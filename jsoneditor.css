@@ -2,7 +2,7 @@
 .jsoneditor-field, .jsoneditor-value, .jsoneditor-field-readonly, .jsoneditor-readonly {
   border: 1px solid transparent;
   min-height: 16px;
-  min-width: 24px; 
+  min-width: 24px;
   padding: 2px;
   margin: 1px;
   outline: none;
@@ -187,7 +187,7 @@ div.jsoneditor-content {
   width: 100%;
   height: 100%;
   position: relative;
-  overflow: auto;  
+  overflow: auto;
 }
 
 textarea.jsonformatter-textarea {
@@ -277,4 +277,3 @@ td.jsoneditor-droparea {
   font-family: droid sans mono, monospace, courier new, courier;
   font-size: 10pt;
 }
-

@@ -968,7 +968,7 @@ JSONEditor.Node.prototype.getDom = function() {
   dom.value = this._createDomValue();
   dom.tree = this._createDomTree(dom.expand, dom.field, dom.value);
   tdField.appendChild(dom.tree);
-
+  
   // create type select box
   var tdType = document.createElement('td');
   tdType.className = 'jsoneditor-td jsoneditor-td-edit'; 
@@ -1351,7 +1351,7 @@ JSONEditor.Node.prototype._createDomTree = function (domExpand, domField, domVal
   var dom = this.dom;
   var domTree = document.createElement('table');
   var tbody = document.createElement('tbody');
-  domTree.style.borderCollapse = 'collapse';
+  domTree.style.borderCollapse = 'collapse'; // TODO: put in css
   domTree.appendChild(tbody);
   var tr = document.createElement('tr');
   tbody.appendChild(tr);
@@ -1793,7 +1793,7 @@ JSONEditor.Node.prototype._stringCast = function(str) {
  * @return {String} escapedText
  */
 JSONEditor.Node.prototype._escape = function (text) {
-  var htmlEscaped = String(text).replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/ /g, '&nbsp;');
+  var htmlEscaped = String(text).replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/  /g, ' &nbsp;');
   var json = JSON.stringify(htmlEscaped);
   var escapedText = json.substring(1, json.length - 1);
   return escapedText;

@@ -128,7 +128,7 @@ main.load = function() {
     ]
   };      
   
-//  try { // TODO
+  try {
     // formatter
     var container = document.getElementById("jsonformatter");
     formatter = new JSONFormatter(container);
@@ -141,7 +141,6 @@ main.load = function() {
     var container = document.getElementById("jsoneditor");
     editor = new JSONEditor(container);
     editor.set(json);      
-  try { // TODO: remove
 
     // splitter
     var domSplitter = document.getElementById('splitter');
