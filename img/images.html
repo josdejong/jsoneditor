@@ -1,0 +1,122 @@
+<!-- images are rendered with Chrome -->
+
+<html>
+<head>
+  <style>
+    body {
+      font-family: arial;
+      font-size: 11pt;
+      font-weight: bold;
+    }
+
+    div {
+      width: 16px;
+      height: 16px;
+      padding: 0px;
+      margin: 0px;
+      color: white;
+      text-align: center;
+      position: relative;
+    }
+
+/*
+    div.d1, div.d2 {
+      position: absolute;
+      width: 5px;
+      height: 5px;
+      border: 2px solid white;
+      background-color: none;
+      
+    }
+    
+    div.d1 {
+      left: 2px;
+      top: 2px;
+    }
+    
+    
+    div.d2 {
+      left: 5px;
+      top: 5px;
+    }
+*/
+
+    div.d1, div.d2, div.d2_gray {
+      position: absolute;
+      background-color: white;
+    }
+    
+    div.d1 {
+      left: 3px;
+      top: 3px;
+      width: 4px;
+      height: 4px;
+      border: 2px solid white;
+    }
+    
+    
+    div.d2, div.d2_gray {
+      left: 5px;
+      top: 5px;
+      width: 7px;
+      height: 7px;
+    }
+
+    div.d2 {
+      border: 1px solid #97B0F8;
+    }
+
+    div.d2_gray {
+      border: 1px solid lightgray;
+    }
+
+    div.small {
+      font-size: 9pt;
+    }
+
+    div.large {
+      font-size: 11pt;
+    }
+
+    div.char {
+      font-weight: normal;
+    }
+
+  </style>
+</head>
+<body>
+
+<!-- add -->
+<div style="background-color: lightgray;">+</div><br>
+<div style="background-color: green;">+</div><br>
+
+<!-- delete -->
+<div style="background-color: lightgray;">&times;</div><br>
+<div style="background-color: red;">&times;</div><br>
+
+<!-- duplicate -->
+<div style="background-color: lightgray;"><div class="d1"></div><div class="d2_gray"></div></div><br>
+<div style="background-color: #97B0F8;"><div class="d1"></div><div class="d2"></div></div><br>
+
+<!-- type auto -->
+<div style="background-color: lightgray;" class="char">A</div><br>
+<div style="background-color: #97B0F8;" class="char">A</div><br>
+
+<!-- type object -->
+<div style="background-color: lightgray;" class="small">{&thinsp;}</div><br>
+<div style="background-color: #97B0F8;" class="small">{&thinsp;}</div><br>
+
+<!-- type array -->
+<div style="background-color: lightgray;" class="small">[&thinsp;]</div><br>
+<div style="background-color: #97B0F8;" class="small">[&thinsp;]</div><br>
+
+<!-- type string -->
+<div style="background-color: lightgray;">"</div><br>
+<div style="background-color: #97B0F8;">"</div><br>
+
+<!-- type empty -->
+<div style="background-color: lightgray;"></div><br>
+<div style="background-color: #97B0F8;"></div><br>
+
+</body>
+</html>

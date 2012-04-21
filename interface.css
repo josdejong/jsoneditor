@@ -1,0 +1,139 @@
+body, html {
+  font-family: arial, sans;
+  font-size: 11pt;
+
+  width: 100%;
+  height: 100%;
+  margin: 0px;
+  padding: 0px;
+
+  overflow: hidden;
+}
+
+h1 {
+  font-size: 18px;
+  padding: 10px 15px;
+  margin: 0px;
+}
+
+span.header-light {
+  color: gray;
+}
+
+#header {
+  width: 100%;
+  height: 40px;
+  overflow: hidden;
+  
+  background-color: #4D4D4D;
+  color: white;
+}
+
+#auto {
+  width: 100%;
+  height: 100%;
+  
+  margin: -40px 0px -24px 0px;
+  padding: 40px 0px  24px 0px;
+ 
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -ms-box-sizing: border-box;
+  box-sizing: border-box;
+
+  overflow: hidden;
+}
+
+#contents {
+  width: 100%;
+  height: 100%;
+
+  overflow: hidden;
+}
+
+#jsonformatter, #jsoneditor {
+  float: left;
+  height: 100%;
+  width: 400px;
+  
+  padding: 15px;
+  
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -ms-box-sizing: border-box;
+  box-sizing: border-box;
+}
+
+#splitter {
+  float: left;
+  height: 100%;
+  cursor: col-resize;
+}
+
+#footer {
+  width: 100%;
+  height: 23px;
+  font-size: 10pt;
+
+  overflow: hidden;
+  color: #BFBFBF;
+  border-top: 1px solid lightgray;
+  text-align: center;
+  background-color: #F5F5F5;
+}
+#footer-inner {
+  margin: 4px;
+}
+
+a.header {
+  color: white;
+  text-decoration: none;
+}
+a.footer, a.hideAds {
+  color: #BFBFBF;
+  text-decoration: none;
+}
+a.footer:hover, a.hideAds:hover {
+  color: red;
+  text-decoration: underline;
+}
+
+#ad {
+  float: left;
+  padding: 15px 0px 15px 0px;
+  position: relative;
+}
+
+div.hideAds {
+  text-align: center;
+  color: #BFBFBF;
+  font-size: 10pt;
+  
+  position: absolute;
+  left: 0px;
+  top: 10px;
+  width: 160px;
+}
+
+div.adSpace {
+  height: 15px;
+}
+
+a.hideAds {
+  text-decoration: underline;
+}
+
+div.error {
+  color: red;
+  background-color: #FFC0CB;
+  border: 1px solid red;
+  border-radius: 3px;
+  padding: 5px;
+  margin: 5px;
+}
+
+button.convert {
+  width: 32px; 
+  height: 32px;
+  cursor: default;
+}

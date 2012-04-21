@@ -1,0 +1,85 @@
+<html>
+
+<!--
+http://www.quirksmode.org/css/clearing.html
+-->
+
+<head>
+
+<style>
+
+#frame {
+  width: 25%;
+  height: 50%;
+  border: 1px solid gray;
+  overflow: auto;
+}
+
+ul {
+  list-style-type: none; 
+}
+
+.container {
+  /*
+  overflow: auto;
+	width: 100%;
+  */
+  clear: both;
+  white-space: nowrap;
+}
+
+.field {
+  float: left; 
+  border: 1px solid green;
+  width: 200px;
+}
+
+.value {
+  border: 1px solid blue;
+  float: left;
+}
+
+.edit {
+  float: right;
+}
+
+</style>
+
+<script type="text/javascript">
+
+</script>
+</head>
+
+<body>
+
+<div id="frame">
+  <ul>
+    <li>
+      <div class="container">
+        <div class="field">field</div>
+        <div class="value">value</div>
+        <div class="edit">edit</div>
+      </div>
+    </li>
+
+    <li>
+      <div class="container">
+        <div class="field">field<br>2nd line</div>
+        <div class="value">value</div>
+        <div class="edit">edit</div>
+      </div>
+    </li>
+
+    <li>
+      <div class="container">
+        <div class="field">field</div>
+        <div class="value">value<br>2nd line</div>
+        <div class="edit">edit</div>
+      </div>
+    </li>
+  </ul>
+</div>
+
+</body>
+
+</html>

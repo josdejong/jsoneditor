@@ -1,0 +1,100 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+  <title>CouchDB Document Editor</title>
+  
+  <meta name="description" content="CouchDB Document Editor">
+  <meta name="keywords" content="json, editor, couchdb, online, javascript, javascript object notation, treeview, open source, free">
+  <meta name="author" content="Jos de Jong">
+
+  <link rel="shortcut icon" href="favicon.ico">
+  
+  <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.0/jquery.min.js"></script>
+  <script type="text/javascript" src="jsoneditor.js"></script>
+  <link rel="stylesheet" type="text/css" href="jsoneditor.css">
+
+  <style type="text/css">
+    body, html {
+      font-family: arial, verdana;
+      font-size: 11pt;
+      width: 100%;
+      height: 100%;
+      margin: 0px;
+      padding: 0px;
+    }
+
+    h1 {
+      color: gray;
+    }
+    
+    input[type=text] {
+      border: 1px solid gray;
+    }
+  </style>
+
+  <script type="text/javascript">
+    var editor = null;
+
+    function init() {
+      var container = document.getElementById('jsoneditor');
+      editor = new JSONEditor(container);
+     
+      document.getElementById('url').focus();
+    }
+    
+    function load() {
+      var url = document.getElementById("url").value;
+      $.ajax({
+        'type': 'GET',
+        'url': url,
+        'dataType': 'json',
+        'success': function (doc) {
+          editor.set(doc);
+        }
+      });
+    }
+    
+    function save() {
+      var doc = editor.get();
+      var url = document.getElementById("url").value;
+      $.ajax({
+        'type': 'PUT',
+        'url': url,
+        'data': JSON.stringify(doc),
+        'success': function (response) {
+          load();
+        }
+      });      
+    }
+  </script>
+</head>
+
+<body onload="init();">
+
+<table align="center" width="790px" height="100%">
+  <tr>
+    <td style="height: 50px;"><h1>CouchDB Document Editor</h1></td>
+  </tr>
+  <tr>
+    <td style="height: 30px;">
+      <table width="100%">
+        <col width="100px"></col>
+        <col ></col>
+        <col width="50px"></col>
+        <col width="50px"></col>
+        <tr>
+          <td>Document Url:</td>
+          <td><input type="text" id="url" style="width: 100%;" value="http://localhost:5984/test/jos"></td>
+          <td><input type="button" value="Load" onclick="load();" /></td>
+          <td><input type="button" value="Save" onclick="save();" /></td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+  <tr>
+    <td id="jsoneditor"></td>
+  </tr>
+</table>
+
+</body>
+</html>

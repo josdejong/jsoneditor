@@ -1,0 +1,64 @@
+JSON EDITOR ONLINE CHANGELOG
+http://jsoneditoronline.org
+
+
+2012-04-21, version 1.0
+
+- values are no longer aligned in one global column, but placed directly right
+  from the field. Having field and value close together improves readability,
+  especially in case of deeply nested data.
+- values are colorized by their type: strings are green, values read, booleans
+  blue, and null is purple.
+- font is changed to a monotype font for better readability.
+- special characters like \t are now handled nicely.
+- overall performance and memory usage improved.
+- when clicking on whitespace, focus is set to the closest field or value.
+- some other small interface tweaks.
+- fixed a bug with casting a value from type auto to string and vice versa 
+  (the value was not casted at all).
+
+
+2012-03-01, version 0.9.10
+
+- nicer looking select box for the field types, with icons.
+- improved drag and drop: better visualized, and now working in all browers.
+- previous values will be restored after changing the type of a field. When 
+  changing the type back, the previous value or childs will be restored.
+- when hovering buttons (fieldtype, duplicate, delete, add) or when dragging
+  a field, corresponding field including its childs is highlighted. This makes
+  it easier to see what part of the data will be edited. 
+- errors are now displayed in a message window on top of the page instead of 
+  an alert which pops up.
+- fixed a bug with displaying enters in fields.
+- fixed a bug where the last trailing enter was removed when setting json
+  in the editor.
+- added a fix to get around Internet Explorer 8 issues with vertical scrollbars.
+
+
+2012-01-29, version 0.9.9
+
+- fields can be duplicated
+- support for drag and drop:
+  - fields in the editor itself can be moved via drag and drop
+  - fields can be exported from the editor as JSON
+  - external JSON can be dropped inside the editor
+- when changing type from array to object and vice versa, childs will be 
+  maintained instead of removed.
+- updated interface. Works now in IE8 too.
+
+
+2012-01-16, version 0.9.8
+
+- improved the performance of expanding a node with all its childs.
+
+
+2012-01-09, version 0.9.7
+
+- added functionallity to expand/collapse a node and all its childs. Click
+  the expand button of a node while holding Ctrl down.
+- small interface improvements
+
+
+2011-11-28, version 0.9.6
+
+- first fully usable version of the JSON editor
