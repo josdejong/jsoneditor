@@ -1,6 +1,13 @@
 JSON EDITOR ONLINE CHANGELOG
 http://jsoneditoronline.org
 
+2012-04-24, version 1.1
+
+- fixed a bug. Dragging an object down which has been expanded and collapsed 
+  again did not work.
+- using a minified version of jsoneditor.js, to improve page load time and 
+  save bandwidth.
+
 
 2012-04-21, version 1.0
 

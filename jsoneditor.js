@@ -26,7 +26,7 @@
  * Copyright (c) 2011-2012 Jos de Jong, http://jsoneditoronline.org
  *
  * @author  Jos de Jong, <wjosdejong@gmail.com>
- * @date    2012-04-21
+ * @date    2012-04-24
  */
 
 
@@ -1052,7 +1052,6 @@ JSONEditor.Node.prototype._onDrag = function (event) {
   var topThis = JSONEditor.getAbsoluteTop(trThis);
   var heightThis = trThis.offsetHeight;
   var mouseY = event.pageY || (event.clientY + document.body.scrollTop);
-  
   if (mouseY < topThis) {
     // move up
     var trPrev = trThis.previousSibling;
@@ -1078,7 +1077,7 @@ JSONEditor.Node.prototype._onDrag = function (event) {
   }
   else {
     // move down
-    var trLast = this.append ? this.append.getDom() : this.dom.tr;
+    var trLast = (this.expanded && this.append) ? this.append.getDom() : this.dom.tr;
     var trFirst = trLast ? trLast.nextSibling : undefined;
     if (trFirst) {
       var topFirst = JSONEditor.getAbsoluteTop(trFirst);
