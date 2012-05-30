@@ -6,6 +6,7 @@
   padding: 2px;
   margin: 1px;
   outline: none;
+  word-wrap: break-word;
 }
 
 .jsoneditor-empty {

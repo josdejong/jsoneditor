@@ -1,22 +1,22 @@
 /**
  * @file jsoneditor.js
- * 
- * @brief 
- * JSONEditor is an editor to display and edit JSON data in a treeview. 
- * 
- * Supported browsers: Chrome, Firefox, Safari, Opera, Internet Explorer 8+ 
- * 
+ *
+ * @brief
+ * JSONEditor is an editor to display and edit JSON data in a treeview.
+ *
+ * Supported browsers: Chrome, Firefox, Safari, Opera, Internet Explorer 8+
+ *
  * @license
- * This json editor is open sourced with the intention to use the editor as 
+ * This json editor is open sourced with the intention to use the editor as
  * a component in your own application. Not to just copy and monetize the editor
  * as it is.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
- * use this file except in compliance with the License. You may obtain a copy 
+ * use this file except in compliance with the License. You may obtain a copy
  * of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
@@ -51,7 +51,7 @@ var JSON;
  * JSONEditor
  * @param {HTML DOM} container    Container element
  * @param {Object or Array} json  JSON object
- */ 
+ */
 JSONEditor = function (container, json) {
   // check availability of JSON parser (not available in IE7 and older)
   if (!JSON) {
@@ -92,7 +92,7 @@ JSONEditor.prototype.set = function (json) {
   this.node.expand(recurse);
 
   this.content.appendChild(this.table);  // Put the table online again
-}
+};
 
 /**
  * Get JSON object from editor
@@ -157,6 +157,7 @@ JSONEditor.prototype.collapseAll = function () {
 }
 
 /**
+ * @constructor JSONEditor.Node
  * Create a new Node
  * @param {Object} params   Can contain parameters: field, fieldEditable, value.
  */ 
@@ -1548,7 +1549,7 @@ JSONEditor.Node.prototype.onEvent = function (event) {
           }
         }
         break;
-    }    
+    }
   }
   
   if ((target == dom.tdExpand && !expandable) || target == dom.tdField || target == dom.tdSeparator) {
@@ -1561,7 +1562,6 @@ JSONEditor.Node.prototype.onEvent = function (event) {
         break;
     }    
   }
-
 }
 
 /**
@@ -1822,6 +1822,7 @@ JSONEditor.Node.prototype._stripHTML = function (html) {
 }
 
 /**
+ * @constructor JSONEditor.AppendNode
  * Create a new AppendNode. This is a special node which is created at the 
  * end of the list with childs for an object or array
  */ 
@@ -1940,8 +1941,13 @@ JSONEditor.prototype._createFrame = function () {
     if (node) {
       node.onEvent(event);
     }
-  }
-  this.frame.onclick = onEvent;
+  };
+  this.frame.onclick = function (event) {
+    onEvent(event);
+
+    // prevent default submit action when JSONEditor is located inside a form
+    JSONEditor.Events.preventDefault(event);
+  };
   this.frame.onchange = onEvent;
   this.frame.onfocus = onEvent;
   this.frame.onblur = onEvent;
@@ -2030,31 +2036,6 @@ JSONEditor.prototype._createTable = function () {
   this.tbody = document.createElement('tbody');
   this.table.appendChild(this.tbody);
 
-  /* TODO: remove
-  // TODO: replace header with a fixed bar (like the formatter has) 
-  // create header column
-  var tr, th;  
-  tr = document.createElement('tr');
-  th = document.createElement('th');
-  th.className = 'jsoneditor-th'; 
-  var editor = this;
-  var expandAll = document.createElement('button');
-  expandAll.innerHTML = 'Expand All';
-  expandAll.onclick = function () {
-    editor.expandAll();
-  }
-  th.appendChild(expandAll);
-  var collapseAll = document.createElement('button');
-  collapseAll.innerHTML = 'Collapse All';
-  collapseAll.onclick = function () {
-    editor.collapseAll();
-  }
-  th.appendChild(collapseAll);
-  th.colSpan = 5;
-  tr.appendChild(th);
-  this.tbody.appendChild(tr);
-  */
-
   this.frame.appendChild(contentOuter);
 }
 
@@ -2090,6 +2071,10 @@ JSONFormatter = function (container) {
 
   this.frame = document.createElement('div');
   this.frame.className = "jsoneditor-frame";
+  this.frame.onclick = function (event) {
+    // prevent default submit action when JSONFormatter is located inside a form
+    JSONEditor.Events.preventDefault(event);
+  };
 
   // create menu table
   this.head = document.createElement('table');
@@ -2155,21 +2140,21 @@ JSONFormatter = function (container) {
   */
 
   var me = this;
-  buttonFormat.onclick = function () {
+  buttonFormat.onclick = function (event) {
     try {
       textarea.value = JSON.stringify(JSON.parse(textarea.value), null, '  ');
     }
     catch (err) {
       me.onError(err);
-    } 
+    }
   };
-  buttonCompact.onclick = function () {
+  buttonCompact.onclick = function (event) {
     try {
       textarea.value = JSON.stringify(JSON.parse(textarea.value));
     }
     catch (err) {
       me.onError(err);
-    } 
+    }
   };
   
   this.container.appendChild(this.frame);
