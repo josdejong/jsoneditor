@@ -1,11 +1,11 @@
 body, html {
-  font-family: arial, sans;
+  font-family: arial, sans-serif;
   font-size: 11pt;
 
   width: 100%;
   height: 100%;
-  margin: 0px;
-  padding: 0px;
+  margin: 0;
+  padding: 0;
 
   overflow: hidden;
 }
@@ -13,7 +13,7 @@ body, html {
 h1 {
   font-size: 18px;
   padding: 10px 15px;
-  margin: 0px;
+  margin: 0;
 }
 
 span.header-light {
@@ -33,12 +33,9 @@ span.header-light {
   width: 100%;
   height: 100%;
   
-  margin: -40px 0px -24px 0px;
-  padding: 40px 0px  24px 0px;
- 
-  -webkit-box-sizing: border-box;
-  -moz-box-sizing: border-box;
-  -ms-box-sizing: border-box;
+  margin: -40px 0 -24px 0;
+  padding: 40px 0  24px 0;
+
   box-sizing: border-box;
 
   overflow: hidden;
@@ -57,10 +54,7 @@ span.header-light {
   width: 400px;
   
   padding: 15px;
-  
-  -webkit-box-sizing: border-box;
-  -moz-box-sizing: border-box;
-  -ms-box-sizing: border-box;
+
   box-sizing: border-box;
 }
 
@@ -100,7 +94,7 @@ a.footer:hover, a.hideAds:hover {
 
 #ad {
   float: left;
-  padding: 15px 0px 15px 0px;
+  padding: 15px 0 15px 0;
   position: relative;
 }
 
@@ -110,7 +104,7 @@ div.hideAds {
   font-size: 10pt;
   
   position: absolute;
-  left: 0px;
+  left: 0;
   top: 10px;
   width: 160px;
 }
