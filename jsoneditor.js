@@ -499,8 +499,8 @@ JSONEditor.Node.prototype.appendChild = function(node) {
  */
 JSONEditor.Node.prototype.moveBefore = function(node, beforeNode) {
     if (this.type == 'array' || this.type == 'object') {
-        // create a temporary row, to prevent the scroll position from jumping when
-        // removing the node
+        // create a temporary row, to prevent the scroll position from jumping
+        // when removing the node
         var tbody = (this.dom.tr) ? this.dom.tr.parentNode : undefined;
         if (tbody) {
             var trTemp = document.createElement('tr');
@@ -1612,10 +1612,32 @@ JSONEditor.Node.prototype._onExpand = function (event) {
 };
 
 JSONEditor.Node.types = [
-    {'value': 'array', 'className': 'jsoneditor-option-array', 'title': 'Field type "array". An array contains an ordered collection of values.'},
-    {'value': 'auto', 'className': 'jsoneditor-option-auto', 'title': 'Field type "auto". The field type is automatically determined from the value and can be a string, number, boolean, or null.'},
-    {'value': 'object', 'className': 'jsoneditor-option-object', 'title': 'Field type "object". An object contains an unordered set of key/value pairs.'},
-    {'value': 'string', 'className': 'jsoneditor-option-string', 'title': 'Field type "string". Field type is not determined from the value, but always returned as string.'}
+    {
+        'value': 'array',
+        'className': 'jsoneditor-option-array',
+        'title': 'Field type "array". ' +
+            'An array contains an ordered collection of values.'
+    },
+    {
+        'value': 'auto',
+        'className': 'jsoneditor-option-auto',
+        'title': 'Field type "auto". ' +
+            'The field type is automatically determined from the value ' +
+            'and can be a string, number, boolean, or null.'
+    },
+    {
+        'value': 'object',
+        'className': 'jsoneditor-option-object',
+        'title': 'Field type "object". ' +
+            'An object contains an unordered set of key/value pairs.'
+    },
+    {
+        'value': 'string',
+        'className': 'jsoneditor-option-string',
+        'title': 'Field type "string". ' +
+            'Field type is not determined from the value, ' +
+            'but always returned as string.'
+    }
 ];
 
 /**
@@ -2334,14 +2356,11 @@ JSONEditor.Events.preventDefault = function (event) {
  */
 JSONEditor.getAbsoluteLeft = function (elem) {
     var left = 0;
-    while( elem != null ) {
+    var body = document.body;
+    while (elem != null && elem != body) {
         left += elem.offsetLeft;
         left -= elem.scrollLeft;
         elem = elem.offsetParent;
-    }
-    if (!document.body.scrollLeft && window.pageXOffset) {
-        // FF
-        left -= window.pageXOffset;
     }
     return left;
 };
@@ -2354,14 +2373,11 @@ JSONEditor.getAbsoluteLeft = function (elem) {
  */
 JSONEditor.getAbsoluteTop = function (elem) {
     var top = 0;
-    while( elem != null ) {
+    var body = document.body;
+    while (elem != null && elem != body) {
         top += elem.offsetTop;
         top -= elem.scrollTop;
         elem = elem.offsetParent;
-    }
-    if (!document.body.scrollTop && window.pageYOffset) {
-        // FF
-        top -= window.pageYOffset;
     }
     return top;
 };
