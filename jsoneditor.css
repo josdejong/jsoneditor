@@ -175,8 +175,10 @@ div.jsoneditor-content-outer, div.jsonformatter-content {
   margin: -32px 0 0 0;
   padding: 32px 0 0 0;
 
+  -moz-box-sizing: border-box;
+  -webkit-box-sizing: border-box;
   box-sizing: border-box;
-  
+
   overflow: hidden;
 }
 
@@ -192,9 +194,11 @@ textarea.jsonformatter-textarea {
   height: 100%;
   margin: 0;
 
+  -moz-box-sizing: border-box;
+  -webkit-box-sizing: border-box;
   box-sizing: border-box;
-  
-  border: none;
+
+    border: none;
   background-color: white;
   resize: none;
 }
