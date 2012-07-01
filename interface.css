@@ -36,6 +36,8 @@ span.header-light {
   margin: -40px 0 -24px 0;
   padding: 40px 0  24px 0;
 
+  -moz-box-sizing: border-box;
+  -webkit-box-sizing: border-box;
   box-sizing: border-box;
 
   overflow: hidden;
@@ -55,6 +57,8 @@ span.header-light {
   
   padding: 15px;
 
+  -moz-box-sizing: border-box;
+  -webkit-box-sizing: border-box;
   box-sizing: border-box;
 }
 
