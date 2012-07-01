@@ -146,9 +146,9 @@ main.load = function() {
         var domSplitter = document.getElementById('splitter');
         domSplitter.innerHTML =
             '<br><br><br>' +
-                '<button id="toForm" onclick="main.formatterToEditor();" title="JSON to Editor" class="convert"> <img src="img/treeRightTriangleBlack.png" style="width:8px; height:8px; margin-left:2px;"></button><br>' +
+                '<button id="toForm" onclick="this.focus(); main.formatterToEditor();" title="JSON to Editor" class="convert"> <img src="img/treeRightTriangleBlack.png" style="width:8px; height:8px; margin-left:2px;"></button><br>' +
                 '<br>' +
-                '<button id="toJSON" onclick="main.editorToFormatter();" title="Editor to JSON" class="convert"><img src="img/treeLeftTriangleBlack.png" style="width:8px; height:8px; margin-right:2px;"></button>';
+                '<button id="toJSON" onclick="this.focus(); main.editorToFormatter();" title="Editor to JSON" class="convert"><img src="img/treeLeftTriangleBlack.png" style="width:8px; height:8px; margin-right:2px;"></button>';
         JSONEditor.Events.addEventListener(domSplitter, "mousedown", main.onMouseDown);
 
         // resize

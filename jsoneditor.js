@@ -1989,8 +1989,6 @@ JSONEditor.prototype._createFrame = function () {
         JSONEditor.Events.preventDefault(event);
     };
     this.frame.onchange = onEvent;
-    this.frame.onfocus = onEvent;
-    this.frame.onblur = onEvent;
     this.frame.onkeyup = onEvent;
     this.frame.oncut = onEvent;
     this.frame.onpaste = onEvent;
@@ -1998,6 +1996,13 @@ JSONEditor.prototype._createFrame = function () {
     this.frame.onmouseup = onEvent;
     this.frame.onmouseover = onEvent;
     this.frame.onmouseout = onEvent;
+    // Note: focus and blur events do not propagate, therefore they defined
+    // using an eventListener with useCapture=true
+    // see http://www.quirksmode.org/blog/archives/2008/04/delegating_the.html
+    JSONEditor.Events.addEventListener(this.frame, 'focus', onEvent, true);
+    JSONEditor.Events.addEventListener(this.frame, 'blur', onEvent, true);
+    this.frame.onfocusin = onEvent;  // for IE
+    this.frame.onfocusout = onEvent; // for IE
 
     // create menu table
     this.head = document.createElement('table');
