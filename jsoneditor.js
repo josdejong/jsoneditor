@@ -1430,6 +1430,16 @@ JSONEditor.Node.prototype.onEvent = function (event) {
             case 'change':
             case 'blur':
             case 'keyup':
+                // make sure " gets escaped
+                var beforeHTML = this.dom.value.innerHTML,
+                    afterHTML = beforeHTML;
+                // " => \"
+                afterHTML = afterHTML.replace(/^"/g, '\\"').replace(/([^\\])"/g, '$1\\"');
+                if (beforeHTML != afterHTML) {
+                    //console.log([beforeHTML, afterHTML]);
+                    this.dom.value.innerHTML = afterHTML;
+                }
+
                 this._getDomValue(true);
                 this._updateDomValue();
                 break;
