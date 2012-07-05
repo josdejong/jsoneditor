@@ -927,6 +927,7 @@ JSONEditor.Node.prototype._getDomField = function(silent) {
 
     if (this.fieldHTML != undefined) {
         try {
+            this.fieldHTML = JSONEditor.prepareHtmlForEscaping(this.fieldHTML);
             this.field = this._unescape(this._stripHTML(this.fieldHTML));
         }
         catch (err) {
@@ -1428,8 +1429,10 @@ JSONEditor.Node.prototype.onEvent = function (event) {
                 JSONEditor.focusNode = this;
                 break;
 
-            case 'change':
             case 'blur':
+                domValue.innerHTML = JSONEditor.insertMissingEscapes(domValue.innerHTML);
+                // fallthrough intentional
+            case 'change':
             case 'keyup':
                 this._getDomValue(true);
                 this._updateDomValue();
@@ -1453,8 +1456,10 @@ JSONEditor.Node.prototype.onEvent = function (event) {
                 JSONEditor.focusNode = this;
                 break;
 
-            case 'change':
             case 'blur':
+                domField.innerHTML = JSONEditor.insertMissingEscapes(domField.innerHTML);
+                // fallthrough intentional
+            case 'change':
             case 'keyup':
                 this._getDomField(true);
                 this._updateDomField();
@@ -2101,29 +2106,46 @@ JSONEditor.getNodeFromTarget = function (target) {
 };
 
 /**
- * Make sure manually entered line breaks, ", and \ are properly escaped
- * and persisted
+ * Make sure manually entered " and \ are properly escaped
  * @param {String} html
  * @return {String}
  */
-JSONEditor.prepareHtmlForEscaping = function (html) {
+JSONEditor.insertMissingEscapes = function (html) {
     // escape \ and " where necessary
     html = html.replace(/\\(.)/g, function (m, c1) {
         return /["'\\\/bfnrtu]/.test(c1)
             ? ('<char92><char' + c1.charCodeAt(0) + '>')
             : ('<char92><char92>' + c1);
-        });
+    });
     html = html.replace(/\\/g, '\\\\');
     html = html.replace(/"/g, '\\"');
     html = html.replace(/<char(\d+)>/g, function (m, c1) {
         return String.fromCharCode(c1);
     });
+    // unescape quotes accidentally escaped inside HTML
+    html = html.replace(/<[a-zA-Z][^>]+>/g, function (m) {
+        return m.replace(/\\"/g, '"');
+    });
+    return html;
+};
+
+/**
+ * Make sure manually entered " and \ are properly escaped and line breaks persisted
+ * @param {String} html
+ * @return {String}
+ */
+JSONEditor.prepareHtmlForEscaping = function (html) {
+    html = JSONEditor.insertMissingEscapes(html);
+
+    // BR DIV => DIV
+    html = html.replace(/<br[^>]*>\s*<div>/g, '<div>');
+
+    // DIV BR /DIV => \n
+    html = html.replace(/<div>\s*(?:<br[^>]*>)?\s*<\/div>/g, '\\n');
 
     // strip trailing BR
     html = html.replace(/<br[^>]*>(\s*)$/, '$1');
 
-    // DIV BR /DIV => \n
-    html = html.replace(/<div>\s*(?:<br[^>]*>)?\s*<\/div>/g, '\\n');
     // BR /DIV => /DIV
     html = html.replace(/<br[^>]*>\s*<\/div>/g, '</div>');
 
