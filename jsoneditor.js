@@ -824,7 +824,7 @@ JSONEditor.Node.prototype._getDomValue = function(silent) {
 
     if (this.valueHTML != undefined) {
         try {
-            this.valueHTML = JSONEditor.normalizeValueString(this.valueHTML);
+            this.valueHTML = JSONEditor.prepareHtmlForEscaping(this.valueHTML);
             // retrieve the value
             if (this.type == 'string') {
                 this.value = this._unescape(this._stripHTML(this.valueHTML));
@@ -2101,21 +2101,32 @@ JSONEditor.getNodeFromTarget = function (target) {
 };
 
 /**
- * Make sure manually entered line breaks are persisted and quotation marks are escaped
+ * Make sure manually entered line breaks, ", and \ are properly escaped
+ * and persisted
  * @param {String} html
  * @return {String}
  */
-JSONEditor.normalizeValueString = function (html) {
-    // \ => \\
-    html = html.replace(/\\(\s|<|$|&)/g, '\\\\$1');
+JSONEditor.prepareHtmlForEscaping = function (html) {
+    // escape \ and " where necessary
+    html = html.replace(/\\(.)/g, function (m, c1) {
+        return /["'\\\/bfnrtu]/.test(c1)
+            ? ('<char92><char' + c1.charCodeAt(0) + '>')
+            : ('<char92><char92>' + c1);
+        });
+    html = html.replace(/\\/g, '\\\\');
+    html = html.replace(/"/g, '\\"');
+    html = html.replace(/<char(\d+)>/g, function (m, c1) {
+        return String.fromCharCode(c1);
+    });
+
     // strip trailing BR
-    html = html.replace(/<br[^>]*>$/, '');
+    html = html.replace(/<br[^>]*>(\s*)$/, '$1');
+
+    // DIV BR /DIV => \n
+    html = html.replace(/<div>\s*(?:<br[^>]*>)?\s*<\/div>/g, '\\n');
     // BR /DIV => /DIV
-    html = html.replace(/<br[^>]*><\/div>/g, '</div>');
-    // DIV BR /DIV => \n BR
-    html = html.replace(/<div>(?:<br[^>]*>)?<\/div>/g, '\\n<br>');
-    // " => \"
-    html = html.replace(/^"/g, '\\"').replace(/([^\\])"/g, '$1\\"');
+    html = html.replace(/<br[^>]*>\s*<\/div>/g, '</div>');
+
     // place \n before line breaking HTML so typed line breaks get preserved
     html = html.replace(/(<(?:br|div))\b/g, '\\n$1');
     return html;
