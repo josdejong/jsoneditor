@@ -824,6 +824,7 @@ JSONEditor.Node.prototype._getDomValue = function(silent) {
 
     if (this.valueHTML != undefined) {
         try {
+            this.valueHTML = JSONEditor.normalizeValueString(this.valueHTML);
             // retrieve the value
             if (this.type == 'string') {
                 this.value = this._unescape(this._stripHTML(this.valueHTML));
@@ -1430,16 +1431,6 @@ JSONEditor.Node.prototype.onEvent = function (event) {
             case 'change':
             case 'blur':
             case 'keyup':
-                // make sure " gets escaped
-                var beforeHTML = this.dom.value.innerHTML,
-                    afterHTML = beforeHTML;
-                // " => \"
-                afterHTML = afterHTML.replace(/^"/g, '\\"').replace(/([^\\])"/g, '$1\\"');
-                if (beforeHTML != afterHTML) {
-                    //console.log([beforeHTML, afterHTML]);
-                    this.dom.value.innerHTML = afterHTML;
-                }
-
                 this._getDomValue(true);
                 this._updateDomValue();
                 break;
@@ -2107,6 +2098,27 @@ JSONEditor.getNodeFromTarget = function (target) {
     }
 
     return undefined;
+};
+
+/**
+ * Make sure manually entered line breaks are persisted and quotation marks are escaped
+ * @param {String} html
+ * @return {String}
+ */
+JSONEditor.normalizeValueString = function (html) {
+    // \ => \\
+    html = html.replace(/\\(\s|<|$|&)/g, '\\\\$1');
+    // strip trailing BR
+    html = html.replace(/<br[^>]*>$/, '');
+    // BR /DIV => /DIV
+    html = html.replace(/<br[^>]*><\/div>/g, '</div>');
+    // DIV BR /DIV => \n BR
+    html = html.replace(/<div>(?:<br[^>]*>)?<\/div>/g, '\\n<br>');
+    // " => \"
+    html = html.replace(/^"/g, '\\"').replace(/([^\\])"/g, '$1\\"');
+    // place \n before line breaking HTML so typed line breaks get preserved
+    html = html.replace(/(<(?:br|div))\b/g, '\\n$1');
+    return html;
 };
 
 /**
