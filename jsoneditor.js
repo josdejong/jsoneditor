@@ -1827,12 +1827,15 @@ JSONEditor.Node.prototype._stringCast = function(str) {
 };
 
 /**
- * escape a text
+ * escape a text, such that it can be displayed safely in an HTML element
  * @param {String} text
  * @return {String} escapedText
  */
 JSONEditor.Node.prototype._escape = function (text) {
-    var htmlEscaped = String(text).replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/  /g, ' &nbsp;');
+    var htmlEscaped = String(text)
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/ /g, '&nbsp;');
     var json = JSON.stringify(htmlEscaped);
     return json.substring(1, json.length - 1);
 };
@@ -1845,7 +1848,10 @@ JSONEditor.Node.prototype._escape = function (text) {
 JSONEditor.Node.prototype._unescape = function (escapedText) {
     var json = '"' + escapedText + '"';
     var htmlEscaped = JSON.parse(json);
-    return htmlEscaped.replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&nbsp;/g, ' ');
+    return htmlEscaped
+        .replace(/&lt;/g, '<')
+        .replace(/&gt;/g, '>')
+        .replace(/&nbsp;/g, ' ');
 };
 
 /**
