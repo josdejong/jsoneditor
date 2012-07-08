@@ -176,6 +176,22 @@ JSONEditor.Node = function (params) {
 };
 
 /**
+ * Set parent node
+ * @param {Node} parent
+ */
+JSONEditor.Node.prototype.setParent = function(parent) {
+    this.parent = parent;
+};
+
+/**
+ * Get parent node. Returns undefined when no parent node is set.
+ * @return {Node} parent
+ */
+JSONEditor.Node.prototype.getParent = function () {
+    return this.parent;
+};
+
+/**
  * Set field
  * @param {String} field
  * @param {boolean} fieldEditable
@@ -319,7 +335,7 @@ JSONEditor.Node.prototype.clone = function() {
         var cloneChilds = [];
         for (var i = 0, iMax = childs.length; i < iMax; i++) {
             var childClone = childs[i].clone();
-            childClone.parent = clone;
+            childClone.setParent(clone);
             cloneChilds.push(childClone);
         }
         clone.childs = cloneChilds;
@@ -465,7 +481,7 @@ JSONEditor.Node.prototype.hideChilds = function() {
 JSONEditor.Node.prototype.appendChild = function(node) {
     if (this.type == 'array' || this.type == 'object') {
         // adjust the link to the parent
-        node.parent = this;
+        node.setParent(this);
         node.fieldEditable = (this.type == 'object');
         if (this.type == 'array') {
             node.index = this.childs.length;
@@ -508,7 +524,7 @@ JSONEditor.Node.prototype.moveBefore = function(node, beforeNode) {
             tbody.appendChild(trTemp);
         }
 
-        var parent = node.parent;
+        var parent = node.getParent();
         if (parent) {
             parent.removeChild(node);
         }
@@ -538,7 +554,7 @@ JSONEditor.Node.prototype.insertBefore = function(node, beforeNode) {
             // append to the child nodes
 
             // adjust the link to the parent
-            node.parent = this;
+            node.setParent(this);
             node.fieldEditable = (this.type == 'object');
             this.childs.push(node);
         }
@@ -550,7 +566,7 @@ JSONEditor.Node.prototype.insertBefore = function(node, beforeNode) {
             }
 
             // adjust the link to the parent
-            node.parent = this;
+            node.setParent(this);
             node.fieldEditable = (this.type == 'object');
             //node.index = index;   // TODO: redundant?
             this.childs.splice(index, 0, node);
@@ -1734,7 +1750,7 @@ JSONEditor.showDropDownList = function (params) {
 JSONEditor.Node.prototype.getAppend = function () {
     if (!this.append) {
         this.append = new JSONEditor.AppendNode();
-        this.append.parent = this;
+        this.append.setParent(this);
     }
     return this.append.getDom();
 };
