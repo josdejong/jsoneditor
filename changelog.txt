@@ -2,10 +2,11 @@ JSON EDITOR ONLINE CHANGELOG
 http://jsoneditoronline.org
 
 
-<not yet released>, version 1.1.2
+<not yet released>, version 1.2.0
 
-- fixed leading an trailing spaces not being displayed in the editor.
+- the position of the vertical separator between left and right panel is stored.
 - link to the sourcecode on github added at the bottom of the page.
+- fixed leading an trailing spaces not being displayed in the editor.
 - fixed wrapping of long words and urls in Chrome.
 
 

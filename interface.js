@@ -26,7 +26,7 @@
  * Copyright (C) 2011-2012 Jos de Jong, http://jsoneditoronline.org
  *
  * @author  Jos de Jong, <wjosdejong@gmail.com>
- * @date    2012-05-30
+ * @date    2012-07-18
  */
 
 
@@ -67,7 +67,7 @@ main.onMouseDown = function (event) {
         main.eventParams.mouseup =
             JSONEditor.Events.addEventListener(document, 'mouseup', main.onMouseUp);
         main.eventParams.screenX = event.screenX;
-        main.eventParams.splitterFraction = main.splitterFraction;
+        main.eventParams.splitterValue = main.getSplitterValue();
     }
     JSONEditor.Events.preventDefault(event);
 };
@@ -78,13 +78,8 @@ main.onMouseMove = function (event) {
 
     var diff = event.screenX - main.eventParams.screenX;
 
-    main.splitterFraction = main.eventParams.splitterFraction + diff / width;
-    if (main.splitterFraction < 0.1) {
-        main.splitterFraction = 0.1;
-    }
-    if (main.splitterFraction > 0.9) {
-        main.splitterFraction = 0.9;
-    }
+    var value = main.eventParams.splitterValue + diff / width;
+    main.setSplitterValue(value);
 
     main.resize();
 
@@ -100,6 +95,58 @@ main.onMouseUp = function (event) {
         main.eventParams.mousedown = false;
     }
     JSONEditor.Events.preventDefault(event);
+};
+
+/**
+ * Set a value for the splitter (UI is not adjusted)
+ * @param {Number} value   A number between 0.1 and 0.9
+ * @return {Number} value  The stored value
+ */
+main.setSplitterValue = function (value) {
+    value = Number(value);
+    if (value < 0.1) {
+        value = 0.1;
+    }
+    if (value > 0.9) {
+        value = 0.9;
+    }
+
+    main.splitterValue = value;
+
+    try {
+        localStorage['splitterValue'] = value;
+    }
+    catch (e) {
+        console.log(e);
+    }
+    return value;
+};
+
+/**
+ * Get the splitter value from local storage
+ * @return {Number} value   A value between 0.1 and 0.9
+ */
+main.getSplitterValue = function () {
+    var value = main.splitterValue;
+    if (value == undefined) {
+        // read from localStorage once
+        try {
+            if (localStorage['splitterValue'] != undefined) {
+                value = Number(localStorage['splitterValue']); // read
+                value = main.setSplitterValue(value);          // verify and store
+            }
+        }
+        catch (e) {
+            console.log(e);
+        }
+    }
+    if (value == undefined) {
+        value = main.setSplitterValue(0.5);
+    }
+    if (value == undefined) {
+        value = 0.5;
+    }
+    return value;
 };
 
 main.load = function() {
@@ -196,8 +243,6 @@ main.load = function() {
     }
 };
 
-main.splitterFraction = 0.5;
-
 main.resize = function() {
     var domEditor = document.getElementById('jsoneditor');
     var domFormatter = document.getElementById('jsonformatter');
@@ -212,7 +257,7 @@ main.resize = function() {
         width -= (adWidth + 15); // Not so nice, +15 here for the margin
     }
 
-    var splitterLeft = width * main.splitterFraction;
+    var splitterLeft = width * main.getSplitterValue();
 
     // resize formatter
     domFormatter.style.width = (splitterLeft) + 'px';
