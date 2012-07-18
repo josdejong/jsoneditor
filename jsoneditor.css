@@ -9,6 +9,10 @@
     word-wrap: break-word;
 }
 
+.jsoneditor-value {
+    word-break: break-word;
+}
+
 .jsoneditor-empty {
     background-color: #E5E5E5;
 }

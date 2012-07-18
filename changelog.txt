@@ -1,6 +1,14 @@
 JSON EDITOR ONLINE CHANGELOG
 http://jsoneditoronline.org
 
+
+<not yet released>, version 1.1.2
+
+- fixed leading an trailing spaces not being displayed in the editor.
+- link to the sourcecode on github added at the bottom of the page.
+- fixed wrapping of long words and urls in Chrome.
+
+
 2012-07-01, version 1.1.1
 
 - fixed global event listener for the focus/blur events, causing changes in
