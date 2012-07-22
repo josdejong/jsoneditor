@@ -23,7 +23,8 @@
 }
 
 .jsoneditor-value:focus, .jsoneditor-field:focus,
-.jsoneditor-value:hover, .jsoneditor-field:hover {
+.jsoneditor-value:hover, .jsoneditor-field:hover,
+.jsoneditor-search-highlight {
     background-color: #FFFFAB;
     border: 1px solid yellow;
 }
@@ -134,7 +135,7 @@ div.jsoneditor-option {
 }
 div.jsoneditor-option:hover {
     background-color: #FFFFAB;
-    color: black;
+    color: #1A1A1A;
 }
 div.jsoneditor-option-string, div.jsoneditor-option-auto,
 div.jsoneditor-option-object, div.jsoneditor-option-array {
@@ -232,14 +233,62 @@ table.jsoneditor-menu {
     left: 0;
     top: 0;
     border-collapse: collapse;
+    color: #1A1A1A;
 }
 
 td.jsoneditor-menu {
-    font-weight: bold;
     background-color: #D5DDF6;
     border-bottom: 1px solid #97B0F8;
     text-align: left;
     padding: 0 3px;
+}
+
+td.jsoneditor-menu, td.jsoneditor-search, button, input {
+    font-weight: normal;
+    font-size: 10pt;
+    font-family: verdana, arial, sans, sans-serif;
+    color: #1A1A1A;
+}
+
+table.jsoneditor-search {
+    float: right;
+}
+
+table.jsoneditor-search-input {
+    border-collapse: collapse;
+}
+
+div.jsoneditor-search {
+    border: 1px solid #97B0F8;
+    background-color: white;
+    padding: 0 2px;
+    margin: 0;
+}
+
+input.jsoneditor-search {
+    width: 120px;
+    border: none;
+    outline: none;
+    margin: 1px;
+}
+
+div.jsoneditor-search-results {
+    color: #4d4d4d;
+    padding-right: 5px;
+}
+
+button.jsoneditor-search-refresh {
+    width: 22px;
+    height: 22px;
+    padding: 0;
+    margin: 0;
+    border: none;
+    cursor: pointer;
+    vertical-align: top;
+    background: url('img/magnifying_glass_gray.png') no-repeat center;
+}
+button.jsoneditor-search-refresh:hover {
+    background: url('img/magnifying_glass_darkgray.png') no-repeat center;
 }
 
 tr, th, td {
@@ -277,4 +326,5 @@ td.jsoneditor-droparea {
 .jsonformatter-textarea {
     font-family: droid sans mono, monospace, courier new, courier, sans-serif;
     font-size: 10pt;
+    color: #1A1A1A;
 }

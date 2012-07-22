@@ -26,7 +26,7 @@
  * Copyright (c) 2011-2012 Jos de Jong, http://jsoneditoronline.org
  *
  * @author  Jos de Jong, <wjosdejong@gmail.com>
- * @date    2012-05-30
+ * @date    2012-07-22
  */
 
 
@@ -51,8 +51,10 @@ var JSON;
  * JSONEditor
  * @param {Element} container    Container element
  * @param {Object}  json         JSON object
+ * @param {Object}  [options]    Object with options. available options:
+ *                                   {Boolean} enableSearch   true by default
  */
-JSONEditor = function (container, json) {
+JSONEditor = function (container, json, options) {
     // check availability of JSON parser (not available in IE7 and older)
     if (!JSON) {
         throw new Error ('Your browser does not support JSON. \n\n' +
@@ -65,10 +67,34 @@ JSONEditor = function (container, json) {
     }
     this.container = container;
 
+
+    this._setOptions(options);
+
     this._createFrame();
     this._createTable();
 
     this.set(json || {});
+};
+
+/**
+ * Initialize and set default options
+ * @param {Object}  [options]      Object with options. available options:
+ *                                   {Boolean} enableSearch   true by default
+ * @private
+ */
+JSONEditor.prototype._setOptions = function (options) {
+    this.options = {
+        'enableSearch': true
+    };
+
+    // copy all options
+    if (options) {
+        for (var prop in options) {
+            if (options.hasOwnProperty(prop)) {
+                this.options[prop] = options[prop];
+            }
+        }
+    }
 };
 
 // node currently being edited
@@ -82,9 +108,11 @@ JSONEditor.prototype.set = function (json) {
     this.content.removeChild(this.table);  // Take the table offline
 
     // replace the root node
-    var node = new JSONEditor.Node({
-        'value': json
-    });
+    var params = {
+        'value': json,
+        'search': undefined // TODO
+    };
+    var node = new JSONEditor.Node(params);
     this._setRoot(node);
 
     // expand
@@ -135,6 +163,27 @@ JSONEditor.prototype._setRoot = function (node) {
 };
 
 /**
+ * Search text in all nodes
+ * The nodes will be expanded when the text is found one of its childs,
+ * else it will be collapsed. Searches are case insensitive.
+ * @param {String} text
+ * @return {Number} results  Number of search results
+ */
+JSONEditor.prototype.search = function (text) {
+    var results;
+    if (this.node) {
+        this.content.removeChild(this.table);  // Take the table offline
+        results = this.node.search(text);
+        this.content.appendChild(this.table);  // Put the table online again
+    }
+    else {
+        results = 0;
+    }
+
+    return results;
+};
+
+/**
  * Expand all nodes
  */
 JSONEditor.prototype.expandAll = function () {
@@ -168,6 +217,9 @@ JSONEditor.Node = function (params) {
     if(params && (params instanceof Object)) {
         this.setField(params.field, params.fieldEditable);
         this.setValue(params.value);
+        if (params.search) {
+            this.search(params.search);
+        }
     }
     else {
         this.setField();
@@ -414,7 +466,7 @@ JSONEditor.Node.prototype.showChilds = function() {
     }
 
     var tr = this.dom.tr;
-    var table = tr.parentNode;
+    var table = tr ? tr.parentNode : undefined;
     if (table) {
         // show row with append button
         var append = this.getAppend();
@@ -587,6 +639,75 @@ JSONEditor.Node.prototype.insertBefore = function(node, beforeNode) {
         node.updateDom();
         this._updateStatus(index);
     }
+};
+
+/**
+ * Search in this node
+ * The node will be expanded when the text is found one of its childs, else
+ * it will be collapsed. Searches are case insensitive.
+ * @param {String} text
+ * @return {Number} results  Number of search results
+ */
+JSONEditor.Node.prototype.search = function(text) {
+    var index;
+    var search = text ? text.toLowerCase() : undefined;
+
+    // delete old search data
+    delete this.searchField;
+    delete this.searchValue;
+
+    // search in field
+    if (this.field != undefined) {
+        var field = String(this.field).toLowerCase();
+        index = field.indexOf(search);
+        if (index != -1) {
+            this.searchField = true;
+        }
+
+        // update dom
+        this._updateDomField();
+    }
+
+    // search in value
+    var childResults = 0;
+    if (this.type == 'array' || this.type == 'object') {
+        // array, object
+
+        // search the nodes childs
+        var childs = this.childs;
+        if (childs) {
+            for (var i = 0, iMax = childs.length; i < iMax; i++) {
+                childResults += childs[i].search(text);
+            }
+        }
+
+        // update dom
+        if (search != undefined) {
+            var recurse = false;
+            if (childResults == 0) {
+                this.collapse(recurse);
+            }
+            else {
+                this.expand(recurse);
+            }
+        }
+    }
+    else {
+        // string, auto
+        if (this.value != undefined ) {
+            var value = String(this.value).toLowerCase();
+            index = value.indexOf(search);
+            if (index != -1) {
+                this.searchValue = true;
+            }
+        }
+
+        // update dom
+        this._updateDomValue();
+    }
+
+    var results = (this.searchField || this.searchValue ? 1 : 0) + childResults;
+    return results;
 };
 
 /**
@@ -902,6 +1023,14 @@ JSONEditor.Node.prototype._updateDomValue = function () {
             JSONEditor.removeClassName(domValue, 'jsoneditor-empty');
         }
 
+        // highlight when there is a search result
+        if (this.searchValue) {
+            JSONEditor.addClassName(domValue, 'jsoneditor-search-highlight');
+        }
+        else {
+            JSONEditor.removeClassName(domValue, 'jsoneditor-search-highlight');
+        }
+
         // strip formatting from the contents of the editable div
         JSONEditor.stripFormatting(domValue);
     }
@@ -923,6 +1052,14 @@ JSONEditor.Node.prototype._updateDomField = function () {
         }
         else {
             JSONEditor.removeClassName(domField, 'jsoneditor-empty');
+        }
+
+        // highlight when there is a search result
+        if (this.searchField) {
+            JSONEditor.addClassName(domField, 'jsoneditor-search-highlight');
+        }
+        else {
+            JSONEditor.removeClassName(domField, 'jsoneditor-search-highlight');
         }
 
         // strip formatting from the contents of the editable div
@@ -1307,6 +1444,7 @@ JSONEditor.Node.prototype._updateStatus = function (startIndex) {
             }
         }
 
+        // adjust title
         domValue.title = this.type + ' containing ' + count + ' items';
     }
 };
@@ -2040,6 +2178,7 @@ JSONEditor.prototype._createFrame = function () {
     // create expand all button
     var expandAll = document.createElement('button');
     expandAll.innerHTML = 'Expand All';
+    expandAll.title = 'Expand all fields';
     expandAll.onclick = function () {
         editor.expandAll();
     };
@@ -2048,10 +2187,15 @@ JSONEditor.prototype._createFrame = function () {
     // create expand all button
     var collapseAll = document.createElement('button');
     collapseAll.innerHTML = 'Collapse All';
+    collapseAll.title = 'Collapse all fields';
     collapseAll.onclick = function () {
         editor.collapseAll();
     };
     td.appendChild(collapseAll);
+
+    if (this.options.enableSearch) {
+        this._createSearchBox(td);
+    }
 
     this.frame.appendChild(this.head);
 };
@@ -2103,6 +2247,118 @@ JSONEditor.prototype._createTable = function () {
     this.table.appendChild(this.tbody);
 
     this.frame.appendChild(contentOuter);
+};
+
+/**
+ * Create a search box in the menu
+ * @param {Element} container   HTML container element of where to create the
+ *                              search box
+ * @private
+ */
+JSONEditor.prototype._createSearchBox = function(container) {
+    var table = document.createElement('table');
+    table.className = 'jsoneditor-search';
+    container.appendChild(table);
+    var tbody = document.createElement('tbody');
+    table.appendChild(tbody);
+    var tr = document.createElement('tr');
+    tbody.appendChild(tr);
+
+    var td = document.createElement('td');
+    td.className = 'jsoneditor-search';
+    tr.appendChild(td);
+    var searchResults = document.createElement('div');
+    searchResults.className = 'jsoneditor-search-results';
+    td.appendChild(searchResults);
+
+    td = document.createElement('td');
+    td.className = 'jsoneditor-search';
+    tr.appendChild(td);
+    var divInput = document.createElement('div');
+    divInput.className = 'jsoneditor-search';
+    divInput.title = 'Search fields and values';
+    td.appendChild(divInput);
+
+    var lastText = undefined;
+    function onSearch(event, forceSearch) {
+        clearDelay();
+
+        var value = search.value;
+        var text = (value.length > 0) ? value : undefined;
+        if (text != lastText || forceSearch) {
+            // only search again when changed
+            lastText = text;
+            var results = editor.search(text);
+
+            // display search results
+            if (text != undefined) {
+                switch (results) {
+                    case 0: searchResults.innerHTML = 'no&nbsp;results'; break;
+                    case 1: searchResults.innerHTML = '1&nbsp;result'; break;
+                    default: searchResults.innerHTML = results + '&nbsp;results'; break;
+                }
+            }
+            else {
+                searchResults.innerHTML = '';
+            }
+        }
+    }
+
+    var timeout = undefined;
+    var delay = 200; // ms
+    function clearDelay() {
+        if (timeout != undefined) {
+            clearTimeout(timeout);
+        }
+    }
+
+    function onDelayedSearch (event) {
+        // execute the search after a short delay (reduces the number of
+        // search actions while typing in the search text box)
+        clearDelay();
+        timeout = setTimeout(onSearch, delay);
+    }
+
+    // table to contain the text input and search button
+    var tableInput = document.createElement('table');
+    tableInput.className = 'jsoneditor-search-input';
+    divInput.appendChild(tableInput);
+    var tbodySearch = document.createElement('tbody');
+    tableInput.appendChild(tbodySearch);
+    tr = document.createElement('tr');
+    tbodySearch.appendChild(tr);
+
+    var search = document.createElement('input');
+    search.className = 'jsoneditor-search';
+    search.oninput = onDelayedSearch;
+    search.onchange = onSearch;         // For IE 8
+    search.onkeyup = function (event) {
+        event = event || window.event;
+        var keynum = event.which || event.keyCode;
+        if (keynum == 27) { // ESC
+            search.value = '';  // clear search
+            onSearch(event);
+        }
+        else if (keynum == 13) { // Enter
+            onSearch(event, true); // force to execute search again
+        }
+        else {
+            onDelayedSearch(event);   // For IE 8
+        }
+    };
+    // TODO: ESC in FF restores the last input, is a FF bug, https://bugzilla.mozilla.org/show_bug.cgi?id=598819
+    td = document.createElement('td');
+    tr.appendChild(td);
+    td.appendChild(search);
+
+    var refreshSearch = document.createElement('button');
+    refreshSearch.className = 'jsoneditor-search-refresh';
+    refreshSearch.onclick = function (event) {
+        onSearch(event, true);
+    };
+    td = document.createElement('td');
+    tr.appendChild(td);
+    td.appendChild(refreshSearch);
 };
 
 /**
@@ -2455,7 +2711,7 @@ JSONEditor.stripFormatting = function (divElement) {
         // remove all attributes
         var attributes = child.attributes;
         if (attributes) {
-            for (var j = 0, jMax = attributes.length; j < jMax; j++) {
+            for (var j = attributes.length - 1; j >= 0; j--) {
                 var attribute = attributes[j];
                 if (attribute.specified == true) {
                     child.removeAttribute(attribute.name);
