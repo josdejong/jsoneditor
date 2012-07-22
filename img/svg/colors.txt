@@ -1,0 +1,12 @@
+JSON Editor Online Icons
+
+size:             16x16 px
+
+blue background:  RGBA 97b0f8ff
+gray background:  RGBA d3d3d3ff
+
+red foreground:   RGBA ff0000ff
+green foreground: RGBA 109618ff
+
+characters are based on the Arial font
+
