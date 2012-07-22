@@ -9,6 +9,8 @@ VERSION 1: Basic functionality
 TODO
 make the css namings more efficient/shorter
 
+get the breaking of long words working correctly in Firefox
+
 Get things working in IE7? maybe only a sizing problem (besides no JSON support)
 
 for highlighting and expanding: send a timestamp, and when very large,
