@@ -1990,8 +1990,8 @@ JSONEditor.Node.prototype._escape = function (text) {
         .replace(/</g, '&lt;')
         .replace(/>/g, '&gt;')
         .replace(/  /g, '&nbsp; ') // replace double space with an nbsp and space
-        .replace(/^ /, '&nbsp')    // space at start
-        .replace(/ $/, '&nbsp');   // space at end
+        .replace(/^ /, '&nbsp;')   // space at start
+        .replace(/ $/, '&nbsp;');  // space at end
 
     var json = JSON.stringify(htmlEscaped);
     return json.substring(1, json.length - 1);
