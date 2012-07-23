@@ -2283,6 +2283,7 @@ JSONEditor.prototype._createSearchBox = function(container) {
     td.appendChild(divInput);
 
     var lastText = undefined;
+    var editor = this;
     function onSearch(event, forceSearch) {
         clearDelay();
 
