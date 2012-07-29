@@ -66,6 +66,7 @@ JSONEditor = function (container, json, options) {
         throw new Error('No container element provided.');
     }
     this.container = container;
+    this.dom = {};
 
 
     this._setOptions(options);
@@ -167,7 +168,7 @@ JSONEditor.prototype._setRoot = function (node) {
  * The nodes will be expanded when the text is found one of its childs,
  * else it will be collapsed. Searches are case insensitive.
  * @param {String} text
- * @return {Number} results  Number of search results
+ * @return {Node[]} results  Array with nodes containing the search text
  */
 JSONEditor.prototype.search = function (text) {
     var results;
@@ -177,7 +178,7 @@ JSONEditor.prototype.search = function (text) {
         this.content.appendChild(this.table);  // Put the table online again
     }
     else {
-        results = 0;
+        results = [];
     }
 
     return results;
@@ -646,9 +647,10 @@ JSONEditor.Node.prototype.insertBefore = function(node, beforeNode) {
  * The node will be expanded when the text is found one of its childs, else
  * it will be collapsed. Searches are case insensitive.
  * @param {String} text
- * @return {Number} results  Number of search results
+ * @return {Node[]} results  Array with nodes containing the search text
  */
 JSONEditor.Node.prototype.search = function(text) {
+    var results = [];
     var index;
     var search = text ? text.toLowerCase() : undefined;
 
@@ -662,6 +664,7 @@ JSONEditor.Node.prototype.search = function(text) {
         index = field.indexOf(search);
         if (index != -1) {
             this.searchField = true;
+            results.push(this);
         }
 
         // update dom
@@ -669,22 +672,23 @@ JSONEditor.Node.prototype.search = function(text) {
     }
 
     // search in value
-    var childResults = 0;
     if (this.type == 'array' || this.type == 'object') {
         // array, object
 
         // search the nodes childs
         var childs = this.childs;
         if (childs) {
+            var childResults = [];
             for (var i = 0, iMax = childs.length; i < iMax; i++) {
-                childResults += childs[i].search(text);
+                childResults = childResults.concat(childs[i].search(text));
             }
+            results = results.concat(childResults);
         }
 
         // update dom
         if (search != undefined) {
             var recurse = false;
-            if (childResults == 0) {
+            if (childResults.length == 0) {
                 this.collapse(recurse);
             }
             else {
@@ -699,6 +703,7 @@ JSONEditor.Node.prototype.search = function(text) {
             index = value.indexOf(search);
             if (index != -1) {
                 this.searchValue = true;
+                results.push(this);
             }
         }
 
@@ -706,7 +711,6 @@ JSONEditor.Node.prototype.search = function(text) {
         this._updateDomValue();
     }
 
-    var results = (this.searchField || this.searchValue ? 1 : 0) + childResults;
     return results;
 };
 
@@ -2137,8 +2141,47 @@ JSONEditor.prototype._createFrame = function () {
 
     // create one global event listener to handle all events from all nodes
     var editor = this;
+    // TODO: move this onEvent to JSONEditor.prototype.onEvent
     var onEvent = function (event) {
         event = event || window.event;
+
+        /* TODO: check for Ctrl+F and F3? or not?
+        if (editor.options.enableSearch) {
+            if (event.type == 'keydown') {
+                var keynum = event.which || event.keyCode;
+                if (keynum == 70 && event.ctrlKey) { // Ctrl+F
+                    console.log('Ctrl+F');
+                    if (editor.dom.search) {
+                        editor.dom.search.focus();
+                        editor.dom.search.select();
+                        JSONEditor.Events.preventDefault(event);
+                    }
+                }
+                else if (keynum == 114) { // F3
+                    if (!event.shiftKey) {
+                        // select next search result
+                        editor.searchResultIndex ++;
+                        if (editor.searchResultIndex >= editor.searchResults.length) {
+                            editor.searchResultIndex = 0;
+                        }
+                    }
+                    else {
+                        // select previous search result
+                        editor.searchResultIndex--;
+                        if (editor.searchResultIndex < 0) {
+                            editor.searchResultIndex = editor.searchResults.length - 1;
+                        }
+                    }
+                    if (editor.searchResultIndex < editor.searchResults.length) {
+                        editor.searchResults[editor.searchResultIndex].focus();
+                    }
+
+                    JSONEditor.Events.preventDefault(event);
+                }
+            }
+        }
+        */
+
         var target = event.target || event.srcElement;
         var node = JSONEditor.getNodeFromTarget(target);
         if (node) {
@@ -2152,6 +2195,7 @@ JSONEditor.prototype._createFrame = function () {
         JSONEditor.Events.preventDefault(event);
     };
     this.frame.onchange = onEvent;
+    this.frame.onkeydown = onEvent;
     this.frame.onkeyup = onEvent;
     this.frame.oncut = onEvent;
     this.frame.onpaste = onEvent;
@@ -2197,7 +2241,7 @@ JSONEditor.prototype._createFrame = function () {
     td.appendChild(collapseAll);
 
     if (this.options.enableSearch) {
-        this._createSearchBox(td);
+        this.searchBox = new JSONEditor.SearchBox(this, td);
     }
 
     this.frame.appendChild(this.head);
@@ -2250,119 +2294,6 @@ JSONEditor.prototype._createTable = function () {
     this.table.appendChild(this.tbody);
 
     this.frame.appendChild(contentOuter);
-};
-
-/**
- * Create a search box in the menu
- * @param {Element} container   HTML container element of where to create the
- *                              search box
- * @private
- */
-JSONEditor.prototype._createSearchBox = function(container) {
-    var table = document.createElement('table');
-    table.className = 'jsoneditor-search';
-    container.appendChild(table);
-    var tbody = document.createElement('tbody');
-    table.appendChild(tbody);
-    var tr = document.createElement('tr');
-    tbody.appendChild(tr);
-
-    var td = document.createElement('td');
-    td.className = 'jsoneditor-search';
-    tr.appendChild(td);
-    var searchResults = document.createElement('div');
-    searchResults.className = 'jsoneditor-search-results';
-    td.appendChild(searchResults);
-
-    td = document.createElement('td');
-    td.className = 'jsoneditor-search';
-    tr.appendChild(td);
-    var divInput = document.createElement('div');
-    divInput.className = 'jsoneditor-search';
-    divInput.title = 'Search fields and values';
-    td.appendChild(divInput);
-
-    var lastText = undefined;
-    var editor = this;
-    function onSearch(event, forceSearch) {
-        clearDelay();
-
-        var value = search.value;
-        var text = (value.length > 0) ? value : undefined;
-        if (text != lastText || forceSearch) {
-            // only search again when changed
-            lastText = text;
-            var results = editor.search(text);
-
-            // display search results
-            if (text != undefined) {
-                switch (results) {
-                    case 0: searchResults.innerHTML = 'no&nbsp;results'; break;
-                    case 1: searchResults.innerHTML = '1&nbsp;result'; break;
-                    default: searchResults.innerHTML = results + '&nbsp;results'; break;
-                }
-            }
-            else {
-                searchResults.innerHTML = '';
-            }
-        }
-    }
-
-    var timeout = undefined;
-    var delay = 200; // ms
-    function clearDelay() {
-        if (timeout != undefined) {
-            clearTimeout(timeout);
-        }
-    }
-
-    function onDelayedSearch (event) {
-        // execute the search after a short delay (reduces the number of
-        // search actions while typing in the search text box)
-        clearDelay();
-        timeout = setTimeout(onSearch, delay);
-    }
-
-    // table to contain the text input and search button
-    var tableInput = document.createElement('table');
-    tableInput.className = 'jsoneditor-search-input';
-    divInput.appendChild(tableInput);
-    var tbodySearch = document.createElement('tbody');
-    tableInput.appendChild(tbodySearch);
-    tr = document.createElement('tr');
-    tbodySearch.appendChild(tr);
-
-    var search = document.createElement('input');
-    search.className = 'jsoneditor-search';
-    search.oninput = onDelayedSearch;
-    search.onchange = onSearch;         // For IE 8
-    search.onkeyup = function (event) {
-        event = event || window.event;
-        var keynum = event.which || event.keyCode;
-        if (keynum == 27) { // ESC
-            search.value = '';  // clear search
-            onSearch(event);
-        }
-        else if (keynum == 13) { // Enter
-            onSearch(event, true); // force to execute search again
-        }
-        else {
-            onDelayedSearch(event);   // For IE 8
-        }
-    };
-    // TODO: ESC in FF restores the last input, is a FF bug, https://bugzilla.mozilla.org/show_bug.cgi?id=598819
-    td = document.createElement('td');
-    tr.appendChild(td);
-    td.appendChild(search);
-
-    var refreshSearch = document.createElement('button');
-    refreshSearch.className = 'jsoneditor-search-refresh';
-    refreshSearch.onclick = function (event) {
-        onSearch(event, true);
-    };
-    td = document.createElement('td');
-    tr.appendChild(td);
-    td.appendChild(refreshSearch);
 };
 
 /**
@@ -2541,6 +2472,170 @@ JSONFormatter.prototype.get = function() {
  }
  */
 
+
+/**
+ * @constructor JSONEditor.SearchBox
+ * Create a search box in given HTML container
+ * @param {Element} container   HTML container element of where to create the
+ *                              search box
+ */
+// TODO: put the SearchBox in a separate prototype
+JSONEditor.SearchBox = function(editor, container) {
+    var searchBox = this;
+
+    this.editor = editor;
+    this.timeout = undefined;
+    this.delay = 200; // ms
+    this.lastText = undefined;
+
+    this.dom = {};
+    this.dom.container = container;
+
+    var table = document.createElement('table');
+    this.dom.table = table;
+    table.className = 'jsoneditor-search';
+    container.appendChild(table);
+    var tbody = document.createElement('tbody');
+    this.dom.tbody = tbody;
+    table.appendChild(tbody);
+    var tr = document.createElement('tr');
+    tbody.appendChild(tr);
+
+    var td = document.createElement('td');
+    td.className = 'jsoneditor-search';
+    tr.appendChild(td);
+    var results = document.createElement('div');
+    this.dom.results = results;
+    results.className = 'jsoneditor-search-results';
+    td.appendChild(results);
+
+    td = document.createElement('td');
+    td.className = 'jsoneditor-search';
+    tr.appendChild(td);
+    var divInput = document.createElement('div');
+    this.dom.input = divInput;
+    divInput.className = 'jsoneditor-search';
+    divInput.title = 'Search fields and values';
+    td.appendChild(divInput);
+
+    // table to contain the text input and search button
+    var tableInput = document.createElement('table');
+    tableInput.className = 'jsoneditor-search-input';
+    divInput.appendChild(tableInput);
+    var tbodySearch = document.createElement('tbody');
+    tableInput.appendChild(tbodySearch);
+    tr = document.createElement('tr');
+    tbodySearch.appendChild(tr);
+
+    var search = document.createElement('input');
+    this.dom.search = search;
+    search.className = 'jsoneditor-search';
+    search.oninput = function (event) {
+        searchBox.onDelayedSearch(event);
+    };
+    search.onchange = function (event) { // For IE 8
+        searchBox.onSearch(event);
+    };
+    search.onkeyup = function (event) {
+        searchBox.onKeyUp(event);
+    };
+
+    // TODO: ESC in FF restores the last input, is a FF bug, https://bugzilla.mozilla.org/show_bug.cgi?id=598819
+    td = document.createElement('td');
+    tr.appendChild(td);
+    td.appendChild(search);
+
+    var refreshSearch = document.createElement('button');
+    refreshSearch.className = 'jsoneditor-search-refresh';
+    refreshSearch.onclick = function (event) {
+        searchBox.onSearch(event, true);
+    };
+    td = document.createElement('td');
+    tr.appendChild(td);
+    td.appendChild(refreshSearch);
+};
+
+/**
+ * Cancel any running onDelayedSearch.
+ */
+JSONEditor.SearchBox.prototype.clearDelay = function() {
+    if (this.timeout != undefined) {
+        clearTimeout(this.timeout);
+        delete this.timeout;
+    }
+};
+
+/**
+ * Start a timer to execute a search after a short delay.
+ * Used for reducing the number of searches while typing.
+ * @param {Event} event
+ */
+JSONEditor.SearchBox.prototype.onDelayedSearch = function (event) {
+    // execute the search after a short delay (reduces the number of
+    // search actions while typing in the search text box)
+    this.clearDelay();
+    var searchBox = this;
+    this.timeout = setTimeout(function (event) {
+        searchBox.onSearch(event);},
+        this.delay);
+};
+
+/**
+ * Handle onSearch event
+ * @param {Event} event
+ * @param {boolean} [forceSearch]  If true, search will be executed again even
+ *                                 when the search text is not changed.
+ *                                 Default is false.
+ */
+JSONEditor.SearchBox.prototype.onSearch = function (event, forceSearch) {
+    this.clearDelay();
+
+    var value = this.dom.search.value;
+    var text = (value.length > 0) ? value : undefined;
+    if (text != this.lastText || forceSearch) {
+        // only search again when changed
+        this.lastText = text;
+        this.results = editor.search(text);
+        this.resultIndex = 0;
+
+        // display search results
+        if (text != undefined) {
+            var resultCount = this.results.length;
+            switch (resultCount) {
+                case 0: this.dom.results.innerHTML = 'no&nbsp;results'; break;
+                case 1: this.dom.results.innerHTML = '1&nbsp;result'; break;
+                default: this.dom.results.innerHTML = resultCount + '&nbsp;results'; break;
+            }
+            /* TODO: do we want this?
+             if (resultCount > 0) {
+             editor.results[editor.searchResultIndex].focus();
+             }
+             */
+        }
+        else {
+            this.dom.results.innerHTML = '';
+        }
+    }
+};
+
+/**
+ * Handle onKeyUp event in the input box
+ * @param {Event} event
+ */
+JSONEditor.SearchBox.prototype.onKeyUp = function (event) {
+    event = event || window.event;
+    var keynum = event.which || event.keyCode;
+    if (keynum == 27) { // ESC
+        this.dom.search.value = '';  // clear search
+        this.onSearch(event);
+    }
+    else if (keynum == 13) { // Enter
+        this.onSearch(event, true); // force to execute search again
+    }
+    else {
+        this.onDelayedSearch(event);   // For IE 8
+    }
+};
 
 // create namespace for event methods
 JSONEditor.Events = {};

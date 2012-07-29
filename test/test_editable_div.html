@@ -106,8 +106,10 @@
     }
 
     /**
-     * get the inner text of an HTML element (for example a div element)
+     * Get the inner text of an HTML element (for example a div element)
      * @param {Element} element
+     * @param {Number} [level]  Nesting level. This value is automatically
+     *                          set when the method is called recursively
      * @return {String} innerText
      */
     function getInnerText (element, level) {

@@ -4,7 +4,7 @@ http://jsoneditoronline.org
 
 <not yet released>, version 1.2.0
 
-- added a search box. Search results are expanded and highlighed.
+- added search functionality. Search results are expanded and highlighed.
 - the position of the vertical separator between left and right panel is stored.
 - link to the sourcecode on github added at the bottom of the page.
 - refinements in the layout: fonts, colors, icons.
