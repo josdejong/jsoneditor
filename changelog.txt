@@ -10,6 +10,8 @@ http://jsoneditoronline.org
 - refinements in the layout: fonts, colors, icons.
 - fixed leading an trailing spaces not being displayed in the editor.
 - fixed wrapping of long words and urls in Chrome.
+- fixed ignoring functions and undefined values in the loaded JSON object
+  (they where interpreted as empty object and string instead of being ignored).
 
 
 2012-07-01, version 1.1.1

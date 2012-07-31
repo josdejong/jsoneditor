@@ -106,21 +106,27 @@ JSONEditor.focusNode = undefined;
  * @param {Object} json
  */
 JSONEditor.prototype.set = function (json) {
-    this.content.removeChild(this.table);  // Take the table offline
+    // verify if json is valid JSON, ignore when a function
+    if (json instanceof Function || (json === undefined)) {
+        this.clear();
+    }
+    else {
+        this.content.removeChild(this.table);  // Take the table offline
 
-    // replace the root node
-    var params = {
-        'value': json,
-        'search': undefined // TODO
-    };
-    var node = new JSONEditor.Node(params);
-    this._setRoot(node);
+        // replace the root node
+        var params = {
+            'value': json,
+            'search': undefined // TODO
+        };
+        var node = new JSONEditor.Node(params);
+        this._setRoot(node);
 
-    // expand
-    var recurse = false;
-    this.node.expand(recurse);
+        // expand
+        var recurse = false;
+        this.node.expand(recurse);
 
-    this.content.appendChild(this.table);  // Put the table online again
+        this.content.appendChild(this.table);  // Put the table online again
+    }
 };
 
 /**
@@ -137,7 +143,7 @@ JSONEditor.prototype.get = function () {
         return this.node.getValue();
     }
     else {
-        return {};
+        return undefined;
     }
 };
 
@@ -286,11 +292,14 @@ JSONEditor.Node.prototype.setValue = function(value) {
         // array
         this.childs = [];
         for (var i = 0, iMax = value.length; i < iMax; i++) {
-            var child = new JSONEditor.Node({
-                // 'field': i, // TODO: cleanup
-                'value': value[i]
-            });
-            this.appendChild(child);
+            var childValue = value[i];
+            if (childValue !== undefined && !(childValue instanceof Function)) {
+                // ignore undefined and functions
+                var child = new JSONEditor.Node({
+                    'value': childValue
+                });
+                this.appendChild(child);
+            }
         }
         this.value = '';
     }
@@ -299,11 +308,15 @@ JSONEditor.Node.prototype.setValue = function(value) {
         this.childs = [];
         for (var childField in value) {
             if (value.hasOwnProperty(childField)) {
-                var child = new JSONEditor.Node({
-                    'field': childField,
-                    'value': value[childField]
-                });
-                this.appendChild(child);
+                var childValue = value[childField];
+                if (childValue !== undefined && !(childValue instanceof Function)) {
+                    // ignore undefined and functions
+                    var child = new JSONEditor.Node({
+                        'field': childField,
+                        'value': childValue
+                    });
+                    this.appendChild(child);
+                }
             }
         }
         this.value = '';
