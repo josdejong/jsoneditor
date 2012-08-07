@@ -26,7 +26,7 @@
  * Copyright (c) 2011-2012 Jos de Jong, http://jsoneditoronline.org
  *
  * @author  Jos de Jong, <wjosdejong@gmail.com>
- * @date    2012-07-22
+ * @date    2012-08-07
  */
 
 
@@ -166,6 +166,14 @@ JSONEditor.prototype._setRoot = function (node) {
     this.clear();
 
     this.node = node;
+
+    // override the getEditor method
+    var editor = this;
+    node.getEditor = function () {
+        return editor;
+    };
+
+    // append to the dom
     this.tbody.appendChild(node.getDom());
 };
 
@@ -174,7 +182,12 @@ JSONEditor.prototype._setRoot = function (node) {
  * The nodes will be expanded when the text is found one of its childs,
  * else it will be collapsed. Searches are case insensitive.
  * @param {String} text
- * @return {Node[]} results  Array with nodes containing the search text
+ * @return {Object[]} results  Array with nodes containing the search results
+ *                             The result objects contains fields:
+ *                             - {Node} node,
+ *                             - {String} elem  the dom element name where
+ *                                              the result is found ('field' or
+ *                                              'value')
  */
 JSONEditor.prototype.search = function (text) {
     var results;
@@ -209,6 +222,72 @@ JSONEditor.prototype.collapseAll = function () {
         this.content.removeChild(this.table);  // Take the table offline
         this.node.collapse();
         this.content.appendChild(this.table);  // Put the table online again
+    }
+};
+
+/**
+ * Set the focus to the JSONEditor. A hidden input field will be created
+ * which captures key events
+ */
+// TODO: use the focus method?
+JSONEditor.prototype.focus = function () {
+    /*
+    if (!this.dom.focus) {
+        this.dom.focus = document.createElement('input');
+        this.dom.focus.className = 'jsoneditor-hidden-focus';
+
+        var editor = this;
+        this.dom.focus.onblur = function () {
+            // remove itself
+            if (editor.dom.focus) {
+                var focus = editor.dom.focus;
+                delete editor.dom.focus;
+                editor.frame.removeChild(focus);
+            }
+        };
+
+        // attach the hidden input box to the DOM
+        if (this.frame.firstChild) {
+            this.frame.insertBefore(this.dom.focus, this.frame.firstChild);
+        }
+        else {
+            this.frame.appendChild(this.dom.focus);
+        }
+    }
+    this.dom.focus.focus();
+    */
+};
+
+/**
+ * Adjust the scroll position such that given top position is shown at 1/4
+ * of the window height.
+ * @param {Number} top
+ */
+JSONEditor.prototype.scrollTo = function (top) {
+    var content = this.content;
+    if (content) {
+        // cancel any running animation
+        var editor = this;
+        if (editor.animateTimeout) {
+            clearTimeout(editor.animateTimeout);
+            delete editor.animateTimeout;
+        }
+
+        // calculate final scroll position
+        var height = content.clientHeight;
+        var bottom = content.scrollHeight - height;
+        var finalScrollTop = Math.min(Math.max(top - height / 4, 0), bottom);
+
+        // animate towards the new scroll position
+        var animate = function () {
+            var scrollTop = content.scrollTop;
+            var diff = (finalScrollTop - scrollTop);
+            if (Math.abs(diff) > 3) {
+                content.scrollTop += diff / 3;
+                editor.animateTimeout = setTimeout(animate, 50);
+            }
+        };
+        animate();
     }
 };
 
@@ -248,6 +327,14 @@ JSONEditor.Node.prototype.setParent = function(parent) {
  */
 JSONEditor.Node.prototype.getParent = function () {
     return this.parent;
+};
+
+/**
+ * Get the JSONEditor
+ * @return {JSONEditor} editor
+ */
+JSONEditor.Node.prototype.getEditor = function () {
+    return this.parent ? this.parent.getEditor() : undefined;
 };
 
 /**
@@ -677,7 +764,10 @@ JSONEditor.Node.prototype.search = function(text) {
         index = field.indexOf(search);
         if (index != -1) {
             this.searchField = true;
-            results.push(this);
+            results.push({
+                'node': this,
+                'elem': 'field'
+            });
         }
 
         // update dom
@@ -716,7 +806,10 @@ JSONEditor.Node.prototype.search = function(text) {
             index = value.indexOf(search);
             if (index != -1) {
                 this.searchValue = true;
-                results.push(this);
+                results.push({
+                    'node': this,
+                    'elem': 'value'
+                });
             }
         }
 
@@ -728,11 +821,36 @@ JSONEditor.Node.prototype.search = function(text) {
 };
 
 /**
- * Set focus to the value of this node
+ * Move the scroll position such that this node is in the visible area.
+ * The node will not get the focus
  */
-JSONEditor.Node.prototype.focus = function() {
+JSONEditor.Node.prototype.scrollTo = function() {
+    if (!this.dom.tr || !this.dom.tr.parentNode) {
+        // if the node is not visible, expand its parents
+        var parent = this.parent;
+        var recurse = false;
+        while (parent) {
+            parent.expand(recurse);
+            parent = parent.parent;
+        }
+    }
+
     if (this.dom.tr && this.dom.tr.parentNode) {
-        if (this.fieldEditable) {
+        var editor = this.getEditor();
+        if (editor) {
+            editor.scrollTo(this.dom.tr.offsetTop);
+        }
+    }
+};
+
+/**
+ * Set focus to the value of this node
+ * @param {String} [field]  The field name of the element to get the focus
+ *                          available values: 'field', 'value'
+ */
+JSONEditor.Node.prototype.focus = function(field) {
+    if (this.dom.tr && this.dom.tr.parentNode) {
+        if (field != 'value' && this.fieldEditable) {
             var domField = this.dom.field;
             if (domField) {
                 domField.focus();
@@ -1041,6 +1159,12 @@ JSONEditor.Node.prototype._updateDomValue = function () {
         }
 
         // highlight when there is a search result
+        if (this.searchValueActive) {
+            JSONEditor.addClassName(domValue, 'jsoneditor-search-highlight-active');
+        }
+        else {
+            JSONEditor.removeClassName(domValue, 'jsoneditor-search-highlight-active');
+        }
         if (this.searchValue) {
             JSONEditor.addClassName(domValue, 'jsoneditor-search-highlight');
         }
@@ -1072,6 +1196,12 @@ JSONEditor.Node.prototype._updateDomField = function () {
         }
 
         // highlight when there is a search result
+        if (this.searchFieldActive) {
+            JSONEditor.addClassName(domField, 'jsoneditor-search-highlight-active');
+        }
+        else {
+            JSONEditor.removeClassName(domField, 'jsoneditor-search-highlight-active');
+        }
         if (this.searchField) {
             JSONEditor.addClassName(domField, 'jsoneditor-search-highlight');
         }
@@ -1559,7 +1689,6 @@ JSONEditor.Node.prototype._createDomTree = function (domExpand, domField, domVal
     dom.tdField = tdField;
 
     // add a separator
-    // TODO: format correctly. Hide in case of array/object
     var tdSeparator = document.createElement('td');
     tdSeparator.className = 'jsoneditor-td-tree';
     tr.appendChild(tdSeparator);
@@ -2157,45 +2286,45 @@ JSONEditor.prototype._createFrame = function () {
     // TODO: move this onEvent to JSONEditor.prototype.onEvent
     var onEvent = function (event) {
         event = event || window.event;
+        var target = event.target || event.srcElement;
 
-        /* TODO: check for Ctrl+F and F3? or not?
+        // Check for search quickkeys, Ctrl+F and F3
         if (editor.options.enableSearch) {
             if (event.type == 'keydown') {
                 var keynum = event.which || event.keyCode;
                 if (keynum == 70 && event.ctrlKey) { // Ctrl+F
-                    console.log('Ctrl+F');
-                    if (editor.dom.search) {
-                        editor.dom.search.focus();
-                        editor.dom.search.select();
+                    if (editor.searchBox) {
+                        editor.searchBox.dom.search.focus();
+                        editor.searchBox.dom.search.select();
                         JSONEditor.Events.preventDefault(event);
                     }
                 }
                 else if (keynum == 114) { // F3
                     if (!event.shiftKey) {
                         // select next search result
-                        editor.searchResultIndex ++;
-                        if (editor.searchResultIndex >= editor.searchResults.length) {
-                            editor.searchResultIndex = 0;
-                        }
+                        editor.searchBox.next();
                     }
                     else {
                         // select previous search result
-                        editor.searchResultIndex--;
-                        if (editor.searchResultIndex < 0) {
-                            editor.searchResultIndex = editor.searchResults.length - 1;
-                        }
+                        editor.searchBox.previous();
                     }
-                    if (editor.searchResultIndex < editor.searchResults.length) {
-                        editor.searchResults[editor.searchResultIndex].focus();
-                    }
+                    editor.searchBox.focusActiveResult();
 
+                    // set selection to the current
                     JSONEditor.Events.preventDefault(event);
                 }
             }
         }
+
+        /* TODO: focus to editor?
+        if (event.type == 'click' &&
+            (target == editor.content || target == editor.contentOuter)) {
+            // set selection to a hidden input box in the editor,
+            // such that quickkeys will be catched
+            editor.focus();
+        }
         */
 
-        var target = event.target || event.srcElement;
         var node = JSONEditor.getNodeFromTarget(target);
         if (node) {
             node.onEvent(event);
@@ -2232,6 +2361,7 @@ JSONEditor.prototype._createFrame = function () {
     var tr = document.createElement('tr');
     tbody.appendChild(tr);
     var td = document.createElement('td');
+    this.tdMenu = td;
     td.className = 'jsoneditor-menu';
     tr.appendChild(td);
 
@@ -2267,6 +2397,7 @@ JSONEditor.prototype._createFrame = function () {
 JSONEditor.prototype._createTable = function () {
     var contentOuter = document.createElement('div');
     contentOuter.className = 'jsoneditor-content-outer';
+    this.contentOuter = contentOuter;
 
     this.content = document.createElement('div');
     this.content.className = 'jsoneditor-content';
@@ -2492,7 +2623,6 @@ JSONFormatter.prototype.get = function() {
  * @param {Element} container   HTML container element of where to create the
  *                              search box
  */
-// TODO: put the SearchBox in a separate prototype
 JSONEditor.SearchBox = function(editor, container) {
     var searchBox = this;
 
@@ -2569,6 +2699,89 @@ JSONEditor.SearchBox = function(editor, container) {
 };
 
 /**
+ * Go to the next search result
+ */
+JSONEditor.SearchBox.prototype.next = function() {
+    if (this.results != undefined) {
+        var index = (this.resultIndex != undefined) ? this.resultIndex + 1 : 0;
+        if (index > this.results.length - 1) {
+            index = 0;
+        }
+        this.setActiveResult(index);
+    }
+};
+
+/**
+ * Go to the prevous search result
+ */
+JSONEditor.SearchBox.prototype.previous = function() {
+    if (this.results != undefined) {
+        var max = this.results.length - 1;
+        var index = (this.resultIndex != undefined) ? this.resultIndex - 1 : max;
+        if (index < 0) {
+            index = max;
+        }
+        this.setActiveResult(index);
+    }
+};
+
+/**
+ * Set new value for the current active result
+ * @param {Number} index
+ */
+JSONEditor.SearchBox.prototype.setActiveResult = function(index) {
+    // de-activate current active result
+    if (this.activeResult) {
+        var prevNode = this.activeResult.node;
+        var prevElem = this.activeResult.elem;
+        if (prevElem == 'field') {
+            delete prevNode.searchFieldActive;
+        }
+        else {
+            delete prevNode.searchValueActive;
+        }
+        prevNode.updateDom();
+    }
+
+    if (!this.results || !this.results[index]) {
+        // out of range, set to undefined
+        this.resultIndex = undefined;
+        this.activeResult = undefined;
+        return;
+    }
+
+    this.resultIndex = index;
+
+    // set new node active
+    var node = this.results[this.resultIndex].node;
+    var elem = this.results[this.resultIndex].elem;
+    if (elem == 'field') {
+        node.searchFieldActive = true;
+    }
+    else {
+        node.searchValueActive = true;
+    }
+    this.activeResult = this.results[this.resultIndex];
+    node.updateDom();
+
+    node.scrollTo();
+};
+
+/**
+ * Set the focus to the currently active result. If there is no currently
+ * active result, the next search result will get focus
+ */
+JSONEditor.SearchBox.prototype.focusActiveResult = function() {
+    if (!this.activeResult) {
+        this.next();
+    }
+
+    if (this.activeResult) {
+        this.activeResult.node.focus(this.activeResult.elem);
+    }
+};
+
+/**
  * Cancel any running onDelayedSearch.
  */
 JSONEditor.SearchBox.prototype.clearDelay = function() {
@@ -2609,7 +2822,7 @@ JSONEditor.SearchBox.prototype.onSearch = function (event, forceSearch) {
         // only search again when changed
         this.lastText = text;
         this.results = editor.search(text);
-        this.resultIndex = 0;
+        this.setActiveResult(undefined);
 
         // display search results
         if (text != undefined) {
@@ -2619,11 +2832,6 @@ JSONEditor.SearchBox.prototype.onSearch = function (event, forceSearch) {
                 case 1: this.dom.results.innerHTML = '1&nbsp;result'; break;
                 default: this.dom.results.innerHTML = resultCount + '&nbsp;results'; break;
             }
-            /* TODO: do we want this?
-             if (resultCount > 0) {
-             editor.results[editor.searchResultIndex].focus();
-             }
-             */
         }
         else {
             this.dom.results.innerHTML = '';
@@ -2643,7 +2851,18 @@ JSONEditor.SearchBox.prototype.onKeyUp = function (event) {
         this.onSearch(event);
     }
     else if (keynum == 13) { // Enter
-        this.onSearch(event, true); // force to execute search again
+        if (event.ctrlKey) {
+            // force to search again
+            this.onSearch(event, true);
+        }
+        else if (event.shiftKey) {
+            // move to the previous search result
+            this.previous();
+        }
+        else {
+            // move to the next search result
+            this.next();
+        }
     }
     else {
         this.onDelayedSearch(event);   // For IE 8
@@ -2798,6 +3017,7 @@ JSONEditor.addClassName = function(elem, className) {
 JSONEditor.removeClassName = function(elem, className) {
     var c = elem.className;
     if (c.indexOf(className) != -1) {
+        // TODO: improve to classname separated by space or start/end of string
         c = c.replace(className, ''); // remove classname
         c = c.replace(/  /g, '');     // remove double spaces
         elem.className = c;
