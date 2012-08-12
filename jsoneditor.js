@@ -26,7 +26,7 @@
  * Copyright (c) 2011-2012 Jos de Jong, http://jsoneditoronline.org
  *
  * @author  Jos de Jong, <wjosdejong@gmail.com>
- * @date    2012-08-07
+ * @date    2012-08-12
  */
 
 
@@ -115,8 +115,7 @@ JSONEditor.prototype.set = function (json) {
 
         // replace the root node
         var params = {
-            'value': json,
-            'search': undefined // TODO
+            'value': json
         };
         var node = new JSONEditor.Node(params);
         this._setRoot(node);
@@ -303,9 +302,6 @@ JSONEditor.Node = function (params) {
     if(params && (params instanceof Object)) {
         this.setField(params.field, params.fieldEditable);
         this.setValue(params.value);
-        if (params.search) {
-            this.search(params.search);
-        }
     }
     else {
         this.setField();
@@ -2288,6 +2284,9 @@ JSONEditor.prototype._createFrame = function () {
         event = event || window.event;
         var target = event.target || event.srcElement;
 
+        /* TODO: Enable quickkeys Ctrl+F and F3.
+        //       Requires knowing whether the JSONEditor has focus or not
+        //       (use a global event listener for that?)
         // Check for search quickkeys, Ctrl+F and F3
         if (editor.options.enableSearch) {
             if (event.type == 'keydown') {
@@ -2297,6 +2296,7 @@ JSONEditor.prototype._createFrame = function () {
                         editor.searchBox.dom.search.focus();
                         editor.searchBox.dom.search.select();
                         JSONEditor.Events.preventDefault(event);
+                        JSONEditor.Events.stopPropagation(event);
                     }
                 }
                 else if (keynum == 114) { // F3
@@ -2312,16 +2312,9 @@ JSONEditor.prototype._createFrame = function () {
 
                     // set selection to the current
                     JSONEditor.Events.preventDefault(event);
+                    JSONEditor.Events.stopPropagation(event);
                 }
             }
-        }
-
-        /* TODO: focus to editor?
-        if (event.type == 'click' &&
-            (target == editor.content || target == editor.contentOuter)) {
-            // set selection to a hidden input box in the editor,
-            // such that quickkeys will be catched
-            editor.focus();
         }
         */
 
@@ -2849,6 +2842,8 @@ JSONEditor.SearchBox.prototype.onKeyUp = function (event) {
     if (keynum == 27) { // ESC
         this.dom.search.value = '';  // clear search
         this.onSearch(event);
+        JSONEditor.Events.preventDefault(event);
+        JSONEditor.Events.stopPropagation(event);
     }
     else if (keynum == 13) { // Enter
         if (event.ctrlKey) {
@@ -2863,6 +2858,8 @@ JSONEditor.SearchBox.prototype.onKeyUp = function (event) {
             // move to the next search result
             this.next();
         }
+        JSONEditor.Events.preventDefault(event);
+        JSONEditor.Events.stopPropagation(event);
     }
     else {
         this.onDelayedSearch(event);   // For IE 8

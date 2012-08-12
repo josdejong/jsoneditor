@@ -6,8 +6,7 @@ http://jsoneditoronline.org
 
 - Added search functionality. Search results are expanded and highlighed.
   Quickkeys in the search box: Enter (next), Shift+Enter (previous), Ctrl+Enter
-  (search again). Quickkeys in the editor: Ctrl+F (focus to search box),
-  F3 (next), Shift+F3 (previous).
+  (search again).
 - The position of the vertical separator between left and right panel is stored.
 - Link to the sourcecode on github added at the bottom of the page.
 - Refinements in the layout: fonts, colors, icons.
