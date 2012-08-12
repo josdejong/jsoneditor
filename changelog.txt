@@ -2,7 +2,7 @@ JSON EDITOR ONLINE CHANGELOG
 http://jsoneditoronline.org
 
 
-<not yet released>, version 1.2.0
+2012-08-12, version 1.2.0
 
 - New: Added search functionality. Search results are expanded and highlighed.
   Quickkeys in the search box: Enter (next), Shift+Enter (previous), Ctrl+Enter
