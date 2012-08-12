@@ -4,15 +4,16 @@ http://jsoneditoronline.org
 
 <not yet released>, version 1.2.0
 
-- Added search functionality. Search results are expanded and highlighed.
+- New: Added search functionality. Search results are expanded and highlighed.
   Quickkeys in the search box: Enter (next), Shift+Enter (previous), Ctrl+Enter
   (search again).
-- The position of the vertical separator between left and right panel is stored.
-- Link to the sourcecode on github added at the bottom of the page.
-- Refinements in the layout: fonts, colors, icons.
-- Fixed leading an trailing spaces not being displayed in the editor.
-- Fixed wrapping of long words and urls in Chrome.
-- Fixed ignoring functions and undefined values in the loaded JSON object
+- New: The position of the vertical separator between left and right panel is
+  stored.
+- New: Link to the sourcecode on github added at the bottom of the page.
+- Changed: Refinements in the layout: fonts, colors, icons.
+- Fixed: leading an trailing spaces not being displayed in the editor.
+- Fixed: wrapping of long words and urls in Chrome.
+- Fixed: ignoring functions and undefined values in the loaded JSON object
   (they where interpreted as empty object and string instead of being ignored).
 
 

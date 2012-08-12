@@ -50,11 +50,11 @@ var JSON;
 /**
  * JSONEditor
  * @param {Element} container    Container element
- * @param {Object}  json         JSON object
  * @param {Object}  [options]    Object with options. available options:
  *                                   {Boolean} enableSearch   true by default
+ * @param {Object}  json         JSON object
  */
-JSONEditor = function (container, json, options) {
+JSONEditor = function (container, options, json) {
     // check availability of JSON parser (not available in IE7 and older)
     if (!JSON) {
         throw new Error ('Your browser does not support JSON. \n\n' +
@@ -2672,6 +2672,9 @@ JSONEditor.SearchBox = function(editor, container) {
     search.onchange = function (event) { // For IE 8
         searchBox.onSearch(event);
     };
+    search.onkeydown = function (event) {
+        searchBox.onKeyDown(event);
+    };
     search.onkeyup = function (event) {
         searchBox.onKeyUp(event);
     };
@@ -2833,10 +2836,10 @@ JSONEditor.SearchBox.prototype.onSearch = function (event, forceSearch) {
 };
 
 /**
- * Handle onKeyUp event in the input box
+ * Handle onKeyDown event in the input box
  * @param {Event} event
  */
-JSONEditor.SearchBox.prototype.onKeyUp = function (event) {
+JSONEditor.SearchBox.prototype.onKeyDown = function (event) {
     event = event || window.event;
     var keynum = event.which || event.keyCode;
     if (keynum == 27) { // ESC
@@ -2861,7 +2864,16 @@ JSONEditor.SearchBox.prototype.onKeyUp = function (event) {
         JSONEditor.Events.preventDefault(event);
         JSONEditor.Events.stopPropagation(event);
     }
-    else {
+};
+
+/**
+ * Handle onKeyUp event in the input box
+ * @param {Event} event
+ */
+JSONEditor.SearchBox.prototype.onKeyUp = function (event) {
+    event = event || window.event;
+    var keynum = event.which || event.keyCode;
+    if (keynum != 27 && keynum != 13) { // !ESC and !Enter
         this.onDelayedSearch(event);   // For IE 8
     }
 };
