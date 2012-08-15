@@ -172,6 +172,7 @@ div.jsoneditor-option-selected {
 div.jsoneditor-frame {
     color: #1A1A1A;
     border: 1px solid #97B0F8;
+    box-sizing: border-box;
     width: 100%;
     height: 100%;
     overflow: auto;
