@@ -1,0 +1,76 @@
+<!-- ant build script for jsoneditoronline -->
+
+<project name="jsoneditor-builder" default="main">
+    <!-- the version number of must be updated here (according to changelog.txt) -->
+    <property name="package" value="jsoneditor"/>
+    <property name="version" value="1.3.0"/>
+
+    <property name="root" location="" />
+    <property name="lib" location="build/lib" />
+    <property name="site" location="build/site" />
+    <property name="compressor" value="tools/yuicompressor-2.4.7.jar" />
+
+    <target name="minify" description="minify jsoneditor libraries">
+        <java jar="${compressor}" dir="jsoneditor" fork="true" failonerror="true">
+            <arg value="-o"/>
+            <arg value="jsoneditor-min.js"/>
+            <arg value="jsoneditor.js"/>
+        </java>
+        <java jar="${compressor}" dir="jsoneditor" fork="true" failonerror="true">
+            <arg value="-o"/>
+            <arg value="jsoneditor-min.css"/>
+            <arg value="jsoneditor.css"/>
+        </java>
+    </target>
+
+    <target name="zip" depends="minify" description="create zipped jsoneditor libraries">
+        <mkdir dir="${lib}" />
+
+        <!-- create a zip file with non-minified jsoneditor -->
+        <!-- TODO: do not overwrite if existing -->
+        <zip destfile="${lib}/${package}-${version}.zip">
+            <fileset dir="${root}" includes="LICENSE" />
+            <fileset dir="${root}" includes="NOTICE" />
+            <fileset dir="${root}" includes="README" />
+            <fileset dir="${root}" includes="changelog.txt" />
+            <fileset dir="${root}" includes="demo.html" />
+            <fileset dir="${root}" includes="jsoneditor/jsoneditor.js" />
+            <fileset dir="${root}" includes="jsoneditor/jsoneditor.css" />
+            <fileset dir="${root}" includes="jsoneditor/img/jsoneditor-icons.png" />
+        </zip>
+
+        <!-- create a zip file with non-minified jsoneditor -->
+        <!-- TODO: do not overwrite if existing -->
+        <zip destfile="${lib}/${package}-${version}.min.zip">
+            <fileset dir="${root}" includes="LICENSE" />
+            <fileset dir="${root}" includes="NOTICE" />
+            <fileset dir="${root}" includes="README" />
+            <fileset dir="${root}" includes="changelog.txt" />
+            <!-- TODO: create demo (with correct links to minified library)
+            <fileset dir="${root}" includes="demo.html" />
+            -->
+            <fileset dir="${root}" includes="jsoneditor/jsoneditor-min.js" />
+            <fileset dir="${root}" includes="jsoneditor/jsoneditor-min.css" />
+            <fileset dir="${root}" includes="jsoneditor/img/jsoneditor-icons.png" />
+        </zip>
+    </target>
+
+    <target name="buildsite" depends="minify" description="copy all files for the site to the build directory">
+        <delete dir="${site}" />
+        <mkdir dir="${site}" />
+        <copy file="LICENSE" todir="${site}" />
+        <copy file="NOTICE" todir="${site}" />
+        <copy file="robots.txt" todir="${site}" />
+        <copy file="changelog.txt" todir="${site}" />
+        <copy file="index.html" todir="${site}" />
+        <copy file="favicon.ico" todir="${site}" />
+        <copy file="interface/interface.js" todir="${site}/interface" />
+        <copy file="interface/interface.css" todir="${site}/interface" />
+        <copy file="jsoneditor/jsoneditor-min.js" todir="${site}/jsoneditor" />
+        <copy file="jsoneditor/jsoneditor.css" todir="${site}/jsoneditor" />
+        <copy file="jsoneditor/img/jsoneditor-icons.png" todir="${site}/jsoneditor/img" />
+    </target>
+
+    <target name="main" depends="minify,zip,buildsite" />
+
+</project>

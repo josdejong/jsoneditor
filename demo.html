@@ -1,0 +1,40 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <link rel="stylesheet" type="text/css" href="jsoneditor/jsoneditor.css">
+    <script type="text/javascript" src="jsoneditor/jsoneditor.js"></script>
+</head>
+<body>
+<p>
+    <button onclick="setJSON();">Set JSON</button>
+    <button onclick="getJSON();">Get JSON</button>
+</p>
+<div id="jsoneditor" style="width: 500px; height: 400px;"></div>
+
+<script type="text/javascript" >
+    // create the editor. Optionally, parameters json and options can be
+    // specified in the constructor.
+    var container = document.getElementById("jsoneditor");
+    var editor = new JSONEditor(container);
+
+    // set json
+    function setJSON () {
+        var json = {
+            "Array": [1, 2, 3],
+            "Boolean": true,
+            "Null": null,
+            "Number": 123,
+            "Object": {"a": "b", "c": "d"},
+            "String": "Hello World"
+        };
+        editor.set(json);
+    }
+
+    // get json
+    function getJSON() {
+        var json = editor.get();
+        alert(JSON.stringify(json, null, 2));
+    }
+</script>
+</body>
+</html>
