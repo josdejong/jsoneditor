@@ -2875,7 +2875,6 @@ JSONEditor.SearchBox.prototype.onKeyDown = function (event) {
     if (keynum == 27) { // ESC
         this.dom.search.value = '';  // clear search
         this.onSearch(event);
-        alert(1)
         JSONEditor.Events.preventDefault(event);
         JSONEditor.Events.stopPropagation(event);
     }
