@@ -1,8 +1,8 @@
 #!/bin/sh
 
 compiler="compiler.jar"
-file="../jsoneditor.js"
-minifiedFile="../jsoneditor-min.js"
+file="../jsoneditor/jsoneditor.js"
+minifiedFile="../jsoneditor/jsoneditor-min.js"
 
 echo "Minifying file $file..."
 

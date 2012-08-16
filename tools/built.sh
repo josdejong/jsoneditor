@@ -5,7 +5,7 @@ sh minify.sh
 cd ..
 
 package="jsoneditoronline.zip"
-files="index.html jsoneditor.js jsoneditor-min.js jsoneditor.css favicon.ico changelog.txt img LICENSE ../NOTICE"
+files="index.html jsoneditor/jsoneditor.js jsoneditor/jsoneditor-min.js jsoneditor/jsoneditor.css favicon.ico changelog.txt jsoneditor/img LICENSE NOTICE README"
 
 rm $package
 
