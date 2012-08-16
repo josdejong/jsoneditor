@@ -26,7 +26,7 @@
  * Copyright (c) 2011-2012 Jos de Jong, http://jsoneditoronline.org
  *
  * @author  Jos de Jong, <wjosdejong@gmail.com>
- * @date    2012-08-12
+ * @date    2012-08-16
  */
 
 
@@ -1263,7 +1263,6 @@ JSONEditor.Node.prototype.getDom = function() {
     // create draggable area
     var tdDrag = document.createElement('td');
     tdDrag.className = 'jsoneditor-td';
-    tdDrag.title = 'Move field (drag and drop)';
     dom.drag = this._createDomDragArea();
     if (dom.drag) {
         tdDrag.appendChild(dom.drag);
@@ -1450,6 +1449,7 @@ JSONEditor.Node.prototype._createDomDragArea = function () {
     var node = this;
     var domDrag = document.createElement('button');
     domDrag.className = 'jsoneditor-dragarea';
+    domDrag.title = 'Move field (drag and drop)';
 
     return domDrag;
 };
@@ -1976,13 +1976,6 @@ JSONEditor.Node.prototype._onTypeButton = function (event) {
 };
 
 JSONEditor.showDropDownList = function (params) {
-    /*
-     console.log(params); // TODO
-     var value = prompt('select a value', params.value);
-     if (value) {
-     callback(value);
-     }*/
-
     var select = document.createElement('div');
     select.className = params.className || '';
     select.style.position = 'absolute';
@@ -1991,7 +1984,7 @@ JSONEditor.showDropDownList = function (params) {
     for (var i = 0; i < params.values.length; i++) {
         var v = params.values[i];
         var text = v.value || String(v);
-        var className = 'jsoneditor-option ' + (v.className || '');
+        var className = 'jsoneditor-option';
         var selected = (text == params.value);
         if (selected)  {
             className += ' ' + params.optionSelectedClassName;
@@ -2001,12 +1994,21 @@ JSONEditor.showDropDownList = function (params) {
         if (v.title) {
             option.title = v.title;
         }
-        option.innerHTML = text;
-        option.onmousedown = function (value) {
+
+        var divIcon = document.createElement('div');
+        divIcon.className = (v.className || '');
+        option.appendChild(divIcon);
+
+        var divText = document.createElement('div');
+        divText.className = 'jsoneditor-option-text';
+        divText.innerHTML = '<div>' + text + '</div>';
+        option.appendChild(divText);
+
+        option.onmousedown = (function (value) {
             return function (event) {
                 params.callback(value);
             };
-        }(v.value);
+        })(v.value);
         select.appendChild(option);
     }
 
@@ -2020,6 +2022,12 @@ JSONEditor.showDropDownList = function (params) {
         params.node.setHighlight(false);
         document.body.removeChild(select);
         JSONEditor.Events.removeEventListener(document, 'mousedown', onmousedown);
+    });
+    var onmousewheel = JSONEditor.Events.addEventListener(document, 'mousewheel', function (event) {
+        JSONEditor.freezeHighlight = false;
+        params.node.setHighlight(false);
+        document.body.removeChild(select);
+        JSONEditor.Events.removeEventListener(document, 'mousewheel', onmousewheel);
     });
 };
 
@@ -2663,6 +2671,12 @@ JSONEditor.SearchBox = function(editor, container) {
     tr = document.createElement('tr');
     tbodySearch.appendChild(tr);
 
+    var refreshSearch = document.createElement('button');
+    refreshSearch.className = 'jsoneditor-search-refresh';
+    td = document.createElement('td');
+    td.appendChild(refreshSearch);
+    tr.appendChild(td);
+
     var search = document.createElement('input');
     this.dom.search = search;
     search.className = 'jsoneditor-search';
@@ -2678,20 +2692,35 @@ JSONEditor.SearchBox = function(editor, container) {
     search.onkeyup = function (event) {
         searchBox.onKeyUp(event);
     };
+    refreshSearch.onclick = function (event) {
+        search.select();
+    };
 
     // TODO: ESC in FF restores the last input, is a FF bug, https://bugzilla.mozilla.org/show_bug.cgi?id=598819
     td = document.createElement('td');
-    tr.appendChild(td);
     td.appendChild(search);
+    tr.appendChild(td);
 
-    var refreshSearch = document.createElement('button');
-    refreshSearch.className = 'jsoneditor-search-refresh';
-    refreshSearch.onclick = function (event) {
-        searchBox.onSearch(event, true);
+    var searchNext = document.createElement('button');
+    searchNext.title = 'Next result (Enter)';
+    searchNext.className = 'jsoneditor-search-next';
+    searchNext.onclick = function (event) {
+        searchBox.next();
     };
     td = document.createElement('td');
+    td.appendChild(searchNext);
     tr.appendChild(td);
-    td.appendChild(refreshSearch);
+
+    var searchPrevious = document.createElement('button');
+    searchPrevious.title = 'Previous result (Shift+Enter)';
+    searchPrevious.className = 'jsoneditor-search-previous';
+    searchPrevious.onclick = function (event) {
+        searchBox.previous();
+    };
+    td = document.createElement('td');
+    td.appendChild(searchPrevious);
+    tr.appendChild(td);
+
 };
 
 /**
@@ -2798,7 +2827,8 @@ JSONEditor.SearchBox.prototype.onDelayedSearch = function (event) {
     this.clearDelay();
     var searchBox = this;
     this.timeout = setTimeout(function (event) {
-        searchBox.onSearch(event);},
+            searchBox.onSearch(event);
+        },
         this.delay);
 };
 
@@ -2845,6 +2875,7 @@ JSONEditor.SearchBox.prototype.onKeyDown = function (event) {
     if (keynum == 27) { // ESC
         this.dom.search.value = '';  // clear search
         this.onSearch(event);
+        alert(1)
         JSONEditor.Events.preventDefault(event);
         JSONEditor.Events.stopPropagation(event);
     }
