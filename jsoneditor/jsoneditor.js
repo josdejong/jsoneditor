@@ -3041,10 +3041,10 @@ JSONEditor.getAbsoluteTop = function (elem) {
  * @param {String} className
  */
 JSONEditor.addClassName = function(elem, className) {
-    var c = elem.className;
-    if (c.indexOf(className) == -1) {
-        c += ' ' + className;
-        elem.className = c;
+    var classes = elem.className.split(' ');
+    if (classes.indexOf(className) == -1) {
+        classes.push(className); // add the class to the array
+        elem.className = classes.join(' ');
     }
 };
 
@@ -3054,12 +3054,11 @@ JSONEditor.addClassName = function(elem, className) {
  * @param {String} className
  */
 JSONEditor.removeClassName = function(elem, className) {
-    var c = elem.className;
-    if (c.indexOf(className) != -1) {
-        // TODO: improve to classname separated by space or start/end of string
-        c = c.replace(className, ''); // remove classname
-        c = c.replace(/  /g, '');     // remove double spaces
-        elem.className = c;
+    var classes = elem.className.split(' ');
+    var index = classes.indexOf(className);
+    if (index != -1) {
+        classes.splice(index, 1); // remove the class from the array
+        elem.className = classes.join(' ');
     }
 };
 
