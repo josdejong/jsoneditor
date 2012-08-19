@@ -67,7 +67,7 @@
         <copy file="interface/interface.js" todir="${site}/interface" />
         <copy file="interface/interface.css" todir="${site}/interface" />
         <copy file="jsoneditor/jsoneditor-min.js" todir="${site}/jsoneditor" />
-        <copy file="jsoneditor/jsoneditor.css" todir="${site}/jsoneditor" />
+        <copy file="jsoneditor/jsoneditor-min.css" todir="${site}/jsoneditor" />
         <copy file="jsoneditor/img/jsoneditor-icons.png" todir="${site}/jsoneditor/img" />
     </target>
 
