@@ -26,7 +26,7 @@
  * Copyright (c) 2011-2012 Jos de Jong, http://jsoneditoronline.org
  *
  * @author  Jos de Jong, <wjosdejong@gmail.com>
- * @date    2012-08-16
+ * @date    2012-08-19
  */
 
 
@@ -349,7 +349,7 @@ JSONEditor.Node.prototype.setField = function(field, fieldEditable) {
  */
 JSONEditor.Node.prototype.getField = function() {
     if (this.field === undefined) {
-        this.field = this._getDomField();
+        this._getDomField();
     }
 
     return this.field;
@@ -426,8 +426,6 @@ JSONEditor.Node.prototype.setValue = function(value) {
  * @return {*} value
  */
 JSONEditor.Node.prototype.getValue = function() {
-    //this._getDomValue(); // TODO: cleanup
-
     if (this.type == 'array') {
         var arr = [];
         var childs = this.childs;
@@ -447,7 +445,7 @@ JSONEditor.Node.prototype.getValue = function() {
     }
     else {
         if (this.value === undefined) {
-            this.value = this._getDomValue();
+            this._getDomValue();
         }
 
         return this.value;
@@ -472,10 +470,10 @@ JSONEditor.Node.prototype.clone = function() {
     var clone = new JSONEditor.Node();
     clone.type = this.type;
     clone.field = this.field;
-    clone.fieldHTML = this.fieldHTML;
+    clone.fieldInnerText = this.fieldInnerText;
     clone.fieldEditable = this.fieldEditable;
     clone.value = this.value;
-    clone.valueHTML = this.valueHTML;
+    clone.valueInnerText = this.valueInnerText;
     clone.expanded = this.expanded;
 
     if (this.childs) {
@@ -1087,17 +1085,17 @@ JSONEditor.Node.prototype._changeType = function (newType) {
  */
 JSONEditor.Node.prototype._getDomValue = function(silent) {
     if (this.dom.value && this.type != 'array' && this.type != 'object') {
-        this.valueHTML = this.dom.value.innerHTML;
+        this.valueInnerText = JSONEditor.getInnerText(this.dom.value);
     }
 
-    if (this.valueHTML != undefined) {
+    if (this.valueInnerText != undefined) {
         try {
             // retrieve the value
             if (this.type == 'string') {
-                this.value = this._unescape(this._stripHTML(this.valueHTML));
+                this.value = this._unescapeHTML(this.valueInnerText);
             }
             else {
-                var value = this._unescape(this._stripHTML(this.valueHTML));
+                var value = this._unescapeHTML(this.valueInnerText);
                 this.value = this._stringCast(value);
             }
         }
@@ -1217,12 +1215,12 @@ JSONEditor.Node.prototype._updateDomField = function () {
  */
 JSONEditor.Node.prototype._getDomField = function(silent) {
     if (this.dom.field && this.fieldEditable) {
-        this.fieldHTML = this.dom.field.innerHTML;
+        this.fieldInnerText = JSONEditor.getInnerText(this.dom.field);
     }
 
-    if (this.fieldHTML != undefined) {
+    if (this.fieldInnerText != undefined) {
         try {
-            this.field = this._unescape(this._stripHTML(this.fieldHTML));
+            this.field = this._unescapeHTML(this.fieldInnerText);
         }
         catch (err) {
             this.field = undefined;
@@ -1526,7 +1524,7 @@ JSONEditor.Node.prototype.updateDom = function () {
         else {
             field = 'field';
         }
-        domField.innerHTML = this._escape(field);
+        domField.innerHTML = this._escapeHTML(field);
     }
 
     // update field and value
@@ -1613,14 +1611,14 @@ JSONEditor.Node.prototype._createDomValue = function () {
         domValue.contentEditable = 'true';
         domValue.spellcheck = false;
         domValue.className = 'jsoneditor-value';
-        domValue.innerHTML = this._escape(this.value);
+        domValue.innerHTML = this._escapeHTML(this.value);
     }
     else {
         domValue = document.createElement('div');
         domValue.contentEditable = 'true';
         domValue.spellcheck = false;
         domValue.className = 'jsoneditor-value';
-        domValue.innerHTML = this._escape(this.value);
+        domValue.innerHTML = this._escapeHTML(this.value);
     }
 
     // TODO: in FF spel/check of editable divs is done via the body. quite ugly
@@ -1723,8 +1721,15 @@ JSONEditor.Node.prototype.onEvent = function (event) {
                 JSONEditor.focusNode = this;
                 break;
 
-            case 'change':
             case 'blur':
+            case 'change':
+                this._getDomValue(true);
+                this._updateDomValue();
+                if (this.value) {
+                    domValue.innerHTML = this._escapeHTML(this.value);
+                }
+                break;
+
             case 'keyup':
                 this._getDomValue(true);
                 this._updateDomValue();
@@ -1750,6 +1755,13 @@ JSONEditor.Node.prototype.onEvent = function (event) {
 
             case 'change':
             case 'blur':
+                this._getDomField(true);
+                this._updateDomField();
+                if (this.field) {
+                    domField.innerHTML = this._escapeHTML(this.field);
+                }
+                break;
+
             case 'keyup':
                 this._getDomField(true);
                 this._updateDomField();
@@ -2135,7 +2147,7 @@ JSONEditor.Node.prototype._stringCast = function(str) {
  * @param {String} text
  * @return {String} escapedText
  */
-JSONEditor.Node.prototype._escape = function (text) {
+JSONEditor.Node.prototype._escapeHTML = function (text) {
     var htmlEscaped = String(text)
         .replace(/</g, '&lt;')
         .replace(/>/g, '&gt;')
@@ -2152,8 +2164,8 @@ JSONEditor.Node.prototype._escape = function (text) {
  * @param {String} escapedText
  * @return {String} text
  */
-JSONEditor.Node.prototype._unescape = function (escapedText) {
-    var json = '"' + escapedText + '"';
+JSONEditor.Node.prototype._unescapeHTML = function (escapedText) {
+    var json = '"' + this._escapeJSON(escapedText) + '"';
     var htmlEscaped = JSON.parse(json);
     return htmlEscaped
         .replace(/&lt;/g, '<')
@@ -2162,10 +2174,50 @@ JSONEditor.Node.prototype._unescape = function (escapedText) {
 };
 
 /**
+ * escape a text to make it a valid JSON string. The method will:
+ *   - replace unescaped double quotes with '\"'
+ *   - replace unescaped backslash with '\\'
+ *   - replace returns with '\n'
+ * @param {String} text
+ * @return {String} escapedText
+ */
+JSONEditor.Node.prototype._escapeJSON = function (text) {
+    // TODO: replace with some smart regex (only when a new solution is faster!)
+    var escaped = '';
+    var i = 0, iMax = text.length;
+    while (i < iMax) {
+        var c = text.charAt(i);
+        if (c == '\n') {
+            escaped += '\\n';
+        }
+        else if (c == '\\') {
+            escaped += c;
+            i++;
+
+            c = text.charAt(i);
+            if ('"\\/bfnrtu'.indexOf(c) == -1) {
+                escaped += '\\';  // no valid escape character
+            }
+            escaped += c;
+        }
+        else if (c == '"') {
+            escaped += '\\"';
+        }
+        else {
+            escaped += c;
+        }
+        i++;
+    }
+
+    return escaped;
+};
+
+/**
  * Strip html tags from a string
  * @param {String} html
  * @return {String} text
  */
+// TODO: remove this method, is not used anymore
 JSONEditor.Node.prototype._stripHTML = function (html) {
     // remove HTML tags
     // code from nickf, http://stackoverflow.com/a/822464/1262753
@@ -3120,21 +3172,99 @@ JSONEditor.setEndOfContentEditable = function (contentEditableElement) {
 };
 
 /**
+ * Get the inner text of an HTML element (for example a div element)
+ * @param {Element} element
+ * @param {Object} [buffer]
+ * @return {String} innerText
+ */
+JSONEditor.getInnerText = function (element, buffer) {
+    var first = (buffer == undefined);
+    if (first) {
+        buffer = {
+            'text': '',
+            'flush': function () {
+                var text = this.text;
+                this.text = '';
+                return text;
+            },
+            'set': function (text) {
+                this.text = text;
+            }
+        };
+    }
+
+    // text node
+    if (element.nodeValue) {
+        return buffer.flush() + element.nodeValue;
+    }
+
+    // divs or other HTML elements
+    if (element.hasChildNodes()) {
+        var childNodes = element.childNodes;
+        var innerText = '';
+
+        for (var i = 0, iMax = childNodes.length; i < iMax; i++) {
+            var child = childNodes[i];
+
+            if (child.nodeName == 'DIV' || child.nodeName == 'P') {
+                var prevChild = childNodes[i - 1];
+                var prevName = prevChild ? prevChild.nodeName : undefined;
+                if (prevName && prevName != 'DIV' && prevName != 'P' && prevName != 'BR') {
+                    innerText += '\n';
+                    buffer.flush();
+                }
+                innerText += JSONEditor.getInnerText(child, buffer);
+                buffer.set('\n');
+            }
+            else if (child.nodeName == 'BR') {
+                innerText += buffer.flush();
+                buffer.set('\n');
+            }
+            else {
+                innerText += JSONEditor.getInnerText(child, buffer);
+            }
+        }
+
+        return innerText;
+    }
+    else {
+        if (element.nodeName == 'P' && JSONEditor.getInternetExplorerVersion() != -1) {
+            // On Internet Explorer, a <p> with hasChildNodes()==false is
+            // rendered with a new line. Note that a <p> with
+            // hasChildNodes()==true is rendered without a new line
+            // Other browsers always ensure there is a <br> inside the <p>,
+            // and if not, the <p> does not render a new line
+            return buffer.flush();
+        }
+    }
+
+    // br or unknown
+    return '';
+};
+
+/**
  * Returns the version of Internet Explorer or a -1
  * (indicating the use of another browser).
  * Source: http://msdn.microsoft.com/en-us/library/ms537509(v=vs.85).aspx
  * @return {Number} Internet Explorer version, or -1 in case of an other browser
  */
+JSONEditor._ieVersion = undefined;
 JSONEditor.getInternetExplorerVersion = function() {
-    var rv = -1; // Return value assumes failure.
-    if (navigator.appName == 'Microsoft Internet Explorer')
-    {
-        var ua = navigator.userAgent;
-        var re  = new RegExp("MSIE ([0-9]{1,}[\.0-9]{0,})");
-        if (re.exec(ua) != null)
-            rv = parseFloat( RegExp.$1 );
+    if (JSONEditor._ieVersion == undefined) {
+        var rv = -1; // Return value assumes failure.
+        if (navigator.appName == 'Microsoft Internet Explorer')
+        {
+            var ua = navigator.userAgent;
+            var re  = new RegExp("MSIE ([0-9]{1,}[\.0-9]{0,})");
+            if (re.exec(ua) != null) {
+                rv = parseFloat( RegExp.$1 );
+            }
+        }
+
+        JSONEditor._ieVersion = rv;
     }
-    return rv;
+
+    return JSONEditor._ieVersion;
 };
 
 JSONEditor.ieVersion = JSONEditor.getInternetExplorerVersion();
