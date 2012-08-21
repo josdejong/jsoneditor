@@ -29,6 +29,7 @@ formatted plain text.
 
 ### Screenshot
 
-<a href="http://jsoneditoronline.org" style="border: 1px solid gray;">
-    <img alt="jsoneditoronline" src="https://raw.github.com/wjosdejong/jsoneditoronline/master/misc/screenshots/jsoneditoronline.png">
+<a href="http://jsoneditoronline.org">
+    <img alt="jsoneditoronline"
+        src="https://raw.github.com/wjosdejong/jsoneditoronline/master/misc/screenshots/jsoneditoronline.png">
 </a>
