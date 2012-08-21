@@ -1,15 +1,15 @@
-JSON Editor Online
+# JSON Editor Online
 http://jsoneditoronline.org
 
 
-Description
+## Description
 
 JSON Editor Online is a web-based tool to view, edit, and format JSON.
 It shows your data side by side in a clear, editable treeview and in 
 formatted plain text.
 
 
-Features
+## Features
 
 - View and edit JSON side by side in treeview and plain text.
 - Edit, add, move, remove, and duplicate fields and values.
@@ -19,9 +19,13 @@ Features
 - Format and compact JSON in plain text.
 
 
-Getting started
+## Getting started
 
 Website:    http://jsoneditoronline.org
 Wiki:       https://github.com/wjosdejong/jsoneditoronline/wiki
 Sourcecode: https://github.com/wjosdejong/jsoneditoronline
 Downloads:  https://github.com/wjosdejong/jsoneditoronline/tree/master/build/lib
+
+## Screenshot
+
+![jsoneditoronline](https://raw.github.com/wjosdejong/jsoneditoronline/master/misc/screenshots/jsoneditoronline.png)
