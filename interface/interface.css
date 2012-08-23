@@ -10,12 +10,6 @@ body, html {
     overflow: hidden;
 }
 
-h1 {
-    font-size: 18px;
-    padding: 10px 15px;
-    margin: 0;
-}
-
 span.header-light {
     color: gray;
 }
@@ -25,8 +19,14 @@ span.header-light {
     height: 40px;
     overflow: hidden;
 
-    background-color: #4D4D4D;
+    background: #4D4D4D url('img/header_background.png');
     color: white;
+}
+
+#logo {
+    height: 32px;
+    margin: 4px 10px;
+    border: none;
 }
 
 #auto {

@@ -323,6 +323,8 @@ main.showError = function (message) {
 
 main.hideAds = function() {
     var domAd = document.getElementById("ad");
-    domAd.parentNode.removeChild(domAd);
-    main.resize();
+    if (domAd) {
+        domAd.parentNode.removeChild(domAd);
+        main.resize();
+    }
 };

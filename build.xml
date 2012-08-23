@@ -7,7 +7,8 @@
 
     <property name="root" location="" />
     <property name="lib" location="build/lib" />
-    <property name="site" location="build/site" />
+    <property name="web" location="build/web" />
+    <property name="chrome_app" location="build/app/chrome" />
     <property name="compressor" value="tools/yuicompressor-2.4.7.jar" />
 
     <target name="minify" description="minify jsoneditor libraries">
@@ -55,22 +56,46 @@
         </zip>
     </target>
 
-    <target name="buildsite" depends="minify" description="copy all files for the site to the build directory">
-        <delete dir="${site}" />
-        <mkdir dir="${site}" />
-        <copy file="LICENSE" todir="${site}" />
-        <copy file="NOTICE" todir="${site}" />
-        <copy file="robots.txt" todir="${site}" />
-        <copy file="changelog.txt" todir="${site}" />
-        <copy file="index.html" todir="${site}" />
-        <copy file="favicon.ico" todir="${site}" />
-        <copy file="interface/interface.js" todir="${site}/interface" />
-        <copy file="interface/interface.css" todir="${site}/interface" />
-        <copy file="jsoneditor/jsoneditor-min.js" todir="${site}/jsoneditor" />
-        <copy file="jsoneditor/jsoneditor-min.css" todir="${site}/jsoneditor" />
-        <copy file="jsoneditor/img/jsoneditor-icons.png" todir="${site}/jsoneditor/img" />
+    <target name="build_site" depends="minify" description="copy all files for the site to the build directory">
+        <delete dir="${web}" />
+        <mkdir dir="${web}" />
+        <copy file="LICENSE" todir="${web}" />
+        <copy file="NOTICE" todir="${web}" />
+        <copy file="README.md" todir="${web}" />
+        <copy file="robots.txt" todir="${web}" />
+        <copy file="changelog.txt" todir="${web}" />
+        <copy file="index.html" todir="${web}" />
+        <copy file="favicon.ico" todir="${web}" />
+        <copy file="interface/interface.js" todir="${web}/interface" />
+        <copy file="interface/interface.css" todir="${web}/interface" />
+        <copy file="interface/img/logo.png" todir="${web}/interface/img" />
+        <copy file="interface/img/header_background.png" todir="${web}/interface/img" />
+        <copy file="jsoneditor/jsoneditor-min.js" todir="${web}/jsoneditor" />
+        <copy file="jsoneditor/jsoneditor-min.css" todir="${web}/jsoneditor" />
+        <copy file="jsoneditor/img/jsoneditor-icons.png" todir="${web}/jsoneditor/img" />
     </target>
 
-    <target name="main" depends="minify,zip,buildsite" />
+    <target name="build_chrome_app" depends="minify" description="copy all files for the chrome app to the build directory">
+        <delete dir="${chrome_app}" />
+        <mkdir dir="${chrome_app}" />
+        <copy file="app/chrome/manifest.json" todir="${chrome_app}" />
+        <copy file="app/chrome/index.html" todir="${chrome_app}" />
+        <copy file="interface/img/icon_128.png" todir="${chrome_app}" />
+        <copy file="interface/img/icon_16.png" todir="${chrome_app}" />
+        <copy file="LICENSE" todir="${chrome_app}" />
+        <copy file="NOTICE" todir="${chrome_app}" />
+        <copy file="README.md" todir="${chrome_app}" />
+        <copy file="changelog.txt" todir="${chrome_app}" />
+        <copy file="favicon.ico" todir="${chrome_app}" />
+        <copy file="interface/interface.js" todir="${chrome_app}/interface" />
+        <copy file="interface/interface.css" todir="${chrome_app}/interface" />
+        <copy file="interface/img/logo_app.png" todir="${chrome_app}/interface/img" />
+        <copy file="interface/img/header_background.png" todir="${chrome_app}/interface/img" />
+        <copy file="jsoneditor/jsoneditor-min.js" todir="${chrome_app}/jsoneditor" />
+        <copy file="jsoneditor/jsoneditor-min.css" todir="${chrome_app}/jsoneditor" />
+        <copy file="jsoneditor/img/jsoneditor-icons.png" todir="${chrome_app}/jsoneditor/img" />
+    </target>
+
+    <target name="main" depends="minify, zip, build_site, build_chrome_app" />
 
 </project>

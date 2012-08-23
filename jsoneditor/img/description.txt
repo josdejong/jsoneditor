@@ -1,6 +1,7 @@
 JSON Editor Online Icons
 
-size:             16x16 px
+size:             outer: 24x24 px
+                  inner: 16x16 px 
 
 blue background:  RGBA 97b0f8ff
 gray background:  RGBA d3d3d3ff

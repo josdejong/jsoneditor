@@ -1,5 +1,5 @@
 # JSON Editor Online
-http://jsoneditoronline.org
+http://jsoneditoronline.org/
 
 
 ### Description
@@ -21,10 +21,10 @@ formatted plain text.
 
 ### Getting started
 
-- Website:    http://jsoneditoronline.org
-- Wiki:       https://github.com/wjosdejong/jsoneditoronline/wiki
-- Sourcecode: https://github.com/wjosdejong/jsoneditoronline
-- Downloads:  https://github.com/wjosdejong/jsoneditoronline/tree/master/build/lib
+- Website:    http://jsoneditoronline.org/
+- Wiki:       https://github.com/wjosdejong/jsoneditoronline/wiki/
+- Sourcecode: https://github.com/wjosdejong/jsoneditoronline/
+- Downloads:  https://github.com/wjosdejong/jsoneditoronline/tree/master/build/lib/
 
 
 ### Screenshot

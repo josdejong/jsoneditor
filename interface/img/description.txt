@@ -1,0 +1,20 @@
+JSON Editor Online Logo
+
+font: Source Sans Pro, 19.2pt (24px)
+    "JSON Editor" -> "Source Sans Pro"
+    "Online"      -> "Source Sans Pro Light"
+
+color: white
+
+logo size: 32x200 px
+
+
+JSON Editor Online Icon
+
+Icon 128x128px
+    background is 100x100px, color #4d4d4d, border radius 10px
+    glass is white, opacity 10%
+    text "{ }" is Arial, 78px, white
+
+Icon 16x16px
+    background full 16x16px. Scaled down from the 128x128px icon

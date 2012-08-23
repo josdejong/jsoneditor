@@ -2,7 +2,8 @@
  * @file jsoneditor.js
  *
  * @brief
- * JSONEditor is an editor to display and edit JSON data in a treeview.
+ * JSONEditor is a web-based tool to view, edit, and format JSON.
+ * It shows data a clear, editable treeview.
  *
  * Supported browsers: Chrome, Firefox, Safari, Opera, Internet Explorer 8+
  *
