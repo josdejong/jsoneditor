@@ -27,7 +27,7 @@
  * Copyright (c) 2011-2012 Jos de Jong, http://jsoneditoronline.org
  *
  * @author  Jos de Jong, <wjosdejong@gmail.com>
- * @date    2012-08-19
+ * @date    2012-08-25
  */
 
 
@@ -2033,13 +2033,17 @@ JSONEditor.showDropDownList = function (params) {
     var onmousedown = JSONEditor.Events.addEventListener(document, 'mousedown', function (event) {
         JSONEditor.freezeHighlight = false;
         params.node.setHighlight(false);
-        document.body.removeChild(select);
+        if (select && select.parentNode) {
+            select.parentNode.removeChild(select);
+        }
         JSONEditor.Events.removeEventListener(document, 'mousedown', onmousedown);
     });
     var onmousewheel = JSONEditor.Events.addEventListener(document, 'mousewheel', function (event) {
         JSONEditor.freezeHighlight = false;
         params.node.setHighlight(false);
-        document.body.removeChild(select);
+        if (select && select.parentNode) {
+            select.parentNode.removeChild(select);
+        }
         JSONEditor.Events.removeEventListener(document, 'mousewheel', onmousewheel);
     });
 };
