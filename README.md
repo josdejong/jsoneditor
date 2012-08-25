@@ -21,7 +21,8 @@ formatted plain text.
 
 ### Getting started
 
-- Website:    http://jsoneditoronline.org/
+- Web app:    http://jsoneditoronline.org/
+- Chrome app: https://chrome.google.com/webstore/detail/gckckcmcgknlbcmnpgijfmpppiplijgn
 - Wiki:       https://github.com/wjosdejong/jsoneditoronline/wiki/
 - Sourcecode: https://github.com/wjosdejong/jsoneditoronline/
 - Downloads:  https://github.com/wjosdejong/jsoneditoronline/tree/master/build/lib/

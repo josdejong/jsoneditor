@@ -1,0 +1,12 @@
+Chrome App
+
+https://developers.google.com/chrome/web-store/articles/launching
+https://developers.google.com/chrome/web-store/articles/launching#pre-launch-checklist
+https://developers.google.com/chrome/web-store/docs/publish
+
+http://developer.chrome.com/extensions/apps.html
+http://developer.chrome.com/trunk/extensions/apps/about_apps.html
+
+Tutorial
+http://ohboard.com/blog/chrome-web-app-development-guide/
+

@@ -1,6 +1,7 @@
 JSON EDITOR ONLINE CHANGELOG
 http://jsoneditoronline.org
 
+
 2012-08-25, version 1.4.3
 
 - Changed: changed code for the buttons to copy from formatter to editor and
