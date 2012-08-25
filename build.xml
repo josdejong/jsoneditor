@@ -3,7 +3,7 @@
 <project name="jsoneditor-builder" default="main">
     <!-- the version number of must be updated here (according to changelog.txt) -->
     <property name="package" value="jsoneditor"/>
-    <property name="version" value="1.4.2"/>
+    <property name="version" value="1.4.3"/>
 
     <property name="root" location="" />
     <property name="lib" location="build/lib" />
@@ -80,6 +80,7 @@
         <mkdir dir="${chrome_app}" />
         <copy file="app/chrome/manifest.json" todir="${chrome_app}" />
         <copy file="app/chrome/index.html" todir="${chrome_app}" />
+        <copy file="app/chrome/app.js" todir="${chrome_app}" />
         <copy file="interface/img/icon_128.png" todir="${chrome_app}" />
         <copy file="interface/img/icon_16.png" todir="${chrome_app}" />
         <copy file="LICENSE" todir="${chrome_app}" />

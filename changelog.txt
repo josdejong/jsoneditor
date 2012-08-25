@@ -1,8 +1,16 @@
 JSON EDITOR ONLINE CHANGELOG
 http://jsoneditoronline.org
 
+2012-08-25, version 1.4.3
+
+- Changed: changed code for the buttons to copy from formatter to editor and
+  vice versa, no inline javascript (gives security policy errors in chrome app).
+
+
 2012-08-25, version 1.4.2
 
+- Changed: other bootstrapping mechanism for the chrome app, in a separate
+  javascript file, as inline javascript is not allowed (security policy).
 - Fixed: drop down menu for changing the field type did throw javascript errors
   (did not break any functionality though).
 

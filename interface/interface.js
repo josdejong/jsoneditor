@@ -26,7 +26,7 @@
  * Copyright (C) 2011-2012 Jos de Jong, http://jsoneditoronline.org
  *
  * @author  Jos de Jong, <wjosdejong@gmail.com>
- * @date    2012-07-18
+ * @date    2012-08-25
  */
 
 
@@ -191,11 +191,40 @@ main.load = function() {
 
         // splitter
         var domSplitter = document.getElementById('splitter');
+
+        /*
         domSplitter.innerHTML =
             '<br><br><br>' +
                 '<button id="toForm" onclick="this.focus(); main.formatterToEditor();" title="JSON to Editor" class="convert"><div class="convert-right"></div></button><br>' +
                 '<br>' +
                 '<button id="toJSON" onclick="this.focus(); main.editorToFormatter();" title="Editor to JSON" class="convert"><div class="convert-left"></div></button>';
+        */
+        domSplitter.appendChild(document.createElement('br'));
+        domSplitter.appendChild(document.createElement('br'));
+        domSplitter.appendChild(document.createElement('br'));
+        var toForm = document.createElement('button');
+        toForm.id = 'toForm';
+        toForm.title = 'JSON to Editor';
+        toForm.className = 'convert';
+        toForm.innerHTML = '<div class="convert-right"></div>';
+        toForm.onclick = function () {
+            this.focus();
+            main.formatterToEditor();
+        };
+        domSplitter.appendChild(toForm);
+        domSplitter.appendChild(document.createElement('br'));
+        domSplitter.appendChild(document.createElement('br'));
+        var toJSON = document.createElement('button');
+        toJSON.id = 'toJSON';
+        toJSON.title = 'Editor to JSON';
+        toJSON.className = 'convert';
+        toJSON.innerHTML = '<div class="convert-left"></div>';
+        toJSON.onclick = function () {
+            this.focus();
+            main.editorToFormatter();
+        };
+        domSplitter.appendChild(toJSON);
+
         JSONEditor.Events.addEventListener(domSplitter, "mousedown", main.onMouseDown);
 
         // resize
