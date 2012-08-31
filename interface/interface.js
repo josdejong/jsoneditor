@@ -26,7 +26,7 @@
  * Copyright (C) 2011-2012 Jos de Jong, http://jsoneditoronline.org
  *
  * @author  Jos de Jong, <wjosdejong@gmail.com>
- * @date    2012-08-25
+ * @date    2012-08-31
  */
 
 
@@ -277,6 +277,7 @@ main.resize = function() {
     var domFormatter = document.getElementById('jsonformatter');
     var domSplitter = document.getElementById('splitter');
     var domAd = document.getElementById('ad');
+    var domAdInfo = document.getElementById('adInfo');
 
     var width = window.innerWidth || document.body.offsetWidth || document.documentElement.offsetWidth;
     var height = window.innerHeight || document.body.offsetHeight || document.documentElement.offsetHeight;
@@ -292,9 +293,17 @@ main.resize = function() {
     domFormatter.style.width = (splitterLeft) + 'px';
 
     // resize editor
+    // the width has a -1 to prevent the width from being just half a pixel
+    // wider than the window, causing the content elements to wrap...
     domEditor.style.left = (splitterLeft + splitterWidth) + 'px';
-    domEditor.style.width = (width - splitterLeft - splitterWidth) + 'px';
+    domEditor.style.width = (width - splitterLeft - splitterWidth - 1) + 'px';
     //editor.onResize(); // TODO
+
+    // resize ad text
+    if (domAdInfo && domAd) {
+        var infoHeight = domAdInfo.clientHeight;
+        domAd.style.paddingTop = infoHeight + 'px';
+    }
 };
 
 main.errorFrame = undefined;
@@ -356,4 +365,16 @@ main.hideAds = function() {
         domAd.parentNode.removeChild(domAd);
         main.resize();
     }
+};
+
+main.removeAds = function () {
+    var domRemoveAds = document.getElementById('removeAds');
+    var domChromeAppInfo = document.getElementById('chromeAppInfo');
+    if (domRemoveAds) {
+        domRemoveAds.style.display = 'none';
+    }
+    if (domChromeAppInfo) {
+        domChromeAppInfo.style.display = '';
+    }
+    main.resize();
 };

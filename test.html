@@ -105,9 +105,23 @@
         </script>
 
         <div id="ad" title="advertisement" >
-            <div class="hideAds">
-                (advertisement <a class="hideAds" href="javascript: main.hideAds();">hide</a>)<br>
+            <div id="adInfo">
+                ADVERTISEMENT<br>
+                <a class="adInfo" href="javascript: main.hideAds();">hide for now</a><br>
+                <div id="removeAds">
+                    <a class="adInfo" href="javascript: main.removeAds()">get rid of the ads</a>
+                </div>
+                <div id="chromeAppInfo" style='display: none;'>
+                    <br>If you want to get rid of the ads,
+                    you can buy the Chrome App.
+                    This will give you the JSON Editor without ads,
+                    offline available, always up to date, and just one click away.<br>
+                    <a class="adInfo"
+                       href="https://chrome.google.com/webstore/detail/gckckcmcgknlbcmnpgijfmpppiplijgn"
+                       target="_blank">Click here for more info</a>
+                </div>
             </div>
+
             <div class="adSpace"></div>
 
             <script type="text/javascript"><!--
@@ -131,7 +145,7 @@
 
 <div id="footer">
     <div id="footer-inner">
-        <a href="http://jsoneditoronline.org" class="footer">JSON Editor Online 1.4.3</a>
+        <a href="http://jsoneditoronline.org" class="footer">JSON Editor Online 1.4.4</a>
         &bull;
         <a href="changelog.txt" target="_blank" class="footer">Changelog</a>
         &bull;

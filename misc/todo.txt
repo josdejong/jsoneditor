@@ -1,15 +1,19 @@
 JSON EDITOR ONLINE TODO
 http://jsoneditoronline.org
 
-
 ________________________________________________________________________
 
 VERSION 1: Basic functionality
 
-TODO
-make the css namings more efficient/shorter
+Bug: on Opera, you cannot double click to select a word in the field/value
+     editable div
 
-get the breaking of long words working correctly in Firefox
+Bug: get the breaking of long words working on Firefox an IE. Does not work for
+     a word like "blablablablablablablablablablablablablablablablablablablabla",
+     and in IE also not for urls.
+
+Bug: zooming on IE8 does not work nicely: width of the contents is not adjusted.
+     is fixed as soon as resize() is executed after zooming
 
 Get things working in IE7? maybe only a sizing problem (besides no JSON support)
 

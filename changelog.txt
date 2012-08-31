@@ -2,6 +2,16 @@ JSON EDITOR ONLINE CHANGELOG
 http://jsoneditoronline.org
 
 
+2012-08-31, version 1.4.4
+
+- Changed: description of advertisement now gives information about the Chrome
+  App (without ads).
+- Changed: Chrome App is now configured to be available offline.
+- Fixed: When zooming your browser window, the fields/values did get wrapped
+  on Chrome (thanks Henri Gourvest), and on Firefox sometimes the jsoneditor
+  disappeared due to wrapping of hte interface contents .
+
+
 2012-08-25, version 1.4.3
 
 - Changed: changed code for the buttons to copy from formatter to editor and
