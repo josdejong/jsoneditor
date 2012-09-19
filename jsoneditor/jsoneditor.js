@@ -184,7 +184,7 @@ JSONEditor.prototype._setRoot = function (node) {
  * @param {String} text
  * @return {Object[]} results  Array with nodes containing the search results
  *                             The result objects contains fields:
- *                             - {Node} node,
+ *                             - {JSONEditor.Node} node,
  *                             - {String} elem  the dom element name where
  *                                              the result is found ('field' or
  *                                              'value')
@@ -312,7 +312,7 @@ JSONEditor.Node = function (params) {
 
 /**
  * Set parent node
- * @param {Node} parent
+ * @param {JSONEditor.Node} parent
  */
 JSONEditor.Node.prototype.setParent = function(parent) {
     this.parent = parent;
@@ -320,7 +320,7 @@ JSONEditor.Node.prototype.setParent = function(parent) {
 
 /**
  * Get parent node. Returns undefined when no parent node is set.
- * @return {Node} parent
+ * @return {JSONEditor.Node} parent
  */
 JSONEditor.Node.prototype.getParent = function () {
     return this.parent;
@@ -361,6 +361,8 @@ JSONEditor.Node.prototype.getField = function() {
  * @param {*} value
  */
 JSONEditor.Node.prototype.setValue = function(value) {
+    var childValue, child;
+
     // first clear all current childs (if any)
     var childs = this.childs;
     if (childs) {
@@ -376,10 +378,10 @@ JSONEditor.Node.prototype.setValue = function(value) {
         // array
         this.childs = [];
         for (var i = 0, iMax = value.length; i < iMax; i++) {
-            var childValue = value[i];
+            childValue = value[i];
             if (childValue !== undefined && !(childValue instanceof Function)) {
                 // ignore undefined and functions
-                var child = new JSONEditor.Node({
+                child = new JSONEditor.Node({
                     'value': childValue
                 });
                 this.appendChild(child);
@@ -392,10 +394,10 @@ JSONEditor.Node.prototype.setValue = function(value) {
         this.childs = [];
         for (var childField in value) {
             if (value.hasOwnProperty(childField)) {
-                var childValue = value[childField];
+                childValue = value[childField];
                 if (childValue !== undefined && !(childValue instanceof Function)) {
                     // ignore undefined and functions
-                    var child = new JSONEditor.Node({
+                    child = new JSONEditor.Node({
                         'field': childField,
                         'value': childValue
                     });
@@ -427,18 +429,20 @@ JSONEditor.Node.prototype.setValue = function(value) {
  * @return {*} value
  */
 JSONEditor.Node.prototype.getValue = function() {
+    var childs, i, iMax;
+
     if (this.type == 'array') {
         var arr = [];
-        var childs = this.childs;
-        for (var i = 0, iMax = childs.length; i < iMax; i++) {
+        childs = this.childs;
+        for (i = 0, iMax = childs.length; i < iMax; i++) {
             arr.push(childs[i].getValue());
         }
         return arr;
     }
     else if (this.type == 'object') {
         var obj = {};
-        var childs = this.childs;
-        for (var i = 0, iMax = childs.length; i < iMax; i++) {
+        childs = this.childs;
+        for (i = 0, iMax = childs.length; i < iMax; i++) {
             var child = childs[i];
             obj[child.getField()] = child.getValue();
         }
@@ -742,7 +746,7 @@ JSONEditor.Node.prototype.insertBefore = function(node, beforeNode) {
  * The node will be expanded when the text is found one of its childs, else
  * it will be collapsed. Searches are case insensitive.
  * @param {String} text
- * @return {Node[]} results  Array with nodes containing the search text
+ * @return {JSONEditor.Node[]} results  Array with nodes containing the search text
  */
 JSONEditor.Node.prototype.search = function(text) {
     var results = [];
@@ -980,6 +984,7 @@ JSONEditor.Node.prototype.removeChild = function(node) {
  * @param {String} newType
  */
 JSONEditor.Node.prototype._changeType = function (newType) {
+    var child, childs, i, iMax;
     var oldType = this.type;
 
     if ((newType == 'string' || newType == 'auto') &&
@@ -1013,9 +1018,9 @@ JSONEditor.Node.prototype._changeType = function (newType) {
                 this.childs = [];
             }
 
-            var childs = this.childs;
-            for (var i = 0, iMax = childs.length; i < iMax; i++) {
-                var child = childs[i];
+            childs = this.childs;
+            for (i = 0, iMax = childs.length; i < iMax; i++) {
+                child = childs[i];
                 child.clearDom();
                 delete child.index;
                 child.fieldEditable = true;
@@ -1033,10 +1038,9 @@ JSONEditor.Node.prototype._changeType = function (newType) {
                 this.childs = [];
             }
 
-            var childs = this.childs;
-            var fieldEditable = false;
-            for (var i = 0, iMax = childs.length; i < iMax; i++) {
-                var child = childs[i];
+            childs = this.childs;
+            for (i = 0, iMax = childs.length; i < iMax; i++) {
+                child = childs[i];
                 child.clearDom();
                 child.fieldEditable = false;
                 child.index = i;
@@ -1438,14 +1442,13 @@ JSONEditor.Node.prototype._onDragEnd = function (event) {
 
 /**
  * Create a drag area, displayed at the left side of the node
- * @return {Element} domDrag
+ * @return {Element | undefined} domDrag
  */
 JSONEditor.Node.prototype._createDomDragArea = function () {
     if (!this.parent) {
         return undefined;
     }
 
-    var node = this;
     var domDrag = document.createElement('button');
     domDrag.className = 'jsoneditor-dragarea';
     domDrag.title = 'Move field (drag and drop)';
@@ -1553,6 +1556,8 @@ JSONEditor.Node.prototype.updateDom = function () {
  *                             Only applicable in case of array
  */
 JSONEditor.Node.prototype._updateStatus = function (startIndex) {
+    var child, i, iMax;
+
     var domValue = this.dom.value;
     var childs = this.childs;
     if (domValue && childs) {
@@ -1561,8 +1566,8 @@ JSONEditor.Node.prototype._updateStatus = function (startIndex) {
             domValue.innerHTML = '[' + count + ']';
 
             // update the field indexes of the childs
-            for (var i = (startIndex > 0 ? startIndex : 0), iMax = childs.length; i < iMax; i++) {
-                var child = childs[i];
+            for (i = (startIndex > 0 ? startIndex : 0), iMax = childs.length; i < iMax; i++) {
+                child = childs[i];
                 child.index = i;
                 var childField = child.dom.field;
                 if (childField) {
@@ -1573,8 +1578,8 @@ JSONEditor.Node.prototype._updateStatus = function (startIndex) {
         else if (this.type == 'object') {
             domValue.innerHTML = '{' + count + '}';
 
-            for (var i = (startIndex > 0 ? startIndex : 0), iMax = childs.length; i < iMax; i++) {
-                var child = childs[i];
+            for (i = (startIndex > 0 ? startIndex : 0), iMax = childs.length; i < iMax; i++) {
+                child = childs[i];
                 if (child.index != undefined) {
                     delete child.index; // TODO: this should be done when changing type only?
 
@@ -1633,8 +1638,6 @@ JSONEditor.Node.prototype._createDomValue = function () {
  * @return {Element} expand
  */
 JSONEditor.Node.prototype._createDomExpandButton = function () {
-    var node = this;
-
     // create expand button
     var expand = document.createElement('button');
     var expandable = (this.type == 'array' || this.type == 'object');
@@ -2018,7 +2021,7 @@ JSONEditor.showDropDownList = function (params) {
         option.appendChild(divText);
 
         option.onmousedown = (function (value) {
-            return function (event) {
+            return function () {
                 params.callback(value);
             };
         })(v.value);
@@ -2030,7 +2033,7 @@ JSONEditor.showDropDownList = function (params) {
     JSONEditor.freezeHighlight = true;
 
     // TODO: change to onclick? -> but be sure to remove existing dropdown first
-    var onmousedown = JSONEditor.Events.addEventListener(document, 'mousedown', function (event) {
+    var onmousedown = JSONEditor.Events.addEventListener(document, 'mousedown', function () {
         JSONEditor.freezeHighlight = false;
         params.node.setHighlight(false);
         if (select && select.parentNode) {
@@ -2038,7 +2041,7 @@ JSONEditor.showDropDownList = function (params) {
         }
         JSONEditor.Events.removeEventListener(document, 'mousedown', onmousedown);
     });
-    var onmousewheel = JSONEditor.Events.addEventListener(document, 'mousewheel', function (event) {
+    var onmousewheel = JSONEditor.Events.addEventListener(document, 'mousewheel', function () {
         JSONEditor.freezeHighlight = false;
         params.node.setHighlight(false);
         if (select && select.parentNode) {
@@ -2120,7 +2123,7 @@ JSONEditor.Node.prototype._getType = function(value) {
  * cast contents of a string to the correct type. This can be a string,
  * a number, a boolean, etc
  * @param {String} str
- * @return {String} castedStr
+ * @return {*} castedStr
  */
 JSONEditor.Node.prototype._stringCast = function(str) {
     var lower = str.toLowerCase(),
@@ -2218,18 +2221,6 @@ JSONEditor.Node.prototype._escapeJSON = function (text) {
 };
 
 /**
- * Strip html tags from a string
- * @param {String} html
- * @return {String} text
- */
-// TODO: remove this method, is not used anymore
-JSONEditor.Node.prototype._stripHTML = function (html) {
-    // remove HTML tags
-    // code from nickf, http://stackoverflow.com/a/822464/1262753
-    return html.replace(/<(?:.|\n)*?>/gm, '');
-};
-
-/**
  * @constructor JSONEditor.AppendNode
  * Create a new AppendNode. This is a special node which is created at the
  * end of the list with childs for an object or array
@@ -2307,7 +2298,6 @@ JSONEditor.AppendNode.prototype.onEvent = function (event) {
     var type = event.type;
     var target = event.target || event.srcElement;
     var dom = this.dom;
-    var node = this;
 
     var domAppend = dom.append;
     if (target == domAppend) {
@@ -2501,7 +2491,7 @@ JSONEditor.prototype._createTable = function () {
 /**
  * Find the node from an event target
  * @param {Element} target
- * @return {JSONEditor.Node} node  or undefined when not found
+ * @return {JSONEditor.Node | undefined} node  or undefined when not found
  */
 JSONEditor.getNodeFromTarget = function (target) {
     while (target) {
@@ -2574,9 +2564,9 @@ JSONFormatter = function (container) {
     this.textarea.spellcheck = false;
     this.content.appendChild(this.textarea);
 
-    var formatter = this;
     var textarea = this.textarea;
     /* TODO: register onchange
+    var formatter = this;
     var onChange = function () {
         formatter._checkChange();
     };
@@ -2603,7 +2593,7 @@ JSONFormatter = function (container) {
     */
 
     var me = this;
-    buttonFormat.onclick = function (event) {
+    buttonFormat.onclick = function () {
         try {
             textarea.value = JSON.stringify(JSON.parse(textarea.value), null, '  ');
         }
@@ -2611,7 +2601,7 @@ JSONFormatter = function (container) {
             me.onError(err);
         }
     };
-    buttonCompact.onclick = function (event) {
+    buttonCompact.onclick = function () {
         try {
             textarea.value = JSON.stringify(JSON.parse(textarea.value));
         }
@@ -2761,7 +2751,7 @@ JSONEditor.SearchBox = function(editor, container) {
     var searchNext = document.createElement('button');
     searchNext.title = 'Next result (Enter)';
     searchNext.className = 'jsoneditor-search-next';
-    searchNext.onclick = function (event) {
+    searchNext.onclick = function () {
         searchBox.next();
     };
     td = document.createElement('td');
@@ -2771,7 +2761,7 @@ JSONEditor.SearchBox = function(editor, container) {
     var searchPrevious = document.createElement('button');
     searchPrevious.title = 'Previous result (Shift+Enter)';
     searchPrevious.className = 'jsoneditor-search-previous';
-    searchPrevious.onclick = function (event) {
+    searchPrevious.onclick = function () {
         searchBox.previous();
     };
     td = document.createElement('td');
