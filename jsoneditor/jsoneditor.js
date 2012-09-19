@@ -226,6 +226,24 @@ JSONEditor.prototype.collapseAll = function () {
 };
 
 /**
+ * The method onChange is called whenever a field or value is changed, created,
+ * deleted, duplicated, etc.
+ * @param {String} action  Change action. Available values: "editField",
+ *                         "editValue", "changeType", "appendNode",
+ *                         "removeNode", "duplicateNode", "moveNode", "expand",
+ *                         "collapse".
+ * @param {Object} params  Object containing parameters describing the change.
+ *                         The parameters in params depend on the action (for
+ *                         example for "editValue" the Node, old value, and new
+ *                         value are provided). params contains all information
+ *                         needed to undo or redo the action.
+ */
+JSONEditor.prototype._onChange = function (action, params) {
+    // TODO: implement undo/redo, and support for external onChange event listeners
+    // console.log('_onChange', action, params);
+};
+
+/**
  * Set the focus to the JSONEditor. A hidden input field will be created
  * which captures key events
  */
@@ -887,6 +905,10 @@ JSONEditor.Node.prototype._duplicate = function(node) {
 
     // TODO: insert after instead of insert before
     this.insertBefore(clone, node);
+
+    this.getEditor()._onChange('duplicateNode', {
+        'node': this
+    });
 };
 
 /**
@@ -978,6 +1000,24 @@ JSONEditor.Node.prototype.removeChild = function(node) {
     return undefined;
 };
 
+/**
+ * Remove a child node node from this node
+ * This method is equal to Node.removeChild, except that _remove firex an
+ * onChange event.
+ * @param {JSONEditor.Node} node
+ * @private
+ */
+JSONEditor.Node.prototype._remove = function (node) {
+    var index = this.childs.indexOf(node);
+
+    this.removeChild(node);
+
+    this.getEditor()._onChange('removeNode', {
+        'node': node,
+        'parent': this,
+        'index': index
+    });
+};
 
 /**
  * change the type of the value of this Node
@@ -1081,6 +1121,12 @@ JSONEditor.Node.prototype._changeType = function (newType) {
 
     // TODO: test if things are updated twice...
     this.updateDom();
+
+    this.getEditor()._onChange('changeType', {
+        'node': this,
+        'old': oldType,
+        'new': newType
+    });
 };
 
 /**
@@ -1096,13 +1142,22 @@ JSONEditor.Node.prototype._getDomValue = function(silent) {
     if (this.valueInnerText != undefined) {
         try {
             // retrieve the value
+            var value;
             if (this.type == 'string') {
-                this.value = this._unescapeHTML(this.valueInnerText);
+                value = this._unescapeHTML(this.valueInnerText);
             }
             else {
-                var value = this._unescapeHTML(this.valueInnerText);
-                this.value = this._stringCast(value);
+                var str = this._unescapeHTML(this.valueInnerText);
+                value = this._stringCast(str);
             }
+            if (value !== this.value) {
+                this.getEditor()._onChange('editValue', {
+                    'node': this,
+                    'old': this.value,
+                    'new': value
+                });
+            }
+            this.value = value;
         }
         catch (err) {
             this.value = undefined;
@@ -1225,7 +1280,16 @@ JSONEditor.Node.prototype._getDomField = function(silent) {
 
     if (this.fieldInnerText != undefined) {
         try {
-            this.field = this._unescapeHTML(this.fieldInnerText);
+            var field = this._unescapeHTML(this.fieldInnerText);
+
+            if (field !== this.field) {
+                this.getEditor()._onChange('editField', {
+                    'node': this,
+                    'old': this.field,
+                    'new': field
+                });
+            }
+            this.field = field;
         }
         catch (err) {
             this.field = undefined;
@@ -1348,7 +1412,11 @@ JSONEditor.Node.prototype._onDragStart = function (event) {
      }
      */
     JSONEditor.freezeHighlight = true;
-    this.oldCursor = document.body.style.cursor;
+    this.drag = {
+        'oldCursor': document.body.style.cursor,
+        'startParent': this.parent,
+        'startIndex': this.parent.childs.indexOf(this)
+    };
     document.body.style.cursor = 'move';
 
     JSONEditor.Events.preventDefault(event);
@@ -1423,9 +1491,17 @@ JSONEditor.Node.prototype._onDrag = function (event) {
 JSONEditor.Node.prototype._onDragEnd = function (event) {
     event = event || window.event;
 
-    document.body.style.cursor = this.oldCursor;
+    this.getEditor()._onChange('moveNode', {
+        'node': this,
+        'startParent': this.drag.startParent,
+        'startIndex': this.drag.startIndex,
+        'endParent': this.parent,
+        'endIndex': this.parent.childs.indexOf(this)
+    });
+
+    document.body.style.cursor = this.drag.oldCursor;
     delete JSONEditor.freezeHighlight;
-    delete this.oldCursor;
+    delete this.drag;
     this.setHighlight(false);
 
     if (this.mousemove) {
@@ -1828,7 +1904,7 @@ JSONEditor.Node.prototype.onEvent = function (event) {
     if (target == domRemove) {
         switch (type) {
             case 'click':
-                this.parent.removeChild(this);
+                this.parent._remove(this);
                 break;
             case 'mouseover':
                 this.setHighlight(true);
@@ -2310,6 +2386,10 @@ JSONEditor.AppendNode.prototype.onEvent = function (event) {
                 this.parent.appendChild(newNode);
                 this.parent.setHighlight(false);
                 newNode.focus();
+                this.getEditor()._onChange('appendNode', {
+                    'node': newNode,
+                    'parent': this.parent
+                });
                 break;
 
             case 'mouseover':
