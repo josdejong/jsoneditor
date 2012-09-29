@@ -440,8 +440,6 @@ JSONEditor.History.prototype.add = function (action, params) {
         'timestamp': new Date()
     };
 
-    // TODO: merge events in case of editField or editValue on the same field within 500 ms
-
     // remove redo actions which are invalid now
     if (this.index < this.history.length - 1) {
         this.history.splice(this.index + 1, this.history.length - this.index - 1);
@@ -2772,7 +2770,7 @@ JSONEditor.prototype._createFrame = function () {
 
     // create expand all button
     var expandAll = document.createElement('button');
-    expandAll.innerHTML = 'Expand All';
+    expandAll.className = 'jsoneditor-menu jsoneditor-expand-all';
     expandAll.title = 'Expand all fields';
     expandAll.onclick = function () {
         editor.expandAll();
@@ -2781,17 +2779,24 @@ JSONEditor.prototype._createFrame = function () {
 
     // create expand all button
     var collapseAll = document.createElement('button');
-    collapseAll.innerHTML = 'Collapse All';
     collapseAll.title = 'Collapse all fields';
+    collapseAll.className = 'jsoneditor-menu jsoneditor-collapse-all';
     collapseAll.onclick = function () {
         editor.collapseAll();
     };
     td.appendChild(collapseAll);
 
     if (this.options.enableHistory) {
+        // create separator
+        var separator = document.createElement('span');
+        //separator.style.width = '5px';
+        //separator.style.display = 'inline';
+        separator.innerHTML = '&nbsp;';
+        td.appendChild(separator);
+
         // create undo button
         var undo = document.createElement('button');
-        undo.innerHTML = 'Undo';
+        undo.className = 'jsoneditor-menu jsoneditor-undo';
         undo.title = 'Undo last action';
         undo.onclick = function () {
             editor.history.undo();
@@ -2801,7 +2806,7 @@ JSONEditor.prototype._createFrame = function () {
 
         // create redo button
         var redo = document.createElement('button');
-        redo.innerHTML = 'Redo';
+        redo.className = 'jsoneditor-menu jsoneditor-redo';
         redo.title = 'Redo';
         redo.onclick = function () {
             editor.history.redo();
@@ -2928,16 +2933,18 @@ JSONFormatter = function (container) {
 
     // create format button
     var buttonFormat = document.createElement('button');
-    buttonFormat.innerHTML = 'Format';
+    //buttonFormat.innerHTML = 'Format';
+    buttonFormat.className = 'jsoneditor-menu jsoneditor-format';
     buttonFormat.title = 'Format JSON data, with proper indentation and line feeds';
-    buttonFormat.className = 'jsoneditor-button';
+    //buttonFormat.className = 'jsoneditor-button';
     td.appendChild(buttonFormat);
 
     // create compact button
     var buttonCompact = document.createElement('button');
-    buttonCompact.innerHTML = 'Compact';
+    //buttonCompact.innerHTML = 'Compact';
+    buttonCompact.className = 'jsoneditor-menu jsoneditor-compact';
     buttonCompact.title = 'Compact JSON data, remove all whitespaces';
-    buttonCompact.className = 'jsoneditor-button';
+    //buttonCompact.className = 'jsoneditor-button';
     td.appendChild(buttonCompact);
     this.frame.appendChild(this.head);
 

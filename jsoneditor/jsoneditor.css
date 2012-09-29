@@ -207,8 +207,8 @@ table.jsoneditor-table {
 div.jsoneditor-content-outer, div.jsonformatter-content {
     width: 100%;
     height: 100%;
-    margin: -32px 0 0 0;
-    padding: 32px 0 0 0;
+    margin: -34px 0 0 0;
+    padding: 34px 0 0 0;
 
     -moz-box-sizing: border-box;
     -webkit-box-sizing: border-box;
@@ -263,7 +263,7 @@ button.jsoneditor-dragarea {
 
 table.jsoneditor-menu {
     width: 100%;
-    height: 32px;
+    height: 34px;
     left: 0;
     top: 0;
     border-collapse: collapse;
@@ -314,7 +314,7 @@ div.jsoneditor-search-results {
 button.jsoneditor-search-refresh, button.jsoneditor-search-next,
         button.jsoneditor-search-previous {
     width: 16px;
-    height: 22px;
+    height: 24px;
     padding: 0;
     margin: 0;
     border: none;
@@ -342,6 +342,53 @@ button.jsoneditor-search-previous {
 button.jsoneditor-search-previous:hover {
     background: url('img/jsoneditor-icons.png') -292px -1px;
 }
+
+
+button.jsoneditor-menu {
+    width: 26px;
+    height: 26px;
+    margin: 2px;
+    padding: 2px;
+    border-radius: 2px;
+    border: 1px solid #aec0f8;
+    background: #e3eaf6 url('../jsoneditor/img/jsoneditor-icons.png');
+}
+
+button.jsoneditor-menu:hover {
+    background-color: #f0f2f5;
+}
+button.jsoneditor-menu:active {
+    background-color: #ffffff;
+}
+button.jsoneditor-menu:disabled {
+    background-color: #e3eaf6;
+}
+
+button.jsoneditor-collapse-all {
+    background-position: -312px 0;
+}
+button.jsoneditor-expand-all {
+    background-position: -312px -24px;
+}
+button.jsoneditor-undo {
+    background-position: -336px 0;
+}
+button.jsoneditor-redo {
+    background-position: -360px 0;
+}
+button.jsoneditor-undo:disabled {
+    background-position: -336px -24px;
+}
+button.jsoneditor-redo:disabled {
+    background-position: -360px -24px;
+}
+button.jsoneditor-compact {
+    background-position: -384px 0;
+}
+button.jsoneditor-format {
+    background-position: -384px -24px;
+}
+
 
 tr, th, td {
     padding: 0;
