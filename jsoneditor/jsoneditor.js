@@ -65,7 +65,7 @@ var JSON;
  * @param {Object}  [options]    Object with options. available options:
  *                                   {Boolean} enableSearch   true by default
  *                                   {Boolean} enableHistory  true by default
- * @param {Object}  json         JSON object
+ * @param {Object | undefined} json JSON object
  */
 JSONEditor = function (container, options, json) {
     // check availability of JSON parser (not available in IE7 and older)
@@ -398,13 +398,13 @@ JSONEditor.History = function (editor) {
             'undo': function (obj) {
                 var parent = obj.params.startParent;
                 var index = obj.params.startIndex;
-                var beforeNode = parent.childs[index];
+                var beforeNode = parent.childs[index] || parent.append;
                 parent.moveBefore(obj.params.node, beforeNode);
             },
             'redo': function (obj) {
                 var parent = obj.params.endParent;
                 var index = obj.params.endIndex;
-                var beforeNode = parent.childs[index];
+                var beforeNode = parent.childs[index] || parent.append;
                 parent.moveBefore(obj.params.node, beforeNode);
             }
         }
@@ -1681,13 +1681,18 @@ JSONEditor.Node.prototype._onDrag = function (event) {
 JSONEditor.Node.prototype._onDragEnd = function (event) {
     event = event || window.event;
 
-    this.getEditor().onAction('moveNode', {
+    var params = {
         'node': this,
         'startParent': this.drag.startParent,
         'startIndex': this.drag.startIndex,
         'endParent': this.parent,
         'endIndex': this.parent.childs.indexOf(this)
-    });
+    };
+    if ((params.startParent != params.endParent) ||
+            (params.startIndex != params.endIndex)) {
+        // only register this action if the node is actually moved to anothe place
+        this.getEditor().onAction('moveNode', params);
+    }
 
     document.body.style.cursor = this.drag.oldCursor;
     delete JSONEditor.freezeHighlight;
