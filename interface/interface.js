@@ -290,13 +290,13 @@ main.resize = function() {
     var splitterLeft = width * main.getSplitterValue();
 
     // resize formatter
-    domFormatter.style.width = (splitterLeft) + 'px';
+    domFormatter.style.width = Math.round(splitterLeft) + 'px';
 
     // resize editor
     // the width has a -1 to prevent the width from being just half a pixel
     // wider than the window, causing the content elements to wrap...
-    domEditor.style.left = (splitterLeft + splitterWidth) + 'px';
-    domEditor.style.width = (width - splitterLeft - splitterWidth - 1) + 'px';
+    domEditor.style.left = Math.round(splitterLeft + splitterWidth) + 'px';
+    domEditor.style.width = Math.round(width - splitterLeft - splitterWidth - 1) + 'px';
     //editor.onResize(); // TODO
 
     // resize ad text
