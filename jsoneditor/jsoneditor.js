@@ -64,6 +64,7 @@ var JSON;
  * @param {Element} container    Container element
  * @param {Object}  [options]    Object with options. available options:
  *                                   {Boolean} enableSearch   true by default
+ *                                   {Boolean} enableHistory  true by default
  * @param {Object}  json         JSON object
  */
 JSONEditor = function (container, options, json) {
@@ -80,9 +81,11 @@ JSONEditor = function (container, options, json) {
     this.container = container;
     this.dom = {};
 
-    this.history = new JSONEditor.History(this);
-
     this._setOptions(options);
+
+    if (this.options.enableHistory) {
+        this.history = new JSONEditor.History(this);
+    }
 
     this._createFrame();
     this._createTable();
@@ -94,11 +97,13 @@ JSONEditor = function (container, options, json) {
  * Initialize and set default options
  * @param {Object}  [options]      Object with options. available options:
  *                                   {Boolean} enableSearch   true by default
+ *                                   {Boolean} enableHistory  true by default
  * @private
  */
 JSONEditor.prototype._setOptions = function (options) {
     this.options = {
-        'enableSearch': true
+        'enableSearch': true,
+        'enableHistory': true
     };
 
     // copy all options
@@ -141,7 +146,9 @@ JSONEditor.prototype.set = function (json) {
     }
 
     // TODO: maintain history, store last state and previous document
-    this.history.clear();
+    if (this.history) {
+        this.history.clear();
+    }
 };
 
 /**
@@ -2775,32 +2782,34 @@ JSONEditor.prototype._createFrame = function () {
     };
     td.appendChild(collapseAll);
 
-    // create undo button
-    var undo = document.createElement('button');
-    undo.innerHTML = 'Undo';
-    undo.title = 'Undo last action';
-    undo.onclick = function () {
-        editor.history.undo();
-    };
-    td.appendChild(undo);
-    this.dom.undo = undo;
+    if (this.options.enableHistory) {
+        // create undo button
+        var undo = document.createElement('button');
+        undo.innerHTML = 'Undo';
+        undo.title = 'Undo last action';
+        undo.onclick = function () {
+            editor.history.undo();
+        };
+        td.appendChild(undo);
+        this.dom.undo = undo;
 
-    // create redo button
-    var redo = document.createElement('button');
-    redo.innerHTML = 'Redo';
-    redo.title = 'Redo';
-    redo.onclick = function () {
-        editor.history.redo();
-    };
-    td.appendChild(redo);
-    this.dom.redo = redo;
+        // create redo button
+        var redo = document.createElement('button');
+        redo.innerHTML = 'Redo';
+        redo.title = 'Redo';
+        redo.onclick = function () {
+            editor.history.redo();
+        };
+        td.appendChild(redo);
+        this.dom.redo = redo;
 
-    // register handler for
-    this.history.onChange = function () {
-        undo.disabled = !editor.history.canUndo();
-        redo.disabled = !editor.history.canRedo();
-    };
-    this.history.onChange();
+        // register handler for onchange of history
+        this.history.onChange = function () {
+            undo.disabled = !editor.history.canUndo();
+            redo.disabled = !editor.history.canRedo();
+        };
+        this.history.onChange();
+    }
 
     if (this.options.enableSearch) {
         this.searchBox = new JSONEditor.SearchBox(this, td);
