@@ -44,6 +44,16 @@ if(!Array.prototype.indexOf) {
         return -1;
     }
 }
+// Internet Explorer 8 and older does not support Array.forEach,
+// so we define it here in that case
+// https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Global_Objects/Array/forEach
+if (!Array.prototype.forEach) {
+    Array.prototype.forEach = function(fn, scope) {
+        for(var i = 0, len = this.length; i < len; ++i) {
+            fn.call(scope || this, this[i], i, this);
+        }
+    }
+}
 
 // define variable JSON, needed for correct error handling on IE7 and older
 var JSON;
@@ -645,23 +655,20 @@ JSONEditor.Node.prototype.setValue = function(value) {
  * @return {*} value
  */
 JSONEditor.Node.prototype.getValue = function() {
-    var childs, i, iMax;
+    //var childs, i, iMax;
 
     if (this.type == 'array') {
         var arr = [];
-        childs = this.childs;
-        for (i = 0, iMax = childs.length; i < iMax; i++) {
-            arr.push(childs[i].getValue());
-        }
+        this.childs.forEach (function (child) {
+            arr.push(child.getValue());
+        });
         return arr;
     }
     else if (this.type == 'object') {
         var obj = {};
-        childs = this.childs;
-        for (i = 0, iMax = childs.length; i < iMax; i++) {
-            var child = childs[i];
+        this.childs.forEach (function (child) {
             obj[child.getField()] = child.getValue();
-        }
+        });
         return obj;
     }
     else {
@@ -699,13 +706,12 @@ JSONEditor.Node.prototype.clone = function() {
 
     if (this.childs) {
         // an object or array
-        var childs = this.childs;
         var cloneChilds = [];
-        for (var i = 0, iMax = childs.length; i < iMax; i++) {
-            var childClone = childs[i].clone();
+        this.childs.forEach(function (child) {
+            var childClone = child.clone();
             childClone.setParent(clone);
             cloneChilds.push(childClone);
-        }
+        });
         clone.childs = cloneChilds;
     }
     else {
@@ -734,11 +740,10 @@ JSONEditor.Node.prototype.expand = function(recurse) {
 
     this.showChilds();
 
-    var childs = this.childs;
     if (recurse != false) {
-        for (var i = 0, iMax = childs.length; i < iMax; i++) {
-            childs[i].expand(recurse);
-        }
+        this.childs.forEach(function (child) {
+            child.expand(recurse);
+        });
     }
 };
 
@@ -755,11 +760,11 @@ JSONEditor.Node.prototype.collapse = function(recurse) {
     this.hideChilds();
 
     // collapse childs in case of recurse
-    var childs = this.childs;
     if (recurse != false) {
-        for (var i = 0, iMax = childs.length; i < iMax; i++) {
-            childs[i].collapse(recurse);
-        }
+        this.childs.forEach(function (child) {
+            child.collapse(recurse);
+        });
+
     }
 
     // make this node collapsed
@@ -795,11 +800,10 @@ JSONEditor.Node.prototype.showChilds = function() {
         }
 
         // show childs
-        for (var i = 0, iMax = childs.length; i < iMax; i++) {
-            var child = childs[i];
+        this.childs.forEach(function (child) {
             table.insertBefore(child.getDom(), append);
             child.showChilds();
-        }
+        });
     }
 };
 
@@ -835,9 +839,9 @@ JSONEditor.Node.prototype.hideChilds = function() {
     }
 
     // hide childs
-    for (var i = 0, iMax = childs.length; i < iMax; i++) {
-        childs[i].hide();
-    }
+    this.childs.forEach(function (child) {
+        child.hide();
+    });
 };
 
 
@@ -993,12 +997,11 @@ JSONEditor.Node.prototype.search = function(text) {
         // array, object
 
         // search the nodes childs
-        var childs = this.childs;
-        if (childs) {
+        if (this.childs) {
             var childResults = [];
-            for (var i = 0, iMax = childs.length; i < iMax; i++) {
-                childResults = childResults.concat(childs[i].search(text));
-            }
+            this.childs.forEach(function (child) {
+                childResults = childResults.concat(child.search(text));
+            });
             results = results.concat(childResults);
         }
 
@@ -1120,6 +1123,7 @@ JSONEditor.Node.prototype.containsNode = function(node) {
 
     var childs = this.childs;
     if (childs) {
+        // TOOD: use the js5 Array.some() here?
         for (var i = 0, iMax = childs.length; i < iMax; i++) {
             if (childs[i].containsNode(node)) {
                 return true;
@@ -1246,16 +1250,14 @@ JSONEditor.Node.prototype.changeType = function (newType) {
                 this.childs = [];
             }
 
-            childs = this.childs;
-            for (i = 0, iMax = childs.length; i < iMax; i++) {
-                child = childs[i];
+            this.childs.forEach(function (child) {
                 child.clearDom();
                 delete child.index;
                 child.fieldEditable = true;
                 if (child.field == undefined) {
                     child.field = i;
                 }
-            }
+            });
 
             if (oldType == 'string' || oldType == 'auto') {
                 this.expanded = true;
@@ -1266,13 +1268,11 @@ JSONEditor.Node.prototype.changeType = function (newType) {
                 this.childs = [];
             }
 
-            childs = this.childs;
-            for (i = 0, iMax = childs.length; i < iMax; i++) {
-                child = childs[i];
+            this.childs.forEach(function (child) {
                 child.clearDom();
                 child.fieldEditable = false;
                 child.index = i;
-            }
+            });
             this._updateStatus();
 
             if (oldType == 'string' || oldType == 'auto') {
@@ -1739,11 +1739,10 @@ JSONEditor.Node.prototype.setHighlight = function (highlight) {
             this.append.setHighlight(highlight);
         }
 
-        var childs = this.childs;
-        if (childs) {
-            for (var i = 0, iMax = childs.length; i < iMax; i++) {
-                childs[i].setHighlight(highlight);
-            }
+        if (this.childs) {
+            this.childs.forEach(function (child) {
+                child.setHighlight(highlight);
+            });
         }
     }
 };
@@ -1820,10 +1819,9 @@ JSONEditor.Node.prototype.updateDom = function () {
 
     // update childs recursively
     if (this.childs) {
-        var childs = this.childs;
-        for (var i = 0, iMax = childs.length; i < iMax; i++) {
-            childs[i].updateDom();
-        }
+        this.childs.forEach(function (child) {
+            child.updateDom();
+        });
     }
 
     // update row with append button
@@ -2329,8 +2327,8 @@ JSONEditor.showDropDownList = function (params) {
     select.style.position = 'absolute';
     select.style.left = (params.x || 0) + 'px';
     select.style.top = (params.y || 0) + 'px';
-    for (var i = 0; i < params.values.length; i++) {
-        var v = params.values[i];
+
+    params.values.forEach(function (v) {
         var text = v.value || String(v);
         var className = 'jsoneditor-option';
         var selected = (text == params.value);
@@ -2358,7 +2356,7 @@ JSONEditor.showDropDownList = function (params) {
             };
         })(v.value);
         select.appendChild(option);
-    }
+    });
 
     document.body.appendChild(select);
     params.node.setHighlight(true);
@@ -3487,10 +3485,7 @@ JSONEditor.removeClassName = function(elem, className) {
  * @param {Element} divElement
  */
 JSONEditor.stripFormatting = function (divElement) {
-    var childs = divElement.childNodes;
-    for (var i = 0, iMax = childs.length; i < iMax; i++) {
-        var child = childs[i];
-
+    divElement.childNodes.forEach(function (child) {
         // remove the style
         if (child.style) {
             // TODO: test if child.attributes does contain style
@@ -3510,7 +3505,7 @@ JSONEditor.stripFormatting = function (divElement) {
 
         // recursively strip childs
         JSONEditor.stripFormatting(child);
-    }
+    });
 };
 
 /**
