@@ -27,7 +27,7 @@
  * Copyright (c) 2011-2012 Jos de Jong, http://jsoneditoronline.org
  *
  * @author  Jos de Jong, <wjosdejong@gmail.com>
- * @date    2012-08-31
+ * @date    2012-09-29
  */
 
 
@@ -346,18 +346,18 @@ JSONEditor.History = function (editor) {
     this.actions = {
         'editField': {
             'undo': function (obj) {
-                obj.params.node.updateField(obj.params.old);
+                obj.params.node.updateField(obj.params.oldValue);
             },
             'redo': function (obj) {
-                obj.params.node.updateField(obj.params.new);
+                obj.params.node.updateField(obj.params.newValue);
             }
         },
         'editValue': {
             'undo': function (obj) {
-                obj.params.node.updateValue(obj.params.old);
+                obj.params.node.updateValue(obj.params.oldValue);
             },
             'redo': function (obj) {
-                obj.params.node.updateValue(obj.params.new);
+                obj.params.node.updateValue(obj.params.newValue);
             }
         },
         'appendNode': {
@@ -1342,8 +1342,8 @@ JSONEditor.Node.prototype._getDomValue = function(silent) {
             if (value !== this.value) {
                 this.getEditor().onAction('editValue', {
                     'node': this,
-                    'old': this.value,
-                    'new': value
+                    'oldValue': this.value,
+                    'newValue': value
                 });
             }
             this.value = value;
@@ -1474,8 +1474,8 @@ JSONEditor.Node.prototype._getDomField = function(silent) {
             if (field !== this.field) {
                 this.getEditor().onAction('editField', {
                     'node': this,
-                    'old': this.field,
-                    'new': field
+                    'oldValue': this.field,
+                    'newValue': field
                 });
             }
             this.field = field;
@@ -2756,17 +2756,10 @@ JSONEditor.prototype._createFrame = function () {
     this.frame.onfocusin = onEvent;  // for IE
     this.frame.onfocusout = onEvent; // for IE
 
-    // create menu table
-    this.head = document.createElement('table');
-    this.head.className = 'jsoneditor-menu';
-    var tbody = document.createElement('tbody');
-    this.head.appendChild(tbody);
-    var tr = document.createElement('tr');
-    tbody.appendChild(tr);
-    var td = document.createElement('td');
-    this.tdMenu = td;
-    td.className = 'jsoneditor-menu';
-    tr.appendChild(td);
+    // create menu
+    this.menu = document.createElement('div');
+    this.menu.className = 'jsoneditor-menu';
+    this.frame.appendChild(this.menu);
 
     // create expand all button
     var expandAll = document.createElement('button');
@@ -2775,7 +2768,7 @@ JSONEditor.prototype._createFrame = function () {
     expandAll.onclick = function () {
         editor.expandAll();
     };
-    td.appendChild(expandAll);
+    this.menu.appendChild(expandAll);
 
     // create expand all button
     var collapseAll = document.createElement('button');
@@ -2784,15 +2777,16 @@ JSONEditor.prototype._createFrame = function () {
     collapseAll.onclick = function () {
         editor.collapseAll();
     };
-    td.appendChild(collapseAll);
+    this.menu.appendChild(collapseAll);
 
+    // create expand/collapse buttons
     if (this.options.enableHistory) {
         // create separator
         var separator = document.createElement('span');
         //separator.style.width = '5px';
         //separator.style.display = 'inline';
         separator.innerHTML = '&nbsp;';
-        td.appendChild(separator);
+        this.menu.appendChild(separator);
 
         // create undo button
         var undo = document.createElement('button');
@@ -2801,7 +2795,7 @@ JSONEditor.prototype._createFrame = function () {
         undo.onclick = function () {
             editor.history.undo();
         };
-        td.appendChild(undo);
+        this.menu.appendChild(undo);
         this.dom.undo = undo;
 
         // create redo button
@@ -2811,7 +2805,7 @@ JSONEditor.prototype._createFrame = function () {
         redo.onclick = function () {
             editor.history.redo();
         };
-        td.appendChild(redo);
+        this.menu.appendChild(redo);
         this.dom.redo = redo;
 
         // register handler for onchange of history
@@ -2822,11 +2816,10 @@ JSONEditor.prototype._createFrame = function () {
         this.history.onChange();
     }
 
+    // create search box
     if (this.options.enableSearch) {
-        this.searchBox = new JSONEditor.SearchBox(this, td);
+        this.searchBox = new JSONEditor.SearchBox(this, this.menu);
     }
-
-    this.frame.appendChild(this.head);
 };
 
 
@@ -2920,16 +2913,10 @@ JSONFormatter = function (container) {
         JSONEditor.Events.preventDefault(event);
     };
 
-    // create menu table
-    this.head = document.createElement('table');
-    this.head.className = 'jsoneditor-menu';
-    var tbody = document.createElement('tbody');
-    this.head.appendChild(tbody);
-    var tr = document.createElement('tr');
-    tbody.appendChild(tr);
-    var td = document.createElement('td');
-    td.className = 'jsoneditor-menu';
-    tr.appendChild(td);
+    // create menu
+    this.menu = document.createElement('div');
+    this.menu.className = 'jsoneditor-menu';
+    this.frame.appendChild(this.menu);
 
     // create format button
     var buttonFormat = document.createElement('button');
@@ -2937,7 +2924,7 @@ JSONFormatter = function (container) {
     buttonFormat.className = 'jsoneditor-menu jsoneditor-format';
     buttonFormat.title = 'Format JSON data, with proper indentation and line feeds';
     //buttonFormat.className = 'jsoneditor-button';
-    td.appendChild(buttonFormat);
+    this.menu.appendChild(buttonFormat);
 
     // create compact button
     var buttonCompact = document.createElement('button');
@@ -2945,8 +2932,7 @@ JSONFormatter = function (container) {
     buttonCompact.className = 'jsoneditor-menu jsoneditor-compact';
     buttonCompact.title = 'Compact JSON data, remove all whitespaces';
     //buttonCompact.className = 'jsoneditor-button';
-    td.appendChild(buttonCompact);
-    this.frame.appendChild(this.head);
+    this.menu.appendChild(buttonCompact);
 
     this.content = document.createElement('div');
     this.content.className = 'jsonformatter-content';
