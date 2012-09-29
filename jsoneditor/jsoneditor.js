@@ -370,8 +370,9 @@ JSONEditor.History = function (editor) {
         },
         'removeNode': {
             'undo': function (obj) {
-                var beforeNode = obj.params.parent.childs[obj.params.index];
-                obj.params.parent.insertBefore(obj.params.node, beforeNode);
+                var parent = obj.params.parent;
+                var beforeNode = parent.childs[obj.params.index] || parent.append;
+                parent.insertBefore(obj.params.node, beforeNode);
             },
             'redo': function (obj) {
                 obj.params.parent.removeChild(obj.params.node);
