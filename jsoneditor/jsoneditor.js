@@ -69,6 +69,7 @@ JSONEditor = function (container, options, json) {
     this.container = container;
     this.dom = {};
 
+    this.history = new JSONEditor.History(this);
 
     this._setOptions(options);
 
@@ -104,7 +105,7 @@ JSONEditor.focusNode = undefined;
 
 /**
  * Set JSON object in editor
- * @param {Object} json
+ * @param {Object | undefined} json
  */
 JSONEditor.prototype.set = function (json) {
     // verify if json is valid JSON, ignore when a function
@@ -127,11 +128,14 @@ JSONEditor.prototype.set = function (json) {
 
         this.content.appendChild(this.table);  // Put the table online again
     }
+
+    // TODO: maintain history, store last state and previous document
+    this.history.clear();
 };
 
 /**
  * Get JSON object from editor
- * @return {Object} json
+ * @return {Object | undefined} json
  */
 JSONEditor.prototype.get = function () {
     // remove focus from currently edited node
@@ -238,9 +242,10 @@ JSONEditor.prototype.collapseAll = function () {
  *                         value are provided). params contains all information
  *                         needed to undo or redo the action.
  */
-JSONEditor.prototype._onChange = function (action, params) {
-    // TODO: implement undo/redo, and support for external onChange event listeners
-    // console.log('_onChange', action, params);
+JSONEditor.prototype.onAction = function (action, params) {
+    if (this.history) {
+        this.history.add(action, params);
+    }
 };
 
 /**
@@ -308,6 +313,199 @@ JSONEditor.prototype.scrollTo = function (top) {
         animate();
     }
 };
+
+
+/**
+ * @constructor JSONEditor.History
+ * Store action history, enables undo and redo
+ * @param {JSONEditor} editor
+ */
+JSONEditor.History = function (editor) {
+    this.editor = editor;
+    this.clear();
+
+    // map with all supported actions
+    this.actions = {
+        'editField': {
+            'undo': function (obj) {
+                obj.params.node.updateField(obj.params.old);
+            },
+            'redo': function (obj) {
+                obj.params.node.updateField(obj.params.new);
+            }
+        },
+        'editValue': {
+            'undo': function (obj) {
+                obj.params.node.updateValue(obj.params.old);
+            },
+            'redo': function (obj) {
+                obj.params.node.updateValue(obj.params.new);
+            }
+        },
+        'appendNode': {
+            'undo': function (obj) {
+                obj.params.parent.removeChild(obj.params.node);
+            },
+            'redo': function (obj) {
+                obj.params.parent.appendChild(obj.params.node);
+            }
+        },
+        'removeNode': {
+            'undo': function (obj) {
+                var beforeNode = obj.params.parent.childs[obj.params.index];
+                obj.params.parent.insertBefore(obj.params.node, beforeNode);
+            },
+            'redo': function (obj) {
+                obj.params.parent.removeChild(obj.params.node);
+            }
+        },
+        'duplicateNode': {
+            'undo': function (obj) {
+                obj.params.parent.removeChild(obj.params.clone);
+            },
+            'redo': function (obj) {
+                // TODO: insert after instead of insert before
+                obj.params.parent.insertBefore(obj.params.clone, obj.params.node);
+            }
+        },
+        'changeType': {
+            'undo': function (obj) {
+                obj.params.node.changeType(obj.params.oldType);
+            },
+            'redo': function (obj) {
+                obj.params.node.changeType(obj.params.newType);
+            }
+        },
+        'moveNode': {
+            'undo': function (obj) {
+                var parent = obj.params.startParent;
+                var index = obj.params.startIndex;
+                var beforeNode = parent.childs[index];
+                parent.moveBefore(obj.params.node, beforeNode);
+            },
+            'redo': function (obj) {
+                var parent = obj.params.endParent;
+                var index = obj.params.endIndex;
+                var beforeNode = parent.childs[index];
+                parent.moveBefore(obj.params.node, beforeNode);
+            }
+        }
+
+        // TODO: restore the original caret position and selection with each undo
+        // TODO: implement history for actions "expand", "collapse", "scroll", "setDocument"
+    };
+};
+
+/**
+ * The method onChange is executed when the History is changed, and can
+ * be overloaded.
+ */
+JSONEditor.History.prototype.onChange = function () {};
+
+/**
+ * Add a new action to the history
+ * @param {String} action  The executed action. Available actions: "editField",
+ *                         "editValue", "changeType", "appendNode",
+ *                         "removeNode", "duplicateNode", "moveNode"
+ * @param {Object} params  Object containing parameters describing the change.
+ *                         The parameters in params depend on the action (for
+ *                         example for "editValue" the Node, old value, and new
+ *                         value are provided). params contains all information
+ *                         needed to undo or redo the action.
+ */
+JSONEditor.History.prototype.add = function (action, params) {
+    this.index++;
+    this.history[this.index] = {
+        'action': action,
+        'params': params,
+        'timestamp': new Date()
+    };
+
+    // TODO: merge events in case of editField or editValue on the same field within 500 ms
+
+    // remove redo actions which are invalid now
+    if (this.index < this.history.length - 1) {
+        this.history.splice(this.index + 1, this.history.length - this.index - 1);
+    }
+
+    // fire onchange event
+    this.onChange();
+};
+
+/**
+ * Clear history
+ */
+JSONEditor.History.prototype.clear = function () {
+    this.history = [];
+    this.index = -1;
+
+    // fire onchange event
+    this.onChange();
+};
+
+/**
+ * Check if there is an action available for undo
+ * @return {Boolean} canUndo
+ */
+JSONEditor.History.prototype.canUndo = function () {
+    return (this.index >= 0);
+};
+
+/**
+ * Check if there is an action available for redo
+ * @return {Boolean} canRedo
+ */
+JSONEditor.History.prototype.canRedo = function () {
+    return (this.index < this.history.length - 1);
+};
+
+/**
+ * Undo the last action
+ */
+JSONEditor.History.prototype.undo = function () {
+    if (this.canUndo()) {
+        var obj = this.history[this.index];
+        if (obj) {
+            var action = this.actions[obj.action];
+            if (action && action.undo) {
+                action.undo(obj);
+            }
+            else {
+                console.log('Error: unknown action "' + obj.action + '"');
+            }
+        }
+        this.index--;
+
+        // fire onchange event
+        this.onChange();
+    }
+};
+
+/**
+ * Redo the last action
+ */
+JSONEditor.History.prototype.redo = function () {
+    if (this.canRedo()) {
+        this.index++;
+
+        var obj = this.history[this.index];
+        if (obj) {
+            if (obj) {
+                var action = this.actions[obj.action];
+                if (action && action.redo) {
+                    action.redo(obj);
+                }
+                else {
+                    console.log('Error: unknown action "' + obj.action + '"');
+                }
+            }
+        }
+
+        // fire onchange event
+        this.onChange();
+    }
+};
+
 
 /**
  * @constructor JSONEditor.Node
@@ -738,7 +936,6 @@ JSONEditor.Node.prototype.insertBefore = function(node, beforeNode) {
             // adjust the link to the parent
             node.setParent(this);
             node.fieldEditable = (this.type == 'object');
-            //node.index = index;   // TODO: redundant?
             this.childs.splice(index, 0, node);
         }
 
@@ -894,6 +1091,7 @@ JSONEditor.Node.prototype.blur = function() {
  * Duplicate given child node
  * new structure will be added right before the cloned node
  * @param {JSONEditor.Node} node           the childNode to be duplicated
+ * @return {JSONEditor.Node} clone         the clone of the node
  */
 JSONEditor.Node.prototype._duplicate = function(node) {
     var clone = node.clone();
@@ -906,9 +1104,7 @@ JSONEditor.Node.prototype._duplicate = function(node) {
     // TODO: insert after instead of insert before
     this.insertBefore(clone, node);
 
-    this.getEditor()._onChange('duplicateNode', {
-        'node': this
-    });
+    return clone;
 };
 
 /**
@@ -1008,22 +1204,14 @@ JSONEditor.Node.prototype.removeChild = function(node) {
  * @private
  */
 JSONEditor.Node.prototype._remove = function (node) {
-    var index = this.childs.indexOf(node);
-
     this.removeChild(node);
-
-    this.getEditor()._onChange('removeNode', {
-        'node': node,
-        'parent': this,
-        'index': index
-    });
 };
 
 /**
- * change the type of the value of this Node
+ * Change the type of the value of this Node
  * @param {String} newType
  */
-JSONEditor.Node.prototype._changeType = function (newType) {
+JSONEditor.Node.prototype.changeType = function (newType) {
     var child, childs, i, iMax;
     var oldType = this.type;
 
@@ -1121,12 +1309,6 @@ JSONEditor.Node.prototype._changeType = function (newType) {
 
     // TODO: test if things are updated twice...
     this.updateDom();
-
-    this.getEditor()._onChange('changeType', {
-        'node': this,
-        'old': oldType,
-        'new': newType
-    });
 };
 
 /**
@@ -1151,7 +1333,7 @@ JSONEditor.Node.prototype._getDomValue = function(silent) {
                 value = this._stringCast(str);
             }
             if (value !== this.value) {
-                this.getEditor()._onChange('editValue', {
+                this.getEditor().onAction('editValue', {
                     'node': this,
                     'old': this.value,
                     'new': value
@@ -1283,7 +1465,7 @@ JSONEditor.Node.prototype._getDomField = function(silent) {
             var field = this._unescapeHTML(this.fieldInnerText);
 
             if (field !== this.field) {
-                this.getEditor()._onChange('editField', {
+                this.getEditor().onAction('editField', {
                     'node': this,
                     'old': this.field,
                     'new': field
@@ -1491,7 +1673,7 @@ JSONEditor.Node.prototype._onDrag = function (event) {
 JSONEditor.Node.prototype._onDragEnd = function (event) {
     event = event || window.event;
 
-    this.getEditor()._onChange('moveNode', {
+    this.getEditor().onAction('moveNode', {
         'node': this,
         'startParent': this.drag.startParent,
         'startIndex': this.drag.startIndex,
@@ -1567,6 +1749,25 @@ JSONEditor.Node.prototype.setHighlight = function (highlight) {
 };
 
 /**
+ * Update the value of the node. Only primitive types are allowed, no Object
+ * or Array is allowed.
+ * @param {String | Number | Boolean | null} value
+ */
+JSONEditor.Node.prototype.updateValue = function (value) {
+    this.value = value;
+    this.updateDom();
+};
+
+/**
+ * Update the field of the node.
+ * @param {String} field
+ */
+JSONEditor.Node.prototype.updateField = function (field) {
+    this.field = field;
+    this.updateDom();
+};
+
+/**
  * Update the HTML DOM
  */
 // TODO: merge updateDom and _updateStatus
@@ -1605,6 +1806,12 @@ JSONEditor.Node.prototype.updateDom = function () {
             field = 'field';
         }
         domField.innerHTML = this._escapeHTML(field);
+    }
+
+    // update value
+    var domValue = this.dom.value;
+    if (domValue) {
+        domValue.innerHTML = this._escapeHTML(this.value);
     }
 
     // update field and value
@@ -1888,7 +2095,13 @@ JSONEditor.Node.prototype.onEvent = function (event) {
     if (target == domDuplicate) {
         switch (type) {
             case 'click':
-                this.parent._duplicate(this);
+                var clone = this.parent._duplicate(this);
+
+                this.getEditor().onAction('duplicateNode', {
+                    'node': this,
+                    'clone': clone,
+                    'parent': this.parent
+                });
                 break;
             case 'mouseover':
                 this.setHighlight(true);
@@ -1904,7 +2117,7 @@ JSONEditor.Node.prototype.onEvent = function (event) {
     if (target == domRemove) {
         switch (type) {
             case 'click':
-                this.parent._remove(this);
+                this._onRemove();
                 break;
             case 'mouseover':
                 this.setHighlight(true);
@@ -1920,7 +2133,7 @@ JSONEditor.Node.prototype.onEvent = function (event) {
     if (target == domType) {
         switch (type) {
             case 'click':
-                this._onTypeButton(event);
+                this._onChangeType(event);
                 break;
             case 'mouseover':
                 this.setHighlight(true);
@@ -2031,6 +2244,7 @@ JSONEditor.Node.types = [
 /**
  * Create a DOM select box containing the node type
  * @return {Element} domType
+ * @private
  */
 JSONEditor.Node.prototype._createDomTypeButton = function () {
     var node = this;
@@ -2041,8 +2255,29 @@ JSONEditor.Node.prototype._createDomTypeButton = function () {
     return domType;
 };
 
+/**
+ * Remove this node
+ * @private
+ */
+JSONEditor.Node.prototype._onRemove = function() {
+    this.setHighlight(false);
+    var index = this.parent.childs.indexOf(this);
 
-JSONEditor.Node.prototype._onTypeButton = function (event) {
+    this.parent._remove(this);
+
+    this.getEditor().onAction('removeNode', {
+        'node': this,
+        'parent': this.parent,
+        'index': index
+    });
+}
+
+/**
+ * Handle a click on the Type-button
+ * @param {Event} event
+ * @private
+ */
+JSONEditor.Node.prototype._onChangeType = function (event) {
     JSONEditor.Events.stopPropagation(event);
 
     var domType = this.dom.type;
@@ -2050,8 +2285,14 @@ JSONEditor.Node.prototype._onTypeButton = function (event) {
     var node = this;
     var x = JSONEditor.getAbsoluteLeft(domType);
     var y = JSONEditor.getAbsoluteTop(domType) + domType.clientHeight;
-    var callback = function (value) {
-        node._changeType(value);
+    var callback = function (newType) {
+        var oldType = node.type;
+        node.changeType(newType);
+        node.getEditor().onAction('changeType', {
+            'node': node,
+            'oldType': oldType,
+            'newType': newType
+        });
         domType.className = 'jsoneditor-type-' + node.type;
     };
     JSONEditor.showDropDownList({
@@ -2067,6 +2308,21 @@ JSONEditor.Node.prototype._onTypeButton = function (event) {
     });
 };
 
+/**
+ * Show a dropdown list
+ * @param {Object} params    Available parameters:
+ *                           {Number} x  The absolute horizontal position
+ *                           {Number} y  The absolute vertical position
+ *                           {JSONEditor.Node} node node used for highlighting
+ *                           {String} value current selected value
+ *                           {Object[]} values the available values. Each object
+ *                                             contains a value, title, and
+ *                                             className
+ *                           {String} optionSelectedClassName
+ *                           {String} optionClassName
+ *                           {function} callback   Callback method, called when
+ *                                                 the selected value changed.
+ */
 JSONEditor.showDropDownList = function (params) {
     var select = document.createElement('div');
     select.className = params.className || '';
@@ -2379,17 +2635,7 @@ JSONEditor.AppendNode.prototype.onEvent = function (event) {
     if (target == domAppend) {
         switch (type) {
             case 'click':
-                var newNode = new JSONEditor.Node({
-                    'field': 'field',
-                    'value': 'value'
-                });
-                this.parent.appendChild(newNode);
-                this.parent.setHighlight(false);
-                newNode.focus();
-                this.getEditor()._onChange('appendNode', {
-                    'node': newNode,
-                    'parent': this.parent
-                });
+                this._onAppend();
                 break;
 
             case 'mouseover':
@@ -2400,6 +2646,25 @@ JSONEditor.AppendNode.prototype.onEvent = function (event) {
                 this.parent.setHighlight(false);
         }
     }
+};
+
+/**
+ * Handle append event
+ * @private
+ */
+JSONEditor.AppendNode.prototype._onAppend = function () {
+    var newNode = new JSONEditor.Node({
+        'field': 'field',
+        'value': 'value'
+    });
+    this.parent.appendChild(newNode);
+    this.parent.setHighlight(false);
+    newNode.focus();
+
+    this.getEditor().onAction('appendNode', {
+        'node': newNode,
+        'parent': this.parent
+    });
 };
 
 /**
@@ -2510,6 +2775,33 @@ JSONEditor.prototype._createFrame = function () {
         editor.collapseAll();
     };
     td.appendChild(collapseAll);
+
+    // create undo button
+    var undo = document.createElement('button');
+    undo.innerHTML = 'Undo';
+    undo.title = 'Undo last action';
+    undo.onclick = function () {
+        editor.history.undo();
+    };
+    td.appendChild(undo);
+    this.dom.undo = undo;
+
+    // create redo button
+    var redo = document.createElement('button');
+    redo.innerHTML = 'Redo';
+    redo.title = 'Redo';
+    redo.onclick = function () {
+        editor.history.redo();
+    };
+    td.appendChild(redo);
+    this.dom.redo = redo;
+
+    // register handler for
+    this.history.onChange = function () {
+        undo.disabled = !editor.history.canUndo();
+        redo.disabled = !editor.history.canRedo();
+    };
+    this.history.onChange();
 
     if (this.options.enableSearch) {
         this.searchBox = new JSONEditor.SearchBox(this, td);

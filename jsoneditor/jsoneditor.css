@@ -79,6 +79,10 @@ button.jsoneditor-type-array, button.jsoneditor-type-object {
     cursor: pointer;
 }
 
+button:disabled {
+    color: #808080;
+}
+
 button.jsoneditor-collapsed, button.jsoneditor-expanded,
 button.jsoneditor-invisible {
     float: left;
