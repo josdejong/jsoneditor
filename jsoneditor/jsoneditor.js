@@ -44,6 +44,7 @@ if(!Array.prototype.indexOf) {
         return -1;
     }
 }
+
 // Internet Explorer 8 and older does not support Array.forEach,
 // so we define it here in that case
 // https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Global_Objects/Array/forEach
@@ -3485,7 +3486,10 @@ JSONEditor.removeClassName = function(elem, className) {
  * @param {Element} divElement
  */
 JSONEditor.stripFormatting = function (divElement) {
-    divElement.childNodes.forEach(function (child) {
+    var childs = divElement.childNodes;
+    for (var i = 0, iMax = childs.length; i < iMax; i++) {
+        var child = childs[i];
+
         // remove the style
         if (child.style) {
             // TODO: test if child.attributes does contain style
@@ -3505,7 +3509,7 @@ JSONEditor.stripFormatting = function (divElement) {
 
         // recursively strip childs
         JSONEditor.stripFormatting(child);
-    });
+    }
 };
 
 /**
