@@ -1107,6 +1107,19 @@ JSONEditor.Node.prototype.focus = function(field) {
  * Remove focus from the value or field of this node
  */
 JSONEditor.Node.prototype.blur = function() {
+    if (this.dom.tr && this.dom.tr.parentNode) {
+        var domValue = this.dom.value;
+        if (domValue) {
+            domValue.blur();
+        }
+        var domField = this.dom.field;
+        if (domField) {
+            domField.blur();
+        }
+    }
+
+    // retrieve the field and value from the DOM. A little redundant but
+    // it cannot do harm.
     this._getDomValue(true);
     this._getDomField(true);
 };
