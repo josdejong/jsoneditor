@@ -376,6 +376,7 @@ button.jsoneditor-undo:disabled {
 button.jsoneditor-redo:disabled {
     background-position: -360px -24px;
 }
+/* TODO: css for button:disabled is not supported by IE8 */
 button.jsoneditor-compact {
     background-position: -384px 0;
 }

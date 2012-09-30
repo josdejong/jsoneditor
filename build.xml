@@ -32,7 +32,7 @@
         <zip destfile="${lib}/${package}-${version}.zip">
             <fileset dir="${root}" includes="LICENSE" />
             <fileset dir="${root}" includes="NOTICE" />
-            <fileset dir="${root}" includes="README" />
+            <fileset dir="${root}" includes="README.md" />
             <fileset dir="${root}" includes="changelog.txt" />
             <fileset dir="${root}" includes="demo.html" />
             <fileset dir="${root}" includes="jsoneditor/jsoneditor.js" />
@@ -45,7 +45,7 @@
         <zip destfile="${lib}/${package}-${version}.min.zip">
             <fileset dir="${root}" includes="LICENSE" />
             <fileset dir="${root}" includes="NOTICE" />
-            <fileset dir="${root}" includes="README" />
+            <fileset dir="${root}" includes="README.md" />
             <fileset dir="${root}" includes="changelog.txt" />
             <!-- TODO: create demo (with correct links to minified library)
             <fileset dir="${root}" includes="demo.html" />
