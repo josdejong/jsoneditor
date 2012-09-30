@@ -397,16 +397,10 @@ JSONEditor.History = function (editor) {
         },
         'moveNode': {
             'undo': function (obj) {
-                var parent = obj.params.startParent;
-                var index = obj.params.startIndex;
-                var beforeNode = parent.childs[index] || parent.append;
-                parent.moveBefore(obj.params.node, beforeNode);
+                obj.params.startParent.moveTo(obj.params.node, obj.params.startIndex);
             },
             'redo': function (obj) {
-                var parent = obj.params.endParent;
-                var index = obj.params.endIndex;
-                var beforeNode = parent.childs[index] || parent.append;
-                parent.moveBefore(obj.params.node, beforeNode);
+                obj.params.endParent.moveTo(obj.params.node, obj.params.endIndex);
             }
         }
 
@@ -887,7 +881,7 @@ JSONEditor.Node.prototype.appendChild = function(node) {
 
 
 /**
- * Move an existing child from its current parent to this node
+ * Move a node from its current parent to this node
  * Only applicable when Node value is of type array or object
  * @param {JSONEditor.Node} node
  * @param {JSONEditor.Node} beforeNode
@@ -920,6 +914,26 @@ JSONEditor.Node.prototype.moveBefore = function(node, beforeNode) {
     }
 };
 
+/**
+ * Move a node from its current parent to this node
+ * Only applicable when Node value is of type array or object.
+ * If index is out of range, the node will be appended to the end
+ * @param {JSONEditor.Node} node
+ * @param {Number} index
+ */
+JSONEditor.Node.prototype.moveTo = function (node, index) {
+    if (node.parent == this) {
+        // same parent
+        var currentIndex = this.childs.indexOf(node);
+        if (currentIndex < index) {
+            // compensate the index for removal of the node itself
+            index++;
+        }
+    }
+
+    var beforeNode = this.childs[index] || this.append;
+    this.moveBefore(node, beforeNode);
+};
 
 /**
  * Insert a new child before a given node
