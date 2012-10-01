@@ -870,12 +870,11 @@ JSONEditor.Node.prototype.appendChild = function(node) {
                 table.insertBefore(newtr, appendTr);
             }
 
-            this._updateStatus(node.index);
-
             node.showChilds();
         }
 
-        node.updateDom();
+        this.updateDom();
+        node.updateDom({'recurse': true});
     }
 };
 
@@ -976,8 +975,8 @@ JSONEditor.Node.prototype.insertBefore = function(node, beforeNode) {
             node.showChilds();
         }
 
-        node.updateDom();
-        this._updateStatus(index);
+        this.updateDom();
+        node.updateDom({'recurse': true});
     }
 };
 
@@ -1225,7 +1224,7 @@ JSONEditor.Node.prototype.removeChild = function(node) {
 
             var removedNode = this.childs.splice(index, 1)[0];
 
-            this._updateStatus(index);
+            this.updateDom();
 
             return removedNode;
         }
@@ -1307,7 +1306,6 @@ JSONEditor.Node.prototype.changeType = function (newType) {
                 child.fieldEditable = false;
                 child.index = i;
             });
-            this._updateStatus();
 
             if (oldType == 'string' || oldType == 'auto') {
                 this.expanded = true;
@@ -1341,7 +1339,6 @@ JSONEditor.Node.prototype.changeType = function (newType) {
         this.focus();
     }
 
-    // TODO: test if things are updated twice...
     this.updateDom();
 };
 
@@ -1587,8 +1584,7 @@ JSONEditor.Node.prototype.getDom = function() {
         tdRemove.appendChild(dom.remove);
     }
 
-    this._updateStatus();
-    this.updateDom();
+    this.updateDom(); // TODO: recurse here?
 
     return dom.tr;
 };
@@ -1806,10 +1802,15 @@ JSONEditor.Node.prototype.updateField = function (field) {
 };
 
 /**
- * Update the HTML DOM
+ * Update the HTML DOM, optionally recursing through the childs
+ * @param {Object} [options] Available parameters:
+ *                          {boolean} [recurse]         If true, the
+ *                          DOM of the childs will be updated recursively.
+ *                          False by default.
+ *                          {boolean} [updateIndexes]   If true (default, the
+ *                          childs indexes of the node will be updated too.
  */
-// TODO: merge updateDom and _updateStatus
-JSONEditor.Node.prototype.updateDom = function () {
+JSONEditor.Node.prototype.updateDom = function (options) {
     // update level indentation
     var domTree = this.dom.tree;
     if (domTree) {
@@ -1849,33 +1850,54 @@ JSONEditor.Node.prototype.updateDom = function () {
     // update value
     var domValue = this.dom.value;
     if (domValue) {
-        domValue.innerHTML = this._escapeHTML(this.value);
+        var count = this.childs ? this.childs.length : 0;
+        if (this.type == 'array') {
+            domValue.innerHTML = '[' + count + ']';
+            domValue.title = this.type + ' containing ' + count + ' items';
+        }
+        else if (this.type == 'object') {
+            domValue.innerHTML = '{' + count + '}';
+            domValue.title = this.type + ' containing ' + count + ' items';
+        }
+        else {
+            domValue.innerHTML = this._escapeHTML(this.value);
+            delete domValue.title;
+        }
     }
 
     // update field and value
     this._updateDomField();
     this._updateDomValue();
 
-    // update childs recursively
-    if (this.childs) {
-        this.childs.forEach(function (child) {
-            child.updateDom();
-        });
+    // update childs indexes
+    if (!options || options.updateIndexes != false) {
+        // updateIndexes is true or undefined
+        this._updateDomIndexes();
     }
 
-    // update row with append button
-    if (this.append) {
-        this.append.updateDom();
+    if (options && options.recurse == true) {
+        // recurse is true or undefined. update childs recursively
+        if (this.childs) {
+            this.childs.forEach(function (child) {
+                child.updateDom(options);
+            });
+        }
+
+        // update row with append button
+        if (this.append) {
+            this.append.updateDom();
+        }
     }
 };
 
 /**
- * Update the title of the given structure.
+ * Update the DOM of the childs of a node: update indexes, field names,
+ * and childs DOM.
  * Only applicable when structure is an array or object
- * @param {Number} startIndex  Optional. Index of the first child to be updated
- *                             Only applicable in case of array
+ * @param {Number} [startIndex]  Index of the first child to be updated
+ *                               Only applicable in case of array
  */
-JSONEditor.Node.prototype._updateStatus = function (startIndex) {
+JSONEditor.Node.prototype._updateDomIndexes = function (startIndex) {
     var child, i, iMax;
 
     var domValue = this.dom.value;
@@ -1883,8 +1905,6 @@ JSONEditor.Node.prototype._updateStatus = function (startIndex) {
     if (domValue && childs) {
         var count = childs.length;
         if (this.type == 'array') {
-            domValue.innerHTML = '[' + count + ']';
-
             // update the field indexes of the childs
             for (i = (startIndex > 0 ? startIndex : 0), iMax = childs.length; i < iMax; i++) {
                 child = childs[i];
@@ -1896,8 +1916,6 @@ JSONEditor.Node.prototype._updateStatus = function (startIndex) {
             }
         }
         else if (this.type == 'object') {
-            domValue.innerHTML = '{' + count + '}';
-
             for (i = (startIndex > 0 ? startIndex : 0), iMax = childs.length; i < iMax; i++) {
                 child = childs[i];
                 if (child.index != undefined) {
@@ -1906,13 +1924,10 @@ JSONEditor.Node.prototype._updateStatus = function (startIndex) {
                     if (child.field == undefined) {
                         child.field = 'field';
                     }
-                    child.updateDom();
+                    //child.updateDom(); // TODO: cleanup?
                 }
             }
         }
-
-        // adjust title
-        domValue.title = this.type + ' containing ' + count + ' items';
     }
 };
 
