@@ -873,7 +873,7 @@ JSONEditor.Node.prototype.appendChild = function(node) {
             node.showChilds();
         }
 
-        this.updateDom();
+        this.updateDom({'updateIndexes': true});
         node.updateDom({'recurse': true});
     }
 };
@@ -975,7 +975,7 @@ JSONEditor.Node.prototype.insertBefore = function(node, beforeNode) {
             node.showChilds();
         }
 
-        this.updateDom();
+        this.updateDom({'updateIndexes': true});
         node.updateDom({'recurse': true});
     }
 };
@@ -1224,7 +1224,7 @@ JSONEditor.Node.prototype.removeChild = function(node) {
 
             var removedNode = this.childs.splice(index, 1)[0];
 
-            this.updateDom();
+            this.updateDom({'updateIndexes': true});
 
             return removedNode;
         }
@@ -1339,7 +1339,7 @@ JSONEditor.Node.prototype.changeType = function (newType) {
         this.focus();
     }
 
-    this.updateDom();
+    this.updateDom({'updateIndexes': true});
 };
 
 /**
@@ -1807,8 +1807,9 @@ JSONEditor.Node.prototype.updateField = function (field) {
  *                          {boolean} [recurse]         If true, the
  *                          DOM of the childs will be updated recursively.
  *                          False by default.
- *                          {boolean} [updateIndexes]   If true (default, the
- *                          childs indexes of the node will be updated too.
+ *                          {boolean} [updateIndexes]   If true, the childs
+ *                          indexes of the node will be updated too. False by
+ *                          default.
  */
 JSONEditor.Node.prototype.updateDom = function (options) {
     // update level indentation
@@ -1870,7 +1871,7 @@ JSONEditor.Node.prototype.updateDom = function (options) {
     this._updateDomValue();
 
     // update childs indexes
-    if (!options || options.updateIndexes != false) {
+    if (options && options.updateIndexes == true) {
         // updateIndexes is true or undefined
         this._updateDomIndexes();
     }
@@ -1891,42 +1892,33 @@ JSONEditor.Node.prototype.updateDom = function (options) {
 };
 
 /**
- * Update the DOM of the childs of a node: update indexes, field names,
- * and childs DOM.
+ * Update the DOM of the childs of a node: update indexes and undefined field
+ * names.
  * Only applicable when structure is an array or object
- * @param {Number} [startIndex]  Index of the first child to be updated
- *                               Only applicable in case of array
  */
-JSONEditor.Node.prototype._updateDomIndexes = function (startIndex) {
-    var child, i, iMax;
-
+JSONEditor.Node.prototype._updateDomIndexes = function () {
     var domValue = this.dom.value;
     var childs = this.childs;
     if (domValue && childs) {
-        var count = childs.length;
         if (this.type == 'array') {
-            // update the field indexes of the childs
-            for (i = (startIndex > 0 ? startIndex : 0), iMax = childs.length; i < iMax; i++) {
-                child = childs[i];
-                child.index = i;
+            childs.forEach(function (child, index) {
+                child.index = index;
                 var childField = child.dom.field;
                 if (childField) {
-                    childField.innerHTML = i;
+                    childField.innerHTML = index;
                 }
-            }
+            });
         }
         else if (this.type == 'object') {
-            for (i = (startIndex > 0 ? startIndex : 0), iMax = childs.length; i < iMax; i++) {
-                child = childs[i];
+            childs.forEach(function (child) {
                 if (child.index != undefined) {
-                    delete child.index; // TODO: this should be done when changing type only?
+                    delete child.index;
 
                     if (child.field == undefined) {
                         child.field = 'field';
                     }
-                    //child.updateDom(); // TODO: cleanup?
                 }
-            }
+            });
         }
     }
 };
