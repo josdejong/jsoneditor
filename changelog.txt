@@ -7,6 +7,7 @@ http://jsoneditoronline.org
 - Implemented history, enabling undo/redo of all actions.
 - Created menu icons (instead of text buttons).
 - Cleaned up the code (removed unused params, improved comments, etc).
+- Minor performance improvements.
 
 
 2012-08-31, version 1.4.4
