@@ -183,6 +183,7 @@ JSONEditor.prototype.clear = function () {
 /**
  * Set the root node for the json editor
  * @param {JSONEditor.Node} node
+ * @private
  */
 JSONEditor.prototype._setRoot = function (node) {
     this.clear();
@@ -1128,6 +1129,7 @@ JSONEditor.Node.prototype.blur = function() {
  * new structure will be added right before the cloned node
  * @param {JSONEditor.Node} node           the childNode to be duplicated
  * @return {JSONEditor.Node} clone         the clone of the node
+ * @private
  */
 JSONEditor.Node.prototype._duplicate = function(node) {
     var clone = node.clone();
@@ -1173,6 +1175,7 @@ JSONEditor.Node.prototype.containsNode = function(node) {
  * @param {JSONEditor.Node} beforeNode     node will be inserted before given
  *                                         node. If no beforeNode is given,
  *                                         the node is appended at the end
+ * @private
  */
 JSONEditor.Node.prototype._move = function(node, beforeNode) {
     if (node == beforeNode) {
@@ -1346,6 +1349,7 @@ JSONEditor.Node.prototype.changeType = function (newType) {
  * Retrieve value from DOM
  * @param {boolean} silent.   If true (default), no errors will be thrown in
  *                            case of invalid data
+ * @private
  */
 JSONEditor.Node.prototype._getDomValue = function(silent) {
     if (this.dom.value && this.type != 'array' && this.type != 'object') {
@@ -1386,6 +1390,7 @@ JSONEditor.Node.prototype._getDomValue = function(silent) {
  * - the text color of the value, depending on the type of the value
  * - the height of the field, depending on the width
  * - background color in case it is empty
+ * @private
  */
 JSONEditor.Node.prototype._updateDomValue = function () {
     var domValue = this.dom.value;
@@ -1449,6 +1454,7 @@ JSONEditor.Node.prototype._updateDomValue = function () {
  * - the text color of the field, depending on the text
  * - the height of the field, depending on the width
  * - background color in case it is empty
+ * @private
  */
 JSONEditor.Node.prototype._updateDomField = function () {
     var domField = this.dom.field;
@@ -1485,6 +1491,7 @@ JSONEditor.Node.prototype._updateDomField = function () {
  * Retrieve field from DOM
  * @param {boolean} silent.   If true (default), no errors will be thrown in
  *                            case of invalid data
+ * @private
  */
 JSONEditor.Node.prototype._getDomField = function(silent) {
     if (this.dom.field && this.fieldEditable) {
@@ -1592,6 +1599,7 @@ JSONEditor.Node.prototype.getDom = function() {
 /**
  * DragStart event, fired on mousedown on the dragarea at the left side of a Node
  * @param {Event} event
+ * @private
  */
 JSONEditor.Node.prototype._onDragStart = function (event) {
     event = event || window.event;
@@ -1637,6 +1645,7 @@ JSONEditor.Node.prototype._onDragStart = function (event) {
 /**
  * Drag event, fired when moving the mouse while dragging a Node
  * @param {Event} event
+ * @private
  */
 JSONEditor.Node.prototype._onDrag = function (event) {
     event = event || window.event;
@@ -1699,6 +1708,7 @@ JSONEditor.Node.prototype._onDrag = function (event) {
 /**
  * Drag event, fired on mouseup after having dragged a node
  * @param {Event} event
+ * @private
  */
 JSONEditor.Node.prototype._onDragEnd = function (event) {
     event = event || window.event;
@@ -1736,6 +1746,7 @@ JSONEditor.Node.prototype._onDragEnd = function (event) {
 /**
  * Create a drag area, displayed at the left side of the node
  * @return {Element | undefined} domDrag
+ * @private
  */
 JSONEditor.Node.prototype._createDomDragArea = function () {
     if (!this.parent) {
@@ -1752,6 +1763,7 @@ JSONEditor.Node.prototype._createDomDragArea = function () {
 /**
  * Create an editable field
  * @return {Element} domField
+ * @private
  */
 JSONEditor.Node.prototype._createDomField = function () {
     return document.createElement('div');
@@ -1895,6 +1907,7 @@ JSONEditor.Node.prototype.updateDom = function (options) {
  * Update the DOM of the childs of a node: update indexes and undefined field
  * names.
  * Only applicable when structure is an array or object
+ * @private
  */
 JSONEditor.Node.prototype._updateDomIndexes = function () {
     var domValue = this.dom.value;
@@ -1925,6 +1938,7 @@ JSONEditor.Node.prototype._updateDomIndexes = function () {
 
 /**
  * Create an editable value
+ * @private
  */
 JSONEditor.Node.prototype._createDomValue = function () {
     var domValue;
@@ -1963,6 +1977,7 @@ JSONEditor.Node.prototype._createDomValue = function () {
 /**
  * Create an expand/collapse button
  * @return {Element} expand
+ * @private
  */
 JSONEditor.Node.prototype._createDomExpandButton = function () {
     // create expand button
@@ -1989,6 +2004,7 @@ JSONEditor.Node.prototype._createDomExpandButton = function () {
  * @param {Element} domField
  * @param {Element} domValue
  * @return {Element} domTree
+ * @private
  */
 JSONEditor.Node.prototype._createDomTree = function (domExpand, domField, domValue) {
     var dom = this.dom;
@@ -2229,6 +2245,7 @@ JSONEditor.Node.prototype.onEvent = function (event) {
 /**
  * Handle the expand event, when clicked on the expand button
  * @param {Event} event
+ * @private
  */
 JSONEditor.Node.prototype._onExpand = function (event) {
     event = event || window.event;
@@ -2443,6 +2460,7 @@ JSONEditor.Node.prototype.getAppend = function () {
  * Create a remove button. Returns undefined when the structure cannot
  * be removed
  * @return {Element | undefined} removeButton, or undefined when inapplicable
+ * @private
  */
 JSONEditor.Node.prototype._createDomRemoveButton = function () {
     if (this.parent && (this.parent.type == 'array' || this.parent.type == 'object')) {
@@ -2462,6 +2480,7 @@ JSONEditor.Node.prototype._createDomRemoveButton = function () {
  * If the Node is the root node, no duplicate button is available and undefined
  * will be returned
  * @return {Element | undefined} buttonDuplicate
+ * @private
  */
 JSONEditor.Node.prototype._createDomDuplicateButton = function () {
     if (this.parent && (this.parent.type == 'array' || this.parent.type == 'object')) {
@@ -2480,6 +2499,7 @@ JSONEditor.Node.prototype._createDomDuplicateButton = function () {
  * get the type of a value
  * @param {*} value
  * @return {String} type   Can be 'object', 'array', 'string', 'auto'
+ * @private
  */
 JSONEditor.Node.prototype._getType = function(value) {
     if (value instanceof Array) {
@@ -2500,6 +2520,7 @@ JSONEditor.Node.prototype._getType = function(value) {
  * a number, a boolean, etc
  * @param {String} str
  * @return {*} castedStr
+ * @private
  */
 JSONEditor.Node.prototype._stringCast = function(str) {
     var lower = str.toLowerCase(),
@@ -2530,6 +2551,7 @@ JSONEditor.Node.prototype._stringCast = function(str) {
  * escape a text, such that it can be displayed safely in an HTML element
  * @param {String} text
  * @return {String} escapedText
+ * @private
  */
 JSONEditor.Node.prototype._escapeHTML = function (text) {
     var htmlEscaped = String(text)
@@ -2547,6 +2569,7 @@ JSONEditor.Node.prototype._escapeHTML = function (text) {
  * unescape a string.
  * @param {String} escapedText
  * @return {String} text
+ * @private
  */
 JSONEditor.Node.prototype._unescapeHTML = function (escapedText) {
     var json = '"' + this._escapeJSON(escapedText) + '"';
@@ -2564,6 +2587,7 @@ JSONEditor.Node.prototype._unescapeHTML = function (escapedText) {
  *   - replace returns with '\n'
  * @param {String} text
  * @return {String} escapedText
+ * @private
  */
 JSONEditor.Node.prototype._escapeJSON = function (text) {
     // TODO: replace with some smart regex (only when a new solution is faster!)
@@ -2598,6 +2622,7 @@ JSONEditor.Node.prototype._escapeJSON = function (text) {
 
 /**
  * @constructor JSONEditor.AppendNode
+ * @extends JSONEditor.Node
  * Create a new AppendNode. This is a special node which is created at the
  * end of the list with childs for an object or array
  */
@@ -2713,6 +2738,7 @@ JSONEditor.AppendNode.prototype._onAppend = function () {
 
 /**
  * Create main frame
+ * @private
  */
 JSONEditor.prototype._createFrame = function () {
     // create the frame
@@ -2859,6 +2885,7 @@ JSONEditor.prototype._createFrame = function () {
 
 /**
  * Create main table
+ * @private
  */
 JSONEditor.prototype._createTable = function () {
     var contentOuter = document.createElement('div');
@@ -3037,6 +3064,7 @@ JSONFormatter.prototype.onError = function(err) {
 
 /**
  * Check if the contents are changed
+ * @private
  */
 JSONFormatter.prototype._checkChange = function() {
     var content = this.textarea.value;
