@@ -2,9 +2,9 @@ JSON EDITOR ONLINE CHANGELOG
 http://jsoneditoronline.org
 
 
-<not yet released>, version 1.5.0
+2012-10-02, version 1.5.0
 
-- Implemented history, enabling undo/redo of all actions.
+- Implemented history: undo/redo all actions.
 - Created menu icons (instead of text buttons).
 - Cleaned up the code (removed unused params, improved comments, etc).
 - Minor performance improvements.
