@@ -1225,6 +1225,10 @@ JSONEditor.Node.prototype.removeChild = function(node) {
         if (index != -1) {
             node.hide();
 
+            // delete old search results
+            delete node.searchField;
+            delete node.searchValue;
+
             var removedNode = this.childs.splice(index, 1)[0];
 
             this.updateDom({'updateIndexes': true});
@@ -1252,7 +1256,6 @@ JSONEditor.Node.prototype._remove = function (node) {
  * @param {String} newType
  */
 JSONEditor.Node.prototype.changeType = function (newType) {
-    var child, childs, i, iMax;
     var oldType = this.type;
 
     if ((newType == 'string' || newType == 'auto') &&
@@ -1286,12 +1289,12 @@ JSONEditor.Node.prototype.changeType = function (newType) {
                 this.childs = [];
             }
 
-            this.childs.forEach(function (child) {
+            this.childs.forEach(function (child, index) {
                 child.clearDom();
                 delete child.index;
                 child.fieldEditable = true;
                 if (child.field == undefined) {
-                    child.field = i;
+                    child.field = index;
                 }
             });
 
@@ -1304,10 +1307,10 @@ JSONEditor.Node.prototype.changeType = function (newType) {
                 this.childs = [];
             }
 
-            this.childs.forEach(function (child) {
+            this.childs.forEach(function (child, index) {
                 child.clearDom();
                 child.fieldEditable = false;
-                child.index = i;
+                child.index = index;
             });
 
             if (oldType == 'string' || oldType == 'auto') {
