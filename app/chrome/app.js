@@ -1,7 +1,6 @@
 /*
-load the chrome application on body load
-*/
-window.onload = function () {
-    main.load();
-    main.resize();
-};
+ * load the chrome application
+ */
+
+main.load();
+main.resize();

@@ -26,7 +26,7 @@
  * Copyright (C) 2011-2012 Jos de Jong, http://jsoneditoronline.org
  *
  * @author  Jos de Jong, <wjosdejong@gmail.com>
- * @date    2012-09-29
+ * @date    2012-10-08
  */
 
 
@@ -192,13 +192,6 @@ main.load = function() {
         // splitter
         var domSplitter = document.getElementById('splitter');
 
-        /*
-        domSplitter.innerHTML =
-            '<br><br><br>' +
-                '<button id="toForm" onclick="this.focus(); main.formatterToEditor();" title="JSON to Editor" class="convert"><div class="convert-right"></div></button><br>' +
-                '<br>' +
-                '<button id="toJSON" onclick="this.focus(); main.editorToFormatter();" title="Editor to JSON" class="convert"><div class="convert-left"></div></button>';
-        */
         domSplitter.appendChild(document.createElement('br'));
         domSplitter.appendChild(document.createElement('br'));
         domSplitter.appendChild(document.createElement('br'));
@@ -369,12 +362,8 @@ main.hideAds = function() {
 
 main.removeAds = function () {
     var domRemoveAds = document.getElementById('removeAds');
-    var domChromeAppInfo = document.getElementById('chromeAppInfo');
     if (domRemoveAds) {
         domRemoveAds.style.display = 'none';
-    }
-    if (domChromeAppInfo) {
-        domChromeAppInfo.style.display = '';
     }
     main.resize();
 };

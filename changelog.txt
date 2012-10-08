@@ -2,6 +2,11 @@ JSON EDITOR ONLINE CHANGELOG
 http://jsoneditoronline.org
 
 
+2012-10-08, version 1.5.1
+
+- Replaced the paid Chrome App with a free, hosted Chrome App (with ads).
+
+
 2012-10-02, version 1.5.0
 
 - Implemented history: undo/redo all actions.
