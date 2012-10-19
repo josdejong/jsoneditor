@@ -1,7 +1,7 @@
 {
     "manifest_version": 2,
     "name": "JSON Editor",
-    "version": "1.5.1",
+    "version": "1.6.0",
     "description": "JSON Editor is a tool to view, edit, and format JSON. It shows your data in an editable treeview and in formatted plain text.",
     "app": {
         "urls": [
