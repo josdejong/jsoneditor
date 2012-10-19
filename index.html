@@ -37,7 +37,7 @@
     Copyright (C) 2011-2012 Jos de Jong, http://jsoneditoronline.org
 
     @author   Jos de Jong, <wjosdejong@gmail.com>
-    @date     2012-10-08
+    @date     2012-10-19
     -->
 
     <meta name="description" content="JSON Editor Online is a web-based tool to view, edit, and format JSON. It shows your data side by side in a clear, editable treeview and in formatted plain text.">
@@ -56,11 +56,11 @@
     <script type="text/javascript" src="interface/interface.js"></script>
 </head>
 
-<body spellcheck="false" >
+<body>
 
 <div id="header">
     <a href="http://jsoneditoronline.org" class="header">
-        <img alt="JSON Editor Online" src="interface/img/logo.png" id="logo">
+        <img alt="JSON Editor Online" title="JSON Editor Online" src="interface/img/logo.png" id="logo">
     </a>
 
     <!-- TODO: info, links, faq -->
@@ -130,7 +130,7 @@
 
 <div id="footer">
     <div id="footer-inner">
-        <a href="http://jsoneditoronline.org" class="footer">JSON Editor Online 1.5.1</a>
+        <a href="http://jsoneditoronline.org" class="footer">JSON Editor Online 1.6.0</a>
         &bull;
         <a href="changelog.txt" target="_blank" class="footer">Changelog</a>
         &bull;
@@ -143,6 +143,8 @@
 <script type="text/javascript">
     main.resize();
 </script>
+
+<script type="text/javascript" src="interface/lib/jsonlint/jsonlint.js"></script>
 
 </body>
 </html>

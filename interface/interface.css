@@ -138,6 +138,17 @@ div.error {
     border-radius: 3px;
     padding: 5px;
     margin: 5px;
+    box-shadow: 0 0 15px rgba(128, 128, 128, 0.5);
+}
+pre.error {
+    margin: 0 0 10px 0;
+    white-space: pre-wrap;
+    font-family: droid sans mono, monospace, courier new, courier, sans-serif;
+    font-size: 10pt;
+}
+a.error {
+    color: red;
+    font-size: 8pt;
 }
 
 button.convert {

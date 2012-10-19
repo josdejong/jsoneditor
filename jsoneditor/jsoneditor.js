@@ -27,7 +27,7 @@
  * Copyright (c) 2011-2012 Jos de Jong, http://jsoneditoronline.org
  *
  * @author  Jos de Jong, <wjosdejong@gmail.com>
- * @date    2012-10-02
+ * @date    2012-10-19
  */
 
 
@@ -1382,6 +1382,7 @@ JSONEditor.Node.prototype._getDomValue = function(silent) {
         catch (err) {
             this.value = undefined;
             if (silent != true) {
+                // TODO: give more detailed error message
                 throw err;
             }
         }
@@ -2576,7 +2577,7 @@ JSONEditor.Node.prototype._escapeHTML = function (text) {
  */
 JSONEditor.Node.prototype._unescapeHTML = function (escapedText) {
     var json = '"' + this._escapeJSON(escapedText) + '"';
-    var htmlEscaped = JSON.parse(json);
+    var htmlEscaped = JSONEditor.parse(json);
     return htmlEscaped
         .replace(/&lt;/g, '<')
         .replace(/&gt;/g, '>')
@@ -3038,7 +3039,7 @@ JSONFormatter = function (container) {
     var me = this;
     buttonFormat.onclick = function () {
         try {
-            textarea.value = JSON.stringify(JSON.parse(textarea.value), null, '  ');
+            textarea.value = JSON.stringify(JSONEditor.parse(textarea.value), null, '  ');
         }
         catch (err) {
             me.onError(err);
@@ -3046,7 +3047,7 @@ JSONFormatter = function (container) {
     };
     buttonCompact.onclick = function () {
         try {
-            textarea.value = JSON.stringify(JSON.parse(textarea.value));
+            textarea.value = JSON.stringify(JSONEditor.parse(textarea.value));
         }
         catch (err) {
             me.onError(err);
@@ -3094,8 +3095,17 @@ JSONFormatter.prototype.set = function(json) {
  * @return {Object} json
  */
 JSONFormatter.prototype.get = function() {
-    return JSON.parse(this.textarea.value);
+    return JSONEditor.parse(this.textarea.value);
 };
+
+/**
+ * Get the text contents of the JSONFormatter
+ * @return {String} text
+ */
+JSONFormatter.prototype.getText = function() {
+    return this.textarea.value;
+};
+
 
 /**
  * Set a callback method for the onchange event
@@ -3112,6 +3122,7 @@ JSONFormatter.prototype.get = function() {
 /**
  * @constructor JSONEditor.SearchBox
  * Create a search box in given HTML container
+ * @param {JSONEditor} editor   The JSON Editor to attach to
  * @param {Element} container   HTML container element of where to create the
  *                              search box
  */
@@ -3707,3 +3718,53 @@ JSONEditor.getInternetExplorerVersion = function() {
 };
 
 JSONEditor.ieVersion = JSONEditor.getInternetExplorerVersion();
+
+/**
+ * Parse JSON using the parser built-in in the browser.
+ * On exception, the jsonString is validated and a detailed error is thrown.
+ * @param {String} jsonString
+ */
+JSONEditor.parse = function (jsonString) {
+    try {
+        return JSON.parse(jsonString);
+    }
+    catch (err) {
+        // get a detailed error message using validate
+        var message = JSONEditor.validate(jsonString) || err;
+        throw new Error(message);
+    }
+};
+
+/**
+ * Validate a string containing a JSON object
+ * This method uses JSONLint to validate the String. If JSONLint is not
+ * available, the built-in JSON parser of the browser is used.
+ * @param {String} jsonString   String with an (invalid) JSON object
+ * @return {String | undefined} Returns undefined when the string is valid JSON,
+ *                              returns a string with an error message when
+ *                              the data is invalid
+ */
+JSONEditor.validate = function (jsonString) {
+    var message = undefined;
+
+    try {
+        if (window.jsonlint) {
+            window.jsonlint.parse(jsonString);
+        }
+        else {
+            JSON.parse(jsonString);
+        }
+    }
+    catch (err) {
+        message = '<pre class="error">' + err.toString() + '</pre>';
+        if (window.jsonlint) {
+            message +=
+                '<a class="error" href="http://zaach.github.com/jsonlint/" target="_blank">' +
+                'validated with jsonlint' +
+                '</a>';
+        }
+    }
+
+    return message;
+};
+

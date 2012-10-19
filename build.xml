@@ -3,7 +3,7 @@
 <project name="jsoneditor-builder" default="main">
     <!-- the version number of must be updated here (according to changelog.txt) -->
     <property name="package" value="jsoneditor"/>
-    <property name="version" value="1.5.1"/>
+    <property name="version" value="1.6.0"/>
 
     <property name="root" location="" />
     <property name="lib" location="build/lib" />
@@ -68,6 +68,7 @@
         <copy file="favicon.ico" todir="${web}" />
         <copy file="interface/interface.js" todir="${web}/interface" />
         <copy file="interface/interface.css" todir="${web}/interface" />
+        <copy file="interface/lib/jsonlint/jsonlint.js" todir="${web}/interface/lib/jsonlint" />
         <copy file="interface/img/logo.png" todir="${web}/interface/img" />
         <copy file="interface/img/header_background.png" todir="${web}/interface/img" />
         <copy file="jsoneditor/jsoneditor-min.js" todir="${web}/jsoneditor" />

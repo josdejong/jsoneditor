@@ -26,7 +26,7 @@
  * Copyright (C) 2011-2012 Jos de Jong, http://jsoneditoronline.org
  *
  * @author  Jos de Jong, <wjosdejong@gmail.com>
- * @date    2012-10-08
+ * @date    2012-10-19
  */
 
 
@@ -35,15 +35,21 @@ var formatter = null;
 
 var main = {};
 
+/**
+ * Get the JSON from the formatter and load it in the editor
+ */
 main.formatterToEditor = function() {
     try {
         editor.set(formatter.get());
     }
     catch (err) {
-        main.showError(err);
+         main.showError(err);
     }
 };
 
+/**
+ * Get the JSON from the editor and load it into the formatter
+ */
 main.editorToFormatter = function () {
     try {
         formatter.set(editor.get());
@@ -54,6 +60,24 @@ main.editorToFormatter = function () {
 };
 
 main.eventParams = {};
+
+/**
+ * Handle key down event.
+ * @param {Event} event
+ */
+main.onKeyDown = function (event) {
+    event = event || window.event;
+    var keynum = event.which || event.keyCode;
+    if (keynum == 27) { // ESC
+        // remove the oldest open error message
+        main.removeError();
+    }
+};
+
+/**
+ * Handle mouse down event. Start dragging the splitter.
+ * @param {Event} event
+ */
 main.onMouseDown = function (event) {
     var leftButtonDown = event.which ? (event.which == 1) : (event.button == 1);
     if (!leftButtonDown) {
@@ -72,6 +96,10 @@ main.onMouseDown = function (event) {
     JSONEditor.Events.preventDefault(event);
 };
 
+/**
+ * Handle on mouse move event. Used to drag the spitter
+ * @param {Event} event
+ */
 main.onMouseMove = function (event) {
     var width = (window.innerWidth || document.body.offsetWidth ||
         document.documentElement.offsetWidth);
@@ -86,6 +114,10 @@ main.onMouseMove = function (event) {
     JSONEditor.Events.preventDefault(event);
 };
 
+/**
+ * Handle on mouse up event
+ * @param {Event} event
+ */
 main.onMouseUp = function (event) {
     if (main.eventParams.mousedown) {
         JSONEditor.Events.removeEventListener(document, 'mousemove', main.eventParams.mousemove);
@@ -149,6 +181,9 @@ main.getSplitterValue = function () {
     return value;
 };
 
+/**
+ * Load the interface (editor, formatter, splitter)
+ */
 main.load = function() {
     var json = {
         "Name": "John Smith",
@@ -219,9 +254,11 @@ main.load = function() {
         domSplitter.appendChild(toJSON);
 
         JSONEditor.Events.addEventListener(domSplitter, "mousedown", main.onMouseDown);
+        JSONEditor.Events.addEventListener(window, 'keydown', main.onKeyDown);
 
         // resize
         JSONEditor.Events.addEventListener(window, 'resize', main.resize);
+
 
         // TODO: implement a focus method
         formatter.textarea.focus();
@@ -259,9 +296,11 @@ main.load = function() {
         /* TODO: use checkChange
          checkChange();
          */
+
+        // enforce FireFox to not do spell checking on any input field
+        document.body.spellcheck = false;
     } catch (err) {
-        var msg = err.message || err;
-        main.showError('Error: ' + msg);
+        main.showError(err);
     }
 };
 
@@ -301,7 +340,15 @@ main.resize = function() {
 
 main.errorFrame = undefined;
 
-main.showError = function (message) {
+/**
+ * Show an error message top center of the interface
+ * @param {Error} error
+ */
+main.showError = function (error) {
+    if (!error) {
+        return;
+    }
+
     if (!main.errorFrame) {
         var width = 500;
         var top = 5;
@@ -314,21 +361,21 @@ main.showError = function (message) {
         document.body.appendChild(main.errorFrame);
     }
 
-    var error = document.createElement('div');
-    error.className = 'error';
-    error.style.position = 'relative';
-    main.errorFrame.appendChild(error);
+    var divError = document.createElement('div');
+    divError.className = 'error';
+    divError.style.position = 'relative';
+    main.errorFrame.appendChild(divError);
 
     var table = document.createElement('table');
     table.style.width = '100%';
-    error.appendChild(table);
+    divError.appendChild(table);
     var tbody = document.createElement('tbody');
     table.appendChild(tbody);
     var tr = document.createElement('tr');
     tbody.appendChild(tr);
 
     var tdMessage = document.createElement('td');
-    tdMessage.innerHTML = message;
+    tdMessage.innerHTML = error.message || error.toString();
     tr.appendChild(tdMessage);
 
     var tdClose = document.createElement('td');
@@ -341,16 +388,31 @@ main.showError = function (message) {
     closeDiv.title = 'Close error message';
     tdClose.appendChild(closeDiv);
     closeDiv.onclick = function () {
-        if (error.parentNode) {
-            error.parentNode.removeChild(error);
-        }
-
-        if (main.errorFrame.childNodes.length == 0) {
-            main.errorFrame.parentNode.removeChild(main.errorFrame);
-            main.errorFrame = undefined;
-        }
+        main.removeError(divError);
     }
 };
+
+/**
+ * Remove an error from the list with errors
+ * @param {Element} [error]   The HTML DOM of an error message
+ *                            If undefined, the first error message will be
+ *                            removed.
+ */
+main.removeError = function (error) {
+    if (!error && main.errorFrame) {
+        error = main.errorFrame.firstChild;
+    }
+
+    if (error && error.parentNode == main.errorFrame) {
+        error.parentNode.removeChild(error);
+    }
+
+    if (main.errorFrame.childNodes.length == 0) {
+        main.errorFrame.parentNode.removeChild(main.errorFrame);
+        main.errorFrame = undefined;
+    }
+};
+
 
 main.hideAds = function() {
     var domAd = document.getElementById("ad");

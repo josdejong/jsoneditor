@@ -2,6 +2,12 @@ JSON EDITOR ONLINE CHANGELOG
 http://jsoneditoronline.org
 
 
+<not yet released>, version 1.6.0
+
+- Improved error messages, using JSONLint.
+- Made the web application pass the W3C markup validation service.
+
+
 2012-10-08, version 1.5.1
 
 - Replaced the paid Chrome App with a free, hosted Chrome App (with ads).
