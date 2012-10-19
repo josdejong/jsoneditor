@@ -407,7 +407,7 @@ main.removeError = function (error) {
         error.parentNode.removeChild(error);
     }
 
-    if (main.errorFrame.childNodes.length == 0) {
+    if (main.errorFrame && main.errorFrame.childNodes.length == 0) {
         main.errorFrame.parentNode.removeChild(main.errorFrame);
         main.errorFrame = undefined;
     }
