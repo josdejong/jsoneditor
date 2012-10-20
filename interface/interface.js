@@ -186,26 +186,26 @@ main.getSplitterValue = function () {
  */
 main.load = function() {
     var json = {
-        "Name": "John Smith",
-        "Age": 32,
-        "Employed": true,
-        "Address": {
-            "Street": "701 First Ave.",
-            "City": "Sunnyvale, CA 95125",
-            "Country": "United States"
+        "name": "John Smith",
+        "age": 32,
+        "employed": true,
+        "address": {
+            "street": "701 First Ave.",
+            "city": "Sunnyvale, CA 95125",
+            "country": "United States"
         },
-        "Children": [
+        "children": [
             {
-                "Name": "Richard",
-                "Age": 7
+                "name": "Richard",
+                "age": 7
             },
             {
-                "Name": "Susan",
-                "Age": 4
+                "name": "Susan",
+                "age": 4
             },
             {
-                "Name": "James",
-                "Age": 3
+                "name": "James",
+                "age": 3
             }
         ]
     };

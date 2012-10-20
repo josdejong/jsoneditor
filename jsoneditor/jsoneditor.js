@@ -1382,7 +1382,6 @@ JSONEditor.Node.prototype._getDomValue = function(silent) {
         catch (err) {
             this.value = undefined;
             if (silent != true) {
-                // TODO: give more detailed error message
                 throw err;
             }
         }
@@ -3760,7 +3759,7 @@ JSONEditor.validate = function (jsonString) {
         if (window.jsonlint) {
             message +=
                 '<a class="error" href="http://zaach.github.com/jsonlint/" target="_blank">' +
-                'validated with jsonlint' +
+                'validated by jsonlint' +
                 '</a>';
         }
     }
