@@ -333,6 +333,32 @@ JSONEditor.prototype.scrollTo = function (top) {
     }
 };
 
+/**
+ * Select all the text of the field of the currently focused node
+ * @param {String} type What to select. Either "field" or "value"
+ */
+JSONEditor.selectFocusedNodeText = function(type){
+    window.setTimeout(function() {
+        var sel, range;
+        if (window.getSelection && document.createRange) {
+            range = document.createRange();
+            if(type == "field")
+                range.selectNodeContents(JSONEditor.focusNode.dom.field);
+            else
+                range.selectNodeContents(JSONEditor.focusNode.dom.value);
+            sel = window.getSelection();
+            sel.removeAllRanges();
+            sel.addRange(range);
+        } else if (document.body.createTextRange) {
+            range = document.body.createTextRange();
+            if(type == "field")
+                range.moveToElementText(JSONEditor.focusNode.dom.field);
+            else
+                range.moveToElementText(JSONEditor.focusNode.dom.value);
+            range.select();
+        }
+    }, 1);
+}
 
 /**
  * @constructor JSONEditor.History
@@ -2069,6 +2095,10 @@ JSONEditor.Node.prototype.onEvent = function (event) {
         switch (type) {
             case 'focus':
                 JSONEditor.focusNode = this;
+                if(this.value == "value" && typeof this.valueNotInitialized != "undefined"){
+                    JSONEditor.selectFocusedNodeText("value")
+                    delete this.valueNotInitialized;
+                }
                 break;
 
             case 'blur':
@@ -2101,6 +2131,10 @@ JSONEditor.Node.prototype.onEvent = function (event) {
         switch (type) {
             case 'focus':
                 JSONEditor.focusNode = this;
+                if(this.field == "field" && typeof this.fieldNotInitialized != "undefined"){
+                    JSONEditor.selectFocusedNodeText("field")
+                    delete this.fieldNotInitialized;
+                }
                 break;
 
             case 'change':
@@ -2731,6 +2765,8 @@ JSONEditor.AppendNode.prototype._onAppend = function () {
     });
     this.parent.appendChild(newNode);
     this.parent.setHighlight(false);
+    newNode.fieldNotInitialized = true;
+    newNode.valueNotInitialized = true;
     newNode.focus();
 
     this.getEditor().onAction('appendNode', {
