@@ -36,7 +36,7 @@
     Copyright (C) 2011-2012 Jos de Jong, http://jsoneditoronline.org
 
     @author   Jos de Jong, <wjosdejong@gmail.com>
-    @date     2012-10-19
+    @date     2012-10-31
     -->
 
     <meta name="description" content="JSON Editor Online is a web-based tool to view, edit, and format JSON. It shows your data side by side in a clear, editable treeview and in formatted plain text.">
@@ -45,25 +45,65 @@
 
     <link rel="shortcut icon" href="favicon.ico">
 
-    <link href="interface/interface.css" rel="stylesheet" type="text/css">
-    <link href="jsoneditor/jsoneditor.css" rel="stylesheet" type="text/css">
+    <link href="app.css" rel="stylesheet" type="text/css">
+    <link href="fileretriever.css" rel="stylesheet" type="text/css">
+    <link href="../../jsoneditor/jsoneditor.css" rel="stylesheet" type="text/css">
     <!-- TODO: droid font
     <link href='http://fonts.googleapis.com/css?family=Droid+Sans+Mono' rel='stylesheet' type='text/css'>
     -->
 
-    <script type="text/javascript" src="jsoneditor/jsoneditor.js"></script>
-    <script type="text/javascript" src="interface/interface.js"></script>
-    <script type="text/javascript" src="interface/lib/jsonlint/jsonlint.js"></script>
+    <script type="text/javascript" src="../../jsoneditor/jsoneditor.js"></script>
+    <script type="text/javascript" src="hash.js"></script>
+    <script type="text/javascript" src="ajax.js"></script>
+    <script type="text/javascript" src="fileretriever.js"></script>
+    <script type="text/javascript" src="notifications.js"></script>
+    <script type="text/javascript" src="splitter.js"></script>
+    <script type="text/javascript" src="app.js"></script>
+    <script type="text/javascript" src="lib/jsonlint/jsonlint.js"></script>
 
+    <style type="text/css">
+        div.convert-right {
+            background: url('../../jsoneditor/img/jsoneditor-icons.png') -168px 0;
+        }
+        div.convert-left {
+            background: url('../../jsoneditor/img/jsoneditor-icons.png') -192px 0;
+        }
+    </style>
 </head>
 
-<body spellcheck="false" >
+<body>
 
 <div id="header" >
     <a href="http://jsoneditoronline.org" class="header">
-        <img alt="JSON Editor Online" title="JSON Editor Online" src="interface/img/logo.png" id="logo">
+        <img alt="JSON Editor Online" title="JSON Editor Online" src="img/logo.png" id="logo">
     </a>
 
+    <div id="menu">
+        <ul>
+            <li>
+                <a id="clear" title="Clear contents">Clear</a>
+            </li>
+            <li>
+                <a id="open" title="Open file from disk">
+                    Open
+                    <span id="openMenuButton" title="Open file from disk or url">
+                    &#x25BC;
+                    </span>
+                </a>
+                <ul id="openMenu">
+                    <li>
+                        <a id="menuOpenFile" title="Open file from disk">Open&nbsp;file</a>
+                    </li>
+                    <li>
+                        <a id="menuOpenUrl" title="Open file from url">Open&nbsp;url</a>
+                    </li>
+                </ul>
+            </li>
+            <li>
+                <a id="save" title="Save file to disk">Save</a>
+            </li>
+        </ul>
+    </div>
 
     <!-- TODO: info, links, faq -->
     <!--
@@ -101,17 +141,14 @@
         <div id="jsoneditor"></div>
 
         <script type="text/javascript">
-            main.load();
-            main.resize();
+            app.load();
+            app.resize();
         </script>
 
         <div id="ad" title="advertisement" >
             <div id="adInfo">
                 ADVERTISEMENT<br>
-                <a class="adInfo" href="javascript: main.hideAds();">hide for now</a><br>
-                <div id="removeAds">
-                    <a class="adInfo" href="javascript: main.removeAds()">get rid of the ads</a>
-                </div>
+                <a class="adInfo" href="javascript: app.hideAds();">hide for now</a><br>
                 <div id="chromeAppInfo" style='display: none;'>
                     <br>If you want to get rid of the ads,
                     you can buy the Chrome App.
@@ -148,16 +185,18 @@
     <div id="footer-inner">
         <a href="http://jsoneditoronline.org" class="footer">JSON Editor Online 1.6.0</a>
         &bull;
-        <a href="changelog.txt" target="_blank" class="footer">Changelog</a>
+        <a href="../../changelog.txt" target="_blank" class="footer">Changelog</a>
         &bull;
         <a href="https://github.com/wjosdejong/jsoneditoronline" target="_blank" class="footer">Sourcecode</a>
         &bull;
-        <a href="NOTICE" target="_blank" class="footer">Copyright 2011-2012 Jos de Jong</a>
+        <a href="datapolicy.txt" target="_blank" class="footer">Data policy</a>
+        &bull;
+        <a href="../../NOTICE" target="_blank" class="footer">Copyright 2011-2012 Jos de Jong</a>
     </div>
 </div>
 
 <script type="text/javascript">
-    main.resize();
+    app.resize();
 </script>
 
 </body>

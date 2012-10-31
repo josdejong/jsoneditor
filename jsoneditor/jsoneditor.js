@@ -27,7 +27,7 @@
  * Copyright (c) 2011-2012 Jos de Jong, http://jsoneditoronline.org
  *
  * @author  Jos de Jong, <wjosdejong@gmail.com>
- * @date    2012-10-19
+ * @date    2012-10-31
  */
 
 
@@ -3105,6 +3105,13 @@ JSONFormatter.prototype.getText = function() {
     return this.textarea.value;
 };
 
+/**
+ * Set the text contents of the JSONFormatter
+ * @param {String} text
+ */
+JSONFormatter.prototype.setText = function(text) {
+    this.textarea.value = text;
+};
 
 /**
  * Set a callback method for the onchange event

@@ -4,7 +4,9 @@ http://jsoneditoronline.org
 
 <not yet released>, version 1.6.0
 
-- Improved error messages, using JSONLint.
+- Added feature to the web application to load and save files to disk and from
+  url.
+- Improved error messages in the web application using JSONLint.
 - Made the web application pass the W3C markup validation service.
 
 
