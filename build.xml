@@ -93,7 +93,6 @@
         <copy file="jsoneditor/jsoneditor-min.css" todir="${web_app}/lib/jsoneditor" />
         <copy file="jsoneditor/img/jsoneditor-icons.png" todir="${web_app}/lib/jsoneditor/img" />
 
-
         <!-- minify the javascript files -->
         <java jar="${compressor}" dir="${web_app}" fork="true" failonerror="true">
             <arg value="-o"/>
