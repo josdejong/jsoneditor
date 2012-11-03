@@ -10,6 +10,8 @@ http://jsoneditoronline.org
 - Added option 'change' to both editor and formatter, which allows to set a
   callback which is triggered when the contents of the editor or formatter
   changes.
+- Renamed options 'enableSearch' and 'enableHistory' to 'search' and 'history'
+  respectively.
 
 
 2012-10-08, version 1.5.1

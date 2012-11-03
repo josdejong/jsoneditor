@@ -63,10 +63,12 @@ var JSON;
  * JSONEditor
  * @param {Element} container    Container element
  * @param {Object}  [options]    Object with options. available options:
- *                                   {Boolean} enableSearch   true by default
- *                                   {Boolean} enableHistory  true by default
- *                                   {function} change        callback method
- *                                                            triggered on change
+ *                               {Boolean} search   Enable search box.
+ *                                                  True by default
+ *                               {Boolean} history  Enable history (undo/redo).
+ *                                                  True by default
+ *                               {function} change  Callback method, triggered
+ *                                                  on change of contents
  * @param {Object | undefined} json JSON object
  */
 JSONEditor = function (container, options, json) {
@@ -85,7 +87,7 @@ JSONEditor = function (container, options, json) {
 
     this._setOptions(options);
 
-    if (this.options.enableHistory) {
+    if (this.options.history) {
         this.history = new JSONEditor.History(this);
     }
 
@@ -97,17 +99,19 @@ JSONEditor = function (container, options, json) {
 
 /**
  * Initialize and set default options
- * @param {Object}  [options]      Object with options. available options:
- *                                   {boolean} enableSearch   true by default
- *                                   {boolean} enableHistory  true by default
- *                                   {function} change        callback method
- *                                                            triggered on change
+ * @param {Object}  [options]    Object with options. available options:
+ *                               {Boolean} search   Enable search box.
+ *                                                  True by default
+ *                               {Boolean} history  Enable history (undo/redo).
+ *                                                  True by default
+ *                               {function} change  Callback method, triggered
+ *                                                  on change of contents
  * @private
  */
 JSONEditor.prototype._setOptions = function (options) {
     this.options = {
-        'enableSearch': true,
-        'enableHistory': true
+        'search': true,
+        'history': true
     };
 
     // copy all options
@@ -116,6 +120,18 @@ JSONEditor.prototype._setOptions = function (options) {
             if (options.hasOwnProperty(prop)) {
                 this.options[prop] = options[prop];
             }
+        }
+
+        // check for deprecated options
+        if (options.enableSearch) {
+            // deprecated since version 1.6.0, 2012-11-03
+            this.options.search = options.enableSearch;
+            console.log('WARNING: Option "enableSearch" is deprecated. Use "search" instead.');
+        }
+        if (options.enableHistory) {
+            // deprecated since version 1.6.0, 2012-11-03
+            this.options.search = options.enableHistory;
+            console.log('WARNING: Option "enableHistory" is deprecated. Use "history" instead.');
         }
     }
 };
@@ -2771,7 +2787,7 @@ JSONEditor.prototype._createFrame = function () {
         //       Requires knowing whether the JSONEditor has focus or not
         //       (use a global event listener for that?)
         // Check for search quickkeys, Ctrl+F and F3
-        if (editor.options.enableSearch) {
+        if (editor.options.search) {
             if (event.type == 'keydown') {
                 var keynum = event.which || event.keyCode;
                 if (keynum == 70 && event.ctrlKey) { // Ctrl+F
@@ -2853,7 +2869,7 @@ JSONEditor.prototype._createFrame = function () {
     this.menu.appendChild(collapseAll);
 
     // create expand/collapse buttons
-    if (this.options.enableHistory) {
+    if (this.options.history) {
         // create separator
         var separator = document.createElement('span');
         //separator.style.width = '5px';
@@ -2890,7 +2906,7 @@ JSONEditor.prototype._createFrame = function () {
     }
 
     // create search box
-    if (this.options.enableSearch) {
+    if (this.options.search) {
         this.searchBox = new JSONEditor.SearchBox(this, this.menu);
     }
 };
