@@ -42,7 +42,10 @@
  *                                            True by default.
  *                         {Boolean} [hash]   Use hash to store the last opened
  *                                            filename or url. True by default.
- * 
+ *                         {Notify} [notify]  A handler for notifications
+ *                                            If provided, messages like
+ *                                            "loading" and "saving" are created.
+ *
  * @license
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy
@@ -70,10 +73,10 @@ var FileRetriever = function (options) {
     };
     this.timeout = Number(options.timeout) || 30000;
     this.scriptUrl = options.scriptUrl || 'fileretriever.php';
+    this.notify = options.notify || undefined;
     this.defaultFilename = 'document.json';
     this.loadCallback = function () {};
     this.dom = {};
-    var me = this;
 
     if (options.hash !== false) {
         if (window.Hash) {
@@ -187,11 +190,22 @@ FileRetriever.prototype.loadUrl = function (url, callback) {
     // set current filename (will be used when saving a file again)
     this.setUrl(url);
 
+    // loading notification
+    var loading = undefined;
+    if (this.notify) {
+        loading = this.notify.showNotification('loading url...');
+    }
+
     // method to ensure the callback is only executed once
+    var me = this;
     var callbackOnce = function (error, data) {
         if (callback) {
             callback(error, data);
             callback = undefined;
+        }
+        if (me.notify && loading) {
+            me.notify.removeMessage(loading);
+            loading = undefined;
         }
     };
 
@@ -242,11 +256,18 @@ FileRetriever.prototype.loadUrl = function (url, callback) {
 FileRetriever.prototype.loadFile = function (callback) {
     this.removeUrl();
 
+    // loading notification
+    var loading = undefined;
+
     // method to ensure the callback is only executed once
     var callbackOnce = function (error, data) {
         if (callback) {
             callback(error, data);
             callback = undefined;
+        }
+        if (me.notify && loading) {
+            me.notify.removeMessage(loading);
+            loading = undefined;
         }
     };
 
@@ -295,6 +316,10 @@ FileRetriever.prototype.loadFile = function (callback) {
         domFile.type = 'file';
         domFile.name = 'file';
         domFile.onchange = function () {
+            if (me.notify && !loading) {
+                loading = me.notify.showNotification('loading file...');
+            }
+
             // there is a file selected
             setTimeout(function () { // Timeout needed for IE
                 var filename = domFile.value;
@@ -343,7 +368,14 @@ FileRetriever.prototype.loadFile = function (callback) {
             inputName: 'file',
             formAction: this.scriptUrl,
             formMethod: 'POST',
-            formTarget: iframeName
+            formTarget: iframeName,
+            callback: function (value) {
+                if (value) {
+                    if (me.notify && !loading) {
+                        loading = me.notify.showNotification('loading file...');
+                    }
+                }
+            }
         });
         // TODO: handle a cancel
     }
@@ -367,6 +399,10 @@ FileRetriever.prototype.loadUrlDialog = function (callback) {
             if (url) {
                 me.loadUrl(url, callback);
             }
+            else {
+                // cancel
+                callback();
+            }
         }
     });
 };
@@ -374,7 +410,8 @@ FileRetriever.prototype.loadUrlDialog = function (callback) {
 /**
  * Show a prompt.
  * The propmt can either:
- * - Post a form when formTarget, formAction, and formMethod are provided
+ * - Post a form when formAction, and formMethod are provided.
+ *   Will call callback on submit.
  * - Call the callback method "callback" with the entered value as parameter.
  *   This happens when a callback parameter is provided.
  * @param {Object} params   Available parameters:
@@ -438,11 +475,8 @@ FileRetriever.prototype.prompt = function (params) {
             }, 0);
             if (params.callback) {
                 params.callback(field.value);
-                return false;
             }
-            else {
-                return true;
-            }
+            return (form.action && form.method);
         }
         else {
             alert('Enter a ' + params.inputName + ' first...');
@@ -504,11 +538,22 @@ FileRetriever.prototype.prompt = function (params) {
  *                                  {Error} error
  */
 FileRetriever.prototype.saveFile = function (data, callback) {
+    // saving notification
+    var saving = undefined;
+    if (this.notify) {
+        saving = this.notify.showNotification('saving file...');
+    }
+
     // method to ensure the callback is only executed once
+    var me = this;
     var callbackOnce = function (error) {
         if (callback) {
             callback(error);
             callback = undefined;
+        }
+        if (me.notify && saving) {
+            me.notify.removeMessage(saving);
+            saving = undefined;
         }
     };
 
@@ -524,7 +569,6 @@ FileRetriever.prototype.saveFile = function (data, callback) {
     else {
         // save file by uploading it to the server and then downloading
         // it via an iframe
-        var me = this;
         if (data.length < this.options.maxSize) {
             ajax.post(me.scriptUrl, data, function(id, status) {
                 if (status == 200) {

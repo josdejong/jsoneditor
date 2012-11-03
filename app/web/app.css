@@ -227,7 +227,7 @@ a.adInfo {
 }
 
 div.error, div.notification {
-    border-radius: 3px;
+    border-radius: 2px;
     padding: 5px;
     margin: 5px;
     box-shadow: 0 0 15px rgba(128, 128, 128, 0.5);

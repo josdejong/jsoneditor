@@ -71,7 +71,7 @@
             <fileset dir="${web_app_src}" includes="hash.js"/>
             <fileset dir="${web_app_src}" includes="ajax.js"/>
             <fileset dir="${web_app_src}" includes="fileretriever.js"/>
-            <fileset dir="${web_app_src}" includes="notifications.js"/>
+            <fileset dir="${web_app_src}" includes="notify.js"/>
             <fileset dir="${web_app_src}" includes="splitter.js"/>
             <fileset dir="${web_app_src}" includes="app.js"/>
         </concat>

@@ -1,11 +1,10 @@
 /**
  * Utility to display notifications and error messages.
  * The messages are displayed on the top center of the web page
- * @constructor Notifications
+ * @constructor Notify
  */
-function Notifications () {
+function Notify () {
     this.dom = {};
-    this.notifications = [];
 
     // TODO: attach the event as soon as there are one or multiple messages displayed,
     //       remove it as soon as they are all gone
@@ -20,7 +19,7 @@ function Notifications () {
  * @param {String} message
  * @return {Element} messageObject
  */
-Notifications.prototype.showNotification = function (message) {
+Notify.prototype.showNotification = function (message) {
     return this.showMessage({
         type: 'notification',
         message: message,
@@ -33,7 +32,7 @@ Notifications.prototype.showNotification = function (message) {
  * @param {Error} error
  * @return {Element} messageObject
  */
-Notifications.prototype.showError = function (error) {
+Notify.prototype.showError = function (error) {
     return this.showMessage({
         type: 'error',
         message: (error.message || error.toString()),
@@ -49,7 +48,7 @@ Notifications.prototype.showError = function (error) {
  *                           {Boolean} closeButton
  * @return {Element} messageObject
  */
-Notifications.prototype.showMessage = function (params) {
+Notify.prototype.showMessage = function (params) {
     var frame = this.dom.frame;
     if (!frame) {
         var width = 500;
@@ -110,7 +109,7 @@ Notifications.prototype.showMessage = function (params) {
  *                              If undefined, the first closeable message will
  *                              closed.
  */
-Notifications.prototype.removeMessage = function (message) {
+Notify.prototype.removeMessage = function (message) {
     var frame = this.dom.frame;
     if (!message && frame) {
         // find the first closable message in the list with displayed messages
@@ -138,7 +137,7 @@ Notifications.prototype.removeMessage = function (message) {
  * @param {Event} event
  * @private
  */
-Notifications.prototype.onKeyDown = function (event) {
+Notify.prototype.onKeyDown = function (event) {
     event = event || window.event;
     var keynum = event.which || event.keyCode;
     if (keynum == 27) { // ESC

@@ -43,7 +43,7 @@ app.formatterToEditor = function() {
         editor.set(formatter.get());
     }
     catch (err) {
-         app.notifications.showError(err);
+         app.notify.showError(err);
     }
 };
 
@@ -55,7 +55,7 @@ app.editorToFormatter = function () {
         formatter.set(editor.get());
     }
     catch (err) {
-        app.notifications.showError(err);
+        app.notify.showError(err);
     }
 };
 
@@ -66,11 +66,12 @@ app.editorToFormatter = function () {
 app.load = function() {
     try {
         // notification handler
-        app.notifications = new Notifications();
+        app.notify = new Notify();
 
         // retriever for loading/saving files
         app.retriever = new FileRetriever({
-            scriptUrl: 'fileretriever.php'
+            scriptUrl: 'fileretriever.php',
+            notify: app.notify
         });
 
         // default json document
@@ -121,7 +122,7 @@ app.load = function() {
         });
         formatter.set(json);
         formatter.onError = function (err) {
-            app.notifications.showError(err);
+            app.notify.showError(err);
         };
 
         // editor
@@ -132,6 +133,7 @@ app.load = function() {
             }
         });
         editor.set(json);
+        // TODO: automatically synchronize data of formatter and editor? (editor should keep its state though)
 
         // splitter
         var domSplitter = document.getElementById('splitter');
@@ -218,44 +220,10 @@ app.load = function() {
         // TODO: implement a focus method
         formatter.textarea.focus();
 
-        /* TODO: use checkChange
-         // TODO: a nicer method to check for changes
-        var formatterLastContent;
-        var editorLastContent;
-        function checkChange () {
-            try {
-                // check for change in formatter
-                var formatterJSON = formatter.get();
-                var formatterContent = JSON.stringify(formatterJSON);
-                if (formatterContent != formatterLastContent) {
-                    formatterLastContent = formatterContent;
-                    editorLastContent = formatterContent;
-                    editor.set(formatterJSON);
-                }
-                else {
-                    // check for change in editor
-                    var editorJSON = editor.get();
-                    var editorContent = JSON.stringify(editorJSON);
-                    if (editorContent != editorLastContent) {
-                        editorLastContent = editorContent;
-                        formatterLastContent = editorContent;
-                        formatter.set(editorJSON);
-                    }
-                }
-            }
-            catch (err) {
-                app.notifications.showError(err);
-            }
-
-            setTimeout(checkChange, 1000);
-        }
-        checkChange();
-        */
-
         // enforce FireFox to not do spell checking on any input field
         document.body.spellcheck = false;
     } catch (err) {
-        app.notifications.showError(err);
+        app.notify.showError(err);
     }
 };
 
@@ -274,12 +242,12 @@ app.openCallback = function (err, data) {
             }
             catch (err) {
                 editor.set({});
-                app.notifications.showError(err);
+                app.notify.showError(err);
             }
         }
     }
     else {
-        app.notifications.showError(err);
+        app.notify.showError(err);
     }
 };
 
@@ -287,7 +255,6 @@ app.openCallback = function (err, data) {
  * Open a file explorer to select a file and open the file
  */
 app.openFile = function() {
-    // TODO: show a 'loading...' notification
     app.retriever.loadFile(app.openCallback);
 };
 
@@ -297,7 +264,6 @@ app.openFile = function() {
  * @param {String} [url]
  */
 app.openUrl = function (url) {
-    // TODO: show a 'loading...' notification
     if (!url) {
         app.retriever.loadUrlDialog(app.openCallback);
     }
@@ -326,7 +292,7 @@ app.saveFile = function () {
     var data = formatter.getText();
     app.retriever.saveFile(data, function (err) {
         if (err) {
-            app.notifications.showError(err);
+            app.notify.showError(err);
         }
     });
 };
