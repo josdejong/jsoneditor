@@ -100,10 +100,10 @@ app.load = function() {
             ]
         };
 
-        // load url if hash contains a url
-        if (window.Hash) {
-            var hash = new Hash();
-            var url = hash.getValue('url');
+        // load url if query parameters contains a url
+        if (window.QueryParams) {
+            var qp = new QueryParams();
+            var url = qp.getValue('url');
             if (url) {
                 json = {};
                 app.openUrl(url);

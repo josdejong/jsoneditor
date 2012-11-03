@@ -68,7 +68,7 @@
 
         <!-- concatenate the javascript and css app files -->
         <concat destfile="${web_app}/app.js">
-            <fileset dir="${web_app_src}" includes="hash.js"/>
+            <fileset dir="${web_app_src}" includes="queryparams.js"/>
             <fileset dir="${web_app_src}" includes="ajax.js"/>
             <fileset dir="${web_app_src}" includes="fileretriever.js"/>
             <fileset dir="${web_app_src}" includes="notify.js"/>
