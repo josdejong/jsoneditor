@@ -10,9 +10,11 @@ http://jsoneditoronline.org
 - Added option 'change' to both editor and formatter, which allows to set a
   callback which is triggered when the contents of the editor or formatter
   changes.
+- Changed the default indentation of the JSONFormatter to 4 spaces.
 - Renamed options 'enableSearch' and 'enableHistory' to 'search' and 'history'
   respectively.
 - Added parameter 'json' to the JSONFormatter constructor.
+- Added option 'indentation' to the JSONFormatter.
 
 
 2012-10-08, version 1.5.1

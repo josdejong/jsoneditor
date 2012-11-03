@@ -2983,8 +2983,10 @@ JSONEditor.getNodeFromTarget = function (target) {
  * @constructor JSONFormatter
  * @param {Element} container
  * @param {Object} [options]         Object with options. available options:
- *                                   {function} change        callback method
- *                                                            triggered on change
+ *                                   {Number} indentation  Number of indentation
+ *                                                         spaces. 4 by default.
+ *                                   {function} change     Callback method
+ *                                                         triggered on change
  * @param {JSON | String} [json]     initial contents of the formatter
  */
 JSONFormatter = function (container, options, json) {
@@ -2996,6 +2998,7 @@ JSONFormatter = function (container, options, json) {
     }
 
     this.container = container;
+    this.indentation = 4; // number of spaces
 
     this.width = container.clientWidth;
     this.height = container.clientHeight;
@@ -3038,25 +3041,33 @@ JSONFormatter = function (container, options, json) {
     this.content.appendChild(this.textarea);
 
     var textarea = this.textarea;
-    if (options && options.change) {
-        // register on change event
-        if (this.textarea.oninput === null) {
-            this.textarea.oninput = function () {
-                options.change();
+
+    // read the options
+    if (options) {
+        if (options.change) {
+            // register on change event
+            if (this.textarea.oninput === null) {
+                this.textarea.oninput = function () {
+                    options.change();
+                }
+            }
+            else {
+                // oninput is undefined. For IE8-
+                this.textarea.onchange = function () {
+                    options.change();
+                }
             }
         }
-        else {
-            // oninput===undefined. For IE8-
-            this.textarea.onchange = function () {
-                options.change();
-            }
+        if (options.indentation) {
+            this.indentation = Number(options.indentation);
         }
     }
 
     var me = this;
     buttonFormat.onclick = function () {
         try {
-            textarea.value = JSON.stringify(JSONEditor.parse(textarea.value), null, '  ');
+            var json = JSONEditor.parse(textarea.value);
+            textarea.value = JSON.stringify(json, null, me.indentation);
         }
         catch (err) {
             me.onError(err);
@@ -3064,7 +3075,8 @@ JSONFormatter = function (container, options, json) {
     };
     buttonCompact.onclick = function () {
         try {
-            textarea.value = JSON.stringify(JSONEditor.parse(textarea.value));
+            var json = JSONEditor.parse(textarea.value);
+            textarea.value = JSON.stringify(json);
         }
         catch (err) {
             me.onError(err);
@@ -3073,6 +3085,7 @@ JSONFormatter = function (container, options, json) {
 
     this.container.appendChild(this.frame);
 
+    // load initial json object or string
     if (typeof(json) == 'string') {
         this.setText(json);
     }
@@ -3095,7 +3108,7 @@ JSONFormatter.prototype.onError = function(err) {
  * @param {Object} json
  */
 JSONFormatter.prototype.set = function(json) {
-    this.textarea.value = JSON.stringify(json, null, '  ');
+    this.textarea.value = JSON.stringify(json, null, this.indentation);
 };
 
 /**
