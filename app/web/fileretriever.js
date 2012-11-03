@@ -34,6 +34,8 @@
  *                                            size allowed by the server 
  *                                            side script). Default is 
  *                                            1024 * 1024 bytes.
+ *                         {Number} [timeout] Timeout in milliseconds.
+ *                                            30000 ms by default.
  *                         {Boolean} [html5]  Use HTML5 solutions
  *                                            to load/save files when
  *                                            supported by the browser.
@@ -57,7 +59,7 @@
  * Copyright (c) 2012 Jos de Jong, http://jsoneditoronline.org
  *
  * @author  Jos de Jong, <wjosdejong@gmail.com>
- * @date    2012-10-31
+ * @date    2012-11-03
  */
 var FileRetriever = function (options) {
     // set options and variables
@@ -66,6 +68,7 @@ var FileRetriever = function (options) {
         maxSize: ((options.maxSize != undefined) ? options.maxSize : 1024 * 1024),
         html5: ((options.html5 != undefined) ? options.html5 : true)
     };
+    this.timeout = Number(options.timeout) || 30000;
     this.scriptUrl = options.scriptUrl || 'fileretriever.php';
     this.defaultFilename = 'document.json';
     this.loadCallback = function () {};
@@ -80,94 +83,20 @@ var FileRetriever = function (options) {
             console.log('WARNING: missing resource hash.js');
         }
     }
+};
 
-    // make an element invisible
-    function hide(elem) {
-        elem.style.visibility = 'hidden';
-        elem.style.position = 'absolute';
-        elem.style.left = '-1000px';
-        elem.style.top = '-1000px';
-        elem.style.width = '0';
-        elem.style.height = '0';
-    }
-
-    // create an iframe to save a file
-    var downloadIframe = document.createElement('iframe');
-    hide(downloadIframe);
-    document.body.appendChild(downloadIframe);
-    this.dom.downloadIframe = downloadIframe;
-
-    // create an iframe for uploading files
-    // the iframe must have an unique name, allowing multiple 
-    // FileRetrievers. The name is needed as target for the uploadForm
-    var uploadIframe = document.createElement('iframe');
-    uploadIframe.name = 'fileretriever-upload-' + Math.round(Math.random() * 1E15);
-    hide(uploadIframe);
-    document.body.appendChild(uploadIframe);
-    uploadIframe.onload = function () {
-        // when a downloaded file is retrieved, send a callback with 
-        // the retrieved data
-        var id = uploadIframe.contentWindow.document.body.innerHTML;
-        var url = me.scriptUrl + '?id=' + id + '&filename=' + me.getFilename();
-        //console.log('uploadIframe.load ', id, ' ', url)
-        ajax.get(url, function (data, status) {
-            //console.log('ajax.get ', url, ' ', data, ' ', status);
-            if (status == 200) {
-                me.loadCallback(null, data);
-            }
-            else {
-                //console.log('Error loading file ' + url, status, data);
-                var err = new Error('Error loading file ' + me.getFilename());
-                me.loadCallback(err, null);
-            }
-        });
-    };
-    this.dom.uploadIframe = uploadIframe;
-    
-    // create a form to upload a file
-    var uploadForm = document.createElement('form');
-    uploadForm.action = this.scriptUrl;
-    uploadForm.method = 'POST';
-    uploadForm.enctype = 'multipart/form-data';
-    uploadForm.target = uploadIframe.name;
-    hide(uploadForm);
-    this.dom.form = uploadForm;
-    var domFile = document.createElement('input');
-    domFile.type = 'file';
-    domFile.name = 'file';
-    domFile.onchange = function () {
-        setTimeout(function () { // Timeout needed for IE
-            var filename = domFile.value;
-            //console.log('load file:' + filename + '.');
-            if (filename.length) {
-                if (me.options.html5 && window.File && window.FileReader) {
-                    // load file via HTML5 FileReader (no size limits)
-                    var file = domFile.files[0];
-                    var reader = new FileReader();
-                    reader.onload = function(event) {
-                        var data = event.target.result;
-                        me.loadCallback(null, data);
-                    };
-
-                    // Read in the image file as a data URL.
-                    reader.readAsText(file);
-                }
-                else {
-                    // load by uploading to server
-                    // TODO: how to check the file size? (on older browsers)
-                    //console.log('submitting...');
-                    uploadForm.submit();
-                }
-            }
-            else {
-                // cancel
-                me.loadCallback(null, null);
-            }
-        }, 0);
-    };
-    uploadForm.appendChild(domFile);
-    this.dom.file = domFile;
-    document.body.appendChild(uploadForm);
+/**
+ * make an HTML DOM element invisible
+ * @param {Element} elem
+ * @private
+ */
+FileRetriever.prototype._hide = function (elem) {
+    elem.style.visibility = 'hidden';
+    elem.style.position = 'absolute';
+    elem.style.left = '-1000px';
+    elem.style.top = '-1000px';
+    elem.style.width = '0';
+    elem.style.height = '0';
 };
 
 /**
@@ -257,13 +186,21 @@ FileRetriever.prototype.removeUrl = function () {
 FileRetriever.prototype.loadUrl = function (url, callback) {
     // set current filename (will be used when saving a file again)
     this.setUrl(url);
-    
+
+    // method to ensure the callback is only executed once
+    var callbackOnce = function (error, data) {
+        if (callback) {
+            callback(error, data);
+            callback = undefined;
+        }
+    };
+
     // try to fetch to the url directly (may result in a cross-domain error)
     var scriptUrl = this.scriptUrl;
     ajax.get(url, function(data, status) {
         if (status == 200) {
             // success. great. no cross-domain error
-            callback(null, data);
+            callbackOnce(null, data);
         }
         else {
             // cross-domain error (or other). retrieve the url via the server
@@ -271,21 +208,26 @@ FileRetriever.prototype.loadUrl = function (url, callback) {
             var err;
             ajax.get(indirectUrl, function(data, status) {
                 if (status == 200) {
-                    callback(null, data);
+                    callbackOnce(null, data);
                 }
                 else if (status == 404) {
                     console.log('Error: url "' + url + '" not found', status, data);
                     err = new Error('Error: url "' + url + '" not found');
-                    callback(err, null);
+                    callbackOnce(err, null);
                 }
                 else {
                     console.log('Error: failed to load url "' + url + '"', status, data);
                     err = new Error('Error: failed to load url "' + url + '"');
-                    callback(err, null);
+                    callbackOnce(err, null);
                 }
             });
         }
     });
+
+    // safety mechanism: callback after a timeout
+    setTimeout(function () {
+        callbackOnce(new Error('Error loading url (timeout)'));
+    }, this.timeout);
 };
 
 /**
@@ -300,39 +242,111 @@ FileRetriever.prototype.loadUrl = function (url, callback) {
 FileRetriever.prototype.loadFile = function (callback) {
     this.removeUrl();
 
+    // method to ensure the callback is only executed once
+    var callbackOnce = function (error, data) {
+        if (callback) {
+            callback(error, data);
+            callback = undefined;
+        }
+    };
+
     var isIE = (navigator.appName == 'Microsoft Internet Explorer');
+
+    var iframeName = 'fileretriever-upload-' + Math.round(Math.random() * 1E15);
+    var me = this;
+
+    // create an iframe for uploading files
+    // the iframe must have an unique name, allowing multiple
+    // FileRetrievers. The name is needed as target for the uploadForm
+    var iframe = document.createElement('iframe');
+    iframe.name = iframeName;
+    me._hide(iframe);
+    iframe.onload = function () {
+        // when a downloaded file is retrieved, send a callback with
+        // the retrieved data
+        var id = iframe.contentWindow.document.body.innerHTML;
+        if (id) {
+            var url = me.scriptUrl + '?id=' + id + '&filename=' + me.getFilename();
+            //console.log('uploadIframe.load ', id, ' ', url)
+            ajax.get(url, function (data, status) {
+                //console.log('ajax.get ', url, ' ', data, ' ', status);
+                if (status == 200) {
+                    callbackOnce(null, data);
+                }
+                else {
+                    //console.log('Error loading file ' + url, status, data);
+                    var err = new Error('Error loading file ' + me.getFilename());
+                    callbackOnce(err, null);
+                }
+            });
+        }
+    };
+    document.body.appendChild(iframe);
+
     if (!isIE) {
-        // immediate file upload
-        this.loadCallback = callback || function () {};
-        this.dom.file.click();
+        // create a hidden form to select a file
+        var domForm = document.createElement('form');
+        domForm.action = this.scriptUrl;
+        domForm.method = 'POST';
+        domForm.enctype = 'multipart/form-data';
+        domForm.target = iframeName;
+        this._hide(domForm);
+        var domFile = document.createElement('input');
+        domFile.type = 'file';
+        domFile.name = 'file';
+        domFile.onchange = function () {
+            // there is a file selected
+            setTimeout(function () { // Timeout needed for IE
+                var filename = domFile.value;
+                if (filename.length) {
+                    if (me.options.html5 && window.File && window.FileReader) {
+                        // load file via HTML5 FileReader (no size limits)
+                        var file = domFile.files[0];
+                        var reader = new FileReader();
+                        reader.onload = function(event) {
+                            var data = event.target.result;
+                            callbackOnce(null, data);
+                        };
+
+                        // Read in the image file as a data URL.
+                        reader.readAsText(file);
+                    }
+                    else {
+                        // load by uploading to server
+                        // TODO: how to check the file size? (on older browsers)
+                        //console.log('submitting...');
+
+                        domForm.submit();
+                    }
+                }
+                else {
+                    // cancel
+                    callbackOnce(null, null);
+                }
+            }, 0);
+        };
+        domForm.appendChild(domFile);
+        document.body.appendChild(domForm);
+
+        // activate file selection (the click is done after a timeout,
+        // as in Opera and Safari, the form is not yet rendered)
+        setTimeout(function () {
+            domFile.click();
+        }, 0);
     }
     else {
-        // immediate file upload not supported in IE thanks to all the 
-        // security limitations. A form is needed with a manual submit.
-        this.loadFileDialog(callback);
+        // create a visual form and submit manually (for IE)
+        this.prompt({
+            title: 'Open file',
+            titleSubmit: 'Open',
+            inputType: 'file',
+            inputName: 'file',
+            formAction: this.scriptUrl,
+            formMethod: 'POST',
+            formTarget: iframeName
+        });
+        // TODO: handle a cancel
     }
-};
-
-/**
- * Show a dialog to select and load a file.
- * Needed to load files on Internet Explorer.
- * @param {function} callback   Callback method, called with parameters:
- *                                  {Error} error
- *                                  {String} data
- */
-FileRetriever.prototype.loadFileDialog = function (callback) {
-    this.removeUrl();
-    this.loadCallback = callback;
-
-    this.prompt({
-        title: 'Open file',
-        titleSubmit: 'Open',
-        inputType: 'file',
-        inputName: 'file',
-        formAction: this.scriptUrl,
-        formMethod: 'POST',
-        formTarget: this.dom.uploadIframe.name
-    });
 };
 
 /**
@@ -490,8 +504,14 @@ FileRetriever.prototype.prompt = function (params) {
  *                                  {Error} error
  */
 FileRetriever.prototype.saveFile = function (data, callback) {
-    callback = callback || function () {};
-    
+    // method to ensure the callback is only executed once
+    var callbackOnce = function (error) {
+        if (callback) {
+            callback(error);
+            callback = undefined;
+        }
+    };
+
     // create an anchor to save files to disk (if supported by the browser)
     var a = document.createElement('a');
     if (this.options.html5 && a.download != undefined) {
@@ -499,7 +519,7 @@ FileRetriever.prototype.saveFile = function (data, callback) {
         a.href = 'data:application/json;charset=utf-8,' + encodeURIComponent(data);
         a.download = this.getFilename();
         a.click();
-        callback()
+        callbackOnce();
     }
     else {
         // save file by uploading it to the server and then downloading
@@ -508,19 +528,32 @@ FileRetriever.prototype.saveFile = function (data, callback) {
         if (data.length < this.options.maxSize) {
             ajax.post(me.scriptUrl, data, function(id, status) {
                 if (status == 200) {
-                    var iframe = me.dom.downloadIframe;
+                    var iframe = document.createElement('iframe');
                     iframe.src = me.scriptUrl + '?id=' + id  + '&filename=' + me.getFilename();
-                    callback();
-                    // TODO: give a callback after the file is saved (iframe load?), not before
+                    me._hide(iframe);
+                    document.body.appendChild(iframe);
+                    /* TODO: send callback after the iframe is loaded. Problem: iframe.onload does not work on IE
+                    iframe.onload = function () {
+                        callbackOnce();
+                    };
+                    //*/
+                    document.body.appendChild(iframe);
+                    callbackOnce();
+                    // TODO: cleanup the iframe after the file is saved. Problem: we cannot know when the save dialog is closed.
                 }
                 else {
-                    callback(new Error('Error saving file'));
+                    callbackOnce(new Error('Error saving file'));
                 }
             });
         }
         else {
-            callback(new Error('Maximum allowed file size exceeded (' +
+            callbackOnce(new Error('Maximum allowed file size exceeded (' +
                 this.options.maxSize + ' bytes)'));
         }
     }
+
+    // safety mechanism: callback after a timeout
+    setTimeout(function () {
+        callbackOnce(new Error('Error saving file (timeout)'));
+    }, this.timeout);
 };
