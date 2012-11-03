@@ -4,10 +4,12 @@ http://jsoneditoronline.org
 
 <not yet released>, version 1.6.0
 
-- Added feature to the web application to load and save files to disk and from
-  url.
+- Added feature to the web application to load and save files from disk and url.
 - Improved error messages in the web application using JSONLint.
 - Made the web application pass the W3C markup validation service.
+- Added option 'change' to both editor and formatter, which allows to set a
+  callback which is triggered when the contents of the editor or formatter
+  changes.
 
 
 2012-10-08, version 1.5.1

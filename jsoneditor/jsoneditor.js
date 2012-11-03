@@ -27,7 +27,7 @@
  * Copyright (c) 2011-2012 Jos de Jong, http://jsoneditoronline.org
  *
  * @author  Jos de Jong, <wjosdejong@gmail.com>
- * @date    2012-10-31
+ * @date    2012-11-03
  */
 
 
@@ -65,6 +65,8 @@ var JSON;
  * @param {Object}  [options]    Object with options. available options:
  *                                   {Boolean} enableSearch   true by default
  *                                   {Boolean} enableHistory  true by default
+ *                                   {function} change        callback method
+ *                                                            triggered on change
  * @param {Object | undefined} json JSON object
  */
 JSONEditor = function (container, options, json) {
@@ -96,8 +98,10 @@ JSONEditor = function (container, options, json) {
 /**
  * Initialize and set default options
  * @param {Object}  [options]      Object with options. available options:
- *                                   {Boolean} enableSearch   true by default
- *                                   {Boolean} enableHistory  true by default
+ *                                   {boolean} enableSearch   true by default
+ *                                   {boolean} enableHistory  true by default
+ *                                   {function} change        callback method
+ *                                                            triggered on change
  * @private
  */
 JSONEditor.prototype._setOptions = function (options) {
@@ -262,8 +266,14 @@ JSONEditor.prototype.collapseAll = function () {
  *                         needed to undo or redo the action.
  */
 JSONEditor.prototype.onAction = function (action, params) {
+    // add an action to the history
     if (this.history) {
         this.history.add(action, params);
+    }
+
+    // trigger the onChange callback
+    if (this.options.change) {
+        this.options.change();
     }
 };
 
@@ -2956,8 +2966,11 @@ JSONEditor.getNodeFromTarget = function (target) {
  * Create a JSONFormatter and attach it to given container
  * @constructor JSONFormatter
  * @param {Element} container
+ * @param {Object} [options]         Object with options. available options:
+ *                                   {function} change        callback method
+ *                                                            triggered on change
  */
-JSONFormatter = function (container) {
+JSONFormatter = function (container, options) {
     // check availability of JSON parser (not available in IE7 and older)
     if (!JSON) {
         throw new Error('Your browser does not support JSON. \n\n' +
@@ -3008,32 +3021,20 @@ JSONFormatter = function (container) {
     this.content.appendChild(this.textarea);
 
     var textarea = this.textarea;
-    /* TODO: register onchange
-    var formatter = this;
-    var onChange = function () {
-        formatter._checkChange();
-    };
-    this.textarea.onchange = onChange;
-    this.textarea.onkeyup = onChange;
-    this.textarea.oncut = onChange;
-    this.textarea.oncopy = onChange;
-    this.textarea.onpaste = onChange;
-    this.textarea.onchange = function () {
-        console.log('onchange');
+    if (options && options.change) {
+        // register on change event
+        if (this.textarea.oninput === null) {
+            this.textarea.oninput = function () {
+                options.change();
+            }
+        }
+        else {
+            // oninput===undefined. For IE8-
+            this.textarea.onchange = function () {
+                options.change();
+            }
+        }
     }
-    this.textarea.ondomcharacterdatamodified = function () {
-        console.log('DOMCharacterDataModified');
-    }
-    this.textarea.ondomattrmodified = function () {
-        console.log('DOMAttrModified');
-    }
-    addEventListener(this.textarea, 'DOMAttrModified', function (event) {
-        console.log('DOMAttrModified', event);
-    });
-    addEventListener(this.textarea, 'DOMCharacterDataModified', function (event) {
-        console.log('DOMCharacterDataModified', event);
-    });
-    */
 
     var me = this;
     buttonFormat.onclick = function () {
@@ -3063,22 +3064,6 @@ JSONFormatter = function (container) {
  */
 JSONFormatter.prototype.onError = function(err) {
     // action should be implemented for the instance
-};
-
-/**
- * Check if the contents are changed
- * @private
- */
-JSONFormatter.prototype._checkChange = function() {
-    var content = this.textarea.value;
-
-    if (content != this.lastContent) {
-        this.lastContent = content;
-        // TODO: implement onChangeCallback
-        if (this.onChangeCallback) {
-            this.onChangeCallback();
-        }
-    }
 };
 
 /**
@@ -3112,18 +3097,6 @@ JSONFormatter.prototype.getText = function() {
 JSONFormatter.prototype.setText = function(text) {
     this.textarea.value = text;
 };
-
-/**
- * Set a callback method for the onchange event
- * @return {function} callback
- */
-/* TODO: setOnChangeCallback
- JSONFormatter.prototype.setOnChangeCallback = function(callback) {
- this.onChangeCallback = callback;
- console.log(this.onChangeCallback, callback)
- }
- */
-
 
 /**
  * @constructor JSONEditor.SearchBox
