@@ -543,7 +543,6 @@ FileRetriever.prototype.saveFile = function (data, callback) {
                         callbackOnce();
                     };
                     //*/
-                    document.body.appendChild(iframe);
                     callbackOnce();
                     // TODO: cleanup the iframe after the file is saved. Problem: we cannot know when the save dialog is closed.
                 }
