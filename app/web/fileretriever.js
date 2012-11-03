@@ -6,7 +6,7 @@
  * files is done purely clientside using HTML5 techniques when supported
  * by the browser.
  * 
- * Requires ajax.js and optionally hash.js.
+ * Requires ajax.js.
  * 
  * Supported browsers: Chrome, Firefox, Opera, Safari, 
  * Internet Explorer 8+.
@@ -40,8 +40,6 @@
  *                                            to load/save files when
  *                                            supported by the browser.
  *                                            True by default.
- *                         {Boolean} [hash]   Use hash to store the last opened
- *                                            filename or url. True by default.
  *                         {Notify} [notify]  A handler for notifications
  *                                            If provided, messages like
  *                                            "loading" and "saving" are created.
@@ -75,17 +73,7 @@ var FileRetriever = function (options) {
     this.scriptUrl = options.scriptUrl || 'fileretriever.php';
     this.notify = options.notify || undefined;
     this.defaultFilename = 'document.json';
-    this.loadCallback = function () {};
     this.dom = {};
-
-    if (options.hash !== false) {
-        if (window.Hash) {
-            this.hash = new Hash();
-        }
-        else {
-            console.log('WARNING: missing resource hash.js');
-        }
-    }
 };
 
 /**
@@ -137,9 +125,6 @@ FileRetriever.prototype._getFilename = function (path) {
  */
 FileRetriever.prototype.setUrl = function (url) {
     this.url = url;
-    if (this.hash) {
-        this.hash.setValue('url', url);
-    }
 };
 
 /**
@@ -147,12 +132,6 @@ FileRetriever.prototype.setUrl = function (url) {
  * @return {String} filename
  */
 FileRetriever.prototype.getFilename = function () {
-    if (this.hash) {
-        var url = this.hash.getValue('url');
-        if (url) {
-            return this._getFilename(url) || this.defaultFilename;
-        }
-    }
     return this.defaultFilename;
 };
 
@@ -161,22 +140,7 @@ FileRetriever.prototype.getFilename = function () {
  * @return {String | undefined} url
  */
 FileRetriever.prototype.getUrl = function () {
-    if (this.hash) {
-        var url = this.hash.getValue('url');
-        if (url) {
-            this.url = url;
-        }
-    }
     return this.url;
-};
-
-/**
- * Remove last url from hash
- */
-FileRetriever.prototype.removeUrl = function () {
-    if (this.hash) {
-        var url = this.hash.removeValue('url');
-    }
 };
 
 /**
@@ -254,8 +218,6 @@ FileRetriever.prototype.loadUrl = function (url, callback) {
  *                                  {string} data
  */
 FileRetriever.prototype.loadFile = function (callback) {
-    this.removeUrl();
-
     // loading notification
     var loading = undefined;
 
@@ -476,7 +438,7 @@ FileRetriever.prototype.prompt = function (params) {
             if (params.callback) {
                 params.callback(field.value);
             }
-            return (form.action && form.method);
+            return (params.formAction != undefined && params.formMethod != undefined);
         }
         else {
             alert('Enter a ' + params.inputName + ' first...');
