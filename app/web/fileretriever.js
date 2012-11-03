@@ -204,7 +204,7 @@ FileRetriever.prototype.loadUrl = function (url, callback) {
 
     // safety mechanism: callback after a timeout
     setTimeout(function () {
-        callbackOnce(new Error('Error loading url (timeout)'));
+        callbackOnce(new Error('Error loading url (time out)'));
     }, this.timeout);
 };
 
@@ -220,6 +220,18 @@ FileRetriever.prototype.loadUrl = function (url, callback) {
 FileRetriever.prototype.loadFile = function (callback) {
     // loading notification
     var loading = undefined;
+    var me = this;
+
+    var startLoading = function () {
+        if (me.notify && !loading) {
+            loading = me.notify.showNotification('loading file...');
+        }
+
+        // safety mechanism: callback after a timeout
+        setTimeout(function () {
+            callbackOnce(new Error('Error loading url (time out)'));
+        }, me.timeout);
+    };
 
     // method to ensure the callback is only executed once
     var callbackOnce = function (error, data) {
@@ -233,14 +245,10 @@ FileRetriever.prototype.loadFile = function (callback) {
         }
     };
 
-    var isIE = (navigator.appName == 'Microsoft Internet Explorer');
-
-    var iframeName = 'fileretriever-upload-' + Math.round(Math.random() * 1E15);
-    var me = this;
-
     // create an iframe for uploading files
     // the iframe must have an unique name, allowing multiple
     // FileRetrievers. The name is needed as target for the uploadForm
+    var iframeName = 'fileretriever-upload-' + Math.round(Math.random() * 1E15);
     var iframe = document.createElement('iframe');
     iframe.name = iframeName;
     me._hide(iframe);
@@ -266,6 +274,7 @@ FileRetriever.prototype.loadFile = function (callback) {
     };
     document.body.appendChild(iframe);
 
+    var isIE = (navigator.appName == 'Microsoft Internet Explorer');
     if (!isIE) {
         // create a hidden form to select a file
         var domForm = document.createElement('form');
@@ -278,9 +287,7 @@ FileRetriever.prototype.loadFile = function (callback) {
         domFile.type = 'file';
         domFile.name = 'file';
         domFile.onchange = function () {
-            if (me.notify && !loading) {
-                loading = me.notify.showNotification('loading file...');
-            }
+            startLoading();
 
             // there is a file selected
             setTimeout(function () { // Timeout needed for IE
@@ -333,9 +340,7 @@ FileRetriever.prototype.loadFile = function (callback) {
             formTarget: iframeName,
             callback: function (value) {
                 if (value) {
-                    if (me.notify && !loading) {
-                        loading = me.notify.showNotification('loading file...');
-                    }
+                    startLoading();
                 }
             }
         });
@@ -559,6 +564,6 @@ FileRetriever.prototype.saveFile = function (data, callback) {
 
     // safety mechanism: callback after a timeout
     setTimeout(function () {
-        callbackOnce(new Error('Error saving file (timeout)'));
+        callbackOnce(new Error('Error saving file (time out)'));
     }, this.timeout);
 };
