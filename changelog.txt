@@ -12,6 +12,7 @@ http://jsoneditoronline.org
   changes.
 - Renamed options 'enableSearch' and 'enableHistory' to 'search' and 'history'
   respectively.
+- Added parameter 'json' to the JSONFormatter constructor.
 
 
 2012-10-08, version 1.5.1

@@ -2985,8 +2985,9 @@ JSONEditor.getNodeFromTarget = function (target) {
  * @param {Object} [options]         Object with options. available options:
  *                                   {function} change        callback method
  *                                                            triggered on change
+ * @param {JSON | String} [json]     initial contents of the formatter
  */
-JSONFormatter = function (container, options) {
+JSONFormatter = function (container, options, json) {
     // check availability of JSON parser (not available in IE7 and older)
     if (!JSON) {
         throw new Error('Your browser does not support JSON. \n\n' +
@@ -3071,6 +3072,13 @@ JSONFormatter = function (container, options) {
     };
 
     this.container.appendChild(this.frame);
+
+    if (typeof(json) == 'string') {
+        this.setText(json);
+    }
+    else {
+        this.set(json);
+    }
 };
 
 /**
