@@ -64,7 +64,7 @@ app.editorToFormatter = function () {
  */
 // TODO: split the method load in multiple methods, it is too large
 app.load = function() {
-    //try {
+    try {
         // notification handler
         app.notifications = new Notifications();
 
@@ -109,9 +109,16 @@ app.load = function() {
             }
         }
 
+        // Store whether editor or formatter is last changed
+        app.lastChanged = undefined;
+
         // formatter
         var container = document.getElementById("jsonformatter");
-        formatter = new JSONFormatter(container);
+        formatter = new JSONFormatter(container, {
+            change: function () {
+                app.lastChanged = formatter;
+            }
+        });
         formatter.set(json);
         formatter.onError = function (err) {
             app.notifications.showError(err);
@@ -119,7 +126,11 @@ app.load = function() {
 
         // editor
         container = document.getElementById("jsoneditor");
-        editor = new JSONEditor(container);
+        editor = new JSONEditor(container, {
+            change: function () {
+                app.lastChanged = editor;
+            }
+        });
         editor.set(json);
 
         // splitter
@@ -243,9 +254,9 @@ app.load = function() {
 
         // enforce FireFox to not do spell checking on any input field
         document.body.spellcheck = false;
-    //} catch (err) {
-    //    app.notifications.showError(err);
-    //}
+    } catch (err) {
+        app.notifications.showError(err);
+    }
 };
 
 /**
@@ -299,7 +310,18 @@ app.openUrl = function (url) {
  * Open a file explorer to save the file.
  */
 app.saveFile = function () {
-    // TODO: get data from the most recently changed editor: formatter or editor
+    // first synchronize the editors and formatters contents
+    if (app.lastChanged == editor) {
+        app.editorToFormatter();
+    }
+    /* TODO: also sync from formatter to editor? will clear the history ...
+    if (app.lastChanged == formatter) {
+        app.formatterToEditor();
+    }
+    */
+    app.lastChanged = undefined;
+
+    // save the text from the formatter
     // TODO: show a 'saving...' notification
     var data = formatter.getText();
     app.retriever.saveFile(data, function (err) {

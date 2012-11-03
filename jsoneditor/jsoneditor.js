@@ -2872,8 +2872,6 @@ JSONEditor.prototype._createFrame = function () {
     if (this.options.history) {
         // create separator
         var separator = document.createElement('span');
-        //separator.style.width = '5px';
-        //separator.style.display = 'inline';
         separator.innerHTML = '&nbsp;';
         this.menu.appendChild(separator);
 
@@ -2882,7 +2880,13 @@ JSONEditor.prototype._createFrame = function () {
         undo.className = 'jsoneditor-menu jsoneditor-undo';
         undo.title = 'Undo last action';
         undo.onclick = function () {
+            // undo last action
             editor.history.undo();
+
+            // trigger change callback
+            if (editor.options.change) {
+                editor.options.change();
+            }
         };
         this.menu.appendChild(undo);
         this.dom.undo = undo;
@@ -2892,7 +2896,13 @@ JSONEditor.prototype._createFrame = function () {
         redo.className = 'jsoneditor-menu jsoneditor-redo';
         redo.title = 'Redo';
         redo.onclick = function () {
+            // redo last action
             editor.history.redo();
+
+            // trigger change callback
+            if (editor.options.change) {
+                editor.options.change();
+            }
         };
         this.menu.appendChild(redo);
         this.dom.redo = redo;
