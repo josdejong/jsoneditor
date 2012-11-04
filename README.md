@@ -16,8 +16,8 @@ formatted plain text.
 - Change type of values.
 - Colorized values, color depends of the value type.
 - Search & highlight text in the treeview.
-- Undo/redo all actions.
-- Load/save files and urls.
+- Undo and redo all actions.
+- Load and save files and urls.
 - Format and compact JSON in plain text.
 
 
