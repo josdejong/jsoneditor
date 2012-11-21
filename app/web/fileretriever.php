@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Script to load and save files from the Javascript client to disk and url.
+ * Script to load and save JSON files from the Javascript client to disk and url.
  *
  * Usage:
  *
@@ -45,7 +45,13 @@ if ($method == 'GET') {
     if (isset($_GET['url'])) {
         // download a file from url and return the file
         $url = $_GET['url'];
-        $body = file_get_contents($url);
+        $context = stream_context_create(array(
+            'http' => array(
+                'method' => 'GET',
+                'header' => "Accept: application/json\r\n"
+            )
+        ));
+        $body = file_get_contents($url, false, $context);
         if ($body != false) {
             header("Content-Disposition: attachment; filename=\"$filename\"");
             header('Content-type: application/json');

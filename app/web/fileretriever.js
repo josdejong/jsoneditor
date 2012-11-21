@@ -70,6 +70,7 @@ var FileRetriever = function (options) {
         html5: ((options.html5 != undefined) ? options.html5 : true)
     };
     this.timeout = Number(options.timeout) || 30000;
+    this.headers = {'Accept': 'application/json'};   // headers for ajax requests
     this.scriptUrl = options.scriptUrl || 'fileretriever.php';
     this.notify = options.notify || undefined;
     this.defaultFilename = 'document.json';
@@ -175,7 +176,7 @@ FileRetriever.prototype.loadUrl = function (url, callback) {
 
     // try to fetch to the url directly (may result in a cross-domain error)
     var scriptUrl = this.scriptUrl;
-    ajax.get(url, function(data, status) {
+    ajax.get(url, me.headers, function(data, status) {
         if (status == 200) {
             // success. great. no cross-domain error
             callbackOnce(null, data);
@@ -184,7 +185,7 @@ FileRetriever.prototype.loadUrl = function (url, callback) {
             // cross-domain error (or other). retrieve the url via the server
             var indirectUrl = scriptUrl + '?url=' + encodeURIComponent(url);
             var err;
-            ajax.get(indirectUrl, function(data, status) {
+            ajax.get(indirectUrl, me.headers, function(data, status) {
                 if (status == 200) {
                     callbackOnce(null, data);
                 }
@@ -258,14 +259,11 @@ FileRetriever.prototype.loadFile = function (callback) {
         var id = iframe.contentWindow.document.body.innerHTML;
         if (id) {
             var url = me.scriptUrl + '?id=' + id + '&filename=' + me.getFilename();
-            //console.log('uploadIframe.load ', id, ' ', url)
-            ajax.get(url, function (data, status) {
-                //console.log('ajax.get ', url, ' ', data, ' ', status);
+            ajax.get(url, me.headers, function (data, status) {
                 if (status == 200) {
                     callbackOnce(null, data);
                 }
                 else {
-                    //console.log('Error loading file ' + url, status, data);
                     var err = new Error('Error loading file ' + me.getFilename());
                     callbackOnce(err, null);
                 }
@@ -537,7 +535,7 @@ FileRetriever.prototype.saveFile = function (data, callback) {
         // save file by uploading it to the server and then downloading
         // it via an iframe
         if (data.length < this.options.maxSize) {
-            ajax.post(me.scriptUrl, data, function(id, status) {
+            ajax.post(me.scriptUrl, data, me.headers, function(id, status) {
                 if (status == 200) {
                     var iframe = document.createElement('iframe');
                     iframe.src = me.scriptUrl + '?id=' + id  + '&filename=' + me.getFilename();

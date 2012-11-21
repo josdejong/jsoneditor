@@ -4,7 +4,7 @@
  * Chrome, Firefox, Opera, Safari, Internet Explorer 7+.
  */
 var ajax = (function () {
-    function fetch (method, url, body, callback) {
+    function fetch (method, url, body, headers, callback) {
         try {
             var xhr = new XMLHttpRequest();
             xhr.onreadystatechange = function() {
@@ -13,6 +13,13 @@ var ajax = (function () {
                 }
             };
             xhr.open(method, url, true);
+            if (headers) {
+                for (var name in headers) {
+                    if (headers.hasOwnProperty(name)) {
+                        xhr.setRequestHeader(name, headers[name]);
+                    }
+                }
+            }
             xhr.send(body);
         }
         catch (err) {
@@ -20,12 +27,12 @@ var ajax = (function () {
         }
     }
 
-    function get (url, callback) {
-        fetch('GET', url, null, callback);
+    function get (url, headers, callback) {
+        fetch('GET', url, null, headers, callback);
     }
 
-    function post (url, body, callback) {
-        fetch('POST', url, body, callback)
+    function post (url, body, headers, callback) {
+        fetch('POST', url, body, headers, callback)
     }
 
     return {
