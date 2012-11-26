@@ -289,7 +289,12 @@ JSONEditor.prototype.onAction = function (action, params) {
 
     // trigger the onChange callback
     if (this.options.change) {
-        this.options.change();
+        try {
+            this.options.change();
+        }
+        catch (err) {
+            console.log('Error in change callback: ', err);
+        }
     }
 };
 
@@ -1130,24 +1135,12 @@ JSONEditor.Node.prototype.focus = function(field) {
 };
 
 /**
- * Remove focus from the value or field of this node
+ * Update the values from the DOM field and value of this node
  */
 JSONEditor.Node.prototype.blur = function() {
-    if (this.dom.tr && this.dom.tr.parentNode) {
-        var domValue = this.dom.value;
-        if (domValue) {
-            domValue.blur();
-        }
-        var domField = this.dom.field;
-        if (domField) {
-            domField.blur();
-        }
-    }
-
-    // retrieve the field and value from the DOM. A little redundant but
-    // it cannot do harm.
-    this._getDomValue(true);
-    this._getDomField(true);
+    // retrieve the actual field and value from the DOM.
+    this._getDomValue(false);
+    this._getDomField(false);
 };
 
 /**
@@ -1397,16 +1390,18 @@ JSONEditor.Node.prototype._getDomValue = function(silent) {
                 value = this._stringCast(str);
             }
             if (value !== this.value) {
+                var oldValue = this.value;
+                this.value = value;
                 this.getEditor().onAction('editValue', {
                     'node': this,
-                    'oldValue': this.value,
+                    'oldValue': oldValue,
                     'newValue': value
                 });
             }
-            this.value = value;
         }
         catch (err) {
             this.value = undefined;
+            // TODO: sent an action with the new, invalid value?
             if (silent != true) {
                 throw err;
             }
@@ -1532,16 +1527,18 @@ JSONEditor.Node.prototype._getDomField = function(silent) {
             var field = this._unescapeHTML(this.fieldInnerText);
 
             if (field !== this.field) {
+                var oldField = this.field;
+                this.field = field;
                 this.getEditor().onAction('editField', {
                     'node': this,
-                    'oldValue': this.field,
+                    'oldValue': oldField,
                     'newValue': field
                 });
             }
-            this.field = field;
         }
         catch (err) {
             this.field = undefined;
+            // TODO: sent an action here, with the new, invalid value?
             if (silent != true) {
                 throw err;
             }
@@ -1632,11 +1629,6 @@ JSONEditor.Node.prototype.getDom = function() {
  */
 JSONEditor.Node.prototype._onDragStart = function (event) {
     event = event || window.event;
-
-    // remove focus from currently edited node
-    if (JSONEditor.focusNode) {
-        JSONEditor.focusNode.blur();
-    }
 
     var node = this;
     if (!this.mousemove) {
@@ -1751,7 +1743,7 @@ JSONEditor.Node.prototype._onDragEnd = function (event) {
     };
     if ((params.startParent != params.endParent) ||
             (params.startIndex != params.endIndex)) {
-        // only register this action if the node is actually moved to anothe place
+        // only register this action if the node is actually moved to another place
         this.getEditor().onAction('moveNode', params);
     }
 
@@ -2360,7 +2352,7 @@ JSONEditor.Node.prototype._onRemove = function() {
         'parent': this.parent,
         'index': index
     });
-}
+};
 
 /**
  * Handle a click on the Type-button

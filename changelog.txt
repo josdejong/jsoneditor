@@ -2,6 +2,12 @@ JSON EDITOR ONLINE CHANGELOG
 http://jsoneditoronline.org
 
 
+2012-11-26, version 1.6.2
+
+- Fixed a bug in the change callback handler, resulting in an infinite loop
+  when requesting the contents of the editor inside the callback (issue #19).
+
+
 2012-11-21, version 1.6.1
 
 - Added a request header "Accept: application/json" when loading files and urls.
