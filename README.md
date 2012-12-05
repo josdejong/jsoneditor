@@ -25,14 +25,14 @@ formatted plain text.
 
 - Web app:    http://jsoneditoronline.org/
 - Chrome app: https://chrome.google.com/webstore/detail/json-editor/lhkmoheomjbkfloacpgllgjcamhihfaj
-- Wiki:       https://github.com/wjosdejong/jsoneditoronline/wiki/
-- Sourcecode: https://github.com/wjosdejong/jsoneditoronline/
-- Downloads:  https://github.com/wjosdejong/jsoneditoronline/downloads
+- Wiki:       https://github.com/josdejong/jsoneditoronline/wiki/
+- Sourcecode: https://github.com/josdejong/jsoneditoronline/
+- Downloads:  https://github.com/josdejong/jsoneditoronline/downloads
 
 
 ### Screenshot
 
 <a href="http://jsoneditoronline.org">
     <img alt="jsoneditoronline"
-        src="https://raw.github.com/wjosdejong/jsoneditoronline/master/misc/screenshots/jsoneditoronline.png">
+        src="https://raw.github.com/josdejong/jsoneditoronline/master/misc/screenshots/jsoneditoronline.png">
 </a>
