@@ -63,6 +63,8 @@ var JSON;
  * JSONEditor
  * @param {Element} container    Container element
  * @param {Object}  [options]    Object with options. available options:
+ *                               {String} mode      Editor mode. Available values:
+ *                                                  'editor' (default), 'viewer'.
  *                               {Boolean} search   Enable search box.
  *                                                  True by default
  *                               {Boolean} history  Enable history (undo/redo).
@@ -114,7 +116,8 @@ JSONEditor.prototype._setOptions = function (options) {
     this.options = {
         search: true,
         history: true,
-        mode: 'editor'
+        mode: 'editor',
+        name: undefined   // root node name
     };
 
     // copy all options
@@ -147,9 +150,11 @@ JSONEditor.focusNode = undefined;
 
 /**
  * Set JSON object in editor
- * @param {Object | undefined} json
+ * @param {Object | undefined} json      JSON data
+ * @param {String}             [name]    Optional field name for the root node.
+ *                                       Can also be set using setName(name).
  */
-JSONEditor.prototype.set = function (json) {
+JSONEditor.prototype.set = function (json, name) {
     // verify if json is valid JSON, ignore when a function
     if (json instanceof Function || (json === undefined)) {
         this.clear();
@@ -159,6 +164,7 @@ JSONEditor.prototype.set = function (json) {
 
         // replace the root node
         var params = {
+            'field': name,
             'value': json
         };
         var node = new JSONEditor.Node(this, params);
@@ -193,6 +199,27 @@ JSONEditor.prototype.get = function () {
     else {
         return undefined;
     }
+};
+
+/**
+ * Set a field name for the root node.
+ * @param {String | undefined} name
+ */
+JSONEditor.prototype.setName = function (name) {
+    if (this.node) {
+        this.node.updateField(name);
+    }
+};
+
+/**
+ * Get the field name for the root node.
+ * @return {String | undefined} name
+ */
+JSONEditor.prototype.getName = function () {
+    if (this.node) {
+        return this.node.getField();
+    }
+    return undefined;
 };
 
 /**

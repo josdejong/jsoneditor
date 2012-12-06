@@ -6,6 +6,8 @@ http://jsoneditoronline.org
 
 - Implemented two modes: 'editor' (default), and 'viewer'. In viewer mode,
   the data and datastructure is read-only.
+- Implemented methods set(json, name), setName(name), and getName(), which
+  allows for setting and getting the field name of the root node.
 
 
 2012-11-26, version 1.6.2
