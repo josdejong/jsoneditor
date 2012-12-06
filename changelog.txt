@@ -8,6 +8,8 @@ http://jsoneditoronline.org
   the data and datastructure is read-only.
 - Implemented methods set(json, name), setName(name), and getName(), which
   allows for setting and getting the field name of the root node.
+- Fixed an issue where the search bar does not work when there is no global
+  window.editor object.
 
 
 2012-11-26, version 1.6.2

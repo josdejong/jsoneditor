@@ -3404,7 +3404,7 @@ JSONEditor.SearchBox.prototype.onSearch = function (event, forceSearch) {
     if (text != this.lastText || forceSearch) {
         // only search again when changed
         this.lastText = text;
-        this.results = editor.search(text);
+        this.results = this.editor.search(text);
         this.setActiveResult(undefined);
 
         // display search results
