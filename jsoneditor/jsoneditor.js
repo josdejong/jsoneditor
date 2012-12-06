@@ -71,6 +71,7 @@ var JSON;
  *                                                  True by default
  *                               {function} change  Callback method, triggered
  *                                                  on change of contents
+ *                               {String} name      Field name for the root node.
  * @param {Object | undefined} json JSON object
  */
 JSONEditor = function (container, options, json) {
@@ -110,6 +111,7 @@ JSONEditor = function (container, options, json) {
  *                                                  True by default.
  *                               {function} change  Callback method, triggered
  *                                                  on change of contents.
+ *                               {String} name      Field name for the root node.
  * @private
  */
 JSONEditor.prototype._setOptions = function (options) {
@@ -117,7 +119,7 @@ JSONEditor.prototype._setOptions = function (options) {
         search: true,
         history: true,
         mode: 'editor',
-        name: undefined   // root node name
+        name: undefined   // field name of root node
     };
 
     // copy all options
@@ -155,6 +157,11 @@ JSONEditor.focusNode = undefined;
  *                                       Can also be set using setName(name).
  */
 JSONEditor.prototype.set = function (json, name) {
+    // adjust field name for root node
+    if (name) {
+        this.options.name = name;
+    }
+
     // verify if json is valid JSON, ignore when a function
     if (json instanceof Function || (json === undefined)) {
         this.clear();
@@ -164,7 +171,7 @@ JSONEditor.prototype.set = function (json, name) {
 
         // replace the root node
         var params = {
-            'field': name,
+            'field': this.options.name,
             'value': json
         };
         var node = new JSONEditor.Node(this, params);
@@ -206,8 +213,9 @@ JSONEditor.prototype.get = function () {
  * @param {String | undefined} name
  */
 JSONEditor.prototype.setName = function (name) {
+    this.options.name = name;
     if (this.node) {
-        this.node.updateField(name);
+        this.node.updateField(this.options.name);
     }
 };
 
@@ -216,10 +224,7 @@ JSONEditor.prototype.setName = function (name) {
  * @return {String | undefined} name
  */
 JSONEditor.prototype.getName = function () {
-    if (this.node) {
-        return this.node.getField();
-    }
-    return undefined;
+    return this.options.name;
 };
 
 /**
