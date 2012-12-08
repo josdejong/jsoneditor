@@ -3822,4 +3822,3 @@ JSONEditor.validate = function (jsonString) {
 
     return message;
 };
-
