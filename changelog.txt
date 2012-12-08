@@ -2,7 +2,7 @@ JSON EDITOR ONLINE CHANGELOG
 http://jsoneditoronline.org
 
 
-<not yet released>, version 1.7.0
+2012-12-08, version 1.7.0
 
 - Implemented two modes: 'editor' (default), and 'viewer'. In viewer mode,
   the data and datastructure is read-only.
