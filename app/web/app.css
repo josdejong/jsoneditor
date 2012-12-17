@@ -267,9 +267,9 @@ div.convert-right, div.convert-left {
 }
 
 div.convert-right {
-    background: url('lib/jsoneditor/img/jsoneditor-icons.png') -168px 0;
+    background: url('lib/jsoneditor/img/jsoneditor-icons.png') -0 -48px;
 }
 
 div.convert-left {
-    background: url('lib/jsoneditor/img/jsoneditor-icons.png') -192px 0;
+    background: url('lib/jsoneditor/img/jsoneditor-icons.png') -24px -48px;
 }

@@ -27,7 +27,7 @@
  * Copyright (c) 2011-2012 Jos de Jong, http://jsoneditoronline.org
  *
  * @author  Jos de Jong, <wjosdejong@gmail.com>
- * @date    2012-12-08
+ * @date    2012-12-16
  */
 
 
@@ -87,6 +87,7 @@ JSONEditor = function (container, options, json) {
     }
     this.container = container;
     this.dom = {};
+    this.highlighter = new JSONEditor.Highlighter();
 
     this._setOptions(options);
 
@@ -432,6 +433,22 @@ JSONEditor.History = function (editor) {
                 obj.params.parent.appendChild(obj.params.node);
             }
         },
+        'insertBeforeNode': {
+            'undo': function (obj) {
+                obj.params.parent.removeChild(obj.params.node);
+            },
+            'redo': function (obj) {
+                obj.params.parent.insertBefore(obj.params.node, obj.params.beforeNode);
+            }
+        },
+        'insertAfterNode': {
+            'undo': function (obj) {
+                obj.params.parent.removeChild(obj.params.node);
+            },
+            'redo': function (obj) {
+                obj.params.parent.insertAfter(obj.params.node, obj.params.afterNode);
+            }
+        },
         'removeNode': {
             'undo': function (obj) {
                 var parent = obj.params.parent;
@@ -447,8 +464,7 @@ JSONEditor.History = function (editor) {
                 obj.params.parent.removeChild(obj.params.clone);
             },
             'redo': function (obj) {
-                // TODO: insert after instead of insert before
-                obj.params.parent.insertBefore(obj.params.clone, obj.params.node);
+                obj.params.parent.insertAfter(obj.params.clone, obj.params.node);
             }
         },
         'changeType': {
@@ -586,7 +602,12 @@ JSONEditor.History.prototype.redo = function () {
  * @constructor JSONEditor.Node
  * Create a new Node
  * @param {JSONEditor} editor
- * @param {Object} params   Can contain parameters: field, fieldEditable, value.
+ * @param {Object} params   Can contain parameters:
+ *                          {string}  field
+ *                          {boolean} fieldEditable
+ *                          {*}       value
+ *                          {String}  type  Can have values 'auto', 'array',
+ *                                          'object', or 'string'.
  */
 JSONEditor.Node = function (editor, params) {
     this.editor = editor;
@@ -595,7 +616,7 @@ JSONEditor.Node = function (editor, params) {
 
     if(params && (params instanceof Object)) {
         this.setField(params.field, params.fieldEditable);
-        this.setValue(params.value);
+        this.setValue(params.value, params.type);
     }
     else {
         this.setField();
@@ -644,8 +665,10 @@ JSONEditor.Node.prototype.getField = function() {
 /**
  * Set value. Value is a JSON structure or an element String, Boolean, etc.
  * @param {*} value
+ * @param {String} [type]  Specify the type of the value. Can be 'auto',
+ *                         'array', 'object', or 'string'
  */
-JSONEditor.Node.prototype.setValue = function(value) {
+JSONEditor.Node.prototype.setValue = function(value, type) {
     var childValue, child;
 
     // first clear all current childs (if any)
@@ -659,6 +682,19 @@ JSONEditor.Node.prototype.setValue = function(value) {
     // TODO: remove the DOM of this Node
 
     this.type = this._getType(value);
+
+    // check if type corresponds with the provided type
+    if (type && type != this.type) {
+        if (type == 'string' && this.type == 'auto') {
+            this.type = type;
+        }
+        else {
+            throw new Error('Type mismatch: ' +
+                'cannot cast value of type "' + this.type +
+                ' to the specified type "' + type + '"');
+        }
+    }
+
     if (this.type == 'array') {
         // array
         this.childs = [];
@@ -783,7 +819,7 @@ JSONEditor.Node.prototype.clone = function() {
 
 /**
  * Expand this node and optionally its childs.
- * @param {boolean} recurse   Optional recursion, true by default. When
+ * @param {boolean} [recurse] Optional recursion, true by default. When
  *                            true, all childs will be expanded recursively
  */
 JSONEditor.Node.prototype.expand = function(recurse) {
@@ -808,7 +844,7 @@ JSONEditor.Node.prototype.expand = function(recurse) {
 
 /**
  * Collapse this node and optionally its childs.
- * @param {Number} recurse   Optional recursion, true by default. When
+ * @param {boolean} [recurse] Optional recursion, true by default. When
  *                            true, all childs will be collapsed recursively
  */
 JSONEditor.Node.prototype.collapse = function(recurse) {
@@ -1039,6 +1075,25 @@ JSONEditor.Node.prototype.insertBefore = function(node, beforeNode) {
 };
 
 /**
+ * Insert a new child before a given node
+ * Only applicable when Node value is of type array or object
+ * @param {JSONEditor.Node} node
+ * @param {JSONEditor.Node} afterNode
+ */
+JSONEditor.Node.prototype.insertAfter = function(node, afterNode) {
+    if (this.type == 'array' || this.type == 'object') {
+        var index = this.childs.indexOf(afterNode);
+        var beforeNode = this.childs[index + 1];
+        if (beforeNode) {
+            this.insertBefore(node, beforeNode);
+        }
+        else {
+            this.appendChild(node);
+        }
+    }
+};
+
+/**
  * Search in this node
  * The node will be expanded when the text is found one of its childs, else
  * it will be collapsed. Searches are case insensitive.
@@ -1181,8 +1236,7 @@ JSONEditor.Node.prototype._duplicate = function(node) {
      }
      */
 
-    // TODO: insert after instead of insert before
-    this.insertBefore(clone, node);
+    this.insertAfter(clone, node);
 
     return clone;
 };
@@ -1299,6 +1353,11 @@ JSONEditor.Node.prototype._remove = function (node) {
  */
 JSONEditor.Node.prototype.changeType = function (newType) {
     var oldType = this.type;
+
+    if (oldType == newType) {
+        // type is not changed
+        return;
+    }
 
     if ((newType == 'string' || newType == 'auto') &&
         (oldType == 'string' || oldType == 'auto')) {
@@ -1605,44 +1664,23 @@ JSONEditor.Node.prototype.getDom = function() {
             tdDrag.appendChild(dom.drag);
         }
         dom.tr.appendChild(tdDrag);
+
+        // create context menu
+        var tdMenu = document.createElement('td');
+        tdMenu.className = 'jsoneditor-td';
+        var menu = document.createElement('button');
+        menu.className = 'jsoneditor-contextmenu';
+        dom.menu = menu;
+        tdMenu.appendChild(dom.menu);
+        dom.tr.appendChild(tdMenu);
     }
 
     // create tree and field
     var tdField = document.createElement('td');
     tdField.className = 'jsoneditor-td';
     dom.tr.appendChild(tdField);
-    dom.expand = this._createDomExpandButton();
-    dom.field = this._createDomField();
-    dom.value = this._createDomValue();
-    dom.tree = this._createDomTree(dom.expand, dom.field, dom.value);
+    dom.tree = this._createDomTree();
     tdField.appendChild(dom.tree);
-
-    if (this.editor.editable) {
-        // create type select box
-        var tdType = document.createElement('td');
-        tdType.className = 'jsoneditor-td jsoneditor-td-edit';
-        dom.tr.appendChild(tdType);
-        dom.type = this._createDomTypeButton();
-        tdType.appendChild(dom.type);
-
-        // create duplicate button
-        var tdDuplicate = document.createElement('td');
-        tdDuplicate.className = 'jsoneditor-td jsoneditor-td-edit';
-        dom.tr.appendChild(tdDuplicate);
-        dom.duplicate = this._createDomDuplicateButton();
-        if (dom.duplicate) {
-            tdDuplicate.appendChild(dom.duplicate);
-        }
-
-        // create remove button
-        var tdRemove = document.createElement('td');
-        tdRemove.className = 'jsoneditor-td jsoneditor-td-edit';
-        dom.tr.appendChild(tdRemove);
-        dom.remove = this._createDomRemoveButton();
-        if (dom.remove) {
-            tdRemove.appendChild(dom.remove);
-        }
-    }
 
     this.updateDom(); // TODO: recurse here?
 
@@ -1748,6 +1786,10 @@ JSONEditor.Node.prototype._onDrag = function (event) {
             if (nodeNext && nodeNext.parent) {
                 nodeNext.parent.moveBefore(this, nodeNext);
             }
+        }
+        else {
+            // TODO: move to the last element.
+            console.log(trLast, trFirst)
         }
     }
     JSONEditor.Events.preventDefault(event);
@@ -2048,13 +2090,10 @@ JSONEditor.Node.prototype._createDomExpandButton = function () {
 
 /**
  * Create a DOM tree element, containing the expand/collapse button
- * @param {Element} domExpand
- * @param {Element} domField
- * @param {Element} domValue
  * @return {Element} domTree
  * @private
  */
-JSONEditor.Node.prototype._createDomTree = function (domExpand, domField, domValue) {
+JSONEditor.Node.prototype._createDomTree = function () {
     var dom = this.dom;
     var domTree = document.createElement('table');
     var tbody = document.createElement('tbody');
@@ -2067,17 +2106,19 @@ JSONEditor.Node.prototype._createDomTree = function (domExpand, domField, domVal
     var tdExpand = document.createElement('td');
     tdExpand.className = 'jsoneditor-td-tree';
     tr.appendChild(tdExpand);
-    tdExpand.appendChild(domExpand);
+    dom.expand = this._createDomExpandButton();
+    tdExpand.appendChild(dom.expand);
     dom.tdExpand = tdExpand;
 
-    // add the field
+    // create the field
     var tdField = document.createElement('td');
     tdField.className = 'jsoneditor-td-tree';
     tr.appendChild(tdField);
-    tdField.appendChild(domField);
+    dom.field = this._createDomField();
+    tdField.appendChild(dom.field);
     dom.tdField = tdField;
 
-    // add a separator
+    // create a separator
     var tdSeparator = document.createElement('td');
     tdSeparator.className = 'jsoneditor-td-tree';
     tr.appendChild(tdSeparator);
@@ -2087,14 +2128,148 @@ JSONEditor.Node.prototype._createDomTree = function (domExpand, domField, domVal
     }
     dom.tdSeparator = tdSeparator;
 
-    // add the value
+    // create the value
     var tdValue = document.createElement('td');
     tdValue.className = 'jsoneditor-td-tree';
     tr.appendChild(tdValue);
-    tdValue.appendChild(domValue);
+    dom.value = this._createDomValue();
+    tdValue.appendChild(dom.value);
     dom.tdValue = tdValue;
 
     return domTree;
+};
+
+/**
+ * The highlighter can highlight/unhighlight a node, and
+ * animate the visibility of a context menu.
+ * @constructor JSONEditor.Highlighter
+ */
+JSONEditor.Highlighter = function () {
+};
+
+/**
+ * Hightlight given node and its childs
+ * @param {JSONEditor.Node} node
+ */
+JSONEditor.Highlighter.prototype.highlight = function (node) {
+    if (this.node != node) {
+        // unhighlight current node
+        if (this.node) {
+            this.node.setHighlight(false);
+        }
+
+        // highlight new node
+        this.node = node;
+        this.node.setHighlight(true);
+    }
+
+    // cancel any current timeout
+    this._cancelUnhighlight();
+};
+
+/**
+ * Unhighlight currently highlighted node.
+ * Will be done after a delay
+ */
+JSONEditor.Highlighter.prototype.unhighlight = function () {
+    var me = this;
+    if (this.node) {
+        var delay = this.menuNode ? 200 : 0;
+        this._cancelUnhighlight();
+
+        this.unhighlightTimer = setTimeout(function () {
+            me.node.setHighlight(false);
+            me.node = undefined;
+            me.unhighlightTimer = undefined;
+        }, delay);
+    }
+};
+
+/**
+ * Cancel an unhighlight action (if before the timeout of the unhighlight action)
+ * @private
+ */
+JSONEditor.Highlighter.prototype._cancelUnhighlight = function () {
+    if (this.unhighlightTimer) {
+        clearTimeout(this.unhighlightTimer);
+        this.unhighlightTimer = undefined;
+    }
+};
+
+/**
+ * Show the context menu of a node
+ * @param {JSONEditor.Node} node
+ */
+JSONEditor.Highlighter.prototype.showMenu = function (node) {
+    if (this.menuNode != node) {
+        if (this.menuNode) {
+            // remove currently visible menu
+            JSONEditor.removeClassName(this.menuNode.dom.menu, 'jsoneditor-contextmenu-show');
+            JSONEditor.removeClassName(this.menuNode.dom.menu, 'jsoneditor-contextmenu-fade');
+        }
+
+        this.menuNode = node;
+        // TODO: not so nice to access the internal dom of the node here. create a node.getMenu instead
+        JSONEditor.addClassName(this.menuNode.dom.menu, 'jsoneditor-contextmenu-show');
+        JSONEditor.addClassName(this.menuNode.dom.menu, 'jsoneditor-contextmenu-fade');
+    }
+
+    this._cancelHideMenu();
+};
+
+/**
+ * Hide currently visible context menu after a delay
+ */
+JSONEditor.Highlighter.prototype.hideMenu = function () {
+    if (this.menuNode) {
+        var me = this;
+        JSONEditor.removeClassName(me.menuNode.dom.menu, 'jsoneditor-contextmenu-fade');
+        this.hidemenuTimer = setTimeout(function () {
+            if (me.menuNode) {
+                JSONEditor.removeClassName(me.menuNode.dom.menu, 'jsoneditor-contextmenu-show');
+                me.menuNode = undefined;
+            }
+        }, 200);
+    }
+};
+
+/**
+ * Cancel hiding of a menu (if before the timeout of the hide action)
+ * @private
+ */
+JSONEditor.Highlighter.prototype._cancelHideMenu = function () {
+    if (this.hidemenuTimer) {
+        clearTimeout(this.hidemenuTimer);
+        this.hidemenuTimer = undefined;
+    }
+    if (this.menuNode) {
+        JSONEditor.addClassName(this.menuNode.dom.menu, 'jsoneditor-contextmenu-fade');
+    }
+};
+
+/**
+ * Test if an element is a child of a parent element.
+ * @param {Element} child
+ * @param {Element} parent
+ * @param {boolean} [includeParent] if true (default), the method will return
+ *                                  true too when the child is the parent.
+ * @return {boolean} isChild
+ */
+JSONEditor.isChildOf = function (child, parent, includeParent) {
+    var e = child;
+    if (includeParent != false && e == parent) {
+        return true;
+    }
+
+    e = e.parentNode;
+    while (e) {
+        if (e == parent) {
+            return true;
+        }
+        e = e.parentNode;
+    }
+
+    return false;
 };
 
 /**
@@ -2107,6 +2282,40 @@ JSONEditor.Node.prototype.onEvent = function (event) {
     var dom = this.dom;
     var node = this;
     var expandable = (this.type == 'array' || this.type == 'object');
+
+    // check if mouse is on menu or on dragarea
+    var isChildOf = JSONEditor.isChildOf;
+    var isOnDragArea = isChildOf(target, dom.drag);
+    var isOnMenu = isChildOf(target, dom.menu);
+
+    // highlight current row and its childs
+    if (isOnMenu || isOnDragArea) {
+        if (type == 'mouseover') {
+            this.editor.highlighter.highlight(this);
+        }
+        else if (type == 'mouseout') {
+            // TODO: onmouseout of menu must only execute unhighlight when no contextmenu is visible
+            this.editor.highlighter.unhighlight();
+        }
+    }
+
+    // drag events
+    if (type == 'mousedown' && target == dom.drag) {
+        this._onDragStart(event);
+    }
+
+    // context menu events
+    if (type == 'click' && target == dom.menu) {
+        node.showContextMenu();
+    }
+
+    // expand events
+    var domExpand = dom.expand;
+    if (type == 'click' && target == dom.expand) {
+        if (expandable) {
+            this._onExpand(event);
+        }
+    }
 
     // value events
     var domValue = dom.value;
@@ -2172,86 +2381,6 @@ JSONEditor.Node.prototype.onEvent = function (event) {
         }
     }
 
-    // drag events
-    var domDrag = dom.drag;
-    if (target == domDrag) {
-        switch (type) {
-            case 'mousedown':
-                this._onDragStart(event);
-                break;
-            case 'mouseover':
-                this.setHighlight(true);
-                break;
-            case 'mouseout':
-                this.setHighlight(false);
-                break;
-        }
-    }
-
-    // expand events
-    var domExpand = dom.expand;
-    if (target == domExpand) {
-        if (type == 'click') {
-            if (expandable) {
-                this._onExpand(event);
-            }
-        }
-    }
-
-    // duplicate button
-    var domDuplicate = dom.duplicate;
-    if (target == domDuplicate) {
-        switch (type) {
-            case 'click':
-                var clone = this.parent._duplicate(this);
-
-                this.editor.onAction('duplicateNode', {
-                    'node': this,
-                    'clone': clone,
-                    'parent': this.parent
-                });
-                break;
-            case 'mouseover':
-                this.setHighlight(true);
-                break;
-            case 'mouseout':
-                this.setHighlight(false);
-                break;
-        }
-    }
-
-    // remove button
-    var domRemove = dom.remove;
-    if (target == domRemove) {
-        switch (type) {
-            case 'click':
-                this._onRemove();
-                break;
-            case 'mouseover':
-                this.setHighlight(true);
-                break;
-            case 'mouseout':
-                this.setHighlight(false);
-                break;
-        }
-    }
-
-    // type button
-    var domType = dom.type;
-    if (target == domType) {
-        switch (type) {
-            case 'click':
-                this._onChangeType(event);
-                break;
-            case 'mouseover':
-                this.setHighlight(true);
-                break;
-            case 'mouseout':
-                this.setHighlight(false);
-                break;
-        }
-    }
-
     // focus
     // when clicked in whitespace left or right from the field or value, set focus
     var domTree = dom.tree;
@@ -2277,8 +2406,8 @@ JSONEditor.Node.prototype.onEvent = function (event) {
                 break;
         }
     }
-
-    if ((target == dom.tdExpand && !expandable) || target == dom.tdField || target == dom.tdSeparator) {
+    if ((target == dom.tdExpand && !expandable) || target == dom.tdField ||
+            target == dom.tdSeparator) {
         switch (type) {
             case 'click':
                 if (domField) {
@@ -2351,20 +2480,6 @@ JSONEditor.Node.types = [
 ];
 
 /**
- * Create a DOM select box containing the node type
- * @return {Element} domType
- * @private
- */
-JSONEditor.Node.prototype._createDomTypeButton = function () {
-    var node = this;
-    var domType = document.createElement('button');
-    domType.className = 'jsoneditor-type-' + node.type;
-    domType.title = 'Change field type';
-
-    return domType;
-};
-
-/**
  * Remove this node
  * @private
  */
@@ -2382,114 +2497,110 @@ JSONEditor.Node.prototype._onRemove = function() {
 };
 
 /**
- * Handle a click on the Type-button
- * @param {Event} event
+ * Duplicate this node
  * @private
  */
-JSONEditor.Node.prototype._onChangeType = function (event) {
-    JSONEditor.Events.stopPropagation(event);
+JSONEditor.Node.prototype._onDuplicate = function() {
+    var clone = this.parent._duplicate(this);
 
-    var domType = this.dom.type;
-
-    var node = this;
-    var x = JSONEditor.getAbsoluteLeft(domType);
-    var y = JSONEditor.getAbsoluteTop(domType) + domType.clientHeight;
-    var callback = function (newType) {
-        var oldType = node.type;
-        node.changeType(newType);
-        node.editor.onAction('changeType', {
-            'node': node,
-            'oldType': oldType,
-            'newType': newType
-        });
-        domType.className = 'jsoneditor-type-' + node.type;
-    };
-    JSONEditor.showDropDownList({
-        'x': x,
-        'y': y,
-        'node': node,
-        'value': node.type,
-        'values': JSONEditor.Node.types,
-        'className': 'jsoneditor-select',
-        'optionSelectedClassName': 'jsoneditor-option-selected',
-        'optionClassName': 'jsoneditor-option',
-        'callback': callback
+    this.editor.onAction('duplicateNode', {
+        'node': this,
+        'clone': clone,
+        'parent': this.parent
     });
 };
 
 /**
- * Show a dropdown list
- * @param {Object} params    Available parameters:
- *                           {Number} x  The absolute horizontal position
- *                           {Number} y  The absolute vertical position
- *                           {JSONEditor.Node} node node used for highlighting
- *                           {String} value current selected value
- *                           {Object[]} values the available values. Each object
- *                                             contains a value, title, and
- *                                             className
- *                           {String} optionSelectedClassName
- *                           {String} optionClassName
- *                           {function} callback   Callback method, called when
- *                                                 the selected value changed.
+ * Handle insert before event
+ * @param {JSONEditor.Node} beforeNode
+ * @param {String} [field]
+ * @param {*} [value]
+ * @param {String} [type]   Can be 'auto', 'array', 'object', or 'string'
+ * @private
  */
-JSONEditor.showDropDownList = function (params) {
-    var select = document.createElement('div');
-    select.className = params.className || '';
-    select.style.position = 'absolute';
-    select.style.left = (params.x || 0) + 'px';
-    select.style.top = (params.y || 0) + 'px';
-
-    params.values.forEach(function (v) {
-        var text = v.value || String(v);
-        var className = 'jsoneditor-option';
-        var selected = (text == params.value);
-        if (selected)  {
-            className += ' ' + params.optionSelectedClassName;
-        }
-        var option = document.createElement('div');
-        option.className = className;
-        if (v.title) {
-            option.title = v.title;
-        }
-
-        var divIcon = document.createElement('div');
-        divIcon.className = (v.className || '');
-        option.appendChild(divIcon);
-
-        var divText = document.createElement('div');
-        divText.className = 'jsoneditor-option-text';
-        divText.innerHTML = '<div>' + text + '</div>';
-        option.appendChild(divText);
-
-        option.onmousedown = (function (value) {
-            return function () {
-                params.callback(value);
-            };
-        })(v.value);
-        select.appendChild(option);
+JSONEditor.Node.prototype._onInsertBefore = function (beforeNode, field, value, type) {
+    var newNode = new JSONEditor.Node(this.editor, {
+        'field': (value != undefined) ? field : 'field',
+        'value': (value != undefined) ? value : 'value',
+        'type': type
     });
+    this.parent.insertBefore(newNode, beforeNode);
+    this.parent.setHighlight(false);
+    newNode.focus();
 
-    document.body.appendChild(select);
-    params.node.setHighlight(true);
-    JSONEditor.freezeHighlight = true;
+    this.editor.onAction('insertBeforeNode', {
+        'node': newNode,
+        'beforeNode': beforeNode,
+        'parent': this.parent
+    });
+};
 
-    // TODO: change to onclick? -> but be sure to remove existing dropdown first
-    var onmousedown = JSONEditor.Events.addEventListener(document, 'mousedown', function () {
-        JSONEditor.freezeHighlight = false;
-        params.node.setHighlight(false);
-        if (select && select.parentNode) {
-            select.parentNode.removeChild(select);
-        }
-        JSONEditor.Events.removeEventListener(document, 'mousedown', onmousedown);
+/**
+ * Handle insert after event
+ * @param {JSONEditor.Node} afterNode
+ * @param {String} [field]
+ * @param {*} [value]
+ * @param {String} [type]   Can be 'auto', 'array', 'object', or 'string'
+ * @private
+ */
+// TODO: remove method _onInsertAfter?
+JSONEditor.Node.prototype._onInsertAfter = function (afterNode, field, value, type) {
+    var newNode = new JSONEditor.Node(this.editor, {
+        'field': (value != undefined) ? field : 'field',
+        'value': (value != undefined) ? value : 'value',
+        'type': type
     });
-    var onmousewheel = JSONEditor.Events.addEventListener(document, 'mousewheel', function () {
-        JSONEditor.freezeHighlight = false;
-        params.node.setHighlight(false);
-        if (select && select.parentNode) {
-            select.parentNode.removeChild(select);
-        }
-        JSONEditor.Events.removeEventListener(document, 'mousewheel', onmousewheel);
+    this.parent.insertAfter(newNode, afterNode);
+    this.parent.setHighlight(false);
+    newNode.focus();
+
+    this.editor.onAction('insertAfterNode', {
+        'node': newNode,
+        'afterNode': afterNode,
+        'parent': this.parent
     });
+};
+
+/**
+ * Change the type of the node's value
+ * @param {String} newType
+ * @private
+ */
+JSONEditor.Node.prototype._onChangeType = function (newType) {
+    var oldType = this.type;
+    if (newType != oldType) {
+        this.changeType(newType);
+
+        this.editor.onAction('changeType', {
+            'node': this,
+            'oldType': oldType,
+            'newType': newType
+        });
+    }
+};
+
+/**
+ * Sort the childs of the node. Only applicable when the node has type 'object'
+ * or 'array'.
+ * @private
+ */
+JSONEditor.Node.prototype._onSort = function () {
+    if (this.childs && (this.type == 'array' || this.type == 'object')) {
+        var direction = (this.sort == 'asc') ? -1 : 1;
+        var prop = (this.type == 'array') ? 'value': 'field';
+        this.hideChilds();
+
+        this.childs.sort(function (a, b) {
+            if (a[prop] > b[prop]) return direction;
+            if (a[prop] < b[prop]) return -direction;
+            return 0;
+        });
+        this.sort = (direction == 1) ? 'asc' : 'desc';
+
+        // TODO: register the sort event in the action history, to be able to undo/redo
+
+        this.showChilds();
+    }
 };
 
 /**
@@ -2505,42 +2616,153 @@ JSONEditor.Node.prototype.getAppend = function () {
 };
 
 /**
- * Create a remove button. Returns undefined when the structure cannot
- * be removed
- * @return {Element | undefined} removeButton, or undefined when inapplicable
- * @private
+ * Show a contextmenu for this node
  */
-JSONEditor.Node.prototype._createDomRemoveButton = function () {
+JSONEditor.Node.prototype.showContextMenu = function () {
+    var node = this;
+    var titles = {
+        'auto': 'Field type "auto". ' +
+            'The field type is automatically determined from the value ' +
+            'and can be a string, number, boolean, or null.',
+        'object': 'Field type "object". ' +
+            'An object contains an unordered set of key/value pairs.',
+        'array': 'Field type "array". ' +
+            'An array contains an ordered collection of values.',
+        'string': 'Field type "string". ' +
+            'Field type is not determined from the value, ' +
+            'but always returned as string.'
+    };
+
+    var items = [];
+
+    items = items.concat([
+        {
+            'text': 'Type',
+            'className': 'jsoneditor-type-' + this.type,
+            'submenu': [
+                {
+                    'text': 'Array',
+                    'className': 'jsoneditor-type-array' +
+                        (this.type == 'array' ? ' selected' : ''),
+                    'title': titles.array,
+                    'click': function () {
+                        node._onChangeType('array');
+                    }
+                },
+                {
+                    'text': 'Auto',
+                    'className': 'jsoneditor-type-auto' +
+                        (this.type == 'auto' ? ' selected' : ''),
+                    'title': titles.auto,
+                    'click': function () {
+                        node._onChangeType('auto');
+                    }
+                },
+                {
+                    'text': 'Object',
+                    'className': 'jsoneditor-type-object' +
+                        (this.type == 'object' ? ' selected' : ''),
+                    'title': titles.object,
+                    'click': function () {
+                        node._onChangeType('object');
+                    }
+                },
+                {
+                    'text': 'String',
+                    'className': 'jsoneditor-type-string' +
+                        (this.type == 'string' ? ' selected' : ''),
+                    'title': titles.string,
+                    'click': function () {
+                        node._onChangeType('string');
+                    }
+                }
+            ]
+        }
+    ]);
+
+    if (this.type == 'array' || this.type == 'object') {
+        items = items.concat([
+            {
+                'text': 'Sort',
+                'className': 'jsoneditor-sort-' + ((this.sort == 'asc') ? 'desc': 'asc'),
+                'click': function () {
+                    node._onSort();
+                }
+            }
+        ]);
+    }
+
     if (this.parent && (this.parent.type == 'array' || this.parent.type == 'object')) {
-        var buttonRemove = document.createElement('button');
-        buttonRemove.className = 'jsoneditor-remove';
-        buttonRemove.title = 'Remove field (including all its childs)';
+        items = items.concat([
+            // create a separator
+            {
+                'type': 'separator'
+            },
 
-        return buttonRemove;
-    }
-    else {
-        return undefined;
-    }
-};
+            // create insert button
+            // TODO: insert before or insert after?
+            {
+                'text': 'Insert',
+                'className': 'jsoneditor-insert',
+                'submenu': [
+                    {
+                        'text': 'Array',
+                        'className': 'jsoneditor-type-array',
+                        'title': titles.array,
+                        'click': function () {
+                            node._onInsertBefore(node, 'field', []);
+                        }
+                    },
+                    {
+                        'text': 'Auto',
+                        'className': 'jsoneditor-type-auto',
+                        'title': titles.auto,
+                        'click': function () {
+                            node._onInsertBefore(node, 'field', 'value', 'auto');
+                        }
+                    },
+                    {
+                        'text': 'Object',
+                        'className': 'jsoneditor-type-object',
+                        'title': titles.object,
+                        'click': function () {
+                            node._onInsertBefore(node, 'field', {});
+                        }
+                    },
+                    {
+                        'text': 'String',
+                        'className': 'jsoneditor-type-string',
+                        'title': titles.string,
+                        'click': function () {
+                            // TODO: settings type string does not work, will become auto
+                            node._onInsertBefore(node, 'field', 'value', 'string');
+                        }
+                    }
+                ]
+            },
 
-/**
- * Create a duplicate button.
- * If the Node is the root node, no duplicate button is available and undefined
- * will be returned
- * @return {Element | undefined} buttonDuplicate
- * @private
- */
-JSONEditor.Node.prototype._createDomDuplicateButton = function () {
-    if (this.parent && (this.parent.type == 'array' || this.parent.type == 'object')) {
-        var buttonDupliate = document.createElement('button');
-        buttonDupliate.className = 'jsoneditor-duplicate';
-        buttonDupliate.title = 'Duplicate field (including all childs)';
+            // create duplicate button
+            {
+                'text': 'Duplicate',
+                'className': 'jsoneditor-duplicate',
+                'click': function () {
+                    node._onDuplicate();
+                }
+            },
 
-        return buttonDupliate;
+            // create remove button
+            {
+                'text': 'Remove',
+                'className': 'jsoneditor-remove',
+                'click': function () {
+                    node._onRemove();
+                }
+            }
+        ]);
     }
-    else {
-        return undefined;
-    }
+
+    var menu = new JSONEditor.ContextMenu(items);
+    menu.show(this.dom.menu);
 };
 
 /**
@@ -2687,6 +2909,9 @@ JSONEditor.AppendNode.prototype = new JSONEditor.Node();
  * @return {Element} dom   TR element
  */
 JSONEditor.AppendNode.prototype.getDom = function () {
+    // TODO: do not create the DOM for the appendNode when in viewer mode
+    // TODO: implement a new solution for the append node
+
     if (this.dom.tr) {
         return this.dom.tr;
     }
@@ -2705,13 +2930,16 @@ JSONEditor.AppendNode.prototype.getDom = function () {
     // a row for the append button
     var trAppend = document.createElement('tr');
     trAppend.node = this;
+    this.dom.tr = trAppend;
 
-    // TODO: do not create an appendNode at all when in viewer mode
+    // when in viewer mode, don't create the contents for the append node
+    // but return here.
     if (!this.editor.editable) {
         return trAppend;
     }
 
-    // a cell for the drag area column
+    // a cell for the dragarea and contextmenu columns
+    trAppend.appendChild(newTd('jsoneditor-td'));
     trAppend.appendChild(newTd('jsoneditor-td'));
 
     // a cell for the append button
@@ -2725,13 +2953,7 @@ JSONEditor.AppendNode.prototype.getDom = function () {
     buttonAppend.title = 'Append a field';
     this.dom.append = buttonAppend;
     tdAppend.appendChild(buttonAppend);
-
-    trAppend.appendChild(newTd('jsoneditor-td jsoneditor-td-edit'));
-    trAppend.appendChild(newTd('jsoneditor-td jsoneditor-td-edit'));
-    trAppend.appendChild(newTd('jsoneditor-td jsoneditor-td-edit'));
-
-    this.dom.tr = trAppend;
-    this.dom.td = tdAppend;
+     this.dom.td = tdAppend;
 
     this.updateDom();
 
@@ -2792,6 +3014,141 @@ JSONEditor.AppendNode.prototype._onAppend = function () {
         'node': newNode,
         'parent': this.parent
     });
+};
+
+/**
+ * A context menu
+ * @param {Object[]} items    Array containing the menu structure
+ *                            TODO: describe structure
+ * @constructor
+ */
+JSONEditor.ContextMenu = function (items) {
+    this.items = items;
+    var me = this;
+
+    // create a container element
+    var menu = document.createElement('div');
+    menu.className = 'jsoneditor-contextmenu';
+    this.menu = menu;
+
+    // create a list to hold the menu items
+    var list = document.createElement('ul');
+    list.className = 'menu';
+    menu.appendChild(list);
+    this.list = list;
+
+    function createMenuItems (list, items) {
+        items.forEach(function (item) {
+            if (item.type == 'separator') {
+                // create a separator
+                var separator = document.createElement('div');
+                separator.className = 'separator';
+                li = document.createElement('li');
+                li.appendChild(separator);
+                list.appendChild(li);
+            }
+            else {
+                // create a menu item
+                var button = document.createElement('button');
+
+                var li = document.createElement('li');
+                li.appendChild(button);
+                list.appendChild(li);
+
+                button.className = item.className;
+                button.innerHTML = '<div class="img"></div>' + item.text;
+                if (item.submenu) {
+                    button.innerHTML = '<div class="img"></div>' + item.text +
+                        '<div class="expand"></div>';
+                    var submenu = document.createElement('ul');
+                    submenu.className = 'menu';
+                    li.appendChild(submenu);
+                    createMenuItems(submenu, item.submenu);
+                }
+                else {
+                    button.innerHTML = '<div class="img"></div>' + item.text;
+                }
+                if (item.title) {
+                    button.title = item.title;
+                }
+                if (item.click && !item.submenu) {
+                    button.onclick = function () {
+                        me.hide();
+                        item.click();
+                    };
+                }
+                else if (!item.click && item.submenu) {
+                    var selected = false;
+                    button.onclick = function () {
+                        selected = !selected;
+                        if (selected) {
+                            JSONEditor.addClassName(li, 'selected');
+                        }
+                        else {
+                            JSONEditor.removeClassName(li, 'selected');
+                        }
+                    };
+                }
+                else if (item.click && item.submenu) {
+                    // TODO: implement click + submenu
+
+
+                }
+            }
+        });
+    }
+    createMenuItems(list, items);
+
+    // add event handlers to remove the menu on mouse scroll or click outside the context menu
+    var onmousedown = JSONEditor.Events.addEventListener(document, 'mousedown', function (event) {
+        event = event || window.event;
+        var target = event.target || event.srcElement;
+        if (!JSONEditor.isChildOf(target, list)) {
+            me.hide();
+            JSONEditor.Events.removeEventListener(document, 'mousedown', onmousedown);
+        }
+    });
+    var onmousewheel = JSONEditor.Events.addEventListener(document, 'mousewheel', function () {
+        me.hide();
+        JSONEditor.Events.removeEventListener(document, 'mousewheel', onmousewheel);
+    });
+};
+
+// current menu, a singleton. We may only have one visible context menu
+JSONEditor.ContextMenu.visibleMenu = undefined;
+
+/**
+ * Attach the menu to an anchor
+ * @param {Element} anchor
+ */
+JSONEditor.ContextMenu.prototype.show = function (anchor) {
+    this.hide();
+
+    // position the menu
+    var left = JSONEditor.getAbsoluteLeft(anchor);
+    var top = JSONEditor.getAbsoluteTop(anchor);
+    var height = anchor.offsetHeight;
+    this.menu.style.left = left + 'px';
+    this.menu.style.top = (top + height) + 'px';
+
+    // TODO: when the menu is too close to the bottom of the page, show it
+    // on above the anchor element instead of below
+
+    document.body.appendChild(this.menu);
+
+    if (JSONEditor.ContextMenu.visibleMenu) {
+        JSONEditor.ContextMenu.visibleMenu.hide();
+    }
+    JSONEditor.ContextMenu.visibleMenu = this;
+};
+
+/**
+ * Hide the context menu if visible
+ */
+JSONEditor.ContextMenu.prototype.hide = function () {
+    if (this.menu.parentNode) {
+        this.menu.parentNode.removeChild(this.menu);
+    }
 };
 
 /**
@@ -2983,15 +3340,9 @@ JSONEditor.prototype._createTable = function () {
     col.width = "24px";
     this.colgroupContent.appendChild(col);
     col = document.createElement('col');
-    this.colgroupContent.appendChild(col);
-    col = document.createElement('col');
     col.width = "24px";
     this.colgroupContent.appendChild(col);
     col = document.createElement('col');
-    col.width = "24px";
-    this.colgroupContent.appendChild(col);
-    col = document.createElement('col');
-    col.width = "24px";
     this.colgroupContent.appendChild(col);
     this.table.appendChild(this.colgroupContent);
 

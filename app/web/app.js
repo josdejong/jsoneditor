@@ -304,7 +304,6 @@ app.clearFile = function () {
     var json = {};
     formatter.set(json);
     editor.set(json);
-    app.retriever.removeUrl();
 };
 
 app.resize = function() {
