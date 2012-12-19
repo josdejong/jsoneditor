@@ -1,4 +1,4 @@
-/**
+/*!
  * @file app.js
  *
  * @brief

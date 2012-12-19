@@ -1,4 +1,4 @@
-/**
+/*!
  * @file jsoneditor.js
  *
  * @brief
@@ -481,6 +481,22 @@ JSONEditor.History = function (editor) {
             },
             'redo': function (obj) {
                 obj.params.endParent.moveTo(obj.params.node, obj.params.endIndex);
+            }
+        },
+        'sort': {
+            'undo': function (obj) {
+                var node = obj.params.node;
+                node.hideChilds();
+                node.sort = obj.params.oldSort;
+                node.childs = obj.params.oldChilds;
+                node.showChilds();
+            },
+            'redo': function (obj) {
+                var node = obj.params.node;
+                node.hideChilds();
+                node.sort = obj.params.newSort;
+                node.childs = obj.params.newChilds;
+                node.showChilds();
             }
         }
 
@@ -2590,6 +2606,13 @@ JSONEditor.Node.prototype._onSort = function () {
         var prop = (this.type == 'array') ? 'value': 'field';
         this.hideChilds();
 
+        var oldChilds = this.childs;
+        var oldSort = this.sort;
+
+        // copy the array (the old one will be kept for an undo action
+        this.childs = this.childs.concat();
+
+        // sort the arrays
         this.childs.sort(function (a, b) {
             if (a[prop] > b[prop]) return direction;
             if (a[prop] < b[prop]) return -direction;
@@ -2597,7 +2620,13 @@ JSONEditor.Node.prototype._onSort = function () {
         });
         this.sort = (direction == 1) ? 'asc' : 'desc';
 
-        // TODO: register the sort event in the action history, to be able to undo/redo
+        this.editor.onAction('sort', {
+            'node': this,
+            'oldChilds': oldChilds,
+            'oldSort': oldSort,
+            'newChilds': this.childs,
+            'newSort': this.sort
+        });
 
         this.showChilds();
     }
