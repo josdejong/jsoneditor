@@ -1726,14 +1726,7 @@ JSONEditor.Node.prototype._onDragStart = function (event) {
             });
     }
 
-    /* TODO: correct highlighting when the TypeDropDown is visible (And has highlighting locked)
-     if (JSONEditor.freezeHighlight) {
-     console.log('heee');
-     JSONEditor.freezeHighlight = false;
-     this.setHighlight(true);
-     }
-     */
-    JSONEditor.freezeHighlight = true;
+    this.editor.highlighter.lock();
     this.drag = {
         'oldCursor': document.body.style.cursor,
         'startParent': this.parent,
@@ -1833,9 +1826,8 @@ JSONEditor.Node.prototype._onDragEnd = function (event) {
     }
 
     document.body.style.cursor = this.drag.oldCursor;
-    delete JSONEditor.freezeHighlight;
+    this.editor.highlighter.unlock();
     delete this.drag;
-    this.setHighlight(false);
 
     if (this.mousemove) {
         JSONEditor.Events.removeEventListener(document, 'mousemove', this.mousemove);
@@ -1881,10 +1873,6 @@ JSONEditor.Node.prototype._createDomField = function () {
  * @param {boolean} highlight
  */
 JSONEditor.Node.prototype.setHighlight = function (highlight) {
-    if (JSONEditor.freezeHighlight) {
-        return;
-    }
-
     if (this.dom.tr) {
         this.dom.tr.className = 'jsoneditor-tr' + (highlight ? ' jsoneditor-tr-highlight' : '');
 
@@ -2161,6 +2149,7 @@ JSONEditor.Node.prototype._createDomTree = function () {
  * @constructor JSONEditor.Highlighter
  */
 JSONEditor.Highlighter = function () {
+    this.locked = false;
 };
 
 /**
@@ -2168,6 +2157,10 @@ JSONEditor.Highlighter = function () {
  * @param {JSONEditor.Node} node
  */
 JSONEditor.Highlighter.prototype.highlight = function (node) {
+    if (this.locked) {
+        return;
+    }
+
     if (this.node != node) {
         // unhighlight current node
         if (this.node) {
@@ -2188,6 +2181,10 @@ JSONEditor.Highlighter.prototype.highlight = function (node) {
  * Will be done after a delay
  */
 JSONEditor.Highlighter.prototype.unhighlight = function () {
+    if (this.locked) {
+        return;
+    }
+
     var me = this;
     if (this.node) {
         var delay = this.menuNode ? 200 : 0;
@@ -2213,55 +2210,19 @@ JSONEditor.Highlighter.prototype._cancelUnhighlight = function () {
 };
 
 /**
- * Show the context menu of a node
- * @param {JSONEditor.Node} node
+ * Lock highlighting or unhighlighting nodes.
+ * methods highlight and unhighlight do not work while locked.
  */
-JSONEditor.Highlighter.prototype.showMenu = function (node) {
-    if (this.menuNode != node) {
-        if (this.menuNode) {
-            // remove currently visible menu
-            JSONEditor.removeClassName(this.menuNode.dom.menu, 'jsoneditor-contextmenu-show');
-            JSONEditor.removeClassName(this.menuNode.dom.menu, 'jsoneditor-contextmenu-fade');
-        }
-
-        this.menuNode = node;
-        // TODO: not so nice to access the internal dom of the node here. create a node.getMenu instead
-        JSONEditor.addClassName(this.menuNode.dom.menu, 'jsoneditor-contextmenu-show');
-        JSONEditor.addClassName(this.menuNode.dom.menu, 'jsoneditor-contextmenu-fade');
-    }
-
-    this._cancelHideMenu();
+JSONEditor.Highlighter.prototype.lock = function () {
+    this.locked = true;
 };
 
 /**
- * Hide currently visible context menu after a delay
+ * Unlock highlighting or unhighlighting nodes
  */
-JSONEditor.Highlighter.prototype.hideMenu = function () {
-    if (this.menuNode) {
-        var me = this;
-        JSONEditor.removeClassName(me.menuNode.dom.menu, 'jsoneditor-contextmenu-fade');
-        this.hidemenuTimer = setTimeout(function () {
-            if (me.menuNode) {
-                JSONEditor.removeClassName(me.menuNode.dom.menu, 'jsoneditor-contextmenu-show');
-                me.menuNode = undefined;
-            }
-        }, 200);
-    }
-};
-
-/**
- * Cancel hiding of a menu (if before the timeout of the hide action)
- * @private
- */
-JSONEditor.Highlighter.prototype._cancelHideMenu = function () {
-    if (this.hidemenuTimer) {
-        clearTimeout(this.hidemenuTimer);
-        this.hidemenuTimer = undefined;
-    }
-    if (this.menuNode) {
-        JSONEditor.addClassName(this.menuNode.dom.menu, 'jsoneditor-contextmenu-fade');
-    }
-};
+JSONEditor.Highlighter.prototype.unlock = function () {
+    this.locked = false;
+}
 
 /**
  * Test if an element is a child of a parent element.
@@ -2322,7 +2283,12 @@ JSONEditor.Node.prototype.onEvent = function (event) {
 
     // context menu events
     if (type == 'click' && target == dom.menu) {
-        node.showContextMenu();
+        node.editor.highlighter.lock();
+        this.showContextMenu(function () {
+            node.editor.highlighter.unlock();
+            node.editor.highlighter.unhighlight();
+        });
+
     }
 
     // expand events
@@ -2500,7 +2466,7 @@ JSONEditor.Node.types = [
  * @private
  */
 JSONEditor.Node.prototype._onRemove = function() {
-    this.setHighlight(false);
+    this.editor.highlighter.unhighlight();
     var index = this.parent.childs.indexOf(this);
 
     this.parent._remove(this);
@@ -2542,7 +2508,7 @@ JSONEditor.Node.prototype._onInsertBefore = function (beforeNode, field, value, 
     });
     newNode.expand(true);
     this.parent.insertBefore(newNode, beforeNode);
-    this.parent.setHighlight(false);
+    this.editor.highlighter.unhighlight();
     newNode.focus();
 
     this.editor.onAction('insertBeforeNode', {
@@ -2568,7 +2534,7 @@ JSONEditor.Node.prototype._onInsertAfter = function (afterNode, field, value, ty
     });
     newNode.expand(true);
     this.parent.insertAfter(newNode, afterNode);
-    this.parent.setHighlight(false);
+    this.editor.highlighter.unhighlight();
     newNode.focus();
 
     this.editor.onAction('insertAfterNode', {
@@ -2593,7 +2559,7 @@ JSONEditor.Node.prototype._onAppend = function (field, value, type) {
     });
     newNode.expand(true);
     this.parent.appendChild(newNode);
-    this.parent.setHighlight(false);
+    this.editor.highlighter.unhighlight();
     newNode.focus();
 
     this.editor.onAction('appendNode', {
@@ -2685,8 +2651,10 @@ JSONEditor.TYPE_TITLES = {
 
 /**
  * Show a contextmenu for this node
+ * @param {function} [onClose]   Callback method called when the context menu
+ *                               is being closed.
  */
-JSONEditor.Node.prototype.showContextMenu = function () {
+JSONEditor.Node.prototype.showContextMenu = function (onClose) {
     var node = this;
     var titles = JSONEditor.TYPE_TITLES;
     var items = [];
@@ -2861,7 +2829,7 @@ JSONEditor.Node.prototype.showContextMenu = function () {
         });
     }
 
-    var menu = new JSONEditor.ContextMenu(items);
+    var menu = new JSONEditor.ContextMenu(items, {close: onClose});
     menu.show(this.dom.menu);
 };
 
@@ -3097,8 +3065,10 @@ JSONEditor.AppendNode.prototype.updateDom = function () {
 
 /**
  * Show a contextmenu for this node
+ * @param {function} [onClose]   Callback method called when the context menu
+ *                               is being closed.
  */
-JSONEditor.AppendNode.prototype.showContextMenu = function () {
+JSONEditor.AppendNode.prototype.showContextMenu = function (onClose) {
     var node = this;
     var titles = JSONEditor.TYPE_TITLES;
     var items = [
@@ -3145,7 +3115,7 @@ JSONEditor.AppendNode.prototype.showContextMenu = function () {
         }
     ];
 
-    var menu = new JSONEditor.ContextMenu(items);
+    var menu = new JSONEditor.ContextMenu(items, {close: onClose});
     menu.show(this.dom.menu);
 };
 
@@ -3157,6 +3127,7 @@ JSONEditor.AppendNode.prototype.onEvent = function (event) {
     var type = event.type;
     var target = event.target || event.srcElement;
     var dom = this.dom;
+    var node = this;
 
     // highlight the appendnodes parent
     var menu = dom.menu;
@@ -3172,7 +3143,11 @@ JSONEditor.AppendNode.prototype.onEvent = function (event) {
 
     // context menu events
     if (type == 'click' && target == dom.menu) {
-        this.showContextMenu();
+        node.editor.highlighter.lock();
+        this.showContextMenu(function () {
+            node.editor.highlighter.unlock();
+            node.editor.highlighter.unhighlight();
+        });
     }
 };
 
@@ -3180,11 +3155,16 @@ JSONEditor.AppendNode.prototype.onEvent = function (event) {
  * A context menu
  * @param {Object[]} items    Array containing the menu structure
  *                            TODO: describe structure
+ * @param {Object} [options]  Object with options. Available options:
+ *                            {function} close    Callback called when the
+ *                                                context menu is being closed.
  * @constructor
  */
-JSONEditor.ContextMenu = function (items) {
+JSONEditor.ContextMenu = function (items, options) {
     this.items = items;
     var me = this;
+
+    this.onClose = options ? options.close : undefined;
 
     // create a container element
     var menu = document.createElement('div');
@@ -3259,6 +3239,7 @@ JSONEditor.ContextMenu = function (items) {
     }
     createMenuItems(list, items);
 
+    // TODO: move attaching event listeners to the method show, and removing them to hide
     // add event handlers to remove the menu on mouse scroll or click outside the context menu
     var onmousedown = JSONEditor.Events.addEventListener(document, 'mousedown', function (event) {
         event = event || window.event;
@@ -3272,6 +3253,7 @@ JSONEditor.ContextMenu = function (items) {
         me.hide();
         JSONEditor.Events.removeEventListener(document, 'mousewheel', onmousewheel);
     });
+    // TODO: add keydown listener, listening for ESC
 };
 
 // current menu, a singleton. We may only have one visible context menu
@@ -3292,7 +3274,7 @@ JSONEditor.ContextMenu.prototype.show = function (anchor) {
     this.menu.style.top = (top + height) + 'px';
 
     // TODO: when the menu is too close to the bottom of the page, show it
-    // on above the anchor element instead of below
+    //       on above the anchor element instead of below
 
     document.body.appendChild(this.menu);
 
@@ -3308,6 +3290,9 @@ JSONEditor.ContextMenu.prototype.show = function (anchor) {
 JSONEditor.ContextMenu.prototype.hide = function () {
     if (this.menu.parentNode) {
         this.menu.parentNode.removeChild(this.menu);
+        if (this.onClose) {
+            this.onClose();
+        }
     }
 };
 
