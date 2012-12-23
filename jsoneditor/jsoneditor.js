@@ -2001,11 +2001,11 @@ JSONEditor.Node.prototype.updateDom = function (options) {
                 child.updateDom(options);
             });
         }
+    }
 
-        // update row with append button
-        if (this.append) {
-            this.append.updateDom();
-        }
+    // update row with append button
+    if (this.append) {
+        this.append.updateDom();
     }
 };
 
@@ -2540,6 +2540,7 @@ JSONEditor.Node.prototype._onInsertBefore = function (beforeNode, field, value, 
         'value': (value != undefined) ? value : 'value',
         'type': type
     });
+    newNode.expand(true);
     this.parent.insertBefore(newNode, beforeNode);
     this.parent.setHighlight(false);
     newNode.focus();
@@ -2559,13 +2560,13 @@ JSONEditor.Node.prototype._onInsertBefore = function (beforeNode, field, value, 
  * @param {String} [type]   Can be 'auto', 'array', 'object', or 'string'
  * @private
  */
-// TODO: remove method _onInsertAfter?
 JSONEditor.Node.prototype._onInsertAfter = function (afterNode, field, value, type) {
     var newNode = new JSONEditor.Node(this.editor, {
         'field': (value != undefined) ? field : 'field',
         'value': (value != undefined) ? value : 'value',
         'type': type
     });
+    newNode.expand(true);
     this.parent.insertAfter(newNode, afterNode);
     this.parent.setHighlight(false);
     newNode.focus();
@@ -2573,6 +2574,30 @@ JSONEditor.Node.prototype._onInsertAfter = function (afterNode, field, value, ty
     this.editor.onAction('insertAfterNode', {
         'node': newNode,
         'afterNode': afterNode,
+        'parent': this.parent
+    });
+};
+
+/**
+ * Handle append event
+ * @param {String} [field]
+ * @param {*} [value]
+ * @param {String} [type]   Can be 'auto', 'array', 'object', or 'string'
+ * @private
+ */
+JSONEditor.Node.prototype._onAppend = function (field, value, type) {
+    var newNode = new JSONEditor.Node(this.editor, {
+        'field': (value != undefined) ? field : 'field',
+        'value': (value != undefined) ? value : 'value',
+        'type': type
+    });
+    newNode.expand(true);
+    this.parent.appendChild(newNode);
+    this.parent.setHighlight(false);
+    newNode.focus();
+
+    this.editor.onAction('appendNode', {
+        'node': newNode,
         'parent': this.parent
     });
 };
@@ -2644,110 +2669,112 @@ JSONEditor.Node.prototype.getAppend = function () {
     return this.append.getDom();
 };
 
+// titles with explanation for the different types
+JSONEditor.TYPE_TITLES = {
+    'auto': 'Field type "auto". ' +
+        'The field type is automatically determined from the value ' +
+        'and can be a string, number, boolean, or null.',
+    'object': 'Field type "object". ' +
+        'An object contains an unordered set of key/value pairs.',
+    'array': 'Field type "array". ' +
+        'An array contains an ordered collection of values.',
+    'string': 'Field type "string". ' +
+        'Field type is not determined from the value, ' +
+        'but always returned as string.'
+};
+
 /**
  * Show a contextmenu for this node
  */
 JSONEditor.Node.prototype.showContextMenu = function () {
     var node = this;
-    var titles = {
-        'auto': 'Field type "auto". ' +
-            'The field type is automatically determined from the value ' +
-            'and can be a string, number, boolean, or null.',
-        'object': 'Field type "object". ' +
-            'An object contains an unordered set of key/value pairs.',
-        'array': 'Field type "array". ' +
-            'An array contains an ordered collection of values.',
-        'string': 'Field type "string". ' +
-            'Field type is not determined from the value, ' +
-            'but always returned as string.'
-    };
-
+    var titles = JSONEditor.TYPE_TITLES;
     var items = [];
 
-    items = items.concat([
-        {
-            'text': 'Type',
-            'className': 'jsoneditor-type-' + this.type,
-            'submenu': [
-                {
-                    'text': 'Array',
-                    'className': 'jsoneditor-type-array' +
-                        (this.type == 'array' ? ' selected' : ''),
-                    'title': titles.array,
-                    'click': function () {
-                        node._onChangeType('array');
-                    }
-                },
-                {
-                    'text': 'Auto',
-                    'className': 'jsoneditor-type-auto' +
-                        (this.type == 'auto' ? ' selected' : ''),
-                    'title': titles.auto,
-                    'click': function () {
-                        node._onChangeType('auto');
-                    }
-                },
-                {
-                    'text': 'Object',
-                    'className': 'jsoneditor-type-object' +
-                        (this.type == 'object' ? ' selected' : ''),
-                    'title': titles.object,
-                    'click': function () {
-                        node._onChangeType('object');
-                    }
-                },
-                {
-                    'text': 'String',
-                    'className': 'jsoneditor-type-string' +
-                        (this.type == 'string' ? ' selected' : ''),
-                    'title': titles.string,
-                    'click': function () {
-                        node._onChangeType('string');
-                    }
-                }
-            ]
-        }
-    ]);
-
-    if (this.type == 'array' || this.type == 'object') {
-        items = items.concat([
+    // TODO: add titles for all context menu items
+    items.push({
+        'text': 'Type',
+        'title': 'Change the type of this node',
+        'className': 'jsoneditor-type-' + this.type,
+        'submenu': [
             {
-                'text': 'Sort',
-                'className': 'jsoneditor-sort-' + ((this.sort == 'asc') ? 'desc': 'asc'),
+                'text': 'Auto',
+                'className': 'jsoneditor-type-auto' +
+                    (this.type == 'auto' ? ' selected' : ''),
+                'title': titles.auto,
                 'click': function () {
-                    node._onSort();
+                    node._onChangeType('auto');
+                }
+            },
+            {
+                'text': 'Array',
+                'className': 'jsoneditor-type-array' +
+                    (this.type == 'array' ? ' selected' : ''),
+                'title': titles.array,
+                'click': function () {
+                    node._onChangeType('array');
+                }
+            },
+            {
+                'text': 'Object',
+                'className': 'jsoneditor-type-object' +
+                    (this.type == 'object' ? ' selected' : ''),
+                'title': titles.object,
+                'click': function () {
+                    node._onChangeType('object');
+                }
+            },
+            {
+                'text': 'String',
+                'className': 'jsoneditor-type-string' +
+                    (this.type == 'string' ? ' selected' : ''),
+                'title': titles.string,
+                'click': function () {
+                    node._onChangeType('string');
                 }
             }
-        ]);
+        ]
+    });
+
+    if (this.type == 'array' || this.type == 'object') {
+        items.push({
+            'text': 'Sort',
+            'title': 'Sort the childs of this node',
+            'className': 'jsoneditor-sort-' + ((this.sort == 'asc') ? 'desc': 'asc'),
+            'click': function () {
+                node._onSort();
+            }
+        });
     }
 
     if (this.parent && (this.parent.type == 'array' || this.parent.type == 'object')) {
-        items = items.concat([
-            // create a separator
-            {
-                'type': 'separator'
-            },
+        // create a separator
+        items.push({
+            'type': 'separator'
+        });
 
-            // create insert button
-            // TODO: insert before or insert after?
-            {
-                'text': 'Insert',
+        // create append button (for last child node only)
+        var childs = node.parent.childs;
+        if (node == childs[childs.length - 1]) {
+            items.push({
+                'text': 'Append',
+                'title': 'Append a new node after this node',
                 'className': 'jsoneditor-insert',
                 'submenu': [
-                    {
-                        'text': 'Array',
-                        'className': 'jsoneditor-type-array',
-                        'title': titles.array,
-                        'click': function () {
-                            node._onInsertBefore(node, 'field', []);
-                        }
-                    },
                     {
                         'text': 'Auto',
                         'className': 'jsoneditor-type-auto',
                         'title': titles.auto,
                         'click': function () {
-                            node._onInsertBefore(node, 'field', 'value', 'auto');
+                            node._onAppend('field', 'value', 'auto');
+                        }
+                    },
+                    {
+                        'text': 'Array',
+                        'className': 'jsoneditor-type-array',
+                        'title': titles.array,
+                        'click': function () {
+                            node._onAppend('field', []);
                         }
                     },
                     {
@@ -2755,7 +2782,7 @@ JSONEditor.Node.prototype.showContextMenu = function () {
                         'className': 'jsoneditor-type-object',
                         'title': titles.object,
                         'click': function () {
-                            node._onInsertBefore(node, 'field', {});
+                            node._onAppend('field', {});
                         }
                     },
                     {
@@ -2764,30 +2791,74 @@ JSONEditor.Node.prototype.showContextMenu = function () {
                         'title': titles.string,
                         'click': function () {
                             // TODO: settings type string does not work, will become auto
-                            node._onInsertBefore(node, 'field', 'value', 'string');
+                            node._onAppend('field', 'value', 'string');
                         }
                     }
                 ]
-            },
+            });
+        }
 
-            // create duplicate button
-            {
-                'text': 'Duplicate',
-                'className': 'jsoneditor-duplicate',
-                'click': function () {
-                    node._onDuplicate();
+        // create insert button
+        items.push({
+            'text': 'Insert',
+            'title': 'Insert a new node before this node',
+            'className': 'jsoneditor-insert',
+            'submenu': [
+                {
+                    'text': 'Auto',
+                    'className': 'jsoneditor-type-auto',
+                    'title': titles.auto,
+                    'click': function () {
+                        node._onInsertBefore(node, 'field', 'value', 'auto');
+                    }
+                },
+                {
+                    'text': 'Array',
+                    'className': 'jsoneditor-type-array',
+                    'title': titles.array,
+                    'click': function () {
+                        node._onInsertBefore(node, 'field', []);
+                    }
+                },
+                {
+                    'text': 'Object',
+                    'className': 'jsoneditor-type-object',
+                    'title': titles.object,
+                    'click': function () {
+                        node._onInsertBefore(node, 'field', {});
+                    }
+                },
+                {
+                    'text': 'String',
+                    'className': 'jsoneditor-type-string',
+                    'title': titles.string,
+                    'click': function () {
+                        // TODO: settings type string does not work, will become auto
+                        node._onInsertBefore(node, 'field', 'value', 'string');
+                    }
                 }
-            },
+            ]
+        });
 
-            // create remove button
-            {
-                'text': 'Remove',
-                'className': 'jsoneditor-remove',
-                'click': function () {
-                    node._onRemove();
-                }
+        // create duplicate button
+        items.push({
+            'text': 'Duplicate',
+            'title': 'Duplicate this node',
+            'className': 'jsoneditor-duplicate',
+            'click': function () {
+                node._onDuplicate();
             }
-        ]);
+        });
+
+        // create remove button
+        items.push({
+            'text': 'Remove',
+            'title': 'Remove this node',
+            'className': 'jsoneditor-remove',
+            'click': function () {
+                node._onRemove();
+            }
+        });
     }
 
     var menu = new JSONEditor.ContextMenu(items);
@@ -2940,26 +3011,16 @@ JSONEditor.AppendNode.prototype = new JSONEditor.Node();
 JSONEditor.AppendNode.prototype.getDom = function () {
     // TODO: do not create the DOM for the appendNode when in viewer mode
     // TODO: implement a new solution for the append node
+    var dom = this.dom;
 
-    if (this.dom.tr) {
-        return this.dom.tr;
-    }
-
-    /**
-     * Create a TD element, and give it the provided class name (if any)
-     * @param {String} [className]
-     * @return {Element} td
-     */
-    function newTd(className) {
-        var td = document.createElement('td');
-        td.className = className || '';
-        return td;
+    if (dom.tr) {
+        return dom.tr;
     }
 
     // a row for the append button
     var trAppend = document.createElement('tr');
     trAppend.node = this;
-    this.dom.tr = trAppend;
+    dom.tr = trAppend;
 
     // when in viewer mode, don't create the contents for the append node
     // but return here.
@@ -2967,22 +3028,31 @@ JSONEditor.AppendNode.prototype.getDom = function () {
         return trAppend;
     }
 
-    // a cell for the dragarea and contextmenu columns
-    trAppend.appendChild(newTd('jsoneditor-td'));
-    trAppend.appendChild(newTd('jsoneditor-td'));
+    // TODO: consistent naming
 
-    // a cell for the append button
+    // a cell for the dragarea column
+    var tdDrag = document.createElement('td');
+    tdDrag.className = 'jsoneditor-td';
+    dom.tdDrag = tdDrag;
+
+    // create context menu
+    var tdMenu = document.createElement('td');
+    tdMenu.className = 'jsoneditor-td';
+    var menu = document.createElement('button');
+    menu.className = 'jsoneditor-contextmenu';
+    dom.menu = menu;
+    dom.tdMenu = tdMenu;
+    tdMenu.appendChild(dom.menu);
+
+    // a cell for the contents (showing text 'empty')
     var tdAppend = document.createElement('td');
-    trAppend.appendChild(tdAppend);
+    var domText = document.createElement('div');
+    domText.innerHTML = '(empty)';
+    domText.className = 'jsoneditor-readonly';
+    tdAppend.appendChild(domText);
     tdAppend.className = 'jsoneditor-td';
-
-    // create the append button
-    var buttonAppend = document.createElement('button');
-    buttonAppend.className = 'jsoneditor-append';
-    buttonAppend.title = 'Append a field';
-    this.dom.append = buttonAppend;
-    tdAppend.appendChild(buttonAppend);
-     this.dom.td = tdAppend;
+    dom.td = tdAppend;
+    dom.text = domText;
 
     this.updateDom();
 
@@ -2993,11 +3063,90 @@ JSONEditor.AppendNode.prototype.getDom = function () {
  * Update the HTML dom of the Node
  */
 JSONEditor.AppendNode.prototype.updateDom = function () {
-    var tdAppend = this.dom.td;
+    var dom = this.dom;
+    var tdAppend = dom.td;
     if (tdAppend) {
         tdAppend.style.paddingLeft = (this.getLevel() * 24 + 26) + 'px';
         // TODO: not so nice hard coded offset
     }
+
+    var domText = dom.text;
+    if (domText) {
+        domText.innerHTML = '(empty ' + this.parent.type + ')';
+    }
+
+    // attach or detach the contents of the append node:
+    // hide when the parent has childs, show when the parent has no childs
+    var trAppend = dom.tr;
+    var hasChilds = (this.parent.childs.length > 0);
+    if (hasChilds) {
+        if (dom.tr.firstChild) {
+            trAppend.removeChild(dom.tdDrag);
+            trAppend.removeChild(dom.tdMenu);
+            trAppend.removeChild(tdAppend);
+        }
+    }
+    else {
+        if (!dom.tr.firstChild) {
+            trAppend.appendChild(dom.tdDrag);
+            trAppend.appendChild(dom.tdMenu);
+            trAppend.appendChild(tdAppend);
+        }
+    }
+};
+
+/**
+ * Show a contextmenu for this node
+ */
+JSONEditor.AppendNode.prototype.showContextMenu = function () {
+    var node = this;
+    var titles = JSONEditor.TYPE_TITLES;
+    var items = [
+        // create append button
+        {
+            'text': 'Append',
+            'title': 'Append a new node',
+            'className': 'jsoneditor-insert',
+            'submenu': [
+                {
+                    'text': 'Auto',
+                    'className': 'jsoneditor-type-auto',
+                    'title': titles.auto,
+                    'click': function () {
+                        node._onAppend('field', 'value', 'auto');
+                    }
+                },
+                {
+                    'text': 'Array',
+                    'className': 'jsoneditor-type-array',
+                    'title': titles.array,
+                    'click': function () {
+                        node._onAppend('field', []);
+                    }
+                },
+                {
+                    'text': 'Object',
+                    'className': 'jsoneditor-type-object',
+                    'title': titles.object,
+                    'click': function () {
+                        node._onAppend('field', {});
+                    }
+                },
+                {
+                    'text': 'String',
+                    'className': 'jsoneditor-type-string',
+                    'title': titles.string,
+                    'click': function () {
+                        // TODO: settings type string does not work, will become auto
+                        node._onAppend('field', 'value', 'string');
+                    }
+                }
+            ]
+        }
+    ];
+
+    var menu = new JSONEditor.ContextMenu(items);
+    menu.show(this.dom.menu);
 };
 
 /**
@@ -3009,40 +3158,22 @@ JSONEditor.AppendNode.prototype.onEvent = function (event) {
     var target = event.target || event.srcElement;
     var dom = this.dom;
 
-    var domAppend = dom.append;
-    if (target == domAppend) {
-        switch (type) {
-            case 'click':
-                this._onAppend();
-                break;
-
-            case 'mouseover':
-                this.parent.setHighlight(true);
-                break;
-
-            case 'mouseout':
-                this.parent.setHighlight(false);
+    // highlight the appendnodes parent
+    var menu = dom.menu;
+    if (target == menu) {
+        if (type == 'mouseover') {
+            this.editor.highlighter.highlight(this.parent);
+        }
+        else if (type == 'mouseout') {
+            // TODO: onmouseout of menu must only execute unhighlight when no contextmenu is visible
+            this.editor.highlighter.unhighlight();
         }
     }
-};
 
-/**
- * Handle append event
- * @private
- */
-JSONEditor.AppendNode.prototype._onAppend = function () {
-    var newNode = new JSONEditor.Node(this.editor, {
-        'field': 'field',
-        'value': 'value'
-    });
-    this.parent.appendChild(newNode);
-    this.parent.setHighlight(false);
-    newNode.focus();
-
-    this.editor.onAction('appendNode', {
-        'node': newNode,
-        'parent': this.parent
-    });
+    // context menu events
+    if (type == 'click' && target == dom.menu) {
+        this.showContextMenu();
+    }
 };
 
 /**

@@ -11,7 +11,7 @@ http://jsoneditoronline.org
   The context menu requires an extra click to perform every action, which can be
   inconvenient. For the advanced users, quick keys for all actions will be
   implemented in the near future.
-- Sort action implemented, to sort the childs of an array or object.
+- Implemented sort action, which sorts the childs of an array or object.
 
 
 2012-12-08, version 1.7.0
