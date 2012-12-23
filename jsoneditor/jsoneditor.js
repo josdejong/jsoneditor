@@ -132,14 +132,14 @@ JSONEditor.prototype._setOptions = function (options) {
         }
 
         // check for deprecated options
-        if (options.enableSearch) {
+        if (options['enableSearch']) {
             // deprecated since version 1.6.0, 2012-11-03
-            this.options.search = options.enableSearch;
+            this.options.search = options['enableSearch'];
             console.log('WARNING: Option "enableSearch" is deprecated. Use "search" instead.');
         }
-        if (options.enableHistory) {
+        if (options['enableSearch']) {
             // deprecated since version 1.6.0, 2012-11-03
-            this.options.search = options.enableHistory;
+            this.options.search = options['enableSearch'];
             console.log('WARNING: Option "enableHistory" is deprecated. Use "history" instead.');
         }
     }
@@ -618,7 +618,7 @@ JSONEditor.History.prototype.redo = function () {
  * @constructor JSONEditor.Node
  * Create a new Node
  * @param {JSONEditor} editor
- * @param {Object} params   Can contain parameters:
+ * @param {Object} [params] Can contain parameters:
  *                          {string}  field
  *                          {boolean} fieldEditable
  *                          {*}       value
@@ -635,8 +635,8 @@ JSONEditor.Node = function (editor, params) {
         this.setValue(params.value, params.type);
     }
     else {
-        this.setField();
-        this.setValue();
+        this.setField('');
+        this.setValue(null);
     }
 };
 
@@ -658,8 +658,8 @@ JSONEditor.Node.prototype.getParent = function () {
 
 /**
  * Set field
- * @param {String} field
- * @param {boolean} fieldEditable
+ * @param {String}  field
+ * @param {boolean} [fieldEditable]
  */
 JSONEditor.Node.prototype.setField = function(field, fieldEditable) {
     this.field = field;
@@ -1270,7 +1270,7 @@ JSONEditor.Node.prototype.containsNode = function(node) {
 
     var childs = this.childs;
     if (childs) {
-        // TOOD: use the js5 Array.some() here?
+        // TODO: use the js5 Array.some() here?
         for (var i = 0, iMax = childs.length; i < iMax; i++) {
             if (childs[i].containsNode(node)) {
                 return true;
@@ -1467,7 +1467,7 @@ JSONEditor.Node.prototype.changeType = function (newType) {
 
 /**
  * Retrieve value from DOM
- * @param {boolean} silent.   If true (default), no errors will be thrown in
+ * @param {boolean} [silent]  If true (default), no errors will be thrown in
  *                            case of invalid data
  * @private
  */
@@ -1537,9 +1537,9 @@ JSONEditor.Node.prototype._updateDomValue = function () {
         else if (v === null) {
             color = 'purple';
         }
-        else if (v === undefined) {
+        else {
             // invalid value
-            color = 'green';
+            color = 'black';
         }
         domValue.style.color = color;
 
@@ -1611,7 +1611,7 @@ JSONEditor.Node.prototype._updateDomField = function () {
 
 /**
  * Retrieve field from DOM
- * @param {boolean} silent.   If true (default), no errors will be thrown in
+ * @param {boolean} [silent]  If true (default), no errors will be thrown in
  *                            case of invalid data
  * @private
  */
@@ -2187,14 +2187,16 @@ JSONEditor.Highlighter.prototype.unhighlight = function () {
 
     var me = this;
     if (this.node) {
-        var delay = this.menuNode ? 200 : 0;
         this._cancelUnhighlight();
 
+        // do the unhighlighting after a small delay, to prevent re-highlighting
+        // the same node when moving from the drag-icon to the contextmenu-icon
+        // or vice versa.
         this.unhighlightTimer = setTimeout(function () {
             me.node.setHighlight(false);
             me.node = undefined;
             me.unhighlightTimer = undefined;
-        }, delay);
+        }, 0);
     }
 };
 
@@ -2625,7 +2627,7 @@ JSONEditor.Node.prototype._onSort = function () {
 
 /**
  * Create a table row with an append button.
- * @return {Element | undefined} buttonAppend or undefined when inapplicable
+ * @return {Node | undefined} buttonAppend or undefined when inapplicable
  */
 JSONEditor.Node.prototype.getAppend = function () {
     if (!this.append) {
@@ -3162,6 +3164,7 @@ JSONEditor.AppendNode.prototype.onEvent = function (event) {
  */
 JSONEditor.ContextMenu = function (items, options) {
     this.items = items;
+    this.eventListeners = {};
     var me = this;
 
     this.onClose = options ? options.close : undefined;
@@ -3220,6 +3223,7 @@ JSONEditor.ContextMenu = function (items, options) {
                 else if (!item.click && item.submenu) {
                     var selected = false;
                     button.onclick = function () {
+                        // TODO: unselect other selected submenu(s)
                         selected = !selected;
                         if (selected) {
                             JSONEditor.addClassName(li, 'selected');
@@ -3238,13 +3242,6 @@ JSONEditor.ContextMenu = function (items, options) {
         });
     }
     createMenuItems(list, items);
-
-    // create event listeners
-    // TODO: move attaching event listeners to the method show, and removing them to hide
-    // add event handlers to remove the menu on mouse scroll or click outside the context menu
-    this.eventListeners = {};
-
-    // TODO: add keydown listener, listening for ESC
 };
 
 // current menu, a singleton. We may only have one visible context menu
@@ -3537,7 +3534,7 @@ JSONEditor.prototype._createTable = function () {
 
 /**
  * Find the node from an event target
- * @param {Element} target
+ * @param {Node} target
  * @return {JSONEditor.Node | undefined} node  or undefined when not found
  */
 JSONEditor.getNodeFromTarget = function (target) {
