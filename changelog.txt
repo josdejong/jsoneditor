@@ -12,6 +12,7 @@ http://jsoneditoronline.org
   inconvenient. For the advanced users, quick keys for all actions will be
   implemented in the near future.
 - Implemented sort action, which sorts the childs of an array or object.
+- Minor improvements and bug fixes.
 
 
 2012-12-08, version 1.7.0

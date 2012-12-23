@@ -27,7 +27,7 @@
  * Copyright (c) 2011-2012 Jos de Jong, http://jsoneditoronline.org
  *
  * @author  Jos de Jong, <wjosdejong@gmail.com>
- * @date    2012-12-16
+ * @date    2012-12-23
  */
 
 
@@ -3239,20 +3239,11 @@ JSONEditor.ContextMenu = function (items, options) {
     }
     createMenuItems(list, items);
 
+    // create event listeners
     // TODO: move attaching event listeners to the method show, and removing them to hide
     // add event handlers to remove the menu on mouse scroll or click outside the context menu
-    var onmousedown = JSONEditor.Events.addEventListener(document, 'mousedown', function (event) {
-        event = event || window.event;
-        var target = event.target || event.srcElement;
-        if (!JSONEditor.isChildOf(target, list)) {
-            me.hide();
-            JSONEditor.Events.removeEventListener(document, 'mousedown', onmousedown);
-        }
-    });
-    var onmousewheel = JSONEditor.Events.addEventListener(document, 'mousewheel', function () {
-        me.hide();
-        JSONEditor.Events.removeEventListener(document, 'mousewheel', onmousewheel);
-    });
+    this.eventListeners = {};
+
     // TODO: add keydown listener, listening for ESC
 };
 
@@ -3276,7 +3267,41 @@ JSONEditor.ContextMenu.prototype.show = function (anchor) {
     // TODO: when the menu is too close to the bottom of the page, show it
     //       on above the anchor element instead of below
 
+    // attach the menu to the document
     document.body.appendChild(this.menu);
+
+    // create and attach event listeners
+    var me = this;
+    var list = this.list;
+    this.eventListeners.mousedown = JSONEditor.Events.addEventListener(
+            document, 'mousedown', function (event) {
+        // hide menu on click outside of the menu
+        event = event || window.event;
+        var target = event.target || event.srcElement;
+        if (!JSONEditor.isChildOf(target, list)) {
+            me.hide();
+        }
+    });
+    this.eventListeners.mousewheel = JSONEditor.Events.addEventListener(
+            document, 'mousewheel', function () {
+        // hide the menu on mouse scroll
+        me.hide();
+    });
+    this.eventListeners.keydown = JSONEditor.Events.addEventListener(
+            document, 'keydown', function (event) {
+        // hide the menu on ESC key
+        event = event || window.event;
+        var keynum = event.which || event.keyCode;
+        if (keynum == 27) { // ESC
+            me.hide();
+            JSONEditor.Events.stopPropagation(event);
+            JSONEditor.Events.preventDefault(event);
+        }
+    });
+
+    // TODO: add keydown listener, listening for ESC
+
+    // TODO: focus to the first button in the context menu
 
     if (JSONEditor.ContextMenu.visibleMenu) {
         JSONEditor.ContextMenu.visibleMenu.hide();
@@ -3288,10 +3313,23 @@ JSONEditor.ContextMenu.prototype.show = function (anchor) {
  * Hide the context menu if visible
  */
 JSONEditor.ContextMenu.prototype.hide = function () {
+    // remove the menu from the DOM
     if (this.menu.parentNode) {
         this.menu.parentNode.removeChild(this.menu);
         if (this.onClose) {
             this.onClose();
+        }
+    }
+
+    // remove all event listeners
+    // all event listeners are supposed to be attached to document.
+    for (var name in this.eventListeners) {
+        if (this.eventListeners.hasOwnProperty(name)) {
+            var fn = this.eventListeners[name];
+            if (fn) {
+                JSONEditor.Events.removeEventListener(document, name, fn);
+            }
+            delete this.eventListeners[name];
         }
     }
 };
@@ -3956,7 +3994,7 @@ JSONEditor.SearchBox.prototype.onKeyDown = function (event) {
 JSONEditor.SearchBox.prototype.onKeyUp = function (event) {
     event = event || window.event;
     var keynum = event.which || event.keyCode;
-    if (keynum != 27 && keynum != 13) { // !ESC and !Enter
+    if (keynum != 27 && keynum != 13) { // !show and !Enter
         this.onDelayedSearch(event);   // For IE 8
     }
 };
@@ -3970,7 +4008,7 @@ JSONEditor.Events = {};
  * @param {string}      action     The action, for example "click",
  *                                 without the prefix "on"
  * @param {function}    listener   The callback function to be executed
- * @param {boolean}     useCapture
+ * @param {boolean}     [useCapture] false by default
  * @return {function}   the created event listener
  */
 JSONEditor.Events.addEventListener = function (element, action, listener, useCapture) {
@@ -3999,7 +4037,7 @@ JSONEditor.Events.addEventListener = function (element, action, listener, useCap
  * @param {Element}  element   An html dom element
  * @param {string}   action    The name of the event, for example "mousedown"
  * @param {function} listener  The listener function
- * @param {boolean}  useCapture
+ * @param {boolean}  [useCapture]   false by default
  */
 JSONEditor.Events.removeEventListener = function(element, action, listener, useCapture) {
     if (element.removeEventListener) {

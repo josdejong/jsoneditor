@@ -120,59 +120,6 @@ button.jsoneditor-invisible {
     float: left;
 }
 
-/* TODO: cleanup
-div.jsoneditor-select {
-    border: 1px solid gray;
-    background-color: white;
-    box-shadow: 4px 4px 10px rgba(128, 128, 128, 0.5);
-}
-
-div.jsoneditor-option {
-    color: #4D4D4D;
-    background-color: white;
-
-    border: none;
-    margin: 0;
-    display: block;
-    text-align: left;
-    cursor: pointer;
-}
-div.jsoneditor-option:hover {
-    background-color: #FFFFAB;
-    color: #1A1A1A;
-}
-div.jsoneditor-option-selected {
-    background-color: #D5DDF6;
-}
-div.jsoneditor-option-text {
-    height: 24px;
-    line-height: 24px;
-    padding: 0 12px 0 0;
-    display: inline-block;
-}
-
-div.jsoneditor-option-string, div.jsoneditor-option-auto,
-div.jsoneditor-option-object, div.jsoneditor-option-array {
-    float: left;
-    width: 24px;
-    height: 24px;
-    display: inline-block;
-    background: url('img/jsoneditor-icons.png');
-}
-div.jsoneditor-option-string {
-    background-position: -192px 0;
-}
-div.jsoneditor-option-auto {
-    background-position: -168px 0;
-}
-div.jsoneditor-option-object {
-    background-position: -120px 0;
-}
-div.jsoneditor-option-array {
-    background-position: -144px 0;
-}
-*/
-
 div.jsoneditor-frame {
     color: #1A1A1A;
     border: 1px solid #97B0F8;
