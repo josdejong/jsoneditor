@@ -542,7 +542,6 @@ div.jsoneditor-contextmenu ul li ul {
     position: relative;
     left: -10px;
     top: 0;
-    height: 0;
 
     border: none;
     box-shadow: inset 0 0 10px rgba(128, 128, 128, 0.5);
@@ -556,7 +555,6 @@ div.jsoneditor-contextmenu ul li ul {
 
 div.jsoneditor-contextmenu ul li.selected ul {
     display: block;
-    height: 96px; /* TODO: make height dynamic */
     padding: 5px 10px;
 }
 

@@ -2591,11 +2591,12 @@ JSONEditor.Node.prototype._onChangeType = function (newType) {
 /**
  * Sort the childs of the node. Only applicable when the node has type 'object'
  * or 'array'.
+ * @param {String} direction   Sorting direction. Available values: "asc", "desc"
  * @private
  */
-JSONEditor.Node.prototype._onSort = function () {
+JSONEditor.Node.prototype._onSort = function (direction) {
     if (this.childs && (this.type == 'array' || this.type == 'object')) {
-        var direction = (this.sort == 'asc') ? -1 : 1;
+        var order = (direction == 'desc') ? -1 : 1;
         var prop = (this.type == 'array') ? 'value': 'field';
         this.hideChilds();
 
@@ -2607,11 +2608,11 @@ JSONEditor.Node.prototype._onSort = function () {
 
         // sort the arrays
         this.childs.sort(function (a, b) {
-            if (a[prop] > b[prop]) return direction;
-            if (a[prop] < b[prop]) return -direction;
+            if (a[prop] > b[prop]) return order;
+            if (a[prop] < b[prop]) return -order;
             return 0;
         });
-        this.sort = (direction == 1) ? 'asc' : 'desc';
+        this.sort = (order == 1) ? 'asc' : 'desc';
 
         this.editor.onAction('sort', {
             'node': this,
@@ -2707,13 +2708,32 @@ JSONEditor.Node.prototype.showContextMenu = function (onClose) {
     });
 
     if (this.type == 'array' || this.type == 'object') {
+        var direction = ((this.sort == 'asc') ? 'desc': 'asc');
         items.push({
             'text': 'Sort',
             'title': 'Sort the childs of this node',
-            'className': 'jsoneditor-sort-' + ((this.sort == 'asc') ? 'desc': 'asc'),
+            'className': 'jsoneditor-sort-' + direction,
             'click': function () {
-                node._onSort();
-            }
+                node._onSort(direction);
+            },
+            'submenu': [
+                {
+                    'text': 'Ascending',
+                    'className': 'jsoneditor-sort-asc',
+                    'title': 'Sort the childs of this node in ascending order',
+                    'click': function () {
+                        node._onSort('asc');
+                    }
+                },
+                {
+                    'text': 'Descending',
+                    'className': 'jsoneditor-sort-desc',
+                    'title': 'Sort the childs of this node in descending order',
+                    'click': function () {
+                        node._onSort('desc');
+                    }
+                }
+            ]
         });
     }
 
@@ -3258,16 +3278,19 @@ JSONEditor.ContextMenu = function (items, options) {
                         // TODO: unselect other selected submenu(s)
                         selected = !selected;
                         if (selected) {
+                            submenu.style.height = (item.submenu.length * 24) + 'px';
                             JSONEditor.addClassName(li, 'selected');
                         }
                         else {
                             JSONEditor.removeClassName(li, 'selected');
+                            submenu.style.height = '0';
                         }
                     };
 
                     // create the submenu
                     var submenu = document.createElement('ul');
                     submenu.className = 'menu';
+                    submenu.style.height = '0';
                     li.appendChild(submenu);
                     createMenuItems(submenu, item.submenu);
                 }
