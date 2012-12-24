@@ -2224,7 +2224,7 @@ JSONEditor.Highlighter.prototype.lock = function () {
  */
 JSONEditor.Highlighter.prototype.unlock = function () {
     this.locked = false;
-}
+};
 
 /**
  * Test if an element is a child of a parent element.
@@ -2285,12 +2285,12 @@ JSONEditor.Node.prototype.onEvent = function (event) {
 
     // context menu events
     if (type == 'click' && target == dom.menu) {
+        node.editor.highlighter.highlight(node);
         node.editor.highlighter.lock();
         this.showContextMenu(function () {
             node.editor.highlighter.unlock();
             node.editor.highlighter.unhighlight();
         });
-
     }
 
     // expand events
@@ -2728,8 +2728,12 @@ JSONEditor.Node.prototype.showContextMenu = function (onClose) {
         if (node == childs[childs.length - 1]) {
             items.push({
                 'text': 'Append',
-                'title': 'Append a new node after this node',
-                'className': 'jsoneditor-insert',
+                'title': 'Append a new node with type \'auto\' after this node',
+                'submenuTitle': 'Select the type of the node to be appended',
+                'className': 'jsoneditor-append',
+                'click': function () {
+                    node._onAppend('field', 'value', 'auto');
+                },
                 'submenu': [
                     {
                         'text': 'Auto',
@@ -2771,8 +2775,12 @@ JSONEditor.Node.prototype.showContextMenu = function (onClose) {
         // create insert button
         items.push({
             'text': 'Insert',
-            'title': 'Insert a new node before this node',
+            'title': 'Insert a new node with type \'auto\' before this node',
+            'submenuTitle': 'Select the type of the node to be inserted',
             'className': 'jsoneditor-insert',
+            'click': function () {
+                node._onInsertBefore(node, 'field', 'value', 'auto');
+            },
             'submenu': [
                 {
                     'text': 'Auto',
@@ -3077,8 +3085,12 @@ JSONEditor.AppendNode.prototype.showContextMenu = function (onClose) {
         // create append button
         {
             'text': 'Append',
-            'title': 'Append a new node',
+            'title': 'Append a new node with type \'auto\'',
+            'submenuTitle': 'Select the type of the node to be appended',
             'className': 'jsoneditor-insert',
+            'click': function () {
+                node._onAppend('field', 'value', 'auto');
+            },
             'submenu': [
                 {
                     'text': 'Auto',
@@ -3163,10 +3175,9 @@ JSONEditor.AppendNode.prototype.onEvent = function (event) {
  * @constructor
  */
 JSONEditor.ContextMenu = function (items, options) {
+    var me = this;
     this.items = items;
     this.eventListeners = {};
-    var me = this;
-
     this.onClose = options ? options.close : undefined;
 
     // create a container element
@@ -3192,37 +3203,58 @@ JSONEditor.ContextMenu = function (items, options) {
             }
             else {
                 // create a menu item
-                var button = document.createElement('button');
-
                 var li = document.createElement('li');
-                li.appendChild(button);
                 list.appendChild(li);
 
+                // create a button in the menu item
+                var button = document.createElement('button');
                 button.className = item.className;
-                button.innerHTML = '<div class="img"></div>' + item.text;
-                if (item.submenu) {
-                    button.innerHTML = '<div class="img"></div>' + item.text +
-                        '<div class="expand"></div>';
-                    var submenu = document.createElement('ul');
-                    submenu.className = 'menu';
-                    li.appendChild(submenu);
-                    createMenuItems(submenu, item.submenu);
-                }
-                else {
-                    button.innerHTML = '<div class="img"></div>' + item.text;
-                }
                 if (item.title) {
                     button.title = item.title;
                 }
-                if (item.click && !item.submenu) {
+                if (item.click) {
                     button.onclick = function () {
                         me.hide();
                         item.click();
                     };
                 }
-                else if (!item.click && item.submenu) {
+                li.appendChild(button);
+
+                // create the contents of the button
+                if (item.submenu) {
+                    // add the icon to the button
+                    var divIcon = document.createElement('div');
+                    divIcon.className = 'icon';
+                    button.appendChild(divIcon);
+                    button.appendChild(document.createTextNode(item.text));
+
+                    var buttonSubmenu;
+                    if (item.click) {
+                        // submenu and a button with a click handler
+                        button.className += ' default';
+
+                        var buttonExpand = document.createElement('button');
+                        buttonExpand.className = 'expand';
+                        buttonExpand.innerHTML = '<div class="expand"></div>';
+                        li.appendChild(buttonExpand);
+                        if (item.submenuTitle) {
+                            buttonExpand.title = item.submenuTitle;
+                        }
+
+                        buttonSubmenu = buttonExpand;
+                    }
+                    else {
+                        // submenu and a button without a click handler
+                        var divExpand = document.createElement('div');
+                        divExpand.className = 'expand';
+                        button.appendChild(divExpand);
+
+                        buttonSubmenu = button;
+                    }
+
+                    // attach a handler to expand/collapse the submenu
                     var selected = false;
-                    button.onclick = function () {
+                    buttonSubmenu.onclick = function () {
                         // TODO: unselect other selected submenu(s)
                         selected = !selected;
                         if (selected) {
@@ -3232,19 +3264,33 @@ JSONEditor.ContextMenu = function (items, options) {
                             JSONEditor.removeClassName(li, 'selected');
                         }
                     };
+
+                    // create the submenu
+                    var submenu = document.createElement('ul');
+                    submenu.className = 'menu';
+                    li.appendChild(submenu);
+                    createMenuItems(submenu, item.submenu);
                 }
-                else if (item.click && item.submenu) {
-                    // TODO: implement click + submenu
-
-
+                else {
+                    // no submenu, just a button with clickhandler
+                    button.innerHTML = '<div class="icon"></div>' + item.text;
                 }
             }
         });
     }
     createMenuItems(list, items);
+
+    // TODO: when the editor is small, show the submenu on the right instead of inline?
+
+    // calculate the max height of the menu with one submenu expanded
+    this.maxHeight = 0; // height in pixels
+    items.forEach(function (item) {
+        var height = (items.length + (item.submenu ? item.submenu.length : 0)) * 24;
+        me.maxHeight = Math.max(me.maxHeight, height);
+    });
 };
 
-// current menu, a singleton. We may only have one visible context menu
+// currently displayed context menu, a singleton. We may only have one visible context menu
 JSONEditor.ContextMenu.visibleMenu = undefined;
 
 /**
@@ -3254,12 +3300,26 @@ JSONEditor.ContextMenu.visibleMenu = undefined;
 JSONEditor.ContextMenu.prototype.show = function (anchor) {
     this.hide();
 
+    // calculate whether the menu fits below the anchor
+    var windowHeight = document.body.clientHeight;
+    var anchorHeight = anchor.offsetHeight;
+    var menuHeight = this.maxHeight;
+
     // position the menu
     var left = JSONEditor.getAbsoluteLeft(anchor);
     var top = JSONEditor.getAbsoluteTop(anchor);
-    var height = anchor.offsetHeight;
-    this.menu.style.left = left + 'px';
-    this.menu.style.top = (top + height) + 'px';
+    if (top + anchorHeight + menuHeight < windowHeight) {
+        // display the menu below the anchor
+        this.menu.style.left = left + 'px';
+        this.menu.style.top = (top + anchorHeight) + 'px';
+        this.menu.style.bottom = '';
+    }
+    else {
+        // display the menu above the anchor
+        this.menu.style.left = left + 'px';
+        this.menu.style.top = '';
+        this.menu.style.bottom = (windowHeight - top) + 'px';
+    }
 
     // TODO: when the menu is too close to the bottom of the page, show it
     //       on above the anchor element instead of below
