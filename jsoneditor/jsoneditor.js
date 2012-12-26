@@ -332,6 +332,62 @@ JSONEditor.prototype.onAction = function (action, params) {
 };
 
 /**
+ * Start autoscrolling when given mouse position is above the top of the
+ * editor contents, or below the bottom.
+ * @param {Number} mouseY  Absolute mouse position in pixels
+ */
+JSONEditor.prototype.startAutoScroll = function (mouseY) {
+    var me = this;
+    var content = this.content;
+    var top = JSONEditor.getAbsoluteTop(content);
+    var height = content.clientHeight;
+    var bottom = top + height;
+    var margin = 24;
+    var interval = 50; // ms
+
+    if ((mouseY < top + margin) && content.scrollTop > 0) {
+        this.autoScrollStep = ((top + margin) - mouseY) / 3;
+    }
+    else if (mouseY > bottom - margin &&
+            height + content.scrollTop < content.scrollHeight) {
+        this.autoScrollStep = ((bottom - margin) - mouseY) / 3;
+    }
+    else {
+        this.autoScrollStep = undefined;
+    }
+
+    if (this.autoScrollStep) {
+        if (!this.autoScrollTimer) {
+            this.autoScrollTimer = setInterval(function () {
+                if (me.autoScrollStep) {
+                    content.scrollTop -= me.autoScrollStep;
+                }
+                else {
+                    me.stopAutoScroll();
+                }
+            }, interval);
+        }
+    }
+    else {
+        this.stopAutoScroll();
+    }
+};
+
+/**
+ * Stop auto scrolling. Only applicable when scrolling
+ */
+JSONEditor.prototype.stopAutoScroll = function () {
+    if (this.autoScrollTimer) {
+        clearTimeout(this.autoScrollTimer);
+        delete this.autoScrollTimer;
+    }
+    if (this.autoScrollStep) {
+        delete this.autoScrollStep;
+    }
+};
+
+
+/**
  * Set the focus to the JSONEditor. A hidden input field will be created
  * which captures key events
  */
@@ -1853,6 +1909,9 @@ JSONEditor.Node.prototype._onDrag = function (event) {
         }
     }
 
+    // auto scroll when hovering around the top of the editor
+    this.editor.startAutoScroll(mouseY);
+
     JSONEditor.Events.preventDefault(event);
 };
 
@@ -1889,6 +1948,9 @@ JSONEditor.Node.prototype._onDragEnd = function (event) {
         JSONEditor.Events.removeEventListener(document, 'mouseup', this.mouseup);
         delete this.mouseup;
     }
+
+    // Stop any running auto scroll
+    this.editor.stopAutoScroll();
 
     JSONEditor.Events.preventDefault(event);
 };
@@ -2383,11 +2445,12 @@ JSONEditor.Node.prototype.onEvent = function (event) {
 
     // context menu events
     if (type == 'click' && target == dom.menu) {
-        node.editor.highlighter.highlight(node);
-        node.editor.highlighter.lock();
+        var highlighter = node.editor.highlighter;
+        highlighter.highlight(node);
+        highlighter.lock();
         this.showContextMenu(function () {
-            node.editor.highlighter.unlock();
-            node.editor.highlighter.unhighlight();
+            highlighter.unlock();
+            highlighter.unhighlight();
         });
     }
 
@@ -4289,8 +4352,10 @@ JSONEditor.getAbsoluteLeft = function (elem) {
     var body = document.body;
     while (elem != null && elem != body) {
         left += elem.offsetLeft;
-        left -= elem.scrollLeft;
         elem = elem.offsetParent;
+        if (elem) {
+            left -= elem.scrollLeft;
+        }
     }
     return left;
 };
@@ -4306,8 +4371,10 @@ JSONEditor.getAbsoluteTop = function (elem) {
     var body = document.body;
     while (elem != null && elem != body) {
         top += elem.offsetTop;
-        top -= elem.scrollTop;
         elem = elem.offsetParent;
+        if (elem) {
+            top -= elem.scrollTop;
+        }
     }
     return top;
 };
