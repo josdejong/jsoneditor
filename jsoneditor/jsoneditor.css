@@ -70,23 +70,6 @@ button.jsoneditor-collapsed, button.jsoneditor-expanded,
 button:disabled {
     color: #808080;
 }
-
-TODO: cleanup
-button.jsoneditor {
-    padding: 0;
-    margin: 0;
-    width: 124px;
-    height: 24px;
-    border: none;
-    cursor: pointer;
-}
-
-button.jsoneditor div.icon {
-    width: 24px;
-    height: 24px;
-    border: none;
-    background: url('img/jsoneditor-icons.png');
-}
 */
 
 td.jsoneditor-nochilds {

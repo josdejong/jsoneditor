@@ -27,7 +27,7 @@
  * Copyright (c) 2011-2012 Jos de Jong, http://jsoneditoronline.org
  *
  * @author  Jos de Jong, <wjosdejong@gmail.com>
- * @date    2012-12-23
+ * @date    2012-12-26
  */
 
 
@@ -997,6 +997,15 @@ JSONEditor.Node.prototype.appendChild = function(node) {
  */
 JSONEditor.Node.prototype.moveBefore = function(node, beforeNode) {
     if (this.type == 'array' || this.type == 'object') {
+        if (node.getParent() == this) {
+            // same parent.
+            var index = this.childs.indexOf(node);
+            if (index != -1 && this.childs[index + 1] == beforeNode) {
+                // node is already on the correct position. Nothing to do.
+                return;
+            }
+        }
+
         // create a temporary row, to prevent the scroll position from jumping
         // when removing the node
         var tbody = (this.dom.tr) ? this.dom.tr.parentNode : undefined;
@@ -1010,6 +1019,7 @@ JSONEditor.Node.prototype.moveBefore = function(node, beforeNode) {
         if (parent) {
             parent.removeChild(node);
         }
+
         if (beforeNode instanceof JSONEditor.AppendNode) {
             this.appendChild(node);
         }
@@ -1730,7 +1740,9 @@ JSONEditor.Node.prototype._onDragStart = function (event) {
     this.drag = {
         'oldCursor': document.body.style.cursor,
         'startParent': this.parent,
-        'startIndex': this.parent.childs.indexOf(this)
+        'startIndex': this.parent.childs.indexOf(this),
+        'mouseX': event.pageX || (event.clientX + document.body.scrollLeft),
+        'level': this.getLevel()
     };
     document.body.style.cursor = 'move';
 
@@ -1744,25 +1756,28 @@ JSONEditor.Node.prototype._onDragStart = function (event) {
  */
 JSONEditor.Node.prototype._onDrag = function (event) {
     event = event || window.event;
+    var mouseY = event.pageY || (event.clientY + document.body.scrollTop);
+    var mouseX = event.pageX || (event.clientX + document.body.scrollLeft);
+
     var trThis = this.dom.tr;
 
     // TODO: add an ESC option, which resets to the original position
 
+    // move up/down
     var topThis = JSONEditor.getAbsoluteTop(trThis);
     var heightThis = trThis.offsetHeight;
-    var mouseY = event.pageY || (event.clientY + document.body.scrollTop);
     if (mouseY < topThis) {
         // move up
-        var trPrev = trThis.previousSibling;
-        var topPrev = JSONEditor.getAbsoluteTop(trPrev);
-        var nodePrev = JSONEditor.getNodeFromTarget(trPrev);
-        while (trPrev && mouseY < topPrev) {
-            nodePrev = JSONEditor.getNodeFromTarget(trPrev);
+        var trPrev = trThis, nodePrev, topPrev;
+        do {
             trPrev = trPrev.previousSibling;
+            nodePrev = JSONEditor.getNodeFromTarget(trPrev);
             topPrev = JSONEditor.getAbsoluteTop(trPrev);
         }
+        while (trPrev && mouseY < topPrev);
 
         if (nodePrev) {
+            // check if mouseY is really inside the found node
             trPrev = nodePrev.dom.tr;
             topPrev = JSONEditor.getAbsoluteTop(trPrev);
             if (mouseY > topPrev + heightThis) {
@@ -1780,17 +1795,24 @@ JSONEditor.Node.prototype._onDrag = function (event) {
         var trFirst = trLast ? trLast.nextSibling : undefined;
         if (trFirst) {
             var topFirst = JSONEditor.getAbsoluteTop(trFirst);
-
-            var nodeNext = undefined;
-            var trNext = trFirst.nextSibling;
-            var topNext = JSONEditor.getAbsoluteTop(trNext);
-            var heightNext = trNext ? (topNext - topFirst) : 0;
-            while (trNext && mouseY > topThis + heightNext) {
+            var trNext = trFirst, bottomNext, heightNext, nodeNext;
+            do {
                 nodeNext = JSONEditor.getNodeFromTarget(trNext);
+                if (trNext) {
+                    bottomNext = JSONEditor.getAbsoluteTop(trNext.nextSibling);
+                    heightNext = trNext ? (bottomNext - topFirst) : 0;
+
+                    if (nodeNext.parent.childs.length == 1) {
+                        // We are about to remove the last child of this parent,
+                        // which will make the parents appendNode visible.
+                        heightNext = 24 - 1;
+                        // TODO: dangerous to suppose the height of the appendNode a constant of 24-1 px.
+                    }
+                }
+
                 trNext = trNext.nextSibling;
-                topNext = JSONEditor.getAbsoluteTop(trNext);
-                heightNext = trNext ? (topNext - topFirst) : 0;
             }
+            while (trNext && mouseY > topThis + heightNext);
 
             if (nodeNext && nodeNext.parent) {
                 nodeNext.parent.moveBefore(this, nodeNext);
@@ -1801,6 +1823,36 @@ JSONEditor.Node.prototype._onDrag = function (event) {
             console.log(trLast, trFirst)
         }
     }
+
+    // move left/right
+    // if the current row is surrounded by one or multiple AppendNodes, select
+    // the parent of one of the AppendNodes, depending on the horizontal offset
+    var nodeThis = JSONEditor.getNodeFromTarget(trThis);
+    var parents = this._getParents(trThis);
+    if (parents.length) {
+        // calculate the desired level
+        var diffX = (mouseX - this.drag.mouseX);
+        var diffLevel = Math.round(diffX / 24);
+        var level = this.drag.level + diffLevel; // desired level
+        while (level < this.drag.level && !parents[level]) {
+            level++;
+        }
+        if (level > parents.length - 1) {
+            level = parents.length - 1;
+        }
+
+        // adjust the level when there is a mismatch
+        var levelThis = nodeThis.getLevel(); // current level
+        if (level != levelThis) {
+            var parent = parents[level];
+            var parentThis = nodeThis.parent;
+            if (parent && parent != parentThis) {
+                parentThis.removeChild(nodeThis);
+                parent.appendChild(nodeThis);
+            }
+        }
+    }
+
     JSONEditor.Events.preventDefault(event);
 };
 
@@ -1839,6 +1891,52 @@ JSONEditor.Node.prototype._onDragEnd = function (event) {
     }
 
     JSONEditor.Events.preventDefault(event);
+};
+
+/**
+ * Get all parents of the non-visible append nodes surrounding the given tr.
+ * Returns an empty array if the tr is not surrounded by append nodes
+ * @param {Node} tr
+ * @return {JSONEditor.Node[]} parents
+ * @private
+ */
+JSONEditor.Node.prototype._getParents = function (tr) {
+    var parents = [];
+    var node;
+
+    // find previous append nodes
+    var trPrev = tr.previousSibling;
+    while (trPrev) {
+        node = JSONEditor.getNodeFromTarget(trPrev);
+        if (node instanceof JSONEditor.AppendNode && !node.isVisible()) {
+            parents[node.getLevel()] = node.parent;
+            trPrev = trPrev.previousSibling;
+        }
+        else {
+            break;
+        }
+    }
+
+    // find next append nodes
+    var trNext = tr.nextSibling;
+    while (trNext) {
+        node = JSONEditor.getNodeFromTarget(trNext);
+        if (node instanceof JSONEditor.AppendNode && !node.isVisible()) {
+            parents[node.getLevel()] = node.parent;
+            trNext = trNext.nextSibling;
+        }
+        else {
+            break;
+        }
+    }
+
+    // add the parent of the node itself
+    if (parents.length) {
+        node = JSONEditor.getNodeFromTarget(tr);
+        parents[node.getLevel()] = node.parent;
+    }
+
+    return parents;
 };
 
 /**
@@ -3076,8 +3174,7 @@ JSONEditor.AppendNode.prototype.updateDom = function () {
     // attach or detach the contents of the append node:
     // hide when the parent has childs, show when the parent has no childs
     var trAppend = dom.tr;
-    var hasChilds = (this.parent.childs.length > 0);
-    if (hasChilds) {
+    if (!this.isVisible()) {
         if (dom.tr.firstChild) {
             trAppend.removeChild(dom.tdDrag);
             trAppend.removeChild(dom.tdMenu);
@@ -3091,6 +3188,15 @@ JSONEditor.AppendNode.prototype.updateDom = function () {
             trAppend.appendChild(tdAppend);
         }
     }
+};
+
+/**
+ * Check whether the AppendNode is currently visible.
+ * the AppendNode is visible when its parent has no childs (i.e. is empty).
+ * @return {boolean} isVisible
+ */
+JSONEditor.AppendNode.prototype.isVisible = function () {
+    return (this.parent.childs.length == 0);
 };
 
 /**
