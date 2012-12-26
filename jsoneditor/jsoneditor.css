@@ -454,10 +454,10 @@ div.jsoneditor-contextmenu .separator {
 }
 
 button.jsoneditor-remove > .icon {
-    background-position: -72px -24px;
+    background-position: -24px -24px;
 }
 button.jsoneditor-remove:hover > .icon {
-    background-position: -72px 0;
+    background-position: -24px 0;
 }
 
 button.jsoneditor-append > .icon {
@@ -489,24 +489,24 @@ button.jsoneditor-insert-below:hover > .icon {
 }
 
 button.jsoneditor-duplicate > .icon {
-    background-position: -96px -24px;
+    background-position: -48px -24px;
 }
 button.jsoneditor-duplicate:hover > .icon {
-    background-position: -96px 0;
+    background-position: -48px 0;
 }
 
 button.jsoneditor-sort-asc > .icon {
-    background-position: -216px -24px;
+    background-position: -168px -24px;
 }
 button.jsoneditor-sort-asc:hover > .icon {
-    background-position: -216px 0;
+    background-position: -168px 0;
 }
 
 button.jsoneditor-sort-desc > .icon {
-    background-position: -240px -24px;
+    background-position: -192px -24px;
 }
 button.jsoneditor-sort-desc:hover > .icon {
-    background-position: -240px 0;
+    background-position: -192px 0;
 }
 
 /* ____________________________ CONTEXT SUB MENU ____________________________ */
@@ -556,35 +556,35 @@ div.jsoneditor-contextmenu ul li:hover ul {
 }
 
 button.jsoneditor-type-string > .icon {
-    background-position: -192px -24px;
+    background-position: -144px -24px;
 }
 button.jsoneditor-type-string:hover > .icon,
         button.jsoneditor-type-string.selected > .icon{
-    background-position: -192px 0;
+    background-position: -144px 0;
 }
 
 button.jsoneditor-type-auto > .icon {
-    background-position: -168px -24px;
+    background-position: -120px -24px;
 }
 button.jsoneditor-type-auto:hover > .icon,
         button.jsoneditor-type-auto.selected > .icon {
-    background-position: -168px 0;
-}
-
-button.jsoneditor-type-object > .icon {
-    background-position: -120px -24px;
-}
-button.jsoneditor-type-object:hover > .icon,
-        button.jsoneditor-type-object.selected > .icon{
     background-position: -120px 0;
 }
 
+button.jsoneditor-type-object > .icon {
+    background-position: -72px -24px;
+}
+button.jsoneditor-type-object:hover > .icon,
+        button.jsoneditor-type-object.selected > .icon{
+    background-position: -72px 0;
+}
+
 button.jsoneditor-type-array > .icon {
-    background-position: -144px -24px;
+    background-position: -96px -24px;
 }
 button.jsoneditor-type-array:hover > .icon,
         button.jsoneditor-type-array.selected > .icon{
-    background-position: -144px 0;
+    background-position: -96px 0;
 }
 
 
