@@ -4,14 +4,14 @@ http://jsoneditoronline.org
 
 <not yet released>, version 2.0.0
 
-- The action buttons to change, duplicate or remove nodes are moved from the
-  fixed right side of the nodes to a context menu. This gives a cleaner
-  interface, more space for the actual contents, and gives more room for new
-  controls (like insert and sort).
-  The context menu requires an extra click to perform every action, which can be
-  inconvenient. For the advanced users, quick keys for all actions will be
-  implemented in the near future.
+- Implemented a context menu, replacing the action buttons on the right side of
+  the editor and the inline action buttons. This gives a cleaner interface,
+  more space for the actual contents, and more room for new controls (like
+  insert and sort).
+- Implemented shortcut keys.
 - Implemented sort action, which sorts the childs of an array or object.
+- Implemented auto scrolling up and down when dragging a node and reaching
+  the top or bottom of the editor.
 - Improved performance and memory usage.
 - Minor improvements and bug fixes.
 

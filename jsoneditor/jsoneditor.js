@@ -2562,6 +2562,49 @@ JSONEditor.Node.prototype.onEvent = function (event) {
                 break;
         }
     }
+
+    if (type == 'keydown') {
+        this.onKeyDown(event);
+    }
+};
+
+/**
+ * Key down event handler
+ * @param {Event} event
+ */
+JSONEditor.Node.prototype.onKeyDown = function (event) {
+    var keynum = event.which || event.keyCode;
+    var ctrlKey = event.ctrlKey;
+    var shiftKey = event.shiftKey;
+    var handled = false;
+
+    // console.log(ctrlKey, keynum, event.charCode); // TODO: cleanup
+    if (ctrlKey && keynum == 68) {  // ctrl+D
+        this._onDuplicate();
+        handled = true;
+    }
+    /* TODO: implement shortcut keys
+    else if (ctrlKey && keynum == 46) { // Ctrl+Del
+        this._onRemove();
+        handled = true;
+        // TODO: focus to the next node
+    }
+    else if (ctrlKey && !shiftKey && keynum == 45) { // Ctrl+Ins
+        this._onInsertBefore(); // Ctrl+Ins
+        handled = true;
+        // TODO: focus to the next node
+    }
+    else if (ctrlKey && shiftKey && keynum == 45) { // Ctrl+Shift+Ins
+        this._onInsertAfter();
+        handled = true;
+        // TODO: focus to the next node
+    }
+    */
+
+    if (handled) {
+        JSONEditor.Events.preventDefault(event);
+        JSONEditor.Events.stopPropagation(event);
+    }
 };
 
 /**
@@ -2657,52 +2700,50 @@ JSONEditor.Node.prototype._onDuplicate = function() {
 
 /**
  * Handle insert before event
- * @param {JSONEditor.Node} beforeNode
  * @param {String} [field]
  * @param {*} [value]
  * @param {String} [type]   Can be 'auto', 'array', 'object', or 'string'
  * @private
  */
-JSONEditor.Node.prototype._onInsertBefore = function (beforeNode, field, value, type) {
+JSONEditor.Node.prototype._onInsertBefore = function (field, value, type) {
     var newNode = new JSONEditor.Node(this.editor, {
         'field': (value != undefined) ? field : 'field',
         'value': (value != undefined) ? value : 'value',
         'type': type
     });
     newNode.expand(true);
-    this.parent.insertBefore(newNode, beforeNode);
+    this.parent.insertBefore(newNode, this);
     this.editor.highlighter.unhighlight();
     newNode.focus();
 
     this.editor.onAction('insertBeforeNode', {
         'node': newNode,
-        'beforeNode': beforeNode,
+        'beforeNode': this,
         'parent': this.parent
     });
 };
 
 /**
  * Handle insert after event
- * @param {JSONEditor.Node} afterNode
  * @param {String} [field]
  * @param {*} [value]
  * @param {String} [type]   Can be 'auto', 'array', 'object', or 'string'
  * @private
  */
-JSONEditor.Node.prototype._onInsertAfter = function (afterNode, field, value, type) {
+JSONEditor.Node.prototype._onInsertAfter = function (field, value, type) {
     var newNode = new JSONEditor.Node(this.editor, {
         'field': (value != undefined) ? field : 'field',
         'value': (value != undefined) ? value : 'value',
         'type': type
     });
     newNode.expand(true);
-    this.parent.insertAfter(newNode, afterNode);
+    this.parent.insertAfter(newNode, this);
     this.editor.highlighter.unhighlight();
     newNode.focus();
 
     this.editor.onAction('insertAfterNode', {
         'node': newNode,
-        'afterNode': afterNode,
+        'afterNode': this,
         'parent': this.parent
     });
 };
@@ -2960,7 +3001,7 @@ JSONEditor.Node.prototype.showContextMenu = function (onClose) {
             'submenuTitle': 'Select the type of the node to be inserted',
             'className': 'jsoneditor-insert',
             'click': function () {
-                node._onInsertBefore(node, 'field', 'value', 'auto');
+                node._onInsertBefore('field', 'value', 'auto');
             },
             'submenu': [
                 {
@@ -2968,7 +3009,7 @@ JSONEditor.Node.prototype.showContextMenu = function (onClose) {
                     'className': 'jsoneditor-type-auto',
                     'title': titles.auto,
                     'click': function () {
-                        node._onInsertBefore(node, 'field', 'value', 'auto');
+                        node._onInsertBefore('field', 'value', 'auto');
                     }
                 },
                 {
@@ -2976,7 +3017,7 @@ JSONEditor.Node.prototype.showContextMenu = function (onClose) {
                     'className': 'jsoneditor-type-array',
                     'title': titles.array,
                     'click': function () {
-                        node._onInsertBefore(node, 'field', []);
+                        node._onInsertBefore('field', []);
                     }
                 },
                 {
@@ -2984,7 +3025,7 @@ JSONEditor.Node.prototype.showContextMenu = function (onClose) {
                     'className': 'jsoneditor-type-object',
                     'title': titles.object,
                     'click': function () {
-                        node._onInsertBefore(node, 'field', {});
+                        node._onInsertBefore('field', {});
                     }
                 },
                 {
@@ -2993,7 +3034,7 @@ JSONEditor.Node.prototype.showContextMenu = function (onClose) {
                     'title': titles.string,
                     'click': function () {
                         // TODO: settings type string does not work, will become auto
-                        node._onInsertBefore(node, 'field', 'value', 'string');
+                        node._onInsertBefore('field', 'value', 'string');
                     }
                 }
             ]
@@ -3601,39 +3642,9 @@ JSONEditor.prototype._createFrame = function () {
         event = event || window.event;
         var target = event.target || event.srcElement;
 
-        /* TODO: Enable quickkeys Ctrl+F and F3.
-        //       Requires knowing whether the JSONEditor has focus or not
-        //       (use a global event listener for that?)
-        // Check for search quickkeys, Ctrl+F and F3
-        if (editor.options.search) {
-            if (event.type == 'keydown') {
-                var keynum = event.which || event.keyCode;
-                if (keynum == 70 && event.ctrlKey) { // Ctrl+F
-                    if (editor.searchBox) {
-                        editor.searchBox.dom.search.focus();
-                        editor.searchBox.dom.search.select();
-                        JSONEditor.Events.preventDefault(event);
-                        JSONEditor.Events.stopPropagation(event);
-                    }
-                }
-                else if (keynum == 114) { // F3
-                    if (!event.shiftKey) {
-                        // select next search result
-                        editor.searchBox.next();
-                    }
-                    else {
-                        // select previous search result
-                        editor.searchBox.previous();
-                    }
-                    editor.searchBox.focusActiveResult();
-
-                    // set selection to the current
-                    JSONEditor.Events.preventDefault(event);
-                    JSONEditor.Events.stopPropagation(event);
-                }
-            }
+        if (event.type == 'keydown') {
+            editor.onKeyDown(event);
         }
-        */
 
         var node = JSONEditor.getNodeFromTarget(target);
         if (node) {
@@ -3686,7 +3697,7 @@ JSONEditor.prototype._createFrame = function () {
     };
     this.menu.appendChild(collapseAll);
 
-    // create expand/collapse buttons
+    // create undo/redo buttons
     if (this.history) {
         // create separator
         var separator = document.createElement('span');
@@ -3698,13 +3709,7 @@ JSONEditor.prototype._createFrame = function () {
         undo.className = 'jsoneditor-menu jsoneditor-undo';
         undo.title = 'Undo last action';
         undo.onclick = function () {
-            // undo last action
-            editor.history.undo();
-
-            // trigger change callback
-            if (editor.options.change) {
-                editor.options.change();
-            }
+            editor._onUndo();
         };
         this.menu.appendChild(undo);
         this.dom.undo = undo;
@@ -3714,13 +3719,7 @@ JSONEditor.prototype._createFrame = function () {
         redo.className = 'jsoneditor-menu jsoneditor-redo';
         redo.title = 'Redo';
         redo.onclick = function () {
-            // redo last action
-            editor.history.redo();
-
-            // trigger change callback
-            if (editor.options.change) {
-                editor.options.change();
-            }
+            editor._onRedo();
         };
         this.menu.appendChild(redo);
         this.dom.redo = redo;
@@ -3739,6 +3738,89 @@ JSONEditor.prototype._createFrame = function () {
     }
 };
 
+/**
+ * Perform an undo action
+ * @private
+ */
+JSONEditor.prototype._onUndo = function () {
+    if (this.history) {
+        // undo last action
+        this.history.undo();
+
+        // trigger change callback
+        if (this.options.change) {
+            this.options.change();
+        }
+    }
+};
+
+/**
+ * Perform a redo action
+ * @private
+ */
+JSONEditor.prototype._onRedo = function () {
+    if (this.history) {
+        // redo last action
+        editor.history.redo();
+
+        // trigger change callback
+        if (editor.options.change) {
+            editor.options.change();
+        }
+    }
+};
+
+/**
+ * Event handler for keydown. Handles shortcut keys
+ * @param {Event} event
+ */
+JSONEditor.prototype.onKeyDown = function (event) {
+    var keynum = event.which || event.keyCode;
+    var ctrlKey = event.ctrlKey;
+    var shiftKey = event.shiftKey;
+    var handled = false;
+
+    if (this.searchBox) {
+        if (ctrlKey && keynum == 70) { // Ctrl+F
+            this.searchBox.dom.search.focus();
+            this.searchBox.dom.search.select();
+            handled = true;
+        }
+        else if (keynum == 114 || (ctrlKey && keynum == 71)) { // F3 or Ctrl+G
+            if (!shiftKey) {
+                // select next search result (F3 or Ctrl+G)
+                this.searchBox.next();
+            }
+            else {
+                // select previous search result (Shift+F3 or Ctrl+Shift+G)
+                this.searchBox.previous();
+            }
+
+            // set selection to the current
+            this.searchBox.focusActiveResult();
+
+            handled = true;
+        }
+    }
+
+    if (this.history) {
+        if (ctrlKey && !shiftKey && keynum == 90) { // Ctrl+Z
+            // undo
+            this._onUndo();
+            handled = true;
+        }
+        else if (ctrlKey && shiftKey && keynum == 90) { // Ctrl+Shift+Z
+            // redo
+            this._onRedo();
+            handled = true;
+        }
+    }
+
+    if (handled) {
+        JSONEditor.Events.preventDefault(event);
+        JSONEditor.Events.stopPropagation(event);
+    }
+};
 
 /**
  * Create main table
@@ -4311,8 +4393,9 @@ JSONEditor.Events.removeEventListener = function(element, action, listener, useC
  * @param {Event} event
  */
 JSONEditor.Events.stopPropagation = function (event) {
-    if (!event)
+    if (!event) {
         event = window.event;
+    }
 
     if (event.stopPropagation) {
         event.stopPropagation();  // non-IE browsers
@@ -4328,8 +4411,9 @@ JSONEditor.Events.stopPropagation = function (event) {
  * @param {Event} event
  */
 JSONEditor.Events.preventDefault = function (event) {
-    if (!event)
+    if (!event) {
         event = window.event;
+    }
 
     if (event.preventDefault) {
         event.preventDefault();  // non-IE browsers
