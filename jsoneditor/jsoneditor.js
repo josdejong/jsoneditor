@@ -1798,15 +1798,17 @@ JSONEditor.Node.prototype._onDrag = function (event) {
     var mouseY = event.pageY || (event.clientY + document.body.scrollTop);
     var mouseX = event.pageX || (event.clientX + document.body.scrollLeft);
 
-    var trThis = this.dom.tr;
-    var trPrev, nodePrev, topPrev;
+    var trThis, trPrev, trNext, trFirst, trLast, trRoot;
+    var nodePrev, nodeNext;
+    var topThis, topPrev, topFirst, heightThis, bottomNext, heightNext;
     var moved = false;
 
     // TODO: add an ESC option, which resets to the original position
 
     // move up/down
-    var topThis = JSONEditor.getAbsoluteTop(trThis);
-    var heightThis = trThis.offsetHeight;
+    trThis = this.dom.tr;
+    topThis = JSONEditor.getAbsoluteTop(trThis);
+    heightThis = trThis.offsetHeight;
     if (mouseY < topThis) {
         // move up
         trPrev = trThis;
@@ -1817,6 +1819,20 @@ JSONEditor.Node.prototype._onDrag = function (event) {
         }
         while (trPrev && mouseY < topPrev);
 
+        if (nodePrev && !nodePrev.parent) {
+            nodePrev = undefined;
+        }
+
+        if (!nodePrev) {
+            // move to the first node
+            trRoot = trThis.parentNode.firstChild;
+            trPrev = trRoot ? trRoot.nextSibling : undefined;
+            nodePrev = JSONEditor.getNodeFromTarget(trPrev);
+            if (nodePrev == this) {
+                nodePrev = undefined;
+            }
+        }
+
         if (nodePrev) {
             // check if mouseY is really inside the found node
             trPrev = nodePrev.dom.tr;
@@ -1826,28 +1842,28 @@ JSONEditor.Node.prototype._onDrag = function (event) {
             }
         }
 
-        if (nodePrev && nodePrev.parent) {
+        if (nodePrev) {
             nodePrev.parent.moveBefore(this, nodePrev);
             moved = true;
         }
     }
     else {
         // move down
-        var trLast = (this.expanded && this.append) ? this.append.getDom() : this.dom.tr;
-        var trFirst = trLast ? trLast.nextSibling : undefined;
+        trLast = (this.expanded && this.append) ? this.append.getDom() : this.dom.tr;
+        trFirst = trLast ? trLast.nextSibling : undefined;
         if (trFirst) {
-            var topFirst = JSONEditor.getAbsoluteTop(trFirst);
-            var trNext = trFirst, bottomNext, heightNext, nodeNext;
+            topFirst = JSONEditor.getAbsoluteTop(trFirst);
+            trNext = trFirst;
             do {
                 nodeNext = JSONEditor.getNodeFromTarget(trNext);
                 if (trNext) {
                     bottomNext = JSONEditor.getAbsoluteTop(trNext.nextSibling);
                     heightNext = trNext ? (bottomNext - topFirst) : 0;
 
-                    if (nodeNext.parent.childs.length == 1) {
+                    if (nodeNext.parent.childs.length == 1 && nodeNext.parent.childs[0] == this) {
                         // We are about to remove the last child of this parent,
                         // which will make the parents appendNode visible.
-                        heightNext = 24 - 1;
+                        topThis += 24 - 1;
                         // TODO: dangerous to suppose the height of the appendNode a constant of 24-1 px.
                     }
                 }
@@ -1859,7 +1875,7 @@ JSONEditor.Node.prototype._onDrag = function (event) {
             if (nodeNext && nodeNext.parent) {
                 // calculate the desired level
                 var diffX = (mouseX - this.drag.mouseX);
-                var diffLevel = Math.round(diffX / 24);
+                var diffLevel = Math.round(diffX / 24 / 2);
                 var level = this.drag.level + diffLevel; // desired level
                 var levelNext = nodeNext.getLevel();     // level to be
 
@@ -1898,10 +1914,6 @@ JSONEditor.Node.prototype._onDrag = function (event) {
                     moved = true;
                 }
             }
-        }
-        else {
-            // TODO: move to the last element.
-            console.log(trLast, trFirst)
         }
     }
 
