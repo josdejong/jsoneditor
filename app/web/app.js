@@ -174,7 +174,7 @@ app.load = function() {
         domSplitter.appendChild(toJSON);
 
         // web page resize handler
-        JSONEditor.Events.addEventListener(window, 'resize', app.resize);
+        JSONEditor.util.addEventListener(window, 'resize', app.resize);
 
         // clear button
         var domClear = document.getElementById('clear');
@@ -201,16 +201,16 @@ app.load = function() {
         var domMenuOpenFile = document.getElementById('menuOpenFile');
         domMenuOpenFile.onclick = function (event) {
             app.openFile();
-            JSONEditor.Events.stopPropagation(event);
-            JSONEditor.Events.preventDefault(event);
+            JSONEditor.util.stopPropagation(event);
+            JSONEditor.util.preventDefault(event);
         };
 
         // menu button open url
         var domMenuOpenUrl = document.getElementById('menuOpenUrl');
         domMenuOpenUrl.onclick = function (event) {
             app.openUrl();
-            JSONEditor.Events.stopPropagation(event);
-            JSONEditor.Events.preventDefault(event);
+            JSONEditor.util.stopPropagation(event);
+            JSONEditor.util.preventDefault(event);
         };
 
         // save button

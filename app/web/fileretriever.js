@@ -401,7 +401,7 @@ FileRetriever.prototype.prompt = function (params) {
             overlay.parentNode.removeChild(overlay);
         }
 
-        JSONEditor.Events.removeEventListener(document, 'keydown', onKeyDown);
+        JSONEditor.util.removeEventListener(document, 'keydown', onKeyDown);
     };
 
     var onCancel = function () {
@@ -411,13 +411,13 @@ FileRetriever.prototype.prompt = function (params) {
         }
     };
 
-    var onKeyDown = JSONEditor.Events.addEventListener(document, 'keydown', function (event) {
+    var onKeyDown = JSONEditor.util.addEventListener(document, 'keydown', function (event) {
         event = event || window.event;
         var keynum = event.which || event.keyCode;
         if (keynum == 27) { // ESC
             onCancel();
-            JSONEditor.Events.preventDefault(event);
-            JSONEditor.Events.stopPropagation(event);
+            JSONEditor.util.preventDefault(event);
+            JSONEditor.util.stopPropagation(event);
         }
     });
 

@@ -339,7 +339,7 @@ JSONEditor.prototype.onAction = function (action, params) {
 JSONEditor.prototype.startAutoScroll = function (mouseY) {
     var me = this;
     var content = this.content;
-    var top = JSONEditor.getAbsoluteTop(content);
+    var top = JSONEditor.util.getAbsoluteTop(content);
     var height = content.clientHeight;
     var bottom = top + height;
     var margin = 24;
@@ -1521,7 +1521,7 @@ JSONEditor.Node.prototype.changeType = function (newType) {
  */
 JSONEditor.Node.prototype._getDomValue = function(silent) {
     if (this.dom.value && this.type != 'array' && this.type != 'object') {
-        this.valueInnerText = JSONEditor.getInnerText(this.dom.value);
+        this.valueInnerText = JSONEditor.util.getInnerText(this.dom.value);
     }
 
     if (this.valueInnerText != undefined) {
@@ -1594,28 +1594,28 @@ JSONEditor.Node.prototype._updateDomValue = function () {
         // make backgound color lightgray when empty
         var isEmpty = (String(this.value) == '' && this.type != 'array' && this.type != 'object');
         if (isEmpty) {
-            JSONEditor.addClassName(domValue, 'jsoneditor-empty');
+            JSONEditor.util.addClassName(domValue, 'jsoneditor-empty');
         }
         else {
-            JSONEditor.removeClassName(domValue, 'jsoneditor-empty');
+            JSONEditor.util.removeClassName(domValue, 'jsoneditor-empty');
         }
 
         // highlight when there is a search result
         if (this.searchValueActive) {
-            JSONEditor.addClassName(domValue, 'jsoneditor-search-highlight-active');
+            JSONEditor.util.addClassName(domValue, 'jsoneditor-search-highlight-active');
         }
         else {
-            JSONEditor.removeClassName(domValue, 'jsoneditor-search-highlight-active');
+            JSONEditor.util.removeClassName(domValue, 'jsoneditor-search-highlight-active');
         }
         if (this.searchValue) {
-            JSONEditor.addClassName(domValue, 'jsoneditor-search-highlight');
+            JSONEditor.util.addClassName(domValue, 'jsoneditor-search-highlight');
         }
         else {
-            JSONEditor.removeClassName(domValue, 'jsoneditor-search-highlight');
+            JSONEditor.util.removeClassName(domValue, 'jsoneditor-search-highlight');
         }
 
         // strip formatting from the contents of the editable div
-        JSONEditor.stripFormatting(domValue);
+        JSONEditor.util.stripFormatting(domValue);
     }
 };
 
@@ -1632,28 +1632,28 @@ JSONEditor.Node.prototype._updateDomField = function () {
         // make backgound color lightgray when empty
         var isEmpty = (String(this.field) == '');
         if (isEmpty) {
-            JSONEditor.addClassName(domField, 'jsoneditor-empty');
+            JSONEditor.util.addClassName(domField, 'jsoneditor-empty');
         }
         else {
-            JSONEditor.removeClassName(domField, 'jsoneditor-empty');
+            JSONEditor.util.removeClassName(domField, 'jsoneditor-empty');
         }
 
         // highlight when there is a search result
         if (this.searchFieldActive) {
-            JSONEditor.addClassName(domField, 'jsoneditor-search-highlight-active');
+            JSONEditor.util.addClassName(domField, 'jsoneditor-search-highlight-active');
         }
         else {
-            JSONEditor.removeClassName(domField, 'jsoneditor-search-highlight-active');
+            JSONEditor.util.removeClassName(domField, 'jsoneditor-search-highlight-active');
         }
         if (this.searchField) {
-            JSONEditor.addClassName(domField, 'jsoneditor-search-highlight');
+            JSONEditor.util.addClassName(domField, 'jsoneditor-search-highlight');
         }
         else {
-            JSONEditor.removeClassName(domField, 'jsoneditor-search-highlight');
+            JSONEditor.util.removeClassName(domField, 'jsoneditor-search-highlight');
         }
 
         // strip formatting from the contents of the editable div
-        JSONEditor.stripFormatting(domField);
+        JSONEditor.util.stripFormatting(domField);
     }
 };
 
@@ -1665,7 +1665,7 @@ JSONEditor.Node.prototype._updateDomField = function () {
  */
 JSONEditor.Node.prototype._getDomField = function(silent) {
     if (this.dom.field && this.fieldEditable) {
-        this.fieldInnerText = JSONEditor.getInnerText(this.dom.field);
+        this.fieldInnerText = JSONEditor.util.getInnerText(this.dom.field);
     }
 
     if (this.fieldInnerText != undefined) {
@@ -1761,14 +1761,14 @@ JSONEditor.Node.prototype._onDragStart = function (event) {
 
     var node = this;
     if (!this.mousemove) {
-        this.mousemove = JSONEditor.Events.addEventListener(document, 'mousemove',
+        this.mousemove = JSONEditor.util.addEventListener(document, 'mousemove',
             function (event) {
                 node._onDrag(event);
             });
     }
 
     if (!this.mouseup) {
-        this.mouseup = JSONEditor.Events.addEventListener(document, 'mouseup',
+        this.mouseup = JSONEditor.util.addEventListener(document, 'mouseup',
             function (event ) {
                 node._onDragEnd(event);
             });
@@ -1784,7 +1784,7 @@ JSONEditor.Node.prototype._onDragStart = function (event) {
     };
     document.body.style.cursor = 'move';
 
-    JSONEditor.Events.preventDefault(event);
+    JSONEditor.util.preventDefault(event);
 };
 
 /**
@@ -1795,7 +1795,9 @@ JSONEditor.Node.prototype._onDragStart = function (event) {
 JSONEditor.Node.prototype._onDrag = function (event) {
     // TODO: this method has grown to large. Split it in a number of methods
     event = event || window.event;
-    var mouseY = event.pageY || (event.clientY + document.body.scrollTop);
+    // TODO: make a separate function to get the absolute mouseY and mouseX
+    var mouseY = (event.pageY || (event.clientY + document.body.scrollTop)) -
+            (document.body.style.marginTop ? parseFloat(document.body.style.marginTop) : 0);
     var mouseX = event.pageX || (event.clientX + document.body.scrollLeft);
 
     var trThis, trPrev, trNext, trFirst, trLast, trRoot;
@@ -1807,7 +1809,7 @@ JSONEditor.Node.prototype._onDrag = function (event) {
 
     // move up/down
     trThis = this.dom.tr;
-    topThis = JSONEditor.getAbsoluteTop(trThis);
+    topThis = JSONEditor.util.getAbsoluteTop(trThis);
     heightThis = trThis.offsetHeight;
     if (mouseY < topThis) {
         // move up
@@ -1815,7 +1817,7 @@ JSONEditor.Node.prototype._onDrag = function (event) {
         do {
             trPrev = trPrev.previousSibling;
             nodePrev = JSONEditor.getNodeFromTarget(trPrev);
-            topPrev = JSONEditor.getAbsoluteTop(trPrev);
+            topPrev = trPrev ? JSONEditor.util.getAbsoluteTop(trPrev) : 0;
         }
         while (trPrev && mouseY < topPrev);
 
@@ -1836,7 +1838,7 @@ JSONEditor.Node.prototype._onDrag = function (event) {
         if (nodePrev) {
             // check if mouseY is really inside the found node
             trPrev = nodePrev.dom.tr;
-            topPrev = JSONEditor.getAbsoluteTop(trPrev);
+            topPrev = trPrev ? JSONEditor.util.getAbsoluteTop(trPrev) : 0;
             if (mouseY > topPrev + heightThis) {
                 nodePrev = undefined;
             }
@@ -1852,12 +1854,13 @@ JSONEditor.Node.prototype._onDrag = function (event) {
         trLast = (this.expanded && this.append) ? this.append.getDom() : this.dom.tr;
         trFirst = trLast ? trLast.nextSibling : undefined;
         if (trFirst) {
-            topFirst = JSONEditor.getAbsoluteTop(trFirst);
+            topFirst = JSONEditor.util.getAbsoluteTop(trFirst);
             trNext = trFirst;
             do {
                 nodeNext = JSONEditor.getNodeFromTarget(trNext);
                 if (trNext) {
-                    bottomNext = JSONEditor.getAbsoluteTop(trNext.nextSibling);
+                    bottomNext = trNext.nextSibling ?
+                        JSONEditor.util.getAbsoluteTop(trNext.nextSibling) : 0;
                     heightNext = trNext ? (bottomNext - topFirst) : 0;
 
                     if (nodeNext.parent.childs.length == 1 && nodeNext.parent.childs[0] == this) {
@@ -1926,7 +1929,7 @@ JSONEditor.Node.prototype._onDrag = function (event) {
     // auto scroll when hovering around the top of the editor
     this.editor.startAutoScroll(mouseY);
 
-    JSONEditor.Events.preventDefault(event);
+    JSONEditor.util.preventDefault(event);
 };
 
 /**
@@ -1955,18 +1958,18 @@ JSONEditor.Node.prototype._onDragEnd = function (event) {
     delete this.drag;
 
     if (this.mousemove) {
-        JSONEditor.Events.removeEventListener(document, 'mousemove', this.mousemove);
+        JSONEditor.util.removeEventListener(document, 'mousemove', this.mousemove);
         delete this.mousemove;
     }
     if (this.mouseup) {
-        JSONEditor.Events.removeEventListener(document, 'mouseup', this.mouseup);
+        JSONEditor.util.removeEventListener(document, 'mouseup', this.mouseup);
         delete this.mouseup;
     }
 
     // Stop any running auto scroll
     this.editor.stopAutoScroll();
 
-    JSONEditor.Events.preventDefault(event);
+    JSONEditor.util.preventDefault(event);
 };
 
 /**
@@ -2502,17 +2505,17 @@ JSONEditor.Node.prototype.onEvent = function (event) {
             case 'click':
                 var left = (event.offsetX != undefined) ?
                     (event.offsetX < (this.getLevel() + 1) * 24) :
-                    (event.clientX < JSONEditor.getAbsoluteLeft(dom.tdSeparator));// for FF
+                    (event.clientX < JSONEditor.util.getAbsoluteLeft(dom.tdSeparator));// for FF
                 if (left || expandable) {
                     // node is expandable when it is an object or array
                     if (domField) {
-                        JSONEditor.setEndOfContentEditable(domField);
+                        JSONEditor.util.setEndOfContentEditable(domField);
                         domField.focus();
                     }
                 }
                 else {
                     if (domValue) {
-                        JSONEditor.setEndOfContentEditable(domValue);
+                        JSONEditor.util.setEndOfContentEditable(domValue);
                         domValue.focus();
                     }
                 }
@@ -2524,7 +2527,7 @@ JSONEditor.Node.prototype.onEvent = function (event) {
         switch (type) {
             case 'click':
                 if (domField) {
-                    JSONEditor.setEndOfContentEditable(domField);
+                    JSONEditor.util.setEndOfContentEditable(domField);
                     domField.focus();
                 }
                 break;
@@ -2570,8 +2573,8 @@ JSONEditor.Node.prototype.onKeyDown = function (event) {
     */
 
     if (handled) {
-        JSONEditor.Events.preventDefault(event);
-        JSONEditor.Events.stopPropagation(event);
+        JSONEditor.util.preventDefault(event);
+        JSONEditor.util.stopPropagation(event);
     }
 };
 
@@ -3339,26 +3342,26 @@ JSONEditor.AppendNode.prototype.onEvent = function (event) {
     var type = event.type;
     var target = event.target || event.srcElement;
     var dom = this.dom;
-    var node = this;
 
-    // highlight the appendnodes parent
+    // highlight the append nodes parent
     var menu = dom.menu;
     if (target == menu) {
         if (type == 'mouseover') {
             this.editor.highlighter.highlight(this.parent);
         }
         else if (type == 'mouseout') {
-            // TODO: onmouseout of menu must only execute unhighlight when no contextmenu is visible
             this.editor.highlighter.unhighlight();
         }
     }
 
     // context menu events
     if (type == 'click' && target == dom.menu) {
-        node.editor.highlighter.lock();
+        var highlighter = this.editor.highlighter;
+        highlighter.highlight(this.parent);
+        highlighter.lock();
         this.showContextMenu(function () {
-            node.editor.highlighter.unlock();
-            node.editor.highlighter.unhighlight();
+            highlighter.unlock();
+            highlighter.unhighlight();
         });
     }
 };
@@ -3376,6 +3379,7 @@ JSONEditor.ContextMenu = function (items, options) {
     var me = this;
     this.items = items;
     this.eventListeners = {};
+    this.visibleSubmenu = undefined;
     this.onClose = options ? options.close : undefined;
 
     // create a container element
@@ -3453,16 +3457,7 @@ JSONEditor.ContextMenu = function (items, options) {
                     // attach a handler to expand/collapse the submenu
                     var selected = false;
                     buttonSubmenu.onclick = function () {
-                        // TODO: unselect other selected submenu(s)
-                        selected = !selected;
-                        if (selected) {
-                            submenu.style.height = (item.submenu.length * 24) + 'px';
-                            JSONEditor.addClassName(li, 'selected');
-                        }
-                        else {
-                            JSONEditor.removeClassName(li, 'selected');
-                            submenu.style.height = '0';
-                        }
+                        me._onShowSubmenu(submenu);
                     };
 
                     // create the submenu
@@ -3507,8 +3502,8 @@ JSONEditor.ContextMenu.prototype.show = function (anchor) {
     var menuHeight = this.maxHeight;
 
     // position the menu
-    var left = JSONEditor.getAbsoluteLeft(anchor);
-    var top = JSONEditor.getAbsoluteTop(anchor);
+    var left = JSONEditor.util.getAbsoluteLeft(anchor);
+    var top = JSONEditor.util.getAbsoluteTop(anchor);
     if (top + anchorHeight + menuHeight < windowHeight) {
         // display the menu below the anchor
         this.menu.style.left = left + 'px';
@@ -3522,16 +3517,13 @@ JSONEditor.ContextMenu.prototype.show = function (anchor) {
         this.menu.style.bottom = (windowHeight - top) + 'px';
     }
 
-    // TODO: when the menu is too close to the bottom of the page, show it
-    //       on above the anchor element instead of below
-
     // attach the menu to the document
     document.body.appendChild(this.menu);
 
     // create and attach event listeners
     var me = this;
     var list = this.list;
-    this.eventListeners.mousedown = JSONEditor.Events.addEventListener(
+    this.eventListeners.mousedown = JSONEditor.util.addEventListener(
             document, 'mousedown', function (event) {
         // hide menu on click outside of the menu
         event = event || window.event;
@@ -3540,24 +3532,22 @@ JSONEditor.ContextMenu.prototype.show = function (anchor) {
             me.hide();
         }
     });
-    this.eventListeners.mousewheel = JSONEditor.Events.addEventListener(
+    this.eventListeners.mousewheel = JSONEditor.util.addEventListener(
             document, 'mousewheel', function () {
         // hide the menu on mouse scroll
         me.hide();
     });
-    this.eventListeners.keydown = JSONEditor.Events.addEventListener(
+    this.eventListeners.keydown = JSONEditor.util.addEventListener(
             document, 'keydown', function (event) {
         // hide the menu on ESC key
         event = event || window.event;
         var keynum = event.which || event.keyCode;
         if (keynum == 27) { // ESC
             me.hide();
-            JSONEditor.Events.stopPropagation(event);
-            JSONEditor.Events.preventDefault(event);
+            JSONEditor.util.stopPropagation(event);
+            JSONEditor.util.preventDefault(event);
         }
     });
-
-    // TODO: add keydown listener, listening for ESC
 
     // TODO: focus to the first button in the context menu
 
@@ -3585,10 +3575,48 @@ JSONEditor.ContextMenu.prototype.hide = function () {
         if (this.eventListeners.hasOwnProperty(name)) {
             var fn = this.eventListeners[name];
             if (fn) {
-                JSONEditor.Events.removeEventListener(document, name, fn);
+                JSONEditor.util.removeEventListener(document, name, fn);
             }
             delete this.eventListeners[name];
         }
+    }
+};
+
+/**
+ * Show or hide a submenu.
+ * Any currently visible submenu will be hided.
+ * @param {Element} submenu
+ * @private
+ */
+JSONEditor.ContextMenu.prototype._onShowSubmenu = function (submenu) {
+    var me = this;
+    var alreadyVisible = (submenu == this.visibleSubmenu);
+
+    // hide the currently visible submenu
+    var visibleSubmenu = this.visibleSubmenu;
+    if (visibleSubmenu) {
+        visibleSubmenu.style.height = '0';
+        visibleSubmenu.style.padding = '';
+        setTimeout(function () {
+            if (me.visibleSubmenu != visibleSubmenu) {
+                visibleSubmenu.style.display = '';
+                JSONEditor.util.removeClassName(visibleSubmenu.parentNode, 'selected');
+            }
+        }, 300); // timeout duration must match the css transition duration
+        this.visibleSubmenu = undefined;
+    }
+
+    if (!alreadyVisible) {
+        submenu.style.display = 'block';
+        var height = submenu.clientHeight; // force a reflow in Firefox
+        setTimeout(function () {
+            if (me.visibleSubmenu == submenu) {
+                submenu.style.height = (submenu.childNodes.length * 24) + 'px';
+                submenu.style.padding = '5px 10px';
+            }
+        }, 0);
+        JSONEditor.util.addClassName(submenu.parentNode, 'selected');
+        this.visibleSubmenu = submenu;
     }
 };
 
@@ -3623,7 +3651,7 @@ JSONEditor.prototype._createFrame = function () {
         onEvent(event);
 
         // prevent default submit action when JSONEditor is located inside a form
-        JSONEditor.Events.preventDefault(event);
+        JSONEditor.util.preventDefault(event);
     };
     this.frame.onchange = onEvent;
     this.frame.onkeydown = onEvent;
@@ -3637,8 +3665,8 @@ JSONEditor.prototype._createFrame = function () {
     // Note: focus and blur events do not propagate, therefore they defined
     // using an eventListener with useCapture=true
     // see http://www.quirksmode.org/blog/archives/2008/04/delegating_the.html
-    JSONEditor.Events.addEventListener(this.frame, 'focus', onEvent, true);
-    JSONEditor.Events.addEventListener(this.frame, 'blur', onEvent, true);
+    JSONEditor.util.addEventListener(this.frame, 'focus', onEvent, true);
+    JSONEditor.util.addEventListener(this.frame, 'blur', onEvent, true);
     this.frame.onfocusin = onEvent;  // for IE
     this.frame.onfocusout = onEvent; // for IE
 
@@ -3785,8 +3813,8 @@ JSONEditor.prototype.onKeyDown = function (event) {
     }
 
     if (handled) {
-        JSONEditor.Events.preventDefault(event);
-        JSONEditor.Events.stopPropagation(event);
+        JSONEditor.util.preventDefault(event);
+        JSONEditor.util.stopPropagation(event);
     }
 };
 
@@ -3809,7 +3837,7 @@ JSONEditor.prototype._createTable = function () {
 
     // IE8 does not handle overflow='auto' correctly.
     // Therefore, set overflow to 'scroll'
-    var ieVersion = JSONEditor.getInternetExplorerVersion();
+    var ieVersion = JSONEditor.util.getInternetExplorerVersion();
     if (ieVersion == 8) {
         this.content.style.overflow = 'scroll';
     }
@@ -3879,7 +3907,7 @@ JSONFormatter = function (container, options, json) {
     this.frame.className = "jsoneditor-frame";
     this.frame.onclick = function (event) {
         // prevent default submit action when JSONFormatter is located inside a form
-        JSONEditor.Events.preventDefault(event);
+        JSONEditor.util.preventDefault(event);
     };
 
     // create menu
@@ -4265,8 +4293,8 @@ JSONEditor.SearchBox.prototype.onKeyDown = function (event) {
     if (keynum == 27) { // ESC
         this.dom.search.value = '';  // clear search
         this.onSearch(event);
-        JSONEditor.Events.preventDefault(event);
-        JSONEditor.Events.stopPropagation(event);
+        JSONEditor.util.preventDefault(event);
+        JSONEditor.util.stopPropagation(event);
     }
     else if (keynum == 13) { // Enter
         if (event.ctrlKey) {
@@ -4281,8 +4309,8 @@ JSONEditor.SearchBox.prototype.onKeyDown = function (event) {
             // move to the next search result
             this.next();
         }
-        JSONEditor.Events.preventDefault(event);
-        JSONEditor.Events.stopPropagation(event);
+        JSONEditor.util.preventDefault(event);
+        JSONEditor.util.stopPropagation(event);
     }
 };
 
@@ -4297,321 +4325,6 @@ JSONEditor.SearchBox.prototype.onKeyUp = function (event) {
         this.onDelayedSearch(event);   // For IE 8
     }
 };
-
-// create namespace for event methods
-JSONEditor.Events = {};
-
-/**
- * Add and event listener. Works for all browsers
- * @param {Element}     element    An html element
- * @param {string}      action     The action, for example "click",
- *                                 without the prefix "on"
- * @param {function}    listener   The callback function to be executed
- * @param {boolean}     [useCapture] false by default
- * @return {function}   the created event listener
- */
-JSONEditor.Events.addEventListener = function (element, action, listener, useCapture) {
-    if (element.addEventListener) {
-        if (useCapture === undefined)
-            useCapture = false;
-
-        if (action === "mousewheel" && navigator.userAgent.indexOf("Firefox") >= 0) {
-            action = "DOMMouseScroll";  // For Firefox
-        }
-
-        element.addEventListener(action, listener, useCapture);
-        return listener;
-    } else {
-        // IE browsers
-        var f = function () {
-            return listener.call(element, window.event);
-        };
-        element.attachEvent("on" + action, f);
-        return f;
-    }
-};
-
-/**
- * Remove an event listener from an element
- * @param {Element}  element   An html dom element
- * @param {string}   action    The name of the event, for example "mousedown"
- * @param {function} listener  The listener function
- * @param {boolean}  [useCapture]   false by default
- */
-JSONEditor.Events.removeEventListener = function(element, action, listener, useCapture) {
-    if (element.removeEventListener) {
-        // non-IE browsers
-        if (useCapture === undefined)
-            useCapture = false;
-
-        if (action === "mousewheel" && navigator.userAgent.indexOf("Firefox") >= 0) {
-            action = "DOMMouseScroll";  // For Firefox
-        }
-
-        element.removeEventListener(action, listener, useCapture);
-    } else {
-        // IE browsers
-        element.detachEvent("on" + action, listener);
-    }
-};
-
-
-/**
- * Stop event propagation
- * @param {Event} event
- */
-JSONEditor.Events.stopPropagation = function (event) {
-    if (!event) {
-        event = window.event;
-    }
-
-    if (event.stopPropagation) {
-        event.stopPropagation();  // non-IE browsers
-    }
-    else {
-        event.cancelBubble = true;  // IE browsers
-    }
-};
-
-
-/**
- * Cancels the event if it is cancelable, without stopping further propagation of the event.
- * @param {Event} event
- */
-JSONEditor.Events.preventDefault = function (event) {
-    if (!event) {
-        event = window.event;
-    }
-
-    if (event.preventDefault) {
-        event.preventDefault();  // non-IE browsers
-    }
-    else {
-        event.returnValue = false;  // IE browsers
-    }
-};
-
-
-
-/**
- * Retrieve the absolute left value of a DOM element
- * @param {Element} elem    A dom element, for example a div
- * @return {Number} left    The absolute left position of this element
- *                          in the browser page.
- */
-JSONEditor.getAbsoluteLeft = function (elem) {
-    var left = 0;
-    var body = document.body;
-    while (elem != null && elem != body) {
-        left += elem.offsetLeft;
-        elem = elem.offsetParent;
-        if (elem) {
-            left -= elem.scrollLeft;
-        }
-    }
-    return left;
-};
-
-/**
- * Retrieve the absolute top value of a DOM element
- * @param {Element} elem    A dom element, for example a div
- * @return {Number} top    The absolute top position of this element
- *                          in the browser page.
- */
-JSONEditor.getAbsoluteTop = function (elem) {
-    var top = 0;
-    var body = document.body;
-    while (elem != null && elem != body) {
-        top += elem.offsetTop;
-        elem = elem.offsetParent;
-        if (elem) {
-            top -= elem.scrollTop;
-        }
-    }
-    return top;
-};
-
-/**
- * add a className to the given elements style
- * @param {Element} elem
- * @param {String} className
- */
-JSONEditor.addClassName = function(elem, className) {
-    var classes = elem.className.split(' ');
-    if (classes.indexOf(className) == -1) {
-        classes.push(className); // add the class to the array
-        elem.className = classes.join(' ');
-    }
-};
-
-/**
- * add a className to the given elements style
- * @param {Element} elem
- * @param {String} className
- */
-JSONEditor.removeClassName = function(elem, className) {
-    var classes = elem.className.split(' ');
-    var index = classes.indexOf(className);
-    if (index != -1) {
-        classes.splice(index, 1); // remove the class from the array
-        elem.className = classes.join(' ');
-    }
-};
-
-/**
- * Strip the formatting from the contents of a div
- * the formatting from the div itself is not stripped, only from its childs.
- * @param {Element} divElement
- */
-JSONEditor.stripFormatting = function (divElement) {
-    var childs = divElement.childNodes;
-    for (var i = 0, iMax = childs.length; i < iMax; i++) {
-        var child = childs[i];
-
-        // remove the style
-        if (child.style) {
-            // TODO: test if child.attributes does contain style
-            child.removeAttribute('style');
-        }
-
-        // remove all attributes
-        var attributes = child.attributes;
-        if (attributes) {
-            for (var j = attributes.length - 1; j >= 0; j--) {
-                var attribute = attributes[j];
-                if (attribute.specified == true) {
-                    child.removeAttribute(attribute.name);
-                }
-            }
-        }
-
-        // recursively strip childs
-        JSONEditor.stripFormatting(child);
-    }
-};
-
-/**
- * Set focus to the end of an editable div
- * code from Nico Burns
- * http://stackoverflow.com/users/140293/nico-burns
- * http://stackoverflow.com/questions/1125292/how-to-move-cursor-to-end-of-contenteditable-entity
- * @param {Element} contentEditableElement
- */
-JSONEditor.setEndOfContentEditable = function (contentEditableElement) {
-    var range, selection;
-    if(document.createRange) {//Firefox, Chrome, Opera, Safari, IE 9+
-        range = document.createRange();//Create a range (a range is a like the selection but invisible)
-        range.selectNodeContents(contentEditableElement);//Select the entire contents of the element with the range
-        range.collapse(false);//collapse the range to the end point. false means collapse to end rather than the start
-        selection = window.getSelection();//get the selection object (allows you to change selection)
-        selection.removeAllRanges();//remove any selections already made
-        selection.addRange(range);//make the range you have just created the visible selection
-    }
-    else if(document.selection) {//IE 8 and lower
-        range = document.body.createTextRange();//Create a range (a range is a like the selection but invisible)
-        range.moveToElementText(contentEditableElement);//Select the entire contents of the element with the range
-        range.collapse(false);//collapse the range to the end point. false means collapse to end rather than the start
-        range.select();//Select the range (make it the visible selection
-    }
-};
-
-/**
- * Get the inner text of an HTML element (for example a div element)
- * @param {Element} element
- * @param {Object} [buffer]
- * @return {String} innerText
- */
-JSONEditor.getInnerText = function (element, buffer) {
-    var first = (buffer == undefined);
-    if (first) {
-        buffer = {
-            'text': '',
-            'flush': function () {
-                var text = this.text;
-                this.text = '';
-                return text;
-            },
-            'set': function (text) {
-                this.text = text;
-            }
-        };
-    }
-
-    // text node
-    if (element.nodeValue) {
-        return buffer.flush() + element.nodeValue;
-    }
-
-    // divs or other HTML elements
-    if (element.hasChildNodes()) {
-        var childNodes = element.childNodes;
-        var innerText = '';
-
-        for (var i = 0, iMax = childNodes.length; i < iMax; i++) {
-            var child = childNodes[i];
-
-            if (child.nodeName == 'DIV' || child.nodeName == 'P') {
-                var prevChild = childNodes[i - 1];
-                var prevName = prevChild ? prevChild.nodeName : undefined;
-                if (prevName && prevName != 'DIV' && prevName != 'P' && prevName != 'BR') {
-                    innerText += '\n';
-                    buffer.flush();
-                }
-                innerText += JSONEditor.getInnerText(child, buffer);
-                buffer.set('\n');
-            }
-            else if (child.nodeName == 'BR') {
-                innerText += buffer.flush();
-                buffer.set('\n');
-            }
-            else {
-                innerText += JSONEditor.getInnerText(child, buffer);
-            }
-        }
-
-        return innerText;
-    }
-    else {
-        if (element.nodeName == 'P' && JSONEditor.getInternetExplorerVersion() != -1) {
-            // On Internet Explorer, a <p> with hasChildNodes()==false is
-            // rendered with a new line. Note that a <p> with
-            // hasChildNodes()==true is rendered without a new line
-            // Other browsers always ensure there is a <br> inside the <p>,
-            // and if not, the <p> does not render a new line
-            return buffer.flush();
-        }
-    }
-
-    // br or unknown
-    return '';
-};
-
-/**
- * Returns the version of Internet Explorer or a -1
- * (indicating the use of another browser).
- * Source: http://msdn.microsoft.com/en-us/library/ms537509(v=vs.85).aspx
- * @return {Number} Internet Explorer version, or -1 in case of an other browser
- */
-JSONEditor._ieVersion = undefined;
-JSONEditor.getInternetExplorerVersion = function() {
-    if (JSONEditor._ieVersion == undefined) {
-        var rv = -1; // Return value assumes failure.
-        if (navigator.appName == 'Microsoft Internet Explorer')
-        {
-            var ua = navigator.userAgent;
-            var re  = new RegExp("MSIE ([0-9]{1,}[\.0-9]{0,})");
-            if (re.exec(ua) != null) {
-                rv = parseFloat( RegExp.$1 );
-            }
-        }
-
-        JSONEditor._ieVersion = rv;
-    }
-
-    return JSONEditor._ieVersion;
-};
-
-JSONEditor.ieVersion = JSONEditor.getInternetExplorerVersion();
 
 /**
  * Parse JSON using the parser built-in in the browser.
@@ -4654,10 +4367,323 @@ JSONEditor.validate = function (jsonString) {
         if (window.jsonlint) {
             message +=
                 '<a class="error" href="http://zaach.github.com/jsonlint/" target="_blank">' +
-                'validated by jsonlint' +
-                '</a>';
+                    'validated by jsonlint' +
+                    '</a>';
         }
     }
 
     return message;
 };
+
+
+// create namespace for util methods
+JSONEditor.util = {};
+
+
+
+/**
+ * Retrieve the absolute left value of a DOM element
+ * @param {Element} elem    A dom element, for example a div
+ * @return {Number} left    The absolute left position of this element
+ *                          in the browser page.
+ */
+JSONEditor.util.getAbsoluteLeft = function (elem) {
+    var left = elem.offsetLeft;
+    var body = document.body;
+    var e = elem.offsetParent;
+    while (e != null && elem != body) {
+        left += e.offsetLeft;
+        left -= e.scrollLeft;
+        e = e.offsetParent;
+    }
+    return left;
+};
+
+/**
+ * Retrieve the absolute top value of a DOM element
+ * @param {Element} elem    A dom element, for example a div
+ * @return {Number} top    The absolute top position of this element
+ *                          in the browser page.
+ */
+JSONEditor.util.getAbsoluteTop = function (elem) {
+    var top = elem.offsetTop;
+    var body = document.body;
+    var e = elem.offsetParent;
+    while (e != null && e != body) {
+        top += e.offsetTop;
+        top -= e.scrollTop;
+        e = e.offsetParent;
+    }
+    return top;
+};
+
+/**
+ * add a className to the given elements style
+ * @param {Element} elem
+ * @param {String} className
+ */
+JSONEditor.util.addClassName = function(elem, className) {
+    var classes = elem.className.split(' ');
+    if (classes.indexOf(className) == -1) {
+        classes.push(className); // add the class to the array
+        elem.className = classes.join(' ');
+    }
+};
+
+/**
+ * add a className to the given elements style
+ * @param {Element} elem
+ * @param {String} className
+ */
+JSONEditor.util.removeClassName = function(elem, className) {
+    var classes = elem.className.split(' ');
+    var index = classes.indexOf(className);
+    if (index != -1) {
+        classes.splice(index, 1); // remove the class from the array
+        elem.className = classes.join(' ');
+    }
+};
+
+/**
+ * Strip the formatting from the contents of a div
+ * the formatting from the div itself is not stripped, only from its childs.
+ * @param {Element} divElement
+ */
+JSONEditor.util.stripFormatting = function (divElement) {
+    var childs = divElement.childNodes;
+    for (var i = 0, iMax = childs.length; i < iMax; i++) {
+        var child = childs[i];
+
+        // remove the style
+        if (child.style) {
+            // TODO: test if child.attributes does contain style
+            child.removeAttribute('style');
+        }
+
+        // remove all attributes
+        var attributes = child.attributes;
+        if (attributes) {
+            for (var j = attributes.length - 1; j >= 0; j--) {
+                var attribute = attributes[j];
+                if (attribute.specified == true) {
+                    child.removeAttribute(attribute.name);
+                }
+            }
+        }
+
+        // recursively strip childs
+        JSONEditor.util.stripFormatting(child);
+    }
+};
+
+/**
+ * Set focus to the end of an editable div
+ * code from Nico Burns
+ * http://stackoverflow.com/users/140293/nico-burns
+ * http://stackoverflow.com/questions/1125292/how-to-move-cursor-to-end-of-contenteditable-entity
+ * @param {Element} contentEditableElement
+ */
+JSONEditor.util.setEndOfContentEditable = function (contentEditableElement) {
+    var range, selection;
+    if(document.createRange) {//Firefox, Chrome, Opera, Safari, IE 9+
+        range = document.createRange();//Create a range (a range is a like the selection but invisible)
+        range.selectNodeContents(contentEditableElement);//Select the entire contents of the element with the range
+        range.collapse(false);//collapse the range to the end point. false means collapse to end rather than the start
+        selection = window.getSelection();//get the selection object (allows you to change selection)
+        selection.removeAllRanges();//remove any selections already made
+        selection.addRange(range);//make the range you have just created the visible selection
+    }
+    else if(document.selection) {//IE 8 and lower
+        range = document.body.createTextRange();//Create a range (a range is a like the selection but invisible)
+        range.moveToElementText(contentEditableElement);//Select the entire contents of the element with the range
+        range.collapse(false);//collapse the range to the end point. false means collapse to end rather than the start
+        range.select();//Select the range (make it the visible selection
+    }
+};
+
+/**
+ * Get the inner text of an HTML element (for example a div element)
+ * @param {Element} element
+ * @param {Object} [buffer]
+ * @return {String} innerText
+ */
+JSONEditor.util.getInnerText = function (element, buffer) {
+    var first = (buffer == undefined);
+    if (first) {
+        buffer = {
+            'text': '',
+            'flush': function () {
+                var text = this.text;
+                this.text = '';
+                return text;
+            },
+            'set': function (text) {
+                this.text = text;
+            }
+        };
+    }
+
+    // text node
+    if (element.nodeValue) {
+        return buffer.flush() + element.nodeValue;
+    }
+
+    // divs or other HTML elements
+    if (element.hasChildNodes()) {
+        var childNodes = element.childNodes;
+        var innerText = '';
+
+        for (var i = 0, iMax = childNodes.length; i < iMax; i++) {
+            var child = childNodes[i];
+
+            if (child.nodeName == 'DIV' || child.nodeName == 'P') {
+                var prevChild = childNodes[i - 1];
+                var prevName = prevChild ? prevChild.nodeName : undefined;
+                if (prevName && prevName != 'DIV' && prevName != 'P' && prevName != 'BR') {
+                    innerText += '\n';
+                    buffer.flush();
+                }
+                innerText += JSONEditor.util.getInnerText(child, buffer);
+                buffer.set('\n');
+            }
+            else if (child.nodeName == 'BR') {
+                innerText += buffer.flush();
+                buffer.set('\n');
+            }
+            else {
+                innerText += JSONEditor.util.getInnerText(child, buffer);
+            }
+        }
+
+        return innerText;
+    }
+    else {
+        if (element.nodeName == 'P' && JSONEditor.util.getInternetExplorerVersion() != -1) {
+            // On Internet Explorer, a <p> with hasChildNodes()==false is
+            // rendered with a new line. Note that a <p> with
+            // hasChildNodes()==true is rendered without a new line
+            // Other browsers always ensure there is a <br> inside the <p>,
+            // and if not, the <p> does not render a new line
+            return buffer.flush();
+        }
+    }
+
+    // br or unknown
+    return '';
+};
+
+/**
+ * Returns the version of Internet Explorer or a -1
+ * (indicating the use of another browser).
+ * Source: http://msdn.microsoft.com/en-us/library/ms537509(v=vs.85).aspx
+ * @return {Number} Internet Explorer version, or -1 in case of an other browser
+ */
+JSONEditor.util._ieVersion = undefined;
+JSONEditor.util.getInternetExplorerVersion = function() {
+    if (JSONEditor.util._ieVersion == undefined) {
+        var rv = -1; // Return value assumes failure.
+        if (navigator.appName == 'Microsoft Internet Explorer')
+        {
+            var ua = navigator.userAgent;
+            var re  = new RegExp("MSIE ([0-9]{1,}[\.0-9]{0,})");
+            if (re.exec(ua) != null) {
+                rv = parseFloat( RegExp.$1 );
+            }
+        }
+
+        JSONEditor.util._ieVersion = rv;
+    }
+
+    return JSONEditor.util._ieVersion;
+};
+
+/**
+ * Add and event listener. Works for all browsers
+ * @param {Element}     element    An html element
+ * @param {string}      action     The action, for example "click",
+ *                                 without the prefix "on"
+ * @param {function}    listener   The callback function to be executed
+ * @param {boolean}     [useCapture] false by default
+ * @return {function}   the created event listener
+ */
+JSONEditor.util.addEventListener = function (element, action, listener, useCapture) {
+    if (element.addEventListener) {
+        if (useCapture === undefined)
+            useCapture = false;
+
+        if (action === "mousewheel" && navigator.userAgent.indexOf("Firefox") >= 0) {
+            action = "DOMMouseScroll";  // For Firefox
+        }
+
+        element.addEventListener(action, listener, useCapture);
+        return listener;
+    } else {
+        // IE browsers
+        var f = function () {
+            return listener.call(element, window.event);
+        };
+        element.attachEvent("on" + action, f);
+        return f;
+    }
+};
+
+/**
+ * Remove an event listener from an element
+ * @param {Element}  element   An html dom element
+ * @param {string}   action    The name of the event, for example "mousedown"
+ * @param {function} listener  The listener function
+ * @param {boolean}  [useCapture]   false by default
+ */
+JSONEditor.util.removeEventListener = function(element, action, listener, useCapture) {
+    if (element.removeEventListener) {
+        // non-IE browsers
+        if (useCapture === undefined)
+            useCapture = false;
+
+        if (action === "mousewheel" && navigator.userAgent.indexOf("Firefox") >= 0) {
+            action = "DOMMouseScroll";  // For Firefox
+        }
+
+        element.removeEventListener(action, listener, useCapture);
+    } else {
+        // IE browsers
+        element.detachEvent("on" + action, listener);
+    }
+};
+
+
+/**
+ * Stop event propagation
+ * @param {Event} event
+ */
+JSONEditor.util.stopPropagation = function (event) {
+    if (!event) {
+        event = window.event;
+    }
+
+    if (event.stopPropagation) {
+        event.stopPropagation();  // non-IE browsers
+    }
+    else {
+        event.cancelBubble = true;  // IE browsers
+    }
+};
+
+
+/**
+ * Cancels the event if it is cancelable, without stopping further propagation of the event.
+ * @param {Event} event
+ */
+JSONEditor.util.preventDefault = function (event) {
+    if (!event) {
+        event = window.event;
+    }
+
+    if (event.preventDefault) {
+        event.preventDefault();  // non-IE browsers
+    }
+    else {
+        event.returnValue = false;  // IE browsers
+    }
+};
+
