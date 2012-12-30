@@ -3496,14 +3496,13 @@ JSONEditor.ContextMenu.prototype.show = function (anchor) {
     this.hide();
 
     // calculate whether the menu fits below the anchor
-    var windowHeight = document.body.clientHeight;
+    var windowHeight = JSONEditor.util.getWindowHeight();
     var anchorHeight = anchor.offsetHeight;
     var menuHeight = this.maxHeight;
 
     // position the menu
     var left = JSONEditor.util.getAbsoluteLeft(anchor);
     var top = JSONEditor.util.getAbsoluteTop(anchor);
-    console.log(top, left, menuHeight, windowHeight, anchorHeight)
     if (top + anchorHeight + menuHeight < windowHeight) {
         // display the menu below the anchor
         this.menu.style.left = left + 'px';
@@ -4428,7 +4427,7 @@ JSONEditor.util.getMouseY = function (event) {
         mouseY = event.pageY;
     }
     else {
-        // for IE8-
+        // for IE8 and older
         mouseY = (event.clientY + document.documentElement.scrollTop);
     }
 
@@ -4446,11 +4445,26 @@ JSONEditor.util.getMouseX = function (event) {
         mouseX = event.pageX;
     }
     else {
-        // for IE8-
+        // for IE8 and older
         mouseX = (event.clientX + document.documentElement.scrollLeft);
     }
 
     return mouseX;
+};
+
+/**
+ * Get the window height
+ * @return {Number} windowHeight
+ */
+JSONEditor.util.getWindowHeight = function () {
+    if ('innerHeight' in window) {
+        return window.innerHeight;
+    }
+    else {
+        // for IE8 and older
+        return Math.max(document.body.clientHeight,
+            document.documentElement.clientHeight);
+    }
 };
 
 /**
