@@ -1746,7 +1746,7 @@ JSONEditor.Node.prototype.getDom = function() {
     dom.tree = this._createDomTree();
     tdField.appendChild(dom.tree);
 
-    this.updateDom(); // TODO: recurse here?
+    this.updateDom({'updateIndexes': true});
 
     return dom.tr;
 };
