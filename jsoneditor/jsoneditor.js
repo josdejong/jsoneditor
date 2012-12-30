@@ -1779,7 +1779,7 @@ JSONEditor.Node.prototype._onDragStart = function (event) {
         'oldCursor': document.body.style.cursor,
         'startParent': this.parent,
         'startIndex': this.parent.childs.indexOf(this),
-        'mouseX': event.pageX || (event.clientX + document.body.scrollLeft),
+        'mouseX': JSONEditor.util.getMouseX(event),
         'level': this.getLevel()
     };
     document.body.style.cursor = 'move';
@@ -1796,9 +1796,8 @@ JSONEditor.Node.prototype._onDrag = function (event) {
     // TODO: this method has grown to large. Split it in a number of methods
     event = event || window.event;
     // TODO: make a separate function to get the absolute mouseY and mouseX
-    var mouseY = (event.pageY || (event.clientY + document.body.scrollTop)) -
-            (document.body.style.marginTop ? parseFloat(document.body.style.marginTop) : 0);
-    var mouseX = event.pageX || (event.clientX + document.body.scrollLeft);
+    var mouseY = JSONEditor.util.getMouseY(event);
+    var mouseX = JSONEditor.util.getMouseX(event);
 
     var trThis, trPrev, trNext, trFirst, trLast, trRoot;
     var nodePrev, nodeNext;
@@ -2505,7 +2504,7 @@ JSONEditor.Node.prototype.onEvent = function (event) {
             case 'click':
                 var left = (event.offsetX != undefined) ?
                     (event.offsetX < (this.getLevel() + 1) * 24) :
-                    (event.clientX < JSONEditor.util.getAbsoluteLeft(dom.tdSeparator));// for FF
+                    (JSONEditor.util.getMouseX(event) < JSONEditor.util.getAbsoluteLeft(dom.tdSeparator));// for FF
                 if (left || expandable) {
                     // node is expandable when it is an object or array
                     if (domField) {
@@ -3504,6 +3503,7 @@ JSONEditor.ContextMenu.prototype.show = function (anchor) {
     // position the menu
     var left = JSONEditor.util.getAbsoluteLeft(anchor);
     var top = JSONEditor.util.getAbsoluteTop(anchor);
+    console.log(top, left, menuHeight, windowHeight, anchorHeight)
     if (top + anchorHeight + menuHeight < windowHeight) {
         // display the menu below the anchor
         this.menu.style.left = left + 'px';
@@ -4415,6 +4415,42 @@ JSONEditor.util.getAbsoluteTop = function (elem) {
         e = e.offsetParent;
     }
     return top;
+};
+
+/**
+ * Get the absolute, vertical mouse position from an event.
+ * @param {Event} event
+ * @return {Number} mouseY
+ */
+JSONEditor.util.getMouseY = function (event) {
+    var mouseY;
+    if ('pageY' in event) {
+        mouseY = event.pageY;
+    }
+    else {
+        // for IE8-
+        mouseY = (event.clientY + document.documentElement.scrollTop);
+    }
+
+    return mouseY;
+};
+
+/**
+ * Get the absolute, horizontal mouse position from an event.
+ * @param {Event} event
+ * @return {Number} mouseX
+ */
+JSONEditor.util.getMouseX = function (event) {
+    var mouseX;
+    if ('pageX' in event) {
+        mouseX = event.pageX;
+    }
+    else {
+        // for IE8-
+        mouseX = (event.clientX + document.documentElement.scrollLeft);
+    }
+
+    return mouseX;
 };
 
 /**
