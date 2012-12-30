@@ -76,28 +76,12 @@ app.load = function() {
 
         // default json document
         var json = {
-            "name": "John Smith",
-            "age": 32,
-            "employed": true,
-            "address": {
-                "street": "701 First Ave.",
-                "city": "Sunnyvale, CA 95125",
-                "country": "United States"
-            },
-            "children": [
-                {
-                    "name": "Richard",
-                    "age": 7
-                },
-                {
-                    "name": "Susan",
-                    "age": 4
-                },
-                {
-                    "name": "James",
-                    "age": 3
-                }
-            ]
+            "array": [1, 2, 3],
+            "boolean": true,
+            "null": null,
+            "number": 123,
+            "object": {"a": "b", "c": "d", "e": "f"},
+            "string": "Hello World"
         };
 
         // load url if query parameters contains a url
