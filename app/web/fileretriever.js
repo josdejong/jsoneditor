@@ -57,10 +57,10 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  *
- * Copyright (c) 2012 Jos de Jong, http://jsoneditoronline.org
+ * Copyright (c) 2013 Jos de Jong, http://jsoneditoronline.org
  *
  * @author  Jos de Jong, <wjosdejong@gmail.com>
- * @date    2012-11-03
+ * @date    2013-01-01
  */
 var FileRetriever = function (options) {
     // set options and variables

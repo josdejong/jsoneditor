@@ -1,0 +1,64 @@
+
+/* __________________________ JSONEDITOR TOP MENU ___________________________ */
+
+
+div.jsoneditor-menu {
+    width: 100%;
+    height: 35px;
+    padding: 2px;
+    margin: 0;
+    overflow: hidden;
+    -moz-box-sizing: border-box;
+    -webkit-box-sizing: border-box;
+    box-sizing: border-box;
+
+    color: #1A1A1A;
+    background-color: #D5DDF6;
+    border-bottom: 1px solid #97B0F8;
+}
+
+button.jsoneditor-menu {
+    width: 26px;
+    height: 26px;
+    margin: 2px;
+    padding: 2px;
+    border-radius: 2px;
+    border: 1px solid #aec0f8;
+    background: #e3eaf6 url('img/jsoneditor-icons.png');
+}
+
+button.jsoneditor-menu:hover {
+    background-color: #f0f2f5;
+}
+button.jsoneditor-menu:active {
+    background-color: #ffffff;
+}
+button.jsoneditor-menu:disabled {
+    background-color: #e3eaf6;
+}
+
+button.jsoneditor-collapse-all {
+    background-position: 0 -96px;
+}
+button.jsoneditor-expand-all {
+    background-position: 0 -120px;
+}
+button.jsoneditor-undo {
+    background-position: -24px -96px;
+}
+button.jsoneditor-undo:disabled {
+    background-position: -24px -120px;
+}
+button.jsoneditor-redo {
+    background-position: -48px -96px;
+}
+button.jsoneditor-redo:disabled {
+    background-position: -48px -120px;
+}
+/* TODO: css for button:disabled is not supported by IE8 */
+button.jsoneditor-compact {
+    background-position: -72px -96px;
+}
+button.jsoneditor-format {
+    background-position: -72px -120px;
+}

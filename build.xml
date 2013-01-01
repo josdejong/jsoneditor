@@ -9,11 +9,14 @@
     <property name="compressor" value="tools/yuicompressor-2.4.7.jar" />
 
     <!-- directories -->
-    <property name="root"        location="" />
-    <property name="lib"         location="build/lib" />
-    <property name="web_app"     location="build/app/web" />
-    <property name="chrome_app"  location="build/app/chrome" />
-    <property name="web_app_src" location="app/web" />
+    <property name="lib"            location="build/lib" />
+    <property name="web_app"        location="build/app/web" />
+    <property name="chrome_app"     location="build/app/chrome" />
+    <property name="web_app_src"    location="app/web" />
+    <property name="src"            location="jsoneditor" />
+    <property name="js_src"         location="jsoneditor/js" />
+    <property name="css_src"        location="jsoneditor/css" />
+    <property name="img_src"        location="jsoneditor/css/img" />
     <property name="jsoneditor"     location="${lib}/${package}-${version}" />
     <property name="jsoneditor_min" location="${lib}/${package}-${version}.min" />
 
@@ -22,43 +25,72 @@
         <delete dir="${jsoneditor_min}" />
 
         <!-- copy all files for the non-minified jsoneditor -->
-        <copy file="${root}/LICENSE" todir="${jsoneditor}" />
-        <copy file="${root}/NOTICE" todir="${jsoneditor}" />
-        <copy file="${root}/README.md" todir="${jsoneditor}" />
-        <copy file="${root}/changelog.txt" todir="${jsoneditor}" />
-        <copy file="${root}/demo.html" todir="${jsoneditor}" />
-        <copy file="${root}/jsoneditor/jsoneditor.js" todir="${jsoneditor}/jsoneditor" />
-        <copy file="${root}/jsoneditor/jsoneditor.css" todir="${jsoneditor}/jsoneditor" />
-        <copy file="${root}/jsoneditor/img/jsoneditor-icons.png" todir="${jsoneditor}/jsoneditor/img" />
+        <copy file="README.md" todir="${jsoneditor}" />
+        <copy file="LICENSE" todir="${jsoneditor}" />
+        <copy file="NOTICE" todir="${jsoneditor}" />
+        <copy file="changelog.txt" todir="${jsoneditor}" />
+        <copy todir="${jsoneditor}/examples">
+            <fileset dir="${src}/examples"/>
+        </copy>
+        <copy file="${img_src}/jsoneditor-icons.png" todir="${jsoneditor}/img" />
 
         <!-- copy all files for the minified jsoneditor -->
-        <copy file="${root}/LICENSE" todir="${jsoneditor_min}" />
-        <copy file="${root}/NOTICE" todir="${jsoneditor_min}" />
-        <copy file="${root}/README.md" todir="${jsoneditor_min}" />
-        <copy file="${root}/changelog.txt" todir="${jsoneditor_min}" />
-        <copy file="${root}/demo.html" todir="${jsoneditor_min}" />
-        <copy file="${root}/jsoneditor/img/jsoneditor-icons.png" todir="${jsoneditor_min}/jsoneditor/img" />
+        <copy file="README.md" todir="${jsoneditor_min}" />
+        <copy file="LICENSE" todir="${jsoneditor_min}" />
+        <copy file="NOTICE" todir="${jsoneditor_min}" />
+        <copy file="changelog.txt" todir="${jsoneditor_min}" />
+        <copy todir="${jsoneditor_min}/examples">
+            <fileset dir="${src}/examples"/>
+        </copy>
+        <replace dir="${jsoneditor_min}/examples" value="jsoneditor-min.js">
+            <include name="**/*.html"/>
+            <replacetoken>jsoneditor.js</replacetoken>
+        </replace>
+        <replace dir="${jsoneditor_min}/examples" value="jsoneditor-min.css">
+            <include name="**/*.html"/>
+            <replacetoken>jsoneditor.css</replacetoken>
+        </replace>
+        <copy file="${img_src}/jsoneditor-icons.png" todir="${jsoneditor_min}/img" />
+
+        <!-- concatenate the javascript and css app files -->
+        <concat destfile="${jsoneditor}/jsoneditor.js">
+            <fileset dir="${js_src}" includes="jsoneditor.js"/>
+            <fileset dir="${js_src}" includes="jsonformatter.js"/>
+            <fileset dir="${js_src}" includes="node.js"/>
+            <fileset dir="${js_src}" includes="appendnode.js"/>
+            <fileset dir="${js_src}" includes="contextmenu.js"/>
+            <fileset dir="${js_src}" includes="history.js"/>
+            <fileset dir="${js_src}" includes="searchbox.js"/>
+            <fileset dir="${js_src}" includes="highlighter.js"/>
+            <fileset dir="${js_src}" includes="util.js"/>
+        </concat>
+        <concat destfile="${jsoneditor}/jsoneditor.css">
+            <fileset dir="${css_src}" includes="jsoneditor.css"/>
+            <fileset dir="${css_src}" includes="menu.css"/>
+            <fileset dir="${css_src}" includes="contextmenu.css"/>
+            <fileset dir="${css_src}" includes="searchbox.css"/>
+        </concat>
 
         <!-- minify the jsoneditor files -->
-        <java jar="${compressor}" dir="jsoneditor" fork="true" failonerror="true">
+        <java jar="${compressor}" dir="${jsoneditor}/" fork="true" failonerror="true">
             <arg value="-o"/>
-            <arg value="${jsoneditor_min}/jsoneditor/jsoneditor-min.js"/>
+            <arg value="${jsoneditor_min}/jsoneditor-min.js"/>
             <arg value="jsoneditor.js"/>
         </java>
-        <java jar="${compressor}" dir="jsoneditor" fork="true" failonerror="true">
+        <java jar="${compressor}" dir="${jsoneditor}" fork="true" failonerror="true">
             <arg value="-o"/>
-            <arg value="${jsoneditor_min}/jsoneditor/jsoneditor-min.css"/>
+            <arg value="${jsoneditor_min}/jsoneditor-min.css"/>
             <arg value="jsoneditor.css"/>
         </java>
 
         <!-- create a zip file with non-minified jsoneditor -->
         <zip destfile="${lib}/${package}-${version}.zip">
-            <fileset dir="${jsoneditor}" includes="**" />
+            <fileset dir="${lib}" includes="${package}-${version}/*" />
         </zip>
 
         <!-- create a zip file with minified jsoneditor -->
         <zip destfile="${lib}/${package}-${version}.min.zip">
-            <fileset dir="${jsoneditor_min}" includes="**" />
+            <fileset dir="${lib}" includes="${package}-${version}.min/*" />
         </zip>
     </target>
 
@@ -94,9 +126,9 @@
         <copy file="${web_app_src}/img/header_background.png" todir="${web_app}/img" />
 
         <copy file="${web_app_src}/lib/jsonlint/jsonlint.js" todir="${web_app}/lib/jsonlint" />
-        <copy file="${jsoneditor_min}/jsoneditor/jsoneditor-min.js" todir="${web_app}/lib/jsoneditor" />
-        <copy file="${jsoneditor_min}/jsoneditor/jsoneditor-min.css" todir="${web_app}/lib/jsoneditor" />
-        <copy file="${jsoneditor_min}/jsoneditor/img/jsoneditor-icons.png" todir="${web_app}/lib/jsoneditor/img" />
+        <copy file="${jsoneditor_min}/jsoneditor-min.js" todir="${web_app}/lib/jsoneditor" />
+        <copy file="${jsoneditor_min}/jsoneditor-min.css" todir="${web_app}/lib/jsoneditor" />
+        <copy file="${jsoneditor_min}/img/jsoneditor-icons.png" todir="${web_app}/lib/jsoneditor/img" />
 
         <!-- minify the javascript files -->
         <java jar="${compressor}" dir="${web_app}" fork="true" failonerror="true">

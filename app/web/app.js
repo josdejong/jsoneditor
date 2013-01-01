@@ -23,10 +23,10 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  *
- * Copyright (C) 2011-2012 Jos de Jong, http://jsoneditoronline.org
+ * Copyright (C) 2011-2013 Jos de Jong, http://jsoneditoronline.org
  *
  * @author  Jos de Jong, <wjosdejong@gmail.com>
- * @date    2012-11-03
+ * @date    2013-01-01
  */
 
 
