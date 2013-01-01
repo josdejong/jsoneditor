@@ -85,12 +85,12 @@
 
         <!-- create a zip file with non-minified jsoneditor -->
         <zip destfile="${lib}/${package}-${version}.zip">
-            <fileset dir="${lib}" includes="${package}-${version}/*" />
+            <fileset dir="${lib}" includes="${package}-${version}/**" />
         </zip>
 
         <!-- create a zip file with minified jsoneditor -->
         <zip destfile="${lib}/${package}-${version}.min.zip">
-            <fileset dir="${lib}" includes="${package}-${version}.min/*" />
+            <fileset dir="${lib}" includes="${package}-${version}.min/**" />
         </zip>
     </target>
 
