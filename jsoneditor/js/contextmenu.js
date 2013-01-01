@@ -179,7 +179,7 @@ JSONEditor.ContextMenu.prototype.show = function (anchor) {
             // hide menu on click outside of the menu
             event = event || window.event;
             var target = event.target || event.srcElement;
-            if (!JSONEditor.isChildOf(target, list)) {
+            if ((target != list) && !me._isChildOf(target, list)) {
                 me.hide();
             }
         });
@@ -270,3 +270,22 @@ JSONEditor.ContextMenu.prototype._onShowSubmenu = function (submenu) {
         this.visibleSubmenu = submenu;
     }
 };
+
+/**
+ * Test if an element is a child of a parent element.
+ * @param {Element} child
+ * @param {Element} parent
+ * @return {boolean} isChild
+ */
+JSONEditor.ContextMenu.prototype._isChildOf = function (child, parent) {
+    var e = child.parentNode;
+    while (e) {
+        if (e == parent) {
+            return true;
+        }
+        e = e.parentNode;
+    }
+
+    return false;
+};
+
