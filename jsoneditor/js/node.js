@@ -1232,7 +1232,10 @@ JSONEditor.Node.prototype._onDrag = function (event) {
                 trPrev = nodeNext.dom.tr.previousSibling;
                 while (levelNext < level && trPrev) {
                     nodePrev = JSONEditor.getNodeFromTarget(trPrev);
-                    if (nodePrev instanceof JSONEditor.AppendNode) {
+                    if (nodePrev == this || nodePrev._isChildOf(this)) {
+                        // neglect itself and its childs
+                    }
+                    else if (nodePrev instanceof JSONEditor.AppendNode) {
                         var childs = nodePrev.parent.childs;
                         if (childs.length > 1 ||
                             (childs.length == 1 && childs[0] != this)) {
@@ -1247,9 +1250,6 @@ JSONEditor.Node.prototype._onDrag = function (event) {
                             break;
                         }
                     }
-                    else if (nodePrev == this) {
-                        // neglect itself
-                    }
                     else {
                         break;
                     }
@@ -1258,7 +1258,7 @@ JSONEditor.Node.prototype._onDrag = function (event) {
                 }
 
                 // move the node when its position is changed
-                if (this.dom.tr.nextSibling != nodeNext.dom.tr) {
+                if (trLast.nextSibling != nodeNext.dom.tr) {
                     nodeNext.parent.moveBefore(this, nodeNext);
                     moved = true;
                 }
@@ -1316,6 +1316,24 @@ JSONEditor.Node.prototype._onDragEnd = function (event) {
     this.editor.stopAutoScroll();
 
     JSONEditor.util.preventDefault(event);
+};
+
+/**
+ * Test if this node is a child of an other node
+ * @param {JSONEditor.Node} node
+ * @return {boolean} isChild
+ * @private
+ */
+JSONEditor.Node.prototype._isChildOf = function (node) {
+    var n = this.parent;
+    while (n) {
+        if (n == node) {
+            return true;
+        }
+        n = n.parent;
+    }
+
+    return false;
 };
 
 /**
@@ -1631,13 +1649,9 @@ JSONEditor.Node.prototype.onEvent = function (event) {
     var node = this;
     var expandable = (this.type == 'array' || this.type == 'object');
 
-    // check if mouse is on menu or on dragarea
-    var isChildOf = JSONEditor.isChildOf;
-    var isOnDragArea = isChildOf(target, dom.drag);
-    var isOnMenu = isChildOf(target, dom.menu);
-
-    // highlight current row and its childs
-    if (isOnMenu || isOnDragArea) {
+    // check if mouse is on menu or on dragarea.
+    // If so, highlight current row and its childs
+    if (target == dom.drag || target == dom.menu) {
         if (type == 'mouseover') {
             this.editor.highlighter.highlight(this);
         }

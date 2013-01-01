@@ -454,31 +454,6 @@ JSONEditor.prototype.scrollTo = function (top) {
 };
 
 /**
- * Test if an element is a child of a parent element.
- * @param {Element} child
- * @param {Element} parent
- * @param {boolean} [includeParent] if true (default), the method will return
- *                                  true too when the child is the parent.
- * @return {boolean} isChild
- */
-JSONEditor.isChildOf = function (child, parent, includeParent) {
-    var e = child;
-    if (includeParent != false && e == parent) {
-        return true;
-    }
-
-    e = e.parentNode;
-    while (e) {
-        if (e == parent) {
-            return true;
-        }
-        e = e.parentNode;
-    }
-
-    return false;
-};
-
-/**
  * Create main frame
  * @private
  */
