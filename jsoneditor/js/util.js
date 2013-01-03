@@ -20,7 +20,30 @@
 // create namespace for util methods
 JSONEditor.util = {};
 
+// Internet Explorer 8 and older does not support Array.indexOf,
+// so we define it here in that case
+// http://soledadpenades.com/2007/05/17/arrayindexof-in-internet-explorer/
+if(!Array.prototype.indexOf) {
+    Array.prototype.indexOf = function(obj){
+        for(var i = 0; i < this.length; i++){
+            if(this[i] == obj){
+                return i;
+            }
+        }
+        return -1;
+    }
+}
 
+// Internet Explorer 8 and older does not support Array.forEach,
+// so we define it here in that case
+// https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Global_Objects/Array/forEach
+if (!Array.prototype.forEach) {
+    Array.prototype.forEach = function(fn, scope) {
+        for(var i = 0, len = this.length; i < len; ++i) {
+            fn.call(scope || this, this[i], i, this);
+        }
+    }
+}
 
 /**
  * Retrieve the absolute left value of a DOM element

@@ -30,35 +30,6 @@
  * @date    2013-01-01
  */
 
-
-// Internet Explorer 8 and older does not support Array.indexOf,
-// so we define it here in that case
-// http://soledadpenades.com/2007/05/17/arrayindexof-in-internet-explorer/
-if(!Array.prototype.indexOf) {
-    Array.prototype.indexOf = function(obj){
-        for(var i = 0; i < this.length; i++){
-            if(this[i] == obj){
-                return i;
-            }
-        }
-        return -1;
-    }
-}
-
-// Internet Explorer 8 and older does not support Array.forEach,
-// so we define it here in that case
-// https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Global_Objects/Array/forEach
-if (!Array.prototype.forEach) {
-    Array.prototype.forEach = function(fn, scope) {
-        for(var i = 0, len = this.length; i < len; ++i) {
-            fn.call(scope || this, this[i], i, this);
-        }
-    }
-}
-
-// define variable JSON, needed for correct error handling on IE7 and older
-var JSON;
-
 /**
  * JSONEditor
  * @param {Element} container    Container element
@@ -75,8 +46,12 @@ var JSON;
  * @param {Object | undefined} json JSON object
  */
 var JSONEditor = function (container, options, json) {
+    if (!(this instanceof JSONEditor)) {
+        throw new Error('JSONEditor constructor called without "new".');
+    }
+
     // check availability of JSON parser (not available in IE7 and older)
-    if (!JSON) {
+    if (!window.JSON) {
         throw new Error ('Your browser does not support JSON. \n\n' +
             'Please install the newest version of your browser.\n' +
             '(all modern browsers support JSON).');

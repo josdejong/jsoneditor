@@ -143,8 +143,8 @@ JSONEditor.AppendNode.prototype.showContextMenu = function (onClose) {
         // create append button
         {
             'text': 'Append',
-            'title': 'Append a new node with type \'auto\'',
-            'submenuTitle': 'Select the type of the node to be appended',
+            'title': 'Append a new field with type \'auto\'',
+            'submenuTitle': 'Select the type of the field to be appended',
             'className': 'jsoneditor-insert',
             'click': function () {
                 node._onAppend('field', 'value', 'auto');

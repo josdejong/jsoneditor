@@ -1070,9 +1070,12 @@ JSONEditor.Node.prototype.getDom = function() {
         // create draggable area
         var tdDrag = document.createElement('td');
         tdDrag.className = 'jsoneditor-td';
-        dom.drag = this._createDomDragArea();
-        if (dom.drag) {
-            tdDrag.appendChild(dom.drag);
+        var domDrag = document.createElement('button');
+        dom.drag = domDrag;
+        domDrag.className = 'jsoneditor-dragarea';
+        domDrag.title = 'Drag to move this field';
+        if (domDrag) {
+            tdDrag.appendChild(domDrag);
         }
         dom.tr.appendChild(tdDrag);
 
@@ -1080,8 +1083,9 @@ JSONEditor.Node.prototype.getDom = function() {
         var tdMenu = document.createElement('td');
         tdMenu.className = 'jsoneditor-td';
         var menu = document.createElement('button');
-        menu.className = 'jsoneditor-contextmenu';
         dom.menu = menu;
+        menu.className = 'jsoneditor-contextmenu';
+        menu.title = 'Click to open a context menu with action buttons';
         tdMenu.appendChild(dom.menu);
         dom.tr.appendChild(tdMenu);
     }
@@ -1334,23 +1338,6 @@ JSONEditor.Node.prototype._isChildOf = function (node) {
     }
 
     return false;
-};
-
-/**
- * Create a drag area, displayed at the left side of the node
- * @return {Element | undefined} domDrag
- * @private
- */
-JSONEditor.Node.prototype._createDomDragArea = function () {
-    if (!this.parent) {
-        return undefined;
-    }
-
-    var domDrag = document.createElement('button');
-    domDrag.className = 'jsoneditor-dragarea';
-    domDrag.title = 'Move field (drag and drop)';
-
-    return domDrag;
 };
 
 /**
@@ -2090,7 +2077,7 @@ JSONEditor.Node.prototype.showContextMenu = function (onClose) {
     // TODO: add titles for all context menu items
     items.push({
         'text': 'Type',
-        'title': 'Change the type of this node',
+        'title': 'Change the type of this field',
         'className': 'jsoneditor-type-' + this.type,
         'submenu': [
             {
@@ -2136,7 +2123,7 @@ JSONEditor.Node.prototype.showContextMenu = function (onClose) {
         var direction = ((this.sort == 'asc') ? 'desc': 'asc');
         items.push({
             'text': 'Sort',
-            'title': 'Sort the childs of this node',
+            'title': 'Sort the childs of this ' + this.type,
             'className': 'jsoneditor-sort-' + direction,
             'click': function () {
                 node._onSort(direction);
@@ -2145,7 +2132,7 @@ JSONEditor.Node.prototype.showContextMenu = function (onClose) {
                 {
                     'text': 'Ascending',
                     'className': 'jsoneditor-sort-asc',
-                    'title': 'Sort the childs of this node in ascending order',
+                    'title': 'Sort the childs of this ' + this.type + ' in ascending order',
                     'click': function () {
                         node._onSort('asc');
                     }
@@ -2153,7 +2140,7 @@ JSONEditor.Node.prototype.showContextMenu = function (onClose) {
                 {
                     'text': 'Descending',
                     'className': 'jsoneditor-sort-desc',
-                    'title': 'Sort the childs of this node in descending order',
+                    'title': 'Sort the childs of this ' + this.type +' in descending order',
                     'click': function () {
                         node._onSort('desc');
                     }
@@ -2173,8 +2160,8 @@ JSONEditor.Node.prototype.showContextMenu = function (onClose) {
         if (node == childs[childs.length - 1]) {
             items.push({
                 'text': 'Append',
-                'title': 'Append a new node with type \'auto\' after this node',
-                'submenuTitle': 'Select the type of the node to be appended',
+                'title': 'Append a new field with type \'auto\' after this field',
+                'submenuTitle': 'Select the type of the field to be appended',
                 'className': 'jsoneditor-append',
                 'click': function () {
                     node._onAppend('field', 'value', 'auto');
@@ -2220,8 +2207,8 @@ JSONEditor.Node.prototype.showContextMenu = function (onClose) {
         // create insert button
         items.push({
             'text': 'Insert',
-            'title': 'Insert a new node with type \'auto\' before this node',
-            'submenuTitle': 'Select the type of the node to be inserted',
+            'title': 'Insert a new field with type \'auto\' before this field',
+            'submenuTitle': 'Select the type of the field to be inserted',
             'className': 'jsoneditor-insert',
             'click': function () {
                 node._onInsertBefore('field', 'value', 'auto');
@@ -2266,7 +2253,7 @@ JSONEditor.Node.prototype.showContextMenu = function (onClose) {
         // create duplicate button
         items.push({
             'text': 'Duplicate',
-            'title': 'Duplicate this node',
+            'title': 'Duplicate this field',
             'className': 'jsoneditor-duplicate',
             'click': function () {
                 node._onDuplicate();
@@ -2276,7 +2263,7 @@ JSONEditor.Node.prototype.showContextMenu = function (onClose) {
         // create remove button
         items.push({
             'text': 'Remove',
-            'title': 'Remove this node',
+            'title': 'Remove this field',
             'className': 'jsoneditor-remove',
             'click': function () {
                 node._onRemove();

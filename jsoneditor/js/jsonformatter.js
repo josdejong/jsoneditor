@@ -29,8 +29,12 @@
  * @param {JSON | String} [json]     initial contents of the formatter
  */
 JSONFormatter = function (container, options, json) {
+    if (!(this instanceof JSONFormatter)) {
+        throw new Error('JSONFormatter constructor called without "new".');
+    }
+
     // check availability of JSON parser (not available in IE7 and older)
-    if (!JSON) {
+    if (!window.JSON) {
         throw new Error('Your browser does not support JSON. \n\n' +
             'Please install the newest version of your browser.\n' +
             '(all modern browsers support JSON).');
