@@ -68,6 +68,7 @@ JSONEditor.AppendNode.prototype.getDom = function () {
     tdMenu.className = 'jsoneditor-td';
     var menu = document.createElement('button');
     menu.className = 'jsoneditor-contextmenu';
+    menu.title = 'Click to open the actions menu';
     dom.menu = menu;
     dom.tdMenu = tdMenu;
     tdMenu.appendChild(dom.menu);
