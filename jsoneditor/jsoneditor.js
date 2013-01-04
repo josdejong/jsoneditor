@@ -2074,7 +2074,7 @@ JSONEditor.Node.prototype.onEvent = function (event) {
             case 'blur':
             case 'change':
                 //update only if something changed
-                if(!(type=='blur' && this.field == "" && this.dom.field.innerHTML == this.fieldPlaceholder)){
+                if(!(type=='blur' && this.value == "" && this.dom.value.innerHTML == this.valuePlaceholder)){
                     this._getDomValue(true);
                     this._updateDomValue();
                 }
