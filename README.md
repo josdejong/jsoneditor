@@ -26,8 +26,8 @@ formatted plain text.
 - Web app:    http://jsoneditoronline.org/
 - Chrome app: https://chrome.google.com/webstore/detail/json-editor/lhkmoheomjbkfloacpgllgjcamhihfaj
 - Wiki:       https://github.com/josdejong/jsoneditoronline/wiki/
+- Downloads:  http://jsoneditoronline.org/downloads/
 - Sourcecode: https://github.com/josdejong/jsoneditoronline/
-- Downloads:  https://github.com/josdejong/jsoneditoronline/tree/master/downloads
 
 
 ### Screenshot
