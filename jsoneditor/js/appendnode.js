@@ -54,7 +54,7 @@ jsoneditor.AppendNode.prototype.getDom = function () {
 
     // when in viewer mode, don't create the contents for the append node
     // but return here.
-    if (!this.editor.editable) {
+    if (!this.editor.mode.editor) {
         return trAppend;
     }
 

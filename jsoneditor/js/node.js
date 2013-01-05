@@ -1069,7 +1069,7 @@ jsoneditor.Node.prototype.getDom = function() {
     dom.tr.className = 'jsoneditor-tr';
     dom.tr.node = this;
 
-    if (this.editor.editable) {
+    if (this.editor.mode.editor) {
         // create draggable area
         var tdDrag = document.createElement('td');
         tdDrag.className = 'jsoneditor-td';
@@ -1414,7 +1414,7 @@ jsoneditor.Node.prototype.updateDom = function (options) {
     if (domField) {
         if (this.fieldEditable == true) {
             // parent is an object
-            domField.contentEditable = this.editor.editable;
+            domField.contentEditable = this.editor.mode.editor;
             domField.spellcheck = false;
             domField.className = 'jsoneditor-field';
         }
@@ -1534,14 +1534,14 @@ jsoneditor.Node.prototype._createDomValue = function () {
     }
     else if (this.type == 'string') {
         domValue = document.createElement('div');
-        domValue.contentEditable = this.editor.editable;
+        domValue.contentEditable = !this.editor.mode.viewer;
         domValue.spellcheck = false;
         domValue.className = 'jsoneditor-value';
         domValue.innerHTML = this._escapeHTML(this.value);
     }
     else {
         domValue = document.createElement('div');
-        domValue.contentEditable = this.editor.editable;
+        domValue.contentEditable = !this.editor.mode.viewer;
         domValue.spellcheck = false;
         domValue.className = 'jsoneditor-value';
         domValue.innerHTML = this._escapeHTML(this.value);

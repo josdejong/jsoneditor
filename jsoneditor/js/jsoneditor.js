@@ -25,7 +25,8 @@ var jsoneditor = jsoneditor || {};
  * @param {Element} container    Container element
  * @param {Object}  [options]    Object with options. available options:
  *                               {String} mode      Editor mode. Available values:
- *                                                  'editor' (default), 'viewer'.
+ *                                                  'editor' (default), 'viewer',
+ *                                                  and 'form'.
  *                               {Boolean} search   Enable search box.
  *                                                  True by default
  *                               {Boolean} history  Enable history (undo/redo).
@@ -56,7 +57,7 @@ jsoneditor.JSONEditor = function (container, options, json) {
 
     this._setOptions(options);
 
-    if (this.options.history && this.editable) {
+    if (this.options.history && !this.mode.viewer) {
         this.history = new jsoneditor.History(this);
     }
 
@@ -70,7 +71,8 @@ jsoneditor.JSONEditor = function (container, options, json) {
  * Initialize and set default options
  * @param {Object}  [options]    Object with options. available options:
  *                               {String} mode      Editor mode. Available values:
- *                                                  'editor' (default), 'viewer'.
+ *                                                  'editor' (default), 'viewer',
+ *                                                  and 'form'.
  *                               {Boolean} search   Enable search box.
  *                                                  True by default.
  *                               {Boolean} history  Enable history (undo/redo).
@@ -109,8 +111,12 @@ jsoneditor.JSONEditor.prototype._setOptions = function (options) {
         }
     }
 
-    // interpret the options
-    this.editable = (this.options.mode != 'viewer');
+    // interpret the mode options
+    this.mode = {
+        editor: (this.options.mode != 'viewer' && this.options.mode != 'form'),
+        viewer: (this.options.mode == 'viewer'),
+        form: (this.options.mode == 'form')
+    };
 };
 
 // node currently being edited
