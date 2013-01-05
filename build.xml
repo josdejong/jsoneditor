@@ -2,7 +2,6 @@
 
 <project name="jsoneditor-builder" default="main">
     <!-- the version number of must be updated here (according to changelog.txt) -->
-    <property name="package"    value="jsoneditor"/>
     <property name="version"    value="2.0.0"/>
 
     <!-- compression tools -->
@@ -17,8 +16,8 @@
     <property name="js_src"         location="jsoneditor/js" />
     <property name="css_src"        location="jsoneditor/css" />
     <property name="img_src"        location="jsoneditor/css/img" />
-    <property name="jsoneditor"     location="${lib}/${package}-${version}" />
-    <property name="jsoneditor_min" location="${lib}/${package}-${version}.min" />
+    <property name="jsoneditor"     location="${lib}/jsoneditor-${version}" />
+    <property name="jsoneditor_min" location="${lib}/jsoneditor-${version}.min" />
 
     <target name="build_lib" description="build jsoneditor library">
         <delete dir="${jsoneditor}" />
@@ -42,18 +41,25 @@
         <copy todir="${jsoneditor_min}/examples">
             <fileset dir="${src}/examples"/>
         </copy>
-        <replace dir="${jsoneditor_min}/examples" value="jsoneditor-min.js">
-            <include name="**/*.html"/>
-            <replacetoken>jsoneditor.js</replacetoken>
-        </replace>
-        <replace dir="${jsoneditor_min}/examples" value="jsoneditor-min.css">
-            <include name="**/*.html"/>
-            <replacetoken>jsoneditor.css</replacetoken>
-        </replace>
         <copy file="${img_src}/jsoneditor-icons.png" todir="${jsoneditor_min}/img" />
 
-        <!-- concatenate the javascript and css app files -->
-        <concat destfile="${jsoneditor}/jsoneditor.js">
+        <!-- replace the library references with the references of the minified lib -->
+        <replace dir="${jsoneditor_min}/examples"
+                 token="jsoneditor.js"
+                 value="jsoneditor-min.js">
+            <include name="**/*.html"/>
+        </replace>
+        <replace dir="${jsoneditor_min}/examples"
+                 token="jsoneditor.css"
+                 value="jsoneditor-min.css">
+            <include name="**/*.html"/>
+        </replace>
+        <replace file="${jsoneditor_min}/examples/requirejs_demo/scripts/main.js"
+                 token="../../../jsoneditor"
+                 value="../../../jsoneditor-min" />
+
+        <!-- concatenate the javascript files -->
+        <concat destfile="${jsoneditor}/tmp.js">
             <fileset dir="${js_src}" includes="jsoneditor.js"/>
             <fileset dir="${js_src}" includes="jsonformatter.js"/>
             <fileset dir="${js_src}" includes="node.js"/>
@@ -64,6 +70,16 @@
             <fileset dir="${js_src}" includes="highlighter.js"/>
             <fileset dir="${js_src}" includes="util.js"/>
         </concat>
+        <loadfile property="tmp" srcFile="${jsoneditor}/tmp.js"/>
+        <delete file="${jsoneditor}/tmp.js" />
+
+        <!-- inject the concatenated javascript files in the module file -->
+        <copy file="${js_src}/module.js" tofile="${jsoneditor}/jsoneditor.js" />
+        <replace file="${jsoneditor}/jsoneditor.js"
+                 token="/***jsoneditor***/"
+                 value="${tmp}" />
+
+        <!-- concatenate the css files -->
         <concat destfile="${jsoneditor}/jsoneditor.css">
             <fileset dir="${css_src}" includes="jsoneditor.css"/>
             <fileset dir="${css_src}" includes="menu.css"/>
@@ -84,13 +100,13 @@
         </java>
 
         <!-- create a zip file with non-minified jsoneditor -->
-        <zip destfile="${lib}/${package}-${version}.zip">
-            <fileset dir="${lib}" includes="${package}-${version}/**" />
+        <zip destfile="${lib}/jsoneditor-${version}.zip">
+            <fileset dir="${lib}" includes="jsoneditor-${version}/**" />
         </zip>
 
         <!-- create a zip file with minified jsoneditor -->
-        <zip destfile="${lib}/${package}-${version}.min.zip">
-            <fileset dir="${lib}" includes="${package}-${version}.min/**" />
+        <zip destfile="${lib}/jsoneditor-${version}.min.zip">
+            <fileset dir="${lib}" includes="jsoneditor-${version}.min/**" />
         </zip>
     </target>
 

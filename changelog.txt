@@ -12,6 +12,8 @@ http://jsoneditoronline.org
 - Implemented sort action, which sorts the childs of an array or object.
 - Implemented auto scrolling up and down when dragging a node and reaching
   the top or bottom of the editor.
+- Added support for CommonJS and RequireJS.
+- Added more examples.
 - Improved performance and memory usage.
 - Minor improvements and bug fixes.
 

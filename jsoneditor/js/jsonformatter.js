@@ -37,7 +37,7 @@ jsoneditor.JSONFormatter = function (container, options, json) {
     }
 
     // check availability of JSON parser (not available in IE7 and older)
-    if (!window.JSON) {
+    if (typeof(JSON) == 'undefined') {
         throw new Error('Your browser does not support JSON. \n\n' +
             'Please install the newest version of your browser.\n' +
             '(all modern browsers support JSON).');

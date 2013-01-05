@@ -76,8 +76,8 @@ jsoneditor.util.validate = function (jsonString) {
     var message = undefined;
 
     try {
-        if (window.jsonlint) {
-            window.jsonlint.parse(jsonString);
+        if (typeof(jsonlint) != 'undefined') {
+            jsonlint.parse(jsonString);
         }
         else {
             JSON.parse(jsonString);
@@ -85,7 +85,7 @@ jsoneditor.util.validate = function (jsonString) {
     }
     catch (err) {
         message = '<pre class="error">' + err.toString() + '</pre>';
-        if (window.jsonlint) {
+        if (typeof(jsonlint) != 'undefined') {
             message +=
                 '<a class="error" href="http://zaach.github.com/jsonlint/" target="_blank">' +
                     'validated by jsonlint' +
@@ -344,9 +344,9 @@ jsoneditor.util.getInnerText = function (element, buffer) {
  * Source: http://msdn.microsoft.com/en-us/library/ms537509(v=vs.85).aspx
  * @return {Number} Internet Explorer version, or -1 in case of an other browser
  */
-jsoneditor.util._ieVersion = undefined;
+var _ieVersion = undefined;
 jsoneditor.util.getInternetExplorerVersion = function() {
-    if (jsoneditor.util._ieVersion == undefined) {
+    if (_ieVersion == undefined) {
         var rv = -1; // Return value assumes failure.
         if (navigator.appName == 'Microsoft Internet Explorer')
         {
@@ -357,10 +357,10 @@ jsoneditor.util.getInternetExplorerVersion = function() {
             }
         }
 
-        jsoneditor.util._ieVersion = rv;
+        _ieVersion = rv;
     }
 
-    return jsoneditor.util._ieVersion;
+    return _ieVersion;
 };
 
 /**

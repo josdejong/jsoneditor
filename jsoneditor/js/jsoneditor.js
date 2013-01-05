@@ -1,17 +1,5 @@
-/*!
- * @file jsoneditor.js
- *
- * @brief
- * JSONEditor is a web-based tool to view, edit, and format JSON.
- * It shows data a clear, editable treeview.
- *
- * Supported browsers: Chrome, Firefox, Safari, Opera, Internet Explorer 8+
- *
+/**
  * @license
- * This json editor is open sourced with the intention to use the editor as
- * a component in your own application. Not to just copy and monetize the editor
- * as it is.
- *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy
  * of the License at
@@ -27,7 +15,6 @@
  * Copyright (c) 2011-2013 Jos de Jong, http://jsoneditoronline.org
  *
  * @author  Jos de Jong, <wjosdejong@gmail.com>
- * @date    2013-01-01
  */
 
 // create namespace
@@ -54,7 +41,7 @@ jsoneditor.JSONEditor = function (container, options, json) {
     }
 
     // check availability of JSON parser (not available in IE7 and older)
-    if (!window.JSON) {
+    if (typeof(JSON) == 'undefined') {
         throw new Error ('Your browser does not support JSON. \n\n' +
             'Please install the newest version of your browser.\n' +
             '(all modern browsers support JSON).');

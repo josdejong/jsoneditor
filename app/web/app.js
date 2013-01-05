@@ -26,7 +26,7 @@
  * Copyright (C) 2011-2013 Jos de Jong, http://jsoneditoronline.org
  *
  * @author  Jos de Jong, <wjosdejong@gmail.com>
- * @date    2013-01-01
+ * @date    2013-01-05
  */
 
 
@@ -305,16 +305,18 @@ app.resize = function() {
         width -= (adWidth + 15); // Not so nice, +15 here for the margin
     }
 
-    var splitterLeft = width * app.splitter.getValue();
+    if (app.splitter) {
+        var splitterLeft = width * app.splitter.getValue();
 
-    // resize formatter
-    domFormatter.style.width = Math.round(splitterLeft) + 'px';
+        // resize formatter
+        domFormatter.style.width = Math.round(splitterLeft) + 'px';
 
-    // resize editor
-    // the width has a -1 to prevent the width from being just half a pixel
-    // wider than the window, causing the content elements to wrap...
-    domEditor.style.left = Math.round(splitterLeft + splitterWidth) + 'px';
-    domEditor.style.width = Math.round(width - splitterLeft - splitterWidth - 1) + 'px';
+        // resize editor
+        // the width has a -1 to prevent the width from being just half a pixel
+        // wider than the window, causing the content elements to wrap...
+        domEditor.style.left = Math.round(splitterLeft + splitterWidth) + 'px';
+        domEditor.style.width = Math.round(width - splitterLeft - splitterWidth - 1) + 'px';
+    }
 
     // resize ad text
     if (domAdInfo && domAd) {
