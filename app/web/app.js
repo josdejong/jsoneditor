@@ -114,7 +114,7 @@ app.load = function() {
         editor = new jsoneditor.JSONEditor(container, {
             change: function () {
                 app.lastChanged = editor;
-            }
+            }, mode:'form'
         });
         editor.set(json);
         // TODO: automatically synchronize data of formatter and editor? (editor should keep its state though)

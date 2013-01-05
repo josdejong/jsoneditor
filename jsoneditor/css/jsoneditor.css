@@ -29,8 +29,10 @@
     vertical-align: top;
 }
 
-.jsoneditor-value:focus, .jsoneditor-field:focus,
-        .jsoneditor-value:hover, .jsoneditor-field:hover,
+.jsoneditor-value[contenteditable=true]:focus,
+        .jsoneditor-field[contenteditable=true]:focus,
+        .jsoneditor-value[contenteditable=true]:hover,
+        .jsoneditor-field[contenteditable=true]:hover,
         .jsoneditor-search-highlight {
     background-color: #FFFFAB;
     border: 1px solid yellow;
