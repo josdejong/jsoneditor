@@ -17,21 +17,23 @@
  * @author  Jos de Jong, <wjosdejong@gmail.com>
  */
 
+// create namespace
+var jsoneditor = jsoneditor || {};
 
 /**
  * The highlighter can highlight/unhighlight a node, and
  * animate the visibility of a context menu.
- * @constructor JSONEditor.Highlighter
+ * @constructor jsoneditor.Highlighter
  */
-JSONEditor.Highlighter = function () {
+jsoneditor.Highlighter = function () {
     this.locked = false;
 };
 
 /**
  * Hightlight given node and its childs
- * @param {JSONEditor.Node} node
+ * @param {jsoneditor.Node} node
  */
-JSONEditor.Highlighter.prototype.highlight = function (node) {
+jsoneditor.Highlighter.prototype.highlight = function (node) {
     if (this.locked) {
         return;
     }
@@ -55,7 +57,7 @@ JSONEditor.Highlighter.prototype.highlight = function (node) {
  * Unhighlight currently highlighted node.
  * Will be done after a delay
  */
-JSONEditor.Highlighter.prototype.unhighlight = function () {
+jsoneditor.Highlighter.prototype.unhighlight = function () {
     if (this.locked) {
         return;
     }
@@ -79,7 +81,7 @@ JSONEditor.Highlighter.prototype.unhighlight = function () {
  * Cancel an unhighlight action (if before the timeout of the unhighlight action)
  * @private
  */
-JSONEditor.Highlighter.prototype._cancelUnhighlight = function () {
+jsoneditor.Highlighter.prototype._cancelUnhighlight = function () {
     if (this.unhighlightTimer) {
         clearTimeout(this.unhighlightTimer);
         this.unhighlightTimer = undefined;
@@ -90,13 +92,13 @@ JSONEditor.Highlighter.prototype._cancelUnhighlight = function () {
  * Lock highlighting or unhighlighting nodes.
  * methods highlight and unhighlight do not work while locked.
  */
-JSONEditor.Highlighter.prototype.lock = function () {
+jsoneditor.Highlighter.prototype.lock = function () {
     this.locked = true;
 };
 
 /**
  * Unlock highlighting or unhighlighting nodes
  */
-JSONEditor.Highlighter.prototype.unlock = function () {
+jsoneditor.Highlighter.prototype.unlock = function () {
     this.locked = false;
 };

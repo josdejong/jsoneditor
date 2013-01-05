@@ -99,7 +99,7 @@ app.load = function() {
 
         // formatter
         var container = document.getElementById("jsonformatter");
-        formatter = new JSONFormatter(container, {
+        formatter = new jsoneditor.JSONFormatter(container, {
             change: function () {
                 app.lastChanged = formatter;
             }
@@ -111,7 +111,7 @@ app.load = function() {
 
         // editor
         container = document.getElementById("jsoneditor");
-        editor = new JSONEditor(container, {
+        editor = new jsoneditor.JSONEditor(container, {
             change: function () {
                 app.lastChanged = editor;
             }
@@ -158,7 +158,7 @@ app.load = function() {
         domSplitter.appendChild(toJSON);
 
         // web page resize handler
-        JSONEditor.util.addEventListener(window, 'resize', app.resize);
+        jsoneditor.util.addEventListener(window, 'resize', app.resize);
 
         // clear button
         var domClear = document.getElementById('clear');
@@ -185,16 +185,16 @@ app.load = function() {
         var domMenuOpenFile = document.getElementById('menuOpenFile');
         domMenuOpenFile.onclick = function (event) {
             app.openFile();
-            JSONEditor.util.stopPropagation(event);
-            JSONEditor.util.preventDefault(event);
+            jsoneditor.util.stopPropagation(event);
+            jsoneditor.util.preventDefault(event);
         };
 
         // menu button open url
         var domMenuOpenUrl = document.getElementById('menuOpenUrl');
         domMenuOpenUrl.onclick = function (event) {
             app.openUrl();
-            JSONEditor.util.stopPropagation(event);
-            JSONEditor.util.preventDefault(event);
+            jsoneditor.util.stopPropagation(event);
+            jsoneditor.util.preventDefault(event);
         };
 
         // save button
@@ -221,7 +221,7 @@ app.openCallback = function (err, data) {
         if (data != undefined) {
             formatter.setText(data);
             try {
-                var json = JSONEditor.parse(data);
+                var json = jsoneditor.util.parse(data);
                 editor.set(json);
             }
             catch (err) {

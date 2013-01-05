@@ -30,8 +30,11 @@
  * @date    2013-01-01
  */
 
+// create namespace
+var jsoneditor = jsoneditor || {};
+
 /**
- * JSONEditor
+ * jsoneditor.JSONEditor
  * @param {Element} container    Container element
  * @param {Object}  [options]    Object with options. available options:
  *                               {String} mode      Editor mode. Available values:
@@ -45,8 +48,8 @@
  *                               {String} name      Field name for the root node.
  * @param {Object | undefined} json JSON object
  */
-var JSONEditor = function (container, options, json) {
-    if (!(this instanceof JSONEditor)) {
+jsoneditor.JSONEditor = function (container, options, json) {
+    if (!(this instanceof jsoneditor.JSONEditor)) {
         throw new Error('JSONEditor constructor called without "new".');
     }
 
@@ -62,12 +65,12 @@ var JSONEditor = function (container, options, json) {
     }
     this.container = container;
     this.dom = {};
-    this.highlighter = new JSONEditor.Highlighter();
+    this.highlighter = new jsoneditor.Highlighter();
 
     this._setOptions(options);
 
     if (this.options.history && this.editable) {
-        this.history = new JSONEditor.History(this);
+        this.history = new jsoneditor.History(this);
     }
 
     this._createFrame();
@@ -90,7 +93,7 @@ var JSONEditor = function (container, options, json) {
  *                               {String} name      Field name for the root node.
  * @private
  */
-JSONEditor.prototype._setOptions = function (options) {
+jsoneditor.JSONEditor.prototype._setOptions = function (options) {
     this.options = {
         search: true,
         history: true,
@@ -124,7 +127,7 @@ JSONEditor.prototype._setOptions = function (options) {
 };
 
 // node currently being edited
-JSONEditor.focusNode = undefined;
+jsoneditor.JSONEditor.focusNode = undefined;
 
 /**
  * Set JSON object in editor
@@ -132,7 +135,7 @@ JSONEditor.focusNode = undefined;
  * @param {String}             [name]    Optional field name for the root node.
  *                                       Can also be set using setName(name).
  */
-JSONEditor.prototype.set = function (json, name) {
+jsoneditor.JSONEditor.prototype.set = function (json, name) {
     // adjust field name for root node
     if (name) {
         this.options.name = name;
@@ -150,7 +153,7 @@ JSONEditor.prototype.set = function (json, name) {
             'field': this.options.name,
             'value': json
         };
-        var node = new JSONEditor.Node(this, params);
+        var node = new jsoneditor.Node(this, params);
         this._setRoot(node);
 
         // expand
@@ -170,10 +173,10 @@ JSONEditor.prototype.set = function (json, name) {
  * Get JSON object from editor
  * @return {Object | undefined} json
  */
-JSONEditor.prototype.get = function () {
+jsoneditor.JSONEditor.prototype.get = function () {
     // remove focus from currently edited node
-    if (JSONEditor.focusNode) {
-        JSONEditor.focusNode.blur();
+    if (jsoneditor.JSONEditor.focusNode) {
+        jsoneditor.JSONEditor.focusNode.blur();
     }
 
     if (this.node) {
@@ -188,7 +191,7 @@ JSONEditor.prototype.get = function () {
  * Set a field name for the root node.
  * @param {String | undefined} name
  */
-JSONEditor.prototype.setName = function (name) {
+jsoneditor.JSONEditor.prototype.setName = function (name) {
     this.options.name = name;
     if (this.node) {
         this.node.updateField(this.options.name);
@@ -199,14 +202,14 @@ JSONEditor.prototype.setName = function (name) {
  * Get the field name for the root node.
  * @return {String | undefined} name
  */
-JSONEditor.prototype.getName = function () {
+jsoneditor.JSONEditor.prototype.getName = function () {
     return this.options.name;
 };
 
 /**
  * Remove the root node from the editor
  */
-JSONEditor.prototype.clear = function () {
+jsoneditor.JSONEditor.prototype.clear = function () {
     if (this.node) {
         this.node.collapse();
         this.tbody.removeChild(this.node.getDom());
@@ -216,10 +219,10 @@ JSONEditor.prototype.clear = function () {
 
 /**
  * Set the root node for the json editor
- * @param {JSONEditor.Node} node
+ * @param {jsoneditor.Node} node
  * @private
  */
-JSONEditor.prototype._setRoot = function (node) {
+jsoneditor.JSONEditor.prototype._setRoot = function (node) {
     this.clear();
 
     this.node = node;
@@ -235,12 +238,12 @@ JSONEditor.prototype._setRoot = function (node) {
  * @param {String} text
  * @return {Object[]} results  Array with nodes containing the search results
  *                             The result objects contains fields:
- *                             - {JSONEditor.Node} node,
+ *                             - {jsoneditor.Node} node,
  *                             - {String} elem  the dom element name where
  *                                              the result is found ('field' or
  *                                              'value')
  */
-JSONEditor.prototype.search = function (text) {
+jsoneditor.JSONEditor.prototype.search = function (text) {
     var results;
     if (this.node) {
         this.content.removeChild(this.table);  // Take the table offline
@@ -257,7 +260,7 @@ JSONEditor.prototype.search = function (text) {
 /**
  * Expand all nodes
  */
-JSONEditor.prototype.expandAll = function () {
+jsoneditor.JSONEditor.prototype.expandAll = function () {
     if (this.node) {
         this.content.removeChild(this.table);  // Take the table offline
         this.node.expand();
@@ -268,7 +271,7 @@ JSONEditor.prototype.expandAll = function () {
 /**
  * Collapse all nodes
  */
-JSONEditor.prototype.collapseAll = function () {
+jsoneditor.JSONEditor.prototype.collapseAll = function () {
     if (this.node) {
         this.content.removeChild(this.table);  // Take the table offline
         this.node.collapse();
@@ -289,7 +292,7 @@ JSONEditor.prototype.collapseAll = function () {
  *                         value are provided). params contains all information
  *                         needed to undo or redo the action.
  */
-JSONEditor.prototype.onAction = function (action, params) {
+jsoneditor.JSONEditor.prototype.onAction = function (action, params) {
     // add an action to the history
     if (this.history) {
         this.history.add(action, params);
@@ -311,10 +314,10 @@ JSONEditor.prototype.onAction = function (action, params) {
  * editor contents, or below the bottom.
  * @param {Number} mouseY  Absolute mouse position in pixels
  */
-JSONEditor.prototype.startAutoScroll = function (mouseY) {
+jsoneditor.JSONEditor.prototype.startAutoScroll = function (mouseY) {
     var me = this;
     var content = this.content;
-    var top = JSONEditor.util.getAbsoluteTop(content);
+    var top = jsoneditor.util.getAbsoluteTop(content);
     var height = content.clientHeight;
     var bottom = top + height;
     var margin = 24;
@@ -351,7 +354,7 @@ JSONEditor.prototype.startAutoScroll = function (mouseY) {
 /**
  * Stop auto scrolling. Only applicable when scrolling
  */
-JSONEditor.prototype.stopAutoScroll = function () {
+jsoneditor.JSONEditor.prototype.stopAutoScroll = function () {
     if (this.autoScrollTimer) {
         clearTimeout(this.autoScrollTimer);
         delete this.autoScrollTimer;
@@ -367,7 +370,7 @@ JSONEditor.prototype.stopAutoScroll = function () {
  * which captures key events
  */
 // TODO: use the focus method?
-JSONEditor.prototype.focus = function () {
+jsoneditor.JSONEditor.prototype.focus = function () {
     /*
     if (!this.dom.focus) {
         this.dom.focus = document.createElement('input');
@@ -400,7 +403,7 @@ JSONEditor.prototype.focus = function () {
  * of the window height.
  * @param {Number} top
  */
-JSONEditor.prototype.scrollTo = function (top) {
+jsoneditor.JSONEditor.prototype.scrollTo = function (top) {
     var content = this.content;
     if (content) {
         // cancel any running animation
@@ -432,7 +435,7 @@ JSONEditor.prototype.scrollTo = function (top) {
  * Create main frame
  * @private
  */
-JSONEditor.prototype._createFrame = function () {
+jsoneditor.JSONEditor.prototype._createFrame = function () {
     // create the frame
     this.container.innerHTML = '';
     this.frame = document.createElement('div');
@@ -441,7 +444,7 @@ JSONEditor.prototype._createFrame = function () {
 
     // create one global event listener to handle all events from all nodes
     var editor = this;
-    // TODO: move this onEvent to JSONEditor.prototype.onEvent
+    // TODO: move this onEvent to jsoneditor.JSONEditor.prototype.onEvent
     var onEvent = function (event) {
         event = event || window.event;
         var target = event.target || event.srcElement;
@@ -450,7 +453,7 @@ JSONEditor.prototype._createFrame = function () {
             editor.onKeyDown(event);
         }
 
-        var node = JSONEditor.getNodeFromTarget(target);
+        var node = jsoneditor.JSONEditor.getNodeFromTarget(target);
         if (node) {
             node.onEvent(event);
         }
@@ -459,7 +462,7 @@ JSONEditor.prototype._createFrame = function () {
         onEvent(event);
 
         // prevent default submit action when JSONEditor is located inside a form
-        JSONEditor.util.preventDefault(event);
+        jsoneditor.util.preventDefault(event);
     };
     this.frame.onchange = onEvent;
     this.frame.onkeydown = onEvent;
@@ -473,8 +476,8 @@ JSONEditor.prototype._createFrame = function () {
     // Note: focus and blur events do not propagate, therefore they defined
     // using an eventListener with useCapture=true
     // see http://www.quirksmode.org/blog/archives/2008/04/delegating_the.html
-    JSONEditor.util.addEventListener(this.frame, 'focus', onEvent, true);
-    JSONEditor.util.addEventListener(this.frame, 'blur', onEvent, true);
+    jsoneditor.util.addEventListener(this.frame, 'focus', onEvent, true);
+    jsoneditor.util.addEventListener(this.frame, 'blur', onEvent, true);
     this.frame.onfocusin = onEvent;  // for IE
     this.frame.onfocusout = onEvent; // for IE
 
@@ -538,7 +541,7 @@ JSONEditor.prototype._createFrame = function () {
 
     // create search box
     if (this.options.search) {
-        this.searchBox = new JSONEditor.SearchBox(this, this.menu);
+        this.searchBox = new jsoneditor.SearchBox(this, this.menu);
     }
 };
 
@@ -546,7 +549,7 @@ JSONEditor.prototype._createFrame = function () {
  * Perform an undo action
  * @private
  */
-JSONEditor.prototype._onUndo = function () {
+jsoneditor.JSONEditor.prototype._onUndo = function () {
     if (this.history) {
         // undo last action
         this.history.undo();
@@ -562,7 +565,7 @@ JSONEditor.prototype._onUndo = function () {
  * Perform a redo action
  * @private
  */
-JSONEditor.prototype._onRedo = function () {
+jsoneditor.JSONEditor.prototype._onRedo = function () {
     if (this.history) {
         // redo last action
         editor.history.redo();
@@ -578,7 +581,7 @@ JSONEditor.prototype._onRedo = function () {
  * Event handler for keydown. Handles shortcut keys
  * @param {Event} event
  */
-JSONEditor.prototype.onKeyDown = function (event) {
+jsoneditor.JSONEditor.prototype.onKeyDown = function (event) {
     var keynum = event.which || event.keyCode;
     var ctrlKey = event.ctrlKey;
     var shiftKey = event.shiftKey;
@@ -621,8 +624,8 @@ JSONEditor.prototype.onKeyDown = function (event) {
     }
 
     if (handled) {
-        JSONEditor.util.preventDefault(event);
-        JSONEditor.util.stopPropagation(event);
+        jsoneditor.util.preventDefault(event);
+        jsoneditor.util.stopPropagation(event);
     }
 };
 
@@ -630,7 +633,7 @@ JSONEditor.prototype.onKeyDown = function (event) {
  * Create main table
  * @private
  */
-JSONEditor.prototype._createTable = function () {
+jsoneditor.JSONEditor.prototype._createTable = function () {
     var contentOuter = document.createElement('div');
     contentOuter.className = 'jsoneditor-content-outer';
     this.contentOuter = contentOuter;
@@ -645,7 +648,7 @@ JSONEditor.prototype._createTable = function () {
 
     // IE8 does not handle overflow='auto' correctly.
     // Therefore, set overflow to 'scroll'
-    var ieVersion = JSONEditor.util.getInternetExplorerVersion();
+    var ieVersion = jsoneditor.util.getInternetExplorerVersion();
     if (ieVersion == 8) {
         this.content.style.overflow = 'scroll';
     }
@@ -673,9 +676,9 @@ JSONEditor.prototype._createTable = function () {
 /**
  * Find the node from an event target
  * @param {Node} target
- * @return {JSONEditor.Node | undefined} node  or undefined when not found
+ * @return {jsoneditor.Node | undefined} node  or undefined when not found
  */
-JSONEditor.getNodeFromTarget = function (target) {
+jsoneditor.JSONEditor.getNodeFromTarget = function (target) {
     while (target) {
         if (target.node) {
             return target.node;
@@ -684,53 +687,4 @@ JSONEditor.getNodeFromTarget = function (target) {
     }
 
     return undefined;
-};
-
-/**
- * Parse JSON using the parser built-in in the browser.
- * On exception, the jsonString is validated and a detailed error is thrown.
- * @param {String} jsonString
- */
-JSONEditor.parse = function (jsonString) {
-    try {
-        return JSON.parse(jsonString);
-    }
-    catch (err) {
-        // get a detailed error message using validate
-        var message = JSONEditor.validate(jsonString) || err;
-        throw new Error(message);
-    }
-};
-
-/**
- * Validate a string containing a JSON object
- * This method uses JSONLint to validate the String. If JSONLint is not
- * available, the built-in JSON parser of the browser is used.
- * @param {String} jsonString   String with an (invalid) JSON object
- * @return {String | undefined} Returns undefined when the string is valid JSON,
- *                              returns a string with an error message when
- *                              the data is invalid
- */
-JSONEditor.validate = function (jsonString) {
-    var message = undefined;
-
-    try {
-        if (window.jsonlint) {
-            window.jsonlint.parse(jsonString);
-        }
-        else {
-            JSON.parse(jsonString);
-        }
-    }
-    catch (err) {
-        message = '<pre class="error">' + err.toString() + '</pre>';
-        if (window.jsonlint) {
-            message +=
-                '<a class="error" href="http://zaach.github.com/jsonlint/" target="_blank">' +
-                    'validated by jsonlint' +
-                    '</a>';
-        }
-    }
-
-    return message;
 };

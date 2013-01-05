@@ -17,26 +17,28 @@
  * @author  Jos de Jong, <wjosdejong@gmail.com>
  */
 
+// create namespace
+var jsoneditor = jsoneditor || {};
 
 /**
- * @constructor JSONEditor.AppendNode
- * @extends JSONEditor.Node
- * @param {JSONEditor} editor
+ * @constructor jsoneditor.AppendNode
+ * @extends jsoneditor.Node
+ * @param {jsoneditor.JSONEditor} editor
  * Create a new AppendNode. This is a special node which is created at the
  * end of the list with childs for an object or array
  */
-JSONEditor.AppendNode = function (editor) {
+jsoneditor.AppendNode = function (editor) {
     this.editor = editor;
     this.dom = {};
 };
 
-JSONEditor.AppendNode.prototype = new JSONEditor.Node();
+jsoneditor.AppendNode.prototype = new jsoneditor.Node();
 
 /**
  * Return a table row with an append button.
  * @return {Element} dom   TR element
  */
-JSONEditor.AppendNode.prototype.getDom = function () {
+jsoneditor.AppendNode.prototype.getDom = function () {
     // TODO: do not create the DOM for the appendNode when in viewer mode
     // TODO: implement a new solution for the append node
     var dom = this.dom;
@@ -91,7 +93,7 @@ JSONEditor.AppendNode.prototype.getDom = function () {
 /**
  * Update the HTML dom of the Node
  */
-JSONEditor.AppendNode.prototype.updateDom = function () {
+jsoneditor.AppendNode.prototype.updateDom = function () {
     var dom = this.dom;
     var tdAppend = dom.td;
     if (tdAppend) {
@@ -128,7 +130,7 @@ JSONEditor.AppendNode.prototype.updateDom = function () {
  * the AppendNode is visible when its parent has no childs (i.e. is empty).
  * @return {boolean} isVisible
  */
-JSONEditor.AppendNode.prototype.isVisible = function () {
+jsoneditor.AppendNode.prototype.isVisible = function () {
     return (this.parent.childs.length == 0);
 };
 
@@ -137,9 +139,9 @@ JSONEditor.AppendNode.prototype.isVisible = function () {
  * @param {function} [onClose]   Callback method called when the context menu
  *                               is being closed.
  */
-JSONEditor.AppendNode.prototype.showContextMenu = function (onClose) {
+jsoneditor.AppendNode.prototype.showContextMenu = function (onClose) {
     var node = this;
-    var titles = JSONEditor.Node.TYPE_TITLES;
+    var titles = jsoneditor.Node.TYPE_TITLES;
     var items = [
         // create append button
         {
@@ -188,7 +190,7 @@ JSONEditor.AppendNode.prototype.showContextMenu = function (onClose) {
         }
     ];
 
-    var menu = new JSONEditor.ContextMenu(items, {close: onClose});
+    var menu = new jsoneditor.ContextMenu(items, {close: onClose});
     menu.show(this.dom.menu);
 };
 
@@ -196,7 +198,7 @@ JSONEditor.AppendNode.prototype.showContextMenu = function (onClose) {
  * Handle an event. The event is catched centrally by the editor
  * @param {Event} event
  */
-JSONEditor.AppendNode.prototype.onEvent = function (event) {
+jsoneditor.AppendNode.prototype.onEvent = function (event) {
     var type = event.type;
     var target = event.target || event.srcElement;
     var dom = this.dom;

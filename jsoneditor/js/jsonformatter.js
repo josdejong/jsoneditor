@@ -17,9 +17,12 @@
  * @author  Jos de Jong, <wjosdejong@gmail.com>
  */
 
+// create namespace
+var jsoneditor = jsoneditor || {};
+
 /**
  * Create a JSONFormatter and attach it to given container
- * @constructor JSONFormatter
+ * @constructor jsoneditor.JSONFormatter
  * @param {Element} container
  * @param {Object} [options]         Object with options. available options:
  *                                   {Number} indentation  Number of indentation
@@ -28,8 +31,8 @@
  *                                                         triggered on change
  * @param {JSON | String} [json]     initial contents of the formatter
  */
-JSONFormatter = function (container, options, json) {
-    if (!(this instanceof JSONFormatter)) {
+jsoneditor.JSONFormatter = function (container, options, json) {
+    if (!(this instanceof jsoneditor.JSONFormatter)) {
         throw new Error('JSONFormatter constructor called without "new".');
     }
 
@@ -50,7 +53,7 @@ JSONFormatter = function (container, options, json) {
     this.frame.className = "jsoneditor-frame";
     this.frame.onclick = function (event) {
         // prevent default submit action when JSONFormatter is located inside a form
-        JSONEditor.util.preventDefault(event);
+        jsoneditor.util.preventDefault(event);
     };
 
     // create menu
@@ -109,7 +112,7 @@ JSONFormatter = function (container, options, json) {
     var me = this;
     buttonFormat.onclick = function () {
         try {
-            var json = JSONEditor.parse(textarea.value);
+            var json = jsoneditor.util.parse(textarea.value);
             textarea.value = JSON.stringify(json, null, me.indentation);
         }
         catch (err) {
@@ -118,7 +121,7 @@ JSONFormatter = function (container, options, json) {
     };
     buttonCompact.onclick = function () {
         try {
-            var json = JSONEditor.parse(textarea.value);
+            var json = jsoneditor.util.parse(textarea.value);
             textarea.value = JSON.stringify(json);
         }
         catch (err) {
@@ -142,7 +145,7 @@ JSONFormatter = function (container, options, json) {
  * It can be overwritten for each instance of the JSONFormatter
  * @param {String} err
  */
-JSONFormatter.prototype.onError = function(err) {
+jsoneditor.JSONFormatter.prototype.onError = function(err) {
     // action should be implemented for the instance
 };
 
@@ -150,7 +153,7 @@ JSONFormatter.prototype.onError = function(err) {
  * Set json data in the formatter
  * @param {Object} json
  */
-JSONFormatter.prototype.set = function(json) {
+jsoneditor.JSONFormatter.prototype.set = function(json) {
     this.textarea.value = JSON.stringify(json, null, this.indentation);
 };
 
@@ -158,15 +161,15 @@ JSONFormatter.prototype.set = function(json) {
  * Get json data from the formatter
  * @return {Object} json
  */
-JSONFormatter.prototype.get = function() {
-    return JSONEditor.parse(this.textarea.value);
+jsoneditor.JSONFormatter.prototype.get = function() {
+    return jsoneditor.util.parse(this.textarea.value);
 };
 
 /**
  * Get the text contents of the JSONFormatter
  * @return {String} text
  */
-JSONFormatter.prototype.getText = function() {
+jsoneditor.JSONFormatter.prototype.getText = function() {
     return this.textarea.value;
 };
 
@@ -174,6 +177,6 @@ JSONFormatter.prototype.getText = function() {
  * Set the text contents of the JSONFormatter
  * @param {String} text
  */
-JSONFormatter.prototype.setText = function(text) {
+jsoneditor.JSONFormatter.prototype.setText = function(text) {
     this.textarea.value = text;
 };

@@ -17,14 +17,17 @@
  * @author  Jos de Jong, <wjosdejong@gmail.com>
  */
 
+// create namespace
+var jsoneditor = jsoneditor || {};
+
 /**
- * @constructor JSONEditor.SearchBox
+ * @constructor jsoneditor.SearchBox
  * Create a search box in given HTML container
- * @param {JSONEditor} editor   The JSON Editor to attach to
- * @param {Element} container   HTML container element of where to create the
- *                              search box
+ * @param {jsoneditor.JSONEditor} editor    The JSON Editor to attach to
+ * @param {Element} container               HTML container element of where to
+ *                                          create the search box
  */
-JSONEditor.SearchBox = function(editor, container) {
+jsoneditor.SearchBox = function(editor, container) {
     var searchBox = this;
 
     this.editor = editor;
@@ -126,7 +129,7 @@ JSONEditor.SearchBox = function(editor, container) {
 /**
  * Go to the next search result
  */
-JSONEditor.SearchBox.prototype.next = function() {
+jsoneditor.SearchBox.prototype.next = function() {
     if (this.results != undefined) {
         var index = (this.resultIndex != undefined) ? this.resultIndex + 1 : 0;
         if (index > this.results.length - 1) {
@@ -139,7 +142,7 @@ JSONEditor.SearchBox.prototype.next = function() {
 /**
  * Go to the prevous search result
  */
-JSONEditor.SearchBox.prototype.previous = function() {
+jsoneditor.SearchBox.prototype.previous = function() {
     if (this.results != undefined) {
         var max = this.results.length - 1;
         var index = (this.resultIndex != undefined) ? this.resultIndex - 1 : max;
@@ -154,7 +157,7 @@ JSONEditor.SearchBox.prototype.previous = function() {
  * Set new value for the current active result
  * @param {Number} index
  */
-JSONEditor.SearchBox.prototype.setActiveResult = function(index) {
+jsoneditor.SearchBox.prototype.setActiveResult = function(index) {
     // de-activate current active result
     if (this.activeResult) {
         var prevNode = this.activeResult.node;
@@ -196,7 +199,7 @@ JSONEditor.SearchBox.prototype.setActiveResult = function(index) {
  * Set the focus to the currently active result. If there is no currently
  * active result, the next search result will get focus
  */
-JSONEditor.SearchBox.prototype.focusActiveResult = function() {
+jsoneditor.SearchBox.prototype.focusActiveResult = function() {
     if (!this.activeResult) {
         this.next();
     }
@@ -209,7 +212,7 @@ JSONEditor.SearchBox.prototype.focusActiveResult = function() {
 /**
  * Cancel any running onDelayedSearch.
  */
-JSONEditor.SearchBox.prototype.clearDelay = function() {
+jsoneditor.SearchBox.prototype.clearDelay = function() {
     if (this.timeout != undefined) {
         clearTimeout(this.timeout);
         delete this.timeout;
@@ -221,7 +224,7 @@ JSONEditor.SearchBox.prototype.clearDelay = function() {
  * Used for reducing the number of searches while typing.
  * @param {Event} event
  */
-JSONEditor.SearchBox.prototype.onDelayedSearch = function (event) {
+jsoneditor.SearchBox.prototype.onDelayedSearch = function (event) {
     // execute the search after a short delay (reduces the number of
     // search actions while typing in the search text box)
     this.clearDelay();
@@ -239,7 +242,7 @@ JSONEditor.SearchBox.prototype.onDelayedSearch = function (event) {
  *                                 when the search text is not changed.
  *                                 Default is false.
  */
-JSONEditor.SearchBox.prototype.onSearch = function (event, forceSearch) {
+jsoneditor.SearchBox.prototype.onSearch = function (event, forceSearch) {
     this.clearDelay();
 
     var value = this.dom.search.value;
@@ -269,14 +272,14 @@ JSONEditor.SearchBox.prototype.onSearch = function (event, forceSearch) {
  * Handle onKeyDown event in the input box
  * @param {Event} event
  */
-JSONEditor.SearchBox.prototype.onKeyDown = function (event) {
+jsoneditor.SearchBox.prototype.onKeyDown = function (event) {
     event = event || window.event;
     var keynum = event.which || event.keyCode;
     if (keynum == 27) { // ESC
         this.dom.search.value = '';  // clear search
         this.onSearch(event);
-        JSONEditor.util.preventDefault(event);
-        JSONEditor.util.stopPropagation(event);
+        jsoneditor.util.preventDefault(event);
+        jsoneditor.util.stopPropagation(event);
     }
     else if (keynum == 13) { // Enter
         if (event.ctrlKey) {
@@ -291,8 +294,8 @@ JSONEditor.SearchBox.prototype.onKeyDown = function (event) {
             // move to the next search result
             this.next();
         }
-        JSONEditor.util.preventDefault(event);
-        JSONEditor.util.stopPropagation(event);
+        jsoneditor.util.preventDefault(event);
+        jsoneditor.util.stopPropagation(event);
     }
 };
 
@@ -300,7 +303,7 @@ JSONEditor.SearchBox.prototype.onKeyDown = function (event) {
  * Handle onKeyUp event in the input box
  * @param {Event} event
  */
-JSONEditor.SearchBox.prototype.onKeyUp = function (event) {
+jsoneditor.SearchBox.prototype.onKeyUp = function (event) {
     event = event || window.event;
     var keynum = event.which || event.keyCode;
     if (keynum != 27 && keynum != 13) { // !show and !Enter

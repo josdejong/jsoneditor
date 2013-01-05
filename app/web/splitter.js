@@ -16,7 +16,7 @@ function Splitter (params) {
     }
 
     var me = this;
-    JSONEditor.util.addEventListener(params.container, "mousedown", function (event) {
+    jsoneditor.util.addEventListener(params.container, "mousedown", function (event) {
         me.onMouseDown(event);
     });
 
@@ -40,17 +40,17 @@ Splitter.prototype.onMouseDown = function (event) {
     if (!this.params.mousedown) {
         this.params.mousedown = true;
         this.params.mousemove =
-            JSONEditor.util.addEventListener(document, 'mousemove', function (event) {
+            jsoneditor.util.addEventListener(document, 'mousemove', function (event) {
                 me.onMouseMove(event);
             });
         this.params.mouseup =
-            JSONEditor.util.addEventListener(document, 'mouseup', function (event) {
+            jsoneditor.util.addEventListener(document, 'mouseup', function (event) {
                 me.onMouseUp(event);
             });
         this.params.screenX = event.screenX;
         this.params.value = this.getValue();
     }
-    JSONEditor.util.preventDefault(event);
+    jsoneditor.util.preventDefault(event);
 };
 
 /**
@@ -69,7 +69,7 @@ Splitter.prototype.onMouseMove = function (event) {
 
     this.onChange(value);
 
-    JSONEditor.util.preventDefault(event);
+    jsoneditor.util.preventDefault(event);
 };
 
 /**
@@ -79,13 +79,13 @@ Splitter.prototype.onMouseMove = function (event) {
  */
 Splitter.prototype.onMouseUp = function (event) {
     if (this.params.mousedown) {
-        JSONEditor.util.removeEventListener(document, 'mousemove', this.params.mousemove);
-        JSONEditor.util.removeEventListener(document, 'mouseup', this.params.mouseup);
+        jsoneditor.util.removeEventListener(document, 'mousemove', this.params.mousemove);
+        jsoneditor.util.removeEventListener(document, 'mouseup', this.params.mouseup);
         this.params.mousemove = undefined;
         this.params.mouseup = undefined;
         this.params.mousedown = false;
     }
-    JSONEditor.util.preventDefault(event);
+    jsoneditor.util.preventDefault(event);
 };
 
 /**

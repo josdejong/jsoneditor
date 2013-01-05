@@ -17,6 +17,9 @@
  * @author  Jos de Jong, <wjosdejong@gmail.com>
  */
 
+// create namespace
+var jsoneditor = jsoneditor || {};
+
 /**
  * A context menu
  * @param {Object[]} items    Array containing the menu structure
@@ -26,7 +29,7 @@
  *                                                context menu is being closed.
  * @constructor
  */
-JSONEditor.ContextMenu = function (items, options) {
+jsoneditor.ContextMenu = function (items, options) {
     var me = this;
     this.items = items;
     this.eventListeners = {};
@@ -138,23 +141,23 @@ JSONEditor.ContextMenu = function (items, options) {
 };
 
 // currently displayed context menu, a singleton. We may only have one visible context menu
-JSONEditor.ContextMenu.visibleMenu = undefined;
+jsoneditor.ContextMenu.visibleMenu = undefined;
 
 /**
  * Attach the menu to an anchor
  * @param {Element} anchor
  */
-JSONEditor.ContextMenu.prototype.show = function (anchor) {
+jsoneditor.ContextMenu.prototype.show = function (anchor) {
     this.hide();
 
     // calculate whether the menu fits below the anchor
-    var windowHeight = JSONEditor.util.getWindowHeight();
+    var windowHeight = jsoneditor.util.getWindowHeight();
     var anchorHeight = anchor.offsetHeight;
     var menuHeight = this.maxHeight;
 
     // position the menu
-    var left = JSONEditor.util.getAbsoluteLeft(anchor);
-    var top = JSONEditor.util.getAbsoluteTop(anchor);
+    var left = jsoneditor.util.getAbsoluteLeft(anchor);
+    var top = jsoneditor.util.getAbsoluteTop(anchor);
     if (top + anchorHeight + menuHeight < windowHeight) {
         // display the menu below the anchor
         this.menu.style.left = left + 'px';
@@ -174,7 +177,7 @@ JSONEditor.ContextMenu.prototype.show = function (anchor) {
     // create and attach event listeners
     var me = this;
     var list = this.list;
-    this.eventListeners.mousedown = JSONEditor.util.addEventListener(
+    this.eventListeners.mousedown = jsoneditor.util.addEventListener(
         document, 'mousedown', function (event) {
             // hide menu on click outside of the menu
             event = event || window.event;
@@ -183,35 +186,35 @@ JSONEditor.ContextMenu.prototype.show = function (anchor) {
                 me.hide();
             }
         });
-    this.eventListeners.mousewheel = JSONEditor.util.addEventListener(
+    this.eventListeners.mousewheel = jsoneditor.util.addEventListener(
         document, 'mousewheel', function () {
             // hide the menu on mouse scroll
             me.hide();
         });
-    this.eventListeners.keydown = JSONEditor.util.addEventListener(
+    this.eventListeners.keydown = jsoneditor.util.addEventListener(
         document, 'keydown', function (event) {
             // hide the menu on ESC key
             event = event || window.event;
             var keynum = event.which || event.keyCode;
             if (keynum == 27) { // ESC
                 me.hide();
-                JSONEditor.util.stopPropagation(event);
-                JSONEditor.util.preventDefault(event);
+                jsoneditor.util.stopPropagation(event);
+                jsoneditor.util.preventDefault(event);
             }
         });
 
     // TODO: focus to the first button in the context menu
 
-    if (JSONEditor.ContextMenu.visibleMenu) {
-        JSONEditor.ContextMenu.visibleMenu.hide();
+    if (jsoneditor.ContextMenu.visibleMenu) {
+        jsoneditor.ContextMenu.visibleMenu.hide();
     }
-    JSONEditor.ContextMenu.visibleMenu = this;
+    jsoneditor.ContextMenu.visibleMenu = this;
 };
 
 /**
  * Hide the context menu if visible
  */
-JSONEditor.ContextMenu.prototype.hide = function () {
+jsoneditor.ContextMenu.prototype.hide = function () {
     // remove the menu from the DOM
     if (this.menu.parentNode) {
         this.menu.parentNode.removeChild(this.menu);
@@ -226,7 +229,7 @@ JSONEditor.ContextMenu.prototype.hide = function () {
         if (this.eventListeners.hasOwnProperty(name)) {
             var fn = this.eventListeners[name];
             if (fn) {
-                JSONEditor.util.removeEventListener(document, name, fn);
+                jsoneditor.util.removeEventListener(document, name, fn);
             }
             delete this.eventListeners[name];
         }
@@ -239,7 +242,7 @@ JSONEditor.ContextMenu.prototype.hide = function () {
  * @param {Element} submenu
  * @private
  */
-JSONEditor.ContextMenu.prototype._onShowSubmenu = function (submenu) {
+jsoneditor.ContextMenu.prototype._onShowSubmenu = function (submenu) {
     var me = this;
     var alreadyVisible = (submenu == this.visibleSubmenu);
 
@@ -251,7 +254,7 @@ JSONEditor.ContextMenu.prototype._onShowSubmenu = function (submenu) {
         setTimeout(function () {
             if (me.visibleSubmenu != visibleSubmenu) {
                 visibleSubmenu.style.display = '';
-                JSONEditor.util.removeClassName(visibleSubmenu.parentNode, 'selected');
+                jsoneditor.util.removeClassName(visibleSubmenu.parentNode, 'selected');
             }
         }, 300); // timeout duration must match the css transition duration
         this.visibleSubmenu = undefined;
@@ -266,7 +269,7 @@ JSONEditor.ContextMenu.prototype._onShowSubmenu = function (submenu) {
                 submenu.style.padding = '5px 10px';
             }
         }, 0);
-        JSONEditor.util.addClassName(submenu.parentNode, 'selected');
+        jsoneditor.util.addClassName(submenu.parentNode, 'selected');
         this.visibleSubmenu = submenu;
     }
 };
@@ -277,7 +280,7 @@ JSONEditor.ContextMenu.prototype._onShowSubmenu = function (submenu) {
  * @param {Element} parent
  * @return {boolean} isChild
  */
-JSONEditor.ContextMenu.prototype._isChildOf = function (child, parent) {
+jsoneditor.ContextMenu.prototype._isChildOf = function (child, parent) {
     var e = child.parentNode;
     while (e) {
         if (e == parent) {

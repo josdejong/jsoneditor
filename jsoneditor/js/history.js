@@ -17,12 +17,15 @@
  * @author  Jos de Jong, <wjosdejong@gmail.com>
  */
 
+// create namespace
+var jsoneditor = jsoneditor || {};
+
 /**
- * @constructor JSONEditor.History
+ * @constructor jsoneditor.History
  * Store action history, enables undo and redo
- * @param {JSONEditor} editor
+ * @param {jsoneditor.JSONEditor} editor
  */
-JSONEditor.History = function (editor) {
+jsoneditor.History = function (editor) {
     this.editor = editor;
     this.clear();
 
@@ -128,7 +131,7 @@ JSONEditor.History = function (editor) {
  * The method onChange is executed when the History is changed, and can
  * be overloaded.
  */
-JSONEditor.History.prototype.onChange = function () {};
+jsoneditor.History.prototype.onChange = function () {};
 
 /**
  * Add a new action to the history
@@ -141,7 +144,7 @@ JSONEditor.History.prototype.onChange = function () {};
  *                         value are provided). params contains all information
  *                         needed to undo or redo the action.
  */
-JSONEditor.History.prototype.add = function (action, params) {
+jsoneditor.History.prototype.add = function (action, params) {
     this.index++;
     this.history[this.index] = {
         'action': action,
@@ -161,7 +164,7 @@ JSONEditor.History.prototype.add = function (action, params) {
 /**
  * Clear history
  */
-JSONEditor.History.prototype.clear = function () {
+jsoneditor.History.prototype.clear = function () {
     this.history = [];
     this.index = -1;
 
@@ -173,7 +176,7 @@ JSONEditor.History.prototype.clear = function () {
  * Check if there is an action available for undo
  * @return {Boolean} canUndo
  */
-JSONEditor.History.prototype.canUndo = function () {
+jsoneditor.History.prototype.canUndo = function () {
     return (this.index >= 0);
 };
 
@@ -181,14 +184,14 @@ JSONEditor.History.prototype.canUndo = function () {
  * Check if there is an action available for redo
  * @return {Boolean} canRedo
  */
-JSONEditor.History.prototype.canRedo = function () {
+jsoneditor.History.prototype.canRedo = function () {
     return (this.index < this.history.length - 1);
 };
 
 /**
  * Undo the last action
  */
-JSONEditor.History.prototype.undo = function () {
+jsoneditor.History.prototype.undo = function () {
     if (this.canUndo()) {
         var obj = this.history[this.index];
         if (obj) {
@@ -210,7 +213,7 @@ JSONEditor.History.prototype.undo = function () {
 /**
  * Redo the last action
  */
-JSONEditor.History.prototype.redo = function () {
+jsoneditor.History.prototype.redo = function () {
     if (this.canRedo()) {
         this.index++;
 
