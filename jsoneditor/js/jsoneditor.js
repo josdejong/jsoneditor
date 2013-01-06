@@ -284,8 +284,9 @@ jsoneditor.JSONEditor.prototype.collapseAll = function () {
  *                         example for "editValue" the Node, old value, and new
  *                         value are provided). params contains all information
  *                         needed to undo or redo the action.
+ * @private
  */
-jsoneditor.JSONEditor.prototype.onAction = function (action, params) {
+jsoneditor.JSONEditor.prototype._onAction = function (action, params) {
     // add an action to the history
     if (this.history) {
         this.history.add(action, params);
@@ -359,51 +360,71 @@ jsoneditor.JSONEditor.prototype.stopAutoScroll = function () {
 
 
 /**
- * Set the focus to the JSONEditor. A hidden input field will be created
- * which captures key events
+ * Set the focus to an element in the JSONEditor, set text selection, and
+ * set scroll position.
+ * @param {Object} selection  An object containing fields:
+ *                            {Element | undefined} dom     The dom element
+ *                                                          which has focus
+ *                            {Range | TextRange} range     A text selection
+ *                            {Number} scrollTop            Scroll position
  */
-// TODO: use the focus method?
-jsoneditor.JSONEditor.prototype.focus = function () {
-    /*
-    if (!this.dom.focus) {
-        this.dom.focus = document.createElement('input');
-        this.dom.focus.className = 'jsoneditor-hidden-focus';
-
-        var editor = this;
-        this.dom.focus.onblur = function () {
-            // remove itself
-            if (editor.dom.focus) {
-                var focus = editor.dom.focus;
-                delete editor.dom.focus;
-                editor.frame.removeChild(focus);
-            }
-        };
-
-        // attach the hidden input box to the DOM
-        if (this.frame.firstChild) {
-            this.frame.insertBefore(this.dom.focus, this.frame.firstChild);
-        }
-        else {
-            this.frame.appendChild(this.dom.focus);
-        }
+jsoneditor.JSONEditor.prototype.setSelection = function (selection) {
+    if (!selection) {
+        return;
     }
-    this.dom.focus.focus();
+
+    if ('scrollTop' in selection && this.content) {
+        // TODO: animated scroll
+        this.content.scrollTop = selection.scrollTop;
+    }
+    /*
+    if (selection.range) {
+        // FIXME: does not work after a DOM element is removed and restored again
+        jsoneditor.util.setSelection(selection.range);
+    }
     */
+    if (selection.dom) {
+        selection.dom.focus();
+    }
+};
+
+/**
+ * Get the current focus
+ * @return {Object} selection An object containing fields:
+ *                            {Element | undefined} dom     The dom element
+ *                                                          which has focus
+ *                            {Range | TextRange} range     A text selection
+ *                            {Number} scrollTop            Scroll position
+ */
+jsoneditor.JSONEditor.prototype.getSelection = function () {
+    return {
+        dom: jsoneditor.JSONEditor.domFocus,
+        scrollTop: this.content ? this.content.scrollTop : 0,
+        range: jsoneditor.util.getSelection()
+    };
 };
 
 /**
  * Adjust the scroll position such that given top position is shown at 1/4
  * of the window height.
  * @param {Number} top
+ * @param {function(boolean)} [callback]   Callback, executed when animation is
+ *                                         finished. The callback returns true
+ *                                         when animation is finished, or false
+ *                                         when not.
  */
-jsoneditor.JSONEditor.prototype.scrollTo = function (top) {
+jsoneditor.JSONEditor.prototype.scrollTo = function (top, callback) {
     var content = this.content;
     if (content) {
-        // cancel any running animation
         var editor = this;
+        // cancel any running animation
         if (editor.animateTimeout) {
             clearTimeout(editor.animateTimeout);
             delete editor.animateTimeout;
+        }
+        if (editor.animateCallback) {
+            editor.animateCallback(false);
+            delete editor.animateCallback;
         }
 
         // calculate final scroll position
@@ -417,10 +438,25 @@ jsoneditor.JSONEditor.prototype.scrollTo = function (top) {
             var diff = (finalScrollTop - scrollTop);
             if (Math.abs(diff) > 3) {
                 content.scrollTop += diff / 3;
+                editor.animateCallback = callback;
                 editor.animateTimeout = setTimeout(animate, 50);
+            }
+            else {
+                // finished
+                if (callback) {
+                    callback(true);
+                }
+                content.scrollTop = finalScrollTop;
+                delete editor.animateTimeout;
+                delete editor.animateCallback;
             }
         };
         animate();
+    }
+    else {
+        if (callback) {
+            callback(false);
+        }
     }
 };
 
@@ -437,19 +473,8 @@ jsoneditor.JSONEditor.prototype._createFrame = function () {
 
     // create one global event listener to handle all events from all nodes
     var editor = this;
-    // TODO: move this onEvent to jsoneditor.JSONEditor.prototype.onEvent
     var onEvent = function (event) {
-        event = event || window.event;
-        var target = event.target || event.srcElement;
-
-        if (event.type == 'keydown') {
-            editor.onKeyDown(event);
-        }
-
-        var node = jsoneditor.Node.getNodeFromTarget(target);
-        if (node) {
-            node.onEvent(event);
-        }
+        editor._onEvent(event);
     };
     this.frame.onclick = function (event) {
         onEvent(event);
@@ -571,14 +596,46 @@ jsoneditor.JSONEditor.prototype._onRedo = function () {
 };
 
 /**
+ * Event handler
+ * @param event
+ * @private
+ */
+jsoneditor.JSONEditor.prototype._onEvent = function (event) {
+    event = event || window.event;
+    var target = event.target || event.srcElement;
+
+    if (event.type == 'keydown') {
+        this._onKeyDown(event);
+    }
+
+    if (event.type == 'focus') {
+        jsoneditor.JSONEditor.domFocus = target;
+    }
+
+    var node = jsoneditor.Node.getNodeFromTarget(target);
+    if (node) {
+        node.onEvent(event);
+    }
+};
+
+/**
  * Event handler for keydown. Handles shortcut keys
  * @param {Event} event
+ * @private
  */
-jsoneditor.JSONEditor.prototype.onKeyDown = function (event) {
+jsoneditor.JSONEditor.prototype._onKeyDown = function (event) {
     var keynum = event.which || event.keyCode;
     var ctrlKey = event.ctrlKey;
     var shiftKey = event.shiftKey;
     var handled = false;
+
+    if (keynum == 9) { // Tab
+        // FIXME: selecting all text on tab key does not work on IE8
+        setTimeout(function () {
+            // select all text when moving focus to an editable div
+            jsoneditor.util.selectContentEditable(jsoneditor.JSONEditor.domFocus);
+        }, 0);
+    }
 
     if (this.searchBox) {
         if (ctrlKey && keynum == 70) { // Ctrl+F
@@ -597,7 +654,7 @@ jsoneditor.JSONEditor.prototype.onKeyDown = function (event) {
             }
 
             // set selection to the current
-            this.searchBox.focusActiveResult();
+            this.searchBox._focusActiveResult();
 
             handled = true;
         }

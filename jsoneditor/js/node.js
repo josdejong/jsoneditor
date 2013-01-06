@@ -587,8 +587,9 @@ jsoneditor.Node.prototype.search = function(text) {
 /**
  * Move the scroll position such that this node is in the visible area.
  * The node will not get the focus
+ * @param {function(boolean)} [callback]
  */
-jsoneditor.Node.prototype.scrollTo = function() {
+jsoneditor.Node.prototype.scrollTo = function(callback) {
     if (!this.dom.tr || !this.dom.tr.parentNode) {
         // if the node is not visible, expand its parents
         var parent = this.parent;
@@ -600,12 +601,12 @@ jsoneditor.Node.prototype.scrollTo = function() {
     }
 
     if (this.dom.tr && this.dom.tr.parentNode) {
-        this.editor.scrollTo(this.dom.tr.offsetTop);
+        this.editor.scrollTo(this.dom.tr.offsetTop, callback);
     }
 };
 
 /**
- * Set focus to the value of this node
+ * Set focus to this node
  * @param {String} [field]  The field name of the element to get the focus
  *                          available values: 'field', 'value'
  */
@@ -615,12 +616,14 @@ jsoneditor.Node.prototype.focus = function(field) {
             var domField = this.dom.field;
             if (domField) {
                 domField.focus();
+                jsoneditor.util.selectContentEditable(domField);
             }
         }
         else {
             var domValue = this.dom.value;
             if (domValue) {
                 domValue.focus();
+                jsoneditor.util.selectContentEditable(domValue);
             }
         }
     }
@@ -888,7 +891,7 @@ jsoneditor.Node.prototype._getDomValue = function(silent) {
             if (value !== this.value) {
                 var oldValue = this.value;
                 this.value = value;
-                this.editor.onAction('editValue', {
+                this.editor._onAction('editValue', {
                     'node': this,
                     'oldValue': oldValue,
                     'newValue': value
@@ -1025,7 +1028,7 @@ jsoneditor.Node.prototype._getDomField = function(silent) {
             if (field !== this.field) {
                 var oldField = this.field;
                 this.field = field;
-                this.editor.onAction('editField', {
+                this.editor._onAction('editField', {
                     'node': this,
                     'oldValue': oldField,
                     'newValue': field
@@ -1303,7 +1306,7 @@ jsoneditor.Node.prototype._onDragEnd = function (event) {
     if ((params.startParent != params.endParent) ||
         (params.startIndex != params.endIndex)) {
         // only register this action if the node is actually moved to another place
-        this.editor.onAction('moveNode', params);
+        this.editor._onAction('moveNode', params);
     }
 
     document.body.style.cursor = this.drag.oldCursor;
@@ -1646,7 +1649,6 @@ jsoneditor.Node.prototype.onEvent = function (event) {
             this.editor.highlighter.highlight(this);
         }
         else if (type == 'mouseout') {
-            // TODO: onmouseout of menu must only execute unhighlight when no contextmenu is visible
             this.editor.highlighter.unhighlight();
         }
     }
@@ -1796,23 +1798,18 @@ jsoneditor.Node.prototype.onKeyDown = function (event) {
         this._onDuplicate();
         handled = true;
     }
-    /* TODO: implement shortcut keys
-     else if (ctrlKey && keynum == 46) { // Ctrl+Del
-     this._onRemove();
-     handled = true;
-     // TODO: focus to the next node
-     }
-     else if (ctrlKey && !shiftKey && keynum == 45) { // Ctrl+Ins
-     this._onInsertBefore(); // Ctrl+Ins
-     handled = true;
-     // TODO: focus to the next node
-     }
-     else if (ctrlKey && shiftKey && keynum == 45) { // Ctrl+Shift+Ins
-     this._onInsertAfter();
-     handled = true;
-     // TODO: focus to the next node
-     }
-     */
+    else if (ctrlKey && keynum == 46) { // Ctrl+Del
+        this._onRemove();
+        handled = true;
+    }
+    else if (ctrlKey && !shiftKey && keynum == 45) { // Ctrl+Ins
+        this._onInsertBefore(); // Ctrl+Ins
+        handled = true;
+    }
+    else if (ctrlKey && shiftKey && keynum == 45) { // Ctrl+Shift+Ins
+        this._onInsertAfter();
+        handled = true;
+    }
 
     if (handled) {
         jsoneditor.util.preventDefault(event);
@@ -1886,14 +1883,32 @@ jsoneditor.Node.types = [
  */
 jsoneditor.Node.prototype._onRemove = function() {
     this.editor.highlighter.unhighlight();
-    var index = this.parent.childs.indexOf(this);
+    var childs = this.parent.childs;
+    var index = childs.indexOf(this);
 
+    // adjust the focus
+    var oldSelection = this.editor.getSelection();
+    if (childs[index + 1]) {
+        childs[index + 1].focus();
+    }
+    else if (childs[index - 1]) {
+        childs[index - 1].focus();
+    }
+    else {
+        this.parent.focus();
+    }
+    var newSelection = this.editor.getSelection();
+
+    // remove the node
     this.parent._remove(this);
 
-    this.editor.onAction('removeNode', {
+    // store history action
+    this.editor._onAction('removeNode', {
         'node': this,
         'parent': this.parent,
-        'index': index
+        'index': index,
+        'oldSelection': oldSelection,
+        'newSelection': newSelection
     });
 };
 
@@ -1902,12 +1917,17 @@ jsoneditor.Node.prototype._onRemove = function() {
  * @private
  */
 jsoneditor.Node.prototype._onDuplicate = function() {
+    var oldSelection = this.editor.getSelection();
     var clone = this.parent._duplicate(this);
+    clone.focus();
+    var newSelection = this.editor.getSelection();
 
-    this.editor.onAction('duplicateNode', {
+    this.editor._onAction('duplicateNode', {
         'node': this,
         'clone': clone,
-        'parent': this.parent
+        'parent': this.parent,
+        'oldSelection': oldSelection,
+        'newSelection': newSelection
     });
 };
 
@@ -1919,6 +1939,8 @@ jsoneditor.Node.prototype._onDuplicate = function() {
  * @private
  */
 jsoneditor.Node.prototype._onInsertBefore = function (field, value, type) {
+    var oldSelection = this.editor.getSelection();
+
     var newNode = new jsoneditor.Node(this.editor, {
         'field': (value != undefined) ? field : 'field',
         'value': (value != undefined) ? value : 'value',
@@ -1928,11 +1950,14 @@ jsoneditor.Node.prototype._onInsertBefore = function (field, value, type) {
     this.parent.insertBefore(newNode, this);
     this.editor.highlighter.unhighlight();
     newNode.focus();
+    var newSelection = this.editor.getSelection();
 
-    this.editor.onAction('insertBeforeNode', {
+    this.editor._onAction('insertBeforeNode', {
         'node': newNode,
         'beforeNode': this,
-        'parent': this.parent
+        'parent': this.parent,
+        'oldSelection': oldSelection,
+        'newSelection': newSelection
     });
 };
 
@@ -1944,6 +1969,8 @@ jsoneditor.Node.prototype._onInsertBefore = function (field, value, type) {
  * @private
  */
 jsoneditor.Node.prototype._onInsertAfter = function (field, value, type) {
+    var oldSelection = this.editor.getSelection();
+
     var newNode = new jsoneditor.Node(this.editor, {
         'field': (value != undefined) ? field : 'field',
         'value': (value != undefined) ? value : 'value',
@@ -1953,11 +1980,14 @@ jsoneditor.Node.prototype._onInsertAfter = function (field, value, type) {
     this.parent.insertAfter(newNode, this);
     this.editor.highlighter.unhighlight();
     newNode.focus();
+    var newSelection = this.editor.getSelection();
 
-    this.editor.onAction('insertAfterNode', {
+    this.editor._onAction('insertAfterNode', {
         'node': newNode,
         'afterNode': this,
-        'parent': this.parent
+        'parent': this.parent,
+        'oldSelection': oldSelection,
+        'newSelection': newSelection
     });
 };
 
@@ -1969,6 +1999,8 @@ jsoneditor.Node.prototype._onInsertAfter = function (field, value, type) {
  * @private
  */
 jsoneditor.Node.prototype._onAppend = function (field, value, type) {
+    var oldSelection = this.editor.getSelection();
+
     var newNode = new jsoneditor.Node(this.editor, {
         'field': (value != undefined) ? field : 'field',
         'value': (value != undefined) ? value : 'value',
@@ -1978,10 +2010,13 @@ jsoneditor.Node.prototype._onAppend = function (field, value, type) {
     this.parent.appendChild(newNode);
     this.editor.highlighter.unhighlight();
     newNode.focus();
+    var newSelection = this.editor.getSelection();
 
-    this.editor.onAction('appendNode', {
+    this.editor._onAction('appendNode', {
         'node': newNode,
-        'parent': this.parent
+        'parent': this.parent,
+        'oldSelection': oldSelection,
+        'newSelection': newSelection
     });
 };
 
@@ -1993,12 +2028,16 @@ jsoneditor.Node.prototype._onAppend = function (field, value, type) {
 jsoneditor.Node.prototype._onChangeType = function (newType) {
     var oldType = this.type;
     if (newType != oldType) {
+        var oldSelection = this.editor.getSelection();
         this.changeType(newType);
+        var newSelection = this.editor.getSelection();
 
-        this.editor.onAction('changeType', {
+        this.editor._onAction('changeType', {
             'node': this,
             'oldType': oldType,
-            'newType': newType
+            'newType': newType,
+            'oldSelection': oldSelection,
+            'newSelection': newSelection
         });
     }
 };
@@ -2029,7 +2068,7 @@ jsoneditor.Node.prototype._onSort = function (direction) {
         });
         this.sort = (order == 1) ? 'asc' : 'desc';
 
-        this.editor.onAction('sort', {
+        this.editor._onAction('sort', {
             'node': this,
             'oldChilds': oldChilds,
             'oldSort': oldSort,
@@ -2057,6 +2096,7 @@ jsoneditor.Node.prototype.getAppend = function () {
  * Find the node from an event target
  * @param {Node} target
  * @return {jsoneditor.Node | undefined} node  or undefined when not found
+ * @static
  */
 jsoneditor.Node.getNodeFromTarget = function (target) {
     while (target) {
@@ -2093,7 +2133,6 @@ jsoneditor.Node.prototype.showContextMenu = function (onClose) {
     var titles = jsoneditor.Node.TYPE_TITLES;
     var items = [];
 
-    // TODO: add titles for all context menu items
     items.push({
         'text': 'Type',
         'title': 'Change the type of this field',
@@ -2215,7 +2254,6 @@ jsoneditor.Node.prototype.showContextMenu = function (onClose) {
                         'className': 'jsoneditor-type-string',
                         'title': titles.string,
                         'click': function () {
-                            // TODO: settings type string does not work, will become auto
                             node._onAppend('field', 'value', 'string');
                         }
                     }

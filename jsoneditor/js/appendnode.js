@@ -182,7 +182,6 @@ jsoneditor.AppendNode.prototype.showContextMenu = function (onClose) {
                     'className': 'jsoneditor-type-string',
                     'title': titles.string,
                     'click': function () {
-                        // TODO: settings type string does not work, will become auto
                         node._onAppend('field', 'value', 'string');
                     }
                 }

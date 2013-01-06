@@ -84,16 +84,16 @@ jsoneditor.SearchBox = function(editor, container) {
     this.dom.search = search;
     search.className = 'jsoneditor-search';
     search.oninput = function (event) {
-        searchBox.onDelayedSearch(event);
+        searchBox._onDelayedSearch(event);
     };
     search.onchange = function (event) { // For IE 8
-        searchBox.onSearch(event);
+        searchBox._onSearch(event);
     };
     search.onkeydown = function (event) {
-        searchBox.onKeyDown(event);
+        searchBox._onKeyDown(event);
     };
     search.onkeyup = function (event) {
-        searchBox.onKeyUp(event);
+        searchBox._onKeyUp(event);
     };
     refreshSearch.onclick = function (event) {
         search.select();
@@ -135,7 +135,7 @@ jsoneditor.SearchBox.prototype.next = function() {
         if (index > this.results.length - 1) {
             index = 0;
         }
-        this.setActiveResult(index);
+        this._setActiveResult(index);
     }
 };
 
@@ -149,15 +149,16 @@ jsoneditor.SearchBox.prototype.previous = function() {
         if (index < 0) {
             index = max;
         }
-        this.setActiveResult(index);
+        this._setActiveResult(index);
     }
 };
 
 /**
  * Set new value for the current active result
  * @param {Number} index
+ * @private
  */
-jsoneditor.SearchBox.prototype.setActiveResult = function(index) {
+jsoneditor.SearchBox.prototype._setActiveResult = function(index) {
     // de-activate current active result
     if (this.activeResult) {
         var prevNode = this.activeResult.node;
@@ -198,8 +199,9 @@ jsoneditor.SearchBox.prototype.setActiveResult = function(index) {
 /**
  * Set the focus to the currently active result. If there is no currently
  * active result, the next search result will get focus
+ * @private
  */
-jsoneditor.SearchBox.prototype.focusActiveResult = function() {
+jsoneditor.SearchBox.prototype._focusActiveResult = function() {
     if (!this.activeResult) {
         this.next();
     }
@@ -211,8 +213,9 @@ jsoneditor.SearchBox.prototype.focusActiveResult = function() {
 
 /**
  * Cancel any running onDelayedSearch.
+ * @private
  */
-jsoneditor.SearchBox.prototype.clearDelay = function() {
+jsoneditor.SearchBox.prototype._clearDelay = function() {
     if (this.timeout != undefined) {
         clearTimeout(this.timeout);
         delete this.timeout;
@@ -223,14 +226,15 @@ jsoneditor.SearchBox.prototype.clearDelay = function() {
  * Start a timer to execute a search after a short delay.
  * Used for reducing the number of searches while typing.
  * @param {Event} event
+ * @private
  */
-jsoneditor.SearchBox.prototype.onDelayedSearch = function (event) {
+jsoneditor.SearchBox.prototype._onDelayedSearch = function (event) {
     // execute the search after a short delay (reduces the number of
     // search actions while typing in the search text box)
-    this.clearDelay();
+    this._clearDelay();
     var searchBox = this;
     this.timeout = setTimeout(function (event) {
-            searchBox.onSearch(event);
+            searchBox._onSearch(event);
         },
         this.delay);
 };
@@ -241,9 +245,10 @@ jsoneditor.SearchBox.prototype.onDelayedSearch = function (event) {
  * @param {boolean} [forceSearch]  If true, search will be executed again even
  *                                 when the search text is not changed.
  *                                 Default is false.
+ * @private
  */
-jsoneditor.SearchBox.prototype.onSearch = function (event, forceSearch) {
-    this.clearDelay();
+jsoneditor.SearchBox.prototype._onSearch = function (event, forceSearch) {
+    this._clearDelay();
 
     var value = this.dom.search.value;
     var text = (value.length > 0) ? value : undefined;
@@ -251,7 +256,7 @@ jsoneditor.SearchBox.prototype.onSearch = function (event, forceSearch) {
         // only search again when changed
         this.lastText = text;
         this.results = this.editor.search(text);
-        this.setActiveResult(undefined);
+        this._setActiveResult(undefined);
 
         // display search results
         if (text != undefined) {
@@ -271,20 +276,21 @@ jsoneditor.SearchBox.prototype.onSearch = function (event, forceSearch) {
 /**
  * Handle onKeyDown event in the input box
  * @param {Event} event
+ * @private
  */
-jsoneditor.SearchBox.prototype.onKeyDown = function (event) {
+jsoneditor.SearchBox.prototype._onKeyDown = function (event) {
     event = event || window.event;
     var keynum = event.which || event.keyCode;
     if (keynum == 27) { // ESC
         this.dom.search.value = '';  // clear search
-        this.onSearch(event);
+        this._onSearch(event);
         jsoneditor.util.preventDefault(event);
         jsoneditor.util.stopPropagation(event);
     }
     else if (keynum == 13) { // Enter
         if (event.ctrlKey) {
             // force to search again
-            this.onSearch(event, true);
+            this._onSearch(event, true);
         }
         else if (event.shiftKey) {
             // move to the previous search result
@@ -302,11 +308,12 @@ jsoneditor.SearchBox.prototype.onKeyDown = function (event) {
 /**
  * Handle onKeyUp event in the input box
  * @param {Event} event
+ * @private
  */
-jsoneditor.SearchBox.prototype.onKeyUp = function (event) {
+jsoneditor.SearchBox.prototype._onKeyUp = function (event) {
     event = event || window.event;
     var keynum = event.which || event.keyCode;
     if (keynum != 27 && keynum != 13) { // !show and !Enter
-        this.onDelayedSearch(event);   // For IE 8
+        this._onDelayedSearch(event);   // For IE 8
     }
 };

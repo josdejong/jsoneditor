@@ -247,7 +247,7 @@ jsoneditor.util.stripFormatting = function (divElement) {
  * code from Nico Burns
  * http://stackoverflow.com/users/140293/nico-burns
  * http://stackoverflow.com/questions/1125292/how-to-move-cursor-to-end-of-contenteditable-entity
- * @param {Element} contentEditableElement
+ * @param {Element} contentEditableElement   A content editable div
  */
 jsoneditor.util.setEndOfContentEditable = function (contentEditableElement) {
     var range, selection;
@@ -264,6 +264,64 @@ jsoneditor.util.setEndOfContentEditable = function (contentEditableElement) {
         range.moveToElementText(contentEditableElement);//Select the entire contents of the element with the range
         range.collapse(false);//collapse the range to the end point. false means collapse to end rather than the start
         range.select();//Select the range (make it the visible selection
+    }
+};
+
+/**
+ * Select all text of a content editable div.
+ * http://stackoverflow.com/a/3806004/1262753
+ * @param {Element} contentEditableElement   A content editable div
+ */
+jsoneditor.util.selectContentEditable = function (contentEditableElement) {
+    if (!contentEditableElement || contentEditableElement.nodeName != 'DIV') {
+        return;
+    }
+
+    var sel, range;
+    if (window.getSelection && document.createRange) {
+        range = document.createRange();
+        range.selectNodeContents(contentEditableElement);
+        sel = window.getSelection();
+        sel.removeAllRanges();
+        sel.addRange(range);
+    } else if (document.body.createTextRange) {
+        range = document.body.createTextRange();
+        range.moveToElementText(contentEditableElement);
+        range.select();
+    }
+};
+
+/**
+ * Get text selection
+ * http://stackoverflow.com/questions/4687808/contenteditable-selected-text-save-and-restore
+ * @return {Range | TextRange | null} range
+ */
+jsoneditor.util.getSelection = function () {
+    if (window.getSelection) {
+        var sel = window.getSelection();
+        if (sel.getRangeAt && sel.rangeCount) {
+            return sel.getRangeAt(0);
+        }
+    } else if (document.selection && document.selection.createRange) {
+        return document.selection.createRange();
+    }
+    return null;
+};
+
+/**
+ * Set text selection
+ * http://stackoverflow.com/questions/4687808/contenteditable-selected-text-save-and-restore
+ * @param {Range | TextRange | null} range
+ */
+jsoneditor.util.setSelection = function (range) {
+    if (range) {
+        if (window.getSelection) {
+            var sel = window.getSelection();
+            sel.removeAllRanges();
+            sel.addRange(range);
+        } else if (document.selection && range.select) {
+            range.select();
+        }
     }
 };
 
@@ -344,9 +402,8 @@ jsoneditor.util.getInnerText = function (element, buffer) {
  * Source: http://msdn.microsoft.com/en-us/library/ms537509(v=vs.85).aspx
  * @return {Number} Internet Explorer version, or -1 in case of an other browser
  */
-var _ieVersion = undefined;
 jsoneditor.util.getInternetExplorerVersion = function() {
-    if (_ieVersion == undefined) {
+    if (_ieVersion == -1) {
         var rv = -1; // Return value assumes failure.
         if (navigator.appName == 'Microsoft Internet Explorer')
         {
@@ -362,6 +419,13 @@ jsoneditor.util.getInternetExplorerVersion = function() {
 
     return _ieVersion;
 };
+
+/**
+ * cached internet explorer version
+ * @type {Number}
+ * @private
+ */
+var _ieVersion = -1;
 
 /**
  * Add and event listener. Works for all browsers

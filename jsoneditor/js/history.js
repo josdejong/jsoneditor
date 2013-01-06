@@ -32,92 +32,92 @@ jsoneditor.History = function (editor) {
     // map with all supported actions
     this.actions = {
         'editField': {
-            'undo': function (obj) {
-                obj.params.node.updateField(obj.params.oldValue);
+            'undo': function (params) {
+                params.node.updateField(params.oldValue);
             },
-            'redo': function (obj) {
-                obj.params.node.updateField(obj.params.newValue);
+            'redo': function (params) {
+                params.node.updateField(params.newValue);
             }
         },
         'editValue': {
-            'undo': function (obj) {
-                obj.params.node.updateValue(obj.params.oldValue);
+            'undo': function (params) {
+                params.node.updateValue(params.oldValue);
             },
-            'redo': function (obj) {
-                obj.params.node.updateValue(obj.params.newValue);
+            'redo': function (params) {
+                params.node.updateValue(params.newValue);
             }
         },
         'appendNode': {
-            'undo': function (obj) {
-                obj.params.parent.removeChild(obj.params.node);
+            'undo': function (params) {
+                params.parent.removeChild(params.node);
             },
-            'redo': function (obj) {
-                obj.params.parent.appendChild(obj.params.node);
+            'redo': function (params) {
+                params.parent.appendChild(params.node);
             }
         },
         'insertBeforeNode': {
-            'undo': function (obj) {
-                obj.params.parent.removeChild(obj.params.node);
+            'undo': function (params) {
+                params.parent.removeChild(params.node);
             },
-            'redo': function (obj) {
-                obj.params.parent.insertBefore(obj.params.node, obj.params.beforeNode);
+            'redo': function (params) {
+                params.parent.insertBefore(params.node, params.beforeNode);
             }
         },
         'insertAfterNode': {
-            'undo': function (obj) {
-                obj.params.parent.removeChild(obj.params.node);
+            'undo': function (params) {
+                params.parent.removeChild(params.node);
             },
-            'redo': function (obj) {
-                obj.params.parent.insertAfter(obj.params.node, obj.params.afterNode);
+            'redo': function (params) {
+                params.parent.insertAfter(params.node, params.afterNode);
             }
         },
         'removeNode': {
-            'undo': function (obj) {
-                var parent = obj.params.parent;
-                var beforeNode = parent.childs[obj.params.index] || parent.append;
-                parent.insertBefore(obj.params.node, beforeNode);
+            'undo': function (params) {
+                var parent = params.parent;
+                var beforeNode = parent.childs[params.index] || parent.append;
+                parent.insertBefore(params.node, beforeNode);
             },
-            'redo': function (obj) {
-                obj.params.parent.removeChild(obj.params.node);
+            'redo': function (params) {
+                params.parent.removeChild(params.node);
             }
         },
         'duplicateNode': {
-            'undo': function (obj) {
-                obj.params.parent.removeChild(obj.params.clone);
+            'undo': function (params) {
+                params.parent.removeChild(params.clone);
             },
-            'redo': function (obj) {
-                obj.params.parent.insertAfter(obj.params.clone, obj.params.node);
+            'redo': function (params) {
+                params.parent.insertAfter(params.clone, params.node);
             }
         },
         'changeType': {
-            'undo': function (obj) {
-                obj.params.node.changeType(obj.params.oldType);
+            'undo': function (params) {
+                params.node.changeType(params.oldType);
             },
-            'redo': function (obj) {
-                obj.params.node.changeType(obj.params.newType);
+            'redo': function (params) {
+                params.node.changeType(params.newType);
             }
         },
         'moveNode': {
-            'undo': function (obj) {
-                obj.params.startParent.moveTo(obj.params.node, obj.params.startIndex);
+            'undo': function (params) {
+                params.startParent.moveTo(params.node, params.startIndex);
             },
-            'redo': function (obj) {
-                obj.params.endParent.moveTo(obj.params.node, obj.params.endIndex);
+            'redo': function (params) {
+                params.endParent.moveTo(params.node, params.endIndex);
             }
         },
         'sort': {
-            'undo': function (obj) {
-                var node = obj.params.node;
+            'undo': function (params) {
+                var node = params.node;
                 node.hideChilds();
-                node.sort = obj.params.oldSort;
-                node.childs = obj.params.oldChilds;
+                node.sort = params.oldSort;
+                node.childs = params.oldChilds;
                 node.showChilds();
             },
-            'redo': function (obj) {
-                var node = obj.params.node;
+            'redo': function (params) {
+                var node = params.node;
                 node.hideChilds();
-                node.sort = obj.params.newSort;
-                node.childs = obj.params.newChilds;
+                node.sort = params.newSort;
+                node.childs = params.newChilds;
                 node.showChilds();
             }
         }
@@ -197,7 +197,10 @@ jsoneditor.History.prototype.undo = function () {
         if (obj) {
             var action = this.actions[obj.action];
             if (action && action.undo) {
-                action.undo(obj);
+                action.undo(obj.params);
+                if (obj.params.oldSelection) {
+                    this.editor.setSelection(obj.params.oldSelection);
+                }
             }
             else {
                 console.log('Error: unknown action "' + obj.action + '"');
@@ -219,14 +222,15 @@ jsoneditor.History.prototype.redo = function () {
 
         var obj = this.history[this.index];
         if (obj) {
-            if (obj) {
-                var action = this.actions[obj.action];
-                if (action && action.redo) {
-                    action.redo(obj);
+            var action = this.actions[obj.action];
+            if (action && action.redo) {
+                action.redo(obj.params);
+                if (obj.params.newSelection) {
+                    this.editor.setSelection(obj.params.newSelection);
                 }
-                else {
-                    console.log('Error: unknown action "' + obj.action + '"');
-                }
+            }
+            else {
+                console.log('Error: unknown action "' + obj.action + '"');
             }
         }
 
