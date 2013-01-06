@@ -1169,7 +1169,7 @@ jsoneditor.Node.prototype._onDrag = function (event) {
         trPrev = trThis;
         do {
             trPrev = trPrev.previousSibling;
-            nodePrev = jsoneditor.JSONEditor.getNodeFromTarget(trPrev);
+            nodePrev = jsoneditor.Node.getNodeFromTarget(trPrev);
             topPrev = trPrev ? jsoneditor.util.getAbsoluteTop(trPrev) : 0;
         }
         while (trPrev && mouseY < topPrev);
@@ -1182,7 +1182,7 @@ jsoneditor.Node.prototype._onDrag = function (event) {
             // move to the first node
             trRoot = trThis.parentNode.firstChild;
             trPrev = trRoot ? trRoot.nextSibling : undefined;
-            nodePrev = jsoneditor.JSONEditor.getNodeFromTarget(trPrev);
+            nodePrev = jsoneditor.Node.getNodeFromTarget(trPrev);
             if (nodePrev == this) {
                 nodePrev = undefined;
             }
@@ -1210,7 +1210,7 @@ jsoneditor.Node.prototype._onDrag = function (event) {
             topFirst = jsoneditor.util.getAbsoluteTop(trFirst);
             trNext = trFirst;
             do {
-                nodeNext = jsoneditor.JSONEditor.getNodeFromTarget(trNext);
+                nodeNext = jsoneditor.Node.getNodeFromTarget(trNext);
                 if (trNext) {
                     bottomNext = trNext.nextSibling ?
                         jsoneditor.util.getAbsoluteTop(trNext.nextSibling) : 0;
@@ -1238,7 +1238,7 @@ jsoneditor.Node.prototype._onDrag = function (event) {
                 // find the best fitting level (move upwards over the append nodes)
                 trPrev = nodeNext.dom.tr.previousSibling;
                 while (levelNext < level && trPrev) {
-                    nodePrev = jsoneditor.JSONEditor.getNodeFromTarget(trPrev);
+                    nodePrev = jsoneditor.Node.getNodeFromTarget(trPrev);
                     if (nodePrev == this || nodePrev._isChildOf(this)) {
                         // neglect itself and its childs
                     }
@@ -1250,7 +1250,7 @@ jsoneditor.Node.prototype._onDrag = function (event) {
                             // consisting of not only this node (else the
                             // append node will change into a visible "empty"
                             // text when removing this node).
-                            nodeNext = jsoneditor.JSONEditor.getNodeFromTarget(trPrev);
+                            nodeNext = jsoneditor.Node.getNodeFromTarget(trPrev);
                             levelNext = nodeNext.getLevel();
                         }
                         else {
@@ -2051,6 +2051,22 @@ jsoneditor.Node.prototype.getAppend = function () {
         this.append.setParent(this);
     }
     return this.append.getDom();
+};
+
+/**
+ * Find the node from an event target
+ * @param {Node} target
+ * @return {jsoneditor.Node | undefined} node  or undefined when not found
+ */
+jsoneditor.Node.getNodeFromTarget = function (target) {
+    while (target) {
+        if (target.node) {
+            return target.node;
+        }
+        target = target.parentNode;
+    }
+
+    return undefined;
 };
 
 // titles with explanation for the different types

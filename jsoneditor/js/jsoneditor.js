@@ -446,7 +446,7 @@ jsoneditor.JSONEditor.prototype._createFrame = function () {
             editor.onKeyDown(event);
         }
 
-        var node = jsoneditor.JSONEditor.getNodeFromTarget(target);
+        var node = jsoneditor.Node.getNodeFromTarget(target);
         if (node) {
             node.onEvent(event);
         }
@@ -664,20 +664,4 @@ jsoneditor.JSONEditor.prototype._createTable = function () {
     this.table.appendChild(this.tbody);
 
     this.frame.appendChild(contentOuter);
-};
-
-/**
- * Find the node from an event target
- * @param {Node} target
- * @return {jsoneditor.Node | undefined} node  or undefined when not found
- */
-jsoneditor.JSONEditor.getNodeFromTarget = function (target) {
-    while (target) {
-        if (target.node) {
-            return target.node;
-        }
-        target = target.parentNode;
-    }
-
-    return undefined;
 };
