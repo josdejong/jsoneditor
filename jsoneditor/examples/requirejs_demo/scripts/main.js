@@ -23,4 +23,3 @@ require([module], function (jsoneditor) {
         alert(JSON.stringify(json, null, 2));
     };
 });
-

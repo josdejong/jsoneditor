@@ -7,13 +7,17 @@
         body {
             font: 11pt arial;
         }
+        #jsoneditor {
+            width: 500px;
+            height: 500px;
+        }
     </style>
 </head>
 <body>
     <p>
         This editor is read-only (mode='viewer').
     </p>
-    <div id="jsoneditor" style="width: 500px; height: 400px;"></div>
+    <div id="jsoneditor"></div>
 
     <script type="text/javascript" >
         // create the editor
@@ -29,8 +33,7 @@
             "object": {"a": "b", "c": "d"},
             "string": "Hello World"
         };
-        var editor = new jsoneditor.JSONEditor(container, options);
-        editor.set(json);
+        var editor = new jsoneditor.JSONEditor(container, options, json);
     </script>
 </body>
 </html>
