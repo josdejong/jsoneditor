@@ -1,0 +1,54 @@
+
+div.fileretriever-overlay, div.fileretriever-background {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 999;
+}
+
+div.fileretriever-overlay {
+    background-color: gray;
+    opacity: 0.2;
+    filter: alpha(opacity = 20);
+}
+
+div.fileretriever-border {
+    width: 410px;
+    margin: 100px auto;
+    padding: 20px;
+    background-color: white;
+    border: 1px solid gray;
+    border-radius: 2px;
+}
+
+form.fileretriever-form {
+}
+
+div.fileretriever-title {
+    font-weight: bold;
+}
+
+div.fileretriever-contents {
+    margin: 30px 0;
+}
+
+div.fileretriever-buttons {
+    text-align: right;
+}
+
+input.fileretriever-field[type="file"] {
+    width: 400px;
+    padding: 3px;
+}
+input.fileretriever-field[type="text"] {
+    width: 400px;
+    border: 1px solid lightgray;
+    border-radius: 2px;
+    padding: 3px;
+}
+
+input.fileretriever-submit, input.fileretriever-cancel {
+    margin-left: 10px;
+}

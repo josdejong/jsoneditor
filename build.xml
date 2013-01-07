@@ -2,95 +2,134 @@
 
 <project name="jsoneditor-builder" default="main">
     <!-- the version number of must be updated here (according to changelog.txt) -->
-    <property name="package" value="jsoneditor"/>
-    <property name="version" value="1.6.0"/>
+    <property name="package"    value="jsoneditor"/>
+    <property name="version"    value="1.7.0"/>
 
-    <property name="root" location="" />
-    <property name="lib" location="build/lib" />
-    <property name="web" location="build/web" />
-    <property name="chrome_app" location="build/app/chrome" />
+    <!-- compression tools -->
     <property name="compressor" value="tools/yuicompressor-2.4.7.jar" />
 
-    <target name="minify" description="minify jsoneditor libraries">
+    <!-- directories -->
+    <property name="root"        location="" />
+    <property name="lib"         location="build/lib" />
+    <property name="web_app"     location="build/app/web" />
+    <property name="chrome_app"  location="build/app/chrome" />
+    <property name="web_app_src" location="app/web" />
+    <property name="jsoneditor"     location="${lib}/${package}-${version}" />
+    <property name="jsoneditor_min" location="${lib}/${package}-${version}.min" />
+
+    <target name="build_lib" description="build jsoneditor library">
+        <delete dir="${jsoneditor}" />
+        <delete dir="${jsoneditor_min}" />
+
+        <!-- copy all files for the non-minified jsoneditor -->
+        <copy file="${root}/LICENSE" todir="${jsoneditor}" />
+        <copy file="${root}/NOTICE" todir="${jsoneditor}" />
+        <copy file="${root}/README.md" todir="${jsoneditor}" />
+        <copy file="${root}/changelog.txt" todir="${jsoneditor}" />
+        <copy file="${root}/demo.html" todir="${jsoneditor}" />
+        <copy file="${root}/jsoneditor/jsoneditor.js" todir="${jsoneditor}/jsoneditor" />
+        <copy file="${root}/jsoneditor/jsoneditor.css" todir="${jsoneditor}/jsoneditor" />
+        <copy file="${root}/jsoneditor/img/jsoneditor-icons.png" todir="${jsoneditor}/jsoneditor/img" />
+
+        <!-- copy all files for the minified jsoneditor -->
+        <copy file="${root}/LICENSE" todir="${jsoneditor_min}" />
+        <copy file="${root}/NOTICE" todir="${jsoneditor_min}" />
+        <copy file="${root}/README.md" todir="${jsoneditor_min}" />
+        <copy file="${root}/changelog.txt" todir="${jsoneditor_min}" />
+        <copy file="${root}/demo.html" todir="${jsoneditor_min}" />
+        <copy file="${root}/jsoneditor/img/jsoneditor-icons.png" todir="${jsoneditor_min}/jsoneditor/img" />
+
+        <!-- minify the jsoneditor files -->
         <java jar="${compressor}" dir="jsoneditor" fork="true" failonerror="true">
             <arg value="-o"/>
-            <arg value="jsoneditor-min.js"/>
+            <arg value="${jsoneditor_min}/jsoneditor/jsoneditor-min.js"/>
             <arg value="jsoneditor.js"/>
         </java>
         <java jar="${compressor}" dir="jsoneditor" fork="true" failonerror="true">
             <arg value="-o"/>
-            <arg value="jsoneditor-min.css"/>
+            <arg value="${jsoneditor_min}/jsoneditor/jsoneditor-min.css"/>
             <arg value="jsoneditor.css"/>
         </java>
-    </target>
-
-    <target name="zip" depends="minify" description="create zipped jsoneditor libraries">
-        <mkdir dir="${lib}" />
 
         <!-- create a zip file with non-minified jsoneditor -->
-        <!-- TODO: do not overwrite if existing -->
         <zip destfile="${lib}/${package}-${version}.zip">
-            <fileset dir="${root}" includes="LICENSE" />
-            <fileset dir="${root}" includes="NOTICE" />
-            <fileset dir="${root}" includes="README.md" />
-            <fileset dir="${root}" includes="changelog.txt" />
-            <fileset dir="${root}" includes="demo.html" />
-            <fileset dir="${root}" includes="jsoneditor/jsoneditor.js" />
-            <fileset dir="${root}" includes="jsoneditor/jsoneditor.css" />
-            <fileset dir="${root}" includes="jsoneditor/img/jsoneditor-icons.png" />
+            <fileset dir="${jsoneditor}" includes="**" />
         </zip>
 
-        <!-- create a zip file with non-minified jsoneditor -->
-        <!-- TODO: do not overwrite if existing -->
+        <!-- create a zip file with minified jsoneditor -->
         <zip destfile="${lib}/${package}-${version}.min.zip">
-            <fileset dir="${root}" includes="LICENSE" />
-            <fileset dir="${root}" includes="NOTICE" />
-            <fileset dir="${root}" includes="README.md" />
-            <fileset dir="${root}" includes="changelog.txt" />
-            <!-- TODO: create demo (with correct links to minified library)
-            <fileset dir="${root}" includes="demo.html" />
-            -->
-            <fileset dir="${root}" includes="jsoneditor/jsoneditor-min.js" />
-            <fileset dir="${root}" includes="jsoneditor/jsoneditor-min.css" />
-            <fileset dir="${root}" includes="jsoneditor/img/jsoneditor-icons.png" />
+            <fileset dir="${jsoneditor_min}" includes="**" />
         </zip>
     </target>
 
-    <target name="build_site" depends="minify" description="copy all files for the site to the build directory">
-        <delete dir="${web}" />
-        <mkdir dir="${web}" />
-        <copy file="LICENSE" todir="${web}" />
-        <copy file="NOTICE" todir="${web}" />
-        <copy file="README.md" todir="${web}" />
-        <copy file="robots.txt" todir="${web}" />
-        <copy file="changelog.txt" todir="${web}" />
-        <copy file="index.html" todir="${web}" />
-        <copy file="favicon.ico" todir="${web}" />
-        <copy file="interface/interface.js" todir="${web}/interface" />
-        <copy file="interface/interface.css" todir="${web}/interface" />
-        <copy file="interface/lib/jsonlint/jsonlint.js" todir="${web}/interface/lib/jsonlint" />
-        <copy file="interface/img/logo.png" todir="${web}/interface/img" />
-        <copy file="interface/img/header_background.png" todir="${web}/interface/img" />
-        <copy file="jsoneditor/jsoneditor-min.js" todir="${web}/jsoneditor" />
-        <copy file="jsoneditor/jsoneditor-min.css" todir="${web}/jsoneditor" />
-        <copy file="jsoneditor/img/jsoneditor-icons.png" todir="${web}/jsoneditor/img" />
+    <target name="build_web_app" depends="build_lib" description="copy all files for the web application to the build directory">
+        <delete dir="${web_app}" />
+        <mkdir dir="${web_app}" />
+
+        <!-- concatenate the javascript and css app files -->
+        <concat destfile="${web_app}/app.js">
+            <fileset dir="${web_app_src}" includes="queryparams.js"/>
+            <fileset dir="${web_app_src}" includes="ajax.js"/>
+            <fileset dir="${web_app_src}" includes="fileretriever.js"/>
+            <fileset dir="${web_app_src}" includes="notify.js"/>
+            <fileset dir="${web_app_src}" includes="splitter.js"/>
+            <fileset dir="${web_app_src}" includes="app.js"/>
+        </concat>
+        <concat destfile="${web_app}/app.css">
+            <fileset dir="${web_app_src}" includes="fileretriever.css"/>
+            <fileset dir="${web_app_src}" includes="app.css"/>
+        </concat>
+
+        <!-- copy all other files and libraries-->
+        <copy file="changelog.txt" todir="${web_app}" />
+        <copy file="README.md" todir="${web_app}" />
+        <copy file="LICENSE" todir="${web_app}" />
+        <copy file="NOTICE" todir="${web_app}" />
+        <copy file="${web_app_src}/robots.txt" todir="${web_app}" />
+        <copy file="${web_app_src}/datapolicy.txt" todir="${web_app}" />
+        <copy file="${web_app_src}/index.html" todir="${web_app}" />
+        <copy file="${web_app_src}/favicon.ico" todir="${web_app}" />
+        <copy file="${web_app_src}/fileretriever.php" todir="${web_app}" />
+        <copy file="${web_app_src}/img/logo.png" todir="${web_app}/img" />
+        <copy file="${web_app_src}/img/header_background.png" todir="${web_app}/img" />
+
+        <copy file="${web_app_src}/lib/jsonlint/jsonlint.js" todir="${web_app}/lib/jsonlint" />
+        <copy file="${jsoneditor_min}/jsoneditor/jsoneditor-min.js" todir="${web_app}/lib/jsoneditor" />
+        <copy file="${jsoneditor_min}/jsoneditor/jsoneditor-min.css" todir="${web_app}/lib/jsoneditor" />
+        <copy file="${jsoneditor_min}/jsoneditor/img/jsoneditor-icons.png" todir="${web_app}/lib/jsoneditor/img" />
+
+        <!-- minify the javascript files -->
+        <java jar="${compressor}" dir="${web_app}" fork="true" failonerror="true">
+            <arg value="-o"/>
+            <arg value="app-min.js"/>
+            <arg value="app.js"/>
+        </java>
+        <java jar="${compressor}" dir="${web_app}" fork="true" failonerror="true">
+            <arg value="-o"/>
+            <arg value="app-min.css"/>
+            <arg value="app.css"/>
+        </java>
+
+        <!-- delete non-minified app files -->
+        <delete file="${web_app}/app.js" />
+        <delete file="${web_app}/app.css" />
     </target>
 
-    <target name="build_chrome_app" depends="minify" description="copy all files for the chrome app to the build directory">
+    <target name="build_chrome_app" depends="build_lib" description="copy and zip all files for the chrome app">
         <!-- hosted app -->
         <delete dir="${chrome_app}" />
         <mkdir dir="${chrome_app}" />
         <copy file="app/chrome/manifest.json" todir="${chrome_app}" />
-        <copy file="interface/img/icon_16.png" todir="${chrome_app}" />
-        <copy file="interface/img/icon_128.png" todir="${chrome_app}" />
-    </target>
+        <copy file="${web_app_src}/img/icon_16.png" todir="${chrome_app}" />
+        <copy file="${web_app_src}/img/icon_128.png" todir="${chrome_app}" />
 
-    <target name="zip_chrome_app" depends="build_chrome_app" description="zip the chrome application">
-        <zip destfile="build/app/chrome_app.zip">
+        <zip destfile="build/app/chrome.zip">
             <fileset dir="${chrome_app}" />
         </zip>
+
+        <delete dir="${chrome_app}" />
     </target>
 
-    <target name="main" depends="minify, zip, build_site, build_chrome_app, zip_chrome_app" />
+    <target name="main" depends="build_lib, build_web_app, build_chrome_app" />
 
 </project>

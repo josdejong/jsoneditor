@@ -27,7 +27,7 @@
  * Copyright (c) 2011-2012 Jos de Jong, http://jsoneditoronline.org
  *
  * @author  Jos de Jong, <wjosdejong@gmail.com>
- * @date    2012-10-19
+ * @date    2012-12-08
  */
 
 
@@ -63,8 +63,15 @@ var JSON;
  * JSONEditor
  * @param {Element} container    Container element
  * @param {Object}  [options]    Object with options. available options:
- *                                   {Boolean} enableSearch   true by default
- *                                   {Boolean} enableHistory  true by default
+ *                               {String} mode      Editor mode. Available values:
+ *                                                  'editor' (default), 'viewer'.
+ *                               {Boolean} search   Enable search box.
+ *                                                  True by default
+ *                               {Boolean} history  Enable history (undo/redo).
+ *                                                  True by default
+ *                               {function} change  Callback method, triggered
+ *                                                  on change of contents
+ *                               {String} name      Field name for the root node.
  * @param {Object | undefined} json JSON object
  */
 JSONEditor = function (container, options, json) {
@@ -83,7 +90,7 @@ JSONEditor = function (container, options, json) {
 
     this._setOptions(options);
 
-    if (this.options.enableHistory) {
+    if (this.options.history && this.editable) {
         this.history = new JSONEditor.History(this);
     }
 
@@ -95,15 +102,24 @@ JSONEditor = function (container, options, json) {
 
 /**
  * Initialize and set default options
- * @param {Object}  [options]      Object with options. available options:
- *                                   {Boolean} enableSearch   true by default
- *                                   {Boolean} enableHistory  true by default
+ * @param {Object}  [options]    Object with options. available options:
+ *                               {String} mode      Editor mode. Available values:
+ *                                                  'editor' (default), 'viewer'.
+ *                               {Boolean} search   Enable search box.
+ *                                                  True by default.
+ *                               {Boolean} history  Enable history (undo/redo).
+ *                                                  True by default.
+ *                               {function} change  Callback method, triggered
+ *                                                  on change of contents.
+ *                               {String} name      Field name for the root node.
  * @private
  */
 JSONEditor.prototype._setOptions = function (options) {
     this.options = {
-        'enableSearch': true,
-        'enableHistory': true
+        search: true,
+        history: true,
+        mode: 'editor',
+        name: undefined   // field name of root node
     };
 
     // copy all options
@@ -113,7 +129,22 @@ JSONEditor.prototype._setOptions = function (options) {
                 this.options[prop] = options[prop];
             }
         }
+
+        // check for deprecated options
+        if (options.enableSearch) {
+            // deprecated since version 1.6.0, 2012-11-03
+            this.options.search = options.enableSearch;
+            console.log('WARNING: Option "enableSearch" is deprecated. Use "search" instead.');
+        }
+        if (options.enableHistory) {
+            // deprecated since version 1.6.0, 2012-11-03
+            this.options.search = options.enableHistory;
+            console.log('WARNING: Option "enableHistory" is deprecated. Use "history" instead.');
+        }
     }
+
+    // interpret the options
+    this.editable = (this.options.mode != 'viewer');
 };
 
 // node currently being edited
@@ -121,9 +152,16 @@ JSONEditor.focusNode = undefined;
 
 /**
  * Set JSON object in editor
- * @param {Object | undefined} json
+ * @param {Object | undefined} json      JSON data
+ * @param {String}             [name]    Optional field name for the root node.
+ *                                       Can also be set using setName(name).
  */
-JSONEditor.prototype.set = function (json) {
+JSONEditor.prototype.set = function (json, name) {
+    // adjust field name for root node
+    if (name) {
+        this.options.name = name;
+    }
+
     // verify if json is valid JSON, ignore when a function
     if (json instanceof Function || (json === undefined)) {
         this.clear();
@@ -133,9 +171,10 @@ JSONEditor.prototype.set = function (json) {
 
         // replace the root node
         var params = {
+            'field': this.options.name,
             'value': json
         };
-        var node = new JSONEditor.Node(params);
+        var node = new JSONEditor.Node(this, params);
         this._setRoot(node);
 
         // expand
@@ -170,6 +209,25 @@ JSONEditor.prototype.get = function () {
 };
 
 /**
+ * Set a field name for the root node.
+ * @param {String | undefined} name
+ */
+JSONEditor.prototype.setName = function (name) {
+    this.options.name = name;
+    if (this.node) {
+        this.node.updateField(this.options.name);
+    }
+};
+
+/**
+ * Get the field name for the root node.
+ * @return {String | undefined} name
+ */
+JSONEditor.prototype.getName = function () {
+    return this.options.name;
+};
+
+/**
  * Remove the root node from the editor
  */
 JSONEditor.prototype.clear = function () {
@@ -189,12 +247,6 @@ JSONEditor.prototype._setRoot = function (node) {
     this.clear();
 
     this.node = node;
-
-    // override the getEditor method
-    var editor = this;
-    node.getEditor = function () {
-        return editor;
-    };
 
     // append to the dom
     this.tbody.appendChild(node.getDom());
@@ -262,8 +314,19 @@ JSONEditor.prototype.collapseAll = function () {
  *                         needed to undo or redo the action.
  */
 JSONEditor.prototype.onAction = function (action, params) {
+    // add an action to the history
     if (this.history) {
         this.history.add(action, params);
+    }
+
+    // trigger the onChange callback
+    if (this.options.change) {
+        try {
+            this.options.change();
+        }
+        catch (err) {
+            console.log('Error in change callback: ', err);
+        }
     }
 };
 
@@ -522,9 +585,11 @@ JSONEditor.History.prototype.redo = function () {
 /**
  * @constructor JSONEditor.Node
  * Create a new Node
+ * @param {JSONEditor} editor
  * @param {Object} params   Can contain parameters: field, fieldEditable, value.
  */
-JSONEditor.Node = function (params) {
+JSONEditor.Node = function (editor, params) {
+    this.editor = editor;
     this.dom = {};
     this.expanded = false;
 
@@ -552,14 +617,6 @@ JSONEditor.Node.prototype.setParent = function(parent) {
  */
 JSONEditor.Node.prototype.getParent = function () {
     return this.parent;
-};
-
-/**
- * Get the JSONEditor
- * @return {JSONEditor} editor
- */
-JSONEditor.Node.prototype.getEditor = function () {
-    return this.parent ? this.parent.getEditor() : undefined;
 };
 
 /**
@@ -609,7 +666,7 @@ JSONEditor.Node.prototype.setValue = function(value) {
             childValue = value[i];
             if (childValue !== undefined && !(childValue instanceof Function)) {
                 // ignore undefined and functions
-                child = new JSONEditor.Node({
+                child = new JSONEditor.Node(this.editor, {
                     'value': childValue
                 });
                 this.appendChild(child);
@@ -625,7 +682,7 @@ JSONEditor.Node.prototype.setValue = function(value) {
                 childValue = value[childField];
                 if (childValue !== undefined && !(childValue instanceof Function)) {
                     // ignore undefined and functions
-                    child = new JSONEditor.Node({
+                    child = new JSONEditor.Node(this.editor, {
                         'field': childField,
                         'value': childValue
                     });
@@ -697,7 +754,7 @@ JSONEditor.Node.prototype.getLevel = function() {
  * @return {JSONEditor.Node} clone
  */
 JSONEditor.Node.prototype.clone = function() {
-    var clone = new JSONEditor.Node();
+    var clone = new JSONEditor.Node(this.editor);
     clone.type = this.type;
     clone.field = this.field;
     clone.fieldInnerText = this.fieldInnerText;
@@ -1074,10 +1131,7 @@ JSONEditor.Node.prototype.scrollTo = function() {
     }
 
     if (this.dom.tr && this.dom.tr.parentNode) {
-        var editor = this.getEditor();
-        if (editor) {
-            editor.scrollTo(this.dom.tr.offsetTop);
-        }
+        this.editor.scrollTo(this.dom.tr.offsetTop);
     }
 };
 
@@ -1104,24 +1158,12 @@ JSONEditor.Node.prototype.focus = function(field) {
 };
 
 /**
- * Remove focus from the value or field of this node
+ * Update the values from the DOM field and value of this node
  */
 JSONEditor.Node.prototype.blur = function() {
-    if (this.dom.tr && this.dom.tr.parentNode) {
-        var domValue = this.dom.value;
-        if (domValue) {
-            domValue.blur();
-        }
-        var domField = this.dom.field;
-        if (domField) {
-            domField.blur();
-        }
-    }
-
-    // retrieve the field and value from the DOM. A little redundant but
-    // it cannot do harm.
-    this._getDomValue(true);
-    this._getDomField(true);
+    // retrieve the actual field and value from the DOM.
+    this._getDomValue(false);
+    this._getDomField(false);
 };
 
 /**
@@ -1371,16 +1413,18 @@ JSONEditor.Node.prototype._getDomValue = function(silent) {
                 value = this._stringCast(str);
             }
             if (value !== this.value) {
-                this.getEditor().onAction('editValue', {
+                var oldValue = this.value;
+                this.value = value;
+                this.editor.onAction('editValue', {
                     'node': this,
-                    'oldValue': this.value,
+                    'oldValue': oldValue,
                     'newValue': value
                 });
             }
-            this.value = value;
         }
         catch (err) {
             this.value = undefined;
+            // TODO: sent an action with the new, invalid value?
             if (silent != true) {
                 throw err;
             }
@@ -1506,16 +1550,18 @@ JSONEditor.Node.prototype._getDomField = function(silent) {
             var field = this._unescapeHTML(this.fieldInnerText);
 
             if (field !== this.field) {
-                this.getEditor().onAction('editField', {
+                var oldField = this.field;
+                this.field = field;
+                this.editor.onAction('editField', {
                     'node': this,
-                    'oldValue': this.field,
+                    'oldValue': oldField,
                     'newValue': field
                 });
             }
-            this.field = field;
         }
         catch (err) {
             this.field = undefined;
+            // TODO: sent an action here, with the new, invalid value?
             if (silent != true) {
                 throw err;
             }
@@ -1550,14 +1596,16 @@ JSONEditor.Node.prototype.getDom = function() {
     dom.tr.className = 'jsoneditor-tr';
     dom.tr.node = this;
 
-    // create draggable area
-    var tdDrag = document.createElement('td');
-    tdDrag.className = 'jsoneditor-td';
-    dom.drag = this._createDomDragArea();
-    if (dom.drag) {
-        tdDrag.appendChild(dom.drag);
+    if (this.editor.editable) {
+        // create draggable area
+        var tdDrag = document.createElement('td');
+        tdDrag.className = 'jsoneditor-td';
+        dom.drag = this._createDomDragArea();
+        if (dom.drag) {
+            tdDrag.appendChild(dom.drag);
+        }
+        dom.tr.appendChild(tdDrag);
     }
-    dom.tr.appendChild(tdDrag);
 
     // create tree and field
     var tdField = document.createElement('td');
@@ -1569,29 +1617,31 @@ JSONEditor.Node.prototype.getDom = function() {
     dom.tree = this._createDomTree(dom.expand, dom.field, dom.value);
     tdField.appendChild(dom.tree);
 
-    // create type select box
-    var tdType = document.createElement('td');
-    tdType.className = 'jsoneditor-td jsoneditor-td-edit';
-    dom.tr.appendChild(tdType);
-    dom.type = this._createDomTypeButton();
-    tdType.appendChild(dom.type);
+    if (this.editor.editable) {
+        // create type select box
+        var tdType = document.createElement('td');
+        tdType.className = 'jsoneditor-td jsoneditor-td-edit';
+        dom.tr.appendChild(tdType);
+        dom.type = this._createDomTypeButton();
+        tdType.appendChild(dom.type);
 
-    // create duplicate button
-    var tdDuplicate = document.createElement('td');
-    tdDuplicate.className = 'jsoneditor-td jsoneditor-td-edit';
-    dom.tr.appendChild(tdDuplicate);
-    dom.duplicate = this._createDomDuplicateButton();
-    if (dom.duplicate) {
-        tdDuplicate.appendChild(dom.duplicate);
-    }
+        // create duplicate button
+        var tdDuplicate = document.createElement('td');
+        tdDuplicate.className = 'jsoneditor-td jsoneditor-td-edit';
+        dom.tr.appendChild(tdDuplicate);
+        dom.duplicate = this._createDomDuplicateButton();
+        if (dom.duplicate) {
+            tdDuplicate.appendChild(dom.duplicate);
+        }
 
-    // create remove button
-    var tdRemove = document.createElement('td');
-    tdRemove.className = 'jsoneditor-td jsoneditor-td-edit';
-    dom.tr.appendChild(tdRemove);
-    dom.remove = this._createDomRemoveButton();
-    if (dom.remove) {
-        tdRemove.appendChild(dom.remove);
+        // create remove button
+        var tdRemove = document.createElement('td');
+        tdRemove.className = 'jsoneditor-td jsoneditor-td-edit';
+        dom.tr.appendChild(tdRemove);
+        dom.remove = this._createDomRemoveButton();
+        if (dom.remove) {
+            tdRemove.appendChild(dom.remove);
+        }
     }
 
     this.updateDom(); // TODO: recurse here?
@@ -1606,11 +1656,6 @@ JSONEditor.Node.prototype.getDom = function() {
  */
 JSONEditor.Node.prototype._onDragStart = function (event) {
     event = event || window.event;
-
-    // remove focus from currently edited node
-    if (JSONEditor.focusNode) {
-        JSONEditor.focusNode.blur();
-    }
 
     var node = this;
     if (!this.mousemove) {
@@ -1725,8 +1770,8 @@ JSONEditor.Node.prototype._onDragEnd = function (event) {
     };
     if ((params.startParent != params.endParent) ||
             (params.startIndex != params.endIndex)) {
-        // only register this action if the node is actually moved to anothe place
-        this.getEditor().onAction('moveNode', params);
+        // only register this action if the node is actually moved to another place
+        this.editor.onAction('moveNode', params);
     }
 
     document.body.style.cursor = this.drag.oldCursor;
@@ -1838,7 +1883,7 @@ JSONEditor.Node.prototype.updateDom = function (options) {
     if (domField) {
         if (this.fieldEditable == true) {
             // parent is an object
-            domField.contentEditable = 'true';
+            domField.contentEditable = this.editor.editable;
             domField.spellcheck = false;
             domField.className = 'jsoneditor-field';
         }
@@ -1958,14 +2003,14 @@ JSONEditor.Node.prototype._createDomValue = function () {
     }
     else if (this.type == 'string') {
         domValue = document.createElement('div');
-        domValue.contentEditable = 'true';
+        domValue.contentEditable = this.editor.editable;
         domValue.spellcheck = false;
         domValue.className = 'jsoneditor-value';
         domValue.innerHTML = this._escapeHTML(this.value);
     }
     else {
         domValue = document.createElement('div');
-        domValue.contentEditable = 'true';
+        domValue.contentEditable = this.editor.editable;
         domValue.spellcheck = false;
         domValue.className = 'jsoneditor-value';
         domValue.innerHTML = this._escapeHTML(this.value);
@@ -2192,7 +2237,7 @@ JSONEditor.Node.prototype.onEvent = function (event) {
             case 'click':
                 var clone = this.parent._duplicate(this);
 
-                this.getEditor().onAction('duplicateNode', {
+                this.editor.onAction('duplicateNode', {
                     'node': this,
                     'clone': clone,
                     'parent': this.parent
@@ -2361,12 +2406,12 @@ JSONEditor.Node.prototype._onRemove = function() {
 
     this.parent._remove(this);
 
-    this.getEditor().onAction('removeNode', {
+    this.editor.onAction('removeNode', {
         'node': this,
         'parent': this.parent,
         'index': index
     });
-}
+};
 
 /**
  * Handle a click on the Type-button
@@ -2384,7 +2429,7 @@ JSONEditor.Node.prototype._onChangeType = function (event) {
     var callback = function (newType) {
         var oldType = node.type;
         node.changeType(newType);
-        node.getEditor().onAction('changeType', {
+        node.editor.onAction('changeType', {
             'node': node,
             'oldType': oldType,
             'newType': newType
@@ -2485,7 +2530,7 @@ JSONEditor.showDropDownList = function (params) {
  */
 JSONEditor.Node.prototype.getAppend = function () {
     if (!this.append) {
-        this.append = new JSONEditor.AppendNode();
+        this.append = new JSONEditor.AppendNode(this.editor);
         this.append.setParent(this);
     }
     return this.append.getDom();
@@ -2658,10 +2703,12 @@ JSONEditor.Node.prototype._escapeJSON = function (text) {
 /**
  * @constructor JSONEditor.AppendNode
  * @extends JSONEditor.Node
+ * @param {JSONEditor} editor
  * Create a new AppendNode. This is a special node which is created at the
  * end of the list with childs for an object or array
  */
-JSONEditor.AppendNode = function () {
+JSONEditor.AppendNode = function (editor) {
+    this.editor = editor;
     this.dom = {};
 };
 
@@ -2689,18 +2736,26 @@ JSONEditor.AppendNode.prototype.getDom = function () {
 
     // a row for the append button
     var trAppend = document.createElement('tr');
-    trAppend.appendChild(newTd('jsoneditor-td'));
     trAppend.node = this;
 
+    // TODO: do not create an appendNode at all when in viewer mode
+    if (!this.editor.editable) {
+        return trAppend;
+    }
+
+    // a cell for the drag area column
+    trAppend.appendChild(newTd('jsoneditor-td'));
+
+    // a cell for the append button
     var tdAppend = document.createElement('td');
     trAppend.appendChild(tdAppend);
     tdAppend.className = 'jsoneditor-td';
 
+    // create the append button
     var buttonAppend = document.createElement('button');
     buttonAppend.className = 'jsoneditor-append';
     buttonAppend.title = 'Append a field';
     this.dom.append = buttonAppend;
-
     tdAppend.appendChild(buttonAppend);
 
     trAppend.appendChild(newTd('jsoneditor-td jsoneditor-td-edit'));
@@ -2757,7 +2812,8 @@ JSONEditor.AppendNode.prototype.onEvent = function (event) {
  * @private
  */
 JSONEditor.AppendNode.prototype._onAppend = function () {
-    var newNode = new JSONEditor.Node({
+
+    var newNode = new JSONEditor.Node(this.editor, {
         'field': '',
         'value': ''
     });
@@ -2768,7 +2824,7 @@ JSONEditor.AppendNode.prototype._onAppend = function () {
     newNode.dom.value.innerHTML = newNode.valuePlaceholder = 'value';
     newNode.focus();
 
-    this.getEditor().onAction('appendNode', {
+    this.editor.onAction('appendNode', {
         'node': newNode,
         'parent': this.parent
     });
@@ -2796,7 +2852,7 @@ JSONEditor.prototype._createFrame = function () {
         //       Requires knowing whether the JSONEditor has focus or not
         //       (use a global event listener for that?)
         // Check for search quickkeys, Ctrl+F and F3
-        if (editor.options.enableSearch) {
+        if (editor.options.search) {
             if (event.type == 'keydown') {
                 var keynum = event.which || event.keyCode;
                 if (keynum == 70 && event.ctrlKey) { // Ctrl+F
@@ -2878,11 +2934,9 @@ JSONEditor.prototype._createFrame = function () {
     this.menu.appendChild(collapseAll);
 
     // create expand/collapse buttons
-    if (this.options.enableHistory) {
+    if (this.history) {
         // create separator
         var separator = document.createElement('span');
-        //separator.style.width = '5px';
-        //separator.style.display = 'inline';
         separator.innerHTML = '&nbsp;';
         this.menu.appendChild(separator);
 
@@ -2891,7 +2945,13 @@ JSONEditor.prototype._createFrame = function () {
         undo.className = 'jsoneditor-menu jsoneditor-undo';
         undo.title = 'Undo last action';
         undo.onclick = function () {
+            // undo last action
             editor.history.undo();
+
+            // trigger change callback
+            if (editor.options.change) {
+                editor.options.change();
+            }
         };
         this.menu.appendChild(undo);
         this.dom.undo = undo;
@@ -2901,7 +2961,13 @@ JSONEditor.prototype._createFrame = function () {
         redo.className = 'jsoneditor-menu jsoneditor-redo';
         redo.title = 'Redo';
         redo.onclick = function () {
+            // redo last action
             editor.history.redo();
+
+            // trigger change callback
+            if (editor.options.change) {
+                editor.options.change();
+            }
         };
         this.menu.appendChild(redo);
         this.dom.redo = redo;
@@ -2915,7 +2981,7 @@ JSONEditor.prototype._createFrame = function () {
     }
 
     // create search box
-    if (this.options.enableSearch) {
+    if (this.options.search) {
         this.searchBox = new JSONEditor.SearchBox(this, this.menu);
     }
 };
@@ -2991,8 +3057,14 @@ JSONEditor.getNodeFromTarget = function (target) {
  * Create a JSONFormatter and attach it to given container
  * @constructor JSONFormatter
  * @param {Element} container
+ * @param {Object} [options]         Object with options. available options:
+ *                                   {Number} indentation  Number of indentation
+ *                                                         spaces. 4 by default.
+ *                                   {function} change     Callback method
+ *                                                         triggered on change
+ * @param {JSON | String} [json]     initial contents of the formatter
  */
-JSONFormatter = function (container) {
+JSONFormatter = function (container, options, json) {
     // check availability of JSON parser (not available in IE7 and older)
     if (!JSON) {
         throw new Error('Your browser does not support JSON. \n\n' +
@@ -3001,6 +3073,7 @@ JSONFormatter = function (container) {
     }
 
     this.container = container;
+    this.indentation = 4; // number of spaces
 
     this.width = container.clientWidth;
     this.height = container.clientHeight;
@@ -3043,37 +3116,33 @@ JSONFormatter = function (container) {
     this.content.appendChild(this.textarea);
 
     var textarea = this.textarea;
-    /* TODO: register onchange
-    var formatter = this;
-    var onChange = function () {
-        formatter._checkChange();
-    };
-    this.textarea.onchange = onChange;
-    this.textarea.onkeyup = onChange;
-    this.textarea.oncut = onChange;
-    this.textarea.oncopy = onChange;
-    this.textarea.onpaste = onChange;
-    this.textarea.onchange = function () {
-        console.log('onchange');
+
+    // read the options
+    if (options) {
+        if (options.change) {
+            // register on change event
+            if (this.textarea.oninput === null) {
+                this.textarea.oninput = function () {
+                    options.change();
+                }
+            }
+            else {
+                // oninput is undefined. For IE8-
+                this.textarea.onchange = function () {
+                    options.change();
+                }
+            }
+        }
+        if (options.indentation) {
+            this.indentation = Number(options.indentation);
+        }
     }
-    this.textarea.ondomcharacterdatamodified = function () {
-        console.log('DOMCharacterDataModified');
-    }
-    this.textarea.ondomattrmodified = function () {
-        console.log('DOMAttrModified');
-    }
-    addEventListener(this.textarea, 'DOMAttrModified', function (event) {
-        console.log('DOMAttrModified', event);
-    });
-    addEventListener(this.textarea, 'DOMCharacterDataModified', function (event) {
-        console.log('DOMCharacterDataModified', event);
-    });
-    */
 
     var me = this;
     buttonFormat.onclick = function () {
         try {
-            textarea.value = JSON.stringify(JSONEditor.parse(textarea.value), null, '  ');
+            var json = JSONEditor.parse(textarea.value);
+            textarea.value = JSON.stringify(json, null, me.indentation);
         }
         catch (err) {
             me.onError(err);
@@ -3081,7 +3150,8 @@ JSONFormatter = function (container) {
     };
     buttonCompact.onclick = function () {
         try {
-            textarea.value = JSON.stringify(JSONEditor.parse(textarea.value));
+            var json = JSONEditor.parse(textarea.value);
+            textarea.value = JSON.stringify(json);
         }
         catch (err) {
             me.onError(err);
@@ -3089,6 +3159,14 @@ JSONFormatter = function (container) {
     };
 
     this.container.appendChild(this.frame);
+
+    // load initial json object or string
+    if (typeof(json) == 'string') {
+        this.setText(json);
+    }
+    else {
+        this.set(json);
+    }
 };
 
 /**
@@ -3101,27 +3179,11 @@ JSONFormatter.prototype.onError = function(err) {
 };
 
 /**
- * Check if the contents are changed
- * @private
- */
-JSONFormatter.prototype._checkChange = function() {
-    var content = this.textarea.value;
-
-    if (content != this.lastContent) {
-        this.lastContent = content;
-        // TODO: implement onChangeCallback
-        if (this.onChangeCallback) {
-            this.onChangeCallback();
-        }
-    }
-};
-
-/**
  * Set json data in the formatter
  * @param {Object} json
  */
 JSONFormatter.prototype.set = function(json) {
-    this.textarea.value = JSON.stringify(json, null, '  ');
+    this.textarea.value = JSON.stringify(json, null, this.indentation);
 };
 
 /**
@@ -3140,18 +3202,13 @@ JSONFormatter.prototype.getText = function() {
     return this.textarea.value;
 };
 
-
 /**
- * Set a callback method for the onchange event
- * @return {function} callback
+ * Set the text contents of the JSONFormatter
+ * @param {String} text
  */
-/* TODO: setOnChangeCallback
- JSONFormatter.prototype.setOnChangeCallback = function(callback) {
- this.onChangeCallback = callback;
- console.log(this.onChangeCallback, callback)
- }
- */
-
+JSONFormatter.prototype.setText = function(text) {
+    this.textarea.value = text;
+};
 
 /**
  * @constructor JSONEditor.SearchBox
@@ -3383,7 +3440,7 @@ JSONEditor.SearchBox.prototype.onSearch = function (event, forceSearch) {
     if (text != this.lastText || forceSearch) {
         // only search again when changed
         this.lastText = text;
-        this.results = editor.search(text);
+        this.results = this.editor.search(text);
         this.setActiveResult(undefined);
 
         // display search results
@@ -3801,4 +3858,3 @@ JSONEditor.validate = function (jsonString) {
 
     return message;
 };
-
