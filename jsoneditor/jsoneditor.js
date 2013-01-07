@@ -2118,16 +2118,32 @@ JSONEditor.Node.prototype.onEvent = function (event) {
 
             case 'blur':
             case 'change':
-                this._getDomValue(true);
-                this._updateDomValue();
+                //update only if something changed
+                if(!(type=='blur' && this.value == "" && this.dom.value.innerHTML == this.valuePlaceholder)){
+                    this._getDomValue(true);
+                    this._updateDomValue();
+                }
                 if (this.value) {
                     domValue.innerHTML = this._escapeHTML(this.value);
                 }
+                //restore placeholder if the value is blank
+                if(this.value == ""){
+                    this.dom.value.innerHTML = this.valuePlaceholder;
+                }
                 break;
 
+            case 'keydown':
+                //clear the placeholder if its still in place
+                if(this.value == "" && this.dom.value.innerHTML == this.valuePlaceholder)
+                    this.dom.value.innerHTML = "";
+                break;
+
+
             case 'keyup':
-                this._getDomValue(true);
-                this._updateDomValue();
+                if(event.keyCode!=9){//no need to update if we just tabbed here
+                    this._getDomValue(true);
+                    this._updateDomValue();
+                }
                 break;
 
             case 'cut':
@@ -2150,16 +2166,32 @@ JSONEditor.Node.prototype.onEvent = function (event) {
 
             case 'change':
             case 'blur':
-                this._getDomField(true);
-                this._updateDomField();
+                //update only if something changed
+                if(!(type=='blur' && this.field == "" && this.dom.field.innerHTML == this.fieldPlaceholder)){
+                    this._getDomField(true);
+                    this._updateDomField();
+                }
                 if (this.field) {
                     domField.innerHTML = this._escapeHTML(this.field);
+                }
+                //restore placeholder if the value is blank
+                if(this.field == ""){
+                    this.dom.field.innerHTML = this.fieldPlaceholder;
+                }
+                break;
+
+            case 'keydown':
+                //clear the placeholder if its still in place
+                if(this.field == "" && this.dom.field.innerHTML == this.fieldPlaceholder){
+                    this.dom.field.innerHTML = "";
                 }
                 break;
 
             case 'keyup':
-                this._getDomField(true);
-                this._updateDomField();
+                if(event.keyCode!=9){//no need to update if we just tabbed here
+                    this._getDomField(true);
+                    this._updateDomField();
+                }
                 break;
 
             case 'cut':
@@ -2780,12 +2812,16 @@ JSONEditor.AppendNode.prototype.onEvent = function (event) {
  * @private
  */
 JSONEditor.AppendNode.prototype._onAppend = function () {
+
     var newNode = new JSONEditor.Node(this.editor, {
-        'field': 'field',
-        'value': 'value'
+        'field': '',
+        'value': ''
     });
     this.parent.appendChild(newNode);
     this.parent.setHighlight(false);
+    //set placeholders
+    newNode.dom.field.innerHTML = newNode.fieldPlaceholder = 'field';
+    newNode.dom.value.innerHTML = newNode.valuePlaceholder = 'value';
     newNode.focus();
 
     this.editor.onAction('appendNode', {
