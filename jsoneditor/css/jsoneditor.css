@@ -2,7 +2,7 @@
 .jsoneditor-field, .jsoneditor-value, .jsoneditor-field-readonly, .jsoneditor-readonly {
     border: 1px solid transparent;
     min-height: 16px;
-    min-width: 24px;
+    min-width: 32px;
     padding: 2px;
     margin: 1px;
     outline: none;
@@ -22,6 +22,20 @@
 .jsoneditor-empty {
     background-color: #E5E5E5;
     border-radius: 2px;
+}
+
+.jsoneditor-readonly {
+    min-width: 16px;
+}
+
+.jsoneditor-field.jsoneditor-empty {
+    background-image: url('img/jsoneditor-icons.png');
+    background-position: 0 -144px;
+}
+
+.jsoneditor-value.jsoneditor-empty {
+    background-image: url('img/jsoneditor-icons.png');
+    background-position: -48px -144px;
 }
 
 .jsoneditor-separator {

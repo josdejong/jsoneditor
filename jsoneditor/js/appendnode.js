@@ -150,7 +150,7 @@ jsoneditor.AppendNode.prototype.showContextMenu = function (onClose) {
             'submenuTitle': 'Select the type of the field to be appended',
             'className': 'jsoneditor-insert',
             'click': function () {
-                node._onAppend('field', 'value', 'auto');
+                node._onAppend('', '', 'auto');
             },
             'submenu': [
                 {
@@ -158,7 +158,7 @@ jsoneditor.AppendNode.prototype.showContextMenu = function (onClose) {
                     'className': 'jsoneditor-type-auto',
                     'title': titles.auto,
                     'click': function () {
-                        node._onAppend('field', 'value', 'auto');
+                        node._onAppend('', '', 'auto');
                     }
                 },
                 {
@@ -166,7 +166,7 @@ jsoneditor.AppendNode.prototype.showContextMenu = function (onClose) {
                     'className': 'jsoneditor-type-array',
                     'title': titles.array,
                     'click': function () {
-                        node._onAppend('field', []);
+                        node._onAppend('', []);
                     }
                 },
                 {
@@ -174,7 +174,7 @@ jsoneditor.AppendNode.prototype.showContextMenu = function (onClose) {
                     'className': 'jsoneditor-type-object',
                     'title': titles.object,
                     'click': function () {
-                        node._onAppend('field', {});
+                        node._onAppend('', {});
                     }
                 },
                 {
@@ -182,7 +182,7 @@ jsoneditor.AppendNode.prototype.showContextMenu = function (onClose) {
                     'className': 'jsoneditor-type-string',
                     'title': titles.string,
                     'click': function () {
-                        node._onAppend('field', 'value', 'string');
+                        node._onAppend('', '', 'string');
                     }
                 }
             ]

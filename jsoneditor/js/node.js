@@ -621,7 +621,7 @@ jsoneditor.Node.prototype.focus = function(field) {
         }
         else {
             var domValue = this.dom.value;
-            if (domValue) {
+            if (domValue && this.type != 'array' && this.type != 'object') {
                 domValue.focus();
                 jsoneditor.util.selectContentEditable(domValue);
             }
@@ -983,7 +983,7 @@ jsoneditor.Node.prototype._updateDomField = function () {
     var domField = this.dom.field;
     if (domField) {
         // make backgound color lightgray when empty
-        var isEmpty = (String(this.field) == '');
+        var isEmpty = (String(this.field) == '' && this.parent.type != 'array');
         if (isEmpty) {
             jsoneditor.util.addClassName(domField, 'jsoneditor-empty');
         }
@@ -1437,7 +1437,7 @@ jsoneditor.Node.prototype.updateDom = function (options) {
             field = this.type;
         }
         else {
-            field = 'field';
+            field = '';
         }
         domField.innerHTML = this._escapeHTML(field);
     }
@@ -1510,7 +1510,7 @@ jsoneditor.Node.prototype._updateDomIndexes = function () {
                     delete child.index;
 
                     if (child.field == undefined) {
-                        child.field = 'field';
+                        child.field = '';
                     }
                 }
             });
@@ -1942,8 +1942,8 @@ jsoneditor.Node.prototype._onInsertBefore = function (field, value, type) {
     var oldSelection = this.editor.getSelection();
 
     var newNode = new jsoneditor.Node(this.editor, {
-        'field': (value != undefined) ? field : 'field',
-        'value': (value != undefined) ? value : 'value',
+        'field': (field != undefined) ? field : '',
+        'value': (value != undefined) ? value : '',
         'type': type
     });
     newNode.expand(true);
@@ -1972,8 +1972,8 @@ jsoneditor.Node.prototype._onInsertAfter = function (field, value, type) {
     var oldSelection = this.editor.getSelection();
 
     var newNode = new jsoneditor.Node(this.editor, {
-        'field': (value != undefined) ? field : 'field',
-        'value': (value != undefined) ? value : 'value',
+        'field': (field != undefined) ? field : '',
+        'value': (value != undefined) ? value : '',
         'type': type
     });
     newNode.expand(true);
@@ -2002,8 +2002,8 @@ jsoneditor.Node.prototype._onAppend = function (field, value, type) {
     var oldSelection = this.editor.getSelection();
 
     var newNode = new jsoneditor.Node(this.editor, {
-        'field': (value != undefined) ? field : 'field',
-        'value': (value != undefined) ? value : 'value',
+        'field': (field != undefined) ? field : '',
+        'value': (value != undefined) ? value : '',
         'type': type
     });
     newNode.expand(true);
@@ -2222,7 +2222,7 @@ jsoneditor.Node.prototype.showContextMenu = function (onClose) {
                 'submenuTitle': 'Select the type of the field to be appended',
                 'className': 'jsoneditor-append',
                 'click': function () {
-                    node._onAppend('field', 'value', 'auto');
+                    node._onAppend('', '', 'auto');
                 },
                 'submenu': [
                     {
@@ -2230,7 +2230,7 @@ jsoneditor.Node.prototype.showContextMenu = function (onClose) {
                         'className': 'jsoneditor-type-auto',
                         'title': titles.auto,
                         'click': function () {
-                            node._onAppend('field', 'value', 'auto');
+                            node._onAppend('', '', 'auto');
                         }
                     },
                     {
@@ -2238,7 +2238,7 @@ jsoneditor.Node.prototype.showContextMenu = function (onClose) {
                         'className': 'jsoneditor-type-array',
                         'title': titles.array,
                         'click': function () {
-                            node._onAppend('field', []);
+                            node._onAppend('', []);
                         }
                     },
                     {
@@ -2246,7 +2246,7 @@ jsoneditor.Node.prototype.showContextMenu = function (onClose) {
                         'className': 'jsoneditor-type-object',
                         'title': titles.object,
                         'click': function () {
-                            node._onAppend('field', {});
+                            node._onAppend('', {});
                         }
                     },
                     {
@@ -2254,7 +2254,7 @@ jsoneditor.Node.prototype.showContextMenu = function (onClose) {
                         'className': 'jsoneditor-type-string',
                         'title': titles.string,
                         'click': function () {
-                            node._onAppend('field', 'value', 'string');
+                            node._onAppend('', '', 'string');
                         }
                     }
                 ]
@@ -2268,7 +2268,7 @@ jsoneditor.Node.prototype.showContextMenu = function (onClose) {
             'submenuTitle': 'Select the type of the field to be inserted',
             'className': 'jsoneditor-insert',
             'click': function () {
-                node._onInsertBefore('field', 'value', 'auto');
+                node._onInsertBefore('', '', 'auto');
             },
             'submenu': [
                 {
@@ -2276,7 +2276,7 @@ jsoneditor.Node.prototype.showContextMenu = function (onClose) {
                     'className': 'jsoneditor-type-auto',
                     'title': titles.auto,
                     'click': function () {
-                        node._onInsertBefore('field', 'value', 'auto');
+                        node._onInsertBefore('', '', 'auto');
                     }
                 },
                 {
@@ -2284,7 +2284,7 @@ jsoneditor.Node.prototype.showContextMenu = function (onClose) {
                     'className': 'jsoneditor-type-array',
                     'title': titles.array,
                     'click': function () {
-                        node._onInsertBefore('field', []);
+                        node._onInsertBefore('', []);
                     }
                 },
                 {
@@ -2292,7 +2292,7 @@ jsoneditor.Node.prototype.showContextMenu = function (onClose) {
                     'className': 'jsoneditor-type-object',
                     'title': titles.object,
                     'click': function () {
-                        node._onInsertBefore('field', {});
+                        node._onInsertBefore('', {});
                     }
                 },
                 {
@@ -2301,7 +2301,7 @@ jsoneditor.Node.prototype.showContextMenu = function (onClose) {
                     'title': titles.string,
                     'click': function () {
                         // TODO: settings type string does not work, will become auto
-                        node._onInsertBefore('field', 'value', 'string');
+                        node._onInsertBefore('', '', 'string');
                     }
                 }
             ]
