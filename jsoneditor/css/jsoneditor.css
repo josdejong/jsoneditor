@@ -20,7 +20,8 @@
 }
 
 .jsoneditor-empty {
-    background-color: #E5E5E5;
+    border-color: lightgray;
+    border-style: dashed;
     border-radius: 2px;
 }
 
