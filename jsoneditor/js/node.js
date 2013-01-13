@@ -605,6 +605,10 @@ jsoneditor.Node.prototype.scrollTo = function(callback) {
     }
 };
 
+
+// stores the element name currently having the focus
+jsoneditor.Node.focusElement = undefined;
+
 /**
  * Set focus to this node
  * @param {String} [elementName]  The field name of the element to get the
@@ -612,6 +616,8 @@ jsoneditor.Node.prototype.scrollTo = function(callback) {
  *                                'expand', 'field', 'value'
  */
 jsoneditor.Node.prototype.focus = function(elementName) {
+    jsoneditor.Node.focusElement = elementName;
+
     if (this.dom.tr && this.dom.tr.parentNode) {
         var dom = this.dom;
 
@@ -1894,7 +1900,7 @@ jsoneditor.Node.prototype.onKeyDown = function (event) {
         if (altKey && !shiftKey) {  // Ctrl + Arrow Left
             // move to left element
             var prevElement = this._previousElement(target);
-            if (prevElement) {
+            if (prevElement || this.dom.drag) {
                 this.focus(this._getElementName(prevElement));
             }
             handled = true;
@@ -1905,7 +1911,7 @@ jsoneditor.Node.prototype.onKeyDown = function (event) {
             // find the previous node
             var prevNode = this._previousNode();
             if (prevNode) {
-                prevNode.focus(this._getElementName(target));
+                prevNode.focus(jsoneditor.Node.focusElement || this._getElementName(target));
             }
             handled = true;
         }
@@ -1914,8 +1920,8 @@ jsoneditor.Node.prototype.onKeyDown = function (event) {
         if (altKey && !shiftKey) {  // Ctrl + Arrow Right
             // move to right element
             var nextElement = this._nextElement(target);
-            if (nextElement) {
-                this.focus(this._getElementName(nextElement ));
+            if (nextElement || this.dom.value) {
+                this.focus(this._getElementName(nextElement));
             }
             handled = true;
         }
@@ -1925,7 +1931,7 @@ jsoneditor.Node.prototype.onKeyDown = function (event) {
             // find the next node
             var nextNode = this._nextNode();
             if (nextNode) {
-                nextNode.focus(this._getElementName(target));
+                nextNode.focus(jsoneditor.Node.focusElement || this._getElementName(target));
             }
             handled = true;
         }
@@ -2241,7 +2247,7 @@ jsoneditor.Node.prototype._previousNode = function () {
             prevDom = prevDom.previousSibling;
             prevNode = jsoneditor.Node.getNodeFromTarget(prevDom);
         }
-        while (prevDom && (prevNode instanceof jsoneditor.AppendNode));
+        while (prevDom && (prevNode instanceof jsoneditor.AppendNode && !prevNode.isVisible()));
     }
     return prevNode;
 };
@@ -2261,7 +2267,7 @@ jsoneditor.Node.prototype._nextNode = function () {
             nextDom = nextDom.nextSibling;
             nextNode = jsoneditor.Node.getNodeFromTarget(nextDom);
         }
-        while (nextDom && (nextNode instanceof jsoneditor.AppendNode));
+        while (nextDom && (nextNode instanceof jsoneditor.AppendNode && !nextNode.isVisible()));
     }
 
     return nextNode;

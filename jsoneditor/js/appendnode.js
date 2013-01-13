@@ -223,4 +223,8 @@ jsoneditor.AppendNode.prototype.onEvent = function (event) {
             highlighter.unhighlight();
         });
     }
+
+    if (type == 'keydown') {
+        this.onKeyDown(event);
+    }
 };
