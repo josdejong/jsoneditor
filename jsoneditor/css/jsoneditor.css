@@ -110,6 +110,10 @@ button.jsoneditor-expanded {
     background-position: -48px -48px;
 }
 
+.jsoneditor-content button:focus {
+    box-shadow: 0 0 10px #97B0F8;
+}
+
 button.jsoneditor-invisible {
     visibility: hidden;
     background: none;

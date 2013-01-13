@@ -629,8 +629,9 @@ jsoneditor.JSONEditor.prototype._onKeyDown = function (event) {
     var shiftKey = event.shiftKey;
     var handled = false;
 
-    if (keynum == 9) { // Tab
+    if (keynum == 9) { // Tab or Shift+Tab
         // FIXME: selecting all text on tab key does not work on IE8 (-> put selectContentEditable() in keyup too?)
+        //jsoneditor.Node.select(jsoneditor.JSONEditor.domFocus);
         setTimeout(function () {
             // select all text when moving focus to an editable div
             jsoneditor.util.selectContentEditable(jsoneditor.JSONEditor.domFocus);
