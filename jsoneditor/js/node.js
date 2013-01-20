@@ -1902,11 +1902,31 @@ jsoneditor.Node.prototype.onKeyDown = function (event) {
             handled = true;
         }
     }
+    else if (keynum == 35) { // End
+        if (altKey) { // Alt+End
+            // find the last node
+            var lastNode = this._lastNode();
+            if (lastNode) {
+                lastNode.focus(jsoneditor.Node.focusElement || this._getElementName(target));
+            }
+            handled = true;
+        }
+    }
+    else if (keynum == 36) { // Home
+        if (altKey) { // Alt+Home
+            // find the first node
+            var firstNode = this._firstNode();
+            if (firstNode) {
+                firstNode.focus(jsoneditor.Node.focusElement || this._getElementName(target));
+            }
+            handled = true;
+        }
+    }
     else if (keynum == 37) {        // Arrow Left
         if (altKey && !shiftKey) {  // Ctrl + Arrow Left
             // move to left element
             var prevElement = this._previousElement(target);
-            if (prevElement || this.dom.drag) {
+            if (prevElement) {
                 this.focus(this._getElementName(prevElement));
             }
             handled = true;
@@ -1926,7 +1946,7 @@ jsoneditor.Node.prototype.onKeyDown = function (event) {
         if (altKey && !shiftKey) {  // Ctrl + Arrow Right
             // move to right element
             var nextElement = this._nextElement(target);
-            if (nextElement || this.dom.value) {
+            if (nextElement) {
                 this.focus(this._getElementName(nextElement));
             }
             handled = true;
@@ -2277,6 +2297,41 @@ jsoneditor.Node.prototype._nextNode = function () {
     }
 
     return nextNode;
+};
+
+/**
+ * Get the first rendered node
+ * @return {jsoneditor.Node | null} firstNode
+ * @private
+ */
+jsoneditor.Node.prototype._firstNode = function () {
+    var firstNode = null;
+    var dom = this.getDom();
+    if (dom && dom.parentNode) {
+        var firstDom = dom.parentNode.firstChild;
+        firstNode = jsoneditor.Node.getNodeFromTarget(firstDom);
+    }
+
+    return firstNode;
+};
+
+/**
+ * Get the last rendered node
+ * @return {jsoneditor.Node | null} lastNode
+ * @private
+ */
+jsoneditor.Node.prototype._lastNode = function () {
+    var lastNode = null;
+    var dom = this.getDom();
+    if (dom && dom.parentNode) {
+        var lastDom = dom.parentNode.lastChild;
+        lastNode =  jsoneditor.Node.getNodeFromTarget(lastDom);
+        while (lastDom && (lastNode instanceof jsoneditor.AppendNode && !lastNode.isVisible())) {
+            lastDom = lastDom.previousSibling;
+            lastNode =  jsoneditor.Node.getNodeFromTarget(lastDom);
+        }
+    }
+    return lastNode;
 };
 
 /**
