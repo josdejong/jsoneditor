@@ -42,7 +42,7 @@ div.jsoneditor-contextmenu ul li button::-moz-focus-inner {
 }
 
 div.jsoneditor-contextmenu ul li button:hover,
-        div.jsoneditor-contextmenu ul li button:focus {
+div.jsoneditor-contextmenu ul li button:focus {
     color: #1a1a1a;
     background-color: #f5f5f5;
 }
@@ -79,8 +79,10 @@ div.jsoneditor-contextmenu ul li button div.expand {
 }
 
 div.jsoneditor-contextmenu ul li button:hover div.expand,
+div.jsoneditor-contextmenu ul li button:focus div.expand,
 div.jsoneditor-contextmenu ul li.selected div.expand,
-div.jsoneditor-contextmenu ul li button.expand:hover div.expand {
+div.jsoneditor-contextmenu ul li button.expand:hover div.expand,
+div.jsoneditor-contextmenu ul li button.expand:focus div.expand {
     opacity: 1;
 }
 
@@ -94,56 +96,64 @@ div.jsoneditor-contextmenu .separator {
 button.jsoneditor-remove > .icon {
     background-position: -24px -24px;
 }
-button.jsoneditor-remove:hover > .icon {
+button.jsoneditor-remove:hover > .icon,
+button.jsoneditor-remove:focus > .icon {
     background-position: -24px 0;
 }
 
 button.jsoneditor-append > .icon {
     background-position: 0 -24px;
 }
-button.jsoneditor-append:hover > .icon {
+button.jsoneditor-append:hover > .icon,
+button.jsoneditor-append:focus > .icon {
     background-position: 0 0;
 }
 
 button.jsoneditor-insert > .icon {
     background-position: 0 -24px;
 }
-button.jsoneditor-insert:hover > .icon {
+button.jsoneditor-insert:hover > .icon,
+button.jsoneditor-insert:focus > .icon {
     background-position: 0 0;
 }
 
 button.jsoneditor-insert-above > .icon {
     background-position: -24px -24px;
 }
-button.jsoneditor-insert-above:hover > .icon {
+button.jsoneditor-insert-above:hover > .icon,
+button.jsoneditor-insert-above:focus > .icon {
     background-position: -24px 0;
 }
 
 button.jsoneditor-insert-below > .icon {
     background-position: -48px -24px;
 }
-button.jsoneditor-insert-below:hover > .icon {
+button.jsoneditor-insert-below:hover > .icon,
+button.jsoneditor-insert-below:focus > .icon {
     background-position: -48px 0;
 }
 
 button.jsoneditor-duplicate > .icon {
     background-position: -48px -24px;
 }
-button.jsoneditor-duplicate:hover > .icon {
+button.jsoneditor-duplicate:hover > .icon,
+button.jsoneditor-duplicate:focus > .icon {
     background-position: -48px 0;
 }
 
 button.jsoneditor-sort-asc > .icon {
     background-position: -168px -24px;
 }
-button.jsoneditor-sort-asc:hover > .icon {
+button.jsoneditor-sort-asc:hover > .icon,
+button.jsoneditor-sort-asc:focus > .icon {
     background-position: -168px 0;
 }
 
 button.jsoneditor-sort-desc > .icon {
     background-position: -192px -24px;
 }
-button.jsoneditor-sort-desc:hover > .icon {
+button.jsoneditor-sort-desc:hover > .icon,
+button.jsoneditor-sort-desc:focus > .icon {
     background-position: -192px 0;
 }
 
@@ -182,7 +192,8 @@ div.jsoneditor-contextmenu ul li ul li button {
     padding-left: 24px;
 }
 
-div.jsoneditor-contextmenu ul li ul li button:hover {
+div.jsoneditor-contextmenu ul li ul li button:hover,
+div.jsoneditor-contextmenu ul li ul li button:focus {
     background-color: #f5f5f5;
 
 }
@@ -191,6 +202,7 @@ button.jsoneditor-type-string > .icon {
     background-position: -144px -24px;
 }
 button.jsoneditor-type-string:hover > .icon,
+button.jsoneditor-type-string:focus > .icon,
 button.jsoneditor-type-string.selected > .icon{
     background-position: -144px 0;
 }
@@ -199,6 +211,7 @@ button.jsoneditor-type-auto > .icon {
     background-position: -120px -24px;
 }
 button.jsoneditor-type-auto:hover > .icon,
+button.jsoneditor-type-auto:focus > .icon,
 button.jsoneditor-type-auto.selected > .icon {
     background-position: -120px 0;
 }
@@ -207,6 +220,7 @@ button.jsoneditor-type-object > .icon {
     background-position: -72px -24px;
 }
 button.jsoneditor-type-object:hover > .icon,
+button.jsoneditor-type-object:focus > .icon,
 button.jsoneditor-type-object.selected > .icon{
     background-position: -72px 0;
 }
@@ -215,6 +229,7 @@ button.jsoneditor-type-array > .icon {
     background-position: -96px -24px;
 }
 button.jsoneditor-type-array:hover > .icon,
+button.jsoneditor-type-array:focus > .icon,
 button.jsoneditor-type-array.selected > .icon{
     background-position: -96px 0;
 }

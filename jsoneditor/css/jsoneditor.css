@@ -45,18 +45,18 @@
 }
 
 .jsoneditor-value[contenteditable=true]:focus,
-        .jsoneditor-field[contenteditable=true]:focus,
-        .jsoneditor-value[contenteditable=true]:hover,
-        .jsoneditor-field[contenteditable=true]:hover,
-        .jsoneditor-search-highlight {
+.jsoneditor-field[contenteditable=true]:focus,
+.jsoneditor-value[contenteditable=true]:hover,
+.jsoneditor-field[contenteditable=true]:hover,
+.jsoneditor-search-highlight {
     background-color: #FFFFAB;
     border: 1px solid yellow;
     border-radius: 2px;
 }
 
 .jsoneditor-search-highlight-active,
-        .jsoneditor-search-highlight-active:focus,
-        .jsoneditor-search-highlight-active:hover {
+.jsoneditor-search-highlight-active:focus,
+.jsoneditor-search-highlight-active:hover {
     background-color: #ffee00;
     border: 1px solid #ffc700;
     border-radius: 2px;
@@ -71,8 +71,8 @@
 }
 
 button.jsoneditor-collapsed, button.jsoneditor-expanded,
-        button.jsoneditor-invisible, button.jsoneditor-dragarea,
-        button.jsoneditor-contextmenu, button.jsoneditor-append {
+button.jsoneditor-invisible, button.jsoneditor-dragarea,
+button.jsoneditor-contextmenu, button.jsoneditor-append {
     width: 24px;
     height: 24px;
     padding: 0;
@@ -232,14 +232,14 @@ td.jsoneditor-droparea {
 }
 
 .jsoneditor-field, .jsoneditor-value, .jsoneditor-td, .jsoneditor-th,
-        .jsoneditor-type, .jsonformatter-textarea {
+.jsoneditor-type, .jsonformatter-textarea {
     font-family: droid sans mono, monospace, courier new, courier, sans-serif;
     font-size: 10pt;
     color: #1A1A1A;
 }
 
 div.jsoneditor-contextmenu button,
-        input.jsoneditor-search, div.jsoneditor-search-results {
+input.jsoneditor-search, div.jsoneditor-search-results {
     font-family: arial, sans-serif;
     font-size: 10pt;
     color: #1A1A1A;

@@ -234,12 +234,15 @@ jsoneditor.ContextMenu.prototype.show = function (anchor) {
             var target = event.target || event.srcElement;
             if ((target != list) && !me._isChildOf(target, list)) {
                 me.hide();
+                jsoneditor.util.stopPropagation(event);
+                jsoneditor.util.preventDefault(event);
             }
         });
     this.eventListeners.mousewheel = jsoneditor.util.addEventListener(
         document, 'mousewheel', function () {
             // hide the menu on mouse scroll
-            me.hide();
+            jsoneditor.util.stopPropagation(event);
+            jsoneditor.util.preventDefault(event);
         });
     this.eventListeners.keydown = jsoneditor.util.addEventListener(
         document, 'keydown', function (event) {
