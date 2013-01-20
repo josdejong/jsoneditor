@@ -1733,7 +1733,7 @@ jsoneditor.Node.prototype.onEvent = function (event) {
         var highlighter = node.editor.highlighter;
         highlighter.highlight(node);
         highlighter.lock();
-        this.showContextMenu(function () {
+        this.showContextMenu(dom.menu, function () {
             highlighter.unlock();
             highlighter.unhighlight();
         });
@@ -1877,6 +1877,12 @@ jsoneditor.Node.prototype.onKeyDown = function (event) {
         if (ctrlKey) {       // Ctrl+E
             var recurse = false;
             this._onExpand(recurse);
+            handled = true;
+        }
+    }
+    else if (keynum == 77) { // M
+        if (ctrlKey) { // Ctrl+M
+            this.showContextMenu(target);
             handled = true;
         }
     }
@@ -2382,10 +2388,11 @@ jsoneditor.Node.TYPE_TITLES = {
 
 /**
  * Show a contextmenu for this node
+ * @param {HTMLElement} anchor   Anchor element to attache the context menu to.
  * @param {function} [onClose]   Callback method called when the context menu
  *                               is being closed.
  */
-jsoneditor.Node.prototype.showContextMenu = function (onClose) {
+jsoneditor.Node.prototype.showContextMenu = function (anchor, onClose) {
     var node = this;
     var titles = jsoneditor.Node.TYPE_TITLES;
     var items = [];
@@ -2586,7 +2593,7 @@ jsoneditor.Node.prototype.showContextMenu = function (onClose) {
     }
 
     var menu = new jsoneditor.ContextMenu(items, {close: onClose});
-    menu.show(this.dom.menu);
+    menu.show(anchor);
 };
 
 /**

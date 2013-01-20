@@ -30,7 +30,11 @@ var jsoneditor = jsoneditor || {};
  * @constructor
  */
 jsoneditor.ContextMenu = function (items, options) {
+    this.dom = {};
+
     var me = this;
+    var dom = this.dom;
+    this.anchor = undefined;
     this.items = items;
     this.eventListeners = {};
     this.visibleSubmenu = undefined;
@@ -39,15 +43,25 @@ jsoneditor.ContextMenu = function (items, options) {
     // create a container element
     var menu = document.createElement('div');
     menu.className = 'jsoneditor-contextmenu';
-    this.menu = menu;
+    dom.menu = menu;
 
     // create a list to hold the menu items
     var list = document.createElement('ul');
     list.className = 'menu';
     menu.appendChild(list);
-    this.list = list;
+    dom.list = list;
+    dom.items = []; // list with all buttons
 
-    function createMenuItems (list, items) {
+    // create a (non-visible) button to set the focus to the menu
+    var focusButton = document.createElement('button');
+    dom.focusButton = focusButton;
+    var li = document.createElement('li');
+    li.style.overflow = 'hidden';
+    li.style.height = '0';
+    li.appendChild(focusButton);
+    list.appendChild(li);
+
+    function createMenuItems (list, domItems, items) {
         items.forEach(function (item) {
             if (item.type == 'separator') {
                 // create a separator
@@ -58,6 +72,8 @@ jsoneditor.ContextMenu = function (items, options) {
                 list.appendChild(li);
             }
             else {
+                var domItem = {};
+
                 // create a menu item
                 var li = document.createElement('li');
                 list.appendChild(li);
@@ -65,6 +81,7 @@ jsoneditor.ContextMenu = function (items, options) {
                 // create a button in the menu item
                 var button = document.createElement('button');
                 button.className = item.className;
+                domItem.button = button;
                 if (item.title) {
                     button.title = item.title;
                 }
@@ -90,6 +107,7 @@ jsoneditor.ContextMenu = function (items, options) {
                         button.className += ' default';
 
                         var buttonExpand = document.createElement('button');
+                        domItem.buttonExpand = buttonExpand;
                         buttonExpand.className = 'expand';
                         buttonExpand.innerHTML = '<div class="expand"></div>';
                         li.appendChild(buttonExpand);
@@ -109,26 +127,31 @@ jsoneditor.ContextMenu = function (items, options) {
                     }
 
                     // attach a handler to expand/collapse the submenu
-                    var selected = false;
                     buttonSubmenu.onclick = function () {
-                        me._onShowSubmenu(submenu);
+                        me._onExpandItem(domItem);
+                        buttonSubmenu.focus();
                     };
 
                     // create the submenu
-                    var submenu = document.createElement('ul');
-                    submenu.className = 'menu';
-                    submenu.style.height = '0';
-                    li.appendChild(submenu);
-                    createMenuItems(submenu, item.submenu);
+                    var domSubItems = [];
+                    domItem.subItems = domSubItems;
+                    var ul = document.createElement('ul');
+                    domItem.ul = ul;
+                    ul.className = 'menu';
+                    ul.style.height = '0';
+                    li.appendChild(ul);
+                    createMenuItems(ul, domSubItems, item.submenu);
                 }
                 else {
                     // no submenu, just a button with clickhandler
                     button.innerHTML = '<div class="icon"></div>' + item.text;
                 }
+
+                domItems.push(domItem);
             }
         });
     }
-    createMenuItems(list, items);
+    createMenuItems(list, this.dom.items, items);
 
     // TODO: when the editor is small, show the submenu on the right instead of inline?
 
@@ -140,12 +163,39 @@ jsoneditor.ContextMenu = function (items, options) {
     });
 };
 
+/**
+ * Get the currently visible buttons
+ * @return {Array.<HTMLElement>} buttons
+ * @private
+ */
+jsoneditor.ContextMenu.prototype._getVisibleButtons = function () {
+    var buttons = [];
+    var me = this;
+    this.dom.items.forEach(function (item) {
+        buttons.push(item.button);
+        if (item.buttonExpand) {
+            buttons.push(item.buttonExpand);
+        }
+        if (item.subItems && item == me.expandedItem) {
+            item.subItems.forEach(function (subItem) {
+                buttons.push(subItem.button);
+                if (subItem.buttonExpand) {
+                    buttons.push(subItem.buttonExpand);
+                }
+                // TODO: change to fully recursive method
+            });
+        }
+    });
+
+    return buttons;
+};
+
 // currently displayed context menu, a singleton. We may only have one visible context menu
 jsoneditor.ContextMenu.visibleMenu = undefined;
 
 /**
  * Attach the menu to an anchor
- * @param {Element} anchor
+ * @param {HTMLElement} anchor
  */
 jsoneditor.ContextMenu.prototype.show = function (anchor) {
     this.hide();
@@ -160,23 +210,23 @@ jsoneditor.ContextMenu.prototype.show = function (anchor) {
     var top = jsoneditor.util.getAbsoluteTop(anchor);
     if (top + anchorHeight + menuHeight < windowHeight) {
         // display the menu below the anchor
-        this.menu.style.left = left + 'px';
-        this.menu.style.top = (top + anchorHeight) + 'px';
-        this.menu.style.bottom = '';
+        this.dom.menu.style.left = left + 'px';
+        this.dom.menu.style.top = (top + anchorHeight) + 'px';
+        this.dom.menu.style.bottom = '';
     }
     else {
         // display the menu above the anchor
-        this.menu.style.left = left + 'px';
-        this.menu.style.top = '';
-        this.menu.style.bottom = (windowHeight - top) + 'px';
+        this.dom.menu.style.left = left + 'px';
+        this.dom.menu.style.top = '';
+        this.dom.menu.style.bottom = (windowHeight - top) + 'px';
     }
 
     // attach the menu to the document
-    document.body.appendChild(this.menu);
+    document.body.appendChild(this.dom.menu);
 
     // create and attach event listeners
     var me = this;
-    var list = this.list;
+    var list = this.dom.list;
     this.eventListeners.mousedown = jsoneditor.util.addEventListener(
         document, 'mousedown', function (event) {
             // hide menu on click outside of the menu
@@ -193,17 +243,14 @@ jsoneditor.ContextMenu.prototype.show = function (anchor) {
         });
     this.eventListeners.keydown = jsoneditor.util.addEventListener(
         document, 'keydown', function (event) {
-            // hide the menu on ESC key
-            event = event || window.event;
-            var keynum = event.which || event.keyCode;
-            if (keynum == 27) { // ESC
-                me.hide();
-                jsoneditor.util.stopPropagation(event);
-                jsoneditor.util.preventDefault(event);
-            }
+            me._onKeyDown(event);
         });
 
-    // TODO: focus to the first button in the context menu
+    // move focus to the first button in the context menu
+    this.anchor = anchor;
+    setTimeout(function () {
+        me.dom.focusButton.focus();
+    }, 0);
 
     if (jsoneditor.ContextMenu.visibleMenu) {
         jsoneditor.ContextMenu.visibleMenu.hide();
@@ -215,9 +262,14 @@ jsoneditor.ContextMenu.prototype.show = function (anchor) {
  * Hide the context menu if visible
  */
 jsoneditor.ContextMenu.prototype.hide = function () {
+    // move focus to the anchor
+    if (this.anchor) {
+        this.anchor.focus();
+    }
+
     // remove the menu from the DOM
-    if (this.menu.parentNode) {
-        this.menu.parentNode.removeChild(this.menu);
+    if (this.dom.menu.parentNode) {
+        this.dom.menu.parentNode.removeChild(this.dom.menu);
         if (this.onClose) {
             this.onClose();
         }
@@ -234,43 +286,149 @@ jsoneditor.ContextMenu.prototype.hide = function () {
             delete this.eventListeners[name];
         }
     }
+
+    if (jsoneditor.ContextMenu.visibleMenu == this) {
+        jsoneditor.ContextMenu.visibleMenu = undefined;
+    }
 };
 
 /**
- * Show or hide a submenu.
- * Any currently visible submenu will be hided.
- * @param {Element} submenu
+ * Expand a submenu
+ * Any currently expanded submenu will be hided.
+ * @param {Object} domItem
  * @private
  */
-jsoneditor.ContextMenu.prototype._onShowSubmenu = function (submenu) {
+jsoneditor.ContextMenu.prototype._onExpandItem = function (domItem) {
     var me = this;
-    var alreadyVisible = (submenu == this.visibleSubmenu);
+    var alreadyVisible = (domItem == this.expandedItem);
 
     // hide the currently visible submenu
-    var visibleSubmenu = this.visibleSubmenu;
-    if (visibleSubmenu) {
-        visibleSubmenu.style.height = '0';
-        visibleSubmenu.style.padding = '';
+    var expandedItem = this.expandedItem;
+    if (expandedItem) {
+        //var ul = expandedItem.ul;
+        expandedItem.ul.style.height = '0';
+        expandedItem.ul.style.padding = '';
         setTimeout(function () {
-            if (me.visibleSubmenu != visibleSubmenu) {
-                visibleSubmenu.style.display = '';
-                jsoneditor.util.removeClassName(visibleSubmenu.parentNode, 'selected');
+            if (me.expandedItem != expandedItem) {
+                expandedItem.ul.style.display = '';
+                jsoneditor.util.removeClassName(expandedItem.ul.parentNode, 'selected');
             }
         }, 300); // timeout duration must match the css transition duration
-        this.visibleSubmenu = undefined;
+        this.expandedItem = undefined;
     }
 
     if (!alreadyVisible) {
-        submenu.style.display = 'block';
-        var height = submenu.clientHeight; // force a reflow in Firefox
+        var ul = domItem.ul;
+        ul.style.display = 'block';
+        var height = ul.clientHeight; // force a reflow in Firefox
         setTimeout(function () {
-            if (me.visibleSubmenu == submenu) {
-                submenu.style.height = (submenu.childNodes.length * 24) + 'px';
-                submenu.style.padding = '5px 10px';
+            if (me.expandedItem == domItem) {
+                ul.style.height = (ul.childNodes.length * 24) + 'px';
+                ul.style.padding = '5px 10px';
             }
         }, 0);
-        jsoneditor.util.addClassName(submenu.parentNode, 'selected');
-        this.visibleSubmenu = submenu;
+        jsoneditor.util.addClassName(ul.parentNode, 'selected');
+        this.expandedItem = domItem;
+    }
+};
+
+/**
+ * Handle onkeydown event
+ * @param {Event} event
+ * @private
+ */
+jsoneditor.ContextMenu.prototype._onKeyDown = function (event) {
+    event = event || window.event;
+    var target = event.target || event.srcElement;
+    var keynum = event.which || event.keyCode;
+    var handled = false;
+    var buttons, targetIndex, prevButton, nextButton;
+
+    if (keynum == 27) { // ESC
+        // hide the menu on ESC key
+        this.hide();
+        handled = true;
+    }
+    else if (keynum == 9) { // Tab
+        if (!event.shiftKey) { // Tab
+            buttons = this._getVisibleButtons();
+            targetIndex = buttons.indexOf(target);
+            if (targetIndex == buttons.length - 1) {
+                // move to first button
+                buttons[0].focus();
+                handled = true;
+            }
+        }
+        else { // Shift+Tab
+            buttons = this._getVisibleButtons();
+            targetIndex = buttons.indexOf(target);
+            if (targetIndex == 0) {
+                // move to last button
+                buttons[buttons.length - 1].focus();
+                handled = true;
+            }
+        }
+    }
+    else if (keynum == 37) { // Arrow Left
+        if (target.className == 'expand') {
+            buttons = this._getVisibleButtons();
+            targetIndex = buttons.indexOf(target);
+            prevButton = buttons[targetIndex - 1];
+            if (prevButton) {
+                prevButton.focus();
+            }
+        }
+        handled = true;
+    }
+    else if (keynum == 38) { // Arrow Up
+        buttons = this._getVisibleButtons();
+        targetIndex = buttons.indexOf(target);
+        prevButton = buttons[targetIndex - 1];
+        if (prevButton && prevButton.className == 'expand') {
+            // skip expand button
+            prevButton = buttons[targetIndex - 2];
+        }
+        if (!prevButton) {
+            // move to last button
+            prevButton = buttons[buttons.length - 1];
+        }
+        if (prevButton) {
+            prevButton.focus();
+        }
+        handled = true;
+    }
+    else if (keynum == 39) { // Arrow Right
+        buttons = this._getVisibleButtons();
+        targetIndex = buttons.indexOf(target);
+        nextButton = buttons[targetIndex + 1];
+        if (nextButton && nextButton.className == 'expand') {
+            nextButton.focus();
+        }
+        handled = true;
+    }
+    else if (keynum == 40) { // Arrow Down
+        buttons = this._getVisibleButtons();
+        targetIndex = buttons.indexOf(target);
+        nextButton = buttons[targetIndex + 1];
+        if (nextButton && nextButton.className == 'expand') {
+            // skip expand button
+            nextButton = buttons[targetIndex + 2];
+        }
+        if (!nextButton) {
+            // move to first button
+            nextButton = buttons[0];
+        }
+        if (nextButton) {
+            nextButton.focus();
+            handled = true;
+        }
+        handled = true;
+    }
+    // TODO: arrow left and right
+
+    if (handled) {
+        jsoneditor.util.stopPropagation(event);
+        jsoneditor.util.preventDefault(event);
     }
 };
 

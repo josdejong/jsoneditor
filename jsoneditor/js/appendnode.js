@@ -136,10 +136,11 @@ jsoneditor.AppendNode.prototype.isVisible = function () {
 
 /**
  * Show a contextmenu for this node
+ * @param {HTMLElement} anchor   The element to attach the menu to.
  * @param {function} [onClose]   Callback method called when the context menu
  *                               is being closed.
  */
-jsoneditor.AppendNode.prototype.showContextMenu = function (onClose) {
+jsoneditor.AppendNode.prototype.showContextMenu = function (anchor, onClose) {
     var node = this;
     var titles = jsoneditor.Node.TYPE_TITLES;
     var items = [
@@ -190,7 +191,7 @@ jsoneditor.AppendNode.prototype.showContextMenu = function (onClose) {
     ];
 
     var menu = new jsoneditor.ContextMenu(items, {close: onClose});
-    menu.show(this.dom.menu);
+    menu.show(anchor);
 };
 
 /**
@@ -218,7 +219,7 @@ jsoneditor.AppendNode.prototype.onEvent = function (event) {
         var highlighter = this.editor.highlighter;
         highlighter.highlight(this.parent);
         highlighter.lock();
-        this.showContextMenu(function () {
+        this.showContextMenu(dom.menu, function () {
             highlighter.unlock();
             highlighter.unhighlight();
         });
