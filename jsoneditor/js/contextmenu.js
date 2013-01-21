@@ -265,11 +265,6 @@ jsoneditor.ContextMenu.prototype.show = function (anchor) {
  * Hide the context menu if visible
  */
 jsoneditor.ContextMenu.prototype.hide = function () {
-    // move focus to the anchor
-    if (this.anchor) {
-        this.anchor.focus();
-    }
-
     // remove the menu from the DOM
     if (this.dom.menu.parentNode) {
         this.dom.menu.parentNode.removeChild(this.dom.menu);
@@ -349,7 +344,14 @@ jsoneditor.ContextMenu.prototype._onKeyDown = function (event) {
 
     if (keynum == 27) { // ESC
         // hide the menu on ESC key
+
+        // move focus to the anchor
+        if (this.anchor) {
+            this.anchor.focus();
+        }
+
         this.hide();
+
         handled = true;
     }
     else if (keynum == 9) { // Tab
