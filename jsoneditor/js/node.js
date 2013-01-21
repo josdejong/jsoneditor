@@ -854,7 +854,6 @@ jsoneditor.Node.prototype.changeType = function (newType) {
     }
     else {
         // change from array to object, or from string/auto to object/array
-
         var table = this.dom.tr ? this.dom.tr.parentNode : undefined;
         var lastTr;
         if (this.expanded) {
@@ -883,7 +882,7 @@ jsoneditor.Node.prototype.changeType = function (newType) {
                 delete child.index;
                 child.fieldEditable = true;
                 if (child.field == undefined) {
-                    child.field = index;
+                    child.field = '';
                 }
             });
 
