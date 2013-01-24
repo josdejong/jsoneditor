@@ -1,5 +1,7 @@
 
-.jsoneditor .field, .jsoneditor .value, .jsoneditor .readonly {
+.jsoneditor .field,
+.jsoneditor .value,
+.jsoneditor .readonly {
     border: 1px solid transparent;
     min-height: 16px;
     min-width: 32px;
@@ -11,7 +13,8 @@
 }
 
 /* adjust margin of p elements inside editable divs, needed for Opera, IE */
-.jsoneditor .field p, .jsoneditor .value p {
+.jsoneditor .field p,
+.jsoneditor .value p {
     margin: 0;
 }
 
@@ -77,12 +80,6 @@
     background-color: transparent;
     background-image: url('img/jsoneditor-icons.png');
 }
-
-/* TODO: no global settings
-button:disabled {
-    color: #808080;
-}
-*/
 
 .jsoneditor button.collapsed {
     background-position: 0 -48px;
