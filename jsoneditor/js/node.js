@@ -1025,16 +1025,16 @@ jsoneditor.Node.prototype._updateDomValue = function () {
 
         // highlight when there is a search result
         if (this.searchValueActive) {
-            jsoneditor.util.addClassName(domValue, 'jsoneditor-search-highlight-active');
+            jsoneditor.util.addClassName(domValue, 'highlight-active');
         }
         else {
-            jsoneditor.util.removeClassName(domValue, 'jsoneditor-search-highlight-active');
+            jsoneditor.util.removeClassName(domValue, 'highlight-active');
         }
         if (this.searchValue) {
-            jsoneditor.util.addClassName(domValue, 'jsoneditor-search-highlight');
+            jsoneditor.util.addClassName(domValue, 'highlight');
         }
         else {
-            jsoneditor.util.removeClassName(domValue, 'jsoneditor-search-highlight');
+            jsoneditor.util.removeClassName(domValue, 'highlight');
         }
 
         // strip formatting from the contents of the editable div

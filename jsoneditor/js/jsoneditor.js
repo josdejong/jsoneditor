@@ -468,7 +468,7 @@ jsoneditor.JSONEditor.prototype._createFrame = function () {
     // create the frame
     this.container.innerHTML = '';
     this.frame = document.createElement('div');
-    this.frame.className = 'jsoneditor-frame';
+    this.frame.className = 'jsoneditor';
     this.container.appendChild(this.frame);
 
     // create one global event listener to handle all events from all nodes
@@ -645,17 +645,15 @@ jsoneditor.JSONEditor.prototype._onKeyDown = function (event) {
             handled = true;
         }
         else if (keynum == 114 || (ctrlKey && keynum == 71)) { // F3 or Ctrl+G
+            var focus = true;
             if (!shiftKey) {
                 // select next search result (F3 or Ctrl+G)
-                this.searchBox.next();
+                this.searchBox.next(focus);
             }
             else {
                 // select previous search result (Shift+F3 or Ctrl+Shift+G)
-                this.searchBox.previous();
+                this.searchBox.previous(focus);
             }
-
-            // set selection to the current
-            this.searchBox._focusActiveResult();
 
             handled = true;
         }

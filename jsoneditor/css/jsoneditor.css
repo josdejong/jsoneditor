@@ -44,19 +44,23 @@
     vertical-align: top;
 }
 
-.jsoneditor-value[contenteditable=true]:focus,
 .jsoneditor-field[contenteditable=true]:focus,
-.jsoneditor-value[contenteditable=true]:hover,
 .jsoneditor-field[contenteditable=true]:hover,
-.jsoneditor-search-highlight {
+.jsoneditor-value[contenteditable=true]:focus,
+.jsoneditor-value[contenteditable=true]:hover,
+.jsoneditor-field.highlight,
+.jsoneditor-value.highlight {
     background-color: #FFFFAB;
     border: 1px solid yellow;
     border-radius: 2px;
 }
 
-.jsoneditor-search-highlight-active,
-.jsoneditor-search-highlight-active:focus,
-.jsoneditor-search-highlight-active:hover {
+.jsoneditor-field.highlight-active,
+.jsoneditor-field.highlight-active:focus,
+.jsoneditor-field.highlight-active:hover,
+.jsoneditor-value.highlight-active,
+.jsoneditor-value.highlight-active:focus,
+.jsoneditor-value.highlight-active:hover {
     background-color: #ffee00;
     border: 1px solid #ffc700;
     border-radius: 2px;
@@ -124,7 +128,7 @@ button.jsoneditor-invisible {
     float: left;
 }
 
-div.jsoneditor-frame {
+div.jsoneditor {
     color: #1A1A1A;
     border: 1px solid #97B0F8;
     -moz-box-sizing: border-box;

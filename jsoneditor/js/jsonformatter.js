@@ -50,7 +50,7 @@ jsoneditor.JSONFormatter = function (container, options, json) {
     this.height = container.clientHeight;
 
     this.frame = document.createElement('div');
-    this.frame.className = "jsoneditor-frame";
+    this.frame.className = 'jsoneditor';
     this.frame.onclick = function (event) {
         // prevent default submit action when JSONFormatter is located inside a form
         jsoneditor.util.preventDefault(event);

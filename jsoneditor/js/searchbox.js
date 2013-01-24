@@ -128,37 +128,43 @@ jsoneditor.SearchBox = function(editor, container) {
 
 /**
  * Go to the next search result
+ * @param {boolean} [focus]   If true, focus will be set to the next result
+ *                            focus is false by default.
  */
-jsoneditor.SearchBox.prototype.next = function() {
+jsoneditor.SearchBox.prototype.next = function(focus) {
     if (this.results != undefined) {
         var index = (this.resultIndex != undefined) ? this.resultIndex + 1 : 0;
         if (index > this.results.length - 1) {
             index = 0;
         }
-        this._setActiveResult(index);
+        this._setActiveResult(index, focus);
     }
 };
 
 /**
  * Go to the prevous search result
+ * @param {boolean} [focus]   If true, focus will be set to the next result
+ *                            focus is false by default.
  */
-jsoneditor.SearchBox.prototype.previous = function() {
+jsoneditor.SearchBox.prototype.previous = function(focus) {
     if (this.results != undefined) {
         var max = this.results.length - 1;
         var index = (this.resultIndex != undefined) ? this.resultIndex - 1 : max;
         if (index < 0) {
             index = max;
         }
-        this._setActiveResult(index);
+        this._setActiveResult(index, focus);
     }
 };
 
 /**
  * Set new value for the current active result
  * @param {Number} index
+ * @param {boolean} [focus]   If true, focus will be set to the next result.
+ *                            focus is false by default.
  * @private
  */
-jsoneditor.SearchBox.prototype._setActiveResult = function(index) {
+jsoneditor.SearchBox.prototype._setActiveResult = function(index, focus) {
     // de-activate current active result
     if (this.activeResult) {
         var prevNode = this.activeResult.node;
@@ -193,22 +199,12 @@ jsoneditor.SearchBox.prototype._setActiveResult = function(index) {
     this.activeResult = this.results[this.resultIndex];
     node.updateDom();
 
-    node.scrollTo();
-};
-
-/**
- * Set the focus to the currently active result. If there is no currently
- * active result, the next search result will get focus
- * @private
- */
-jsoneditor.SearchBox.prototype._focusActiveResult = function() {
-    if (!this.activeResult) {
-        this.next();
-    }
-
-    if (this.activeResult) {
-        this.activeResult.node.focus(this.activeResult.elem);
-    }
+    // TODO: not so nice that the focus is only set after the animation is finished
+    node.scrollTo(function () {
+        if (focus) {
+            node.focus(elem);
+        }
+    });
 };
 
 /**
