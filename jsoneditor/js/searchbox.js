@@ -40,7 +40,7 @@ jsoneditor.SearchBox = function(editor, container) {
 
     var table = document.createElement('table');
     this.dom.table = table;
-    table.className = 'jsoneditor-search';
+    table.className = 'search';
     container.appendChild(table);
     var tbody = document.createElement('tbody');
     this.dom.tbody = tbody;
@@ -49,25 +49,22 @@ jsoneditor.SearchBox = function(editor, container) {
     tbody.appendChild(tr);
 
     var td = document.createElement('td');
-    td.className = 'jsoneditor-search';
     tr.appendChild(td);
     var results = document.createElement('div');
     this.dom.results = results;
-    results.className = 'jsoneditor-search-results';
+    results.className = 'results';
     td.appendChild(results);
 
     td = document.createElement('td');
-    td.className = 'jsoneditor-search';
     tr.appendChild(td);
     var divInput = document.createElement('div');
     this.dom.input = divInput;
-    divInput.className = 'jsoneditor-search';
+    divInput.className = 'frame';
     divInput.title = 'Search fields and values';
     td.appendChild(divInput);
 
     // table to contain the text input and search button
     var tableInput = document.createElement('table');
-    tableInput.className = 'jsoneditor-search-input';
     divInput.appendChild(tableInput);
     var tbodySearch = document.createElement('tbody');
     tableInput.appendChild(tbodySearch);
@@ -75,14 +72,13 @@ jsoneditor.SearchBox = function(editor, container) {
     tbodySearch.appendChild(tr);
 
     var refreshSearch = document.createElement('button');
-    refreshSearch.className = 'jsoneditor-search-refresh';
+    refreshSearch.className = 'refresh';
     td = document.createElement('td');
     td.appendChild(refreshSearch);
     tr.appendChild(td);
 
     var search = document.createElement('input');
     this.dom.search = search;
-    search.className = 'jsoneditor-search';
     search.oninput = function (event) {
         searchBox._onDelayedSearch(event);
     };
@@ -106,7 +102,7 @@ jsoneditor.SearchBox = function(editor, container) {
 
     var searchNext = document.createElement('button');
     searchNext.title = 'Next result (Enter)';
-    searchNext.className = 'jsoneditor-search-next';
+    searchNext.className = 'next';
     searchNext.onclick = function () {
         searchBox.next();
     };
@@ -116,7 +112,7 @@ jsoneditor.SearchBox = function(editor, container) {
 
     var searchPrevious = document.createElement('button');
     searchPrevious.title = 'Previous result (Shift+Enter)';
-    searchPrevious.className = 'jsoneditor-search-previous';
+    searchPrevious.className = 'previous';
     searchPrevious.onclick = function () {
         searchBox.previous();
     };

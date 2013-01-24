@@ -1,8 +1,5 @@
 
-/* __________________________ JSONEDITOR TOP MENU ___________________________ */
-
-
-div.jsoneditor-menu {
+.jsoneditor .menu {
     width: 100%;
     height: 35px;
     padding: 2px;
@@ -17,7 +14,7 @@ div.jsoneditor-menu {
     border-bottom: 1px solid #97B0F8;
 }
 
-button.jsoneditor-menu {
+.jsoneditor .menu button {
     width: 26px;
     height: 26px;
     margin: 2px;
@@ -27,38 +24,39 @@ button.jsoneditor-menu {
     background: #e3eaf6 url('img/jsoneditor-icons.png');
 }
 
-button.jsoneditor-menu:hover {
+.jsoneditor .menu button:hover {
     background-color: #f0f2f5;
 }
-button.jsoneditor-menu:active {
+.jsoneditor .menu button:active {
     background-color: #ffffff;
 }
-button.jsoneditor-menu:disabled {
+.jsoneditor .menu button:disabled {
     background-color: #e3eaf6;
 }
 
-button.jsoneditor-collapse-all {
+.jsoneditor .menu button.collapse-all {
     background-position: 0 -96px;
 }
-button.jsoneditor-expand-all {
+.jsoneditor .menu button.expand-all {
     background-position: 0 -120px;
 }
-button.jsoneditor-undo {
+.jsoneditor .menu button.undo {
     background-position: -24px -96px;
 }
-button.jsoneditor-undo:disabled {
+.jsoneditor .menu button.undo:disabled {
     background-position: -24px -120px;
 }
-button.jsoneditor-redo {
+.jsoneditor .menu button.redo {
     background-position: -48px -96px;
 }
-button.jsoneditor-redo:disabled {
+.jsoneditor .menu button.redo:disabled {
     background-position: -48px -120px;
 }
-/* TODO: css for button:disabled is not supported by IE8 */
-button.jsoneditor-compact {
+.jsoneditor .menu button.compact {
     background-position: -72px -96px;
 }
-button.jsoneditor-format {
+.jsoneditor .menu button.format {
     background-position: -72px -120px;
 }
+
+/* TODO: css for button:disabled is not supported by IE8 */

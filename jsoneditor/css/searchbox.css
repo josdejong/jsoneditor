@@ -1,35 +1,42 @@
 
-table.jsoneditor-search {
+.jsoneditor .search input,
+.jsoneditor .search .results {
+    font-family: arial, sans-serif;
+    font-size: 10pt;
+    color: #1A1A1A;
+}
+
+.jsoneditor .search {
     position: absolute;
     right: 2px;
     top: 2px;
 }
 
-table.jsoneditor-search-input {
-    border-collapse: collapse;
-}
-
-div.jsoneditor-search {
+.jsoneditor .search .frame {
     border: 1px solid #97B0F8;
     background-color: white;
     padding: 0 2px;
     margin: 0;
 }
 
-input.jsoneditor-search {
+.jsoneditor .search .frame table {
+    border-collapse: collapse;
+}
+
+.jsoneditor .search input {
     width: 120px;
     border: none;
     outline: none;
     margin: 1px;
 }
 
-div.jsoneditor-search-results {
+.jsoneditor .search .results {
     color: #4d4d4d;
     padding-right: 5px;
+    line-height: 24px;
 }
 
-button.jsoneditor-search-refresh, button.jsoneditor-search-next,
-button.jsoneditor-search-previous {
+.jsoneditor .search button {
     width: 16px;
     height: 24px;
     padding: 0;
@@ -39,24 +46,24 @@ button.jsoneditor-search-previous {
     vertical-align: top;
 }
 
-button.jsoneditor-search-refresh {
+.jsoneditor .search button.refresh {
     width: 18px;
     background-position: -99px -73px;
 }
 
-button.jsoneditor-search-next {
+.jsoneditor .search button.next {
     cursor: pointer;
     background-position: -124px -73px;
 }
-button.jsoneditor-search-next:hover {
+.jsoneditor .search button.next:hover {
     background-position: -124px -49px;
 }
 
-button.jsoneditor-search-previous {
+.jsoneditor .search button.previous {
     cursor: pointer;
     background-position: -148px -73px;
     margin-right: 2px;
 }
-button.jsoneditor-search-previous:hover {
+.jsoneditor .search button.previous:hover {
     background-position: -148px -49px;
 }

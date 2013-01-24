@@ -58,13 +58,13 @@ jsoneditor.JSONFormatter = function (container, options, json) {
 
     // create menu
     this.menu = document.createElement('div');
-    this.menu.className = 'jsoneditor-menu';
+    this.menu.className = 'menu';
     this.frame.appendChild(this.menu);
 
     // create format button
     var buttonFormat = document.createElement('button');
     //buttonFormat.innerHTML = 'Format';
-    buttonFormat.className = 'jsoneditor-menu jsoneditor-format';
+    buttonFormat.className = 'format';
     buttonFormat.title = 'Format JSON data, with proper indentation and line feeds';
     //buttonFormat.className = 'jsoneditor-button';
     this.menu.appendChild(buttonFormat);
@@ -72,17 +72,17 @@ jsoneditor.JSONFormatter = function (container, options, json) {
     // create compact button
     var buttonCompact = document.createElement('button');
     //buttonCompact.innerHTML = 'Compact';
-    buttonCompact.className = 'jsoneditor-menu jsoneditor-compact';
+    buttonCompact.className = 'compact';
     buttonCompact.title = 'Compact JSON data, remove all whitespaces';
     //buttonCompact.className = 'jsoneditor-button';
     this.menu.appendChild(buttonCompact);
 
     this.content = document.createElement('div');
-    this.content.className = 'jsonformatter-content';
+    this.content.className = 'outer';
     this.frame.appendChild(this.content);
 
     this.textarea = document.createElement('textarea');
-    this.textarea.className = "jsonformatter-textarea";
+    this.textarea.className = 'content';
     this.textarea.spellcheck = false;
     this.content.appendChild(this.textarea);
 

@@ -62,12 +62,10 @@ jsoneditor.AppendNode.prototype.getDom = function () {
 
     // a cell for the dragarea column
     var tdDrag = document.createElement('td');
-    tdDrag.className = 'jsoneditor-td';
     dom.tdDrag = tdDrag;
 
     // create context menu
     var tdMenu = document.createElement('td');
-    tdMenu.className = 'jsoneditor-td';
     var menu = document.createElement('button');
     menu.className = 'jsoneditor-contextmenu';
     menu.title = 'Click to open the actions menu (Ctrl+M)';
@@ -79,9 +77,8 @@ jsoneditor.AppendNode.prototype.getDom = function () {
     var tdAppend = document.createElement('td');
     var domText = document.createElement('div');
     domText.innerHTML = '(empty)';
-    domText.className = 'jsoneditor-readonly';
+    domText.className = 'readonly';
     tdAppend.appendChild(domText);
-    tdAppend.className = 'jsoneditor-td';
     dom.td = tdAppend;
     dom.text = domText;
 
@@ -149,14 +146,14 @@ jsoneditor.AppendNode.prototype.showContextMenu = function (anchor, onClose) {
             'text': 'Append',
             'title': 'Append a new field with type \'auto\' (Ctrl+Shift+Ins)',
             'submenuTitle': 'Select the type of the field to be appended',
-            'className': 'jsoneditor-insert',
+            'className': 'insert',
             'click': function () {
                 node._onAppend('', '', 'auto');
             },
             'submenu': [
                 {
                     'text': 'Auto',
-                    'className': 'jsoneditor-type-auto',
+                    'className': 'type-auto',
                     'title': titles.auto,
                     'click': function () {
                         node._onAppend('', '', 'auto');
@@ -164,7 +161,7 @@ jsoneditor.AppendNode.prototype.showContextMenu = function (anchor, onClose) {
                 },
                 {
                     'text': 'Array',
-                    'className': 'jsoneditor-type-array',
+                    'className': '-type-array',
                     'title': titles.array,
                     'click': function () {
                         node._onAppend('', []);
@@ -172,7 +169,7 @@ jsoneditor.AppendNode.prototype.showContextMenu = function (anchor, onClose) {
                 },
                 {
                     'text': 'Object',
-                    'className': 'jsoneditor-type-object',
+                    'className': 'type-object',
                     'title': titles.object,
                     'click': function () {
                         node._onAppend('', {});
@@ -180,7 +177,7 @@ jsoneditor.AppendNode.prototype.showContextMenu = function (anchor, onClose) {
                 },
                 {
                     'text': 'String',
-                    'className': 'jsoneditor-type-string',
+                    'className': 'type-string',
                     'title': titles.string,
                     'click': function () {
                         node._onAppend('', '', 'string');

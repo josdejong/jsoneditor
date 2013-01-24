@@ -501,12 +501,12 @@ jsoneditor.JSONEditor.prototype._createFrame = function () {
 
     // create menu
     this.menu = document.createElement('div');
-    this.menu.className = 'jsoneditor-menu';
+    this.menu.className = 'menu';
     this.frame.appendChild(this.menu);
 
     // create expand all button
     var expandAll = document.createElement('button');
-    expandAll.className = 'jsoneditor-menu jsoneditor-expand-all';
+    expandAll.className = 'expand-all';
     expandAll.title = 'Expand all fields';
     expandAll.onclick = function () {
         editor.expandAll();
@@ -516,7 +516,7 @@ jsoneditor.JSONEditor.prototype._createFrame = function () {
     // create expand all button
     var collapseAll = document.createElement('button');
     collapseAll.title = 'Collapse all fields';
-    collapseAll.className = 'jsoneditor-menu jsoneditor-collapse-all';
+    collapseAll.className = 'collapse-all';
     collapseAll.onclick = function () {
         editor.collapseAll();
     };
@@ -531,7 +531,7 @@ jsoneditor.JSONEditor.prototype._createFrame = function () {
 
         // create undo button
         var undo = document.createElement('button');
-        undo.className = 'jsoneditor-menu jsoneditor-undo';
+        undo.className = 'undo';
         undo.title = 'Undo last action';
         undo.onclick = function () {
             editor._onUndo();
@@ -541,7 +541,7 @@ jsoneditor.JSONEditor.prototype._createFrame = function () {
 
         // create redo button
         var redo = document.createElement('button');
-        redo.className = 'jsoneditor-menu jsoneditor-redo';
+        redo.className = 'redo';
         redo.title = 'Redo';
         redo.onclick = function () {
             editor._onRedo();
@@ -684,15 +684,15 @@ jsoneditor.JSONEditor.prototype._onKeyDown = function (event) {
  */
 jsoneditor.JSONEditor.prototype._createTable = function () {
     var contentOuter = document.createElement('div');
-    contentOuter.className = 'jsoneditor-content-outer';
+    contentOuter.className = 'outer';
     this.contentOuter = contentOuter;
 
     this.content = document.createElement('div');
-    this.content.className = 'jsoneditor-content';
+    this.content.className = 'content';
     contentOuter.appendChild(this.content);
 
     this.table = document.createElement('table');
-    this.table.className = 'jsoneditor-table';
+    this.table.className = 'content';
     this.content.appendChild(this.table);
 
     // IE8 does not handle overflow='auto' correctly.
