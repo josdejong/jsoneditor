@@ -613,7 +613,7 @@ jsoneditor.Node.focusElement = undefined;
  * Set focus to this node
  * @param {String} [elementName]  The field name of the element to get the
  *                                focus available values: 'drag', 'menu',
- *                                'expand', 'field', 'value'
+ *                                'expand', 'field', 'value' (default)
  */
 jsoneditor.Node.prototype.focus = function(elementName) {
     jsoneditor.Node.focusElement = elementName;
@@ -1149,7 +1149,7 @@ jsoneditor.Node.prototype.getDom = function() {
         var domDrag = document.createElement('button');
         dom.drag = domDrag;
         domDrag.className = 'jsoneditor-dragarea';
-        domDrag.title = 'Drag to move this field';
+        domDrag.title = 'Drag to move this field (Alt+Shift+Arrows)';
         if (domDrag) {
             tdDrag.appendChild(domDrag);
         }
@@ -1161,7 +1161,7 @@ jsoneditor.Node.prototype.getDom = function() {
         var menu = document.createElement('button');
         dom.menu = menu;
         menu.className = 'jsoneditor-contextmenu';
-        menu.title = 'Click to open the actions menu';
+        menu.title = 'Click to open the actions menu (Ctrl+M)';
         tdMenu.appendChild(dom.menu);
         dom.tr.appendChild(tdMenu);
     }
@@ -1385,8 +1385,7 @@ jsoneditor.Node.prototype._onDragEnd = function (event) {
 
     if (this.mousemove) {
         jsoneditor.util.removeEventListener(document, 'mousemove', this.mousemove);
-        delete this.mousemove;
-    }
+        delete this.mousemove;}
     if (this.mouseup) {
         jsoneditor.util.removeEventListener(document, 'mouseup', this.mouseup);
         delete this.mouseup;
@@ -1637,7 +1636,7 @@ jsoneditor.Node.prototype._createDomExpandButton = function () {
     if (this._hasChilds()) {
         expand.className = this.expanded ? 'jsoneditor-expanded' : 'jsoneditor-collapsed';
         expand.title =
-            'Click to expand/collapse this field. \n' +
+            'Click to expand/collapse this field (Ctrl+E). \n' +
                 'Ctrl+Click to expand/collapse including all childs.';
     }
     else {
@@ -1874,9 +1873,9 @@ jsoneditor.Node.prototype.onKeyDown = function (event) {
         }
     }
     else if (keynum == 69) { // E
-        if (ctrlKey) {       // Ctrl+E
-            var recurse = false;
-            this._onExpand(recurse);
+        if (ctrlKey) {       // Ctrl+E and Ctrl+Shift+E
+            this._onExpand(shiftKey);  // recurse = shiftKey
+            target.focus(); // TODO: should restore focus in case of recursing expand (which takes DOM offline)
             handled = true;
         }
     }
@@ -2163,7 +2162,7 @@ jsoneditor.Node.prototype._onInsertBefore = function (field, value, type) {
     newNode.expand(true);
     this.parent.insertBefore(newNode, this);
     this.editor.highlighter.unhighlight();
-    newNode.focus();
+    newNode.focus('field');
     var newSelection = this.editor.getSelection();
 
     this.editor._onAction('insertBeforeNode', {
@@ -2193,7 +2192,7 @@ jsoneditor.Node.prototype._onInsertAfter = function (field, value, type) {
     newNode.expand(true);
     this.parent.insertAfter(newNode, this);
     this.editor.highlighter.unhighlight();
-    newNode.focus();
+    newNode.focus('field');
     var newSelection = this.editor.getSelection();
 
     this.editor._onAction('insertAfterNode', {
@@ -2223,7 +2222,7 @@ jsoneditor.Node.prototype._onAppend = function (field, value, type) {
     newNode.expand(true);
     this.parent.appendChild(newNode);
     this.editor.highlighter.unhighlight();
-    newNode.focus();
+    newNode.focus('field');
     var newSelection = this.editor.getSelection();
 
     this.editor._onAction('appendNode', {
@@ -2602,7 +2601,7 @@ jsoneditor.Node.prototype.showContextMenu = function (anchor, onClose) {
         if (node == childs[childs.length - 1]) {
             items.push({
                 'text': 'Append',
-                'title': 'Append a new field with type \'auto\' after this field',
+                'title': 'Append a new field with type \'auto\' after this field (Ctrl+Shift+Ins)',
                 'submenuTitle': 'Select the type of the field to be appended',
                 'className': 'jsoneditor-append',
                 'click': function () {
@@ -2648,7 +2647,7 @@ jsoneditor.Node.prototype.showContextMenu = function (anchor, onClose) {
         // create insert button
         items.push({
             'text': 'Insert',
-            'title': 'Insert a new field with type \'auto\' before this field',
+            'title': 'Insert a new field with type \'auto\' before this field (Ctrl+Ins)',
             'submenuTitle': 'Select the type of the field to be inserted',
             'className': 'jsoneditor-insert',
             'click': function () {
@@ -2694,7 +2693,7 @@ jsoneditor.Node.prototype.showContextMenu = function (anchor, onClose) {
         // create duplicate button
         items.push({
             'text': 'Duplicate',
-            'title': 'Duplicate this field',
+            'title': 'Duplicate this field (Ctrl+D)',
             'className': 'jsoneditor-duplicate',
             'click': function () {
                 node._onDuplicate();
@@ -2704,7 +2703,7 @@ jsoneditor.Node.prototype.showContextMenu = function (anchor, onClose) {
         // create remove button
         items.push({
             'text': 'Remove',
-            'title': 'Remove this field',
+            'title': 'Remove this field (Ctrl+Del)',
             'className': 'jsoneditor-remove',
             'click': function () {
                 node._onRemove();

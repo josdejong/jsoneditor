@@ -76,7 +76,7 @@
         <!-- inject the concatenated javascript files in the module file -->
         <copy file="${js_src}/module.js" tofile="${jsoneditor}/jsoneditor.js" />
         <replace file="${jsoneditor}/jsoneditor.js"
-                 token="/***jsoneditor***/"
+                 token="/***code_placeholder***/"
                  value="${tmp}" />
 
         <!-- concatenate the css files -->

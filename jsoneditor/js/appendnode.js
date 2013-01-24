@@ -70,7 +70,7 @@ jsoneditor.AppendNode.prototype.getDom = function () {
     tdMenu.className = 'jsoneditor-td';
     var menu = document.createElement('button');
     menu.className = 'jsoneditor-contextmenu';
-    menu.title = 'Click to open the actions menu';
+    menu.title = 'Click to open the actions menu (Ctrl+M)';
     dom.menu = menu;
     dom.tdMenu = tdMenu;
     tdMenu.appendChild(dom.menu);
@@ -147,7 +147,7 @@ jsoneditor.AppendNode.prototype.showContextMenu = function (anchor, onClose) {
         // create append button
         {
             'text': 'Append',
-            'title': 'Append a new field with type \'auto\'',
+            'title': 'Append a new field with type \'auto\' (Ctrl+Shift+Ins)',
             'submenuTitle': 'Select the type of the field to be appended',
             'className': 'jsoneditor-insert',
             'click': function () {
