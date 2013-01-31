@@ -138,7 +138,7 @@ JSONEditor.prototype._setOptions = function (options) {
         }
         if (options.enableHistory) {
             // deprecated since version 1.6.0, 2012-11-03
-            this.options.search = options.enableHistory;
+            this.options.history = options.enableHistory;
             console.log('WARNING: Option "enableHistory" is deprecated. Use "history" instead.');
         }
     }
