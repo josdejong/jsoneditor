@@ -1634,6 +1634,15 @@ JSONEditor.Node.prototype.getDom = function() {
             tdDuplicate.appendChild(dom.duplicate);
         }
 
+        // create path button
+        var tdPath = document.createElement('td');
+        tdPath.className = 'jsoneditor-td jsoneditor-td-edit';
+        dom.tr.appendChild(tdPath);
+        dom.path = this._createDomPathButton();
+        if (dom.path) {
+            tdPath.appendChild(dom.path);
+        }
+
         // create remove button
         var tdRemove = document.createElement('td');
         tdRemove.className = 'jsoneditor-td jsoneditor-td-edit';
@@ -2220,6 +2229,58 @@ JSONEditor.Node.prototype.onEvent = function (event) {
         }
     }
 
+    // path button
+    var domPath = dom.path;
+    if (target == domPath) {
+        switch (type) {
+            case 'click':
+
+                var objpath = this;               
+                var myPath = "";                  
+
+                function recurseUp(obj){
+                    if(obj.parent){
+
+                        if(obj.index != undefined){
+                           //why ][? because it will be reversed...
+                           myPath += "]"+obj.index+"["                                
+                        }else{
+                            //not so sure about this reverse split idea
+                            myPath += obj.field.split("").reverse().join("") +".";                        
+                        }
+                        recurseUp(obj.parent);
+                    }
+
+                    return myPath;
+                    
+                }
+
+                //reverse the reverse done in recursion, but on the whole string! (prob better way)
+                myPath += "yourObj" + recurseUp(this).split("").reverse().join("");                 
+                
+                //if previous path exists, remove.
+                if(document.getElementById('myObjPath')){
+                    document.getElementById('jsoneditor').removeChild(document.getElementById('myObjPath'));
+                }
+                
+                //append path to DOM for viewing.
+                var myPathDomTarget = document.createElement('div');
+                myPathDomTarget.id = "myObjPath";
+                document.getElementById('jsoneditor').appendChild(myPathDomTarget); 
+                var txt = document.createTextNode(myPath);
+                document.getElementById('myObjPath').appendChild(txt); 
+
+
+                break;
+            case 'mouseover':
+                this.setHighlight(true);
+                break;
+            case 'mouseout':
+                this.setHighlight(false);
+                break;
+        }
+    }
+
     // remove button
     var domRemove = dom.remove;
     if (target == domRemove) {
@@ -2541,6 +2602,21 @@ JSONEditor.Node.prototype._createDomDuplicateButton = function () {
     else {
         return undefined;
     }
+};
+
+/**
+ * Create a PATH SAVE button.
+ * If the Node is the root node, the path size will be 1. * 
+ * @return {Element | undefined} buttonDuplicate
+ * @private
+ */
+JSONEditor.Node.prototype._createDomPathButton = function () {
+     
+        var buttonPath = document.createElement('button');
+        buttonPath.className = 'jsoneditor-path';
+        buttonPath.title = 'Show Path of Obj Target';
+        return buttonPath;    
+     
 };
 
 /**
