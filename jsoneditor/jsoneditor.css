@@ -52,7 +52,7 @@
     color: gray;
 }
 
-button.jsoneditor-remove, button.jsoneditor-append, button.jsoneditor-duplicate,
+button.jsoneditor-remove, button.jsoneditor-append, button.jsoneditor-duplicate, button.jsoneditor-path,
 button.jsoneditor-collapsed, button.jsoneditor-expanded,
 button.jsoneditor-invisible, button.jsoneditor-dragarea,
 button.jsoneditor-type-auto, button.jsoneditor-type-string,
@@ -107,6 +107,13 @@ button.jsoneditor-duplicate {
 }
 button.jsoneditor-duplicate:hover {
     background-position: -48px 0;
+}
+
+button.jsoneditor-path{
+    background-position: -292px -25px;
+}
+button.jsoneditor-path:hover {
+    background-position: -292px -1px;
 }
 
 button.jsoneditor-type-string {
