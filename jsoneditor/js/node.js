@@ -964,7 +964,9 @@ jsoneditor.Node.prototype._getDomValue = function(silent) {
                 this.editor._onAction('editValue', {
                     'node': this,
                     'oldValue': oldValue,
-                    'newValue': value
+                    'newValue': value,
+                    'oldSelection': this.editor.selection,
+                    'newSelection': this.editor.getSelection()
                 });
             }
         }
@@ -1101,7 +1103,9 @@ jsoneditor.Node.prototype._getDomField = function(silent) {
                 this.editor._onAction('editField', {
                     'node': this,
                     'oldValue': oldField,
-                    'newValue': field
+                    'newValue': field,
+                    'oldSelection': this.editor.selection,
+                    'newSelection': this.editor.getSelection()
                 });
             }
         }
@@ -1759,6 +1763,16 @@ jsoneditor.Node.prototype.onEvent = function (event) {
                 }
                 break;
 
+            case 'input':
+                this._getDomValue(true);
+                this._updateDomValue();
+                break;
+
+            case 'keydown':
+            case 'mousedown':
+                this.editor.selection = this.editor.getSelection();
+                break;
+
             case 'keyup':
                 this._getDomValue(true);
                 this._updateDomValue();
@@ -1782,13 +1796,23 @@ jsoneditor.Node.prototype.onEvent = function (event) {
                 jsoneditor.JSONEditor.focusNode = this;
                 break;
 
-            case 'change':
             case 'blur':
+            case 'change':
                 this._getDomField(true);
                 this._updateDomField();
                 if (this.field) {
                     domField.innerHTML = this._escapeHTML(this.field);
                 }
+                break;
+
+            case 'input':
+                this._getDomField(true);
+                this._updateDomField();
+                break;
+
+            case 'keydown':
+            case 'mousedown':
+                this.editor.selection = this.editor.getSelection();
                 break;
 
             case 'keyup':

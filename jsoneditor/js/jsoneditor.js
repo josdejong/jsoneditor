@@ -54,6 +54,7 @@ jsoneditor.JSONEditor = function (container, options, json) {
     this.container = container;
     this.dom = {};
     this.highlighter = new jsoneditor.Highlighter();
+    this.selection = undefined; // will hold the last input selection
 
     this._setOptions(options);
 
@@ -106,7 +107,7 @@ jsoneditor.JSONEditor.prototype._setOptions = function (options) {
         }
         if (options['enableSearch']) {
             // deprecated since version 1.6.0, 2012-11-03
-            this.options.search = options['enableSearch'];
+            this.options.history = options['enableSearch'];
             console.log('WARNING: Option "enableHistory" is deprecated. Use "history" instead.');
         }
     }
@@ -377,12 +378,9 @@ jsoneditor.JSONEditor.prototype.setSelection = function (selection) {
         // TODO: animated scroll
         this.content.scrollTop = selection.scrollTop;
     }
-    /*
     if (selection.range) {
-        // FIXME: does not work after a DOM element is removed and restored again
-        jsoneditor.util.setSelection(selection.range);
+        jsoneditor.util.setSelectionOffset(selection.range);
     }
-    */
     if (selection.dom) {
         selection.dom.focus();
     }
@@ -400,7 +398,7 @@ jsoneditor.JSONEditor.prototype.getSelection = function () {
     return {
         dom: jsoneditor.JSONEditor.domFocus,
         scrollTop: this.content ? this.content.scrollTop : 0,
-        range: jsoneditor.util.getSelection()
+        range: jsoneditor.util.getSelectionOffset()
     };
 };
 
@@ -482,6 +480,7 @@ jsoneditor.JSONEditor.prototype._createFrame = function () {
         // prevent default submit action when JSONEditor is located inside a form
         jsoneditor.util.preventDefault(event);
     };
+    this.frame.oninput = onEvent;
     this.frame.onchange = onEvent;
     this.frame.onkeydown = onEvent;
     this.frame.onkeyup = onEvent;

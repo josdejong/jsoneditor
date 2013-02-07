@@ -326,6 +326,58 @@ jsoneditor.util.setSelection = function (range) {
 };
 
 /**
+ * Get selected text range
+ * @return {Object} params  object containing parameters:
+ *                              {Number}  startOffset
+ *                              {Number}  endOffset
+ *                              {Element} container  HTML element holding the
+ *                                                   selected text element
+ *                          Returns null if no text selection is found
+ */
+jsoneditor.util.getSelectionOffset = function () {
+    var range = jsoneditor.util.getSelection();
+
+    if (range && range.startOffset != undefined && range.endOffset != undefined &&
+            range.startContainer && (range.startContainer == range.endContainer)) {
+        return {
+            startOffset: range.startOffset,
+            endOffset: range.endOffset,
+            container: range.startContainer.parentNode
+        };
+    }
+    else {
+        // TODO: implement getSelectionOffset for IE8
+    }
+
+    return null;
+};
+
+/**
+ * Set selected text range in given element
+ * @param {Object} params   An object containing:
+ *                              {Element} container
+ *                              {Number} startOffset
+ *                              {Number} endOffset
+ */
+jsoneditor.util.setSelectionOffset = function (params) {
+    if (document.createRange && window.getSelection) {
+        var selection = window.getSelection();
+        if(selection) {
+            var range = document.createRange();
+            // TODO: do not suppose that the first child of the container is a textnode,
+            //       but recursively find the textnodes
+            range.setStart(params.container.firstChild, params.startOffset);
+            range.setEnd(params.container.firstChild, params.endOffset);
+
+            jsoneditor.util.setSelection(range);
+        }
+    }
+    else {
+        // TODO: implement setSelectionOffset for IE8
+    }
+};
+
+/**
  * Get the inner text of an HTML element (for example a div element)
  * @param {Element} element
  * @param {Object} [buffer]
