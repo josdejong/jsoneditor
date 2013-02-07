@@ -337,7 +337,7 @@ jsoneditor.util.setSelection = function (range) {
 jsoneditor.util.getSelectionOffset = function () {
     var range = jsoneditor.util.getSelection();
 
-    if (range && range.startOffset != undefined && range.endOffset != undefined &&
+    if (range && 'startOffset' in range && 'endOffset' in range &&
             range.startContainer && (range.startContainer == range.endContainer)) {
         return {
             startOffset: range.startOffset,

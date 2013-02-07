@@ -531,7 +531,7 @@ jsoneditor.JSONEditor.prototype._createFrame = function () {
         // create undo button
         var undo = document.createElement('button');
         undo.className = 'undo';
-        undo.title = 'Undo last action';
+        undo.title = 'Undo last action (Ctrl+Z)';
         undo.onclick = function () {
             editor._onUndo();
         };
@@ -541,7 +541,7 @@ jsoneditor.JSONEditor.prototype._createFrame = function () {
         // create redo button
         var redo = document.createElement('button');
         redo.className = 'redo';
-        redo.title = 'Redo';
+        redo.title = 'Redo (Ctrl+Shift+Z)';
         redo.onclick = function () {
             editor._onRedo();
         };

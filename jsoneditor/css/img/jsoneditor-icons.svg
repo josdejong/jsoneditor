@@ -27,9 +27,9 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="2.8284271"
-     inkscape:cx="49.693249"
-     inkscape:cy="102.19293"
+     inkscape:zoom="11.313708"
+     inkscape:cx="72.175832"
+     inkscape:cy="53.58774"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="false"
@@ -467,16 +467,6 @@
        inkscape:connector-curvature="0" />
     <path
        style="opacity:0.8;fill:none;stroke:#4d4d4d;stroke-width:2.00000095;stroke-linecap:square;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
-       d="m 77,998.36216 14.00092,0"
-       id="path4946-9"
-       inkscape:connector-curvature="0" />
-    <path
-       style="opacity:0.8;fill:none;stroke:#4d4d4d;stroke-width:2.00000095;stroke-linecap:square;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
-       d="m 77,994.36216 14.00092,0"
-       id="path4946-9-8"
-       inkscape:connector-curvature="0" />
-    <path
-       style="opacity:0.8;fill:none;stroke:#4d4d4d;stroke-width:2.00000095;stroke-linecap:square;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
        d="m 77,986.36216 14.00092,0"
        id="path4946-0"
        inkscape:connector-curvature="0" />
@@ -862,5 +852,10 @@
            height="64.700272"
            x="-5.6568542"
            y="143.56319" /></flowRegion><flowPara
-         id="flowPara3943" /></flowRoot>  </g>
+         id="flowPara3943" /></flowRoot>    <path
+       style="opacity:0.8;fill:none;stroke:#4d4d4d;stroke-width:2.00000072;stroke-linecap:square;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
+       d="m 77,994.3622 6.99981,0"
+       id="path4946-9-8-2-3-7-3"
+       inkscape:connector-curvature="0" />
+  </g>
 </svg>
