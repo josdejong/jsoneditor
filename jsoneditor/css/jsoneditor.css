@@ -90,7 +90,6 @@
 }
 
 .jsoneditor button.contextmenu {
-    position: relative;
     background-position: -48px -72px;
 }
 
@@ -167,11 +166,7 @@ div.jsoneditor {
 }
 
 .jsoneditor button.dragarea {
-    width: 24px;
-    height: 24px;
     background: url('img/jsoneditor-icons.png') -72px -72px;
-
-    display: block;
     cursor: move;
 }
 

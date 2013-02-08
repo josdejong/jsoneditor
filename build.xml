@@ -140,6 +140,9 @@
         <copy file="${web_app_src}/fileretriever.php" todir="${web_app}" />
         <copy file="${web_app_src}/img/logo.png" todir="${web_app}/img" />
         <copy file="${web_app_src}/img/header_background.png" todir="${web_app}/img" />
+        <copy todir="${web_app}/doc">
+            <fileset dir="${web_app_src}/doc"/>
+        </copy>
 
         <copy file="${web_app_src}/lib/jsonlint/jsonlint.js" todir="${web_app}/lib/jsonlint" />
         <copy file="${jsoneditor_min}/jsoneditor-min.js" todir="${web_app}/lib/jsoneditor" />
