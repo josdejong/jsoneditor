@@ -37,6 +37,7 @@ jsoneditor.ContextMenu = function (items, options) {
     this.anchor = undefined;
     this.items = items;
     this.eventListeners = {};
+    this.selection = undefined; // holds the selection before the menu was opened
     this.visibleSubmenu = undefined;
     this.onClose = options ? options.close : undefined;
 
@@ -250,6 +251,7 @@ jsoneditor.ContextMenu.prototype.show = function (anchor) {
         });
 
     // move focus to the first button in the context menu
+    this.selection = jsoneditor.util.getSelection();
     this.anchor = anchor;
     setTimeout(function () {
         me.dom.focusButton.focus();
@@ -345,7 +347,10 @@ jsoneditor.ContextMenu.prototype._onKeyDown = function (event) {
     if (keynum == 27) { // ESC
         // hide the menu on ESC key
 
-        // move focus to the anchor
+        // restore previous selection and focus
+        if (this.selection) {
+            jsoneditor.util.setSelection(this.selection);
+        }
         if (this.anchor) {
             this.anchor.focus();
         }
