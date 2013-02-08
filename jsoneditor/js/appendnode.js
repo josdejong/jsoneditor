@@ -161,7 +161,7 @@ jsoneditor.AppendNode.prototype.showContextMenu = function (anchor, onClose) {
                 },
                 {
                     'text': 'Array',
-                    'className': '-type-array',
+                    'className': 'type-array',
                     'title': titles.array,
                     'click': function () {
                         node._onAppend('', []);
