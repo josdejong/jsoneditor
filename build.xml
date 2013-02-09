@@ -134,7 +134,7 @@
         <copy file="LICENSE" todir="${web_app}" />
         <copy file="NOTICE" todir="${web_app}" />
         <copy file="${web_app_src}/robots.txt" todir="${web_app}" />
-        <copy file="${web_app_src}/datapolicy.txt" todir="${web_app}" />
+        <copy file="${web_app_src}/datapolicy.md" todir="${web_app}" />
         <copy file="${web_app_src}/index.html" todir="${web_app}" />
         <copy file="${web_app_src}/favicon.ico" todir="${web_app}" />
         <copy file="${web_app_src}/fileretriever.php" todir="${web_app}" />

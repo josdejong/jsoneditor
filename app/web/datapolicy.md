@@ -1,4 +1,5 @@
-JSON EDITOR ONLINE DATA POLICY
+JSON Editor online - Data policy
+
 http://jsoneditoronline.org
 
 
@@ -6,7 +7,7 @@ This file describes the data policy of JSON Editor Online. When using the
 open/save functionality of the editor, files may need to be downloaded via the
 server, therefore:
 
-    DO NOT LOAD OR SAVE SENSITIVE DATA VIA THE EDITORS OPEN/SAVE FUNCTIONALITY.
+**DO NOT LOAD OR SAVE SENSITIVE DATA VIA THE EDITORS OPEN/SAVE FUNCTIONALITY.**
 
 Files which are downloaded via the server are sent unsecured and unencrypted.
 
