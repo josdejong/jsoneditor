@@ -1,7 +1,7 @@
 <!-- ant build script for jsoneditoronline -->
 
 <project name="jsoneditor-builder" default="main">
-    <!-- the version number of must be updated here (according to changelog.md) -->
+    <!-- the version number of must be updated here (according to changelog.txt) -->
     <property name="version"    value="2.0.0"/>
 
     <!-- compression tools -->
@@ -27,7 +27,7 @@
         <copy file="README.md" todir="${jsoneditor}" />
         <copy file="LICENSE" todir="${jsoneditor}" />
         <copy file="NOTICE" todir="${jsoneditor}" />
-        <copy file="changelog.md" todir="${jsoneditor}" />
+        <copy file="changelog.txt" todir="${jsoneditor}" />
         <copy todir="${jsoneditor}/examples">
             <fileset dir="${src}/examples"/>
         </copy>
@@ -37,7 +37,7 @@
         <copy file="README.md" todir="${jsoneditor_min}" />
         <copy file="LICENSE" todir="${jsoneditor_min}" />
         <copy file="NOTICE" todir="${jsoneditor_min}" />
-        <copy file="changelog.md" todir="${jsoneditor_min}" />
+        <copy file="changelog.txt" todir="${jsoneditor_min}" />
         <copy todir="${jsoneditor_min}/examples">
             <fileset dir="${src}/examples"/>
         </copy>
@@ -129,12 +129,12 @@
         </concat>
 
         <!-- copy all other files and libraries-->
-        <copy file="changelog.md" todir="${web_app}" />
+        <copy file="changelog.txt" todir="${web_app}" />
         <copy file="README.md" todir="${web_app}" />
         <copy file="LICENSE" todir="${web_app}" />
         <copy file="NOTICE" todir="${web_app}" />
         <copy file="${web_app_src}/robots.txt" todir="${web_app}" />
-        <copy file="${web_app_src}/datapolicy.md" todir="${web_app}" />
+        <copy file="${web_app_src}/datapolicy.txt" todir="${web_app}" />
         <copy file="${web_app_src}/index.html" todir="${web_app}" />
         <copy file="${web_app_src}/favicon.ico" todir="${web_app}" />
         <copy file="${web_app_src}/fileretriever.php" todir="${web_app}" />
