@@ -2,21 +2,21 @@ JSON EDITOR ONLINE CHANGELOG
 http://jsoneditoronline.org
 
 
-<not yet released>, version 2.0.0
+2013-02-09, version 2.0.0
 
-- Implemented a context menu, replacing the action buttons on the right side of
+- Implemented an action menu, replacing the action buttons on the right side of
   the editor and the inline action buttons. This gives a cleaner interface,
   more space for the actual contents, and more room for new controls (like
   insert and sort).
-- Implemented shortcut keys.
+- Implemented shortcut keys. The JSON Editor can be used with just a keyboard.
 - Implemented sort action, which sorts the childs of an array or object.
 - Implemented auto scrolling up and down when dragging a node and reaching
   the top or bottom of the editor.
 - Added support for CommonJS and RequireJS.
 - Added more examples.
-- Improved performance and memory usage.
 - Implemented a new mode 'form', in which only values are editable and the
   fields are fixed.
+- Improved performance and memory usage.
 - Minor improvements and bug fixes.
 
 
