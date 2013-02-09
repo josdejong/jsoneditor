@@ -94,7 +94,8 @@
 }
 
 .jsoneditor button.contextmenu:hover,
-.jsoneditor button.contextmenu:focus {
+.jsoneditor button.contextmenu:focus,
+.jsoneditor button.contextmenu.selected {
     background-position: -48px -48px;
 }
 

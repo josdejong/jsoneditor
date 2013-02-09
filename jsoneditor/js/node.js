@@ -1731,7 +1731,9 @@ jsoneditor.Node.prototype.onEvent = function (event) {
         var highlighter = node.editor.highlighter;
         highlighter.highlight(node);
         highlighter.lock();
+        jsoneditor.util.addClassName(dom.menu, 'selected');
         this.showContextMenu(dom.menu, function () {
+            jsoneditor.util.removeClassName(dom.menu, 'selected');
             highlighter.unlock();
             highlighter.unhighlight();
         });
