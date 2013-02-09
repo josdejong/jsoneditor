@@ -50,6 +50,9 @@ th, td {
 a {
     color: #4183C4;
 }
+a:hover {
+    color: red;
+}
 
 img.icon {
     vertical-align: middle;

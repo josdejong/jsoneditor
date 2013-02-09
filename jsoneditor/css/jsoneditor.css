@@ -76,8 +76,7 @@
     margin: 0;
     border: none;
     cursor: pointer;
-    background-color: transparent;
-    background-image: url('img/jsoneditor-icons.png');
+    background: transparent url('img/jsoneditor-icons.png');
 }
 
 .jsoneditor button.collapsed {
