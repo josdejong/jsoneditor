@@ -105,9 +105,9 @@ jsoneditor.JSONEditor.prototype._setOptions = function (options) {
             this.options.search = options['enableSearch'];
             console.log('WARNING: Option "enableSearch" is deprecated. Use "search" instead.');
         }
-        if (options['enableSearch']) {
+        if (options['enableHistory']) {
             // deprecated since version 1.6.0, 2012-11-03
-            this.options.history = options['enableSearch'];
+            this.options.history = options['enableHistory'];
             console.log('WARNING: Option "enableHistory" is deprecated. Use "history" instead.');
         }
     }
