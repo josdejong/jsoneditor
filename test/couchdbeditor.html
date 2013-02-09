@@ -10,8 +10,8 @@
   <link rel="shortcut icon" href="../app/web/favicon.ico">
   
   <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.0/jquery.min.js"></script>
-  <script type="text/javascript" src="../jsoneditor/jsoneditor.js"></script>
-  <link rel="stylesheet" type="text/css" href="../jsoneditor/jsoneditor.css">
+  <script type="text/javascript" src="../jsoneditor/js/jsoneditor.js"></script>
+  <link rel="stylesheet" type="text/css" href="../jsoneditor/css/jsoneditor.css">
 
   <style type="text/css">
     body, html {
@@ -37,7 +37,7 @@
 
     function init() {
       var container = document.getElementById('jsoneditor');
-      editor = new JSONEditor(container);
+      editor = (container);
      
       document.getElementById('url').focus();
     }

@@ -33,10 +33,10 @@
     License for the specific language governing permissions and limitations under
     the License.
 
-    Copyright (C) 2011-2012 Jos de Jong, http://jsoneditoronline.org
+    Copyright (C) 2011-2013 Jos de Jong, http://jsoneditoronline.org
 
     @author   Jos de Jong, <wjosdejong@gmail.com>
-    @date     2012-11-03
+    @date     2013-02-09
     -->
 
     <meta name="description" content="JSON Editor Online is a web-based tool to view, edit, and format JSON. It shows your data side by side in a clear, editable treeview and in formatted plain text.">
@@ -47,12 +47,23 @@
 
     <link href="app.css" rel="stylesheet" type="text/css">
     <link href="fileretriever.css" rel="stylesheet" type="text/css">
-    <link href="../../jsoneditor/jsoneditor.css" rel="stylesheet" type="text/css">
+    <link href="../../jsoneditor/css/jsoneditor.css" rel="stylesheet" type="text/css">
+    <link href="../../jsoneditor/css/menu.css" rel="stylesheet" type="text/css">
+    <link href="../../jsoneditor/css/searchbox.css" rel="stylesheet" type="text/css">
+    <link href="../../jsoneditor/css/contextmenu.css" rel="stylesheet" type="text/css">
     <!-- TODO: droid font
     <link href='http://fonts.googleapis.com/css?family=Droid+Sans+Mono' rel='stylesheet' type='text/css'>
     -->
 
-    <script type="text/javascript" src="../../jsoneditor/jsoneditor.js"></script>
+    <script type="text/javascript" src="../../jsoneditor/js/jsoneditor.js"></script>
+    <script type="text/javascript" src="../../jsoneditor/js/jsonformatter.js"></script>
+    <script type="text/javascript" src="../../jsoneditor/js/node.js"></script>
+    <script type="text/javascript" src="../../jsoneditor/js/appendnode.js"></script>
+    <script type="text/javascript" src="../../jsoneditor/js/contextmenu.js"></script>
+    <script type="text/javascript" src="../../jsoneditor/js/history.js"></script>
+    <script type="text/javascript" src="../../jsoneditor/js/searchbox.js"></script>
+    <script type="text/javascript" src="../../jsoneditor/js/highlighter.js"></script>
+    <script type="text/javascript" src="../../jsoneditor/js/util.js"></script>
     <script type="text/javascript" src="queryparams.js"></script>
     <script type="text/javascript" src="ajax.js"></script>
     <script type="text/javascript" src="fileretriever.js"></script>
@@ -63,10 +74,10 @@
 
     <style type="text/css">
         div.convert-right {
-            background: url('../../jsoneditor/img/jsoneditor-icons.png') -168px 0;
+            background: url('../../jsoneditor/css/img/jsoneditor-icons.png') -0 -48px;
         }
         div.convert-left {
-            background: url('../../jsoneditor/img/jsoneditor-icons.png') -192px 0;
+            background: url('../../jsoneditor/css/img/jsoneditor-icons.png') -24px -48px;
         }
     </style>
 </head>
@@ -101,6 +112,9 @@
             </li>
             <li>
                 <a id="save" title="Save file to disk">Save</a>
+            </li>
+            <li>
+                <a id="help" title="Open documentation (opens in a new window)" href="doc/index.html" target="_blank">Help</a>
             </li>
         </ul>
     </div>
@@ -183,7 +197,7 @@
 
 <div id="footer">
     <div id="footer-inner">
-        <a href="http://jsoneditoronline.org" class="footer">JSON Editor Online 1.7.0</a>
+        <a href="http://jsoneditoronline.org" class="footer">JSON Editor Online 2.0.0</a>
         &bull;
         <a href="../../changelog.txt" target="_blank" class="footer">Changelog</a>
         &bull;
@@ -191,7 +205,7 @@
         &bull;
         <a href="datapolicy.txt" target="_blank" class="footer">Data policy</a>
         &bull;
-        <a href="../../NOTICE" target="_blank" class="footer">Copyright 2011-2012 Jos de Jong</a>
+        <a href="../../NOTICE" target="_blank" class="footer">Copyright 2011-2013 Jos de Jong</a>
     </div>
 </div>
 

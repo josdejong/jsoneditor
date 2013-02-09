@@ -1,4 +1,4 @@
-/**
+/*!
  * @file app.js
  *
  * @brief
@@ -23,10 +23,10 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  *
- * Copyright (C) 2011-2012 Jos de Jong, http://jsoneditoronline.org
+ * Copyright (C) 2011-2013 Jos de Jong, http://jsoneditoronline.org
  *
  * @author  Jos de Jong, <wjosdejong@gmail.com>
- * @date    2012-11-03
+ * @date    2013-02-09
  */
 
 
@@ -76,28 +76,12 @@ app.load = function() {
 
         // default json document
         var json = {
-            "name": "John Smith",
-            "age": 32,
-            "employed": true,
-            "address": {
-                "street": "701 First Ave.",
-                "city": "Sunnyvale, CA 95125",
-                "country": "United States"
-            },
-            "children": [
-                {
-                    "name": "Richard",
-                    "age": 7
-                },
-                {
-                    "name": "Susan",
-                    "age": 4
-                },
-                {
-                    "name": "James",
-                    "age": 3
-                }
-            ]
+            "array": [1, 2, 3],
+            "boolean": true,
+            "null": null,
+            "number": 123,
+            "object": {"a": "b", "c": "d", "e": "f"},
+            "string": "Hello World"
         };
 
         // load url if query parameters contains a url
@@ -115,7 +99,7 @@ app.load = function() {
 
         // formatter
         var container = document.getElementById("jsonformatter");
-        formatter = new JSONFormatter(container, {
+        formatter = new jsoneditor.JSONFormatter(container, {
             change: function () {
                 app.lastChanged = formatter;
             }
@@ -127,7 +111,7 @@ app.load = function() {
 
         // editor
         container = document.getElementById("jsoneditor");
-        editor = new JSONEditor(container, {
+        editor = new jsoneditor.JSONEditor(container, {
             change: function () {
                 app.lastChanged = editor;
             }
@@ -174,7 +158,7 @@ app.load = function() {
         domSplitter.appendChild(toJSON);
 
         // web page resize handler
-        JSONEditor.Events.addEventListener(window, 'resize', app.resize);
+        jsoneditor.util.addEventListener(window, 'resize', app.resize);
 
         // clear button
         var domClear = document.getElementById('clear');
@@ -201,16 +185,16 @@ app.load = function() {
         var domMenuOpenFile = document.getElementById('menuOpenFile');
         domMenuOpenFile.onclick = function (event) {
             app.openFile();
-            JSONEditor.Events.stopPropagation(event);
-            JSONEditor.Events.preventDefault(event);
+            jsoneditor.util.stopPropagation(event);
+            jsoneditor.util.preventDefault(event);
         };
 
         // menu button open url
         var domMenuOpenUrl = document.getElementById('menuOpenUrl');
         domMenuOpenUrl.onclick = function (event) {
             app.openUrl();
-            JSONEditor.Events.stopPropagation(event);
-            JSONEditor.Events.preventDefault(event);
+            jsoneditor.util.stopPropagation(event);
+            jsoneditor.util.preventDefault(event);
         };
 
         // save button
@@ -237,7 +221,7 @@ app.openCallback = function (err, data) {
         if (data != undefined) {
             formatter.setText(data);
             try {
-                var json = JSONEditor.parse(data);
+                var json = jsoneditor.util.parse(data);
                 editor.set(json);
             }
             catch (err) {
@@ -304,7 +288,6 @@ app.clearFile = function () {
     var json = {};
     formatter.set(json);
     editor.set(json);
-    app.retriever.removeUrl();
 };
 
 app.resize = function() {
@@ -322,16 +305,18 @@ app.resize = function() {
         width -= (adWidth + 15); // Not so nice, +15 here for the margin
     }
 
-    var splitterLeft = width * app.splitter.getValue();
+    if (app.splitter) {
+        var splitterLeft = width * app.splitter.getValue();
 
-    // resize formatter
-    domFormatter.style.width = Math.round(splitterLeft) + 'px';
+        // resize formatter
+        domFormatter.style.width = Math.round(splitterLeft) + 'px';
 
-    // resize editor
-    // the width has a -1 to prevent the width from being just half a pixel
-    // wider than the window, causing the content elements to wrap...
-    domEditor.style.left = Math.round(splitterLeft + splitterWidth) + 'px';
-    domEditor.style.width = Math.round(width - splitterLeft - splitterWidth - 1) + 'px';
+        // resize editor
+        // the width has a -1 to prevent the width from being just half a pixel
+        // wider than the window, causing the content elements to wrap...
+        domEditor.style.left = Math.round(splitterLeft + splitterWidth) + 'px';
+        domEditor.style.width = Math.round(width - splitterLeft - splitterWidth - 1) + 'px';
+    }
 
     // resize ad text
     if (domAdInfo && domAd) {

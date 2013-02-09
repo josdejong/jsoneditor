@@ -1,0 +1,219 @@
+
+/* ContextMenu - main menu */
+
+.jsoneditor-contextmenu {
+    position: absolute;
+}
+
+.jsoneditor-contextmenu ul {
+    position: relative;
+    left: 0;
+    top: 0;
+    width: 124px;
+
+    background: white;
+    border: 1px solid #d3d3d3;
+    box-shadow: 2px 2px 12px rgba(128, 128, 128, 0.3);
+
+    z-index: 1;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.jsoneditor-contextmenu ul li button {
+    padding: 0;
+    margin: 0;
+    width: 124px;
+    height: 24px;
+    border: none;
+    cursor: pointer;
+    color: #4d4d4d;
+    background: transparent;
+
+    line-height: 24px;
+    text-align: left;
+}
+
+/* Fix button padding in firefox */
+.jsoneditor-contextmenu ul li button::-moz-focus-inner {
+    padding: 0;
+    border: 0;
+}
+
+.jsoneditor-contextmenu ul li button:hover,
+.jsoneditor-contextmenu ul li button:focus {
+    color: #1a1a1a;
+    background-color: #f5f5f5;
+    outline: none;
+}
+
+.jsoneditor-contextmenu ul li button.default {
+    width: 92px;
+}
+
+.jsoneditor-contextmenu ul li button.expand {
+    float: right;
+    width: 32px;
+    height: 24px;
+    border-left: 1px solid #e5e5e5;
+}
+
+.jsoneditor-contextmenu div.icon {
+    float: left;
+    width: 24px;
+    height: 24px;
+    border: none;
+    padding: 0;
+    margin: 0;
+    background-image: url('img/jsoneditor-icons.png');
+}
+
+.jsoneditor-contextmenu ul li button div.expand {
+    float: right;
+    width: 24px;
+    height: 24px;
+    padding: 0;
+    margin: 0 4px 0 0;
+    background: url('img/jsoneditor-icons.png') 0 -72px;
+    opacity: 0.4;
+}
+
+.jsoneditor-contextmenu ul li button:hover div.expand,
+.jsoneditor-contextmenu ul li button:focus div.expand,
+.jsoneditor-contextmenu ul li.selected div.expand,
+.jsoneditor-contextmenu ul li button.expand:hover div.expand,
+.jsoneditor-contextmenu ul li button.expand:focus div.expand {
+    opacity: 1;
+}
+
+.jsoneditor-contextmenu .separator {
+    height: 0;
+    border-top: 1px solid #e5e5e5;
+    padding-top: 5px;
+    margin-top: 5px;
+}
+
+.jsoneditor-contextmenu button.remove > .icon {
+    background-position: -24px -24px;
+}
+.jsoneditor-contextmenu button.remove:hover > .icon,
+.jsoneditor-contextmenu button.remove:focus > .icon {
+    background-position: -24px 0;
+}
+
+.jsoneditor-contextmenu button.append > .icon {
+    background-position: 0 -24px;
+}
+.jsoneditor-contextmenu button.append:hover > .icon,
+.jsoneditor-contextmenu button.append:focus > .icon {
+    background-position: 0 0;
+}
+
+.jsoneditor-contextmenu button.insert > .icon {
+    background-position: 0 -24px;
+}
+.jsoneditor-contextmenu button.insert:hover > .icon,
+.jsoneditor-contextmenu button.insert:focus > .icon {
+    background-position: 0 0;
+}
+
+.jsoneditor-contextmenu button.duplicate > .icon {
+    background-position: -48px -24px;
+}
+.jsoneditor-contextmenu button.duplicate:hover > .icon,
+.jsoneditor-contextmenu button.duplicate:focus > .icon {
+    background-position: -48px 0;
+}
+
+.jsoneditor-contextmenu button.sort-asc > .icon {
+    background-position: -168px -24px;
+}
+.jsoneditor-contextmenu button.sort-asc:hover > .icon,
+.jsoneditor-contextmenu button.sort-asc:focus > .icon {
+    background-position: -168px 0;
+}
+
+.jsoneditor-contextmenu button.sort-desc > .icon {
+    background-position: -192px -24px;
+}
+.jsoneditor-contextmenu button.sort-desc:hover > .icon,
+.jsoneditor-contextmenu button.sort-desc:focus > .icon {
+    background-position: -192px 0;
+}
+
+/* ContextMenu - sub menu */
+
+.jsoneditor-contextmenu ul li ul li .selected {
+    background-color: #D5DDF6;
+}
+
+.jsoneditor-contextmenu ul li {
+    overflow: hidden;
+}
+
+.jsoneditor-contextmenu ul li ul {
+    display: none;
+    position: relative;
+    left: -10px;
+    top: 0;
+
+    border: none;
+    box-shadow: inset 0 0 10px rgba(128, 128, 128, 0.5);
+    padding: 0 10px;
+
+    /* TODO: transition is not supported on IE8-9 */
+    -webkit-transition: all 0.3s ease-out;
+    -moz-transition: all 0.3s ease-out;
+    -o-transition: all 0.3s ease-out;
+    transition: all 0.3s ease-out;
+}
+
+.jsoneditor-contextmenu ul li.selected ul {
+}
+
+.jsoneditor-contextmenu ul li ul li button {
+    padding-left: 24px;
+}
+
+.jsoneditor-contextmenu ul li ul li button:hover,
+.jsoneditor-contextmenu ul li ul li button:focus {
+    background-color: #f5f5f5;
+
+}
+
+.jsoneditor-contextmenu button.type-string > .icon {
+    background-position: -144px -24px;
+}
+.jsoneditor-contextmenu button.type-string:hover > .icon,
+.jsoneditor-contextmenu button.type-string:focus > .icon,
+.jsoneditor-contextmenu button.type-string.selected > .icon{
+    background-position: -144px 0;
+}
+
+.jsoneditor-contextmenu button.type-auto > .icon {
+    background-position: -120px -24px;
+}
+.jsoneditor-contextmenu button.type-auto:hover > .icon,
+.jsoneditor-contextmenu button.type-auto:focus > .icon,
+.jsoneditor-contextmenu button.type-auto.selected > .icon {
+    background-position: -120px 0;
+}
+
+.jsoneditor-contextmenu button.type-object > .icon {
+    background-position: -72px -24px;
+}
+.jsoneditor-contextmenu button.type-object:hover > .icon,
+.jsoneditor-contextmenu button.type-object:focus > .icon,
+.jsoneditor-contextmenu button.type-object.selected > .icon{
+    background-position: -72px 0;
+}
+
+.jsoneditor-contextmenu button.type-array > .icon {
+    background-position: -96px -24px;
+}
+.jsoneditor-contextmenu button.type-array:hover > .icon,
+.jsoneditor-contextmenu button.type-array:focus > .icon,
+.jsoneditor-contextmenu button.type-array.selected > .icon{
+    background-position: -96px 0;
+}

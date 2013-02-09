@@ -57,10 +57,10 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  *
- * Copyright (c) 2012 Jos de Jong, http://jsoneditoronline.org
+ * Copyright (c) 2013 Jos de Jong, http://jsoneditoronline.org
  *
  * @author  Jos de Jong, <wjosdejong@gmail.com>
- * @date    2012-11-03
+ * @date    2013-01-01
  */
 var FileRetriever = function (options) {
     // set options and variables
@@ -401,7 +401,7 @@ FileRetriever.prototype.prompt = function (params) {
             overlay.parentNode.removeChild(overlay);
         }
 
-        JSONEditor.Events.removeEventListener(document, 'keydown', onKeyDown);
+        jsoneditor.util.removeEventListener(document, 'keydown', onKeyDown);
     };
 
     var onCancel = function () {
@@ -411,13 +411,13 @@ FileRetriever.prototype.prompt = function (params) {
         }
     };
 
-    var onKeyDown = JSONEditor.Events.addEventListener(document, 'keydown', function (event) {
+    var onKeyDown = jsoneditor.util.addEventListener(document, 'keydown', function (event) {
         event = event || window.event;
         var keynum = event.which || event.keyCode;
         if (keynum == 27) { // ESC
             onCancel();
-            JSONEditor.Events.preventDefault(event);
-            JSONEditor.Events.stopPropagation(event);
+            jsoneditor.util.preventDefault(event);
+            jsoneditor.util.stopPropagation(event);
         }
     });
 

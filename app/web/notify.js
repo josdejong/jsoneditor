@@ -9,7 +9,7 @@ function Notify () {
     // TODO: attach the event as soon as there are one or multiple messages displayed,
     //       remove it as soon as they are all gone
     var me = this;
-    JSONEditor.Events.addEventListener(document, 'keydown', function (event) {
+    jsoneditor.util.addEventListener(document, 'keydown', function (event) {
         me.onKeyDown(event);
     });
 }
@@ -143,7 +143,7 @@ Notify.prototype.onKeyDown = function (event) {
     if (keynum == 27) { // ESC
         // remove the oldest open and closeable message
         this.removeMessage();
-        JSONEditor.Events.preventDefault(event);
-        JSONEditor.Events.stopPropagation(event);
+        jsoneditor.util.preventDefault(event);
+        jsoneditor.util.stopPropagation(event);
     }
 };

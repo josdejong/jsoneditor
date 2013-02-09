@@ -101,18 +101,21 @@ span.header-light {
 
 #menu ul li ul li:hover {
     background-color: white;
-    color: #737373;
 }
 
 #menu a {
     padding: 6px 10px;
     display: block;
     cursor: pointer;
+    text-decoration: none;
+    color: white;
 }
 
 #menu ul li ul li a {
+    color: #737373;
     width: 80px;
 }
+
 
 #openMenuButton {
     font-size: 75%;
@@ -267,9 +270,9 @@ div.convert-right, div.convert-left {
 }
 
 div.convert-right {
-    background: url('lib/jsoneditor/img/jsoneditor-icons.png') -168px 0;
+    background: url('lib/jsoneditor/img/jsoneditor-icons.png') -0 -48px;
 }
 
 div.convert-left {
-    background: url('lib/jsoneditor/img/jsoneditor-icons.png') -192px 0;
+    background: url('lib/jsoneditor/img/jsoneditor-icons.png') -24px -48px;
 }
