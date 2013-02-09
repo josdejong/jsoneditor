@@ -28,8 +28,8 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="11.313708"
-     inkscape:cx="72.175832"
-     inkscape:cy="53.58774"
+     inkscape:cx="61.013218"
+     inkscape:cy="50.052206"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="false"
@@ -640,14 +640,14 @@
        sodipodi:cy="14.625"
        sodipodi:rx="5.875"
        sodipodi:ry="5.625"
-       d="m 340.84575,10.647524 c 2.29433,-2.1966988 6.01417,-2.1966988 8.3085,0 2.29433,2.196699 2.29433,5.758252 0,7.954952 C 348.05248,19.657368 346.55815,20.25 345,20.25"
-       transform="matrix(1.0994451,0,0,1.1555556,-341.82269,1000.4932)"
+       d="M 340.84575,10.647524 A 5.875,5.625 0 1 1 345,20.25"
+       transform="matrix(1.0994451,0,0,1.1555556,-343.14769,999.4622)"
        sodipodi:start="3.9269908"
        sodipodi:end="7.8539816"
        sodipodi:open="true" />
     <path
        style="opacity:0.4;fill:#4d4d4d;fill-opacity:1;stroke:none"
-       d="M 35.827669,1015.7373 30.324753,1009.9307 28,1017.6425 z"
+       d="m 34.502669,1014.7063 -5.502916,-5.8066 -2.324753,7.7118 z"
        id="path3055-0-70-1-7-5-1"
        inkscape:connector-curvature="0"
        sodipodi:nodetypes="cccc" />
@@ -659,14 +659,14 @@
        sodipodi:cy="14.625"
        sodipodi:rx="5.875"
        sodipodi:ry="5.625"
-       d="m 340.84575,10.647524 c 2.29433,-2.1966988 6.01417,-2.1966988 8.3085,0 2.29433,2.196699 2.29433,5.758252 0,7.954952 C 348.05248,19.657368 346.55815,20.25 345,20.25"
-       transform="matrix(-1.0994451,0,0,1.1555556,440.59288,1000.4307)"
+       d="M 340.84575,10.647524 A 5.875,5.625 0 1 1 345,20.25"
+       transform="matrix(-1.0994451,0,0,1.1555556,439.2678,999.4622)"
        sodipodi:start="3.9269908"
        sodipodi:end="7.8539816"
        sodipodi:open="true" />
     <path
        style="opacity:0.4;fill:#4d4d4d;fill-opacity:1;stroke:none"
-       d="m 62.94251,1015.6748 5.50292,-5.8066 2.32475,7.7118 z"
+       d="m 61.61743,1014.7063 5.50292,-5.8066 2.32475,7.7118 z"
        id="path3055-0-70-1-7-5-8-1"
        inkscape:connector-curvature="0"
        sodipodi:nodetypes="cccc" />
