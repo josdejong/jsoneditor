@@ -7,7 +7,6 @@
     min-width: 32px;
     padding: 2px;
     margin: 1px;
-    outline: none;
     word-wrap: break-word;
     float: left;
 }
@@ -99,8 +98,17 @@
     background-position: -48px -48px;
 }
 
+.jsoneditor div.content *:focus {
+    outline: none;
+}
+
 .jsoneditor div.content button:focus {
-    box-shadow: 0 0 10px #97B0F8;
+    /* TODO: nice outline for buttons with focus
+    outline: #97B0F8 solid 2px;
+    box-shadow: 0 0 8px #97B0F8;
+    */
+    background-color: #f5f5f5;
+    outline: #e5e5e5 solid 1px;
 }
 
 .jsoneditor button.invisible {

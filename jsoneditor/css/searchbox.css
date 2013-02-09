@@ -46,6 +46,10 @@
     vertical-align: top;
 }
 
+.jsoneditor .search button:hover {
+    background-color: transparent;
+}
+
 .jsoneditor .search button.refresh {
     width: 18px;
     background-position: -99px -73px;

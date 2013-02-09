@@ -45,6 +45,7 @@
 .jsoneditor-contextmenu ul li button:focus {
     color: #1a1a1a;
     background-color: #f5f5f5;
+    outline: none;
 }
 
 .jsoneditor-contextmenu ul li button.default {
