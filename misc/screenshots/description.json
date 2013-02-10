@@ -1,7 +1,7 @@
 {
     "Name": "JSON Editor Online",
     "Website": "http://jsoneditoronline.org",
-    "Version": 1.3,
+    "Version": 2.0,
     "Free": true,
     "Description": "JSON Editor Online is a web-based tool to view, edit, and format JSON. It shows your data side by side in a clear, editable treeview and in formatted plain text.",
     "Features": [
