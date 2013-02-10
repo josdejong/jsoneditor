@@ -9,6 +9,14 @@ It shows your data side by side in a clear, editable treeview and in
 formatted plain text.
 
 
+### Screenshot
+
+<a href="http://jsoneditoronline.org">
+    <img alt="jsoneditoronline"
+        src="https://raw.github.com/josdejong/jsoneditoronline/master/misc/screenshots/jsoneditoronline.png">
+</a>
+
+
 ### Features
 
 - View and edit JSON side by side in treeview and plain text.
@@ -42,11 +50,3 @@ To build the library from sourcecode, run
 
 in the root of the project. This will generate a folder `build` containing
 generated library and web application.
-
-
-### Screenshot
-
-<a href="http://jsoneditoronline.org">
-    <img alt="jsoneditoronline"
-        src="https://raw.github.com/josdejong/jsoneditoronline/master/misc/screenshots/jsoneditoronline.png">
-</a>

@@ -69,7 +69,7 @@ if (typeof(module) != 'undefined' && typeof(exports) != 'undefined') {
 }
 
 /**
- * RequireJS module exports
+ * AMD module exports
  */
 if (typeof(require) != 'undefined' && typeof(define) != 'undefined') {
     define(function () {
