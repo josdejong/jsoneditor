@@ -585,11 +585,11 @@ jsoneditor.JSONEditor.prototype._onUndo = function () {
 jsoneditor.JSONEditor.prototype._onRedo = function () {
     if (this.history) {
         // redo last action
-        editor.history.redo();
+        this.history.redo();
 
         // trigger change callback
-        if (editor.options.change) {
-            editor.options.change();
+        if (this.options.change) {
+            this.options.change();
         }
     }
 };
