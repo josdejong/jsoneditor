@@ -2,7 +2,7 @@
 
 <project name="jsoneditor-builder" default="main">
     <!-- the version number of must be updated here (according to changelog.txt) -->
-    <property name="version"    value="2.0.0"/>
+    <property name="version"    value="2.0.1"/>
 
     <!-- compression tools -->
     <property name="compressor" value="tools/yuicompressor-2.4.7.jar" />
