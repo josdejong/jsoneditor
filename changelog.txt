@@ -3,7 +3,7 @@
 http://jsoneditoronline.org
 
 
-## 2013-02-20, version 2.0.1
+## 2013-02-21, version 2.0.1
 
 - Fixed undefined variable in the redo method.
 - Removed the "hide ads" button. Not allowed by Google AdSense, sorry.

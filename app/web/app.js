@@ -26,7 +26,7 @@
  * Copyright (C) 2011-2013 Jos de Jong, http://jsoneditoronline.org
  *
  * @author  Jos de Jong, <wjosdejong@gmail.com>
- * @date    2013-02-20
+ * @date    2013-02-21
  */
 
 
@@ -291,11 +291,11 @@ app.clearFile = function () {
 };
 
 app.resize = function() {
+    var domMenu = document.getElementById('menu');
     var domEditor = document.getElementById('jsoneditor');
     var domFormatter = document.getElementById('jsonformatter');
     var domSplitter = document.getElementById('splitter');
     var domAd = document.getElementById('ad');
-    var domAdInfo = document.getElementById('adInfo');
 
     var width = window.innerWidth || document.body.offsetWidth || document.documentElement.offsetWidth;
     var height = window.innerHeight || document.body.offsetHeight || document.documentElement.offsetHeight;
@@ -318,9 +318,13 @@ app.resize = function() {
         domEditor.style.width = Math.round(width - splitterLeft - splitterWidth - 1) + 'px';
     }
 
-    // resize ad text
-    if (domAdInfo && domAd) {
-        var infoHeight = domAdInfo.clientHeight;
-        domAd.style.paddingTop = infoHeight + 'px';
+    // align main menu with ads
+    if (domMenu) {
+        if (adWidth) {
+            domMenu.style.right = (15 + (adWidth + 15)) + 'px';
+        }
+        else {
+            domMenu.style.right = 15 + 'px';
+        }
     }
 };

@@ -185,11 +185,11 @@ a.header {
     color: white;
     text-decoration: none;
 }
-a.footer, a.adInfo {
+a.footer {
     color: #BFBFBF;
     text-decoration: none;
 }
-a.footer:hover, a.adInfo:hover {
+a.footer:hover {
     color: red;
     text-decoration: underline;
 }
