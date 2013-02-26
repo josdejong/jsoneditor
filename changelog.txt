@@ -3,6 +3,11 @@
 http://jsoneditoronline.org
 
 
+## 2013-02-26, version 2.0.2
+
+- Fixed: dragarea of the root node was wrongly visible is removed now.
+
+
 ## 2013-02-21, version 2.0.1
 
 - Fixed undefined variable in the redo method.

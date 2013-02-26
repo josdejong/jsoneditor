@@ -1148,11 +1148,11 @@ jsoneditor.Node.prototype.getDom = function() {
     if (this.editor.mode.editor) {
         // create draggable area
         var tdDrag = document.createElement('td');
-        var domDrag = document.createElement('button');
-        dom.drag = domDrag;
-        domDrag.className = 'dragarea';
-        domDrag.title = 'Drag to move this field (Alt+Shift+Arrows)';
-        if (domDrag) {
+        if (this.parent) {
+            var domDrag = document.createElement('button');
+            dom.drag = domDrag;
+            domDrag.className = 'dragarea';
+            domDrag.title = 'Drag to move this field (Alt+Shift+Arrows)';
             tdDrag.appendChild(domDrag);
         }
         dom.tr.appendChild(tdDrag);
