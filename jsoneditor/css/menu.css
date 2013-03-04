@@ -59,4 +59,23 @@
     background-position: -72px -120px;
 }
 
+.jsoneditor .menu a {
+    font-family: arial, sans-serif;
+    font-size: 10pt;
+    color: #97B0F8;
+    vertical-align: middle;
+}
+
+.jsoneditor .menu a:hover {
+    color: red;
+}
+
+.jsoneditor .menu a.poweredBy {
+    font-size: 8pt;
+    position: absolute;
+    right: 0;
+    top: 0;
+    padding: 10px;
+}
+
 /* TODO: css for button:disabled is not supported by IE8 */

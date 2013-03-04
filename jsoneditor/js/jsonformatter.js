@@ -25,6 +25,9 @@ var jsoneditor = jsoneditor || {};
  * @constructor jsoneditor.JSONFormatter
  * @param {Element} container
  * @param {Object} [options]         Object with options. available options:
+ *                                   {String} mode         Available values:
+ *                                                         "text" (default)
+ *                                                         or "code".
  *                                   {Number} indentation  Number of indentation
  *                                                         spaces. 4 by default.
  *                                   {function} change     Callback method
@@ -43,8 +46,24 @@ jsoneditor.JSONFormatter = function (container, options, json) {
             '(all modern browsers support JSON).');
     }
 
+    // read options
+    options = options || {};
+    if (options.indentation) {
+        this.indentation = Number(options.indentation);
+    }
+    this.mode = (options.mode == 'code') ? 'code' : 'text';
+    // load an ace code editor
+    if (this.mode == 'code' && (typeof ace === 'undefined')) {
+        this.mode = 'text';
+        console.log('ERROR: Cannot load code editor, Ace library not loaded. ' +
+            'Falling back to plain text editor');
+    }
+
+    var me = this;
     this.container = container;
-    this.indentation = 4; // number of spaces
+    this.editor = undefined;    // ace code editor
+    this.textarea = undefined;  // plain text editor (fallback when Ace is not available)
+    this.indentation = 4;       // number of spaces
 
     this.width = container.clientWidth;
     this.height = container.clientHeight;
@@ -68,6 +87,9 @@ jsoneditor.JSONFormatter = function (container, options, json) {
     buttonFormat.title = 'Format JSON data, with proper indentation and line feeds';
     //buttonFormat.className = 'jsoneditor-button';
     this.menu.appendChild(buttonFormat);
+    buttonFormat.onclick = function () {
+        me.format();
+    };
 
     // create compact button
     var buttonCompact = document.createElement('button');
@@ -76,22 +98,61 @@ jsoneditor.JSONFormatter = function (container, options, json) {
     buttonCompact.title = 'Compact JSON data, remove all whitespaces';
     //buttonCompact.className = 'jsoneditor-button';
     this.menu.appendChild(buttonCompact);
+    buttonCompact.onclick = function () {
+        me.compact();
+    };
 
     this.content = document.createElement('div');
     this.content.className = 'outer';
     this.frame.appendChild(this.content);
 
-    this.textarea = document.createElement('textarea');
-    this.textarea.className = 'content';
-    this.textarea.spellcheck = false;
-    this.content.appendChild(this.textarea);
+    this.container.appendChild(this.frame);
 
-    var textarea = this.textarea;
+    if (this.mode == 'code') {
+        this.editorDom = document.createElement('div');
+        this.editorDom.style.height = '100%'; // TODO: move to css
+        this.editorDom.style.width = '100%'; // TODO: move to css
+        this.content.appendChild(this.editorDom);
 
-    // read the options
-    if (options) {
+        var editor = ace.edit(this.editorDom);
+        editor.setTheme('ace/theme/jso');
+        editor.setShowPrintMargin(false);
+        editor.setFontSize(13);
+        editor.getSession().setMode('ace/mode/json');
+        editor.getSession().setUseSoftTabs(true);
+        editor.getSession().setUseWrapMode(true);
+        this.editor = editor;
+
+        var poweredBy = document.createElement('a');
+        poweredBy.appendChild(document.createTextNode('powered by ace'));
+        poweredBy.href = 'http://ace.ajax.org';
+        poweredBy.target = '_blank';
+        poweredBy.className = 'poweredBy';
+        poweredBy.onclick = function () {
+            // TODO: this anchor falls below the margin of the content,
+            // therefore the normal a.href does not work. We use a click event
+            // for now, but this should be fixed.
+            window.open(poweredBy.href, poweredBy.target);
+        };
+        this.menu.appendChild(poweredBy);
+
         if (options.change) {
-            // register on change event
+            // register onchange event
+            editor.on('change', function () {
+                options.change();
+            });
+        }
+    }
+    else {
+        // load a plain text textarea
+        var textarea = document.createElement('textarea');
+        textarea.className = 'content';
+        textarea.spellcheck = false;
+        this.content.appendChild(textarea);
+        this.textarea = textarea;
+
+        if (options.change) {
+            // register onchange event
             if (this.textarea.oninput === null) {
                 this.textarea.oninput = function () {
                     options.change();
@@ -104,32 +165,7 @@ jsoneditor.JSONFormatter = function (container, options, json) {
                 }
             }
         }
-        if (options.indentation) {
-            this.indentation = Number(options.indentation);
-        }
     }
-
-    var me = this;
-    buttonFormat.onclick = function () {
-        try {
-            var json = jsoneditor.util.parse(textarea.value);
-            textarea.value = JSON.stringify(json, null, me.indentation);
-        }
-        catch (err) {
-            me.onError(err);
-        }
-    };
-    buttonCompact.onclick = function () {
-        try {
-            var json = jsoneditor.util.parse(textarea.value);
-            textarea.value = JSON.stringify(json);
-        }
-        catch (err) {
-            me.onError(err);
-        }
-    };
-
-    this.container.appendChild(this.frame);
 
     // load initial json object or string
     if (typeof(json) == 'string') {
@@ -150,11 +186,59 @@ jsoneditor.JSONFormatter.prototype.onError = function(err) {
 };
 
 /**
+ * Compact the code in the formatter
+ */
+jsoneditor.JSONFormatter.prototype.compact = function () {
+    try {
+        var json = jsoneditor.util.parse(this.getText());
+        this.setText(JSON.stringify(json));
+    }
+    catch (err) {
+        this.onError(err);
+    }
+};
+
+/**
+ * Format the code in the formatter
+ */
+jsoneditor.JSONFormatter.prototype.format = function () {
+    try {
+        var json = jsoneditor.util.parse(this.getText());
+        this.setText(JSON.stringify(json, null, this.indentation));
+    }
+    catch (err) {
+        this.onError(err);
+    }
+};
+
+/**
+ * Set focus to the formatter
+ */
+jsoneditor.JSONFormatter.prototype.focus = function () {
+    if (this.textarea) {
+        this.textarea.focus();
+    }
+    if (this.editor) {
+        this.editor.focus();
+    }
+};
+
+/**
+ * Resize the formatter
+ */
+jsoneditor.JSONFormatter.prototype.resize = function () {
+    if (this.editor) {
+        var force = false;
+        this.editor.resize(force);
+    }
+};
+
+/**
  * Set json data in the formatter
  * @param {Object} json
  */
 jsoneditor.JSONFormatter.prototype.set = function(json) {
-    this.textarea.value = JSON.stringify(json, null, this.indentation);
+    this.setText(JSON.stringify(json, null, this.indentation));
 };
 
 /**
@@ -162,7 +246,7 @@ jsoneditor.JSONFormatter.prototype.set = function(json) {
  * @return {Object} json
  */
 jsoneditor.JSONFormatter.prototype.get = function() {
-    return jsoneditor.util.parse(this.textarea.value);
+    return jsoneditor.util.parse(this.getText());
 };
 
 /**
@@ -170,7 +254,13 @@ jsoneditor.JSONFormatter.prototype.get = function() {
  * @return {String} text
  */
 jsoneditor.JSONFormatter.prototype.getText = function() {
-    return this.textarea.value;
+    if (this.textarea) {
+        return this.textarea.value;
+    }
+    if (this.editor) {
+        return this.editor.getValue();
+    }
+    return '';
 };
 
 /**
@@ -178,5 +268,10 @@ jsoneditor.JSONFormatter.prototype.getText = function() {
  * @param {String} text
  */
 jsoneditor.JSONFormatter.prototype.setText = function(text) {
-    this.textarea.value = text;
+    if (this.textarea) {
+        this.textarea.value = text;
+    }
+    if (this.editor) {
+        return this.editor.setValue(text, -1);
+    }
 };

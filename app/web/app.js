@@ -100,6 +100,7 @@ app.load = function() {
         // formatter
         var container = document.getElementById("jsonformatter");
         formatter = new jsoneditor.JSONFormatter(container, {
+            mode: 'code',
             change: function () {
                 app.lastChanged = formatter;
             }
@@ -201,8 +202,8 @@ app.load = function() {
         var domSave = document.getElementById('save');
         domSave.onclick = app.saveFile;
 
-        // TODO: implement a focus method
-        formatter.textarea.focus();
+        // set focus on the formatter
+        formatter.focus();
 
         // enforce FireFox to not do spell checking on any input field
         document.body.spellcheck = false;
@@ -310,6 +311,7 @@ app.resize = function() {
 
         // resize formatter
         domFormatter.style.width = Math.round(splitterLeft) + 'px';
+        formatter.resize();
 
         // resize editor
         // the width has a -1 to prevent the width from being just half a pixel

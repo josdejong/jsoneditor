@@ -2,7 +2,7 @@
 
 <project name="jsoneditor-builder" default="main">
     <!-- the version number of must be updated here (according to changelog.txt) -->
-    <property name="version"    value="2.0.2"/>
+    <property name="version"    value="2.1.0-SNAPSHOT"/>
 
     <!-- compression tools -->
     <property name="compressor" value="tools/yuicompressor-2.4.7.jar" />
@@ -143,6 +143,15 @@
         <copy todir="${web_app}/doc">
             <fileset dir="${web_app_src}/doc"/>
         </copy>
+
+        <!-- concatenate and copy the ace files -->
+        <concat destfile="${web_app}/lib/ace/ace-min.js">
+            <fileset dir="${web_app_src}/lib/ace" includes="ace.js"/>
+            <fileset dir="${web_app_src}/lib/ace" includes="mode-json.js"/>
+            <fileset dir="${web_app_src}/lib/ace" includes="theme-textmate.js"/>
+            <fileset dir="${web_app_src}/lib/ace" includes="theme-jso.js"/>
+        </concat>
+        <copy file="${web_app_src}/lib/ace/worker-json.js" todir="${web_app}/lib/ace" />
 
         <copy file="${web_app_src}/lib/jsonlint/jsonlint.js" todir="${web_app}/lib/jsonlint" />
         <copy file="${jsoneditor_min}/jsoneditor-min.js" todir="${web_app}/lib/jsoneditor" />

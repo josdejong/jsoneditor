@@ -3,6 +3,12 @@
 http://jsoneditoronline.org
 
 
+## <not yet released>, version 2.1.0
+
+- Implemented code editor Ace instead of the plain text JSON editor. Ace
+  provides syntax highlighting and code inspection.
+
+
 ## 2013-02-26, version 2.0.2
 
 - Fixed: dragarea of the root node was wrongly visible is removed now.

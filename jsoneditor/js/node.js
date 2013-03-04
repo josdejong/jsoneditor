@@ -991,6 +991,7 @@ jsoneditor.Node.prototype._updateDomValue = function () {
     var domValue = this.dom.value;
     if (domValue) {
         // set text color depending on value type
+        // TODO: put colors in css
         var v = this.value;
         var t = (this.type == 'auto') ? typeof(v) : this.type;
         var color = '';
@@ -1001,14 +1002,14 @@ jsoneditor.Node.prototype._updateDomValue = function () {
             color = 'red';
         }
         else if (t == 'boolean') {
-            color = 'blue';
+            color = 'orange';
         }
         else if (this._hasChilds()) {
             // note: typeof(null)=="object", therefore check this.type instead of t
             color = '';
         }
         else if (v === null) {
-            color = 'purple';
+            color = 'blue';
         }
         else {
             // invalid value

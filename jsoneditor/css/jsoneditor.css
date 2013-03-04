@@ -45,6 +45,7 @@
 .jsoneditor .separator {
     padding: 3px 0;
     vertical-align: top;
+    color: gray;
 }
 
 .jsoneditor .field[contenteditable=true]:focus,
