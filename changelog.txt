@@ -5,8 +5,9 @@ http://jsoneditoronline.org
 
 ## <not yet released>, version 2.1.0
 
-- Implemented code editor Ace instead of the plain text JSON editor. Ace
-  provides syntax highlighting and code inspection.
+- Replaced the plain text editor with code editor Ace, which brings in syntax
+  highlighting and code inspection.
+- Improved the splitter between the two panels. Panels can be hided.
 
 
 ## 2013-02-26, version 2.0.2

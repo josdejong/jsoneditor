@@ -108,7 +108,8 @@ color: red\
 color: #BF78CC\
 }\
 .ace-jso .ace_invalid {\
-background-color: #FF002A\
+color: #FFFFFF;\
+background-color: #FF002A;\
 }\
 .ace-jso .ace_fold {\
 background-color: #AF956F;\

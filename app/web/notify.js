@@ -59,6 +59,7 @@ Notify.prototype.showMessage = function (params) {
         frame.style.left = (windowWidth - width) / 2 + 'px';
         frame.style.width = width + 'px';
         frame.style.top = top + 'px';
+        frame.style.zIndex = '999';
         document.body.appendChild(frame);
         this.dom.frame = frame;
     }

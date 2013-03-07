@@ -38,7 +38,7 @@ var app = {};
 /**
  * Get the JSON from the formatter and load it in the editor
  */
-app.formatterToEditor = function() {
+app.JSONToEditor = function() {
     try {
         editor.set(formatter.get());
     }
@@ -50,7 +50,7 @@ app.formatterToEditor = function() {
 /**
  * Get the JSON from the editor and load it into the formatter
  */
-app.editorToFormatter = function () {
+app.editorToJSON = function () {
     try {
         formatter.set(editor.get());
     }
@@ -121,42 +121,26 @@ app.load = function() {
         // TODO: automatically synchronize data of formatter and editor? (editor should keep its state though)
 
         // splitter
-        var domSplitter = document.getElementById('splitter');
         app.splitter = new Splitter({
-            container: domSplitter,
+            container: document.getElementById('drag'),
             change: function () {
                 app.resize();
             }
         });
 
-        // button Formatter-to-Editor
-        domSplitter.appendChild(document.createElement('br'));
-        domSplitter.appendChild(document.createElement('br'));
-        domSplitter.appendChild(document.createElement('br'));
-        var toForm = document.createElement('button');
-        toForm.id = 'toForm';
-        toForm.title = 'JSON to Editor';
-        toForm.className = 'convert';
-        toForm.innerHTML = '<div class="convert-right"></div>';
-        toForm.onclick = function () {
+        // button JSON-to-Editor
+        var toEditor = document.getElementById('toEditor');
+        toEditor.onclick = function () {
             this.focus();
-            app.formatterToEditor();
+            app.JSONToEditor();
         };
-        domSplitter.appendChild(toForm);
 
-        // button Editor-to-Formatter
-        domSplitter.appendChild(document.createElement('br'));
-        domSplitter.appendChild(document.createElement('br'));
-        var toJSON = document.createElement('button');
-        toJSON.id = 'toJSON';
-        toJSON.title = 'Editor to JSON';
-        toJSON.className = 'convert';
-        toJSON.innerHTML = '<div class="convert-left"></div>';
+        // button Editor-to-Editor
+        var toJSON = document.getElementById('toJSON');
         toJSON.onclick = function () {
             this.focus();
-            app.editorToFormatter();
+            app.editorToJSON();
         };
-        domSplitter.appendChild(toJSON);
 
         // web page resize handler
         jsoneditor.util.addEventListener(window, 'resize', app.resize);
@@ -263,11 +247,11 @@ app.openUrl = function (url) {
 app.saveFile = function () {
     // first synchronize the editors and formatters contents
     if (app.lastChanged == editor) {
-        app.editorToFormatter();
+        app.editorToJSON();
     }
     /* TODO: also sync from formatter to editor? will clear the history ...
     if (app.lastChanged == formatter) {
-        app.formatterToEditor();
+        app.JSONToEditor();
     }
     */
     app.lastChanged = undefined;
@@ -296,37 +280,75 @@ app.resize = function() {
     var domEditor = document.getElementById('jsoneditor');
     var domFormatter = document.getElementById('jsonformatter');
     var domSplitter = document.getElementById('splitter');
+    var domSplitterButtons = document.getElementById('buttons');
+    var domSplitterDrag = document.getElementById('drag');
     var domAd = document.getElementById('ad');
 
-    var width = window.innerWidth || document.body.offsetWidth || document.documentElement.offsetWidth;
-    var height = window.innerHeight || document.body.offsetHeight || document.documentElement.offsetHeight;
+    var margin = 15;
+    var width = (window.innerWidth || document.body.offsetWidth ||
+        document.documentElement.offsetWidth);
     var adWidth = domAd ? domAd.clientWidth : 0;
-    var splitterWidth = domSplitter.clientWidth;
     if (adWidth) {
-        width -= (adWidth + 15); // Not so nice, +15 here for the margin
+        width -= (adWidth + margin);
     }
 
     if (app.splitter) {
-        var splitterLeft = width * app.splitter.getValue();
+        app.splitter.setWidth(width);
+
+        // calculate horizontal splitter position
+        var value = app.splitter.getValue();
+        var showFormatter = (value > 0);
+        var showEditor = (value < 1);
+        var showButtons = showFormatter && showEditor;
+        domSplitterButtons.style.display = showButtons ? '' : 'none';
+
+        var splitterWidth = domSplitter.clientWidth;
+        var splitterLeft;
+        if (!showFormatter) {
+            // formatter not visible
+            splitterLeft = 0;
+            domSplitterDrag.innerHTML = '&rsaquo;';
+            domSplitterDrag.title = 'Drag right to show the code editor';
+        }
+        else if (!showEditor) {
+            // editor not visible
+            splitterLeft = width * value - splitterWidth;
+            domSplitterDrag.innerHTML = '&lsaquo;';
+            domSplitterDrag.title = 'Drag left to show the tree editor';
+        }
+        else {
+            // both editor and formatter visible
+            splitterLeft = width * value - splitterWidth / 2;
+            domSplitterDrag.innerHTML = '&#8942;';
+            domSplitterDrag.title = 'Drag left or right to change the width of the panels';
+        }
 
         // resize formatter
-        domFormatter.style.width = Math.round(splitterLeft) + 'px';
+        domFormatter.style.display = (value == 0) ? 'none' : '';
+        domFormatter.style.width = Math.max(Math.round(splitterLeft), 0) + 'px';
         formatter.resize();
+
+        // resize the splitter
+        domSplitterDrag.style.height = (domSplitter.clientHeight -
+            domSplitterButtons.clientHeight - 2 * margin -
+            (showButtons ? margin : 0)) + 'px';
+        domSplitterDrag.style.lineHeight = domSplitterDrag.style.height;
 
         // resize editor
         // the width has a -1 to prevent the width from being just half a pixel
         // wider than the window, causing the content elements to wrap...
+        domEditor.style.display = (value == 1) ? 'none' : '';
         domEditor.style.left = Math.round(splitterLeft + splitterWidth) + 'px';
-        domEditor.style.width = Math.round(width - splitterLeft - splitterWidth - 1) + 'px';
+        domEditor.style.width = Math.max(Math.round(width - splitterLeft - splitterWidth - 2), 0) + 'px';
     }
 
     // align main menu with ads
     if (domMenu) {
         if (adWidth) {
-            domMenu.style.right = (15 + (adWidth + 15)) + 'px';
+            domMenu.style.right = (margin + (adWidth + margin)) + 'px';
         }
         else {
-            domMenu.style.right = 15 + 'px';
+            domMenu.style.right = margin + 'px';
         }
     }
 };

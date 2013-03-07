@@ -21,6 +21,8 @@ function Splitter (params) {
     });
 
     this.container = params.container;
+    this.width = 1;
+    this.value = 0.5;
     this.onChange = (params.change) ? params.change : function () {};
     this.params = {};
 }
@@ -36,6 +38,7 @@ Splitter.prototype.onMouseDown = function (event) {
     if (!leftButtonDown) {
         return;
     }
+    jsoneditor.util.addClassName(this.container, 'active');
 
     if (!this.params.mousedown) {
         this.params.mousedown = true;
@@ -59,12 +62,10 @@ Splitter.prototype.onMouseDown = function (event) {
  * @private
  */
 Splitter.prototype.onMouseMove = function (event) {
-    var width = (window.innerWidth || document.body.offsetWidth ||
-        document.documentElement.offsetWidth);
-
     var diff = event.screenX - this.params.screenX;
 
-    var value = this.params.value + diff / width;
+    // TODO: width does not work correct when ad is visible
+    var value = this.params.value + diff / this.width;
     value = this.setValue(value);
 
     this.onChange(value);
@@ -78,14 +79,37 @@ Splitter.prototype.onMouseMove = function (event) {
  * @private
  */
 Splitter.prototype.onMouseUp = function (event) {
+    jsoneditor.util.removeClassName(this.container, 'active');
+
     if (this.params.mousedown) {
         jsoneditor.util.removeEventListener(document, 'mousemove', this.params.mousemove);
         jsoneditor.util.removeEventListener(document, 'mouseup', this.params.mouseup);
         this.params.mousemove = undefined;
         this.params.mouseup = undefined;
         this.params.mousedown = false;
+
+        var value = this.getValue();
+        if (value == this.params.value) {
+            // value is unchanged
+            if (value == 0) {
+                value = this.setValue(0.2);
+                this.onChange(value);
+            }
+            if (value == 1) {
+                value = this.setValue(0.8);
+                this.onChange(value);
+            }
+        }
     }
     jsoneditor.util.preventDefault(event);
+};
+
+/**
+ * Set the window width for the splitter
+ * @param {Number} width
+ */
+Splitter.prototype.setWidth = function (width) {
+    this.width = width;
 };
 
 /**
@@ -96,10 +120,10 @@ Splitter.prototype.onMouseUp = function (event) {
 Splitter.prototype.setValue = function (value) {
     value = Number(value);
     if (value < 0.1) {
-        value = 0.1;
+        value = 0;
     }
     if (value > 0.9) {
-        value = 0.9;
+        value = 1;
     }
 
     this.value = value;

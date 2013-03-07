@@ -1,4 +1,4 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!DOCTYPE HTML>
 <html>
 <head>
     <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
@@ -36,7 +36,7 @@
     Copyright (C) 2011-2013 Jos de Jong, http://jsoneditoronline.org
 
     @author   Jos de Jong, <wjosdejong@gmail.com>
-    @date     2013-03-04
+    @date     2013-03-07
     -->
 
     <meta name="description" content="JSON Editor Online is a web-based tool to view, edit, and format JSON. It shows your data side by side in a clear, editable treeview and in formatted plain text.">
@@ -155,7 +155,22 @@
     <div id="contents">
         <div id="jsonformatter"></div>
 
-        <div id="splitter"></div>
+        <div id="splitter">
+            <div id="buttons">
+                <div>
+                    <button id="toEditor" class="convert" title="JSON to Editor">
+                        <div class="convert-right"></div>
+                    </button>
+                </div>
+                <div>
+                    <button id="toJSON" class="convert" title="Editor to JSON">
+                        <div class="convert-left"></div>
+                    </button>
+                </div>
+            </div>
+            <div id="drag">
+            </div>
+        </div>
 
         <div id="jsoneditor"></div>
 
