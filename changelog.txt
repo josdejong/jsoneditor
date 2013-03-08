@@ -3,7 +3,7 @@
 http://jsoneditoronline.org
 
 
-## <not yet released>, version 2.1.0
+## 2013-03-08, version 2.1.0
 
 - Replaced the plain text editor with code editor Ace, which brings in syntax
   highlighting and code inspection.
