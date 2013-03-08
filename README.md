@@ -27,7 +27,7 @@ a code editor.
 - Search & highlight text in the treeview.
 - Undo and redo all actions.
 - Load and save files and urls.
-- Format, compact, and inspect JSON in a code editor powered by [Ace](http://ace.ajax.org/).
+- Format, compact, and inspect JSON in the code editor powered by [Ace](http://ace.ajax.org/).
 - Library can be loaded as CommonJS module, AMD module, or as a regular javascript file.
 
 
