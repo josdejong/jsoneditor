@@ -5,6 +5,8 @@
  * @param {Object} params   Available parameters:
  *                          {Element} container  HTML container representing
  *                                               the splitter
+ *                          {Number} [snap]      Number of pixels to snap to
+ *                                               the edges (0 or 1)
  *                          {function} [change]  Callback method called when
  *                                               the splitter value has changed.
  *                                               The callback is called with
@@ -21,8 +23,9 @@ function Splitter (params) {
     });
 
     this.container = params.container;
-    this.width = 1;
-    this.value = 0.5;
+    this.snap = Number(params.snap) || 200; // px
+    this.width = undefined;
+    this.value = undefined;
     this.onChange = (params.change) ? params.change : function () {};
     this.params = {};
 }
@@ -51,9 +54,11 @@ Splitter.prototype.onMouseDown = function (event) {
                 me.onMouseUp(event);
             });
         this.params.screenX = event.screenX;
+        this.params.changed = false;
         this.params.value = this.getValue();
     }
     jsoneditor.util.preventDefault(event);
+    jsoneditor.util.stopPropagation(event);
 };
 
 /**
@@ -62,15 +67,22 @@ Splitter.prototype.onMouseDown = function (event) {
  * @private
  */
 Splitter.prototype.onMouseMove = function (event) {
-    var diff = event.screenX - this.params.screenX;
+    if (this.width != undefined) {
+        var diff = event.screenX - this.params.screenX;
 
-    // TODO: width does not work correct when ad is visible
-    var value = this.params.value + diff / this.width;
-    value = this.setValue(value);
+        var value = this.params.value + diff / this.width;
+        value = this.setValue(value);
 
-    this.onChange(value);
+        if (value != this.params.value) {
+            // value has been changed
+            this.params.changed = true;
+        }
+
+        this.onChange(value);
+    }
 
     jsoneditor.util.preventDefault(event);
+    jsoneditor.util.stopPropagation(event);
 };
 
 /**
@@ -88,8 +100,10 @@ Splitter.prototype.onMouseUp = function (event) {
         this.params.mouseup = undefined;
         this.params.mousedown = false;
 
+        console.log(this.params.changed)
+
         var value = this.getValue();
-        if (value == this.params.value) {
+        if (!this.params.changed) {
             // value is unchanged
             if (value == 0) {
                 value = this.setValue(0.2);
@@ -102,6 +116,7 @@ Splitter.prototype.onMouseUp = function (event) {
         }
     }
     jsoneditor.util.preventDefault(event);
+    jsoneditor.util.stopPropagation(event);
 };
 
 /**
@@ -114,16 +129,20 @@ Splitter.prototype.setWidth = function (width) {
 
 /**
  * Set a value for the splitter (UI is not adjusted)
- * @param {Number} value   A number between 0.1 and 0.9
+ * @param {Number} value   A number between 0 and 1
  * @return {Number} value  The stored value
  */
 Splitter.prototype.setValue = function (value) {
     value = Number(value);
-    if (value < 0.1) {
-        value = 0;
-    }
-    if (value > 0.9) {
-        value = 1;
+
+    // snap to 0 or 1 when close
+    if (this.width != undefined && this.width > this.snap) {
+        if (value < this.snap / this.width) {
+            value = 0;
+        }
+        if (value > (this.width - this.snap) / this.width) {
+            value = 1;
+        }
     }
 
     this.value = value;
