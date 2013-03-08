@@ -100,11 +100,9 @@ Splitter.prototype.onMouseUp = function (event) {
         this.params.mouseup = undefined;
         this.params.mousedown = false;
 
-        console.log(this.params.changed)
-
         var value = this.getValue();
         if (!this.params.changed) {
-            // value is unchanged
+            // value is unchanged -> unsnap when currently snapped
             if (value == 0) {
                 value = this.setValue(0.2);
                 this.onChange(value);

@@ -52,11 +52,18 @@ jsoneditor.JSONFormatter = function (container, options, json) {
         this.indentation = Number(options.indentation);
     }
     this.mode = (options.mode == 'code') ? 'code' : 'text';
-    // load an ace code editor
-    if (this.mode == 'code' && (typeof ace === 'undefined')) {
-        this.mode = 'text';
-        console.log('ERROR: Cannot load code editor, Ace library not loaded. ' +
-            'Falling back to plain text editor');
+    if (this.mode == 'code') {
+        // verify whether Ace editor is available and supported
+        if (typeof ace === 'undefined') {
+            this.mode = 'text';
+            console.log('WARNING: Cannot load code editor, Ace library not loaded. ' +
+                'Falling back to plain text editor');
+        }
+        if (jsoneditor.util.getInternetExplorerVersion() == 8) {
+            this.mode = 'text';
+            console.log('WARNING: Cannot load code editor, Ace is not supported on IE8. ' +
+                'Falling back to plain text editor');
+        }
     }
 
     var me = this;

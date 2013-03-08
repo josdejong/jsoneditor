@@ -36,9 +36,9 @@ var formatter = null;
 var app = {};
 
 /**
- * Get the JSON from the formatter and load it in the editor
+ * Get the JSON from the code editor and load it in the tree editor
  */
-app.JSONToEditor = function() {
+app.CodeToEditor = function() {
     try {
         editor.set(formatter.get());
     }
@@ -48,9 +48,9 @@ app.JSONToEditor = function() {
 };
 
 /**
- * Get the JSON from the editor and load it into the formatter
+ * Get the JSON from the tree editor and load it into the code editor
  */
-app.editorToJSON = function () {
+app.editorToCode = function () {
     try {
         formatter.set(editor.get());
     }
@@ -128,18 +128,18 @@ app.load = function() {
             }
         });
 
-        // button JSON-to-Editor
+        // button Code-to-Editor
         var toEditor = document.getElementById('toEditor');
         toEditor.onclick = function () {
             this.focus();
-            app.JSONToEditor();
+            app.CodeToEditor();
         };
 
-        // button Editor-to-Editor
-        var toJSON = document.getElementById('toJSON');
-        toJSON.onclick = function () {
+        // button Editor-to-Dode
+        var toCode = document.getElementById('toCode');
+        toCode.onclick = function () {
             this.focus();
-            app.editorToJSON();
+            app.editorToCode();
         };
 
         // web page resize handler
@@ -247,11 +247,11 @@ app.openUrl = function (url) {
 app.saveFile = function () {
     // first synchronize the editors and formatters contents
     if (app.lastChanged == editor) {
-        app.editorToJSON();
+        app.editorToCode();
     }
     /* TODO: also sync from formatter to editor? will clear the history ...
     if (app.lastChanged == formatter) {
-        app.JSONToEditor();
+        app.CodeToEditor();
     }
     */
     app.lastChanged = undefined;
