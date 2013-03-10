@@ -138,6 +138,7 @@
         <copy file="${web_app_src}/index.html" todir="${web_app}" />
         <copy file="${web_app_src}/favicon.ico" todir="${web_app}" />
         <copy file="${web_app_src}/fileretriever.php" todir="${web_app}" />
+        <copy file="${web_app_src}/googlea47c4a0b36d11021.html" todir="${web_app}" />
         <copy file="${web_app_src}/img/logo.png" todir="${web_app}/img" />
         <copy file="${web_app_src}/img/header_background.png" todir="${web_app}/img" />
         <copy todir="${web_app}/doc">
