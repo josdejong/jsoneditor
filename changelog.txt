@@ -3,6 +3,12 @@
 http://jsoneditoronline.org
 
 
+## 2013-03-11, version 2.1.1
+
+- Fixed an issue with console outputs on IE8, causing the editor not to work
+  at all on IE8.
+
+
 ## 2013-03-08, version 2.1.0
 
 - Replaced the plain text editor with code editor Ace, which brings in syntax

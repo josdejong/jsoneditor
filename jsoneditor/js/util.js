@@ -46,6 +46,13 @@ if (!Array.prototype.forEach) {
     }
 }
 
+// Old browsers do not have a console, so create a fake one in that case.
+if (typeof console === 'undefined') {
+    console = {
+        log: function () {}
+    };
+}
+
 /**
  * Parse JSON using the parser built-in in the browser.
  * On exception, the jsonString is validated and a detailed error is thrown.

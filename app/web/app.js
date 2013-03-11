@@ -319,7 +319,10 @@ app.resize = function() {
         else {
             // both editor and formatter visible
             splitterLeft = width * value - splitterWidth / 2;
-            domSplitterDrag.innerHTML = '&#8942;';
+
+            // TODO: find a character with vertical dots that works on IE8 too, or use an image
+            var isIE8 = (jsoneditor.util.getInternetExplorerVersion() == 8);
+            domSplitterDrag.innerHTML = (!isIE8) ? '&#8942;' : '|';
             domSplitterDrag.title = 'Drag left or right to change the width of the panels';
         }
 
