@@ -5,15 +5,23 @@
  *                               {String} mode      Editor mode. Available values:
  *                                                  'tree' (default), 'view',
  *                                                  'form', 'text', and 'code'.
- *                               {Boolean} search   Enable search box.
- *                                                  True by default
- *                               {Boolean} history  Enable history (undo/redo).
- *                                                  True by default
  *                               {function} change  Callback method, triggered
  *                                                  on change of contents
+ *                               {Boolean} search   Enable search box.
+ *                                                  True by default
+ *                                                  Only applicable for modes
+ *                                                  'tree', 'view', and 'form'
+ *                               {Boolean} history  Enable history (undo/redo).
+ *                                                  True by default
+ *                                                  Only applicable for modes
+ *                                                  'tree', 'view', and 'form'
  *                               {String} name      Field name for the root node.
+ *                                                  Only applicable for modes
+ *                                                  'tree', 'view', and 'form'
  *                               {Number} indentation   Number of indentation
  *                                                      spaces. 4 by default.
+ *                                                      Only applicable for
+ *                                                      modes 'text' and 'code'
  * @param {Object | undefined} json JSON object
  */
 function JSONEditor (container, options, json) {
@@ -117,8 +125,10 @@ JSONEditor.prototype.getName = function () {
 };
 
 /**
- * Change the mode of the editor
- * @param {String} mode
+ * Change the mode of the editor.
+ * JSONEditor will be extended with all methods needed for the chosen mode.
+ * @param {String} mode     Available modes: 'tree' (default), 'view', 'form',
+ *                          'text', and 'code'.
  */
 JSONEditor.prototype.setMode = function (mode) {
     var container = this.container,

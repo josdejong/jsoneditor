@@ -131,6 +131,9 @@ TreeEditor.focusNode = undefined;
 TreeEditor.prototype.set = function (json, name) {
     // adjust field name for root node
     if (name) {
+        // TODO: deprecated since version 2.2.0. Cleanup some day.
+        console.log('Warning: second parameter "name" is deprecated. ' +
+            'Use setName(name) instead.');
         this.options.name = name;
     }
 
