@@ -2,6 +2,10 @@
 
 http://jsoneditoronline.org
 
+## not yet released, version 2.2.0
+
+- Unified JSONFormatter and JSONEditor in one editor with a switchable mode.
+
 
 ## 2013-03-11, version 2.1.1
 

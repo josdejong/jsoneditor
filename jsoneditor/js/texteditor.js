@@ -1,28 +1,6 @@
 /**
- * @license
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not
- * use this file except in compliance with the License. You may obtain a copy
- * of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations under
- * the License.
- *
- * Copyright (c) 2011-2013 Jos de Jong, http://jsoneditoronline.org
- *
- * @author  Jos de Jong, <wjosdejong@gmail.com>
- */
-
-// create namespace
-var jsoneditor = jsoneditor || {};
-
-/**
- * Create a JSONFormatter and attach it to given container
- * @constructor jsoneditor.JSONFormatter
+ * Create a TextEditor and attach it to given container
+ * @constructor TextEditor
  * @param {Element} container
  * @param {Object} [options]         Object with options. available options:
  *                                   {String} mode         Available values:
@@ -34,11 +12,23 @@ var jsoneditor = jsoneditor || {};
  *                                                         triggered on change
  * @param {JSON | String} [json]     initial contents of the formatter
  */
-jsoneditor.JSONFormatter = function (container, options, json) {
-    if (!(this instanceof jsoneditor.JSONFormatter)) {
-        throw new Error('JSONFormatter constructor called without "new".');
+function TextEditor(container, options, json) {
+    if (!(this instanceof TextEditor)) {
+        throw new Error('TextEditor constructor called without "new".');
     }
 
+    this._create(container, options, json);
+}
+
+/**
+ * Create a TextEditor and attach it to given container
+ * @constructor TextEditor
+ * @param {Element} container
+ * @param {Object} [options]         See description in constructor
+ * @param {JSON | String} [json]     initial contents of the formatter
+ * @private
+ */
+TextEditor.prototype._create = function (container, options, json) {
     // check availability of JSON parser (not available in IE7 and older)
     if (typeof(JSON) == 'undefined') {
         throw new Error('Your browser does not support JSON. \n\n' +
@@ -59,7 +49,7 @@ jsoneditor.JSONFormatter = function (container, options, json) {
             console.log('WARNING: Cannot load code editor, Ace library not loaded. ' +
                 'Falling back to plain text editor');
         }
-        if (jsoneditor.util.getInternetExplorerVersion() == 8) {
+        if (util.getInternetExplorerVersion() == 8) {
             this.mode = 'text';
             console.log('WARNING: Cannot load code editor, Ace is not supported on IE8. ' +
                 'Falling back to plain text editor');
@@ -78,8 +68,8 @@ jsoneditor.JSONFormatter = function (container, options, json) {
     this.frame = document.createElement('div');
     this.frame.className = 'jsoneditor';
     this.frame.onclick = function (event) {
-        // prevent default submit action when JSONFormatter is located inside a form
-        jsoneditor.util.preventDefault(event);
+        // prevent default submit action when TextEditor is located inside a form
+        util.preventDefault(event);
     };
 
     // create menu
@@ -184,20 +174,30 @@ jsoneditor.JSONFormatter = function (container, options, json) {
 };
 
 /**
+ * Detach the editor from the DOM
+ * @private
+ */
+TextEditor.prototype._delete = function () {
+    if (this.frame && this.container && this.frame.parentNode == this.container) {
+        this.container.removeChild(this.frame);
+    }
+};
+
+/**
  * This method is executed on error.
- * It can be overwritten for each instance of the JSONFormatter
+ * It can be overwritten for each instance of the TextEditor
  * @param {String} err
  */
-jsoneditor.JSONFormatter.prototype.onError = function(err) {
+TextEditor.prototype.onError = function(err) {
     // action should be implemented for the instance
 };
 
 /**
  * Compact the code in the formatter
  */
-jsoneditor.JSONFormatter.prototype.compact = function () {
+TextEditor.prototype.compact = function () {
     try {
-        var json = jsoneditor.util.parse(this.getText());
+        var json = util.parse(this.getText());
         this.setText(JSON.stringify(json));
     }
     catch (err) {
@@ -208,9 +208,9 @@ jsoneditor.JSONFormatter.prototype.compact = function () {
 /**
  * Format the code in the formatter
  */
-jsoneditor.JSONFormatter.prototype.format = function () {
+TextEditor.prototype.format = function () {
     try {
-        var json = jsoneditor.util.parse(this.getText());
+        var json = util.parse(this.getText());
         this.setText(JSON.stringify(json, null, this.indentation));
     }
     catch (err) {
@@ -221,7 +221,7 @@ jsoneditor.JSONFormatter.prototype.format = function () {
 /**
  * Set focus to the formatter
  */
-jsoneditor.JSONFormatter.prototype.focus = function () {
+TextEditor.prototype.focus = function () {
     if (this.textarea) {
         this.textarea.focus();
     }
@@ -233,7 +233,7 @@ jsoneditor.JSONFormatter.prototype.focus = function () {
 /**
  * Resize the formatter
  */
-jsoneditor.JSONFormatter.prototype.resize = function () {
+TextEditor.prototype.resize = function () {
     if (this.editor) {
         var force = false;
         this.editor.resize(force);
@@ -244,7 +244,7 @@ jsoneditor.JSONFormatter.prototype.resize = function () {
  * Set json data in the formatter
  * @param {Object} json
  */
-jsoneditor.JSONFormatter.prototype.set = function(json) {
+TextEditor.prototype.set = function(json) {
     this.setText(JSON.stringify(json, null, this.indentation));
 };
 
@@ -252,15 +252,15 @@ jsoneditor.JSONFormatter.prototype.set = function(json) {
  * Get json data from the formatter
  * @return {Object} json
  */
-jsoneditor.JSONFormatter.prototype.get = function() {
-    return jsoneditor.util.parse(this.getText());
+TextEditor.prototype.get = function() {
+    return util.parse(this.getText());
 };
 
 /**
- * Get the text contents of the JSONFormatter
- * @return {String} text
+ * Get the text contents of the TextEditor
+ * @return {String} jsonText
  */
-jsoneditor.JSONFormatter.prototype.getText = function() {
+TextEditor.prototype.getText = function() {
     if (this.textarea) {
         return this.textarea.value;
     }
@@ -271,14 +271,26 @@ jsoneditor.JSONFormatter.prototype.getText = function() {
 };
 
 /**
- * Set the text contents of the JSONFormatter
- * @param {String} text
+ * Set the text contents of the TextEditor
+ * @param {String} jsonText
  */
-jsoneditor.JSONFormatter.prototype.setText = function(text) {
+TextEditor.prototype.setText = function(jsonText) {
     if (this.textarea) {
-        this.textarea.value = text;
+        this.textarea.value = jsonText;
     }
     if (this.editor) {
-        return this.editor.setValue(text, -1);
+        this.editor.setValue(jsonText, -1);
     }
+};
+
+// register modes at the JSONEditor
+JSONEditor.modes.text = {
+    editor: TextEditor,
+    data: 'text',
+    load: TextEditor.prototype.format
+};
+JSONEditor.modes.code = {
+    editor: TextEditor,
+    data: 'text',
+    load: TextEditor.prototype.format
 };

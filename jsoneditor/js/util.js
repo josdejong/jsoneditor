@@ -1,25 +1,5 @@
-/**
- * @license
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not
- * use this file except in compliance with the License. You may obtain a copy
- * of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations under
- * the License.
- *
- * Copyright (c) 2011-2013 Jos de Jong, http://jsoneditoronline.org
- *
- * @author  Jos de Jong, <wjosdejong@gmail.com>
- */
-
 // create namespace
-var jsoneditor = jsoneditor || {};
-jsoneditor.util = {};
+util = {};
 
 // Internet Explorer 8 and older does not support Array.indexOf,
 // so we define it here in that case
@@ -58,13 +38,13 @@ if (typeof console === 'undefined') {
  * On exception, the jsonString is validated and a detailed error is thrown.
  * @param {String} jsonString
  */
-jsoneditor.util.parse = function (jsonString) {
+util.parse = function (jsonString) {
     try {
         return JSON.parse(jsonString);
     }
     catch (err) {
         // get a detailed error message using validate
-        var message = jsoneditor.util.validate(jsonString) || err;
+        var message = util.validate(jsonString) || err;
         throw new Error(message);
     }
 };
@@ -79,7 +59,7 @@ jsoneditor.util.parse = function (jsonString) {
  *                              the data is invalid. This message is HTML
  *                              formatted.
  */
-jsoneditor.util.validate = function (jsonString) {
+util.validate = function (jsonString) {
     var message = undefined;
 
     try {
@@ -104,12 +84,41 @@ jsoneditor.util.validate = function (jsonString) {
 };
 
 /**
+ * Extend object a with the properties of object b
+ * @param {Object} a
+ * @param {Object} b
+ * @return {Object} a
+ */
+util.extend = function (a, b) {
+    for (var prop in b) {
+        if (b.hasOwnProperty(prop)) {
+            a[prop] = b[prop];
+        }
+    }
+    return a;
+};
+
+/**
+ * Remove all properties from object a
+ * @param {Object} a
+ * @return {Object} a
+ */
+util.clear = function (a) {
+    for (var prop in a) {
+        if (a.hasOwnProperty(prop)) {
+            delete a[prop];
+        }
+    }
+    return a;
+};
+
+/**
  * Retrieve the absolute left value of a DOM element
  * @param {Element} elem    A dom element, for example a div
  * @return {Number} left    The absolute left position of this element
  *                          in the browser page.
  */
-jsoneditor.util.getAbsoluteLeft = function (elem) {
+util.getAbsoluteLeft = function (elem) {
     var left = elem.offsetLeft;
     var body = document.body;
     var e = elem.offsetParent;
@@ -127,7 +136,7 @@ jsoneditor.util.getAbsoluteLeft = function (elem) {
  * @return {Number} top    The absolute top position of this element
  *                          in the browser page.
  */
-jsoneditor.util.getAbsoluteTop = function (elem) {
+util.getAbsoluteTop = function (elem) {
     var top = elem.offsetTop;
     var body = document.body;
     var e = elem.offsetParent;
@@ -144,7 +153,7 @@ jsoneditor.util.getAbsoluteTop = function (elem) {
  * @param {Event} event
  * @return {Number} mouseY
  */
-jsoneditor.util.getMouseY = function (event) {
+util.getMouseY = function (event) {
     var mouseY;
     if ('pageY' in event) {
         mouseY = event.pageY;
@@ -162,7 +171,7 @@ jsoneditor.util.getMouseY = function (event) {
  * @param {Event} event
  * @return {Number} mouseX
  */
-jsoneditor.util.getMouseX = function (event) {
+util.getMouseX = function (event) {
     var mouseX;
     if ('pageX' in event) {
         mouseX = event.pageX;
@@ -179,7 +188,7 @@ jsoneditor.util.getMouseX = function (event) {
  * Get the window height
  * @return {Number} windowHeight
  */
-jsoneditor.util.getWindowHeight = function () {
+util.getWindowHeight = function () {
     if ('innerHeight' in window) {
         return window.innerHeight;
     }
@@ -195,7 +204,7 @@ jsoneditor.util.getWindowHeight = function () {
  * @param {Element} elem
  * @param {String} className
  */
-jsoneditor.util.addClassName = function(elem, className) {
+util.addClassName = function(elem, className) {
     var classes = elem.className.split(' ');
     if (classes.indexOf(className) == -1) {
         classes.push(className); // add the class to the array
@@ -208,7 +217,7 @@ jsoneditor.util.addClassName = function(elem, className) {
  * @param {Element} elem
  * @param {String} className
  */
-jsoneditor.util.removeClassName = function(elem, className) {
+util.removeClassName = function(elem, className) {
     var classes = elem.className.split(' ');
     var index = classes.indexOf(className);
     if (index != -1) {
@@ -222,7 +231,7 @@ jsoneditor.util.removeClassName = function(elem, className) {
  * the formatting from the div itself is not stripped, only from its childs.
  * @param {Element} divElement
  */
-jsoneditor.util.stripFormatting = function (divElement) {
+util.stripFormatting = function (divElement) {
     var childs = divElement.childNodes;
     for (var i = 0, iMax = childs.length; i < iMax; i++) {
         var child = childs[i];
@@ -245,7 +254,7 @@ jsoneditor.util.stripFormatting = function (divElement) {
         }
 
         // recursively strip childs
-        jsoneditor.util.stripFormatting(child);
+        util.stripFormatting(child);
     }
 };
 
@@ -256,7 +265,7 @@ jsoneditor.util.stripFormatting = function (divElement) {
  * http://stackoverflow.com/questions/1125292/how-to-move-cursor-to-end-of-contenteditable-entity
  * @param {Element} contentEditableElement   A content editable div
  */
-jsoneditor.util.setEndOfContentEditable = function (contentEditableElement) {
+util.setEndOfContentEditable = function (contentEditableElement) {
     var range, selection;
     if(document.createRange) {//Firefox, Chrome, Opera, Safari, IE 9+
         range = document.createRange();//Create a range (a range is a like the selection but invisible)
@@ -279,7 +288,7 @@ jsoneditor.util.setEndOfContentEditable = function (contentEditableElement) {
  * http://stackoverflow.com/a/3806004/1262753
  * @param {Element} contentEditableElement   A content editable div
  */
-jsoneditor.util.selectContentEditable = function (contentEditableElement) {
+util.selectContentEditable = function (contentEditableElement) {
     if (!contentEditableElement || contentEditableElement.nodeName != 'DIV') {
         return;
     }
@@ -303,7 +312,7 @@ jsoneditor.util.selectContentEditable = function (contentEditableElement) {
  * http://stackoverflow.com/questions/4687808/contenteditable-selected-text-save-and-restore
  * @return {Range | TextRange | null} range
  */
-jsoneditor.util.getSelection = function () {
+util.getSelection = function () {
     if (window.getSelection) {
         var sel = window.getSelection();
         if (sel.getRangeAt && sel.rangeCount) {
@@ -320,7 +329,7 @@ jsoneditor.util.getSelection = function () {
  * http://stackoverflow.com/questions/4687808/contenteditable-selected-text-save-and-restore
  * @param {Range | TextRange | null} range
  */
-jsoneditor.util.setSelection = function (range) {
+util.setSelection = function (range) {
     if (range) {
         if (window.getSelection) {
             var sel = window.getSelection();
@@ -341,8 +350,8 @@ jsoneditor.util.setSelection = function (range) {
  *                                                   selected text element
  *                          Returns null if no text selection is found
  */
-jsoneditor.util.getSelectionOffset = function () {
-    var range = jsoneditor.util.getSelection();
+util.getSelectionOffset = function () {
+    var range = util.getSelection();
 
     if (range && 'startOffset' in range && 'endOffset' in range &&
             range.startContainer && (range.startContainer == range.endContainer)) {
@@ -366,7 +375,7 @@ jsoneditor.util.getSelectionOffset = function () {
  *                              {Number} startOffset
  *                              {Number} endOffset
  */
-jsoneditor.util.setSelectionOffset = function (params) {
+util.setSelectionOffset = function (params) {
     if (document.createRange && window.getSelection) {
         var selection = window.getSelection();
         if(selection) {
@@ -376,7 +385,7 @@ jsoneditor.util.setSelectionOffset = function (params) {
             range.setStart(params.container.firstChild, params.startOffset);
             range.setEnd(params.container.firstChild, params.endOffset);
 
-            jsoneditor.util.setSelection(range);
+            util.setSelection(range);
         }
     }
     else {
@@ -390,7 +399,7 @@ jsoneditor.util.setSelectionOffset = function (params) {
  * @param {Object} [buffer]
  * @return {String} innerText
  */
-jsoneditor.util.getInnerText = function (element, buffer) {
+util.getInnerText = function (element, buffer) {
     var first = (buffer == undefined);
     if (first) {
         buffer = {
@@ -426,7 +435,7 @@ jsoneditor.util.getInnerText = function (element, buffer) {
                     innerText += '\n';
                     buffer.flush();
                 }
-                innerText += jsoneditor.util.getInnerText(child, buffer);
+                innerText += util.getInnerText(child, buffer);
                 buffer.set('\n');
             }
             else if (child.nodeName == 'BR') {
@@ -434,14 +443,14 @@ jsoneditor.util.getInnerText = function (element, buffer) {
                 buffer.set('\n');
             }
             else {
-                innerText += jsoneditor.util.getInnerText(child, buffer);
+                innerText += util.getInnerText(child, buffer);
             }
         }
 
         return innerText;
     }
     else {
-        if (element.nodeName == 'P' && jsoneditor.util.getInternetExplorerVersion() != -1) {
+        if (element.nodeName == 'P' && util.getInternetExplorerVersion() != -1) {
             // On Internet Explorer, a <p> with hasChildNodes()==false is
             // rendered with a new line. Note that a <p> with
             // hasChildNodes()==true is rendered without a new line
@@ -461,7 +470,7 @@ jsoneditor.util.getInnerText = function (element, buffer) {
  * Source: http://msdn.microsoft.com/en-us/library/ms537509(v=vs.85).aspx
  * @return {Number} Internet Explorer version, or -1 in case of an other browser
  */
-jsoneditor.util.getInternetExplorerVersion = function() {
+util.getInternetExplorerVersion = function() {
     if (_ieVersion == -1) {
         var rv = -1; // Return value assumes failure.
         if (navigator.appName == 'Microsoft Internet Explorer')
@@ -495,7 +504,7 @@ var _ieVersion = -1;
  * @param {boolean}     [useCapture] false by default
  * @return {function}   the created event listener
  */
-jsoneditor.util.addEventListener = function (element, action, listener, useCapture) {
+util.addEventListener = function (element, action, listener, useCapture) {
     if (element.addEventListener) {
         if (useCapture === undefined)
             useCapture = false;
@@ -523,7 +532,7 @@ jsoneditor.util.addEventListener = function (element, action, listener, useCaptu
  * @param {function} listener  The listener function
  * @param {boolean}  [useCapture]   false by default
  */
-jsoneditor.util.removeEventListener = function(element, action, listener, useCapture) {
+util.removeEventListener = function(element, action, listener, useCapture) {
     if (element.removeEventListener) {
         // non-IE browsers
         if (useCapture === undefined)
@@ -545,7 +554,7 @@ jsoneditor.util.removeEventListener = function(element, action, listener, useCap
  * Stop event propagation
  * @param {Event} event
  */
-jsoneditor.util.stopPropagation = function (event) {
+util.stopPropagation = function (event) {
     if (!event) {
         event = window.event;
     }
@@ -563,7 +572,7 @@ jsoneditor.util.stopPropagation = function (event) {
  * Cancels the event if it is cancelable, without stopping further propagation of the event.
  * @param {Event} event
  */
-jsoneditor.util.preventDefault = function (event) {
+util.preventDefault = function (event) {
     if (!event) {
         event = window.event;
     }

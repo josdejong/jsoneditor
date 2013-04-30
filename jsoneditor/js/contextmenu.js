@@ -1,26 +1,4 @@
 /**
- * @license
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not
- * use this file except in compliance with the License. You may obtain a copy
- * of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations under
- * the License.
- *
- * Copyright (c) 2011-2013 Jos de Jong, http://jsoneditoronline.org
- *
- * @author  Jos de Jong, <wjosdejong@gmail.com>
- */
-
-// create namespace
-var jsoneditor = jsoneditor || {};
-
-/**
  * A context menu
  * @param {Object[]} items    Array containing the menu structure
  *                            TODO: describe structure
@@ -29,7 +7,7 @@ var jsoneditor = jsoneditor || {};
  *                                                context menu is being closed.
  * @constructor
  */
-jsoneditor.ContextMenu = function (items, options) {
+function ContextMenu (items, options) {
     this.dom = {};
 
     var me = this;
@@ -162,14 +140,14 @@ jsoneditor.ContextMenu = function (items, options) {
         var height = (items.length + (item.submenu ? item.submenu.length : 0)) * 24;
         me.maxHeight = Math.max(me.maxHeight, height);
     });
-};
+}
 
 /**
  * Get the currently visible buttons
  * @return {Array.<HTMLElement>} buttons
  * @private
  */
-jsoneditor.ContextMenu.prototype._getVisibleButtons = function () {
+ContextMenu.prototype._getVisibleButtons = function () {
     var buttons = [];
     var me = this;
     this.dom.items.forEach(function (item) {
@@ -192,23 +170,23 @@ jsoneditor.ContextMenu.prototype._getVisibleButtons = function () {
 };
 
 // currently displayed context menu, a singleton. We may only have one visible context menu
-jsoneditor.ContextMenu.visibleMenu = undefined;
+ContextMenu.visibleMenu = undefined;
 
 /**
  * Attach the menu to an anchor
  * @param {HTMLElement} anchor
  */
-jsoneditor.ContextMenu.prototype.show = function (anchor) {
+ContextMenu.prototype.show = function (anchor) {
     this.hide();
 
     // calculate whether the menu fits below the anchor
-    var windowHeight = jsoneditor.util.getWindowHeight();
+    var windowHeight = util.getWindowHeight();
     var anchorHeight = anchor.offsetHeight;
     var menuHeight = this.maxHeight;
 
     // position the menu
-    var left = jsoneditor.util.getAbsoluteLeft(anchor);
-    var top = jsoneditor.util.getAbsoluteTop(anchor);
+    var left = util.getAbsoluteLeft(anchor);
+    var top = util.getAbsoluteTop(anchor);
     if (top + anchorHeight + menuHeight < windowHeight) {
         // display the menu below the anchor
         this.dom.menu.style.left = left + 'px';
@@ -228,45 +206,45 @@ jsoneditor.ContextMenu.prototype.show = function (anchor) {
     // create and attach event listeners
     var me = this;
     var list = this.dom.list;
-    this.eventListeners.mousedown = jsoneditor.util.addEventListener(
+    this.eventListeners.mousedown = util.addEventListener(
         document, 'mousedown', function (event) {
             // hide menu on click outside of the menu
             event = event || window.event;
             var target = event.target || event.srcElement;
             if ((target != list) && !me._isChildOf(target, list)) {
                 me.hide();
-                jsoneditor.util.stopPropagation(event);
-                jsoneditor.util.preventDefault(event);
+                util.stopPropagation(event);
+                util.preventDefault(event);
             }
         });
-    this.eventListeners.mousewheel = jsoneditor.util.addEventListener(
+    this.eventListeners.mousewheel = util.addEventListener(
         document, 'mousewheel', function () {
             // hide the menu on mouse scroll
-            jsoneditor.util.stopPropagation(event);
-            jsoneditor.util.preventDefault(event);
+            util.stopPropagation(event);
+            util.preventDefault(event);
         });
-    this.eventListeners.keydown = jsoneditor.util.addEventListener(
+    this.eventListeners.keydown = util.addEventListener(
         document, 'keydown', function (event) {
             me._onKeyDown(event);
         });
 
     // move focus to the first button in the context menu
-    this.selection = jsoneditor.util.getSelection();
+    this.selection = util.getSelection();
     this.anchor = anchor;
     setTimeout(function () {
         me.dom.focusButton.focus();
     }, 0);
 
-    if (jsoneditor.ContextMenu.visibleMenu) {
-        jsoneditor.ContextMenu.visibleMenu.hide();
+    if (ContextMenu.visibleMenu) {
+        ContextMenu.visibleMenu.hide();
     }
-    jsoneditor.ContextMenu.visibleMenu = this;
+    ContextMenu.visibleMenu = this;
 };
 
 /**
  * Hide the context menu if visible
  */
-jsoneditor.ContextMenu.prototype.hide = function () {
+ContextMenu.prototype.hide = function () {
     // remove the menu from the DOM
     if (this.dom.menu.parentNode) {
         this.dom.menu.parentNode.removeChild(this.dom.menu);
@@ -281,14 +259,14 @@ jsoneditor.ContextMenu.prototype.hide = function () {
         if (this.eventListeners.hasOwnProperty(name)) {
             var fn = this.eventListeners[name];
             if (fn) {
-                jsoneditor.util.removeEventListener(document, name, fn);
+                util.removeEventListener(document, name, fn);
             }
             delete this.eventListeners[name];
         }
     }
 
-    if (jsoneditor.ContextMenu.visibleMenu == this) {
-        jsoneditor.ContextMenu.visibleMenu = undefined;
+    if (ContextMenu.visibleMenu == this) {
+        ContextMenu.visibleMenu = undefined;
     }
 };
 
@@ -298,7 +276,7 @@ jsoneditor.ContextMenu.prototype.hide = function () {
  * @param {Object} domItem
  * @private
  */
-jsoneditor.ContextMenu.prototype._onExpandItem = function (domItem) {
+ContextMenu.prototype._onExpandItem = function (domItem) {
     var me = this;
     var alreadyVisible = (domItem == this.expandedItem);
 
@@ -311,7 +289,7 @@ jsoneditor.ContextMenu.prototype._onExpandItem = function (domItem) {
         setTimeout(function () {
             if (me.expandedItem != expandedItem) {
                 expandedItem.ul.style.display = '';
-                jsoneditor.util.removeClassName(expandedItem.ul.parentNode, 'selected');
+                util.removeClassName(expandedItem.ul.parentNode, 'selected');
             }
         }, 300); // timeout duration must match the css transition duration
         this.expandedItem = undefined;
@@ -327,7 +305,7 @@ jsoneditor.ContextMenu.prototype._onExpandItem = function (domItem) {
                 ul.style.padding = '5px 10px';
             }
         }, 0);
-        jsoneditor.util.addClassName(ul.parentNode, 'selected');
+        util.addClassName(ul.parentNode, 'selected');
         this.expandedItem = domItem;
     }
 };
@@ -337,7 +315,7 @@ jsoneditor.ContextMenu.prototype._onExpandItem = function (domItem) {
  * @param {Event} event
  * @private
  */
-jsoneditor.ContextMenu.prototype._onKeyDown = function (event) {
+ContextMenu.prototype._onKeyDown = function (event) {
     event = event || window.event;
     var target = event.target || event.srcElement;
     var keynum = event.which || event.keyCode;
@@ -349,7 +327,7 @@ jsoneditor.ContextMenu.prototype._onKeyDown = function (event) {
 
         // restore previous selection and focus
         if (this.selection) {
-            jsoneditor.util.setSelection(this.selection);
+            util.setSelection(this.selection);
         }
         if (this.anchor) {
             this.anchor.focus();
@@ -437,8 +415,8 @@ jsoneditor.ContextMenu.prototype._onKeyDown = function (event) {
     // TODO: arrow left and right
 
     if (handled) {
-        jsoneditor.util.stopPropagation(event);
-        jsoneditor.util.preventDefault(event);
+        util.stopPropagation(event);
+        util.preventDefault(event);
     }
 };
 
@@ -448,7 +426,7 @@ jsoneditor.ContextMenu.prototype._onKeyDown = function (event) {
  * @param {Element} parent
  * @return {boolean} isChild
  */
-jsoneditor.ContextMenu.prototype._isChildOf = function (child, parent) {
+ContextMenu.prototype._isChildOf = function (child, parent) {
     var e = child.parentNode;
     while (e) {
         if (e == parent) {

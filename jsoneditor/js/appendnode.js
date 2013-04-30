@@ -1,45 +1,23 @@
 /**
- * @license
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not
- * use this file except in compliance with the License. You may obtain a copy
- * of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations under
- * the License.
- *
- * Copyright (c) 2011-2013 Jos de Jong, http://jsoneditoronline.org
- *
- * @author  Jos de Jong, <wjosdejong@gmail.com>
- */
-
-// create namespace
-var jsoneditor = jsoneditor || {};
-
-/**
- * @constructor jsoneditor.AppendNode
- * @extends jsoneditor.Node
- * @param {jsoneditor.JSONEditor} editor
+ * @constructor AppendNode
+ * @extends Node
+ * @param {TreeEditor} editor
  * Create a new AppendNode. This is a special node which is created at the
  * end of the list with childs for an object or array
  */
-jsoneditor.AppendNode = function (editor) {
+function AppendNode (editor) {
+    /** @type {TreeEditor} */
     this.editor = editor;
     this.dom = {};
-};
+}
 
-jsoneditor.AppendNode.prototype = new jsoneditor.Node();
+AppendNode.prototype = new Node();
 
 /**
  * Return a table row with an append button.
  * @return {Element} dom   TR element
  */
-jsoneditor.AppendNode.prototype.getDom = function () {
-    // TODO: do not create the DOM for the appendNode when in viewer mode
+AppendNode.prototype.getDom = function () {
     // TODO: implement a new solution for the append node
     var dom = this.dom;
 
@@ -52,26 +30,21 @@ jsoneditor.AppendNode.prototype.getDom = function () {
     trAppend.node = this;
     dom.tr = trAppend;
 
-    // when in viewer mode, don't create the contents for the append node
-    // but return here.
-    if (!this.editor.mode.editor) {
-        return trAppend;
-    }
-
     // TODO: consistent naming
 
-    // a cell for the dragarea column
-    var tdDrag = document.createElement('td');
-    dom.tdDrag = tdDrag;
+    if (this.editor.mode.edit) {
+        // a cell for the dragarea column
+        dom.tdDrag = document.createElement('td');
 
-    // create context menu
-    var tdMenu = document.createElement('td');
-    var menu = document.createElement('button');
-    menu.className = 'contextmenu';
-    menu.title = 'Click to open the actions menu (Ctrl+M)';
-    dom.menu = menu;
-    dom.tdMenu = tdMenu;
-    tdMenu.appendChild(dom.menu);
+        // create context menu
+        var tdMenu = document.createElement('td');
+        dom.tdMenu = tdMenu;
+        var menu = document.createElement('button');
+        menu.className = 'contextmenu';
+        menu.title = 'Click to open the actions menu (Ctrl+M)';
+        dom.menu = menu;
+        tdMenu.appendChild(dom.menu);
+    }
 
     // a cell for the contents (showing text 'empty')
     var tdAppend = document.createElement('td');
@@ -90,7 +63,7 @@ jsoneditor.AppendNode.prototype.getDom = function () {
 /**
  * Update the HTML dom of the Node
  */
-jsoneditor.AppendNode.prototype.updateDom = function () {
+AppendNode.prototype.updateDom = function () {
     var dom = this.dom;
     var tdAppend = dom.td;
     if (tdAppend) {
@@ -108,15 +81,23 @@ jsoneditor.AppendNode.prototype.updateDom = function () {
     var trAppend = dom.tr;
     if (!this.isVisible()) {
         if (dom.tr.firstChild) {
-            trAppend.removeChild(dom.tdDrag);
-            trAppend.removeChild(dom.tdMenu);
+            if (dom.tdDrag) {
+                trAppend.removeChild(dom.tdDrag);
+            }
+            if (dom.tdMenu) {
+                trAppend.removeChild(dom.tdMenu);
+            }
             trAppend.removeChild(tdAppend);
         }
     }
     else {
         if (!dom.tr.firstChild) {
-            trAppend.appendChild(dom.tdDrag);
-            trAppend.appendChild(dom.tdMenu);
+            if (dom.tdDrag) {
+                trAppend.appendChild(dom.tdDrag);
+            }
+            if (dom.tdMenu) {
+                trAppend.appendChild(dom.tdMenu);
+            }
             trAppend.appendChild(tdAppend);
         }
     }
@@ -127,7 +108,7 @@ jsoneditor.AppendNode.prototype.updateDom = function () {
  * the AppendNode is visible when its parent has no childs (i.e. is empty).
  * @return {boolean} isVisible
  */
-jsoneditor.AppendNode.prototype.isVisible = function () {
+AppendNode.prototype.isVisible = function () {
     return (this.parent.childs.length == 0);
 };
 
@@ -137,9 +118,9 @@ jsoneditor.AppendNode.prototype.isVisible = function () {
  * @param {function} [onClose]   Callback method called when the context menu
  *                               is being closed.
  */
-jsoneditor.AppendNode.prototype.showContextMenu = function (anchor, onClose) {
+AppendNode.prototype.showContextMenu = function (anchor, onClose) {
     var node = this;
-    var titles = jsoneditor.Node.TYPE_TITLES;
+    var titles = Node.TYPE_TITLES;
     var items = [
         // create append button
         {
@@ -187,7 +168,7 @@ jsoneditor.AppendNode.prototype.showContextMenu = function (anchor, onClose) {
         }
     ];
 
-    var menu = new jsoneditor.ContextMenu(items, {close: onClose});
+    var menu = new ContextMenu(items, {close: onClose});
     menu.show(anchor);
 };
 
@@ -195,7 +176,7 @@ jsoneditor.AppendNode.prototype.showContextMenu = function (anchor, onClose) {
  * Handle an event. The event is catched centrally by the editor
  * @param {Event} event
  */
-jsoneditor.AppendNode.prototype.onEvent = function (event) {
+AppendNode.prototype.onEvent = function (event) {
     var type = event.type;
     var target = event.target || event.srcElement;
     var dom = this.dom;
@@ -216,9 +197,9 @@ jsoneditor.AppendNode.prototype.onEvent = function (event) {
         var highlighter = this.editor.highlighter;
         highlighter.highlight(this.parent);
         highlighter.lock();
-        jsoneditor.util.addClassName(dom.menu, 'selected');
+        util.addClassName(dom.menu, 'selected');
         this.showContextMenu(dom.menu, function () {
-            jsoneditor.util.removeClassName(dom.menu, 'selected');
+            util.removeClassName(dom.menu, 'selected');
             highlighter.unlock();
             highlighter.unhighlight();
         });

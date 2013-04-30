@@ -26,21 +26,21 @@
  * Copyright (C) 2011-2013 Jos de Jong, http://jsoneditoronline.org
  *
  * @author  Jos de Jong, <wjosdejong@gmail.com>
- * @date    2013-03-08
+ * @date    2013-04-30
  */
 
 
-var editor = null;
-var formatter = null;
+var treeEditor = null;
+var codeEditor = null;
 
 var app = {};
 
 /**
  * Get the JSON from the code editor and load it in the tree editor
  */
-app.CodeToEditor = function() {
+app.CodeToTree = function() {
     try {
-        editor.set(formatter.get());
+        treeEditor.set(codeEditor.get());
     }
     catch (err) {
          app.notify.showError(err);
@@ -50,9 +50,9 @@ app.CodeToEditor = function() {
 /**
  * Get the JSON from the tree editor and load it into the code editor
  */
-app.editorToCode = function () {
+app.treeToCode = function () {
     try {
-        formatter.set(editor.get());
+        codeEditor.set(treeEditor.get());
     }
     catch (err) {
         app.notify.showError(err);
@@ -60,7 +60,7 @@ app.editorToCode = function () {
 };
 
 /**
- * Load the interface (editor, formatter, splitter)
+ * Load the interface (tree editor, code editor, splitter)
  */
 // TODO: split the method load in multiple methods, it is too large
 app.load = function() {
@@ -94,31 +94,32 @@ app.load = function() {
             }
         }
 
-        // Store whether editor or formatter is last changed
+        // Store whether tree editor or code editor is last changed
         app.lastChanged = undefined;
 
-        // formatter
-        var container = document.getElementById("jsonformatter");
-        formatter = new jsoneditor.JSONFormatter(container, {
+        // code editor
+        var container = document.getElementById("codeEditor");
+        codeEditor = new jsoneditor.JSONEditor(container, {
             mode: 'code',
             change: function () {
-                app.lastChanged = formatter;
+                app.lastChanged = codeEditor;
             }
         });
-        formatter.set(json);
-        formatter.onError = function (err) {
+        codeEditor.set(json);
+        codeEditor.onError = function (err) {
             app.notify.showError(err);
         };
 
-        // editor
-        container = document.getElementById("jsoneditor");
-        editor = new jsoneditor.JSONEditor(container, {
+        // tree editor
+        container = document.getElementById("treeEditor");
+        treeEditor = new jsoneditor.JSONEditor(container, {
+            mode: 'tree',
             change: function () {
-                app.lastChanged = editor;
+                app.lastChanged = treeEditor;
             }
         });
-        editor.set(json);
-        // TODO: automatically synchronize data of formatter and editor? (editor should keep its state though)
+        treeEditor.set(json);
+        // TODO: automatically synchronize data of code and tree editor? (tree editor should keep its state though)
 
         // splitter
         app.splitter = new Splitter({
@@ -128,18 +129,18 @@ app.load = function() {
             }
         });
 
-        // button Code-to-Editor
-        var toEditor = document.getElementById('toEditor');
-        toEditor.onclick = function () {
+        // button Code-to-Tree
+        var toTree = document.getElementById('toTree');
+        toTree.onclick = function () {
             this.focus();
-            app.CodeToEditor();
+            app.CodeToTree();
         };
 
-        // button Editor-to-Dode
+        // button Tree-to-Code
         var toCode = document.getElementById('toCode');
         toCode.onclick = function () {
             this.focus();
-            app.editorToCode();
+            app.treeToCode();
         };
 
         // web page resize handler
@@ -186,8 +187,8 @@ app.load = function() {
         var domSave = document.getElementById('save');
         domSave.onclick = app.saveFile;
 
-        // set focus on the formatter
-        formatter.focus();
+        // set focus on the code editor
+        codeEditor.focus();
 
         // enforce FireFox to not do spell checking on any input field
         document.body.spellcheck = false;
@@ -203,14 +204,14 @@ app.load = function() {
  */
 app.openCallback = function (err, data) {
     if (!err) {
-        if (data != undefined) {
-            formatter.setText(data);
+        if (data != null) {
+            codeEditor.setText(data);
             try {
                 var json = jsoneditor.util.parse(data);
-                editor.set(json);
+                treeEditor.set(json);
             }
             catch (err) {
-                editor.set({});
+                treeEditor.set({});
                 app.notify.showError(err);
             }
         }
@@ -245,20 +246,20 @@ app.openUrl = function (url) {
  * Open a file explorer to save the file.
  */
 app.saveFile = function () {
-    // first synchronize the editors and formatters contents
-    if (app.lastChanged == editor) {
-        app.editorToCode();
+    // first synchronize both editors contents
+    if (app.lastChanged == treeEditor) {
+        app.treeToCode();
     }
-    /* TODO: also sync from formatter to editor? will clear the history ...
-    if (app.lastChanged == formatter) {
+    /* TODO: also sync from code to tree editor? will clear the history ...
+    if (app.lastChanged == codeEditor) {
         app.CodeToEditor();
     }
     */
     app.lastChanged = undefined;
 
-    // save the text from the formatter
+    // save the text from the code editor
     // TODO: show a 'saving...' notification
-    var data = formatter.getText();
+    var data = codeEditor.getText();
     app.retriever.saveFile(data, function (err) {
         if (err) {
             app.notify.showError(err);
@@ -271,14 +272,14 @@ app.saveFile = function () {
  */
 app.clearFile = function () {
     var json = {};
-    formatter.set(json);
-    editor.set(json);
+    codeEditor.set(json);
+    treeEditor.set(json);
 };
 
 app.resize = function() {
     var domMenu = document.getElementById('menu');
-    var domEditor = document.getElementById('jsoneditor');
-    var domFormatter = document.getElementById('jsonformatter');
+    var domTreeEditor = document.getElementById('treeEditor');
+    var domCodeEditor = document.getElementById('codeEditor');
     var domSplitter = document.getElementById('splitter');
     var domSplitterButtons = document.getElementById('buttons');
     var domSplitterDrag = document.getElementById('drag');
@@ -297,27 +298,27 @@ app.resize = function() {
 
         // calculate horizontal splitter position
         var value = app.splitter.getValue();
-        var showFormatter = (value > 0);
-        var showEditor = (value < 1);
-        var showButtons = showFormatter && showEditor;
+        var showCodeEditor = (value > 0);
+        var showTreeEditor = (value < 1);
+        var showButtons = showCodeEditor && showTreeEditor;
         domSplitterButtons.style.display = showButtons ? '' : 'none';
 
         var splitterWidth = domSplitter.clientWidth;
         var splitterLeft;
-        if (!showFormatter) {
-            // formatter not visible
+        if (!showCodeEditor) {
+            // code editor not visible
             splitterLeft = 0;
             domSplitterDrag.innerHTML = '&rsaquo;';
             domSplitterDrag.title = 'Drag right to show the code editor';
         }
-        else if (!showEditor) {
-            // editor not visible
+        else if (!showTreeEditor) {
+            // tree editor not visible
             splitterLeft = width * value - splitterWidth;
             domSplitterDrag.innerHTML = '&lsaquo;';
             domSplitterDrag.title = 'Drag left to show the tree editor';
         }
         else {
-            // both editor and formatter visible
+            // both tree and code editor visible
             splitterLeft = width * value - splitterWidth / 2;
 
             // TODO: find a character with vertical dots that works on IE8 too, or use an image
@@ -326,10 +327,10 @@ app.resize = function() {
             domSplitterDrag.title = 'Drag left or right to change the width of the panels';
         }
 
-        // resize formatter
-        domFormatter.style.display = (value == 0) ? 'none' : '';
-        domFormatter.style.width = Math.max(Math.round(splitterLeft), 0) + 'px';
-        formatter.resize();
+        // resize code editor
+        domCodeEditor.style.display = (value == 0) ? 'none' : '';
+        domCodeEditor.style.width = Math.max(Math.round(splitterLeft), 0) + 'px';
+        codeEditor.resize();
 
         // resize the splitter
         domSplitterDrag.style.height = (domSplitter.clientHeight -
@@ -337,12 +338,12 @@ app.resize = function() {
             (showButtons ? margin : 0)) + 'px';
         domSplitterDrag.style.lineHeight = domSplitterDrag.style.height;
 
-        // resize editor
+        // resize tree editor
         // the width has a -1 to prevent the width from being just half a pixel
         // wider than the window, causing the content elements to wrap...
-        domEditor.style.display = (value == 1) ? 'none' : '';
-        domEditor.style.left = Math.round(splitterLeft + splitterWidth) + 'px';
-        domEditor.style.width = Math.max(Math.round(width - splitterLeft - splitterWidth - 2), 0) + 'px';
+        domTreeEditor.style.display = (value == 1) ? 'none' : '';
+        domTreeEditor.style.left = Math.round(splitterLeft + splitterWidth) + 'px';
+        domTreeEditor.style.width = Math.max(Math.round(width - splitterLeft - splitterWidth - 2), 0) + 'px';
     }
 
     // align main menu with ads

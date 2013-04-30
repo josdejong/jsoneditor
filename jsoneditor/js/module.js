@@ -27,7 +27,7 @@
  * Copyright (c) 2011-2013 Jos de Jong, http://jsoneditoronline.org
  *
  * @author  Jos de Jong, <wjosdejong@gmail.com>
- * @date    2013-02-21
+ * @date    2013-04-29
  */
 
 (function () {
@@ -36,10 +36,13 @@
 /***code_placeholder***/
 
 // module exports
-var jsoneditorExports = {
-    'JSONEditor': jsoneditor.JSONEditor,
-    'JSONFormatter': jsoneditor.JSONFormatter,
-    'util': jsoneditor.util
+var jsoneditor = {
+    'JSONEditor': JSONEditor,
+    'JSONFormatter': function () {
+        throw new Error('JSONFormatter is deprecated. ' +
+            'Use JSONEditor with mode "text" or "code" instead');
+    },
+    'util': util
 };
 
 /**
@@ -65,7 +68,7 @@ var loadCss = function () {
  */
 if (typeof(module) != 'undefined' && typeof(exports) != 'undefined') {
     loadCss();
-    module.exports = exports = jsoneditorExports;
+    module.exports = exports = jsoneditor;
 }
 
 /**
@@ -74,12 +77,12 @@ if (typeof(module) != 'undefined' && typeof(exports) != 'undefined') {
 if (typeof(require) != 'undefined' && typeof(define) != 'undefined') {
     define(function () {
         loadCss();
-        return jsoneditorExports;
+        return jsoneditor;
     });
 }
 else {
-    // create attach the module to window, load as a regular javascript file
-    window['jsoneditor'] = jsoneditorExports;
+    // attach the module to the window, load as a regular javascript file
+    window['jsoneditor'] = jsoneditor;
 }
 
 })();

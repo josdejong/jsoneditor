@@ -61,7 +61,8 @@
         <!-- concatenate the javascript files -->
         <concat destfile="${jsoneditor}/tmp.js">
             <fileset dir="${js_src}" includes="jsoneditor.js"/>
-            <fileset dir="${js_src}" includes="jsonformatter.js"/>
+            <fileset dir="${js_src}" includes="treeeditor.js"/>
+            <fileset dir="${js_src}" includes="texteditor.js"/>
             <fileset dir="${js_src}" includes="node.js"/>
             <fileset dir="${js_src}" includes="appendnode.js"/>
             <fileset dir="${js_src}" includes="contextmenu.js"/>

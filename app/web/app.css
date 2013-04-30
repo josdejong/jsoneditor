@@ -147,7 +147,7 @@ span.header-light {
     overflow: hidden;
 }
 
-#jsonformatter, #jsoneditor {
+#codeEditor, #treeEditor {
     height: 100%;
     width: 400px;
 
@@ -156,12 +156,12 @@ span.header-light {
     box-sizing: border-box;
 }
 
-#jsonformatter {
+#codeEditor {
     float: left;
     padding: 15px 0 15px 15px;
 }
 
-#jsoneditor {
+#treeEditor {
     float: left;
     padding: 15px 15px 15px 0;
 }
