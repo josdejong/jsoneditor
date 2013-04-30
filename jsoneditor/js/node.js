@@ -1005,6 +1005,31 @@ Node.prototype._updateDomValue = function () {
             util.removeClassName(domValue, 'empty');
         }
 
+        // underline url
+        if (t == 'string' && util.isUrl(v)) {
+            util.addClassName(domValue, 'url');
+        }
+        else {
+            util.removeClassName(domValue, 'url');
+        }
+
+        // update title
+        if (t == 'array' || t == 'object') {
+            var count = this.childs ? this.childs.length : 0;
+            domValue.title = this.type + ' containing ' + count + ' items';
+        }
+        else if (t == 'string' && util.isUrl(v)) {
+            if (this.editor.mode.view) {
+                domValue.title = 'Click to open url in new window';
+            }
+            else {
+                domValue.title = 'Ctrl+Click or Ctrl+Enter to open url in new window';
+            }
+        }
+        else {
+            domValue.title = '';
+        }
+
         // highlight when there is a search result
         if (this.searchValueActive) {
             util.addClassName(domValue, 'highlight-active');
@@ -1497,15 +1522,12 @@ Node.prototype.updateDom = function (options) {
         var count = this.childs ? this.childs.length : 0;
         if (this.type == 'array') {
             domValue.innerHTML = '[' + count + ']';
-            domValue.title = this.type + ' containing ' + count + ' items';
         }
         else if (this.type == 'object') {
             domValue.innerHTML = '{' + count + '}';
-            domValue.title = this.type + ' containing ' + count + ' items';
         }
         else {
             domValue.innerHTML = this._escapeHTML(this.value);
-            delete domValue.title;
         }
     }
 
@@ -1684,11 +1706,12 @@ Node.prototype._createDomTree = function () {
  * @param {Event} event
  */
 Node.prototype.onEvent = function (event) {
-    var type = event.type;
-    var target = event.target || event.srcElement;
-    var dom = this.dom;
-    var node = this;
-    var expandable = this._hasChilds();
+    var type = event.type,
+        target = event.target || event.srcElement,
+        dom = this.dom,
+        node = this,
+        focusNode,
+        expandable = this._hasChilds();
 
     // check if mouse is on menu or on dragarea.
     // If so, highlight current row and its childs
@@ -1731,6 +1754,7 @@ Node.prototype.onEvent = function (event) {
     // value events
     var domValue = dom.value;
     if (target == domValue) {
+        //noinspection FallthroughInSwitchStatementJS
         switch (type) {
             case 'focus':
                 focusNode = this;
@@ -1753,6 +1777,10 @@ Node.prototype.onEvent = function (event) {
             case 'keydown':
             case 'mousedown':
                 this.editor.selection = this.editor.getSelection();
+                break;
+
+            case 'click':
+                this._onOpenUrl(event);
                 break;
 
             case 'keyup':
@@ -1868,7 +1896,13 @@ Node.prototype.onKeyDown = function (event) {
     var prevNode, nextNode, nextDom, nextDom2;
 
     // console.log(ctrlKey, keynum, event.charCode); // TODO: cleanup
-    if (keynum == 68) {  // D
+    if (keynum == 13) { // Enter
+        if (target == this.dom.value && (ctrlKey || this.editor.mode.view)) {
+            this._onOpenUrl(event);
+            handled = true;
+        }
+    }
+    else if (keynum == 68) {  // D
         if (ctrlKey) {   // Ctrl+D
             this._onDuplicate();
             handled = true;
@@ -2032,6 +2066,21 @@ Node.prototype.onKeyDown = function (event) {
     if (handled) {
         util.preventDefault(event);
         util.stopPropagation(event);
+    }
+};
+
+/**
+ * Check whether to open an url on click
+ * @param {Event} event
+ * @private
+ */
+Node.prototype._onOpenUrl = function (event) {
+    event = event || window.event;
+    if (event.ctrlKey || this.editor.mode.view) {
+        if (util.isUrl(this.value)) {
+            // open url
+            window.open(this.value, '_blank');
+        }
     }
 };
 

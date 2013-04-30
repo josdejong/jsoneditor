@@ -113,6 +113,17 @@ util.clear = function (a) {
 };
 
 /**
+ * Test whether a text contains a url (matches true when a string starts with
+ * 'http://*' or 'https://*'
+ * @param {String} text
+ */
+var isUrlRegex = /^https?:\/\/(?!$)/;
+util.isUrl = function (text) {
+    return (typeof text == 'string' || text instanceof String) &&
+        isUrlRegex.test(text);
+};
+
+/**
  * Retrieve the absolute left value of a DOM element
  * @param {Element} elem    A dom element, for example a div
  * @return {Number} left    The absolute left position of this element

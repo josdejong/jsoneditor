@@ -42,6 +42,11 @@
     background-position: -48px -144px;
 }
 
+.jsoneditor .value.url {
+    text-decoration: underline;
+    cursor: pointer;
+}
+
 .jsoneditor .separator {
     padding: 3px 0;
     vertical-align: top;
