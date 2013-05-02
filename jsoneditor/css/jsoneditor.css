@@ -43,8 +43,13 @@
 }
 
 .jsoneditor .value.url {
+    color: green;
     text-decoration: underline;
-    cursor: pointer;
+}
+
+.jsoneditor a.value.url:hover,
+.jsoneditor a.value.url:focus {
+    color: red;
 }
 
 .jsoneditor .separator {

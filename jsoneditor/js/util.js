@@ -113,11 +113,11 @@ util.clear = function (a) {
 };
 
 /**
- * Test whether a text contains a url (matches true when a string starts with
- * 'http://*' or 'https://*'
+ * Test whether a text contains a url (matches when a string starts
+ * with 'http://*' or 'https://*' and has no whitespace characters)
  * @param {String} text
  */
-var isUrlRegex = /^https?:\/\/(?!$)/;
+var isUrlRegex = /^https?:\/\/\S+$/;
 util.isUrl = function (text) {
     return (typeof text == 'string' || text instanceof String) &&
         isUrlRegex.test(text);

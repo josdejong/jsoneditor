@@ -973,8 +973,12 @@ Node.prototype._updateDomValue = function () {
         // TODO: put colors in css
         var v = this.value;
         var t = (this.type == 'auto') ? typeof(v) : this.type;
+        var isUrl = (t == 'string' && util.isUrl(v));
         var color = '';
-        if (t == 'string') {
+        if (isUrl && !this.editor.mode.edit) {
+            color = '';
+        }
+        else if (t == 'string') {
             color = 'green';
         }
         else if (t == 'number') {
@@ -1006,7 +1010,7 @@ Node.prototype._updateDomValue = function () {
         }
 
         // underline url
-        if (t == 'string' && util.isUrl(v)) {
+        if (isUrl) {
             util.addClassName(domValue, 'url');
         }
         else {
@@ -1019,10 +1023,7 @@ Node.prototype._updateDomValue = function () {
             domValue.title = this.type + ' containing ' + count + ' items';
         }
         else if (t == 'string' && util.isUrl(v)) {
-            if (this.editor.mode.view) {
-                domValue.title = 'Click to open url in new window';
-            }
-            else {
+            if (this.editor.mode.edit) {
                 domValue.title = 'Ctrl+Click or Ctrl+Enter to open url in new window';
             }
         }
@@ -1606,23 +1607,24 @@ Node.prototype._createDomValue = function () {
         domValue.className = 'readonly';
         domValue.innerHTML = '{...}';
     }
-    else if (this.type == 'string') {
-        domValue = document.createElement('div');
-        domValue.contentEditable = !this.editor.mode.view;
-        domValue.spellcheck = false;
-        domValue.className = 'value';
-        domValue.innerHTML = this._escapeHTML(this.value);
-    }
     else {
-        domValue = document.createElement('div');
-        domValue.contentEditable = !this.editor.mode.view;
-        domValue.spellcheck = false;
-        domValue.className = 'value';
-        domValue.innerHTML = this._escapeHTML(this.value);
+        if (!this.editor.mode.edit && util.isUrl(this.value)) {
+            // create a link in case of read-only editor and value containing an url
+            domValue = document.createElement('a');
+            domValue.className = 'value';
+            domValue.href = this.value;
+            domValue.target = '_blank';
+            domValue.innerHTML = this._escapeHTML(this.value);
+        }
+        else {
+            // create and editable or read-only div
+            domValue = document.createElement('div');
+            domValue.contentEditable = !this.editor.mode.view;
+            domValue.spellcheck = false;
+            domValue.className = 'value';
+            domValue.innerHTML = this._escapeHTML(this.value);
+        }
     }
-
-    // TODO: in FF spel/check of editable divs is done via the body. quite ugly
-    // document.body.spellcheck = false;
 
     return domValue;
 };
@@ -1780,7 +1782,11 @@ Node.prototype.onEvent = function (event) {
                 break;
 
             case 'click':
-                this._onOpenUrl(event);
+                if (event.ctrlKey && this.editor.mode.edit) {
+                    if (util.isUrl(this.value)) {
+                        window.open(this.value, '_blank');
+                    }
+                }
                 break;
 
             case 'keyup':
@@ -1897,9 +1903,13 @@ Node.prototype.onKeyDown = function (event) {
 
     // console.log(ctrlKey, keynum, event.charCode); // TODO: cleanup
     if (keynum == 13) { // Enter
-        if (target == this.dom.value && (ctrlKey || this.editor.mode.view)) {
-            this._onOpenUrl(event);
-            handled = true;
+        if (target == this.dom.value) {
+            if (!this.editor.mode.edit || event.ctrlKey) {
+                if (util.isUrl(this.value)) {
+                    window.open(this.value, '_blank');
+                    handled = true;
+                }
+            }
         }
     }
     else if (keynum == 68) {  // D
@@ -2066,21 +2076,6 @@ Node.prototype.onKeyDown = function (event) {
     if (handled) {
         util.preventDefault(event);
         util.stopPropagation(event);
-    }
-};
-
-/**
- * Check whether to open an url on click
- * @param {Event} event
- * @private
- */
-Node.prototype._onOpenUrl = function (event) {
-    event = event || window.event;
-    if (event.ctrlKey || this.editor.mode.view) {
-        if (util.isUrl(this.value)) {
-            // open url
-            window.open(this.value, '_blank');
-        }
     }
 };
 

@@ -492,10 +492,16 @@ TreeEditor.prototype._createFrame = function () {
         editor._onEvent(event);
     };
     this.frame.onclick = function (event) {
+        event = event || window.event;
+        var target = event.target || event.srcElement;
+
         onEvent(event);
 
-        // prevent default submit action when TreeEditor is located inside a form
-        util.preventDefault(event);
+        // prevent default submit action of buttons when TreeEditor is located
+        // inside a form
+        if (target.nodeName == 'BUTTON') {
+            util.preventDefault(event);
+        }
     };
     this.frame.oninput = onEvent;
     this.frame.onchange = onEvent;
