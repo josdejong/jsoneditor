@@ -1131,7 +1131,7 @@ Node.prototype._getDomField = function(silent) {
 Node.prototype.clearDom = function() {
     // TODO: hide the node first?
     //this.hide();
-    // TOOD: recursively clear dom?
+    // TODO: recursively clear dom?
 
     this.dom = {};
 };
@@ -1226,9 +1226,8 @@ Node.prototype._onDragStart = function (event) {
  * @private
  */
 Node.prototype._onDrag = function (event) {
-    // TODO: this method has grown to large. Split it in a number of methods
+    // TODO: this method has grown too large. Split it in a number of methods
     event = event || window.event;
-    // TODO: make a separate function to get the absolute mouseY and mouseX
     var mouseY = util.getMouseY(event);
     var mouseX = util.getMouseX(event);
 
@@ -1745,7 +1744,6 @@ Node.prototype.onEvent = function (event) {
     }
 
     // expand events
-    var domExpand = dom.expand;
     if (type == 'click' && target == dom.expand) {
         if (expandable) {
             var recurse = event.ctrlKey; // with ctrl-key, expand/collapse all
@@ -1909,6 +1907,15 @@ Node.prototype.onKeyDown = function (event) {
                     window.open(this.value, '_blank');
                     handled = true;
                 }
+            }
+        }
+        else if (target == this.dom.expand) {
+            var expandable = this._hasChilds();
+            if (expandable) {
+                var recurse = event.ctrlKey; // with ctrl-key, expand/collapse all
+                this._onExpand(recurse);
+                target.focus();
+                handled = true;
             }
         }
     }
@@ -2700,7 +2707,6 @@ Node.prototype.showContextMenu = function (anchor, onClose) {
                     'className': 'type-string',
                     'title': titles.string,
                     'click': function () {
-                        // TODO: settings type string does not work, will become auto
                         node._onInsertBefore('', '', 'string');
                     }
                 }
