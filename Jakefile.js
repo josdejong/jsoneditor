@@ -19,7 +19,7 @@ var JSONEDITOR = './jsoneditor.js',
 /**
  * default task
  */
-desc('Execute all tasks: build, minify, and zip the library and web app');
+desc('Execute all tasks');
 task('default', ['clear', 'build', 'minify', 'zip', 'webapp', 'chromeapp'], function () {
     console.log('Done');
 });
@@ -94,7 +94,8 @@ task('minify', ['build'], function () {
     minify({
         src: JSONEDITOR,
         dest: JSONEDITOR_MIN,
-        header: read('./src/js/header.js')
+        header: read('./src/js/header.js'),
+        separator: '\n'
     });
 
     // update version number and stuff in the javascript files
