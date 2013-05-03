@@ -13,7 +13,7 @@ a code editor.
 
 <a href="http://jsoneditoronline.org">
     <img alt="jsoneditoronline"
-        src="https://raw.github.com/josdejong/jsoneditoronline/master/misc/screenshots/jsoneditoronline.png">
+        src="https://raw.github.com/josdejong/jsoneditor/master/misc/screenshots/jsoneditoronline.png">
 </a>
 
 
@@ -35,9 +35,9 @@ a code editor.
 
 - Web app:    http://jsoneditoronline.org/
 - Chrome app: https://chrome.google.com/webstore/detail/json-editor/lhkmoheomjbkfloacpgllgjcamhihfaj
-- Wiki:       https://github.com/josdejong/jsoneditoronline/wiki/
+- Wiki:       https://github.com/josdejong/jsoneditor/wiki/
 - Downloads:  http://jsoneditoronline.org/downloads/
-- Sourcecode: https://github.com/josdejong/jsoneditoronline/
+- Sourcecode: https://github.com/josdejong/jsoneditor/
 
 
 ### Build
