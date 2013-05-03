@@ -37,23 +37,24 @@ task('clear', function () {
  */
 desc('Build the library');
 task('build', ['clear'], function () {
+    var jsoneditorSrc = './jsoneditor/';
     // concatenate the javascript files
     concat({
         src: [
-            './src/js/jsoneditor.js',
-            './src/js/treeeditor.js',
-            './src/js/texteditor.js',
-            './src/js/node.js',
-            './src/js/appendnode.js',
-            './src/js/contextmenu.js',
-            './src/js/history.js',
-            './src/js/searchbox.js',
-            './src/js/highlighter.js',
-            './src/js/util.js',
-            './src/js/module.js'
+            jsoneditorSrc + 'js/jsoneditor.js',
+            jsoneditorSrc + 'js/treeeditor.js',
+            jsoneditorSrc + 'js/texteditor.js',
+            jsoneditorSrc + 'js/node.js',
+            jsoneditorSrc + 'js/appendnode.js',
+            jsoneditorSrc + 'js/contextmenu.js',
+            jsoneditorSrc + 'js/history.js',
+            jsoneditorSrc + 'js/searchbox.js',
+            jsoneditorSrc + 'js/highlighter.js',
+            jsoneditorSrc + 'js/util.js',
+            jsoneditorSrc + 'js/module.js'
         ],
         dest: JSONEDITOR,
-        header: read('./src/js/header.js') + '\n' +
+        header: read(jsoneditorSrc +'js/header.js') + '\n' +
             '(function () {\n',
         separator: '\n',
         footer: '\n})();\n'
@@ -66,10 +67,10 @@ task('build', ['clear'], function () {
     // concatenate and stringify the css files
     concat({
         src: [
-            './src/css/jsoneditor.css',
-            './src/css/contextmenu.css',
-            './src/css/menu.css',
-            './src/css/searchbox.css'
+            jsoneditorSrc + 'css/jsoneditor.css',
+            jsoneditorSrc + 'css/contextmenu.css',
+            jsoneditorSrc + 'css/menu.css',
+            jsoneditorSrc + 'css/searchbox.css'
         ],
         dest: JSONEDITOR_CSS,
         separator: '\n'
@@ -81,7 +82,7 @@ task('build', ['clear'], function () {
 
     // create a folder img and copy the icons
     jake.mkdirP('./img');
-    jake.cpR('./src/css/img/jsoneditor-icons.png', './img/');
+    jake.cpR(jsoneditorSrc + 'css/img/jsoneditor-icons.png', './img/');
     console.log('Copied jsoneditor-icons.png to ./img/');
 });
 
@@ -94,7 +95,7 @@ task('minify', ['build'], function () {
     minify({
         src: JSONEDITOR,
         dest: JSONEDITOR_MIN,
-        header: read('./src/js/header.js'),
+        header: read('./jsoneditor/js/header.js'),
         separator: '\n'
     });
 
