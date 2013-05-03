@@ -1,4 +1,4 @@
-# JSON Editor Online - Changelog
+# JSON Editor Online - History
 
 http://jsoneditoronline.org
 
@@ -6,6 +6,7 @@ http://jsoneditoronline.org
 
 - Unified JSONFormatter and JSONEditor in one editor with a switchable mode.
 - Urls are navigable now.
+- Added jsoneditor to npm and bower.
 
 
 ## 2013-03-11, version 2.1.1

@@ -40,13 +40,29 @@ a code editor.
 - Sourcecode: https://github.com/josdejong/jsoneditoronline/
 
 
+### Install
+
+with npm:
+
+    npm install jsoneditor
+
+with bower:
+
+    npm install bower
+
+downloads:
+
+    http://jsoneditoronline.org/downloads/
+
+
 ### Build
 
-The code of the JSON Editor is located in the folder `jsoneditor`.
+The code of the JSON Editor is located in the folder `src`.
 The code for the web application in `app/web`.
 To build the library from sourcecode, run
 
-    ant
+    jake
 
-in the root of the project. This will generate a folder `build` containing
-generated library and web application.
+in the root of the project. This will generate the files `jsoneditor.js`,
+`jsoneditor.css`, etc., and will create a folder `build` containing the
+zipped library and the built web application.
