@@ -12,9 +12,9 @@
     "homepage": "http://jsoneditoronline.org/",
     "repository": {
         "type": "git",
-        "url": "https://github.com/josdejong/jsoneditoronline.git"
+        "url": "https://github.com/josdejong/jsoneditor.git"
     },
-    "bugs": "https://github.com/josdejong/jsoneditoronline/issues",
+    "bugs": "https://github.com/josdejong/jsoneditor/issues",
     "scripts": {
         "prepublish": "jake"
     },
