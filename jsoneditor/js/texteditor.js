@@ -112,7 +112,7 @@ TextEditor.prototype._create = function (container, options, json) {
         this.content.appendChild(this.editorDom);
 
         var editor = ace.edit(this.editorDom);
-        editor.setTheme('ace/theme/jso');
+        editor.setTheme('ace/theme/jsoneditor');
         editor.setShowPrintMargin(false);
         editor.setFontSize(13);
         editor.getSession().setMode('ace/mode/json');
@@ -188,6 +188,7 @@ TextEditor.prototype._delete = function () {
  * It can be overwritten for each instance of the TextEditor
  * @param {String} err
  */
+// TODO: replace with an options.error
 TextEditor.prototype.onError = function(err) {
     // action should be implemented for the instance
 };

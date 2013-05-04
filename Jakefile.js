@@ -160,6 +160,7 @@ task('zip', ['build', 'minify'], {async: true}, function () {
 desc('Build web app');
 task('webapp', ['build', 'minify'], function () {
     var webAppSrc = './app/web/';
+    var libSrc = './lib/';
     var webApp = BUILD + '/app/web/';
     var webAppLib = webApp + 'lib/';
     var webAppAce = webAppLib + 'ace/';
@@ -241,18 +242,18 @@ task('webapp', ['build', 'minify'], function () {
     // concatenate and copy ace files
     concat({
         src: [
-            webAppSrc + 'lib/ace/ace.js',
-            webAppSrc + 'lib/ace/mode-json.js',
-            webAppSrc + 'lib/ace/theme-textmate.js',
-            webAppSrc + 'lib/ace/theme-jso.js'
+            libSrc + 'ace/ace.js',
+            libSrc + 'ace/mode-json.js',
+            libSrc + 'ace/theme-textmate.js',
+            libSrc + 'ace/theme-jsoneditor.js'
         ],
         dest: webAppAce + 'ace-min.js',
         separator: '\n'
     });
-    jake.cpR(webAppSrc + 'lib/ace/worker-json.js', webAppAce);
+    jake.cpR(libSrc + 'ace/worker-json.js', webAppAce);
 
     // copy json lint file
-    jake.cpR(webAppSrc + 'lib/jsonlint/jsonlint.js', webAppLib + 'jsonlint/')
+    jake.cpR(libSrc + 'jsonlint/jsonlint.js', webAppLib + 'jsonlint/')
 
     // copy jsoneditor files
     jake.cpR(JSONEDITOR_MIN, webAppLib + 'jsoneditor/');
