@@ -31,6 +31,14 @@ a code editor.
 - Library can be loaded as CommonJS module, AMD module, or as a regular javascript file.
 
 
+### Documentation
+
+- [Docs](https://github.com/josdejong/jsoneditor/tree/master/docs)
+- [Examples](https://github.com/josdejong/jsoneditor/tree/master/examples)
+- [Source](https://github.com/josdejong/jsoneditor)
+- [History](https://github.com/josdejong/jsoneditor/blob/master/HISTORY.md)
+
+
 ### Install
 
 with npm:
@@ -80,14 +88,6 @@ download:
 </body>
 </html>
 ```
-
-### Documentation
-
-- Docs: [https://github.com/josdejong/jsoneditor/tree/master/docs](https://github.com/josdejong/jsoneditor/tree/master/docs)
-- Examples: [https://github.com/josdejong/jsoneditor/tree/master/examples](https://github.com/josdejong/jsoneditor/tree/master/examples)
-- Source: [https://github.com/josdejong/jsoneditor](https://github.com/josdejong/jsoneditor)
-- History: [https://github.com/josdejong/jsoneditor/blob/master/HISTORY.md](https://github.com/josdejong/jsoneditor/blob/master/HISTORY.md)
-
 
 ### Build
 

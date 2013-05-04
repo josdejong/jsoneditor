@@ -33,7 +33,7 @@ Optionally, [jsonlint](https://github.com/zaach/jsonlint) can be loaded to get
 more detailed error messages.
 
 ```html
-<script type="text/javascript" src="lib/jsonlint/jsonlint.js"></script>
+<script type="text/javascript" src="jsoneditor/lib/jsonlint/jsonlint.js"></script>
 ```
 
 ### Code editor
@@ -44,10 +44,10 @@ Also, the content type must be specified on the page.
 ```html
 <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
 
-<script type="text/javascript" src="../lib/ace/ace.js"></script>
-<script type="text/javascript" src="../lib/ace/mode-json.js"></script>
-<script type="text/javascript" src="../lib/ace/theme-textmate.js"></script>
-<script type="text/javascript" src="../lib/ace/theme-jsoneditor.js"></script>
+<script type="text/javascript" src="jsoneditor/lib/ace/ace.js"></script>
+<script type="text/javascript" src="jsoneditor/lib/ace/mode-json.js"></script>
+<script type="text/javascript" src="jsoneditor/lib/ace/theme-textmate.js"></script>
+<script type="text/javascript" src="jsoneditor/lib/ace/theme-jsoneditor.js"></script>
 ```
 
 ## Use
