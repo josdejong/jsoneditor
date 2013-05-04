@@ -35,14 +35,14 @@ Constructs a new JSONEditor.
   - `{String} name`.
     Initial field name for the root node, is undefined by default.
     Can also be set using `JSONEditor.setName(name)`.
-    Only applicable when mode is 'tree', 'view', or 'form'.
+    Only applicable when `mode` is 'tree', 'view', or 'form'.
   - `{boolean} search`.
     Enables a search box in the upper right corner of the JSONEditor.
     True by default.
-    Only applicable when mode is 'tree', 'view', or 'form'.
+    Only applicable when `mode` is 'tree', 'view', or 'form'.
   - `{Number} indentation`.
     Number of indentation spaces. 4 by default.
-    Only applicable when mode is 'code' or 'text'.
+    Only applicable when `mode` is 'code' or 'text'.
 
 - `{JSON} json`
   Initial JSON data to be loaded into the JSONEditor. Alternatively, the method `JSONEditor.set(json)` can be used to load JSON data into the editor.
@@ -72,6 +72,15 @@ Set JSON data.
 - `{JSON} json`
   JSON data to be displayed in the JSONEditor.
 
+#### `JSONEditor.setMode(mode)`
+
+Switch mode. Mode `code` requires the [Ace editor](http://ace.ajax.org/).
+
+*Parameters:*
+
+- `{String} mode`
+  Available values: `tree`, 'view', `form`, `code`, `text`.
+
 #### `JSONEditor.setName(name)`
 
 Set a field name for the root node.
@@ -80,7 +89,6 @@ Set a field name for the root node.
 
 - `{String | undefined} name`
   Field name of the root node. If undefined, the current name will be removed.
-
 
 #### `JSONEditor.setText(jsonString)`
 
