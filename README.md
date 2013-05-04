@@ -31,15 +31,6 @@ a code editor.
 - Library can be loaded as CommonJS module, AMD module, or as a regular javascript file.
 
 
-### Getting started
-
-- Web app:    http://jsoneditoronline.org/
-- Chrome app: https://chrome.google.com/webstore/detail/json-editor/lhkmoheomjbkfloacpgllgjcamhihfaj
-- Wiki:       https://github.com/josdejong/jsoneditor/wiki/
-- Downloads:  http://jsoneditoronline.org/downloads/
-- Sourcecode: https://github.com/josdejong/jsoneditor/
-
-
 ### Install
 
 with npm:
@@ -50,9 +41,53 @@ with bower:
 
     npm install bower
 
-downloads:
+download:
 
-    http://jsoneditoronline.org/downloads/
+[http://jsoneditoronline.org/downloads/](http://jsoneditoronline.org/downloads/)
+
+
+### Use
+
+```html
+<!DOCTYPE HTML>
+<html>
+<head>
+    <link rel="stylesheet" type="text/css" href="jsoneditor/jsoneditor-min.css">
+    <script type="text/javascript" src="jsoneditor/jsoneditor-min.js"></script>
+</head>
+<body>
+    <div id="jsoneditor" style="width: 400px; height: 400px;"></div>
+
+    <script type="text/javascript" >
+        // create the editor
+        var container = document.getElementById("jsoneditor");
+        var editor = new jsoneditor.JSONEditor(container);
+
+        // set json
+        var json = {
+            "Array": [1, 2, 3],
+            "Boolean": true,
+            "Null": null,
+            "Number": 123,
+            "Object": {"a": "b", "c": "d"},
+            "String": "Hello World"
+        };
+        editor.set(json);
+
+        // get json
+        var json = editor.get();
+    </script>
+</body>
+</html>
+```
+
+### Documentation
+
+Documentation: [https://github.com/josdejong/jsoneditor/tree/master/docs](https://github.com/josdejong/jsoneditor/tree/master/docs)
+
+Example code: [https://github.com/josdejong/jsoneditor/tree/master/examples](https://github.com/josdejong/jsoneditor/tree/master/examples)
+
+Source code: [https://github.com/josdejong/jsoneditor](https://github.com/josdejong/jsoneditor)
 
 
 ### Build
