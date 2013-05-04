@@ -6,6 +6,7 @@ http://jsoneditoronline.org
 
 - Unified JSONFormatter and JSONEditor in one editor with a switchable mode.
 - Urls are navigable now.
+- Improved error and log handling.
 - Added jsoneditor to npm and bower.
 
 

@@ -129,7 +129,7 @@ Node.prototype.setValue = function(value, type) {
          if (typeof(value) == 'string') {
          var escValue = JSON.stringify(value);
          this.value = escValue.substring(1, escValue.length - 1);
-         console.log('check', value, this.value);
+         util.log('check', value, this.value);
          }
          else {
          this.value = value;
@@ -1899,7 +1899,7 @@ Node.prototype.onKeyDown = function (event) {
     var handled = false;
     var prevNode, nextNode, nextDom, nextDom2;
 
-    // console.log(ctrlKey, keynum, event.charCode); // TODO: cleanup
+    // util.log(ctrlKey, keynum, event.charCode); // TODO: cleanup
     if (keynum == 13) { // Enter
         if (target == this.dom.value) {
             if (!this.editor.mode.edit || event.ctrlKey) {

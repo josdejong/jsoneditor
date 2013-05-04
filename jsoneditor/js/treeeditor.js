@@ -92,22 +92,22 @@ TreeEditor.prototype._setOptions = function (options) {
         if (options['enableSearch']) {
             // deprecated since version 1.6.0, 2012-11-03
             this.options.search = options['enableSearch'];
-            console.log('WARNING: Option "enableSearch" is deprecated. Use "search" instead.');
+            util.log('WARNING: Option "enableSearch" is deprecated. Use "search" instead.');
         }
         if (options['enableHistory']) {
             // deprecated since version 1.6.0, 2012-11-03
             this.options.history = options['enableHistory'];
-            console.log('WARNING: Option "enableHistory" is deprecated. Use "history" instead.');
+            util.log('WARNING: Option "enableHistory" is deprecated. Use "history" instead.');
         }
         if (options['mode'] == 'editor') {
             // deprecated since version 2.2.0, 2013-04-30
             this.options.mode = 'tree';
-            console.log('WARNING: Mode "editor" is deprecated. Use "tree" instead.');
+            util.log('WARNING: Mode "editor" is deprecated. Use "tree" instead.');
         }
         if (options['mode'] == 'viewer') {
             // deprecated since version 2.2.0, 2013-04-30
             this.options.mode = 'view';
-            console.log('WARNING: Mode "viewer" is deprecated. Use "view" instead.');
+            util.log('WARNING: Mode "viewer" is deprecated. Use "view" instead.');
         }
     }
 
@@ -132,7 +132,7 @@ TreeEditor.prototype.set = function (json, name) {
     // adjust field name for root node
     if (name) {
         // TODO: deprecated since version 2.2.0. Cleanup some day.
-        console.log('Warning: second parameter "name" is deprecated. ' +
+        util.log('Warning: second parameter "name" is deprecated. ' +
             'Use setName(name) instead.');
         this.options.name = name;
     }
@@ -317,7 +317,7 @@ TreeEditor.prototype._onAction = function (action, params) {
             this.options.change();
         }
         catch (err) {
-            console.log('Error in change callback: ', err);
+            util.log('Error in change callback: ', err);
         }
     }
 };

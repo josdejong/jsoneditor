@@ -43,7 +43,7 @@ app.CodeToTree = function() {
         treeEditor.set(codeEditor.get());
     }
     catch (err) {
-         app.notify.showError(err);
+         app.notify.showError(app.formatError(err));
     }
 };
 
@@ -55,7 +55,7 @@ app.treeToCode = function () {
         codeEditor.set(treeEditor.get());
     }
     catch (err) {
-        app.notify.showError(err);
+        app.notify.showError(app.formatError(err));
     }
 };
 
@@ -103,12 +103,12 @@ app.load = function() {
             mode: 'code',
             change: function () {
                 app.lastChanged = codeEditor;
+            },
+            error: function (err) {
+                app.notify.showError(app.formatError(err));
             }
         });
         codeEditor.set(json);
-        codeEditor.onError = function (err) {
-            app.notify.showError(err);
-        };
 
         // tree editor
         container = document.getElementById("treeEditor");
@@ -116,6 +116,9 @@ app.load = function() {
             mode: 'tree',
             change: function () {
                 app.lastChanged = treeEditor;
+            },
+            error: function (err) {
+                app.notify.showError(app.formatError(err));
             }
         });
         treeEditor.set(json);
@@ -212,7 +215,7 @@ app.openCallback = function (err, data) {
             }
             catch (err) {
                 treeEditor.set({});
-                app.notify.showError(err);
+                app.notify.showError(app.formatError(err));
             }
         }
     }
@@ -265,6 +268,22 @@ app.saveFile = function () {
             app.notify.showError(err);
         }
     });
+};
+
+/**
+ * Format a JSON parse/stringify error as HTML
+ * @param {Error} err
+ * @returns {string}
+ */
+app.formatError = function (err) {
+    var message = '<pre class="error">' + err.toString() + '</pre>';
+    if (typeof(jsonlint) != 'undefined') {
+        message +=
+            '<a class="error" href="http://zaach.github.com/jsonlint/" target="_blank">' +
+                'validated by jsonlint' +
+                '</a>';
+    }
+    return message;
 };
 
 /**

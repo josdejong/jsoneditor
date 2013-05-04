@@ -181,7 +181,7 @@ History.prototype.undo = function () {
                 }
             }
             else {
-                console.log('Error: unknown action "' + obj.action + '"');
+                util.log('Error: unknown action "' + obj.action + '"');
             }
         }
         this.index--;
@@ -208,7 +208,7 @@ History.prototype.redo = function () {
                 }
             }
             else {
-                console.log('Error: unknown action "' + obj.action + '"');
+                util.log('Error: unknown action "' + obj.action + '"');
             }
         }
 

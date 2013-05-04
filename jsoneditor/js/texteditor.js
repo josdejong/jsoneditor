@@ -41,17 +41,18 @@ TextEditor.prototype._create = function (container, options, json) {
     if (options.indentation) {
         this.indentation = Number(options.indentation);
     }
+    this.options = options;
     this.mode = (options.mode == 'code') ? 'code' : 'text';
     if (this.mode == 'code') {
         // verify whether Ace editor is available and supported
         if (typeof ace === 'undefined') {
             this.mode = 'text';
-            console.log('WARNING: Cannot load code editor, Ace library not loaded. ' +
+            util.log('WARNING: Cannot load code editor, Ace library not loaded. ' +
                 'Falling back to plain text editor');
         }
         if (util.getInternetExplorerVersion() == 8) {
             this.mode = 'text';
-            console.log('WARNING: Cannot load code editor, Ace is not supported on IE8. ' +
+            util.log('WARNING: Cannot load code editor, Ace is not supported on IE8. ' +
                 'Falling back to plain text editor');
         }
     }
@@ -85,7 +86,12 @@ TextEditor.prototype._create = function (container, options, json) {
     //buttonFormat.className = 'jsoneditor-button';
     this.menu.appendChild(buttonFormat);
     buttonFormat.onclick = function () {
-        me.format();
+        try {
+            me.format();
+        }
+        catch (err) {
+            me._onError(err);
+        }
     };
 
     // create compact button
@@ -96,7 +102,13 @@ TextEditor.prototype._create = function (container, options, json) {
     //buttonCompact.className = 'jsoneditor-button';
     this.menu.appendChild(buttonCompact);
     buttonCompact.onclick = function () {
-        me.compact();
+        try {
+            me.compact();
+        }
+        catch (err) {
+            me._onError(err);
+        }
+
     };
 
     this.content = document.createElement('div');
@@ -184,39 +196,41 @@ TextEditor.prototype._delete = function () {
 };
 
 /**
- * This method is executed on error.
- * It can be overwritten for each instance of the TextEditor
- * @param {String} err
+ * Throw an error. If an error callback is configured in options.error, this
+ * callback will be invoked. Else, a regular error is thrown.
+ * @param {Error} err
+ * @private
  */
-// TODO: replace with an options.error
-TextEditor.prototype.onError = function(err) {
-    // action should be implemented for the instance
+TextEditor.prototype._onError = function(err) {
+    // TODO: onError is deprecated since version 2.2.0. cleanup some day
+    if (typeof this.onError === 'function') {
+        util.log('WARNING: JSONEditor.onError is deprecated. ' +
+            'Use options.error instead.');
+        this.onError(err);
+    }
+
+    if (typeof this.options.error === 'function') {
+        this.options.error(err);
+    }
+    else {
+        throw err;
+    }
 };
 
 /**
  * Compact the code in the formatter
  */
 TextEditor.prototype.compact = function () {
-    try {
-        var json = util.parse(this.getText());
-        this.setText(JSON.stringify(json));
-    }
-    catch (err) {
-        this.onError(err);
-    }
+    var json = util.parse(this.getText());
+    this.setText(JSON.stringify(json));
 };
 
 /**
  * Format the code in the formatter
  */
 TextEditor.prototype.format = function () {
-    try {
-        var json = util.parse(this.getText());
-        this.setText(JSON.stringify(json, null, this.indentation));
-    }
-    catch (err) {
-        this.onError(err);
-    }
+    var json = util.parse(this.getText());
+    this.setText(JSON.stringify(json, null, this.indentation));
 };
 
 /**

@@ -173,39 +173,69 @@ JSONEditor.prototype.setMode = function (mode) {
     options.mode = mode;
     var config = JSONEditor.modes[mode];
     if (config) {
-        if (config.data == 'text') {
-            // text
-            name = this.getName();
-            data = this.getText();
+        try {
+            if (config.data == 'text') {
+                // text
+                name = this.getName();
+                data = this.getText();
 
-            this._delete();
-            util.clear(this);
-            util.extend(this, config.editor.prototype);
-            this._create(container, options);
+                this._delete();
+                util.clear(this);
+                util.extend(this, config.editor.prototype);
+                this._create(container, options);
 
-            this.setName(name);
-            this.setText(data);
+                this.setName(name);
+                this.setText(data);
+            }
+            else {
+                // json
+                name = this.getName();
+                data = this.get();
+
+                this._delete();
+                util.clear(this);
+                util.extend(this, config.editor.prototype);
+                this._create(container, options);
+
+                this.setName(name);
+                this.set(data);
+            }
+
+            if (typeof config.load === 'function') {
+                try {
+                    config.load.call(this);
+                }
+                catch (err) {}
+            }
         }
-        else {
-            // json
-            name = this.getName();
-            data = this.get();
-
-            this._delete();
-            util.clear(this);
-            util.extend(this, config.editor.prototype);
-            this._create(container, options);
-
-            this.setName(name);
-            this.set(data);
-        }
-
-        if (typeof config.load === 'function') {
-            config.load.call(this);
+        catch (err) {
+            this._onError(err);
         }
     }
     else {
         throw new Error('Unknown mode "' + options.mode + '"');
+    }
+};
+
+/**
+ * Throw an error. If an error callback is configured in options.error, this
+ * callback will be invoked. Else, a regular error is thrown.
+ * @param {Error} err
+ * @private
+ */
+JSONEditor.prototype._onError = function(err) {
+    // TODO: onError is deprecated since version 2.2.0. cleanup some day
+    if (typeof this.onError === 'function') {
+        util.log('WARNING: JSONEditor.onError is deprecated. ' +
+            'Use options.error instead.');
+        this.onError(err);
+    }
+
+    if (typeof this.options.error === 'function') {
+        this.options.error(err);
+    }
+    else {
+        throw err;
     }
 };
 
@@ -303,22 +333,22 @@ TreeEditor.prototype._setOptions = function (options) {
         if (options['enableSearch']) {
             // deprecated since version 1.6.0, 2012-11-03
             this.options.search = options['enableSearch'];
-            console.log('WARNING: Option "enableSearch" is deprecated. Use "search" instead.');
+            util.log('WARNING: Option "enableSearch" is deprecated. Use "search" instead.');
         }
         if (options['enableHistory']) {
             // deprecated since version 1.6.0, 2012-11-03
             this.options.history = options['enableHistory'];
-            console.log('WARNING: Option "enableHistory" is deprecated. Use "history" instead.');
+            util.log('WARNING: Option "enableHistory" is deprecated. Use "history" instead.');
         }
         if (options['mode'] == 'editor') {
             // deprecated since version 2.2.0, 2013-04-30
             this.options.mode = 'tree';
-            console.log('WARNING: Mode "editor" is deprecated. Use "tree" instead.');
+            util.log('WARNING: Mode "editor" is deprecated. Use "tree" instead.');
         }
         if (options['mode'] == 'viewer') {
             // deprecated since version 2.2.0, 2013-04-30
             this.options.mode = 'view';
-            console.log('WARNING: Mode "viewer" is deprecated. Use "view" instead.');
+            util.log('WARNING: Mode "viewer" is deprecated. Use "view" instead.');
         }
     }
 
@@ -343,7 +373,7 @@ TreeEditor.prototype.set = function (json, name) {
     // adjust field name for root node
     if (name) {
         // TODO: deprecated since version 2.2.0. Cleanup some day.
-        console.log('Warning: second parameter "name" is deprecated. ' +
+        util.log('Warning: second parameter "name" is deprecated. ' +
             'Use setName(name) instead.');
         this.options.name = name;
     }
@@ -528,7 +558,7 @@ TreeEditor.prototype._onAction = function (action, params) {
             this.options.change();
         }
         catch (err) {
-            console.log('Error in change callback: ', err);
+            util.log('Error in change callback: ', err);
         }
     }
 };
@@ -1023,17 +1053,18 @@ TextEditor.prototype._create = function (container, options, json) {
     if (options.indentation) {
         this.indentation = Number(options.indentation);
     }
+    this.options = options;
     this.mode = (options.mode == 'code') ? 'code' : 'text';
     if (this.mode == 'code') {
         // verify whether Ace editor is available and supported
         if (typeof ace === 'undefined') {
             this.mode = 'text';
-            console.log('WARNING: Cannot load code editor, Ace library not loaded. ' +
+            util.log('WARNING: Cannot load code editor, Ace library not loaded. ' +
                 'Falling back to plain text editor');
         }
         if (util.getInternetExplorerVersion() == 8) {
             this.mode = 'text';
-            console.log('WARNING: Cannot load code editor, Ace is not supported on IE8. ' +
+            util.log('WARNING: Cannot load code editor, Ace is not supported on IE8. ' +
                 'Falling back to plain text editor');
         }
     }
@@ -1067,7 +1098,12 @@ TextEditor.prototype._create = function (container, options, json) {
     //buttonFormat.className = 'jsoneditor-button';
     this.menu.appendChild(buttonFormat);
     buttonFormat.onclick = function () {
-        me.format();
+        try {
+            me.format();
+        }
+        catch (err) {
+            me._onError(err);
+        }
     };
 
     // create compact button
@@ -1078,7 +1114,13 @@ TextEditor.prototype._create = function (container, options, json) {
     //buttonCompact.className = 'jsoneditor-button';
     this.menu.appendChild(buttonCompact);
     buttonCompact.onclick = function () {
-        me.compact();
+        try {
+            me.compact();
+        }
+        catch (err) {
+            me._onError(err);
+        }
+
     };
 
     this.content = document.createElement('div');
@@ -1166,39 +1208,41 @@ TextEditor.prototype._delete = function () {
 };
 
 /**
- * This method is executed on error.
- * It can be overwritten for each instance of the TextEditor
- * @param {String} err
+ * Throw an error. If an error callback is configured in options.error, this
+ * callback will be invoked. Else, a regular error is thrown.
+ * @param {Error} err
+ * @private
  */
-// TODO: replace with an options.error
-TextEditor.prototype.onError = function(err) {
-    // action should be implemented for the instance
+TextEditor.prototype._onError = function(err) {
+    // TODO: onError is deprecated since version 2.2.0. cleanup some day
+    if (typeof this.onError === 'function') {
+        util.log('WARNING: JSONEditor.onError is deprecated. ' +
+            'Use options.error instead.');
+        this.onError(err);
+    }
+
+    if (typeof this.options.error === 'function') {
+        this.options.error(err);
+    }
+    else {
+        throw err;
+    }
 };
 
 /**
  * Compact the code in the formatter
  */
 TextEditor.prototype.compact = function () {
-    try {
-        var json = util.parse(this.getText());
-        this.setText(JSON.stringify(json));
-    }
-    catch (err) {
-        this.onError(err);
-    }
+    var json = util.parse(this.getText());
+    this.setText(JSON.stringify(json));
 };
 
 /**
  * Format the code in the formatter
  */
 TextEditor.prototype.format = function () {
-    try {
-        var json = util.parse(this.getText());
-        this.setText(JSON.stringify(json, null, this.indentation));
-    }
-    catch (err) {
-        this.onError(err);
-    }
+    var json = util.parse(this.getText());
+    this.setText(JSON.stringify(json, null, this.indentation));
 };
 
 /**
@@ -1409,7 +1453,7 @@ Node.prototype.setValue = function(value, type) {
          if (typeof(value) == 'string') {
          var escValue = JSON.stringify(value);
          this.value = escValue.substring(1, escValue.length - 1);
-         console.log('check', value, this.value);
+         util.log('check', value, this.value);
          }
          else {
          this.value = value;
@@ -3179,7 +3223,7 @@ Node.prototype.onKeyDown = function (event) {
     var handled = false;
     var prevNode, nextNode, nextDom, nextDom2;
 
-    // console.log(ctrlKey, keynum, event.charCode); // TODO: cleanup
+    // util.log(ctrlKey, keynum, event.charCode); // TODO: cleanup
     if (keynum == 13) { // Enter
         if (target == this.dom.value) {
             if (!this.editor.mode.edit || event.ctrlKey) {
@@ -4979,7 +5023,7 @@ History.prototype.undo = function () {
                 }
             }
             else {
-                console.log('Error: unknown action "' + obj.action + '"');
+                util.log('Error: unknown action "' + obj.action + '"');
             }
         }
         this.index--;
@@ -5006,7 +5050,7 @@ History.prototype.redo = function () {
                 }
             }
             else {
-                console.log('Error: unknown action "' + obj.action + '"');
+                util.log('Error: unknown action "' + obj.action + '"');
             }
         }
 
@@ -5415,13 +5459,6 @@ if (!Array.prototype.forEach) {
     }
 }
 
-// Old browsers do not have a console, so create a fake one in that case.
-if (typeof console === 'undefined') {
-    console = {
-        log: function () {}
-    };
-}
-
 /**
  * Parse JSON using the parser built-in in the browser.
  * On exception, the jsonString is validated and a detailed error is thrown.
@@ -5432,9 +5469,9 @@ util.parse = function (jsonString) {
         return JSON.parse(jsonString);
     }
     catch (err) {
-        // get a detailed error message using validate
-        var message = util.validate(jsonString) || err;
-        throw new Error(message);
+        // try to throw a more detailed error message using validate
+        util.validate(jsonString);
+        throw err;
     }
 };
 
@@ -5443,33 +5480,15 @@ util.parse = function (jsonString) {
  * This method uses JSONLint to validate the String. If JSONLint is not
  * available, the built-in JSON parser of the browser is used.
  * @param {String} jsonString   String with an (invalid) JSON object
- * @return {String | undefined} Returns undefined when the string is valid JSON,
- *                              returns a string with an error message when
- *                              the data is invalid. This message is HTML
- *                              formatted.
+ * @throws Error
  */
 util.validate = function (jsonString) {
-    var message = undefined;
-
-    try {
-        if (typeof(jsonlint) != 'undefined') {
-            jsonlint.parse(jsonString);
-        }
-        else {
-            JSON.parse(jsonString);
-        }
+    if (typeof(jsonlint) != 'undefined') {
+        jsonlint.parse(jsonString);
     }
-    catch (err) {
-        message = '<pre class="error">' + err.toString() + '</pre>';
-        if (typeof(jsonlint) != 'undefined') {
-            message +=
-                '<a class="error" href="http://zaach.github.com/jsonlint/" target="_blank">' +
-                    'validated by jsonlint' +
-                    '</a>';
-        }
+    else {
+        JSON.parse(jsonString);
     }
-
-    return message;
 };
 
 /**
@@ -5499,6 +5518,16 @@ util.clear = function (a) {
         }
     }
     return a;
+};
+
+/**
+ * Output text to the console, if console is available
+ * @param {...*} args
+ */
+util.log = function(args) {
+    if (console && typeof console.log === 'function') {
+        console.log.apply(console, arguments);
+    }
 };
 
 /**

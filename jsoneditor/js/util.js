@@ -26,13 +26,6 @@ if (!Array.prototype.forEach) {
     }
 }
 
-// Old browsers do not have a console, so create a fake one in that case.
-if (typeof console === 'undefined') {
-    console = {
-        log: function () {}
-    };
-}
-
 /**
  * Parse JSON using the parser built-in in the browser.
  * On exception, the jsonString is validated and a detailed error is thrown.
@@ -43,9 +36,9 @@ util.parse = function (jsonString) {
         return JSON.parse(jsonString);
     }
     catch (err) {
-        // get a detailed error message using validate
-        var message = util.validate(jsonString) || err;
-        throw new Error(message);
+        // try to throw a more detailed error message using validate
+        util.validate(jsonString);
+        throw err;
     }
 };
 
@@ -54,33 +47,15 @@ util.parse = function (jsonString) {
  * This method uses JSONLint to validate the String. If JSONLint is not
  * available, the built-in JSON parser of the browser is used.
  * @param {String} jsonString   String with an (invalid) JSON object
- * @return {String | undefined} Returns undefined when the string is valid JSON,
- *                              returns a string with an error message when
- *                              the data is invalid. This message is HTML
- *                              formatted.
+ * @throws Error
  */
 util.validate = function (jsonString) {
-    var message = undefined;
-
-    try {
-        if (typeof(jsonlint) != 'undefined') {
-            jsonlint.parse(jsonString);
-        }
-        else {
-            JSON.parse(jsonString);
-        }
+    if (typeof(jsonlint) != 'undefined') {
+        jsonlint.parse(jsonString);
     }
-    catch (err) {
-        message = '<pre class="error">' + err.toString() + '</pre>';
-        if (typeof(jsonlint) != 'undefined') {
-            message +=
-                '<a class="error" href="http://zaach.github.com/jsonlint/" target="_blank">' +
-                    'validated by jsonlint' +
-                    '</a>';
-        }
+    else {
+        JSON.parse(jsonString);
     }
-
-    return message;
 };
 
 /**
@@ -110,6 +85,16 @@ util.clear = function (a) {
         }
     }
     return a;
+};
+
+/**
+ * Output text to the console, if console is available
+ * @param {...*} args
+ */
+util.log = function(args) {
+    if (console && typeof console.log === 'function') {
+        console.log.apply(console, arguments);
+    }
 };
 
 /**

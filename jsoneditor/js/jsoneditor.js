@@ -139,38 +139,68 @@ JSONEditor.prototype.setMode = function (mode) {
     options.mode = mode;
     var config = JSONEditor.modes[mode];
     if (config) {
-        if (config.data == 'text') {
-            // text
-            name = this.getName();
-            data = this.getText();
+        try {
+            if (config.data == 'text') {
+                // text
+                name = this.getName();
+                data = this.getText();
 
-            this._delete();
-            util.clear(this);
-            util.extend(this, config.editor.prototype);
-            this._create(container, options);
+                this._delete();
+                util.clear(this);
+                util.extend(this, config.editor.prototype);
+                this._create(container, options);
 
-            this.setName(name);
-            this.setText(data);
+                this.setName(name);
+                this.setText(data);
+            }
+            else {
+                // json
+                name = this.getName();
+                data = this.get();
+
+                this._delete();
+                util.clear(this);
+                util.extend(this, config.editor.prototype);
+                this._create(container, options);
+
+                this.setName(name);
+                this.set(data);
+            }
+
+            if (typeof config.load === 'function') {
+                try {
+                    config.load.call(this);
+                }
+                catch (err) {}
+            }
         }
-        else {
-            // json
-            name = this.getName();
-            data = this.get();
-
-            this._delete();
-            util.clear(this);
-            util.extend(this, config.editor.prototype);
-            this._create(container, options);
-
-            this.setName(name);
-            this.set(data);
-        }
-
-        if (typeof config.load === 'function') {
-            config.load.call(this);
+        catch (err) {
+            this._onError(err);
         }
     }
     else {
         throw new Error('Unknown mode "' + options.mode + '"');
+    }
+};
+
+/**
+ * Throw an error. If an error callback is configured in options.error, this
+ * callback will be invoked. Else, a regular error is thrown.
+ * @param {Error} err
+ * @private
+ */
+JSONEditor.prototype._onError = function(err) {
+    // TODO: onError is deprecated since version 2.2.0. cleanup some day
+    if (typeof this.onError === 'function') {
+        util.log('WARNING: JSONEditor.onError is deprecated. ' +
+            'Use options.error instead.');
+        this.onError(err);
+    }
+
+    if (typeof this.options.error === 'function') {
+        this.options.error(err);
+    }
+    else {
+        throw err;
     }
 };
