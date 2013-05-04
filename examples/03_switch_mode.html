@@ -1,0 +1,73 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+
+    <!-- jsoneditor -->
+    <link rel="stylesheet" type="text/css" href="../jsoneditor.css">
+    <script type="text/javascript" src="../jsoneditor.js"></script>
+
+    <!-- ace code editor -->
+    <script type="text/javascript" src="../lib/ace/ace.js"></script>
+    <script type="text/javascript" src="../lib/ace/mode-json.js"></script>
+    <script type="text/javascript" src="../lib/ace/theme-textmate.js"></script>
+    <script type="text/javascript" src="../lib/ace/theme-jsoneditor.js"></script>
+
+    <!-- json lint -->
+    <script type="text/javascript" src="../lib/jsonlint/jsonlint.js"></script>
+
+    <style type="text/css">
+        body, select {
+            font: 10pt arial;
+            font-family: arial, sans-serif;
+            font-size: 11pt;
+
+        }
+        #jsoneditor {
+            width: 500px;
+            height: 500px;
+        }
+    </style>
+</head>
+<body>
+
+<p>
+    <label for="mode">Switch mode:</label>
+    <select id="mode">
+        <option value="tree">tree</option>
+        <option value="view">view</option>
+        <option value="form">form</option>
+        <option value="code">code</option>
+        <option value="text">text</option>
+    </select>
+</p>
+
+<div id="jsoneditor"></div>
+
+<script type="text/javascript" >
+    // create switchable mode
+    var mode = document.getElementById('mode');
+    mode.onchange = function () {
+        editor.setMode(mode.value);
+    };
+
+    // create the editor
+    var container = document.getElementById("jsoneditor");
+    var options = {
+        mode: mode.value,
+        error: function (err) {
+            alert(err.toString());
+        }
+    };
+    var json = {
+        "array": [1, 2, 3],
+        "boolean": true,
+        "null": null,
+        "number": 123,
+        "object": {"a": "b", "c": "d"},
+        "string": "Hello World"
+    };
+    var editor = new jsoneditor.JSONEditor(container, options, json);
+</script>
+</body>
+</html>
