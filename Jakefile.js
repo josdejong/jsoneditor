@@ -136,6 +136,7 @@ task('zip', ['build', 'minify'], {async: true}, function () {
         JSONEDITOR_CSS_MIN,
         'img/*.*',
         'lib/**/*.*',
+        'docs/**/*.*',
         'examples/**/*.*'
     ]);
     var files = filelist.toArray();
@@ -166,7 +167,6 @@ task('webapp', ['build', 'minify'], function () {
     var webAppLib = webApp + 'lib/';
     var webAppAce = webAppLib + 'ace/';
     var webAppImg = webApp + 'img/';
-    var webAppDoc = webApp + 'doc/';
     var appJs = webApp + 'app.js';
     var appCss = webApp + 'app.css';
     var appCssMin = webApp + 'app-min.css';
@@ -181,7 +181,6 @@ task('webapp', ['build', 'minify'], function () {
     jake.mkdirP(webAppLib + 'jsoneditor/img/');
     jake.mkdirP(webAppLib + 'jsonlint/');
     jake.mkdirP(webAppImg);
-    jake.mkdirP(webAppDoc);
 
     // concatenate the javascript files
     concat({
@@ -234,7 +233,7 @@ task('webapp', ['build', 'minify'], function () {
     jake.cpR(webAppSrc + 'googlea47c4a0b36d11021.html', webApp);
     jake.cpR(webAppSrc + 'img/logo.png', webAppImg);
     jake.cpR(webAppSrc + 'img/header_background.png', webAppImg);
-    jake.cpR(webAppSrc + 'doc/', webAppDoc);
+    jake.cpR(webAppSrc + 'doc/', webApp);
 
     // update date and verison in index.html
     replacePlaceholders(webApp + 'index.html');

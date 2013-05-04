@@ -2,12 +2,12 @@
 
 http://jsoneditoronline.org
 
-## not yet released, version 2.2.0
+## 2013-05-04, version 2.2.0
 
 - Unified JSONFormatter and JSONEditor in one editor with a switchable mode.
 - Urls are navigable now.
 - Improved error and log handling.
-- Added jsoneditor to npm and bower.
+- Added jsoneditor to package managers npm and bower.
 
 
 ## 2013-03-11, version 2.1.1

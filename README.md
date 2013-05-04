@@ -83,21 +83,20 @@ download:
 
 ### Documentation
 
-Documentation: [https://github.com/josdejong/jsoneditor/tree/master/docs](https://github.com/josdejong/jsoneditor/tree/master/docs)
-
-Example code: [https://github.com/josdejong/jsoneditor/tree/master/examples](https://github.com/josdejong/jsoneditor/tree/master/examples)
-
-Source code: [https://github.com/josdejong/jsoneditor](https://github.com/josdejong/jsoneditor)
+- Docs: [https://github.com/josdejong/jsoneditor/tree/master/docs](https://github.com/josdejong/jsoneditor/tree/master/docs)
+- Examples: [https://github.com/josdejong/jsoneditor/tree/master/examples](https://github.com/josdejong/jsoneditor/tree/master/examples)
+- Source: [https://github.com/josdejong/jsoneditor](https://github.com/josdejong/jsoneditor)
+- History: [https://github.com/josdejong/jsoneditor/blob/master/HISTORY.md](https://github.com/josdejong/jsoneditor/blob/master/HISTORY.md)
 
 
 ### Build
 
-The code of the JSON Editor is located in the folder `src`.
+The code of the JSON Editor is located in the folder `jsoneditor`.
 The code for the web application in `app/web`.
 To build the library from sourcecode, run
 
     jake
 
 in the root of the project. This will generate the files `jsoneditor.js`,
-`jsoneditor.css`, etc., and will create a folder `build` containing the
-zipped library and the built web application.
+`jsoneditor.css`, and minified versions, and will create a folder `build`
+containing the zipped library and the built web application.
