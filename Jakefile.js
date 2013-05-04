@@ -135,6 +135,7 @@ task('zip', ['build', 'minify'], {async: true}, function () {
         JSONEDITOR_MIN,
         JSONEDITOR_CSS_MIN,
         'img/*.*',
+        'lib/**/*.*',
         'examples/**/*.*'
     ]);
     var files = filelist.toArray();
