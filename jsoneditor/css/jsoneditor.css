@@ -42,6 +42,16 @@
     background-position: -48px -144px;
 }
 
+.jsoneditor .value.url {
+    color: green;
+    text-decoration: underline;
+}
+
+.jsoneditor a.value.url:hover,
+.jsoneditor a.value.url:focus {
+    color: red;
+}
+
 .jsoneditor .separator {
     padding: 3px 0;
     vertical-align: top;

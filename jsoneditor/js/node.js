@@ -1,29 +1,7 @@
 /**
- * @license
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not
- * use this file except in compliance with the License. You may obtain a copy
- * of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations under
- * the License.
- *
- * Copyright (c) 2011-2013 Jos de Jong, http://jsoneditoronline.org
- *
- * @author  Jos de Jong, <wjosdejong@gmail.com>
- */
-
-// create namespace
-var jsoneditor = jsoneditor || {};
-
-/**
- * @constructor jsoneditor.Node
+ * @constructor Node
  * Create a new Node
- * @param {JSONEditor} editor
+ * @param {TreeEditor} editor
  * @param {Object} [params] Can contain parameters:
  *                          {string}  field
  *                          {boolean} fieldEditable
@@ -31,7 +9,8 @@ var jsoneditor = jsoneditor || {};
  *                          {String}  type  Can have values 'auto', 'array',
  *                                          'object', or 'string'.
  */
-jsoneditor.Node = function (editor, params) {
+function Node (editor, params) {
+    /** @type {TreeEditor} */
     this.editor = editor;
     this.dom = {};
     this.expanded = false;
@@ -48,9 +27,9 @@ jsoneditor.Node = function (editor, params) {
 
 /**
  * Set parent node
- * @param {jsoneditor.Node} parent
+ * @param {Node} parent
  */
-jsoneditor.Node.prototype.setParent = function(parent) {
+Node.prototype.setParent = function(parent) {
     this.parent = parent;
 };
 
@@ -59,7 +38,7 @@ jsoneditor.Node.prototype.setParent = function(parent) {
  * @param {String}  field
  * @param {boolean} [fieldEditable]
  */
-jsoneditor.Node.prototype.setField = function(field, fieldEditable) {
+Node.prototype.setField = function(field, fieldEditable) {
     this.field = field;
     this.fieldEditable = (fieldEditable == true);
 };
@@ -68,7 +47,7 @@ jsoneditor.Node.prototype.setField = function(field, fieldEditable) {
  * Get field
  * @return {String}
  */
-jsoneditor.Node.prototype.getField = function() {
+Node.prototype.getField = function() {
     if (this.field === undefined) {
         this._getDomField();
     }
@@ -82,7 +61,7 @@ jsoneditor.Node.prototype.getField = function() {
  * @param {String} [type]  Specify the type of the value. Can be 'auto',
  *                         'array', 'object', or 'string'
  */
-jsoneditor.Node.prototype.setValue = function(value, type) {
+Node.prototype.setValue = function(value, type) {
     var childValue, child;
 
     // first clear all current childs (if any)
@@ -116,7 +95,7 @@ jsoneditor.Node.prototype.setValue = function(value, type) {
             childValue = value[i];
             if (childValue !== undefined && !(childValue instanceof Function)) {
                 // ignore undefined and functions
-                child = new jsoneditor.Node(this.editor, {
+                child = new Node(this.editor, {
                     'value': childValue
                 });
                 this.appendChild(child);
@@ -132,7 +111,7 @@ jsoneditor.Node.prototype.setValue = function(value, type) {
                 childValue = value[childField];
                 if (childValue !== undefined && !(childValue instanceof Function)) {
                     // ignore undefined and functions
-                    child = new jsoneditor.Node(this.editor, {
+                    child = new Node(this.editor, {
                         'field': childField,
                         'value': childValue
                     });
@@ -150,7 +129,7 @@ jsoneditor.Node.prototype.setValue = function(value, type) {
          if (typeof(value) == 'string') {
          var escValue = JSON.stringify(value);
          this.value = escValue.substring(1, escValue.length - 1);
-         console.log('check', value, this.value);
+         util.log('check', value, this.value);
          }
          else {
          this.value = value;
@@ -163,7 +142,7 @@ jsoneditor.Node.prototype.setValue = function(value, type) {
  * Get value. Value is a JSON structure
  * @return {*} value
  */
-jsoneditor.Node.prototype.getValue = function() {
+Node.prototype.getValue = function() {
     //var childs, i, iMax;
 
     if (this.type == 'array') {
@@ -193,7 +172,7 @@ jsoneditor.Node.prototype.getValue = function() {
  * Get the nesting level of this node
  * @return {Number} level
  */
-jsoneditor.Node.prototype.getLevel = function() {
+Node.prototype.getLevel = function() {
     return (this.parent ? this.parent.getLevel() + 1 : 0);
 };
 
@@ -201,10 +180,10 @@ jsoneditor.Node.prototype.getLevel = function() {
  * Create a clone of a node
  * The complete state of a clone is copied, including whether it is expanded or
  * not. The DOM elements are not cloned.
- * @return {jsoneditor.Node} clone
+ * @return {Node} clone
  */
-jsoneditor.Node.prototype.clone = function() {
-    var clone = new jsoneditor.Node(this.editor);
+Node.prototype.clone = function() {
+    var clone = new Node(this.editor);
     clone.type = this.type;
     clone.field = this.field;
     clone.fieldInnerText = this.fieldInnerText;
@@ -236,7 +215,7 @@ jsoneditor.Node.prototype.clone = function() {
  * @param {boolean} [recurse] Optional recursion, true by default. When
  *                            true, all childs will be expanded recursively
  */
-jsoneditor.Node.prototype.expand = function(recurse) {
+Node.prototype.expand = function(recurse) {
     if (!this.childs) {
         return;
     }
@@ -261,7 +240,7 @@ jsoneditor.Node.prototype.expand = function(recurse) {
  * @param {boolean} [recurse] Optional recursion, true by default. When
  *                            true, all childs will be collapsed recursively
  */
-jsoneditor.Node.prototype.collapse = function(recurse) {
+Node.prototype.collapse = function(recurse) {
     if (!this.childs) {
         return;
     }
@@ -286,7 +265,7 @@ jsoneditor.Node.prototype.collapse = function(recurse) {
 /**
  * Recursively show all childs when they are expanded
  */
-jsoneditor.Node.prototype.showChilds = function() {
+Node.prototype.showChilds = function() {
     var childs = this.childs;
     if (!childs) {
         return;
@@ -319,7 +298,7 @@ jsoneditor.Node.prototype.showChilds = function() {
 /**
  * Hide the node with all its childs
  */
-jsoneditor.Node.prototype.hide = function() {
+Node.prototype.hide = function() {
     var tr = this.dom.tr;
     var table = tr ? tr.parentNode : undefined;
     if (table) {
@@ -332,7 +311,7 @@ jsoneditor.Node.prototype.hide = function() {
 /**
  * Recursively hide all childs
  */
-jsoneditor.Node.prototype.hideChilds = function() {
+Node.prototype.hideChilds = function() {
     var childs = this.childs;
     if (!childs) {
         return;
@@ -357,9 +336,9 @@ jsoneditor.Node.prototype.hideChilds = function() {
 /**
  * Add a new child to the node.
  * Only applicable when Node value is of type array or object
- * @param {jsoneditor.Node} node
+ * @param {Node} node
  */
-jsoneditor.Node.prototype.appendChild = function(node) {
+Node.prototype.appendChild = function(node) {
     if (this._hasChilds()) {
         // adjust the link to the parent
         node.setParent(this);
@@ -390,10 +369,10 @@ jsoneditor.Node.prototype.appendChild = function(node) {
 /**
  * Move a node from its current parent to this node
  * Only applicable when Node value is of type array or object
- * @param {jsoneditor.Node} node
- * @param {jsoneditor.Node} beforeNode
+ * @param {Node} node
+ * @param {Node} beforeNode
  */
-jsoneditor.Node.prototype.moveBefore = function(node, beforeNode) {
+Node.prototype.moveBefore = function(node, beforeNode) {
     if (this._hasChilds()) {
         // create a temporary row, to prevent the scroll position from jumping
         // when removing the node
@@ -408,7 +387,7 @@ jsoneditor.Node.prototype.moveBefore = function(node, beforeNode) {
             node.parent.removeChild(node);
         }
 
-        if (beforeNode instanceof jsoneditor.AppendNode) {
+        if (beforeNode instanceof AppendNode) {
             this.appendChild(node);
         }
         else {
@@ -425,10 +404,10 @@ jsoneditor.Node.prototype.moveBefore = function(node, beforeNode) {
  * Move a node from its current parent to this node
  * Only applicable when Node value is of type array or object.
  * If index is out of range, the node will be appended to the end
- * @param {jsoneditor.Node} node
+ * @param {Node} node
  * @param {Number} index
  */
-jsoneditor.Node.prototype.moveTo = function (node, index) {
+Node.prototype.moveTo = function (node, index) {
     if (node.parent == this) {
         // same parent
         var currentIndex = this.childs.indexOf(node);
@@ -445,10 +424,10 @@ jsoneditor.Node.prototype.moveTo = function (node, index) {
 /**
  * Insert a new child before a given node
  * Only applicable when Node value is of type array or object
- * @param {jsoneditor.Node} node
- * @param {jsoneditor.Node} beforeNode
+ * @param {Node} node
+ * @param {Node} beforeNode
  */
-jsoneditor.Node.prototype.insertBefore = function(node, beforeNode) {
+Node.prototype.insertBefore = function(node, beforeNode) {
     if (this._hasChilds()) {
         if (beforeNode == this.append) {
             // append to the child nodes
@@ -491,10 +470,10 @@ jsoneditor.Node.prototype.insertBefore = function(node, beforeNode) {
 /**
  * Insert a new child before a given node
  * Only applicable when Node value is of type array or object
- * @param {jsoneditor.Node} node
- * @param {jsoneditor.Node} afterNode
+ * @param {Node} node
+ * @param {Node} afterNode
  */
-jsoneditor.Node.prototype.insertAfter = function(node, afterNode) {
+Node.prototype.insertAfter = function(node, afterNode) {
     if (this._hasChilds()) {
         var index = this.childs.indexOf(afterNode);
         var beforeNode = this.childs[index + 1];
@@ -512,9 +491,9 @@ jsoneditor.Node.prototype.insertAfter = function(node, afterNode) {
  * The node will be expanded when the text is found one of its childs, else
  * it will be collapsed. Searches are case insensitive.
  * @param {String} text
- * @return {jsoneditor.Node[]} results  Array with nodes containing the search text
+ * @return {Node[]} results  Array with nodes containing the search text
  */
-jsoneditor.Node.prototype.search = function(text) {
+Node.prototype.search = function(text) {
     var results = [];
     var index;
     var search = text ? text.toLowerCase() : undefined;
@@ -589,7 +568,7 @@ jsoneditor.Node.prototype.search = function(text) {
  * The node will not get the focus
  * @param {function(boolean)} [callback]
  */
-jsoneditor.Node.prototype.scrollTo = function(callback) {
+Node.prototype.scrollTo = function(callback) {
     if (!this.dom.tr || !this.dom.tr.parentNode) {
         // if the node is not visible, expand its parents
         var parent = this.parent;
@@ -607,7 +586,7 @@ jsoneditor.Node.prototype.scrollTo = function(callback) {
 
 
 // stores the element name currently having the focus
-jsoneditor.Node.focusElement = undefined;
+Node.focusElement = undefined;
 
 /**
  * Set focus to this node
@@ -615,8 +594,8 @@ jsoneditor.Node.focusElement = undefined;
  *                                focus available values: 'drag', 'menu',
  *                                'expand', 'field', 'value' (default)
  */
-jsoneditor.Node.prototype.focus = function(elementName) {
-    jsoneditor.Node.focusElement = elementName;
+Node.prototype.focus = function(elementName) {
+    Node.focusElement = elementName;
 
     if (this.dom.tr && this.dom.tr.parentNode) {
         var dom = this.dom;
@@ -641,11 +620,11 @@ jsoneditor.Node.prototype.focus = function(elementName) {
                 }
                 else if (dom.field && this.fieldEditable) {
                     dom.field.focus();
-                    jsoneditor.util.selectContentEditable(dom.field);
+                    util.selectContentEditable(dom.field);
                 }
                 else if (dom.value && !this._hasChilds()) {
                     dom.value.focus();
-                    jsoneditor.util.selectContentEditable(dom.value);
+                    util.selectContentEditable(dom.value);
                 }
                 else {
                     dom.menu.focus();
@@ -655,11 +634,11 @@ jsoneditor.Node.prototype.focus = function(elementName) {
             case 'field':
                 if (dom.field && this.fieldEditable) {
                     dom.field.focus();
-                    jsoneditor.util.selectContentEditable(dom.field);
+                    util.selectContentEditable(dom.field);
                 }
                 else if (dom.value && !this._hasChilds()) {
                     dom.value.focus();
-                    jsoneditor.util.selectContentEditable(dom.value);
+                    util.selectContentEditable(dom.value);
                 }
                 else if (this._hasChilds()) {
                     dom.expand.focus();
@@ -673,11 +652,11 @@ jsoneditor.Node.prototype.focus = function(elementName) {
             default:
                 if (dom.value && !this._hasChilds()) {
                     dom.value.focus();
-                    jsoneditor.util.selectContentEditable(dom.value);
+                    util.selectContentEditable(dom.value);
                 }
                 else if (dom.field && this.fieldEditable) {
                     dom.field.focus();
-                    jsoneditor.util.selectContentEditable(dom.field);
+                    util.selectContentEditable(dom.field);
                 }
                 else if (this._hasChilds()) {
                     dom.expand.focus();
@@ -694,16 +673,16 @@ jsoneditor.Node.prototype.focus = function(elementName) {
  * Select all text in an editable div after a delay of 0 ms
  * @param {Element} editableDiv
  */
-jsoneditor.Node.select = function(editableDiv) {
+Node.select = function(editableDiv) {
     setTimeout(function () {
-        jsoneditor.util.selectContentEditable(editableDiv);
+        util.selectContentEditable(editableDiv);
     }, 0);
 };
 
 /**
  * Update the values from the DOM field and value of this node
  */
-jsoneditor.Node.prototype.blur = function() {
+Node.prototype.blur = function() {
     // retrieve the actual field and value from the DOM.
     this._getDomValue(false);
     this._getDomField(false);
@@ -712,11 +691,11 @@ jsoneditor.Node.prototype.blur = function() {
 /**
  * Duplicate given child node
  * new structure will be added right before the cloned node
- * @param {jsoneditor.Node} node           the childNode to be duplicated
- * @return {jsoneditor.Node} clone         the clone of the node
+ * @param {Node} node           the childNode to be duplicated
+ * @return {Node} clone         the clone of the node
  * @private
  */
-jsoneditor.Node.prototype._duplicate = function(node) {
+Node.prototype._duplicate = function(node) {
     var clone = node.clone();
 
     /* TODO: adjust the field name (to prevent equal field names)
@@ -732,10 +711,10 @@ jsoneditor.Node.prototype._duplicate = function(node) {
 /**
  * Check if given node is a child. The method will check recursively to find
  * this node.
- * @param {jsoneditor.Node} node
+ * @param {Node} node
  * @return {boolean} containsNode
  */
-jsoneditor.Node.prototype.containsNode = function(node) {
+Node.prototype.containsNode = function(node) {
     if (this == node) {
         return true;
     }
@@ -755,13 +734,13 @@ jsoneditor.Node.prototype.containsNode = function(node) {
 
 /**
  * Move given node into this node
- * @param {jsoneditor.Node} node           the childNode to be moved
- * @param {jsoneditor.Node} beforeNode     node will be inserted before given
+ * @param {Node} node           the childNode to be moved
+ * @param {Node} beforeNode     node will be inserted before given
  *                                         node. If no beforeNode is given,
  *                                         the node is appended at the end
  * @private
  */
-jsoneditor.Node.prototype._move = function(node, beforeNode) {
+Node.prototype._move = function(node, beforeNode) {
     if (node == beforeNode) {
         // nothing to do...
         return;
@@ -798,11 +777,11 @@ jsoneditor.Node.prototype._move = function(node, beforeNode) {
 /**
  * Remove a child from the node.
  * Only applicable when Node value is of type array or object
- * @param {jsoneditor.Node} node   The child node to be removed;
- * @return {jsoneditor.Node | undefined} node  The removed node on success,
+ * @param {Node} node   The child node to be removed;
+ * @return {Node | undefined} node  The removed node on success,
  *                                             else undefined
  */
-jsoneditor.Node.prototype.removeChild = function(node) {
+Node.prototype.removeChild = function(node) {
     if (this.childs) {
         var index = this.childs.indexOf(node);
 
@@ -828,10 +807,10 @@ jsoneditor.Node.prototype.removeChild = function(node) {
  * Remove a child node node from this node
  * This method is equal to Node.removeChild, except that _remove firex an
  * onChange event.
- * @param {jsoneditor.Node} node
+ * @param {Node} node
  * @private
  */
-jsoneditor.Node.prototype._remove = function (node) {
+Node.prototype._remove = function (node) {
     this.removeChild(node);
 };
 
@@ -839,7 +818,7 @@ jsoneditor.Node.prototype._remove = function (node) {
  * Change the type of the value of this Node
  * @param {String} newType
  */
-jsoneditor.Node.prototype.changeType = function (newType) {
+Node.prototype.changeType = function (newType) {
     var oldType = this.type;
 
     if (oldType == newType) {
@@ -942,9 +921,9 @@ jsoneditor.Node.prototype.changeType = function (newType) {
  *                            case of invalid data
  * @private
  */
-jsoneditor.Node.prototype._getDomValue = function(silent) {
+Node.prototype._getDomValue = function(silent) {
     if (this.dom.value && this.type != 'array' && this.type != 'object') {
-        this.valueInnerText = jsoneditor.util.getInnerText(this.dom.value);
+        this.valueInnerText = util.getInnerText(this.dom.value);
     }
 
     if (this.valueInnerText != undefined) {
@@ -987,15 +966,19 @@ jsoneditor.Node.prototype._getDomValue = function(silent) {
  * - background color in case it is empty
  * @private
  */
-jsoneditor.Node.prototype._updateDomValue = function () {
+Node.prototype._updateDomValue = function () {
     var domValue = this.dom.value;
     if (domValue) {
         // set text color depending on value type
         // TODO: put colors in css
         var v = this.value;
         var t = (this.type == 'auto') ? typeof(v) : this.type;
+        var isUrl = (t == 'string' && util.isUrl(v));
         var color = '';
-        if (t == 'string') {
+        if (isUrl && !this.editor.mode.edit) {
+            color = '';
+        }
+        else if (t == 'string') {
             color = 'green';
         }
         else if (t == 'number') {
@@ -1009,7 +992,7 @@ jsoneditor.Node.prototype._updateDomValue = function () {
             color = '';
         }
         else if (v === null) {
-            color = 'blue';
+            color = '#004ED0';  // blue
         }
         else {
             // invalid value
@@ -1020,28 +1003,50 @@ jsoneditor.Node.prototype._updateDomValue = function () {
         // make backgound color lightgray when empty
         var isEmpty = (String(this.value) == '' && this.type != 'array' && this.type != 'object');
         if (isEmpty) {
-            jsoneditor.util.addClassName(domValue, 'empty');
+            util.addClassName(domValue, 'empty');
         }
         else {
-            jsoneditor.util.removeClassName(domValue, 'empty');
+            util.removeClassName(domValue, 'empty');
+        }
+
+        // underline url
+        if (isUrl) {
+            util.addClassName(domValue, 'url');
+        }
+        else {
+            util.removeClassName(domValue, 'url');
+        }
+
+        // update title
+        if (t == 'array' || t == 'object') {
+            var count = this.childs ? this.childs.length : 0;
+            domValue.title = this.type + ' containing ' + count + ' items';
+        }
+        else if (t == 'string' && util.isUrl(v)) {
+            if (this.editor.mode.edit) {
+                domValue.title = 'Ctrl+Click or Ctrl+Enter to open url in new window';
+            }
+        }
+        else {
+            domValue.title = '';
         }
 
         // highlight when there is a search result
         if (this.searchValueActive) {
-            jsoneditor.util.addClassName(domValue, 'highlight-active');
+            util.addClassName(domValue, 'highlight-active');
         }
         else {
-            jsoneditor.util.removeClassName(domValue, 'highlight-active');
+            util.removeClassName(domValue, 'highlight-active');
         }
         if (this.searchValue) {
-            jsoneditor.util.addClassName(domValue, 'highlight');
+            util.addClassName(domValue, 'highlight');
         }
         else {
-            jsoneditor.util.removeClassName(domValue, 'highlight');
+            util.removeClassName(domValue, 'highlight');
         }
 
         // strip formatting from the contents of the editable div
-        jsoneditor.util.stripFormatting(domValue);
+        util.stripFormatting(domValue);
     }
 };
 
@@ -1052,34 +1057,34 @@ jsoneditor.Node.prototype._updateDomValue = function () {
  * - background color in case it is empty
  * @private
  */
-jsoneditor.Node.prototype._updateDomField = function () {
+Node.prototype._updateDomField = function () {
     var domField = this.dom.field;
     if (domField) {
         // make backgound color lightgray when empty
         var isEmpty = (String(this.field) == '' && this.parent.type != 'array');
         if (isEmpty) {
-            jsoneditor.util.addClassName(domField, 'empty');
+            util.addClassName(domField, 'empty');
         }
         else {
-            jsoneditor.util.removeClassName(domField, 'empty');
+            util.removeClassName(domField, 'empty');
         }
 
         // highlight when there is a search result
         if (this.searchFieldActive) {
-            jsoneditor.util.addClassName(domField, 'highlight-active');
+            util.addClassName(domField, 'highlight-active');
         }
         else {
-            jsoneditor.util.removeClassName(domField, 'highlight-active');
+            util.removeClassName(domField, 'highlight-active');
         }
         if (this.searchField) {
-            jsoneditor.util.addClassName(domField, 'highlight');
+            util.addClassName(domField, 'highlight');
         }
         else {
-            jsoneditor.util.removeClassName(domField, 'highlight');
+            util.removeClassName(domField, 'highlight');
         }
 
         // strip formatting from the contents of the editable div
-        jsoneditor.util.stripFormatting(domField);
+        util.stripFormatting(domField);
     }
 };
 
@@ -1089,9 +1094,9 @@ jsoneditor.Node.prototype._updateDomField = function () {
  *                            case of invalid data
  * @private
  */
-jsoneditor.Node.prototype._getDomField = function(silent) {
+Node.prototype._getDomField = function(silent) {
     if (this.dom.field && this.fieldEditable) {
-        this.fieldInnerText = jsoneditor.util.getInnerText(this.dom.field);
+        this.fieldInnerText = util.getInnerText(this.dom.field);
     }
 
     if (this.fieldInnerText != undefined) {
@@ -1123,10 +1128,10 @@ jsoneditor.Node.prototype._getDomField = function(silent) {
 /**
  * Clear the dom of the node
  */
-jsoneditor.Node.prototype.clearDom = function() {
+Node.prototype.clearDom = function() {
     // TODO: hide the node first?
     //this.hide();
-    // TOOD: recursively clear dom?
+    // TODO: recursively clear dom?
 
     this.dom = {};
 };
@@ -1136,7 +1141,7 @@ jsoneditor.Node.prototype.clearDom = function() {
  * The dom will be generated when not yet created
  * @return {Element} tr    HTML DOM TR Element
  */
-jsoneditor.Node.prototype.getDom = function() {
+Node.prototype.getDom = function() {
     var dom = this.dom;
     if (dom.tr) {
         return dom.tr;
@@ -1146,7 +1151,7 @@ jsoneditor.Node.prototype.getDom = function() {
     dom.tr = document.createElement('tr');
     dom.tr.node = this;
 
-    if (this.editor.mode.editor) {
+    if (this.editor.mode.edit) {
         // create draggable area
         var tdDrag = document.createElement('td');
         if (this.parent) {
@@ -1184,19 +1189,19 @@ jsoneditor.Node.prototype.getDom = function() {
  * @param {Event} event
  * @private
  */
-jsoneditor.Node.prototype._onDragStart = function (event) {
+Node.prototype._onDragStart = function (event) {
     event = event || window.event;
 
     var node = this;
     if (!this.mousemove) {
-        this.mousemove = jsoneditor.util.addEventListener(document, 'mousemove',
+        this.mousemove = util.addEventListener(document, 'mousemove',
             function (event) {
                 node._onDrag(event);
             });
     }
 
     if (!this.mouseup) {
-        this.mouseup = jsoneditor.util.addEventListener(document, 'mouseup',
+        this.mouseup = util.addEventListener(document, 'mouseup',
             function (event ) {
                 node._onDragEnd(event);
             });
@@ -1207,12 +1212,12 @@ jsoneditor.Node.prototype._onDragStart = function (event) {
         'oldCursor': document.body.style.cursor,
         'startParent': this.parent,
         'startIndex': this.parent.childs.indexOf(this),
-        'mouseX': jsoneditor.util.getMouseX(event),
+        'mouseX': util.getMouseX(event),
         'level': this.getLevel()
     };
     document.body.style.cursor = 'move';
 
-    jsoneditor.util.preventDefault(event);
+    util.preventDefault(event);
 };
 
 /**
@@ -1220,12 +1225,11 @@ jsoneditor.Node.prototype._onDragStart = function (event) {
  * @param {Event} event
  * @private
  */
-jsoneditor.Node.prototype._onDrag = function (event) {
-    // TODO: this method has grown to large. Split it in a number of methods
+Node.prototype._onDrag = function (event) {
+    // TODO: this method has grown too large. Split it in a number of methods
     event = event || window.event;
-    // TODO: make a separate function to get the absolute mouseY and mouseX
-    var mouseY = jsoneditor.util.getMouseY(event);
-    var mouseX = jsoneditor.util.getMouseX(event);
+    var mouseY = util.getMouseY(event);
+    var mouseX = util.getMouseX(event);
 
     var trThis, trPrev, trNext, trFirst, trLast, trRoot;
     var nodePrev, nodeNext;
@@ -1236,15 +1240,15 @@ jsoneditor.Node.prototype._onDrag = function (event) {
 
     // move up/down
     trThis = this.dom.tr;
-    topThis = jsoneditor.util.getAbsoluteTop(trThis);
+    topThis = util.getAbsoluteTop(trThis);
     heightThis = trThis.offsetHeight;
     if (mouseY < topThis) {
         // move up
         trPrev = trThis;
         do {
             trPrev = trPrev.previousSibling;
-            nodePrev = jsoneditor.Node.getNodeFromTarget(trPrev);
-            topPrev = trPrev ? jsoneditor.util.getAbsoluteTop(trPrev) : 0;
+            nodePrev = Node.getNodeFromTarget(trPrev);
+            topPrev = trPrev ? util.getAbsoluteTop(trPrev) : 0;
         }
         while (trPrev && mouseY < topPrev);
 
@@ -1256,7 +1260,7 @@ jsoneditor.Node.prototype._onDrag = function (event) {
             // move to the first node
             trRoot = trThis.parentNode.firstChild;
             trPrev = trRoot ? trRoot.nextSibling : undefined;
-            nodePrev = jsoneditor.Node.getNodeFromTarget(trPrev);
+            nodePrev = Node.getNodeFromTarget(trPrev);
             if (nodePrev == this) {
                 nodePrev = undefined;
             }
@@ -1265,7 +1269,7 @@ jsoneditor.Node.prototype._onDrag = function (event) {
         if (nodePrev) {
             // check if mouseY is really inside the found node
             trPrev = nodePrev.dom.tr;
-            topPrev = trPrev ? jsoneditor.util.getAbsoluteTop(trPrev) : 0;
+            topPrev = trPrev ? util.getAbsoluteTop(trPrev) : 0;
             if (mouseY > topPrev + heightThis) {
                 nodePrev = undefined;
             }
@@ -1281,13 +1285,13 @@ jsoneditor.Node.prototype._onDrag = function (event) {
         trLast = (this.expanded && this.append) ? this.append.getDom() : this.dom.tr;
         trFirst = trLast ? trLast.nextSibling : undefined;
         if (trFirst) {
-            topFirst = jsoneditor.util.getAbsoluteTop(trFirst);
+            topFirst = util.getAbsoluteTop(trFirst);
             trNext = trFirst;
             do {
-                nodeNext = jsoneditor.Node.getNodeFromTarget(trNext);
+                nodeNext = Node.getNodeFromTarget(trNext);
                 if (trNext) {
                     bottomNext = trNext.nextSibling ?
-                        jsoneditor.util.getAbsoluteTop(trNext.nextSibling) : 0;
+                        util.getAbsoluteTop(trNext.nextSibling) : 0;
                     heightNext = trNext ? (bottomNext - topFirst) : 0;
 
                     if (nodeNext.parent.childs.length == 1 && nodeNext.parent.childs[0] == this) {
@@ -1312,11 +1316,11 @@ jsoneditor.Node.prototype._onDrag = function (event) {
                 // find the best fitting level (move upwards over the append nodes)
                 trPrev = nodeNext.dom.tr.previousSibling;
                 while (levelNext < level && trPrev) {
-                    nodePrev = jsoneditor.Node.getNodeFromTarget(trPrev);
+                    nodePrev = Node.getNodeFromTarget(trPrev);
                     if (nodePrev == this || nodePrev._isChildOf(this)) {
                         // neglect itself and its childs
                     }
-                    else if (nodePrev instanceof jsoneditor.AppendNode) {
+                    else if (nodePrev instanceof AppendNode) {
                         var childs = nodePrev.parent.childs;
                         if (childs.length > 1 ||
                             (childs.length == 1 && childs[0] != this)) {
@@ -1324,7 +1328,7 @@ jsoneditor.Node.prototype._onDrag = function (event) {
                             // consisting of not only this node (else the
                             // append node will change into a visible "empty"
                             // text when removing this node).
-                            nodeNext = jsoneditor.Node.getNodeFromTarget(trPrev);
+                            nodeNext = Node.getNodeFromTarget(trPrev);
                             levelNext = nodeNext.getLevel();
                         }
                         else {
@@ -1356,7 +1360,7 @@ jsoneditor.Node.prototype._onDrag = function (event) {
     // auto scroll when hovering around the top of the editor
     this.editor.startAutoScroll(mouseY);
 
-    jsoneditor.util.preventDefault(event);
+    util.preventDefault(event);
 };
 
 /**
@@ -1364,7 +1368,7 @@ jsoneditor.Node.prototype._onDrag = function (event) {
  * @param {Event} event
  * @private
  */
-jsoneditor.Node.prototype._onDragEnd = function (event) {
+Node.prototype._onDragEnd = function (event) {
     event = event || window.event;
 
     var params = {
@@ -1385,26 +1389,26 @@ jsoneditor.Node.prototype._onDragEnd = function (event) {
     delete this.drag;
 
     if (this.mousemove) {
-        jsoneditor.util.removeEventListener(document, 'mousemove', this.mousemove);
+        util.removeEventListener(document, 'mousemove', this.mousemove);
         delete this.mousemove;}
     if (this.mouseup) {
-        jsoneditor.util.removeEventListener(document, 'mouseup', this.mouseup);
+        util.removeEventListener(document, 'mouseup', this.mouseup);
         delete this.mouseup;
     }
 
     // Stop any running auto scroll
     this.editor.stopAutoScroll();
 
-    jsoneditor.util.preventDefault(event);
+    util.preventDefault(event);
 };
 
 /**
  * Test if this node is a child of an other node
- * @param {jsoneditor.Node} node
+ * @param {Node} node
  * @return {boolean} isChild
  * @private
  */
-jsoneditor.Node.prototype._isChildOf = function (node) {
+Node.prototype._isChildOf = function (node) {
     var n = this.parent;
     while (n) {
         if (n == node) {
@@ -1421,7 +1425,7 @@ jsoneditor.Node.prototype._isChildOf = function (node) {
  * @return {Element} domField
  * @private
  */
-jsoneditor.Node.prototype._createDomField = function () {
+Node.prototype._createDomField = function () {
     return document.createElement('div');
 };
 
@@ -1430,7 +1434,7 @@ jsoneditor.Node.prototype._createDomField = function () {
  * Only applied to the currently visible (expanded childs)
  * @param {boolean} highlight
  */
-jsoneditor.Node.prototype.setHighlight = function (highlight) {
+Node.prototype.setHighlight = function (highlight) {
     if (this.dom.tr) {
         this.dom.tr.className = (highlight ? 'highlight' : '');
 
@@ -1451,7 +1455,7 @@ jsoneditor.Node.prototype.setHighlight = function (highlight) {
  * or Array is allowed.
  * @param {String | Number | Boolean | null} value
  */
-jsoneditor.Node.prototype.updateValue = function (value) {
+Node.prototype.updateValue = function (value) {
     this.value = value;
     this.updateDom();
 };
@@ -1460,7 +1464,7 @@ jsoneditor.Node.prototype.updateValue = function (value) {
  * Update the field of the node.
  * @param {String} field
  */
-jsoneditor.Node.prototype.updateField = function (field) {
+Node.prototype.updateField = function (field) {
     this.field = field;
     this.updateDom();
 };
@@ -1475,7 +1479,7 @@ jsoneditor.Node.prototype.updateField = function (field) {
  *                          indexes of the node will be updated too. False by
  *                          default.
  */
-jsoneditor.Node.prototype.updateDom = function (options) {
+Node.prototype.updateDom = function (options) {
     // update level indentation
     var domTree = this.dom.tree;
     if (domTree) {
@@ -1487,7 +1491,7 @@ jsoneditor.Node.prototype.updateDom = function (options) {
     if (domField) {
         if (this.fieldEditable == true) {
             // parent is an object
-            domField.contentEditable = this.editor.mode.editor;
+            domField.contentEditable = this.editor.mode.edit;
             domField.spellcheck = false;
             domField.className = 'field';
         }
@@ -1518,15 +1522,12 @@ jsoneditor.Node.prototype.updateDom = function (options) {
         var count = this.childs ? this.childs.length : 0;
         if (this.type == 'array') {
             domValue.innerHTML = '[' + count + ']';
-            domValue.title = this.type + ' containing ' + count + ' items';
         }
         else if (this.type == 'object') {
             domValue.innerHTML = '{' + count + '}';
-            domValue.title = this.type + ' containing ' + count + ' items';
         }
         else {
             domValue.innerHTML = this._escapeHTML(this.value);
-            delete domValue.title;
         }
     }
 
@@ -1561,7 +1562,7 @@ jsoneditor.Node.prototype.updateDom = function (options) {
  * Only applicable when structure is an array or object
  * @private
  */
-jsoneditor.Node.prototype._updateDomIndexes = function () {
+Node.prototype._updateDomIndexes = function () {
     var domValue = this.dom.value;
     var childs = this.childs;
     if (domValue && childs) {
@@ -1592,7 +1593,7 @@ jsoneditor.Node.prototype._updateDomIndexes = function () {
  * Create an editable value
  * @private
  */
-jsoneditor.Node.prototype._createDomValue = function () {
+Node.prototype._createDomValue = function () {
     var domValue;
 
     if (this.type == 'array') {
@@ -1605,23 +1606,24 @@ jsoneditor.Node.prototype._createDomValue = function () {
         domValue.className = 'readonly';
         domValue.innerHTML = '{...}';
     }
-    else if (this.type == 'string') {
-        domValue = document.createElement('div');
-        domValue.contentEditable = !this.editor.mode.viewer;
-        domValue.spellcheck = false;
-        domValue.className = 'value';
-        domValue.innerHTML = this._escapeHTML(this.value);
-    }
     else {
-        domValue = document.createElement('div');
-        domValue.contentEditable = !this.editor.mode.viewer;
-        domValue.spellcheck = false;
-        domValue.className = 'value';
-        domValue.innerHTML = this._escapeHTML(this.value);
+        if (!this.editor.mode.edit && util.isUrl(this.value)) {
+            // create a link in case of read-only editor and value containing an url
+            domValue = document.createElement('a');
+            domValue.className = 'value';
+            domValue.href = this.value;
+            domValue.target = '_blank';
+            domValue.innerHTML = this._escapeHTML(this.value);
+        }
+        else {
+            // create and editable or read-only div
+            domValue = document.createElement('div');
+            domValue.contentEditable = !this.editor.mode.view;
+            domValue.spellcheck = false;
+            domValue.className = 'value';
+            domValue.innerHTML = this._escapeHTML(this.value);
+        }
     }
-
-    // TODO: in FF spel/check of editable divs is done via the body. quite ugly
-    // document.body.spellcheck = false;
 
     return domValue;
 };
@@ -1631,7 +1633,7 @@ jsoneditor.Node.prototype._createDomValue = function () {
  * @return {Element} expand
  * @private
  */
-jsoneditor.Node.prototype._createDomExpandButton = function () {
+Node.prototype._createDomExpandButton = function () {
     // create expand button
     var expand = document.createElement('button');
     if (this._hasChilds()) {
@@ -1654,7 +1656,7 @@ jsoneditor.Node.prototype._createDomExpandButton = function () {
  * @return {Element} domTree
  * @private
  */
-jsoneditor.Node.prototype._createDomTree = function () {
+Node.prototype._createDomTree = function () {
     var dom = this.dom;
     var domTree = document.createElement('table');
     var tbody = document.createElement('tbody');
@@ -1704,12 +1706,13 @@ jsoneditor.Node.prototype._createDomTree = function () {
  * Handle an event. The event is catched centrally by the editor
  * @param {Event} event
  */
-jsoneditor.Node.prototype.onEvent = function (event) {
-    var type = event.type;
-    var target = event.target || event.srcElement;
-    var dom = this.dom;
-    var node = this;
-    var expandable = this._hasChilds();
+Node.prototype.onEvent = function (event) {
+    var type = event.type,
+        target = event.target || event.srcElement,
+        dom = this.dom,
+        node = this,
+        focusNode,
+        expandable = this._hasChilds();
 
     // check if mouse is on menu or on dragarea.
     // If so, highlight current row and its childs
@@ -1732,16 +1735,15 @@ jsoneditor.Node.prototype.onEvent = function (event) {
         var highlighter = node.editor.highlighter;
         highlighter.highlight(node);
         highlighter.lock();
-        jsoneditor.util.addClassName(dom.menu, 'selected');
+        util.addClassName(dom.menu, 'selected');
         this.showContextMenu(dom.menu, function () {
-            jsoneditor.util.removeClassName(dom.menu, 'selected');
+            util.removeClassName(dom.menu, 'selected');
             highlighter.unlock();
             highlighter.unhighlight();
         });
     }
 
     // expand events
-    var domExpand = dom.expand;
     if (type == 'click' && target == dom.expand) {
         if (expandable) {
             var recurse = event.ctrlKey; // with ctrl-key, expand/collapse all
@@ -1752,9 +1754,10 @@ jsoneditor.Node.prototype.onEvent = function (event) {
     // value events
     var domValue = dom.value;
     if (target == domValue) {
+        //noinspection FallthroughInSwitchStatementJS
         switch (type) {
             case 'focus':
-                jsoneditor.JSONEditor.focusNode = this;
+                focusNode = this;
                 break;
 
             case 'blur':
@@ -1774,6 +1777,14 @@ jsoneditor.Node.prototype.onEvent = function (event) {
             case 'keydown':
             case 'mousedown':
                 this.editor.selection = this.editor.getSelection();
+                break;
+
+            case 'click':
+                if (event.ctrlKey && this.editor.mode.edit) {
+                    if (util.isUrl(this.value)) {
+                        window.open(this.value, '_blank');
+                    }
+                }
                 break;
 
             case 'keyup':
@@ -1796,7 +1807,7 @@ jsoneditor.Node.prototype.onEvent = function (event) {
     if (target == domField) {
         switch (type) {
             case 'focus':
-                jsoneditor.JSONEditor.focusNode = this;
+                focusNode = this;
                 break;
 
             case 'blur':
@@ -1841,17 +1852,17 @@ jsoneditor.Node.prototype.onEvent = function (event) {
             case 'click':
                 var left = (event.offsetX != undefined) ?
                     (event.offsetX < (this.getLevel() + 1) * 24) :
-                    (jsoneditor.util.getMouseX(event) < jsoneditor.util.getAbsoluteLeft(dom.tdSeparator));// for FF
+                    (util.getMouseX(event) < util.getAbsoluteLeft(dom.tdSeparator));// for FF
                 if (left || expandable) {
                     // node is expandable when it is an object or array
                     if (domField) {
-                        jsoneditor.util.setEndOfContentEditable(domField);
+                        util.setEndOfContentEditable(domField);
                         domField.focus();
                     }
                 }
                 else {
                     if (domValue) {
-                        jsoneditor.util.setEndOfContentEditable(domValue);
+                        util.setEndOfContentEditable(domValue);
                         domValue.focus();
                     }
                 }
@@ -1863,7 +1874,7 @@ jsoneditor.Node.prototype.onEvent = function (event) {
         switch (type) {
             case 'click':
                 if (domField) {
-                    jsoneditor.util.setEndOfContentEditable(domField);
+                    util.setEndOfContentEditable(domField);
                     domField.focus();
                 }
                 break;
@@ -1879,7 +1890,7 @@ jsoneditor.Node.prototype.onEvent = function (event) {
  * Key down event handler
  * @param {Event} event
  */
-jsoneditor.Node.prototype.onKeyDown = function (event) {
+Node.prototype.onKeyDown = function (event) {
     var keynum = event.which || event.keyCode;
     var target = event.target || event.srcElement;
     var ctrlKey = event.ctrlKey;
@@ -1888,8 +1899,27 @@ jsoneditor.Node.prototype.onKeyDown = function (event) {
     var handled = false;
     var prevNode, nextNode, nextDom, nextDom2;
 
-    // console.log(ctrlKey, keynum, event.charCode); // TODO: cleanup
-    if (keynum == 68) {  // D
+    // util.log(ctrlKey, keynum, event.charCode); // TODO: cleanup
+    if (keynum == 13) { // Enter
+        if (target == this.dom.value) {
+            if (!this.editor.mode.edit || event.ctrlKey) {
+                if (util.isUrl(this.value)) {
+                    window.open(this.value, '_blank');
+                    handled = true;
+                }
+            }
+        }
+        else if (target == this.dom.expand) {
+            var expandable = this._hasChilds();
+            if (expandable) {
+                var recurse = event.ctrlKey; // with ctrl-key, expand/collapse all
+                this._onExpand(recurse);
+                target.focus();
+                handled = true;
+            }
+        }
+    }
+    else if (keynum == 68) {  // D
         if (ctrlKey) {   // Ctrl+D
             this._onDuplicate();
             handled = true;
@@ -1929,7 +1959,7 @@ jsoneditor.Node.prototype.onKeyDown = function (event) {
             // find the last node
             var lastNode = this._lastNode();
             if (lastNode) {
-                lastNode.focus(jsoneditor.Node.focusElement || this._getElementName(target));
+                lastNode.focus(Node.focusElement || this._getElementName(target));
             }
             handled = true;
         }
@@ -1939,7 +1969,7 @@ jsoneditor.Node.prototype.onKeyDown = function (event) {
             // find the first node
             var firstNode = this._firstNode();
             if (firstNode) {
-                firstNode.focus(jsoneditor.Node.focusElement || this._getElementName(target));
+                firstNode.focus(Node.focusElement || this._getElementName(target));
             }
             handled = true;
         }
@@ -1963,14 +1993,14 @@ jsoneditor.Node.prototype.onKeyDown = function (event) {
                 nextDom = dom.nextSibling;
             }
             if (nextDom) {
-                nextNode = jsoneditor.Node.getNodeFromTarget(nextDom);
+                nextNode = Node.getNodeFromTarget(nextDom);
                 nextDom2 = nextDom.nextSibling;
-                nextNode2 = jsoneditor.Node.getNodeFromTarget(nextDom2);
-                if (nextNode && nextNode instanceof jsoneditor.AppendNode &&
+                nextNode2 = Node.getNodeFromTarget(nextDom2);
+                if (nextNode && nextNode instanceof AppendNode &&
                         !(this.parent.childs.length == 1) &&
                         nextNode2 && nextNode2.parent) {
                     nextNode2.parent.moveBefore(this, nextNode2);
-                    this.focus(jsoneditor.Node.focusElement || this._getElementName(target));
+                    this.focus(Node.focusElement || this._getElementName(target));
                 }
             }
         }
@@ -1980,7 +2010,7 @@ jsoneditor.Node.prototype.onKeyDown = function (event) {
             // find the previous node
             prevNode = this._previousNode();
             if (prevNode) {
-                prevNode.focus(jsoneditor.Node.focusElement || this._getElementName(target));
+                prevNode.focus(Node.focusElement || this._getElementName(target));
             }
             handled = true;
         }
@@ -1989,7 +2019,7 @@ jsoneditor.Node.prototype.onKeyDown = function (event) {
             prevNode = this._previousNode();
             if (prevNode && prevNode.parent) {
                 prevNode.parent.moveBefore(this, prevNode);
-                this.focus(jsoneditor.Node.focusElement || this._getElementName(target));
+                this.focus(Node.focusElement || this._getElementName(target));
             }
             handled = true;
         }
@@ -2007,12 +2037,12 @@ jsoneditor.Node.prototype.onKeyDown = function (event) {
             dom = this.getDom();
             var prevDom = dom.previousSibling;
             if (prevDom) {
-                prevNode = jsoneditor.Node.getNodeFromTarget(prevDom);
+                prevNode = Node.getNodeFromTarget(prevDom);
                 if (prevNode && prevNode.parent &&
-                        (prevNode instanceof jsoneditor.AppendNode)
+                        (prevNode instanceof AppendNode)
                         && !prevNode.isVisible()) {
                     prevNode.parent.moveBefore(this, prevNode);
-                    this.focus(jsoneditor.Node.focusElement || this._getElementName(target));
+                    this.focus(Node.focusElement || this._getElementName(target));
                 }
             }
         }
@@ -2022,7 +2052,7 @@ jsoneditor.Node.prototype.onKeyDown = function (event) {
             // find the next node
             nextNode = this._nextNode();
             if (nextNode) {
-                nextNode.focus(jsoneditor.Node.focusElement || this._getElementName(target));
+                nextNode.focus(Node.focusElement || this._getElementName(target));
             }
             handled = true;
         }
@@ -2041,18 +2071,18 @@ jsoneditor.Node.prototype.onKeyDown = function (event) {
             else {
                 nextDom2 = nextDom ? nextDom.nextSibling : undefined;
             }
-            var nextNode2 = jsoneditor.Node.getNodeFromTarget(nextDom2);
+            var nextNode2 = Node.getNodeFromTarget(nextDom2);
             if (nextNode2 && nextNode2.parent) {
                 nextNode2.parent.moveBefore(this, nextNode2);
-                this.focus(jsoneditor.Node.focusElement || this._getElementName(target));
+                this.focus(Node.focusElement || this._getElementName(target));
             }
             handled = true;
         }
     }
 
     if (handled) {
-        jsoneditor.util.preventDefault(event);
-        jsoneditor.util.stopPropagation(event);
+        util.preventDefault(event);
+        util.stopPropagation(event);
     }
 };
 
@@ -2061,7 +2091,7 @@ jsoneditor.Node.prototype.onKeyDown = function (event) {
  * @param {boolean} recurse   If true, child nodes will be expanded too
  * @private
  */
-jsoneditor.Node.prototype._onExpand = function (recurse) {
+Node.prototype._onExpand = function (recurse) {
     if (recurse) {
         // Take the table offline
         var table = this.dom.tr.parentNode; // TODO: not nice to access the main table like this
@@ -2088,7 +2118,7 @@ jsoneditor.Node.prototype._onExpand = function (recurse) {
  * Remove this node
  * @private
  */
-jsoneditor.Node.prototype._onRemove = function() {
+Node.prototype._onRemove = function() {
     this.editor.highlighter.unhighlight();
     var childs = this.parent.childs;
     var index = childs.indexOf(this);
@@ -2123,7 +2153,7 @@ jsoneditor.Node.prototype._onRemove = function() {
  * Duplicate this node
  * @private
  */
-jsoneditor.Node.prototype._onDuplicate = function() {
+Node.prototype._onDuplicate = function() {
     var oldSelection = this.editor.getSelection();
     var clone = this.parent._duplicate(this);
     clone.focus();
@@ -2145,10 +2175,10 @@ jsoneditor.Node.prototype._onDuplicate = function() {
  * @param {String} [type]   Can be 'auto', 'array', 'object', or 'string'
  * @private
  */
-jsoneditor.Node.prototype._onInsertBefore = function (field, value, type) {
+Node.prototype._onInsertBefore = function (field, value, type) {
     var oldSelection = this.editor.getSelection();
 
-    var newNode = new jsoneditor.Node(this.editor, {
+    var newNode = new Node(this.editor, {
         'field': (field != undefined) ? field : '',
         'value': (value != undefined) ? value : '',
         'type': type
@@ -2175,10 +2205,10 @@ jsoneditor.Node.prototype._onInsertBefore = function (field, value, type) {
  * @param {String} [type]   Can be 'auto', 'array', 'object', or 'string'
  * @private
  */
-jsoneditor.Node.prototype._onInsertAfter = function (field, value, type) {
+Node.prototype._onInsertAfter = function (field, value, type) {
     var oldSelection = this.editor.getSelection();
 
-    var newNode = new jsoneditor.Node(this.editor, {
+    var newNode = new Node(this.editor, {
         'field': (field != undefined) ? field : '',
         'value': (value != undefined) ? value : '',
         'type': type
@@ -2205,10 +2235,10 @@ jsoneditor.Node.prototype._onInsertAfter = function (field, value, type) {
  * @param {String} [type]   Can be 'auto', 'array', 'object', or 'string'
  * @private
  */
-jsoneditor.Node.prototype._onAppend = function (field, value, type) {
+Node.prototype._onAppend = function (field, value, type) {
     var oldSelection = this.editor.getSelection();
 
-    var newNode = new jsoneditor.Node(this.editor, {
+    var newNode = new Node(this.editor, {
         'field': (field != undefined) ? field : '',
         'value': (value != undefined) ? value : '',
         'type': type
@@ -2232,7 +2262,7 @@ jsoneditor.Node.prototype._onAppend = function (field, value, type) {
  * @param {String} newType
  * @private
  */
-jsoneditor.Node.prototype._onChangeType = function (newType) {
+Node.prototype._onChangeType = function (newType) {
     var oldType = this.type;
     if (newType != oldType) {
         var oldSelection = this.editor.getSelection();
@@ -2255,7 +2285,7 @@ jsoneditor.Node.prototype._onChangeType = function (newType) {
  * @param {String} direction   Sorting direction. Available values: "asc", "desc"
  * @private
  */
-jsoneditor.Node.prototype._onSort = function (direction) {
+Node.prototype._onSort = function (direction) {
     if (this._hasChilds()) {
         var order = (direction == 'desc') ? -1 : 1;
         var prop = (this.type == 'array') ? 'value': 'field';
@@ -2291,9 +2321,9 @@ jsoneditor.Node.prototype._onSort = function (direction) {
  * Create a table row with an append button.
  * @return {HTMLElement | undefined} buttonAppend or undefined when inapplicable
  */
-jsoneditor.Node.prototype.getAppend = function () {
+Node.prototype.getAppend = function () {
     if (!this.append) {
-        this.append = new jsoneditor.AppendNode(this.editor);
+        this.append = new AppendNode(this.editor);
         this.append.setParent(this);
     }
     return this.append.getDom();
@@ -2302,10 +2332,10 @@ jsoneditor.Node.prototype.getAppend = function () {
 /**
  * Find the node from an event target
  * @param {Node} target
- * @return {jsoneditor.Node | undefined} node  or undefined when not found
+ * @return {Node | undefined} node  or undefined when not found
  * @static
  */
-jsoneditor.Node.getNodeFromTarget = function (target) {
+Node.getNodeFromTarget = function (target) {
     while (target) {
         if (target.node) {
             return target.node;
@@ -2318,10 +2348,10 @@ jsoneditor.Node.getNodeFromTarget = function (target) {
 
 /**
  * Get the previously rendered node
- * @return {jsoneditor.Node | null} previousNode
+ * @return {Node | null} previousNode
  * @private
  */
-jsoneditor.Node.prototype._previousNode = function () {
+Node.prototype._previousNode = function () {
     var prevNode = null;
     var dom = this.getDom();
     if (dom && dom.parentNode) {
@@ -2329,19 +2359,19 @@ jsoneditor.Node.prototype._previousNode = function () {
         var prevDom = dom;
         do {
             prevDom = prevDom.previousSibling;
-            prevNode = jsoneditor.Node.getNodeFromTarget(prevDom);
+            prevNode = Node.getNodeFromTarget(prevDom);
         }
-        while (prevDom && (prevNode instanceof jsoneditor.AppendNode && !prevNode.isVisible()));
+        while (prevDom && (prevNode instanceof AppendNode && !prevNode.isVisible()));
     }
     return prevNode;
 };
 
 /**
  * Get the next rendered node
- * @return {jsoneditor.Node | null} nextNode
+ * @return {Node | null} nextNode
  * @private
  */
-jsoneditor.Node.prototype._nextNode = function () {
+Node.prototype._nextNode = function () {
     var nextNode = null;
     var dom = this.getDom();
     if (dom && dom.parentNode) {
@@ -2349,9 +2379,9 @@ jsoneditor.Node.prototype._nextNode = function () {
         var nextDom = dom;
         do {
             nextDom = nextDom.nextSibling;
-            nextNode = jsoneditor.Node.getNodeFromTarget(nextDom);
+            nextNode = Node.getNodeFromTarget(nextDom);
         }
-        while (nextDom && (nextNode instanceof jsoneditor.AppendNode && !nextNode.isVisible()));
+        while (nextDom && (nextNode instanceof AppendNode && !nextNode.isVisible()));
     }
 
     return nextNode;
@@ -2359,15 +2389,15 @@ jsoneditor.Node.prototype._nextNode = function () {
 
 /**
  * Get the first rendered node
- * @return {jsoneditor.Node | null} firstNode
+ * @return {Node | null} firstNode
  * @private
  */
-jsoneditor.Node.prototype._firstNode = function () {
+Node.prototype._firstNode = function () {
     var firstNode = null;
     var dom = this.getDom();
     if (dom && dom.parentNode) {
         var firstDom = dom.parentNode.firstChild;
-        firstNode = jsoneditor.Node.getNodeFromTarget(firstDom);
+        firstNode = Node.getNodeFromTarget(firstDom);
     }
 
     return firstNode;
@@ -2375,18 +2405,18 @@ jsoneditor.Node.prototype._firstNode = function () {
 
 /**
  * Get the last rendered node
- * @return {jsoneditor.Node | null} lastNode
+ * @return {Node | null} lastNode
  * @private
  */
-jsoneditor.Node.prototype._lastNode = function () {
+Node.prototype._lastNode = function () {
     var lastNode = null;
     var dom = this.getDom();
     if (dom && dom.parentNode) {
         var lastDom = dom.parentNode.lastChild;
-        lastNode =  jsoneditor.Node.getNodeFromTarget(lastDom);
-        while (lastDom && (lastNode instanceof jsoneditor.AppendNode && !lastNode.isVisible())) {
+        lastNode =  Node.getNodeFromTarget(lastDom);
+        while (lastDom && (lastNode instanceof AppendNode && !lastNode.isVisible())) {
             lastDom = lastDom.previousSibling;
-            lastNode =  jsoneditor.Node.getNodeFromTarget(lastDom);
+            lastNode =  Node.getNodeFromTarget(lastDom);
         }
     }
     return lastNode;
@@ -2398,7 +2428,7 @@ jsoneditor.Node.prototype._lastNode = function () {
  * @return {Element | null} nextElem
  * @private
  */
-jsoneditor.Node.prototype._previousElement = function (elem) {
+Node.prototype._previousElement = function (elem) {
     var dom = this.dom;
     // noinspection FallthroughInSwitchStatementJS
     switch (elem) {
@@ -2430,7 +2460,7 @@ jsoneditor.Node.prototype._previousElement = function (elem) {
  * @return {Element | null} nextElem
  * @private
  */
-jsoneditor.Node.prototype._nextElement = function (elem) {
+Node.prototype._nextElement = function (elem) {
     var dom = this.dom;
     // noinspection FallthroughInSwitchStatementJS
     switch (elem) {
@@ -2463,7 +2493,7 @@ jsoneditor.Node.prototype._nextElement = function (elem) {
  *                                      'menu', 'expand', 'field', 'value'
  * @private
  */
-jsoneditor.Node.prototype._getElementName = function (element) {
+Node.prototype._getElementName = function (element) {
     var dom = this.dom;
     for (var name in dom) {
         if (dom.hasOwnProperty(name)) {
@@ -2481,12 +2511,12 @@ jsoneditor.Node.prototype._getElementName = function (element) {
  * @return {boolean} hasChilds
  * @private
  */
-jsoneditor.Node.prototype._hasChilds = function () {
+Node.prototype._hasChilds = function () {
     return this.type == 'array' || this.type == 'object';
 };
 
 // titles with explanation for the different types
-jsoneditor.Node.TYPE_TITLES = {
+Node.TYPE_TITLES = {
     'auto': 'Field type "auto". ' +
         'The field type is automatically determined from the value ' +
         'and can be a string, number, boolean, or null.',
@@ -2505,9 +2535,9 @@ jsoneditor.Node.TYPE_TITLES = {
  * @param {function} [onClose]   Callback method called when the context menu
  *                               is being closed.
  */
-jsoneditor.Node.prototype.showContextMenu = function (anchor, onClose) {
+Node.prototype.showContextMenu = function (anchor, onClose) {
     var node = this;
-    var titles = jsoneditor.Node.TYPE_TITLES;
+    var titles = Node.TYPE_TITLES;
     var items = [];
 
     items.push({
@@ -2677,7 +2707,6 @@ jsoneditor.Node.prototype.showContextMenu = function (anchor, onClose) {
                     'className': 'type-string',
                     'title': titles.string,
                     'click': function () {
-                        // TODO: settings type string does not work, will become auto
                         node._onInsertBefore('', '', 'string');
                     }
                 }
@@ -2705,7 +2734,7 @@ jsoneditor.Node.prototype.showContextMenu = function (anchor, onClose) {
         });
     }
 
-    var menu = new jsoneditor.ContextMenu(items, {close: onClose});
+    var menu = new ContextMenu(items, {close: onClose});
     menu.show(anchor);
 };
 
@@ -2715,7 +2744,7 @@ jsoneditor.Node.prototype.showContextMenu = function (anchor, onClose) {
  * @return {String} type   Can be 'object', 'array', 'string', 'auto'
  * @private
  */
-jsoneditor.Node.prototype._getType = function(value) {
+Node.prototype._getType = function(value) {
     if (value instanceof Array) {
         return 'array';
     }
@@ -2736,7 +2765,7 @@ jsoneditor.Node.prototype._getType = function(value) {
  * @return {*} castedStr
  * @private
  */
-jsoneditor.Node.prototype._stringCast = function(str) {
+Node.prototype._stringCast = function(str) {
     var lower = str.toLowerCase(),
         num = Number(str),          // will nicely fail with '123ab'
         numFloat = parseFloat(str); // will nicely fail with '  '
@@ -2767,7 +2796,7 @@ jsoneditor.Node.prototype._stringCast = function(str) {
  * @return {String} escapedText
  * @private
  */
-jsoneditor.Node.prototype._escapeHTML = function (text) {
+Node.prototype._escapeHTML = function (text) {
     var htmlEscaped = String(text)
         .replace(/</g, '&lt;')
         .replace(/>/g, '&gt;')
@@ -2785,9 +2814,9 @@ jsoneditor.Node.prototype._escapeHTML = function (text) {
  * @return {String} text
  * @private
  */
-jsoneditor.Node.prototype._unescapeHTML = function (escapedText) {
+Node.prototype._unescapeHTML = function (escapedText) {
     var json = '"' + this._escapeJSON(escapedText) + '"';
-    var htmlEscaped = jsoneditor.util.parse(json);
+    var htmlEscaped = util.parse(json);
     return htmlEscaped
         .replace(/&lt;/g, '<')
         .replace(/&gt;/g, '>')
@@ -2803,7 +2832,7 @@ jsoneditor.Node.prototype._unescapeHTML = function (escapedText) {
  * @return {String} escapedText
  * @private
  */
-jsoneditor.Node.prototype._escapeJSON = function (text) {
+Node.prototype._escapeJSON = function (text) {
     // TODO: replace with some smart regex (only when a new solution is faster!)
     var escaped = '';
     var i = 0, iMax = text.length;

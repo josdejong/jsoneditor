@@ -1,31 +1,9 @@
 /**
- * @license
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not
- * use this file except in compliance with the License. You may obtain a copy
- * of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations under
- * the License.
- *
- * Copyright (c) 2011-2013 Jos de Jong, http://jsoneditoronline.org
- *
- * @author  Jos de Jong, <wjosdejong@gmail.com>
- */
-
-// create namespace
-var jsoneditor = jsoneditor || {};
-
-/**
- * @constructor jsoneditor.History
+ * @constructor History
  * Store action history, enables undo and redo
- * @param {jsoneditor.JSONEditor} editor
+ * @param {JSONEditor} editor
  */
-jsoneditor.History = function (editor) {
+function History (editor) {
     this.editor = editor;
     this.clear();
 
@@ -125,13 +103,13 @@ jsoneditor.History = function (editor) {
         // TODO: restore the original caret position and selection with each undo
         // TODO: implement history for actions "expand", "collapse", "scroll", "setDocument"
     };
-};
+}
 
 /**
  * The method onChange is executed when the History is changed, and can
  * be overloaded.
  */
-jsoneditor.History.prototype.onChange = function () {};
+History.prototype.onChange = function () {};
 
 /**
  * Add a new action to the history
@@ -144,7 +122,7 @@ jsoneditor.History.prototype.onChange = function () {};
  *                         value are provided). params contains all information
  *                         needed to undo or redo the action.
  */
-jsoneditor.History.prototype.add = function (action, params) {
+History.prototype.add = function (action, params) {
     this.index++;
     this.history[this.index] = {
         'action': action,
@@ -164,7 +142,7 @@ jsoneditor.History.prototype.add = function (action, params) {
 /**
  * Clear history
  */
-jsoneditor.History.prototype.clear = function () {
+History.prototype.clear = function () {
     this.history = [];
     this.index = -1;
 
@@ -176,7 +154,7 @@ jsoneditor.History.prototype.clear = function () {
  * Check if there is an action available for undo
  * @return {Boolean} canUndo
  */
-jsoneditor.History.prototype.canUndo = function () {
+History.prototype.canUndo = function () {
     return (this.index >= 0);
 };
 
@@ -184,14 +162,14 @@ jsoneditor.History.prototype.canUndo = function () {
  * Check if there is an action available for redo
  * @return {Boolean} canRedo
  */
-jsoneditor.History.prototype.canRedo = function () {
+History.prototype.canRedo = function () {
     return (this.index < this.history.length - 1);
 };
 
 /**
  * Undo the last action
  */
-jsoneditor.History.prototype.undo = function () {
+History.prototype.undo = function () {
     if (this.canUndo()) {
         var obj = this.history[this.index];
         if (obj) {
@@ -203,7 +181,7 @@ jsoneditor.History.prototype.undo = function () {
                 }
             }
             else {
-                console.log('Error: unknown action "' + obj.action + '"');
+                util.log('Error: unknown action "' + obj.action + '"');
             }
         }
         this.index--;
@@ -216,7 +194,7 @@ jsoneditor.History.prototype.undo = function () {
 /**
  * Redo the last action
  */
-jsoneditor.History.prototype.redo = function () {
+History.prototype.redo = function () {
     if (this.canRedo()) {
         this.index++;
 
@@ -230,7 +208,7 @@ jsoneditor.History.prototype.redo = function () {
                 }
             }
             else {
-                console.log('Error: unknown action "' + obj.action + '"');
+                util.log('Error: unknown action "' + obj.action + '"');
             }
         }
 

@@ -36,7 +36,8 @@
     Copyright (C) 2011-2013 Jos de Jong, http://jsoneditoronline.org
 
     @author   Jos de Jong, <wjosdejong@gmail.com>
-    @date     2013-03-08
+    @version  @@version
+    @date     @@date
     -->
 
     <meta name="description" content="JSON Editor Online is a web-based tool to view, edit, and format JSON. It shows your data side by side in a clear, editable treeview and in a code editor.">
@@ -56,7 +57,8 @@
     -->
 
     <script type="text/javascript" src="../../jsoneditor/js/jsoneditor.js"></script>
-    <script type="text/javascript" src="../../jsoneditor/js/jsonformatter.js"></script>
+    <script type="text/javascript" src="../../jsoneditor/js/treeeditor.js"></script>
+    <script type="text/javascript" src="../../jsoneditor/js/texteditor.js"></script>
     <script type="text/javascript" src="../../jsoneditor/js/node.js"></script>
     <script type="text/javascript" src="../../jsoneditor/js/appendnode.js"></script>
     <script type="text/javascript" src="../../jsoneditor/js/contextmenu.js"></script>
@@ -64,18 +66,19 @@
     <script type="text/javascript" src="../../jsoneditor/js/searchbox.js"></script>
     <script type="text/javascript" src="../../jsoneditor/js/highlighter.js"></script>
     <script type="text/javascript" src="../../jsoneditor/js/util.js"></script>
+    <script type="text/javascript" src="../../jsoneditor/js/module.js"></script>
     <script type="text/javascript" src="queryparams.js"></script>
     <script type="text/javascript" src="ajax.js"></script>
     <script type="text/javascript" src="fileretriever.js"></script>
     <script type="text/javascript" src="notify.js"></script>
     <script type="text/javascript" src="splitter.js"></script>
     <script type="text/javascript" src="app.js"></script>
-    <script type="text/javascript" src="lib/jsonlint/jsonlint.js"></script>
+    <script type="text/javascript" src="../../lib/jsonlint/jsonlint.js"></script>
 
-    <script type="text/javascript" src="lib/ace/ace.js"></script>
-    <script type="text/javascript" src="lib/ace/mode-json.js"></script>
-    <script type="text/javascript" src="lib/ace/theme-textmate.js"></script>
-    <script type="text/javascript" src="lib/ace/theme-jso.js"></script>
+    <script type="text/javascript" src="../../lib/ace/ace.js"></script>
+    <script type="text/javascript" src="../../lib/ace/mode-json.js"></script>
+    <script type="text/javascript" src="../../lib/ace/theme-textmate.js"></script>
+    <script type="text/javascript" src="../../lib/ace/theme-jsoneditor.js"></script>
 
     <style type="text/css">
         div.convert-right {
@@ -153,17 +156,17 @@
 
 <div id="auto">
     <div id="contents">
-        <div id="jsonformatter"></div>
+        <div id="codeEditor"></div>
 
         <div id="splitter">
             <div id="buttons">
                 <div>
-                    <button id="toEditor" class="convert" title="JSON to Editor">
+                    <button id="toTree" class="convert" title="Copy code to tree editor">
                         <div class="convert-right"></div>
                     </button>
                 </div>
                 <div>
-                    <button id="toCode" class="convert" title="Editor to JSON">
+                    <button id="toCode" class="convert" title="Copy tree to code editor">
                         <div class="convert-left"></div>
                     </button>
                 </div>
@@ -172,7 +175,7 @@
             </div>
         </div>
 
-        <div id="jsoneditor"></div>
+        <div id="treeEditor"></div>
 
         <script type="text/javascript">
             app.load();
@@ -201,9 +204,9 @@
 
 <div id="footer">
     <div id="footer-inner">
-        <a href="http://jsoneditoronline.org" class="footer">JSON Editor Online 2.1.1</a>
+        <a href="http://jsoneditoronline.org" class="footer">JSON Editor Online @@version</a>
         &bull;
-        <a href="../../changelog.txt" target="_blank" class="footer">Changelog</a>
+        <a href="../../HISTORY.md" target="_blank" class="footer">History</a>
         &bull;
         <a href="https://github.com/josdejong/jsoneditor/" target="_blank" class="footer">Sourcecode</a>
         &bull;

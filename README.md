@@ -12,7 +12,7 @@ a code editor.
 ### Screenshot
 
 <a href="http://jsoneditoronline.org">
-    <img alt="jsoneditoronline"
+    <img alt="jsoneditor"
         src="https://raw.github.com/josdejong/jsoneditor/master/misc/screenshots/jsoneditoronline.png">
 </a>
 
@@ -31,13 +31,62 @@ a code editor.
 - Library can be loaded as CommonJS module, AMD module, or as a regular javascript file.
 
 
-### Getting started
+### Install
 
-- Web app:    http://jsoneditoronline.org/
-- Chrome app: https://chrome.google.com/webstore/detail/json-editor/lhkmoheomjbkfloacpgllgjcamhihfaj
-- Wiki:       https://github.com/josdejong/jsoneditor/wiki/
-- Downloads:  http://jsoneditoronline.org/downloads/
-- Sourcecode: https://github.com/josdejong/jsoneditor/
+with npm:
+
+    npm install jsoneditor
+
+with bower:
+
+    npm install bower
+
+download:
+
+[http://jsoneditoronline.org/downloads/](http://jsoneditoronline.org/downloads/)
+
+
+### Use
+
+```html
+<!DOCTYPE HTML>
+<html>
+<head>
+    <link rel="stylesheet" type="text/css" href="jsoneditor/jsoneditor-min.css">
+    <script type="text/javascript" src="jsoneditor/jsoneditor-min.js"></script>
+</head>
+<body>
+    <div id="jsoneditor" style="width: 400px; height: 400px;"></div>
+
+    <script type="text/javascript" >
+        // create the editor
+        var container = document.getElementById("jsoneditor");
+        var editor = new jsoneditor.JSONEditor(container);
+
+        // set json
+        var json = {
+            "Array": [1, 2, 3],
+            "Boolean": true,
+            "Null": null,
+            "Number": 123,
+            "Object": {"a": "b", "c": "d"},
+            "String": "Hello World"
+        };
+        editor.set(json);
+
+        // get json
+        var json = editor.get();
+    </script>
+</body>
+</html>
+```
+
+### Documentation
+
+- Docs: [https://github.com/josdejong/jsoneditor/tree/master/docs](https://github.com/josdejong/jsoneditor/tree/master/docs)
+- Examples: [https://github.com/josdejong/jsoneditor/tree/master/examples](https://github.com/josdejong/jsoneditor/tree/master/examples)
+- Source: [https://github.com/josdejong/jsoneditor](https://github.com/josdejong/jsoneditor)
+- History: [https://github.com/josdejong/jsoneditor/blob/master/HISTORY.md](https://github.com/josdejong/jsoneditor/blob/master/HISTORY.md)
 
 
 ### Build
@@ -46,7 +95,8 @@ The code of the JSON Editor is located in the folder `jsoneditor`.
 The code for the web application in `app/web`.
 To build the library from sourcecode, run
 
-    ant
+    jake
 
-in the root of the project. This will generate a folder `build` containing
-generated library and web application.
+in the root of the project. This will generate the files `jsoneditor.js`,
+`jsoneditor.css`, and minified versions, and will create a folder `build`
+containing the zipped library and the built web application.

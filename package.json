@@ -1,0 +1,28 @@
+{
+    "name": "jsoneditor",
+    "version": "2.2.0",
+    "description": "A web-based tool to view, edit and format JSON",
+    "tags": [
+        "json",
+        "editor",
+        "viewer",
+        "formatter"
+    ],
+    "author": "Jos de Jong <wjosdejong@gmail.com>",
+    "homepage": "http://jsoneditoronline.org/",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/josdejong/jsoneditor.git"
+    },
+    "bugs": "https://github.com/josdejong/jsoneditor/issues",
+    "scripts": {
+        "prepublish": "jake"
+    },
+    "dependencies": {},
+    "devDependencies": {
+        "jake": "latest",
+        "jake-utils": "latest",
+        "archiver": "latest",
+        "clean-css": "latest"
+    }
+}
