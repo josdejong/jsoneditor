@@ -5,11 +5,16 @@ http://jsoneditoronline.org/
 ### Description
 
 JSON Editor Online is a web-based tool to view, edit, and format JSON.
-It shows your data side by side in a clear, editable treeview and in 
-a code editor.
+It has various modes such as a tree editor, a code editor, and a plain text
+editor.
 
+The editor can be used as a component in your own web application. The library
+can be loaded as CommonJS module, AMD module, or as a regular javascript file.
 
 ### Screenshot
+
+The web application shows two panels side by side: a code editor on the left,
+and a tree editor on the right. Files and urls can be loaded via the main menu.
 
 <a href="http://jsoneditoronline.org">
     <img alt="jsoneditor"
@@ -19,16 +24,21 @@ a code editor.
 
 ### Features
 
-- View and edit JSON side by side in a treeview and a code editor.
+#### Tree editor
 - Edit, add, move, remove, and duplicate fields and values.
 - Change type of values.
 - Sort arrays and objects.
-- Colorized values, color depends of the value type.
+- Colorized code.
 - Search & highlight text in the treeview.
 - Undo and redo all actions.
-- Load and save files and urls.
-- Format, compact, and inspect JSON in the code editor powered by [Ace](http://ace.ajax.org/).
-- Library can be loaded as CommonJS module, AMD module, or as a regular javascript file.
+
+#### Code editor
+- Format and compact JSON.
+- Colorized code (powered by Ace).
+- Inspect JSON (powered by Ace).
+
+#### Text editor
+- Format and compact JSON.
 
 
 ### Documentation
