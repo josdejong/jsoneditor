@@ -41,7 +41,7 @@ TextEditor.prototype._create = function (container, options, json) {
     if (options.indentation) {
         this.indentation = Number(options.indentation);
     }
-    this.options = options;
+    this.options = options || {};
     this.mode = (options.mode == 'code') ? 'code' : 'text';
     if (this.mode == 'code') {
         // verify whether Ace editor is available and supported
