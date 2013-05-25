@@ -2,6 +2,12 @@
 
 http://jsoneditoronline.org
 
+
+## version 2.2.1
+
+- Fixed undefined options in TextEditor.
+
+
 ## 2013-05-04, version 2.2.0
 
 - Unified JSONFormatter and JSONEditor in one editor with a switchable mode.

@@ -27,8 +27,8 @@
  * Copyright (c) 2011-2013 Jos de Jong, http://jsoneditoronline.org
  *
  * @author  Jos de Jong, <wjosdejong@gmail.com>
- * @version 2.2.0
- * @date    2013-05-04
+ * @version 2.3.0-SNAPSHOT
+ * @date    2013-05-25
  */
 (function () {
 
@@ -1053,7 +1053,7 @@ TextEditor.prototype._create = function (container, options, json) {
     if (options.indentation) {
         this.indentation = Number(options.indentation);
     }
-    this.options = options;
+    this.options = options || {};
     this.mode = (options.mode == 'code') ? 'code' : 'text';
     if (this.mode == 'code') {
         // verify whether Ace editor is available and supported
