@@ -231,7 +231,7 @@ JSONEditor.prototype._onError = function(err) {
         this.onError(err);
     }
 
-    if (typeof this.options.error === 'function') {
+    if (typeof this.options !== 'undefined' && typeof this.options.error === 'function') {
         this.options.error(err);
     }
     else {
@@ -1221,7 +1221,7 @@ TextEditor.prototype._onError = function(err) {
         this.onError(err);
     }
 
-    if (typeof this.options.error === 'function') {
+    if (typeof this.options !== 'undefined' && typeof this.options.error === 'function') {
         this.options.error(err);
     }
     else {
