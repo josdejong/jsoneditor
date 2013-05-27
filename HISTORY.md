@@ -3,9 +3,10 @@
 http://jsoneditoronline.org
 
 
-## version 2.2.1
+## 2013-05-27, version 2.2.1
 
-- Fixed undefined options in TextEditor.
+- Fixed undefined options in TextEditor. Thanks Wiseon3.
+- Fixed non-working save function on Firefox 21. Thanks youxiachai.
 
 
 ## 2013-05-04, version 2.2.0
