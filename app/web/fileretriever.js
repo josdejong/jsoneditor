@@ -526,9 +526,15 @@ FileRetriever.prototype.saveFile = function (data, callback) {
     var a = document.createElement('a');
     if (this.options.html5 && a.download != undefined) {
         // save file directly using a data URL
+        a.style.display = 'none';
         a.href = 'data:application/json;charset=utf-8,' + encodeURIComponent(data);
         a.download = this.getFilename();
+
+        // attach the element to the DOM, invoke a click action, and remove it again
+        document.body.appendChild(a);
         a.click();
+        document.body.removeChild(a);
+
         callbackOnce();
     }
     else {
