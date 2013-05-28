@@ -27,8 +27,8 @@
  * Copyright (c) 2011-2013 Jos de Jong, http://jsoneditoronline.org
  *
  * @author  Jos de Jong, <wjosdejong@gmail.com>
- * @version 2.2.1
- * @date    2013-05-27
+ * @version 2.3.0-SNAPSHOT
+ * @date    2013-05-28
  */
 (function () {
 
@@ -231,7 +231,7 @@ JSONEditor.prototype._onError = function(err) {
         this.onError(err);
     }
 
-    if (typeof this.options.error === 'function') {
+    if (this.options && typeof this.options.error === 'function') {
         this.options.error(err);
     }
     else {
@@ -1050,10 +1050,10 @@ TextEditor.prototype._create = function (container, options, json) {
 
     // read options
     options = options || {};
+    this.options = options;
     if (options.indentation) {
         this.indentation = Number(options.indentation);
     }
-    this.options = options || {};
     this.mode = (options.mode == 'code') ? 'code' : 'text';
     if (this.mode == 'code') {
         // verify whether Ace editor is available and supported
@@ -1120,7 +1120,6 @@ TextEditor.prototype._create = function (container, options, json) {
         catch (err) {
             me._onError(err);
         }
-
     };
 
     this.content = document.createElement('div');
@@ -1221,7 +1220,7 @@ TextEditor.prototype._onError = function(err) {
         this.onError(err);
     }
 
-    if (typeof this.options.error === 'function') {
+    if (this.options && typeof this.options.error === 'function') {
         this.options.error(err);
     }
     else {
