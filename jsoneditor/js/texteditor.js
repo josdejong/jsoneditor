@@ -38,10 +38,10 @@ TextEditor.prototype._create = function (container, options, json) {
 
     // read options
     options = options || {};
+    this.options = options;
     if (options.indentation) {
         this.indentation = Number(options.indentation);
     }
-    this.options = options || {};
     this.mode = (options.mode == 'code') ? 'code' : 'text';
     if (this.mode == 'code') {
         // verify whether Ace editor is available and supported
@@ -108,7 +108,6 @@ TextEditor.prototype._create = function (container, options, json) {
         catch (err) {
             me._onError(err);
         }
-
     };
 
     this.content = document.createElement('div');
@@ -209,7 +208,7 @@ TextEditor.prototype._onError = function(err) {
         this.onError(err);
     }
 
-    if (typeof this.options.error === 'function') {
+    if (this.options && typeof this.options.error === 'function') {
         this.options.error(err);
     }
     else {
