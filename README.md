@@ -57,7 +57,7 @@ with npm:
 
 with bower:
 
-    npm install bower
+    bower install jsoneditor
 
 download:
 
