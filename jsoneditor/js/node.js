@@ -985,7 +985,7 @@ Node.prototype._updateDomValue = function () {
             color = 'red';
         }
         else if (t == 'boolean') {
-            color = 'orange';
+            color = 'darkorange';
         }
         else if (this._hasChilds()) {
             // note: typeof(null)=="object", therefore check this.type instead of t
@@ -1661,6 +1661,7 @@ Node.prototype._createDomTree = function () {
     var domTree = document.createElement('table');
     var tbody = document.createElement('tbody');
     domTree.style.borderCollapse = 'collapse'; // TODO: put in css
+    domTree.className = 'values';
     domTree.appendChild(tbody);
     var tr = document.createElement('tr');
     tbody.appendChild(tr);
