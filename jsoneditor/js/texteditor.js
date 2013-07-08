@@ -42,6 +42,9 @@ TextEditor.prototype._create = function (container, options, json) {
     if (options.indentation) {
         this.indentation = Number(options.indentation);
     }
+    else {
+        this.indentation = 4;       // number of spaces
+    }
     this.mode = (options.mode == 'code') ? 'code' : 'text';
     if (this.mode == 'code') {
         // verify whether Ace editor is available and supported
@@ -61,7 +64,6 @@ TextEditor.prototype._create = function (container, options, json) {
     this.container = container;
     this.editor = undefined;    // ace code editor
     this.textarea = undefined;  // plain text editor (fallback when Ace is not available)
-    this.indentation = 4;       // number of spaces
 
     this.width = container.clientWidth;
     this.height = container.clientHeight;
