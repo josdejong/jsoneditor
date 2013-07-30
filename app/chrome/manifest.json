@@ -11,7 +11,7 @@
             "http://jsoneditoronline.org/NOTICE"
         ],
         "launch": {
-            "web_url": "http://jsoneditoronline.org/"
+            "web_url": "http://jsoneditoronline.org/index.html?referrer=chrome_app"
         }
     },
     "icons": {

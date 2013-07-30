@@ -28,7 +28,7 @@
  *
  * @author  Jos de Jong, <wjosdejong@gmail.com>
  * @version 2.3.0-SNAPSHOT
- * @date    2013-05-28
+ * @date    2013-07-30
  */
 (function () {
 
@@ -1054,6 +1054,9 @@ TextEditor.prototype._create = function (container, options, json) {
     if (options.indentation) {
         this.indentation = Number(options.indentation);
     }
+    else {
+        this.indentation = 4;       // number of spaces
+    }
     this.mode = (options.mode == 'code') ? 'code' : 'text';
     if (this.mode == 'code') {
         // verify whether Ace editor is available and supported
@@ -1073,7 +1076,6 @@ TextEditor.prototype._create = function (container, options, json) {
     this.container = container;
     this.editor = undefined;    // ace code editor
     this.textarea = undefined;  // plain text editor (fallback when Ace is not available)
-    this.indentation = 4;       // number of spaces
 
     this.width = container.clientWidth;
     this.height = container.clientHeight;
@@ -2308,7 +2310,7 @@ Node.prototype._updateDomValue = function () {
             color = 'red';
         }
         else if (t == 'boolean') {
-            color = 'orange';
+            color = 'darkorange';
         }
         else if (this._hasChilds()) {
             // note: typeof(null)=="object", therefore check this.type instead of t
@@ -2984,6 +2986,7 @@ Node.prototype._createDomTree = function () {
     var domTree = document.createElement('table');
     var tbody = document.createElement('tbody');
     domTree.style.borderCollapse = 'collapse'; // TODO: put in css
+    domTree.className = 'values';
     domTree.appendChild(tbody);
     var tr = document.createElement('tr');
     tbody.appendChild(tr);
@@ -6054,8 +6057,8 @@ if (typeof(module) != 'undefined' && typeof(exports) != 'undefined') {
  * AMD module exports
  */
 if (typeof(require) != 'undefined' && typeof(define) != 'undefined') {
+    loadCss();
     define(function () {
-        loadCss();
         return jsoneditor;
     });
 }

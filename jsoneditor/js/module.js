@@ -39,8 +39,8 @@ if (typeof(module) != 'undefined' && typeof(exports) != 'undefined') {
  * AMD module exports
  */
 if (typeof(require) != 'undefined' && typeof(define) != 'undefined') {
+    loadCss();
     define(function () {
-        loadCss();
         return jsoneditor;
     });
 }
