@@ -27,8 +27,8 @@
  * Copyright (c) 2011-2013 Jos de Jong, http://jsoneditoronline.org
  *
  * @author  Jos de Jong, <wjosdejong@gmail.com>
- * @version 2.3.0-SNAPSHOT
- * @date    2013-07-30
+ * @version 2.2.2-SNAPSHOT
+ * @date    2013-07-31
  */
 (function () {
 
@@ -6031,18 +6031,26 @@ var jsoneditor = {
  * load jsoneditor.css
  */
 var loadCss = function () {
-    // get the script location, and built the css file name from the js file name
-    // http://stackoverflow.com/a/2161748/1262753
+    // find the script named 'jsoneditor.js' or 'jsoneditor-min.js' or
+    // 'jsoneditor.min.js', and use its path to find the css file to be
+    // loaded.
     var scripts = document.getElementsByTagName('script');
-    var jsFile = scripts[scripts.length-1].src.split('?')[0];
-    var cssFile = jsFile.substring(0, jsFile.length - 2) + 'css';
+    for (var s = 0; s < scripts.length; s++) {
+        var src = scripts[s].src;
+        if (/(^|\/)jsoneditor([-\.]min)?.js$/.test(src)) {
+            var jsFile = src.split('?')[0];
+            var cssFile = jsFile.substring(0, jsFile.length - 2) + 'css';
 
-    // load css
-    var link = document.createElement('link');
-    link.type = 'text/css';
-    link.rel = 'stylesheet';
-    link.href = cssFile;
-    document.getElementsByTagName('head')[0].appendChild(link);
+            // load css file
+            var link = document.createElement('link');
+            link.type = 'text/css';
+            link.rel = 'stylesheet';
+            link.href = cssFile;
+            document.getElementsByTagName('head')[0].appendChild(link);
+
+            break;
+        }
+    }
 };
 
 /**
