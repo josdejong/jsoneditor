@@ -51,14 +51,19 @@ if ($method == 'GET') {
                 'header' => "Accept: application/json\r\n"
             )
         ));
-        $body = file_get_contents($url, false, $context);
-        if ($body != false) {
-            header("Content-Disposition: attachment; filename=\"$filename\"");
-            header('Content-type: application/json');
-            echo $body;
+        if (preg_match('/^https?:\/\//', $url)) { // only allow to fetch http:// and https:// urls
+            $body = file_get_contents($url, false, $context);
+            if ($body != false) {
+                header("Content-Disposition: attachment; filename=\"$filename\"");
+                header('Content-type: application/json');
+                echo $body;
+            }
+            else {
+                header('HTTP/1.1 404 Not Found');
+            }
         }
         else {
-            header('HTTP/1.1 404 Not Found');
+            header('HTTP/1.1 403 Forbidden');
         }
     }
     else if (isset($_GET['id'])) {

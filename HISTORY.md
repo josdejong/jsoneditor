@@ -7,6 +7,8 @@ http://jsoneditoronline.org
 
 - Fixed non working option `indentation`.
 - Fixed css not being loaded with AMD in case of multiple scripts.
+- Fixed a security error in the server side file retriever script of
+  the web application.
 
 
 ## 2013-05-27, version 2.2.1
