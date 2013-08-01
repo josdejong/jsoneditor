@@ -3,7 +3,7 @@
 http://jsoneditoronline.org
 
 
-## version 2.2.2
+## 2013-08-01, version 2.2.2
 
 - Fixed non working option `indentation`.
 - Fixed css not being loaded with AMD in case of multiple scripts.
