@@ -19,19 +19,21 @@
     <div id="jsoneditor"></div>
 
     <script type="text/javascript" >
-        // create the editor
-        var container = document.getElementById("jsoneditor");
+        var container = document.getElementById('jsoneditor');
+
         var options = {
-            mode: "view"
+            mode: 'view'
         };
+
         var json = {
-            "array": [1, 2, 3],
-            "boolean": true,
-            "null": null,
-            "number": 123,
-            "object": {"a": "b", "c": "d"},
-            "string": "Hello World"
+            'array': [1, 2, 3],
+            'boolean': true,
+            'null': null,
+            'number': 123,
+            'object': {'a': 'b', 'c': 'd'},
+            'string': 'Hello World'
         };
+
         var editor = new jsoneditor.JSONEditor(container, options, json);
     </script>
 </body>

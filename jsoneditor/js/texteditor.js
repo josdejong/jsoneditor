@@ -82,10 +82,8 @@ TextEditor.prototype._create = function (container, options, json) {
 
     // create format button
     var buttonFormat = document.createElement('button');
-    //buttonFormat.innerHTML = 'Format';
     buttonFormat.className = 'format';
     buttonFormat.title = 'Format JSON data, with proper indentation and line feeds';
-    //buttonFormat.className = 'jsoneditor-button';
     this.menu.appendChild(buttonFormat);
     buttonFormat.onclick = function () {
         try {
@@ -98,10 +96,8 @@ TextEditor.prototype._create = function (container, options, json) {
 
     // create compact button
     var buttonCompact = document.createElement('button');
-    //buttonCompact.innerHTML = 'Compact';
     buttonCompact.className = 'compact';
     buttonCompact.title = 'Compact JSON data, remove all whitespaces';
-    //buttonCompact.className = 'jsoneditor-button';
     this.menu.appendChild(buttonCompact);
     buttonCompact.onclick = function () {
         try {
@@ -111,6 +107,12 @@ TextEditor.prototype._create = function (container, options, json) {
             me._onError(err);
         }
     };
+
+    // create mode box
+    if (this.options && this.options.modes && this.options.modes.length) {
+        var modeBox = createModeBox(this, this.options.modes, this.options.mode);
+        this.menu.appendChild(modeBox);
+    }
 
     this.content = document.createElement('div');
     this.content.className = 'outer';

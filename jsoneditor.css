@@ -252,7 +252,7 @@ div.jsoneditor {
     color: #4d4d4d;
     background: transparent;
 
-    line-height: 24px;
+    line-height: 26px;
     text-align: left;
 }
 
@@ -365,7 +365,7 @@ div.jsoneditor {
 
 /* ContextMenu - sub menu */
 
-.jsoneditor-contextmenu ul li ul li .selected {
+.jsoneditor-contextmenu ul li .selected {
     background-color: #D5DDF6;
 }
 
@@ -439,6 +439,11 @@ div.jsoneditor {
     background-position: -96px 0;
 }
 
+.jsoneditor-contextmenu button.type-modes > .icon {
+    background-image: none;
+    width: 6px;
+}
+
 
 .jsoneditor .menu {
     width: 100%;
@@ -459,10 +464,17 @@ div.jsoneditor {
     width: 26px;
     height: 26px;
     margin: 2px;
-    padding: 2px;
+    padding: 0;
     border-radius: 2px;
     border: 1px solid #aec0f8;
     background: #e3eaf6 url('img/jsoneditor-icons.png');
+    color: #4D4D4D;
+    opacity: 0.8;
+
+    font-family: arial, sans-serif;
+    font-size: 10pt;
+
+    float: left;
 }
 
 .jsoneditor .menu button:hover {
@@ -498,6 +510,17 @@ div.jsoneditor {
 }
 .jsoneditor .menu button.format {
     background-position: -72px -120px;
+}
+
+.jsoneditor .menu button.modes {
+    background-image: none;
+    width: auto;
+    padding-left: 6px;
+    padding-right: 6px;
+}
+
+.jsoneditor .menu button.separator {
+    margin-left: 10px;
 }
 
 .jsoneditor .menu a {

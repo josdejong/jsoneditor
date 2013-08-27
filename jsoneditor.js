@@ -27,8 +27,8 @@
  * Copyright (c) 2011-2013 Jos de Jong, http://jsoneditoronline.org
  *
  * @author  Jos de Jong, <wjosdejong@gmail.com>
- * @version 2.2.2
- * @date    2013-08-01
+ * @version 2.3.0-SNAPSHOT
+ * @date    2013-08-27
  */
 (function () {
 
@@ -787,14 +787,9 @@ TreeEditor.prototype._createFrame = function () {
 
     // create undo/redo buttons
     if (this.history) {
-        // create separator
-        var separator = document.createElement('span');
-        separator.innerHTML = '&nbsp;';
-        this.menu.appendChild(separator);
-
         // create undo button
         var undo = document.createElement('button');
-        undo.className = 'undo';
+        undo.className = 'undo separator';
         undo.title = 'Undo last action (Ctrl+Z)';
         undo.onclick = function () {
             editor._onUndo();
@@ -818,6 +813,12 @@ TreeEditor.prototype._createFrame = function () {
             redo.disabled = !editor.history.canRedo();
         };
         this.history.onChange();
+    }
+
+    // create mode box
+    if (this.options && this.options.modes && this.options.modes.length) {
+        var modeBox = createModeBox(this, this.options.modes, this.options.mode);
+        this.menu.appendChild(modeBox);
     }
 
     // create search box
@@ -1094,10 +1095,8 @@ TextEditor.prototype._create = function (container, options, json) {
 
     // create format button
     var buttonFormat = document.createElement('button');
-    //buttonFormat.innerHTML = 'Format';
     buttonFormat.className = 'format';
     buttonFormat.title = 'Format JSON data, with proper indentation and line feeds';
-    //buttonFormat.className = 'jsoneditor-button';
     this.menu.appendChild(buttonFormat);
     buttonFormat.onclick = function () {
         try {
@@ -1110,10 +1109,8 @@ TextEditor.prototype._create = function (container, options, json) {
 
     // create compact button
     var buttonCompact = document.createElement('button');
-    //buttonCompact.innerHTML = 'Compact';
     buttonCompact.className = 'compact';
     buttonCompact.title = 'Compact JSON data, remove all whitespaces';
-    //buttonCompact.className = 'jsoneditor-button';
     this.menu.appendChild(buttonCompact);
     buttonCompact.onclick = function () {
         try {
@@ -1123,6 +1120,12 @@ TextEditor.prototype._create = function (container, options, json) {
             me._onError(err);
         }
     };
+
+    // create mode box
+    if (this.options && this.options.modes && this.options.modes.length) {
+        var modeBox = createModeBox(this, this.options.modes, this.options.mode);
+        this.menu.appendChild(modeBox);
+    }
 
     this.content = document.createElement('div');
     this.content.className = 'outer';
@@ -5060,6 +5063,86 @@ History.prototype.redo = function () {
         this.onChange();
     }
 };
+
+/**
+ * create a mode box to be used in the editor menu's
+ * @param {JSONEditor} editor
+ * @param {String[]} modes  Available modes: 'code', 'form', 'text', 'tree', 'view'
+ * @param {String} current  Available modes: 'code', 'form', 'text', 'tree', 'view'
+ * @returns {HTMLElement} box
+ */
+function createModeBox(editor, modes, current) {
+    // available modes
+    var availableModes = {
+        code: {
+            'text': 'Code',
+            'title': 'Switch to code highlighter',
+            'click': function () {
+                editor.setMode('code');
+            }
+        },
+        form: {
+            'text': 'Form',
+            'title': 'Switch to form editor',
+            'click': function () {
+                editor.setMode('form');
+            }
+        },
+        text: {
+            'text': 'Text',
+            'title': 'Switch to plain text editor',
+            'click': function () {
+                editor.setMode('text');
+            }
+        },
+        tree: {
+            'text': 'Tree',
+            'title': 'Switch to tree editor',
+            'click': function () {
+                editor.setMode('tree');
+            }
+        },
+        view: {
+            'text': 'View',
+            'title': 'Switch to tree view',
+            'click': function () {
+                editor.setMode('view');
+            }
+        }
+    };
+
+    // list the selected modes
+    var items = [];
+    for (var i = 0; i < modes.length; i++) {
+        var mode = modes[i];
+        var item = availableModes[mode];
+        if (!item) {
+            throw new Error('Unknown mode "' + mode + '"');
+        }
+
+        item.className = 'type-modes' + ((current == mode) ? ' selected' : '');
+        items.push(item);
+    }
+
+    // retrieve the title of current mode
+    var currentMode = availableModes[current];
+    if (!currentMode) {
+        throw new Error('Unknown mode "' + current + '"');
+    }
+    var currentTitle = currentMode.text;
+
+    // create the html element
+    var box = document.createElement('button');
+    box.className = 'modes separator';
+    box.innerHTML = currentTitle + ' &#x25BE;';
+    box.title = 'Switch editor mode';
+    box.onclick = function () {
+        var menu = new ContextMenu(items);
+        menu.show(box);
+    };
+
+    return box;
+}
 
 /**
  * @constructor SearchBox

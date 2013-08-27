@@ -32,6 +32,9 @@ Constructs a new JSONEditor.
     In 'form' mode, only the value can be changed, the datastructure is read-only.
     Mode 'code' requires the Ace editor to be loaded on the page.
     Mode 'text' shows the data as plain text.
+  - `{String[]} modes`.
+    Create a box in the editor menu where the user can switch between the specified
+    modes. Available values: see option `mode`.
   - `{String} name`.
     Initial field name for the root node, is undefined by default.
     Can also be set using `JSONEditor.setName(name)`.

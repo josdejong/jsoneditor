@@ -31,7 +31,7 @@
     color: #4d4d4d;
     background: transparent;
 
-    line-height: 24px;
+    line-height: 26px;
     text-align: left;
 }
 
@@ -144,7 +144,7 @@
 
 /* ContextMenu - sub menu */
 
-.jsoneditor-contextmenu ul li ul li .selected {
+.jsoneditor-contextmenu ul li .selected {
     background-color: #D5DDF6;
 }
 
@@ -216,4 +216,9 @@
 .jsoneditor-contextmenu button.type-array:focus > .icon,
 .jsoneditor-contextmenu button.type-array.selected > .icon{
     background-position: -96px 0;
+}
+
+.jsoneditor-contextmenu button.type-modes > .icon {
+    background-image: none;
+    width: 6px;
 }
