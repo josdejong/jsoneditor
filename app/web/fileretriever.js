@@ -331,6 +331,7 @@ FileRetriever.prototype.loadFile = function (callback) {
         this.prompt({
             title: 'Open file',
             titleSubmit: 'Open',
+            description: 'Select a file from disk and click the button Open to load it.',
             inputType: 'file',
             inputName: 'file',
             formAction: this.scriptUrl,
@@ -357,6 +358,8 @@ FileRetriever.prototype.loadUrlDialog = function (callback) {
     this.prompt({
         title: 'Open url',
         titleSubmit: 'Open',
+        description: 'Enter a public url. ' +
+            'Urls which need authentication or are located on an intranet cannot be loaded.',
         inputType: 'text',
         inputName: 'url',
         inputDefault: this.getUrl(),
@@ -383,6 +386,7 @@ FileRetriever.prototype.loadUrlDialog = function (callback) {
  *                          {String} title
  *                          {String} titleSubmit
  *                          {String} titleCancel
+ *                          {String} description
  *                          {String} inputType
  *                          {String} inputName
  *                          {String} inputDefault
@@ -453,6 +457,13 @@ FileRetriever.prototype.prompt = function (params) {
     title.className = 'fileretriever-title';
     title.appendChild(document.createTextNode(params.title || 'Dialog'));
     form.appendChild(title);
+
+    if (params.description) {
+        var description = document.createElement('div');
+        description.className = 'fileretriever-description';
+        description.appendChild(document.createTextNode(params.description));
+        form.appendChild(description);
+    }
 
     var field = document.createElement('input');
     field.className = 'fileretriever-field';

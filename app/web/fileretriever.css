@@ -30,6 +30,11 @@ div.fileretriever-title {
     font-weight: bold;
 }
 
+div.fileretriever-description {
+    color: gray;
+    margin: 30px 0 0 0;
+}
+
 div.fileretriever-contents {
     margin: 30px 0;
 }
