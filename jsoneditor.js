@@ -2303,7 +2303,7 @@ Node.prototype._updateDomValue = function () {
         // set text color depending on value type
         // TODO: put colors in css
         var v = this.value;
-        var t = (this.type == 'auto') ? typeof(v) : this.type;
+        var t = (this.type == 'auto') ? util.type(v) : this.type;
         var isUrl = (t == 'string' && util.isUrl(v));
         var color = '';
         if (isUrl && !this.editor.mode.edit) {
@@ -2319,7 +2319,6 @@ Node.prototype._updateDomValue = function () {
             color = 'darkorange';
         }
         else if (this._hasChilds()) {
-            // note: typeof(null)=="object", therefore check this.type instead of t
             color = '';
         }
         else if (v === null) {
@@ -2331,7 +2330,7 @@ Node.prototype._updateDomValue = function () {
         }
         domValue.style.color = color;
 
-        // make backgound color lightgray when empty
+        // make background color light-gray when empty
         var isEmpty = (String(this.value) == '' && this.type != 'array' && this.type != 'object');
         if (isEmpty) {
             util.addClassName(domValue, 'empty');
@@ -5537,8 +5536,6 @@ Highlighter.prototype.unlock = function () {
 // create namespace
 util = {};
 
-// Internet Explorer 8 and older does not support Array.indexOf,
-// so we define it here in that case
 // http://soledadpenades.com/2007/05/17/arrayindexof-in-internet-explorer/
 if(!Array.prototype.indexOf) {
     Array.prototype.indexOf = function(obj){
@@ -5551,8 +5548,6 @@ if(!Array.prototype.indexOf) {
     }
 }
 
-// Internet Explorer 8 and older does not support Array.forEach,
-// so we define it here in that case
 // https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Global_Objects/Array/forEach
 if (!Array.prototype.forEach) {
     Array.prototype.forEach = function(fn, scope) {
@@ -5562,12 +5557,19 @@ if (!Array.prototype.forEach) {
     }
 }
 
+// https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/isArray
+if(!Array.isArray) {
+    Array.isArray = function (vArg) {
+        return Object.prototype.toString.call(vArg) === "[object Array]";
+    };
+}
+
 /**
  * Parse JSON using the parser built-in in the browser.
  * On exception, the jsonString is validated and a detailed error is thrown.
  * @param {String} jsonString
  */
-util.parse = function (jsonString) {
+util.parse = function parse(jsonString) {
     try {
         return JSON.parse(jsonString);
     }
@@ -5585,7 +5587,7 @@ util.parse = function (jsonString) {
  * @param {String} jsonString   String with an (invalid) JSON object
  * @throws Error
  */
-util.validate = function (jsonString) {
+util.validate = function validate(jsonString) {
     if (typeof(jsonlint) != 'undefined') {
         jsonlint.parse(jsonString);
     }
@@ -5600,7 +5602,7 @@ util.validate = function (jsonString) {
  * @param {Object} b
  * @return {Object} a
  */
-util.extend = function (a, b) {
+util.extend = function extend(a, b) {
     for (var prop in b) {
         if (b.hasOwnProperty(prop)) {
             a[prop] = b[prop];
@@ -5614,7 +5616,7 @@ util.extend = function (a, b) {
  * @param {Object} a
  * @return {Object} a
  */
-util.clear = function (a) {
+util.clear = function clear (a) {
     for (var prop in a) {
         if (a.hasOwnProperty(prop)) {
             delete a[prop];
@@ -5627,10 +5629,41 @@ util.clear = function (a) {
  * Output text to the console, if console is available
  * @param {...*} args
  */
-util.log = function(args) {
+util.log = function log (args) {
     if (console && typeof console.log === 'function') {
         console.log.apply(console, arguments);
     }
+};
+
+/**
+ * Get the type of an object
+ * @param {*} object
+ * @return {String} type
+ */
+util.type = function type (object) {
+    if (object === null) {
+        return 'null';
+    }
+    if (object === undefined) {
+        return 'undefined';
+    }
+    if ((object instanceof Number) || (typeof object === 'number')) {
+        return 'number';
+    }
+    if ((object instanceof String) || (typeof object === 'string')) {
+        return 'string';
+    }
+    if ((object instanceof Boolean) || (typeof object === 'boolean')) {
+        return 'boolean';
+    }
+    if ((object instanceof RegExp) || (typeof object === 'regexp')) {
+        return 'regexp';
+    }
+    if (Array.isArray(object)) {
+        return 'array';
+    }
+
+    return 'object';
 };
 
 /**
@@ -5639,7 +5672,7 @@ util.log = function(args) {
  * @param {String} text
  */
 var isUrlRegex = /^https?:\/\/\S+$/;
-util.isUrl = function (text) {
+util.isUrl = function isUrl (text) {
     return (typeof text == 'string' || text instanceof String) &&
         isUrlRegex.test(text);
 };
@@ -5650,7 +5683,7 @@ util.isUrl = function (text) {
  * @return {Number} left    The absolute left position of this element
  *                          in the browser page.
  */
-util.getAbsoluteLeft = function (elem) {
+util.getAbsoluteLeft = function getAbsoluteLeft(elem) {
     var left = elem.offsetLeft;
     var body = document.body;
     var e = elem.offsetParent;
@@ -5668,7 +5701,7 @@ util.getAbsoluteLeft = function (elem) {
  * @return {Number} top    The absolute top position of this element
  *                          in the browser page.
  */
-util.getAbsoluteTop = function (elem) {
+util.getAbsoluteTop = function getAbsoluteTop(elem) {
     var top = elem.offsetTop;
     var body = document.body;
     var e = elem.offsetParent;
@@ -5685,7 +5718,7 @@ util.getAbsoluteTop = function (elem) {
  * @param {Event} event
  * @return {Number} mouseY
  */
-util.getMouseY = function (event) {
+util.getMouseY = function getMouseY(event) {
     var mouseY;
     if ('pageY' in event) {
         mouseY = event.pageY;
@@ -5703,7 +5736,7 @@ util.getMouseY = function (event) {
  * @param {Event} event
  * @return {Number} mouseX
  */
-util.getMouseX = function (event) {
+util.getMouseX = function getMouseX(event) {
     var mouseX;
     if ('pageX' in event) {
         mouseX = event.pageX;
@@ -5720,7 +5753,7 @@ util.getMouseX = function (event) {
  * Get the window height
  * @return {Number} windowHeight
  */
-util.getWindowHeight = function () {
+util.getWindowHeight = function getWindowHeight() {
     if ('innerHeight' in window) {
         return window.innerHeight;
     }
@@ -5736,7 +5769,7 @@ util.getWindowHeight = function () {
  * @param {Element} elem
  * @param {String} className
  */
-util.addClassName = function(elem, className) {
+util.addClassName = function addClassName(elem, className) {
     var classes = elem.className.split(' ');
     if (classes.indexOf(className) == -1) {
         classes.push(className); // add the class to the array
@@ -5749,7 +5782,7 @@ util.addClassName = function(elem, className) {
  * @param {Element} elem
  * @param {String} className
  */
-util.removeClassName = function(elem, className) {
+util.removeClassName = function removeClassName(elem, className) {
     var classes = elem.className.split(' ');
     var index = classes.indexOf(className);
     if (index != -1) {
@@ -5763,7 +5796,7 @@ util.removeClassName = function(elem, className) {
  * the formatting from the div itself is not stripped, only from its childs.
  * @param {Element} divElement
  */
-util.stripFormatting = function (divElement) {
+util.stripFormatting = function stripFormatting(divElement) {
     var childs = divElement.childNodes;
     for (var i = 0, iMax = childs.length; i < iMax; i++) {
         var child = childs[i];
@@ -5797,7 +5830,7 @@ util.stripFormatting = function (divElement) {
  * http://stackoverflow.com/questions/1125292/how-to-move-cursor-to-end-of-contenteditable-entity
  * @param {Element} contentEditableElement   A content editable div
  */
-util.setEndOfContentEditable = function (contentEditableElement) {
+util.setEndOfContentEditable = function setEndOfContentEditable(contentEditableElement) {
     var range, selection;
     if(document.createRange) {//Firefox, Chrome, Opera, Safari, IE 9+
         range = document.createRange();//Create a range (a range is a like the selection but invisible)
@@ -5820,7 +5853,7 @@ util.setEndOfContentEditable = function (contentEditableElement) {
  * http://stackoverflow.com/a/3806004/1262753
  * @param {Element} contentEditableElement   A content editable div
  */
-util.selectContentEditable = function (contentEditableElement) {
+util.selectContentEditable = function selectContentEditable(contentEditableElement) {
     if (!contentEditableElement || contentEditableElement.nodeName != 'DIV') {
         return;
     }
@@ -5844,7 +5877,7 @@ util.selectContentEditable = function (contentEditableElement) {
  * http://stackoverflow.com/questions/4687808/contenteditable-selected-text-save-and-restore
  * @return {Range | TextRange | null} range
  */
-util.getSelection = function () {
+util.getSelection = function getSelection() {
     if (window.getSelection) {
         var sel = window.getSelection();
         if (sel.getRangeAt && sel.rangeCount) {
@@ -5861,7 +5894,7 @@ util.getSelection = function () {
  * http://stackoverflow.com/questions/4687808/contenteditable-selected-text-save-and-restore
  * @param {Range | TextRange | null} range
  */
-util.setSelection = function (range) {
+util.setSelection = function setSelection(range) {
     if (range) {
         if (window.getSelection) {
             var sel = window.getSelection();
@@ -5882,7 +5915,7 @@ util.setSelection = function (range) {
  *                                                   selected text element
  *                          Returns null if no text selection is found
  */
-util.getSelectionOffset = function () {
+util.getSelectionOffset = function getSelectionOffset() {
     var range = util.getSelection();
 
     if (range && 'startOffset' in range && 'endOffset' in range &&
@@ -5907,7 +5940,7 @@ util.getSelectionOffset = function () {
  *                              {Number} startOffset
  *                              {Number} endOffset
  */
-util.setSelectionOffset = function (params) {
+util.setSelectionOffset = function setSelectionOffset(params) {
     if (document.createRange && window.getSelection) {
         var selection = window.getSelection();
         if(selection) {
@@ -5931,7 +5964,7 @@ util.setSelectionOffset = function (params) {
  * @param {Object} [buffer]
  * @return {String} innerText
  */
-util.getInnerText = function (element, buffer) {
+util.getInnerText = function getInnerText(element, buffer) {
     var first = (buffer == undefined);
     if (first) {
         buffer = {
@@ -6002,7 +6035,7 @@ util.getInnerText = function (element, buffer) {
  * Source: http://msdn.microsoft.com/en-us/library/ms537509(v=vs.85).aspx
  * @return {Number} Internet Explorer version, or -1 in case of an other browser
  */
-util.getInternetExplorerVersion = function() {
+util.getInternetExplorerVersion = function getInternetExplorerVersion() {
     if (_ieVersion == -1) {
         var rv = -1; // Return value assumes failure.
         if (navigator.appName == 'Microsoft Internet Explorer')
@@ -6036,7 +6069,7 @@ var _ieVersion = -1;
  * @param {boolean}     [useCapture] false by default
  * @return {function}   the created event listener
  */
-util.addEventListener = function (element, action, listener, useCapture) {
+util.addEventListener = function addEventListener(element, action, listener, useCapture) {
     if (element.addEventListener) {
         if (useCapture === undefined)
             useCapture = false;
@@ -6064,7 +6097,7 @@ util.addEventListener = function (element, action, listener, useCapture) {
  * @param {function} listener  The listener function
  * @param {boolean}  [useCapture]   false by default
  */
-util.removeEventListener = function(element, action, listener, useCapture) {
+util.removeEventListener = function removeEventListener(element, action, listener, useCapture) {
     if (element.removeEventListener) {
         // non-IE browsers
         if (useCapture === undefined)
@@ -6086,7 +6119,7 @@ util.removeEventListener = function(element, action, listener, useCapture) {
  * Stop event propagation
  * @param {Event} event
  */
-util.stopPropagation = function (event) {
+util.stopPropagation = function stopPropagation(event) {
     if (!event) {
         event = window.event;
     }
@@ -6104,7 +6137,7 @@ util.stopPropagation = function (event) {
  * Cancels the event if it is cancelable, without stopping further propagation of the event.
  * @param {Event} event
  */
-util.preventDefault = function (event) {
+util.preventDefault = function preventDefault(event) {
     if (!event) {
         event = window.event;
     }

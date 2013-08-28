@@ -972,7 +972,7 @@ Node.prototype._updateDomValue = function () {
         // set text color depending on value type
         // TODO: put colors in css
         var v = this.value;
-        var t = (this.type == 'auto') ? typeof(v) : this.type;
+        var t = (this.type == 'auto') ? util.type(v) : this.type;
         var isUrl = (t == 'string' && util.isUrl(v));
         var color = '';
         if (isUrl && !this.editor.mode.edit) {
@@ -988,7 +988,6 @@ Node.prototype._updateDomValue = function () {
             color = 'darkorange';
         }
         else if (this._hasChilds()) {
-            // note: typeof(null)=="object", therefore check this.type instead of t
             color = '';
         }
         else if (v === null) {
@@ -1000,7 +999,7 @@ Node.prototype._updateDomValue = function () {
         }
         domValue.style.color = color;
 
-        // make backgound color lightgray when empty
+        // make background color light-gray when empty
         var isEmpty = (String(this.value) == '' && this.type != 'array' && this.type != 'object');
         if (isEmpty) {
             util.addClassName(domValue, 'empty');

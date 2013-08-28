@@ -7,6 +7,7 @@ http://jsoneditoronline.org
 
 - Implemented an option `modes`, which creates a menu in the editor
   where the user can switch between the selected editor modes.
+- Fixed wrong title on fields with value `null`.
 
 
 ## 2013-08-01, version 2.2.2
