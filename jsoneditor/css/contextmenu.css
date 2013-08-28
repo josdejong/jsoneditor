@@ -3,6 +3,7 @@
 
 .jsoneditor-contextmenu {
     position: absolute;
+    z-index: 999;
 }
 
 .jsoneditor-contextmenu ul {
@@ -15,7 +16,6 @@
     border: 1px solid #d3d3d3;
     box-shadow: 2px 2px 12px rgba(128, 128, 128, 0.3);
 
-    z-index: 1;
     list-style: none;
     margin: 0;
     padding: 0;

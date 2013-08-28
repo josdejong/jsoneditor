@@ -578,6 +578,7 @@ TreeEditor.prototype._createFrame = function () {
     if (this.options && this.options.modes && this.options.modes.length) {
         var modeBox = createModeBox(this, this.options.modes, this.options.mode);
         this.menu.appendChild(modeBox);
+        this.dom.modeBox = modeBox;
     }
 
     // create search box

@@ -6,41 +6,56 @@
  * @returns {HTMLElement} box
  */
 function createModeBox(editor, modes, current) {
+    /**
+     * Switch the mode of the editor
+     * @param {String} mode
+     */
+    function switchMode(mode) {
+        // switch mode
+        editor.setMode(mode);
+
+        // restore focus on mode box
+        var modeBox = editor.dom && editor.dom.modeBox;
+        if (modeBox) {
+            modeBox.focus();
+        }
+    }
+
     // available modes
     var availableModes = {
         code: {
             'text': 'Code',
             'title': 'Switch to code highlighter',
             'click': function () {
-                editor.setMode('code');
+                switchMode('code')
             }
         },
         form: {
             'text': 'Form',
             'title': 'Switch to form editor',
             'click': function () {
-                editor.setMode('form');
+                switchMode('form');
             }
         },
         text: {
             'text': 'Text',
             'title': 'Switch to plain text editor',
             'click': function () {
-                editor.setMode('text');
+                switchMode('text');
             }
         },
         tree: {
             'text': 'Tree',
             'title': 'Switch to tree editor',
             'click': function () {
-                editor.setMode('tree');
+                switchMode('tree');
             }
         },
         view: {
             'text': 'View',
             'title': 'Switch to tree view',
             'click': function () {
-                editor.setMode('view');
+                switchMode('view');
             }
         }
     };

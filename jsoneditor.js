@@ -28,7 +28,7 @@
  *
  * @author  Jos de Jong, <wjosdejong@gmail.com>
  * @version 2.3.0-SNAPSHOT
- * @date    2013-08-27
+ * @date    2013-08-28
  */
 (function () {
 
@@ -819,6 +819,7 @@ TreeEditor.prototype._createFrame = function () {
     if (this.options && this.options.modes && this.options.modes.length) {
         var modeBox = createModeBox(this, this.options.modes, this.options.mode);
         this.menu.appendChild(modeBox);
+        this.dom.modeBox = modeBox;
     }
 
     // create search box
@@ -1075,6 +1076,7 @@ TextEditor.prototype._create = function (container, options, json) {
 
     var me = this;
     this.container = container;
+    this.dom = {};
     this.editor = undefined;    // ace code editor
     this.textarea = undefined;  // plain text editor (fallback when Ace is not available)
 
@@ -1125,6 +1127,7 @@ TextEditor.prototype._create = function (container, options, json) {
     if (this.options && this.options.modes && this.options.modes.length) {
         var modeBox = createModeBox(this, this.options.modes, this.options.mode);
         this.menu.appendChild(modeBox);
+        this.dom.modeBox = modeBox;
     }
 
     this.content = document.createElement('div');
@@ -5072,41 +5075,56 @@ History.prototype.redo = function () {
  * @returns {HTMLElement} box
  */
 function createModeBox(editor, modes, current) {
+    /**
+     * Switch the mode of the editor
+     * @param {String} mode
+     */
+    function switchMode(mode) {
+        // switch mode
+        editor.setMode(mode);
+
+        // restore focus on mode box
+        var modeBox = editor.dom && editor.dom.modeBox;
+        if (modeBox) {
+            modeBox.focus();
+        }
+    }
+
     // available modes
     var availableModes = {
         code: {
             'text': 'Code',
             'title': 'Switch to code highlighter',
             'click': function () {
-                editor.setMode('code');
+                switchMode('code')
             }
         },
         form: {
             'text': 'Form',
             'title': 'Switch to form editor',
             'click': function () {
-                editor.setMode('form');
+                switchMode('form');
             }
         },
         text: {
             'text': 'Text',
             'title': 'Switch to plain text editor',
             'click': function () {
-                editor.setMode('text');
+                switchMode('text');
             }
         },
         tree: {
             'text': 'Tree',
             'title': 'Switch to tree editor',
             'click': function () {
-                editor.setMode('tree');
+                switchMode('tree');
             }
         },
         view: {
             'text': 'View',
             'title': 'Switch to tree view',
             'click': function () {
-                editor.setMode('view');
+                switchMode('view');
             }
         }
     };

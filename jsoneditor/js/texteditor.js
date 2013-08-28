@@ -62,6 +62,7 @@ TextEditor.prototype._create = function (container, options, json) {
 
     var me = this;
     this.container = container;
+    this.dom = {};
     this.editor = undefined;    // ace code editor
     this.textarea = undefined;  // plain text editor (fallback when Ace is not available)
 
@@ -112,6 +113,7 @@ TextEditor.prototype._create = function (container, options, json) {
     if (this.options && this.options.modes && this.options.modes.length) {
         var modeBox = createModeBox(this, this.options.modes, this.options.mode);
         this.menu.appendChild(modeBox);
+        this.dom.modeBox = modeBox;
     }
 
     this.content = document.createElement('div');
