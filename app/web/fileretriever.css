@@ -21,6 +21,10 @@ div.fileretriever-border {
     background-color: white;
     border: 1px solid gray;
     border-radius: 2px;
+
+    -moz-box-shadow:    2px 2px 12px rgba(128, 128, 128, 0.3);
+    -webkit-box-shadow: 2px 2px 12px rgba(128, 128, 128, 0.3);
+    box-shadow:         2px 2px 12px rgba(128, 128, 128, 0.3);
 }
 
 form.fileretriever-form {

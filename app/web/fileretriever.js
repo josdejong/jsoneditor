@@ -214,9 +214,9 @@ FileRetriever.prototype.loadUrl = function (url, callback) {
  * A file explorer will be opened to select a file and press ok.
  * In case of Internet Explorer, an upload form will be shown where the
  * user has to select a file via a file explorer after that click load.
- * @param {function} callback   Callback method, called with parameters:
- *                                  {Error} error
- *                                  {string} data
+ * @param {function} [callback]   Callback method, called with parameters:
+ *                                    {Error} error
+ *                                    {string} data
  */
 FileRetriever.prototype.loadFile = function (callback) {
     // loading notification
@@ -246,54 +246,21 @@ FileRetriever.prototype.loadFile = function (callback) {
         }
     };
 
-    // create an iframe for uploading files
-    // the iframe must have an unique name, allowing multiple
-    // FileRetrievers. The name is needed as target for the uploadForm
-    var iframeName = 'fileretriever-upload-' + Math.round(Math.random() * 1E15);
-    var iframe = document.createElement('iframe');
-    iframe.name = iframeName;
-    me._hide(iframe);
-    iframe.onload = function () {
-        // when a downloaded file is retrieved, send a callback with
-        // the retrieved data
-        var id = iframe.contentWindow.document.body.innerHTML;
-        if (id) {
-            var url = me.scriptUrl + '?id=' + id + '&filename=' + me.getFilename();
-            ajax.get(url, me.headers, function (data, status) {
-                if (status == 200) {
-                    callbackOnce(null, data);
-                }
-                else {
-                    var err = new Error('Error loading file ' + me.getFilename());
-                    callbackOnce(err, null);
-                }
-            });
-        }
-    };
-    document.body.appendChild(iframe);
+    // create a form to select a file and submit
+    var useFileReader = (me.options.html5 && window.File && window.FileReader);
 
-    var isIE = (navigator.appName == 'Microsoft Internet Explorer');
-    if (!isIE) {
-        // create a hidden form to select a file
-        var domForm = document.createElement('form');
-        domForm.action = this.scriptUrl;
-        domForm.method = 'POST';
-        domForm.enctype = 'multipart/form-data';
-        domForm.target = iframeName;
-        this._hide(domForm);
-        var domFile = document.createElement('input');
-        domFile.type = 'file';
-        domFile.name = 'file';
-        domFile.onchange = function () {
-            startLoading();
-
-            // there is a file selected
-            setTimeout(function () { // Timeout needed for IE
-                var filename = domFile.value;
-                if (filename.length) {
-                    if (me.options.html5 && window.File && window.FileReader) {
+    if (useFileReader) {
+        this.prompt({
+            title: 'Open file',
+            titleSubmit: 'Open',
+            description: 'Select a file on your computer.',
+            inputType: 'file',
+            inputName: 'file',
+            callback: function (value, field) {
+                if (value) {
+                    if (useFileReader) {
                         // load file via HTML5 FileReader (no size limits)
-                        var file = domFile.files[0];
+                        var file = field.files[0];
                         var reader = new FileReader();
                         reader.onload = function(event) {
                             var data = event.target.result;
@@ -303,35 +270,51 @@ FileRetriever.prototype.loadFile = function (callback) {
                         // Read in the image file as a data URL.
                         reader.readAsText(file);
                     }
-                    else {
-                        // load by uploading to server
-                        // TODO: how to check the file size? (on older browsers)
-                        //console.log('submitting...');
 
-                        domForm.submit();
-                    }
+                    startLoading();
                 }
-                else {
-                    // cancel
-                    callbackOnce(null, null);
-                }
-            }, 0);
-        };
-        domForm.appendChild(domFile);
-        document.body.appendChild(domForm);
-
-        // activate file selection (the click is done after a timeout,
-        // as in Opera and Safari, the form is not yet rendered)
-        setTimeout(function () {
-            domFile.click();
-        }, 0);
+            }
+        });
+        // TODO: handle a cancel
     }
     else {
-        // create a visual form and submit manually (for IE)
+        // no html5 filereader available
+
+        // create an iframe for uploading files
+        // the iframe must have an unique name, allowing multiple
+        // FileRetrievers. The name is needed as target for the uploadForm
+        var iframeName = 'fileretriever-upload-' + Math.round(Math.random() * 1E15);
+        var iframe = document.createElement('iframe');
+        iframe.name = iframeName;
+        me._hide(iframe);
+        iframe.onload = function () {
+            // when a downloaded file is retrieved, send a callback with
+            // the retrieved data
+            var id = iframe.contentWindow.document.body.innerHTML;
+            if (id) {
+                var url = me.scriptUrl + '?id=' + id + '&filename=' + me.getFilename();
+                ajax.get(url, me.headers, function (data, status) {
+                    if (status == 200) {
+                        callbackOnce(null, data);
+                    }
+                    else {
+                        var err = new Error('Error loading file ' + me.getFilename());
+                        callbackOnce(err, null);
+                    }
+
+                    // cleanup the frame again
+                    if (iframe.parentNode === document.body) {
+                        document.body.removeChild(iframe);
+                    }
+                });
+            }
+        };
+        document.body.appendChild(iframe);
+
         this.prompt({
             title: 'Open file',
             titleSubmit: 'Open',
-            description: 'Select a file from disk and click the button Open to load it.',
+            description: 'Select a file on your computer.',
             inputType: 'file',
             inputName: 'file',
             formAction: this.scriptUrl,
@@ -380,7 +363,7 @@ FileRetriever.prototype.loadUrlDialog = function (callback) {
  * The propmt can either:
  * - Post a form when formAction, and formMethod are provided.
  *   Will call callback on submit.
- * - Call the callback method "callback" with the entered value as parameter.
+ * - Call the callback method "callback" with the entered value as first parameter and the created DOM field as second.
  *   This happens when a callback parameter is provided.
  * @param {Object} params   Available parameters:
  *                          {String} title
@@ -439,11 +422,11 @@ FileRetriever.prototype.prompt = function (params) {
     form.onsubmit = function () {
         if (field.value) {
             setTimeout(function () {
-                // remove after the submit has taken place!
+                // remove *after* the submit has taken place!
                 removeDialog();
             }, 0);
             if (params.callback) {
-                params.callback(field.value);
+                params.callback(field.value, field);
             }
             return (params.formAction != undefined && params.formMethod != undefined);
         }
@@ -500,6 +483,13 @@ FileRetriever.prototype.prompt = function (params) {
     var background = document.createElement('div');
     background.className = 'fileretriever-background';
     background.appendChild(border);
+    background.onclick = function (event) {
+        event = event || window.event;
+        var target = event.target || event.srcElement;
+        if (target == background) {
+            onCancel();
+        }
+    };
     document.body.appendChild(background);
 
     field.focus();

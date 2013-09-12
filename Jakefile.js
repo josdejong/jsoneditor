@@ -229,7 +229,6 @@ task('webapp', ['build', 'minify'], function () {
     jake.cpR(webAppSrc + 'robots.txt', webApp);
     jake.cpR(webAppSrc + 'datapolicy.txt', webApp);
     jake.cpR(webAppSrc + 'index.html', webApp);
-    jake.cpR(webAppSrc + 'chrome_app_counter.html', webApp);
     jake.cpR(webAppSrc + 'favicon.ico', webApp);
     jake.cpR(webAppSrc + 'fileretriever.php', webApp);
     jake.cpR(webAppSrc + 'googlea47c4a0b36d11021.html', webApp);
