@@ -4,10 +4,15 @@ util = {};
 // Internet Explorer 8 and older does not support Array.indexOf,
 // so we define it here in that case
 // http://soledadpenades.com/2007/05/17/arrayindexof-in-internet-explorer/
-if(!Array.prototype.indexOf) {
-    Array.prototype.indexOf = function(obj){
-        for(var i = 0; i < this.length; i++){
-            if(this[i] == obj){
+
+if (Array.prototype.forEach) {
+    util.indexOf = function(array, obj) {
+        return array.indexOf(obj);
+    }
+} else {
+    util.indexOf = function(array, obj){
+        for(var i = 0; i < array.length; i++){
+            if(array[i] == obj){
                 return i;
             }
         }
@@ -18,13 +23,19 @@ if(!Array.prototype.indexOf) {
 // Internet Explorer 8 and older does not support Array.forEach,
 // so we define it here in that case
 // https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Global_Objects/Array/forEach
-if (!Array.prototype.forEach) {
-    Array.prototype.forEach = function(fn, scope) {
-        for(var i = 0, len = this.length; i < len; ++i) {
-            fn.call(scope || this, this[i], i, this);
+
+if (Array.prototype.forEach) {
+    util.forEach = function(array, fn, scope) {
+        array.forEach(fn, scope);
+    }
+} else {
+    util.forEach = function(array, fn, scope) {
+        for(var i = 0, len = array.length; i < len; ++i) {
+            fn.call(scope || array, array[i], i, array);
         }
     }
 }
+
 
 /**
  * Parse JSON using the parser built-in in the browser.

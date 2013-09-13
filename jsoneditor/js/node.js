@@ -147,14 +147,14 @@ Node.prototype.getValue = function() {
 
     if (this.type == 'array') {
         var arr = [];
-        this.childs.forEach (function (child) {
+        util.forEach (this.childs, function (child) {
             arr.push(child.getValue());
         });
         return arr;
     }
     else if (this.type == 'object') {
         var obj = {};
-        this.childs.forEach (function (child) {
+        util.forEach (this.childs, function (child) {
             obj[child.getField()] = child.getValue();
         });
         return obj;
@@ -195,7 +195,7 @@ Node.prototype.clone = function() {
     if (this.childs) {
         // an object or array
         var cloneChilds = [];
-        this.childs.forEach(function (child) {
+        util.forEach(this.childs, function (child) {
             var childClone = child.clone();
             childClone.setParent(clone);
             cloneChilds.push(childClone);
@@ -229,7 +229,7 @@ Node.prototype.expand = function(recurse) {
     this.showChilds();
 
     if (recurse != false) {
-        this.childs.forEach(function (child) {
+        util.forEach(this.childs, function (child) {
             child.expand(recurse);
         });
     }
@@ -249,7 +249,7 @@ Node.prototype.collapse = function(recurse) {
 
     // collapse childs in case of recurse
     if (recurse != false) {
-        this.childs.forEach(function (child) {
+        util.forEach(this.childs, function (child) {
             child.collapse(recurse);
         });
 
@@ -288,7 +288,7 @@ Node.prototype.showChilds = function() {
         }
 
         // show childs
-        this.childs.forEach(function (child) {
+        util.forEach(this.childs, function (child) {
             table.insertBefore(child.getDom(), append);
             child.showChilds();
         });
@@ -327,7 +327,7 @@ Node.prototype.hideChilds = function() {
     }
 
     // hide childs
-    this.childs.forEach(function (child) {
+    util.forEach(this.childs, function (child) {
         child.hide();
     });
 };
@@ -410,7 +410,7 @@ Node.prototype.moveBefore = function(node, beforeNode) {
 Node.prototype.moveTo = function (node, index) {
     if (node.parent == this) {
         // same parent
-        var currentIndex = this.childs.indexOf(node);
+        var currentIndex = util.indexOf(this.childs, node);
         if (currentIndex < index) {
             // compensate the index for removal of the node itself
             index++;
@@ -439,7 +439,7 @@ Node.prototype.insertBefore = function(node, beforeNode) {
         }
         else {
             // insert before a child node
-            var index = this.childs.indexOf(beforeNode);
+            var index = util.indexOf(this.childs, beforeNode);
             if (index == -1) {
                 throw new Error('Node not found');
             }
@@ -475,7 +475,7 @@ Node.prototype.insertBefore = function(node, beforeNode) {
  */
 Node.prototype.insertAfter = function(node, afterNode) {
     if (this._hasChilds()) {
-        var index = this.childs.indexOf(afterNode);
+        var index = util.indexOf(this.childs, afterNode);
         var beforeNode = this.childs[index + 1];
         if (beforeNode) {
             this.insertBefore(node, beforeNode);
@@ -505,7 +505,7 @@ Node.prototype.search = function(text) {
     // search in field
     if (this.field != undefined) {
         var field = String(this.field).toLowerCase();
-        index = field.indexOf(search);
+        index = util.indexOf(field, search);
         if (index != -1) {
             this.searchField = true;
             results.push({
@@ -525,7 +525,7 @@ Node.prototype.search = function(text) {
         // search the nodes childs
         if (this.childs) {
             var childResults = [];
-            this.childs.forEach(function (child) {
+            util.forEach(this.childs, function (child) {
                 childResults = childResults.concat(child.search(text));
             });
             results = results.concat(childResults);
@@ -546,7 +546,7 @@ Node.prototype.search = function(text) {
         // string, auto
         if (this.value != undefined ) {
             var value = String(this.value).toLowerCase();
-            index = value.indexOf(search);
+            index = util.indexOf(value, search);
             if (index != -1) {
                 this.searchValue = true;
                 results.push({
@@ -783,7 +783,7 @@ Node.prototype._move = function(node, beforeNode) {
  */
 Node.prototype.removeChild = function(node) {
     if (this.childs) {
-        var index = this.childs.indexOf(node);
+        var index = util.indexOf(this.childs, node);
 
         if (index != -1) {
             node.hide();
@@ -856,7 +856,7 @@ Node.prototype.changeType = function (newType) {
                 this.childs = [];
             }
 
-            this.childs.forEach(function (child, index) {
+            util.forEach(this.childs, function (child, index) {
                 child.clearDom();
                 delete child.index;
                 child.fieldEditable = true;
@@ -874,7 +874,7 @@ Node.prototype.changeType = function (newType) {
                 this.childs = [];
             }
 
-            this.childs.forEach(function (child, index) {
+            util.forEach(this.childs, function (child, index) {
                 child.clearDom();
                 child.fieldEditable = false;
                 child.index = index;
@@ -1211,7 +1211,7 @@ Node.prototype._onDragStart = function (event) {
     this.drag = {
         'oldCursor': document.body.style.cursor,
         'startParent': this.parent,
-        'startIndex': this.parent.childs.indexOf(this),
+        'startIndex': util.indexOf(this.parent.childs, this),
         'mouseX': util.getMouseX(event),
         'level': this.getLevel()
     };
@@ -1376,7 +1376,7 @@ Node.prototype._onDragEnd = function (event) {
         'startParent': this.drag.startParent,
         'startIndex': this.drag.startIndex,
         'endParent': this.parent,
-        'endIndex': this.parent.childs.indexOf(this)
+        'endIndex': util.indexOf(this.parent.childs, this)
     };
     if ((params.startParent != params.endParent) ||
         (params.startIndex != params.endIndex)) {
@@ -1443,7 +1443,7 @@ Node.prototype.setHighlight = function (highlight) {
         }
 
         if (this.childs) {
-            this.childs.forEach(function (child) {
+            util.forEach(this.childs, function (child) {
                 child.setHighlight(highlight);
             });
         }
@@ -1544,7 +1544,7 @@ Node.prototype.updateDom = function (options) {
     if (options && options.recurse == true) {
         // recurse is true or undefined. update childs recursively
         if (this.childs) {
-            this.childs.forEach(function (child) {
+            util.forEach(this.childs, function (child) {
                 child.updateDom(options);
             });
         }
@@ -1567,7 +1567,7 @@ Node.prototype._updateDomIndexes = function () {
     var childs = this.childs;
     if (domValue && childs) {
         if (this.type == 'array') {
-            childs.forEach(function (child, index) {
+            util.forEach(childs, function (child, index) {
                 child.index = index;
                 var childField = child.dom.field;
                 if (childField) {
@@ -1576,7 +1576,7 @@ Node.prototype._updateDomIndexes = function () {
             });
         }
         else if (this.type == 'object') {
-            childs.forEach(function (child) {
+            util.forEach(childs, function (child) {
                 if (child.index != undefined) {
                     delete child.index;
 
@@ -2122,7 +2122,7 @@ Node.prototype._onExpand = function (recurse) {
 Node.prototype._onRemove = function() {
     this.editor.highlighter.unhighlight();
     var childs = this.parent.childs;
-    var index = childs.indexOf(this);
+    var index = util.indexOf(childs, this);
 
     // adjust the focus
     var oldSelection = this.editor.getSelection();
@@ -2847,7 +2847,7 @@ Node.prototype._escapeJSON = function (text) {
             i++;
 
             c = text.charAt(i);
-            if ('"\\/bfnrtu'.indexOf(c) == -1) {
+            if (util.indexOf('"\\/bfnrtu', c) == -1) {
                 escaped += '\\';  // no valid escape character
             }
             escaped += c;

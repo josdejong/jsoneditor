@@ -28,7 +28,7 @@
  *
  * @author  Jos de Jong, <wjosdejong@gmail.com>
  * @version 2.2.2
- * @date    2013-08-01
+ * @date    2013-09-13
  */
 (function () {
 
@@ -1472,14 +1472,14 @@ Node.prototype.getValue = function() {
 
     if (this.type == 'array') {
         var arr = [];
-        this.childs.forEach (function (child) {
+        util.forEach (this.childs, function (child) {
             arr.push(child.getValue());
         });
         return arr;
     }
     else if (this.type == 'object') {
         var obj = {};
-        this.childs.forEach (function (child) {
+        util.forEach (this.childs, function (child) {
             obj[child.getField()] = child.getValue();
         });
         return obj;
@@ -1520,7 +1520,7 @@ Node.prototype.clone = function() {
     if (this.childs) {
         // an object or array
         var cloneChilds = [];
-        this.childs.forEach(function (child) {
+        util.forEach(this.childs, function (child) {
             var childClone = child.clone();
             childClone.setParent(clone);
             cloneChilds.push(childClone);
@@ -1554,7 +1554,7 @@ Node.prototype.expand = function(recurse) {
     this.showChilds();
 
     if (recurse != false) {
-        this.childs.forEach(function (child) {
+        util.forEach(this.childs, function (child) {
             child.expand(recurse);
         });
     }
@@ -1574,7 +1574,7 @@ Node.prototype.collapse = function(recurse) {
 
     // collapse childs in case of recurse
     if (recurse != false) {
-        this.childs.forEach(function (child) {
+        util.forEach(this.childs, function (child) {
             child.collapse(recurse);
         });
 
@@ -1613,7 +1613,7 @@ Node.prototype.showChilds = function() {
         }
 
         // show childs
-        this.childs.forEach(function (child) {
+        util.forEach(this.childs, function (child) {
             table.insertBefore(child.getDom(), append);
             child.showChilds();
         });
@@ -1652,7 +1652,7 @@ Node.prototype.hideChilds = function() {
     }
 
     // hide childs
-    this.childs.forEach(function (child) {
+    util.forEach(this.childs, function (child) {
         child.hide();
     });
 };
@@ -1735,7 +1735,7 @@ Node.prototype.moveBefore = function(node, beforeNode) {
 Node.prototype.moveTo = function (node, index) {
     if (node.parent == this) {
         // same parent
-        var currentIndex = this.childs.indexOf(node);
+        var currentIndex = util.indexOf(this.childs, node);
         if (currentIndex < index) {
             // compensate the index for removal of the node itself
             index++;
@@ -1764,7 +1764,7 @@ Node.prototype.insertBefore = function(node, beforeNode) {
         }
         else {
             // insert before a child node
-            var index = this.childs.indexOf(beforeNode);
+            var index = util.indexOf(this.childs, beforeNode);
             if (index == -1) {
                 throw new Error('Node not found');
             }
@@ -1800,7 +1800,7 @@ Node.prototype.insertBefore = function(node, beforeNode) {
  */
 Node.prototype.insertAfter = function(node, afterNode) {
     if (this._hasChilds()) {
-        var index = this.childs.indexOf(afterNode);
+        var index = util.indexOf(this.childs, afterNode);
         var beforeNode = this.childs[index + 1];
         if (beforeNode) {
             this.insertBefore(node, beforeNode);
@@ -1830,7 +1830,7 @@ Node.prototype.search = function(text) {
     // search in field
     if (this.field != undefined) {
         var field = String(this.field).toLowerCase();
-        index = field.indexOf(search);
+        index = util.indexOf(field, search);
         if (index != -1) {
             this.searchField = true;
             results.push({
@@ -1850,7 +1850,7 @@ Node.prototype.search = function(text) {
         // search the nodes childs
         if (this.childs) {
             var childResults = [];
-            this.childs.forEach(function (child) {
+            util.forEach(this.childs, function (child) {
                 childResults = childResults.concat(child.search(text));
             });
             results = results.concat(childResults);
@@ -1871,7 +1871,7 @@ Node.prototype.search = function(text) {
         // string, auto
         if (this.value != undefined ) {
             var value = String(this.value).toLowerCase();
-            index = value.indexOf(search);
+            index = util.indexOf(value, search);
             if (index != -1) {
                 this.searchValue = true;
                 results.push({
@@ -2108,7 +2108,7 @@ Node.prototype._move = function(node, beforeNode) {
  */
 Node.prototype.removeChild = function(node) {
     if (this.childs) {
-        var index = this.childs.indexOf(node);
+        var index = util.indexOf(this.childs, node);
 
         if (index != -1) {
             node.hide();
@@ -2181,7 +2181,7 @@ Node.prototype.changeType = function (newType) {
                 this.childs = [];
             }
 
-            this.childs.forEach(function (child, index) {
+            util.forEach(this.childs, function (child, index) {
                 child.clearDom();
                 delete child.index;
                 child.fieldEditable = true;
@@ -2199,7 +2199,7 @@ Node.prototype.changeType = function (newType) {
                 this.childs = [];
             }
 
-            this.childs.forEach(function (child, index) {
+            util.forEach(this.childs, function (child, index) {
                 child.clearDom();
                 child.fieldEditable = false;
                 child.index = index;
@@ -2536,7 +2536,7 @@ Node.prototype._onDragStart = function (event) {
     this.drag = {
         'oldCursor': document.body.style.cursor,
         'startParent': this.parent,
-        'startIndex': this.parent.childs.indexOf(this),
+        'startIndex': util.indexOf(this.parent.childs, this),
         'mouseX': util.getMouseX(event),
         'level': this.getLevel()
     };
@@ -2701,7 +2701,7 @@ Node.prototype._onDragEnd = function (event) {
         'startParent': this.drag.startParent,
         'startIndex': this.drag.startIndex,
         'endParent': this.parent,
-        'endIndex': this.parent.childs.indexOf(this)
+        'endIndex': util.indexOf(this.parent.childs, this)
     };
     if ((params.startParent != params.endParent) ||
         (params.startIndex != params.endIndex)) {
@@ -2768,7 +2768,7 @@ Node.prototype.setHighlight = function (highlight) {
         }
 
         if (this.childs) {
-            this.childs.forEach(function (child) {
+            util.forEach(this.childs, function (child) {
                 child.setHighlight(highlight);
             });
         }
@@ -2869,7 +2869,7 @@ Node.prototype.updateDom = function (options) {
     if (options && options.recurse == true) {
         // recurse is true or undefined. update childs recursively
         if (this.childs) {
-            this.childs.forEach(function (child) {
+            util.forEach(this.childs, function (child) {
                 child.updateDom(options);
             });
         }
@@ -2892,7 +2892,7 @@ Node.prototype._updateDomIndexes = function () {
     var childs = this.childs;
     if (domValue && childs) {
         if (this.type == 'array') {
-            childs.forEach(function (child, index) {
+            util.forEach(childs, function (child, index) {
                 child.index = index;
                 var childField = child.dom.field;
                 if (childField) {
@@ -2901,7 +2901,7 @@ Node.prototype._updateDomIndexes = function () {
             });
         }
         else if (this.type == 'object') {
-            childs.forEach(function (child) {
+            util.forEach(childs, function (child) {
                 if (child.index != undefined) {
                     delete child.index;
 
@@ -3447,7 +3447,7 @@ Node.prototype._onExpand = function (recurse) {
 Node.prototype._onRemove = function() {
     this.editor.highlighter.unhighlight();
     var childs = this.parent.childs;
-    var index = childs.indexOf(this);
+    var index = util.indexOf(childs, this);
 
     // adjust the focus
     var oldSelection = this.editor.getSelection();
@@ -4172,7 +4172,7 @@ Node.prototype._escapeJSON = function (text) {
             i++;
 
             c = text.charAt(i);
-            if ('"\\/bfnrtu'.indexOf(c) == -1) {
+            if (util.indexOf('"\\/bfnrtu', c) == -1) {
                 escaped += '\\';  // no valid escape character
             }
             escaped += c;
@@ -4444,7 +4444,7 @@ function ContextMenu (items, options) {
     list.appendChild(li);
 
     function createMenuItems (list, domItems, items) {
-        items.forEach(function (item) {
+        util.forEach(items, function (item) {
             if (item.type == 'separator') {
                 // create a separator
                 var separator = document.createElement('div');
@@ -4539,7 +4539,7 @@ function ContextMenu (items, options) {
 
     // calculate the max height of the menu with one submenu expanded
     this.maxHeight = 0; // height in pixels
-    items.forEach(function (item) {
+    util.forEach(items, function (item) {
         var height = (items.length + (item.submenu ? item.submenu.length : 0)) * 24;
         me.maxHeight = Math.max(me.maxHeight, height);
     });
@@ -4553,13 +4553,13 @@ function ContextMenu (items, options) {
 ContextMenu.prototype._getVisibleButtons = function () {
     var buttons = [];
     var me = this;
-    this.dom.items.forEach(function (item) {
+    util.forEach(this.dom.items, function (item) {
         buttons.push(item.button);
         if (item.buttonExpand) {
             buttons.push(item.buttonExpand);
         }
         if (item.subItems && item == me.expandedItem) {
-            item.subItems.forEach(function (subItem) {
+            util.forEach(item.subItems, function (subItem) {
                 buttons.push(subItem.button);
                 if (subItem.buttonExpand) {
                     buttons.push(subItem.buttonExpand);
@@ -4743,7 +4743,7 @@ ContextMenu.prototype._onKeyDown = function (event) {
     else if (keynum == 9) { // Tab
         if (!event.shiftKey) { // Tab
             buttons = this._getVisibleButtons();
-            targetIndex = buttons.indexOf(target);
+            targetIndex = util.indexOf(buttons, target);
             if (targetIndex == buttons.length - 1) {
                 // move to first button
                 buttons[0].focus();
@@ -4752,7 +4752,7 @@ ContextMenu.prototype._onKeyDown = function (event) {
         }
         else { // Shift+Tab
             buttons = this._getVisibleButtons();
-            targetIndex = buttons.indexOf(target);
+            targetIndex = util.indexOf(buttons, target);
             if (targetIndex == 0) {
                 // move to last button
                 buttons[buttons.length - 1].focus();
@@ -4763,7 +4763,7 @@ ContextMenu.prototype._onKeyDown = function (event) {
     else if (keynum == 37) { // Arrow Left
         if (target.className == 'expand') {
             buttons = this._getVisibleButtons();
-            targetIndex = buttons.indexOf(target);
+            targetIndex = util.indexOf(buttons, target);
             prevButton = buttons[targetIndex - 1];
             if (prevButton) {
                 prevButton.focus();
@@ -4773,7 +4773,7 @@ ContextMenu.prototype._onKeyDown = function (event) {
     }
     else if (keynum == 38) { // Arrow Up
         buttons = this._getVisibleButtons();
-        targetIndex = buttons.indexOf(target);
+        targetIndex = util.indexOf(buttons, target);
         prevButton = buttons[targetIndex - 1];
         if (prevButton && prevButton.className == 'expand') {
             // skip expand button
@@ -4790,7 +4790,7 @@ ContextMenu.prototype._onKeyDown = function (event) {
     }
     else if (keynum == 39) { // Arrow Right
         buttons = this._getVisibleButtons();
-        targetIndex = buttons.indexOf(target);
+        targetIndex = util.indexOf(buttons, target);
         nextButton = buttons[targetIndex + 1];
         if (nextButton && nextButton.className == 'expand') {
             nextButton.focus();
@@ -4799,7 +4799,7 @@ ContextMenu.prototype._onKeyDown = function (event) {
     }
     else if (keynum == 40) { // Arrow Down
         buttons = this._getVisibleButtons();
-        targetIndex = buttons.indexOf(target);
+        targetIndex = util.indexOf(buttons, target);
         nextButton = buttons[targetIndex + 1];
         if (nextButton && nextButton.className == 'expand') {
             // skip expand button
@@ -5439,10 +5439,15 @@ util = {};
 // Internet Explorer 8 and older does not support Array.indexOf,
 // so we define it here in that case
 // http://soledadpenades.com/2007/05/17/arrayindexof-in-internet-explorer/
-if(!Array.prototype.indexOf) {
-    Array.prototype.indexOf = function(obj){
-        for(var i = 0; i < this.length; i++){
-            if(this[i] == obj){
+
+if (Array.prototype.forEach) {
+    util.indexOf = function(array, obj) {
+        return array.indexOf(obj);
+    }
+} else {
+    util.indexOf = function(array, obj){
+        for(var i = 0; i < array.length; i++){
+            if(array[i] == obj){
                 return i;
             }
         }
@@ -5453,13 +5458,19 @@ if(!Array.prototype.indexOf) {
 // Internet Explorer 8 and older does not support Array.forEach,
 // so we define it here in that case
 // https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Global_Objects/Array/forEach
-if (!Array.prototype.forEach) {
-    Array.prototype.forEach = function(fn, scope) {
-        for(var i = 0, len = this.length; i < len; ++i) {
-            fn.call(scope || this, this[i], i, this);
+
+if (Array.prototype.forEach) {
+    util.forEach = function(array, fn, scope) {
+        array.forEach(fn, scope);
+    }
+} else {
+    util.forEach = function(array, fn, scope) {
+        for(var i = 0, len = array.length; i < len; ++i) {
+            fn.call(scope || array, array[i], i, array);
         }
     }
 }
+
 
 /**
  * Parse JSON using the parser built-in in the browser.
