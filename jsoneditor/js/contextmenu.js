@@ -41,7 +41,7 @@ function ContextMenu (items, options) {
     list.appendChild(li);
 
     function createMenuItems (list, domItems, items) {
-        items.forEach(function (item) {
+        util.forEach(items, function (item) {
             if (item.type == 'separator') {
                 // create a separator
                 var separator = document.createElement('div');
@@ -136,7 +136,7 @@ function ContextMenu (items, options) {
 
     // calculate the max height of the menu with one submenu expanded
     this.maxHeight = 0; // height in pixels
-    items.forEach(function (item) {
+    util.forEach(items, function (item) {
         var height = (items.length + (item.submenu ? item.submenu.length : 0)) * 24;
         me.maxHeight = Math.max(me.maxHeight, height);
     });
@@ -150,13 +150,13 @@ function ContextMenu (items, options) {
 ContextMenu.prototype._getVisibleButtons = function () {
     var buttons = [];
     var me = this;
-    this.dom.items.forEach(function (item) {
+    util.forEach(this.dom.items, function (item) {
         buttons.push(item.button);
         if (item.buttonExpand) {
             buttons.push(item.buttonExpand);
         }
         if (item.subItems && item == me.expandedItem) {
-            item.subItems.forEach(function (subItem) {
+            util.forEach(item.subItems, function (subItem) {
                 buttons.push(subItem.button);
                 if (subItem.buttonExpand) {
                     buttons.push(subItem.buttonExpand);
@@ -340,7 +340,7 @@ ContextMenu.prototype._onKeyDown = function (event) {
     else if (keynum == 9) { // Tab
         if (!event.shiftKey) { // Tab
             buttons = this._getVisibleButtons();
-            targetIndex = buttons.indexOf(target);
+            targetIndex = util.indexOf(buttons, target);
             if (targetIndex == buttons.length - 1) {
                 // move to first button
                 buttons[0].focus();
@@ -349,7 +349,7 @@ ContextMenu.prototype._onKeyDown = function (event) {
         }
         else { // Shift+Tab
             buttons = this._getVisibleButtons();
-            targetIndex = buttons.indexOf(target);
+            targetIndex = util.indexOf(buttons, target);
             if (targetIndex == 0) {
                 // move to last button
                 buttons[buttons.length - 1].focus();
@@ -360,7 +360,7 @@ ContextMenu.prototype._onKeyDown = function (event) {
     else if (keynum == 37) { // Arrow Left
         if (target.className == 'expand') {
             buttons = this._getVisibleButtons();
-            targetIndex = buttons.indexOf(target);
+            targetIndex = util.indexOf(buttons, target);
             prevButton = buttons[targetIndex - 1];
             if (prevButton) {
                 prevButton.focus();
@@ -370,7 +370,7 @@ ContextMenu.prototype._onKeyDown = function (event) {
     }
     else if (keynum == 38) { // Arrow Up
         buttons = this._getVisibleButtons();
-        targetIndex = buttons.indexOf(target);
+        targetIndex = util.indexOf(buttons, target);
         prevButton = buttons[targetIndex - 1];
         if (prevButton && prevButton.className == 'expand') {
             // skip expand button
@@ -387,7 +387,7 @@ ContextMenu.prototype._onKeyDown = function (event) {
     }
     else if (keynum == 39) { // Arrow Right
         buttons = this._getVisibleButtons();
-        targetIndex = buttons.indexOf(target);
+        targetIndex = util.indexOf(buttons, target);
         nextButton = buttons[targetIndex + 1];
         if (nextButton && nextButton.className == 'expand') {
             nextButton.focus();
@@ -396,7 +396,7 @@ ContextMenu.prototype._onKeyDown = function (event) {
     }
     else if (keynum == 40) { // Arrow Down
         buttons = this._getVisibleButtons();
-        targetIndex = buttons.indexOf(target);
+        targetIndex = util.indexOf(buttons, target);
         nextButton = buttons[targetIndex + 1];
         if (nextButton && nextButton.className == 'expand') {
             // skip expand button
