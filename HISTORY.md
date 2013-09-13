@@ -3,7 +3,7 @@
 http://jsoneditoronline.org
 
 
-## not yet released, version 2.3.0
+## 2013-09-13, version 2.3.0
 
 - Implemented an option `modes`, which creates a menu in the editor
   where the user can switch between the selected editor modes.
