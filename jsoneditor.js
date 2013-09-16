@@ -27,8 +27,8 @@
  * Copyright (c) 2011-2013 Jos de Jong, http://jsoneditoronline.org
  *
  * @author  Jos de Jong, <wjosdejong@gmail.com>
- * @version 2.3.0
- * @date    2013-09-13
+ * @version 2.3.1-SNAPSHOT
+ * @date    2013-09-16
  */
 (function () {
 

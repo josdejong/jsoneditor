@@ -224,7 +224,7 @@ div.jsoneditor {
 
 .jsoneditor-contextmenu {
     position: absolute;
-    z-index: 999;
+    z-index: 99999;
 }
 
 .jsoneditor-contextmenu ul {
