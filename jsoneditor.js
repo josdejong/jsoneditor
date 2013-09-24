@@ -3871,7 +3871,7 @@ Node.prototype.showContextMenu = function (anchor, onClose) {
     var titles = Node.TYPE_TITLES;
     var items = [];
 	var submenu = [];
-	var types = this.editor.options.nodeTypes[this._firstNode()==node?0:1] || ['auto', 'array', 'object', 'string'];
+	var types = (this.editor.options.nodeTypes && this.editor.options.nodeTypes[this._firstNode()==node?0:1]) || ['auto', 'array', 'object', 'string'];
 	
 	for(var i=0;i<types.length;i++){
 		var option = undefined;
