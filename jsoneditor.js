@@ -56,6 +56,12 @@
  *                                                      spaces. 4 by default.
  *                                                      Only applicable for
  *                                                      modes 'text' and 'code'
+ *                               {Array} nodeTypes	An array of arrays, with the 
+ *													accepted node types to be 
+ *													created. The first position 
+ *													is used for the root level, 
+ *													the second for the rest of
+ *													the child levels.
  * @param {Object | undefined} json JSON object
  */
 function JSONEditor (container, options, json) {
