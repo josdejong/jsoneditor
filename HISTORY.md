@@ -3,9 +3,10 @@
 http://jsoneditoronline.org
 
 
-## not yet released, version 2.3.1
+## 2013-09-24, version 2.3.1
 
 - Fixed non-working action menu when in bootstrap modal (z-index issue).
+- Fixed missing main field in package.json.
 
 
 ## 2013-09-13, version 2.3.0
