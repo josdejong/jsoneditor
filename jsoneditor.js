@@ -56,6 +56,12 @@
  *                                                      spaces. 4 by default.
  *                                                      Only applicable for
  *                                                      modes 'text' and 'code'
+ *                               {Array} nodeTypes	An array of arrays, with the 
+ *													accepted node types to be 
+ *													created. The first position 
+ *													is used for the root level, 
+ *													the second for the rest of
+ *													the child levels.
  * @param {Object | undefined} json JSON object
  */
 function JSONEditor (container, options, json) {
@@ -3870,13 +3876,14 @@ Node.prototype.showContextMenu = function (anchor, onClose) {
     var node = this;
     var titles = Node.TYPE_TITLES;
     var items = [];
-
-    items.push({
-        'text': 'Type',
-        'title': 'Change the type of this field',
-        'className': 'type-' + this.type,
-        'submenu': [
-            {
+	var submenu = [];
+	var types = (this.editor.options.nodeTypes && this.editor.options.nodeTypes[this._firstNode()==node?0:1]) || ['auto', 'array', 'object', 'string'];
+	
+	for(var i=0;i<types.length;i++){
+		var option = undefined;
+		var type = types[i];
+		if(type=='auto'){
+			option = {
                 'text': 'Auto',
                 'className': 'type-auto' +
                     (this.type == 'auto' ? ' selected' : ''),
@@ -3884,8 +3891,9 @@ Node.prototype.showContextMenu = function (anchor, onClose) {
                 'click': function () {
                     node._onChangeType('auto');
                 }
-            },
-            {
+            }
+		}else if(type=='array'){
+            option = {
                 'text': 'Array',
                 'className': 'type-array' +
                     (this.type == 'array' ? ' selected' : ''),
@@ -3893,8 +3901,9 @@ Node.prototype.showContextMenu = function (anchor, onClose) {
                 'click': function () {
                     node._onChangeType('array');
                 }
-            },
-            {
+            };
+		}else if(type=='object'){
+            option = {
                 'text': 'Object',
                 'className': 'type-object' +
                     (this.type == 'object' ? ' selected' : ''),
@@ -3902,8 +3911,9 @@ Node.prototype.showContextMenu = function (anchor, onClose) {
                 'click': function () {
                     node._onChangeType('object');
                 }
-            },
-            {
+            };
+		}else if(type=='string'){
+            option = {
                 'text': 'String',
                 'className': 'type-string' +
                     (this.type == 'string' ? ' selected' : ''),
@@ -3912,7 +3922,16 @@ Node.prototype.showContextMenu = function (anchor, onClose) {
                     node._onChangeType('string');
                 }
             }
-        ]
+		}
+		if(option)
+			submenu.push(option);
+	}
+	
+	items.push({
+        'text': 'Type',
+        'title': 'Change the type of this field',
+        'className': 'type-' + this.type,
+        'submenu': submenu
     });
 
     if (this._hasChilds()) {
@@ -3953,6 +3972,55 @@ Node.prototype.showContextMenu = function (anchor, onClose) {
 
         // create append button (for last child node only)
         var childs = node.parent.childs;
+		submenu = [];
+		for(var i=0;i<types.length;i++){
+			var option = undefined;
+			var type = types[i];
+			if(type=='auto'){
+				option = {
+					'text': 'Auto',
+					'className': 'type-auto' +
+						(this.type == 'auto' ? ' selected' : ''),
+					'title': titles.auto,
+					'click': function () {
+						node._onAppend('', '', 'auto');
+					}
+				}
+			}else if(type=='array'){
+				option = {
+					'text': 'Array',
+					'className': 'type-array' +
+						(this.type == 'array' ? ' selected' : ''),
+					'title': titles.array,
+					'click': function () {
+						node._onAppend('', []);
+					}
+				};
+			}else if(type=='object'){
+				option = {
+					'text': 'Object',
+					'className': 'type-object' +
+						(this.type == 'object' ? ' selected' : ''),
+					'title': titles.object,
+					'click': function () {
+						node._onAppend('', {});
+					}
+				};
+			}else if(type=='string'){
+				option = {
+					'text': 'String',
+					'className': 'type-string' +
+						(this.type == 'string' ? ' selected' : ''),
+					'title': titles.string,
+					'click': function () {
+						node._onAppend('', '', 'string');
+					}
+				}
+			}
+			if(option)
+				submenu.push(option);
+		}
+		
         if (node == childs[childs.length - 1]) {
             items.push({
                 'text': 'Append',
@@ -3962,43 +4030,59 @@ Node.prototype.showContextMenu = function (anchor, onClose) {
                 'click': function () {
                     node._onAppend('', '', 'auto');
                 },
-                'submenu': [
-                    {
-                        'text': 'Auto',
-                        'className': 'type-auto',
-                        'title': titles.auto,
-                        'click': function () {
-                            node._onAppend('', '', 'auto');
-                        }
-                    },
-                    {
-                        'text': 'Array',
-                        'className': 'type-array',
-                        'title': titles.array,
-                        'click': function () {
-                            node._onAppend('', []);
-                        }
-                    },
-                    {
-                        'text': 'Object',
-                        'className': 'type-object',
-                        'title': titles.object,
-                        'click': function () {
-                            node._onAppend('', {});
-                        }
-                    },
-                    {
-                        'text': 'String',
-                        'className': 'type-string',
-                        'title': titles.string,
-                        'click': function () {
-                            node._onAppend('', '', 'string');
-                        }
-                    }
-                ]
+                'submenu': submenu
             });
         }
-
+		
+		submenu = [];
+		for(var i=0;i<types.length;i++){
+			var option = undefined;
+			var type = types[i];
+			if(type=='auto'){
+				option = {
+					'text': 'Auto',
+					'className': 'type-auto' +
+						(this.type == 'auto' ? ' selected' : ''),
+					'title': titles.auto,
+					'click': function () {
+						node._onInsertBefore('', '', 'auto');
+					}
+				}
+			}else if(type=='array'){
+				option = {
+					'text': 'Array',
+					'className': 'type-array' +
+						(this.type == 'array' ? ' selected' : ''),
+					'title': titles.array,
+					'click': function () {
+						node._onInsertBefore('', []);
+					}
+				};
+			}else if(type=='object'){
+				option = {
+					'text': 'Object',
+					'className': 'type-object' +
+						(this.type == 'object' ? ' selected' : ''),
+					'title': titles.object,
+					'click': function () {
+						node._onInsertBefore('', {});
+					}
+				};
+			}else if(type=='string'){
+				option = {
+					'text': 'String',
+					'className': 'type-string' +
+						(this.type == 'string' ? ' selected' : ''),
+					'title': titles.string,
+					'click': function () {
+						node._onInsertBefore('', '', 'string');
+					}
+				}
+			}
+			if(option)
+				submenu.push(option);
+		}
+		
         // create insert button
         items.push({
             'text': 'Insert',
@@ -4008,40 +4092,7 @@ Node.prototype.showContextMenu = function (anchor, onClose) {
             'click': function () {
                 node._onInsertBefore('', '', 'auto');
             },
-            'submenu': [
-                {
-                    'text': 'Auto',
-                    'className': 'type-auto',
-                    'title': titles.auto,
-                    'click': function () {
-                        node._onInsertBefore('', '', 'auto');
-                    }
-                },
-                {
-                    'text': 'Array',
-                    'className': 'type-array',
-                    'title': titles.array,
-                    'click': function () {
-                        node._onInsertBefore('', []);
-                    }
-                },
-                {
-                    'text': 'Object',
-                    'className': 'type-object',
-                    'title': titles.object,
-                    'click': function () {
-                        node._onInsertBefore('', {});
-                    }
-                },
-                {
-                    'text': 'String',
-                    'className': 'type-string',
-                    'title': titles.string,
-                    'click': function () {
-                        node._onInsertBefore('', '', 'string');
-                    }
-                }
-            ]
+            'submenu': submenu
         });
 
         // create duplicate button
