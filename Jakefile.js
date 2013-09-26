@@ -226,6 +226,7 @@ task('webapp', ['build', 'minify'], function () {
     jake.cpR('./NOTICE', webApp);
     jake.cpR('./LICENSE', webApp);
     jake.cpR('./LICENSE', webApp);
+    jake.cpR(webAppSrc + 'cache.manifest', webApp);
     jake.cpR(webAppSrc + 'robots.txt', webApp);
     jake.cpR(webAppSrc + 'datapolicy.txt', webApp);
     jake.cpR(webAppSrc + 'index.html', webApp);
@@ -239,6 +240,7 @@ task('webapp', ['build', 'minify'], function () {
     // update date and verison in index.html
     replacePlaceholders(webApp + 'index.html');
     replacePlaceholders(webApp + 'index.html'); // TODO: fix bug in replace, should replace all occurrences
+    replacePlaceholders(webApp + 'cache.manifest');
 
     // concatenate and copy ace files
     concat({

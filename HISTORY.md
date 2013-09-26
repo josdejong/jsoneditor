@@ -3,6 +3,11 @@
 http://jsoneditoronline.org
 
 
+## 2013-09-26, version 2.3.2
+
+- The web application is now available offline. Thanks ayanamist.
+
+
 ## 2013-09-24, version 2.3.1
 
 - Fixed non-working action menu when in bootstrap modal (z-index issue).

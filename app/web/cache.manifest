@@ -1,5 +1,5 @@
 CACHE MANIFEST
-#Version 2.3.1
+#Version @@version
 
 CACHE:
 favicon.ico
@@ -26,3 +26,6 @@ doc/img/splitter.png
 doc/index.html
 doc/doc.css
 
+# always load online resources like ads
+NETWORK:
+*
