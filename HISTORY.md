@@ -3,7 +3,7 @@
 http://jsoneditoronline.org
 
 
-## not yet released, version 2.3.3
+## 2013-10-17, version 2.3.3
 
 - Added support for search (Ctrl+F) in the code editor Ace.
 - Fixed a positioning issue of the action menu when in bootstrap modal.
