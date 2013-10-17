@@ -2,7 +2,7 @@
 /* ContextMenu - main menu */
 
 .jsoneditor-contextmenu {
-    position: absolute;
+    position: fixed;
     z-index: 99999;
 }
 

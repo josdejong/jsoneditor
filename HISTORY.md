@@ -3,6 +3,12 @@
 http://jsoneditoronline.org
 
 
+## not yet released, version 2.3.3
+
+- Fixed a positioning issue of the action menu when in bootstrap modal.
+  (thanks tsash).
+
+
 ## 2013-09-26, version 2.3.2
 
 - The web application is now available offline. Thanks ayanamist.
