@@ -27,8 +27,8 @@
  * Copyright (c) 2011-2013 Jos de Jong, http://jsoneditoronline.org
  *
  * @author  Jos de Jong, <wjosdejong@gmail.com>
- * @version 2.3.2
- * @date    2013-09-26
+ * @version 2.3.3
+ * @date    2013-10-17
  */
 (function () {
 
@@ -953,11 +953,11 @@ TreeEditor.prototype._createTable = function () {
     this.contentOuter = contentOuter;
 
     this.content = document.createElement('div');
-    this.content.className = 'content';
+    this.content.className = 'tree';
     contentOuter.appendChild(this.content);
 
     this.table = document.createElement('table');
-    this.table.className = 'content';
+    this.table.className = 'tree';
     this.content.appendChild(this.table);
 
     // IE8 does not handle overflow='auto' correctly.
@@ -1174,7 +1174,7 @@ TextEditor.prototype._create = function (container, options, json) {
     else {
         // load a plain text textarea
         var textarea = document.createElement('textarea');
-        textarea.className = 'content';
+        textarea.className = 'text';
         textarea.spellcheck = false;
         this.content.appendChild(textarea);
         this.textarea = textarea;

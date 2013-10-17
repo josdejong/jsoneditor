@@ -160,7 +160,7 @@ TextEditor.prototype._create = function (container, options, json) {
     else {
         // load a plain text textarea
         var textarea = document.createElement('textarea');
-        textarea.className = 'content';
+        textarea.className = 'text';
         textarea.spellcheck = false;
         this.content.appendChild(textarea);
         this.textarea = textarea;

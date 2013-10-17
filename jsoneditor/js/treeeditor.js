@@ -712,11 +712,11 @@ TreeEditor.prototype._createTable = function () {
     this.contentOuter = contentOuter;
 
     this.content = document.createElement('div');
-    this.content.className = 'content';
+    this.content.className = 'tree';
     contentOuter.appendChild(this.content);
 
     this.table = document.createElement('table');
-    this.table.className = 'content';
+    this.table.className = 'tree';
     this.content.appendChild(this.table);
 
     // IE8 does not handle overflow='auto' correctly.

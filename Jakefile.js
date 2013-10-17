@@ -248,7 +248,8 @@ task('webapp', ['build', 'minify'], function () {
             libSrc + 'ace/ace.js',
             libSrc + 'ace/mode-json.js',
             libSrc + 'ace/theme-textmate.js',
-            libSrc + 'ace/theme-jsoneditor.js'
+            libSrc + 'ace/theme-jsoneditor.js',
+            libSrc + 'ace/ext-searchbox.js'
         ],
         dest: webAppAce + 'ace-min.js',
         separator: '\n'

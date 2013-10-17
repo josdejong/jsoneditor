@@ -80,7 +80,7 @@
     border-radius: 2px;
 }
 
-.jsoneditor button {
+.jsoneditor div.tree button {
     width: 24px;
     height: 24px;
     padding: 0;
@@ -90,29 +90,29 @@
     background: transparent url('img/jsoneditor-icons.png');
 }
 
-.jsoneditor button.collapsed {
+.jsoneditor div.tree button.collapsed {
     background-position: 0 -48px;
 }
 
-.jsoneditor button.expanded {
+.jsoneditor div.tree button.expanded {
     background-position: 0 -72px;
 }
 
-.jsoneditor button.contextmenu {
+.jsoneditor div.tree button.contextmenu {
     background-position: -48px -72px;
 }
 
-.jsoneditor button.contextmenu:hover,
-.jsoneditor button.contextmenu:focus,
-.jsoneditor button.contextmenu.selected {
+.jsoneditor div.tree button.contextmenu:hover,
+.jsoneditor div.tree button.contextmenu:focus,
+.jsoneditor div.tree button.contextmenu.selected {
     background-position: -48px -48px;
 }
 
-.jsoneditor div.content *:focus {
+.jsoneditor div.tree *:focus {
     outline: none;
 }
 
-.jsoneditor div.content button:focus {
+.jsoneditor div.tree button:focus {
     /* TODO: nice outline for buttons with focus
     outline: #97B0F8 solid 2px;
     box-shadow: 0 0 8px #97B0F8;
@@ -121,7 +121,7 @@
     outline: #e5e5e5 solid 1px;
 }
 
-.jsoneditor button.invisible {
+.jsoneditor div.tree button.invisible {
     visibility: hidden;
     background: none;
 }
@@ -139,7 +139,8 @@ div.jsoneditor {
     padding: 0;
 }
 
-.jsoneditor table.content {
+
+.jsoneditor div.tree table.tree {
     border-collapse: collapse;
     border-spacing: 0;
     width: 100%;
@@ -159,14 +160,14 @@ div.jsoneditor {
     overflow: hidden;
 }
 
-.jsoneditor div.content {
+.jsoneditor div.tree {
     width: 100%;
     height: 100%;
     position: relative;
     overflow: auto;
 }
 
-.jsoneditor textarea.content {
+.jsoneditor textarea.text {
     width: 100%;
     height: 100%;
     margin: 0;
@@ -184,13 +185,13 @@ div.jsoneditor {
     background-color: #FFFFAB;
 }
 
-.jsoneditor button.dragarea {
+.jsoneditor div.tree button.dragarea {
     background: url('img/jsoneditor-icons.png') -72px -72px;
     cursor: move;
 }
 
-.jsoneditor button.dragarea:hover,
-.jsoneditor button.dragarea:focus {
+.jsoneditor div.tree button.dragarea:hover,
+.jsoneditor div.tree button.dragarea:focus {
     background-position: -72px -48px;
 }
 
@@ -223,7 +224,7 @@ div.jsoneditor {
 /* ContextMenu - main menu */
 
 .jsoneditor-contextmenu {
-    position: absolute;
+    position: fixed;
     z-index: 99999;
 }
 
