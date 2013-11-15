@@ -217,8 +217,8 @@ ContextMenu.prototype.show = function (anchor) {
             }
         });
     this.eventListeners.mousewheel = util.addEventListener(
-        document, 'mousewheel', function () {
-            // hide the menu on mouse scroll
+        document, 'mousewheel', function (event) {
+            // block scrolling when context menu is visible
             event.stopPropagation();
             event.preventDefault();
         });
