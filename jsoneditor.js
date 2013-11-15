@@ -27,7 +27,7 @@
  * Copyright (c) 2011-2013 Jos de Jong, http://jsoneditoronline.org
  *
  * @author  Jos de Jong, <wjosdejong@gmail.com>
- * @version 2.3.4-SNAPSHOT
+ * @version 2.4.0-SNAPSHOT
  * @date    2013-11-15
  */
 (function () {
@@ -4597,8 +4597,8 @@ ContextMenu.prototype.show = function (anchor) {
             }
         });
     this.eventListeners.mousewheel = util.addEventListener(
-        document, 'mousewheel', function () {
-            // hide the menu on mouse scroll
+        document, 'mousewheel', function (event) {
+            // block scrolling when context menu is visible
             event.stopPropagation();
             event.preventDefault();
         });
@@ -5923,6 +5923,14 @@ util.getInternetExplorerVersion = function getInternetExplorerVersion() {
 };
 
 /**
+ * Test whether the current browser is Firefox
+ * @returns {boolean} isFirefox
+ */
+util.isFirefox = function isFirefox () {
+  return (navigator.userAgent.indexOf("Firefox") != -1);
+};
+
+/**
  * cached internet explorer version
  * @type {Number}
  * @private
@@ -5943,7 +5951,7 @@ util.addEventListener = function addEventListener(element, action, listener, use
         if (useCapture === undefined)
             useCapture = false;
 
-        if (action === "mousewheel" && navigator.userAgent.indexOf("Firefox") >= 0) {
+        if (action === "mousewheel" && util.isFirefox()) {
             action = "DOMMouseScroll";  // For Firefox
         }
 
@@ -5966,7 +5974,7 @@ util.removeEventListener = function removeEventListener(element, action, listene
         if (useCapture === undefined)
             useCapture = false;
 
-        if (action === "mousewheel" && navigator.userAgent.indexOf("Firefox") >= 0) {
+        if (action === "mousewheel" && util.isFirefox()) {
             action = "DOMMouseScroll";  // For Firefox
         }
 

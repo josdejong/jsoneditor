@@ -420,6 +420,14 @@ util.getInternetExplorerVersion = function getInternetExplorerVersion() {
 };
 
 /**
+ * Test whether the current browser is Firefox
+ * @returns {boolean} isFirefox
+ */
+util.isFirefox = function isFirefox () {
+  return (navigator.userAgent.indexOf("Firefox") != -1);
+};
+
+/**
  * cached internet explorer version
  * @type {Number}
  * @private
@@ -440,7 +448,7 @@ util.addEventListener = function addEventListener(element, action, listener, use
         if (useCapture === undefined)
             useCapture = false;
 
-        if (action === "mousewheel" && navigator.userAgent.indexOf("Firefox") >= 0) {
+        if (action === "mousewheel" && util.isFirefox()) {
             action = "DOMMouseScroll";  // For Firefox
         }
 
@@ -463,7 +471,7 @@ util.removeEventListener = function removeEventListener(element, action, listene
         if (useCapture === undefined)
             useCapture = false;
 
-        if (action === "mousewheel" && navigator.userAgent.indexOf("Firefox") >= 0) {
+        if (action === "mousewheel" && util.isFirefox()) {
             action = "DOMMouseScroll";  // For Firefox
         }
 

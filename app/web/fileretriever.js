@@ -522,8 +522,11 @@ FileRetriever.prototype.saveFile = function (data, callback) {
     };
 
     // create an anchor to save files to disk (if supported by the browser)
+    // Note: save file using a.download is disabled in Firefox because of a
+    //       a bug in Firefox, which breaks the cut/paste functionality of
+    //       editable divs on the page.
     var a = document.createElement('a');
-    if (this.options.html5 && a.download != undefined) {
+    if (this.options.html5 && a.download != undefined && !util.isFirefox()) {
         // save file directly using a data URL
         a.style.display = 'none';
         a.href = 'data:application/json;charset=utf-8,' + encodeURIComponent(data);
