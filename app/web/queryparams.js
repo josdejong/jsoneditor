@@ -10,18 +10,18 @@ function QueryParams ()  {}
  * @return {Object} query    object containing key/values
  */
 QueryParams.prototype.getQuery = function () {
-    var search = window.location.search.substring(1); // skip the ? character
-    var params = search.split('&');
-    var query = {};
-    for (var i = 0, iMax = params.length; i < iMax; i++) {
-        var keyvalue = params[i].split('=');
-        if (keyvalue.length == 2) {
-            var key = decodeURIComponent(keyvalue[0]);
-            var value = decodeURIComponent(keyvalue[1]);
-            query[key] = value;
-        }
+  var search = window.location.search.substring(1); // skip the ? character
+  var params = search.split('&');
+  var query = {};
+  for (var i = 0, iMax = params.length; i < iMax; i++) {
+    var keyvalue = params[i].split('=');
+    if (keyvalue.length == 2) {
+      var key = decodeURIComponent(keyvalue[0]);
+      var value = decodeURIComponent(keyvalue[1]);
+      query[key] = value;
     }
-    return query;
+  }
+  return query;
 };
 
 /**
@@ -29,23 +29,23 @@ QueryParams.prototype.getQuery = function () {
  * @param {Object} query    object with strings
  */
 QueryParams.prototype.setQuery = function (query) {
-    var search = '';
+  var search = '';
 
-    for (var key in query) {
-        if (query.hasOwnProperty(key)) {
-            var value = query[key];
-            if (value != undefined) {
-                if (search.length) {
-                    search += '&';
-                }
-                search += encodeURIComponent(key);
-                search += '=';
-                search += encodeURIComponent(query[key]);
-            }
+  for (var key in query) {
+    if (query.hasOwnProperty(key)) {
+      var value = query[key];
+      if (value != undefined) {
+        if (search.length) {
+          search += '&';
         }
+        search += encodeURIComponent(key);
+        search += '=';
+        search += encodeURIComponent(query[key]);
+      }
     }
+  }
 
-    window.location.search = (search.length ? ('#' + search) : '');
+  window.location.search = (search.length ? ('#' + search) : '');
 };
 
 
@@ -55,8 +55,8 @@ QueryParams.prototype.setQuery = function (query) {
  * @return {String} value   undefined when the value is not found
  */
 QueryParams.prototype.getValue = function (key) {
-    var query = this.getQuery();
-    return query[key];
+  var query = this.getQuery();
+  return query[key];
 };
 
 /**
@@ -65,7 +65,7 @@ QueryParams.prototype.getValue = function (key) {
  * @param {String} value
  */
 QueryParams.prototype.setValue = function (key, value) {
-    var query = this.getQuery();
-    query[key] = value;
-    this.setQuery(query);
+  var query = this.getQuery();
+  query[key] = value;
+  this.setQuery(query);
 };

@@ -44,7 +44,7 @@ Constructs a new JSONEditor.
     True by default.
     Only applicable when `mode` is 'tree', 'view', or 'form'.
   - `{Number} indentation`.
-    Number of indentation spaces. 4 by default.
+    Number of indentation spaces. 2 by default.
     Only applicable when `mode` is 'code' or 'text'.
 
 - `{JSON} json`

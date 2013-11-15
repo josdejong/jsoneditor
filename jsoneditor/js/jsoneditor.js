@@ -25,20 +25,20 @@
  * @param {Object | undefined} json JSON object
  */
 function JSONEditor (container, options, json) {
-    if (!(this instanceof JSONEditor)) {
-        throw new Error('JSONEditor constructor called without "new".');
-    }
+  if (!(this instanceof JSONEditor)) {
+    throw new Error('JSONEditor constructor called without "new".');
+  }
 
-    // check for unsupported browser (IE8 and older)
-    var ieVersion = util.getInternetExplorerVersion();
-    if (ieVersion != -1 && ieVersion < 9) {
-        throw new Error('Unsupported browser, IE9 or newer required. ' +
-            'Please install the newest version of your browser.');
-    }
+  // check for unsupported browser (IE8 and older)
+  var ieVersion = util.getInternetExplorerVersion();
+  if (ieVersion != -1 && ieVersion < 9) {
+    throw new Error('Unsupported browser, IE9 or newer required. ' +
+        'Please install the newest version of your browser.');
+  }
 
-    if (arguments.length) {
-        this._create(container, options, json);
-    }
+  if (arguments.length) {
+    this._create(container, options, json);
+  }
 }
 
 /**
@@ -66,12 +66,12 @@ JSONEditor.modes = {};
  * @private
  */
 JSONEditor.prototype._create = function (container, options, json) {
-    this.container = container;
-    this.options = options || {};
-    this.json = json || {};
+  this.container = container;
+  this.options = options || {};
+  this.json = json || {};
 
-    var mode = this.options.mode || 'tree';
-    this.setMode(mode);
+  var mode = this.options.mode || 'tree';
+  this.setMode(mode);
 };
 
 /**
@@ -85,7 +85,7 @@ JSONEditor.prototype._delete = function () {};
  * @param {Object | undefined} json      JSON data
  */
 JSONEditor.prototype.set = function (json) {
-    this.json = json;
+  this.json = json;
 };
 
 /**
@@ -93,7 +93,7 @@ JSONEditor.prototype.set = function (json) {
  * @returns {Object} json
  */
 JSONEditor.prototype.get = function () {
-    return this.json;
+  return this.json;
 };
 
 /**
@@ -101,7 +101,7 @@ JSONEditor.prototype.get = function () {
  * @param {String | undefined} jsonText
  */
 JSONEditor.prototype.setText = function (jsonText) {
-    this.json = util.parse(jsonText);
+  this.json = util.parse(jsonText);
 };
 
 /**
@@ -109,7 +109,7 @@ JSONEditor.prototype.setText = function (jsonText) {
  * @returns {String} jsonText
  */
 JSONEditor.prototype.getText = function () {
-    return JSON.stringify(this.json);
+  return JSON.stringify(this.json);
 };
 
 /**
@@ -117,10 +117,10 @@ JSONEditor.prototype.getText = function () {
  * @param {String | undefined} name
  */
 JSONEditor.prototype.setName = function (name) {
-    if (!this.options) {
-        this.options = {};
-    }
-    this.options.name = name;
+  if (!this.options) {
+    this.options = {};
+  }
+  this.options.name = name;
 };
 
 /**
@@ -128,7 +128,7 @@ JSONEditor.prototype.setName = function (name) {
  * @return {String | undefined} name
  */
 JSONEditor.prototype.getName = function () {
-    return this.options && this.options.name;
+  return this.options && this.options.name;
 };
 
 /**
@@ -138,56 +138,56 @@ JSONEditor.prototype.getName = function () {
  *                          'text', and 'code'.
  */
 JSONEditor.prototype.setMode = function (mode) {
-    var container = this.container,
-        options = util.extend({}, this.options),
-        data,
-        name;
+  var container = this.container,
+      options = util.extend({}, this.options),
+      data,
+      name;
 
-    options.mode = mode;
-    var config = JSONEditor.modes[mode];
-    if (config) {
+  options.mode = mode;
+  var config = JSONEditor.modes[mode];
+  if (config) {
+    try {
+      if (config.data == 'text') {
+        // text
+        name = this.getName();
+        data = this.getText();
+
+        this._delete();
+        util.clear(this);
+        util.extend(this, config.editor.prototype);
+        this._create(container, options);
+
+        this.setName(name);
+        this.setText(data);
+      }
+      else {
+        // json
+        name = this.getName();
+        data = this.get();
+
+        this._delete();
+        util.clear(this);
+        util.extend(this, config.editor.prototype);
+        this._create(container, options);
+
+        this.setName(name);
+        this.set(data);
+      }
+
+      if (typeof config.load === 'function') {
         try {
-            if (config.data == 'text') {
-                // text
-                name = this.getName();
-                data = this.getText();
-
-                this._delete();
-                util.clear(this);
-                util.extend(this, config.editor.prototype);
-                this._create(container, options);
-
-                this.setName(name);
-                this.setText(data);
-            }
-            else {
-                // json
-                name = this.getName();
-                data = this.get();
-
-                this._delete();
-                util.clear(this);
-                util.extend(this, config.editor.prototype);
-                this._create(container, options);
-
-                this.setName(name);
-                this.set(data);
-            }
-
-            if (typeof config.load === 'function') {
-                try {
-                    config.load.call(this);
-                }
-                catch (err) {}
-            }
+          config.load.call(this);
         }
-        catch (err) {
-            this._onError(err);
-        }
+        catch (err) {}
+      }
     }
-    else {
-        throw new Error('Unknown mode "' + options.mode + '"');
+    catch (err) {
+      this._onError(err);
     }
+  }
+  else {
+    throw new Error('Unknown mode "' + options.mode + '"');
+  }
 };
 
 /**
@@ -197,17 +197,17 @@ JSONEditor.prototype.setMode = function (mode) {
  * @private
  */
 JSONEditor.prototype._onError = function(err) {
-    // TODO: onError is deprecated since version 2.2.0. cleanup some day
-    if (typeof this.onError === 'function') {
-        util.log('WARNING: JSONEditor.onError is deprecated. ' +
-            'Use options.error instead.');
-        this.onError(err);
-    }
+  // TODO: onError is deprecated since version 2.2.0. cleanup some day
+  if (typeof this.onError === 'function') {
+    util.log('WARNING: JSONEditor.onError is deprecated. ' +
+        'Use options.error instead.');
+    this.onError(err);
+  }
 
-    if (this.options && typeof this.options.error === 'function') {
-        this.options.error(err);
-    }
-    else {
-        throw err;
-    }
+  if (this.options && typeof this.options.error === 'function') {
+    this.options.error(err);
+  }
+  else {
+    throw err;
+  }
 };

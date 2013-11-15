@@ -1,40 +1,40 @@
 <!DOCTYPE HTML>
 <html>
 <head>
-    <link rel="stylesheet" type="text/css" href="../jsoneditor.css">
-    <script type="text/javascript" src="../jsoneditor.js"></script>
-    <style type="text/css">
-        body {
-            font: 11pt arial;
-        }
-        #jsoneditor {
-            width: 500px;
-        }
-    </style>
+  <link rel="stylesheet" type="text/css" href="../jsoneditor.css">
+  <script type="text/javascript" src="../jsoneditor.js"></script>
+  <style type="text/css">
+    body {
+      font: 11pt arial;
+    }
+    #jsoneditor {
+      width: 500px;
+    }
+  </style>
 </head>
 <body>
-    <p>
-        This editor is read-only (mode='viewer').
-    </p>
-    <div id="jsoneditor"></div>
+<p>
+  This editor is read-only (mode='viewer').
+</p>
+<div id="jsoneditor"></div>
 
-    <script type="text/javascript" >
-        var container = document.getElementById('jsoneditor');
+<script type="text/javascript" >
+  var container = document.getElementById('jsoneditor');
 
-        var options = {
-            mode: 'view'
-        };
+  var options = {
+    mode: 'view'
+  };
 
-        var json = {
-            'array': [1, 2, 3],
-            'boolean': true,
-            'null': null,
-            'number': 123,
-            'object': {'a': 'b', 'c': 'd'},
-            'string': 'Hello World'
-        };
+  var json = {
+    'array': [1, 2, 3],
+    'boolean': true,
+    'null': null,
+    'number': 123,
+    'object': {'a': 'b', 'c': 'd'},
+    'string': 'Hello World'
+  };
 
-        var editor = new jsoneditor.JSONEditor(container, options, json);
-    </script>
+  var editor = new jsoneditor.JSONEditor(container, options, json);
+</script>
 </body>
 </html>

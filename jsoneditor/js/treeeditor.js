@@ -15,11 +15,11 @@
  * @param {Object | undefined} json JSON object
  */
 function TreeEditor(container, options, json) {
-    if (!(this instanceof TreeEditor)) {
-        throw new Error('TreeEditor constructor called without "new".');
-    }
+  if (!(this instanceof TreeEditor)) {
+    throw new Error('TreeEditor constructor called without "new".');
+  }
 
-    this._create(container, options, json);
+  this._create(container, options, json);
 }
 
 /**
@@ -30,24 +30,24 @@ function TreeEditor(container, options, json) {
  * @private
  */
 TreeEditor.prototype._create = function (container, options, json) {
-    if (!container) {
-        throw new Error('No container element provided.');
-    }
-    this.container = container;
-    this.dom = {};
-    this.highlighter = new Highlighter();
-    this.selection = undefined; // will hold the last input selection
+  if (!container) {
+    throw new Error('No container element provided.');
+  }
+  this.container = container;
+  this.dom = {};
+  this.highlighter = new Highlighter();
+  this.selection = undefined; // will hold the last input selection
 
-    this._setOptions(options);
+  this._setOptions(options);
 
-    if (this.options.history && !this.mode.view) {
-        this.history = new History(this);
-    }
+  if (this.options.history && !this.mode.view) {
+    this.history = new History(this);
+  }
 
-    this._createFrame();
-    this._createTable();
+  this._createFrame();
+  this._createTable();
 
-    this.set(json || {});
+  this.set(json || {});
 };
 
 /**
@@ -55,9 +55,9 @@ TreeEditor.prototype._create = function (container, options, json) {
  * @private
  */
 TreeEditor.prototype._delete = function () {
-    if (this.frame && this.container && this.frame.parentNode == this.container) {
-        this.container.removeChild(this.frame);
-    }
+  if (this.frame && this.container && this.frame.parentNode == this.container) {
+    this.container.removeChild(this.frame);
+  }
 };
 
 /**
@@ -66,50 +66,50 @@ TreeEditor.prototype._delete = function () {
  * @private
  */
 TreeEditor.prototype._setOptions = function (options) {
-    this.options = {
-        search: true,
-        history: true,
-        mode: 'tree',
-        name: undefined   // field name of root node
-    };
+  this.options = {
+    search: true,
+    history: true,
+    mode: 'tree',
+    name: undefined   // field name of root node
+  };
 
-    // copy all options
-    if (options) {
-        for (var prop in options) {
-            if (options.hasOwnProperty(prop)) {
-                this.options[prop] = options[prop];
-            }
-        }
-
-        // check for deprecated options
-        if (options['enableSearch']) {
-            // deprecated since version 1.6.0, 2012-11-03
-            this.options.search = options['enableSearch'];
-            util.log('WARNING: Option "enableSearch" is deprecated. Use "search" instead.');
-        }
-        if (options['enableHistory']) {
-            // deprecated since version 1.6.0, 2012-11-03
-            this.options.history = options['enableHistory'];
-            util.log('WARNING: Option "enableHistory" is deprecated. Use "history" instead.');
-        }
-        if (options['mode'] == 'editor') {
-            // deprecated since version 2.2.0, 2013-04-30
-            this.options.mode = 'tree';
-            util.log('WARNING: Mode "editor" is deprecated. Use "tree" instead.');
-        }
-        if (options['mode'] == 'viewer') {
-            // deprecated since version 2.2.0, 2013-04-30
-            this.options.mode = 'view';
-            util.log('WARNING: Mode "viewer" is deprecated. Use "view" instead.');
-        }
+  // copy all options
+  if (options) {
+    for (var prop in options) {
+      if (options.hasOwnProperty(prop)) {
+        this.options[prop] = options[prop];
+      }
     }
 
-    // interpret the mode options
-    this.mode = {
-        edit: (this.options.mode != 'view' && this.options.mode != 'form'),
-        view: (this.options.mode == 'view'),
-        form: (this.options.mode == 'form')
-    };
+    // check for deprecated options
+    if (options['enableSearch']) {
+      // deprecated since version 1.6.0, 2012-11-03
+      this.options.search = options['enableSearch'];
+      util.log('WARNING: Option "enableSearch" is deprecated. Use "search" instead.');
+    }
+    if (options['enableHistory']) {
+      // deprecated since version 1.6.0, 2012-11-03
+      this.options.history = options['enableHistory'];
+      util.log('WARNING: Option "enableHistory" is deprecated. Use "history" instead.');
+    }
+    if (options['mode'] == 'editor') {
+      // deprecated since version 2.2.0, 2013-04-30
+      this.options.mode = 'tree';
+      util.log('WARNING: Mode "editor" is deprecated. Use "tree" instead.');
+    }
+    if (options['mode'] == 'viewer') {
+      // deprecated since version 2.2.0, 2013-04-30
+      this.options.mode = 'view';
+      util.log('WARNING: Mode "viewer" is deprecated. Use "view" instead.');
+    }
+  }
+
+  // interpret the mode options
+  this.mode = {
+    edit: (this.options.mode != 'view' && this.options.mode != 'form'),
+    view: (this.options.mode == 'view'),
+    form: (this.options.mode == 'form')
+  };
 };
 
 // node currently being edited
@@ -122,40 +122,40 @@ TreeEditor.focusNode = undefined;
  *                                       Can also be set using setName(name).
  */
 TreeEditor.prototype.set = function (json, name) {
-    // adjust field name for root node
-    if (name) {
-        // TODO: deprecated since version 2.2.0. Cleanup some day.
-        util.log('Warning: second parameter "name" is deprecated. ' +
-            'Use setName(name) instead.');
-        this.options.name = name;
-    }
+  // adjust field name for root node
+  if (name) {
+    // TODO: deprecated since version 2.2.0. Cleanup some day.
+    util.log('Warning: second parameter "name" is deprecated. ' +
+        'Use setName(name) instead.');
+    this.options.name = name;
+  }
 
-    // verify if json is valid JSON, ignore when a function
-    if (json instanceof Function || (json === undefined)) {
-        this.clear();
-    }
-    else {
-        this.content.removeChild(this.table);  // Take the table offline
+  // verify if json is valid JSON, ignore when a function
+  if (json instanceof Function || (json === undefined)) {
+    this.clear();
+  }
+  else {
+    this.content.removeChild(this.table);  // Take the table offline
 
-        // replace the root node
-        var params = {
-            'field': this.options.name,
-            'value': json
-        };
-        var node = new Node(this, params);
-        this._setRoot(node);
+    // replace the root node
+    var params = {
+      'field': this.options.name,
+      'value': json
+    };
+    var node = new Node(this, params);
+    this._setRoot(node);
 
-        // expand
-        var recurse = false;
-        this.node.expand(recurse);
+    // expand
+    var recurse = false;
+    this.node.expand(recurse);
 
-        this.content.appendChild(this.table);  // Put the table online again
-    }
+    this.content.appendChild(this.table);  // Put the table online again
+  }
 
-    // TODO: maintain history, store last state and previous document
-    if (this.history) {
-        this.history.clear();
-    }
+  // TODO: maintain history, store last state and previous document
+  if (this.history) {
+    this.history.clear();
+  }
 };
 
 /**
@@ -163,17 +163,17 @@ TreeEditor.prototype.set = function (json, name) {
  * @return {Object | undefined} json
  */
 TreeEditor.prototype.get = function () {
-    // remove focus from currently edited node
-    if (TreeEditor.focusNode) {
-        TreeEditor.focusNode.blur();
-    }
+  // remove focus from currently edited node
+  if (TreeEditor.focusNode) {
+    TreeEditor.focusNode.blur();
+  }
 
-    if (this.node) {
-        return this.node.getValue();
-    }
-    else {
-        return undefined;
-    }
+  if (this.node) {
+    return this.node.getValue();
+  }
+  else {
+    return undefined;
+  }
 };
 
 /**
@@ -181,7 +181,7 @@ TreeEditor.prototype.get = function () {
  * @return {String} jsonText
  */
 TreeEditor.prototype.getText = function() {
-    return JSON.stringify(this.get());
+  return JSON.stringify(this.get());
 };
 
 /**
@@ -189,7 +189,7 @@ TreeEditor.prototype.getText = function() {
  * @param {String} jsonText
  */
 TreeEditor.prototype.setText = function(jsonText) {
-    this.set(util.parse(jsonText));
+  this.set(util.parse(jsonText));
 };
 
 /**
@@ -197,10 +197,10 @@ TreeEditor.prototype.setText = function(jsonText) {
  * @param {String | undefined} name
  */
 TreeEditor.prototype.setName = function (name) {
-    this.options.name = name;
-    if (this.node) {
-        this.node.updateField(this.options.name);
-    }
+  this.options.name = name;
+  if (this.node) {
+    this.node.updateField(this.options.name);
+  }
 };
 
 /**
@@ -208,18 +208,18 @@ TreeEditor.prototype.setName = function (name) {
  * @return {String | undefined} name
  */
 TreeEditor.prototype.getName = function () {
-    return this.options.name;
+  return this.options.name;
 };
 
 /**
  * Remove the root node from the editor
  */
 TreeEditor.prototype.clear = function () {
-    if (this.node) {
-        this.node.collapse();
-        this.tbody.removeChild(this.node.getDom());
-        delete this.node;
-    }
+  if (this.node) {
+    this.node.collapse();
+    this.tbody.removeChild(this.node.getDom());
+    delete this.node;
+  }
 };
 
 /**
@@ -228,12 +228,12 @@ TreeEditor.prototype.clear = function () {
  * @private
  */
 TreeEditor.prototype._setRoot = function (node) {
-    this.clear();
+  this.clear();
 
-    this.node = node;
+  this.node = node;
 
-    // append to the dom
-    this.tbody.appendChild(node.getDom());
+  // append to the dom
+  this.tbody.appendChild(node.getDom());
 };
 
 /**
@@ -249,39 +249,39 @@ TreeEditor.prototype._setRoot = function (node) {
  *                                              'value')
  */
 TreeEditor.prototype.search = function (text) {
-    var results;
-    if (this.node) {
-        this.content.removeChild(this.table);  // Take the table offline
-        results = this.node.search(text);
-        this.content.appendChild(this.table);  // Put the table online again
-    }
-    else {
-        results = [];
-    }
+  var results;
+  if (this.node) {
+    this.content.removeChild(this.table);  // Take the table offline
+    results = this.node.search(text);
+    this.content.appendChild(this.table);  // Put the table online again
+  }
+  else {
+    results = [];
+  }
 
-    return results;
+  return results;
 };
 
 /**
  * Expand all nodes
  */
 TreeEditor.prototype.expandAll = function () {
-    if (this.node) {
-        this.content.removeChild(this.table);  // Take the table offline
-        this.node.expand();
-        this.content.appendChild(this.table);  // Put the table online again
-    }
+  if (this.node) {
+    this.content.removeChild(this.table);  // Take the table offline
+    this.node.expand();
+    this.content.appendChild(this.table);  // Put the table online again
+  }
 };
 
 /**
  * Collapse all nodes
  */
 TreeEditor.prototype.collapseAll = function () {
-    if (this.node) {
-        this.content.removeChild(this.table);  // Take the table offline
-        this.node.collapse();
-        this.content.appendChild(this.table);  // Put the table online again
-    }
+  if (this.node) {
+    this.content.removeChild(this.table);  // Take the table offline
+    this.node.collapse();
+    this.content.appendChild(this.table);  // Put the table online again
+  }
 };
 
 /**
@@ -299,20 +299,20 @@ TreeEditor.prototype.collapseAll = function () {
  * @private
  */
 TreeEditor.prototype._onAction = function (action, params) {
-    // add an action to the history
-    if (this.history) {
-        this.history.add(action, params);
-    }
+  // add an action to the history
+  if (this.history) {
+    this.history.add(action, params);
+  }
 
-    // trigger the onChange callback
-    if (this.options.change) {
-        try {
-            this.options.change();
-        }
-        catch (err) {
-            util.log('Error in change callback: ', err);
-        }
+  // trigger the onChange callback
+  if (this.options.change) {
+    try {
+      this.options.change();
     }
+    catch (err) {
+      util.log('Error in change callback: ', err);
+    }
+  }
 };
 
 /**
@@ -321,53 +321,53 @@ TreeEditor.prototype._onAction = function (action, params) {
  * @param {Number} mouseY  Absolute mouse position in pixels
  */
 TreeEditor.prototype.startAutoScroll = function (mouseY) {
-    var me = this;
-    var content = this.content;
-    var top = util.getAbsoluteTop(content);
-    var height = content.clientHeight;
-    var bottom = top + height;
-    var margin = 24;
-    var interval = 50; // ms
+  var me = this;
+  var content = this.content;
+  var top = util.getAbsoluteTop(content);
+  var height = content.clientHeight;
+  var bottom = top + height;
+  var margin = 24;
+  var interval = 50; // ms
 
-    if ((mouseY < top + margin) && content.scrollTop > 0) {
-        this.autoScrollStep = ((top + margin) - mouseY) / 3;
-    }
-    else if (mouseY > bottom - margin &&
-            height + content.scrollTop < content.scrollHeight) {
-        this.autoScrollStep = ((bottom - margin) - mouseY) / 3;
-    }
-    else {
-        this.autoScrollStep = undefined;
-    }
+  if ((mouseY < top + margin) && content.scrollTop > 0) {
+    this.autoScrollStep = ((top + margin) - mouseY) / 3;
+  }
+  else if (mouseY > bottom - margin &&
+      height + content.scrollTop < content.scrollHeight) {
+    this.autoScrollStep = ((bottom - margin) - mouseY) / 3;
+  }
+  else {
+    this.autoScrollStep = undefined;
+  }
 
-    if (this.autoScrollStep) {
-        if (!this.autoScrollTimer) {
-            this.autoScrollTimer = setInterval(function () {
-                if (me.autoScrollStep) {
-                    content.scrollTop -= me.autoScrollStep;
-                }
-                else {
-                    me.stopAutoScroll();
-                }
-            }, interval);
+  if (this.autoScrollStep) {
+    if (!this.autoScrollTimer) {
+      this.autoScrollTimer = setInterval(function () {
+        if (me.autoScrollStep) {
+          content.scrollTop -= me.autoScrollStep;
         }
+        else {
+          me.stopAutoScroll();
+        }
+      }, interval);
     }
-    else {
-        this.stopAutoScroll();
-    }
+  }
+  else {
+    this.stopAutoScroll();
+  }
 };
 
 /**
  * Stop auto scrolling. Only applicable when scrolling
  */
 TreeEditor.prototype.stopAutoScroll = function () {
-    if (this.autoScrollTimer) {
-        clearTimeout(this.autoScrollTimer);
-        delete this.autoScrollTimer;
-    }
-    if (this.autoScrollStep) {
-        delete this.autoScrollStep;
-    }
+  if (this.autoScrollTimer) {
+    clearTimeout(this.autoScrollTimer);
+    delete this.autoScrollTimer;
+  }
+  if (this.autoScrollStep) {
+    delete this.autoScrollStep;
+  }
 };
 
 
@@ -381,20 +381,20 @@ TreeEditor.prototype.stopAutoScroll = function () {
  *                            {Number} scrollTop            Scroll position
  */
 TreeEditor.prototype.setSelection = function (selection) {
-    if (!selection) {
-        return;
-    }
+  if (!selection) {
+    return;
+  }
 
-    if ('scrollTop' in selection && this.content) {
-        // TODO: animated scroll
-        this.content.scrollTop = selection.scrollTop;
-    }
-    if (selection.range) {
-        util.setSelectionOffset(selection.range);
-    }
-    if (selection.dom) {
-        selection.dom.focus();
-    }
+  if ('scrollTop' in selection && this.content) {
+    // TODO: animated scroll
+    this.content.scrollTop = selection.scrollTop;
+  }
+  if (selection.range) {
+    util.setSelectionOffset(selection.range);
+  }
+  if (selection.dom) {
+    selection.dom.focus();
+  }
 };
 
 /**
@@ -406,11 +406,11 @@ TreeEditor.prototype.setSelection = function (selection) {
  *                            {Number} scrollTop            Scroll position
  */
 TreeEditor.prototype.getSelection = function () {
-    return {
-        dom: TreeEditor.domFocus,
-        scrollTop: this.content ? this.content.scrollTop : 0,
-        range: util.getSelectionOffset()
-    };
+  return {
+    dom: TreeEditor.domFocus,
+    scrollTop: this.content ? this.content.scrollTop : 0,
+    range: util.getSelectionOffset()
+  };
 };
 
 /**
@@ -423,50 +423,50 @@ TreeEditor.prototype.getSelection = function () {
  *                                         when not.
  */
 TreeEditor.prototype.scrollTo = function (top, callback) {
-    var content = this.content;
-    if (content) {
-        var editor = this;
-        // cancel any running animation
-        if (editor.animateTimeout) {
-            clearTimeout(editor.animateTimeout);
-            delete editor.animateTimeout;
-        }
-        if (editor.animateCallback) {
-            editor.animateCallback(false);
-            delete editor.animateCallback;
-        }
-
-        // calculate final scroll position
-        var height = content.clientHeight;
-        var bottom = content.scrollHeight - height;
-        var finalScrollTop = Math.min(Math.max(top - height / 4, 0), bottom);
-
-        // animate towards the new scroll position
-        var animate = function () {
-            var scrollTop = content.scrollTop;
-            var diff = (finalScrollTop - scrollTop);
-            if (Math.abs(diff) > 3) {
-                content.scrollTop += diff / 3;
-                editor.animateCallback = callback;
-                editor.animateTimeout = setTimeout(animate, 50);
-            }
-            else {
-                // finished
-                if (callback) {
-                    callback(true);
-                }
-                content.scrollTop = finalScrollTop;
-                delete editor.animateTimeout;
-                delete editor.animateCallback;
-            }
-        };
-        animate();
+  var content = this.content;
+  if (content) {
+    var editor = this;
+    // cancel any running animation
+    if (editor.animateTimeout) {
+      clearTimeout(editor.animateTimeout);
+      delete editor.animateTimeout;
     }
-    else {
+    if (editor.animateCallback) {
+      editor.animateCallback(false);
+      delete editor.animateCallback;
+    }
+
+    // calculate final scroll position
+    var height = content.clientHeight;
+    var bottom = content.scrollHeight - height;
+    var finalScrollTop = Math.min(Math.max(top - height / 4, 0), bottom);
+
+    // animate towards the new scroll position
+    var animate = function () {
+      var scrollTop = content.scrollTop;
+      var diff = (finalScrollTop - scrollTop);
+      if (Math.abs(diff) > 3) {
+        content.scrollTop += diff / 3;
+        editor.animateCallback = callback;
+        editor.animateTimeout = setTimeout(animate, 50);
+      }
+      else {
+        // finished
         if (callback) {
-            callback(false);
+          callback(true);
         }
+        content.scrollTop = finalScrollTop;
+        delete editor.animateTimeout;
+        delete editor.animateCallback;
+      }
+    };
+    animate();
+  }
+  else {
+    if (callback) {
+      callback(false);
     }
+  }
 };
 
 /**
@@ -474,109 +474,109 @@ TreeEditor.prototype.scrollTo = function (top, callback) {
  * @private
  */
 TreeEditor.prototype._createFrame = function () {
-    // create the frame
-    this.frame = document.createElement('div');
-    this.frame.className = 'jsoneditor';
-    this.container.appendChild(this.frame);
+  // create the frame
+  this.frame = document.createElement('div');
+  this.frame.className = 'jsoneditor';
+  this.container.appendChild(this.frame);
 
-    // create one global event listener to handle all events from all nodes
-    var editor = this;
-    var onEvent = function (event) {
-        editor._onEvent(event);
-    };
-    this.frame.onclick = function (event) {
-        var target = event.target;// || event.srcElement;
+  // create one global event listener to handle all events from all nodes
+  var editor = this;
+  var onEvent = function (event) {
+    editor._onEvent(event);
+  };
+  this.frame.onclick = function (event) {
+    var target = event.target;// || event.srcElement;
 
-        onEvent(event);
+    onEvent(event);
 
-        // prevent default submit action of buttons when TreeEditor is located
-        // inside a form
-        if (target.nodeName == 'BUTTON') {
-            event.preventDefault();
-        }
-    };
-    this.frame.oninput = onEvent;
-    this.frame.onchange = onEvent;
-    this.frame.onkeydown = onEvent;
-    this.frame.onkeyup = onEvent;
-    this.frame.oncut = onEvent;
-    this.frame.onpaste = onEvent;
-    this.frame.onmousedown = onEvent;
-    this.frame.onmouseup = onEvent;
-    this.frame.onmouseover = onEvent;
-    this.frame.onmouseout = onEvent;
-    // Note: focus and blur events do not propagate, therefore they defined
-    // using an eventListener with useCapture=true
-    // see http://www.quirksmode.org/blog/archives/2008/04/delegating_the.html
-    util.addEventListener(this.frame, 'focus', onEvent, true);
-    util.addEventListener(this.frame, 'blur', onEvent, true);
-    this.frame.onfocusin = onEvent;  // for IE
-    this.frame.onfocusout = onEvent; // for IE
-
-    // create menu
-    this.menu = document.createElement('div');
-    this.menu.className = 'menu';
-    this.frame.appendChild(this.menu);
-
-    // create expand all button
-    var expandAll = document.createElement('button');
-    expandAll.className = 'expand-all';
-    expandAll.title = 'Expand all fields';
-    expandAll.onclick = function () {
-        editor.expandAll();
-    };
-    this.menu.appendChild(expandAll);
-
-    // create expand all button
-    var collapseAll = document.createElement('button');
-    collapseAll.title = 'Collapse all fields';
-    collapseAll.className = 'collapse-all';
-    collapseAll.onclick = function () {
-        editor.collapseAll();
-    };
-    this.menu.appendChild(collapseAll);
-
-    // create undo/redo buttons
-    if (this.history) {
-        // create undo button
-        var undo = document.createElement('button');
-        undo.className = 'undo separator';
-        undo.title = 'Undo last action (Ctrl+Z)';
-        undo.onclick = function () {
-            editor._onUndo();
-        };
-        this.menu.appendChild(undo);
-        this.dom.undo = undo;
-
-        // create redo button
-        var redo = document.createElement('button');
-        redo.className = 'redo';
-        redo.title = 'Redo (Ctrl+Shift+Z)';
-        redo.onclick = function () {
-            editor._onRedo();
-        };
-        this.menu.appendChild(redo);
-        this.dom.redo = redo;
-
-        // register handler for onchange of history
-        this.history.onChange = function () {
-            undo.disabled = !editor.history.canUndo();
-            redo.disabled = !editor.history.canRedo();
-        };
-        this.history.onChange();
+    // prevent default submit action of buttons when TreeEditor is located
+    // inside a form
+    if (target.nodeName == 'BUTTON') {
+      event.preventDefault();
     }
+  };
+  this.frame.oninput = onEvent;
+  this.frame.onchange = onEvent;
+  this.frame.onkeydown = onEvent;
+  this.frame.onkeyup = onEvent;
+  this.frame.oncut = onEvent;
+  this.frame.onpaste = onEvent;
+  this.frame.onmousedown = onEvent;
+  this.frame.onmouseup = onEvent;
+  this.frame.onmouseover = onEvent;
+  this.frame.onmouseout = onEvent;
+  // Note: focus and blur events do not propagate, therefore they defined
+  // using an eventListener with useCapture=true
+  // see http://www.quirksmode.org/blog/archives/2008/04/delegating_the.html
+  util.addEventListener(this.frame, 'focus', onEvent, true);
+  util.addEventListener(this.frame, 'blur', onEvent, true);
+  this.frame.onfocusin = onEvent;  // for IE
+  this.frame.onfocusout = onEvent; // for IE
 
-    // create mode box
-    if (this.options && this.options.modes && this.options.modes.length) {
-        var modeBox = createModeBox(this, this.options.modes, this.options.mode);
-        this.menu.appendChild(modeBox);
-        this.dom.modeBox = modeBox;
-    }
+  // create menu
+  this.menu = document.createElement('div');
+  this.menu.className = 'menu';
+  this.frame.appendChild(this.menu);
 
-    // create search box
-    if (this.options.search) {
-        this.searchBox = new SearchBox(this, this.menu);
-    }
+  // create expand all button
+  var expandAll = document.createElement('button');
+  expandAll.className = 'expand-all';
+  expandAll.title = 'Expand all fields';
+  expandAll.onclick = function () {
+    editor.expandAll();
+  };
+  this.menu.appendChild(expandAll);
+
+  // create expand all button
+  var collapseAll = document.createElement('button');
+  collapseAll.title = 'Collapse all fields';
+  collapseAll.className = 'collapse-all';
+  collapseAll.onclick = function () {
+    editor.collapseAll();
+  };
+  this.menu.appendChild(collapseAll);
+
+  // create undo/redo buttons
+  if (this.history) {
+    // create undo button
+    var undo = document.createElement('button');
+    undo.className = 'undo separator';
+    undo.title = 'Undo last action (Ctrl+Z)';
+    undo.onclick = function () {
+      editor._onUndo();
+    };
+    this.menu.appendChild(undo);
+    this.dom.undo = undo;
+
+    // create redo button
+    var redo = document.createElement('button');
+    redo.className = 'redo';
+    redo.title = 'Redo (Ctrl+Shift+Z)';
+    redo.onclick = function () {
+      editor._onRedo();
+    };
+    this.menu.appendChild(redo);
+    this.dom.redo = redo;
+
+    // register handler for onchange of history
+    this.history.onChange = function () {
+      undo.disabled = !editor.history.canUndo();
+      redo.disabled = !editor.history.canRedo();
+    };
+    this.history.onChange();
+  }
+
+  // create mode box
+  if (this.options && this.options.modes && this.options.modes.length) {
+    var modeBox = createModeBox(this, this.options.modes, this.options.mode);
+    this.menu.appendChild(modeBox);
+    this.dom.modeBox = modeBox;
+  }
+
+  // create search box
+  if (this.options.search) {
+    this.searchBox = new SearchBox(this, this.menu);
+  }
 };
 
 /**
@@ -584,15 +584,15 @@ TreeEditor.prototype._createFrame = function () {
  * @private
  */
 TreeEditor.prototype._onUndo = function () {
-    if (this.history) {
-        // undo last action
-        this.history.undo();
+  if (this.history) {
+    // undo last action
+    this.history.undo();
 
-        // trigger change callback
-        if (this.options.change) {
-            this.options.change();
-        }
+    // trigger change callback
+    if (this.options.change) {
+      this.options.change();
     }
+  }
 };
 
 /**
@@ -600,15 +600,15 @@ TreeEditor.prototype._onUndo = function () {
  * @private
  */
 TreeEditor.prototype._onRedo = function () {
-    if (this.history) {
-        // redo last action
-        this.history.redo();
+  if (this.history) {
+    // redo last action
+    this.history.redo();
 
-        // trigger change callback
-        if (this.options.change) {
-            this.options.change();
-        }
+    // trigger change callback
+    if (this.options.change) {
+      this.options.change();
     }
+  }
 };
 
 /**
@@ -617,20 +617,20 @@ TreeEditor.prototype._onRedo = function () {
  * @private
  */
 TreeEditor.prototype._onEvent = function (event) {
-    var target = event.target;
+  var target = event.target;
 
-    if (event.type == 'keydown') {
-        this._onKeyDown(event);
-    }
+  if (event.type == 'keydown') {
+    this._onKeyDown(event);
+  }
 
-    if (event.type == 'focus') {
-        TreeEditor.domFocus = target;
-    }
+  if (event.type == 'focus') {
+    TreeEditor.domFocus = target;
+  }
 
-    var node = Node.getNodeFromTarget(target);
-    if (node) {
-        node.onEvent(event);
-    }
+  var node = Node.getNodeFromTarget(target);
+  if (node) {
+    node.onEvent(event);
+  }
 };
 
 /**
@@ -639,56 +639,56 @@ TreeEditor.prototype._onEvent = function (event) {
  * @private
  */
 TreeEditor.prototype._onKeyDown = function (event) {
-    var keynum = event.which || event.keyCode;
-    var ctrlKey = event.ctrlKey;
-    var shiftKey = event.shiftKey;
-    var handled = false;
+  var keynum = event.which || event.keyCode;
+  var ctrlKey = event.ctrlKey;
+  var shiftKey = event.shiftKey;
+  var handled = false;
 
-    if (keynum == 9) { // Tab or Shift+Tab
-        setTimeout(function () {
-            // select all text when moving focus to an editable div
-            util.selectContentEditable(TreeEditor.domFocus);
-        }, 0);
+  if (keynum == 9) { // Tab or Shift+Tab
+    setTimeout(function () {
+      // select all text when moving focus to an editable div
+      util.selectContentEditable(TreeEditor.domFocus);
+    }, 0);
+  }
+
+  if (this.searchBox) {
+    if (ctrlKey && keynum == 70) { // Ctrl+F
+      this.searchBox.dom.search.focus();
+      this.searchBox.dom.search.select();
+      handled = true;
     }
+    else if (keynum == 114 || (ctrlKey && keynum == 71)) { // F3 or Ctrl+G
+      var focus = true;
+      if (!shiftKey) {
+        // select next search result (F3 or Ctrl+G)
+        this.searchBox.next(focus);
+      }
+      else {
+        // select previous search result (Shift+F3 or Ctrl+Shift+G)
+        this.searchBox.previous(focus);
+      }
 
-    if (this.searchBox) {
-        if (ctrlKey && keynum == 70) { // Ctrl+F
-            this.searchBox.dom.search.focus();
-            this.searchBox.dom.search.select();
-            handled = true;
-        }
-        else if (keynum == 114 || (ctrlKey && keynum == 71)) { // F3 or Ctrl+G
-            var focus = true;
-            if (!shiftKey) {
-                // select next search result (F3 or Ctrl+G)
-                this.searchBox.next(focus);
-            }
-            else {
-                // select previous search result (Shift+F3 or Ctrl+Shift+G)
-                this.searchBox.previous(focus);
-            }
-
-            handled = true;
-        }
+      handled = true;
     }
+  }
 
-    if (this.history) {
-        if (ctrlKey && !shiftKey && keynum == 90) { // Ctrl+Z
-            // undo
-            this._onUndo();
-            handled = true;
-        }
-        else if (ctrlKey && shiftKey && keynum == 90) { // Ctrl+Shift+Z
-            // redo
-            this._onRedo();
-            handled = true;
-        }
+  if (this.history) {
+    if (ctrlKey && !shiftKey && keynum == 90) { // Ctrl+Z
+      // undo
+      this._onUndo();
+      handled = true;
     }
+    else if (ctrlKey && shiftKey && keynum == 90) { // Ctrl+Shift+Z
+      // redo
+      this._onRedo();
+      handled = true;
+    }
+  }
 
-    if (handled) {
-        event.preventDefault();
-        event.stopPropagation();
-    }
+  if (handled) {
+    event.preventDefault();
+    event.stopPropagation();
+  }
 };
 
 /**
@@ -696,59 +696,59 @@ TreeEditor.prototype._onKeyDown = function (event) {
  * @private
  */
 TreeEditor.prototype._createTable = function () {
-    var contentOuter = document.createElement('div');
-    contentOuter.className = 'outer';
-    this.contentOuter = contentOuter;
+  var contentOuter = document.createElement('div');
+  contentOuter.className = 'outer';
+  this.contentOuter = contentOuter;
 
-    this.content = document.createElement('div');
-    this.content.className = 'tree';
-    contentOuter.appendChild(this.content);
+  this.content = document.createElement('div');
+  this.content.className = 'tree';
+  contentOuter.appendChild(this.content);
 
-    this.table = document.createElement('table');
-    this.table.className = 'tree';
-    this.content.appendChild(this.table);
+  this.table = document.createElement('table');
+  this.table.className = 'tree';
+  this.content.appendChild(this.table);
 
-    // create colgroup where the first two columns don't have a fixed
-    // width, and the edit columns do have a fixed width
-    var col;
-    this.colgroupContent = document.createElement('colgroup');
-    if (this.mode.edit) {
-        col = document.createElement('col');
-        col.width = "24px";
-        this.colgroupContent.appendChild(col);
-    }
+  // create colgroup where the first two columns don't have a fixed
+  // width, and the edit columns do have a fixed width
+  var col;
+  this.colgroupContent = document.createElement('colgroup');
+  if (this.mode.edit) {
     col = document.createElement('col');
     col.width = "24px";
     this.colgroupContent.appendChild(col);
-    col = document.createElement('col');
-    this.colgroupContent.appendChild(col);
-    this.table.appendChild(this.colgroupContent);
+  }
+  col = document.createElement('col');
+  col.width = "24px";
+  this.colgroupContent.appendChild(col);
+  col = document.createElement('col');
+  this.colgroupContent.appendChild(col);
+  this.table.appendChild(this.colgroupContent);
 
-    this.tbody = document.createElement('tbody');
-    this.table.appendChild(this.tbody);
+  this.tbody = document.createElement('tbody');
+  this.table.appendChild(this.tbody);
 
-    this.frame.appendChild(contentOuter);
+  this.frame.appendChild(contentOuter);
 };
 
 // register modes at the JSONEditor
 JSONEditor.modes.tree = {
-    editor: TreeEditor,
-    data: 'json'
+  editor: TreeEditor,
+  data: 'json'
 };
 JSONEditor.modes.view = {
-    editor: TreeEditor,
-    data: 'json'
+  editor: TreeEditor,
+  data: 'json'
 };
 JSONEditor.modes.form = {
-    editor: TreeEditor,
-    data: 'json'
+  editor: TreeEditor,
+  data: 'json'
 };
 // Deprecated modes (deprecated since version 2.2.0)
 JSONEditor.modes.editor = {
-    editor: TreeEditor,
-    data: 'json'
+  editor: TreeEditor,
+  data: 'json'
 };
 JSONEditor.modes.viewer = {
-    editor: TreeEditor,
-    data: 'json'
+  editor: TreeEditor,
+  data: 'json'
 };

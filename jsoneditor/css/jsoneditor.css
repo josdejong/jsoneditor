@@ -2,60 +2,60 @@
 .jsoneditor .field,
 .jsoneditor .value,
 .jsoneditor .readonly {
-    border: 1px solid transparent;
-    min-height: 16px;
-    min-width: 32px;
-    padding: 2px;
-    margin: 1px;
-    word-wrap: break-word;
-    float: left;
+  border: 1px solid transparent;
+  min-height: 16px;
+  min-width: 32px;
+  padding: 2px;
+  margin: 1px;
+  word-wrap: break-word;
+  float: left;
 }
 
 /* adjust margin of p elements inside editable divs, needed for Opera, IE */
 .jsoneditor .field p,
 .jsoneditor .value p {
-    margin: 0;
+  margin: 0;
 }
 
 .jsoneditor .value {
-    word-break: break-word;
+  word-break: break-word;
 }
 
 .jsoneditor .readonly {
-    min-width: 16px;
-    color: gray;
+  min-width: 16px;
+  color: gray;
 }
 
 .jsoneditor .empty {
-    border-color: lightgray;
-    border-style: dashed;
-    border-radius: 2px;
+  border-color: lightgray;
+  border-style: dashed;
+  border-radius: 2px;
 }
 
 .jsoneditor .field.empty {
-    background-image: url('img/jsoneditor-icons.png');
-    background-position: 0 -144px;
+  background-image: url('img/jsoneditor-icons.png');
+  background-position: 0 -144px;
 }
 
 .jsoneditor .value.empty {
-    background-image: url('img/jsoneditor-icons.png');
-    background-position: -48px -144px;
+  background-image: url('img/jsoneditor-icons.png');
+  background-position: -48px -144px;
 }
 
 .jsoneditor .value.url {
-    color: green;
-    text-decoration: underline;
+  color: green;
+  text-decoration: underline;
 }
 
 .jsoneditor a.value.url:hover,
 .jsoneditor a.value.url:focus {
-    color: red;
+  color: red;
 }
 
 .jsoneditor .separator {
-    padding: 3px 0;
-    vertical-align: top;
-    color: gray;
+  padding: 3px 0;
+  vertical-align: top;
+  color: gray;
 }
 
 .jsoneditor .field[contenteditable=true]:focus,
@@ -64,9 +64,9 @@
 .jsoneditor .value[contenteditable=true]:hover,
 .jsoneditor .field.highlight,
 .jsoneditor .value.highlight {
-    background-color: #FFFFAB;
-    border: 1px solid yellow;
-    border-radius: 2px;
+  background-color: #FFFFAB;
+  border: 1px solid yellow;
+  border-radius: 2px;
 }
 
 .jsoneditor .field.highlight-active,
@@ -75,141 +75,141 @@
 .jsoneditor .value.highlight-active,
 .jsoneditor .value.highlight-active:focus,
 .jsoneditor .value.highlight-active:hover {
-    background-color: #ffee00;
-    border: 1px solid #ffc700;
-    border-radius: 2px;
+  background-color: #ffee00;
+  border: 1px solid #ffc700;
+  border-radius: 2px;
 }
 
 .jsoneditor div.tree button {
-    width: 24px;
-    height: 24px;
-    padding: 0;
-    margin: 0;
-    border: none;
-    cursor: pointer;
-    background: transparent url('img/jsoneditor-icons.png');
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  margin: 0;
+  border: none;
+  cursor: pointer;
+  background: transparent url('img/jsoneditor-icons.png');
 }
 
 .jsoneditor div.tree button.collapsed {
-    background-position: 0 -48px;
+  background-position: 0 -48px;
 }
 
 .jsoneditor div.tree button.expanded {
-    background-position: 0 -72px;
+  background-position: 0 -72px;
 }
 
 .jsoneditor div.tree button.contextmenu {
-    background-position: -48px -72px;
+  background-position: -48px -72px;
 }
 
 .jsoneditor div.tree button.contextmenu:hover,
 .jsoneditor div.tree button.contextmenu:focus,
 .jsoneditor div.tree button.contextmenu.selected {
-    background-position: -48px -48px;
+  background-position: -48px -48px;
 }
 
 .jsoneditor div.tree *:focus {
-    outline: none;
+  outline: none;
 }
 
 .jsoneditor div.tree button:focus {
-    /* TODO: nice outline for buttons with focus
-    outline: #97B0F8 solid 2px;
-    box-shadow: 0 0 8px #97B0F8;
-    */
-    background-color: #f5f5f5;
-    outline: #e5e5e5 solid 1px;
+  /* TODO: nice outline for buttons with focus
+  outline: #97B0F8 solid 2px;
+  box-shadow: 0 0 8px #97B0F8;
+  */
+  background-color: #f5f5f5;
+  outline: #e5e5e5 solid 1px;
 }
 
 .jsoneditor div.tree button.invisible {
-    visibility: hidden;
-    background: none;
+  visibility: hidden;
+  background: none;
 }
 
 .jsoneditor {
-    color: #1A1A1A;
-    border: 1px solid #97B0F8;
-    -moz-box-sizing: border-box;
-    -webkit-box-sizing: border-box;
-    box-sizing: border-box;
+  color: #1A1A1A;
+  border: 1px solid #97B0F8;
+  -moz-box-sizing: border-box;
+  -webkit-box-sizing: border-box;
+  box-sizing: border-box;
 
-    width: 100%;
-    height: 100%;
-    overflow: auto;
-    position: relative;
-    padding: 0;
-    line-height: 100%;
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  position: relative;
+  padding: 0;
+  line-height: 100%;
 }
 
 
 .jsoneditor div.tree table.tree {
-    border-collapse: collapse;
-    border-spacing: 0;
-    width: 100%;
-    margin: 0;
+  border-collapse: collapse;
+  border-spacing: 0;
+  width: 100%;
+  margin: 0;
 }
 
 .jsoneditor div.outer {
-    width: 100%;
-    height: 100%;
-    margin: -35px 0 0 0;
-    padding: 35px 0 0 0;
+  width: 100%;
+  height: 100%;
+  margin: -35px 0 0 0;
+  padding: 35px 0 0 0;
 
-    -moz-box-sizing: border-box;
-    -webkit-box-sizing: border-box;
-    box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -webkit-box-sizing: border-box;
+  box-sizing: border-box;
 
-    overflow: hidden;
+  overflow: hidden;
 }
 
 .jsoneditor div.tree {
-    width: 100%;
-    height: 100%;
-    position: relative;
-    overflow: auto;
+  width: 100%;
+  height: 100%;
+  position: relative;
+  overflow: auto;
 }
 
 .jsoneditor textarea.text {
-    width: 100%;
-    height: 100%;
-    margin: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
 
-    -moz-box-sizing: border-box;
-    -webkit-box-sizing: border-box;
-    box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -webkit-box-sizing: border-box;
+  box-sizing: border-box;
 
-    border: none;
-    background-color: white;
-    resize: none;
+  border: none;
+  background-color: white;
+  resize: none;
 }
 
 .jsoneditor tr.highlight {
-    background-color: #FFFFAB;
+  background-color: #FFFFAB;
 }
 
 .jsoneditor div.tree button.dragarea {
-    background: url('img/jsoneditor-icons.png') -72px -72px;
-    cursor: move;
+  background: url('img/jsoneditor-icons.png') -72px -72px;
+  cursor: move;
 }
 
 .jsoneditor div.tree button.dragarea:hover,
 .jsoneditor div.tree button.dragarea:focus {
-    background-position: -72px -48px;
+  background-position: -72px -48px;
 }
 
 .jsoneditor tr,
 .jsoneditor th,
 .jsoneditor td {
-    padding: 0;
-    margin: 0;
+  padding: 0;
+  margin: 0;
 }
 
 .jsoneditor td {
-    vertical-align: top;
+  vertical-align: top;
 }
 
 .jsoneditor td.tree {
-    vertical-align: top;
+  vertical-align: top;
 }
 
 .jsoneditor .field,
@@ -217,7 +217,7 @@
 .jsoneditor td,
 .jsoneditor th,
 .jsoneditor textarea {
-    font-family: droid sans mono, monospace, courier new, courier, sans-serif;
-    font-size: 10pt;
-    color: #1A1A1A;
+  font-family: droid sans mono, monospace, courier new, courier, sans-serif;
+  font-size: 10pt;
+  color: #1A1A1A;
 }

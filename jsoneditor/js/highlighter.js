@@ -4,7 +4,7 @@
  * @constructor Highlighter
  */
 function Highlighter () {
-    this.locked = false;
+  this.locked = false;
 }
 
 /**
@@ -12,23 +12,23 @@ function Highlighter () {
  * @param {Node} node
  */
 Highlighter.prototype.highlight = function (node) {
-    if (this.locked) {
-        return;
+  if (this.locked) {
+    return;
+  }
+
+  if (this.node != node) {
+    // unhighlight current node
+    if (this.node) {
+      this.node.setHighlight(false);
     }
 
-    if (this.node != node) {
-        // unhighlight current node
-        if (this.node) {
-            this.node.setHighlight(false);
-        }
+    // highlight new node
+    this.node = node;
+    this.node.setHighlight(true);
+  }
 
-        // highlight new node
-        this.node = node;
-        this.node.setHighlight(true);
-    }
-
-    // cancel any current timeout
-    this._cancelUnhighlight();
+  // cancel any current timeout
+  this._cancelUnhighlight();
 };
 
 /**
@@ -36,23 +36,23 @@ Highlighter.prototype.highlight = function (node) {
  * Will be done after a delay
  */
 Highlighter.prototype.unhighlight = function () {
-    if (this.locked) {
-        return;
-    }
+  if (this.locked) {
+    return;
+  }
 
-    var me = this;
-    if (this.node) {
-        this._cancelUnhighlight();
+  var me = this;
+  if (this.node) {
+    this._cancelUnhighlight();
 
-        // do the unhighlighting after a small delay, to prevent re-highlighting
-        // the same node when moving from the drag-icon to the contextmenu-icon
-        // or vice versa.
-        this.unhighlightTimer = setTimeout(function () {
-            me.node.setHighlight(false);
-            me.node = undefined;
-            me.unhighlightTimer = undefined;
-        }, 0);
-    }
+    // do the unhighlighting after a small delay, to prevent re-highlighting
+    // the same node when moving from the drag-icon to the contextmenu-icon
+    // or vice versa.
+    this.unhighlightTimer = setTimeout(function () {
+      me.node.setHighlight(false);
+      me.node = undefined;
+      me.unhighlightTimer = undefined;
+    }, 0);
+  }
 };
 
 /**
@@ -60,10 +60,10 @@ Highlighter.prototype.unhighlight = function () {
  * @private
  */
 Highlighter.prototype._cancelUnhighlight = function () {
-    if (this.unhighlightTimer) {
-        clearTimeout(this.unhighlightTimer);
-        this.unhighlightTimer = undefined;
-    }
+  if (this.unhighlightTimer) {
+    clearTimeout(this.unhighlightTimer);
+    this.unhighlightTimer = undefined;
+  }
 };
 
 /**
@@ -71,12 +71,12 @@ Highlighter.prototype._cancelUnhighlight = function () {
  * methods highlight and unhighlight do not work while locked.
  */
 Highlighter.prototype.lock = function () {
-    this.locked = true;
+  this.locked = true;
 };
 
 /**
  * Unlock highlighting or unhighlighting nodes
  */
 Highlighter.prototype.unlock = function () {
-    this.locked = false;
+  this.locked = false;
 };

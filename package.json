@@ -1,29 +1,29 @@
 {
-    "name": "jsoneditor",
-    "version": "2.4.0-SNAPSHOT",
-    "main": "jsoneditor.js",
-    "description": "A web-based tool to view, edit and format JSON",
-    "tags": [
-        "json",
-        "editor",
-        "viewer",
-        "formatter"
-    ],
-    "author": "Jos de Jong <wjosdejong@gmail.com>",
-    "homepage": "http://jsoneditoronline.org/",
-    "repository": {
-        "type": "git",
-        "url": "https://github.com/josdejong/jsoneditor.git"
-    },
-    "bugs": "https://github.com/josdejong/jsoneditor/issues",
-    "scripts": {
-        "prepublish": "jake"
-    },
-    "dependencies": {},
-    "devDependencies": {
-        "jake": "latest",
-        "jake-utils": "latest",
-        "archiver": "latest",
-        "clean-css": "latest"
-    }
+  "name": "jsoneditor",
+  "version": "2.4.0-SNAPSHOT",
+  "main": "jsoneditor.js",
+  "description": "A web-based tool to view, edit and format JSON",
+  "tags": [
+    "json",
+    "editor",
+    "viewer",
+    "formatter"
+  ],
+  "author": "Jos de Jong <wjosdejong@gmail.com>",
+  "homepage": "http://jsoneditoronline.org/",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/josdejong/jsoneditor.git"
+  },
+  "bugs": "https://github.com/josdejong/jsoneditor/issues",
+  "scripts": {
+    "prepublish": "jake"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "jake": "latest",
+    "jake-utils": "latest",
+    "archiver": "latest",
+    "clean-css": "latest"
+  }
 }

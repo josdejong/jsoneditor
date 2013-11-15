@@ -1,99 +1,99 @@
 
 .jsoneditor .menu {
-    width: 100%;
-    height: 35px;
-    padding: 2px;
-    margin: 0;
-    overflow: hidden;
-    -moz-box-sizing: border-box;
-    -webkit-box-sizing: border-box;
-    box-sizing: border-box;
+  width: 100%;
+  height: 35px;
+  padding: 2px;
+  margin: 0;
+  overflow: hidden;
+  -moz-box-sizing: border-box;
+  -webkit-box-sizing: border-box;
+  box-sizing: border-box;
 
-    color: #1A1A1A;
-    background-color: #D5DDF6;
-    border-bottom: 1px solid #97B0F8;
+  color: #1A1A1A;
+  background-color: #D5DDF6;
+  border-bottom: 1px solid #97B0F8;
 }
 
 .jsoneditor .menu button {
-    width: 26px;
-    height: 26px;
-    margin: 2px;
-    padding: 0;
-    border-radius: 2px;
-    border: 1px solid #aec0f8;
-    background: #e3eaf6 url('img/jsoneditor-icons.png');
-    color: #4D4D4D;
-    opacity: 0.8;
+  width: 26px;
+  height: 26px;
+  margin: 2px;
+  padding: 0;
+  border-radius: 2px;
+  border: 1px solid #aec0f8;
+  background: #e3eaf6 url('img/jsoneditor-icons.png');
+  color: #4D4D4D;
+  opacity: 0.8;
 
-    font-family: arial, sans-serif;
-    font-size: 10pt;
+  font-family: arial, sans-serif;
+  font-size: 10pt;
 
-    float: left;
+  float: left;
 }
 
 .jsoneditor .menu button:hover {
-    background-color: #f0f2f5;
+  background-color: #f0f2f5;
 }
 .jsoneditor .menu button:active {
-    background-color: #ffffff;
+  background-color: #ffffff;
 }
 .jsoneditor .menu button:disabled {
-    background-color: #e3eaf6;
+  background-color: #e3eaf6;
 }
 
 .jsoneditor .menu button.collapse-all {
-    background-position: 0 -96px;
+  background-position: 0 -96px;
 }
 .jsoneditor .menu button.expand-all {
-    background-position: 0 -120px;
+  background-position: 0 -120px;
 }
 .jsoneditor .menu button.undo {
-    background-position: -24px -96px;
+  background-position: -24px -96px;
 }
 .jsoneditor .menu button.undo:disabled {
-    background-position: -24px -120px;
+  background-position: -24px -120px;
 }
 .jsoneditor .menu button.redo {
-    background-position: -48px -96px;
+  background-position: -48px -96px;
 }
 .jsoneditor .menu button.redo:disabled {
-    background-position: -48px -120px;
+  background-position: -48px -120px;
 }
 .jsoneditor .menu button.compact {
-    background-position: -72px -96px;
+  background-position: -72px -96px;
 }
 .jsoneditor .menu button.format {
-    background-position: -72px -120px;
+  background-position: -72px -120px;
 }
 
 .jsoneditor .menu button.modes {
-    background-image: none;
-    width: auto;
-    padding-left: 6px;
-    padding-right: 6px;
+  background-image: none;
+  width: auto;
+  padding-left: 6px;
+  padding-right: 6px;
 }
 
 .jsoneditor .menu button.separator {
-    margin-left: 10px;
+  margin-left: 10px;
 }
 
 .jsoneditor .menu a {
-    font-family: arial, sans-serif;
-    font-size: 10pt;
-    color: #97B0F8;
-    vertical-align: middle;
+  font-family: arial, sans-serif;
+  font-size: 10pt;
+  color: #97B0F8;
+  vertical-align: middle;
 }
 
 .jsoneditor .menu a:hover {
-    color: red;
+  color: red;
 }
 
 .jsoneditor .menu a.poweredBy {
-    font-size: 8pt;
-    position: absolute;
-    right: 0;
-    top: 0;
-    padding: 10px;
+  font-size: 8pt;
+  position: absolute;
+  right: 0;
+  top: 0;
+  padding: 10px;
 }
 
 /* TODO: css for button:disabled is not supported by IE8 */
