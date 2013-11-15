@@ -1,34 +1,6 @@
 // create namespace
 util = {};
 
-// http://soledadpenades.com/2007/05/17/arrayindexof-in-internet-explorer/
-if(!Array.prototype.indexOf) {
-    Array.prototype.indexOf = function(obj){
-        for(var i = 0; i < this.length; i++){
-            if(this[i] == obj){
-                return i;
-            }
-        }
-        return -1;
-    }
-}
-
-// https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Global_Objects/Array/forEach
-if (!Array.prototype.forEach) {
-    Array.prototype.forEach = function(fn, scope) {
-        for(var i = 0, len = this.length; i < len; ++i) {
-            fn.call(scope || this, this[i], i, this);
-        }
-    }
-}
-
-// https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/isArray
-if(!Array.isArray) {
-    Array.isArray = function (vArg) {
-        return Object.prototype.toString.call(vArg) === "[object Array]";
-    };
-}
-
 /**
  * Parse JSON using the parser built-in in the browser.
  * On exception, the jsonString is validated and a detailed error is thrown.
@@ -179,57 +151,6 @@ util.getAbsoluteTop = function getAbsoluteTop(elem) {
 };
 
 /**
- * Get the absolute, vertical mouse position from an event.
- * @param {Event} event
- * @return {Number} mouseY
- */
-util.getMouseY = function getMouseY(event) {
-    var mouseY;
-    if ('pageY' in event) {
-        mouseY = event.pageY;
-    }
-    else {
-        // for IE8 and older
-        mouseY = (event.clientY + document.documentElement.scrollTop);
-    }
-
-    return mouseY;
-};
-
-/**
- * Get the absolute, horizontal mouse position from an event.
- * @param {Event} event
- * @return {Number} mouseX
- */
-util.getMouseX = function getMouseX(event) {
-    var mouseX;
-    if ('pageX' in event) {
-        mouseX = event.pageX;
-    }
-    else {
-        // for IE8 and older
-        mouseX = (event.clientX + document.documentElement.scrollLeft);
-    }
-
-    return mouseX;
-};
-
-/**
- * Get the window height
- * @return {Number} windowHeight
- */
-util.getWindowHeight = function getWindowHeight() {
-    if ('innerHeight' in window) {
-        return window.innerHeight;
-    }
-    else {
-        // for IE8 and older
-        return Math.max(document.body.clientHeight,
-            document.documentElement.clientHeight);
-    }
-};
-
-/**
  * add a className to the given elements style
  * @param {Element} elem
  * @param {String} className
@@ -297,19 +218,13 @@ util.stripFormatting = function stripFormatting(divElement) {
  */
 util.setEndOfContentEditable = function setEndOfContentEditable(contentEditableElement) {
     var range, selection;
-    if(document.createRange) {//Firefox, Chrome, Opera, Safari, IE 9+
+    if(document.createRange) {
         range = document.createRange();//Create a range (a range is a like the selection but invisible)
         range.selectNodeContents(contentEditableElement);//Select the entire contents of the element with the range
         range.collapse(false);//collapse the range to the end point. false means collapse to end rather than the start
         selection = window.getSelection();//get the selection object (allows you to change selection)
         selection.removeAllRanges();//remove any selections already made
         selection.addRange(range);//make the range you have just created the visible selection
-    }
-    else if(document.selection) {//IE 8 and lower
-        range = document.body.createTextRange();//Create a range (a range is a like the selection but invisible)
-        range.moveToElementText(contentEditableElement);//Select the entire contents of the element with the range
-        range.collapse(false);//collapse the range to the end point. false means collapse to end rather than the start
-        range.select();//Select the range (make it the visible selection
     }
 };
 
@@ -330,10 +245,6 @@ util.selectContentEditable = function selectContentEditable(contentEditableEleme
         sel = window.getSelection();
         sel.removeAllRanges();
         sel.addRange(range);
-    } else if (document.body.createTextRange) {
-        range = document.body.createTextRange();
-        range.moveToElementText(contentEditableElement);
-        range.select();
     }
 };
 
@@ -348,8 +259,6 @@ util.getSelection = function getSelection() {
         if (sel.getRangeAt && sel.rangeCount) {
             return sel.getRangeAt(0);
         }
-    } else if (document.selection && document.selection.createRange) {
-        return document.selection.createRange();
     }
     return null;
 };
@@ -365,8 +274,6 @@ util.setSelection = function setSelection(range) {
             var sel = window.getSelection();
             sel.removeAllRanges();
             sel.addRange(range);
-        } else if (document.selection && range.select) {
-            range.select();
         }
     }
 };
@@ -391,9 +298,6 @@ util.getSelectionOffset = function getSelectionOffset() {
             container: range.startContainer.parentNode
         };
     }
-    else {
-        // TODO: implement getSelectionOffset for IE8
-    }
 
     return null;
 };
@@ -417,9 +321,6 @@ util.setSelectionOffset = function setSelectionOffset(params) {
 
             util.setSelection(range);
         }
-    }
-    else {
-        // TODO: implement setSelectionOffset for IE8
     }
 };
 
@@ -546,12 +447,7 @@ util.addEventListener = function addEventListener(element, action, listener, use
         element.addEventListener(action, listener, useCapture);
         return listener;
     } else {
-        // IE browsers
-        var f = function () {
-            return listener.call(element, window.event);
-        };
-        element.attachEvent("on" + action, f);
-        return f;
+        throw new Error('missing function addEventListener');
     }
 };
 
@@ -564,7 +460,6 @@ util.addEventListener = function addEventListener(element, action, listener, use
  */
 util.removeEventListener = function removeEventListener(element, action, listener, useCapture) {
     if (element.removeEventListener) {
-        // non-IE browsers
         if (useCapture === undefined)
             useCapture = false;
 
@@ -574,43 +469,6 @@ util.removeEventListener = function removeEventListener(element, action, listene
 
         element.removeEventListener(action, listener, useCapture);
     } else {
-        // IE browsers
-        element.detachEvent("on" + action, listener);
-    }
-};
-
-
-/**
- * Stop event propagation
- * @param {Event} event
- */
-util.stopPropagation = function stopPropagation(event) {
-    if (!event) {
-        event = window.event;
-    }
-
-    if (event.stopPropagation) {
-        event.stopPropagation();  // non-IE browsers
-    }
-    else {
-        event.cancelBubble = true;  // IE browsers
-    }
-};
-
-
-/**
- * Cancels the event if it is cancelable, without stopping further propagation of the event.
- * @param {Event} event
- */
-util.preventDefault = function preventDefault(event) {
-    if (!event) {
-        event = window.event;
-    }
-
-    if (event.preventDefault) {
-        event.preventDefault();  // non-IE browsers
-    }
-    else {
-        event.returnValue = false;  // IE browsers
+      throw new Error('missing function removeEventListener');
     }
 };

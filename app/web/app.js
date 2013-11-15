@@ -158,7 +158,6 @@ app.load = function() {
         var domOpen = document.getElementById('open');
         var domOpenMenuButton = document.getElementById('openMenuButton');
         domOpen.onclick = function (event) {
-            event = event || window.event; // for IE8
             var target = event.target || event.srcElement;
             if (target == domOpenMenuButton ||
                     (event.offsetX > domOpen.offsetWidth - domOpenMenuButton.offsetWidth)) {
@@ -174,16 +173,16 @@ app.load = function() {
         var domMenuOpenFile = document.getElementById('menuOpenFile');
         domMenuOpenFile.onclick = function (event) {
             app.openFile();
-            jsoneditor.util.stopPropagation(event);
-            jsoneditor.util.preventDefault(event);
+            event.stopPropagation();
+            event.preventDefault();
         };
 
         // menu button open url
         var domMenuOpenUrl = document.getElementById('menuOpenUrl');
         domMenuOpenUrl.onclick = function (event) {
             app.openUrl();
-            jsoneditor.util.stopPropagation(event);
-            jsoneditor.util.preventDefault(event);
+            event.stopPropagation();
+            event.preventDefault();
         };
 
         // save button

@@ -180,7 +180,7 @@ ContextMenu.prototype.show = function (anchor) {
     this.hide();
 
     // calculate whether the menu fits below the anchor
-    var windowHeight = util.getWindowHeight();
+    var windowHeight = window.innerHeight;
     var anchorHeight = anchor.offsetHeight;
     var menuHeight = this.maxHeight;
 
@@ -209,19 +209,18 @@ ContextMenu.prototype.show = function (anchor) {
     this.eventListeners.mousedown = util.addEventListener(
         document, 'mousedown', function (event) {
             // hide menu on click outside of the menu
-            event = event || window.event;
-            var target = event.target || event.srcElement;
+            var target = event.target;
             if ((target != list) && !me._isChildOf(target, list)) {
                 me.hide();
-                util.stopPropagation(event);
-                util.preventDefault(event);
+                event.stopPropagation();
+                event.preventDefault();
             }
         });
     this.eventListeners.mousewheel = util.addEventListener(
         document, 'mousewheel', function () {
             // hide the menu on mouse scroll
-            util.stopPropagation(event);
-            util.preventDefault(event);
+            event.stopPropagation();
+            event.preventDefault();
         });
     this.eventListeners.keydown = util.addEventListener(
         document, 'keydown', function (event) {
@@ -316,9 +315,8 @@ ContextMenu.prototype._onExpandItem = function (domItem) {
  * @private
  */
 ContextMenu.prototype._onKeyDown = function (event) {
-    event = event || window.event;
-    var target = event.target || event.srcElement;
-    var keynum = event.which || event.keyCode;
+    var target = event.target;
+    var keynum = event.which;
     var handled = false;
     var buttons, targetIndex, prevButton, nextButton;
 
@@ -415,8 +413,8 @@ ContextMenu.prototype._onKeyDown = function (event) {
     // TODO: arrow left and right
 
     if (handled) {
-        util.stopPropagation(event);
-        util.preventDefault(event);
+        event.stopPropagation();
+        event.preventDefault();
     }
 };
 

@@ -60,7 +60,7 @@ function SearchBox (editor, container) {
     search.oninput = function (event) {
         searchBox._onDelayedSearch(event);
     };
-    search.onchange = function (event) { // For IE 8
+    search.onchange = function (event) { // For IE 9
         searchBox._onSearch(event);
     };
     search.onkeydown = function (event) {
@@ -248,13 +248,12 @@ SearchBox.prototype._onSearch = function (event, forceSearch) {
  * @private
  */
 SearchBox.prototype._onKeyDown = function (event) {
-    event = event || window.event;
-    var keynum = event.which || event.keyCode;
+    var keynum = event.which;
     if (keynum == 27) { // ESC
         this.dom.search.value = '';  // clear search
         this._onSearch(event);
-        util.preventDefault(event);
-        util.stopPropagation(event);
+        event.preventDefault();
+        event.stopPropagation();
     }
     else if (keynum == 13) { // Enter
         if (event.ctrlKey) {
@@ -269,8 +268,8 @@ SearchBox.prototype._onKeyDown = function (event) {
             // move to the next search result
             this.next();
         }
-        util.preventDefault(event);
-        util.stopPropagation(event);
+        event.preventDefault();
+        event.stopPropagation();
     }
 };
 
@@ -280,9 +279,8 @@ SearchBox.prototype._onKeyDown = function (event) {
  * @private
  */
 SearchBox.prototype._onKeyUp = function (event) {
-    event = event || window.event;
-    var keynum = event.which || event.keyCode;
+    var keynum = event.keyCode;
     if (keynum != 27 && keynum != 13) { // !show and !Enter
-        this._onDelayedSearch(event);   // For IE 8
+        this._onDelayedSearch(event);   // For IE 9
     }
 };

@@ -139,12 +139,11 @@ Notify.prototype.removeMessage = function (message) {
  * @private
  */
 Notify.prototype.onKeyDown = function (event) {
-    event = event || window.event;
-    var keynum = event.which || event.keyCode;
+    var keynum = event.which;
     if (keynum == 27) { // ESC
         // remove the oldest open and closeable message
         this.removeMessage();
-        jsoneditor.util.preventDefault(event);
-        jsoneditor.util.stopPropagation(event);
+        event.preventDefault();
+        event.stopPropagation();
     }
 };

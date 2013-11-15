@@ -61,7 +61,7 @@ TextEditor.prototype._create = function (container, options, json) {
     this.frame.className = 'jsoneditor';
     this.frame.onclick = function (event) {
         // prevent default submit action when TextEditor is located inside a form
-        util.preventDefault(event);
+        event.preventDefault();
     };
 
     // create menu

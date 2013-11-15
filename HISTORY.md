@@ -3,6 +3,11 @@
 http://jsoneditoronline.org
 
 
+## not yet released, version 2.3.4
+
+- Dropped support for IE8, cleaned up legacy code for old browsers.
+
+
 ## 2013-10-17, version 2.3.3
 
 - Added support for search (Ctrl+F) in the code editor Ace.

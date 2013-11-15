@@ -57,8 +57,8 @@ Splitter.prototype.onMouseDown = function (event) {
         this.params.changed = false;
         this.params.value = this.getValue();
     }
-    jsoneditor.util.preventDefault(event);
-    jsoneditor.util.stopPropagation(event);
+    event.preventDefault();
+    event.stopPropagation();
 };
 
 /**
@@ -81,8 +81,8 @@ Splitter.prototype.onMouseMove = function (event) {
         this.onChange(value);
     }
 
-    jsoneditor.util.preventDefault(event);
-    jsoneditor.util.stopPropagation(event);
+    event.preventDefault();
+    event.stopPropagation();
 };
 
 /**
@@ -113,8 +113,8 @@ Splitter.prototype.onMouseUp = function (event) {
             }
         }
     }
-    jsoneditor.util.preventDefault(event);
-    jsoneditor.util.stopPropagation(event);
+    event.preventDefault();
+    event.stopPropagation();
 };
 
 /**

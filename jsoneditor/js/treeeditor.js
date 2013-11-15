@@ -485,15 +485,14 @@ TreeEditor.prototype._createFrame = function () {
         editor._onEvent(event);
     };
     this.frame.onclick = function (event) {
-        event = event || window.event;
-        var target = event.target || event.srcElement;
+        var target = event.target;// || event.srcElement;
 
         onEvent(event);
 
         // prevent default submit action of buttons when TreeEditor is located
         // inside a form
         if (target.nodeName == 'BUTTON') {
-            util.preventDefault(event);
+            event.preventDefault();
         }
     };
     this.frame.oninput = onEvent;
@@ -618,8 +617,7 @@ TreeEditor.prototype._onRedo = function () {
  * @private
  */
 TreeEditor.prototype._onEvent = function (event) {
-    event = event || window.event;
-    var target = event.target || event.srcElement;
+    var target = event.target;
 
     if (event.type == 'keydown') {
         this._onKeyDown(event);
@@ -647,8 +645,6 @@ TreeEditor.prototype._onKeyDown = function (event) {
     var handled = false;
 
     if (keynum == 9) { // Tab or Shift+Tab
-        // FIXME: selecting all text on tab key does not work on IE8 (-> put selectContentEditable() in keyup too?)
-        //Node.select(TreeEditor.domFocus);
         setTimeout(function () {
             // select all text when moving focus to an editable div
             util.selectContentEditable(TreeEditor.domFocus);
@@ -690,8 +686,8 @@ TreeEditor.prototype._onKeyDown = function (event) {
     }
 
     if (handled) {
-        util.preventDefault(event);
-        util.stopPropagation(event);
+        event.preventDefault();
+        event.stopPropagation();
     }
 };
 
@@ -711,13 +707,6 @@ TreeEditor.prototype._createTable = function () {
     this.table = document.createElement('table');
     this.table.className = 'tree';
     this.content.appendChild(this.table);
-
-    // IE8 does not handle overflow='auto' correctly.
-    // Therefore, set overflow to 'scroll'
-    var ieVersion = util.getInternetExplorerVersion();
-    if (ieVersion == 8) {
-        this.content.style.overflow = 'scroll';
-    }
 
     // create colgroup where the first two columns don't have a fixed
     // width, and the edit columns do have a fixed width

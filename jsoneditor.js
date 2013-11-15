@@ -63,11 +63,11 @@ function JSONEditor (container, options, json) {
         throw new Error('JSONEditor constructor called without "new".');
     }
 
-    // check availability of JSON parser (not available in IE7 and older)
-    if (typeof JSON === 'undefined') {
-        throw new Error ('Your browser does not support JSON. \n\n' +
-            'Please install the newest version of your browser.\n' +
-            '(all modern browsers support JSON).');
+    // check for unsupported browser (IE8 and older)
+    var ieVersion = util.getInternetExplorerVersion();
+    if (ieVersion != -1 && ieVersion < 9) {
+        throw new Error('Unsupported browser, IE9 or newer required. ' +
+            'Please install the newest version of your browser.');
     }
 
     if (arguments.length) {
@@ -733,15 +733,14 @@ TreeEditor.prototype._createFrame = function () {
         editor._onEvent(event);
     };
     this.frame.onclick = function (event) {
-        event = event || window.event;
-        var target = event.target || event.srcElement;
+        var target = event.target;// || event.srcElement;
 
         onEvent(event);
 
         // prevent default submit action of buttons when TreeEditor is located
         // inside a form
         if (target.nodeName == 'BUTTON') {
-            util.preventDefault(event);
+            event.preventDefault();
         }
     };
     this.frame.oninput = onEvent;
@@ -866,8 +865,7 @@ TreeEditor.prototype._onRedo = function () {
  * @private
  */
 TreeEditor.prototype._onEvent = function (event) {
-    event = event || window.event;
-    var target = event.target || event.srcElement;
+    var target = event.target;
 
     if (event.type == 'keydown') {
         this._onKeyDown(event);
@@ -895,8 +893,6 @@ TreeEditor.prototype._onKeyDown = function (event) {
     var handled = false;
 
     if (keynum == 9) { // Tab or Shift+Tab
-        // FIXME: selecting all text on tab key does not work on IE8 (-> put selectContentEditable() in keyup too?)
-        //Node.select(TreeEditor.domFocus);
         setTimeout(function () {
             // select all text when moving focus to an editable div
             util.selectContentEditable(TreeEditor.domFocus);
@@ -938,8 +934,8 @@ TreeEditor.prototype._onKeyDown = function (event) {
     }
 
     if (handled) {
-        util.preventDefault(event);
-        util.stopPropagation(event);
+        event.preventDefault();
+        event.stopPropagation();
     }
 };
 
@@ -959,13 +955,6 @@ TreeEditor.prototype._createTable = function () {
     this.table = document.createElement('table');
     this.table.className = 'tree';
     this.content.appendChild(this.table);
-
-    // IE8 does not handle overflow='auto' correctly.
-    // Therefore, set overflow to 'scroll'
-    var ieVersion = util.getInternetExplorerVersion();
-    if (ieVersion == 8) {
-        this.content.style.overflow = 'scroll';
-    }
 
     // create colgroup where the first two columns don't have a fixed
     // width, and the edit columns do have a fixed width
@@ -1060,11 +1049,6 @@ TextEditor.prototype._create = function (container, options, json) {
             util.log('WARNING: Cannot load code editor, Ace library not loaded. ' +
                 'Falling back to plain text editor');
         }
-        if (util.getInternetExplorerVersion() == 8) {
-            this.mode = 'text';
-            util.log('WARNING: Cannot load code editor, Ace is not supported on IE8. ' +
-                'Falling back to plain text editor');
-        }
     }
 
     var me = this;
@@ -1080,7 +1064,7 @@ TextEditor.prototype._create = function (container, options, json) {
     this.frame.className = 'jsoneditor';
     this.frame.onclick = function (event) {
         // prevent default submit action when TextEditor is located inside a form
-        util.preventDefault(event);
+        event.preventDefault();
     };
 
     // create menu
@@ -2513,8 +2497,6 @@ Node.prototype.getDom = function() {
  * @private
  */
 Node.prototype._onDragStart = function (event) {
-    event = event || window.event;
-
     var node = this;
     if (!this.mousemove) {
         this.mousemove = util.addEventListener(document, 'mousemove',
@@ -2535,12 +2517,12 @@ Node.prototype._onDragStart = function (event) {
         'oldCursor': document.body.style.cursor,
         'startParent': this.parent,
         'startIndex': this.parent.childs.indexOf(this),
-        'mouseX': util.getMouseX(event),
+        'mouseX': event.pageX,
         'level': this.getLevel()
     };
     document.body.style.cursor = 'move';
 
-    util.preventDefault(event);
+    event.preventDefault();
 };
 
 /**
@@ -2550,9 +2532,8 @@ Node.prototype._onDragStart = function (event) {
  */
 Node.prototype._onDrag = function (event) {
     // TODO: this method has grown too large. Split it in a number of methods
-    event = event || window.event;
-    var mouseY = util.getMouseY(event);
-    var mouseX = util.getMouseX(event);
+    var mouseY = event.pageY;
+    var mouseX = event.pageX;
 
     var trThis, trPrev, trNext, trFirst, trLast, trRoot;
     var nodePrev, nodeNext;
@@ -2683,7 +2664,7 @@ Node.prototype._onDrag = function (event) {
     // auto scroll when hovering around the top of the editor
     this.editor.startAutoScroll(mouseY);
 
-    util.preventDefault(event);
+    event.preventDefault();
 };
 
 /**
@@ -2692,8 +2673,6 @@ Node.prototype._onDrag = function (event) {
  * @private
  */
 Node.prototype._onDragEnd = function (event) {
-    event = event || window.event;
-
     var params = {
         'node': this,
         'startParent': this.drag.startParent,
@@ -2722,7 +2701,7 @@ Node.prototype._onDragEnd = function (event) {
     // Stop any running auto scroll
     this.editor.stopAutoScroll();
 
-    util.preventDefault(event);
+    event.preventDefault();
 };
 
 /**
@@ -3176,7 +3155,7 @@ Node.prototype.onEvent = function (event) {
             case 'click':
                 var left = (event.offsetX != undefined) ?
                     (event.offsetX < (this.getLevel() + 1) * 24) :
-                    (util.getMouseX(event) < util.getAbsoluteLeft(dom.tdSeparator));// for FF
+                    (event.pageX < util.getAbsoluteLeft(dom.tdSeparator));// for FF
                 if (left || expandable) {
                     // node is expandable when it is an object or array
                     if (domField) {
@@ -3405,8 +3384,8 @@ Node.prototype.onKeyDown = function (event) {
     }
 
     if (handled) {
-        util.preventDefault(event);
-        util.stopPropagation(event);
+        event.preventDefault();
+        event.stopPropagation();
     }
 };
 
@@ -4581,7 +4560,7 @@ ContextMenu.prototype.show = function (anchor) {
     this.hide();
 
     // calculate whether the menu fits below the anchor
-    var windowHeight = util.getWindowHeight();
+    var windowHeight = window.innerHeight;
     var anchorHeight = anchor.offsetHeight;
     var menuHeight = this.maxHeight;
 
@@ -4610,19 +4589,18 @@ ContextMenu.prototype.show = function (anchor) {
     this.eventListeners.mousedown = util.addEventListener(
         document, 'mousedown', function (event) {
             // hide menu on click outside of the menu
-            event = event || window.event;
-            var target = event.target || event.srcElement;
+            var target = event.target;
             if ((target != list) && !me._isChildOf(target, list)) {
                 me.hide();
-                util.stopPropagation(event);
-                util.preventDefault(event);
+                event.stopPropagation();
+                event.preventDefault();
             }
         });
     this.eventListeners.mousewheel = util.addEventListener(
         document, 'mousewheel', function () {
             // hide the menu on mouse scroll
-            util.stopPropagation(event);
-            util.preventDefault(event);
+            event.stopPropagation();
+            event.preventDefault();
         });
     this.eventListeners.keydown = util.addEventListener(
         document, 'keydown', function (event) {
@@ -4717,9 +4695,8 @@ ContextMenu.prototype._onExpandItem = function (domItem) {
  * @private
  */
 ContextMenu.prototype._onKeyDown = function (event) {
-    event = event || window.event;
-    var target = event.target || event.srcElement;
-    var keynum = event.which || event.keyCode;
+    var target = event.target;
+    var keynum = event.which;
     var handled = false;
     var buttons, targetIndex, prevButton, nextButton;
 
@@ -4816,8 +4793,8 @@ ContextMenu.prototype._onKeyDown = function (event) {
     // TODO: arrow left and right
 
     if (handled) {
-        util.stopPropagation(event);
-        util.preventDefault(event);
+        event.stopPropagation();
+        event.preventDefault();
     }
 };
 
@@ -5216,7 +5193,7 @@ function SearchBox (editor, container) {
     search.oninput = function (event) {
         searchBox._onDelayedSearch(event);
     };
-    search.onchange = function (event) { // For IE 8
+    search.onchange = function (event) { // For IE 9
         searchBox._onSearch(event);
     };
     search.onkeydown = function (event) {
@@ -5404,13 +5381,12 @@ SearchBox.prototype._onSearch = function (event, forceSearch) {
  * @private
  */
 SearchBox.prototype._onKeyDown = function (event) {
-    event = event || window.event;
-    var keynum = event.which || event.keyCode;
+    var keynum = event.which;
     if (keynum == 27) { // ESC
         this.dom.search.value = '';  // clear search
         this._onSearch(event);
-        util.preventDefault(event);
-        util.stopPropagation(event);
+        event.preventDefault();
+        event.stopPropagation();
     }
     else if (keynum == 13) { // Enter
         if (event.ctrlKey) {
@@ -5425,8 +5401,8 @@ SearchBox.prototype._onKeyDown = function (event) {
             // move to the next search result
             this.next();
         }
-        util.preventDefault(event);
-        util.stopPropagation(event);
+        event.preventDefault();
+        event.stopPropagation();
     }
 };
 
@@ -5436,10 +5412,9 @@ SearchBox.prototype._onKeyDown = function (event) {
  * @private
  */
 SearchBox.prototype._onKeyUp = function (event) {
-    event = event || window.event;
-    var keynum = event.which || event.keyCode;
+    var keynum = event.keyCode;
     if (keynum != 27 && keynum != 13) { // !show and !Enter
-        this._onDelayedSearch(event);   // For IE 8
+        this._onDelayedSearch(event);   // For IE 9
     }
 };
 
@@ -5529,34 +5504,6 @@ Highlighter.prototype.unlock = function () {
 // create namespace
 util = {};
 
-// http://soledadpenades.com/2007/05/17/arrayindexof-in-internet-explorer/
-if(!Array.prototype.indexOf) {
-    Array.prototype.indexOf = function(obj){
-        for(var i = 0; i < this.length; i++){
-            if(this[i] == obj){
-                return i;
-            }
-        }
-        return -1;
-    }
-}
-
-// https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Global_Objects/Array/forEach
-if (!Array.prototype.forEach) {
-    Array.prototype.forEach = function(fn, scope) {
-        for(var i = 0, len = this.length; i < len; ++i) {
-            fn.call(scope || this, this[i], i, this);
-        }
-    }
-}
-
-// https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/isArray
-if(!Array.isArray) {
-    Array.isArray = function (vArg) {
-        return Object.prototype.toString.call(vArg) === "[object Array]";
-    };
-}
-
 /**
  * Parse JSON using the parser built-in in the browser.
  * On exception, the jsonString is validated and a detailed error is thrown.
@@ -5623,7 +5570,7 @@ util.clear = function clear (a) {
  * @param {...*} args
  */
 util.log = function log (args) {
-    if (console && typeof console.log === 'function') {
+    if (typeof console !== 'undefined' && typeof console.log === 'function') {
         console.log.apply(console, arguments);
     }
 };
@@ -5707,57 +5654,6 @@ util.getAbsoluteTop = function getAbsoluteTop(elem) {
 };
 
 /**
- * Get the absolute, vertical mouse position from an event.
- * @param {Event} event
- * @return {Number} mouseY
- */
-util.getMouseY = function getMouseY(event) {
-    var mouseY;
-    if ('pageY' in event) {
-        mouseY = event.pageY;
-    }
-    else {
-        // for IE8 and older
-        mouseY = (event.clientY + document.documentElement.scrollTop);
-    }
-
-    return mouseY;
-};
-
-/**
- * Get the absolute, horizontal mouse position from an event.
- * @param {Event} event
- * @return {Number} mouseX
- */
-util.getMouseX = function getMouseX(event) {
-    var mouseX;
-    if ('pageX' in event) {
-        mouseX = event.pageX;
-    }
-    else {
-        // for IE8 and older
-        mouseX = (event.clientX + document.documentElement.scrollLeft);
-    }
-
-    return mouseX;
-};
-
-/**
- * Get the window height
- * @return {Number} windowHeight
- */
-util.getWindowHeight = function getWindowHeight() {
-    if ('innerHeight' in window) {
-        return window.innerHeight;
-    }
-    else {
-        // for IE8 and older
-        return Math.max(document.body.clientHeight,
-            document.documentElement.clientHeight);
-    }
-};
-
-/**
  * add a className to the given elements style
  * @param {Element} elem
  * @param {String} className
@@ -5825,19 +5721,13 @@ util.stripFormatting = function stripFormatting(divElement) {
  */
 util.setEndOfContentEditable = function setEndOfContentEditable(contentEditableElement) {
     var range, selection;
-    if(document.createRange) {//Firefox, Chrome, Opera, Safari, IE 9+
+    if(document.createRange) {
         range = document.createRange();//Create a range (a range is a like the selection but invisible)
         range.selectNodeContents(contentEditableElement);//Select the entire contents of the element with the range
         range.collapse(false);//collapse the range to the end point. false means collapse to end rather than the start
         selection = window.getSelection();//get the selection object (allows you to change selection)
         selection.removeAllRanges();//remove any selections already made
         selection.addRange(range);//make the range you have just created the visible selection
-    }
-    else if(document.selection) {//IE 8 and lower
-        range = document.body.createTextRange();//Create a range (a range is a like the selection but invisible)
-        range.moveToElementText(contentEditableElement);//Select the entire contents of the element with the range
-        range.collapse(false);//collapse the range to the end point. false means collapse to end rather than the start
-        range.select();//Select the range (make it the visible selection
     }
 };
 
@@ -5858,10 +5748,6 @@ util.selectContentEditable = function selectContentEditable(contentEditableEleme
         sel = window.getSelection();
         sel.removeAllRanges();
         sel.addRange(range);
-    } else if (document.body.createTextRange) {
-        range = document.body.createTextRange();
-        range.moveToElementText(contentEditableElement);
-        range.select();
     }
 };
 
@@ -5876,8 +5762,6 @@ util.getSelection = function getSelection() {
         if (sel.getRangeAt && sel.rangeCount) {
             return sel.getRangeAt(0);
         }
-    } else if (document.selection && document.selection.createRange) {
-        return document.selection.createRange();
     }
     return null;
 };
@@ -5893,8 +5777,6 @@ util.setSelection = function setSelection(range) {
             var sel = window.getSelection();
             sel.removeAllRanges();
             sel.addRange(range);
-        } else if (document.selection && range.select) {
-            range.select();
         }
     }
 };
@@ -5919,9 +5801,6 @@ util.getSelectionOffset = function getSelectionOffset() {
             container: range.startContainer.parentNode
         };
     }
-    else {
-        // TODO: implement getSelectionOffset for IE8
-    }
 
     return null;
 };
@@ -5945,9 +5824,6 @@ util.setSelectionOffset = function setSelectionOffset(params) {
 
             util.setSelection(range);
         }
-    }
-    else {
-        // TODO: implement setSelectionOffset for IE8
     }
 };
 
@@ -6074,12 +5950,7 @@ util.addEventListener = function addEventListener(element, action, listener, use
         element.addEventListener(action, listener, useCapture);
         return listener;
     } else {
-        // IE browsers
-        var f = function () {
-            return listener.call(element, window.event);
-        };
-        element.attachEvent("on" + action, f);
-        return f;
+        throw new Error('missing function addEventListener');
     }
 };
 
@@ -6092,7 +5963,6 @@ util.addEventListener = function addEventListener(element, action, listener, use
  */
 util.removeEventListener = function removeEventListener(element, action, listener, useCapture) {
     if (element.removeEventListener) {
-        // non-IE browsers
         if (useCapture === undefined)
             useCapture = false;
 
@@ -6102,44 +5972,7 @@ util.removeEventListener = function removeEventListener(element, action, listene
 
         element.removeEventListener(action, listener, useCapture);
     } else {
-        // IE browsers
-        element.detachEvent("on" + action, listener);
-    }
-};
-
-
-/**
- * Stop event propagation
- * @param {Event} event
- */
-util.stopPropagation = function stopPropagation(event) {
-    if (!event) {
-        event = window.event;
-    }
-
-    if (event.stopPropagation) {
-        event.stopPropagation();  // non-IE browsers
-    }
-    else {
-        event.cancelBubble = true;  // IE browsers
-    }
-};
-
-
-/**
- * Cancels the event if it is cancelable, without stopping further propagation of the event.
- * @param {Event} event
- */
-util.preventDefault = function preventDefault(event) {
-    if (!event) {
-        event = window.event;
-    }
-
-    if (event.preventDefault) {
-        event.preventDefault();  // non-IE browsers
-    }
-    else {
-        event.returnValue = false;  // IE browsers
+      throw new Error('missing function removeEventListener');
     }
 };
 

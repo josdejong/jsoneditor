@@ -1189,8 +1189,6 @@ Node.prototype.getDom = function() {
  * @private
  */
 Node.prototype._onDragStart = function (event) {
-    event = event || window.event;
-
     var node = this;
     if (!this.mousemove) {
         this.mousemove = util.addEventListener(document, 'mousemove',
@@ -1211,12 +1209,12 @@ Node.prototype._onDragStart = function (event) {
         'oldCursor': document.body.style.cursor,
         'startParent': this.parent,
         'startIndex': this.parent.childs.indexOf(this),
-        'mouseX': util.getMouseX(event),
+        'mouseX': event.pageX,
         'level': this.getLevel()
     };
     document.body.style.cursor = 'move';
 
-    util.preventDefault(event);
+    event.preventDefault();
 };
 
 /**
@@ -1226,9 +1224,8 @@ Node.prototype._onDragStart = function (event) {
  */
 Node.prototype._onDrag = function (event) {
     // TODO: this method has grown too large. Split it in a number of methods
-    event = event || window.event;
-    var mouseY = util.getMouseY(event);
-    var mouseX = util.getMouseX(event);
+    var mouseY = event.pageY;
+    var mouseX = event.pageX;
 
     var trThis, trPrev, trNext, trFirst, trLast, trRoot;
     var nodePrev, nodeNext;
@@ -1359,7 +1356,7 @@ Node.prototype._onDrag = function (event) {
     // auto scroll when hovering around the top of the editor
     this.editor.startAutoScroll(mouseY);
 
-    util.preventDefault(event);
+    event.preventDefault();
 };
 
 /**
@@ -1368,8 +1365,6 @@ Node.prototype._onDrag = function (event) {
  * @private
  */
 Node.prototype._onDragEnd = function (event) {
-    event = event || window.event;
-
     var params = {
         'node': this,
         'startParent': this.drag.startParent,
@@ -1398,7 +1393,7 @@ Node.prototype._onDragEnd = function (event) {
     // Stop any running auto scroll
     this.editor.stopAutoScroll();
 
-    util.preventDefault(event);
+    event.preventDefault();
 };
 
 /**
@@ -1852,7 +1847,7 @@ Node.prototype.onEvent = function (event) {
             case 'click':
                 var left = (event.offsetX != undefined) ?
                     (event.offsetX < (this.getLevel() + 1) * 24) :
-                    (util.getMouseX(event) < util.getAbsoluteLeft(dom.tdSeparator));// for FF
+                    (event.pageX < util.getAbsoluteLeft(dom.tdSeparator));// for FF
                 if (left || expandable) {
                     // node is expandable when it is an object or array
                     if (domField) {
@@ -2081,8 +2076,8 @@ Node.prototype.onKeyDown = function (event) {
     }
 
     if (handled) {
-        util.preventDefault(event);
-        util.stopPropagation(event);
+        event.preventDefault();
+        event.stopPropagation();
     }
 };
 

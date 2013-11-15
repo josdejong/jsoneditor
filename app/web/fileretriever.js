@@ -399,12 +399,11 @@ FileRetriever.prototype.prompt = function (params) {
     };
 
     var onKeyDown = jsoneditor.util.addEventListener(document, 'keydown', function (event) {
-        event = event || window.event;
-        var keynum = event.which || event.keyCode;
+        var keynum = event.which;
         if (keynum == 27) { // ESC
             onCancel();
-            jsoneditor.util.preventDefault(event);
-            jsoneditor.util.stopPropagation(event);
+            event.preventDefault();
+            event.stopPropagation();
         }
     });
 
@@ -484,8 +483,7 @@ FileRetriever.prototype.prompt = function (params) {
     background.className = 'fileretriever-background';
     background.appendChild(border);
     background.onclick = function (event) {
-        event = event || window.event;
-        var target = event.target || event.srcElement;
+        var target = event.target;
         if (target == background) {
             onCancel();
         }
