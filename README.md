@@ -11,6 +11,8 @@ editor.
 The editor can be used as a component in your own web application. The library
 can be loaded as CommonJS module, AMD module, or as a regular javascript file.
 
+Supported browsers: Chrome, Firefox, Safari, Opera, Internet Explorer 9+.
+
 ### Screenshot
 
 The web application shows two panels side by side: a code editor on the left,

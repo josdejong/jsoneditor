@@ -149,7 +149,9 @@ Splitter.prototype.setValue = function (value) {
         localStorage['splitterValue'] = value;
     }
     catch (e) {
-        console.log(e);
+        if (console && console.log) {
+            console.log(e);
+        }
     }
     return value;
 };

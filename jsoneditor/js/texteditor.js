@@ -29,13 +29,6 @@ function TextEditor(container, options, json) {
  * @private
  */
 TextEditor.prototype._create = function (container, options, json) {
-    // check availability of JSON parser (not available in IE7 and older)
-    if (typeof(JSON) == 'undefined') {
-        throw new Error('Your browser does not support JSON. \n\n' +
-            'Please install the newest version of your browser.\n' +
-            '(all modern browsers support JSON).');
-    }
-
     // read options
     options = options || {};
     this.options = options;
@@ -51,11 +44,6 @@ TextEditor.prototype._create = function (container, options, json) {
         if (typeof ace === 'undefined') {
             this.mode = 'text';
             util.log('WARNING: Cannot load code editor, Ace library not loaded. ' +
-                'Falling back to plain text editor');
-        }
-        if (util.getInternetExplorerVersion() == 8) {
-            this.mode = 'text';
-            util.log('WARNING: Cannot load code editor, Ace is not supported on IE8. ' +
                 'Falling back to plain text editor');
         }
     }

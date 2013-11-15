@@ -95,7 +95,7 @@ util.clear = function clear (a) {
  * @param {...*} args
  */
 util.log = function log (args) {
-    if (console && typeof console.log === 'function') {
+    if (typeof console !== 'undefined' && typeof console.log === 'function') {
         console.log.apply(console, arguments);
     }
 };

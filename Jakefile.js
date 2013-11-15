@@ -3,7 +3,7 @@
  */
 var jake = require('jake'),
     path = require('path'),
-    cleanCss = require('clean-css'),
+    CleanCSS = require('clean-css'),
     archiver = require('archiver'),
     fs = require('fs');
 
@@ -79,7 +79,7 @@ task('build', ['clear'], function () {
     console.log('Created ' + JSONEDITOR_CSS);
 
     // minify the css file
-    write(JSONEDITOR_CSS_MIN, cleanCss.process(String(read(JSONEDITOR_CSS))));
+    write(JSONEDITOR_CSS_MIN, new CleanCSS().minify(String(read(JSONEDITOR_CSS))));
 
     // create a folder img and copy the icons
     jake.mkdirP('./img');
@@ -214,7 +214,7 @@ task('webapp', ['build', 'minify'], function () {
     });
 
     // minify css file
-    write(appCssMin, cleanCss.process(String(read(appCss))));
+    write(appCssMin, new CleanCSS().minify(String(read(appCss))));
 
     // remove non minified javascript and css file
     fs.unlinkSync(appJs);

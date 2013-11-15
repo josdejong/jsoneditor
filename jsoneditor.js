@@ -27,8 +27,8 @@
  * Copyright (c) 2011-2013 Jos de Jong, http://jsoneditoronline.org
  *
  * @author  Jos de Jong, <wjosdejong@gmail.com>
- * @version 2.3.3
- * @date    2013-10-17
+ * @version 2.3.4-SNAPSHOT
+ * @date    2013-11-15
  */
 (function () {
 
@@ -61,6 +61,13 @@
 function JSONEditor (container, options, json) {
     if (!(this instanceof JSONEditor)) {
         throw new Error('JSONEditor constructor called without "new".');
+    }
+
+    // check availability of JSON parser (not available in IE7 and older)
+    if (typeof JSON === 'undefined') {
+        throw new Error ('Your browser does not support JSON. \n\n' +
+            'Please install the newest version of your browser.\n' +
+            '(all modern browsers support JSON).');
     }
 
     if (arguments.length) {
@@ -271,13 +278,6 @@ function TreeEditor(container, options, json) {
  * @private
  */
 TreeEditor.prototype._create = function (container, options, json) {
-    // check availability of JSON parser (not available in IE7 and older)
-    if (typeof(JSON) == 'undefined') {
-        throw new Error ('Your browser does not support JSON. \n\n' +
-            'Please install the newest version of your browser.\n' +
-            '(all modern browsers support JSON).');
-    }
-
     if (!container) {
         throw new Error('No container element provided.');
     }
@@ -1043,13 +1043,6 @@ function TextEditor(container, options, json) {
  * @private
  */
 TextEditor.prototype._create = function (container, options, json) {
-    // check availability of JSON parser (not available in IE7 and older)
-    if (typeof(JSON) == 'undefined') {
-        throw new Error('Your browser does not support JSON. \n\n' +
-            'Please install the newest version of your browser.\n' +
-            '(all modern browsers support JSON).');
-    }
-
     // read options
     options = options || {};
     this.options = options;
