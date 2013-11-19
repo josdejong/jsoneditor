@@ -27,8 +27,8 @@
  * Copyright (c) 2011-2013 Jos de Jong, http://jsoneditoronline.org
  *
  * @author  Jos de Jong, <wjosdejong@gmail.com>
- * @version 2.4.0-SNAPSHOT
- * @date    2013-11-15
+ * @version 2.3.4
+ * @date    2013-11-19
  */
 (function () {
 
@@ -5957,8 +5957,13 @@ util.addEventListener = function addEventListener(element, action, listener, use
 
     element.addEventListener(action, listener, useCapture);
     return listener;
-  } else {
-    throw new Error('missing function addEventListener');
+  } else if (element.attachEvent) {
+    // Old IE browsers
+    var f = function () {
+      return listener.call(element, window.event);
+    };
+    element.attachEvent("on" + action, f);
+    return f;
   }
 };
 
@@ -5979,8 +5984,9 @@ util.removeEventListener = function removeEventListener(element, action, listene
     }
 
     element.removeEventListener(action, listener, useCapture);
-  } else {
-    throw new Error('missing function removeEventListener');
+  } else if (element.detachEvent) {
+    // Old IE browsers
+    element.detachEvent("on" + action, listener);
   }
 };
 

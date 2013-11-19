@@ -3,7 +3,7 @@
 http://jsoneditoronline.org
 
 
-## not yet released, version 2.4.0
+## 2013-11-19, version 2.3.4
 
 - Dropped support for IE8, cleaned up legacy code for old browsers.
 - Disabled saving files using HTML5 on Firefox to prevent a Firefox bug

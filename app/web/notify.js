@@ -35,7 +35,7 @@ Notify.prototype.showNotification = function (message) {
 Notify.prototype.showError = function (error) {
   return this.showMessage({
     type: 'error',
-    message: (error.message || error.toString()),
+    message: (error.message ? 'Error: ' + error.message : error.toString()),
     closeButton: true
   });
 };

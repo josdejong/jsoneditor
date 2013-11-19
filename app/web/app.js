@@ -195,7 +195,15 @@ app.load = function() {
     // enforce FireFox to not do spell checking on any input field
     document.body.spellcheck = false;
   } catch (err) {
-    app.notify.showError(err);
+    try {
+      app.notify.showError(err);
+    }
+    catch (e) {
+      if (console && console.log) {
+        console.log(err);
+      }
+      alert(err);
+    }
   }
 };
 
