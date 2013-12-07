@@ -6,6 +6,7 @@ http://jsoneditoronline.org
 ## (not yet released), version 2.3.5
 
 - Fixed a positioning issue of the action menu again.
+- Fixed an issue with non-breaking space characters.
 
 
 ## 2013-11-19, version 2.3.4

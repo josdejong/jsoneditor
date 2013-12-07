@@ -4123,7 +4123,7 @@ Node.prototype._unescapeHTML = function (escapedText) {
   return htmlEscaped
       .replace(/&lt;/g, '<')
       .replace(/&gt;/g, '>')
-      .replace(/&nbsp;/g, ' ');
+      .replace(/&nbsp;|\u00A0/g, ' ');
 };
 
 /**
