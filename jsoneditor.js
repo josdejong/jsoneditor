@@ -27,8 +27,8 @@
  * Copyright (c) 2011-2013 Jos de Jong, http://jsoneditoronline.org
  *
  * @author  Jos de Jong, <wjosdejong@gmail.com>
- * @version 2.3.4
- * @date    2013-11-19
+ * @version 2.3.5-SNAPSHOT
+ * @date    2013-12-07
  */
 (function () {
 
@@ -4560,14 +4560,16 @@ ContextMenu.prototype.show = function (anchor) {
   this.hide();
 
   // calculate whether the menu fits below the anchor
-  var windowHeight = window.innerHeight;
-  var anchorHeight = anchor.offsetHeight;
-  var menuHeight = this.maxHeight;
+  var windowHeight = window.innerHeight,
+      windowScroll = (window.pageYOffset || document.scrollTop),
+      windowBottom = windowHeight + windowScroll,
+      anchorHeight = anchor.offsetHeight,
+      menuHeight = this.maxHeight;
 
   // position the menu
   var left = util.getAbsoluteLeft(anchor);
   var top = util.getAbsoluteTop(anchor);
-  if (top + anchorHeight + menuHeight < windowHeight) {
+  if (top + anchorHeight + menuHeight < windowBottom) {
     // display the menu below the anchor
     this.dom.menu.style.left = left + 'px';
     this.dom.menu.style.top = (top + anchorHeight) + 'px';
@@ -5624,33 +5626,19 @@ util.isUrl = function isUrl (text) {
  *                          in the browser page.
  */
 util.getAbsoluteLeft = function getAbsoluteLeft(elem) {
-  var left = elem.offsetLeft;
-  var body = document.body;
-  var e = elem.offsetParent;
-  while (e != null && elem != body) {
-    left += e.offsetLeft;
-    left -= e.scrollLeft;
-    e = e.offsetParent;
-  }
-  return left;
+  var rect = elem.getBoundingClientRect();
+  return rect.left + window.pageXOffset || document.scrollLeft || 0;
 };
 
 /**
  * Retrieve the absolute top value of a DOM element
  * @param {Element} elem    A dom element, for example a div
- * @return {Number} top    The absolute top position of this element
+ * @return {Number} top     The absolute top position of this element
  *                          in the browser page.
  */
 util.getAbsoluteTop = function getAbsoluteTop(elem) {
-  var top = elem.offsetTop;
-  var body = document.body;
-  var e = elem.offsetParent;
-  while (e != null && e != body) {
-    top += e.offsetTop;
-    top -= e.scrollTop;
-    e = e.offsetParent;
-  }
-  return top;
+  var rect = elem.getBoundingClientRect();
+  return rect.top + window.pageYOffset || document.scrollTop || 0;
 };
 
 /**

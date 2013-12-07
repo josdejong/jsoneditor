@@ -226,7 +226,7 @@
 /* ContextMenu - main menu */
 
 .jsoneditor-contextmenu {
-  position: fixed;
+  position: absolute;
   z-index: 99999;
 }
 

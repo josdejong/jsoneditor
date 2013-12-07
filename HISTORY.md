@@ -3,6 +3,11 @@
 http://jsoneditoronline.org
 
 
+## (not yet released), version 2.3.5
+
+- Fixed a positioning issue of the action menu again.
+
+
 ## 2013-11-19, version 2.3.4
 
 - Dropped support for IE8, cleaned up legacy code for old browsers.

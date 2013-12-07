@@ -180,14 +180,16 @@ ContextMenu.prototype.show = function (anchor) {
   this.hide();
 
   // calculate whether the menu fits below the anchor
-  var windowHeight = window.innerHeight;
-  var anchorHeight = anchor.offsetHeight;
-  var menuHeight = this.maxHeight;
+  var windowHeight = window.innerHeight,
+      windowScroll = (window.pageYOffset || document.scrollTop),
+      windowBottom = windowHeight + windowScroll,
+      anchorHeight = anchor.offsetHeight,
+      menuHeight = this.maxHeight;
 
   // position the menu
   var left = util.getAbsoluteLeft(anchor);
   var top = util.getAbsoluteTop(anchor);
-  if (top + anchorHeight + menuHeight < windowHeight) {
+  if (top + anchorHeight + menuHeight < windowBottom) {
     // display the menu below the anchor
     this.dom.menu.style.left = left + 'px';
     this.dom.menu.style.top = (top + anchorHeight) + 'px';

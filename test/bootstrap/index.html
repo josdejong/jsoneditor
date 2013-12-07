@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Test Bootstrap modal</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <link href="css/bootstrap.min.css" rel="stylesheet" media="screen">
+  <link rel="stylesheet" type="text/css" href="../../jsoneditor-min.css">
+
+  <script src="http://cdnjs.cloudflare.com/ajax/libs/jquery/2.0.3/jquery.js"></script>
+  <script src="js/bootstrap.min.js"></script>
+  <script src="../../jsoneditor-min.js"></script>
+
+  <style>
+    body {
+      width: 500px;
+      margin: 20px;
+      padding: 20px;
+    }
+  </style>
+</head>
+<body>
+
+<div style="height: 100px;"></div>
+
+<h1>Test Bootstrap Modal</h1>
+
+<a class="btn" data-toggle="modal" href="#myModal1">Launch Modal 1</a>
+
+
+<div class="modal hide" id="myModal1"><!-- note the use of "hide" class -->
+  <div class="modal-header">
+    <button class="close" data-dismiss="modal">&times;</button>
+    <h3>Modal header</h3>
+  </div>
+  <div class="modal-body">
+    <p>One fine body...</p>
+    <div id="jsoneditor1"></div>
+  </div>
+  <div class="modal-footer">
+    <a href="#" class="btn" data-dismiss="modal">Close</a><!-- note the use of "data-dismiss" -->
+    <a href="#" class="btn btn-primary">Save changes</a>
+  </div>
+</div>​
+
+<a class="btn" data-toggle="modal" href="#myModal2">Launch Modal 2</a>
+
+<div class="modal hide" id="myModal2"><!-- note the use of "hide" class -->
+  <div class="modal-header">
+    <button class="close" data-dismiss="modal">&times;</button>
+    <h3>Modal header</h3>
+  </div>
+  <div class="modal-body">
+    <p>One fine body...</p>
+    <div id="jsoneditor2" style="height: 300px;"></div>
+  </div>
+  <div class="modal-footer">
+    <a href="#" class="btn" data-dismiss="modal">Close</a><!-- note the use of "data-dismiss" -->
+    <a href="#" class="btn btn-primary">Save changes</a>
+  </div>
+</div>​
+
+<p></p>
+
+<div id="jsoneditor3"></div>
+
+<p></p>
+
+<div id="jsoneditor4" style="height: 300px;"></div>
+
+<p></p>
+
+<div style="width:500px; height:300px; overflow: auto; background: lightgray;">
+  <div style="width: 700px; height:200px;"></div>
+  <div id="jsoneditor5" style="width: 300px; height: 300px; background: white; margin: 0 200px;"></div>
+  <div style="height:200px;"></div>
+</div>
+
+<div style="height: 400px;"></div>
+
+<script>
+  function createEditor (container) {
+
+    var options = {};
+
+    var json = {
+      'array': [1, 2, 3],
+      'boolean': true,
+      'null': null,
+      'number': 123,
+      'object': {'a': 'b', 'c': 'd'},
+      'string': 'Hello World'
+    };
+
+    var editor = new jsoneditor.JSONEditor(container, options, json);
+  }
+
+  setTimeout(function () {
+    createEditor(document.getElementById('jsoneditor1'));
+    createEditor(document.getElementById('jsoneditor2'));
+    createEditor(document.getElementById('jsoneditor3'));
+    createEditor(document.getElementById('jsoneditor4'));
+    createEditor(document.getElementById('jsoneditor5'));
+    document.getElementById('jsoneditor5').parentNode.scrollLeft = 100;
+    document.getElementById('jsoneditor5').parentNode.scrollTop = 100;
+    document.scrollTop = 100;
+  }, 0);
+
+</script>
+
+</body>
+</html>
+

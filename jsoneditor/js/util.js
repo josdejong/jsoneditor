@@ -121,33 +121,19 @@ util.isUrl = function isUrl (text) {
  *                          in the browser page.
  */
 util.getAbsoluteLeft = function getAbsoluteLeft(elem) {
-  var left = elem.offsetLeft;
-  var body = document.body;
-  var e = elem.offsetParent;
-  while (e != null && elem != body) {
-    left += e.offsetLeft;
-    left -= e.scrollLeft;
-    e = e.offsetParent;
-  }
-  return left;
+  var rect = elem.getBoundingClientRect();
+  return rect.left + window.pageXOffset || document.scrollLeft || 0;
 };
 
 /**
  * Retrieve the absolute top value of a DOM element
  * @param {Element} elem    A dom element, for example a div
- * @return {Number} top    The absolute top position of this element
+ * @return {Number} top     The absolute top position of this element
  *                          in the browser page.
  */
 util.getAbsoluteTop = function getAbsoluteTop(elem) {
-  var top = elem.offsetTop;
-  var body = document.body;
-  var e = elem.offsetParent;
-  while (e != null && e != body) {
-    top += e.offsetTop;
-    top -= e.scrollTop;
-    e = e.offsetParent;
-  }
-  return top;
+  var rect = elem.getBoundingClientRect();
+  return rect.top + window.pageYOffset || document.scrollTop || 0;
 };
 
 /**
