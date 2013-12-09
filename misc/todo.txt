@@ -12,34 +12,12 @@ Bug: get the breaking of long words working on Firefox an IE. Does not work for
      a word like "blablablablablablablablablablablablablablablablablablablabla",
      and in IE also not for urls.
 
-Bug: zooming on IE8 does not work nicely: width of the contents is not adjusted.
-     is fixed as soon as resize() is executed after zooming
-
-Get things working in IE7? maybe only a sizing problem (besides no JSON support)
-
 for highlighting and expanding: send a timestamp, and when very large,
     split via a timeout in different parts so, the browser stays responsive.
-
-The edit buttons on the right should stay visible on the right side always,
-    possibly overlapping the text (but with a horizontal scrollbar)
 
 ________________________________________________________________________
 
 VERSION 2: Functionality
-
-filter nodes
-
-create onchange callbacks
-
-make the editor more keyboard friendly. Shortcut keys, access to the type dropdown menu
-
-alt+arrow keys to navigate through the fields and values
-
-copy a structure via Ctrl+ drag and drop?
-
-undo/redo
-
-load files from url or by upload
 
 store the contents in the browser. also store all revisions (used with undo/redo)
 
@@ -52,9 +30,6 @@ warning when an object has multiple fields with the same name
 create options:
   - collapsed: true/false
   - editableFields: true/false
-
-when dragging higher than the top, or lower than the bottom, scroll the 
-  whole editor.
 
 ________________________________________________________________________
 
