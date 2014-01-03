@@ -181,7 +181,7 @@ ContextMenu.prototype.show = function (anchor) {
 
   // calculate whether the menu fits below the anchor
   var windowHeight = window.innerHeight,
-      windowScroll = (window.pageYOffset || document.scrollTop),
+      windowScroll = (window.pageYOffset || document.scrollTop || 0),
       windowBottom = windowHeight + windowScroll,
       anchorHeight = anchor.offsetHeight,
       menuHeight = this.maxHeight;

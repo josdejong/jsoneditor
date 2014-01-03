@@ -3,6 +3,11 @@
 http://jsoneditoronline.org
 
 
+## 2014-01-03, version 2.3.6
+
+- Fixed positioning issue of the action menu.
+
+
 ## 2013-12-09, version 2.3.5
 
 - Fixed a positioning issue of the action menu again.

@@ -27,8 +27,8 @@
  * Copyright (c) 2011-2013 Jos de Jong, http://jsoneditoronline.org
  *
  * @author  Jos de Jong, <wjosdejong@gmail.com>
- * @version 2.3.5
- * @date    2013-12-09
+ * @version 2.3.6
+ * @date    2014-01-03
  */
 (function () {
 
@@ -4561,7 +4561,7 @@ ContextMenu.prototype.show = function (anchor) {
 
   // calculate whether the menu fits below the anchor
   var windowHeight = window.innerHeight,
-      windowScroll = (window.pageYOffset || document.scrollTop),
+      windowScroll = (window.pageYOffset || document.scrollTop || 0),
       windowBottom = windowHeight + windowScroll,
       anchorHeight = anchor.offsetHeight,
       menuHeight = this.maxHeight;
