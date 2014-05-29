@@ -2,7 +2,7 @@ app
 bower.json
 build
 downloads
-jsoneditor
+src
 misc
 node_modules
 test

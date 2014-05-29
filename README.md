@@ -96,7 +96,7 @@ download:
 
 ### Build
 
-The code of the JSON Editor is located in the folder `jsoneditor`. To build 
+The code of the JSON Editor is located in the folder `src`. To build 
 jsoneditor:
 
 - Install dependencies:
@@ -116,6 +116,5 @@ jsoneditor:
 
       npm run build
 
-  This will generate the files `jsoneditor.js`,
-  `jsoneditor.css`, and minified versions, and will create a folder `build`
-  containing the zipped library and the built web application.
+  This will generate the files `jsoneditor.js`, `jsoneditor.css`, and minified 
+  versions in the root of the project.

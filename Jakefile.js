@@ -39,7 +39,7 @@ task('clear', function () {
  */
 desc('Build the library');
 task('build', ['clear'], function () {
-  var jsoneditorSrc = './jsoneditor/';
+  var jsoneditorSrc = './src/';
   // concatenate the javascript files
   concat({
     src: [
@@ -122,7 +122,7 @@ task('minify', ['build'], function () {
   minify({
     src: JSONEDITOR,
     dest: JSONEDITOR_MIN,
-    header: read('./jsoneditor/js/header.js'),
+    header: read('./src/js/header.js'),
     separator: '\n'
   });
 
