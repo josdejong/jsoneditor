@@ -1,6 +1,8 @@
 var fs = require('fs'),
     gulp = require('gulp'),
     gutil = require('gulp-util'),
+    concatCss = require('gulp-concat-css'),
+    minifyCSS = require('gulp-minify-css'),
     webpack = require('webpack'),
     uglify = require('uglify-js');
 
@@ -10,9 +12,11 @@ var ENTRY       = './src/js/JSONEditor.js',
     FILE_MIN    = 'jsoneditor.min.js',
     FILE_MAP    = 'jsoneditor.map',
     DIST        = './',
-    JSONEDITOR_JS     = DIST + FILE,
-    JSONEDITOR_MIN_JS = DIST + FILE_MIN,
-    JSONEDITOR_MAP_JS = DIST + FILE_MAP;
+    JSONEDITOR_JS       = DIST + FILE,
+    JSONEDITOR_MIN_JS   = DIST + FILE_MIN,
+    JSONEDITOR_MAP_JS   = DIST + FILE_MAP,
+    JSONEDITOR_CSS      = DIST + 'jsoneditor.css',
+    JSONEDITOR_MIN_CSS  = DIST + 'jsoneditor.min.css';
 
 // generate banner with today's date and correct version
 function createBanner() {
@@ -55,6 +59,7 @@ gulp.task('bundle', function (cb) {
   // update the banner contents (has a date in it which should stay up to date)
   bannerPlugin.banner = createBanner();
 
+  // bundle javascript
   compiler.run(function (err, stats) {
     if (err) {
       gutil.log(err);
@@ -62,12 +67,25 @@ gulp.task('bundle', function (cb) {
 
     gutil.log('bundled ' + JSONEDITOR_JS);
 
-    // TODO: bundle css
-
-    // TODO: bundle and minify assets
-
     cb();
   });
+
+  // bundle css
+  gulp.src([
+    'src/css/jsoneditor.css',
+    'src/css/contextmenu.css',
+    'src/css/menu.css',
+    'src/css/searchbox.css'
+  ])
+      .pipe(concatCss(JSONEDITOR_CSS))
+      .pipe(gulp.dest('.'))
+      .pipe(concatCss(JSONEDITOR_MIN_CSS))
+      .pipe(minifyCSS())
+      .pipe(gulp.dest('.'));
+
+  gutil.log('bundled ' + JSONEDITOR_CSS);
+  gutil.log('bundled ' + JSONEDITOR_MIN_CSS);
+
 });
 
 gulp.task('minify', ['bundle'], function () {
@@ -79,9 +97,11 @@ gulp.task('minify', ['bundle'], function () {
   gutil.log('Minified ' + JSONEDITOR_MIN_JS);
   gutil.log('Mapped ' + JSONEDITOR_MAP_JS);
 
-  // TODO: minify css
-
 });
+
+
+// TODO: bundle and minify assets
+
 
 // The default task (called when you run `gulp`)
 gulp.task('default', ['bundle', 'minify']);

@@ -328,7 +328,7 @@ return /******/ (function(modules) { // webpackBootstrap
 /* 1 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(4), __webpack_require__(5), __webpack_require__(6), __webpack_require__(7), __webpack_require__(8), __webpack_require__(3)], __WEBPACK_AMD_DEFINE_RESULT__ = (function (Highlighter, History, SearchBox, Node, modebox, util) {
+	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(5), __webpack_require__(6), __webpack_require__(7), __webpack_require__(8), __webpack_require__(4), __webpack_require__(3)], __WEBPACK_AMD_DEFINE_RESULT__ = (function (Highlighter, History, SearchBox, Node, modebox, util) {
 
 	  /**
 	   * @constructor TreeEditor
@@ -1064,7 +1064,7 @@ return /******/ (function(modules) { // webpackBootstrap
 /* 2 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(8), __webpack_require__(3)], __WEBPACK_AMD_DEFINE_RESULT__ = (function (modebox, util) {
+	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(4), __webpack_require__(3)], __WEBPACK_AMD_DEFINE_RESULT__ = (function (modebox, util) {
 
 	  /**
 	   * Create a TextEditor and attach it to given container
@@ -1866,6 +1866,113 @@ return /******/ (function(modules) { // webpackBootstrap
 /* 4 */
 /***/ function(module, exports, __webpack_require__) {
 
+	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(9)], __WEBPACK_AMD_DEFINE_RESULT__ = (function (ContextMenu) {
+
+	  /**
+	   * Create a mode box to be used in the editor menu's
+	   * @param {JSONEditor} editor
+	   * @param {String[]} modes  Available modes: 'code', 'form', 'text', 'tree', 'view'
+	   * @param {String} current  Available modes: 'code', 'form', 'text', 'tree', 'view'
+	   * @returns {HTMLElement} box
+	   */
+	  function createModeBox(editor, modes, current) {
+	    /**
+	     * Switch the mode of the editor
+	     * @param {String} mode
+	     */
+	    function switchMode(mode) {
+	      // switch mode
+	      editor.setMode(mode);
+
+	      // restore focus on mode box
+	      var modeBox = editor.dom && editor.dom.modeBox;
+	      if (modeBox) {
+	        modeBox.focus();
+	      }
+	    }
+
+	    // available modes
+	    var availableModes = {
+	      code: {
+	        'text': 'Code',
+	        'title': 'Switch to code highlighter',
+	        'click': function () {
+	          switchMode('code')
+	        }
+	      },
+	      form: {
+	        'text': 'Form',
+	        'title': 'Switch to form editor',
+	        'click': function () {
+	          switchMode('form');
+	        }
+	      },
+	      text: {
+	        'text': 'Text',
+	        'title': 'Switch to plain text editor',
+	        'click': function () {
+	          switchMode('text');
+	        }
+	      },
+	      tree: {
+	        'text': 'Tree',
+	        'title': 'Switch to tree editor',
+	        'click': function () {
+	          switchMode('tree');
+	        }
+	      },
+	      view: {
+	        'text': 'View',
+	        'title': 'Switch to tree view',
+	        'click': function () {
+	          switchMode('view');
+	        }
+	      }
+	    };
+
+	    // list the selected modes
+	    var items = [];
+	    for (var i = 0; i < modes.length; i++) {
+	      var mode = modes[i];
+	      var item = availableModes[mode];
+	      if (!item) {
+	        throw new Error('Unknown mode "' + mode + '"');
+	      }
+
+	      item.className = 'type-modes' + ((current == mode) ? ' selected' : '');
+	      items.push(item);
+	    }
+
+	    // retrieve the title of current mode
+	    var currentMode = availableModes[current];
+	    if (!currentMode) {
+	      throw new Error('Unknown mode "' + current + '"');
+	    }
+	    var currentTitle = currentMode.text;
+
+	    // create the html element
+	    var box = document.createElement('button');
+	    box.className = 'modes separator';
+	    box.innerHTML = currentTitle + ' &#x25BE;';
+	    box.title = 'Switch editor mode';
+	    box.onclick = function () {
+	      var menu = new ContextMenu(items);
+	      menu.show(box);
+	    };
+
+	    return box;
+	  }
+
+	  return {
+	    create: createModeBox
+	  }
+	}.apply(null, __WEBPACK_AMD_DEFINE_ARRAY__)), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
+
+
+/***/ },
+/* 5 */
+/***/ function(module, exports, __webpack_require__) {
+
 	var __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_RESULT__ = (function () {
 
 	  /**
@@ -1955,7 +2062,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	}.call(exports, __webpack_require__, exports, module)), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
 
 /***/ },
-/* 5 */
+/* 6 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(3)], __WEBPACK_AMD_DEFINE_RESULT__ = (function (util) {
@@ -2184,7 +2291,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 6 */
+/* 7 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_RESULT__ = (function () {
@@ -2483,7 +2590,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 7 */
+/* 8 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(9), __webpack_require__(10), __webpack_require__(3)], __WEBPACK_AMD_DEFINE_RESULT__ = (function (ContextMenu, appendNodeFactory, util) {
@@ -5353,113 +5460,6 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	  return Node;
 	}.apply(null, __WEBPACK_AMD_DEFINE_ARRAY__)), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
-
-/***/ },
-/* 8 */
-/***/ function(module, exports, __webpack_require__) {
-
-	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(9)], __WEBPACK_AMD_DEFINE_RESULT__ = (function (ContextMenu) {
-
-	  /**
-	   * Create a mode box to be used in the editor menu's
-	   * @param {JSONEditor} editor
-	   * @param {String[]} modes  Available modes: 'code', 'form', 'text', 'tree', 'view'
-	   * @param {String} current  Available modes: 'code', 'form', 'text', 'tree', 'view'
-	   * @returns {HTMLElement} box
-	   */
-	  function createModeBox(editor, modes, current) {
-	    /**
-	     * Switch the mode of the editor
-	     * @param {String} mode
-	     */
-	    function switchMode(mode) {
-	      // switch mode
-	      editor.setMode(mode);
-
-	      // restore focus on mode box
-	      var modeBox = editor.dom && editor.dom.modeBox;
-	      if (modeBox) {
-	        modeBox.focus();
-	      }
-	    }
-
-	    // available modes
-	    var availableModes = {
-	      code: {
-	        'text': 'Code',
-	        'title': 'Switch to code highlighter',
-	        'click': function () {
-	          switchMode('code')
-	        }
-	      },
-	      form: {
-	        'text': 'Form',
-	        'title': 'Switch to form editor',
-	        'click': function () {
-	          switchMode('form');
-	        }
-	      },
-	      text: {
-	        'text': 'Text',
-	        'title': 'Switch to plain text editor',
-	        'click': function () {
-	          switchMode('text');
-	        }
-	      },
-	      tree: {
-	        'text': 'Tree',
-	        'title': 'Switch to tree editor',
-	        'click': function () {
-	          switchMode('tree');
-	        }
-	      },
-	      view: {
-	        'text': 'View',
-	        'title': 'Switch to tree view',
-	        'click': function () {
-	          switchMode('view');
-	        }
-	      }
-	    };
-
-	    // list the selected modes
-	    var items = [];
-	    for (var i = 0; i < modes.length; i++) {
-	      var mode = modes[i];
-	      var item = availableModes[mode];
-	      if (!item) {
-	        throw new Error('Unknown mode "' + mode + '"');
-	      }
-
-	      item.className = 'type-modes' + ((current == mode) ? ' selected' : '');
-	      items.push(item);
-	    }
-
-	    // retrieve the title of current mode
-	    var currentMode = availableModes[current];
-	    if (!currentMode) {
-	      throw new Error('Unknown mode "' + current + '"');
-	    }
-	    var currentTitle = currentMode.text;
-
-	    // create the html element
-	    var box = document.createElement('button');
-	    box.className = 'modes separator';
-	    box.innerHTML = currentTitle + ' &#x25BE;';
-	    box.title = 'Switch editor mode';
-	    box.onclick = function () {
-	      var menu = new ContextMenu(items);
-	      menu.show(box);
-	    };
-
-	    return box;
-	  }
-
-	  return {
-	    create: createModeBox
-	  }
-	}.apply(null, __WEBPACK_AMD_DEFINE_ARRAY__)), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
-
 
 /***/ },
 /* 9 */
