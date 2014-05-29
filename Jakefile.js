@@ -9,26 +9,29 @@ var jake = require('jake'),
 require('jake-utils');
 
 // constants
-var JSONEDITOR = './jsoneditor.js',
-    JSONEDITOR_CSS = './jsoneditor.css',
-    JSONEDITOR_MIN = './jsoneditor-min.js',
-    JSONEDITOR_CSS_MIN = './jsoneditor-min.css',
-    DIST = './dist';
+var BUILD = './',
+    ASSET = BUILD + 'asset/',
+    BUILD_ACE = BUILD + 'asset/ace/',
+    BUILD_JSONLINT = BUILD + 'asset/jsonlint/',
+    JSONEDITOR = BUILD +'jsoneditor.js',
+    JSONEDITOR_CSS = BUILD + 'jsoneditor.css',
+    JSONEDITOR_MIN = BUILD + 'jsoneditor.min.js',
+    JSONEDITOR_CSS_MIN = BUILD + 'jsoneditor.min.css';
 
 /**
  * default task
  */
 desc('Execute all tasks');
-task('default', ['clear', 'build', 'minify', 'zip'], function () {
+task('default', ['clear', 'build', 'minify'], function () {
   console.log('Done');
 });
 
 /**
  * build the library
  */
-desc('Clear the build directory');
+desc('Clear the asset directory');
 task('clear', function () {
-  jake.rmRf(DIST);
+  jake.rmRf(ASSET);
 });
 
 /**
@@ -84,6 +87,30 @@ task('build', ['clear'], function () {
   jake.mkdirP('./img');
   jake.cpR(jsoneditorSrc + 'css/img/jsoneditor-icons.png', './img/');
   console.log('Copied jsoneditor-icons.png to ./img/');
+
+  // copy assets
+  // concatenate and copy ace files
+  var aceSrc = './node_modules/ace/build/src-min/';
+  jake.mkdirP(BUILD_ACE);
+  concat({
+    src: [
+          aceSrc + 'ace.js',
+          aceSrc + 'ext-searchbox.js',
+          aceSrc + 'mode-json.js',
+          aceSrc + 'theme-textmate.js',
+          jsoneditorSrc + 'js/ace/theme-jsoneditor.js'
+    ],
+    dest: BUILD_ACE + 'ace.js',
+    separator: '\n'
+  });
+  jake.cpR(aceSrc + 'worker-json.js', BUILD_ACE);
+
+  // copy and minify json lint file
+  jake.mkdirP(BUILD_JSONLINT);
+  minify({
+    src: './node_modules/jsonlint/lib/jsonlint.js',
+    dest: BUILD_JSONLINT + 'jsonlint.js'
+  });
 });
 
 /**
@@ -111,8 +138,8 @@ task('minify', ['build'], function () {
 desc('Zip the library');
 task('zip', ['build', 'minify'], {async: true}, function () {
   var pkg = 'jsoneditor-' + version();
-  var zipfile = DIST + '/' + pkg + '.zip';
-  jake.mkdirP(DIST);
+  var zipfile = BUILD + pkg + '.zip';
+  jake.mkdirP(BUILD);
 
   var output = fs.createWriteStream(zipfile);
   var archive = archiver('zip');

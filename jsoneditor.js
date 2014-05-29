@@ -23,7 +23,7 @@
  * Copyright (c) 2011-2013 Jos de Jong, http://jsoneditoronline.org
  *
  * @author  Jos de Jong, <wjosdejong@gmail.com>
- * @version 2.3.7-SNAPSHOT
+ * @version 3.0.0-SNAPSHOT
  * @date    2014-05-29
  */
 (function () {
@@ -5990,7 +5990,7 @@ var jsoneditor = {
  * load jsoneditor.css
  */
 var loadCss = function () {
-  // find the script named 'jsoneditor.js' or 'jsoneditor-min.js' or
+  // find the script named 'jsoneditor.js' or 'jsoneditor.min.js' or
   // 'jsoneditor.min.js', and use its path to find the css file to be
   // loaded.
   var scripts = document.getElementsByTagName('script');

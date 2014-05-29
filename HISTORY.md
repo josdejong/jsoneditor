@@ -3,6 +3,11 @@
 http://jsoneditoronline.org
 
 
+## not yet released, version 3.0.0
+
+- Large code reorganization.
+
+
 ## 2014-01-03, version 2.3.6
 
 - Fixed positioning issue of the action menu.

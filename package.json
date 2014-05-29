@@ -1,6 +1,6 @@
 {
   "name": "jsoneditor",
-  "version": "2.3.7-SNAPSHOT",
+  "version": "3.0.0-SNAPSHOT",
   "main": "jsoneditor.js",
   "description": "A web-based tool to view, edit and format JSON",
   "tags": [
@@ -16,12 +16,16 @@
     "url": "https://github.com/josdejong/jsoneditor.git"
   },
   "bugs": "https://github.com/josdejong/jsoneditor/issues",
-  "scripts": {},
+  "scripts": {
+    "build": "jake"
+  },
   "dependencies": {},
   "devDependencies": {
     "jake": "latest",
     "jake-utils": "latest",
     "archiver": "latest",
-    "clean-css": "latest"
+    "clean-css": "latest",
+    "jsonlint": "latest",
+    "ace": "git://github.com/ajaxorg/ace.git"
   }
 }

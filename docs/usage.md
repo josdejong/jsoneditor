@@ -23,8 +23,8 @@ To implement JSONEditor in a web application, load the javascript and css file
 in the head of the HTML page:
 
 ```html
-<link rel="stylesheet" type="text/css" href="jsoneditor/jsoneditor-min.css">
-<script type="text/javascript" src="jsoneditor/jsoneditor-min.js"></script>
+<link rel="stylesheet" type="text/css" href="jsoneditor/jsoneditor.min.css">
+<script type="text/javascript" src="jsoneditor/jsoneditor.min.js"></script>
 ```
 
 ### Detailed error messages
@@ -33,21 +33,21 @@ Optionally, [jsonlint](https://github.com/zaach/jsonlint) can be loaded to get
 more detailed error messages.
 
 ```html
-<script type="text/javascript" src="jsoneditor/lib/jsonlint/jsonlint.js"></script>
+<script type="text/javascript" src="jsoneditor/asset/jsonlint/jsonlint.js"></script>
 ```
 
 ### Code editor
 
 The mode 'code' requires the [Ace editor](http://ace.ajax.org/) to be loaded.
-Also, the content type must be specified on the page.
+JSON Editor comes with a custom built version of Ace containing the ace modules
+`ace.js`, `ext-searchbox.js`, `mode-json.js`, `theme-textmate.js`, and a custom
+theme `theme-jsoneditor.js`.
+Besides loading ace, the content type must be specified on the page.
 
 ```html
 <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
 
-<script type="text/javascript" src="jsoneditor/lib/ace/ace.js"></script>
-<script type="text/javascript" src="jsoneditor/lib/ace/mode-json.js"></script>
-<script type="text/javascript" src="jsoneditor/lib/ace/theme-textmate.js"></script>
-<script type="text/javascript" src="jsoneditor/lib/ace/theme-jsoneditor.js"></script>
+<script type="text/javascript" src="jsoneditor/asset/ace/ace.js"></script>
 ```
 
 ## Use
@@ -95,8 +95,8 @@ var json = editor.get();
 <!DOCTYPE HTML>
 <html>
 <head>
-    <link rel="stylesheet" type="text/css" href="jsoneditor/jsoneditor-min.css">
-    <script type="text/javascript" src="jsoneditor/jsoneditor-min.js"></script>
+    <link rel="stylesheet" type="text/css" href="jsoneditor/jsoneditor.min.css">
+    <script type="text/javascript" src="jsoneditor/jsoneditor.min.js"></script>
 </head>
 <body>
 <p>

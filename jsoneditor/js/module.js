@@ -13,7 +13,7 @@ var jsoneditor = {
  * load jsoneditor.css
  */
 var loadCss = function () {
-  // find the script named 'jsoneditor.js' or 'jsoneditor-min.js' or
+  // find the script named 'jsoneditor.js' or 'jsoneditor.min.js' or
   // 'jsoneditor.min.js', and use its path to find the css file to be
   // loaded.
   var scripts = document.getElementsByTagName('script');

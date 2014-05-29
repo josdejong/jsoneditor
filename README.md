@@ -96,12 +96,26 @@ download:
 
 ### Build
 
-The code of the JSON Editor is located in the folder `jsoneditor`.
-The code for the web application in `app/web`.
-To build the library from sourcecode, run
+The code of the JSON Editor is located in the folder `jsoneditor`. To build 
+jsoneditor:
 
-    jake
+- Install dependencies:
 
-in the root of the project. This will generate the files `jsoneditor.js`,
-`jsoneditor.css`, and minified versions, and will create a folder `build`
-containing the zipped library and the built web application.
+      npm install
+
+- Build Ace editor:
+
+      cd node_modules/ace
+      npm install
+      node ./Makefile.dryice.js -m
+      cd ../..
+
+  This generates the ace editor files in the folder `node_modules/ace/build`.
+
+- Build JSON Editor:
+
+      npm run build
+
+  This will generate the files `jsoneditor.js`,
+  `jsoneditor.css`, and minified versions, and will create a folder `build`
+  containing the zipped library and the built web application.
