@@ -13,15 +13,8 @@ can be loaded as CommonJS module, AMD module, or as a regular javascript file.
 
 Supported browsers: Chrome, Firefox, Safari, Opera, Internet Explorer 9+.
 
-### Screenshot
-
-The web application shows two panels side by side: a code editor on the left,
-and a tree editor on the right. Files and urls can be loaded via the main menu.
-
-<a href="http://jsoneditoronline.org">
-    <img alt="jsoneditor"
-        src="https://raw.github.com/josdejong/jsoneditor/master/misc/screenshots/jsoneditoronline.png">
-</a>
+<img alt="json editor" src="https://raw.github.com/josdejong/jsoneditor/master/misc/jsoneditor.png">
+<img alt="code editor" src="https://raw.github.com/josdejong/jsoneditor/master/misc/codeeditor.png">
 
 
 ### Features

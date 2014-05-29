@@ -1,4 +1,5 @@
 .idea
 build
+dist
 downloads
 node_modules

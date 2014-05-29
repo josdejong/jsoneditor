@@ -1,5 +1,4 @@
-JSON EDITOR ONLINE TODO
-http://jsoneditoronline.org
+JSON EDITOR TODO
 
 ________________________________________________________________________
 

@@ -8,10 +8,6 @@
  * Supported browsers: Chrome, Firefox, Safari, Opera, Internet Explorer 8+
  *
  * @license
- * This json editor is open sourced with the intention to use the editor as
- * a component in your own application. Not to just copy and monetize the editor
- * as it is.
- *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy
  * of the License at
@@ -27,8 +23,8 @@
  * Copyright (c) 2011-2013 Jos de Jong, http://jsoneditoronline.org
  *
  * @author  Jos de Jong, <wjosdejong@gmail.com>
- * @version 2.3.6
- * @date    2014-01-03
+ * @version 2.3.7-SNAPSHOT
+ * @date    2014-05-29
  */
 (function () {
 
@@ -1010,7 +1006,7 @@ JSONEditor.modes.viewer = {
  *                                                         "text" (default)
  *                                                         or "code".
  *                                   {Number} indentation  Number of indentation
- *                                                         spaces. 4 by default.
+ *                                                         spaces. 2 by default.
  *                                   {function} change     Callback method
  *                                                         triggered on change
  * @param {JSON | String} [json]     initial contents of the formatter
@@ -1124,6 +1120,7 @@ TextEditor.prototype._create = function (container, options, json) {
     editor.setShowPrintMargin(false);
     editor.setFontSize(13);
     editor.getSession().setMode('ace/mode/json');
+    editor.getSession().setTabSize(2);
     editor.getSession().setUseSoftTabs(true);
     editor.getSession().setUseWrapMode(true);
     this.editor = editor;

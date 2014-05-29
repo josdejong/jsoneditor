@@ -8,10 +8,6 @@
  * Supported browsers: Chrome, Firefox, Safari, Opera, Internet Explorer 8+
  *
  * @license
- * This json editor is open sourced with the intention to use the editor as
- * a component in your own application. Not to just copy and monetize the editor
- * as it is.
- *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy
  * of the License at
