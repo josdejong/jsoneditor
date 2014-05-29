@@ -65,7 +65,7 @@ var container = document.getElementById("jsoneditor");
 var options = {
     mode: 'tree'
 };
-var editor = new jsoneditor.JSONEditor(container, options);
+var editor = new JSONEditor(container, options);
 ```
 
 To set JSON data in the editor:
@@ -108,7 +108,7 @@ var json = editor.get();
 <script type="text/javascript" >
     // create the editor
     var container = document.getElementById("jsoneditor");
-    var editor = new jsoneditor.JSONEditor(container);
+    var editor = new JSONEditor(container);
 
     // set json
     function setJSON () {

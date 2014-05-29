@@ -3,9 +3,22 @@
 <head>
   <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
 
+  <!-- require.js -->
+  <script src="require.js"></script>
+  <script>
+    require.config({
+      packages: [
+        {
+          name: 'JSONEditor',
+          location: '../src/js/',
+          main: 'JSONEditor'
+        }
+      ]
+    });
+  </script>
+
   <!-- json editor -->
   <link rel="stylesheet" type="text/css" href="../jsoneditor.css">
-  <script type="text/javascript" src="../jsoneditor.js"></script>
 
   <!-- ace editor -->
   <script type="text/javascript" src="../node_modules/ace/build/src-min/ace.js"></script>
@@ -43,26 +56,30 @@
 <div id="jsoneditor"></div>
 
 <script type="text/javascript" >
-  var container = document.getElementById('jsoneditor');
+  var container, options, json, editor;
 
-  var options = {
-    mode: 'tree',
-    modes: ['code', 'form', 'text', 'tree', 'view'], // allowed modes
-    error: function (err) {
-      alert(err.toString());
-    }
-  };
+  require(['JSONEditor'], function (JSONEditor) {
+    container = document.getElementById('jsoneditor');
 
-  var json = {
-    "array": [1, 2, 3],
-    "boolean": true,
-    "null": null,
-    "number": 123,
-    "object": {"a": "b", "c": "d"},
-    "string": "Hello World"
-  };
+    options = {
+      mode: 'tree',
+      modes: ['code', 'form', 'text', 'tree', 'view'], // allowed modes
+      error: function (err) {
+        alert(err.toString());
+      }
+    };
 
-  var editor = new jsoneditor.JSONEditor(container, options, json);
+    json = {
+      "array": [1, 2, 3],
+      "boolean": true,
+      "null": null,
+      "number": 123,
+      "object": {"a": "b", "c": "d"},
+      "string": "Hello World"
+    };
+
+    editor = new JSONEditor(container, options, json);
+  });
 </script>
 </body>
 </html>

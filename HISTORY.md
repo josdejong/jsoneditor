@@ -5,6 +5,8 @@ http://jsoneditoronline.org
 
 ## not yet released, version 3.0.0
 
+- Editor must be loaded as `new JSONEditor(...)` instead of 
+  `new jsoneditor.JSONEditor(...)`.
 - Large code reorganization.
 
 

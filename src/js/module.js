@@ -2,10 +2,6 @@
 // module exports
 var jsoneditor = {
   'JSONEditor': JSONEditor,
-  'JSONFormatter': function () {
-    throw new Error('JSONFormatter is deprecated. ' +
-        'Use JSONEditor with mode "text" or "code" instead');
-  },
   'util': util
 };
 

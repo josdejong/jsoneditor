@@ -52,7 +52,7 @@ Constructs a new JSONEditor.
 
 *Returns:*
 
-- `{jsoneditor.JSONEditor} editor`
+- `{JSONEditor} editor`
   New instance of a JSONEditor.
 
 
@@ -133,7 +133,7 @@ var options = {
     "mode": "tree",
     "search": true
 };
-var editor = new jsoneditor.JSONEditor (container, options);
+var editor = new JSONEditor (container, options);
 var json = {
     "Array": [1, 2, 3],
     "Boolean": true,
@@ -155,7 +155,7 @@ var options = {
     "mode": "text",
     "indentation": 2
 };
-var editor = new jsoneditor.JSONEditor (container, options);
+var editor = new JSONEditor (container, options);
 var json = {
     "Array": [1, 2, 3],
     "Boolean": true,

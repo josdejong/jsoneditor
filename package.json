@@ -17,7 +17,7 @@
   },
   "bugs": "https://github.com/josdejong/jsoneditor/issues",
   "scripts": {
-    "build": "jake"
+    "build": "gulp"
   },
   "dependencies": {},
   "devDependencies": {
@@ -25,6 +25,10 @@
     "jake-utils": "latest",
     "archiver": "latest",
     "clean-css": "latest",
+    "gulp": "latest",
+    "gulp-util": "latest",
+    "webpack": "latest",
+    "uglify-js": "latest",
     "jsonlint": "latest",
     "ace": "git://github.com/ajaxorg/ace.git"
   }

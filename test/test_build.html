@@ -1,18 +1,18 @@
 <!DOCTYPE HTML>
 <html>
 <head>
-  <title>JSONEditor | Switch mode</title>
   <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
 
   <!-- json editor -->
-  <link rel="stylesheet" type="text/css" href="../jsoneditor.css">
   <script type="text/javascript" src="../jsoneditor.js"></script>
+  <link rel="stylesheet" type="text/css" href="../jsoneditor.css">
 
   <!-- ace editor -->
-  <script type="text/javascript" src="../asset/ace/ace.js"></script>
+  <script type="text/javascript" src="../node_modules/ace/build/src-min/ace.js"></script>
+  <script type="text/javascript" src="../src/js/ace/theme-jsoneditor.js"></script>
 
   <!-- json lint -->
-  <script type="text/javascript" src="../asset/jsonlint/jsonlint.js"></script>
+  <script type="text/javascript" src="../node_modules/jsonlint/lib/jsonlint.js"></script>
 
   <style type="text/css">
     body {
@@ -43,9 +43,11 @@
 <div id="jsoneditor"></div>
 
 <script type="text/javascript" >
-  var container = document.getElementById('jsoneditor');
+  var container, options, json, editor;
 
-  var options = {
+  container = document.getElementById('jsoneditor');
+
+  options = {
     mode: 'tree',
     modes: ['code', 'form', 'text', 'tree', 'view'], // allowed modes
     error: function (err) {
@@ -53,7 +55,7 @@
     }
   };
 
-  var json = {
+  json = {
     "array": [1, 2, 3],
     "boolean": true,
     "null": null,
@@ -62,7 +64,7 @@
     "string": "Hello World"
   };
 
-  var editor = new JSONEditor(container, options, json);
+  editor = new JSONEditor(container, options, json);
 </script>
 </body>
 </html>
