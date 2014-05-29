@@ -43,16 +43,16 @@ task('build', ['clear'], function () {
   // concatenate the javascript files
   concat({
     src: [
-      jsoneditorSrc + 'js/jsoneditor.js',
-      jsoneditorSrc + 'js/treeeditor.js',
-      jsoneditorSrc + 'js/texteditor.js',
-      jsoneditorSrc + 'js/node.js',
-      jsoneditorSrc + 'js/appendnode.js',
-      jsoneditorSrc + 'js/contextmenu.js',
-      jsoneditorSrc + 'js/history.js',
+      jsoneditorSrc + 'js/JSONEditor.js',
+      jsoneditorSrc + 'js/TreeEditor.js',
+      jsoneditorSrc + 'js/TextEditor.js',
+      jsoneditorSrc + 'js/Node.js',
+      jsoneditorSrc + 'js/AppendNode.js',
+      jsoneditorSrc + 'js/ContextMenu.js',
+      jsoneditorSrc + 'js/History.js',
       jsoneditorSrc + 'js/modebox.js',
-      jsoneditorSrc + 'js/searchbox.js',
-      jsoneditorSrc + 'js/highlighter.js',
+      jsoneditorSrc + 'js/SearchBox.js',
+      jsoneditorSrc + 'js/Highlighter.js',
       jsoneditorSrc + 'js/util.js',
       jsoneditorSrc + 'js/module.js'
     ],
