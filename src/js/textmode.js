@@ -1,8 +1,10 @@
 define(['./modebox', './util'], function (modebox, util) {
 
+  // create a mixin with the functions for text mode
+  var textmode = {};
+
   /**
-   * Create a TextEditor and attach it to given container
-   * @constructor TextEditor
+   * Create a text editor
    * @param {Element} container
    * @param {Object} [options]         Object with options. available options:
    *                                   {String} mode         Available values:
@@ -13,24 +15,9 @@ define(['./modebox', './util'], function (modebox, util) {
    *                                   {function} change     Callback method
    *                                                         triggered on change
    * @param {JSON | String} [json]     initial contents of the formatter
-   */
-  function TextEditor(container, options, json) {
-    if (!(this instanceof TextEditor)) {
-      throw new Error('TextEditor constructor called without "new".');
-    }
-
-    this._create(container, options, json);
-  }
-
-  /**
-   * Create a TextEditor and attach it to given container
-   * @constructor TextEditor
-   * @param {Element} container
-   * @param {Object} [options]         See description in constructor
-   * @param {JSON | String} [json]     initial contents of the formatter
    * @private
    */
-  TextEditor.prototype._create = function (container, options, json) {
+  textmode.create = function (container, options, json) {
     // read options
     options = options || {};
     this.options = options;
@@ -62,7 +49,7 @@ define(['./modebox', './util'], function (modebox, util) {
     this.frame = document.createElement('div');
     this.frame.className = 'jsoneditor';
     this.frame.onclick = function (event) {
-      // prevent default submit action when TextEditor is located inside a form
+      // prevent default submit action when the editor is located inside a form
       event.preventDefault();
     };
 
@@ -185,7 +172,7 @@ define(['./modebox', './util'], function (modebox, util) {
    * Detach the editor from the DOM
    * @private
    */
-  TextEditor.prototype._delete = function () {
+  textmode._delete = function () {
     if (this.frame && this.container && this.frame.parentNode == this.container) {
       this.container.removeChild(this.frame);
     }
@@ -197,7 +184,7 @@ define(['./modebox', './util'], function (modebox, util) {
    * @param {Error} err
    * @private
    */
-  TextEditor.prototype._onError = function(err) {
+  textmode._onError = function(err) {
     // TODO: onError is deprecated since version 2.2.0. cleanup some day
     if (typeof this.onError === 'function') {
       util.log('WARNING: JSONEditor.onError is deprecated. ' +
@@ -216,7 +203,7 @@ define(['./modebox', './util'], function (modebox, util) {
   /**
    * Compact the code in the formatter
    */
-  TextEditor.prototype.compact = function () {
+  textmode.compact = function () {
     var json = util.parse(this.getText());
     this.setText(JSON.stringify(json));
   };
@@ -224,7 +211,7 @@ define(['./modebox', './util'], function (modebox, util) {
   /**
    * Format the code in the formatter
    */
-  TextEditor.prototype.format = function () {
+  textmode.format = function () {
     var json = util.parse(this.getText());
     this.setText(JSON.stringify(json, null, this.indentation));
   };
@@ -232,7 +219,7 @@ define(['./modebox', './util'], function (modebox, util) {
   /**
    * Set focus to the formatter
    */
-  TextEditor.prototype.focus = function () {
+  textmode.focus = function () {
     if (this.textarea) {
       this.textarea.focus();
     }
@@ -244,7 +231,7 @@ define(['./modebox', './util'], function (modebox, util) {
   /**
    * Resize the formatter
    */
-  TextEditor.prototype.resize = function () {
+  textmode.resize = function () {
     if (this.editor) {
       var force = false;
       this.editor.resize(force);
@@ -255,7 +242,7 @@ define(['./modebox', './util'], function (modebox, util) {
    * Set json data in the formatter
    * @param {Object} json
    */
-  TextEditor.prototype.set = function(json) {
+  textmode.set = function(json) {
     this.setText(JSON.stringify(json, null, this.indentation));
   };
 
@@ -263,15 +250,15 @@ define(['./modebox', './util'], function (modebox, util) {
    * Get json data from the formatter
    * @return {Object} json
    */
-  TextEditor.prototype.get = function() {
+  textmode.get = function() {
     return util.parse(this.getText());
   };
 
   /**
-   * Get the text contents of the TextEditor
+   * Get the text contents of the editor
    * @return {String} jsonText
    */
-  TextEditor.prototype.getText = function() {
+  textmode.getText = function() {
     if (this.textarea) {
       return this.textarea.value;
     }
@@ -282,10 +269,10 @@ define(['./modebox', './util'], function (modebox, util) {
   };
 
   /**
-   * Set the text contents of the TextEditor
+   * Set the text contents of the editor
    * @param {String} jsonText
    */
-  TextEditor.prototype.setText = function(jsonText) {
+  textmode.setText = function(jsonText) {
     if (this.textarea) {
       this.textarea.value = jsonText;
     }
@@ -295,18 +282,16 @@ define(['./modebox', './util'], function (modebox, util) {
   };
 
   // define modes
-  TextEditor.modes = {
+  return {
     text: {
-      editor: TextEditor,
+      mixin: textmode,
       data: 'text',
-      load: TextEditor.prototype.format
+      load: textmode.format
     },
     code: {
-      editor: TextEditor,
+      mixin: textmode,
       data: 'text',
-      load: TextEditor.prototype.format
+      load: textmode.format
     }
   };
-
-  return TextEditor;
 });

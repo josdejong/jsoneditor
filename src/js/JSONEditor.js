@@ -1,4 +1,4 @@
-define(['./TreeEditor', './TextEditor', './util'], function (TreeEditor, TextEditor, util) {
+define(['./treemode', './textmode', './util'], function (treemode, textmode, util) {
 
   /**
    * @constructor JSONEditor
@@ -46,17 +46,17 @@ define(['./TreeEditor', './TextEditor', './util'], function (TreeEditor, TextEdi
   /**
    * Configuration for all registered modes. Example:
    * {
- *     tree: {
- *         editor: TreeEditor,
- *         data: 'json'
- *     },
- *     text: {
- *         editor: TextEditor,
- *         data: 'text'
- *     }
- * }
+   *     tree: {
+   *         mixin: TreeEditor,
+   *         data: 'json'
+   *     },
+   *     text: {
+   *         mixin: TextEditor,
+   *         data: 'text'
+   *     }
+   * }
    *
-   * @type { Object.<String, {editor: Object, data: String} > }
+   * @type { Object.<String, {mixin: Object, data: String} > }
    */
   JSONEditor.modes = {};
 
@@ -156,8 +156,8 @@ define(['./TreeEditor', './TextEditor', './util'], function (TreeEditor, TextEdi
 
           this._delete();
           util.clear(this);
-          util.extend(this, config.editor.prototype);
-          this._create(container, options);
+          util.extend(this, config.mixin);
+          this.create(container, options);
 
           this.setName(name);
           this.setText(data);
@@ -169,8 +169,8 @@ define(['./TreeEditor', './TextEditor', './util'], function (TreeEditor, TextEdi
 
           this._delete();
           util.clear(this);
-          util.extend(this, config.editor.prototype);
-          this._create(container, options);
+          util.extend(this, config.mixin);
+          this.create(container, options);
 
           this.setName(name);
           this.set(data);
@@ -215,26 +215,30 @@ define(['./TreeEditor', './TextEditor', './util'], function (TreeEditor, TextEdi
   };
 
   /**
-   * Register modes for the JSON Editor
+   * Register a plugin with one ore multiple modes for the JSON Editor
    *  TODO: describe the mode format
    * @param {Object} modes    An object with the mode names as keys, and an object
    *                          defining the mode as value
    */
-  JSONEditor.registerModes = function (modes) {
+  JSONEditor.register = function (modes) {
     for (var mode in modes) {
       if (modes.hasOwnProperty(mode)) {
         if (mode in JSONEditor.modes) {
           throw new Error('Mode "' + mode + '" already registered');
         }
 
+        // TODO: validate the new mode mixin,
+        // must have functions: create, get, getText, set, setText
+        // may not have functions: setMode, register
+
         JSONEditor.modes[mode] = modes[mode];
       }
     }
   };
 
-  // register TreeEditor and TextEditor
-  JSONEditor.registerModes(TreeEditor.modes);
-  JSONEditor.registerModes(TextEditor.modes);
+  // register tree and text modes
+  JSONEditor.register(treemode);
+  JSONEditor.register(textmode);
 
   return JSONEditor;
 });

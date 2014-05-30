@@ -1,4 +1,4 @@
-define(['./util'], function (util) {
+define(['./ContextMenu', './util'], function (ContextMenu, util) {
 
   /**
    * A factory function to create an AppendNode, which depends on a Node

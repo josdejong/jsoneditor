@@ -1,8 +1,11 @@
 define(['./Highlighter', './History', './SearchBox', './Node', './modebox', './util'],
     function (Highlighter, History, SearchBox, Node, modebox, util) {
 
+  // create a mixin with the functions for tree mode
+  var treemode = {};
+      
   /**
-   * @constructor TreeEditor
+   * Create a tree editor
    * @param {Element} container    Container element
    * @param {Object}  [options]    Object with options. available options:
    *                               {String} mode      Editor mode. Available values:
@@ -16,23 +19,9 @@ define(['./Highlighter', './History', './SearchBox', './Node', './modebox', './u
    *                                                  on change of contents
    *                               {String} name      Field name for the root node.
    * @param {Object | undefined} json JSON object
-   */
-  function TreeEditor(container, options, json) {
-    if (!(this instanceof TreeEditor)) {
-      throw new Error('TreeEditor constructor called without "new".');
-    }
-
-    this._create(container, options, json);
-  }
-
-  /**
-   * Create the TreeEditor
-   * @param {Element} container    Container element
-   * @param {Object}  [options]    See description in constructor
-   * @param {Object | undefined} json JSON object
    * @private
    */
-  TreeEditor.prototype._create = function (container, options, json) {
+  treemode.create = function (container, options, json) {
     if (!container) {
       throw new Error('No container element provided.');
     }
@@ -57,7 +46,7 @@ define(['./Highlighter', './History', './SearchBox', './Node', './modebox', './u
    * Detach the editor from the DOM
    * @private
    */
-  TreeEditor.prototype._delete = function () {
+  treemode._delete = function () {
     if (this.frame && this.container && this.frame.parentNode == this.container) {
       this.container.removeChild(this.frame);
     }
@@ -68,7 +57,7 @@ define(['./Highlighter', './History', './SearchBox', './Node', './modebox', './u
    * @param {Object}  [options]    See description in constructor
    * @private
    */
-  TreeEditor.prototype._setOptions = function (options) {
+  treemode._setOptions = function (options) {
     this.options = {
       search: true,
       history: true,
@@ -93,8 +82,11 @@ define(['./Highlighter', './History', './SearchBox', './Node', './modebox', './u
     };
   };
 
-// node currently being edited
-  TreeEditor.focusNode = undefined;
+  // node currently being edited
+  var focusNode = undefined;
+
+  // dom having focus
+  var domFocus = null;
 
   /**
    * Set JSON object in editor
@@ -102,7 +94,7 @@ define(['./Highlighter', './History', './SearchBox', './Node', './modebox', './u
    * @param {String}             [name]    Optional field name for the root node.
    *                                       Can also be set using setName(name).
    */
-  TreeEditor.prototype.set = function (json, name) {
+  treemode.set = function (json, name) {
     // adjust field name for root node
     if (name) {
       // TODO: deprecated since version 2.2.0. Cleanup some day.
@@ -143,10 +135,10 @@ define(['./Highlighter', './History', './SearchBox', './Node', './modebox', './u
    * Get JSON object from editor
    * @return {Object | undefined} json
    */
-  TreeEditor.prototype.get = function () {
+  treemode.get = function () {
     // remove focus from currently edited node
-    if (TreeEditor.focusNode) {
-      TreeEditor.focusNode.blur();
+    if (focusNode) {
+      focusNode.blur();
     }
 
     if (this.node) {
@@ -158,18 +150,18 @@ define(['./Highlighter', './History', './SearchBox', './Node', './modebox', './u
   };
 
   /**
-   * Get the text contents of the TreeEditor
+   * Get the text contents of the editor
    * @return {String} jsonText
    */
-  TreeEditor.prototype.getText = function() {
+  treemode.getText = function() {
     return JSON.stringify(this.get());
   };
 
   /**
-   * Set the text contents of the TreeEditor
+   * Set the text contents of the editor
    * @param {String} jsonText
    */
-  TreeEditor.prototype.setText = function(jsonText) {
+  treemode.setText = function(jsonText) {
     this.set(util.parse(jsonText));
   };
 
@@ -177,7 +169,7 @@ define(['./Highlighter', './History', './SearchBox', './Node', './modebox', './u
    * Set a field name for the root node.
    * @param {String | undefined} name
    */
-  TreeEditor.prototype.setName = function (name) {
+  treemode.setName = function (name) {
     this.options.name = name;
     if (this.node) {
       this.node.updateField(this.options.name);
@@ -188,14 +180,14 @@ define(['./Highlighter', './History', './SearchBox', './Node', './modebox', './u
    * Get the field name for the root node.
    * @return {String | undefined} name
    */
-  TreeEditor.prototype.getName = function () {
+  treemode.getName = function () {
     return this.options.name;
   };
 
   /**
    * Remove the root node from the editor
    */
-  TreeEditor.prototype.clear = function () {
+  treemode.clear = function () {
     if (this.node) {
       this.node.collapse();
       this.tbody.removeChild(this.node.getDom());
@@ -208,7 +200,7 @@ define(['./Highlighter', './History', './SearchBox', './Node', './modebox', './u
    * @param {Node} node
    * @private
    */
-  TreeEditor.prototype._setRoot = function (node) {
+  treemode._setRoot = function (node) {
     this.clear();
 
     this.node = node;
@@ -229,7 +221,7 @@ define(['./Highlighter', './History', './SearchBox', './Node', './modebox', './u
    *                                              the result is found ('field' or
    *                                              'value')
    */
-  TreeEditor.prototype.search = function (text) {
+  treemode.search = function (text) {
     var results;
     if (this.node) {
       this.content.removeChild(this.table);  // Take the table offline
@@ -246,7 +238,7 @@ define(['./Highlighter', './History', './SearchBox', './Node', './modebox', './u
   /**
    * Expand all nodes
    */
-  TreeEditor.prototype.expandAll = function () {
+  treemode.expandAll = function () {
     if (this.node) {
       this.content.removeChild(this.table);  // Take the table offline
       this.node.expand();
@@ -257,7 +249,7 @@ define(['./Highlighter', './History', './SearchBox', './Node', './modebox', './u
   /**
    * Collapse all nodes
    */
-  TreeEditor.prototype.collapseAll = function () {
+  treemode.collapseAll = function () {
     if (this.node) {
       this.content.removeChild(this.table);  // Take the table offline
       this.node.collapse();
@@ -279,7 +271,7 @@ define(['./Highlighter', './History', './SearchBox', './Node', './modebox', './u
    *                         needed to undo or redo the action.
    * @private
    */
-  TreeEditor.prototype._onAction = function (action, params) {
+  treemode._onAction = function (action, params) {
     // add an action to the history
     if (this.history) {
       this.history.add(action, params);
@@ -301,7 +293,7 @@ define(['./Highlighter', './History', './SearchBox', './Node', './modebox', './u
    * editor contents, or below the bottom.
    * @param {Number} mouseY  Absolute mouse position in pixels
    */
-  TreeEditor.prototype.startAutoScroll = function (mouseY) {
+  treemode.startAutoScroll = function (mouseY) {
     var me = this;
     var content = this.content;
     var top = util.getAbsoluteTop(content);
@@ -341,7 +333,7 @@ define(['./Highlighter', './History', './SearchBox', './Node', './modebox', './u
   /**
    * Stop auto scrolling. Only applicable when scrolling
    */
-  TreeEditor.prototype.stopAutoScroll = function () {
+  treemode.stopAutoScroll = function () {
     if (this.autoScrollTimer) {
       clearTimeout(this.autoScrollTimer);
       delete this.autoScrollTimer;
@@ -353,7 +345,7 @@ define(['./Highlighter', './History', './SearchBox', './Node', './modebox', './u
 
 
   /**
-   * Set the focus to an element in the TreeEditor, set text selection, and
+   * Set the focus to an element in the editor, set text selection, and
    * set scroll position.
    * @param {Object} selection  An object containing fields:
    *                            {Element | undefined} dom     The dom element
@@ -361,7 +353,7 @@ define(['./Highlighter', './History', './SearchBox', './Node', './modebox', './u
    *                            {Range | TextRange} range     A text selection
    *                            {Number} scrollTop            Scroll position
    */
-  TreeEditor.prototype.setSelection = function (selection) {
+  treemode.setSelection = function (selection) {
     if (!selection) {
       return;
     }
@@ -386,9 +378,9 @@ define(['./Highlighter', './History', './SearchBox', './Node', './modebox', './u
    *                            {Range | TextRange} range     A text selection
    *                            {Number} scrollTop            Scroll position
    */
-  TreeEditor.prototype.getSelection = function () {
+  treemode.getSelection = function () {
     return {
-      dom: TreeEditor.domFocus,
+      dom: domFocus,
       scrollTop: this.content ? this.content.scrollTop : 0,
       range: util.getSelectionOffset()
     };
@@ -403,7 +395,7 @@ define(['./Highlighter', './History', './SearchBox', './Node', './modebox', './u
    *                                         when animation is finished, or false
    *                                         when not.
    */
-  TreeEditor.prototype.scrollTo = function (top, callback) {
+  treemode.scrollTo = function (top, callback) {
     var content = this.content;
     if (content) {
       var editor = this;
@@ -454,7 +446,7 @@ define(['./Highlighter', './History', './SearchBox', './Node', './modebox', './u
    * Create main frame
    * @private
    */
-  TreeEditor.prototype._createFrame = function () {
+  treemode._createFrame = function () {
     // create the frame
     this.frame = document.createElement('div');
     this.frame.className = 'jsoneditor';
@@ -470,7 +462,7 @@ define(['./Highlighter', './History', './SearchBox', './Node', './modebox', './u
 
       onEvent(event);
 
-      // prevent default submit action of buttons when TreeEditor is located
+      // prevent default submit action of buttons when editor is located
       // inside a form
       if (target.nodeName == 'BUTTON') {
         event.preventDefault();
@@ -564,7 +556,7 @@ define(['./Highlighter', './History', './SearchBox', './Node', './modebox', './u
    * Perform an undo action
    * @private
    */
-  TreeEditor.prototype._onUndo = function () {
+  treemode._onUndo = function () {
     if (this.history) {
       // undo last action
       this.history.undo();
@@ -580,7 +572,7 @@ define(['./Highlighter', './History', './SearchBox', './Node', './modebox', './u
    * Perform a redo action
    * @private
    */
-  TreeEditor.prototype._onRedo = function () {
+  treemode._onRedo = function () {
     if (this.history) {
       // redo last action
       this.history.redo();
@@ -597,7 +589,7 @@ define(['./Highlighter', './History', './SearchBox', './Node', './modebox', './u
    * @param event
    * @private
    */
-  TreeEditor.prototype._onEvent = function (event) {
+  treemode._onEvent = function (event) {
     var target = event.target;
 
     if (event.type == 'keydown') {
@@ -605,7 +597,7 @@ define(['./Highlighter', './History', './SearchBox', './Node', './modebox', './u
     }
 
     if (event.type == 'focus') {
-      TreeEditor.domFocus = target;
+      domFocus = target;
     }
 
     var node = Node.getNodeFromTarget(target);
@@ -619,7 +611,7 @@ define(['./Highlighter', './History', './SearchBox', './Node', './modebox', './u
    * @param {Event} event
    * @private
    */
-  TreeEditor.prototype._onKeyDown = function (event) {
+  treemode._onKeyDown = function (event) {
     var keynum = event.which || event.keyCode;
     var ctrlKey = event.ctrlKey;
     var shiftKey = event.shiftKey;
@@ -628,7 +620,7 @@ define(['./Highlighter', './History', './SearchBox', './Node', './modebox', './u
     if (keynum == 9) { // Tab or Shift+Tab
       setTimeout(function () {
         // select all text when moving focus to an editable div
-        util.selectContentEditable(TreeEditor.domFocus);
+        util.selectContentEditable(domFocus);
       }, 0);
     }
 
@@ -676,7 +668,7 @@ define(['./Highlighter', './History', './SearchBox', './Node', './modebox', './u
    * Create main table
    * @private
    */
-  TreeEditor.prototype._createTable = function () {
+  treemode._createTable = function () {
     var contentOuter = document.createElement('div');
     contentOuter.className = 'outer';
     this.contentOuter = contentOuter;
@@ -712,20 +704,18 @@ define(['./Highlighter', './History', './SearchBox', './Node', './modebox', './u
   };
 
   // define modes
-  TreeEditor.modes = {
+  return {
     tree: {
-      editor: TreeEditor,
+      mixin: treemode,
       data: 'json'
     },
     view: {
-      editor: TreeEditor,
+      mixin: treemode,
       data: 'json'
     },
     form: {
-      editor: TreeEditor,
+      mixin: treemode,
       data: 'json'
     }
   };
-
-  return TreeEditor;
 });
