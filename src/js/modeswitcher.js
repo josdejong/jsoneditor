@@ -1,13 +1,15 @@
 define(['./ContextMenu'], function (ContextMenu) {
 
   /**
-   * Create a mode box to be used in the editor menu's
-   * @param {JSONEditor} editor
+   * Create a select box to be used in the editor menu's, which allows to switch mode
+   * @param {Object} editor
    * @param {String[]} modes  Available modes: 'code', 'form', 'text', 'tree', 'view'
    * @param {String} current  Available modes: 'code', 'form', 'text', 'tree', 'view'
    * @returns {HTMLElement} box
    */
-  function createModeBox(editor, modes, current) {
+  function createModeSwitcher(editor, modes, current) {
+    // TODO: decouple mode switcher from editor
+
     /**
      * Switch the mode of the editor
      * @param {String} mode
@@ -96,6 +98,6 @@ define(['./ContextMenu'], function (ContextMenu) {
   }
 
   return {
-    create: createModeBox
+    create: createModeSwitcher
   }
 });

@@ -1,4 +1,4 @@
-define(['./modebox', './util'], function (modebox, util) {
+define(['./modeswitcher', './util'], function (modeswitcher, util) {
 
   // create a mixin with the functions for text mode
   var textmode = {};
@@ -14,10 +14,9 @@ define(['./modebox', './util'], function (modebox, util) {
    *                                                         spaces. 2 by default.
    *                                   {function} change     Callback method
    *                                                         triggered on change
-   * @param {JSON | String} [json]     initial contents of the formatter
    * @private
    */
-  textmode.create = function (container, options, json) {
+  textmode.create = function (container, options) {
     // read options
     options = options || {};
     this.options = options;
@@ -88,7 +87,7 @@ define(['./modebox', './util'], function (modebox, util) {
 
     // create mode box
     if (this.options && this.options.modes && this.options.modes.length) {
-      var modeBox = modebox.create(this, this.options.modes, this.options.mode);
+      var modeBox = modeswitcher.create(this, this.options.modes, this.options.mode);
       this.menu.appendChild(modeBox);
       this.dom.modeBox = modeBox;
     }
@@ -157,14 +156,6 @@ define(['./modebox', './util'], function (modebox, util) {
           }
         }
       }
-    }
-
-    // load initial json object or string
-    if (typeof(json) == 'string') {
-      this.setText(json);
-    }
-    else {
-      this.set(json);
     }
   };
 
@@ -282,16 +273,18 @@ define(['./modebox', './util'], function (modebox, util) {
   };
 
   // define modes
-  return {
-    text: {
+  return [
+    {
+      mode: 'text',
       mixin: textmode,
       data: 'text',
       load: textmode.format
     },
-    code: {
+    {
+      mode: 'code',
       mixin: textmode,
       data: 'text',
       load: textmode.format
     }
-  };
+  ];
 });

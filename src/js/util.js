@@ -98,7 +98,7 @@ define(function () {
     if ((object instanceof RegExp) || (typeof object === 'regexp')) {
       return 'regexp';
     }
-    if (Array.isArray(object)) {
+    if (util.isArray(object)) {
       return 'array';
     }
 
@@ -114,6 +114,15 @@ define(function () {
   util.isUrl = function isUrl (text) {
     return (typeof text == 'string' || text instanceof String) &&
         isUrlRegex.test(text);
+  };
+
+  /**
+   * Tes whether given object is an Array
+   * @param {*} obj
+   * @returns {boolean} returns true when obj is an array
+   */
+  util.isArray = function (obj) {
+    return Object.prototype.toString.call(obj) === '[object Array]';
   };
 
   /**

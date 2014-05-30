@@ -83,7 +83,7 @@ return /******/ (function(modules) { // webpackBootstrap
 /* 0 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(1), __webpack_require__(2), __webpack_require__(3)], __WEBPACK_AMD_DEFINE_RESULT__ = (function (TreeEditor, TextEditor, util) {
+	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(1), __webpack_require__(2), __webpack_require__(3)], __WEBPACK_AMD_DEFINE_RESULT__ = (function (treemode, textmode, util) {
 
 	  /**
 	   * @constructor JSONEditor
@@ -131,17 +131,17 @@ return /******/ (function(modules) { // webpackBootstrap
 	  /**
 	   * Configuration for all registered modes. Example:
 	   * {
-	 *     tree: {
-	 *         editor: TreeEditor,
-	 *         data: 'json'
-	 *     },
-	 *     text: {
-	 *         editor: TextEditor,
-	 *         data: 'text'
-	 *     }
-	 * }
+	   *     tree: {
+	   *         mixin: TreeEditor,
+	   *         data: 'json'
+	   *     },
+	   *     text: {
+	   *         mixin: TextEditor,
+	   *         data: 'text'
+	   *     }
+	   * }
 	   *
-	   * @type { Object.<String, {editor: Object, data: String} > }
+	   * @type { Object.<String, {mixin: Object, data: String} > }
 	   */
 	  JSONEditor.modes = {};
 
@@ -241,8 +241,8 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	          this._delete();
 	          util.clear(this);
-	          util.extend(this, config.editor.prototype);
-	          this._create(container, options);
+	          util.extend(this, config.mixin);
+	          this.create(container, options);
 
 	          this.setName(name);
 	          this.setText(data);
@@ -254,8 +254,8 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	          this._delete();
 	          util.clear(this);
-	          util.extend(this, config.editor.prototype);
-	          this._create(container, options);
+	          util.extend(this, config.mixin);
+	          this.create(container, options);
 
 	          this.setName(name);
 	          this.set(data);
@@ -300,26 +300,30 @@ return /******/ (function(modules) { // webpackBootstrap
 	  };
 
 	  /**
-	   * Register modes for the JSON Editor
+	   * Register a plugin with one ore multiple modes for the JSON Editor
 	   *  TODO: describe the mode format
 	   * @param {Object} modes    An object with the mode names as keys, and an object
 	   *                          defining the mode as value
 	   */
-	  JSONEditor.registerModes = function (modes) {
+	  JSONEditor.register = function (modes) {
 	    for (var mode in modes) {
 	      if (modes.hasOwnProperty(mode)) {
 	        if (mode in JSONEditor.modes) {
 	          throw new Error('Mode "' + mode + '" already registered');
 	        }
 
+	        // TODO: validate the new mode mixin,
+	        // must have functions: create, get, getText, set, setText
+	        // may not have functions: setMode, register
+
 	        JSONEditor.modes[mode] = modes[mode];
 	      }
 	    }
 	  };
 
-	  // register TreeEditor and TextEditor
-	  JSONEditor.registerModes(TreeEditor.modes);
-	  JSONEditor.registerModes(TextEditor.modes);
+	  // register tree and text modes
+	  JSONEditor.register(treemode);
+	  JSONEditor.register(textmode);
 
 	  return JSONEditor;
 	}.apply(null, __WEBPACK_AMD_DEFINE_ARRAY__)), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
@@ -330,8 +334,11 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(5), __webpack_require__(6), __webpack_require__(7), __webpack_require__(8), __webpack_require__(4), __webpack_require__(3)], __WEBPACK_AMD_DEFINE_RESULT__ = (function (Highlighter, History, SearchBox, Node, modebox, util) {
 
+	  // create a mixin with the functions for tree mode
+	  var treemode = {};
+	      
 	  /**
-	   * @constructor TreeEditor
+	   * Create a tree editor
 	   * @param {Element} container    Container element
 	   * @param {Object}  [options]    Object with options. available options:
 	   *                               {String} mode      Editor mode. Available values:
@@ -345,23 +352,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	   *                                                  on change of contents
 	   *                               {String} name      Field name for the root node.
 	   * @param {Object | undefined} json JSON object
-	   */
-	  function TreeEditor(container, options, json) {
-	    if (!(this instanceof TreeEditor)) {
-	      throw new Error('TreeEditor constructor called without "new".');
-	    }
-
-	    this._create(container, options, json);
-	  }
-
-	  /**
-	   * Create the TreeEditor
-	   * @param {Element} container    Container element
-	   * @param {Object}  [options]    See description in constructor
-	   * @param {Object | undefined} json JSON object
 	   * @private
 	   */
-	  TreeEditor.prototype._create = function (container, options, json) {
+	  treemode.create = function (container, options, json) {
 	    if (!container) {
 	      throw new Error('No container element provided.');
 	    }
@@ -386,7 +379,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	   * Detach the editor from the DOM
 	   * @private
 	   */
-	  TreeEditor.prototype._delete = function () {
+	  treemode._delete = function () {
 	    if (this.frame && this.container && this.frame.parentNode == this.container) {
 	      this.container.removeChild(this.frame);
 	    }
@@ -397,7 +390,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	   * @param {Object}  [options]    See description in constructor
 	   * @private
 	   */
-	  TreeEditor.prototype._setOptions = function (options) {
+	  treemode._setOptions = function (options) {
 	    this.options = {
 	      search: true,
 	      history: true,
@@ -422,8 +415,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	    };
 	  };
 
-	// node currently being edited
-	  TreeEditor.focusNode = undefined;
+	  // node currently being edited
+	  var focusNode = undefined;
+
+	  // dom having focus
+	  var domFocus = null;
 
 	  /**
 	   * Set JSON object in editor
@@ -431,7 +427,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	   * @param {String}             [name]    Optional field name for the root node.
 	   *                                       Can also be set using setName(name).
 	   */
-	  TreeEditor.prototype.set = function (json, name) {
+	  treemode.set = function (json, name) {
 	    // adjust field name for root node
 	    if (name) {
 	      // TODO: deprecated since version 2.2.0. Cleanup some day.
@@ -472,10 +468,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	   * Get JSON object from editor
 	   * @return {Object | undefined} json
 	   */
-	  TreeEditor.prototype.get = function () {
+	  treemode.get = function () {
 	    // remove focus from currently edited node
-	    if (TreeEditor.focusNode) {
-	      TreeEditor.focusNode.blur();
+	    if (focusNode) {
+	      focusNode.blur();
 	    }
 
 	    if (this.node) {
@@ -487,18 +483,18 @@ return /******/ (function(modules) { // webpackBootstrap
 	  };
 
 	  /**
-	   * Get the text contents of the TreeEditor
+	   * Get the text contents of the editor
 	   * @return {String} jsonText
 	   */
-	  TreeEditor.prototype.getText = function() {
+	  treemode.getText = function() {
 	    return JSON.stringify(this.get());
 	  };
 
 	  /**
-	   * Set the text contents of the TreeEditor
+	   * Set the text contents of the editor
 	   * @param {String} jsonText
 	   */
-	  TreeEditor.prototype.setText = function(jsonText) {
+	  treemode.setText = function(jsonText) {
 	    this.set(util.parse(jsonText));
 	  };
 
@@ -506,7 +502,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	   * Set a field name for the root node.
 	   * @param {String | undefined} name
 	   */
-	  TreeEditor.prototype.setName = function (name) {
+	  treemode.setName = function (name) {
 	    this.options.name = name;
 	    if (this.node) {
 	      this.node.updateField(this.options.name);
@@ -517,14 +513,14 @@ return /******/ (function(modules) { // webpackBootstrap
 	   * Get the field name for the root node.
 	   * @return {String | undefined} name
 	   */
-	  TreeEditor.prototype.getName = function () {
+	  treemode.getName = function () {
 	    return this.options.name;
 	  };
 
 	  /**
 	   * Remove the root node from the editor
 	   */
-	  TreeEditor.prototype.clear = function () {
+	  treemode.clear = function () {
 	    if (this.node) {
 	      this.node.collapse();
 	      this.tbody.removeChild(this.node.getDom());
@@ -537,7 +533,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	   * @param {Node} node
 	   * @private
 	   */
-	  TreeEditor.prototype._setRoot = function (node) {
+	  treemode._setRoot = function (node) {
 	    this.clear();
 
 	    this.node = node;
@@ -558,7 +554,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	   *                                              the result is found ('field' or
 	   *                                              'value')
 	   */
-	  TreeEditor.prototype.search = function (text) {
+	  treemode.search = function (text) {
 	    var results;
 	    if (this.node) {
 	      this.content.removeChild(this.table);  // Take the table offline
@@ -575,7 +571,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  /**
 	   * Expand all nodes
 	   */
-	  TreeEditor.prototype.expandAll = function () {
+	  treemode.expandAll = function () {
 	    if (this.node) {
 	      this.content.removeChild(this.table);  // Take the table offline
 	      this.node.expand();
@@ -586,7 +582,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  /**
 	   * Collapse all nodes
 	   */
-	  TreeEditor.prototype.collapseAll = function () {
+	  treemode.collapseAll = function () {
 	    if (this.node) {
 	      this.content.removeChild(this.table);  // Take the table offline
 	      this.node.collapse();
@@ -608,7 +604,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	   *                         needed to undo or redo the action.
 	   * @private
 	   */
-	  TreeEditor.prototype._onAction = function (action, params) {
+	  treemode._onAction = function (action, params) {
 	    // add an action to the history
 	    if (this.history) {
 	      this.history.add(action, params);
@@ -630,7 +626,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	   * editor contents, or below the bottom.
 	   * @param {Number} mouseY  Absolute mouse position in pixels
 	   */
-	  TreeEditor.prototype.startAutoScroll = function (mouseY) {
+	  treemode.startAutoScroll = function (mouseY) {
 	    var me = this;
 	    var content = this.content;
 	    var top = util.getAbsoluteTop(content);
@@ -670,7 +666,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  /**
 	   * Stop auto scrolling. Only applicable when scrolling
 	   */
-	  TreeEditor.prototype.stopAutoScroll = function () {
+	  treemode.stopAutoScroll = function () {
 	    if (this.autoScrollTimer) {
 	      clearTimeout(this.autoScrollTimer);
 	      delete this.autoScrollTimer;
@@ -682,7 +678,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 	  /**
-	   * Set the focus to an element in the TreeEditor, set text selection, and
+	   * Set the focus to an element in the editor, set text selection, and
 	   * set scroll position.
 	   * @param {Object} selection  An object containing fields:
 	   *                            {Element | undefined} dom     The dom element
@@ -690,7 +686,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	   *                            {Range | TextRange} range     A text selection
 	   *                            {Number} scrollTop            Scroll position
 	   */
-	  TreeEditor.prototype.setSelection = function (selection) {
+	  treemode.setSelection = function (selection) {
 	    if (!selection) {
 	      return;
 	    }
@@ -715,9 +711,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	   *                            {Range | TextRange} range     A text selection
 	   *                            {Number} scrollTop            Scroll position
 	   */
-	  TreeEditor.prototype.getSelection = function () {
+	  treemode.getSelection = function () {
 	    return {
-	      dom: TreeEditor.domFocus,
+	      dom: domFocus,
 	      scrollTop: this.content ? this.content.scrollTop : 0,
 	      range: util.getSelectionOffset()
 	    };
@@ -732,7 +728,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	   *                                         when animation is finished, or false
 	   *                                         when not.
 	   */
-	  TreeEditor.prototype.scrollTo = function (top, callback) {
+	  treemode.scrollTo = function (top, callback) {
 	    var content = this.content;
 	    if (content) {
 	      var editor = this;
@@ -783,7 +779,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	   * Create main frame
 	   * @private
 	   */
-	  TreeEditor.prototype._createFrame = function () {
+	  treemode._createFrame = function () {
 	    // create the frame
 	    this.frame = document.createElement('div');
 	    this.frame.className = 'jsoneditor';
@@ -799,7 +795,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	      onEvent(event);
 
-	      // prevent default submit action of buttons when TreeEditor is located
+	      // prevent default submit action of buttons when editor is located
 	      // inside a form
 	      if (target.nodeName == 'BUTTON') {
 	        event.preventDefault();
@@ -893,7 +889,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	   * Perform an undo action
 	   * @private
 	   */
-	  TreeEditor.prototype._onUndo = function () {
+	  treemode._onUndo = function () {
 	    if (this.history) {
 	      // undo last action
 	      this.history.undo();
@@ -909,7 +905,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	   * Perform a redo action
 	   * @private
 	   */
-	  TreeEditor.prototype._onRedo = function () {
+	  treemode._onRedo = function () {
 	    if (this.history) {
 	      // redo last action
 	      this.history.redo();
@@ -926,7 +922,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	   * @param event
 	   * @private
 	   */
-	  TreeEditor.prototype._onEvent = function (event) {
+	  treemode._onEvent = function (event) {
 	    var target = event.target;
 
 	    if (event.type == 'keydown') {
@@ -934,7 +930,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }
 
 	    if (event.type == 'focus') {
-	      TreeEditor.domFocus = target;
+	      domFocus = target;
 	    }
 
 	    var node = Node.getNodeFromTarget(target);
@@ -948,7 +944,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	   * @param {Event} event
 	   * @private
 	   */
-	  TreeEditor.prototype._onKeyDown = function (event) {
+	  treemode._onKeyDown = function (event) {
 	    var keynum = event.which || event.keyCode;
 	    var ctrlKey = event.ctrlKey;
 	    var shiftKey = event.shiftKey;
@@ -957,7 +953,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    if (keynum == 9) { // Tab or Shift+Tab
 	      setTimeout(function () {
 	        // select all text when moving focus to an editable div
-	        util.selectContentEditable(TreeEditor.domFocus);
+	        util.selectContentEditable(domFocus);
 	      }, 0);
 	    }
 
@@ -1005,7 +1001,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	   * Create main table
 	   * @private
 	   */
-	  TreeEditor.prototype._createTable = function () {
+	  treemode._createTable = function () {
 	    var contentOuter = document.createElement('div');
 	    contentOuter.className = 'outer';
 	    this.contentOuter = contentOuter;
@@ -1041,22 +1037,20 @@ return /******/ (function(modules) { // webpackBootstrap
 	  };
 
 	  // define modes
-	  TreeEditor.modes = {
+	  return {
 	    tree: {
-	      editor: TreeEditor,
+	      mixin: treemode,
 	      data: 'json'
 	    },
 	    view: {
-	      editor: TreeEditor,
+	      mixin: treemode,
 	      data: 'json'
 	    },
 	    form: {
-	      editor: TreeEditor,
+	      mixin: treemode,
 	      data: 'json'
 	    }
 	  };
-
-	  return TreeEditor;
 	}.apply(null, __WEBPACK_AMD_DEFINE_ARRAY__)), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
 
 
@@ -1066,9 +1060,11 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(4), __webpack_require__(3)], __WEBPACK_AMD_DEFINE_RESULT__ = (function (modebox, util) {
 
+	  // create a mixin with the functions for text mode
+	  var textmode = {};
+
 	  /**
-	   * Create a TextEditor and attach it to given container
-	   * @constructor TextEditor
+	   * Create a text editor
 	   * @param {Element} container
 	   * @param {Object} [options]         Object with options. available options:
 	   *                                   {String} mode         Available values:
@@ -1079,24 +1075,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	   *                                   {function} change     Callback method
 	   *                                                         triggered on change
 	   * @param {JSON | String} [json]     initial contents of the formatter
-	   */
-	  function TextEditor(container, options, json) {
-	    if (!(this instanceof TextEditor)) {
-	      throw new Error('TextEditor constructor called without "new".');
-	    }
-
-	    this._create(container, options, json);
-	  }
-
-	  /**
-	   * Create a TextEditor and attach it to given container
-	   * @constructor TextEditor
-	   * @param {Element} container
-	   * @param {Object} [options]         See description in constructor
-	   * @param {JSON | String} [json]     initial contents of the formatter
 	   * @private
 	   */
-	  TextEditor.prototype._create = function (container, options, json) {
+	  textmode.create = function (container, options, json) {
 	    // read options
 	    options = options || {};
 	    this.options = options;
@@ -1128,7 +1109,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    this.frame = document.createElement('div');
 	    this.frame.className = 'jsoneditor';
 	    this.frame.onclick = function (event) {
-	      // prevent default submit action when TextEditor is located inside a form
+	      // prevent default submit action when the editor is located inside a form
 	      event.preventDefault();
 	    };
 
@@ -1251,7 +1232,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	   * Detach the editor from the DOM
 	   * @private
 	   */
-	  TextEditor.prototype._delete = function () {
+	  textmode._delete = function () {
 	    if (this.frame && this.container && this.frame.parentNode == this.container) {
 	      this.container.removeChild(this.frame);
 	    }
@@ -1263,7 +1244,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	   * @param {Error} err
 	   * @private
 	   */
-	  TextEditor.prototype._onError = function(err) {
+	  textmode._onError = function(err) {
 	    // TODO: onError is deprecated since version 2.2.0. cleanup some day
 	    if (typeof this.onError === 'function') {
 	      util.log('WARNING: JSONEditor.onError is deprecated. ' +
@@ -1282,7 +1263,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  /**
 	   * Compact the code in the formatter
 	   */
-	  TextEditor.prototype.compact = function () {
+	  textmode.compact = function () {
 	    var json = util.parse(this.getText());
 	    this.setText(JSON.stringify(json));
 	  };
@@ -1290,7 +1271,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  /**
 	   * Format the code in the formatter
 	   */
-	  TextEditor.prototype.format = function () {
+	  textmode.format = function () {
 	    var json = util.parse(this.getText());
 	    this.setText(JSON.stringify(json, null, this.indentation));
 	  };
@@ -1298,7 +1279,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  /**
 	   * Set focus to the formatter
 	   */
-	  TextEditor.prototype.focus = function () {
+	  textmode.focus = function () {
 	    if (this.textarea) {
 	      this.textarea.focus();
 	    }
@@ -1310,7 +1291,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  /**
 	   * Resize the formatter
 	   */
-	  TextEditor.prototype.resize = function () {
+	  textmode.resize = function () {
 	    if (this.editor) {
 	      var force = false;
 	      this.editor.resize(force);
@@ -1321,7 +1302,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	   * Set json data in the formatter
 	   * @param {Object} json
 	   */
-	  TextEditor.prototype.set = function(json) {
+	  textmode.set = function(json) {
 	    this.setText(JSON.stringify(json, null, this.indentation));
 	  };
 
@@ -1329,15 +1310,15 @@ return /******/ (function(modules) { // webpackBootstrap
 	   * Get json data from the formatter
 	   * @return {Object} json
 	   */
-	  TextEditor.prototype.get = function() {
+	  textmode.get = function() {
 	    return util.parse(this.getText());
 	  };
 
 	  /**
-	   * Get the text contents of the TextEditor
+	   * Get the text contents of the editor
 	   * @return {String} jsonText
 	   */
-	  TextEditor.prototype.getText = function() {
+	  textmode.getText = function() {
 	    if (this.textarea) {
 	      return this.textarea.value;
 	    }
@@ -1348,10 +1329,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	  };
 
 	  /**
-	   * Set the text contents of the TextEditor
+	   * Set the text contents of the editor
 	   * @param {String} jsonText
 	   */
-	  TextEditor.prototype.setText = function(jsonText) {
+	  textmode.setText = function(jsonText) {
 	    if (this.textarea) {
 	      this.textarea.value = jsonText;
 	    }
@@ -1361,20 +1342,18 @@ return /******/ (function(modules) { // webpackBootstrap
 	  };
 
 	  // define modes
-	  TextEditor.modes = {
+	  return {
 	    text: {
-	      editor: TextEditor,
+	      mixin: textmode,
 	      data: 'text',
-	      load: TextEditor.prototype.format
+	      load: textmode.format
 	    },
 	    code: {
-	      editor: TextEditor,
+	      mixin: textmode,
 	      data: 'text',
-	      load: TextEditor.prototype.format
+	      load: textmode.format
 	    }
 	  };
-
-	  return TextEditor;
 	}.apply(null, __WEBPACK_AMD_DEFINE_ARRAY__)), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
 
 
@@ -5915,7 +5894,7 @@ return /******/ (function(modules) { // webpackBootstrap
 /* 10 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(3)], __WEBPACK_AMD_DEFINE_RESULT__ = (function (util) {
+	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(9), __webpack_require__(3)], __WEBPACK_AMD_DEFINE_RESULT__ = (function (ContextMenu, util) {
 
 	  /**
 	   * A factory function to create an AppendNode, which depends on a Node

@@ -1,5 +1,5 @@
-define(['./Highlighter', './History', './SearchBox', './Node', './modebox', './util'],
-    function (Highlighter, History, SearchBox, Node, modebox, util) {
+define(['./Highlighter', './History', './SearchBox', './Node', './modeswitcher', './util'],
+    function (Highlighter, History, SearchBox, Node, modeswitcher, util) {
 
   // create a mixin with the functions for tree mode
   var treemode = {};
@@ -18,10 +18,9 @@ define(['./Highlighter', './History', './SearchBox', './Node', './modebox', './u
    *                               {function} change  Callback method, triggered
    *                                                  on change of contents
    *                               {String} name      Field name for the root node.
-   * @param {Object | undefined} json JSON object
    * @private
    */
-  treemode.create = function (container, options, json) {
+  treemode.create = function (container, options) {
     if (!container) {
       throw new Error('No container element provided.');
     }
@@ -38,8 +37,6 @@ define(['./Highlighter', './History', './SearchBox', './Node', './modebox', './u
 
     this._createFrame();
     this._createTable();
-
-    this.set(json || {});
   };
 
   /**
@@ -541,7 +538,7 @@ define(['./Highlighter', './History', './SearchBox', './Node', './modebox', './u
 
     // create mode box
     if (this.options && this.options.modes && this.options.modes.length) {
-      var modeBox = modebox.create(this, this.options.modes, this.options.mode);
+      var modeBox = modeswitcher.create(this, this.options.modes, this.options.mode);
       this.menu.appendChild(modeBox);
       this.dom.modeBox = modeBox;
     }
@@ -704,18 +701,21 @@ define(['./Highlighter', './History', './SearchBox', './Node', './modebox', './u
   };
 
   // define modes
-  return {
-    tree: {
+  return [
+    {
+      mode: 'tree',
       mixin: treemode,
       data: 'json'
     },
-    view: {
+    {
+      mode: 'view',
       mixin: treemode,
       data: 'json'
     },
-    form: {
+    {
+      mode: 'form',
       mixin: treemode,
       data: 'json'
     }
-  };
+  ];
 });
