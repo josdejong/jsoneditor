@@ -17,16 +17,22 @@
   },
   "bugs": "https://github.com/josdejong/jsoneditor/issues",
   "scripts": {
-    "build": "gulp"
+    "build": "gulp",
+    "build-assets": "gulp build-assets"
   },
   "dependencies": {},
   "devDependencies": {
     "ace": "git://github.com/ajaxorg/ace.git",
     "gulp": "latest",
+    "gulp-clean": "^0.3.0",
+    "gulp-concat": "^2.2.0",
     "gulp-concat-css": "^0.1.4",
     "gulp-minify-css": "^0.3.4",
+    "gulp-shell": "^0.2.5",
     "gulp-util": "latest",
     "jsonlint": "latest",
+    "merge-stream": "^0.1.1",
+    "mkdirp": "^0.5.0",
     "uglify-js": "latest",
     "webpack": "latest"
   }

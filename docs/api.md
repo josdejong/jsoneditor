@@ -133,7 +133,7 @@ var options = {
     "mode": "tree",
     "search": true
 };
-var editor = new JSONEditor (container, options);
+var editor = new JSONEditor(container, options);
 var json = {
     "Array": [1, 2, 3],
     "Boolean": true,
@@ -155,7 +155,7 @@ var options = {
     "mode": "text",
     "indentation": 2
 };
-var editor = new JSONEditor (container, options);
+var editor = new JSONEditor(container, options);
 var json = {
     "Array": [1, 2, 3],
     "Boolean": true,
