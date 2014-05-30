@@ -38,7 +38,9 @@ Supported browsers: Chrome, Firefox, Safari, Opera, Internet Explorer 9+.
 
 ### Documentation
 
-- [Docs](https://github.com/josdejong/jsoneditor/tree/master/docs)
+- Documentation:
+  - [API](https://github.com/josdejong/jsoneditor/tree/master/docs/api.md)
+  - [Usage](https://github.com/josdejong/jsoneditor/tree/master/docs/usage.md)
 - [Examples](https://github.com/josdejong/jsoneditor/tree/master/examples)
 - [Source](https://github.com/josdejong/jsoneditor)
 - [History](https://github.com/josdejong/jsoneditor/blob/master/HISTORY.md)

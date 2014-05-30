@@ -204,6 +204,7 @@ define(['./treemode', './textmode', './util'], function (treemode, textmode, uti
    *
    * A mode is described as an object with properties:
    *
+   * - `mode: String`           The name of the mode.
    * - `mixin: Object`          An object containing the mixin functions which
    *                            will be added to the JSONEditor. Must contain functions
    *                            create, get, getText, set, and setText. May have
@@ -223,12 +224,10 @@ define(['./treemode', './textmode', './util'], function (treemode, textmode, uti
     if (util.isArray(mode)) {
       // multiple modes
       for (i = 0; i < mode.length; i++) {
-        JSONEditor.register(mode[i]);
+        JSONEditor.registerMode(mode[i]);
       }
     }
     else {
-      // a single mode
-
       // validate the new mode
       if (!('mode' in mode)) throw new Error('Property "mode" missing');
       if (!('mixin' in mode)) throw new Error('Property "mixin" missing');
@@ -239,14 +238,10 @@ define(['./treemode', './textmode', './util'], function (treemode, textmode, uti
       }
 
       // validate the mixin
-      var required = ['create', 'get', 'getText', 'set', 'setText'];
-      for (i = 0; i < required.length; i++) {
-        prop = required[i];
-        if (typeof mode.mixin[prop] !== 'function') {
-          throw new Error('Required function "' + prop + '" missing on mixin');
-        }
+      if (typeof mode.mixin.create !== 'function') {
+        throw new Error('Required function "create" missing on mixin');
       }
-      var reserved = ['setMode', 'register', 'modes'];
+      var reserved = ['setMode', 'registerMode', 'modes'];
       for (i = 0; i < reserved.length; i++) {
         prop = reserved[i];
         if (prop in mode.mixin) {
