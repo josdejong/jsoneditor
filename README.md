@@ -14,9 +14,6 @@ can be loaded as CommonJS module, AMD module, or as a regular javascript file.
 
 Supported browsers: Chrome, Firefox, Safari, Opera, Internet Explorer 9+.
 
-<img alt="json editor" src="https://raw.github.com/josdejong/jsoneditor/master/misc/jsoneditor.png">
-<img alt="code editor" src="https://raw.github.com/josdejong/jsoneditor/master/misc/codeeditor.png">
-
 
 ### Features
 
@@ -35,6 +32,15 @@ Supported browsers: Chrome, Firefox, Safari, Opera, Internet Explorer 9+.
 
 #### Text editor
 - Format and compact JSON.
+
+
+### Screenshots
+
+#### Tree editor
+<img alt="json editor" src="https://raw.github.com/josdejong/jsoneditor/master/misc/jsoneditor.png">
+
+#### Code editor
+<img alt="code editor" src="https://raw.github.com/josdejong/jsoneditor/master/misc/codeeditor.png">
 
 
 ### Documentation
