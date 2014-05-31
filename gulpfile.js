@@ -133,18 +133,19 @@ gulp.task('asset-ace', ['build-ace', 'asset-clean'], function () {
 
   // TODO: throw an error when aceSrc is missing?
 
+  var plugins = [
+    aceSrc + 'ext-searchbox.js',
+    aceSrc + 'mode-json.js',
+    aceSrc + 'theme-textmate.js',
+    './src/js/ace/theme-jsoneditor.js'
+  ];
+
   return merge(
-      gulp.src([
-            aceSrc + 'ace.js',
-            aceSrc + 'ext-searchbox.js',
-            aceSrc + 'mode-json.js',
-            aceSrc + 'theme-textmate.js',
-        './src/js/ace/theme-jsoneditor.js'
-      ])
+      gulp.src([aceSrc + 'ace.js'].concat(plugins))
           .pipe(concat('ace.js'))
           .pipe(gulp.dest(DIST_ACE)),
 
-  gulp.src(aceSrc + 'worker-json.js')
+  gulp.src([aceSrc + 'worker-json.js'].concat(plugins))
       .pipe(gulp.dest(DIST_ACE))
   );
 });
