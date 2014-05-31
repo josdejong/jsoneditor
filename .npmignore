@@ -9,7 +9,7 @@ test
 tools
 .idea
 component.json
-Jakefile.js
+gulpfile.js
 .npmignore
 .gitignore
 *.zip
