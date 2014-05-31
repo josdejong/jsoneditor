@@ -1,10 +1,11 @@
-# JSON Editor Online
+# JSON Editor
+https://github.com/josdejong/jsoneditor
 http://jsoneditoronline.org/
 
 
 ### Description
 
-JSON Editor Online is a web-based tool to view, edit, and format JSON.
+JSON Editor is a web-based tool to view, edit, and format JSON.
 It has various modes such as a tree editor, a code editor, and a plain text
 editor.
 

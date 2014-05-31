@@ -1,13 +1,14 @@
-# JSON Editor Online - History
+# JSON Editor - History
 
-http://jsoneditoronline.org
+https://github.com/josdejong/jsoneditor
 
 
-## not yet released, version 3.0.0
+## 2014-05-31, version 3.0.0
 
+- Large code reorganization.
 - Editor must be loaded as `new JSONEditor(...)` instead of 
   `new jsoneditor.JSONEditor(...)`.
-- Large code reorganization.
+- Web application has been moved to another project.
 
 
 ## 2014-01-03, version 2.3.6

@@ -9,6 +9,7 @@ var fs = require('fs'),
     merge = require('merge-stream'),
     mkdirp = require('mkdirp'),
     webpack = require('webpack'),
+    archiver = require('archiver'),
     uglify = require('uglify-js');
 
 var ENTRY       = './src/js/JSONEditor.js',
@@ -161,33 +162,12 @@ gulp.task('asset-jsonlint', ['asset-clean'], function (done) {
 
 gulp.task('build-assets', ['asset-clean', 'asset-ace', 'asset-jsonlint'], function () {});
 
-// TODO: create zip file?
-//gulp.task('zip', ['bundle', 'minify'], function () {
-//  var pkg = 'jsoneditor-' + require('./package.json').version;
-//  var file = BUILD + pkg + '.zip';
-//
-//  var zip = require('gulp-zip');
-//
-//  gulp.task('default', function () {
-//    gulp.src([
-//      'README.md',
-//      'NOTICE',
-//      'LICENSE',
-//      'HISTORY.md',
-//      JSONEDITOR_JS,
-//      JSONEDITOR_CSS,
-//      JSONEDITOR_MIN_JS,
-//      JSONEDITOR_MAP_JS,
-//      JSONEDITOR_MIN_CSS,
-//      'img/*.*',
-//      'asset/**/*.*',
-//      'docs/**/*.*',
-//      'examples/**/*.*'
-//    ])
-//        .pipe(zip(file))
-//        .pipe(gulp.dest('.'));
-//  });
-//});
+// TODO: zip file using archiver
+var pkg = 'jsoneditor-' + require('./package.json').version + '.zip';
+gulp.task('zip', shell.task([
+      'zip ' + pkg + ' ' +
+      'README.md NOTICE LICENSE HISTORY.md jsoneditor.js jsoneditor.css jsoneditor.min.js jsoneditor.min.css jsoneditor.map img asset docs examples -r '
+]));
 
 // The default task (called when you run `gulp`)
 gulp.task('default', ['bundle', 'minify']);

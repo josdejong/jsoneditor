@@ -12,3 +12,4 @@ component.json
 Jakefile.js
 .npmignore
 .gitignore
+*.zip
