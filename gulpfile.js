@@ -9,7 +9,6 @@ var fs = require('fs'),
     merge = require('merge-stream'),
     mkdirp = require('mkdirp'),
     webpack = require('webpack'),
-    archiver = require('archiver'),
     uglify = require('uglify-js');
 
 var ENTRY       = './src/js/JSONEditor.js',
