@@ -8,6 +8,7 @@ https://github.com/josdejong/jsoneditor
 - Large code reorganization.
 - Editor must be loaded as `new JSONEditor(...)` instead of 
   `new jsoneditor.JSONEditor(...)`.
+- Css is not automatically loaded anymore when using AMD.
 - Web application has been moved to another project.
 
 

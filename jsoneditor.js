@@ -23,8 +23,8 @@
  * Copyright (c) 2011-2014 Jos de Jong, http://jsoneditoronline.org
  *
  * @author  Jos de Jong, <wjosdejong@gmail.com>
- * @version 3.0.0-SNAPSHOT
- * @date    2014-05-30
+ * @version 3.0.0
+ * @date    2014-05-31
  */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
@@ -234,32 +234,17 @@ return /******/ (function(modules) { // webpackBootstrap
 	    var config = JSONEditor.modes[mode];
 	    if (config) {
 	      try {
-	        if (config.data == 'text') {
-	          // text
-	          name = this.getName();
-	          data = this.getText();
+	        var asText = (config.data == 'text');
+	        name = this.getName();
+	        data = this[asText ? 'getText' : 'get'](); // get text or json
 
-	          this._delete();
-	          util.clear(this);
-	          util.extend(this, config.mixin);
-	          this.create(container, options);
+	        this._delete();
+	        util.clear(this);
+	        util.extend(this, config.mixin);
+	        this.create(container, options);
 
-	          this.setName(name);
-	          this.setText(data);
-	        }
-	        else {
-	          // json
-	          name = this.getName();
-	          data = this.get();
-
-	          this._delete();
-	          util.clear(this);
-	          util.extend(this, config.mixin);
-	          this.create(container, options);
-
-	          this.setName(name);
-	          this.set(data);
-	        }
+	        this.setName(name);
+	        this[asText ? 'setText' : 'set'](data); // set text or json
 
 	        if (typeof config.load === 'function') {
 	          try {
@@ -300,30 +285,62 @@ return /******/ (function(modules) { // webpackBootstrap
 	  };
 
 	  /**
-	   * Register a plugin with one ore multiple modes for the JSON Editor
-	   *  TODO: describe the mode format
-	   * @param {Object} modes    An object with the mode names as keys, and an object
-	   *                          defining the mode as value
+	   * Register a plugin with one ore multiple modes for the JSON Editor.
+	   *
+	   * A mode is described as an object with properties:
+	   *
+	   * - `mode: String`           The name of the mode.
+	   * - `mixin: Object`          An object containing the mixin functions which
+	   *                            will be added to the JSONEditor. Must contain functions
+	   *                            create, get, getText, set, and setText. May have
+	   *                            additional functions.
+	   *                            When the JSONEditor switches to a mixin, all mixin
+	   *                            functions are added to the JSONEditor, and then
+	   *                            the function `create(container, options)` is executed.
+	   * - `data: 'text' | 'json'`  The type of data that will be used to load the mixin.
+	   * - `[load: function]`       An optional function called after the mixin
+	   *                            has been loaded.
+	   *
+	   * @param {Object | Array} mode  A mode object or an array with multiple mode objects.
 	   */
-	  JSONEditor.register = function (modes) {
-	    for (var mode in modes) {
-	      if (modes.hasOwnProperty(mode)) {
-	        if (mode in JSONEditor.modes) {
-	          throw new Error('Mode "' + mode + '" already registered');
-	        }
+	  JSONEditor.registerMode = function (mode) {
+	    var i, prop;
 
-	        // TODO: validate the new mode mixin,
-	        // must have functions: create, get, getText, set, setText
-	        // may not have functions: setMode, register
-
-	        JSONEditor.modes[mode] = modes[mode];
+	    if (util.isArray(mode)) {
+	      // multiple modes
+	      for (i = 0; i < mode.length; i++) {
+	        JSONEditor.registerMode(mode[i]);
 	      }
+	    }
+	    else {
+	      // validate the new mode
+	      if (!('mode' in mode)) throw new Error('Property "mode" missing');
+	      if (!('mixin' in mode)) throw new Error('Property "mixin" missing');
+	      if (!('data' in mode)) throw new Error('Property "data" missing');
+	      var name = mode.mode;
+	      if (name in JSONEditor.modes) {
+	        throw new Error('Mode "' + name + '" already registered');
+	      }
+
+	      // validate the mixin
+	      if (typeof mode.mixin.create !== 'function') {
+	        throw new Error('Required function "create" missing on mixin');
+	      }
+	      var reserved = ['setMode', 'registerMode', 'modes'];
+	      for (i = 0; i < reserved.length; i++) {
+	        prop = reserved[i];
+	        if (prop in mode.mixin) {
+	          throw new Error('Reserved property "' + prop + '" not allowed in mixin');
+	        }
+	      }
+
+	      JSONEditor.modes[name] = mode;
 	    }
 	  };
 
 	  // register tree and text modes
-	  JSONEditor.register(treemode);
-	  JSONEditor.register(textmode);
+	  JSONEditor.registerMode(treemode);
+	  JSONEditor.registerMode(textmode);
 
 	  return JSONEditor;
 	}.apply(null, __WEBPACK_AMD_DEFINE_ARRAY__)), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
@@ -332,7 +349,7 @@ return /******/ (function(modules) { // webpackBootstrap
 /* 1 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(5), __webpack_require__(6), __webpack_require__(7), __webpack_require__(8), __webpack_require__(4), __webpack_require__(3)], __WEBPACK_AMD_DEFINE_RESULT__ = (function (Highlighter, History, SearchBox, Node, modebox, util) {
+	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(4), __webpack_require__(5), __webpack_require__(6), __webpack_require__(7), __webpack_require__(8), __webpack_require__(3)], __WEBPACK_AMD_DEFINE_RESULT__ = (function (Highlighter, History, SearchBox, Node, modeswitcher, util) {
 
 	  // create a mixin with the functions for tree mode
 	  var treemode = {};
@@ -351,10 +368,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	   *                               {function} change  Callback method, triggered
 	   *                                                  on change of contents
 	   *                               {String} name      Field name for the root node.
-	   * @param {Object | undefined} json JSON object
 	   * @private
 	   */
-	  treemode.create = function (container, options, json) {
+	  treemode.create = function (container, options) {
 	    if (!container) {
 	      throw new Error('No container element provided.');
 	    }
@@ -371,8 +387,6 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	    this._createFrame();
 	    this._createTable();
-
-	    this.set(json || {});
 	  };
 
 	  /**
@@ -874,7 +888,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	    // create mode box
 	    if (this.options && this.options.modes && this.options.modes.length) {
-	      var modeBox = modebox.create(this, this.options.modes, this.options.mode);
+	      var modeBox = modeswitcher.create(this, this.options.modes, this.options.mode);
 	      this.menu.appendChild(modeBox);
 	      this.dom.modeBox = modeBox;
 	    }
@@ -1037,20 +1051,23 @@ return /******/ (function(modules) { // webpackBootstrap
 	  };
 
 	  // define modes
-	  return {
-	    tree: {
+	  return [
+	    {
+	      mode: 'tree',
 	      mixin: treemode,
 	      data: 'json'
 	    },
-	    view: {
+	    {
+	      mode: 'view',
 	      mixin: treemode,
 	      data: 'json'
 	    },
-	    form: {
+	    {
+	      mode: 'form',
 	      mixin: treemode,
 	      data: 'json'
 	    }
-	  };
+	  ];
 	}.apply(null, __WEBPACK_AMD_DEFINE_ARRAY__)), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
 
 
@@ -1058,7 +1075,7 @@ return /******/ (function(modules) { // webpackBootstrap
 /* 2 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(4), __webpack_require__(3)], __WEBPACK_AMD_DEFINE_RESULT__ = (function (modebox, util) {
+	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(8), __webpack_require__(3)], __WEBPACK_AMD_DEFINE_RESULT__ = (function (modeswitcher, util) {
 
 	  // create a mixin with the functions for text mode
 	  var textmode = {};
@@ -1074,10 +1091,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	   *                                                         spaces. 2 by default.
 	   *                                   {function} change     Callback method
 	   *                                                         triggered on change
-	   * @param {JSON | String} [json]     initial contents of the formatter
 	   * @private
 	   */
-	  textmode.create = function (container, options, json) {
+	  textmode.create = function (container, options) {
 	    // read options
 	    options = options || {};
 	    this.options = options;
@@ -1148,7 +1164,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	    // create mode box
 	    if (this.options && this.options.modes && this.options.modes.length) {
-	      var modeBox = modebox.create(this, this.options.modes, this.options.mode);
+	      var modeBox = modeswitcher.create(this, this.options.modes, this.options.mode);
 	      this.menu.appendChild(modeBox);
 	      this.dom.modeBox = modeBox;
 	    }
@@ -1217,14 +1233,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	          }
 	        }
 	      }
-	    }
-
-	    // load initial json object or string
-	    if (typeof(json) == 'string') {
-	      this.setText(json);
-	    }
-	    else {
-	      this.set(json);
 	    }
 	  };
 
@@ -1342,18 +1350,20 @@ return /******/ (function(modules) { // webpackBootstrap
 	  };
 
 	  // define modes
-	  return {
-	    text: {
+	  return [
+	    {
+	      mode: 'text',
 	      mixin: textmode,
 	      data: 'text',
 	      load: textmode.format
 	    },
-	    code: {
+	    {
+	      mode: 'code',
 	      mixin: textmode,
 	      data: 'text',
 	      load: textmode.format
 	    }
-	  };
+	  ];
 	}.apply(null, __WEBPACK_AMD_DEFINE_ARRAY__)), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
 
 
@@ -1461,7 +1471,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    if ((object instanceof RegExp) || (typeof object === 'regexp')) {
 	      return 'regexp';
 	    }
-	    if (Array.isArray(object)) {
+	    if (util.isArray(object)) {
 	      return 'array';
 	    }
 
@@ -1477,6 +1487,15 @@ return /******/ (function(modules) { // webpackBootstrap
 	  util.isUrl = function isUrl (text) {
 	    return (typeof text == 'string' || text instanceof String) &&
 	        isUrlRegex.test(text);
+	  };
+
+	  /**
+	   * Tes whether given object is an Array
+	   * @param {*} obj
+	   * @returns {boolean} returns true when obj is an array
+	   */
+	  util.isArray = function (obj) {
+	    return Object.prototype.toString.call(obj) === '[object Array]';
 	  };
 
 	  /**
@@ -1845,113 +1864,6 @@ return /******/ (function(modules) { // webpackBootstrap
 /* 4 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(9)], __WEBPACK_AMD_DEFINE_RESULT__ = (function (ContextMenu) {
-
-	  /**
-	   * Create a mode box to be used in the editor menu's
-	   * @param {JSONEditor} editor
-	   * @param {String[]} modes  Available modes: 'code', 'form', 'text', 'tree', 'view'
-	   * @param {String} current  Available modes: 'code', 'form', 'text', 'tree', 'view'
-	   * @returns {HTMLElement} box
-	   */
-	  function createModeBox(editor, modes, current) {
-	    /**
-	     * Switch the mode of the editor
-	     * @param {String} mode
-	     */
-	    function switchMode(mode) {
-	      // switch mode
-	      editor.setMode(mode);
-
-	      // restore focus on mode box
-	      var modeBox = editor.dom && editor.dom.modeBox;
-	      if (modeBox) {
-	        modeBox.focus();
-	      }
-	    }
-
-	    // available modes
-	    var availableModes = {
-	      code: {
-	        'text': 'Code',
-	        'title': 'Switch to code highlighter',
-	        'click': function () {
-	          switchMode('code')
-	        }
-	      },
-	      form: {
-	        'text': 'Form',
-	        'title': 'Switch to form editor',
-	        'click': function () {
-	          switchMode('form');
-	        }
-	      },
-	      text: {
-	        'text': 'Text',
-	        'title': 'Switch to plain text editor',
-	        'click': function () {
-	          switchMode('text');
-	        }
-	      },
-	      tree: {
-	        'text': 'Tree',
-	        'title': 'Switch to tree editor',
-	        'click': function () {
-	          switchMode('tree');
-	        }
-	      },
-	      view: {
-	        'text': 'View',
-	        'title': 'Switch to tree view',
-	        'click': function () {
-	          switchMode('view');
-	        }
-	      }
-	    };
-
-	    // list the selected modes
-	    var items = [];
-	    for (var i = 0; i < modes.length; i++) {
-	      var mode = modes[i];
-	      var item = availableModes[mode];
-	      if (!item) {
-	        throw new Error('Unknown mode "' + mode + '"');
-	      }
-
-	      item.className = 'type-modes' + ((current == mode) ? ' selected' : '');
-	      items.push(item);
-	    }
-
-	    // retrieve the title of current mode
-	    var currentMode = availableModes[current];
-	    if (!currentMode) {
-	      throw new Error('Unknown mode "' + current + '"');
-	    }
-	    var currentTitle = currentMode.text;
-
-	    // create the html element
-	    var box = document.createElement('button');
-	    box.className = 'modes separator';
-	    box.innerHTML = currentTitle + ' &#x25BE;';
-	    box.title = 'Switch editor mode';
-	    box.onclick = function () {
-	      var menu = new ContextMenu(items);
-	      menu.show(box);
-	    };
-
-	    return box;
-	  }
-
-	  return {
-	    create: createModeBox
-	  }
-	}.apply(null, __WEBPACK_AMD_DEFINE_ARRAY__)), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
-
-
-/***/ },
-/* 5 */
-/***/ function(module, exports, __webpack_require__) {
-
 	var __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_RESULT__ = (function () {
 
 	  /**
@@ -2041,7 +1953,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	}.call(exports, __webpack_require__, exports, module)), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
 
 /***/ },
-/* 6 */
+/* 5 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(3)], __WEBPACK_AMD_DEFINE_RESULT__ = (function (util) {
@@ -2270,7 +2182,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 7 */
+/* 6 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_RESULT__ = (function () {
@@ -2569,7 +2481,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 8 */
+/* 7 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(9), __webpack_require__(10), __webpack_require__(3)], __WEBPACK_AMD_DEFINE_RESULT__ = (function (ContextMenu, appendNodeFactory, util) {
@@ -5439,6 +5351,115 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	  return Node;
 	}.apply(null, __WEBPACK_AMD_DEFINE_ARRAY__)), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
+
+/***/ },
+/* 8 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(9)], __WEBPACK_AMD_DEFINE_RESULT__ = (function (ContextMenu) {
+
+	  /**
+	   * Create a select box to be used in the editor menu's, which allows to switch mode
+	   * @param {Object} editor
+	   * @param {String[]} modes  Available modes: 'code', 'form', 'text', 'tree', 'view'
+	   * @param {String} current  Available modes: 'code', 'form', 'text', 'tree', 'view'
+	   * @returns {HTMLElement} box
+	   */
+	  function createModeSwitcher(editor, modes, current) {
+	    // TODO: decouple mode switcher from editor
+
+	    /**
+	     * Switch the mode of the editor
+	     * @param {String} mode
+	     */
+	    function switchMode(mode) {
+	      // switch mode
+	      editor.setMode(mode);
+
+	      // restore focus on mode box
+	      var modeBox = editor.dom && editor.dom.modeBox;
+	      if (modeBox) {
+	        modeBox.focus();
+	      }
+	    }
+
+	    // available modes
+	    var availableModes = {
+	      code: {
+	        'text': 'Code',
+	        'title': 'Switch to code highlighter',
+	        'click': function () {
+	          switchMode('code')
+	        }
+	      },
+	      form: {
+	        'text': 'Form',
+	        'title': 'Switch to form editor',
+	        'click': function () {
+	          switchMode('form');
+	        }
+	      },
+	      text: {
+	        'text': 'Text',
+	        'title': 'Switch to plain text editor',
+	        'click': function () {
+	          switchMode('text');
+	        }
+	      },
+	      tree: {
+	        'text': 'Tree',
+	        'title': 'Switch to tree editor',
+	        'click': function () {
+	          switchMode('tree');
+	        }
+	      },
+	      view: {
+	        'text': 'View',
+	        'title': 'Switch to tree view',
+	        'click': function () {
+	          switchMode('view');
+	        }
+	      }
+	    };
+
+	    // list the selected modes
+	    var items = [];
+	    for (var i = 0; i < modes.length; i++) {
+	      var mode = modes[i];
+	      var item = availableModes[mode];
+	      if (!item) {
+	        throw new Error('Unknown mode "' + mode + '"');
+	      }
+
+	      item.className = 'type-modes' + ((current == mode) ? ' selected' : '');
+	      items.push(item);
+	    }
+
+	    // retrieve the title of current mode
+	    var currentMode = availableModes[current];
+	    if (!currentMode) {
+	      throw new Error('Unknown mode "' + current + '"');
+	    }
+	    var currentTitle = currentMode.text;
+
+	    // create the html element
+	    var box = document.createElement('button');
+	    box.className = 'modes separator';
+	    box.innerHTML = currentTitle + ' &#x25BE;';
+	    box.title = 'Switch editor mode';
+	    box.onclick = function () {
+	      var menu = new ContextMenu(items);
+	      menu.show(box);
+	    };
+
+	    return box;
+	  }
+
+	  return {
+	    create: createModeSwitcher
+	  }
+	}.apply(null, __WEBPACK_AMD_DEFINE_ARRAY__)), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
+
 
 /***/ },
 /* 9 */
