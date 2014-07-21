@@ -1,0 +1,61 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <title>JSONEditor | Load and save</title>
+  <link rel="stylesheet" type="text/css" href="../jsoneditor.css">
+  <script src="../jsoneditor.js"></script>
+
+  <script src="http://bgrins.github.io/filereader.js/filereader.js"></script>
+  <script src="http://eligrey.com/demos/FileSaver.js/FileSaver.js"></script>
+
+  <style>
+    html, body {
+      font: 11pt sans-serif;
+    }
+    #jsoneditor {
+      width: 500px;
+      height: 500px;
+    }
+  </style>
+</head>
+<body>
+<h1>Load and save JSON documents</h1>
+<p>
+  This examples uses HTML5 to load/save local files.
+  Powered by <a href="http://bgrins.github.io/filereader.js/">FileReader.js</a> and
+  <a href="https://github.com/eligrey/FileSaver.js">FileSaver.js</a>.<br>
+  Only supported on modern browsers (Chrome, FireFox, IE10+, Safari 6.1+, Opera 15+).
+</p>
+<p>
+  Load a JSON document: <input type="file" id="loadDocument" value="Load"/>
+</p>
+<p>
+  Save a JSON document: <input type="button" id="saveDocument" value="Save" />
+</p>
+
+<div id="jsoneditor"></div>
+
+<script type="text/javascript" >
+  // create the editor
+  var editor = new JSONEditor(document.getElementById('jsoneditor'));
+
+  // Load a JSON document
+  FileReaderJS.setupInput(document.getElementById('loadDocument'), {
+    readAsDefault: 'Text',
+    on: {
+      load: function (event, file) {
+        editor.setText(event.target.result);
+      }
+    }
+  });
+
+  // Save a JSON document
+  document.getElementById('saveDocument').onclick = function () {
+    var blob = new Blob([editor.getText()], {type: 'application/json;charset=utf-8'});
+    saveAs(blob, 'document.json');
+  };
+</script>
+</body>
+</html>
+
+
