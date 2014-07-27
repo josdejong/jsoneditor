@@ -1,6 +1,7 @@
 # JSON Editor
-https://github.com/josdejong/jsoneditor
-http://jsoneditoronline.org/
+
+Website: http://jsoneditoronline.org/
+Github: https://github.com/josdejong/jsoneditor
 
 
 ### Description

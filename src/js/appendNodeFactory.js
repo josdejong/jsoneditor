@@ -16,6 +16,8 @@ define(['./ContextMenu', './util'], function (ContextMenu, util) {
       /** @type {TreeEditor} */
       this.editor = editor;
       this.dom = {};
+
+      this._setEditability(editor);
     }
 
     AppendNode.prototype = new Node();
@@ -39,7 +41,7 @@ define(['./ContextMenu', './util'], function (ContextMenu, util) {
 
       // TODO: consistent naming
 
-      if (this.editor.mode.edit) {
+      if (this.editable.field) {
         // a cell for the dragarea column
         dom.tdDrag = document.createElement('td');
 

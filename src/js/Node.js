@@ -25,7 +25,41 @@ define(['./ContextMenu', './appendNodeFactory', './util'], function (ContextMenu
       this.setField('');
       this.setValue(null);
     }
+
+    this._setEditability(editor);
   }
+
+  /**
+   * Determine whether the field and/or value of this node are editable
+   * @param editor
+   * @private
+   */
+  Node.prototype._setEditability = function (editor) {
+    this.editable = {
+      field: true,
+      value: true
+    };
+
+    if (editor) {
+      this.editable.field = (this.editor.options.mode != 'view' && this.editor.options.mode != 'form');
+      this.editable.value = (this.editor.options.mode != 'view');
+
+      if (typeof editor.options.editable === 'function') {
+        var editable = editor.options.editable({
+          field: this.field
+        });
+
+        if (typeof editable === 'boolean') {
+          this.editable.field = editable;
+          this.editable.value = editable;
+        }
+        else {
+          if (typeof editable.field === 'boolean') this.editable.field = editable.field;
+          if (typeof editable.value === 'boolean') this.editable.value = editable.value;
+        }
+      }
+    }
+  };
 
   /**
    * Set parent node
@@ -977,7 +1011,7 @@ define(['./ContextMenu', './appendNodeFactory', './util'], function (ContextMenu
       var t = (this.type == 'auto') ? util.type(v) : this.type;
       var isUrl = (t == 'string' && util.isUrl(v));
       var color = '';
-      if (isUrl && !this.editor.mode.edit) {
+      if (isUrl && !this.editable.value) { // TODO: when to apply this?
         color = '';
       }
       else if (t == 'string') {
@@ -1024,7 +1058,7 @@ define(['./ContextMenu', './appendNodeFactory', './util'], function (ContextMenu
         domValue.title = this.type + ' containing ' + count + ' items';
       }
       else if (t == 'string' && util.isUrl(v)) {
-        if (this.editor.mode.edit) {
+        if (this.editable.value) {
           domValue.title = 'Ctrl+Click or Ctrl+Enter to open url in new window';
         }
       }
@@ -1152,15 +1186,17 @@ define(['./ContextMenu', './appendNodeFactory', './util'], function (ContextMenu
     dom.tr = document.createElement('tr');
     dom.tr.node = this;
 
-    if (this.editor.mode.edit) {
-      // create draggable area
+    if (this.editor.options.mode != 'view' && this.editor.options.mode != 'form') {
       var tdDrag = document.createElement('td');
-      if (this.parent) {
-        var domDrag = document.createElement('button');
-        dom.drag = domDrag;
-        domDrag.className = 'dragarea';
-        domDrag.title = 'Drag to move this field (Alt+Shift+Arrows)';
-        tdDrag.appendChild(domDrag);
+      if (this.editable.field) {
+        // create draggable area
+        if (this.parent) {
+          var domDrag = document.createElement('button');
+          dom.drag = domDrag;
+          domDrag.className = 'dragarea';
+          domDrag.title = 'Drag to move this field (Alt+Shift+Arrows)';
+          tdDrag.appendChild(domDrag);
+        }
       }
       dom.tr.appendChild(tdDrag);
 
@@ -1485,9 +1521,9 @@ define(['./ContextMenu', './appendNodeFactory', './util'], function (ContextMenu
     // update field
     var domField = this.dom.field;
     if (domField) {
-      if (this.fieldEditable == true) {
+      if (this.fieldEditable) {
         // parent is an object
-        domField.contentEditable = this.editor.mode.edit;
+        domField.contentEditable = this.editable.field;
         domField.spellcheck = false;
         domField.className = 'field';
       }
@@ -1603,7 +1639,7 @@ define(['./ContextMenu', './appendNodeFactory', './util'], function (ContextMenu
       domValue.innerHTML = '{...}';
     }
     else {
-      if (!this.editor.mode.edit && util.isUrl(this.value)) {
+      if (!this.editable.value && util.isUrl(this.value)) {
         // create a link in case of read-only editor and value containing an url
         domValue = document.createElement('a');
         domValue.className = 'value';
@@ -1612,9 +1648,9 @@ define(['./ContextMenu', './appendNodeFactory', './util'], function (ContextMenu
         domValue.innerHTML = this._escapeHTML(this.value);
       }
       else {
-        // create and editable or read-only div
+        // create an editable or read-only div
         domValue = document.createElement('div');
-        domValue.contentEditable = !this.editor.mode.view;
+        domValue.contentEditable = this.editable.value;
         domValue.spellcheck = false;
         domValue.className = 'value';
         domValue.innerHTML = this._escapeHTML(this.value);
@@ -1777,7 +1813,7 @@ define(['./ContextMenu', './appendNodeFactory', './util'], function (ContextMenu
           break;
 
         case 'click':
-          if (event.ctrlKey && this.editor.mode.edit) {
+          if (event.ctrlKey || !this.editable.value) {
             if (util.isUrl(this.value)) {
               window.open(this.value, '_blank');
             }
@@ -1899,7 +1935,7 @@ define(['./ContextMenu', './appendNodeFactory', './util'], function (ContextMenu
     // util.log(ctrlKey, keynum, event.charCode); // TODO: cleanup
     if (keynum == 13) { // Enter
       if (target == this.dom.value) {
-        if (!this.editor.mode.edit || event.ctrlKey) {
+        if (!this.editable.value || event.ctrlKey) {
           if (util.isUrl(this.value)) {
             window.open(this.value, '_blank');
             handled = true;
@@ -2537,49 +2573,51 @@ define(['./ContextMenu', './appendNodeFactory', './util'], function (ContextMenu
     var titles = Node.TYPE_TITLES;
     var items = [];
 
-    items.push({
-      'text': 'Type',
-      'title': 'Change the type of this field',
-      'className': 'type-' + this.type,
-      'submenu': [
-        {
-          'text': 'Auto',
-          'className': 'type-auto' +
-              (this.type == 'auto' ? ' selected' : ''),
-          'title': titles.auto,
-          'click': function () {
-            node._onChangeType('auto');
+    if (this.editable.value) {
+      items.push({
+        'text': 'Type',
+        'title': 'Change the type of this field',
+        'className': 'type-' + this.type,
+        'submenu': [
+          {
+            'text': 'Auto',
+            'className': 'type-auto' +
+                (this.type == 'auto' ? ' selected' : ''),
+            'title': titles.auto,
+            'click': function () {
+              node._onChangeType('auto');
+            }
+          },
+          {
+            'text': 'Array',
+            'className': 'type-array' +
+                (this.type == 'array' ? ' selected' : ''),
+            'title': titles.array,
+            'click': function () {
+              node._onChangeType('array');
+            }
+          },
+          {
+            'text': 'Object',
+            'className': 'type-object' +
+                (this.type == 'object' ? ' selected' : ''),
+            'title': titles.object,
+            'click': function () {
+              node._onChangeType('object');
+            }
+          },
+          {
+            'text': 'String',
+            'className': 'type-string' +
+                (this.type == 'string' ? ' selected' : ''),
+            'title': titles.string,
+            'click': function () {
+              node._onChangeType('string');
+            }
           }
-        },
-        {
-          'text': 'Array',
-          'className': 'type-array' +
-              (this.type == 'array' ? ' selected' : ''),
-          'title': titles.array,
-          'click': function () {
-            node._onChangeType('array');
-          }
-        },
-        {
-          'text': 'Object',
-          'className': 'type-object' +
-              (this.type == 'object' ? ' selected' : ''),
-          'title': titles.object,
-          'click': function () {
-            node._onChangeType('object');
-          }
-        },
-        {
-          'text': 'String',
-          'className': 'type-string' +
-              (this.type == 'string' ? ' selected' : ''),
-          'title': titles.string,
-          'click': function () {
-            node._onChangeType('string');
-          }
-        }
-      ]
-    });
+        ]
+      });
+    }
 
     if (this._hasChilds()) {
       var direction = ((this.sort == 'asc') ? 'desc': 'asc');
@@ -2612,10 +2650,12 @@ define(['./ContextMenu', './appendNodeFactory', './util'], function (ContextMenu
     }
 
     if (this.parent && this.parent._hasChilds()) {
-      // create a separator
-      items.push({
-        'type': 'separator'
-      });
+      if (items.length) {
+        // create a separator
+        items.push({
+          'type': 'separator'
+        });
+      }
 
       // create append button (for last child node only)
       var childs = node.parent.childs;
@@ -2710,25 +2750,27 @@ define(['./ContextMenu', './appendNodeFactory', './util'], function (ContextMenu
         ]
       });
 
-      // create duplicate button
-      items.push({
-        'text': 'Duplicate',
-        'title': 'Duplicate this field (Ctrl+D)',
-        'className': 'duplicate',
-        'click': function () {
-          node._onDuplicate();
-        }
-      });
+      if (this.editable.field) {
+        // create duplicate button
+        items.push({
+          'text': 'Duplicate',
+          'title': 'Duplicate this field (Ctrl+D)',
+          'className': 'duplicate',
+          'click': function () {
+            node._onDuplicate();
+          }
+        });
 
-      // create remove button
-      items.push({
-        'text': 'Remove',
-        'title': 'Remove this field (Ctrl+Del)',
-        'className': 'remove',
-        'click': function () {
-          node._onRemove();
-        }
-      });
+        // create remove button
+        items.push({
+          'text': 'Remove',
+          'title': 'Remove this field (Ctrl+Del)',
+          'className': 'remove',
+          'click': function () {
+            node._onRemove();
+          }
+        });
+      }
     }
 
     var menu = new ContextMenu(items, {close: onClose});
