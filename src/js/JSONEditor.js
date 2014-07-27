@@ -148,7 +148,7 @@ define(['./treemode', './textmode', './util'], function (treemode, textmode, uti
     options.mode = mode;
     var config = JSONEditor.modes[mode];
     if (config) {
-      try {
+//      try {
         var asText = (config.data == 'text');
         name = this.getName();
         data = this[asText ? 'getText' : 'get'](); // get text or json
@@ -167,10 +167,10 @@ define(['./treemode', './textmode', './util'], function (treemode, textmode, uti
           }
           catch (err) {}
         }
-      }
-      catch (err) {
-        this._onError(err);
-      }
+//      }
+//      catch (err) {
+//        this._onError(err);
+//      }
     }
     else {
       throw new Error('Unknown mode "' + options.mode + '"');

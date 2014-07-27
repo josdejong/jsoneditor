@@ -67,6 +67,7 @@
       mode: 'tree',
       modes: ['code', 'form', 'text', 'tree', 'view'], // allowed modes
       error: function (err) {
+        console.trace();
         alert(err.toString());
       },
       editable: function (node) {
@@ -94,9 +95,9 @@
       "boolean": true,
       "null": null,
       "number": 123,
-      "object": {"a": "b", "c": "d"},
+      "object": {"a": "b", "c": {"d": "e", "f": "g"}},
       "string": "Hello World",
-      "url": "http://jsoneditorononline.org"
+      "url": "http://jsoneditoronline.org"
     };
 
     editor = new JSONEditor(container, options, json);

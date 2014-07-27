@@ -232,7 +232,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    options.mode = mode;
 	    var config = JSONEditor.modes[mode];
 	    if (config) {
-	      try {
+	//      try {
 	        var asText = (config.data == 'text');
 	        name = this.getName();
 	        data = this[asText ? 'getText' : 'get'](); // get text or json
@@ -251,10 +251,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	          }
 	          catch (err) {}
 	        }
-	      }
-	      catch (err) {
-	        this._onError(err);
-	      }
+	//      }
+	//      catch (err) {
+	//        this._onError(err);
+	//      }
 	    }
 	    else {
 	      throw new Error('Unknown mode "' + options.mode + '"');
@@ -348,7 +348,7 @@ return /******/ (function(modules) { // webpackBootstrap
 /* 1 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(5), __webpack_require__(6), __webpack_require__(7), __webpack_require__(8), __webpack_require__(4), __webpack_require__(3)], __WEBPACK_AMD_DEFINE_RESULT__ = (function (Highlighter, History, SearchBox, Node, modeswitcher, util) {
+	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(4), __webpack_require__(5), __webpack_require__(6), __webpack_require__(7), __webpack_require__(8), __webpack_require__(3)], __WEBPACK_AMD_DEFINE_RESULT__ = (function (Highlighter, History, SearchBox, Node, modeswitcher, util) {
 
 	  // create a mixin with the functions for tree mode
 	  var treemode = {};
@@ -1074,7 +1074,7 @@ return /******/ (function(modules) { // webpackBootstrap
 /* 2 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(4), __webpack_require__(3)], __WEBPACK_AMD_DEFINE_RESULT__ = (function (modeswitcher, util) {
+	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(8), __webpack_require__(3)], __WEBPACK_AMD_DEFINE_RESULT__ = (function (modeswitcher, util) {
 
 	  // create a mixin with the functions for text mode
 	  var textmode = {};
@@ -1873,115 +1873,6 @@ return /******/ (function(modules) { // webpackBootstrap
 /* 4 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(9)], __WEBPACK_AMD_DEFINE_RESULT__ = (function (ContextMenu) {
-
-	  /**
-	   * Create a select box to be used in the editor menu's, which allows to switch mode
-	   * @param {Object} editor
-	   * @param {String[]} modes  Available modes: 'code', 'form', 'text', 'tree', 'view'
-	   * @param {String} current  Available modes: 'code', 'form', 'text', 'tree', 'view'
-	   * @returns {HTMLElement} box
-	   */
-	  function createModeSwitcher(editor, modes, current) {
-	    // TODO: decouple mode switcher from editor
-
-	    /**
-	     * Switch the mode of the editor
-	     * @param {String} mode
-	     */
-	    function switchMode(mode) {
-	      // switch mode
-	      editor.setMode(mode);
-
-	      // restore focus on mode box
-	      var modeBox = editor.dom && editor.dom.modeBox;
-	      if (modeBox) {
-	        modeBox.focus();
-	      }
-	    }
-
-	    // available modes
-	    var availableModes = {
-	      code: {
-	        'text': 'Code',
-	        'title': 'Switch to code highlighter',
-	        'click': function () {
-	          switchMode('code')
-	        }
-	      },
-	      form: {
-	        'text': 'Form',
-	        'title': 'Switch to form editor',
-	        'click': function () {
-	          switchMode('form');
-	        }
-	      },
-	      text: {
-	        'text': 'Text',
-	        'title': 'Switch to plain text editor',
-	        'click': function () {
-	          switchMode('text');
-	        }
-	      },
-	      tree: {
-	        'text': 'Tree',
-	        'title': 'Switch to tree editor',
-	        'click': function () {
-	          switchMode('tree');
-	        }
-	      },
-	      view: {
-	        'text': 'View',
-	        'title': 'Switch to tree view',
-	        'click': function () {
-	          switchMode('view');
-	        }
-	      }
-	    };
-
-	    // list the selected modes
-	    var items = [];
-	    for (var i = 0; i < modes.length; i++) {
-	      var mode = modes[i];
-	      var item = availableModes[mode];
-	      if (!item) {
-	        throw new Error('Unknown mode "' + mode + '"');
-	      }
-
-	      item.className = 'type-modes' + ((current == mode) ? ' selected' : '');
-	      items.push(item);
-	    }
-
-	    // retrieve the title of current mode
-	    var currentMode = availableModes[current];
-	    if (!currentMode) {
-	      throw new Error('Unknown mode "' + current + '"');
-	    }
-	    var currentTitle = currentMode.text;
-
-	    // create the html element
-	    var box = document.createElement('button');
-	    box.className = 'modes separator';
-	    box.innerHTML = currentTitle + ' &#x25BE;';
-	    box.title = 'Switch editor mode';
-	    box.onclick = function () {
-	      var menu = new ContextMenu(items);
-	      menu.show(box);
-	    };
-
-	    return box;
-	  }
-
-	  return {
-	    create: createModeSwitcher
-	  }
-	}.apply(null, __WEBPACK_AMD_DEFINE_ARRAY__)), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
-
-
-/***/ },
-/* 5 */
-/***/ function(module, exports, __webpack_require__) {
-
 	var __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_RESULT__ = (function () {
 
 	  /**
@@ -2071,7 +1962,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	}.call(exports, __webpack_require__, exports, module)), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
 
 /***/ },
-/* 6 */
+/* 5 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(3)], __WEBPACK_AMD_DEFINE_RESULT__ = (function (util) {
@@ -2300,7 +2191,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 7 */
+/* 6 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_RESULT__ = (function () {
@@ -2599,7 +2490,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 8 */
+/* 7 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(9), __webpack_require__(10), __webpack_require__(3)], __WEBPACK_AMD_DEFINE_RESULT__ = (function (ContextMenu, appendNodeFactory, util) {
@@ -2629,28 +2520,27 @@ return /******/ (function(modules) { // webpackBootstrap
 	      this.setField('');
 	      this.setValue(null);
 	    }
-
-	    this._setEditability(editor);
 	  }
 
 	  /**
 	   * Determine whether the field and/or value of this node are editable
-	   * @param editor
 	   * @private
 	   */
-	  Node.prototype._setEditability = function (editor) {
+	  Node.prototype._updateEditability = function () {
 	    this.editable = {
 	      field: true,
 	      value: true
 	    };
 
-	    if (editor) {
-	      this.editable.field = (this.editor.options.mode != 'view' && this.editor.options.mode != 'form');
-	      this.editable.value = (this.editor.options.mode != 'view');
+	    if (this.editor) {
+	      this.editable.field = this.editor.mode.edit;
+	      this.editable.value = !this.editor.mode.view;
 
-	      if (typeof editor.options.editable === 'function') {
-	        var editable = editor.options.editable({
-	          field: this.field
+	      if (this.editor.mode.edit && (typeof this.editor.options.editable === 'function')) {
+	        var editable = this.editor.options.editable({
+	          field: this.field,
+	          value: this.value,
+	          path: this.path()
 	        });
 
 	        if (typeof editable === 'boolean') {
@@ -2663,6 +2553,23 @@ return /******/ (function(modules) { // webpackBootstrap
 	        }
 	      }
 	    }
+	  };
+
+	  /**
+	   * Get the path of this node
+	   * @return {String[]} Array containing the path to this node
+	   */
+	  Node.prototype.path = function () {
+	    var node = this;
+	    var path = [];
+	    while (node) {
+	      var field = node.field || node.index;
+	      if (field !== undefined) {
+	        path.unshift(field);
+	      }
+	      node = node.parent;
+	    }
+	    return path;
 	  };
 
 	  /**
@@ -2736,7 +2643,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        if (childValue !== undefined && !(childValue instanceof Function)) {
 	          // ignore undefined and functions
 	          child = new Node(this.editor, {
-	            'value': childValue
+	            value: childValue
 	          });
 	          this.appendChild(child);
 	        }
@@ -2752,8 +2659,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	          if (childValue !== undefined && !(childValue instanceof Function)) {
 	            // ignore undefined and functions
 	            child = new Node(this.editor, {
-	              'field': childField,
-	              'value': childValue
+	              field: childField,
+	              value: childValue
 	            });
 	            this.appendChild(child);
 	          }
@@ -3786,11 +3693,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	      return dom.tr;
 	    }
 
+	    this._updateEditability();
+
 	    // create row
 	    dom.tr = document.createElement('tr');
 	    dom.tr.node = this;
 
-	    if (this.editor.options.mode != 'view' && this.editor.options.mode != 'form') {
+	    if (this.editor.mode.edit) { // note: we take here the global setting!
 	      var tdDrag = document.createElement('td');
 	      if (this.editable.field) {
 	        // create draggable area
@@ -4778,11 +4687,11 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	    // store history action
 	    this.editor._onAction('removeNode', {
-	      'node': this,
-	      'parent': this.parent,
-	      'index': index,
-	      'oldSelection': oldSelection,
-	      'newSelection': newSelection
+	      node: this,
+	      parent: this.parent,
+	      index: index,
+	      oldSelection: oldSelection,
+	      newSelection: newSelection
 	    });
 	  };
 
@@ -4797,11 +4706,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	    var newSelection = this.editor.getSelection();
 
 	    this.editor._onAction('duplicateNode', {
-	      'node': this,
-	      'clone': clone,
-	      'parent': this.parent,
-	      'oldSelection': oldSelection,
-	      'newSelection': newSelection
+	      node: this,
+	      clone: clone,
+	      parent: this.parent,
+	      oldSelection: oldSelection,
+	      newSelection: newSelection
 	    });
 	  };
 
@@ -4816,9 +4725,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	    var oldSelection = this.editor.getSelection();
 
 	    var newNode = new Node(this.editor, {
-	      'field': (field != undefined) ? field : '',
-	      'value': (value != undefined) ? value : '',
-	      'type': type
+	      field: (field != undefined) ? field : '',
+	      value: (value != undefined) ? value : '',
+	      type: type
 	    });
 	    newNode.expand(true);
 	    this.parent.insertBefore(newNode, this);
@@ -4827,11 +4736,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	    var newSelection = this.editor.getSelection();
 
 	    this.editor._onAction('insertBeforeNode', {
-	      'node': newNode,
-	      'beforeNode': this,
-	      'parent': this.parent,
-	      'oldSelection': oldSelection,
-	      'newSelection': newSelection
+	      node: newNode,
+	      beforeNode: this,
+	      parent: this.parent,
+	      oldSelection: oldSelection,
+	      newSelection: newSelection
 	    });
 	  };
 
@@ -4846,9 +4755,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	    var oldSelection = this.editor.getSelection();
 
 	    var newNode = new Node(this.editor, {
-	      'field': (field != undefined) ? field : '',
-	      'value': (value != undefined) ? value : '',
-	      'type': type
+	      field: (field != undefined) ? field : '',
+	      value: (value != undefined) ? value : '',
+	      type: type
 	    });
 	    newNode.expand(true);
 	    this.parent.insertAfter(newNode, this);
@@ -4857,11 +4766,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	    var newSelection = this.editor.getSelection();
 
 	    this.editor._onAction('insertAfterNode', {
-	      'node': newNode,
-	      'afterNode': this,
-	      'parent': this.parent,
-	      'oldSelection': oldSelection,
-	      'newSelection': newSelection
+	      node: newNode,
+	      afterNode: this,
+	      parent: this.parent,
+	      oldSelection: oldSelection,
+	      newSelection: newSelection
 	    });
 	  };
 
@@ -4876,9 +4785,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	    var oldSelection = this.editor.getSelection();
 
 	    var newNode = new Node(this.editor, {
-	      'field': (field != undefined) ? field : '',
-	      'value': (value != undefined) ? value : '',
-	      'type': type
+	      field: (field != undefined) ? field : '',
+	      value: (value != undefined) ? value : '',
+	      type: type
 	    });
 	    newNode.expand(true);
 	    this.parent.appendChild(newNode);
@@ -4887,10 +4796,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	    var newSelection = this.editor.getSelection();
 
 	    this.editor._onAction('appendNode', {
-	      'node': newNode,
-	      'parent': this.parent,
-	      'oldSelection': oldSelection,
-	      'newSelection': newSelection
+	      node: newNode,
+	      parent: this.parent,
+	      oldSelection: oldSelection,
+	      newSelection: newSelection
 	    });
 	  };
 
@@ -4907,11 +4816,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	      var newSelection = this.editor.getSelection();
 
 	      this.editor._onAction('changeType', {
-	        'node': this,
-	        'oldType': oldType,
-	        'newType': newType,
-	        'oldSelection': oldSelection,
-	        'newSelection': newSelection
+	        node: this,
+	        oldType: oldType,
+	        newType: newType,
+	        oldSelection: oldSelection,
+	        newSelection: newSelection
 	      });
 	    }
 	  };
@@ -4943,11 +4852,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	      this.sort = (order == 1) ? 'asc' : 'desc';
 
 	      this.editor._onAction('sort', {
-	        'node': this,
-	        'oldChilds': oldChilds,
-	        'oldSort': oldSort,
-	        'newChilds': this.childs,
-	        'newSort': this.sort
+	        node: this,
+	        oldChilds: oldChilds,
+	        oldSort: oldSort,
+	        newChilds: this.childs,
+	        newSort: this.sort
 	      });
 
 	      this.showChilds();
@@ -5179,43 +5088,43 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	    if (this.editable.value) {
 	      items.push({
-	        'text': 'Type',
-	        'title': 'Change the type of this field',
-	        'className': 'type-' + this.type,
-	        'submenu': [
+	        text: 'Type',
+	        title: 'Change the type of this field',
+	        className: 'type-' + this.type,
+	        submenu: [
 	          {
-	            'text': 'Auto',
-	            'className': 'type-auto' +
+	            text: 'Auto',
+	            className: 'type-auto' +
 	                (this.type == 'auto' ? ' selected' : ''),
-	            'title': titles.auto,
-	            'click': function () {
+	            title: titles.auto,
+	            click: function () {
 	              node._onChangeType('auto');
 	            }
 	          },
 	          {
-	            'text': 'Array',
-	            'className': 'type-array' +
+	            text: 'Array',
+	            className: 'type-array' +
 	                (this.type == 'array' ? ' selected' : ''),
-	            'title': titles.array,
-	            'click': function () {
+	            title: titles.array,
+	            click: function () {
 	              node._onChangeType('array');
 	            }
 	          },
 	          {
-	            'text': 'Object',
-	            'className': 'type-object' +
+	            text: 'Object',
+	            className: 'type-object' +
 	                (this.type == 'object' ? ' selected' : ''),
-	            'title': titles.object,
-	            'click': function () {
+	            title: titles.object,
+	            click: function () {
 	              node._onChangeType('object');
 	            }
 	          },
 	          {
-	            'text': 'String',
-	            'className': 'type-string' +
+	            text: 'String',
+	            className: 'type-string' +
 	                (this.type == 'string' ? ' selected' : ''),
-	            'title': titles.string,
-	            'click': function () {
+	            title: titles.string,
+	            click: function () {
 	              node._onChangeType('string');
 	            }
 	          }
@@ -5226,26 +5135,26 @@ return /******/ (function(modules) { // webpackBootstrap
 	    if (this._hasChilds()) {
 	      var direction = ((this.sort == 'asc') ? 'desc': 'asc');
 	      items.push({
-	        'text': 'Sort',
-	        'title': 'Sort the childs of this ' + this.type,
-	        'className': 'sort-' + direction,
-	        'click': function () {
+	        text: 'Sort',
+	        title: 'Sort the childs of this ' + this.type,
+	        className: 'sort-' + direction,
+	        click: function () {
 	          node._onSort(direction);
 	        },
-	        'submenu': [
+	        submenu: [
 	          {
-	            'text': 'Ascending',
-	            'className': 'sort-asc',
-	            'title': 'Sort the childs of this ' + this.type + ' in ascending order',
-	            'click': function () {
+	            text: 'Ascending',
+	            className: 'sort-asc',
+	            title: 'Sort the childs of this ' + this.type + ' in ascending order',
+	            click: function () {
 	              node._onSort('asc');
 	            }
 	          },
 	          {
-	            'text': 'Descending',
-	            'className': 'sort-desc',
-	            'title': 'Sort the childs of this ' + this.type +' in descending order',
-	            'click': function () {
+	            text: 'Descending',
+	            className: 'sort-desc',
+	            title: 'Sort the childs of this ' + this.type +' in descending order',
+	            click: function () {
 	              node._onSort('desc');
 	            }
 	          }
@@ -5265,43 +5174,43 @@ return /******/ (function(modules) { // webpackBootstrap
 	      var childs = node.parent.childs;
 	      if (node == childs[childs.length - 1]) {
 	        items.push({
-	          'text': 'Append',
-	          'title': 'Append a new field with type \'auto\' after this field (Ctrl+Shift+Ins)',
-	          'submenuTitle': 'Select the type of the field to be appended',
-	          'className': 'append',
-	          'click': function () {
+	          text: 'Append',
+	          title: 'Append a new field with type \'auto\' after this field (Ctrl+Shift+Ins)',
+	          submenuTitle: 'Select the type of the field to be appended',
+	          className: 'append',
+	          click: function () {
 	            node._onAppend('', '', 'auto');
 	          },
-	          'submenu': [
+	          submenu: [
 	            {
-	              'text': 'Auto',
-	              'className': 'type-auto',
-	              'title': titles.auto,
-	              'click': function () {
+	              text: 'Auto',
+	              className: 'type-auto',
+	              title: titles.auto,
+	              click: function () {
 	                node._onAppend('', '', 'auto');
 	              }
 	            },
 	            {
-	              'text': 'Array',
-	              'className': 'type-array',
-	              'title': titles.array,
-	              'click': function () {
+	              text: 'Array',
+	              className: 'type-array',
+	              title: titles.array,
+	              click: function () {
 	                node._onAppend('', []);
 	              }
 	            },
 	            {
-	              'text': 'Object',
-	              'className': 'type-object',
-	              'title': titles.object,
-	              'click': function () {
+	              text: 'Object',
+	              className: 'type-object',
+	              title: titles.object,
+	              click: function () {
 	                node._onAppend('', {});
 	              }
 	            },
 	            {
-	              'text': 'String',
-	              'className': 'type-string',
-	              'title': titles.string,
-	              'click': function () {
+	              text: 'String',
+	              className: 'type-string',
+	              title: titles.string,
+	              click: function () {
 	                node._onAppend('', '', 'string');
 	              }
 	            }
@@ -5311,43 +5220,43 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	      // create insert button
 	      items.push({
-	        'text': 'Insert',
-	        'title': 'Insert a new field with type \'auto\' before this field (Ctrl+Ins)',
-	        'submenuTitle': 'Select the type of the field to be inserted',
-	        'className': 'insert',
-	        'click': function () {
+	        text: 'Insert',
+	        title: 'Insert a new field with type \'auto\' before this field (Ctrl+Ins)',
+	        submenuTitle: 'Select the type of the field to be inserted',
+	        className: 'insert',
+	        click: function () {
 	          node._onInsertBefore('', '', 'auto');
 	        },
-	        'submenu': [
+	        submenu: [
 	          {
-	            'text': 'Auto',
-	            'className': 'type-auto',
-	            'title': titles.auto,
-	            'click': function () {
+	            text: 'Auto',
+	            className: 'type-auto',
+	            title: titles.auto,
+	            click: function () {
 	              node._onInsertBefore('', '', 'auto');
 	            }
 	          },
 	          {
-	            'text': 'Array',
-	            'className': 'type-array',
-	            'title': titles.array,
-	            'click': function () {
+	            text: 'Array',
+	            className: 'type-array',
+	            title: titles.array,
+	            click: function () {
 	              node._onInsertBefore('', []);
 	            }
 	          },
 	          {
-	            'text': 'Object',
-	            'className': 'type-object',
-	            'title': titles.object,
-	            'click': function () {
+	            text: 'Object',
+	            className: 'type-object',
+	            title: titles.object,
+	            click: function () {
 	              node._onInsertBefore('', {});
 	            }
 	          },
 	          {
-	            'text': 'String',
-	            'className': 'type-string',
-	            'title': titles.string,
-	            'click': function () {
+	            text: 'String',
+	            className: 'type-string',
+	            title: titles.string,
+	            click: function () {
 	              node._onInsertBefore('', '', 'string');
 	            }
 	          }
@@ -5357,20 +5266,20 @@ return /******/ (function(modules) { // webpackBootstrap
 	      if (this.editable.field) {
 	        // create duplicate button
 	        items.push({
-	          'text': 'Duplicate',
-	          'title': 'Duplicate this field (Ctrl+D)',
-	          'className': 'duplicate',
-	          'click': function () {
+	          text: 'Duplicate',
+	          title: 'Duplicate this field (Ctrl+D)',
+	          className: 'duplicate',
+	          click: function () {
 	            node._onDuplicate();
 	          }
 	        });
 
 	        // create remove button
 	        items.push({
-	          'text': 'Remove',
-	          'title': 'Remove this field (Ctrl+Del)',
-	          'className': 'remove',
-	          'click': function () {
+	          text: 'Remove',
+	          title: 'Remove this field (Ctrl+Del)',
+	          className: 'remove',
+	          click: function () {
 	            node._onRemove();
 	          }
 	        });
@@ -5511,6 +5420,115 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	  return Node;
 	}.apply(null, __WEBPACK_AMD_DEFINE_ARRAY__)), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
+
+/***/ },
+/* 8 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(9)], __WEBPACK_AMD_DEFINE_RESULT__ = (function (ContextMenu) {
+
+	  /**
+	   * Create a select box to be used in the editor menu's, which allows to switch mode
+	   * @param {Object} editor
+	   * @param {String[]} modes  Available modes: 'code', 'form', 'text', 'tree', 'view'
+	   * @param {String} current  Available modes: 'code', 'form', 'text', 'tree', 'view'
+	   * @returns {HTMLElement} box
+	   */
+	  function createModeSwitcher(editor, modes, current) {
+	    // TODO: decouple mode switcher from editor
+
+	    /**
+	     * Switch the mode of the editor
+	     * @param {String} mode
+	     */
+	    function switchMode(mode) {
+	      // switch mode
+	      editor.setMode(mode);
+
+	      // restore focus on mode box
+	      var modeBox = editor.dom && editor.dom.modeBox;
+	      if (modeBox) {
+	        modeBox.focus();
+	      }
+	    }
+
+	    // available modes
+	    var availableModes = {
+	      code: {
+	        'text': 'Code',
+	        'title': 'Switch to code highlighter',
+	        'click': function () {
+	          switchMode('code')
+	        }
+	      },
+	      form: {
+	        'text': 'Form',
+	        'title': 'Switch to form editor',
+	        'click': function () {
+	          switchMode('form');
+	        }
+	      },
+	      text: {
+	        'text': 'Text',
+	        'title': 'Switch to plain text editor',
+	        'click': function () {
+	          switchMode('text');
+	        }
+	      },
+	      tree: {
+	        'text': 'Tree',
+	        'title': 'Switch to tree editor',
+	        'click': function () {
+	          switchMode('tree');
+	        }
+	      },
+	      view: {
+	        'text': 'View',
+	        'title': 'Switch to tree view',
+	        'click': function () {
+	          switchMode('view');
+	        }
+	      }
+	    };
+
+	    // list the selected modes
+	    var items = [];
+	    for (var i = 0; i < modes.length; i++) {
+	      var mode = modes[i];
+	      var item = availableModes[mode];
+	      if (!item) {
+	        throw new Error('Unknown mode "' + mode + '"');
+	      }
+
+	      item.className = 'type-modes' + ((current == mode) ? ' selected' : '');
+	      items.push(item);
+	    }
+
+	    // retrieve the title of current mode
+	    var currentMode = availableModes[current];
+	    if (!currentMode) {
+	      throw new Error('Unknown mode "' + current + '"');
+	    }
+	    var currentTitle = currentMode.text;
+
+	    // create the html element
+	    var box = document.createElement('button');
+	    box.className = 'modes separator';
+	    box.innerHTML = currentTitle + ' &#x25BE;';
+	    box.title = 'Switch editor mode';
+	    box.onclick = function () {
+	      var menu = new ContextMenu(items);
+	      menu.show(box);
+	    };
+
+	    return box;
+	  }
+
+	  return {
+	    create: createModeSwitcher
+	  }
+	}.apply(null, __WEBPACK_AMD_DEFINE_ARRAY__)), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
+
 
 /***/ },
 /* 9 */
@@ -5984,8 +6002,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	      /** @type {TreeEditor} */
 	      this.editor = editor;
 	      this.dom = {};
-
-	      this._setEditability(editor);
 	    }
 
 	    AppendNode.prototype = new Node();
@@ -6001,6 +6017,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	      if (dom.tr) {
 	        return dom.tr;
 	      }
+
+	      this._updateEditability();
 
 	      // a row for the append button
 	      var trAppend = document.createElement('tr');

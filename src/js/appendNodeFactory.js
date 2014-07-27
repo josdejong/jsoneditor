@@ -16,8 +16,6 @@ define(['./ContextMenu', './util'], function (ContextMenu, util) {
       /** @type {TreeEditor} */
       this.editor = editor;
       this.dom = {};
-
-      this._setEditability(editor);
     }
 
     AppendNode.prototype = new Node();
@@ -33,6 +31,8 @@ define(['./ContextMenu', './util'], function (ContextMenu, util) {
       if (dom.tr) {
         return dom.tr;
       }
+
+      this._updateEditability();
 
       // a row for the append button
       var trAppend = document.createElement('tr');

@@ -27,7 +27,12 @@
 
     var options = {
       editable: function (node) {
-        // node is an object {field: 'FIELD'}
+        // node is an object like:
+        //   {
+        //     field: 'FIELD',
+        //     value: 'VALUE',
+        //     path: ['PATH', 'TO', 'NODE']
+        //   }
         switch (node.field) {
           case '_id':
             return false;
