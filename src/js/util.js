@@ -13,9 +13,19 @@ define(function () {
       return JSON.parse(jsonString);
     }
     catch (err) {
-      // try to throw a more detailed error message using validate
-      util.validate(jsonString);
-      throw err;
+      // try to load as JavaScript instead of JSON (like "{a: 2}" instead of "{"a": 2}"
+      try {
+        return eval('(' + jsonString + ')');
+      }
+      catch(err2) {
+        // ok no luck loading as JavaScript
+
+        // try to throw a more detailed error message using validate
+        util.validate(jsonString);
+
+        // rethrow the original error
+        throw err;
+      }
     }
   };
 

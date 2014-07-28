@@ -67,17 +67,37 @@
       mode: 'tree',
       modes: ['code', 'form', 'text', 'tree', 'view'], // allowed modes
       error: function (err) {
+        console.trace();
         alert(err.toString());
+      },
+      editable: function (node) {
+        console.log(node);
+        switch(node.field) {
+          case '_id':
+            return false;
+
+          case '_field':
+            return {
+              field: false,
+              value: true
+            };
+
+          default:
+            return true;
+        }
       }
     };
 
     json = {
+      "_id": "1234",
+      "_field": "ABCD",
       "array": [1, 2, 3],
       "boolean": true,
       "null": null,
       "number": 123,
-      "object": {"a": "b", "c": "d"},
-      "string": "Hello World"
+      "object": {"a": "b", "c": {"d": "e", "f": "g"}},
+      "string": "Hello World",
+      "url": "http://jsoneditoronline.org"
     };
 
     editor = new JSONEditor(container, options, json);

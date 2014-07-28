@@ -32,6 +32,8 @@ define(['./ContextMenu', './util'], function (ContextMenu, util) {
         return dom.tr;
       }
 
+      this._updateEditability();
+
       // a row for the append button
       var trAppend = document.createElement('tr');
       trAppend.node = this;
@@ -39,7 +41,7 @@ define(['./ContextMenu', './util'], function (ContextMenu, util) {
 
       // TODO: consistent naming
 
-      if (this.editor.mode.edit) {
+      if (this.editable.field) {
         // a cell for the dragarea column
         dom.tdDrag = document.createElement('td');
 

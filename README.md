@@ -1,8 +1,9 @@
 # JSON Editor
-
 https://github.com/josdejong/jsoneditor
-
 http://jsoneditoronline.org/
+
+Website: http://jsoneditoronline.org/
+Github: https://github.com/josdejong/jsoneditor
 
 
 ### Description
@@ -36,20 +37,12 @@ Supported browsers: Chrome, Firefox, Safari, Opera, Internet Explorer 9+.
 - Format and compact JSON.
 
 
-### Screenshots
-
-#### Tree editor
-<img alt="json editor" src="https://raw.github.com/josdejong/jsoneditor/master/misc/jsoneditor.png">
-
-#### Code editor
-<img alt="code editor" src="https://raw.github.com/josdejong/jsoneditor/master/misc/codeeditor.png">
-
-
 ### Documentation
 
 - Documentation:
   - [API](https://github.com/josdejong/jsoneditor/tree/master/docs/api.md)
   - [Usage](https://github.com/josdejong/jsoneditor/tree/master/docs/usage.md)
+  - [Shortcut keys](https://github.com/josdejong/jsoneditor/tree/master/docs/shortcut_keys.md)
 - [Examples](https://github.com/josdejong/jsoneditor/tree/master/examples)
 - [Source](https://github.com/josdejong/jsoneditor)
 - [History](https://github.com/josdejong/jsoneditor/blob/master/HISTORY.md)
