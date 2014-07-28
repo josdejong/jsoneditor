@@ -38,10 +38,10 @@ define(['./ContextMenu', './appendNodeFactory', './util'], function (ContextMenu
     };
 
     if (this.editor) {
-      this.editable.field = this.editor.mode.edit;
-      this.editable.value = !this.editor.mode.view;
+      this.editable.field = this.editor.options.mode === 'tree';
+      this.editable.value = this.editor.options.mode !== 'view';
 
-      if (this.editor.mode.edit && (typeof this.editor.options.editable === 'function')) {
+      if (this.editor.options.mode === 'tree' && (typeof this.editor.options.editable === 'function')) {
         var editable = this.editor.options.editable({
           field: this.field,
           value: this.value,
@@ -1204,7 +1204,7 @@ define(['./ContextMenu', './appendNodeFactory', './util'], function (ContextMenu
     dom.tr = document.createElement('tr');
     dom.tr.node = this;
 
-    if (this.editor.mode.edit) { // note: we take here the global setting!
+    if (this.editor.options.mode === 'tree') { // note: we take here the global setting!
       var tdDrag = document.createElement('td');
       if (this.editable.field) {
         // create draggable area

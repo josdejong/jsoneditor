@@ -7,7 +7,9 @@ https://github.com/josdejong/jsoneditor
 
 - JSONEditor now accepts JavaScript objects as input, and can turn them into
   valid JSON. For example `{a:2,b:'str'}` can be turned into `{"a":2,"b":"str"}`.
-  
+- Implemented an option `editable`, a callback function, which allows to set 
+  individual nodes (their field and/or value) editable or read-only.
+
 
 ## 2014-05-31, version 3.0.0
 

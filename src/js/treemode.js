@@ -31,7 +31,7 @@ define(['./Highlighter', './History', './SearchBox', './Node', './modeswitcher',
 
     this._setOptions(options);
 
-    if (this.options.history && !this.mode.view) {
+    if (this.options.history && this.options.mode !== 'view') {
       this.history = new History(this);
     }
 
@@ -70,13 +70,6 @@ define(['./Highlighter', './History', './SearchBox', './Node', './modeswitcher',
         }
       }
     }
-
-    // interpret the mode options
-    this.mode = {
-      edit: (this.options.mode != 'view' && this.options.mode != 'form'),
-      view: (this.options.mode == 'view'),
-      form: (this.options.mode == 'form')
-    };
   };
 
   // node currently being edited
@@ -682,7 +675,7 @@ define(['./Highlighter', './History', './SearchBox', './Node', './modeswitcher',
     // width, and the edit columns do have a fixed width
     var col;
     this.colgroupContent = document.createElement('colgroup');
-    if (this.mode.edit) {
+    if (this.options.mode === 'tree') {
       col = document.createElement('col');
       col.width = "24px";
       this.colgroupContent.appendChild(col);
