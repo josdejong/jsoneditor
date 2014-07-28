@@ -9,6 +9,8 @@ https://github.com/josdejong/jsoneditor
   valid JSON. For example `{a:2,b:'str'}` can be turned into `{"a":2,"b":"str"}`.
 - Implemented an option `editable`, a callback function, which allows to set 
   individual nodes (their field and/or value) editable or read-only.
+- Fixed: shortcut keys to manipulate the nodes are now disabled when mode 
+  is `form` or `view`.
 
 
 ## 2014-05-31, version 3.0.0

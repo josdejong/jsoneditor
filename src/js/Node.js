@@ -1204,7 +1204,7 @@ define(['./ContextMenu', './appendNodeFactory', './util'], function (ContextMenu
     dom.tr = document.createElement('tr');
     dom.tr.node = this;
 
-    if (this.editor.options.mode === 'tree') { // note: we take here the global setting!
+    if (this.editor.options.mode === 'tree') { // note: we take here the global setting
       var tdDrag = document.createElement('td');
       if (this.editable.field) {
         // create draggable area
@@ -1949,6 +1949,7 @@ define(['./ContextMenu', './appendNodeFactory', './util'], function (ContextMenu
     var altKey = event.altKey;
     var handled = false;
     var prevNode, nextNode, nextDom, nextDom2;
+    var editable = this.editor.options.mode === 'tree';
 
     // util.log(ctrlKey, keynum, event.charCode); // TODO: cleanup
     if (keynum == 13) { // Enter
@@ -1971,7 +1972,7 @@ define(['./ContextMenu', './appendNodeFactory', './util'], function (ContextMenu
       }
     }
     else if (keynum == 68) {  // D
-      if (ctrlKey) {   // Ctrl+D
+      if (ctrlKey && editable) {   // Ctrl+D
         this._onDuplicate();
         handled = true;
       }
@@ -1983,19 +1984,19 @@ define(['./ContextMenu', './appendNodeFactory', './util'], function (ContextMenu
         handled = true;
       }
     }
-    else if (keynum == 77) { // M
+    else if (keynum == 77 && editable) { // M
       if (ctrlKey) { // Ctrl+M
         this.showContextMenu(target);
         handled = true;
       }
     }
-    else if (keynum == 46) { // Del
+    else if (keynum == 46 && editable) { // Del
       if (ctrlKey) {       // Ctrl+Del
         this._onRemove();
         handled = true;
       }
     }
-    else if (keynum == 45) { // Ins
+    else if (keynum == 45 && editable) { // Ins
       if (ctrlKey && !shiftKey) {       // Ctrl+Ins
         this._onInsertBefore();
         handled = true;
@@ -2034,7 +2035,7 @@ define(['./ContextMenu', './appendNodeFactory', './util'], function (ContextMenu
         }
         handled = true;
       }
-      else if (altKey && shiftKey) { // Alt + Shift Arrow left
+      else if (altKey && shiftKey && editable) { // Alt + Shift Arrow left
         if (this.expanded) {
           var appendDom = this.getAppend();
           nextDom = appendDom ? appendDom.nextSibling : undefined;
@@ -2107,7 +2108,7 @@ define(['./ContextMenu', './appendNodeFactory', './util'], function (ContextMenu
         }
         handled = true;
       }
-      else if (altKey && shiftKey) { // Alt + Shift + Arrow Down
+      else if (altKey && shiftKey && editable) { // Alt + Shift + Arrow Down
         // find the 2nd next node and move before that one
         if (this.expanded) {
           nextNode = this.append ? this.append._nextNode() : undefined;

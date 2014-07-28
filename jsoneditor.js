@@ -24,7 +24,7 @@
  *
  * @author  Jos de Jong, <wjosdejong@gmail.com>
  * @version 3.1.0-SNAPSHOT
- * @date    2014-07-27
+ * @date    2014-07-28
  */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
@@ -232,7 +232,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    options.mode = mode;
 	    var config = JSONEditor.modes[mode];
 	    if (config) {
-	//      try {
+	      try {
 	        var asText = (config.data == 'text');
 	        name = this.getName();
 	        data = this[asText ? 'getText' : 'get'](); // get text or json
@@ -251,10 +251,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	          }
 	          catch (err) {}
 	        }
-	//      }
-	//      catch (err) {
-	//        this._onError(err);
-	//      }
+	      }
+	      catch (err) {
+	        this._onError(err);
+	      }
 	    }
 	    else {
 	      throw new Error('Unknown mode "' + options.mode + '"');
@@ -380,7 +380,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	    this._setOptions(options);
 
-	    if (this.options.history && !this.mode.view) {
+	    if (this.options.history && this.options.mode !== 'view') {
 	      this.history = new History(this);
 	    }
 
@@ -419,13 +419,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	        }
 	      }
 	    }
-
-	    // interpret the mode options
-	    this.mode = {
-	      edit: (this.options.mode != 'view' && this.options.mode != 'form'),
-	      view: (this.options.mode == 'view'),
-	      form: (this.options.mode == 'form')
-	    };
 	  };
 
 	  // node currently being edited
@@ -1031,7 +1024,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    // width, and the edit columns do have a fixed width
 	    var col;
 	    this.colgroupContent = document.createElement('colgroup');
-	    if (this.mode.edit) {
+	    if (this.options.mode === 'tree') {
 	      col = document.createElement('col');
 	      col.width = "24px";
 	      this.colgroupContent.appendChild(col);
@@ -2533,10 +2526,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	    };
 
 	    if (this.editor) {
-	      this.editable.field = this.editor.mode.edit;
-	      this.editable.value = !this.editor.mode.view;
+	      this.editable.field = this.editor.options.mode === 'tree';
+	      this.editable.value = this.editor.options.mode !== 'view';
 
-	      if (this.editor.mode.edit && (typeof this.editor.options.editable === 'function')) {
+	      if (this.editor.options.mode === 'tree' && (typeof this.editor.options.editable === 'function')) {
 	        var editable = this.editor.options.editable({
 	          field: this.field,
 	          value: this.value,
@@ -3699,7 +3692,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    dom.tr = document.createElement('tr');
 	    dom.tr.node = this;
 
-	    if (this.editor.mode.edit) { // note: we take here the global setting!
+	    if (this.editor.options.mode === 'tree') { // note: we take here the global setting
 	      var tdDrag = document.createElement('td');
 	      if (this.editable.field) {
 	        // create draggable area
@@ -4444,6 +4437,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    var altKey = event.altKey;
 	    var handled = false;
 	    var prevNode, nextNode, nextDom, nextDom2;
+	    var editable = this.editor.options.mode === 'tree';
 
 	    // util.log(ctrlKey, keynum, event.charCode); // TODO: cleanup
 	    if (keynum == 13) { // Enter
@@ -4466,7 +4460,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	      }
 	    }
 	    else if (keynum == 68) {  // D
-	      if (ctrlKey) {   // Ctrl+D
+	      if (ctrlKey && editable) {   // Ctrl+D
 	        this._onDuplicate();
 	        handled = true;
 	      }
@@ -4478,19 +4472,19 @@ return /******/ (function(modules) { // webpackBootstrap
 	        handled = true;
 	      }
 	    }
-	    else if (keynum == 77) { // M
+	    else if (keynum == 77 && editable) { // M
 	      if (ctrlKey) { // Ctrl+M
 	        this.showContextMenu(target);
 	        handled = true;
 	      }
 	    }
-	    else if (keynum == 46) { // Del
+	    else if (keynum == 46 && editable) { // Del
 	      if (ctrlKey) {       // Ctrl+Del
 	        this._onRemove();
 	        handled = true;
 	      }
 	    }
-	    else if (keynum == 45) { // Ins
+	    else if (keynum == 45 && editable) { // Ins
 	      if (ctrlKey && !shiftKey) {       // Ctrl+Ins
 	        this._onInsertBefore();
 	        handled = true;
@@ -4529,7 +4523,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        }
 	        handled = true;
 	      }
-	      else if (altKey && shiftKey) { // Alt + Shift Arrow left
+	      else if (altKey && shiftKey && editable) { // Alt + Shift Arrow left
 	        if (this.expanded) {
 	          var appendDom = this.getAppend();
 	          nextDom = appendDom ? appendDom.nextSibling : undefined;
@@ -4602,7 +4596,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        }
 	        handled = true;
 	      }
-	      else if (altKey && shiftKey) { // Alt + Shift + Arrow Down
+	      else if (altKey && shiftKey && editable) { // Alt + Shift + Arrow Down
 	        // find the 2nd next node and move before that one
 	        if (this.expanded) {
 	          nextNode = this.append ? this.append._nextNode() : undefined;
