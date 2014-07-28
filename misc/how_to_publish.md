@@ -29,7 +29,7 @@ correct date and version number in the header.
 Test whether the npm library is ok by installing it locally:
 
     cd ../tmp-folder
-    npm install ../mathjs
+    npm install ./path/to/jsoneditor
 
 Check whether the examples in the library work ok, and whether the necessary
 files are included.
@@ -57,13 +57,13 @@ Publish at cdnjs: test after 30 to 60 minutes whether the new version is
 published at cdnjs (should auto update).
 
 
-## Test published libraries
+## Test published library
 
 Install the libraries locally and test whether they work correctly:
 
     cd tmp-folder
-    npm install mathjs
-    bower install mathjs
+    npm install jsoneditor
+    bower install jsoneditor
 
 
 ## Put zip file to website

@@ -3,7 +3,7 @@
 https://github.com/josdejong/jsoneditor
 
 
-## not yet released, version 3.1.0
+## 2014-07-28, version 3.1.0
 
 - JSONEditor now accepts JavaScript objects as input, and can turn them into
   valid JSON. For example `{a:2,b:'str'}` can be turned into `{"a":2,"b":"str"}`.
