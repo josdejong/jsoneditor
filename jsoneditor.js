@@ -23,7 +23,7 @@
  * Copyright (c) 2011-2014 Jos de Jong, http://jsoneditoronline.org
  *
  * @author  Jos de Jong, <wjosdejong@gmail.com>
- * @version 3.1.0
+ * @version 3.2.0-SNAPSHOT
  * @date    2014-07-28
  */
 (function webpackUniversalModuleDefinition(root, factory) {

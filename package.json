@@ -1,6 +1,6 @@
 {
   "name": "jsoneditor",
-  "version": "3.1.0",
+  "version": "3.2.0-SNAPSHOT",
   "main": "jsoneditor.js",
   "description": "A web-based tool to view, edit and format JSON",
   "tags": [
