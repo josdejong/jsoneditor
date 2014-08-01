@@ -3,6 +3,12 @@
 https://github.com/josdejong/jsoneditor
 
 
+## 2014-08-01, version 3.1.1
+
+- Replaced parsing of JavaScript objects into JSON from `eval` to a dedicated
+  `parseJS` function.
+
+
 ## 2014-07-28, version 3.1.0
 
 - JSONEditor now accepts JavaScript objects as input, and can turn them into
