@@ -5,7 +5,8 @@ https://github.com/josdejong/jsoneditor
 
 ## 2014-08-01, version 3.1.2
 
-- Fixed `parseJS` not being able to parse a single quoted string to JSON.
+- Some fixes/improvements in `parseJS` (to parse a JSON object from a JavaScript
+  object).
 
 
 ## 2014-08-01, version 3.1.1

@@ -45,7 +45,9 @@ define(function () {
     while(i < jsString.length) {
       var c = jsString.charAt(i);
 
-      if (c === '"' || c === '\'') {
+      var isEscaped = jsString.charAt(i - 1) === '\\';
+      if ((c === '"' || c === '\'') && !isEscaped) {
+
         if (c === inString) {
           // end of string
           inString = false;
@@ -55,10 +57,8 @@ define(function () {
           inString = c;
         }
         else {
-          // add escape character if not escaped
-          if (jsString.charAt(i - 1) !== '\\') {
-            chars.push('\\');
-          }
+          // add escape character
+          chars.push('\\');
         }
       }
 
