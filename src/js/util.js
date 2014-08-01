@@ -68,7 +68,7 @@ define(function () {
     var jsonString = chars.join('');
 
     // replace keys/values enclosed by single quotes with double quotes
-    jsonString = jsonString.replace(/(.)'/g, function ($0, $1) {
+    jsonString = jsonString.replace(/(.?)'/g, function ($0, $1) {
       var str = $1.replace(/"/g, '\\"'); // escape double quotes
       return ($1 == '\\') ? '\'' : str + '"';
     });
