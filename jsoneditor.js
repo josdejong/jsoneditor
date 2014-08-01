@@ -23,8 +23,8 @@
  * Copyright (c) 2011-2014 Jos de Jong, http://jsoneditoronline.org
  *
  * @author  Jos de Jong, <wjosdejong@gmail.com>
- * @version 3.2.0-SNAPSHOT
- * @date    2014-07-28
+ * @version 3.1.1
+ * @date    2014-08-01
  */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
@@ -1372,6 +1372,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	   * Parse JSON using the parser built-in in the browser.
 	   * On exception, the jsonString is validated and a detailed error is thrown.
 	   * @param {String} jsonString
+	   * @return {JSON} json
 	   */
 	  util.parse = function parse(jsonString) {
 	    try {
@@ -1380,7 +1381,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    catch (err) {
 	      // try to load as JavaScript instead of JSON (like "{a: 2}" instead of "{"a": 2}"
 	      try {
-	        return eval('(' + jsonString + ')');
+	        return util.parseJS(jsonString);
 	      }
 	      catch(err2) {
 	        // ok no luck loading as JavaScript
@@ -1392,6 +1393,57 @@ return /******/ (function(modules) { // webpackBootstrap
 	        throw err;
 	      }
 	    }
+	  };
+
+	  /**
+	   * Parse a string containing an object in JavaScript notation into a JSON.
+	   * Throws an error when not successful. This function can for example parse
+	   * a string like "{a: 2, 'b': {c: 'd'}".
+	   * @param {string} jsString
+	   * @returns {JSON} json
+	   */
+	  util.parseJS = function (jsString) {
+	    // escape quotes inside strings
+	    var chars = [];
+	    var inString = false;
+	    var i = 0;
+	    while(i < jsString.length) {
+	      var c = jsString.charAt(i);
+
+	      if (c === '"' || c === '\'') {
+	        if (c === inString) {
+	          // end of string
+	          inString = false;
+	        }
+	        else if (!inString) {
+	          // start of string
+	          inString = c;
+	        }
+	        else {
+	          // add escape character if not escaped
+	          if (jsString.charAt(i - 1) !== '\\') {
+	            chars.push('\\');
+	          }
+	        }
+	      }
+
+	      chars.push(c);
+	      i++;
+	    }
+	    var jsonString = chars.join('');
+
+	    // replace keys/values enclosed by single quotes with double quotes
+	    jsonString = jsonString.replace(/(.)'/g, function ($0, $1) {
+	      var str = $1.replace(/"/g, '\\"'); // escape double quotes
+	      return ($1 == '\\') ? '\'' : str + '"';
+	    });
+
+	    // enclose unquoted object keys with double quotes
+	    jsonString = jsonString.replace(/([{,]\s*)([a-zA-Z_][a-zA-Z0-9_]*)(\s*:)/g, function ($0, $1, $2, $3) {
+	      return $1 + '"' + $2 + '"' + $3;
+	    });
+
+	    return JSON.parse(jsonString);
 	  };
 
 	  /**
