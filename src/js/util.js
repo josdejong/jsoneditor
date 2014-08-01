@@ -38,16 +38,15 @@ define(function () {
    * @returns {JSON} json
    */
   util.parseJS = function (jsString) {
-    // escape quotes inside strings
+    // escape all single and double quotes inside strings
     var chars = [];
     var inString = false;
     var i = 0;
     while(i < jsString.length) {
       var c = jsString.charAt(i);
-
       var isEscaped = jsString.charAt(i - 1) === '\\';
-      if ((c === '"' || c === '\'') && !isEscaped) {
 
+      if ((c === '"' || c === '\'') && !isEscaped) {
         if (c === inString) {
           // end of string
           inString = false;
@@ -67,10 +66,11 @@ define(function () {
     }
     var jsonString = chars.join('');
 
-    // replace keys/values enclosed by single quotes with double quotes
+    // replace unescaped single quotes with double quotes,
+    // and replace escaped single quotes with unescaped single quotes
+    // TODO: we could do this step immediately in the previous step
     jsonString = jsonString.replace(/(.?)'/g, function ($0, $1) {
-      var str = $1.replace(/"/g, '\\"'); // escape double quotes
-      return ($1 == '\\') ? '\'' : str + '"';
+      return ($1 == '\\') ? '\'' : $1 + '"';
     });
 
     // enclose unquoted object keys with double quotes
