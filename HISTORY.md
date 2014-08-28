@@ -3,10 +3,11 @@
 https://github.com/josdejong/jsoneditor
 
 
-## 2014-08-01, version 3.1.2
+## not yet released, version 3.1.2
 
 - Some fixes/improvements in `parseJS` (to parse a JSON object from a JavaScript
   object).
+- Fixed the lack of a semi colon at end of the bundled files.
 
 
 ## 2014-08-01, version 3.1.1

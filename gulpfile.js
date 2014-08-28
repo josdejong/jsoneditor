@@ -105,7 +105,7 @@ gulp.task('bundle', function (done) {
 gulp.task('minify', ['bundle'], function () {
   var result = uglify.minify([JSONEDITOR_JS], uglifyConfig);
 
-  fs.writeFileSync(JSONEDITOR_MIN_JS, result.code + '\n//# sourceMappingURL=' + FILE_MAP);
+  fs.writeFileSync(JSONEDITOR_MIN_JS, result.code);
   fs.writeFileSync(JSONEDITOR_MAP_JS, result.map);
 
   gutil.log('Minified ' + JSONEDITOR_MIN_JS);
