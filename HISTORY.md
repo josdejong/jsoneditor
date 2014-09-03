@@ -3,7 +3,7 @@
 https://github.com/josdejong/jsoneditor
 
 
-## not yet released, version 3.1.2
+## 2014-09-03, version 3.1.2
 
 - Some fixes/improvements in `parseJS` (to parse a JSON object from a JavaScript
   object).

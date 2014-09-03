@@ -23,8 +23,8 @@
  * Copyright (c) 2011-2014 Jos de Jong, http://jsoneditoronline.org
  *
  * @author  Jos de Jong, <wjosdejong@gmail.com>
- * @version 3.1.2-SNAPSHOT
- * @date    2014-08-28
+ * @version 3.1.2
+ * @date    2014-09-03
  */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
