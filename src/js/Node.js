@@ -41,7 +41,7 @@ define(['./ContextMenu', './appendNodeFactory', './util'], function (ContextMenu
       this.editable.field = this.editor.options.mode === 'tree';
       this.editable.value = this.editor.options.mode !== 'view';
 
-      if (this.editor.options.mode === 'tree' && (typeof this.editor.options.editable === 'function')) {
+      if ((this.editor.options.mode === 'tree' || this.editor.options.mode === 'form') && (typeof this.editor.options.editable === 'function')) {
         var editable = this.editor.options.editable({
           field: this.field,
           value: this.value,
