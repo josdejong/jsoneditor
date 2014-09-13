@@ -14,30 +14,23 @@ define(function () {
       return JSON.parse(jsonString);
     }
     catch (err) {
-      // try to load as JavaScript instead of JSON (like "{a: 2}" instead of "{"a": 2}"
-      try {
-        return util.parseJS(jsonString);
-      }
-      catch(err2) {
-        // ok no luck loading as JavaScript
+      // try to throw a more detailed error message using validate
+      util.validate(jsonString);
 
-        // try to throw a more detailed error message using validate
-        util.validate(jsonString);
-
-        // rethrow the original error
-        throw err;
-      }
+      // rethrow the original error
+      throw err;
     }
   };
 
   /**
-   * Parse a string containing an object in JavaScript notation into a JSON.
-   * Throws an error when not successful. This function can for example parse
-   * a string like "{a: 2, 'b': {c: 'd'}".
+   * Sanitize a JSON-like string containing. For example changes JavaScript
+   * notation into JSON notation.
+   * This function for example changes a string like "{a: 2, 'b': {c: 'd'}"
+   * into '{"a": 2, "b": {"c": "d"}'
    * @param {string} jsString
-   * @returns {JSON} json
+   * @returns {string} json
    */
-  util.parseJS = function (jsString) {
+  util.sanitize = function (jsString) {
     // escape all single and double quotes inside strings
     var chars = [];
     var inString = false;
@@ -78,7 +71,7 @@ define(function () {
       return $1 + '"' + $2 + '"' + $3;
     });
 
-    return JSON.parse(jsonString);
+    return jsonString;
   };
 
   /**

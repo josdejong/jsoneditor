@@ -195,16 +195,18 @@ define(['./modeswitcher', './util'], function (modeswitcher, util) {
    * Compact the code in the formatter
    */
   textmode.compact = function () {
-    var json = util.parse(this.getText());
-    this.setText(JSON.stringify(json));
+    var json = this.get();
+    var text = JSON.stringify(json);
+    this.setText(text);
   };
 
   /**
    * Format the code in the formatter
    */
   textmode.format = function () {
-    var json = util.parse(this.getText());
-    this.setText(JSON.stringify(json, null, this.indentation));
+    var json = this.get();
+    var text = JSON.stringify(json, null, this.indentation);
+    this.setText(text);
   };
 
   /**
@@ -242,7 +244,22 @@ define(['./modeswitcher', './util'], function (modeswitcher, util) {
    * @return {Object} json
    */
   textmode.get = function() {
-    return util.parse(this.getText());
+    var text = this.getText();
+    var json;
+
+    try {
+      json = util.parse(text); // this can throw an error
+    }
+    catch (err) {
+      // try to sanitize json, replace JavaScript notation with JSON notation
+      text = util.sanitize(text);
+      this.setText(text);
+
+      // try to parse again
+      json = util.parse(text); // this can throw an error
+    }
+
+    return json;
   };
 
   /**

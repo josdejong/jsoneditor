@@ -3,6 +3,13 @@
 https://github.com/josdejong/jsoneditor
 
 
+## not yet released, version 3.1.3
+
+- Before an error is thrown because of invalid text, the editor first tries to
+  sanitize the text (replace JavaScript notation with JSON notation), and only
+  after that throws the error.
+
+
 ## 2014-09-03, version 3.1.2
 
 - Some fixes/improvements in `parseJS` (to parse a JSON object from a JavaScript
