@@ -619,7 +619,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    // trigger the onChange callback
 	    if (this.options.change) {
 	      try {
-	        this.options.change(params);
+	        this.options.change(action, params);
 	      }
 	      catch (err) {
 	        util.log('Error in change callback: ', err);
