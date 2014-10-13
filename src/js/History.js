@@ -170,6 +170,7 @@ define(['./util'], function (util) {
 
   /**
    * Undo the last action
+   * @returns applied history entry see {@link #add}
    */
   History.prototype.undo = function () {
     if (this.canUndo()) {
@@ -191,10 +192,12 @@ define(['./util'], function (util) {
       // fire onchange event
       this.onChange();
     }
+    return obj || null;
   };
 
   /**
    * Redo the last action
+   * @returns applied history entry see {@link #add}
    */
   History.prototype.redo = function () {
     if (this.canRedo()) {
@@ -217,6 +220,7 @@ define(['./util'], function (util) {
       // fire onchange event
       this.onChange();
     }
+    return obj || null;
   };
 
   return History;

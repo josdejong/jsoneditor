@@ -24,7 +24,7 @@
  *
  * @author  Jos de Jong, <wjosdejong@gmail.com>
  * @version 3.1.2
- * @date    2014-09-03
+ * @date    2014-10-14
  */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
@@ -348,7 +348,7 @@ return /******/ (function(modules) { // webpackBootstrap
 /* 1 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(4), __webpack_require__(5), __webpack_require__(6), __webpack_require__(7), __webpack_require__(8), __webpack_require__(3)], __WEBPACK_AMD_DEFINE_RESULT__ = function (Highlighter, History, SearchBox, Node, modeswitcher, util) {
+	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(5), __webpack_require__(4), __webpack_require__(6), __webpack_require__(7), __webpack_require__(8), __webpack_require__(3)], __WEBPACK_AMD_DEFINE_RESULT__ = function (Highlighter, History, SearchBox, Node, modeswitcher, util) {
 
 	  // create a mixin with the functions for tree mode
 	  var treemode = {};
@@ -898,11 +898,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	  treemode._onUndo = function () {
 	    if (this.history) {
 	      // undo last action
-	      this.history.undo();
-
+	      var historyEntry = this.history.undo();
 	      // trigger change callback
 	      if (this.options.change) {
-	        this.options.change();
+	        this.options.change(historyEntry.action, historyEntry.params);
 	      }
 	    }
 	  };
@@ -914,11 +913,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	  treemode._onRedo = function () {
 	    if (this.history) {
 	      // redo last action
-	      this.history.redo();
-
+	      var historyEntry = this.history.redo();
 	      // trigger change callback
 	      if (this.options.change) {
-	        this.options.change();
+	        this.options.change(historyEntry.action, historyEntry.params);
 	      }
 	    }
 	  };
@@ -1918,98 +1916,6 @@ return /******/ (function(modules) { // webpackBootstrap
 /* 4 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_RESULT__ = function () {
-
-	  /**
-	   * The highlighter can highlight/unhighlight a node, and
-	   * animate the visibility of a context menu.
-	   * @constructor Highlighter
-	   */
-	  function Highlighter () {
-	    this.locked = false;
-	  }
-
-	  /**
-	   * Hightlight given node and its childs
-	   * @param {Node} node
-	   */
-	  Highlighter.prototype.highlight = function (node) {
-	    if (this.locked) {
-	      return;
-	    }
-
-	    if (this.node != node) {
-	      // unhighlight current node
-	      if (this.node) {
-	        this.node.setHighlight(false);
-	      }
-
-	      // highlight new node
-	      this.node = node;
-	      this.node.setHighlight(true);
-	    }
-
-	    // cancel any current timeout
-	    this._cancelUnhighlight();
-	  };
-
-	  /**
-	   * Unhighlight currently highlighted node.
-	   * Will be done after a delay
-	   */
-	  Highlighter.prototype.unhighlight = function () {
-	    if (this.locked) {
-	      return;
-	    }
-
-	    var me = this;
-	    if (this.node) {
-	      this._cancelUnhighlight();
-
-	      // do the unhighlighting after a small delay, to prevent re-highlighting
-	      // the same node when moving from the drag-icon to the contextmenu-icon
-	      // or vice versa.
-	      this.unhighlightTimer = setTimeout(function () {
-	        me.node.setHighlight(false);
-	        me.node = undefined;
-	        me.unhighlightTimer = undefined;
-	      }, 0);
-	    }
-	  };
-
-	  /**
-	   * Cancel an unhighlight action (if before the timeout of the unhighlight action)
-	   * @private
-	   */
-	  Highlighter.prototype._cancelUnhighlight = function () {
-	    if (this.unhighlightTimer) {
-	      clearTimeout(this.unhighlightTimer);
-	      this.unhighlightTimer = undefined;
-	    }
-	  };
-
-	  /**
-	   * Lock highlighting or unhighlighting nodes.
-	   * methods highlight and unhighlight do not work while locked.
-	   */
-	  Highlighter.prototype.lock = function () {
-	    this.locked = true;
-	  };
-
-	  /**
-	   * Unlock highlighting or unhighlighting nodes
-	   */
-	  Highlighter.prototype.unlock = function () {
-	    this.locked = false;
-	  };
-
-	  return Highlighter;
-	}.call(exports, __webpack_require__, exports, module), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
-
-/***/ },
-/* 5 */
-/***/ function(module, exports, __webpack_require__) {
-
 	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(3)], __WEBPACK_AMD_DEFINE_RESULT__ = function (util) {
 
 	  /**
@@ -2182,6 +2088,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	  /**
 	   * Undo the last action
+	   * @returns applied history entry see {@link #add}
 	   */
 	  History.prototype.undo = function () {
 	    if (this.canUndo()) {
@@ -2203,10 +2110,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	      // fire onchange event
 	      this.onChange();
 	    }
+	    return obj || null;
 	  };
 
 	  /**
 	   * Redo the last action
+	   * @returns applied history entry see {@link #add}
 	   */
 	  History.prototype.redo = function () {
 	    if (this.canRedo()) {
@@ -2229,11 +2138,104 @@ return /******/ (function(modules) { // webpackBootstrap
 	      // fire onchange event
 	      this.onChange();
 	    }
+	    return obj || null;
 	  };
 
 	  return History;
 	}.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
 
+
+/***/ },
+/* 5 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_RESULT__ = function () {
+
+	  /**
+	   * The highlighter can highlight/unhighlight a node, and
+	   * animate the visibility of a context menu.
+	   * @constructor Highlighter
+	   */
+	  function Highlighter () {
+	    this.locked = false;
+	  }
+
+	  /**
+	   * Hightlight given node and its childs
+	   * @param {Node} node
+	   */
+	  Highlighter.prototype.highlight = function (node) {
+	    if (this.locked) {
+	      return;
+	    }
+
+	    if (this.node != node) {
+	      // unhighlight current node
+	      if (this.node) {
+	        this.node.setHighlight(false);
+	      }
+
+	      // highlight new node
+	      this.node = node;
+	      this.node.setHighlight(true);
+	    }
+
+	    // cancel any current timeout
+	    this._cancelUnhighlight();
+	  };
+
+	  /**
+	   * Unhighlight currently highlighted node.
+	   * Will be done after a delay
+	   */
+	  Highlighter.prototype.unhighlight = function () {
+	    if (this.locked) {
+	      return;
+	    }
+
+	    var me = this;
+	    if (this.node) {
+	      this._cancelUnhighlight();
+
+	      // do the unhighlighting after a small delay, to prevent re-highlighting
+	      // the same node when moving from the drag-icon to the contextmenu-icon
+	      // or vice versa.
+	      this.unhighlightTimer = setTimeout(function () {
+	        me.node.setHighlight(false);
+	        me.node = undefined;
+	        me.unhighlightTimer = undefined;
+	      }, 0);
+	    }
+	  };
+
+	  /**
+	   * Cancel an unhighlight action (if before the timeout of the unhighlight action)
+	   * @private
+	   */
+	  Highlighter.prototype._cancelUnhighlight = function () {
+	    if (this.unhighlightTimer) {
+	      clearTimeout(this.unhighlightTimer);
+	      this.unhighlightTimer = undefined;
+	    }
+	  };
+
+	  /**
+	   * Lock highlighting or unhighlighting nodes.
+	   * methods highlight and unhighlight do not work while locked.
+	   */
+	  Highlighter.prototype.lock = function () {
+	    this.locked = true;
+	  };
+
+	  /**
+	   * Unlock highlighting or unhighlighting nodes
+	   */
+	  Highlighter.prototype.unlock = function () {
+	    this.locked = false;
+	  };
+
+	  return Highlighter;
+	}.call(exports, __webpack_require__, exports, module), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
 
 /***/ },
 /* 6 */

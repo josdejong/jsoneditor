@@ -270,7 +270,7 @@ define(['./Highlighter', './History', './SearchBox', './Node', './modeswitcher',
     // trigger the onChange callback
     if (this.options.change) {
       try {
-        this.options.change();
+        this.options.change(action, params);
       }
       catch (err) {
         util.log('Error in change callback: ', err);
@@ -549,11 +549,10 @@ define(['./Highlighter', './History', './SearchBox', './Node', './modeswitcher',
   treemode._onUndo = function () {
     if (this.history) {
       // undo last action
-      this.history.undo();
-
-      // trigger change callback
-      if (this.options.change) {
-        this.options.change();
+      var historyEntry = this.history.undo();
+      // trigger change callback if anything have changed
+      if (this.options.change && historyEntry) {
+        this.options.change(historyEntry.action, historyEntry.params);
       }
     }
   };
@@ -565,11 +564,10 @@ define(['./Highlighter', './History', './SearchBox', './Node', './modeswitcher',
   treemode._onRedo = function () {
     if (this.history) {
       // redo last action
-      this.history.redo();
-
-      // trigger change callback
-      if (this.options.change) {
-        this.options.change();
+      var historyEntry = this.history.redo();
+      // trigger change callback if anything have changed
+      if (this.options.change && historyEntry) {
+        this.options.change(historyEntry.action, historyEntry.params);
       }
     }
   };
