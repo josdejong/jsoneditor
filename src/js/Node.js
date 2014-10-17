@@ -68,7 +68,7 @@ define(['./ContextMenu', './appendNodeFactory', './util'], function (ContextMenu
     var node = this;
     var path = [];
     while (node) {
-      var field = node.field || node.index;
+      var field = node.field != undefined ? node.field : node.index;
       if (field !== undefined) {
         path.unshift(field);
       }
