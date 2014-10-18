@@ -270,7 +270,7 @@ define(['./Highlighter', './History', './SearchBox', './Node', './modeswitcher',
     // trigger the onChange callback
     if (this.options.change) {
       try {
-        this.options.change(action, params);
+        this.options.change(translateChangeToJSONPatch(action, params));
       }
       catch (err) {
         util.log('Error in change callback: ', err);
@@ -552,7 +552,9 @@ define(['./Highlighter', './History', './SearchBox', './Node', './modeswitcher',
       var historyEntry = this.history.undo();
       // trigger change callback if anything have changed
       if (this.options.change && historyEntry) {
-        this.options.change(historyEntry.action, historyEntry.params);
+        this.options.change(
+          translateChangeToJSONPatch(historyEntry.action, historyEntry.params)
+        );
       }
     }
   };
@@ -567,7 +569,9 @@ define(['./Highlighter', './History', './SearchBox', './Node', './modeswitcher',
       var historyEntry = this.history.redo();
       // trigger change callback if anything have changed
       if (this.options.change && historyEntry) {
-        this.options.change(historyEntry.action, historyEntry.params);
+        this.options.change(
+          translateChangeToJSONPatch(historyEntry.action, historyEntry.params)
+        );
       }
     }
   };
@@ -691,6 +695,101 @@ define(['./Highlighter', './History', './SearchBox', './Node', './modeswitcher',
     this.frame.appendChild(contentOuter);
   };
 
+  /**
+   * Translate our internal change info into JSON-Patch format
+   * @see  http://tools.ietf.org/html/rfc6902
+   * @param  {String} action JSONEditor action
+   * @param  {Object} params JSONEditor params
+   * @return {Object}        single JSON-Patch entry
+   */
+  function translateChangeToJSONPatch(action, params){
+    /**
+     * Get path to node in JSON Pointer format
+     * (http://tools.ietf.org/html/rfc6901)
+     * _Almost_ like params.node.path().join("/")
+     * @param {Node} node jsoneditor node in question
+     * @returns {String} path
+     */
+    function JSONPointer(node){
+        var path = "";
+        while (node) {
+          var field = node.field != undefined ? node.field : node.index;
+          switch(typeof field){
+            case "string":
+                path = "/" + escapePathComponent(field) + path;
+                break;
+            case "number":
+                path = "/" + field + path;
+                break;
+          }
+          node = node.parent;
+        }
+        return path;
+
+    }
+    /** 
+     * Escape `/` and `~`, according to JSON-Pointer rules.
+     * @param {String} str string to escape
+     * @returns {String} escaped string
+     */
+    function escapePathComponent(str) {
+        if (str.indexOf('/') === -1 && str.indexOf('~') === -1)
+            return str;
+        return str.replace(/~/g, '~0').replace(/\//g, '~1');
+    }
+    var patch;
+    switch(action){
+      case "duplicateNode":
+        console.warn("duplicateNode->copy Is not supported yet, as currently new node with same name is created, what violates JSON-Patch");
+        break;
+      case "changeType":
+        console.warn("changeType->replace may behave strange, as even if new node is created with specified type, its `node.value==\"\"`")
+        patch = {
+          op: "replace",
+          path: JSONPointer(params.node),
+          value: params.node.value
+        }
+        break;
+      case "editValue":
+        patch = {
+          op: "replace",
+          path: JSONPointer(params.node),
+          value: params.newValue
+        }
+        break;
+      case "removeNode":
+        patch = {
+          op: "remove",
+          path: JSONPointer(params.node)
+        }
+        break;
+      case "insertBeforeNode":
+      case "appendNode":
+        patch = {
+          op: "add",
+          path: JSONPointer(params.node),
+          value: params.node.value
+        }
+        break;
+      case "moveNode":
+        if(params.startParent !== params.endParent){
+          patch = {
+            op: "move",
+            from: JSONPointer(params.startParent) + "/" + params.node.field,
+            path: JSONPointer(params.node)
+          }
+        }
+        break;
+      case "editField":
+        patch = {
+          op: "move",
+          from: JSONPointer(params.node.parent) + "/" + params.oldValue,
+          path: JSONPointer(params.node)
+        }
+        break;
+    }
+    return patch;
+  }
   // define modes
   return [
     {
