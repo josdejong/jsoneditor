@@ -765,6 +765,8 @@ define(['./Highlighter', './History', './SearchBox', './Node', './modeswitcher',
         break;
       case "insertBeforeNode":
       case "appendNode":
+        console.warn("insertBeforeNode,appendNode->add may behave strange, as even if new node is created with specified type, its `node.value==\"\"`",
+          "also when inserting item into an array, new path is given, and there is no info about previous indexes, so it's hard to distinguish whether to use `-`, old index, or if it is not an array item, so we should stick to the given path");
         patch = {
           op: "add",
           path: JSONPointer(params.node),
@@ -772,6 +774,7 @@ define(['./Highlighter', './History', './SearchBox', './Node', './modeswitcher',
         }
         break;
       case "moveNode":
+        console.warn("moveNode->move Still does not cover moving array items, as their name was already changed to `\"\"` which is fully valid object key, so we cannot distinguish it");
         if(params.startParent !== params.endParent){
           patch = {
             op: "move",
