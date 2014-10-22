@@ -712,7 +712,7 @@ define(['./Highlighter', './History', './SearchBox', './Node', './modeswitcher',
      */
     function JSONPointer(node){
         var path = "";
-        while (node) {
+        while (node.parent) {
           var field = node.field != undefined ? node.field : node.index;
           switch(typeof field){
             case "string":
