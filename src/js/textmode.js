@@ -130,7 +130,7 @@ define(['./modeswitcher', './util'], function (modeswitcher, util) {
       if (options.change) {
         // register onchange event
         editor.on('change', function () {
-          options.change();
+          options.change(replaceRootJSONPatch(me));
         });
       }
     }
@@ -146,13 +146,13 @@ define(['./modeswitcher', './util'], function (modeswitcher, util) {
         // register onchange event
         if (this.textarea.oninput === null) {
           this.textarea.oninput = function () {
-            options.change();
+            options.change(replaceRootJSONPatch(me));
           }
         }
         else {
           // oninput is undefined. For IE8-
           this.textarea.onchange = function () {
-            options.change();
+            options.change(replaceRootJSONPatch(me));
           }
         }
       }
@@ -271,6 +271,14 @@ define(['./modeswitcher', './util'], function (modeswitcher, util) {
       this.editor.setValue(jsonText, -1);
     }
   };
+
+  function replaceRootJSONPatch(textmode){
+    return {
+          op: "replace",
+          path: "",
+          value: textmode.get()
+        }
+  }
 
   // define modes
   return [
