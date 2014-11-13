@@ -13,7 +13,10 @@
     "type": "git",
     "url": "https://github.com/josdejong/jsoneditor.git"
   },
-  "main": "jsoneditor.min.js",
+  "main": [
+    "jsoneditor.min.js", 
+    "jsoneditor.css"
+  ],
   "bugs": "https://github.com/josdejong/jsoneditor/issues",
   "ignore": [
     "app",
