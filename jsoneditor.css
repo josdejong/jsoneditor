@@ -42,6 +42,17 @@
   background-position: -48px -144px;
 }
 
+.jsoneditor .appenditem > .icon {
+  float: left;
+  width: 24px;
+  height: 24px;
+  border: none;
+  padding: 0;
+  margin: 0;
+  background-image: url("img/jsoneditor-icons.png");
+  background-position: 0 -24px;
+}
+
 .jsoneditor .value.url {
   color: green;
   text-decoration: underline;

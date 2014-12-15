@@ -49,9 +49,13 @@ define(['./util'], function (util) {
 
       // a cell for the contents (showing text 'empty')
       var tdAppend = document.createElement('td');
+      tdAppend.className = 'appenditem';
       var domText = document.createElement('div');
       domText.innerHTML = '(empty)';
       domText.className = 'readonly';
+      var icon = document.createElement('div');
+      icon.className = 'icon';
+      tdAppend.appendChild(icon);
       tdAppend.appendChild(domText);
       dom.td = tdAppend;
       dom.text = domText;
@@ -74,7 +78,7 @@ define(['./util'], function (util) {
 
       var domText = dom.text;
       if (domText) {
-        domText.innerHTML = '(empty ' + this.parent.type + ')';
+        domText.innerHTML = '(extend ' + this.parent.type + ')';
       }
 
       // attach or detach the contents of the append node:
@@ -104,7 +108,7 @@ define(['./util'], function (util) {
      * @return {boolean} isVisible
      */
     AppendNode.prototype.isVisible = function () {
-      return (this.parent.childs.length == 0);
+      return true;
     };
 
     /**
@@ -116,6 +120,9 @@ define(['./util'], function (util) {
       var target = event.target || event.srcElement;
       var dom = this.dom;
 
+      if (type == 'click') {
+        this._onAppend('', '', 'auto');
+      }
       if (type == 'keydown') {
         this.onKeyDown(event);
       }

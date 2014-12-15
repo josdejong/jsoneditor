@@ -24,7 +24,7 @@
  *
  * @author  Jos de Jong, <wjosdejong@gmail.com>
  * @version 3.1.2
- * @date    2014-09-03
+ * @date    2014-12-15
  */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
@@ -82,7 +82,7 @@ return /******/ (function(modules) { // webpackBootstrap
 /* 0 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(1), __webpack_require__(2), __webpack_require__(3)], __WEBPACK_AMD_DEFINE_RESULT__ = function (treemode, textmode, util) {
+	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(1), __webpack_require__(2)], __WEBPACK_AMD_DEFINE_RESULT__ = function (treemode, util) {
 
 	  /**
 	   * @constructor JSONEditor
@@ -339,16 +339,16 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	  // register tree and text modes
 	  JSONEditor.registerMode(treemode);
-	  JSONEditor.registerMode(textmode);
 
 	  return JSONEditor;
 	}.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
+
 
 /***/ },
 /* 1 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(4), __webpack_require__(5), __webpack_require__(6), __webpack_require__(7), __webpack_require__(8), __webpack_require__(3)], __WEBPACK_AMD_DEFINE_RESULT__ = function (Highlighter, History, SearchBox, Node, modeswitcher, util) {
+	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(3), __webpack_require__(4), __webpack_require__(5), __webpack_require__(6), __webpack_require__(2)], __WEBPACK_AMD_DEFINE_RESULT__ = function (Highlighter, History, SearchBox, Node, util) {
 
 	  // create a mixin with the functions for tree mode
 	  var treemode = {};
@@ -878,13 +878,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	      this.history.onChange();
 	    }
 
-	    // create mode box
-	    if (this.options && this.options.modes && this.options.modes.length) {
-	      var modeBox = modeswitcher.create(this, this.options.modes, this.options.mode);
-	      this.menu.appendChild(modeBox);
-	      this.dom.modeBox = modeBox;
-	    }
-
 	    // create search box
 	    if (this.options.search) {
 	      this.searchBox = new SearchBox(this, this.menu);
@@ -1024,11 +1017,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	    // width, and the edit columns do have a fixed width
 	    var col;
 	    this.colgroupContent = document.createElement('colgroup');
-	    if (this.options.mode === 'tree') {
-	      col = document.createElement('col');
-	      col.width = "24px";
-	      this.colgroupContent.appendChild(col);
-	    }
 	    col = document.createElement('col');
 	    col.width = "24px";
 	    this.colgroupContent.appendChild(col);
@@ -1065,302 +1053,6 @@ return /******/ (function(modules) { // webpackBootstrap
 
 /***/ },
 /* 2 */
-/***/ function(module, exports, __webpack_require__) {
-
-	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(8), __webpack_require__(3)], __WEBPACK_AMD_DEFINE_RESULT__ = function (modeswitcher, util) {
-
-	  // create a mixin with the functions for text mode
-	  var textmode = {};
-
-	  /**
-	   * Create a text editor
-	   * @param {Element} container
-	   * @param {Object} [options]         Object with options. available options:
-	   *                                   {String} mode         Available values:
-	   *                                                         "text" (default)
-	   *                                                         or "code".
-	   *                                   {Number} indentation  Number of indentation
-	   *                                                         spaces. 2 by default.
-	   *                                   {function} change     Callback method
-	   *                                                         triggered on change
-	   * @private
-	   */
-	  textmode.create = function (container, options) {
-	    // read options
-	    options = options || {};
-	    this.options = options;
-	    if (options.indentation) {
-	      this.indentation = Number(options.indentation);
-	    }
-	    else {
-	      this.indentation = 2;       // number of spaces
-	    }
-	    this.mode = (options.mode == 'code') ? 'code' : 'text';
-	    if (this.mode == 'code') {
-	      // verify whether Ace editor is available and supported
-	      if (typeof ace === 'undefined') {
-	        this.mode = 'text';
-	        util.log('WARNING: Cannot load code editor, Ace library not loaded. ' +
-	            'Falling back to plain text editor');
-	      }
-	    }
-
-	    var me = this;
-	    this.container = container;
-	    this.dom = {};
-	    this.editor = undefined;    // ace code editor
-	    this.textarea = undefined;  // plain text editor (fallback when Ace is not available)
-
-	    this.width = container.clientWidth;
-	    this.height = container.clientHeight;
-
-	    this.frame = document.createElement('div');
-	    this.frame.className = 'jsoneditor';
-	    this.frame.onclick = function (event) {
-	      // prevent default submit action when the editor is located inside a form
-	      event.preventDefault();
-	    };
-
-	    // create menu
-	    this.menu = document.createElement('div');
-	    this.menu.className = 'menu';
-	    this.frame.appendChild(this.menu);
-
-	    // create format button
-	    var buttonFormat = document.createElement('button');
-	    buttonFormat.className = 'format';
-	    buttonFormat.title = 'Format JSON data, with proper indentation and line feeds';
-	    this.menu.appendChild(buttonFormat);
-	    buttonFormat.onclick = function () {
-	      try {
-	        me.format();
-	      }
-	      catch (err) {
-	        me._onError(err);
-	      }
-	    };
-
-	    // create compact button
-	    var buttonCompact = document.createElement('button');
-	    buttonCompact.className = 'compact';
-	    buttonCompact.title = 'Compact JSON data, remove all whitespaces';
-	    this.menu.appendChild(buttonCompact);
-	    buttonCompact.onclick = function () {
-	      try {
-	        me.compact();
-	      }
-	      catch (err) {
-	        me._onError(err);
-	      }
-	    };
-
-	    // create mode box
-	    if (this.options && this.options.modes && this.options.modes.length) {
-	      var modeBox = modeswitcher.create(this, this.options.modes, this.options.mode);
-	      this.menu.appendChild(modeBox);
-	      this.dom.modeBox = modeBox;
-	    }
-
-	    this.content = document.createElement('div');
-	    this.content.className = 'outer';
-	    this.frame.appendChild(this.content);
-
-	    this.container.appendChild(this.frame);
-
-	    if (this.mode == 'code') {
-	      this.editorDom = document.createElement('div');
-	      this.editorDom.style.height = '100%'; // TODO: move to css
-	      this.editorDom.style.width = '100%'; // TODO: move to css
-	      this.content.appendChild(this.editorDom);
-
-	      var editor = ace.edit(this.editorDom);
-	      editor.setTheme('ace/theme/jsoneditor');
-	      editor.setShowPrintMargin(false);
-	      editor.setFontSize(13);
-	      editor.getSession().setMode('ace/mode/json');
-	      editor.getSession().setTabSize(2);
-	      editor.getSession().setUseSoftTabs(true);
-	      editor.getSession().setUseWrapMode(true);
-	      this.editor = editor;
-
-	      var poweredBy = document.createElement('a');
-	      poweredBy.appendChild(document.createTextNode('powered by ace'));
-	      poweredBy.href = 'http://ace.ajax.org';
-	      poweredBy.target = '_blank';
-	      poweredBy.className = 'poweredBy';
-	      poweredBy.onclick = function () {
-	        // TODO: this anchor falls below the margin of the content,
-	        // therefore the normal a.href does not work. We use a click event
-	        // for now, but this should be fixed.
-	        window.open(poweredBy.href, poweredBy.target);
-	      };
-	      this.menu.appendChild(poweredBy);
-
-	      if (options.change) {
-	        // register onchange event
-	        editor.on('change', function () {
-	          options.change();
-	        });
-	      }
-	    }
-	    else {
-	      // load a plain text textarea
-	      var textarea = document.createElement('textarea');
-	      textarea.className = 'text';
-	      textarea.spellcheck = false;
-	      this.content.appendChild(textarea);
-	      this.textarea = textarea;
-
-	      if (options.change) {
-	        // register onchange event
-	        if (this.textarea.oninput === null) {
-	          this.textarea.oninput = function () {
-	            options.change();
-	          }
-	        }
-	        else {
-	          // oninput is undefined. For IE8-
-	          this.textarea.onchange = function () {
-	            options.change();
-	          }
-	        }
-	      }
-	    }
-	  };
-
-	  /**
-	   * Detach the editor from the DOM
-	   * @private
-	   */
-	  textmode._delete = function () {
-	    if (this.frame && this.container && this.frame.parentNode == this.container) {
-	      this.container.removeChild(this.frame);
-	    }
-	  };
-
-	  /**
-	   * Throw an error. If an error callback is configured in options.error, this
-	   * callback will be invoked. Else, a regular error is thrown.
-	   * @param {Error} err
-	   * @private
-	   */
-	  textmode._onError = function(err) {
-	    // TODO: onError is deprecated since version 2.2.0. cleanup some day
-	    if (typeof this.onError === 'function') {
-	      util.log('WARNING: JSONEditor.onError is deprecated. ' +
-	          'Use options.error instead.');
-	      this.onError(err);
-	    }
-
-	    if (this.options && typeof this.options.error === 'function') {
-	      this.options.error(err);
-	    }
-	    else {
-	      throw err;
-	    }
-	  };
-
-	  /**
-	   * Compact the code in the formatter
-	   */
-	  textmode.compact = function () {
-	    var json = util.parse(this.getText());
-	    this.setText(JSON.stringify(json));
-	  };
-
-	  /**
-	   * Format the code in the formatter
-	   */
-	  textmode.format = function () {
-	    var json = util.parse(this.getText());
-	    this.setText(JSON.stringify(json, null, this.indentation));
-	  };
-
-	  /**
-	   * Set focus to the formatter
-	   */
-	  textmode.focus = function () {
-	    if (this.textarea) {
-	      this.textarea.focus();
-	    }
-	    if (this.editor) {
-	      this.editor.focus();
-	    }
-	  };
-
-	  /**
-	   * Resize the formatter
-	   */
-	  textmode.resize = function () {
-	    if (this.editor) {
-	      var force = false;
-	      this.editor.resize(force);
-	    }
-	  };
-
-	  /**
-	   * Set json data in the formatter
-	   * @param {Object} json
-	   */
-	  textmode.set = function(json) {
-	    this.setText(JSON.stringify(json, null, this.indentation));
-	  };
-
-	  /**
-	   * Get json data from the formatter
-	   * @return {Object} json
-	   */
-	  textmode.get = function() {
-	    return util.parse(this.getText());
-	  };
-
-	  /**
-	   * Get the text contents of the editor
-	   * @return {String} jsonText
-	   */
-	  textmode.getText = function() {
-	    if (this.textarea) {
-	      return this.textarea.value;
-	    }
-	    if (this.editor) {
-	      return this.editor.getValue();
-	    }
-	    return '';
-	  };
-
-	  /**
-	   * Set the text contents of the editor
-	   * @param {String} jsonText
-	   */
-	  textmode.setText = function(jsonText) {
-	    if (this.textarea) {
-	      this.textarea.value = jsonText;
-	    }
-	    if (this.editor) {
-	      this.editor.setValue(jsonText, -1);
-	    }
-	  };
-
-	  // define modes
-	  return [
-	    {
-	      mode: 'text',
-	      mixin: textmode,
-	      data: 'text',
-	      load: textmode.format
-	    },
-	    {
-	      mode: 'code',
-	      mixin: textmode,
-	      data: 'text',
-	      load: textmode.format
-	    }
-	  ];
-	}.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
-
-
-/***/ },
-/* 3 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_RESULT__ = function () {
@@ -1915,7 +1607,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	}.call(exports, __webpack_require__, exports, module), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
 
 /***/ },
-/* 4 */
+/* 3 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_RESULT__ = function () {
@@ -2007,10 +1699,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	}.call(exports, __webpack_require__, exports, module), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
 
 /***/ },
-/* 5 */
+/* 4 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(3)], __WEBPACK_AMD_DEFINE_RESULT__ = function (util) {
+	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(2)], __WEBPACK_AMD_DEFINE_RESULT__ = function (util) {
 
 	  /**
 	   * @constructor History
@@ -2236,7 +1928,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 6 */
+/* 5 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_RESULT__ = function () {
@@ -2535,10 +2227,10 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 7 */
+/* 6 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(9), __webpack_require__(10), __webpack_require__(3)], __WEBPACK_AMD_DEFINE_RESULT__ = function (ContextMenu, appendNodeFactory, util) {
+	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(7), __webpack_require__(2)], __WEBPACK_AMD_DEFINE_RESULT__ = function (appendNodeFactory, util) {
 
 	  /**
 	   * @constructor Node
@@ -2608,7 +2300,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    var node = this;
 	    var path = [];
 	    while (node) {
-	      var field = node.field || node.index;
+	      var field = node.field != undefined ? node.field : node.index;
 	      if (field !== undefined) {
 	        path.unshift(field);
 	      }
@@ -3183,7 +2875,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  /**
 	   * Set focus to this node
 	   * @param {String} [elementName]  The field name of the element to get the
-	   *                                focus available values: 'drag', 'menu',
+	   *                                focus available values: 'drag',
 	   *                                'expand', 'field', 'value' (default)
 	   */
 	  Node.prototype.focus = function(elementName) {
@@ -3197,13 +2889,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	          if (dom.drag) {
 	            dom.drag.focus();
 	          }
-	          else {
-	            dom.menu.focus();
-	          }
-	          break;
-
-	        case 'menu':
-	          dom.menu.focus();
 	          break;
 
 	        case 'expand':
@@ -3219,7 +2904,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            util.selectContentEditable(dom.value);
 	          }
 	          else {
-	            dom.menu.focus();
+	            dom.drag.focus();
 	          }
 	          break;
 
@@ -3236,7 +2921,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            dom.expand.focus();
 	          }
 	          else {
-	            dom.menu.focus();
+	            dom.drag.focus();
 	          }
 	          break;
 
@@ -3254,7 +2939,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            dom.expand.focus();
 	          }
 	          else {
-	            dom.menu.focus();
+	            dom.drag.focus();
 	          }
 	          break;
 	      }
@@ -3758,14 +3443,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	      }
 	      dom.tr.appendChild(tdDrag);
 
-	      // create context menu
-	      var tdMenu = document.createElement('td');
-	      var menu = document.createElement('button');
-	      dom.menu = menu;
-	      menu.className = 'contextmenu';
-	      menu.title = 'Click to open the actions menu (Ctrl+M)';
-	      tdMenu.appendChild(dom.menu);
-	      dom.tr.appendChild(tdMenu);
 	    }
 
 	    // create tree and field
@@ -4305,9 +3982,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	        focusNode,
 	        expandable = this._hasChilds();
 
-	    // check if mouse is on menu or on dragarea.
+	    // check if mouse is on dragarea.
 	    // If so, highlight current row and its childs
-	    if (target == dom.drag || target == dom.menu) {
+	    if (target == dom.drag) {
 	      if (type == 'mouseover') {
 	        this.editor.highlighter.highlight(this);
 	      }
@@ -4319,19 +3996,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	    // drag events
 	    if (type == 'mousedown' && target == dom.drag) {
 	      this._onDragStart(event);
-	    }
-
-	    // context menu events
-	    if (type == 'click' && target == dom.menu) {
-	      var highlighter = node.editor.highlighter;
-	      highlighter.highlight(node);
-	      highlighter.lock();
-	      util.addClassName(dom.menu, 'selected');
-	      this.showContextMenu(dom.menu, function () {
-	        util.removeClassName(dom.menu, 'selected');
-	        highlighter.unlock();
-	        highlighter.unhighlight();
-	      });
 	    }
 
 	    // expand events
@@ -4521,12 +4185,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	      if (ctrlKey) {       // Ctrl+E and Ctrl+Shift+E
 	        this._onExpand(shiftKey);  // recurse = shiftKey
 	        target.focus(); // TODO: should restore focus in case of recursing expand (which takes DOM offline)
-	        handled = true;
-	      }
-	    }
-	    else if (keynum == 77 && editable) { // M
-	      if (ctrlKey) { // Ctrl+M
-	        this.showContextMenu(target);
 	        handled = true;
 	      }
 	    }
@@ -5035,8 +4693,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	        }
 	      // intentional fall through
 	      case dom.expand:
-	        return dom.menu;
-	      case dom.menu:
 	        if (dom.drag) {
 	          return dom.drag;
 	        }
@@ -5057,8 +4713,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	    // noinspection FallthroughInSwitchStatementJS
 	    switch (elem) {
 	      case dom.drag:
-	        return dom.menu;
-	      case dom.menu:
 	        if (this._hasChilds()) {
 	          return dom.expand;
 	        }
@@ -5082,7 +4736,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	   * For example when element == dom.field, "field" is returned.
 	   * @param {Element} element
 	   * @return {String | null} elementName  Available elements with name: 'drag',
-	   *                                      'menu', 'expand', 'field', 'value'
+	   *                                      'expand', 'field', 'value'
 	   * @private
 	   */
 	  Node.prototype._getElementName = function (element) {
@@ -5119,221 +4773,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	    'string': 'Field type "string". ' +
 	        'Field type is not determined from the value, ' +
 	        'but always returned as string.'
-	  };
-
-	  /**
-	   * Show a contextmenu for this node
-	   * @param {HTMLElement} anchor   Anchor element to attache the context menu to.
-	   * @param {function} [onClose]   Callback method called when the context menu
-	   *                               is being closed.
-	   */
-	  Node.prototype.showContextMenu = function (anchor, onClose) {
-	    var node = this;
-	    var titles = Node.TYPE_TITLES;
-	    var items = [];
-
-	    if (this.editable.value) {
-	      items.push({
-	        text: 'Type',
-	        title: 'Change the type of this field',
-	        className: 'type-' + this.type,
-	        submenu: [
-	          {
-	            text: 'Auto',
-	            className: 'type-auto' +
-	                (this.type == 'auto' ? ' selected' : ''),
-	            title: titles.auto,
-	            click: function () {
-	              node._onChangeType('auto');
-	            }
-	          },
-	          {
-	            text: 'Array',
-	            className: 'type-array' +
-	                (this.type == 'array' ? ' selected' : ''),
-	            title: titles.array,
-	            click: function () {
-	              node._onChangeType('array');
-	            }
-	          },
-	          {
-	            text: 'Object',
-	            className: 'type-object' +
-	                (this.type == 'object' ? ' selected' : ''),
-	            title: titles.object,
-	            click: function () {
-	              node._onChangeType('object');
-	            }
-	          },
-	          {
-	            text: 'String',
-	            className: 'type-string' +
-	                (this.type == 'string' ? ' selected' : ''),
-	            title: titles.string,
-	            click: function () {
-	              node._onChangeType('string');
-	            }
-	          }
-	        ]
-	      });
-	    }
-
-	    if (this._hasChilds()) {
-	      var direction = ((this.sort == 'asc') ? 'desc': 'asc');
-	      items.push({
-	        text: 'Sort',
-	        title: 'Sort the childs of this ' + this.type,
-	        className: 'sort-' + direction,
-	        click: function () {
-	          node._onSort(direction);
-	        },
-	        submenu: [
-	          {
-	            text: 'Ascending',
-	            className: 'sort-asc',
-	            title: 'Sort the childs of this ' + this.type + ' in ascending order',
-	            click: function () {
-	              node._onSort('asc');
-	            }
-	          },
-	          {
-	            text: 'Descending',
-	            className: 'sort-desc',
-	            title: 'Sort the childs of this ' + this.type +' in descending order',
-	            click: function () {
-	              node._onSort('desc');
-	            }
-	          }
-	        ]
-	      });
-	    }
-
-	    if (this.parent && this.parent._hasChilds()) {
-	      if (items.length) {
-	        // create a separator
-	        items.push({
-	          'type': 'separator'
-	        });
-	      }
-
-	      // create append button (for last child node only)
-	      var childs = node.parent.childs;
-	      if (node == childs[childs.length - 1]) {
-	        items.push({
-	          text: 'Append',
-	          title: 'Append a new field with type \'auto\' after this field (Ctrl+Shift+Ins)',
-	          submenuTitle: 'Select the type of the field to be appended',
-	          className: 'append',
-	          click: function () {
-	            node._onAppend('', '', 'auto');
-	          },
-	          submenu: [
-	            {
-	              text: 'Auto',
-	              className: 'type-auto',
-	              title: titles.auto,
-	              click: function () {
-	                node._onAppend('', '', 'auto');
-	              }
-	            },
-	            {
-	              text: 'Array',
-	              className: 'type-array',
-	              title: titles.array,
-	              click: function () {
-	                node._onAppend('', []);
-	              }
-	            },
-	            {
-	              text: 'Object',
-	              className: 'type-object',
-	              title: titles.object,
-	              click: function () {
-	                node._onAppend('', {});
-	              }
-	            },
-	            {
-	              text: 'String',
-	              className: 'type-string',
-	              title: titles.string,
-	              click: function () {
-	                node._onAppend('', '', 'string');
-	              }
-	            }
-	          ]
-	        });
-	      }
-
-	      // create insert button
-	      items.push({
-	        text: 'Insert',
-	        title: 'Insert a new field with type \'auto\' before this field (Ctrl+Ins)',
-	        submenuTitle: 'Select the type of the field to be inserted',
-	        className: 'insert',
-	        click: function () {
-	          node._onInsertBefore('', '', 'auto');
-	        },
-	        submenu: [
-	          {
-	            text: 'Auto',
-	            className: 'type-auto',
-	            title: titles.auto,
-	            click: function () {
-	              node._onInsertBefore('', '', 'auto');
-	            }
-	          },
-	          {
-	            text: 'Array',
-	            className: 'type-array',
-	            title: titles.array,
-	            click: function () {
-	              node._onInsertBefore('', []);
-	            }
-	          },
-	          {
-	            text: 'Object',
-	            className: 'type-object',
-	            title: titles.object,
-	            click: function () {
-	              node._onInsertBefore('', {});
-	            }
-	          },
-	          {
-	            text: 'String',
-	            className: 'type-string',
-	            title: titles.string,
-	            click: function () {
-	              node._onInsertBefore('', '', 'string');
-	            }
-	          }
-	        ]
-	      });
-
-	      if (this.editable.field) {
-	        // create duplicate button
-	        items.push({
-	          text: 'Duplicate',
-	          title: 'Duplicate this field (Ctrl+D)',
-	          className: 'duplicate',
-	          click: function () {
-	            node._onDuplicate();
-	          }
-	        });
-
-	        // create remove button
-	        items.push({
-	          text: 'Remove',
-	          title: 'Remove this field (Ctrl+Del)',
-	          className: 'remove',
-	          click: function () {
-	            node._onRemove();
-	          }
-	        });
-	      }
-	    }
-
-	    var menu = new ContextMenu(items, {close: onClose});
-	    menu.show(anchor);
 	  };
 
 	  /**
@@ -5467,570 +4906,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	  return Node;
 	}.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
 
-/***/ },
-/* 8 */
-/***/ function(module, exports, __webpack_require__) {
-
-	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(9)], __WEBPACK_AMD_DEFINE_RESULT__ = function (ContextMenu) {
-
-	  /**
-	   * Create a select box to be used in the editor menu's, which allows to switch mode
-	   * @param {Object} editor
-	   * @param {String[]} modes  Available modes: 'code', 'form', 'text', 'tree', 'view'
-	   * @param {String} current  Available modes: 'code', 'form', 'text', 'tree', 'view'
-	   * @returns {HTMLElement} box
-	   */
-	  function createModeSwitcher(editor, modes, current) {
-	    // TODO: decouple mode switcher from editor
-
-	    /**
-	     * Switch the mode of the editor
-	     * @param {String} mode
-	     */
-	    function switchMode(mode) {
-	      // switch mode
-	      editor.setMode(mode);
-
-	      // restore focus on mode box
-	      var modeBox = editor.dom && editor.dom.modeBox;
-	      if (modeBox) {
-	        modeBox.focus();
-	      }
-	    }
-
-	    // available modes
-	    var availableModes = {
-	      code: {
-	        'text': 'Code',
-	        'title': 'Switch to code highlighter',
-	        'click': function () {
-	          switchMode('code')
-	        }
-	      },
-	      form: {
-	        'text': 'Form',
-	        'title': 'Switch to form editor',
-	        'click': function () {
-	          switchMode('form');
-	        }
-	      },
-	      text: {
-	        'text': 'Text',
-	        'title': 'Switch to plain text editor',
-	        'click': function () {
-	          switchMode('text');
-	        }
-	      },
-	      tree: {
-	        'text': 'Tree',
-	        'title': 'Switch to tree editor',
-	        'click': function () {
-	          switchMode('tree');
-	        }
-	      },
-	      view: {
-	        'text': 'View',
-	        'title': 'Switch to tree view',
-	        'click': function () {
-	          switchMode('view');
-	        }
-	      }
-	    };
-
-	    // list the selected modes
-	    var items = [];
-	    for (var i = 0; i < modes.length; i++) {
-	      var mode = modes[i];
-	      var item = availableModes[mode];
-	      if (!item) {
-	        throw new Error('Unknown mode "' + mode + '"');
-	      }
-
-	      item.className = 'type-modes' + ((current == mode) ? ' selected' : '');
-	      items.push(item);
-	    }
-
-	    // retrieve the title of current mode
-	    var currentMode = availableModes[current];
-	    if (!currentMode) {
-	      throw new Error('Unknown mode "' + current + '"');
-	    }
-	    var currentTitle = currentMode.text;
-
-	    // create the html element
-	    var box = document.createElement('button');
-	    box.className = 'modes separator';
-	    box.innerHTML = currentTitle + ' &#x25BE;';
-	    box.title = 'Switch editor mode';
-	    box.onclick = function () {
-	      var menu = new ContextMenu(items);
-	      menu.show(box);
-	    };
-
-	    return box;
-	  }
-
-	  return {
-	    create: createModeSwitcher
-	  }
-	}.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
-
 
 /***/ },
-/* 9 */
+/* 7 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(3)], __WEBPACK_AMD_DEFINE_RESULT__ = function (util) {
-
-	  /**
-	   * A context menu
-	   * @param {Object[]} items    Array containing the menu structure
-	   *                            TODO: describe structure
-	   * @param {Object} [options]  Object with options. Available options:
-	   *                            {function} close    Callback called when the
-	   *                                                context menu is being closed.
-	   * @constructor
-	   */
-	  function ContextMenu (items, options) {
-	    this.dom = {};
-
-	    var me = this;
-	    var dom = this.dom;
-	    this.anchor = undefined;
-	    this.items = items;
-	    this.eventListeners = {};
-	    this.selection = undefined; // holds the selection before the menu was opened
-	    this.visibleSubmenu = undefined;
-	    this.onClose = options ? options.close : undefined;
-
-	    // create a container element
-	    var menu = document.createElement('div');
-	    menu.className = 'jsoneditor-contextmenu';
-	    dom.menu = menu;
-
-	    // create a list to hold the menu items
-	    var list = document.createElement('ul');
-	    list.className = 'menu';
-	    menu.appendChild(list);
-	    dom.list = list;
-	    dom.items = []; // list with all buttons
-
-	    // create a (non-visible) button to set the focus to the menu
-	    var focusButton = document.createElement('button');
-	    dom.focusButton = focusButton;
-	    var li = document.createElement('li');
-	    li.style.overflow = 'hidden';
-	    li.style.height = '0';
-	    li.appendChild(focusButton);
-	    list.appendChild(li);
-
-	    function createMenuItems (list, domItems, items) {
-	      items.forEach(function (item) {
-	        if (item.type == 'separator') {
-	          // create a separator
-	          var separator = document.createElement('div');
-	          separator.className = 'separator';
-	          li = document.createElement('li');
-	          li.appendChild(separator);
-	          list.appendChild(li);
-	        }
-	        else {
-	          var domItem = {};
-
-	          // create a menu item
-	          var li = document.createElement('li');
-	          list.appendChild(li);
-
-	          // create a button in the menu item
-	          var button = document.createElement('button');
-	          button.className = item.className;
-	          domItem.button = button;
-	          if (item.title) {
-	            button.title = item.title;
-	          }
-	          if (item.click) {
-	            button.onclick = function () {
-	              me.hide();
-	              item.click();
-	            };
-	          }
-	          li.appendChild(button);
-
-	          // create the contents of the button
-	          if (item.submenu) {
-	            // add the icon to the button
-	            var divIcon = document.createElement('div');
-	            divIcon.className = 'icon';
-	            button.appendChild(divIcon);
-	            button.appendChild(document.createTextNode(item.text));
-
-	            var buttonSubmenu;
-	            if (item.click) {
-	              // submenu and a button with a click handler
-	              button.className += ' default';
-
-	              var buttonExpand = document.createElement('button');
-	              domItem.buttonExpand = buttonExpand;
-	              buttonExpand.className = 'expand';
-	              buttonExpand.innerHTML = '<div class="expand"></div>';
-	              li.appendChild(buttonExpand);
-	              if (item.submenuTitle) {
-	                buttonExpand.title = item.submenuTitle;
-	              }
-
-	              buttonSubmenu = buttonExpand;
-	            }
-	            else {
-	              // submenu and a button without a click handler
-	              var divExpand = document.createElement('div');
-	              divExpand.className = 'expand';
-	              button.appendChild(divExpand);
-
-	              buttonSubmenu = button;
-	            }
-
-	            // attach a handler to expand/collapse the submenu
-	            buttonSubmenu.onclick = function () {
-	              me._onExpandItem(domItem);
-	              buttonSubmenu.focus();
-	            };
-
-	            // create the submenu
-	            var domSubItems = [];
-	            domItem.subItems = domSubItems;
-	            var ul = document.createElement('ul');
-	            domItem.ul = ul;
-	            ul.className = 'menu';
-	            ul.style.height = '0';
-	            li.appendChild(ul);
-	            createMenuItems(ul, domSubItems, item.submenu);
-	          }
-	          else {
-	            // no submenu, just a button with clickhandler
-	            button.innerHTML = '<div class="icon"></div>' + item.text;
-	          }
-
-	          domItems.push(domItem);
-	        }
-	      });
-	    }
-	    createMenuItems(list, this.dom.items, items);
-
-	    // TODO: when the editor is small, show the submenu on the right instead of inline?
-
-	    // calculate the max height of the menu with one submenu expanded
-	    this.maxHeight = 0; // height in pixels
-	    items.forEach(function (item) {
-	      var height = (items.length + (item.submenu ? item.submenu.length : 0)) * 24;
-	      me.maxHeight = Math.max(me.maxHeight, height);
-	    });
-	  }
-
-	  /**
-	   * Get the currently visible buttons
-	   * @return {Array.<HTMLElement>} buttons
-	   * @private
-	   */
-	  ContextMenu.prototype._getVisibleButtons = function () {
-	    var buttons = [];
-	    var me = this;
-	    this.dom.items.forEach(function (item) {
-	      buttons.push(item.button);
-	      if (item.buttonExpand) {
-	        buttons.push(item.buttonExpand);
-	      }
-	      if (item.subItems && item == me.expandedItem) {
-	        item.subItems.forEach(function (subItem) {
-	          buttons.push(subItem.button);
-	          if (subItem.buttonExpand) {
-	            buttons.push(subItem.buttonExpand);
-	          }
-	          // TODO: change to fully recursive method
-	        });
-	      }
-	    });
-
-	    return buttons;
-	  };
-
-	// currently displayed context menu, a singleton. We may only have one visible context menu
-	  ContextMenu.visibleMenu = undefined;
-
-	  /**
-	   * Attach the menu to an anchor
-	   * @param {HTMLElement} anchor
-	   */
-	  ContextMenu.prototype.show = function (anchor) {
-	    this.hide();
-
-	    // calculate whether the menu fits below the anchor
-	    var windowHeight = window.innerHeight,
-	        windowScroll = (window.pageYOffset || document.scrollTop || 0),
-	        windowBottom = windowHeight + windowScroll,
-	        anchorHeight = anchor.offsetHeight,
-	        menuHeight = this.maxHeight;
-
-	    // position the menu
-	    var left = util.getAbsoluteLeft(anchor);
-	    var top = util.getAbsoluteTop(anchor);
-	    if (top + anchorHeight + menuHeight < windowBottom) {
-	      // display the menu below the anchor
-	      this.dom.menu.style.left = left + 'px';
-	      this.dom.menu.style.top = (top + anchorHeight) + 'px';
-	      this.dom.menu.style.bottom = '';
-	    }
-	    else {
-	      // display the menu above the anchor
-	      this.dom.menu.style.left = left + 'px';
-	      this.dom.menu.style.top = '';
-	      this.dom.menu.style.bottom = (windowHeight - top) + 'px';
-	    }
-
-	    // attach the menu to the document
-	    document.body.appendChild(this.dom.menu);
-
-	    // create and attach event listeners
-	    var me = this;
-	    var list = this.dom.list;
-	    this.eventListeners.mousedown = util.addEventListener(
-	        document, 'mousedown', function (event) {
-	          // hide menu on click outside of the menu
-	          var target = event.target;
-	          if ((target != list) && !me._isChildOf(target, list)) {
-	            me.hide();
-	            event.stopPropagation();
-	            event.preventDefault();
-	          }
-	        });
-	    this.eventListeners.mousewheel = util.addEventListener(
-	        document, 'mousewheel', function (event) {
-	          // block scrolling when context menu is visible
-	          event.stopPropagation();
-	          event.preventDefault();
-	        });
-	    this.eventListeners.keydown = util.addEventListener(
-	        document, 'keydown', function (event) {
-	          me._onKeyDown(event);
-	        });
-
-	    // move focus to the first button in the context menu
-	    this.selection = util.getSelection();
-	    this.anchor = anchor;
-	    setTimeout(function () {
-	      me.dom.focusButton.focus();
-	    }, 0);
-
-	    if (ContextMenu.visibleMenu) {
-	      ContextMenu.visibleMenu.hide();
-	    }
-	    ContextMenu.visibleMenu = this;
-	  };
-
-	  /**
-	   * Hide the context menu if visible
-	   */
-	  ContextMenu.prototype.hide = function () {
-	    // remove the menu from the DOM
-	    if (this.dom.menu.parentNode) {
-	      this.dom.menu.parentNode.removeChild(this.dom.menu);
-	      if (this.onClose) {
-	        this.onClose();
-	      }
-	    }
-
-	    // remove all event listeners
-	    // all event listeners are supposed to be attached to document.
-	    for (var name in this.eventListeners) {
-	      if (this.eventListeners.hasOwnProperty(name)) {
-	        var fn = this.eventListeners[name];
-	        if (fn) {
-	          util.removeEventListener(document, name, fn);
-	        }
-	        delete this.eventListeners[name];
-	      }
-	    }
-
-	    if (ContextMenu.visibleMenu == this) {
-	      ContextMenu.visibleMenu = undefined;
-	    }
-	  };
-
-	  /**
-	   * Expand a submenu
-	   * Any currently expanded submenu will be hided.
-	   * @param {Object} domItem
-	   * @private
-	   */
-	  ContextMenu.prototype._onExpandItem = function (domItem) {
-	    var me = this;
-	    var alreadyVisible = (domItem == this.expandedItem);
-
-	    // hide the currently visible submenu
-	    var expandedItem = this.expandedItem;
-	    if (expandedItem) {
-	      //var ul = expandedItem.ul;
-	      expandedItem.ul.style.height = '0';
-	      expandedItem.ul.style.padding = '';
-	      setTimeout(function () {
-	        if (me.expandedItem != expandedItem) {
-	          expandedItem.ul.style.display = '';
-	          util.removeClassName(expandedItem.ul.parentNode, 'selected');
-	        }
-	      }, 300); // timeout duration must match the css transition duration
-	      this.expandedItem = undefined;
-	    }
-
-	    if (!alreadyVisible) {
-	      var ul = domItem.ul;
-	      ul.style.display = 'block';
-	      var height = ul.clientHeight; // force a reflow in Firefox
-	      setTimeout(function () {
-	        if (me.expandedItem == domItem) {
-	          ul.style.height = (ul.childNodes.length * 24) + 'px';
-	          ul.style.padding = '5px 10px';
-	        }
-	      }, 0);
-	      util.addClassName(ul.parentNode, 'selected');
-	      this.expandedItem = domItem;
-	    }
-	  };
-
-	  /**
-	   * Handle onkeydown event
-	   * @param {Event} event
-	   * @private
-	   */
-	  ContextMenu.prototype._onKeyDown = function (event) {
-	    var target = event.target;
-	    var keynum = event.which;
-	    var handled = false;
-	    var buttons, targetIndex, prevButton, nextButton;
-
-	    if (keynum == 27) { // ESC
-	      // hide the menu on ESC key
-
-	      // restore previous selection and focus
-	      if (this.selection) {
-	        util.setSelection(this.selection);
-	      }
-	      if (this.anchor) {
-	        this.anchor.focus();
-	      }
-
-	      this.hide();
-
-	      handled = true;
-	    }
-	    else if (keynum == 9) { // Tab
-	      if (!event.shiftKey) { // Tab
-	        buttons = this._getVisibleButtons();
-	        targetIndex = buttons.indexOf(target);
-	        if (targetIndex == buttons.length - 1) {
-	          // move to first button
-	          buttons[0].focus();
-	          handled = true;
-	        }
-	      }
-	      else { // Shift+Tab
-	        buttons = this._getVisibleButtons();
-	        targetIndex = buttons.indexOf(target);
-	        if (targetIndex == 0) {
-	          // move to last button
-	          buttons[buttons.length - 1].focus();
-	          handled = true;
-	        }
-	      }
-	    }
-	    else if (keynum == 37) { // Arrow Left
-	      if (target.className == 'expand') {
-	        buttons = this._getVisibleButtons();
-	        targetIndex = buttons.indexOf(target);
-	        prevButton = buttons[targetIndex - 1];
-	        if (prevButton) {
-	          prevButton.focus();
-	        }
-	      }
-	      handled = true;
-	    }
-	    else if (keynum == 38) { // Arrow Up
-	      buttons = this._getVisibleButtons();
-	      targetIndex = buttons.indexOf(target);
-	      prevButton = buttons[targetIndex - 1];
-	      if (prevButton && prevButton.className == 'expand') {
-	        // skip expand button
-	        prevButton = buttons[targetIndex - 2];
-	      }
-	      if (!prevButton) {
-	        // move to last button
-	        prevButton = buttons[buttons.length - 1];
-	      }
-	      if (prevButton) {
-	        prevButton.focus();
-	      }
-	      handled = true;
-	    }
-	    else if (keynum == 39) { // Arrow Right
-	      buttons = this._getVisibleButtons();
-	      targetIndex = buttons.indexOf(target);
-	      nextButton = buttons[targetIndex + 1];
-	      if (nextButton && nextButton.className == 'expand') {
-	        nextButton.focus();
-	      }
-	      handled = true;
-	    }
-	    else if (keynum == 40) { // Arrow Down
-	      buttons = this._getVisibleButtons();
-	      targetIndex = buttons.indexOf(target);
-	      nextButton = buttons[targetIndex + 1];
-	      if (nextButton && nextButton.className == 'expand') {
-	        // skip expand button
-	        nextButton = buttons[targetIndex + 2];
-	      }
-	      if (!nextButton) {
-	        // move to first button
-	        nextButton = buttons[0];
-	      }
-	      if (nextButton) {
-	        nextButton.focus();
-	        handled = true;
-	      }
-	      handled = true;
-	    }
-	    // TODO: arrow left and right
-
-	    if (handled) {
-	      event.stopPropagation();
-	      event.preventDefault();
-	    }
-	  };
-
-	  /**
-	   * Test if an element is a child of a parent element.
-	   * @param {Element} child
-	   * @param {Element} parent
-	   * @return {boolean} isChild
-	   */
-	  ContextMenu.prototype._isChildOf = function (child, parent) {
-	    var e = child.parentNode;
-	    while (e) {
-	      if (e == parent) {
-	        return true;
-	      }
-	      e = e.parentNode;
-	    }
-
-	    return false;
-	  };
-
-	  return ContextMenu;
-	}.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
-
-
-/***/ },
-/* 10 */
-/***/ function(module, exports, __webpack_require__) {
-
-	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(9), __webpack_require__(3)], __WEBPACK_AMD_DEFINE_RESULT__ = function (ContextMenu, util) {
+	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(2)], __WEBPACK_AMD_DEFINE_RESULT__ = function (util) {
 
 	  /**
 	   * A factory function to create an AppendNode, which depends on a Node
@@ -6077,21 +4958,17 @@ return /******/ (function(modules) { // webpackBootstrap
 	        // a cell for the dragarea column
 	        dom.tdDrag = document.createElement('td');
 
-	        // create context menu
-	        var tdMenu = document.createElement('td');
-	        dom.tdMenu = tdMenu;
-	        var menu = document.createElement('button');
-	        menu.className = 'contextmenu';
-	        menu.title = 'Click to open the actions menu (Ctrl+M)';
-	        dom.menu = menu;
-	        tdMenu.appendChild(dom.menu);
 	      }
 
 	      // a cell for the contents (showing text 'empty')
 	      var tdAppend = document.createElement('td');
+	      tdAppend.className = 'appenditem';
 	      var domText = document.createElement('div');
 	      domText.innerHTML = '(empty)';
 	      domText.className = 'readonly';
+	      var icon = document.createElement('div');
+	      icon.className = 'icon';
+	      tdAppend.appendChild(icon);
 	      tdAppend.appendChild(domText);
 	      dom.td = tdAppend;
 	      dom.text = domText;
@@ -6114,7 +4991,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	      var domText = dom.text;
 	      if (domText) {
-	        domText.innerHTML = '(empty ' + this.parent.type + ')';
+	        domText.innerHTML = '(extend ' + this.parent.type + ')';
 	      }
 
 	      // attach or detach the contents of the append node:
@@ -6125,9 +5002,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	          if (dom.tdDrag) {
 	            trAppend.removeChild(dom.tdDrag);
 	          }
-	          if (dom.tdMenu) {
-	            trAppend.removeChild(dom.tdMenu);
-	          }
 	          trAppend.removeChild(tdAppend);
 	        }
 	      }
@@ -6135,9 +5009,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	        if (!dom.tr.firstChild) {
 	          if (dom.tdDrag) {
 	            trAppend.appendChild(dom.tdDrag);
-	          }
-	          if (dom.tdMenu) {
-	            trAppend.appendChild(dom.tdMenu);
 	          }
 	          trAppend.appendChild(tdAppend);
 	        }
@@ -6150,67 +5021,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	     * @return {boolean} isVisible
 	     */
 	    AppendNode.prototype.isVisible = function () {
-	      return (this.parent.childs.length == 0);
-	    };
-
-	    /**
-	     * Show a contextmenu for this node
-	     * @param {HTMLElement} anchor   The element to attach the menu to.
-	     * @param {function} [onClose]   Callback method called when the context menu
-	     *                               is being closed.
-	     */
-	    AppendNode.prototype.showContextMenu = function (anchor, onClose) {
-	      var node = this;
-	      var titles = Node.TYPE_TITLES;
-	      var items = [
-	        // create append button
-	        {
-	          'text': 'Append',
-	          'title': 'Append a new field with type \'auto\' (Ctrl+Shift+Ins)',
-	          'submenuTitle': 'Select the type of the field to be appended',
-	          'className': 'insert',
-	          'click': function () {
-	            node._onAppend('', '', 'auto');
-	          },
-	          'submenu': [
-	            {
-	              'text': 'Auto',
-	              'className': 'type-auto',
-	              'title': titles.auto,
-	              'click': function () {
-	                node._onAppend('', '', 'auto');
-	              }
-	            },
-	            {
-	              'text': 'Array',
-	              'className': 'type-array',
-	              'title': titles.array,
-	              'click': function () {
-	                node._onAppend('', []);
-	              }
-	            },
-	            {
-	              'text': 'Object',
-	              'className': 'type-object',
-	              'title': titles.object,
-	              'click': function () {
-	                node._onAppend('', {});
-	              }
-	            },
-	            {
-	              'text': 'String',
-	              'className': 'type-string',
-	              'title': titles.string,
-	              'click': function () {
-	                node._onAppend('', '', 'string');
-	              }
-	            }
-	          ]
-	        }
-	      ];
-
-	      var menu = new ContextMenu(items, {close: onClose});
-	      menu.show(anchor);
+	      return true;
 	    };
 
 	    /**
@@ -6222,30 +5033,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	      var target = event.target || event.srcElement;
 	      var dom = this.dom;
 
-	      // highlight the append nodes parent
-	      var menu = dom.menu;
-	      if (target == menu) {
-	        if (type == 'mouseover') {
-	          this.editor.highlighter.highlight(this.parent);
-	        }
-	        else if (type == 'mouseout') {
-	          this.editor.highlighter.unhighlight();
-	        }
+	      if (type == 'click') {
+	        this._onAppend('', '', 'auto');
 	      }
-
-	      // context menu events
-	      if (type == 'click' && target == dom.menu) {
-	        var highlighter = this.editor.highlighter;
-	        highlighter.highlight(this.parent);
-	        highlighter.lock();
-	        util.addClassName(dom.menu, 'selected');
-	        this.showContextMenu(dom.menu, function () {
-	          util.removeClassName(dom.menu, 'selected');
-	          highlighter.unlock();
-	          highlighter.unhighlight();
-	        });
-	      }
-
 	      if (type == 'keydown') {
 	        this.onKeyDown(event);
 	      }

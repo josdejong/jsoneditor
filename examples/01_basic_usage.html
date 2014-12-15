@@ -21,7 +21,7 @@
 <script type="text/javascript" >
   // create the editor
   var container = document.getElementById('jsoneditor');
-  var editor = new JSONEditor(container);
+  var editor = new JSONEditor(container, {search: false});
 
   // set json
   document.getElementById('setJSON').onclick = function () {
