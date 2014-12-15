@@ -1,4 +1,4 @@
-define(['./ContextMenu', './util'], function (ContextMenu, util) {
+define(['./util'], function (util) {
 
   /**
    * A factory function to create an AppendNode, which depends on a Node
@@ -45,14 +45,6 @@ define(['./ContextMenu', './util'], function (ContextMenu, util) {
         // a cell for the dragarea column
         dom.tdDrag = document.createElement('td');
 
-        // create context menu
-        var tdMenu = document.createElement('td');
-        dom.tdMenu = tdMenu;
-        var menu = document.createElement('button');
-        menu.className = 'contextmenu';
-        menu.title = 'Click to open the actions menu (Ctrl+M)';
-        dom.menu = menu;
-        tdMenu.appendChild(dom.menu);
       }
 
       // a cell for the contents (showing text 'empty')
@@ -93,9 +85,6 @@ define(['./ContextMenu', './util'], function (ContextMenu, util) {
           if (dom.tdDrag) {
             trAppend.removeChild(dom.tdDrag);
           }
-          if (dom.tdMenu) {
-            trAppend.removeChild(dom.tdMenu);
-          }
           trAppend.removeChild(tdAppend);
         }
       }
@@ -103,9 +92,6 @@ define(['./ContextMenu', './util'], function (ContextMenu, util) {
         if (!dom.tr.firstChild) {
           if (dom.tdDrag) {
             trAppend.appendChild(dom.tdDrag);
-          }
-          if (dom.tdMenu) {
-            trAppend.appendChild(dom.tdMenu);
           }
           trAppend.appendChild(tdAppend);
         }
@@ -122,66 +108,6 @@ define(['./ContextMenu', './util'], function (ContextMenu, util) {
     };
 
     /**
-     * Show a contextmenu for this node
-     * @param {HTMLElement} anchor   The element to attach the menu to.
-     * @param {function} [onClose]   Callback method called when the context menu
-     *                               is being closed.
-     */
-    AppendNode.prototype.showContextMenu = function (anchor, onClose) {
-      var node = this;
-      var titles = Node.TYPE_TITLES;
-      var items = [
-        // create append button
-        {
-          'text': 'Append',
-          'title': 'Append a new field with type \'auto\' (Ctrl+Shift+Ins)',
-          'submenuTitle': 'Select the type of the field to be appended',
-          'className': 'insert',
-          'click': function () {
-            node._onAppend('', '', 'auto');
-          },
-          'submenu': [
-            {
-              'text': 'Auto',
-              'className': 'type-auto',
-              'title': titles.auto,
-              'click': function () {
-                node._onAppend('', '', 'auto');
-              }
-            },
-            {
-              'text': 'Array',
-              'className': 'type-array',
-              'title': titles.array,
-              'click': function () {
-                node._onAppend('', []);
-              }
-            },
-            {
-              'text': 'Object',
-              'className': 'type-object',
-              'title': titles.object,
-              'click': function () {
-                node._onAppend('', {});
-              }
-            },
-            {
-              'text': 'String',
-              'className': 'type-string',
-              'title': titles.string,
-              'click': function () {
-                node._onAppend('', '', 'string');
-              }
-            }
-          ]
-        }
-      ];
-
-      var menu = new ContextMenu(items, {close: onClose});
-      menu.show(anchor);
-    };
-
-    /**
      * Handle an event. The event is catched centrally by the editor
      * @param {Event} event
      */
@@ -189,30 +115,6 @@ define(['./ContextMenu', './util'], function (ContextMenu, util) {
       var type = event.type;
       var target = event.target || event.srcElement;
       var dom = this.dom;
-
-      // highlight the append nodes parent
-      var menu = dom.menu;
-      if (target == menu) {
-        if (type == 'mouseover') {
-          this.editor.highlighter.highlight(this.parent);
-        }
-        else if (type == 'mouseout') {
-          this.editor.highlighter.unhighlight();
-        }
-      }
-
-      // context menu events
-      if (type == 'click' && target == dom.menu) {
-        var highlighter = this.editor.highlighter;
-        highlighter.highlight(this.parent);
-        highlighter.lock();
-        util.addClassName(dom.menu, 'selected');
-        this.showContextMenu(dom.menu, function () {
-          util.removeClassName(dom.menu, 'selected');
-          highlighter.unlock();
-          highlighter.unhighlight();
-        });
-      }
 
       if (type == 'keydown') {
         this.onKeyDown(event);

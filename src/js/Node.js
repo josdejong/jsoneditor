@@ -1,4 +1,4 @@
-define(['./ContextMenu', './appendNodeFactory', './util'], function (ContextMenu, appendNodeFactory, util) {
+define(['./appendNodeFactory', './util'], function (appendNodeFactory, util) {
 
   /**
    * @constructor Node
@@ -643,7 +643,7 @@ define(['./ContextMenu', './appendNodeFactory', './util'], function (ContextMenu
   /**
    * Set focus to this node
    * @param {String} [elementName]  The field name of the element to get the
-   *                                focus available values: 'drag', 'menu',
+   *                                focus available values: 'drag',
    *                                'expand', 'field', 'value' (default)
    */
   Node.prototype.focus = function(elementName) {
@@ -657,13 +657,6 @@ define(['./ContextMenu', './appendNodeFactory', './util'], function (ContextMenu
           if (dom.drag) {
             dom.drag.focus();
           }
-          else {
-            dom.menu.focus();
-          }
-          break;
-
-        case 'menu':
-          dom.menu.focus();
           break;
 
         case 'expand':
@@ -679,7 +672,7 @@ define(['./ContextMenu', './appendNodeFactory', './util'], function (ContextMenu
             util.selectContentEditable(dom.value);
           }
           else {
-            dom.menu.focus();
+            dom.drag.focus();
           }
           break;
 
@@ -696,7 +689,7 @@ define(['./ContextMenu', './appendNodeFactory', './util'], function (ContextMenu
             dom.expand.focus();
           }
           else {
-            dom.menu.focus();
+            dom.drag.focus();
           }
           break;
 
@@ -714,7 +707,7 @@ define(['./ContextMenu', './appendNodeFactory', './util'], function (ContextMenu
             dom.expand.focus();
           }
           else {
-            dom.menu.focus();
+            dom.drag.focus();
           }
           break;
       }
@@ -1218,14 +1211,6 @@ define(['./ContextMenu', './appendNodeFactory', './util'], function (ContextMenu
       }
       dom.tr.appendChild(tdDrag);
 
-      // create context menu
-      var tdMenu = document.createElement('td');
-      var menu = document.createElement('button');
-      dom.menu = menu;
-      menu.className = 'contextmenu';
-      menu.title = 'Click to open the actions menu (Ctrl+M)';
-      tdMenu.appendChild(dom.menu);
-      dom.tr.appendChild(tdMenu);
     }
 
     // create tree and field
@@ -1765,9 +1750,9 @@ define(['./ContextMenu', './appendNodeFactory', './util'], function (ContextMenu
         focusNode,
         expandable = this._hasChilds();
 
-    // check if mouse is on menu or on dragarea.
+    // check if mouse is on dragarea.
     // If so, highlight current row and its childs
-    if (target == dom.drag || target == dom.menu) {
+    if (target == dom.drag) {
       if (type == 'mouseover') {
         this.editor.highlighter.highlight(this);
       }
@@ -1779,19 +1764,6 @@ define(['./ContextMenu', './appendNodeFactory', './util'], function (ContextMenu
     // drag events
     if (type == 'mousedown' && target == dom.drag) {
       this._onDragStart(event);
-    }
-
-    // context menu events
-    if (type == 'click' && target == dom.menu) {
-      var highlighter = node.editor.highlighter;
-      highlighter.highlight(node);
-      highlighter.lock();
-      util.addClassName(dom.menu, 'selected');
-      this.showContextMenu(dom.menu, function () {
-        util.removeClassName(dom.menu, 'selected');
-        highlighter.unlock();
-        highlighter.unhighlight();
-      });
     }
 
     // expand events
@@ -1981,12 +1953,6 @@ define(['./ContextMenu', './appendNodeFactory', './util'], function (ContextMenu
       if (ctrlKey) {       // Ctrl+E and Ctrl+Shift+E
         this._onExpand(shiftKey);  // recurse = shiftKey
         target.focus(); // TODO: should restore focus in case of recursing expand (which takes DOM offline)
-        handled = true;
-      }
-    }
-    else if (keynum == 77 && editable) { // M
-      if (ctrlKey) { // Ctrl+M
-        this.showContextMenu(target);
         handled = true;
       }
     }
@@ -2495,8 +2461,6 @@ define(['./ContextMenu', './appendNodeFactory', './util'], function (ContextMenu
         }
       // intentional fall through
       case dom.expand:
-        return dom.menu;
-      case dom.menu:
         if (dom.drag) {
           return dom.drag;
         }
@@ -2517,8 +2481,6 @@ define(['./ContextMenu', './appendNodeFactory', './util'], function (ContextMenu
     // noinspection FallthroughInSwitchStatementJS
     switch (elem) {
       case dom.drag:
-        return dom.menu;
-      case dom.menu:
         if (this._hasChilds()) {
           return dom.expand;
         }
@@ -2542,7 +2504,7 @@ define(['./ContextMenu', './appendNodeFactory', './util'], function (ContextMenu
    * For example when element == dom.field, "field" is returned.
    * @param {Element} element
    * @return {String | null} elementName  Available elements with name: 'drag',
-   *                                      'menu', 'expand', 'field', 'value'
+   *                                      'expand', 'field', 'value'
    * @private
    */
   Node.prototype._getElementName = function (element) {
@@ -2579,221 +2541,6 @@ define(['./ContextMenu', './appendNodeFactory', './util'], function (ContextMenu
     'string': 'Field type "string". ' +
         'Field type is not determined from the value, ' +
         'but always returned as string.'
-  };
-
-  /**
-   * Show a contextmenu for this node
-   * @param {HTMLElement} anchor   Anchor element to attache the context menu to.
-   * @param {function} [onClose]   Callback method called when the context menu
-   *                               is being closed.
-   */
-  Node.prototype.showContextMenu = function (anchor, onClose) {
-    var node = this;
-    var titles = Node.TYPE_TITLES;
-    var items = [];
-
-    if (this.editable.value) {
-      items.push({
-        text: 'Type',
-        title: 'Change the type of this field',
-        className: 'type-' + this.type,
-        submenu: [
-          {
-            text: 'Auto',
-            className: 'type-auto' +
-                (this.type == 'auto' ? ' selected' : ''),
-            title: titles.auto,
-            click: function () {
-              node._onChangeType('auto');
-            }
-          },
-          {
-            text: 'Array',
-            className: 'type-array' +
-                (this.type == 'array' ? ' selected' : ''),
-            title: titles.array,
-            click: function () {
-              node._onChangeType('array');
-            }
-          },
-          {
-            text: 'Object',
-            className: 'type-object' +
-                (this.type == 'object' ? ' selected' : ''),
-            title: titles.object,
-            click: function () {
-              node._onChangeType('object');
-            }
-          },
-          {
-            text: 'String',
-            className: 'type-string' +
-                (this.type == 'string' ? ' selected' : ''),
-            title: titles.string,
-            click: function () {
-              node._onChangeType('string');
-            }
-          }
-        ]
-      });
-    }
-
-    if (this._hasChilds()) {
-      var direction = ((this.sort == 'asc') ? 'desc': 'asc');
-      items.push({
-        text: 'Sort',
-        title: 'Sort the childs of this ' + this.type,
-        className: 'sort-' + direction,
-        click: function () {
-          node._onSort(direction);
-        },
-        submenu: [
-          {
-            text: 'Ascending',
-            className: 'sort-asc',
-            title: 'Sort the childs of this ' + this.type + ' in ascending order',
-            click: function () {
-              node._onSort('asc');
-            }
-          },
-          {
-            text: 'Descending',
-            className: 'sort-desc',
-            title: 'Sort the childs of this ' + this.type +' in descending order',
-            click: function () {
-              node._onSort('desc');
-            }
-          }
-        ]
-      });
-    }
-
-    if (this.parent && this.parent._hasChilds()) {
-      if (items.length) {
-        // create a separator
-        items.push({
-          'type': 'separator'
-        });
-      }
-
-      // create append button (for last child node only)
-      var childs = node.parent.childs;
-      if (node == childs[childs.length - 1]) {
-        items.push({
-          text: 'Append',
-          title: 'Append a new field with type \'auto\' after this field (Ctrl+Shift+Ins)',
-          submenuTitle: 'Select the type of the field to be appended',
-          className: 'append',
-          click: function () {
-            node._onAppend('', '', 'auto');
-          },
-          submenu: [
-            {
-              text: 'Auto',
-              className: 'type-auto',
-              title: titles.auto,
-              click: function () {
-                node._onAppend('', '', 'auto');
-              }
-            },
-            {
-              text: 'Array',
-              className: 'type-array',
-              title: titles.array,
-              click: function () {
-                node._onAppend('', []);
-              }
-            },
-            {
-              text: 'Object',
-              className: 'type-object',
-              title: titles.object,
-              click: function () {
-                node._onAppend('', {});
-              }
-            },
-            {
-              text: 'String',
-              className: 'type-string',
-              title: titles.string,
-              click: function () {
-                node._onAppend('', '', 'string');
-              }
-            }
-          ]
-        });
-      }
-
-      // create insert button
-      items.push({
-        text: 'Insert',
-        title: 'Insert a new field with type \'auto\' before this field (Ctrl+Ins)',
-        submenuTitle: 'Select the type of the field to be inserted',
-        className: 'insert',
-        click: function () {
-          node._onInsertBefore('', '', 'auto');
-        },
-        submenu: [
-          {
-            text: 'Auto',
-            className: 'type-auto',
-            title: titles.auto,
-            click: function () {
-              node._onInsertBefore('', '', 'auto');
-            }
-          },
-          {
-            text: 'Array',
-            className: 'type-array',
-            title: titles.array,
-            click: function () {
-              node._onInsertBefore('', []);
-            }
-          },
-          {
-            text: 'Object',
-            className: 'type-object',
-            title: titles.object,
-            click: function () {
-              node._onInsertBefore('', {});
-            }
-          },
-          {
-            text: 'String',
-            className: 'type-string',
-            title: titles.string,
-            click: function () {
-              node._onInsertBefore('', '', 'string');
-            }
-          }
-        ]
-      });
-
-      if (this.editable.field) {
-        // create duplicate button
-        items.push({
-          text: 'Duplicate',
-          title: 'Duplicate this field (Ctrl+D)',
-          className: 'duplicate',
-          click: function () {
-            node._onDuplicate();
-          }
-        });
-
-        // create remove button
-        items.push({
-          text: 'Remove',
-          title: 'Remove this field (Ctrl+Del)',
-          className: 'remove',
-          click: function () {
-            node._onRemove();
-          }
-        });
-      }
-    }
-
-    var menu = new ContextMenu(items, {close: onClose});
-    menu.show(anchor);
   };
 
   /**
