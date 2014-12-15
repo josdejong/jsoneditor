@@ -1,4 +1,4 @@
-define(['./treemode', './textmode', './util'], function (treemode, textmode, util) {
+define(['./treemode', './util'], function (treemode, util) {
 
   /**
    * @constructor JSONEditor
@@ -255,7 +255,6 @@ define(['./treemode', './textmode', './util'], function (treemode, textmode, uti
 
   // register tree and text modes
   JSONEditor.registerMode(treemode);
-  JSONEditor.registerMode(textmode);
 
   return JSONEditor;
 });
