@@ -1,5 +1,5 @@
-define(['./Highlighter', './History', './SearchBox', './Node', './modeswitcher', './util'],
-    function (Highlighter, History, SearchBox, Node, modeswitcher, util) {
+define(['./Highlighter', './History', './SearchBox', './Node', './util'],
+    function (Highlighter, History, SearchBox, Node, util) {
 
   // create a mixin with the functions for tree mode
   var treemode = {};
@@ -527,13 +527,6 @@ define(['./Highlighter', './History', './SearchBox', './Node', './modeswitcher',
         redo.disabled = !editor.history.canRedo();
       };
       this.history.onChange();
-    }
-
-    // create mode box
-    if (this.options && this.options.modes && this.options.modes.length) {
-      var modeBox = modeswitcher.create(this, this.options.modes, this.options.mode);
-      this.menu.appendChild(modeBox);
-      this.dom.modeBox = modeBox;
     }
 
     // create search box
