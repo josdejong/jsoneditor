@@ -21,7 +21,149 @@
 <script type="text/javascript" >
   // create the editor
   var container = document.getElementById('jsoneditor');
-  var editor = new JSONEditor(container, {search: false});
+  var type = {
+    "type": "Constructor",
+    "label": "S",
+    "fieldName": "",
+    "children": [
+      {
+        "type": "List",
+        "label": "",
+        "fieldName": "pieces",
+        "children": [
+          {
+            "type": "Constructor",
+            "label": "Piece",
+            "fieldName": "",
+            "children": [
+              {
+                "type": "Constructor",
+                "label": "Point",
+                "fieldName": "position",
+                "children": [
+                  {
+                    "type": "Number",
+                    "label": "",
+                    "fieldName": "x",
+                    "children": []
+                  },
+                  {
+                    "type": "Number",
+                    "label": "",
+                    "fieldName": "y",
+                    "children": []
+                  }
+                ]
+              },
+              {
+                "type": "Choice",
+                "label": "Color",
+                "fieldName": "color",
+                "children": [
+                  {
+                    "type": "Constructor",
+                    "label": "Black",
+                    "fieldName": "",
+                    "children": []
+                  },
+                  {
+                    "type": "Constructor",
+                    "label": "White",
+                    "fieldName": "",
+                    "children": []
+                  }
+                ]
+              },
+              {
+                "type": "Choice",
+                "label": "Kind",
+                "fieldName": "kind",
+                "children": [
+                  {
+                    "type": "Constructor",
+                    "label": "Rook",
+                    "fieldName": "",
+                    "children": [
+                      {
+                        "type": "Boolean",
+                        "label": "",
+                        "fieldName": "moved",
+                        "children": []
+                      }
+                    ]
+                  },
+                  {
+                    "type": "Constructor",
+                    "label": "King",
+                    "fieldName": "",
+                    "children": [
+                      {
+                        "type": "Boolean",
+                        "label": "",
+                        "fieldName": "moved",
+                        "children": []
+                      }
+                    ]
+                  },
+                  {
+                    "type": "Constructor",
+                    "label": "Knight",
+                    "fieldName": "",
+                    "children": []
+                  },
+                  {
+                    "type": "Constructor",
+                    "label": "Bishop",
+                    "fieldName": "",
+                    "children": []
+                  },
+                  {
+                    "type": "Constructor",
+                    "label": "Queen",
+                    "fieldName": "",
+                    "children": [
+                      {
+                        "type": "Constructor",
+                        "label": "Point",
+                        "fieldName": "target",
+                        "children": [
+                          {
+                            "type": "Number",
+                            "label": "",
+                            "fieldName": "x",
+                            "children": []
+                          },
+                          {
+                            "type": "Number",
+                            "label": "",
+                            "fieldName": "y",
+                            "children": []
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "Number",
+        "label": "",
+        "fieldName": "last_capture",
+        "children": []
+      }
+    ]
+  }
+  
+  var data = {
+    pieces: [],
+    last_capture: -1
+  }
+  var editor = new JSONEditor(container, {search: false}, data, type);
+
 
   // set json
   document.getElementById('setJSON').onclick = function () {
