@@ -8,8 +8,7 @@ define(['./appendNodeFactory', './util'], function (appendNodeFactory, util) {
    *                          {string}  field
    *                          {boolean} fieldEditable
    *                          {*}       value
-   *                          {String}  type  Can have values 'auto', 'array',
-   *                                          'object', or 'string'.
+   *                          {Type}     type
    */
   function Node (editor, params) {
     /** @type {TreeEditor} */
@@ -110,8 +109,7 @@ define(['./appendNodeFactory', './util'], function (appendNodeFactory, util) {
   /**
    * Set value. Value is a JSON structure or an element String, Boolean, etc.
    * @param {*} value
-   * @param {String} [type]  Specify the type of the value. Can be 'auto',
-   *                         'array', 'object', or 'string'
+   * @param {Type} [type]
    */
   Node.prototype.setValue = function(value, type) {
     var childValue, child;
@@ -126,36 +124,41 @@ define(['./appendNodeFactory', './util'], function (appendNodeFactory, util) {
 
     // TODO: remove the DOM of this Node
 
-    this.type = this._getType(value);
+    // FIXME: Check that type matches value. If it matches, we shouldn't need
+    // to set this.type
+    this.type = type;
+    var i, iMax;
 
-    // check if type corresponds with the provided type
-    if (type && type != this.type) {
-      if (type == 'string' && this.type == 'auto') {
-        this.type = type;
-      }
-      else {
-        throw new Error('Type mismatch: ' +
-            'cannot cast value of type "' + this.type +
-            ' to the specified type "' + type + '"');
-      }
-    }
-
-    if (this.type == 'array') {
-      // array
+    if (!this.type) {
+      this.childs = undefined;
+      this.value = null;
+    } else if (this.type.type == 'List') {
       this.childs = [];
-      for (var i = 0, iMax = value.length; i < iMax; i++) {
+      for (i = 0, iMax = value.length; i < iMax; i++) {
         childValue = value[i];
-        if (childValue !== undefined && !(childValue instanceof Function)) {
-          // ignore undefined and functions
-          child = new Node(this.editor, {
-            value: childValue
-          });
-          this.appendChild(child);
-        }
+        child = new Node(this.editor, {
+          value: childValue,
+          type: this.type.children[0],
+        });
+        this.appendChild(child);
       }
       this.value = '';
     }
-    else if (this.type == 'object') {
+    else if (this.type.type == 'Constructor') {
+      this.childs = [];
+      var fields = this.type.children;
+      for (i = 0, iMax = fields.length; i < iMax; i++) {
+        childValue = value[fields[i].fieldName];
+        child = new Node(this.editor, {
+          field: fields[i].fieldName,
+          value: childValue,
+          type: fields[i],
+        });
+        this.appendChild(child);
+      }
+      this.value = '';
+    }
+    else if (this.type.type == 'Dict') {
       // object
       this.childs = [];
       for (var childField in value) {
@@ -165,14 +168,15 @@ define(['./appendNodeFactory', './util'], function (appendNodeFactory, util) {
             // ignore undefined and functions
             child = new Node(this.editor, {
               field: childField,
-              value: childValue
+              value: childValue,
+              type: this.type.children[0],
             });
             this.appendChild(child);
           }
         }
       }
       this.value = '';
-    }
+    } // FIXME: check for other types
     else {
       // value
       this.childs = undefined;
@@ -197,14 +201,14 @@ define(['./appendNodeFactory', './util'], function (appendNodeFactory, util) {
   Node.prototype.getValue = function() {
     //var childs, i, iMax;
 
-    if (this.type == 'array') {
+    if (this.type.type == 'List') {
       var arr = [];
       this.childs.forEach (function (child) {
         arr.push(child.getValue());
       });
       return arr;
     }
-    else if (this.type == 'object') {
+    else if (this.type.type == 'Dict') {
       var obj = {};
       this.childs.forEach (function (child) {
         obj[child.getField()] = child.getValue();
@@ -394,8 +398,8 @@ define(['./appendNodeFactory', './util'], function (appendNodeFactory, util) {
     if (this._hasChilds()) {
       // adjust the link to the parent
       node.setParent(this);
-      node.fieldEditable = (this.type == 'object');
-      if (this.type == 'array') {
+      node.fieldEditable = (this.type.type == 'Dict');
+      if (this.type.type == 'List') {
         node.index = this.childs.length;
       }
       this.childs.push(node);
@@ -486,7 +490,7 @@ define(['./appendNodeFactory', './util'], function (appendNodeFactory, util) {
 
         // adjust the link to the parent
         node.setParent(this);
-        node.fieldEditable = (this.type == 'object');
+        node.fieldEditable = (this.type.type == 'Dict');
         this.childs.push(node);
       }
       else {
@@ -498,7 +502,7 @@ define(['./appendNodeFactory', './util'], function (appendNodeFactory, util) {
 
         // adjust the link to the parent
         node.setParent(this);
-        node.fieldEditable = (this.type == 'object');
+        node.fieldEditable = (this.type.type == 'Dict');
         this.childs.splice(index, 0, node);
       }
 
@@ -860,114 +864,14 @@ define(['./appendNodeFactory', './util'], function (appendNodeFactory, util) {
   };
 
   /**
-   * Change the type of the value of this Node
-   * @param {String} newType
-   */
-  Node.prototype.changeType = function (newType) {
-    var oldType = this.type;
-
-    if (oldType == newType) {
-      // type is not changed
-      return;
-    }
-
-    if ((newType == 'string' || newType == 'auto') &&
-        (oldType == 'string' || oldType == 'auto')) {
-      // this is an easy change
-      this.type = newType;
-    }
-    else {
-      // change from array to object, or from string/auto to object/array
-      var table = this.dom.tr ? this.dom.tr.parentNode : undefined;
-      var lastTr;
-      if (this.expanded) {
-        lastTr = this.getAppend();
-      }
-      else {
-        lastTr = this.getDom();
-      }
-      var nextTr = (lastTr && lastTr.parentNode) ? lastTr.nextSibling : undefined;
-
-      // hide current field and all its childs
-      this.hide();
-      this.clearDom();
-
-      // adjust the field and the value
-      this.type = newType;
-
-      // adjust childs
-      if (newType == 'object') {
-        if (!this.childs) {
-          this.childs = [];
-        }
-
-        this.childs.forEach(function (child, index) {
-          child.clearDom();
-          delete child.index;
-          child.fieldEditable = true;
-          if (child.field == undefined) {
-            child.field = '';
-          }
-        });
-
-        if (oldType == 'string' || oldType == 'auto') {
-          this.expanded = true;
-        }
-      }
-      else if (newType == 'array') {
-        if (!this.childs) {
-          this.childs = [];
-        }
-
-        this.childs.forEach(function (child, index) {
-          child.clearDom();
-          child.fieldEditable = false;
-          child.index = index;
-        });
-
-        if (oldType == 'string' || oldType == 'auto') {
-          this.expanded = true;
-        }
-      }
-      else {
-        this.expanded = false;
-      }
-
-      // create new DOM
-      if (table) {
-        if (nextTr) {
-          table.insertBefore(this.getDom(), nextTr);
-        }
-        else {
-          table.appendChild(this.getDom());
-        }
-      }
-      this.showChilds();
-    }
-
-    if (newType == 'auto' || newType == 'string') {
-      // cast value to the correct type
-      if (newType == 'string') {
-        this.value = String(this.value);
-      }
-      else {
-        this.value = this._stringCast(String(this.value));
-      }
-
-      this.focus();
-    }
-
-    this.updateDom({'updateIndexes': true});
-  };
-
-  /**
    * Retrieve value from DOM
    * @param {boolean} [silent]  If true (default), no errors will be thrown in
    *                            case of invalid data
    * @private
    */
   Node.prototype._getDomValue = function(silent) {
-    if (this.dom.value && this.type != 'array' && this.type != 'object') {
+    if (this.dom.value && this.type.type != 'List' && this.type != 'Dict') {
+      // FIXME: other types that can be interpreted literally
       this.valueInnerText = util.getInnerText(this.dom.value);
     }
 
@@ -975,7 +879,8 @@ define(['./appendNodeFactory', './util'], function (appendNodeFactory, util) {
       try {
         // retrieve the value
         var value;
-        if (this.type == 'string') {
+        if (this.type == 'String') {
+          // FIXME: other types
           value = this._unescapeHTML(this.valueInnerText);
         }
         else {
@@ -1017,19 +922,19 @@ define(['./appendNodeFactory', './util'], function (appendNodeFactory, util) {
       // set text color depending on value type
       // TODO: put colors in css
       var v = this.value;
-      var t = (this.type == 'auto') ? util.type(v) : this.type;
+      var t = this.type;
       var isUrl = (t == 'string' && util.isUrl(v));
       var color = '';
       if (isUrl && !this.editable.value) { // TODO: when to apply this?
         color = '';
       }
-      else if (t == 'string') {
+      else if (t == 'String') {
         color = 'green';
       }
-      else if (t == 'number') {
+      else if (t == 'Number') {
         color = 'red';
       }
-      else if (t == 'boolean') {
+      else if (t == 'Boolean') {
         color = 'darkorange';
       }
       else if (this._hasChilds()) {
@@ -1045,7 +950,7 @@ define(['./appendNodeFactory', './util'], function (appendNodeFactory, util) {
       domValue.style.color = color;
 
       // make background color light-gray when empty
-      var isEmpty = (String(this.value) == '' && this.type != 'array' && this.type != 'object');
+      var isEmpty = (String(this.value) == '' && this.type.type != 'List' && this.type.type != 'Dict' && this.type.type != 'Constructor');
       if (isEmpty) {
         util.addClassName(domValue, 'empty');
       }
@@ -1062,9 +967,9 @@ define(['./appendNodeFactory', './util'], function (appendNodeFactory, util) {
       }
 
       // update title
-      if (t == 'array' || t == 'object') {
+      if (t == 'List' || t == 'Dict') {
         var count = this.childs ? this.childs.length : 0;
-        domValue.title = this.type + ' containing ' + count + ' items';
+        domValue.title = this.type.type + ' containing ' + count + ' items';
       }
       else if (t == 'string' && util.isUrl(v)) {
         if (this.editable.value) {
@@ -1105,7 +1010,8 @@ define(['./appendNodeFactory', './util'], function (appendNodeFactory, util) {
     var domField = this.dom.field;
     if (domField) {
       // make backgound color lightgray when empty
-      var isEmpty = (String(this.field) == '' && this.parent.type != 'array');
+      var isEmpty = (String(this.field) == '' && this.parent.type.type != 'List');
+      // FIXME: check type handling
       if (isEmpty) {
         util.addClassName(domField, 'empty');
       }
@@ -1142,7 +1048,6 @@ define(['./appendNodeFactory', './util'], function (appendNodeFactory, util) {
     if (this.dom.field && this.fieldEditable) {
       this.fieldInnerText = util.getInnerText(this.dom.field);
     }
-
     if (this.fieldInnerText != undefined) {
       try {
         var field = this._unescapeHTML(this.fieldInnerText);
@@ -1543,7 +1448,7 @@ define(['./appendNodeFactory', './util'], function (appendNodeFactory, util) {
         field = this.field;
       }
       else if (this._hasChilds()) {
-        field = this.type;
+        field = this.type.type;
       }
       else {
         field = '';
@@ -1555,11 +1460,14 @@ define(['./appendNodeFactory', './util'], function (appendNodeFactory, util) {
     var domValue = this.dom.value;
     if (domValue) {
       var count = this.childs ? this.childs.length : 0;
-      if (this.type == 'array') {
+      if (this.type.type == 'List') {
         domValue.innerHTML = '[' + count + ']';
       }
-      else if (this.type == 'object') {
+      else if (this.type.type == 'Dict') {
         domValue.innerHTML = '{' + count + '}';
+      }
+      else if (this.type.type == 'Constructor') {
+        domValue.innerHTML = this.type.label + '(...)';
       }
       else {
         domValue.innerHTML = this._escapeHTML(this.value);
@@ -1601,7 +1509,7 @@ define(['./appendNodeFactory', './util'], function (appendNodeFactory, util) {
     var domValue = this.dom.value;
     var childs = this.childs;
     if (domValue && childs) {
-      if (this.type == 'array') {
+      if (this.type.type == 'List') {
         childs.forEach(function (child, index) {
           child.index = index;
           var childField = child.dom.field;
@@ -1610,7 +1518,7 @@ define(['./appendNodeFactory', './util'], function (appendNodeFactory, util) {
           }
         });
       }
-      else if (this.type == 'object') {
+      else if (this.type.type == 'Dict') {
         childs.forEach(function (child) {
           if (child.index != undefined) {
             delete child.index;
@@ -1631,33 +1539,28 @@ define(['./appendNodeFactory', './util'], function (appendNodeFactory, util) {
   Node.prototype._createDomValue = function () {
     var domValue;
 
-    if (this.type == 'array') {
+    if (this.type.type == 'List') {
       domValue = document.createElement('div');
       domValue.className = 'readonly';
       domValue.innerHTML = '[...]';
     }
-    else if (this.type == 'object') {
+    else if (this.type.type == 'Dict') {
       domValue = document.createElement('div');
       domValue.className = 'readonly';
       domValue.innerHTML = '{...}';
     }
+    else if (this.type.type == 'Constructor') {
+      domValue = document.createElement('div');
+      domValue.className = 'readonly';
+      domValue.innerHTML = '(...)';
+    }
     else {
-      if (!this.editable.value && util.isUrl(this.value)) {
-        // create a link in case of read-only editor and value containing an url
-        domValue = document.createElement('a');
-        domValue.className = 'value';
-        domValue.href = this.value;
-        domValue.target = '_blank';
-        domValue.innerHTML = this._escapeHTML(this.value);
-      }
-      else {
-        // create an editable or read-only div
-        domValue = document.createElement('div');
-        domValue.contentEditable = this.editable.value;
-        domValue.spellcheck = false;
-        domValue.className = 'value';
-        domValue.innerHTML = this._escapeHTML(this.value);
-      }
+      // create an editable or read-only div
+      domValue = document.createElement('div');
+      domValue.contentEditable = this.editable.value;
+      domValue.spellcheck = false;
+      domValue.className = 'value';
+      domValue.innerHTML = this._escapeHTML(this.value);
     }
 
     return domValue;
@@ -1721,7 +1624,7 @@ define(['./appendNodeFactory', './util'], function (appendNodeFactory, util) {
     var tdSeparator = document.createElement('td');
     tdSeparator.className = 'tree';
     tr.appendChild(tdSeparator);
-    if (this.type != 'object' && this.type != 'array') {
+    if (this.type.type != 'Dict' && this.type.type != 'List' && this.type.type != 'Constructor') {
       tdSeparator.appendChild(document.createTextNode(':'));
       tdSeparator.className = 'separator';
     }
@@ -2190,7 +2093,7 @@ define(['./appendNodeFactory', './util'], function (appendNodeFactory, util) {
    * Handle insert before event
    * @param {String} [field]
    * @param {*} [value]
-   * @param {String} [type]   Can be 'auto', 'array', 'object', or 'string'
+   * @param {Type} [type]
    * @private
    */
   Node.prototype._onInsertBefore = function (field, value, type) {
@@ -2220,7 +2123,7 @@ define(['./appendNodeFactory', './util'], function (appendNodeFactory, util) {
    * Handle insert after event
    * @param {String} [field]
    * @param {*} [value]
-   * @param {String} [type]   Can be 'auto', 'array', 'object', or 'string'
+   * @param {Type} [type]
    * @private
    */
   Node.prototype._onInsertAfter = function (field, value, type) {
@@ -2250,7 +2153,7 @@ define(['./appendNodeFactory', './util'], function (appendNodeFactory, util) {
    * Handle append event
    * @param {String} [field]
    * @param {*} [value]
-   * @param {String} [type]   Can be 'auto', 'array', 'object', or 'string'
+   * @param {Type} [type]
    * @private
    */
   Node.prototype._onAppend = function (field, value, type) {
@@ -2466,7 +2369,8 @@ define(['./appendNodeFactory', './util'], function (appendNodeFactory, util) {
    * @private
    */
   Node.prototype._hasChilds = function () {
-    return this.type == 'array' || this.type == 'object';
+    return this.type.type == 'List' || this.type == 'Dict' ||
+           this.type.type == 'Constructor' || this.type == 'Choice';
   };
 
   /**

@@ -78,7 +78,7 @@ define(['./util'], function (util) {
 
       var domText = dom.text;
       if (domText) {
-        domText.innerHTML = '(extend ' + this.parent.type + ')';
+        domText.innerHTML = 'Extend ' + this.parent.type.type;
       }
 
       // attach or detach the contents of the append node:
@@ -108,7 +108,7 @@ define(['./util'], function (util) {
      * @return {boolean} isVisible
      */
     AppendNode.prototype.isVisible = function () {
-      return true;
+      return this.parent.type == 'List' || this.parent.type == 'Dict';
     };
 
     /**
@@ -121,7 +121,9 @@ define(['./util'], function (util) {
       var dom = this.dom;
 
       if (type == 'click') {
-        this._onAppend('', '', 'auto');
+        var type = this.parent.type.children[0];
+        var value = ''; // FIXME: manufacture value of given type
+        this._onAppend('', value, type);
       }
       if (type == 'keydown') {
         this.onKeyDown(event);

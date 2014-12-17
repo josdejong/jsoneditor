@@ -93,7 +93,8 @@ define(['./Highlighter', './History', './SearchBox', './Node', './util'],
       // replace the root node
       var params = {
         'field': this.options.name,
-        'value': json
+        'value': json,
+        'type': this.type
       };
       var node = new Node(this, params);
       this._setRoot(node);

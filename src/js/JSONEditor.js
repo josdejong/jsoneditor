@@ -26,7 +26,7 @@ define(['./treemode', './util'], function (treemode, util) {
    *                                                      modes 'text' and 'code'
    * @param {Object | undefined} json JSON object
    */
-  function JSONEditor (container, options, json) {
+  function JSONEditor (container, options, json, type) {
     if (!(this instanceof JSONEditor)) {
       throw new Error('JSONEditor constructor called without "new".');
     }
@@ -37,9 +37,8 @@ define(['./treemode', './util'], function (treemode, util) {
       throw new Error('Unsupported browser, IE9 or newer required. ' +
           'Please install the newest version of your browser.');
     }
-
     if (arguments.length) {
-      this._create(container, options, json);
+      this._create(container, options, json, type);
     }
   }
 
@@ -67,11 +66,11 @@ define(['./treemode', './util'], function (treemode, util) {
    * @param {Object | undefined} json JSON object
    * @private
    */
-  JSONEditor.prototype._create = function (container, options, json) {
+  JSONEditor.prototype._create = function (container, options, json, type) {
     this.container = container;
     this.options = options || {};
     this.json = json || {};
-
+    this.type = type || {type: "Constructor", label: "Null", fieldName: "", children: []};
     var mode = this.options.mode || 'tree';
     this.setMode(mode);
   };
