@@ -108,7 +108,7 @@ define(['./util'], function (util) {
      * @return {boolean} isVisible
      */
     AppendNode.prototype.isVisible = function () {
-      return this.parent.type == 'List' || this.parent.type == 'Dict';
+      return this.parent.type.type == 'List' || this.parent.type.type == 'Dict';
     };
 
     /**
