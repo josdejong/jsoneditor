@@ -2276,66 +2276,6 @@ define(['./appendNodeFactory', './util'], function (appendNodeFactory, util) {
   };
 
   /**
-   * Change the type of the node's value
-   * @param {String} newType
-   * @private
-   */
-  Node.prototype._onChangeType = function (newType) {
-    var oldType = this.type;
-    if (newType != oldType) {
-      var oldSelection = this.editor.getSelection();
-      this.changeType(newType);
-      var newSelection = this.editor.getSelection();
-
-      this.editor._onAction('changeType', {
-        node: this,
-        oldType: oldType,
-        newType: newType,
-        oldSelection: oldSelection,
-        newSelection: newSelection
-      });
-    }
-  };
-
-  /**
-   * Sort the childs of the node. Only applicable when the node has type 'object'
-   * or 'array'.
-   * @param {String} direction   Sorting direction. Available values: "asc", "desc"
-   * @private
-   */
-  Node.prototype._onSort = function (direction) {
-    if (this._hasChilds()) {
-      var order = (direction == 'desc') ? -1 : 1;
-      var prop = (this.type == 'array') ? 'value': 'field';
-      this.hideChilds();
-
-      var oldChilds = this.childs;
-      var oldSort = this.sort;
-
-      // copy the array (the old one will be kept for an undo action
-      this.childs = this.childs.concat();
-
-      // sort the arrays
-      this.childs.sort(function (a, b) {
-        if (a[prop] > b[prop]) return order;
-        if (a[prop] < b[prop]) return -order;
-        return 0;
-      });
-      this.sort = (order == 1) ? 'asc' : 'desc';
-
-      this.editor._onAction('sort', {
-        node: this,
-        oldChilds: oldChilds,
-        oldSort: oldSort,
-        newChilds: this.childs,
-        newSort: this.sort
-      });
-
-      this.showChilds();
-    }
-  };
-
-  /**
    * Create a table row with an append button.
    * @return {HTMLElement | undefined} buttonAppend or undefined when inapplicable
    */
@@ -2527,40 +2467,6 @@ define(['./appendNodeFactory', './util'], function (appendNodeFactory, util) {
    */
   Node.prototype._hasChilds = function () {
     return this.type == 'array' || this.type == 'object';
-  };
-
-// titles with explanation for the different types
-  Node.TYPE_TITLES = {
-    'auto': 'Field type "auto". ' +
-        'The field type is automatically determined from the value ' +
-        'and can be a string, number, boolean, or null.',
-    'object': 'Field type "object". ' +
-        'An object contains an unordered set of key/value pairs.',
-    'array': 'Field type "array". ' +
-        'An array contains an ordered collection of values.',
-    'string': 'Field type "string". ' +
-        'Field type is not determined from the value, ' +
-        'but always returned as string.'
-  };
-
-  /**
-   * get the type of a value
-   * @param {*} value
-   * @return {String} type   Can be 'object', 'array', 'string', 'auto'
-   * @private
-   */
-  Node.prototype._getType = function(value) {
-    if (value instanceof Array) {
-      return 'array';
-    }
-    if (value instanceof Object) {
-      return 'object';
-    }
-    if (typeof(value) == 'string' && typeof(this._stringCast(value)) != 'string') {
-      return 'string';
-    }
-
-    return 'auto';
   };
 
   /**

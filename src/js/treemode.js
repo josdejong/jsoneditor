@@ -81,18 +81,8 @@ define(['./Highlighter', './History', './SearchBox', './Node', './util'],
   /**
    * Set JSON object in editor
    * @param {Object | undefined} json      JSON data
-   * @param {String}             [name]    Optional field name for the root node.
-   *                                       Can also be set using setName(name).
    */
-  treemode.set = function (json, name) {
-    // adjust field name for root node
-    if (name) {
-      // TODO: deprecated since version 2.2.0. Cleanup some day.
-      util.log('Warning: second parameter "name" is deprecated. ' +
-          'Use setName(name) instead.');
-      this.options.name = name;
-    }
-
+  treemode.set = function (json) {
     // verify if json is valid JSON, ignore when a function
     if (json instanceof Function || (json === undefined)) {
       this.clear();
@@ -145,14 +135,6 @@ define(['./Highlighter', './History', './SearchBox', './Node', './util'],
    */
   treemode.getText = function() {
     return JSON.stringify(this.get());
-  };
-
-  /**
-   * Set the text contents of the editor
-   * @param {String} jsonText
-   */
-  treemode.setText = function(jsonText) {
-    this.set(util.parse(jsonText));
   };
 
   /**
@@ -251,7 +233,7 @@ define(['./Highlighter', './History', './SearchBox', './Node', './util'],
    * The method onChange is called whenever a field or value is changed, created,
    * deleted, duplicated, etc.
    * @param {String} action  Change action. Available values: "editField",
-   *                         "editValue", "changeType", "appendNode",
+   *                         "editValue", "appendNode",
    *                         "removeNode", "duplicateNode", "moveNode", "expand",
    *                         "collapse".
    * @param {Object} params  Object containing parameters describing the change.

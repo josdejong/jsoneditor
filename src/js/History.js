@@ -69,36 +69,12 @@ define(['./util'], function (util) {
           params.parent.insertAfter(params.clone, params.node);
         }
       },
-      'changeType': {
-        'undo': function (params) {
-          params.node.changeType(params.oldType);
-        },
-        'redo': function (params) {
-          params.node.changeType(params.newType);
-        }
-      },
       'moveNode': {
         'undo': function (params) {
           params.startParent.moveTo(params.node, params.startIndex);
         },
         'redo': function (params) {
           params.endParent.moveTo(params.node, params.endIndex);
-        }
-      },
-      'sort': {
-        'undo': function (params) {
-          var node = params.node;
-          node.hideChilds();
-          node.sort = params.oldSort;
-          node.childs = params.oldChilds;
-          node.showChilds();
-        },
-        'redo': function (params) {
-          var node = params.node;
-          node.hideChilds();
-          node.sort = params.newSort;
-          node.childs = params.newChilds;
-          node.showChilds();
         }
       }
 
@@ -116,7 +92,7 @@ define(['./util'], function (util) {
   /**
    * Add a new action to the history
    * @param {String} action  The executed action. Available actions: "editField",
-   *                         "editValue", "changeType", "appendNode",
+   *                         "editValue", "appendNode",
    *                         "removeNode", "duplicateNode", "moveNode"
    * @param {Object} params  Object containing parameters describing the change.
    *                         The parameters in params depend on the action (for

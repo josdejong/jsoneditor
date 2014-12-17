@@ -99,14 +99,6 @@ define(['./treemode', './util'], function (treemode, util) {
   };
 
   /**
-   * Set string containing JSON for the editor
-   * @param {String | undefined} jsonText
-   */
-  JSONEditor.prototype.setText = function (jsonText) {
-    this.json = util.parse(jsonText);
-  };
-
-  /**
    * Get stringified JSON contents from the editor
    * @returns {String} jsonText
    */
@@ -149,17 +141,15 @@ define(['./treemode', './util'], function (treemode, util) {
     var config = JSONEditor.modes[mode];
     if (config) {
       try {
-        var asText = (config.data == 'text');
         name = this.getName();
-        data = this[asText ? 'getText' : 'get'](); // get text or json
+        data = this.get(); // get text or json
 
         this._delete();
-        util.clear(this);
         util.extend(this, config.mixin);
         this.create(container, options);
 
         this.setName(name);
-        this[asText ? 'setText' : 'set'](data); // set text or json
+        this.set(data);
 
         if (typeof config.load === 'function') {
           try {
@@ -207,7 +197,7 @@ define(['./treemode', './util'], function (treemode, util) {
    * - `mode: String`           The name of the mode.
    * - `mixin: Object`          An object containing the mixin functions which
    *                            will be added to the JSONEditor. Must contain functions
-   *                            create, get, getText, set, and setText. May have
+   *                            create, get, getText, set. May have
    *                            additional functions.
    *                            When the JSONEditor switches to a mixin, all mixin
    *                            functions are added to the JSONEditor, and then
