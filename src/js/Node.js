@@ -176,7 +176,7 @@ define(['./appendNodeFactory', './util'], function (appendNodeFactory, util) {
         }
       }
       this.value = '';
-    } // FIXME: check for other types
+    }
     else {
       // value
       this.childs = undefined;
@@ -245,7 +245,6 @@ define(['./appendNodeFactory', './util'], function (appendNodeFactory, util) {
     clone.fieldInnerText = this.fieldInnerText;
     clone.fieldEditable = this.fieldEditable;
     clone.value = this.value;
-    clone.valueInnerText = this.valueInnerText;
     clone.expanded = this.expanded;
 
     if (this.childs) {
@@ -870,25 +869,44 @@ define(['./appendNodeFactory', './util'], function (appendNodeFactory, util) {
    * @private
    */
   Node.prototype._getDomValue = function(silent) {
-    if (this.dom.value && this.type.type != 'List' && this.type != 'Dict') {
-      // FIXME: other types that can be interpreted literally
-      this.valueInnerText = util.getInnerText(this.dom.value);
+    var valueInnerText, oldValue;
+
+    if (this.dom.value && this.type.type === 'Choice') {
+      oldValue = this.value;
+      var option = this.dom.value.options[this.dom.value.selectedIndex].value;
+      for (var i = 0; i < this.type.children.length; i++) {
+        if (this.type.children[i].label === option) break;
+      }
+      this.value = this.type.children[i].buildDefaultValue();
+      this.editor._onAction('editValue', {
+        'node': this,
+        'oldValue': oldValue,
+        'newValue': this.value,
+        'oldSelection': this.editor.selection,
+        'newSelection': this.editor.getSelection()
+      });
     }
 
-    if (this.valueInnerText != undefined) {
+
+    if (this.dom.value && this.type.type != 'List' && this.type.type != 'Dict' && this.type.type != 'Choice') {
+      // FIXME: other types that can be interpreted literally
+      var valueInnerText = util.getInnerText(this.dom.value);
+    }
+
+    if (valueInnerText != undefined) {
       try {
         // retrieve the value
         var value;
-        if (this.type == 'String') {
+        if (this.type.type == 'String') {
           // FIXME: other types
-          value = this._unescapeHTML(this.valueInnerText);
+          value = this._unescapeHTML(valueInnerText);
         }
         else {
-          var str = this._unescapeHTML(this.valueInnerText);
+          var str = this._unescapeHTML(valueInnerText);
           value = this._stringCast(str);
         }
         if (value !== this.value) {
-          var oldValue = this.value;
+          oldValue = this.value;
           this.value = value;
           this.editor._onAction('editValue', {
             'node': this,
@@ -922,8 +940,8 @@ define(['./appendNodeFactory', './util'], function (appendNodeFactory, util) {
       // set text color depending on value type
       // TODO: put colors in css
       var v = this.value;
-      var t = this.type;
-      var isUrl = (t == 'string' && util.isUrl(v));
+      var t = this.type.type;
+      var isUrl = (t == 'String' && util.isUrl(v));
       var color = '';
       if (isUrl && !this.editable.value) { // TODO: when to apply this?
         color = '';
@@ -995,7 +1013,9 @@ define(['./appendNodeFactory', './util'], function (appendNodeFactory, util) {
       }
 
       // strip formatting from the contents of the editable div
-      util.stripFormatting(domValue);
+      if ( t!= 'Choice') {
+        util.stripFormatting(domValue);
+      }
     }
   };
 
@@ -1469,6 +1489,15 @@ define(['./appendNodeFactory', './util'], function (appendNodeFactory, util) {
       else if (this.type.type == 'Constructor') {
         domValue.innerHTML = this.type.label + '(...)';
       }
+      else if (this.type.type == 'Choice') {
+        domValue.innerHTML = '';
+        for (var i = 0; i < this.type.children.length; i++) {
+          var option = document.createElement('option')
+          option.innerHTML = this.type.children[i].label;
+          option.setAttribute('value', this.type.children[i].label);
+          domValue.appendChild(option);
+        }
+      }
       else {
         domValue.innerHTML = this._escapeHTML(this.value);
       }
@@ -1553,6 +1582,9 @@ define(['./appendNodeFactory', './util'], function (appendNodeFactory, util) {
       domValue = document.createElement('div');
       domValue.className = 'readonly';
       domValue.innerHTML = '(...)';
+    }
+    else if (this.type.type == 'Choice') {
+      domValue = document.createElement('select');
     }
     else {
       // create an editable or read-only div
@@ -1690,7 +1722,7 @@ define(['./appendNodeFactory', './util'], function (appendNodeFactory, util) {
         case 'change':
           this._getDomValue(true);
           this._updateDomValue();
-          if (this.value) {
+          if (this.value && this.type.type === "String") {
             domValue.innerHTML = this._escapeHTML(this.value);
           }
           break;
