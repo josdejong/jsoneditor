@@ -122,7 +122,7 @@ define(['./util'], function (util) {
 
       if (type == 'click') {
         var type = this.parent.type.children[0];
-        var value = ''; // FIXME: manufacture value of given type
+        var value = type.buildDefaultValue();
         this._onAppend('', value, type);
       }
       if (type == 'keydown') {
