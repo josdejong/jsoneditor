@@ -35,6 +35,13 @@
             "type": "Constructor",
             "label": "Piece",
             "fieldName": "",
+            buildDefaultValue: function () {
+                return {
+                    color: {getlabel: function () {return "Black"}},
+                    kind: {getlabel: function () {return "Pawn"}, move2_time: 0},
+                    position: {x:0, y:0}
+                }
+            },
             "children": [
               {
                 "type": "Constructor",
