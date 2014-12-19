@@ -127,7 +127,7 @@ define(['./appendNodeFactory', './util'], function (appendNodeFactory, util) {
     // FIXME: Check that type matches value. If it matches, we shouldn't need
     // to set this.type
     this.type = type;
-    var i, iMax;
+    var i, iMax, fields;
 
     if (!this.type) {
       this.childs = undefined;
@@ -142,11 +142,11 @@ define(['./appendNodeFactory', './util'], function (appendNodeFactory, util) {
         });
         this.appendChild(child);
       }
-      this.value = '';
+      this.value = value;
     }
     else if (this.type.type == 'Constructor') {
       this.childs = [];
-      var fields = this.type.children;
+      fields = this.type.children;
       for (i = 0, iMax = fields.length; i < iMax; i++) {
         childValue = value[fields[i].fieldName];
         child = new Node(this.editor, {
@@ -156,7 +156,26 @@ define(['./appendNodeFactory', './util'], function (appendNodeFactory, util) {
         });
         this.appendChild(child);
       }
-      this.value = '';
+      this.value = value;
+    }
+    else if (this.type.type == 'Choice') {
+      this.childs = [];
+      var choices = this.type.children;
+      for (i = 0, iMax = choices.length; i < iMax; i++) {
+        if (choices[i].label == value.getLabel()) break;
+      }
+      var constructor = choices[i];
+      fields = constructor.children;
+      for (i = 0, iMax = fields.length; i < iMax; i++) {
+        childValue = value[fields[i].fieldName];
+        child = new Node(this.editor, {
+          field: fields[i].fieldName,
+          value: childValue,
+          type: fields[i],
+        });
+        this.appendChild(child);
+      }
+      this.value = value;
     }
     else if (this.type.type == 'Dict') {
       // object
@@ -175,7 +194,7 @@ define(['./appendNodeFactory', './util'], function (appendNodeFactory, util) {
           }
         }
       }
-      this.value = '';
+      this.value = value;
     }
     else {
       // value
@@ -871,20 +890,50 @@ define(['./appendNodeFactory', './util'], function (appendNodeFactory, util) {
   Node.prototype._getDomValue = function(silent) {
     var valueInnerText, oldValue;
 
-    if (this.dom.value && this.type.type === 'Choice') {
+    if (this.type.type === 'Choice') {
       oldValue = this.value;
       var option = this.dom.value.options[this.dom.value.selectedIndex].value;
       for (var i = 0; i < this.type.children.length; i++) {
         if (this.type.children[i].label === option) break;
       }
-      this.value = this.type.children[i].buildDefaultValue();
+      var newValue = this.type.children[i].buildDefaultValue();
+
+      var table = this.dom.tr ? this.dom.tr.parentNode : undefined;
+      var lastTr;
+      if (this.expanded) {
+        lastTr = this.getAppend();
+      }
+      else {
+        lastTr = this.getDom();
+      }
+      var nextTr = (lastTr && lastTr.parentNode) ? lastTr.nextSibling : undefined;
+      this.hide();
+      this.clearDom();
+      this.childs.forEach(function (child, index) {
+          child.clearDom();
+        });
+
+      this.setValue(newValue, this.type);
       this.editor._onAction('editValue', {
         'node': this,
         'oldValue': oldValue,
-        'newValue': this.value,
+        'newValue': newValue,
         'oldSelection': this.editor.selection,
         'newSelection': this.editor.getSelection()
       });
+
+
+      if (table) {
+        if (nextTr) {
+          table.insertBefore(this.getDom(), nextTr);
+        }
+        else {
+          table.appendChild(this.getDom());
+        }
+      }
+      this.showChilds();
+      
+      this.updateDom({recurse: true});
     }
 
 
@@ -1490,13 +1539,16 @@ define(['./appendNodeFactory', './util'], function (appendNodeFactory, util) {
         domValue.innerHTML = this.type.label + '(...)';
       }
       else if (this.type.type == 'Choice') {
+        debugger
         domValue.innerHTML = '';
+        var valueLabel = this.value?this.value.getLabel():'';
         for (var i = 0; i < this.type.children.length; i++) {
           var option = document.createElement('option')
           option.innerHTML = this.type.children[i].label;
           option.setAttribute('value', this.type.children[i].label);
           domValue.appendChild(option);
         }
+        domValue.value = valueLabel;
       }
       else {
         domValue.innerHTML = this._escapeHTML(this.value);
@@ -2401,8 +2453,21 @@ define(['./appendNodeFactory', './util'], function (appendNodeFactory, util) {
    * @private
    */
   Node.prototype._hasChilds = function () {
-    return this.type.type == 'List' || this.type == 'Dict' ||
-           this.type.type == 'Constructor' || this.type == 'Choice';
+    if (this.type.type === 'Choice') {
+      return true;
+// FIXME: choices only has children when the current constructor has fields
+/*
+      if (this.value == null)
+        return false;
+      for (var i = 0; i < this.type.children.length; i++)
+        if (this.type.children[i].label === this.value.getLabel()) {
+          return this.type.children[i].children.length > 0;
+        }
+        return false;
+*/
+    } else {
+      return this.type.children.length > 0;
+    }
   };
 
   /**
