@@ -13,8 +13,7 @@
 </head>
 <body>
 <p>
-  <button id="setJSON">Set JSON</button>
-  <button id="getJSON">Get JSON</button>
+  <button id="getJSON">Get Value</button>
 </p>
 <div id="jsoneditor"></div>
 
@@ -37,8 +36,8 @@
             "fieldName": "",
             buildDefaultValue: function () {
                 return {
-                    color: {getlabel: function () {return "Black"}},
-                    kind: {getlabel: function () {return "Pawn"}, move2_time: 0},
+                    color: {getLabel: function () {return "Black"}},
+                    kind: {getLabel: function () {return "Bishop"}, moved: true},
                     position: {x:0, y:0}
                 }
             },
@@ -71,13 +70,15 @@
                     "type": "Constructor",
                     "label": "Black",
                     "fieldName": "",
-                    "children": []
+                    "children": [],
+                    buildDefaultValue: function () {return {getLabel: function () {return "Black"}}}
                   },
                   {
                     "type": "Constructor",
                     "label": "White",
                     "fieldName": "",
-                    "children": []
+                    "children": [],
+                    buildDefaultValue: function () {return {getLabel: function () {return "White"}}}
                   }
                 ]
               },
@@ -97,7 +98,8 @@
                         "fieldName": "moved",
                         "children": []
                       }
-                    ]
+                    ],
+                    buildDefaultValue: function () {return {moved: false, getLabel: function () {return "Rook"}}}
                   },
                   {
                     "type": "Constructor",
@@ -110,19 +112,22 @@
                         "fieldName": "moved",
                         "children": []
                       }
-                    ]
+                    ],
+                    buildDefaultValue: function () {return {moved: false, getLabel: function () {return "King"}}}
                   },
                   {
                     "type": "Constructor",
                     "label": "Knight",
                     "fieldName": "",
-                    "children": []
+                    "children": [],
+                    buildDefaultValue: function () {return {getLabel: function () {return "Knight"}}}
                   },
                   {
                     "type": "Constructor",
                     "label": "Bishop",
                     "fieldName": "",
-                    "children": []
+                    "children": [],
+                    buildDefaultValue: function () {return {getLabel: function () {return "Bishop"}}}
                   },
                   {
                     "type": "Constructor",
@@ -148,7 +153,8 @@
                           }
                         ]
                       }
-                    ]
+                    ],
+                    buildDefaultValue: function () {return {target: {x:0, y:0}, getLabel: function () {return "Queen"}}}
                   }
                 ]
               }
@@ -172,20 +178,7 @@
   var editor = new JSONEditor(container, {search: false}, data, type);
 
 
-  // set json
-  document.getElementById('setJSON').onclick = function () {
-    var json = {
-      'array': [1, 2, 3],
-      'boolean': true,
-      'null': null,
-      'number': 123,
-      'object': {'a': 'b', 'c': 'd'},
-      'string': 'Hello World'
-    };
-    editor.set(json);
-  };
-
-  // get json
+  // get value
   document.getElementById('getJSON').onclick = function () {
     var json = editor.get();
     alert(JSON.stringify(json, null, 2));

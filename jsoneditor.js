@@ -24,7 +24,7 @@
  *
  * @author  Jos de Jong, <wjosdejong@gmail.com>
  * @version 3.1.2
- * @date    2014-12-15
+ * @date    2014-12-19
  */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
@@ -110,7 +110,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	   *                                                      modes 'text' and 'code'
 	   * @param {Object | undefined} json JSON object
 	   */
-	  function JSONEditor (container, options, json) {
+	  function JSONEditor (container, options, json, type) {
 	    if (!(this instanceof JSONEditor)) {
 	      throw new Error('JSONEditor constructor called without "new".');
 	    }
@@ -121,9 +121,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	      throw new Error('Unsupported browser, IE9 or newer required. ' +
 	          'Please install the newest version of your browser.');
 	    }
-
 	    if (arguments.length) {
-	      this._create(container, options, json);
+	      this._create(container, options, json, type);
 	    }
 	  }
 
@@ -151,11 +150,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	   * @param {Object | undefined} json JSON object
 	   * @private
 	   */
-	  JSONEditor.prototype._create = function (container, options, json) {
+	  JSONEditor.prototype._create = function (container, options, json, type) {
 	    this.container = container;
 	    this.options = options || {};
 	    this.json = json || {};
-
+	    this.type = type || {type: "Constructor", label: "Null", fieldName: "", children: []};
 	    var mode = this.options.mode || 'tree';
 	    this.setMode(mode);
 	  };
@@ -180,14 +179,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	   */
 	  JSONEditor.prototype.get = function () {
 	    return this.json;
-	  };
-
-	  /**
-	   * Set string containing JSON for the editor
-	   * @param {String | undefined} jsonText
-	   */
-	  JSONEditor.prototype.setText = function (jsonText) {
-	    this.json = util.parse(jsonText);
 	  };
 
 	  /**
@@ -233,17 +224,15 @@ return /******/ (function(modules) { // webpackBootstrap
 	    var config = JSONEditor.modes[mode];
 	    if (config) {
 	      try {
-	        var asText = (config.data == 'text');
 	        name = this.getName();
-	        data = this[asText ? 'getText' : 'get'](); // get text or json
+	        data = this.get(); // get text or json
 
 	        this._delete();
-	        util.clear(this);
 	        util.extend(this, config.mixin);
 	        this.create(container, options);
 
 	        this.setName(name);
-	        this[asText ? 'setText' : 'set'](data); // set text or json
+	        this.set(data);
 
 	        if (typeof config.load === 'function') {
 	          try {
@@ -291,7 +280,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	   * - `mode: String`           The name of the mode.
 	   * - `mixin: Object`          An object containing the mixin functions which
 	   *                            will be added to the JSONEditor. Must contain functions
-	   *                            create, get, getText, set, and setText. May have
+	   *                            create, get, getText, set. May have
 	   *                            additional functions.
 	   *                            When the JSONEditor switches to a mixin, all mixin
 	   *                            functions are added to the JSONEditor, and then
@@ -430,18 +419,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	  /**
 	   * Set JSON object in editor
 	   * @param {Object | undefined} json      JSON data
-	   * @param {String}             [name]    Optional field name for the root node.
-	   *                                       Can also be set using setName(name).
 	   */
-	  treemode.set = function (json, name) {
-	    // adjust field name for root node
-	    if (name) {
-	      // TODO: deprecated since version 2.2.0. Cleanup some day.
-	      util.log('Warning: second parameter "name" is deprecated. ' +
-	          'Use setName(name) instead.');
-	      this.options.name = name;
-	    }
-
+	  treemode.set = function (json) {
 	    // verify if json is valid JSON, ignore when a function
 	    if (json instanceof Function || (json === undefined)) {
 	      this.clear();
@@ -452,7 +431,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	      // replace the root node
 	      var params = {
 	        'field': this.options.name,
-	        'value': json
+	        'value': json,
+	        'type': this.type
 	      };
 	      var node = new Node(this, params);
 	      this._setRoot(node);
@@ -494,14 +474,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	   */
 	  treemode.getText = function() {
 	    return JSON.stringify(this.get());
-	  };
-
-	  /**
-	   * Set the text contents of the editor
-	   * @param {String} jsonText
-	   */
-	  treemode.setText = function(jsonText) {
-	    this.set(util.parse(jsonText));
 	  };
 
 	  /**
@@ -600,7 +572,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	   * The method onChange is called whenever a field or value is changed, created,
 	   * deleted, duplicated, etc.
 	   * @param {String} action  Change action. Available values: "editField",
-	   *                         "editValue", "changeType", "appendNode",
+	   *                         "editValue", "appendNode",
 	   *                         "removeNode", "duplicateNode", "moveNode", "expand",
 	   *                         "collapse".
 	   * @param {Object} params  Object containing parameters describing the change.
@@ -1773,36 +1745,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	          params.parent.insertAfter(params.clone, params.node);
 	        }
 	      },
-	      'changeType': {
-	        'undo': function (params) {
-	          params.node.changeType(params.oldType);
-	        },
-	        'redo': function (params) {
-	          params.node.changeType(params.newType);
-	        }
-	      },
 	      'moveNode': {
 	        'undo': function (params) {
 	          params.startParent.moveTo(params.node, params.startIndex);
 	        },
 	        'redo': function (params) {
 	          params.endParent.moveTo(params.node, params.endIndex);
-	        }
-	      },
-	      'sort': {
-	        'undo': function (params) {
-	          var node = params.node;
-	          node.hideChilds();
-	          node.sort = params.oldSort;
-	          node.childs = params.oldChilds;
-	          node.showChilds();
-	        },
-	        'redo': function (params) {
-	          var node = params.node;
-	          node.hideChilds();
-	          node.sort = params.newSort;
-	          node.childs = params.newChilds;
-	          node.showChilds();
 	        }
 	      }
 
@@ -1820,7 +1768,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  /**
 	   * Add a new action to the history
 	   * @param {String} action  The executed action. Available actions: "editField",
-	   *                         "editValue", "changeType", "appendNode",
+	   *                         "editValue", "appendNode",
 	   *                         "removeNode", "duplicateNode", "moveNode"
 	   * @param {Object} params  Object containing parameters describing the change.
 	   *                         The parameters in params depend on the action (for
@@ -2240,8 +2188,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	   *                          {string}  field
 	   *                          {boolean} fieldEditable
 	   *                          {*}       value
-	   *                          {String}  type  Can have values 'auto', 'array',
-	   *                                          'object', or 'string'.
+	   *                          {Type}     type
 	   */
 	  function Node (editor, params) {
 	    /** @type {TreeEditor} */
@@ -2342,8 +2289,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  /**
 	   * Set value. Value is a JSON structure or an element String, Boolean, etc.
 	   * @param {*} value
-	   * @param {String} [type]  Specify the type of the value. Can be 'auto',
-	   *                         'array', 'object', or 'string'
+	   * @param {Type} [type]
 	   */
 	  Node.prototype.setValue = function(value, type) {
 	    var childValue, child;
@@ -2358,36 +2304,58 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	    // TODO: remove the DOM of this Node
 
-	    this.type = this._getType(value);
+	    this.type = type || this.type;
+	    var i, iMax, fields;
 
-	    // check if type corresponds with the provided type
-	    if (type && type != this.type) {
-	      if (type == 'string' && this.type == 'auto') {
-	        this.type = type;
-	      }
-	      else {
-	        throw new Error('Type mismatch: ' +
-	            'cannot cast value of type "' + this.type +
-	            ' to the specified type "' + type + '"');
-	      }
-	    }
-
-	    if (this.type == 'array') {
-	      // array
+	    if (!this.type) {
+	      this.childs = undefined;
+	      this.value = null;
+	    } else if (this.type.type == 'List') {
 	      this.childs = [];
-	      for (var i = 0, iMax = value.length; i < iMax; i++) {
+	      for (i = 0, iMax = value.length; i < iMax; i++) {
 	        childValue = value[i];
-	        if (childValue !== undefined && !(childValue instanceof Function)) {
-	          // ignore undefined and functions
-	          child = new Node(this.editor, {
-	            value: childValue
-	          });
-	          this.appendChild(child);
-	        }
+	        child = new Node(this.editor, {
+	          value: childValue,
+	          type: this.type.children[0],
+	        });
+	        this.appendChild(child);
 	      }
-	      this.value = '';
+	      this.value = value;
 	    }
-	    else if (this.type == 'object') {
+	    else if (this.type.type == 'Constructor') {
+	      this.childs = [];
+	      fields = this.type.children;
+	      for (i = 0, iMax = fields.length; i < iMax; i++) {
+	        childValue = value[fields[i].fieldName];
+	        child = new Node(this.editor, {
+	          field: fields[i].fieldName,
+	          value: childValue,
+	          type: fields[i],
+	        });
+	        this.appendChild(child);
+	      }
+	      this.value = value;
+	    }
+	    else if (this.type.type == 'Choice') {
+	      this.childs = [];
+	      var choices = this.type.children;
+	      for (i = 0, iMax = choices.length; i < iMax; i++) {
+	        if (choices[i].label == value.getLabel()) break;
+	      }
+	      var constructor = choices[i];
+	      fields = constructor.children;
+	      for (i = 0, iMax = fields.length; i < iMax; i++) {
+	        childValue = value[fields[i].fieldName];
+	        child = new Node(this.editor, {
+	          field: fields[i].fieldName,
+	          value: childValue,
+	          type: fields[i],
+	        });
+	        this.appendChild(child);
+	      }
+	      this.value = value;
+	    }
+	    else if (this.type.type == 'Dict') {
 	      // object
 	      this.childs = [];
 	      for (var childField in value) {
@@ -2397,13 +2365,14 @@ return /******/ (function(modules) { // webpackBootstrap
 	            // ignore undefined and functions
 	            child = new Node(this.editor, {
 	              field: childField,
-	              value: childValue
+	              value: childValue,
+	              type: this.type.children[0],
 	            });
 	            this.appendChild(child);
 	          }
 	        }
 	      }
-	      this.value = '';
+	      this.value = value;
 	    }
 	    else {
 	      // value
@@ -2429,14 +2398,14 @@ return /******/ (function(modules) { // webpackBootstrap
 	  Node.prototype.getValue = function() {
 	    //var childs, i, iMax;
 
-	    if (this.type == 'array') {
+	    if (this.type.type == 'List') {
 	      var arr = [];
 	      this.childs.forEach (function (child) {
 	        arr.push(child.getValue());
 	      });
 	      return arr;
 	    }
-	    else if (this.type == 'object') {
+	    else if (this.type.type == 'Dict') {
 	      var obj = {};
 	      this.childs.forEach (function (child) {
 	        obj[child.getField()] = child.getValue();
@@ -2473,7 +2442,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	    clone.fieldInnerText = this.fieldInnerText;
 	    clone.fieldEditable = this.fieldEditable;
 	    clone.value = this.value;
-	    clone.valueInnerText = this.valueInnerText;
 	    clone.expanded = this.expanded;
 
 	    if (this.childs) {
@@ -2626,8 +2594,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	    if (this._hasChilds()) {
 	      // adjust the link to the parent
 	      node.setParent(this);
-	      node.fieldEditable = (this.type == 'object');
-	      if (this.type == 'array') {
+	      node.fieldEditable = (this.type.type == 'Dict');
+	      if (this.type.type == 'List') {
 	        node.index = this.childs.length;
 	      }
 	      this.childs.push(node);
@@ -2718,7 +2686,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	        // adjust the link to the parent
 	        node.setParent(this);
-	        node.fieldEditable = (this.type == 'object');
+	        node.fieldEditable = (this.type.type == 'Dict');
 	        this.childs.push(node);
 	      }
 	      else {
@@ -2730,7 +2698,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	        // adjust the link to the parent
 	        node.setParent(this);
-	        node.fieldEditable = (this.type == 'object');
+	        node.fieldEditable = (this.type.type == 'Dict');
 	        this.childs.splice(index, 0, node);
 	      }
 
@@ -3092,24 +3060,22 @@ return /******/ (function(modules) { // webpackBootstrap
 	  };
 
 	  /**
-	   * Change the type of the value of this Node
-	   * @param {String} newType
+	   * Retrieve value from DOM
+	   * @param {boolean} [silent]  If true (default), no errors will be thrown in
+	   *                            case of invalid data
+	   * @private
 	   */
-	  Node.prototype.changeType = function (newType) {
-	    var oldType = this.type;
+	  Node.prototype._getDomValue = function(silent) {
+	    var valueInnerText, oldValue;
 
-	    if (oldType == newType) {
-	      // type is not changed
-	      return;
-	    }
+	    if (this.type.type === 'Choice') {
+	      oldValue = this.value;
+	      var option = this.dom.value.options[this.dom.value.selectedIndex].value;
+	      for (var i = 0; i < this.type.children.length; i++) {
+	        if (this.type.children[i].label === option) break;
+	      }
+	      var newValue = this.type.children[i].buildDefaultValue();
 
-	    if ((newType == 'string' || newType == 'auto') &&
-	        (oldType == 'string' || oldType == 'auto')) {
-	      // this is an easy change
-	      this.type = newType;
-	    }
-	    else {
-	      // change from array to object, or from string/auto to object/array
 	      var table = this.dom.tr ? this.dom.tr.parentNode : undefined;
 	      var lastTr;
 	      if (this.expanded) {
@@ -3119,53 +3085,22 @@ return /******/ (function(modules) { // webpackBootstrap
 	        lastTr = this.getDom();
 	      }
 	      var nextTr = (lastTr && lastTr.parentNode) ? lastTr.nextSibling : undefined;
-
-	      // hide current field and all its childs
 	      this.hide();
 	      this.clearDom();
-
-	      // adjust the field and the value
-	      this.type = newType;
-
-	      // adjust childs
-	      if (newType == 'object') {
-	        if (!this.childs) {
-	          this.childs = [];
-	        }
-
-	        this.childs.forEach(function (child, index) {
+	      this.childs.forEach(function (child, index) {
 	          child.clearDom();
-	          delete child.index;
-	          child.fieldEditable = true;
-	          if (child.field == undefined) {
-	            child.field = '';
-	          }
 	        });
 
-	        if (oldType == 'string' || oldType == 'auto') {
-	          this.expanded = true;
-	        }
-	      }
-	      else if (newType == 'array') {
-	        if (!this.childs) {
-	          this.childs = [];
-	        }
+	      this.setValue(newValue, this.type);
+	      this.editor._onAction('editValue', {
+	        'node': this,
+	        'oldValue': oldValue,
+	        'newValue': newValue,
+	        'oldSelection': this.editor.selection,
+	        'newSelection': this.editor.getSelection()
+	      });
 
-	        this.childs.forEach(function (child, index) {
-	          child.clearDom();
-	          child.fieldEditable = false;
-	          child.index = index;
-	        });
 
-	        if (oldType == 'string' || oldType == 'auto') {
-	          this.expanded = true;
-	        }
-	      }
-	      else {
-	        this.expanded = false;
-	      }
-
-	      // create new DOM
 	      if (table) {
 	        if (nextTr) {
 	          table.insertBefore(this.getDom(), nextTr);
@@ -3175,47 +3110,28 @@ return /******/ (function(modules) { // webpackBootstrap
 	        }
 	      }
 	      this.showChilds();
+	      
+	      this.updateDom({recurse: true});
 	    }
 
-	    if (newType == 'auto' || newType == 'string') {
-	      // cast value to the correct type
-	      if (newType == 'string') {
-	        this.value = String(this.value);
-	      }
-	      else {
-	        this.value = this._stringCast(String(this.value));
-	      }
 
-	      this.focus();
+	    if (this.dom.value && this.type.type != 'List' && this.type.type != 'Dict' && this.type.type != 'Choice') {
+	      var valueInnerText = util.getInnerText(this.dom.value);
 	    }
 
-	    this.updateDom({'updateIndexes': true});
-	  };
-
-	  /**
-	   * Retrieve value from DOM
-	   * @param {boolean} [silent]  If true (default), no errors will be thrown in
-	   *                            case of invalid data
-	   * @private
-	   */
-	  Node.prototype._getDomValue = function(silent) {
-	    if (this.dom.value && this.type != 'array' && this.type != 'object') {
-	      this.valueInnerText = util.getInnerText(this.dom.value);
-	    }
-
-	    if (this.valueInnerText != undefined) {
+	    if (valueInnerText != undefined) {
 	      try {
 	        // retrieve the value
 	        var value;
-	        if (this.type == 'string') {
-	          value = this._unescapeHTML(this.valueInnerText);
+	        if (this.type.type == 'String') {
+	          value = this._unescapeHTML(valueInnerText);
 	        }
 	        else {
-	          var str = this._unescapeHTML(this.valueInnerText);
+	          var str = this._unescapeHTML(valueInnerText);
 	          value = this._stringCast(str);
 	        }
 	        if (value !== this.value) {
-	          var oldValue = this.value;
+	          oldValue = this.value;
 	          this.value = value;
 	          this.editor._onAction('editValue', {
 	            'node': this,
@@ -3249,19 +3165,19 @@ return /******/ (function(modules) { // webpackBootstrap
 	      // set text color depending on value type
 	      // TODO: put colors in css
 	      var v = this.value;
-	      var t = (this.type == 'auto') ? util.type(v) : this.type;
-	      var isUrl = (t == 'string' && util.isUrl(v));
+	      var t = this.type.type;
+	      var isUrl = (t == 'String' && util.isUrl(v));
 	      var color = '';
 	      if (isUrl && !this.editable.value) { // TODO: when to apply this?
 	        color = '';
 	      }
-	      else if (t == 'string') {
+	      else if (t == 'String') {
 	        color = 'green';
 	      }
-	      else if (t == 'number') {
+	      else if (t == 'Number') {
 	        color = 'red';
 	      }
-	      else if (t == 'boolean') {
+	      else if (t == 'Boolean') {
 	        color = 'darkorange';
 	      }
 	      else if (this._hasChilds()) {
@@ -3277,7 +3193,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	      domValue.style.color = color;
 
 	      // make background color light-gray when empty
-	      var isEmpty = (String(this.value) == '' && this.type != 'array' && this.type != 'object');
+	      var isEmpty = (String(this.value) == '' && this.type.type != 'List' && this.type.type != 'Dict' && this.type.type != 'Constructor');
 	      if (isEmpty) {
 	        util.addClassName(domValue, 'empty');
 	      }
@@ -3294,9 +3210,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	      }
 
 	      // update title
-	      if (t == 'array' || t == 'object') {
+	      if (t == 'List' || t == 'Dict') {
 	        var count = this.childs ? this.childs.length : 0;
-	        domValue.title = this.type + ' containing ' + count + ' items';
+	        domValue.title = this.type.type + ' containing ' + count + ' items';
 	      }
 	      else if (t == 'string' && util.isUrl(v)) {
 	        if (this.editable.value) {
@@ -3322,7 +3238,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	      }
 
 	      // strip formatting from the contents of the editable div
-	      util.stripFormatting(domValue);
+	      if ( t!= 'Choice') {
+	        util.stripFormatting(domValue);
+	      }
 	    }
 	  };
 
@@ -3337,7 +3255,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    var domField = this.dom.field;
 	    if (domField) {
 	      // make backgound color lightgray when empty
-	      var isEmpty = (String(this.field) == '' && this.parent.type != 'array');
+	      var isEmpty = (String(this.field) == '' && this.parent.type.type != 'List');
 	      if (isEmpty) {
 	        util.addClassName(domField, 'empty');
 	      }
@@ -3374,7 +3292,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	    if (this.dom.field && this.fieldEditable) {
 	      this.fieldInnerText = util.getInnerText(this.dom.field);
 	    }
-
 	    if (this.fieldInnerText != undefined) {
 	      try {
 	        var field = this._unescapeHTML(this.fieldInnerText);
@@ -3775,7 +3692,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        field = this.field;
 	      }
 	      else if (this._hasChilds()) {
-	        field = this.type;
+	        field = this.type.type;
 	      }
 	      else {
 	        field = '';
@@ -3787,11 +3704,25 @@ return /******/ (function(modules) { // webpackBootstrap
 	    var domValue = this.dom.value;
 	    if (domValue) {
 	      var count = this.childs ? this.childs.length : 0;
-	      if (this.type == 'array') {
+	      if (this.type.type == 'List') {
 	        domValue.innerHTML = '[' + count + ']';
 	      }
-	      else if (this.type == 'object') {
+	      else if (this.type.type == 'Dict') {
 	        domValue.innerHTML = '{' + count + '}';
+	      }
+	      else if (this.type.type == 'Constructor') {
+	        domValue.innerHTML = this.type.label + '(...)';
+	      }
+	      else if (this.type.type == 'Choice') {
+	        domValue.innerHTML = '';
+	        var valueLabel = this.value?this.value.getLabel():'';
+	        for (var i = 0; i < this.type.children.length; i++) {
+	          var option = document.createElement('option')
+	          option.innerHTML = this.type.children[i].label;
+	          option.setAttribute('value', this.type.children[i].label);
+	          domValue.appendChild(option);
+	        }
+	        domValue.value = valueLabel;
 	      }
 	      else {
 	        domValue.innerHTML = this._escapeHTML(this.value);
@@ -3833,7 +3764,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    var domValue = this.dom.value;
 	    var childs = this.childs;
 	    if (domValue && childs) {
-	      if (this.type == 'array') {
+	      if (this.type.type == 'List') {
 	        childs.forEach(function (child, index) {
 	          child.index = index;
 	          var childField = child.dom.field;
@@ -3842,7 +3773,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	          }
 	        });
 	      }
-	      else if (this.type == 'object') {
+	      else if (this.type.type == 'Dict') {
 	        childs.forEach(function (child) {
 	          if (child.index != undefined) {
 	            delete child.index;
@@ -3863,33 +3794,31 @@ return /******/ (function(modules) { // webpackBootstrap
 	  Node.prototype._createDomValue = function () {
 	    var domValue;
 
-	    if (this.type == 'array') {
+	    if (this.type.type == 'List') {
 	      domValue = document.createElement('div');
 	      domValue.className = 'readonly';
 	      domValue.innerHTML = '[...]';
 	    }
-	    else if (this.type == 'object') {
+	    else if (this.type.type == 'Dict') {
 	      domValue = document.createElement('div');
 	      domValue.className = 'readonly';
 	      domValue.innerHTML = '{...}';
 	    }
+	    else if (this.type.type == 'Constructor') {
+	      domValue = document.createElement('div');
+	      domValue.className = 'readonly';
+	      domValue.innerHTML = '(...)';
+	    }
+	    else if (this.type.type == 'Choice') {
+	      domValue = document.createElement('select');
+	    }
 	    else {
-	      if (!this.editable.value && util.isUrl(this.value)) {
-	        // create a link in case of read-only editor and value containing an url
-	        domValue = document.createElement('a');
-	        domValue.className = 'value';
-	        domValue.href = this.value;
-	        domValue.target = '_blank';
-	        domValue.innerHTML = this._escapeHTML(this.value);
-	      }
-	      else {
-	        // create an editable or read-only div
-	        domValue = document.createElement('div');
-	        domValue.contentEditable = this.editable.value;
-	        domValue.spellcheck = false;
-	        domValue.className = 'value';
-	        domValue.innerHTML = this._escapeHTML(this.value);
-	      }
+	      // create an editable or read-only div
+	      domValue = document.createElement('div');
+	      domValue.contentEditable = this.editable.value;
+	      domValue.spellcheck = false;
+	      domValue.className = 'value';
+	      domValue.innerHTML = this._escapeHTML(this.value);
 	    }
 
 	    return domValue;
@@ -3953,7 +3882,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    var tdSeparator = document.createElement('td');
 	    tdSeparator.className = 'tree';
 	    tr.appendChild(tdSeparator);
-	    if (this.type != 'object' && this.type != 'array') {
+	    if (this.type.type != 'Dict' && this.type.type != 'List' && this.type.type != 'Constructor') {
 	      tdSeparator.appendChild(document.createTextNode(':'));
 	      tdSeparator.className = 'separator';
 	    }
@@ -4019,7 +3948,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        case 'change':
 	          this._getDomValue(true);
 	          this._updateDomValue();
-	          if (this.value) {
+	          if (this.value && this.type.type === "String") {
 	            domValue.innerHTML = this._escapeHTML(this.value);
 	          }
 	          break;
@@ -4422,7 +4351,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	   * Handle insert before event
 	   * @param {String} [field]
 	   * @param {*} [value]
-	   * @param {String} [type]   Can be 'auto', 'array', 'object', or 'string'
+	   * @param {Type} [type]
 	   * @private
 	   */
 	  Node.prototype._onInsertBefore = function (field, value, type) {
@@ -4452,7 +4381,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	   * Handle insert after event
 	   * @param {String} [field]
 	   * @param {*} [value]
-	   * @param {String} [type]   Can be 'auto', 'array', 'object', or 'string'
+	   * @param {Type} [type]
 	   * @private
 	   */
 	  Node.prototype._onInsertAfter = function (field, value, type) {
@@ -4482,7 +4411,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	   * Handle append event
 	   * @param {String} [field]
 	   * @param {*} [value]
-	   * @param {String} [type]   Can be 'auto', 'array', 'object', or 'string'
+	   * @param {Type} [type]
 	   * @private
 	   */
 	  Node.prototype._onAppend = function (field, value, type) {
@@ -4505,66 +4434,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	      oldSelection: oldSelection,
 	      newSelection: newSelection
 	    });
-	  };
-
-	  /**
-	   * Change the type of the node's value
-	   * @param {String} newType
-	   * @private
-	   */
-	  Node.prototype._onChangeType = function (newType) {
-	    var oldType = this.type;
-	    if (newType != oldType) {
-	      var oldSelection = this.editor.getSelection();
-	      this.changeType(newType);
-	      var newSelection = this.editor.getSelection();
-
-	      this.editor._onAction('changeType', {
-	        node: this,
-	        oldType: oldType,
-	        newType: newType,
-	        oldSelection: oldSelection,
-	        newSelection: newSelection
-	      });
-	    }
-	  };
-
-	  /**
-	   * Sort the childs of the node. Only applicable when the node has type 'object'
-	   * or 'array'.
-	   * @param {String} direction   Sorting direction. Available values: "asc", "desc"
-	   * @private
-	   */
-	  Node.prototype._onSort = function (direction) {
-	    if (this._hasChilds()) {
-	      var order = (direction == 'desc') ? -1 : 1;
-	      var prop = (this.type == 'array') ? 'value': 'field';
-	      this.hideChilds();
-
-	      var oldChilds = this.childs;
-	      var oldSort = this.sort;
-
-	      // copy the array (the old one will be kept for an undo action
-	      this.childs = this.childs.concat();
-
-	      // sort the arrays
-	      this.childs.sort(function (a, b) {
-	        if (a[prop] > b[prop]) return order;
-	        if (a[prop] < b[prop]) return -order;
-	        return 0;
-	      });
-	      this.sort = (order == 1) ? 'asc' : 'desc';
-
-	      this.editor._onAction('sort', {
-	        node: this,
-	        oldChilds: oldChilds,
-	        oldSort: oldSort,
-	        newChilds: this.childs,
-	        newSort: this.sort
-	      });
-
-	      this.showChilds();
-	    }
 	  };
 
 	  /**
@@ -4758,41 +4627,23 @@ return /******/ (function(modules) { // webpackBootstrap
 	   * @private
 	   */
 	  Node.prototype._hasChilds = function () {
-	    return this.type == 'array' || this.type == 'object';
-	  };
+	    if (this.type.type === 'Choice') {
+	      for (var i = 0; i < this.type.children.length; i++) {
+	        if (this.type.children[i].children.length > 0) return true;
+	      }
+	      return false;
 
-	// titles with explanation for the different types
-	  Node.TYPE_TITLES = {
-	    'auto': 'Field type "auto". ' +
-	        'The field type is automatically determined from the value ' +
-	        'and can be a string, number, boolean, or null.',
-	    'object': 'Field type "object". ' +
-	        'An object contains an unordered set of key/value pairs.',
-	    'array': 'Field type "array". ' +
-	        'An array contains an ordered collection of values.',
-	    'string': 'Field type "string". ' +
-	        'Field type is not determined from the value, ' +
-	        'but always returned as string.'
-	  };
-
-	  /**
-	   * get the type of a value
-	   * @param {*} value
-	   * @return {String} type   Can be 'object', 'array', 'string', 'auto'
-	   * @private
-	   */
-	  Node.prototype._getType = function(value) {
-	    if (value instanceof Array) {
-	      return 'array';
+	      // FIXME: only if THE CURRENT VALUE has children
+	      /*
+	      for (var i = 0; i < this.type.children.length; i++)
+	        if (this.type.children[i].label === this.value.getLabel()) {
+	          return this.type.children[i].children.length > 0;
+	        }
+	      return false;
+	      */
+	    } else {
+	      return this.type.children.length > 0;
 	    }
-	    if (value instanceof Object) {
-	      return 'object';
-	    }
-	    if (typeof(value) == 'string' && typeof(this._stringCast(value)) != 'string') {
-	      return 'string';
-	    }
-
-	    return 'auto';
 	  };
 
 	  /**
@@ -4991,7 +4842,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	      var domText = dom.text;
 	      if (domText) {
-	        domText.innerHTML = '(extend ' + this.parent.type + ')';
+	        domText.innerHTML = 'Extend ' + this.parent.type.type;
 	      }
 
 	      // attach or detach the contents of the append node:
@@ -5021,7 +4872,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	     * @return {boolean} isVisible
 	     */
 	    AppendNode.prototype.isVisible = function () {
-	      return true;
+	      return this.parent.type.type == 'List' || this.parent.type.type == 'Dict';
 	    };
 
 	    /**
@@ -5034,7 +4885,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	      var dom = this.dom;
 
 	      if (type == 'click') {
-	        this._onAppend('', '', 'auto');
+	        var type = this.parent.type.children[0];
+	        var value = type.buildDefaultValue();
+	        this._onAppend('', value, type);
 	      }
 	      if (type == 'keydown') {
 	        this.onKeyDown(event);

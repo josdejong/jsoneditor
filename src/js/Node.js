@@ -124,9 +124,7 @@ define(['./appendNodeFactory', './util'], function (appendNodeFactory, util) {
 
     // TODO: remove the DOM of this Node
 
-    // FIXME: Check that type matches value. If it matches, we shouldn't need
-    // to set this.type
-    this.type = type;
+    this.type = type || this.type;
     var i, iMax, fields;
 
     if (!this.type) {
@@ -938,7 +936,6 @@ define(['./appendNodeFactory', './util'], function (appendNodeFactory, util) {
 
 
     if (this.dom.value && this.type.type != 'List' && this.type.type != 'Dict' && this.type.type != 'Choice') {
-      // FIXME: other types that can be interpreted literally
       var valueInnerText = util.getInnerText(this.dom.value);
     }
 
@@ -947,7 +944,6 @@ define(['./appendNodeFactory', './util'], function (appendNodeFactory, util) {
         // retrieve the value
         var value;
         if (this.type.type == 'String') {
-          // FIXME: other types
           value = this._unescapeHTML(valueInnerText);
         }
         else {
@@ -1080,7 +1076,6 @@ define(['./appendNodeFactory', './util'], function (appendNodeFactory, util) {
     if (domField) {
       // make backgound color lightgray when empty
       var isEmpty = (String(this.field) == '' && this.parent.type.type != 'List');
-      // FIXME: check type handling
       if (isEmpty) {
         util.addClassName(domField, 'empty');
       }
@@ -1539,7 +1534,6 @@ define(['./appendNodeFactory', './util'], function (appendNodeFactory, util) {
         domValue.innerHTML = this.type.label + '(...)';
       }
       else if (this.type.type == 'Choice') {
-        debugger
         domValue.innerHTML = '';
         var valueLabel = this.value?this.value.getLabel():'';
         for (var i = 0; i < this.type.children.length; i++) {
@@ -2454,17 +2448,19 @@ define(['./appendNodeFactory', './util'], function (appendNodeFactory, util) {
    */
   Node.prototype._hasChilds = function () {
     if (this.type.type === 'Choice') {
-      return true;
-// FIXME: choices only has children when the current constructor has fields
-/*
-      if (this.value == null)
-        return false;
+      for (var i = 0; i < this.type.children.length; i++) {
+        if (this.type.children[i].children.length > 0) return true;
+      }
+      return false;
+
+      // FIXME: only if THE CURRENT VALUE has children
+      /*
       for (var i = 0; i < this.type.children.length; i++)
         if (this.type.children[i].label === this.value.getLabel()) {
           return this.type.children[i].children.length > 0;
         }
-        return false;
-*/
+      return false;
+      */
     } else {
       return this.type.children.length > 0;
     }
