@@ -79,12 +79,12 @@ define(['./Highlighter', './History', './SearchBox', './Node', './util'],
   var domFocus = null;
 
   /**
-   * Set JSON object in editor
-   * @param {Object | undefined} json      JSON data
+   * Set AIMARA value in editor
+   * @param {Object | undefined} value      value
    */
-  treemode.set = function (json) {
-    // verify if json is valid JSON, ignore when a function
-    if (json instanceof Function || (json === undefined)) {
+  treemode.set = function (value) {
+    // verify if value is valid value, ignore when a function
+    if (value instanceof Function || (value === undefined)) {
       this.clear();
     }
     else {
@@ -93,7 +93,7 @@ define(['./Highlighter', './History', './SearchBox', './Node', './util'],
       // replace the root node
       var params = {
         'field': this.options.name,
-        'value': json,
+        'value': value,
         'type': this.type
       };
       var node = new Node(this, params);
@@ -114,7 +114,7 @@ define(['./Highlighter', './History', './SearchBox', './Node', './util'],
 
   /**
    * Get JSON object from editor
-   * @return {Object | undefined} json
+   * @return {Object | undefined} value
    */
   treemode.get = function () {
     // remove focus from currently edited node
@@ -128,14 +128,6 @@ define(['./Highlighter', './History', './SearchBox', './Node', './util'],
     else {
       return undefined;
     }
-  };
-
-  /**
-   * Get the text contents of the editor
-   * @return {String} jsonText
-   */
-  treemode.getText = function() {
-    return JSON.stringify(this.get());
   };
 
   /**

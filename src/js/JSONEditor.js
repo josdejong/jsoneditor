@@ -26,7 +26,7 @@ define(['./treemode', './util'], function (treemode, util) {
    *                                                      modes 'text' and 'code'
    * @param {Object | undefined} json JSON object
    */
-  function JSONEditor (container, options, json, type) {
+  function JSONEditor (container, options, value, type) {
     if (!(this instanceof JSONEditor)) {
       throw new Error('JSONEditor constructor called without "new".');
     }
@@ -38,7 +38,7 @@ define(['./treemode', './util'], function (treemode, util) {
           'Please install the newest version of your browser.');
     }
     if (arguments.length) {
-      this._create(container, options, json, type);
+      this._create(container, options, value, type);
     }
   }
 
@@ -63,13 +63,13 @@ define(['./treemode', './util'], function (treemode, util) {
    * Create the JSONEditor
    * @param {Element} container    Container element
    * @param {Object}  [options]    See description in constructor
-   * @param {Object | undefined} json JSON object
+   * @param {Object | undefined} value Value
    * @private
    */
-  JSONEditor.prototype._create = function (container, options, json, type) {
+  JSONEditor.prototype._create = function (container, options, value, type) {
     this.container = container;
     this.options = options || {};
-    this.json = json || {};
+    this.value = value || {};
     this.type = type || {type: "Constructor", label: "Null", fieldName: "", children: []};
     var mode = this.options.mode || 'tree';
     this.setMode(mode);
@@ -82,27 +82,19 @@ define(['./treemode', './util'], function (treemode, util) {
   JSONEditor.prototype._delete = function () {};
 
   /**
-   * Set JSON object in editor
-   * @param {Object | undefined} json      JSON data
+   * Set edited object in editor
+   * @param {Object | undefined} value      value
    */
-  JSONEditor.prototype.set = function (json) {
-    this.json = json;
+  JSONEditor.prototype.set = function (value) {
+    this.value = value;
   };
 
   /**
-   * Get JSON from the editor
-   * @returns {Object} json
+   * Get data structure from the editor
+   * @returns {Object} value
    */
   JSONEditor.prototype.get = function () {
-    return this.json;
-  };
-
-  /**
-   * Get stringified JSON contents from the editor
-   * @returns {String} jsonText
-   */
-  JSONEditor.prototype.getText = function () {
-    return JSON.stringify(this.json);
+    return this.value;
   };
 
   /**
@@ -141,7 +133,7 @@ define(['./treemode', './util'], function (treemode, util) {
     if (config) {
       try {
         name = this.getName();
-        data = this.get(); // get text or json
+        data = this.get(); // get value
 
         this._delete();
         util.extend(this, config.mixin);
