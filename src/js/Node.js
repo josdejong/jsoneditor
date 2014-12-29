@@ -217,7 +217,6 @@ define(['./appendNodeFactory', './util'], function (appendNodeFactory, util) {
    */
   Node.prototype.getValue = function() {
     //var childs, i, iMax;
-    console.log("getValue of", this.type.type, "node")
 
     if (this.type.type == 'List') {
       var arr = [];
@@ -233,7 +232,7 @@ define(['./appendNodeFactory', './util'], function (appendNodeFactory, util) {
       });
       return obj;
     }
-    else if (this.type.type == 'Constructor') {
+    else if (this.type.type == 'Constructor' || this.type.type == 'Choice') {
       // Call getValue recursively for children nodes.
       var v = this.value;
       this.childs.forEach (function (child) {
