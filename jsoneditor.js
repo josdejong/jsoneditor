@@ -24,7 +24,7 @@
  *
  * @author  Jos de Jong, <wjosdejong@gmail.com>
  * @version 3.1.2
- * @date    2014-12-23
+ * @date    2014-12-29
  */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
@@ -110,7 +110,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	   *                                                      modes 'text' and 'code'
 	   * @param {Object | undefined} json JSON object
 	   */
-	  function JSONEditor (container, options, json, type) {
+	  function JSONEditor (container, options, value, type) {
 	    if (!(this instanceof JSONEditor)) {
 	      throw new Error('JSONEditor constructor called without "new".');
 	    }
@@ -122,7 +122,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	          'Please install the newest version of your browser.');
 	    }
 	    if (arguments.length) {
-	      this._create(container, options, json, type);
+	      this._create(container, options, value, type);
 	    }
 	  }
 
@@ -147,13 +147,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	   * Create the JSONEditor
 	   * @param {Element} container    Container element
 	   * @param {Object}  [options]    See description in constructor
-	   * @param {Object | undefined} json JSON object
+	   * @param {Object | undefined} value Value
 	   * @private
 	   */
-	  JSONEditor.prototype._create = function (container, options, json, type) {
+	  JSONEditor.prototype._create = function (container, options, value, type) {
 	    this.container = container;
 	    this.options = options || {};
-	    this.json = json || {};
+	    this.value = value || {};
 	    this.type = type || {type: "Constructor", label: "Null", fieldName: "", children: []};
 	    var mode = this.options.mode || 'tree';
 	    this.setMode(mode);
@@ -166,27 +166,19 @@ return /******/ (function(modules) { // webpackBootstrap
 	  JSONEditor.prototype._delete = function () {};
 
 	  /**
-	   * Set JSON object in editor
-	   * @param {Object | undefined} json      JSON data
+	   * Set edited object in editor
+	   * @param {Object | undefined} value      value
 	   */
-	  JSONEditor.prototype.set = function (json) {
-	    this.json = json;
+	  JSONEditor.prototype.set = function (value) {
+	    this.value = value;
 	  };
 
 	  /**
-	   * Get JSON from the editor
-	   * @returns {Object} json
+	   * Get data structure from the editor
+	   * @returns {Object} value
 	   */
 	  JSONEditor.prototype.get = function () {
-	    return this.json;
-	  };
-
-	  /**
-	   * Get stringified JSON contents from the editor
-	   * @returns {String} jsonText
-	   */
-	  JSONEditor.prototype.getText = function () {
-	    return JSON.stringify(this.json);
+	    return this.value;
 	  };
 
 	  /**
@@ -225,7 +217,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    if (config) {
 	      try {
 	        name = this.getName();
-	        data = this.get(); // get text or json
+	        data = this.get(); // get value
 
 	        this._delete();
 	        util.extend(this, config.mixin);
@@ -417,12 +409,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	  var domFocus = null;
 
 	  /**
-	   * Set JSON object in editor
-	   * @param {Object | undefined} json      JSON data
+	   * Set AIMARA value in editor
+	   * @param {Object | undefined} value      value
 	   */
-	  treemode.set = function (json) {
-	    // verify if json is valid JSON, ignore when a function
-	    if (json instanceof Function || (json === undefined)) {
+	  treemode.set = function (value) {
+	    // verify if value is valid value, ignore when a function
+	    if (value instanceof Function || (value === undefined)) {
 	      this.clear();
 	    }
 	    else {
@@ -431,7 +423,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	      // replace the root node
 	      var params = {
 	        'field': this.options.name,
-	        'value': json,
+	        'value': value,
 	        'type': this.type
 	      };
 	      var node = new Node(this, params);
@@ -452,7 +444,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	  /**
 	   * Get JSON object from editor
-	   * @return {Object | undefined} json
+	   * @return {Object | undefined} value
 	   */
 	  treemode.get = function () {
 	    // remove focus from currently edited node
@@ -466,14 +458,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	    else {
 	      return undefined;
 	    }
-	  };
-
-	  /**
-	   * Get the text contents of the editor
-	   * @return {String} jsonText
-	   */
-	  treemode.getText = function() {
-	    return JSON.stringify(this.get());
 	  };
 
 	  /**
@@ -2397,6 +2381,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	   */
 	  Node.prototype.getValue = function() {
 	    //var childs, i, iMax;
+	    console.log("getValue of", this.type.type, "node")
 
 	    if (this.type.type == 'List') {
 	      var arr = [];
@@ -2412,6 +2397,14 @@ return /******/ (function(modules) { // webpackBootstrap
 	      });
 	      return obj;
 	    }
+	    else if (this.type.type == 'Constructor') {
+	      // Call getValue recursively for children nodes.
+	      var v = this.value;
+	      this.childs.forEach (function (child) {
+	        v[child.getField()] = child.getValue();
+	      });
+	      return v;
+	    } 
 	    else {
 	      if (this.value === undefined) {
 	        this._getDomValue();
