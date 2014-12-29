@@ -2381,7 +2381,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	   */
 	  Node.prototype.getValue = function() {
 	    //var childs, i, iMax;
-	    console.log("getValue of", this.type.type, "node")
 
 	    if (this.type.type == 'List') {
 	      var arr = [];
@@ -2397,7 +2396,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	      });
 	      return obj;
 	    }
-	    else if (this.type.type == 'Constructor') {
+	    else if (this.type.type == 'Constructor' || this.type.type == 'Choice') {
 	      // Call getValue recursively for children nodes.
 	      var v = this.value;
 	      this.childs.forEach (function (child) {
