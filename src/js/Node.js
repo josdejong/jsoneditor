@@ -107,7 +107,7 @@ define(['./appendNodeFactory', './util'], function (appendNodeFactory, util) {
   };
 
   /**
-   * Set value. Value is a JSON structure or an element String, Boolean, etc.
+   * Set value. Value is an AIMARA value.
    * @param {*} value
    * @param {Type} [type]
    */
@@ -198,21 +198,11 @@ define(['./appendNodeFactory', './util'], function (appendNodeFactory, util) {
       // value
       this.childs = undefined;
       this.value = value;
-      /* TODO
-       if (typeof(value) == 'string') {
-       var escValue = JSON.stringify(value);
-       this.value = escValue.substring(1, escValue.length - 1);
-       util.log('check', value, this.value);
-       }
-       else {
-       this.value = value;
-       }
-       */
     }
   };
 
   /**
-   * Get value. Value is a JSON structure
+   * Get value. Value is an AIMARA value
    * @return {*} value
    */
   Node.prototype.getValue = function() {

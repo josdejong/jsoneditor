@@ -24,7 +24,7 @@ define(['./treemode', './util'], function (treemode, util) {
    *                                                      spaces. 4 by default.
    *                                                      Only applicable for
    *                                                      modes 'text' and 'code'
-   * @param {Object | undefined} json JSON object
+   * @param {Object | undefined} value JSON object
    */
   function JSONEditor (container, options, value, type) {
     if (!(this instanceof JSONEditor)) {
@@ -47,7 +47,7 @@ define(['./treemode', './util'], function (treemode, util) {
    * {
    *     tree: {
    *         mixin: TreeEditor,
-   *         data: 'json'
+   *         data: 'value'
    *     },
    *     text: {
    *         mixin: TextEditor,
@@ -193,7 +193,6 @@ define(['./treemode', './util'], function (treemode, util) {
    *                            When the JSONEditor switches to a mixin, all mixin
    *                            functions are added to the JSONEditor, and then
    *                            the function `create(container, options)` is executed.
-   * - `data: 'text' | 'json'`  The type of data that will be used to load the mixin.
    * - `[load: function]`       An optional function called after the mixin
    *                            has been loaded.
    *
@@ -212,7 +211,6 @@ define(['./treemode', './util'], function (treemode, util) {
       // validate the new mode
       if (!('mode' in mode)) throw new Error('Property "mode" missing');
       if (!('mixin' in mode)) throw new Error('Property "mixin" missing');
-      if (!('data' in mode)) throw new Error('Property "data" missing');
       var name = mode.mode;
       if (name in JSONEditor.modes) {
         throw new Error('Mode "' + name + '" already registered');

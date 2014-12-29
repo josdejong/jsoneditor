@@ -113,7 +113,7 @@ define(['./Highlighter', './History', './SearchBox', './Node', './util'],
   };
 
   /**
-   * Get JSON object from editor
+   * Get AIMARA value from editor
    * @return {Object | undefined} value
    */
   treemode.get = function () {
@@ -661,17 +661,7 @@ define(['./Highlighter', './History', './SearchBox', './Node', './util'],
     {
       mode: 'tree',
       mixin: treemode,
-      data: 'json'
-    },
-    {
-      mode: 'view',
-      mixin: treemode,
-      data: 'json'
-    },
-    {
-      mode: 'form',
-      mixin: treemode,
-      data: 'json'
+      data: 'value'
     }
   ];
 });

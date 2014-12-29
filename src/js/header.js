@@ -1,9 +1,10 @@
 /*!
- * jsoneditor.js
+ * aimaraeditor.js
  *
  * @brief
- * JSONEditor is a web-based tool to view, edit, and format JSON.
- * It shows data a clear, editable treeview.
+ * AIMARA editor is a js tool for editing AIMARA values. It is based on
+ * JSONEditor by Jos de Jong, but without any affiliation or connection
+ * to its author.
  *
  * Supported browsers: Chrome, Firefox, Safari, Opera, Internet Explorer 8+
  *
@@ -20,9 +21,10 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  *
- * Copyright (c) 2011-2014 Jos de Jong, http://jsoneditoronline.org
+ * Copyright (c) 2014 Daniel Moisset, http://machinalis.com/
+ * Copyright (c) 2011-2014 Jos de Jong
  *
- * @author  Jos de Jong, <wjosdejong@gmail.com>
+ * @author  Daniel Moisset, dmoisset@machinalis.com
  * @version @@version
  * @date    @@date
  */
