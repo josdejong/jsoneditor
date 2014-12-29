@@ -78,7 +78,7 @@ define(['./util'], function (util) {
 
       var domText = dom.text;
       if (domText) {
-        domText.innerHTML = 'Extend ' + this.parent.type.type;
+        domText.innerHTML = 'Extend ' + this.parent.type.getType();
       }
 
       // attach or detach the contents of the append node:
@@ -108,7 +108,7 @@ define(['./util'], function (util) {
      * @return {boolean} isVisible
      */
     AppendNode.prototype.isVisible = function () {
-      return this.parent.type.type == 'List' || this.parent.type.type == 'Dict';
+      return this.parent.type.getType() == 'List' || this.parent.type.getType() == 'Dict';
     };
 
     /**
@@ -116,16 +116,15 @@ define(['./util'], function (util) {
      * @param {Event} event
      */
     AppendNode.prototype.onEvent = function (event) {
-      var type = event.type;
+      var etype = event.type;
       var target = event.target || event.srcElement;
       var dom = this.dom;
 
-      if (type == 'click') {
-        var type = this.parent.type.children[0];
+      if (etype == 'click') {
+        var type = this.parent.type.getChildren()[0];
         var value = type.buildDefaultValue();
         this._onAppend('', value, type);
-      }
-      if (type == 'keydown') {
+      } else  if (etype == 'keydown') {
         this.onKeyDown(event);
       }
     };

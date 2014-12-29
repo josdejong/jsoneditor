@@ -130,25 +130,25 @@ define(['./appendNodeFactory', './util'], function (appendNodeFactory, util) {
     if (!this.type) {
       this.childs = undefined;
       this.value = null;
-    } else if (this.type.type == 'List') {
+    } else if (this.type.getType() == 'List') {
       this.childs = [];
       for (i = 0, iMax = value.length; i < iMax; i++) {
         childValue = value[i];
         child = new Node(this.editor, {
           value: childValue,
-          type: this.type.children[0],
+          type: this.type.getChildren()[0],
         });
         this.appendChild(child);
       }
       this.value = value;
     }
-    else if (this.type.type == 'Constructor') {
+    else if (this.type.getType() == 'Constructor') {
       this.childs = [];
-      fields = this.type.children;
+      fields = this.type.getChildren();
       for (i = 0, iMax = fields.length; i < iMax; i++) {
-        childValue = value[fields[i].fieldName];
+        childValue = value[fields[i].getFieldName()];
         child = new Node(this.editor, {
-          field: fields[i].fieldName,
+          field: fields[i].getFieldName(),
           value: childValue,
           type: fields[i],
         });
@@ -156,18 +156,18 @@ define(['./appendNodeFactory', './util'], function (appendNodeFactory, util) {
       }
       this.value = value;
     }
-    else if (this.type.type == 'Choice') {
+    else if (this.type.getType() == 'Choice') {
       this.childs = [];
-      var choices = this.type.children;
+      var choices = this.type.getChildren();
       for (i = 0, iMax = choices.length; i < iMax; i++) {
-        if (choices[i].label == value.getLabel()) break;
+        if (choices[i].getLabel() == value.getLabel()) break;
       }
       var constructor = choices[i];
-      fields = constructor.children;
+      fields = constructor.getChildren();
       for (i = 0, iMax = fields.length; i < iMax; i++) {
-        childValue = value[fields[i].fieldName];
+        childValue = value[fields[i].getFieldName()];
         child = new Node(this.editor, {
-          field: fields[i].fieldName,
+          field: fields[i].getFieldName(),
           value: childValue,
           type: fields[i],
         });
@@ -175,7 +175,7 @@ define(['./appendNodeFactory', './util'], function (appendNodeFactory, util) {
       }
       this.value = value;
     }
-    else if (this.type.type == 'Dict') {
+    else if (this.type.getType() == 'Dict') {
       // object
       this.childs = [];
       for (var childField in value) {
@@ -186,7 +186,7 @@ define(['./appendNodeFactory', './util'], function (appendNodeFactory, util) {
             child = new Node(this.editor, {
               field: childField,
               value: childValue,
-              type: this.type.children[0],
+              type: this.type.getChildren()[0],
             });
             this.appendChild(child);
           }
@@ -208,21 +208,21 @@ define(['./appendNodeFactory', './util'], function (appendNodeFactory, util) {
   Node.prototype.getValue = function() {
     //var childs, i, iMax;
 
-    if (this.type.type == 'List') {
+    if (this.type.getType() == 'List') {
       var arr = [];
       this.childs.forEach (function (child) {
         arr.push(child.getValue());
       });
       return arr;
     }
-    else if (this.type.type == 'Dict') {
+    else if (this.type.getType() == 'Dict') {
       var obj = {};
       this.childs.forEach (function (child) {
         obj[child.getField()] = child.getValue();
       });
       return obj;
     }
-    else if (this.type.type == 'Constructor' || this.type.type == 'Choice') {
+    else if (this.type.getType() == 'Constructor' || this.type.getType() == 'Choice') {
       // Call getValue recursively for children nodes.
       var v = this.value;
       this.childs.forEach (function (child) {
@@ -412,8 +412,8 @@ define(['./appendNodeFactory', './util'], function (appendNodeFactory, util) {
     if (this._hasChilds()) {
       // adjust the link to the parent
       node.setParent(this);
-      node.fieldEditable = (this.type.type == 'Dict');
-      if (this.type.type == 'List') {
+      node.fieldEditable = (this.type.getType() == 'Dict');
+      if (this.type.getType() == 'List') {
         node.index = this.childs.length;
       }
       this.childs.push(node);
@@ -504,7 +504,7 @@ define(['./appendNodeFactory', './util'], function (appendNodeFactory, util) {
 
         // adjust the link to the parent
         node.setParent(this);
-        node.fieldEditable = (this.type.type == 'Dict');
+        node.fieldEditable = (this.type.getType() == 'Dict');
         this.childs.push(node);
       }
       else {
@@ -516,7 +516,7 @@ define(['./appendNodeFactory', './util'], function (appendNodeFactory, util) {
 
         // adjust the link to the parent
         node.setParent(this);
-        node.fieldEditable = (this.type.type == 'Dict');
+        node.fieldEditable = (this.type.getType() == 'Dict');
         this.childs.splice(index, 0, node);
       }
 
@@ -886,13 +886,13 @@ define(['./appendNodeFactory', './util'], function (appendNodeFactory, util) {
   Node.prototype._getDomValue = function(silent) {
     var valueInnerText, oldValue;
 
-    if (this.type.type === 'Choice') {
+    if (this.type.getType() === 'Choice') {
       oldValue = this.value;
       var option = this.dom.value.options[this.dom.value.selectedIndex].value;
-      for (var i = 0; i < this.type.children.length; i++) {
-        if (this.type.children[i].label === option) break;
+      for (var i = 0; i < this.type.getChildren().length; i++) {
+        if (this.type.getChildren()[i].getLabel() === option) break;
       }
-      var newValue = this.type.children[i].buildDefaultValue();
+      var newValue = this.type.getChildren[i].buildDefaultValue();
 
       var table = this.dom.tr ? this.dom.tr.parentNode : undefined;
       var lastTr;
@@ -933,7 +933,7 @@ define(['./appendNodeFactory', './util'], function (appendNodeFactory, util) {
     }
 
 
-    if (this.dom.value && this.type.type != 'List' && this.type.type != 'Dict' && this.type.type != 'Choice') {
+    if (this.dom.value && this.type.getType() != 'List' && this.type.getType() != 'Dict' && this.type.getType() != 'Choice') {
       var valueInnerText = util.getInnerText(this.dom.value);
     }
 
@@ -941,7 +941,7 @@ define(['./appendNodeFactory', './util'], function (appendNodeFactory, util) {
       try {
         // retrieve the value
         var value;
-        if (this.type.type == 'String') {
+        if (this.type.getType() == 'String') {
           value = this._unescapeHTML(valueInnerText);
         }
         else {
@@ -983,7 +983,7 @@ define(['./appendNodeFactory', './util'], function (appendNodeFactory, util) {
       // set text color depending on value type
       // TODO: put colors in css
       var v = this.value;
-      var t = this.type.type;
+      var t = this.type.getType();
       var isUrl = (t == 'String' && util.isUrl(v));
       var color = '';
       if (isUrl && !this.editable.value) { // TODO: when to apply this?
@@ -1011,7 +1011,7 @@ define(['./appendNodeFactory', './util'], function (appendNodeFactory, util) {
       domValue.style.color = color;
 
       // make background color light-gray when empty
-      var isEmpty = (String(this.value) == '' && this.type.type != 'List' && this.type.type != 'Dict' && this.type.type != 'Constructor');
+      var isEmpty = (String(this.value) == '' && this.type.getType() != 'List' && this.type.getType() != 'Dict' && this.type.getType() != 'Constructor');
       if (isEmpty) {
         util.addClassName(domValue, 'empty');
       }
@@ -1030,7 +1030,7 @@ define(['./appendNodeFactory', './util'], function (appendNodeFactory, util) {
       // update title
       if (t == 'List' || t == 'Dict') {
         var count = this.childs ? this.childs.length : 0;
-        domValue.title = this.type.type + ' containing ' + count + ' items';
+        domValue.title = this.type.getType() + ' containing ' + count + ' items';
       }
       else if (t == 'string' && util.isUrl(v)) {
         if (this.editable.value) {
@@ -1073,7 +1073,7 @@ define(['./appendNodeFactory', './util'], function (appendNodeFactory, util) {
     var domField = this.dom.field;
     if (domField) {
       // make backgound color lightgray when empty
-      var isEmpty = (String(this.field) == '' && this.parent.type.type != 'List');
+      var isEmpty = (String(this.field) == '' && this.parent.type.getType() != 'List');
       if (isEmpty) {
         util.addClassName(domField, 'empty');
       }
@@ -1510,7 +1510,7 @@ define(['./appendNodeFactory', './util'], function (appendNodeFactory, util) {
         field = this.field;
       }
       else if (this._hasChilds()) {
-        field = this.type.type;
+        field = this.type.getType();
       }
       else {
         field = '';
@@ -1522,22 +1522,22 @@ define(['./appendNodeFactory', './util'], function (appendNodeFactory, util) {
     var domValue = this.dom.value;
     if (domValue) {
       var count = this.childs ? this.childs.length : 0;
-      if (this.type.type == 'List') {
+      if (this.type.getType() == 'List') {
         domValue.innerHTML = '[' + count + ']';
       }
-      else if (this.type.type == 'Dict') {
+      else if (this.type.getType() == 'Dict') {
         domValue.innerHTML = '{' + count + '}';
       }
-      else if (this.type.type == 'Constructor') {
-        domValue.innerHTML = this.type.label + '(...)';
+      else if (this.type.getType() == 'Constructor') {
+        domValue.innerHTML = this.type.getLabel() + '(...)';
       }
-      else if (this.type.type == 'Choice') {
+      else if (this.type.getType() == 'Choice') {
         domValue.innerHTML = '';
         var valueLabel = this.value?this.value.getLabel():'';
-        for (var i = 0; i < this.type.children.length; i++) {
+        for (var i = 0; i < this.type.getChildren().length; i++) {
           var option = document.createElement('option')
-          option.innerHTML = this.type.children[i].label;
-          option.setAttribute('value', this.type.children[i].label);
+          option.innerHTML = this.type.getChildren()[i].getLabel();
+          option.setAttribute('value', this.type.getChildren()[i].getLabel());
           domValue.appendChild(option);
         }
         domValue.value = valueLabel;
@@ -1582,7 +1582,7 @@ define(['./appendNodeFactory', './util'], function (appendNodeFactory, util) {
     var domValue = this.dom.value;
     var childs = this.childs;
     if (domValue && childs) {
-      if (this.type.type == 'List') {
+      if (this.type.getType() == 'List') {
         childs.forEach(function (child, index) {
           child.index = index;
           var childField = child.dom.field;
@@ -1591,7 +1591,7 @@ define(['./appendNodeFactory', './util'], function (appendNodeFactory, util) {
           }
         });
       }
-      else if (this.type.type == 'Dict') {
+      else if (this.type.getType() == 'Dict') {
         childs.forEach(function (child) {
           if (child.index != undefined) {
             delete child.index;
@@ -1612,22 +1612,22 @@ define(['./appendNodeFactory', './util'], function (appendNodeFactory, util) {
   Node.prototype._createDomValue = function () {
     var domValue;
 
-    if (this.type.type == 'List') {
+    if (this.type.getType() == 'List') {
       domValue = document.createElement('div');
       domValue.className = 'readonly';
       domValue.innerHTML = '[...]';
     }
-    else if (this.type.type == 'Dict') {
+    else if (this.type.getType() == 'Dict') {
       domValue = document.createElement('div');
       domValue.className = 'readonly';
       domValue.innerHTML = '{...}';
     }
-    else if (this.type.type == 'Constructor') {
+    else if (this.type.getType() == 'Constructor') {
       domValue = document.createElement('div');
       domValue.className = 'readonly';
       domValue.innerHTML = '(...)';
     }
-    else if (this.type.type == 'Choice') {
+    else if (this.type.getType() == 'Choice') {
       domValue = document.createElement('select');
     }
     else {
@@ -1700,7 +1700,7 @@ define(['./appendNodeFactory', './util'], function (appendNodeFactory, util) {
     var tdSeparator = document.createElement('td');
     tdSeparator.className = 'tree';
     tr.appendChild(tdSeparator);
-    if (this.type.type != 'Dict' && this.type.type != 'List' && this.type.type != 'Constructor') {
+    if (this.type.getType() != 'Dict' && this.type.getType() != 'List' && this.type.getType() != 'Constructor') {
       tdSeparator.appendChild(document.createTextNode(':'));
       tdSeparator.className = 'separator';
     }
@@ -1766,7 +1766,7 @@ define(['./appendNodeFactory', './util'], function (appendNodeFactory, util) {
         case 'change':
           this._getDomValue(true);
           this._updateDomValue();
-          if (this.value && this.type.type === "String") {
+          if (this.value && this.type.getType() === "String") {
             domValue.innerHTML = this._escapeHTML(this.value);
           }
           break;
@@ -2445,22 +2445,22 @@ define(['./appendNodeFactory', './util'], function (appendNodeFactory, util) {
    * @private
    */
   Node.prototype._hasChilds = function () {
-    if (this.type.type === 'Choice') {
-      for (var i = 0; i < this.type.children.length; i++) {
-        if (this.type.children[i].children.length > 0) return true;
+    if (this.type.getType() === 'Choice') {
+      for (var i = 0; i < this.type.getChildren().length; i++) {
+        if (this.type.getChildren()[i].getChildren().length > 0) return true;
       }
       return false;
 
       // FIXME: only if THE CURRENT VALUE has children
       /*
-      for (var i = 0; i < this.type.children.length; i++)
-        if (this.type.children[i].label === this.value.getLabel()) {
-          return this.type.children[i].children.length > 0;
+      for (var i = 0; i < this.type.getChildren().length; i++)
+        if (this.type.getChildren()[i].getLabel() === this.value.getLabel()) {
+          return this.type.getChildren()[i].getChildren().length > 0;
         }
       return false;
       */
     } else {
-      return this.type.children.length > 0;
+      return this.type.getChildren().length > 0;
     }
   };
 

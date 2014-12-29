@@ -64,13 +64,14 @@ define(['./treemode', './util'], function (treemode, util) {
    * @param {Element} container    Container element
    * @param {Object}  [options]    See description in constructor
    * @param {Object | undefined} value Value
+   * @param {TypeInfo} type        Type for the value
    * @private
    */
   JSONEditor.prototype._create = function (container, options, value, type) {
     this.container = container;
     this.options = options || {};
     this.value = value || {};
-    this.type = type || {type: "Constructor", label: "Null", fieldName: "", children: []};
+    this.type = type;
     var mode = this.options.mode || 'tree';
     this.setMode(mode);
   };
