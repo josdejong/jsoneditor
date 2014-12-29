@@ -1,9 +1,10 @@
 /*!
- * jsoneditor.js
+ * aimaraeditor.js
  *
  * @brief
- * JSONEditor is a web-based tool to view, edit, and format JSON.
- * It shows data a clear, editable treeview.
+ * AIMARA editor is a js tool for editing AIMARA values. It is based on
+ * JSONEditor by Jos de Jong, but without any affiliation or connection
+ * to its author.
  *
  * Supported browsers: Chrome, Firefox, Safari, Opera, Internet Explorer 8+
  *
@@ -20,12 +21,14 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  *
- * Copyright (c) 2011-2014 Jos de Jong, http://jsoneditoronline.org
+ * Copyright (c) 2014 Daniel Moisset, http://machinalis.com/
+ * Copyright (c) 2011-2014 Jos de Jong
  *
- * @author  Jos de Jong, <wjosdejong@gmail.com>
+ * @author  Daniel Moisset, dmoisset@machinalis.com
  * @version 3.1.2
  * @date    2014-12-29
  */
+
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
 		module.exports = factory();
@@ -108,7 +111,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	   *                                                      spaces. 4 by default.
 	   *                                                      Only applicable for
 	   *                                                      modes 'text' and 'code'
-	   * @param {Object | undefined} json JSON object
+	   * @param {Object | undefined} value JSON object
 	   */
 	  function JSONEditor (container, options, value, type) {
 	    if (!(this instanceof JSONEditor)) {
@@ -131,7 +134,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	   * {
 	   *     tree: {
 	   *         mixin: TreeEditor,
-	   *         data: 'json'
+	   *         data: 'value'
 	   *     },
 	   *     text: {
 	   *         mixin: TextEditor,
@@ -148,13 +151,14 @@ return /******/ (function(modules) { // webpackBootstrap
 	   * @param {Element} container    Container element
 	   * @param {Object}  [options]    See description in constructor
 	   * @param {Object | undefined} value Value
+	   * @param {TypeInfo} type        Type for the value
 	   * @private
 	   */
 	  JSONEditor.prototype._create = function (container, options, value, type) {
 	    this.container = container;
 	    this.options = options || {};
 	    this.value = value || {};
-	    this.type = type || {type: "Constructor", label: "Null", fieldName: "", children: []};
+	    this.type = type;
 	    var mode = this.options.mode || 'tree';
 	    this.setMode(mode);
 	  };
@@ -277,7 +281,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	   *                            When the JSONEditor switches to a mixin, all mixin
 	   *                            functions are added to the JSONEditor, and then
 	   *                            the function `create(container, options)` is executed.
-	   * - `data: 'text' | 'json'`  The type of data that will be used to load the mixin.
 	   * - `[load: function]`       An optional function called after the mixin
 	   *                            has been loaded.
 	   *
@@ -296,7 +299,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	      // validate the new mode
 	      if (!('mode' in mode)) throw new Error('Property "mode" missing');
 	      if (!('mixin' in mode)) throw new Error('Property "mixin" missing');
-	      if (!('data' in mode)) throw new Error('Property "data" missing');
 	      var name = mode.mode;
 	      if (name in JSONEditor.modes) {
 	        throw new Error('Mode "' + name + '" already registered');
@@ -443,7 +445,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  };
 
 	  /**
-	   * Get JSON object from editor
+	   * Get AIMARA value from editor
 	   * @return {Object | undefined} value
 	   */
 	  treemode.get = function () {
@@ -991,17 +993,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    {
 	      mode: 'tree',
 	      mixin: treemode,
-	      data: 'json'
-	    },
-	    {
-	      mode: 'view',
-	      mixin: treemode,
-	      data: 'json'
-	    },
-	    {
-	      mode: 'form',
-	      mixin: treemode,
-	      data: 'json'
+	      data: 'value'
 	    }
 	  ];
 	}.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
@@ -2271,7 +2263,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  };
 
 	  /**
-	   * Set value. Value is a JSON structure or an element String, Boolean, etc.
+	   * Set value. Value is an AIMARA value.
 	   * @param {*} value
 	   * @param {Type} [type]
 	   */
@@ -2294,25 +2286,25 @@ return /******/ (function(modules) { // webpackBootstrap
 	    if (!this.type) {
 	      this.childs = undefined;
 	      this.value = null;
-	    } else if (this.type.type == 'List') {
+	    } else if (this.type.getType() == 'List') {
 	      this.childs = [];
 	      for (i = 0, iMax = value.length; i < iMax; i++) {
 	        childValue = value[i];
 	        child = new Node(this.editor, {
 	          value: childValue,
-	          type: this.type.children[0],
+	          type: this.type.getChildren()[0],
 	        });
 	        this.appendChild(child);
 	      }
 	      this.value = value;
 	    }
-	    else if (this.type.type == 'Constructor') {
+	    else if (this.type.getType() == 'Constructor') {
 	      this.childs = [];
-	      fields = this.type.children;
+	      fields = this.type.getChildren();
 	      for (i = 0, iMax = fields.length; i < iMax; i++) {
-	        childValue = value[fields[i].fieldName];
+	        childValue = value[fields[i].getFieldName()];
 	        child = new Node(this.editor, {
-	          field: fields[i].fieldName,
+	          field: fields[i].getFieldName(),
 	          value: childValue,
 	          type: fields[i],
 	        });
@@ -2320,18 +2312,18 @@ return /******/ (function(modules) { // webpackBootstrap
 	      }
 	      this.value = value;
 	    }
-	    else if (this.type.type == 'Choice') {
+	    else if (this.type.getType() == 'Choice') {
 	      this.childs = [];
-	      var choices = this.type.children;
+	      var choices = this.type.getChildren();
 	      for (i = 0, iMax = choices.length; i < iMax; i++) {
-	        if (choices[i].label == value.getLabel()) break;
+	        if (choices[i].getLabel() == value.getLabel()) break;
 	      }
 	      var constructor = choices[i];
-	      fields = constructor.children;
+	      fields = constructor.getChildren();
 	      for (i = 0, iMax = fields.length; i < iMax; i++) {
-	        childValue = value[fields[i].fieldName];
+	        childValue = value[fields[i].getFieldName()];
 	        child = new Node(this.editor, {
-	          field: fields[i].fieldName,
+	          field: fields[i].getFieldName(),
 	          value: childValue,
 	          type: fields[i],
 	        });
@@ -2339,7 +2331,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	      }
 	      this.value = value;
 	    }
-	    else if (this.type.type == 'Dict') {
+	    else if (this.type.getType() == 'Dict') {
 	      // object
 	      this.childs = [];
 	      for (var childField in value) {
@@ -2350,7 +2342,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            child = new Node(this.editor, {
 	              field: childField,
 	              value: childValue,
-	              type: this.type.children[0],
+	              type: this.type.getChildren()[0],
 	            });
 	            this.appendChild(child);
 	          }
@@ -2362,41 +2354,31 @@ return /******/ (function(modules) { // webpackBootstrap
 	      // value
 	      this.childs = undefined;
 	      this.value = value;
-	      /* TODO
-	       if (typeof(value) == 'string') {
-	       var escValue = JSON.stringify(value);
-	       this.value = escValue.substring(1, escValue.length - 1);
-	       util.log('check', value, this.value);
-	       }
-	       else {
-	       this.value = value;
-	       }
-	       */
 	    }
 	  };
 
 	  /**
-	   * Get value. Value is a JSON structure
+	   * Get value. Value is an AIMARA value
 	   * @return {*} value
 	   */
 	  Node.prototype.getValue = function() {
 	    //var childs, i, iMax;
 
-	    if (this.type.type == 'List') {
+	    if (this.type.getType() == 'List') {
 	      var arr = [];
 	      this.childs.forEach (function (child) {
 	        arr.push(child.getValue());
 	      });
 	      return arr;
 	    }
-	    else if (this.type.type == 'Dict') {
+	    else if (this.type.getType() == 'Dict') {
 	      var obj = {};
 	      this.childs.forEach (function (child) {
 	        obj[child.getField()] = child.getValue();
 	      });
 	      return obj;
 	    }
-	    else if (this.type.type == 'Constructor' || this.type.type == 'Choice') {
+	    else if (this.type.getType() == 'Constructor' || this.type.getType() == 'Choice') {
 	      // Call getValue recursively for children nodes.
 	      var v = this.value;
 	      this.childs.forEach (function (child) {
@@ -2586,8 +2568,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	    if (this._hasChilds()) {
 	      // adjust the link to the parent
 	      node.setParent(this);
-	      node.fieldEditable = (this.type.type == 'Dict');
-	      if (this.type.type == 'List') {
+	      node.fieldEditable = (this.type.getType() == 'Dict');
+	      if (this.type.getType() == 'List') {
 	        node.index = this.childs.length;
 	      }
 	      this.childs.push(node);
@@ -2678,7 +2660,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	        // adjust the link to the parent
 	        node.setParent(this);
-	        node.fieldEditable = (this.type.type == 'Dict');
+	        node.fieldEditable = (this.type.getType() == 'Dict');
 	        this.childs.push(node);
 	      }
 	      else {
@@ -2690,7 +2672,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	        // adjust the link to the parent
 	        node.setParent(this);
-	        node.fieldEditable = (this.type.type == 'Dict');
+	        node.fieldEditable = (this.type.getType() == 'Dict');
 	        this.childs.splice(index, 0, node);
 	      }
 
@@ -3060,13 +3042,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	  Node.prototype._getDomValue = function(silent) {
 	    var valueInnerText, oldValue;
 
-	    if (this.type.type === 'Choice') {
+	    if (this.type.getType() === 'Choice') {
 	      oldValue = this.value;
 	      var option = this.dom.value.options[this.dom.value.selectedIndex].value;
-	      for (var i = 0; i < this.type.children.length; i++) {
-	        if (this.type.children[i].label === option) break;
+	      for (var i = 0; i < this.type.getChildren().length; i++) {
+	        if (this.type.getChildren()[i].getLabel() === option) break;
 	      }
-	      var newValue = this.type.children[i].buildDefaultValue();
+	      var newValue = this.type.getChildren[i].buildDefaultValue();
 
 	      var table = this.dom.tr ? this.dom.tr.parentNode : undefined;
 	      var lastTr;
@@ -3107,7 +3089,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }
 
 
-	    if (this.dom.value && this.type.type != 'List' && this.type.type != 'Dict' && this.type.type != 'Choice') {
+	    if (this.dom.value && this.type.getType() != 'List' && this.type.getType() != 'Dict' && this.type.getType() != 'Choice') {
 	      var valueInnerText = util.getInnerText(this.dom.value);
 	    }
 
@@ -3115,7 +3097,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	      try {
 	        // retrieve the value
 	        var value;
-	        if (this.type.type == 'String') {
+	        if (this.type.getType() == 'String') {
 	          value = this._unescapeHTML(valueInnerText);
 	        }
 	        else {
@@ -3157,7 +3139,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	      // set text color depending on value type
 	      // TODO: put colors in css
 	      var v = this.value;
-	      var t = this.type.type;
+	      var t = this.type.getType();
 	      var isUrl = (t == 'String' && util.isUrl(v));
 	      var color = '';
 	      if (isUrl && !this.editable.value) { // TODO: when to apply this?
@@ -3185,7 +3167,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	      domValue.style.color = color;
 
 	      // make background color light-gray when empty
-	      var isEmpty = (String(this.value) == '' && this.type.type != 'List' && this.type.type != 'Dict' && this.type.type != 'Constructor');
+	      var isEmpty = (String(this.value) == '' && this.type.getType() != 'List' && this.type.getType() != 'Dict' && this.type.getType() != 'Constructor');
 	      if (isEmpty) {
 	        util.addClassName(domValue, 'empty');
 	      }
@@ -3204,7 +3186,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	      // update title
 	      if (t == 'List' || t == 'Dict') {
 	        var count = this.childs ? this.childs.length : 0;
-	        domValue.title = this.type.type + ' containing ' + count + ' items';
+	        domValue.title = this.type.getType() + ' containing ' + count + ' items';
 	      }
 	      else if (t == 'string' && util.isUrl(v)) {
 	        if (this.editable.value) {
@@ -3247,7 +3229,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    var domField = this.dom.field;
 	    if (domField) {
 	      // make backgound color lightgray when empty
-	      var isEmpty = (String(this.field) == '' && this.parent.type.type != 'List');
+	      var isEmpty = (String(this.field) == '' && this.parent.type.getType() != 'List');
 	      if (isEmpty) {
 	        util.addClassName(domField, 'empty');
 	      }
@@ -3684,7 +3666,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        field = this.field;
 	      }
 	      else if (this._hasChilds()) {
-	        field = this.type.type;
+	        field = this.type.getType();
 	      }
 	      else {
 	        field = '';
@@ -3696,22 +3678,22 @@ return /******/ (function(modules) { // webpackBootstrap
 	    var domValue = this.dom.value;
 	    if (domValue) {
 	      var count = this.childs ? this.childs.length : 0;
-	      if (this.type.type == 'List') {
+	      if (this.type.getType() == 'List') {
 	        domValue.innerHTML = '[' + count + ']';
 	      }
-	      else if (this.type.type == 'Dict') {
+	      else if (this.type.getType() == 'Dict') {
 	        domValue.innerHTML = '{' + count + '}';
 	      }
-	      else if (this.type.type == 'Constructor') {
-	        domValue.innerHTML = this.type.label + '(...)';
+	      else if (this.type.getType() == 'Constructor') {
+	        domValue.innerHTML = this.type.getLabel() + '(...)';
 	      }
-	      else if (this.type.type == 'Choice') {
+	      else if (this.type.getType() == 'Choice') {
 	        domValue.innerHTML = '';
 	        var valueLabel = this.value?this.value.getLabel():'';
-	        for (var i = 0; i < this.type.children.length; i++) {
+	        for (var i = 0; i < this.type.getChildren().length; i++) {
 	          var option = document.createElement('option')
-	          option.innerHTML = this.type.children[i].label;
-	          option.setAttribute('value', this.type.children[i].label);
+	          option.innerHTML = this.type.getChildren()[i].getLabel();
+	          option.setAttribute('value', this.type.getChildren()[i].getLabel());
 	          domValue.appendChild(option);
 	        }
 	        domValue.value = valueLabel;
@@ -3756,7 +3738,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    var domValue = this.dom.value;
 	    var childs = this.childs;
 	    if (domValue && childs) {
-	      if (this.type.type == 'List') {
+	      if (this.type.getType() == 'List') {
 	        childs.forEach(function (child, index) {
 	          child.index = index;
 	          var childField = child.dom.field;
@@ -3765,7 +3747,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	          }
 	        });
 	      }
-	      else if (this.type.type == 'Dict') {
+	      else if (this.type.getType() == 'Dict') {
 	        childs.forEach(function (child) {
 	          if (child.index != undefined) {
 	            delete child.index;
@@ -3786,22 +3768,22 @@ return /******/ (function(modules) { // webpackBootstrap
 	  Node.prototype._createDomValue = function () {
 	    var domValue;
 
-	    if (this.type.type == 'List') {
+	    if (this.type.getType() == 'List') {
 	      domValue = document.createElement('div');
 	      domValue.className = 'readonly';
 	      domValue.innerHTML = '[...]';
 	    }
-	    else if (this.type.type == 'Dict') {
+	    else if (this.type.getType() == 'Dict') {
 	      domValue = document.createElement('div');
 	      domValue.className = 'readonly';
 	      domValue.innerHTML = '{...}';
 	    }
-	    else if (this.type.type == 'Constructor') {
+	    else if (this.type.getType() == 'Constructor') {
 	      domValue = document.createElement('div');
 	      domValue.className = 'readonly';
 	      domValue.innerHTML = '(...)';
 	    }
-	    else if (this.type.type == 'Choice') {
+	    else if (this.type.getType() == 'Choice') {
 	      domValue = document.createElement('select');
 	    }
 	    else {
@@ -3874,7 +3856,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    var tdSeparator = document.createElement('td');
 	    tdSeparator.className = 'tree';
 	    tr.appendChild(tdSeparator);
-	    if (this.type.type != 'Dict' && this.type.type != 'List' && this.type.type != 'Constructor') {
+	    if (this.type.getType() != 'Dict' && this.type.getType() != 'List' && this.type.getType() != 'Constructor') {
 	      tdSeparator.appendChild(document.createTextNode(':'));
 	      tdSeparator.className = 'separator';
 	    }
@@ -3940,7 +3922,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        case 'change':
 	          this._getDomValue(true);
 	          this._updateDomValue();
-	          if (this.value && this.type.type === "String") {
+	          if (this.value && this.type.getType() === "String") {
 	            domValue.innerHTML = this._escapeHTML(this.value);
 	          }
 	          break;
@@ -4619,22 +4601,22 @@ return /******/ (function(modules) { // webpackBootstrap
 	   * @private
 	   */
 	  Node.prototype._hasChilds = function () {
-	    if (this.type.type === 'Choice') {
-	      for (var i = 0; i < this.type.children.length; i++) {
-	        if (this.type.children[i].children.length > 0) return true;
+	    if (this.type.getType() === 'Choice') {
+	      for (var i = 0; i < this.type.getChildren().length; i++) {
+	        if (this.type.getChildren()[i].getChildren().length > 0) return true;
 	      }
 	      return false;
 
 	      // FIXME: only if THE CURRENT VALUE has children
 	      /*
-	      for (var i = 0; i < this.type.children.length; i++)
-	        if (this.type.children[i].label === this.value.getLabel()) {
-	          return this.type.children[i].children.length > 0;
+	      for (var i = 0; i < this.type.getChildren().length; i++)
+	        if (this.type.getChildren()[i].getLabel() === this.value.getLabel()) {
+	          return this.type.getChildren()[i].getChildren().length > 0;
 	        }
 	      return false;
 	      */
 	    } else {
-	      return this.type.children.length > 0;
+	      return this.type.getChildren().length > 0;
 	    }
 	  };
 
@@ -4834,7 +4816,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	      var domText = dom.text;
 	      if (domText) {
-	        domText.innerHTML = 'Extend ' + this.parent.type.type;
+	        domText.innerHTML = 'Extend ' + this.parent.type.getType();
 	      }
 
 	      // attach or detach the contents of the append node:
@@ -4864,7 +4846,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	     * @return {boolean} isVisible
 	     */
 	    AppendNode.prototype.isVisible = function () {
-	      return this.parent.type.type == 'List' || this.parent.type.type == 'Dict';
+	      return this.parent.type.getType() == 'List' || this.parent.type.getType() == 'Dict';
 	    };
 
 	    /**
@@ -4872,16 +4854,15 @@ return /******/ (function(modules) { // webpackBootstrap
 	     * @param {Event} event
 	     */
 	    AppendNode.prototype.onEvent = function (event) {
-	      var type = event.type;
+	      var etype = event.type;
 	      var target = event.target || event.srcElement;
 	      var dom = this.dom;
 
-	      if (type == 'click') {
-	        var type = this.parent.type.children[0];
+	      if (etype == 'click') {
+	        var type = this.parent.type.getChildren()[0];
 	        var value = type.buildDefaultValue();
 	        this._onAppend('', value, type);
-	      }
-	      if (type == 'keydown') {
+	      } else  if (etype == 'keydown') {
 	        this.onKeyDown(event);
 	      }
 	    };
