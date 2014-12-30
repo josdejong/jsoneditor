@@ -20,157 +20,68 @@
 <script type="text/javascript" >
   // create the editor
   var container = document.getElementById('jsoneditor');
-  var type = {
-    "type": "Constructor",
-    "label": "S",
-    "fieldName": "",
-    "children": [
-      {
-        "type": "List",
-        "label": "",
-        "fieldName": "pieces",
-        "children": [
-          {
-            "type": "Constructor",
-            "label": "Piece",
-            "fieldName": "",
-            buildDefaultValue: function () {
-                return {
-                    color: {getLabel: function () {return "Black"}},
-                    kind: {getLabel: function () {return "Bishop"}, moved: true},
-                    position: {x:0, y:0}
-                }
-            },
-            "children": [
-              {
-                "type": "Constructor",
-                "label": "Point",
-                "fieldName": "position",
-                "children": [
-                  {
-                    "type": "Number",
-                    "label": "",
-                    "fieldName": "x",
-                    "children": []
-                  },
-                  {
-                    "type": "Number",
-                    "label": "",
-                    "fieldName": "y",
-                    "children": []
-                  }
-                ]
-              },
-              {
-                "type": "Choice",
-                "label": "Color",
-                "fieldName": "color",
-                "children": [
-                  {
-                    "type": "Constructor",
-                    "label": "Black",
-                    "fieldName": "",
-                    "children": [],
-                    buildDefaultValue: function () {return {getLabel: function () {return "Black"}}}
-                  },
-                  {
-                    "type": "Constructor",
-                    "label": "White",
-                    "fieldName": "",
-                    "children": [],
-                    buildDefaultValue: function () {return {getLabel: function () {return "White"}}}
-                  }
-                ]
-              },
-              {
-                "type": "Choice",
-                "label": "Kind",
-                "fieldName": "kind",
-                "children": [
-                  {
-                    "type": "Constructor",
-                    "label": "Rook",
-                    "fieldName": "",
-                    "children": [
-                      {
-                        "type": "Boolean",
-                        "label": "",
-                        "fieldName": "moved",
-                        "children": []
-                      }
-                    ],
-                    buildDefaultValue: function () {return {moved: false, getLabel: function () {return "Rook"}}}
-                  },
-                  {
-                    "type": "Constructor",
-                    "label": "King",
-                    "fieldName": "",
-                    "children": [
-                      {
-                        "type": "Boolean",
-                        "label": "",
-                        "fieldName": "moved",
-                        "children": []
-                      }
-                    ],
-                    buildDefaultValue: function () {return {moved: false, getLabel: function () {return "King"}}}
-                  },
-                  {
-                    "type": "Constructor",
-                    "label": "Knight",
-                    "fieldName": "",
-                    "children": [],
-                    buildDefaultValue: function () {return {getLabel: function () {return "Knight"}}}
-                  },
-                  {
-                    "type": "Constructor",
-                    "label": "Bishop",
-                    "fieldName": "",
-                    "children": [],
-                    buildDefaultValue: function () {return {getLabel: function () {return "Bishop"}}}
-                  },
-                  {
-                    "type": "Constructor",
-                    "label": "Queen",
-                    "fieldName": "",
-                    "children": [
-                      {
-                        "type": "Constructor",
-                        "label": "Point",
-                        "fieldName": "target",
-                        "children": [
-                          {
-                            "type": "Number",
-                            "label": "",
-                            "fieldName": "x",
-                            "children": []
-                          },
-                          {
-                            "type": "Number",
-                            "label": "",
-                            "fieldName": "y",
-                            "children": []
-                          }
-                        ]
-                      }
-                    ],
-                    buildDefaultValue: function () {return {target: {x:0, y:0}, getLabel: function () {return "Queen"}}}
-                  }
-                ]
-              }
-            ]
-          }
-        ]
-      },
-      {
-        "type": "Number",
-        "label": "",
-        "fieldName": "last_capture",
-        "children": []
-      }
-    ]
+  
+  function makeValue(label, attributes) {
+    attributes.getLabel = function () { return label };
+    return attributes;
   }
   
+  function makeType(type, label, fieldName, children, defaultValue) {
+    result = {};
+    result.getType = function () {return type};
+    result.getLabel = function () {return label};
+    result.getFieldName = function () {return fieldName};
+    result.getChildren = function () {return children || []};
+    if (defaultValue) {
+        result.buildDefaultValue = function () {return defaultValue};
+    }
+    return result;
+  }
+
+  var type = makeType("Constructor", "S", "", [
+    makeType("List", "", "pieces", [
+      makeType(
+        "Constructor", "Pieces", "", [
+          makeType("Constructor", "Point", "position", [
+            makeType("Number", "", "x"),
+            makeType("Number", "", "y"),
+          ]),
+          makeType("Choice", "Color", "color", [
+            makeType("Constructor", "White", "", makeValue("White", {})),
+            makeType("Constructor", "Black", "", makeValue("Black", {}))
+          ]),
+          makeType("Choice", "Kind", "kind", [
+            makeType("Constructor", "Rook", "", [
+                makeType("Boolean", "", "Moved", [])
+              ],
+              makeValue("Rook", {moved: false})
+            ),
+            makeType("Constructor", "King", "", [
+                makeType("Boolean", "", "Moved", [])
+              ],
+              makeValue("King", {moved: false})
+            ),
+            makeType("Constructor", "Knight", "", [], makeValue("Knight", {})),
+            makeType("Constructor", "Bishop", "", [], makeValue("Bishop", {})),
+            makeType("Constructor", "Queen", "", [
+                makeType("Constructor", "Point", "target", [
+                  makeType("Number", "", "x"),
+                  makeType("Number", "", "y"),
+                ])
+              ],
+              makeValue("Queen", {target: {x:0, y: 0}})
+            )
+          ]),
+        ], {
+          color: makeValue("Black", {}),
+          kind:  makeValue("Bishop", {moved: true}),
+          position: {x:0, y:0}
+        }
+      )
+    ]),
+    makeType("Number", "", "last_capture", [])
+  ])
+
   var data = {
     pieces: [],
     last_capture: -1
