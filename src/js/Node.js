@@ -1714,6 +1714,16 @@ define(['./appendNodeFactory', './util'], function (appendNodeFactory, util) {
     tdValue.appendChild(dom.value);
     dom.tdValue = tdValue;
 
+    // create the remove button
+    if (this._isRemovable()) {
+      var tdValue = document.createElement('td');
+      tdValue.className = 'tree';
+      var button = document.createElement('button');
+      button.className = 'remove'
+      tr.appendChild(tdValue);
+      tdValue.appendChild(button);
+    }
+
     return domTree;
   };
 
@@ -2462,6 +2472,19 @@ define(['./appendNodeFactory', './util'], function (appendNodeFactory, util) {
     } else {
       return this.type.getChildren().length > 0;
     }
+  };
+
+  /**
+   * True for nodes that can be removed by user (list or dictionary elements)
+   * @return {boolean} is removable
+   * @private
+   */
+  Node.prototype._isRemovable = function () {
+    if (this.parent) {
+      var ptype = this.parent.type.getType();
+      return (ptype === "List") || (ptype === "Dict");
+    };
+    return false
   };
 
   /**
