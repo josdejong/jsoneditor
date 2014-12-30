@@ -892,7 +892,7 @@ define(['./appendNodeFactory', './util'], function (appendNodeFactory, util) {
       for (var i = 0; i < this.type.getChildren().length; i++) {
         if (this.type.getChildren()[i].getLabel() === option) break;
       }
-      var newValue = this.type.getChildren[i].buildDefaultValue();
+      var newValue = this.type.getChildren()[i].buildDefaultValue();
 
       var table = this.dom.tr ? this.dom.tr.parentNode : undefined;
       var lastTr;
