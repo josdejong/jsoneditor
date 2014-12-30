@@ -1719,6 +1719,7 @@ define(['./appendNodeFactory', './util'], function (appendNodeFactory, util) {
       var tdValue = document.createElement('td');
       tdValue.className = 'tree';
       var button = document.createElement('button');
+      dom.removeButton = button;
       button.className = 'remove'
       tr.appendChild(tdValue);
       tdValue.appendChild(button);
@@ -1761,6 +1762,11 @@ define(['./appendNodeFactory', './util'], function (appendNodeFactory, util) {
         var recurse = event.ctrlKey; // with ctrl-key, expand/collapse all
         this._onExpand(recurse);
       }
+    }
+
+    // remove events
+    if (type == 'click' && target === dom.removeButton) {
+      this._onRemove();
     }
 
     // value events
