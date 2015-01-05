@@ -23,6 +23,7 @@
   
   function makeValue(label, attributes) {
     attributes.getLabel = function () { return label };
+    attributes._label = label;
     return attributes;
   }
   
@@ -47,8 +48,8 @@
             makeType("Number", "", "y"),
           ]),
           makeType("Choice", "Color", "color", [
-            makeType("Constructor", "White", "", makeValue("White", {})),
-            makeType("Constructor", "Black", "", makeValue("Black", {}))
+            makeType("Constructor", "White", "", [], makeValue("White", {})),
+            makeType("Constructor", "Black", "", [], makeValue("Black", {}))
           ]),
           makeType("Choice", "Kind", "kind", [
             makeType("Constructor", "Rook", "", [
