@@ -26,7 +26,7 @@
  *
  * @author  Daniel Moisset, dmoisset@machinalis.com
  * @version 3.1.2
- * @date    2014-12-29
+ * @date    2015-01-05
  */
 
 (function webpackUniversalModuleDefinition(root, factory) {
@@ -2594,7 +2594,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	  /**
 	   * Move a node from its current parent to this node
-	   * Only applicable when Node value is of type array or object
+	   * Only applicable when Node value is of type List or Dict
 	   * @param {Node} node
 	   * @param {Node} beforeNode
 	   */
@@ -3048,7 +3048,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	      for (var i = 0; i < this.type.getChildren().length; i++) {
 	        if (this.type.getChildren()[i].getLabel() === option) break;
 	      }
-	      var newValue = this.type.getChildren[i].buildDefaultValue();
+	      var newValue = this.type.getChildren()[i].buildDefaultValue();
 
 	      var table = this.dom.tr ? this.dom.tr.parentNode : undefined;
 	      var lastTr;
@@ -3324,11 +3324,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	      var tdDrag = document.createElement('td');
 	      if (this.editable.field) {
 	        // create draggable area
-	        if (this.parent) {
+	        if (this._isRemovable()) {  
+	          // Note that only removable items are draggable. So we reuse this
+	          // check
 	          var domDrag = document.createElement('button');
 	          dom.drag = domDrag;
 	          domDrag.className = 'dragarea';
-	          domDrag.title = 'Drag to move this field (Alt+Shift+Arrows)';
+	          domDrag.title = 'Drag to move this element';
 	          tdDrag.appendChild(domDrag);
 	        }
 	      }
@@ -3435,7 +3437,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        }
 	      }
 
-	      if (nodePrev) {
+	      if (nodePrev && nodePrev.parent === this.parent) {
 	        nodePrev.parent.moveBefore(this, nodePrev);
 	        moved = true;
 	      }
@@ -3503,7 +3505,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	          }
 
 	          // move the node when its position is changed
-	          if (trLast.nextSibling != nodeNext.dom.tr) {
+	          if (trLast.nextSibling != nodeNext.dom.tr && nodeNext.parent === this.parent) {
 	            nodeNext.parent.moveBefore(this, nodeNext);
 	            moved = true;
 	          }
@@ -3870,6 +3872,17 @@ return /******/ (function(modules) { // webpackBootstrap
 	    tdValue.appendChild(dom.value);
 	    dom.tdValue = tdValue;
 
+	    // create the remove button
+	    if (this._isRemovable()) {
+	      var tdValue = document.createElement('td');
+	      tdValue.className = 'tree';
+	      var button = document.createElement('button');
+	      dom.removeButton = button;
+	      button.className = 'remove'
+	      tr.appendChild(tdValue);
+	      tdValue.appendChild(button);
+	    }
+
 	    return domTree;
 	  };
 
@@ -3907,6 +3920,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	        var recurse = event.ctrlKey; // with ctrl-key, expand/collapse all
 	        this._onExpand(recurse);
 	      }
+	    }
+
+	    // remove events
+	    if (type == 'click' && target === dom.removeButton) {
+	      this._onRemove();
 	    }
 
 	    // value events
@@ -4618,6 +4636,19 @@ return /******/ (function(modules) { // webpackBootstrap
 	    } else {
 	      return this.type.getChildren().length > 0;
 	    }
+	  };
+
+	  /**
+	   * True for nodes that can be removed by user (list or dictionary elements)
+	   * @return {boolean} is removable
+	   * @private
+	   */
+	  Node.prototype._isRemovable = function () {
+	    if (this.parent) {
+	      var ptype = this.parent.type.getType();
+	      return (ptype === "List") || (ptype === "Dict");
+	    };
+	    return false
 	  };
 
 	  /**

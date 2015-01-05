@@ -50,7 +50,7 @@
   padding: 0;
   margin: 0;
   background-image: url("img/jsoneditor-icons.png");
-  background-position: 0 -24px;
+  background-position: 0 0px;
 }
 
 .jsoneditor .value.url {
@@ -103,6 +103,10 @@
 
 .jsoneditor div.tree button.collapsed {
   background-position: 0 -48px;
+}
+
+.jsoneditor div.tree button.remove {
+  background-position: -24px 0px;
 }
 
 .jsoneditor div.tree button.expanded {
