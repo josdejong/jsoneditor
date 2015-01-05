@@ -438,7 +438,7 @@ define(['./appendNodeFactory', './util'], function (appendNodeFactory, util) {
 
   /**
    * Move a node from its current parent to this node
-   * Only applicable when Node value is of type array or object
+   * Only applicable when Node value is of type List or Dict
    * @param {Node} node
    * @param {Node} beforeNode
    */
@@ -1168,11 +1168,13 @@ define(['./appendNodeFactory', './util'], function (appendNodeFactory, util) {
       var tdDrag = document.createElement('td');
       if (this.editable.field) {
         // create draggable area
-        if (this.parent) {
+        if (this._isRemovable()) {  
+          // Note that only removable items are draggable. So we reuse this
+          // check
           var domDrag = document.createElement('button');
           dom.drag = domDrag;
           domDrag.className = 'dragarea';
-          domDrag.title = 'Drag to move this field (Alt+Shift+Arrows)';
+          domDrag.title = 'Drag to move this element';
           tdDrag.appendChild(domDrag);
         }
       }
@@ -1279,7 +1281,7 @@ define(['./appendNodeFactory', './util'], function (appendNodeFactory, util) {
         }
       }
 
-      if (nodePrev) {
+      if (nodePrev && nodePrev.parent === this.parent) {
         nodePrev.parent.moveBefore(this, nodePrev);
         moved = true;
       }
@@ -1347,7 +1349,7 @@ define(['./appendNodeFactory', './util'], function (appendNodeFactory, util) {
           }
 
           // move the node when its position is changed
-          if (trLast.nextSibling != nodeNext.dom.tr) {
+          if (trLast.nextSibling != nodeNext.dom.tr && nodeNext.parent === this.parent) {
             nodeNext.parent.moveBefore(this, nodeNext);
             moved = true;
           }
