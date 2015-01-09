@@ -806,6 +806,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	      if (target.nodeName == 'BUTTON') {
 	        event.preventDefault();
 	      }
+	      event.stopPropagation();
 	    };
 	    this.frame.oninput = onEvent;
 	    this.frame.onchange = onEvent;
