@@ -24,7 +24,7 @@
  *
  * @author  Jos de Jong, <wjosdejong@gmail.com>
  * @version 3.1.3-SNAPSHOT
- * @date    2014-09-13
+ * @date    2015-01-23
  */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
@@ -1120,6 +1120,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	      // prevent default submit action when the editor is located inside a form
 	      event.preventDefault();
 	    };
+	    this.frame.onkeydown = function (event) {
+	      me._onKeyDown(event);
+	    };
 
 	    // create menu
 	    this.menu = document.createElement('div');
@@ -1129,7 +1132,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    // create format button
 	    var buttonFormat = document.createElement('button');
 	    buttonFormat.className = 'format';
-	    buttonFormat.title = 'Format JSON data, with proper indentation and line feeds';
+	    buttonFormat.title = 'Format JSON data, with proper indentation and line feeds (Ctrl+\\)';
 	    this.menu.appendChild(buttonFormat);
 	    buttonFormat.onclick = function () {
 	      try {
@@ -1143,7 +1146,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    // create compact button
 	    var buttonCompact = document.createElement('button');
 	    buttonCompact.className = 'compact';
-	    buttonCompact.title = 'Compact JSON data, remove all whitespaces';
+	    buttonCompact.title = 'Compact JSON data, remove all whitespaces (Ctrl+Shift+\\)';
 	    this.menu.appendChild(buttonCompact);
 	    buttonCompact.onclick = function () {
 	      try {
@@ -1225,6 +1228,31 @@ return /******/ (function(modules) { // webpackBootstrap
 	          }
 	        }
 	      }
+	    }
+	  };
+
+	  /**
+	   * Event handler for keydown. Handles shortcut keys
+	   * @param {Event} event
+	   * @private
+	   */
+	  textmode._onKeyDown = function (event) {
+	    var keynum = event.which || event.keyCode;
+	    var handled = false;
+
+	    if (keynum == 220 && event.ctrlKey) {
+	      if (event.shiftKey) { // Ctrl+Shift+\
+	        this.compact();
+	      }
+	      else { // Ctrl+\
+	        this.format();
+	      }
+	      handled = true;
+	    }
+
+	    if (handled) {
+	      event.preventDefault();
+	      event.stopPropagation();
 	    }
 	  };
 
@@ -2618,7 +2646,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    var node = this;
 	    var path = [];
 	    while (node) {
-	      var field = node.field || node.index;
+	      var field = node.field != undefined ? node.field : node.index;
 	      if (field !== undefined) {
 	        path.unshift(field);
 	      }

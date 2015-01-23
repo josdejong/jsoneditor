@@ -475,6 +475,7 @@
   background-color: #f0f2f5;
 }
 
+.jsoneditor .menu button:focus,
 .jsoneditor .menu button:active {
   background-color: #ffffff;
 }
@@ -551,6 +552,8 @@
   font-family: arial, sans-serif;
   font-size: 10pt;
   color: #1A1A1A;
+  background: transparent;
+  /* For Firefox */
 }
 
 .jsoneditor .search {

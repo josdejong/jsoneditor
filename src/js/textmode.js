@@ -51,6 +51,9 @@ define(['./modeswitcher', './util'], function (modeswitcher, util) {
       // prevent default submit action when the editor is located inside a form
       event.preventDefault();
     };
+    this.frame.onkeydown = function (event) {
+      me._onKeyDown(event);
+    };
 
     // create menu
     this.menu = document.createElement('div');
@@ -60,7 +63,7 @@ define(['./modeswitcher', './util'], function (modeswitcher, util) {
     // create format button
     var buttonFormat = document.createElement('button');
     buttonFormat.className = 'format';
-    buttonFormat.title = 'Format JSON data, with proper indentation and line feeds';
+    buttonFormat.title = 'Format JSON data, with proper indentation and line feeds (Ctrl+\\)';
     this.menu.appendChild(buttonFormat);
     buttonFormat.onclick = function () {
       try {
@@ -74,7 +77,7 @@ define(['./modeswitcher', './util'], function (modeswitcher, util) {
     // create compact button
     var buttonCompact = document.createElement('button');
     buttonCompact.className = 'compact';
-    buttonCompact.title = 'Compact JSON data, remove all whitespaces';
+    buttonCompact.title = 'Compact JSON data, remove all whitespaces (Ctrl+Shift+\\)';
     this.menu.appendChild(buttonCompact);
     buttonCompact.onclick = function () {
       try {
@@ -156,6 +159,31 @@ define(['./modeswitcher', './util'], function (modeswitcher, util) {
           }
         }
       }
+    }
+  };
+
+  /**
+   * Event handler for keydown. Handles shortcut keys
+   * @param {Event} event
+   * @private
+   */
+  textmode._onKeyDown = function (event) {
+    var keynum = event.which || event.keyCode;
+    var handled = false;
+
+    if (keynum == 220 && event.ctrlKey) {
+      if (event.shiftKey) { // Ctrl+Shift+\
+        this.compact();
+      }
+      else { // Ctrl+\
+        this.format();
+      }
+      handled = true;
+    }
+
+    if (handled) {
+      event.preventDefault();
+      event.stopPropagation();
     }
   };
 
