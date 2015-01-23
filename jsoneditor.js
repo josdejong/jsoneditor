@@ -26,7 +26,7 @@
  *
  * @author  Daniel Moisset, dmoisset@machinalis.com
  * @version 3.1.2
- * @date    2015-01-05
+ * @date    2015-01-23
  */
 
 (function webpackUniversalModuleDefinition(root, factory) {
@@ -96,6 +96,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	   *                                                  'form', 'text', and 'code'.
 	   *                               {function} change  Callback method, triggered
 	   *                                                  on change of contents
+	   *                               {function} click  Callback method, triggered
+	   *                                                  on click
 	   *                               {Boolean} search   Enable search box.
 	   *                                                  True by default
 	   *                                                  Only applicable for modes
@@ -349,6 +351,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	   *                                                  True by default
 	   *                               {function} change  Callback method, triggered
 	   *                                                  on change of contents
+	   *                               {function} click  Callback method, triggered
+	   *                                                  when a node is clicked
 	   *                               {String} name      Field name for the root node.
 	   * @private
 	   */
@@ -893,6 +897,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	    var node = Node.getNodeFromTarget(target);
 	    if (node) {
 	      node.onEvent(event);
+	      if (event.type == 'click' && this.options.click) {
+	        this.options.click(node)
+	      }
 	    }
 	  };
 
