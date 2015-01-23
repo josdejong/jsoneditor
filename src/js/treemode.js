@@ -17,6 +17,8 @@ define(['./Highlighter', './History', './SearchBox', './Node', './util'],
    *                                                  True by default
    *                               {function} change  Callback method, triggered
    *                                                  on change of contents
+   *                               {function} click  Callback method, triggered
+   *                                                  when a node is clicked
    *                               {String} name      Field name for the root node.
    * @private
    */
@@ -561,6 +563,9 @@ define(['./Highlighter', './History', './SearchBox', './Node', './util'],
     var node = Node.getNodeFromTarget(target);
     if (node) {
       node.onEvent(event);
+      if (event.type == 'click' && this.options.click) {
+        this.options.click(node)
+      }
     }
   };
 
