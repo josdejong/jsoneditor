@@ -9,6 +9,8 @@ define(['./treemode', './util'], function (treemode, util) {
    *                                                  'form', 'text', and 'code'.
    *                               {function} change  Callback method, triggered
    *                                                  on change of contents
+   *                               {function} click  Callback method, triggered
+   *                                                  on click
    *                               {Boolean} search   Enable search box.
    *                                                  True by default
    *                                                  Only applicable for modes
