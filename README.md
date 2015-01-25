@@ -74,7 +74,7 @@ download:
 <html>
 <head>
     <link rel="stylesheet" type="text/css" href="jsoneditor/jsoneditor.min.css">
-    <script type="text/javascript" src="jsoneditor/jsoneditor-min.js"></script>
+    <script type="text/javascript" src="jsoneditor/jsoneditor.min.js"></script>
 </head>
 <body>
     <div id="jsoneditor" style="width: 400px; height: 400px;"></div>
