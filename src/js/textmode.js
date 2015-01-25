@@ -112,7 +112,7 @@ define(['./modeswitcher', './util'], function (modeswitcher, util) {
       editor.setShowPrintMargin(false);
       editor.setFontSize(13);
       editor.getSession().setMode('ace/mode/json');
-      editor.getSession().setTabSize(2);
+      editor.getSession().setTabSize(this.indentation);
       editor.getSession().setUseSoftTabs(true);
       editor.getSession().setUseWrapMode(true);
       this.editor = editor;

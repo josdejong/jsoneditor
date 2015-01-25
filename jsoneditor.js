@@ -24,7 +24,7 @@
  *
  * @author  Jos de Jong, <wjosdejong@gmail.com>
  * @version 3.1.3-SNAPSHOT
- * @date    2015-01-23
+ * @date    2015-01-25
  */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
@@ -1181,7 +1181,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	      editor.setShowPrintMargin(false);
 	      editor.setFontSize(13);
 	      editor.getSession().setMode('ace/mode/json');
-	      editor.getSession().setTabSize(2);
+	      editor.getSession().setTabSize(this.indentation);
 	      editor.getSession().setUseSoftTabs(true);
 	      editor.getSession().setUseWrapMode(true);
 	      this.editor = editor;

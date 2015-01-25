@@ -12,6 +12,7 @@ https://github.com/josdejong/jsoneditor
   after that throws the error.
 - Fixed Node.path() not working for a JSON Object `""`. Thanks @tomalec.
 - Minor styling improvements.
+- Fixed configured indentation not being applied to Ace editor.
 
 
 ## 2014-09-03, version 3.1.2
