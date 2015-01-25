@@ -1,6 +1,6 @@
 {
   "name": "jsoneditor",
-  "version": "3.1.3-SNAPSHOT",
+  "version": "3.2.0",
   "description": "A web-based tool to view, edit and format JSON",
   "tags": [
     "json",
@@ -15,7 +15,7 @@
   },
   "main": [
     "jsoneditor.min.js", 
-    "jsoneditor.css"
+    "jsoneditor.min.css"
   ],
   "bugs": "https://github.com/josdejong/jsoneditor/issues",
   "ignore": [

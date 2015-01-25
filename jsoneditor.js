@@ -20,10 +20,10 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  *
- * Copyright (c) 2011-2014 Jos de Jong, http://jsoneditoronline.org
+ * Copyright (c) 2011-2015 Jos de Jong, http://jsoneditoronline.org
  *
  * @author  Jos de Jong, <wjosdejong@gmail.com>
- * @version 3.1.3-SNAPSHOT
+ * @version 3.2.0
  * @date    2015-01-25
  */
 (function webpackUniversalModuleDefinition(root, factory) {

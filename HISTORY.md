@@ -3,7 +3,7 @@
 https://github.com/josdejong/jsoneditor
 
 
-## not yet released, version 3.2.0
+## 2015-01-25, version 3.2.0
 
 - Implemented shortcut keys `Ctrl+\` to format and `Ctrl+Shift+\` to compact
   JSON when in mode `text` or `code`.
