@@ -112,7 +112,8 @@ define(['./appendNodeFactory', './util'], function (appendNodeFactory, util) {
    * @param {Type} [type]
    */
   Node.prototype.setValue = function(value, type) {
-    var childValue, child;
+    var childValue, child,
+        errors = [];
 
     // first clear all current childs (if any)
     var childs = this.childs;
@@ -131,6 +132,10 @@ define(['./appendNodeFactory', './util'], function (appendNodeFactory, util) {
       this.childs = undefined;
       this.value = null;
     } else if (this.type.getType() == 'List') {
+      if (!(value instanceof Array)) {
+        errors.push('Invalid value, expected a list.');
+        value = this.type.buildDefaultValue();
+      }
       this.childs = [];
       for (i = 0, iMax = value.length; i < iMax; i++) {
         childValue = value[i];
@@ -143,12 +148,21 @@ define(['./appendNodeFactory', './util'], function (appendNodeFactory, util) {
       this.value = value;
     }
     else if (this.type.getType() == 'Constructor') {
+      if (!(value instanceof Object) || (value instanceof Array)) {
+        errors.push('Invalid value, expected a ' + this.type.getLabel() + '.');
+        value = this.type.buildDefaultValue();
+      }
       this.childs = [];
       fields = this.type.getChildren();
       for (i = 0, iMax = fields.length; i < iMax; i++) {
-        childValue = value[fields[i].getFieldName()];
+        fieldName = fields[i].getFieldName()
+        if (value[fieldName] === undefined || value[fieldName] === null) {
+          errors.push('Missing field: ' + fieldName);
+          value[fieldName] = fields[i].buildDefaultValue();
+        }
+        childValue = value[fieldName];
         child = new Node(this.editor, {
-          field: fields[i].getFieldName(),
+          field: fieldName,
           value: childValue,
           type: fields[i],
         });
@@ -159,15 +173,32 @@ define(['./appendNodeFactory', './util'], function (appendNodeFactory, util) {
     else if (this.type.getType() == 'Choice') {
       this.childs = [];
       var choices = this.type.getChildren();
-      for (i = 0, iMax = choices.length; i < iMax; i++) {
-        if (choices[i].getLabel() == value.getLabel()) break;
+      choiceFound = false;
+      try {
+        for (i = 0, iMax = choices.length; i < iMax; i++) {
+          if (choices[i].getLabel() == value.getLabel()) {
+            choiceFound = true;
+            break;
+          }
+        }
+      }
+      catch (err) {} // handled bellow, as choiceFound will be left as false
+      if (!choiceFound) {
+        var choiceNames = [];
+        for (j = 0, jMax = choices.length; j < jMax; j++) {
+          choiceNames.push(choices[j].getLabel());
+        }
+        errors.push('Invalid value, expected a valid choice between ' + choiceNames.join(', ') + '.');
+        value = this.type.buildDefaultValue();
+        i = 0;
       }
       var constructor = choices[i];
       fields = constructor.getChildren();
       for (i = 0, iMax = fields.length; i < iMax; i++) {
-        childValue = value[fields[i].getFieldName()];
+        fieldName = fields[i].getFieldName();
+        childValue = value[fieldName];
         child = new Node(this.editor, {
-          field: fields[i].getFieldName(),
+          field: fieldName,
           value: childValue,
           type: fields[i],
         });
@@ -178,6 +209,10 @@ define(['./appendNodeFactory', './util'], function (appendNodeFactory, util) {
     else if (this.type.getType() == 'Dict') {
       // object
       this.childs = [];
+      if (!(value instanceof Object) || (value instanceof Array)) {
+        errors.push('Invalid value, expected a Dict.');
+        value = this.type.buildDefaultValue();
+      }
       for (var childField in value) {
         if (value.hasOwnProperty(childField)) {
           childValue = value[childField];
@@ -198,6 +233,12 @@ define(['./appendNodeFactory', './util'], function (appendNodeFactory, util) {
       // value
       this.childs = undefined;
       this.value = value;
+    }
+
+    if (this.editor && this.editor.options && typeof this.editor.options.error === 'function') {
+      for (i = 0; i < errors.length; i++) {
+        this.editor.options.error(errors[i]);
+      }
     }
   };
 
