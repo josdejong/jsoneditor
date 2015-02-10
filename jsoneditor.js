@@ -24,7 +24,7 @@
  *
  * @author  Jos de Jong, <wjosdejong@gmail.com>
  * @version 3.2.0
- * @date    2015-01-25
+ * @date    2015-02-10
  */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
@@ -1480,6 +1480,17 @@ return /******/ (function(modules) { // webpackBootstrap
 	    jsonString = jsonString.replace(/([{,]\s*)([a-zA-Z_][a-zA-Z0-9_]*)(\s*:)/g, function ($0, $1, $2, $3) {
 	      return $1 + '"' + $2 + '"' + $3;
 	    });
+
+	    //Strips only jQuery's JSONP
+	    // if(jsonString.match(/.*jQuery.+?\(/)){
+	    //   var jsonStringTemp = jsonString.replace(/.*jQuery.+?\(/,'');
+	    //   jsonString = jsonStringTemp.replace(/\)(?!.*\));?/g,'');
+	    // }
+
+	    //Clear json's surrounding (for example: 123{"a":"b"}456 => {"a":"b"})
+	    jsonString = jsonString.replace(/[^{]*/,'');//remove all characters before first "{" (match first not '{')
+
+	    jsonString = jsonString.replace(/([^}])(?!(.|[\r\n])*(\}))/g,'');//remove all characters after last "}" (match first not '}' which does not have following '}')
 
 	    return jsonString;
 	  };
