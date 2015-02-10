@@ -71,6 +71,17 @@ define(function () {
       return $1 + '"' + $2 + '"' + $3;
     });
 
+    //Strips only jQuery's JSONP
+    // if(jsonString.match(/.*jQuery.+?\(/)){
+    //   var jsonStringTemp = jsonString.replace(/.*jQuery.+?\(/,'');
+    //   jsonString = jsonStringTemp.replace(/\)(?!.*\));?/g,'');
+    // }
+
+    //Clear json's surrounding (for example: 123{"a":"b"}456 => {"a":"b"})
+    jsonString = jsonString.replace(/[^{]*/,'');//remove all characters before first "{" (match first not '{')
+
+    jsonString = jsonString.replace(/([^}])(?!.*(\}))/g,'');//remove all characters after last "}" (match first not '}' which does not have following '}')
+
     return jsonString;
   };
 
