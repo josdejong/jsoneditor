@@ -4,7 +4,7 @@ var fs = require('fs'),
     concat = require('gulp-concat'),
     concatCss = require('gulp-concat-css'),
     minifyCSS = require('gulp-minify-css'),
-    clean = require('gulp-clean'),
+    rimraf = require('gulp-rimraf'),
     shell = require('gulp-shell'),
     merge = require('merge-stream'),
     mkdirp = require('mkdirp'),
@@ -115,7 +115,7 @@ gulp.task('minify', ['bundle'], function () {
 
 gulp.task('asset-clean', function () {
   return gulp.src('./asset', {read: false})
-      .pipe(clean());
+      .pipe(rimraf());
 });
 
 gulp.task('build-ace', shell.task([

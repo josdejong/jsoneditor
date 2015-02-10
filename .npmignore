@@ -13,3 +13,4 @@ gulpfile.js
 .npmignore
 .gitignore
 *.zip
+npm-debug.log
