@@ -80,7 +80,7 @@ define(function () {
     //Clear json's surrounding (for example: 123{"a":"b"}456 => {"a":"b"})
     jsonString = jsonString.replace(/[^{]*/,'');//remove all characters before first "{" (match first not '{')
 
-    jsonString = jsonString.replace(/([^}])(?!.*(\}))/g,'');//remove all characters after last "}" (match first not '}' which does not have following '}')
+    jsonString = jsonString.replace(/([^}])(?!(.|[\r\n])*(\}))/g,'');//remove all characters after last "}" (match first not '}' which does not have following '}')
 
     return jsonString;
   };
