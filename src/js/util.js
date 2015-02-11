@@ -71,16 +71,16 @@ define(function () {
       return $1 + '"' + $2 + '"' + $3;
     });
 
-    //Strips only jQuery's JSONP
-    // if(jsonString.match(/.*jQuery.+?\(/)){
-    //   var jsonStringTemp = jsonString.replace(/.*jQuery.+?\(/,'');
-    //   jsonString = jsonStringTemp.replace(/\)(?!.*\));?/g,'');
-    // }
 
-    //Clear json's surrounding (for example: 123{"a":"b"}456 => {"a":"b"})
-    jsonString = jsonString.replace(/[^{]*/,'');//remove all characters before first "{" (match first not '{')
+    jsonString.replace(/\*(.|[\r\n])*?\*/g,'');//Remove all code comments
 
-    jsonString = jsonString.replace(/([^}])(?!(.|[\r\n])*(\}))/g,'');//remove all characters after last "}" (match first not '}' which does not have following '}')
+    //If JSON starts with a function (Carachters/digist/"_-"), remove this function. 
+    //This is usefull for "stripping" JSONP objects to become JSON
+    //For example: function_12321321 ( [{"a":"b"}] ); => [{"a":"b"}]
+    if(jsonString.match(/[\da-zA-Z_-\s]+\(+\s*/)){
+      var jsonStringTemp = jsonString.replace(/[\da-zA-Z_-\s]+\(+\s*/,'')
+      jsonString = jsonStringTemp.replace(/\s*\)(?!.*[\)])[;\s]*/g,'');
+    }
 
     return jsonString;
   };
