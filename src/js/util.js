@@ -71,8 +71,7 @@ define(function () {
       return $1 + '"' + $2 + '"' + $3;
     });
 
-
-    jsonString.replace(/\*(.|[\r\n])*?\*/g,'');//Remove all code comments
+    jsonString = jsonString.replace(/\/\*(.|[\r\n])*?\*\//g,'');//Remove all code comments
 
     //If JSON starts with a function (Carachters/digist/"_-"), remove this function. 
     //This is usefull for "stripping" JSONP objects to become JSON
