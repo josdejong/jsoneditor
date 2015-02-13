@@ -24,7 +24,7 @@
  *
  * @author  Jos de Jong, <wjosdejong@gmail.com>
  * @version 3.2.0
- * @date    2015-02-12
+ * @date    2015-02-13
  */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
@@ -1490,11 +1490,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    if (match) {
 	      var jsonString = match[1];
 	    }
-	    // if(jsonString.match(/[\da-zA-Z_-\s]+\(+\s*/)){
-	    //   var jsonStringTemp = jsonString.replace(/[\da-zA-Z_-\s]+\(+\s*/,'')
-	    //   jsonString = jsonStringTemp.replace(/\s*\)(?!.*[\)])[;\s]*/g,'');
-	    // }
-
+	   
 	    return jsonString;
 	  };
 
