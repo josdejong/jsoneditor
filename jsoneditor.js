@@ -24,7 +24,7 @@
  *
  * @author  Jos de Jong, <wjosdejong@gmail.com>
  * @version 3.2.0
- * @date    2015-02-11
+ * @date    2015-02-12
  */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
@@ -1486,10 +1486,14 @@ return /******/ (function(modules) { // webpackBootstrap
 	    //If JSON starts with a function (Carachters/digist/"_-"), remove this function. 
 	    //This is usefull for "stripping" JSONP objects to become JSON
 	    //For example: function_12321321 ( [{"a":"b"}] ); => [{"a":"b"}]
-	    if(jsonString.match(/[\da-zA-Z_-\s]+\(+\s*/)){
-	      var jsonStringTemp = jsonString.replace(/[\da-zA-Z_-\s]+\(+\s*/,'')
-	      jsonString = jsonStringTemp.replace(/\s*\)(?!.*[\)])[;\s]*/g,'');
+	    var match = jsonString.match(/^\s*[\dA-z_$]+\s*\(([\s\S]*)\)\s*;?\s*$/);
+	    if (match) {
+	      var jsonString = match[1];
 	    }
+	    // if(jsonString.match(/[\da-zA-Z_-\s]+\(+\s*/)){
+	    //   var jsonStringTemp = jsonString.replace(/[\da-zA-Z_-\s]+\(+\s*/,'')
+	    //   jsonString = jsonStringTemp.replace(/\s*\)(?!.*[\)])[;\s]*/g,'');
+	    // }
 
 	    return jsonString;
 	  };

@@ -76,11 +76,11 @@ define(function () {
     //If JSON starts with a function (Carachters/digist/"_-"), remove this function. 
     //This is usefull for "stripping" JSONP objects to become JSON
     //For example: function_12321321 ( [{"a":"b"}] ); => [{"a":"b"}]
-    if(jsonString.match(/[\da-zA-Z_-\s]+\(+\s*/)){
-      var jsonStringTemp = jsonString.replace(/[\da-zA-Z_-\s]+\(+\s*/,'')
-      jsonString = jsonStringTemp.replace(/\s*\)(?!.*[\)])[;\s]*/g,'');
+    var match = jsonString.match(/^\s*[\dA-z_$]+\s*\(([\s\S]*)\)\s*;?\s*$/);
+    if (match) {
+      var jsonString = match[1];
     }
-
+   
     return jsonString;
   };
 
