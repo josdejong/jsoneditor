@@ -1488,6 +1488,16 @@ return /******/ (function(modules) { // webpackBootstrap
 	    return $1 + '"' + $2 + '"' + $3;
 	  });
 
+	  jsonString = jsonString.replace(/\/\*(.|[\r\n])*?\*\//g,'');//Remove all code comments
+
+	  //If JSON starts with a function (Carachters/digist/"_-"), remove this function. 
+	  //This is usefull for "stripping" JSONP objects to become JSON
+	  //For example: function_12321321 ( [{"a":"b"}] ); => [{"a":"b"}]
+	  var match = jsonString.match(/^\s*[\dA-z_$]+\s*\(([\s\S]*)\)\s*;?\s*$/);
+	  if (match) {
+	    var jsonString = match[1];
+	  }
+
 	  return jsonString;
 	};
 
@@ -5755,7 +5765,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	background: url(\"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAACCAYAAACZgbYnAAAAE0lEQVQImWP4////f4bLly//BwAmVgd1/w11/gAAAABJRU5ErkJggg==\") right repeat-y\
 	}";
 
-	var dom = require("../lib/dom");
+	var dom = acequire("../lib/dom");
 	dom.importCssString(exports.cssText, exports.cssClass);
 	});
 
@@ -21783,7 +21793,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	    try {
 	            var workerSrc = mod.src;
-	    var Blob = __webpack_require__(18);
+	    var Blob = __webpack_require__(21);
 	    var blob = new Blob([ workerSrc ], { type: 'application/javascript' });
 	    var blobUrl = (window.URL || window.webkitURL).createObjectURL(blob);
 
@@ -26126,7 +26136,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    if (!args[1])
 	        throw new Error('Usage: '+args[0]+' FILE');
 	    if (typeof process !== 'undefined') {
-	        var source = __webpack_require__(!(function webpackMissingModule() { var e = new Error("Cannot find module \"fs\""); e.code = 'MODULE_NOT_FOUND'; throw e; }())).readFileSync(__webpack_require__(20).join(process.cwd(), args[1]), "utf8");
+	        var source = __webpack_require__(!(function webpackMissingModule() { var e = new Error("Cannot find module \"fs\""); e.code = 'MODULE_NOT_FOUND'; throw e; }())).readFileSync(__webpack_require__(19).join(process.cwd(), args[1]), "utf8");
 	    } else {
 	        var cwd = __webpack_require__(!(function webpackMissingModule() { var e = new Error("Cannot find module \"file\""); e.code = 'MODULE_NOT_FOUND'; throw e; }())).path(__webpack_require__(!(function webpackMissingModule() { var e = new Error("Cannot find module \"file\""); e.code = 'MODULE_NOT_FOUND'; throw e; }())).cwd());
 	        var source = cwd.join(args[1]).read({charset: "utf-8"});
@@ -26137,7 +26147,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  exports.main(typeof process !== 'undefined' ? process.argv.slice(1) : __webpack_require__(!(function webpackMissingModule() { var e = new Error("Cannot find module \"system\""); e.code = 'MODULE_NOT_FOUND'; throw e; }())).args);
 	}
 	}
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(21), __webpack_require__(19)(module)))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(20), __webpack_require__(18)(module)))
 
 /***/ },
 /* 16 */
@@ -26157,41 +26167,6 @@ return /******/ (function(modules) { // webpackBootstrap
 /* 18 */
 /***/ function(module, exports, __webpack_require__) {
 
-	/* WEBPACK VAR INJECTION */(function(global) {module.exports = get_blob()
-
-	function get_blob() {
-	  if(global.Blob) {
-	    try {
-	      new Blob(['asdf'], {type: 'text/plain'})
-	      return Blob
-	    } catch(err) {}
-	  }
-
-	  var Builder = global.WebKitBlobBuilder ||
-	                global.MozBlobBuilder ||
-	                global.MSBlobBuilder
-
-	  return function(parts, bag) {
-	    var builder = new Builder
-	      , endings = bag.endings
-	      , type = bag.type
-
-	    if(endings) for(var i = 0, len = parts.length; i < len; ++i) {
-	      builder.append(parts[i], endings)
-	    } else for(var i = 0, len = parts.length; i < len; ++i) {
-	      builder.append(parts[i])
-	    }
-
-	    return type ? builder.getBlob(type) : builder.getBlob()
-	  }
-	}
-	
-	/* WEBPACK VAR INJECTION */}.call(exports, (function() { return this; }())))
-
-/***/ },
-/* 19 */
-/***/ function(module, exports, __webpack_require__) {
-
 	module.exports = function(module) {
 		if(!module.webpackPolyfill) {
 			module.deprecate = function() {};
@@ -26205,7 +26180,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 20 */
+/* 19 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {// Copyright Joyent, Inc. and other Node contributors.
@@ -26433,10 +26408,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }
 	;
 	
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(21)))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(20)))
 
 /***/ },
-/* 21 */
+/* 20 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// shim for using process in browser
@@ -26526,6 +26501,41 @@ return /******/ (function(modules) { // webpackBootstrap
 	    throw new Error('process.chdir is not supported');
 	};
 
+
+/***/ },
+/* 21 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/* WEBPACK VAR INJECTION */(function(global) {module.exports = get_blob()
+
+	function get_blob() {
+	  if(global.Blob) {
+	    try {
+	      new Blob(['asdf'], {type: 'text/plain'})
+	      return Blob
+	    } catch(err) {}
+	  }
+
+	  var Builder = global.WebKitBlobBuilder ||
+	                global.MozBlobBuilder ||
+	                global.MSBlobBuilder
+
+	  return function(parts, bag) {
+	    var builder = new Builder
+	      , endings = bag.endings
+	      , type = bag.type
+
+	    if(endings) for(var i = 0, len = parts.length; i < len; ++i) {
+	      builder.append(parts[i], endings)
+	    } else for(var i = 0, len = parts.length; i < len; ++i) {
+	      builder.append(parts[i])
+	    }
+
+	    return type ? builder.getBlob(type) : builder.getBlob()
+	  }
+	}
+	
+	/* WEBPACK VAR INJECTION */}.call(exports, (function() { return this; }())))
 
 /***/ }
 /******/ ])
