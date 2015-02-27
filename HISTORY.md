@@ -7,6 +7,7 @@ https://github.com/josdejong/jsoneditor
 
 - Ace editor and jsonlint are now packed with jsoneditor.js by default.
 - Reworked the source code to CommonJS modules, using `brace` to load Ace.
+- JSONP is now automatically stripped from JSON. Thanks @yanivefraim.
 
 
 ## 2015-01-25, version 3.2.0
