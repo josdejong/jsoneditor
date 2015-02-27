@@ -124,3 +124,10 @@ jsoneditor:
 
   This will build Ace editor, and then generates necessary ace editor files in 
   the folder `./asset/ace`, and jsonlint in the folder `./asset/jsonlint`.
+
+
+### Custom builds
+
+To create a custom build of the JavaScript code, browserify can be used:
+
+    browserify ./index.js -o ./jsoneditor.custom.js -s JSONEditor --ignore-missing
