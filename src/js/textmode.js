@@ -1,3 +1,8 @@
+var ace = require('brace');
+require('brace/mode/json');
+require('brace/ext/searchbox');
+require('./ace/theme-jsoneditor');
+
 var modeswitcher = require('./modeswitcher');
 var util = require('./util');
 

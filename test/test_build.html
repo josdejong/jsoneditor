@@ -1,19 +1,12 @@
 <!DOCTYPE HTML>
 <html>
 <head>
-  <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+  <!--<meta http-equiv="Content-Type" content="text/html;charset=utf-8">-->
 
-  <!-- json editor -->
-  <script type="text/javascript" src="../jsoneditor.js"></script>
+  <script src="../jsoneditor.js"></script>
   <link rel="stylesheet" type="text/css" href="../jsoneditor.css">
 
-  <!-- ace editor -->
-  <script type="text/javascript" src="../asset/ace/ace.js"></script>
-
-  <!-- json lint -->
-  <script type="text/javascript" src="../asset/jsonlint/jsonlint.js"></script>
-
-  <style type="text/css">
+  <style>
     body {
       font: 10.5pt arial;
       color: #4d4d4d;
@@ -41,7 +34,7 @@
 
 <div id="jsoneditor"></div>
 
-<script type="text/javascript" >
+<script>
   var container, options, json, editor;
 
   container = document.getElementById('jsoneditor');

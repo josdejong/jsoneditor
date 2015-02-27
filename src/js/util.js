@@ -1,3 +1,5 @@
+var jsonlint = require('jsonlint');
+
 /**
  * Parse JSON using the parser built-in in the browser.
  * On exception, the jsonString is validated and a detailed error is thrown.
