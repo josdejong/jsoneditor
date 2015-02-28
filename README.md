@@ -6,7 +6,7 @@ Website: http://jsoneditoronline.org/
 Github: https://github.com/josdejong/jsoneditor
 
 
-### Description
+## Description
 
 JSON Editor is a web-based tool to view, edit, and format JSON.
 It has various modes such as a tree editor, a code editor, and a plain text
@@ -22,9 +22,9 @@ Supported browsers: Chrome, Firefox, Safari, Opera, Internet Explorer 9+.
 <img alt="code editor" src="https://raw.github.com/josdejong/jsoneditor/master/misc/codeeditor.png">
 
 
-### Features
+## Features
 
-#### Tree editor
+### Tree editor
 - Edit, add, move, remove, and duplicate fields and values.
 - Change type of values.
 - Sort arrays and objects.
@@ -32,16 +32,16 @@ Supported browsers: Chrome, Firefox, Safari, Opera, Internet Explorer 9+.
 - Search & highlight text in the treeview.
 - Undo and redo all actions.
 
-#### Code editor
+### Code editor
 - Format and compact JSON.
 - Colorized code (powered by Ace).
 - Inspect JSON (powered by Ace).
 
-#### Text editor
+### Text editor
 - Format and compact JSON.
 
 
-### Documentation
+## Documentation
 
 - Documentation:
   - [API](https://github.com/josdejong/jsoneditor/tree/master/docs/api.md)
@@ -52,7 +52,7 @@ Supported browsers: Chrome, Firefox, Safari, Opera, Internet Explorer 9+.
 - [History](https://github.com/josdejong/jsoneditor/blob/master/HISTORY.md)
 
 
-### Install
+## Install
 
 with npm:
 
@@ -67,7 +67,7 @@ download:
 [http://jsoneditoronline.org/downloads/](http://jsoneditoronline.org/downloads/)
 
 
-### Use
+## Use
 
 ```html
 <!DOCTYPE HTML>
@@ -102,7 +102,8 @@ download:
 </html>
 ```
 
-### Build
+
+## Build
 
 The code of the JSON Editor is located in the folder `./src`. To build 
 jsoneditor:
@@ -118,15 +119,8 @@ jsoneditor:
   This will generate the files `./jsoneditor.js`, `./jsoneditor.css`, and  
   minified versions in the root of the project.
 
-- To rebuild the assets (not necessary):
 
-      npm run build-assets
-
-  This will build Ace editor, and then generates necessary ace editor files in 
-  the folder `./asset/ace`, and jsonlint in the folder `./asset/jsonlint`.
-
-
-### Custom builds
+## Custom builds
 
 To create a custom build of the JavaScript code, browserify can be used:
 
