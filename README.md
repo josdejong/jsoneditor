@@ -131,3 +131,6 @@ jsoneditor:
 To create a custom build of the JavaScript code, browserify can be used:
 
     browserify ./index.js -o ./jsoneditor.custom.js -s JSONEditor --ignore-missing
+
+TODO: describe how to create a bundle with Ace editor excluded (accounts for 2/3
+of the total size of the library).
