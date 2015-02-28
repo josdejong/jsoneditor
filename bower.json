@@ -29,6 +29,7 @@
     "tools",
     ".idea",
     "gulpfile.js",
+    "index.js",
     "package.json",
     ".npmignore",
     ".gitignore"
