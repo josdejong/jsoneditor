@@ -5,16 +5,32 @@ describe('util', function () {
 
   describe('sanitize', function () {
 
+    it('should leave valid JSON as is', function () {
+      assert.equal(util.sanitize('{"a":2}'), '{"a":2}');
+    });
+
     it('should replace JavaScript with JSON', function () {
       assert.equal(util.sanitize('{a:2}'), '{"a":2}');
       assert.equal(util.sanitize('{\'a\':2}'), '{"a":2}');
       assert.equal(util.sanitize('{a:\'foo\'}'), '{"a":"foo"}');
 
-      // handle escape characters
-      assert.equal(util.sanitize('{a:"foo\'bar"}'), '{"a":"foo\'bar"}');
-      assert.equal(util.sanitize('{a:"foo\\"bar"}'), '{"a":"foo\\"bar"}');
-      assert.equal(util.sanitize('{a:\'foo"bar\'}'), '{"a":"foo\\"bar"}');
-      assert.equal(util.sanitize('{a:"foo\\\'bar"}'), '{"a":"foo\'bar"}');
+      // should leave string content untouched
+      assert.equal(util.sanitize('"{a:b}"'), '"{a:b}"');
+    });
+
+    it('should add/remove escape characters', function () {
+      assert.equal(util.sanitize('"foo\'bar"'), '"foo\'bar"');
+      assert.equal(util.sanitize('"foo\\"bar"'), '"foo\\"bar"');
+      assert.equal(util.sanitize('\'foo"bar\''), '"foo\\"bar"');
+      assert.equal(util.sanitize('\'foo\\\'bar\''), '"foo\'bar"');
+      assert.equal(util.sanitize('"foo\\\'bar"'), '"foo\'bar"');
+    });
+
+    it('remove comments', function () {
+      assert.equal(util.sanitize('/* foo */ {}'), ' {}');
+
+      // should not remove comments in string
+      assert.equal(util.sanitize('{"str":"/* foo */"}'), '{"str":"/* foo */"}');
     });
 
     it('should strip JSONP notation', function () {

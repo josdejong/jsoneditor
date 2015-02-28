@@ -30,56 +30,121 @@ exports.parse = function parse(jsonString) {
 exports.sanitize = function (jsString) {
   // escape all single and double quotes inside strings
   var chars = [];
-  var inString = false;
   var i = 0;
-  while(i < jsString.length) {
-    var c = jsString.charAt(i);
-    var isEscaped = jsString.charAt(i - 1) === '\\';
 
-    if ((c === '"' || c === '\'') && !isEscaped) {
-      if (c === inString) {
-        // end of string
-        inString = false;
+  //If JSON starts with a function (characters/digits/"_-"), remove this function.
+  //This is useful for "stripping" JSONP objects to become JSON
+  //For example: /* some comment */ function_12321321 ( [{"a":"b"}] ); => [{"a":"b"}]
+  var match = jsString.match(/^(\/\*(.|[\r\n])*?\*\/)?\s*[\da-zA-Z_$]+\s*\(([\s\S]*)\)\s*;?\s*$/);
+  if (match) {
+    jsString = match[3];
+  }
+
+  // helper functions to get the current/prev/next character
+  function curr () { return jsString.charAt(i);     }
+  function next()  { return jsString.charAt(i + 1); }
+  function prev()  { return jsString.charAt(i - 1); }
+
+  // test whether the last non-whitespace character was a brace-open '{'
+  function prevIsBrace() {
+    var ii = i - 1;
+    while (ii >= 0) {
+      var cc = jsString.charAt(ii);
+      if (cc === '{') {
+        return true;
       }
-      else if (!inString) {
-        // start of string
-        inString = c;
+      else if (cc === ' ' || cc === '\n' || cc === '\r') { // whitespace
+        ii--;
       }
       else {
-        // add escape character
-        chars.push('\\');
+        return false;
       }
     }
+    return false;
+  }
 
-    chars.push(c);
+  // skip a block comment '/* ... */'
+  function skipComment () {
+    i += 2;
+    while (i < jsString.length && (curr() !== '*' || next() !== '/')) {
+      i++;
+    }
+    i += 2;
+  }
+
+  // parse single or double quoted string
+  function parseString(quote) {
+    chars.push('"');
     i++;
+    var c = curr();
+    while (i < jsString.length && c !== quote) {
+      if (c === '"' && prev() !== '\\') {
+        // unescaped double quote, escape it
+        chars.push('\\');
+      }
+
+      // handle escape character
+      if (c === '\\') {
+        i++;
+        c = curr();
+
+        // remove the escape character when followed by a single quote ', not needed
+        if (c !== '\'') {
+          chars.push('\\');
+        }
+      }
+      chars.push(c);
+
+      i++;
+      c = curr();
+    }
+    if (c === quote) {
+      chars.push('"');
+      i++;
+    }
   }
 
-  var jsonString = chars.join('');
+  // parse an unquoted key
+  function parseKey() {
+    var specialValues = ['null', 'true', 'false'];
+    var key = '';
+    var c = curr();
 
-  // replace unescaped single quotes with double quotes,
-  // and replace escaped single quotes with unescaped single quotes
-  // TODO: we could do this step immediately in the previous step
-  jsonString = jsonString.replace(/(.?)'/g, function ($0, $1) {
-    return ($1 == '\\') ? '\'' : $1 + '"';
-  });
+    var regexp = /[a-zA-Z_$\d]/; // letter, number, underscore, dollar character
+    while (regexp.test(c)) {
+      key += c;
+      i++;
+      c = curr();
+    }
 
-  // enclose unquoted object keys with double quotes
-  jsonString = jsonString.replace(/([{,]\s*)([a-zA-Z_][a-zA-Z0-9_]*)(\s*:)/g, function ($0, $1, $2, $3) {
-    return $1 + '"' + $2 + '"' + $3;
-  });
-
-  jsonString = jsonString.replace(/\/\*(.|[\r\n])*?\*\//g,'');//Remove all code comments
-
-  //If JSON starts with a function (Carachters/digist/"_-"), remove this function. 
-  //This is useful for "stripping" JSONP objects to become JSON
-  //For example: function_12321321 ( [{"a":"b"}] ); => [{"a":"b"}]
-  var match = jsonString.match(/^\s*[\dA-z_$]+\s*\(([\s\S]*)\)\s*;?\s*$/);
-  if (match) {
-    jsonString = match[1];
+    if (specialValues.indexOf(key) === -1) {
+      chars.push('"' + key + '"');
+    }
+    else {
+      chars.push(key);
+    }
   }
 
-  return jsonString;
+  while(i < jsString.length) {
+    var c = curr();
+
+    if (c === '/' && next() === '*') {
+      skipComment();
+    }
+    else if (c === '\'' || c === '"') {
+      parseString(c);
+    }
+    else if (/[a-zA-Z_$]/.test(c) && prevIsBrace()) {
+      // an unquoted object key (like a in '{a:2}')
+      parseKey();
+    }
+    else {
+      chars.push(c);
+      i++;
+    }
+  }
+
+  return chars.join('');
 };
 
 /**

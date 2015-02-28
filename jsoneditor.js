@@ -24,7 +24,7 @@
  *
  * @author  Jos de Jong, <wjosdejong@gmail.com>
  * @version 3.2.0
- * @date    2015-02-27
+ * @date    2015-02-28
  */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
@@ -350,11 +350,11 @@ return /******/ (function(modules) { // webpackBootstrap
 /* 1 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var Highlighter = __webpack_require__(6);
-	var History = __webpack_require__(7);
-	var SearchBox = __webpack_require__(8);
-	var Node = __webpack_require__(9);
-	var modeswitcher = __webpack_require__(5);
+	var Highlighter = __webpack_require__(4);
+	var History = __webpack_require__(5);
+	var SearchBox = __webpack_require__(6);
+	var Node = __webpack_require__(7);
+	var modeswitcher = __webpack_require__(8);
 	var util = __webpack_require__(3);
 
 	// create a mixin with the functions for tree mode
@@ -1072,12 +1072,18 @@ return /******/ (function(modules) { // webpackBootstrap
 /* 2 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var ace = __webpack_require__(10);
-	__webpack_require__(11);
-	__webpack_require__(12);
-	__webpack_require__(4);
+	var ace;
+	try {
+	  ace = __webpack_require__(10);
+	  __webpack_require__(11);
+	  __webpack_require__(12);
+	  __webpack_require__(9);
+	}
+	catch (err) {
+	  // failed to load ace, no problem, we will fall back to plain text
+	}
 
-	var modeswitcher = __webpack_require__(5);
+	var modeswitcher = __webpack_require__(8);
 	var util = __webpack_require__(3);
 
 	// create a mixin with the functions for text mode
@@ -1418,7 +1424,7 @@ return /******/ (function(modules) { // webpackBootstrap
 /* 3 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var jsonlint = __webpack_require__(13);
+	var jsonlint = __webpack_require__(15);
 
 	/**
 	 * Parse JSON using the parser built-in in the browser.
@@ -1450,55 +1456,121 @@ return /******/ (function(modules) { // webpackBootstrap
 	exports.sanitize = function (jsString) {
 	  // escape all single and double quotes inside strings
 	  var chars = [];
-	  var inString = false;
 	  var i = 0;
-	  while(i < jsString.length) {
-	    var c = jsString.charAt(i);
-	    var isEscaped = jsString.charAt(i - 1) === '\\';
 
-	    if ((c === '"' || c === '\'') && !isEscaped) {
-	      if (c === inString) {
-	        // end of string
-	        inString = false;
+	  //If JSON starts with a function (characters/digits/"_-"), remove this function.
+	  //This is useful for "stripping" JSONP objects to become JSON
+	  //For example: /* some comment */ function_12321321 ( [{"a":"b"}] ); => [{"a":"b"}]
+	  var match = jsString.match(/^(\/\*(.|[\r\n])*?\*\/)?\s*[\da-zA-Z_$]+\s*\(([\s\S]*)\)\s*;?\s*$/);
+	  if (match) {
+	    jsString = match[3];
+	  }
+
+	  // helper functions to get the current/prev/next character
+	  function curr () { return jsString.charAt(i);     }
+	  function next()  { return jsString.charAt(i + 1); }
+	  function prev()  { return jsString.charAt(i - 1); }
+
+	  // test whether the last non-whitespace character was a brace-open '{'
+	  function prevIsBrace() {
+	    var ii = i - 1;
+	    while (ii >= 0) {
+	      var cc = jsString.charAt(ii);
+	      if (cc === '{') {
+	        return true;
 	      }
-	      else if (!inString) {
-	        // start of string
-	        inString = c;
+	      else if (cc === ' ' || cc === '\n' || cc === '\r') { // whitespace
+	        ii--;
 	      }
 	      else {
-	        // add escape character
-	        chars.push('\\');
+	        return false;
 	      }
 	    }
+	    return false;
+	  }
 
-	    chars.push(c);
+	  // skip a block comment '/* ... */'
+	  function skipComment () {
+	    i += 2;
+	    while (i < jsString.length && (curr() !== '*' || next() !== '/')) {
+	      i++;
+	    }
+	    i += 2;
+	  }
+
+	  // parse single or double quoted string
+	  function parseString(quote) {
+	    chars.push('"');
 	    i++;
+	    var c = curr();
+	    while (i < jsString.length && c !== quote) {
+	      if (c === '"' && prev() !== '\\') {
+	        // unescaped double quote, escape it
+	        chars.push('\\');
+	      }
+
+	      // handle escape character
+	      if (c === '\\') {
+	        i++;
+	        c = curr();
+
+	        // remove the escape character when followed by a single quote ', not needed
+	        if (c !== '\'') {
+	          chars.push('\\');
+	        }
+	      }
+	      chars.push(c);
+
+	      i++;
+	      c = curr();
+	    }
+	    if (c === quote) {
+	      chars.push('"');
+	      i++;
+	    }
 	  }
-	  var jsonString = chars.join('');
 
-	  // replace unescaped single quotes with double quotes,
-	  // and replace escaped single quotes with unescaped single quotes
-	  // TODO: we could do this step immediately in the previous step
-	  jsonString = jsonString.replace(/(.?)'/g, function ($0, $1) {
-	    return ($1 == '\\') ? '\'' : $1 + '"';
-	  });
+	  // parse an unquoted key
+	  function parseKey() {
+	    var specialValues = ['null', 'true', 'false'];
+	    var key = '';
+	    var c = curr();
 
-	  // enclose unquoted object keys with double quotes
-	  jsonString = jsonString.replace(/([{,]\s*)([a-zA-Z_][a-zA-Z0-9_]*)(\s*:)/g, function ($0, $1, $2, $3) {
-	    return $1 + '"' + $2 + '"' + $3;
-	  });
+	    var regexp = /[a-zA-Z_$\d]/; // letter, number, underscore, dollar character
+	    while (regexp.test(c)) {
+	      key += c;
+	      i++;
+	      c = curr();
+	    }
 
-	  jsonString = jsonString.replace(/\/\*(.|[\r\n])*?\*\//g,'');//Remove all code comments
-
-	  //If JSON starts with a function (Carachters/digist/"_-"), remove this function. 
-	  //This is usefull for "stripping" JSONP objects to become JSON
-	  //For example: function_12321321 ( [{"a":"b"}] ); => [{"a":"b"}]
-	  var match = jsonString.match(/^\s*[\dA-z_$]+\s*\(([\s\S]*)\)\s*;?\s*$/);
-	  if (match) {
-	    var jsonString = match[1];
+	    if (specialValues.indexOf(key) === -1) {
+	      chars.push('"' + key + '"');
+	    }
+	    else {
+	      chars.push(key);
+	    }
 	  }
 
-	  return jsonString;
+	  while(i < jsString.length) {
+	    var c = curr();
+
+	    if (c === '/' && next() === '*') {
+	      skipComment();
+	    }
+	    else if (c === '\'' || c === '"') {
+	      parseString(c);
+	    }
+	    else if (/[a-zA-Z_$]/.test(c) && prevIsBrace()) {
+	      // an unquoted object key (like a in '{a:2}')
+	      parseKey();
+	    }
+	    else {
+	      chars.push(c);
+	      i++;
+	    }
+	  }
+
+	  return chars.join('');
 	};
 
 	/**
@@ -1677,7 +1749,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    if (attributes) {
 	      for (var j = attributes.length - 1; j >= 0; j--) {
 	        var attribute = attributes[j];
-	        if (attribute.specified == true) {
+	        if (attribute.specified === true) {
 	          child.removeAttribute(attribute.name);
 	        }
 	      }
@@ -1971,262 +2043,6 @@ return /******/ (function(modules) { // webpackBootstrap
 /* 4 */
 /***/ function(module, exports, __webpack_require__) {
 
-	/* ***** BEGIN LICENSE BLOCK *****
-	 * Distributed under the BSD license:
-	 *
-	 * Copyright (c) 2010, Ajax.org B.V.
-	 * All rights reserved.
-	 * 
-	 * Redistribution and use in source and binary forms, with or without
-	 * modification, are permitted provided that the following conditions are met:
-	 *     * Redistributions of source code must retain the above copyright
-	 *       notice, this list of conditions and the following disclaimer.
-	 *     * Redistributions in binary form must reproduce the above copyright
-	 *       notice, this list of conditions and the following disclaimer in the
-	 *       documentation and/or other materials provided with the distribution.
-	 *     * Neither the name of Ajax.org B.V. nor the
-	 *       names of its contributors may be used to endorse or promote products
-	 *       derived from this software without specific prior written permission.
-	 * 
-	 * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
-	 * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-	 * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-	 * DISCLAIMED. IN NO EVENT SHALL AJAX.ORG B.V. BE LIABLE FOR ANY
-	 * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-	 * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-	 * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-	 * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-	 * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-	 * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-	 *
-	 * ***** END LICENSE BLOCK ***** */
-
-	ace.define('ace/theme/jsoneditor', ['require', 'exports', 'module', 'ace/lib/dom'], function(acequire, exports, module) {
-
-	exports.isDark = false;
-	exports.cssClass = "ace-jsoneditor";
-	exports.cssText = ".ace-jsoneditor .ace_gutter {\
-	background: #ebebeb;\
-	color: #333\
-	}\
-	\
-	.ace-jsoneditor.ace_editor {\
-	font-family: droid sans mono, monospace, courier new, courier, sans-serif;\
-	line-height: 1.3;\
-	}\
-	.ace-jsoneditor .ace_print-margin {\
-	width: 1px;\
-	background: #e8e8e8\
-	}\
-	.ace-jsoneditor .ace_scroller {\
-	background-color: #FFFFFF\
-	}\
-	.ace-jsoneditor .ace_text-layer {\
-	color: gray\
-	}\
-	.ace-jsoneditor .ace_variable {\
-	color: #1a1a1a\
-	}\
-	.ace-jsoneditor .ace_cursor {\
-	border-left: 2px solid #000000\
-	}\
-	.ace-jsoneditor .ace_overwrite-cursors .ace_cursor {\
-	border-left: 0px;\
-	border-bottom: 1px solid #000000\
-	}\
-	.ace-jsoneditor .ace_marker-layer .ace_selection {\
-	background: #D5DDF6\
-	}\
-	.ace-jsoneditor.ace_multiselect .ace_selection.ace_start {\
-	box-shadow: 0 0 3px 0px #FFFFFF;\
-	border-radius: 2px\
-	}\
-	.ace-jsoneditor .ace_marker-layer .ace_step {\
-	background: rgb(255, 255, 0)\
-	}\
-	.ace-jsoneditor .ace_marker-layer .ace_bracket {\
-	margin: -1px 0 0 -1px;\
-	border: 1px solid #BFBFBF\
-	}\
-	.ace-jsoneditor .ace_marker-layer .ace_active-line {\
-	background: #FFFBD1\
-	}\
-	.ace-jsoneditor .ace_gutter-active-line {\
-	background-color : #dcdcdc\
-	}\
-	.ace-jsoneditor .ace_marker-layer .ace_selected-word {\
-	border: 1px solid #D5DDF6\
-	}\
-	.ace-jsoneditor .ace_invisible {\
-	color: #BFBFBF\
-	}\
-	.ace-jsoneditor .ace_keyword,\
-	.ace-jsoneditor .ace_meta,\
-	.ace-jsoneditor .ace_support.ace_constant.ace_property-value {\
-	color: #AF956F\
-	}\
-	.ace-jsoneditor .ace_keyword.ace_operator {\
-	color: #484848\
-	}\
-	.ace-jsoneditor .ace_keyword.ace_other.ace_unit {\
-	color: #96DC5F\
-	}\
-	.ace-jsoneditor .ace_constant.ace_language {\
-	color: darkorange\
-	}\
-	.ace-jsoneditor .ace_constant.ace_numeric {\
-	color: red\
-	}\
-	.ace-jsoneditor .ace_constant.ace_character.ace_entity {\
-	color: #BF78CC\
-	}\
-	.ace-jsoneditor .ace_invalid {\
-	color: #FFFFFF;\
-	background-color: #FF002A;\
-	}\
-	.ace-jsoneditor .ace_fold {\
-	background-color: #AF956F;\
-	border-color: #000000\
-	}\
-	.ace-jsoneditor .ace_storage,\
-	.ace-jsoneditor .ace_support.ace_class,\
-	.ace-jsoneditor .ace_support.ace_function,\
-	.ace-jsoneditor .ace_support.ace_other,\
-	.ace-jsoneditor .ace_support.ace_type {\
-	color: #C52727\
-	}\
-	.ace-jsoneditor .ace_string {\
-	color: green\
-	}\
-	.ace-jsoneditor .ace_comment {\
-	color: #BCC8BA\
-	}\
-	.ace-jsoneditor .ace_entity.ace_name.ace_tag,\
-	.ace-jsoneditor .ace_entity.ace_other.ace_attribute-name {\
-	color: #606060\
-	}\
-	.ace-jsoneditor .ace_markup.ace_underline {\
-	text-decoration: underline\
-	}\
-	.ace-jsoneditor .ace_indent-guide {\
-	background: url(\"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAACCAYAAACZgbYnAAAAE0lEQVQImWP4////f4bLly//BwAmVgd1/w11/gAAAABJRU5ErkJggg==\") right repeat-y\
-	}";
-
-	var dom = acequire("../lib/dom");
-	dom.importCssString(exports.cssText, exports.cssClass);
-	});
-
-
-/***/ },
-/* 5 */
-/***/ function(module, exports, __webpack_require__) {
-
-	var ContextMenu = __webpack_require__(14);
-
-	/**
-	 * Create a select box to be used in the editor menu's, which allows to switch mode
-	 * @param {Object} editor
-	 * @param {String[]} modes  Available modes: 'code', 'form', 'text', 'tree', 'view'
-	 * @param {String} current  Available modes: 'code', 'form', 'text', 'tree', 'view'
-	 * @returns {HTMLElement} box
-	 */
-	function createModeSwitcher(editor, modes, current) {
-	  // TODO: decouple mode switcher from editor
-
-	  /**
-	   * Switch the mode of the editor
-	   * @param {String} mode
-	   */
-	  function switchMode(mode) {
-	    // switch mode
-	    editor.setMode(mode);
-
-	    // restore focus on mode box
-	    var modeBox = editor.dom && editor.dom.modeBox;
-	    if (modeBox) {
-	      modeBox.focus();
-	    }
-	  }
-
-	  // available modes
-	  var availableModes = {
-	    code: {
-	      'text': 'Code',
-	      'title': 'Switch to code highlighter',
-	      'click': function () {
-	        switchMode('code')
-	      }
-	    },
-	    form: {
-	      'text': 'Form',
-	      'title': 'Switch to form editor',
-	      'click': function () {
-	        switchMode('form');
-	      }
-	    },
-	    text: {
-	      'text': 'Text',
-	      'title': 'Switch to plain text editor',
-	      'click': function () {
-	        switchMode('text');
-	      }
-	    },
-	    tree: {
-	      'text': 'Tree',
-	      'title': 'Switch to tree editor',
-	      'click': function () {
-	        switchMode('tree');
-	      }
-	    },
-	    view: {
-	      'text': 'View',
-	      'title': 'Switch to tree view',
-	      'click': function () {
-	        switchMode('view');
-	      }
-	    }
-	  };
-
-	  // list the selected modes
-	  var items = [];
-	  for (var i = 0; i < modes.length; i++) {
-	    var mode = modes[i];
-	    var item = availableModes[mode];
-	    if (!item) {
-	      throw new Error('Unknown mode "' + mode + '"');
-	    }
-
-	    item.className = 'type-modes' + ((current == mode) ? ' selected' : '');
-	    items.push(item);
-	  }
-
-	  // retrieve the title of current mode
-	  var currentMode = availableModes[current];
-	  if (!currentMode) {
-	    throw new Error('Unknown mode "' + current + '"');
-	  }
-	  var currentTitle = currentMode.text;
-
-	  // create the html element
-	  var box = document.createElement('button');
-	  box.className = 'modes separator';
-	  box.innerHTML = currentTitle + ' &#x25BE;';
-	  box.title = 'Switch editor mode';
-	  box.onclick = function () {
-	    var menu = new ContextMenu(items);
-	    menu.show(box);
-	  };
-
-	  return box;
-	}
-
-	exports.create = createModeSwitcher;
-
-
-/***/ },
-/* 6 */
-/***/ function(module, exports, __webpack_require__) {
-
 	/**
 	 * The highlighter can highlight/unhighlight a node, and
 	 * animate the visibility of a context menu.
@@ -2314,7 +2130,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 7 */
+/* 5 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var util = __webpack_require__(3);
@@ -2542,7 +2358,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 8 */
+/* 6 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -2836,11 +2652,11 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 9 */
+/* 7 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var ContextMenu = __webpack_require__(14);
-	var appendNodeFactory = __webpack_require__(15);
+	var ContextMenu = __webpack_require__(13);
+	var appendNodeFactory = __webpack_require__(14);
 	var util = __webpack_require__(3);
 
 	/**
@@ -2935,7 +2751,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	 */
 	Node.prototype.setField = function(field, fieldEditable) {
 	  this.field = field;
-	  this.fieldEditable = (fieldEditable == true);
+	  this.fieldEditable = (fieldEditable === true);
 	};
 
 	/**
@@ -3123,7 +2939,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	  this.showChilds();
 
-	  if (recurse != false) {
+	  if (recurse !== false) {
 	    this.childs.forEach(function (child) {
 	      child.expand(recurse);
 	    });
@@ -3143,7 +2959,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  this.hideChilds();
 
 	  // collapse childs in case of recurse
-	  if (recurse != false) {
+	  if (recurse !== false) {
 	    this.childs.forEach(function (child) {
 	      child.collapse(recurse);
 	    });
@@ -3847,7 +3663,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    catch (err) {
 	      this.value = undefined;
 	      // TODO: sent an action with the new, invalid value?
-	      if (silent != true) {
+	      if (silent !== true) {
 	        throw err;
 	      }
 	    }
@@ -4012,7 +3828,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    catch (err) {
 	      this.field = undefined;
 	      // TODO: sent an action here, with the new, invalid value?
-	      if (silent != true) {
+	      if (silent !== true) {
 	        throw err;
 	      }
 	    }
@@ -4429,12 +4245,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	  this._updateDomValue();
 
 	  // update childs indexes
-	  if (options && options.updateIndexes == true) {
+	  if (options && options.updateIndexes === true) {
 	    // updateIndexes is true or undefined
 	    this._updateDomIndexes();
 	  }
 
-	  if (options && options.recurse == true) {
+	  if (options && options.recurse === true) {
 	    // recurse is true or undefined. update childs recursively
 	    if (this.childs) {
 	      this.childs.forEach(function (child) {
@@ -5768,6 +5584,262 @@ return /******/ (function(modules) { // webpackBootstrap
 	var AppendNode = appendNodeFactory(Node);
 
 	module.exports = Node;
+
+
+/***/ },
+/* 8 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var ContextMenu = __webpack_require__(13);
+
+	/**
+	 * Create a select box to be used in the editor menu's, which allows to switch mode
+	 * @param {Object} editor
+	 * @param {String[]} modes  Available modes: 'code', 'form', 'text', 'tree', 'view'
+	 * @param {String} current  Available modes: 'code', 'form', 'text', 'tree', 'view'
+	 * @returns {HTMLElement} box
+	 */
+	function createModeSwitcher(editor, modes, current) {
+	  // TODO: decouple mode switcher from editor
+
+	  /**
+	   * Switch the mode of the editor
+	   * @param {String} mode
+	   */
+	  function switchMode(mode) {
+	    // switch mode
+	    editor.setMode(mode);
+
+	    // restore focus on mode box
+	    var modeBox = editor.dom && editor.dom.modeBox;
+	    if (modeBox) {
+	      modeBox.focus();
+	    }
+	  }
+
+	  // available modes
+	  var availableModes = {
+	    code: {
+	      'text': 'Code',
+	      'title': 'Switch to code highlighter',
+	      'click': function () {
+	        switchMode('code')
+	      }
+	    },
+	    form: {
+	      'text': 'Form',
+	      'title': 'Switch to form editor',
+	      'click': function () {
+	        switchMode('form');
+	      }
+	    },
+	    text: {
+	      'text': 'Text',
+	      'title': 'Switch to plain text editor',
+	      'click': function () {
+	        switchMode('text');
+	      }
+	    },
+	    tree: {
+	      'text': 'Tree',
+	      'title': 'Switch to tree editor',
+	      'click': function () {
+	        switchMode('tree');
+	      }
+	    },
+	    view: {
+	      'text': 'View',
+	      'title': 'Switch to tree view',
+	      'click': function () {
+	        switchMode('view');
+	      }
+	    }
+	  };
+
+	  // list the selected modes
+	  var items = [];
+	  for (var i = 0; i < modes.length; i++) {
+	    var mode = modes[i];
+	    var item = availableModes[mode];
+	    if (!item) {
+	      throw new Error('Unknown mode "' + mode + '"');
+	    }
+
+	    item.className = 'type-modes' + ((current == mode) ? ' selected' : '');
+	    items.push(item);
+	  }
+
+	  // retrieve the title of current mode
+	  var currentMode = availableModes[current];
+	  if (!currentMode) {
+	    throw new Error('Unknown mode "' + current + '"');
+	  }
+	  var currentTitle = currentMode.text;
+
+	  // create the html element
+	  var box = document.createElement('button');
+	  box.className = 'modes separator';
+	  box.innerHTML = currentTitle + ' &#x25BE;';
+	  box.title = 'Switch editor mode';
+	  box.onclick = function () {
+	    var menu = new ContextMenu(items);
+	    menu.show(box);
+	  };
+
+	  return box;
+	}
+
+	exports.create = createModeSwitcher;
+
+
+/***/ },
+/* 9 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/* ***** BEGIN LICENSE BLOCK *****
+	 * Distributed under the BSD license:
+	 *
+	 * Copyright (c) 2010, Ajax.org B.V.
+	 * All rights reserved.
+	 * 
+	 * Redistribution and use in source and binary forms, with or without
+	 * modification, are permitted provided that the following conditions are met:
+	 *     * Redistributions of source code must retain the above copyright
+	 *       notice, this list of conditions and the following disclaimer.
+	 *     * Redistributions in binary form must reproduce the above copyright
+	 *       notice, this list of conditions and the following disclaimer in the
+	 *       documentation and/or other materials provided with the distribution.
+	 *     * Neither the name of Ajax.org B.V. nor the
+	 *       names of its contributors may be used to endorse or promote products
+	 *       derived from this software without specific prior written permission.
+	 * 
+	 * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+	 * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+	 * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+	 * DISCLAIMED. IN NO EVENT SHALL AJAX.ORG B.V. BE LIABLE FOR ANY
+	 * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+	 * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+	 * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+	 * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+	 * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+	 * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+	 *
+	 * ***** END LICENSE BLOCK ***** */
+
+	ace.define('ace/theme/jsoneditor', ['require', 'exports', 'module', 'ace/lib/dom'], function(acequire, exports, module) {
+
+	exports.isDark = false;
+	exports.cssClass = "ace-jsoneditor";
+	exports.cssText = ".ace-jsoneditor .ace_gutter {\
+	background: #ebebeb;\
+	color: #333\
+	}\
+	\
+	.ace-jsoneditor.ace_editor {\
+	font-family: droid sans mono, monospace, courier new, courier, sans-serif;\
+	line-height: 1.3;\
+	}\
+	.ace-jsoneditor .ace_print-margin {\
+	width: 1px;\
+	background: #e8e8e8\
+	}\
+	.ace-jsoneditor .ace_scroller {\
+	background-color: #FFFFFF\
+	}\
+	.ace-jsoneditor .ace_text-layer {\
+	color: gray\
+	}\
+	.ace-jsoneditor .ace_variable {\
+	color: #1a1a1a\
+	}\
+	.ace-jsoneditor .ace_cursor {\
+	border-left: 2px solid #000000\
+	}\
+	.ace-jsoneditor .ace_overwrite-cursors .ace_cursor {\
+	border-left: 0px;\
+	border-bottom: 1px solid #000000\
+	}\
+	.ace-jsoneditor .ace_marker-layer .ace_selection {\
+	background: #D5DDF6\
+	}\
+	.ace-jsoneditor.ace_multiselect .ace_selection.ace_start {\
+	box-shadow: 0 0 3px 0px #FFFFFF;\
+	border-radius: 2px\
+	}\
+	.ace-jsoneditor .ace_marker-layer .ace_step {\
+	background: rgb(255, 255, 0)\
+	}\
+	.ace-jsoneditor .ace_marker-layer .ace_bracket {\
+	margin: -1px 0 0 -1px;\
+	border: 1px solid #BFBFBF\
+	}\
+	.ace-jsoneditor .ace_marker-layer .ace_active-line {\
+	background: #FFFBD1\
+	}\
+	.ace-jsoneditor .ace_gutter-active-line {\
+	background-color : #dcdcdc\
+	}\
+	.ace-jsoneditor .ace_marker-layer .ace_selected-word {\
+	border: 1px solid #D5DDF6\
+	}\
+	.ace-jsoneditor .ace_invisible {\
+	color: #BFBFBF\
+	}\
+	.ace-jsoneditor .ace_keyword,\
+	.ace-jsoneditor .ace_meta,\
+	.ace-jsoneditor .ace_support.ace_constant.ace_property-value {\
+	color: #AF956F\
+	}\
+	.ace-jsoneditor .ace_keyword.ace_operator {\
+	color: #484848\
+	}\
+	.ace-jsoneditor .ace_keyword.ace_other.ace_unit {\
+	color: #96DC5F\
+	}\
+	.ace-jsoneditor .ace_constant.ace_language {\
+	color: darkorange\
+	}\
+	.ace-jsoneditor .ace_constant.ace_numeric {\
+	color: red\
+	}\
+	.ace-jsoneditor .ace_constant.ace_character.ace_entity {\
+	color: #BF78CC\
+	}\
+	.ace-jsoneditor .ace_invalid {\
+	color: #FFFFFF;\
+	background-color: #FF002A;\
+	}\
+	.ace-jsoneditor .ace_fold {\
+	background-color: #AF956F;\
+	border-color: #000000\
+	}\
+	.ace-jsoneditor .ace_storage,\
+	.ace-jsoneditor .ace_support.ace_class,\
+	.ace-jsoneditor .ace_support.ace_function,\
+	.ace-jsoneditor .ace_support.ace_other,\
+	.ace-jsoneditor .ace_support.ace_type {\
+	color: #C52727\
+	}\
+	.ace-jsoneditor .ace_string {\
+	color: green\
+	}\
+	.ace-jsoneditor .ace_comment {\
+	color: #BCC8BA\
+	}\
+	.ace-jsoneditor .ace_entity.ace_name.ace_tag,\
+	.ace-jsoneditor .ace_entity.ace_other.ace_attribute-name {\
+	color: #606060\
+	}\
+	.ace-jsoneditor .ace_markup.ace_underline {\
+	text-decoration: underline\
+	}\
+	.ace-jsoneditor .ace_indent-guide {\
+	background: url(\"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAACCAYAAACZgbYnAAAAE0lEQVQImWP4////f4bLly//BwAmVgd1/w11/gAAAABJRU5ErkJggg==\") right repeat-y\
+	}";
+
+	var dom = acequire("../lib/dom");
+	dom.importCssString(exports.cssText, exports.cssClass);
+	});
 
 
 /***/ },
@@ -25034,444 +25106,6 @@ return /******/ (function(modules) { // webpackBootstrap
 /* 13 */
 /***/ function(module, exports, __webpack_require__) {
 
-	/* WEBPACK VAR INJECTION */(function(process, module) {/* Jison generated parser */
-	var jsonlint = (function(){
-	var parser = {trace: function trace() { },
-	yy: {},
-	symbols_: {"error":2,"JSONString":3,"STRING":4,"JSONNumber":5,"NUMBER":6,"JSONNullLiteral":7,"NULL":8,"JSONBooleanLiteral":9,"TRUE":10,"FALSE":11,"JSONText":12,"JSONValue":13,"EOF":14,"JSONObject":15,"JSONArray":16,"{":17,"}":18,"JSONMemberList":19,"JSONMember":20,":":21,",":22,"[":23,"]":24,"JSONElementList":25,"$accept":0,"$end":1},
-	terminals_: {2:"error",4:"STRING",6:"NUMBER",8:"NULL",10:"TRUE",11:"FALSE",14:"EOF",17:"{",18:"}",21:":",22:",",23:"[",24:"]"},
-	productions_: [0,[3,1],[5,1],[7,1],[9,1],[9,1],[12,2],[13,1],[13,1],[13,1],[13,1],[13,1],[13,1],[15,2],[15,3],[20,3],[19,1],[19,3],[16,2],[16,3],[25,1],[25,3]],
-	performAction: function anonymous(yytext,yyleng,yylineno,yy,yystate,$$,_$) {
-
-	var $0 = $$.length - 1;
-	switch (yystate) {
-	case 1: // replace escaped characters with actual character
-	          this.$ = yytext.replace(/\\(\\|")/g, "$"+"1")
-	                     .replace(/\\n/g,'\n')
-	                     .replace(/\\r/g,'\r')
-	                     .replace(/\\t/g,'\t')
-	                     .replace(/\\v/g,'\v')
-	                     .replace(/\\f/g,'\f')
-	                     .replace(/\\b/g,'\b');
-	        
-	break;
-	case 2:this.$ = Number(yytext);
-	break;
-	case 3:this.$ = null;
-	break;
-	case 4:this.$ = true;
-	break;
-	case 5:this.$ = false;
-	break;
-	case 6:return this.$ = $$[$0-1];
-	break;
-	case 13:this.$ = {};
-	break;
-	case 14:this.$ = $$[$0-1];
-	break;
-	case 15:this.$ = [$$[$0-2], $$[$0]];
-	break;
-	case 16:this.$ = {}; this.$[$$[$0][0]] = $$[$0][1];
-	break;
-	case 17:this.$ = $$[$0-2]; $$[$0-2][$$[$0][0]] = $$[$0][1];
-	break;
-	case 18:this.$ = [];
-	break;
-	case 19:this.$ = $$[$0-1];
-	break;
-	case 20:this.$ = [$$[$0]];
-	break;
-	case 21:this.$ = $$[$0-2]; $$[$0-2].push($$[$0]);
-	break;
-	}
-	},
-	table: [{3:5,4:[1,12],5:6,6:[1,13],7:3,8:[1,9],9:4,10:[1,10],11:[1,11],12:1,13:2,15:7,16:8,17:[1,14],23:[1,15]},{1:[3]},{14:[1,16]},{14:[2,7],18:[2,7],22:[2,7],24:[2,7]},{14:[2,8],18:[2,8],22:[2,8],24:[2,8]},{14:[2,9],18:[2,9],22:[2,9],24:[2,9]},{14:[2,10],18:[2,10],22:[2,10],24:[2,10]},{14:[2,11],18:[2,11],22:[2,11],24:[2,11]},{14:[2,12],18:[2,12],22:[2,12],24:[2,12]},{14:[2,3],18:[2,3],22:[2,3],24:[2,3]},{14:[2,4],18:[2,4],22:[2,4],24:[2,4]},{14:[2,5],18:[2,5],22:[2,5],24:[2,5]},{14:[2,1],18:[2,1],21:[2,1],22:[2,1],24:[2,1]},{14:[2,2],18:[2,2],22:[2,2],24:[2,2]},{3:20,4:[1,12],18:[1,17],19:18,20:19},{3:5,4:[1,12],5:6,6:[1,13],7:3,8:[1,9],9:4,10:[1,10],11:[1,11],13:23,15:7,16:8,17:[1,14],23:[1,15],24:[1,21],25:22},{1:[2,6]},{14:[2,13],18:[2,13],22:[2,13],24:[2,13]},{18:[1,24],22:[1,25]},{18:[2,16],22:[2,16]},{21:[1,26]},{14:[2,18],18:[2,18],22:[2,18],24:[2,18]},{22:[1,28],24:[1,27]},{22:[2,20],24:[2,20]},{14:[2,14],18:[2,14],22:[2,14],24:[2,14]},{3:20,4:[1,12],20:29},{3:5,4:[1,12],5:6,6:[1,13],7:3,8:[1,9],9:4,10:[1,10],11:[1,11],13:30,15:7,16:8,17:[1,14],23:[1,15]},{14:[2,19],18:[2,19],22:[2,19],24:[2,19]},{3:5,4:[1,12],5:6,6:[1,13],7:3,8:[1,9],9:4,10:[1,10],11:[1,11],13:31,15:7,16:8,17:[1,14],23:[1,15]},{18:[2,17],22:[2,17]},{18:[2,15],22:[2,15]},{22:[2,21],24:[2,21]}],
-	defaultActions: {16:[2,6]},
-	parseError: function parseError(str, hash) {
-	    throw new Error(str);
-	},
-	parse: function parse(input) {
-	    var self = this,
-	        stack = [0],
-	        vstack = [null], // semantic value stack
-	        lstack = [], // location stack
-	        table = this.table,
-	        yytext = '',
-	        yylineno = 0,
-	        yyleng = 0,
-	        recovering = 0,
-	        TERROR = 2,
-	        EOF = 1;
-
-	    //this.reductionCount = this.shiftCount = 0;
-
-	    this.lexer.setInput(input);
-	    this.lexer.yy = this.yy;
-	    this.yy.lexer = this.lexer;
-	    if (typeof this.lexer.yylloc == 'undefined')
-	        this.lexer.yylloc = {};
-	    var yyloc = this.lexer.yylloc;
-	    lstack.push(yyloc);
-
-	    if (typeof this.yy.parseError === 'function')
-	        this.parseError = this.yy.parseError;
-
-	    function popStack (n) {
-	        stack.length = stack.length - 2*n;
-	        vstack.length = vstack.length - n;
-	        lstack.length = lstack.length - n;
-	    }
-
-	    function lex() {
-	        var token;
-	        token = self.lexer.lex() || 1; // $end = 1
-	        // if token isn't its numeric value, convert
-	        if (typeof token !== 'number') {
-	            token = self.symbols_[token] || token;
-	        }
-	        return token;
-	    }
-
-	    var symbol, preErrorSymbol, state, action, a, r, yyval={},p,len,newState, expected;
-	    while (true) {
-	        // retreive state number from top of stack
-	        state = stack[stack.length-1];
-
-	        // use default actions if available
-	        if (this.defaultActions[state]) {
-	            action = this.defaultActions[state];
-	        } else {
-	            if (symbol == null)
-	                symbol = lex();
-	            // read action for current state and first input
-	            action = table[state] && table[state][symbol];
-	        }
-
-	        // handle parse error
-	        _handle_error:
-	        if (typeof action === 'undefined' || !action.length || !action[0]) {
-
-	            if (!recovering) {
-	                // Report error
-	                expected = [];
-	                for (p in table[state]) if (this.terminals_[p] && p > 2) {
-	                    expected.push("'"+this.terminals_[p]+"'");
-	                }
-	                var errStr = '';
-	                if (this.lexer.showPosition) {
-	                    errStr = 'Parse error on line '+(yylineno+1)+":\n"+this.lexer.showPosition()+"\nExpecting "+expected.join(', ') + ", got '" + this.terminals_[symbol]+ "'";
-	                } else {
-	                    errStr = 'Parse error on line '+(yylineno+1)+": Unexpected " +
-	                                  (symbol == 1 /*EOF*/ ? "end of input" :
-	                                              ("'"+(this.terminals_[symbol] || symbol)+"'"));
-	                }
-	                this.parseError(errStr,
-	                    {text: this.lexer.match, token: this.terminals_[symbol] || symbol, line: this.lexer.yylineno, loc: yyloc, expected: expected});
-	            }
-
-	            // just recovered from another error
-	            if (recovering == 3) {
-	                if (symbol == EOF) {
-	                    throw new Error(errStr || 'Parsing halted.');
-	                }
-
-	                // discard current lookahead and grab another
-	                yyleng = this.lexer.yyleng;
-	                yytext = this.lexer.yytext;
-	                yylineno = this.lexer.yylineno;
-	                yyloc = this.lexer.yylloc;
-	                symbol = lex();
-	            }
-
-	            // try to recover from error
-	            while (1) {
-	                // check for error recovery rule in this state
-	                if ((TERROR.toString()) in table[state]) {
-	                    break;
-	                }
-	                if (state == 0) {
-	                    throw new Error(errStr || 'Parsing halted.');
-	                }
-	                popStack(1);
-	                state = stack[stack.length-1];
-	            }
-
-	            preErrorSymbol = symbol; // save the lookahead token
-	            symbol = TERROR;         // insert generic error symbol as new lookahead
-	            state = stack[stack.length-1];
-	            action = table[state] && table[state][TERROR];
-	            recovering = 3; // allow 3 real symbols to be shifted before reporting a new error
-	        }
-
-	        // this shouldn't happen, unless resolve defaults are off
-	        if (action[0] instanceof Array && action.length > 1) {
-	            throw new Error('Parse Error: multiple actions possible at state: '+state+', token: '+symbol);
-	        }
-
-	        switch (action[0]) {
-
-	            case 1: // shift
-	                //this.shiftCount++;
-
-	                stack.push(symbol);
-	                vstack.push(this.lexer.yytext);
-	                lstack.push(this.lexer.yylloc);
-	                stack.push(action[1]); // push state
-	                symbol = null;
-	                if (!preErrorSymbol) { // normal execution/no error
-	                    yyleng = this.lexer.yyleng;
-	                    yytext = this.lexer.yytext;
-	                    yylineno = this.lexer.yylineno;
-	                    yyloc = this.lexer.yylloc;
-	                    if (recovering > 0)
-	                        recovering--;
-	                } else { // error just occurred, resume old lookahead f/ before error
-	                    symbol = preErrorSymbol;
-	                    preErrorSymbol = null;
-	                }
-	                break;
-
-	            case 2: // reduce
-	                //this.reductionCount++;
-
-	                len = this.productions_[action[1]][1];
-
-	                // perform semantic action
-	                yyval.$ = vstack[vstack.length-len]; // default to $$ = $1
-	                // default location, uses first token for firsts, last for lasts
-	                yyval._$ = {
-	                    first_line: lstack[lstack.length-(len||1)].first_line,
-	                    last_line: lstack[lstack.length-1].last_line,
-	                    first_column: lstack[lstack.length-(len||1)].first_column,
-	                    last_column: lstack[lstack.length-1].last_column
-	                };
-	                r = this.performAction.call(yyval, yytext, yyleng, yylineno, this.yy, action[1], vstack, lstack);
-
-	                if (typeof r !== 'undefined') {
-	                    return r;
-	                }
-
-	                // pop off stack
-	                if (len) {
-	                    stack = stack.slice(0,-1*len*2);
-	                    vstack = vstack.slice(0, -1*len);
-	                    lstack = lstack.slice(0, -1*len);
-	                }
-
-	                stack.push(this.productions_[action[1]][0]);    // push nonterminal (reduce)
-	                vstack.push(yyval.$);
-	                lstack.push(yyval._$);
-	                // goto new state = table[STATE][NONTERMINAL]
-	                newState = table[stack[stack.length-2]][stack[stack.length-1]];
-	                stack.push(newState);
-	                break;
-
-	            case 3: // accept
-	                return true;
-	        }
-
-	    }
-
-	    return true;
-	}};
-	/* Jison generated lexer */
-	var lexer = (function(){
-	var lexer = ({EOF:1,
-	parseError:function parseError(str, hash) {
-	        if (this.yy.parseError) {
-	            this.yy.parseError(str, hash);
-	        } else {
-	            throw new Error(str);
-	        }
-	    },
-	setInput:function (input) {
-	        this._input = input;
-	        this._more = this._less = this.done = false;
-	        this.yylineno = this.yyleng = 0;
-	        this.yytext = this.matched = this.match = '';
-	        this.conditionStack = ['INITIAL'];
-	        this.yylloc = {first_line:1,first_column:0,last_line:1,last_column:0};
-	        return this;
-	    },
-	input:function () {
-	        var ch = this._input[0];
-	        this.yytext+=ch;
-	        this.yyleng++;
-	        this.match+=ch;
-	        this.matched+=ch;
-	        var lines = ch.match(/\n/);
-	        if (lines) this.yylineno++;
-	        this._input = this._input.slice(1);
-	        return ch;
-	    },
-	unput:function (ch) {
-	        this._input = ch + this._input;
-	        return this;
-	    },
-	more:function () {
-	        this._more = true;
-	        return this;
-	    },
-	less:function (n) {
-	        this._input = this.match.slice(n) + this._input;
-	    },
-	pastInput:function () {
-	        var past = this.matched.substr(0, this.matched.length - this.match.length);
-	        return (past.length > 20 ? '...':'') + past.substr(-20).replace(/\n/g, "");
-	    },
-	upcomingInput:function () {
-	        var next = this.match;
-	        if (next.length < 20) {
-	            next += this._input.substr(0, 20-next.length);
-	        }
-	        return (next.substr(0,20)+(next.length > 20 ? '...':'')).replace(/\n/g, "");
-	    },
-	showPosition:function () {
-	        var pre = this.pastInput();
-	        var c = new Array(pre.length + 1).join("-");
-	        return pre + this.upcomingInput() + "\n" + c+"^";
-	    },
-	next:function () {
-	        if (this.done) {
-	            return this.EOF;
-	        }
-	        if (!this._input) this.done = true;
-
-	        var token,
-	            match,
-	            tempMatch,
-	            index,
-	            col,
-	            lines;
-	        if (!this._more) {
-	            this.yytext = '';
-	            this.match = '';
-	        }
-	        var rules = this._currentRules();
-	        for (var i=0;i < rules.length; i++) {
-	            tempMatch = this._input.match(this.rules[rules[i]]);
-	            if (tempMatch && (!match || tempMatch[0].length > match[0].length)) {
-	                match = tempMatch;
-	                index = i;
-	                if (!this.options.flex) break;
-	            }
-	        }
-	        if (match) {
-	            lines = match[0].match(/\n.*/g);
-	            if (lines) this.yylineno += lines.length;
-	            this.yylloc = {first_line: this.yylloc.last_line,
-	                           last_line: this.yylineno+1,
-	                           first_column: this.yylloc.last_column,
-	                           last_column: lines ? lines[lines.length-1].length-1 : this.yylloc.last_column + match[0].length}
-	            this.yytext += match[0];
-	            this.match += match[0];
-	            this.yyleng = this.yytext.length;
-	            this._more = false;
-	            this._input = this._input.slice(match[0].length);
-	            this.matched += match[0];
-	            token = this.performAction.call(this, this.yy, this, rules[index],this.conditionStack[this.conditionStack.length-1]);
-	            if (this.done && this._input) this.done = false;
-	            if (token) return token;
-	            else return;
-	        }
-	        if (this._input === "") {
-	            return this.EOF;
-	        } else {
-	            this.parseError('Lexical error on line '+(this.yylineno+1)+'. Unrecognized text.\n'+this.showPosition(), 
-	                    {text: "", token: null, line: this.yylineno});
-	        }
-	    },
-	lex:function lex() {
-	        var r = this.next();
-	        if (typeof r !== 'undefined') {
-	            return r;
-	        } else {
-	            return this.lex();
-	        }
-	    },
-	begin:function begin(condition) {
-	        this.conditionStack.push(condition);
-	    },
-	popState:function popState() {
-	        return this.conditionStack.pop();
-	    },
-	_currentRules:function _currentRules() {
-	        return this.conditions[this.conditionStack[this.conditionStack.length-1]].rules;
-	    },
-	topState:function () {
-	        return this.conditionStack[this.conditionStack.length-2];
-	    },
-	pushState:function begin(condition) {
-	        this.begin(condition);
-	    }});
-	lexer.options = {};
-	lexer.performAction = function anonymous(yy,yy_,$avoiding_name_collisions,YY_START) {
-
-	var YYSTATE=YY_START
-	switch($avoiding_name_collisions) {
-	case 0:/* skip whitespace */
-	break;
-	case 1:return 6
-	break;
-	case 2:yy_.yytext = yy_.yytext.substr(1,yy_.yyleng-2); return 4
-	break;
-	case 3:return 17
-	break;
-	case 4:return 18
-	break;
-	case 5:return 23
-	break;
-	case 6:return 24
-	break;
-	case 7:return 22
-	break;
-	case 8:return 21
-	break;
-	case 9:return 10
-	break;
-	case 10:return 11
-	break;
-	case 11:return 8
-	break;
-	case 12:return 14
-	break;
-	case 13:return 'INVALID'
-	break;
-	}
-	};
-	lexer.rules = [/^(?:\s+)/,/^(?:(-?([0-9]|[1-9][0-9]+))(\.[0-9]+)?([eE][-+]?[0-9]+)?\b)/,/^(?:"(?:\\[\\"bfnrt/]|\\u[a-fA-F0-9]{4}|[^\\\0-\x09\x0a-\x1f"])*")/,/^(?:\{)/,/^(?:\})/,/^(?:\[)/,/^(?:\])/,/^(?:,)/,/^(?::)/,/^(?:true\b)/,/^(?:false\b)/,/^(?:null\b)/,/^(?:$)/,/^(?:.)/];
-	lexer.conditions = {"INITIAL":{"rules":[0,1,2,3,4,5,6,7,8,9,10,11,12,13],"inclusive":true}};
-
-
-	;
-	return lexer;})()
-	parser.lexer = lexer;
-	return parser;
-	})();
-	if (true) {
-	exports.parser = jsonlint;
-	exports.parse = function () { return jsonlint.parse.apply(jsonlint, arguments); }
-	exports.main = function commonjsMain(args) {
-	    if (!args[1])
-	        throw new Error('Usage: '+args[0]+' FILE');
-	    if (typeof process !== 'undefined') {
-	        var source = __webpack_require__(!(function webpackMissingModule() { var e = new Error("Cannot find module \"fs\""); e.code = 'MODULE_NOT_FOUND'; throw e; }())).readFileSync(__webpack_require__(19).join(process.cwd(), args[1]), "utf8");
-	    } else {
-	        var cwd = __webpack_require__(!(function webpackMissingModule() { var e = new Error("Cannot find module \"file\""); e.code = 'MODULE_NOT_FOUND'; throw e; }())).path(__webpack_require__(!(function webpackMissingModule() { var e = new Error("Cannot find module \"file\""); e.code = 'MODULE_NOT_FOUND'; throw e; }())).cwd());
-	        var source = cwd.join(args[1]).read({charset: "utf-8"});
-	    }
-	    return exports.parser.parse(source);
-	}
-	if (typeof module !== 'undefined' && __webpack_require__.c[0] === module) {
-	  exports.main(typeof process !== 'undefined' ? process.argv.slice(1) : __webpack_require__(!(function webpackMissingModule() { var e = new Error("Cannot find module \"system\""); e.code = 'MODULE_NOT_FOUND'; throw e; }())).args);
-	}
-	}
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(20), __webpack_require__(18)(module)))
-
-/***/ },
-/* 14 */
-/***/ function(module, exports, __webpack_require__) {
-
 	var util = __webpack_require__(3);
 
 	/**
@@ -25918,11 +25552,11 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 15 */
+/* 14 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var util = __webpack_require__(3);
-	var ContextMenu = __webpack_require__(14);
+	var ContextMenu = __webpack_require__(13);
 
 	/**
 	 * A factory function to create an AppendNode, which depends on a Node
@@ -26150,6 +25784,444 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
+/* 15 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/* WEBPACK VAR INJECTION */(function(process, module) {/* Jison generated parser */
+	var jsonlint = (function(){
+	var parser = {trace: function trace() { },
+	yy: {},
+	symbols_: {"error":2,"JSONString":3,"STRING":4,"JSONNumber":5,"NUMBER":6,"JSONNullLiteral":7,"NULL":8,"JSONBooleanLiteral":9,"TRUE":10,"FALSE":11,"JSONText":12,"JSONValue":13,"EOF":14,"JSONObject":15,"JSONArray":16,"{":17,"}":18,"JSONMemberList":19,"JSONMember":20,":":21,",":22,"[":23,"]":24,"JSONElementList":25,"$accept":0,"$end":1},
+	terminals_: {2:"error",4:"STRING",6:"NUMBER",8:"NULL",10:"TRUE",11:"FALSE",14:"EOF",17:"{",18:"}",21:":",22:",",23:"[",24:"]"},
+	productions_: [0,[3,1],[5,1],[7,1],[9,1],[9,1],[12,2],[13,1],[13,1],[13,1],[13,1],[13,1],[13,1],[15,2],[15,3],[20,3],[19,1],[19,3],[16,2],[16,3],[25,1],[25,3]],
+	performAction: function anonymous(yytext,yyleng,yylineno,yy,yystate,$$,_$) {
+
+	var $0 = $$.length - 1;
+	switch (yystate) {
+	case 1: // replace escaped characters with actual character
+	          this.$ = yytext.replace(/\\(\\|")/g, "$"+"1")
+	                     .replace(/\\n/g,'\n')
+	                     .replace(/\\r/g,'\r')
+	                     .replace(/\\t/g,'\t')
+	                     .replace(/\\v/g,'\v')
+	                     .replace(/\\f/g,'\f')
+	                     .replace(/\\b/g,'\b');
+	        
+	break;
+	case 2:this.$ = Number(yytext);
+	break;
+	case 3:this.$ = null;
+	break;
+	case 4:this.$ = true;
+	break;
+	case 5:this.$ = false;
+	break;
+	case 6:return this.$ = $$[$0-1];
+	break;
+	case 13:this.$ = {};
+	break;
+	case 14:this.$ = $$[$0-1];
+	break;
+	case 15:this.$ = [$$[$0-2], $$[$0]];
+	break;
+	case 16:this.$ = {}; this.$[$$[$0][0]] = $$[$0][1];
+	break;
+	case 17:this.$ = $$[$0-2]; $$[$0-2][$$[$0][0]] = $$[$0][1];
+	break;
+	case 18:this.$ = [];
+	break;
+	case 19:this.$ = $$[$0-1];
+	break;
+	case 20:this.$ = [$$[$0]];
+	break;
+	case 21:this.$ = $$[$0-2]; $$[$0-2].push($$[$0]);
+	break;
+	}
+	},
+	table: [{3:5,4:[1,12],5:6,6:[1,13],7:3,8:[1,9],9:4,10:[1,10],11:[1,11],12:1,13:2,15:7,16:8,17:[1,14],23:[1,15]},{1:[3]},{14:[1,16]},{14:[2,7],18:[2,7],22:[2,7],24:[2,7]},{14:[2,8],18:[2,8],22:[2,8],24:[2,8]},{14:[2,9],18:[2,9],22:[2,9],24:[2,9]},{14:[2,10],18:[2,10],22:[2,10],24:[2,10]},{14:[2,11],18:[2,11],22:[2,11],24:[2,11]},{14:[2,12],18:[2,12],22:[2,12],24:[2,12]},{14:[2,3],18:[2,3],22:[2,3],24:[2,3]},{14:[2,4],18:[2,4],22:[2,4],24:[2,4]},{14:[2,5],18:[2,5],22:[2,5],24:[2,5]},{14:[2,1],18:[2,1],21:[2,1],22:[2,1],24:[2,1]},{14:[2,2],18:[2,2],22:[2,2],24:[2,2]},{3:20,4:[1,12],18:[1,17],19:18,20:19},{3:5,4:[1,12],5:6,6:[1,13],7:3,8:[1,9],9:4,10:[1,10],11:[1,11],13:23,15:7,16:8,17:[1,14],23:[1,15],24:[1,21],25:22},{1:[2,6]},{14:[2,13],18:[2,13],22:[2,13],24:[2,13]},{18:[1,24],22:[1,25]},{18:[2,16],22:[2,16]},{21:[1,26]},{14:[2,18],18:[2,18],22:[2,18],24:[2,18]},{22:[1,28],24:[1,27]},{22:[2,20],24:[2,20]},{14:[2,14],18:[2,14],22:[2,14],24:[2,14]},{3:20,4:[1,12],20:29},{3:5,4:[1,12],5:6,6:[1,13],7:3,8:[1,9],9:4,10:[1,10],11:[1,11],13:30,15:7,16:8,17:[1,14],23:[1,15]},{14:[2,19],18:[2,19],22:[2,19],24:[2,19]},{3:5,4:[1,12],5:6,6:[1,13],7:3,8:[1,9],9:4,10:[1,10],11:[1,11],13:31,15:7,16:8,17:[1,14],23:[1,15]},{18:[2,17],22:[2,17]},{18:[2,15],22:[2,15]},{22:[2,21],24:[2,21]}],
+	defaultActions: {16:[2,6]},
+	parseError: function parseError(str, hash) {
+	    throw new Error(str);
+	},
+	parse: function parse(input) {
+	    var self = this,
+	        stack = [0],
+	        vstack = [null], // semantic value stack
+	        lstack = [], // location stack
+	        table = this.table,
+	        yytext = '',
+	        yylineno = 0,
+	        yyleng = 0,
+	        recovering = 0,
+	        TERROR = 2,
+	        EOF = 1;
+
+	    //this.reductionCount = this.shiftCount = 0;
+
+	    this.lexer.setInput(input);
+	    this.lexer.yy = this.yy;
+	    this.yy.lexer = this.lexer;
+	    if (typeof this.lexer.yylloc == 'undefined')
+	        this.lexer.yylloc = {};
+	    var yyloc = this.lexer.yylloc;
+	    lstack.push(yyloc);
+
+	    if (typeof this.yy.parseError === 'function')
+	        this.parseError = this.yy.parseError;
+
+	    function popStack (n) {
+	        stack.length = stack.length - 2*n;
+	        vstack.length = vstack.length - n;
+	        lstack.length = lstack.length - n;
+	    }
+
+	    function lex() {
+	        var token;
+	        token = self.lexer.lex() || 1; // $end = 1
+	        // if token isn't its numeric value, convert
+	        if (typeof token !== 'number') {
+	            token = self.symbols_[token] || token;
+	        }
+	        return token;
+	    }
+
+	    var symbol, preErrorSymbol, state, action, a, r, yyval={},p,len,newState, expected;
+	    while (true) {
+	        // retreive state number from top of stack
+	        state = stack[stack.length-1];
+
+	        // use default actions if available
+	        if (this.defaultActions[state]) {
+	            action = this.defaultActions[state];
+	        } else {
+	            if (symbol == null)
+	                symbol = lex();
+	            // read action for current state and first input
+	            action = table[state] && table[state][symbol];
+	        }
+
+	        // handle parse error
+	        _handle_error:
+	        if (typeof action === 'undefined' || !action.length || !action[0]) {
+
+	            if (!recovering) {
+	                // Report error
+	                expected = [];
+	                for (p in table[state]) if (this.terminals_[p] && p > 2) {
+	                    expected.push("'"+this.terminals_[p]+"'");
+	                }
+	                var errStr = '';
+	                if (this.lexer.showPosition) {
+	                    errStr = 'Parse error on line '+(yylineno+1)+":\n"+this.lexer.showPosition()+"\nExpecting "+expected.join(', ') + ", got '" + this.terminals_[symbol]+ "'";
+	                } else {
+	                    errStr = 'Parse error on line '+(yylineno+1)+": Unexpected " +
+	                                  (symbol == 1 /*EOF*/ ? "end of input" :
+	                                              ("'"+(this.terminals_[symbol] || symbol)+"'"));
+	                }
+	                this.parseError(errStr,
+	                    {text: this.lexer.match, token: this.terminals_[symbol] || symbol, line: this.lexer.yylineno, loc: yyloc, expected: expected});
+	            }
+
+	            // just recovered from another error
+	            if (recovering == 3) {
+	                if (symbol == EOF) {
+	                    throw new Error(errStr || 'Parsing halted.');
+	                }
+
+	                // discard current lookahead and grab another
+	                yyleng = this.lexer.yyleng;
+	                yytext = this.lexer.yytext;
+	                yylineno = this.lexer.yylineno;
+	                yyloc = this.lexer.yylloc;
+	                symbol = lex();
+	            }
+
+	            // try to recover from error
+	            while (1) {
+	                // check for error recovery rule in this state
+	                if ((TERROR.toString()) in table[state]) {
+	                    break;
+	                }
+	                if (state == 0) {
+	                    throw new Error(errStr || 'Parsing halted.');
+	                }
+	                popStack(1);
+	                state = stack[stack.length-1];
+	            }
+
+	            preErrorSymbol = symbol; // save the lookahead token
+	            symbol = TERROR;         // insert generic error symbol as new lookahead
+	            state = stack[stack.length-1];
+	            action = table[state] && table[state][TERROR];
+	            recovering = 3; // allow 3 real symbols to be shifted before reporting a new error
+	        }
+
+	        // this shouldn't happen, unless resolve defaults are off
+	        if (action[0] instanceof Array && action.length > 1) {
+	            throw new Error('Parse Error: multiple actions possible at state: '+state+', token: '+symbol);
+	        }
+
+	        switch (action[0]) {
+
+	            case 1: // shift
+	                //this.shiftCount++;
+
+	                stack.push(symbol);
+	                vstack.push(this.lexer.yytext);
+	                lstack.push(this.lexer.yylloc);
+	                stack.push(action[1]); // push state
+	                symbol = null;
+	                if (!preErrorSymbol) { // normal execution/no error
+	                    yyleng = this.lexer.yyleng;
+	                    yytext = this.lexer.yytext;
+	                    yylineno = this.lexer.yylineno;
+	                    yyloc = this.lexer.yylloc;
+	                    if (recovering > 0)
+	                        recovering--;
+	                } else { // error just occurred, resume old lookahead f/ before error
+	                    symbol = preErrorSymbol;
+	                    preErrorSymbol = null;
+	                }
+	                break;
+
+	            case 2: // reduce
+	                //this.reductionCount++;
+
+	                len = this.productions_[action[1]][1];
+
+	                // perform semantic action
+	                yyval.$ = vstack[vstack.length-len]; // default to $$ = $1
+	                // default location, uses first token for firsts, last for lasts
+	                yyval._$ = {
+	                    first_line: lstack[lstack.length-(len||1)].first_line,
+	                    last_line: lstack[lstack.length-1].last_line,
+	                    first_column: lstack[lstack.length-(len||1)].first_column,
+	                    last_column: lstack[lstack.length-1].last_column
+	                };
+	                r = this.performAction.call(yyval, yytext, yyleng, yylineno, this.yy, action[1], vstack, lstack);
+
+	                if (typeof r !== 'undefined') {
+	                    return r;
+	                }
+
+	                // pop off stack
+	                if (len) {
+	                    stack = stack.slice(0,-1*len*2);
+	                    vstack = vstack.slice(0, -1*len);
+	                    lstack = lstack.slice(0, -1*len);
+	                }
+
+	                stack.push(this.productions_[action[1]][0]);    // push nonterminal (reduce)
+	                vstack.push(yyval.$);
+	                lstack.push(yyval._$);
+	                // goto new state = table[STATE][NONTERMINAL]
+	                newState = table[stack[stack.length-2]][stack[stack.length-1]];
+	                stack.push(newState);
+	                break;
+
+	            case 3: // accept
+	                return true;
+	        }
+
+	    }
+
+	    return true;
+	}};
+	/* Jison generated lexer */
+	var lexer = (function(){
+	var lexer = ({EOF:1,
+	parseError:function parseError(str, hash) {
+	        if (this.yy.parseError) {
+	            this.yy.parseError(str, hash);
+	        } else {
+	            throw new Error(str);
+	        }
+	    },
+	setInput:function (input) {
+	        this._input = input;
+	        this._more = this._less = this.done = false;
+	        this.yylineno = this.yyleng = 0;
+	        this.yytext = this.matched = this.match = '';
+	        this.conditionStack = ['INITIAL'];
+	        this.yylloc = {first_line:1,first_column:0,last_line:1,last_column:0};
+	        return this;
+	    },
+	input:function () {
+	        var ch = this._input[0];
+	        this.yytext+=ch;
+	        this.yyleng++;
+	        this.match+=ch;
+	        this.matched+=ch;
+	        var lines = ch.match(/\n/);
+	        if (lines) this.yylineno++;
+	        this._input = this._input.slice(1);
+	        return ch;
+	    },
+	unput:function (ch) {
+	        this._input = ch + this._input;
+	        return this;
+	    },
+	more:function () {
+	        this._more = true;
+	        return this;
+	    },
+	less:function (n) {
+	        this._input = this.match.slice(n) + this._input;
+	    },
+	pastInput:function () {
+	        var past = this.matched.substr(0, this.matched.length - this.match.length);
+	        return (past.length > 20 ? '...':'') + past.substr(-20).replace(/\n/g, "");
+	    },
+	upcomingInput:function () {
+	        var next = this.match;
+	        if (next.length < 20) {
+	            next += this._input.substr(0, 20-next.length);
+	        }
+	        return (next.substr(0,20)+(next.length > 20 ? '...':'')).replace(/\n/g, "");
+	    },
+	showPosition:function () {
+	        var pre = this.pastInput();
+	        var c = new Array(pre.length + 1).join("-");
+	        return pre + this.upcomingInput() + "\n" + c+"^";
+	    },
+	next:function () {
+	        if (this.done) {
+	            return this.EOF;
+	        }
+	        if (!this._input) this.done = true;
+
+	        var token,
+	            match,
+	            tempMatch,
+	            index,
+	            col,
+	            lines;
+	        if (!this._more) {
+	            this.yytext = '';
+	            this.match = '';
+	        }
+	        var rules = this._currentRules();
+	        for (var i=0;i < rules.length; i++) {
+	            tempMatch = this._input.match(this.rules[rules[i]]);
+	            if (tempMatch && (!match || tempMatch[0].length > match[0].length)) {
+	                match = tempMatch;
+	                index = i;
+	                if (!this.options.flex) break;
+	            }
+	        }
+	        if (match) {
+	            lines = match[0].match(/\n.*/g);
+	            if (lines) this.yylineno += lines.length;
+	            this.yylloc = {first_line: this.yylloc.last_line,
+	                           last_line: this.yylineno+1,
+	                           first_column: this.yylloc.last_column,
+	                           last_column: lines ? lines[lines.length-1].length-1 : this.yylloc.last_column + match[0].length}
+	            this.yytext += match[0];
+	            this.match += match[0];
+	            this.yyleng = this.yytext.length;
+	            this._more = false;
+	            this._input = this._input.slice(match[0].length);
+	            this.matched += match[0];
+	            token = this.performAction.call(this, this.yy, this, rules[index],this.conditionStack[this.conditionStack.length-1]);
+	            if (this.done && this._input) this.done = false;
+	            if (token) return token;
+	            else return;
+	        }
+	        if (this._input === "") {
+	            return this.EOF;
+	        } else {
+	            this.parseError('Lexical error on line '+(this.yylineno+1)+'. Unrecognized text.\n'+this.showPosition(), 
+	                    {text: "", token: null, line: this.yylineno});
+	        }
+	    },
+	lex:function lex() {
+	        var r = this.next();
+	        if (typeof r !== 'undefined') {
+	            return r;
+	        } else {
+	            return this.lex();
+	        }
+	    },
+	begin:function begin(condition) {
+	        this.conditionStack.push(condition);
+	    },
+	popState:function popState() {
+	        return this.conditionStack.pop();
+	    },
+	_currentRules:function _currentRules() {
+	        return this.conditions[this.conditionStack[this.conditionStack.length-1]].rules;
+	    },
+	topState:function () {
+	        return this.conditionStack[this.conditionStack.length-2];
+	    },
+	pushState:function begin(condition) {
+	        this.begin(condition);
+	    }});
+	lexer.options = {};
+	lexer.performAction = function anonymous(yy,yy_,$avoiding_name_collisions,YY_START) {
+
+	var YYSTATE=YY_START
+	switch($avoiding_name_collisions) {
+	case 0:/* skip whitespace */
+	break;
+	case 1:return 6
+	break;
+	case 2:yy_.yytext = yy_.yytext.substr(1,yy_.yyleng-2); return 4
+	break;
+	case 3:return 17
+	break;
+	case 4:return 18
+	break;
+	case 5:return 23
+	break;
+	case 6:return 24
+	break;
+	case 7:return 22
+	break;
+	case 8:return 21
+	break;
+	case 9:return 10
+	break;
+	case 10:return 11
+	break;
+	case 11:return 8
+	break;
+	case 12:return 14
+	break;
+	case 13:return 'INVALID'
+	break;
+	}
+	};
+	lexer.rules = [/^(?:\s+)/,/^(?:(-?([0-9]|[1-9][0-9]+))(\.[0-9]+)?([eE][-+]?[0-9]+)?\b)/,/^(?:"(?:\\[\\"bfnrt/]|\\u[a-fA-F0-9]{4}|[^\\\0-\x09\x0a-\x1f"])*")/,/^(?:\{)/,/^(?:\})/,/^(?:\[)/,/^(?:\])/,/^(?:,)/,/^(?::)/,/^(?:true\b)/,/^(?:false\b)/,/^(?:null\b)/,/^(?:$)/,/^(?:.)/];
+	lexer.conditions = {"INITIAL":{"rules":[0,1,2,3,4,5,6,7,8,9,10,11,12,13],"inclusive":true}};
+
+
+	;
+	return lexer;})()
+	parser.lexer = lexer;
+	return parser;
+	})();
+	if (true) {
+	exports.parser = jsonlint;
+	exports.parse = function () { return jsonlint.parse.apply(jsonlint, arguments); }
+	exports.main = function commonjsMain(args) {
+	    if (!args[1])
+	        throw new Error('Usage: '+args[0]+' FILE');
+	    if (typeof process !== 'undefined') {
+	        var source = __webpack_require__(!(function webpackMissingModule() { var e = new Error("Cannot find module \"fs\""); e.code = 'MODULE_NOT_FOUND'; throw e; }())).readFileSync(__webpack_require__(20).join(process.cwd(), args[1]), "utf8");
+	    } else {
+	        var cwd = __webpack_require__(!(function webpackMissingModule() { var e = new Error("Cannot find module \"file\""); e.code = 'MODULE_NOT_FOUND'; throw e; }())).path(__webpack_require__(!(function webpackMissingModule() { var e = new Error("Cannot find module \"file\""); e.code = 'MODULE_NOT_FOUND'; throw e; }())).cwd());
+	        var source = cwd.join(args[1]).read({charset: "utf-8"});
+	    }
+	    return exports.parser.parse(source);
+	}
+	if (typeof module !== 'undefined' && __webpack_require__.c[0] === module) {
+	  exports.main(typeof process !== 'undefined' ? process.argv.slice(1) : __webpack_require__(!(function webpackMissingModule() { var e = new Error("Cannot find module \"system\""); e.code = 'MODULE_NOT_FOUND'; throw e; }())).args);
+	}
+	}
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(19), __webpack_require__(18)(module)))
+
+/***/ },
 /* 16 */
 /***/ function(module, exports, __webpack_require__) {
 
@@ -26181,6 +26253,98 @@ return /******/ (function(modules) { // webpackBootstrap
 
 /***/ },
 /* 19 */
+/***/ function(module, exports, __webpack_require__) {
+
+	// shim for using process in browser
+
+	var process = module.exports = {};
+
+	process.nextTick = (function () {
+	    var canSetImmediate = typeof window !== 'undefined'
+	    && window.setImmediate;
+	    var canMutationObserver = typeof window !== 'undefined'
+	    && window.MutationObserver;
+	    var canPost = typeof window !== 'undefined'
+	    && window.postMessage && window.addEventListener
+	    ;
+
+	    if (canSetImmediate) {
+	        return function (f) { return window.setImmediate(f) };
+	    }
+
+	    var queue = [];
+
+	    if (canMutationObserver) {
+	        var hiddenDiv = document.createElement("div");
+	        var observer = new MutationObserver(function () {
+	            var queueList = queue.slice();
+	            queue.length = 0;
+	            queueList.forEach(function (fn) {
+	                fn();
+	            });
+	        });
+
+	        observer.observe(hiddenDiv, { attributes: true });
+
+	        return function nextTick(fn) {
+	            if (!queue.length) {
+	                hiddenDiv.setAttribute('yes', 'no');
+	            }
+	            queue.push(fn);
+	        };
+	    }
+
+	    if (canPost) {
+	        window.addEventListener('message', function (ev) {
+	            var source = ev.source;
+	            if ((source === window || source === null) && ev.data === 'process-tick') {
+	                ev.stopPropagation();
+	                if (queue.length > 0) {
+	                    var fn = queue.shift();
+	                    fn();
+	                }
+	            }
+	        }, true);
+
+	        return function nextTick(fn) {
+	            queue.push(fn);
+	            window.postMessage('process-tick', '*');
+	        };
+	    }
+
+	    return function nextTick(fn) {
+	        setTimeout(fn, 0);
+	    };
+	})();
+
+	process.title = 'browser';
+	process.browser = true;
+	process.env = {};
+	process.argv = [];
+
+	function noop() {}
+
+	process.on = noop;
+	process.addListener = noop;
+	process.once = noop;
+	process.off = noop;
+	process.removeListener = noop;
+	process.removeAllListeners = noop;
+	process.emit = noop;
+
+	process.binding = function (name) {
+	    throw new Error('process.binding is not supported');
+	};
+
+	// TODO(shtylman)
+	process.cwd = function () { return '/' };
+	process.chdir = function (dir) {
+	    throw new Error('process.chdir is not supported');
+	};
+
+
+/***/ },
+/* 20 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {// Copyright Joyent, Inc. and other Node contributors.
@@ -26408,99 +26572,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }
 	;
 	
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(20)))
-
-/***/ },
-/* 20 */
-/***/ function(module, exports, __webpack_require__) {
-
-	// shim for using process in browser
-
-	var process = module.exports = {};
-
-	process.nextTick = (function () {
-	    var canSetImmediate = typeof window !== 'undefined'
-	    && window.setImmediate;
-	    var canMutationObserver = typeof window !== 'undefined'
-	    && window.MutationObserver;
-	    var canPost = typeof window !== 'undefined'
-	    && window.postMessage && window.addEventListener
-	    ;
-
-	    if (canSetImmediate) {
-	        return function (f) { return window.setImmediate(f) };
-	    }
-
-	    var queue = [];
-
-	    if (canMutationObserver) {
-	        var hiddenDiv = document.createElement("div");
-	        var observer = new MutationObserver(function () {
-	            var queueList = queue.slice();
-	            queue.length = 0;
-	            queueList.forEach(function (fn) {
-	                fn();
-	            });
-	        });
-
-	        observer.observe(hiddenDiv, { attributes: true });
-
-	        return function nextTick(fn) {
-	            if (!queue.length) {
-	                hiddenDiv.setAttribute('yes', 'no');
-	            }
-	            queue.push(fn);
-	        };
-	    }
-
-	    if (canPost) {
-	        window.addEventListener('message', function (ev) {
-	            var source = ev.source;
-	            if ((source === window || source === null) && ev.data === 'process-tick') {
-	                ev.stopPropagation();
-	                if (queue.length > 0) {
-	                    var fn = queue.shift();
-	                    fn();
-	                }
-	            }
-	        }, true);
-
-	        return function nextTick(fn) {
-	            queue.push(fn);
-	            window.postMessage('process-tick', '*');
-	        };
-	    }
-
-	    return function nextTick(fn) {
-	        setTimeout(fn, 0);
-	    };
-	})();
-
-	process.title = 'browser';
-	process.browser = true;
-	process.env = {};
-	process.argv = [];
-
-	function noop() {}
-
-	process.on = noop;
-	process.addListener = noop;
-	process.once = noop;
-	process.off = noop;
-	process.removeListener = noop;
-	process.removeAllListeners = noop;
-	process.emit = noop;
-
-	process.binding = function (name) {
-	    throw new Error('process.binding is not supported');
-	};
-
-	// TODO(shtylman)
-	process.cwd = function () { return '/' };
-	process.chdir = function (dir) {
-	    throw new Error('process.chdir is not supported');
-	};
-
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(19)))
 
 /***/ },
 /* 21 */
