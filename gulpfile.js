@@ -10,15 +10,15 @@ var uglify = require('uglify-js');
 
 var ENTRY    = './src/js/JSONEditor.js';
 var HEADER   = './src/js/header.js';
+var IMAGE    = './src/css/img/jsoneditor-icons.png';
+var DIST     = './dist';
 var FILE     = 'jsoneditor.js';
-var FILE_MIN = 'jsoneditor.min.js';
 var FILE_MAP = 'jsoneditor.map';
-var DIST     = './';
-var JSONEDITOR_JS       = DIST + FILE;
-var JSONEDITOR_MIN_JS   = DIST + FILE_MIN;
-var JSONEDITOR_MAP_JS   = DIST + FILE_MAP;
-var JSONEDITOR_CSS      = DIST + 'jsoneditor.css';
-var JSONEDITOR_MIN_CSS  = DIST + 'jsoneditor.min.css';
+var JSONEDITOR_JS       = DIST + '/' + FILE;
+var JSONEDITOR_MIN_JS   = DIST + '/jsoneditor.min.js';
+var JSONEDITOR_MAP_JS   = DIST + '/' + FILE_MAP;
+var JSONEDITOR_CSS      = DIST + '/jsoneditor.css';
+var JSONEDITOR_MIN_CSS  = DIST + '/jsoneditor.min.css';
 
 // generate banner with today's date and correct version
 function createBanner() {
@@ -57,8 +57,14 @@ var uglifyConfig = {
 // create a single instance of the compiler to allow caching
 var compiler = webpack(webpackConfig);
 
+// make dist and dist/img folders
+gulp.task('mkdir', function () {
+  mkdirp.sync(DIST);
+  mkdirp.sync(DIST + '/img');
+});
+
 // bundle javascript
-gulp.task('bundle', function (done) {
+gulp.task('bundle', ['mkdir'], function (done) {
   // update the banner contents (has a date in it which should stay up to date)
   bannerPlugin.banner = createBanner();
 
@@ -74,7 +80,7 @@ gulp.task('bundle', function (done) {
 });
 
 // bundle css
-gulp.task('bundle-css', function () {
+gulp.task('bundle-css', ['mkdir'], function () {
   gulp.src([
     'src/css/jsoneditor.css',
     'src/css/contextmenu.css',
@@ -92,11 +98,10 @@ gulp.task('bundle-css', function () {
 });
 
 // create a folder img and copy the icons
-gulp.task('copy-img', function () {
-  mkdirp.sync('./img');
-  gulp.src('./src/css/img/jsoneditor-icons.png')
-      .pipe(gulp.dest('./img/'));
-  gutil.log('Copied jsoneditor-icons.png to ./img/');
+gulp.task('copy-img', ['mkdir'], function () {
+  gulp.src(IMAGE)
+      .pipe(gulp.dest(DIST +'/img'));
+  gutil.log('Copied images');
 });
 
 gulp.task('minify', ['bundle'], function () {

@@ -23,8 +23,8 @@ To implement JSONEditor in a web application, load the javascript and css file
 in the head of the HTML page:
 
 ```html
-<link rel="stylesheet" type="text/css" href="jsoneditor/jsoneditor.min.css">
-<script src="jsoneditor/jsoneditor.min.js"></script>
+<link href="jsoneditor/dist/jsoneditor.min.css" rel="stylesheet" type="text/css">
+<script src="jsoneditor/dist/jsoneditor.min.js"></script>
 ```
 
 ## Use
@@ -72,8 +72,8 @@ var json = editor.get();
 <!DOCTYPE HTML>
 <html>
 <head>
-    <link rel="stylesheet" type="text/css" href="jsoneditor/jsoneditor.min.css">
-    <script src="jsoneditor/jsoneditor.min.js"></script>
+    <link href="jsoneditor/dist/jsoneditor.min.css" rel="stylesheet" type="text/css">
+    <script src="jsoneditor/dist/jsoneditor.min.js"></script>
 </head>
 <body>
 <p>

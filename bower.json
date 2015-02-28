@@ -14,8 +14,8 @@
     "url": "https://github.com/josdejong/jsoneditor.git"
   },
   "main": [
-    "jsoneditor.min.js", 
-    "jsoneditor.min.css"
+    "./dist/jsoneditor.min.js",
+    "./dist/jsoneditor.min.css"
   ],
   "bugs": "https://github.com/josdejong/jsoneditor/issues",
   "ignore": [

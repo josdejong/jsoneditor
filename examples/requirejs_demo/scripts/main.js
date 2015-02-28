@@ -1,4 +1,4 @@
-var module = '../../../jsoneditor';
+var module = '../../../dist/jsoneditor';
 require([module], function (JSONEditor) {
   // create the editor
   var container = document.getElementById('jsoneditor');
