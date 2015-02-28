@@ -33,12 +33,12 @@
 }
 
 .jsoneditor .field.empty {
-  background-image: url("../img/jsoneditor-icons.png");
+  background-image: url("img/jsoneditor-icons.png");
   background-position: 0 -144px;
 }
 
 .jsoneditor .value.empty {
-  background-image: url("../img/jsoneditor-icons.png");
+  background-image: url("img/jsoneditor-icons.png");
   background-position: -48px -144px;
 }
 
@@ -87,7 +87,7 @@
   margin: 0;
   border: none;
   cursor: pointer;
-  background: transparent url("../img/jsoneditor-icons.png");
+  background: transparent url("img/jsoneditor-icons.png");
 }
 
 .jsoneditor div.tree button.collapsed {
@@ -182,7 +182,7 @@
 }
 
 .jsoneditor div.tree button.dragarea {
-  background: url("../img/jsoneditor-icons.png") -72px -72px;
+  background: url("img/jsoneditor-icons.png") -72px -72px;
   cursor: move;
 }
 
@@ -280,7 +280,7 @@
   border: none;
   padding: 0;
   margin: 0;
-  background-image: url("../img/jsoneditor-icons.png");
+  background-image: url("img/jsoneditor-icons.png");
 }
 
 .jsoneditor-contextmenu ul li button div.expand {
@@ -289,7 +289,7 @@
   height: 24px;
   padding: 0;
   margin: 0 4px 0 0;
-  background: url("../img/jsoneditor-icons.png") 0 -72px;
+  background: url("img/jsoneditor-icons.png") 0 -72px;
   opacity: 0.4;
 }
 
@@ -463,7 +463,7 @@
   padding: 0;
   border-radius: 2px;
   border: 1px solid #aec0f8;
-  background: #e3eaf6 url("../img/jsoneditor-icons.png");
+  background: #e3eaf6 url("img/jsoneditor-icons.png");
   color: #4D4D4D;
   opacity: 0.8;
   font-family: arial, sans-serif;
@@ -592,7 +592,7 @@
   padding: 0;
   margin: 0;
   border: none;
-  background: url("../img/jsoneditor-icons.png");
+  background: url("img/jsoneditor-icons.png");
   vertical-align: top;
 }
 

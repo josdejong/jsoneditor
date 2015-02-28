@@ -14,6 +14,8 @@ var IMAGE    = './src/css/img/jsoneditor-icons.png';
 var DIST     = './dist';
 var FILE     = 'jsoneditor.js';
 var FILE_MAP = 'jsoneditor.map';
+var FILE_CSS = 'jsoneditor.css';
+var FILE_MIN_CSS = 'jsoneditor.min.css';
 var JSONEDITOR_JS       = DIST + '/' + FILE;
 var JSONEDITOR_MIN_JS   = DIST + '/jsoneditor.min.js';
 var JSONEDITOR_MAP_JS   = DIST + '/' + FILE_MAP;
@@ -87,11 +89,11 @@ gulp.task('bundle-css', ['mkdir'], function () {
     'src/css/menu.css',
     'src/css/searchbox.css'
   ])
-      .pipe(concatCss(JSONEDITOR_CSS))
-      .pipe(gulp.dest('.'))
-      .pipe(concatCss(JSONEDITOR_MIN_CSS))
+      .pipe(concatCss(FILE_CSS))
+      .pipe(gulp.dest(DIST))
+      .pipe(concatCss(FILE_MIN_CSS))
       .pipe(minifyCSS())
-      .pipe(gulp.dest('.'));
+      .pipe(gulp.dest(DIST));
 
   gutil.log('bundled ' + JSONEDITOR_CSS);
   gutil.log('bundled ' + JSONEDITOR_MIN_CSS);
@@ -118,8 +120,7 @@ gulp.task('minify', ['bundle'], function () {
 // TODO: zip file using archiver
 var pkg = 'jsoneditor-' + require('./package.json').version + '.zip';
 gulp.task('zip', shell.task([
-      'zip ' + pkg + ' ' +
-      'README.md NOTICE LICENSE HISTORY.md jsoneditor.js jsoneditor.css jsoneditor.min.js jsoneditor.min.css jsoneditor.map img docs examples -r '
+      'zip ' + pkg + ' ' + 'README.md NOTICE LICENSE HISTORY.md dist docs examples -r '
 ]));
 
 // The default task (called when you run `gulp`)
