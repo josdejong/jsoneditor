@@ -35,7 +35,7 @@ exports.sanitize = function (jsString) {
   //If JSON starts with a function (characters/digits/"_-"), remove this function.
   //This is useful for "stripping" JSONP objects to become JSON
   //For example: /* some comment */ function_12321321 ( [{"a":"b"}] ); => [{"a":"b"}]
-  var match = jsString.match(/^(\/\*(.|[\r\n])*?\*\/)?\s*[\da-zA-Z_$]+\s*\(([\s\S]*)\)\s*;?\s*$/);
+  var match = jsString.match(/^\s*(\/\*(.|[\r\n])*?\*\/)?\s*[\da-zA-Z_$]+\s*\(([\s\S]*)\)\s*;?\s*$/);
   if (match) {
     jsString = match[3];
   }

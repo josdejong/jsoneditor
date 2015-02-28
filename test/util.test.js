@@ -46,6 +46,8 @@ describe('util', function () {
       assert.equal(util.sanitize('/* foo bar */ callback_123 ({})'), '{}');
       assert.equal(util.sanitize('/* foo bar */\ncallback_123({})'), '{}');
       assert.equal(util.sanitize('/* foo bar */ callback_123 (  {}  )'), '  {}  ');
+      assert.equal(util.sanitize('  /* foo bar */   callback_123 ({});  '), '{}');
+      assert.equal(util.sanitize('\n/* foo\nbar */\ncallback_123 ({});\n\n'), '{}');
 
       // non-matching
       assert.equal(util.sanitize('callback abc({});'), 'callback abc({});');
