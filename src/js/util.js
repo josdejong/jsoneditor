@@ -54,6 +54,7 @@ exports.sanitize = function (jsString) {
     chars.push(c);
     i++;
   }
+
   var jsonString = chars.join('');
 
   // replace unescaped single quotes with double quotes,
@@ -71,11 +72,11 @@ exports.sanitize = function (jsString) {
   jsonString = jsonString.replace(/\/\*(.|[\r\n])*?\*\//g,'');//Remove all code comments
 
   //If JSON starts with a function (Carachters/digist/"_-"), remove this function. 
-  //This is usefull for "stripping" JSONP objects to become JSON
+  //This is useful for "stripping" JSONP objects to become JSON
   //For example: function_12321321 ( [{"a":"b"}] ); => [{"a":"b"}]
   var match = jsonString.match(/^\s*[\dA-z_$]+\s*\(([\s\S]*)\)\s*;?\s*$/);
   if (match) {
-    var jsonString = match[1];
+    jsonString = match[1];
   }
 
   return jsonString;

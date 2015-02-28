@@ -18,7 +18,7 @@
   "bugs": "https://github.com/josdejong/jsoneditor/issues",
   "scripts": {
     "build": "gulp",
-    "build-assets": "gulp build-assets"
+    "test": "mocha test"
   },
   "dependencies": {
     "brace": "^0.4.1",
@@ -31,6 +31,7 @@
     "gulp-shell": "^0.3.0",
     "gulp-util": "^3.0.3",
     "mkdirp": "^0.5.0",
+    "mocha": "^2.1.0",
     "uglify-js": "^2.4.16",
     "webpack": "^1.5.3"
   }
