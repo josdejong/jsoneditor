@@ -14,6 +14,13 @@ Update the date and version number in the file HISTORY.md. Verify whether all
 changes in the new version are described.
 
 
+## Test the library
+
+Run the unit tests and validate whether all tests pass:
+
+    npm test
+
+
 ## Build library
 
 Build the build (jsoneditor.js, jsoneditor.css, ...) files by running:

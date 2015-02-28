@@ -3,9 +3,11 @@
 https://github.com/josdejong/jsoneditor
 
 
-## not yet released, version 4.0.0
+## 2015-02-28, version 4.0.0
 
 - Ace editor and jsonlint are now packed with jsoneditor.js by default.
+  This makes the library about 4 times larger. If Ace is not needed, a custom
+  build of the library can be done.
 - The distribution files are now moved from the root to the `/dist` folder.
 - Reworked the source code to CommonJS modules, using `brace` to load Ace.
 - JSONP is now automatically stripped from JSON. Thanks @yanivefraim.
