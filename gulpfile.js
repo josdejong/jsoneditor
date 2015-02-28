@@ -8,19 +8,11 @@ var mkdirp = require('mkdirp');
 var webpack = require('webpack');
 var uglify = require('uglify-js');
 
-var ENTRY    = './src/js/JSONEditor.js';
-var HEADER   = './src/js/header.js';
-var IMAGE    = './src/css/img/jsoneditor-icons.png';
-var DIST     = './dist';
-var FILE     = 'jsoneditor.js';
-var FILE_MAP = 'jsoneditor.map';
-var FILE_CSS = 'jsoneditor.css';
-var FILE_MIN_CSS = 'jsoneditor.min.css';
-var JSONEDITOR_JS       = DIST + '/' + FILE;
-var JSONEDITOR_MIN_JS   = DIST + '/jsoneditor.min.js';
-var JSONEDITOR_MAP_JS   = DIST + '/' + FILE_MAP;
-var JSONEDITOR_CSS      = DIST + '/jsoneditor.css';
-var JSONEDITOR_MIN_CSS  = DIST + '/jsoneditor.min.css';
+var NAME    = 'jsoneditor';
+var ENTRY   = './src/js/JSONEditor.js';
+var HEADER  = './src/js/header.js';
+var IMAGE   = './src/css/img/jsoneditor-icons.png';
+var DIST    = './dist';
 
 // generate banner with today's date and correct version
 function createBanner() {
@@ -43,14 +35,14 @@ var webpackConfig = {
     library: 'JSONEditor',
     libraryTarget: 'umd',
     path: DIST,
-    filename: FILE
+    filename: NAME + '.js'
   },
   plugins: [ bannerPlugin ],
   cache: true
 };
 
 var uglifyConfig = {
-  outSourceMap: FILE_MAP,
+  outSourceMap: NAME + '.map',
   output: {
     comments: /@license/
   }
@@ -75,7 +67,7 @@ gulp.task('bundle', ['mkdir'], function (done) {
       gutil.log(err);
     }
 
-    gutil.log('bundled ' + JSONEDITOR_JS);
+    gutil.log('bundled ' + NAME + '.js');
 
     done();
   });
@@ -89,14 +81,14 @@ gulp.task('bundle-css', ['mkdir'], function () {
     'src/css/menu.css',
     'src/css/searchbox.css'
   ])
-      .pipe(concatCss(FILE_CSS))
+      .pipe(concatCss(NAME + '.css'))
       .pipe(gulp.dest(DIST))
-      .pipe(concatCss(FILE_MIN_CSS))
+      .pipe(concatCss(NAME + '.min.css'))
       .pipe(minifyCSS())
       .pipe(gulp.dest(DIST));
 
-  gutil.log('bundled ' + JSONEDITOR_CSS);
-  gutil.log('bundled ' + JSONEDITOR_MIN_CSS);
+  gutil.log('bundled ' + DIST + '/' + NAME + '.css');
+  gutil.log('bundled ' + DIST + '/' + NAME + '.min.css');
 });
 
 // create a folder img and copy the icons
@@ -107,13 +99,16 @@ gulp.task('copy-img', ['mkdir'], function () {
 });
 
 gulp.task('minify', ['bundle'], function () {
-  var result = uglify.minify([JSONEDITOR_JS], uglifyConfig);
+  var result = uglify.minify([DIST + '/' + NAME + '.js'], uglifyConfig);
 
-  fs.writeFileSync(JSONEDITOR_MIN_JS, result.code);
-  fs.writeFileSync(JSONEDITOR_MAP_JS, result.map);
+  var fileMin = DIST + '/' + NAME + '.min.js';
+  var fileMap = DIST + '/' + NAME + '.map';
 
-  gutil.log('Minified ' + JSONEDITOR_MIN_JS);
-  gutil.log('Mapped ' + JSONEDITOR_MAP_JS);
+  fs.writeFileSync(fileMin, result.code);
+  fs.writeFileSync(fileMap, result.map);
+
+  gutil.log('Minified ' + fileMin);
+  gutil.log('Mapped ' + fileMap);
 
 });
 
