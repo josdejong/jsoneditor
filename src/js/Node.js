@@ -94,7 +94,7 @@ Node.prototype.setParent = function(parent) {
  */
 Node.prototype.setField = function(field, fieldEditable) {
   this.field = field;
-  this.fieldEditable = (fieldEditable == true);
+  this.fieldEditable = (fieldEditable === true);
 };
 
 /**
@@ -282,7 +282,7 @@ Node.prototype.expand = function(recurse) {
 
   this.showChilds();
 
-  if (recurse != false) {
+  if (recurse !== false) {
     this.childs.forEach(function (child) {
       child.expand(recurse);
     });
@@ -302,7 +302,7 @@ Node.prototype.collapse = function(recurse) {
   this.hideChilds();
 
   // collapse childs in case of recurse
-  if (recurse != false) {
+  if (recurse !== false) {
     this.childs.forEach(function (child) {
       child.collapse(recurse);
     });
@@ -1006,7 +1006,7 @@ Node.prototype._getDomValue = function(silent) {
     catch (err) {
       this.value = undefined;
       // TODO: sent an action with the new, invalid value?
-      if (silent != true) {
+      if (silent !== true) {
         throw err;
       }
     }
@@ -1171,7 +1171,7 @@ Node.prototype._getDomField = function(silent) {
     catch (err) {
       this.field = undefined;
       // TODO: sent an action here, with the new, invalid value?
-      if (silent != true) {
+      if (silent !== true) {
         throw err;
       }
     }
@@ -1588,12 +1588,12 @@ Node.prototype.updateDom = function (options) {
   this._updateDomValue();
 
   // update childs indexes
-  if (options && options.updateIndexes == true) {
+  if (options && options.updateIndexes === true) {
     // updateIndexes is true or undefined
     this._updateDomIndexes();
   }
 
-  if (options && options.recurse == true) {
+  if (options && options.recurse === true) {
     // recurse is true or undefined. update childs recursively
     if (this.childs) {
       this.childs.forEach(function (child) {

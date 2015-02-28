@@ -258,7 +258,7 @@ exports.stripFormatting = function stripFormatting(divElement) {
     if (attributes) {
       for (var j = attributes.length - 1; j >= 0; j--) {
         var attribute = attributes[j];
-        if (attribute.specified == true) {
+        if (attribute.specified === true) {
           child.removeAttribute(attribute.name);
         }
       }
