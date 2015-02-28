@@ -1,7 +1,13 @@
-var ace = require('brace');
-require('brace/mode/json');
-require('brace/ext/searchbox');
-require('./ace/theme-jsoneditor');
+var ace;
+try {
+  ace = require('brace');
+  require('brace/mode/json');
+  require('brace/ext/searchbox');
+  require('./ace/theme-jsoneditor');
+}
+catch (err) {
+  // failed to load ace, no problem, we will fall back to plain text
+}
 
 var modeswitcher = require('./modeswitcher');
 var util = require('./util');

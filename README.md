@@ -132,5 +132,7 @@ To create a custom build of the JavaScript code, browserify can be used:
 
     browserify ./index.js -o ./jsoneditor.custom.js -s JSONEditor --ignore-missing
 
-TODO: describe how to create a bundle with Ace editor excluded (accounts for 2/3
-of the total size of the library).
+The Ace editor, used in mode `code`, accounts for about 75% of the total
+size of the library. To exclude the Ace editor from the bundle:
+
+    browserify ./index.js -o ./jsoneditor.custom.js -s JSONEditor --ignore-missing -x brace -x brace/mode/json -x brace/ext/searchbox
