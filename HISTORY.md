@@ -3,6 +3,11 @@
 https://github.com/josdejong/jsoneditor
 
 
+## not yet released, version 4.1.0
+
+- Implemented a function `focus()` for modes tree, view, and form.
+
+
 ## 2015-02-28, version 4.0.0
 
 - Ace editor and jsonlint are now packed with jsoneditor.js by default.

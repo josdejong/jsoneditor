@@ -54,6 +54,10 @@ Collapse all fields. Only applicable for mode 'tree', 'view', and 'form'.
 
 Expand all fields. Only applicable for mode 'tree', 'view', and 'form'.
 
+#### `JSONEditor.focus()`
+
+Set focus to the JSONEditor.
+
 #### `JSONEditor.set(json)`
 
 Set JSON data.

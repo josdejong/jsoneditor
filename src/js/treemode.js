@@ -179,6 +179,33 @@ treemode.getName = function () {
 };
 
 /**
+ * Set focus to the editor. Focus will be set to:
+ * - the first editable field or value, or else
+ * - to the expand button of the root node, or else
+ * - to the context menu button of the root node, or else
+ * - to the first button in the top menu
+ */
+treemode.focus = function () {
+  var input = this.content.querySelector('[contenteditable=true]');
+  if (input) {
+    input.focus();
+  }
+  else if (this.node.dom.expand) {
+    this.node.dom.expand.focus();
+  }
+  else if (this.node.dom.menu) {
+    this.node.dom.menu.focus();
+  }
+  else {
+    // focus to the first button in the menu
+    input = this.frame.querySelector('button');
+    if (input) {
+      input.focus();
+    }
+  }
+};
+
+/**
  * Remove the root node from the editor
  */
 treemode.clear = function () {
