@@ -115,7 +115,7 @@ gulp.task('minify', ['bundle'], function () {
 // TODO: zip file using archiver
 var pkg = 'jsoneditor-' + require('./package.json').version + '.zip';
 gulp.task('zip', shell.task([
-      'zip ' + pkg + ' ' + 'README.md NOTICE LICENSE HISTORY.md dist docs examples -r '
+      'zip ' + pkg + ' ' + 'README.md NOTICE LICENSE HISTORY.md index.html src dist docs examples -r '
 ]));
 
 // The default task (called when you run `gulp`)

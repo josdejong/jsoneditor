@@ -3,6 +3,16 @@
 https://github.com/josdejong/jsoneditor
 
 
+## 2015-03-15, version 4.1.2
+
+- Fixed broken bower package 4.1.1.
+
+
+## 2015-03-15, version 4.1.1
+
+- Added missing file `index.js` to the bower package.
+
+
 ## 2015-03-15, version 4.1.0
 
 - Implemented a function `focus()` for modes tree, view, and form.

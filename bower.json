@@ -1,6 +1,6 @@
 {
   "name": "jsoneditor",
-  "version": "4.1.0",
+  "version": "4.1.2",
   "description": "A web-based tool to view, edit and format JSON",
   "tags": [
     "json",
@@ -23,13 +23,11 @@
     "node_modules",
     "test",
     "tools",
-    ".idea",
     "gulpfile.js",
-    "index.js",
-    "package.json",
+    "npm-debug.log",
+    ".idea",
     ".npmignore",
-    ".gitignore",
-    "npm-debug.log"
+    ".gitignore"
   ],
   "dependencies": {}
 }
