@@ -3,9 +3,11 @@
 https://github.com/josdejong/jsoneditor
 
 
-## not yet released, version 4.1.0
+## 2015-03-15, version 4.1.0
 
 - Implemented a function `focus()` for modes tree, view, and form.
+- Added `./src` folder to the distributed package, needed for usage via
+  node.js/browserify.
 
 
 ## 2015-02-28, version 4.0.0
