@@ -1,9 +1,6 @@
 var ace;
 try {
-  ace = require('brace');
-  require('brace/mode/json');
-  require('brace/ext/searchbox');
-  require('./ace/theme-jsoneditor');
+  ace = require('./ace');
 }
 catch (err) {
   // failed to load ace, no problem, we will fall back to plain text

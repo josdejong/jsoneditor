@@ -3,6 +3,12 @@
 https://github.com/josdejong/jsoneditor
 
 
+## 2015-03-17, version 4.1.3
+
+- Fixed broken bundling with browserify: the `jsonlint` package was requiring
+  missing dependencies.
+
+
 ## 2015-03-15, version 4.1.2
 
 - Fixed broken bower package 4.1.1.

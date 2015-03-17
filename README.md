@@ -125,12 +125,12 @@ jsoneditor:
 The source code of JSONEditor consists of CommonJS modules. To create a custom
 bundle of the source code, [browserify](http://browserify.org/) can be used:
 
-    browserify ./index.js -o ./jsoneditor.custom.js -s JSONEditor --ignore-missing
+    browserify ./index.js -o ./jsoneditor.custom.js -s JSONEditor
 
 The Ace editor, used in mode `code`, accounts for about 75% of the total
 size of the library. To exclude the Ace editor from the bundle:
 
-    browserify ./index.js -o ./jsoneditor.custom.js -s JSONEditor --ignore-missing -x brace -x brace/mode/json -x brace/ext/searchbox
+    browserify ./index.js -o ./jsoneditor.custom.js -s JSONEditor -x brace -x brace/mode/json -x brace/ext/searchbox
 
 To minify the generated bundle, use [uglifyjs](https://github.com/mishoo/UglifyJS2):
 
