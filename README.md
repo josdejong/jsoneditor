@@ -130,7 +130,7 @@ The source code of JSONEditor consists of CommonJS modules. JSONEditor can be bu
 
     npm install
 
-To create a custom bundle of the source code, [browserify](http://browserify.org/) can be used:
+To create a custom bundle of the source code using browserify:
 
     browserify ./index.js -o ./jsoneditor.custom.js -s JSONEditor
 
