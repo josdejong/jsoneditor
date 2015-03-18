@@ -34,6 +34,8 @@ Constructs a new JSONEditor.
     Enables a search box in the upper right corner of the JSONEditor. True by default. Only applicable when `mode` is 'tree', 'view', or 'form'.
   - `{Number} indentation`  
     Number of indentation spaces. 2 by default. Only applicable when `mode` is 'code' or 'text'.
+  - `{String} theme`  
+    Set the Ace editor theme, uses included 'ace/theme/jsoneditor' by default. Please note that only the default theme is included with jsoneditor, so if you specify another one you need to make sure it is loaded.
 
 - `{JSON} json`  
   Initial JSON data to be loaded into the JSONEditor. Alternatively, the method `JSONEditor.set(json)` can be used to load JSON data into the editor.
