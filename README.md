@@ -110,11 +110,15 @@ jsoneditor:
 
 - Install dependencies:
 
-      npm install
+  ```
+  npm install
+  ```
 
 - Build JSON Editor:
 
-      npm run build
+  ```
+  npm run build
+  ```
 
   This will generate the files `./jsoneditor.js`, `./jsoneditor.css`, and  
   minified versions in the root of the project.
@@ -122,8 +126,11 @@ jsoneditor:
 
 ## Custom builds
 
-The source code of JSONEditor consists of CommonJS modules. To create a custom
-bundle of the source code, [browserify](http://browserify.org/) can be used:
+The source code of JSONEditor consists of CommonJS modules. JSONEditor can be bundled in a customized way using a module bundler like [browserify](http://browserify.org/) or [webpack](http://webpack.github.io/). First, install all dependencies of jsoneditor:
+
+    npm install
+
+To create a custom bundle of the source code, [browserify](http://browserify.org/) can be used:
 
     browserify ./index.js -o ./jsoneditor.custom.js -s JSONEditor
 
