@@ -44,6 +44,7 @@ textmode.create = function (container, options) {
           'Falling back to plain text editor');
     }
   }
+  this.theme = options.theme || 'ace/theme/jsoneditor';
 
   var me = this;
   this.container = container;
@@ -117,7 +118,7 @@ textmode.create = function (container, options) {
     this.content.appendChild(this.editorDom);
 
     var editor = ace.edit(this.editorDom);
-    editor.setTheme('ace/theme/jsoneditor');
+    editor.setTheme(this.theme);
     editor.setShowPrintMargin(false);
     editor.setFontSize(13);
     editor.getSession().setMode('ace/mode/json');
