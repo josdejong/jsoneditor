@@ -87,12 +87,12 @@ Set a field name for the root node.
 
 #### `JSONEditor.setText(jsonString)`
 
-Set text data in the formatter.
+Set text data in the editor.
 
 *Parameters:*
 
 - `{String} jsonString`  
-  Contents of the JSONformatter as string.
+  Contents of the editor as string.
 
 #### `JSONEditor.get()`
 
@@ -119,7 +119,10 @@ Get JSON data as string.
 *Returns:*
 
 - `{String} jsonString`  
-  Contents of the JSONformatter as string.
+  Contents of the editor as string. When the editor is in code `text` or `code`,
+  the returned text is returned as-is. For the other modes, the returned text
+  is a compacted string. In order to get the JSON formatted with a certain
+  number of spaces, use `JSON.stringify(JSONEditor.get(), null, 2)`.
 
 
 ### Examples
