@@ -1024,34 +1024,36 @@ Node.prototype._updateDomValue = function () {
   var domValue = this.dom.value;
   if (domValue) {
     // set text color depending on value type
-    // TODO: put colors in css
     var v = this.value;
     var t = (this.type == 'auto') ? util.type(v) : this.type;
     var isUrl = (t == 'string' && util.isUrl(v));
-    var color = '';
+
+    util.removeClassName(domValue, 'value-string');
+    util.removeClassName(domValue, 'value-number');
+    util.removeClassName(domValue, 'value-boolean');
+    util.removeClassName(domValue, 'value-null');
+    util.removeClassName(domValue, 'value-invalid');
+
     if (isUrl && !this.editable.value) { // TODO: when to apply this?
-      color = '';
     }
     else if (t == 'string') {
-      color = 'green';
+      util.addClassName(domValue, 'value-string');
     }
     else if (t == 'number') {
-      color = 'red';
+      util.addClassName(domValue, 'value-number');
     }
     else if (t == 'boolean') {
-      color = 'darkorange';
+      util.addClassName(domValue, 'value-boolean');
     }
     else if (this._hasChilds()) {
-      color = '';
     }
     else if (v === null) {
-      color = '#004ED0';  // blue
+      util.addClassName(domValue, 'value-null');
     }
     else {
       // invalid value
-      color = 'black';
+      util.addClassName(domValue, 'value-invalid');
     }
-    domValue.style.color = color;
 
     // make background color light-gray when empty
     var isEmpty = (String(this.value) == '' && this.type != 'array' && this.type != 'object');

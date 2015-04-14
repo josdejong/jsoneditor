@@ -52,6 +52,26 @@
   color: red;
 }
 
+.jsoneditor .value.value-string {
+  color: green;
+}
+
+.jsoneditor .value.value-number {
+  color: red;
+}
+
+.jsoneditor .value.value-boolean {
+  color: darkorange;
+}
+
+.jsoneditor .value.value-null {
+  color: #004ED0;
+}
+
+.jsoneditor .value.value-invalid {
+  color: black;
+}
+
 .jsoneditor .separator {
   padding: 3px 0;
   vertical-align: top;
