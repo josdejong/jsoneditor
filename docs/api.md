@@ -16,7 +16,7 @@ Constructs a new JSONEditor.
   Optional object with options. Available options:
 
   - `{function} change`  
-    Set a callback method triggered when the contents of the JSONEditor change. Called without parameters.
+    Set a callback method triggered when the contents of the JSONEditor change. Called without parameters. Will only be triggered on changes made by the user, not in case of programmatic changes via the functions `set` or `setText`.
   - `{function} editable`  
     Set a callback method to determine whether individual nodes are editable or read-only. Only applicable when option `mode` is `tree`. The callback is invoked as `editable(node)`, where `node` is an object `{field: string, value: string, path: string[]}`. The function must either return a boolean value to set both the nodes field and value editable or read-only, or return an object `{field: boolean, value: boolean}`.
   - `{function} error`  
