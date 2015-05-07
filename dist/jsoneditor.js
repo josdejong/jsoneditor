@@ -24,7 +24,7 @@
  *
  * @author  Jos de Jong, <wjosdejong@gmail.com>
  * @version 4.1.3
- * @date    2015-03-17
+ * @date    2015-05-07
  */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
@@ -1145,6 +1145,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	          'Falling back to plain text editor');
 	    }
 	  }
+	  this.theme = options.theme || 'ace/theme/jsoneditor';
 
 	  var me = this;
 	  this.container = container;
@@ -1218,7 +1219,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    this.content.appendChild(this.editorDom);
 
 	    var editor = ace.edit(this.editorDom);
-	    editor.setTheme('ace/theme/jsoneditor');
+	    editor.setTheme(this.theme);
 	    editor.setShowPrintMargin(false);
 	    editor.setFontSize(13);
 	    editor.getSession().setMode('ace/mode/json');
@@ -6832,7 +6833,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	})();
 	if (true) {
 	  exports.parser = jsonlint;
-	  exports.parse = jsonlint.parse;
+	  exports.parse = jsonlint.parse.bind(jsonlint);
 	}
 
 /***/ },

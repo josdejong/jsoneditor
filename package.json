@@ -22,7 +22,7 @@
   },
   "dependencies": {
     "brace": "^0.4.1",
-    "jsonlint": "josdejong/jsonlint#fb47330"
+    "jsonlint": "josdejong/jsonlint#85a19d7"
   },
   "devDependencies": {
     "gulp": "^3.8.11",

@@ -7,6 +7,7 @@ https://github.com/josdejong/jsoneditor
 
 - Implemented option `theme`, allowing to set a custom theme for the Ace 
   editor. Thanks @nfvs.
+- Fixed #186: binding issue to `jsonlint.parse`.
 
 
 ## 2015-03-15, version 4.1.1
