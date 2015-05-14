@@ -3,7 +3,7 @@
 https://github.com/josdejong/jsoneditor
 
 
-## not yet released, version 4.2.0
+## 2015-05-14, version 4.2.0
 
 - Implemented option `theme`, allowing to set a custom theme for the Ace 
   editor. Thanks @nfvs.
@@ -11,6 +11,7 @@ https://github.com/josdejong/jsoneditor
   instead of the embedded version.
 - Fixed #186: binding issue to `jsonlint.parse`.
 - Fixed `editor.get()` manipulating the code when containing an error.
+
 
 ## 2015-03-15, version 4.1.1
 
