@@ -67,6 +67,13 @@ download:
 [http://jsoneditoronline.org/downloads/](http://jsoneditoronline.org/downloads/)
 
 
+### More
+
+There is a directive available for using JSONEditor in Angular.js:
+
+[https://github.com/angular-tools/ng-jsoneditor](https://github.com/angular-tools/ng-jsoneditor)
+
+
 ## Use
 
 ```html
