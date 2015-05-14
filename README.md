@@ -73,6 +73,9 @@ download:
 <!DOCTYPE HTML>
 <html>
 <head>
+    <!-- when using the mode "code", it's important to specify charset utf-8 -->
+    <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+
     <link href="jsoneditor/dist/jsoneditor.min.css" rel="stylesheet" type="text/css">
     <script src="jsoneditor/dist/jsoneditor.min.js"></script>
 </head>
