@@ -10,7 +10,7 @@ https://github.com/josdejong/jsoneditor
 - Implemented option `ace`, which allows to pass a custom instance of the Ace
   instead of the embedded version.
 - Fixed #186: binding issue to `jsonlint.parse`.
-
+- Fixed `editor.get()` manipulating the code when containing an error.
 
 ## 2015-03-15, version 4.1.1
 

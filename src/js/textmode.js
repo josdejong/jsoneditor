@@ -53,6 +53,8 @@ textmode.create = function (container, options) {
           'Falling back to plain text editor');
     }
   }
+
+  // determine theme
   this.theme = options.theme || 'ace/theme/jsoneditor';
 
   var me = this;
@@ -300,7 +302,6 @@ textmode.get = function() {
   catch (err) {
     // try to sanitize json, replace JavaScript notation with JSON notation
     text = util.sanitize(text);
-    this.setText(text);
 
     // try to parse again
     json = util.parse(text); // this can throw an error
