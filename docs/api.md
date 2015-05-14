@@ -15,6 +15,8 @@ Constructs a new JSONEditor.
 - `{Object} options`  
   Optional object with options. Available options:
 
+  - `{Object} ace`  
+    Provide a custom version of the [Ace editor](http://ace.c9.io/) and use this instead of the version that comes embedded with JSONEditor. Only applicable when `mode` is `code`.
   - `{function} change`  
     Set a callback method triggered when the contents of the JSONEditor change. Called without parameters. Will only be triggered on changes made by the user, not in case of programmatic changes via the functions `set` or `setText`.
   - `{function} editable`  

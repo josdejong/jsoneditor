@@ -23,22 +23,31 @@ var textmode = {};
  *                                                         spaces. 2 by default.
  *                                   {function} change     Callback method
  *                                                         triggered on change
+ *                                   {Object} ace          A custom instance of
+ *                                                         Ace editor.
  * @private
  */
 textmode.create = function (container, options) {
   // read options
   options = options || {};
   this.options = options;
+
+  // indentation
   if (options.indentation) {
     this.indentation = Number(options.indentation);
   }
   else {
-    this.indentation = 2;       // number of spaces
+    this.indentation = 2; // number of spaces
   }
+
+  // grab ace from options if provided
+  var _ace = options.ace ? options.ace : ace;
+
+  // determine mode
   this.mode = (options.mode == 'code') ? 'code' : 'text';
   if (this.mode == 'code') {
     // verify whether Ace editor is available and supported
-    if (typeof ace === 'undefined') {
+    if (typeof _ace === 'undefined') {
       this.mode = 'text';
       util.log('WARNING: Cannot load code editor, Ace library not loaded. ' +
           'Falling back to plain text editor');
@@ -117,7 +126,7 @@ textmode.create = function (container, options) {
     this.editorDom.style.width = '100%'; // TODO: move to css
     this.content.appendChild(this.editorDom);
 
-    var editor = ace.edit(this.editorDom);
+    var editor = _ace.edit(this.editorDom);
     editor.setTheme(this.theme);
     editor.setShowPrintMargin(false);
     editor.setFontSize(13);

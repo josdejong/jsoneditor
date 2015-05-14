@@ -24,7 +24,7 @@
  *
  * @author  Jos de Jong, <wjosdejong@gmail.com>
  * @version 4.1.3
- * @date    2015-05-07
+ * @date    2015-05-14
  */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
@@ -350,11 +350,11 @@ return /******/ (function(modules) { // webpackBootstrap
 /* 1 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var Highlighter = __webpack_require__(4);
-	var History = __webpack_require__(5);
-	var SearchBox = __webpack_require__(6);
-	var Node = __webpack_require__(7);
-	var modeswitcher = __webpack_require__(8);
+	var Highlighter = __webpack_require__(5);
+	var History = __webpack_require__(6);
+	var SearchBox = __webpack_require__(7);
+	var Node = __webpack_require__(8);
+	var modeswitcher = __webpack_require__(4);
 	var util = __webpack_require__(3);
 
 	// create a mixin with the functions for tree mode
@@ -1107,7 +1107,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  // failed to load ace, no problem, we will fall back to plain text
 	}
 
-	var modeswitcher = __webpack_require__(8);
+	var modeswitcher = __webpack_require__(4);
 	var util = __webpack_require__(3);
 
 	// create a mixin with the functions for text mode
@@ -1124,22 +1124,31 @@ return /******/ (function(modules) { // webpackBootstrap
 	 *                                                         spaces. 2 by default.
 	 *                                   {function} change     Callback method
 	 *                                                         triggered on change
+	 *                                   {Object} ace          A custom instance of
+	 *                                                         Ace editor.
 	 * @private
 	 */
 	textmode.create = function (container, options) {
 	  // read options
 	  options = options || {};
 	  this.options = options;
+
+	  // indentation
 	  if (options.indentation) {
 	    this.indentation = Number(options.indentation);
 	  }
 	  else {
-	    this.indentation = 2;       // number of spaces
+	    this.indentation = 2; // number of spaces
 	  }
+
+	  // grab ace from options if provided
+	  var _ace = this.options.ace ? this.options.ace : ace;
+
+	  // determine mode
 	  this.mode = (options.mode == 'code') ? 'code' : 'text';
 	  if (this.mode == 'code') {
 	    // verify whether Ace editor is available and supported
-	    if (typeof ace === 'undefined') {
+	    if (typeof _ace === 'undefined') {
 	      this.mode = 'text';
 	      util.log('WARNING: Cannot load code editor, Ace library not loaded. ' +
 	          'Falling back to plain text editor');
@@ -1218,7 +1227,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    this.editorDom.style.width = '100%'; // TODO: move to css
 	    this.content.appendChild(this.editorDom);
 
-	    var editor = ace.edit(this.editorDom);
+	    var editor = _ace.edit(this.editorDom);
 	    editor.setTheme(this.theme);
 	    editor.setShowPrintMargin(false);
 	    editor.setFontSize(13);
@@ -2068,6 +2077,112 @@ return /******/ (function(modules) { // webpackBootstrap
 /* 4 */
 /***/ function(module, exports, __webpack_require__) {
 
+	var ContextMenu = __webpack_require__(10);
+
+	/**
+	 * Create a select box to be used in the editor menu's, which allows to switch mode
+	 * @param {Object} editor
+	 * @param {String[]} modes  Available modes: 'code', 'form', 'text', 'tree', 'view'
+	 * @param {String} current  Available modes: 'code', 'form', 'text', 'tree', 'view'
+	 * @returns {HTMLElement} box
+	 */
+	function createModeSwitcher(editor, modes, current) {
+	  // TODO: decouple mode switcher from editor
+
+	  /**
+	   * Switch the mode of the editor
+	   * @param {String} mode
+	   */
+	  function switchMode(mode) {
+	    // switch mode
+	    editor.setMode(mode);
+
+	    // restore focus on mode box
+	    var modeBox = editor.dom && editor.dom.modeBox;
+	    if (modeBox) {
+	      modeBox.focus();
+	    }
+	  }
+
+	  // available modes
+	  var availableModes = {
+	    code: {
+	      'text': 'Code',
+	      'title': 'Switch to code highlighter',
+	      'click': function () {
+	        switchMode('code')
+	      }
+	    },
+	    form: {
+	      'text': 'Form',
+	      'title': 'Switch to form editor',
+	      'click': function () {
+	        switchMode('form');
+	      }
+	    },
+	    text: {
+	      'text': 'Text',
+	      'title': 'Switch to plain text editor',
+	      'click': function () {
+	        switchMode('text');
+	      }
+	    },
+	    tree: {
+	      'text': 'Tree',
+	      'title': 'Switch to tree editor',
+	      'click': function () {
+	        switchMode('tree');
+	      }
+	    },
+	    view: {
+	      'text': 'View',
+	      'title': 'Switch to tree view',
+	      'click': function () {
+	        switchMode('view');
+	      }
+	    }
+	  };
+
+	  // list the selected modes
+	  var items = [];
+	  for (var i = 0; i < modes.length; i++) {
+	    var mode = modes[i];
+	    var item = availableModes[mode];
+	    if (!item) {
+	      throw new Error('Unknown mode "' + mode + '"');
+	    }
+
+	    item.className = 'type-modes' + ((current == mode) ? ' selected' : '');
+	    items.push(item);
+	  }
+
+	  // retrieve the title of current mode
+	  var currentMode = availableModes[current];
+	  if (!currentMode) {
+	    throw new Error('Unknown mode "' + current + '"');
+	  }
+	  var currentTitle = currentMode.text;
+
+	  // create the html element
+	  var box = document.createElement('button');
+	  box.className = 'modes separator';
+	  box.innerHTML = currentTitle + ' &#x25BE;';
+	  box.title = 'Switch editor mode';
+	  box.onclick = function () {
+	    var menu = new ContextMenu(items);
+	    menu.show(box);
+	  };
+
+	  return box;
+	}
+
+	exports.create = createModeSwitcher;
+
+
+/***/ },
+/* 5 */
+/***/ function(module, exports, __webpack_require__) {
+
 	/**
 	 * The highlighter can highlight/unhighlight a node, and
 	 * animate the visibility of a context menu.
@@ -2155,7 +2270,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 5 */
+/* 6 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var util = __webpack_require__(3);
@@ -2383,7 +2498,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 6 */
+/* 7 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -2677,11 +2792,11 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 7 */
+/* 8 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var ContextMenu = __webpack_require__(10);
-	var appendNodeFactory = __webpack_require__(11);
+	var appendNodeFactory = __webpack_require__(13);
 	var util = __webpack_require__(3);
 
 	/**
@@ -5612,112 +5727,6 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 8 */
-/***/ function(module, exports, __webpack_require__) {
-
-	var ContextMenu = __webpack_require__(10);
-
-	/**
-	 * Create a select box to be used in the editor menu's, which allows to switch mode
-	 * @param {Object} editor
-	 * @param {String[]} modes  Available modes: 'code', 'form', 'text', 'tree', 'view'
-	 * @param {String} current  Available modes: 'code', 'form', 'text', 'tree', 'view'
-	 * @returns {HTMLElement} box
-	 */
-	function createModeSwitcher(editor, modes, current) {
-	  // TODO: decouple mode switcher from editor
-
-	  /**
-	   * Switch the mode of the editor
-	   * @param {String} mode
-	   */
-	  function switchMode(mode) {
-	    // switch mode
-	    editor.setMode(mode);
-
-	    // restore focus on mode box
-	    var modeBox = editor.dom && editor.dom.modeBox;
-	    if (modeBox) {
-	      modeBox.focus();
-	    }
-	  }
-
-	  // available modes
-	  var availableModes = {
-	    code: {
-	      'text': 'Code',
-	      'title': 'Switch to code highlighter',
-	      'click': function () {
-	        switchMode('code')
-	      }
-	    },
-	    form: {
-	      'text': 'Form',
-	      'title': 'Switch to form editor',
-	      'click': function () {
-	        switchMode('form');
-	      }
-	    },
-	    text: {
-	      'text': 'Text',
-	      'title': 'Switch to plain text editor',
-	      'click': function () {
-	        switchMode('text');
-	      }
-	    },
-	    tree: {
-	      'text': 'Tree',
-	      'title': 'Switch to tree editor',
-	      'click': function () {
-	        switchMode('tree');
-	      }
-	    },
-	    view: {
-	      'text': 'View',
-	      'title': 'Switch to tree view',
-	      'click': function () {
-	        switchMode('view');
-	      }
-	    }
-	  };
-
-	  // list the selected modes
-	  var items = [];
-	  for (var i = 0; i < modes.length; i++) {
-	    var mode = modes[i];
-	    var item = availableModes[mode];
-	    if (!item) {
-	      throw new Error('Unknown mode "' + mode + '"');
-	    }
-
-	    item.className = 'type-modes' + ((current == mode) ? ' selected' : '');
-	    items.push(item);
-	  }
-
-	  // retrieve the title of current mode
-	  var currentMode = availableModes[current];
-	  if (!currentMode) {
-	    throw new Error('Unknown mode "' + current + '"');
-	  }
-	  var currentTitle = currentMode.text;
-
-	  // create the html element
-	  var box = document.createElement('button');
-	  box.className = 'modes separator';
-	  box.innerHTML = currentTitle + ' &#x25BE;';
-	  box.title = 'Switch editor mode';
-	  box.onclick = function () {
-	    var menu = new ContextMenu(items);
-	    menu.show(box);
-	  };
-
-	  return box;
-	}
-
-	exports.create = createModeSwitcher;
-
-
-/***/ },
 /* 9 */
 /***/ function(module, exports, __webpack_require__) {
 
@@ -5727,7 +5736,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	// load required ace modules
 	__webpack_require__(15);
 	__webpack_require__(16);
-	__webpack_require__(13);
+	__webpack_require__(11);
 
 	module.exports = ace;
 
@@ -6185,232 +6194,150 @@ return /******/ (function(modules) { // webpackBootstrap
 /* 11 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var util = __webpack_require__(3);
-	var ContextMenu = __webpack_require__(10);
+	/* ***** BEGIN LICENSE BLOCK *****
+	 * Distributed under the BSD license:
+	 *
+	 * Copyright (c) 2010, Ajax.org B.V.
+	 * All rights reserved.
+	 * 
+	 * Redistribution and use in source and binary forms, with or without
+	 * modification, are permitted provided that the following conditions are met:
+	 *     * Redistributions of source code must retain the above copyright
+	 *       notice, this list of conditions and the following disclaimer.
+	 *     * Redistributions in binary form must reproduce the above copyright
+	 *       notice, this list of conditions and the following disclaimer in the
+	 *       documentation and/or other materials provided with the distribution.
+	 *     * Neither the name of Ajax.org B.V. nor the
+	 *       names of its contributors may be used to endorse or promote products
+	 *       derived from this software without specific prior written permission.
+	 * 
+	 * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+	 * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+	 * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+	 * DISCLAIMED. IN NO EVENT SHALL AJAX.ORG B.V. BE LIABLE FOR ANY
+	 * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+	 * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+	 * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+	 * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+	 * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+	 * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+	 *
+	 * ***** END LICENSE BLOCK ***** */
 
-	/**
-	 * A factory function to create an AppendNode, which depends on a Node
-	 * @param {Node} Node
-	 */
-	function appendNodeFactory(Node) {
-	  /**
-	   * @constructor AppendNode
-	   * @extends Node
-	   * @param {TreeEditor} editor
-	   * Create a new AppendNode. This is a special node which is created at the
-	   * end of the list with childs for an object or array
-	   */
-	  function AppendNode (editor) {
-	    /** @type {TreeEditor} */
-	    this.editor = editor;
-	    this.dom = {};
-	  }
+	ace.define('ace/theme/jsoneditor', ['require', 'exports', 'module', 'ace/lib/dom'], function(acequire, exports, module) {
 
-	  AppendNode.prototype = new Node();
+	exports.isDark = false;
+	exports.cssClass = "ace-jsoneditor";
+	exports.cssText = ".ace-jsoneditor .ace_gutter {\
+	background: #ebebeb;\
+	color: #333\
+	}\
+	\
+	.ace-jsoneditor.ace_editor {\
+	font-family: droid sans mono, monospace, courier new, courier, sans-serif;\
+	line-height: 1.3;\
+	}\
+	.ace-jsoneditor .ace_print-margin {\
+	width: 1px;\
+	background: #e8e8e8\
+	}\
+	.ace-jsoneditor .ace_scroller {\
+	background-color: #FFFFFF\
+	}\
+	.ace-jsoneditor .ace_text-layer {\
+	color: gray\
+	}\
+	.ace-jsoneditor .ace_variable {\
+	color: #1a1a1a\
+	}\
+	.ace-jsoneditor .ace_cursor {\
+	border-left: 2px solid #000000\
+	}\
+	.ace-jsoneditor .ace_overwrite-cursors .ace_cursor {\
+	border-left: 0px;\
+	border-bottom: 1px solid #000000\
+	}\
+	.ace-jsoneditor .ace_marker-layer .ace_selection {\
+	background: #D5DDF6\
+	}\
+	.ace-jsoneditor.ace_multiselect .ace_selection.ace_start {\
+	box-shadow: 0 0 3px 0px #FFFFFF;\
+	border-radius: 2px\
+	}\
+	.ace-jsoneditor .ace_marker-layer .ace_step {\
+	background: rgb(255, 255, 0)\
+	}\
+	.ace-jsoneditor .ace_marker-layer .ace_bracket {\
+	margin: -1px 0 0 -1px;\
+	border: 1px solid #BFBFBF\
+	}\
+	.ace-jsoneditor .ace_marker-layer .ace_active-line {\
+	background: #FFFBD1\
+	}\
+	.ace-jsoneditor .ace_gutter-active-line {\
+	background-color : #dcdcdc\
+	}\
+	.ace-jsoneditor .ace_marker-layer .ace_selected-word {\
+	border: 1px solid #D5DDF6\
+	}\
+	.ace-jsoneditor .ace_invisible {\
+	color: #BFBFBF\
+	}\
+	.ace-jsoneditor .ace_keyword,\
+	.ace-jsoneditor .ace_meta,\
+	.ace-jsoneditor .ace_support.ace_constant.ace_property-value {\
+	color: #AF956F\
+	}\
+	.ace-jsoneditor .ace_keyword.ace_operator {\
+	color: #484848\
+	}\
+	.ace-jsoneditor .ace_keyword.ace_other.ace_unit {\
+	color: #96DC5F\
+	}\
+	.ace-jsoneditor .ace_constant.ace_language {\
+	color: darkorange\
+	}\
+	.ace-jsoneditor .ace_constant.ace_numeric {\
+	color: red\
+	}\
+	.ace-jsoneditor .ace_constant.ace_character.ace_entity {\
+	color: #BF78CC\
+	}\
+	.ace-jsoneditor .ace_invalid {\
+	color: #FFFFFF;\
+	background-color: #FF002A;\
+	}\
+	.ace-jsoneditor .ace_fold {\
+	background-color: #AF956F;\
+	border-color: #000000\
+	}\
+	.ace-jsoneditor .ace_storage,\
+	.ace-jsoneditor .ace_support.ace_class,\
+	.ace-jsoneditor .ace_support.ace_function,\
+	.ace-jsoneditor .ace_support.ace_other,\
+	.ace-jsoneditor .ace_support.ace_type {\
+	color: #C52727\
+	}\
+	.ace-jsoneditor .ace_string {\
+	color: green\
+	}\
+	.ace-jsoneditor .ace_comment {\
+	color: #BCC8BA\
+	}\
+	.ace-jsoneditor .ace_entity.ace_name.ace_tag,\
+	.ace-jsoneditor .ace_entity.ace_other.ace_attribute-name {\
+	color: #606060\
+	}\
+	.ace-jsoneditor .ace_markup.ace_underline {\
+	text-decoration: underline\
+	}\
+	.ace-jsoneditor .ace_indent-guide {\
+	background: url(\"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAACCAYAAACZgbYnAAAAE0lEQVQImWP4////f4bLly//BwAmVgd1/w11/gAAAABJRU5ErkJggg==\") right repeat-y\
+	}";
 
-	  /**
-	   * Return a table row with an append button.
-	   * @return {Element} dom   TR element
-	   */
-	  AppendNode.prototype.getDom = function () {
-	    // TODO: implement a new solution for the append node
-	    var dom = this.dom;
-
-	    if (dom.tr) {
-	      return dom.tr;
-	    }
-
-	    this._updateEditability();
-
-	    // a row for the append button
-	    var trAppend = document.createElement('tr');
-	    trAppend.node = this;
-	    dom.tr = trAppend;
-
-	    // TODO: consistent naming
-
-	    if (this.editable.field) {
-	      // a cell for the dragarea column
-	      dom.tdDrag = document.createElement('td');
-
-	      // create context menu
-	      var tdMenu = document.createElement('td');
-	      dom.tdMenu = tdMenu;
-	      var menu = document.createElement('button');
-	      menu.className = 'contextmenu';
-	      menu.title = 'Click to open the actions menu (Ctrl+M)';
-	      dom.menu = menu;
-	      tdMenu.appendChild(dom.menu);
-	    }
-
-	    // a cell for the contents (showing text 'empty')
-	    var tdAppend = document.createElement('td');
-	    var domText = document.createElement('div');
-	    domText.innerHTML = '(empty)';
-	    domText.className = 'readonly';
-	    tdAppend.appendChild(domText);
-	    dom.td = tdAppend;
-	    dom.text = domText;
-
-	    this.updateDom();
-
-	    return trAppend;
-	  };
-
-	  /**
-	   * Update the HTML dom of the Node
-	   */
-	  AppendNode.prototype.updateDom = function () {
-	    var dom = this.dom;
-	    var tdAppend = dom.td;
-	    if (tdAppend) {
-	      tdAppend.style.paddingLeft = (this.getLevel() * 24 + 26) + 'px';
-	      // TODO: not so nice hard coded offset
-	    }
-
-	    var domText = dom.text;
-	    if (domText) {
-	      domText.innerHTML = '(empty ' + this.parent.type + ')';
-	    }
-
-	    // attach or detach the contents of the append node:
-	    // hide when the parent has childs, show when the parent has no childs
-	    var trAppend = dom.tr;
-	    if (!this.isVisible()) {
-	      if (dom.tr.firstChild) {
-	        if (dom.tdDrag) {
-	          trAppend.removeChild(dom.tdDrag);
-	        }
-	        if (dom.tdMenu) {
-	          trAppend.removeChild(dom.tdMenu);
-	        }
-	        trAppend.removeChild(tdAppend);
-	      }
-	    }
-	    else {
-	      if (!dom.tr.firstChild) {
-	        if (dom.tdDrag) {
-	          trAppend.appendChild(dom.tdDrag);
-	        }
-	        if (dom.tdMenu) {
-	          trAppend.appendChild(dom.tdMenu);
-	        }
-	        trAppend.appendChild(tdAppend);
-	      }
-	    }
-	  };
-
-	  /**
-	   * Check whether the AppendNode is currently visible.
-	   * the AppendNode is visible when its parent has no childs (i.e. is empty).
-	   * @return {boolean} isVisible
-	   */
-	  AppendNode.prototype.isVisible = function () {
-	    return (this.parent.childs.length == 0);
-	  };
-
-	  /**
-	   * Show a contextmenu for this node
-	   * @param {HTMLElement} anchor   The element to attach the menu to.
-	   * @param {function} [onClose]   Callback method called when the context menu
-	   *                               is being closed.
-	   */
-	  AppendNode.prototype.showContextMenu = function (anchor, onClose) {
-	    var node = this;
-	    var titles = Node.TYPE_TITLES;
-	    var items = [
-	      // create append button
-	      {
-	        'text': 'Append',
-	        'title': 'Append a new field with type \'auto\' (Ctrl+Shift+Ins)',
-	        'submenuTitle': 'Select the type of the field to be appended',
-	        'className': 'insert',
-	        'click': function () {
-	          node._onAppend('', '', 'auto');
-	        },
-	        'submenu': [
-	          {
-	            'text': 'Auto',
-	            'className': 'type-auto',
-	            'title': titles.auto,
-	            'click': function () {
-	              node._onAppend('', '', 'auto');
-	            }
-	          },
-	          {
-	            'text': 'Array',
-	            'className': 'type-array',
-	            'title': titles.array,
-	            'click': function () {
-	              node._onAppend('', []);
-	            }
-	          },
-	          {
-	            'text': 'Object',
-	            'className': 'type-object',
-	            'title': titles.object,
-	            'click': function () {
-	              node._onAppend('', {});
-	            }
-	          },
-	          {
-	            'text': 'String',
-	            'className': 'type-string',
-	            'title': titles.string,
-	            'click': function () {
-	              node._onAppend('', '', 'string');
-	            }
-	          }
-	        ]
-	      }
-	    ];
-
-	    var menu = new ContextMenu(items, {close: onClose});
-	    menu.show(anchor);
-	  };
-
-	  /**
-	   * Handle an event. The event is catched centrally by the editor
-	   * @param {Event} event
-	   */
-	  AppendNode.prototype.onEvent = function (event) {
-	    var type = event.type;
-	    var target = event.target || event.srcElement;
-	    var dom = this.dom;
-
-	    // highlight the append nodes parent
-	    var menu = dom.menu;
-	    if (target == menu) {
-	      if (type == 'mouseover') {
-	        this.editor.highlighter.highlight(this.parent);
-	      }
-	      else if (type == 'mouseout') {
-	        this.editor.highlighter.unhighlight();
-	      }
-	    }
-
-	    // context menu events
-	    if (type == 'click' && target == dom.menu) {
-	      var highlighter = this.editor.highlighter;
-	      highlighter.highlight(this.parent);
-	      highlighter.lock();
-	      util.addClassName(dom.menu, 'selected');
-	      this.showContextMenu(dom.menu, function () {
-	        util.removeClassName(dom.menu, 'selected');
-	        highlighter.unlock();
-	        highlighter.unhighlight();
-	      });
-	    }
-
-	    if (type == 'keydown') {
-	      this.onKeyDown(event);
-	    }
-	  };
-
-	  return AppendNode;
-	}
-
-	module.exports = appendNodeFactory;
+	var dom = acequire("../lib/dom");
+	dom.importCssString(exports.cssText, exports.cssClass);
+	});
 
 
 /***/ },
@@ -6840,150 +6767,232 @@ return /******/ (function(modules) { // webpackBootstrap
 /* 13 */
 /***/ function(module, exports, __webpack_require__) {
 
-	/* ***** BEGIN LICENSE BLOCK *****
-	 * Distributed under the BSD license:
-	 *
-	 * Copyright (c) 2010, Ajax.org B.V.
-	 * All rights reserved.
-	 * 
-	 * Redistribution and use in source and binary forms, with or without
-	 * modification, are permitted provided that the following conditions are met:
-	 *     * Redistributions of source code must retain the above copyright
-	 *       notice, this list of conditions and the following disclaimer.
-	 *     * Redistributions in binary form must reproduce the above copyright
-	 *       notice, this list of conditions and the following disclaimer in the
-	 *       documentation and/or other materials provided with the distribution.
-	 *     * Neither the name of Ajax.org B.V. nor the
-	 *       names of its contributors may be used to endorse or promote products
-	 *       derived from this software without specific prior written permission.
-	 * 
-	 * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
-	 * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-	 * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-	 * DISCLAIMED. IN NO EVENT SHALL AJAX.ORG B.V. BE LIABLE FOR ANY
-	 * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-	 * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-	 * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-	 * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-	 * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-	 * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-	 *
-	 * ***** END LICENSE BLOCK ***** */
+	var util = __webpack_require__(3);
+	var ContextMenu = __webpack_require__(10);
 
-	ace.define('ace/theme/jsoneditor', ['require', 'exports', 'module', 'ace/lib/dom'], function(acequire, exports, module) {
+	/**
+	 * A factory function to create an AppendNode, which depends on a Node
+	 * @param {Node} Node
+	 */
+	function appendNodeFactory(Node) {
+	  /**
+	   * @constructor AppendNode
+	   * @extends Node
+	   * @param {TreeEditor} editor
+	   * Create a new AppendNode. This is a special node which is created at the
+	   * end of the list with childs for an object or array
+	   */
+	  function AppendNode (editor) {
+	    /** @type {TreeEditor} */
+	    this.editor = editor;
+	    this.dom = {};
+	  }
 
-	exports.isDark = false;
-	exports.cssClass = "ace-jsoneditor";
-	exports.cssText = ".ace-jsoneditor .ace_gutter {\
-	background: #ebebeb;\
-	color: #333\
-	}\
-	\
-	.ace-jsoneditor.ace_editor {\
-	font-family: droid sans mono, monospace, courier new, courier, sans-serif;\
-	line-height: 1.3;\
-	}\
-	.ace-jsoneditor .ace_print-margin {\
-	width: 1px;\
-	background: #e8e8e8\
-	}\
-	.ace-jsoneditor .ace_scroller {\
-	background-color: #FFFFFF\
-	}\
-	.ace-jsoneditor .ace_text-layer {\
-	color: gray\
-	}\
-	.ace-jsoneditor .ace_variable {\
-	color: #1a1a1a\
-	}\
-	.ace-jsoneditor .ace_cursor {\
-	border-left: 2px solid #000000\
-	}\
-	.ace-jsoneditor .ace_overwrite-cursors .ace_cursor {\
-	border-left: 0px;\
-	border-bottom: 1px solid #000000\
-	}\
-	.ace-jsoneditor .ace_marker-layer .ace_selection {\
-	background: #D5DDF6\
-	}\
-	.ace-jsoneditor.ace_multiselect .ace_selection.ace_start {\
-	box-shadow: 0 0 3px 0px #FFFFFF;\
-	border-radius: 2px\
-	}\
-	.ace-jsoneditor .ace_marker-layer .ace_step {\
-	background: rgb(255, 255, 0)\
-	}\
-	.ace-jsoneditor .ace_marker-layer .ace_bracket {\
-	margin: -1px 0 0 -1px;\
-	border: 1px solid #BFBFBF\
-	}\
-	.ace-jsoneditor .ace_marker-layer .ace_active-line {\
-	background: #FFFBD1\
-	}\
-	.ace-jsoneditor .ace_gutter-active-line {\
-	background-color : #dcdcdc\
-	}\
-	.ace-jsoneditor .ace_marker-layer .ace_selected-word {\
-	border: 1px solid #D5DDF6\
-	}\
-	.ace-jsoneditor .ace_invisible {\
-	color: #BFBFBF\
-	}\
-	.ace-jsoneditor .ace_keyword,\
-	.ace-jsoneditor .ace_meta,\
-	.ace-jsoneditor .ace_support.ace_constant.ace_property-value {\
-	color: #AF956F\
-	}\
-	.ace-jsoneditor .ace_keyword.ace_operator {\
-	color: #484848\
-	}\
-	.ace-jsoneditor .ace_keyword.ace_other.ace_unit {\
-	color: #96DC5F\
-	}\
-	.ace-jsoneditor .ace_constant.ace_language {\
-	color: darkorange\
-	}\
-	.ace-jsoneditor .ace_constant.ace_numeric {\
-	color: red\
-	}\
-	.ace-jsoneditor .ace_constant.ace_character.ace_entity {\
-	color: #BF78CC\
-	}\
-	.ace-jsoneditor .ace_invalid {\
-	color: #FFFFFF;\
-	background-color: #FF002A;\
-	}\
-	.ace-jsoneditor .ace_fold {\
-	background-color: #AF956F;\
-	border-color: #000000\
-	}\
-	.ace-jsoneditor .ace_storage,\
-	.ace-jsoneditor .ace_support.ace_class,\
-	.ace-jsoneditor .ace_support.ace_function,\
-	.ace-jsoneditor .ace_support.ace_other,\
-	.ace-jsoneditor .ace_support.ace_type {\
-	color: #C52727\
-	}\
-	.ace-jsoneditor .ace_string {\
-	color: green\
-	}\
-	.ace-jsoneditor .ace_comment {\
-	color: #BCC8BA\
-	}\
-	.ace-jsoneditor .ace_entity.ace_name.ace_tag,\
-	.ace-jsoneditor .ace_entity.ace_other.ace_attribute-name {\
-	color: #606060\
-	}\
-	.ace-jsoneditor .ace_markup.ace_underline {\
-	text-decoration: underline\
-	}\
-	.ace-jsoneditor .ace_indent-guide {\
-	background: url(\"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAACCAYAAACZgbYnAAAAE0lEQVQImWP4////f4bLly//BwAmVgd1/w11/gAAAABJRU5ErkJggg==\") right repeat-y\
-	}";
+	  AppendNode.prototype = new Node();
 
-	var dom = acequire("../lib/dom");
-	dom.importCssString(exports.cssText, exports.cssClass);
-	});
+	  /**
+	   * Return a table row with an append button.
+	   * @return {Element} dom   TR element
+	   */
+	  AppendNode.prototype.getDom = function () {
+	    // TODO: implement a new solution for the append node
+	    var dom = this.dom;
+
+	    if (dom.tr) {
+	      return dom.tr;
+	    }
+
+	    this._updateEditability();
+
+	    // a row for the append button
+	    var trAppend = document.createElement('tr');
+	    trAppend.node = this;
+	    dom.tr = trAppend;
+
+	    // TODO: consistent naming
+
+	    if (this.editable.field) {
+	      // a cell for the dragarea column
+	      dom.tdDrag = document.createElement('td');
+
+	      // create context menu
+	      var tdMenu = document.createElement('td');
+	      dom.tdMenu = tdMenu;
+	      var menu = document.createElement('button');
+	      menu.className = 'contextmenu';
+	      menu.title = 'Click to open the actions menu (Ctrl+M)';
+	      dom.menu = menu;
+	      tdMenu.appendChild(dom.menu);
+	    }
+
+	    // a cell for the contents (showing text 'empty')
+	    var tdAppend = document.createElement('td');
+	    var domText = document.createElement('div');
+	    domText.innerHTML = '(empty)';
+	    domText.className = 'readonly';
+	    tdAppend.appendChild(domText);
+	    dom.td = tdAppend;
+	    dom.text = domText;
+
+	    this.updateDom();
+
+	    return trAppend;
+	  };
+
+	  /**
+	   * Update the HTML dom of the Node
+	   */
+	  AppendNode.prototype.updateDom = function () {
+	    var dom = this.dom;
+	    var tdAppend = dom.td;
+	    if (tdAppend) {
+	      tdAppend.style.paddingLeft = (this.getLevel() * 24 + 26) + 'px';
+	      // TODO: not so nice hard coded offset
+	    }
+
+	    var domText = dom.text;
+	    if (domText) {
+	      domText.innerHTML = '(empty ' + this.parent.type + ')';
+	    }
+
+	    // attach or detach the contents of the append node:
+	    // hide when the parent has childs, show when the parent has no childs
+	    var trAppend = dom.tr;
+	    if (!this.isVisible()) {
+	      if (dom.tr.firstChild) {
+	        if (dom.tdDrag) {
+	          trAppend.removeChild(dom.tdDrag);
+	        }
+	        if (dom.tdMenu) {
+	          trAppend.removeChild(dom.tdMenu);
+	        }
+	        trAppend.removeChild(tdAppend);
+	      }
+	    }
+	    else {
+	      if (!dom.tr.firstChild) {
+	        if (dom.tdDrag) {
+	          trAppend.appendChild(dom.tdDrag);
+	        }
+	        if (dom.tdMenu) {
+	          trAppend.appendChild(dom.tdMenu);
+	        }
+	        trAppend.appendChild(tdAppend);
+	      }
+	    }
+	  };
+
+	  /**
+	   * Check whether the AppendNode is currently visible.
+	   * the AppendNode is visible when its parent has no childs (i.e. is empty).
+	   * @return {boolean} isVisible
+	   */
+	  AppendNode.prototype.isVisible = function () {
+	    return (this.parent.childs.length == 0);
+	  };
+
+	  /**
+	   * Show a contextmenu for this node
+	   * @param {HTMLElement} anchor   The element to attach the menu to.
+	   * @param {function} [onClose]   Callback method called when the context menu
+	   *                               is being closed.
+	   */
+	  AppendNode.prototype.showContextMenu = function (anchor, onClose) {
+	    var node = this;
+	    var titles = Node.TYPE_TITLES;
+	    var items = [
+	      // create append button
+	      {
+	        'text': 'Append',
+	        'title': 'Append a new field with type \'auto\' (Ctrl+Shift+Ins)',
+	        'submenuTitle': 'Select the type of the field to be appended',
+	        'className': 'insert',
+	        'click': function () {
+	          node._onAppend('', '', 'auto');
+	        },
+	        'submenu': [
+	          {
+	            'text': 'Auto',
+	            'className': 'type-auto',
+	            'title': titles.auto,
+	            'click': function () {
+	              node._onAppend('', '', 'auto');
+	            }
+	          },
+	          {
+	            'text': 'Array',
+	            'className': 'type-array',
+	            'title': titles.array,
+	            'click': function () {
+	              node._onAppend('', []);
+	            }
+	          },
+	          {
+	            'text': 'Object',
+	            'className': 'type-object',
+	            'title': titles.object,
+	            'click': function () {
+	              node._onAppend('', {});
+	            }
+	          },
+	          {
+	            'text': 'String',
+	            'className': 'type-string',
+	            'title': titles.string,
+	            'click': function () {
+	              node._onAppend('', '', 'string');
+	            }
+	          }
+	        ]
+	      }
+	    ];
+
+	    var menu = new ContextMenu(items, {close: onClose});
+	    menu.show(anchor);
+	  };
+
+	  /**
+	   * Handle an event. The event is catched centrally by the editor
+	   * @param {Event} event
+	   */
+	  AppendNode.prototype.onEvent = function (event) {
+	    var type = event.type;
+	    var target = event.target || event.srcElement;
+	    var dom = this.dom;
+
+	    // highlight the append nodes parent
+	    var menu = dom.menu;
+	    if (target == menu) {
+	      if (type == 'mouseover') {
+	        this.editor.highlighter.highlight(this.parent);
+	      }
+	      else if (type == 'mouseout') {
+	        this.editor.highlighter.unhighlight();
+	      }
+	    }
+
+	    // context menu events
+	    if (type == 'click' && target == dom.menu) {
+	      var highlighter = this.editor.highlighter;
+	      highlighter.highlight(this.parent);
+	      highlighter.lock();
+	      util.addClassName(dom.menu, 'selected');
+	      this.showContextMenu(dom.menu, function () {
+	        util.removeClassName(dom.menu, 'selected');
+	        highlighter.unlock();
+	        highlighter.unhighlight();
+	      });
+	    }
+
+	    if (type == 'keydown') {
+	      this.onKeyDown(event);
+	    }
+	  };
+
+	  return AppendNode;
+	}
+
+	module.exports = appendNodeFactory;
 
 
 /***/ },
