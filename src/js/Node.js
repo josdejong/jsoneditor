@@ -1828,6 +1828,11 @@ Node.prototype.onEvent = function (event) {
         break;
 
       case 'keydown':
+        if (event.keyCode == 13 && this.editor.options.completeOnEnter == !event.shiftKey) {
+          event.preventDefault();
+          domValue.blur();
+          break;
+        }
       case 'mousedown':
         this.editor.selection = this.editor.getSelection();
         break;
@@ -1878,6 +1883,11 @@ Node.prototype.onEvent = function (event) {
         break;
 
       case 'keydown':
+        if (event.keyCode == 13 && this.editor.options.completeOnEnter == !event.shiftKey) {
+          event.preventDefault();
+          domField.blur();
+          break;
+        }
       case 'mousedown':
         this.editor.selection = this.editor.getSelection();
         break;
