@@ -74,9 +74,9 @@ Node.prototype._updateEditability = function () {
  * element is used.  The first element in the array indicates the field name.
  * The second element in the array specifies the number (in order) of the
  * duplicate field.  For example if an object has three fields called foo
- * the path ["foo"] will return the first child with field foo.  The path
- * [['foo', 0]] will return the second child with the field foo.  The path
- * [['foo', 1]] will return the third child with the field foo.
+ * the path ["foo"] will return the third child with field foo.  The path
+ * [['foo', 0]] will return the first child with the field foo.  The path
+ * [['foo', 1]] will return the second child with the field foo.
  *
  * @return {Array} Array containing the path to this node
  */
@@ -87,11 +87,12 @@ Node.prototype.path = function () {
     var parent = node.parent;
     if (parent != null) {
       if (parent.type == "object") {
-        var fieldIndex = parent.childFields[node.field].indexOf(node);
-        if (fieldIndex === 0) {
+        var childNodes = parent.childFields[node.field];
+        var fieldIndex = childNodes.indexOf(node);
+        if (fieldIndex === (childNodes.length - 1)) {
           path.unshift(node.field);
         } else {
-          var pathElement = [node.field, fieldIndex++];
+          var pathElement = [node.field, fieldIndex];
           path.unshift(pathElement);
         }
       } else {
@@ -427,7 +428,7 @@ Node.prototype.appendChild = function(node) {
     }
     this.childs.push(node);
     if (this.type == 'object') {
-      this._addNodeToField(node, node.field);
+      this._onChildAddedToField(node, node.field);
     }
 
     if (this.expanded) {
@@ -547,7 +548,7 @@ Node.prototype.insertBefore = function(node, beforeNode) {
     this.updateDom({'updateIndexes': true});
     node.updateDom({'recurse': true});
 
-    this._addNodeToField(node, node.field);
+    this._onChildAddedToField(node, node.field);
   }
 };
 
@@ -870,7 +871,7 @@ Node.prototype.removeChild = function(node) {
     var index = this.childs.indexOf(node);
 
     if (this.type === 'object' && this.childFields[node.field] !== undefined) {
-      this._removeNodeFromField(node, node.field);
+      this._onChildRemovedFromField(node, node.field);
     }
 
     if (index != -1) {
@@ -1176,18 +1177,6 @@ Node.prototype._updateDomField = function () {
       util.removeClassName(domField, 'highlight');
     }
 
-    if (this.parent && this.parent.type == "object") {
-      if (this.parent.childFields[this.field].indexOf(this) != 0) {
-        util.addClassName(domField, 'duplicate');
-        this.dom.tr.title = "Duplicate field";
-        domField.title = "Duplicate field";
-      } else {
-        util.removeClassName(domField, 'duplicate');
-        this.dom.tr.title = "";
-        domField.title - "";
-      }
-    }
-
     // strip formatting from the contents of the editable div
     util.stripFormatting(domField);
   }
@@ -1211,7 +1200,7 @@ Node.prototype._getDomField = function(silent) {
       if (field !== this.field) {
         var oldField = this.field;
         this.field = field;
-        this.parent._renameChild(this, oldField, field);
+        this.parent._onChildFieldRenamed(this, oldField, field);
         this.editor._onAction('editField', {
           'node': this,
           'oldValue': oldField,
@@ -1231,12 +1220,66 @@ Node.prototype._getDomField = function(silent) {
   }
 };
 
-Node.prototype._renameChild = function(child, oldField, field) {
-  this._removeNodeFromField(child, oldField);
-  this._addNodeToField(child, field);
+/**
+ * A helper method that updates any duplicate field markings in an object node.
+ * @param childField The name of the field to update.
+ * @private
+ */
+Node.prototype._updateDuplicateChildFields = function(childField) {
+  var childNodes = this.childFields[childField];
+  if (childNodes !== undefined) {
+    for (var i = 0; i < childNodes.length - 1; i++) {
+      this._markDuplicateField(childNodes[i]);
+    }
+    this._unmarkDuplicateField(childNodes[childNodes.length - 1]);
+  }
 };
 
-Node.prototype._removeNodeFromField = function(child, oldField) {
+/**
+ * A helper method to render a child node as a duplicate.
+ * @param child The child to mark as a duplicate.
+ * @private
+ */
+Node.prototype._markDuplicateField = function(child) {
+  if (child.dom.field) {
+    util.addClassName(child.dom.field, 'duplicate');
+    child.dom.tr.title = "Duplicate field";
+    child.dom.field.title = "Duplicate field";
+  }
+};
+
+/**
+ * A helper method stop rendering a child node as a duplicate.
+ * @param child The child to mark as not a duplicate.
+ * @private
+ */
+Node.prototype._unmarkDuplicateField = function(child) {
+  if (child.dom.field) {
+    util.removeClassName(child.dom.field, 'duplicate');
+    child.dom.tr.title = "";
+    child.dom.field.title = "";
+  }
+};
+
+/**
+ * A helper method stop rendering a child node as a duplicate.
+ * @param child The child to mark as not a duplicate.
+ * @private
+ */
+Node.prototype._onChildFieldRenamed = function(child, oldField, field) {
+  this._onChildRemovedFromField(child, oldField);
+  this._onChildAddedToField(child, field);
+};
+
+/**
+ * A help method to update child field mappings for an object node, when a
+ * child no longer possesses the field name.
+ *
+ * @param child The child that was removed.
+ * @param oldField The old field name.
+ * @private
+ */
+Node.prototype._onChildRemovedFromField = function(child, oldField) {
   var fields = this.childFields[oldField];
 
   if (fields.length === 1) {
@@ -1246,9 +1289,19 @@ Node.prototype._removeNodeFromField = function(child, oldField) {
     var fieldIndex = fields.indexOf(child);
     fields.splice(fieldIndex, 1);
   }
+
+  this._updateDuplicateChildFields(oldField);
 };
 
-Node.prototype._addNodeToField = function(child, field) {
+/**
+ * A helper method to update the child field mappings when a child is set to
+ * this field name.
+ *
+ * @param child The child be set
+ * @param field The new field name.
+ * @private
+ */
+Node.prototype._onChildAddedToField = function(child, field) {
   var childFields = this.childFields[field];
   if (childFields === undefined) {
     childFields = [];
@@ -1270,6 +1323,8 @@ Node.prototype._addNodeToField = function(child, field) {
   if (!inserted) {
     this.childFields[field].push(child);
   }
+
+  this._updateDuplicateChildFields(field);
 };
 
 /**
@@ -1608,9 +1663,9 @@ Node.prototype.setHighlight = function (highlight) {
  * element is used.  The first element in the array indicates the field name.
  * The second element in the array specifies the number (in order) of the
  * duplicate field.  For example if an object has three fields called foo
- * the path ["foo"] will return the first child with field foo.  The path
- * [['foo', 0]] will return the second child with the field foo.  The path
- * [['foo', 1]] will return the third child with the field foo.
+ * the path ["foo"] will return the third child with field foo.  The path
+ * [['foo', 0]] will return the first child with the field foo.  The path
+ * [['foo', 1]] will return the second child with the field foo.
  *
  * @param path An array representing the path to a node, from this node
  *
@@ -1621,6 +1676,13 @@ Node.prototype.getChild = function(path) {
   return this._getChild(clonedPath, this);
 };
 
+/**
+ * A recursive help method to get a child of this node by its relative path.
+ * @param path The relative path from this node to the desired node.
+ * @return {Node} The node with the relative path form this one, or null
+ * if it does not exist.
+ * @private
+ */
 Node.prototype._getChild = function(path) {
   if (path.length == 0) {
     return this;
@@ -1632,7 +1694,7 @@ Node.prototype._getChild = function(path) {
     var child = this.childs[element];
     return child._getChild(path);
   } else if (this.type == "object" && typeof element == "string" && this.childFields[element] !== undefined) {
-    var child = this.childFields[element][0];
+    var child = this.childFields[element][this.childFields[element].length - 1];
     return child._getChild(path);
   } else if (this.type == "object" && Array.isArray(element) && this.childFields[element[0]] !== undefined) {
     var child = this.childFields[element[0]][element[1]];
