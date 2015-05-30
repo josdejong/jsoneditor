@@ -1176,6 +1176,18 @@ Node.prototype._updateDomField = function () {
       util.removeClassName(domField, 'highlight');
     }
 
+    if (this.parent && this.parent.type == "object") {
+      if (this.parent.childFields[this.field].indexOf(this) != 0) {
+        util.addClassName(domField, 'duplicate');
+        this.dom.tr.title = "Duplicate field";
+        domField.title = "Duplicate field";
+      } else {
+        util.removeClassName(domField, 'duplicate');
+        this.dom.tr.title = "";
+        domField.title - "";
+      }
+    }
+
     // strip formatting from the contents of the editable div
     util.stripFormatting(domField);
   }
