@@ -63,18 +63,42 @@ Node.prototype._updateEditability = function () {
 };
 
 /**
- * Get the path of this node
- * @return {String[]} Array containing the path to this node
+ * Gets the path to this node.  The path is represented
+ * as an array containing strings, integers, or arrays of the format
+ * ["fieldName", index").  A integer in the array signifies that the parent
+ * node is an array and the child is looked up by its index.  A string
+ * indicates that the parent is an object node and that the child is
+ * looked up by field name.  Since fields within an object can be duplicated
+ * while editing, when specifying a string the FIRST field with the matching
+ * name will be used.  To access an "invalid" duplicate field, the array
+ * element is used.  The first element in the array indicates the field name.
+ * The second element in the array specifies the number (in order) of the
+ * duplicate field.  For example if an object has three fields called foo
+ * the path ["foo"] will return the first child with field foo.  The path
+ * [['foo', 0]] will return the second child with the field foo.  The path
+ * [['foo', 1]] will return the third child with the field foo.
+ *
+ * @return {Array} Array containing the path to this node
  */
 Node.prototype.path = function () {
   var node = this;
   var path = [];
   while (node) {
-    var field = node.field != undefined ? node.field : node.index;
-    if (field !== undefined) {
-      path.unshift(field);
+    var parent = node.parent;
+    if (parent != null) {
+      if (parent.type == "object") {
+        var fieldIndex = parent.childFields[node.field].indexOf(node);
+        if (fieldIndex === 0) {
+          path.unshift(node.field);
+        } else {
+          var pathElement = [node.field, fieldIndex++];
+          path.unshift(pathElement);
+        }
+      } else {
+        path.unshift(node.index);
+      }
     }
-    node = node.parent;
+    node = parent;
   }
   return path;
 };
@@ -160,6 +184,7 @@ Node.prototype.setValue = function(value, type) {
   else if (this.type == 'object') {
     // object
     this.childs = [];
+    this.childFields = {};
     for (var childField in value) {
       if (value.hasOwnProperty(childField)) {
         childValue = value[childField];
@@ -401,6 +426,9 @@ Node.prototype.appendChild = function(node) {
       node.index = this.childs.length;
     }
     this.childs.push(node);
+    if (this.type == 'object') {
+      this._addNodeToField(node, node.field);
+    }
 
     if (this.expanded) {
       // insert into the DOM, before the appendRow
@@ -518,6 +546,8 @@ Node.prototype.insertBefore = function(node, beforeNode) {
 
     this.updateDom({'updateIndexes': true});
     node.updateDom({'recurse': true});
+
+    this._addNodeToField(node, node.field);
   }
 };
 
@@ -839,6 +869,10 @@ Node.prototype.removeChild = function(node) {
   if (this.childs) {
     var index = this.childs.indexOf(node);
 
+    if (this.type === 'object' && this.childFields[node.field] !== undefined) {
+      this._removeNodeFromField(node, node.field);
+    }
+
     if (index != -1) {
       node.hide();
 
@@ -880,6 +914,10 @@ Node.prototype.changeType = function (newType) {
     return;
   }
 
+  if (this.childFields) {
+    delete this.childFields;
+  }
+
   if ((newType == 'string' || newType == 'auto') &&
       (oldType == 'string' || oldType == 'auto')) {
     // this is an easy change
@@ -909,6 +947,8 @@ Node.prototype.changeType = function (newType) {
       if (!this.childs) {
         this.childs = [];
       }
+
+      this.childFields = {};
 
       this.childs.forEach(function (child, index) {
         child.clearDom();
@@ -1159,6 +1199,7 @@ Node.prototype._getDomField = function(silent) {
       if (field !== this.field) {
         var oldField = this.field;
         this.field = field;
+        this.parent._renameChild(this, oldField, field);
         this.editor._onAction('editField', {
           'node': this,
           'oldValue': oldField,
@@ -1175,6 +1216,47 @@ Node.prototype._getDomField = function(silent) {
         throw err;
       }
     }
+  }
+};
+
+Node.prototype._renameChild = function(child, oldField, field) {
+  this._removeNodeFromField(child, oldField);
+  this._addNodeToField(child, field);
+};
+
+Node.prototype._removeNodeFromField = function(child, oldField) {
+  var fields = this.childFields[oldField];
+
+  if (fields.length === 1) {
+    // We are removing the only field.  Simply delete.
+    delete this.childFields[oldField];
+  } else {
+    var fieldIndex = fields.indexOf(child);
+    fields.splice(fieldIndex, 1);
+  }
+};
+
+Node.prototype._addNodeToField = function(child, field) {
+  var childFields = this.childFields[field];
+  if (childFields === undefined) {
+    childFields = [];
+    this.childFields[field] = childFields;
+  }
+
+  var childIndex = this.childs.indexOf(child);
+  var inserted = false;
+  for(var i = 0; i < childFields.length; i++) {
+    var otherChild = childFields[i];
+    var otherIndex = this.childs.indexOf(otherChild);
+    if (child == otherChild || childIndex < otherIndex) {
+      this.childFields[field].splice(i, 0, child);
+      inserted = true;
+      break;
+    }
+  }
+
+  if (!inserted) {
+    this.childFields[field].push(child);
   }
 };
 
@@ -1499,6 +1581,52 @@ Node.prototype.setHighlight = function (highlight) {
         child.setHighlight(highlight);
       });
     }
+  }
+};
+
+/**
+ * Gets a node by its relative path from this node.  The path is represented
+ * as an array containing strings, integers, or arrays of the format
+ * ["fieldName", index").  A integer in the array signifies that the parent
+ * node is an array and the child is looked up by its index.  A string
+ * indicates that the parent is an object node and that the child is
+ * looked up by field name.  Since fields within an object can be duplicated
+ * while editing, when specifying a string the FIRST field with the matching
+ * name will be used.  To access an "invalid" duplicate field, the array
+ * element is used.  The first element in the array indicates the field name.
+ * The second element in the array specifies the number (in order) of the
+ * duplicate field.  For example if an object has three fields called foo
+ * the path ["foo"] will return the first child with field foo.  The path
+ * [['foo', 0]] will return the second child with the field foo.  The path
+ * [['foo', 1]] will return the third child with the field foo.
+ *
+ * @param path An array representing the path to a node, from this node
+ *
+ * @return {Node} the node corresponding to the path, or null.
+ */
+Node.prototype.getChild = function(path) {
+  var clonedPath = path.slice(0);
+  return this._getChild(clonedPath, this);
+};
+
+Node.prototype._getChild = function(path) {
+  if (path.length == 0) {
+    return this;
+  }
+
+  var element = path.shift();
+
+  if (this.type == "array" && typeof element === "number" && this.childs[element] !== undefined) {
+    var child = this.childs[element];
+    return child._getChild(path);
+  } else if (this.type == "object" && typeof element == "string" && this.childFields[element] !== undefined) {
+    var child = this.childFields[element][0];
+    return child._getChild(path);
+  } else if (this.type == "object" && Array.isArray(element) && this.childFields[element[0]] !== undefined) {
+    var child = this.childFields[element[0]][element[1]];
+    return child._getChild(path);
+  } else {
+    return null;
   }
 };
 
