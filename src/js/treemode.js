@@ -22,6 +22,12 @@ var treemode = {};
  *                               {function} change  Callback method, triggered
  *                                                  on change of contents
  *                               {String} name      Field name for the root node.
+ *                               {String} completeOnEnter
+ *                                  If true, enables editing completion by hitting enter. To insert
+ *                                  a newline user can hit shift+enter.  If false, hitting enter
+ *                                  will insert a newline.  To complete, the user can hit shift+
+ *                                  enter.  False by default.
+ *
  * @private
  */
 treemode.create = function (container, options) {
@@ -63,7 +69,8 @@ treemode._setOptions = function (options) {
     search: true,
     history: true,
     mode: 'tree',
-    name: undefined   // field name of root node
+    name: undefined,   // field name of root node
+    completeOnEnter: false
   };
 
   // copy all options
