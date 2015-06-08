@@ -774,7 +774,7 @@ treemode.focus = function () {
         console.warn("duplicateNode->copy Is not supported yet, as currently new node with same name is created, what violates JSON-Patch");
         break;
       case "changeType":
-        console.warn("changeType->replace may behave strange, as even if new node is created with specified type, its `node.value==\"\"`")
+        (params.node.type == "array" || params.node.type == "object") && console.warn("changeType->replace may behave strange, as even if new node is created with specified type, its `node.value==\"\"`")
         patch = {
           op: "replace",
           path: JSONPointer(params.node),
@@ -794,6 +794,7 @@ treemode.focus = function () {
           path: JSONPointer(params.node)
         }
         break;
+      case "insertAfterNode":
       case "insertBeforeNode":
       case "appendNode":
         console.warn("insertBeforeNode,appendNode->add may behave strange, as even if new node is created with specified type, its `node.value==\"\"`",
@@ -820,6 +821,9 @@ treemode.focus = function () {
           from: JSONPointer(params.node.parent) + "/" + params.oldValue,
           path: JSONPointer(params.node)
         }
+        break;
+      case "sort":
+        // no changes to the JSON itself
         break;
     }
     return patch;
