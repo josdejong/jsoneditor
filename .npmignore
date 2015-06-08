@@ -1,8 +1,5 @@
-app
 bower.json
-build
 downloads
-src
 misc
 node_modules
 test
@@ -13,3 +10,4 @@ gulpfile.js
 .npmignore
 .gitignore
 *.zip
+npm-debug.log

@@ -3,15 +3,8 @@
 <head>
   <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
 
-  <!-- json editor -->
-  <script type="text/javascript" src="../jsoneditor.min.js"></script>
-  <link rel="stylesheet" type="text/css" href="../jsoneditor.min.css">
-
-  <!-- ace editor -->
-  <script type="text/javascript" src="../asset/ace/ace.js"></script>
-
-  <!-- json lint -->
-  <script type="text/javascript" src="../asset/jsonlint/jsonlint.js"></script>
+  <link href="../dist/jsoneditor.min.css" rel="stylesheet" type="text/css">
+  <script src="../dist/jsoneditor.min.js"></script>
 
   <style type="text/css">
     body {
@@ -41,7 +34,7 @@
 
 <div id="jsoneditor"></div>
 
-<script type="text/javascript" >
+<script>
   var container, options, json, editor;
 
   container = document.getElementById('jsoneditor');

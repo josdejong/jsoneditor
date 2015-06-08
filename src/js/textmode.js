@@ -1,4 +1,13 @@
-define(['./modeswitcher', './util'], function (modeswitcher, util) {
+var ace;
+try {
+  ace = require('./ace');
+}
+catch (err) {
+  // failed to load ace, no problem, we will fall back to plain text
+}
+
+var modeswitcher = require('./modeswitcher');
+var util = require('./util');
 
   // create a mixin with the functions for text mode
   var textmode = {};
@@ -14,27 +23,39 @@ define(['./modeswitcher', './util'], function (modeswitcher, util) {
    *                                                         spaces. 2 by default.
    *                                   {function} change     Callback method
    *                                                         triggered on change
+ *                                   {Object} ace          A custom instance of
+ *                                                         Ace editor.
    * @private
    */
   textmode.create = function (container, options) {
     // read options
     options = options || {};
     this.options = options;
+
+  // indentation
     if (options.indentation) {
       this.indentation = Number(options.indentation);
     }
     else {
       this.indentation = 2;       // number of spaces
     }
+
+  // grab ace from options if provided
+  var _ace = options.ace ? options.ace : ace;
+
+  // determine mode
     this.mode = (options.mode == 'code') ? 'code' : 'text';
     if (this.mode == 'code') {
       // verify whether Ace editor is available and supported
-      if (typeof ace === 'undefined') {
+    if (typeof _ace === 'undefined') {
         this.mode = 'text';
         util.log('WARNING: Cannot load code editor, Ace library not loaded. ' +
             'Falling back to plain text editor');
       }
     }
+
+  // determine theme
+  this.theme = options.theme || 'ace/theme/jsoneditor';
 
     var me = this;
     this.container = container;
@@ -51,6 +72,9 @@ define(['./modeswitcher', './util'], function (modeswitcher, util) {
       // prevent default submit action when the editor is located inside a form
       event.preventDefault();
     };
+  this.frame.onkeydown = function (event) {
+    me._onKeyDown(event);
+  };
 
     // create menu
     this.menu = document.createElement('div');
@@ -60,7 +84,7 @@ define(['./modeswitcher', './util'], function (modeswitcher, util) {
     // create format button
     var buttonFormat = document.createElement('button');
     buttonFormat.className = 'format';
-    buttonFormat.title = 'Format JSON data, with proper indentation and line feeds';
+  buttonFormat.title = 'Format JSON data, with proper indentation and line feeds (Ctrl+\\)';
     this.menu.appendChild(buttonFormat);
     buttonFormat.onclick = function () {
       try {
@@ -74,7 +98,7 @@ define(['./modeswitcher', './util'], function (modeswitcher, util) {
     // create compact button
     var buttonCompact = document.createElement('button');
     buttonCompact.className = 'compact';
-    buttonCompact.title = 'Compact JSON data, remove all whitespaces';
+  buttonCompact.title = 'Compact JSON data, remove all whitespaces (Ctrl+Shift+\\)';
     this.menu.appendChild(buttonCompact);
     buttonCompact.onclick = function () {
       try {
@@ -104,12 +128,12 @@ define(['./modeswitcher', './util'], function (modeswitcher, util) {
       this.editorDom.style.width = '100%'; // TODO: move to css
       this.content.appendChild(this.editorDom);
 
-      var editor = ace.edit(this.editorDom);
-      editor.setTheme('ace/theme/jsoneditor');
+    var editor = _ace.edit(this.editorDom);
+    editor.setTheme(this.theme);
       editor.setShowPrintMargin(false);
       editor.setFontSize(13);
       editor.getSession().setMode('ace/mode/json');
-      editor.getSession().setTabSize(2);
+    editor.getSession().setTabSize(this.indentation);
       editor.getSession().setUseSoftTabs(true);
       editor.getSession().setUseWrapMode(true);
       this.editor = editor;
@@ -160,6 +184,31 @@ define(['./modeswitcher', './util'], function (modeswitcher, util) {
   };
 
   /**
+ * Event handler for keydown. Handles shortcut keys
+ * @param {Event} event
+ * @private
+ */
+textmode._onKeyDown = function (event) {
+  var keynum = event.which || event.keyCode;
+  var handled = false;
+
+  if (keynum == 220 && event.ctrlKey) {
+    if (event.shiftKey) { // Ctrl+Shift+\
+      this.compact();
+    }
+    else { // Ctrl+\
+      this.format();
+    }
+    handled = true;
+  }
+
+  if (handled) {
+    event.preventDefault();
+    event.stopPropagation();
+  }
+};
+
+/**
    * Detach the editor from the DOM
    * @private
    */
@@ -195,16 +244,18 @@ define(['./modeswitcher', './util'], function (modeswitcher, util) {
    * Compact the code in the formatter
    */
   textmode.compact = function () {
-    var json = util.parse(this.getText());
-    this.setText(JSON.stringify(json));
+  var json = this.get();
+  var text = JSON.stringify(json);
+  this.setText(text);
   };
 
   /**
    * Format the code in the formatter
    */
   textmode.format = function () {
-    var json = util.parse(this.getText());
-    this.setText(JSON.stringify(json, null, this.indentation));
+  var json = this.get();
+  var text = JSON.stringify(json, null, this.indentation);
+  this.setText(text);
   };
 
   /**
@@ -242,7 +293,21 @@ define(['./modeswitcher', './util'], function (modeswitcher, util) {
    * @return {Object} json
    */
   textmode.get = function() {
-    return util.parse(this.getText());
+  var text = this.getText();
+  var json;
+
+  try {
+    json = util.parse(text); // this can throw an error
+  }
+  catch (err) {
+    // try to sanitize json, replace JavaScript notation with JSON notation
+    text = util.sanitize(text);
+
+    // try to parse again
+    json = util.parse(text); // this can throw an error
+  }
+
+  return json;
   };
 
   /**
@@ -281,7 +346,7 @@ define(['./modeswitcher', './util'], function (modeswitcher, util) {
   }
 
   // define modes
-  return [
+module.exports = [
     {
       mode: 'text',
       mixin: textmode,
@@ -295,4 +360,3 @@ define(['./modeswitcher', './util'], function (modeswitcher, util) {
       load: textmode.format
     }
   ];
-});

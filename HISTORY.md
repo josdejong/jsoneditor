@@ -3,6 +3,52 @@
 https://github.com/josdejong/jsoneditor
 
 
+## 2015-05-14, version 4.2.0
+
+- Implemented option `theme`, allowing to set a custom theme for the Ace 
+  editor. Thanks @nfvs.
+- Implemented option `ace`, which allows to pass a custom instance of the Ace
+  instead of the embedded version.
+- Fixed #186: binding issue to `jsonlint.parse`.
+- Fixed `editor.get()` manipulating the code when containing an error.
+
+
+## 2015-03-15, version 4.1.1
+
+- Added missing file `index.js` to the bower package.
+
+
+## 2015-03-15, version 4.1.0
+
+- Implemented a function `focus()` for modes tree, view, and form.
+- Added `./src` folder to the distributed package, needed for usage via
+  node.js/browserify.
+
+
+## 2015-02-28, version 4.0.0
+
+- Ace editor and jsonlint are now packed with jsoneditor.js by default.
+  This makes the library about 4 times larger. If Ace is not needed, a custom
+  build of the library can be done.
+- The distribution files are now moved from the root to the `/dist` folder.
+- Reworked the source code to CommonJS modules, using `brace` to load Ace.
+- JSONP is now automatically stripped from JSON. Thanks @yanivefraim.
+- Fixed bugs in the JSON sanitizer, no longer manipulating JSON-like structures
+  inside strings.
+
+
+## 2015-01-25, version 3.2.0
+
+- Implemented shortcut keys `Ctrl+\` to format and `Ctrl+Shift+\` to compact
+  JSON when in mode `text` or `code`.
+- Before an error is thrown because of invalid text, the editor first tries to
+  sanitize the text (replace JavaScript notation with JSON notation), and only
+  after that throws the error.
+- Fixed Node.path() not working for a JSON Object `""`. Thanks @tomalec.
+- Minor styling improvements.
+- Fixed configured indentation not being applied to Ace editor.
+
+
 ## 2014-09-03, version 3.1.2
 
 - Some fixes/improvements in `parseJS` (to parse a JSON object from a JavaScript

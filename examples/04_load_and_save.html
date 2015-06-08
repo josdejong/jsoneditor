@@ -2,8 +2,9 @@
 <html>
 <head>
   <title>JSONEditor | Load and save</title>
-  <link rel="stylesheet" type="text/css" href="../jsoneditor.css">
-  <script src="../jsoneditor.js"></script>
+
+  <link href="../dist/jsoneditor.css" rel="stylesheet" type="text/css">
+  <script src="../dist/jsoneditor.js"></script>
 
   <script src="http://bgrins.github.io/filereader.js/filereader.js"></script>
   <script src="http://eligrey.com/demos/FileSaver.js/FileSaver.js"></script>
@@ -35,7 +36,7 @@
 
 <div id="jsoneditor"></div>
 
-<script type="text/javascript" >
+<script>
   // create the editor
   var editor = new JSONEditor(document.getElementById('jsoneditor'));
 

@@ -1,4 +1,4 @@
-define(['./util'], function (util) {
+var util = require('./util');
 
   /**
    * @constructor History
@@ -223,5 +223,4 @@ define(['./util'], function (util) {
     return obj || null;
   };
 
-  return History;
-});
+module.exports = History;

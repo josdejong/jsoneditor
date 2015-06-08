@@ -1,5 +1,7 @@
 # Shortcut keys
 
+## Tree Editor
+
 Key                     | Description
 ----------------------- | ------------------------------------------------
 Alt+Arrows              | Move the caret up/down/left/right between fields
@@ -18,3 +20,18 @@ Alt+Home                | Move the caret to the first field
 Ctrl+M                  | Show actions menu
 Ctrl+Z                  | Undo last action
 Ctrl+Shift+Z            | Redo
+
+
+## Code Editor
+
+The code editor is powered by [Ace Editor](http://ace.c9.io/). This editor's
+shortcut keys are described here:
+
+https://github.com/ajaxorg/ace/wiki/Default-Keyboard-Shortcuts
+
+Additionally, there are shortcut keys to format/compact the code:
+
+Key                     | Description
+----------------------- | ------------------------------------------------
+Ctrl+\                  | Format JSON data, set proper indentation
+Ctrl+Shift+\            | Compact JSON data, remove all whitespace

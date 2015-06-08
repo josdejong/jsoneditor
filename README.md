@@ -6,7 +6,7 @@ Website: http://jsoneditoronline.org/
 Github: https://github.com/josdejong/jsoneditor
 
 
-### Description
+## Description
 
 JSON Editor is a web-based tool to view, edit, and format JSON.
 It has various modes such as a tree editor, a code editor, and a plain text
@@ -22,9 +22,9 @@ Supported browsers: Chrome, Firefox, Safari, Opera, Internet Explorer 9+.
 <img alt="code editor" src="https://raw.github.com/josdejong/jsoneditor/master/misc/codeeditor.png">
 
 
-### Features
+## Features
 
-#### Tree editor
+### Tree editor
 - Edit, add, move, remove, and duplicate fields and values.
 - Change type of values.
 - Sort arrays and objects.
@@ -32,16 +32,16 @@ Supported browsers: Chrome, Firefox, Safari, Opera, Internet Explorer 9+.
 - Search & highlight text in the treeview.
 - Undo and redo all actions.
 
-#### Code editor
+### Code editor
 - Format and compact JSON.
 - Colorized code (powered by Ace).
 - Inspect JSON (powered by Ace).
 
-#### Text editor
+### Text editor
 - Format and compact JSON.
 
 
-### Documentation
+## Documentation
 
 - Documentation:
   - [API](https://github.com/josdejong/jsoneditor/tree/master/docs/api.md)
@@ -52,7 +52,7 @@ Supported browsers: Chrome, Firefox, Safari, Opera, Internet Explorer 9+.
 - [History](https://github.com/josdejong/jsoneditor/blob/master/HISTORY.md)
 
 
-### Install
+## Install
 
 with npm:
 
@@ -67,19 +67,29 @@ download:
 [http://jsoneditoronline.org/downloads/](http://jsoneditoronline.org/downloads/)
 
 
-### Use
+#### More
+
+There is a directive available for using JSONEditor in Angular.js:
+
+[https://github.com/angular-tools/ng-jsoneditor](https://github.com/angular-tools/ng-jsoneditor)
+
+
+## Use
 
 ```html
 <!DOCTYPE HTML>
 <html>
 <head>
-    <link rel="stylesheet" type="text/css" href="jsoneditor/jsoneditor.min.css">
-    <script type="text/javascript" src="jsoneditor/jsoneditor-min.js"></script>
+    <!-- when using the mode "code", it's important to specify charset utf-8 -->
+    <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+
+    <link href="jsoneditor/dist/jsoneditor.min.css" rel="stylesheet" type="text/css">
+    <script src="jsoneditor/dist/jsoneditor.min.js"></script>
 </head>
 <body>
     <div id="jsoneditor" style="width: 400px; height: 400px;"></div>
 
-    <script type="text/javascript" >
+    <script>
         // create the editor
         var container = document.getElementById("jsoneditor");
         var editor = new JSONEditor(container);
@@ -102,25 +112,43 @@ download:
 </html>
 ```
 
-### Build
+
+## Build
 
 The code of the JSON Editor is located in the folder `./src`. To build 
 jsoneditor:
 
 - Install dependencies:
 
-      npm install
+  ```
+  npm install
+  ```
 
 - Build JSON Editor:
 
-      npm run build
+  ```
+  npm run build
+  ```
 
   This will generate the files `./jsoneditor.js`, `./jsoneditor.css`, and  
   minified versions in the root of the project.
 
-- To rebuild the assets (not necessary):
 
-      npm run build-assets
+## Custom builds
 
-  This will build Ace editor, and then generates necessary ace editor files in 
-  the folder `./asset/ace`, and jsonlint in the folder `./asset/jsonlint`.
+The source code of JSONEditor consists of CommonJS modules. JSONEditor can be bundled in a customized way using a module bundler like [browserify](http://browserify.org/) or [webpack](http://webpack.github.io/). First, install all dependencies of jsoneditor:
+
+    npm install
+
+To create a custom bundle of the source code using browserify:
+
+    browserify ./index.js -o ./jsoneditor.custom.js -s JSONEditor
+
+The Ace editor, used in mode `code`, accounts for about 75% of the total
+size of the library. To exclude the Ace editor from the bundle:
+
+    browserify ./index.js -o ./jsoneditor.custom.js -s JSONEditor -x brace -x brace/mode/json -x brace/ext/searchbox
+
+To minify the generated bundle, use [uglifyjs](https://github.com/mishoo/UglifyJS2):
+
+    uglifyjs ./jsoneditor.custom.js -o ./jsoneditor.custom.min.js -m -c

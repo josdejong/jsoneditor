@@ -34,6 +34,7 @@
 .jsoneditor .menu button:hover {
   background-color: #f0f2f5;
 }
+.jsoneditor .menu button:focus,
 .jsoneditor .menu button:active {
   background-color: #ffffff;
 }

@@ -15,8 +15,10 @@ Constructs a new JSONEditor.
 - `{Object} options`  
   Optional object with options. Available options:
 
+  - `{Object} ace`  
+    Provide a custom version of the [Ace editor](http://ace.c9.io/) and use this instead of the version that comes embedded with JSONEditor. Only applicable when `mode` is `code`.
   - `{function} change`  
-    Set a callback method triggered when the contents of the JSONEditor change. Called without parameters.
+    Set a callback method triggered when the contents of the JSONEditor change. Called without parameters. Will only be triggered on changes made by the user, not in case of programmatic changes via the functions `set` or `setText`.
   - `{function} editable`  
     Set a callback method to determine whether individual nodes are editable or read-only. Only applicable when option `mode` is `tree`. The callback is invoked as `editable(node)`, where `node` is an object `{field: string, value: string, path: string[]}`. The function must either return a boolean value to set both the nodes field and value editable or read-only, or return an object `{field: boolean, value: boolean}`.
   - `{function} error`  
@@ -34,6 +36,8 @@ Constructs a new JSONEditor.
     Enables a search box in the upper right corner of the JSONEditor. True by default. Only applicable when `mode` is 'tree', 'view', or 'form'.
   - `{Number} indentation`  
     Number of indentation spaces. 2 by default. Only applicable when `mode` is 'code' or 'text'.
+  - `{String} theme`  
+    Set the Ace editor theme, uses included 'ace/theme/jsoneditor' by default. Please note that only the default theme is included with jsoneditor, so if you specify another one you need to make sure it is loaded.
 
 - `{JSON} json`  
   Initial JSON data to be loaded into the JSONEditor. Alternatively, the method `JSONEditor.set(json)` can be used to load JSON data into the editor.
@@ -53,6 +57,10 @@ Collapse all fields. Only applicable for mode 'tree', 'view', and 'form'.
 #### `JSONEditor.expandAll()`
 
 Expand all fields. Only applicable for mode 'tree', 'view', and 'form'.
+
+#### `JSONEditor.focus()`
+
+Set focus to the JSONEditor.
 
 #### `JSONEditor.set(json)`
 
@@ -83,12 +91,12 @@ Set a field name for the root node.
 
 #### `JSONEditor.setText(jsonString)`
 
-Set text data in the formatter.
+Set text data in the editor.
 
 *Parameters:*
 
 - `{String} jsonString`  
-  Contents of the JSONformatter as string.
+  Contents of the editor as string.
 
 #### `JSONEditor.get()`
 
@@ -115,7 +123,10 @@ Get JSON data as string.
 *Returns:*
 
 - `{String} jsonString`  
-  Contents of the JSONformatter as string.
+  Contents of the editor as string. When the editor is in code `text` or `code`,
+  the returned text is returned as-is. For the other modes, the returned text
+  is a compacted string. In order to get the JSON formatted with a certain
+  number of spaces, use `JSON.stringify(JSONEditor.get(), null, 2)`.
 
 
 ### Examples
