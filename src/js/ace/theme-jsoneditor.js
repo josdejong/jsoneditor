@@ -38,7 +38,7 @@ color: #333\
 }\
 \
 .ace-jsoneditor.ace_editor {\
-font-family: droid sans mono, monospace, courier new, courier, sans-serif;\
+font-family: droid sans mono, consolas, monospace, courier new, courier, sans-serif;\
 line-height: 1.3;\
 }\
 .ace-jsoneditor .ace_print-margin {\
