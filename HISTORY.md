@@ -3,6 +3,11 @@
 https://github.com/josdejong/jsoneditor
 
 
+## 2015-06-13, version 4.2.1
+
+- Fixed #161: Cannot select text in Ace editor on systems using Chinese fonts.
+
+
 ## 2015-05-14, version 4.2.0
 
 - Implemented option `theme`, allowing to set a custom theme for the Ace 

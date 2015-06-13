@@ -23,8 +23,8 @@
  * Copyright (c) 2011-2015 Jos de Jong, http://jsoneditoronline.org
  *
  * @author  Jos de Jong, <wjosdejong@gmail.com>
- * @version 4.2.0
- * @date    2015-05-14
+ * @version 4.2.1
+ * @date    2015-06-13
  */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
@@ -6890,7 +6890,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	}\
 	\
 	.ace-jsoneditor.ace_editor {\
-	font-family: droid sans mono, monospace, courier new, courier, sans-serif;\
+	font-family: droid sans mono, consolas, monospace, courier new, courier, sans-serif;\
 	line-height: 1.3;\
 	}\
 	.ace-jsoneditor .ace_print-margin {\
