@@ -23,6 +23,8 @@ var textmode = {};
  *                                                         spaces. 2 by default.
  *                                   {function} change     Callback method
  *                                                         triggered on change
+ *                                   {function} onMode     Callback method
+ *                                                         triggered after setMode
  *                                   {Object} ace          A custom instance of
  *                                                         Ace editor.
  * @private

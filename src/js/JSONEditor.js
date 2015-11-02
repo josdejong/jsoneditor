@@ -169,6 +169,13 @@ JSONEditor.prototype.setMode = function (mode) {
         }
         catch (err) {}
       }
+
+      if (typeof options.onMode === 'function') {
+        try {
+          options.onMode(options.mode);
+        }
+        catch (err) {}
+      }
     }
     catch (err) {
       this._onError(err);
