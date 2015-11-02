@@ -171,7 +171,7 @@ var json = {
 };
 editor.set(json);
 
-var json = editor.get(json);
+var json = editor.get();
 ```
 
 ## JSON parsing and stringification
