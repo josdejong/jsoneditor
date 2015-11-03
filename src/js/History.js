@@ -170,6 +170,7 @@ History.prototype.canRedo = function () {
 
 /**
  * Undo the last action
+ * @returns applied history entry see {@link #add}
  */
 History.prototype.undo = function () {
   if (this.canUndo()) {
@@ -191,10 +192,12 @@ History.prototype.undo = function () {
     // fire onchange event
     this.onChange();
   }
+  return obj || null;
 };
 
 /**
  * Redo the last action
+ * @returns applied history entry see {@link #add}
  */
 History.prototype.redo = function () {
   if (this.canRedo()) {
@@ -217,6 +220,7 @@ History.prototype.redo = function () {
     // fire onchange event
     this.onChange();
   }
+  return obj || null;
 };
 
 module.exports = History;

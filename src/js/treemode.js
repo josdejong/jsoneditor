@@ -301,7 +301,7 @@ treemode._onAction = function (action, params) {
   // trigger the onChange callback
   if (this.options.change) {
     try {
-      this.options.change();
+      this.options.change(translateChangeToJSONPatch(action, params));
     }
     catch (err) {
       util.log('Error in change callback: ', err);
@@ -580,11 +580,13 @@ treemode._createFrame = function () {
 treemode._onUndo = function () {
   if (this.history) {
     // undo last action
-    this.history.undo();
+    var historyEntry = this.history.undo();
 
-    // trigger change callback
-    if (this.options.change) {
-      this.options.change();
+    // trigger change callback if anything have changed
+    if (this.options.change && historyEntry) {
+      this.options.change(
+        translateChangeToJSONPatch(historyEntry.action, historyEntry.params)
+      );
     }
   }
 };
@@ -596,11 +598,12 @@ treemode._onUndo = function () {
 treemode._onRedo = function () {
   if (this.history) {
     // redo last action
-    this.history.redo();
-
-    // trigger change callback
-    if (this.options.change) {
-      this.options.change();
+    var historyEntry = this.history.redo();
+    // trigger change callback if anything have changed
+    if (this.options.change && historyEntry) {
+      this.options.change(
+        translateChangeToJSONPatch(historyEntry.action, historyEntry.params)
+      );
     }
   }
 };
@@ -723,6 +726,109 @@ treemode._createTable = function () {
 
   this.frame.appendChild(contentOuter);
 };
+
+/**
+ * Translate our internal change info into JSON-Patch format
+ * @see  http://tools.ietf.org/html/rfc6902
+ * @param  {String} action JSONEditor action
+ * @param  {Object} params JSONEditor params
+ * @return {Object}        single JSON-Patch entry
+ */
+function translateChangeToJSONPatch(action, params){
+  /**
+   * Get path to node in JSON Pointer format
+   * (http://tools.ietf.org/html/rfc6901)
+   * _Almost_ like params.node.path().join("/")
+   * @param {Node} node jsoneditor node in question
+   * @returns {String} path
+   */
+  function JSONPointer(node){
+    var path = "";
+    while (node.parent) {
+      var field = node.field != undefined ? node.field : node.index;
+      switch(typeof field){
+        case "string":
+            path = "/" + escapePathComponent(field) + path;
+            break;
+        case "number":
+            path = "/" + field + path;
+            break;
+      }
+      node = node.parent;
+    }
+    return path;
+
+  }
+  /** 
+   * Escape `/` and `~`, according to JSON-Pointer rules.
+   * @param {String} str string to escape
+   * @returns {String} escaped string
+   */
+  function escapePathComponent(str) {
+    if (str.indexOf('/') === -1 && str.indexOf('~') === -1)
+      return str;
+    return str.replace(/~/g, '~0').replace(/\//g, '~1');
+  }
+  var patch;
+  switch(action){
+    case "duplicateNode":
+      console.warn("duplicateNode->copy Is not supported yet, as currently new node with same name is created, what violates JSON-Patch");
+      break;
+    case "changeType":
+      (params.node.type == "array" || params.node.type == "object") && console.warn("changeType->replace may behave strange, as even if new node is created with specified type, its `node.value==\"\"`")
+      patch = {
+        op: "replace",
+        path: JSONPointer(params.node),
+        value: params.node.value
+      }
+      break;
+    case "editValue":
+      patch = {
+        op: "replace",
+        path: JSONPointer(params.node),
+        value: params.newValue
+      }
+      break;
+    case "removeNode":
+      patch = {
+        op: "remove",
+        path: JSONPointer(params.node)
+      }
+      break;
+    case "insertAfterNode":
+    case "insertBeforeNode":
+    case "appendNode":
+      console.warn("insertBeforeNode,appendNode->add may behave strange, as even if new node is created with specified type, its `node.value==\"\"`",
+        "also when inserting item into an array, new path is given, and there is no info about previous indexes, so it's hard to distinguish whether to use `-`, old index, or if it is not an array item, so we should stick to the given path");
+      patch = {
+        op: "add",
+        path: JSONPointer(params.node),
+        value: params.node.value
+      }
+      break;
+    case "moveNode":
+      console.warn("moveNode->move Still does not cover moving array items, as their name was already changed to `\"\"` which is fully valid object key, so we cannot distinguish it");
+      if(params.startParent !== params.endParent){
+        patch = {
+          op: "move",
+          from: JSONPointer(params.startParent) + "/" + params.node.field,
+          path: JSONPointer(params.node)
+        }
+      }
+      break;
+    case "editField":
+      patch = {
+        op: "move",
+        from: JSONPointer(params.node.parent) + "/" + params.oldValue,
+        path: JSONPointer(params.node)
+      }
+      break;
+    case "sort":
+      // no changes to the JSON itself
+      break;
+  }
+  return patch;
+}
 
 // define modes
 module.exports = [

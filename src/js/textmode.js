@@ -154,7 +154,7 @@ textmode.create = function (container, options) {
     if (options.change) {
       // register onchange event
       editor.on('change', function () {
-        options.change();
+        options.change(replaceRootJSONPatch(me));
       });
     }
   }
@@ -170,13 +170,13 @@ textmode.create = function (container, options) {
       // register onchange event
       if (this.textarea.oninput === null) {
         this.textarea.oninput = function () {
-          options.change();
+          options.change(replaceRootJSONPatch(me));
         }
       }
       else {
         // oninput is undefined. For IE8-
         this.textarea.onchange = function () {
-          options.change();
+          options.change(replaceRootJSONPatch(me));
         }
       }
     }
@@ -336,6 +336,14 @@ textmode.setText = function(jsonText) {
     this.editor.setValue(jsonText, -1);
   }
 };
+
+function replaceRootJSONPatch(textmode){
+  return {
+    op: "replace",
+    path: "",
+    value: textmode.get()
+  };
+}
 
 // define modes
 module.exports = [
