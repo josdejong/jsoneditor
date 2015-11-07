@@ -3,6 +3,11 @@
 https://github.com/josdejong/jsoneditor
 
 
+## not yet released, version 4.2.2
+
+- Fixed #234: Remove dependency on a fork of the `jsonlint` project on github.
+
+
 ## 2015-06-13, version 4.2.1
 
 - Fixed #161: Cannot select text in Ace editor on systems using Chinese fonts.
@@ -21,7 +26,7 @@ https://github.com/josdejong/jsoneditor
 ## 2015-03-15, version 4.1.1
 
 - Added missing file `index.js` to the bower package.
-
+  
 
 ## 2015-03-15, version 4.1.0
 

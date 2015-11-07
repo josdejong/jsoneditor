@@ -21,8 +21,7 @@
     "test": "mocha test"
   },
   "dependencies": {
-    "brace": "^0.4.1",
-    "jsonlint": "josdejong/jsonlint#85a19d7"
+    "brace": "^0.4.1"
   },
   "devDependencies": {
     "gulp": "^3.8.11",

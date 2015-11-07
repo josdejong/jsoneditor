@@ -1,4 +1,4 @@
-var jsonlint = require('jsonlint');
+var jsonlint = require('./assets/jsonlint/jsonlint');
 
 /**
  * Parse JSON using the parser built-in in the browser.
