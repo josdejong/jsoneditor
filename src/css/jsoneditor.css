@@ -32,14 +32,21 @@
   border-radius: 2px;
 }
 
-.jsoneditor .field.empty {
-  background-image: url('img/jsoneditor-icons.svg');
-  background-position: 0 -144px;
+.jsoneditor .field.empty::after,
+.jsoneditor .value.empty::after {
+  text-transform: uppercase;
+  pointer-events: none;
+  color: rgba(77, 77, 77, 0.66);
+  font-weight: bold;
+  font-size: 8pt;
 }
 
-.jsoneditor .value.empty {
-  background-image: url('img/jsoneditor-icons.svg');
-  background-position: -48px -144px;
+.jsoneditor .field.empty::after {
+  content: "field";
+}
+
+.jsoneditor .value.empty::after {
+  content: "value";
 }
 
 .jsoneditor .value.url {
