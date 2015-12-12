@@ -33,12 +33,12 @@
 }
 
 .jsoneditor .field.empty {
-  background-image: url('img/jsoneditor-icons.png');
+  background-image: url('img/jsoneditor-icons.svg');
   background-position: 0 -144px;
 }
 
 .jsoneditor .value.empty {
-  background-image: url('img/jsoneditor-icons.png');
+  background-image: url('img/jsoneditor-icons.svg');
   background-position: -48px -144px;
 }
 
@@ -87,7 +87,7 @@
   margin: 0;
   border: none;
   cursor: pointer;
-  background: transparent url('img/jsoneditor-icons.png');
+  background: transparent url('img/jsoneditor-icons.svg');
 }
 
 .jsoneditor div.tree button.collapsed {
@@ -188,7 +188,7 @@
 }
 
 .jsoneditor div.tree button.dragarea {
-  background: url('img/jsoneditor-icons.png') -72px -72px;
+  background: url('img/jsoneditor-icons.svg') -72px -72px;
   cursor: move;
 }
 
