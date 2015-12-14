@@ -11,7 +11,7 @@ var uglify = require('uglify-js');
 var NAME    = 'jsoneditor';
 var ENTRY   = './src/js/JSONEditor.js';
 var HEADER  = './src/js/header.js';
-var IMAGE   = './src/css/img/jsoneditor-icons.png';
+var IMAGE   = './src/css/img/jsoneditor-icons.svg';
 var DIST    = './dist';
 
 // generate banner with today's date and correct version
