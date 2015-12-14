@@ -5,6 +5,7 @@ https://github.com/josdejong/jsoneditor
 
 ## not yet released, version 4.2.2
 
+- Replaced the PNG icon images with SVG. Thanks @1j01.
 - Fixed #234: Remove dependency on a fork of the `jsonlint` project on github.
 
 
