@@ -4,7 +4,7 @@
 
 ### Constructor
 
-#### `JSONEditor(container [, options] [, json])`
+#### `JSONEditor(container [, options [, json]])`
 
 Constructs a new JSONEditor.
 
@@ -78,7 +78,7 @@ Switch mode. Mode `code` requires the [Ace editor](http://ace.ajax.org/).
 *Parameters:*
 
 - `{String} mode`  
-  Available values: `tree`, 'view', `form`, `code`, `text`.
+  Available values: `tree`, `view`, `form`, `code`, `text`.
 
 #### `JSONEditor.setName(name)`
 
@@ -93,6 +93,9 @@ Set a field name for the root node.
 
 Set text data in the editor.
 
+This method throws an exception when the provided jsonString does not contain 
+valid JSON and the editor is in mode `tree`, `view`, or `form`.
+
 *Parameters:*
 
 - `{String} jsonString`  
@@ -100,7 +103,10 @@ Set text data in the editor.
 
 #### `JSONEditor.get()`
 
-Get JSON data.
+Get JSON data. 
+
+This method throws an exception when the editor does not contain valid JSON, 
+which can be the case when the editor is in mode `code` or `text`.
 
 *Returns:*
 
