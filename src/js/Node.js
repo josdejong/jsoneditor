@@ -2858,6 +2858,7 @@ Node.prototype._stringCast = function(str) {
  */
 Node.prototype._escapeHTML = function (text) {
   var htmlEscaped = String(text)
+      .replace(/&/g, '&amp;')    // must be replaced first!
       .replace(/</g, '&lt;')
       .replace(/>/g, '&gt;')
       .replace(/  /g, ' &nbsp;') // replace double space with an nbsp and space
@@ -2880,7 +2881,8 @@ Node.prototype._unescapeHTML = function (escapedText) {
   return htmlEscaped
       .replace(/&lt;/g, '<')
       .replace(/&gt;/g, '>')
-      .replace(/&nbsp;|\u00A0/g, ' ');
+      .replace(/&nbsp;|\u00A0/g, ' ')
+      .replace(/&amp;/g, '&'); // must be replaced last
 };
 
 /**
