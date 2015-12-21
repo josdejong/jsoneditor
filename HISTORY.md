@@ -7,6 +7,8 @@ https://github.com/josdejong/jsoneditor
 
 - Replaced the PNG icon images with SVG. Thanks @1j01.
 - Fixed #234: Remove dependency on a fork of the `jsonlint` project on github.
+- Fixed: disabled `Ctrl+L` quick key to go to a line, instead use the default
+  browser behavior of selecting the address bar.
 
 
 ## 2015-06-13, version 4.2.1

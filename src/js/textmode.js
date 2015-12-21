@@ -139,6 +139,8 @@ textmode.create = function (container, options) {
     editor.getSession().setTabSize(this.indentation);
     editor.getSession().setUseSoftTabs(true);
     editor.getSession().setUseWrapMode(true);
+    editor.commands.bindKey('Ctrl-L', null);    // disable Ctrl+L (is used by the browser to select the address bar)
+    editor.commands.bindKey('Command-L', null); // disable Ctrl+L (is used by the browser to select the address bar)
     this.editor = editor;
 
     var poweredBy = document.createElement('a');
