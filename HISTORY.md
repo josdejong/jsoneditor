@@ -6,6 +6,8 @@ https://github.com/josdejong/jsoneditor
 ## not yet released, version 4.2.2
 
 - Replaced the PNG icon images with SVG. Thanks @1j01.
+- Fixed #149: Memory leak when switching mode from/to `code` mode, web worker
+  of Ace editor wasn't cleaned up.
 - Fixed #234: Remove dependency on a fork of the `jsonlint` project on github.
 - Fixed: disabled `Ctrl+L` quick key to go to a line, instead use the default
   browser behavior of selecting the address bar.
