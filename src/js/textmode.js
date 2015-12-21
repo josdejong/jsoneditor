@@ -221,7 +221,6 @@ textmode._delete = function () {
   // remove old ace editor
   if (this.editor) {
     this.editor.destroy();
-    console.log('destroy');
   }
 
   if (this.frame && this.container && this.frame.parentNode == this.container) {
