@@ -21,7 +21,7 @@
     "test": "mocha test"
   },
   "dependencies": {
-    "brace": "^0.4.1"
+    "brace": "0.7.0"
   },
   "devDependencies": {
     "gulp": "^3.8.11",

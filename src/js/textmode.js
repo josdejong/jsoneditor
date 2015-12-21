@@ -131,6 +131,7 @@ textmode.create = function (container, options) {
     this.content.appendChild(this.editorDom);
 
     var editor = _ace.edit(this.editorDom);
+    editor.$blockScrolling = Infinity;
     editor.setTheme(this.theme);
     editor.setShowPrintMargin(false);
     editor.setFontSize(13);
