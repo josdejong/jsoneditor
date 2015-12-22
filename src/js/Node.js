@@ -984,6 +984,7 @@ Node.prototype._getDomValue = function(silent) {
     try {
       // retrieve the value
       var value;
+      console.log('getValue', this.valueInnerText, this.valueInnerText.length)
       if (this.type == 'string') {
         value = this._unescapeHTML(this.valueInnerText);
       }
@@ -2857,16 +2858,13 @@ Node.prototype._stringCast = function(str) {
  * @private
  */
 Node.prototype._escapeHTML = function (text) {
-  var htmlEscaped = String(text)
+  return String(text)
       .replace(/&/g, '&amp;')    // must be replaced first!
       .replace(/</g, '&lt;')
       .replace(/>/g, '&gt;')
       .replace(/  /g, ' &nbsp;') // replace double space with an nbsp and space
       .replace(/^ /, '&nbsp;')   // space at start
       .replace(/ $/, '&nbsp;');  // space at end
-
-  var json = JSON.stringify(htmlEscaped);
-  return json.substring(1, json.length - 1);
 };
 
 /**
@@ -2876,13 +2874,11 @@ Node.prototype._escapeHTML = function (text) {
  * @private
  */
 Node.prototype._unescapeHTML = function (escapedText) {
-  var json = '"' + this._escapeJSON(escapedText) + '"';
-  var htmlEscaped = util.parse(json);
-  return htmlEscaped
+  return this._escapeJSON(escapedText)
       .replace(/&lt;/g, '<')
       .replace(/&gt;/g, '>')
       .replace(/&nbsp;|\u00A0/g, ' ')
-      .replace(/&amp;/g, '&'); // must be replaced last
+      .replace(/&amp;/g, '&');   // must be replaced last
 };
 
 /**
@@ -2897,8 +2893,8 @@ Node.prototype._unescapeHTML = function (escapedText) {
 Node.prototype._escapeJSON = function (text) {
   // TODO: replace with some smart regex (only when a new solution is faster!)
   var escaped = '';
-  var i = 0, iMax = text.length;
-  while (i < iMax) {
+  var i = 0;
+  while (i < text.length) {
     var c = text.charAt(i);
     if (c == '\n') {
       escaped += '\\n';
@@ -2908,7 +2904,7 @@ Node.prototype._escapeJSON = function (text) {
       i++;
 
       c = text.charAt(i);
-      if ('"\\/bfnrtu'.indexOf(c) == -1) {
+      if (c === '' || '"\\/bfnrtu'.indexOf(c) == -1) {
         escaped += '\\';  // no valid escape character
       }
       escaped += c;
