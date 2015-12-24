@@ -15,18 +15,21 @@ var textmode = {};
 /**
  * Create a text editor
  * @param {Element} container
- * @param {Object} [options]         Object with options. available options:
- *                                   {String} mode         Available values:
- *                                                         "text" (default)
- *                                                         or "code".
- *                                   {Number} indentation  Number of indentation
- *                                                         spaces. 2 by default.
- *                                   {function} change     Callback method
- *                                                         triggered on change
- *                                   {function} onMode     Callback method
- *                                                         triggered after setMode
- *                                   {Object} ace          A custom instance of
- *                                                         Ace editor.
+ * @param {Object} [options]   Object with options. available options:
+ *                             {String} mode         Available values:
+ *                                                   "text" (default)
+ *                                                   or "code".
+ *                             {Number} indentation  Number of indentation
+ *                                                   spaces. 2 by default.
+ *                             {function} change     Callback method
+ *                                                   triggered on change
+ *                             {function} onMode     Callback method
+ *                                                   triggered after setMode
+ *                             {Object} ace          A custom instance of
+ *                                                   Ace editor.
+ *                             {boolean} escapeUnicode  If true, unicode
+ *                                                      characters are escaped.
+ *                                                      false by default.
  * @private
  */
 textmode.create = function (container, options) {
@@ -339,11 +342,18 @@ textmode.getText = function() {
  * @param {String} jsonText
  */
 textmode.setText = function(jsonText) {
+  if (this.options.escapeUnicode === true) {
+    text = util.escapeUnicodeChars(jsonText);
+  }
+  else {
+    text = jsonText;
+  }
+
   if (this.textarea) {
-    this.textarea.value = jsonText;
+    this.textarea.value = text;
   }
   if (this.editor) {
-    this.editor.setValue(jsonText, -1);
+    this.editor.setValue(text, -1);
   }
 };
 

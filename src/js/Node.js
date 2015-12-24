@@ -2857,16 +2857,25 @@ Node.prototype._stringCast = function(str) {
  * @private
  */
 Node.prototype._escapeHTML = function (text) {
-  var htmlEscaped = String(text)
-      .replace(/&/g, '&amp;')    // must be replaced first!
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/  /g, ' &nbsp;') // replace double space with an nbsp and space
-      .replace(/^ /, '&nbsp;')   // space at start
-      .replace(/ $/, '&nbsp;');  // space at end
+  if (typeof text !== 'string') {
+    return String(text);
+  }
+  else {
+    var htmlEscaped = String(text)
+        .replace(/&/g, '&amp;')    // must be replaced first!
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/  /g, ' &nbsp;') // replace double space with an nbsp and space
+        .replace(/^ /, '&nbsp;')   // space at start
+        .replace(/ $/, '&nbsp;');  // space at end
 
-  var json = JSON.stringify(htmlEscaped);
-  return json.substring(1, json.length - 1);
+    var json = JSON.stringify(htmlEscaped);
+    var html = json.substring(1, json.length - 1);
+    if (this.editor.options.escapeUnicode === true) {
+      html = util.escapeUnicodeChars(html);
+    }
+    return html;
+  }
 };
 
 /**

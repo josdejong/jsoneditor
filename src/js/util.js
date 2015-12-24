@@ -148,6 +148,21 @@ exports.sanitize = function (jsString) {
 };
 
 /**
+ * Escape unicode characters.
+ * For example input '\u2661' (length 1) will output '\\u2661' (length 5).
+ * @param {string} text
+ * @return {string}
+ */
+exports.escapeUnicodeChars = function (text) {
+  // see https://www.wikiwand.com/en/UTF-16
+  // note: we leave surrogate pairs as two individual chars,
+  // as JSON doesn't interpret them as a single unicode char.
+  return text.replace(/[\u007F-\uFFFF]/g, function(c) {
+    return '\\u'+('0000' + c.charCodeAt(0).toString(16)).slice(-4);
+  })
+};
+
+/**
  * Validate a string containing a JSON object
  * This method uses JSONLint to validate the String. If JSONLint is not
  * available, the built-in JSON parser of the browser is used.

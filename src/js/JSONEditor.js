@@ -22,10 +22,13 @@ var util = require('./util');
  *                               {String} name      Field name for the root node.
  *                                                  Only applicable for modes
  *                                                  'tree', 'view', and 'form'
- *                               {Number} indentation   Number of indentation
- *                                                      spaces. 4 by default.
- *                                                      Only applicable for
- *                                                      modes 'text' and 'code'
+ *                               {Number} indentation     Number of indentation
+ *                                                        spaces. 4 by default.
+ *                                                        Only applicable for
+ *                                                        modes 'text' and 'code'
+ *                               {boolean} escapeUnicode  If true, unicode
+ *                                                        characters are escaped.
+ *                                                        false by default.
  * @param {Object | undefined} json JSON object
  */
 function JSONEditor (container, options, json) {

@@ -24,6 +24,9 @@ Constructs a new JSONEditor.
   - `{function} error`  
     Set a callback method triggered when an error occurs. Invoked with the error as first argument. The callback is only invoked
     for errors triggered by a users action.
+  - `{boolean} escapeUnicode`  
+    If true, unicode characters are escaped and displayed as their code instead
+    of the character. False by default.
   - `{boolean} history`  
     Enables history, adds a button Undo and Redo to the menu of the JSONEditor. True by default. Only applicable when `mode` is 'tree' or 'form'.
   - `{String} mode`  

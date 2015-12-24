@@ -6,7 +6,9 @@ https://github.com/josdejong/jsoneditor
 ## not yet released, version 4.2.2
 
 - Replaced the PNG icon images with SVG. Thanks @1j01.
-- Fixed #230, #227, and #93: html and unicode characters not escaped.
+- Implemented a new option `escapeUnicode`, which will show the hexadecimal 
+  unicode instead of the character itself. (See #93 and #230).
+- Fixed #227: html codes like `&amp;` not escaped.
 - Fixed #149: Memory leak when switching mode from/to `code` mode, web worker
   of Ace editor wasn't cleaned up.
 - Fixed #234: Remove dependency on a fork of the `jsonlint` project on github.

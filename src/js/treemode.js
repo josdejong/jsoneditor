@@ -22,6 +22,9 @@ var treemode = {};
  *                               {function} change  Callback method, triggered
  *                                                  on change of contents
  *                               {String} name      Field name for the root node.
+ *                               {boolean} escapeUnicode  If true, unicode
+ *                                                        characters are escaped.
+ *                                                        false by default.
  * @private
  */
 treemode.create = function (container, options) {
