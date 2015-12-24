@@ -984,7 +984,6 @@ Node.prototype._getDomValue = function(silent) {
     try {
       // retrieve the value
       var value;
-      console.log('getValue', this.valueInnerText, this.valueInnerText.length)
       if (this.type == 'string') {
         value = this._unescapeHTML(this.valueInnerText);
       }
@@ -2858,13 +2857,16 @@ Node.prototype._stringCast = function(str) {
  * @private
  */
 Node.prototype._escapeHTML = function (text) {
-  return String(text)
+  var htmlEscaped = String(text)
       .replace(/&/g, '&amp;')    // must be replaced first!
       .replace(/</g, '&lt;')
       .replace(/>/g, '&gt;')
       .replace(/  /g, ' &nbsp;') // replace double space with an nbsp and space
       .replace(/^ /, '&nbsp;')   // space at start
       .replace(/ $/, '&nbsp;');  // space at end
+
+  var json = JSON.stringify(htmlEscaped);
+  return json.substring(1, json.length - 1);
 };
 
 /**
@@ -2874,7 +2876,10 @@ Node.prototype._escapeHTML = function (text) {
  * @private
  */
 Node.prototype._unescapeHTML = function (escapedText) {
-  return this._escapeJSON(escapedText)
+  var json = '"' + this._escapeJSON(escapedText) + '"';
+  var htmlEscaped = util.parse(json);
+
+  return htmlEscaped
       .replace(/&lt;/g, '<')
       .replace(/&gt;/g, '>')
       .replace(/&nbsp;|\u00A0/g, ' ')

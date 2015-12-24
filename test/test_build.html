@@ -45,15 +45,17 @@
     modes: ['code', 'form', 'text', 'tree', 'view'], // allowed modes
     error: function (err) {
       alert(err.toString());
-    }
+    },
+    indentation: 4
   };
 
   json = {
     "array": [1, 2, 3],
     "boolean": true,
     "htmlcode": '&quot;',
-    "unicode": '\\u20b9',
-    "invalid": '\u20b9',
+    "escaped_unicode": '\\u20b9',
+    "unicode": '\u20b9',
+    "return": '\n',
     "null": null,
     "number": 123,
     "object": {"a": "b", "c": "d"},
@@ -61,6 +63,8 @@
   };
 
   editor = new JSONEditor(container, options, json);
+
+  console.log(JSON.stringify(json));
 </script>
 </body>
 </html>
