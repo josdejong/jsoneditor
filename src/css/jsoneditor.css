@@ -34,10 +34,8 @@
 
 .jsoneditor .field.empty::after,
 .jsoneditor .value.empty::after {
-  text-transform: uppercase;
   pointer-events: none;
-  color: rgba(77, 77, 77, 0.66);
-  font-weight: bold;
+  color: lightgray;
   font-size: 8pt;
 }
 
