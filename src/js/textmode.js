@@ -147,16 +147,18 @@ textmode.create = function (container, options) {
     this.aceEditor = aceEditor;
 
     // TODO: deprecated since v5.0.0. Cleanup backward compatibility some day
-    Object.defineProperty(this, 'editor', {
-      get: function () {
-        console.warn('Property "editor" has been renamed to "aceEditor".');
-        return me.aceEditor;
-      },
-      set: function (aceEditor) {
-        console.warn('Property "editor" has been renamed to "aceEditor".');
-        me.aceEditor = aceEditor;
-      }
-    });
+    if (!this.hasOwnProperty('editor')) {
+      Object.defineProperty(this, 'editor', {
+        get: function () {
+          console.warn('Property "editor" has been renamed to "aceEditor".');
+          return me.aceEditor;
+        },
+        set: function (aceEditor) {
+          console.warn('Property "editor" has been renamed to "aceEditor".');
+          me.aceEditor = aceEditor;
+        }
+      });
+    }
 
     var poweredBy = document.createElement('a');
     poweredBy.appendChild(document.createTextNode('powered by ace'));

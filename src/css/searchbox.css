@@ -14,7 +14,7 @@
 }
 
 .jsoneditor .search .frame {
-  border: 1px solid #97B0F8;
+  border: 1px solid transparent;
   background-color: white;
   padding: 0 2px;
   margin: 0;

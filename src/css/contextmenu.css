@@ -145,7 +145,8 @@
 /* ContextMenu - sub menu */
 
 .jsoneditor-contextmenu ul li .selected {
-  background-color: #D5DDF6;
+  color: white;
+  background-color: #ec3f29;
 }
 
 .jsoneditor-contextmenu ul li {
@@ -174,12 +175,12 @@
 
 .jsoneditor-contextmenu ul li ul li button {
   padding-left: 24px;
+  animation: all ease-in-out 1s;
 }
 
 .jsoneditor-contextmenu ul li ul li button:hover,
 .jsoneditor-contextmenu ul li ul li button:focus {
   background-color: #f5f5f5;
-
 }
 
 .jsoneditor-contextmenu button.type-string > .icon {

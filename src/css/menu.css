@@ -9,9 +9,9 @@
   -webkit-box-sizing: border-box;
   box-sizing: border-box;
 
-  color: #1A1A1A;
-  background-color: #D5DDF6;
-  border-bottom: 1px solid #97B0F8;
+  color: white;
+  background-color: #3c80d9;
+  border-bottom: 1px solid #3c80d9;
 }
 
 .jsoneditor .menu button {
@@ -20,9 +20,9 @@
   margin: 2px;
   padding: 0;
   border-radius: 2px;
-  border: 1px solid #aec0f8;
-  background: #e3eaf6 url('img/jsoneditor-icons.svg');
-  color: #4D4D4D;
+  border: 1px solid transparent;
+  background: transparent url('img/jsoneditor-icons.svg');
+  color: white;
   opacity: 0.8;
 
   font-family: arial, sans-serif;
@@ -32,14 +32,15 @@
 }
 
 .jsoneditor .menu button:hover {
-  background-color: #f0f2f5;
+  background-color: rgba(255,255,255,0.2);
+  border: 1px solid rgba(255,255,255,0.4);
 }
 .jsoneditor .menu button:focus,
 .jsoneditor .menu button:active {
-  background-color: #ffffff;
+  background-color: rgba(255,255,255,0.3);
 }
 .jsoneditor .menu button:disabled {
-  background-color: #e3eaf6;
+  opacity: 0.5;
 }
 
 .jsoneditor .menu button.collapse-all {
@@ -81,12 +82,13 @@
 .jsoneditor .menu a {
   font-family: arial, sans-serif;
   font-size: 10pt;
-  color: #97B0F8;
+  color: white;
+  opacity: 0.8;
   vertical-align: middle;
 }
 
 .jsoneditor .menu a:hover {
-  color: red;
+  opacity: 1;
 }
 
 .jsoneditor .menu a.poweredBy {

@@ -62,7 +62,7 @@ border-left: 0px;\
 border-bottom: 1px solid #000000\
 }\
 .ace-jsoneditor .ace_marker-layer .ace_selection {\
-background: #D5DDF6\
+background: lightgray\
 }\
 .ace-jsoneditor.ace_multiselect .ace_selection.ace_start {\
 box-shadow: 0 0 3px 0px #FFFFFF;\
@@ -82,7 +82,7 @@ background: #FFFBD1\
 background-color : #dcdcdc\
 }\
 .ace-jsoneditor .ace_marker-layer .ace_selected-word {\
-border: 1px solid #D5DDF6\
+border: 1px solid lightgray\
 }\
 .ace-jsoneditor .ace_invisible {\
 color: #BFBFBF\
