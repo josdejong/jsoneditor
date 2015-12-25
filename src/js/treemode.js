@@ -476,7 +476,7 @@ treemode.scrollTo = function (top, callback) {
 treemode._createFrame = function () {
   // create the frame
   this.frame = document.createElement('div');
-  this.frame.className = 'jsoneditor';
+  this.frame.className = 'jsoneditor mode-' + this.options.mode;
   this.container.appendChild(this.frame);
 
   // create one global event listener to handle all events from all nodes

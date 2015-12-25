@@ -72,7 +72,7 @@ textmode.create = function (container, options) {
   this.height = container.clientHeight;
 
   this.frame = document.createElement('div');
-  this.frame.className = 'jsoneditor';
+  this.frame.className = 'jsoneditor mode-' + this.options.mode;
   this.frame.onclick = function (event) {
     // prevent default submit action when the editor is located inside a form
     event.preventDefault();

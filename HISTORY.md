@@ -5,11 +5,13 @@ https://github.com/josdejong/jsoneditor
 
 ## not yet released, version 5.0.0
 
-- Replaced the PNG icon images with SVG. Thanks @1j01.
 - Implemented a new option `escapeUnicode`, which will show the hexadecimal 
   unicode instead of the character itself. (See #93 and #230).
 - Implemented method `getMode`.
 - Implemented option `onModeChange(oldMode, newMode)`.
+- Implemented #203: Objects and arrays in mode `form` and `view` are now
+  expandable by clicking the field names too.
+- Replaced the PNG icon images with SVG. Thanks @1j01.
 - Renamed options `change`, `editable`, `error` to respectively `onChange`,
   `onEditable`, and `onError`. Old options are still working and give a 
   deprecation warning.

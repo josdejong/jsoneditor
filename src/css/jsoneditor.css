@@ -97,6 +97,11 @@
   background: transparent url('img/jsoneditor-icons.svg');
 }
 
+.jsoneditor.mode-view tr.expandable,
+.jsoneditor.mode-form tr.expandable {
+  cursor: pointer;
+}
+
 .jsoneditor div.tree button.collapsed {
   background-position: 0 -48px;
 }

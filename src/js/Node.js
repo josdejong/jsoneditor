@@ -1574,12 +1574,15 @@ Node.prototype.updateDom = function (options) {
     var count = this.childs ? this.childs.length : 0;
     if (this.type == 'array') {
       domValue.innerHTML = '[' + count + ']';
+      this.dom.tr.className = 'expandable';
     }
     else if (this.type == 'object') {
       domValue.innerHTML = '{' + count + '}';
+      this.dom.tr.className = 'expandable';
     }
     else {
       domValue.innerHTML = this._escapeHTML(this.value);
+      this.dom.tr.className = '';
     }
   }
 
@@ -1756,7 +1759,7 @@ Node.prototype._createDomTree = function () {
 };
 
 /**
- * Handle an event. The event is catched centrally by the editor
+ * Handle an event. The event is caught centrally by the editor
  * @param {Event} event
  */
 Node.prototype.onEvent = function (event) {
@@ -1797,7 +1800,8 @@ Node.prototype.onEvent = function (event) {
   }
 
   // expand events
-  if (type == 'click' && target == dom.expand) {
+  if (type == 'click' &&
+      (target == dom.expand || node.editor.options.mode === 'view' || node.editor.options.mode === 'form')) {
     if (expandable) {
       var recurse = event.ctrlKey; // with ctrl-key, expand/collapse all
       this._onExpand(recurse);
