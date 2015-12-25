@@ -61,7 +61,7 @@ function SearchBox (editor, container) {
     searchBox._onDelayedSearch(event);
   };
   search.onchange = function (event) { // For IE 9
-    searchBox._onSearch(event);
+    searchBox._onSearch();
   };
   search.onkeydown = function (event) {
     searchBox._onKeyDown(event);
@@ -203,20 +203,19 @@ SearchBox.prototype._onDelayedSearch = function (event) {
   this._clearDelay();
   var searchBox = this;
   this.timeout = setTimeout(function (event) {
-        searchBox._onSearch(event);
-      },
-      this.delay);
+    searchBox._onSearch();
+  },
+  this.delay);
 };
 
 /**
  * Handle onSearch event
- * @param {Event} event
  * @param {boolean} [forceSearch]  If true, search will be executed again even
  *                                 when the search text is not changed.
  *                                 Default is false.
  * @private
  */
-SearchBox.prototype._onSearch = function (event, forceSearch) {
+SearchBox.prototype._onSearch = function (forceSearch) {
   this._clearDelay();
 
   var value = this.dom.search.value;
@@ -251,14 +250,14 @@ SearchBox.prototype._onKeyDown = function (event) {
   var keynum = event.which;
   if (keynum == 27) { // ESC
     this.dom.search.value = '';  // clear search
-    this._onSearch(event);
+    this._onSearch();
     event.preventDefault();
     event.stopPropagation();
   }
   else if (keynum == 13) { // Enter
     if (event.ctrlKey) {
       // force to search again
-      this._onSearch(event, true);
+      this._onSearch(true);
     }
     else if (event.shiftKey) {
       // move to the previous search result
@@ -283,6 +282,15 @@ SearchBox.prototype._onKeyUp = function (event) {
   if (keynum != 27 && keynum != 13) { // !show and !Enter
     this._onDelayedSearch(event);   // For IE 9
   }
+};
+
+/**
+ * Set search text. Will apply a new search
+ * @param {string} value
+ */
+SearchBox.prototype.setValue = function (value) {
+  this.dom.search.value = value;
+  this._onSearch();
 };
 
 module.exports = SearchBox;

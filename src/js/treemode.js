@@ -126,6 +126,9 @@ treemode.set = function (json, name) {
   if (this.history) {
     this.history.clear();
   }
+
+  // clear search
+  this.searchBox.setValue('');
 };
 
 /**
