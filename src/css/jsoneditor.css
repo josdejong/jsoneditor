@@ -97,8 +97,8 @@
   background: transparent url('img/jsoneditor-icons.svg');
 }
 
-.jsoneditor.mode-view tr.expandable,
-.jsoneditor.mode-form tr.expandable {
+.jsoneditor.mode-view tr.expandable td.tree,
+.jsoneditor.mode-form tr.expandable td.tree {
   cursor: pointer;
 }
 

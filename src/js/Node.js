@@ -1800,11 +1800,13 @@ Node.prototype.onEvent = function (event) {
   }
 
   // expand events
-  if (type == 'click' &&
-      (target == dom.expand || node.editor.options.mode === 'view' || node.editor.options.mode === 'form')) {
-    if (expandable) {
-      var recurse = event.ctrlKey; // with ctrl-key, expand/collapse all
-      this._onExpand(recurse);
+  if (type == 'click') {
+    if (target == dom.expand ||
+        ((node.editor.options.mode === 'view' || node.editor.options.mode === 'form') && target.nodeName === 'DIV')) {
+      if (expandable) {
+        var recurse = event.ctrlKey; // with ctrl-key, expand/collapse all
+        this._onExpand(recurse);
+      }
     }
   }
 
