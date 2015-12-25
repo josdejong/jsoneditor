@@ -285,11 +285,10 @@ SearchBox.prototype._onKeyUp = function (event) {
 };
 
 /**
- * Set search text. Will apply a new search
- * @param {string} value
+ * Clear the search results
  */
-SearchBox.prototype.setValue = function (value) {
-  this.dom.search.value = value;
+SearchBox.prototype.clear = function () {
+  this.dom.search.value = '';
   this._onSearch();
 };
 

@@ -128,7 +128,7 @@ treemode.set = function (json, name) {
   }
 
   // clear search
-  this.searchBox.setValue('');
+  this.searchBox.clear();
 };
 
 /**
