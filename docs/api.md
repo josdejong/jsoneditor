@@ -28,8 +28,7 @@ Constructs a new JSONEditor.
     Set a callback function triggered right after the mode is changed by the user. Only applicable when 
     the mode can be changed by the user (i.e. when option `modes` is set).
   - `{boolean} escapeUnicode`  
-    If true, unicode characters are escaped and displayed as their code instead
-    of the character. False by default.
+    If true, unicode characters are escaped and displayed as their hexadecimal code (like `\u260E`) instead of of the character itself (like `☎`). False by default.
   - `{boolean} history`  
     Enables history, adds a button Undo and Redo to the menu of the JSONEditor. True by default. Only applicable when `mode` is 'tree' or 'form'.
   - `{String} mode`  

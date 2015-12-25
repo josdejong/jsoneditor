@@ -65,7 +65,7 @@ textmode.create = function (container, options) {
   var me = this;
   this.container = container;
   this.dom = {};
-  this.editor = undefined;    // ace code editor
+  this.aceEditor = undefined;  // ace code editor
   this.textarea = undefined;  // plain text editor (fallback when Ace is not available)
 
   this.width = container.clientWidth;
@@ -133,18 +133,30 @@ textmode.create = function (container, options) {
     this.editorDom.style.width = '100%'; // TODO: move to css
     this.content.appendChild(this.editorDom);
 
-    var editor = _ace.edit(this.editorDom);
-    editor.$blockScrolling = Infinity;
-    editor.setTheme(this.theme);
-    editor.setShowPrintMargin(false);
-    editor.setFontSize(13);
-    editor.getSession().setMode('ace/mode/json');
-    editor.getSession().setTabSize(this.indentation);
-    editor.getSession().setUseSoftTabs(true);
-    editor.getSession().setUseWrapMode(true);
-    editor.commands.bindKey('Ctrl-L', null);    // disable Ctrl+L (is used by the browser to select the address bar)
-    editor.commands.bindKey('Command-L', null); // disable Ctrl+L (is used by the browser to select the address bar)
-    this.editor = editor;
+    var aceEditor = _ace.edit(this.editorDom);
+    aceEditor.$blockScrolling = Infinity;
+    aceEditor.setTheme(this.theme);
+    aceEditor.setShowPrintMargin(false);
+    aceEditor.setFontSize(13);
+    aceEditor.getSession().setMode('ace/mode/json');
+    aceEditor.getSession().setTabSize(this.indentation);
+    aceEditor.getSession().setUseSoftTabs(true);
+    aceEditor.getSession().setUseWrapMode(true);
+    aceEditor.commands.bindKey('Ctrl-L', null);    // disable Ctrl+L (is used by the browser to select the address bar)
+    aceEditor.commands.bindKey('Command-L', null); // disable Ctrl+L (is used by the browser to select the address bar)
+    this.aceEditor = aceEditor;
+
+    // TODO: deprecated since v5.0.0. Cleanup backward compatibility some day
+    Object.defineProperty(this, 'editor', {
+      get: function () {
+        console.warn('Property "editor" has been renamed to "aceEditor".');
+        return me.aceEditor;
+      },
+      set: function (aceEditor) {
+        console.warn('Property "editor" has been renamed to "aceEditor".');
+        me.aceEditor = aceEditor;
+      }
+    });
 
     var poweredBy = document.createElement('a');
     poweredBy.appendChild(document.createTextNode('powered by ace'));
@@ -161,7 +173,7 @@ textmode.create = function (container, options) {
 
     if (options.onChange) {
       // register onchange event
-      editor.on('change', options.onChange);
+      aceEditor.on('change', options.onChange);
     }
   }
   else {
@@ -216,8 +228,8 @@ textmode._onKeyDown = function (event) {
  */
 textmode._delete = function () {
   // remove old ace editor
-  if (this.editor) {
-    this.editor.destroy();
+  if (this.aceEditor) {
+    this.aceEditor.destroy();
   }
 
   if (this.frame && this.container && this.frame.parentNode == this.container) {
@@ -250,8 +262,8 @@ textmode.focus = function () {
   if (this.textarea) {
     this.textarea.focus();
   }
-  if (this.editor) {
-    this.editor.focus();
+  if (this.aceEditor) {
+    this.aceEditor.focus();
   }
 };
 
@@ -259,9 +271,9 @@ textmode.focus = function () {
  * Resize the formatter
  */
 textmode.resize = function () {
-  if (this.editor) {
+  if (this.aceEditor) {
     var force = false;
-    this.editor.resize(force);
+    this.aceEditor.resize(force);
   }
 };
 
@@ -303,8 +315,8 @@ textmode.getText = function() {
   if (this.textarea) {
     return this.textarea.value;
   }
-  if (this.editor) {
-    return this.editor.getValue();
+  if (this.aceEditor) {
+    return this.aceEditor.getValue();
   }
   return '';
 };
@@ -324,8 +336,8 @@ textmode.setText = function(jsonText) {
   if (this.textarea) {
     this.textarea.value = text;
   }
-  if (this.editor) {
-    this.editor.setValue(text, -1);
+  if (this.aceEditor) {
+    this.aceEditor.setValue(text, -1);
   }
 };
 
