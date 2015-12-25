@@ -16,20 +16,20 @@ var textmode = {};
  * Create a text editor
  * @param {Element} container
  * @param {Object} [options]   Object with options. available options:
- *                             {String} mode         Available values:
- *                                                   "text" (default)
- *                                                   or "code".
- *                             {Number} indentation  Number of indentation
- *                                                   spaces. 2 by default.
- *                             {function} change     Callback method
- *                                                   triggered on change
- *                             {function} onMode     Callback method
- *                                                   triggered after setMode
- *                             {Object} ace          A custom instance of
- *                                                   Ace editor.
- *                             {boolean} escapeUnicode  If true, unicode
- *                                                      characters are escaped.
- *                                                      false by default.
+ *                             {String} mode             Available values:
+ *                                                       "text" (default)
+ *                                                       or "code".
+ *                             {Number} indentation      Number of indentation
+ *                                                       spaces. 2 by default.
+ *                             {function} onChange       Callback method
+ *                                                       triggered on change
+ *                             {function} onModeChange   Callback method
+ *                                                       triggered after setMode
+ *                             {Object} ace              A custom instance of
+ *                                                       Ace editor.
+ *                             {boolean} escapeUnicode   If true, unicode
+ *                                                       characters are escaped.
+ *                                                       false by default.
  * @private
  */
 textmode.create = function (container, options) {
@@ -159,11 +159,9 @@ textmode.create = function (container, options) {
     };
     this.menu.appendChild(poweredBy);
 
-    if (options.change) {
+    if (options.onChange) {
       // register onchange event
-      editor.on('change', function () {
-        options.change();
-      });
+      editor.on('change', options.onChange);
     }
   }
   else {
@@ -174,18 +172,14 @@ textmode.create = function (container, options) {
     this.content.appendChild(textarea);
     this.textarea = textarea;
 
-    if (options.change) {
+    if (options.onChange) {
       // register onchange event
       if (this.textarea.oninput === null) {
-        this.textarea.oninput = function () {
-          options.change();
-        }
+        this.textarea.oninput = options.onChange();
       }
       else {
         // oninput is undefined. For IE8-
-        this.textarea.onchange = function () {
-          options.change();
-        }
+        this.textarea.onchange = options.onChange();
       }
     }
   }
@@ -228,28 +222,6 @@ textmode._delete = function () {
 
   if (this.frame && this.container && this.frame.parentNode == this.container) {
     this.container.removeChild(this.frame);
-  }
-};
-
-/**
- * Throw an error. If an error callback is configured in options.error, this
- * callback will be invoked. Else, a regular error is thrown.
- * @param {Error} err
- * @private
- */
-textmode._onError = function(err) {
-  // TODO: onError is deprecated since version 2.2.0. cleanup some day
-  if (typeof this.onError === 'function') {
-    util.log('WARNING: JSONEditor.onError is deprecated. ' +
-        'Use options.error instead.');
-    this.onError(err);
-  }
-
-  if (this.options && typeof this.options.error === 'function') {
-    this.options.error(err);
-  }
-  else {
-    throw err;
   }
 };
 

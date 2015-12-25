@@ -1,7 +1,7 @@
 <!DOCTYPE HTML>
 <html>
 <head>
-  <title>JSONEditor | Basic usage</title>
+  <title>JSONEditor | Custom editable fields</title>
 
   <link href="../dist/jsoneditor.css" rel="stylesheet" type="text/css">
   <script src="../dist/jsoneditor.js"></script>
@@ -28,7 +28,7 @@
     var container = document.getElementById('jsoneditor');
 
     var options = {
-      editable: function (node) {
+      onEditable: function (node) {
         // node is an object like:
         //   {
         //     field: 'FIELD',

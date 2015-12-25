@@ -43,8 +43,8 @@ Node.prototype._updateEditability = function () {
     this.editable.field = this.editor.options.mode === 'tree';
     this.editable.value = this.editor.options.mode !== 'view';
 
-    if (this.editor.options.mode === 'tree' && (typeof this.editor.options.editable === 'function')) {
-      var editable = this.editor.options.editable({
+    if (this.editor.options.mode === 'tree' && (typeof this.editor.options.onEditable === 'function')) {
+      var editable = this.editor.options.onEditable({
         field: this.field,
         value: this.value,
         path: this.path()

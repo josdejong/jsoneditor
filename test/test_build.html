@@ -42,7 +42,7 @@
   options = {
     mode: 'tree',
     modes: ['code', 'form', 'text', 'tree', 'view'], // allowed modes
-    error: function (err) {
+    onError: function (err) {
       alert(err.toString());
     },
     indentation: 4,

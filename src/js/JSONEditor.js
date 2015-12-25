@@ -6,22 +6,24 @@ var util = require('./util');
  * @constructor JSONEditor
  * @param {Element} container    Container element
  * @param {Object}  [options]    Object with options. available options:
- *                               {String} mode      Editor mode. Available values:
- *                                                  'tree' (default), 'view',
- *                                                  'form', 'text', and 'code'.
- *                               {function} change  Callback method, triggered
- *                                                  on change of contents
- *                               {Boolean} search   Enable search box.
- *                                                  True by default
- *                                                  Only applicable for modes
- *                                                  'tree', 'view', and 'form'
- *                               {Boolean} history  Enable history (undo/redo).
- *                                                  True by default
- *                                                  Only applicable for modes
- *                                                  'tree', 'view', and 'form'
- *                               {String} name      Field name for the root node.
- *                                                  Only applicable for modes
- *                                                  'tree', 'view', and 'form'
+ *                               {String} mode        Editor mode. Available values:
+ *                                                    'tree' (default), 'view',
+ *                                                    'form', 'text', and 'code'.
+ *                               {function} onChange  Callback method, triggered
+ *                                                    on change of contents
+ *                               {function} onError   Callback method, triggered
+ *                                                    when an error occurs
+ *                               {Boolean} search     Enable search box.
+ *                                                    True by default
+ *                                                    Only applicable for modes
+ *                                                    'tree', 'view', and 'form'
+ *                               {Boolean} history    Enable history (undo/redo).
+ *                                                    True by default
+ *                                                    Only applicable for modes
+ *                                                    'tree', 'view', and 'form'
+ *                               {String} name        Field name for the root node.
+ *                                                    Only applicable for modes
+ *                                                    'tree', 'view', and 'form'
  *                               {Number} indentation     Number of indentation
  *                                                        spaces. 4 by default.
  *                                                        Only applicable for
@@ -41,6 +43,40 @@ function JSONEditor (container, options, json) {
   if (ieVersion != -1 && ieVersion < 9) {
     throw new Error('Unsupported browser, IE9 or newer required. ' +
         'Please install the newest version of your browser.');
+  }
+
+  if (options) {
+    // check for deprecated options
+    if (options.error) {
+      console.warn('Option "error" has been renamed to "onError"');
+      options.onError = options.error;
+      delete options.error;
+    }
+    if (options.change) {
+      console.warn('Option "change" has been renamed to "onChange"');
+      options.onChange = options.change;
+      delete options.change;
+    }
+    if (options.editable) {
+      console.warn('Option "editable" has been renamed to "onEditable"');
+      options.onEditable = options.editable;
+      delete options.editable;
+    }
+
+    // validate options
+    if (options) {
+      var VALID_OPTIONS = [
+        'ace',
+        'onChange', 'onEditable', 'onError', 'onModeChange',
+        'escapeUnicode', 'history', 'mode', 'modes', 'name', 'indentation', 'theme'
+      ];
+
+      Object.keys(options).forEach(function (option) {
+        if (VALID_OPTIONS.indexOf(option) === -1) {
+          console.warn('Unknown option "' + option + '". This option will be ignored');
+        }
+      });
+    }
   }
 
   if (arguments.length) {
@@ -145,10 +181,11 @@ JSONEditor.prototype.getName = function () {
  *                          'text', and 'code'.
  */
 JSONEditor.prototype.setMode = function (mode) {
-  var container = this.container,
-      options = util.extend({}, this.options),
-      data,
-      name;
+  var container = this.container;
+  var options = util.extend({}, this.options);
+  var oldMode = options.mode;
+  var data;
+  var name;
 
   options.mode = mode;
   var config = JSONEditor.modes[mode];
@@ -170,14 +207,18 @@ JSONEditor.prototype.setMode = function (mode) {
         try {
           config.load.call(this);
         }
-        catch (err) {}
+        catch (err) {
+          console.error(err);
+        }
       }
 
-      if (typeof options.onMode === 'function') {
+      if (typeof options.onModeChange === 'function' && mode !== oldMode) {
         try {
-          options.onMode(options.mode);
+          options.onModeChange(mode, oldMode);
         }
-        catch (err) {}
+        catch (err) {
+          console.error(err);
+        }
       }
     }
     catch (err) {
@@ -190,21 +231,22 @@ JSONEditor.prototype.setMode = function (mode) {
 };
 
 /**
+ * Get the current mode
+ * @return {string}
+ */
+JSONEditor.prototype.getMode = function () {
+  return this.options.mode;
+};
+
+/**
  * Throw an error. If an error callback is configured in options.error, this
  * callback will be invoked. Else, a regular error is thrown.
  * @param {Error} err
  * @private
  */
 JSONEditor.prototype._onError = function(err) {
-  // TODO: onError is deprecated since version 2.2.0. cleanup some day
-  if (typeof this.onError === 'function') {
-    util.log('WARNING: JSONEditor.onError is deprecated. ' +
-        'Use options.error instead.');
-    this.onError(err);
-  }
-
-  if (this.options && typeof this.options.error === 'function') {
-    this.options.error(err);
+  if (this.options && typeof this.options.onError === 'function') {
+    this.options.onError(err);
   }
   else {
     throw err;

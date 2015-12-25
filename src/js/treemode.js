@@ -12,16 +12,16 @@ var treemode = {};
  * Create a tree editor
  * @param {Element} container    Container element
  * @param {Object}  [options]    Object with options. available options:
- *                               {String} mode      Editor mode. Available values:
- *                                                  'tree' (default), 'view',
- *                                                  and 'form'.
- *                               {Boolean} search   Enable search box.
- *                                                  True by default
- *                               {Boolean} history  Enable history (undo/redo).
- *                                                  True by default
- *                               {function} change  Callback method, triggered
- *                                                  on change of contents
- *                               {String} name      Field name for the root node.
+ *                               {String} mode            Editor mode. Available values:
+ *                                                        'tree' (default), 'view',
+ *                                                        and 'form'.
+ *                               {Boolean} search         Enable search box.
+ *                                                        True by default
+ *                               {Boolean} history        Enable history (undo/redo).
+ *                                                        True by default
+ *                               {function} onChange      Callback method, triggered
+ *                                                        on change of contents
+ *                               {String} name            Field name for the root node.
  *                               {boolean} escapeUnicode  If true, unicode
  *                                                        characters are escaped.
  *                                                        false by default.
@@ -305,9 +305,9 @@ treemode._onAction = function (action, params) {
   }
 
   // trigger the onChange callback
-  if (this.options.change) {
+  if (this.options.onChange) {
     try {
-      this.options.change();
+      this.options.onChange();
     }
     catch (err) {
       util.log('Error in change callback: ', err);
@@ -589,8 +589,8 @@ treemode._onUndo = function () {
     this.history.undo();
 
     // trigger change callback
-    if (this.options.change) {
-      this.options.change();
+    if (this.options.onChange) {
+      this.options.onChange();
     }
   }
 };
@@ -605,8 +605,8 @@ treemode._onRedo = function () {
     this.history.redo();
 
     // trigger change callback
-    if (this.options.change) {
-      this.options.change();
+    if (this.options.onChange) {
+      this.options.onChange();
     }
   }
 };

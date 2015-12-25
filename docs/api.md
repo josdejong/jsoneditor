@@ -17,13 +17,16 @@ Constructs a new JSONEditor.
 
   - `{Object} ace`  
     Provide a custom version of the [Ace editor](http://ace.c9.io/) and use this instead of the version that comes embedded with JSONEditor. Only applicable when `mode` is `code`.
-  - `{function} change`  
-    Set a callback method triggered when the contents of the JSONEditor change. Called without parameters. Will only be triggered on changes made by the user, not in case of programmatic changes via the functions `set` or `setText`.
-  - `{function} editable`  
-    Set a callback method to determine whether individual nodes are editable or read-only. Only applicable when option `mode` is `tree`. The callback is invoked as `editable(node)`, where `node` is an object `{field: string, value: string, path: string[]}`. The function must either return a boolean value to set both the nodes field and value editable or read-only, or return an object `{field: boolean, value: boolean}`.
-  - `{function} error`  
-    Set a callback method triggered when an error occurs. Invoked with the error as first argument. The callback is only invoked
-    for errors triggered by a users action.
+  - `{function} onChange`  
+    Set a callback function triggered when the contents of the JSONEditor change. Called without parameters. Will only be triggered on changes made by the user, not in case of programmatic changes via the functions `set` or `setText`.
+  - `{function} onEditable`  
+    Set a callback function  to determine whether individual nodes are editable or read-only. Only applicable when option `mode` is `tree`. The callback is invoked as `editable(node)`, where `node` is an object `{field: string, value: string, path: string[]}`. The function must either return a boolean value to set both the nodes field and value editable or read-only, or return an object `{field: boolean, value: boolean}`.
+  - `{function} onError`  
+    Set a callback function triggered when an error occurs. Invoked with the error as first argument. The callback is only invoked
+    for errors triggered by a users action, like switching from code mode to tree mode or clicking the Format button whilst the editor doesn't contain valid JSON.
+  - `{function} onModeChange(newMode, oldMode)`  
+    Set a callback function triggered right after the mode is changed by the user. Only applicable when 
+    the mode can be changed by the user (i.e. when option `modes` is set).
   - `{boolean} escapeUnicode`  
     If true, unicode characters are escaped and displayed as their code instead
     of the character. False by default.
@@ -115,6 +118,15 @@ which can be the case when the editor is in mode `code` or `text`.
 
 - `{JSON} json`  
   JSON data from the JSONEditor.
+
+#### `JSONEditor.getMode()`
+
+Retrieve the current mode of the editor.
+
+*Returns:*
+
+- `{String} mode`  
+  Current mode of the editor for example `tree` or `code`.
 
 #### `JSONEditor.getName()`
 

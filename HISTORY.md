@@ -3,11 +3,17 @@
 https://github.com/josdejong/jsoneditor
 
 
-## not yet released, version 4.2.2
+## not yet released, version 5.0.0
 
 - Replaced the PNG icon images with SVG. Thanks @1j01.
 - Implemented a new option `escapeUnicode`, which will show the hexadecimal 
   unicode instead of the character itself. (See #93 and #230).
+- Implemented method `getMode`.
+- Implemented option `onModeChange(oldMode, newMode)`.
+- Renamed options `change`, `editable`, `error` to respectively `onChange`,
+  `onEditable`, and `onError`. Old options are still working and give a 
+  deprecation warning.
+- JSONEditor new throws a warning in the console in case of unknown options.
 - Fixed #93 and #227: html codes like `&amp;` not escaped.
 - Fixed #149: Memory leak when switching mode from/to `code` mode, web worker
   of Ace editor wasn't cleaned up.

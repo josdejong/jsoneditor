@@ -43,8 +43,11 @@
   var options = {
     mode: 'tree',
     modes: ['code', 'form', 'text', 'tree', 'view'], // allowed modes
-    error: function (err) {
+    onError: function (err) {
       alert(err.toString());
+    },
+    onModeChange: function (newMode, oldMode) {
+      console.log('Mode switched from', oldMode, 'to', newMode);
     }
   };
 
