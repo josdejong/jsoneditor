@@ -1539,15 +1539,15 @@ Node.prototype.updateDom = function (options) {
     var count = this.childs ? this.childs.length : 0;
     if (this.type == 'array') {
       domValue.innerHTML = '[' + count + ']';
-      this.dom.tr.className = 'jsoneditor-expandable';
+      util.addClassName(this.dom.tr, 'jsoneditor-expandable');
     }
     else if (this.type == 'object') {
       domValue.innerHTML = '{' + count + '}';
-      this.dom.tr.className = 'jsoneditor-expandable';
+      util.addClassName(this.dom.tr, 'jsoneditor-expandable');
     }
     else {
       domValue.innerHTML = this._escapeHTML(this.value);
-      this.dom.tr.className = '';
+      util.removeClassName(this.dom.tr, 'jsoneditor-expandable');
     }
   }
 
