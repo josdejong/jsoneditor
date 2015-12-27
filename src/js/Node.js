@@ -1023,79 +1023,44 @@ Node.prototype._getDomValue = function(silent) {
 Node.prototype._updateDomValue = function () {
   var domValue = this.dom.value;
   if (domValue) {
-    // set text color depending on value type
-    // TODO: put colors in css
-    var v = this.value;
-    var t = (this.type == 'auto') ? util.type(v) : this.type;
-    var isUrl = (t == 'string' && util.isUrl(v));
-    var color = '';
-    if (isUrl && !this.editable.value) { // TODO: when to apply this?
-      color = '';
-    }
-    else if (t == 'string') {
-      color = 'green';
-    }
-    else if (t == 'number') {
-      color = 'red';
-    }
-    else if (t == 'boolean') {
-      color = 'darkorange';
-    }
-    else if (this._hasChilds()) {
-      color = '';
-    }
-    else if (v === null) {
-      color = '#004ED0';  // blue
-    }
-    else {
-      // invalid value
-      color = 'black';
-    }
-    domValue.style.color = color;
+    var classNames = ['value'];
 
-    // make background color light-gray when empty
+
+    // set text color depending on value type
+    var value = this.value;
+    var type = (this.type == 'auto') ? util.type(value) : this.type;
+    var isUrl = type == 'string' && util.isUrl(value);
+    classNames.push(type);
+    if (isUrl) {
+      classNames.push('url');
+    }
+
+    // visual styling when empty
     var isEmpty = (String(this.value) == '' && this.type != 'array' && this.type != 'object');
     if (isEmpty) {
-      util.addClassName(domValue, 'empty');
-    }
-    else {
-      util.removeClassName(domValue, 'empty');
-    }
-
-    // underline url
-    if (isUrl) {
-      util.addClassName(domValue, 'url');
-    }
-    else {
-      util.removeClassName(domValue, 'url');
-    }
-
-    // update title
-    if (t == 'array' || t == 'object') {
-      var count = this.childs ? this.childs.length : 0;
-      domValue.title = this.type + ' containing ' + count + ' items';
-    }
-    else if (t == 'string' && util.isUrl(v)) {
-      if (this.editable.value) {
-        domValue.title = 'Ctrl+Click or Ctrl+Enter to open url in new window';
-      }
-    }
-    else {
-      domValue.title = '';
+      classNames.push('empty');
     }
 
     // highlight when there is a search result
     if (this.searchValueActive) {
-      util.addClassName(domValue, 'highlight-active');
-    }
-    else {
-      util.removeClassName(domValue, 'highlight-active');
+      classNames.push('highlight-active');
     }
     if (this.searchValue) {
-      util.addClassName(domValue, 'highlight');
+      classNames.push('highlight');
+    }
+
+    domValue.className = classNames.join(' ');
+
+    // update title
+    if (type == 'array' || type == 'object') {
+      var count = this.childs ? this.childs.length : 0;
+      domValue.title = this.type + ' containing ' + count + ' items';
+    }
+    else if (isUrl && this.editable.value) {
+      domValue.title = 'Ctrl+Click or Ctrl+Enter to open url in new window';
     }
     else {
-      util.removeClassName(domValue, 'highlight');
+      domValue.title = '';
     }
 
     // strip formatting from the contents of the editable div
@@ -1653,19 +1618,16 @@ Node.prototype._createDomValue = function () {
 
   if (this.type == 'array') {
     domValue = document.createElement('div');
-    domValue.className = 'readonly';
     domValue.innerHTML = '[...]';
   }
   else if (this.type == 'object') {
     domValue = document.createElement('div');
-    domValue.className = 'readonly';
     domValue.innerHTML = '{...}';
   }
   else {
     if (!this.editable.value && util.isUrl(this.value)) {
       // create a link in case of read-only editor and value containing an url
       domValue = document.createElement('a');
-      domValue.className = 'value';
       domValue.href = this.value;
       domValue.target = '_blank';
       domValue.innerHTML = this._escapeHTML(this.value);
@@ -1675,7 +1637,6 @@ Node.prototype._createDomValue = function () {
       domValue = document.createElement('div');
       domValue.contentEditable = this.editable.value;
       domValue.spellcheck = false;
-      domValue.className = 'value';
       domValue.innerHTML = this._escapeHTML(this.value);
     }
   }

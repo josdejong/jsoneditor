@@ -29,6 +29,7 @@
   border: none;
   outline: none;
   margin: 1px;
+  line-height: 20px;
 }
 
 .jsoneditor .search .results {

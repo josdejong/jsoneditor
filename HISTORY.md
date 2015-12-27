@@ -15,6 +15,7 @@ https://github.com/josdejong/jsoneditor
 - Renamed options `change`, `editable`, `error` to respectively `onChange`,
   `onEditable`, and `onError`. Old options are still working and give a 
   deprecation warning.
+- Colors of values are now customizable using CSS. 
 - JSONEditor new throws a warning in the console in case of unknown options.
 - Fixed #93 and #227: html codes like `&amp;` not escaped.
 - Fixed #149: Memory leak when switching mode from/to `code` mode, web worker

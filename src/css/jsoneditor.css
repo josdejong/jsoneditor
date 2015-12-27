@@ -54,7 +54,7 @@
 
 .jsoneditor a.value.url:hover,
 .jsoneditor a.value.url:focus {
-  color: red;
+  color: #ee422e;
 }
 
 .jsoneditor .separator {
@@ -84,6 +84,34 @@
   border: 1px solid #ffc700;
   border-radius: 2px;
 }
+
+.jsoneditor .value.string {
+  color: #008000;
+}
+
+.jsoneditor .value.object,
+.jsoneditor .value.array {
+  min-width: 16px;
+  color: #808080;
+}
+
+.jsoneditor .value.number {
+  color: #ee422e;
+}
+
+.jsoneditor .value.boolean {
+  color: #ff8c00;
+}
+
+.jsoneditor .value.null {
+  color: #004ED0;
+}
+
+.jsoneditor .value.invalid {
+  color: #000000;
+}
+
+
 
 .jsoneditor div.tree button {
   width: 24px;
@@ -188,6 +216,7 @@
   -webkit-box-sizing: border-box;
   box-sizing: border-box;
 
+  outline-width: 0;
   border: none;
   background-color: white;
   resize: none;
