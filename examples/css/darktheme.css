@@ -51,7 +51,7 @@ div.jsoneditor-tree button:focus {
 div.jsoneditor-readonly {
   color: #acacac;
 }
-div.jsoneditor-separator {
+div.jsoneditor td.jsoneditor-separator {
   color: #acacac;
 }
 div.jsoneditor-value.jsoneditor-string {

@@ -57,7 +57,7 @@ a.jsoneditor-value.jsoneditor-url:focus {
   color: #ee422e;
 }
 
-div.jsoneditor div.jsoneditor-separator {
+div.jsoneditor td.jsoneditor-separator {
   padding: 3px 0;
   vertical-align: top;
   color: gray;
