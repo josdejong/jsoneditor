@@ -476,7 +476,7 @@ treemode.scrollTo = function (top, callback) {
 treemode._createFrame = function () {
   // create the frame
   this.frame = document.createElement('div');
-  this.frame.className = 'jsoneditor mode-' + this.options.mode;
+  this.frame.className = 'jsoneditor jsoneditor-mode-' + this.options.mode;
   this.container.appendChild(this.frame);
 
   // create one global event listener to handle all events from all nodes
@@ -515,12 +515,12 @@ treemode._createFrame = function () {
 
   // create menu
   this.menu = document.createElement('div');
-  this.menu.className = 'menu';
+  this.menu.className = 'jsoneditor-menu';
   this.frame.appendChild(this.menu);
 
   // create expand all button
   var expandAll = document.createElement('button');
-  expandAll.className = 'expand-all';
+  expandAll.className = 'jsoneditor-expand-all';
   expandAll.title = 'Expand all fields';
   expandAll.onclick = function () {
     editor.expandAll();
@@ -530,7 +530,7 @@ treemode._createFrame = function () {
   // create expand all button
   var collapseAll = document.createElement('button');
   collapseAll.title = 'Collapse all fields';
-  collapseAll.className = 'collapse-all';
+  collapseAll.className = 'jsoneditor-collapse-all';
   collapseAll.onclick = function () {
     editor.collapseAll();
   };
@@ -540,7 +540,7 @@ treemode._createFrame = function () {
   if (this.history) {
     // create undo button
     var undo = document.createElement('button');
-    undo.className = 'undo separator';
+    undo.className = 'jsoneditor-undo jsoneditor-separator';
     undo.title = 'Undo last action (Ctrl+Z)';
     undo.onclick = function () {
       editor._onUndo();
@@ -550,7 +550,7 @@ treemode._createFrame = function () {
 
     // create redo button
     var redo = document.createElement('button');
-    redo.className = 'redo';
+    redo.className = 'jsoneditor-redo';
     redo.title = 'Redo (Ctrl+Shift+Z)';
     redo.onclick = function () {
       editor._onRedo();
@@ -697,15 +697,15 @@ treemode._onKeyDown = function (event) {
  */
 treemode._createTable = function () {
   var contentOuter = document.createElement('div');
-  contentOuter.className = 'outer';
+  contentOuter.className = 'jsoneditor-outer';
   this.contentOuter = contentOuter;
 
   this.content = document.createElement('div');
-  this.content.className = 'tree';
+  this.content.className = 'jsoneditor-tree';
   contentOuter.appendChild(this.content);
 
   this.table = document.createElement('table');
-  this.table.className = 'tree';
+  this.table.className = 'jsoneditor-tree';
   this.content.appendChild(this.table);
 
   // create colgroup where the first two columns don't have a fixed

@@ -12,6 +12,8 @@ https://github.com/josdejong/jsoneditor
 - Implemented #203: Objects and arrays in mode `form` and `view` are now
   expandable by clicking the field names too.
 - Replaced the PNG icon images with SVG. Thanks @1j01.
+- Renamed all CSS classes They now have prefixes `.jsoneditor-` to prevent
+  name collisions with css frameworks like bootstrap.
 - Renamed options `change`, `editable`, `error` to respectively `onChange`,
   `onEditable`, and `onError`. Old options are still working and give a 
   deprecation warning.

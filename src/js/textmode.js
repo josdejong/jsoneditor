@@ -72,7 +72,7 @@ textmode.create = function (container, options) {
   this.height = container.clientHeight;
 
   this.frame = document.createElement('div');
-  this.frame.className = 'jsoneditor mode-' + this.options.mode;
+  this.frame.className = 'jsoneditor jsoneditor-mode-' + this.options.mode;
   this.frame.onclick = function (event) {
     // prevent default submit action when the editor is located inside a form
     event.preventDefault();
@@ -83,12 +83,12 @@ textmode.create = function (container, options) {
 
   // create menu
   this.menu = document.createElement('div');
-  this.menu.className = 'menu';
+  this.menu.className = 'jsoneditor-menu';
   this.frame.appendChild(this.menu);
 
   // create format button
   var buttonFormat = document.createElement('button');
-  buttonFormat.className = 'format';
+  buttonFormat.className = 'jsoneditor-format';
   buttonFormat.title = 'Format JSON data, with proper indentation and line feeds (Ctrl+\\)';
   this.menu.appendChild(buttonFormat);
   buttonFormat.onclick = function () {
@@ -102,7 +102,7 @@ textmode.create = function (container, options) {
 
   // create compact button
   var buttonCompact = document.createElement('button');
-  buttonCompact.className = 'compact';
+  buttonCompact.className = 'jsoneditor-compact';
   buttonCompact.title = 'Compact JSON data, remove all whitespaces (Ctrl+Shift+\\)';
   this.menu.appendChild(buttonCompact);
   buttonCompact.onclick = function () {
@@ -122,7 +122,7 @@ textmode.create = function (container, options) {
   }
 
   this.content = document.createElement('div');
-  this.content.className = 'outer';
+  this.content.className = 'jsoneditor-outer';
   this.frame.appendChild(this.content);
 
   this.container.appendChild(this.frame);
@@ -164,7 +164,7 @@ textmode.create = function (container, options) {
     poweredBy.appendChild(document.createTextNode('powered by ace'));
     poweredBy.href = 'http://ace.ajax.org';
     poweredBy.target = '_blank';
-    poweredBy.className = 'poweredBy';
+    poweredBy.className = 'jsoneditor-poweredBy';
     poweredBy.onclick = function () {
       // TODO: this anchor falls below the margin of the content,
       // therefore the normal a.href does not work. We use a click event
@@ -181,7 +181,7 @@ textmode.create = function (container, options) {
   else {
     // load a plain text textarea
     var textarea = document.createElement('textarea');
-    textarea.className = 'text';
+    textarea.className = 'jsoneditor-text';
     textarea.spellcheck = false;
     this.content.appendChild(textarea);
     this.textarea = textarea;

@@ -73,7 +73,7 @@ function createModeSwitcher(editor, modes, current) {
       throw new Error('Unknown mode "' + mode + '"');
     }
 
-    item.className = 'type-modes' + ((current == mode) ? ' selected' : '');
+    item.className = 'jsoneditor-type-modes' + ((current == mode) ? ' jsoneditor-selected' : '');
     items.push(item);
   }
 
@@ -86,7 +86,7 @@ function createModeSwitcher(editor, modes, current) {
 
   // create the html element
   var box = document.createElement('button');
-  box.className = 'modes separator';
+  box.className = 'jsoneditor-modes jsoneditor-separator';
   box.innerHTML = currentTitle + ' &#x25BE;';
   box.title = 'Switch editor mode';
   box.onclick = function () {

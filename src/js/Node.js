@@ -277,7 +277,7 @@ Node.prototype.expand = function(recurse) {
   // set this node expanded
   this.expanded = true;
   if (this.dom.expand) {
-    this.dom.expand.className = 'expanded';
+    this.dom.expand.className = 'jsoneditor-expanded';
   }
 
   this.showChilds();
@@ -311,7 +311,7 @@ Node.prototype.collapse = function(recurse) {
 
   // make this node collapsed
   if (this.dom.expand) {
-    this.dom.expand.className = 'collapsed';
+    this.dom.expand.className = 'jsoneditor-collapsed';
   }
   this.expanded = false;
 };
@@ -1023,30 +1023,30 @@ Node.prototype._getDomValue = function(silent) {
 Node.prototype._updateDomValue = function () {
   var domValue = this.dom.value;
   if (domValue) {
-    var classNames = ['value'];
+    var classNames = ['jsoneditor-value'];
 
 
     // set text color depending on value type
     var value = this.value;
     var type = (this.type == 'auto') ? util.type(value) : this.type;
     var isUrl = type == 'string' && util.isUrl(value);
-    classNames.push(type);
+    classNames.push('jsoneditor-' + type);
     if (isUrl) {
-      classNames.push('url');
+      classNames.push('jsoneditor-url');
     }
 
     // visual styling when empty
     var isEmpty = (String(this.value) == '' && this.type != 'array' && this.type != 'object');
     if (isEmpty) {
-      classNames.push('empty');
+      classNames.push('jsoneditor-empty');
     }
 
     // highlight when there is a search result
     if (this.searchValueActive) {
-      classNames.push('highlight-active');
+      classNames.push('jsoneditor-highlight-active');
     }
     if (this.searchValue) {
-      classNames.push('highlight');
+      classNames.push('jsoneditor-highlight');
     }
 
     domValue.className = classNames.join(' ');
@@ -1081,24 +1081,24 @@ Node.prototype._updateDomField = function () {
     // make backgound color lightgray when empty
     var isEmpty = (String(this.field) == '' && this.parent.type != 'array');
     if (isEmpty) {
-      util.addClassName(domField, 'empty');
+      util.addClassName(domField, 'jsoneditor-empty');
     }
     else {
-      util.removeClassName(domField, 'empty');
+      util.removeClassName(domField, 'jsoneditor-empty');
     }
 
     // highlight when there is a search result
     if (this.searchFieldActive) {
-      util.addClassName(domField, 'highlight-active');
+      util.addClassName(domField, 'jsoneditor-highlight-active');
     }
     else {
-      util.removeClassName(domField, 'highlight-active');
+      util.removeClassName(domField, 'jsoneditor-highlight-active');
     }
     if (this.searchField) {
-      util.addClassName(domField, 'highlight');
+      util.addClassName(domField, 'jsoneditor-highlight');
     }
     else {
-      util.removeClassName(domField, 'highlight');
+      util.removeClassName(domField, 'jsoneditor-highlight');
     }
 
     // strip formatting from the contents of the editable div
@@ -1178,7 +1178,7 @@ Node.prototype.getDom = function() {
       if (this.parent) {
         var domDrag = document.createElement('button');
         dom.drag = domDrag;
-        domDrag.className = 'dragarea';
+        domDrag.className = 'jsoneditor-dragarea';
         domDrag.title = 'Drag to move this field (Alt+Shift+Arrows)';
         tdDrag.appendChild(domDrag);
       }
@@ -1189,7 +1189,7 @@ Node.prototype.getDom = function() {
     var tdMenu = document.createElement('td');
     var menu = document.createElement('button');
     dom.menu = menu;
-    menu.className = 'contextmenu';
+    menu.className = 'jsoneditor-contextmenu';
     menu.title = 'Click to open the actions menu (Ctrl+M)';
     tdMenu.appendChild(dom.menu);
     dom.tr.appendChild(tdMenu);
@@ -1453,7 +1453,7 @@ Node.prototype._createDomField = function () {
  */
 Node.prototype.setHighlight = function (highlight) {
   if (this.dom.tr) {
-    this.dom.tr.className = (highlight ? 'highlight' : '');
+    this.dom.tr.className = (highlight ? 'jsoneditor-highlight' : '');
 
     if (this.append) {
       this.append.setHighlight(highlight);
@@ -1510,11 +1510,11 @@ Node.prototype.updateDom = function (options) {
       // parent is an object
       domField.contentEditable = this.editable.field;
       domField.spellcheck = false;
-      domField.className = 'field';
+      domField.className = 'jsoneditor-field';
     }
     else {
       // parent is an array this is the root node
-      domField.className = 'readonly';
+      domField.className = 'jsoneditor-readonly';
     }
 
     var field;
@@ -1539,11 +1539,11 @@ Node.prototype.updateDom = function (options) {
     var count = this.childs ? this.childs.length : 0;
     if (this.type == 'array') {
       domValue.innerHTML = '[' + count + ']';
-      this.dom.tr.className = 'expandable';
+      this.dom.tr.className = 'jsoneditor-expandable';
     }
     else if (this.type == 'object') {
       domValue.innerHTML = '{' + count + '}';
-      this.dom.tr.className = 'expandable';
+      this.dom.tr.className = 'jsoneditor-expandable';
     }
     else {
       domValue.innerHTML = this._escapeHTML(this.value);
@@ -1653,13 +1653,13 @@ Node.prototype._createDomExpandButton = function () {
   // create expand button
   var expand = document.createElement('button');
   if (this._hasChilds()) {
-    expand.className = this.expanded ? 'expanded' : 'collapsed';
+    expand.className = this.expanded ? 'jsoneditor-expanded' : 'jsoneditor-collapsed';
     expand.title =
         'Click to expand/collapse this field (Ctrl+E). \n' +
         'Ctrl+Click to expand/collapse including all childs.';
   }
   else {
-    expand.className = 'invisible';
+    expand.className = 'jsoneditor-invisible';
     expand.title = '';
   }
 
@@ -1677,14 +1677,14 @@ Node.prototype._createDomTree = function () {
   var domTree = document.createElement('table');
   var tbody = document.createElement('tbody');
   domTree.style.borderCollapse = 'collapse'; // TODO: put in css
-  domTree.className = 'values';
+  domTree.className = 'jsoneditor-values';
   domTree.appendChild(tbody);
   var tr = document.createElement('tr');
   tbody.appendChild(tr);
 
   // create expand button
   var tdExpand = document.createElement('td');
-  tdExpand.className = 'tree';
+  tdExpand.className = 'jsoneditor-tree';
   tr.appendChild(tdExpand);
   dom.expand = this._createDomExpandButton();
   tdExpand.appendChild(dom.expand);
@@ -1692,7 +1692,7 @@ Node.prototype._createDomTree = function () {
 
   // create the field
   var tdField = document.createElement('td');
-  tdField.className = 'tree';
+  tdField.className = 'jsoneditor-tree';
   tr.appendChild(tdField);
   dom.field = this._createDomField();
   tdField.appendChild(dom.field);
@@ -1700,17 +1700,17 @@ Node.prototype._createDomTree = function () {
 
   // create a separator
   var tdSeparator = document.createElement('td');
-  tdSeparator.className = 'tree';
+  tdSeparator.className = 'jsoneditor-tree';
   tr.appendChild(tdSeparator);
   if (this.type != 'object' && this.type != 'array') {
     tdSeparator.appendChild(document.createTextNode(':'));
-    tdSeparator.className = 'separator';
+    tdSeparator.className = 'jsoneditor-separator';
   }
   dom.tdSeparator = tdSeparator;
 
   // create the value
   var tdValue = document.createElement('td');
-  tdValue.className = 'tree';
+  tdValue.className = 'jsoneditor-tree';
   tr.appendChild(tdValue);
   dom.value = this._createDomValue();
   tdValue.appendChild(dom.value);
@@ -1752,9 +1752,9 @@ Node.prototype.onEvent = function (event) {
     var highlighter = node.editor.highlighter;
     highlighter.highlight(node);
     highlighter.lock();
-    util.addClassName(dom.menu, 'selected');
+    util.addClassName(dom.menu, 'jsoneditor-selected');
     this.showContextMenu(dom.menu, function () {
-      util.removeClassName(dom.menu, 'selected');
+      util.removeClassName(dom.menu, 'jsoneditor-selected');
       highlighter.unlock();
       highlighter.unhighlight();
     });
@@ -2565,12 +2565,12 @@ Node.prototype.showContextMenu = function (anchor, onClose) {
     items.push({
       text: 'Type',
       title: 'Change the type of this field',
-      className: 'type-' + this.type,
+      className: 'jsoneditor-type-' + this.type,
       submenu: [
         {
           text: 'Auto',
-          className: 'type-auto' +
-              (this.type == 'auto' ? ' selected' : ''),
+          className: 'jsoneditor-type-auto' +
+              (this.type == 'auto' ? ' jsoneditor-selected' : ''),
           title: titles.auto,
           click: function () {
             node._onChangeType('auto');
@@ -2578,8 +2578,8 @@ Node.prototype.showContextMenu = function (anchor, onClose) {
         },
         {
           text: 'Array',
-          className: 'type-array' +
-              (this.type == 'array' ? ' selected' : ''),
+          className: 'jsoneditor-type-array' +
+              (this.type == 'array' ? ' jsoneditor-selected' : ''),
           title: titles.array,
           click: function () {
             node._onChangeType('array');
@@ -2587,8 +2587,8 @@ Node.prototype.showContextMenu = function (anchor, onClose) {
         },
         {
           text: 'Object',
-          className: 'type-object' +
-              (this.type == 'object' ? ' selected' : ''),
+          className: 'jsoneditor-type-object' +
+              (this.type == 'object' ? ' jsoneditor-selected' : ''),
           title: titles.object,
           click: function () {
             node._onChangeType('object');
@@ -2596,8 +2596,8 @@ Node.prototype.showContextMenu = function (anchor, onClose) {
         },
         {
           text: 'String',
-          className: 'type-string' +
-              (this.type == 'string' ? ' selected' : ''),
+          className: 'jsoneditor-type-string' +
+              (this.type == 'string' ? ' jsoneditor-selected' : ''),
           title: titles.string,
           click: function () {
             node._onChangeType('string');
@@ -2612,14 +2612,14 @@ Node.prototype.showContextMenu = function (anchor, onClose) {
     items.push({
       text: 'Sort',
       title: 'Sort the childs of this ' + this.type,
-      className: 'sort-' + direction,
+      className: 'jsoneditor-sort-' + direction,
       click: function () {
         node._onSort(direction);
       },
       submenu: [
         {
           text: 'Ascending',
-          className: 'sort-asc',
+          className: 'jsoneditor-sort-asc',
           title: 'Sort the childs of this ' + this.type + ' in ascending order',
           click: function () {
             node._onSort('asc');
@@ -2627,7 +2627,7 @@ Node.prototype.showContextMenu = function (anchor, onClose) {
         },
         {
           text: 'Descending',
-          className: 'sort-desc',
+          className: 'jsoneditor-sort-desc',
           title: 'Sort the childs of this ' + this.type +' in descending order',
           click: function () {
             node._onSort('desc');
@@ -2652,14 +2652,14 @@ Node.prototype.showContextMenu = function (anchor, onClose) {
         text: 'Append',
         title: 'Append a new field with type \'auto\' after this field (Ctrl+Shift+Ins)',
         submenuTitle: 'Select the type of the field to be appended',
-        className: 'append',
+        className: 'jsoneditor-append',
         click: function () {
           node._onAppend('', '', 'auto');
         },
         submenu: [
           {
             text: 'Auto',
-            className: 'type-auto',
+            className: 'jsoneditor-type-auto',
             title: titles.auto,
             click: function () {
               node._onAppend('', '', 'auto');
@@ -2667,7 +2667,7 @@ Node.prototype.showContextMenu = function (anchor, onClose) {
           },
           {
             text: 'Array',
-            className: 'type-array',
+            className: 'jsoneditor-type-array',
             title: titles.array,
             click: function () {
               node._onAppend('', []);
@@ -2675,7 +2675,7 @@ Node.prototype.showContextMenu = function (anchor, onClose) {
           },
           {
             text: 'Object',
-            className: 'type-object',
+            className: 'jsoneditor-type-object',
             title: titles.object,
             click: function () {
               node._onAppend('', {});
@@ -2683,7 +2683,7 @@ Node.prototype.showContextMenu = function (anchor, onClose) {
           },
           {
             text: 'String',
-            className: 'type-string',
+            className: 'jsoneditor-type-string',
             title: titles.string,
             click: function () {
               node._onAppend('', '', 'string');
@@ -2698,14 +2698,14 @@ Node.prototype.showContextMenu = function (anchor, onClose) {
       text: 'Insert',
       title: 'Insert a new field with type \'auto\' before this field (Ctrl+Ins)',
       submenuTitle: 'Select the type of the field to be inserted',
-      className: 'insert',
+      className: 'jsoneditor-insert',
       click: function () {
         node._onInsertBefore('', '', 'auto');
       },
       submenu: [
         {
           text: 'Auto',
-          className: 'type-auto',
+          className: 'jsoneditor-type-auto',
           title: titles.auto,
           click: function () {
             node._onInsertBefore('', '', 'auto');
@@ -2713,7 +2713,7 @@ Node.prototype.showContextMenu = function (anchor, onClose) {
         },
         {
           text: 'Array',
-          className: 'type-array',
+          className: 'jsoneditor-type-array',
           title: titles.array,
           click: function () {
             node._onInsertBefore('', []);
@@ -2721,7 +2721,7 @@ Node.prototype.showContextMenu = function (anchor, onClose) {
         },
         {
           text: 'Object',
-          className: 'type-object',
+          className: 'jsoneditor-type-object',
           title: titles.object,
           click: function () {
             node._onInsertBefore('', {});
@@ -2729,7 +2729,7 @@ Node.prototype.showContextMenu = function (anchor, onClose) {
         },
         {
           text: 'String',
-          className: 'type-string',
+          className: 'jsoneditor-type-string',
           title: titles.string,
           click: function () {
             node._onInsertBefore('', '', 'string');
@@ -2743,7 +2743,7 @@ Node.prototype.showContextMenu = function (anchor, onClose) {
       items.push({
         text: 'Duplicate',
         title: 'Duplicate this field (Ctrl+D)',
-        className: 'duplicate',
+        className: 'jsoneditor-duplicate',
         click: function () {
           node._onDuplicate();
         }
@@ -2753,7 +2753,7 @@ Node.prototype.showContextMenu = function (anchor, onClose) {
       items.push({
         text: 'Remove',
         title: 'Remove this field (Ctrl+Del)',
-        className: 'remove',
+        className: 'jsoneditor-remove',
         click: function () {
           node._onRemove();
         }

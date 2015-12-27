@@ -1,12 +1,12 @@
 
 /* ContextMenu - main menu */
 
-.jsoneditor-contextmenu {
+div.jsoneditor-contextmenu {
   position: absolute;
   z-index: 99999;
 }
 
-.jsoneditor-contextmenu ul {
+div.jsoneditor-contextmenu ul {
   position: relative;
   left: 0;
   top: 0;
@@ -21,7 +21,7 @@
   padding: 0;
 }
 
-.jsoneditor-contextmenu ul li button {
+div.jsoneditor-contextmenu ul li button {
   padding: 0;
   margin: 0;
   width: 124px;
@@ -36,30 +36,30 @@
 }
 
 /* Fix button padding in firefox */
-.jsoneditor-contextmenu ul li button::-moz-focus-inner {
+div.jsoneditor-contextmenu ul li button::-moz-focus-inner {
   padding: 0;
   border: 0;
 }
 
-.jsoneditor-contextmenu ul li button:hover,
-.jsoneditor-contextmenu ul li button:focus {
+div.jsoneditor-contextmenu ul li button:hover,
+div.jsoneditor-contextmenu ul li button:focus {
   color: #1a1a1a;
   background-color: #f5f5f5;
   outline: none;
 }
 
-.jsoneditor-contextmenu ul li button.default {
+div.jsoneditor-contextmenu ul li button.jsoneditor-default {
   width: 92px;
 }
 
-.jsoneditor-contextmenu ul li button.expand {
+div.jsoneditor-contextmenu ul li button.jsoneditor-expand {
   float: right;
   width: 32px;
   height: 24px;
   border-left: 1px solid #e5e5e5;
 }
 
-.jsoneditor-contextmenu div.icon {
+div.jsoneditor-contextmenu div.jsoneditor-icon {
   float: left;
   width: 24px;
   height: 24px;
@@ -69,7 +69,7 @@
   background-image: url('img/jsoneditor-icons.svg');
 }
 
-.jsoneditor-contextmenu ul li button div.expand {
+div.jsoneditor-contextmenu ul li button div.jsoneditor-expand {
   float: right;
   width: 24px;
   height: 24px;
@@ -79,81 +79,82 @@
   opacity: 0.4;
 }
 
-.jsoneditor-contextmenu ul li button:hover div.expand,
-.jsoneditor-contextmenu ul li button:focus div.expand,
-.jsoneditor-contextmenu ul li.selected div.expand,
-.jsoneditor-contextmenu ul li button.expand:hover div.expand,
-.jsoneditor-contextmenu ul li button.expand:focus div.expand {
+div.jsoneditor-contextmenu ul li button:hover div.jsoneditor-expand,
+div.jsoneditor-contextmenu ul li button:focus div.jsoneditor-expand,
+div.jsoneditor-contextmenu ul li.jsoneditor-selected div.jsoneditor-expand,
+div.jsoneditor-contextmenu ul li button.jsoneditor-expand:hover div.jsoneditor-expand,
+div.jsoneditor-contextmenu ul li button.jsoneditor-expand:focus div.jsoneditor-expand {
   opacity: 1;
 }
 
-.jsoneditor-contextmenu .separator {
+div.jsoneditor-contextmenu div.jsoneditor-separator {
   height: 0;
   border-top: 1px solid #e5e5e5;
   padding-top: 5px;
   margin-top: 5px;
 }
 
-.jsoneditor-contextmenu button.remove > .icon {
+div.jsoneditor-contextmenu button.jsoneditor-remove > div.jsoneditor-icon {
   background-position: -24px -24px;
 }
-.jsoneditor-contextmenu button.remove:hover > .icon,
-.jsoneditor-contextmenu button.remove:focus > .icon {
+div.jsoneditor-contextmenu button.jsoneditor-remove:hover > div.jsoneditor-icon,
+div.jsoneditor-contextmenu button.jsoneditor-remove:focus > div.jsoneditor-icon {
   background-position: -24px 0;
 }
 
-.jsoneditor-contextmenu button.append > .icon {
+div.jsoneditor-contextmenu button.jsoneditor-append > div.jsoneditor-icon {
   background-position: 0 -24px;
 }
-.jsoneditor-contextmenu button.append:hover > .icon,
-.jsoneditor-contextmenu button.append:focus > .icon {
+div.jsoneditor-contextmenu button.jsoneditor-append:hover > div.jsoneditor-icon,
+div.jsoneditor-contextmenu button.jsoneditor-append:focus > div.jsoneditor-icon {
   background-position: 0 0;
 }
 
-.jsoneditor-contextmenu button.insert > .icon {
+div.jsoneditor-contextmenu button.jsoneditor-insert > div.jsoneditor-icon {
   background-position: 0 -24px;
 }
-.jsoneditor-contextmenu button.insert:hover > .icon,
-.jsoneditor-contextmenu button.insert:focus > .icon {
+div.jsoneditor-contextmenu button.jsoneditor-insert:hover > div.jsoneditor-icon,
+div.jsoneditor-contextmenu button.jsoneditor-insert:focus > div.jsoneditor-icon {
   background-position: 0 0;
 }
 
-.jsoneditor-contextmenu button.duplicate > .icon {
+div.jsoneditor-contextmenu button.jsoneditor-duplicate > div.jsoneditor-icon {
   background-position: -48px -24px;
 }
-.jsoneditor-contextmenu button.duplicate:hover > .icon,
-.jsoneditor-contextmenu button.duplicate:focus > .icon {
+div.jsoneditor-contextmenu button.jsoneditor-duplicate:hover > div.jsoneditor-icon,
+div.jsoneditor-contextmenu button.jsoneditor-duplicate:focus > div.jsoneditor-icon {
   background-position: -48px 0;
 }
 
-.jsoneditor-contextmenu button.sort-asc > .icon {
+div.jsoneditor-contextmenu button.jsoneditor-sort-asc > div.jsoneditor-icon {
   background-position: -168px -24px;
 }
-.jsoneditor-contextmenu button.sort-asc:hover > .icon,
-.jsoneditor-contextmenu button.sort-asc:focus > .icon {
+div.jsoneditor-contextmenu button.jsoneditor-sort-asc:hover > div.jsoneditor-icon,
+div.jsoneditor-contextmenu button.jsoneditor-sort-asc:focus > div.jsoneditor-icon {
   background-position: -168px 0;
 }
 
-.jsoneditor-contextmenu button.sort-desc > .icon {
+div.jsoneditor-contextmenu button.jsoneditor-sort-desc > div.jsoneditor-icon {
   background-position: -192px -24px;
 }
-.jsoneditor-contextmenu button.sort-desc:hover > .icon,
-.jsoneditor-contextmenu button.sort-desc:focus > .icon {
+div.jsoneditor-contextmenu button.jsoneditor-sort-desc:hover > div.jsoneditor-icon,
+div.jsoneditor-contextmenu button.jsoneditor-sort-desc:focus > div.jsoneditor-icon {
   background-position: -192px 0;
 }
 
 /* ContextMenu - sub menu */
 
-.jsoneditor-contextmenu ul li .selected {
+div.jsoneditor-contextmenu ul li button.jsoneditor-selected,
+div.jsoneditor-contextmenu ul li button.jsoneditor-selected:hover {
   color: white;
   background-color: #ee422e;
 }
 
-.jsoneditor-contextmenu ul li {
+div.jsoneditor-contextmenu ul li {
   overflow: hidden;
 }
 
-.jsoneditor-contextmenu ul li ul {
+div.jsoneditor-contextmenu ul li ul {
   display: none;
   position: relative;
   left: -10px;
@@ -170,56 +171,56 @@
   transition: all 0.3s ease-out;
 }
 
-.jsoneditor-contextmenu ul li.selected ul {
+div.jsoneditor-contextmenu ul li.jsoneditor-selected ul {
 }
 
-.jsoneditor-contextmenu ul li ul li button {
+div.jsoneditor-contextmenu ul li ul li button {
   padding-left: 24px;
   animation: all ease-in-out 1s;
 }
 
-.jsoneditor-contextmenu ul li ul li button:hover,
-.jsoneditor-contextmenu ul li ul li button:focus {
+div.jsoneditor-contextmenu ul li ul li button:hover,
+div.jsoneditor-contextmenu ul li ul li button:focus {
   background-color: #f5f5f5;
 }
 
-.jsoneditor-contextmenu button.type-string > .icon {
+div.jsoneditor-contextmenu button.jsoneditor-type-string > div.jsoneditor-icon {
   background-position: -144px -24px;
 }
-.jsoneditor-contextmenu button.type-string:hover > .icon,
-.jsoneditor-contextmenu button.type-string:focus > .icon,
-.jsoneditor-contextmenu button.type-string.selected > .icon{
+div.jsoneditor-contextmenu button.jsoneditor-type-string:hover > div.jsoneditor-icon,
+div.jsoneditor-contextmenu button.jsoneditor-type-string:focus > div.jsoneditor-icon,
+div.jsoneditor-contextmenu button.jsoneditor-type-string.jsoneditor-selected > div.jsoneditor-icon{
   background-position: -144px 0;
 }
 
-.jsoneditor-contextmenu button.type-auto > .icon {
+div.jsoneditor-contextmenu button.jsoneditor-type-auto > div.jsoneditor-icon {
   background-position: -120px -24px;
 }
-.jsoneditor-contextmenu button.type-auto:hover > .icon,
-.jsoneditor-contextmenu button.type-auto:focus > .icon,
-.jsoneditor-contextmenu button.type-auto.selected > .icon {
+div.jsoneditor-contextmenu button.jsoneditor-type-auto:hover > div.jsoneditor-icon,
+div.jsoneditor-contextmenu button.jsoneditor-type-auto:focus > div.jsoneditor-icon,
+div.jsoneditor-contextmenu button.jsoneditor-type-auto.jsoneditor-selected > div.jsoneditor-icon {
   background-position: -120px 0;
 }
 
-.jsoneditor-contextmenu button.type-object > .icon {
+div.jsoneditor-contextmenu button.jsoneditor-type-object > div.jsoneditor-icon {
   background-position: -72px -24px;
 }
-.jsoneditor-contextmenu button.type-object:hover > .icon,
-.jsoneditor-contextmenu button.type-object:focus > .icon,
-.jsoneditor-contextmenu button.type-object.selected > .icon{
+div.jsoneditor-contextmenu button.jsoneditor-type-object:hover > div.jsoneditor-icon,
+div.jsoneditor-contextmenu button.jsoneditor-type-object:focus > div.jsoneditor-icon,
+div.jsoneditor-contextmenu button.jsoneditor-type-object.jsoneditor-selected > div.jsoneditor-icon{
   background-position: -72px 0;
 }
 
-.jsoneditor-contextmenu button.type-array > .icon {
+div.jsoneditor-contextmenu button.jsoneditor-type-array > div.jsoneditor-icon {
   background-position: -96px -24px;
 }
-.jsoneditor-contextmenu button.type-array:hover > .icon,
-.jsoneditor-contextmenu button.type-array:focus > .icon,
-.jsoneditor-contextmenu button.type-array.selected > .icon{
+div.jsoneditor-contextmenu button.jsoneditor-type-array:hover > div.jsoneditor-icon,
+div.jsoneditor-contextmenu button.jsoneditor-type-array:focus > div.jsoneditor-icon,
+div.jsoneditor-contextmenu button.jsoneditor-type-array.jsoneditor-selected > div.jsoneditor-icon{
   background-position: -96px 0;
 }
 
-.jsoneditor-contextmenu button.type-modes > .icon {
+div.jsoneditor-contextmenu button.jsoneditor-type-modes > div.jsoneditor-icon {
   background-image: none;
   width: 6px;
 }

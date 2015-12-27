@@ -18,7 +18,7 @@ function SearchBox (editor, container) {
 
   var table = document.createElement('table');
   this.dom.table = table;
-  table.className = 'search';
+  table.className = 'jsoneditor-search';
   container.appendChild(table);
   var tbody = document.createElement('tbody');
   this.dom.tbody = tbody;
@@ -30,14 +30,14 @@ function SearchBox (editor, container) {
   tr.appendChild(td);
   var results = document.createElement('div');
   this.dom.results = results;
-  results.className = 'results';
+  results.className = 'jsoneditor-results';
   td.appendChild(results);
 
   td = document.createElement('td');
   tr.appendChild(td);
   var divInput = document.createElement('div');
   this.dom.input = divInput;
-  divInput.className = 'frame';
+  divInput.className = 'jsoneditor-frame';
   divInput.title = 'Search fields and values';
   td.appendChild(divInput);
 
@@ -50,7 +50,7 @@ function SearchBox (editor, container) {
   tbodySearch.appendChild(tr);
 
   var refreshSearch = document.createElement('button');
-  refreshSearch.className = 'refresh';
+  refreshSearch.className = 'jsoneditor-refresh';
   td = document.createElement('td');
   td.appendChild(refreshSearch);
   tr.appendChild(td);
@@ -80,7 +80,7 @@ function SearchBox (editor, container) {
 
   var searchNext = document.createElement('button');
   searchNext.title = 'Next result (Enter)';
-  searchNext.className = 'next';
+  searchNext.className = 'jsoneditor-next';
   searchNext.onclick = function () {
     searchBox.next();
   };
@@ -90,7 +90,7 @@ function SearchBox (editor, container) {
 
   var searchPrevious = document.createElement('button');
   searchPrevious.title = 'Previous result (Shift+Enter)';
-  searchPrevious.className = 'previous';
+  searchPrevious.className = 'jsoneditor-previous';
   searchPrevious.onclick = function () {
     searchBox.previous();
   };
