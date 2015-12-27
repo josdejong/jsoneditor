@@ -15,7 +15,7 @@ div.jsoneditor-field,
 div.jsoneditor-value {
   color: #ffffff;
 }
-div.jsoneditor-search div.jsoneditor-frame {
+table.jsoneditor-search div.jsoneditor-frame {
   background: #808080;
 }
 
