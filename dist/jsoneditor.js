@@ -24,7 +24,7 @@
  *
  * @author  Jos de Jong, <wjosdejong@gmail.com>
  * @version 4.2.1
- * @date    2015-06-13
+ * @date    2015-12-27
  */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
@@ -90,26 +90,31 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * @constructor JSONEditor
 	 * @param {Element} container    Container element
 	 * @param {Object}  [options]    Object with options. available options:
-	 *                               {String} mode      Editor mode. Available values:
-	 *                                                  'tree' (default), 'view',
-	 *                                                  'form', 'text', and 'code'.
-	 *                               {function} change  Callback method, triggered
-	 *                                                  on change of contents
-	 *                               {Boolean} search   Enable search box.
-	 *                                                  True by default
-	 *                                                  Only applicable for modes
-	 *                                                  'tree', 'view', and 'form'
-	 *                               {Boolean} history  Enable history (undo/redo).
-	 *                                                  True by default
-	 *                                                  Only applicable for modes
-	 *                                                  'tree', 'view', and 'form'
-	 *                               {String} name      Field name for the root node.
-	 *                                                  Only applicable for modes
-	 *                                                  'tree', 'view', and 'form'
-	 *                               {Number} indentation   Number of indentation
-	 *                                                      spaces. 4 by default.
-	 *                                                      Only applicable for
-	 *                                                      modes 'text' and 'code'
+	 *                               {String} mode        Editor mode. Available values:
+	 *                                                    'tree' (default), 'view',
+	 *                                                    'form', 'text', and 'code'.
+	 *                               {function} onChange  Callback method, triggered
+	 *                                                    on change of contents
+	 *                               {function} onError   Callback method, triggered
+	 *                                                    when an error occurs
+	 *                               {Boolean} search     Enable search box.
+	 *                                                    True by default
+	 *                                                    Only applicable for modes
+	 *                                                    'tree', 'view', and 'form'
+	 *                               {Boolean} history    Enable history (undo/redo).
+	 *                                                    True by default
+	 *                                                    Only applicable for modes
+	 *                                                    'tree', 'view', and 'form'
+	 *                               {String} name        Field name for the root node.
+	 *                                                    Only applicable for modes
+	 *                                                    'tree', 'view', and 'form'
+	 *                               {Number} indentation     Number of indentation
+	 *                                                        spaces. 4 by default.
+	 *                                                        Only applicable for
+	 *                                                        modes 'text' and 'code'
+	 *                               {boolean} escapeUnicode  If true, unicode
+	 *                                                        characters are escaped.
+	 *                                                        false by default.
 	 * @param {Object | undefined} json JSON object
 	 */
 	function JSONEditor (container, options, json) {
@@ -122,6 +127,40 @@ return /******/ (function(modules) { // webpackBootstrap
 	  if (ieVersion != -1 && ieVersion < 9) {
 	    throw new Error('Unsupported browser, IE9 or newer required. ' +
 	        'Please install the newest version of your browser.');
+	  }
+
+	  if (options) {
+	    // check for deprecated options
+	    if (options.error) {
+	      console.warn('Option "error" has been renamed to "onError"');
+	      options.onError = options.error;
+	      delete options.error;
+	    }
+	    if (options.change) {
+	      console.warn('Option "change" has been renamed to "onChange"');
+	      options.onChange = options.change;
+	      delete options.change;
+	    }
+	    if (options.editable) {
+	      console.warn('Option "editable" has been renamed to "onEditable"');
+	      options.onEditable = options.editable;
+	      delete options.editable;
+	    }
+
+	    // validate options
+	    if (options) {
+	      var VALID_OPTIONS = [
+	        'ace',
+	        'onChange', 'onEditable', 'onError', 'onModeChange',
+	        'escapeUnicode', 'history', 'mode', 'modes', 'name', 'indentation', 'theme'
+	      ];
+
+	      Object.keys(options).forEach(function (option) {
+	        if (VALID_OPTIONS.indexOf(option) === -1) {
+	          console.warn('Unknown option "' + option + '". This option will be ignored');
+	        }
+	      });
+	    }
 	  }
 
 	  if (arguments.length) {
@@ -226,10 +265,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	 *                          'text', and 'code'.
 	 */
 	JSONEditor.prototype.setMode = function (mode) {
-	  var container = this.container,
-	      options = util.extend({}, this.options),
-	      data,
-	      name;
+	  var container = this.container;
+	  var options = util.extend({}, this.options);
+	  var oldMode = options.mode;
+	  var data;
+	  var name;
 
 	  options.mode = mode;
 	  var config = JSONEditor.modes[mode];
@@ -251,7 +291,18 @@ return /******/ (function(modules) { // webpackBootstrap
 	        try {
 	          config.load.call(this);
 	        }
-	        catch (err) {}
+	        catch (err) {
+	          console.error(err);
+	        }
+	      }
+
+	      if (typeof options.onModeChange === 'function' && mode !== oldMode) {
+	        try {
+	          options.onModeChange(mode, oldMode);
+	        }
+	        catch (err) {
+	          console.error(err);
+	        }
 	      }
 	    }
 	    catch (err) {
@@ -264,21 +315,22 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 
 	/**
+	 * Get the current mode
+	 * @return {string}
+	 */
+	JSONEditor.prototype.getMode = function () {
+	  return this.options.mode;
+	};
+
+	/**
 	 * Throw an error. If an error callback is configured in options.error, this
 	 * callback will be invoked. Else, a regular error is thrown.
 	 * @param {Error} err
 	 * @private
 	 */
 	JSONEditor.prototype._onError = function(err) {
-	  // TODO: onError is deprecated since version 2.2.0. cleanup some day
-	  if (typeof this.onError === 'function') {
-	    util.log('WARNING: JSONEditor.onError is deprecated. ' +
-	        'Use options.error instead.');
-	    this.onError(err);
-	  }
-
-	  if (this.options && typeof this.options.error === 'function') {
-	    this.options.error(err);
+	  if (this.options && typeof this.options.onError === 'function') {
+	    this.options.onError(err);
 	  }
 	  else {
 	    throw err;
@@ -364,16 +416,19 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * Create a tree editor
 	 * @param {Element} container    Container element
 	 * @param {Object}  [options]    Object with options. available options:
-	 *                               {String} mode      Editor mode. Available values:
-	 *                                                  'tree' (default), 'view',
-	 *                                                  and 'form'.
-	 *                               {Boolean} search   Enable search box.
-	 *                                                  True by default
-	 *                               {Boolean} history  Enable history (undo/redo).
-	 *                                                  True by default
-	 *                               {function} change  Callback method, triggered
-	 *                                                  on change of contents
-	 *                               {String} name      Field name for the root node.
+	 *                               {String} mode            Editor mode. Available values:
+	 *                                                        'tree' (default), 'view',
+	 *                                                        and 'form'.
+	 *                               {Boolean} search         Enable search box.
+	 *                                                        True by default
+	 *                               {Boolean} history        Enable history (undo/redo).
+	 *                                                        True by default
+	 *                               {function} onChange      Callback method, triggered
+	 *                                                        on change of contents
+	 *                               {String} name            Field name for the root node.
+	 *                               {boolean} escapeUnicode  If true, unicode
+	 *                                                        characters are escaped.
+	 *                                                        false by default.
 	 * @private
 	 */
 	treemode.create = function (container, options) {
@@ -475,6 +530,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	  if (this.history) {
 	    this.history.clear();
 	  }
+
+	  // clear search
+	  this.searchBox.clear();
 	};
 
 	/**
@@ -651,9 +709,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	  }
 
 	  // trigger the onChange callback
-	  if (this.options.change) {
+	  if (this.options.onChange) {
 	    try {
-	      this.options.change();
+	      this.options.onChange();
 	    }
 	    catch (err) {
 	      util.log('Error in change callback: ', err);
@@ -822,7 +880,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	treemode._createFrame = function () {
 	  // create the frame
 	  this.frame = document.createElement('div');
-	  this.frame.className = 'jsoneditor';
+	  this.frame.className = 'jsoneditor mode-' + this.options.mode;
 	  this.container.appendChild(this.frame);
 
 	  // create one global event listener to handle all events from all nodes
@@ -935,8 +993,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	    this.history.undo();
 
 	    // trigger change callback
-	    if (this.options.change) {
-	      this.options.change();
+	    if (this.options.onChange) {
+	      this.options.onChange();
 	    }
 	  }
 	};
@@ -951,8 +1009,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	    this.history.redo();
 
 	    // trigger change callback
-	    if (this.options.change) {
-	      this.options.change();
+	    if (this.options.onChange) {
+	      this.options.onChange();
 	    }
 	  }
 	};
@@ -1101,7 +1159,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var ace;
 	try {
-	  ace = __webpack_require__(9);
+	  ace = __webpack_require__(10);
 	}
 	catch (err) {
 	  // failed to load ace, no problem, we will fall back to plain text
@@ -1116,16 +1174,21 @@ return /******/ (function(modules) { // webpackBootstrap
 	/**
 	 * Create a text editor
 	 * @param {Element} container
-	 * @param {Object} [options]         Object with options. available options:
-	 *                                   {String} mode         Available values:
-	 *                                                         "text" (default)
-	 *                                                         or "code".
-	 *                                   {Number} indentation  Number of indentation
-	 *                                                         spaces. 2 by default.
-	 *                                   {function} change     Callback method
-	 *                                                         triggered on change
-	 *                                   {Object} ace          A custom instance of
-	 *                                                         Ace editor.
+	 * @param {Object} [options]   Object with options. available options:
+	 *                             {String} mode             Available values:
+	 *                                                       "text" (default)
+	 *                                                       or "code".
+	 *                             {Number} indentation      Number of indentation
+	 *                                                       spaces. 2 by default.
+	 *                             {function} onChange       Callback method
+	 *                                                       triggered on change
+	 *                             {function} onModeChange   Callback method
+	 *                                                       triggered after setMode
+	 *                             {Object} ace              A custom instance of
+	 *                                                       Ace editor.
+	 *                             {boolean} escapeUnicode   If true, unicode
+	 *                                                       characters are escaped.
+	 *                                                       false by default.
 	 * @private
 	 */
 	textmode.create = function (container, options) {
@@ -1161,14 +1224,14 @@ return /******/ (function(modules) { // webpackBootstrap
 	  var me = this;
 	  this.container = container;
 	  this.dom = {};
-	  this.editor = undefined;    // ace code editor
+	  this.aceEditor = undefined;  // ace code editor
 	  this.textarea = undefined;  // plain text editor (fallback when Ace is not available)
 
 	  this.width = container.clientWidth;
 	  this.height = container.clientHeight;
 
 	  this.frame = document.createElement('div');
-	  this.frame.className = 'jsoneditor';
+	  this.frame.className = 'jsoneditor mode-' + this.options.mode;
 	  this.frame.onclick = function (event) {
 	    // prevent default submit action when the editor is located inside a form
 	    event.preventDefault();
@@ -1229,15 +1292,32 @@ return /******/ (function(modules) { // webpackBootstrap
 	    this.editorDom.style.width = '100%'; // TODO: move to css
 	    this.content.appendChild(this.editorDom);
 
-	    var editor = _ace.edit(this.editorDom);
-	    editor.setTheme(this.theme);
-	    editor.setShowPrintMargin(false);
-	    editor.setFontSize(13);
-	    editor.getSession().setMode('ace/mode/json');
-	    editor.getSession().setTabSize(this.indentation);
-	    editor.getSession().setUseSoftTabs(true);
-	    editor.getSession().setUseWrapMode(true);
-	    this.editor = editor;
+	    var aceEditor = _ace.edit(this.editorDom);
+	    aceEditor.$blockScrolling = Infinity;
+	    aceEditor.setTheme(this.theme);
+	    aceEditor.setShowPrintMargin(false);
+	    aceEditor.setFontSize(13);
+	    aceEditor.getSession().setMode('ace/mode/json');
+	    aceEditor.getSession().setTabSize(this.indentation);
+	    aceEditor.getSession().setUseSoftTabs(true);
+	    aceEditor.getSession().setUseWrapMode(true);
+	    aceEditor.commands.bindKey('Ctrl-L', null);    // disable Ctrl+L (is used by the browser to select the address bar)
+	    aceEditor.commands.bindKey('Command-L', null); // disable Ctrl+L (is used by the browser to select the address bar)
+	    this.aceEditor = aceEditor;
+
+	    // TODO: deprecated since v5.0.0. Cleanup backward compatibility some day
+	    if (!this.hasOwnProperty('editor')) {
+	      Object.defineProperty(this, 'editor', {
+	        get: function () {
+	          console.warn('Property "editor" has been renamed to "aceEditor".');
+	          return me.aceEditor;
+	        },
+	        set: function (aceEditor) {
+	          console.warn('Property "editor" has been renamed to "aceEditor".');
+	          me.aceEditor = aceEditor;
+	        }
+	      });
+	    }
 
 	    var poweredBy = document.createElement('a');
 	    poweredBy.appendChild(document.createTextNode('powered by ace'));
@@ -1252,11 +1332,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	    };
 	    this.menu.appendChild(poweredBy);
 
-	    if (options.change) {
+	    if (options.onChange) {
 	      // register onchange event
-	      editor.on('change', function () {
-	        options.change();
-	      });
+	      aceEditor.on('change', options.onChange);
 	    }
 	  }
 	  else {
@@ -1267,18 +1345,14 @@ return /******/ (function(modules) { // webpackBootstrap
 	    this.content.appendChild(textarea);
 	    this.textarea = textarea;
 
-	    if (options.change) {
+	    if (options.onChange) {
 	      // register onchange event
 	      if (this.textarea.oninput === null) {
-	        this.textarea.oninput = function () {
-	          options.change();
-	        }
+	        this.textarea.oninput = options.onChange();
 	      }
 	      else {
 	        // oninput is undefined. For IE8-
-	        this.textarea.onchange = function () {
-	          options.change();
-	        }
+	        this.textarea.onchange = options.onChange();
 	      }
 	    }
 	  }
@@ -1314,30 +1388,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * @private
 	 */
 	textmode._delete = function () {
+	  // remove old ace editor
+	  if (this.aceEditor) {
+	    this.aceEditor.destroy();
+	  }
+
 	  if (this.frame && this.container && this.frame.parentNode == this.container) {
 	    this.container.removeChild(this.frame);
-	  }
-	};
-
-	/**
-	 * Throw an error. If an error callback is configured in options.error, this
-	 * callback will be invoked. Else, a regular error is thrown.
-	 * @param {Error} err
-	 * @private
-	 */
-	textmode._onError = function(err) {
-	  // TODO: onError is deprecated since version 2.2.0. cleanup some day
-	  if (typeof this.onError === 'function') {
-	    util.log('WARNING: JSONEditor.onError is deprecated. ' +
-	        'Use options.error instead.');
-	    this.onError(err);
-	  }
-
-	  if (this.options && typeof this.options.error === 'function') {
-	    this.options.error(err);
-	  }
-	  else {
-	    throw err;
 	  }
 	};
 
@@ -1366,8 +1423,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	  if (this.textarea) {
 	    this.textarea.focus();
 	  }
-	  if (this.editor) {
-	    this.editor.focus();
+	  if (this.aceEditor) {
+	    this.aceEditor.focus();
 	  }
 	};
 
@@ -1375,9 +1432,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * Resize the formatter
 	 */
 	textmode.resize = function () {
-	  if (this.editor) {
+	  if (this.aceEditor) {
 	    var force = false;
-	    this.editor.resize(force);
+	    this.aceEditor.resize(force);
 	  }
 	};
 
@@ -1419,8 +1476,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	  if (this.textarea) {
 	    return this.textarea.value;
 	  }
-	  if (this.editor) {
-	    return this.editor.getValue();
+	  if (this.aceEditor) {
+	    return this.aceEditor.getValue();
 	  }
 	  return '';
 	};
@@ -1430,11 +1487,18 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * @param {String} jsonText
 	 */
 	textmode.setText = function(jsonText) {
-	  if (this.textarea) {
-	    this.textarea.value = jsonText;
+	  if (this.options.escapeUnicode === true) {
+	    text = util.escapeUnicodeChars(jsonText);
 	  }
-	  if (this.editor) {
-	    this.editor.setValue(jsonText, -1);
+	  else {
+	    text = jsonText;
+	  }
+
+	  if (this.textarea) {
+	    this.textarea.value = text;
+	  }
+	  if (this.aceEditor) {
+	    this.aceEditor.setValue(text, -1);
 	  }
 	};
 
@@ -1459,7 +1523,7 @@ return /******/ (function(modules) { // webpackBootstrap
 /* 3 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var jsonlint = __webpack_require__(12);
+	var jsonlint = __webpack_require__(9);
 
 	/**
 	 * Parse JSON using the parser built-in in the browser.
@@ -1606,6 +1670,21 @@ return /******/ (function(modules) { // webpackBootstrap
 	  }
 
 	  return chars.join('');
+	};
+
+	/**
+	 * Escape unicode characters.
+	 * For example input '\u2661' (length 1) will output '\\u2661' (length 5).
+	 * @param {string} text
+	 * @return {string}
+	 */
+	exports.escapeUnicodeChars = function (text) {
+	  // see https://www.wikiwand.com/en/UTF-16
+	  // note: we leave surrogate pairs as two individual chars,
+	  // as JSON doesn't interpret them as a single unicode char.
+	  return text.replace(/[\u007F-\uFFFF]/g, function(c) {
+	    return '\\u'+('0000' + c.charCodeAt(0).toString(16)).slice(-4);
+	  })
 	};
 
 	/**
@@ -2459,7 +2538,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    searchBox._onDelayedSearch(event);
 	  };
 	  search.onchange = function (event) { // For IE 9
-	    searchBox._onSearch(event);
+	    searchBox._onSearch();
 	  };
 	  search.onkeydown = function (event) {
 	    searchBox._onKeyDown(event);
@@ -2601,20 +2680,19 @@ return /******/ (function(modules) { // webpackBootstrap
 	  this._clearDelay();
 	  var searchBox = this;
 	  this.timeout = setTimeout(function (event) {
-	        searchBox._onSearch(event);
-	      },
-	      this.delay);
+	    searchBox._onSearch();
+	  },
+	  this.delay);
 	};
 
 	/**
 	 * Handle onSearch event
-	 * @param {Event} event
 	 * @param {boolean} [forceSearch]  If true, search will be executed again even
 	 *                                 when the search text is not changed.
 	 *                                 Default is false.
 	 * @private
 	 */
-	SearchBox.prototype._onSearch = function (event, forceSearch) {
+	SearchBox.prototype._onSearch = function (forceSearch) {
 	  this._clearDelay();
 
 	  var value = this.dom.search.value;
@@ -2649,14 +2727,14 @@ return /******/ (function(modules) { // webpackBootstrap
 	  var keynum = event.which;
 	  if (keynum == 27) { // ESC
 	    this.dom.search.value = '';  // clear search
-	    this._onSearch(event);
+	    this._onSearch();
 	    event.preventDefault();
 	    event.stopPropagation();
 	  }
 	  else if (keynum == 13) { // Enter
 	    if (event.ctrlKey) {
 	      // force to search again
-	      this._onSearch(event, true);
+	      this._onSearch(true);
 	    }
 	    else if (event.shiftKey) {
 	      // move to the previous search result
@@ -2683,6 +2761,14 @@ return /******/ (function(modules) { // webpackBootstrap
 	  }
 	};
 
+	/**
+	 * Clear the search results
+	 */
+	SearchBox.prototype.clear = function () {
+	  this.dom.search.value = '';
+	  this._onSearch();
+	};
+
 	module.exports = SearchBox;
 
 
@@ -2690,8 +2776,8 @@ return /******/ (function(modules) { // webpackBootstrap
 /* 7 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var ContextMenu = __webpack_require__(10);
-	var appendNodeFactory = __webpack_require__(11);
+	var ContextMenu = __webpack_require__(11);
+	var appendNodeFactory = __webpack_require__(12);
 	var util = __webpack_require__(3);
 
 	/**
@@ -2735,8 +2821,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	    this.editable.field = this.editor.options.mode === 'tree';
 	    this.editable.value = this.editor.options.mode !== 'view';
 
-	    if (this.editor.options.mode === 'tree' && (typeof this.editor.options.editable === 'function')) {
-	      var editable = this.editor.options.editable({
+	    if (this.editor.options.mode === 'tree' && (typeof this.editor.options.onEditable === 'function')) {
+	      var editable = this.editor.options.onEditable({
 	        field: this.field,
 	        value: this.value,
 	        path: this.path()
@@ -3715,79 +3801,44 @@ return /******/ (function(modules) { // webpackBootstrap
 	Node.prototype._updateDomValue = function () {
 	  var domValue = this.dom.value;
 	  if (domValue) {
-	    // set text color depending on value type
-	    // TODO: put colors in css
-	    var v = this.value;
-	    var t = (this.type == 'auto') ? util.type(v) : this.type;
-	    var isUrl = (t == 'string' && util.isUrl(v));
-	    var color = '';
-	    if (isUrl && !this.editable.value) { // TODO: when to apply this?
-	      color = '';
-	    }
-	    else if (t == 'string') {
-	      color = 'green';
-	    }
-	    else if (t == 'number') {
-	      color = 'red';
-	    }
-	    else if (t == 'boolean') {
-	      color = 'darkorange';
-	    }
-	    else if (this._hasChilds()) {
-	      color = '';
-	    }
-	    else if (v === null) {
-	      color = '#004ED0';  // blue
-	    }
-	    else {
-	      // invalid value
-	      color = 'black';
-	    }
-	    domValue.style.color = color;
+	    var classNames = ['value'];
 
-	    // make background color light-gray when empty
+
+	    // set text color depending on value type
+	    var value = this.value;
+	    var type = (this.type == 'auto') ? util.type(value) : this.type;
+	    var isUrl = type == 'string' && util.isUrl(value);
+	    classNames.push(type);
+	    if (isUrl) {
+	      classNames.push('url');
+	    }
+
+	    // visual styling when empty
 	    var isEmpty = (String(this.value) == '' && this.type != 'array' && this.type != 'object');
 	    if (isEmpty) {
-	      util.addClassName(domValue, 'empty');
-	    }
-	    else {
-	      util.removeClassName(domValue, 'empty');
-	    }
-
-	    // underline url
-	    if (isUrl) {
-	      util.addClassName(domValue, 'url');
-	    }
-	    else {
-	      util.removeClassName(domValue, 'url');
-	    }
-
-	    // update title
-	    if (t == 'array' || t == 'object') {
-	      var count = this.childs ? this.childs.length : 0;
-	      domValue.title = this.type + ' containing ' + count + ' items';
-	    }
-	    else if (t == 'string' && util.isUrl(v)) {
-	      if (this.editable.value) {
-	        domValue.title = 'Ctrl+Click or Ctrl+Enter to open url in new window';
-	      }
-	    }
-	    else {
-	      domValue.title = '';
+	      classNames.push('empty');
 	    }
 
 	    // highlight when there is a search result
 	    if (this.searchValueActive) {
-	      util.addClassName(domValue, 'highlight-active');
-	    }
-	    else {
-	      util.removeClassName(domValue, 'highlight-active');
+	      classNames.push('highlight-active');
 	    }
 	    if (this.searchValue) {
-	      util.addClassName(domValue, 'highlight');
+	      classNames.push('highlight');
+	    }
+
+	    domValue.className = classNames.join(' ');
+
+	    // update title
+	    if (type == 'array' || type == 'object') {
+	      var count = this.childs ? this.childs.length : 0;
+	      domValue.title = this.type + ' containing ' + count + ' items';
+	    }
+	    else if (isUrl && this.editable.value) {
+	      domValue.title = 'Ctrl+Click or Ctrl+Enter to open url in new window';
 	    }
 	    else {
-	      util.removeClassName(domValue, 'highlight');
+	      domValue.title = '';
 	    }
 
 	    // strip formatting from the contents of the editable div
@@ -4266,12 +4317,15 @@ return /******/ (function(modules) { // webpackBootstrap
 	    var count = this.childs ? this.childs.length : 0;
 	    if (this.type == 'array') {
 	      domValue.innerHTML = '[' + count + ']';
+	      this.dom.tr.className = 'expandable';
 	    }
 	    else if (this.type == 'object') {
 	      domValue.innerHTML = '{' + count + '}';
+	      this.dom.tr.className = 'expandable';
 	    }
 	    else {
 	      domValue.innerHTML = this._escapeHTML(this.value);
+	      this.dom.tr.className = '';
 	    }
 	  }
 
@@ -4342,19 +4396,16 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	  if (this.type == 'array') {
 	    domValue = document.createElement('div');
-	    domValue.className = 'readonly';
 	    domValue.innerHTML = '[...]';
 	  }
 	  else if (this.type == 'object') {
 	    domValue = document.createElement('div');
-	    domValue.className = 'readonly';
 	    domValue.innerHTML = '{...}';
 	  }
 	  else {
 	    if (!this.editable.value && util.isUrl(this.value)) {
 	      // create a link in case of read-only editor and value containing an url
 	      domValue = document.createElement('a');
-	      domValue.className = 'value';
 	      domValue.href = this.value;
 	      domValue.target = '_blank';
 	      domValue.innerHTML = this._escapeHTML(this.value);
@@ -4364,7 +4415,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	      domValue = document.createElement('div');
 	      domValue.contentEditable = this.editable.value;
 	      domValue.spellcheck = false;
-	      domValue.className = 'value';
 	      domValue.innerHTML = this._escapeHTML(this.value);
 	    }
 	  }
@@ -4448,7 +4498,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 
 	/**
-	 * Handle an event. The event is catched centrally by the editor
+	 * Handle an event. The event is caught centrally by the editor
 	 * @param {Event} event
 	 */
 	Node.prototype.onEvent = function (event) {
@@ -4489,10 +4539,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	  }
 
 	  // expand events
-	  if (type == 'click' && target == dom.expand) {
-	    if (expandable) {
-	      var recurse = event.ctrlKey; // with ctrl-key, expand/collapse all
-	      this._onExpand(recurse);
+	  if (type == 'click') {
+	    if (target == dom.expand ||
+	        ((node.editor.options.mode === 'view' || node.editor.options.mode === 'form') && target.nodeName === 'DIV')) {
+	      if (expandable) {
+	        var recurse = event.ctrlKey; // with ctrl-key, expand/collapse all
+	        this._onExpand(recurse);
+	      }
 	    }
 	  }
 
@@ -5549,15 +5602,25 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * @private
 	 */
 	Node.prototype._escapeHTML = function (text) {
-	  var htmlEscaped = String(text)
-	      .replace(/</g, '&lt;')
-	      .replace(/>/g, '&gt;')
-	      .replace(/  /g, ' &nbsp;') // replace double space with an nbsp and space
-	      .replace(/^ /, '&nbsp;')   // space at start
-	      .replace(/ $/, '&nbsp;');  // space at end
+	  if (typeof text !== 'string') {
+	    return String(text);
+	  }
+	  else {
+	    var htmlEscaped = String(text)
+	        .replace(/&/g, '&amp;')    // must be replaced first!
+	        .replace(/</g, '&lt;')
+	        .replace(/>/g, '&gt;')
+	        .replace(/  /g, ' &nbsp;') // replace double space with an nbsp and space
+	        .replace(/^ /, '&nbsp;')   // space at start
+	        .replace(/ $/, '&nbsp;');  // space at end
 
-	  var json = JSON.stringify(htmlEscaped);
-	  return json.substring(1, json.length - 1);
+	    var json = JSON.stringify(htmlEscaped);
+	    var html = json.substring(1, json.length - 1);
+	    if (this.editor.options.escapeUnicode === true) {
+	      html = util.escapeUnicodeChars(html);
+	    }
+	    return html;
+	  }
 	};
 
 	/**
@@ -5569,10 +5632,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	Node.prototype._unescapeHTML = function (escapedText) {
 	  var json = '"' + this._escapeJSON(escapedText) + '"';
 	  var htmlEscaped = util.parse(json);
+
 	  return htmlEscaped
 	      .replace(/&lt;/g, '<')
 	      .replace(/&gt;/g, '>')
-	      .replace(/&nbsp;|\u00A0/g, ' ');
+	      .replace(/&nbsp;|\u00A0/g, ' ')
+	      .replace(/&amp;/g, '&');   // must be replaced last
 	};
 
 	/**
@@ -5587,8 +5652,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	Node.prototype._escapeJSON = function (text) {
 	  // TODO: replace with some smart regex (only when a new solution is faster!)
 	  var escaped = '';
-	  var i = 0, iMax = text.length;
-	  while (i < iMax) {
+	  var i = 0;
+	  while (i < text.length) {
 	    var c = text.charAt(i);
 	    if (c == '\n') {
 	      escaped += '\\n';
@@ -5598,7 +5663,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	      i++;
 
 	      c = text.charAt(i);
-	      if ('"\\/bfnrtu'.indexOf(c) == -1) {
+	      if (c === '' || '"\\/bfnrtu'.indexOf(c) == -1) {
 	        escaped += '\\';  // no valid escape character
 	      }
 	      escaped += c;
@@ -5625,7 +5690,7 @@ return /******/ (function(modules) { // webpackBootstrap
 /* 8 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var ContextMenu = __webpack_require__(10);
+	var ContextMenu = __webpack_require__(11);
 
 	/**
 	 * Create a select box to be used in the editor menu's, which allows to switch mode
@@ -5731,6 +5796,429 @@ return /******/ (function(modules) { // webpackBootstrap
 /* 9 */
 /***/ function(module, exports, __webpack_require__) {
 
+	/* Jison generated parser */
+	var jsonlint = (function(){
+	var parser = {trace: function trace() { },
+	yy: {},
+	symbols_: {"error":2,"JSONString":3,"STRING":4,"JSONNumber":5,"NUMBER":6,"JSONNullLiteral":7,"NULL":8,"JSONBooleanLiteral":9,"TRUE":10,"FALSE":11,"JSONText":12,"JSONValue":13,"EOF":14,"JSONObject":15,"JSONArray":16,"{":17,"}":18,"JSONMemberList":19,"JSONMember":20,":":21,",":22,"[":23,"]":24,"JSONElementList":25,"$accept":0,"$end":1},
+	terminals_: {2:"error",4:"STRING",6:"NUMBER",8:"NULL",10:"TRUE",11:"FALSE",14:"EOF",17:"{",18:"}",21:":",22:",",23:"[",24:"]"},
+	productions_: [0,[3,1],[5,1],[7,1],[9,1],[9,1],[12,2],[13,1],[13,1],[13,1],[13,1],[13,1],[13,1],[15,2],[15,3],[20,3],[19,1],[19,3],[16,2],[16,3],[25,1],[25,3]],
+	performAction: function anonymous(yytext,yyleng,yylineno,yy,yystate,$$,_$) {
+
+	var $0 = $$.length - 1;
+	switch (yystate) {
+	case 1: // replace escaped characters with actual character
+	          this.$ = yytext.replace(/\\(\\|")/g, "$"+"1")
+	                     .replace(/\\n/g,'\n')
+	                     .replace(/\\r/g,'\r')
+	                     .replace(/\\t/g,'\t')
+	                     .replace(/\\v/g,'\v')
+	                     .replace(/\\f/g,'\f')
+	                     .replace(/\\b/g,'\b');
+	        
+	break;
+	case 2:this.$ = Number(yytext);
+	break;
+	case 3:this.$ = null;
+	break;
+	case 4:this.$ = true;
+	break;
+	case 5:this.$ = false;
+	break;
+	case 6:return this.$ = $$[$0-1];
+	break;
+	case 13:this.$ = {};
+	break;
+	case 14:this.$ = $$[$0-1];
+	break;
+	case 15:this.$ = [$$[$0-2], $$[$0]];
+	break;
+	case 16:this.$ = {}; this.$[$$[$0][0]] = $$[$0][1];
+	break;
+	case 17:this.$ = $$[$0-2]; $$[$0-2][$$[$0][0]] = $$[$0][1];
+	break;
+	case 18:this.$ = [];
+	break;
+	case 19:this.$ = $$[$0-1];
+	break;
+	case 20:this.$ = [$$[$0]];
+	break;
+	case 21:this.$ = $$[$0-2]; $$[$0-2].push($$[$0]);
+	break;
+	}
+	},
+	table: [{3:5,4:[1,12],5:6,6:[1,13],7:3,8:[1,9],9:4,10:[1,10],11:[1,11],12:1,13:2,15:7,16:8,17:[1,14],23:[1,15]},{1:[3]},{14:[1,16]},{14:[2,7],18:[2,7],22:[2,7],24:[2,7]},{14:[2,8],18:[2,8],22:[2,8],24:[2,8]},{14:[2,9],18:[2,9],22:[2,9],24:[2,9]},{14:[2,10],18:[2,10],22:[2,10],24:[2,10]},{14:[2,11],18:[2,11],22:[2,11],24:[2,11]},{14:[2,12],18:[2,12],22:[2,12],24:[2,12]},{14:[2,3],18:[2,3],22:[2,3],24:[2,3]},{14:[2,4],18:[2,4],22:[2,4],24:[2,4]},{14:[2,5],18:[2,5],22:[2,5],24:[2,5]},{14:[2,1],18:[2,1],21:[2,1],22:[2,1],24:[2,1]},{14:[2,2],18:[2,2],22:[2,2],24:[2,2]},{3:20,4:[1,12],18:[1,17],19:18,20:19},{3:5,4:[1,12],5:6,6:[1,13],7:3,8:[1,9],9:4,10:[1,10],11:[1,11],13:23,15:7,16:8,17:[1,14],23:[1,15],24:[1,21],25:22},{1:[2,6]},{14:[2,13],18:[2,13],22:[2,13],24:[2,13]},{18:[1,24],22:[1,25]},{18:[2,16],22:[2,16]},{21:[1,26]},{14:[2,18],18:[2,18],22:[2,18],24:[2,18]},{22:[1,28],24:[1,27]},{22:[2,20],24:[2,20]},{14:[2,14],18:[2,14],22:[2,14],24:[2,14]},{3:20,4:[1,12],20:29},{3:5,4:[1,12],5:6,6:[1,13],7:3,8:[1,9],9:4,10:[1,10],11:[1,11],13:30,15:7,16:8,17:[1,14],23:[1,15]},{14:[2,19],18:[2,19],22:[2,19],24:[2,19]},{3:5,4:[1,12],5:6,6:[1,13],7:3,8:[1,9],9:4,10:[1,10],11:[1,11],13:31,15:7,16:8,17:[1,14],23:[1,15]},{18:[2,17],22:[2,17]},{18:[2,15],22:[2,15]},{22:[2,21],24:[2,21]}],
+	defaultActions: {16:[2,6]},
+	parseError: function parseError(str, hash) {
+	    throw new Error(str);
+	},
+	parse: function parse(input) {
+	    var self = this,
+	        stack = [0],
+	        vstack = [null], // semantic value stack
+	        lstack = [], // location stack
+	        table = this.table,
+	        yytext = '',
+	        yylineno = 0,
+	        yyleng = 0,
+	        recovering = 0,
+	        TERROR = 2,
+	        EOF = 1;
+
+	    //this.reductionCount = this.shiftCount = 0;
+
+	    this.lexer.setInput(input);
+	    this.lexer.yy = this.yy;
+	    this.yy.lexer = this.lexer;
+	    if (typeof this.lexer.yylloc == 'undefined')
+	        this.lexer.yylloc = {};
+	    var yyloc = this.lexer.yylloc;
+	    lstack.push(yyloc);
+
+	    if (typeof this.yy.parseError === 'function')
+	        this.parseError = this.yy.parseError;
+
+	    function popStack (n) {
+	        stack.length = stack.length - 2*n;
+	        vstack.length = vstack.length - n;
+	        lstack.length = lstack.length - n;
+	    }
+
+	    function lex() {
+	        var token;
+	        token = self.lexer.lex() || 1; // $end = 1
+	        // if token isn't its numeric value, convert
+	        if (typeof token !== 'number') {
+	            token = self.symbols_[token] || token;
+	        }
+	        return token;
+	    }
+
+	    var symbol, preErrorSymbol, state, action, a, r, yyval={},p,len,newState, expected;
+	    while (true) {
+	        // retreive state number from top of stack
+	        state = stack[stack.length-1];
+
+	        // use default actions if available
+	        if (this.defaultActions[state]) {
+	            action = this.defaultActions[state];
+	        } else {
+	            if (symbol == null)
+	                symbol = lex();
+	            // read action for current state and first input
+	            action = table[state] && table[state][symbol];
+	        }
+
+	        // handle parse error
+	        _handle_error:
+	        if (typeof action === 'undefined' || !action.length || !action[0]) {
+
+	            if (!recovering) {
+	                // Report error
+	                expected = [];
+	                for (p in table[state]) if (this.terminals_[p] && p > 2) {
+	                    expected.push("'"+this.terminals_[p]+"'");
+	                }
+	                var errStr = '';
+	                if (this.lexer.showPosition) {
+	                    errStr = 'Parse error on line '+(yylineno+1)+":\n"+this.lexer.showPosition()+"\nExpecting "+expected.join(', ') + ", got '" + this.terminals_[symbol]+ "'";
+	                } else {
+	                    errStr = 'Parse error on line '+(yylineno+1)+": Unexpected " +
+	                                  (symbol == 1 /*EOF*/ ? "end of input" :
+	                                              ("'"+(this.terminals_[symbol] || symbol)+"'"));
+	                }
+	                this.parseError(errStr,
+	                    {text: this.lexer.match, token: this.terminals_[symbol] || symbol, line: this.lexer.yylineno, loc: yyloc, expected: expected});
+	            }
+
+	            // just recovered from another error
+	            if (recovering == 3) {
+	                if (symbol == EOF) {
+	                    throw new Error(errStr || 'Parsing halted.');
+	                }
+
+	                // discard current lookahead and grab another
+	                yyleng = this.lexer.yyleng;
+	                yytext = this.lexer.yytext;
+	                yylineno = this.lexer.yylineno;
+	                yyloc = this.lexer.yylloc;
+	                symbol = lex();
+	            }
+
+	            // try to recover from error
+	            while (1) {
+	                // check for error recovery rule in this state
+	                if ((TERROR.toString()) in table[state]) {
+	                    break;
+	                }
+	                if (state == 0) {
+	                    throw new Error(errStr || 'Parsing halted.');
+	                }
+	                popStack(1);
+	                state = stack[stack.length-1];
+	            }
+
+	            preErrorSymbol = symbol; // save the lookahead token
+	            symbol = TERROR;         // insert generic error symbol as new lookahead
+	            state = stack[stack.length-1];
+	            action = table[state] && table[state][TERROR];
+	            recovering = 3; // allow 3 real symbols to be shifted before reporting a new error
+	        }
+
+	        // this shouldn't happen, unless resolve defaults are off
+	        if (action[0] instanceof Array && action.length > 1) {
+	            throw new Error('Parse Error: multiple actions possible at state: '+state+', token: '+symbol);
+	        }
+
+	        switch (action[0]) {
+
+	            case 1: // shift
+	                //this.shiftCount++;
+
+	                stack.push(symbol);
+	                vstack.push(this.lexer.yytext);
+	                lstack.push(this.lexer.yylloc);
+	                stack.push(action[1]); // push state
+	                symbol = null;
+	                if (!preErrorSymbol) { // normal execution/no error
+	                    yyleng = this.lexer.yyleng;
+	                    yytext = this.lexer.yytext;
+	                    yylineno = this.lexer.yylineno;
+	                    yyloc = this.lexer.yylloc;
+	                    if (recovering > 0)
+	                        recovering--;
+	                } else { // error just occurred, resume old lookahead f/ before error
+	                    symbol = preErrorSymbol;
+	                    preErrorSymbol = null;
+	                }
+	                break;
+
+	            case 2: // reduce
+	                //this.reductionCount++;
+
+	                len = this.productions_[action[1]][1];
+
+	                // perform semantic action
+	                yyval.$ = vstack[vstack.length-len]; // default to $$ = $1
+	                // default location, uses first token for firsts, last for lasts
+	                yyval._$ = {
+	                    first_line: lstack[lstack.length-(len||1)].first_line,
+	                    last_line: lstack[lstack.length-1].last_line,
+	                    first_column: lstack[lstack.length-(len||1)].first_column,
+	                    last_column: lstack[lstack.length-1].last_column
+	                };
+	                r = this.performAction.call(yyval, yytext, yyleng, yylineno, this.yy, action[1], vstack, lstack);
+
+	                if (typeof r !== 'undefined') {
+	                    return r;
+	                }
+
+	                // pop off stack
+	                if (len) {
+	                    stack = stack.slice(0,-1*len*2);
+	                    vstack = vstack.slice(0, -1*len);
+	                    lstack = lstack.slice(0, -1*len);
+	                }
+
+	                stack.push(this.productions_[action[1]][0]);    // push nonterminal (reduce)
+	                vstack.push(yyval.$);
+	                lstack.push(yyval._$);
+	                // goto new state = table[STATE][NONTERMINAL]
+	                newState = table[stack[stack.length-2]][stack[stack.length-1]];
+	                stack.push(newState);
+	                break;
+
+	            case 3: // accept
+	                return true;
+	        }
+
+	    }
+
+	    return true;
+	}};
+	/* Jison generated lexer */
+	var lexer = (function(){
+	var lexer = ({EOF:1,
+	parseError:function parseError(str, hash) {
+	        if (this.yy.parseError) {
+	            this.yy.parseError(str, hash);
+	        } else {
+	            throw new Error(str);
+	        }
+	    },
+	setInput:function (input) {
+	        this._input = input;
+	        this._more = this._less = this.done = false;
+	        this.yylineno = this.yyleng = 0;
+	        this.yytext = this.matched = this.match = '';
+	        this.conditionStack = ['INITIAL'];
+	        this.yylloc = {first_line:1,first_column:0,last_line:1,last_column:0};
+	        return this;
+	    },
+	input:function () {
+	        var ch = this._input[0];
+	        this.yytext+=ch;
+	        this.yyleng++;
+	        this.match+=ch;
+	        this.matched+=ch;
+	        var lines = ch.match(/\n/);
+	        if (lines) this.yylineno++;
+	        this._input = this._input.slice(1);
+	        return ch;
+	    },
+	unput:function (ch) {
+	        this._input = ch + this._input;
+	        return this;
+	    },
+	more:function () {
+	        this._more = true;
+	        return this;
+	    },
+	less:function (n) {
+	        this._input = this.match.slice(n) + this._input;
+	    },
+	pastInput:function () {
+	        var past = this.matched.substr(0, this.matched.length - this.match.length);
+	        return (past.length > 20 ? '...':'') + past.substr(-20).replace(/\n/g, "");
+	    },
+	upcomingInput:function () {
+	        var next = this.match;
+	        if (next.length < 20) {
+	            next += this._input.substr(0, 20-next.length);
+	        }
+	        return (next.substr(0,20)+(next.length > 20 ? '...':'')).replace(/\n/g, "");
+	    },
+	showPosition:function () {
+	        var pre = this.pastInput();
+	        var c = new Array(pre.length + 1).join("-");
+	        return pre + this.upcomingInput() + "\n" + c+"^";
+	    },
+	next:function () {
+	        if (this.done) {
+	            return this.EOF;
+	        }
+	        if (!this._input) this.done = true;
+
+	        var token,
+	            match,
+	            tempMatch,
+	            index,
+	            col,
+	            lines;
+	        if (!this._more) {
+	            this.yytext = '';
+	            this.match = '';
+	        }
+	        var rules = this._currentRules();
+	        for (var i=0;i < rules.length; i++) {
+	            tempMatch = this._input.match(this.rules[rules[i]]);
+	            if (tempMatch && (!match || tempMatch[0].length > match[0].length)) {
+	                match = tempMatch;
+	                index = i;
+	                if (!this.options.flex) break;
+	            }
+	        }
+	        if (match) {
+	            lines = match[0].match(/\n.*/g);
+	            if (lines) this.yylineno += lines.length;
+	            this.yylloc = {first_line: this.yylloc.last_line,
+	                           last_line: this.yylineno+1,
+	                           first_column: this.yylloc.last_column,
+	                           last_column: lines ? lines[lines.length-1].length-1 : this.yylloc.last_column + match[0].length}
+	            this.yytext += match[0];
+	            this.match += match[0];
+	            this.yyleng = this.yytext.length;
+	            this._more = false;
+	            this._input = this._input.slice(match[0].length);
+	            this.matched += match[0];
+	            token = this.performAction.call(this, this.yy, this, rules[index],this.conditionStack[this.conditionStack.length-1]);
+	            if (this.done && this._input) this.done = false;
+	            if (token) return token;
+	            else return;
+	        }
+	        if (this._input === "") {
+	            return this.EOF;
+	        } else {
+	            this.parseError('Lexical error on line '+(this.yylineno+1)+'. Unrecognized text.\n'+this.showPosition(), 
+	                    {text: "", token: null, line: this.yylineno});
+	        }
+	    },
+	lex:function lex() {
+	        var r = this.next();
+	        if (typeof r !== 'undefined') {
+	            return r;
+	        } else {
+	            return this.lex();
+	        }
+	    },
+	begin:function begin(condition) {
+	        this.conditionStack.push(condition);
+	    },
+	popState:function popState() {
+	        return this.conditionStack.pop();
+	    },
+	_currentRules:function _currentRules() {
+	        return this.conditions[this.conditionStack[this.conditionStack.length-1]].rules;
+	    },
+	topState:function () {
+	        return this.conditionStack[this.conditionStack.length-2];
+	    },
+	pushState:function begin(condition) {
+	        this.begin(condition);
+	    }});
+	lexer.options = {};
+	lexer.performAction = function anonymous(yy,yy_,$avoiding_name_collisions,YY_START) {
+
+	var YYSTATE=YY_START
+	switch($avoiding_name_collisions) {
+	case 0:/* skip whitespace */
+	break;
+	case 1:return 6
+	break;
+	case 2:yy_.yytext = yy_.yytext.substr(1,yy_.yyleng-2); return 4
+	break;
+	case 3:return 17
+	break;
+	case 4:return 18
+	break;
+	case 5:return 23
+	break;
+	case 6:return 24
+	break;
+	case 7:return 22
+	break;
+	case 8:return 21
+	break;
+	case 9:return 10
+	break;
+	case 10:return 11
+	break;
+	case 11:return 8
+	break;
+	case 12:return 14
+	break;
+	case 13:return 'INVALID'
+	break;
+	}
+	};
+	lexer.rules = [/^(?:\s+)/,/^(?:(-?([0-9]|[1-9][0-9]+))(\.[0-9]+)?([eE][-+]?[0-9]+)?\b)/,/^(?:"(?:\\[\\"bfnrt/]|\\u[a-fA-F0-9]{4}|[^\\\0-\x09\x0a-\x1f"])*")/,/^(?:\{)/,/^(?:\})/,/^(?:\[)/,/^(?:\])/,/^(?:,)/,/^(?::)/,/^(?:true\b)/,/^(?:false\b)/,/^(?:null\b)/,/^(?:$)/,/^(?:.)/];
+	lexer.conditions = {"INITIAL":{"rules":[0,1,2,3,4,5,6,7,8,9,10,11,12,13],"inclusive":true}};
+
+
+	;
+	return lexer;})()
+	parser.lexer = lexer;
+	return parser;
+	})();
+	if (true) {
+	  exports.parser = jsonlint;
+	  exports.parse = jsonlint.parse.bind(jsonlint);
+	}
+
+/***/ },
+/* 10 */
+/***/ function(module, exports, __webpack_require__) {
+
 	// load brace
 	var ace = __webpack_require__(14);
 
@@ -5743,7 +6231,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 10 */
+/* 11 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var util = __webpack_require__(3);
@@ -6192,11 +6680,11 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 11 */
+/* 12 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var util = __webpack_require__(3);
-	var ContextMenu = __webpack_require__(10);
+	var ContextMenu = __webpack_require__(11);
 
 	/**
 	 * A factory function to create an AppendNode, which depends on a Node
@@ -6424,429 +6912,6 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 12 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/* Jison generated parser */
-	var jsonlint = (function(){
-	var parser = {trace: function trace() { },
-	yy: {},
-	symbols_: {"error":2,"JSONString":3,"STRING":4,"JSONNumber":5,"NUMBER":6,"JSONNullLiteral":7,"NULL":8,"JSONBooleanLiteral":9,"TRUE":10,"FALSE":11,"JSONText":12,"JSONValue":13,"EOF":14,"JSONObject":15,"JSONArray":16,"{":17,"}":18,"JSONMemberList":19,"JSONMember":20,":":21,",":22,"[":23,"]":24,"JSONElementList":25,"$accept":0,"$end":1},
-	terminals_: {2:"error",4:"STRING",6:"NUMBER",8:"NULL",10:"TRUE",11:"FALSE",14:"EOF",17:"{",18:"}",21:":",22:",",23:"[",24:"]"},
-	productions_: [0,[3,1],[5,1],[7,1],[9,1],[9,1],[12,2],[13,1],[13,1],[13,1],[13,1],[13,1],[13,1],[15,2],[15,3],[20,3],[19,1],[19,3],[16,2],[16,3],[25,1],[25,3]],
-	performAction: function anonymous(yytext,yyleng,yylineno,yy,yystate,$$,_$) {
-
-	var $0 = $$.length - 1;
-	switch (yystate) {
-	case 1: // replace escaped characters with actual character
-	          this.$ = yytext.replace(/\\(\\|")/g, "$"+"1")
-	                     .replace(/\\n/g,'\n')
-	                     .replace(/\\r/g,'\r')
-	                     .replace(/\\t/g,'\t')
-	                     .replace(/\\v/g,'\v')
-	                     .replace(/\\f/g,'\f')
-	                     .replace(/\\b/g,'\b');
-	        
-	break;
-	case 2:this.$ = Number(yytext);
-	break;
-	case 3:this.$ = null;
-	break;
-	case 4:this.$ = true;
-	break;
-	case 5:this.$ = false;
-	break;
-	case 6:return this.$ = $$[$0-1];
-	break;
-	case 13:this.$ = {};
-	break;
-	case 14:this.$ = $$[$0-1];
-	break;
-	case 15:this.$ = [$$[$0-2], $$[$0]];
-	break;
-	case 16:this.$ = {}; this.$[$$[$0][0]] = $$[$0][1];
-	break;
-	case 17:this.$ = $$[$0-2]; $$[$0-2][$$[$0][0]] = $$[$0][1];
-	break;
-	case 18:this.$ = [];
-	break;
-	case 19:this.$ = $$[$0-1];
-	break;
-	case 20:this.$ = [$$[$0]];
-	break;
-	case 21:this.$ = $$[$0-2]; $$[$0-2].push($$[$0]);
-	break;
-	}
-	},
-	table: [{3:5,4:[1,12],5:6,6:[1,13],7:3,8:[1,9],9:4,10:[1,10],11:[1,11],12:1,13:2,15:7,16:8,17:[1,14],23:[1,15]},{1:[3]},{14:[1,16]},{14:[2,7],18:[2,7],22:[2,7],24:[2,7]},{14:[2,8],18:[2,8],22:[2,8],24:[2,8]},{14:[2,9],18:[2,9],22:[2,9],24:[2,9]},{14:[2,10],18:[2,10],22:[2,10],24:[2,10]},{14:[2,11],18:[2,11],22:[2,11],24:[2,11]},{14:[2,12],18:[2,12],22:[2,12],24:[2,12]},{14:[2,3],18:[2,3],22:[2,3],24:[2,3]},{14:[2,4],18:[2,4],22:[2,4],24:[2,4]},{14:[2,5],18:[2,5],22:[2,5],24:[2,5]},{14:[2,1],18:[2,1],21:[2,1],22:[2,1],24:[2,1]},{14:[2,2],18:[2,2],22:[2,2],24:[2,2]},{3:20,4:[1,12],18:[1,17],19:18,20:19},{3:5,4:[1,12],5:6,6:[1,13],7:3,8:[1,9],9:4,10:[1,10],11:[1,11],13:23,15:7,16:8,17:[1,14],23:[1,15],24:[1,21],25:22},{1:[2,6]},{14:[2,13],18:[2,13],22:[2,13],24:[2,13]},{18:[1,24],22:[1,25]},{18:[2,16],22:[2,16]},{21:[1,26]},{14:[2,18],18:[2,18],22:[2,18],24:[2,18]},{22:[1,28],24:[1,27]},{22:[2,20],24:[2,20]},{14:[2,14],18:[2,14],22:[2,14],24:[2,14]},{3:20,4:[1,12],20:29},{3:5,4:[1,12],5:6,6:[1,13],7:3,8:[1,9],9:4,10:[1,10],11:[1,11],13:30,15:7,16:8,17:[1,14],23:[1,15]},{14:[2,19],18:[2,19],22:[2,19],24:[2,19]},{3:5,4:[1,12],5:6,6:[1,13],7:3,8:[1,9],9:4,10:[1,10],11:[1,11],13:31,15:7,16:8,17:[1,14],23:[1,15]},{18:[2,17],22:[2,17]},{18:[2,15],22:[2,15]},{22:[2,21],24:[2,21]}],
-	defaultActions: {16:[2,6]},
-	parseError: function parseError(str, hash) {
-	    throw new Error(str);
-	},
-	parse: function parse(input) {
-	    var self = this,
-	        stack = [0],
-	        vstack = [null], // semantic value stack
-	        lstack = [], // location stack
-	        table = this.table,
-	        yytext = '',
-	        yylineno = 0,
-	        yyleng = 0,
-	        recovering = 0,
-	        TERROR = 2,
-	        EOF = 1;
-
-	    //this.reductionCount = this.shiftCount = 0;
-
-	    this.lexer.setInput(input);
-	    this.lexer.yy = this.yy;
-	    this.yy.lexer = this.lexer;
-	    if (typeof this.lexer.yylloc == 'undefined')
-	        this.lexer.yylloc = {};
-	    var yyloc = this.lexer.yylloc;
-	    lstack.push(yyloc);
-
-	    if (typeof this.yy.parseError === 'function')
-	        this.parseError = this.yy.parseError;
-
-	    function popStack (n) {
-	        stack.length = stack.length - 2*n;
-	        vstack.length = vstack.length - n;
-	        lstack.length = lstack.length - n;
-	    }
-
-	    function lex() {
-	        var token;
-	        token = self.lexer.lex() || 1; // $end = 1
-	        // if token isn't its numeric value, convert
-	        if (typeof token !== 'number') {
-	            token = self.symbols_[token] || token;
-	        }
-	        return token;
-	    }
-
-	    var symbol, preErrorSymbol, state, action, a, r, yyval={},p,len,newState, expected;
-	    while (true) {
-	        // retreive state number from top of stack
-	        state = stack[stack.length-1];
-
-	        // use default actions if available
-	        if (this.defaultActions[state]) {
-	            action = this.defaultActions[state];
-	        } else {
-	            if (symbol == null)
-	                symbol = lex();
-	            // read action for current state and first input
-	            action = table[state] && table[state][symbol];
-	        }
-
-	        // handle parse error
-	        _handle_error:
-	        if (typeof action === 'undefined' || !action.length || !action[0]) {
-
-	            if (!recovering) {
-	                // Report error
-	                expected = [];
-	                for (p in table[state]) if (this.terminals_[p] && p > 2) {
-	                    expected.push("'"+this.terminals_[p]+"'");
-	                }
-	                var errStr = '';
-	                if (this.lexer.showPosition) {
-	                    errStr = 'Parse error on line '+(yylineno+1)+":\n"+this.lexer.showPosition()+"\nExpecting "+expected.join(', ') + ", got '" + this.terminals_[symbol]+ "'";
-	                } else {
-	                    errStr = 'Parse error on line '+(yylineno+1)+": Unexpected " +
-	                                  (symbol == 1 /*EOF*/ ? "end of input" :
-	                                              ("'"+(this.terminals_[symbol] || symbol)+"'"));
-	                }
-	                this.parseError(errStr,
-	                    {text: this.lexer.match, token: this.terminals_[symbol] || symbol, line: this.lexer.yylineno, loc: yyloc, expected: expected});
-	            }
-
-	            // just recovered from another error
-	            if (recovering == 3) {
-	                if (symbol == EOF) {
-	                    throw new Error(errStr || 'Parsing halted.');
-	                }
-
-	                // discard current lookahead and grab another
-	                yyleng = this.lexer.yyleng;
-	                yytext = this.lexer.yytext;
-	                yylineno = this.lexer.yylineno;
-	                yyloc = this.lexer.yylloc;
-	                symbol = lex();
-	            }
-
-	            // try to recover from error
-	            while (1) {
-	                // check for error recovery rule in this state
-	                if ((TERROR.toString()) in table[state]) {
-	                    break;
-	                }
-	                if (state == 0) {
-	                    throw new Error(errStr || 'Parsing halted.');
-	                }
-	                popStack(1);
-	                state = stack[stack.length-1];
-	            }
-
-	            preErrorSymbol = symbol; // save the lookahead token
-	            symbol = TERROR;         // insert generic error symbol as new lookahead
-	            state = stack[stack.length-1];
-	            action = table[state] && table[state][TERROR];
-	            recovering = 3; // allow 3 real symbols to be shifted before reporting a new error
-	        }
-
-	        // this shouldn't happen, unless resolve defaults are off
-	        if (action[0] instanceof Array && action.length > 1) {
-	            throw new Error('Parse Error: multiple actions possible at state: '+state+', token: '+symbol);
-	        }
-
-	        switch (action[0]) {
-
-	            case 1: // shift
-	                //this.shiftCount++;
-
-	                stack.push(symbol);
-	                vstack.push(this.lexer.yytext);
-	                lstack.push(this.lexer.yylloc);
-	                stack.push(action[1]); // push state
-	                symbol = null;
-	                if (!preErrorSymbol) { // normal execution/no error
-	                    yyleng = this.lexer.yyleng;
-	                    yytext = this.lexer.yytext;
-	                    yylineno = this.lexer.yylineno;
-	                    yyloc = this.lexer.yylloc;
-	                    if (recovering > 0)
-	                        recovering--;
-	                } else { // error just occurred, resume old lookahead f/ before error
-	                    symbol = preErrorSymbol;
-	                    preErrorSymbol = null;
-	                }
-	                break;
-
-	            case 2: // reduce
-	                //this.reductionCount++;
-
-	                len = this.productions_[action[1]][1];
-
-	                // perform semantic action
-	                yyval.$ = vstack[vstack.length-len]; // default to $$ = $1
-	                // default location, uses first token for firsts, last for lasts
-	                yyval._$ = {
-	                    first_line: lstack[lstack.length-(len||1)].first_line,
-	                    last_line: lstack[lstack.length-1].last_line,
-	                    first_column: lstack[lstack.length-(len||1)].first_column,
-	                    last_column: lstack[lstack.length-1].last_column
-	                };
-	                r = this.performAction.call(yyval, yytext, yyleng, yylineno, this.yy, action[1], vstack, lstack);
-
-	                if (typeof r !== 'undefined') {
-	                    return r;
-	                }
-
-	                // pop off stack
-	                if (len) {
-	                    stack = stack.slice(0,-1*len*2);
-	                    vstack = vstack.slice(0, -1*len);
-	                    lstack = lstack.slice(0, -1*len);
-	                }
-
-	                stack.push(this.productions_[action[1]][0]);    // push nonterminal (reduce)
-	                vstack.push(yyval.$);
-	                lstack.push(yyval._$);
-	                // goto new state = table[STATE][NONTERMINAL]
-	                newState = table[stack[stack.length-2]][stack[stack.length-1]];
-	                stack.push(newState);
-	                break;
-
-	            case 3: // accept
-	                return true;
-	        }
-
-	    }
-
-	    return true;
-	}};
-	/* Jison generated lexer */
-	var lexer = (function(){
-	var lexer = ({EOF:1,
-	parseError:function parseError(str, hash) {
-	        if (this.yy.parseError) {
-	            this.yy.parseError(str, hash);
-	        } else {
-	            throw new Error(str);
-	        }
-	    },
-	setInput:function (input) {
-	        this._input = input;
-	        this._more = this._less = this.done = false;
-	        this.yylineno = this.yyleng = 0;
-	        this.yytext = this.matched = this.match = '';
-	        this.conditionStack = ['INITIAL'];
-	        this.yylloc = {first_line:1,first_column:0,last_line:1,last_column:0};
-	        return this;
-	    },
-	input:function () {
-	        var ch = this._input[0];
-	        this.yytext+=ch;
-	        this.yyleng++;
-	        this.match+=ch;
-	        this.matched+=ch;
-	        var lines = ch.match(/\n/);
-	        if (lines) this.yylineno++;
-	        this._input = this._input.slice(1);
-	        return ch;
-	    },
-	unput:function (ch) {
-	        this._input = ch + this._input;
-	        return this;
-	    },
-	more:function () {
-	        this._more = true;
-	        return this;
-	    },
-	less:function (n) {
-	        this._input = this.match.slice(n) + this._input;
-	    },
-	pastInput:function () {
-	        var past = this.matched.substr(0, this.matched.length - this.match.length);
-	        return (past.length > 20 ? '...':'') + past.substr(-20).replace(/\n/g, "");
-	    },
-	upcomingInput:function () {
-	        var next = this.match;
-	        if (next.length < 20) {
-	            next += this._input.substr(0, 20-next.length);
-	        }
-	        return (next.substr(0,20)+(next.length > 20 ? '...':'')).replace(/\n/g, "");
-	    },
-	showPosition:function () {
-	        var pre = this.pastInput();
-	        var c = new Array(pre.length + 1).join("-");
-	        return pre + this.upcomingInput() + "\n" + c+"^";
-	    },
-	next:function () {
-	        if (this.done) {
-	            return this.EOF;
-	        }
-	        if (!this._input) this.done = true;
-
-	        var token,
-	            match,
-	            tempMatch,
-	            index,
-	            col,
-	            lines;
-	        if (!this._more) {
-	            this.yytext = '';
-	            this.match = '';
-	        }
-	        var rules = this._currentRules();
-	        for (var i=0;i < rules.length; i++) {
-	            tempMatch = this._input.match(this.rules[rules[i]]);
-	            if (tempMatch && (!match || tempMatch[0].length > match[0].length)) {
-	                match = tempMatch;
-	                index = i;
-	                if (!this.options.flex) break;
-	            }
-	        }
-	        if (match) {
-	            lines = match[0].match(/\n.*/g);
-	            if (lines) this.yylineno += lines.length;
-	            this.yylloc = {first_line: this.yylloc.last_line,
-	                           last_line: this.yylineno+1,
-	                           first_column: this.yylloc.last_column,
-	                           last_column: lines ? lines[lines.length-1].length-1 : this.yylloc.last_column + match[0].length}
-	            this.yytext += match[0];
-	            this.match += match[0];
-	            this.yyleng = this.yytext.length;
-	            this._more = false;
-	            this._input = this._input.slice(match[0].length);
-	            this.matched += match[0];
-	            token = this.performAction.call(this, this.yy, this, rules[index],this.conditionStack[this.conditionStack.length-1]);
-	            if (this.done && this._input) this.done = false;
-	            if (token) return token;
-	            else return;
-	        }
-	        if (this._input === "") {
-	            return this.EOF;
-	        } else {
-	            this.parseError('Lexical error on line '+(this.yylineno+1)+'. Unrecognized text.\n'+this.showPosition(), 
-	                    {text: "", token: null, line: this.yylineno});
-	        }
-	    },
-	lex:function lex() {
-	        var r = this.next();
-	        if (typeof r !== 'undefined') {
-	            return r;
-	        } else {
-	            return this.lex();
-	        }
-	    },
-	begin:function begin(condition) {
-	        this.conditionStack.push(condition);
-	    },
-	popState:function popState() {
-	        return this.conditionStack.pop();
-	    },
-	_currentRules:function _currentRules() {
-	        return this.conditions[this.conditionStack[this.conditionStack.length-1]].rules;
-	    },
-	topState:function () {
-	        return this.conditionStack[this.conditionStack.length-2];
-	    },
-	pushState:function begin(condition) {
-	        this.begin(condition);
-	    }});
-	lexer.options = {};
-	lexer.performAction = function anonymous(yy,yy_,$avoiding_name_collisions,YY_START) {
-
-	var YYSTATE=YY_START
-	switch($avoiding_name_collisions) {
-	case 0:/* skip whitespace */
-	break;
-	case 1:return 6
-	break;
-	case 2:yy_.yytext = yy_.yytext.substr(1,yy_.yyleng-2); return 4
-	break;
-	case 3:return 17
-	break;
-	case 4:return 18
-	break;
-	case 5:return 23
-	break;
-	case 6:return 24
-	break;
-	case 7:return 22
-	break;
-	case 8:return 21
-	break;
-	case 9:return 10
-	break;
-	case 10:return 11
-	break;
-	case 11:return 8
-	break;
-	case 12:return 14
-	break;
-	case 13:return 'INVALID'
-	break;
-	}
-	};
-	lexer.rules = [/^(?:\s+)/,/^(?:(-?([0-9]|[1-9][0-9]+))(\.[0-9]+)?([eE][-+]?[0-9]+)?\b)/,/^(?:"(?:\\[\\"bfnrt/]|\\u[a-fA-F0-9]{4}|[^\\\0-\x09\x0a-\x1f"])*")/,/^(?:\{)/,/^(?:\})/,/^(?:\[)/,/^(?:\])/,/^(?:,)/,/^(?::)/,/^(?:true\b)/,/^(?:false\b)/,/^(?:null\b)/,/^(?:$)/,/^(?:.)/];
-	lexer.conditions = {"INITIAL":{"rules":[0,1,2,3,4,5,6,7,8,9,10,11,12,13],"inclusive":true}};
-
-
-	;
-	return lexer;})()
-	parser.lexer = lexer;
-	return parser;
-	})();
-	if (true) {
-	  exports.parser = jsonlint;
-	  exports.parse = jsonlint.parse.bind(jsonlint);
-	}
-
-/***/ },
 /* 13 */
 /***/ function(module, exports, __webpack_require__) {
 
@@ -6914,7 +6979,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	border-bottom: 1px solid #000000\
 	}\
 	.ace-jsoneditor .ace_marker-layer .ace_selection {\
-	background: #D5DDF6\
+	background: lightgray\
 	}\
 	.ace-jsoneditor.ace_multiselect .ace_selection.ace_start {\
 	box-shadow: 0 0 3px 0px #FFFFFF;\
@@ -6934,7 +6999,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	background-color : #dcdcdc\
 	}\
 	.ace-jsoneditor .ace_marker-layer .ace_selected-word {\
-	border: 1px solid #D5DDF6\
+	border: 1px solid lightgray\
 	}\
 	.ace-jsoneditor .ace_invisible {\
 	color: #BFBFBF\
@@ -7040,69 +7105,62 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var ACE_NAMESPACE = "ace";
 
-	var global = (function() {
-	    return this;
-	})();
+	var global = (function() { return this; })();
+	if (!global && typeof window != "undefined") global = window; // strict mode
 
 
 	if (!ACE_NAMESPACE && typeof acequirejs !== "undefined")
 	    return;
 
 
-	var _define = function(module, deps, payload) {
-	    if (typeof module !== 'string') {
-	        if (_define.original)
-	            _define.original.apply(window, arguments);
+	var define = function(module, deps, payload) {
+	    if (typeof module !== "string") {
+	        if (define.original)
+	            define.original.apply(this, arguments);
 	        else {
-	            console.error('dropping module because define wasn\'t a string.');
+	            console.error("dropping module because define wasn\'t a string.");
 	            console.trace();
 	        }
 	        return;
 	    }
-
 	    if (arguments.length == 2)
 	        payload = deps;
-
-	    if (!_define.modules) {
-	        _define.modules = {};
-	        _define.payloads = {};
+	    if (!define.modules[module]) {
+	        define.payloads[module] = payload;
+	        define.modules[module] = null;
 	    }
-
-	    _define.payloads[module] = payload;
-	    _define.modules[module] = null;
 	};
 
+	define.modules = {};
+	define.payloads = {};
+
 	/**
-	 * Get at functionality ace.define()ed using the function above
+	 * Get at functionality define()ed using the function above
 	 */
 	var _acequire = function(parentId, module, callback) {
-	    if (Object.prototype.toString.call(module) === "[object Array]") {
+	    if (typeof module === "string") {
+	        var payload = lookup(parentId, module);
+	        if (payload != undefined) {
+	            callback && callback();
+	            return payload;
+	        }
+	    } else if (Object.prototype.toString.call(module) === "[object Array]") {
 	        var params = [];
 	        for (var i = 0, l = module.length; i < l; ++i) {
 	            var dep = lookup(parentId, module[i]);
-	            if (!dep && _acequire.original)
-	                return _acequire.original.apply(window, arguments);
+	            if (dep == undefined && acequire.original)
+	                return;
 	            params.push(dep);
 	        }
-	        if (callback) {
-	            callback.apply(null, params);
-	        }
+	        return callback && callback.apply(null, params) || true;
 	    }
-	    else if (typeof module === 'string') {
-	        var payload = lookup(parentId, module);
-	        if (!payload && _acequire.original)
-	            return _acequire.original.apply(window, arguments);
+	};
 
-	        if (callback) {
-	            callback();
-	        }
-
-	        return payload;
-	    }
-	    else {
-	        if (_acequire.original)
-	            return _acequire.original.apply(window, arguments);
-	    }
+	var acequire = function(module, callback) {
+	    var packagedModule = _acequire("", module, callback);
+	    if (packagedModule == undefined && acequire.original)
+	        return acequire.original.apply(this, arguments);
+	    return packagedModule;
 	};
 
 	var normalizeModule = function(parentId, moduleName) {
@@ -7121,7 +7179,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	            moduleName = moduleName.replace(/\/\.\//, "/").replace(/[^\/]+\/\.\.\//, "");
 	        }
 	    }
-
 	    return moduleName;
 	};
 
@@ -7130,12 +7187,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * definition function if needed.
 	 */
 	var lookup = function(parentId, moduleName) {
-
 	    moduleName = normalizeModule(parentId, moduleName);
 
-	    var module = _define.modules[moduleName];
+	    var module = define.modules[moduleName];
 	    if (!module) {
-	        module = _define.payloads[moduleName];
+	        module = define.payloads[moduleName];
 	        if (typeof module === 'function') {
 	            var exports = {};
 	            var mod = {
@@ -7151,19 +7207,15 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	            var returnValue = module(req, exports, mod);
 	            exports = returnValue || mod.exports;
-	            _define.modules[moduleName] = exports;
-	            delete _define.payloads[moduleName];
+	            define.modules[moduleName] = exports;
+	            delete define.payloads[moduleName];
 	        }
-	        module = _define.modules[moduleName] = exports || module;
+	        module = define.modules[moduleName] = exports || module;
 	    }
 	    return module;
 	};
 
 	function exportAce(ns) {
-	    var acequire = function(module, callback) {
-	        return _acequire("", module, callback);
-	    };
-
 	    var root = global;
 	    if (ns) {
 	        if (!global[ns])
@@ -7172,13 +7224,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }
 
 	    if (!root.define || !root.define.packaged) {
-	        _define.original = root.define;
-	        root.define = _define;
+	        define.original = root.define;
+	        root.define = define;
 	        root.define.packaged = true;
 	    }
 
 	    if (!root.acequire || !root.acequire.packaged) {
-	        _acequire.original = root.acequire;
+	        acequire.original = root.acequire;
 	        root.acequire = acequire;
 	        root.acequire.packaged = true;
 	    }
@@ -7969,16 +8021,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	ace.define("ace/lib/dom",["require","exports","module"], function(acequire, exports, module) {
 	"use strict";
 
-	if (typeof document == "undefined")
-	    return;
-
 	var XHTML_NS = "http://www.w3.org/1999/xhtml";
 
 	exports.getDocumentHead = function(doc) {
 	    if (!doc)
 	        doc = document;
 	    return doc.head || doc.getElementsByTagName("head")[0] || doc.documentElement;
-	}
+	};
 
 	exports.createElement = function(tag, ns) {
 	    return document.createElementNS ?
@@ -8017,7 +8066,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        add = false;
 	        classes.splice(index, 1);
 	    }
-	    if(add)
+	    if (add)
 	        classes.push(name);
 
 	    el.className = classes.join(" ");
@@ -8053,16 +8102,16 @@ return /******/ (function(modules) { // webpackBootstrap
 	    
 	    var style;
 	    
+	    if (id)
+	        cssText += "\n/*# sourceURL=ace/css/" + id + " */";
+	    
 	    if (doc.createStyleSheet) {
 	        style = doc.createStyleSheet();
 	        style.cssText = cssText;
 	        if (id)
 	            style.owningElement.id = id;
 	    } else {
-	        style = doc.createElementNS
-	            ? doc.createElementNS(XHTML_NS, "style")
-	            : doc.createElement("style");
-
+	        style = exports.createElement("style");
 	        style.appendChild(doc.createTextNode(cssText));
 	        if (id)
 	            style.id = id;
@@ -8098,38 +8147,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	        element.clientHeight
 	    );
 	};
-
-	if (window.pageYOffset !== undefined) {
-	    exports.getPageScrollTop = function() {
-	        return window.pageYOffset;
-	    };
-
-	    exports.getPageScrollLeft = function() {
-	        return window.pageXOffset;
-	    };
-	}
-	else {
-	    exports.getPageScrollTop = function() {
-	        return document.body.scrollTop;
-	    };
-
-	    exports.getPageScrollLeft = function() {
-	        return document.body.scrollLeft;
-	    };
-	}
-
-	if (window.getComputedStyle)
-	    exports.computedStyle = function(element, style) {
-	        if (style)
-	            return (window.getComputedStyle(element, "") || {})[style] || "";
-	        return window.getComputedStyle(element, "") || {};
-	    };
-	else
-	    exports.computedStyle = function(element, style) {
-	        if (style)
-	            return element.currentStyle[style];
-	        return element.currentStyle;
-	    };
 
 	exports.scrollbarWidth = function(document) {
 	    var inner = exports.createElement("ace_inner");
@@ -8167,6 +8184,43 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	    return noScrollbar-withScrollbar;
 	};
+
+	if (typeof document == "undefined") {
+	    exports.importCssString = function() {};
+	    return;
+	}
+
+	if (window.pageYOffset !== undefined) {
+	    exports.getPageScrollTop = function() {
+	        return window.pageYOffset;
+	    };
+
+	    exports.getPageScrollLeft = function() {
+	        return window.pageXOffset;
+	    };
+	}
+	else {
+	    exports.getPageScrollTop = function() {
+	        return document.body.scrollTop;
+	    };
+
+	    exports.getPageScrollLeft = function() {
+	        return document.body.scrollLeft;
+	    };
+	}
+
+	if (window.getComputedStyle)
+	    exports.computedStyle = function(element, style) {
+	        if (style)
+	            return (window.getComputedStyle(element, "") || {})[style] || "";
+	        return window.getComputedStyle(element, "") || {};
+	    };
+	else
+	    exports.computedStyle = function(element, style) {
+	        if (style)
+	            return element.currentStyle[style];
+	        return element.currentStyle;
+	    };
 	exports.setInnerHtml = function(el, innerHtml) {
 	    var element = el.cloneNode(false);//document.createElement("div");
 	    element.innerHTML = innerHtml;
@@ -8296,8 +8350,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	           73: 'i',  74: 'j',  75: 'k',  76: 'l',  77: 'm',  78: 'n', 79:  'o',
 	           80: 'p',  81: 'q',  82: 'r',  83: 's',  84: 't',  85: 'u', 86:  'v',
 	           87: 'w',  88: 'x',  89: 'y',  90: 'z', 107: '+', 109: '-', 110: '.',
-	          187: '=', 188: ',', 189: '-', 190: '.', 191: '/', 192: '`', 219: '[',
-	          220: '\\',221: ']', 222: '\''
+	          186: ';', 187: '=', 188: ',', 189: '-', 190: '.', 191: '/', 192: '`',
+	          219: '[', 220: '\\',221: ']', 222: "'", 111: '/', 106: '*'
 	        }
 	    };
 	    var name, i;
@@ -8327,7 +8381,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    })();
 
 	    ret.KEY_MODS[0] = "";
-	    ret.KEY_MODS[-1] = "input";
+	    ret.KEY_MODS[-1] = "input-";
 
 	    return ret;
 	})();
@@ -8394,6 +8448,9 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var keys = acequire("./keys");
 	var useragent = acequire("./useragent");
+
+	var pressedKeys = null;
+	var ts = 0;
 
 	exports.addListener = function(elem, type, callback) {
 	    if (elem.addEventListener) {
@@ -8463,6 +8520,29 @@ return /******/ (function(modules) { // webpackBootstrap
 	    exports.addListener(document, "dragstart", onMouseUp, true);
 	    
 	    return onMouseUp;
+	};
+
+	exports.addTouchMoveListener = function (el, callback) {
+	    if ("ontouchmove" in el) {
+	        var startx, starty;
+	        exports.addListener(el, "touchstart", function (e) {
+	            var touchObj = e.changedTouches[0];
+	            startx = touchObj.clientX;
+	            starty = touchObj.clientY;
+	        });
+	        exports.addListener(el, "touchmove", function (e) {
+	            var factor = 1,
+	            touchObj = e.changedTouches[0];
+
+	            e.wheelX = -(touchObj.clientX - startx) / factor;
+	            e.wheelY = -(touchObj.clientY - starty) / factor;
+
+	            startx = touchObj.clientX;
+	            starty = touchObj.clientY;
+
+	            callback(e);
+	        });
+	    } 
 	};
 
 	exports.addMouseWheelListener = function(el, callback) {
@@ -8580,7 +8660,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    var hashId = getModifierHash(e);
 
 	    if (!useragent.isMac && pressedKeys) {
-	        if (pressedKeys[91] || pressedKeys[92])
+	        if (pressedKeys.OSKey)
 	            hashId |= 8;
 	        if (pressedKeys.altGr) {
 	            if ((3 & hashId) != 3)
@@ -8591,36 +8671,20 @@ return /******/ (function(modules) { // webpackBootstrap
 	        if (keyCode === 18 || keyCode === 17) {
 	            var location = "location" in e ? e.location : e.keyLocation;
 	            if (keyCode === 17 && location === 1) {
-	                ts = e.timeStamp;
+	                if (pressedKeys[keyCode] == 1)
+	                    ts = e.timeStamp;
 	            } else if (keyCode === 18 && hashId === 3 && location === 2) {
-	                var dt = -ts;
-	                ts = e.timeStamp;
-	                dt += ts;
-	                if (dt < 3)
+	                var dt = e.timeStamp - ts;
+	                if (dt < 50)
 	                    pressedKeys.altGr = true;
 	            }
 	        }
 	    }
 	    
 	    if (keyCode in keys.MODIFIER_KEYS) {
-	        switch (keys.MODIFIER_KEYS[keyCode]) {
-	            case "Alt":
-	                hashId = 2;
-	                break;
-	            case "Shift":
-	                hashId = 4;
-	                break;
-	            case "Ctrl":
-	                hashId = 1;
-	                break;
-	            default:
-	                hashId = 8;
-	                break;
-	        }
 	        keyCode = -1;
 	    }
-
-	    if (hashId & 8 && (keyCode === 91 || keyCode === 93)) {
+	    if (hashId & 8 && (keyCode >= 91 && keyCode <= 93)) {
 	        keyCode = -1;
 	    }
 	    
@@ -8647,8 +8711,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    return callback(e, hashId, keyCode);
 	}
 
-	var pressedKeys = null;
-	var ts = 0;
+
 	exports.addCommandKeyListener = function(el, callback) {
 	    var addListener = exports.addListener;
 	    if (useragent.isOldGecko || (useragent.isOpera && !("KeyboardEvent" in window))) {
@@ -8663,8 +8726,18 @@ return /******/ (function(modules) { // webpackBootstrap
 	        var lastDefaultPrevented = null;
 
 	        addListener(el, "keydown", function(e) {
-	            pressedKeys[e.keyCode] = true;
-	            var result = normalizeCommandKeys(callback, e, e.keyCode);
+	            var keyCode = e.keyCode;
+	            pressedKeys[keyCode] = (pressedKeys[keyCode] || 0) + 1;
+	            if (keyCode == 91 || keyCode == 92) {
+	                pressedKeys.OSKey = true;
+	            } else if (pressedKeys.OSKey) {
+	                if (e.timeStamp - pressedKeys.lastT > 200 && pressedKeys.count == 1)
+	                    resetPressedKeys();
+	            }
+	            if (pressedKeys[keyCode] == 1)
+	                pressedKeys.count++;
+	            pressedKeys.lastT = e.timeStamp;
+	            var result = normalizeCommandKeys(callback, e, keyCode);
 	            lastDefaultPrevented = e.defaultPrevented;
 	            return result;
 	        });
@@ -8677,19 +8750,31 @@ return /******/ (function(modules) { // webpackBootstrap
 	        });
 
 	        addListener(el, "keyup", function(e) {
-	            pressedKeys[e.keyCode] = null;
+	            var keyCode = e.keyCode;
+	            if (!pressedKeys[keyCode]) {
+	                resetPressedKeys();
+	            } else {
+	                pressedKeys.count = Math.max(pressedKeys.count - 1, 0);
+	            }
+	            if (keyCode == 91 || keyCode == 92) {
+	                pressedKeys.OSKey = false;
+	            }
+	            pressedKeys[keyCode] = null;
 	        });
 
 	        if (!pressedKeys) {
-	            pressedKeys = Object.create(null);
-	            addListener(window, "focus", function(e) {
-	                pressedKeys = Object.create(null);
-	            });
+	            resetPressedKeys();
+	            addListener(window, "focus", resetPressedKeys);
 	        }
 	    }
 	};
+	function resetPressedKeys() {
+	    pressedKeys = Object.create(null);
+	    pressedKeys.count = 0;
+	    pressedKeys.lastT = 0;
+	}
 
-	if (window.postMessage && !useragent.isOldIE) {
+	if (typeof window == "object" && window.postMessage && !useragent.isOldIE) {
 	    var postMessageId = 1;
 	    exports.nextTick = function(callback, win) {
 	        win = win || window;
@@ -8706,11 +8791,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	}
 
 
-	exports.nextFrame = window.requestAnimationFrame ||
-	    window.mozRequestAnimationFrame ||
-	    window.webkitRequestAnimationFrame ||
-	    window.msRequestAnimationFrame ||
-	    window.oRequestAnimationFrame;
+	exports.nextFrame = typeof window == "object" && (window.requestAnimationFrame
+	    || window.mozRequestAnimationFrame
+	    || window.webkitRequestAnimationFrame
+	    || window.msRequestAnimationFrame
+	    || window.oRequestAnimationFrame);
 
 	if (exports.nextFrame)
 	    exports.nextFrame = exports.nextFrame.bind(window);
@@ -8773,20 +8858,24 @@ return /******/ (function(modules) { // webpackBootstrap
 	    return copy;
 	};
 
-	exports.deepCopy = function (obj) {
+	exports.deepCopy = function deepCopy(obj) {
 	    if (typeof obj !== "object" || !obj)
 	        return obj;
+	    var copy;
+	    if (Array.isArray(obj)) {
+	        copy = [];
+	        for (var key = 0; key < obj.length; key++) {
+	            copy[key] = deepCopy(obj[key]);
+	        }
+	        return copy;
+	    }
 	    var cons = obj.constructor;
 	    if (cons === RegExp)
 	        return obj;
 	    
-	    var copy = cons();
+	    copy = cons();
 	    for (var key in obj) {
-	        if (typeof obj[key] === "object") {
-	            copy[key] = exports.deepCopy(obj[key]);
-	        } else {
-	            copy[key] = obj[key];
-	        }
+	        copy[key] = deepCopy(obj[key]);
 	    }
 	    return copy;
 	};
@@ -8923,13 +9012,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	    if (useragent.isTouchPad)
 	        text.setAttribute("x-palm-disable-auto-cap", true);
 
-	    text.wrap = "off";
-	    text.autocorrect = "off";
-	    text.autocapitalize = "off";
-	    text.spellcheck = false;
+	    text.setAttribute("wrap", "off");
+	    text.setAttribute("autocorrect", "off");
+	    text.setAttribute("autocapitalize", "off");
+	    text.setAttribute("spellcheck", false);
 
 	    text.style.opacity = "0";
-	    if (useragent.isOldIE) text.style.top = "-100px";
+	    if (useragent.isOldIE) text.style.top = "-1000px";
 	    parentNode.insertBefore(text, parentNode.firstChild);
 
 	    var PLACEHOLDER = "\x01\x01";
@@ -8950,8 +9039,21 @@ return /******/ (function(modules) { // webpackBootstrap
 	        host.onFocus(e);
 	        resetSelection();
 	    });
-	    this.focus = function() { text.focus(); };
-	    this.blur = function() { text.blur(); };
+	    this.focus = function() {
+	        if (tempStyle) return text.focus();
+	        var top = text.style.top;
+	        text.style.position = "fixed";
+	        text.style.top = "-1000px";
+	        text.focus();
+	        setTimeout(function() {
+	            text.style.position = "";
+	            if (text.style.top == "-1000px")
+	                text.style.top = top;
+	        }, 0);
+	    };
+	    this.blur = function() {
+	        text.blur();
+	    };
 	    this.isFocused = function() {
 	        return isFocused;
 	    };
@@ -8968,6 +9070,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	    function resetSelection(isEmpty) {
 	        if (inComposition)
 	            return;
+	        inComposition = true;
+	        
 	        if (inputHandler) {
 	            selectionStart = 0;
 	            selectionEnd = isEmpty ? 0 : text.value.length - 1;
@@ -8978,6 +9082,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	        try {
 	            text.setSelectionRange(selectionStart, selectionEnd);
 	        } catch(e){}
+	        
+	        inComposition = false;
 	    }
 
 	    function resetValue() {
@@ -9152,7 +9258,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        var data = handleClipboardData(e);
 	        if (typeof data == "string") {
 	            if (data)
-	                host.onPaste(data);
+	                host.onPaste(data, e);
 	            if (useragent.isIE)
 	                setTimeout(resetSelection);
 	            event.preventDefault(e);
@@ -9318,7 +9424,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    this.onContextMenuClose = onContextMenuClose;
 	    var closeTimeout;
 	    function onContextMenuClose() {
-	        clearTimeout(closeTimeout)
+	        clearTimeout(closeTimeout);
 	        closeTimeout = setTimeout(function () {
 	            if (tempStyle) {
 	                text.style.cssText = tempStyle;
@@ -9360,6 +9466,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    editor.setDefaultHandler("tripleclick", this.onTripleClick.bind(mouseHandler));
 	    editor.setDefaultHandler("quadclick", this.onQuadClick.bind(mouseHandler));
 	    editor.setDefaultHandler("mousewheel", this.onMouseWheel.bind(mouseHandler));
+	    editor.setDefaultHandler("touchmove", this.onTouchMove.bind(mouseHandler));
 
 	    var exports = ["select", "startSelect", "selectEnd", "selectAllEnd", "selectByWordsEnd",
 	        "selectByLinesEnd", "dragWait", "dragWaitEnd", "focusWait"];
@@ -9384,9 +9491,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	        if (button !== 0) {
 	            var selectionRange = editor.getSelectionRange();
 	            var selectionEmpty = selectionRange.isEmpty();
-
+	            editor.$blockScrolling++;
 	            if (selectionEmpty)
 	                editor.selection.moveToPosition(pos);
+	            editor.$blockScrolling--;
 	            editor.textInput.onContextMenu(ev.domEvent);
 	            return; // stopping event here breaks contextmenu on ff mac
 	        }
@@ -9409,7 +9517,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    this.startSelect = function(pos, waitForClickSelection) {
 	        pos = pos || this.editor.renderer.screenToTextCoordinates(this.x, this.y);
 	        var editor = this.editor;
-	        
+	        editor.$blockScrolling++;
 	        if (this.mousedownEvent.getShiftKey())
 	            editor.selection.selectToPosition(pos);
 	        else if (!waitForClickSelection)
@@ -9421,12 +9529,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	        }
 	        editor.setStyle("ace_selecting");
 	        this.setState("select");
+	        editor.$blockScrolling--;
 	    };
 
 	    this.select = function() {
 	        var anchor, editor = this.editor;
 	        var cursor = editor.renderer.screenToTextCoordinates(this.x, this.y);
-
+	        editor.$blockScrolling++;
 	        if (this.$clickSelection) {
 	            var cmp = this.$clickSelection.comparePoint(cursor);
 
@@ -9442,7 +9551,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            editor.selection.setSelectionAnchor(anchor.row, anchor.column);
 	        }
 	        editor.selection.selectToPosition(cursor);
-
+	        editor.$blockScrolling--;
 	        editor.renderer.scrollCursorIntoView();
 	    };
 
@@ -9450,7 +9559,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        var anchor, editor = this.editor;
 	        var cursor = editor.renderer.screenToTextCoordinates(this.x, this.y);
 	        var range = editor.selection[unitName](cursor.row, cursor.column);
-
+	        editor.$blockScrolling++;
 	        if (this.$clickSelection) {
 	            var cmpStart = this.$clickSelection.comparePoint(range.start);
 	            var cmpEnd = this.$clickSelection.comparePoint(range.end);
@@ -9474,7 +9583,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            editor.selection.setSelectionAnchor(anchor.row, anchor.column);
 	        }
 	        editor.selection.selectToPosition(cursor);
-
+	        editor.$blockScrolling--;
 	        editor.renderer.scrollCursorIntoView();
 	    };
 
@@ -9551,6 +9660,19 @@ return /******/ (function(modules) { // webpackBootstrap
 	        var t = ev.domEvent.timeStamp;
 	        var dt = t - (this.$lastScrollTime||0);
 	        
+	        var editor = this.editor;
+	        var isScrolable = editor.renderer.isScrollableBy(ev.wheelX * ev.speed, ev.wheelY * ev.speed);
+	        if (isScrolable || dt < 200) {
+	            this.$lastScrollTime = t;
+	            editor.renderer.scrollBy(ev.wheelX * ev.speed, ev.wheelY * ev.speed);
+	            return ev.stop();
+	        }
+	    };
+	    
+	    this.onTouchMove = function (ev) {
+	        var t = ev.domEvent.timeStamp;
+	        var dt = t - (this.$lastScrollTime || 0);
+
 	        var editor = this.editor;
 	        var isScrolable = editor.renderer.isScrollableBy(ev.wheelX * ev.speed, ev.wheelY * ev.speed);
 	        if (isScrolable || dt < 200) {
@@ -9713,7 +9835,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        if (mouseHandler.$tooltipFollowsMouse) {
 	            moveTooltip(mouseEvent);
 	        } else {
-	            var gutterElement = gutter.$cells[editor.session.documentToScreenRow(row, 0)].element;
+	            var gutterElement = mouseEvent.domEvent.target;
 	            var rect = gutterElement.getBoundingClientRect();
 	            var style = tooltip.getElement().style;
 	            style.left = rect.right + "px";
@@ -10420,16 +10542,140 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	});
 
-	ace.define("ace/config",["require","exports","module","ace/lib/lang","ace/lib/oop","ace/lib/net","ace/lib/event_emitter"], function(acequire, exports, module) {
+	ace.define("ace/lib/app_config",["require","exports","module","ace/lib/oop","ace/lib/event_emitter"], function(acequire, exports, module) {
+	"no use strict";
+
+	var oop = acequire("./oop");
+	var EventEmitter = acequire("./event_emitter").EventEmitter;
+
+	var optionsProvider = {
+	    setOptions: function(optList) {
+	        Object.keys(optList).forEach(function(key) {
+	            this.setOption(key, optList[key]);
+	        }, this);
+	    },
+	    getOptions: function(optionNames) {
+	        var result = {};
+	        if (!optionNames) {
+	            optionNames = Object.keys(this.$options);
+	        } else if (!Array.isArray(optionNames)) {
+	            result = optionNames;
+	            optionNames = Object.keys(result);
+	        }
+	        optionNames.forEach(function(key) {
+	            result[key] = this.getOption(key);
+	        }, this);
+	        return result;
+	    },
+	    setOption: function(name, value) {
+	        if (this["$" + name] === value)
+	            return;
+	        var opt = this.$options[name];
+	        if (!opt) {
+	            return warn('misspelled option "' + name + '"');
+	        }
+	        if (opt.forwardTo)
+	            return this[opt.forwardTo] && this[opt.forwardTo].setOption(name, value);
+
+	        if (!opt.handlesSet)
+	            this["$" + name] = value;
+	        if (opt && opt.set)
+	            opt.set.call(this, value);
+	    },
+	    getOption: function(name) {
+	        var opt = this.$options[name];
+	        if (!opt) {
+	            return warn('misspelled option "' + name + '"');
+	        }
+	        if (opt.forwardTo)
+	            return this[opt.forwardTo] && this[opt.forwardTo].getOption(name);
+	        return opt && opt.get ? opt.get.call(this) : this["$" + name];
+	    }
+	};
+
+	function warn(message) {
+	    if (typeof console != "undefined" && console.warn)
+	        console.warn.apply(console, arguments);
+	}
+
+	function reportError(msg, data) {
+	    var e = new Error(msg);
+	    e.data = data;
+	    if (typeof console == "object" && console.error)
+	        console.error(e);
+	    setTimeout(function() { throw e; });
+	}
+
+	var AppConfig = function() {
+	    this.$defaultOptions = {};
+	};
+
+	(function() {
+	    oop.implement(this, EventEmitter);
+	    this.defineOptions = function(obj, path, options) {
+	        if (!obj.$options)
+	            this.$defaultOptions[path] = obj.$options = {};
+
+	        Object.keys(options).forEach(function(key) {
+	            var opt = options[key];
+	            if (typeof opt == "string")
+	                opt = {forwardTo: opt};
+
+	            opt.name || (opt.name = key);
+	            obj.$options[opt.name] = opt;
+	            if ("initialValue" in opt)
+	                obj["$" + opt.name] = opt.initialValue;
+	        });
+	        oop.implement(obj, optionsProvider);
+
+	        return this;
+	    };
+
+	    this.resetOptions = function(obj) {
+	        Object.keys(obj.$options).forEach(function(key) {
+	            var opt = obj.$options[key];
+	            if ("value" in opt)
+	                obj.setOption(key, opt.value);
+	        });
+	    };
+
+	    this.setDefaultValue = function(path, name, value) {
+	        var opts = this.$defaultOptions[path] || (this.$defaultOptions[path] = {});
+	        if (opts[name]) {
+	            if (opts.forwardTo)
+	                this.setDefaultValue(opts.forwardTo, name, value);
+	            else
+	                opts[name].value = value;
+	        }
+	    };
+
+	    this.setDefaultValues = function(path, optionHash) {
+	        Object.keys(optionHash).forEach(function(key) {
+	            this.setDefaultValue(path, key, optionHash[key]);
+	        }, this);
+	    };
+	    
+	    this.warn = warn;
+	    this.reportError = reportError;
+	    
+	}).call(AppConfig.prototype);
+
+	exports.AppConfig = AppConfig;
+
+	});
+
+	ace.define("ace/config",["require","exports","module","ace/lib/lang","ace/lib/oop","ace/lib/net","ace/lib/app_config"], function(acequire, exports, module) {
 	"no use strict";
 
 	var lang = acequire("./lib/lang");
 	var oop = acequire("./lib/oop");
 	var net = acequire("./lib/net");
-	var EventEmitter = acequire("./lib/event_emitter").EventEmitter;
+	var AppConfig = acequire("./lib/app_config").AppConfig;
+
+	module.exports = exports = new AppConfig();
 
 	var global = (function() {
-	    return this;
+	    return this || typeof window != "undefined" && window;
 	})();
 
 	var options = {
@@ -10459,8 +10705,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	exports.all = function() {
 	    return lang.copyObject(options);
 	};
-	oop.implement(exports, EventEmitter);
-
 	exports.moduleUrl = function(name, component) {
 	    if (options.$moduleUrls[name])
 	        return options.$moduleUrls[name];
@@ -10583,99 +10827,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	    return str.replace(/-(.)/g, function(m, m1) { return m1.toUpperCase(); });
 	}
 
-	var optionsProvider = {
-	    setOptions: function(optList) {
-	        Object.keys(optList).forEach(function(key) {
-	            this.setOption(key, optList[key]);
-	        }, this);
-	    },
-	    getOptions: function(optionNames) {
-	        var result = {};
-	        if (!optionNames) {
-	            optionNames = Object.keys(this.$options);
-	        } else if (!Array.isArray(optionNames)) {
-	            result = optionNames;
-	            optionNames = Object.keys(result);
-	        }
-	        optionNames.forEach(function(key) {
-	            result[key] = this.getOption(key);
-	        }, this);
-	        return result;
-	    },
-	    setOption: function(name, value) {
-	        if (this["$" + name] === value)
-	            return;
-	        var opt = this.$options[name];
-	        if (!opt) {
-	            if (typeof console != "undefined" && console.warn)
-	                console.warn('misspelled option "' + name + '"');
-	            return undefined;
-	        }
-	        if (opt.forwardTo)
-	            return this[opt.forwardTo] && this[opt.forwardTo].setOption(name, value);
-
-	        if (!opt.handlesSet)
-	            this["$" + name] = value;
-	        if (opt && opt.set)
-	            opt.set.call(this, value);
-	    },
-	    getOption: function(name) {
-	        var opt = this.$options[name];
-	        if (!opt) {
-	            if (typeof console != "undefined" && console.warn)
-	                console.warn('misspelled option "' + name + '"');
-	            return undefined;
-	        }
-	        if (opt.forwardTo)
-	            return this[opt.forwardTo] && this[opt.forwardTo].getOption(name);
-	        return opt && opt.get ? opt.get.call(this) : this["$" + name];
-	    }
-	};
-
-	var defaultOptions = {};
-	exports.defineOptions = function(obj, path, options) {
-	    if (!obj.$options)
-	        defaultOptions[path] = obj.$options = {};
-
-	    Object.keys(options).forEach(function(key) {
-	        var opt = options[key];
-	        if (typeof opt == "string")
-	            opt = {forwardTo: opt};
-
-	        opt.name || (opt.name = key);
-	        obj.$options[opt.name] = opt;
-	        if ("initialValue" in opt)
-	            obj["$" + opt.name] = opt.initialValue;
-	    });
-	    oop.implement(obj, optionsProvider);
-
-	    return this;
-	};
-
-	exports.resetOptions = function(obj) {
-	    Object.keys(obj.$options).forEach(function(key) {
-	        var opt = obj.$options[key];
-	        if ("value" in opt)
-	            obj.setOption(key, opt.value);
-	    });
-	};
-
-	exports.setDefaultValue = function(path, name, value) {
-	    var opts = defaultOptions[path] || (defaultOptions[path] = {});
-	    if (opts[name]) {
-	        if (opts.forwardTo)
-	            exports.setDefaultValue(opts.forwardTo, name, value);
-	        else
-	            opts[name].value = value;
-	    }
-	};
-
-	exports.setDefaultValues = function(path, optionHash) {
-	    Object.keys(optionHash).forEach(function(key) {
-	        exports.setDefaultValue(path, key, optionHash[key]);
-	    });
-	};
-
 	});
 
 	ace.define("ace/mouse/mouse_handler",["require","exports","module","ace/lib/event","ace/lib/useragent","ace/mouse/default_handlers","ace/mouse/default_gutter_handler","ace/mouse/mouse_event","ace/mouse/dragdrop_handler","ace/config"], function(acequire, exports, module) {
@@ -10696,13 +10847,15 @@ return /******/ (function(modules) { // webpackBootstrap
 	    new DefaultHandlers(this);
 	    new DefaultGutterHandler(this);
 	    new DragdropHandler(this);
-	    
-	    var focusEditor = function(e) { 
-	        if (!editor.isFocused() && editor.textInput)
-	            editor.textInput.moveToMouse(e);
-	        editor.focus() 
+
+	    var focusEditor = function(e) {
+	        if (!document.hasFocus || !document.hasFocus())
+	            window.focus();
+	        editor.focus();
+	        if (!editor.isFocused())
+	            window.focus();
 	    };
-	    
+
 	    var mouseTarget = editor.renderer.getMouseEventTarget();
 	    event.addListener(mouseTarget, "click", this.onMouseEvent.bind(this, "click"));
 	    event.addListener(mouseTarget, "mousemove", this.onMouseMove.bind(this, "mousemove"));
@@ -10712,10 +10865,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	        event.addMultiMouseDownListener(editor.renderer.scrollBarH.inner, [400, 300, 250], this, "onMouseEvent");
 	        if (useragent.isIE) {
 	            event.addListener(editor.renderer.scrollBarV.element, "mousedown", focusEditor);
-	            event.addListener(editor.renderer.scrollBarH.element, "mousemove", focusEditor);
+	            event.addListener(editor.renderer.scrollBarH.element, "mousedown", focusEditor);
 	        }
 	    }
 	    event.addMouseWheelListener(editor.container, this.onMouseWheel.bind(this, "mousewheel"));
+	    event.addTouchMoveListener(editor.container, this.onTouchMove.bind(this, "touchmove"));
 
 	    var gutterEl = editor.renderer.$gutter;
 	    event.addListener(gutterEl, "mousedown", this.onMouseEvent.bind(this, "guttermousedown"));
@@ -10733,12 +10887,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	    editor.on("mousemove", function(e){
 	        if (_self.state || _self.$dragDelay || !_self.$dragEnabled)
 	            return;
-	        
-	        var char = editor.renderer.screenToTextCoordinates(e.x, e.y);
+
+	        var character = editor.renderer.screenToTextCoordinates(e.x, e.y);
 	        var range = editor.session.selection.getRange();
 	        var renderer = editor.renderer;
 
-	        if (!range.isEmpty() && range.insideStart(char.row, char.column)) {
+	        if (!range.isEmpty() && range.insideStart(character.row, character.column)) {
 	            renderer.setCursorStyle("default");
 	        } else {
 	            renderer.setCursorStyle("");
@@ -10765,6 +10919,14 @@ return /******/ (function(modules) { // webpackBootstrap
 	        mouseEvent.wheelX = e.wheelX;
 	        mouseEvent.wheelY = e.wheelY;
 
+	        this.editor._emit(name, mouseEvent);
+	    };
+	    
+	    this.onTouchMove = function (name, e) {
+	        var mouseEvent = new MouseEvent(e, this.editor);
+	        mouseEvent.speed = 1;//this.$scrollSpeed * 2;
+	        mouseEvent.wheelX = e.wheelX;
+	        mouseEvent.wheelY = e.wheelY;
 	        this.editor._emit(name, mouseEvent);
 	    };
 
@@ -10970,7 +11132,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    this.getKeyboardHandler = function() {
 	        return this.$handlers[this.$handlers.length - 1];
 	    };
-
+	    
 	    this.getStatusText = function() {
 	        var data = this.$data;
 	        var editor = data.editor;
@@ -10993,7 +11155,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            if (toExecute.command == "null") {
 	                success = true;
 	            } else {
-	                success = commands.exec(toExecute.command, this.$editor, toExecute.args, e);                
+	                success = commands.exec(toExecute.command, this.$editor, toExecute.args, e);
 	            }
 	            if (success && e && hashId != -1 && 
 	                toExecute.passEvent != true && toExecute.command.passEvent != true
@@ -11003,6 +11165,15 @@ return /******/ (function(modules) { // webpackBootstrap
 	            if (success)
 	                break;
 	        }
+	        
+	        if (!success && hashId == -1) {
+	            toExecute = {command: "insertstring"};
+	            success = commands.exec("insertstring", this.$editor, keyString);
+	        }
+	        
+	        if (success)
+	            this.$editor._signal("keyboardActivity", toExecute);
+	        
 	        return success;
 	    };
 
@@ -11012,9 +11183,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    };
 
 	    this.onTextInput = function(text) {
-	        var success = this.$callKeyboardHandlers(-1, text);
-	        if (!success)
-	            this.$editor.commands.exec("insertstring", this.$editor, text);
+	        this.$callKeyboardHandlers(-1, text);
 	    };
 
 	}).call(KeyBinding.prototype);
@@ -11753,8 +11922,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	        var docPos = this.session.screenToDocumentPosition(screenPos.row + rows, screenPos.column);
 	        
 	        if (rows !== 0 && chars === 0 && docPos.row === this.lead.row && docPos.column === this.lead.column) {
-	            if (this.session.lineWidgets && this.session.lineWidgets[docPos.row])
-	                docPos.row++;
+	            if (this.session.lineWidgets && this.session.lineWidgets[docPos.row]) {
+	                if (docPos.row > 0 || rows > 0)
+	                    docPos.row++;
+	            }
 	        }
 	        this.moveCursorTo(docPos.row, docPos.column + chars, chars === 0);
 	    };
@@ -11838,7 +12009,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                this.toSingleRange(data[0]);
 	                for (var i = data.length; i--; ) {
 	                    var r = Range.fromPoints(data[i].start, data[i].end);
-	                    if (data.isBackwards)
+	                    if (data[i].isBackwards)
 	                        r.cursor = r.start;
 	                    this.addRange(r, true);
 	                }
@@ -11869,8 +12040,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	exports.Selection = Selection;
 	});
 
-	ace.define("ace/tokenizer",["require","exports","module"], function(acequire, exports, module) {
+	ace.define("ace/tokenizer",["require","exports","module","ace/config"], function(acequire, exports, module) {
 	"use strict";
+
+	var config = acequire("./config");
 	var MAX_TOKEN_COUNT = 2000;
 	var Tokenizer = function(rules) {
 	    this.states = rules;
@@ -11902,7 +12075,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                if (rule.token.length == 1 || matchcount == 1) {
 	                    rule.token = rule.token[0];
 	                } else if (matchcount - 1 != rule.token.length) {
-	                    this.reportError("number of classes and regexp groups doesn't match", {
+	                    this.reportError("number of classes and regexp groups doesn't match", { 
 	                        rule: rule,
 	                        groupCount: matchcount - 1
 	                    });
@@ -12032,6 +12205,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	            if (lastCapture.end != null && /^\)*$/.test(src.substr(lastCapture.end)))
 	                src = src.substring(0, lastCapture.start) + src.substr(lastCapture.end);
 	        }
+	        if (src.charAt(0) != "^") src = "^" + src;
+	        if (src.charAt(src.length - 1) != "$") src += "$";
+	        
 	        return new RegExp(src, (flag||"").replace("g", ""));
 	    };
 	    this.getLineTokens = function(line, startState) {
@@ -12166,14 +12342,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	            state : stack.length ? stack : currentState
 	        };
 	    };
-
-	    this.reportError = function(msg, data) {
-	        var e = new Error(msg);
-	        e.data = data;
-	        if (typeof console == "object" && console.error)
-	            console.error(e);
-	        setTimeout(function() { throw e; });
-	    };
+	    
+	    this.reportError = config.reportError;
+	    
 	}).call(Tokenizer.prototype);
 
 	exports.Tokenizer = Tokenizer;
@@ -12209,13 +12380,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	            for (var i = 0; i < state.length; i++) {
 	                var rule = state[i];
 	                if (rule.next || rule.onMatch) {
-	                    if (typeof rule.next != "string") {
-	                        if (rule.nextState && rule.nextState.indexOf(prefix) !== 0)
-	                            rule.nextState = prefix + rule.nextState;
-	                    } else {
+	                    if (typeof rule.next == "string") {
 	                        if (rule.next.indexOf(prefix) !== 0)
 	                            rule.next = prefix + rule.next;
 	                    }
+	                    if (rule.nextState && rule.nextState.indexOf(prefix) !== 0)
+	                        rule.nextState = prefix + rule.nextState;
 	                }
 	            }
 	            this.$rules[prefix + key] = state;
@@ -12555,6 +12725,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	        }
 	        
 	        return column;  
+	    };
+	    this.getCurrentTokenPosition = function() {
+	        return {row: this.$row, column: this.getCurrentTokenColumn()};
 	    };
 	            
 	}).call(TokenIterator.prototype);
@@ -12915,6 +13088,71 @@ return /******/ (function(modules) { // webpackBootstrap
 	exports.Mode = Mode;
 	});
 
+	ace.define("ace/apply_delta",["require","exports","module"], function(acequire, exports, module) {
+	"use strict";
+
+	function throwDeltaError(delta, errorText){
+	    console.log("Invalid Delta:", delta);
+	    throw "Invalid Delta: " + errorText;
+	}
+
+	function positionInDocument(docLines, position) {
+	    return position.row    >= 0 && position.row    <  docLines.length &&
+	           position.column >= 0 && position.column <= docLines[position.row].length;
+	}
+
+	function validateDelta(docLines, delta) {
+	    if (delta.action != "insert" && delta.action != "remove")
+	        throwDeltaError(delta, "delta.action must be 'insert' or 'remove'");
+	    if (!(delta.lines instanceof Array))
+	        throwDeltaError(delta, "delta.lines must be an Array");
+	    if (!delta.start || !delta.end)
+	       throwDeltaError(delta, "delta.start/end must be an present");
+	    var start = delta.start;
+	    if (!positionInDocument(docLines, delta.start))
+	        throwDeltaError(delta, "delta.start must be contained in document");
+	    var end = delta.end;
+	    if (delta.action == "remove" && !positionInDocument(docLines, end))
+	        throwDeltaError(delta, "delta.end must contained in document for 'remove' actions");
+	    var numRangeRows = end.row - start.row;
+	    var numRangeLastLineChars = (end.column - (numRangeRows == 0 ? start.column : 0));
+	    if (numRangeRows != delta.lines.length - 1 || delta.lines[numRangeRows].length != numRangeLastLineChars)
+	        throwDeltaError(delta, "delta.range must match delta lines");
+	}
+
+	exports.applyDelta = function(docLines, delta, doNotValidate) {
+	    
+	    var row = delta.start.row;
+	    var startColumn = delta.start.column;
+	    var line = docLines[row] || "";
+	    switch (delta.action) {
+	        case "insert":
+	            var lines = delta.lines;
+	            if (lines.length === 1) {
+	                docLines[row] = line.substring(0, startColumn) + delta.lines[0] + line.substring(startColumn);
+	            } else {
+	                var args = [row, 1].concat(delta.lines);
+	                docLines.splice.apply(docLines, args);
+	                docLines[row] = line.substring(0, startColumn) + docLines[row];
+	                docLines[row + delta.lines.length - 1] += line.substring(startColumn);
+	            }
+	            break;
+	        case "remove":
+	            var endColumn = delta.end.column;
+	            var endRow = delta.end.row;
+	            if (row === endRow) {
+	                docLines[row] = line.substring(0, startColumn) + line.substring(endColumn);
+	            } else {
+	                docLines.splice(
+	                    row, endRow - row + 1,
+	                    line.substring(0, startColumn) + docLines[endRow].substring(endColumn)
+	                );
+	            }
+	            break;
+	    }
+	}
+	});
+
 	ace.define("ace/anchor",["require","exports","module","ace/lib/oop","ace/lib/event_emitter"], function(acequire, exports, module) {
 	"use strict";
 
@@ -12941,70 +13179,46 @@ return /******/ (function(modules) { // webpackBootstrap
 	        return this.document;
 	    };
 	    this.$insertRight = false;
-	    this.onChange = function(e) {
-	        var delta = e.data;
-	        var range = delta.range;
-
-	        if (range.start.row == range.end.row && range.start.row != this.row)
+	    this.onChange = function(delta) {
+	        if (delta.start.row == delta.end.row && delta.start.row != this.row)
 	            return;
 
-	        if (range.start.row > this.row)
+	        if (delta.start.row > this.row)
 	            return;
-
-	        if (range.start.row == this.row && range.start.column > this.column)
-	            return;
-
-	        var row = this.row;
-	        var column = this.column;
-	        var start = range.start;
-	        var end = range.end;
-
-	        if (delta.action === "insertText") {
-	            if (start.row === row && start.column <= column) {
-	                if (start.column === column && this.$insertRight) {
-	                } else if (start.row === end.row) {
-	                    column += end.column - start.column;
-	                } else {
-	                    column -= start.column;
-	                    row += end.row - start.row;
-	                }
-	            } else if (start.row !== end.row && start.row < row) {
-	                row += end.row - start.row;
-	            }
-	        } else if (delta.action === "insertLines") {
-	            if (start.row === row && column === 0 && this.$insertRight) {
-	            }
-	            else if (start.row <= row) {
-	                row += end.row - start.row;
-	            }
-	        } else if (delta.action === "removeText") {
-	            if (start.row === row && start.column < column) {
-	                if (end.column >= column)
-	                    column = start.column;
-	                else
-	                    column = Math.max(0, column - (end.column - start.column));
-
-	            } else if (start.row !== end.row && start.row < row) {
-	                if (end.row === row)
-	                    column = Math.max(0, column - end.column) + start.column;
-	                row -= (end.row - start.row);
-	            } else if (end.row === row) {
-	                row -= end.row - start.row;
-	                column = Math.max(0, column - end.column) + start.column;
-	            }
-	        } else if (delta.action == "removeLines") {
-	            if (start.row <= row) {
-	                if (end.row <= row)
-	                    row -= end.row - start.row;
-	                else {
-	                    row = start.row;
-	                    column = 0;
-	                }
-	            }
-	        }
-
-	        this.setPosition(row, column, true);
+	            
+	        var point = $getTransformedPoint(delta, {row: this.row, column: this.column}, this.$insertRight);
+	        this.setPosition(point.row, point.column, true);
 	    };
+	    
+	    function $pointsInOrder(point1, point2, equalPointsInOrder) {
+	        var bColIsAfter = equalPointsInOrder ? point1.column <= point2.column : point1.column < point2.column;
+	        return (point1.row < point2.row) || (point1.row == point2.row && bColIsAfter);
+	    }
+	            
+	    function $getTransformedPoint(delta, point, moveIfEqual) {
+	        var deltaIsInsert = delta.action == "insert";
+	        var deltaRowShift = (deltaIsInsert ? 1 : -1) * (delta.end.row    - delta.start.row);
+	        var deltaColShift = (deltaIsInsert ? 1 : -1) * (delta.end.column - delta.start.column);
+	        var deltaStart = delta.start;
+	        var deltaEnd = deltaIsInsert ? deltaStart : delta.end; // Collapse insert range.
+	        if ($pointsInOrder(point, deltaStart, moveIfEqual)) {
+	            return {
+	                row: point.row,
+	                column: point.column
+	            };
+	        }
+	        if ($pointsInOrder(deltaEnd, point, !moveIfEqual)) {
+	            return {
+	                row: point.row + deltaRowShift,
+	                column: point.column + (point.row == deltaEnd.row ? deltaColShift : 0)
+	            };
+	        }
+	        
+	        return {
+	            row: deltaStart.row,
+	            column: deltaStart.column
+	        };
+	    }
 	    this.setPosition = function(row, column, noClip) {
 	        var pos;
 	        if (noClip) {
@@ -13064,22 +13278,23 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	});
 
-	ace.define("ace/document",["require","exports","module","ace/lib/oop","ace/lib/event_emitter","ace/range","ace/anchor"], function(acequire, exports, module) {
+	ace.define("ace/document",["require","exports","module","ace/lib/oop","ace/apply_delta","ace/lib/event_emitter","ace/range","ace/anchor"], function(acequire, exports, module) {
 	"use strict";
 
 	var oop = acequire("./lib/oop");
+	var applyDelta = acequire("./apply_delta").applyDelta;
 	var EventEmitter = acequire("./lib/event_emitter").EventEmitter;
 	var Range = acequire("./range").Range;
 	var Anchor = acequire("./anchor").Anchor;
 
-	var Document = function(text) {
-	    this.$lines = [];
-	    if (text.length === 0) {
+	var Document = function(textOrLines) {
+	    this.$lines = [""];
+	    if (textOrLines.length === 0) {
 	        this.$lines = [""];
-	    } else if (Array.isArray(text)) {
-	        this._insertLines(0, text);
+	    } else if (Array.isArray(textOrLines)) {
+	        this.insertMergedLines({row: 0, column: 0}, textOrLines);
 	    } else {
-	        this.insert({row: 0, column:0}, text);
+	        this.insert({row: 0, column:0}, textOrLines);
 	    }
 	};
 
@@ -13087,9 +13302,9 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	    oop.implement(this, EventEmitter);
 	    this.setValue = function(text) {
-	        var len = this.getLength();
-	        this.remove(new Range(0, 0, len, this.getLine(len-1).length));
-	        this.insert({row: 0, column:0}, text);
+	        var len = this.getLength() - 1;
+	        this.remove(new Range(0, 0, len, this.getLine(len).length));
+	        this.insert({row: 0, column: 0}, text);
 	    };
 	    this.getValue = function() {
 	        return this.getAllLines().join(this.getNewLineCharacter());
@@ -13097,14 +13312,15 @@ return /******/ (function(modules) { // webpackBootstrap
 	    this.createAnchor = function(row, column) {
 	        return new Anchor(this, row, column);
 	    };
-	    if ("aaa".split(/a/).length === 0)
+	    if ("aaa".split(/a/).length === 0) {
 	        this.$split = function(text) {
 	            return text.replace(/\r\n|\r/g, "\n").split("\n");
 	        };
-	    else
+	    } else {
 	        this.$split = function(text) {
 	            return text.split(/\r\n|\r|\n/);
 	        };
+	    }
 
 
 	    this.$detectNewLine = function(text) {
@@ -13151,251 +13367,246 @@ return /******/ (function(modules) { // webpackBootstrap
 	        return this.$lines.length;
 	    };
 	    this.getTextRange = function(range) {
-	        if (range.start.row == range.end.row) {
-	            return this.getLine(range.start.row)
-	                .substring(range.start.column, range.end.column);
-	        }
-	        var lines = this.getLines(range.start.row, range.end.row);
-	        lines[0] = (lines[0] || "").substring(range.start.column);
-	        var l = lines.length - 1;
-	        if (range.end.row - range.start.row == l)
-	            lines[l] = lines[l].substring(0, range.end.column);
-	        return lines.join(this.getNewLineCharacter());
+	        return this.getLinesForRange(range).join(this.getNewLineCharacter());
 	    };
-
+	    this.getLinesForRange = function(range) {
+	        var lines;
+	        if (range.start.row === range.end.row) {
+	            lines = [this.getLine(range.start.row).substring(range.start.column, range.end.column)];
+	        } else {
+	            lines = this.getLines(range.start.row, range.end.row);
+	            lines[0] = (lines[0] || "").substring(range.start.column);
+	            var l = lines.length - 1;
+	            if (range.end.row - range.start.row == l)
+	                lines[l] = lines[l].substring(0, range.end.column);
+	        }
+	        return lines;
+	    };
+	    this.insertLines = function(row, lines) {
+	        console.warn("Use of document.insertLines is deprecated. Use the insertFullLines method instead.");
+	        return this.insertFullLines(row, lines);
+	    };
+	    this.removeLines = function(firstRow, lastRow) {
+	        console.warn("Use of document.removeLines is deprecated. Use the removeFullLines method instead.");
+	        return this.removeFullLines(firstRow, lastRow);
+	    };
+	    this.insertNewLine = function(position) {
+	        console.warn("Use of document.insertNewLine is deprecated. Use insertMergedLines(position, [\'\', \'\']) instead.");
+	        return this.insertMergedLines(position, ["", ""]);
+	    };
+	    this.insert = function(position, text) {
+	        if (this.getLength() <= 1)
+	            this.$detectNewLine(text);
+	        
+	        return this.insertMergedLines(position, this.$split(text));
+	    };
+	    this.insertInLine = function(position, text) {
+	        var start = this.clippedPos(position.row, position.column);
+	        var end = this.pos(position.row, position.column + text.length);
+	        
+	        this.applyDelta({
+	            start: start,
+	            end: end,
+	            action: "insert",
+	            lines: [text]
+	        }, true);
+	        
+	        return this.clonePos(end);
+	    };
+	    
+	    this.clippedPos = function(row, column) {
+	        var length = this.getLength();
+	        if (row === undefined) {
+	            row = length;
+	        } else if (row < 0) {
+	            row = 0;
+	        } else if (row >= length) {
+	            row = length - 1;
+	            column = undefined;
+	        }
+	        var line = this.getLine(row);
+	        if (column == undefined)
+	            column = line.length;
+	        column = Math.min(Math.max(column, 0), line.length);
+	        return {row: row, column: column};
+	    };
+	    
+	    this.clonePos = function(pos) {
+	        return {row: pos.row, column: pos.column};
+	    };
+	    
+	    this.pos = function(row, column) {
+	        return {row: row, column: column};
+	    };
+	    
 	    this.$clipPosition = function(position) {
 	        var length = this.getLength();
 	        if (position.row >= length) {
 	            position.row = Math.max(0, length - 1);
-	            position.column = this.getLine(length-1).length;
-	        } else if (position.row < 0)
-	            position.row = 0;
-	        return position;
-	    };
-	    this.insert = function(position, text) {
-	        if (!text || text.length === 0)
-	            return position;
-
-	        position = this.$clipPosition(position);
-	        if (this.getLength() <= 1)
-	            this.$detectNewLine(text);
-
-	        var lines = this.$split(text);
-	        var firstLine = lines.splice(0, 1)[0];
-	        var lastLine = lines.length == 0 ? null : lines.splice(lines.length - 1, 1)[0];
-
-	        position = this.insertInLine(position, firstLine);
-	        if (lastLine !== null) {
-	            position = this.insertNewLine(position); // terminate first line
-	            position = this._insertLines(position.row, lines);
-	            position = this.insertInLine(position, lastLine || "");
+	            position.column = this.getLine(length - 1).length;
+	        } else {
+	            position.row = Math.max(0, position.row);
+	            position.column = Math.min(Math.max(position.column, 0), this.getLine(position.row).length);
 	        }
 	        return position;
 	    };
-	    this.insertLines = function(row, lines) {
-	        if (row >= this.getLength())
-	            return this.insert({row: row, column: 0}, "\n" + lines.join("\n"));
-	        return this._insertLines(Math.max(row, 0), lines);
-	    };
-	    this._insertLines = function(row, lines) {
-	        if (lines.length == 0)
-	            return {row: row, column: 0};
-	        while (lines.length > 0xF000) {
-	            var end = this._insertLines(row, lines.slice(0, 0xF000));
-	            lines = lines.slice(0xF000);
-	            row = end.row;
+	    this.insertFullLines = function(row, lines) {
+	        row = Math.min(Math.max(row, 0), this.getLength());
+	        var column = 0;
+	        if (row < this.getLength()) {
+	            lines = lines.concat([""]);
+	            column = 0;
+	        } else {
+	            lines = [""].concat(lines);
+	            row--;
+	            column = this.$lines[row].length;
 	        }
-
-	        var args = [row, 0];
-	        args.push.apply(args, lines);
-	        this.$lines.splice.apply(this.$lines, args);
-
-	        var range = new Range(row, 0, row + lines.length, 0);
-	        var delta = {
-	            action: "insertLines",
-	            range: range,
+	        this.insertMergedLines({row: row, column: column}, lines);
+	    };    
+	    this.insertMergedLines = function(position, lines) {
+	        var start = this.clippedPos(position.row, position.column);
+	        var end = {
+	            row: start.row + lines.length - 1,
+	            column: (lines.length == 1 ? start.column : 0) + lines[lines.length - 1].length
+	        };
+	        
+	        this.applyDelta({
+	            start: start,
+	            end: end,
+	            action: "insert",
 	            lines: lines
-	        };
-	        this._signal("change", { data: delta });
-	        return range.end;
-	    };
-	    this.insertNewLine = function(position) {
-	        position = this.$clipPosition(position);
-	        var line = this.$lines[position.row] || "";
-
-	        this.$lines[position.row] = line.substring(0, position.column);
-	        this.$lines.splice(position.row + 1, 0, line.substring(position.column, line.length));
-
-	        var end = {
-	            row : position.row + 1,
-	            column : 0
-	        };
-
-	        var delta = {
-	            action: "insertText",
-	            range: Range.fromPoints(position, end),
-	            text: this.getNewLineCharacter()
-	        };
-	        this._signal("change", { data: delta });
-
-	        return end;
-	    };
-	    this.insertInLine = function(position, text) {
-	        if (text.length == 0)
-	            return position;
-
-	        var line = this.$lines[position.row] || "";
-
-	        this.$lines[position.row] = line.substring(0, position.column) + text
-	                + line.substring(position.column);
-
-	        var end = {
-	            row : position.row,
-	            column : position.column + text.length
-	        };
-
-	        var delta = {
-	            action: "insertText",
-	            range: Range.fromPoints(position, end),
-	            text: text
-	        };
-	        this._signal("change", { data: delta });
-
-	        return end;
+	        });
+	        
+	        return this.clonePos(end);
 	    };
 	    this.remove = function(range) {
-	        if (!(range instanceof Range))
-	            range = Range.fromPoints(range.start, range.end);
-	        range.start = this.$clipPosition(range.start);
-	        range.end = this.$clipPosition(range.end);
-
-	        if (range.isEmpty())
-	            return range.start;
-
-	        var firstRow = range.start.row;
-	        var lastRow = range.end.row;
-
-	        if (range.isMultiLine()) {
-	            var firstFullRow = range.start.column == 0 ? firstRow : firstRow + 1;
-	            var lastFullRow = lastRow - 1;
-
-	            if (range.end.column > 0)
-	                this.removeInLine(lastRow, 0, range.end.column);
-
-	            if (lastFullRow >= firstFullRow)
-	                this._removeLines(firstFullRow, lastFullRow);
-
-	            if (firstFullRow != firstRow) {
-	                this.removeInLine(firstRow, range.start.column, this.getLine(firstRow).length);
-	                this.removeNewLine(range.start.row);
-	            }
-	        }
-	        else {
-	            this.removeInLine(firstRow, range.start.column, range.end.column);
-	        }
-	        return range.start;
+	        var start = this.clippedPos(range.start.row, range.start.column);
+	        var end = this.clippedPos(range.end.row, range.end.column);
+	        this.applyDelta({
+	            start: start,
+	            end: end,
+	            action: "remove",
+	            lines: this.getLinesForRange({start: start, end: end})
+	        });
+	        return this.clonePos(start);
 	    };
 	    this.removeInLine = function(row, startColumn, endColumn) {
-	        if (startColumn == endColumn)
-	            return;
-
-	        var range = new Range(row, startColumn, row, endColumn);
-	        var line = this.getLine(row);
-	        var removed = line.substring(startColumn, endColumn);
-	        var newLine = line.substring(0, startColumn) + line.substring(endColumn, line.length);
-	        this.$lines.splice(row, 1, newLine);
-
-	        var delta = {
-	            action: "removeText",
-	            range: range,
-	            text: removed
-	        };
-	        this._signal("change", { data: delta });
-	        return range.start;
+	        var start = this.clippedPos(row, startColumn);
+	        var end = this.clippedPos(row, endColumn);
+	        
+	        this.applyDelta({
+	            start: start,
+	            end: end,
+	            action: "remove",
+	            lines: this.getLinesForRange({start: start, end: end})
+	        }, true);
+	        
+	        return this.clonePos(start);
 	    };
-	    this.removeLines = function(firstRow, lastRow) {
-	        if (firstRow < 0 || lastRow >= this.getLength())
-	            return this.remove(new Range(firstRow, 0, lastRow + 1, 0));
-	        return this._removeLines(firstRow, lastRow);
-	    };
-
-	    this._removeLines = function(firstRow, lastRow) {
-	        var range = new Range(firstRow, 0, lastRow + 1, 0);
-	        var removed = this.$lines.splice(firstRow, lastRow - firstRow + 1);
-
-	        var delta = {
-	            action: "removeLines",
-	            range: range,
-	            nl: this.getNewLineCharacter(),
-	            lines: removed
-	        };
-	        this._signal("change", { data: delta });
-	        return removed;
+	    this.removeFullLines = function(firstRow, lastRow) {
+	        firstRow = Math.min(Math.max(0, firstRow), this.getLength() - 1);
+	        lastRow  = Math.min(Math.max(0, lastRow ), this.getLength() - 1);
+	        var deleteFirstNewLine = lastRow == this.getLength() - 1 && firstRow > 0;
+	        var deleteLastNewLine  = lastRow  < this.getLength() - 1;
+	        var startRow = ( deleteFirstNewLine ? firstRow - 1                  : firstRow                    );
+	        var startCol = ( deleteFirstNewLine ? this.getLine(startRow).length : 0                           );
+	        var endRow   = ( deleteLastNewLine  ? lastRow + 1                   : lastRow                     );
+	        var endCol   = ( deleteLastNewLine  ? 0                             : this.getLine(endRow).length ); 
+	        var range = new Range(startRow, startCol, endRow, endCol);
+	        var deletedLines = this.$lines.slice(firstRow, lastRow + 1);
+	        
+	        this.applyDelta({
+	            start: range.start,
+	            end: range.end,
+	            action: "remove",
+	            lines: this.getLinesForRange(range)
+	        });
+	        return deletedLines;
 	    };
 	    this.removeNewLine = function(row) {
-	        var firstLine = this.getLine(row);
-	        var secondLine = this.getLine(row+1);
-
-	        var range = new Range(row, firstLine.length, row+1, 0);
-	        var line = firstLine + secondLine;
-
-	        this.$lines.splice(row, 2, line);
-
-	        var delta = {
-	            action: "removeText",
-	            range: range,
-	            text: this.getNewLineCharacter()
-	        };
-	        this._signal("change", { data: delta });
+	        if (row < this.getLength() - 1 && row >= 0) {
+	            this.applyDelta({
+	                start: this.pos(row, this.getLine(row).length),
+	                end: this.pos(row + 1, 0),
+	                action: "remove",
+	                lines: ["", ""]
+	            });
+	        }
 	    };
 	    this.replace = function(range, text) {
 	        if (!(range instanceof Range))
 	            range = Range.fromPoints(range.start, range.end);
-	        if (text.length == 0 && range.isEmpty())
+	        if (text.length === 0 && range.isEmpty())
 	            return range.start;
 	        if (text == this.getTextRange(range))
 	            return range.end;
 
 	        this.remove(range);
+	        var end;
 	        if (text) {
-	            var end = this.insert(range.start, text);
+	            end = this.insert(range.start, text);
 	        }
 	        else {
 	            end = range.start;
 	        }
-
+	        
 	        return end;
 	    };
 	    this.applyDeltas = function(deltas) {
 	        for (var i=0; i<deltas.length; i++) {
-	            var delta = deltas[i];
-	            var range = Range.fromPoints(delta.range.start, delta.range.end);
-
-	            if (delta.action == "insertLines")
-	                this.insertLines(range.start.row, delta.lines);
-	            else if (delta.action == "insertText")
-	                this.insert(range.start, delta.text);
-	            else if (delta.action == "removeLines")
-	                this._removeLines(range.start.row, range.end.row - 1);
-	            else if (delta.action == "removeText")
-	                this.remove(range);
+	            this.applyDelta(deltas[i]);
 	        }
 	    };
 	    this.revertDeltas = function(deltas) {
 	        for (var i=deltas.length-1; i>=0; i--) {
-	            var delta = deltas[i];
-
-	            var range = Range.fromPoints(delta.range.start, delta.range.end);
-
-	            if (delta.action == "insertLines")
-	                this._removeLines(range.start.row, range.end.row - 1);
-	            else if (delta.action == "insertText")
-	                this.remove(range);
-	            else if (delta.action == "removeLines")
-	                this._insertLines(range.start.row, delta.lines);
-	            else if (delta.action == "removeText")
-	                this.insert(range.start, delta.text);
+	            this.revertDelta(deltas[i]);
 	        }
+	    };
+	    this.applyDelta = function(delta, doNotValidate) {
+	        var isInsert = delta.action == "insert";
+	        if (isInsert ? delta.lines.length <= 1 && !delta.lines[0]
+	            : !Range.comparePoints(delta.start, delta.end)) {
+	            return;
+	        }
+	        
+	        if (isInsert && delta.lines.length > 20000)
+	            this.$splitAndapplyLargeDelta(delta, 20000);
+	        applyDelta(this.$lines, delta, doNotValidate);
+	        this._signal("change", delta);
+	    };
+	    
+	    this.$splitAndapplyLargeDelta = function(delta, MAX) {
+	        var lines = delta.lines;
+	        var l = lines.length;
+	        var row = delta.start.row; 
+	        var column = delta.start.column;
+	        var from = 0, to = 0;
+	        do {
+	            from = to;
+	            to += MAX - 1;
+	            var chunk = lines.slice(from, to);
+	            if (to > l) {
+	                delta.lines = chunk;
+	                delta.start.row = row + from;
+	                delta.start.column = column;
+	                break;
+	            }
+	            chunk.push("");
+	            this.applyDelta({
+	                start: this.pos(row + from, column),
+	                end: this.pos(row + to, column = 0),
+	                action: delta.action,
+	                lines: chunk
+	            }, true);
+	        } while(true);
+	    };
+	    this.revertDelta = function(delta) {
+	        this.applyDelta({
+	            start: this.clonePos(delta.start),
+	            end: this.clonePos(delta.end),
+	            action: (delta.action == "insert" ? "remove" : "insert"),
+	            lines: delta.lines.slice()
+	        });
 	    };
 	    this.indexToPosition = function(index, startRow) {
 	        var lines = this.$lines || this.getAllLines();
@@ -13446,11 +13657,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	        var endLine = -1;
 	        var doc = self.doc;
 
+	        var startLine = currentLine;
 	        while (self.lines[currentLine])
 	            currentLine++;
-
-	        var startLine = currentLine;
-
+	        
 	        var len = doc.getLength();
 	        var processedLines = 0;
 	        self.running = false;
@@ -13512,13 +13722,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }
 
 	    this.$updateOnChange = function(delta) {
-	        var range = delta.range;
-	        var startRow = range.start.row;
-	        var len = range.end.row - startRow;
+	        var startRow = delta.start.row;
+	        var len = delta.end.row - startRow;
 
 	        if (len === 0) {
 	            this.lines[startRow] = null;
-	        } else if (delta.action == "removeText" || delta.action == "removeLines") {
+	        } else if (delta.action == "remove") {
 	            this.lines.splice(startRow, len + 1, null);
 	            this.states.splice(startRow, len + 1, null);
 	        } else {
@@ -13990,14 +14199,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	        this.session = null;
 	    };
 
-	    this.$onChange = function(e) {
-	        var changeRange = e.data.range;
-	        if (e.data.action[0] == "i"){
-	            var start = changeRange.start;
-	            var end = changeRange.end;
+	    this.$onChange = function(delta) {
+	        if (delta.action == "insert"){
+	            var start = delta.start;
+	            var end = delta.end;
 	        } else {
-	            var end = changeRange.start;
-	            var start = changeRange.end;
+	            var end = delta.start;
+	            var start = delta.end;
 	        }
 	        var startRow = start.row;
 	        var endRow = end.row;
@@ -14227,7 +14435,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            var folds = this.getFoldsInRange(ranges);
 	        }
 	        return folds;
-	    }
+	    };
 	    this.getAllFolds = function() {
 	        var folds = [];
 	        var foldLines = this.$foldData;
@@ -14312,15 +14520,15 @@ return /******/ (function(modules) { // webpackBootstrap
 	                end = foldLine.end.row,
 	                start = foldLine.start.row;
 	            if (end >= last) {
-	                if(start < last) {
-	                    if(start >= first)
+	                if (start < last) {
+	                    if (start >= first)
 	                        rowCount -= last-start;
 	                    else
-	                        rowCount = 0;//in one fold
+	                        rowCount = 0; // in one fold
 	                }
 	                break;
-	            } else if(end >= first){
-	                if (start >= first) //fold inside range
+	            } else if (end >= first){
+	                if (start >= first) // fold inside range
 	                    rowCount -=  end-start;
 	                else
 	                    rowCount -=  end-first+1;
@@ -14364,7 +14572,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	        if (startFold && !startFold.range.isStart(startRow, startColumn))
 	            this.removeFold(startFold);
-
+	        
 	        if (endFold && !endFold.range.isEnd(endRow, endColumn))
 	            this.removeFold(endFold);
 	        var folds = this.getFoldsInRange(fold.range);
@@ -14405,7 +14613,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        else
 	            this.$updateRowLengthCache(foldLine.start.row, foldLine.start.row);
 	        this.$modified = true;
-	        this._emit("changeFold", { data: fold, action: "add" });
+	        this._signal("changeFold", { data: fold, action: "add" });
 
 	        return fold;
 	    };
@@ -14454,7 +14662,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                this.$updateRowLengthCache(startRow, endRow);
 	        }
 	        this.$modified = true;
-	        this._emit("changeFold", { data: fold, action: "remove" });
+	        this._signal("changeFold", { data: fold, action: "remove" });
 	    };
 
 	    this.removeFolds = function(folds) {
@@ -14633,7 +14841,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        var placeholder = "...";
 	        if (!range.isMultiLine()) {
 	            placeholder = this.getTextRange(range);
-	            if(placeholder.length < 4)
+	            if (placeholder.length < 4)
 	                return;
 	            placeholder = placeholder.trim().substring(0, 2) + "..";
 	        }
@@ -14650,7 +14858,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            if (dir != 1) {
 	                do {
 	                    token = iterator.stepBackward();
-	                } while(token && re.test(token.type));
+	                } while (token && re.test(token.type));
 	                iterator.stepForward();
 	            }
 	            
@@ -14662,7 +14870,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            if (dir != -1) {
 	                do {
 	                    token = iterator.stepForward();
-	                } while(token && re.test(token.type));
+	                } while (token && re.test(token.type));
 	                token = iterator.stepBackward();
 	            } else
 	                token = iterator.getCurrentToken();
@@ -14729,8 +14937,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	            
 	        this.$foldMode = foldMode;
 	        
-	        this.removeListener('change', this.$updateFoldWidgets);
-	        this._emit("changeAnnotation");
+	        this.off('change', this.$updateFoldWidgets);
+	        this.off('tokenizerUpdate', this.$tokenizerUpdateFoldWidgets);
+	        this._signal("changeAnnotation");
 	        
 	        if (!foldMode || this.$foldStyle == "manual") {
 	            this.foldWidgets = null;
@@ -14742,8 +14951,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	        this.getFoldWidgetRange = foldMode.getFoldWidgetRange.bind(foldMode, this, this.$foldStyle);
 	        
 	        this.$updateFoldWidgets = this.updateFoldWidgets.bind(this);
+	        this.$tokenizerUpdateFoldWidgets = this.tokenizerUpdateFoldWidgets.bind(this);
 	        this.on('change', this.$updateFoldWidgets);
-	        
+	        this.on('tokenizerUpdate', this.$tokenizerUpdateFoldWidgets);
 	    };
 
 	    this.getParentFoldRangeData = function (row, ignoreCurrent) {
@@ -14771,7 +14981,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            range: i !== -1 && range,
 	            firstRange: firstRange
 	        };
-	    }
+	    };
 
 	    this.onFoldWidgetClick = function(row, e) {
 	        e = e.domEvent;
@@ -14783,7 +14993,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        
 	        var range = this.$toggleFoldWidget(row, options);
 	        if (!range) {
-	            var el = (e.target || e.srcElement)
+	            var el = (e.target || e.srcElement);
 	            if (el && /ace_fold-widget/.test(el.className))
 	                el.className += " ace_invalid";
 	        }
@@ -14824,7 +15034,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            this.foldAll(startRow, endRow, options.all ? 10000 : 0);
 	        } else if (options.children) {
 	            endRow = range ? range.end.row : this.getLength();
-	            this.foldAll(row + 1, range.end.row, options.all ? 10000 : 0);
+	            this.foldAll(row + 1, endRow, options.all ? 10000 : 0);
 	        } else if (range) {
 	            if (options.all) 
 	                range.collapseChildren = 10000;
@@ -14858,15 +15068,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	        }
 	    };
 
-	    this.updateFoldWidgets = function(e) {
-	        var delta = e.data;
-	        var range = delta.range;
-	        var firstRow = range.start.row;
-	        var len = range.end.row - firstRow;
+	    this.updateFoldWidgets = function(delta) {
+	        var firstRow = delta.start.row;
+	        var len = delta.end.row - firstRow;
 
 	        if (len === 0) {
 	            this.foldWidgets[firstRow] = null;
-	        } else if (delta.action == "removeText" || delta.action == "removeLines") {
+	        } else if (delta.action == 'remove') {
 	            this.foldWidgets.splice(firstRow, len + 1, null);
 	        } else {
 	            var args = Array(len + 1);
@@ -14874,7 +15082,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	            this.foldWidgets.splice.apply(this.foldWidgets, args);
 	        }
 	    };
-
+	    this.tokenizerUpdateFoldWidgets = function(e) {
+	        var rows = e.data;
+	        if (rows.first != rows.last) {
+	            if (this.foldWidgets.length > rows.first)
+	                this.foldWidgets.splice(rows.first, this.foldWidgets.length);
+	        }
+	    };
 	}
 
 	exports.Folding = Folding;
@@ -14970,7 +15184,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            typeRe = new RegExp(
 	                "(\\.?" +
 	                token.type.replace(".", "\\.").replace("rparen", ".paren")
-	                    .replace(/\b(?:end|start|begin)\b/, "")
+	                    .replace(/\b(?:end)\b/, "(?:start|begin|end)")
 	                + ")+"
 	            );
 	        }
@@ -15022,7 +15236,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            typeRe = new RegExp(
 	                "(\\.?" +
 	                token.type.replace(".", "\\.").replace("lparen", ".paren")
-	                    .replace(/\b(?:end|start|begin)\b/, "")
+	                    .replace(/\b(?:start|begin)\b/, "(?:start|begin|end)")
 	                + ")+"
 	            );
 	        }
@@ -15088,7 +15302,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    this.$foldData = [];
 	    this.$foldData.toString = function() {
 	        return this.join("\n");
-	    }
+	    };
 	    this.on("changeFold", this.onChangeFold.bind(this));
 	    this.$onChange = this.onChange.bind(this);
 
@@ -15169,13 +15383,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	        this.$resetRowCache(fold.start.row);
 	    };
 
-	    this.onChange = function(e) {
-	        var delta = e.data;
+	    this.onChange = function(delta) {
 	        this.$modified = true;
 
-	        this.$resetRowCache(delta.range.start.row);
+	        this.$resetRowCache(delta.start.row);
 
-	        var removedFolds = this.$updateInternalDataOnChange(e);
+	        var removedFolds = this.$updateInternalDataOnChange(delta);
 	        if (!this.$fromUndo && this.$undoManager && !delta.ignore) {
 	            this.$deltasDoc.push(delta);
 	            if (removedFolds && removedFolds.length != 0) {
@@ -15189,7 +15402,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        }
 
 	        this.bgTokenizer && this.bgTokenizer.$updateOnChange(delta);
-	        this._signal("change", e);
+	        this._signal("change", delta);
 	    };
 	    this.setValue = function(text) {
 	        this.doc.setValue(text);
@@ -15533,17 +15746,17 @@ return /******/ (function(modules) { // webpackBootstrap
 	        config.loadModule(["mode", path], function(m) {
 	            if (this.$modeId !== path)
 	                return cb && cb();
-	            if (this.$modes[path] && !options)
-	                return this.$onChangeMode(this.$modes[path]);
-	            if (m && m.Mode) {
+	            if (this.$modes[path] && !options) {
+	                this.$onChangeMode(this.$modes[path]);
+	            } else if (m && m.Mode) {
 	                m = new m.Mode(options);
 	                if (!options) {
 	                    this.$modes[path] = m;
 	                    m.$id = path;
 	                }
 	                this.$onChangeMode(m);
-	                cb && cb();
 	            }
+	            cb && cb();
 	        }.bind(this));
 	        if (!this.$mode)
 	            this.$onChangeMode(this.$modes["ace/mode/text"], true);
@@ -15606,10 +15819,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        try {
 	            this.$worker = this.$mode.createWorker(this);
 	        } catch (e) {
-	            if (typeof console == "object") {
-	                console.log("Could not load worker");
-	                console.log(e);
-	            }    
+	            config.warn("Could not load worker", e);
 	            this.$worker = null;
 	        }
 	    };
@@ -15708,6 +15918,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	    this.remove = function(range) {
 	        return this.doc.remove(range);
 	    };
+	    this.removeFullLines = function(firstRow, lastRow){
+	        return this.doc.removeFullLines(firstRow, lastRow);
+	    };
 	    this.undoChanges = function(deltas, dontSelect) {
 	        if (!deltas.length)
 	            return;
@@ -15760,39 +15973,36 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	    this.$getUndoSelection = function(deltas, isUndo, lastUndoRange) {
 	        function isInsert(delta) {
-	            var insert =
-	                delta.action === "insertText" || delta.action === "insertLines";
-	            return isUndo ? !insert : insert;
+	            return isUndo ? delta.action !== "insert" : delta.action === "insert";
 	        }
 
 	        var delta = deltas[0];
 	        var range, point;
 	        var lastDeltaIsInsert = false;
 	        if (isInsert(delta)) {
-	            range = Range.fromPoints(delta.range.start, delta.range.end);
+	            range = Range.fromPoints(delta.start, delta.end);
 	            lastDeltaIsInsert = true;
 	        } else {
-	            range = Range.fromPoints(delta.range.start, delta.range.start);
+	            range = Range.fromPoints(delta.start, delta.start);
 	            lastDeltaIsInsert = false;
 	        }
 
 	        for (var i = 1; i < deltas.length; i++) {
 	            delta = deltas[i];
 	            if (isInsert(delta)) {
-	                point = delta.range.start;
+	                point = delta.start;
 	                if (range.compare(point.row, point.column) == -1) {
-	                    range.setStart(delta.range.start);
+	                    range.setStart(point);
 	                }
-	                point = delta.range.end;
+	                point = delta.end;
 	                if (range.compare(point.row, point.column) == 1) {
-	                    range.setEnd(delta.range.end);
+	                    range.setEnd(point);
 	                }
 	                lastDeltaIsInsert = true;
 	            } else {
-	                point = delta.range.start;
+	                point = delta.start;
 	                if (range.compare(point.row, point.column) == -1) {
-	                    range =
-	                        Range.fromPoints(delta.range.start, delta.range.start);
+	                    range = Range.fromPoints(delta.start, delta.start);
 	                }
 	                lastDeltaIsInsert = false;
 	            }
@@ -15860,7 +16070,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    this.indentRows = function(startRow, endRow, indentString) {
 	        indentString = indentString.replace(/\t/g, this.getTabString());
 	        for (var row=startRow; row<=endRow; row++)
-	            this.insert({row: row, column:0}, indentString);
+	            this.doc.insertInLine({row: row, column: 0}, indentString);
 	    };
 	    this.outdentRows = function (range) {
 	        var rowRange = range.collapseRows();
@@ -15910,11 +16120,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	            x.end.row += diff;
 	            return x;
 	        });
-
+	        
 	        var lines = dir == 0
 	            ? this.doc.getLines(firstRow, lastRow)
-	            : this.doc.removeLines(firstRow, lastRow);
-	        this.doc.insertLines(firstRow+diff, lines);
+	            : this.doc.removeFullLines(firstRow, lastRow);
+	        this.doc.insertFullLines(firstRow+diff, lines);
 	        folds.length && this.addFolds(folds);
 	        return diff;
 	    };
@@ -16010,12 +16220,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	    };
 	    this.setWrapLimitRange = function(min, max) {
 	        if (this.$wrapLimitRange.min !== min || this.$wrapLimitRange.max !== max) {
-	            this.$wrapLimitRange = {
-	                min: min,
-	                max: max
-	            };
+	            this.$wrapLimitRange = { min: min, max: max };
 	            this.$modified = true;
-	            this._signal("changeWrapMode");
+	            if (this.$useWrapMode)
+	                this._signal("changeWrapMode");
 	        }
 	    };
 	    this.adjustWrapLimit = function(desiredLimit, $printMargin) {
@@ -16058,34 +16266,23 @@ return /******/ (function(modules) { // webpackBootstrap
 	        };
 	    };
 
-	    this.$updateInternalDataOnChange = function(e) {
+	    this.$updateInternalDataOnChange = function(delta) {
 	        var useWrapMode = this.$useWrapMode;
-	        var len;
-	        var action = e.data.action;
-	        var firstRow = e.data.range.start.row;
-	        var lastRow = e.data.range.end.row;
-	        var start = e.data.range.start;
-	        var end = e.data.range.end;
+	        var action = delta.action;
+	        var start = delta.start;
+	        var end = delta.end;
+	        var firstRow = start.row;
+	        var lastRow = end.row;
+	        var len = lastRow - firstRow;
 	        var removedFolds = null;
-
-	        if (action.indexOf("Lines") != -1) {
-	            if (action == "insertLines") {
-	                lastRow = firstRow + (e.data.lines.length);
-	            } else {
-	                lastRow = firstRow;
-	            }
-	            len = e.data.lines ? e.data.lines.length : lastRow - firstRow;
-	        } else {
-	            len = lastRow - firstRow;
-	        }
-
+	        
 	        this.$updating = true;
 	        if (len != 0) {
-	            if (action.indexOf("remove") != -1) {
+	            if (action === "remove") {
 	                this[useWrapMode ? "$wrapData" : "$rowLengthCache"].splice(firstRow, len);
 
 	                var foldLines = this.$foldData;
-	                removedFolds = this.getFoldsInRange(e.data.range);
+	                removedFolds = this.getFoldsInRange(delta);
 	                this.removeFolds(removedFolds);
 
 	                var foldLine = this.getFoldLine(end.row);
@@ -16142,9 +16339,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	                }
 	            }
 	        } else {
-	            len = Math.abs(e.data.range.start.column - e.data.range.end.column);
-	            if (action.indexOf("remove") != -1) {
-	                removedFolds = this.getFoldsInRange(e.data.range);
+	            len = Math.abs(delta.start.column - delta.end.column);
+	            if (action === "remove") {
+	                removedFolds = this.getFoldsInRange(delta);
 	                this.removeFolds(removedFolds);
 
 	                len = -len;
@@ -16226,7 +16423,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        TAB_SPACE = 12;
 
 
-	    this.$computeWrapSplits = function(tokens, wrapLimit) {
+	    this.$computeWrapSplits = function(tokens, wrapLimit, tabSize) {
 	        if (tokens.length == 0) {
 	            return [];
 	        }
@@ -16237,6 +16434,31 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	        var isCode = this.$wrapAsCode;
 
+	        var indentedSoftWrap = this.$indentedSoftWrap;
+	        var maxIndent = wrapLimit <= Math.max(2 * tabSize, 8)
+	            || indentedSoftWrap === false ? 0 : Math.floor(wrapLimit / 2);
+
+	        function getWrapIndent() {
+	            var indentation = 0;
+	            if (maxIndent === 0)
+	                return indentation;
+	            if (indentedSoftWrap) {
+	                for (var i = 0; i < tokens.length; i++) {
+	                    var token = tokens[i];
+	                    if (token == SPACE)
+	                        indentation += 1;
+	                    else if (token == TAB)
+	                        indentation += tabSize;
+	                    else if (token == TAB_SPACE)
+	                        continue;
+	                    else
+	                        break;
+	                }
+	            }
+	            if (isCode && indentedSoftWrap !== false)
+	                indentation += tabSize;
+	            return Math.min(indentation, maxIndent);
+	        }
 	        function addSplit(screenPos) {
 	            var displayed = tokens.slice(lastSplit, screenPos);
 	            var len = displayed.length;
@@ -16248,13 +16470,17 @@ return /******/ (function(modules) { // webpackBootstrap
 	                    len -= 1;
 	                });
 
+	            if (!splits.length) {
+	                indent = getWrapIndent();
+	                splits.indent = indent;
+	            }
 	            lastDocSplit += len;
 	            splits.push(lastDocSplit);
 	            lastSplit = screenPos;
 	        }
-
-	        while (displayLength - lastSplit > wrapLimit) {
-	            var split = lastSplit + wrapLimit;
+	        var indent = 0;
+	        while (displayLength - lastSplit > wrapLimit - indent) {
+	            var split = lastSplit + wrapLimit - indent;
 	            if (tokens[split - 1] >= SPACE && tokens[split] >= SPACE) {
 	                addSplit(split);
 	                continue;
@@ -16281,7 +16507,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                addSplit(split);
 	                continue;
 	            }
-	            var minSplit = Math.max(split - (isCode ? 10 : wrapLimit-(wrapLimit>>2)), lastSplit - 1);
+	            var minSplit = Math.max(split - (wrapLimit -(wrapLimit>>2)), lastSplit - 1);
 	            while (split > minSplit && tokens[split] < PLACEHOLDER_START) {
 	                split --;
 	            }
@@ -16304,7 +16530,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            split = lastSplit + wrapLimit;
 	            if (tokens[split] == CHAR_EXT)
 	                split--;
-	            addSplit(split);
+	            addSplit(split - indent);
 	        }
 	        return splits;
 	    };
@@ -16380,6 +16606,16 @@ return /******/ (function(modules) { // webpackBootstrap
 	            return this.$wrapData[row].length + 1;
 	        }
 	    };
+
+	    this.getRowWrapIndent = function(screenRow) {
+	        if (this.$useWrapMode) {
+	            var pos = this.screenToDocumentPosition(screenRow, Number.MAX_VALUE);
+	            var splits = this.$wrapData[pos.row];
+	            return splits.length && splits[0] < pos.column ? splits.indent : 0;
+	        } else {
+	            return 0;
+	        }
+	    }
 	    this.getScreenLastRowColumn = function(screenRow) {
 	        var pos = this.screenToDocumentPosition(screenRow, Number.MAX_VALUE);
 	        return this.documentToScreenColumn(pos.row, pos.column);
@@ -16470,20 +16706,21 @@ return /******/ (function(modules) { // webpackBootstrap
 	            line = this.getLine(docRow);
 	            foldLine = null;
 	        }
-
+	        var wrapIndent = 0;
 	        if (this.$useWrapMode) {
 	            var splits = this.$wrapData[docRow];
 	            if (splits) {
 	                var splitIndex = Math.floor(screenRow - row);
 	                column = splits[splitIndex];
 	                if(splitIndex > 0 && splits.length) {
+	                    wrapIndent = splits.indent;
 	                    docColumn = splits[splitIndex - 1] || splits[splits.length - 1];
 	                    line = line.substring(docColumn);
 	                }
 	            }
 	        }
 
-	        docColumn += this.$getStringScreenWidth(line, screenColumn)[1];
+	        docColumn += this.$getStringScreenWidth(line, screenColumn - wrapIndent)[1];
 	        if (this.$useWrapMode && docColumn >= column)
 	            docColumn = column - 1;
 
@@ -16555,6 +16792,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            textLine = this.getLine(docRow).substring(0, docColumn);
 	            foldStartRow = docRow;
 	        }
+	        var wrapIndent = 0;
 	        if (this.$useWrapMode) {
 	            var wrapRow = this.$wrapData[foldStartRow];
 	            if (wrapRow) {
@@ -16566,12 +16804,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	                textLine = textLine.substring(
 	                    wrapRow[screenRowOffset - 1] || 0, textLine.length
 	                );
+	                wrapIndent = screenRowOffset > 0 ? wrapRow.indent : 0;
 	            }
 	        }
 
 	        return {
 	            row: screenRow,
-	            column: this.$getStringScreenWidth(textLine)[0]
+	            column: wrapIndent + this.$getStringScreenWidth(textLine)[0]
 	        };
 	    };
 	    this.documentToScreenColumn = function(row, docColumn) {
@@ -16613,6 +16852,29 @@ return /******/ (function(modules) { // webpackBootstrap
 	        return screenRows;
 	    };
 	    this.$setFontMetrics = function(fm) {
+	        if (!this.$enableVarChar) return;
+	        this.$getStringScreenWidth = function(str, maxScreenColumn, screenColumn) {
+	            if (maxScreenColumn === 0)
+	                return [0, 0];
+	            if (!maxScreenColumn)
+	                maxScreenColumn = Infinity;
+	            screenColumn = screenColumn || 0;
+	            
+	            var c, column;
+	            for (column = 0; column < str.length; column++) {
+	                c = str.charAt(column);
+	                if (c === "\t") {
+	                    screenColumn += this.getScreenTabSize(screenColumn);
+	                } else {
+	                    screenColumn += fm.getCharacterWidth(c);
+	                }
+	                if (screenColumn > maxScreenColumn) {
+	                    break;
+	                }
+	            }
+	            
+	            return [screenColumn, column];
+	        };
 	    };
 	    
 	    this.destroy = function() {
@@ -16679,6 +16941,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	            if (this.$wrap == value)
 	                return;
+	            this.$wrap = value;
 	            if (!value) {
 	                this.setUseWrapMode(false);
 	            } else {
@@ -16686,7 +16949,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	                this.setWrapLimitRange(col, col);
 	                this.setUseWrapMode(true);
 	            }
-	            this.$wrap = value;
 	        },
 	        get: function() {
 	            if (this.getUseWrapMode()) {
@@ -16716,6 +16978,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        },
 	        initialValue: "auto"
 	    },
+	    indentedSoftWrap: { initialValue: true },
 	    firstLineNumber: {
 	        set: function() {this._signal("changeBreakpoint");},
 	        initialValue: 1
@@ -16784,8 +17047,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	        this.$options = options;
 	    };
 	    this.find = function(session) {
-	        var iterator = this.$matchIterator(session, this.$options);
-
+	        var options = this.$options;
+	        var iterator = this.$matchIterator(session, options);
 	        if (!iterator)
 	            return false;
 
@@ -16793,7 +17056,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	        iterator.forEach(function(range, row, offset) {
 	            if (!range.start) {
 	                var column = range.offset + (offset || 0);
-	                firstRange = new Range(row, column, row, column+range.length);
+	                firstRange = new Range(row, column, row, column + range.length);
+	                if (!range.length && options.start && options.start.start
+	                    && options.skipCurrent != false && firstRange.isEqual(options.start)
+	                ) {
+	                    firstRange = null;
+	                    return false;
+	                }
 	            } else
 	                firstRange = range;
 	            return true;
@@ -16903,8 +17172,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        if (!re)
 	            return false;
 
-	        var self = this, callback, backwards = options.backwards;
-
+	        var callback;
 	        if (options.$isMultiLine) {
 	            var len = re.length;
 	            var matchIterator = function(line, row, offset) {
@@ -16929,7 +17197,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                if (callback(range))
 	                    return true;
 	            };
-	        } else if (backwards) {
+	        } else if (options.backwards) {
 	            var matchIterator = function(line, row, startIndex) {
 	                var matches = lang.getMatchOffsets(line, re);
 	                for (var i = matches.length-1; i >= 0; i--)
@@ -16944,11 +17212,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	                        return true;
 	            };
 	        }
+	        
+	        var lineIterator = this.$lineIterator(session, options);
 
 	        return {
 	            forEach: function(_callback) {
 	                callback = _callback;
-	                self.$lineIterator(session, options).forEach(matchIterator);
+	                lineIterator.forEach(matchIterator);
 	            }
 	        };
 	    };
@@ -17081,7 +17351,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	MultiHashHandler.prototype = HashHandler.prototype;
 
 	(function() {
-
+	    
 
 	    this.addCommand = function(command) {
 	        if (this.commands[command.name])
@@ -17114,14 +17384,17 @@ return /******/ (function(modules) { // webpackBootstrap
 	        }
 	    };
 
-	    this.bindKey = function(key, command, asDefault) {
-	        if (typeof key == "object")
+	    this.bindKey = function(key, command, position) {
+	        if (typeof key == "object") {
+	            if (position == undefined)
+	                position = key.position;
 	            key = key[this.platform];
+	        }
 	        if (!key)
 	            return;
 	        if (typeof command == "function")
 	            return this.addCommand({exec: command, bindKey: key, name: command.name || key});
-
+	        
 	        key.split("|").forEach(function(keyPart) {
 	            var chain = "";
 	            if (keyPart.indexOf(" ") != -1) {
@@ -17137,11 +17410,15 @@ return /******/ (function(modules) { // webpackBootstrap
 	            }
 	            var binding = this.parseKeys(keyPart);
 	            var id = KEY_MODS[binding.hashId] + binding.key;
-	            this._addCommandToBinding(chain + id, command, asDefault);
+	            this._addCommandToBinding(chain + id, command, position);
 	        }, this);
 	    };
-
-	    this._addCommandToBinding = function(keyId, command, asDefault) {
+	    
+	    function getPosition(command) {
+	        return typeof command == "object" && command.bindKey
+	            && command.bindKey.position || 0;
+	    }
+	    this._addCommandToBinding = function(keyId, command, position) {
 	        var ckb = this.commandKeyBinding, i;
 	        if (!command) {
 	            delete ckb[keyId];
@@ -17154,10 +17431,20 @@ return /******/ (function(modules) { // webpackBootstrap
 	                ckb[keyId].splice(i, 1);
 	            }
 
-	            if (asDefault || command.isDefault)
-	                ckb[keyId].unshift(command);
-	            else
-	                ckb[keyId].push(command);
+	            if (typeof position != "number") {
+	                if (position || command.isDefault)
+	                    position = -100;
+	                else
+	                   position = getPosition(command);
+	            }
+	            var commands = ckb[keyId];
+	            for (i = 0; i < commands.length; i++) {
+	                var other = commands[i];
+	                var otherPos = getPosition(other);
+	                if (otherPos > position)
+	                    break;
+	            }
+	            commands.splice(i, 0, command);
 	        }
 	    };
 
@@ -17229,23 +17516,32 @@ return /******/ (function(modules) { // webpackBootstrap
 	    };
 
 	    this.handleKeyboard = function(data, hashId, keyString, keyCode) {
+	        if (keyCode < 0) return;
 	        var key = KEY_MODS[hashId] + keyString;
 	        var command = this.commandKeyBinding[key];
 	        if (data.$keyChain) {
 	            data.$keyChain += " " + key;
 	            command = this.commandKeyBinding[data.$keyChain] || command;
 	        }
-
+	        
 	        if (command) {
 	            if (command == "chainKeys" || command[command.length - 1] == "chainKeys") {
 	                data.$keyChain = data.$keyChain || key;
 	                return {command: "null"};
 	            }
 	        }
-
-	        if (data.$keyChain && keyCode > 0)
-	            data.$keyChain = "";
+	        
+	        if (data.$keyChain) {
+	            if ((!hashId || hashId == 4) && keyString.length == 1)
+	                data.$keyChain = data.$keyChain.slice(0, -key.length - 1); // wait for input
+	            else if (hashId == -1 || keyCode > 0)
+	                data.$keyChain = ""; // reset keyChain
+	        }
 	        return {command: command};
+	    };
+	    
+	    this.getStatusText = function(editor, data) {
+	        return data.$keyChain || "";
 	    };
 
 	}).call(HashHandler.prototype);
@@ -17282,7 +17578,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            }
 	            return false;
 	        }
-
+	        
 	        if (typeof command === "string")
 	            command = this.commands[command];
 
@@ -17425,29 +17721,33 @@ return /******/ (function(modules) { // webpackBootstrap
 	    name: "fold",
 	    bindKey: bindKey("Alt-L|Ctrl-F1", "Command-Alt-L|Command-F1"),
 	    exec: function(editor) { editor.session.toggleFold(false); },
+	    multiSelectAction: "forEach",
 	    scrollIntoView: "center",
 	    readOnly: true
 	}, {
 	    name: "unfold",
 	    bindKey: bindKey("Alt-Shift-L|Ctrl-Shift-F1", "Command-Alt-Shift-L|Command-Shift-F1"),
 	    exec: function(editor) { editor.session.toggleFold(true); },
+	    multiSelectAction: "forEach",
 	    scrollIntoView: "center",
 	    readOnly: true
 	}, {
 	    name: "toggleFoldWidget",
 	    bindKey: bindKey("F2", "F2"),
 	    exec: function(editor) { editor.session.toggleFoldWidget(); },
+	    multiSelectAction: "forEach",
 	    scrollIntoView: "center",
 	    readOnly: true
 	}, {
 	    name: "toggleParentFoldWidget",
 	    bindKey: bindKey("Alt-F2", "Alt-F2"),
 	    exec: function(editor) { editor.session.toggleFoldWidget(true); },
+	    multiSelectAction: "forEach",
 	    scrollIntoView: "center",
 	    readOnly: true
 	}, {
 	    name: "foldall",
-	    bindKey: bindKey("Ctrl-Alt-0", "Ctrl-Command-Option-0"),
+	    bindKey: bindKey(null, "Ctrl-Command-Option-0"),
 	    exec: function(editor) { editor.session.foldAll(); },
 	    scrollIntoView: "center",
 	    readOnly: true
@@ -17533,12 +17833,14 @@ return /******/ (function(modules) { // webpackBootstrap
 	    bindKey: bindKey("Shift-Up", "Shift-Up"),
 	    exec: function(editor) { editor.getSelection().selectUp(); },
 	    multiSelectAction: "forEach",
+	    scrollIntoView: "cursor",
 	    readOnly: true
 	}, {
 	    name: "golineup",
 	    bindKey: bindKey("Up", "Up|Ctrl-P"),
 	    exec: function(editor, args) { editor.navigateUp(args.times); },
 	    multiSelectAction: "forEach",
+	    scrollIntoView: "cursor",
 	    readOnly: true
 	}, {
 	    name: "selecttoend",
@@ -17723,18 +18025,32 @@ return /******/ (function(modules) { // webpackBootstrap
 	    bindKey: bindKey("Ctrl-P", "Ctrl-P"),
 	    exec: function(editor) { editor.jumpToMatching(); },
 	    multiSelectAction: "forEach",
+	    scrollIntoView: "animate",
 	    readOnly: true
 	}, {
 	    name: "selecttomatching",
 	    bindKey: bindKey("Ctrl-Shift-P", "Ctrl-Shift-P"),
 	    exec: function(editor) { editor.jumpToMatching(true); },
 	    multiSelectAction: "forEach",
+	    scrollIntoView: "animate",
+	    readOnly: true
+	}, {
+	    name: "expandToMatching",
+	    bindKey: bindKey("Ctrl-Shift-M", "Ctrl-Shift-M"),
+	    exec: function(editor) { editor.jumpToMatching(true, true); },
+	    multiSelectAction: "forEach",
+	    scrollIntoView: "animate",
 	    readOnly: true
 	}, {
 	    name: "passKeysToBrowser",
-	    bindKey: bindKey("null", "null"),
+	    bindKey: bindKey(null, null),
 	    exec: function() {},
 	    passEvent: true,
+	    readOnly: true
+	}, {
+	    name: "copy",
+	    exec: function(editor) {
+	    },
 	    readOnly: true
 	},
 	{
@@ -17750,6 +18066,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	    },
 	    scrollIntoView: "cursor",
 	    multiSelectAction: "forEach"
+	}, {
+	    name: "paste",
+	    exec: function(editor, args) {
+	        editor.$handlePaste(args);
+	    },
+	    scrollIntoView: "cursor"
 	}, {
 	    name: "removeline",
 	    bindKey: bindKey("Ctrl-D", "Command-D"),
@@ -17784,11 +18106,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	    name: "modifyNumberUp",
 	    bindKey: bindKey("Ctrl-Shift-Up", "Alt-Shift-Up"),
 	    exec: function(editor) { editor.modifyNumber(1); },
+	    scrollIntoView: "cursor",
 	    multiSelectAction: "forEach"
 	}, {
 	    name: "modifyNumberDown",
 	    bindKey: bindKey("Ctrl-Shift-Down", "Alt-Shift-Down"),
 	    exec: function(editor) { editor.modifyNumber(-1); },
+	    scrollIntoView: "cursor",
 	    multiSelectAction: "forEach"
 	}, {
 	    name: "replace",
@@ -17955,7 +18279,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        var isBackwards = editor.selection.isBackwards();
 	        var selectionStart = isBackwards ? editor.selection.getSelectionLead() : editor.selection.getSelectionAnchor();
 	        var selectionEnd = isBackwards ? editor.selection.getSelectionAnchor() : editor.selection.getSelectionLead();
-	        var firstLineEndCol = editor.session.doc.getLine(selectionStart.row).length
+	        var firstLineEndCol = editor.session.doc.getLine(selectionStart.row).length;
 	        var selectedText = editor.session.doc.getTextRange(editor.selection.getRange());
 	        var selectedCount = selectedText.replace(/\n\s*/, " ").length;
 	        var insertLine = editor.session.doc.getLine(selectionStart.row);
@@ -17966,7 +18290,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                curLine = " " + curLine;
 	            }
 	            insertLine += curLine;
-	        };
+	        }
 
 	        if (selectionEnd.row + 1 < (editor.session.doc.getLength() - 1)) {
 	            insertLine += editor.session.doc.getNewLineCharacter();
@@ -18127,16 +18451,23 @@ return /******/ (function(modules) { // webpackBootstrap
 	            args: commadEvent.args,
 	            scrollTop: this.renderer.scrollTop
 	        };
+	        if (this.curOp.command.name && this.curOp.command.scrollIntoView !== undefined)
+	            this.$blockScrolling++;
 	    };
 
 	    this.endOperation = function(e) {
 	        if (this.curOp) {
 	            if (e && e.returnValue === false)
 	                return this.curOp = null;
-
+	            this._signal("beforeEndOperation");
 	            var command = this.curOp.command;
-	            if (command && command.scrollIntoView) {
-	                switch (command.scrollIntoView) {
+	            if (command.name && this.$blockScrolling > 0)
+	                this.$blockScrolling--;
+	            var scrollIntoView = command && command.scrollIntoView;
+	            if (scrollIntoView) {
+	                switch (scrollIntoView) {
+	                    case "center-animate":
+	                        scrollIntoView = "animate";
 	                    case "center":
 	                        this.renderer.scrollCursorIntoView(null, 0.5);
 	                        break;
@@ -18154,7 +18485,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                    default:
 	                        break;
 	                }
-	                if (command.scrollIntoView == "animate")
+	                if (scrollIntoView == "animate")
 	                    this.renderer.animateScrolling(this.curOp.scrollTop);
 	            }
 	            
@@ -18218,6 +18549,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	    this.setSession = function(session) {
 	        if (this.session == session)
 	            return;
+	        if (this.curOp) this.endOperation();
+	        this.curOp = {};
 
 	        var oldSession = this.session;
 	        if (oldSession) {
@@ -18317,6 +18650,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	            oldSession: oldSession
 	        });
 	        
+	        this.curOp = null;
+	        
 	        oldSession && oldSession._signal("changeEditor", {oldEditor: this});
 	        session && session._signal("changeEditor", {editor: this});
 	    };
@@ -18404,12 +18739,18 @@ return /******/ (function(modules) { // webpackBootstrap
 	            var iterator = new TokenIterator(self.session, pos.row, pos.column);
 	            var token = iterator.getCurrentToken();
 	            
-	            if (!token || token.type.indexOf('tag-name') === -1) {
+	            if (!token || !/\b(?:tag-open|tag-name)/.test(token.type)) {
 	                session.removeMarker(session.$tagHighlight);
 	                session.$tagHighlight = null;
 	                return;
 	            }
-
+	            
+	            if (token.type.indexOf("tag-open") != -1) {
+	                token = iterator.stepForward();
+	                if (!token)
+	                    return;
+	            }
+	            
 	            var tag = token.value;
 	            var depth = 0;
 	            var prevToken = iterator.stepBackward();
@@ -18495,18 +18836,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	    this.$cursorChange = function() {
 	        this.renderer.updateCursor();
 	    };
-	    this.onDocumentChange = function(e) {
-	        var delta = e.data;
-	        var range = delta.range;
-	        var lastRow;
+	    this.onDocumentChange = function(delta) {
+	        var wrap = this.session.$useWrapMode;
+	        var lastRow = (delta.start.row == delta.end.row ? delta.end.row : Infinity);
+	        this.renderer.updateLines(delta.start.row, lastRow, wrap);
 
-	        if (range.start.row == range.end.row && delta.action != "insertLines" && delta.action != "removeLines")
-	            lastRow = range.end.row;
-	        else
-	            lastRow = Infinity;
-	        this.renderer.updateLines(range.start.row, lastRow, this.session.$useWrapMode);
-
-	        this._signal("change", e);
+	        this._signal("change", delta);
 	        this.$cursorChange();
 	        this.$updateHighlightActiveLine();
 	    };
@@ -18528,6 +18863,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	        this.$cursorChange();
 
 	        if (!this.$blockScrolling) {
+	            config.warn("Automatically scrolling cursor into view after selection change",
+	                "this will be disabled in the next version",
+	                "set editor.$blockScrolling = Infinity to disable this message"
+	            );
 	            this.renderer.scrollCursorIntoView();
 	        }
 
@@ -18667,12 +19006,33 @@ return /******/ (function(modules) { // webpackBootstrap
 	    this.onCut = function() {
 	        this.commands.exec("cut", this);
 	    };
-	    this.onPaste = function(text) {
-	        if (this.$readOnly)
-	            return;
-	        var e = {text: text};
+	    this.onPaste = function(text, event) {
+	        var e = {text: text, event: event};
+	        this.commands.exec("paste", this, e);
+	    };
+	    
+	    this.$handlePaste = function(e) {
+	        if (typeof e == "string") 
+	            e = {text: e};
 	        this._signal("paste", e);
-	        this.insert(e.text, true);
+	        var text = e.text;
+	        if (!this.inMultiSelectMode || this.inVirtualSelectionMode) {
+	            this.insert(text);
+	        } else {
+	            var lines = text.split(/\r\n|\r|\n/);
+	            var ranges = this.selection.rangeList.ranges;
+	    
+	            if (lines.length > ranges.length || lines.length < 2 || !lines[1])
+	                return this.commands.exec("insertstring", this, text);
+	    
+	            for (var i = ranges.length; i--;) {
+	                var range = ranges[i];
+	                if (!range.isEmpty())
+	                    this.session.remove(range);
+	    
+	                this.session.insert(range.start, lines[i]);
+	            }
+	        }
 	    };
 
 	    this.execCommand = function(command, args) {
@@ -19115,15 +19475,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    };
 	    this.removeLines = function() {
 	        var rows = this.$getSelectedRows();
-	        var range;
-	        if (rows.first === 0 || rows.last+1 < this.session.getLength())
-	            range = new Range(rows.first, 0, rows.last+1, 0);
-	        else
-	            range = new Range(
-	                rows.first-1, this.session.getLine(rows.first-1).length,
-	                rows.last, this.session.getLine(rows.last).length
-	            );
-	        this.session.remove(range);
+	        this.session.removeFullLines(rows.first, rows.last);
 	        this.clearSelection();
 	    };
 
@@ -19145,67 +19497,71 @@ return /******/ (function(modules) { // webpackBootstrap
 	        }
 	    };
 	    this.moveLinesDown = function() {
-	        this.$moveLines(function(firstRow, lastRow) {
-	            return this.session.moveLinesDown(firstRow, lastRow);
-	        });
+	        this.$moveLines(1, false);
 	    };
 	    this.moveLinesUp = function() {
-	        this.$moveLines(function(firstRow, lastRow) {
-	            return this.session.moveLinesUp(firstRow, lastRow);
-	        });
+	        this.$moveLines(-1, false);
 	    };
 	    this.moveText = function(range, toPosition, copy) {
 	        return this.session.moveText(range, toPosition, copy);
 	    };
 	    this.copyLinesUp = function() {
-	        this.$moveLines(function(firstRow, lastRow) {
-	            this.session.duplicateLines(firstRow, lastRow);
-	            return 0;
-	        });
+	        this.$moveLines(-1, true);
 	    };
 	    this.copyLinesDown = function() {
-	        this.$moveLines(function(firstRow, lastRow) {
-	            return this.session.duplicateLines(firstRow, lastRow);
-	        });
+	        this.$moveLines(1, true);
 	    };
-	    this.$moveLines = function(mover) {
+	    this.$moveLines = function(dir, copy) {
+	        var rows, moved;
 	        var selection = this.selection;
 	        if (!selection.inMultiSelectMode || this.inVirtualSelectionMode) {
 	            var range = selection.toOrientedRange();
-	            var rows = this.$getSelectedRows(range);
-	            var linesMoved = mover.call(this, rows.first, rows.last);
-	            range.moveBy(linesMoved, 0);
+	            rows = this.$getSelectedRows(range);
+	            moved = this.session.$moveLines(rows.first, rows.last, copy ? 0 : dir);
+	            if (copy && dir == -1) moved = 0;
+	            range.moveBy(moved, 0);
 	            selection.fromOrientedRange(range);
 	        } else {
 	            var ranges = selection.rangeList.ranges;
 	            selection.rangeList.detach(this.session);
-
-	            for (var i = ranges.length; i--; ) {
+	            this.inVirtualSelectionMode = true;
+	            
+	            var diff = 0;
+	            var totalDiff = 0;
+	            var l = ranges.length;
+	            for (var i = 0; i < l; i++) {
 	                var rangeIndex = i;
-	                var rows = ranges[i].collapseRows();
-	                var last = rows.end.row;
-	                var first = rows.start.row;
-	                while (i--) {
-	                    rows = ranges[i].collapseRows();
-	                    if (first - rows.end.row <= 1)
-	                        first = rows.end.row;
-	                    else
+	                ranges[i].moveBy(diff, 0);
+	                rows = this.$getSelectedRows(ranges[i]);
+	                var first = rows.first;
+	                var last = rows.last;
+	                while (++i < l) {
+	                    if (totalDiff) ranges[i].moveBy(totalDiff, 0);
+	                    var subRows = this.$getSelectedRows(ranges[i]);
+	                    if (copy && subRows.first != last)
 	                        break;
+	                    else if (!copy && subRows.first > last + 1)
+	                        break;
+	                    last = subRows.last;
 	                }
-	                i++;
-
-	                var linesMoved = mover.call(this, first, last);
-	                while (rangeIndex >= i) {
-	                    ranges[rangeIndex].moveBy(linesMoved, 0);
-	                    rangeIndex--;
+	                i--;
+	                diff = this.session.$moveLines(first, last, copy ? 0 : dir);
+	                if (copy && dir == -1) rangeIndex = i + 1;
+	                while (rangeIndex <= i) {
+	                    ranges[rangeIndex].moveBy(diff, 0);
+	                    rangeIndex++;
 	                }
+	                if (!copy) diff = 0;
+	                totalDiff += diff;
 	            }
+	            
 	            selection.fromOrientedRange(selection.ranges[0]);
 	            selection.rangeList.attach(this.session);
+	            this.inVirtualSelectionMode = false;
 	        }
 	    };
-	    this.$getSelectedRows = function() {
-	        var range = this.getSelectionRange().collapseRows();
+	    this.$getSelectedRows = function(range) {
+	        range = (range || this.getSelectionRange()).collapseRows();
 
 	        return {
 	            first: this.session.getRowFoldStart(range.start.row),
@@ -19826,6 +20182,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    useSoftTabs: "session",
 	    tabSize: "session",
 	    wrap: "session",
+	    indentedSoftWrap: "session",
 	    foldStyle: "session",
 	    mode: "session"
 	});
@@ -19841,42 +20198,39 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	(function() {
 	    this.execute = function(options) {
-	        var deltas = options.args[0];
+	        var deltaSets = options.args[0];
 	        this.$doc  = options.args[1];
 	        if (options.merge && this.hasUndo()){
 	            this.dirtyCounter--;
-	            deltas = this.$undoStack.pop().concat(deltas);
+	            deltaSets = this.$undoStack.pop().concat(deltaSets);
 	        }
-	        this.$undoStack.push(deltas);
+	        this.$undoStack.push(deltaSets);
 	        this.$redoStack = [];
-
 	        if (this.dirtyCounter < 0) {
 	            this.dirtyCounter = NaN;
 	        }
 	        this.dirtyCounter++;
 	    };
 	    this.undo = function(dontSelect) {
-	        var deltas = this.$undoStack.pop();
+	        var deltaSets = this.$undoStack.pop();
 	        var undoSelectionRange = null;
-	        if (deltas) {
-	            undoSelectionRange =
-	                this.$doc.undoChanges(deltas, dontSelect);
-	            this.$redoStack.push(deltas);
+	        if (deltaSets) {
+	            undoSelectionRange = this.$doc.undoChanges(deltaSets, dontSelect);
+	            this.$redoStack.push(deltaSets);
 	            this.dirtyCounter--;
 	        }
 
 	        return undoSelectionRange;
 	    };
 	    this.redo = function(dontSelect) {
-	        var deltas = this.$redoStack.pop();
+	        var deltaSets = this.$redoStack.pop();
 	        var redoSelectionRange = null;
-	        if (deltas) {
+	        if (deltaSets) {
 	            redoSelectionRange =
-	                this.$doc.redoChanges(deltas, dontSelect);
-	            this.$undoStack.push(deltas);
+	                this.$doc.redoChanges(this.$deserializeDeltas(deltaSets), dontSelect);
+	            this.$undoStack.push(deltaSets);
 	            this.dirtyCounter++;
 	        }
-
 	        return redoSelectionRange;
 	    };
 	    this.reset = function() {
@@ -19896,7 +20250,48 @@ return /******/ (function(modules) { // webpackBootstrap
 	    this.isClean = function() {
 	        return this.dirtyCounter === 0;
 	    };
-
+	    this.$serializeDeltas = function(deltaSets) {
+	        return cloneDeltaSetsObj(deltaSets, $serializeDelta);
+	    };
+	    this.$deserializeDeltas = function(deltaSets) {
+	        return cloneDeltaSetsObj(deltaSets, $deserializeDelta);
+	    };
+	    
+	    function $serializeDelta(delta){
+	        return {
+	            action: delta.action,
+	            start: delta.start,
+	            end: delta.end,
+	            lines: delta.lines.length == 1 ? null : delta.lines,
+	            text: delta.lines.length == 1 ? delta.lines[0] : null,
+	        };
+	    }
+	        
+	    function $deserializeDelta(delta) {
+	        return {
+	            action: delta.action,
+	            start: delta.start,
+	            end: delta.end,
+	            lines: delta.lines || [delta.text]
+	        };
+	    }
+	    
+	    function cloneDeltaSetsObj(deltaSets_old, fnGetModifiedDelta) {
+	        var deltaSets_new = new Array(deltaSets_old.length);
+	        for (var i = 0; i < deltaSets_old.length; i++) {
+	            var deltaSet_old = deltaSets_old[i];
+	            var deltaSet_new = { group: deltaSet_old.group, deltas: new Array(deltaSet_old.length)};
+	            
+	            for (var j = 0; j < deltaSet_old.deltas.length; j++) {
+	                var delta_old = deltaSet_old.deltas[j];
+	                deltaSet_new.deltas[j] = fnGetModifiedDelta(delta_old);
+	            }
+	            
+	            deltaSets_new[i] = deltaSet_new;
+	        }
+	        return deltaSets_new;
+	    }
+	    
 	}).call(UndoManager.prototype);
 
 	exports.UndoManager = UndoManager;
@@ -19973,15 +20368,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	        }
 	    };
 
-	    this.$updateAnnotations = function (e) {
+	    this.$updateAnnotations = function (delta) {
 	        if (!this.$annotations.length)
 	            return;
-	        var delta = e.data;
-	        var range = delta.range;
-	        var firstRow = range.start.row;
-	        var len = range.end.row - firstRow;
+	        var firstRow = delta.start.row;
+	        var len = delta.end.row - firstRow;
 	        if (len === 0) {
-	        } else if (delta.action == "removeText" || delta.action == "removeLines") {
+	        } else if (delta.action == 'remove') {
 	            this.$annotations.splice(firstRow, len + 1, null);
 	        } else {
 	            var args = new Array(len + 1);
@@ -20219,7 +20612,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                else
 	                    this.drawMultiLineMarker(html, range, marker.clazz, config);
 	            } else {
-	                this.drawSingleLineMarker(html, range, marker.clazz + " ace_start", config);
+	                this.drawSingleLineMarker(html, range, marker.clazz + " ace_start" + " ace_br15", config);
 	            }
 	        }
 	        this.element.innerHTML = html.join("");
@@ -20228,23 +20621,30 @@ return /******/ (function(modules) { // webpackBootstrap
 	    this.$getTop = function(row, layerConfig) {
 	        return (row - layerConfig.firstRowScreen) * layerConfig.lineHeight;
 	    };
+
+	    function getBorderClass(tl, tr, br, bl) {
+	        return (tl ? 1 : 0) | (tr ? 2 : 0) | (br ? 4 : 0) | (bl ? 8 : 0);
+	    }
 	    this.drawTextMarker = function(stringBuilder, range, clazz, layerConfig, extraStyle) {
-	        var row = range.start.row;
-
-	        var lineRange = new Range(
-	            row, range.start.column,
-	            row, this.session.getScreenLastRowColumn(row)
-	        );
-	        this.drawSingleLineMarker(stringBuilder, lineRange, clazz + " ace_start", layerConfig, 1, extraStyle);
-	        row = range.end.row;
-	        lineRange = new Range(row, 0, row, range.end.column);
-	        this.drawSingleLineMarker(stringBuilder, lineRange, clazz, layerConfig, 0, extraStyle);
-
-	        for (row = range.start.row + 1; row < range.end.row; row++) {
-	            lineRange.start.row = row;
-	            lineRange.end.row = row;
-	            lineRange.end.column = this.session.getScreenLastRowColumn(row);
-	            this.drawSingleLineMarker(stringBuilder, lineRange, clazz, layerConfig, 1, extraStyle);
+	        var session = this.session;
+	        var start = range.start.row;
+	        var end = range.end.row;
+	        var row = start;
+	        var prev = 0; 
+	        var curr = 0;
+	        var next = session.getScreenLastRowColumn(row);
+	        var lineRange = new Range(row, range.start.column, row, curr);
+	        for (; row <= end; row++) {
+	            lineRange.start.row = lineRange.end.row = row;
+	            lineRange.start.column = row == start ? range.start.column : session.getRowWrapIndent(row);
+	            lineRange.end.column = next;
+	            prev = curr;
+	            curr = next;
+	            next = row + 1 < end ? session.getScreenLastRowColumn(row + 1) : row == end ? 0 : range.end.column;
+	            this.drawSingleLineMarker(stringBuilder, lineRange, 
+	                clazz + (row == start  ? " ace_start" : "") + " ace_br"
+	                    + getBorderClass(row == start || row == start + 1 && range.start.column, prev < curr, curr > next, row == end),
+	                layerConfig, row == end ? 0 : 1, extraStyle);
 	        }
 	    };
 	    this.drawMultiLineMarker = function(stringBuilder, range, clazz, config, extraStyle) {
@@ -20255,7 +20655,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        extraStyle = extraStyle || "";
 
 	        stringBuilder.push(
-	            "<div class='", clazz, " ace_start' style='",
+	            "<div class='", clazz, " ace_br1 ace_start' style='",
 	            "height:", height, "px;",
 	            "right:0;",
 	            "top:", top, "px;",
@@ -20265,19 +20665,21 @@ return /******/ (function(modules) { // webpackBootstrap
 	        var width = range.end.column * config.characterWidth;
 
 	        stringBuilder.push(
-	            "<div class='", clazz, "' style='",
+	            "<div class='", clazz, " ace_br12' style='",
 	            "height:", height, "px;",
 	            "width:", width, "px;",
 	            "top:", top, "px;",
 	            "left:", padding, "px;", extraStyle, "'></div>"
 	        );
 	        height = (range.end.row - range.start.row - 1) * config.lineHeight;
-	        if (height < 0)
+	        if (height <= 0)
 	            return;
 	        top = this.$getTop(range.start.row + 1, config);
+	        
+	        var radiusClass = (range.start.column ? 1 : 0) | (range.end.column ? 0 : 8);
 
 	        stringBuilder.push(
-	            "<div class='", clazz, "' style='",
+	            "<div class='", clazz, (radiusClass ? " ace_br" + radiusClass : ""), "' style='",
 	            "height:", height, "px;",
 	            "right:0;",
 	            "top:", top, "px;",
@@ -20356,7 +20758,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    this.EOL_CHAR_LF = "\xAC";
 	    this.EOL_CHAR_CRLF = "\xa4";
 	    this.EOL_CHAR = this.EOL_CHAR_LF;
-	    this.TAB_CHAR = "\u2192"; //"\u21E5";
+	    this.TAB_CHAR = "\u2014"; //"\u21E5";
 	    this.SPACE_CHAR = "\xB7";
 	    this.$padding = 0;
 
@@ -20432,11 +20834,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	        for (var i = 1; i < tabSize + 1; i++) {
 	            if (this.showInvisibles) {
 	                tabStr.push("<span class='ace_invisible ace_invisible_tab'>"
-	                    + this.TAB_CHAR
-	                    + lang.stringRepeat("\xa0", i - 1)
+	                    + lang.stringRepeat(this.TAB_CHAR, i)
 	                    + "</span>");
 	            } else {
-	                tabStr.push(lang.stringRepeat("\xa0", i));
+	                tabStr.push(lang.stringRepeat(" ", i));
 	            }
 	        }
 	        if (this.displayIndentGuides) {
@@ -20449,9 +20850,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	                spaceClass = " ace_invisible_space";
 	                tabClass = " ace_invisible_tab";
 	                var spaceContent = lang.stringRepeat(this.SPACE_CHAR, this.tabSize);
-	                var tabContent = this.TAB_CHAR + lang.stringRepeat("\xa0", this.tabSize - 1);
+	                var tabContent = lang.stringRepeat(this.TAB_CHAR, this.tabSize);
 	            } else{
-	                var spaceContent = lang.stringRepeat("\xa0", this.tabSize);
+	                var spaceContent = lang.stringRepeat(" ", this.tabSize);
 	                var tabContent = spaceContent;
 	            }
 
@@ -20620,16 +21021,18 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	    this.$renderToken = function(stringBuilder, screenColumn, token, value) {
 	        var self = this;
-	        var replaceReg = /\t|&|<|( +)|([\x00-\x1f\x80-\xa0\xad\u1680\u180E\u2000-\u200f\u2028\u2029\u202F\u205F\u3000\uFEFF])|[\u1100-\u115F\u11A3-\u11A7\u11FA-\u11FF\u2329-\u232A\u2E80-\u2E99\u2E9B-\u2EF3\u2F00-\u2FD5\u2FF0-\u2FFB\u3000-\u303E\u3041-\u3096\u3099-\u30FF\u3105-\u312D\u3131-\u318E\u3190-\u31BA\u31C0-\u31E3\u31F0-\u321E\u3220-\u3247\u3250-\u32FE\u3300-\u4DBF\u4E00-\uA48C\uA490-\uA4C6\uA960-\uA97C\uAC00-\uD7A3\uD7B0-\uD7C6\uD7CB-\uD7FB\uF900-\uFAFF\uFE10-\uFE19\uFE30-\uFE52\uFE54-\uFE66\uFE68-\uFE6B\uFF01-\uFF60\uFFE0-\uFFE6]/g;
+	        var replaceReg = /\t|&|<|>|( +)|([\x00-\x1f\x80-\xa0\xad\u1680\u180E\u2000-\u200f\u2028\u2029\u202F\u205F\u3000\uFEFF\uFFF9-\uFFFC])|[\u1100-\u115F\u11A3-\u11A7\u11FA-\u11FF\u2329-\u232A\u2E80-\u2E99\u2E9B-\u2EF3\u2F00-\u2FD5\u2FF0-\u2FFB\u3000-\u303E\u3041-\u3096\u3099-\u30FF\u3105-\u312D\u3131-\u318E\u3190-\u31BA\u31C0-\u31E3\u31F0-\u321E\u3220-\u3247\u3250-\u32FE\u3300-\u4DBF\u4E00-\uA48C\uA490-\uA4C6\uA960-\uA97C\uAC00-\uD7A3\uD7B0-\uD7C6\uD7CB-\uD7FB\uF900-\uFAFF\uFE10-\uFE19\uFE30-\uFE52\uFE54-\uFE66\uFE68-\uFE6B\uFF01-\uFF60\uFFE0-\uFFE6]/g;
 	        var replaceFunc = function(c, a, b, tabIdx, idx4) {
 	            if (a) {
-	                return self.showInvisibles ?
-	                    "<span class='ace_invisible ace_invisible_space'>" + lang.stringRepeat(self.SPACE_CHAR, c.length) + "</span>" :
-	                    lang.stringRepeat("\xa0", c.length);
+	                return self.showInvisibles
+	                    ? "<span class='ace_invisible ace_invisible_space'>" + lang.stringRepeat(self.SPACE_CHAR, c.length) + "</span>"
+	                    : c;
 	            } else if (c == "&") {
 	                return "&#38;";
 	            } else if (c == "<") {
 	                return "&#60;";
+	            } else if (c == ">") {
+	                return "&#62;";
 	            } else if (c == "\t") {
 	                var tabSize = self.session.getScreenTabSize(screenColumn + tabIdx);
 	                screenColumn += tabSize - 1;
@@ -20716,6 +21119,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	                            this.config.lineHeight, "px'>"
 	                        );
 	                    }
+
+	                    stringBuilder.push(lang.stringRepeat("\xa0", splits.indent));
 
 	                    split ++;
 	                    screenColumn = 0;
@@ -20867,15 +21272,15 @@ return /******/ (function(modules) { // webpackBootstrap
 	"use strict";
 
 	var dom = acequire("../lib/dom");
-	var IE8;
+	var isIE8;
 
 	var Cursor = function(parentEl) {
 	    this.element = dom.createElement("div");
 	    this.element.className = "ace_layer ace_cursor-layer";
 	    parentEl.appendChild(this.element);
 	    
-	    if (IE8 === undefined)
-	        IE8 = "opacity" in this.element;
+	    if (isIE8 === undefined)
+	        isIE8 = !("opacity" in this.element.style);
 
 	    this.isVisible = false;
 	    this.isBlinking = true;
@@ -20885,7 +21290,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	    this.cursors = [];
 	    this.cursor = this.addCursor();
 	    dom.addCssClass(this.element, "ace_hidden-cursors");
-	    this.$updateCursors = this.$updateVisibility.bind(this);
+	    this.$updateCursors = (isIE8
+	        ? this.$updateVisibility
+	        : this.$updateOpacity).bind(this);
 	};
 
 	(function() {
@@ -20926,13 +21333,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	    };
 
 	    this.setSmoothBlinking = function(smoothBlinking) {
-	        if (smoothBlinking != this.smoothBlinking && !IE8) {
+	        if (smoothBlinking != this.smoothBlinking && !isIE8) {
 	            this.smoothBlinking = smoothBlinking;
 	            dom.setCssClass(this.element, "ace_smooth-blinking", smoothBlinking);
 	            this.$updateCursors(true);
-	            this.$updateCursors = (smoothBlinking 
-	                ? this.$updateOpacity
-	                : this.$updateVisibility).bind(this);
+	            this.$updateCursors = (this.$updateOpacity).bind(this);
 	            this.restartTimer();
 	        }
 	    };
@@ -21030,11 +21435,15 @@ return /******/ (function(modules) { // webpackBootstrap
 	            }
 
 	            var style = (this.cursors[cursorIndex++] || this.addCursor()).style;
-
-	            style.left = pixelPos.left + "px";
-	            style.top = pixelPos.top + "px";
-	            style.width = config.characterWidth + "px";
-	            style.height = config.lineHeight + "px";
+	            
+	            if (!this.drawCursor) {
+	                style.left = pixelPos.left + "px";
+	                style.top = pixelPos.top + "px";
+	                style.width = config.characterWidth + "px";
+	                style.height = config.lineHeight + "px";
+	            } else {
+	                this.drawCursor(style, pixelPos, config, selections[i], this.session);
+	            }
 	        }
 	        while (this.cursors.length > cursorIndex)
 	            this.removeCursor();
@@ -21044,6 +21453,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	        this.$pixelPos = pixelPos;
 	        this.restartTimer();
 	    };
+	    
+	    this.drawCursor = null;
 
 	    this.$setOverwrite = function(overwrite) {
 	        if (overwrite != this.overwrite) {
@@ -21280,9 +21691,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	    
 	    this.$setMeasureNodeStyles = function(style, isRoot) {
 	        style.width = style.height = "auto";
-	        style.left = style.top = "-100px";
+	        style.left = style.top = "0px";
 	        style.visibility = "hidden";
-	        style.position = "fixed";
+	        style.position = "absolute";
 	        style.whiteSpace = "pre";
 
 	        if (useragent.isIE < 8) {
@@ -21318,9 +21729,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	    this.setPolling = function(val) {
 	        if (val) {
 	            this.$pollSizeChanges();
-	        } else {
-	            if (this.$pollSizeChangesTimer)
-	                this.$pollSizeChangesTimer;
+	        } else if (this.$pollSizeChangesTimer) {
+	            clearInterval(this.$pollSizeChangesTimer);
+	            this.$pollSizeChangesTimer = 0;
 	        }
 	    };
 
@@ -21356,7 +21767,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    this.getCharacterWidth = function(ch) {
 	        var w = this.charSizes[ch];
 	        if (w === undefined) {
-	            this.charSizes[ch] = this.$measureCharWidth(ch) / this.$characterSize.width;
+	            w = this.charSizes[ch] = this.$measureCharWidth(ch) / this.$characterSize.width;
 	        }
 	        return w;
 	    };
@@ -21518,6 +21929,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	-moz-user-select: text;\
 	-webkit-user-select: text;\
 	user-select: text;\
+	white-space: pre!important;\
 	}\
 	.ace_text-input.ace_composition {\
 	background: inherit;\
@@ -21530,6 +21942,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	z-index: 1;\
 	position: absolute;\
 	overflow: hidden;\
+	word-wrap: normal;\
 	white-space: pre;\
 	height: 100%;\
 	width: 100%;\
@@ -21560,7 +21973,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	-moz-box-sizing: border-box;\
 	-webkit-box-sizing: border-box;\
 	box-sizing: border-box;\
-	border-left: 2px solid\
+	border-left: 2px solid;\
+	transform: translatez(0);\
 	}\
 	.ace_slim-cursors .ace_cursor {\
 	border-left-width: 1px;\
@@ -21741,9 +22155,24 @@ return /******/ (function(modules) { // webpackBootstrap
 	position: absolute;\
 	z-index: 8;\
 	}\
+	.ace_br1 {border-top-left-radius    : 3px;}\
+	.ace_br2 {border-top-right-radius   : 3px;}\
+	.ace_br3 {border-top-left-radius    : 3px; border-top-right-radius:    3px;}\
+	.ace_br4 {border-bottom-right-radius: 3px;}\
+	.ace_br5 {border-top-left-radius    : 3px; border-bottom-right-radius: 3px;}\
+	.ace_br6 {border-top-right-radius   : 3px; border-bottom-right-radius: 3px;}\
+	.ace_br7 {border-top-left-radius    : 3px; border-top-right-radius:    3px; border-bottom-right-radius: 3px;}\
+	.ace_br8 {border-bottom-left-radius : 3px;}\
+	.ace_br9 {border-top-left-radius    : 3px; border-bottom-left-radius:  3px;}\
+	.ace_br10{border-top-right-radius   : 3px; border-bottom-left-radius:  3px;}\
+	.ace_br11{border-top-left-radius    : 3px; border-top-right-radius:    3px; border-bottom-left-radius:  3px;}\
+	.ace_br12{border-bottom-right-radius: 3px; border-bottom-left-radius:  3px;}\
+	.ace_br13{border-top-left-radius    : 3px; border-bottom-right-radius: 3px; border-bottom-left-radius:  3px;}\
+	.ace_br14{border-top-right-radius   : 3px; border-bottom-right-radius: 3px; border-bottom-left-radius:  3px;}\
+	.ace_br15{border-top-left-radius    : 3px; border-top-right-radius:    3px; border-bottom-right-radius: 3px; border-bottom-left-radius: 3px;}\
 	";
 
-	dom.importCssString(editorCss, "ace_editor");
+	dom.importCssString(editorCss, "ace_editor.css");
 
 	var VirtualRenderer = function(container, theme) {
 	    var _self = this;
@@ -21989,6 +22418,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	        if (this.resizing)
 	            this.resizing = 0;
+	        this.scrollBarV.scrollLeft = this.scrollBarV.scrollTop = null;
 	    };
 	    
 	    this.$updateCachedSize = function(force, gutterWidth, width, height) {
@@ -22152,7 +22582,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        return this.container;
 	    };
 	    this.getMouseEventTarget = function() {
-	        return this.content;
+	        return this.scroller;
 	    };
 	    this.getTextAreaContainer = function() {
 	        return this.container;
@@ -22165,9 +22595,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	        var posLeft = this.$cursorLayer.$pixelPos.left;
 	        posTop -= config.offset;
 
+	        var style = this.textarea.style;
 	        var h = this.lineHeight;
-	        if (posTop < 0 || posTop > config.height - h)
+	        if (posTop < 0 || posTop > config.height - h) {
+	            style.top = style.left = "0";
 	            return;
+	        }
 
 	        var w = this.characterWidth;
 	        if (this.$composition) {
@@ -22180,11 +22613,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	            posLeft = this.$size.scrollerWidth - w;
 
 	        posLeft += this.gutterWidth;
-
-	        this.textarea.style.height = h + "px";
-	        this.textarea.style.width = w + "px";
-	        this.textarea.style.left = Math.min(posLeft, this.$size.scrollerWidth - w) + "px";
-	        this.textarea.style.top = Math.min(posTop, this.$size.height - h) + "px";
+	        style.height = h + "px";
+	        style.width = w + "px";
+	        style.left = Math.min(posLeft, this.$size.scrollerWidth - w) + "px";
+	        style.top = Math.min(posTop, this.$size.height - h) + "px";
 	    };
 	    this.getFirstVisibleRow = function() {
 	        return this.layerConfig.firstRow;
@@ -22230,7 +22662,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        this.setOption("hScrollBarAlwaysVisible", alwaysVisible);
 	    };
 	    this.getVScrollBarAlwaysVisible = function() {
-	        return this.$hScrollBarAlwaysVisible;
+	        return this.$vScrollBarAlwaysVisible;
 	    };
 	    this.setVScrollBarAlwaysVisible = function(alwaysVisible) {
 	        this.setOption("vScrollBarAlwaysVisible", alwaysVisible);
@@ -22379,6 +22811,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	            (this.$minLines||1) * this.lineHeight,
 	            Math.min(maxHeight, height)
 	        ) + this.scrollMargin.v + (this.$extraHeight || 0);
+	        if (this.$horizScroll)
+	            desiredHeight += this.scrollBarH.getHeight();
 	        var vScroll = height > maxHeight;
 	        
 	        if (desiredHeight != this.desiredHeight ||
@@ -22398,18 +22832,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	    };
 	    
 	    this.$computeLayerConfig = function() {
-	        if (this.$maxLines && this.lineHeight > 1)
-	            this.$autosize();
-
 	        var session = this.session;
 	        var size = this.$size;
 	        
 	        var hideScrollbars = size.height <= 2 * this.lineHeight;
 	        var screenLines = this.session.getScreenLength();
 	        var maxHeight = screenLines * this.lineHeight;
-
-	        var offset = this.scrollTop % this.lineHeight;
-	        var minHeight = size.scrollerHeight + this.lineHeight;
 
 	        var longestLine = this.$getLongestLine();
 	        
@@ -22421,21 +22849,28 @@ return /******/ (function(modules) { // webpackBootstrap
 	            this.$horizScroll = horizScroll;
 	            this.scrollBarH.setVisible(horizScroll);
 	        }
+	        var vScrollBefore = this.$vScroll; // autosize can change vscroll value in which case we need to update longestLine
+	        if (this.$maxLines && this.lineHeight > 1)
+	            this.$autosize();
+
+	        var offset = this.scrollTop % this.lineHeight;
+	        var minHeight = size.scrollerHeight + this.lineHeight;
 	        
 	        var scrollPastEnd = !this.$maxLines && this.$scrollPastEnd
 	            ? (size.scrollerHeight - this.lineHeight) * this.$scrollPastEnd
 	            : 0;
 	        maxHeight += scrollPastEnd;
+	        
+	        var sm = this.scrollMargin;
+	        this.session.setScrollTop(Math.max(-sm.top,
+	            Math.min(this.scrollTop, maxHeight - size.scrollerHeight + sm.bottom)));
 
-	        this.session.setScrollTop(Math.max(-this.scrollMargin.top,
-	            Math.min(this.scrollTop, maxHeight - size.scrollerHeight + this.scrollMargin.bottom)));
-
-	        this.session.setScrollLeft(Math.max(-this.scrollMargin.left, Math.min(this.scrollLeft,
-	            longestLine + 2 * this.$padding - size.scrollerWidth + this.scrollMargin.right)));
+	        this.session.setScrollLeft(Math.max(-sm.left, Math.min(this.scrollLeft, 
+	            longestLine + 2 * this.$padding - size.scrollerWidth + sm.right)));
 	        
 	        var vScroll = !hideScrollbars && (this.$vScrollBarAlwaysVisible ||
-	            size.scrollerHeight - maxHeight + scrollPastEnd < 0 || this.scrollTop);
-	        var vScrollChanged = this.$vScroll !== vScroll;
+	            size.scrollerHeight - maxHeight + scrollPastEnd < 0 || this.scrollTop > sm.top);
+	        var vScrollChanged = vScrollBefore !== vScroll;
 	        if (vScrollChanged) {
 	            this.$vScroll = vScroll;
 	            this.scrollBarV.setVisible(vScroll);
@@ -23075,7 +23510,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                break;
 	        }
 	    };
-
+	    
 	    this.reportError = function(err) {
 	        window.console && console.error && console.error(err);
 	    };
@@ -23125,19 +23560,22 @@ return /******/ (function(modules) { // webpackBootstrap
 	        doc.on("change", this.changeListener);
 	    };
 
-	    this.changeListener = function(e) {
+	    this.changeListener = function(delta) {
 	        if (!this.deltaQueue) {
-	            this.deltaQueue = [e.data];
+	            this.deltaQueue = [];
 	            setTimeout(this.$sendDeltaQueue, 0);
-	        } else
-	            this.deltaQueue.push(e.data);
+	        }
+	        if (delta.action == "insert")
+	            this.deltaQueue.push(delta.start, delta.lines);
+	        else
+	            this.deltaQueue.push(delta.start, delta.end);
 	    };
 
 	    this.$sendDeltaQueue = function() {
 	        var q = this.deltaQueue;
 	        if (!q) return;
 	        this.deltaQueue = null;
-	        if (q.length > 20 && q.length > this.$doc.getLength() >> 1) {
+	        if (q.length > 50 && q.length > this.$doc.getLength() >> 1) {
 	            this.call("setValue", [this.$doc.getValue()]);
 	        } else
 	            this.emit("change", {data: q});
@@ -23241,7 +23679,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    
 	    this.$pos = pos;
 	    var undoStack = session.getUndoManager().$undoStack || session.getUndoManager().$undostack || {length: -1};
-	    this.$undoStackDepth =  undoStack.length;
+	    this.$undoStackDepth = undoStack.length;
 	    this.setup();
 
 	    session.selection.on("changeCursor", this.$onCursorChange);
@@ -23254,104 +23692,97 @@ return /******/ (function(modules) { // webpackBootstrap
 	        var _self = this;
 	        var doc = this.doc;
 	        var session = this.session;
-	        var pos = this.$pos;
 	        
 	        this.selectionBefore = session.selection.toJSON();
 	        if (session.selection.inMultiSelectMode)
 	            session.selection.toSingleRange();
 
-	        this.pos = doc.createAnchor(pos.row, pos.column);
-	        this.markerId = session.addMarker(new Range(pos.row, pos.column, pos.row, pos.column + this.length), this.mainClass, null, false);
-	        this.pos.on("change", function(event) {
-	            session.removeMarker(_self.markerId);
-	            _self.markerId = session.addMarker(new Range(event.value.row, event.value.column, event.value.row, event.value.column+_self.length), _self.mainClass, null, false);
-	        });
+	        this.pos = doc.createAnchor(this.$pos.row, this.$pos.column);
+	        var pos = this.pos;
+	        pos.$insertRight = true;
+	        pos.detach();
+	        pos.markerId = session.addMarker(new Range(pos.row, pos.column, pos.row, pos.column + this.length), this.mainClass, null, false);
 	        this.others = [];
 	        this.$others.forEach(function(other) {
 	            var anchor = doc.createAnchor(other.row, other.column);
+	            anchor.$insertRight = true;
+	            anchor.detach();
 	            _self.others.push(anchor);
 	        });
 	        session.setUndoSelect(false);
 	    };
 	    this.showOtherMarkers = function() {
-	        if(this.othersActive) return;
+	        if (this.othersActive) return;
 	        var session = this.session;
 	        var _self = this;
 	        this.othersActive = true;
 	        this.others.forEach(function(anchor) {
 	            anchor.markerId = session.addMarker(new Range(anchor.row, anchor.column, anchor.row, anchor.column+_self.length), _self.othersClass, null, false);
-	            anchor.on("change", function(event) {
-	                session.removeMarker(anchor.markerId);
-	                anchor.markerId = session.addMarker(new Range(event.value.row, event.value.column, event.value.row, event.value.column+_self.length), _self.othersClass, null, false);
-	            });
 	        });
 	    };
 	    this.hideOtherMarkers = function() {
-	        if(!this.othersActive) return;
+	        if (!this.othersActive) return;
 	        this.othersActive = false;
 	        for (var i = 0; i < this.others.length; i++) {
 	            this.session.removeMarker(this.others[i].markerId);
 	        }
 	    };
-	    this.onUpdate = function(event) {
-	        var delta = event.data;
-	        var range = delta.range;
-	        if(range.start.row !== range.end.row) return;
-	        if(range.start.row !== this.pos.row) return;
-	        if (this.$updating) return;
+	    this.onUpdate = function(delta) {
+	        if (this.$updating)
+	            return this.updateAnchors(delta);
+	            
+	        var range = delta;
+	        if (range.start.row !== range.end.row) return;
+	        if (range.start.row !== this.pos.row) return;
 	        this.$updating = true;
-	        var lengthDiff = delta.action === "insertText" ? range.end.column - range.start.column : range.start.column - range.end.column;
+	        var lengthDiff = delta.action === "insert" ? range.end.column - range.start.column : range.start.column - range.end.column;
+	        var inMainRange = range.start.column >= this.pos.column && range.start.column <= this.pos.column + this.length + 1;
+	        var distanceFromStart = range.start.column - this.pos.column;
 	        
-	        if(range.start.column >= this.pos.column && range.start.column <= this.pos.column + this.length + 1) {
-	            var distanceFromStart = range.start.column - this.pos.column;
+	        this.updateAnchors(delta);
+	        
+	        if (inMainRange)
 	            this.length += lengthDiff;
-	            if(!this.session.$fromUndo) {
-	                if(delta.action === "insertText") {
-	                    for (var i = this.others.length - 1; i >= 0; i--) {
-	                        var otherPos = this.others[i];
-	                        var newPos = {row: otherPos.row, column: otherPos.column + distanceFromStart};
-	                        if(otherPos.row === range.start.row && range.start.column < otherPos.column)
-	                            newPos.column += lengthDiff;
-	                        this.doc.insert(newPos, delta.text);
-	                    }
-	                } else if(delta.action === "removeText") {
-	                    for (var i = this.others.length - 1; i >= 0; i--) {
-	                        var otherPos = this.others[i];
-	                        var newPos = {row: otherPos.row, column: otherPos.column + distanceFromStart};
-	                        if(otherPos.row === range.start.row && range.start.column < otherPos.column)
-	                            newPos.column += lengthDiff;
-	                        this.doc.remove(new Range(newPos.row, newPos.column, newPos.row, newPos.column - lengthDiff));
-	                    }
+
+	        if (inMainRange && !this.session.$fromUndo) {
+	            if (delta.action === 'insert') {
+	                for (var i = this.others.length - 1; i >= 0; i--) {
+	                    var otherPos = this.others[i];
+	                    var newPos = {row: otherPos.row, column: otherPos.column + distanceFromStart};
+	                    this.doc.insertMergedLines(newPos, delta.lines);
 	                }
-	                if(range.start.column === this.pos.column && delta.action === "insertText") {
-	                    setTimeout(function() {
-	                        this.pos.setPosition(this.pos.row, this.pos.column - lengthDiff);
-	                        for (var i = 0; i < this.others.length; i++) {
-	                            var other = this.others[i];
-	                            var newPos = {row: other.row, column: other.column - lengthDiff};
-	                            if(other.row === range.start.row && range.start.column < other.column)
-	                                newPos.column += lengthDiff;
-	                            other.setPosition(newPos.row, newPos.column);
-	                        }
-	                    }.bind(this), 0);
+	            } else if (delta.action === 'remove') {
+	                for (var i = this.others.length - 1; i >= 0; i--) {
+	                    var otherPos = this.others[i];
+	                    var newPos = {row: otherPos.row, column: otherPos.column + distanceFromStart};
+	                    this.doc.remove(new Range(newPos.row, newPos.column, newPos.row, newPos.column - lengthDiff));
 	                }
-	                else if(range.start.column === this.pos.column && delta.action === "removeText") {
-	                    setTimeout(function() {
-	                        for (var i = 0; i < this.others.length; i++) {
-	                            var other = this.others[i];
-	                            if(other.row === range.start.row && range.start.column < other.column) {
-	                                other.setPosition(other.row, other.column - lengthDiff);
-	                            }
-	                        }
-	                    }.bind(this), 0);
-	                }
-	            }
-	            this.pos._emit("change", {value: this.pos});
-	            for (var i = 0; i < this.others.length; i++) {
-	                this.others[i]._emit("change", {value: this.others[i]});
 	            }
 	        }
+	        
 	        this.$updating = false;
+	        this.updateMarkers();
+	    };
+	    
+	    this.updateAnchors = function(delta) {
+	        this.pos.onChange(delta);
+	        for (var i = this.others.length; i--;)
+	            this.others[i].onChange(delta);
+	        this.updateMarkers();
+	    };
+	    
+	    this.updateMarkers = function() {
+	        if (this.$updating)
+	            return;
+	        var _self = this;
+	        var session = this.session;
+	        var updateMarker = function(pos, className) {
+	            session.removeMarker(pos.markerId);
+	            pos.markerId = session.addMarker(new Range(pos.row, pos.column, pos.row, pos.column+_self.length), className, null, false);
+	        };
+	        updateMarker(this.pos, this.mainClass);
+	        for (var i = this.others.length; i--;)
+	            updateMarker(this.others[i], this.othersClass);
 	    };
 
 	    this.onCursorChange = function(event) {
@@ -23366,20 +23797,16 @@ return /******/ (function(modules) { // webpackBootstrap
 	        }
 	    };    
 	    this.detach = function() {
-	        this.session.removeMarker(this.markerId);
+	        this.session.removeMarker(this.pos && this.pos.markerId);
 	        this.hideOtherMarkers();
 	        this.doc.removeEventListener("change", this.$onUpdate);
 	        this.session.selection.removeEventListener("changeCursor", this.$onCursorChange);
-	        this.pos.detach();
-	        for (var i = 0; i < this.others.length; i++) {
-	            this.others[i].detach();
-	        }
 	        this.session.setUndoSelect(true);
 	        this.session = null;
 	    };
 	    this.cancel = function() {
-	        if(this.$undoStackDepth === -1)
-	            throw Error("Canceling placeholders only supported with undo manager attached to session.");
+	        if (this.$undoStackDepth === -1)
+	            return;
 	        var undoManager = this.session.getUndoManager();
 	        var undosRequired = (undoManager.$undoStack || undoManager.$undostack).length - this.$undoStackDepth;
 	        for (var i = 0; i < undosRequired; i++) {
@@ -23447,15 +23874,15 @@ return /******/ (function(modules) { // webpackBootstrap
 	    var selectionMode;
 	    if (editor.$mouseHandler.$enableJumpToDef) {
 	        if (ctrl && alt || accel && alt)
-	            selectionMode = "add";
-	        else if (alt)
+	            selectionMode = shift ? "block" : "add";
+	        else if (alt && editor.$blockSelectEnabled)
 	            selectionMode = "block";
 	    } else {
 	        if (accel && !alt) {
 	            selectionMode = "add";
 	            if (!isMultiSelect && shift)
 	                return;
-	        } else if (alt) {
+	        } else if (alt && editor.$blockSelectEnabled) {
 	            selectionMode = "block";
 	        }
 	    }
@@ -23481,7 +23908,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        
 	        if (shift) {
 	            oldRange = null;
-	            range = selection.ranges[0];
+	            range = selection.ranges[0] || range;
 	            editor.removeSelectionMarker(range);
 	        }
 	        editor.once("mouseup", function() {
@@ -23514,7 +23941,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	            if (isSamePoint(screenCursor, newCursor) && isSamePoint(cursor, selection.lead))
 	                return;
 	            screenCursor = newCursor;
-
+	            
+	            editor.$blockScrolling++;
 	            editor.selection.moveToPosition(cursor);
 	            editor.renderer.scrollCursorIntoView();
 
@@ -23524,8 +23952,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	                rectSel[0] = editor.$mouseHandler.$clickSelection.clone();
 	            rectSel.forEach(editor.addSelectionMarker, editor);
 	            editor.updateSelectionMarkers();
+	            editor.$blockScrolling--;
 	        };
-	        
+	        editor.$blockScrolling++;
 	        if (isMultiSelect && !accel) {
 	            selection.toSingleRange();
 	        } else if (!isMultiSelect && accel) {
@@ -23537,6 +23966,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            screenAnchor = session.documentToScreenPosition(selection.lead);            
 	        else
 	            selection.moveToPosition(pos);
+	        editor.$blockScrolling--;
 	        
 	        screenCursor = {row: -1, column: -1};
 
@@ -23576,62 +24006,73 @@ return /******/ (function(modules) { // webpackBootstrap
 	    name: "addCursorAbove",
 	    exec: function(editor) { editor.selectMoreLines(-1); },
 	    bindKey: {win: "Ctrl-Alt-Up", mac: "Ctrl-Alt-Up"},
-	    readonly: true
+	    scrollIntoView: "cursor",
+	    readOnly: true
 	}, {
 	    name: "addCursorBelow",
 	    exec: function(editor) { editor.selectMoreLines(1); },
 	    bindKey: {win: "Ctrl-Alt-Down", mac: "Ctrl-Alt-Down"},
-	    readonly: true
+	    scrollIntoView: "cursor",
+	    readOnly: true
 	}, {
 	    name: "addCursorAboveSkipCurrent",
 	    exec: function(editor) { editor.selectMoreLines(-1, true); },
 	    bindKey: {win: "Ctrl-Alt-Shift-Up", mac: "Ctrl-Alt-Shift-Up"},
-	    readonly: true
+	    scrollIntoView: "cursor",
+	    readOnly: true
 	}, {
 	    name: "addCursorBelowSkipCurrent",
 	    exec: function(editor) { editor.selectMoreLines(1, true); },
 	    bindKey: {win: "Ctrl-Alt-Shift-Down", mac: "Ctrl-Alt-Shift-Down"},
-	    readonly: true
+	    scrollIntoView: "cursor",
+	    readOnly: true
 	}, {
 	    name: "selectMoreBefore",
 	    exec: function(editor) { editor.selectMore(-1); },
 	    bindKey: {win: "Ctrl-Alt-Left", mac: "Ctrl-Alt-Left"},
-	    readonly: true
+	    scrollIntoView: "cursor",
+	    readOnly: true
 	}, {
 	    name: "selectMoreAfter",
 	    exec: function(editor) { editor.selectMore(1); },
 	    bindKey: {win: "Ctrl-Alt-Right", mac: "Ctrl-Alt-Right"},
-	    readonly: true
+	    scrollIntoView: "cursor",
+	    readOnly: true
 	}, {
 	    name: "selectNextBefore",
 	    exec: function(editor) { editor.selectMore(-1, true); },
 	    bindKey: {win: "Ctrl-Alt-Shift-Left", mac: "Ctrl-Alt-Shift-Left"},
-	    readonly: true
+	    scrollIntoView: "cursor",
+	    readOnly: true
 	}, {
 	    name: "selectNextAfter",
 	    exec: function(editor) { editor.selectMore(1, true); },
 	    bindKey: {win: "Ctrl-Alt-Shift-Right", mac: "Ctrl-Alt-Shift-Right"},
-	    readonly: true
+	    scrollIntoView: "cursor",
+	    readOnly: true
 	}, {
 	    name: "splitIntoLines",
 	    exec: function(editor) { editor.multiSelect.splitIntoLines(); },
 	    bindKey: {win: "Ctrl-Alt-L", mac: "Ctrl-Alt-L"},
-	    readonly: true
+	    readOnly: true
 	}, {
 	    name: "alignCursors",
 	    exec: function(editor) { editor.alignCursors(); },
-	    bindKey: {win: "Ctrl-Alt-A", mac: "Ctrl-Alt-A"}
+	    bindKey: {win: "Ctrl-Alt-A", mac: "Ctrl-Alt-A"},
+	    scrollIntoView: "cursor"
 	}, {
 	    name: "findAll",
 	    exec: function(editor) { editor.findAll(); },
 	    bindKey: {win: "Ctrl-Alt-K", mac: "Ctrl-Alt-G"},
-	    readonly: true
+	    scrollIntoView: "cursor",
+	    readOnly: true
 	}];
 	exports.multiSelectCommands = [{
 	    name: "singleSelection",
 	    bindKey: "esc",
 	    exec: function(editor) { editor.exitMultiSelectMode(); },
-	    readonly: true,
+	    scrollIntoView: "cursor",
+	    readOnly: true,
 	    isAvailable: function(editor) {return editor && editor.inMultiSelectMode}
 	}];
 
@@ -24071,33 +24512,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	            var pos = anchor == this.multiSelect.anchor
 	                ? range.cursor == range.start ? range.end : range.start
 	                : range.cursor;
-	            if (!isSamePoint(pos, anchor))
+	            if (pos.row != anchor.row 
+	                || this.session.$clipPositionToDocument(pos.row, pos.column).column != anchor.column)
 	                this.multiSelect.toSingleRange(this.multiSelect.toOrientedRange());
-	        }
-	    };
-	    this.onPaste = function(text) {
-	        if (this.$readOnly)
-	            return;
-
-
-	        var e = {text: text};
-	        this._signal("paste", e);
-	        text = e.text;
-	        if (!this.inMultiSelectMode || this.inVirtualSelectionMode)
-	            return this.insert(text);
-
-	        var lines = text.split(/\r\n|\r|\n/);
-	        var ranges = this.selection.rangeList.ranges;
-
-	        if (lines.length > ranges.length || lines.length < 2 || !lines[1])
-	            return this.commands.exec("insertstring", this, text);
-
-	        for (var i = ranges.length; i--;) {
-	            var range = ranges[i];
-	            if (!range.isEmpty())
-	                this.session.remove(range);
-
-	            this.session.insert(range.start, lines[i]);
 	        }
 	    };
 	    this.findAll = function(needle, options, additive) {
@@ -24257,9 +24674,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	                if (fr < 0) fr = 0;
 	                if (lr >= max) lr = max - 1;
 	            }
-	            var lines = this.session.doc.removeLines(fr, lr);
+	            var lines = this.session.removeFullLines(fr, lr);
 	            lines = this.$reAlignText(lines, guessRange);
-	            this.session.doc.insert({row: fr, column: 0}, lines.join("\n") + "\n");
+	            this.session.insert({row: fr, column: 0}, lines.join("\n") + "\n");
 	            if (!guessRange) {
 	                range.start.column = 0;
 	                range.end.column = lines[lines.length - 1].length;
@@ -24420,7 +24837,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	    var el = editor.textInput.getElement();
 	    var altCursor = false;
 	    event.addListener(el, "keydown", function(e) {
-	        if (e.keyCode == 18 && !(e.ctrlKey || e.shiftKey || e.metaKey)) {
+	        var altDown = e.keyCode == 18 && !(e.ctrlKey || e.shiftKey || e.metaKey);
+	        if (editor.$blockSelectEnabled && altDown) {
 	            if (!altCursor) {
 	                editor.renderer.setMouseCursor("crosshair");
 	                altCursor = true;
@@ -24454,6 +24872,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	                this.off("changeSession", this.$multiselectOnSessionChange);
 	                this.off("mousedown", onMouseDown);
 	            }
+	        },
+	        value: true
+	    },
+	    enableBlockSelect: {
+	        set: function(val) {
+	            this.$blockSelectEnabled = val;
 	        },
 	        value: true
 	    }
@@ -24652,7 +25076,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	}\
 	.ace-tm.ace_multiselect .ace_selection.ace_start {\
 	box-shadow: 0 0 3px 0px white;\
-	border-radius: 2px;\
 	}\
 	.ace-tm .ace_marker-layer .ace_step {\
 	background: rgb(252, 255, 0);\
@@ -24703,6 +25126,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    this.$onChangeEditor = this.$onChangeEditor.bind(this);
 	    
 	    this.session.on("change", this.updateOnChange);
+	    this.session.on("changeFold", this.updateOnFold);
 	    this.session.on("changeEditor", this.$onChangeEditor);
 	}
 
@@ -24723,8 +25147,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	    this.$getWidgetScreenLength = function() {
 	        var screenRows = 0;
 	        this.lineWidgets.forEach(function(w){
-	            if (w && w.rowCount)
-	                screenRows +=w.rowCount;
+	            if (w && w.rowCount && !w.hidden)
+	                screenRows += w.rowCount;
 	        });
 	        return screenRows;
 	    };    
@@ -24732,7 +25156,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    this.$onChangeEditor = function(e) {
 	        this.attach(e.editor);
 	    };
-
+	    
 	    this.attach = function(editor) {
 	        if (editor  && editor.widgetManager && editor.widgetManager != this)
 	            editor.widgetManager.detach();
@@ -24768,17 +25192,41 @@ return /******/ (function(modules) { // webpackBootstrap
 	        });
 	    };
 
-	    this.updateOnChange = function(e) {
+	    this.updateOnFold = function(e, session) {
+	        var lineWidgets = session.lineWidgets;
+	        if (!lineWidgets || !e.action)
+	            return;
+	        var fold = e.data;
+	        var start = fold.start.row;
+	        var end = fold.end.row;
+	        var hide = e.action == "add";
+	        for (var i = start + 1; i < end; i++) {
+	            if (lineWidgets[i])
+	                lineWidgets[i].hidden = hide;
+	        }
+	        if (lineWidgets[end]) {
+	            if (hide) {
+	                if (!lineWidgets[start])
+	                    lineWidgets[start] = lineWidgets[end];
+	                else
+	                    lineWidgets[end].hidden = hide;
+	            } else {
+	                if (lineWidgets[start] == lineWidgets[end])
+	                    lineWidgets[start] = undefined;
+	                lineWidgets[end].hidden = hide;
+	            }
+	        }
+	    };
+	    
+	    this.updateOnChange = function(delta) {
 	        var lineWidgets = this.session.lineWidgets;
 	        if (!lineWidgets) return;
-	            
-	        var delta = e.data;
-	        var range = delta.range;
-	        var startRow = range.start.row;
-	        var len = range.end.row - startRow;
+	        
+	        var startRow = delta.start.row;
+	        var len = delta.end.row - startRow;
 
 	        if (len === 0) {
-	        } else if (delta.action == "removeText" || delta.action == "removeLines") {
+	        } else if (delta.action == 'remove') {
 	            var removed = lineWidgets.splice(startRow + 1, len);
 	            removed.forEach(function(w) {
 	                w && this.removeLineWidget(w);
@@ -24800,6 +25248,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	            if (w) {
 	                noWidgets = false;
 	                w.row = i;
+	                while (w.$oldWidget) {
+	                    w.$oldWidget.row = i;
+	                    w = w.$oldWidget;
+	                }
 	            }
 	        });
 	        if (noWidgets)
@@ -24810,7 +25262,18 @@ return /******/ (function(modules) { // webpackBootstrap
 	        if (!this.session.lineWidgets)
 	            this.session.lineWidgets = new Array(this.session.getLength());
 	        
+	        var old = this.session.lineWidgets[w.row];
+	        if (old) {
+	            w.$oldWidget = old;
+	            if (old.el && old.el.parentNode) {
+	                old.el.parentNode.removeChild(old.el);
+	                old._inDocument = false;
+	            }
+	        }
+	            
 	        this.session.lineWidgets[w.row] = w;
+	        
+	        w.session = this.session;
 	        
 	        var renderer = this.editor.renderer;
 	        if (w.html && !w.el) {
@@ -24831,27 +25294,65 @@ return /******/ (function(modules) { // webpackBootstrap
 	        if (!w.pixelHeight) {
 	            w.pixelHeight = w.el.offsetHeight;
 	        }
-	        if (w.rowCount == null)
+	        if (w.rowCount == null) {
 	            w.rowCount = w.pixelHeight / renderer.layerConfig.lineHeight;
+	        }
 	        
+	        var fold = this.session.getFoldAt(w.row, 0);
+	        w.$fold = fold;
+	        if (fold) {
+	            var lineWidgets = this.session.lineWidgets;
+	            if (w.row == fold.end.row && !lineWidgets[fold.start.row])
+	                lineWidgets[fold.start.row] = w;
+	            else
+	                w.hidden = true;
+	        }
+	            
 	        this.session._emit("changeFold", {data:{start:{row: w.row}}});
 	        
 	        this.$updateRows();
 	        this.renderWidgets(null, renderer);
+	        this.onWidgetChanged(w);
 	        return w;
 	    };
 	    
 	    this.removeLineWidget = function(w) {
 	        w._inDocument = false;
+	        w.session = null;
 	        if (w.el && w.el.parentNode)
 	            w.el.parentNode.removeChild(w.el);
 	        if (w.editor && w.editor.destroy) try {
 	            w.editor.destroy();
 	        } catch(e){}
-	        if (this.session.lineWidgets)
-	            this.session.lineWidgets[w.row] = undefined;
+	        if (this.session.lineWidgets) {
+	            var w1 = this.session.lineWidgets[w.row]
+	            if (w1 == w) {
+	                this.session.lineWidgets[w.row] = w.$oldWidget;
+	                if (w.$oldWidget)
+	                    this.onWidgetChanged(w.$oldWidget);
+	            } else {
+	                while (w1) {
+	                    if (w1.$oldWidget == w) {
+	                        w1.$oldWidget = w.$oldWidget;
+	                        break;
+	                    }
+	                    w1 = w1.$oldWidget;
+	                }
+	            }
+	        }
 	        this.session._emit("changeFold", {data:{start:{row: w.row}}});
 	        this.$updateRows();
+	    };
+	    
+	    this.getWidgetsAtRow = function(row) {
+	        var lineWidgets = this.session.lineWidgets;
+	        var w = lineWidgets && lineWidgets[row];
+	        var list = [];
+	        while (w) {
+	            list.push(w);
+	            w = w.$oldWidget;
+	        }
+	        return list;
 	    };
 	    
 	    this.onWidgetChanged = function(w) {
@@ -24867,7 +25368,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	        var min = Infinity;
 	        for (var i = 0; i < changedWidgets.length; i++) {
 	            var w = changedWidgets[i];
+	            if (!w || !w.el) continue;
+	            if (w.session != this.session) continue;
 	            if (!w._inDocument) {
+	                if (this.session.lineWidgets[w.row] != w)
+	                    continue;
 	                w._inDocument = true;
 	                renderer.container.appendChild(w.el);
 	            }
@@ -24916,7 +25421,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	        for (var i = first; i <= last; i++) {
 	            var w = lineWidgets[i];
 	            if (!w || !w.el) continue;
-
+	            if (w.hidden) {
+	                w.el.style.top = -100 - (w.pixelHeight || 0) + "px";
+	                continue;
+	            }
 	            if (!w._inDocument) {
 	                w._inDocument = true;
 	                renderer.container.appendChild(w.el);
@@ -24930,7 +25438,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	            if (!w.fixedWidth)
 	                left -= renderer.scrollLeft;
 	            w.el.style.left = left + "px";
-
+	            
+	            if (w.fullWidth && w.screenWidth) {
+	                w.el.style.minWidth = config.width + 2 * config.padding + "px";
+	            }
+	            
 	            if (w.fixedWidth) {
 	                w.el.style.right = renderer.scrollBar.getWidth() + "px";
 	            } else {
@@ -24978,7 +25490,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    if (i < 0)
 	        i = -i - 1;
 	    
-	    if (i >= annotations.length - 1)
+	    if (i >= annotations.length)
 	        i = dir > 0 ? 0 : annotations.length - 1;
 	    else if (i === 0 && dir < 0)
 	        i = annotations.length - 1;
@@ -25014,7 +25526,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	    
 	    var pos = editor.getCursorPosition();
 	    var row = pos.row;
-	    var oldWidget = session.lineWidgets && session.lineWidgets[row];
+	    var oldWidget = session.widgetManager.getWidgetsAtRow(row).filter(function(w) {
+	        return w.type == "errorMarker";
+	    })[0];
 	    if (oldWidget) {
 	        oldWidget.destroy();
 	    } else {
@@ -25044,7 +25558,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	        row: pos.row, 
 	        fixedWidth: true,
 	        coverGutter: true,
-	        el: dom.createElement("div")
+	        el: dom.createElement("div"),
+	        type: "errorMarker"
 	    };
 	    var el = w.el.appendChild(dom.createElement("div"));
 	    var arrow = w.el.appendChild(dom.createElement("div"));
@@ -25168,7 +25683,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        value = oldNode.value;
 	        el = dom.createElement("pre");
 	        oldNode.parentNode.replaceChild(el, oldNode);
-	    } else {
+	    } else if (el) {
 	        value = dom.getInnerText(el);
 	        el.innerHTML = '';
 	    }
@@ -25199,6 +25714,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	}
 	exports.EditSession = EditSession;
 	exports.UndoManager = UndoManager;
+	exports.version = "1.2.2";
 	});
 	            (function() {
 	                ace.acequire(["ace/ace"], function(a) {
@@ -25359,6 +25875,19 @@ return /******/ (function(modules) { // webpackBootstrap
 	    };
 	};
 
+	var getWrapped = function(selection, selected, opening, closing) {
+	    var rowDiff = selection.end.row - selection.start.row;
+	    return {
+	        text: opening + selected + closing,
+	        selection: [
+	                0,
+	                selection.start.column + 1,
+	                rowDiff,
+	                selection.end.column + (rowDiff ? 0 : 1)
+	            ]
+	    };
+	};
+
 	var CstyleBehaviour = function() {
 	    this.add("braces", "insertion", function(state, action, editor, session, text) {
 	        var cursor = editor.getCursorPosition();
@@ -25368,10 +25897,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            var selection = editor.getSelectionRange();
 	            var selected = session.doc.getTextRange(selection);
 	            if (selected !== "" && selected !== "{" && editor.getWrapBehavioursEnabled()) {
-	                return {
-	                    text: '{' + selected + '}',
-	                    selection: false
-	                };
+	                return getWrapped(selection, selected, '{', '}');
 	            } else if (CstyleBehaviour.isSaneInsertion(editor, session)) {
 	                if (/[\]\}\)]/.test(line[cursor.column]) || editor.inMultiSelectMode) {
 	                    CstyleBehaviour.recordAutoInsert(editor, session, "}");
@@ -25451,10 +25977,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            var selection = editor.getSelectionRange();
 	            var selected = session.doc.getTextRange(selection);
 	            if (selected !== "" && editor.getWrapBehavioursEnabled()) {
-	                return {
-	                    text: '(' + selected + ')',
-	                    selection: false
-	                };
+	                return getWrapped(selection, selected, '(', ')');
 	            } else if (CstyleBehaviour.isSaneInsertion(editor, session)) {
 	                CstyleBehaviour.recordAutoInsert(editor, session, ")");
 	                return {
@@ -25499,10 +26022,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            var selection = editor.getSelectionRange();
 	            var selected = session.doc.getTextRange(selection);
 	            if (selected !== "" && editor.getWrapBehavioursEnabled()) {
-	                return {
-	                    text: '[' + selected + ']',
-	                    selection: false
-	                };
+	                return getWrapped(selection, selected, '[', ']');
 	            } else if (CstyleBehaviour.isSaneInsertion(editor, session)) {
 	                CstyleBehaviour.recordAutoInsert(editor, session, "]");
 	                return {
@@ -25548,49 +26068,44 @@ return /******/ (function(modules) { // webpackBootstrap
 	            var selection = editor.getSelectionRange();
 	            var selected = session.doc.getTextRange(selection);
 	            if (selected !== "" && selected !== "'" && selected != '"' && editor.getWrapBehavioursEnabled()) {
-	                return {
-	                    text: quote + selected + quote,
-	                    selection: false
-	                };
-	            } else {
+	                return getWrapped(selection, selected, quote, quote);
+	            } else if (!selected) {
 	                var cursor = editor.getCursorPosition();
 	                var line = session.doc.getLine(cursor.row);
 	                var leftChar = line.substring(cursor.column-1, cursor.column);
-	                if (leftChar == '\\') {
+	                var rightChar = line.substring(cursor.column, cursor.column + 1);
+	                
+	                var token = session.getTokenAt(cursor.row, cursor.column);
+	                var rightToken = session.getTokenAt(cursor.row, cursor.column + 1);
+	                if (leftChar == "\\" && token && /escape/.test(token.type))
 	                    return null;
+	                
+	                var stringBefore = token && /string|escape/.test(token.type);
+	                var stringAfter = !rightToken || /string|escape/.test(rightToken.type);
+	                
+	                var pair;
+	                if (rightChar == quote) {
+	                    pair = stringBefore !== stringAfter;
+	                } else {
+	                    if (stringBefore && !stringAfter)
+	                        return null; // wrap string with different quote
+	                    if (stringBefore && stringAfter)
+	                        return null; // do not pair quotes inside strings
+	                    var wordRe = session.$mode.tokenRe;
+	                    wordRe.lastIndex = 0;
+	                    var isWordBefore = wordRe.test(leftChar);
+	                    wordRe.lastIndex = 0;
+	                    var isWordAfter = wordRe.test(leftChar);
+	                    if (isWordBefore || isWordAfter)
+	                        return null; // before or after alphanumeric
+	                    if (rightChar && !/[\s;,.})\]\\]/.test(rightChar))
+	                        return null; // there is rightChar and it isn't closing
+	                    pair = true;
 	                }
-	                var tokens = session.getTokens(selection.start.row);
-	                var col = 0, token;
-	                var quotepos = -1; // Track whether we're inside an open quote.
-
-	                for (var x = 0; x < tokens.length; x++) {
-	                    token = tokens[x];
-	                    if (token.type == "string") {
-	                      quotepos = -1;
-	                    } else if (quotepos < 0) {
-	                      quotepos = token.value.indexOf(quote);
-	                    }
-	                    if ((token.value.length + col) > selection.start.column) {
-	                        break;
-	                    }
-	                    col += tokens[x].value.length;
-	                }
-	                if (!token || (quotepos < 0 && token.type !== "comment" && (token.type !== "string" || ((selection.start.column !== token.value.length+col-1) && token.value.lastIndexOf(quote) === token.value.length-1)))) {
-	                    if (!CstyleBehaviour.isSaneInsertion(editor, session))
-	                        return;
-	                    return {
-	                        text: quote + quote,
-	                        selection: [1,1]
-	                    };
-	                } else if (token && token.type === "string") {
-	                    var rightChar = line.substring(cursor.column, cursor.column + 1);
-	                    if (rightChar == quote) {
-	                        return {
-	                            text: '',
-	                            selection: [1, 1]
-	                        };
-	                    }
-	                }
+	                return {
+	                    text: pair ? quote + quote : "",
+	                    selection: [1,1]
+	                };
 	            }
 	        }
 	    });
@@ -25702,12 +26217,35 @@ return /******/ (function(modules) { // webpackBootstrap
 	oop.inherits(FoldMode, BaseFoldMode);
 
 	(function() {
-
+	    
 	    this.foldingStartMarker = /(\{|\[)[^\}\]]*$|^\s*(\/\*)/;
 	    this.foldingStopMarker = /^[^\[\{]*(\}|\])|^[\s\*]*(\*\/)/;
+	    this.singleLineBlockCommentRe= /^\s*(\/\*).*\*\/\s*$/;
+	    this.tripleStarBlockCommentRe = /^\s*(\/\*\*\*).*\*\/\s*$/;
+	    this.startRegionRe = /^\s*(\/\*|\/\/)#?region\b/;
+	    this._getFoldWidgetBase = this.getFoldWidget;
+	    this.getFoldWidget = function(session, foldStyle, row) {
+	        var line = session.getLine(row);
+	    
+	        if (this.singleLineBlockCommentRe.test(line)) {
+	            if (!this.startRegionRe.test(line) && !this.tripleStarBlockCommentRe.test(line))
+	                return "";
+	        }
+	    
+	        var fw = this._getFoldWidgetBase(session, foldStyle, row);
+	    
+	        if (!fw && this.startRegionRe.test(line))
+	            return "start"; // lineCommentRegionStart
+	    
+	        return fw;
+	    };
 
 	    this.getFoldWidgetRange = function(session, foldStyle, row, forceMultiline) {
 	        var line = session.getLine(row);
+	        
+	        if (this.startRegionRe.test(line))
+	            return this.getCommentRegionBlock(session, line, row);
+	        
 	        var match = line.match(this.foldingStartMarker);
 	        if (match) {
 	            var i = match.index;
@@ -25772,6 +26310,28 @@ return /******/ (function(modules) { // webpackBootstrap
 	        
 	        return new Range(startRow, startColumn, endRow, session.getLine(endRow).length);
 	    };
+	    this.getCommentRegionBlock = function(session, line, row) {
+	        var startColumn = line.search(/\s*$/);
+	        var maxRow = session.getLength();
+	        var startRow = row;
+	        
+	        var re = /^\s*(?:\/\*|\/\/|--)#?(end)?region\b/;
+	        var depth = 1;
+	        while (++row < maxRow) {
+	            line = session.getLine(row);
+	            var m = re.exec(line);
+	            if (!m) continue;
+	            if (m[1]) depth--;
+	            else depth++;
+
+	            if (!depth) break;
+	        }
+
+	        var endRow = row;
+	        if (endRow > startRow) {
+	            return new Range(startRow, startColumn, endRow, line.length);
+	        }
+	    };
 
 	}).call(FoldMode.prototype);
 
@@ -25823,11 +26383,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	        var worker = new WorkerClient(["ace"], __webpack_require__(17), "JsonWorker");
 	        worker.attachToDocument(session.getDocument());
 
-	        worker.on("error", function(e) {
-	            session.setAnnotations([e.data]);
+	        worker.on("annotate", function(e) {
+	            session.setAnnotations(e.data);
 	        });
 
-	        worker.on("ok", function() {
+	        worker.on("terminate", function() {
 	            session.clearAnnotations();
 	        });
 
@@ -25911,7 +26471,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	float: left;\
 	height: 22px;\
 	margin: 0;\
-	padding: 0;\
 	position: relative;\
 	}\
 	.ace_searchbtn:last-child,\
@@ -26103,10 +26662,14 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }]);
 	    this.$searchBarKb = new HashHandler();
 	    this.$searchBarKb.bindKeys({
-	        "Ctrl-f|Command-f|Ctrl-H|Command-Option-F": function(sb) {
+	        "Ctrl-f|Command-f": function(sb) {
 	            var isReplace = sb.isReplace = !sb.isReplace;
 	            sb.replaceBox.style.display = isReplace ? "" : "none";
-	            sb[isReplace ? "replaceInput" : "searchInput"].focus();
+	            sb.searchInput.focus();
+	        },
+	        "Ctrl-H|Command-Option-F": function(sb) {
+	            sb.replaceBox.style.display = "";
+	            sb.replaceInput.focus();
 	        },
 	        "Ctrl-G|Command-G": function(sb) {
 	            sb.findNext();
@@ -26171,14 +26734,15 @@ return /******/ (function(modules) { // webpackBootstrap
 	        this.editor.session.highlight(re || this.editor.$search.$options.re);
 	        this.editor.renderer.updateBackMarkers()
 	    };
-	    this.find = function(skipCurrent, backwards) {
+	    this.find = function(skipCurrent, backwards, preventScroll) {
 	        var range = this.editor.find(this.searchInput.value, {
 	            skipCurrent: skipCurrent,
 	            backwards: backwards,
 	            wrap: true,
 	            regExp: this.regExpOption.checked,
 	            caseSensitive: this.caseSensitiveOption.checked,
-	            wholeWord: this.wholeWordOption.checked
+	            wholeWord: this.wholeWordOption.checked,
+	            preventScroll: preventScroll
 	        });
 	        var noMatch = !range && this.searchInput.value;
 	        dom.setCssClass(this.searchBox, "ace_nomatch", noMatch);
@@ -26192,7 +26756,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        this.find(true, true);
 	    };
 	    this.findAll = function(){
-	        var range = this.editor.findAll(this.searchInput.value, {
+	        var range = this.editor.findAll(this.searchInput.value, {            
 	            regExp: this.regExpOption.checked,
 	            caseSensitive: this.caseSensitiveOption.checked,
 	            wholeWord: this.wholeWordOption.checked
@@ -26231,6 +26795,9 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	        if (value)
 	            this.searchInput.value = value;
+	        
+	        this.find(false, false, true);
+	        
 	        this.searchInput.focus();
 	        this.searchInput.select();
 
@@ -26261,7 +26828,7 @@ return /******/ (function(modules) { // webpackBootstrap
 /***/ function(module, exports, __webpack_require__) {
 
 	module.exports.id = 'ace/mode/json_worker';
-	module.exports.src = "\"no use strict\";(function(window){if(void 0===window.window||!window.document){window.console=function(){var msgs=Array.prototype.slice.call(arguments,0);postMessage({type:\"log\",data:msgs})},window.console.error=window.console.warn=window.console.log=window.console.trace=window.console,window.window=window,window.ace=window,window.onerror=function(message,file,line,col,err){postMessage({type:\"error\",data:{message:message,file:file,line:line,col:col,stack:err.stack}})},window.normalizeModule=function(parentId,moduleName){if(-1!==moduleName.indexOf(\"!\")){var chunks=moduleName.split(\"!\");return window.normalizeModule(parentId,chunks[0])+\"!\"+window.normalizeModule(parentId,chunks[1])}if(\".\"==moduleName.charAt(0)){var base=parentId.split(\"/\").slice(0,-1).join(\"/\");for(moduleName=(base?base+\"/\":\"\")+moduleName;-1!==moduleName.indexOf(\".\")&&previous!=moduleName;){var previous=moduleName;moduleName=moduleName.replace(/^\\.\\//,\"\").replace(/\\/\\.\\//,\"/\").replace(/[^\\/]+\\/\\.\\.\\//,\"\")}}return moduleName},window.acequire=function(parentId,id){if(id||(id=parentId,parentId=null),!id.charAt)throw Error(\"worker.js acequire() accepts only (parentId, id) as arguments\");id=window.normalizeModule(parentId,id);var module=window.acequire.modules[id];if(module)return module.initialized||(module.initialized=!0,module.exports=module.factory().exports),module.exports;var chunks=id.split(\"/\");if(!window.acequire.tlns)return console.log(\"unable to load \"+id);chunks[0]=window.acequire.tlns[chunks[0]]||chunks[0];var path=chunks.join(\"/\")+\".js\";return window.acequire.id=id,importScripts(path),window.acequire(parentId,id)},window.acequire.modules={},window.acequire.tlns={},window.define=function(id,deps,factory){if(2==arguments.length?(factory=deps,\"string\"!=typeof id&&(deps=id,id=window.acequire.id)):1==arguments.length&&(factory=id,deps=[],id=window.acequire.id),\"function\"!=typeof factory)return window.acequire.modules[id]={exports:factory,initialized:!0},void 0;deps.length||(deps=[\"require\",\"exports\",\"module\"]);var req=function(childId){return window.acequire(id,childId)};window.acequire.modules[id]={exports:{},factory:function(){var module=this,returnExports=factory.apply(this,deps.map(function(dep){switch(dep){case\"require\":return req;case\"exports\":return module.exports;case\"module\":return module;default:return req(dep)}}));return returnExports&&(module.exports=returnExports),module}}},window.define.amd={},window.initBaseUrls=function initBaseUrls(topLevelNamespaces){acequire.tlns=topLevelNamespaces},window.initSender=function initSender(){var EventEmitter=window.acequire(\"ace/lib/event_emitter\").EventEmitter,oop=window.acequire(\"ace/lib/oop\"),Sender=function(){};return function(){oop.implement(this,EventEmitter),this.callback=function(data,callbackId){postMessage({type:\"call\",id:callbackId,data:data})},this.emit=function(name,data){postMessage({type:\"event\",name:name,data:data})}}.call(Sender.prototype),new Sender};var main=window.main=null,sender=window.sender=null;window.onmessage=function(e){var msg=e.data;if(msg.command){if(!main[msg.command])throw Error(\"Unknown command:\"+msg.command);main[msg.command].apply(main,msg.args)}else if(msg.init){initBaseUrls(msg.tlns),acequire(\"ace/lib/es5-shim\"),sender=window.sender=initSender();var clazz=acequire(msg.module)[msg.classname];main=window.main=new clazz(sender)}else msg.event&&sender&&sender._signal(msg.event,msg.data)}}})(this),ace.define(\"ace/lib/oop\",[\"require\",\"exports\",\"module\"],function(acequire,exports){\"use strict\";exports.inherits=function(ctor,superCtor){ctor.super_=superCtor,ctor.prototype=Object.create(superCtor.prototype,{constructor:{value:ctor,enumerable:!1,writable:!0,configurable:!0}})},exports.mixin=function(obj,mixin){for(var key in mixin)obj[key]=mixin[key];return obj},exports.implement=function(proto,mixin){exports.mixin(proto,mixin)}}),ace.define(\"ace/lib/event_emitter\",[\"require\",\"exports\",\"module\"],function(acequire,exports){\"use strict\";var EventEmitter={},stopPropagation=function(){this.propagationStopped=!0},preventDefault=function(){this.defaultPrevented=!0};EventEmitter._emit=EventEmitter._dispatchEvent=function(eventName,e){this._eventRegistry||(this._eventRegistry={}),this._defaultHandlers||(this._defaultHandlers={});var listeners=this._eventRegistry[eventName]||[],defaultHandler=this._defaultHandlers[eventName];if(listeners.length||defaultHandler){\"object\"==typeof e&&e||(e={}),e.type||(e.type=eventName),e.stopPropagation||(e.stopPropagation=stopPropagation),e.preventDefault||(e.preventDefault=preventDefault),listeners=listeners.slice();for(var i=0;listeners.length>i&&(listeners[i](e,this),!e.propagationStopped);i++);return defaultHandler&&!e.defaultPrevented?defaultHandler(e,this):void 0}},EventEmitter._signal=function(eventName,e){var listeners=(this._eventRegistry||{})[eventName];if(listeners){listeners=listeners.slice();for(var i=0;listeners.length>i;i++)listeners[i](e,this)}},EventEmitter.once=function(eventName,callback){var _self=this;callback&&this.addEventListener(eventName,function newCallback(){_self.removeEventListener(eventName,newCallback),callback.apply(null,arguments)})},EventEmitter.setDefaultHandler=function(eventName,callback){var handlers=this._defaultHandlers;if(handlers||(handlers=this._defaultHandlers={_disabled_:{}}),handlers[eventName]){var old=handlers[eventName],disabled=handlers._disabled_[eventName];disabled||(handlers._disabled_[eventName]=disabled=[]),disabled.push(old);var i=disabled.indexOf(callback);-1!=i&&disabled.splice(i,1)}handlers[eventName]=callback},EventEmitter.removeDefaultHandler=function(eventName,callback){var handlers=this._defaultHandlers;if(handlers){var disabled=handlers._disabled_[eventName];if(handlers[eventName]==callback)handlers[eventName],disabled&&this.setDefaultHandler(eventName,disabled.pop());else if(disabled){var i=disabled.indexOf(callback);-1!=i&&disabled.splice(i,1)}}},EventEmitter.on=EventEmitter.addEventListener=function(eventName,callback,capturing){this._eventRegistry=this._eventRegistry||{};var listeners=this._eventRegistry[eventName];return listeners||(listeners=this._eventRegistry[eventName]=[]),-1==listeners.indexOf(callback)&&listeners[capturing?\"unshift\":\"push\"](callback),callback},EventEmitter.off=EventEmitter.removeListener=EventEmitter.removeEventListener=function(eventName,callback){this._eventRegistry=this._eventRegistry||{};var listeners=this._eventRegistry[eventName];if(listeners){var index=listeners.indexOf(callback);-1!==index&&listeners.splice(index,1)}},EventEmitter.removeAllListeners=function(eventName){this._eventRegistry&&(this._eventRegistry[eventName]=[])},exports.EventEmitter=EventEmitter}),ace.define(\"ace/range\",[\"require\",\"exports\",\"module\"],function(acequire,exports){\"use strict\";var comparePoints=function(p1,p2){return p1.row-p2.row||p1.column-p2.column},Range=function(startRow,startColumn,endRow,endColumn){this.start={row:startRow,column:startColumn},this.end={row:endRow,column:endColumn}};(function(){this.isEqual=function(range){return this.start.row===range.start.row&&this.end.row===range.end.row&&this.start.column===range.start.column&&this.end.column===range.end.column},this.toString=function(){return\"Range: [\"+this.start.row+\"/\"+this.start.column+\"] -> [\"+this.end.row+\"/\"+this.end.column+\"]\"},this.contains=function(row,column){return 0==this.compare(row,column)},this.compareRange=function(range){var cmp,end=range.end,start=range.start;return cmp=this.compare(end.row,end.column),1==cmp?(cmp=this.compare(start.row,start.column),1==cmp?2:0==cmp?1:0):-1==cmp?-2:(cmp=this.compare(start.row,start.column),-1==cmp?-1:1==cmp?42:0)},this.comparePoint=function(p){return this.compare(p.row,p.column)},this.containsRange=function(range){return 0==this.comparePoint(range.start)&&0==this.comparePoint(range.end)},this.intersects=function(range){var cmp=this.compareRange(range);return-1==cmp||0==cmp||1==cmp},this.isEnd=function(row,column){return this.end.row==row&&this.end.column==column},this.isStart=function(row,column){return this.start.row==row&&this.start.column==column},this.setStart=function(row,column){\"object\"==typeof row?(this.start.column=row.column,this.start.row=row.row):(this.start.row=row,this.start.column=column)},this.setEnd=function(row,column){\"object\"==typeof row?(this.end.column=row.column,this.end.row=row.row):(this.end.row=row,this.end.column=column)},this.inside=function(row,column){return 0==this.compare(row,column)?this.isEnd(row,column)||this.isStart(row,column)?!1:!0:!1},this.insideStart=function(row,column){return 0==this.compare(row,column)?this.isEnd(row,column)?!1:!0:!1},this.insideEnd=function(row,column){return 0==this.compare(row,column)?this.isStart(row,column)?!1:!0:!1},this.compare=function(row,column){return this.isMultiLine()||row!==this.start.row?this.start.row>row?-1:row>this.end.row?1:this.start.row===row?column>=this.start.column?0:-1:this.end.row===row?this.end.column>=column?0:1:0:this.start.column>column?-1:column>this.end.column?1:0},this.compareStart=function(row,column){return this.start.row==row&&this.start.column==column?-1:this.compare(row,column)},this.compareEnd=function(row,column){return this.end.row==row&&this.end.column==column?1:this.compare(row,column)},this.compareInside=function(row,column){return this.end.row==row&&this.end.column==column?1:this.start.row==row&&this.start.column==column?-1:this.compare(row,column)},this.clipRows=function(firstRow,lastRow){if(this.end.row>lastRow)var end={row:lastRow+1,column:0};else if(firstRow>this.end.row)var end={row:firstRow,column:0};if(this.start.row>lastRow)var start={row:lastRow+1,column:0};else if(firstRow>this.start.row)var start={row:firstRow,column:0};return Range.fromPoints(start||this.start,end||this.end)},this.extend=function(row,column){var cmp=this.compare(row,column);if(0==cmp)return this;if(-1==cmp)var start={row:row,column:column};else var end={row:row,column:column};return Range.fromPoints(start||this.start,end||this.end)},this.isEmpty=function(){return this.start.row===this.end.row&&this.start.column===this.end.column},this.isMultiLine=function(){return this.start.row!==this.end.row},this.clone=function(){return Range.fromPoints(this.start,this.end)},this.collapseRows=function(){return 0==this.end.column?new Range(this.start.row,0,Math.max(this.start.row,this.end.row-1),0):new Range(this.start.row,0,this.end.row,0)},this.toScreenRange=function(session){var screenPosStart=session.documentToScreenPosition(this.start),screenPosEnd=session.documentToScreenPosition(this.end);return new Range(screenPosStart.row,screenPosStart.column,screenPosEnd.row,screenPosEnd.column)},this.moveBy=function(row,column){this.start.row+=row,this.start.column+=column,this.end.row+=row,this.end.column+=column}}).call(Range.prototype),Range.fromPoints=function(start,end){return new Range(start.row,start.column,end.row,end.column)},Range.comparePoints=comparePoints,Range.comparePoints=function(p1,p2){return p1.row-p2.row||p1.column-p2.column},exports.Range=Range}),ace.define(\"ace/anchor\",[\"require\",\"exports\",\"module\",\"ace/lib/oop\",\"ace/lib/event_emitter\"],function(acequire,exports){\"use strict\";var oop=acequire(\"./lib/oop\"),EventEmitter=acequire(\"./lib/event_emitter\").EventEmitter,Anchor=exports.Anchor=function(doc,row,column){this.$onChange=this.onChange.bind(this),this.attach(doc),column===void 0?this.setPosition(row.row,row.column):this.setPosition(row,column)};(function(){oop.implement(this,EventEmitter),this.getPosition=function(){return this.$clipPositionToDocument(this.row,this.column)},this.getDocument=function(){return this.document},this.$insertRight=!1,this.onChange=function(e){var delta=e.data,range=delta.range;if(!(range.start.row==range.end.row&&range.start.row!=this.row||range.start.row>this.row||range.start.row==this.row&&range.start.column>this.column)){var row=this.row,column=this.column,start=range.start,end=range.end;\"insertText\"===delta.action?start.row===row&&column>=start.column?start.column===column&&this.$insertRight||(start.row===end.row?column+=end.column-start.column:(column-=start.column,row+=end.row-start.row)):start.row!==end.row&&row>start.row&&(row+=end.row-start.row):\"insertLines\"===delta.action?start.row===row&&0===column&&this.$insertRight||row>=start.row&&(row+=end.row-start.row):\"removeText\"===delta.action?start.row===row&&column>start.column?column=end.column>=column?start.column:Math.max(0,column-(end.column-start.column)):start.row!==end.row&&row>start.row?(end.row===row&&(column=Math.max(0,column-end.column)+start.column),row-=end.row-start.row):end.row===row&&(row-=end.row-start.row,column=Math.max(0,column-end.column)+start.column):\"removeLines\"==delta.action&&row>=start.row&&(row>=end.row?row-=end.row-start.row:(row=start.row,column=0)),this.setPosition(row,column,!0)}},this.setPosition=function(row,column,noClip){var pos;if(pos=noClip?{row:row,column:column}:this.$clipPositionToDocument(row,column),this.row!=pos.row||this.column!=pos.column){var old={row:this.row,column:this.column};this.row=pos.row,this.column=pos.column,this._signal(\"change\",{old:old,value:pos})}},this.detach=function(){this.document.removeEventListener(\"change\",this.$onChange)},this.attach=function(doc){this.document=doc||this.document,this.document.on(\"change\",this.$onChange)},this.$clipPositionToDocument=function(row,column){var pos={};return row>=this.document.getLength()?(pos.row=Math.max(0,this.document.getLength()-1),pos.column=this.document.getLine(pos.row).length):0>row?(pos.row=0,pos.column=0):(pos.row=row,pos.column=Math.min(this.document.getLine(pos.row).length,Math.max(0,column))),0>column&&(pos.column=0),pos}}).call(Anchor.prototype)}),ace.define(\"ace/document\",[\"require\",\"exports\",\"module\",\"ace/lib/oop\",\"ace/lib/event_emitter\",\"ace/range\",\"ace/anchor\"],function(acequire,exports){\"use strict\";var oop=acequire(\"./lib/oop\"),EventEmitter=acequire(\"./lib/event_emitter\").EventEmitter,Range=acequire(\"./range\").Range,Anchor=acequire(\"./anchor\").Anchor,Document=function(text){this.$lines=[],0===text.length?this.$lines=[\"\"]:Array.isArray(text)?this._insertLines(0,text):this.insert({row:0,column:0},text)};(function(){oop.implement(this,EventEmitter),this.setValue=function(text){var len=this.getLength();this.remove(new Range(0,0,len,this.getLine(len-1).length)),this.insert({row:0,column:0},text)},this.getValue=function(){return this.getAllLines().join(this.getNewLineCharacter())},this.createAnchor=function(row,column){return new Anchor(this,row,column)},this.$split=0===\"aaa\".split(/a/).length?function(text){return text.replace(/\\r\\n|\\r/g,\"\\n\").split(\"\\n\")}:function(text){return text.split(/\\r\\n|\\r|\\n/)},this.$detectNewLine=function(text){var match=text.match(/^.*?(\\r\\n|\\r|\\n)/m);this.$autoNewLine=match?match[1]:\"\\n\",this._signal(\"changeNewLineMode\")},this.getNewLineCharacter=function(){switch(this.$newLineMode){case\"windows\":return\"\\r\\n\";case\"unix\":return\"\\n\";default:return this.$autoNewLine||\"\\n\"}},this.$autoNewLine=\"\",this.$newLineMode=\"auto\",this.setNewLineMode=function(newLineMode){this.$newLineMode!==newLineMode&&(this.$newLineMode=newLineMode,this._signal(\"changeNewLineMode\"))},this.getNewLineMode=function(){return this.$newLineMode},this.isNewLine=function(text){return\"\\r\\n\"==text||\"\\r\"==text||\"\\n\"==text},this.getLine=function(row){return this.$lines[row]||\"\"},this.getLines=function(firstRow,lastRow){return this.$lines.slice(firstRow,lastRow+1)},this.getAllLines=function(){return this.getLines(0,this.getLength())},this.getLength=function(){return this.$lines.length},this.getTextRange=function(range){if(range.start.row==range.end.row)return this.getLine(range.start.row).substring(range.start.column,range.end.column);var lines=this.getLines(range.start.row,range.end.row);lines[0]=(lines[0]||\"\").substring(range.start.column);var l=lines.length-1;return range.end.row-range.start.row==l&&(lines[l]=lines[l].substring(0,range.end.column)),lines.join(this.getNewLineCharacter())},this.$clipPosition=function(position){var length=this.getLength();return position.row>=length?(position.row=Math.max(0,length-1),position.column=this.getLine(length-1).length):0>position.row&&(position.row=0),position},this.insert=function(position,text){if(!text||0===text.length)return position;position=this.$clipPosition(position),1>=this.getLength()&&this.$detectNewLine(text);var lines=this.$split(text),firstLine=lines.splice(0,1)[0],lastLine=0==lines.length?null:lines.splice(lines.length-1,1)[0];return position=this.insertInLine(position,firstLine),null!==lastLine&&(position=this.insertNewLine(position),position=this._insertLines(position.row,lines),position=this.insertInLine(position,lastLine||\"\")),position},this.insertLines=function(row,lines){return row>=this.getLength()?this.insert({row:row,column:0},\"\\n\"+lines.join(\"\\n\")):this._insertLines(Math.max(row,0),lines)},this._insertLines=function(row,lines){if(0==lines.length)return{row:row,column:0};for(;lines.length>61440;){var end=this._insertLines(row,lines.slice(0,61440));lines=lines.slice(61440),row=end.row}var args=[row,0];args.push.apply(args,lines),this.$lines.splice.apply(this.$lines,args);var range=new Range(row,0,row+lines.length,0),delta={action:\"insertLines\",range:range,lines:lines};return this._signal(\"change\",{data:delta}),range.end},this.insertNewLine=function(position){position=this.$clipPosition(position);var line=this.$lines[position.row]||\"\";this.$lines[position.row]=line.substring(0,position.column),this.$lines.splice(position.row+1,0,line.substring(position.column,line.length));var end={row:position.row+1,column:0},delta={action:\"insertText\",range:Range.fromPoints(position,end),text:this.getNewLineCharacter()};return this._signal(\"change\",{data:delta}),end},this.insertInLine=function(position,text){if(0==text.length)return position;var line=this.$lines[position.row]||\"\";this.$lines[position.row]=line.substring(0,position.column)+text+line.substring(position.column);var end={row:position.row,column:position.column+text.length},delta={action:\"insertText\",range:Range.fromPoints(position,end),text:text};return this._signal(\"change\",{data:delta}),end},this.remove=function(range){if(range instanceof Range||(range=Range.fromPoints(range.start,range.end)),range.start=this.$clipPosition(range.start),range.end=this.$clipPosition(range.end),range.isEmpty())return range.start;var firstRow=range.start.row,lastRow=range.end.row;if(range.isMultiLine()){var firstFullRow=0==range.start.column?firstRow:firstRow+1,lastFullRow=lastRow-1;range.end.column>0&&this.removeInLine(lastRow,0,range.end.column),lastFullRow>=firstFullRow&&this._removeLines(firstFullRow,lastFullRow),firstFullRow!=firstRow&&(this.removeInLine(firstRow,range.start.column,this.getLine(firstRow).length),this.removeNewLine(range.start.row))}else this.removeInLine(firstRow,range.start.column,range.end.column);return range.start},this.removeInLine=function(row,startColumn,endColumn){if(startColumn!=endColumn){var range=new Range(row,startColumn,row,endColumn),line=this.getLine(row),removed=line.substring(startColumn,endColumn),newLine=line.substring(0,startColumn)+line.substring(endColumn,line.length);this.$lines.splice(row,1,newLine);var delta={action:\"removeText\",range:range,text:removed};return this._signal(\"change\",{data:delta}),range.start}},this.removeLines=function(firstRow,lastRow){return 0>firstRow||lastRow>=this.getLength()?this.remove(new Range(firstRow,0,lastRow+1,0)):this._removeLines(firstRow,lastRow)},this._removeLines=function(firstRow,lastRow){var range=new Range(firstRow,0,lastRow+1,0),removed=this.$lines.splice(firstRow,lastRow-firstRow+1),delta={action:\"removeLines\",range:range,nl:this.getNewLineCharacter(),lines:removed};return this._signal(\"change\",{data:delta}),removed},this.removeNewLine=function(row){var firstLine=this.getLine(row),secondLine=this.getLine(row+1),range=new Range(row,firstLine.length,row+1,0),line=firstLine+secondLine;this.$lines.splice(row,2,line);var delta={action:\"removeText\",range:range,text:this.getNewLineCharacter()};this._signal(\"change\",{data:delta})},this.replace=function(range,text){if(range instanceof Range||(range=Range.fromPoints(range.start,range.end)),0==text.length&&range.isEmpty())return range.start;if(text==this.getTextRange(range))return range.end;if(this.remove(range),text)var end=this.insert(range.start,text);else end=range.start;return end},this.applyDeltas=function(deltas){for(var i=0;deltas.length>i;i++){var delta=deltas[i],range=Range.fromPoints(delta.range.start,delta.range.end);\"insertLines\"==delta.action?this.insertLines(range.start.row,delta.lines):\"insertText\"==delta.action?this.insert(range.start,delta.text):\"removeLines\"==delta.action?this._removeLines(range.start.row,range.end.row-1):\"removeText\"==delta.action&&this.remove(range)}},this.revertDeltas=function(deltas){for(var i=deltas.length-1;i>=0;i--){var delta=deltas[i],range=Range.fromPoints(delta.range.start,delta.range.end);\"insertLines\"==delta.action?this._removeLines(range.start.row,range.end.row-1):\"insertText\"==delta.action?this.remove(range):\"removeLines\"==delta.action?this._insertLines(range.start.row,delta.lines):\"removeText\"==delta.action&&this.insert(range.start,delta.text)}},this.indexToPosition=function(index,startRow){for(var lines=this.$lines||this.getAllLines(),newlineLength=this.getNewLineCharacter().length,i=startRow||0,l=lines.length;l>i;i++)if(index-=lines[i].length+newlineLength,0>index)return{row:i,column:index+lines[i].length+newlineLength};return{row:l-1,column:lines[l-1].length}},this.positionToIndex=function(pos,startRow){for(var lines=this.$lines||this.getAllLines(),newlineLength=this.getNewLineCharacter().length,index=0,row=Math.min(pos.row,lines.length),i=startRow||0;row>i;++i)index+=lines[i].length+newlineLength;return index+pos.column}}).call(Document.prototype),exports.Document=Document}),ace.define(\"ace/lib/lang\",[\"require\",\"exports\",\"module\"],function(acequire,exports){\"use strict\";exports.last=function(a){return a[a.length-1]},exports.stringReverse=function(string){return string.split(\"\").reverse().join(\"\")},exports.stringRepeat=function(string,count){for(var result=\"\";count>0;)1&count&&(result+=string),(count>>=1)&&(string+=string);return result};var trimBeginRegexp=/^\\s\\s*/,trimEndRegexp=/\\s\\s*$/;exports.stringTrimLeft=function(string){return string.replace(trimBeginRegexp,\"\")},exports.stringTrimRight=function(string){return string.replace(trimEndRegexp,\"\")},exports.copyObject=function(obj){var copy={};for(var key in obj)copy[key]=obj[key];return copy},exports.copyArray=function(array){for(var copy=[],i=0,l=array.length;l>i;i++)copy[i]=array[i]&&\"object\"==typeof array[i]?this.copyObject(array[i]):array[i];return copy},exports.deepCopy=function(obj){if(\"object\"!=typeof obj||!obj)return obj;var cons=obj.constructor;if(cons===RegExp)return obj;var copy=cons();for(var key in obj)copy[key]=\"object\"==typeof obj[key]?exports.deepCopy(obj[key]):obj[key];return copy},exports.arrayToMap=function(arr){for(var map={},i=0;arr.length>i;i++)map[arr[i]]=1;return map},exports.createMap=function(props){var map=Object.create(null);for(var i in props)map[i]=props[i];return map},exports.arrayRemove=function(array,value){for(var i=0;array.length>=i;i++)value===array[i]&&array.splice(i,1)},exports.escapeRegExp=function(str){return str.replace(/([.*+?^${}()|[\\]\\/\\\\])/g,\"\\\\$1\")},exports.escapeHTML=function(str){return str.replace(/&/g,\"&#38;\").replace(/\"/g,\"&#34;\").replace(/'/g,\"&#39;\").replace(/</g,\"&#60;\")},exports.getMatchOffsets=function(string,regExp){var matches=[];return string.replace(regExp,function(str){matches.push({offset:arguments[arguments.length-2],length:str.length})}),matches},exports.deferredCall=function(fcn){var timer=null,callback=function(){timer=null,fcn()},deferred=function(timeout){return deferred.cancel(),timer=setTimeout(callback,timeout||0),deferred};return deferred.schedule=deferred,deferred.call=function(){return this.cancel(),fcn(),deferred},deferred.cancel=function(){return clearTimeout(timer),timer=null,deferred},deferred.isPending=function(){return timer},deferred},exports.delayedCall=function(fcn,defaultTimeout){var timer=null,callback=function(){timer=null,fcn()},_self=function(timeout){null==timer&&(timer=setTimeout(callback,timeout||defaultTimeout))};return _self.delay=function(timeout){timer&&clearTimeout(timer),timer=setTimeout(callback,timeout||defaultTimeout)},_self.schedule=_self,_self.call=function(){this.cancel(),fcn()},_self.cancel=function(){timer&&clearTimeout(timer),timer=null},_self.isPending=function(){return timer},_self}}),ace.define(\"ace/worker/mirror\",[\"require\",\"exports\",\"module\",\"ace/document\",\"ace/lib/lang\"],function(acequire,exports){\"use strict\";var Document=acequire(\"../document\").Document,lang=acequire(\"../lib/lang\"),Mirror=exports.Mirror=function(sender){this.sender=sender;var doc=this.doc=new Document(\"\"),deferredUpdate=this.deferredUpdate=lang.delayedCall(this.onUpdate.bind(this)),_self=this;sender.on(\"change\",function(e){return doc.applyDeltas(e.data),_self.$timeout?deferredUpdate.schedule(_self.$timeout):(_self.onUpdate(),void 0)})};(function(){this.$timeout=500,this.setTimeout=function(timeout){this.$timeout=timeout},this.setValue=function(value){this.doc.setValue(value),this.deferredUpdate.schedule(this.$timeout)},this.getValue=function(callbackId){this.sender.callback(this.doc.getValue(),callbackId)},this.onUpdate=function(){},this.isPending=function(){return this.deferredUpdate.isPending()}}).call(Mirror.prototype)}),ace.define(\"ace/mode/json/json_parse\",[\"require\",\"exports\",\"module\"],function(){\"use strict\";var at,ch,text,value,escapee={'\"':'\"',\"\\\\\":\"\\\\\",\"/\":\"/\",b:\"\\b\",f:\"\\f\",n:\"\\n\",r:\"\\r\",t:\"\t\"},error=function(m){throw{name:\"SyntaxError\",message:m,at:at,text:text}},next=function(c){return c&&c!==ch&&error(\"Expected '\"+c+\"' instead of '\"+ch+\"'\"),ch=text.charAt(at),at+=1,ch},number=function(){var number,string=\"\";for(\"-\"===ch&&(string=\"-\",next(\"-\"));ch>=\"0\"&&\"9\">=ch;)string+=ch,next();if(\".\"===ch)for(string+=\".\";next()&&ch>=\"0\"&&\"9\">=ch;)string+=ch;if(\"e\"===ch||\"E\"===ch)for(string+=ch,next(),(\"-\"===ch||\"+\"===ch)&&(string+=ch,next());ch>=\"0\"&&\"9\">=ch;)string+=ch,next();return number=+string,isNaN(number)?(error(\"Bad number\"),void 0):number},string=function(){var hex,i,uffff,string=\"\";if('\"'===ch)for(;next();){if('\"'===ch)return next(),string;if(\"\\\\\"===ch)if(next(),\"u\"===ch){for(uffff=0,i=0;4>i&&(hex=parseInt(next(),16),isFinite(hex));i+=1)uffff=16*uffff+hex;string+=String.fromCharCode(uffff)}else{if(\"string\"!=typeof escapee[ch])break;string+=escapee[ch]}else string+=ch}error(\"Bad string\")},white=function(){for(;ch&&\" \">=ch;)next()},word=function(){switch(ch){case\"t\":return next(\"t\"),next(\"r\"),next(\"u\"),next(\"e\"),!0;case\"f\":return next(\"f\"),next(\"a\"),next(\"l\"),next(\"s\"),next(\"e\"),!1;case\"n\":return next(\"n\"),next(\"u\"),next(\"l\"),next(\"l\"),null}error(\"Unexpected '\"+ch+\"'\")},array=function(){var array=[];if(\"[\"===ch){if(next(\"[\"),white(),\"]\"===ch)return next(\"]\"),array;for(;ch;){if(array.push(value()),white(),\"]\"===ch)return next(\"]\"),array;next(\",\"),white()}}error(\"Bad array\")},object=function(){var key,object={};if(\"{\"===ch){if(next(\"{\"),white(),\"}\"===ch)return next(\"}\"),object;for(;ch;){if(key=string(),white(),next(\":\"),Object.hasOwnProperty.call(object,key)&&error('Duplicate key \"'+key+'\"'),object[key]=value(),white(),\"}\"===ch)return next(\"}\"),object;next(\",\"),white()}}error(\"Bad object\")};return value=function(){switch(white(),ch){case\"{\":return object();case\"[\":return array();case'\"':return string();case\"-\":return number();default:return ch>=\"0\"&&\"9\">=ch?number():word()}},function(source,reviver){var result;return text=source,at=0,ch=\" \",result=value(),white(),ch&&error(\"Syntax error\"),\"function\"==typeof reviver?function walk(holder,key){var k,v,value=holder[key];if(value&&\"object\"==typeof value)for(k in value)Object.hasOwnProperty.call(value,k)&&(v=walk(value,k),void 0!==v?value[k]=v:delete value[k]);return reviver.call(holder,key,value)}({\"\":result},\"\"):result}}),ace.define(\"ace/mode/json_worker\",[\"require\",\"exports\",\"module\",\"ace/lib/oop\",\"ace/worker/mirror\",\"ace/mode/json/json_parse\"],function(acequire,exports){\"use strict\";var oop=acequire(\"../lib/oop\"),Mirror=acequire(\"../worker/mirror\").Mirror,parse=acequire(\"./json/json_parse\"),JsonWorker=exports.JsonWorker=function(sender){Mirror.call(this,sender),this.setTimeout(200)};oop.inherits(JsonWorker,Mirror),function(){this.onUpdate=function(){var value=this.doc.getValue();try{value&&parse(value)}catch(e){var pos=this.doc.indexToPosition(e.at-1);return this.sender.emit(\"error\",{row:pos.row,column:pos.column,text:e.message,type:\"error\"}),void 0}this.sender.emit(\"ok\")}}.call(JsonWorker.prototype)}),ace.define(\"ace/lib/es5-shim\",[\"require\",\"exports\",\"module\"],function(){function Empty(){}function doesDefinePropertyWork(object){try{return Object.defineProperty(object,\"sentinel\",{}),\"sentinel\"in object}catch(exception){}}function toInteger(n){return n=+n,n!==n?n=0:0!==n&&n!==1/0&&n!==-(1/0)&&(n=(n>0||-1)*Math.floor(Math.abs(n))),n}Function.prototype.bind||(Function.prototype.bind=function(that){var target=this;if(\"function\"!=typeof target)throw new TypeError(\"Function.prototype.bind called on incompatible \"+target);var args=slice.call(arguments,1),bound=function(){if(this instanceof bound){var result=target.apply(this,args.concat(slice.call(arguments)));return Object(result)===result?result:this}return target.apply(that,args.concat(slice.call(arguments)))};return target.prototype&&(Empty.prototype=target.prototype,bound.prototype=new Empty,Empty.prototype=null),bound});var defineGetter,defineSetter,lookupGetter,lookupSetter,supportsAccessors,call=Function.prototype.call,prototypeOfArray=Array.prototype,prototypeOfObject=Object.prototype,slice=prototypeOfArray.slice,_toString=call.bind(prototypeOfObject.toString),owns=call.bind(prototypeOfObject.hasOwnProperty);if((supportsAccessors=owns(prototypeOfObject,\"__defineGetter__\"))&&(defineGetter=call.bind(prototypeOfObject.__defineGetter__),defineSetter=call.bind(prototypeOfObject.__defineSetter__),lookupGetter=call.bind(prototypeOfObject.__lookupGetter__),lookupSetter=call.bind(prototypeOfObject.__lookupSetter__)),2!=[1,2].splice(0).length)if(function(){function makeArray(l){var a=Array(l+2);return a[0]=a[1]=0,a}var lengthBefore,array=[];return array.splice.apply(array,makeArray(20)),array.splice.apply(array,makeArray(26)),lengthBefore=array.length,array.splice(5,0,\"XXX\"),lengthBefore+1==array.length,lengthBefore+1==array.length?!0:void 0}()){var array_splice=Array.prototype.splice;Array.prototype.splice=function(start,deleteCount){return arguments.length?array_splice.apply(this,[void 0===start?0:start,void 0===deleteCount?this.length-start:deleteCount].concat(slice.call(arguments,2))):[]}}else Array.prototype.splice=function(pos,removeCount){var length=this.length;pos>0?pos>length&&(pos=length):void 0==pos?pos=0:0>pos&&(pos=Math.max(length+pos,0)),length>pos+removeCount||(removeCount=length-pos);var removed=this.slice(pos,pos+removeCount),insert=slice.call(arguments,2),add=insert.length;if(pos===length)add&&this.push.apply(this,insert);else{var remove=Math.min(removeCount,length-pos),tailOldPos=pos+remove,tailNewPos=tailOldPos+add-remove,tailCount=length-tailOldPos,lengthAfterRemove=length-remove;if(tailOldPos>tailNewPos)for(var i=0;tailCount>i;++i)this[tailNewPos+i]=this[tailOldPos+i];else if(tailNewPos>tailOldPos)for(i=tailCount;i--;)this[tailNewPos+i]=this[tailOldPos+i];if(add&&pos===lengthAfterRemove)this.length=lengthAfterRemove,this.push.apply(this,insert);else for(this.length=lengthAfterRemove+add,i=0;add>i;++i)this[pos+i]=insert[i]}return removed};Array.isArray||(Array.isArray=function(obj){return\"[object Array]\"==_toString(obj)});var boxedString=Object(\"a\"),splitString=\"a\"!=boxedString[0]||!(0 in boxedString);if(Array.prototype.forEach||(Array.prototype.forEach=function(fun){var object=toObject(this),self=splitString&&\"[object String]\"==_toString(this)?this.split(\"\"):object,thisp=arguments[1],i=-1,length=self.length>>>0;if(\"[object Function]\"!=_toString(fun))throw new TypeError;\nfor(;length>++i;)i in self&&fun.call(thisp,self[i],i,object)}),Array.prototype.map||(Array.prototype.map=function(fun){var object=toObject(this),self=splitString&&\"[object String]\"==_toString(this)?this.split(\"\"):object,length=self.length>>>0,result=Array(length),thisp=arguments[1];if(\"[object Function]\"!=_toString(fun))throw new TypeError(fun+\" is not a function\");for(var i=0;length>i;i++)i in self&&(result[i]=fun.call(thisp,self[i],i,object));return result}),Array.prototype.filter||(Array.prototype.filter=function(fun){var value,object=toObject(this),self=splitString&&\"[object String]\"==_toString(this)?this.split(\"\"):object,length=self.length>>>0,result=[],thisp=arguments[1];if(\"[object Function]\"!=_toString(fun))throw new TypeError(fun+\" is not a function\");for(var i=0;length>i;i++)i in self&&(value=self[i],fun.call(thisp,value,i,object)&&result.push(value));return result}),Array.prototype.every||(Array.prototype.every=function(fun){var object=toObject(this),self=splitString&&\"[object String]\"==_toString(this)?this.split(\"\"):object,length=self.length>>>0,thisp=arguments[1];if(\"[object Function]\"!=_toString(fun))throw new TypeError(fun+\" is not a function\");for(var i=0;length>i;i++)if(i in self&&!fun.call(thisp,self[i],i,object))return!1;return!0}),Array.prototype.some||(Array.prototype.some=function(fun){var object=toObject(this),self=splitString&&\"[object String]\"==_toString(this)?this.split(\"\"):object,length=self.length>>>0,thisp=arguments[1];if(\"[object Function]\"!=_toString(fun))throw new TypeError(fun+\" is not a function\");for(var i=0;length>i;i++)if(i in self&&fun.call(thisp,self[i],i,object))return!0;return!1}),Array.prototype.reduce||(Array.prototype.reduce=function(fun){var object=toObject(this),self=splitString&&\"[object String]\"==_toString(this)?this.split(\"\"):object,length=self.length>>>0;if(\"[object Function]\"!=_toString(fun))throw new TypeError(fun+\" is not a function\");if(!length&&1==arguments.length)throw new TypeError(\"reduce of empty array with no initial value\");var result,i=0;if(arguments.length>=2)result=arguments[1];else for(;;){if(i in self){result=self[i++];break}if(++i>=length)throw new TypeError(\"reduce of empty array with no initial value\")}for(;length>i;i++)i in self&&(result=fun.call(void 0,result,self[i],i,object));return result}),Array.prototype.reduceRight||(Array.prototype.reduceRight=function(fun){var object=toObject(this),self=splitString&&\"[object String]\"==_toString(this)?this.split(\"\"):object,length=self.length>>>0;if(\"[object Function]\"!=_toString(fun))throw new TypeError(fun+\" is not a function\");if(!length&&1==arguments.length)throw new TypeError(\"reduceRight of empty array with no initial value\");var result,i=length-1;if(arguments.length>=2)result=arguments[1];else for(;;){if(i in self){result=self[i--];break}if(0>--i)throw new TypeError(\"reduceRight of empty array with no initial value\")}do i in this&&(result=fun.call(void 0,result,self[i],i,object));while(i--);return result}),Array.prototype.indexOf&&-1==[0,1].indexOf(1,2)||(Array.prototype.indexOf=function(sought){var self=splitString&&\"[object String]\"==_toString(this)?this.split(\"\"):toObject(this),length=self.length>>>0;if(!length)return-1;var i=0;for(arguments.length>1&&(i=toInteger(arguments[1])),i=i>=0?i:Math.max(0,length+i);length>i;i++)if(i in self&&self[i]===sought)return i;return-1}),Array.prototype.lastIndexOf&&-1==[0,1].lastIndexOf(0,-3)||(Array.prototype.lastIndexOf=function(sought){var self=splitString&&\"[object String]\"==_toString(this)?this.split(\"\"):toObject(this),length=self.length>>>0;if(!length)return-1;var i=length-1;for(arguments.length>1&&(i=Math.min(i,toInteger(arguments[1]))),i=i>=0?i:length-Math.abs(i);i>=0;i--)if(i in self&&sought===self[i])return i;return-1}),Object.getPrototypeOf||(Object.getPrototypeOf=function(object){return object.__proto__||(object.constructor?object.constructor.prototype:prototypeOfObject)}),!Object.getOwnPropertyDescriptor){var ERR_NON_OBJECT=\"Object.getOwnPropertyDescriptor called on a non-object: \";Object.getOwnPropertyDescriptor=function(object,property){if(\"object\"!=typeof object&&\"function\"!=typeof object||null===object)throw new TypeError(ERR_NON_OBJECT+object);if(owns(object,property)){var descriptor,getter,setter;if(descriptor={enumerable:!0,configurable:!0},supportsAccessors){var prototype=object.__proto__;object.__proto__=prototypeOfObject;var getter=lookupGetter(object,property),setter=lookupSetter(object,property);if(object.__proto__=prototype,getter||setter)return getter&&(descriptor.get=getter),setter&&(descriptor.set=setter),descriptor}return descriptor.value=object[property],descriptor}}}if(Object.getOwnPropertyNames||(Object.getOwnPropertyNames=function(object){return Object.keys(object)}),!Object.create){var createEmpty;createEmpty=null===Object.prototype.__proto__?function(){return{__proto__:null}}:function(){var empty={};for(var i in empty)empty[i]=null;return empty.constructor=empty.hasOwnProperty=empty.propertyIsEnumerable=empty.isPrototypeOf=empty.toLocaleString=empty.toString=empty.valueOf=empty.__proto__=null,empty},Object.create=function(prototype,properties){var object;if(null===prototype)object=createEmpty();else{if(\"object\"!=typeof prototype)throw new TypeError(\"typeof prototype[\"+typeof prototype+\"] != 'object'\");var Type=function(){};Type.prototype=prototype,object=new Type,object.__proto__=prototype}return void 0!==properties&&Object.defineProperties(object,properties),object}}if(Object.defineProperty){var definePropertyWorksOnObject=doesDefinePropertyWork({}),definePropertyWorksOnDom=\"undefined\"==typeof document||doesDefinePropertyWork(document.createElement(\"div\"));if(!definePropertyWorksOnObject||!definePropertyWorksOnDom)var definePropertyFallback=Object.defineProperty}if(!Object.defineProperty||definePropertyFallback){var ERR_NON_OBJECT_DESCRIPTOR=\"Property description must be an object: \",ERR_NON_OBJECT_TARGET=\"Object.defineProperty called on non-object: \",ERR_ACCESSORS_NOT_SUPPORTED=\"getters & setters can not be defined on this javascript engine\";Object.defineProperty=function(object,property,descriptor){if(\"object\"!=typeof object&&\"function\"!=typeof object||null===object)throw new TypeError(ERR_NON_OBJECT_TARGET+object);if(\"object\"!=typeof descriptor&&\"function\"!=typeof descriptor||null===descriptor)throw new TypeError(ERR_NON_OBJECT_DESCRIPTOR+descriptor);if(definePropertyFallback)try{return definePropertyFallback.call(Object,object,property,descriptor)}catch(exception){}if(owns(descriptor,\"value\"))if(supportsAccessors&&(lookupGetter(object,property)||lookupSetter(object,property))){var prototype=object.__proto__;object.__proto__=prototypeOfObject,delete object[property],object[property]=descriptor.value,object.__proto__=prototype}else object[property]=descriptor.value;else{if(!supportsAccessors)throw new TypeError(ERR_ACCESSORS_NOT_SUPPORTED);owns(descriptor,\"get\")&&defineGetter(object,property,descriptor.get),owns(descriptor,\"set\")&&defineSetter(object,property,descriptor.set)}return object}}Object.defineProperties||(Object.defineProperties=function(object,properties){for(var property in properties)owns(properties,property)&&Object.defineProperty(object,property,properties[property]);return object}),Object.seal||(Object.seal=function(object){return object}),Object.freeze||(Object.freeze=function(object){return object});try{Object.freeze(function(){})}catch(exception){Object.freeze=function(freezeObject){return function(object){return\"function\"==typeof object?object:freezeObject(object)}}(Object.freeze)}if(Object.preventExtensions||(Object.preventExtensions=function(object){return object}),Object.isSealed||(Object.isSealed=function(){return!1}),Object.isFrozen||(Object.isFrozen=function(){return!1}),Object.isExtensible||(Object.isExtensible=function(object){if(Object(object)===object)throw new TypeError;for(var name=\"\";owns(object,name);)name+=\"?\";object[name]=!0;var returnValue=owns(object,name);return delete object[name],returnValue}),!Object.keys){var hasDontEnumBug=!0,dontEnums=[\"toString\",\"toLocaleString\",\"valueOf\",\"hasOwnProperty\",\"isPrototypeOf\",\"propertyIsEnumerable\",\"constructor\"],dontEnumsLength=dontEnums.length;for(var key in{toString:null})hasDontEnumBug=!1;Object.keys=function(object){if(\"object\"!=typeof object&&\"function\"!=typeof object||null===object)throw new TypeError(\"Object.keys called on a non-object\");var keys=[];for(var name in object)owns(object,name)&&keys.push(name);if(hasDontEnumBug)for(var i=0,ii=dontEnumsLength;ii>i;i++){var dontEnum=dontEnums[i];owns(object,dontEnum)&&keys.push(dontEnum)}return keys}}Date.now||(Date.now=function(){return(new Date).getTime()});var ws=\"\t\\n\u000b\\f\\r   ᠎             　\\u2028\\u2029﻿\";if(!String.prototype.trim||ws.trim()){ws=\"[\"+ws+\"]\";var trimBeginRegexp=RegExp(\"^\"+ws+ws+\"*\"),trimEndRegexp=RegExp(ws+ws+\"*$\");String.prototype.trim=function(){return(this+\"\").replace(trimBeginRegexp,\"\").replace(trimEndRegexp,\"\")}}var toObject=function(o){if(null==o)throw new TypeError(\"can't convert \"+o+\" to object\");return Object(o)}});";
+	module.exports.src = "\"no use strict\";(function(window){function resolveModuleId(id,paths){for(var testPath=id,tail=\"\";testPath;){var alias=paths[testPath];if(\"string\"==typeof alias)return alias+tail;if(alias)return alias.location.replace(/\\/*$/,\"/\")+(tail||alias.main||alias.name);if(alias===!1)return\"\";var i=testPath.lastIndexOf(\"/\");if(-1===i)break;tail=testPath.substr(i)+tail,testPath=testPath.slice(0,i)}return id}if(!(void 0!==window.window&&window.document||window.acequire&&window.define)){window.console||(window.console=function(){var msgs=Array.prototype.slice.call(arguments,0);postMessage({type:\"log\",data:msgs})},window.console.error=window.console.warn=window.console.log=window.console.trace=window.console),window.window=window,window.ace=window,window.onerror=function(message,file,line,col,err){postMessage({type:\"error\",data:{message:message,data:err.data,file:file,line:line,col:col,stack:err.stack}})},window.normalizeModule=function(parentId,moduleName){if(-1!==moduleName.indexOf(\"!\")){var chunks=moduleName.split(\"!\");return window.normalizeModule(parentId,chunks[0])+\"!\"+window.normalizeModule(parentId,chunks[1])}if(\".\"==moduleName.charAt(0)){var base=parentId.split(\"/\").slice(0,-1).join(\"/\");for(moduleName=(base?base+\"/\":\"\")+moduleName;-1!==moduleName.indexOf(\".\")&&previous!=moduleName;){var previous=moduleName;moduleName=moduleName.replace(/^\\.\\//,\"\").replace(/\\/\\.\\//,\"/\").replace(/[^\\/]+\\/\\.\\.\\//,\"\")}}return moduleName},window.acequire=function acequire(parentId,id){if(id||(id=parentId,parentId=null),!id.charAt)throw Error(\"worker.js acequire() accepts only (parentId, id) as arguments\");id=window.normalizeModule(parentId,id);var module=window.acequire.modules[id];if(module)return module.initialized||(module.initialized=!0,module.exports=module.factory().exports),module.exports;if(!window.acequire.tlns)return console.log(\"unable to load \"+id);var path=resolveModuleId(id,window.acequire.tlns);return\".js\"!=path.slice(-3)&&(path+=\".js\"),window.acequire.id=id,window.acequire.modules[id]={},importScripts(path),window.acequire(parentId,id)},window.acequire.modules={},window.acequire.tlns={},window.define=function(id,deps,factory){if(2==arguments.length?(factory=deps,\"string\"!=typeof id&&(deps=id,id=window.acequire.id)):1==arguments.length&&(factory=id,deps=[],id=window.acequire.id),\"function\"!=typeof factory)return window.acequire.modules[id]={exports:factory,initialized:!0},void 0;deps.length||(deps=[\"require\",\"exports\",\"module\"]);var req=function(childId){return window.acequire(id,childId)};window.acequire.modules[id]={exports:{},factory:function(){var module=this,returnExports=factory.apply(this,deps.map(function(dep){switch(dep){case\"require\":return req;case\"exports\":return module.exports;case\"module\":return module;default:return req(dep)}}));return returnExports&&(module.exports=returnExports),module}}},window.define.amd={},acequire.tlns={},window.initBaseUrls=function(topLevelNamespaces){for(var i in topLevelNamespaces)acequire.tlns[i]=topLevelNamespaces[i]},window.initSender=function(){var EventEmitter=window.acequire(\"ace/lib/event_emitter\").EventEmitter,oop=window.acequire(\"ace/lib/oop\"),Sender=function(){};return function(){oop.implement(this,EventEmitter),this.callback=function(data,callbackId){postMessage({type:\"call\",id:callbackId,data:data})},this.emit=function(name,data){postMessage({type:\"event\",name:name,data:data})}}.call(Sender.prototype),new Sender};var main=window.main=null,sender=window.sender=null;window.onmessage=function(e){var msg=e.data;if(msg.event&&sender)sender._signal(msg.event,msg.data);else if(msg.command)if(main[msg.command])main[msg.command].apply(main,msg.args);else{if(!window[msg.command])throw Error(\"Unknown command:\"+msg.command);window[msg.command].apply(window,msg.args)}else if(msg.init){window.initBaseUrls(msg.tlns),acequire(\"ace/lib/es5-shim\"),sender=window.sender=window.initSender();var clazz=acequire(msg.module)[msg.classname];main=window.main=new clazz(sender)}}}})(this),ace.define(\"ace/lib/oop\",[\"require\",\"exports\",\"module\"],function(acequire,exports){\"use strict\";exports.inherits=function(ctor,superCtor){ctor.super_=superCtor,ctor.prototype=Object.create(superCtor.prototype,{constructor:{value:ctor,enumerable:!1,writable:!0,configurable:!0}})},exports.mixin=function(obj,mixin){for(var key in mixin)obj[key]=mixin[key];return obj},exports.implement=function(proto,mixin){exports.mixin(proto,mixin)}}),ace.define(\"ace/range\",[\"require\",\"exports\",\"module\"],function(acequire,exports){\"use strict\";var comparePoints=function(p1,p2){return p1.row-p2.row||p1.column-p2.column},Range=function(startRow,startColumn,endRow,endColumn){this.start={row:startRow,column:startColumn},this.end={row:endRow,column:endColumn}};(function(){this.isEqual=function(range){return this.start.row===range.start.row&&this.end.row===range.end.row&&this.start.column===range.start.column&&this.end.column===range.end.column},this.toString=function(){return\"Range: [\"+this.start.row+\"/\"+this.start.column+\"] -> [\"+this.end.row+\"/\"+this.end.column+\"]\"},this.contains=function(row,column){return 0==this.compare(row,column)},this.compareRange=function(range){var cmp,end=range.end,start=range.start;return cmp=this.compare(end.row,end.column),1==cmp?(cmp=this.compare(start.row,start.column),1==cmp?2:0==cmp?1:0):-1==cmp?-2:(cmp=this.compare(start.row,start.column),-1==cmp?-1:1==cmp?42:0)},this.comparePoint=function(p){return this.compare(p.row,p.column)},this.containsRange=function(range){return 0==this.comparePoint(range.start)&&0==this.comparePoint(range.end)},this.intersects=function(range){var cmp=this.compareRange(range);return-1==cmp||0==cmp||1==cmp},this.isEnd=function(row,column){return this.end.row==row&&this.end.column==column},this.isStart=function(row,column){return this.start.row==row&&this.start.column==column},this.setStart=function(row,column){\"object\"==typeof row?(this.start.column=row.column,this.start.row=row.row):(this.start.row=row,this.start.column=column)},this.setEnd=function(row,column){\"object\"==typeof row?(this.end.column=row.column,this.end.row=row.row):(this.end.row=row,this.end.column=column)},this.inside=function(row,column){return 0==this.compare(row,column)?this.isEnd(row,column)||this.isStart(row,column)?!1:!0:!1},this.insideStart=function(row,column){return 0==this.compare(row,column)?this.isEnd(row,column)?!1:!0:!1},this.insideEnd=function(row,column){return 0==this.compare(row,column)?this.isStart(row,column)?!1:!0:!1},this.compare=function(row,column){return this.isMultiLine()||row!==this.start.row?this.start.row>row?-1:row>this.end.row?1:this.start.row===row?column>=this.start.column?0:-1:this.end.row===row?this.end.column>=column?0:1:0:this.start.column>column?-1:column>this.end.column?1:0},this.compareStart=function(row,column){return this.start.row==row&&this.start.column==column?-1:this.compare(row,column)},this.compareEnd=function(row,column){return this.end.row==row&&this.end.column==column?1:this.compare(row,column)},this.compareInside=function(row,column){return this.end.row==row&&this.end.column==column?1:this.start.row==row&&this.start.column==column?-1:this.compare(row,column)},this.clipRows=function(firstRow,lastRow){if(this.end.row>lastRow)var end={row:lastRow+1,column:0};else if(firstRow>this.end.row)var end={row:firstRow,column:0};if(this.start.row>lastRow)var start={row:lastRow+1,column:0};else if(firstRow>this.start.row)var start={row:firstRow,column:0};return Range.fromPoints(start||this.start,end||this.end)},this.extend=function(row,column){var cmp=this.compare(row,column);if(0==cmp)return this;if(-1==cmp)var start={row:row,column:column};else var end={row:row,column:column};return Range.fromPoints(start||this.start,end||this.end)},this.isEmpty=function(){return this.start.row===this.end.row&&this.start.column===this.end.column},this.isMultiLine=function(){return this.start.row!==this.end.row},this.clone=function(){return Range.fromPoints(this.start,this.end)},this.collapseRows=function(){return 0==this.end.column?new Range(this.start.row,0,Math.max(this.start.row,this.end.row-1),0):new Range(this.start.row,0,this.end.row,0)},this.toScreenRange=function(session){var screenPosStart=session.documentToScreenPosition(this.start),screenPosEnd=session.documentToScreenPosition(this.end);return new Range(screenPosStart.row,screenPosStart.column,screenPosEnd.row,screenPosEnd.column)},this.moveBy=function(row,column){this.start.row+=row,this.start.column+=column,this.end.row+=row,this.end.column+=column}}).call(Range.prototype),Range.fromPoints=function(start,end){return new Range(start.row,start.column,end.row,end.column)},Range.comparePoints=comparePoints,Range.comparePoints=function(p1,p2){return p1.row-p2.row||p1.column-p2.column},exports.Range=Range}),ace.define(\"ace/apply_delta\",[\"require\",\"exports\",\"module\"],function(acequire,exports){\"use strict\";exports.applyDelta=function(docLines,delta){var row=delta.start.row,startColumn=delta.start.column,line=docLines[row]||\"\";switch(delta.action){case\"insert\":var lines=delta.lines;if(1===lines.length)docLines[row]=line.substring(0,startColumn)+delta.lines[0]+line.substring(startColumn);else{var args=[row,1].concat(delta.lines);docLines.splice.apply(docLines,args),docLines[row]=line.substring(0,startColumn)+docLines[row],docLines[row+delta.lines.length-1]+=line.substring(startColumn)}break;case\"remove\":var endColumn=delta.end.column,endRow=delta.end.row;row===endRow?docLines[row]=line.substring(0,startColumn)+line.substring(endColumn):docLines.splice(row,endRow-row+1,line.substring(0,startColumn)+docLines[endRow].substring(endColumn))}}}),ace.define(\"ace/lib/event_emitter\",[\"require\",\"exports\",\"module\"],function(acequire,exports){\"use strict\";var EventEmitter={},stopPropagation=function(){this.propagationStopped=!0},preventDefault=function(){this.defaultPrevented=!0};EventEmitter._emit=EventEmitter._dispatchEvent=function(eventName,e){this._eventRegistry||(this._eventRegistry={}),this._defaultHandlers||(this._defaultHandlers={});var listeners=this._eventRegistry[eventName]||[],defaultHandler=this._defaultHandlers[eventName];if(listeners.length||defaultHandler){\"object\"==typeof e&&e||(e={}),e.type||(e.type=eventName),e.stopPropagation||(e.stopPropagation=stopPropagation),e.preventDefault||(e.preventDefault=preventDefault),listeners=listeners.slice();for(var i=0;listeners.length>i&&(listeners[i](e,this),!e.propagationStopped);i++);return defaultHandler&&!e.defaultPrevented?defaultHandler(e,this):void 0}},EventEmitter._signal=function(eventName,e){var listeners=(this._eventRegistry||{})[eventName];if(listeners){listeners=listeners.slice();for(var i=0;listeners.length>i;i++)listeners[i](e,this)}},EventEmitter.once=function(eventName,callback){var _self=this;callback&&this.addEventListener(eventName,function newCallback(){_self.removeEventListener(eventName,newCallback),callback.apply(null,arguments)})},EventEmitter.setDefaultHandler=function(eventName,callback){var handlers=this._defaultHandlers;if(handlers||(handlers=this._defaultHandlers={_disabled_:{}}),handlers[eventName]){var old=handlers[eventName],disabled=handlers._disabled_[eventName];disabled||(handlers._disabled_[eventName]=disabled=[]),disabled.push(old);var i=disabled.indexOf(callback);-1!=i&&disabled.splice(i,1)}handlers[eventName]=callback},EventEmitter.removeDefaultHandler=function(eventName,callback){var handlers=this._defaultHandlers;if(handlers){var disabled=handlers._disabled_[eventName];if(handlers[eventName]==callback)handlers[eventName],disabled&&this.setDefaultHandler(eventName,disabled.pop());else if(disabled){var i=disabled.indexOf(callback);-1!=i&&disabled.splice(i,1)}}},EventEmitter.on=EventEmitter.addEventListener=function(eventName,callback,capturing){this._eventRegistry=this._eventRegistry||{};var listeners=this._eventRegistry[eventName];return listeners||(listeners=this._eventRegistry[eventName]=[]),-1==listeners.indexOf(callback)&&listeners[capturing?\"unshift\":\"push\"](callback),callback},EventEmitter.off=EventEmitter.removeListener=EventEmitter.removeEventListener=function(eventName,callback){this._eventRegistry=this._eventRegistry||{};var listeners=this._eventRegistry[eventName];if(listeners){var index=listeners.indexOf(callback);-1!==index&&listeners.splice(index,1)}},EventEmitter.removeAllListeners=function(eventName){this._eventRegistry&&(this._eventRegistry[eventName]=[])},exports.EventEmitter=EventEmitter}),ace.define(\"ace/anchor\",[\"require\",\"exports\",\"module\",\"ace/lib/oop\",\"ace/lib/event_emitter\"],function(acequire,exports){\"use strict\";var oop=acequire(\"./lib/oop\"),EventEmitter=acequire(\"./lib/event_emitter\").EventEmitter,Anchor=exports.Anchor=function(doc,row,column){this.$onChange=this.onChange.bind(this),this.attach(doc),column===void 0?this.setPosition(row.row,row.column):this.setPosition(row,column)};(function(){function $pointsInOrder(point1,point2,equalPointsInOrder){var bColIsAfter=equalPointsInOrder?point1.column<=point2.column:point1.column<point2.column;return point1.row<point2.row||point1.row==point2.row&&bColIsAfter}function $getTransformedPoint(delta,point,moveIfEqual){var deltaIsInsert=\"insert\"==delta.action,deltaRowShift=(deltaIsInsert?1:-1)*(delta.end.row-delta.start.row),deltaColShift=(deltaIsInsert?1:-1)*(delta.end.column-delta.start.column),deltaStart=delta.start,deltaEnd=deltaIsInsert?deltaStart:delta.end;return $pointsInOrder(point,deltaStart,moveIfEqual)?{row:point.row,column:point.column}:$pointsInOrder(deltaEnd,point,!moveIfEqual)?{row:point.row+deltaRowShift,column:point.column+(point.row==deltaEnd.row?deltaColShift:0)}:{row:deltaStart.row,column:deltaStart.column}}oop.implement(this,EventEmitter),this.getPosition=function(){return this.$clipPositionToDocument(this.row,this.column)},this.getDocument=function(){return this.document},this.$insertRight=!1,this.onChange=function(delta){if(!(delta.start.row==delta.end.row&&delta.start.row!=this.row||delta.start.row>this.row)){var point=$getTransformedPoint(delta,{row:this.row,column:this.column},this.$insertRight);this.setPosition(point.row,point.column,!0)}},this.setPosition=function(row,column,noClip){var pos;if(pos=noClip?{row:row,column:column}:this.$clipPositionToDocument(row,column),this.row!=pos.row||this.column!=pos.column){var old={row:this.row,column:this.column};this.row=pos.row,this.column=pos.column,this._signal(\"change\",{old:old,value:pos})}},this.detach=function(){this.document.removeEventListener(\"change\",this.$onChange)},this.attach=function(doc){this.document=doc||this.document,this.document.on(\"change\",this.$onChange)},this.$clipPositionToDocument=function(row,column){var pos={};return row>=this.document.getLength()?(pos.row=Math.max(0,this.document.getLength()-1),pos.column=this.document.getLine(pos.row).length):0>row?(pos.row=0,pos.column=0):(pos.row=row,pos.column=Math.min(this.document.getLine(pos.row).length,Math.max(0,column))),0>column&&(pos.column=0),pos}}).call(Anchor.prototype)}),ace.define(\"ace/document\",[\"require\",\"exports\",\"module\",\"ace/lib/oop\",\"ace/apply_delta\",\"ace/lib/event_emitter\",\"ace/range\",\"ace/anchor\"],function(acequire,exports){\"use strict\";var oop=acequire(\"./lib/oop\"),applyDelta=acequire(\"./apply_delta\").applyDelta,EventEmitter=acequire(\"./lib/event_emitter\").EventEmitter,Range=acequire(\"./range\").Range,Anchor=acequire(\"./anchor\").Anchor,Document=function(textOrLines){this.$lines=[\"\"],0===textOrLines.length?this.$lines=[\"\"]:Array.isArray(textOrLines)?this.insertMergedLines({row:0,column:0},textOrLines):this.insert({row:0,column:0},textOrLines)};(function(){oop.implement(this,EventEmitter),this.setValue=function(text){var len=this.getLength()-1;this.remove(new Range(0,0,len,this.getLine(len).length)),this.insert({row:0,column:0},text)},this.getValue=function(){return this.getAllLines().join(this.getNewLineCharacter())},this.createAnchor=function(row,column){return new Anchor(this,row,column)},this.$split=0===\"aaa\".split(/a/).length?function(text){return text.replace(/\\r\\n|\\r/g,\"\\n\").split(\"\\n\")}:function(text){return text.split(/\\r\\n|\\r|\\n/)},this.$detectNewLine=function(text){var match=text.match(/^.*?(\\r\\n|\\r|\\n)/m);this.$autoNewLine=match?match[1]:\"\\n\",this._signal(\"changeNewLineMode\")},this.getNewLineCharacter=function(){switch(this.$newLineMode){case\"windows\":return\"\\r\\n\";case\"unix\":return\"\\n\";default:return this.$autoNewLine||\"\\n\"}},this.$autoNewLine=\"\",this.$newLineMode=\"auto\",this.setNewLineMode=function(newLineMode){this.$newLineMode!==newLineMode&&(this.$newLineMode=newLineMode,this._signal(\"changeNewLineMode\"))},this.getNewLineMode=function(){return this.$newLineMode},this.isNewLine=function(text){return\"\\r\\n\"==text||\"\\r\"==text||\"\\n\"==text},this.getLine=function(row){return this.$lines[row]||\"\"},this.getLines=function(firstRow,lastRow){return this.$lines.slice(firstRow,lastRow+1)},this.getAllLines=function(){return this.getLines(0,this.getLength())},this.getLength=function(){return this.$lines.length},this.getTextRange=function(range){return this.getLinesForRange(range).join(this.getNewLineCharacter())},this.getLinesForRange=function(range){var lines;if(range.start.row===range.end.row)lines=[this.getLine(range.start.row).substring(range.start.column,range.end.column)];else{lines=this.getLines(range.start.row,range.end.row),lines[0]=(lines[0]||\"\").substring(range.start.column);var l=lines.length-1;range.end.row-range.start.row==l&&(lines[l]=lines[l].substring(0,range.end.column))}return lines},this.insertLines=function(row,lines){return console.warn(\"Use of document.insertLines is deprecated. Use the insertFullLines method instead.\"),this.insertFullLines(row,lines)},this.removeLines=function(firstRow,lastRow){return console.warn(\"Use of document.removeLines is deprecated. Use the removeFullLines method instead.\"),this.removeFullLines(firstRow,lastRow)},this.insertNewLine=function(position){return console.warn(\"Use of document.insertNewLine is deprecated. Use insertMergedLines(position, ['', '']) instead.\"),this.insertMergedLines(position,[\"\",\"\"])},this.insert=function(position,text){return 1>=this.getLength()&&this.$detectNewLine(text),this.insertMergedLines(position,this.$split(text))},this.insertInLine=function(position,text){var start=this.clippedPos(position.row,position.column),end=this.pos(position.row,position.column+text.length);return this.applyDelta({start:start,end:end,action:\"insert\",lines:[text]},!0),this.clonePos(end)},this.clippedPos=function(row,column){var length=this.getLength();void 0===row?row=length:0>row?row=0:row>=length&&(row=length-1,column=void 0);var line=this.getLine(row);return void 0==column&&(column=line.length),column=Math.min(Math.max(column,0),line.length),{row:row,column:column}},this.clonePos=function(pos){return{row:pos.row,column:pos.column}},this.pos=function(row,column){return{row:row,column:column}},this.$clipPosition=function(position){var length=this.getLength();return position.row>=length?(position.row=Math.max(0,length-1),position.column=this.getLine(length-1).length):(position.row=Math.max(0,position.row),position.column=Math.min(Math.max(position.column,0),this.getLine(position.row).length)),position},this.insertFullLines=function(row,lines){row=Math.min(Math.max(row,0),this.getLength());var column=0;this.getLength()>row?(lines=lines.concat([\"\"]),column=0):(lines=[\"\"].concat(lines),row--,column=this.$lines[row].length),this.insertMergedLines({row:row,column:column},lines)},this.insertMergedLines=function(position,lines){var start=this.clippedPos(position.row,position.column),end={row:start.row+lines.length-1,column:(1==lines.length?start.column:0)+lines[lines.length-1].length};return this.applyDelta({start:start,end:end,action:\"insert\",lines:lines}),this.clonePos(end)},this.remove=function(range){var start=this.clippedPos(range.start.row,range.start.column),end=this.clippedPos(range.end.row,range.end.column);return this.applyDelta({start:start,end:end,action:\"remove\",lines:this.getLinesForRange({start:start,end:end})}),this.clonePos(start)},this.removeInLine=function(row,startColumn,endColumn){var start=this.clippedPos(row,startColumn),end=this.clippedPos(row,endColumn);return this.applyDelta({start:start,end:end,action:\"remove\",lines:this.getLinesForRange({start:start,end:end})},!0),this.clonePos(start)},this.removeFullLines=function(firstRow,lastRow){firstRow=Math.min(Math.max(0,firstRow),this.getLength()-1),lastRow=Math.min(Math.max(0,lastRow),this.getLength()-1);var deleteFirstNewLine=lastRow==this.getLength()-1&&firstRow>0,deleteLastNewLine=this.getLength()-1>lastRow,startRow=deleteFirstNewLine?firstRow-1:firstRow,startCol=deleteFirstNewLine?this.getLine(startRow).length:0,endRow=deleteLastNewLine?lastRow+1:lastRow,endCol=deleteLastNewLine?0:this.getLine(endRow).length,range=new Range(startRow,startCol,endRow,endCol),deletedLines=this.$lines.slice(firstRow,lastRow+1);return this.applyDelta({start:range.start,end:range.end,action:\"remove\",lines:this.getLinesForRange(range)}),deletedLines},this.removeNewLine=function(row){this.getLength()-1>row&&row>=0&&this.applyDelta({start:this.pos(row,this.getLine(row).length),end:this.pos(row+1,0),action:\"remove\",lines:[\"\",\"\"]})},this.replace=function(range,text){if(range instanceof Range||(range=Range.fromPoints(range.start,range.end)),0===text.length&&range.isEmpty())return range.start;if(text==this.getTextRange(range))return range.end;this.remove(range);var end;return end=text?this.insert(range.start,text):range.start},this.applyDeltas=function(deltas){for(var i=0;deltas.length>i;i++)this.applyDelta(deltas[i])},this.revertDeltas=function(deltas){for(var i=deltas.length-1;i>=0;i--)this.revertDelta(deltas[i])},this.applyDelta=function(delta,doNotValidate){var isInsert=\"insert\"==delta.action;(isInsert?1>=delta.lines.length&&!delta.lines[0]:!Range.comparePoints(delta.start,delta.end))||(isInsert&&delta.lines.length>2e4&&this.$splitAndapplyLargeDelta(delta,2e4),applyDelta(this.$lines,delta,doNotValidate),this._signal(\"change\",delta))},this.$splitAndapplyLargeDelta=function(delta,MAX){for(var lines=delta.lines,l=lines.length,row=delta.start.row,column=delta.start.column,from=0,to=0;;){from=to,to+=MAX-1;var chunk=lines.slice(from,to);if(to>l){delta.lines=chunk,delta.start.row=row+from,delta.start.column=column;break}chunk.push(\"\"),this.applyDelta({start:this.pos(row+from,column),end:this.pos(row+to,column=0),action:delta.action,lines:chunk},!0)}},this.revertDelta=function(delta){this.applyDelta({start:this.clonePos(delta.start),end:this.clonePos(delta.end),action:\"insert\"==delta.action?\"remove\":\"insert\",lines:delta.lines.slice()})},this.indexToPosition=function(index,startRow){for(var lines=this.$lines||this.getAllLines(),newlineLength=this.getNewLineCharacter().length,i=startRow||0,l=lines.length;l>i;i++)if(index-=lines[i].length+newlineLength,0>index)return{row:i,column:index+lines[i].length+newlineLength};return{row:l-1,column:lines[l-1].length}},this.positionToIndex=function(pos,startRow){for(var lines=this.$lines||this.getAllLines(),newlineLength=this.getNewLineCharacter().length,index=0,row=Math.min(pos.row,lines.length),i=startRow||0;row>i;++i)index+=lines[i].length+newlineLength;return index+pos.column}}).call(Document.prototype),exports.Document=Document}),ace.define(\"ace/lib/lang\",[\"require\",\"exports\",\"module\"],function(acequire,exports){\"use strict\";exports.last=function(a){return a[a.length-1]},exports.stringReverse=function(string){return string.split(\"\").reverse().join(\"\")},exports.stringRepeat=function(string,count){for(var result=\"\";count>0;)1&count&&(result+=string),(count>>=1)&&(string+=string);return result};var trimBeginRegexp=/^\\s\\s*/,trimEndRegexp=/\\s\\s*$/;exports.stringTrimLeft=function(string){return string.replace(trimBeginRegexp,\"\")},exports.stringTrimRight=function(string){return string.replace(trimEndRegexp,\"\")},exports.copyObject=function(obj){var copy={};for(var key in obj)copy[key]=obj[key];return copy},exports.copyArray=function(array){for(var copy=[],i=0,l=array.length;l>i;i++)copy[i]=array[i]&&\"object\"==typeof array[i]?this.copyObject(array[i]):array[i];return copy},exports.deepCopy=function deepCopy(obj){if(\"object\"!=typeof obj||!obj)return obj;var copy;if(Array.isArray(obj)){copy=[];for(var key=0;obj.length>key;key++)copy[key]=deepCopy(obj[key]);return copy}var cons=obj.constructor;if(cons===RegExp)return obj;copy=cons();for(var key in obj)copy[key]=deepCopy(obj[key]);return copy},exports.arrayToMap=function(arr){for(var map={},i=0;arr.length>i;i++)map[arr[i]]=1;return map},exports.createMap=function(props){var map=Object.create(null);for(var i in props)map[i]=props[i];return map},exports.arrayRemove=function(array,value){for(var i=0;array.length>=i;i++)value===array[i]&&array.splice(i,1)},exports.escapeRegExp=function(str){return str.replace(/([.*+?^${}()|[\\]\\/\\\\])/g,\"\\\\$1\")},exports.escapeHTML=function(str){return str.replace(/&/g,\"&#38;\").replace(/\"/g,\"&#34;\").replace(/'/g,\"&#39;\").replace(/</g,\"&#60;\")},exports.getMatchOffsets=function(string,regExp){var matches=[];return string.replace(regExp,function(str){matches.push({offset:arguments[arguments.length-2],length:str.length})}),matches},exports.deferredCall=function(fcn){var timer=null,callback=function(){timer=null,fcn()},deferred=function(timeout){return deferred.cancel(),timer=setTimeout(callback,timeout||0),deferred};return deferred.schedule=deferred,deferred.call=function(){return this.cancel(),fcn(),deferred},deferred.cancel=function(){return clearTimeout(timer),timer=null,deferred},deferred.isPending=function(){return timer},deferred},exports.delayedCall=function(fcn,defaultTimeout){var timer=null,callback=function(){timer=null,fcn()},_self=function(timeout){null==timer&&(timer=setTimeout(callback,timeout||defaultTimeout))};return _self.delay=function(timeout){timer&&clearTimeout(timer),timer=setTimeout(callback,timeout||defaultTimeout)},_self.schedule=_self,_self.call=function(){this.cancel(),fcn()},_self.cancel=function(){timer&&clearTimeout(timer),timer=null},_self.isPending=function(){return timer},_self}}),ace.define(\"ace/worker/mirror\",[\"require\",\"exports\",\"module\",\"ace/range\",\"ace/document\",\"ace/lib/lang\"],function(acequire,exports){\"use strict\";acequire(\"../range\").Range;var Document=acequire(\"../document\").Document,lang=acequire(\"../lib/lang\"),Mirror=exports.Mirror=function(sender){this.sender=sender;var doc=this.doc=new Document(\"\"),deferredUpdate=this.deferredUpdate=lang.delayedCall(this.onUpdate.bind(this)),_self=this;sender.on(\"change\",function(e){var data=e.data;if(data[0].start)doc.applyDeltas(data);else for(var i=0;data.length>i;i+=2){if(Array.isArray(data[i+1]))var d={action:\"insert\",start:data[i],lines:data[i+1]};else var d={action:\"remove\",start:data[i],end:data[i+1]};doc.applyDelta(d,!0)}return _self.$timeout?deferredUpdate.schedule(_self.$timeout):(_self.onUpdate(),void 0)})};(function(){this.$timeout=500,this.setTimeout=function(timeout){this.$timeout=timeout},this.setValue=function(value){this.doc.setValue(value),this.deferredUpdate.schedule(this.$timeout)},this.getValue=function(callbackId){this.sender.callback(this.doc.getValue(),callbackId)},this.onUpdate=function(){},this.isPending=function(){return this.deferredUpdate.isPending()}}).call(Mirror.prototype)}),ace.define(\"ace/mode/json/json_parse\",[\"require\",\"exports\",\"module\"],function(){\"use strict\";var at,ch,text,value,escapee={'\"':'\"',\"\\\\\":\"\\\\\",\"/\":\"/\",b:\"\\b\",f:\"\\f\",n:\"\\n\",r:\"\\r\",t:\"\t\"},error=function(m){throw{name:\"SyntaxError\",message:m,at:at,text:text}},next=function(c){return c&&c!==ch&&error(\"Expected '\"+c+\"' instead of '\"+ch+\"'\"),ch=text.charAt(at),at+=1,ch},number=function(){var number,string=\"\";for(\"-\"===ch&&(string=\"-\",next(\"-\"));ch>=\"0\"&&\"9\">=ch;)string+=ch,next();if(\".\"===ch)for(string+=\".\";next()&&ch>=\"0\"&&\"9\">=ch;)string+=ch;if(\"e\"===ch||\"E\"===ch)for(string+=ch,next(),(\"-\"===ch||\"+\"===ch)&&(string+=ch,next());ch>=\"0\"&&\"9\">=ch;)string+=ch,next();return number=+string,isNaN(number)?(error(\"Bad number\"),void 0):number},string=function(){var hex,i,uffff,string=\"\";if('\"'===ch)for(;next();){if('\"'===ch)return next(),string;if(\"\\\\\"===ch)if(next(),\"u\"===ch){for(uffff=0,i=0;4>i&&(hex=parseInt(next(),16),isFinite(hex));i+=1)uffff=16*uffff+hex;string+=String.fromCharCode(uffff)}else{if(\"string\"!=typeof escapee[ch])break;string+=escapee[ch]}else string+=ch}error(\"Bad string\")},white=function(){for(;ch&&\" \">=ch;)next()},word=function(){switch(ch){case\"t\":return next(\"t\"),next(\"r\"),next(\"u\"),next(\"e\"),!0;case\"f\":return next(\"f\"),next(\"a\"),next(\"l\"),next(\"s\"),next(\"e\"),!1;case\"n\":return next(\"n\"),next(\"u\"),next(\"l\"),next(\"l\"),null}error(\"Unexpected '\"+ch+\"'\")},array=function(){var array=[];if(\"[\"===ch){if(next(\"[\"),white(),\"]\"===ch)return next(\"]\"),array;for(;ch;){if(array.push(value()),white(),\"]\"===ch)return next(\"]\"),array;next(\",\"),white()}}error(\"Bad array\")},object=function(){var key,object={};if(\"{\"===ch){if(next(\"{\"),white(),\"}\"===ch)return next(\"}\"),object;for(;ch;){if(key=string(),white(),next(\":\"),Object.hasOwnProperty.call(object,key)&&error('Duplicate key \"'+key+'\"'),object[key]=value(),white(),\"}\"===ch)return next(\"}\"),object;next(\",\"),white()}}error(\"Bad object\")};return value=function(){switch(white(),ch){case\"{\":return object();case\"[\":return array();case'\"':return string();case\"-\":return number();default:return ch>=\"0\"&&\"9\">=ch?number():word()}},function(source,reviver){var result;return text=source,at=0,ch=\" \",result=value(),white(),ch&&error(\"Syntax error\"),\"function\"==typeof reviver?function walk(holder,key){var k,v,value=holder[key];if(value&&\"object\"==typeof value)for(k in value)Object.hasOwnProperty.call(value,k)&&(v=walk(value,k),void 0!==v?value[k]=v:delete value[k]);return reviver.call(holder,key,value)}({\"\":result},\"\"):result}}),ace.define(\"ace/mode/json_worker\",[\"require\",\"exports\",\"module\",\"ace/lib/oop\",\"ace/worker/mirror\",\"ace/mode/json/json_parse\"],function(acequire,exports){\"use strict\";var oop=acequire(\"../lib/oop\"),Mirror=acequire(\"../worker/mirror\").Mirror,parse=acequire(\"./json/json_parse\"),JsonWorker=exports.JsonWorker=function(sender){Mirror.call(this,sender),this.setTimeout(200)};oop.inherits(JsonWorker,Mirror),function(){this.onUpdate=function(){var value=this.doc.getValue(),errors=[];try{value&&parse(value)}catch(e){var pos=this.doc.indexToPosition(e.at-1);errors.push({row:pos.row,column:pos.column,text:e.message,type:\"error\"})}this.sender.emit(\"annotate\",errors)}}.call(JsonWorker.prototype)}),ace.define(\"ace/lib/es5-shim\",[\"require\",\"exports\",\"module\"],function(){function Empty(){}function doesDefinePropertyWork(object){try{return Object.defineProperty(object,\"sentinel\",{}),\"sentinel\"in object}catch(exception){}}function toInteger(n){return n=+n,n!==n?n=0:0!==n&&n!==1/0&&n!==-(1/0)&&(n=(n>0||-1)*Math.floor(Math.abs(n))),n}Function.prototype.bind||(Function.prototype.bind=function(that){var target=this;if(\"function\"!=typeof target)throw new TypeError(\"Function.prototype.bind called on incompatible \"+target);var args=slice.call(arguments,1),bound=function(){if(this instanceof bound){var result=target.apply(this,args.concat(slice.call(arguments)));return Object(result)===result?result:this}return target.apply(that,args.concat(slice.call(arguments)))};return target.prototype&&(Empty.prototype=target.prototype,bound.prototype=new Empty,Empty.prototype=null),bound});var defineGetter,defineSetter,lookupGetter,lookupSetter,supportsAccessors,call=Function.prototype.call,prototypeOfArray=Array.prototype,prototypeOfObject=Object.prototype,slice=prototypeOfArray.slice,_toString=call.bind(prototypeOfObject.toString),owns=call.bind(prototypeOfObject.hasOwnProperty);if((supportsAccessors=owns(prototypeOfObject,\"__defineGetter__\"))&&(defineGetter=call.bind(prototypeOfObject.__defineGetter__),defineSetter=call.bind(prototypeOfObject.__defineSetter__),lookupGetter=call.bind(prototypeOfObject.__lookupGetter__),lookupSetter=call.bind(prototypeOfObject.__lookupSetter__)),2!=[1,2].splice(0).length)if(function(){function makeArray(l){var a=Array(l+2);return a[0]=a[1]=0,a}var lengthBefore,array=[];return array.splice.apply(array,makeArray(20)),array.splice.apply(array,makeArray(26)),lengthBefore=array.length,array.splice(5,0,\"XXX\"),lengthBefore+1==array.length,lengthBefore+1==array.length?!0:void 0\n}()){var array_splice=Array.prototype.splice;Array.prototype.splice=function(start,deleteCount){return arguments.length?array_splice.apply(this,[void 0===start?0:start,void 0===deleteCount?this.length-start:deleteCount].concat(slice.call(arguments,2))):[]}}else Array.prototype.splice=function(pos,removeCount){var length=this.length;pos>0?pos>length&&(pos=length):void 0==pos?pos=0:0>pos&&(pos=Math.max(length+pos,0)),length>pos+removeCount||(removeCount=length-pos);var removed=this.slice(pos,pos+removeCount),insert=slice.call(arguments,2),add=insert.length;if(pos===length)add&&this.push.apply(this,insert);else{var remove=Math.min(removeCount,length-pos),tailOldPos=pos+remove,tailNewPos=tailOldPos+add-remove,tailCount=length-tailOldPos,lengthAfterRemove=length-remove;if(tailOldPos>tailNewPos)for(var i=0;tailCount>i;++i)this[tailNewPos+i]=this[tailOldPos+i];else if(tailNewPos>tailOldPos)for(i=tailCount;i--;)this[tailNewPos+i]=this[tailOldPos+i];if(add&&pos===lengthAfterRemove)this.length=lengthAfterRemove,this.push.apply(this,insert);else for(this.length=lengthAfterRemove+add,i=0;add>i;++i)this[pos+i]=insert[i]}return removed};Array.isArray||(Array.isArray=function(obj){return\"[object Array]\"==_toString(obj)});var boxedString=Object(\"a\"),splitString=\"a\"!=boxedString[0]||!(0 in boxedString);if(Array.prototype.forEach||(Array.prototype.forEach=function(fun){var object=toObject(this),self=splitString&&\"[object String]\"==_toString(this)?this.split(\"\"):object,thisp=arguments[1],i=-1,length=self.length>>>0;if(\"[object Function]\"!=_toString(fun))throw new TypeError;for(;length>++i;)i in self&&fun.call(thisp,self[i],i,object)}),Array.prototype.map||(Array.prototype.map=function(fun){var object=toObject(this),self=splitString&&\"[object String]\"==_toString(this)?this.split(\"\"):object,length=self.length>>>0,result=Array(length),thisp=arguments[1];if(\"[object Function]\"!=_toString(fun))throw new TypeError(fun+\" is not a function\");for(var i=0;length>i;i++)i in self&&(result[i]=fun.call(thisp,self[i],i,object));return result}),Array.prototype.filter||(Array.prototype.filter=function(fun){var value,object=toObject(this),self=splitString&&\"[object String]\"==_toString(this)?this.split(\"\"):object,length=self.length>>>0,result=[],thisp=arguments[1];if(\"[object Function]\"!=_toString(fun))throw new TypeError(fun+\" is not a function\");for(var i=0;length>i;i++)i in self&&(value=self[i],fun.call(thisp,value,i,object)&&result.push(value));return result}),Array.prototype.every||(Array.prototype.every=function(fun){var object=toObject(this),self=splitString&&\"[object String]\"==_toString(this)?this.split(\"\"):object,length=self.length>>>0,thisp=arguments[1];if(\"[object Function]\"!=_toString(fun))throw new TypeError(fun+\" is not a function\");for(var i=0;length>i;i++)if(i in self&&!fun.call(thisp,self[i],i,object))return!1;return!0}),Array.prototype.some||(Array.prototype.some=function(fun){var object=toObject(this),self=splitString&&\"[object String]\"==_toString(this)?this.split(\"\"):object,length=self.length>>>0,thisp=arguments[1];if(\"[object Function]\"!=_toString(fun))throw new TypeError(fun+\" is not a function\");for(var i=0;length>i;i++)if(i in self&&fun.call(thisp,self[i],i,object))return!0;return!1}),Array.prototype.reduce||(Array.prototype.reduce=function(fun){var object=toObject(this),self=splitString&&\"[object String]\"==_toString(this)?this.split(\"\"):object,length=self.length>>>0;if(\"[object Function]\"!=_toString(fun))throw new TypeError(fun+\" is not a function\");if(!length&&1==arguments.length)throw new TypeError(\"reduce of empty array with no initial value\");var result,i=0;if(arguments.length>=2)result=arguments[1];else for(;;){if(i in self){result=self[i++];break}if(++i>=length)throw new TypeError(\"reduce of empty array with no initial value\")}for(;length>i;i++)i in self&&(result=fun.call(void 0,result,self[i],i,object));return result}),Array.prototype.reduceRight||(Array.prototype.reduceRight=function(fun){var object=toObject(this),self=splitString&&\"[object String]\"==_toString(this)?this.split(\"\"):object,length=self.length>>>0;if(\"[object Function]\"!=_toString(fun))throw new TypeError(fun+\" is not a function\");if(!length&&1==arguments.length)throw new TypeError(\"reduceRight of empty array with no initial value\");var result,i=length-1;if(arguments.length>=2)result=arguments[1];else for(;;){if(i in self){result=self[i--];break}if(0>--i)throw new TypeError(\"reduceRight of empty array with no initial value\")}do i in this&&(result=fun.call(void 0,result,self[i],i,object));while(i--);return result}),Array.prototype.indexOf&&-1==[0,1].indexOf(1,2)||(Array.prototype.indexOf=function(sought){var self=splitString&&\"[object String]\"==_toString(this)?this.split(\"\"):toObject(this),length=self.length>>>0;if(!length)return-1;var i=0;for(arguments.length>1&&(i=toInteger(arguments[1])),i=i>=0?i:Math.max(0,length+i);length>i;i++)if(i in self&&self[i]===sought)return i;return-1}),Array.prototype.lastIndexOf&&-1==[0,1].lastIndexOf(0,-3)||(Array.prototype.lastIndexOf=function(sought){var self=splitString&&\"[object String]\"==_toString(this)?this.split(\"\"):toObject(this),length=self.length>>>0;if(!length)return-1;var i=length-1;for(arguments.length>1&&(i=Math.min(i,toInteger(arguments[1]))),i=i>=0?i:length-Math.abs(i);i>=0;i--)if(i in self&&sought===self[i])return i;return-1}),Object.getPrototypeOf||(Object.getPrototypeOf=function(object){return object.__proto__||(object.constructor?object.constructor.prototype:prototypeOfObject)}),!Object.getOwnPropertyDescriptor){var ERR_NON_OBJECT=\"Object.getOwnPropertyDescriptor called on a non-object: \";Object.getOwnPropertyDescriptor=function(object,property){if(\"object\"!=typeof object&&\"function\"!=typeof object||null===object)throw new TypeError(ERR_NON_OBJECT+object);if(owns(object,property)){var descriptor,getter,setter;if(descriptor={enumerable:!0,configurable:!0},supportsAccessors){var prototype=object.__proto__;object.__proto__=prototypeOfObject;var getter=lookupGetter(object,property),setter=lookupSetter(object,property);if(object.__proto__=prototype,getter||setter)return getter&&(descriptor.get=getter),setter&&(descriptor.set=setter),descriptor}return descriptor.value=object[property],descriptor}}}if(Object.getOwnPropertyNames||(Object.getOwnPropertyNames=function(object){return Object.keys(object)}),!Object.create){var createEmpty;createEmpty=null===Object.prototype.__proto__?function(){return{__proto__:null}}:function(){var empty={};for(var i in empty)empty[i]=null;return empty.constructor=empty.hasOwnProperty=empty.propertyIsEnumerable=empty.isPrototypeOf=empty.toLocaleString=empty.toString=empty.valueOf=empty.__proto__=null,empty},Object.create=function(prototype,properties){var object;if(null===prototype)object=createEmpty();else{if(\"object\"!=typeof prototype)throw new TypeError(\"typeof prototype[\"+typeof prototype+\"] != 'object'\");var Type=function(){};Type.prototype=prototype,object=new Type,object.__proto__=prototype}return void 0!==properties&&Object.defineProperties(object,properties),object}}if(Object.defineProperty){var definePropertyWorksOnObject=doesDefinePropertyWork({}),definePropertyWorksOnDom=\"undefined\"==typeof document||doesDefinePropertyWork(document.createElement(\"div\"));if(!definePropertyWorksOnObject||!definePropertyWorksOnDom)var definePropertyFallback=Object.defineProperty}if(!Object.defineProperty||definePropertyFallback){var ERR_NON_OBJECT_DESCRIPTOR=\"Property description must be an object: \",ERR_NON_OBJECT_TARGET=\"Object.defineProperty called on non-object: \",ERR_ACCESSORS_NOT_SUPPORTED=\"getters & setters can not be defined on this javascript engine\";Object.defineProperty=function(object,property,descriptor){if(\"object\"!=typeof object&&\"function\"!=typeof object||null===object)throw new TypeError(ERR_NON_OBJECT_TARGET+object);if(\"object\"!=typeof descriptor&&\"function\"!=typeof descriptor||null===descriptor)throw new TypeError(ERR_NON_OBJECT_DESCRIPTOR+descriptor);if(definePropertyFallback)try{return definePropertyFallback.call(Object,object,property,descriptor)}catch(exception){}if(owns(descriptor,\"value\"))if(supportsAccessors&&(lookupGetter(object,property)||lookupSetter(object,property))){var prototype=object.__proto__;object.__proto__=prototypeOfObject,delete object[property],object[property]=descriptor.value,object.__proto__=prototype}else object[property]=descriptor.value;else{if(!supportsAccessors)throw new TypeError(ERR_ACCESSORS_NOT_SUPPORTED);owns(descriptor,\"get\")&&defineGetter(object,property,descriptor.get),owns(descriptor,\"set\")&&defineSetter(object,property,descriptor.set)}return object}}Object.defineProperties||(Object.defineProperties=function(object,properties){for(var property in properties)owns(properties,property)&&Object.defineProperty(object,property,properties[property]);return object}),Object.seal||(Object.seal=function(object){return object}),Object.freeze||(Object.freeze=function(object){return object});try{Object.freeze(function(){})}catch(exception){Object.freeze=function(freezeObject){return function(object){return\"function\"==typeof object?object:freezeObject(object)}}(Object.freeze)}if(Object.preventExtensions||(Object.preventExtensions=function(object){return object}),Object.isSealed||(Object.isSealed=function(){return!1}),Object.isFrozen||(Object.isFrozen=function(){return!1}),Object.isExtensible||(Object.isExtensible=function(object){if(Object(object)===object)throw new TypeError;for(var name=\"\";owns(object,name);)name+=\"?\";object[name]=!0;var returnValue=owns(object,name);return delete object[name],returnValue}),!Object.keys){var hasDontEnumBug=!0,dontEnums=[\"toString\",\"toLocaleString\",\"valueOf\",\"hasOwnProperty\",\"isPrototypeOf\",\"propertyIsEnumerable\",\"constructor\"],dontEnumsLength=dontEnums.length;for(var key in{toString:null})hasDontEnumBug=!1;Object.keys=function(object){if(\"object\"!=typeof object&&\"function\"!=typeof object||null===object)throw new TypeError(\"Object.keys called on a non-object\");var keys=[];for(var name in object)owns(object,name)&&keys.push(name);if(hasDontEnumBug)for(var i=0,ii=dontEnumsLength;ii>i;i++){var dontEnum=dontEnums[i];owns(object,dontEnum)&&keys.push(dontEnum)}return keys}}Date.now||(Date.now=function(){return(new Date).getTime()});var ws=\"\t\\n\u000b\\f\\r   ᠎             　\\u2028\\u2029﻿\";if(!String.prototype.trim||ws.trim()){ws=\"[\"+ws+\"]\";var trimBeginRegexp=RegExp(\"^\"+ws+ws+\"*\"),trimEndRegexp=RegExp(ws+ws+\"*$\");String.prototype.trim=function(){return(this+\"\").replace(trimBeginRegexp,\"\").replace(trimEndRegexp,\"\")}}var toObject=function(o){if(null==o)throw new TypeError(\"can't convert \"+o+\" to object\");return Object(o)}});";
 
 /***/ },
 /* 18 */
