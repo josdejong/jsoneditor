@@ -1214,17 +1214,15 @@ Node.prototype.getDom = function() {
 Node.prototype._onDragStart = function (event) {
   var node = this;
   if (!this.mousemove) {
-    this.mousemove = util.addEventListener(document, 'mousemove',
-        function (event) {
-          node._onDrag(event);
-        });
+    this.mousemove = util.addEventListener(window, 'mousemove', function (event) {
+      node._onDrag(event);
+    });
   }
 
   if (!this.mouseup) {
-    this.mouseup = util.addEventListener(document, 'mouseup',
-        function (event ) {
-          node._onDragEnd(event);
-        });
+    this.mouseup = util.addEventListener(window, 'mouseup',function (event ) {
+      node._onDragEnd(event);
+    });
   }
 
   this.editor.highlighter.lock();
@@ -1403,13 +1401,17 @@ Node.prototype._onDragEnd = function (event) {
 
   document.body.style.cursor = this.drag.oldCursor;
   this.editor.highlighter.unlock();
+  if (event.target !== this.dom.drag && event.target !== this.dom.menu) {
+    this.editor.highlighter.unhighlight();
+  }
   delete this.drag;
 
   if (this.mousemove) {
-    util.removeEventListener(document, 'mousemove', this.mousemove);
-    delete this.mousemove;}
+    util.removeEventListener(window, 'mousemove', this.mousemove);
+    delete this.mousemove;
+  }
   if (this.mouseup) {
-    util.removeEventListener(document, 'mouseup', this.mouseup);
+    util.removeEventListener(window, 'mouseup', this.mouseup);
     delete this.mouseup;
   }
 

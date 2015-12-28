@@ -26,6 +26,7 @@ https://github.com/josdejong/jsoneditor
 - Fixed: disabled `Ctrl+L` quick key to go to a line, instead use the default
   browser behavior of selecting the address bar.
 - Fixed #38: clear search results after a new JSON object is set.
+- Fixed #242: row stays highlighted when dragging outside editor.
 
 
 ## 2015-06-13, version 4.2.1
