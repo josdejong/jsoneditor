@@ -145,7 +145,8 @@ div.jsoneditor-contextmenu button.jsoneditor-sort-desc:focus > div.jsoneditor-ic
 /* ContextMenu - sub menu */
 
 div.jsoneditor-contextmenu ul li button.jsoneditor-selected,
-div.jsoneditor-contextmenu ul li button.jsoneditor-selected:hover {
+div.jsoneditor-contextmenu ul li button.jsoneditor-selected:hover,
+div.jsoneditor-contextmenu ul li button.jsoneditor-selected:focus {
   color: white;
   background-color: #ee422e;
 }
