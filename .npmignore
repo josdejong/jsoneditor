@@ -6,7 +6,6 @@ test
 tools
 .idea
 component.json
-gulpfile.js
 .npmignore
 .gitignore
 *.zip
