@@ -53,17 +53,13 @@ Supported browsers: Chrome, Firefox, Safari, Opera, Internet Explorer 9+.
 
 ## Install
 
-with npm:
+with npm (recommended):
 
     npm install jsoneditor
 
 with bower:
 
     bower install jsoneditor
-
-download:
-
-[http://jsoneditoronline.org/downloads/](http://jsoneditoronline.org/downloads/)
 
 
 #### More

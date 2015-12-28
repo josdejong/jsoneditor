@@ -10,7 +10,8 @@
     "formatter"
   ],
   "author": "Jos de Jong <wjosdejong@gmail.com>",
-  "homepage": "http://jsoneditoronline.org/",
+  "license": "Apache-2.0",
+  "homepage": "https://github.com/josdejong/jsoneditor",
   "repository": {
     "type": "git",
     "url": "https://github.com/josdejong/jsoneditor.git"
