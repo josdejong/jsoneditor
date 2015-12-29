@@ -1,6 +1,7 @@
 var Highlighter = require('./Highlighter');
 var History = require('./History');
 var SearchBox = require('./SearchBox');
+var ContextMenu = require('./ContextMenu');
 var Node = require('./Node');
 var modeswitcher = require('./modeswitcher');
 var util = require('./util');
@@ -617,19 +618,157 @@ treemode._onRedo = function () {
  * @private
  */
 treemode._onEvent = function (event) {
-  var target = event.target;
-
   if (event.type == 'keydown') {
     this._onKeyDown(event);
   }
 
   if (event.type == 'focus') {
-    domFocus = target;
+    domFocus = event.target;
   }
 
-  var node = Node.getNodeFromTarget(target);
+  var node = Node.getNodeFromTarget(event.target);
+
+  if (node && node.selected) {
+    if (event.type == 'click' && event.target == node.dom.menu) {
+      this.showContextMenu(event.target);
+
+      // stop propagation
+      return;
+    }
+  }
+  else {
+    if (event.type == 'mousedown') {
+      this._unselect();
+
+      if (node && event.target == node.dom.drag) {
+        node._onDragStart(event);
+      }
+      else if (!node || (event.target != node.dom.field && event.target != node.dom.value)) {
+        // select multiple nodes
+        // TODO: if there is already a multiselect and this event is inside one of the selected nodes, start a node drag action
+        this._onMultiSelectStart(event);
+      }
+    }
+  }
+
   if (node) {
     node.onEvent(event);
+  }
+};
+
+treemode._onMultiSelectStart = function (event) {
+  var node = Node.getNodeFromTarget(event.target);
+
+  this.multiselect = {
+    start: node || null,
+    end: null,
+    nodes: []
+  };
+
+  var editor = this;
+  if (!this.mousemove) {
+    this.mousemove = util.addEventListener(window, 'mousemove', function (event) {
+      editor._onMultiSelect(event);
+    });
+  }
+  if (!this.mouseup) {
+    this.mouseup = util.addEventListener(window, 'mouseup', function (event ) {
+      editor._onMultiSelectEnd(event);
+    });
+  }
+
+};
+
+/**
+ * unselect selected nodes (mutiselect mode)
+ * @private
+ */
+treemode._unselect = function () {
+  if (this.multiselect) {
+    // deselect previous node selection
+    this.multiselect.nodes.forEach(function (node) {
+      node.setSelection(false);
+    });
+  }
+};
+
+treemode._onMultiSelect = function (event) {
+  event.preventDefault();
+
+  var node = Node.getNodeFromTarget(event.target);
+
+  if (node) {
+    if (this.multiselect.start == null) {
+      this.multiselect.start = node;
+    }
+    this.multiselect.end = node;
+  }
+
+  // unselect previous selection
+  this._unselect();
+
+  // find the selected nodes in the range from first to last
+  var start = this.multiselect.start;
+  var end = this.multiselect.end || this.multiselect.start;
+  if (start && end) {
+    // find the top level childs, all having the same parent
+    this.multiselect.nodes = this._findTopLevelNodes(start, end);
+    var first = this.multiselect.nodes[0];
+    this.multiselect.nodes.forEach(function (node) {
+      node.setSelection(true, node === first);
+    });
+  }
+};
+
+treemode._onMultiSelectEnd = function (event) {
+  // cleanup global event listeners
+  if (this.mousemove) {
+    util.removeEventListener(window, 'mousemove', this.mousemove);
+    delete this.mousemove;
+  }
+  if (this.mouseup) {
+    util.removeEventListener(window, 'mouseup', this.mouseup);
+    delete this.mouseup;
+  }
+};
+
+/**
+ * From two arbitrary selected nodes, find their shared parent node.
+ * From that parent node, select the two child nodes in the brances going to
+ * nodes `start` and `end`, and select all childs in between.
+ * @param {Node} start
+ * @param {Node} end
+ * @return {Array.<Node>} Returns an ordered list with child nodes
+ * @private
+ */
+treemode._findTopLevelNodes = function (start, end) {
+  var startPath = start.getPath();
+  var endPath = end.getPath();
+  var i = 0;
+  while (i < startPath.length && startPath[i] === endPath[i]) {
+    i++;
+  }
+  var root = startPath[i - 1];
+  var startChild = startPath[i];
+  var endChild = endPath[i];
+
+  if (!startChild || !endChild) {
+    // startChild or endChild are each others parents
+    startChild = root;
+    endChild = root;
+    root = root.parent
+  }
+
+  if (root && startChild && endChild) {
+    var startIndex = root.childs.indexOf(startChild);
+    var endIndex = root.childs.indexOf(endChild);
+    var firstIndex = Math.min(startIndex, endIndex);
+    var lastIndex = Math.max(startIndex, endIndex);
+
+    return root.childs.slice(firstIndex, lastIndex + 1);
+  }
+  else {
+    return [];
   }
 };
 
@@ -728,6 +867,40 @@ treemode._createTable = function () {
   this.table.appendChild(this.tbody);
 
   this.frame.appendChild(contentOuter);
+};
+
+/**
+ * Show a contextmenu for this node.
+ * Used for multiselection
+ * @param {HTMLElement} anchor   Anchor element to attache the context menu to.
+ * @param {function} [onClose]   Callback method called when the context menu
+ *                               is being closed.
+ */
+treemode.showContextMenu = function (anchor, onClose) {
+  var items = [];
+
+  // create duplicate button
+  items.push({
+    text: 'Duplicate',
+    title: 'Duplicate selected fields (Ctrl+D)',
+    className: 'jsoneditor-duplicate',
+    click: function () {
+      // TODO
+    }
+  });
+
+  // create remove button
+  items.push({
+    text: 'Remove',
+    title: 'Remove selected fields (Ctrl+Del)',
+    className: 'jsoneditor-remove',
+    click: function () {
+      // TODO
+    }
+  });
+
+  var menu = new ContextMenu(items, {close: onClose});
+  menu.show(anchor);
 };
 
 // define modes

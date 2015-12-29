@@ -231,6 +231,16 @@ Node.prototype.getLevel = function() {
 };
 
 /**
+ * Get path of the root node till the current node
+ * @return {Node[]} Returns an array with nodes
+ */
+Node.prototype.getPath = function() {
+  var path = this.parent ? this.parent.getPath() : [];
+  path.push(this);
+  return path;
+};
+
+/**
  * Create a clone of a node
  * The complete state of a clone is copied, including whether it is expanded or
  * not. The DOM elements are not cloned.
@@ -1455,7 +1465,12 @@ Node.prototype._createDomField = function () {
  */
 Node.prototype.setHighlight = function (highlight) {
   if (this.dom.tr) {
-    this.dom.tr.className = (highlight ? 'jsoneditor-highlight' : '');
+    if (highlight) {
+      util.addClassName(this.dom.tr, 'jsoneditor-highlight');
+    }
+    else {
+      util.removeClassName(this.dom.tr, 'jsoneditor-highlight');
+    }
 
     if (this.append) {
       this.append.setHighlight(highlight);
@@ -1464,6 +1479,41 @@ Node.prototype.setHighlight = function (highlight) {
     if (this.childs) {
       this.childs.forEach(function (child) {
         child.setHighlight(highlight);
+      });
+    }
+  }
+};
+
+/**
+ * Select or deselect a node
+ * @param {boolean} selected
+ * @param {boolean} [isFirst]
+ */
+Node.prototype.setSelection = function (selected, isFirst) {
+  this.selected = selected;
+
+  if (this.dom.tr) {
+    if (selected) {
+      util.addClassName(this.dom.tr, 'jsoneditor-selected');
+    }
+    else {
+      util.removeClassName(this.dom.tr, 'jsoneditor-selected');
+    }
+
+    if (isFirst) {
+      util.addClassName(this.dom.tr, 'jsoneditor-first');
+    }
+    else {
+      util.removeClassName(this.dom.tr, 'jsoneditor-first');
+    }
+
+    if (this.append) {
+      this.append.setSelection(selected);
+    }
+
+    if (this.childs) {
+      this.childs.forEach(function (child) {
+        child.setSelection(selected);
       });
     }
   }
@@ -1742,11 +1792,6 @@ Node.prototype.onEvent = function (event) {
     else if (type == 'mouseout') {
       this.editor.highlighter.unhighlight();
     }
-  }
-
-  // drag events
-  if (type == 'mousedown' && target == dom.drag) {
-    this._onDragStart(event);
   }
 
   // context menu events

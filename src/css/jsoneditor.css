@@ -142,7 +142,8 @@ div.jsoneditor-tree button.jsoneditor-contextmenu {
 
 div.jsoneditor-tree button.jsoneditor-contextmenu:hover,
 div.jsoneditor-tree button.jsoneditor-contextmenu:focus,
-div.jsoneditor-tree button.jsoneditor-contextmenu.selected {
+div.jsoneditor-tree button.jsoneditor-contextmenu.selected,
+tr.jsoneditor-selected.jsoneditor-first button.jsoneditor-contextmenu {
   background-position: -48px -48px;
 }
 
@@ -222,8 +223,17 @@ textarea.jsoneditor-text {
   resize: none;
 }
 
-tr.jsoneditor-highlight {
-  background-color: #FFFFAB;
+tr.jsoneditor-highlight,
+tr.jsoneditor-selected {
+  background-color: #e6e6e6;
+}
+
+tr.jsoneditor-selected button {
+  visibility: hidden;
+}
+
+tr.jsoneditor-selected.jsoneditor-first button {
+  visibility: visible;
 }
 
 div.jsoneditor-tree button.jsoneditor-dragarea {
@@ -232,7 +242,8 @@ div.jsoneditor-tree button.jsoneditor-dragarea {
 }
 
 div.jsoneditor-tree button.jsoneditor-dragarea:hover,
-div.jsoneditor-tree button.jsoneditor-dragarea:focus {
+div.jsoneditor-tree button.jsoneditor-dragarea:focus,
+tr.jsoneditor-selected.jsoneditor-first button.jsoneditor-dragarea {
   background-position: -72px -48px;
 }
 
