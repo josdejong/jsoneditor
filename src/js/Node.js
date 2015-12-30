@@ -2252,33 +2252,6 @@ Node.prototype._onExpand = function (recurse) {
 };
 
 /**
- * Remove this node
- * @private
- */
-Node.prototype._onRemove = function() {
-  this.editor.highlighter.unhighlight();
-  var parent = this.parent;
-  var index = this.getIndex();
-
-  // adjust the focus
-  var oldSelection = this.editor.getSelection();
-  Node.blurNodes(this);
-  var newSelection = this.editor.getSelection();
-
-  // remove the node
-  this.parent._remove(this);
-
-  // store history action
-  this.editor._onAction('removeNodes', {
-    nodes: [this],
-    parent: parent,
-    index: index,
-    oldSelection: oldSelection,
-    newSelection: newSelection
-  });
-};
-
-/**
  * Remove nodes
  * @param {Node[] | Node} nodes
  */
