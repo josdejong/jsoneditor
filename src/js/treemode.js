@@ -36,6 +36,7 @@ treemode.create = function (container, options) {
   this.dom = {};
   this.highlighter = new Highlighter();
   this.selection = undefined; // will hold the last input selection
+  this.multiselect = { nodes: [] };
 
   this._setOptions(options);
 
@@ -379,6 +380,7 @@ treemode.stopAutoScroll = function () {
  *                            {Element | undefined} dom     The dom element
  *                                                          which has focus
  *                            {Range | TextRange} range     A text selection
+ *                            {Node[]} nodes                Nodes in case of multi selection
  *                            {Number} scrollTop            Scroll position
  */
 treemode.setSelection = function (selection) {
@@ -389,6 +391,10 @@ treemode.setSelection = function (selection) {
   if ('scrollTop' in selection && this.content) {
     // TODO: animated scroll
     this.content.scrollTop = selection.scrollTop;
+  }
+  if (selection.nodes) {
+    // multi-select
+    this.select(selection.nodes);
   }
   if (selection.range) {
     util.setSelectionOffset(selection.range);
@@ -404,13 +410,15 @@ treemode.setSelection = function (selection) {
  *                            {Element | undefined} dom     The dom element
  *                                                          which has focus
  *                            {Range | TextRange} range     A text selection
+ *                            {Node[]} nodes                Nodes in case of multi selection
  *                            {Number} scrollTop            Scroll position
  */
 treemode.getSelection = function () {
   return {
     dom: domFocus,
-    scrollTop: this.content ? this.content.scrollTop : 0,
-    range: util.getSelectionOffset()
+    range: util.getSelectionOffset(),
+    nodes: this.multiselect.nodes.slice(0),
+    scrollTop: this.content ? this.content.scrollTop : 0
   };
 };
 
@@ -638,7 +646,7 @@ treemode._onEvent = function (event) {
   }
   else {
     if (event.type == 'mousedown') {
-      this._unselect();
+      this.deselect();
 
       if (node && event.target == node.dom.drag) {
         node._onDragStart(event);
@@ -680,14 +688,33 @@ treemode._onMultiSelectStart = function (event) {
 };
 
 /**
- * unselect selected nodes (mutiselect mode)
- * @private
+ * deselect currently selected nodes
  */
-treemode._unselect = function () {
-  if (this.multiselect) {
-    // deselect previous node selection
+treemode.deselect = function () {
+  if (this.multiselect.nodes) {
     this.multiselect.nodes.forEach(function (node) {
-      node.setSelection(false);
+      node.setSelected(false);
+    });
+  }
+};
+
+/**
+ * select nodes
+ * @param {Node[] | Node} nodes
+ */
+treemode.select = function (nodes) {
+  if (!Array.isArray(nodes)) {
+    return this.select([nodes]);
+  }
+
+  if (nodes) {
+    this.deselect();
+
+    this.multiselect.nodes = nodes.slice(0);
+
+    var first = nodes[0];
+    nodes.forEach(function (node) {
+      node.setSelected(true, node === first);
     });
   }
 };
@@ -704,8 +731,8 @@ treemode._onMultiSelect = function (event) {
     this.multiselect.end = node;
   }
 
-  // unselect previous selection
-  this._unselect();
+  // deselect previous selection
+  this.deselect();
 
   // find the selected nodes in the range from first to last
   var start = this.multiselect.start;
@@ -713,10 +740,7 @@ treemode._onMultiSelect = function (event) {
   if (start && end) {
     // find the top level childs, all having the same parent
     this.multiselect.nodes = this._findTopLevelNodes(start, end);
-    var first = this.multiselect.nodes[0];
-    this.multiselect.nodes.forEach(function (node) {
-      node.setSelection(true, node === first);
-    });
+    this.select(this.multiselect.nodes);
   }
 };
 
@@ -887,7 +911,7 @@ treemode.showContextMenu = function (anchor, onClose) {
     className: 'jsoneditor-duplicate',
     click: function () {
       if (editor.multiselect) {
-        Node.duplicate(editor.multiselect.nodes);
+        var clones = Node.duplicate(editor.multiselect.nodes);
       }
     }
   });

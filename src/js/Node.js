@@ -1480,7 +1480,7 @@ Node.prototype.setHighlight = function (highlight) {
  * @param {boolean} selected
  * @param {boolean} [isFirst]
  */
-Node.prototype.setSelection = function (selected, isFirst) {
+Node.prototype.setSelected = function (selected, isFirst) {
   this.selected = selected;
 
   if (this.dom.tr) {
@@ -1499,12 +1499,12 @@ Node.prototype.setSelection = function (selected, isFirst) {
     }
 
     if (this.append) {
-      this.append.setSelection(selected);
+      this.append.setSelected(selected);
     }
 
     if (this.childs) {
       this.childs.forEach(function (child) {
-        child.setSelection(selected);
+        child.setSelected(selected);
       });
     }
   }
@@ -2228,7 +2228,7 @@ Node.remove = function(nodes) {
 
     // store history action
     editor._onAction('removeNodes', {
-      nodes: nodes,
+      nodes: nodes.slice(0), // store a copy of the array!
       parent: parent,
       index: firstIndex,
       oldSelection: oldSelection,
@@ -2253,7 +2253,9 @@ Node.duplicate = function(nodes) {
     var parent = lastNode.parent;
     var editor = lastNode.editor;
 
-    // duplicate the nodes and set selection to the first duplicated node
+    editor.deselect(editor.multiselect.nodes);
+
+    // duplicate the nodes
     var oldSelection = editor.getSelection();
     var afterNode = lastNode;
     var clones = nodes.map(function (node) {
@@ -2262,7 +2264,14 @@ Node.duplicate = function(nodes) {
       afterNode = clone;
       return clone;
     });
-    clones[0].focus();
+
+    // set selection to the duplicated nodes
+    if (nodes.length === 1) {
+      clones[0].focus();
+    }
+    else {
+      editor.select(clones);
+    }
     var newSelection = editor.getSelection();
 
     editor._onAction('duplicateNodes', {
@@ -2272,6 +2281,11 @@ Node.duplicate = function(nodes) {
       oldSelection: oldSelection,
       newSelection: newSelection
     });
+
+    return clones;
+  }
+  else {
+    return [];
   }
 };
 
