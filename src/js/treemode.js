@@ -641,19 +641,28 @@ treemode._onEvent = function (event) {
     domFocus = event.target;
   }
 
+  if (event.type == 'mousedown') {
+    this._startDragDistance(event);
+  }
+  if (event.type == 'mousemove' || event.type == 'mouseup' || event.type == 'click') {
+    this._updateDragDistance(event);
+  }
+
   var node = Node.getNodeFromTarget(event.target);
 
   if (node && node.selected) {
-    if (event.type == 'click' && event.target == node.dom.menu) {
-      this.showContextMenu(event.target);
-
-      // stop propagation
-      return;
-    }
-
     if (event.type == 'click') {
+      if (event.target == node.dom.menu) {
+        this.showContextMenu(event.target);
+
+        // stop propagation (else we will open the context menu of a single node)
+        return;
+      }
+
       // deselect a multi selection
-      this.deselect();
+      if (!event.hasMoved) {
+        this.deselect();
+      }
     }
 
     if (event.type == 'mousedown') {
@@ -681,6 +690,30 @@ treemode._onEvent = function (event) {
   }
 };
 
+treemode._startDragDistance = function (event) {
+  this.dragDistanceEvent = {
+    initialTarget: event.target,
+    initialPageX: event.pageX,
+    initialPageY: event.pageY,
+    dragDistance: 0,
+    hasMoved: false
+  };
+};
+
+treemode._updateDragDistance = function (event) {
+  var diffX = event.pageX - this.dragDistanceEvent.initialPageX;
+  var diffY = event.pageY - this.dragDistanceEvent.initialPageY;
+
+  this.dragDistanceEvent.dragDistance = Math.sqrt(diffX * diffX + diffY * diffY);
+  this.dragDistanceEvent.hasMoved =
+      this.dragDistanceEvent.hasMoved || this.dragDistanceEvent.dragDistance > 10;
+
+  event.dragDistance = this.dragDistanceEvent.dragDistance;
+  event.hasMoved = this.dragDistanceEvent.hasMoved;
+
+  return event.dragDistance;
+};
+
 /**
  * Start multi selection of nodes by dragging the mouse
  * @param event
@@ -694,6 +727,8 @@ treemode._onMultiSelectStart = function (event) {
     end: null,
     nodes: []
   };
+
+  this._startDragDistance(event);
 
   var editor = this;
   if (!this.mousemove) {
@@ -716,6 +751,11 @@ treemode._onMultiSelectStart = function (event) {
  */
 treemode._onMultiSelect = function (event) {
   event.preventDefault();
+
+  this._updateDragDistance(event);
+  if (!event.hasMoved) {
+    return;
+  }
 
   var node = Node.getNodeFromTarget(event.target);
 
@@ -745,8 +785,9 @@ treemode._onMultiSelect = function (event) {
  * @private
  */
 treemode._onMultiSelectEnd = function (event) {
-  if (this.multiselection.end) {
-    this.multiselection.end.dom.menu.focus();
+  // set focus to the context menu button of the first node
+  if (this.multiselection.nodes[0]) {
+    this.multiselection.nodes[0].dom.menu.focus();
   }
 
   this.multiselection.start = null;

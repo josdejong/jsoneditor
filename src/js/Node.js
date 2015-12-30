@@ -1434,6 +1434,11 @@ Node.onDragEnd = function (nodes, event) {
   var firstIndex = parent.childs.indexOf(firstNode);
   var beforeNode = parent.childs[firstIndex + nodes.length] || parent.append;
 
+  // set focus to the context menu button of the first node
+  if (nodes[0]) {
+    nodes[0].dom.menu.focus();
+  }
+
   var params = {
     nodes: nodes,
     oldSelection: editor.drag.oldSelection,
@@ -1954,37 +1959,31 @@ Node.prototype.onEvent = function (event) {
   // focus
   // when clicked in whitespace left or right from the field or value, set focus
   var domTree = dom.tree;
-  if (target == domTree.parentNode) {
-    switch (type) {
-      case 'click':
-        var left = (event.offsetX != undefined) ?
-            (event.offsetX < (this.getLevel() + 1) * 24) :
-            (event.pageX < util.getAbsoluteLeft(dom.tdSeparator));// for FF
-        if (left || expandable) {
-          // node is expandable when it is an object or array
-          if (domField) {
-            util.setEndOfContentEditable(domField);
-            domField.focus();
-          }
-        }
-        else {
-          if (domValue) {
-            util.setEndOfContentEditable(domValue);
-            domValue.focus();
-          }
-        }
-        break;
+  if (target == domTree.parentNode &&
+      type == 'click' && !event.hasMoved) {
+    var left = (event.offsetX != undefined) ?
+        (event.offsetX < (this.getLevel() + 1) * 24) :
+        (event.pageX < util.getAbsoluteLeft(dom.tdSeparator));// for FF
+    if (left || expandable) {
+      // node is expandable when it is an object or array
+      if (domField) {
+        util.setEndOfContentEditable(domField);
+        domField.focus();
+      }
+    }
+    else {
+      if (domValue) {
+        util.setEndOfContentEditable(domValue);
+        domValue.focus();
+      }
     }
   }
   if ((target == dom.tdExpand && !expandable) || target == dom.tdField ||
-      target == dom.tdSeparator) {
-    switch (type) {
-      case 'click':
-        if (domField) {
-          util.setEndOfContentEditable(domField);
-          domField.focus();
-        }
-        break;
+      target == dom.tdSeparator &&
+      type == 'click' && !event.hasMoved) {
+    if (domField) {
+      util.setEndOfContentEditable(domField);
+      domField.focus();
     }
   }
 

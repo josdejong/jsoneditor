@@ -6,7 +6,7 @@ https://github.com/josdejong/jsoneditor
 ## not yet released, version 5.0.0
 
 - Implemented selection of multiple nodes, allowing to move/duplicate/remove
-  multiple nodes at once.
+  multiple nodes at once (See #106).
 - Implemented a new option `escapeUnicode`, which will show the hexadecimal 
   unicode instead of the character itself. (See #93 and #230).
 - Implemented method `getMode`.
