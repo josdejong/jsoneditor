@@ -687,38 +687,6 @@ treemode._onMultiSelectStart = function (event) {
 
 };
 
-/**
- * deselect currently selected nodes
- */
-treemode.deselect = function () {
-  if (this.multiselect.nodes) {
-    this.multiselect.nodes.forEach(function (node) {
-      node.setSelected(false);
-    });
-  }
-};
-
-/**
- * select nodes
- * @param {Node[] | Node} nodes
- */
-treemode.select = function (nodes) {
-  if (!Array.isArray(nodes)) {
-    return this.select([nodes]);
-  }
-
-  if (nodes) {
-    this.deselect();
-
-    this.multiselect.nodes = nodes.slice(0);
-
-    var first = nodes[0];
-    nodes.forEach(function (node) {
-      node.setSelected(true, node === first);
-    });
-  }
-};
-
 treemode._onMultiSelect = function (event) {
   event.preventDefault();
 
@@ -757,6 +725,38 @@ treemode._onMultiSelectEnd = function (event) {
 };
 
 /**
+ * deselect currently selected nodes
+ */
+treemode.deselect = function () {
+  if (this.multiselect.nodes) {
+    this.multiselect.nodes.forEach(function (node) {
+      node.setSelected(false);
+    });
+  }
+};
+
+/**
+ * select nodes
+ * @param {Node[] | Node} nodes
+ */
+treemode.select = function (nodes) {
+  if (!Array.isArray(nodes)) {
+    return this.select([nodes]);
+  }
+
+  if (nodes) {
+    this.deselect();
+
+    this.multiselect.nodes = nodes.slice(0);
+
+    var first = nodes[0];
+    nodes.forEach(function (node) {
+      node.setSelected(true, node === first);
+    });
+  }
+};
+
+/**
  * From two arbitrary selected nodes, find their shared parent node.
  * From that parent node, select the two child nodes in the brances going to
  * nodes `start` and `end`, and select all childs in between.
@@ -778,9 +778,16 @@ treemode._findTopLevelNodes = function (start, end) {
 
   if (!startChild || !endChild) {
     // startChild or endChild are each others parents
-    startChild = root;
-    endChild = root;
-    root = root.parent
+    if (root.parent) {
+      startChild = root;
+      endChild = root;
+      root = root.parent
+    }
+    else {
+      // we have selected the root node (which doesn't have a parent)
+      startChild = root.childs[0];
+      endChild = root.childs[root.childs.length - 1];
+    }
   }
 
   if (root && startChild && endChild) {

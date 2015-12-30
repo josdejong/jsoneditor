@@ -47,7 +47,7 @@ Node.prototype._updateEditability = function () {
       var editable = this.editor.options.onEditable({
         field: this.field,
         value: this.value,
-        path: this.path()
+        path: this.getFieldsPath()
       });
 
       if (typeof editable === 'boolean') {
@@ -66,7 +66,7 @@ Node.prototype._updateEditability = function () {
  * Get the path of this node
  * @return {String[]} Array containing the path to this node
  */
-Node.prototype.path = function () {
+Node.prototype.getFieldsPath = function () {
   var node = this;
   var path = [];
   while (node) {
