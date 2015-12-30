@@ -1221,8 +1221,13 @@ Node.onDragStart = function (nodes, event) {
 
   var firstNode = nodes[0];
   var lastNode = nodes[nodes.length - 1];
+  var draggedNode = Node.getNodeFromTarget(event.target);
   var beforeNode = lastNode._nextSibling();
   var editor = firstNode.editor;
+
+  // in case of multiple selected nodes, offsetY prevents the selection from
+  // jumping when you start dragging one of the lower down nodes in the selection
+  var offsetY = util.getAbsoluteTop(draggedNode.dom.tr) - util.getAbsoluteTop(firstNode.dom.tr);
 
   if (!editor.mousemove) {
     editor.mousemove = util.addEventListener(window, 'mousemove', function (event) {
@@ -1242,6 +1247,7 @@ Node.onDragStart = function (nodes, event) {
     oldSelection: editor.getSelection(),
     oldBeforeNode: beforeNode,
     mouseX: event.pageX,
+    offsetY: offsetY,
     level: firstNode.getLevel()
   };
   document.body.style.cursor = 'move';
@@ -1263,10 +1269,9 @@ Node.onDrag = function (nodes, event) {
   }
 
   // TODO: this method has grown too large. Split it in a number of methods
-  var mouseY = event.pageY;
-  var mouseX = event.pageX;
-
   var editor = nodes[0].editor;
+  var mouseY = event.pageY - editor.drag.offsetY;
+  var mouseX = event.pageX;
   var trThis, trPrev, trNext, trFirst, trLast, trRoot;
   var nodePrev, nodeNext;
   var topThis, topPrev, topFirst, heightThis, bottomNext, heightNext;
@@ -1368,8 +1373,7 @@ Node.onDrag = function (nodes, event) {
           }
           else if (nodePrev instanceof AppendNode) {
             var childs = nodePrev.parent.childs;
-            if (childs.length > nodes.length ||
-                (childs.length == nodes.length && childs[nodes.length - 1] != lastNode)) {
+            if (childs.length != nodes.length || childs[nodes.length - 1] != lastNode) {
               // non-visible append node of a list of childs
               // consisting of not only this node (else the
               // append node will change into a visible "empty"

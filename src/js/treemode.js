@@ -681,6 +681,11 @@ treemode._onEvent = function (event) {
   }
 };
 
+/**
+ * Start multi selection of nodes by dragging the mouse
+ * @param event
+ * @private
+ */
 treemode._onMultiSelectStart = function (event) {
   var node = Node.getNodeFromTarget(event.target);
 
@@ -704,6 +709,11 @@ treemode._onMultiSelectStart = function (event) {
 
 };
 
+/**
+ * Multiselect nodes by dragging
+ * @param event
+ * @private
+ */
 treemode._onMultiSelect = function (event) {
   event.preventDefault();
 
@@ -729,7 +739,16 @@ treemode._onMultiSelect = function (event) {
   }
 };
 
+/**
+ * End of multiselect nodes by dragging
+ * @param event
+ * @private
+ */
 treemode._onMultiSelectEnd = function (event) {
+  if (this.multiselection.end) {
+    this.multiselection.end.dom.menu.focus();
+  }
+
   this.multiselection.start = null;
   this.multiselection.end = null;
 
