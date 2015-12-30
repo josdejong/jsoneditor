@@ -1397,16 +1397,17 @@ Node.prototype._onDrag = function (event) {
  */
 Node.prototype._onDragEnd = function (event) {
   var params = {
-    'node': this,
+    'nodes': [this],
     'startParent': this.drag.startParent,
     'startIndex': this.drag.startIndex,
     'endParent': this.parent,
     'endIndex': this.parent.childs.indexOf(this)
   };
+
   if ((params.startParent != params.endParent) ||
       (params.startIndex != params.endIndex)) {
     // only register this action if the node is actually moved to another place
-    this.editor._onAction('moveNode', params);
+    this.editor._onAction('moveNodes', params);
   }
 
   document.body.style.cursor = this.drag.oldCursor;
@@ -2208,8 +2209,8 @@ Node.prototype._onRemove = function() {
   this.parent._remove(this);
 
   // store history action
-  this.editor._onAction('removeNode', {
-    node: this,
+  this.editor._onAction('removeNodes', {
+    nodes: [this],
     parent: this.parent,
     index: index,
     oldSelection: oldSelection,
@@ -2227,9 +2228,9 @@ Node.prototype._onDuplicate = function() {
   clone.focus();
   var newSelection = this.editor.getSelection();
 
-  this.editor._onAction('duplicateNode', {
-    node: this,
-    clone: clone,
+  this.editor._onAction('duplicateNodes', {
+    afterNode: this,
+    nodes: [clone],
     parent: this.parent,
     oldSelection: oldSelection,
     newSelection: newSelection
@@ -2257,8 +2258,8 @@ Node.prototype._onInsertBefore = function (field, value, type) {
   newNode.focus('field');
   var newSelection = this.editor.getSelection();
 
-  this.editor._onAction('insertBeforeNode', {
-    node: newNode,
+  this.editor._onAction('insertBeforeNodes', {
+    nodes: [newNode],
     beforeNode: this,
     parent: this.parent,
     oldSelection: oldSelection,
@@ -2287,8 +2288,8 @@ Node.prototype._onInsertAfter = function (field, value, type) {
   newNode.focus('field');
   var newSelection = this.editor.getSelection();
 
-  this.editor._onAction('insertAfterNode', {
-    node: newNode,
+  this.editor._onAction('insertAfterNodes', {
+    nodes: [newNode],
     afterNode: this,
     parent: this.parent,
     oldSelection: oldSelection,
@@ -2317,8 +2318,8 @@ Node.prototype._onAppend = function (field, value, type) {
   newNode.focus('field');
   var newSelection = this.editor.getSelection();
 
-  this.editor._onAction('appendNode', {
-    node: newNode,
+  this.editor._onAction('appendNodes', {
+    nodes: [newNode],
     parent: this.parent,
     oldSelection: oldSelection,
     newSelection: newSelection
