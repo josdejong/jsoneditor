@@ -1334,11 +1334,12 @@ Node.onDrag = function (nodes, event) {
               util.getAbsoluteTop(trNext.nextSibling) : 0;
           heightNext = trNext ? (bottomNext - topFirst) : 0;
 
-          if (nodeNext.parent.childs.length == 1 && nodeNext.parent.childs[0] == lastNode) {
+          if (nodeNext.parent.childs.length == nodes.length &&
+              nodeNext.parent.childs[nodes.length - 1] == lastNode) {
             // We are about to remove the last child of this parent,
             // which will make the parents appendNode visible.
-            topThis += 24 - 1;
-            // TODO: dangerous to suppose the height of the appendNode a constant of 24-1 px.
+            topThis += 27;
+            // TODO: dangerous to suppose the height of the appendNode a constant of 27 px.
           }
         }
 
@@ -1357,13 +1358,18 @@ Node.onDrag = function (nodes, event) {
         trPrev = nodeNext.dom.tr.previousSibling;
         while (levelNext < level && trPrev) {
           nodePrev = Node.getNodeFromTarget(trPrev);
-          if (nodePrev == lastNode || nodePrev._isChildOf(lastNode)) {
-            // neglect itself and its childs
+
+          var isDraggedNode = nodes.some(function (node) {
+            return node === nodePrev || nodePrev._isChildOf(node);
+          });
+
+          if (isDraggedNode) {
+            // neglect the dragged nodes themselves and their childs
           }
           else if (nodePrev instanceof AppendNode) {
             var childs = nodePrev.parent.childs;
-            if (childs.length > 1 ||
-                (childs.length == 1 && childs[0] != lastNode)) {
+            if (childs.length > nodes.length ||
+                (childs.length == nodes.length && childs[nodes.length - 1] != lastNode)) {
               // non-visible append node of a list of childs
               // consisting of not only this node (else the
               // append node will change into a visible "empty"
