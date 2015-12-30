@@ -36,7 +36,7 @@ treemode.create = function (container, options) {
   this.dom = {};
   this.highlighter = new Highlighter();
   this.selection = undefined; // will hold the last input selection
-  this.multiselect = { nodes: [] };
+  this.multiselection = [];
 
   this._setOptions(options);
 
@@ -422,7 +422,7 @@ treemode.getSelection = function () {
   return {
     dom: domFocus,
     range: range,
-    nodes: this.multiselect.nodes.slice(0),
+    nodes: this.multiselection.slice(0),
     scrollTop: this.content ? this.content.scrollTop : 0
   };
 };
@@ -656,7 +656,7 @@ treemode._onEvent = function (event) {
 
     if (event.type == 'mousedown') {
       // drag multiple nodes
-      Node.onDragStart(this.multiselect.nodes, event);
+      Node.onDragStart(this.multiselection, event);
     }
   }
   else {
@@ -682,10 +682,10 @@ treemode._onEvent = function (event) {
 treemode._onMultiSelectStart = function (event) {
   var node = Node.getNodeFromTarget(event.target);
 
-  this.multiselect = {
+  this.multiselection = [];
+  this.drag = {
     start: node || null,
-    end: null,
-    nodes: []
+    end: null
   };
 
   var editor = this;
@@ -708,26 +708,28 @@ treemode._onMultiSelect = function (event) {
   var node = Node.getNodeFromTarget(event.target);
 
   if (node) {
-    if (this.multiselect.start == null) {
-      this.multiselect.start = node;
+    if (this.drag.start == null) {
+      this.drag.start = node;
     }
-    this.multiselect.end = node;
+    this.drag.end = node;
   }
 
   // deselect previous selection
   this.deselect();
 
   // find the selected nodes in the range from first to last
-  var start = this.multiselect.start;
-  var end = this.multiselect.end || this.multiselect.start;
+  var start = this.drag.start;
+  var end = this.drag.end || this.drag.start;
   if (start && end) {
     // find the top level childs, all having the same parent
-    this.multiselect.nodes = this._findTopLevelNodes(start, end);
-    this.select(this.multiselect.nodes);
+    this.multiselection = this._findTopLevelNodes(start, end);
+    this.select(this.multiselection);
   }
 };
 
 treemode._onMultiSelectEnd = function (event) {
+  delete this.drag;
+
   // cleanup global event listeners
   if (this.mousemove) {
     util.removeEventListener(window, 'mousemove', this.mousemove);
@@ -743,11 +745,11 @@ treemode._onMultiSelectEnd = function (event) {
  * deselect currently selected nodes
  */
 treemode.deselect = function () {
-  if (this.multiselect.nodes) {
-    this.multiselect.nodes.forEach(function (node) {
+  if (this.multiselection) {
+    this.multiselection.forEach(function (node) {
       node.setSelected(false);
     });
-    this.multiselect.nodes = [];
+    this.multiselection = [];
   }
 };
 
@@ -763,7 +765,7 @@ treemode.select = function (nodes) {
   if (nodes) {
     this.deselect();
 
-    this.multiselect.nodes = nodes.slice(0);
+    this.multiselection = nodes.slice(0);
 
     var first = nodes[0];
     nodes.forEach(function (node) {
@@ -933,9 +935,7 @@ treemode.showContextMenu = function (anchor, onClose) {
     title: 'Duplicate selected fields (Ctrl+D)',
     className: 'jsoneditor-duplicate',
     click: function () {
-      if (editor.multiselect) {
-        Node.onDuplicate(editor.multiselect.nodes);
-      }
+      Node.onDuplicate(editor.multiselection);
     }
   });
 
@@ -945,9 +945,7 @@ treemode.showContextMenu = function (anchor, onClose) {
     title: 'Remove selected fields (Ctrl+Del)',
     className: 'jsoneditor-remove',
     click: function () {
-      if (editor.multiselect) {
-        Node.onRemove(editor.multiselect.nodes);
-      }
+      Node.onRemove(editor.multiselection);
     }
   });
 

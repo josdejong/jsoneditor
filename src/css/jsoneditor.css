@@ -228,7 +228,8 @@ tr.jsoneditor-selected {
   background-color: #e6e6e6;
 }
 
-tr.jsoneditor-selected button {
+tr.jsoneditor-selected button.jsoneditor-dragarea,
+tr.jsoneditor-selected button.jsoneditor-contextmenu {
   visibility: hidden;
 }
 
