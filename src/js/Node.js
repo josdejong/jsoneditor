@@ -2006,6 +2006,11 @@ Node.prototype.onKeyDown = function (event) {
   var oldBeforeNode;
   var nodes;
   var multiselection;
+  var selectedNodes = this.editor.multiselection.nodes.length > 0
+      ? this.editor.multiselection.nodes
+      : [this];
+  var firstNode = selectedNodes[0];
+  var lastNode = selectedNodes[selectedNodes.length - 1];
 
   // util.log(ctrlKey, keynum, event.charCode); // TODO: cleanup
   if (keynum == 13) { // Enter
@@ -2029,10 +2034,7 @@ Node.prototype.onKeyDown = function (event) {
   }
   else if (keynum == 68) {  // D
     if (ctrlKey && editable) {   // Ctrl+D
-      nodes = this.editor.multiselection.nodes.length > 0
-          ? this.editor.multiselection.nodes
-          : this;
-      Node.onDuplicate(nodes);
+      Node.onDuplicate(selectedNodes);
       handled = true;
     }
   }
@@ -2051,10 +2053,7 @@ Node.prototype.onKeyDown = function (event) {
   }
   else if (keynum == 46 && editable) { // Del
     if (ctrlKey) {       // Ctrl+Del
-      nodes = this.editor.multiselection.nodes.length > 0
-          ? this.editor.multiselection.nodes
-          : this;
-      Node.onRemove(nodes);
+      Node.onRemove(selectedNodes);
       handled = true;
     }
   }
@@ -2071,9 +2070,9 @@ Node.prototype.onKeyDown = function (event) {
   else if (keynum == 35) { // End
     if (altKey) { // Alt+End
       // find the last node
-      var lastNode = this._lastNode();
-      if (lastNode) {
-        lastNode.focus(Node.focusElement || this._getElementName(target));
+      var endNode = this._lastNode();
+      if (endNode) {
+        endNode.focus(Node.focusElement || this._getElementName(target));
       }
       handled = true;
     }
@@ -2081,9 +2080,9 @@ Node.prototype.onKeyDown = function (event) {
   else if (keynum == 36) { // Home
     if (altKey) { // Alt+Home
       // find the first node
-      var firstNode = this._firstNode();
-      if (firstNode) {
-        firstNode.focus(Node.focusElement || this._getElementName(target));
+      var homeNode = this._firstNode();
+      if (homeNode) {
+        homeNode.focus(Node.focusElement || this._getElementName(target));
       }
       handled = true;
     }
@@ -2098,12 +2097,12 @@ Node.prototype.onKeyDown = function (event) {
       handled = true;
     }
     else if (altKey && shiftKey && editable) { // Alt + Shift + Arrow left
-      if (this.expanded) {
-        var appendDom = this.getAppend();
+      if (lastNode.expanded) {
+        var appendDom = lastNode.getAppend();
         nextDom = appendDom ? appendDom.nextSibling : undefined;
       }
       else {
-        var dom = this.getDom();
+        var dom = lastNode.getDom();
         nextDom = dom.nextSibling;
       }
       if (nextDom) {
@@ -2111,16 +2110,18 @@ Node.prototype.onKeyDown = function (event) {
         nextDom2 = nextDom.nextSibling;
         nextNode2 = Node.getNodeFromTarget(nextDom2);
         if (nextNode && nextNode instanceof AppendNode &&
-            !(this.parent.childs.length == 1) &&
+            !(lastNode.parent.childs.length == 1) &&
             nextNode2 && nextNode2.parent) {
           oldSelection = this.editor.getSelection();
-          oldBeforeNode = this._nextSibling();
+          oldBeforeNode = lastNode._nextSibling();
 
-          nextNode2.parent.moveBefore(this, nextNode2);
+          selectedNodes.forEach(function (node) {
+            nextNode2.parent.moveBefore(node, nextNode2);
+          });
           this.focus(Node.focusElement || this._getElementName(target));
 
           this.editor._onAction('moveNodes', {
-            nodes: [this],
+            nodes: selectedNodes,
             oldBeforeNode: oldBeforeNode,
             newBeforeNode: nextNode2,
             oldSelection: oldSelection,
@@ -2156,16 +2157,18 @@ Node.prototype.onKeyDown = function (event) {
     }
     else if (altKey && shiftKey) { // Alt + Shift + Arrow Up
       // find the previous node
-      prevNode = this._previousNode();
+      prevNode = firstNode._previousNode();
       if (prevNode && prevNode.parent) {
         oldSelection = this.editor.getSelection();
-        oldBeforeNode = this._nextSibling();
+        oldBeforeNode = lastNode._nextSibling();
 
-        prevNode.parent.moveBefore(this, prevNode);
+        selectedNodes.forEach(function (node) {
+          prevNode.parent.moveBefore(node, prevNode);
+        });
         this.focus(Node.focusElement || this._getElementName(target));
 
         this.editor._onAction('moveNodes', {
-          nodes: [this],
+          nodes: selectedNodes,
           oldBeforeNode: oldBeforeNode,
           newBeforeNode: prevNode,
           oldSelection: oldSelection,
@@ -2185,7 +2188,7 @@ Node.prototype.onKeyDown = function (event) {
       handled = true;
     }
     else if (altKey && shiftKey) { // Alt + Shift + Arrow Right
-      dom = this.getDom();
+      dom = firstNode.getDom();
       var prevDom = dom.previousSibling;
       if (prevDom) {
         prevNode = Node.getNodeFromTarget(prevDom);
@@ -2193,13 +2196,15 @@ Node.prototype.onKeyDown = function (event) {
             (prevNode instanceof AppendNode)
             && !prevNode.isVisible()) {
           oldSelection = this.editor.getSelection();
-          oldBeforeNode = this._nextSibling();
+          oldBeforeNode = lastNode._nextSibling();
 
-          prevNode.parent.moveBefore(this, prevNode);
+          selectedNodes.forEach(function (node) {
+            prevNode.parent.moveBefore(node, prevNode);
+          });
           this.focus(Node.focusElement || this._getElementName(target));
 
           this.editor._onAction('moveNodes', {
-            nodes: [this],
+            nodes: selectedNodes,
             oldBeforeNode: oldBeforeNode,
             newBeforeNode: prevNode,
             oldSelection: oldSelection,
@@ -2235,22 +2240,24 @@ Node.prototype.onKeyDown = function (event) {
     }
     else if (altKey && shiftKey && editable) { // Alt + Shift + Arrow Down
       // find the 2nd next node and move before that one
-      if (this.expanded) {
-        nextNode = this.append ? this.append._nextNode() : undefined;
+      if (lastNode.expanded) {
+        nextNode = lastNode.append ? lastNode.append._nextNode() : undefined;
       }
       else {
-        nextNode = this._nextNode();
+        nextNode = lastNode._nextNode();
       }
       var nextNode2 = nextNode && (nextNode._nextNode() || nextNode.parent.append);
       if (nextNode2 && nextNode2.parent) {
         oldSelection = this.editor.getSelection();
-        oldBeforeNode = this._nextSibling();
+        oldBeforeNode = lastNode._nextSibling();
 
-        nextNode2.parent.moveBefore(this, nextNode2);
+        selectedNodes.forEach(function (node) {
+          nextNode2.parent.moveBefore(node, nextNode2);
+        });
         this.focus(Node.focusElement || this._getElementName(target));
 
         this.editor._onAction('moveNodes', {
-          nodes: [this],
+          nodes: selectedNodes,
           oldBeforeNode: oldBeforeNode,
           newBeforeNode: nextNode2,
           oldSelection: oldSelection,
