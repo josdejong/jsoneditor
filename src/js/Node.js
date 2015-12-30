@@ -80,6 +80,15 @@ Node.prototype.path = function () {
 };
 
 /**
+ * Get the index of this node: the index in the list of childs where this
+ * node is part of
+ * @return {number} Returns the index, or -1 if this is the root node
+ */
+Node.prototype.getIndex = function () {
+  return this.parent ? this.parent.childs.indexOf(this) : -1;
+};
+
+/**
  * Set parent node
  * @param {Node} parent
  */
@@ -753,26 +762,6 @@ Node.prototype.blur = function() {
 };
 
 /**
- * Duplicate given child node
- * new structure will be added right before the cloned node
- * @param {Node} node           the childNode to be duplicated
- * @return {Node} clone         the clone of the node
- * @private
- */
-Node.prototype._duplicate = function(node) {
-  var clone = node.clone();
-
-  /* TODO: adjust the field name (to prevent equal field names)
-   if (this.type == 'object') {
-   }
-   */
-
-  this.insertAfter(clone, node);
-
-  return clone;
-};
-
-/**
  * Check if given node is a child. The method will check recursively to find
  * this node.
  * @param {Node} node
@@ -857,6 +846,7 @@ Node.prototype.removeChild = function(node) {
       delete node.searchValue;
 
       var removedNode = this.childs.splice(index, 1)[0];
+      removedNode.parent = null;
 
       this.updateDom({'updateIndexes': true});
 
@@ -1990,7 +1980,7 @@ Node.prototype.onKeyDown = function (event) {
   }
   else if (keynum == 68) {  // D
     if (ctrlKey && editable) {   // Ctrl+D
-      this._onDuplicate();
+      Node.duplicate(this);
       handled = true;
     }
   }
@@ -2009,7 +1999,7 @@ Node.prototype.onKeyDown = function (event) {
   }
   else if (keynum == 46 && editable) { // Del
     if (ctrlKey) {       // Ctrl+Del
-      this._onRemove();
+      Node.remove(this);
       handled = true;
     }
   }
@@ -2189,20 +2179,12 @@ Node.prototype._onExpand = function (recurse) {
  */
 Node.prototype._onRemove = function() {
   this.editor.highlighter.unhighlight();
-  var childs = this.parent.childs;
-  var index = childs.indexOf(this);
+  var parent = this.parent;
+  var index = this.getIndex();
 
   // adjust the focus
   var oldSelection = this.editor.getSelection();
-  if (childs[index + 1]) {
-    childs[index + 1].focus();
-  }
-  else if (childs[index - 1]) {
-    childs[index - 1].focus();
-  }
-  else {
-    this.parent.focus();
-  }
+  Node.blurNodes(this);
   var newSelection = this.editor.getSelection();
 
   // remove the node
@@ -2211,7 +2193,7 @@ Node.prototype._onRemove = function() {
   // store history action
   this.editor._onAction('removeNodes', {
     nodes: [this],
-    parent: this.parent,
+    parent: parent,
     index: index,
     oldSelection: oldSelection,
     newSelection: newSelection
@@ -2219,22 +2201,78 @@ Node.prototype._onRemove = function() {
 };
 
 /**
- * Duplicate this node
- * @private
+ * Remove nodes
+ * @param {Node[] | Node} nodes
  */
-Node.prototype._onDuplicate = function() {
-  var oldSelection = this.editor.getSelection();
-  var clone = this.parent._duplicate(this);
-  clone.focus();
-  var newSelection = this.editor.getSelection();
+Node.remove = function(nodes) {
+  if (!Array.isArray(nodes)) {
+    return Node.remove([nodes]);
+  }
 
-  this.editor._onAction('duplicateNodes', {
-    afterNode: this,
-    nodes: [clone],
-    parent: this.parent,
-    oldSelection: oldSelection,
-    newSelection: newSelection
-  });
+  if (nodes && nodes.length > 0) {
+    var firstNode = nodes[0];
+    var parent = firstNode.parent;
+    var editor = firstNode.editor;
+    var firstIndex = firstNode.getIndex();
+    editor.highlighter.unhighlight();
+
+    // adjust the focus
+    var oldSelection = editor.getSelection();
+    Node.blurNodes(nodes);
+    var newSelection = editor.getSelection();
+
+    // remove the nodes
+    nodes.forEach(function (node) {
+      node.parent._remove(node);
+    });
+
+    // store history action
+    editor._onAction('removeNodes', {
+      nodes: nodes,
+      parent: parent,
+      index: firstIndex,
+      oldSelection: oldSelection,
+      newSelection: newSelection
+    });
+  }
+};
+
+
+/**
+ * Duplicate nodes
+ * duplicated nodes will be added right after the original nodes
+ * @param {Node[] | Node} nodes
+ */
+Node.duplicate = function(nodes) {
+  if (!Array.isArray(nodes)) {
+    return Node.duplicate([nodes]);
+  }
+
+  if (nodes && nodes.length > 0) {
+    var lastNode = nodes[nodes.length - 1];
+    var parent = lastNode.parent;
+    var editor = lastNode.editor;
+
+    // duplicate the nodes and set selection to the first duplicated node
+    var oldSelection = editor.getSelection();
+    var afterNode = lastNode;
+    var clones = nodes.map(function (node) {
+      var clone = node.clone();
+      parent.insertAfter(clone, afterNode);
+      afterNode = clone;
+      return clone;
+    });
+    clones[0].focus();
+    var newSelection = editor.getSelection();
+
+    editor._onAction('duplicateNodes', {
+      afterNode: lastNode,
+      nodes: clones,
+      parent: parent,
+      oldSelection: oldSelection,
+      newSelection: newSelection
+    });
+  }
 };
 
 /**
@@ -2413,6 +2451,32 @@ Node.getNodeFromTarget = function (target) {
   }
 
   return undefined;
+};
+
+/**
+ * Remove the focus of given nodes, and move the focus to the (a) node before,
+ * (b) the node after, or (c) the parent node.
+ * @param {Array.<Node> | Node} nodes
+ */
+Node.blurNodes = function (nodes) {
+  if (!Array.isArray(nodes)) {
+    Node.blurNodes([nodes]);
+    return;
+  }
+
+  var firstNode = nodes[0];
+  var parent = firstNode.parent;
+  var firstIndex = firstNode.getIndex();
+
+  if (parent.childs[firstIndex + nodes.length]) {
+    parent.childs[firstIndex + nodes.length].focus();
+  }
+  else if (parent.childs[firstIndex - 1]) {
+    parent.childs[firstIndex - 1].focus();
+  }
+  else {
+    parent.focus();
+  }
 };
 
 /**
@@ -2793,7 +2857,7 @@ Node.prototype.showContextMenu = function (anchor, onClose) {
         title: 'Duplicate this field (Ctrl+D)',
         className: 'jsoneditor-duplicate',
         click: function () {
-          node._onDuplicate();
+          Node.duplicate(node);
         }
       });
 
@@ -2803,7 +2867,7 @@ Node.prototype.showContextMenu = function (anchor, onClose) {
         title: 'Remove this field (Ctrl+Del)',
         className: 'jsoneditor-remove',
         click: function () {
-          node._onRemove();
+          Node.remove(node);
         }
       });
     }

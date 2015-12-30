@@ -878,6 +878,7 @@ treemode._createTable = function () {
  */
 treemode.showContextMenu = function (anchor, onClose) {
   var items = [];
+  var editor = this;
 
   // create duplicate button
   items.push({
@@ -885,7 +886,9 @@ treemode.showContextMenu = function (anchor, onClose) {
     title: 'Duplicate selected fields (Ctrl+D)',
     className: 'jsoneditor-duplicate',
     click: function () {
-      // TODO
+      if (editor.multiselect) {
+        Node.duplicate(editor.multiselect.nodes);
+      }
     }
   });
 
@@ -895,13 +898,16 @@ treemode.showContextMenu = function (anchor, onClose) {
     title: 'Remove selected fields (Ctrl+Del)',
     className: 'jsoneditor-remove',
     click: function () {
-      // TODO
+      if (editor.multiselect) {
+        Node.remove(editor.multiselect.nodes);
+      }
     }
   });
 
   var menu = new ContextMenu(items, {close: onClose});
   menu.show(anchor);
 };
+
 
 // define modes
 module.exports = [
