@@ -24,7 +24,7 @@
  *
  * @author  Jos de Jong, <wjosdejong@gmail.com>
  * @version 4.2.1
- * @date    2015-12-27
+ * @date    2015-12-30
  */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
@@ -405,8 +405,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	var Highlighter = __webpack_require__(4);
 	var History = __webpack_require__(5);
 	var SearchBox = __webpack_require__(6);
-	var Node = __webpack_require__(7);
-	var modeswitcher = __webpack_require__(8);
+	var ContextMenu = __webpack_require__(7);
+	var Node = __webpack_require__(8);
+	var modeswitcher = __webpack_require__(9);
 	var util = __webpack_require__(3);
 
 	// create a mixin with the functions for tree mode
@@ -439,6 +440,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	  this.dom = {};
 	  this.highlighter = new Highlighter();
 	  this.selection = undefined; // will hold the last input selection
+	  this.multiselection = {
+	    nodes: []
+	  };
 
 	  this._setOptions(options);
 
@@ -782,6 +786,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	 *                            {Element | undefined} dom     The dom element
 	 *                                                          which has focus
 	 *                            {Range | TextRange} range     A text selection
+	 *                            {Node[]} nodes                Nodes in case of multi selection
 	 *                            {Number} scrollTop            Scroll position
 	 */
 	treemode.setSelection = function (selection) {
@@ -792,6 +797,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	  if ('scrollTop' in selection && this.content) {
 	    // TODO: animated scroll
 	    this.content.scrollTop = selection.scrollTop;
+	  }
+	  if (selection.nodes) {
+	    // multi-select
+	    this.select(selection.nodes);
 	  }
 	  if (selection.range) {
 	    util.setSelectionOffset(selection.range);
@@ -807,13 +816,20 @@ return /******/ (function(modules) { // webpackBootstrap
 	 *                            {Element | undefined} dom     The dom element
 	 *                                                          which has focus
 	 *                            {Range | TextRange} range     A text selection
+	 *                            {Node[]} nodes                Nodes in case of multi selection
 	 *                            {Number} scrollTop            Scroll position
 	 */
 	treemode.getSelection = function () {
+	  var range = util.getSelectionOffset();
+	  if (range && range.container.nodeName !== 'DIV') { // filter on (editable) divs)
+	    range = null;
+	  }
+
 	  return {
 	    dom: domFocus,
-	    scrollTop: this.content ? this.content.scrollTop : 0,
-	    range: util.getSelectionOffset()
+	    range: range,
+	    nodes: this.multiselection.nodes.slice(0),
+	    scrollTop: this.content ? this.content.scrollTop : 0
 	  };
 	};
 
@@ -880,7 +896,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	treemode._createFrame = function () {
 	  // create the frame
 	  this.frame = document.createElement('div');
-	  this.frame.className = 'jsoneditor mode-' + this.options.mode;
+	  this.frame.className = 'jsoneditor jsoneditor-mode-' + this.options.mode;
 	  this.container.appendChild(this.frame);
 
 	  // create one global event listener to handle all events from all nodes
@@ -919,12 +935,12 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	  // create menu
 	  this.menu = document.createElement('div');
-	  this.menu.className = 'menu';
+	  this.menu.className = 'jsoneditor-menu';
 	  this.frame.appendChild(this.menu);
 
 	  // create expand all button
 	  var expandAll = document.createElement('button');
-	  expandAll.className = 'expand-all';
+	  expandAll.className = 'jsoneditor-expand-all';
 	  expandAll.title = 'Expand all fields';
 	  expandAll.onclick = function () {
 	    editor.expandAll();
@@ -934,7 +950,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  // create expand all button
 	  var collapseAll = document.createElement('button');
 	  collapseAll.title = 'Collapse all fields';
-	  collapseAll.className = 'collapse-all';
+	  collapseAll.className = 'jsoneditor-collapse-all';
 	  collapseAll.onclick = function () {
 	    editor.collapseAll();
 	  };
@@ -944,7 +960,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  if (this.history) {
 	    // create undo button
 	    var undo = document.createElement('button');
-	    undo.className = 'undo separator';
+	    undo.className = 'jsoneditor-undo jsoneditor-separator';
 	    undo.title = 'Undo last action (Ctrl+Z)';
 	    undo.onclick = function () {
 	      editor._onUndo();
@@ -954,7 +970,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	    // create redo button
 	    var redo = document.createElement('button');
-	    redo.className = 'redo';
+	    redo.className = 'jsoneditor-redo';
 	    redo.title = 'Redo (Ctrl+Shift+Z)';
 	    redo.onclick = function () {
 	      editor._onRedo();
@@ -1021,19 +1037,259 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * @private
 	 */
 	treemode._onEvent = function (event) {
-	  var target = event.target;
-
 	  if (event.type == 'keydown') {
 	    this._onKeyDown(event);
 	  }
 
 	  if (event.type == 'focus') {
-	    domFocus = target;
+	    domFocus = event.target;
 	  }
 
-	  var node = Node.getNodeFromTarget(target);
+	  if (event.type == 'mousedown') {
+	    this._startDragDistance(event);
+	  }
+	  if (event.type == 'mousemove' || event.type == 'mouseup' || event.type == 'click') {
+	    this._updateDragDistance(event);
+	  }
+
+	  var node = Node.getNodeFromTarget(event.target);
+
+	  if (node && node.selected) {
+	    if (event.type == 'click') {
+	      if (event.target == node.dom.menu) {
+	        this.showContextMenu(event.target);
+
+	        // stop propagation (else we will open the context menu of a single node)
+	        return;
+	      }
+
+	      // deselect a multi selection
+	      if (!event.hasMoved) {
+	        this.deselect();
+	      }
+	    }
+
+	    if (event.type == 'mousedown') {
+	      // drag multiple nodes
+	      Node.onDragStart(this.multiselection.nodes, event);
+	    }
+	  }
+	  else {
+	    if (event.type == 'mousedown') {
+	      this.deselect();
+
+	      if (node && event.target == node.dom.drag) {
+	        // drag a singe node
+	        Node.onDragStart(node, event);
+	      }
+	      else if (!node || (event.target != node.dom.field && event.target != node.dom.value)) {
+	        // select multiple nodes
+	        this._onMultiSelectStart(event);
+	      }
+	    }
+	  }
+
 	  if (node) {
 	    node.onEvent(event);
+	  }
+	};
+
+	treemode._startDragDistance = function (event) {
+	  this.dragDistanceEvent = {
+	    initialTarget: event.target,
+	    initialPageX: event.pageX,
+	    initialPageY: event.pageY,
+	    dragDistance: 0,
+	    hasMoved: false
+	  };
+	};
+
+	treemode._updateDragDistance = function (event) {
+	  var diffX = event.pageX - this.dragDistanceEvent.initialPageX;
+	  var diffY = event.pageY - this.dragDistanceEvent.initialPageY;
+
+	  this.dragDistanceEvent.dragDistance = Math.sqrt(diffX * diffX + diffY * diffY);
+	  this.dragDistanceEvent.hasMoved =
+	      this.dragDistanceEvent.hasMoved || this.dragDistanceEvent.dragDistance > 10;
+
+	  event.dragDistance = this.dragDistanceEvent.dragDistance;
+	  event.hasMoved = this.dragDistanceEvent.hasMoved;
+
+	  return event.dragDistance;
+	};
+
+	/**
+	 * Start multi selection of nodes by dragging the mouse
+	 * @param event
+	 * @private
+	 */
+	treemode._onMultiSelectStart = function (event) {
+	  var node = Node.getNodeFromTarget(event.target);
+
+	  this.multiselection = {
+	    start: node || null,
+	    end: null,
+	    nodes: []
+	  };
+
+	  this._startDragDistance(event);
+
+	  var editor = this;
+	  if (!this.mousemove) {
+	    this.mousemove = util.addEventListener(window, 'mousemove', function (event) {
+	      editor._onMultiSelect(event);
+	    });
+	  }
+	  if (!this.mouseup) {
+	    this.mouseup = util.addEventListener(window, 'mouseup', function (event ) {
+	      editor._onMultiSelectEnd(event);
+	    });
+	  }
+
+	};
+
+	/**
+	 * Multiselect nodes by dragging
+	 * @param event
+	 * @private
+	 */
+	treemode._onMultiSelect = function (event) {
+	  event.preventDefault();
+
+	  this._updateDragDistance(event);
+	  if (!event.hasMoved) {
+	    return;
+	  }
+
+	  var node = Node.getNodeFromTarget(event.target);
+
+	  if (node) {
+	    if (this.multiselection.start == null) {
+	      this.multiselection.start = node;
+	    }
+	    this.multiselection.end = node;
+	  }
+
+	  // deselect previous selection
+	  this.deselect();
+
+	  // find the selected nodes in the range from first to last
+	  var start = this.multiselection.start;
+	  var end = this.multiselection.end || this.multiselection.start;
+	  if (start && end) {
+	    // find the top level childs, all having the same parent
+	    this.multiselection.nodes = this._findTopLevelNodes(start, end);
+	    this.select(this.multiselection.nodes);
+	  }
+	};
+
+	/**
+	 * End of multiselect nodes by dragging
+	 * @param event
+	 * @private
+	 */
+	treemode._onMultiSelectEnd = function (event) {
+	  // set focus to the context menu button of the first node
+	  if (this.multiselection.nodes[0]) {
+	    this.multiselection.nodes[0].dom.menu.focus();
+	  }
+
+	  this.multiselection.start = null;
+	  this.multiselection.end = null;
+
+	  // cleanup global event listeners
+	  if (this.mousemove) {
+	    util.removeEventListener(window, 'mousemove', this.mousemove);
+	    delete this.mousemove;
+	  }
+	  if (this.mouseup) {
+	    util.removeEventListener(window, 'mouseup', this.mouseup);
+	    delete this.mouseup;
+	  }
+	};
+
+	/**
+	 * deselect currently selected nodes
+	 * @param {boolean} [clearStartAndEnd=false]  If true, the `start` and `end`
+	 *                                            state is cleared too.
+	 */
+	treemode.deselect = function (clearStartAndEnd) {
+	  this.multiselection.nodes.forEach(function (node) {
+	    node.setSelected(false);
+	  });
+	  this.multiselection.nodes = [];
+
+	  if (clearStartAndEnd) {
+	    this.multiselection.start = null;
+	    this.multiselection.end = null;
+	  }
+	};
+
+	/**
+	 * select nodes
+	 * @param {Node[] | Node} nodes
+	 */
+	treemode.select = function (nodes) {
+	  if (!Array.isArray(nodes)) {
+	    return this.select([nodes]);
+	  }
+
+	  if (nodes) {
+	    this.deselect();
+
+	    this.multiselection.nodes = nodes.slice(0);
+
+	    var first = nodes[0];
+	    nodes.forEach(function (node) {
+	      node.setSelected(true, node === first);
+	    });
+	  }
+	};
+
+	/**
+	 * From two arbitrary selected nodes, find their shared parent node.
+	 * From that parent node, select the two child nodes in the brances going to
+	 * nodes `start` and `end`, and select all childs in between.
+	 * @param {Node} start
+	 * @param {Node} end
+	 * @return {Array.<Node>} Returns an ordered list with child nodes
+	 * @private
+	 */
+	treemode._findTopLevelNodes = function (start, end) {
+	  var startPath = start.getPath();
+	  var endPath = end.getPath();
+	  var i = 0;
+	  while (i < startPath.length && startPath[i] === endPath[i]) {
+	    i++;
+	  }
+	  var root = startPath[i - 1];
+	  var startChild = startPath[i];
+	  var endChild = endPath[i];
+
+	  if (!startChild || !endChild) {
+	    if (root.parent) {
+	      // startChild is a parent of endChild or vice versa
+	      startChild = root;
+	      endChild = root;
+	      root = root.parent
+	    }
+	    else {
+	      // we have selected the root node (which doesn't have a parent)
+	      startChild = root.childs[0];
+	      endChild = root.childs[root.childs.length - 1];
+	    }
+	  }
+
+	  if (root && startChild && endChild) {
+	    var startIndex = root.childs.indexOf(startChild);
+	    var endIndex = root.childs.indexOf(endChild);
+	    var firstIndex = Math.min(startIndex, endIndex);
+	    var lastIndex = Math.max(startIndex, endIndex);
+
+	    return root.childs.slice(firstIndex, lastIndex + 1);
+	  }
+	  else {
+	    return [];
 	  }
 	};
 
@@ -1101,15 +1357,15 @@ return /******/ (function(modules) { // webpackBootstrap
 	 */
 	treemode._createTable = function () {
 	  var contentOuter = document.createElement('div');
-	  contentOuter.className = 'outer';
+	  contentOuter.className = 'jsoneditor-outer';
 	  this.contentOuter = contentOuter;
 
 	  this.content = document.createElement('div');
-	  this.content.className = 'tree';
+	  this.content.className = 'jsoneditor-tree';
 	  contentOuter.appendChild(this.content);
 
 	  this.table = document.createElement('table');
-	  this.table.className = 'tree';
+	  this.table.className = 'jsoneditor-tree';
 	  this.content.appendChild(this.table);
 
 	  // create colgroup where the first two columns don't have a fixed
@@ -1133,6 +1389,42 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	  this.frame.appendChild(contentOuter);
 	};
+
+	/**
+	 * Show a contextmenu for this node.
+	 * Used for multiselection
+	 * @param {HTMLElement} anchor   Anchor element to attache the context menu to.
+	 * @param {function} [onClose]   Callback method called when the context menu
+	 *                               is being closed.
+	 */
+	treemode.showContextMenu = function (anchor, onClose) {
+	  var items = [];
+	  var editor = this;
+
+	  // create duplicate button
+	  items.push({
+	    text: 'Duplicate',
+	    title: 'Duplicate selected fields (Ctrl+D)',
+	    className: 'jsoneditor-duplicate',
+	    click: function () {
+	      Node.onDuplicate(editor.multiselection.nodes);
+	    }
+	  });
+
+	  // create remove button
+	  items.push({
+	    text: 'Remove',
+	    title: 'Remove selected fields (Ctrl+Del)',
+	    className: 'jsoneditor-remove',
+	    click: function () {
+	      Node.onRemove(editor.multiselection.nodes);
+	    }
+	  });
+
+	  var menu = new ContextMenu(items, {close: onClose});
+	  menu.show(anchor);
+	};
+
 
 	// define modes
 	module.exports = [
@@ -1165,7 +1457,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  // failed to load ace, no problem, we will fall back to plain text
 	}
 
-	var modeswitcher = __webpack_require__(8);
+	var modeswitcher = __webpack_require__(9);
 	var util = __webpack_require__(3);
 
 	// create a mixin with the functions for text mode
@@ -1231,7 +1523,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  this.height = container.clientHeight;
 
 	  this.frame = document.createElement('div');
-	  this.frame.className = 'jsoneditor mode-' + this.options.mode;
+	  this.frame.className = 'jsoneditor jsoneditor-mode-' + this.options.mode;
 	  this.frame.onclick = function (event) {
 	    // prevent default submit action when the editor is located inside a form
 	    event.preventDefault();
@@ -1242,12 +1534,12 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	  // create menu
 	  this.menu = document.createElement('div');
-	  this.menu.className = 'menu';
+	  this.menu.className = 'jsoneditor-menu';
 	  this.frame.appendChild(this.menu);
 
 	  // create format button
 	  var buttonFormat = document.createElement('button');
-	  buttonFormat.className = 'format';
+	  buttonFormat.className = 'jsoneditor-format';
 	  buttonFormat.title = 'Format JSON data, with proper indentation and line feeds (Ctrl+\\)';
 	  this.menu.appendChild(buttonFormat);
 	  buttonFormat.onclick = function () {
@@ -1261,7 +1553,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	  // create compact button
 	  var buttonCompact = document.createElement('button');
-	  buttonCompact.className = 'compact';
+	  buttonCompact.className = 'jsoneditor-compact';
 	  buttonCompact.title = 'Compact JSON data, remove all whitespaces (Ctrl+Shift+\\)';
 	  this.menu.appendChild(buttonCompact);
 	  buttonCompact.onclick = function () {
@@ -1281,7 +1573,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  }
 
 	  this.content = document.createElement('div');
-	  this.content.className = 'outer';
+	  this.content.className = 'jsoneditor-outer';
 	  this.frame.appendChild(this.content);
 
 	  this.container.appendChild(this.frame);
@@ -1323,7 +1615,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    poweredBy.appendChild(document.createTextNode('powered by ace'));
 	    poweredBy.href = 'http://ace.ajax.org';
 	    poweredBy.target = '_blank';
-	    poweredBy.className = 'poweredBy';
+	    poweredBy.className = 'jsoneditor-poweredBy';
 	    poweredBy.onclick = function () {
 	      // TODO: this anchor falls below the margin of the content,
 	      // therefore the normal a.href does not work. We use a click event
@@ -1340,7 +1632,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  else {
 	    // load a plain text textarea
 	    var textarea = document.createElement('textarea');
-	    textarea.className = 'text';
+	    textarea.className = 'jsoneditor-text';
 	    textarea.spellcheck = false;
 	    this.content.appendChild(textarea);
 	    this.textarea = textarea;
@@ -1523,7 +1815,7 @@ return /******/ (function(modules) { // webpackBootstrap
 /* 3 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var jsonlint = __webpack_require__(9);
+	var jsonlint = __webpack_require__(11);
 
 	/**
 	 * Parse JSON using the parser built-in in the browser.
@@ -2276,48 +2568,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	        params.node.updateValue(params.newValue);
 	      }
 	    },
-	    'appendNode': {
-	      'undo': function (params) {
-	        params.parent.removeChild(params.node);
-	      },
-	      'redo': function (params) {
-	        params.parent.appendChild(params.node);
-	      }
-	    },
-	    'insertBeforeNode': {
-	      'undo': function (params) {
-	        params.parent.removeChild(params.node);
-	      },
-	      'redo': function (params) {
-	        params.parent.insertBefore(params.node, params.beforeNode);
-	      }
-	    },
-	    'insertAfterNode': {
-	      'undo': function (params) {
-	        params.parent.removeChild(params.node);
-	      },
-	      'redo': function (params) {
-	        params.parent.insertAfter(params.node, params.afterNode);
-	      }
-	    },
-	    'removeNode': {
-	      'undo': function (params) {
-	        var parent = params.parent;
-	        var beforeNode = parent.childs[params.index] || parent.append;
-	        parent.insertBefore(params.node, beforeNode);
-	      },
-	      'redo': function (params) {
-	        params.parent.removeChild(params.node);
-	      }
-	    },
-	    'duplicateNode': {
-	      'undo': function (params) {
-	        params.parent.removeChild(params.clone);
-	      },
-	      'redo': function (params) {
-	        params.parent.insertAfter(params.clone, params.node);
-	      }
-	    },
 	    'changeType': {
 	      'undo': function (params) {
 	        params.node.changeType(params.oldType);
@@ -2326,14 +2576,86 @@ return /******/ (function(modules) { // webpackBootstrap
 	        params.node.changeType(params.newType);
 	      }
 	    },
-	    'moveNode': {
+
+	    'appendNodes': {
 	      'undo': function (params) {
-	        params.startParent.moveTo(params.node, params.startIndex);
+	        params.nodes.forEach(function (node) {
+	          params.parent.removeChild(node);
+	        });
 	      },
 	      'redo': function (params) {
-	        params.endParent.moveTo(params.node, params.endIndex);
+	        params.nodes.forEach(function (node) {
+	          params.parent.appendChild(node);
+	        });
 	      }
 	    },
+	    'insertBeforeNodes': {
+	      'undo': function (params) {
+	        params.nodes.forEach(function (node) {
+	          params.parent.removeChild(node);
+	        });
+	      },
+	      'redo': function (params) {
+	        params.nodes.forEach(function (node) {
+	          params.parent.insertBefore(node, params.beforeNode);
+	        });
+	      }
+	    },
+	    'insertAfterNodes': {
+	      'undo': function (params) {
+	        params.nodes.forEach(function (node) {
+	          params.parent.removeChild(node);
+	        });
+	      },
+	      'redo': function (params) {
+	        var afterNode = params.afterNode;
+	        params.nodes.forEach(function (node) {
+	          params.parent.insertAfter(params.node, afterNode);
+	          afterNode = node;
+	        });
+	      }
+	    },
+	    'removeNodes': {
+	      'undo': function (params) {
+	        var parent = params.parent;
+	        var beforeNode = parent.childs[params.index] || parent.append;
+	        params.nodes.forEach(function (node) {
+	          parent.insertBefore(node, beforeNode);
+	        });
+	      },
+	      'redo': function (params) {
+	        params.nodes.forEach(function (node) {
+	          params.parent.removeChild(node);
+	        });
+	      }
+	    },
+	    'duplicateNodes': {
+	      'undo': function (params) {
+	        params.nodes.forEach(function (node) {
+	          params.parent.removeChild(node);
+	        });
+	      },
+	      'redo': function (params) {
+	        var afterNode = params.afterNode;
+	        params.nodes.forEach(function (node) {
+	          params.parent.insertAfter(node, afterNode);
+	          afterNode = node;
+	        });
+	      }
+	    },
+	    'moveNodes': {
+	      'undo': function (params) {
+	        params.nodes.forEach(function (node) {
+	          params.oldBeforeNode.parent.moveBefore(node, params.oldBeforeNode);
+	        });
+	      },
+	      'redo': function (params) {
+	        params.nodes.forEach(function (node) {
+	          params.newBeforeNode.parent.moveBefore(node, params.newBeforeNode);
+	        });
+	      }
+	    },
+
 	    'sort': {
 	      'undo': function (params) {
 	        var node = params.node;
@@ -2495,7 +2817,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	  var table = document.createElement('table');
 	  this.dom.table = table;
-	  table.className = 'search';
+	  table.className = 'jsoneditor-search';
 	  container.appendChild(table);
 	  var tbody = document.createElement('tbody');
 	  this.dom.tbody = tbody;
@@ -2507,14 +2829,14 @@ return /******/ (function(modules) { // webpackBootstrap
 	  tr.appendChild(td);
 	  var results = document.createElement('div');
 	  this.dom.results = results;
-	  results.className = 'results';
+	  results.className = 'jsoneditor-results';
 	  td.appendChild(results);
 
 	  td = document.createElement('td');
 	  tr.appendChild(td);
 	  var divInput = document.createElement('div');
 	  this.dom.input = divInput;
-	  divInput.className = 'frame';
+	  divInput.className = 'jsoneditor-frame';
 	  divInput.title = 'Search fields and values';
 	  td.appendChild(divInput);
 
@@ -2527,7 +2849,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  tbodySearch.appendChild(tr);
 
 	  var refreshSearch = document.createElement('button');
-	  refreshSearch.className = 'refresh';
+	  refreshSearch.className = 'jsoneditor-refresh';
 	  td = document.createElement('td');
 	  td.appendChild(refreshSearch);
 	  tr.appendChild(td);
@@ -2557,7 +2879,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	  var searchNext = document.createElement('button');
 	  searchNext.title = 'Next result (Enter)';
-	  searchNext.className = 'next';
+	  searchNext.className = 'jsoneditor-next';
 	  searchNext.onclick = function () {
 	    searchBox.next();
 	  };
@@ -2567,7 +2889,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	  var searchPrevious = document.createElement('button');
 	  searchPrevious.title = 'Previous result (Shift+Enter)';
-	  searchPrevious.className = 'previous';
+	  searchPrevious.className = 'jsoneditor-previous';
 	  searchPrevious.onclick = function () {
 	    searchBox.previous();
 	  };
@@ -2776,7 +3098,456 @@ return /******/ (function(modules) { // webpackBootstrap
 /* 7 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var ContextMenu = __webpack_require__(11);
+	var util = __webpack_require__(3);
+
+	/**
+	 * A context menu
+	 * @param {Object[]} items    Array containing the menu structure
+	 *                            TODO: describe structure
+	 * @param {Object} [options]  Object with options. Available options:
+	 *                            {function} close    Callback called when the
+	 *                                                context menu is being closed.
+	 * @constructor
+	 */
+	function ContextMenu (items, options) {
+	  this.dom = {};
+
+	  var me = this;
+	  var dom = this.dom;
+	  this.anchor = undefined;
+	  this.items = items;
+	  this.eventListeners = {};
+	  this.selection = undefined; // holds the selection before the menu was opened
+	  this.visibleSubmenu = undefined;
+	  this.onClose = options ? options.close : undefined;
+
+	  // create a container element
+	  var menu = document.createElement('div');
+	  menu.className = 'jsoneditor-contextmenu';
+	  dom.menu = menu;
+
+	  // create a list to hold the menu items
+	  var list = document.createElement('ul');
+	  list.className = 'jsoneditor-menu';
+	  menu.appendChild(list);
+	  dom.list = list;
+	  dom.items = []; // list with all buttons
+
+	  // create a (non-visible) button to set the focus to the menu
+	  var focusButton = document.createElement('button');
+	  dom.focusButton = focusButton;
+	  var li = document.createElement('li');
+	  li.style.overflow = 'hidden';
+	  li.style.height = '0';
+	  li.appendChild(focusButton);
+	  list.appendChild(li);
+
+	  function createMenuItems (list, domItems, items) {
+	    items.forEach(function (item) {
+	      if (item.type == 'separator') {
+	        // create a separator
+	        var separator = document.createElement('div');
+	        separator.className = 'jsoneditor-separator';
+	        li = document.createElement('li');
+	        li.appendChild(separator);
+	        list.appendChild(li);
+	      }
+	      else {
+	        var domItem = {};
+
+	        // create a menu item
+	        var li = document.createElement('li');
+	        list.appendChild(li);
+
+	        // create a button in the menu item
+	        var button = document.createElement('button');
+	        button.className = item.className;
+	        domItem.button = button;
+	        if (item.title) {
+	          button.title = item.title;
+	        }
+	        if (item.click) {
+	          button.onclick = function () {
+	            me.hide();
+	            item.click();
+	          };
+	        }
+	        li.appendChild(button);
+
+	        // create the contents of the button
+	        if (item.submenu) {
+	          // add the icon to the button
+	          var divIcon = document.createElement('div');
+	          divIcon.className = 'jsoneditor-icon';
+	          button.appendChild(divIcon);
+	          button.appendChild(document.createTextNode(item.text));
+
+	          var buttonSubmenu;
+	          if (item.click) {
+	            // submenu and a button with a click handler
+	            button.className += ' jsoneditor-default';
+
+	            var buttonExpand = document.createElement('button');
+	            domItem.buttonExpand = buttonExpand;
+	            buttonExpand.className = 'jsoneditor-expand';
+	            buttonExpand.innerHTML = '<div class="jsoneditor-expand"></div>';
+	            li.appendChild(buttonExpand);
+	            if (item.submenuTitle) {
+	              buttonExpand.title = item.submenuTitle;
+	            }
+
+	            buttonSubmenu = buttonExpand;
+	          }
+	          else {
+	            // submenu and a button without a click handler
+	            var divExpand = document.createElement('div');
+	            divExpand.className = 'jsoneditor-expand';
+	            button.appendChild(divExpand);
+
+	            buttonSubmenu = button;
+	          }
+
+	          // attach a handler to expand/collapse the submenu
+	          buttonSubmenu.onclick = function () {
+	            me._onExpandItem(domItem);
+	            buttonSubmenu.focus();
+	          };
+
+	          // create the submenu
+	          var domSubItems = [];
+	          domItem.subItems = domSubItems;
+	          var ul = document.createElement('ul');
+	          domItem.ul = ul;
+	          ul.className = 'jsoneditor-menu';
+	          ul.style.height = '0';
+	          li.appendChild(ul);
+	          createMenuItems(ul, domSubItems, item.submenu);
+	        }
+	        else {
+	          // no submenu, just a button with clickhandler
+	          button.innerHTML = '<div class="jsoneditor-icon"></div>' + item.text;
+	        }
+
+	        domItems.push(domItem);
+	      }
+	    });
+	  }
+	  createMenuItems(list, this.dom.items, items);
+
+	  // TODO: when the editor is small, show the submenu on the right instead of inline?
+
+	  // calculate the max height of the menu with one submenu expanded
+	  this.maxHeight = 0; // height in pixels
+	  items.forEach(function (item) {
+	    var height = (items.length + (item.submenu ? item.submenu.length : 0)) * 24;
+	    me.maxHeight = Math.max(me.maxHeight, height);
+	  });
+	}
+
+	/**
+	 * Get the currently visible buttons
+	 * @return {Array.<HTMLElement>} buttons
+	 * @private
+	 */
+	ContextMenu.prototype._getVisibleButtons = function () {
+	  var buttons = [];
+	  var me = this;
+	  this.dom.items.forEach(function (item) {
+	    buttons.push(item.button);
+	    if (item.buttonExpand) {
+	      buttons.push(item.buttonExpand);
+	    }
+	    if (item.subItems && item == me.expandedItem) {
+	      item.subItems.forEach(function (subItem) {
+	        buttons.push(subItem.button);
+	        if (subItem.buttonExpand) {
+	          buttons.push(subItem.buttonExpand);
+	        }
+	        // TODO: change to fully recursive method
+	      });
+	    }
+	  });
+
+	  return buttons;
+	};
+
+	// currently displayed context menu, a singleton. We may only have one visible context menu
+	ContextMenu.visibleMenu = undefined;
+
+	/**
+	 * Attach the menu to an anchor
+	 * @param {HTMLElement} anchor
+	 */
+	ContextMenu.prototype.show = function (anchor) {
+	  this.hide();
+
+	  // calculate whether the menu fits below the anchor
+	  var windowHeight = window.innerHeight,
+	      windowScroll = (window.pageYOffset || document.scrollTop || 0),
+	      windowBottom = windowHeight + windowScroll,
+	      anchorHeight = anchor.offsetHeight,
+	      menuHeight = this.maxHeight;
+
+	  // position the menu
+	  var left = util.getAbsoluteLeft(anchor);
+	  var top = util.getAbsoluteTop(anchor);
+	  if (top + anchorHeight + menuHeight < windowBottom) {
+	    // display the menu below the anchor
+	    this.dom.menu.style.left = left + 'px';
+	    this.dom.menu.style.top = (top + anchorHeight) + 'px';
+	    this.dom.menu.style.bottom = '';
+	  }
+	  else {
+	    // display the menu above the anchor
+	    this.dom.menu.style.left = left + 'px';
+	    this.dom.menu.style.top = '';
+	    this.dom.menu.style.bottom = (windowHeight - top) + 'px';
+	  }
+
+	  // attach the menu to the document
+	  document.body.appendChild(this.dom.menu);
+
+	  // create and attach event listeners
+	  var me = this;
+	  var list = this.dom.list;
+	  this.eventListeners.mousedown = util.addEventListener(
+	      document, 'mousedown', function (event) {
+	        // hide menu on click outside of the menu
+	        var target = event.target;
+	        if ((target != list) && !me._isChildOf(target, list)) {
+	          me.hide();
+	          event.stopPropagation();
+	          event.preventDefault();
+	        }
+	      });
+	  this.eventListeners.mousewheel = util.addEventListener(
+	      document, 'mousewheel', function (event) {
+	        // block scrolling when context menu is visible
+	        event.stopPropagation();
+	        event.preventDefault();
+	      });
+	  this.eventListeners.keydown = util.addEventListener(
+	      document, 'keydown', function (event) {
+	        me._onKeyDown(event);
+	      });
+
+	  // move focus to the first button in the context menu
+	  this.selection = util.getSelection();
+	  this.anchor = anchor;
+	  setTimeout(function () {
+	    me.dom.focusButton.focus();
+	  }, 0);
+
+	  if (ContextMenu.visibleMenu) {
+	    ContextMenu.visibleMenu.hide();
+	  }
+	  ContextMenu.visibleMenu = this;
+	};
+
+	/**
+	 * Hide the context menu if visible
+	 */
+	ContextMenu.prototype.hide = function () {
+	  // remove the menu from the DOM
+	  if (this.dom.menu.parentNode) {
+	    this.dom.menu.parentNode.removeChild(this.dom.menu);
+	    if (this.onClose) {
+	      this.onClose();
+	    }
+	  }
+
+	  // remove all event listeners
+	  // all event listeners are supposed to be attached to document.
+	  for (var name in this.eventListeners) {
+	    if (this.eventListeners.hasOwnProperty(name)) {
+	      var fn = this.eventListeners[name];
+	      if (fn) {
+	        util.removeEventListener(document, name, fn);
+	      }
+	      delete this.eventListeners[name];
+	    }
+	  }
+
+	  if (ContextMenu.visibleMenu == this) {
+	    ContextMenu.visibleMenu = undefined;
+	  }
+	};
+
+	/**
+	 * Expand a submenu
+	 * Any currently expanded submenu will be hided.
+	 * @param {Object} domItem
+	 * @private
+	 */
+	ContextMenu.prototype._onExpandItem = function (domItem) {
+	  var me = this;
+	  var alreadyVisible = (domItem == this.expandedItem);
+
+	  // hide the currently visible submenu
+	  var expandedItem = this.expandedItem;
+	  if (expandedItem) {
+	    //var ul = expandedItem.ul;
+	    expandedItem.ul.style.height = '0';
+	    expandedItem.ul.style.padding = '';
+	    setTimeout(function () {
+	      if (me.expandedItem != expandedItem) {
+	        expandedItem.ul.style.display = '';
+	        util.removeClassName(expandedItem.ul.parentNode, 'jsoneditor-selected');
+	      }
+	    }, 300); // timeout duration must match the css transition duration
+	    this.expandedItem = undefined;
+	  }
+
+	  if (!alreadyVisible) {
+	    var ul = domItem.ul;
+	    ul.style.display = 'block';
+	    var height = ul.clientHeight; // force a reflow in Firefox
+	    setTimeout(function () {
+	      if (me.expandedItem == domItem) {
+	        ul.style.height = (ul.childNodes.length * 24) + 'px';
+	        ul.style.padding = '5px 10px';
+	      }
+	    }, 0);
+	    util.addClassName(ul.parentNode, 'jsoneditor-selected');
+	    this.expandedItem = domItem;
+	  }
+	};
+
+	/**
+	 * Handle onkeydown event
+	 * @param {Event} event
+	 * @private
+	 */
+	ContextMenu.prototype._onKeyDown = function (event) {
+	  var target = event.target;
+	  var keynum = event.which;
+	  var handled = false;
+	  var buttons, targetIndex, prevButton, nextButton;
+
+	  if (keynum == 27) { // ESC
+	    // hide the menu on ESC key
+
+	    // restore previous selection and focus
+	    if (this.selection) {
+	      util.setSelection(this.selection);
+	    }
+	    if (this.anchor) {
+	      this.anchor.focus();
+	    }
+
+	    this.hide();
+
+	    handled = true;
+	  }
+	  else if (keynum == 9) { // Tab
+	    if (!event.shiftKey) { // Tab
+	      buttons = this._getVisibleButtons();
+	      targetIndex = buttons.indexOf(target);
+	      if (targetIndex == buttons.length - 1) {
+	        // move to first button
+	        buttons[0].focus();
+	        handled = true;
+	      }
+	    }
+	    else { // Shift+Tab
+	      buttons = this._getVisibleButtons();
+	      targetIndex = buttons.indexOf(target);
+	      if (targetIndex == 0) {
+	        // move to last button
+	        buttons[buttons.length - 1].focus();
+	        handled = true;
+	      }
+	    }
+	  }
+	  else if (keynum == 37) { // Arrow Left
+	    if (target.className == 'jsoneditor-expand') {
+	      buttons = this._getVisibleButtons();
+	      targetIndex = buttons.indexOf(target);
+	      prevButton = buttons[targetIndex - 1];
+	      if (prevButton) {
+	        prevButton.focus();
+	      }
+	    }
+	    handled = true;
+	  }
+	  else if (keynum == 38) { // Arrow Up
+	    buttons = this._getVisibleButtons();
+	    targetIndex = buttons.indexOf(target);
+	    prevButton = buttons[targetIndex - 1];
+	    if (prevButton && prevButton.className == 'jsoneditor-expand') {
+	      // skip expand button
+	      prevButton = buttons[targetIndex - 2];
+	    }
+	    if (!prevButton) {
+	      // move to last button
+	      prevButton = buttons[buttons.length - 1];
+	    }
+	    if (prevButton) {
+	      prevButton.focus();
+	    }
+	    handled = true;
+	  }
+	  else if (keynum == 39) { // Arrow Right
+	    buttons = this._getVisibleButtons();
+	    targetIndex = buttons.indexOf(target);
+	    nextButton = buttons[targetIndex + 1];
+	    if (nextButton && nextButton.className == 'jsoneditor-expand') {
+	      nextButton.focus();
+	    }
+	    handled = true;
+	  }
+	  else if (keynum == 40) { // Arrow Down
+	    buttons = this._getVisibleButtons();
+	    targetIndex = buttons.indexOf(target);
+	    nextButton = buttons[targetIndex + 1];
+	    if (nextButton && nextButton.className == 'jsoneditor-expand') {
+	      // skip expand button
+	      nextButton = buttons[targetIndex + 2];
+	    }
+	    if (!nextButton) {
+	      // move to first button
+	      nextButton = buttons[0];
+	    }
+	    if (nextButton) {
+	      nextButton.focus();
+	      handled = true;
+	    }
+	    handled = true;
+	  }
+	  // TODO: arrow left and right
+
+	  if (handled) {
+	    event.stopPropagation();
+	    event.preventDefault();
+	  }
+	};
+
+	/**
+	 * Test if an element is a child of a parent element.
+	 * @param {Element} child
+	 * @param {Element} parent
+	 * @return {boolean} isChild
+	 */
+	ContextMenu.prototype._isChildOf = function (child, parent) {
+	  var e = child.parentNode;
+	  while (e) {
+	    if (e == parent) {
+	      return true;
+	    }
+	    e = e.parentNode;
+	  }
+
+	  return false;
+	};
+
+	module.exports = ContextMenu;
+
+
+/***/ },
+/* 8 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var ContextMenu = __webpack_require__(7);
 	var appendNodeFactory = __webpack_require__(12);
 	var util = __webpack_require__(3);
 
@@ -2825,7 +3596,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	      var editable = this.editor.options.onEditable({
 	        field: this.field,
 	        value: this.value,
-	        path: this.path()
+	        path: this.getFieldsPath()
 	      });
 
 	      if (typeof editable === 'boolean') {
@@ -2844,7 +3615,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * Get the path of this node
 	 * @return {String[]} Array containing the path to this node
 	 */
-	Node.prototype.path = function () {
+	Node.prototype.getFieldsPath = function () {
 	  var node = this;
 	  var path = [];
 	  while (node) {
@@ -2855,6 +3626,15 @@ return /******/ (function(modules) { // webpackBootstrap
 	    node = node.parent;
 	  }
 	  return path;
+	};
+
+	/**
+	 * Get the index of this node: the index in the list of childs where this
+	 * node is part of
+	 * @return {number} Returns the index, or -1 if this is the root node
+	 */
+	Node.prototype.getIndex = function () {
+	  return this.parent ? this.parent.childs.indexOf(this) : -1;
 	};
 
 	/**
@@ -3009,6 +3789,16 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 
 	/**
+	 * Get path of the root node till the current node
+	 * @return {Node[]} Returns an array with nodes
+	 */
+	Node.prototype.getPath = function() {
+	  var path = this.parent ? this.parent.getPath() : [];
+	  path.push(this);
+	  return path;
+	};
+
+	/**
 	 * Create a clone of a node
 	 * The complete state of a clone is copied, including whether it is expanded or
 	 * not. The DOM elements are not cloned.
@@ -3055,7 +3845,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  // set this node expanded
 	  this.expanded = true;
 	  if (this.dom.expand) {
-	    this.dom.expand.className = 'expanded';
+	    this.dom.expand.className = 'jsoneditor-expanded';
 	  }
 
 	  this.showChilds();
@@ -3089,7 +3879,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	  // make this node collapsed
 	  if (this.dom.expand) {
-	    this.dom.expand.className = 'collapsed';
+	    this.dom.expand.className = 'jsoneditor-collapsed';
 	  }
 	  this.expanded = false;
 	};
@@ -3521,26 +4311,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 
 	/**
-	 * Duplicate given child node
-	 * new structure will be added right before the cloned node
-	 * @param {Node} node           the childNode to be duplicated
-	 * @return {Node} clone         the clone of the node
-	 * @private
-	 */
-	Node.prototype._duplicate = function(node) {
-	  var clone = node.clone();
-
-	  /* TODO: adjust the field name (to prevent equal field names)
-	   if (this.type == 'object') {
-	   }
-	   */
-
-	  this.insertAfter(clone, node);
-
-	  return clone;
-	};
-
-	/**
 	 * Check if given node is a child. The method will check recursively to find
 	 * this node.
 	 * @param {Node} node
@@ -3625,6 +4395,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	      delete node.searchValue;
 
 	      var removedNode = this.childs.splice(index, 1)[0];
+	      removedNode.parent = null;
 
 	      this.updateDom({'updateIndexes': true});
 
@@ -3801,30 +4572,30 @@ return /******/ (function(modules) { // webpackBootstrap
 	Node.prototype._updateDomValue = function () {
 	  var domValue = this.dom.value;
 	  if (domValue) {
-	    var classNames = ['value'];
+	    var classNames = ['jsoneditor-value'];
 
 
 	    // set text color depending on value type
 	    var value = this.value;
 	    var type = (this.type == 'auto') ? util.type(value) : this.type;
 	    var isUrl = type == 'string' && util.isUrl(value);
-	    classNames.push(type);
+	    classNames.push('jsoneditor-' + type);
 	    if (isUrl) {
-	      classNames.push('url');
+	      classNames.push('jsoneditor-url');
 	    }
 
 	    // visual styling when empty
 	    var isEmpty = (String(this.value) == '' && this.type != 'array' && this.type != 'object');
 	    if (isEmpty) {
-	      classNames.push('empty');
+	      classNames.push('jsoneditor-empty');
 	    }
 
 	    // highlight when there is a search result
 	    if (this.searchValueActive) {
-	      classNames.push('highlight-active');
+	      classNames.push('jsoneditor-highlight-active');
 	    }
 	    if (this.searchValue) {
-	      classNames.push('highlight');
+	      classNames.push('jsoneditor-highlight');
 	    }
 
 	    domValue.className = classNames.join(' ');
@@ -3859,24 +4630,24 @@ return /******/ (function(modules) { // webpackBootstrap
 	    // make backgound color lightgray when empty
 	    var isEmpty = (String(this.field) == '' && this.parent.type != 'array');
 	    if (isEmpty) {
-	      util.addClassName(domField, 'empty');
+	      util.addClassName(domField, 'jsoneditor-empty');
 	    }
 	    else {
-	      util.removeClassName(domField, 'empty');
+	      util.removeClassName(domField, 'jsoneditor-empty');
 	    }
 
 	    // highlight when there is a search result
 	    if (this.searchFieldActive) {
-	      util.addClassName(domField, 'highlight-active');
+	      util.addClassName(domField, 'jsoneditor-highlight-active');
 	    }
 	    else {
-	      util.removeClassName(domField, 'highlight-active');
+	      util.removeClassName(domField, 'jsoneditor-highlight-active');
 	    }
 	    if (this.searchField) {
-	      util.addClassName(domField, 'highlight');
+	      util.addClassName(domField, 'jsoneditor-highlight');
 	    }
 	    else {
-	      util.removeClassName(domField, 'highlight');
+	      util.removeClassName(domField, 'jsoneditor-highlight');
 	    }
 
 	    // strip formatting from the contents of the editable div
@@ -3956,7 +4727,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	      if (this.parent) {
 	        var domDrag = document.createElement('button');
 	        dom.drag = domDrag;
-	        domDrag.className = 'dragarea';
+	        domDrag.className = 'jsoneditor-dragarea';
 	        domDrag.title = 'Drag to move this field (Alt+Shift+Arrows)';
 	        tdDrag.appendChild(domDrag);
 	      }
@@ -3967,7 +4738,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    var tdMenu = document.createElement('td');
 	    var menu = document.createElement('button');
 	    dom.menu = menu;
-	    menu.className = 'contextmenu';
+	    menu.className = 'jsoneditor-contextmenu';
 	    menu.title = 'Click to open the actions menu (Ctrl+M)';
 	    tdMenu.appendChild(dom.menu);
 	    dom.tr.appendChild(tdMenu);
@@ -3986,32 +4757,47 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	/**
 	 * DragStart event, fired on mousedown on the dragarea at the left side of a Node
+	 * @param {Node[] | Node} nodes
 	 * @param {Event} event
-	 * @private
 	 */
-	Node.prototype._onDragStart = function (event) {
-	  var node = this;
-	  if (!this.mousemove) {
-	    this.mousemove = util.addEventListener(document, 'mousemove',
-	        function (event) {
-	          node._onDrag(event);
-	        });
+	Node.onDragStart = function (nodes, event) {
+	  if (!Array.isArray(nodes)) {
+	    return Node.onDragStart([nodes], event);
+	  }
+	  if (nodes.length === 0) {
+	    return;
 	  }
 
-	  if (!this.mouseup) {
-	    this.mouseup = util.addEventListener(document, 'mouseup',
-	        function (event ) {
-	          node._onDragEnd(event);
-	        });
+	  var firstNode = nodes[0];
+	  var lastNode = nodes[nodes.length - 1];
+	  var draggedNode = Node.getNodeFromTarget(event.target);
+	  var beforeNode = lastNode._nextSibling();
+	  var editor = firstNode.editor;
+
+	  // in case of multiple selected nodes, offsetY prevents the selection from
+	  // jumping when you start dragging one of the lower down nodes in the selection
+	  var offsetY = util.getAbsoluteTop(draggedNode.dom.tr) - util.getAbsoluteTop(firstNode.dom.tr);
+
+	  if (!editor.mousemove) {
+	    editor.mousemove = util.addEventListener(window, 'mousemove', function (event) {
+	      Node.onDrag(nodes, event);
+	    });
 	  }
 
-	  this.editor.highlighter.lock();
-	  this.drag = {
-	    'oldCursor': document.body.style.cursor,
-	    'startParent': this.parent,
-	    'startIndex': this.parent.childs.indexOf(this),
-	    'mouseX': event.pageX,
-	    'level': this.getLevel()
+	  if (!editor.mouseup) {
+	    editor.mouseup = util.addEventListener(window, 'mouseup',function (event ) {
+	      Node.onDragEnd(nodes, event);
+	    });
+	  }
+
+	  editor.highlighter.lock();
+	  editor.drag = {
+	    oldCursor: document.body.style.cursor,
+	    oldSelection: editor.getSelection(),
+	    oldBeforeNode: beforeNode,
+	    mouseX: event.pageX,
+	    offsetY: offsetY,
+	    level: firstNode.getLevel()
 	  };
 	  document.body.style.cursor = 'move';
 
@@ -4020,14 +4806,21 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	/**
 	 * Drag event, fired when moving the mouse while dragging a Node
+	 * @param {Node[] | Node} nodes
 	 * @param {Event} event
-	 * @private
 	 */
-	Node.prototype._onDrag = function (event) {
-	  // TODO: this method has grown too large. Split it in a number of methods
-	  var mouseY = event.pageY;
-	  var mouseX = event.pageX;
+	Node.onDrag = function (nodes, event) {
+	  if (!Array.isArray(nodes)) {
+	    return Node.onDrag([nodes], event);
+	  }
+	  if (nodes.length === 0) {
+	    return;
+	  }
 
+	  // TODO: this method has grown too large. Split it in a number of methods
+	  var editor = nodes[0].editor;
+	  var mouseY = event.pageY - editor.drag.offsetY;
+	  var mouseX = event.pageX;
 	  var trThis, trPrev, trNext, trFirst, trLast, trRoot;
 	  var nodePrev, nodeNext;
 	  var topThis, topPrev, topFirst, heightThis, bottomNext, heightNext;
@@ -4036,7 +4829,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	  // TODO: add an ESC option, which resets to the original position
 
 	  // move up/down
-	  trThis = this.dom.tr;
+	  var firstNode = nodes[0];
+	  trThis = firstNode.dom.tr;
 	  topThis = util.getAbsoluteTop(trThis);
 	  heightThis = trThis.offsetHeight;
 	  if (mouseY < topThis) {
@@ -4058,7 +4852,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	      trRoot = trThis.parentNode.firstChild;
 	      trPrev = trRoot ? trRoot.nextSibling : undefined;
 	      nodePrev = Node.getNodeFromTarget(trPrev);
-	      if (nodePrev == this) {
+	      if (nodePrev == firstNode) {
 	        nodePrev = undefined;
 	      }
 	    }
@@ -4073,13 +4867,16 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }
 
 	    if (nodePrev) {
-	      nodePrev.parent.moveBefore(this, nodePrev);
+	      nodes.forEach(function (node) {
+	        nodePrev.parent.moveBefore(node, nodePrev);
+	      });
 	      moved = true;
 	    }
 	  }
 	  else {
 	    // move down
-	    trLast = (this.expanded && this.append) ? this.append.getDom() : this.dom.tr;
+	    var lastNode = nodes[nodes.length - 1];
+	    trLast = (lastNode.expanded && lastNode.append) ? lastNode.append.getDom() : lastNode.dom.tr;
 	    trFirst = trLast ? trLast.nextSibling : undefined;
 	    if (trFirst) {
 	      topFirst = util.getAbsoluteTop(trFirst);
@@ -4091,11 +4888,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	              util.getAbsoluteTop(trNext.nextSibling) : 0;
 	          heightNext = trNext ? (bottomNext - topFirst) : 0;
 
-	          if (nodeNext.parent.childs.length == 1 && nodeNext.parent.childs[0] == this) {
+	          if (nodeNext.parent.childs.length == nodes.length &&
+	              nodeNext.parent.childs[nodes.length - 1] == lastNode) {
 	            // We are about to remove the last child of this parent,
 	            // which will make the parents appendNode visible.
-	            topThis += 24 - 1;
-	            // TODO: dangerous to suppose the height of the appendNode a constant of 24-1 px.
+	            topThis += 27;
+	            // TODO: dangerous to suppose the height of the appendNode a constant of 27 px.
 	          }
 	        }
 
@@ -4105,22 +4903,26 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	      if (nodeNext && nodeNext.parent) {
 	        // calculate the desired level
-	        var diffX = (mouseX - this.drag.mouseX);
+	        var diffX = (mouseX - editor.drag.mouseX);
 	        var diffLevel = Math.round(diffX / 24 / 2);
-	        var level = this.drag.level + diffLevel; // desired level
+	        var level = editor.drag.level + diffLevel; // desired level
 	        var levelNext = nodeNext.getLevel();     // level to be
 
 	        // find the best fitting level (move upwards over the append nodes)
 	        trPrev = nodeNext.dom.tr.previousSibling;
 	        while (levelNext < level && trPrev) {
 	          nodePrev = Node.getNodeFromTarget(trPrev);
-	          if (nodePrev == this || nodePrev._isChildOf(this)) {
-	            // neglect itself and its childs
+
+	          var isDraggedNode = nodes.some(function (node) {
+	            return node === nodePrev || nodePrev._isChildOf(node);
+	          });
+
+	          if (isDraggedNode) {
+	            // neglect the dragged nodes themselves and their childs
 	          }
 	          else if (nodePrev instanceof AppendNode) {
 	            var childs = nodePrev.parent.childs;
-	            if (childs.length > 1 ||
-	                (childs.length == 1 && childs[0] != this)) {
+	            if (childs.length != nodes.length || childs[nodes.length - 1] != lastNode) {
 	              // non-visible append node of a list of childs
 	              // consisting of not only this node (else the
 	              // append node will change into a visible "empty"
@@ -4141,7 +4943,9 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	        // move the node when its position is changed
 	        if (trLast.nextSibling != nodeNext.dom.tr) {
-	          nodeNext.parent.moveBefore(this, nodeNext);
+	          nodes.forEach(function (node) {
+	            nodeNext.parent.moveBefore(node, nodeNext);
+	          });
 	          moved = true;
 	        }
 	      }
@@ -4150,49 +4954,73 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	  if (moved) {
 	    // update the dragging parameters when moved
-	    this.drag.mouseX = mouseX;
-	    this.drag.level = this.getLevel();
+	    editor.drag.mouseX = mouseX;
+	    editor.drag.level = firstNode.getLevel();
 	  }
 
 	  // auto scroll when hovering around the top of the editor
-	  this.editor.startAutoScroll(mouseY);
+	  editor.startAutoScroll(mouseY);
 
 	  event.preventDefault();
 	};
 
 	/**
 	 * Drag event, fired on mouseup after having dragged a node
+	 * @param {Node[] | Node} nodes
 	 * @param {Event} event
-	 * @private
 	 */
-	Node.prototype._onDragEnd = function (event) {
-	  var params = {
-	    'node': this,
-	    'startParent': this.drag.startParent,
-	    'startIndex': this.drag.startIndex,
-	    'endParent': this.parent,
-	    'endIndex': this.parent.childs.indexOf(this)
-	  };
-	  if ((params.startParent != params.endParent) ||
-	      (params.startIndex != params.endIndex)) {
-	    // only register this action if the node is actually moved to another place
-	    this.editor._onAction('moveNode', params);
+	Node.onDragEnd = function (nodes, event) {
+	  if (!Array.isArray(nodes)) {
+	    return Node.onDrag([nodes], event);
+	  }
+	  if (nodes.length === 0) {
+	    return;
 	  }
 
-	  document.body.style.cursor = this.drag.oldCursor;
-	  this.editor.highlighter.unlock();
-	  delete this.drag;
+	  var firstNode = nodes[0];
+	  var editor = firstNode.editor;
+	  var parent = firstNode.parent;
+	  var firstIndex = parent.childs.indexOf(firstNode);
+	  var beforeNode = parent.childs[firstIndex + nodes.length] || parent.append;
 
-	  if (this.mousemove) {
-	    util.removeEventListener(document, 'mousemove', this.mousemove);
-	    delete this.mousemove;}
-	  if (this.mouseup) {
-	    util.removeEventListener(document, 'mouseup', this.mouseup);
-	    delete this.mouseup;
+	  // set focus to the context menu button of the first node
+	  if (nodes[0]) {
+	    nodes[0].dom.menu.focus();
+	  }
+
+	  var params = {
+	    nodes: nodes,
+	    oldSelection: editor.drag.oldSelection,
+	    newSelection: editor.getSelection(),
+	    oldBeforeNode: editor.drag.oldBeforeNode,
+	    newBeforeNode: beforeNode
+	  };
+
+	  if (params.oldBeforeNode != params.newBeforeNode) {
+	    // only register this action if the node is actually moved to another place
+	    editor._onAction('moveNodes', params);
+	  }
+
+	  document.body.style.cursor = editor.drag.oldCursor;
+	  editor.highlighter.unlock();
+	  nodes.forEach(function (node) {
+	    if (event.target !== node.dom.drag && event.target !== node.dom.menu) {
+	      editor.highlighter.unhighlight();
+	    }
+	  });
+	  delete editor.drag;
+
+	  if (editor.mousemove) {
+	    util.removeEventListener(window, 'mousemove', editor.mousemove);
+	    delete editor.mousemove;
+	  }
+	  if (editor.mouseup) {
+	    util.removeEventListener(window, 'mouseup', editor.mouseup);
+	    delete editor.mouseup;
 	  }
 
 	  // Stop any running auto scroll
-	  this.editor.stopAutoScroll();
+	  editor.stopAutoScroll();
 
 	  event.preventDefault();
 	};
@@ -4231,7 +5059,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	 */
 	Node.prototype.setHighlight = function (highlight) {
 	  if (this.dom.tr) {
-	    this.dom.tr.className = (highlight ? 'highlight' : '');
+	    if (highlight) {
+	      util.addClassName(this.dom.tr, 'jsoneditor-highlight');
+	    }
+	    else {
+	      util.removeClassName(this.dom.tr, 'jsoneditor-highlight');
+	    }
 
 	    if (this.append) {
 	      this.append.setHighlight(highlight);
@@ -4240,6 +5073,41 @@ return /******/ (function(modules) { // webpackBootstrap
 	    if (this.childs) {
 	      this.childs.forEach(function (child) {
 	        child.setHighlight(highlight);
+	      });
+	    }
+	  }
+	};
+
+	/**
+	 * Select or deselect a node
+	 * @param {boolean} selected
+	 * @param {boolean} [isFirst]
+	 */
+	Node.prototype.setSelected = function (selected, isFirst) {
+	  this.selected = selected;
+
+	  if (this.dom.tr) {
+	    if (selected) {
+	      util.addClassName(this.dom.tr, 'jsoneditor-selected');
+	    }
+	    else {
+	      util.removeClassName(this.dom.tr, 'jsoneditor-selected');
+	    }
+
+	    if (isFirst) {
+	      util.addClassName(this.dom.tr, 'jsoneditor-first');
+	    }
+	    else {
+	      util.removeClassName(this.dom.tr, 'jsoneditor-first');
+	    }
+
+	    if (this.append) {
+	      this.append.setSelected(selected);
+	    }
+
+	    if (this.childs) {
+	      this.childs.forEach(function (child) {
+	        child.setSelected(selected);
 	      });
 	    }
 	  }
@@ -4288,11 +5156,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	      // parent is an object
 	      domField.contentEditable = this.editable.field;
 	      domField.spellcheck = false;
-	      domField.className = 'field';
+	      domField.className = 'jsoneditor-field';
 	    }
 	    else {
 	      // parent is an array this is the root node
-	      domField.className = 'readonly';
+	      domField.className = 'jsoneditor-readonly';
 	    }
 
 	    var field;
@@ -4317,15 +5185,15 @@ return /******/ (function(modules) { // webpackBootstrap
 	    var count = this.childs ? this.childs.length : 0;
 	    if (this.type == 'array') {
 	      domValue.innerHTML = '[' + count + ']';
-	      this.dom.tr.className = 'expandable';
+	      util.addClassName(this.dom.tr, 'jsoneditor-expandable');
 	    }
 	    else if (this.type == 'object') {
 	      domValue.innerHTML = '{' + count + '}';
-	      this.dom.tr.className = 'expandable';
+	      util.addClassName(this.dom.tr, 'jsoneditor-expandable');
 	    }
 	    else {
 	      domValue.innerHTML = this._escapeHTML(this.value);
-	      this.dom.tr.className = '';
+	      util.removeClassName(this.dom.tr, 'jsoneditor-expandable');
 	    }
 	  }
 
@@ -4431,13 +5299,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	  // create expand button
 	  var expand = document.createElement('button');
 	  if (this._hasChilds()) {
-	    expand.className = this.expanded ? 'expanded' : 'collapsed';
+	    expand.className = this.expanded ? 'jsoneditor-expanded' : 'jsoneditor-collapsed';
 	    expand.title =
 	        'Click to expand/collapse this field (Ctrl+E). \n' +
 	        'Ctrl+Click to expand/collapse including all childs.';
 	  }
 	  else {
-	    expand.className = 'invisible';
+	    expand.className = 'jsoneditor-invisible';
 	    expand.title = '';
 	  }
 
@@ -4455,14 +5323,14 @@ return /******/ (function(modules) { // webpackBootstrap
 	  var domTree = document.createElement('table');
 	  var tbody = document.createElement('tbody');
 	  domTree.style.borderCollapse = 'collapse'; // TODO: put in css
-	  domTree.className = 'values';
+	  domTree.className = 'jsoneditor-values';
 	  domTree.appendChild(tbody);
 	  var tr = document.createElement('tr');
 	  tbody.appendChild(tr);
 
 	  // create expand button
 	  var tdExpand = document.createElement('td');
-	  tdExpand.className = 'tree';
+	  tdExpand.className = 'jsoneditor-tree';
 	  tr.appendChild(tdExpand);
 	  dom.expand = this._createDomExpandButton();
 	  tdExpand.appendChild(dom.expand);
@@ -4470,7 +5338,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	  // create the field
 	  var tdField = document.createElement('td');
-	  tdField.className = 'tree';
+	  tdField.className = 'jsoneditor-tree';
 	  tr.appendChild(tdField);
 	  dom.field = this._createDomField();
 	  tdField.appendChild(dom.field);
@@ -4478,17 +5346,17 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	  // create a separator
 	  var tdSeparator = document.createElement('td');
-	  tdSeparator.className = 'tree';
+	  tdSeparator.className = 'jsoneditor-tree';
 	  tr.appendChild(tdSeparator);
 	  if (this.type != 'object' && this.type != 'array') {
 	    tdSeparator.appendChild(document.createTextNode(':'));
-	    tdSeparator.className = 'separator';
+	    tdSeparator.className = 'jsoneditor-separator';
 	  }
 	  dom.tdSeparator = tdSeparator;
 
 	  // create the value
 	  var tdValue = document.createElement('td');
-	  tdValue.className = 'tree';
+	  tdValue.className = 'jsoneditor-tree';
 	  tr.appendChild(tdValue);
 	  dom.value = this._createDomValue();
 	  tdValue.appendChild(dom.value);
@@ -4520,19 +5388,14 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }
 	  }
 
-	  // drag events
-	  if (type == 'mousedown' && target == dom.drag) {
-	    this._onDragStart(event);
-	  }
-
 	  // context menu events
 	  if (type == 'click' && target == dom.menu) {
 	    var highlighter = node.editor.highlighter;
 	    highlighter.highlight(node);
 	    highlighter.lock();
-	    util.addClassName(dom.menu, 'selected');
+	    util.addClassName(dom.menu, 'jsoneditor-selected');
 	    this.showContextMenu(dom.menu, function () {
-	      util.removeClassName(dom.menu, 'selected');
+	      util.removeClassName(dom.menu, 'jsoneditor-selected');
 	      highlighter.unlock();
 	      highlighter.unhighlight();
 	    });
@@ -4645,37 +5508,31 @@ return /******/ (function(modules) { // webpackBootstrap
 	  // focus
 	  // when clicked in whitespace left or right from the field or value, set focus
 	  var domTree = dom.tree;
-	  if (target == domTree.parentNode) {
-	    switch (type) {
-	      case 'click':
-	        var left = (event.offsetX != undefined) ?
-	            (event.offsetX < (this.getLevel() + 1) * 24) :
-	            (event.pageX < util.getAbsoluteLeft(dom.tdSeparator));// for FF
-	        if (left || expandable) {
-	          // node is expandable when it is an object or array
-	          if (domField) {
-	            util.setEndOfContentEditable(domField);
-	            domField.focus();
-	          }
-	        }
-	        else {
-	          if (domValue) {
-	            util.setEndOfContentEditable(domValue);
-	            domValue.focus();
-	          }
-	        }
-	        break;
+	  if (target == domTree.parentNode &&
+	      type == 'click' && !event.hasMoved) {
+	    var left = (event.offsetX != undefined) ?
+	        (event.offsetX < (this.getLevel() + 1) * 24) :
+	        (event.pageX < util.getAbsoluteLeft(dom.tdSeparator));// for FF
+	    if (left || expandable) {
+	      // node is expandable when it is an object or array
+	      if (domField) {
+	        util.setEndOfContentEditable(domField);
+	        domField.focus();
+	      }
+	    }
+	    else {
+	      if (domValue) {
+	        util.setEndOfContentEditable(domValue);
+	        domValue.focus();
+	      }
 	    }
 	  }
 	  if ((target == dom.tdExpand && !expandable) || target == dom.tdField ||
-	      target == dom.tdSeparator) {
-	    switch (type) {
-	      case 'click':
-	        if (domField) {
-	          util.setEndOfContentEditable(domField);
-	          domField.focus();
-	        }
-	        break;
+	      target == dom.tdSeparator &&
+	      type == 'click' && !event.hasMoved) {
+	    if (domField) {
+	      util.setEndOfContentEditable(domField);
+	      domField.focus();
 	    }
 	  }
 
@@ -4697,6 +5554,15 @@ return /******/ (function(modules) { // webpackBootstrap
 	  var handled = false;
 	  var prevNode, nextNode, nextDom, nextDom2;
 	  var editable = this.editor.options.mode === 'tree';
+	  var oldSelection;
+	  var oldBeforeNode;
+	  var nodes;
+	  var multiselection;
+	  var selectedNodes = this.editor.multiselection.nodes.length > 0
+	      ? this.editor.multiselection.nodes
+	      : [this];
+	  var firstNode = selectedNodes[0];
+	  var lastNode = selectedNodes[selectedNodes.length - 1];
 
 	  // util.log(ctrlKey, keynum, event.charCode); // TODO: cleanup
 	  if (keynum == 13) { // Enter
@@ -4720,7 +5586,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  }
 	  else if (keynum == 68) {  // D
 	    if (ctrlKey && editable) {   // Ctrl+D
-	      this._onDuplicate();
+	      Node.onDuplicate(selectedNodes);
 	      handled = true;
 	    }
 	  }
@@ -4739,7 +5605,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  }
 	  else if (keynum == 46 && editable) { // Del
 	    if (ctrlKey) {       // Ctrl+Del
-	      this._onRemove();
+	      Node.onRemove(selectedNodes);
 	      handled = true;
 	    }
 	  }
@@ -4756,9 +5622,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	  else if (keynum == 35) { // End
 	    if (altKey) { // Alt+End
 	      // find the last node
-	      var lastNode = this._lastNode();
-	      if (lastNode) {
-	        lastNode.focus(Node.focusElement || this._getElementName(target));
+	      var endNode = this._lastNode();
+	      if (endNode) {
+	        endNode.focus(Node.focusElement || this._getElementName(target));
 	      }
 	      handled = true;
 	    }
@@ -4766,9 +5632,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	  else if (keynum == 36) { // Home
 	    if (altKey) { // Alt+Home
 	      // find the first node
-	      var firstNode = this._firstNode();
-	      if (firstNode) {
-	        firstNode.focus(Node.focusElement || this._getElementName(target));
+	      var homeNode = this._firstNode();
+	      if (homeNode) {
+	        homeNode.focus(Node.focusElement || this._getElementName(target));
 	      }
 	      handled = true;
 	    }
@@ -4782,13 +5648,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	      }
 	      handled = true;
 	    }
-	    else if (altKey && shiftKey && editable) { // Alt + Shift Arrow left
-	      if (this.expanded) {
-	        var appendDom = this.getAppend();
+	    else if (altKey && shiftKey && editable) { // Alt + Shift + Arrow left
+	      if (lastNode.expanded) {
+	        var appendDom = lastNode.getAppend();
 	        nextDom = appendDom ? appendDom.nextSibling : undefined;
 	      }
 	      else {
-	        var dom = this.getDom();
+	        var dom = lastNode.getDom();
 	        nextDom = dom.nextSibling;
 	      }
 	      if (nextDom) {
@@ -4796,10 +5662,23 @@ return /******/ (function(modules) { // webpackBootstrap
 	        nextDom2 = nextDom.nextSibling;
 	        nextNode2 = Node.getNodeFromTarget(nextDom2);
 	        if (nextNode && nextNode instanceof AppendNode &&
-	            !(this.parent.childs.length == 1) &&
+	            !(lastNode.parent.childs.length == 1) &&
 	            nextNode2 && nextNode2.parent) {
-	          nextNode2.parent.moveBefore(this, nextNode2);
+	          oldSelection = this.editor.getSelection();
+	          oldBeforeNode = lastNode._nextSibling();
+
+	          selectedNodes.forEach(function (node) {
+	            nextNode2.parent.moveBefore(node, nextNode2);
+	          });
 	          this.focus(Node.focusElement || this._getElementName(target));
+
+	          this.editor._onAction('moveNodes', {
+	            nodes: selectedNodes,
+	            oldBeforeNode: oldBeforeNode,
+	            newBeforeNode: nextNode2,
+	            oldSelection: oldSelection,
+	            newSelection: this.editor.getSelection()
+	          });
 	        }
 	      }
 	    }
@@ -4809,16 +5688,44 @@ return /******/ (function(modules) { // webpackBootstrap
 	      // find the previous node
 	      prevNode = this._previousNode();
 	      if (prevNode) {
+	        this.editor.deselect(true);
 	        prevNode.focus(Node.focusElement || this._getElementName(target));
+	      }
+	      handled = true;
+	    }
+	    else if (!altKey && shiftKey) { // Shift + Arrow Up
+	      // select multiple nodes
+	      prevNode = this._previousNode();
+	      if (prevNode) {
+	        multiselection = this.editor.multiselection;
+	        multiselection.start = multiselection.start || this;
+	        multiselection.end = prevNode;
+	        nodes = this.editor._findTopLevelNodes(multiselection.start, multiselection.end);
+
+	        this.editor.select(nodes);
+	        prevNode.focus('field'); // select field as we know this always exists
 	      }
 	      handled = true;
 	    }
 	    else if (altKey && shiftKey) { // Alt + Shift + Arrow Up
 	      // find the previous node
-	      prevNode = this._previousNode();
+	      prevNode = firstNode._previousNode();
 	      if (prevNode && prevNode.parent) {
-	        prevNode.parent.moveBefore(this, prevNode);
+	        oldSelection = this.editor.getSelection();
+	        oldBeforeNode = lastNode._nextSibling();
+
+	        selectedNodes.forEach(function (node) {
+	          prevNode.parent.moveBefore(node, prevNode);
+	        });
 	        this.focus(Node.focusElement || this._getElementName(target));
+
+	        this.editor._onAction('moveNodes', {
+	          nodes: selectedNodes,
+	          oldBeforeNode: oldBeforeNode,
+	          newBeforeNode: prevNode,
+	          oldSelection: oldSelection,
+	          newSelection: this.editor.getSelection()
+	        });
 	      }
 	      handled = true;
 	    }
@@ -4832,16 +5739,29 @@ return /******/ (function(modules) { // webpackBootstrap
 	      }
 	      handled = true;
 	    }
-	    else if (altKey && shiftKey) { // Alt + Shift Arrow Right
-	      dom = this.getDom();
+	    else if (altKey && shiftKey) { // Alt + Shift + Arrow Right
+	      dom = firstNode.getDom();
 	      var prevDom = dom.previousSibling;
 	      if (prevDom) {
 	        prevNode = Node.getNodeFromTarget(prevDom);
 	        if (prevNode && prevNode.parent &&
 	            (prevNode instanceof AppendNode)
 	            && !prevNode.isVisible()) {
-	          prevNode.parent.moveBefore(this, prevNode);
+	          oldSelection = this.editor.getSelection();
+	          oldBeforeNode = lastNode._nextSibling();
+
+	          selectedNodes.forEach(function (node) {
+	            prevNode.parent.moveBefore(node, prevNode);
+	          });
 	          this.focus(Node.focusElement || this._getElementName(target));
+
+	          this.editor._onAction('moveNodes', {
+	            nodes: selectedNodes,
+	            oldBeforeNode: oldBeforeNode,
+	            newBeforeNode: prevNode,
+	            oldSelection: oldSelection,
+	            newSelection: this.editor.getSelection()
+	          });
 	        }
 	      }
 	    }
@@ -4851,29 +5771,50 @@ return /******/ (function(modules) { // webpackBootstrap
 	      // find the next node
 	      nextNode = this._nextNode();
 	      if (nextNode) {
+	        this.editor.deselect(true);
 	        nextNode.focus(Node.focusElement || this._getElementName(target));
+	      }
+	      handled = true;
+	    }
+	    else if (!altKey && shiftKey) { // Shift + Arrow Down
+	      // select multiple nodes
+	      nextNode = this._nextNode();
+	      if (nextNode) {
+	        multiselection = this.editor.multiselection;
+	        multiselection.start = multiselection.start || this;
+	        multiselection.end = nextNode;
+	        nodes = this.editor._findTopLevelNodes(multiselection.start, multiselection.end);
+
+	        this.editor.select(nodes);
+	        nextNode.focus('field'); // select field as we know this always exists
 	      }
 	      handled = true;
 	    }
 	    else if (altKey && shiftKey && editable) { // Alt + Shift + Arrow Down
 	      // find the 2nd next node and move before that one
-	      if (this.expanded) {
-	        nextNode = this.append ? this.append._nextNode() : undefined;
+	      if (lastNode.expanded) {
+	        nextNode = lastNode.append ? lastNode.append._nextNode() : undefined;
 	      }
 	      else {
-	        nextNode = this._nextNode();
+	        nextNode = lastNode._nextNode();
 	      }
-	      nextDom = nextNode ? nextNode.getDom() : undefined;
-	      if (this.parent.childs.length == 1) {
-	        nextDom2 = nextDom;
-	      }
-	      else {
-	        nextDom2 = nextDom ? nextDom.nextSibling : undefined;
-	      }
-	      var nextNode2 = Node.getNodeFromTarget(nextDom2);
+	      var nextNode2 = nextNode && (nextNode._nextNode() || nextNode.parent.append);
 	      if (nextNode2 && nextNode2.parent) {
-	        nextNode2.parent.moveBefore(this, nextNode2);
+	        oldSelection = this.editor.getSelection();
+	        oldBeforeNode = lastNode._nextSibling();
+
+	        selectedNodes.forEach(function (node) {
+	          nextNode2.parent.moveBefore(node, nextNode2);
+	        });
 	        this.focus(Node.focusElement || this._getElementName(target));
+
+	        this.editor._onAction('moveNodes', {
+	          nodes: selectedNodes,
+	          oldBeforeNode: oldBeforeNode,
+	          newBeforeNode: nextNode2,
+	          oldSelection: oldSelection,
+	          newSelection: this.editor.getSelection()
+	        });
 	      }
 	      handled = true;
 	    }
@@ -4914,57 +5855,87 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 
 	/**
-	 * Remove this node
-	 * @private
+	 * Remove nodes
+	 * @param {Node[] | Node} nodes
 	 */
-	Node.prototype._onRemove = function() {
-	  this.editor.highlighter.unhighlight();
-	  var childs = this.parent.childs;
-	  var index = childs.indexOf(this);
-
-	  // adjust the focus
-	  var oldSelection = this.editor.getSelection();
-	  if (childs[index + 1]) {
-	    childs[index + 1].focus();
+	Node.onRemove = function(nodes) {
+	  if (!Array.isArray(nodes)) {
+	    return Node.onRemove([nodes]);
 	  }
-	  else if (childs[index - 1]) {
-	    childs[index - 1].focus();
-	  }
-	  else {
-	    this.parent.focus();
-	  }
-	  var newSelection = this.editor.getSelection();
 
-	  // remove the node
-	  this.parent._remove(this);
+	  if (nodes && nodes.length > 0) {
+	    var firstNode = nodes[0];
+	    var parent = firstNode.parent;
+	    var editor = firstNode.editor;
+	    var firstIndex = firstNode.getIndex();
+	    editor.highlighter.unhighlight();
 
-	  // store history action
-	  this.editor._onAction('removeNode', {
-	    node: this,
-	    parent: this.parent,
-	    index: index,
-	    oldSelection: oldSelection,
-	    newSelection: newSelection
-	  });
+	    // adjust the focus
+	    var oldSelection = editor.getSelection();
+	    Node.blurNodes(nodes);
+	    var newSelection = editor.getSelection();
+
+	    // remove the nodes
+	    nodes.forEach(function (node) {
+	      node.parent._remove(node);
+	    });
+
+	    // store history action
+	    editor._onAction('removeNodes', {
+	      nodes: nodes.slice(0), // store a copy of the array!
+	      parent: parent,
+	      index: firstIndex,
+	      oldSelection: oldSelection,
+	      newSelection: newSelection
+	    });
+	  }
 	};
 
-	/**
-	 * Duplicate this node
-	 * @private
-	 */
-	Node.prototype._onDuplicate = function() {
-	  var oldSelection = this.editor.getSelection();
-	  var clone = this.parent._duplicate(this);
-	  clone.focus();
-	  var newSelection = this.editor.getSelection();
 
-	  this.editor._onAction('duplicateNode', {
-	    node: this,
-	    clone: clone,
-	    parent: this.parent,
-	    oldSelection: oldSelection,
-	    newSelection: newSelection
-	  });
+	/**
+	 * Duplicate nodes
+	 * duplicated nodes will be added right after the original nodes
+	 * @param {Node[] | Node} nodes
+	 */
+	Node.onDuplicate = function(nodes) {
+	  if (!Array.isArray(nodes)) {
+	    return Node.onDuplicate([nodes]);
+	  }
+
+	  if (nodes && nodes.length > 0) {
+	    var lastNode = nodes[nodes.length - 1];
+	    var parent = lastNode.parent;
+	    var editor = lastNode.editor;
+
+	    editor.deselect(editor.multiselection.nodes);
+
+	    // duplicate the nodes
+	    var oldSelection = editor.getSelection();
+	    var afterNode = lastNode;
+	    var clones = nodes.map(function (node) {
+	      var clone = node.clone();
+	      parent.insertAfter(clone, afterNode);
+	      afterNode = clone;
+	      return clone;
+	    });
+
+	    // set selection to the duplicated nodes
+	    if (nodes.length === 1) {
+	      clones[0].focus();
+	    }
+	    else {
+	      editor.select(clones);
+	    }
+	    var newSelection = editor.getSelection();
+
+	    editor._onAction('duplicateNodes', {
+	      afterNode: lastNode,
+	      nodes: clones,
+	      parent: parent,
+	      oldSelection: oldSelection,
+	      newSelection: newSelection
+	    });
+	  }
 	};
 
 	/**
@@ -4988,8 +5959,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	  newNode.focus('field');
 	  var newSelection = this.editor.getSelection();
 
-	  this.editor._onAction('insertBeforeNode', {
-	    node: newNode,
+	  this.editor._onAction('insertBeforeNodes', {
+	    nodes: [newNode],
 	    beforeNode: this,
 	    parent: this.parent,
 	    oldSelection: oldSelection,
@@ -5018,8 +5989,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	  newNode.focus('field');
 	  var newSelection = this.editor.getSelection();
 
-	  this.editor._onAction('insertAfterNode', {
-	    node: newNode,
+	  this.editor._onAction('insertAfterNodes', {
+	    nodes: [newNode],
 	    afterNode: this,
 	    parent: this.parent,
 	    oldSelection: oldSelection,
@@ -5048,8 +6019,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	  newNode.focus('field');
 	  var newSelection = this.editor.getSelection();
 
-	  this.editor._onAction('appendNode', {
-	    node: newNode,
+	  this.editor._onAction('appendNodes', {
+	    nodes: [newNode],
 	    parent: this.parent,
 	    oldSelection: oldSelection,
 	    newSelection: newSelection
@@ -5143,6 +6114,42 @@ return /******/ (function(modules) { // webpackBootstrap
 	  }
 
 	  return undefined;
+	};
+
+	/**
+	 * Remove the focus of given nodes, and move the focus to the (a) node before,
+	 * (b) the node after, or (c) the parent node.
+	 * @param {Array.<Node> | Node} nodes
+	 */
+	Node.blurNodes = function (nodes) {
+	  if (!Array.isArray(nodes)) {
+	    Node.blurNodes([nodes]);
+	    return;
+	  }
+
+	  var firstNode = nodes[0];
+	  var parent = firstNode.parent;
+	  var firstIndex = firstNode.getIndex();
+
+	  if (parent.childs[firstIndex + nodes.length]) {
+	    parent.childs[firstIndex + nodes.length].focus();
+	  }
+	  else if (parent.childs[firstIndex - 1]) {
+	    parent.childs[firstIndex - 1].focus();
+	  }
+	  else {
+	    parent.focus();
+	  }
+	};
+
+	/**
+	 * Get the next sibling of current node
+	 * @return {Node} nextSibling
+	 * @private
+	 */
+	Node.prototype._nextSibling = function () {
+	  var index = this.parent.childs.indexOf(this);
+	  return this.parent.childs[index + 1] || this.parent.append;
 	};
 
 	/**
@@ -5343,12 +6350,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	    items.push({
 	      text: 'Type',
 	      title: 'Change the type of this field',
-	      className: 'type-' + this.type,
+	      className: 'jsoneditor-type-' + this.type,
 	      submenu: [
 	        {
 	          text: 'Auto',
-	          className: 'type-auto' +
-	              (this.type == 'auto' ? ' selected' : ''),
+	          className: 'jsoneditor-type-auto' +
+	              (this.type == 'auto' ? ' jsoneditor-selected' : ''),
 	          title: titles.auto,
 	          click: function () {
 	            node._onChangeType('auto');
@@ -5356,8 +6363,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	        },
 	        {
 	          text: 'Array',
-	          className: 'type-array' +
-	              (this.type == 'array' ? ' selected' : ''),
+	          className: 'jsoneditor-type-array' +
+	              (this.type == 'array' ? ' jsoneditor-selected' : ''),
 	          title: titles.array,
 	          click: function () {
 	            node._onChangeType('array');
@@ -5365,8 +6372,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	        },
 	        {
 	          text: 'Object',
-	          className: 'type-object' +
-	              (this.type == 'object' ? ' selected' : ''),
+	          className: 'jsoneditor-type-object' +
+	              (this.type == 'object' ? ' jsoneditor-selected' : ''),
 	          title: titles.object,
 	          click: function () {
 	            node._onChangeType('object');
@@ -5374,8 +6381,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	        },
 	        {
 	          text: 'String',
-	          className: 'type-string' +
-	              (this.type == 'string' ? ' selected' : ''),
+	          className: 'jsoneditor-type-string' +
+	              (this.type == 'string' ? ' jsoneditor-selected' : ''),
 	          title: titles.string,
 	          click: function () {
 	            node._onChangeType('string');
@@ -5390,14 +6397,14 @@ return /******/ (function(modules) { // webpackBootstrap
 	    items.push({
 	      text: 'Sort',
 	      title: 'Sort the childs of this ' + this.type,
-	      className: 'sort-' + direction,
+	      className: 'jsoneditor-sort-' + direction,
 	      click: function () {
 	        node._onSort(direction);
 	      },
 	      submenu: [
 	        {
 	          text: 'Ascending',
-	          className: 'sort-asc',
+	          className: 'jsoneditor-sort-asc',
 	          title: 'Sort the childs of this ' + this.type + ' in ascending order',
 	          click: function () {
 	            node._onSort('asc');
@@ -5405,7 +6412,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        },
 	        {
 	          text: 'Descending',
-	          className: 'sort-desc',
+	          className: 'jsoneditor-sort-desc',
 	          title: 'Sort the childs of this ' + this.type +' in descending order',
 	          click: function () {
 	            node._onSort('desc');
@@ -5430,14 +6437,14 @@ return /******/ (function(modules) { // webpackBootstrap
 	        text: 'Append',
 	        title: 'Append a new field with type \'auto\' after this field (Ctrl+Shift+Ins)',
 	        submenuTitle: 'Select the type of the field to be appended',
-	        className: 'append',
+	        className: 'jsoneditor-append',
 	        click: function () {
 	          node._onAppend('', '', 'auto');
 	        },
 	        submenu: [
 	          {
 	            text: 'Auto',
-	            className: 'type-auto',
+	            className: 'jsoneditor-type-auto',
 	            title: titles.auto,
 	            click: function () {
 	              node._onAppend('', '', 'auto');
@@ -5445,7 +6452,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	          },
 	          {
 	            text: 'Array',
-	            className: 'type-array',
+	            className: 'jsoneditor-type-array',
 	            title: titles.array,
 	            click: function () {
 	              node._onAppend('', []);
@@ -5453,7 +6460,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	          },
 	          {
 	            text: 'Object',
-	            className: 'type-object',
+	            className: 'jsoneditor-type-object',
 	            title: titles.object,
 	            click: function () {
 	              node._onAppend('', {});
@@ -5461,7 +6468,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	          },
 	          {
 	            text: 'String',
-	            className: 'type-string',
+	            className: 'jsoneditor-type-string',
 	            title: titles.string,
 	            click: function () {
 	              node._onAppend('', '', 'string');
@@ -5476,14 +6483,14 @@ return /******/ (function(modules) { // webpackBootstrap
 	      text: 'Insert',
 	      title: 'Insert a new field with type \'auto\' before this field (Ctrl+Ins)',
 	      submenuTitle: 'Select the type of the field to be inserted',
-	      className: 'insert',
+	      className: 'jsoneditor-insert',
 	      click: function () {
 	        node._onInsertBefore('', '', 'auto');
 	      },
 	      submenu: [
 	        {
 	          text: 'Auto',
-	          className: 'type-auto',
+	          className: 'jsoneditor-type-auto',
 	          title: titles.auto,
 	          click: function () {
 	            node._onInsertBefore('', '', 'auto');
@@ -5491,7 +6498,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        },
 	        {
 	          text: 'Array',
-	          className: 'type-array',
+	          className: 'jsoneditor-type-array',
 	          title: titles.array,
 	          click: function () {
 	            node._onInsertBefore('', []);
@@ -5499,7 +6506,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        },
 	        {
 	          text: 'Object',
-	          className: 'type-object',
+	          className: 'jsoneditor-type-object',
 	          title: titles.object,
 	          click: function () {
 	            node._onInsertBefore('', {});
@@ -5507,7 +6514,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        },
 	        {
 	          text: 'String',
-	          className: 'type-string',
+	          className: 'jsoneditor-type-string',
 	          title: titles.string,
 	          click: function () {
 	            node._onInsertBefore('', '', 'string');
@@ -5521,9 +6528,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	      items.push({
 	        text: 'Duplicate',
 	        title: 'Duplicate this field (Ctrl+D)',
-	        className: 'duplicate',
+	        className: 'jsoneditor-duplicate',
 	        click: function () {
-	          node._onDuplicate();
+	          Node.onDuplicate(node);
 	        }
 	      });
 
@@ -5531,9 +6538,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	      items.push({
 	        text: 'Remove',
 	        title: 'Remove this field (Ctrl+Del)',
-	        className: 'remove',
+	        className: 'jsoneditor-remove',
 	        click: function () {
-	          node._onRemove();
+	          Node.onRemove(node);
 	        }
 	      });
 	    }
@@ -5687,10 +6694,10 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 8 */
+/* 9 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var ContextMenu = __webpack_require__(11);
+	var ContextMenu = __webpack_require__(7);
 
 	/**
 	 * Create a select box to be used in the editor menu's, which allows to switch mode
@@ -5765,7 +6772,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	      throw new Error('Unknown mode "' + mode + '"');
 	    }
 
-	    item.className = 'type-modes' + ((current == mode) ? ' selected' : '');
+	    item.className = 'jsoneditor-type-modes' + ((current == mode) ? ' jsoneditor-selected' : '');
 	    items.push(item);
 	  }
 
@@ -5778,7 +6785,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	  // create the html element
 	  var box = document.createElement('button');
-	  box.className = 'modes separator';
+	  box.className = 'jsoneditor-modes jsoneditor-separator';
 	  box.innerHTML = currentTitle + ' &#x25BE;';
 	  box.title = 'Switch editor mode';
 	  box.onclick = function () {
@@ -5793,7 +6800,22 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 9 */
+/* 10 */
+/***/ function(module, exports, __webpack_require__) {
+
+	// load brace
+	var ace = __webpack_require__(14);
+
+	// load required ace modules
+	__webpack_require__(15);
+	__webpack_require__(16);
+	__webpack_require__(13);
+
+	module.exports = ace;
+
+
+/***/ },
+/* 11 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* Jison generated parser */
@@ -6216,475 +7238,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	}
 
 /***/ },
-/* 10 */
-/***/ function(module, exports, __webpack_require__) {
-
-	// load brace
-	var ace = __webpack_require__(14);
-
-	// load required ace modules
-	__webpack_require__(15);
-	__webpack_require__(16);
-	__webpack_require__(13);
-
-	module.exports = ace;
-
-
-/***/ },
-/* 11 */
-/***/ function(module, exports, __webpack_require__) {
-
-	var util = __webpack_require__(3);
-
-	/**
-	 * A context menu
-	 * @param {Object[]} items    Array containing the menu structure
-	 *                            TODO: describe structure
-	 * @param {Object} [options]  Object with options. Available options:
-	 *                            {function} close    Callback called when the
-	 *                                                context menu is being closed.
-	 * @constructor
-	 */
-	function ContextMenu (items, options) {
-	  this.dom = {};
-
-	  var me = this;
-	  var dom = this.dom;
-	  this.anchor = undefined;
-	  this.items = items;
-	  this.eventListeners = {};
-	  this.selection = undefined; // holds the selection before the menu was opened
-	  this.visibleSubmenu = undefined;
-	  this.onClose = options ? options.close : undefined;
-
-	  // create a container element
-	  var menu = document.createElement('div');
-	  menu.className = 'jsoneditor-contextmenu';
-	  dom.menu = menu;
-
-	  // create a list to hold the menu items
-	  var list = document.createElement('ul');
-	  list.className = 'menu';
-	  menu.appendChild(list);
-	  dom.list = list;
-	  dom.items = []; // list with all buttons
-
-	  // create a (non-visible) button to set the focus to the menu
-	  var focusButton = document.createElement('button');
-	  dom.focusButton = focusButton;
-	  var li = document.createElement('li');
-	  li.style.overflow = 'hidden';
-	  li.style.height = '0';
-	  li.appendChild(focusButton);
-	  list.appendChild(li);
-
-	  function createMenuItems (list, domItems, items) {
-	    items.forEach(function (item) {
-	      if (item.type == 'separator') {
-	        // create a separator
-	        var separator = document.createElement('div');
-	        separator.className = 'separator';
-	        li = document.createElement('li');
-	        li.appendChild(separator);
-	        list.appendChild(li);
-	      }
-	      else {
-	        var domItem = {};
-
-	        // create a menu item
-	        var li = document.createElement('li');
-	        list.appendChild(li);
-
-	        // create a button in the menu item
-	        var button = document.createElement('button');
-	        button.className = item.className;
-	        domItem.button = button;
-	        if (item.title) {
-	          button.title = item.title;
-	        }
-	        if (item.click) {
-	          button.onclick = function () {
-	            me.hide();
-	            item.click();
-	          };
-	        }
-	        li.appendChild(button);
-
-	        // create the contents of the button
-	        if (item.submenu) {
-	          // add the icon to the button
-	          var divIcon = document.createElement('div');
-	          divIcon.className = 'icon';
-	          button.appendChild(divIcon);
-	          button.appendChild(document.createTextNode(item.text));
-
-	          var buttonSubmenu;
-	          if (item.click) {
-	            // submenu and a button with a click handler
-	            button.className += ' default';
-
-	            var buttonExpand = document.createElement('button');
-	            domItem.buttonExpand = buttonExpand;
-	            buttonExpand.className = 'expand';
-	            buttonExpand.innerHTML = '<div class="expand"></div>';
-	            li.appendChild(buttonExpand);
-	            if (item.submenuTitle) {
-	              buttonExpand.title = item.submenuTitle;
-	            }
-
-	            buttonSubmenu = buttonExpand;
-	          }
-	          else {
-	            // submenu and a button without a click handler
-	            var divExpand = document.createElement('div');
-	            divExpand.className = 'expand';
-	            button.appendChild(divExpand);
-
-	            buttonSubmenu = button;
-	          }
-
-	          // attach a handler to expand/collapse the submenu
-	          buttonSubmenu.onclick = function () {
-	            me._onExpandItem(domItem);
-	            buttonSubmenu.focus();
-	          };
-
-	          // create the submenu
-	          var domSubItems = [];
-	          domItem.subItems = domSubItems;
-	          var ul = document.createElement('ul');
-	          domItem.ul = ul;
-	          ul.className = 'menu';
-	          ul.style.height = '0';
-	          li.appendChild(ul);
-	          createMenuItems(ul, domSubItems, item.submenu);
-	        }
-	        else {
-	          // no submenu, just a button with clickhandler
-	          button.innerHTML = '<div class="icon"></div>' + item.text;
-	        }
-
-	        domItems.push(domItem);
-	      }
-	    });
-	  }
-	  createMenuItems(list, this.dom.items, items);
-
-	  // TODO: when the editor is small, show the submenu on the right instead of inline?
-
-	  // calculate the max height of the menu with one submenu expanded
-	  this.maxHeight = 0; // height in pixels
-	  items.forEach(function (item) {
-	    var height = (items.length + (item.submenu ? item.submenu.length : 0)) * 24;
-	    me.maxHeight = Math.max(me.maxHeight, height);
-	  });
-	}
-
-	/**
-	 * Get the currently visible buttons
-	 * @return {Array.<HTMLElement>} buttons
-	 * @private
-	 */
-	ContextMenu.prototype._getVisibleButtons = function () {
-	  var buttons = [];
-	  var me = this;
-	  this.dom.items.forEach(function (item) {
-	    buttons.push(item.button);
-	    if (item.buttonExpand) {
-	      buttons.push(item.buttonExpand);
-	    }
-	    if (item.subItems && item == me.expandedItem) {
-	      item.subItems.forEach(function (subItem) {
-	        buttons.push(subItem.button);
-	        if (subItem.buttonExpand) {
-	          buttons.push(subItem.buttonExpand);
-	        }
-	        // TODO: change to fully recursive method
-	      });
-	    }
-	  });
-
-	  return buttons;
-	};
-
-	// currently displayed context menu, a singleton. We may only have one visible context menu
-	ContextMenu.visibleMenu = undefined;
-
-	/**
-	 * Attach the menu to an anchor
-	 * @param {HTMLElement} anchor
-	 */
-	ContextMenu.prototype.show = function (anchor) {
-	  this.hide();
-
-	  // calculate whether the menu fits below the anchor
-	  var windowHeight = window.innerHeight,
-	      windowScroll = (window.pageYOffset || document.scrollTop || 0),
-	      windowBottom = windowHeight + windowScroll,
-	      anchorHeight = anchor.offsetHeight,
-	      menuHeight = this.maxHeight;
-
-	  // position the menu
-	  var left = util.getAbsoluteLeft(anchor);
-	  var top = util.getAbsoluteTop(anchor);
-	  if (top + anchorHeight + menuHeight < windowBottom) {
-	    // display the menu below the anchor
-	    this.dom.menu.style.left = left + 'px';
-	    this.dom.menu.style.top = (top + anchorHeight) + 'px';
-	    this.dom.menu.style.bottom = '';
-	  }
-	  else {
-	    // display the menu above the anchor
-	    this.dom.menu.style.left = left + 'px';
-	    this.dom.menu.style.top = '';
-	    this.dom.menu.style.bottom = (windowHeight - top) + 'px';
-	  }
-
-	  // attach the menu to the document
-	  document.body.appendChild(this.dom.menu);
-
-	  // create and attach event listeners
-	  var me = this;
-	  var list = this.dom.list;
-	  this.eventListeners.mousedown = util.addEventListener(
-	      document, 'mousedown', function (event) {
-	        // hide menu on click outside of the menu
-	        var target = event.target;
-	        if ((target != list) && !me._isChildOf(target, list)) {
-	          me.hide();
-	          event.stopPropagation();
-	          event.preventDefault();
-	        }
-	      });
-	  this.eventListeners.mousewheel = util.addEventListener(
-	      document, 'mousewheel', function (event) {
-	        // block scrolling when context menu is visible
-	        event.stopPropagation();
-	        event.preventDefault();
-	      });
-	  this.eventListeners.keydown = util.addEventListener(
-	      document, 'keydown', function (event) {
-	        me._onKeyDown(event);
-	      });
-
-	  // move focus to the first button in the context menu
-	  this.selection = util.getSelection();
-	  this.anchor = anchor;
-	  setTimeout(function () {
-	    me.dom.focusButton.focus();
-	  }, 0);
-
-	  if (ContextMenu.visibleMenu) {
-	    ContextMenu.visibleMenu.hide();
-	  }
-	  ContextMenu.visibleMenu = this;
-	};
-
-	/**
-	 * Hide the context menu if visible
-	 */
-	ContextMenu.prototype.hide = function () {
-	  // remove the menu from the DOM
-	  if (this.dom.menu.parentNode) {
-	    this.dom.menu.parentNode.removeChild(this.dom.menu);
-	    if (this.onClose) {
-	      this.onClose();
-	    }
-	  }
-
-	  // remove all event listeners
-	  // all event listeners are supposed to be attached to document.
-	  for (var name in this.eventListeners) {
-	    if (this.eventListeners.hasOwnProperty(name)) {
-	      var fn = this.eventListeners[name];
-	      if (fn) {
-	        util.removeEventListener(document, name, fn);
-	      }
-	      delete this.eventListeners[name];
-	    }
-	  }
-
-	  if (ContextMenu.visibleMenu == this) {
-	    ContextMenu.visibleMenu = undefined;
-	  }
-	};
-
-	/**
-	 * Expand a submenu
-	 * Any currently expanded submenu will be hided.
-	 * @param {Object} domItem
-	 * @private
-	 */
-	ContextMenu.prototype._onExpandItem = function (domItem) {
-	  var me = this;
-	  var alreadyVisible = (domItem == this.expandedItem);
-
-	  // hide the currently visible submenu
-	  var expandedItem = this.expandedItem;
-	  if (expandedItem) {
-	    //var ul = expandedItem.ul;
-	    expandedItem.ul.style.height = '0';
-	    expandedItem.ul.style.padding = '';
-	    setTimeout(function () {
-	      if (me.expandedItem != expandedItem) {
-	        expandedItem.ul.style.display = '';
-	        util.removeClassName(expandedItem.ul.parentNode, 'selected');
-	      }
-	    }, 300); // timeout duration must match the css transition duration
-	    this.expandedItem = undefined;
-	  }
-
-	  if (!alreadyVisible) {
-	    var ul = domItem.ul;
-	    ul.style.display = 'block';
-	    var height = ul.clientHeight; // force a reflow in Firefox
-	    setTimeout(function () {
-	      if (me.expandedItem == domItem) {
-	        ul.style.height = (ul.childNodes.length * 24) + 'px';
-	        ul.style.padding = '5px 10px';
-	      }
-	    }, 0);
-	    util.addClassName(ul.parentNode, 'selected');
-	    this.expandedItem = domItem;
-	  }
-	};
-
-	/**
-	 * Handle onkeydown event
-	 * @param {Event} event
-	 * @private
-	 */
-	ContextMenu.prototype._onKeyDown = function (event) {
-	  var target = event.target;
-	  var keynum = event.which;
-	  var handled = false;
-	  var buttons, targetIndex, prevButton, nextButton;
-
-	  if (keynum == 27) { // ESC
-	    // hide the menu on ESC key
-
-	    // restore previous selection and focus
-	    if (this.selection) {
-	      util.setSelection(this.selection);
-	    }
-	    if (this.anchor) {
-	      this.anchor.focus();
-	    }
-
-	    this.hide();
-
-	    handled = true;
-	  }
-	  else if (keynum == 9) { // Tab
-	    if (!event.shiftKey) { // Tab
-	      buttons = this._getVisibleButtons();
-	      targetIndex = buttons.indexOf(target);
-	      if (targetIndex == buttons.length - 1) {
-	        // move to first button
-	        buttons[0].focus();
-	        handled = true;
-	      }
-	    }
-	    else { // Shift+Tab
-	      buttons = this._getVisibleButtons();
-	      targetIndex = buttons.indexOf(target);
-	      if (targetIndex == 0) {
-	        // move to last button
-	        buttons[buttons.length - 1].focus();
-	        handled = true;
-	      }
-	    }
-	  }
-	  else if (keynum == 37) { // Arrow Left
-	    if (target.className == 'expand') {
-	      buttons = this._getVisibleButtons();
-	      targetIndex = buttons.indexOf(target);
-	      prevButton = buttons[targetIndex - 1];
-	      if (prevButton) {
-	        prevButton.focus();
-	      }
-	    }
-	    handled = true;
-	  }
-	  else if (keynum == 38) { // Arrow Up
-	    buttons = this._getVisibleButtons();
-	    targetIndex = buttons.indexOf(target);
-	    prevButton = buttons[targetIndex - 1];
-	    if (prevButton && prevButton.className == 'expand') {
-	      // skip expand button
-	      prevButton = buttons[targetIndex - 2];
-	    }
-	    if (!prevButton) {
-	      // move to last button
-	      prevButton = buttons[buttons.length - 1];
-	    }
-	    if (prevButton) {
-	      prevButton.focus();
-	    }
-	    handled = true;
-	  }
-	  else if (keynum == 39) { // Arrow Right
-	    buttons = this._getVisibleButtons();
-	    targetIndex = buttons.indexOf(target);
-	    nextButton = buttons[targetIndex + 1];
-	    if (nextButton && nextButton.className == 'expand') {
-	      nextButton.focus();
-	    }
-	    handled = true;
-	  }
-	  else if (keynum == 40) { // Arrow Down
-	    buttons = this._getVisibleButtons();
-	    targetIndex = buttons.indexOf(target);
-	    nextButton = buttons[targetIndex + 1];
-	    if (nextButton && nextButton.className == 'expand') {
-	      // skip expand button
-	      nextButton = buttons[targetIndex + 2];
-	    }
-	    if (!nextButton) {
-	      // move to first button
-	      nextButton = buttons[0];
-	    }
-	    if (nextButton) {
-	      nextButton.focus();
-	      handled = true;
-	    }
-	    handled = true;
-	  }
-	  // TODO: arrow left and right
-
-	  if (handled) {
-	    event.stopPropagation();
-	    event.preventDefault();
-	  }
-	};
-
-	/**
-	 * Test if an element is a child of a parent element.
-	 * @param {Element} child
-	 * @param {Element} parent
-	 * @return {boolean} isChild
-	 */
-	ContextMenu.prototype._isChildOf = function (child, parent) {
-	  var e = child.parentNode;
-	  while (e) {
-	    if (e == parent) {
-	      return true;
-	    }
-	    e = e.parentNode;
-	  }
-
-	  return false;
-	};
-
-	module.exports = ContextMenu;
-
-
-/***/ },
 /* 12 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var util = __webpack_require__(3);
-	var ContextMenu = __webpack_require__(11);
+	var ContextMenu = __webpack_require__(7);
 
 	/**
 	 * A factory function to create an AppendNode, which depends on a Node
@@ -6735,7 +7293,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	      var tdMenu = document.createElement('td');
 	      dom.tdMenu = tdMenu;
 	      var menu = document.createElement('button');
-	      menu.className = 'contextmenu';
+	      menu.className = 'jsoneditor-contextmenu';
 	      menu.title = 'Click to open the actions menu (Ctrl+M)';
 	      dom.menu = menu;
 	      tdMenu.appendChild(dom.menu);
@@ -6745,7 +7303,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    var tdAppend = document.createElement('td');
 	    var domText = document.createElement('div');
 	    domText.innerHTML = '(empty)';
-	    domText.className = 'readonly';
+	    domText.className = 'jsoneditor-readonly';
 	    tdAppend.appendChild(domText);
 	    dom.td = tdAppend;
 	    dom.text = domText;
@@ -6822,14 +7380,14 @@ return /******/ (function(modules) { // webpackBootstrap
 	        'text': 'Append',
 	        'title': 'Append a new field with type \'auto\' (Ctrl+Shift+Ins)',
 	        'submenuTitle': 'Select the type of the field to be appended',
-	        'className': 'insert',
+	        'className': 'jsoneditor-insert',
 	        'click': function () {
 	          node._onAppend('', '', 'auto');
 	        },
 	        'submenu': [
 	          {
 	            'text': 'Auto',
-	            'className': 'type-auto',
+	            'className': 'jsoneditor-type-auto',
 	            'title': titles.auto,
 	            'click': function () {
 	              node._onAppend('', '', 'auto');
@@ -6837,7 +7395,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	          },
 	          {
 	            'text': 'Array',
-	            'className': 'type-array',
+	            'className': 'jsoneditor-type-array',
 	            'title': titles.array,
 	            'click': function () {
 	              node._onAppend('', []);
@@ -6845,7 +7403,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	          },
 	          {
 	            'text': 'Object',
-	            'className': 'type-object',
+	            'className': 'jsoneditor-type-object',
 	            'title': titles.object,
 	            'click': function () {
 	              node._onAppend('', {});
@@ -6853,7 +7411,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	          },
 	          {
 	            'text': 'String',
-	            'className': 'type-string',
+	            'className': 'jsoneditor-type-string',
 	            'title': titles.string,
 	            'click': function () {
 	              node._onAppend('', '', 'string');
@@ -6892,9 +7450,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	      var highlighter = this.editor.highlighter;
 	      highlighter.highlight(this.parent);
 	      highlighter.lock();
-	      util.addClassName(dom.menu, 'selected');
+	      util.addClassName(dom.menu, 'jsoneditor-selected');
 	      this.showContextMenu(dom.menu, function () {
-	        util.removeClassName(dom.menu, 'selected');
+	        util.removeClassName(dom.menu, 'jsoneditor-selected');
 	        highlighter.unlock();
 	        highlighter.unhighlight();
 	      });
