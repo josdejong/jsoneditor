@@ -1220,9 +1220,8 @@ Node.onDragStart = function (nodes, event) {
   }
 
   var firstNode = nodes[0];
-  var parent = firstNode.parent;
-  var firstIndex = parent.childs.indexOf(firstNode);
-  var beforeNode = parent.childs[firstIndex + nodes.length] || parent.append;
+  var lastNode = nodes[nodes.length - 1];
+  var beforeNode = lastNode._nextSibling();
   var editor = firstNode.editor;
 
   if (!editor.mousemove) {
@@ -1997,6 +1996,8 @@ Node.prototype.onKeyDown = function (event) {
   var handled = false;
   var prevNode, nextNode, nextDom, nextDom2;
   var editable = this.editor.options.mode === 'tree';
+  var oldSelection;
+  var oldBeforeNode;
 
   // util.log(ctrlKey, keynum, event.charCode); // TODO: cleanup
   if (keynum == 13) { // Enter
@@ -2020,7 +2021,7 @@ Node.prototype.onKeyDown = function (event) {
   }
   else if (keynum == 68) {  // D
     if (ctrlKey && editable) {   // Ctrl+D
-      Node.duplicate(this);
+      Node.onDuplicate(this);
       handled = true;
     }
   }
@@ -2039,7 +2040,7 @@ Node.prototype.onKeyDown = function (event) {
   }
   else if (keynum == 46 && editable) { // Del
     if (ctrlKey) {       // Ctrl+Del
-      Node.remove(this);
+      Node.onRemove(this);
       handled = true;
     }
   }
@@ -2082,7 +2083,7 @@ Node.prototype.onKeyDown = function (event) {
       }
       handled = true;
     }
-    else if (altKey && shiftKey && editable) { // Alt + Shift Arrow left
+    else if (altKey && shiftKey && editable) { // Alt + Shift + Arrow left
       if (this.expanded) {
         var appendDom = this.getAppend();
         nextDom = appendDom ? appendDom.nextSibling : undefined;
@@ -2098,8 +2099,19 @@ Node.prototype.onKeyDown = function (event) {
         if (nextNode && nextNode instanceof AppendNode &&
             !(this.parent.childs.length == 1) &&
             nextNode2 && nextNode2.parent) {
+          oldSelection = this.editor.getSelection();
+          oldBeforeNode = this._nextSibling();
+
           nextNode2.parent.moveBefore(this, nextNode2);
           this.focus(Node.focusElement || this._getElementName(target));
+
+          this.editor._onAction('moveNodes', {
+            nodes: [this],
+            oldBeforeNode: oldBeforeNode,
+            newBeforeNode: nextNode2,
+            oldSelection: oldSelection,
+            newSelection: this.editor.getSelection()
+          });
         }
       }
     }
@@ -2117,8 +2129,19 @@ Node.prototype.onKeyDown = function (event) {
       // find the previous node
       prevNode = this._previousNode();
       if (prevNode && prevNode.parent) {
+        oldSelection = this.editor.getSelection();
+        oldBeforeNode = this._nextSibling();
+
         prevNode.parent.moveBefore(this, prevNode);
         this.focus(Node.focusElement || this._getElementName(target));
+
+        this.editor._onAction('moveNodes', {
+          nodes: [this],
+          oldBeforeNode: oldBeforeNode,
+          newBeforeNode: prevNode,
+          oldSelection: oldSelection,
+          newSelection: this.editor.getSelection()
+        });
       }
       handled = true;
     }
@@ -2132,7 +2155,7 @@ Node.prototype.onKeyDown = function (event) {
       }
       handled = true;
     }
-    else if (altKey && shiftKey) { // Alt + Shift Arrow Right
+    else if (altKey && shiftKey) { // Alt + Shift + Arrow Right
       dom = this.getDom();
       var prevDom = dom.previousSibling;
       if (prevDom) {
@@ -2140,8 +2163,19 @@ Node.prototype.onKeyDown = function (event) {
         if (prevNode && prevNode.parent &&
             (prevNode instanceof AppendNode)
             && !prevNode.isVisible()) {
+          oldSelection = this.editor.getSelection();
+          oldBeforeNode = this._nextSibling();
+
           prevNode.parent.moveBefore(this, prevNode);
           this.focus(Node.focusElement || this._getElementName(target));
+
+          this.editor._onAction('moveNodes', {
+            nodes: [this],
+            oldBeforeNode: oldBeforeNode,
+            newBeforeNode: prevNode,
+            oldSelection: oldSelection,
+            newSelection: this.editor.getSelection()
+          });
         }
       }
     }
@@ -2163,17 +2197,21 @@ Node.prototype.onKeyDown = function (event) {
       else {
         nextNode = this._nextNode();
       }
-      nextDom = nextNode ? nextNode.getDom() : undefined;
-      if (this.parent.childs.length == 1) {
-        nextDom2 = nextDom;
-      }
-      else {
-        nextDom2 = nextDom ? nextDom.nextSibling : undefined;
-      }
-      var nextNode2 = Node.getNodeFromTarget(nextDom2);
+      var nextNode2 = nextNode && (nextNode._nextNode() || nextNode.parent.append);
       if (nextNode2 && nextNode2.parent) {
+        oldSelection = this.editor.getSelection();
+        oldBeforeNode = this._nextSibling();
+
         nextNode2.parent.moveBefore(this, nextNode2);
         this.focus(Node.focusElement || this._getElementName(target));
+
+        this.editor._onAction('moveNodes', {
+          nodes: [this],
+          oldBeforeNode: oldBeforeNode,
+          newBeforeNode: nextNode2,
+          oldSelection: oldSelection,
+          newSelection: this.editor.getSelection()
+        });
       }
       handled = true;
     }
@@ -2244,9 +2282,9 @@ Node.prototype._onRemove = function() {
  * Remove nodes
  * @param {Node[] | Node} nodes
  */
-Node.remove = function(nodes) {
+Node.onRemove = function(nodes) {
   if (!Array.isArray(nodes)) {
-    return Node.remove([nodes]);
+    return Node.onRemove([nodes]);
   }
 
   if (nodes && nodes.length > 0) {
@@ -2283,9 +2321,9 @@ Node.remove = function(nodes) {
  * duplicated nodes will be added right after the original nodes
  * @param {Node[] | Node} nodes
  */
-Node.duplicate = function(nodes) {
+Node.onDuplicate = function(nodes) {
   if (!Array.isArray(nodes)) {
-    return Node.duplicate([nodes]);
+    return Node.onDuplicate([nodes]);
   }
 
   if (nodes && nodes.length > 0) {
@@ -2321,11 +2359,6 @@ Node.duplicate = function(nodes) {
       oldSelection: oldSelection,
       newSelection: newSelection
     });
-
-    return clones;
-  }
-  else {
-    return [];
   }
 };
 
@@ -2531,6 +2564,16 @@ Node.blurNodes = function (nodes) {
   else {
     parent.focus();
   }
+};
+
+/**
+ * Get the next sibling of current node
+ * @return {Node} nextSibling
+ * @private
+ */
+Node.prototype._nextSibling = function () {
+  var index = this.parent.childs.indexOf(this);
+  return this.parent.childs[index + 1] || this.parent.append;
 };
 
 /**
@@ -2911,7 +2954,7 @@ Node.prototype.showContextMenu = function (anchor, onClose) {
         title: 'Duplicate this field (Ctrl+D)',
         className: 'jsoneditor-duplicate',
         click: function () {
-          Node.duplicate(node);
+          Node.onDuplicate(node);
         }
       });
 
@@ -2921,7 +2964,7 @@ Node.prototype.showContextMenu = function (anchor, onClose) {
         title: 'Remove this field (Ctrl+Del)',
         className: 'jsoneditor-remove',
         click: function () {
-          Node.remove(node);
+          Node.onRemove(node);
         }
       });
     }

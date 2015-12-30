@@ -27,6 +27,7 @@ https://github.com/josdejong/jsoneditor
   browser behavior of selecting the address bar.
 - Fixed #38: clear search results after a new JSON object is set.
 - Fixed #242: row stays highlighted when dragging outside editor.
+- Fixed quick-keys Shift+Alt+Arrows not registering actions in history.
 
 
 ## 2015-06-13, version 4.2.1

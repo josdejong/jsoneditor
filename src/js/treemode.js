@@ -934,7 +934,7 @@ treemode.showContextMenu = function (anchor, onClose) {
     className: 'jsoneditor-duplicate',
     click: function () {
       if (editor.multiselect) {
-        var clones = Node.duplicate(editor.multiselect.nodes);
+        Node.onDuplicate(editor.multiselect.nodes);
       }
     }
   });
@@ -946,7 +946,7 @@ treemode.showContextMenu = function (anchor, onClose) {
     className: 'jsoneditor-remove',
     click: function () {
       if (editor.multiselect) {
-        Node.remove(editor.multiselect.nodes);
+        Node.onRemove(editor.multiselect.nodes);
       }
     }
   });
