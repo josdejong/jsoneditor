@@ -2004,6 +2004,8 @@ Node.prototype.onKeyDown = function (event) {
   var editable = this.editor.options.mode === 'tree';
   var oldSelection;
   var oldBeforeNode;
+  var nodes;
+  var multiselection;
 
   // util.log(ctrlKey, keynum, event.charCode); // TODO: cleanup
   if (keynum == 13) { // Enter
@@ -2027,7 +2029,10 @@ Node.prototype.onKeyDown = function (event) {
   }
   else if (keynum == 68) {  // D
     if (ctrlKey && editable) {   // Ctrl+D
-      Node.onDuplicate(this);
+      nodes = this.editor.multiselection.nodes.length > 0
+          ? this.editor.multiselection.nodes
+          : this;
+      Node.onDuplicate(nodes);
       handled = true;
     }
   }
@@ -2046,7 +2051,10 @@ Node.prototype.onKeyDown = function (event) {
   }
   else if (keynum == 46 && editable) { // Del
     if (ctrlKey) {       // Ctrl+Del
-      Node.onRemove(this);
+      nodes = this.editor.multiselection.nodes.length > 0
+          ? this.editor.multiselection.nodes
+          : this;
+      Node.onRemove(nodes);
       handled = true;
     }
   }
@@ -2127,7 +2135,22 @@ Node.prototype.onKeyDown = function (event) {
       // find the previous node
       prevNode = this._previousNode();
       if (prevNode) {
+        this.editor.deselect(true);
         prevNode.focus(Node.focusElement || this._getElementName(target));
+      }
+      handled = true;
+    }
+    else if (!altKey && shiftKey) { // Shift + Arrow Up
+      // select multiple nodes
+      prevNode = this._previousNode();
+      if (prevNode) {
+        multiselection = this.editor.multiselection;
+        multiselection.start = multiselection.start || this;
+        multiselection.end = prevNode;
+        nodes = this.editor._findTopLevelNodes(multiselection.start, multiselection.end);
+
+        this.editor.select(nodes);
+        prevNode.focus('field'); // select field as we know this always exists
       }
       handled = true;
     }
@@ -2191,7 +2214,22 @@ Node.prototype.onKeyDown = function (event) {
       // find the next node
       nextNode = this._nextNode();
       if (nextNode) {
+        this.editor.deselect(true);
         nextNode.focus(Node.focusElement || this._getElementName(target));
+      }
+      handled = true;
+    }
+    else if (!altKey && shiftKey) { // Shift + Arrow Down
+      // select multiple nodes
+      nextNode = this._nextNode();
+      if (nextNode) {
+        multiselection = this.editor.multiselection;
+        multiselection.start = multiselection.start || this;
+        multiselection.end = nextNode;
+        nodes = this.editor._findTopLevelNodes(multiselection.start, multiselection.end);
+
+        this.editor.select(nodes);
+        nextNode.focus('field'); // select field as we know this always exists
       }
       handled = true;
     }
@@ -2310,7 +2348,7 @@ Node.onDuplicate = function(nodes) {
     var parent = lastNode.parent;
     var editor = lastNode.editor;
 
-    editor.deselect(editor.multiselect.nodes);
+    editor.deselect(editor.multiselection.nodes);
 
     // duplicate the nodes
     var oldSelection = editor.getSelection();

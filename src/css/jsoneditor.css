@@ -233,7 +233,8 @@ tr.jsoneditor-selected button.jsoneditor-contextmenu {
   visibility: hidden;
 }
 
-tr.jsoneditor-selected.jsoneditor-first button {
+tr.jsoneditor-selected.jsoneditor-first button.jsoneditor-dragarea,
+tr.jsoneditor-selected.jsoneditor-first button.jsoneditor-contextmenu {
   visibility: visible;
 }
 
