@@ -414,9 +414,14 @@ treemode.setSelection = function (selection) {
  *                            {Number} scrollTop            Scroll position
  */
 treemode.getSelection = function () {
+  var range = util.getSelectionOffset();
+  if (range && range.container.nodeName !== 'DIV') { // filter on (editable) divs)
+    range = null;
+  }
+
   return {
     dom: domFocus,
-    range: util.getSelectionOffset(),
+    range: range,
     nodes: this.multiselect.nodes.slice(0),
     scrollTop: this.content ? this.content.scrollTop : 0
   };
@@ -643,17 +648,27 @@ treemode._onEvent = function (event) {
       // stop propagation
       return;
     }
+
+    if (event.type == 'click') {
+      // deselect a multi selection
+      this.deselect();
+    }
+
+    if (event.type == 'mousedown') {
+      // drag multiple nodes
+      Node.onDragStart(this.multiselect.nodes, event);
+    }
   }
   else {
     if (event.type == 'mousedown') {
       this.deselect();
 
       if (node && event.target == node.dom.drag) {
-        node._onDragStart(event);
+        // drag a singe node
+        Node.onDragStart(node, event);
       }
       else if (!node || (event.target != node.dom.field && event.target != node.dom.value)) {
         // select multiple nodes
-        // TODO: if there is already a multiselect and this event is inside one of the selected nodes, start a node drag action
         this._onMultiSelectStart(event);
       }
     }
@@ -732,6 +747,7 @@ treemode.deselect = function () {
     this.multiselect.nodes.forEach(function (node) {
       node.setSelected(false);
     });
+    this.multiselect.nodes = [];
   }
 };
 
@@ -777,8 +793,8 @@ treemode._findTopLevelNodes = function (start, end) {
   var endChild = endPath[i];
 
   if (!startChild || !endChild) {
-    // startChild or endChild are each others parents
     if (root.parent) {
+      // startChild is a parent of endChild or vice versa
       startChild = root;
       endChild = root;
       root = root.parent

@@ -104,15 +104,14 @@ function History (editor) {
     },
     'moveNodes': {
       'undo': function (params) {
-        params.nodes.forEach(function (node, index) {
-          params.startParent.moveTo(node, params.startIndex + index);
+        params.nodes.forEach(function (node) {
+          params.oldBeforeNode.parent.moveBefore(node, params.oldBeforeNode);
         });
       },
       'redo': function (params) {
-        params.nodes.forEach(function (node, index) {
-          params.endParent.moveTo(node, params.endIndex + index);
+        params.nodes.forEach(function (node) {
+          params.newBeforeNode.parent.moveBefore(node, params.newBeforeNode);
         });
-
       }
     },
 

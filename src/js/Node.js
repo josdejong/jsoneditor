@@ -1208,30 +1208,42 @@ Node.prototype.getDom = function() {
 
 /**
  * DragStart event, fired on mousedown on the dragarea at the left side of a Node
+ * @param {Node[] | Node} nodes
  * @param {Event} event
- * @private
  */
-Node.prototype._onDragStart = function (event) {
-  var node = this;
-  if (!this.mousemove) {
-    this.mousemove = util.addEventListener(window, 'mousemove', function (event) {
-      node._onDrag(event);
+Node.onDragStart = function (nodes, event) {
+  if (!Array.isArray(nodes)) {
+    return Node.onDragStart([nodes], event);
+  }
+  if (nodes.length === 0) {
+    return;
+  }
+
+  var firstNode = nodes[0];
+  var parent = firstNode.parent;
+  var firstIndex = parent.childs.indexOf(firstNode);
+  var beforeNode = parent.childs[firstIndex + nodes.length] || parent.append;
+  var editor = firstNode.editor;
+
+  if (!editor.mousemove) {
+    editor.mousemove = util.addEventListener(window, 'mousemove', function (event) {
+      Node.onDrag(nodes, event);
     });
   }
 
-  if (!this.mouseup) {
-    this.mouseup = util.addEventListener(window, 'mouseup',function (event ) {
-      node._onDragEnd(event);
+  if (!editor.mouseup) {
+    editor.mouseup = util.addEventListener(window, 'mouseup',function (event ) {
+      Node.onDragEnd(nodes, event);
     });
   }
 
-  this.editor.highlighter.lock();
-  this.drag = {
-    'oldCursor': document.body.style.cursor,
-    'startParent': this.parent,
-    'startIndex': this.parent.childs.indexOf(this),
-    'mouseX': event.pageX,
-    'level': this.getLevel()
+  editor.highlighter.lock();
+  editor.drag = {
+    oldCursor: document.body.style.cursor,
+    oldSelection: editor.getSelection(),
+    oldBeforeNode: beforeNode,
+    mouseX: event.pageX,
+    level: firstNode.getLevel()
   };
   document.body.style.cursor = 'move';
 
@@ -1240,14 +1252,22 @@ Node.prototype._onDragStart = function (event) {
 
 /**
  * Drag event, fired when moving the mouse while dragging a Node
+ * @param {Node[] | Node} nodes
  * @param {Event} event
- * @private
  */
-Node.prototype._onDrag = function (event) {
+Node.onDrag = function (nodes, event) {
+  if (!Array.isArray(nodes)) {
+    return Node.onDrag([nodes], event);
+  }
+  if (nodes.length === 0) {
+    return;
+  }
+
   // TODO: this method has grown too large. Split it in a number of methods
   var mouseY = event.pageY;
   var mouseX = event.pageX;
 
+  var editor = nodes[0].editor;
   var trThis, trPrev, trNext, trFirst, trLast, trRoot;
   var nodePrev, nodeNext;
   var topThis, topPrev, topFirst, heightThis, bottomNext, heightNext;
@@ -1256,7 +1276,8 @@ Node.prototype._onDrag = function (event) {
   // TODO: add an ESC option, which resets to the original position
 
   // move up/down
-  trThis = this.dom.tr;
+  var firstNode = nodes[0];
+  trThis = firstNode.dom.tr;
   topThis = util.getAbsoluteTop(trThis);
   heightThis = trThis.offsetHeight;
   if (mouseY < topThis) {
@@ -1278,7 +1299,7 @@ Node.prototype._onDrag = function (event) {
       trRoot = trThis.parentNode.firstChild;
       trPrev = trRoot ? trRoot.nextSibling : undefined;
       nodePrev = Node.getNodeFromTarget(trPrev);
-      if (nodePrev == this) {
+      if (nodePrev == firstNode) {
         nodePrev = undefined;
       }
     }
@@ -1293,13 +1314,16 @@ Node.prototype._onDrag = function (event) {
     }
 
     if (nodePrev) {
-      nodePrev.parent.moveBefore(this, nodePrev);
+      nodes.forEach(function (node) {
+        nodePrev.parent.moveBefore(node, nodePrev);
+      });
       moved = true;
     }
   }
   else {
     // move down
-    trLast = (this.expanded && this.append) ? this.append.getDom() : this.dom.tr;
+    var lastNode = nodes[nodes.length - 1];
+    trLast = (lastNode.expanded && lastNode.append) ? lastNode.append.getDom() : lastNode.dom.tr;
     trFirst = trLast ? trLast.nextSibling : undefined;
     if (trFirst) {
       topFirst = util.getAbsoluteTop(trFirst);
@@ -1311,7 +1335,7 @@ Node.prototype._onDrag = function (event) {
               util.getAbsoluteTop(trNext.nextSibling) : 0;
           heightNext = trNext ? (bottomNext - topFirst) : 0;
 
-          if (nodeNext.parent.childs.length == 1 && nodeNext.parent.childs[0] == this) {
+          if (nodeNext.parent.childs.length == 1 && nodeNext.parent.childs[0] == lastNode) {
             // We are about to remove the last child of this parent,
             // which will make the parents appendNode visible.
             topThis += 24 - 1;
@@ -1325,22 +1349,22 @@ Node.prototype._onDrag = function (event) {
 
       if (nodeNext && nodeNext.parent) {
         // calculate the desired level
-        var diffX = (mouseX - this.drag.mouseX);
+        var diffX = (mouseX - editor.drag.mouseX);
         var diffLevel = Math.round(diffX / 24 / 2);
-        var level = this.drag.level + diffLevel; // desired level
+        var level = editor.drag.level + diffLevel; // desired level
         var levelNext = nodeNext.getLevel();     // level to be
 
         // find the best fitting level (move upwards over the append nodes)
         trPrev = nodeNext.dom.tr.previousSibling;
         while (levelNext < level && trPrev) {
           nodePrev = Node.getNodeFromTarget(trPrev);
-          if (nodePrev == this || nodePrev._isChildOf(this)) {
+          if (nodePrev == lastNode || nodePrev._isChildOf(lastNode)) {
             // neglect itself and its childs
           }
           else if (nodePrev instanceof AppendNode) {
             var childs = nodePrev.parent.childs;
             if (childs.length > 1 ||
-                (childs.length == 1 && childs[0] != this)) {
+                (childs.length == 1 && childs[0] != lastNode)) {
               // non-visible append node of a list of childs
               // consisting of not only this node (else the
               // append node will change into a visible "empty"
@@ -1361,7 +1385,9 @@ Node.prototype._onDrag = function (event) {
 
         // move the node when its position is changed
         if (trLast.nextSibling != nodeNext.dom.tr) {
-          nodeNext.parent.moveBefore(this, nodeNext);
+          nodes.forEach(function (node) {
+            nodeNext.parent.moveBefore(node, nodeNext);
+          });
           moved = true;
         }
       }
@@ -1370,54 +1396,68 @@ Node.prototype._onDrag = function (event) {
 
   if (moved) {
     // update the dragging parameters when moved
-    this.drag.mouseX = mouseX;
-    this.drag.level = this.getLevel();
+    editor.drag.mouseX = mouseX;
+    editor.drag.level = firstNode.getLevel();
   }
 
   // auto scroll when hovering around the top of the editor
-  this.editor.startAutoScroll(mouseY);
+  editor.startAutoScroll(mouseY);
 
   event.preventDefault();
 };
 
 /**
  * Drag event, fired on mouseup after having dragged a node
+ * @param {Node[] | Node} nodes
  * @param {Event} event
- * @private
  */
-Node.prototype._onDragEnd = function (event) {
+Node.onDragEnd = function (nodes, event) {
+  if (!Array.isArray(nodes)) {
+    return Node.onDrag([nodes], event);
+  }
+  if (nodes.length === 0) {
+    return;
+  }
+
+  var firstNode = nodes[0];
+  var editor = firstNode.editor;
+  var parent = firstNode.parent;
+  var firstIndex = parent.childs.indexOf(firstNode);
+  var beforeNode = parent.childs[firstIndex + nodes.length] || parent.append;
+
   var params = {
-    'nodes': [this],
-    'startParent': this.drag.startParent,
-    'startIndex': this.drag.startIndex,
-    'endParent': this.parent,
-    'endIndex': this.parent.childs.indexOf(this)
+    nodes: nodes,
+    oldSelection: editor.drag.oldSelection,
+    newSelection: editor.getSelection(),
+    oldBeforeNode: editor.drag.oldBeforeNode,
+    newBeforeNode: beforeNode
   };
 
-  if ((params.startParent != params.endParent) ||
-      (params.startIndex != params.endIndex)) {
+  if (params.oldBeforeNode != params.newBeforeNode) {
     // only register this action if the node is actually moved to another place
-    this.editor._onAction('moveNodes', params);
+    editor._onAction('moveNodes', params);
   }
 
-  document.body.style.cursor = this.drag.oldCursor;
-  this.editor.highlighter.unlock();
-  if (event.target !== this.dom.drag && event.target !== this.dom.menu) {
-    this.editor.highlighter.unhighlight();
-  }
-  delete this.drag;
+  document.body.style.cursor = editor.drag.oldCursor;
+  editor.highlighter.unlock();
+  nodes.forEach(function (node) {
+    if (event.target !== node.dom.drag && event.target !== node.dom.menu) {
+      editor.highlighter.unhighlight();
+    }
+  });
+  delete editor.drag;
 
-  if (this.mousemove) {
-    util.removeEventListener(window, 'mousemove', this.mousemove);
-    delete this.mousemove;
+  if (editor.mousemove) {
+    util.removeEventListener(window, 'mousemove', editor.mousemove);
+    delete editor.mousemove;
   }
-  if (this.mouseup) {
-    util.removeEventListener(window, 'mouseup', this.mouseup);
-    delete this.mouseup;
+  if (editor.mouseup) {
+    util.removeEventListener(window, 'mouseup', editor.mouseup);
+    delete editor.mouseup;
   }
 
   // Stop any running auto scroll
-  this.editor.stopAutoScroll();
+  editor.stopAutoScroll();
 
   event.preventDefault();
 };
