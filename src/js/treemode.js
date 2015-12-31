@@ -653,7 +653,7 @@ treemode._onEvent = function (event) {
   if (node && node.selected) {
     if (event.type == 'click') {
       if (event.target == node.dom.menu) {
-        this.showContextMenu(event.target);
+        this.showContextMenu(event.target.parentNode);
 
         // stop propagation (else we will open the context menu of a single node)
         return;
@@ -701,6 +701,10 @@ treemode._startDragDistance = function (event) {
 };
 
 treemode._updateDragDistance = function (event) {
+  if (!this.dragDistanceEvent) {
+    this._startDragDistance(event);
+  }
+
   var diffX = event.pageX - this.dragDistanceEvent.initialPageX;
   var diffY = event.pageY - this.dragDistanceEvent.initialPageY;
 
@@ -1024,7 +1028,7 @@ treemode.showContextMenu = function (anchor, onClose) {
   });
 
   var menu = new ContextMenu(items, {close: onClose});
-  menu.show(anchor);
+  menu.show(anchor, this.content);
 };
 
 

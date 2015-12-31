@@ -2786,7 +2786,8 @@ Node.TYPE_TITLES = {
 
 /**
  * Show a contextmenu for this node
- * @param {HTMLElement} anchor   Anchor element to attache the context menu to.
+ * @param {HTMLElement} anchor   Anchor element to attach the context menu to
+ *                               as sibling.
  * @param {function} [onClose]   Callback method called when the context menu
  *                               is being closed.
  */
@@ -2996,7 +2997,7 @@ Node.prototype.showContextMenu = function (anchor, onClose) {
   }
 
   var menu = new ContextMenu(items, {close: onClose});
-  menu.show(anchor);
+  menu.show(anchor, this.editor.content);
 };
 
 /**

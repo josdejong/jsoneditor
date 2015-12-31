@@ -1,6 +1,12 @@
 
 /* ContextMenu - main menu */
 
+div.jsoneditor-contextmenu-root {
+  position: relative;
+  width: 0;
+  height: 0;
+}
+
 div.jsoneditor-contextmenu {
   position: absolute;
   z-index: 99999;

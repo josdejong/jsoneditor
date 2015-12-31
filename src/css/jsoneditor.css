@@ -142,7 +142,7 @@ div.jsoneditor-tree button.jsoneditor-contextmenu {
 
 div.jsoneditor-tree button.jsoneditor-contextmenu:hover,
 div.jsoneditor-tree button.jsoneditor-contextmenu:focus,
-div.jsoneditor-tree button.jsoneditor-contextmenu.selected,
+div.jsoneditor-tree button.jsoneditor-contextmenu.jsoneditor-selected,
 tr.jsoneditor-selected.jsoneditor-first button.jsoneditor-contextmenu {
   background-position: -48px -48px;
 }
@@ -174,7 +174,7 @@ div.jsoneditor {
 
   width: 100%;
   height: 100%;
-  overflow: auto;
+  overflow: hidden;
   position: relative;
   padding: 0;
   line-height: 100%;
@@ -197,8 +197,6 @@ div.jsoneditor-outer {
   -moz-box-sizing: border-box;
   -webkit-box-sizing: border-box;
   box-sizing: border-box;
-
-  overflow: hidden;
 }
 
 div.jsoneditor-tree {

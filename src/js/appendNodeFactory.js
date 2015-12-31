@@ -179,7 +179,7 @@ function appendNodeFactory(Node) {
     ];
 
     var menu = new ContextMenu(items, {close: onClose});
-    menu.show(anchor);
+    menu.show(anchor, this.editor.content);
   };
 
   /**

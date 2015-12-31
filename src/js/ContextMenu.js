@@ -18,13 +18,18 @@ function ContextMenu (items, options) {
   this.items = items;
   this.eventListeners = {};
   this.selection = undefined; // holds the selection before the menu was opened
-  this.visibleSubmenu = undefined;
   this.onClose = options ? options.close : undefined;
+
+  // create root element
+  var root = document.createElement('div');
+  root.className = 'jsoneditor-contextmenu-root';
+  dom.root = root;
 
   // create a container element
   var menu = document.createElement('div');
   menu.className = 'jsoneditor-contextmenu';
   dom.menu = menu;
+  root.appendChild(menu);
 
   // create a list to hold the menu items
   var list = document.createElement('ul');
@@ -176,60 +181,65 @@ ContextMenu.visibleMenu = undefined;
 
 /**
  * Attach the menu to an anchor
- * @param {HTMLElement} anchor
+ * @param {HTMLElement} anchor          Anchor where the menu will be attached
+ *                                      as sibling.
+ * @param {HTMLElement} [contentWindow] The DIV with with the (scrollable) contents
  */
-ContextMenu.prototype.show = function (anchor) {
+ContextMenu.prototype.show = function (anchor, contentWindow) {
   this.hide();
 
-  // calculate whether the menu fits below the anchor
-  var windowHeight = window.innerHeight,
-      windowScroll = (window.pageYOffset || document.scrollTop || 0),
-      windowBottom = windowHeight + windowScroll,
-      anchorHeight = anchor.offsetHeight,
-      menuHeight = this.maxHeight;
+  // determine whether to display the menu below or above the anchor
+  var showBelow = true;
+  if (contentWindow) {
+    var anchorRect = anchor.getBoundingClientRect();
+    var contentRect = contentWindow.getBoundingClientRect();
+
+    if (anchorRect.bottom + this.maxHeight < contentRect.bottom) {
+      // fits below -> show below
+    }
+    else if (anchorRect.top - this.maxHeight > contentRect.top) {
+      // fits above -> show above
+      showBelow = false;
+    }
+    else {
+      // doesn't fit above nor below -> show below
+    }
+  }
 
   // position the menu
-  var left = util.getAbsoluteLeft(anchor);
-  var top = util.getAbsoluteTop(anchor);
-  if (top + anchorHeight + menuHeight < windowBottom) {
+  if (showBelow) {
     // display the menu below the anchor
-    this.dom.menu.style.left = left + 'px';
-    this.dom.menu.style.top = (top + anchorHeight) + 'px';
+    var anchorHeight = anchor.offsetHeight;
+    this.dom.menu.style.left = '0px';
+    this.dom.menu.style.top = anchorHeight + 'px';
     this.dom.menu.style.bottom = '';
   }
   else {
     // display the menu above the anchor
-    this.dom.menu.style.left = left + 'px';
+    this.dom.menu.style.left = '0px';
     this.dom.menu.style.top = '';
-    this.dom.menu.style.bottom = (windowHeight - top) + 'px';
+    this.dom.menu.style.bottom = '0px';
   }
 
-  // attach the menu to the document
-  document.body.appendChild(this.dom.menu);
+  // attach the menu to the parent of the anchor
+  var parent = anchor.parentNode;
+  parent.insertBefore(this.dom.root, parent.firstChild);
 
   // create and attach event listeners
   var me = this;
   var list = this.dom.list;
-  this.eventListeners.mousedown = util.addEventListener(
-      document, 'mousedown', function (event) {
-        // hide menu on click outside of the menu
-        var target = event.target;
-        if ((target != list) && !me._isChildOf(target, list)) {
-          me.hide();
-          event.stopPropagation();
-          event.preventDefault();
-        }
-      });
-  this.eventListeners.mousewheel = util.addEventListener(
-      document, 'mousewheel', function (event) {
-        // block scrolling when context menu is visible
-        event.stopPropagation();
-        event.preventDefault();
-      });
-  this.eventListeners.keydown = util.addEventListener(
-      document, 'keydown', function (event) {
-        me._onKeyDown(event);
-      });
+  this.eventListeners.mousedown = util.addEventListener(window, 'mousedown', function (event) {
+    // hide menu on click outside of the menu
+    var target = event.target;
+    if ((target != list) && !me._isChildOf(target, list)) {
+      me.hide();
+      event.stopPropagation();
+      event.preventDefault();
+    }
+  });
+  this.eventListeners.keydown = util.addEventListener(window, 'keydown', function (event) {
+    me._onKeyDown(event);
+  });
 
   // move focus to the first button in the context menu
   this.selection = util.getSelection();
@@ -249,8 +259,8 @@ ContextMenu.prototype.show = function (anchor) {
  */
 ContextMenu.prototype.hide = function () {
   // remove the menu from the DOM
-  if (this.dom.menu.parentNode) {
-    this.dom.menu.parentNode.removeChild(this.dom.menu);
+  if (this.dom.root.parentNode) {
+    this.dom.root.parentNode.removeChild(this.dom.root);
     if (this.onClose) {
       this.onClose();
     }
@@ -262,7 +272,7 @@ ContextMenu.prototype.hide = function () {
     if (this.eventListeners.hasOwnProperty(name)) {
       var fn = this.eventListeners[name];
       if (fn) {
-        util.removeEventListener(document, name, fn);
+        util.removeEventListener(window, name, fn);
       }
       delete this.eventListeners[name];
     }

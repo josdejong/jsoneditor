@@ -4,7 +4,6 @@ div.jsoneditor-menu {
   height: 35px;
   padding: 2px;
   margin: 0;
-  overflow: hidden;
   -moz-box-sizing: border-box;
   -webkit-box-sizing: border-box;
   box-sizing: border-box;
@@ -14,7 +13,8 @@ div.jsoneditor-menu {
   border-bottom: 1px solid #3883fa;
 }
 
-div.jsoneditor-menu > button {
+div.jsoneditor-menu > button,
+div.jsoneditor-menu > div.jsoneditor-modes > button {
   width: 26px;
   height: 26px;
   margin: 2px;
@@ -31,15 +31,19 @@ div.jsoneditor-menu > button {
   float: left;
 }
 
-div.jsoneditor-menu > button:hover {
+div.jsoneditor-menu > button:hover,
+div.jsoneditor-menu > div.jsoneditor-modes > button:hover {
   background-color: rgba(255,255,255,0.2);
   border: 1px solid rgba(255,255,255,0.4);
 }
 div.jsoneditor-menu > button:focus,
-div.jsoneditor-menu > button:active {
+div.jsoneditor-menu > button:active,
+div.jsoneditor-menu > div.jsoneditor-modes > button:focus,
+div.jsoneditor-menu > div.jsoneditor-modes > button:active {
   background-color: rgba(255,255,255,0.3);
 }
-div.jsoneditor-menu > button:disabled {
+div.jsoneditor-menu > button:disabled,
+div.jsoneditor-menu > div.jsoneditor-modes > button:disabled {
   opacity: 0.5;
 }
 
@@ -68,14 +72,20 @@ div.jsoneditor-menu > button.jsoneditor-format {
   background-position: -72px -120px;
 }
 
-div.jsoneditor-menu > button.jsoneditor-modes {
+div.jsoneditor-menu > div.jsoneditor-modes {
+  display: inline-block;
+  float: left;
+}
+
+div.jsoneditor-menu > div.jsoneditor-modes > button {
   background-image: none;
   width: auto;
   padding-left: 6px;
   padding-right: 6px;
 }
 
-div.jsoneditor-menu > button.jsoneditor-separator {
+div.jsoneditor-menu > button.jsoneditor-separator,
+div.jsoneditor-menu > div.jsoneditor-modes > button.jsoneditor-separator {
   margin-left: 10px;
 }
 
@@ -98,5 +108,3 @@ div.jsoneditor-menu a.jsoneditor-poweredBy {
   top: 0;
   padding: 10px;
 }
-
-/* TODO: css for button:disabled is not supported by IE8 */

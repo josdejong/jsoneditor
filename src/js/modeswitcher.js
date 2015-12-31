@@ -94,7 +94,12 @@ function createModeSwitcher(editor, modes, current) {
     menu.show(box);
   };
 
-  return box;
+  var div = document.createElement('div');
+  div.className = 'jsoneditor-modes';
+  div.style.position = 'relative';
+  div.appendChild(box);
+
+  return div;
 }
 
 exports.create = createModeSwitcher;
