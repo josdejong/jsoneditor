@@ -5,6 +5,7 @@ https://github.com/josdejong/jsoneditor
 
 ## 2015-12-31, version 5.0.0
 
+- New design.
 - Implemented selection of multiple nodes, allowing to move/duplicate/remove
   multiple nodes at once (See #106).
 - Implemented a new option `escapeUnicode`, which will show the hexadecimal 
