@@ -6,6 +6,7 @@ https://github.com/josdejong/jsoneditor
 ## not yet released, version 5.0.1
 
 - Fixed #130: option `onEditable` not available in mode `form`.
+- Fixed #202: removed `version` field from bower.json.
 
 
 ## 2015-12-31, version 5.0.0

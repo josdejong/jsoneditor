@@ -5,7 +5,7 @@ This document describes the steps required to publish a new version of jsonedito
 
 ## Update version number
 
-Update the version number in both package.json and bower.json.
+Update the version number in package.json.
 
 
 ## Update history
