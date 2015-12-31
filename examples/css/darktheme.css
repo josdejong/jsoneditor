@@ -19,7 +19,8 @@ table.jsoneditor-search div.jsoneditor-frame {
   background: #808080;
 }
 
-tr.jsoneditor-highlight {
+tr.jsoneditor-highlight,
+tr.jsoneditor-selected {
   background-color: #808080;
 }
 
