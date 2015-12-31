@@ -1959,8 +1959,7 @@ Node.prototype.onEvent = function (event) {
   // focus
   // when clicked in whitespace left or right from the field or value, set focus
   var domTree = dom.tree;
-  if (target == domTree.parentNode &&
-      type == 'click' && !event.hasMoved) {
+  if (target == domTree.parentNode && type == 'click' && !event.hasMoved) {
     var left = (event.offsetX != undefined) ?
         (event.offsetX < (this.getLevel() + 1) * 24) :
         (event.pageX < util.getAbsoluteLeft(dom.tdSeparator));// for FF
@@ -1978,9 +1977,8 @@ Node.prototype.onEvent = function (event) {
       }
     }
   }
-  if ((target == dom.tdExpand && !expandable) || target == dom.tdField ||
-      target == dom.tdSeparator &&
-      type == 'click' && !event.hasMoved) {
+  if (((target == dom.tdExpand && !expandable) || target == dom.tdField || target == dom.tdSeparator) &&
+      (type == 'click' && !event.hasMoved)) {
     if (domField) {
       util.setEndOfContentEditable(domField);
       domField.focus();
