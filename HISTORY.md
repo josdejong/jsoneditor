@@ -3,7 +3,7 @@
 https://github.com/josdejong/jsoneditor
 
 
-## not yet released, version 5.0.1
+## 2015-12-31, version 5.0.1
 
 - Fixed a bug in positioning of the context menu for multiple selected nodes.
 - Fixed #130: option `onEditable` not available in mode `form`.
