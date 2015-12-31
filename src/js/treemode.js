@@ -653,7 +653,7 @@ treemode._onEvent = function (event) {
   if (node && node.selected) {
     if (event.type == 'click') {
       if (event.target == node.dom.menu) {
-        this.showContextMenu(event.target.parentNode);
+        this.showContextMenu(event.target);
 
         // stop propagation (else we will open the context menu of a single node)
         return;
