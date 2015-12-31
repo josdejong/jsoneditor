@@ -147,3 +147,4 @@ size of the library. To exclude the Ace editor from the bundle:
 To minify the generated bundle, use [uglifyjs](https://github.com/mishoo/UglifyJS2):
 
     uglifyjs ./jsoneditor.custom.js -o ./jsoneditor.custom.min.js -m -c
+
