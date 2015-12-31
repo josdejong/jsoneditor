@@ -73,25 +73,6 @@ Install the libraries locally and test whether they work correctly:
     bower install jsoneditor
 
 
-## Put zip file to website
-
-Create a zipped file of the library by running
-
-    gulp zip
-    
-Add the file to the `downloads` folder of the website.
-
-
-## Update version number
-
-Switch to the develop branch, and update the version numbers in package.json and
-bower.json to a new snapshot version, like
-
-    1.2.5-SNAPSHOT
-
-commit and push the changes.
-
-
 ## Done
 
 Congrats, be proud.
