@@ -23,8 +23,8 @@
  * Copyright (c) 2011-2015 Jos de Jong, http://jsoneditoronline.org
  *
  * @author  Jos de Jong, <wjosdejong@gmail.com>
- * @version 4.2.1
- * @date    2015-12-30
+ * @version 5.0.0
+ * @date    2015-12-31
  */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
@@ -402,12 +402,12 @@ return /******/ (function(modules) { // webpackBootstrap
 /* 1 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var Highlighter = __webpack_require__(4);
-	var History = __webpack_require__(5);
-	var SearchBox = __webpack_require__(6);
-	var ContextMenu = __webpack_require__(7);
-	var Node = __webpack_require__(8);
-	var modeswitcher = __webpack_require__(9);
+	var Highlighter = __webpack_require__(5);
+	var History = __webpack_require__(6);
+	var SearchBox = __webpack_require__(7);
+	var ContextMenu = __webpack_require__(8);
+	var Node = __webpack_require__(9);
+	var modeswitcher = __webpack_require__(4);
 	var util = __webpack_require__(3);
 
 	// create a mixin with the functions for tree mode
@@ -1057,7 +1057,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  if (node && node.selected) {
 	    if (event.type == 'click') {
 	      if (event.target == node.dom.menu) {
-	        this.showContextMenu(event.target);
+	        this.showContextMenu(event.target.parentNode);
 
 	        // stop propagation (else we will open the context menu of a single node)
 	        return;
@@ -1105,6 +1105,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 
 	treemode._updateDragDistance = function (event) {
+	  if (!this.dragDistanceEvent) {
+	    this._startDragDistance(event);
+	  }
+
 	  var diffX = event.pageX - this.dragDistanceEvent.initialPageX;
 	  var diffY = event.pageY - this.dragDistanceEvent.initialPageY;
 
@@ -1125,6 +1129,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	 */
 	treemode._onMultiSelectStart = function (event) {
 	  var node = Node.getNodeFromTarget(event.target);
+
+	  if (this.options.mode !== 'tree' || this.options.onEditable !== undefined) {
+	    // dragging not allowed in modes 'view' and 'form'
+	    // TODO: allow multiselection of items when option onEditable is specified
+	    return;
+	  }
 
 	  this.multiselection = {
 	    start: node || null,
@@ -1422,7 +1432,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  });
 
 	  var menu = new ContextMenu(items, {close: onClose});
-	  menu.show(anchor);
+	  menu.show(anchor, this.content);
 	};
 
 
@@ -1457,7 +1467,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  // failed to load ace, no problem, we will fall back to plain text
 	}
 
-	var modeswitcher = __webpack_require__(9);
+	var modeswitcher = __webpack_require__(4);
 	var util = __webpack_require__(3);
 
 	// create a mixin with the functions for text mode
@@ -2449,6 +2459,117 @@ return /******/ (function(modules) { // webpackBootstrap
 /* 4 */
 /***/ function(module, exports, __webpack_require__) {
 
+	var ContextMenu = __webpack_require__(8);
+
+	/**
+	 * Create a select box to be used in the editor menu's, which allows to switch mode
+	 * @param {Object} editor
+	 * @param {String[]} modes  Available modes: 'code', 'form', 'text', 'tree', 'view'
+	 * @param {String} current  Available modes: 'code', 'form', 'text', 'tree', 'view'
+	 * @returns {HTMLElement} box
+	 */
+	function createModeSwitcher(editor, modes, current) {
+	  // TODO: decouple mode switcher from editor
+
+	  /**
+	   * Switch the mode of the editor
+	   * @param {String} mode
+	   */
+	  function switchMode(mode) {
+	    // switch mode
+	    editor.setMode(mode);
+
+	    // restore focus on mode box
+	    var modeBox = editor.dom && editor.dom.modeBox;
+	    if (modeBox) {
+	      modeBox.focus();
+	    }
+	  }
+
+	  // available modes
+	  var availableModes = {
+	    code: {
+	      'text': 'Code',
+	      'title': 'Switch to code highlighter',
+	      'click': function () {
+	        switchMode('code')
+	      }
+	    },
+	    form: {
+	      'text': 'Form',
+	      'title': 'Switch to form editor',
+	      'click': function () {
+	        switchMode('form');
+	      }
+	    },
+	    text: {
+	      'text': 'Text',
+	      'title': 'Switch to plain text editor',
+	      'click': function () {
+	        switchMode('text');
+	      }
+	    },
+	    tree: {
+	      'text': 'Tree',
+	      'title': 'Switch to tree editor',
+	      'click': function () {
+	        switchMode('tree');
+	      }
+	    },
+	    view: {
+	      'text': 'View',
+	      'title': 'Switch to tree view',
+	      'click': function () {
+	        switchMode('view');
+	      }
+	    }
+	  };
+
+	  // list the selected modes
+	  var items = [];
+	  for (var i = 0; i < modes.length; i++) {
+	    var mode = modes[i];
+	    var item = availableModes[mode];
+	    if (!item) {
+	      throw new Error('Unknown mode "' + mode + '"');
+	    }
+
+	    item.className = 'jsoneditor-type-modes' + ((current == mode) ? ' jsoneditor-selected' : '');
+	    items.push(item);
+	  }
+
+	  // retrieve the title of current mode
+	  var currentMode = availableModes[current];
+	  if (!currentMode) {
+	    throw new Error('Unknown mode "' + current + '"');
+	  }
+	  var currentTitle = currentMode.text;
+
+	  // create the html element
+	  var box = document.createElement('button');
+	  box.className = 'jsoneditor-modes jsoneditor-separator';
+	  box.innerHTML = currentTitle + ' &#x25BE;';
+	  box.title = 'Switch editor mode';
+	  box.onclick = function () {
+	    var menu = new ContextMenu(items);
+	    menu.show(box);
+	  };
+
+	  var div = document.createElement('div');
+	  div.className = 'jsoneditor-modes';
+	  div.style.position = 'relative';
+	  div.appendChild(box);
+
+	  return div;
+	}
+
+	exports.create = createModeSwitcher;
+
+
+/***/ },
+/* 5 */
+/***/ function(module, exports, __webpack_require__) {
+
 	/**
 	 * The highlighter can highlight/unhighlight a node, and
 	 * animate the visibility of a context menu.
@@ -2536,7 +2657,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 5 */
+/* 6 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var util = __webpack_require__(3);
@@ -2794,7 +2915,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 6 */
+/* 7 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -3095,7 +3216,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 7 */
+/* 8 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var util = __webpack_require__(3);
@@ -3118,13 +3239,18 @@ return /******/ (function(modules) { // webpackBootstrap
 	  this.items = items;
 	  this.eventListeners = {};
 	  this.selection = undefined; // holds the selection before the menu was opened
-	  this.visibleSubmenu = undefined;
 	  this.onClose = options ? options.close : undefined;
+
+	  // create root element
+	  var root = document.createElement('div');
+	  root.className = 'jsoneditor-contextmenu-root';
+	  dom.root = root;
 
 	  // create a container element
 	  var menu = document.createElement('div');
 	  menu.className = 'jsoneditor-contextmenu';
 	  dom.menu = menu;
+	  root.appendChild(menu);
 
 	  // create a list to hold the menu items
 	  var list = document.createElement('ul');
@@ -3276,60 +3402,65 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	/**
 	 * Attach the menu to an anchor
-	 * @param {HTMLElement} anchor
+	 * @param {HTMLElement} anchor          Anchor where the menu will be attached
+	 *                                      as sibling.
+	 * @param {HTMLElement} [contentWindow] The DIV with with the (scrollable) contents
 	 */
-	ContextMenu.prototype.show = function (anchor) {
+	ContextMenu.prototype.show = function (anchor, contentWindow) {
 	  this.hide();
 
-	  // calculate whether the menu fits below the anchor
-	  var windowHeight = window.innerHeight,
-	      windowScroll = (window.pageYOffset || document.scrollTop || 0),
-	      windowBottom = windowHeight + windowScroll,
-	      anchorHeight = anchor.offsetHeight,
-	      menuHeight = this.maxHeight;
+	  // determine whether to display the menu below or above the anchor
+	  var showBelow = true;
+	  if (contentWindow) {
+	    var anchorRect = anchor.getBoundingClientRect();
+	    var contentRect = contentWindow.getBoundingClientRect();
+
+	    if (anchorRect.bottom + this.maxHeight < contentRect.bottom) {
+	      // fits below -> show below
+	    }
+	    else if (anchorRect.top - this.maxHeight > contentRect.top) {
+	      // fits above -> show above
+	      showBelow = false;
+	    }
+	    else {
+	      // doesn't fit above nor below -> show below
+	    }
+	  }
 
 	  // position the menu
-	  var left = util.getAbsoluteLeft(anchor);
-	  var top = util.getAbsoluteTop(anchor);
-	  if (top + anchorHeight + menuHeight < windowBottom) {
+	  if (showBelow) {
 	    // display the menu below the anchor
-	    this.dom.menu.style.left = left + 'px';
-	    this.dom.menu.style.top = (top + anchorHeight) + 'px';
+	    var anchorHeight = anchor.offsetHeight;
+	    this.dom.menu.style.left = '0px';
+	    this.dom.menu.style.top = anchorHeight + 'px';
 	    this.dom.menu.style.bottom = '';
 	  }
 	  else {
 	    // display the menu above the anchor
-	    this.dom.menu.style.left = left + 'px';
+	    this.dom.menu.style.left = '0px';
 	    this.dom.menu.style.top = '';
-	    this.dom.menu.style.bottom = (windowHeight - top) + 'px';
+	    this.dom.menu.style.bottom = '0px';
 	  }
 
-	  // attach the menu to the document
-	  document.body.appendChild(this.dom.menu);
+	  // attach the menu to the parent of the anchor
+	  var parent = anchor.parentNode;
+	  parent.insertBefore(this.dom.root, parent.firstChild);
 
 	  // create and attach event listeners
 	  var me = this;
 	  var list = this.dom.list;
-	  this.eventListeners.mousedown = util.addEventListener(
-	      document, 'mousedown', function (event) {
-	        // hide menu on click outside of the menu
-	        var target = event.target;
-	        if ((target != list) && !me._isChildOf(target, list)) {
-	          me.hide();
-	          event.stopPropagation();
-	          event.preventDefault();
-	        }
-	      });
-	  this.eventListeners.mousewheel = util.addEventListener(
-	      document, 'mousewheel', function (event) {
-	        // block scrolling when context menu is visible
-	        event.stopPropagation();
-	        event.preventDefault();
-	      });
-	  this.eventListeners.keydown = util.addEventListener(
-	      document, 'keydown', function (event) {
-	        me._onKeyDown(event);
-	      });
+	  this.eventListeners.mousedown = util.addEventListener(window, 'mousedown', function (event) {
+	    // hide menu on click outside of the menu
+	    var target = event.target;
+	    if ((target != list) && !me._isChildOf(target, list)) {
+	      me.hide();
+	      event.stopPropagation();
+	      event.preventDefault();
+	    }
+	  });
+	  this.eventListeners.keydown = util.addEventListener(window, 'keydown', function (event) {
+	    me._onKeyDown(event);
+	  });
 
 	  // move focus to the first button in the context menu
 	  this.selection = util.getSelection();
@@ -3349,8 +3480,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	 */
 	ContextMenu.prototype.hide = function () {
 	  // remove the menu from the DOM
-	  if (this.dom.menu.parentNode) {
-	    this.dom.menu.parentNode.removeChild(this.dom.menu);
+	  if (this.dom.root.parentNode) {
+	    this.dom.root.parentNode.removeChild(this.dom.root);
 	    if (this.onClose) {
 	      this.onClose();
 	    }
@@ -3362,7 +3493,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    if (this.eventListeners.hasOwnProperty(name)) {
 	      var fn = this.eventListeners[name];
 	      if (fn) {
-	        util.removeEventListener(document, name, fn);
+	        util.removeEventListener(window, name, fn);
 	      }
 	      delete this.eventListeners[name];
 	    }
@@ -3544,10 +3675,10 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 8 */
+/* 9 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var ContextMenu = __webpack_require__(7);
+	var ContextMenu = __webpack_require__(8);
 	var appendNodeFactory = __webpack_require__(12);
 	var util = __webpack_require__(3);
 
@@ -5508,8 +5639,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  // focus
 	  // when clicked in whitespace left or right from the field or value, set focus
 	  var domTree = dom.tree;
-	  if (target == domTree.parentNode &&
-	      type == 'click' && !event.hasMoved) {
+	  if (target == domTree.parentNode && type == 'click' && !event.hasMoved) {
 	    var left = (event.offsetX != undefined) ?
 	        (event.offsetX < (this.getLevel() + 1) * 24) :
 	        (event.pageX < util.getAbsoluteLeft(dom.tdSeparator));// for FF
@@ -5527,9 +5657,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	      }
 	    }
 	  }
-	  if ((target == dom.tdExpand && !expandable) || target == dom.tdField ||
-	      target == dom.tdSeparator &&
-	      type == 'click' && !event.hasMoved) {
+	  if (((target == dom.tdExpand && !expandable) || target == dom.tdField || target == dom.tdSeparator) &&
+	      (type == 'click' && !event.hasMoved)) {
 	    if (domField) {
 	      util.setEndOfContentEditable(domField);
 	      domField.focus();
@@ -5693,7 +5822,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	      }
 	      handled = true;
 	    }
-	    else if (!altKey && shiftKey) { // Shift + Arrow Up
+	    else if (!altKey && shiftKey && editable) { // Shift + Arrow Up
 	      // select multiple nodes
 	      prevNode = this._previousNode();
 	      if (prevNode) {
@@ -5707,7 +5836,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	      }
 	      handled = true;
 	    }
-	    else if (altKey && shiftKey) { // Alt + Shift + Arrow Up
+	    else if (altKey && shiftKey && editable) { // Alt + Shift + Arrow Up
 	      // find the previous node
 	      prevNode = firstNode._previousNode();
 	      if (prevNode && prevNode.parent) {
@@ -5739,7 +5868,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	      }
 	      handled = true;
 	    }
-	    else if (altKey && shiftKey) { // Alt + Shift + Arrow Right
+	    else if (altKey && shiftKey && editable) { // Alt + Shift + Arrow Right
 	      dom = firstNode.getDom();
 	      var prevDom = dom.previousSibling;
 	      if (prevDom) {
@@ -5776,7 +5905,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	      }
 	      handled = true;
 	    }
-	    else if (!altKey && shiftKey) { // Shift + Arrow Down
+	    else if (!altKey && shiftKey && editable) { // Shift + Arrow Down
 	      // select multiple nodes
 	      nextNode = this._nextNode();
 	      if (nextNode) {
@@ -6337,7 +6466,8 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	/**
 	 * Show a contextmenu for this node
-	 * @param {HTMLElement} anchor   Anchor element to attache the context menu to.
+	 * @param {HTMLElement} anchor   Anchor element to attach the context menu to
+	 *                               as sibling.
 	 * @param {function} [onClose]   Callback method called when the context menu
 	 *                               is being closed.
 	 */
@@ -6547,7 +6677,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  }
 
 	  var menu = new ContextMenu(items, {close: onClose});
-	  menu.show(anchor);
+	  menu.show(anchor, this.editor.content);
 	};
 
 	/**
@@ -6691,112 +6821,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	var AppendNode = appendNodeFactory(Node);
 
 	module.exports = Node;
-
-
-/***/ },
-/* 9 */
-/***/ function(module, exports, __webpack_require__) {
-
-	var ContextMenu = __webpack_require__(7);
-
-	/**
-	 * Create a select box to be used in the editor menu's, which allows to switch mode
-	 * @param {Object} editor
-	 * @param {String[]} modes  Available modes: 'code', 'form', 'text', 'tree', 'view'
-	 * @param {String} current  Available modes: 'code', 'form', 'text', 'tree', 'view'
-	 * @returns {HTMLElement} box
-	 */
-	function createModeSwitcher(editor, modes, current) {
-	  // TODO: decouple mode switcher from editor
-
-	  /**
-	   * Switch the mode of the editor
-	   * @param {String} mode
-	   */
-	  function switchMode(mode) {
-	    // switch mode
-	    editor.setMode(mode);
-
-	    // restore focus on mode box
-	    var modeBox = editor.dom && editor.dom.modeBox;
-	    if (modeBox) {
-	      modeBox.focus();
-	    }
-	  }
-
-	  // available modes
-	  var availableModes = {
-	    code: {
-	      'text': 'Code',
-	      'title': 'Switch to code highlighter',
-	      'click': function () {
-	        switchMode('code')
-	      }
-	    },
-	    form: {
-	      'text': 'Form',
-	      'title': 'Switch to form editor',
-	      'click': function () {
-	        switchMode('form');
-	      }
-	    },
-	    text: {
-	      'text': 'Text',
-	      'title': 'Switch to plain text editor',
-	      'click': function () {
-	        switchMode('text');
-	      }
-	    },
-	    tree: {
-	      'text': 'Tree',
-	      'title': 'Switch to tree editor',
-	      'click': function () {
-	        switchMode('tree');
-	      }
-	    },
-	    view: {
-	      'text': 'View',
-	      'title': 'Switch to tree view',
-	      'click': function () {
-	        switchMode('view');
-	      }
-	    }
-	  };
-
-	  // list the selected modes
-	  var items = [];
-	  for (var i = 0; i < modes.length; i++) {
-	    var mode = modes[i];
-	    var item = availableModes[mode];
-	    if (!item) {
-	      throw new Error('Unknown mode "' + mode + '"');
-	    }
-
-	    item.className = 'jsoneditor-type-modes' + ((current == mode) ? ' jsoneditor-selected' : '');
-	    items.push(item);
-	  }
-
-	  // retrieve the title of current mode
-	  var currentMode = availableModes[current];
-	  if (!currentMode) {
-	    throw new Error('Unknown mode "' + current + '"');
-	  }
-	  var currentTitle = currentMode.text;
-
-	  // create the html element
-	  var box = document.createElement('button');
-	  box.className = 'jsoneditor-modes jsoneditor-separator';
-	  box.innerHTML = currentTitle + ' &#x25BE;';
-	  box.title = 'Switch editor mode';
-	  box.onclick = function () {
-	    var menu = new ContextMenu(items);
-	    menu.show(box);
-	  };
-
-	  return box;
-	}
-
-	exports.create = createModeSwitcher;
 
 
 /***/ },
@@ -7242,7 +7266,7 @@ return /******/ (function(modules) { // webpackBootstrap
 /***/ function(module, exports, __webpack_require__) {
 
 	var util = __webpack_require__(3);
-	var ContextMenu = __webpack_require__(7);
+	var ContextMenu = __webpack_require__(8);
 
 	/**
 	 * A factory function to create an AppendNode, which depends on a Node
@@ -7422,7 +7446,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    ];
 
 	    var menu = new ContextMenu(items, {close: onClose});
-	    menu.show(anchor);
+	    menu.show(anchor, this.editor.content);
 	  };
 
 	  /**

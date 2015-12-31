@@ -3,7 +3,7 @@
 https://github.com/josdejong/jsoneditor
 
 
-## not yet released, version 5.0.0
+## 2015-12-31, version 5.0.0
 
 - Implemented selection of multiple nodes, allowing to move/duplicate/remove
   multiple nodes at once (See #106).
