@@ -722,6 +722,12 @@ treemode._updateDragDistance = function (event) {
 treemode._onMultiSelectStart = function (event) {
   var node = Node.getNodeFromTarget(event.target);
 
+  if (this.options.mode !== 'tree' || this.options.onEditable !== undefined) {
+    // dragging not allowed in modes 'view' and 'form'
+    // TODO: allow multiselection of items when option onEditable is specified
+    return;
+  }
+
   this.multiselection = {
     start: node || null,
     end: null,

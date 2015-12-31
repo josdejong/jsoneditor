@@ -2144,7 +2144,7 @@ Node.prototype.onKeyDown = function (event) {
       }
       handled = true;
     }
-    else if (!altKey && shiftKey) { // Shift + Arrow Up
+    else if (!altKey && shiftKey && editable) { // Shift + Arrow Up
       // select multiple nodes
       prevNode = this._previousNode();
       if (prevNode) {
@@ -2158,7 +2158,7 @@ Node.prototype.onKeyDown = function (event) {
       }
       handled = true;
     }
-    else if (altKey && shiftKey) { // Alt + Shift + Arrow Up
+    else if (altKey && shiftKey && editable) { // Alt + Shift + Arrow Up
       // find the previous node
       prevNode = firstNode._previousNode();
       if (prevNode && prevNode.parent) {
@@ -2190,7 +2190,7 @@ Node.prototype.onKeyDown = function (event) {
       }
       handled = true;
     }
-    else if (altKey && shiftKey) { // Alt + Shift + Arrow Right
+    else if (altKey && shiftKey && editable) { // Alt + Shift + Arrow Right
       dom = firstNode.getDom();
       var prevDom = dom.previousSibling;
       if (prevDom) {
@@ -2227,7 +2227,7 @@ Node.prototype.onKeyDown = function (event) {
       }
       handled = true;
     }
-    else if (!altKey && shiftKey) { // Shift + Arrow Down
+    else if (!altKey && shiftKey && editable) { // Shift + Arrow Down
       // select multiple nodes
       nextNode = this._nextNode();
       if (nextNode) {
