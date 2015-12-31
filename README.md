@@ -16,9 +16,7 @@ can be loaded as CommonJS module, AMD module, or as a regular javascript file.
 
 Supported browsers: Chrome, Firefox, Safari, Opera, Internet Explorer 9+.
 
-<img alt="json editor" src="https://raw.github.com/josdejong/jsoneditor/master/misc/jsoneditor.png">
-
-<img alt="code editor" src="https://raw.github.com/josdejong/jsoneditor/master/misc/codeeditor.png">
+<img alt="json editor" src="https://raw.github.com/josdejong/jsoneditor/master/misc/jsoneditor.png"> &nbsp; <img alt="code editor" src="https://raw.github.com/josdejong/jsoneditor/master/misc/codeeditor.png">
 
 
 ## Features
@@ -147,3 +145,4 @@ size of the library. To exclude the Ace editor from the bundle:
 To minify the generated bundle, use [uglifyjs](https://github.com/mishoo/UglifyJS2):
 
     uglifyjs ./jsoneditor.custom.js -o ./jsoneditor.custom.min.js -m -c
+
