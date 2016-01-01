@@ -5,8 +5,8 @@
 Key                     | Description
 ----------------------- | ------------------------------------------------
 Alt+Arrows              | Move the caret up/down/left/right between fields
-Shift+Alt+Arrows        | Move current field or selected fields up/down/left/right
 Shift+Arrow Up/Down     | Select multiple fields
+Shift+Alt+Arrows        | Move current field or selected fields up/down/left/right
 Ctrl+D                  | Duplicate field
 Ctrl+Del                | Remove field
 Ctrl+Enter              | Open link when on a field containing an url
