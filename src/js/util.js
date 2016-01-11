@@ -626,3 +626,53 @@ exports.removeEventListener = function removeEventListener(element, action, list
     element.detachEvent("on" + action, listener);
   }
 };
+
+/**
+ * Parse a JSON path like '.items[3].name' into an array
+ * @param {string} jsonPath
+ * @return {Array}
+ */
+exports.parsePath = function parsePath(jsonPath) {
+  var prop, remainder;
+
+  if (jsonPath.length === 0) {
+    return [];
+  }
+
+  // find a match like '.prop'
+  var match = jsonPath.match(/^\.(\w+)/);
+  if (match) {
+    prop = match[1];
+    remainder = jsonPath.substr(prop.length + 1);
+  }
+  else if (jsonPath[0] === '[') {
+    // find a match like
+    var end = jsonPath.indexOf(']');
+    if (end === -1) {
+      throw new SyntaxError('Character ] expected in path');
+    }
+    if (end === 1) {
+      throw new SyntaxError('Index expected after [');
+    }
+
+    prop = JSON.parse(jsonPath.substring(1, end));
+    remainder = jsonPath.substr(end + 1);
+  }
+  else {
+    throw new SyntaxError('Failed to parse path');
+  }
+
+  return [prop].concat(parsePath(remainder))
+};
+
+/**
+ * Test whether the child rect fits completely inside the parent rect.
+ * @param {ClientRect} parent
+ * @param {ClientRect} child
+ */
+exports.insideRect = function (parent, child) {
+  return child.left >= parent.left
+      && child.right <= parent.right
+      && child.top >= parent.top
+      && child.bottom <= parent.bottom;
+};

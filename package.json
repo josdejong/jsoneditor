@@ -23,6 +23,7 @@
     "test": "mocha test"
   },
   "dependencies": {
+    "ajv": "3.2.0",
     "brace": "0.7.0"
   },
   "devDependencies": {

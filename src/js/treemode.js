@@ -1,3 +1,4 @@
+var Ajv = require('ajv/dist/ajv.bundle.js');
 var Highlighter = require('./Highlighter');
 var History = require('./History');
 var SearchBox = require('./SearchBox');
@@ -5,6 +6,9 @@ var ContextMenu = require('./ContextMenu');
 var Node = require('./Node');
 var modeswitcher = require('./modeswitcher');
 var util = require('./util');
+
+// create an instance of ajv for JSON validation
+var ajv = Ajv({ allErrors: true });
 
 // create a mixin with the functions for tree mode
 var treemode = {};
@@ -26,6 +30,7 @@ var treemode = {};
  *                               {boolean} escapeUnicode  If true, unicode
  *                                                        characters are escaped.
  *                                                        false by default.
+ *                               {Object} schema          A JSON Schema for validation
  * @private
  */
 treemode.create = function (container, options) {
@@ -39,6 +44,7 @@ treemode.create = function (container, options) {
   this.multiselection = {
     nodes: []
   };
+  this.errorNodes = [];
 
   this._setOptions(options);
 
@@ -70,7 +76,8 @@ treemode._setOptions = function (options) {
     search: true,
     history: true,
     mode: 'tree',
-    name: undefined   // field name of root node
+    name: undefined,   // field name of root node
+    schema: null
   };
 
   // copy all options
@@ -81,6 +88,9 @@ treemode._setOptions = function (options) {
       }
     }
   }
+
+  // compile a JSON schema validator if a JSON schema is provided
+  this._validate = this.options.schema ? ajv.compile(this.options.schema) : null;
 };
 
 // node currently being edited
@@ -113,11 +123,16 @@ treemode.set = function (json, name) {
 
     // replace the root node
     var params = {
-      'field': this.options.name,
-      'value': json
+      field: this.options.name,
+      value: json
     };
     var node = new Node(this, params);
     this._setRoot(node);
+
+    // validate JSON schema
+    if (this.options.schema) {
+      this.validate();
+    }
 
     // expand
     var recurse = false;
@@ -308,6 +323,21 @@ treemode._onAction = function (action, params) {
     this.history.add(action, params);
   }
 
+  this._onChange();
+};
+
+/**
+ * Handle a change:
+ * - Validate JSON schema
+ * - Send a callback to the onChange listener if provided
+ * @private
+ */
+treemode._onChange = function () {
+  // validate JSON schema
+  if (this.options.schema) {
+    this.validate();
+  }
+
   // trigger the onChange callback
   if (this.options.onChange) {
     try {
@@ -316,6 +346,44 @@ treemode._onAction = function (action, params) {
     catch (err) {
       util.log('Error in change callback: ', err);
     }
+  }
+};
+
+/**
+ * Validate current JSON object against the configured JSON schema
+ * Throws an exception when no JSON schema is configured
+ */
+treemode.validate = function () {
+  if (!this._validate) {
+    throw new Error('Cannot validate: no JSON schema configured');
+  }
+
+  //console.time('validate'); // TODO: clean up time measurement
+  var valid = this._validate(this.node.getValue());
+  //console.timeEnd('validate');
+
+  // clear all current errors
+  this.errorNodes.forEach(function (node) {
+    node.setError(null);
+  });
+
+  // apply all new errors
+  var root = this.node;
+  if (!valid) {
+    this.errorNodes = this._validate.errors
+        .map(function (error) {
+          var node = root.findNode(error.dataPath);
+          if (node) {
+            node.setError(error);
+          }
+          return node;
+        })
+        .filter(function (node) {
+          return node != null
+        });
+  }
+  else {
+    this.errorNodes = [];
   }
 };
 
@@ -604,10 +672,8 @@ treemode._onUndo = function () {
     // undo last action
     this.history.undo();
 
-    // trigger change callback
-    if (this.options.onChange) {
-      this.options.onChange();
-    }
+    // fire change event
+    this._onChange();
   }
 };
 
@@ -620,10 +686,8 @@ treemode._onRedo = function () {
     // redo last action
     this.history.redo();
 
-    // trigger change callback
-    if (this.options.onChange) {
-      this.options.onChange();
-    }
+    // fire change event
+    this._onChange();
   }
 };
 

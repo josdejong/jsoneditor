@@ -1,0 +1,93 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+
+  <link href="../dist/jsoneditor.css" rel="stylesheet" type="text/css">
+  <script src="../dist/jsoneditor.js"></script>
+
+  <style type="text/css">
+    body {
+      font: 10.5pt arial;
+      color: #4d4d4d;
+      line-height: 150%;
+      width: 500px;
+      padding-left: 40px;
+    }
+
+    code {
+      background-color: #f5f5f5;
+    }
+
+    #jsoneditor {
+      width: 500px;
+      height: 500px;
+    }
+  </style>
+</head>
+<body>
+
+<p>
+  Switch editor mode using the mode box.
+  Note that the mode can be changed programmatically as well using the method
+  <code>editor.setMode(mode)</code>, try it in the console of your browser.
+</p>
+
+<div id="jsoneditor"></div>
+
+<script>
+  var container = document.getElementById('jsoneditor');
+
+  var schema = {
+    "title": "Example Schema",
+    "type": "object",
+    "properties": {
+      "firstName": {
+        "type": "string"
+      },
+      "lastName": {
+        "type": "string"
+      },
+      "age": {
+        "description": "Age in years",
+        "type": "integer",
+        "minimum": 0
+      },
+      "hobbies": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        }
+      }
+    },
+    "required": ["firstName", "lastName"]
+  };
+
+  var options = {
+    mode: 'tree',
+    modes: ['form', 'tree', 'view'], // allowed modes
+    onError: function (err) {
+      console.error(err);
+    },
+    schema: schema
+  };
+
+  var json = {
+    "firstName": "Jos",
+    "lastName": "de Jong",
+    "age": 34.2,
+    "hobbies": [
+        "programming",
+        "movies",
+        "bicycling"
+    ]
+  };
+
+  var editor = new JSONEditor(container, options, json);
+
+  console.log('json', json);
+  console.log('schema', schema);
+  console.log('string', JSON.stringify(json));
+</script>
+</body>
+</html>

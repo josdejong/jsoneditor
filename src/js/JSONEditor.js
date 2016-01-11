@@ -66,7 +66,7 @@ function JSONEditor (container, options, json) {
     // validate options
     if (options) {
       var VALID_OPTIONS = [
-        'ace',
+        'ace', 'schema',
         'onChange', 'onEditable', 'onError', 'onModeChange',
         'escapeUnicode', 'history', 'mode', 'modes', 'name', 'indentation', 'theme'
       ];

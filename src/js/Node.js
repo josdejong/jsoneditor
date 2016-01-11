@@ -14,7 +14,7 @@ var util = require('./util');
  *                                          'object', or 'string'.
  */
 function Node (editor, params) {
-  /** @type {TreeEditor} */
+  /** @type {./treemode} */
   this.editor = editor;
   this.dom = {};
   this.expanded = false;
@@ -78,6 +78,93 @@ Node.prototype.getFieldsPath = function () {
     node = node.parent;
   }
   return path;
+};
+
+/**
+ * Find a Node from a JSON path like '.items[3].name'
+ * @param {string} jsonPath
+ * @return {Node | null} Returns the Node when found, returns null if not found
+ */
+Node.prototype.findNode = function (jsonPath) {
+  var path = util.parsePath(jsonPath);
+  var node = this;
+  while (node && path.length > 0) {
+    var prop = path.shift();
+    if (typeof prop === 'number') {
+      if (node.type !== 'array') {
+        throw new Error('Cannot get child node at index ' + prop + ': node is no array');
+      }
+      node = node.childs[prop];
+    }
+    else { // string
+      if (node.type !== 'object') {
+        throw new Error('Cannot get child node ' + prop + ': node is no object');
+      }
+      node = node.childs.filter(function (child) {
+        return child.field === prop;
+      })[0];
+    }
+  }
+
+  return node;
+};
+
+/**
+ *
+ * @param {{dataPath: string, keyword: string, message: string, params: Object, schemaPath: string} | null} error
+ */
+Node.prototype.setError = function (error) {
+  // ensure the dom exists
+  this.getDom();
+
+  this.error = error;
+  var tdError = this.dom.tdError;
+  if (error) {
+    if (!tdError) {
+      tdError = document.createElement('td');
+      this.dom.tdError = tdError;
+      this.dom.tdValue.parentNode.appendChild(tdError);
+    }
+
+    var popover = document.createElement('div');
+    popover.className = 'jsoneditor-popover jsoneditor-right';
+    popover.appendChild(document.createTextNode(error.message));
+
+    var button = document.createElement('button');
+    button.className = 'jsoneditor-schema-error';
+    button.appendChild(popover);
+
+    var editor = this.editor;
+    button.onmouseover = button.onclick = button.onfocus = function () {
+      var directions = ['right', 'above', 'below', 'left'];
+      for (var i = 0; i < directions.length; i++) {
+        var direction = directions[i];
+        popover.className = 'jsoneditor-popover jsoneditor-' + direction;
+
+        var contentRect = editor.content.getBoundingClientRect();
+        var popoverRect = popover.getBoundingClientRect();
+        var fit = util.insideRect(contentRect, popoverRect);
+
+        if (fit) {
+          break;
+        }
+      }
+    };
+
+    while (tdError.firstChild) {
+      tdError.removeChild(tdError.firstChild);
+    }
+    tdError.appendChild(button);
+
+    // loop over all parents of this node, and set an error "This object contains childs with errors"
+
+  }
+  else {
+    if (tdError) {
+      this.dom.tdError.parentNode.removeChild(this.dom.tdError);
+      delete this.dom.tdError;
+    }
+  }
 };
 
 /**
@@ -1601,7 +1688,7 @@ Node.prototype.updateDom = function (options) {
     domTree.style.marginLeft = this.getLevel() * 24 + 'px';
   }
 
-  // update field
+  // apply field to DOM
   var domField = this.dom.field;
   if (domField) {
     if (this.fieldEditable) {
@@ -1631,7 +1718,7 @@ Node.prototype.updateDom = function (options) {
     domField.innerHTML = this._escapeHTML(field);
   }
 
-  // update value
+  // apply value to DOM
   var domValue = this.dom.value;
   if (domValue) {
     var count = this.childs ? this.childs.length : 0;

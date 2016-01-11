@@ -119,9 +119,10 @@ gulp.task('zip', shell.task([
 ]));
 
 // The watch task (to automatically rebuild when the source code changes)
-// Does only generate jsoneditor.js and jsoneditor.css, not the minified versions
-gulp.task('watch', ['bundle', 'bundle-css'], function () {
-  gulp.watch(['src/**/*.js'], ['bundle', 'bundle-css']);
+// Does only generate jsoneditor.js and jsoneditor.css, and copy the image
+// Does NOT minify the code
+gulp.task('watch', ['bundle', 'bundle-css', 'copy-img'], function () {
+  gulp.watch(['src/**/*'], ['bundle', 'bundle-css', 'copy-img']);
 });
 
 // The default task (called when you run `gulp`)
