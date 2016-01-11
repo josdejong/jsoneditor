@@ -118,5 +118,11 @@ gulp.task('zip', shell.task([
       'zip ' + pkg + ' ' + 'README.md NOTICE LICENSE HISTORY.md index.html src dist docs examples -r '
 ]));
 
+// The watch task (to automatically rebuild when the source code changes)
+// Does only generate jsoneditor.js and jsoneditor.css, not the minified versions
+gulp.task('watch', ['bundle', 'bundle-css'], function () {
+  gulp.watch(['src/**/*.js'], ['bundle', 'bundle-css']);
+});
+
 // The default task (called when you run `gulp`)
 gulp.task('default', ['bundle', 'bundle-css', 'copy-img', 'minify']);

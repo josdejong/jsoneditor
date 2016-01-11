@@ -124,7 +124,17 @@ jsoneditor:
   ```
 
   This will generate the files `./jsoneditor.js`, `./jsoneditor.css`, and  
-  minified versions in the root of the project.
+  minified versions in the dist of the project.
+
+- To automatically build when a source file has changed:
+
+  ```
+  npm run watch
+  ```
+
+  This will update `./jsoneditor.js` and `./jsoneditor.css` in the dist folder
+  on every change, but it will **NOT** update the minified versions as that's
+  an expensive operation.
 
 
 ## Custom builds
