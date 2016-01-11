@@ -370,17 +370,38 @@ treemode.validate = function () {
   // apply all new errors
   var root = this.node;
   if (!valid) {
-    this.errorNodes = this._validate.errors
-        .map(function (error) {
-          var node = root.findNode(error.dataPath);
-          if (node) {
-            node.setError(error);
-          }
-          return node;
-        })
-        .filter(function (node) {
-          return node != null
-        });
+  this.errorNodes = this._validate.errors
+      .map(function findNode (error) {
+        return {
+          node: root.findNode(error.dataPath),
+          error: error
+        }
+      })
+      .filter(function hasNode (entry) {
+        return entry.node != null
+      })
+      .reduce(function expandParents (all, entry) {
+        // expand parents, then merge such that parents come first and
+        // original entries last
+        return entry.node
+            .findParents()
+            .map(function (parent) {
+              return {
+                node: parent,
+                error: {
+                  message: parent.type === 'object'
+                      ? 'Contains invalid properties' // object
+                      : 'Contains invalid items'      // array
+                }
+              };
+            })
+            .concat(all, [entry]);
+      }, [])
+      // TODO: dedupe
+      .map(function setError (entry) {
+        entry.node.setError(entry.error);
+        return entry.node;
+      });
   }
   else {
     this.errorNodes = [];

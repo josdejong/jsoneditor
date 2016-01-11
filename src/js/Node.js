@@ -110,6 +110,21 @@ Node.prototype.findNode = function (jsonPath) {
 };
 
 /**
+ * Find all parents of this node. The parents are ordered from root node towards
+ * the original node.
+ * @return {Array.<Node>}
+ */
+Node.prototype.findParents = function () {
+  var parents = [];
+  var parent = this.parent;
+  while (parent) {
+    parents.unshift(parent);
+    parent = parent.parent;
+  }
+  return parents;
+};
+
+/**
  *
  * @param {{dataPath: string, keyword: string, message: string, params: Object, schemaPath: string} | null} error
  */
