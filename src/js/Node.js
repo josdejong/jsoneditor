@@ -5,7 +5,7 @@ var util = require('./util');
 /**
  * @constructor Node
  * Create a new Node
- * @param {TreeEditor} editor
+ * @param {./treemode} editor
  * @param {Object} [params] Can contain parameters:
  *                          {string}  field
  *                          {boolean} fieldEditable
@@ -28,7 +28,8 @@ function Node (editor, params) {
     this.setValue(null);
   }
 
-  this._debouncedGetDomValue = util.debounce(this._getDomValue.bind(this), Node.prototype.DEBOUNCE_INTERVAL);
+  this._debouncedOnChangeValue = util.debounce(this._onChangeValue.bind(this), Node.prototype.DEBOUNCE_INTERVAL);
+  this._debouncedOnChangeField = util.debounce(this._onChangeField.bind(this), Node.prototype.DEBOUNCE_INTERVAL);
 }
 
 // debounce interval for keyboard input in milliseconds
@@ -227,6 +228,7 @@ Node.prototype.setParent = function(parent) {
  */
 Node.prototype.setField = function(field, fieldEditable) {
   this.field = field;
+  this.previousField = field;
   this.fieldEditable = (fieldEditable === true);
 };
 
@@ -323,6 +325,8 @@ Node.prototype.setValue = function(value, type) {
      }
      */
   }
+
+  this.previousValue = this.value;
 };
 
 /**
@@ -1116,31 +1120,8 @@ Node.prototype._getDomValue = function(silent) {
         value = this._stringCast(str);
       }
       if (value !== this.value) {
-        var oldValue = this.value;
         this.value = value;
-        var selection = this.editor.getSelection();
-        var undoDiff = util.textDiff(value, oldValue);
-        var redoDiff = util.textDiff(oldValue, value);
-        console.log('selection', selection, oldValue, value, util.textDiff(oldValue, value), util.textDiff(value, oldValue))
-        this.editor._onAction('editValue', {
-          'node': this,
-          'oldValue': oldValue,
-          'newValue': value,
-          'oldSelection': util.extend({}, selection, {
-            range: {
-              container: selection.range.container,
-              startOffset: undoDiff.start,
-              endOffset: undoDiff.end
-            }
-          }),
-          'newSelection': util.extend({}, selection, {
-            range: {
-              container: selection.range.container,
-              startOffset: redoDiff.start,
-              endOffset: redoDiff.end
-            }
-          })
-        });
+        this._debouncedOnChangeValue();
       }
     }
     catch (err) {
@@ -1151,6 +1132,76 @@ Node.prototype._getDomValue = function(silent) {
       }
     }
   }
+};
+
+/**
+ * Handle a changed value
+ * @private
+ */
+Node.prototype._onChangeValue = function () {
+  var undoDiff = util.textDiff(String(this.value), String(this.previousValue));
+  var redoDiff = util.textDiff(String(this.previousValue), String(this.value));
+
+  var selection = this.editor.getSelection();
+  var oldSelection = util.extend({}, selection, {
+    range: {
+      container: selection.range.container,
+      startOffset: undoDiff.start,
+      endOffset: undoDiff.end
+    }
+  });
+  var newSelection = util.extend({}, selection, {
+    range: {
+      container: selection.range.container,
+      startOffset: redoDiff.start,
+      endOffset: redoDiff.end
+    }
+  });
+
+  this.editor._onAction('editValue', {
+    node: this,
+    oldValue: this.previousValue,
+    newValue: this.value,
+    oldSelection: oldSelection,
+    newSelection: newSelection
+  });
+
+  this.previousValue = this.value;
+};
+
+/**
+ * Handle a changed field
+ * @private
+ */
+Node.prototype._onChangeField = function () {
+  var undoDiff = util.textDiff(this.field, this.previousField);
+  var redoDiff = util.textDiff(this.previousField, this.field);
+
+  var selection = this.editor.getSelection();
+  var oldSelection = util.extend({}, selection, {
+    range: {
+      container: selection.range.container,
+      startOffset: undoDiff.start,
+      endOffset: undoDiff.end
+    }
+  });
+  var newSelection = util.extend({}, selection, {
+    range: {
+      container: selection.range.container,
+      startOffset: redoDiff.start,
+      endOffset: redoDiff.end
+    }
+  });
+
+  this.editor._onAction('editField', {
+    node: this,
+    oldValue: this.previousField,
+    newValue: this.field,
+    oldSelection: oldSelection,
+    newSelection: newSelection
+  });
+
+  this.previousField = this.field;
 };
 
 /**
@@ -1285,15 +1336,8 @@ Node.prototype._getDomField = function(silent) {
       var field = this._unescapeHTML(this.fieldInnerText);
 
       if (field !== this.field) {
-        var oldField = this.field;
         this.field = field;
-        this.editor._onAction('editField', {
-          'node': this,
-          'oldValue': oldField,
-          'newValue': field,
-          'oldSelection': this.editor.selection,
-          'newSelection': this.editor.getSelection()
-        });
+        this._debouncedOnChangeField();
       }
     }
     catch (err) {
@@ -2099,12 +2143,14 @@ Node.prototype.onEvent = function (event) {
         break;
 
       case 'input':
-        this._debouncedGetDomValue(true);
+        //this._debouncedGetDomValue(true); // TODO
+        this._getDomValue(true);
         this._updateDomValue();
         break;
 
       case 'keydown':
       case 'mousedown':
+          // TODO: cleanup
         this.editor.selection = this.editor.getSelection();
         break;
 
@@ -2117,7 +2163,8 @@ Node.prototype.onEvent = function (event) {
         break;
 
       case 'keyup':
-        this._debouncedGetDomValue(true);
+        //this._debouncedGetDomValue(true); // TODO
+        this._getDomValue(true);
         this._updateDomValue();
         break;
 
