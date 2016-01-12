@@ -26,13 +26,14 @@ Supported browsers: Chrome, Firefox, Safari, Opera, Internet Explorer 9+.
 - Change type of values.
 - Sort arrays and objects.
 - Colorized code.
-- Search & highlight text in the treeview.
+- Search & highlight text in the tree view.
 - Undo and redo all actions.
+- JSON schema validation (powered by [ajv](https://github.com/epoberezkin/ajv)).
 
 ### Code editor
 - Format and compact JSON.
-- Colorized code (powered by Ace).
-- Inspect JSON (powered by Ace).
+- Colorized code (powered by [Ace](https://ace.c9.io)).
+- Inspect JSON (powered by [Ace](https://ace.c9.io)).
 
 ### Text editor
 - Format and compact JSON.
@@ -85,7 +86,8 @@ There is a directive available for using JSONEditor in Angular.js:
     <script>
         // create the editor
         var container = document.getElementById("jsoneditor");
-        var editor = new JSONEditor(container);
+        var options = {};
+        var editor = new JSONEditor(container, options);
 
         // set json
         var json = {

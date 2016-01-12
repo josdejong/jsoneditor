@@ -11,46 +11,96 @@ Constructs a new JSONEditor.
 *Parameters:*
 
 - `{Element} container`  
+
   An HTML DIV element. The JSONEditor will be created inside this container element.
-- `{Object} options`  
-  Optional object with options. Available options:
 
-  - `{Object} ace`  
-    Provide a custom version of the [Ace editor](http://ace.c9.io/) and use this instead of the version that comes embedded with JSONEditor. Only applicable when `mode` is `code`.
-  - `{function} onChange`  
-    Set a callback function triggered when the contents of the JSONEditor change. Called without parameters. Will only be triggered on changes made by the user, not in case of programmatic changes via the functions `set` or `setText`.
-  - `{function} onEditable`  
-    Set a callback function  to determine whether individual nodes are editable or read-only. Only applicable when option `mode` is `tree`. The callback is invoked as `editable(node)`, where `node` is an object `{field: string, value: string, path: string[]}`. The function must either return a boolean value to set both the nodes field and value editable or read-only, or return an object `{field: boolean, value: boolean}`.
-  - `{function} onError`  
-    Set a callback function triggered when an error occurs. Invoked with the error as first argument. The callback is only invoked
-    for errors triggered by a users action, like switching from code mode to tree mode or clicking the Format button whilst the editor doesn't contain valid JSON.
-  - `{function} onModeChange(newMode, oldMode)`  
-    Set a callback function triggered right after the mode is changed by the user. Only applicable when 
-    the mode can be changed by the user (i.e. when option `modes` is set).
-  - `{boolean} escapeUnicode`  
-    If true, unicode characters are escaped and displayed as their hexadecimal code (like `\u260E`) instead of of the character itself (like `☎`). False by default.
-  - `{boolean} history`  
-    Enables history, adds a button Undo and Redo to the menu of the JSONEditor. True by default. Only applicable when `mode` is 'tree' or 'form'.
-  - `{String} mode`  
-    Set the editor mode. Available values: 'tree' (default), 'view', 'form', 'code', 'text'. In 'view' mode, the data and datastructure is read-only. In 'form' mode, only the value can be changed, the datastructure is read-only. Mode 'code' requires the Ace editor to be loaded on the page. Mode 'text' shows the data as plain text.
-  - `{String[]} modes`  
-    Create a box in the editor menu where the user can switch between the specified modes. Available values: see option `mode`.
-  - `{String} name`  
-    Initial field name for the root node, is undefined by default. Can also be set using `JSONEditor.setName(name)`. Only applicable when `mode` is 'tree', 'view', or 'form'.
-  - `{boolean} search`  
-    Enables a search box in the upper right corner of the JSONEditor. True by default. Only applicable when `mode` is 'tree', 'view', or 'form'.
-  - `{Number} indentation`  
-    Number of indentation spaces. 2 by default. Only applicable when `mode` is 'code' or 'text'.
-  - `{String} theme`  
-    Set the Ace editor theme, uses included 'ace/theme/jsoneditor' by default. Please note that only the default theme is included with jsoneditor, so if you specify another one you need to make sure it is loaded.
+- `{Object} options`
 
-- `{JSON} json`  
+  Optional object with options. The available options are described under
+  [Configuration options](#configuration-options).
+
+- `{JSON} json`
   Initial JSON data to be loaded into the JSONEditor. Alternatively, the method `JSONEditor.set(json)` can be used to load JSON data into the editor.
 
 *Returns:*
 
-- `{JSONEditor} editor`  
+- `{JSONEditor} editor`
   New instance of a JSONEditor.
+
+### Configuration options
+
+- `{Object} ace`
+
+  Provide a custom version of the [Ace editor](http://ace.c9.io/) and use this instead of the version that comes embedded with JSONEditor. Only applicable when `mode` is `code`.
+
+- `{function} ajv`
+
+  Provide a custom instance of [ajv](https://github.com/epoberezkin/ajv), the
+  library used for JSON schema validation. Example:
+
+  ```js
+  var options = {
+    ajv: Ajv({ allErrors: true })
+  }
+  ```
+
+- `{function} onChange`
+
+  Set a callback function triggered when the contents of the JSONEditor change. Called without parameters. Will only be triggered on changes made by the user, not in case of programmatic changes via the functions `set` or `setText`.
+
+- `{function} onEditable`
+
+  Set a callback function  to determine whether individual nodes are editable or read-only. Only applicable when option `mode` is `tree`. The callback is invoked as `editable(node)`, where `node` is an object `{field: string, value: string, path: string[]}`. The function must either return a boolean value to set both the nodes field and value editable or read-only, or return an object `{field: boolean, value: boolean}`.
+
+- `{function} onError`
+
+  Set a callback function triggered when an error occurs. Invoked with the error as first argument. The callback is only invoked
+  for errors triggered by a users action, like switching from code mode to tree mode or clicking the Format button whilst the editor doesn't contain valid JSON.
+
+- `{function} onModeChange(newMode, oldMode)`
+
+  Set a callback function triggered right after the mode is changed by the user. Only applicable when
+  the mode can be changed by the user (i.e. when option `modes` is set).
+
+- `{boolean} escapeUnicode`
+
+  If true, unicode characters are escaped and displayed as their hexadecimal code (like `\u260E`) instead of of the character itself (like `☎`). False by default.
+
+- `{boolean} history`
+
+  Enables history, adds a button Undo and Redo to the menu of the JSONEditor. True by default. Only applicable when `mode` is 'tree' or 'form'.
+
+- `{String} mode`
+
+  Set the editor mode. Available values: 'tree' (default), 'view', 'form', 'code', 'text'. In 'view' mode, the data and datastructure is read-only. In 'form' mode, only the value can be changed, the datastructure is read-only. Mode 'code' requires the Ace editor to be loaded on the page. Mode 'text' shows the data as plain text.
+
+- `{String[]} modes`
+
+  Create a box in the editor menu where the user can switch between the specified modes. Available values: see option `mode`.
+
+- `{String} name`
+
+  Initial field name for the root node, is undefined by default. Can also be set using `JSONEditor.setName(name)`. Only applicable when `mode` is 'tree', 'view', or 'form'.
+
+- `{Object} schema`
+
+  Validate the JSON object against a JSON schema. A JSON schema describes the
+  structure that a JSON object must have, like required properties or the type
+  that a value must have. Only applicable for modes `tree` and `form`.
+
+  See [http://json-schema.org/](http://json-schema.org/) for more information.
+
+- `{boolean} search`
+
+  Enables a search box in the upper right corner of the JSONEditor. True by default. Only applicable when `mode` is 'tree', 'view', or 'form'.
+
+- `{Number} indentation`
+
+  Number of indentation spaces. 2 by default. Only applicable when `mode` is 'code' or 'text'.
+
+- `{String} theme`
+
+  Set the Ace editor theme, uses included 'ace/theme/jsoneditor' by default. Please note that only the default theme is included with jsoneditor, so if you specify another one you need to make sure it is loaded.
 
 
 ### Methods
