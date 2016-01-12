@@ -88,7 +88,7 @@ Constructs a new JSONEditor.
 
   Validate the JSON object against a JSON schema. A JSON schema describes the
   structure that a JSON object must have, like required properties or the type
-  that a value must have. Only applicable for modes `tree` and `form`.
+  that a value must have.
 
   See [http://json-schema.org/](http://json-schema.org/) for more information.
 

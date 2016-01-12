@@ -12,6 +12,8 @@ var util = require('./util');
 // create a mixin with the functions for text mode
 var textmode = {};
 
+var MAX_ERRORS = 3; // maximum number of displayed errors at the bottom
+
 /**
  * Create a text editor
  * @param {Element} container
@@ -66,6 +68,12 @@ textmode.create = function (container, options) {
   this.dom = {};
   this.aceEditor = undefined;  // ace code editor
   this.textarea = undefined;  // plain text editor (fallback when Ace is not available)
+  this.validateSchema = null;
+
+  // create a debounced validate function
+  var wait = this.options.debounceInterval;
+  var immediate = true;
+  this._debouncedValidate = util.debounce(this.validate.bind(this), wait, immediate);
 
   this.width = container.clientWidth;
   this.height = container.clientHeight;
@@ -172,10 +180,8 @@ textmode.create = function (container, options) {
     };
     this.menu.appendChild(poweredBy);
 
-    if (options.onChange) {
-      // register onchange event
-      aceEditor.on('change', options.onChange);
-    }
+    // register onchange event
+    aceEditor.on('change', this._onChange.bind(this));
   }
   else {
     // load a plain text textarea
@@ -185,15 +191,36 @@ textmode.create = function (container, options) {
     this.content.appendChild(textarea);
     this.textarea = textarea;
 
-    if (options.onChange) {
-      // register onchange event
-      if (this.textarea.oninput === null) {
-        this.textarea.oninput = options.onChange();
-      }
-      else {
-        // oninput is undefined. For IE8-
-        this.textarea.onchange = options.onChange();
-      }
+    // register onchange event
+    if (this.textarea.oninput === null) {
+      this.textarea.oninput = this._onChange.bind(this);
+    }
+    else {
+      // oninput is undefined. For IE8-
+      this.textarea.onchange = this._onChange.bind(this);
+    }
+  }
+
+  this.setSchema(this.options.schema);
+};
+
+/**
+ * Handle a change:
+ * - Validate JSON schema
+ * - Send a callback to the onChange listener if provided
+ * @private
+ */
+textmode._onChange = function () {
+  // validate JSON schema (if configured)
+  this._debouncedValidate();
+
+  // trigger the onChange callback
+  if (this.options.onChange) {
+    try {
+      this.options.onChange();
+    }
+    catch (err) {
+      console.error('Error in onChange callback: ', err);
     }
   }
 };
@@ -340,6 +367,9 @@ textmode.setText = function(jsonText) {
   if (this.aceEditor) {
     this.aceEditor.setValue(text, -1);
   }
+
+  // validate JSON schema
+  this.validate();
 };
 
 /**
@@ -347,7 +377,71 @@ textmode.setText = function(jsonText) {
  * Throws an exception when no JSON schema is configured
  */
 textmode.validate = function () {
-  // TODO: implement validate for textmode
+  // clear all current errors
+  if (this.dom.validationErrors) {
+    this.dom.validationErrors.parentNode.removeChild(this.dom.validationErrors);
+    this.dom.validationErrors = null;
+
+    this.content.style.marginBottom = '';
+    this.content.style.paddingBottom = '';
+  }
+
+  var doValidate = false;
+  var errors = [];
+  var json;
+  try {
+    json = this.get(); // this can fail when there is no valid json
+    doValidate = true;
+  }
+  catch (err) {
+    // no valid JSON, don't validate
+  }
+
+  // only validate the JSON when parsing the JSON succeeeded
+  if (doValidate && this.validateSchema) {
+    //console.time('validate'); // TODO: clean up time measurement
+    var valid = this.validateSchema(json);
+    //console.timeEnd('validate');
+
+    if (!valid) {
+      errors = this.validateSchema.errors;
+    }
+  }
+
+  if (errors.length > 0) {
+    // limit the number of displayed errors
+    var limit = errors.length > MAX_ERRORS;
+    if (limit) {
+      errors = errors.slice(0, MAX_ERRORS);
+      var hidden = this.validateSchema.errors.length - MAX_ERRORS;
+      errors.push('(' + hidden + ' more errors...)')
+    }
+
+    var validationErrors = document.createElement('div');
+    validationErrors.innerHTML = '<table class="jsoneditor-text-errors">' +
+        '<tbody>' +
+        errors.map(function (error) {
+          var message;
+          if (typeof error === 'string') {
+            message = '<td colspan="2"><pre>' + error + '</pre></td>';
+          }
+          else {
+            message = '<td>' + error.dataPath + '</td>' +
+                '<td>' + error.message + '</td>';
+          }
+
+          return '<tr><td><button class="jsoneditor-schema-error"></button></td>' + message + '</tr>'
+        }).join('') +
+        '</tbody>' +
+        '</table>';
+
+    this.dom.validationErrors = validationErrors;
+    this.frame.appendChild(validationErrors);
+
+    var height = validationErrors.clientHeight;
+    this.content.style.marginBottom = (-height) + 'px';
+    this.content.style.paddingBottom = height + 'px';
+  }
 };
 
 // define modes
