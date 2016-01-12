@@ -75,8 +75,7 @@ treemode._setOptions = function (options) {
     history: true,
     mode: 'tree',
     name: undefined,   // field name of root node
-    schema: null,
-    debounceInterval: 100  // debounce interval for schema validation in milliseconds
+    schema: null
   };
 
   // copy all options
@@ -92,9 +91,7 @@ treemode._setOptions = function (options) {
   this.setSchema(this.options.schema);
 
   // create a debounced validate function
-  var wait = this.options.debounceInterval;
-  var immediate = true;
-  this._debouncedValidate = util.debounce(this.validate.bind(this), wait, immediate);
+  this._debouncedValidate = util.debounce(this.validate.bind(this), this.DEBOUNCE_INTERVAL);
 };
 
 // node currently being edited

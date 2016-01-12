@@ -28,8 +28,11 @@ function Node (editor, params) {
     this.setValue(null);
   }
 
-  this._debouncedGetDomValue = util.debounce(this._getDomValue.bind(this), 100);
+  this._debouncedGetDomValue = util.debounce(this._getDomValue.bind(this), Node.prototype.DEBOUNCE_INTERVAL);
 }
+
+// debounce interval for keyboard input in milliseconds
+Node.prototype.DEBOUNCE_INTERVAL = 150;
 
 /**
  * Determine whether the field and/or value of this node are editable
@@ -1115,12 +1118,28 @@ Node.prototype._getDomValue = function(silent) {
       if (value !== this.value) {
         var oldValue = this.value;
         this.value = value;
+        var selection = this.editor.getSelection();
+        var undoDiff = util.textDiff(value, oldValue);
+        var redoDiff = util.textDiff(oldValue, value);
+        console.log('selection', selection, oldValue, value, util.textDiff(oldValue, value), util.textDiff(value, oldValue))
         this.editor._onAction('editValue', {
           'node': this,
           'oldValue': oldValue,
           'newValue': value,
-          'oldSelection': this.editor.selection,
-          'newSelection': this.editor.getSelection()
+          'oldSelection': util.extend({}, selection, {
+            range: {
+              container: selection.range.container,
+              startOffset: undoDiff.start,
+              endOffset: undoDiff.end
+            }
+          }),
+          'newSelection': util.extend({}, selection, {
+            range: {
+              container: selection.range.container,
+              startOffset: redoDiff.start,
+              endOffset: redoDiff.end
+            }
+          })
         });
       }
     }
@@ -2080,7 +2099,7 @@ Node.prototype.onEvent = function (event) {
         break;
 
       case 'input':
-        this._getDomValue(true);
+        this._debouncedGetDomValue(true);
         this._updateDomValue();
         break;
 
@@ -2098,7 +2117,7 @@ Node.prototype.onEvent = function (event) {
         break;
 
       case 'keyup':
-        this._getDomValue(true);
+        this._debouncedGetDomValue(true);
         this._updateDomValue();
         break;
 

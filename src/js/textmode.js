@@ -71,9 +71,7 @@ textmode.create = function (container, options) {
   this.validateSchema = null;
 
   // create a debounced validate function
-  var wait = this.options.debounceInterval;
-  var immediate = true;
-  this._debouncedValidate = util.debounce(this.validate.bind(this), wait, immediate);
+  this._debouncedValidate = util.debounce(this.validate.bind(this), this.DEBOUNCE_INTERVAL);
 
   this.width = container.clientWidth;
   this.height = container.clientHeight;

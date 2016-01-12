@@ -695,3 +695,50 @@ exports.debounce = function debounce(func, wait, immediate) {
     if (callNow) func.apply(context, args);
   };
 };
+
+/**
+ * Determines the difference between two texts.
+ * Can only detect one removed or inserted block of characters.
+ * @param {string} oldText
+ * @param {string} newText
+ * @return {{start: number, end: number}} Returns the start and end
+ *                                        of the changed part in newText.
+ */
+exports.textDiff = function textDiff(oldText, newText) {
+  var len = newText.length;
+  var start = 0;
+  var oldEnd = oldText.length;
+  var newEnd = newText.length;
+
+  while (newText.charAt(start) === oldText.charAt(start)
+  && start < len) {
+    start++;
+  }
+
+  while (newText.charAt(newEnd - 1) === oldText.charAt(oldEnd - 1)
+  && newEnd > start && oldEnd > 0) {
+    newEnd--;
+    oldEnd--;
+  }
+
+  return {start: start, end: newEnd};
+};
+
+/**
+ * Extend object a with the properties of object b or a series of objects
+ * Only properties with defined values are copied
+ * @param {Object} a
+ * @param {... Object} b
+ * @return {Object} a
+ */
+exports.extend = function (a, b) {
+  for (var i = 1; i < arguments.length; i++) {
+    var other = arguments[i];
+    for (var prop in other) {
+      if (other.hasOwnProperty(prop)) {
+        a[prop] = other[prop];
+      }
+    }
+  }
+  return a;
+};

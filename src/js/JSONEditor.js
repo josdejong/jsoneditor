@@ -75,7 +75,7 @@ function JSONEditor (container, options, json) {
     if (options) {
       var VALID_OPTIONS = [
         'ace', 'theme',
-        'ajv', 'schema', 'debounceInterval',
+        'ajv', 'schema',
         'onChange', 'onEditable', 'onError', 'onModeChange',
         'escapeUnicode', 'history', 'mode', 'modes', 'name', 'indentation'
       ];
@@ -109,6 +109,9 @@ function JSONEditor (container, options, json) {
  * @type { Object.<String, {mixin: Object, data: String} > }
  */
 JSONEditor.modes = {};
+
+// debounce interval for JSON schema vaidation in milliseconds
+JSONEditor.prototype.DEBOUNCE_INTERVAL = 150;
 
 /**
  * Create the JSONEditor
