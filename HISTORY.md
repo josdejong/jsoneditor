@@ -6,6 +6,8 @@ https://github.com/josdejong/jsoneditor
 ## not yet released, version 5.1.0
 
 - Implemented support for JSON schema validation, powered by `ajv`.
+  A JSON schema can be configured via the option `schema` or the method
+  `setSchema`.
 - Added a minimalist bundle to the `dist` folder, excluding `ace` and `ajv`.
 - Fixed an error throw when switching to mode "code" via the menu.
 

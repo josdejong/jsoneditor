@@ -10,7 +10,7 @@ Constructs a new JSONEditor.
 
 *Parameters:*
 
-- `{Element} container`  
+- `{Element} container`
 
   An HTML DIV element. The JSONEditor will be created inside this container element.
 
@@ -20,11 +20,13 @@ Constructs a new JSONEditor.
   [Configuration options](#configuration-options).
 
 - `{JSON} json`
+
   Initial JSON data to be loaded into the JSONEditor. Alternatively, the method `JSONEditor.set(json)` can be used to load JSON data into the editor.
 
 *Returns:*
 
 - `{JSONEditor} editor`
+
   New instance of a JSONEditor.
 
 ### Configuration options
@@ -33,7 +35,7 @@ Constructs a new JSONEditor.
 
   Provide a custom version of the [Ace editor](http://ace.c9.io/) and use this instead of the version that comes embedded with JSONEditor. Only applicable when `mode` is `code`.
 
-- `{function} ajv`
+- `{Object} ajv`
 
   Provide a custom instance of [ajv](https://github.com/epoberezkin/ajv), the
   library used for JSON schema validation. Example:
@@ -124,6 +126,7 @@ Set JSON data.
 *Parameters:*
 
 - `{JSON} json`
+
   JSON data to be displayed in the JSONEditor.
 
 #### `JSONEditor.setMode(mode)`
@@ -132,7 +135,8 @@ Switch mode. Mode `code` requires the [Ace editor](http://ace.ajax.org/).
 
 *Parameters:*
 
-- `{String} mode`  
+- `{String} mode`
+
   Available values: `tree`, `view`, `form`, `code`, `text`.
 
 #### `JSONEditor.setName(name)`
@@ -141,19 +145,32 @@ Set a field name for the root node.
 
 *Parameters:*
 
-- `{String | undefined} name`  
+- `{String | undefined} name`
+
   Field name of the root node. If undefined, the current name will be removed.
+
+#### `JSONEditor.setSchema(schema)`
+
+Set a JSON schema for validation of the JSON object. See also option `schema`.
+See [http://json-schema.org/](http://json-schema.org/) for more information on the JSON schema definition.
+
+*Parameters:*
+
+- `{Object} schema`
+
+  A JSON schema.
 
 #### `JSONEditor.setText(jsonString)`
 
 Set text data in the editor.
 
-This method throws an exception when the provided jsonString does not contain 
+This method throws an exception when the provided jsonString does not contain
 valid JSON and the editor is in mode `tree`, `view`, or `form`.
 
 *Parameters:*
 
-- `{String} jsonString`  
+- `{String} jsonString`
+
   Contents of the editor as string.
 
 #### `JSONEditor.get()`
@@ -165,7 +182,8 @@ which can be the case when the editor is in mode `code` or `text`.
 
 *Returns:*
 
-- `{JSON} json`  
+- `{JSON} json`
+
   JSON data from the JSONEditor.
 
 #### `JSONEditor.getMode()`
@@ -174,7 +192,8 @@ Retrieve the current mode of the editor.
 
 *Returns:*
 
-- `{String} mode`  
+- `{String} mode`
+
   Current mode of the editor for example `tree` or `code`.
 
 #### `JSONEditor.getName()`
@@ -183,7 +202,8 @@ Retrieve the current field name of the root node.
 
 *Returns:*
 
-- `{String | undefined} name`  
+- `{String | undefined} name`
+
   Current field name of the root node, or undefined if not set.
 
 #### `JSONEditor.getText()`
@@ -192,7 +212,8 @@ Get JSON data as string.
 
 *Returns:*
 
-- `{String} jsonString`  
+- `{String} jsonString`
+
   Contents of the editor as string. When the editor is in code `text` or `code`,
   the returned text is returned as-is. For the other modes, the returned text
   is a compacted string. In order to get the JSON formatted with a certain

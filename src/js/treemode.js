@@ -1,10 +1,3 @@
-var Ajv;
-try {
-  Ajv = require('ajv/dist/ajv.bundle.js');
-}
-catch (err) {
-  // no problem... when we need Ajv we will throw a neat exception
-}
 var Highlighter = require('./Highlighter');
 var History = require('./History');
 var SearchBox = require('./SearchBox');
@@ -47,6 +40,7 @@ treemode.create = function (container, options) {
   this.multiselection = {
     nodes: []
   };
+  this.validateSchema = null; // will be set in .setSchema(schema)
   this.errorNodes = [];
 
 
@@ -95,20 +89,7 @@ treemode._setOptions = function (options) {
   }
 
   // compile a JSON schema validator if a JSON schema is provided
-  this._validate = null;
-  if (this.options.schema) {
-    var ajv;
-    try {
-      // grab ajv from options if provided, else create a new instance
-      ajv = options.ajv || Ajv({ allErrors: true });
-    }
-    catch (err) {
-      console.warn('Failed to create an instance of Ajv, JSON Schema validation is not available. Please use a JSONEditor bundle including Ajv, or pass an instance of Ajv as via the configuration option `ajv`.');
-    }
-    if (ajv) {
-      this._validate = ajv.compile(this.options.schema);
-    }
-  }
+  this.setSchema(this.options.schema);
 
   // create a debounced validate function
   var wait = this.options.debounceInterval;
@@ -372,56 +353,62 @@ treemode._onChange = function () {
  * Throws an exception when no JSON schema is configured
  */
 treemode.validate = function () {
-  if (!this._validate) {
+  // clear all current errors
+  if (this.errorNodes) {
+    this.errorNodes.forEach(function (node) {
+      node.setError(null);
+    });
+  }
+
+  if (!this.validateSchema) {
     // if no schema is configured or ajv was not loaded, skip validation
     return;
   }
 
+  var root = this.node;
+  if (!root) { // TODO: this should be redundant but is needed on mode switch
+    return;
+  }
+
   //console.time('validate'); // TODO: clean up time measurement
-  var valid = this._validate(this.node.getValue());
+  var valid = this.validateSchema(root.getValue());
   //console.timeEnd('validate');
 
-  // clear all current errors
-  this.errorNodes.forEach(function (node) {
-    node.setError(null);
-  });
-
   // apply all new errors
-  var root = this.node;
   if (!valid) {
-  this.errorNodes = this._validate.errors
-      .map(function findNode (error) {
-        return {
-          node: root.findNode(error.dataPath),
-          error: error
-        }
-      })
-      .filter(function hasNode (entry) {
-        return entry.node != null
-      })
-      .reduce(function expandParents (all, entry) {
-        // expand parents, then merge such that parents come first and
-        // original entries last
-        return entry.node
-            .findParents()
-            .map(function (parent) {
-              return {
-                node: parent,
-                child: entry.node,
-                error: {
-                  message: parent.type === 'object'
-                      ? 'Contains invalid properties' // object
-                      : 'Contains invalid items'      // array
-                }
-              };
-            })
-            .concat(all, [entry]);
-      }, [])
-      // TODO: dedupe the parent nodes
-      .map(function setError (entry) {
-        entry.node.setError(entry.error, entry.child);
-        return entry.node;
-      });
+    this.errorNodes = this.validateSchema.errors
+        .map(function findNode (error) {
+          return {
+            node: root.findNode(error.dataPath),
+            error: error
+          }
+        })
+        .filter(function hasNode (entry) {
+          return entry.node != null
+        })
+        .reduce(function expandParents (all, entry) {
+          // expand parents, then merge such that parents come first and
+          // original entries last
+          return entry.node
+              .findParents()
+              .map(function (parent) {
+                return {
+                  node: parent,
+                  child: entry.node,
+                  error: {
+                    message: parent.type === 'object'
+                        ? 'Contains invalid properties' // object
+                        : 'Contains invalid items'      // array
+                  }
+                };
+              })
+              .concat(all, [entry]);
+        }, [])
+        // TODO: dedupe the parent nodes
+        .map(function setError (entry) {
+          entry.node.setError(entry.error, entry.child);
+          return entry.node;
+        });
   }
   else {
     this.errorNodes = [];

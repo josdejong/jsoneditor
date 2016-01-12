@@ -342,6 +342,14 @@ textmode.setText = function(jsonText) {
   }
 };
 
+/**
+ * Validate current JSON object against the configured JSON schema
+ * Throws an exception when no JSON schema is configured
+ */
+textmode.validate = function () {
+  // TODO: implement validate for textmode
+};
+
 // define modes
 module.exports = [
   {

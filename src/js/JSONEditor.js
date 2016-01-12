@@ -1,3 +1,11 @@
+var Ajv;
+try {
+  Ajv = require('ajv/dist/ajv.bundle.js');
+}
+catch (err) {
+  // no problem... when we need Ajv we will throw a neat exception
+}
+
 var treemode = require('./treemode');
 var textmode = require('./textmode');
 var util = require('./util');
@@ -252,6 +260,51 @@ JSONEditor.prototype._onError = function(err) {
   else {
     throw err;
   }
+};
+
+/**
+ * Set a JSON schema for validation of the JSON object.
+ * To remove the schema, call JSONEditor.setSchema(null)
+ * @param {Object | null} schema
+ */
+JSONEditor.prototype.setSchema = function (schema) {
+  // compile a JSON schema validator if a JSON schema is provided
+  if (schema) {
+    var ajv;
+    try {
+      // grab ajv from options if provided, else create a new instance
+      ajv = this.options.ajv || Ajv({ allErrors: true });
+
+    }
+    catch (err) {
+      console.warn('Failed to create an instance of Ajv, JSON Schema validation is not available. Please use a JSONEditor bundle including Ajv, or pass an instance of Ajv as via the configuration option `ajv`.');
+    }
+
+    if (ajv) {
+      this.validateSchema = ajv.compile(schema);
+
+      // add schema to the options, so that when switching to an other mode,
+      // the set schema is not lost
+      this.options.schema = schema;
+
+      // validate now
+      this.validate();
+    }
+  }
+  else {
+    // remove current schema
+    this.validateSchema = null;
+    this.options.schema = null;
+    this.validate(); // to clear current error messages
+  }
+};
+
+/**
+ * Validate current JSON object against the configured JSON schema
+ * Throws an exception when no JSON schema is configured
+ */
+JSONEditor.prototype.validate = function () {
+  // must be implemented by treemode and textmode
 };
 
 /**
