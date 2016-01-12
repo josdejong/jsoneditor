@@ -54,8 +54,7 @@ textmode.create = function (container, options) {
     // verify whether Ace editor is available and supported
     if (typeof _ace === 'undefined') {
       this.mode = 'text';
-      util.log('WARNING: Cannot load code editor, Ace library not loaded. ' +
-          'Falling back to plain text editor');
+      console.warn('Failed to load Ace editor, falling back to plain text mode. Please use a JSONEditor bundle including Ace, or pass Ace as via the configuration option `ace`.');
     }
   }
 

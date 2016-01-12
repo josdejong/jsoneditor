@@ -43,8 +43,6 @@ treemode.create = function (container, options) {
   };
   this.errorNodes = [];
 
-  // create an instance of ajv for JSON validation
-  this.ajv = Ajv({ allErrors: true });
 
   this._setOptions(options);
 
@@ -91,7 +89,22 @@ treemode._setOptions = function (options) {
   }
 
   // compile a JSON schema validator if a JSON schema is provided
-  this._validate = this.options.schema ? this.ajv.compile(this.options.schema) : null;
+  this._validate = null;
+  if (this.options.schema) {
+    var ajv;
+    try {
+      // grab ajv from options if provided, else create a new instance
+      ajv = options.ajv || Ajv({ allErrors: true });
+    }
+    catch (err) {
+      console.warn('Failed to create an instance of Ajv, JSON Schema validation is not available. Please use a JSONEditor bundle including Ajv, or pass an instance of Ajv as via the configuration option `ajv`.');
+    }
+    if (ajv) {
+      this._validate = ajv.compile(this.options.schema);
+    }
+  }
+
+  // create a debounced validate function
   var wait = this.options.debounceInterval;
   var immediate = true;
   this._debouncedValidate = util.debounce(this.validate.bind(this), wait, immediate);
@@ -133,10 +146,8 @@ treemode.set = function (json, name) {
     var node = new Node(this, params);
     this._setRoot(node);
 
-    // validate JSON schema
-    if (this.options.schema) {
-      this.validate();
-    }
+    // validate JSON schema (if configured)
+    this.validate();
 
     // expand
     var recurse = false;
@@ -337,10 +348,8 @@ treemode._onAction = function (action, params) {
  * @private
  */
 treemode._onChange = function () {
-  // validate JSON schema
-  if (this.options.schema) {
-    this._debouncedValidate();
-  }
+  // validate JSON schema (if configured)
+  this._debouncedValidate();
 
   // trigger the onChange callback
   if (this.options.onChange) {
@@ -359,7 +368,8 @@ treemode._onChange = function () {
  */
 treemode.validate = function () {
   if (!this._validate) {
-    throw new Error('Cannot validate: no JSON schema configured');
+    // if no schema is configured or ajv was not loaded, skip validation
+    return;
   }
 
   //console.time('validate'); // TODO: clean up time measurement
