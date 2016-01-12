@@ -1,0 +1,62 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+
+  <link href="../dist/jsoneditor.min.css" rel="stylesheet" type="text/css">
+  <script src="../dist/jsoneditor-minimalist.min.js"></script>
+
+  <style type="text/css">
+    body {
+      font: 10.5pt arial;
+      color: #4d4d4d;
+      line-height: 150%;
+      width: 500px;
+    }
+
+    code {
+      background-color: #f5f5f5;
+    }
+
+    #jsoneditor {
+      width: 500px;
+      height: 500px;
+    }
+  </style>
+</head>
+<body>
+
+<p>
+  Switch editor mode using the mode box.
+  Note that the mode can be changed programmatically as well using the method
+  <code>editor.setMode(mode)</code>, try it in the console of your browser.
+</p>
+
+<div id="jsoneditor"></div>
+
+<script>
+  var container, options, json, editor;
+
+  container = document.getElementById('jsoneditor');
+
+  options = {
+    mode: 'tree',
+    modes: ['code', 'form', 'text', 'tree', 'view'], // allowed modes
+    onError: function (err) {
+      alert(err.toString());
+    }
+  };
+
+  json = {
+    "array": [1, 2, 3],
+    "boolean": true,
+    "null": null,
+    "number": 123,
+    "object": {"a": "b", "c": "d"},
+    "string": "Hello World"
+  };
+
+  editor = new JSONEditor(container, options, json);
+</script>
+</body>
+</html>

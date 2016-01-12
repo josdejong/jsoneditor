@@ -1,4 +1,10 @@
-var Ajv = require('ajv/dist/ajv.bundle.js');
+var Ajv;
+try {
+  Ajv = require('ajv/dist/ajv.bundle.js');
+}
+catch (err) {
+  // no problem... when we need Ajv we will throw a neat exception
+}
 var Highlighter = require('./Highlighter');
 var History = require('./History');
 var SearchBox = require('./SearchBox');
@@ -601,7 +607,11 @@ treemode._createFrame = function () {
   // create one global event listener to handle all events from all nodes
   var editor = this;
   function onEvent(event) {
-    editor._onEvent(event);
+    // when switching to mode "code" or "text" via the menu, some events
+    // are still fired whilst the _onEvent methods is already removed.
+    if (editor._onEvent) {
+      editor._onEvent(event);
+    }
   }
   this.frame.onclick = function (event) {
     var target = event.target;// || event.srcElement;

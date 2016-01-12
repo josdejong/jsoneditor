@@ -9,9 +9,11 @@ var webpack = require('webpack');
 var uglify = require('uglify-js');
 
 var NAME    = 'jsoneditor';
+var NAME_MINIMALIST = 'jsoneditor-minimalist';
 var ENTRY   = './src/js/JSONEditor.js';
 var HEADER  = './src/js/header.js';
 var IMAGE   = './src/css/img/jsoneditor-icons.svg';
+var DOCS    = './src/docs/*';
 var DIST    = './dist';
 
 // generate banner with today's date and correct version
@@ -29,7 +31,8 @@ var bannerPlugin = new webpack.BannerPlugin(createBanner(), {
   raw: true
 });
 
-var webpackConfig = {
+// create a single instance of the compiler to allow caching
+var compiler = webpack({
   entry: ENTRY,
   output: {
     library: 'JSONEditor',
@@ -39,17 +42,48 @@ var webpackConfig = {
   },
   plugins: [ bannerPlugin ],
   cache: true
-};
-
-var uglifyConfig = {
-  outSourceMap: NAME + '.map',
-  output: {
-    comments: /@license/
-  }
-};
+});
 
 // create a single instance of the compiler to allow caching
-var compiler = webpack(webpackConfig);
+var compilerMinimalist = webpack({
+  entry: ENTRY,
+  output: {
+    library: 'JSONEditor',
+    libraryTarget: 'umd',
+    path: DIST,
+    filename: NAME_MINIMALIST + '.js'
+  },
+  plugins: [
+    bannerPlugin,
+    new webpack.IgnorePlugin(new RegExp('^brace')),
+    new webpack.IgnorePlugin(new RegExp('^ajv'))
+  ],
+  //exclude: [
+  //  'brace',
+  //  'ajv/dist/ajv.bundle.js'
+  //],
+
+
+  cache: true
+});
+
+function minify(name) {
+  var result = uglify.minify([DIST + '/' + name + '.js'], {
+    outSourceMap: name + '.map',
+    output: {
+      comments: /@license/
+    }
+  });
+
+  var fileMin = DIST + '/' + name + '.min.js';
+  var fileMap = DIST + '/' + name + '.map';
+
+  fs.writeFileSync(fileMin, result.code);
+  fs.writeFileSync(fileMap, result.map);
+
+  gutil.log('Minified ' + fileMin);
+  gutil.log('Mapped ' + fileMap);
+}
 
 // make dist and dist/img folders
 gulp.task('mkdir', function () {
@@ -68,6 +102,22 @@ gulp.task('bundle', ['mkdir'], function (done) {
     }
 
     gutil.log('bundled ' + NAME + '.js');
+
+    done();
+  });
+});
+
+// bundle minimalist version of javascript
+gulp.task('bundle-minimalist', ['mkdir'], function (done) {
+  // update the banner contents (has a date in it which should stay up to date)
+  bannerPlugin.banner = createBanner();
+
+  compilerMinimalist.run(function (err, stats) {
+    if (err) {
+      gutil.log(err);
+    }
+
+    gutil.log('bundled ' + NAME_MINIMALIST + '.js');
 
     done();
   });
@@ -98,18 +148,19 @@ gulp.task('copy-img', ['mkdir'], function () {
   gutil.log('Copied images');
 });
 
+// create a folder img and copy the icons
+gulp.task('copy-docs', ['mkdir'], function () {
+  gulp.src(DOCS)
+      .pipe(gulp.dest(DIST));
+  gutil.log('Copied doc');
+});
+
 gulp.task('minify', ['bundle'], function () {
-  var result = uglify.minify([DIST + '/' + NAME + '.js'], uglifyConfig);
+  minify(NAME)
+});
 
-  var fileMin = DIST + '/' + NAME + '.min.js';
-  var fileMap = DIST + '/' + NAME + '.map';
-
-  fs.writeFileSync(fileMin, result.code);
-  fs.writeFileSync(fileMap, result.map);
-
-  gutil.log('Minified ' + fileMin);
-  gutil.log('Mapped ' + fileMap);
-
+gulp.task('minify-minimalist', ['bundle-minimalist'], function () {
+  minify(NAME_MINIMALIST)
 });
 
 // TODO: zip file using archiver
@@ -120,10 +171,18 @@ gulp.task('zip', shell.task([
 
 // The watch task (to automatically rebuild when the source code changes)
 // Does only generate jsoneditor.js and jsoneditor.css, and copy the image
-// Does NOT minify the code
+// Does NOT minify the code and does NOT generate the minimalist version
 gulp.task('watch', ['bundle', 'bundle-css', 'copy-img'], function () {
   gulp.watch(['src/**/*'], ['bundle', 'bundle-css', 'copy-img']);
 });
 
 // The default task (called when you run `gulp`)
-gulp.task('default', ['bundle', 'bundle-css', 'copy-img', 'minify']);
+gulp.task('default', [
+  'bundle',
+  'bundle-minimalist',
+  'bundle-css',
+  'copy-img',
+  'copy-docs',
+  'minify',
+  'minify-minimalist'
+]);

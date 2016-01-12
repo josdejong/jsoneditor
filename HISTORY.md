@@ -3,6 +3,13 @@
 https://github.com/josdejong/jsoneditor
 
 
+## not yet released, version 5.1.0
+
+- Implemented support for JSON schema validation, powered by `ajv`.
+- Added a minimalist bundle to the `dist` folder, excluding `ace` and `ajv`.
+- Fixed an error throw when switching to mode "code" via the menu.
+
+
 ## 2015-12-31, version 5.0.1
 
 - Fixed a bug in positioning of the context menu for multiple selected nodes.
