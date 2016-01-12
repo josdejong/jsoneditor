@@ -676,3 +676,32 @@ exports.insideRect = function (parent, child) {
       && child.top >= parent.top
       && child.bottom <= parent.bottom;
 };
+
+/**
+ * Returns a function, that, as long as it continues to be invoked, will not
+ * be triggered. The function will be called after it stops being called for
+ * N milliseconds.
+ *
+ * Source: https://davidwalsh.name/javascript-debounce-function
+ *
+ * @param {function} func
+ * @param {number} wait                 Number in milliseconds
+ * @param {boolean} [immediate=false]   If `immediate` is passed, trigger the
+ *                                      function on the leading edge, instead
+ *                                      of the trailing.
+ * @return {function} Return the debounced function
+ */
+exports.debounce = function debounce(func, wait, immediate) {
+  var timeout;
+  return function() {
+    var context = this, args = arguments;
+    var later = function() {
+      timeout = null;
+      if (!immediate) func.apply(context, args);
+    };
+    var callNow = immediate && !timeout;
+    clearTimeout(timeout);
+    timeout = setTimeout(later, wait);
+    if (callNow) func.apply(context, args);
+  };
+};

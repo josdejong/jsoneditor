@@ -7,9 +7,6 @@ var Node = require('./Node');
 var modeswitcher = require('./modeswitcher');
 var util = require('./util');
 
-// create an instance of ajv for JSON validation
-var ajv = Ajv({ allErrors: true });
-
 // create a mixin with the functions for tree mode
 var treemode = {};
 
@@ -46,6 +43,9 @@ treemode.create = function (container, options) {
   };
   this.errorNodes = [];
 
+  // create an instance of ajv for JSON validation
+  this.ajv = Ajv({ allErrors: true });
+
   this._setOptions(options);
 
   if (this.options.history && this.options.mode !== 'view') {
@@ -77,7 +77,8 @@ treemode._setOptions = function (options) {
     history: true,
     mode: 'tree',
     name: undefined,   // field name of root node
-    schema: null
+    schema: null,
+    debounceInterval: 100  // debounce interval for schema validation in milliseconds
   };
 
   // copy all options
@@ -90,7 +91,10 @@ treemode._setOptions = function (options) {
   }
 
   // compile a JSON schema validator if a JSON schema is provided
-  this._validate = this.options.schema ? ajv.compile(this.options.schema) : null;
+  this._validate = this.options.schema ? this.ajv.compile(this.options.schema) : null;
+  var wait = this.options.debounceInterval;
+  var immediate = true;
+  this._debouncedValidate = util.debounce(this.validate.bind(this), wait, immediate);
 };
 
 // node currently being edited
@@ -335,7 +339,7 @@ treemode._onAction = function (action, params) {
 treemode._onChange = function () {
   // validate JSON schema
   if (this.options.schema) {
-    this.validate();
+    this._debouncedValidate();
   }
 
   // trigger the onChange callback
@@ -397,7 +401,7 @@ treemode.validate = function () {
             })
             .concat(all, [entry]);
       }, [])
-      // TODO: dedupe
+      // TODO: dedupe the parent nodes
       .map(function setError (entry) {
         entry.node.setError(entry.error);
         return entry.node;

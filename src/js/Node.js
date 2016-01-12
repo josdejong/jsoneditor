@@ -27,6 +27,8 @@ function Node (editor, params) {
     this.setField('');
     this.setValue(null);
   }
+
+  this._debouncedGetDomValue = util.debounce(this._getDomValue.bind(this), 100);
 }
 
 /**
