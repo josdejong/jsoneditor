@@ -442,6 +442,12 @@ textmode.validate = function () {
     this.content.style.marginBottom = (-height) + 'px';
     this.content.style.paddingBottom = height + 'px';
   }
+
+  // update the height of the ace editor
+  if (this.aceEditor) {
+    var force = false;
+    this.aceEditor.resize(force);
+  }
 };
 
 // define modes
