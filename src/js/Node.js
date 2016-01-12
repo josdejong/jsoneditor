@@ -129,8 +129,12 @@ Node.prototype.findParents = function () {
 /**
  *
  * @param {{dataPath: string, keyword: string, message: string, params: Object, schemaPath: string} | null} error
+ * @param {Node} [child]  When this is the error of a parent node, pointing
+ *                        to an invalid child node, the child node itself
+ *                        can be provided. If provided, clicking the error
+ *                        icon will set focus to the invalid child node.
  */
-Node.prototype.setError = function (error) {
+Node.prototype.setError = function (error, child) {
   // ensure the dom exists
   this.getDom();
 
@@ -151,14 +155,14 @@ Node.prototype.setError = function (error) {
     button.className = 'jsoneditor-schema-error';
     button.appendChild(popover);
 
-    var editor = this.editor;
-    button.onmouseover = button.onclick = button.onfocus = function () {
+    // update the direction of the popover
+    button.onmouseover = button.onfocus = function updateDirection() {
       var directions = ['right', 'above', 'below', 'left'];
       for (var i = 0; i < directions.length; i++) {
         var direction = directions[i];
         popover.className = 'jsoneditor-popover jsoneditor-' + direction;
 
-        var contentRect = editor.content.getBoundingClientRect();
+        var contentRect = this.editor.content.getBoundingClientRect();
         var popoverRect = popover.getBoundingClientRect();
         var fit = util.insideRect(contentRect, popoverRect);
 
@@ -166,15 +170,27 @@ Node.prototype.setError = function (error) {
           break;
         }
       }
-    };
+    }.bind(this);
 
+    // when clicking the error icon, expand all nodes towards the invalid
+    // child node, and set focus to the child node
+    if (child) {
+      button.onclick = function showInvalidNode() {
+        child.findParents().forEach(function (parent) {
+          parent.expand(false);
+        });
+
+        child.scrollTo(function () {
+          child.focus();
+        });
+      };
+    }
+
+    // apply the error message to the node
     while (tdError.firstChild) {
       tdError.removeChild(tdError.firstChild);
     }
     tdError.appendChild(button);
-
-    // loop over all parents of this node, and set an error "This object contains childs with errors"
-
   }
   else {
     if (tdError) {

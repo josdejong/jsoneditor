@@ -401,6 +401,7 @@ treemode.validate = function () {
             .map(function (parent) {
               return {
                 node: parent,
+                child: entry.node,
                 error: {
                   message: parent.type === 'object'
                       ? 'Contains invalid properties' // object
@@ -412,7 +413,7 @@ treemode.validate = function () {
       }, [])
       // TODO: dedupe the parent nodes
       .map(function setError (entry) {
-        entry.node.setError(entry.error);
+        entry.node.setError(entry.error, entry.child);
         return entry.node;
       });
   }
