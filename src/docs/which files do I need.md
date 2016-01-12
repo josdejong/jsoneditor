@@ -23,7 +23,7 @@ The minimalist version has excluded the following libraries:
 - `ajv`, used for JSON schema validation.
 
 This reduces the the size of the minified and gzipped JavaScript file from
-about 160 kB to just 25 kB.
+about 160 kB to about 40 kB.
 
 When to use the minimalist version?
 
