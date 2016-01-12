@@ -266,7 +266,8 @@ div.jsoneditor-field,
 div.jsoneditor-value,
 div.jsoneditor td,
 div.jsoneditor th,
-div.jsoneditor textarea {
+div.jsoneditor textarea,
+.jsoneditor-schema-error {
   font-family: droid sans mono, consolas, monospace, courier new, courier, sans-serif;
   font-size: 10pt;
   color: #1A1A1A;
@@ -280,7 +281,7 @@ div.jsoneditor textarea {
 .jsoneditor-schema-error {
   cursor: default;
   display: inline-block;
-  font-family: arial, sans-serif;
+  /*font-family: arial, sans-serif;*/
   height: 24px;
   line-height: 24px;
   position: relative;
@@ -413,7 +414,7 @@ div.jsoneditor-tree .jsoneditor-schema-error {
   width: 100%;
   border-collapse: collapse;
   background-color: #ffef8b;
-  border-top: 1px solid gold;
+  border-top: 1px solid #ffd700;
 }
 
 .jsoneditor .jsoneditor-text-errors td {

@@ -1288,6 +1288,54 @@ Node.prototype._getDomField = function(silent) {
 };
 
 /**
+ * Validate this node and all it's childs
+ * @return {Array.<{node: Node, error: {message: string}}>} Returns a list with duplicates
+ */
+Node.prototype.validate = function () {
+  var errors = [];
+
+  // find duplicate keys
+  if (this.type === 'object') {
+    var keys = {};
+    var duplicateKeys = [];
+    for (var i = 0; i < this.childs.length; i++) {
+      var child = this.childs[i];
+      if (keys[child.field]) {
+        duplicateKeys.push(child.field);
+      }
+      keys[child.field] = true;
+    }
+
+    if (duplicateKeys.length > 0) {
+      errors = this.childs
+          .filter(function (node) {
+            return duplicateKeys.indexOf(node.field) !== -1;
+          })
+          .map(function (node) {
+            return {
+              node: node,
+              error: {
+                message: 'duplicate key "' + node.field + '"'
+              }
+            }
+          });
+    }
+  }
+
+  // recurse over the childs
+  if (this.childs) {
+    for (var i = 0; i < this.childs.length; i++) {
+      var e = this.childs[i].validate();
+      if (e.length > 0) {
+        errors = errors.concat(e);
+      }
+    }
+  }
+
+  return errors;
+};
+
+/**
  * Clear the dom of the node
  */
 Node.prototype.clearDom = function() {

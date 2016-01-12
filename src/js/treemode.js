@@ -360,57 +360,59 @@ treemode.validate = function () {
     });
   }
 
-  if (!this.validateSchema) {
-    // if no schema is configured or ajv was not loaded, skip validation
-    return;
-  }
-
   var root = this.node;
   if (!root) { // TODO: this should be redundant but is needed on mode switch
     return;
   }
 
+  // check for duplicate keys
+  var duplicateErrors = root.validate();
+
   // validate the JSON
-  var valid = this.validateSchema(root.getValue());
-  if (!valid) {
-    // apply all new errors
-    this.errorNodes = this.validateSchema.errors
-        .map(function findNode (error) {
-          return {
-            node: root.findNode(error.dataPath),
-            error: error
-          }
-        })
-        .filter(function hasNode (entry) {
-          return entry.node != null
-        })
-        .reduce(function expandParents (all, entry) {
-          // expand parents, then merge such that parents come first and
-          // original entries last
-          return entry.node
-              .findParents()
-              .map(function (parent) {
-                return {
-                  node: parent,
-                  child: entry.node,
-                  error: {
-                    message: parent.type === 'object'
-                        ? 'Contains invalid properties' // object
-                        : 'Contains invalid items'      // array
-                  }
-                };
-              })
-              .concat(all, [entry]);
-        }, [])
-        // TODO: dedupe the parent nodes
-        .map(function setError (entry) {
-          entry.node.setError(entry.error, entry.child);
-          return entry.node;
-        });
+  var schemaErrors = [];
+  if (this.validateSchema) {
+    var valid = this.validateSchema(root.getValue());
+    if (!valid) {
+      // apply all new errors
+      schemaErrors = this.validateSchema.errors
+          .map(function findNode (error) {
+            return {
+              node: root.findNode(error.dataPath),
+              error: error
+            }
+          })
+          .filter(function hasNode (entry) {
+            return entry.node != null
+          });
+    }
   }
-  else {
-    this.errorNodes = [];
-  }
+
+  // display the error in the nodes with a problem
+  this.errorNodes = duplicateErrors
+      .concat(schemaErrors)
+      .reduce(function expandParents (all, entry) {
+        // expand parents, then merge such that parents come first and
+        // original entries last
+        return entry.node
+            .findParents()
+            .map(function (parent) {
+              return {
+                node: parent,
+                child: entry.node,
+                error: {
+                  message: parent.type === 'object'
+                      ? 'Contains invalid properties' // object
+                      : 'Contains invalid items'      // array
+                }
+              };
+            })
+            .concat(all, [entry]);
+      }, [])
+      // TODO: dedupe the parent nodes
+      .map(function setError (entry) {
+        entry.node.setError(entry.error, entry.child);
+        return entry.node;
+      });
 };
 
 /**
