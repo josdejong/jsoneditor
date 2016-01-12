@@ -213,7 +213,7 @@ History.prototype.undo = function () {
         }
       }
       else {
-        util.log('Error: unknown action "' + obj.action + '"');
+        console.error(new Error('unknown action "' + obj.action + '"'));
       }
     }
     this.index--;
@@ -240,7 +240,7 @@ History.prototype.redo = function () {
         }
       }
       else {
-        util.log('Error: unknown action "' + obj.action + '"');
+        console.error(new Error('unknown action "' + obj.action + '"'));
       }
     }
 

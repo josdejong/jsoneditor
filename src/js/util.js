@@ -208,16 +208,6 @@ exports.clear = function clear (a) {
 };
 
 /**
- * Output text to the console, if console is available
- * @param {...*} args
- */
-exports.log = function log (args) {
-  if (typeof console !== 'undefined' && typeof console.log === 'function') {
-    console.log.apply(console, arguments);
-  }
-};
-
-/**
  * Get the type of an object
  * @param {*} object
  * @return {String} type

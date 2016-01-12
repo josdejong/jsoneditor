@@ -126,8 +126,7 @@ treemode.set = function (json, name) {
   // adjust field name for root node
   if (name) {
     // TODO: deprecated since version 2.2.0. Cleanup some day.
-    util.log('Warning: second parameter "name" is deprecated. ' +
-        'Use setName(name) instead.');
+    console.warn('Second parameter "name" is deprecated. Use setName(name) instead.');
     this.options.name = name;
   }
 
@@ -357,7 +356,7 @@ treemode._onChange = function () {
       this.options.onChange();
     }
     catch (err) {
-      util.log('Error in change callback: ', err);
+      console.error('Error in onChange callback: ', err);
     }
   }
 };
