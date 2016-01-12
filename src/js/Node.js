@@ -980,7 +980,7 @@ Node.prototype.removeChild = function(node) {
 
 /**
  * Remove a child node node from this node
- * This method is equal to Node.removeChild, except that _remove firex an
+ * This method is equal to Node.removeChild, except that _remove fire an
  * onChange event.
  * @param {Node} node
  * @private
@@ -1182,6 +1182,29 @@ Node.prototype._updateDomValue = function () {
     }
     else {
       domValue.title = '';
+    }
+
+    // show checkbox when the value is a boolean
+    if (type === 'boolean') {
+      if (!this.dom.checkbox) {
+        this.dom.checkbox = document.createElement('input');
+        this.dom.checkbox.type = 'checkbox';
+        this.dom.tdCheckbox = document.createElement('td');
+        this.dom.tdCheckbox.className = 'jsoneditor-tree';
+        this.dom.tdCheckbox.appendChild(this.dom.checkbox);
+
+        this.dom.tdValue.parentNode.insertBefore(this.dom.tdCheckbox, this.dom.tdValue);
+      }
+
+      this.dom.checkbox.checked = this.value;
+    }
+    else {
+      // cleanup checkbox when displayed
+      if (this.dom.tdCheckbox) {
+        this.dom.tdCheckbox.parentNode.removeChild(this.dom.tdCheckbox);
+        delete this.dom.tdCheckbox;
+        delete this.dom.checkbox;
+      }
     }
 
     // strip formatting from the contents of the editable div
@@ -1982,6 +2005,12 @@ Node.prototype.onEvent = function (event) {
         this._onExpand(recurse);
       }
     }
+  }
+
+  // swap the value of a boolean when the checkbox displayed left is clicked
+  if (type == 'change' && target == dom.checkbox) {
+    this.dom.value.innerHTML = !this.value;
+    this._getDomValue();
   }
 
   // value events

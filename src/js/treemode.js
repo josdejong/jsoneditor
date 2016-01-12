@@ -370,12 +370,10 @@ treemode.validate = function () {
     return;
   }
 
-  //console.time('validate'); // TODO: clean up time measurement
+  // validate the JSON
   var valid = this.validateSchema(root.getValue());
-  //console.timeEnd('validate');
-
-  // apply all new errors
   if (!valid) {
+    // apply all new errors
     this.errorNodes = this.validateSchema.errors
         .map(function findNode (error) {
           return {

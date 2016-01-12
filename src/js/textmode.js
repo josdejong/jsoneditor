@@ -397,7 +397,7 @@ textmode.validate = function () {
     // no valid JSON, don't validate
   }
 
-  // only validate the JSON when parsing the JSON succeeeded
+  // only validate the JSON when parsing the JSON succeeded
   if (doValidate && this.validateSchema) {
     //console.time('validate'); // TODO: clean up time measurement
     var valid = this.validateSchema(json);

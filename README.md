@@ -34,9 +34,11 @@ Supported browsers: Chrome, Firefox, Safari, Opera, Internet Explorer 9+.
 - Format and compact JSON.
 - Colorized code (powered by [Ace](https://ace.c9.io)).
 - Inspect JSON (powered by [Ace](https://ace.c9.io)).
+- JSON schema validation (powered by [ajv](https://github.com/epoberezkin/ajv)).
 
 ### Text editor
 - Format and compact JSON.
+- JSON schema validation (powered by [ajv](https://github.com/epoberezkin/ajv)).
 
 
 ## Documentation
