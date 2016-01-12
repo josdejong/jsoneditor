@@ -2263,7 +2263,7 @@ Node.prototype.onKeyDown = function (event) {
       }
       handled = true;
     }
-    else if (!altKey && shiftKey && editable) { // Shift + Arrow Up
+    else if (!altKey && ctrlKey && shiftKey && editable) { // Ctrl + Shift + Arrow Up
       // select multiple nodes
       prevNode = this._previousNode();
       if (prevNode) {
@@ -2346,7 +2346,7 @@ Node.prototype.onKeyDown = function (event) {
       }
       handled = true;
     }
-    else if (!altKey && shiftKey && editable) { // Shift + Arrow Down
+    else if (!altKey && ctrlKey && shiftKey && editable) { // Ctrl + Shift + Arrow Down
       // select multiple nodes
       nextNode = this._nextNode();
       if (nextNode) {
