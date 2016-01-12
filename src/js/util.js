@@ -444,6 +444,11 @@ exports.setSelectionOffset = function setSelectionOffset(params) {
     var selection = window.getSelection();
     if(selection) {
       var range = document.createRange();
+
+      if (!params.container.firstChild) {
+        params.container.appendChild(document.createTextNode(''));
+      }
+
       // TODO: do not suppose that the first child of the container is a textnode,
       //       but recursively find the textnodes
       range.setStart(params.container.firstChild, params.startOffset);
@@ -722,23 +727,4 @@ exports.textDiff = function textDiff(oldText, newText) {
   }
 
   return {start: start, end: newEnd};
-};
-
-/**
- * Extend object a with the properties of object b or a series of objects
- * Only properties with defined values are copied
- * @param {Object} a
- * @param {... Object} b
- * @return {Object} a
- */
-exports.extend = function (a, b) {
-  for (var i = 1; i < arguments.length; i++) {
-    var other = arguments[i];
-    for (var prop in other) {
-      if (other.hasOwnProperty(prop)) {
-        a[prop] = other[prop];
-      }
-    }
-  }
-  return a;
 };

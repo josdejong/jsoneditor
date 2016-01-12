@@ -1139,24 +1139,20 @@ Node.prototype._getDomValue = function(silent) {
  * @private
  */
 Node.prototype._onChangeValue = function () {
-  var undoDiff = util.textDiff(String(this.value), String(this.previousValue));
-  var redoDiff = util.textDiff(String(this.previousValue), String(this.value));
-
-  var selection = this.editor.getSelection();
-  var oldSelection = util.extend({}, selection, {
-    range: {
-      container: selection.range.container,
-      startOffset: undoDiff.start,
-      endOffset: undoDiff.end
-    }
-  });
-  var newSelection = util.extend({}, selection, {
-    range: {
-      container: selection.range.container,
-      startOffset: redoDiff.start,
-      endOffset: redoDiff.end
-    }
-  });
+  // get current selection, then override the range such that we can select
+  // the added/removed text on undo/redo
+  var oldSelection = this.editor.getSelection();
+  if (oldSelection.range) {
+    var undoDiff = util.textDiff(String(this.value), String(this.previousValue));
+    oldSelection.range.startOffset = undoDiff.start;
+    oldSelection.range.endOffset = undoDiff.end;
+  }
+  var newSelection = this.editor.getSelection();
+  if (newSelection.range) {
+    var redoDiff = util.textDiff(String(this.previousValue), String(this.value));
+    newSelection.range.startOffset = redoDiff.start;
+    newSelection.range.endOffset = redoDiff.end;
+  }
 
   this.editor._onAction('editValue', {
     node: this,
@@ -1174,24 +1170,20 @@ Node.prototype._onChangeValue = function () {
  * @private
  */
 Node.prototype._onChangeField = function () {
-  var undoDiff = util.textDiff(this.field, this.previousField);
-  var redoDiff = util.textDiff(this.previousField, this.field);
-
-  var selection = this.editor.getSelection();
-  var oldSelection = util.extend({}, selection, {
-    range: {
-      container: selection.range.container,
-      startOffset: undoDiff.start,
-      endOffset: undoDiff.end
-    }
-  });
-  var newSelection = util.extend({}, selection, {
-    range: {
-      container: selection.range.container,
-      startOffset: redoDiff.start,
-      endOffset: redoDiff.end
-    }
-  });
+  // get current selection, then override the range such that we can select
+  // the added/removed text on undo/redo
+  var oldSelection = this.editor.getSelection();
+  if (oldSelection.range) {
+    var undoDiff = util.textDiff(this.field, this.previousField);
+    oldSelection.range.startOffset = undoDiff.start;
+    oldSelection.range.endOffset = undoDiff.end;
+  }
+  var newSelection = this.editor.getSelection();
+  if (newSelection.range) {
+    var redoDiff = util.textDiff(this.previousField, this.field);
+    newSelection.range.startOffset = redoDiff.start;
+    newSelection.range.endOffset = redoDiff.end;
+  }
 
   this.editor._onAction('editField', {
     node: this,
