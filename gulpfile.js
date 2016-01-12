@@ -58,12 +58,6 @@ var compilerMinimalist = webpack({
     new webpack.IgnorePlugin(new RegExp('^brace$')),
     new webpack.IgnorePlugin(new RegExp('^ajv'))
   ],
-  //exclude: [
-  //  'brace',
-  //  'ajv/dist/ajv.bundle.js'
-  //],
-
-
   cache: true
 });
 

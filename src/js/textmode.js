@@ -365,7 +365,13 @@ textmode.setText = function(jsonText) {
     this.textarea.value = text;
   }
   if (this.aceEditor) {
+    // prevent emitting onChange events while setting new text
+    var originalOnChange = this.options.onChange;
+    this.options.onChange = null;
+
     this.aceEditor.setValue(text, -1);
+
+    this.options.onChange = originalOnChange;
   }
 
   // validate JSON schema

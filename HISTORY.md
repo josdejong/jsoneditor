@@ -11,6 +11,7 @@ https://github.com/josdejong/jsoneditor
 - Implemented #183: display a checkbox left from boolean values, so you can
   easily switch between true/false.
 - Added a minimalist bundle to the `dist` folder, excluding `ace` and `ajv`.
+- Fixed #222: editor throwing `onChange` events when switching mode.
 - Fixed an error throw when switching to mode "code" via the menu.
 - Fixed interfering shortcut keys: changed quick keys to select multiple fields
   from `Shift+Arrow Up/Down` to `Ctrl+Shift+Arrow Up/Down`.
