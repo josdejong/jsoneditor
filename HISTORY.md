@@ -3,10 +3,9 @@
 https://github.com/josdejong/jsoneditor
 
 
-## not yet released, version 5.1.0
+## 2016-01-14, version 5.1.0
 
-- Implemented support for JSON schema validation, powered by `ajv`. A JSON
-  schema can be configured via the option `schema` or the method `setSchema`.
+- Implemented support for JSON schema validation, powered by `ajv`.
 - Implemented #197: display an error in case of duplicate keys in an object.
 - Implemented #183: display a checkbox left from boolean values, so you can
   easily switch between true/false.

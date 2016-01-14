@@ -2,8 +2,9 @@
  * jsoneditor.js
  *
  * @brief
- * JSONEditor is a web-based tool to view, edit, and format JSON.
- * It shows data a clear, editable treeview.
+ * JSONEditor is a web-based tool to view, edit, format, and validate JSON.
+ * It has various modes such as a tree editor, a code editor, and a plain text
+ * editor.
  *
  * Supported browsers: Chrome, Firefox, Safari, Opera, Internet Explorer 8+
  *
@@ -20,7 +21,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  *
- * Copyright (c) 2011-2015 Jos de Jong, http://jsoneditoronline.org
+ * Copyright (c) 2011-2016 Jos de Jong, http://jsoneditoronline.org
  *
  * @author  Jos de Jong, <wjosdejong@gmail.com>
  * @version @@version
