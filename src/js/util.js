@@ -664,12 +664,14 @@ exports.parsePath = function parsePath(jsonPath) {
  * Test whether the child rect fits completely inside the parent rect.
  * @param {ClientRect} parent
  * @param {ClientRect} child
+ * @param {number} margin
  */
-exports.insideRect = function (parent, child) {
-  return child.left >= parent.left
-      && child.right <= parent.right
-      && child.top >= parent.top
-      && child.bottom <= parent.bottom;
+exports.insideRect = function (parent, child, margin) {
+  var _margin = margin !== undefined ? margin : 0;
+  return child.left   - _margin >= parent.left
+      && child.right  + _margin <= parent.right
+      && child.top    - _margin >= parent.top
+      && child.bottom + _margin <= parent.bottom;
 };
 
 /**

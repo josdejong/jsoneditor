@@ -168,7 +168,8 @@ Node.prototype.setError = function (error, child) {
 
         var contentRect = this.editor.content.getBoundingClientRect();
         var popoverRect = popover.getBoundingClientRect();
-        var fit = util.insideRect(contentRect, popoverRect);
+        var margin = 20; // account for a scroll bar
+        var fit = util.insideRect(contentRect, popoverRect, margin);
 
         if (fit) {
           break;
