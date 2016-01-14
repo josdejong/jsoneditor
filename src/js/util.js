@@ -680,6 +680,32 @@ exports.getFromSchema = function (schema, schemaPath) {
 };
 
 /**
+ * Improve the error message of a JSON schema error
+ * @param {Object} schema
+ * @param {Object} error
+ * @return {Object} The error
+ */
+exports.improveSchemaError = function (schema, error) {
+  if (error.keyword === 'enum') {
+    var enums = exports.getFromSchema(schema, error.schemaPath);
+    if (enums) {
+      enums = enums.map(function (value) {
+        return JSON.stringify(value);
+      });
+
+      if (enums.length > 5) {
+        var more = ['(' + (enums.length - 5) + ' more...)'];
+        enums = enums.slice(0, 5);
+        enums.push(more);
+      }
+      error.message = 'should be equal to one of: ' + enums.join(', ');
+    }
+  }
+
+  return error;
+};
+
+/**
  * Test whether the child rect fits completely inside the parent rect.
  * @param {ClientRect} parent
  * @param {ClientRect} child

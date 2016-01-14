@@ -403,12 +403,13 @@ textmode.validate = function () {
 
   // only validate the JSON when parsing the JSON succeeded
   if (doValidate && this.validateSchema) {
-    //console.time('validate'); // TODO: clean up time measurement
     var valid = this.validateSchema(json);
-    //console.timeEnd('validate');
-
     if (!valid) {
-      errors = this.validateSchema.errors;
+      var schema = this.options.schema;
+      errors = this.validateSchema.errors
+          .map(function (error) {
+            return util.improveSchemaError(schema, error);
+          });
     }
   }
 
