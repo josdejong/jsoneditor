@@ -661,6 +661,25 @@ exports.parsePath = function parsePath(jsonPath) {
 };
 
 /**
+ * Retrieve a part of the schema
+ * @param {Object} schema
+ * @param {string} schemaPath   A path like "#/properties/gender/enum"
+ * @return {Object} Returns the found part of the schema, or undefined when not found.
+ */
+exports.getFromSchema = function (schema, schemaPath) {
+  var path = schemaPath.split('/');
+  path.shift(); // remove the first #
+
+  var obj = schema;
+  var prop;
+  while (prop = path.shift()) {
+    obj = obj[prop];
+  }
+
+  return obj;
+};
+
+/**
  * Test whether the child rect fits completely inside the parent rect.
  * @param {ClientRect} parent
  * @param {ClientRect} child

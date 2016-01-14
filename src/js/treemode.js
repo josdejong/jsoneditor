@@ -370,12 +370,14 @@ treemode.validate = function () {
   if (this.validateSchema) {
     var valid = this.validateSchema(root.getValue());
     if (!valid) {
+      var schema = this.options.schema;
+
       // apply all new errors
       schemaErrors = this.validateSchema.errors
           .map(function findNode (error) {
             return {
               node: root.findNode(error.dataPath),
-              error: error
+              error: improveErrorMessages(error)
             }
           })
           .filter(function hasNode (entry) {
@@ -411,6 +413,29 @@ treemode.validate = function () {
         return entry.node;
       });
 };
+
+/**
+ * Improve the error messages of JSON schema errors
+ * @param {Object} error
+ * @return {Object} The error
+ */
+function improveErrorMessages (error) {
+  if (error.keyword === 'enum') {
+    var enums = util.getFromSchema(schema, error.schemaPath);
+    if (enums) {
+      enums = enums.map(function (value) {
+        return JSON.stringify(value);
+      });
+
+      if (enums.length > 5) {
+        enums = enums.slice(0, 5).concat(['(' + (enums.length - 5) + ' more...)']);
+      }
+      error.message = 'should be equal to one of: ' + enums.join(', ');
+    }
+  }
+
+  return error;
+}
 
 /**
  * Start autoscrolling when given mouse position is above the top of the

@@ -40,6 +40,9 @@
       "lastName": {
         "type": "string"
       },
+      "gender": {
+        "enum": ["male", "female"]
+      },
       "age": {
         "description": "Age in years",
         "type": "integer",
@@ -52,7 +55,8 @@
   var json = {
     firstName: 'John',
     lastName: 'Doe',
-    age: 28.5
+    gender: null,
+    age: 28
   };
 
   var options = {
