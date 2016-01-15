@@ -3,6 +3,11 @@
 https://github.com/josdejong/jsoneditor
 
 
+## not yet released, version 5.1.1
+
+- Fixed #255: Removed wrong console warning about the option `search`.
+
+
 ## 2016-01-14, version 5.1.0
 
 - Implemented support for JSON schema validation, powered by `ajv`.
