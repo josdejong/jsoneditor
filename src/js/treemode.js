@@ -372,12 +372,10 @@ treemode.validate = function () {
   if (this.validateSchema) {
     var valid = this.validateSchema(root.getValue());
     if (!valid) {
-      var schema = this.options.schema;
-
       // apply all new errors
       schemaErrors = this.validateSchema.errors
           .map(function (error) {
-            return util.improveSchemaError(schema, error);
+            return util.improveSchemaError(error);
           })
           .map(function findNode (error) {
             return {

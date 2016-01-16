@@ -42,7 +42,7 @@ Constructs a new JSONEditor.
 
   ```js
   var options = {
-    ajv: Ajv({ allErrors: true })
+    ajv: Ajv({ allErrors: true, verbose: true })
   }
   ```
 

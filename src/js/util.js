@@ -661,33 +661,13 @@ exports.parsePath = function parsePath(jsonPath) {
 };
 
 /**
- * Retrieve a part of the schema
- * @param {Object} schema
- * @param {string} schemaPath   A path like "#/properties/gender/enum"
- * @return {Object} Returns the found part of the schema, or undefined when not found.
- */
-exports.getFromSchema = function (schema, schemaPath) {
-  var path = schemaPath.split('/');
-  path.shift(); // remove the first #
-
-  var obj = schema;
-  var prop;
-  while (prop = path.shift()) {
-    obj = obj[prop];
-  }
-
-  return obj;
-};
-
-/**
  * Improve the error message of a JSON schema error
- * @param {Object} schema
  * @param {Object} error
  * @return {Object} The error
  */
-exports.improveSchemaError = function (schema, error) {
-  if (error.keyword === 'enum') {
-    var enums = exports.getFromSchema(schema, error.schemaPath);
+exports.improveSchemaError = function (error) {
+  if (error.keyword === 'enum' && Array.isArray(error.schema)) {
+    var enums = error.schema;
     if (enums) {
       enums = enums.map(function (value) {
         return JSON.stringify(value);

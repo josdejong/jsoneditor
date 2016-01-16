@@ -276,7 +276,7 @@ JSONEditor.prototype.setSchema = function (schema) {
     var ajv;
     try {
       // grab ajv from options if provided, else create a new instance
-      ajv = this.options.ajv || Ajv({ allErrors: true });
+      ajv = this.options.ajv || Ajv({ allErrors: true, verbose: true });
 
     }
     catch (err) {

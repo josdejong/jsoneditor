@@ -5,6 +5,8 @@ https://github.com/josdejong/jsoneditor
 
 ## not yet released, version 5.1.1
 
+- Fixed #257: Improving error messages for enum errors failed when the
+  schema contains references.
 - Fixed #255: Removed wrong console warning about the option `search`.
 - Fixed error thrown when option `search` is false (see #256). Thanks @MiroHibler.
 

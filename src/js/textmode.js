@@ -405,11 +405,9 @@ textmode.validate = function () {
   if (doValidate && this.validateSchema) {
     var valid = this.validateSchema(json);
     if (!valid) {
-      var schema = this.options.schema;
-      errors = this.validateSchema.errors
-          .map(function (error) {
-            return util.improveSchemaError(schema, error);
-          });
+      errors = this.validateSchema.errors.map(function (error) {
+        return util.improveSchemaError(error);
+      });
     }
   }
 
