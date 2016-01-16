@@ -24,8 +24,8 @@
  * Copyright (c) 2011-2016 Jos de Jong, http://jsoneditoronline.org
  *
  * @author  Jos de Jong, <wjosdejong@gmail.com>
- * @version 5.1.0
- * @date    2016-01-14
+ * @version 5.1.1
+ * @date    2016-01-16
  */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
@@ -162,7 +162,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        'ace', 'theme',
 	        'ajv', 'schema',
 	        'onChange', 'onEditable', 'onError', 'onModeChange',
-	        'escapeUnicode', 'history', 'mode', 'modes', 'name', 'indentation'
+	        'escapeUnicode', 'history', 'search', 'mode', 'modes', 'name', 'indentation'
 	      ];
 
 	      Object.keys(options).forEach(function (option) {
@@ -361,7 +361,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    var ajv;
 	    try {
 	      // grab ajv from options if provided, else create a new instance
-	      ajv = this.options.ajv || Ajv({ allErrors: true });
+	      ajv = this.options.ajv || Ajv({ allErrors: true, verbose: true });
 
 	    }
 	    catch (err) {
@@ -607,7 +607,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	  }
 
 	  // clear search
-	  this.searchBox.clear();
+	  if (this.searchBox) {
+	    this.searchBox.clear();
+	  }
 	};
 
 	/**
@@ -832,12 +834,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	  if (this.validateSchema) {
 	    var valid = this.validateSchema(root.getValue());
 	    if (!valid) {
-	      var schema = this.options.schema;
-
 	      // apply all new errors
 	      schemaErrors = this.validateSchema.errors
 	          .map(function (error) {
-	            return util.improveSchemaError(schema, error);
+	            return util.improveSchemaError(error);
 	          })
 	          .map(function findNode (error) {
 	            return {
@@ -1611,6 +1611,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  }
 	];
 
+
 /***/ },
 /* 2 */
 /***/ function(module, exports, __webpack_require__) {
@@ -2022,11 +2023,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	  if (doValidate && this.validateSchema) {
 	    var valid = this.validateSchema(json);
 	    if (!valid) {
-	      var schema = this.options.schema;
-	      errors = this.validateSchema.errors
-	          .map(function (error) {
-	            return util.improveSchemaError(schema, error);
-	          });
+	      errors = this.validateSchema.errors.map(function (error) {
+	        return util.improveSchemaError(error);
+	      });
 	    }
 	  }
 
@@ -2756,33 +2755,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 
 	/**
-	 * Retrieve a part of the schema
-	 * @param {Object} schema
-	 * @param {string} schemaPath   A path like "#/properties/gender/enum"
-	 * @return {Object} Returns the found part of the schema, or undefined when not found.
-	 */
-	exports.getFromSchema = function (schema, schemaPath) {
-	  var path = schemaPath.split('/');
-	  path.shift(); // remove the first #
-
-	  var obj = schema;
-	  var prop;
-	  while (prop = path.shift()) {
-	    obj = obj[prop];
-	  }
-
-	  return obj;
-	};
-
-	/**
 	 * Improve the error message of a JSON schema error
-	 * @param {Object} schema
 	 * @param {Object} error
 	 * @return {Object} The error
 	 */
-	exports.improveSchemaError = function (schema, error) {
-	  if (error.keyword === 'enum') {
-	    var enums = exports.getFromSchema(schema, error.schemaPath);
+	exports.improveSchemaError = function (error) {
+	  if (error.keyword === 'enum' && Array.isArray(error.schema)) {
+	    var enums = error.schema;
 	    if (enums) {
 	      enums = enums.map(function (value) {
 	        return JSON.stringify(value);
