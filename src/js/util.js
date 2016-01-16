@@ -45,31 +45,36 @@ exports.sanitize = function (jsString) {
   function next()  { return jsString.charAt(i + 1); }
   function prev()  { return jsString.charAt(i - 1); }
 
-  // test whether the last non-whitespace character was a brace-open '{'
-  function prevIsBrace() {
-    var ii = i - 1;
-    while (ii >= 0) {
-      var cc = jsString.charAt(ii);
-      if (cc === '{') {
-        return true;
+  // get the last parsed non-whitespace character
+  function lastNonWhitespace () {
+    var p = chars.length - 1;
+
+    while (p >= 0) {
+      var pp = chars[p];
+      if (pp !== ' ' && pp !== '\n' && pp !== '\r' && pp !== '\t') { // non whitespace
+        return pp;
       }
-      else if (cc === ' ' || cc === '\n' || cc === '\r') { // whitespace
-        ii--;
-      }
-      else {
-        return false;
-      }
+      p--;
     }
-    return false;
+
+    return '';
   }
 
   // skip a block comment '/* ... */'
-  function skipComment () {
+  function skipBlockComment () {
     i += 2;
     while (i < jsString.length && (curr() !== '*' || next() !== '/')) {
       i++;
     }
     i += 2;
+  }
+
+  // skip a comment '// ...'
+  function skipComment () {
+    i += 2;
+    while (i < jsString.length && (curr() !== '\n')) {
+      i++;
+    }
   }
 
   // parse single or double quoted string
@@ -129,12 +134,15 @@ exports.sanitize = function (jsString) {
     var c = curr();
 
     if (c === '/' && next() === '*') {
+      skipBlockComment();
+    }
+    else if (c === '/' && next() === '/') {
       skipComment();
     }
     else if (c === '\'' || c === '"') {
       parseString(c);
     }
-    else if (/[a-zA-Z_$]/.test(c) && prevIsBrace()) {
+    else if (/[a-zA-Z_$]/.test(c) && ['{', ','].indexOf(lastNonWhitespace()) !== -1) {
       // an unquoted object key (like a in '{a:2}')
       parseKey();
     }

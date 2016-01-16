@@ -3,6 +3,11 @@
 https://github.com/josdejong/jsoneditor
 
 
+## not yet released, version 5.1.2
+
+- Improvements in sanitizing invalid JSON.
+
+
 ## 2016-01-16, version 5.1.1
 
 - Fixed #257: Improving error messages for enum errors failed when the

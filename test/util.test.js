@@ -13,6 +13,7 @@ describe('util', function () {
       assert.equal(util.sanitize('{a:2}'), '{"a":2}');
       assert.equal(util.sanitize('{\'a\':2}'), '{"a":2}');
       assert.equal(util.sanitize('{a:\'foo\'}'), '{"a":"foo"}');
+      assert.equal(util.sanitize('{a:\'foo\',b:\'bar\'}'), '{"a":"foo","b":"bar"}');
 
       // should leave string content untouched
       assert.equal(util.sanitize('"{a:b}"'), '"{a:b}"');
@@ -28,6 +29,9 @@ describe('util', function () {
 
     it('remove comments', function () {
       assert.equal(util.sanitize('/* foo */ {}'), ' {}');
+      assert.equal(util.sanitize('/* foo */ {}'), ' {}');
+      assert.equal(util.sanitize('{a:\'foo\',/*hello*/b:\'bar\'}'), '{"a":"foo","b":"bar"}');
+      assert.equal(util.sanitize('{\na:\'foo\',//hello\nb:\'bar\'\n}'), '{\n"a":"foo",\n"b":"bar"\n}');
 
       // should not remove comments in string
       assert.equal(util.sanitize('{"str":"/* foo */"}'), '{"str":"/* foo */"}');
