@@ -99,6 +99,7 @@ textmode.create = function (container, options) {
   buttonFormat.onclick = function () {
     try {
       me.format();
+      me._onChange();
     }
     catch (err) {
       me._onError(err);
@@ -113,6 +114,7 @@ textmode.create = function (container, options) {
   buttonCompact.onclick = function () {
     try {
       me.compact();
+      me._onChange();
     }
     catch (err) {
       me._onError(err);
@@ -235,9 +237,11 @@ textmode._onKeyDown = function (event) {
   if (keynum == 220 && event.ctrlKey) {
     if (event.shiftKey) { // Ctrl+Shift+\
       this.compact();
+      this._onChange();
     }
     else { // Ctrl+\
       this.format();
+      this._onChange();
     }
     handled = true;
   }

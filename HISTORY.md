@@ -6,6 +6,7 @@ https://github.com/josdejong/jsoneditor
 ## not yet released, version 5.1.2
 
 - Improvements in sanitizing invalid JSON.
+- Fixed clicking format/compact not triggering an onChange event.
 
 
 ## 2016-01-16, version 5.1.1
