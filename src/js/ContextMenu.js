@@ -73,6 +73,7 @@ function ContextMenu (items, options) {
         }
         if (item.click) {
           button.onclick = function () {
+            event.preventDefault();
             me.hide();
             item.click();
           };
@@ -113,7 +114,8 @@ function ContextMenu (items, options) {
           }
 
           // attach a handler to expand/collapse the submenu
-          buttonSubmenu.onclick = function () {
+          buttonSubmenu.onclick = function (event) {
+            event.preventDefault();
             me._onExpandItem(domItem);
             buttonSubmenu.focus();
           };
