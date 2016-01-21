@@ -1,6 +1,6 @@
 var Ajv;
 try {
-  Ajv = require('ajv/dist/ajv.bundle.js');
+  Ajv = require('ajv');
 }
 catch (err) {
   // no problem... when we need Ajv we will throw a neat exception

@@ -41,6 +41,11 @@ var compiler = webpack({
     filename: NAME + '.js'
   },
   plugins: [ bannerPlugin ],
+  module: {
+    loaders: [
+      { test: /\.json$/, loader: "json" }
+    ]
+  },
   cache: true
 });
 
