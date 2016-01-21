@@ -24,8 +24,8 @@
  * Copyright (c) 2011-2016 Jos de Jong, http://jsoneditoronline.org
  *
  * @author  Jos de Jong, <wjosdejong@gmail.com>
- * @version 5.1.1
- * @date    2016-01-16
+ * @version 5.1.2
+ * @date    2016-01-21
  */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
@@ -85,7 +85,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var Ajv;
 	try {
-	  Ajv = __webpack_require__(!(function webpackMissingModule() { var e = new Error("Cannot find module \"ajv/dist/ajv.bundle.js\""); e.code = 'MODULE_NOT_FOUND'; throw e; }()));
+	  Ajv = __webpack_require__(!(function webpackMissingModule() { var e = new Error("Cannot find module \"ajv\""); e.code = 'MODULE_NOT_FOUND'; throw e; }()));
 	}
 	catch (err) {
 	  // no problem... when we need Ajv we will throw a neat exception
@@ -1717,6 +1717,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  buttonFormat.onclick = function () {
 	    try {
 	      me.format();
+	      me._onChange();
 	    }
 	    catch (err) {
 	      me._onError(err);
@@ -1731,6 +1732,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  buttonCompact.onclick = function () {
 	    try {
 	      me.compact();
+	      me._onChange();
 	    }
 	    catch (err) {
 	      me._onError(err);
@@ -1853,9 +1855,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	  if (keynum == 220 && event.ctrlKey) {
 	    if (event.shiftKey) { // Ctrl+Shift+\
 	      this.compact();
+	      this._onChange();
 	    }
 	    else { // Ctrl+\
 	      this.format();
+	      this._onChange();
 	    }
 	    handled = true;
 	  }
@@ -2139,31 +2143,36 @@ return /******/ (function(modules) { // webpackBootstrap
 	  function next()  { return jsString.charAt(i + 1); }
 	  function prev()  { return jsString.charAt(i - 1); }
 
-	  // test whether the last non-whitespace character was a brace-open '{'
-	  function prevIsBrace() {
-	    var ii = i - 1;
-	    while (ii >= 0) {
-	      var cc = jsString.charAt(ii);
-	      if (cc === '{') {
-	        return true;
+	  // get the last parsed non-whitespace character
+	  function lastNonWhitespace () {
+	    var p = chars.length - 1;
+
+	    while (p >= 0) {
+	      var pp = chars[p];
+	      if (pp !== ' ' && pp !== '\n' && pp !== '\r' && pp !== '\t') { // non whitespace
+	        return pp;
 	      }
-	      else if (cc === ' ' || cc === '\n' || cc === '\r') { // whitespace
-	        ii--;
-	      }
-	      else {
-	        return false;
-	      }
+	      p--;
 	    }
-	    return false;
+
+	    return '';
 	  }
 
 	  // skip a block comment '/* ... */'
-	  function skipComment () {
+	  function skipBlockComment () {
 	    i += 2;
 	    while (i < jsString.length && (curr() !== '*' || next() !== '/')) {
 	      i++;
 	    }
 	    i += 2;
+	  }
+
+	  // skip a comment '// ...'
+	  function skipComment () {
+	    i += 2;
+	    while (i < jsString.length && (curr() !== '\n')) {
+	      i++;
+	    }
 	  }
 
 	  // parse single or double quoted string
@@ -2223,12 +2232,15 @@ return /******/ (function(modules) { // webpackBootstrap
 	    var c = curr();
 
 	    if (c === '/' && next() === '*') {
+	      skipBlockComment();
+	    }
+	    else if (c === '/' && next() === '/') {
 	      skipComment();
 	    }
 	    else if (c === '\'' || c === '"') {
 	      parseString(c);
 	    }
-	    else if (/[a-zA-Z_$]/.test(c) && prevIsBrace()) {
+	    else if (/[a-zA-Z_$]/.test(c) && ['{', ','].indexOf(lastNonWhitespace()) !== -1) {
 	      // an unquoted object key (like a in '{a:2}')
 	      parseKey();
 	    }
@@ -3579,6 +3591,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        }
 	        if (item.click) {
 	          button.onclick = function () {
+	            event.preventDefault();
 	            me.hide();
 	            item.click();
 	          };
@@ -3619,7 +3632,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	          }
 
 	          // attach a handler to expand/collapse the submenu
-	          buttonSubmenu.onclick = function () {
+	          buttonSubmenu.onclick = function (event) {
+	            event.preventDefault();
 	            me._onExpandItem(domItem);
 	            buttonSubmenu.focus();
 	          };

@@ -3,12 +3,14 @@
 https://github.com/josdejong/jsoneditor
 
 
-## not yet released, version 5.1.2
+## 2016-01-21, version 5.1.2
 
 - Improvements in sanitizing invalid JSON.
+- Updated dependencies to the latest version.
 - Fixed clicking format/compact not triggering an onChange event.
 - Fixed #259: when having a JSONEditor inside an HTML form, clicking an entry
   in the context menu did submit the form.
+- Fixed browserify build, see #260. Thanks @onip.
 
 
 ## 2016-01-16, version 5.1.1
