@@ -72,7 +72,7 @@ function ContextMenu (items, options) {
           button.title = item.title;
         }
         if (item.click) {
-          button.onclick = function () {
+          button.onclick = function (event) {
             event.preventDefault();
             me.hide();
             item.click();

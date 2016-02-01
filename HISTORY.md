@@ -3,6 +3,11 @@
 https://github.com/josdejong/jsoneditor
 
 
+## not yet released, version 5.1.3
+
+- Fixed #264: Clicking items in the context menu not working on Firefox.
+
+
 ## 2016-01-21, version 5.1.2
 
 - Improvements in sanitizing invalid JSON.
