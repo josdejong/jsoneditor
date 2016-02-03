@@ -24,8 +24,8 @@
  * Copyright (c) 2011-2016 Jos de Jong, http://jsoneditoronline.org
  *
  * @author  Jos de Jong, <wjosdejong@gmail.com>
- * @version 5.1.2
- * @date    2016-01-21
+ * @version 5.1.3
+ * @date    2016-02-03
  */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
@@ -85,7 +85,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var Ajv;
 	try {
-	  Ajv = __webpack_require__(4);
+	  Ajv = __webpack_require__(10);
 	}
 	catch (err) {
 	  // no problem... when we need Ajv we will throw a neat exception
@@ -465,7 +465,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	var SearchBox = __webpack_require__(7);
 	var ContextMenu = __webpack_require__(8);
 	var Node = __webpack_require__(9);
-	var modeswitcher = __webpack_require__(10);
+	var modeswitcher = __webpack_require__(4);
 	var util = __webpack_require__(3);
 
 	// create a mixin with the functions for tree mode
@@ -1624,7 +1624,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  // failed to load ace, no problem, we will fall back to plain text
 	}
 
-	var modeswitcher = __webpack_require__(10);
+	var modeswitcher = __webpack_require__(4);
 	var util = __webpack_require__(3);
 
 	// create a mixin with the functions for text mode
@@ -2867,331 +2867,111 @@ return /******/ (function(modules) { // webpackBootstrap
 /* 4 */
 /***/ function(module, exports, __webpack_require__) {
 
-	'use strict';
-
-	var compileSchema = __webpack_require__(22)
-	  , resolve = __webpack_require__(13)
-	  , Cache = __webpack_require__(14)
-	  , SchemaObject = __webpack_require__(15)
-	  , stableStringify = __webpack_require__(24)
-	  , formats = __webpack_require__(16)
-	  , rules = __webpack_require__(17)
-	  , v5 = __webpack_require__(18);
-
-	module.exports = Ajv;
-
-	Ajv.prototype.compileAsync = __webpack_require__(19);
-	Ajv.prototype.addKeyword = __webpack_require__(20);
-
-	var META_SCHEMA_ID = 'http://json-schema.org/draft-04/schema';
-	var SCHEMA_URI_FORMAT = /^(?:(?:[a-z][a-z0-9+-.]*:)?\/\/)?[^\s]*$/i;
-	function SCHEMA_URI_FORMAT_FUNC(str) {
-	  return SCHEMA_URI_FORMAT.test(str);
-	}
+	var ContextMenu = __webpack_require__(8);
 
 	/**
-	 * Creates validator instance.
-	 * Usage: `Ajv(opts)`
-	 * @param {Object} opts optional options
-	 * @return {Object} ajv instance
+	 * Create a select box to be used in the editor menu's, which allows to switch mode
+	 * @param {Object} editor
+	 * @param {String[]} modes  Available modes: 'code', 'form', 'text', 'tree', 'view'
+	 * @param {String} current  Available modes: 'code', 'form', 'text', 'tree', 'view'
+	 * @returns {HTMLElement} box
 	 */
-	function Ajv(opts) {
-	  if (!(this instanceof Ajv)) return new Ajv(opts);
-	  var self = this;
-
-	  this.opts = opts || {};
-	  this._schemas = {};
-	  this._refs = {};
-	  this._formats = formats(this.opts.format);
-	  this._cache = this.opts.cache || new Cache;
-	  this._loadingSchemas = {};
-	  this.RULES = rules();
-
-	  // this is done on purpose, so that methods are bound to the instance
-	  // (without using bind) so that they can be used without the instance
-	  this.validate = validate;
-	  this.compile = compile;
-	  this.addSchema = addSchema;
-	  this.addMetaSchema = addMetaSchema;
-	  this.validateSchema = validateSchema;
-	  this.getSchema = getSchema;
-	  this.removeSchema = removeSchema;
-	  this.addFormat = addFormat;
-	  this.errorsText = errorsText;
-
-	  this._addSchema = _addSchema;
-	  this._compile = _compile;
-
-	  addInitialSchemas();
-	  if (this.opts.formats) addInitialFormats();
-
-	  if (this.opts.errorDataPath == 'property')
-	    this.opts._errorDataPathProperty = true;
-
-	  if (this.opts.v5) v5.enable(this);
-
-	  this.opts.loopRequired = this.opts.loopRequired || Infinity;
-
+	function createModeSwitcher(editor, modes, current) {
+	  // TODO: decouple mode switcher from editor
 
 	  /**
-	   * Validate data using schema
-	   * Schema will be compiled and cached (using serialized JSON as key. [json-stable-stringify](https://github.com/substack/json-stable-stringify) is used to serialize.
-	   * @param  {String|Object} schemaKeyRef key, ref or schema object
-	   * @param  {Any} data to be validated
-	   * @return {Boolean} validation result. Errors from the last validation will be available in `ajv.errors` (and also in compiled schema: `schema.errors`).
+	   * Switch the mode of the editor
+	   * @param {String} mode
 	   */
-	  function validate(schemaKeyRef, data) {
-	    var v;
-	    if (typeof schemaKeyRef == 'string') {
-	      v = getSchema(schemaKeyRef);
-	      if (!v) throw new Error('no schema with key or ref "' + schemaKeyRef + '"');
-	    } else {
-	      var schemaObj = _addSchema(schemaKeyRef);
-	      v = schemaObj.validate || _compile(schemaObj);
-	    }
+	  function switchMode(mode) {
+	    // switch mode
+	    editor.setMode(mode);
 
-	    var valid = v(data);
-	    self.errors = v.errors;
-	    return valid;
-	  }
-
-
-	  /**
-	   * Create validating function for passed schema.
-	   * @param  {String|Object} schema
-	   * @return {Function} validating function
-	   */
-	  function compile(schema) {
-	    var schemaObj = _addSchema(schema);
-	    return schemaObj.validate || _compile(schemaObj);
-	  }
-
-
-	  /**
-	   * Adds schema to the instance.
-	   * @param {Object|Array} schema schema or array of schemas. If array is passed, `key` will be ignored.
-	   * @param {String} key Optional schema key. Can be passed to `validate` method instead of schema object or id/ref. One schema per instance can have empty `id` and `key`.
-	   */
-	  function addSchema(schema, key, _skipValidation, _meta) {
-	    if (Array.isArray(schema)){
-	      for (var i=0; i<schema.length; i++) addSchema(schema[i]);
-	      return;
-	    }
-	    // can key/id have # inside?
-	    key = resolve.normalizeId(key || schema.id);
-	    checkUnique(key);
-	    var schemaObj = self._schemas[key] = _addSchema(schema, _skipValidation);
-	    schemaObj.meta = _meta;
-	  }
-
-
-	  /**
-	   * Add schema that will be used to validate other schemas
-	   * removeAdditional option is alway set to false
-	   * @param {Object} schema
-	   * @param {String} key optional schema key
-	   */
-	  function addMetaSchema(schema, key, _skipValidation) {
-	    addSchema(schema, key, _skipValidation, true);
-	  }
-
-
-	  /**
-	   * Validate schema
-	   * @param {Object} schema schema to validate
-	   * @param {Boolean} throwOrLogError pass true to throw (or log) an error if invalid
-	   * @return {Boolean}
-	   */
-	  function validateSchema(schema, throwOrLogError) {
-	    var $schema = schema.$schema || (self.opts.v5 ? v5.META_SCHEMA_ID : META_SCHEMA_ID);
-	    var currentUriFormat = self._formats.uri;
-	    self._formats.uri = typeof currentUriFormat == 'function'
-	                        ? SCHEMA_URI_FORMAT_FUNC
-	                        : SCHEMA_URI_FORMAT;
-	    var valid = validate($schema, schema);
-	    self._formats.uri = currentUriFormat;
-	    if (!valid && throwOrLogError) {
-	      var message = 'schema is invalid:' + errorsText();
-	      if (self.opts.validateSchema == 'log') console.error(message);
-	      else throw new Error(message);
-	    }
-	    return valid;
-	  }
-
-
-	  /**
-	   * Get compiled schema from the instance by `key` or `ref`.
-	   * @param  {String} keyRef `key` that was passed to `addSchema` or full schema reference (`schema.id` or resolved id).
-	   * @return {Function} schema validating function (with property `schema`).
-	   */
-	  function getSchema(keyRef) {
-	    var schemaObj = _getSchemaObj(keyRef);
-	    switch (typeof schemaObj) {
-	      case 'object': return schemaObj.validate || _compile(schemaObj);
-	      case 'string': return getSchema(schemaObj);
+	    // restore focus on mode box
+	    var modeBox = editor.dom && editor.dom.modeBox;
+	    if (modeBox) {
+	      modeBox.focus();
 	    }
 	  }
 
-
-	  function _getSchemaObj(keyRef) {
-	    keyRef = resolve.normalizeId(keyRef);
-	    return self._schemas[keyRef] || self._refs[keyRef];
-	  }
-
-
-	  /**
-	   * Remove cached schema
-	   * Even if schema is referenced by other schemas it still can be removed as other schemas have local references
-	   * @param  {String|Object} schemaKeyRef key, ref or schema object
-	   */
-	  function removeSchema(schemaKeyRef) {
-	    switch (typeof schemaKeyRef) {
-	      case 'string':
-	        var schemaObj = _getSchemaObj(schemaKeyRef);
-	        self._cache.del(schemaObj.jsonStr);
-	        delete self._schemas[schemaKeyRef];
-	        delete self._refs[schemaKeyRef];
-	        break;
-	      case 'object':
-	        var jsonStr = stableStringify(schemaKeyRef);
-	        self._cache.del(jsonStr);
-	        var id = schemaKeyRef.id;
-	        if (id) {
-	          id = resolve.normalizeId(id);
-	          delete self._refs[id];
-	        }
+	  // available modes
+	  var availableModes = {
+	    code: {
+	      'text': 'Code',
+	      'title': 'Switch to code highlighter',
+	      'click': function () {
+	        switchMode('code')
+	      }
+	    },
+	    form: {
+	      'text': 'Form',
+	      'title': 'Switch to form editor',
+	      'click': function () {
+	        switchMode('form');
+	      }
+	    },
+	    text: {
+	      'text': 'Text',
+	      'title': 'Switch to plain text editor',
+	      'click': function () {
+	        switchMode('text');
+	      }
+	    },
+	    tree: {
+	      'text': 'Tree',
+	      'title': 'Switch to tree editor',
+	      'click': function () {
+	        switchMode('tree');
+	      }
+	    },
+	    view: {
+	      'text': 'View',
+	      'title': 'Switch to tree view',
+	      'click': function () {
+	        switchMode('view');
+	      }
 	    }
-	  }
+	  };
 
-
-	  function _addSchema(schema, skipValidation) {
-	    if (typeof schema != 'object') throw new Error('schema should be object');
-	    var jsonStr = stableStringify(schema);
-	    var cached = self._cache.get(jsonStr);
-	    if (cached) return cached;
-
-	    var id = resolve.normalizeId(schema.id);
-	    if (id) checkUnique(id);
-
-	    if (self.opts.validateSchema !== false && !skipValidation)
-	      validateSchema(schema, true);
-
-	    var localRefs = resolve.ids.call(self, schema);
-
-	    var schemaObj = new SchemaObject({
-	      id: id,
-	      schema: schema,
-	      localRefs: localRefs,
-	      jsonStr: jsonStr,
-	    });
-
-	    if (id[0] != '#') self._refs[id] = schemaObj;
-	    self._cache.put(jsonStr, schemaObj);
-
-	    return schemaObj;
-	  }
-
-
-	  function _compile(schemaObj, root) {
-	    if (schemaObj.compiling) {
-	      schemaObj.validate = callValidate;
-	      callValidate.schema = schemaObj.schema;
-	      callValidate.errors = null;
-	      callValidate.root = root ? root : callValidate;
-	      return callValidate;
-	    }
-	    schemaObj.compiling = true;
-
-	    var currentRA = self.opts.removeAdditional
-	      , currentUD = self.opts.useDefaults;
-	    if (schemaObj.meta) {
-	      if (currentRA) self.opts.removeAdditional = false;
-	      if (currentUD) self.opts.useDefaults = false;
-	    }
-	    var v;
-	    try { v = compileSchema.call(self, schemaObj.schema, root, schemaObj.localRefs); }
-	    finally {
-	      schemaObj.compiling = false;
-	      if (currentRA) self.opts.removeAdditional = currentRA;
-	      if (currentUD) self.opts.useDefaults = currentUD;
+	  // list the selected modes
+	  var items = [];
+	  for (var i = 0; i < modes.length; i++) {
+	    var mode = modes[i];
+	    var item = availableModes[mode];
+	    if (!item) {
+	      throw new Error('Unknown mode "' + mode + '"');
 	    }
 
-	    schemaObj.validate = v;
-	    schemaObj.refs = v.refs;
-	    schemaObj.refVal = v.refVal;
-	    schemaObj.root = v.root;
-	    return v;
-
-
-	    function callValidate() {
-	      var v = schemaObj.validate;
-	      var result = v.apply(null, arguments);
-	      callValidate.errors = v.errors;
-	      return result;
-	    }
+	    item.className = 'jsoneditor-type-modes' + ((current == mode) ? ' jsoneditor-selected' : '');
+	    items.push(item);
 	  }
 
-
-	  /**
-	   * Convert array of error message objects to string
-	   * @param  {Array<Object>} errors optional array of validation errors, if not passed errors from the instance are used.
-	   * @param  {Object} opts optional options with properties `separator` and `dataVar`.
-	   * @return {String}
-	   */
-	  function errorsText(errors, opts) {
-	    errors = errors || self.errors;
-	    if (!errors) return 'No errors';
-	    opts = opts || {};
-	    var separator = opts.separator || ', ';
-	    var dataVar = opts.dataVar || 'data';
-
-	    var text = '';
-	    for (var i=0; i<errors.length; i++) {
-	      var e = errors[i];
-	      if (e) text += dataVar + e.dataPath + ' ' + e.message + separator;
-	    }
-	    return text.slice(0, -separator.length);
+	  // retrieve the title of current mode
+	  var currentMode = availableModes[current];
+	  if (!currentMode) {
+	    throw new Error('Unknown mode "' + current + '"');
 	  }
+	  var currentTitle = currentMode.text;
 
+	  // create the html element
+	  var box = document.createElement('button');
+	  box.className = 'jsoneditor-modes jsoneditor-separator';
+	  box.innerHTML = currentTitle + ' &#x25BE;';
+	  box.title = 'Switch editor mode';
+	  box.onclick = function () {
+	    var menu = new ContextMenu(items);
+	    menu.show(box);
+	  };
 
-	  /**
-	   * Add custom format
-	   * @param {String} name format name
-	   * @param {String|RegExp|Function} format string is converted to RegExp; function should return boolean (true when valid)
-	   */
-	  function addFormat(name, format) {
-	    if (typeof format == 'string') format = new RegExp(format);
-	    self._formats[name] = format;
-	  }
+	  var div = document.createElement('div');
+	  div.className = 'jsoneditor-modes';
+	  div.style.position = 'relative';
+	  div.appendChild(box);
 
-
-	  function addInitialSchemas() {
-	    if (self.opts.meta !== false) {
-	      var metaSchema = __webpack_require__(28);
-	      addMetaSchema(metaSchema, META_SCHEMA_ID, true);
-	      self._refs['http://json-schema.org/schema'] = META_SCHEMA_ID;
-	    }
-
-	    var optsSchemas = self.opts.schemas;
-	    if (!optsSchemas) return;
-	    if (Array.isArray(optsSchemas)) addSchema(optsSchemas);
-	    else for (var key in optsSchemas) addSchema(optsSchemas[key], key);
-	  }
-
-
-	  function addInitialFormats() {
-	    for (var name in self.opts.formats) {
-	      var format = self.opts.formats[name];
-	      addFormat(name, format);
-	    }
-	  }
-
-
-	  function checkUnique(id) {
-	    if (self._schemas[id] || self._refs[id])
-	      throw new Error('schema with key or id "' + id + '" already exists');
-	  }
+	  return div;
 	}
+
+	exports.create = createModeSwitcher;
 
 
 /***/ },
@@ -3921,7 +3701,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	          button.title = item.title;
 	        }
 	        if (item.click) {
-	          button.onclick = function () {
+	          button.onclick = function (event) {
 	            event.preventDefault();
 	            me.hide();
 	            item.click();
@@ -4309,7 +4089,7 @@ return /******/ (function(modules) { // webpackBootstrap
 /***/ function(module, exports, __webpack_require__) {
 
 	var ContextMenu = __webpack_require__(8);
-	var appendNodeFactory = __webpack_require__(21);
+	var appendNodeFactory = __webpack_require__(13);
 	var util = __webpack_require__(3);
 
 	/**
@@ -7714,111 +7494,331 @@ return /******/ (function(modules) { // webpackBootstrap
 /* 10 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var ContextMenu = __webpack_require__(8);
+	'use strict';
 
-	/**
-	 * Create a select box to be used in the editor menu's, which allows to switch mode
-	 * @param {Object} editor
-	 * @param {String[]} modes  Available modes: 'code', 'form', 'text', 'tree', 'view'
-	 * @param {String} current  Available modes: 'code', 'form', 'text', 'tree', 'view'
-	 * @returns {HTMLElement} box
-	 */
-	function createModeSwitcher(editor, modes, current) {
-	  // TODO: decouple mode switcher from editor
+	var compileSchema = __webpack_require__(23)
+	  , resolve = __webpack_require__(14)
+	  , Cache = __webpack_require__(15)
+	  , SchemaObject = __webpack_require__(16)
+	  , stableStringify = __webpack_require__(24)
+	  , formats = __webpack_require__(17)
+	  , rules = __webpack_require__(18)
+	  , v5 = __webpack_require__(19);
 
-	  /**
-	   * Switch the mode of the editor
-	   * @param {String} mode
-	   */
-	  function switchMode(mode) {
-	    // switch mode
-	    editor.setMode(mode);
+	module.exports = Ajv;
 
-	    // restore focus on mode box
-	    var modeBox = editor.dom && editor.dom.modeBox;
-	    if (modeBox) {
-	      modeBox.focus();
-	    }
-	  }
+	Ajv.prototype.compileAsync = __webpack_require__(20);
+	Ajv.prototype.addKeyword = __webpack_require__(21);
 
-	  // available modes
-	  var availableModes = {
-	    code: {
-	      'text': 'Code',
-	      'title': 'Switch to code highlighter',
-	      'click': function () {
-	        switchMode('code')
-	      }
-	    },
-	    form: {
-	      'text': 'Form',
-	      'title': 'Switch to form editor',
-	      'click': function () {
-	        switchMode('form');
-	      }
-	    },
-	    text: {
-	      'text': 'Text',
-	      'title': 'Switch to plain text editor',
-	      'click': function () {
-	        switchMode('text');
-	      }
-	    },
-	    tree: {
-	      'text': 'Tree',
-	      'title': 'Switch to tree editor',
-	      'click': function () {
-	        switchMode('tree');
-	      }
-	    },
-	    view: {
-	      'text': 'View',
-	      'title': 'Switch to tree view',
-	      'click': function () {
-	        switchMode('view');
-	      }
-	    }
-	  };
-
-	  // list the selected modes
-	  var items = [];
-	  for (var i = 0; i < modes.length; i++) {
-	    var mode = modes[i];
-	    var item = availableModes[mode];
-	    if (!item) {
-	      throw new Error('Unknown mode "' + mode + '"');
-	    }
-
-	    item.className = 'jsoneditor-type-modes' + ((current == mode) ? ' jsoneditor-selected' : '');
-	    items.push(item);
-	  }
-
-	  // retrieve the title of current mode
-	  var currentMode = availableModes[current];
-	  if (!currentMode) {
-	    throw new Error('Unknown mode "' + current + '"');
-	  }
-	  var currentTitle = currentMode.text;
-
-	  // create the html element
-	  var box = document.createElement('button');
-	  box.className = 'jsoneditor-modes jsoneditor-separator';
-	  box.innerHTML = currentTitle + ' &#x25BE;';
-	  box.title = 'Switch editor mode';
-	  box.onclick = function () {
-	    var menu = new ContextMenu(items);
-	    menu.show(box);
-	  };
-
-	  var div = document.createElement('div');
-	  div.className = 'jsoneditor-modes';
-	  div.style.position = 'relative';
-	  div.appendChild(box);
-
-	  return div;
+	var META_SCHEMA_ID = 'http://json-schema.org/draft-04/schema';
+	var SCHEMA_URI_FORMAT = /^(?:(?:[a-z][a-z0-9+-.]*:)?\/\/)?[^\s]*$/i;
+	function SCHEMA_URI_FORMAT_FUNC(str) {
+	  return SCHEMA_URI_FORMAT.test(str);
 	}
 
-	exports.create = createModeSwitcher;
+	/**
+	 * Creates validator instance.
+	 * Usage: `Ajv(opts)`
+	 * @param {Object} opts optional options
+	 * @return {Object} ajv instance
+	 */
+	function Ajv(opts) {
+	  if (!(this instanceof Ajv)) return new Ajv(opts);
+	  var self = this;
+
+	  this.opts = opts || {};
+	  this._schemas = {};
+	  this._refs = {};
+	  this._formats = formats(this.opts.format);
+	  this._cache = this.opts.cache || new Cache;
+	  this._loadingSchemas = {};
+	  this.RULES = rules();
+
+	  // this is done on purpose, so that methods are bound to the instance
+	  // (without using bind) so that they can be used without the instance
+	  this.validate = validate;
+	  this.compile = compile;
+	  this.addSchema = addSchema;
+	  this.addMetaSchema = addMetaSchema;
+	  this.validateSchema = validateSchema;
+	  this.getSchema = getSchema;
+	  this.removeSchema = removeSchema;
+	  this.addFormat = addFormat;
+	  this.errorsText = errorsText;
+
+	  this._addSchema = _addSchema;
+	  this._compile = _compile;
+
+	  addInitialSchemas();
+	  if (this.opts.formats) addInitialFormats();
+
+	  if (this.opts.errorDataPath == 'property')
+	    this.opts._errorDataPathProperty = true;
+
+	  if (this.opts.v5) v5.enable(this);
+
+	  this.opts.loopRequired = this.opts.loopRequired || Infinity;
+
+
+	  /**
+	   * Validate data using schema
+	   * Schema will be compiled and cached (using serialized JSON as key. [json-stable-stringify](https://github.com/substack/json-stable-stringify) is used to serialize.
+	   * @param  {String|Object} schemaKeyRef key, ref or schema object
+	   * @param  {Any} data to be validated
+	   * @return {Boolean} validation result. Errors from the last validation will be available in `ajv.errors` (and also in compiled schema: `schema.errors`).
+	   */
+	  function validate(schemaKeyRef, data) {
+	    var v;
+	    if (typeof schemaKeyRef == 'string') {
+	      v = getSchema(schemaKeyRef);
+	      if (!v) throw new Error('no schema with key or ref "' + schemaKeyRef + '"');
+	    } else {
+	      var schemaObj = _addSchema(schemaKeyRef);
+	      v = schemaObj.validate || _compile(schemaObj);
+	    }
+
+	    var valid = v(data);
+	    self.errors = v.errors;
+	    return valid;
+	  }
+
+
+	  /**
+	   * Create validating function for passed schema.
+	   * @param  {String|Object} schema
+	   * @return {Function} validating function
+	   */
+	  function compile(schema) {
+	    var schemaObj = _addSchema(schema);
+	    return schemaObj.validate || _compile(schemaObj);
+	  }
+
+
+	  /**
+	   * Adds schema to the instance.
+	   * @param {Object|Array} schema schema or array of schemas. If array is passed, `key` will be ignored.
+	   * @param {String} key Optional schema key. Can be passed to `validate` method instead of schema object or id/ref. One schema per instance can have empty `id` and `key`.
+	   */
+	  function addSchema(schema, key, _skipValidation, _meta) {
+	    if (Array.isArray(schema)){
+	      for (var i=0; i<schema.length; i++) addSchema(schema[i]);
+	      return;
+	    }
+	    // can key/id have # inside?
+	    key = resolve.normalizeId(key || schema.id);
+	    checkUnique(key);
+	    var schemaObj = self._schemas[key] = _addSchema(schema, _skipValidation);
+	    schemaObj.meta = _meta;
+	  }
+
+
+	  /**
+	   * Add schema that will be used to validate other schemas
+	   * removeAdditional option is alway set to false
+	   * @param {Object} schema
+	   * @param {String} key optional schema key
+	   */
+	  function addMetaSchema(schema, key, _skipValidation) {
+	    addSchema(schema, key, _skipValidation, true);
+	  }
+
+
+	  /**
+	   * Validate schema
+	   * @param {Object} schema schema to validate
+	   * @param {Boolean} throwOrLogError pass true to throw (or log) an error if invalid
+	   * @return {Boolean}
+	   */
+	  function validateSchema(schema, throwOrLogError) {
+	    var $schema = schema.$schema || (self.opts.v5 ? v5.META_SCHEMA_ID : META_SCHEMA_ID);
+	    var currentUriFormat = self._formats.uri;
+	    self._formats.uri = typeof currentUriFormat == 'function'
+	                        ? SCHEMA_URI_FORMAT_FUNC
+	                        : SCHEMA_URI_FORMAT;
+	    var valid = validate($schema, schema);
+	    self._formats.uri = currentUriFormat;
+	    if (!valid && throwOrLogError) {
+	      var message = 'schema is invalid:' + errorsText();
+	      if (self.opts.validateSchema == 'log') console.error(message);
+	      else throw new Error(message);
+	    }
+	    return valid;
+	  }
+
+
+	  /**
+	   * Get compiled schema from the instance by `key` or `ref`.
+	   * @param  {String} keyRef `key` that was passed to `addSchema` or full schema reference (`schema.id` or resolved id).
+	   * @return {Function} schema validating function (with property `schema`).
+	   */
+	  function getSchema(keyRef) {
+	    var schemaObj = _getSchemaObj(keyRef);
+	    switch (typeof schemaObj) {
+	      case 'object': return schemaObj.validate || _compile(schemaObj);
+	      case 'string': return getSchema(schemaObj);
+	    }
+	  }
+
+
+	  function _getSchemaObj(keyRef) {
+	    keyRef = resolve.normalizeId(keyRef);
+	    return self._schemas[keyRef] || self._refs[keyRef];
+	  }
+
+
+	  /**
+	   * Remove cached schema
+	   * Even if schema is referenced by other schemas it still can be removed as other schemas have local references
+	   * @param  {String|Object} schemaKeyRef key, ref or schema object
+	   */
+	  function removeSchema(schemaKeyRef) {
+	    switch (typeof schemaKeyRef) {
+	      case 'string':
+	        var schemaObj = _getSchemaObj(schemaKeyRef);
+	        self._cache.del(schemaObj.jsonStr);
+	        delete self._schemas[schemaKeyRef];
+	        delete self._refs[schemaKeyRef];
+	        break;
+	      case 'object':
+	        var jsonStr = stableStringify(schemaKeyRef);
+	        self._cache.del(jsonStr);
+	        var id = schemaKeyRef.id;
+	        if (id) {
+	          id = resolve.normalizeId(id);
+	          delete self._refs[id];
+	        }
+	    }
+	  }
+
+
+	  function _addSchema(schema, skipValidation) {
+	    if (typeof schema != 'object') throw new Error('schema should be object');
+	    var jsonStr = stableStringify(schema);
+	    var cached = self._cache.get(jsonStr);
+	    if (cached) return cached;
+
+	    var id = resolve.normalizeId(schema.id);
+	    if (id) checkUnique(id);
+
+	    if (self.opts.validateSchema !== false && !skipValidation)
+	      validateSchema(schema, true);
+
+	    var localRefs = resolve.ids.call(self, schema);
+
+	    var schemaObj = new SchemaObject({
+	      id: id,
+	      schema: schema,
+	      localRefs: localRefs,
+	      jsonStr: jsonStr,
+	    });
+
+	    if (id[0] != '#') self._refs[id] = schemaObj;
+	    self._cache.put(jsonStr, schemaObj);
+
+	    return schemaObj;
+	  }
+
+
+	  function _compile(schemaObj, root) {
+	    if (schemaObj.compiling) {
+	      schemaObj.validate = callValidate;
+	      callValidate.schema = schemaObj.schema;
+	      callValidate.errors = null;
+	      callValidate.root = root ? root : callValidate;
+	      return callValidate;
+	    }
+	    schemaObj.compiling = true;
+
+	    var currentRA = self.opts.removeAdditional
+	      , currentUD = self.opts.useDefaults;
+	    if (schemaObj.meta) {
+	      if (currentRA) self.opts.removeAdditional = false;
+	      if (currentUD) self.opts.useDefaults = false;
+	    }
+	    var v;
+	    try { v = compileSchema.call(self, schemaObj.schema, root, schemaObj.localRefs); }
+	    finally {
+	      schemaObj.compiling = false;
+	      if (currentRA) self.opts.removeAdditional = currentRA;
+	      if (currentUD) self.opts.useDefaults = currentUD;
+	    }
+
+	    schemaObj.validate = v;
+	    schemaObj.refs = v.refs;
+	    schemaObj.refVal = v.refVal;
+	    schemaObj.root = v.root;
+	    return v;
+
+
+	    function callValidate() {
+	      var v = schemaObj.validate;
+	      var result = v.apply(null, arguments);
+	      callValidate.errors = v.errors;
+	      return result;
+	    }
+	  }
+
+
+	  /**
+	   * Convert array of error message objects to string
+	   * @param  {Array<Object>} errors optional array of validation errors, if not passed errors from the instance are used.
+	   * @param  {Object} opts optional options with properties `separator` and `dataVar`.
+	   * @return {String}
+	   */
+	  function errorsText(errors, opts) {
+	    errors = errors || self.errors;
+	    if (!errors) return 'No errors';
+	    opts = opts || {};
+	    var separator = opts.separator || ', ';
+	    var dataVar = opts.dataVar || 'data';
+
+	    var text = '';
+	    for (var i=0; i<errors.length; i++) {
+	      var e = errors[i];
+	      if (e) text += dataVar + e.dataPath + ' ' + e.message + separator;
+	    }
+	    return text.slice(0, -separator.length);
+	  }
+
+
+	  /**
+	   * Add custom format
+	   * @param {String} name format name
+	   * @param {String|RegExp|Function} format string is converted to RegExp; function should return boolean (true when valid)
+	   */
+	  function addFormat(name, format) {
+	    if (typeof format == 'string') format = new RegExp(format);
+	    self._formats[name] = format;
+	  }
+
+
+	  function addInitialSchemas() {
+	    if (self.opts.meta !== false) {
+	      var metaSchema = __webpack_require__(28);
+	      addMetaSchema(metaSchema, META_SCHEMA_ID, true);
+	      self._refs['http://json-schema.org/schema'] = META_SCHEMA_ID;
+	    }
+
+	    var optsSchemas = self.opts.schemas;
+	    if (!optsSchemas) return;
+	    if (Array.isArray(optsSchemas)) addSchema(optsSchemas);
+	    else for (var key in optsSchemas) addSchema(optsSchemas[key], key);
+	  }
+
+
+	  function addInitialFormats() {
+	    for (var name in self.opts.formats) {
+	      var format = self.opts.formats[name];
+	      addFormat(name, format);
+	    }
+	  }
+
+
+	  function checkUnique(id) {
+	    if (self._schemas[id] || self._refs[id])
+	      throw new Error('schema with key or id "' + id + '" already exists');
+	  }
+	}
 
 
 /***/ },
@@ -7831,7 +7831,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	// load required ace modules
 	__webpack_require__(26);
 	__webpack_require__(27);
-	__webpack_require__(23);
+	__webpack_require__(22);
 
 	module.exports = ace;
 
@@ -8263,12 +8263,244 @@ return /******/ (function(modules) { // webpackBootstrap
 /* 13 */
 /***/ function(module, exports, __webpack_require__) {
 
+	var util = __webpack_require__(3);
+	var ContextMenu = __webpack_require__(8);
+
+	/**
+	 * A factory function to create an AppendNode, which depends on a Node
+	 * @param {Node} Node
+	 */
+	function appendNodeFactory(Node) {
+	  /**
+	   * @constructor AppendNode
+	   * @extends Node
+	   * @param {TreeEditor} editor
+	   * Create a new AppendNode. This is a special node which is created at the
+	   * end of the list with childs for an object or array
+	   */
+	  function AppendNode (editor) {
+	    /** @type {TreeEditor} */
+	    this.editor = editor;
+	    this.dom = {};
+	  }
+
+	  AppendNode.prototype = new Node();
+
+	  /**
+	   * Return a table row with an append button.
+	   * @return {Element} dom   TR element
+	   */
+	  AppendNode.prototype.getDom = function () {
+	    // TODO: implement a new solution for the append node
+	    var dom = this.dom;
+
+	    if (dom.tr) {
+	      return dom.tr;
+	    }
+
+	    this._updateEditability();
+
+	    // a row for the append button
+	    var trAppend = document.createElement('tr');
+	    trAppend.node = this;
+	    dom.tr = trAppend;
+
+	    // TODO: consistent naming
+
+	    if (this.editable.field) {
+	      // a cell for the dragarea column
+	      dom.tdDrag = document.createElement('td');
+
+	      // create context menu
+	      var tdMenu = document.createElement('td');
+	      dom.tdMenu = tdMenu;
+	      var menu = document.createElement('button');
+	      menu.className = 'jsoneditor-contextmenu';
+	      menu.title = 'Click to open the actions menu (Ctrl+M)';
+	      dom.menu = menu;
+	      tdMenu.appendChild(dom.menu);
+	    }
+
+	    // a cell for the contents (showing text 'empty')
+	    var tdAppend = document.createElement('td');
+	    var domText = document.createElement('div');
+	    domText.innerHTML = '(empty)';
+	    domText.className = 'jsoneditor-readonly';
+	    tdAppend.appendChild(domText);
+	    dom.td = tdAppend;
+	    dom.text = domText;
+
+	    this.updateDom();
+
+	    return trAppend;
+	  };
+
+	  /**
+	   * Update the HTML dom of the Node
+	   */
+	  AppendNode.prototype.updateDom = function () {
+	    var dom = this.dom;
+	    var tdAppend = dom.td;
+	    if (tdAppend) {
+	      tdAppend.style.paddingLeft = (this.getLevel() * 24 + 26) + 'px';
+	      // TODO: not so nice hard coded offset
+	    }
+
+	    var domText = dom.text;
+	    if (domText) {
+	      domText.innerHTML = '(empty ' + this.parent.type + ')';
+	    }
+
+	    // attach or detach the contents of the append node:
+	    // hide when the parent has childs, show when the parent has no childs
+	    var trAppend = dom.tr;
+	    if (!this.isVisible()) {
+	      if (dom.tr.firstChild) {
+	        if (dom.tdDrag) {
+	          trAppend.removeChild(dom.tdDrag);
+	        }
+	        if (dom.tdMenu) {
+	          trAppend.removeChild(dom.tdMenu);
+	        }
+	        trAppend.removeChild(tdAppend);
+	      }
+	    }
+	    else {
+	      if (!dom.tr.firstChild) {
+	        if (dom.tdDrag) {
+	          trAppend.appendChild(dom.tdDrag);
+	        }
+	        if (dom.tdMenu) {
+	          trAppend.appendChild(dom.tdMenu);
+	        }
+	        trAppend.appendChild(tdAppend);
+	      }
+	    }
+	  };
+
+	  /**
+	   * Check whether the AppendNode is currently visible.
+	   * the AppendNode is visible when its parent has no childs (i.e. is empty).
+	   * @return {boolean} isVisible
+	   */
+	  AppendNode.prototype.isVisible = function () {
+	    return (this.parent.childs.length == 0);
+	  };
+
+	  /**
+	   * Show a contextmenu for this node
+	   * @param {HTMLElement} anchor   The element to attach the menu to.
+	   * @param {function} [onClose]   Callback method called when the context menu
+	   *                               is being closed.
+	   */
+	  AppendNode.prototype.showContextMenu = function (anchor, onClose) {
+	    var node = this;
+	    var titles = Node.TYPE_TITLES;
+	    var items = [
+	      // create append button
+	      {
+	        'text': 'Append',
+	        'title': 'Append a new field with type \'auto\' (Ctrl+Shift+Ins)',
+	        'submenuTitle': 'Select the type of the field to be appended',
+	        'className': 'jsoneditor-insert',
+	        'click': function () {
+	          node._onAppend('', '', 'auto');
+	        },
+	        'submenu': [
+	          {
+	            'text': 'Auto',
+	            'className': 'jsoneditor-type-auto',
+	            'title': titles.auto,
+	            'click': function () {
+	              node._onAppend('', '', 'auto');
+	            }
+	          },
+	          {
+	            'text': 'Array',
+	            'className': 'jsoneditor-type-array',
+	            'title': titles.array,
+	            'click': function () {
+	              node._onAppend('', []);
+	            }
+	          },
+	          {
+	            'text': 'Object',
+	            'className': 'jsoneditor-type-object',
+	            'title': titles.object,
+	            'click': function () {
+	              node._onAppend('', {});
+	            }
+	          },
+	          {
+	            'text': 'String',
+	            'className': 'jsoneditor-type-string',
+	            'title': titles.string,
+	            'click': function () {
+	              node._onAppend('', '', 'string');
+	            }
+	          }
+	        ]
+	      }
+	    ];
+
+	    var menu = new ContextMenu(items, {close: onClose});
+	    menu.show(anchor, this.editor.content);
+	  };
+
+	  /**
+	   * Handle an event. The event is catched centrally by the editor
+	   * @param {Event} event
+	   */
+	  AppendNode.prototype.onEvent = function (event) {
+	    var type = event.type;
+	    var target = event.target || event.srcElement;
+	    var dom = this.dom;
+
+	    // highlight the append nodes parent
+	    var menu = dom.menu;
+	    if (target == menu) {
+	      if (type == 'mouseover') {
+	        this.editor.highlighter.highlight(this.parent);
+	      }
+	      else if (type == 'mouseout') {
+	        this.editor.highlighter.unhighlight();
+	      }
+	    }
+
+	    // context menu events
+	    if (type == 'click' && target == dom.menu) {
+	      var highlighter = this.editor.highlighter;
+	      highlighter.highlight(this.parent);
+	      highlighter.lock();
+	      util.addClassName(dom.menu, 'jsoneditor-selected');
+	      this.showContextMenu(dom.menu, function () {
+	        util.removeClassName(dom.menu, 'jsoneditor-selected');
+	        highlighter.unlock();
+	        highlighter.unhighlight();
+	      });
+	    }
+
+	    if (type == 'keydown') {
+	      this.onKeyDown(event);
+	    }
+	  };
+
+	  return AppendNode;
+	}
+
+	module.exports = appendNodeFactory;
+
+
+/***/ },
+/* 14 */
+/***/ function(module, exports, __webpack_require__) {
+
 	'use strict';
 
 	var url = __webpack_require__(37)
 	  , equal = __webpack_require__(29)
 	  , util = __webpack_require__(30)
-	  , SchemaObject = __webpack_require__(15);
+	  , SchemaObject = __webpack_require__(16);
 
 	module.exports = resolve;
 
@@ -8505,7 +8737,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 14 */
+/* 15 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -8532,7 +8764,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 15 */
+/* 16 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -8547,7 +8779,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 16 */
+/* 17 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -8716,7 +8948,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 17 */
+/* 18 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -8760,7 +8992,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 18 */
+/* 19 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -8799,7 +9031,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 19 */
+/* 20 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -8886,7 +9118,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 20 */
+/* 21 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -8949,244 +9181,162 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 21 */
+/* 22 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var util = __webpack_require__(3);
-	var ContextMenu = __webpack_require__(8);
+	/* ***** BEGIN LICENSE BLOCK *****
+	 * Distributed under the BSD license:
+	 *
+	 * Copyright (c) 2010, Ajax.org B.V.
+	 * All rights reserved.
+	 * 
+	 * Redistribution and use in source and binary forms, with or without
+	 * modification, are permitted provided that the following conditions are met:
+	 *     * Redistributions of source code must retain the above copyright
+	 *       notice, this list of conditions and the following disclaimer.
+	 *     * Redistributions in binary form must reproduce the above copyright
+	 *       notice, this list of conditions and the following disclaimer in the
+	 *       documentation and/or other materials provided with the distribution.
+	 *     * Neither the name of Ajax.org B.V. nor the
+	 *       names of its contributors may be used to endorse or promote products
+	 *       derived from this software without specific prior written permission.
+	 * 
+	 * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+	 * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+	 * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+	 * DISCLAIMED. IN NO EVENT SHALL AJAX.ORG B.V. BE LIABLE FOR ANY
+	 * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+	 * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+	 * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+	 * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+	 * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+	 * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+	 *
+	 * ***** END LICENSE BLOCK ***** */
 
-	/**
-	 * A factory function to create an AppendNode, which depends on a Node
-	 * @param {Node} Node
-	 */
-	function appendNodeFactory(Node) {
-	  /**
-	   * @constructor AppendNode
-	   * @extends Node
-	   * @param {TreeEditor} editor
-	   * Create a new AppendNode. This is a special node which is created at the
-	   * end of the list with childs for an object or array
-	   */
-	  function AppendNode (editor) {
-	    /** @type {TreeEditor} */
-	    this.editor = editor;
-	    this.dom = {};
-	  }
+	ace.define('ace/theme/jsoneditor', ['require', 'exports', 'module', 'ace/lib/dom'], function(acequire, exports, module) {
 
-	  AppendNode.prototype = new Node();
+	exports.isDark = false;
+	exports.cssClass = "ace-jsoneditor";
+	exports.cssText = ".ace-jsoneditor .ace_gutter {\
+	background: #ebebeb;\
+	color: #333\
+	}\
+	\
+	.ace-jsoneditor.ace_editor {\
+	font-family: droid sans mono, consolas, monospace, courier new, courier, sans-serif;\
+	line-height: 1.3;\
+	}\
+	.ace-jsoneditor .ace_print-margin {\
+	width: 1px;\
+	background: #e8e8e8\
+	}\
+	.ace-jsoneditor .ace_scroller {\
+	background-color: #FFFFFF\
+	}\
+	.ace-jsoneditor .ace_text-layer {\
+	color: gray\
+	}\
+	.ace-jsoneditor .ace_variable {\
+	color: #1a1a1a\
+	}\
+	.ace-jsoneditor .ace_cursor {\
+	border-left: 2px solid #000000\
+	}\
+	.ace-jsoneditor .ace_overwrite-cursors .ace_cursor {\
+	border-left: 0px;\
+	border-bottom: 1px solid #000000\
+	}\
+	.ace-jsoneditor .ace_marker-layer .ace_selection {\
+	background: lightgray\
+	}\
+	.ace-jsoneditor.ace_multiselect .ace_selection.ace_start {\
+	box-shadow: 0 0 3px 0px #FFFFFF;\
+	border-radius: 2px\
+	}\
+	.ace-jsoneditor .ace_marker-layer .ace_step {\
+	background: rgb(255, 255, 0)\
+	}\
+	.ace-jsoneditor .ace_marker-layer .ace_bracket {\
+	margin: -1px 0 0 -1px;\
+	border: 1px solid #BFBFBF\
+	}\
+	.ace-jsoneditor .ace_marker-layer .ace_active-line {\
+	background: #FFFBD1\
+	}\
+	.ace-jsoneditor .ace_gutter-active-line {\
+	background-color : #dcdcdc\
+	}\
+	.ace-jsoneditor .ace_marker-layer .ace_selected-word {\
+	border: 1px solid lightgray\
+	}\
+	.ace-jsoneditor .ace_invisible {\
+	color: #BFBFBF\
+	}\
+	.ace-jsoneditor .ace_keyword,\
+	.ace-jsoneditor .ace_meta,\
+	.ace-jsoneditor .ace_support.ace_constant.ace_property-value {\
+	color: #AF956F\
+	}\
+	.ace-jsoneditor .ace_keyword.ace_operator {\
+	color: #484848\
+	}\
+	.ace-jsoneditor .ace_keyword.ace_other.ace_unit {\
+	color: #96DC5F\
+	}\
+	.ace-jsoneditor .ace_constant.ace_language {\
+	color: darkorange\
+	}\
+	.ace-jsoneditor .ace_constant.ace_numeric {\
+	color: red\
+	}\
+	.ace-jsoneditor .ace_constant.ace_character.ace_entity {\
+	color: #BF78CC\
+	}\
+	.ace-jsoneditor .ace_invalid {\
+	color: #FFFFFF;\
+	background-color: #FF002A;\
+	}\
+	.ace-jsoneditor .ace_fold {\
+	background-color: #AF956F;\
+	border-color: #000000\
+	}\
+	.ace-jsoneditor .ace_storage,\
+	.ace-jsoneditor .ace_support.ace_class,\
+	.ace-jsoneditor .ace_support.ace_function,\
+	.ace-jsoneditor .ace_support.ace_other,\
+	.ace-jsoneditor .ace_support.ace_type {\
+	color: #C52727\
+	}\
+	.ace-jsoneditor .ace_string {\
+	color: green\
+	}\
+	.ace-jsoneditor .ace_comment {\
+	color: #BCC8BA\
+	}\
+	.ace-jsoneditor .ace_entity.ace_name.ace_tag,\
+	.ace-jsoneditor .ace_entity.ace_other.ace_attribute-name {\
+	color: #606060\
+	}\
+	.ace-jsoneditor .ace_markup.ace_underline {\
+	text-decoration: underline\
+	}\
+	.ace-jsoneditor .ace_indent-guide {\
+	background: url(\"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAACCAYAAACZgbYnAAAAE0lEQVQImWP4////f4bLly//BwAmVgd1/w11/gAAAABJRU5ErkJggg==\") right repeat-y\
+	}";
 
-	  /**
-	   * Return a table row with an append button.
-	   * @return {Element} dom   TR element
-	   */
-	  AppendNode.prototype.getDom = function () {
-	    // TODO: implement a new solution for the append node
-	    var dom = this.dom;
-
-	    if (dom.tr) {
-	      return dom.tr;
-	    }
-
-	    this._updateEditability();
-
-	    // a row for the append button
-	    var trAppend = document.createElement('tr');
-	    trAppend.node = this;
-	    dom.tr = trAppend;
-
-	    // TODO: consistent naming
-
-	    if (this.editable.field) {
-	      // a cell for the dragarea column
-	      dom.tdDrag = document.createElement('td');
-
-	      // create context menu
-	      var tdMenu = document.createElement('td');
-	      dom.tdMenu = tdMenu;
-	      var menu = document.createElement('button');
-	      menu.className = 'jsoneditor-contextmenu';
-	      menu.title = 'Click to open the actions menu (Ctrl+M)';
-	      dom.menu = menu;
-	      tdMenu.appendChild(dom.menu);
-	    }
-
-	    // a cell for the contents (showing text 'empty')
-	    var tdAppend = document.createElement('td');
-	    var domText = document.createElement('div');
-	    domText.innerHTML = '(empty)';
-	    domText.className = 'jsoneditor-readonly';
-	    tdAppend.appendChild(domText);
-	    dom.td = tdAppend;
-	    dom.text = domText;
-
-	    this.updateDom();
-
-	    return trAppend;
-	  };
-
-	  /**
-	   * Update the HTML dom of the Node
-	   */
-	  AppendNode.prototype.updateDom = function () {
-	    var dom = this.dom;
-	    var tdAppend = dom.td;
-	    if (tdAppend) {
-	      tdAppend.style.paddingLeft = (this.getLevel() * 24 + 26) + 'px';
-	      // TODO: not so nice hard coded offset
-	    }
-
-	    var domText = dom.text;
-	    if (domText) {
-	      domText.innerHTML = '(empty ' + this.parent.type + ')';
-	    }
-
-	    // attach or detach the contents of the append node:
-	    // hide when the parent has childs, show when the parent has no childs
-	    var trAppend = dom.tr;
-	    if (!this.isVisible()) {
-	      if (dom.tr.firstChild) {
-	        if (dom.tdDrag) {
-	          trAppend.removeChild(dom.tdDrag);
-	        }
-	        if (dom.tdMenu) {
-	          trAppend.removeChild(dom.tdMenu);
-	        }
-	        trAppend.removeChild(tdAppend);
-	      }
-	    }
-	    else {
-	      if (!dom.tr.firstChild) {
-	        if (dom.tdDrag) {
-	          trAppend.appendChild(dom.tdDrag);
-	        }
-	        if (dom.tdMenu) {
-	          trAppend.appendChild(dom.tdMenu);
-	        }
-	        trAppend.appendChild(tdAppend);
-	      }
-	    }
-	  };
-
-	  /**
-	   * Check whether the AppendNode is currently visible.
-	   * the AppendNode is visible when its parent has no childs (i.e. is empty).
-	   * @return {boolean} isVisible
-	   */
-	  AppendNode.prototype.isVisible = function () {
-	    return (this.parent.childs.length == 0);
-	  };
-
-	  /**
-	   * Show a contextmenu for this node
-	   * @param {HTMLElement} anchor   The element to attach the menu to.
-	   * @param {function} [onClose]   Callback method called when the context menu
-	   *                               is being closed.
-	   */
-	  AppendNode.prototype.showContextMenu = function (anchor, onClose) {
-	    var node = this;
-	    var titles = Node.TYPE_TITLES;
-	    var items = [
-	      // create append button
-	      {
-	        'text': 'Append',
-	        'title': 'Append a new field with type \'auto\' (Ctrl+Shift+Ins)',
-	        'submenuTitle': 'Select the type of the field to be appended',
-	        'className': 'jsoneditor-insert',
-	        'click': function () {
-	          node._onAppend('', '', 'auto');
-	        },
-	        'submenu': [
-	          {
-	            'text': 'Auto',
-	            'className': 'jsoneditor-type-auto',
-	            'title': titles.auto,
-	            'click': function () {
-	              node._onAppend('', '', 'auto');
-	            }
-	          },
-	          {
-	            'text': 'Array',
-	            'className': 'jsoneditor-type-array',
-	            'title': titles.array,
-	            'click': function () {
-	              node._onAppend('', []);
-	            }
-	          },
-	          {
-	            'text': 'Object',
-	            'className': 'jsoneditor-type-object',
-	            'title': titles.object,
-	            'click': function () {
-	              node._onAppend('', {});
-	            }
-	          },
-	          {
-	            'text': 'String',
-	            'className': 'jsoneditor-type-string',
-	            'title': titles.string,
-	            'click': function () {
-	              node._onAppend('', '', 'string');
-	            }
-	          }
-	        ]
-	      }
-	    ];
-
-	    var menu = new ContextMenu(items, {close: onClose});
-	    menu.show(anchor, this.editor.content);
-	  };
-
-	  /**
-	   * Handle an event. The event is catched centrally by the editor
-	   * @param {Event} event
-	   */
-	  AppendNode.prototype.onEvent = function (event) {
-	    var type = event.type;
-	    var target = event.target || event.srcElement;
-	    var dom = this.dom;
-
-	    // highlight the append nodes parent
-	    var menu = dom.menu;
-	    if (target == menu) {
-	      if (type == 'mouseover') {
-	        this.editor.highlighter.highlight(this.parent);
-	      }
-	      else if (type == 'mouseout') {
-	        this.editor.highlighter.unhighlight();
-	      }
-	    }
-
-	    // context menu events
-	    if (type == 'click' && target == dom.menu) {
-	      var highlighter = this.editor.highlighter;
-	      highlighter.highlight(this.parent);
-	      highlighter.lock();
-	      util.addClassName(dom.menu, 'jsoneditor-selected');
-	      this.showContextMenu(dom.menu, function () {
-	        util.removeClassName(dom.menu, 'jsoneditor-selected');
-	        highlighter.unlock();
-	        highlighter.unhighlight();
-	      });
-	    }
-
-	    if (type == 'keydown') {
-	      this.onKeyDown(event);
-	    }
-	  };
-
-	  return AppendNode;
-	}
-
-	module.exports = appendNodeFactory;
+	var dom = acequire("../lib/dom");
+	dom.importCssString(exports.cssText, exports.cssClass);
+	});
 
 
 /***/ },
-/* 22 */
+/* 23 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var resolve = __webpack_require__(13)
+	var resolve = __webpack_require__(14)
 	  , util = __webpack_require__(30)
 	  , equal = __webpack_require__(29)
 	  , stableStringify = __webpack_require__(24);
@@ -9419,160 +9569,10 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 23 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/* ***** BEGIN LICENSE BLOCK *****
-	 * Distributed under the BSD license:
-	 *
-	 * Copyright (c) 2010, Ajax.org B.V.
-	 * All rights reserved.
-	 * 
-	 * Redistribution and use in source and binary forms, with or without
-	 * modification, are permitted provided that the following conditions are met:
-	 *     * Redistributions of source code must retain the above copyright
-	 *       notice, this list of conditions and the following disclaimer.
-	 *     * Redistributions in binary form must reproduce the above copyright
-	 *       notice, this list of conditions and the following disclaimer in the
-	 *       documentation and/or other materials provided with the distribution.
-	 *     * Neither the name of Ajax.org B.V. nor the
-	 *       names of its contributors may be used to endorse or promote products
-	 *       derived from this software without specific prior written permission.
-	 * 
-	 * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
-	 * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-	 * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-	 * DISCLAIMED. IN NO EVENT SHALL AJAX.ORG B.V. BE LIABLE FOR ANY
-	 * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-	 * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-	 * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-	 * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-	 * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-	 * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-	 *
-	 * ***** END LICENSE BLOCK ***** */
-
-	ace.define('ace/theme/jsoneditor', ['require', 'exports', 'module', 'ace/lib/dom'], function(acequire, exports, module) {
-
-	exports.isDark = false;
-	exports.cssClass = "ace-jsoneditor";
-	exports.cssText = ".ace-jsoneditor .ace_gutter {\
-	background: #ebebeb;\
-	color: #333\
-	}\
-	\
-	.ace-jsoneditor.ace_editor {\
-	font-family: droid sans mono, consolas, monospace, courier new, courier, sans-serif;\
-	line-height: 1.3;\
-	}\
-	.ace-jsoneditor .ace_print-margin {\
-	width: 1px;\
-	background: #e8e8e8\
-	}\
-	.ace-jsoneditor .ace_scroller {\
-	background-color: #FFFFFF\
-	}\
-	.ace-jsoneditor .ace_text-layer {\
-	color: gray\
-	}\
-	.ace-jsoneditor .ace_variable {\
-	color: #1a1a1a\
-	}\
-	.ace-jsoneditor .ace_cursor {\
-	border-left: 2px solid #000000\
-	}\
-	.ace-jsoneditor .ace_overwrite-cursors .ace_cursor {\
-	border-left: 0px;\
-	border-bottom: 1px solid #000000\
-	}\
-	.ace-jsoneditor .ace_marker-layer .ace_selection {\
-	background: lightgray\
-	}\
-	.ace-jsoneditor.ace_multiselect .ace_selection.ace_start {\
-	box-shadow: 0 0 3px 0px #FFFFFF;\
-	border-radius: 2px\
-	}\
-	.ace-jsoneditor .ace_marker-layer .ace_step {\
-	background: rgb(255, 255, 0)\
-	}\
-	.ace-jsoneditor .ace_marker-layer .ace_bracket {\
-	margin: -1px 0 0 -1px;\
-	border: 1px solid #BFBFBF\
-	}\
-	.ace-jsoneditor .ace_marker-layer .ace_active-line {\
-	background: #FFFBD1\
-	}\
-	.ace-jsoneditor .ace_gutter-active-line {\
-	background-color : #dcdcdc\
-	}\
-	.ace-jsoneditor .ace_marker-layer .ace_selected-word {\
-	border: 1px solid lightgray\
-	}\
-	.ace-jsoneditor .ace_invisible {\
-	color: #BFBFBF\
-	}\
-	.ace-jsoneditor .ace_keyword,\
-	.ace-jsoneditor .ace_meta,\
-	.ace-jsoneditor .ace_support.ace_constant.ace_property-value {\
-	color: #AF956F\
-	}\
-	.ace-jsoneditor .ace_keyword.ace_operator {\
-	color: #484848\
-	}\
-	.ace-jsoneditor .ace_keyword.ace_other.ace_unit {\
-	color: #96DC5F\
-	}\
-	.ace-jsoneditor .ace_constant.ace_language {\
-	color: darkorange\
-	}\
-	.ace-jsoneditor .ace_constant.ace_numeric {\
-	color: red\
-	}\
-	.ace-jsoneditor .ace_constant.ace_character.ace_entity {\
-	color: #BF78CC\
-	}\
-	.ace-jsoneditor .ace_invalid {\
-	color: #FFFFFF;\
-	background-color: #FF002A;\
-	}\
-	.ace-jsoneditor .ace_fold {\
-	background-color: #AF956F;\
-	border-color: #000000\
-	}\
-	.ace-jsoneditor .ace_storage,\
-	.ace-jsoneditor .ace_support.ace_class,\
-	.ace-jsoneditor .ace_support.ace_function,\
-	.ace-jsoneditor .ace_support.ace_other,\
-	.ace-jsoneditor .ace_support.ace_type {\
-	color: #C52727\
-	}\
-	.ace-jsoneditor .ace_string {\
-	color: green\
-	}\
-	.ace-jsoneditor .ace_comment {\
-	color: #BCC8BA\
-	}\
-	.ace-jsoneditor .ace_entity.ace_name.ace_tag,\
-	.ace-jsoneditor .ace_entity.ace_other.ace_attribute-name {\
-	color: #606060\
-	}\
-	.ace-jsoneditor .ace_markup.ace_underline {\
-	text-decoration: underline\
-	}\
-	.ace-jsoneditor .ace_indent-guide {\
-	background: url(\"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAACCAYAAACZgbYnAAAAE0lEQVQImWP4////f4bLly//BwAmVgd1/w11/gAAAABJRU5ErkJggg==\") right repeat-y\
-	}";
-
-	var dom = acequire("../lib/dom");
-	dom.importCssString(exports.cssText, exports.cssClass);
-	});
-
-
-/***/ },
 /* 24 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var json = typeof JSON !== 'undefined' ? JSON : __webpack_require__(39);
+	var json = typeof JSON !== 'undefined' ? JSON : __webpack_require__(57);
 
 	module.exports = function (obj, opts) {
 	    if (!opts) opts = {};
@@ -29931,28 +29931,28 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	//all requires must be explicit because browserify won't work with dynamic requires
 	module.exports = {
-	  '$ref': __webpack_require__(40),
-	  allOf: __webpack_require__(41),
-	  anyOf: __webpack_require__(42),
-	  dependencies: __webpack_require__(43),
-	  enum: __webpack_require__(44),
-	  format: __webpack_require__(45),
-	  items: __webpack_require__(46),
-	  maximum: __webpack_require__(47),
-	  minimum: __webpack_require__(47),
-	  maxItems: __webpack_require__(48),
-	  minItems: __webpack_require__(48),
-	  maxLength: __webpack_require__(49),
-	  minLength: __webpack_require__(49),
-	  maxProperties: __webpack_require__(50),
-	  minProperties: __webpack_require__(50),
-	  multipleOf: __webpack_require__(51),
-	  not: __webpack_require__(52),
-	  oneOf: __webpack_require__(53),
-	  pattern: __webpack_require__(54),
-	  properties: __webpack_require__(55),
-	  required: __webpack_require__(56),
-	  uniqueItems: __webpack_require__(57),
+	  '$ref': __webpack_require__(39),
+	  allOf: __webpack_require__(40),
+	  anyOf: __webpack_require__(41),
+	  dependencies: __webpack_require__(42),
+	  enum: __webpack_require__(43),
+	  format: __webpack_require__(44),
+	  items: __webpack_require__(45),
+	  maximum: __webpack_require__(46),
+	  minimum: __webpack_require__(46),
+	  maxItems: __webpack_require__(47),
+	  minItems: __webpack_require__(47),
+	  maxLength: __webpack_require__(48),
+	  minLength: __webpack_require__(48),
+	  maxProperties: __webpack_require__(49),
+	  minProperties: __webpack_require__(49),
+	  multipleOf: __webpack_require__(50),
+	  not: __webpack_require__(51),
+	  oneOf: __webpack_require__(52),
+	  pattern: __webpack_require__(53),
+	  properties: __webpack_require__(54),
+	  required: __webpack_require__(55),
+	  uniqueItems: __webpack_require__(56),
 	  validate: __webpack_require__(36)
 	};
 
@@ -31869,14 +31869,6 @@ return /******/ (function(modules) { // webpackBootstrap
 /* 39 */
 /***/ function(module, exports, __webpack_require__) {
 
-	exports.parse = __webpack_require__(61);
-	exports.stringify = __webpack_require__(62);
-
-
-/***/ },
-/* 40 */
-/***/ function(module, exports, __webpack_require__) {
-
 	'use strict';
 	module.exports = function generate_ref(it, $keyword) {
 	  var out = ' ';
@@ -31975,7 +31967,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 41 */
+/* 40 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -32015,7 +32007,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 42 */
+/* 41 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -32083,7 +32075,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 43 */
+/* 42 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -32191,7 +32183,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 44 */
+/* 43 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -32256,7 +32248,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 45 */
+/* 44 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -32358,7 +32350,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 46 */
+/* 45 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -32499,7 +32491,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 47 */
+/* 46 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -32619,7 +32611,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 48 */
+/* 47 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -32695,7 +32687,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 49 */
+/* 48 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -32776,7 +32768,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 50 */
+/* 49 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -32852,7 +32844,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 51 */
+/* 50 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -32929,7 +32921,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 52 */
+/* 51 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -33008,7 +33000,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 53 */
+/* 52 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -33084,7 +33076,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 54 */
+/* 53 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -33159,7 +33151,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 55 */
+/* 54 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -33575,7 +33567,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 56 */
+/* 55 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -33820,7 +33812,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 57 */
+/* 56 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -33889,6 +33881,14 @@ return /******/ (function(modules) { // webpackBootstrap
 	  }
 	  return out;
 	}
+
+
+/***/ },
+/* 57 */
+/***/ function(module, exports, __webpack_require__) {
+
+	exports.parse = __webpack_require__(61);
+	exports.stringify = __webpack_require__(62);
 
 
 /***/ },
