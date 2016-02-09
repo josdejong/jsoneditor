@@ -3,6 +3,11 @@
 https://github.com/josdejong/jsoneditor
 
 
+## not yet released, version 5.1.4
+
+- Fixed broken example 04_load_and_save.html. See #265.
+
+
 ## 2016-02-03, version 5.1.3
 
 - Fixed #264: Clicking items in the context menu not working on Firefox.
