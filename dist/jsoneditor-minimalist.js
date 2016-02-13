@@ -24,8 +24,8 @@
  * Copyright (c) 2011-2016 Jos de Jong, http://jsoneditoronline.org
  *
  * @author  Jos de Jong, <wjosdejong@gmail.com>
- * @version 5.1.3
- * @date    2016-02-03
+ * @version 5.1.4
+ * @date    2016-02-13
  */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
@@ -460,12 +460,12 @@ return /******/ (function(modules) { // webpackBootstrap
 /* 1 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var Highlighter = __webpack_require__(5);
-	var History = __webpack_require__(6);
-	var SearchBox = __webpack_require__(7);
-	var ContextMenu = __webpack_require__(8);
-	var Node = __webpack_require__(9);
-	var modeswitcher = __webpack_require__(4);
+	var Highlighter = __webpack_require__(4);
+	var History = __webpack_require__(5);
+	var SearchBox = __webpack_require__(6);
+	var ContextMenu = __webpack_require__(7);
+	var Node = __webpack_require__(8);
+	var modeswitcher = __webpack_require__(9);
 	var util = __webpack_require__(3);
 
 	// create a mixin with the functions for tree mode
@@ -1624,7 +1624,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  // failed to load ace, no problem, we will fall back to plain text
 	}
 
-	var modeswitcher = __webpack_require__(4);
+	var modeswitcher = __webpack_require__(9);
 	var util = __webpack_require__(3);
 
 	// create a mixin with the functions for text mode
@@ -2867,117 +2867,6 @@ return /******/ (function(modules) { // webpackBootstrap
 /* 4 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var ContextMenu = __webpack_require__(8);
-
-	/**
-	 * Create a select box to be used in the editor menu's, which allows to switch mode
-	 * @param {Object} editor
-	 * @param {String[]} modes  Available modes: 'code', 'form', 'text', 'tree', 'view'
-	 * @param {String} current  Available modes: 'code', 'form', 'text', 'tree', 'view'
-	 * @returns {HTMLElement} box
-	 */
-	function createModeSwitcher(editor, modes, current) {
-	  // TODO: decouple mode switcher from editor
-
-	  /**
-	   * Switch the mode of the editor
-	   * @param {String} mode
-	   */
-	  function switchMode(mode) {
-	    // switch mode
-	    editor.setMode(mode);
-
-	    // restore focus on mode box
-	    var modeBox = editor.dom && editor.dom.modeBox;
-	    if (modeBox) {
-	      modeBox.focus();
-	    }
-	  }
-
-	  // available modes
-	  var availableModes = {
-	    code: {
-	      'text': 'Code',
-	      'title': 'Switch to code highlighter',
-	      'click': function () {
-	        switchMode('code')
-	      }
-	    },
-	    form: {
-	      'text': 'Form',
-	      'title': 'Switch to form editor',
-	      'click': function () {
-	        switchMode('form');
-	      }
-	    },
-	    text: {
-	      'text': 'Text',
-	      'title': 'Switch to plain text editor',
-	      'click': function () {
-	        switchMode('text');
-	      }
-	    },
-	    tree: {
-	      'text': 'Tree',
-	      'title': 'Switch to tree editor',
-	      'click': function () {
-	        switchMode('tree');
-	      }
-	    },
-	    view: {
-	      'text': 'View',
-	      'title': 'Switch to tree view',
-	      'click': function () {
-	        switchMode('view');
-	      }
-	    }
-	  };
-
-	  // list the selected modes
-	  var items = [];
-	  for (var i = 0; i < modes.length; i++) {
-	    var mode = modes[i];
-	    var item = availableModes[mode];
-	    if (!item) {
-	      throw new Error('Unknown mode "' + mode + '"');
-	    }
-
-	    item.className = 'jsoneditor-type-modes' + ((current == mode) ? ' jsoneditor-selected' : '');
-	    items.push(item);
-	  }
-
-	  // retrieve the title of current mode
-	  var currentMode = availableModes[current];
-	  if (!currentMode) {
-	    throw new Error('Unknown mode "' + current + '"');
-	  }
-	  var currentTitle = currentMode.text;
-
-	  // create the html element
-	  var box = document.createElement('button');
-	  box.className = 'jsoneditor-modes jsoneditor-separator';
-	  box.innerHTML = currentTitle + ' &#x25BE;';
-	  box.title = 'Switch editor mode';
-	  box.onclick = function () {
-	    var menu = new ContextMenu(items);
-	    menu.show(box);
-	  };
-
-	  var div = document.createElement('div');
-	  div.className = 'jsoneditor-modes';
-	  div.style.position = 'relative';
-	  div.appendChild(box);
-
-	  return div;
-	}
-
-	exports.create = createModeSwitcher;
-
-
-/***/ },
-/* 5 */
-/***/ function(module, exports, __webpack_require__) {
-
 	/**
 	 * The highlighter can highlight/unhighlight a node, and
 	 * animate the visibility of a context menu.
@@ -3065,7 +2954,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 6 */
+/* 5 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var util = __webpack_require__(3);
@@ -3323,7 +3212,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 7 */
+/* 6 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -3624,7 +3513,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 8 */
+/* 7 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var util = __webpack_require__(3);
@@ -4085,10 +3974,10 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 9 */
+/* 8 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var ContextMenu = __webpack_require__(8);
+	var ContextMenu = __webpack_require__(7);
 	var appendNodeFactory = __webpack_require__(12);
 	var util = __webpack_require__(3);
 
@@ -7491,6 +7380,117 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
+/* 9 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var ContextMenu = __webpack_require__(7);
+
+	/**
+	 * Create a select box to be used in the editor menu's, which allows to switch mode
+	 * @param {Object} editor
+	 * @param {String[]} modes  Available modes: 'code', 'form', 'text', 'tree', 'view'
+	 * @param {String} current  Available modes: 'code', 'form', 'text', 'tree', 'view'
+	 * @returns {HTMLElement} box
+	 */
+	function createModeSwitcher(editor, modes, current) {
+	  // TODO: decouple mode switcher from editor
+
+	  /**
+	   * Switch the mode of the editor
+	   * @param {String} mode
+	   */
+	  function switchMode(mode) {
+	    // switch mode
+	    editor.setMode(mode);
+
+	    // restore focus on mode box
+	    var modeBox = editor.dom && editor.dom.modeBox;
+	    if (modeBox) {
+	      modeBox.focus();
+	    }
+	  }
+
+	  // available modes
+	  var availableModes = {
+	    code: {
+	      'text': 'Code',
+	      'title': 'Switch to code highlighter',
+	      'click': function () {
+	        switchMode('code')
+	      }
+	    },
+	    form: {
+	      'text': 'Form',
+	      'title': 'Switch to form editor',
+	      'click': function () {
+	        switchMode('form');
+	      }
+	    },
+	    text: {
+	      'text': 'Text',
+	      'title': 'Switch to plain text editor',
+	      'click': function () {
+	        switchMode('text');
+	      }
+	    },
+	    tree: {
+	      'text': 'Tree',
+	      'title': 'Switch to tree editor',
+	      'click': function () {
+	        switchMode('tree');
+	      }
+	    },
+	    view: {
+	      'text': 'View',
+	      'title': 'Switch to tree view',
+	      'click': function () {
+	        switchMode('view');
+	      }
+	    }
+	  };
+
+	  // list the selected modes
+	  var items = [];
+	  for (var i = 0; i < modes.length; i++) {
+	    var mode = modes[i];
+	    var item = availableModes[mode];
+	    if (!item) {
+	      throw new Error('Unknown mode "' + mode + '"');
+	    }
+
+	    item.className = 'jsoneditor-type-modes' + ((current == mode) ? ' jsoneditor-selected' : '');
+	    items.push(item);
+	  }
+
+	  // retrieve the title of current mode
+	  var currentMode = availableModes[current];
+	  if (!currentMode) {
+	    throw new Error('Unknown mode "' + current + '"');
+	  }
+	  var currentTitle = currentMode.text;
+
+	  // create the html element
+	  var box = document.createElement('button');
+	  box.className = 'jsoneditor-modes jsoneditor-separator';
+	  box.innerHTML = currentTitle + ' &#x25BE;';
+	  box.title = 'Switch editor mode';
+	  box.onclick = function () {
+	    var menu = new ContextMenu(items);
+	    menu.show(box);
+	  };
+
+	  var div = document.createElement('div');
+	  div.className = 'jsoneditor-modes';
+	  div.style.position = 'relative';
+	  div.appendChild(box);
+
+	  return div;
+	}
+
+	exports.create = createModeSwitcher;
+
+
+/***/ },
 /* 10 */
 /***/ function(module, exports, __webpack_require__) {
 
@@ -7933,7 +7933,7 @@ return /******/ (function(modules) { // webpackBootstrap
 /***/ function(module, exports, __webpack_require__) {
 
 	var util = __webpack_require__(3);
-	var ContextMenu = __webpack_require__(8);
+	var ContextMenu = __webpack_require__(7);
 
 	/**
 	 * A factory function to create an AppendNode, which depends on a Node
