@@ -24,8 +24,8 @@
  * Copyright (c) 2011-2016 Jos de Jong, http://jsoneditoronline.org
  *
  * @author  Jos de Jong, <wjosdejong@gmail.com>
- * @version 5.1.4
- * @date    2016-02-13
+ * @version 5.1.5
+ * @date    2016-02-15
  */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
@@ -85,7 +85,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var Ajv;
 	try {
-	  Ajv = __webpack_require__(10);
+	  Ajv = __webpack_require__(4);
 	}
 	catch (err) {
 	  // no problem... when we need Ajv we will throw a neat exception
@@ -460,12 +460,12 @@ return /******/ (function(modules) { // webpackBootstrap
 /* 1 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var Highlighter = __webpack_require__(4);
-	var History = __webpack_require__(5);
-	var SearchBox = __webpack_require__(6);
-	var ContextMenu = __webpack_require__(7);
-	var Node = __webpack_require__(8);
-	var modeswitcher = __webpack_require__(9);
+	var Highlighter = __webpack_require__(6);
+	var History = __webpack_require__(7);
+	var SearchBox = __webpack_require__(8);
+	var ContextMenu = __webpack_require__(9);
+	var Node = __webpack_require__(10);
+	var modeswitcher = __webpack_require__(5);
 	var util = __webpack_require__(3);
 
 	// create a mixin with the functions for tree mode
@@ -1624,7 +1624,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  // failed to load ace, no problem, we will fall back to plain text
 	}
 
-	var modeswitcher = __webpack_require__(9);
+	var modeswitcher = __webpack_require__(5);
 	var util = __webpack_require__(3);
 
 	// create a mixin with the functions for text mode
@@ -2867,6 +2867,448 @@ return /******/ (function(modules) { // webpackBootstrap
 /* 4 */
 /***/ function(module, exports, __webpack_require__) {
 
+	'use strict';
+
+	var compileSchema = __webpack_require__(23)
+	  , resolve = __webpack_require__(13)
+	  , Cache = __webpack_require__(14)
+	  , SchemaObject = __webpack_require__(15)
+	  , stableStringify = __webpack_require__(24)
+	  , formats = __webpack_require__(16)
+	  , rules = __webpack_require__(17)
+	  , v5 = __webpack_require__(18);
+
+	module.exports = Ajv;
+
+	Ajv.prototype.compileAsync = __webpack_require__(19);
+	Ajv.prototype.addKeyword = __webpack_require__(20);
+
+	var META_SCHEMA_ID = 'http://json-schema.org/draft-04/schema';
+	var SCHEMA_URI_FORMAT = /^(?:(?:[a-z][a-z0-9+-.]*:)?\/\/)?[^\s]*$/i;
+	function SCHEMA_URI_FORMAT_FUNC(str) {
+	  return SCHEMA_URI_FORMAT.test(str);
+	}
+
+	/**
+	 * Creates validator instance.
+	 * Usage: `Ajv(opts)`
+	 * @param {Object} opts optional options
+	 * @return {Object} ajv instance
+	 */
+	function Ajv(opts) {
+	  if (!(this instanceof Ajv)) return new Ajv(opts);
+	  var self = this;
+
+	  this.opts = opts || {};
+	  this._schemas = {};
+	  this._refs = {};
+	  this._formats = formats(this.opts.format);
+	  this._cache = this.opts.cache || new Cache;
+	  this._loadingSchemas = {};
+	  this.RULES = rules();
+
+	  // this is done on purpose, so that methods are bound to the instance
+	  // (without using bind) so that they can be used without the instance
+	  this.validate = validate;
+	  this.compile = compile;
+	  this.addSchema = addSchema;
+	  this.addMetaSchema = addMetaSchema;
+	  this.validateSchema = validateSchema;
+	  this.getSchema = getSchema;
+	  this.removeSchema = removeSchema;
+	  this.addFormat = addFormat;
+	  this.errorsText = errorsText;
+
+	  this._addSchema = _addSchema;
+	  this._compile = _compile;
+
+	  addInitialSchemas();
+	  if (this.opts.formats) addInitialFormats();
+
+	  if (this.opts.errorDataPath == 'property')
+	    this.opts._errorDataPathProperty = true;
+
+	  if (this.opts.v5) v5.enable(this);
+
+	  this.opts.loopRequired = this.opts.loopRequired || Infinity;
+
+
+	  /**
+	   * Validate data using schema
+	   * Schema will be compiled and cached (using serialized JSON as key. [json-stable-stringify](https://github.com/substack/json-stable-stringify) is used to serialize.
+	   * @param  {String|Object} schemaKeyRef key, ref or schema object
+	   * @param  {Any} data to be validated
+	   * @return {Boolean} validation result. Errors from the last validation will be available in `ajv.errors` (and also in compiled schema: `schema.errors`).
+	   */
+	  function validate(schemaKeyRef, data) {
+	    var v;
+	    if (typeof schemaKeyRef == 'string') {
+	      v = getSchema(schemaKeyRef);
+	      if (!v) throw new Error('no schema with key or ref "' + schemaKeyRef + '"');
+	    } else {
+	      var schemaObj = _addSchema(schemaKeyRef);
+	      v = schemaObj.validate || _compile(schemaObj);
+	    }
+
+	    var valid = v(data);
+	    self.errors = v.errors;
+	    return valid;
+	  }
+
+
+	  /**
+	   * Create validating function for passed schema.
+	   * @param  {String|Object} schema
+	   * @return {Function} validating function
+	   */
+	  function compile(schema) {
+	    var schemaObj = _addSchema(schema);
+	    return schemaObj.validate || _compile(schemaObj);
+	  }
+
+
+	  /**
+	   * Adds schema to the instance.
+	   * @param {Object|Array} schema schema or array of schemas. If array is passed, `key` will be ignored.
+	   * @param {String} key Optional schema key. Can be passed to `validate` method instead of schema object or id/ref. One schema per instance can have empty `id` and `key`.
+	   */
+	  function addSchema(schema, key, _skipValidation, _meta) {
+	    if (Array.isArray(schema)){
+	      for (var i=0; i<schema.length; i++) addSchema(schema[i]);
+	      return;
+	    }
+	    // can key/id have # inside?
+	    key = resolve.normalizeId(key || schema.id);
+	    checkUnique(key);
+	    var schemaObj = self._schemas[key] = _addSchema(schema, _skipValidation);
+	    schemaObj.meta = _meta;
+	  }
+
+
+	  /**
+	   * Add schema that will be used to validate other schemas
+	   * removeAdditional option is alway set to false
+	   * @param {Object} schema
+	   * @param {String} key optional schema key
+	   */
+	  function addMetaSchema(schema, key, _skipValidation) {
+	    addSchema(schema, key, _skipValidation, true);
+	  }
+
+
+	  /**
+	   * Validate schema
+	   * @param {Object} schema schema to validate
+	   * @param {Boolean} throwOrLogError pass true to throw (or log) an error if invalid
+	   * @return {Boolean}
+	   */
+	  function validateSchema(schema, throwOrLogError) {
+	    var $schema = schema.$schema || (self.opts.v5 ? v5.META_SCHEMA_ID : META_SCHEMA_ID);
+	    var currentUriFormat = self._formats.uri;
+	    self._formats.uri = typeof currentUriFormat == 'function'
+	                        ? SCHEMA_URI_FORMAT_FUNC
+	                        : SCHEMA_URI_FORMAT;
+	    var valid = validate($schema, schema);
+	    self._formats.uri = currentUriFormat;
+	    if (!valid && throwOrLogError) {
+	      var message = 'schema is invalid:' + errorsText();
+	      if (self.opts.validateSchema == 'log') console.error(message);
+	      else throw new Error(message);
+	    }
+	    return valid;
+	  }
+
+
+	  /**
+	   * Get compiled schema from the instance by `key` or `ref`.
+	   * @param  {String} keyRef `key` that was passed to `addSchema` or full schema reference (`schema.id` or resolved id).
+	   * @return {Function} schema validating function (with property `schema`).
+	   */
+	  function getSchema(keyRef) {
+	    var schemaObj = _getSchemaObj(keyRef);
+	    switch (typeof schemaObj) {
+	      case 'object': return schemaObj.validate || _compile(schemaObj);
+	      case 'string': return getSchema(schemaObj);
+	    }
+	  }
+
+
+	  function _getSchemaObj(keyRef) {
+	    keyRef = resolve.normalizeId(keyRef);
+	    return self._schemas[keyRef] || self._refs[keyRef];
+	  }
+
+
+	  /**
+	   * Remove cached schema
+	   * Even if schema is referenced by other schemas it still can be removed as other schemas have local references
+	   * @param  {String|Object} schemaKeyRef key, ref or schema object
+	   */
+	  function removeSchema(schemaKeyRef) {
+	    switch (typeof schemaKeyRef) {
+	      case 'string':
+	        var schemaObj = _getSchemaObj(schemaKeyRef);
+	        self._cache.del(schemaObj.jsonStr);
+	        delete self._schemas[schemaKeyRef];
+	        delete self._refs[schemaKeyRef];
+	        break;
+	      case 'object':
+	        var jsonStr = stableStringify(schemaKeyRef);
+	        self._cache.del(jsonStr);
+	        var id = schemaKeyRef.id;
+	        if (id) {
+	          id = resolve.normalizeId(id);
+	          delete self._refs[id];
+	        }
+	    }
+	  }
+
+
+	  function _addSchema(schema, skipValidation) {
+	    if (typeof schema != 'object') throw new Error('schema should be object');
+	    var jsonStr = stableStringify(schema);
+	    var cached = self._cache.get(jsonStr);
+	    if (cached) return cached;
+
+	    var id = resolve.normalizeId(schema.id);
+	    if (id) checkUnique(id);
+
+	    if (self.opts.validateSchema !== false && !skipValidation)
+	      validateSchema(schema, true);
+
+	    var localRefs = resolve.ids.call(self, schema);
+
+	    var schemaObj = new SchemaObject({
+	      id: id,
+	      schema: schema,
+	      localRefs: localRefs,
+	      jsonStr: jsonStr,
+	    });
+
+	    if (id[0] != '#') self._refs[id] = schemaObj;
+	    self._cache.put(jsonStr, schemaObj);
+
+	    return schemaObj;
+	  }
+
+
+	  function _compile(schemaObj, root) {
+	    if (schemaObj.compiling) {
+	      schemaObj.validate = callValidate;
+	      callValidate.schema = schemaObj.schema;
+	      callValidate.errors = null;
+	      callValidate.root = root ? root : callValidate;
+	      return callValidate;
+	    }
+	    schemaObj.compiling = true;
+
+	    var currentRA = self.opts.removeAdditional
+	      , currentUD = self.opts.useDefaults;
+	    if (schemaObj.meta) {
+	      if (currentRA) self.opts.removeAdditional = false;
+	      if (currentUD) self.opts.useDefaults = false;
+	    }
+	    var v;
+	    try { v = compileSchema.call(self, schemaObj.schema, root, schemaObj.localRefs); }
+	    finally {
+	      schemaObj.compiling = false;
+	      if (currentRA) self.opts.removeAdditional = currentRA;
+	      if (currentUD) self.opts.useDefaults = currentUD;
+	    }
+
+	    schemaObj.validate = v;
+	    schemaObj.refs = v.refs;
+	    schemaObj.refVal = v.refVal;
+	    schemaObj.root = v.root;
+	    return v;
+
+
+	    function callValidate() {
+	      var v = schemaObj.validate;
+	      var result = v.apply(null, arguments);
+	      callValidate.errors = v.errors;
+	      return result;
+	    }
+	  }
+
+
+	  /**
+	   * Convert array of error message objects to string
+	   * @param  {Array<Object>} errors optional array of validation errors, if not passed errors from the instance are used.
+	   * @param  {Object} opts optional options with properties `separator` and `dataVar`.
+	   * @return {String}
+	   */
+	  function errorsText(errors, opts) {
+	    errors = errors || self.errors;
+	    if (!errors) return 'No errors';
+	    opts = opts || {};
+	    var separator = opts.separator || ', ';
+	    var dataVar = opts.dataVar || 'data';
+
+	    var text = '';
+	    for (var i=0; i<errors.length; i++) {
+	      var e = errors[i];
+	      if (e) text += dataVar + e.dataPath + ' ' + e.message + separator;
+	    }
+	    return text.slice(0, -separator.length);
+	  }
+
+
+	  /**
+	   * Add custom format
+	   * @param {String} name format name
+	   * @param {String|RegExp|Function} format string is converted to RegExp; function should return boolean (true when valid)
+	   */
+	  function addFormat(name, format) {
+	    if (typeof format == 'string') format = new RegExp(format);
+	    self._formats[name] = format;
+	  }
+
+
+	  function addInitialSchemas() {
+	    if (self.opts.meta !== false) {
+	      var metaSchema = __webpack_require__(28);
+	      addMetaSchema(metaSchema, META_SCHEMA_ID, true);
+	      self._refs['http://json-schema.org/schema'] = META_SCHEMA_ID;
+	    }
+
+	    var optsSchemas = self.opts.schemas;
+	    if (!optsSchemas) return;
+	    if (Array.isArray(optsSchemas)) addSchema(optsSchemas);
+	    else for (var key in optsSchemas) addSchema(optsSchemas[key], key);
+	  }
+
+
+	  function addInitialFormats() {
+	    for (var name in self.opts.formats) {
+	      var format = self.opts.formats[name];
+	      addFormat(name, format);
+	    }
+	  }
+
+
+	  function checkUnique(id) {
+	    if (self._schemas[id] || self._refs[id])
+	      throw new Error('schema with key or id "' + id + '" already exists');
+	  }
+	}
+
+
+/***/ },
+/* 5 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var ContextMenu = __webpack_require__(9);
+
+	/**
+	 * Create a select box to be used in the editor menu's, which allows to switch mode
+	 * @param {Object} editor
+	 * @param {String[]} modes  Available modes: 'code', 'form', 'text', 'tree', 'view'
+	 * @param {String} current  Available modes: 'code', 'form', 'text', 'tree', 'view'
+	 * @returns {HTMLElement} box
+	 */
+	function createModeSwitcher(editor, modes, current) {
+	  // TODO: decouple mode switcher from editor
+
+	  /**
+	   * Switch the mode of the editor
+	   * @param {String} mode
+	   */
+	  function switchMode(mode) {
+	    // switch mode
+	    editor.setMode(mode);
+
+	    // restore focus on mode box
+	    var modeBox = editor.dom && editor.dom.modeBox;
+	    if (modeBox) {
+	      modeBox.focus();
+	    }
+	  }
+
+	  // available modes
+	  var availableModes = {
+	    code: {
+	      'text': 'Code',
+	      'title': 'Switch to code highlighter',
+	      'click': function () {
+	        switchMode('code')
+	      }
+	    },
+	    form: {
+	      'text': 'Form',
+	      'title': 'Switch to form editor',
+	      'click': function () {
+	        switchMode('form');
+	      }
+	    },
+	    text: {
+	      'text': 'Text',
+	      'title': 'Switch to plain text editor',
+	      'click': function () {
+	        switchMode('text');
+	      }
+	    },
+	    tree: {
+	      'text': 'Tree',
+	      'title': 'Switch to tree editor',
+	      'click': function () {
+	        switchMode('tree');
+	      }
+	    },
+	    view: {
+	      'text': 'View',
+	      'title': 'Switch to tree view',
+	      'click': function () {
+	        switchMode('view');
+	      }
+	    }
+	  };
+
+	  // list the selected modes
+	  var items = [];
+	  for (var i = 0; i < modes.length; i++) {
+	    var mode = modes[i];
+	    var item = availableModes[mode];
+	    if (!item) {
+	      throw new Error('Unknown mode "' + mode + '"');
+	    }
+
+	    item.className = 'jsoneditor-type-modes' + ((current == mode) ? ' jsoneditor-selected' : '');
+	    items.push(item);
+	  }
+
+	  // retrieve the title of current mode
+	  var currentMode = availableModes[current];
+	  if (!currentMode) {
+	    throw new Error('Unknown mode "' + current + '"');
+	  }
+	  var currentTitle = currentMode.text;
+
+	  // create the html element
+	  var box = document.createElement('button');
+	  box.className = 'jsoneditor-modes jsoneditor-separator';
+	  box.innerHTML = currentTitle + ' &#x25BE;';
+	  box.title = 'Switch editor mode';
+	  box.onclick = function () {
+	    var menu = new ContextMenu(items);
+	    menu.show(box);
+	  };
+
+	  var div = document.createElement('div');
+	  div.className = 'jsoneditor-modes';
+	  div.style.position = 'relative';
+	  div.appendChild(box);
+
+	  return div;
+	}
+
+	exports.create = createModeSwitcher;
+
+
+/***/ },
+/* 6 */
+/***/ function(module, exports, __webpack_require__) {
+
 	/**
 	 * The highlighter can highlight/unhighlight a node, and
 	 * animate the visibility of a context menu.
@@ -2954,7 +3396,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 5 */
+/* 7 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var util = __webpack_require__(3);
@@ -3212,7 +3654,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 6 */
+/* 8 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -3513,7 +3955,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 7 */
+/* 9 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var util = __webpack_require__(3);
@@ -3974,11 +4416,11 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 8 */
+/* 10 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var ContextMenu = __webpack_require__(7);
-	var appendNodeFactory = __webpack_require__(13);
+	var ContextMenu = __webpack_require__(9);
+	var appendNodeFactory = __webpack_require__(21);
 	var util = __webpack_require__(3);
 
 	/**
@@ -5227,7 +5669,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }
 
 	    // show checkbox when the value is a boolean
-	    if (type === 'boolean') {
+	    if (type === 'boolean' && this.editable.value) {
 	      if (!this.dom.checkbox) {
 	        this.dom.checkbox = document.createElement('input');
 	        this.dom.checkbox.type = 'checkbox';
@@ -7380,448 +7822,6 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 9 */
-/***/ function(module, exports, __webpack_require__) {
-
-	var ContextMenu = __webpack_require__(7);
-
-	/**
-	 * Create a select box to be used in the editor menu's, which allows to switch mode
-	 * @param {Object} editor
-	 * @param {String[]} modes  Available modes: 'code', 'form', 'text', 'tree', 'view'
-	 * @param {String} current  Available modes: 'code', 'form', 'text', 'tree', 'view'
-	 * @returns {HTMLElement} box
-	 */
-	function createModeSwitcher(editor, modes, current) {
-	  // TODO: decouple mode switcher from editor
-
-	  /**
-	   * Switch the mode of the editor
-	   * @param {String} mode
-	   */
-	  function switchMode(mode) {
-	    // switch mode
-	    editor.setMode(mode);
-
-	    // restore focus on mode box
-	    var modeBox = editor.dom && editor.dom.modeBox;
-	    if (modeBox) {
-	      modeBox.focus();
-	    }
-	  }
-
-	  // available modes
-	  var availableModes = {
-	    code: {
-	      'text': 'Code',
-	      'title': 'Switch to code highlighter',
-	      'click': function () {
-	        switchMode('code')
-	      }
-	    },
-	    form: {
-	      'text': 'Form',
-	      'title': 'Switch to form editor',
-	      'click': function () {
-	        switchMode('form');
-	      }
-	    },
-	    text: {
-	      'text': 'Text',
-	      'title': 'Switch to plain text editor',
-	      'click': function () {
-	        switchMode('text');
-	      }
-	    },
-	    tree: {
-	      'text': 'Tree',
-	      'title': 'Switch to tree editor',
-	      'click': function () {
-	        switchMode('tree');
-	      }
-	    },
-	    view: {
-	      'text': 'View',
-	      'title': 'Switch to tree view',
-	      'click': function () {
-	        switchMode('view');
-	      }
-	    }
-	  };
-
-	  // list the selected modes
-	  var items = [];
-	  for (var i = 0; i < modes.length; i++) {
-	    var mode = modes[i];
-	    var item = availableModes[mode];
-	    if (!item) {
-	      throw new Error('Unknown mode "' + mode + '"');
-	    }
-
-	    item.className = 'jsoneditor-type-modes' + ((current == mode) ? ' jsoneditor-selected' : '');
-	    items.push(item);
-	  }
-
-	  // retrieve the title of current mode
-	  var currentMode = availableModes[current];
-	  if (!currentMode) {
-	    throw new Error('Unknown mode "' + current + '"');
-	  }
-	  var currentTitle = currentMode.text;
-
-	  // create the html element
-	  var box = document.createElement('button');
-	  box.className = 'jsoneditor-modes jsoneditor-separator';
-	  box.innerHTML = currentTitle + ' &#x25BE;';
-	  box.title = 'Switch editor mode';
-	  box.onclick = function () {
-	    var menu = new ContextMenu(items);
-	    menu.show(box);
-	  };
-
-	  var div = document.createElement('div');
-	  div.className = 'jsoneditor-modes';
-	  div.style.position = 'relative';
-	  div.appendChild(box);
-
-	  return div;
-	}
-
-	exports.create = createModeSwitcher;
-
-
-/***/ },
-/* 10 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-
-	var compileSchema = __webpack_require__(23)
-	  , resolve = __webpack_require__(14)
-	  , Cache = __webpack_require__(15)
-	  , SchemaObject = __webpack_require__(16)
-	  , stableStringify = __webpack_require__(24)
-	  , formats = __webpack_require__(17)
-	  , rules = __webpack_require__(18)
-	  , v5 = __webpack_require__(19);
-
-	module.exports = Ajv;
-
-	Ajv.prototype.compileAsync = __webpack_require__(20);
-	Ajv.prototype.addKeyword = __webpack_require__(21);
-
-	var META_SCHEMA_ID = 'http://json-schema.org/draft-04/schema';
-	var SCHEMA_URI_FORMAT = /^(?:(?:[a-z][a-z0-9+-.]*:)?\/\/)?[^\s]*$/i;
-	function SCHEMA_URI_FORMAT_FUNC(str) {
-	  return SCHEMA_URI_FORMAT.test(str);
-	}
-
-	/**
-	 * Creates validator instance.
-	 * Usage: `Ajv(opts)`
-	 * @param {Object} opts optional options
-	 * @return {Object} ajv instance
-	 */
-	function Ajv(opts) {
-	  if (!(this instanceof Ajv)) return new Ajv(opts);
-	  var self = this;
-
-	  this.opts = opts || {};
-	  this._schemas = {};
-	  this._refs = {};
-	  this._formats = formats(this.opts.format);
-	  this._cache = this.opts.cache || new Cache;
-	  this._loadingSchemas = {};
-	  this.RULES = rules();
-
-	  // this is done on purpose, so that methods are bound to the instance
-	  // (without using bind) so that they can be used without the instance
-	  this.validate = validate;
-	  this.compile = compile;
-	  this.addSchema = addSchema;
-	  this.addMetaSchema = addMetaSchema;
-	  this.validateSchema = validateSchema;
-	  this.getSchema = getSchema;
-	  this.removeSchema = removeSchema;
-	  this.addFormat = addFormat;
-	  this.errorsText = errorsText;
-
-	  this._addSchema = _addSchema;
-	  this._compile = _compile;
-
-	  addInitialSchemas();
-	  if (this.opts.formats) addInitialFormats();
-
-	  if (this.opts.errorDataPath == 'property')
-	    this.opts._errorDataPathProperty = true;
-
-	  if (this.opts.v5) v5.enable(this);
-
-	  this.opts.loopRequired = this.opts.loopRequired || Infinity;
-
-
-	  /**
-	   * Validate data using schema
-	   * Schema will be compiled and cached (using serialized JSON as key. [json-stable-stringify](https://github.com/substack/json-stable-stringify) is used to serialize.
-	   * @param  {String|Object} schemaKeyRef key, ref or schema object
-	   * @param  {Any} data to be validated
-	   * @return {Boolean} validation result. Errors from the last validation will be available in `ajv.errors` (and also in compiled schema: `schema.errors`).
-	   */
-	  function validate(schemaKeyRef, data) {
-	    var v;
-	    if (typeof schemaKeyRef == 'string') {
-	      v = getSchema(schemaKeyRef);
-	      if (!v) throw new Error('no schema with key or ref "' + schemaKeyRef + '"');
-	    } else {
-	      var schemaObj = _addSchema(schemaKeyRef);
-	      v = schemaObj.validate || _compile(schemaObj);
-	    }
-
-	    var valid = v(data);
-	    self.errors = v.errors;
-	    return valid;
-	  }
-
-
-	  /**
-	   * Create validating function for passed schema.
-	   * @param  {String|Object} schema
-	   * @return {Function} validating function
-	   */
-	  function compile(schema) {
-	    var schemaObj = _addSchema(schema);
-	    return schemaObj.validate || _compile(schemaObj);
-	  }
-
-
-	  /**
-	   * Adds schema to the instance.
-	   * @param {Object|Array} schema schema or array of schemas. If array is passed, `key` will be ignored.
-	   * @param {String} key Optional schema key. Can be passed to `validate` method instead of schema object or id/ref. One schema per instance can have empty `id` and `key`.
-	   */
-	  function addSchema(schema, key, _skipValidation, _meta) {
-	    if (Array.isArray(schema)){
-	      for (var i=0; i<schema.length; i++) addSchema(schema[i]);
-	      return;
-	    }
-	    // can key/id have # inside?
-	    key = resolve.normalizeId(key || schema.id);
-	    checkUnique(key);
-	    var schemaObj = self._schemas[key] = _addSchema(schema, _skipValidation);
-	    schemaObj.meta = _meta;
-	  }
-
-
-	  /**
-	   * Add schema that will be used to validate other schemas
-	   * removeAdditional option is alway set to false
-	   * @param {Object} schema
-	   * @param {String} key optional schema key
-	   */
-	  function addMetaSchema(schema, key, _skipValidation) {
-	    addSchema(schema, key, _skipValidation, true);
-	  }
-
-
-	  /**
-	   * Validate schema
-	   * @param {Object} schema schema to validate
-	   * @param {Boolean} throwOrLogError pass true to throw (or log) an error if invalid
-	   * @return {Boolean}
-	   */
-	  function validateSchema(schema, throwOrLogError) {
-	    var $schema = schema.$schema || (self.opts.v5 ? v5.META_SCHEMA_ID : META_SCHEMA_ID);
-	    var currentUriFormat = self._formats.uri;
-	    self._formats.uri = typeof currentUriFormat == 'function'
-	                        ? SCHEMA_URI_FORMAT_FUNC
-	                        : SCHEMA_URI_FORMAT;
-	    var valid = validate($schema, schema);
-	    self._formats.uri = currentUriFormat;
-	    if (!valid && throwOrLogError) {
-	      var message = 'schema is invalid:' + errorsText();
-	      if (self.opts.validateSchema == 'log') console.error(message);
-	      else throw new Error(message);
-	    }
-	    return valid;
-	  }
-
-
-	  /**
-	   * Get compiled schema from the instance by `key` or `ref`.
-	   * @param  {String} keyRef `key` that was passed to `addSchema` or full schema reference (`schema.id` or resolved id).
-	   * @return {Function} schema validating function (with property `schema`).
-	   */
-	  function getSchema(keyRef) {
-	    var schemaObj = _getSchemaObj(keyRef);
-	    switch (typeof schemaObj) {
-	      case 'object': return schemaObj.validate || _compile(schemaObj);
-	      case 'string': return getSchema(schemaObj);
-	    }
-	  }
-
-
-	  function _getSchemaObj(keyRef) {
-	    keyRef = resolve.normalizeId(keyRef);
-	    return self._schemas[keyRef] || self._refs[keyRef];
-	  }
-
-
-	  /**
-	   * Remove cached schema
-	   * Even if schema is referenced by other schemas it still can be removed as other schemas have local references
-	   * @param  {String|Object} schemaKeyRef key, ref or schema object
-	   */
-	  function removeSchema(schemaKeyRef) {
-	    switch (typeof schemaKeyRef) {
-	      case 'string':
-	        var schemaObj = _getSchemaObj(schemaKeyRef);
-	        self._cache.del(schemaObj.jsonStr);
-	        delete self._schemas[schemaKeyRef];
-	        delete self._refs[schemaKeyRef];
-	        break;
-	      case 'object':
-	        var jsonStr = stableStringify(schemaKeyRef);
-	        self._cache.del(jsonStr);
-	        var id = schemaKeyRef.id;
-	        if (id) {
-	          id = resolve.normalizeId(id);
-	          delete self._refs[id];
-	        }
-	    }
-	  }
-
-
-	  function _addSchema(schema, skipValidation) {
-	    if (typeof schema != 'object') throw new Error('schema should be object');
-	    var jsonStr = stableStringify(schema);
-	    var cached = self._cache.get(jsonStr);
-	    if (cached) return cached;
-
-	    var id = resolve.normalizeId(schema.id);
-	    if (id) checkUnique(id);
-
-	    if (self.opts.validateSchema !== false && !skipValidation)
-	      validateSchema(schema, true);
-
-	    var localRefs = resolve.ids.call(self, schema);
-
-	    var schemaObj = new SchemaObject({
-	      id: id,
-	      schema: schema,
-	      localRefs: localRefs,
-	      jsonStr: jsonStr,
-	    });
-
-	    if (id[0] != '#') self._refs[id] = schemaObj;
-	    self._cache.put(jsonStr, schemaObj);
-
-	    return schemaObj;
-	  }
-
-
-	  function _compile(schemaObj, root) {
-	    if (schemaObj.compiling) {
-	      schemaObj.validate = callValidate;
-	      callValidate.schema = schemaObj.schema;
-	      callValidate.errors = null;
-	      callValidate.root = root ? root : callValidate;
-	      return callValidate;
-	    }
-	    schemaObj.compiling = true;
-
-	    var currentRA = self.opts.removeAdditional
-	      , currentUD = self.opts.useDefaults;
-	    if (schemaObj.meta) {
-	      if (currentRA) self.opts.removeAdditional = false;
-	      if (currentUD) self.opts.useDefaults = false;
-	    }
-	    var v;
-	    try { v = compileSchema.call(self, schemaObj.schema, root, schemaObj.localRefs); }
-	    finally {
-	      schemaObj.compiling = false;
-	      if (currentRA) self.opts.removeAdditional = currentRA;
-	      if (currentUD) self.opts.useDefaults = currentUD;
-	    }
-
-	    schemaObj.validate = v;
-	    schemaObj.refs = v.refs;
-	    schemaObj.refVal = v.refVal;
-	    schemaObj.root = v.root;
-	    return v;
-
-
-	    function callValidate() {
-	      var v = schemaObj.validate;
-	      var result = v.apply(null, arguments);
-	      callValidate.errors = v.errors;
-	      return result;
-	    }
-	  }
-
-
-	  /**
-	   * Convert array of error message objects to string
-	   * @param  {Array<Object>} errors optional array of validation errors, if not passed errors from the instance are used.
-	   * @param  {Object} opts optional options with properties `separator` and `dataVar`.
-	   * @return {String}
-	   */
-	  function errorsText(errors, opts) {
-	    errors = errors || self.errors;
-	    if (!errors) return 'No errors';
-	    opts = opts || {};
-	    var separator = opts.separator || ', ';
-	    var dataVar = opts.dataVar || 'data';
-
-	    var text = '';
-	    for (var i=0; i<errors.length; i++) {
-	      var e = errors[i];
-	      if (e) text += dataVar + e.dataPath + ' ' + e.message + separator;
-	    }
-	    return text.slice(0, -separator.length);
-	  }
-
-
-	  /**
-	   * Add custom format
-	   * @param {String} name format name
-	   * @param {String|RegExp|Function} format string is converted to RegExp; function should return boolean (true when valid)
-	   */
-	  function addFormat(name, format) {
-	    if (typeof format == 'string') format = new RegExp(format);
-	    self._formats[name] = format;
-	  }
-
-
-	  function addInitialSchemas() {
-	    if (self.opts.meta !== false) {
-	      var metaSchema = __webpack_require__(28);
-	      addMetaSchema(metaSchema, META_SCHEMA_ID, true);
-	      self._refs['http://json-schema.org/schema'] = META_SCHEMA_ID;
-	    }
-
-	    var optsSchemas = self.opts.schemas;
-	    if (!optsSchemas) return;
-	    if (Array.isArray(optsSchemas)) addSchema(optsSchemas);
-	    else for (var key in optsSchemas) addSchema(optsSchemas[key], key);
-	  }
-
-
-	  function addInitialFormats() {
-	    for (var name in self.opts.formats) {
-	      var format = self.opts.formats[name];
-	      addFormat(name, format);
-	    }
-	  }
-
-
-	  function checkUnique(id) {
-	    if (self._schemas[id] || self._refs[id])
-	      throw new Error('schema with key or id "' + id + '" already exists');
-	  }
-	}
-
-
-/***/ },
 /* 11 */
 /***/ function(module, exports, __webpack_require__) {
 
@@ -8263,244 +8263,12 @@ return /******/ (function(modules) { // webpackBootstrap
 /* 13 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var util = __webpack_require__(3);
-	var ContextMenu = __webpack_require__(7);
-
-	/**
-	 * A factory function to create an AppendNode, which depends on a Node
-	 * @param {Node} Node
-	 */
-	function appendNodeFactory(Node) {
-	  /**
-	   * @constructor AppendNode
-	   * @extends Node
-	   * @param {TreeEditor} editor
-	   * Create a new AppendNode. This is a special node which is created at the
-	   * end of the list with childs for an object or array
-	   */
-	  function AppendNode (editor) {
-	    /** @type {TreeEditor} */
-	    this.editor = editor;
-	    this.dom = {};
-	  }
-
-	  AppendNode.prototype = new Node();
-
-	  /**
-	   * Return a table row with an append button.
-	   * @return {Element} dom   TR element
-	   */
-	  AppendNode.prototype.getDom = function () {
-	    // TODO: implement a new solution for the append node
-	    var dom = this.dom;
-
-	    if (dom.tr) {
-	      return dom.tr;
-	    }
-
-	    this._updateEditability();
-
-	    // a row for the append button
-	    var trAppend = document.createElement('tr');
-	    trAppend.node = this;
-	    dom.tr = trAppend;
-
-	    // TODO: consistent naming
-
-	    if (this.editable.field) {
-	      // a cell for the dragarea column
-	      dom.tdDrag = document.createElement('td');
-
-	      // create context menu
-	      var tdMenu = document.createElement('td');
-	      dom.tdMenu = tdMenu;
-	      var menu = document.createElement('button');
-	      menu.className = 'jsoneditor-contextmenu';
-	      menu.title = 'Click to open the actions menu (Ctrl+M)';
-	      dom.menu = menu;
-	      tdMenu.appendChild(dom.menu);
-	    }
-
-	    // a cell for the contents (showing text 'empty')
-	    var tdAppend = document.createElement('td');
-	    var domText = document.createElement('div');
-	    domText.innerHTML = '(empty)';
-	    domText.className = 'jsoneditor-readonly';
-	    tdAppend.appendChild(domText);
-	    dom.td = tdAppend;
-	    dom.text = domText;
-
-	    this.updateDom();
-
-	    return trAppend;
-	  };
-
-	  /**
-	   * Update the HTML dom of the Node
-	   */
-	  AppendNode.prototype.updateDom = function () {
-	    var dom = this.dom;
-	    var tdAppend = dom.td;
-	    if (tdAppend) {
-	      tdAppend.style.paddingLeft = (this.getLevel() * 24 + 26) + 'px';
-	      // TODO: not so nice hard coded offset
-	    }
-
-	    var domText = dom.text;
-	    if (domText) {
-	      domText.innerHTML = '(empty ' + this.parent.type + ')';
-	    }
-
-	    // attach or detach the contents of the append node:
-	    // hide when the parent has childs, show when the parent has no childs
-	    var trAppend = dom.tr;
-	    if (!this.isVisible()) {
-	      if (dom.tr.firstChild) {
-	        if (dom.tdDrag) {
-	          trAppend.removeChild(dom.tdDrag);
-	        }
-	        if (dom.tdMenu) {
-	          trAppend.removeChild(dom.tdMenu);
-	        }
-	        trAppend.removeChild(tdAppend);
-	      }
-	    }
-	    else {
-	      if (!dom.tr.firstChild) {
-	        if (dom.tdDrag) {
-	          trAppend.appendChild(dom.tdDrag);
-	        }
-	        if (dom.tdMenu) {
-	          trAppend.appendChild(dom.tdMenu);
-	        }
-	        trAppend.appendChild(tdAppend);
-	      }
-	    }
-	  };
-
-	  /**
-	   * Check whether the AppendNode is currently visible.
-	   * the AppendNode is visible when its parent has no childs (i.e. is empty).
-	   * @return {boolean} isVisible
-	   */
-	  AppendNode.prototype.isVisible = function () {
-	    return (this.parent.childs.length == 0);
-	  };
-
-	  /**
-	   * Show a contextmenu for this node
-	   * @param {HTMLElement} anchor   The element to attach the menu to.
-	   * @param {function} [onClose]   Callback method called when the context menu
-	   *                               is being closed.
-	   */
-	  AppendNode.prototype.showContextMenu = function (anchor, onClose) {
-	    var node = this;
-	    var titles = Node.TYPE_TITLES;
-	    var items = [
-	      // create append button
-	      {
-	        'text': 'Append',
-	        'title': 'Append a new field with type \'auto\' (Ctrl+Shift+Ins)',
-	        'submenuTitle': 'Select the type of the field to be appended',
-	        'className': 'jsoneditor-insert',
-	        'click': function () {
-	          node._onAppend('', '', 'auto');
-	        },
-	        'submenu': [
-	          {
-	            'text': 'Auto',
-	            'className': 'jsoneditor-type-auto',
-	            'title': titles.auto,
-	            'click': function () {
-	              node._onAppend('', '', 'auto');
-	            }
-	          },
-	          {
-	            'text': 'Array',
-	            'className': 'jsoneditor-type-array',
-	            'title': titles.array,
-	            'click': function () {
-	              node._onAppend('', []);
-	            }
-	          },
-	          {
-	            'text': 'Object',
-	            'className': 'jsoneditor-type-object',
-	            'title': titles.object,
-	            'click': function () {
-	              node._onAppend('', {});
-	            }
-	          },
-	          {
-	            'text': 'String',
-	            'className': 'jsoneditor-type-string',
-	            'title': titles.string,
-	            'click': function () {
-	              node._onAppend('', '', 'string');
-	            }
-	          }
-	        ]
-	      }
-	    ];
-
-	    var menu = new ContextMenu(items, {close: onClose});
-	    menu.show(anchor, this.editor.content);
-	  };
-
-	  /**
-	   * Handle an event. The event is catched centrally by the editor
-	   * @param {Event} event
-	   */
-	  AppendNode.prototype.onEvent = function (event) {
-	    var type = event.type;
-	    var target = event.target || event.srcElement;
-	    var dom = this.dom;
-
-	    // highlight the append nodes parent
-	    var menu = dom.menu;
-	    if (target == menu) {
-	      if (type == 'mouseover') {
-	        this.editor.highlighter.highlight(this.parent);
-	      }
-	      else if (type == 'mouseout') {
-	        this.editor.highlighter.unhighlight();
-	      }
-	    }
-
-	    // context menu events
-	    if (type == 'click' && target == dom.menu) {
-	      var highlighter = this.editor.highlighter;
-	      highlighter.highlight(this.parent);
-	      highlighter.lock();
-	      util.addClassName(dom.menu, 'jsoneditor-selected');
-	      this.showContextMenu(dom.menu, function () {
-	        util.removeClassName(dom.menu, 'jsoneditor-selected');
-	        highlighter.unlock();
-	        highlighter.unhighlight();
-	      });
-	    }
-
-	    if (type == 'keydown') {
-	      this.onKeyDown(event);
-	    }
-	  };
-
-	  return AppendNode;
-	}
-
-	module.exports = appendNodeFactory;
-
-
-/***/ },
-/* 14 */
-/***/ function(module, exports, __webpack_require__) {
-
 	'use strict';
 
 	var url = __webpack_require__(37)
 	  , equal = __webpack_require__(29)
 	  , util = __webpack_require__(30)
-	  , SchemaObject = __webpack_require__(16);
+	  , SchemaObject = __webpack_require__(15);
 
 	module.exports = resolve;
 
@@ -8737,7 +8505,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 15 */
+/* 14 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -8764,7 +8532,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 16 */
+/* 15 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -8779,7 +8547,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 17 */
+/* 16 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -8948,7 +8716,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 18 */
+/* 17 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -8992,7 +8760,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 19 */
+/* 18 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -9031,7 +8799,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 20 */
+/* 19 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -9118,7 +8886,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 21 */
+/* 20 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -9178,6 +8946,238 @@ return /******/ (function(modules) { // webpackBootstrap
 	    if (!self.RULES.types[dataType]) throw new Error('Unknown type ' + dataType);
 	  }
 	};
+
+
+/***/ },
+/* 21 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var util = __webpack_require__(3);
+	var ContextMenu = __webpack_require__(9);
+
+	/**
+	 * A factory function to create an AppendNode, which depends on a Node
+	 * @param {Node} Node
+	 */
+	function appendNodeFactory(Node) {
+	  /**
+	   * @constructor AppendNode
+	   * @extends Node
+	   * @param {TreeEditor} editor
+	   * Create a new AppendNode. This is a special node which is created at the
+	   * end of the list with childs for an object or array
+	   */
+	  function AppendNode (editor) {
+	    /** @type {TreeEditor} */
+	    this.editor = editor;
+	    this.dom = {};
+	  }
+
+	  AppendNode.prototype = new Node();
+
+	  /**
+	   * Return a table row with an append button.
+	   * @return {Element} dom   TR element
+	   */
+	  AppendNode.prototype.getDom = function () {
+	    // TODO: implement a new solution for the append node
+	    var dom = this.dom;
+
+	    if (dom.tr) {
+	      return dom.tr;
+	    }
+
+	    this._updateEditability();
+
+	    // a row for the append button
+	    var trAppend = document.createElement('tr');
+	    trAppend.node = this;
+	    dom.tr = trAppend;
+
+	    // TODO: consistent naming
+
+	    if (this.editable.field) {
+	      // a cell for the dragarea column
+	      dom.tdDrag = document.createElement('td');
+
+	      // create context menu
+	      var tdMenu = document.createElement('td');
+	      dom.tdMenu = tdMenu;
+	      var menu = document.createElement('button');
+	      menu.className = 'jsoneditor-contextmenu';
+	      menu.title = 'Click to open the actions menu (Ctrl+M)';
+	      dom.menu = menu;
+	      tdMenu.appendChild(dom.menu);
+	    }
+
+	    // a cell for the contents (showing text 'empty')
+	    var tdAppend = document.createElement('td');
+	    var domText = document.createElement('div');
+	    domText.innerHTML = '(empty)';
+	    domText.className = 'jsoneditor-readonly';
+	    tdAppend.appendChild(domText);
+	    dom.td = tdAppend;
+	    dom.text = domText;
+
+	    this.updateDom();
+
+	    return trAppend;
+	  };
+
+	  /**
+	   * Update the HTML dom of the Node
+	   */
+	  AppendNode.prototype.updateDom = function () {
+	    var dom = this.dom;
+	    var tdAppend = dom.td;
+	    if (tdAppend) {
+	      tdAppend.style.paddingLeft = (this.getLevel() * 24 + 26) + 'px';
+	      // TODO: not so nice hard coded offset
+	    }
+
+	    var domText = dom.text;
+	    if (domText) {
+	      domText.innerHTML = '(empty ' + this.parent.type + ')';
+	    }
+
+	    // attach or detach the contents of the append node:
+	    // hide when the parent has childs, show when the parent has no childs
+	    var trAppend = dom.tr;
+	    if (!this.isVisible()) {
+	      if (dom.tr.firstChild) {
+	        if (dom.tdDrag) {
+	          trAppend.removeChild(dom.tdDrag);
+	        }
+	        if (dom.tdMenu) {
+	          trAppend.removeChild(dom.tdMenu);
+	        }
+	        trAppend.removeChild(tdAppend);
+	      }
+	    }
+	    else {
+	      if (!dom.tr.firstChild) {
+	        if (dom.tdDrag) {
+	          trAppend.appendChild(dom.tdDrag);
+	        }
+	        if (dom.tdMenu) {
+	          trAppend.appendChild(dom.tdMenu);
+	        }
+	        trAppend.appendChild(tdAppend);
+	      }
+	    }
+	  };
+
+	  /**
+	   * Check whether the AppendNode is currently visible.
+	   * the AppendNode is visible when its parent has no childs (i.e. is empty).
+	   * @return {boolean} isVisible
+	   */
+	  AppendNode.prototype.isVisible = function () {
+	    return (this.parent.childs.length == 0);
+	  };
+
+	  /**
+	   * Show a contextmenu for this node
+	   * @param {HTMLElement} anchor   The element to attach the menu to.
+	   * @param {function} [onClose]   Callback method called when the context menu
+	   *                               is being closed.
+	   */
+	  AppendNode.prototype.showContextMenu = function (anchor, onClose) {
+	    var node = this;
+	    var titles = Node.TYPE_TITLES;
+	    var items = [
+	      // create append button
+	      {
+	        'text': 'Append',
+	        'title': 'Append a new field with type \'auto\' (Ctrl+Shift+Ins)',
+	        'submenuTitle': 'Select the type of the field to be appended',
+	        'className': 'jsoneditor-insert',
+	        'click': function () {
+	          node._onAppend('', '', 'auto');
+	        },
+	        'submenu': [
+	          {
+	            'text': 'Auto',
+	            'className': 'jsoneditor-type-auto',
+	            'title': titles.auto,
+	            'click': function () {
+	              node._onAppend('', '', 'auto');
+	            }
+	          },
+	          {
+	            'text': 'Array',
+	            'className': 'jsoneditor-type-array',
+	            'title': titles.array,
+	            'click': function () {
+	              node._onAppend('', []);
+	            }
+	          },
+	          {
+	            'text': 'Object',
+	            'className': 'jsoneditor-type-object',
+	            'title': titles.object,
+	            'click': function () {
+	              node._onAppend('', {});
+	            }
+	          },
+	          {
+	            'text': 'String',
+	            'className': 'jsoneditor-type-string',
+	            'title': titles.string,
+	            'click': function () {
+	              node._onAppend('', '', 'string');
+	            }
+	          }
+	        ]
+	      }
+	    ];
+
+	    var menu = new ContextMenu(items, {close: onClose});
+	    menu.show(anchor, this.editor.content);
+	  };
+
+	  /**
+	   * Handle an event. The event is catched centrally by the editor
+	   * @param {Event} event
+	   */
+	  AppendNode.prototype.onEvent = function (event) {
+	    var type = event.type;
+	    var target = event.target || event.srcElement;
+	    var dom = this.dom;
+
+	    // highlight the append nodes parent
+	    var menu = dom.menu;
+	    if (target == menu) {
+	      if (type == 'mouseover') {
+	        this.editor.highlighter.highlight(this.parent);
+	      }
+	      else if (type == 'mouseout') {
+	        this.editor.highlighter.unhighlight();
+	      }
+	    }
+
+	    // context menu events
+	    if (type == 'click' && target == dom.menu) {
+	      var highlighter = this.editor.highlighter;
+	      highlighter.highlight(this.parent);
+	      highlighter.lock();
+	      util.addClassName(dom.menu, 'jsoneditor-selected');
+	      this.showContextMenu(dom.menu, function () {
+	        util.removeClassName(dom.menu, 'jsoneditor-selected');
+	        highlighter.unlock();
+	        highlighter.unhighlight();
+	      });
+	    }
+
+	    if (type == 'keydown') {
+	      this.onKeyDown(event);
+	    }
+	  };
+
+	  return AppendNode;
+	}
+
+	module.exports = appendNodeFactory;
 
 
 /***/ },
@@ -9336,7 +9336,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	'use strict';
 
-	var resolve = __webpack_require__(14)
+	var resolve = __webpack_require__(13)
 	  , util = __webpack_require__(30)
 	  , equal = __webpack_require__(29)
 	  , stableStringify = __webpack_require__(24);

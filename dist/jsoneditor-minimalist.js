@@ -24,8 +24,8 @@
  * Copyright (c) 2011-2016 Jos de Jong, http://jsoneditoronline.org
  *
  * @author  Jos de Jong, <wjosdejong@gmail.com>
- * @version 5.1.4
- * @date    2016-02-13
+ * @version 5.1.5
+ * @date    2016-02-15
  */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
@@ -5227,7 +5227,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }
 
 	    // show checkbox when the value is a boolean
-	    if (type === 'boolean') {
+	    if (type === 'boolean' && this.editable.value) {
 	      if (!this.dom.checkbox) {
 	        this.dom.checkbox = document.createElement('input');
 	        this.dom.checkbox.type = 'checkbox';
