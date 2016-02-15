@@ -1248,7 +1248,7 @@ Node.prototype._updateDomValue = function () {
     }
 
     // show checkbox when the value is a boolean
-    if (type === 'boolean') {
+    if (type === 'boolean' && this.editable.value) {
       if (!this.dom.checkbox) {
         this.dom.checkbox = document.createElement('input');
         this.dom.checkbox.type = 'checkbox';

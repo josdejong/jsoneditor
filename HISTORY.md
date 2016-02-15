@@ -3,6 +3,11 @@
 https://github.com/josdejong/jsoneditor
 
 
+## 2016-02-15, version 5.1.5
+
+- Fixed #272: Checkbox for boolean values visible in view mode.
+
+
 ## 2016-02-13, version 5.1.4
 
 - Fixed broken example 04_load_and_save.html. See #265.
