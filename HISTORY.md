@@ -3,6 +3,11 @@
 https://github.com/josdejong/jsoneditor
 
 
+## not yet released, version 5.2.0
+
+- Fixed #268: JSONEditor now trims text in fields and values.
+
+
 ## 2016-02-15, version 5.1.5
 
 - Fixed #272: Checkbox for boolean values visible in view mode.

@@ -3344,7 +3344,7 @@ Node.prototype._escapeHTML = function (text) {
  * @private
  */
 Node.prototype._unescapeHTML = function (escapedText) {
-  var json = '"' + this._escapeJSON(escapedText) + '"';
+  var json = '"' + this._escapeJSON(escapedText.trim()) + '"';
   var htmlEscaped = util.parse(json);
 
   return htmlEscaped
