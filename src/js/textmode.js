@@ -6,6 +6,7 @@ catch (err) {
   // failed to load ace, no problem, we will fall back to plain text
 }
 
+var localize = require('ajv-i18n');
 var modeswitcher = require('./modeswitcher');
 var util = require('./util');
 
@@ -409,6 +410,7 @@ textmode.validate = function () {
   if (doValidate && this.validateSchema) {
     var valid = this.validateSchema(json);
     if (!valid) {
+      this._translate(this.validateSchema.errors);
       errors = this.validateSchema.errors.map(function (error) {
         return util.improveSchemaError(error);
       });
@@ -454,6 +456,13 @@ textmode.validate = function () {
   if (this.aceEditor) {
     var force = false;
     this.aceEditor.resize(force);
+  }
+};
+
+textmode._translate = function(errors) {
+  var fn = localize[this.options.lang];
+  if (fn !== undefined && fn !== null) {
+    fn(errors);
   }
 };
 

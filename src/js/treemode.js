@@ -1,3 +1,4 @@
+var localize = require('ajv-i18n')
 var Highlighter = require('./Highlighter');
 var History = require('./History');
 var SearchBox = require('./SearchBox');
@@ -373,6 +374,7 @@ treemode.validate = function () {
     var valid = this.validateSchema(root.getValue());
     if (!valid) {
       // apply all new errors
+      this._translate(this.validateSchema.errors);
       schemaErrors = this.validateSchema.errors
           .map(function (error) {
             return util.improveSchemaError(error);
@@ -415,6 +417,13 @@ treemode.validate = function () {
         entry.node.setError(entry.error, entry.child);
         return entry.node;
       });
+};
+
+treemode._translate = function(errors) {
+  var fn = localize[this.options.lang];
+  if (fn !== undefined && fn !== null) {
+    fn(errors);
+  }
 };
 
 /**
