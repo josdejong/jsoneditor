@@ -37,6 +37,11 @@ div.jsoneditor-contextmenu ul li button {
   color: #4d4d4d;
   background: transparent;
 
+  font-size: 10pt;
+  font-family: arial, sans-serif;
+
+  box-sizing: border-box;
+
   line-height: 26px;
   text-align: left;
 }

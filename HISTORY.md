@@ -7,6 +7,7 @@ https://github.com/josdejong/jsoneditor
 
 - Implemented method `editor.destroy()` to properly cleanup the editor (#278).
 - Fixed #268: JSONEditor now trims text in fields and values.
+- Fixed #280: Some CSS issues when used in combination with bootstrap.
 
 
 ## 2016-02-15, version 5.1.5
