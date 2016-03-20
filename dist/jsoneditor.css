@@ -47,9 +47,16 @@ div.jsoneditor-value.jsoneditor-empty::after {
   content: "value";
 }
 
-div.jsoneditor-value.jsoneditor-url {
+div.jsoneditor-value.jsoneditor-url,
+a.jsoneditor-value.jsoneditor-url {
   color: green;
   text-decoration: underline;
+}
+
+a.jsoneditor-value.jsoneditor-url {
+  display: inline-block;
+  padding: 2px;
+  margin: 2px;
 }
 
 a.jsoneditor-value.jsoneditor-url:hover,
@@ -483,6 +490,9 @@ div.jsoneditor-contextmenu ul li button {
   cursor: pointer;
   color: #4d4d4d;
   background: transparent;
+  font-size: 10pt;
+  font-family: arial, sans-serif;
+  box-sizing: border-box;
   line-height: 26px;
   text-align: left;
 }
@@ -809,10 +819,18 @@ table.jsoneditor-search div.jsoneditor-results {
   /* For Firefox */
 }
 
+table.jsoneditor-search div.jsoneditor-results {
+  color: white;
+  padding-right: 5px;
+  line-height: 24px;
+}
+
 table.jsoneditor-search {
   position: absolute;
-  right: 2px;
-  top: 2px;
+  right: 4px;
+  top: 4px;
+  border-collapse: collapse;
+  border-spacing: 0;
 }
 
 table.jsoneditor-search div.jsoneditor-frame {
@@ -832,12 +850,6 @@ table.jsoneditor-search input {
   outline: none;
   margin: 1px;
   line-height: 20px;
-}
-
-table.jsoneditor-search .jsoneditor-results {
-  color: #4d4d4d;
-  padding-right: 5px;
-  line-height: 24px;
 }
 
 table.jsoneditor-search button {

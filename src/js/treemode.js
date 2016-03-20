@@ -44,7 +44,7 @@ treemode.create = function (container, options) {
   this.errorNodes = [];
 
   this.node = null;
-  this.focusNode = null;
+  this.focusTarget = null;
 
   this._setOptions(options);
 
@@ -70,7 +70,7 @@ treemode.destroy = function () {
 
   this.clear();
   this.node = null;
-  this.focusNode = null;
+  this.focusTarget = null;
   this.selection = null;
   this.multiselection = null;
   this.errorNodes = null;
@@ -179,8 +179,8 @@ treemode.set = function (json, name) {
  */
 treemode.get = function () {
   // remove focus from currently edited node
-  if (this.focusNode) {
-    this.focusNode.blur();
+  if (this.focusTarget) {
+    this.focusTarget.blur();
   }
 
   if (this.node) {
@@ -543,7 +543,7 @@ treemode.getSelection = function () {
   }
 
   return {
-    dom: this.dom.focus,
+    dom: this.focusTarget,
     range: range,
     nodes: this.multiselection.nodes.slice(0),
     scrollTop: this.content ? this.content.scrollTop : 0
@@ -764,7 +764,7 @@ treemode._onEvent = function (event) {
   }
 
   if (event.type == 'focus') {
-    this.dom.focus = event.target;
+    this.focusTarget = event.target;
   }
 
   if (event.type == 'mousedown') {
@@ -1037,9 +1037,10 @@ treemode._onKeyDown = function (event) {
   var handled = false;
 
   if (keynum == 9) { // Tab or Shift+Tab
+    var me = this;
     setTimeout(function () {
       // select all text when moving focus to an editable div
-      util.selectContentEditable(this.dom.focus);
+      util.selectContentEditable(me.focusTarget);
     }, 0);
   }
 

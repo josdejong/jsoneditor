@@ -24,8 +24,8 @@
  * Copyright (c) 2011-2016 Jos de Jong, http://jsoneditoronline.org
  *
  * @author  Jos de Jong, <wjosdejong@gmail.com>
- * @version 5.1.5
- * @date    2016-02-15
+ * @version 5.2.0
+ * @date    2016-03-20
  */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
@@ -215,10 +215,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 
 	/**
-	 * Detach the editor from the DOM
-	 * @private
+	 * Destroy the editor. Clean up DOM, event listeners, and web workers.
 	 */
-	JSONEditor.prototype._delete = function () {};
+	JSONEditor.prototype.destroy = function () {};
 
 	/**
 	 * Set JSON object in editor
@@ -292,7 +291,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	      name = this.getName();
 	      data = this[asText ? 'getText' : 'get'](); // get text or json
 
-	      this._delete();
+	      this.destroy();
 	      util.clear(this);
 	      util.extend(this, config.mixin);
 	      this.create(container, options);
@@ -465,7 +464,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	var SearchBox = __webpack_require__(6);
 	var ContextMenu = __webpack_require__(7);
 	var Node = __webpack_require__(8);
-	var modeswitcher = __webpack_require__(9);
+	var ModeSwitcher = __webpack_require__(9);
 	var util = __webpack_require__(3);
 
 	// create a mixin with the functions for tree mode
@@ -505,6 +504,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	  this.validateSchema = null; // will be set in .setSchema(schema)
 	  this.errorNodes = [];
 
+	  this.node = null;
+	  this.focusTarget = null;
 
 	  this._setOptions(options);
 
@@ -517,12 +518,39 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 
 	/**
-	 * Detach the editor from the DOM
-	 * @private
+	 * Destroy the editor. Clean up DOM, event listeners, and web workers.
 	 */
-	treemode._delete = function () {
+	treemode.destroy = function () {
 	  if (this.frame && this.container && this.frame.parentNode == this.container) {
 	    this.container.removeChild(this.frame);
+	    this.frame = null;
+	  }
+	  this.container = null;
+
+	  this.dom = null;
+
+	  this.clear();
+	  this.node = null;
+	  this.focusTarget = null;
+	  this.selection = null;
+	  this.multiselection = null;
+	  this.errorNodes = null;
+	  this.validateSchema = null;
+	  this._debouncedValidate = null;
+
+	  if (this.history) {
+	    this.history.destroy();
+	    this.history = null;
+	  }
+
+	  if (this.searchBox) {
+	    this.searchBox.destroy();
+	    this.searchBox = null;
+	  }
+
+	  if (this.modeSwitcher) {
+	    this.modeSwitcher.destroy();
+	    this.modeSwitcher = null;
 	  }
 	};
 
@@ -555,12 +583,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	  // create a debounced validate function
 	  this._debouncedValidate = util.debounce(this.validate.bind(this), this.DEBOUNCE_INTERVAL);
 	};
-
-	// node currently being edited
-	var focusNode = undefined;
-
-	// dom having focus
-	var domFocus = null;
 
 	/**
 	 * Set JSON object in editor
@@ -618,8 +640,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	 */
 	treemode.get = function () {
 	  // remove focus from currently edited node
-	  if (focusNode) {
-	    focusNode.blur();
+	  if (this.focusTarget) {
+	    this.focusTarget.blur();
 	  }
 
 	  if (this.node) {
@@ -982,7 +1004,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  }
 
 	  return {
-	    dom: domFocus,
+	    dom: this.focusTarget,
 	    range: range,
 	    nodes: this.multiselection.nodes.slice(0),
 	    scrollTop: this.content ? this.content.scrollTop : 0
@@ -1148,9 +1170,14 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	  // create mode box
 	  if (this.options && this.options.modes && this.options.modes.length) {
-	    var modeBox = modeswitcher.create(this, this.options.modes, this.options.mode);
-	    this.menu.appendChild(modeBox);
-	    this.dom.modeBox = modeBox;
+	    var me = this;
+	    this.modeSwitcher = new ModeSwitcher(this.menu, this.options.modes, this.options.mode, function onSwitch(mode) {
+	      me.modeSwitcher.destroy();
+
+	      // switch mode and restore focus
+	      me.setMode(mode);
+	      me.modeSwitcher.focus();
+	    });
 	  }
 
 	  // create search box
@@ -1198,7 +1225,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  }
 
 	  if (event.type == 'focus') {
-	    domFocus = event.target;
+	    this.focusTarget = event.target;
 	  }
 
 	  if (event.type == 'mousedown') {
@@ -1471,9 +1498,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	  var handled = false;
 
 	  if (keynum == 9) { // Tab or Shift+Tab
+	    var me = this;
 	    setTimeout(function () {
 	      // select all text when moving focus to an editable div
-	      util.selectContentEditable(domFocus);
+	      util.selectContentEditable(me.focusTarget);
 	    }, 0);
 	  }
 
@@ -1624,7 +1652,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  // failed to load ace, no problem, we will fall back to plain text
 	}
 
-	var modeswitcher = __webpack_require__(9);
+	var ModeSwitcher = __webpack_require__(9);
 	var util = __webpack_require__(3);
 
 	// create a mixin with the functions for text mode
@@ -1741,9 +1769,13 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	  // create mode box
 	  if (this.options && this.options.modes && this.options.modes.length) {
-	    var modeBox = modeswitcher.create(this, this.options.modes, this.options.mode);
-	    this.menu.appendChild(modeBox);
-	    this.dom.modeBox = modeBox;
+	    this.modeSwitcher = new ModeSwitcher(this.menu, this.options.modes, this.options.mode, function onSwitch(mode) {
+	      me.modeSwitcher.destroy();
+
+	      // switch mode and restore focus
+	      me.setMode(mode);
+	      me.modeSwitcher.focus();
+	    });
 	  }
 
 	  this.content = document.createElement('div');
@@ -1871,18 +1903,27 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 
 	/**
-	 * Detach the editor from the DOM
-	 * @private
+	 * Destroy the editor. Clean up DOM, event listeners, and web workers.
 	 */
-	textmode._delete = function () {
+	textmode.destroy = function () {
 	  // remove old ace editor
 	  if (this.aceEditor) {
 	    this.aceEditor.destroy();
+	    this.aceEditor = null;
 	  }
 
 	  if (this.frame && this.container && this.frame.parentNode == this.container) {
 	    this.container.removeChild(this.frame);
 	  }
+
+	  if (this.modeSwitcher) {
+	    this.modeSwitcher.destroy();
+	    this.modeSwitcher = null;
+	  }
+
+	  this.textarea = null;
+	  
+	  this._debouncedValidate = null;
 	};
 
 	/**
@@ -2966,6 +3007,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	 */
 	function History (editor) {
 	  this.editor = editor;
+	  this.history = [];
+	  this.index = -1;
+
 	  this.clear();
 
 	  // map with all supported actions
@@ -3206,6 +3250,16 @@ return /******/ (function(modules) { // webpackBootstrap
 	    // fire onchange event
 	    this.onChange();
 	  }
+	};
+
+	/**
+	 * Destroy history
+	 */
+	History.prototype.destroy = function () {
+	  this.editor = null;
+
+	  this.history = [];
+	  this.index = -1;
 	};
 
 	module.exports = History;
@@ -3507,6 +3561,21 @@ return /******/ (function(modules) { // webpackBootstrap
 	SearchBox.prototype.clear = function () {
 	  this.dom.search.value = '';
 	  this._onSearch();
+	};
+
+	/**
+	 * Destroy the search box
+	 */
+	SearchBox.prototype.destroy = function () {
+	  this.editor = null;
+	  this.dom.container.removeChild(this.dom.table);
+	  this.dom = null;
+
+	  this.results = null;
+	  this.activeResult = null;
+
+	  this._clearDelay();
+
 	};
 
 	module.exports = SearchBox;
@@ -6052,7 +6121,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	      target = event.target || event.srcElement,
 	      dom = this.dom,
 	      node = this,
-	      focusNode,
 	      expandable = this._hasChilds();
 
 	  // check if mouse is on menu or on dragarea.
@@ -6101,10 +6169,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	  if (target == domValue) {
 	    //noinspection FallthroughInSwitchStatementJS
 	    switch (type) {
-	      case 'focus':
-	        focusNode = this;
-	        break;
-
 	      case 'blur':
 	      case 'change':
 	        this._getDomValue(true);
@@ -6154,10 +6218,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	  var domField = dom.field;
 	  if (target == domField) {
 	    switch (type) {
-	      case 'focus':
-	        focusNode = this;
-	        break;
-
 	      case 'blur':
 	      case 'change':
 	        this._getDomField(true);
@@ -7323,7 +7383,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * @private
 	 */
 	Node.prototype._unescapeHTML = function (escapedText) {
-	  var json = '"' + this._escapeJSON(escapedText) + '"';
+	  var json = '"' + this._escapeJSON(escapedText.trim()) + '"';
 	  var htmlEscaped = util.parse(json);
 
 	  return htmlEscaped
@@ -7387,64 +7447,48 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	/**
 	 * Create a select box to be used in the editor menu's, which allows to switch mode
-	 * @param {Object} editor
+	 * @param {HTMLElement} container
 	 * @param {String[]} modes  Available modes: 'code', 'form', 'text', 'tree', 'view'
 	 * @param {String} current  Available modes: 'code', 'form', 'text', 'tree', 'view'
-	 * @returns {HTMLElement} box
+	 * @param {function(mode: string)} onSwitch  Callback invoked on switch
+	 * @constructor
 	 */
-	function createModeSwitcher(editor, modes, current) {
-	  // TODO: decouple mode switcher from editor
-
-	  /**
-	   * Switch the mode of the editor
-	   * @param {String} mode
-	   */
-	  function switchMode(mode) {
-	    // switch mode
-	    editor.setMode(mode);
-
-	    // restore focus on mode box
-	    var modeBox = editor.dom && editor.dom.modeBox;
-	    if (modeBox) {
-	      modeBox.focus();
-	    }
-	  }
-
+	function ModeSwitcher(container, modes, current, onSwitch) {
 	  // available modes
 	  var availableModes = {
 	    code: {
 	      'text': 'Code',
 	      'title': 'Switch to code highlighter',
 	      'click': function () {
-	        switchMode('code')
+	        onSwitch('code')
 	      }
 	    },
 	    form: {
 	      'text': 'Form',
 	      'title': 'Switch to form editor',
 	      'click': function () {
-	        switchMode('form');
+	        onSwitch('form');
 	      }
 	    },
 	    text: {
 	      'text': 'Text',
 	      'title': 'Switch to plain text editor',
 	      'click': function () {
-	        switchMode('text');
+	        onSwitch('text');
 	      }
 	    },
 	    tree: {
 	      'text': 'Tree',
 	      'title': 'Switch to tree editor',
 	      'click': function () {
-	        switchMode('tree');
+	        onSwitch('tree');
 	      }
 	    },
 	    view: {
 	      'text': 'View',
 	      'title': 'Switch to tree view',
 	      'click': function () {
-	        switchMode('view');
+	        onSwitch('view');
 	      }
 	    }
 	  };
@@ -7479,15 +7523,38 @@ return /******/ (function(modules) { // webpackBootstrap
 	    menu.show(box);
 	  };
 
-	  var div = document.createElement('div');
-	  div.className = 'jsoneditor-modes';
-	  div.style.position = 'relative';
-	  div.appendChild(box);
+	  var frame = document.createElement('div');
+	  frame.className = 'jsoneditor-modes';
+	  frame.style.position = 'relative';
+	  frame.appendChild(box);
 
-	  return div;
+	  container.appendChild(frame);
+
+	  this.dom = {
+	    container: container,
+	    box: box,
+	    frame: frame
+	  };
 	}
 
-	exports.create = createModeSwitcher;
+	/**
+	 * Set focus to switcher
+	 */
+	ModeSwitcher.prototype.focus = function () {
+	  this.dom.box.focus();
+	};
+
+	/**
+	 * Destroy the ModeSwitcher, remove from DOM
+	 */
+	ModeSwitcher.prototype.destroy = function () {
+	  if (this.dom && this.dom.frame && this.dom.frame.parentNode) {
+	    this.dom.frame.parentNode.removeChild(this.dom.frame);
+	  }
+	  this.dom = null;
+	};
+
+	module.exports = ModeSwitcher;
 
 
 /***/ },

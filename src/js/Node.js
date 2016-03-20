@@ -2121,10 +2121,6 @@ Node.prototype.onEvent = function (event) {
   if (target == domValue) {
     //noinspection FallthroughInSwitchStatementJS
     switch (type) {
-      case 'focus':
-        this.editor.focusNode = this;
-        break;
-
       case 'blur':
       case 'change':
         this._getDomValue(true);
@@ -2174,10 +2170,6 @@ Node.prototype.onEvent = function (event) {
   var domField = dom.field;
   if (target == domField) {
     switch (type) {
-      case 'focus':
-        this.editor.focusNode = this;
-        break;
-
       case 'blur':
       case 'change':
         this._getDomField(true);
