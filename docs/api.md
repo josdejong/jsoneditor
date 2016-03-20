@@ -111,6 +111,10 @@ Constructs a new JSONEditor.
 
 Collapse all fields. Only applicable for mode 'tree', 'view', and 'form'.
 
+#### `JSONEditor.destroy()`
+
+Destroy the editor. Clean up DOM, event listeners, and web workers.
+
 #### `JSONEditor.expandAll()`
 
 Expand all fields. Only applicable for mode 'tree', 'view', and 'form'.

@@ -3,7 +3,7 @@ var History = require('./History');
 var SearchBox = require('./SearchBox');
 var ContextMenu = require('./ContextMenu');
 var Node = require('./Node');
-var modeswitcher = require('./modeswitcher');
+var ModeSwitcher = require('./ModeSwitcher');
 var util = require('./util');
 
 // create a mixin with the functions for tree mode
@@ -43,6 +43,8 @@ treemode.create = function (container, options) {
   this.validateSchema = null; // will be set in .setSchema(schema)
   this.errorNodes = [];
 
+  this.node = null;
+  this.focusNode = null;
 
   this._setOptions(options);
 
@@ -55,12 +57,39 @@ treemode.create = function (container, options) {
 };
 
 /**
- * Detach the editor from the DOM
- * @private
+ * Destroy the editor. Clean up DOM, event listeners, and web workers.
  */
-treemode._delete = function () {
+treemode.destroy = function () {
   if (this.frame && this.container && this.frame.parentNode == this.container) {
     this.container.removeChild(this.frame);
+    this.frame = null;
+  }
+  this.container = null;
+
+  this.dom = null;
+
+  this.clear();
+  this.node = null;
+  this.focusNode = null;
+  this.selection = null;
+  this.multiselection = null;
+  this.errorNodes = null;
+  this.validateSchema = null;
+  this._debouncedValidate = null;
+
+  if (this.history) {
+    this.history.destroy();
+    this.history = null;
+  }
+
+  if (this.searchBox) {
+    this.searchBox.destroy();
+    this.searchBox = null;
+  }
+
+  if (this.modeSwitcher) {
+    this.modeSwitcher.destroy();
+    this.modeSwitcher = null;
   }
 };
 
@@ -93,12 +122,6 @@ treemode._setOptions = function (options) {
   // create a debounced validate function
   this._debouncedValidate = util.debounce(this.validate.bind(this), this.DEBOUNCE_INTERVAL);
 };
-
-// node currently being edited
-var focusNode = undefined;
-
-// dom having focus
-var domFocus = null;
 
 /**
  * Set JSON object in editor
@@ -156,8 +179,8 @@ treemode.set = function (json, name) {
  */
 treemode.get = function () {
   // remove focus from currently edited node
-  if (focusNode) {
-    focusNode.blur();
+  if (this.focusNode) {
+    this.focusNode.blur();
   }
 
   if (this.node) {
@@ -520,7 +543,7 @@ treemode.getSelection = function () {
   }
 
   return {
-    dom: domFocus,
+    dom: this.dom.focus,
     range: range,
     nodes: this.multiselection.nodes.slice(0),
     scrollTop: this.content ? this.content.scrollTop : 0
@@ -686,9 +709,14 @@ treemode._createFrame = function () {
 
   // create mode box
   if (this.options && this.options.modes && this.options.modes.length) {
-    var modeBox = modeswitcher.create(this, this.options.modes, this.options.mode);
-    this.menu.appendChild(modeBox);
-    this.dom.modeBox = modeBox;
+    var me = this;
+    this.modeSwitcher = new ModeSwitcher(this.menu, this.options.modes, this.options.mode, function onSwitch(mode) {
+      me.modeSwitcher.destroy();
+
+      // switch mode and restore focus
+      me.setMode(mode);
+      me.modeSwitcher.focus();
+    });
   }
 
   // create search box
@@ -736,7 +764,7 @@ treemode._onEvent = function (event) {
   }
 
   if (event.type == 'focus') {
-    domFocus = event.target;
+    this.dom.focus = event.target;
   }
 
   if (event.type == 'mousedown') {
@@ -1011,7 +1039,7 @@ treemode._onKeyDown = function (event) {
   if (keynum == 9) { // Tab or Shift+Tab
     setTimeout(function () {
       // select all text when moving focus to an editable div
-      util.selectContentEditable(domFocus);
+      util.selectContentEditable(this.dom.focus);
     }, 0);
   }
 

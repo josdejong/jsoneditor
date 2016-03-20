@@ -2073,7 +2073,6 @@ Node.prototype.onEvent = function (event) {
       target = event.target || event.srcElement,
       dom = this.dom,
       node = this,
-      focusNode,
       expandable = this._hasChilds();
 
   // check if mouse is on menu or on dragarea.
@@ -2123,7 +2122,7 @@ Node.prototype.onEvent = function (event) {
     //noinspection FallthroughInSwitchStatementJS
     switch (type) {
       case 'focus':
-        focusNode = this;
+        this.editor.focusNode = this;
         break;
 
       case 'blur':
@@ -2176,7 +2175,7 @@ Node.prototype.onEvent = function (event) {
   if (target == domField) {
     switch (type) {
       case 'focus':
-        focusNode = this;
+        this.editor.focusNode = this;
         break;
 
       case 'blur':

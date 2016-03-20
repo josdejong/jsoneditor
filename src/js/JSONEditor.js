@@ -130,10 +130,9 @@ JSONEditor.prototype._create = function (container, options, json) {
 };
 
 /**
- * Detach the editor from the DOM
- * @private
+ * Destroy the editor. Clean up DOM, event listeners, and web workers.
  */
-JSONEditor.prototype._delete = function () {};
+JSONEditor.prototype.destroy = function () {};
 
 /**
  * Set JSON object in editor
@@ -207,7 +206,7 @@ JSONEditor.prototype.setMode = function (mode) {
       name = this.getName();
       data = this[asText ? 'getText' : 'get'](); // get text or json
 
-      this._delete();
+      this.destroy();
       util.clear(this);
       util.extend(this, config.mixin);
       this.create(container, options);

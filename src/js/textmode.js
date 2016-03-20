@@ -6,7 +6,7 @@ catch (err) {
   // failed to load ace, no problem, we will fall back to plain text
 }
 
-var modeswitcher = require('./modeswitcher');
+var ModeSwitcher = require('./ModeSwitcher');
 var util = require('./util');
 
 // create a mixin with the functions for text mode
@@ -123,9 +123,13 @@ textmode.create = function (container, options) {
 
   // create mode box
   if (this.options && this.options.modes && this.options.modes.length) {
-    var modeBox = modeswitcher.create(this, this.options.modes, this.options.mode);
-    this.menu.appendChild(modeBox);
-    this.dom.modeBox = modeBox;
+    this.modeSwitcher = new ModeSwitcher(this.menu, this.options.modes, this.options.mode, function onSwitch(mode) {
+      me.modeSwitcher.destroy();
+
+      // switch mode and restore focus
+      me.setMode(mode);
+      me.modeSwitcher.focus();
+    });
   }
 
   this.content = document.createElement('div');
@@ -253,18 +257,27 @@ textmode._onKeyDown = function (event) {
 };
 
 /**
- * Detach the editor from the DOM
- * @private
+ * Destroy the editor. Clean up DOM, event listeners, and web workers.
  */
-textmode._delete = function () {
+textmode.destroy = function () {
   // remove old ace editor
   if (this.aceEditor) {
     this.aceEditor.destroy();
+    this.aceEditor = null;
   }
 
   if (this.frame && this.container && this.frame.parentNode == this.container) {
     this.container.removeChild(this.frame);
   }
+
+  if (this.modeSwitcher) {
+    this.modeSwitcher.destroy();
+    this.modeSwitcher = null;
+  }
+
+  this.textarea = null;
+  
+  this._debouncedValidate = null;
 };
 
 /**

@@ -19,7 +19,7 @@
   "bugs": "https://github.com/josdejong/jsoneditor/issues",
   "scripts": {
     "build": "gulp",
-    "watch": "watch",
+    "watch": "gulp watch",
     "test": "mocha test"
   },
   "dependencies": {

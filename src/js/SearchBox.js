@@ -292,4 +292,19 @@ SearchBox.prototype.clear = function () {
   this._onSearch();
 };
 
+/**
+ * Destroy the search box
+ */
+SearchBox.prototype.destroy = function () {
+  this.editor = null;
+  this.dom.container.removeChild(this.dom.table);
+  this.dom = null;
+
+  this.results = null;
+  this.activeResult = null;
+
+  this._clearDelay();
+
+};
+
 module.exports = SearchBox;

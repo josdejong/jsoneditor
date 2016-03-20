@@ -7,6 +7,9 @@ var util = require('./util');
  */
 function History (editor) {
   this.editor = editor;
+  this.history = [];
+  this.index = -1;
+
   this.clear();
 
   // map with all supported actions
@@ -247,6 +250,16 @@ History.prototype.redo = function () {
     // fire onchange event
     this.onChange();
   }
+};
+
+/**
+ * Destroy history
+ */
+History.prototype.destroy = function () {
+  this.editor = null;
+
+  this.history = [];
+  this.index = -1;
 };
 
 module.exports = History;
