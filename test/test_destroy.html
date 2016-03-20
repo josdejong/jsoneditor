@@ -1,0 +1,87 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+
+  <link href="../dist/jsoneditor.css" rel="stylesheet" type="text/css">
+  <script src="../dist/jsoneditor.js"></script>
+
+  <style type="text/css">
+    body {
+      font: 10.5pt arial;
+      color: #4d4d4d;
+      line-height: 150%;
+      width: 500px;
+      padding-left: 40px;
+    }
+
+    code {
+      background-color: #f5f5f5;
+    }
+
+    #jsoneditor {
+      width: 500px;
+      height: 500px;
+    }
+  </style>
+</head>
+<body>
+
+<p>
+  Switch editor mode using the mode box.
+  Note that the mode can be changed programmatically as well using the method
+  <code>editor.setMode(mode)</code>, try it in the console of your browser.
+</p>
+
+<form>
+  <div id="jsoneditor"></div>
+</form>
+
+<p>
+  <button id="destroy">Destroy</button>
+</p>
+
+<script>
+  var container, options, json, editor;
+
+  container = document.getElementById('jsoneditor');
+
+  options = {
+    mode: 'tree',
+    modes: ['code', 'form', 'text', 'tree', 'view'], // allowed modes
+    onError: function (err) {
+      alert(err.toString());
+    },
+    onChange: function () {
+      console.log('change');
+    },
+    indentation: 4,
+    escapeUnicode: true
+  };
+
+  json = {
+    "array": [1, 2, [3,4,5]],
+    "boolean": true,
+    "htmlcode": '&quot;',
+    "escaped_unicode": '\\u20b9',
+    "unicode": '\u20b9,\uD83D\uDCA9',
+    "return": '\n',
+    "null": null,
+    "number": 123,
+    "object": {"a": "b", "c": "d"},
+    "string": "Hello World",
+    "url": "http://jsoneditoronline.org"
+  };
+
+  editor = new JSONEditor(container, options, json);
+
+  console.log('json', json);
+  console.log('string', JSON.stringify(json));
+
+  document.querySelector('#destroy').onclick = function () {
+    editor.destroy();
+    editor = null;
+  }
+</script>
+</body>
+</html>

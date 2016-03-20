@@ -1,0 +1,61 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <link href="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.0.0-alpha/css/bootstrap.min.css" rel="stylesheet" type="text/css">
+  <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.0.0-beta1/jquery.min.js"></script>
+  <script src="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.0.0-alpha/js/bootstrap.min.js"></script>
+
+
+  <link href="../dist/jsoneditor.css" rel="stylesheet" type="text/css">
+  <script src="../dist/jsoneditor.js"></script>
+
+  <style type="text/css">
+    #jsoneditor {
+      width: 500px;
+      height: 500px;
+    }
+
+    ul.jsoneditor-menu { /* bootstrap fix */
+      -webkit-box-sizing: content-box;
+      -moz-box-sizing: content-box;
+      box-sizing: content-box;
+    }
+  </style>
+</head>
+<body>
+<p>
+  Test with bootstrap
+</p>
+
+<div id="jsoneditor"></div>
+
+<script>
+  var container = document.getElementById('jsoneditor');
+  var options = {
+    "mode": "tree",
+    "modes": [
+      "tree",
+      "form",
+      "code",
+      "text",
+      "view"
+    ],
+    "history": false,
+    onChange: function () {
+      if (editor) {
+        // if you comment out the next line of code, the problem is solved
+        // editor.get() throws an exception when the editor does not
+        // contain valid JSON.
+        console.log('change', editor.get())
+      }
+    }
+  };
+  var editor = new JSONEditor(container, options);
+
+  var text = "[{\"test\":\"test\"}]";
+  var json = JSON.parse(text);
+  editor.set(json);
+
+</script>
+</body>
+</html>
