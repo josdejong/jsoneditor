@@ -690,6 +690,10 @@ exports.improveSchemaError = function (error) {
     }
   }
 
+  if (error.keyword === 'additionalProperties') {
+    error.message = 'should NOT have additional property: ' + error.params.additionalProperty;
+  }
+
   return error;
 };
 

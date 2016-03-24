@@ -3,6 +3,12 @@
 https://github.com/josdejong/jsoneditor
 
 
+## not yet released, version 5.2.1
+
+- Fixed #283: improved JSON schema error message in case of no
+  additionalProperties.
+
+
 ## 2016-03-20, version 5.2.0
 
 - Implemented method `editor.destroy()` to properly cleanup the editor (#278).
