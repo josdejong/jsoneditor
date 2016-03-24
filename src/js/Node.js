@@ -1261,12 +1261,58 @@ Node.prototype._updateDomValue = function () {
 
       this.dom.checkbox.checked = this.value;
     }
+    //If the node has an enum property and it is editable lets create the select element
+    else if (this.enum && this.editable.value) {
+      if (!this.dom.select) {
+        this.dom.select = document.createElement('select');
+        this.id = this.field + "_" + new Date().getUTCMilliseconds();
+        this.dom.select.id = this.id;
+        this.dom.select.name = this.dom.select.id;
+
+        //Create the default empty option
+        this.dom.select.option = document.createElement('option');
+        this.dom.select.option.value = '';
+        this.dom.select.option.innerHTML = '--';
+        this.dom.select.appendChild(this.dom.select.option);
+
+        //Itterate all the enum values and add all the values as options
+        for(var i = 0; i < this.enum.enum.length; i++) {
+          this.dom.select.option = document.createElement('option');
+          this.dom.select.option.value = this.enum.enum[i];
+          this.dom.select.option.innerHTML = this.enum.enumLabels[i];
+          if(this.dom.select.option.value == this.value){
+            this.dom.select.option.selected = true;
+          }
+          this.dom.select.appendChild(this.dom.select.option);
+        }
+
+        this.dom.tdSelect = document.createElement('td');
+        this.dom.tdSelect.className = 'jsoneditor-tree';
+        this.dom.tdSelect.appendChild(this.dom.select);
+
+        //If the enum is inside a composite type display both the simple input and the dropdown field
+        if(this.schema !== undefined && (
+            this.schema.hasOwnProperty("oneOf") ||
+            this.schema.hasOwnProperty("anyOf") ||
+            this.schema.hasOwnProperty("allOf"))
+        ) {
+          this.dom.tdValue.parentNode.insertBefore(this.dom.tdSelect, this.dom.tdValue);
+        } else {
+          this.dom.tdValue.parentNode.insertBefore(this.dom.tdSelect, this.dom.tdValue);
+          this.dom.tdValue.className += ' hidden';
+        }
+      }
+    }
     else {
       // cleanup checkbox when displayed
       if (this.dom.tdCheckbox) {
         this.dom.tdCheckbox.parentNode.removeChild(this.dom.tdCheckbox);
         delete this.dom.tdCheckbox;
         delete this.dom.checkbox;
+	      } else if (this.dom.tdSelect) {
+			  this.dom.tdSelect.parentNode.removeChild(this.dom.tdSelect);
+			  delete this.dom.tdSelect;
+			  delete this.dom.select;
       }
     }
 
@@ -1878,6 +1924,40 @@ Node.prototype.updateDom = function (options) {
     domField.innerHTML = this._escapeHTML(field);
   }
 
+  //Locating the schema of the node and checking for enum type
+  if(this.editor && this.editor.options) {
+    //Search for the element with 'name' equals to the name of the current field.
+    //Store the schema of the node in the schema attribute. Hereafter, wherever you have acces in the node
+    //you will have also access in its own schema
+    this.schema = this._getJsonObject(this.editor.options.schema, 'name', field)[0];
+    //Try now to locate any enumerations inside the schema of the field
+    if(this.schema){
+      //We check here some different cases  in order to locate any defined enum field in the schema of the field
+      if(this.schema.hasOwnProperty('enum')){
+        if(Array.isArray(this.schema.enum)){
+          //We expect in the enumLabels attribute of a json schema property the labels for the enum values
+          //in the same order as the respective elements in the enum array. Otherwise, use the enum values
+          //as labels.
+          var enumLabels = (this.schema.hasOwnProperty('enumLabels') && this.schema.enumLabels != undefined) ?
+              this.schema.enumLabels : this.schema.enum;
+          this.enum = {'enum': this.schema.enum, 'enumLabels' : enumLabels};
+        } else {
+          this.enum = this.schema.enum;
+        }
+      } else if(this.schema.hasOwnProperty('oneOf')){
+        this.enum = this._getJsonObject(this.schema.oneOf, 'enum')[0];
+      } else if(this.schema.hasOwnProperty('anyOf')){
+        this.enum = this._getJsonObject(this.schema.anyOf, 'enum')[0];
+      } else if(this.schema.hasOwnProperty('allOf')){
+        this.enum = this._getJsonObject(this.schema.allOf, 'enum')[0];
+      }
+
+      if(this.schema.enum !== undefined && !this.schema.enum.hasOwnProperty('enumLabels')){
+        this.schema.enum.enumLabels = this.schema.enum.enum;
+      }
+    }
+  }
+
   // apply value to DOM
   var domValue = this.dom.value;
   if (domValue) {
@@ -1919,6 +1999,27 @@ Node.prototype.updateDom = function (options) {
   if (this.append) {
     this.append.updateDom();
   }
+};
+
+/**
+ * Get all sub-elements of the given object with the specified key and value.
+ * @private
+ */
+Node.prototype._getJsonObject = function (obj, key, val) {
+  var objects = [];
+  for (var i in obj) {
+    if (!obj.hasOwnProperty(i)) continue;
+    if (typeof obj[i] == 'object') {
+      if(i == key && val === undefined && Array.isArray(obj[i])){
+        objects.push(obj);
+      } else {
+        objects = objects.concat(this._getJsonObject(obj[i], key, val));
+      }
+    } else if (i == key && obj[key] == val) {
+      objects.push(obj);
+    }
+  }
+  return objects;
 };
 
 /**
