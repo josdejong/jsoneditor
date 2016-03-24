@@ -46,14 +46,39 @@ function appendNodeFactory(Node) {
       // a cell for the dragarea column
       dom.tdDrag = document.createElement('td');
 
-      // create context menu
+      //Get the context menu options
+      var contextOptions = this.editor.options ? this.editor.options.context : undefined;
+      //Get the items with a defined context menu
+      var menuItems = (contextOptions) ? contextOptions.items : undefined;
+      //Get the items of which the children have a defined context menu
+      var menuChildren = (contextOptions) ? contextOptions.children : undefined;
+      //Check if there is any defined context for the current node
+      var itemWithContextMenu = (!menuItems && !menuChildren) || (menuItems && menuItems[this.field]);
+      //Check if there is any defined context for the parent of the current node
+      var childWithContextMenu = (!menuChildren && !menuItems) || (menuChildren && this.parent && menuChildren[this.parent.field]);
+
+      //Set a flag indicating that the current node has a context menu that must be displayed
+      this.displayContextMenu = itemWithContextMenu || childWithContextMenu;
+
       var tdMenu = document.createElement('td');
       dom.tdMenu = tdMenu;
-      var menu = document.createElement('button');
-      menu.className = 'jsoneditor-contextmenu';
-      menu.title = 'Click to open the actions menu (Ctrl+M)';
-      dom.menu = menu;
-      tdMenu.appendChild(dom.menu);
+
+      //Attach the context menu in the DOM
+      if(this.displayContextMenu) {
+        //Only the permitted menu actions will be displayed in the context menu
+        this.contextMenuActions = (itemWithContextMenu && menuItems) ?
+            menuItems[this.field] : (itemWithContextMenu && menuChildren) ? menuChildren[this.parent.field] : [];
+
+        var menu = document.createElement('button');
+        menu.className = 'jsoneditor-contextmenu';
+        menu.title = 'Click to open the actions menu (Ctrl+M)';
+        dom.menu = menu;
+        tdMenu.appendChild(dom.menu);
+      } else {
+        //Allow special theming for columns without context menu
+        //(e.g. reduce the width of the column)
+        tdMenu.className = 'jsoneditor-no-contextmenu';
+      }
     }
 
     // a cell for the contents (showing text 'empty')
@@ -131,9 +156,62 @@ function appendNodeFactory(Node) {
   AppendNode.prototype.showContextMenu = function (anchor, onClose) {
     var node = this;
     var titles = Node.TYPE_TITLES;
-    var items = [
-      // create append button
-      {
+    //Get the permitted context menu actions of the node
+    var menuActions = this.contextMenuActions ? this.contextMenuActions : [];
+    //Build the submenu once and reuse it where needed
+    var subMenu = [];
+    if(!menuActions || menuActions.indexOf('Auto') >= 0){
+      subMenu.push({
+        text: 'Auto',
+        className: 'jsoneditor-type-auto' +
+        (this.type == 'auto' ? ' jsoneditor-selected' : ''),
+        title: titles.auto,
+        click: function () {
+          node._onChangeType('auto');
+        }
+      });
+    }
+
+    if(!menuActions || menuActions.indexOf('Array') >= 0){
+      subMenu.push({
+        text: 'Array',
+        className: 'jsoneditor-type-array' +
+        (this.type == 'array' ? ' jsoneditor-selected' : ''),
+        title: titles.array,
+        click: function () {
+          node._onChangeType('array');
+        }
+      });
+    }
+
+    if(!menuActions || menuActions.indexOf('Object') >= 0){
+      subMenu.push({
+        text: 'Object',
+        className: 'jsoneditor-type-object' +
+        (this.type == 'object' ? ' jsoneditor-selected' : ''),
+        title: titles.object,
+        click: function () {
+          node._onChangeType('object');
+        }
+      });
+    }
+
+    if(!menuActions || menuActions.indexOf('String') >= 0){
+      subMenu.push({
+        text: 'String',
+        className: 'jsoneditor-type-string' +
+        (this.type == 'string' ? ' jsoneditor-selected' : ''),
+        title: titles.string,
+        click: function () {
+          node._onChangeType('string');
+        }
+      });
+    }
+
+    subMenu = (subMenu.length > 0) ? subMenu : undefined;
+    var items = [];
+    if(!menuActions || menuActions.indexOf('Append') >= 0){
+      items.push({
         'text': 'Append',
         'title': 'Append a new field with type \'auto\' (Ctrl+Shift+Ins)',
         'submenuTitle': 'Select the type of the field to be appended',
@@ -141,45 +219,15 @@ function appendNodeFactory(Node) {
         'click': function () {
           node._onAppend('', '', 'auto');
         },
-        'submenu': [
-          {
-            'text': 'Auto',
-            'className': 'jsoneditor-type-auto',
-            'title': titles.auto,
-            'click': function () {
-              node._onAppend('', '', 'auto');
-            }
-          },
-          {
-            'text': 'Array',
-            'className': 'jsoneditor-type-array',
-            'title': titles.array,
-            'click': function () {
-              node._onAppend('', []);
-            }
-          },
-          {
-            'text': 'Object',
-            'className': 'jsoneditor-type-object',
-            'title': titles.object,
-            'click': function () {
-              node._onAppend('', {});
-            }
-          },
-          {
-            'text': 'String',
-            'className': 'jsoneditor-type-string',
-            'title': titles.string,
-            'click': function () {
-              node._onAppend('', '', 'string');
-            }
-          }
-        ]
-      }
-    ];
+        'submenu': subMenu
+      });
+    }
 
-    var menu = new ContextMenu(items, {close: onClose});
-    menu.show(anchor, this.editor.content);
+    //Display the context menu if there is one
+    if(items.length > 0) {
+      var menu = new ContextMenu(items, {close: onClose});
+      menu.show(anchor, this.editor.content);
+    }
   };
 
   /**
