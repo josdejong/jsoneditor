@@ -1942,7 +1942,7 @@ Node.prototype.updateDom = function (options) {
           //We expect in the enumLabels attribute of a json schema property the labels for the enum values
           //in the same order as the respective elements in the enum array. Otherwise, use the enum values
           //as labels.
-          var enumLabels = (this.schema.hasOwnProperty('enumLabels') && this.schema.enumLabels != undefined) ?
+          var enumLabels = (this.schema.hasOwnProperty('enumLabels') && this.schema.enumLabels !== undefined) ?
               this.schema.enumLabels : this.schema.enum;
           this.enum = {'enum': this.schema.enum, 'enumLabels' : enumLabels};
         } else {
@@ -1956,8 +1956,8 @@ Node.prototype.updateDom = function (options) {
         this.enum = this._getJsonObject(this.schema.allOf, 'enum')[0];
       }
 
-      if(this.schema.enum !== undefined && !this.schema.enum.hasOwnProperty('enumLabels')){
-        this.schema.enum.enumLabels = this.schema.enum.enum;
+      if(this.enum !== undefined && !this.enum.hasOwnProperty('enumLabels')){
+        this.enum.enumLabels = this.enum.enum;
       }
     }
   }
