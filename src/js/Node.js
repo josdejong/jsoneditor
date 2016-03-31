@@ -1299,7 +1299,8 @@ Node.prototype._updateDomValue = function () {
           this.dom.tdValue.parentNode.insertBefore(this.dom.tdSelect, this.dom.tdValue);
         } else {
           this.dom.tdValue.parentNode.insertBefore(this.dom.tdSelect, this.dom.tdValue);
-          this.dom.tdValue.className += ' hidden';
+          this.dom.tdValue.style.visibility = 'hidden';
+          this.dom.tdValue.innerHTML = '';
         }
       }
     }
