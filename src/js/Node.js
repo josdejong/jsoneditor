@@ -1930,6 +1930,9 @@ Node.prototype.updateDom = function (options) {
     //Store the schema of the node in the schema attribute. Hereafter, wherever you have acces in the node
     //you will have also access in its own schema
     this.schema = this._getJsonObject(this.editor.options.schema, 'name', field)[0];
+    if(!this.schema) {
+      this.schema = this._getJsonObject(this.editor.options.schema, field)[0];
+    }
     //Try now to locate any enumerations inside the schema of the field
     if(this.schema){
       //We check here some different cases  in order to locate any defined enum field in the schema of the field
@@ -2010,8 +2013,12 @@ Node.prototype._getJsonObject = function (obj, key, val) {
   for (var i in obj) {
     if (!obj.hasOwnProperty(i)) continue;
     if (typeof obj[i] == 'object') {
-      if(i == key && val === undefined && Array.isArray(obj[i])){
-        objects.push(obj);
+      if(i === key && val === undefined){
+        if(Array.isArray(obj[i])) {
+          objects.push(obj);
+        } else {
+          objects.push(obj[i]);
+        }
       } else {
         objects = objects.concat(this._getJsonObject(obj[i], key, val));
       }
@@ -2215,6 +2222,12 @@ Node.prototype.onEvent = function (event) {
   if (type == 'change' && target == dom.checkbox) {
     this.dom.value.innerHTML = !this.value;
     this._getDomValue();
+  }
+  //Update the value of the node based on the selected option
+  if (type == 'change' && target == dom.select) {
+    this.dom.value.innerHTML = dom.select.value;
+    this._getDomValue();
+    this._updateDomValue();
   }
 
   // value events
