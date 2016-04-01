@@ -296,19 +296,30 @@ Node.prototype.setValue = function(value, type) {
   else if (this.type == 'object') {
     // object
     this.childs = [];
+    var props = [];
     for (var childField in value) {
       if (value.hasOwnProperty(childField)) {
-        childValue = value[childField];
-        if (childValue !== undefined && !(childValue instanceof Function)) {
-          // ignore undefined and functions
-          child = new Node(this.editor, {
-            field: childField,
-            value: childValue
-          });
-          this.appendChild(child);
-        }
+        props.push(childField);
       }
     }
+
+    if (this.editor.options.sortObjectKeys === true) {
+      props = this._naturalSort(props);
+    }
+
+    for (var i = 0; i < props.length; i++) {
+      var childField = props[i];
+      childValue = value[childField];
+      if (childValue !== undefined && !(childValue instanceof Function)) {
+        // ignore undefined and functions
+        child = new Node(this.editor, {
+          field: childField,
+          value: childValue
+        });
+        this.appendChild(child);
+      }
+    }
+
     this.value = '';
   }
   else {
@@ -3384,6 +3395,57 @@ Node.prototype._escapeJSON = function (text) {
 
   return escaped;
 };
+
+/**
+ * sorts an array of strings using natural sort.
+ * Natural sort resuls in the array `['100', '2', '1']` being sorted as
+ * `['1', '2', '100']` instead of `['1', '100', '2']`, making it more readable.
+ * This implementation is an adaptation of Brian Huisman implementation of the
+ * Alphanum Algorithm by David Koelle.
+ * @param {Array[String]} array
+ * @return {String} sortedArray
+ * @private
+ */
+Node.prototype._naturalSort = function(array) {
+  var sortedArray = array.slice();
+
+  for (var z = 0, t; t = sortedArray[z]; z++) {
+    sortedArray[z] = [];
+    var x = 0, y = -1, n = 0, i, j;
+
+    while (i = (j = t.charAt(x++)).charCodeAt(0)) {
+      var m = (i == 46 || (i >=48 && i <= 57));
+      if (m !== n) {
+        sortedArray[z][++y] = '';
+        n = m;
+      }
+      sortedArray[z][y] += j;
+    }
+  }
+
+  sortedArray.sort(function(a, b) {
+    for (var x = 0, aa, bb; (aa = a[x]) && (bb = b[x]); x++) {
+      aa = aa.toLowerCase();
+      bb = bb.toLowerCase();
+      if (aa !== bb) {
+        var c = Number(aa), d = Number(bb);
+        if (c == aa && d == bb) {
+          return c - d;
+        }
+        else {
+          return (aa > bb) ? 1 : -1;
+        }
+      }
+    }
+    return a.length - b.length;
+  });
+
+  for (var z = 0; z < sortedArray.length; z++) {
+    sortedArray[z] = sortedArray[z].join('');
+  }
+
+  return sortedArray;
+}
 
 // TODO: find a nicer solution to resolve this circular dependency between Node and AppendNode
 var AppendNode = appendNodeFactory(Node);
