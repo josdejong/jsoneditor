@@ -658,7 +658,8 @@ exports.parsePath = function parsePath(jsonPath) {
       throw new SyntaxError('Index expected after [');
     }
 
-    prop = JSON.parse(jsonPath.substring(1, end));
+    var value = jsonPath.substring(1, end);
+    prop = value === '*' ? value : JSON.parse(value); // parse string and number
     remainder = jsonPath.substr(end + 1);
   }
   else {
