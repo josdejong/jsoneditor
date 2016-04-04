@@ -3,8 +3,9 @@
 https://github.com/josdejong/jsoneditor
 
 
-## not yet released, version 5.2.1
+## not yet released, version 5.3.0
 
+- Implemented support for sorting object keys naturally. Thanks @edufelipe.
 - Fixed #283: improved JSON schema error message in case of no
   additionalProperties.
 
