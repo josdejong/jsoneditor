@@ -54,7 +54,7 @@ Node.prototype._updateEditability = function () {
       var editable = this.editor.options.onEditable({
         field: this.field,
         value: this.value,
-        path: this.getFieldsPath()
+        path: this.getPath()
       });
 
       if (typeof editable === 'boolean') {
@@ -73,11 +73,14 @@ Node.prototype._updateEditability = function () {
  * Get the path of this node
  * @return {String[]} Array containing the path to this node
  */
-Node.prototype.getFieldsPath = function () {
+Node.prototype.getPath = function () {
   var node = this;
   var path = [];
   while (node) {
-    var field = node.field != undefined ? node.field : node.index;
+    var field = (!node.parent || node.parent.type != 'array')
+        ? node.field
+        : node.index;
+
     if (field !== undefined) {
       path.unshift(field);
     }
@@ -372,8 +375,8 @@ Node.prototype.getLevel = function() {
  * Get path of the root node till the current node
  * @return {Node[]} Returns an array with nodes
  */
-Node.prototype.getPath = function() {
-  var path = this.parent ? this.parent.getPath() : [];
+Node.prototype.getNodePath = function() {
+  var path = this.parent ? this.parent.getNodePath() : [];
   path.push(this);
   return path;
 };
