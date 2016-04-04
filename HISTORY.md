@@ -8,7 +8,8 @@ https://github.com/josdejong/jsoneditor
 - Implemented support for sorting object keys naturally. Thanks @edufelipe.
 - Fixed #283: improved JSON schema error message in case of no
   additionalProperties.
-
+- Fixed #286: Calling `get()` or `getText()` caused the editor to lose focus.
+  A regression introduced in v5.2.0.
 
 ## 2016-03-20, version 5.2.0
 

@@ -180,7 +180,10 @@ treemode.set = function (json, name) {
 treemode.get = function () {
   // remove focus from currently edited node
   if (this.focusTarget) {
-    this.focusTarget.blur();
+    var node = Node.getNodeFromTarget(this.focusTarget);
+    if (node) {
+      node.blur();
+    }
   }
 
   if (this.node) {
