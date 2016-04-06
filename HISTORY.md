@@ -3,7 +3,7 @@
 https://github.com/josdejong/jsoneditor
 
 
-## not yet released, version 5.3.0
+## 2016-04-06, version 5.3.0
 
 - Implemented support for sorting object keys naturally. Thanks @edufelipe.
 - Sorting object keys or array items via the context menu is now also naturally

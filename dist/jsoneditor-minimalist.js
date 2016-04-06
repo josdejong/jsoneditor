@@ -24,8 +24,8 @@
  * Copyright (c) 2011-2016 Jos de Jong, http://jsoneditoronline.org
  *
  * @author  Jos de Jong, <wjosdejong@gmail.com>
- * @version 5.2.0
- * @date    2016-03-20
+ * @version 5.3.0
+ * @date    2016-04-06
  */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
@@ -124,6 +124,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	 *                               {boolean} escapeUnicode  If true, unicode
 	 *                                                        characters are escaped.
 	 *                                                        false by default.
+	 *                               {boolean} sortObjectKeys If true, object keys are
+	 *                                                        sorted before display.
+	 *                                                        false by default.
 	 * @param {Object | undefined} json JSON object
 	 */
 	function JSONEditor (container, options, json) {
@@ -162,7 +165,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        'ace', 'theme',
 	        'ajv', 'schema',
 	        'onChange', 'onEditable', 'onError', 'onModeChange',
-	        'escapeUnicode', 'history', 'search', 'mode', 'modes', 'name', 'indentation'
+	        'escapeUnicode', 'history', 'search', 'mode', 'modes', 'name', 'indentation', 'sortObjectKeys'
 	      ];
 
 	      Object.keys(options).forEach(function (option) {
@@ -641,7 +644,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	treemode.get = function () {
 	  // remove focus from currently edited node
 	  if (this.focusTarget) {
-	    this.focusTarget.blur();
+	    var node = Node.getNodeFromTarget(this.focusTarget);
+	    if (node) {
+	      node.blur();
+	    }
 	  }
 
 	  if (this.node) {
@@ -1449,8 +1455,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * @private
 	 */
 	treemode._findTopLevelNodes = function (start, end) {
-	  var startPath = start.getPath();
-	  var endPath = end.getPath();
+	  var startPath = start.getNodePath();
+	  var endPath = end.getNodePath();
 	  var i = 0;
 	  while (i < startPath.length && startPath[i] === endPath[i]) {
 	    i++;
@@ -1646,7 +1652,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var ace;
 	try {
-	  ace = __webpack_require__(11);
+	  ace = __webpack_require__(10);
 	}
 	catch (err) {
 	  // failed to load ace, no problem, we will fall back to plain text
@@ -2137,7 +2143,7 @@ return /******/ (function(modules) { // webpackBootstrap
 /* 3 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var jsonlint = __webpack_require__(10);
+	var jsonlint = __webpack_require__(11);
 
 	/**
 	 * Parse JSON using the parser built-in in the browser.
@@ -2797,7 +2803,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	      throw new SyntaxError('Index expected after [');
 	    }
 
-	    prop = JSON.parse(jsonPath.substring(1, end));
+	    var value = jsonPath.substring(1, end);
+	    prop = value === '*' ? value : JSON.parse(value); // parse string and number
 	    remainder = jsonPath.substr(end + 1);
 	  }
 	  else {
@@ -2827,6 +2834,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	      }
 	      error.message = 'should be equal to one of: ' + enums.join(', ');
 	    }
+	  }
+
+	  if (error.keyword === 'additionalProperties') {
+	    error.message = 'should NOT have additional property: ' + error.params.additionalProperty;
 	  }
 
 	  return error;
@@ -4046,6 +4057,7 @@ return /******/ (function(modules) { // webpackBootstrap
 /* 8 */
 /***/ function(module, exports, __webpack_require__) {
 
+	var naturalSort = __webpack_require__(14);
 	var ContextMenu = __webpack_require__(7);
 	var appendNodeFactory = __webpack_require__(12);
 	var util = __webpack_require__(3);
@@ -4102,7 +4114,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	      var editable = this.editor.options.onEditable({
 	        field: this.field,
 	        value: this.value,
-	        path: this.getFieldsPath()
+	        path: this.getPath()
 	      });
 
 	      if (typeof editable === 'boolean') {
@@ -4121,11 +4133,14 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * Get the path of this node
 	 * @return {String[]} Array containing the path to this node
 	 */
-	Node.prototype.getFieldsPath = function () {
+	Node.prototype.getPath = function () {
 	  var node = this;
 	  var path = [];
 	  while (node) {
-	    var field = node.field != undefined ? node.field : node.index;
+	    var field = (!node.parent || node.parent.type != 'array')
+	        ? node.field
+	        : node.index;
+
 	    if (field !== undefined) {
 	      path.unshift(field);
 	    }
@@ -4358,21 +4373,16 @@ return /******/ (function(modules) { // webpackBootstrap
 	      }
 	    }
 	    this.value = '';
+
+	    // sort object keys
+	    if (this.editor.options.sortObjectKeys === true) {
+	      this.sort('asc');
+	    }
 	  }
 	  else {
 	    // value
 	    this.childs = undefined;
 	    this.value = value;
-	    /* TODO
-	     if (typeof(value) == 'string') {
-	     var escValue = JSON.stringify(value);
-	     this.value = escValue.substring(1, escValue.length - 1);
-	     console.log('check', value, this.value);
-	     }
-	     else {
-	     this.value = value;
-	     }
-	     */
 	  }
 
 	  this.previousValue = this.value;
@@ -4420,8 +4430,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * Get path of the root node till the current node
 	 * @return {Node[]} Returns an array with nodes
 	 */
-	Node.prototype.getPath = function() {
-	  var path = this.parent ? this.parent.getPath() : [];
+	Node.prototype.getNodePath = function() {
+	  var path = this.parent ? this.parent.getNodePath() : [];
 	  path.push(this);
 	  return path;
 	};
@@ -6795,41 +6805,41 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 
 	/**
-	 * Sort the childs of the node. Only applicable when the node has type 'object'
+	 * Sort the child's of the node. Only applicable when the node has type 'object'
 	 * or 'array'.
 	 * @param {String} direction   Sorting direction. Available values: "asc", "desc"
 	 * @private
 	 */
-	Node.prototype._onSort = function (direction) {
-	  if (this._hasChilds()) {
-	    var order = (direction == 'desc') ? -1 : 1;
-	    var prop = (this.type == 'array') ? 'value': 'field';
-	    this.hideChilds();
-
-	    var oldChilds = this.childs;
-	    var oldSort = this.sort;
-
-	    // copy the array (the old one will be kept for an undo action
-	    this.childs = this.childs.concat();
-
-	    // sort the arrays
-	    this.childs.sort(function (a, b) {
-	      if (a[prop] > b[prop]) return order;
-	      if (a[prop] < b[prop]) return -order;
-	      return 0;
-	    });
-	    this.sort = (order == 1) ? 'asc' : 'desc';
-
-	    this.editor._onAction('sort', {
-	      node: this,
-	      oldChilds: oldChilds,
-	      oldSort: oldSort,
-	      newChilds: this.childs,
-	      newSort: this.sort
-	    });
-
-	    this.showChilds();
+	Node.prototype.sort = function (direction) {
+	  if (!this._hasChilds()) {
+	    return;
 	  }
+
+	  var order = (direction == 'desc') ? -1 : 1;
+	  var prop = (this.type == 'array') ? 'value': 'field';
+	  this.hideChilds();
+
+	  var oldChilds = this.childs;
+	  var oldSortOrder = this.sortOrder;
+
+	  // copy the array (the old one will be kept for an undo action
+	  this.childs = this.childs.concat();
+
+	  // sort the arrays
+	  this.childs.sort(function (a, b) {
+	    return order * naturalSort(a[prop], b[prop]);
+	  });
+	  this.sortOrder = (order == 1) ? 'asc' : 'desc';
+
+	  this.editor._onAction('sort', {
+	    node: this,
+	    oldChilds: oldChilds,
+	    oldSort: oldSortOrder,
+	    newChilds: this.childs,
+	    newSort: this.sortOrder
+	  });
+
+	  this.showChilds();
 	};
 
 	/**
@@ -7139,13 +7149,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	  }
 
 	  if (this._hasChilds()) {
-	    var direction = ((this.sort == 'asc') ? 'desc': 'asc');
+	    var direction = ((this.sortOrder == 'asc') ? 'desc': 'asc');
 	    items.push({
 	      text: 'Sort',
 	      title: 'Sort the childs of this ' + this.type,
 	      className: 'jsoneditor-sort-' + direction,
 	      click: function () {
-	        node._onSort(direction);
+	        node.sort(direction);
 	      },
 	      submenu: [
 	        {
@@ -7153,7 +7163,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	          className: 'jsoneditor-sort-asc',
 	          title: 'Sort the childs of this ' + this.type + ' in ascending order',
 	          click: function () {
-	            node._onSort('asc');
+	            node.sort('asc');
 	          }
 	        },
 	        {
@@ -7161,7 +7171,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	          className: 'jsoneditor-sort-desc',
 	          title: 'Sort the childs of this ' + this.type +' in descending order',
 	          click: function () {
-	            node._onSort('desc');
+	            node.sort('desc');
 	          }
 	        }
 	      ]
@@ -7559,6 +7569,21 @@ return /******/ (function(modules) { // webpackBootstrap
 
 /***/ },
 /* 10 */
+/***/ function(module, exports, __webpack_require__) {
+
+	// load brace
+	var ace = __webpack_require__(!(function webpackMissingModule() { var e = new Error("Cannot find module \"brace\""); e.code = 'MODULE_NOT_FOUND'; throw e; }()));
+
+	// load required ace modules
+	__webpack_require__(15);
+	__webpack_require__(16);
+	__webpack_require__(13);
+
+	module.exports = ace;
+
+
+/***/ },
+/* 11 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* Jison generated parser */
@@ -7981,21 +8006,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	}
 
 /***/ },
-/* 11 */
-/***/ function(module, exports, __webpack_require__) {
-
-	// load brace
-	var ace = __webpack_require__(!(function webpackMissingModule() { var e = new Error("Cannot find module \"brace\""); e.code = 'MODULE_NOT_FOUND'; throw e; }()));
-
-	// load required ace modules
-	__webpack_require__(14);
-	__webpack_require__(15);
-	__webpack_require__(13);
-
-	module.exports = ace;
-
-
-/***/ },
 /* 12 */
 /***/ function(module, exports, __webpack_require__) {
 
@@ -8379,6 +8389,57 @@ return /******/ (function(modules) { // webpackBootstrap
 
 /***/ },
 /* 14 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/*
+	 * Natural Sort algorithm for Javascript - Version 0.7 - Released under MIT license
+	 * Author: Jim Palmer (based on chunking idea from Dave Koelle)
+	 */
+	/*jshint unused:false */
+	module.exports = function naturalSort (a, b) {
+		"use strict";
+		var re = /(^([+\-]?(?:0|[1-9]\d*)(?:\.\d*)?(?:[eE][+\-]?\d+)?)?$|^0x[0-9a-f]+$|\d+)/gi,
+			sre = /(^[ ]*|[ ]*$)/g,
+			dre = /(^([\w ]+,?[\w ]+)?[\w ]+,?[\w ]+\d+:\d+(:\d+)?[\w ]?|^\d{1,4}[\/\-]\d{1,4}[\/\-]\d{1,4}|^\w+, \w+ \d+, \d{4})/,
+			hre = /^0x[0-9a-f]+$/i,
+			ore = /^0/,
+			i = function(s) { return naturalSort.insensitive && ('' + s).toLowerCase() || '' + s; },
+			// convert all to strings strip whitespace
+			x = i(a).replace(sre, '') || '',
+			y = i(b).replace(sre, '') || '',
+			// chunk/tokenize
+			xN = x.replace(re, '\0$1\0').replace(/\0$/,'').replace(/^\0/,'').split('\0'),
+			yN = y.replace(re, '\0$1\0').replace(/\0$/,'').replace(/^\0/,'').split('\0'),
+			// numeric, hex or date detection
+			xD = parseInt(x.match(hre), 16) || (xN.length !== 1 && x.match(dre) && Date.parse(x)),
+			yD = parseInt(y.match(hre), 16) || xD && y.match(dre) && Date.parse(y) || null,
+			oFxNcL, oFyNcL;
+		// first try and sort Hex codes or Dates
+		if (yD) {
+			if ( xD < yD ) { return -1; }
+			else if ( xD > yD ) { return 1; }
+		}
+		// natural sorting through split numeric strings and default strings
+		for(var cLoc=0, numS=Math.max(xN.length, yN.length); cLoc < numS; cLoc++) {
+			// find floats not starting with '0', string or 0 if not defined (Clint Priest)
+			oFxNcL = !(xN[cLoc] || '').match(ore) && parseFloat(xN[cLoc]) || xN[cLoc] || 0;
+			oFyNcL = !(yN[cLoc] || '').match(ore) && parseFloat(yN[cLoc]) || yN[cLoc] || 0;
+			// handle numeric vs string comparison - number < string - (Kyle Adams)
+			if (isNaN(oFxNcL) !== isNaN(oFyNcL)) { return (isNaN(oFxNcL)) ? 1 : -1; }
+			// rely on string comparison if different types - i.e. '02' < 2 != '02' < '2'
+			else if (typeof oFxNcL !== typeof oFyNcL) {
+				oFxNcL += '';
+				oFyNcL += '';
+			}
+			if (oFxNcL < oFyNcL) { return -1; }
+			if (oFxNcL > oFyNcL) { return 1; }
+		}
+		return 0;
+	};
+
+
+/***/ },
+/* 15 */
 /***/ function(module, exports, __webpack_require__) {
 
 	ace.define("ace/mode/json_highlight_rules",["require","exports","module","ace/lib/oop","ace/mode/text_highlight_rules"], function(acequire, exports, module) {
@@ -9029,7 +9090,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    };
 
 	    this.createWorker = function(session) {
-	        var worker = new WorkerClient(["ace"], __webpack_require__(16), "JsonWorker");
+	        var worker = new WorkerClient(["ace"], __webpack_require__(17), "JsonWorker");
 	        worker.attachToDocument(session.getDocument());
 
 	        worker.on("annotate", function(e) {
@@ -9052,7 +9113,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 15 */
+/* 16 */
 /***/ function(module, exports, __webpack_require__) {
 
 	ace.define("ace/ext/searchbox",["require","exports","module","ace/lib/dom","ace/lib/lang","ace/lib/event","ace/keyboard/hash_handler","ace/lib/keys"], function(acequire, exports, module) {
@@ -9473,7 +9534,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            
 
 /***/ },
-/* 16 */
+/* 17 */
 /***/ function(module, exports, __webpack_require__) {
 
 	module.exports.id = 'ace/mode/json_worker';
