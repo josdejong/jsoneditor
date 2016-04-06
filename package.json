@@ -24,7 +24,8 @@
   },
   "dependencies": {
     "ajv": "3.4.0",
-    "brace": "0.7.0"
+    "brace": "0.7.0",
+    "javascript-natural-sort": "0.7.1"
   },
   "devDependencies": {
     "gulp": "3.9.0",
