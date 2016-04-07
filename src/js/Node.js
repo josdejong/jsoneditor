@@ -1288,18 +1288,19 @@ Node.prototype._updateDomValue = function () {
         this.dom.tdSelect = document.createElement('td');
         this.dom.tdSelect.className = 'jsoneditor-tree';
         this.dom.tdSelect.appendChild(this.dom.select);
+        this.dom.tdValue.parentNode.insertBefore(this.dom.tdSelect, this.dom.tdValue);
 
         //If the enum is inside a composite type display both the simple input and the dropdown field
         if(this.schema !== undefined && (
-            this.schema.hasOwnProperty("oneOf") ||
-            this.schema.hasOwnProperty("anyOf") ||
-            this.schema.hasOwnProperty("allOf"))
+            !this.schema.hasOwnProperty("oneOf") &&
+            !this.schema.hasOwnProperty("anyOf") &&
+            !this.schema.hasOwnProperty("allOf"))
         ) {
-          this.dom.tdValue.parentNode.insertBefore(this.dom.tdSelect, this.dom.tdValue);
+            this.valueFieldHTML = this.dom.tdValue.innerHTML;
+            this.dom.tdValue.style.visibility = 'hidden';
+            this.dom.tdValue.innerHTML = '';
         } else {
-          this.dom.tdValue.parentNode.insertBefore(this.dom.tdSelect, this.dom.tdValue);
-          this.dom.tdValue.style.visibility = 'hidden';
-          this.dom.tdValue.innerHTML = '';
+            delete this.valueFieldHTML;
         }
       }
     }
@@ -1309,10 +1310,13 @@ Node.prototype._updateDomValue = function () {
         this.dom.tdCheckbox.parentNode.removeChild(this.dom.tdCheckbox);
         delete this.dom.tdCheckbox;
         delete this.dom.checkbox;
-	      } else if (this.dom.tdSelect) {
-			  this.dom.tdSelect.parentNode.removeChild(this.dom.tdSelect);
-			  delete this.dom.tdSelect;
-			  delete this.dom.select;
+      } else if (this.dom.tdSelect) {
+          this.dom.tdSelect.parentNode.removeChild(this.dom.tdSelect);
+          delete this.dom.tdSelect;
+          delete this.dom.select;
+          this.dom.tdValue.innerHTML = this.valueFieldHTML;
+          this.dom.tdValue.style.visibility = '';
+          delete this.valueFieldHTML;
       }
     }
 
@@ -1953,11 +1957,15 @@ Node.prototype.updateDom = function (options) {
         this.enum = this._getJsonObject(this.schema.anyOf, 'enum')[0];
       } else if(this.schema.hasOwnProperty('allOf')){
         this.enum = this._getJsonObject(this.schema.allOf, 'enum')[0];
+      } else {
+        delete this.enum;
       }
 
       if(this.enum !== undefined && !this.enum.hasOwnProperty('enumLabels')){
         this.enum.enumLabels = this.enum.enum;
       }
+    } else {
+      delete this.enum;
     }
   }
 
@@ -2295,7 +2303,7 @@ Node.prototype.onEvent = function (event) {
 
       case 'input':
         this._getDomField(true);
-        this._updateDomField();
+        this.updateDom();
         break;
 
       case 'keydown':
