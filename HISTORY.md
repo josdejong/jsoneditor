@@ -3,10 +3,15 @@
 https://github.com/josdejong/jsoneditor
 
 
-## not yet released, version 5.2.1
+## 2016-04-06, version 5.3.0
 
+- Implemented support for sorting object keys naturally. Thanks @edufelipe.
+- Sorting object keys or array items via the context menu is now also naturally
+  sorted.
 - Fixed #283: improved JSON schema error message in case of no
   additionalProperties.
+- Fixed #286: Calling `get()` or `getText()` caused the editor to lose focus.
+  A regression introduced in v5.2.0.
 
 
 ## 2016-03-20, version 5.2.0

@@ -180,7 +180,10 @@ treemode.set = function (json, name) {
 treemode.get = function () {
   // remove focus from currently edited node
   if (this.focusTarget) {
-    this.focusTarget.blur();
+    var node = Node.getNodeFromTarget(this.focusTarget);
+    if (node) {
+      node.blur();
+    }
   }
 
   if (this.node) {
@@ -988,8 +991,8 @@ treemode.select = function (nodes) {
  * @private
  */
 treemode._findTopLevelNodes = function (start, end) {
-  var startPath = start.getPath();
-  var endPath = end.getPath();
+  var startPath = start.getNodePath();
+  var endPath = end.getNodePath();
   var i = 0;
   while (i < startPath.length && startPath[i] === endPath[i]) {
     i++;

@@ -39,6 +39,9 @@ var util = require('./util');
  *                               {boolean} escapeUnicode  If true, unicode
  *                                                        characters are escaped.
  *                                                        false by default.
+ *                               {boolean} sortObjectKeys If true, object keys are
+ *                                                        sorted before display.
+ *                                                        false by default.
  * @param {Object | undefined} json JSON object
  */
 function JSONEditor (container, options, json) {
@@ -77,7 +80,7 @@ function JSONEditor (container, options, json) {
         'ace', 'theme',
         'ajv', 'schema',
         'onChange', 'onEditable', 'onError', 'onModeChange',
-        'escapeUnicode', 'history', 'search', 'mode', 'modes', 'name', 'indentation'
+        'escapeUnicode', 'history', 'search', 'mode', 'modes', 'name', 'indentation', 'sortObjectKeys'
       ];
 
       Object.keys(options).forEach(function (option) {

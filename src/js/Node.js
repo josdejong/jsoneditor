@@ -1,3 +1,4 @@
+var naturalSort = require('javascript-natural-sort');
 var ContextMenu = require('./ContextMenu');
 var appendNodeFactory = require('./appendNodeFactory');
 var util = require('./util');
@@ -54,7 +55,7 @@ Node.prototype._updateEditability = function () {
       var editable = this.editor.options.onEditable({
         field: this.field,
         value: this.value,
-        path: this.getFieldsPath()
+        path: this.getPath()
       });
 
       if (typeof editable === 'boolean') {
@@ -73,11 +74,14 @@ Node.prototype._updateEditability = function () {
  * Get the path of this node
  * @return {String[]} Array containing the path to this node
  */
-Node.prototype.getFieldsPath = function () {
+Node.prototype.getPath = function () {
   var node = this;
   var path = [];
   while (node) {
-    var field = node.field != undefined ? node.field : node.index;
+    var field = (!node.parent || node.parent.type != 'array')
+        ? node.field
+        : node.index;
+
     if (field !== undefined) {
       path.unshift(field);
     }
@@ -310,21 +314,16 @@ Node.prototype.setValue = function(value, type) {
       }
     }
     this.value = '';
+
+    // sort object keys
+    if (this.editor.options.sortObjectKeys === true) {
+      this.sort('asc');
+    }
   }
   else {
     // value
     this.childs = undefined;
     this.value = value;
-    /* TODO
-     if (typeof(value) == 'string') {
-     var escValue = JSON.stringify(value);
-     this.value = escValue.substring(1, escValue.length - 1);
-     console.log('check', value, this.value);
-     }
-     else {
-     this.value = value;
-     }
-     */
   }
 
   this.previousValue = this.value;
@@ -372,8 +371,8 @@ Node.prototype.getLevel = function() {
  * Get path of the root node till the current node
  * @return {Node[]} Returns an array with nodes
  */
-Node.prototype.getPath = function() {
-  var path = this.parent ? this.parent.getPath() : [];
+Node.prototype.getNodePath = function() {
+  var path = this.parent ? this.parent.getNodePath() : [];
   path.push(this);
   return path;
 };
@@ -2862,41 +2861,41 @@ Node.prototype._onChangeType = function (newType) {
 };
 
 /**
- * Sort the childs of the node. Only applicable when the node has type 'object'
+ * Sort the child's of the node. Only applicable when the node has type 'object'
  * or 'array'.
  * @param {String} direction   Sorting direction. Available values: "asc", "desc"
  * @private
  */
-Node.prototype._onSort = function (direction) {
-  if (this._hasChilds()) {
-    var order = (direction == 'desc') ? -1 : 1;
-    var prop = (this.type == 'array') ? 'value': 'field';
-    this.hideChilds();
-
-    var oldChilds = this.childs;
-    var oldSort = this.sort;
-
-    // copy the array (the old one will be kept for an undo action
-    this.childs = this.childs.concat();
-
-    // sort the arrays
-    this.childs.sort(function (a, b) {
-      if (a[prop] > b[prop]) return order;
-      if (a[prop] < b[prop]) return -order;
-      return 0;
-    });
-    this.sort = (order == 1) ? 'asc' : 'desc';
-
-    this.editor._onAction('sort', {
-      node: this,
-      oldChilds: oldChilds,
-      oldSort: oldSort,
-      newChilds: this.childs,
-      newSort: this.sort
-    });
-
-    this.showChilds();
+Node.prototype.sort = function (direction) {
+  if (!this._hasChilds()) {
+    return;
   }
+
+  var order = (direction == 'desc') ? -1 : 1;
+  var prop = (this.type == 'array') ? 'value': 'field';
+  this.hideChilds();
+
+  var oldChilds = this.childs;
+  var oldSortOrder = this.sortOrder;
+
+  // copy the array (the old one will be kept for an undo action
+  this.childs = this.childs.concat();
+
+  // sort the arrays
+  this.childs.sort(function (a, b) {
+    return order * naturalSort(a[prop], b[prop]);
+  });
+  this.sortOrder = (order == 1) ? 'asc' : 'desc';
+
+  this.editor._onAction('sort', {
+    node: this,
+    oldChilds: oldChilds,
+    oldSort: oldSortOrder,
+    newChilds: this.childs,
+    newSort: this.sortOrder
+  });
+
+  this.showChilds();
 };
 
 /**
@@ -3206,13 +3205,13 @@ Node.prototype.showContextMenu = function (anchor, onClose) {
   }
 
   if (this._hasChilds()) {
-    var direction = ((this.sort == 'asc') ? 'desc': 'asc');
+    var direction = ((this.sortOrder == 'asc') ? 'desc': 'asc');
     items.push({
       text: 'Sort',
       title: 'Sort the childs of this ' + this.type,
       className: 'jsoneditor-sort-' + direction,
       click: function () {
-        node._onSort(direction);
+        node.sort(direction);
       },
       submenu: [
         {
@@ -3220,7 +3219,7 @@ Node.prototype.showContextMenu = function (anchor, onClose) {
           className: 'jsoneditor-sort-asc',
           title: 'Sort the childs of this ' + this.type + ' in ascending order',
           click: function () {
-            node._onSort('asc');
+            node.sort('asc');
           }
         },
         {
@@ -3228,7 +3227,7 @@ Node.prototype.showContextMenu = function (anchor, onClose) {
           className: 'jsoneditor-sort-desc',
           title: 'Sort the childs of this ' + this.type +' in descending order',
           click: function () {
-            node._onSort('desc');
+            node.sort('desc');
           }
         }
       ]
