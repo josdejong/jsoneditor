@@ -1,0 +1,25 @@
+/* reset styling (prevent conflicts with bootstrap, materialize.css, etc.) */
+
+div.jsoneditor input {
+  height: auto;
+  border: inherit;
+}
+
+div.jsoneditor input:focus {
+  border: none !important;
+  box-shadow: none !important;
+}
+
+div.jsoneditor table {
+  border-collapse: collapse;
+  width: auto;
+}
+
+div.jsoneditor td,
+div.jsoneditor th {
+  padding: 0;
+  display: table-cell;
+  text-align: left;
+  vertical-align: inherit;
+  border-radius: inherit;
+}

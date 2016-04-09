@@ -125,6 +125,7 @@ gulp.task('bundle-minimalist', ['mkdir'], function (done) {
 // bundle css
 gulp.task('bundle-css', ['mkdir'], function () {
   gulp.src([
+    'src/css/reset.css',
     'src/css/jsoneditor.css',
     'src/css/contextmenu.css',
     'src/css/menu.css',

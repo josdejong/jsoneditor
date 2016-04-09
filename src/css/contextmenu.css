@@ -9,6 +9,7 @@ div.jsoneditor-contextmenu-root {
 
 div.jsoneditor-contextmenu {
   position: absolute;
+  box-sizing: content-box;
   z-index: 99999;
 }
 
