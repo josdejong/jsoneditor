@@ -23,20 +23,20 @@
     "test": "mocha test"
   },
   "dependencies": {
-    "ajv": "3.4.0",
-    "brace": "0.7.0",
+    "ajv": "3.8.8",
+    "brace": "0.8.0",
     "javascript-natural-sort": "0.7.1"
   },
   "devDependencies": {
-    "gulp": "3.9.0",
+    "gulp": "3.9.1",
+    "gulp-clean-css": "2.0.5",
     "gulp-concat-css": "2.2.0",
-    "gulp-minify-css": "1.2.3",
-    "gulp-shell": "0.5.1",
+    "gulp-shell": "0.5.2",
     "gulp-util": "3.0.7",
     "json-loader": "0.5.4",
     "mkdirp": "0.5.1",
-    "mocha": "2.3.4",
-    "uglify-js": "2.6.1",
-    "webpack": "1.12.11"
+    "mocha": "2.4.5",
+    "uglify-js": "2.6.2",
+    "webpack": "1.12.14"
   }
 }

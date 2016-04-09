@@ -3,6 +3,11 @@
 https://github.com/josdejong/jsoneditor
 
 
+## not yet released, version 5.4.0
+
+- Upgraded all dependencies.
+
+
 ## 2016-04-06, version 5.3.0
 
 - Implemented support for sorting object keys naturally. Thanks @edufelipe.
