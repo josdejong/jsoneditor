@@ -1,3 +1,5 @@
+'use strict';
+
 var jsonlint = require('./assets/jsonlint/jsonlint');
 
 /**

@@ -1,3 +1,5 @@
+'use strict';
+
 var ContextMenu = require('./ContextMenu');
 
 /**

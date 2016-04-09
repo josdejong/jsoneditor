@@ -1,3 +1,5 @@
+'use strict';
+
 var Ajv;
 try {
   Ajv = require('ajv');

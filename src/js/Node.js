@@ -1,3 +1,5 @@
+'use strict';
+
 var naturalSort = require('javascript-natural-sort');
 var ContextMenu = require('./ContextMenu');
 var appendNodeFactory = require('./appendNodeFactory');

@@ -1,3 +1,6 @@
+'use strict';
+
+
 var Highlighter = require('./Highlighter');
 var History = require('./History');
 var SearchBox = require('./SearchBox');

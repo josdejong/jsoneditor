@@ -1,3 +1,5 @@
+'use strict';
+
 var util = require('./util');
 var ContextMenu = require('./ContextMenu');
 
