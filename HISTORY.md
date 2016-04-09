@@ -3,9 +3,9 @@
 https://github.com/josdejong/jsoneditor
 
 
-## not yet released, version 5.4.0
+## 2016-04-09, version 5.4.0
 
-- Upgraded all dependencies.
+- Upgraded all dependencies (`ajv`, `brace`, etc).
 - Fixed #289: Some CSS breaking when using the editor in combination with
   materialize.css or bootstrap.
 - Fixed #290: `setText()` not working in mode text or code.
