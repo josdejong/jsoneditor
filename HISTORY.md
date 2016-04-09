@@ -6,6 +6,7 @@ https://github.com/josdejong/jsoneditor
 ## not yet released, version 5.4.0
 
 - Upgraded all dependencies.
+- Fixed #290: `setText()` not working in mode text or code.
 
 
 ## 2016-04-06, version 5.3.0

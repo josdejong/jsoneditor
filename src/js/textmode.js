@@ -371,6 +371,8 @@ textmode.getText = function() {
  * @param {String} jsonText
  */
 textmode.setText = function(jsonText) {
+  var text;
+
   if (this.options.escapeUnicode === true) {
     text = util.escapeUnicodeChars(jsonText);
   }
