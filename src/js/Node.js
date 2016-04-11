@@ -1262,6 +1262,7 @@ Node.prototype._updateDomValue = function () {
     }
     //If the node has an enum property and it is editable lets create the select element
     else if (this.enum && this.editable.value) {
+      debugger;
       if (!this.dom.select) {
         this.dom.select = document.createElement('select');
         this.id = this.field + "_" + new Date().getUTCMilliseconds();
@@ -1940,8 +1941,10 @@ Node.prototype.updateDom = function (options) {
     //Search for any enumeration type in the schema of the current node.
     //Enum types can be also be part of a composite type.
     if(this.schema){
+      debugger;
       if(this.schema.hasOwnProperty('enum')){
-        this.enum = this.schema.enum;
+        this.enum = new Object();
+        this.enum.enum = this.schema.enum;
       } else if(this.schema.hasOwnProperty('oneOf')){
         this.enum = this._getJsonObject(this.schema.oneOf, 'enum')[0];
       } else if(this.schema.hasOwnProperty('anyOf')){
