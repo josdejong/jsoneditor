@@ -5,8 +5,10 @@ https://github.com/josdejong/jsoneditor
 
 ## not yet released, version 5.5.0
 
-- Implemented a dropdown for values having an JSON Schema enum. Thanks @tdakanalis.
-
+- Implemented a dropdown for values having an JSON Schema enum.
+  Thanks @tdakanalis.
+- Fixed #291, #292: Some CSS broken when using the editor in combination with
+  bootstrap. Thanks @nucleartide.
 
 ## 2016-04-09, version 5.4.0
 
