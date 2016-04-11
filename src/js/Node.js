@@ -1274,11 +1274,11 @@ Node.prototype._updateDomValue = function () {
         this.dom.select.option.innerHTML = '--';
         this.dom.select.appendChild(this.dom.select.option);
 
-        //Itterate all the enum values and add all the values as options
+        //Iterate all enum values and add them as options
         for(var i = 0; i < this.enum.enum.length; i++) {
           this.dom.select.option = document.createElement('option');
           this.dom.select.option.value = this.enum.enum[i];
-          this.dom.select.option.innerHTML = this.enum.enumLabels[i];
+          this.dom.select.option.innerHTML = this.enum.enum[i];
           if(this.dom.select.option.value == this.value){
             this.dom.select.option.selected = true;
           }
@@ -1293,6 +1293,7 @@ Node.prototype._updateDomValue = function () {
         //If the enum is inside a composite type display both the simple input and the dropdown field
         if(this.schema !== undefined && (
             !this.schema.hasOwnProperty("oneOf") &&
+            !this.schema.hasOwnProperty("anyOf") &&
             !this.schema.hasOwnProperty("anyOf") &&
             !this.schema.hasOwnProperty("allOf"))
         ) {
@@ -1928,29 +1929,19 @@ Node.prototype.updateDom = function (options) {
     domField.innerHTML = this._escapeHTML(field);
   }
 
-  //Locating the schema of the node and checking for enum type
+  //Locating the schema of the node and checking for any enum type
   if(this.editor && this.editor.options) {
-    //Search for the element with 'name' equals to the name of the current field.
-    //Store the schema of the node in the schema attribute. Hereafter, wherever you have acces in the node
-    //you will have also access in its own schema
+    //Search for the schema element of the current node and store it in the schema attribute.
+    //Hereafter, wherever you have access in the node you will have also access in its own schema.
     this.schema = this._getJsonObject(this.editor.options.schema, 'name', field)[0];
     if(!this.schema) {
       this.schema = this._getJsonObject(this.editor.options.schema, field)[0];
     }
-    //Try now to locate any enumerations inside the schema of the field
+    //Search for any enumeration type in the schema of the current node.
+    //Enum types can be also be part of a composite type.
     if(this.schema){
-      //We check here some different cases  in order to locate any defined enum field in the schema of the field
       if(this.schema.hasOwnProperty('enum')){
-        if(Array.isArray(this.schema.enum)){
-          //We expect in the enumLabels attribute of a json schema property the labels for the enum values
-          //in the same order as the respective elements in the enum array. Otherwise, use the enum values
-          //as labels.
-          var enumLabels = (this.schema.hasOwnProperty('enumLabels') && this.schema.enumLabels !== undefined) ?
-              this.schema.enumLabels : this.schema.enum;
-          this.enum = {'enum': this.schema.enum, 'enumLabels' : enumLabels};
-        } else {
-          this.enum = this.schema.enum;
-        }
+        this.enum = this.schema.enum;
       } else if(this.schema.hasOwnProperty('oneOf')){
         this.enum = this._getJsonObject(this.schema.oneOf, 'enum')[0];
       } else if(this.schema.hasOwnProperty('anyOf')){
@@ -1959,10 +1950,6 @@ Node.prototype.updateDom = function (options) {
         this.enum = this._getJsonObject(this.schema.allOf, 'enum')[0];
       } else {
         delete this.enum;
-      }
-
-      if(this.enum !== undefined && !this.enum.hasOwnProperty('enumLabels')){
-        this.enum.enumLabels = this.enum.enum;
       }
     } else {
       delete this.enum;
