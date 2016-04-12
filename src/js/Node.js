@@ -3244,7 +3244,7 @@ Node.prototype.showContextMenu = function (anchor, onClose) {
     });
   }
 
-  if (this._hasChilds()) {
+  if (this._hasChilds() && (!menuActions || menuActions.indexOf('Sort') >= 0) ) {
     var direction = ((this.sortOrder == 'asc') ? 'desc': 'asc');
     items.push({
       text: 'Sort',
