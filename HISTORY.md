@@ -3,10 +3,30 @@
 https://github.com/josdejong/jsoneditor
 
 
-## not yet released, version 5.2.1
+## not yet released, version 5.5.0
 
+- Implemented a dropdown for values having an JSON Schema enum.
+  Thanks @tdakanalis.
+- Fixed #291, #292: Some CSS broken when using the editor in combination with
+  bootstrap. Thanks @nucleartide.
+
+## 2016-04-09, version 5.4.0
+
+- Upgraded all dependencies (`ajv`, `brace`, etc).
+- Fixed #289: Some CSS breaking when using the editor in combination with
+  materialize.css or bootstrap.
+- Fixed #290: `setText()` not working in mode text or code.
+
+
+## 2016-04-06, version 5.3.0
+
+- Implemented support for sorting object keys naturally. Thanks @edufelipe.
+- Sorting object keys or array items via the context menu is now also naturally
+  sorted.
 - Fixed #283: improved JSON schema error message in case of no
   additionalProperties.
+- Fixed #286: Calling `get()` or `getText()` caused the editor to lose focus.
+  A regression introduced in v5.2.0.
 
 
 ## 2016-03-20, version 5.2.0

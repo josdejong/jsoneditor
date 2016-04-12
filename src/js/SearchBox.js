@@ -1,3 +1,5 @@
+'use strict';
+
 /**
  * @constructor SearchBox
  * Create a search box in given HTML container

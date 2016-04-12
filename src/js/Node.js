@@ -1,3 +1,6 @@
+'use strict';
+
+var naturalSort = require('javascript-natural-sort');
 var ContextMenu = require('./ContextMenu');
 var appendNodeFactory = require('./appendNodeFactory');
 var util = require('./util');
@@ -54,7 +57,7 @@ Node.prototype._updateEditability = function () {
       var editable = this.editor.options.onEditable({
         field: this.field,
         value: this.value,
-        path: this.getFieldsPath()
+        path: this.getPath()
       });
 
       if (typeof editable === 'boolean') {
@@ -73,11 +76,14 @@ Node.prototype._updateEditability = function () {
  * Get the path of this node
  * @return {String[]} Array containing the path to this node
  */
-Node.prototype.getFieldsPath = function () {
+Node.prototype.getPath = function () {
   var node = this;
   var path = [];
   while (node) {
-    var field = node.field != undefined ? node.field : node.index;
+    var field = (!node.parent || node.parent.type != 'array')
+        ? node.field
+        : node.index;
+
     if (field !== undefined) {
       path.unshift(field);
     }
@@ -310,21 +316,16 @@ Node.prototype.setValue = function(value, type) {
       }
     }
     this.value = '';
+
+    // sort object keys
+    if (this.editor.options.sortObjectKeys === true) {
+      this.sort('asc');
+    }
   }
   else {
     // value
     this.childs = undefined;
     this.value = value;
-    /* TODO
-     if (typeof(value) == 'string') {
-     var escValue = JSON.stringify(value);
-     this.value = escValue.substring(1, escValue.length - 1);
-     console.log('check', value, this.value);
-     }
-     else {
-     this.value = value;
-     }
-     */
   }
 
   this.previousValue = this.value;
@@ -372,8 +373,8 @@ Node.prototype.getLevel = function() {
  * Get path of the root node till the current node
  * @return {Node[]} Returns an array with nodes
  */
-Node.prototype.getPath = function() {
-  var path = this.parent ? this.parent.getPath() : [];
+Node.prototype.getNodePath = function() {
+  var path = this.parent ? this.parent.getNodePath() : [];
   path.push(this);
   return path;
 };
@@ -1261,12 +1262,64 @@ Node.prototype._updateDomValue = function () {
 
       this.dom.checkbox.checked = this.value;
     }
+    //If the node has an enum property and it is editable lets create the select element
+    else if (this.enum && this.editable.value) {
+      if (!this.dom.select) {
+        this.dom.select = document.createElement('select');
+        this.id = this.field + "_" + new Date().getUTCMilliseconds();
+        this.dom.select.id = this.id;
+        this.dom.select.name = this.dom.select.id;
+
+        //Create the default empty option
+        this.dom.select.option = document.createElement('option');
+        this.dom.select.option.value = '';
+        this.dom.select.option.innerHTML = '--';
+        this.dom.select.appendChild(this.dom.select.option);
+
+        //Iterate all enum values and add them as options
+        for(var i = 0; i < this.enum.enum.length; i++) {
+          this.dom.select.option = document.createElement('option');
+          this.dom.select.option.value = this.enum.enum[i];
+          this.dom.select.option.innerHTML = this.enum.enum[i];
+          if(this.dom.select.option.value == this.value){
+            this.dom.select.option.selected = true;
+          }
+          this.dom.select.appendChild(this.dom.select.option);
+        }
+
+        this.dom.tdSelect = document.createElement('td');
+        this.dom.tdSelect.className = 'jsoneditor-tree';
+        this.dom.tdSelect.appendChild(this.dom.select);
+        this.dom.tdValue.parentNode.insertBefore(this.dom.tdSelect, this.dom.tdValue);
+
+        //If the enum is inside a composite type display both the simple input and the dropdown field
+        if(this.schema !== undefined && (
+            !this.schema.hasOwnProperty("oneOf") &&
+            !this.schema.hasOwnProperty("anyOf") &&
+            !this.schema.hasOwnProperty("anyOf") &&
+            !this.schema.hasOwnProperty("allOf"))
+        ) {
+            this.valueFieldHTML = this.dom.tdValue.innerHTML;
+            this.dom.tdValue.style.visibility = 'hidden';
+            this.dom.tdValue.innerHTML = '';
+        } else {
+            delete this.valueFieldHTML;
+        }
+      }
+    }
     else {
       // cleanup checkbox when displayed
       if (this.dom.tdCheckbox) {
         this.dom.tdCheckbox.parentNode.removeChild(this.dom.tdCheckbox);
         delete this.dom.tdCheckbox;
         delete this.dom.checkbox;
+      } else if (this.dom.tdSelect) {
+          this.dom.tdSelect.parentNode.removeChild(this.dom.tdSelect);
+          delete this.dom.tdSelect;
+          delete this.dom.select;
+          this.dom.tdValue.innerHTML = this.valueFieldHTML;
+          this.dom.tdValue.style.visibility = '';
+          delete this.valueFieldHTML;
       }
     }
 
@@ -1903,6 +1956,34 @@ Node.prototype.updateDom = function (options) {
     domField.innerHTML = this._escapeHTML(field);
   }
 
+  //Locating the schema of the node and checking for any enum type
+  if(this.editor && this.editor.options) {
+    //Search for the schema element of the current node and store it in the schema attribute.
+    //Hereafter, wherever you have access in the node you will have also access in its own schema.
+    this.schema = this._getJsonObject(this.editor.options.schema, 'name', field)[0];
+    if(!this.schema) {
+      this.schema = this._getJsonObject(this.editor.options.schema, field)[0];
+    }
+    //Search for any enumeration type in the schema of the current node.
+    //Enum types can be also be part of a composite type.
+    if(this.schema){
+      if(this.schema.hasOwnProperty('enum')){
+        this.enum = new Object();
+        this.enum.enum = this.schema.enum;
+      } else if(this.schema.hasOwnProperty('oneOf')){
+        this.enum = this._getJsonObject(this.schema.oneOf, 'enum')[0];
+      } else if(this.schema.hasOwnProperty('anyOf')){
+        this.enum = this._getJsonObject(this.schema.anyOf, 'enum')[0];
+      } else if(this.schema.hasOwnProperty('allOf')){
+        this.enum = this._getJsonObject(this.schema.allOf, 'enum')[0];
+      } else {
+        delete this.enum;
+      }
+    } else {
+      delete this.enum;
+    }
+  }
+
   // apply value to DOM
   var domValue = this.dom.value;
   if (domValue) {
@@ -1944,6 +2025,31 @@ Node.prototype.updateDom = function (options) {
   if (this.append) {
     this.append.updateDom();
   }
+};
+
+/**
+ * Get all sub-elements of the given object with the specified key and value.
+ * @private
+ */
+Node.prototype._getJsonObject = function (obj, key, val) {
+  var objects = [];
+  for (var i in obj) {
+    if (!obj.hasOwnProperty(i)) continue;
+    if (typeof obj[i] == 'object') {
+      if(i === key && val === undefined){
+        if(Array.isArray(obj[i])) {
+          objects.push(obj);
+        } else {
+          objects.push(obj[i]);
+        }
+      } else {
+        objects = objects.concat(this._getJsonObject(obj[i], key, val));
+      }
+    } else if (i == key && obj[key] == val) {
+      objects.push(obj);
+    }
+  }
+  return objects;
 };
 
 /**
@@ -2140,6 +2246,12 @@ Node.prototype.onEvent = function (event) {
     this.dom.value.innerHTML = !this.value;
     this._getDomValue();
   }
+  //Update the value of the node based on the selected option
+  if (type == 'change' && target == dom.select) {
+    this.dom.value.innerHTML = dom.select.value;
+    this._getDomValue();
+    this._updateDomValue();
+  }
 
   // value events
   var domValue = dom.value;
@@ -2206,7 +2318,7 @@ Node.prototype.onEvent = function (event) {
 
       case 'input':
         this._getDomField(true);
-        this._updateDomField();
+        this.updateDom();
         break;
 
       case 'keydown':
@@ -2772,41 +2884,41 @@ Node.prototype._onChangeType = function (newType) {
 };
 
 /**
- * Sort the childs of the node. Only applicable when the node has type 'object'
+ * Sort the child's of the node. Only applicable when the node has type 'object'
  * or 'array'.
  * @param {String} direction   Sorting direction. Available values: "asc", "desc"
  * @private
  */
-Node.prototype._onSort = function (direction) {
-  if (this._hasChilds()) {
-    var order = (direction == 'desc') ? -1 : 1;
-    var prop = (this.type == 'array') ? 'value': 'field';
-    this.hideChilds();
-
-    var oldChilds = this.childs;
-    var oldSort = this.sort;
-
-    // copy the array (the old one will be kept for an undo action
-    this.childs = this.childs.concat();
-
-    // sort the arrays
-    this.childs.sort(function (a, b) {
-      if (a[prop] > b[prop]) return order;
-      if (a[prop] < b[prop]) return -order;
-      return 0;
-    });
-    this.sort = (order == 1) ? 'asc' : 'desc';
-
-    this.editor._onAction('sort', {
-      node: this,
-      oldChilds: oldChilds,
-      oldSort: oldSort,
-      newChilds: this.childs,
-      newSort: this.sort
-    });
-
-    this.showChilds();
+Node.prototype.sort = function (direction) {
+  if (!this._hasChilds()) {
+    return;
   }
+
+  var order = (direction == 'desc') ? -1 : 1;
+  var prop = (this.type == 'array') ? 'value': 'field';
+  this.hideChilds();
+
+  var oldChilds = this.childs;
+  var oldSortOrder = this.sortOrder;
+
+  // copy the array (the old one will be kept for an undo action
+  this.childs = this.childs.concat();
+
+  // sort the arrays
+  this.childs.sort(function (a, b) {
+    return order * naturalSort(a[prop], b[prop]);
+  });
+  this.sortOrder = (order == 1) ? 'asc' : 'desc';
+
+  this.editor._onAction('sort', {
+    node: this,
+    oldChilds: oldChilds,
+    oldSort: oldSortOrder,
+    newChilds: this.childs,
+    newSort: this.sortOrder
+  });
+
+  this.showChilds();
 };
 
 /**
@@ -3132,14 +3244,14 @@ Node.prototype.showContextMenu = function (anchor, onClose) {
     });
   }
 
-  if (this._hasChilds() && (!menuActions || menuActions.indexOf('Sort') >= 0) ) {
-    var direction = ((this.sort == 'asc') ? 'desc': 'asc');
+  if (this._hasChilds()) {
+    var direction = ((this.sortOrder == 'asc') ? 'desc': 'asc');
     items.push({
       text: 'Sort',
       title: 'Sort the childs of this ' + this.type,
       className: 'jsoneditor-sort-' + direction,
       click: function () {
-        node._onSort(direction);
+        node.sort(direction);
       },
       submenu: [
         {
@@ -3147,7 +3259,7 @@ Node.prototype.showContextMenu = function (anchor, onClose) {
           className: 'jsoneditor-sort-asc',
           title: 'Sort the childs of this ' + this.type + ' in ascending order',
           click: function () {
-            node._onSort('asc');
+            node.sort('asc');
           }
         },
         {
@@ -3155,7 +3267,7 @@ Node.prototype.showContextMenu = function (anchor, onClose) {
           className: 'jsoneditor-sort-desc',
           title: 'Sort the childs of this ' + this.type +' in descending order',
           click: function () {
-            node._onSort('desc');
+            node.sort('desc');
           }
         }
       ]

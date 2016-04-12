@@ -1,3 +1,5 @@
+'use strict';
+
 /**
  * The highlighter can highlight/unhighlight a node, and
  * animate the visibility of a context menu.

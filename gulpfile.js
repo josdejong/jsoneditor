@@ -2,7 +2,7 @@ var fs = require('fs');
 var gulp = require('gulp');
 var gutil = require('gulp-util');
 var concatCss = require('gulp-concat-css');
-var minifyCSS = require('gulp-minify-css');
+var minifyCSS = require('gulp-clean-css');
 var shell = require('gulp-shell');
 var mkdirp = require('mkdirp');
 var webpack = require('webpack');
@@ -125,6 +125,7 @@ gulp.task('bundle-minimalist', ['mkdir'], function (done) {
 // bundle css
 gulp.task('bundle-css', ['mkdir'], function () {
   gulp.src([
+    'src/css/reset.css',
     'src/css/jsoneditor.css',
     'src/css/contextmenu.css',
     'src/css/menu.css',

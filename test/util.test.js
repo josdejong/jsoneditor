@@ -1,6 +1,9 @@
 var assert = require('assert');
 var util = require('../src/js/util');
 
+// console.log('TEST', util.parsePath('.items[3].name'));
+// console.log('TEST', util.parsePath('.items[*].name'));
+
 describe('util', function () {
 
   describe('sanitize', function () {
@@ -70,6 +73,7 @@ describe('util', function () {
       assert.deepEqual(util.parsePath('.foo[2]'), ['foo', 2]);
       assert.deepEqual(util.parsePath('.foo[2].bar'), ['foo', 2, 'bar']);
       assert.deepEqual(util.parsePath('.foo["prop with spaces"]'), ['foo', 'prop with spaces']);
+      assert.deepEqual(util.parsePath('.foo[*].bar'), ['foo', '*', 'bar']);
     });
 
     it ('should throw an exception in case of an invalid path', function () {
