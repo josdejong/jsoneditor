@@ -447,6 +447,15 @@ treemode.validate = function () {
 };
 
 /**
+ * Refresh the rendered contents
+ */
+treemode.refresh = function () {
+  if (this.node) {
+    this.node.updateDom({recurse: true});
+  }
+};
+
+/**
  * Start autoscrolling when given mouse position is above the top of the
  * editor contents, or below the bottom.
  * @param {Number} mouseY  Absolute mouse position in pixels

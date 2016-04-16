@@ -297,12 +297,15 @@ JSONEditor.prototype.setSchema = function (schema) {
       // validate now
       this.validate();
     }
+
+    this.refresh(); // update DOM
   }
   else {
     // remove current schema
     this.validateSchema = null;
     this.options.schema = null;
     this.validate(); // to clear current error messages
+    this.refresh();  // update DOM
   }
 };
 
@@ -312,6 +315,13 @@ JSONEditor.prototype.setSchema = function (schema) {
  */
 JSONEditor.prototype.validate = function () {
   // must be implemented by treemode and textmode
+};
+
+/**
+ * Refresh the rendered contents
+ */
+JSONEditor.prototype.refresh = function () {
+  // can be implemented by treemode and textmode
 };
 
 /**
