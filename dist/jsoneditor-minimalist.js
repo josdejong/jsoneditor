@@ -24,7 +24,7 @@
  * Copyright (c) 2011-2016 Jos de Jong, http://jsoneditoronline.org
  *
  * @author  Jos de Jong, <wjosdejong@gmail.com>
- * @version 5.5.0
+ * @version 5.5.1
  * @date    2016-04-16
  */
 (function webpackUniversalModuleDefinition(root, factory) {
@@ -382,12 +382,15 @@ return /******/ (function(modules) { // webpackBootstrap
 	      // validate now
 	      this.validate();
 	    }
+
+	    this.refresh(); // update DOM
 	  }
 	  else {
 	    // remove current schema
 	    this.validateSchema = null;
 	    this.options.schema = null;
 	    this.validate(); // to clear current error messages
+	    this.refresh();  // update DOM
 	  }
 	};
 
@@ -397,6 +400,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	 */
 	JSONEditor.prototype.validate = function () {
 	  // must be implemented by treemode and textmode
+	};
+
+	/**
+	 * Refresh the rendered contents
+	 */
+	JSONEditor.prototype.refresh = function () {
+	  // can be implemented by treemode and textmode
 	};
 
 	/**
@@ -910,6 +920,15 @@ return /******/ (function(modules) { // webpackBootstrap
 	        entry.node.setError(entry.error, entry.child);
 	        return entry.node;
 	      });
+	};
+
+	/**
+	 * Refresh the rendered contents
+	 */
+	treemode.refresh = function () {
+	  if (this.node) {
+	    this.node.updateDom({recurse: true});
+	  }
 	};
 
 	/**

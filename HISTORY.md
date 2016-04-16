@@ -3,7 +3,7 @@
 https://github.com/josdejong/jsoneditor
 
 
-## not yet released, version 5.5.1
+## 2016-04-16, version 5.5.1
 
 - Fixed enum select boxes not being rendered/removed when setting or removing
   a JSON schema via `editor.setSchema(schema)`.
