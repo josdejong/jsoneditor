@@ -24,8 +24,8 @@
  * Copyright (c) 2011-2016 Jos de Jong, http://jsoneditoronline.org
  *
  * @author  Jos de Jong, <wjosdejong@gmail.com>
- * @version 5.4.0
- * @date    2016-04-09
+ * @version 5.5.0
+ * @date    2016-04-16
  */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
@@ -13165,12 +13165,64 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	      this.dom.checkbox.checked = this.value;
 	    }
+	    //If the node has an enum property and it is editable lets create the select element
+	    else if (this.enum && this.editable.value) {
+	      if (!this.dom.select) {
+	        this.dom.select = document.createElement('select');
+	        this.id = this.field + "_" + new Date().getUTCMilliseconds();
+	        this.dom.select.id = this.id;
+	        this.dom.select.name = this.dom.select.id;
+
+	        //Create the default empty option
+	        this.dom.select.option = document.createElement('option');
+	        this.dom.select.option.value = '';
+	        this.dom.select.option.innerHTML = '--';
+	        this.dom.select.appendChild(this.dom.select.option);
+
+	        //Iterate all enum values and add them as options
+	        for(var i = 0; i < this.enum.enum.length; i++) {
+	          this.dom.select.option = document.createElement('option');
+	          this.dom.select.option.value = this.enum.enum[i];
+	          this.dom.select.option.innerHTML = this.enum.enum[i];
+	          if(this.dom.select.option.value == this.value){
+	            this.dom.select.option.selected = true;
+	          }
+	          this.dom.select.appendChild(this.dom.select.option);
+	        }
+
+	        this.dom.tdSelect = document.createElement('td');
+	        this.dom.tdSelect.className = 'jsoneditor-tree';
+	        this.dom.tdSelect.appendChild(this.dom.select);
+	        this.dom.tdValue.parentNode.insertBefore(this.dom.tdSelect, this.dom.tdValue);
+
+	        //If the enum is inside a composite type display both the simple input and the dropdown field
+	        if(this.schema !== undefined && (
+	            !this.schema.hasOwnProperty("oneOf") &&
+	            !this.schema.hasOwnProperty("anyOf") &&
+	            !this.schema.hasOwnProperty("anyOf") &&
+	            !this.schema.hasOwnProperty("allOf"))
+	        ) {
+	            this.valueFieldHTML = this.dom.tdValue.innerHTML;
+	            this.dom.tdValue.style.visibility = 'hidden';
+	            this.dom.tdValue.innerHTML = '';
+	        } else {
+	            delete this.valueFieldHTML;
+	        }
+	      }
+	    }
 	    else {
 	      // cleanup checkbox when displayed
 	      if (this.dom.tdCheckbox) {
 	        this.dom.tdCheckbox.parentNode.removeChild(this.dom.tdCheckbox);
 	        delete this.dom.tdCheckbox;
 	        delete this.dom.checkbox;
+	      } else if (this.dom.tdSelect) {
+	          this.dom.tdSelect.parentNode.removeChild(this.dom.tdSelect);
+	          delete this.dom.tdSelect;
+	          delete this.dom.select;
+	          this.dom.tdValue.innerHTML = this.valueFieldHTML;
+	          this.dom.tdValue.style.visibility = '';
+	          delete this.valueFieldHTML;
 	      }
 	    }
 
@@ -13782,6 +13834,34 @@ return /******/ (function(modules) { // webpackBootstrap
 	    domField.innerHTML = this._escapeHTML(field);
 	  }
 
+	  //Locating the schema of the node and checking for any enum type
+	  if(this.editor && this.editor.options) {
+	    //Search for the schema element of the current node and store it in the schema attribute.
+	    //Hereafter, wherever you have access in the node you will have also access in its own schema.
+	    this.schema = this._getJsonObject(this.editor.options.schema, 'name', field)[0];
+	    if(!this.schema) {
+	      this.schema = this._getJsonObject(this.editor.options.schema, field)[0];
+	    }
+	    //Search for any enumeration type in the schema of the current node.
+	    //Enum types can be also be part of a composite type.
+	    if(this.schema){
+	      if(this.schema.hasOwnProperty('enum')){
+	        this.enum = new Object();
+	        this.enum.enum = this.schema.enum;
+	      } else if(this.schema.hasOwnProperty('oneOf')){
+	        this.enum = this._getJsonObject(this.schema.oneOf, 'enum')[0];
+	      } else if(this.schema.hasOwnProperty('anyOf')){
+	        this.enum = this._getJsonObject(this.schema.anyOf, 'enum')[0];
+	      } else if(this.schema.hasOwnProperty('allOf')){
+	        this.enum = this._getJsonObject(this.schema.allOf, 'enum')[0];
+	      } else {
+	        delete this.enum;
+	      }
+	    } else {
+	      delete this.enum;
+	    }
+	  }
+
 	  // apply value to DOM
 	  var domValue = this.dom.value;
 	  if (domValue) {
@@ -13823,6 +13903,31 @@ return /******/ (function(modules) { // webpackBootstrap
 	  if (this.append) {
 	    this.append.updateDom();
 	  }
+	};
+
+	/**
+	 * Get all sub-elements of the given object with the specified key and value.
+	 * @private
+	 */
+	Node.prototype._getJsonObject = function (obj, key, val) {
+	  var objects = [];
+	  for (var i in obj) {
+	    if (!obj.hasOwnProperty(i)) continue;
+	    if (typeof obj[i] == 'object') {
+	      if(i === key && val === undefined){
+	        if(Array.isArray(obj[i])) {
+	          objects.push(obj);
+	        } else {
+	          objects.push(obj[i]);
+	        }
+	      } else {
+	        objects = objects.concat(this._getJsonObject(obj[i], key, val));
+	      }
+	    } else if (i == key && obj[key] == val) {
+	      objects.push(obj);
+	    }
+	  }
+	  return objects;
 	};
 
 	/**
@@ -14019,6 +14124,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	    this.dom.value.innerHTML = !this.value;
 	    this._getDomValue();
 	  }
+	  //Update the value of the node based on the selected option
+	  if (type == 'change' && target == dom.select) {
+	    this.dom.value.innerHTML = dom.select.value;
+	    this._getDomValue();
+	    this._updateDomValue();
+	  }
 
 	  // value events
 	  var domValue = dom.value;
@@ -14085,7 +14196,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	      case 'input':
 	        this._getDomField(true);
-	        this._updateDomField();
+	        this.updateDom();
 	        break;
 
 	      case 'keydown':

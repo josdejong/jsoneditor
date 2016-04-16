@@ -3,7 +3,7 @@
 https://github.com/josdejong/jsoneditor
 
 
-## not yet released, version 5.5.0
+## 2016-04-16, version 5.5.0
 
 - Implemented a dropdown for values having an JSON Schema enum.
   Thanks @tdakanalis.
