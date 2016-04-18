@@ -3,6 +3,11 @@
 https://github.com/josdejong/jsoneditor
 
 
+## not yet released, version 5.5.2
+
+- Fixed #294: Fields reset their caret location on every key press in Firefox.
+
+
 ## 2016-04-16, version 5.5.1
 
 - Fixed enum select boxes not being rendered/removed when setting or removing
