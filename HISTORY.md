@@ -3,7 +3,7 @@
 https://github.com/josdejong/jsoneditor
 
 
-## not yet released, version 5.5.2
+## 2016-04-18, version 5.5.2
 
 - Fixed #294: Fields reset their caret location on every key press in Firefox.
 

@@ -24,8 +24,8 @@
  * Copyright (c) 2011-2016 Jos de Jong, http://jsoneditoronline.org
  *
  * @author  Jos de Jong, <wjosdejong@gmail.com>
- * @version 5.5.1
- * @date    2016-04-16
+ * @version 5.5.2
+ * @date    2016-04-18
  */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
@@ -5938,48 +5938,22 @@ return /******/ (function(modules) { // webpackBootstrap
 	      domField.className = 'jsoneditor-readonly';
 	    }
 
-	    var field;
+	    var fieldText;
 	    if (this.index != undefined) {
-	      field = this.index;
+	      fieldText = this.index;
 	    }
 	    else if (this.field != undefined) {
-	      field = this.field;
+	      fieldText = this.field;
 	    }
 	    else if (this._hasChilds()) {
-	      field = this.type;
+	      fieldText = this.type;
 	    }
 	    else {
-	      field = '';
+	      fieldText = '';
 	    }
-	    domField.innerHTML = this._escapeHTML(field);
-	  }
+	    domField.innerHTML = this._escapeHTML(fieldText);
 
-	  //Locating the schema of the node and checking for any enum type
-	  if(this.editor && this.editor.options) {
-	    //Search for the schema element of the current node and store it in the schema attribute.
-	    //Hereafter, wherever you have access in the node you will have also access in its own schema.
-	    this.schema = this._getJsonObject(this.editor.options.schema, 'name', field)[0];
-	    if(!this.schema) {
-	      this.schema = this._getJsonObject(this.editor.options.schema, field)[0];
-	    }
-	    //Search for any enumeration type in the schema of the current node.
-	    //Enum types can be also be part of a composite type.
-	    if(this.schema){
-	      if(this.schema.hasOwnProperty('enum')){
-	        this.enum = new Object();
-	        this.enum.enum = this.schema.enum;
-	      } else if(this.schema.hasOwnProperty('oneOf')){
-	        this.enum = this._getJsonObject(this.schema.oneOf, 'enum')[0];
-	      } else if(this.schema.hasOwnProperty('anyOf')){
-	        this.enum = this._getJsonObject(this.schema.anyOf, 'enum')[0];
-	      } else if(this.schema.hasOwnProperty('allOf')){
-	        this.enum = this._getJsonObject(this.schema.allOf, 'enum')[0];
-	      } else {
-	        delete this.enum;
-	      }
-	    } else {
-	      delete this.enum;
-	    }
+	    this._updateSchema();
 	  }
 
 	  // apply value to DOM
@@ -6022,6 +5996,43 @@ return /******/ (function(modules) { // webpackBootstrap
 	  // update row with append button
 	  if (this.append) {
 	    this.append.updateDom();
+	  }
+	};
+
+	/**
+	 * Locate the JSON schema of the node and check for any enum type
+	 * @private
+	 */
+	Node.prototype._updateSchema = function () {
+	  //Locating the schema of the node and checking for any enum type
+	  if(this.editor && this.editor.options) {
+	    var field = (this.index != undefined) ? this.index : this.field;
+
+	    //Search for the schema element of the current node and store it in the schema attribute.
+	    //Hereafter, wherever you have access in the node you will have also access in its own schema.
+	    this.schema = this._getJsonObject(this.editor.options.schema, 'name', field)[0];
+	    if(!this.schema) {
+	      this.schema = this._getJsonObject(this.editor.options.schema, field)[0];
+	    }
+
+	    //Search for any enumeration type in the schema of the current node.
+	    //Enum types can be also be part of a composite type.
+	    if(this.schema){
+	      if(this.schema.hasOwnProperty('enum')){
+	        this.enum = {};
+	        this.enum.enum = this.schema.enum;
+	      } else if(this.schema.hasOwnProperty('oneOf')){
+	        this.enum = this._getJsonObject(this.schema.oneOf, 'enum')[0];
+	      } else if(this.schema.hasOwnProperty('anyOf')){
+	        this.enum = this._getJsonObject(this.schema.anyOf, 'enum')[0];
+	      } else if(this.schema.hasOwnProperty('allOf')){
+	        this.enum = this._getJsonObject(this.schema.allOf, 'enum')[0];
+	      } else {
+	        delete this.enum;
+	      }
+	    } else {
+	      delete this.enum;
+	    }
 	  }
 	};
 
@@ -6316,7 +6327,9 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	      case 'input':
 	        this._getDomField(true);
-	        this.updateDom();
+	        this._updateSchema();
+	        this._updateDomField();
+	        this._updateDomValue();
 	        break;
 
 	      case 'keydown':
