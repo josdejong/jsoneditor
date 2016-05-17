@@ -1933,7 +1933,10 @@ Node.prototype.updateDom = function (options) {
   if(this.editor && this.editor.options) {
     //Search for the schema element of the current node and store it in the schema attribute.
     //Hereafter, wherever you have access in the node you will have also access in its own schema.
-    this.schema = this._getJsonObject(this.editor.options.schema, 'name', field)[0];
+    //Lets first try to identify elements using ids id attribute
+    var nodeId = this.getPath().filter(function (value) { return typeof value !== 'number';  }).join("/");
+    this.schema = this._getJsonObject(this.editor.options.schema, 'id', nodeId)[0];
+    //if we fail to find any element with the specific id lets try based on the name of the field
     if(!this.schema) {
       this.schema = this._getJsonObject(this.editor.options.schema, field)[0];
     }
