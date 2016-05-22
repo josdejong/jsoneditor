@@ -3,6 +3,12 @@
 https://github.com/josdejong/jsoneditor
 
 
+## 2016-05-22, version 5.5.4
+
+- Fixed #285: an issue with the enum drop down when having defined multiple
+  enums in a JSON schema.
+
+
 ## 2016-05-22, version 5.5.3
 
 - Fixed #299: reverted the fix of #268 by trimming text in fields and values.
