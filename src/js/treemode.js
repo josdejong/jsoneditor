@@ -819,7 +819,7 @@ treemode._onEvent = function (event) {
         // drag a singe node
         Node.onDragStart(node, event);
       }
-      else if (!node || (event.target != node.dom.field && event.target != node.dom.value)) {
+      else if (!node || (event.target != node.dom.field && event.target != node.dom.value && event.target != node.dom.select)) {
         // select multiple nodes
         this._onMultiSelectStart(event);
       }

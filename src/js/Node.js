@@ -2234,7 +2234,8 @@ Node.prototype.onEvent = function (event) {
     this.dom.value.innerHTML = !this.value;
     this._getDomValue();
   }
-  //Update the value of the node based on the selected option
+
+  // update the value of the node based on the selected option
   if (type == 'change' && target == dom.select) {
     this.dom.value.innerHTML = dom.select.value;
     this._getDomValue();
