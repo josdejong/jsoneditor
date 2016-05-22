@@ -24,7 +24,7 @@
  * Copyright (c) 2011-2016 Jos de Jong, http://jsoneditoronline.org
  *
  * @author  Jos de Jong, <wjosdejong@gmail.com>
- * @version 5.5.3
+ * @version 5.5.4
  * @date    2016-05-22
  */
 (function webpackUniversalModuleDefinition(root, factory) {
@@ -1295,7 +1295,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        // drag a singe node
 	        Node.onDragStart(node, event);
 	      }
-	      else if (!node || (event.target != node.dom.field && event.target != node.dom.value)) {
+	      else if (!node || (event.target != node.dom.field && event.target != node.dom.value && event.target != node.dom.select)) {
 	        // select multiple nodes
 	        this._onMultiSelectStart(event);
 	      }
@@ -5300,10 +5300,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	        this.dom.select.appendChild(this.dom.select.option);
 
 	        //Iterate all enum values and add them as options
-	        for(var i = 0; i < this.enum.enum.length; i++) {
+	        for(var i = 0; i < this.enum.length; i++) {
 	          this.dom.select.option = document.createElement('option');
-	          this.dom.select.option.value = this.enum.enum[i];
-	          this.dom.select.option.innerHTML = this.enum.enum[i];
+	          this.dom.select.option.value = this.enum[i];
+	          this.dom.select.option.innerHTML = this.enum[i];
 	          if(this.dom.select.option.value == this.value){
 	            this.dom.select.option.selected = true;
 	          }
@@ -6006,59 +6006,61 @@ return /******/ (function(modules) { // webpackBootstrap
 	Node.prototype._updateSchema = function () {
 	  //Locating the schema of the node and checking for any enum type
 	  if(this.editor && this.editor.options) {
-	    var field = (this.index != undefined) ? this.index : this.field;
-
-	    //Search for the schema element of the current node and store it in the schema attribute.
-	    //Hereafter, wherever you have access in the node you will have also access in its own schema.
-	    this.schema = this._getJsonObject(this.editor.options.schema, 'name', field)[0];
-	    if(!this.schema) {
-	      this.schema = this._getJsonObject(this.editor.options.schema, field)[0];
+	    // find the part of the json schema matching this nodes path
+	    this.schema = Node._findSchema(this.editor.options.schema, this.getPath());
+	    if (this.schema) {
+	      this.enum = Node._findEnum(this.schema);
 	    }
-
-	    //Search for any enumeration type in the schema of the current node.
-	    //Enum types can be also be part of a composite type.
-	    if(this.schema){
-	      if(this.schema.hasOwnProperty('enum')){
-	        this.enum = {};
-	        this.enum.enum = this.schema.enum;
-	      } else if(this.schema.hasOwnProperty('oneOf')){
-	        this.enum = this._getJsonObject(this.schema.oneOf, 'enum')[0];
-	      } else if(this.schema.hasOwnProperty('anyOf')){
-	        this.enum = this._getJsonObject(this.schema.anyOf, 'enum')[0];
-	      } else if(this.schema.hasOwnProperty('allOf')){
-	        this.enum = this._getJsonObject(this.schema.allOf, 'enum')[0];
-	      } else {
-	        delete this.enum;
-	      }
-	    } else {
+	    else {
 	      delete this.enum;
 	    }
 	  }
 	};
 
 	/**
-	 * Get all sub-elements of the given object with the specified key and value.
+	 * find an enum definition in a JSON schema, as property `enum` or inside
+	 * one of the schemas composites (`oneOf`, `anyOf`, `allOf`)
+	 * @param  {Object} schema
+	 * @return {Array | null} Returns the enum when found, null otherwise.
 	 * @private
 	 */
-	Node.prototype._getJsonObject = function (obj, key, val) {
-	  var objects = [];
-	  for (var i in obj) {
-	    if (!obj.hasOwnProperty(i)) continue;
-	    if (typeof obj[i] == 'object') {
-	      if(i === key && val === undefined){
-	        if(Array.isArray(obj[i])) {
-	          objects.push(obj);
-	        } else {
-	          objects.push(obj[i]);
-	        }
-	      } else {
-	        objects = objects.concat(this._getJsonObject(obj[i], key, val));
-	      }
-	    } else if (i == key && obj[key] == val) {
-	      objects.push(obj);
+	Node._findEnum = function (schema) {
+	  if (schema.enum) {
+	    return schema.enum;
+	  }
+
+	  var composite = schema.oneOf || schema.anyOf || schema.allOf;
+	  if (composite) {
+	    var match = composite.filter(function (entry) {return entry.enum});
+	    if (match.length > 0) {
+	      return match[0].enum;
 	    }
 	  }
-	  return objects;
+
+	  return null
+	};
+
+	/**
+	 * Return the part of a JSON schema matching given path.
+	 * @param {Object} schema
+	 * @param {Array.<string | number>} path
+	 * @return {Object | null}
+	 * @private
+	 */
+	Node._findSchema = function (schema, path) {
+	  var childSchema = schema;
+
+	  for (var i = 0; i < path.length && childSchema; i++) {
+	    var key = path[i];
+	    if (typeof key === 'string' && childSchema.properties) {
+	      childSchema = childSchema.properties[key] || null
+	    }
+	    else if (typeof key === 'number' && childSchema.items) {
+	      childSchema = childSchema.items
+	    }
+	  }
+
+	  return childSchema
 	};
 
 	/**
@@ -6255,7 +6257,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	    this.dom.value.innerHTML = !this.value;
 	    this._getDomValue();
 	  }
-	  //Update the value of the node based on the selected option
+
+	  // update the value of the node based on the selected option
 	  if (type == 'change' && target == dom.select) {
 	    this.dom.value.innerHTML = dom.select.value;
 	    this._getDomValue();
@@ -6367,7 +6370,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	      }
 	    }
 	    else {
-	      if (domValue) {
+	      if (domValue && !this.enum) {
 	        util.setEndOfContentEditable(domValue);
 	        domValue.focus();
 	      }
