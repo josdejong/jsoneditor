@@ -3,7 +3,7 @@
 https://github.com/josdejong/jsoneditor
 
 
-## not yet released, version 5.5.3
+## 2016-05-22, version 5.5.3
 
 - Fixed #299: reverted the fix of #268 by trimming text in fields and values.
 

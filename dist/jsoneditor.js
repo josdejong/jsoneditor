@@ -24,8 +24,8 @@
  * Copyright (c) 2011-2016 Jos de Jong, http://jsoneditoronline.org
  *
  * @author  Jos de Jong, <wjosdejong@gmail.com>
- * @version 5.5.2
- * @date    2016-04-18
+ * @version 5.5.3
+ * @date    2016-05-22
  */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
@@ -15382,7 +15382,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * @private
 	 */
 	Node.prototype._unescapeHTML = function (escapedText) {
-	  var json = '"' + this._escapeJSON(escapedText.trim()) + '"';
+	  var json = '"' + this._escapeJSON(escapedText) + '"';
 	  var htmlEscaped = util.parse(json);
 
 	  return htmlEscaped
