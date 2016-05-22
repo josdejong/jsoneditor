@@ -7,6 +7,8 @@ https://github.com/josdejong/jsoneditor
 
 - Fixed #285: an issue with the enum drop down when having defined multiple
   enums in a JSON schema.
+- Fixed a (harmless) error in the console when clicking right from an enum
+  drop down.
 
 
 ## 2016-05-22, version 5.5.3

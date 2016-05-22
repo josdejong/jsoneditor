@@ -2346,7 +2346,7 @@ Node.prototype.onEvent = function (event) {
       }
     }
     else {
-      if (domValue) {
+      if (domValue && !this.enum) {
         util.setEndOfContentEditable(domValue);
         domValue.focus();
       }
