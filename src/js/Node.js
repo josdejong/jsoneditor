@@ -1264,8 +1264,17 @@ Node.prototype._updateDomValue = function () {
 
       this.dom.checkbox.checked = this.value;
     }
-    //If the node has an enum property and it is editable lets create the select element
-    else if (this.enum && this.editable.value) {
+    else {
+      // cleanup checkbox when displayed
+      if (this.dom.tdCheckbox) {
+        this.dom.tdCheckbox.parentNode.removeChild(this.dom.tdCheckbox);
+        delete this.dom.tdCheckbox;
+        delete this.dom.checkbox;
+      }
+    }
+
+    if (this.enum && this.editable.value) {
+      // create select box when this node has an enum object
       if (!this.dom.select) {
         this.dom.select = document.createElement('select');
         this.id = this.field + "_" + new Date().getUTCMilliseconds();
@@ -1298,30 +1307,25 @@ Node.prototype._updateDomValue = function () {
         if(this.schema !== undefined && (
             !this.schema.hasOwnProperty("oneOf") &&
             !this.schema.hasOwnProperty("anyOf") &&
-            !this.schema.hasOwnProperty("anyOf") &&
             !this.schema.hasOwnProperty("allOf"))
         ) {
-            this.valueFieldHTML = this.dom.tdValue.innerHTML;
-            this.dom.tdValue.style.visibility = 'hidden';
-            this.dom.tdValue.innerHTML = '';
+          this.valueFieldHTML = this.dom.tdValue.innerHTML;
+          this.dom.tdValue.style.visibility = 'hidden';
+          this.dom.tdValue.innerHTML = '';
         } else {
-            delete this.valueFieldHTML;
+          delete this.valueFieldHTML;
         }
       }
     }
     else {
-      // cleanup checkbox when displayed
-      if (this.dom.tdCheckbox) {
-        this.dom.tdCheckbox.parentNode.removeChild(this.dom.tdCheckbox);
-        delete this.dom.tdCheckbox;
-        delete this.dom.checkbox;
-      } else if (this.dom.tdSelect) {
-          this.dom.tdSelect.parentNode.removeChild(this.dom.tdSelect);
-          delete this.dom.tdSelect;
-          delete this.dom.select;
-          this.dom.tdValue.innerHTML = this.valueFieldHTML;
-          this.dom.tdValue.style.visibility = '';
-          delete this.valueFieldHTML;
+      // cleanup select box when displayed
+      if (this.dom.tdSelect) {
+        this.dom.tdSelect.parentNode.removeChild(this.dom.tdSelect);
+        delete this.dom.tdSelect;
+        delete this.dom.select;
+        this.dom.tdValue.innerHTML = this.valueFieldHTML;
+        this.dom.tdValue.style.visibility = '';
+        delete this.valueFieldHTML;
       }
     }
 
