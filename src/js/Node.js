@@ -80,9 +80,11 @@ Node.prototype.getPath = function () {
   var node = this;
   var path = [];
   while (node) {
-    var field = (!node.parent || node.parent.type != 'array')
-        ? node.field
-        : node.index;
+    var field = !node.parent
+        ? undefined  // do not add an (optional) field name of the root node
+        :  (node.parent.type != 'array')
+            ? node.field
+            : node.index;
 
     if (field !== undefined) {
       path.unshift(field);

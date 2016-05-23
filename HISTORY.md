@@ -3,6 +3,12 @@
 https://github.com/josdejong/jsoneditor
 
 
+## not yet released, version 5.5.5
+
+- Fixed enum drop downs not working when the JSONEditor is configured with
+  a name.
+
+
 ## 2016-05-22, version 5.5.4
 
 - Fixed #285: an issue with the enum drop down when having defined multiple
