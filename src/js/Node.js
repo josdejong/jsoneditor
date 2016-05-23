@@ -1302,19 +1302,20 @@ Node.prototype._updateDomValue = function () {
         this.dom.tdSelect.className = 'jsoneditor-tree';
         this.dom.tdSelect.appendChild(this.dom.select);
         this.dom.tdValue.parentNode.insertBefore(this.dom.tdSelect, this.dom.tdValue);
+      }
 
-        //If the enum is inside a composite type display both the simple input and the dropdown field
-        if(this.schema !== undefined && (
-            !this.schema.hasOwnProperty("oneOf") &&
-            !this.schema.hasOwnProperty("anyOf") &&
-            !this.schema.hasOwnProperty("allOf"))
-        ) {
-          this.valueFieldHTML = this.dom.tdValue.innerHTML;
-          this.dom.tdValue.style.visibility = 'hidden';
-          this.dom.tdValue.innerHTML = '';
-        } else {
-          delete this.valueFieldHTML;
-        }
+      // If the enum is inside a composite type display
+      // both the simple input and the dropdown field
+      if(this.schema && (
+          !this.schema.hasOwnProperty("oneOf") &&
+          !this.schema.hasOwnProperty("anyOf") &&
+          !this.schema.hasOwnProperty("allOf"))
+      ) {
+        this.valueFieldHTML = this.dom.tdValue.innerHTML;
+        this.dom.tdValue.style.visibility = 'hidden';
+        this.dom.tdValue.innerHTML = '';
+      } else {
+        delete this.valueFieldHTML;
       }
     }
     else {
