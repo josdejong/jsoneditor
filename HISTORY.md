@@ -5,6 +5,8 @@ https://github.com/josdejong/jsoneditor
 
 ## not yet released, version 5.5.5
 
+- Fixed #298: Switch mode button disappears when switching from text/code to
+  tree/form/view mode when the JSON contained errors.
 - Fixed enum drop downs not working when the JSONEditor is configured with
   a name.
 
