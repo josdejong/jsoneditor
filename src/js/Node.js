@@ -80,9 +80,11 @@ Node.prototype.getPath = function () {
   var node = this;
   var path = [];
   while (node) {
-    var field = (!node.parent || node.parent.type != 'array')
-        ? node.field
-        : node.index;
+    var field = !node.parent
+        ? undefined  // do not add an (optional) field name of the root node
+        :  (node.parent.type != 'array')
+            ? node.field
+            : node.index;
 
     if (field !== undefined) {
       path.unshift(field);
@@ -1262,8 +1264,17 @@ Node.prototype._updateDomValue = function () {
 
       this.dom.checkbox.checked = this.value;
     }
-    //If the node has an enum property and it is editable lets create the select element
-    else if (this.enum && this.editable.value) {
+    else {
+      // cleanup checkbox when displayed
+      if (this.dom.tdCheckbox) {
+        this.dom.tdCheckbox.parentNode.removeChild(this.dom.tdCheckbox);
+        delete this.dom.tdCheckbox;
+        delete this.dom.checkbox;
+      }
+    }
+
+    if (this.enum && this.editable.value) {
+      // create select box when this node has an enum object
       if (!this.dom.select) {
         this.dom.select = document.createElement('select');
         this.id = this.field + "_" + new Date().getUTCMilliseconds();
@@ -1277,10 +1288,10 @@ Node.prototype._updateDomValue = function () {
         this.dom.select.appendChild(this.dom.select.option);
 
         //Iterate all enum values and add them as options
-        for(var i = 0; i < this.enum.enum.length; i++) {
+        for(var i = 0; i < this.enum.length; i++) {
           this.dom.select.option = document.createElement('option');
-          this.dom.select.option.value = this.enum.enum[i];
-          this.dom.select.option.innerHTML = this.enum.enum[i];
+          this.dom.select.option.value = this.enum[i];
+          this.dom.select.option.innerHTML = this.enum[i];
           if(this.dom.select.option.value == this.value){
             this.dom.select.option.selected = true;
           }
@@ -1291,35 +1302,31 @@ Node.prototype._updateDomValue = function () {
         this.dom.tdSelect.className = 'jsoneditor-tree';
         this.dom.tdSelect.appendChild(this.dom.select);
         this.dom.tdValue.parentNode.insertBefore(this.dom.tdSelect, this.dom.tdValue);
+      }
 
-        //If the enum is inside a composite type display both the simple input and the dropdown field
-        if(this.schema !== undefined && (
-            !this.schema.hasOwnProperty("oneOf") &&
-            !this.schema.hasOwnProperty("anyOf") &&
-            !this.schema.hasOwnProperty("anyOf") &&
-            !this.schema.hasOwnProperty("allOf"))
-        ) {
-            this.valueFieldHTML = this.dom.tdValue.innerHTML;
-            this.dom.tdValue.style.visibility = 'hidden';
-            this.dom.tdValue.innerHTML = '';
-        } else {
-            delete this.valueFieldHTML;
-        }
+      // If the enum is inside a composite type display
+      // both the simple input and the dropdown field
+      if(this.schema && (
+          !this.schema.hasOwnProperty("oneOf") &&
+          !this.schema.hasOwnProperty("anyOf") &&
+          !this.schema.hasOwnProperty("allOf"))
+      ) {
+        this.valueFieldHTML = this.dom.tdValue.innerHTML;
+        this.dom.tdValue.style.visibility = 'hidden';
+        this.dom.tdValue.innerHTML = '';
+      } else {
+        delete this.valueFieldHTML;
       }
     }
     else {
-      // cleanup checkbox when displayed
-      if (this.dom.tdCheckbox) {
-        this.dom.tdCheckbox.parentNode.removeChild(this.dom.tdCheckbox);
-        delete this.dom.tdCheckbox;
-        delete this.dom.checkbox;
-      } else if (this.dom.tdSelect) {
-          this.dom.tdSelect.parentNode.removeChild(this.dom.tdSelect);
-          delete this.dom.tdSelect;
-          delete this.dom.select;
-          this.dom.tdValue.innerHTML = this.valueFieldHTML;
-          this.dom.tdValue.style.visibility = '';
-          delete this.valueFieldHTML;
+      // cleanup select box when displayed
+      if (this.dom.tdSelect) {
+        this.dom.tdSelect.parentNode.removeChild(this.dom.tdSelect);
+        delete this.dom.tdSelect;
+        delete this.dom.select;
+        this.dom.tdValue.innerHTML = this.valueFieldHTML;
+        this.dom.tdValue.style.visibility = '';
+        delete this.valueFieldHTML;
       }
     }
 
@@ -1940,48 +1947,22 @@ Node.prototype.updateDom = function (options) {
       domField.className = 'jsoneditor-readonly';
     }
 
-    var field;
+    var fieldText;
     if (this.index != undefined) {
-      field = this.index;
+      fieldText = this.index;
     }
     else if (this.field != undefined) {
-      field = this.field;
+      fieldText = this.field;
     }
     else if (this._hasChilds()) {
-      field = this.type;
+      fieldText = this.type;
     }
     else {
-      field = '';
+      fieldText = '';
     }
-    domField.innerHTML = this._escapeHTML(field);
-  }
+    domField.innerHTML = this._escapeHTML(fieldText);
 
-  //Locating the schema of the node and checking for any enum type
-  if(this.editor && this.editor.options) {
-    //Search for the schema element of the current node and store it in the schema attribute.
-    //Hereafter, wherever you have access in the node you will have also access in its own schema.
-    this.schema = this._getJsonObject(this.editor.options.schema, 'name', field)[0];
-    if(!this.schema) {
-      this.schema = this._getJsonObject(this.editor.options.schema, field)[0];
-    }
-    //Search for any enumeration type in the schema of the current node.
-    //Enum types can be also be part of a composite type.
-    if(this.schema){
-      if(this.schema.hasOwnProperty('enum')){
-        this.enum = new Object();
-        this.enum.enum = this.schema.enum;
-      } else if(this.schema.hasOwnProperty('oneOf')){
-        this.enum = this._getJsonObject(this.schema.oneOf, 'enum')[0];
-      } else if(this.schema.hasOwnProperty('anyOf')){
-        this.enum = this._getJsonObject(this.schema.anyOf, 'enum')[0];
-      } else if(this.schema.hasOwnProperty('allOf')){
-        this.enum = this._getJsonObject(this.schema.allOf, 'enum')[0];
-      } else {
-        delete this.enum;
-      }
-    } else {
-      delete this.enum;
-    }
+    this._updateSchema();
   }
 
   // apply value to DOM
@@ -2028,28 +2009,67 @@ Node.prototype.updateDom = function (options) {
 };
 
 /**
- * Get all sub-elements of the given object with the specified key and value.
+ * Locate the JSON schema of the node and check for any enum type
  * @private
  */
-Node.prototype._getJsonObject = function (obj, key, val) {
-  var objects = [];
-  for (var i in obj) {
-    if (!obj.hasOwnProperty(i)) continue;
-    if (typeof obj[i] == 'object') {
-      if(i === key && val === undefined){
-        if(Array.isArray(obj[i])) {
-          objects.push(obj);
-        } else {
-          objects.push(obj[i]);
-        }
-      } else {
-        objects = objects.concat(this._getJsonObject(obj[i], key, val));
-      }
-    } else if (i == key && obj[key] == val) {
-      objects.push(obj);
+Node.prototype._updateSchema = function () {
+  //Locating the schema of the node and checking for any enum type
+  if(this.editor && this.editor.options) {
+    // find the part of the json schema matching this nodes path
+    this.schema = Node._findSchema(this.editor.options.schema, this.getPath());
+    if (this.schema) {
+      this.enum = Node._findEnum(this.schema);
+    }
+    else {
+      delete this.enum;
     }
   }
-  return objects;
+};
+
+/**
+ * find an enum definition in a JSON schema, as property `enum` or inside
+ * one of the schemas composites (`oneOf`, `anyOf`, `allOf`)
+ * @param  {Object} schema
+ * @return {Array | null} Returns the enum when found, null otherwise.
+ * @private
+ */
+Node._findEnum = function (schema) {
+  if (schema.enum) {
+    return schema.enum;
+  }
+
+  var composite = schema.oneOf || schema.anyOf || schema.allOf;
+  if (composite) {
+    var match = composite.filter(function (entry) {return entry.enum});
+    if (match.length > 0) {
+      return match[0].enum;
+    }
+  }
+
+  return null
+};
+
+/**
+ * Return the part of a JSON schema matching given path.
+ * @param {Object} schema
+ * @param {Array.<string | number>} path
+ * @return {Object | null}
+ * @private
+ */
+Node._findSchema = function (schema, path) {
+  var childSchema = schema;
+
+  for (var i = 0; i < path.length && childSchema; i++) {
+    var key = path[i];
+    if (typeof key === 'string' && childSchema.properties) {
+      childSchema = childSchema.properties[key] || null
+    }
+    else if (typeof key === 'number' && childSchema.items) {
+      childSchema = childSchema.items
+    }
+  }
+
+  return childSchema
 };
 
 /**
@@ -2246,7 +2266,8 @@ Node.prototype.onEvent = function (event) {
     this.dom.value.innerHTML = !this.value;
     this._getDomValue();
   }
-  //Update the value of the node based on the selected option
+
+  // update the value of the node based on the selected option
   if (type == 'change' && target == dom.select) {
     this.dom.value.innerHTML = dom.select.value;
     this._getDomValue();
@@ -2318,7 +2339,9 @@ Node.prototype.onEvent = function (event) {
 
       case 'input':
         this._getDomField(true);
-        this.updateDom();
+        this._updateSchema();
+        this._updateDomField();
+        this._updateDomValue();
         break;
 
       case 'keydown':
@@ -2356,7 +2379,7 @@ Node.prototype.onEvent = function (event) {
       }
     }
     else {
-      if (domValue) {
+      if (domValue && !this.enum) {
         util.setEndOfContentEditable(domValue);
         domValue.focus();
       }
@@ -3431,7 +3454,7 @@ Node.prototype._escapeHTML = function (text) {
  * @private
  */
 Node.prototype._unescapeHTML = function (escapedText) {
-  var json = '"' + this._escapeJSON(escapedText.trim()) + '"';
+  var json = '"' + this._escapeJSON(escapedText) + '"';
   var htmlEscaped = util.parse(json);
 
   return htmlEscaped

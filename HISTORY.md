@@ -3,7 +3,39 @@
 https://github.com/josdejong/jsoneditor
 
 
-## not yet released, version 5.5.0
+## not yet released, version 5.5.5
+
+- Fixed #298: Switch mode button disappears when switching from text/code to
+  tree/form/view mode when the JSON contained errors.
+- Fixed enum drop downs not working when the JSONEditor is configured with
+  a name.
+
+
+## 2016-05-22, version 5.5.4
+
+- Fixed #285: an issue with the enum drop down when having defined multiple
+  enums in a JSON schema.
+- Fixed a (harmless) error in the console when clicking right from an enum
+  drop down.
+
+
+## 2016-05-22, version 5.5.3
+
+- Fixed #299: reverted the fix of #268 by trimming text in fields and values.
+
+
+## 2016-04-18, version 5.5.2
+
+- Fixed #294: Fields reset their caret location on every key press in Firefox.
+
+
+## 2016-04-16, version 5.5.1
+
+- Fixed enum select boxes not being rendered/removed when setting or removing
+  a JSON schema via `editor.setSchema(schema)`.
+
+
+## 2016-04-16, version 5.5.0
 
 - Implemented a dropdown for values having an JSON Schema enum.
   Thanks @tdakanalis.

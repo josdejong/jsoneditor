@@ -24,8 +24,8 @@
  * Copyright (c) 2011-2016 Jos de Jong, http://jsoneditoronline.org
  *
  * @author  Jos de Jong, <wjosdejong@gmail.com>
- * @version 5.4.0
- * @date    2016-04-09
+ * @version 5.5.4
+ * @date    2016-05-22
  */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
@@ -382,12 +382,15 @@ return /******/ (function(modules) { // webpackBootstrap
 	      // validate now
 	      this.validate();
 	    }
+
+	    this.refresh(); // update DOM
 	  }
 	  else {
 	    // remove current schema
 	    this.validateSchema = null;
 	    this.options.schema = null;
 	    this.validate(); // to clear current error messages
+	    this.refresh();  // update DOM
 	  }
 	};
 
@@ -397,6 +400,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	 */
 	JSONEditor.prototype.validate = function () {
 	  // must be implemented by treemode and textmode
+	};
+
+	/**
+	 * Refresh the rendered contents
+	 */
+	JSONEditor.prototype.refresh = function () {
+	  // can be implemented by treemode and textmode
 	};
 
 	/**
@@ -913,6 +923,15 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 
 	/**
+	 * Refresh the rendered contents
+	 */
+	treemode.refresh = function () {
+	  if (this.node) {
+	    this.node.updateDom({recurse: true});
+	  }
+	};
+
+	/**
 	 * Start autoscrolling when given mouse position is above the top of the
 	 * editor contents, or below the bottom.
 	 * @param {Number} mouseY  Absolute mouse position in pixels
@@ -1276,7 +1295,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        // drag a singe node
 	        Node.onDragStart(node, event);
 	      }
-	      else if (!node || (event.target != node.dom.field && event.target != node.dom.value)) {
+	      else if (!node || (event.target != node.dom.field && event.target != node.dom.value && event.target != node.dom.select)) {
 	        // select multiple nodes
 	        this._onMultiSelectStart(event);
 	      }
@@ -5266,12 +5285,64 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	      this.dom.checkbox.checked = this.value;
 	    }
+	    //If the node has an enum property and it is editable lets create the select element
+	    else if (this.enum && this.editable.value) {
+	      if (!this.dom.select) {
+	        this.dom.select = document.createElement('select');
+	        this.id = this.field + "_" + new Date().getUTCMilliseconds();
+	        this.dom.select.id = this.id;
+	        this.dom.select.name = this.dom.select.id;
+
+	        //Create the default empty option
+	        this.dom.select.option = document.createElement('option');
+	        this.dom.select.option.value = '';
+	        this.dom.select.option.innerHTML = '--';
+	        this.dom.select.appendChild(this.dom.select.option);
+
+	        //Iterate all enum values and add them as options
+	        for(var i = 0; i < this.enum.length; i++) {
+	          this.dom.select.option = document.createElement('option');
+	          this.dom.select.option.value = this.enum[i];
+	          this.dom.select.option.innerHTML = this.enum[i];
+	          if(this.dom.select.option.value == this.value){
+	            this.dom.select.option.selected = true;
+	          }
+	          this.dom.select.appendChild(this.dom.select.option);
+	        }
+
+	        this.dom.tdSelect = document.createElement('td');
+	        this.dom.tdSelect.className = 'jsoneditor-tree';
+	        this.dom.tdSelect.appendChild(this.dom.select);
+	        this.dom.tdValue.parentNode.insertBefore(this.dom.tdSelect, this.dom.tdValue);
+
+	        //If the enum is inside a composite type display both the simple input and the dropdown field
+	        if(this.schema !== undefined && (
+	            !this.schema.hasOwnProperty("oneOf") &&
+	            !this.schema.hasOwnProperty("anyOf") &&
+	            !this.schema.hasOwnProperty("anyOf") &&
+	            !this.schema.hasOwnProperty("allOf"))
+	        ) {
+	            this.valueFieldHTML = this.dom.tdValue.innerHTML;
+	            this.dom.tdValue.style.visibility = 'hidden';
+	            this.dom.tdValue.innerHTML = '';
+	        } else {
+	            delete this.valueFieldHTML;
+	        }
+	      }
+	    }
 	    else {
 	      // cleanup checkbox when displayed
 	      if (this.dom.tdCheckbox) {
 	        this.dom.tdCheckbox.parentNode.removeChild(this.dom.tdCheckbox);
 	        delete this.dom.tdCheckbox;
 	        delete this.dom.checkbox;
+	      } else if (this.dom.tdSelect) {
+	          this.dom.tdSelect.parentNode.removeChild(this.dom.tdSelect);
+	          delete this.dom.tdSelect;
+	          delete this.dom.select;
+	          this.dom.tdValue.innerHTML = this.valueFieldHTML;
+	          this.dom.tdValue.style.visibility = '';
+	          delete this.valueFieldHTML;
 	      }
 	    }
 
@@ -5867,20 +5938,22 @@ return /******/ (function(modules) { // webpackBootstrap
 	      domField.className = 'jsoneditor-readonly';
 	    }
 
-	    var field;
+	    var fieldText;
 	    if (this.index != undefined) {
-	      field = this.index;
+	      fieldText = this.index;
 	    }
 	    else if (this.field != undefined) {
-	      field = this.field;
+	      fieldText = this.field;
 	    }
 	    else if (this._hasChilds()) {
-	      field = this.type;
+	      fieldText = this.type;
 	    }
 	    else {
-	      field = '';
+	      fieldText = '';
 	    }
-	    domField.innerHTML = this._escapeHTML(field);
+	    domField.innerHTML = this._escapeHTML(fieldText);
+
+	    this._updateSchema();
 	  }
 
 	  // apply value to DOM
@@ -5924,6 +5997,70 @@ return /******/ (function(modules) { // webpackBootstrap
 	  if (this.append) {
 	    this.append.updateDom();
 	  }
+	};
+
+	/**
+	 * Locate the JSON schema of the node and check for any enum type
+	 * @private
+	 */
+	Node.prototype._updateSchema = function () {
+	  //Locating the schema of the node and checking for any enum type
+	  if(this.editor && this.editor.options) {
+	    // find the part of the json schema matching this nodes path
+	    this.schema = Node._findSchema(this.editor.options.schema, this.getPath());
+	    if (this.schema) {
+	      this.enum = Node._findEnum(this.schema);
+	    }
+	    else {
+	      delete this.enum;
+	    }
+	  }
+	};
+
+	/**
+	 * find an enum definition in a JSON schema, as property `enum` or inside
+	 * one of the schemas composites (`oneOf`, `anyOf`, `allOf`)
+	 * @param  {Object} schema
+	 * @return {Array | null} Returns the enum when found, null otherwise.
+	 * @private
+	 */
+	Node._findEnum = function (schema) {
+	  if (schema.enum) {
+	    return schema.enum;
+	  }
+
+	  var composite = schema.oneOf || schema.anyOf || schema.allOf;
+	  if (composite) {
+	    var match = composite.filter(function (entry) {return entry.enum});
+	    if (match.length > 0) {
+	      return match[0].enum;
+	    }
+	  }
+
+	  return null
+	};
+
+	/**
+	 * Return the part of a JSON schema matching given path.
+	 * @param {Object} schema
+	 * @param {Array.<string | number>} path
+	 * @return {Object | null}
+	 * @private
+	 */
+	Node._findSchema = function (schema, path) {
+	  var childSchema = schema;
+
+	  for (var i = 0; i < path.length && childSchema; i++) {
+	    var key = path[i];
+	    if (typeof key === 'string' && childSchema.properties) {
+	      childSchema = childSchema.properties[key] || null
+	    }
+	    else if (typeof key === 'number' && childSchema.items) {
+	      childSchema = childSchema.items
+	    }
+	  }
+
+	  return childSchema
 	};
 
 	/**
@@ -6121,6 +6258,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	    this._getDomValue();
 	  }
 
+	  // update the value of the node based on the selected option
+	  if (type == 'change' && target == dom.select) {
+	    this.dom.value.innerHTML = dom.select.value;
+	    this._getDomValue();
+	    this._updateDomValue();
+	  }
+
 	  // value events
 	  var domValue = dom.value;
 	  if (target == domValue) {
@@ -6186,7 +6330,9 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	      case 'input':
 	        this._getDomField(true);
+	        this._updateSchema();
 	        this._updateDomField();
+	        this._updateDomValue();
 	        break;
 
 	      case 'keydown':
@@ -6224,7 +6370,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	      }
 	    }
 	    else {
-	      if (domValue) {
+	      if (domValue && !this.enum) {
 	        util.setEndOfContentEditable(domValue);
 	        domValue.focus();
 	      }
@@ -7340,7 +7486,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * @private
 	 */
 	Node.prototype._unescapeHTML = function (escapedText) {
-	  var json = '"' + this._escapeJSON(escapedText.trim()) + '"';
+	  var json = '"' + this._escapeJSON(escapedText) + '"';
 	  var htmlEscaped = util.parse(json);
 
 	  return htmlEscaped

@@ -447,6 +447,15 @@ treemode.validate = function () {
 };
 
 /**
+ * Refresh the rendered contents
+ */
+treemode.refresh = function () {
+  if (this.node) {
+    this.node.updateDom({recurse: true});
+  }
+};
+
+/**
  * Start autoscrolling when given mouse position is above the top of the
  * editor contents, or below the bottom.
  * @param {Number} mouseY  Absolute mouse position in pixels
@@ -810,7 +819,7 @@ treemode._onEvent = function (event) {
         // drag a singe node
         Node.onDragStart(node, event);
       }
-      else if (!node || (event.target != node.dom.field && event.target != node.dom.value)) {
+      else if (!node || (event.target != node.dom.field && event.target != node.dom.value && event.target != node.dom.select)) {
         // select multiple nodes
         this._onMultiSelectStart(event);
       }
