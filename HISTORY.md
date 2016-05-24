@@ -3,7 +3,7 @@
 https://github.com/josdejong/jsoneditor
 
 
-## not yet released, version 5.5.5
+## 2016-05-24, version 5.5.5
 
 - Fixed #298: Switch mode button disappears when switching from text/code to
   tree/form/view mode when the JSON contained errors.

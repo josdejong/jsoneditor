@@ -24,8 +24,8 @@
  * Copyright (c) 2011-2016 Jos de Jong, http://jsoneditoronline.org
  *
  * @author  Jos de Jong, <wjosdejong@gmail.com>
- * @version 5.5.4
- * @date    2016-05-22
+ * @version 5.5.5
+ * @date    2016-05-24
  */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
@@ -4103,9 +4103,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	  var node = this;
 	  var path = [];
 	  while (node) {
-	    var field = (!node.parent || node.parent.type != 'array')
-	        ? node.field
-	        : node.index;
+	    var field = !node.parent
+	        ? undefined  // do not add an (optional) field name of the root node
+	        :  (node.parent.type != 'array')
+	            ? node.field
+	            : node.index;
 
 	    if (field !== undefined) {
 	      path.unshift(field);
@@ -5285,8 +5287,17 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	      this.dom.checkbox.checked = this.value;
 	    }
-	    //If the node has an enum property and it is editable lets create the select element
-	    else if (this.enum && this.editable.value) {
+	    else {
+	      // cleanup checkbox when displayed
+	      if (this.dom.tdCheckbox) {
+	        this.dom.tdCheckbox.parentNode.removeChild(this.dom.tdCheckbox);
+	        delete this.dom.tdCheckbox;
+	        delete this.dom.checkbox;
+	      }
+	    }
+
+	    if (this.enum && this.editable.value) {
+	      // create select box when this node has an enum object
 	      if (!this.dom.select) {
 	        this.dom.select = document.createElement('select');
 	        this.id = this.field + "_" + new Date().getUTCMilliseconds();
@@ -5314,35 +5325,31 @@ return /******/ (function(modules) { // webpackBootstrap
 	        this.dom.tdSelect.className = 'jsoneditor-tree';
 	        this.dom.tdSelect.appendChild(this.dom.select);
 	        this.dom.tdValue.parentNode.insertBefore(this.dom.tdSelect, this.dom.tdValue);
+	      }
 
-	        //If the enum is inside a composite type display both the simple input and the dropdown field
-	        if(this.schema !== undefined && (
-	            !this.schema.hasOwnProperty("oneOf") &&
-	            !this.schema.hasOwnProperty("anyOf") &&
-	            !this.schema.hasOwnProperty("anyOf") &&
-	            !this.schema.hasOwnProperty("allOf"))
-	        ) {
-	            this.valueFieldHTML = this.dom.tdValue.innerHTML;
-	            this.dom.tdValue.style.visibility = 'hidden';
-	            this.dom.tdValue.innerHTML = '';
-	        } else {
-	            delete this.valueFieldHTML;
-	        }
+	      // If the enum is inside a composite type display
+	      // both the simple input and the dropdown field
+	      if(this.schema && (
+	          !this.schema.hasOwnProperty("oneOf") &&
+	          !this.schema.hasOwnProperty("anyOf") &&
+	          !this.schema.hasOwnProperty("allOf"))
+	      ) {
+	        this.valueFieldHTML = this.dom.tdValue.innerHTML;
+	        this.dom.tdValue.style.visibility = 'hidden';
+	        this.dom.tdValue.innerHTML = '';
+	      } else {
+	        delete this.valueFieldHTML;
 	      }
 	    }
 	    else {
-	      // cleanup checkbox when displayed
-	      if (this.dom.tdCheckbox) {
-	        this.dom.tdCheckbox.parentNode.removeChild(this.dom.tdCheckbox);
-	        delete this.dom.tdCheckbox;
-	        delete this.dom.checkbox;
-	      } else if (this.dom.tdSelect) {
-	          this.dom.tdSelect.parentNode.removeChild(this.dom.tdSelect);
-	          delete this.dom.tdSelect;
-	          delete this.dom.select;
-	          this.dom.tdValue.innerHTML = this.valueFieldHTML;
-	          this.dom.tdValue.style.visibility = '';
-	          delete this.valueFieldHTML;
+	      // cleanup select box when displayed
+	      if (this.dom.tdSelect) {
+	        this.dom.tdSelect.parentNode.removeChild(this.dom.tdSelect);
+	        delete this.dom.tdSelect;
+	        delete this.dom.select;
+	        this.dom.tdValue.innerHTML = this.valueFieldHTML;
+	        this.dom.tdValue.style.visibility = '';
+	        delete this.valueFieldHTML;
 	      }
 	    }
 
@@ -8079,8 +8086,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	  // create mode box
 	  if (this.options && this.options.modes && this.options.modes.length) {
 	    this.modeSwitcher = new ModeSwitcher(this.menu, this.options.modes, this.options.mode, function onSwitch(mode) {
-	      me.modeSwitcher.destroy();
-
 	      // switch mode and restore focus
 	      me.setMode(mode);
 	      me.modeSwitcher.focus();
