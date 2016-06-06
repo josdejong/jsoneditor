@@ -3,6 +3,11 @@
 https://github.com/josdejong/jsoneditor
 
 
+## not yet released, version 5.5.6
+
+- Improved example 04_load_and_save.html. Thanks @RDCH106.
+
+
 ## 2016-05-24, version 5.5.5
 
 - Fixed #298: Switch mode button disappears when switching from text/code to
