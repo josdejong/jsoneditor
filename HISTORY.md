@@ -3,7 +3,7 @@
 https://github.com/josdejong/jsoneditor
 
 
-## not yet released, version 5.5.6
+## 2016-06-15, version 5.5.6
 
 - Fixed #303: editor contents collapsed when the parent div of the JSONEditor
   has no height set.

@@ -23,6 +23,8 @@ div.jsoneditor th {
   vertical-align: inherit;
   border-radius: inherit;
 }
+
+
 div.jsoneditor-field,
 div.jsoneditor-value,
 div.jsoneditor-readonly {
@@ -224,6 +226,11 @@ div.jsoneditor-outer {
   -moz-box-sizing: border-box;
   -webkit-box-sizing: border-box;
   box-sizing: border-box;
+}
+
+textarea.jsoneditor-text,
+.ace-jsoneditor {
+  min-height: 150px;
 }
 
 div.jsoneditor-tree {
