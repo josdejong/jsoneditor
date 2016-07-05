@@ -3,6 +3,12 @@
 https://github.com/josdejong/jsoneditor
 
 
+## not yet released, version 5.5.7
+
+- Fixed #308: wrong positioning of label "empty array" when `onEditable`
+  returns false.
+
+
 ## 2016-06-15, version 5.5.6
 
 - Fixed #303: editor contents collapsed when the parent div of the JSONEditor
