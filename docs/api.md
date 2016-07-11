@@ -54,6 +54,10 @@ Constructs a new JSONEditor.
 
   Set a callback function  to determine whether individual nodes are editable or read-only. Only applicable when option `mode` is `tree`. The callback is invoked as `editable(node)`, where `node` is an object `{field: string, value: string, path: string[]}`. The function must either return a boolean value to set both the nodes field and value editable or read-only, or return an object `{field: boolean, value: boolean}`.
 
+- `{function} onObjectID`
+
+  Set a callback function to determine the ID field for a node of type "object". Applicable when option `mode` is `tree`, `view`, or `form`. The callback is invoked as `onObjectID(path)`, where `path` is a `string[]`. The function must return a string indicating the field designated as the ID field. In the case that an object doesn't have an identifier field, the function may return an empty string, `null`, or `undefined`.
+
 - `{function} onError`
 
   Set a callback function triggered when an error occurs. Invoked with the error as first argument. The callback is only invoked

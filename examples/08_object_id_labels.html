@@ -1,0 +1,68 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <title>JSONEditor | Basic usage</title>
+
+  <link href="../dist/jsoneditor.css" rel="stylesheet" type="text/css">
+  <script src="../dist/jsoneditor.js"></script>
+
+  <style type="text/css">
+    #jsoneditor {
+      width: 500px;
+      height: 500px;
+    }
+  </style>
+</head>
+<body>
+<p>
+  <button id="setJSON">Set JSON</button>
+  <button id="getJSON">Get JSON</button>
+</p>
+<div id="jsoneditor"></div>
+
+<script>
+  // create the editor
+  var container = document.getElementById('jsoneditor');
+  var options = {
+    onObjectID: function onObjectID(path) {
+      if (path[0] === 'campaignList' && typeof path[1] === 'number') {
+        return 'payName';
+      }
+    }
+  };
+  var json = {
+    campaignList: [
+      {
+        payName: 'test payname 1'
+      },
+      {
+        payName: 'test payname 2'
+      },
+      {
+        payName: 'test payname 3'
+      },
+    ]
+  };
+  var editor = new JSONEditor(container, options, json);
+
+  // set json
+  document.getElementById('setJSON').onclick = function () {
+    var json = {
+      'array': [1, 2, 3],
+      'boolean': true,
+      'null': null,
+      'number': 123,
+      'object': {'a': 'b', 'c': 'd'},
+      'string': 'Hello World'
+    };
+    editor.set(json);
+  };
+
+  // get json
+  document.getElementById('getJSON').onclick = function () {
+    var json = editor.get();
+    alert(JSON.stringify(json, null, 2));
+  };
+</script>
+</body>
+</html>

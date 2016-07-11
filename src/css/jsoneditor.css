@@ -106,6 +106,10 @@ div.jsoneditor-value.jsoneditor-array {
   color: #808080;
 }
 
+div.jsoneditor-value.jsoneditor-object span {
+  color: #2FB556;
+}
+
 div.jsoneditor-value.jsoneditor-number {
   color: #ee422e;
 }
