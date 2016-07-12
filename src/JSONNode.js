@@ -1,7 +1,6 @@
 import { h, Component } from 'preact'
 import isObject from './utils/isObject'
-import escapeHTML from './utils/escapeHTML'
-import unescapeHTML from './utils/unescapeHTML'
+import { escapeHTML, unescapeHTML } from './utils/escape'
 import getInnerText from './utils/getInnerText'
 import stringConvert from './utils/stringConvert'
 import valueType, {isUrl} from  './utils/valueType'
@@ -83,7 +82,7 @@ export default class JSONNode extends Component {
             ? this.renderReadonly(index)
             : this.renderField(field, parent, this.onChangeField),
         this.renderSeparator(),
-        this.renderValue(value, this.onChangeValue)
+        this.renderValue(value, this.onChangeValue, this.onClickUrl, this.onKeyDownUrl)
       ])
     ])
   }
@@ -99,7 +98,7 @@ export default class JSONNode extends Component {
     return h('div', {
       class: 'jsoneditor-field' + (hasParent ? '' : ' jsoneditor-readonly'),
       contentEditable: hasParent,
-      spellCheck: "false", // FIXME: turning off spellcheck doesn't work
+      spellCheck: 'false',
       onBlur: onChangeField
     }, content)
   }
@@ -108,7 +107,7 @@ export default class JSONNode extends Component {
     return h('div', {class: 'jsoneditor-separator'}, ':')
   }
 
-  renderValue (value, onChangeValue) {
+  renderValue (value, onChangeValue, onClickUrl, onKeyDownUrl) {
     const type = valueType (value)
     const _isUrl = isUrl(value)
     const valueClass = 'jsoneditor-value jsoneditor-' + type + (_isUrl ? ' jsoneditor-url' : '')
@@ -116,10 +115,10 @@ export default class JSONNode extends Component {
     return h('div', {
       class: valueClass,
       contentEditable: true,
-      spellCheck: "false",  // FIXME: turning off spellcheck doesn't work
+      spellCheck: 'false',  // FIXME: turning off spellcheck doesn't work
       onInput: onChangeValue,
-      onClick: _isUrl ? this.onClickUrl : null,
-      onKeyDown: _isUrl ? this.onKeyDownUrl: null,
+      onClick: _isUrl ? onClickUrl : null,
+      onKeyDown: _isUrl ? onKeyDownUrl: null,
       title: _isUrl ? 'Ctrl+Click or ctrl+Enter to open url' : null
     }, escapeHTML(value))
   }

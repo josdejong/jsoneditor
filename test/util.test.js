@@ -1,5 +1,5 @@
 var assert = require('assert');
-var util = require('../src/js/util');
+var util = require('./js/util');
 
 // console.log('TEST', util.parsePath('.items[3].name'));
 // console.log('TEST', util.parsePath('.items[*].name'));

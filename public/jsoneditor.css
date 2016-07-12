@@ -1,6 +1,8 @@
 .jsoneditor {
   border: 1px solid #3883fa;
   overflow: auto;
+  height: 100%;
+  min-height: 150px;
 }
 
 .jsoneditor-node {
