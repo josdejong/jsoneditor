@@ -1,11 +1,15 @@
 import { h, Component } from 'preact'
 import isObject from './utils/isObject'
+import escapeHTML from './utils/escapeHTML'
+import unescapeHTML from './utils/unescapeHTML'
+import getInnerText from './utils/getInnerText'
 
 export default class JSONNode extends Component {
   constructor (props) {
     super(props)
 
-    this.onValueInput = this.onValueInput.bind(this)
+    this.onBlurField = this.onBlurField.bind(this)
+    this.onBlurValue = this.onBlurValue.bind(this)
   }
 
   render (props) {
@@ -20,47 +24,51 @@ export default class JSONNode extends Component {
     }
   }
 
-  renderObject ({field, value, onChangeValue}) {
+  renderObject ({parent, field, value, onChangeValue, onChangeField}) {
     //console.log('JSONObject', field,value)
+    const hasParent = parent !== null
 
     return h('li', {class: 'jsoneditor-object'}, [
       h('div', {class: 'jsoneditor-node'}, [
-        h('div', {class: 'jsoneditor-field', contentEditable: true}, field),
+        h('div', {class: 'jsoneditor-field', contentEditable: hasParent, onBlur: this.onBlurField}, hasParent ? field : 'object'),
         h('div', {class: 'jsoneditor-separator'}, ':'),
-        h('div', {class: 'jsoneditor-info'}, '{' + Object.keys(value).length + '}')
+        h('div', {class: 'jsoneditor-readonly', contentEditable: false}, '{' + Object.keys(value).length + '}')
       ]),
       h('ul',
           {class: 'jsoneditor-list'},
-          Object.keys(value).map(f => h(JSONNode, {parent: this, field: f, value: value[f], onChangeValue})))
+          Object
+              .keys(value)
+              .map(f => h(JSONNode, {parent: this, field: f, value: value[f], onChangeValue, onChangeField})))
     ])
   }
 
-  renderArray ({field, value, onChangeValue}) {
+  renderArray ({parent, field, value, onChangeValue, onChangeField}) {
+    const hasParent = parent !== null
+
     return h('li', {}, [
       h('div', {class: 'jsoneditor-node jsoneditor-array'}, [
-        h('div', {class: 'jsoneditor-field', contentEditable: true}, field),
+        h('div', {class: 'jsoneditor-field', contentEditable: hasParent, onBlur: this.onBlurField}, hasParent ? field : 'array'),
         h('div', {class: 'jsoneditor-separator'}, ':'),
-        h('div', {class: 'jsoneditor-info'}, '{' + value.length + '}')
+        h('div', {class: 'jsoneditor-readonly', contentEditable: false}, '{' + value.length + '}')
       ]),
       h('ul',
           {class: 'jsoneditor-list'},
-          value.map((v, f) => h(JSONNode, {parent: this, field: f, value: v, onChangeValue})))
+          value
+              .map((v, i) => h(JSONNode, {parent: this, index: i, value: v, onChangeValue, onChangeField})))
     ])
   }
 
-  renderValue ({field, value}) {
+  renderValue ({parent, index, field, value}) {
+    const hasParent = parent !== null
     //console.log('JSONValue', field, value)
 
     return h('li', {}, [
       h('div', {class: 'jsoneditor-node'}, [
-        h('div', {class: 'jsoneditor-field', contentEditable: true}, field),
+        index !== undefined
+            ? h('div', {class: 'jsoneditor-readonly', contentEditable: false}, index)
+            : h('div', {class: 'jsoneditor-field', contentEditable: hasParent, onBlur: this.onBlurField}, hasParent ? field : 'value'),
         h('div', {class: 'jsoneditor-separator'}, ':'),
-        h('div', {
-          class: 'jsoneditor-value',
-          contentEditable: true,
-          // 'data-path': JSON.stringify(this.getPath())
-          onInput: this.onValueInput
-        }, value)
+        h('div', {class: 'jsoneditor-value', contentEditable: true, onBlur: this.onBlurValue}, escapeHTML(value))
       ])
     ])
   }
@@ -69,10 +77,21 @@ export default class JSONNode extends Component {
     return nextProps.field !== this.props.field || nextProps.value !== this.props.value
   }
 
-  onValueInput (event) {
+  onBlurField (event) {
+    const path = this.props.parent.getPath()
+    const newField = getInnerText(event.target)
+    const oldField = this.props.field
+    if (newField !== oldField) {
+      this.props.onChangeField(path, newField, oldField)
+    }
+  }
+
+  onBlurValue (event) {
     const path = this.getPath()
-    const value = event.target.innerHTML
-    this.props.onChangeValue(path, value)
+    const value = unescapeHTML(getInnerText(event.target))
+    if (value !== this.props.value) {
+      this.props.onChangeValue(path, value)
+    }
   }
 
   getPath () {
@@ -80,7 +99,7 @@ export default class JSONNode extends Component {
 
     let node = this
     while (node) {
-      path.unshift(node.props.field)
+      path.unshift(node.props.field || node.props.index)
 
       node = node.props.parent
     }
@@ -88,5 +107,13 @@ export default class JSONNode extends Component {
     path.shift() // remove the root node again (null)
 
     return path
+  }
+
+  getRoot () {
+    let node = this
+    while (node && node.props.parent) {
+      node = node.props.parent
+    }
+    return node
   }
 }

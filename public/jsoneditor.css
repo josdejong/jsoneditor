@@ -24,17 +24,17 @@ ul.jsoneditor-list {
   margin: 0;
 }
 
-.jsoneditor-key,
+.jsoneditor-field,
 .jsoneditor-value {
-  min-width: 32px;
+  min-width: 24px;
   border: 1px solid transparent;
   border-radius: 2px;
   word-break: break-word;
 }
 
-.jsoneditor-key:focus,
+.jsoneditor-field:focus,
 .jsoneditor-value:focus,
-.jsoneditor-key:hover,
+.jsoneditor-field:hover,
 .jsoneditor-value:hover {
   background-color: #FFFFAB;
   border-color: #ff0;
@@ -44,6 +44,6 @@ ul.jsoneditor-list {
   color: gray;
 }
 
-.jsoneditor-info {
+.jsoneditor-readonly {
   color: gray;
 }
