@@ -23,7 +23,7 @@ export default function valueType(value) {
   if (value instanceof RegExp) {
     return 'regexp'
   }
-  if (exports.isArray(value)) {
+  if (Array.isArray(value)) {
     return 'array'
   }
 

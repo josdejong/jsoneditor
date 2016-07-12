@@ -93,7 +93,7 @@ export default class JSONNode extends Component {
 
   renderField (field, parent, onChangeField) {
     const hasParent = parent !== null
-    const content = hasParent ? escapeHTML(field) : 'value'
+    const content = hasParent ? escapeHTML(field) : valueType(this.props.value)
 
     return h('div', {
       class: 'jsoneditor-field' + (hasParent ? '' : ' jsoneditor-readonly'),

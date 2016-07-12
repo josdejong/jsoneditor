@@ -10,7 +10,7 @@ export default function parseJSON(jsonString) {
   }
   catch (err) {
     // try to throw a more detailed error message using validate
-    exports.validate(jsonString)
+    validate(jsonString)
 
     // rethrow the original error
     throw err
