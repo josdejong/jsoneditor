@@ -10,12 +10,13 @@ export default function escapeHTML (text, escapeUnicode = false) {
   }
   else {
     var htmlEscaped = String(text)
-        .replace(/&/g, '&amp;')    // must be replaced first!
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/  /g, ' &nbsp;') // replace double space with an nbsp and space
-        .replace(/^ /, '&nbsp;')   // space at start
-        .replace(/ $/, '&nbsp;');  // space at end
+    // TODO: cleanup redundant character replacements
+        // .replace(/&/g, '&amp;')    // must be replaced first!
+        // .replace(/</g, '&lt;')
+        // .replace(/>/g, '&gt;')
+        .replace(/  /g, ' \u00a0') // replace double space with an nbsp and space
+        .replace(/^ /, '\u00a0')   // space at start
+        .replace(/ $/, '\u00a0')   // space at end
 
     var json = JSON.stringify(htmlEscaped)
     var html = json.substring(1, json.length - 1)
