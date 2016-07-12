@@ -47,3 +47,9 @@ ul.jsoneditor-list {
 .jsoneditor-readonly {
   color: gray;
 }
+
+.jsoneditor-readonly:focus,
+.jsoneditor-readonly:hover {
+  border-color: transparent;
+  background-color: inherit;
+}

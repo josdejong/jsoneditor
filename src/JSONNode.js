@@ -3,6 +3,7 @@ import isObject from './utils/isObject'
 import escapeHTML from './utils/escapeHTML'
 import unescapeHTML from './utils/unescapeHTML'
 import getInnerText from './utils/getInnerText'
+import stringConvert from './utils/stringConvert'
 
 export default class JSONNode extends Component {
   constructor (props) {
@@ -24,13 +25,15 @@ export default class JSONNode extends Component {
     }
   }
 
+  // TODO: reorganize the render methods, they are too large now
+
   renderObject ({parent, field, value, onChangeValue, onChangeField}) {
     //console.log('JSONObject', field,value)
     const hasParent = parent !== null
 
-    return h('li', {class: 'jsoneditor-object'}, [
-      h('div', {class: 'jsoneditor-node'}, [
-        h('div', {class: 'jsoneditor-field', contentEditable: hasParent, onBlur: this.onBlurField}, hasParent ? field : 'object'),
+    return h('li', {}, [
+      h('div', {class: 'jsoneditor-node jsoneditor-object'}, [
+        h('div', {class: 'jsoneditor-field' + (hasParent ? '' : ' jsoneditor-readonly'), contentEditable: hasParent, onBlur: this.onBlurField}, hasParent ? escapeHTML(field) : 'object'),
         h('div', {class: 'jsoneditor-separator'}, ':'),
         h('div', {class: 'jsoneditor-readonly', contentEditable: false}, '{' + Object.keys(value).length + '}')
       ]),
@@ -47,7 +50,7 @@ export default class JSONNode extends Component {
 
     return h('li', {}, [
       h('div', {class: 'jsoneditor-node jsoneditor-array'}, [
-        h('div', {class: 'jsoneditor-field', contentEditable: hasParent, onBlur: this.onBlurField}, hasParent ? field : 'array'),
+        h('div', {class: 'jsoneditor-field' + (hasParent ? '' : ' jsoneditor-readonly'), contentEditable: hasParent, onBlur: this.onBlurField}, hasParent ? escapeHTML(field) : 'array'),
         h('div', {class: 'jsoneditor-separator'}, ':'),
         h('div', {class: 'jsoneditor-readonly', contentEditable: false}, '{' + value.length + '}')
       ]),
@@ -66,7 +69,7 @@ export default class JSONNode extends Component {
       h('div', {class: 'jsoneditor-node'}, [
         index !== undefined
             ? h('div', {class: 'jsoneditor-readonly', contentEditable: false}, index)
-            : h('div', {class: 'jsoneditor-field', contentEditable: hasParent, onBlur: this.onBlurField}, hasParent ? field : 'value'),
+            : h('div', {class: 'jsoneditor-field' + (hasParent ? '' : ' jsoneditor-readonly'), contentEditable: hasParent, onBlur: this.onBlurField}, hasParent ? escapeHTML(field) : 'value'),
         h('div', {class: 'jsoneditor-separator'}, ':'),
         h('div', {class: 'jsoneditor-value', contentEditable: true, onBlur: this.onBlurValue}, escapeHTML(value))
       ])
@@ -79,7 +82,7 @@ export default class JSONNode extends Component {
 
   onBlurField (event) {
     const path = this.props.parent.getPath()
-    const newField = getInnerText(event.target)
+    const newField = unescapeHTML(getInnerText(event.target))
     const oldField = this.props.field
     if (newField !== oldField) {
       this.props.onChangeField(path, newField, oldField)
@@ -88,7 +91,7 @@ export default class JSONNode extends Component {
 
   onBlurValue (event) {
     const path = this.getPath()
-    const value = unescapeHTML(getInnerText(event.target))
+    const value = stringConvert(unescapeHTML(getInnerText(event.target)))
     if (value !== this.props.value) {
       this.props.onChangeValue(path, value)
     }
