@@ -1,0 +1,49 @@
+.jsoneditor {
+  border: 1px solid #3883fa;
+  overflow: auto;
+}
+
+.jsoneditor-node {
+  /*border: 1px solid #555;*/
+  font: 14px Arial;
+
+  /* flexbox setup */
+  display: inline-flex;
+  flex-direction: row;
+}
+
+.jsoneditor-node > div {
+  flex: 1 1 auto;
+
+  padding: 2px 5px;
+}
+
+ul.jsoneditor-list {
+  list-style-type: none;
+  padding-left: 24px;
+  margin: 0;
+}
+
+.jsoneditor-key,
+.jsoneditor-value {
+  min-width: 32px;
+  border: 1px solid transparent;
+  border-radius: 2px;
+  word-break: break-word;
+}
+
+.jsoneditor-key:focus,
+.jsoneditor-value:focus,
+.jsoneditor-key:hover,
+.jsoneditor-value:hover {
+  background-color: #FFFFAB;
+  border-color: #ff0;
+}
+
+.jsoneditor-separator {
+  color: gray;
+}
+
+.jsoneditor-info {
+  color: gray;
+}
