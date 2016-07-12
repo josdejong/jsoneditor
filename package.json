@@ -18,10 +18,9 @@
   },
   "bugs": "https://github.com/josdejong/jsoneditor/issues",
   "scripts": {
-    "build": "gulp",
-    "watch": "gulp watch",
-    "test": "mocha test",
-    "build-next": "rollup -c"
+    "build": "react-dev-server --build; uglifyjs public/bundle.js -o public/bundle.min.js",
+    "watch": "react-dev-server",
+    "test": "mocha test"
   },
   "dependencies": {
     "ajv": "3.8.8",
