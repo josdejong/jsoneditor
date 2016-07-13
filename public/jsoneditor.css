@@ -31,13 +31,17 @@ ul.jsoneditor-list {
 .jsoneditor-value,
 .jsoneditor-readonly {
   min-width: 24px;
-  border-radius: 2px;
   word-break: break-word;
 
   font-family: droid sans mono, consolas, monospace, courier new, courier, sans-serif;
   font-size: 10pt;
   color: #1A1A1A;
   outline: none;
+}
+
+.jsoneditor-field,
+.jsoneditor-value {
+  border-radius: 1px;
 }
 
 .jsoneditor-field:focus,

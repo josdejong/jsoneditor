@@ -1,5 +1,5 @@
 import { h, Component } from 'preact'
-import isObject from './utils/isObject'
+import { isObject } from './utils/objectUtils'
 import { escapeHTML, unescapeHTML } from './utils/escape'
 import getInnerText from './utils/getInnerText'
 import stringConvert from './utils/stringConvert'
@@ -99,7 +99,7 @@ export default class JSONNode extends Component {
       class: 'jsoneditor-field' + (hasParent ? '' : ' jsoneditor-readonly'),
       contentEditable: hasParent,
       spellCheck: 'false',
-      onBlur: onChangeField
+      onInput: onChangeField
     }, content)
   }
 
@@ -132,7 +132,7 @@ export default class JSONNode extends Component {
     const newField = unescapeHTML(getInnerText(event.target))
     const oldField = this.props.field
     if (newField !== oldField) {
-      this.props.onChangeField(path, newField, oldField)
+      this.props.onChangeField(path, oldField, newField)
     }
   }
 

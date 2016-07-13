@@ -1,7 +1,6 @@
 import { h, Component } from 'preact'
-import setIn from './utils/setIn'
-import getIn from './utils/getIn'
-import clone from './utils/clone'
+
+import { getIn, setIn, renameField } from './utils/objectUtils'
 import JSONNode from './JSONNode'
 
 export default class Main extends Component {
@@ -37,18 +36,14 @@ export default class Main extends Component {
     })
   }
 
-  onChangeField (path, newField, oldField) {
+  onChangeField (path, oldField, newField) {
     console.log('onChangeField', path, newField, oldField)
+
+    const oldObject = getIn(this.state.json, path)
+    const newObject = renameField(oldObject, oldField, newField)
     
-    const value = clone(getIn(this.state.json, path))
-
-    console.log('value', value)
-
-    value[newField] = value[oldField]
-    delete value[oldField]
-
     this.setState({
-      json: setIn(this.state.json, path, value)
+      json: setIn(this.state.json, path, newObject)
     })
   }
 
