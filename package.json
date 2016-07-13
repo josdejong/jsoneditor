@@ -18,8 +18,8 @@
   },
   "bugs": "https://github.com/josdejong/jsoneditor/issues",
   "scripts": {
-    "build": "react-dev-server --build; uglifyjs public/bundle.js -o public/bundle.min.js",
-    "watch": "react-dev-server",
+    "build": "react-dev-server --static dist --build; mv dist/bundle.js dist/jsoneditor.js; uglifyjs dist/jsoneditor.js -o dist/jsoneditor.min.js; cp src/jsoneditor.css dist",
+    "watch": "react-dev-server --static src --index develop.html",
     "test": "mocha test"
   },
   "dependencies": {
