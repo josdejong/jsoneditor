@@ -9,8 +9,8 @@ export default class JSONNode extends Component {
 
     this.onChangeField = this.onChangeField.bind(this)
     this.onChangeValue = this.onChangeValue.bind(this)
-    this.onClickUrl = this.onClickUrl.bind(this)
-    this.onKeyDownUrl = this.onKeyDownUrl.bind(this)
+    this.onClickValue = this.onClickValue.bind(this)
+    this.onKeyDownValue = this.onKeyDownValue.bind(this)
   }
 
   render (props) {
@@ -25,11 +25,7 @@ export default class JSONNode extends Component {
     }
   }
 
-  // TODO: reorganize the render methods, they are too large now
-
   renderJSONObject ({parent, field, value, onChangeValue, onChangeField}) {
-    //console.log('JSONObject', field,value)
-
     const childs = Object.keys(value).map(f => {
       return h(JSONNode, {
         parent: this,
@@ -42,7 +38,7 @@ export default class JSONNode extends Component {
 
     return h('li', {}, [
       h('div', {class: 'jsoneditor-node jsoneditor-object'}, [
-        this.renderField(field, parent, this.onChangeField),
+        this.renderField(field, value, parent),
         this.renderSeparator(),
         this.renderReadonly('{' + Object.keys(value).length + '}')
       ]),
@@ -63,7 +59,7 @@ export default class JSONNode extends Component {
 
     return h('li', {}, [
       h('div', {class: 'jsoneditor-node jsoneditor-array'}, [
-        this.renderField(field, parent, this.onChangeField),
+        this.renderField(field, value, parent),
         this.renderSeparator(),
         this.renderReadonly('{' + value.length + '}')
       ]),
@@ -72,15 +68,13 @@ export default class JSONNode extends Component {
   }
 
   renderJSONValue ({parent, index, field, value}) {
-    //console.log('JSONValue', field, value)
-
     return h('li', {}, [
       h('div', {class: 'jsoneditor-node'}, [
         index !== undefined
             ? this.renderReadonly(index)
-            : this.renderField(field, parent, this.onChangeField),
+            : this.renderField(field, value, parent),
         this.renderSeparator(),
-        this.renderValue(value, this.onChangeValue, this.onClickUrl, this.onKeyDownUrl)
+        this.renderValue(value)
       ])
     ])
   }
@@ -89,15 +83,15 @@ export default class JSONNode extends Component {
     return h('div', {class: 'jsoneditor-readonly', contentEditable: false}, text)
   }
 
-  renderField (field, parent, onChangeField) {
+  renderField (field, value, parent) {
     const hasParent = parent !== null
-    const content = hasParent ? escapeHTML(field) : valueType(this.props.value)
+    const content = hasParent ? escapeHTML(field) : valueType(value)
 
     return h('div', {
       class: 'jsoneditor-field' + (hasParent ? '' : ' jsoneditor-readonly'),
       contentEditable: hasParent,
       spellCheck: 'false',
-      onInput: onChangeField
+      onBlur: this.onChangeField
     }, content)
   }
 
@@ -105,7 +99,7 @@ export default class JSONNode extends Component {
     return h('div', {class: 'jsoneditor-separator'}, ':')
   }
 
-  renderValue (value, onChangeValue, onClickUrl, onKeyDownUrl) {
+  renderValue (value) {
     const type = valueType (value)
     const _isUrl = isUrl(value)
     const valueClass = 'jsoneditor-value jsoneditor-' + type + (_isUrl ? ' jsoneditor-url' : '')
@@ -113,10 +107,10 @@ export default class JSONNode extends Component {
     return h('div', {
       class: valueClass,
       contentEditable: true,
-      spellCheck: 'false',  // FIXME: turning off spellcheck doesn't work
-      onInput: onChangeValue,
-      onClick: _isUrl ? onClickUrl : null,
-      onKeyDown: _isUrl ? onKeyDownUrl: null,
+      spellCheck: 'false',
+      onBlur: this.onChangeValue,
+      onClick: this.onClickValue,
+      onKeyDown: this.onKeyDownValue,
       title: _isUrl ? 'Ctrl+Click or ctrl+Enter to open url' : null
     }, escapeHTML(value))
   }
@@ -136,32 +130,37 @@ export default class JSONNode extends Component {
 
   onChangeValue (event) {
     const path = this.getPath()
-    const value = stringConvert(unescapeHTML(getInnerText(event.target)))
+    const value = this._getValueFromEvent(event)
     if (value !== this.props.value) {
       this.props.onChangeValue(path, value)
     }
   }
 
-  onClickUrl (event) {
+  onClickValue (event) {
     if (event.ctrlKey && event.button === 0) { // Ctrl+Left click
-      event.preventDefault()
-      event.stopPropagation()
-
-      this.openUrl()
+      this._openLinkIfUrl(event)
     }
   }
 
-  onKeyDownUrl (event) {
+  onKeyDownValue (event) {
     if (event.ctrlKey && event.which === 13) { // Ctrl+Enter
-      event.preventDefault()
-      event.stopPropagation()
-
-      this.openUrl()
+      this._openLinkIfUrl(event)
     }
   }
 
-  openUrl () {
-    window.open(this.props.value, '_blank')
+  _openLinkIfUrl (event) {
+    const value = this._getValueFromEvent(event)
+
+    if (isUrl(value)) {
+      event.preventDefault()
+      event.stopPropagation()
+
+      window.open(value, '_blank')
+    }
+  }
+
+  _getValueFromEvent (event) {
+    return stringConvert(unescapeHTML(getInnerText(event.target)))
   }
 
   getPath () {
