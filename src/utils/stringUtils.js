@@ -1,4 +1,4 @@
-import parseJSON from './parseJSON'
+import { parseJSON } from './jsonUtils'
 
 /**
  * escape a text, such that it can be displayed safely in an HTML element

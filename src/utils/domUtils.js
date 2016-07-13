@@ -4,7 +4,7 @@
  * @param {Object} [buffer]
  * @return {String} innerText
  */
-export default function getInnerText (element, buffer) {
+export function getInnerText (element, buffer) {
   var first = (buffer == undefined)
   if (first) {
     buffer = {

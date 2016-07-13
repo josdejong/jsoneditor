@@ -1,9 +1,7 @@
 import { h, Component } from 'preact'
-import { isObject } from './utils/objectUtils'
-import { escapeHTML, unescapeHTML } from './utils/escape'
-import getInnerText from './utils/getInnerText'
-import stringConvert from './utils/stringConvert'
-import valueType, {isUrl} from  './utils/valueType'
+import { escapeHTML, unescapeHTML } from './utils/stringUtils'
+import { getInnerText } from './utils/domUtils'
+import {stringConvert, valueType, isUrl, isObject} from  './utils/typeUtils'
 
 export default class JSONNode extends Component {
   constructor (props) {

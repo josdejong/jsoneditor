@@ -4,7 +4,7 @@
  * @param {String} jsonString
  * @return {JSON} json
  */
-export default function parseJSON(jsonString) {
+export function parseJSON(jsonString) {
   try {
     return JSON.parse(jsonString)
   }
