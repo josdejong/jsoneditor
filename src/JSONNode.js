@@ -8,10 +8,12 @@ export default class JSONNode extends Component {
     super(props)
 
     this.state = {
-      expanded: false
+      expanded: false,
+      value: props.value
     }
 
     this.handleChangeField = this.handleChangeField.bind(this)
+    this.handleBlurValue = this.handleBlurValue.bind(this)
     this.handleChangeValue = this.handleChangeValue.bind(this)
     this.handleClickValue = this.handleClickValue.bind(this)
     this.handleKeyDownValue = this.handleKeyDownValue.bind(this)
@@ -92,7 +94,7 @@ export default class JSONNode extends Component {
         h('div', {class: 'jsoneditor-button-placeholder'}),
         this.renderField(parent, index, field, value),
         this.renderSeparator(),
-        this.renderValue(value)
+        this.renderValue(this.state.value)
       ])
     ])
   }
@@ -130,7 +132,8 @@ export default class JSONNode extends Component {
       class: valueClass,
       contentEditable: true,
       spellCheck: 'false',
-      onBlur: this.handleChangeValue,
+      onInput: this.handleChangeValue,
+      onBlur: this.handleBlurValue,
       onClick: this.handleClickValue,
       onKeyDown: this.handleKeyDownValue,
       title: _isUrl ? 'Ctrl+Click or ctrl+Enter to open url' : null
@@ -149,6 +152,12 @@ export default class JSONNode extends Component {
         (this.state && Object.keys(nextState).some(prop => this.state[prop] !== nextState[prop]))
   }
 
+  componentWillReceiveProps(nextProps) {
+    this.setState({
+      value: nextProps.value
+    })
+  }
+
   handleChangeField (event) {
     const path = this.props.parent.getPath()
     const newField = unescapeHTML(getInnerText(event.target))
@@ -158,12 +167,17 @@ export default class JSONNode extends Component {
     }
   }
 
-  handleChangeValue (event) {
+  handleBlurValue (event) {
     const path = this.getPath()
-    const value = this._getValueFromEvent(event)
-    if (value !== this.props.value) {
-      this.props.onChangeValue(path, value)
+    if (this.state.value !== this.props.value) {
+      this.props.onChangeValue(path, this.state.value)
     }
+  }
+
+  handleChangeValue (event) {
+    this.setState({
+      value: this._getValueFromEvent(event)
+    })
   }
 
   handleClickValue (event) {
