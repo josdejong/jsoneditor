@@ -7,10 +7,15 @@ export default class JSONNode extends Component {
   constructor (props) {
     super(props)
 
-    this.onChangeField = this.onChangeField.bind(this)
-    this.onChangeValue = this.onChangeValue.bind(this)
-    this.onClickValue = this.onClickValue.bind(this)
-    this.onKeyDownValue = this.onKeyDownValue.bind(this)
+    this.state = {
+      expanded: false
+    }
+
+    this.handleChangeField = this.handleChangeField.bind(this)
+    this.handleChangeValue = this.handleChangeValue.bind(this)
+    this.handleClickValue = this.handleClickValue.bind(this)
+    this.handleKeyDownValue = this.handleKeyDownValue.bind(this)
+    this.handleExpand = this.handleExpand.bind(this)
   }
 
   render (props) {
@@ -26,50 +31,65 @@ export default class JSONNode extends Component {
   }
 
   renderJSONObject ({parent, field, value, onChangeValue, onChangeField}) {
-    const childs = Object.keys(value).map(f => {
-      return h(JSONNode, {
-        parent: this,
-        field: f,
-        value: value[f],
-        onChangeValue,
-        onChangeField
-      })
-    })
-
-    return h('li', {}, [
+    const childCount = Object.keys(value).length
+    const contents = [
       h('div', {class: 'jsoneditor-node jsoneditor-object'}, [
+        this.renderExpandButton(),
         this.renderField(field, value, parent),
         this.renderSeparator(),
-        this.renderReadonly('{' + Object.keys(value).length + '}')
-      ]),
-      h('ul', {class: 'jsoneditor-list'}, childs)
-    ])
+        this.renderReadonly(`{${childCount}}`, `Array containing ${childCount} items`)
+      ])
+    ]
+
+    if (this.state.expanded) {
+      const childs = this.state.expanded && Object.keys(value).map(f => {
+            return h(JSONNode, {
+              parent: this,
+              field: f,
+              value: value[f],
+              onChangeValue,
+              onChangeField
+            })
+          })
+
+      contents.push(h('ul', {class: 'jsoneditor-list'}, childs))
+    }
+
+    return h('li', {}, contents)
   }
 
   renderJSONArray ({parent, field, value, onChangeValue, onChangeField}) {
-    const childs = value.map((v, i) => {
-      return h(JSONNode, {
-        parent: this,
-        index: i,
-        value: v,
-        onChangeValue,
-        onChangeField
-      })
-    })
-
-    return h('li', {}, [
+    const childCount = value.length
+    const contents = [
       h('div', {class: 'jsoneditor-node jsoneditor-array'}, [
+        this.renderExpandButton(),
         this.renderField(field, value, parent),
         this.renderSeparator(),
-        this.renderReadonly('{' + value.length + '}')
-      ]),
-      h('ul', {class: 'jsoneditor-list'}, childs)
-    ])
+        this.renderReadonly(`[${childCount}]`, `Array containing ${childCount} items`)
+      ])
+    ]
+
+    if (this.state.expanded) {
+      const childs = this.state.expanded && value.map((v, i) => {
+            return h(JSONNode, {
+              parent: this,
+              index: i,
+              value: v,
+              onChangeValue,
+              onChangeField
+            })
+          })
+
+      contents.push(h('ul', {class: 'jsoneditor-list'}, childs))
+    }
+
+    return h('li', {}, contents)
   }
 
   renderJSONValue ({parent, index, field, value}) {
     return h('li', {}, [
       h('div', {class: 'jsoneditor-node'}, [
+        h('div', {class: 'jsoneditor-button-placeholder'}),
         index !== undefined
             ? this.renderReadonly(index)
             : this.renderField(field, value, parent),
@@ -79,8 +99,8 @@ export default class JSONNode extends Component {
     ])
   }
 
-  renderReadonly (text) {
-    return h('div', {class: 'jsoneditor-readonly', contentEditable: false}, text)
+  renderReadonly (text, title = null) {
+    return h('div', {class: 'jsoneditor-readonly', contentEditable: false, title}, text)
   }
 
   renderField (field, value, parent) {
@@ -91,7 +111,7 @@ export default class JSONNode extends Component {
       class: 'jsoneditor-field' + (hasParent ? '' : ' jsoneditor-readonly'),
       contentEditable: hasParent,
       spellCheck: 'false',
-      onBlur: this.onChangeField
+      onBlur: this.handleChangeField
     }, content)
   }
 
@@ -108,18 +128,26 @@ export default class JSONNode extends Component {
       class: valueClass,
       contentEditable: true,
       spellCheck: 'false',
-      onBlur: this.onChangeValue,
-      onClick: this.onClickValue,
-      onKeyDown: this.onKeyDownValue,
+      onBlur: this.handleChangeValue,
+      onClick: this.handleClickValue,
+      onKeyDown: this.handleKeyDownValue,
       title: _isUrl ? 'Ctrl+Click or ctrl+Enter to open url' : null
     }, escapeHTML(value))
   }
 
-  shouldComponentUpdate(nextProps, nextState) {
-    return nextProps.field !== this.props.field || nextProps.value !== this.props.value
+  renderExpandButton () {
+    const className = `jsoneditor-button jsoneditor-${this.state.expanded ? 'expanded' : 'collapsed'}`
+    return h('div', {class: 'jsoneditor-button-container'},
+        h('button', {class: className, onClick: this.handleExpand})
+    )
   }
 
-  onChangeField (event) {
+  shouldComponentUpdate(nextProps, nextState) {
+    return Object.keys(nextProps).some(prop => this.props[prop] !== nextProps[prop]) ||
+        (this.state && Object.keys(nextState).some(prop => this.state[prop] !== nextState[prop]))
+  }
+
+  handleChangeField (event) {
     const path = this.props.parent.getPath()
     const newField = unescapeHTML(getInnerText(event.target))
     const oldField = this.props.field
@@ -128,7 +156,7 @@ export default class JSONNode extends Component {
     }
   }
 
-  onChangeValue (event) {
+  handleChangeValue (event) {
     const path = this.getPath()
     const value = this._getValueFromEvent(event)
     if (value !== this.props.value) {
@@ -136,16 +164,22 @@ export default class JSONNode extends Component {
     }
   }
 
-  onClickValue (event) {
+  handleClickValue (event) {
     if (event.ctrlKey && event.button === 0) { // Ctrl+Left click
       this._openLinkIfUrl(event)
     }
   }
 
-  onKeyDownValue (event) {
+  handleKeyDownValue (event) {
     if (event.ctrlKey && event.which === 13) { // Ctrl+Enter
       this._openLinkIfUrl(event)
     }
+  }
+
+  handleExpand (event) {
+    this.setState({
+      expanded: !this.state.expanded
+    })
   }
 
   _openLinkIfUrl (event) {

@@ -17,14 +17,29 @@
 
 .jsoneditor-node > div {
   flex: 1 1 auto;
-
-  padding: 2px 5px;
 }
 
 ul.jsoneditor-list {
   list-style-type: none;
   padding-left: 24px;
   margin: 0;
+  font-size: 0;
+}
+
+/* no left padding for the root ul element */
+.jsoneditor > ul.jsoneditor-list {
+  padding-left: 2px;
+}
+
+.jsoneditor-field,
+.jsoneditor-value,
+.jsoneditor-readonly,
+.jsoneditor-separator {
+  flex: 1 1 auto;
+  line-height: 20px;
+
+  font-family: droid sans mono, consolas, monospace, courier new, courier, sans-serif;
+  font-size: 10pt;
 }
 
 .jsoneditor-field,
@@ -33,10 +48,14 @@ ul.jsoneditor-list {
   min-width: 24px;
   word-break: break-word;
 
-  font-family: droid sans mono, consolas, monospace, courier new, courier, sans-serif;
-  font-size: 10pt;
+  padding: 0 5px;
+
   color: #1A1A1A;
   outline: none;
+}
+
+.jsoneditor-button-container {
+  font-size: 0;
 }
 
 .jsoneditor-field,
@@ -98,4 +117,41 @@ ul.jsoneditor-list {
 div.jsoneditor-value.jsoneditor-url {
   color: green;
   text-decoration: underline;
+}
+
+.jsoneditor-button-placeholder {
+  width: 20px;
+  padding: 0;
+  margin: 0;
+
+  line-height: 20px;
+}
+
+button.jsoneditor-button {
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  margin: 0;
+  border: none;
+  cursor: pointer;
+  background: transparent url('img/jsoneditor-icons.svg');
+}
+
+button.jsoneditor-button:focus {
+  /* TODO: nice outline for buttons with focus
+  outline: #97B0F8 solid 2px;
+  box-shadow: 0 0 8px #97B0F8;
+  */
+  background-color: #f5f5f5;
+  outline: #e5e5e5 solid 1px;
+}
+
+/* FIXME: change icons from size 24x24 to 20x20 */
+
+button.jsoneditor-button.jsoneditor-collapsed {
+  background-position: -2px -50px;
+}
+
+button.jsoneditor-button.jsoneditor-expanded {
+  background-position: -2px -74px;
 }
