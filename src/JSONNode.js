@@ -30,12 +30,12 @@ export default class JSONNode extends Component {
     }
   }
 
-  renderJSONObject ({parent, field, value, onChangeValue, onChangeField}) {
+  renderJSONObject ({parent, index, field, value, onChangeValue, onChangeField}) {
     const childCount = Object.keys(value).length
     const contents = [
       h('div', {class: 'jsoneditor-node jsoneditor-object'}, [
         this.renderExpandButton(),
-        this.renderField(field, value, parent),
+        this.renderField(parent, index, field, value),
         this.renderSeparator(),
         this.renderReadonly(`{${childCount}}`, `Array containing ${childCount} items`)
       ])
@@ -58,12 +58,12 @@ export default class JSONNode extends Component {
     return h('li', {}, contents)
   }
 
-  renderJSONArray ({parent, field, value, onChangeValue, onChangeField}) {
+  renderJSONArray ({parent, index, field, value, onChangeValue, onChangeField}) {
     const childCount = value.length
     const contents = [
       h('div', {class: 'jsoneditor-node jsoneditor-array'}, [
         this.renderExpandButton(),
-        this.renderField(field, value, parent),
+        this.renderField(parent, index, field, value),
         this.renderSeparator(),
         this.renderReadonly(`[${childCount}]`, `Array containing ${childCount} items`)
       ])
@@ -90,9 +90,7 @@ export default class JSONNode extends Component {
     return h('li', {}, [
       h('div', {class: 'jsoneditor-node'}, [
         h('div', {class: 'jsoneditor-button-placeholder'}),
-        index !== undefined
-            ? this.renderReadonly(index)
-            : this.renderField(field, value, parent),
+        this.renderField(parent, index, field, value),
         this.renderSeparator(),
         this.renderValue(value)
       ])
@@ -103,13 +101,17 @@ export default class JSONNode extends Component {
     return h('div', {class: 'jsoneditor-readonly', contentEditable: false, title}, text)
   }
 
-  renderField (field, value, parent) {
-    const hasParent = parent !== null
-    const content = hasParent ? escapeHTML(field) : valueType(value)
+  renderField (parent, index, field, value) {
+    const readonly = !parent || index !== undefined
+    const content = !parent
+        ? valueType(value)        // render 'object' or 'array', or 'number' as field
+        : index !== undefined
+            ? index               // render the array index of the item
+            : escapeHTML(field)   // render the property name
 
     return h('div', {
-      class: 'jsoneditor-field' + (hasParent ? '' : ' jsoneditor-readonly'),
-      contentEditable: hasParent,
+      class: 'jsoneditor-field' + (readonly ? ' jsoneditor-readonly' : ''),
+      contentEditable: !readonly,
       spellCheck: 'false',
       onBlur: this.handleChangeField
     }, content)
