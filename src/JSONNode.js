@@ -1,19 +1,14 @@
 import { h, Component } from 'preact'
 import { escapeHTML, unescapeHTML } from './utils/stringUtils'
 import { getInnerText } from './utils/domUtils'
-import {stringConvert, valueType, isUrl, isObject} from  './utils/typeUtils'
+import {stringConvert, valueType, isUrl} from  './utils/typeUtils'
+import { last } from './utils/arrayUtils'
 
 export default class JSONNode extends Component {
   constructor (props) {
     super(props)
 
-    this.state = {
-      expanded: false,
-      value: props.value
-    }
-
-    this.handleChangeField = this.handleChangeField.bind(this)
-    this.handleBlurValue = this.handleBlurValue.bind(this)
+    this.handleChangeProperty = this.handleChangeProperty.bind(this)
     this.handleChangeValue = this.handleChangeValue.bind(this)
     this.handleClickValue = this.handleClickValue.bind(this)
     this.handleKeyDownValue = this.handleKeyDownValue.bind(this)
@@ -21,10 +16,10 @@ export default class JSONNode extends Component {
   }
 
   render (props) {
-    if (Array.isArray(props.value)) {
+    if (props.data.type === 'array') {
       return this.renderJSONArray(props)
     }
-    else if (isObject(props.value)) {
+    else if (props.data.type === 'object') {
       return this.renderJSONObject(props)
     }
     else {
@@ -32,27 +27,27 @@ export default class JSONNode extends Component {
     }
   }
 
-  renderJSONObject ({parent, index, field, value, onChangeValue, onChangeField}) {
-    const childCount = Object.keys(value).length
+  renderJSONObject ({data, index, options, onChangeValue, onChangeProperty, onExpand}) {
+    const childCount = data.childs.length
     const contents = [
       h('div', {class: 'jsoneditor-node jsoneditor-object'}, [
         this.renderExpandButton(),
-        this.renderField(parent, index, field, value),
+        this.renderProperty(data, index, options),
         this.renderSeparator(),
         this.renderReadonly(`{${childCount}}`, `Array containing ${childCount} items`)
       ])
     ]
 
-    if (this.state.expanded) {
-      const childs = this.state.expanded && Object.keys(value).map(f => {
-            return h(JSONNode, {
-              parent: this,
-              field: f,
-              value: value[f],
-              onChangeValue,
-              onChangeField
-            })
-          })
+    if (data.expanded) {
+      const childs = data.childs.map(child => {
+        return h(JSONNode, {
+          data: child,
+          options,
+          onChangeValue,
+          onChangeProperty,
+          onExpand
+        })
+      })
 
       contents.push(h('ul', {class: 'jsoneditor-list'}, childs))
     }
@@ -60,27 +55,28 @@ export default class JSONNode extends Component {
     return h('li', {}, contents)
   }
 
-  renderJSONArray ({parent, index, field, value, onChangeValue, onChangeField}) {
-    const childCount = value.length
+  renderJSONArray ({data, index, options, onChangeValue, onChangeProperty, onExpand}) {
+    const childCount = data.childs.length
     const contents = [
       h('div', {class: 'jsoneditor-node jsoneditor-array'}, [
         this.renderExpandButton(),
-        this.renderField(parent, index, field, value),
+        this.renderProperty(data, index, options),
         this.renderSeparator(),
         this.renderReadonly(`[${childCount}]`, `Array containing ${childCount} items`)
       ])
     ]
 
-    if (this.state.expanded) {
-      const childs = this.state.expanded && value.map((v, i) => {
-            return h(JSONNode, {
-              parent: this,
-              index: i,
-              value: v,
-              onChangeValue,
-              onChangeField
-            })
-          })
+    if (data.expanded) {
+      const childs = data.childs.map((child, index) => {
+        return h(JSONNode, {
+          data: child,
+          index,
+          options,
+          onChangeValue,
+          onChangeProperty,
+          onExpand
+        })
+      })
 
       contents.push(h('ul', {class: 'jsoneditor-list'}, childs))
     }
@@ -88,13 +84,13 @@ export default class JSONNode extends Component {
     return h('li', {}, contents)
   }
 
-  renderJSONValue ({parent, index, field, value}) {
+  renderJSONValue ({data, index, options}) {
     return h('li', {}, [
       h('div', {class: 'jsoneditor-node'}, [
         h('div', {class: 'jsoneditor-button-placeholder'}),
-        this.renderField(parent, index, field, value),
+        this.renderProperty(data, index, options),
         this.renderSeparator(),
-        this.renderValue(this.state.value)
+        this.renderValue(data.value)
       ])
     ])
   }
@@ -103,20 +99,29 @@ export default class JSONNode extends Component {
     return h('div', {class: 'jsoneditor-readonly', contentEditable: false, title}, text)
   }
 
-  renderField (parent, index, field, value) {
-    const readonly = !parent || index !== undefined
-    const content = !parent
-        ? valueType(value)        // render 'object' or 'array', or 'number' as field
+  renderProperty (data, index, options) {
+    const property = last(data.path)
+    const isProperty = typeof property === 'string'
+    const content = isProperty
+        ? escapeHTML(property)      // render the property name
         : index !== undefined
-            ? index               // render the array index of the item
-            : escapeHTML(field)   // render the property name
+            ? index             // render the array index of the item
+            : JSONNode._rootName(data, options)
 
     return h('div', {
-      class: 'jsoneditor-field' + (readonly ? ' jsoneditor-readonly' : ''),
-      contentEditable: !readonly,
+      class: 'jsoneditor-property' + (isProperty ? '' : ' jsoneditor-readonly'),
+      contentEditable: isProperty,
       spellCheck: 'false',
-      onBlur: this.handleChangeField
+      onInput: this.handleChangeProperty
     }, content)
+  }
+
+  static _rootName (data, options) {
+    return typeof options.name === 'string'
+        ? options.name
+        : (data.type === 'object' || data.type === 'array')
+            ? data.type
+            : valueType(data.value)
   }
 
   renderSeparator() {
@@ -133,7 +138,6 @@ export default class JSONNode extends Component {
       contentEditable: true,
       spellCheck: 'false',
       onInput: this.handleChangeValue,
-      onBlur: this.handleBlurValue,
       onClick: this.handleClickValue,
       onKeyDown: this.handleKeyDownValue,
       title: _isUrl ? 'Ctrl+Click or ctrl+Enter to open url' : null
@@ -141,43 +145,28 @@ export default class JSONNode extends Component {
   }
 
   renderExpandButton () {
-    const className = `jsoneditor-button jsoneditor-${this.state.expanded ? 'expanded' : 'collapsed'}`
+    const className = `jsoneditor-button jsoneditor-${this.props.data.expanded ? 'expanded' : 'collapsed'}`
     return h('div', {class: 'jsoneditor-button-container'},
         h('button', {class: className, onClick: this.handleExpand})
     )
   }
 
   shouldComponentUpdate(nextProps, nextState) {
-    return Object.keys(nextProps).some(prop => this.props[prop] !== nextProps[prop]) ||
-        (this.state && Object.keys(nextState).some(prop => this.state[prop] !== nextState[prop]))
+    return Object.keys(nextProps).some(prop => this.props[prop] !== nextProps[prop])
   }
 
-  componentWillReceiveProps(nextProps) {
-    this.setState({
-      value: nextProps.value
-    })
-  }
+  handleChangeProperty (event) {
+    const property = unescapeHTML(getInnerText(event.target))
+    const oldPath = this.props.data.path
+    const newPath = oldPath.slice(0, oldPath.length - 1).concat(property)
 
-  handleChangeField (event) {
-    const path = this.props.parent.getPath()
-    const newField = unescapeHTML(getInnerText(event.target))
-    const oldField = this.props.field
-    if (newField !== oldField) {
-      this.props.onChangeField(path, oldField, newField)
-    }
-  }
-
-  handleBlurValue (event) {
-    const path = this.getPath()
-    if (this.state.value !== this.props.value) {
-      this.props.onChangeValue(path, this.state.value)
-    }
+    this.props.onChangeProperty(oldPath, newPath)
   }
 
   handleChangeValue (event) {
-    this.setState({
-      value: this._getValueFromEvent(event)
-    })
+    const value = this._getValueFromEvent(event)
+
+    this.props.onChangeValue(this.props.data.path, value)
   }
 
   handleClickValue (event) {
@@ -193,9 +182,7 @@ export default class JSONNode extends Component {
   }
 
   handleExpand (event) {
-    this.setState({
-      expanded: !this.state.expanded
-    })
+    this.props.onExpand(this.props.data.path, !this.props.data.expanded)
   }
 
   _openLinkIfUrl (event) {
@@ -211,20 +198,5 @@ export default class JSONNode extends Component {
 
   _getValueFromEvent (event) {
     return stringConvert(unescapeHTML(getInnerText(event.target)))
-  }
-
-  getPath () {
-    const path = []
-
-    let node = this
-    while (node) {
-      path.unshift(node.props.field || node.props.index)
-
-      node = node.props.parent
-    }
-
-    path.shift() // remove the root node again (null)
-
-    return path
   }
 }

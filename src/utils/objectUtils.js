@@ -79,30 +79,3 @@ export function setIn (object, path, value) {
 
   return updated
 }
-
-/**
- * Rename a field in an object without mutating the object itself.
- * The order of the fields in the object is maintained.
- * @param {Object} object
- * @param {string} oldField
- * @param {string} newField
- * @return {Object} Returns a clone of the object where property `oldField` is
- *                  renamed to `newField`
- */
-export function renameField(object, oldField, newField) {
-  const renamed = {}
-
-  // important: maintain the order in which we add the properties to newValue,
-  // else the field will "jump" to another place
-  Object.keys(object).forEach(field => {
-    if (field === oldField) {
-      renamed[newField] = object[oldField]
-    }
-    else {
-      renamed[field] = object[field]
-    }
-  })
-
-  return renamed
-}
-

@@ -31,7 +31,7 @@ ul.jsoneditor-list {
   padding-left: 2px;
 }
 
-.jsoneditor-field,
+.jsoneditor-property,
 .jsoneditor-value,
 .jsoneditor-readonly,
 .jsoneditor-separator {
@@ -42,7 +42,7 @@ ul.jsoneditor-list {
   font-size: 10pt;
 }
 
-.jsoneditor-field,
+.jsoneditor-property,
 .jsoneditor-value,
 .jsoneditor-readonly {
   min-width: 24px;
@@ -58,17 +58,17 @@ ul.jsoneditor-list {
   font-size: 0;
 }
 
-.jsoneditor-field,
+.jsoneditor-property,
 .jsoneditor-value {
   border-radius: 1px;
 }
 
-.jsoneditor-field:focus,
+.jsoneditor-property:focus,
 .jsoneditor-value:focus {
   box-shadow: 0 0 3px 1px #008fd5;
 }
 
-.jsoneditor-field:hover,
+.jsoneditor-property:hover,
 .jsoneditor-value:hover {
   background-color: #f5f5f5;
 }
