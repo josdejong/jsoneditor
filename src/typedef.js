@@ -4,7 +4,8 @@
  *   type: string,
  *   expanded: boolean?,
  *   menu: boolean?,
- *   path: Array.<string | number>,
+ *   path: string,
+ *   prop: string?,
  *   value: *?,
  *   childs: Model[]?
  * }} Model

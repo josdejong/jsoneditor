@@ -4,7 +4,7 @@ import ContextMenu from './ContextMenu'
 import { escapeHTML, unescapeHTML } from './utils/stringUtils'
 import { getInnerText } from './utils/domUtils'
 import {stringConvert, valueType, isUrl} from  './utils/typeUtils'
-import { last } from './utils/arrayUtils'
+import * as pointer from 'json-pointer'
 
 export default class JSONNode extends Component {
   constructor (props) {
@@ -102,10 +102,9 @@ export default class JSONNode extends Component {
   }
 
   renderProperty (data, index, options) {
-    const property = last(data.path)
-    const isProperty = typeof property === 'string'
+    const isProperty = typeof data.prop === 'string'
     const content = isProperty
-        ? escapeHTML(property)      // render the property name
+        ? escapeHTML(data.prop) // render the property name
         : index !== undefined
             ? index             // render the array index of the item
             : JSONNode._rootName(data, options)
@@ -169,11 +168,11 @@ export default class JSONNode extends Component {
   }
 
   handleChangeProperty (event) {
-    const property = unescapeHTML(getInnerText(event.target))
-    const oldPath = this.props.data.path
-    const newPath = oldPath.slice(0, oldPath.length - 1).concat(property)
+    const oldProp = this.props.data.prop
+    const newProp = unescapeHTML(getInnerText(event.target))
+    const path = this.props.data.path.replace(/\/.+$/, '') // remove last entry
 
-    this.props.events.onChangeProperty(oldPath, newPath)
+    this.props.events.onChangeProperty(path, oldProp, newProp)
   }
 
   handleChangeValue (event) {

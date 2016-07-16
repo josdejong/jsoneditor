@@ -1,7 +1,7 @@
 import { h, Component } from 'preact'
+import * as pointer from 'json-pointer'
 
-import { setIn } from './utils/objectUtils'
-import { last } from './utils/arrayUtils'
+import { setIn, getIn } from './utils/objectUtils'
 import { isObject } from './utils/typeUtils'
 import JSONNode from './JSONNode'
 
@@ -46,25 +46,34 @@ export default class Main extends Component {
   _onChangeValue (path, value) {
     console.log('_onChangeValue', path, value)
 
-    const modelPath = Main._pathToModelPath(this.state.data, path).concat('value')
+    const modelPath = Main._pathToModelPath(this.state.data, Main._parsePath(path)).concat('value')
 
     this.setState({
       data: setIn(this.state.data, modelPath, value)
     })
   }
 
-  _onChangeProperty (oldPath, newPath) {
-    console.log('_onChangeProperty', oldPath, newPath)
+  _onChangeProperty (path, oldProp, newProp) {
+    console.log('_onChangeProperty', path, oldProp, newProp)
 
-    const modelPath = Main._pathToModelPath(this.state.data, oldPath).concat('path')
+    const array = pointer.parse(path)
+    const parent = getIn(this.state.data, array)
+    const index = parent.childs.findIndex(child => child.prop === oldProp)
 
-    this.setState({
-      data: setIn(this.state.data, modelPath, newPath)
-    })
+    const newPath = path + '/' + pointer.escape(newProp)
+    const modelPath = Main._pathToModelPath(this.state.data, array).concat(['childs', index])
+
+    let data = this.state.data
+    data = setIn(data, modelPath.concat('path'), newPath)
+    data = setIn(data, modelPath.concat('prop'), newProp)
+
+    this.setState({ data })
   }
 
   _onExpand(path, expand) {
-    const modelPath = Main._pathToModelPath(this.state.data, path).concat('expanded')
+    const modelPath = Main._pathToModelPath(this.state.data, Main._parsePath(path)).concat('expanded')
+
+    console.log('_onExpand', path, modelPath)
 
     this.setState({
       data: setIn(this.state.data, modelPath, expand)
@@ -72,7 +81,7 @@ export default class Main extends Component {
   }
 
   _onContextMenu(path, visible) {
-    const modelPath = Main._pathToModelPath(this.state.data, path).concat('menu')
+    const modelPath = Main._pathToModelPath(this.state.data, Main._parsePath(path)).concat('menu')
 
     this.setState({
       data: setIn(this.state.data, modelPath, visible)
@@ -87,17 +96,34 @@ export default class Main extends Component {
   // TODO: comment
   set (json) {
     this.setState({
-      data: Main._jsonToModel([], json, this.state.options.expand)
+      data: Main._jsonToModel('', null, json, this.state.options.expand)
     })
   }
 
   /**
    * Default function to determine whether or not to expand a node initially
-   * @param {Array.<string | number>} path
+   *
+   * Rule: expand the root node only
+   *
+   * @param {string} path   A JSON Pointer path
    * @return {boolean}
    */
   static expand (path) {
-    return path.length === 0
+    return path.indexOf('/') === -1
+  }
+
+  /**
+   * parse json pointer into an array, and replace strings containing a number
+   * with a number
+   * @param {string} path
+   * @return {Array.<string | number>}
+   * @private
+   */
+  static _parsePath (path) {
+    return pointer.parse(path).map(item => {
+      const num = Number(item)
+      return isNaN(num) ? item : num
+    })
   }
 
   /**
@@ -119,7 +145,7 @@ export default class Main extends Component {
     }
     else {
       // object property. find the index of this property
-      index = model.childs.findIndex(child => last(child.path) === path[0])
+      index = model.childs.findIndex(child => child.prop === path[0])
     }
 
     return ['childs', index]
@@ -128,19 +154,21 @@ export default class Main extends Component {
 
   /**
    * Convert a JSON object into the internally used data model
-   * @param {Array.<string | number>} path
+   * @param {string} path
+   * @param {string | null} prop
    * @param {Object | Array | string | number | boolean | null} value
-   * @param {function(path: Array.<string>)} expand
+   * @param {function(path: string)} expand
    * @return {Model}
    * @private
    */
-  static _jsonToModel (path, value, expand) {
+  static _jsonToModel (path, prop, value, expand) {
     if (Array.isArray(value)) {
       return {
         type: 'array',
         expanded: expand(path),
         path,
-        childs: value.map((child, index) => Main._jsonToModel(path.concat(index), child, expand))
+        prop,
+        childs: value.map((child, index) => Main._jsonToModel(path + '/' + index, null, child, expand))
       }
     }
     else if (isObject(value)) {
@@ -148,8 +176,9 @@ export default class Main extends Component {
         type: 'object',
         expanded: expand(path),
         path,
+        prop,
         childs: Object.keys(value).map(prop => {
-          return Main._jsonToModel(path.concat(prop), value[prop], expand)
+          return Main._jsonToModel(path + '/' + pointer.escape(prop), prop, value[prop], expand)
         })
       }
     }
@@ -157,6 +186,7 @@ export default class Main extends Component {
       return {
         type: 'auto',
         path,
+        prop,
         value
       }
     }
@@ -176,8 +206,7 @@ export default class Main extends Component {
       const object = {}
 
       model.childs.forEach(child => {
-        const prop = last(child.path)
-        object[prop] = Main._modelToJson(child)
+        object[child.prop] = Main._modelToJson(child)
       })
 
       return object
