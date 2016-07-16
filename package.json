@@ -38,6 +38,7 @@
     "gulp-shell": "0.5.2",
     "gulp-util": "3.0.7",
     "json-loader": "0.5.4",
+    "json-pointer": "0.5.0",
     "mithril": "0.2.5",
     "mkdirp": "0.5.1",
     "mocha": "2.4.5",

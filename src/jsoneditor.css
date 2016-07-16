@@ -21,7 +21,7 @@
 
 ul.jsoneditor-list {
   list-style-type: none;
-  padding-left: 24px;
+  padding-left: 20px;
   margin: 0;
   font-size: 0;
 }
@@ -128,6 +128,7 @@ div.jsoneditor-value.jsoneditor-url {
 }
 
 button.jsoneditor-button {
+  position: relative;
   width: 20px;
   height: 20px;
   padding: 0;
@@ -154,4 +155,25 @@ button.jsoneditor-button.jsoneditor-collapsed {
 
 button.jsoneditor-button.jsoneditor-expanded {
   background-position: -2px -74px;
+}
+
+button.jsoneditor-button.jsoneditor-contextmenu {
+  background-position: -50px -74px;
+}
+
+button.jsoneditor-button.jsoneditor-contextmenu:hover,
+button.jsoneditor-button.jsoneditor-contextmenu:focus,
+button.jsoneditor-button.jsoneditor-contextmenu.jsoneditor-selected {
+  background-position: -50px -50px;
+}
+
+div.jsoneditor-contextmenu {
+  position: absolute;
+  top: 20px;
+  left: 0;
+
+  z-index: 1;
+  background: white;
+  padding: 5px;
+  border: 1px solid gray;
 }

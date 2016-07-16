@@ -1,4 +1,6 @@
 import { h, Component } from 'preact'
+
+import ContextMenu from './ContextMenu'
 import { escapeHTML, unescapeHTML } from './utils/stringUtils'
 import { getInnerText } from './utils/domUtils'
 import {stringConvert, valueType, isUrl} from  './utils/typeUtils'
@@ -13,6 +15,7 @@ export default class JSONNode extends Component {
     this.handleClickValue = this.handleClickValue.bind(this)
     this.handleKeyDownValue = this.handleKeyDownValue.bind(this)
     this.handleExpand = this.handleExpand.bind(this)
+    this.handleContextMenu = this.handleContextMenu.bind(this)
   }
 
   render (props) {
@@ -27,13 +30,14 @@ export default class JSONNode extends Component {
     }
   }
 
-  renderJSONObject ({data, index, options, onChangeValue, onChangeProperty, onExpand}) {
+  renderJSONObject ({data, index, options, events}) {
     const childCount = data.childs.length
     const contents = [
       h('div', {class: 'jsoneditor-node jsoneditor-object'}, [
         this.renderExpandButton(),
+        this.renderContextMenuButton(),
         this.renderProperty(data, index, options),
-        this.renderSeparator(),
+        this.renderSeparator(), // TODO: remove separator for Object and Array (gives an issue in Preact)
         this.renderReadonly(`{${childCount}}`, `Array containing ${childCount} items`)
       ])
     ]
@@ -43,9 +47,7 @@ export default class JSONNode extends Component {
         return h(JSONNode, {
           data: child,
           options,
-          onChangeValue,
-          onChangeProperty,
-          onExpand
+          events
         })
       })
 
@@ -55,13 +57,14 @@ export default class JSONNode extends Component {
     return h('li', {}, contents)
   }
 
-  renderJSONArray ({data, index, options, onChangeValue, onChangeProperty, onExpand}) {
+  renderJSONArray ({data, index, options, events}) {
     const childCount = data.childs.length
     const contents = [
       h('div', {class: 'jsoneditor-node jsoneditor-array'}, [
         this.renderExpandButton(),
+        this.renderContextMenuButton(),
         this.renderProperty(data, index, options),
-        this.renderSeparator(),
+        this.renderSeparator(), // TODO: remove separator for Object and Array (gives an issue in Preact)
         this.renderReadonly(`[${childCount}]`, `Array containing ${childCount} items`)
       ])
     ]
@@ -72,9 +75,7 @@ export default class JSONNode extends Component {
           data: child,
           index,
           options,
-          onChangeValue,
-          onChangeProperty,
-          onExpand
+          events
         })
       })
 
@@ -88,6 +89,7 @@ export default class JSONNode extends Component {
     return h('li', {}, [
       h('div', {class: 'jsoneditor-node'}, [
         h('div', {class: 'jsoneditor-button-placeholder'}),
+        this.renderContextMenuButton(),
         this.renderProperty(data, index, options),
         this.renderSeparator(),
         this.renderValue(data.value)
@@ -114,14 +116,6 @@ export default class JSONNode extends Component {
       spellCheck: 'false',
       onInput: this.handleChangeProperty
     }, content)
-  }
-
-  static _rootName (data, options) {
-    return typeof options.name === 'string'
-        ? options.name
-        : (data.type === 'object' || data.type === 'array')
-            ? data.type
-            : valueType(data.value)
   }
 
   renderSeparator() {
@@ -151,8 +145,27 @@ export default class JSONNode extends Component {
     )
   }
 
+  renderContextMenuButton () {
+    const childs = this.props.data.menu ? [
+        h(ContextMenu)
+    ] : null
+
+    const className = `jsoneditor-button jsoneditor-contextmenu`
+    return h('div', {class: 'jsoneditor-button-container'},
+        h('button', {class: className, onClick: this.handleContextMenu}, childs)
+    )
+  }
+
   shouldComponentUpdate(nextProps, nextState) {
     return Object.keys(nextProps).some(prop => this.props[prop] !== nextProps[prop])
+  }
+
+  static _rootName (data, options) {
+    return typeof options.name === 'string'
+        ? options.name
+        : (data.type === 'object' || data.type === 'array')
+        ? data.type
+        : valueType(data.value)
   }
 
   handleChangeProperty (event) {
@@ -160,13 +173,13 @@ export default class JSONNode extends Component {
     const oldPath = this.props.data.path
     const newPath = oldPath.slice(0, oldPath.length - 1).concat(property)
 
-    this.props.onChangeProperty(oldPath, newPath)
+    this.props.events.onChangeProperty(oldPath, newPath)
   }
 
   handleChangeValue (event) {
     const value = this._getValueFromEvent(event)
 
-    this.props.onChangeValue(this.props.data.path, value)
+    this.props.events.onChangeValue(this.props.data.path, value)
   }
 
   handleClickValue (event) {
@@ -182,7 +195,11 @@ export default class JSONNode extends Component {
   }
 
   handleExpand (event) {
-    this.props.onExpand(this.props.data.path, !this.props.data.expanded)
+    this.props.events.onExpand(this.props.data.path, !this.props.data.expanded)
+  }
+
+  handleContextMenu (event) {
+    this.props.events.onContextMenu(this.props.data.path, !this.props.data.menu)
   }
 
   _openLinkIfUrl (event) {

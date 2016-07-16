@@ -20,24 +20,25 @@ export default class Main extends Component {
         expanded: true,
         path: [],
         childs: []
-      }
-    }
+      },
 
-    this._onExpand = this._onExpand.bind(this)
-    this._onChangeValue = this._onChangeValue.bind(this)
-    this._onChangeProperty = this._onChangeProperty.bind(this)
+      events: {
+        onChangeProperty: this._onChangeProperty.bind(this),
+        onChangeValue: this._onChangeValue.bind(this),
+        onExpand: this._onExpand.bind(this),
+        onContextMenu: this._onContextMenu.bind(this)
+      },
+
+      menu: null,
+
+      search: null
+    }
   }
 
   render() {
     return h('div', {class: 'jsoneditor'}, [
       h('ul', {class: 'jsoneditor-list'}, [
-        h(JSONNode, {
-          data: this.state.data,
-          options: this.state.options,
-          onChangeProperty: this._onChangeProperty,
-          onChangeValue: this._onChangeValue,
-          onExpand: this._onExpand
-        })
+        h(JSONNode, this.state)
       ])
     ])
   }
@@ -67,6 +68,14 @@ export default class Main extends Component {
 
     this.setState({
       data: setIn(this.state.data, modelPath, expand)
+    })
+  }
+
+  _onContextMenu(path, visible) {
+    const modelPath = Main._pathToModelPath(this.state.data, path).concat('menu')
+
+    this.setState({
+      data: setIn(this.state.data, modelPath, visible)
     })
   }
 
