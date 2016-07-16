@@ -30,7 +30,7 @@ export default class JSONNode extends Component {
     }
   }
 
-  renderJSONObject ({data, index, options, events}) {
+  renderJSONObject ({data, index, options, events, menu}) {
     const childCount = data.childs.length
     const contents = [
       h('div', {class: 'jsoneditor-node jsoneditor-object'}, [
@@ -47,7 +47,8 @@ export default class JSONNode extends Component {
         return h(JSONNode, {
           data: child,
           options,
-          events
+          events,
+          menu
         })
       })
 
@@ -57,7 +58,7 @@ export default class JSONNode extends Component {
     return h('li', {}, contents)
   }
 
-  renderJSONArray ({data, index, options, events}) {
+  renderJSONArray ({data, index, options, events, menu}) {
     const childCount = data.childs.length
     const contents = [
       h('div', {class: 'jsoneditor-node jsoneditor-array'}, [
@@ -75,7 +76,8 @@ export default class JSONNode extends Component {
           data: child,
           index,
           options,
-          events
+          events,
+          menu
         })
       })
 
@@ -145,11 +147,12 @@ export default class JSONNode extends Component {
   }
 
   renderContextMenuButton () {
-    const childs = this.props.data.menu ? [
-        h(ContextMenu)
-    ] : null
+    const visible = this.contextMenuVisible()
+    const childs = visible
+        ? [ h(ContextMenu) ]
+        : null
 
-    const className = `jsoneditor-button jsoneditor-contextmenu`
+    const className = `jsoneditor-button jsoneditor-contextmenu` + (visible ? ' jsoneditor-visible' : '')
     return h('div', {class: 'jsoneditor-button-container'},
         h('button', {class: className, onClick: this.handleContextMenu}, childs)
     )
@@ -157,6 +160,10 @@ export default class JSONNode extends Component {
 
   shouldComponentUpdate(nextProps, nextState) {
     return Object.keys(nextProps).some(prop => this.props[prop] !== nextProps[prop])
+  }
+
+  contextMenuVisible () {
+    return this.props.menu === this.props.data.path
   }
 
   static _rootName (data, options) {
@@ -198,7 +205,12 @@ export default class JSONNode extends Component {
   }
 
   handleContextMenu (event) {
-    this.props.events.onContextMenu(this.props.data.path, !this.props.data.menu)
+    // toggle visibility of the context menu
+    const path = this.contextMenuVisible()
+        ? null
+        : this.props.data.path
+
+    this.props.events.onContextMenu(path)
   }
 
   _openLinkIfUrl (event) {

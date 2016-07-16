@@ -29,7 +29,7 @@ export default class Main extends Component {
         onContextMenu: this._onContextMenu.bind(this)
       },
 
-      menu: null,
+      menu: null,  // json pointer to the node having menu visible
 
       search: null
     }
@@ -80,11 +80,14 @@ export default class Main extends Component {
     })
   }
 
-  _onContextMenu(path, visible) {
-    const modelPath = Main._pathToModelPath(this.state.data, Main._parsePath(path)).concat('menu')
-
+  /**
+   * Set ContextMenu to a json pointer, or hide the context menu by passing null
+   * @param {string | null} path
+   * @private
+   */
+  _onContextMenu(path) {
     this.setState({
-      data: setIn(this.state.data, modelPath, visible)
+      menu: path || null
     })
   }
 
