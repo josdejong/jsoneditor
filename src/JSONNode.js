@@ -24,6 +24,7 @@ export default class JSONNode extends Component {
   constructor (props) {
     super(props)
 
+    // TODO: create a function bindMethods(this)
     this.handleChangeProperty = this.handleChangeProperty.bind(this)
     this.handleChangeValue = this.handleChangeValue.bind(this)
     this.handleClickValue = this.handleClickValue.bind(this)
@@ -159,16 +160,18 @@ export default class JSONNode extends Component {
   }
 
   renderContextMenuButton () {
-    const visible = this.props.data.menu === true
+    const className = 'jsoneditor-button jsoneditor-contextmenu' +
+        (this.props.data.contextMenu ? ' jsoneditor-visible' : '')
 
-    const className = 'jsoneditor-button jsoneditor-contextmenu' + (visible ? ' jsoneditor-visible' : '')
     return h('div', {class: 'jsoneditor-button-container'},
-        visible ? this.renderContextMenu() : null,
+        this.props.data.contextMenu
+            ? this.renderContextMenu(this.props.data.contextMenu)
+            : null,
         h('button', {class: className, onClick: this.handleContextMenu})
     )
   }
 
-  renderContextMenu () {
+  renderContextMenu ({anchor, root}) {
     const hasParent = this.props.data.path !== ''
     const type = this.props.data.type
     const items = [] // array with menu items
@@ -333,10 +336,11 @@ export default class JSONNode extends Component {
 
     // TODO: implement a hook to adjust the context menu
 
-    return h(ContextMenu, {items})
+    return h(ContextMenu, {anchor, root, items})
   }
 
   shouldComponentUpdate(nextProps, nextState) {
+    // WARNING: we suppose that JSONNode is stateless, we don't check changes in the state, only in props
     return Object.keys(nextProps).some(prop => this.props[prop] !== nextProps[prop])
   }
 
@@ -360,20 +364,20 @@ export default class JSONNode extends Component {
   }
 
   handleChangeValue (event) {
-    const value = this._getValueFromEvent(event)
+    const value = JSONNode._getValueFromEvent(event)
 
     this.props.events.onChangeValue(this.props.data.path, value)
   }
 
   handleClickValue (event) {
     if (event.ctrlKey && event.button === 0) { // Ctrl+Left click
-      this._openLinkIfUrl(event)
+      JSONNode._openLinkIfUrl(event)
     }
   }
 
   handleKeyDownValue (event) {
     if (event.ctrlKey && event.which === 13) { // Ctrl+Enter
-      this._openLinkIfUrl(event)
+      JSONNode._openLinkIfUrl(event)
     }
   }
 
@@ -384,16 +388,25 @@ export default class JSONNode extends Component {
   handleContextMenu (event) {
     event.stopPropagation() // stop propagation, because else Main.js will hide the context menu again
 
-    // toggle visibility of the context menu
-    const path = this.props.data.menu === true
-        ? null
-        : this.props.data.path
-
-    this.props.events.onContextMenu(path)
+    if (this.props.data.contextMenu) {
+      this.props.events.hideContextMenu()
+    }
+    else {
+      this.props.events.showContextMenu({
+        path: this.props.data.path,
+        anchor: event.target,
+        root: JSONNode._findRootElement(event)
+      })
+    }
   }
 
-  _openLinkIfUrl (event) {
-    const value = this._getValueFromEvent(event)
+  /**
+   * When this JSONNode holds an URL as value, open this URL in a new browser tab
+   * @param event
+   * @private
+   */
+  static _openLinkIfUrl (event) {
+    const value = JSONNode._getValueFromEvent(event)
 
     if (isUrl(value)) {
       event.preventDefault()
@@ -403,7 +416,33 @@ export default class JSONNode extends Component {
     }
   }
 
-  _getValueFromEvent (event) {
+  static _getValueFromEvent (event) {
     return stringConvert(unescapeHTML(getInnerText(event.target)))
   }
+
+
+  /**
+   * Find the root DOM element of the JSONEditor
+   * Search is done based on the CSS class 'jsoneditor'
+   * @param event
+   * @return {*}
+   * @private
+   */
+  static _findRootElement (event) {
+    function isEditorElement (elem) {
+      return elem.className.split(' ').indexOf('jsoneditor') !== -1
+    }
+
+    let elem = event.target
+    while (elem) {
+      if (isEditorElement(elem)) {
+        return elem
+      }
+
+      elem = elem.parentNode
+    }
+
+    return null
+  }
+
 }

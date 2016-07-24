@@ -1,28 +1,41 @@
-import { h, Component } from 'preact'
+import { h, render, Component } from 'preact'
+
+export let CONTEXT_MENU_HEIGHT = 240
 
 export default class ContextMenu extends Component {
   constructor(props) {
     super(props)
 
+    // determine orientation
+    const anchorRect = this.props.anchor.getBoundingClientRect()
+    const rootRect = this.props.root.getBoundingClientRect()
+    const orientation = (rootRect.bottom - anchorRect.bottom < CONTEXT_MENU_HEIGHT &&
+            anchorRect.top - rootRect.top > CONTEXT_MENU_HEIGHT)
+        ? 'top'
+        : 'bottom'
+
     this.state = {
+      orientation,
       expanded: null,   // menu index of expanded menu item
       expanding: null,  // menu index of expanding menu item
       collapsing: null  // menu index of collapsing menu item
     }
 
-    this.onUpdate = [] // handlers to be executed after component update
-
     this.renderMenuItem = this.renderMenuItem.bind(this)
   }
   
   render () {
+    if (!this.props.items) {
+      return null
+    }
 
     // TODO: create a non-visible button to set the focus to the menu
     // TODO: implement (customizable) quick keys
 
-    // TODO: render the context menu on top when there is no space below the node
+    const className = 'jsoneditor-contextmenu ' +
+        ((this.state.orientation === 'top') ? 'jsoneditor-contextmenu-top' : 'jsoneditor-contextmenu-bottom')
 
-    return h('div', {class: 'jsoneditor-contextmenu'},
+    return h('div', {class: className},
       this.props.items.map(this.renderMenuItem)
     )
   }
@@ -47,7 +60,6 @@ export default class ContextMenu extends Component {
     }
     else if (item.submenu) {
       // button expands the submenu
-
       return h('div', {class: 'jsoneditor-menu-item'}, [
         h('button', {class: 'jsoneditor-menu-button ' + item.className, title: item.title, onClick: this.createExpandHandler(index) }, [
           h('span', {class: 'jsoneditor-icon'}),
@@ -73,7 +85,7 @@ export default class ContextMenu extends Component {
    * @param {number} index
    */
   renderSubMenu (submenu, index) {
-    const expanding = this.state.expanding === index
+    const expanded = this.state.expanded === index
     const collapsing = this.state.collapsing === index
 
     const contents = submenu.map(item => {
@@ -86,7 +98,7 @@ export default class ContextMenu extends Component {
     })
 
     const className = 'jsoneditor-submenu ' +
-        (expanding ? ' jsoneditor-expanding' : '') +
+        (expanded ? ' jsoneditor-expanded' : '') +
         (collapsing ? ' jsoneditor-collapsing' : '')
 
     return h('div', {class: className}, contents)
@@ -100,14 +112,7 @@ export default class ContextMenu extends Component {
 
       this.setState({
         expanded: (prev === index) ? null : index,
-        expanding: null,
         collapsing: prev
-      })
-
-      this.onUpdate.push(() => {
-        this.setState({
-          expanding: this.state.expanded
-        })
       })
 
       // timeout after unit is collapsed
@@ -119,11 +124,5 @@ export default class ContextMenu extends Component {
         }
       }, 300)
     }
-  }
-
-  componentDidUpdate () {
-    this.onUpdate.forEach(handler => handler())
-    this.onUpdate = []
-
   }
 }

@@ -61,20 +61,19 @@ export function isUrl (text) {
  * @private
  */
 export function stringConvert (str) {
-  const lower = str.toLowerCase()
   const num = Number(str)           // will nicely fail with '123ab'
   const numFloat = parseFloat(str)  // will nicely fail with '  '
 
   if (str == '') {
     return ''
   }
-  else if (lower == 'null') {
+  else if (str == 'null') {
     return null
   }
-  else if (lower == 'true') {
+  else if (str == 'true') {
     return true
   }
-  else if (lower == 'false') {
+  else if (str == 'false') {
     return false
   }
   else if (!isNaN(num) && !isNaN(numFloat)) {

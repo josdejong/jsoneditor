@@ -170,7 +170,7 @@ button.jsoneditor-button.jsoneditor-contextmenu.jsoneditor-visible {
 
 
 
-/******************************* Context Menu ******************************/
+/******************************* Context Menu *********************************/
 
 div.jsoneditor-contextmenu {
   position: absolute;
@@ -182,6 +182,11 @@ div.jsoneditor-contextmenu {
 
   border: 1px solid #d3d3d3;
   box-shadow: 2px 2px 12px rgba(128, 128, 128, 0.3);
+}
+
+div.jsoneditor-contextmenu.jsoneditor-contextmenu-top {
+  top: auto;
+  bottom: 20px;
 }
 
 div.jsoneditor-menu-item {
@@ -319,7 +324,7 @@ div.jsoneditor-submenu {
               inset 0 -10px 10px -10px rgba(128, 128, 128, 0.5)
 }
 
-div.jsoneditor-submenu.jsoneditor-expanding {
+div.jsoneditor-submenu.jsoneditor-expanded {
   visibility: visible;
   max-height: 104px;   /* 4 * 24px + 2 * 5px */
   /* FIXME: shouldn't rely on max-height equal to 4 items, should be flexible */

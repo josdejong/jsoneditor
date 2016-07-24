@@ -9,6 +9,13 @@ export default class Main extends Component {
   constructor (props) {
     super(props)
 
+    // TODO: create a function bindMethods(this)
+    this.handleChangeProperty = this.handleChangeProperty.bind(this)
+    this.handleChangeValue = this.handleChangeValue.bind(this)
+    this.handleExpand = this.handleExpand.bind(this)
+    this.handleShowContextMenu = this.handleShowContextMenu.bind(this)
+    this.handleHideContextMenu = this.handleHideContextMenu.bind(this)
+
     this.state = {
       options: Object.assign({
         name: null,
@@ -23,19 +30,18 @@ export default class Main extends Component {
       },
 
       events: {
-        onChangeProperty: this.handleChangeProperty.bind(this),
-        onChangeValue: this.handleChangeValue.bind(this),
-        onExpand: this.handleExpand.bind(this),
-        onContextMenu: this.handleContextMenu.bind(this)
+        onChangeProperty: this.handleChangeProperty,
+        onChangeValue: this.handleChangeValue,
+        onExpand: this.handleExpand,
+        showContextMenu: this.handleShowContextMenu,
+        hideContextMenu: this.handleHideContextMenu
       },
 
       /** @type {string | null} */
-      menu: null,  // json pointer to the node having menu visible
+      contextMenuPath: null,  // json pointer to the node having menu visible
 
       search: null
     }
-
-    this.handleHideContextMenu = this.handleHideContextMenu.bind(this)
   }
 
   render() {
@@ -84,32 +90,34 @@ export default class Main extends Component {
   /**
    * Set ContextMenu to a json pointer, or hide the context menu by passing null
    * @param {string | null} path
+   * @param {Element} anchor
+   * @param {Element} root
    * @private
    */
-  handleContextMenu(path) {
+  handleShowContextMenu({path, anchor, root}) {
     let data = this.state.data
 
     // hide previous context menu (if any)
-    if (this.state.menu !== null) {
-      const modelPath = Main._pathToModelPath(this.state.data, Main._parsePath(this.state.menu))
-      data = setIn(data, modelPath.concat('menu'), false)
+    if (this.state.contextMenuPath !== null) {
+      const modelPath = Main._pathToModelPath(this.state.data, Main._parsePath(this.state.contextMenuPath))
+      data = setIn(data, modelPath.concat('contextMenu'), false)
     }
 
     // show new menu
-    if (path !== null) {
+    if (typeof path === 'string') {
       const modelPath = Main._pathToModelPath(this.state.data, Main._parsePath(path))
-      data = setIn(data, modelPath.concat('menu'), true)
+      data = setIn(data, modelPath.concat('contextMenu'), {anchor, root})
     }
 
     this.setState({
-      menu: path,  // store path of current menu, just to easily find it next time
+      contextMenuPath: typeof path === 'string' ? path :  null,  // store path of current menu, just to easily find it next time
       data
     })
   }
 
   handleHideContextMenu (event) {
     // FIXME: find a different way to show/hide the context menu. create a single instance in the Main, pass a reference to it into the JSON nodes?
-    this.handleContextMenu(null)
+    this.handleShowContextMenu({})
   }
 
   // TODO: comment
