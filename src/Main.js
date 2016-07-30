@@ -2,7 +2,7 @@ import { h, Component } from 'preact'
 import * as pointer from 'json-pointer'
 
 import { setIn, updateIn, getIn, deleteIn, cloneDeep } from './utils/objectUtils'
-import { compareAsc, compareDesc } from './utils/arrayUtils'
+import { compareAsc, compareDesc, last } from './utils/arrayUtils'
 import { isObject } from './utils/typeUtils'
 import bindMethods from './utils/bindMethods'
 import JSONNode from './JSONNode'
@@ -23,7 +23,6 @@ export default class Main extends Component {
       data: {
         type: 'object',
         expanded: true,
-        path: [],
         childs: []
       },
 
@@ -56,7 +55,7 @@ export default class Main extends Component {
           data: this.state.data,
           events: this.state.events,
           options: this.state.options,
-          path: ''
+          path: []
         })
       ])
     ])
@@ -72,7 +71,7 @@ export default class Main extends Component {
     console.log('handleChangeProperty', path, oldProp, newProp)
 
     const index = this._findIndex(path, oldProp)
-    const newPath = path + '/' + pointer.escape(newProp)
+    const newPath = path.concat(newProp)
 
     this._setIn(path, ['childs', index, 'path'], newPath)
     this._setIn(path, ['childs', index, 'prop'], newProp)
@@ -91,11 +90,8 @@ export default class Main extends Component {
 
     // TODO: this method is quite complicated. Can we simplify it?
 
-    const parsedPath = pointer.parse(path)
-    const afterProp = parsedPath[parsedPath.length - 1]
-    const parentPath = parsedPath.slice(0, parsedPath.length - 1)
-        .map(entry => '/' + pointer.escape(entry)).join('')
-
+    const afterProp = last(path)
+    const parentPath = path.slice(0, path.length - 1)
     const parent = this._getIn(parentPath)
 
     const index = parent.type === 'array'
@@ -126,11 +122,8 @@ export default class Main extends Component {
 
     // TODO: this method is quite complicated. Can we simplify it?
 
-    const parsedPath = pointer.parse(path)
-    const prop = parsedPath[parsedPath.length - 1]
-    const parentPath = parsedPath.slice(0, parsedPath.length - 1)
-        .map(entry => '/' + pointer.escape(entry)).join('')
-
+    const prop = last(path)
+    const parentPath = path.slice(0, path.length - 1)
     const parent = this._getIn(parentPath)
 
     const index = parent.type === 'array'
@@ -157,19 +150,14 @@ export default class Main extends Component {
   }
 
   /**
-   *
-   * @param path
+   * Order the childs of an array in ascending or descending order
+   * @param {Array.<string | number>} path
    * @param {'asc' | 'desc' | null} [order=null]  If not provided, will toggle current ordering
    */
   handleSort (path, order = null) {
     console.log('handleSort', path, order)
 
     this.handleHideContextMenu()  // TODO: should be handled by the contextmenu itself
-
-    const comparators = {
-      asc: compareAsc,
-      desc: compareDesc
-    }
 
     let _order
     if (order === 'asc' || order === 'desc') {
@@ -184,7 +172,7 @@ export default class Main extends Component {
 
     this._updateIn(path, ['childs'], function (childs) {
       const ordered = childs.slice(0)
-      const compare = comparators[_order] || comparators['asc']
+      const compare = _order === 'desc' ? compareDesc : compareAsc
 
       ordered.sort((a, b) => compare(a.value, b.value))
 
@@ -199,14 +187,14 @@ export default class Main extends Component {
   }
 
   /**
-   * Set ContextMenu to a json pointer, or hide the context menu by passing null
-   * @param {string | null} path
+   * Set ContextMenu to a json pointer, or hide the context menu by passing null as path
+   * @param {Array.<string | number> | null} path
    * @param {Element} anchor
    * @param {Element} root
    * @private
    */
   handleShowContextMenu({path, anchor, root}) {
-    let data = this.state.data
+    console.log('handleShowContextMenu', path, anchor, root)
 
     // TODO: remove this cached this.state.contextMenuPath and do a brute-force sweep over the data instead?
     // hide previous context menu (if any)
@@ -215,12 +203,12 @@ export default class Main extends Component {
     }
 
     // show new menu
-    if (typeof path === 'string') {
+    if (Array.isArray(path)) {
       this._setIn(path, ['contextMenu'], {anchor, root})
     }
 
     this.setState({
-      contextMenuPath: typeof path === 'string' ? path :  null  // store path of current menu, just to easily find it next time
+      contextMenuPath: Array.isArray(path) ? path :  null  // store path of current menu, just to easily find it next time
     })
   }
 
@@ -230,13 +218,13 @@ export default class Main extends Component {
   }
 
   _getIn (path, modelProps = []) {
-    const modelPath = Main._pathToModelPath(this.state.data, Main._parsePath(path))
+    const modelPath = Main._pathToModelPath(this.state.data, path)
 
     return getIn(this.state.data, modelPath.concat(modelProps))
   }
 
   _setIn (path, modelProps = [], value) {
-    const modelPath = Main._pathToModelPath(this.state.data, Main._parsePath(path))
+    const modelPath = Main._pathToModelPath(this.state.data, path)
 
     this.setState({
       data: setIn(this.state.data, modelPath.concat(modelProps), value)
@@ -244,7 +232,7 @@ export default class Main extends Component {
   }
 
   _updateIn (path, modelProps = [], callback) {
-    const modelPath = Main._pathToModelPath(this.state.data, Main._parsePath(path))
+    const modelPath = Main._pathToModelPath(this.state.data, path)
 
     this.setState({
       data: updateIn(this.state.data, modelPath.concat(modelProps), callback)
@@ -252,7 +240,7 @@ export default class Main extends Component {
   }
 
   _deleteIn (path, modelProps = []) {
-    const modelPath = Main._pathToModelPath(this.state.data, Main._parsePath(path))
+    const modelPath = Main._pathToModelPath(this.state.data, path)
 
     this.setState({
       data: deleteIn(this.state.data, modelPath.concat(modelProps))
@@ -272,7 +260,7 @@ export default class Main extends Component {
   // TODO: comment
   set (json) {
     this.setState({
-      data: Main._jsonToModel('', null, json, this.state.options.expand)
+      data: Main._jsonToModel([], null, json, this.state.options.expand)
     })
   }
 
@@ -281,25 +269,11 @@ export default class Main extends Component {
    *
    * Rule: expand the root node only
    *
-   * @param {string} path   A JSON Pointer path
+   * @param {Array.<string | number>} path
    * @return {boolean}
    */
   static expand (path) {
-    return path.indexOf('/') === -1
-  }
-
-  /**
-   * parse json pointer into an array, and replace strings containing a number
-   * with a number
-   * @param {string} path
-   * @return {Array.<string | number>}
-   * @private
-   */
-  static _parsePath (path) {
-    return pointer.parse(path).map(item => {
-      const num = Number(item)
-      return isNaN(num) ? item : num
-    })
+    return path.length === 0
   }
 
   /**
@@ -330,10 +304,10 @@ export default class Main extends Component {
 
   /**
    * Convert a JSON object into the internally used data model
-   * @param {string} path
+   * @param {Array.<string | number>} path
    * @param {string | null} prop
    * @param {Object | Array | string | number | boolean | null} value
-   * @param {function(path: string)} expand
+   * @param {function(path: Array.<string | number>)} expand
    * @return {Model}
    * @private
    */
@@ -343,7 +317,7 @@ export default class Main extends Component {
         type: 'array',
         expanded: expand(path),
         prop,
-        childs: value.map((child, index) => Main._jsonToModel(path + '/' + index, null, child, expand))
+        childs: value.map((child, index) => Main._jsonToModel(path.concat(index), null, child, expand))
       }
     }
     else if (isObject(value)) {
@@ -352,7 +326,7 @@ export default class Main extends Component {
         expanded: expand(path),
         prop,
         childs: Object.keys(value).map(prop => {
-          return Main._jsonToModel(path + '/' + pointer.escape(prop), prop, value[prop], expand)
+          return Main._jsonToModel(path.concat(prop), prop, value[prop], expand)
         })
       }
     }

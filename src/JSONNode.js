@@ -2,6 +2,7 @@ import { h, Component } from 'preact'
 
 import ContextMenu from './ContextMenu'
 import { escapeHTML, unescapeHTML } from './utils/stringUtils'
+import { last } from './utils/arrayUtils'
 import { getInnerText } from './utils/domUtils'
 import {stringConvert, valueType, isUrl} from  './utils/typeUtils'
 
@@ -45,13 +46,13 @@ export default class JSONNode extends Component {
     }
   }
 
-  renderJSONObject ({data, path, index, options, events}) {
+  renderJSONObject ({path, data, options, events}) {
     const childCount = data.childs.length
     const contents = [
       h('div', {class: 'jsoneditor-node jsoneditor-object'}, [
         this.renderExpandButton(),
         this.renderContextMenuButton(),
-        this.renderProperty(data, index, options),
+        this.renderProperty(path, data, options),
         this.renderSeparator(), // TODO: remove separator for Object and Array (gives an issue in Preact)
         this.renderReadonly(`{${childCount}}`, `Array containing ${childCount} items`)
       ])
@@ -60,7 +61,7 @@ export default class JSONNode extends Component {
     if (data.expanded) {
       const childs = data.childs.map(child => {
         return h(JSONNode, {
-          path: path + '/' + child.prop,
+          path: path.concat(child.prop),
           data: child,
           options,
           events
@@ -73,13 +74,13 @@ export default class JSONNode extends Component {
     return h('li', {}, contents)
   }
 
-  renderJSONArray ({data, path, index, options, events}) {
+  renderJSONArray ({path, data, options, events}) {
     const childCount = data.childs.length
     const contents = [
       h('div', {class: 'jsoneditor-node jsoneditor-array'}, [
         this.renderExpandButton(),
         this.renderContextMenuButton(),
-        this.renderProperty(data, index, options),
+        this.renderProperty(path, data, options),
         this.renderSeparator(), // TODO: remove separator for Object and Array (gives an issue in Preact)
         this.renderReadonly(`[${childCount}]`, `Array containing ${childCount} items`)
       ])
@@ -88,9 +89,8 @@ export default class JSONNode extends Component {
     if (data.expanded) {
       const childs = data.childs.map((child, index) => {
         return h(JSONNode, {
-          path: path + '/' + index,
+          path: path.concat(index),
           data: child,
-          index,
           options,
           events
         })
@@ -102,12 +102,12 @@ export default class JSONNode extends Component {
     return h('li', {}, contents)
   }
 
-  renderJSONValue ({data, index, options}) {
+  renderJSONValue ({path, data, options}) {
     return h('li', {}, [
       h('div', {class: 'jsoneditor-node'}, [
         h('div', {class: 'jsoneditor-button-placeholder'}),
         this.renderContextMenuButton(),
-        this.renderProperty(data, index, options),
+        this.renderProperty(path, data, options),
         this.renderSeparator(),
         this.renderValue(data.value)
       ])
@@ -118,20 +118,29 @@ export default class JSONNode extends Component {
     return h('div', {class: 'jsoneditor-readonly', contentEditable: false, title}, text)
   }
 
-  renderProperty (data, index, options) {
-    const isProperty = typeof data.prop === 'string'
-    const content = isProperty
-        ? escapeHTML(data.prop) // render the property name
-        : index !== undefined
-            ? index             // render the array index of the item
-            : JSONNode._rootName(data, options)
+  renderProperty (path, data, options) {
+    if (path.length > 0) {
+      const content = last(path)
+      const isIndex = typeof content === 'number'
 
-    return h('div', {
-      class: 'jsoneditor-property' + (isProperty ? '' : ' jsoneditor-readonly'),
-      contentEditable: isProperty,
-      spellCheck: 'false',
-      onInput: this.handleChangeProperty
-    }, content)
+      return h('div', {
+        class: 'jsoneditor-property' + (isIndex ? ' jsoneditor-readonly' : ''),
+        contentEditable: !isIndex,
+        spellCheck: 'false',
+        onInput: this.handleChangeProperty
+      }, content)
+    }
+    else {
+      // root node
+      const content = JSONNode._rootName(data, options)
+
+      return h('div', {
+        class: 'jsoneditor-property jsoneditor-readonly',
+        contentEditable: false,
+        spellCheck: 'false',
+        onInput: this.handleChangeProperty
+      }, content)
+    }
   }
 
   renderSeparator() {
@@ -175,7 +184,7 @@ export default class JSONNode extends Component {
 
   renderContextMenu ({anchor, root}) {
     const path = this.props.path
-    const hasParent = path !== ''
+    const hasParent = path.length > 0
     const type = this.props.data.type
     const events = this.props.events
     const items = [] // array with menu items
@@ -321,10 +330,9 @@ export default class JSONNode extends Component {
     const newProp = unescapeHTML(getInnerText(event.target))
 
     // remove last entry from the path to get the path of the parent object
-    const index = this.props.path.lastIndexOf('/')
-    const path = this.props.path.substr(0, index)
+    const parentPath = this.props.path.slice(0, this.props.path.length - 1)
 
-    this.props.events.onChangeProperty(path, oldProp, newProp)
+    this.props.events.onChangeProperty(parentPath, oldProp, newProp)
   }
 
   handleChangeValue (event) {
