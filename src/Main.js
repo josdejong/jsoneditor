@@ -159,14 +159,15 @@ export default class Main extends Component {
 
     this.handleHideContextMenu()  // TODO: should be handled by the contextmenu itself
 
+    const entry = this._getIn(path)
+
     let _order
     if (order === 'asc' || order === 'desc') {
       _order = order
     }
     else {
       // toggle previous order
-      const current = this._getIn(path, ['order'])
-      _order = current !== 'asc' ? 'asc' : 'desc'
+      _order = entry.order !== 'asc' ? 'asc' : 'desc'
       this._setIn(path, ['order'], _order)
     }
 
@@ -174,7 +175,12 @@ export default class Main extends Component {
       const ordered = childs.slice(0)
       const compare = _order === 'desc' ? compareDesc : compareAsc
 
-      ordered.sort((a, b) => compare(a.value, b.value))
+      if (entry.type === 'array') {
+        ordered.sort((a, b) => compare(a.value, b.value))
+      }
+      else { // entry.type === 'object'
+        ordered.sort((a, b) => compare(a.prop, b.prop))
+      }
 
       return ordered
     })
