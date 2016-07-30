@@ -1,8 +1,10 @@
 import { h, Component } from 'preact'
 import * as pointer from 'json-pointer'
 
-import { setIn, getIn } from './utils/objectUtils'
+import { setIn, updateIn, getIn, deleteIn, cloneDeep } from './utils/objectUtils'
+import { compareAsc, compareDesc } from './utils/arrayUtils'
 import { isObject } from './utils/typeUtils'
+import bindMethods from './utils/bindMethods'
 import JSONNode from './JSONNode'
 
 export default class Main extends Component {
@@ -10,11 +12,7 @@ export default class Main extends Component {
     super(props)
 
     // TODO: create a function bindMethods(this)
-    this.handleChangeProperty = this.handleChangeProperty.bind(this)
-    this.handleChangeValue = this.handleChangeValue.bind(this)
-    this.handleExpand = this.handleExpand.bind(this)
-    this.handleShowContextMenu = this.handleShowContextMenu.bind(this)
-    this.handleHideContextMenu = this.handleHideContextMenu.bind(this)
+    bindMethods(this)
 
     this.state = {
       options: Object.assign({
@@ -32,7 +30,14 @@ export default class Main extends Component {
       events: {
         onChangeProperty: this.handleChangeProperty,
         onChangeValue: this.handleChangeValue,
+        onChangeType: this.handleChangeType,
+        onInsert: this.handleInsert,
+        onDuplicate: this.handleDuplicate,
+        onRemove: this.handleRemove,
+        onSort: this.handleSort,
+
         onExpand: this.handleExpand,
+
         showContextMenu: this.handleShowContextMenu,
         hideContextMenu: this.handleHideContextMenu
       },
@@ -47,7 +52,12 @@ export default class Main extends Component {
   render() {
     return h('div', {class: 'jsoneditor', onClick: this.handleHideContextMenu}, [
       h('ul', {class: 'jsoneditor-list'}, [
-        h(JSONNode, this.state)
+        h(JSONNode, {
+          data: this.state.data,
+          events: this.state.events,
+          options: this.state.options,
+          path: ''
+        })
       ])
     ])
   }
@@ -55,36 +65,137 @@ export default class Main extends Component {
   handleChangeValue (path, value) {
     console.log('handleChangeValue', path, value)
 
-    const modelPath = Main._pathToModelPath(this.state.data, Main._parsePath(path)).concat('value')
-
-    this.setState({
-      data: setIn(this.state.data, modelPath, value)
-    })
+    this._setIn(path, ['value'], value)
   }
 
   handleChangeProperty (path, oldProp, newProp) {
     console.log('handleChangeProperty', path, oldProp, newProp)
 
-    const modelPath = Main._pathToModelPath(this.state.data, pointer.parse(path))
-    const parent = getIn(this.state.data, modelPath)
-    const index = parent.childs.findIndex(child => child.prop === oldProp)
+    const index = this._findIndex(path, oldProp)
     const newPath = path + '/' + pointer.escape(newProp)
 
-    let data = this.state.data
-    data = setIn(data, modelPath.concat(['childs', index, 'path']), newPath)
-    data = setIn(data, modelPath.concat(['childs', index, 'prop']), newProp)
+    this._setIn(path, ['childs', index, 'path'], newPath)
+    this._setIn(path, ['childs', index, 'prop'], newProp)
+  }
 
-    this.setState({ data })
+  handleChangeType (path, type) {
+    console.log('handleChangeType', path, type)
+
+    this._setIn(path, ['type'], type)
+  }
+
+  handleInsert (path, prop, value, type) {
+    console.log('handleInsert', path, prop, value, type)
+
+    this.handleHideContextMenu()  // TODO: should be handled by the contextmenu itself
+
+    // TODO: this method is quite complicated. Can we simplify it?
+
+    const parsedPath = pointer.parse(path)
+    const afterProp = parsedPath[parsedPath.length - 1]
+    const parentPath = parsedPath.slice(0, parsedPath.length - 1)
+        .map(entry => '/' + pointer.escape(entry)).join('')
+
+    const parent = this._getIn(parentPath)
+
+    const index = parent.type === 'array'
+        ? parseInt(afterProp)
+        : this._findIndex(parentPath, afterProp)
+
+    this._updateIn(parentPath, ['childs'], function (childs) {
+      const updated = childs.slice(0)
+      const type = isObject(value) ? 'object' : Array.isArray(value) ? 'array' : (type || 'value')
+      const newEntry = {
+        expanded: true,
+        type,
+        prop,
+        value,
+        childs: []
+      }
+
+      updated.splice(index + 1, 0, newEntry)
+
+      return updated
+    })
+  }
+
+  handleDuplicate (path) {
+    console.log('handleDuplicate', path)
+
+    this.handleHideContextMenu()  // TODO: should be handled by the contextmenu itself
+
+    // TODO: this method is quite complicated. Can we simplify it?
+
+    const parsedPath = pointer.parse(path)
+    const prop = parsedPath[parsedPath.length - 1]
+    const parentPath = parsedPath.slice(0, parsedPath.length - 1)
+        .map(entry => '/' + pointer.escape(entry)).join('')
+
+    const parent = this._getIn(parentPath)
+
+    const index = parent.type === 'array'
+        ? parseInt(prop)
+        : this._findIndex(parentPath, prop)
+
+    this._updateIn(parentPath, ['childs'], function (childs) {
+      const updated = childs.slice(0)
+      const original = childs[index]
+      const duplicate = cloneDeep(original)
+
+      updated.splice(index + 1, 0, duplicate)
+
+      return updated
+    })
+  }
+
+  handleRemove (path) {
+    console.log('handleRemove', path)
+
+    this.handleHideContextMenu()  // TODO: should be handled by the contextmenu itself
+
+    this._deleteIn(path)
+  }
+
+  /**
+   *
+   * @param path
+   * @param {'asc' | 'desc' | null} [order=null]  If not provided, will toggle current ordering
+   */
+  handleSort (path, order = null) {
+    console.log('handleSort', path, order)
+
+    this.handleHideContextMenu()  // TODO: should be handled by the contextmenu itself
+
+    const comparators = {
+      asc: compareAsc,
+      desc: compareDesc
+    }
+
+    let _order
+    if (order === 'asc' || order === 'desc') {
+      _order = order
+    }
+    else {
+      // toggle previous order
+      const current = this._getIn(path, ['order'])
+      _order = current !== 'asc' ? 'asc' : 'desc'
+      this._setIn(path, ['order'], _order)
+    }
+
+    this._updateIn(path, ['childs'], function (childs) {
+      const ordered = childs.slice(0)
+      const compare = comparators[_order] || comparators['asc']
+
+      ordered.sort((a, b) => compare(a.value, b.value))
+
+      return ordered
+    })
   }
 
   handleExpand(path, expand) {
-    const modelPath = Main._pathToModelPath(this.state.data, Main._parsePath(path))
+    console.log('handleExpand', path, expand)
 
-    console.log('handleExpand', path, modelPath)
-
-    this.setState({
-      data: setIn(this.state.data, modelPath.concat('expanded'), expand)
-    })
+    this._setIn(path, ['expanded'], expand)
   }
 
   /**
@@ -97,27 +208,60 @@ export default class Main extends Component {
   handleShowContextMenu({path, anchor, root}) {
     let data = this.state.data
 
+    // TODO: remove this cached this.state.contextMenuPath and do a brute-force sweep over the data instead?
     // hide previous context menu (if any)
     if (this.state.contextMenuPath !== null) {
-      const modelPath = Main._pathToModelPath(this.state.data, Main._parsePath(this.state.contextMenuPath))
-      data = setIn(data, modelPath.concat('contextMenu'), false)
+      this._setIn(this.state.contextMenuPath, ['contextMenu'], null)
     }
 
     // show new menu
     if (typeof path === 'string') {
-      const modelPath = Main._pathToModelPath(this.state.data, Main._parsePath(path))
-      data = setIn(data, modelPath.concat('contextMenu'), {anchor, root})
+      this._setIn(path, ['contextMenu'], {anchor, root})
     }
 
     this.setState({
-      contextMenuPath: typeof path === 'string' ? path :  null,  // store path of current menu, just to easily find it next time
-      data
+      contextMenuPath: typeof path === 'string' ? path :  null  // store path of current menu, just to easily find it next time
     })
   }
 
-  handleHideContextMenu (event) {
+  handleHideContextMenu () {
     // FIXME: find a different way to show/hide the context menu. create a single instance in the Main, pass a reference to it into the JSON nodes?
     this.handleShowContextMenu({})
+  }
+
+  _getIn (path, modelProps = []) {
+    const modelPath = Main._pathToModelPath(this.state.data, Main._parsePath(path))
+
+    return getIn(this.state.data, modelPath.concat(modelProps))
+  }
+
+  _setIn (path, modelProps = [], value) {
+    const modelPath = Main._pathToModelPath(this.state.data, Main._parsePath(path))
+
+    this.setState({
+      data: setIn(this.state.data, modelPath.concat(modelProps), value)
+    })
+  }
+
+  _updateIn (path, modelProps = [], callback) {
+    const modelPath = Main._pathToModelPath(this.state.data, Main._parsePath(path))
+
+    this.setState({
+      data: updateIn(this.state.data, modelPath.concat(modelProps), callback)
+    })
+  }
+
+  _deleteIn (path, modelProps = []) {
+    const modelPath = Main._pathToModelPath(this.state.data, Main._parsePath(path))
+
+    this.setState({
+      data: deleteIn(this.state.data, modelPath.concat(modelProps))
+    })
+  }
+
+  _findIndex(path, prop) {
+    const object = this._getIn(path)
+    return object.childs.findIndex(child => child.prop === prop)
   }
 
   // TODO: comment
@@ -198,7 +342,6 @@ export default class Main extends Component {
       return {
         type: 'array',
         expanded: expand(path),
-        path,
         prop,
         childs: value.map((child, index) => Main._jsonToModel(path + '/' + index, null, child, expand))
       }
@@ -207,7 +350,6 @@ export default class Main extends Component {
       return {
         type: 'object',
         expanded: expand(path),
-        path,
         prop,
         childs: Object.keys(value).map(prop => {
           return Main._jsonToModel(path + '/' + pointer.escape(prop), prop, value[prop], expand)
@@ -217,7 +359,6 @@ export default class Main extends Component {
     else {
       return {
         type: 'value',
-        path,
         prop,
         value
       }

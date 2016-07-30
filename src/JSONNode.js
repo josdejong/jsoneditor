@@ -45,7 +45,7 @@ export default class JSONNode extends Component {
     }
   }
 
-  renderJSONObject ({data, index, options, events}) {
+  renderJSONObject ({data, path, index, options, events}) {
     const childCount = data.childs.length
     const contents = [
       h('div', {class: 'jsoneditor-node jsoneditor-object'}, [
@@ -60,6 +60,7 @@ export default class JSONNode extends Component {
     if (data.expanded) {
       const childs = data.childs.map(child => {
         return h(JSONNode, {
+          path: path + '/' + child.prop,
           data: child,
           options,
           events
@@ -72,7 +73,7 @@ export default class JSONNode extends Component {
     return h('li', {}, contents)
   }
 
-  renderJSONArray ({data, index, options, events}) {
+  renderJSONArray ({data, path, index, options, events}) {
     const childCount = data.childs.length
     const contents = [
       h('div', {class: 'jsoneditor-node jsoneditor-array'}, [
@@ -87,6 +88,7 @@ export default class JSONNode extends Component {
     if (data.expanded) {
       const childs = data.childs.map((child, index) => {
         return h(JSONNode, {
+          path: path + '/' + index,
           data: child,
           index,
           options,
@@ -172,8 +174,10 @@ export default class JSONNode extends Component {
   }
 
   renderContextMenu ({anchor, root}) {
-    const hasParent = this.props.data.path !== ''
+    const path = this.props.path
+    const hasParent = path !== ''
     const type = this.props.data.type
+    const events = this.props.events
     const items = [] // array with menu items
 
     items.push({
@@ -185,35 +189,25 @@ export default class JSONNode extends Component {
           text: 'Value',
           className: 'jsoneditor-type-value' + (type == 'value' ? ' jsoneditor-selected' : ''),
           title: TYPE_TITLES.value,
-          click: function () {
-            alert('value') // TODO
-          }
+          click: () => events.onChangeType(path, 'value')
         },
         {
           text: 'Array',
           className: 'jsoneditor-type-array' + (type == 'array' ? ' jsoneditor-selected' : ''),
           title: TYPE_TITLES.array,
-          click: function () {
-            alert('array') // TODO
-          }
+          click: () => events.onChangeType(path, 'array')
         },
         {
           text: 'Object',
           className: 'jsoneditor-type-object' + (type == 'object' ? ' jsoneditor-selected' : ''),
           title: TYPE_TITLES.object,
-          click: function () {
-            //node._onChangeType('object');
-            alert('object') // TODO
-          }
+          click: () => events.onChangeType(path, 'object')
         },
         {
           text: 'String',
           className: 'jsoneditor-type-string' + (type == 'string' ? ' jsoneditor-selected' : ''),
           title: TYPE_TITLES.string,
-          click: function () {
-            // node._onChangeType('string');
-            alert('string') // TODO
-          }
+          click: () => events.onChangeType(path, 'string')
         }
       ]
     });
@@ -224,28 +218,19 @@ export default class JSONNode extends Component {
         text: 'Sort',
         title: 'Sort the childs of this ' + TYPE_TITLES.type,
         className: 'jsoneditor-sort-' + direction,
-        click: function () {
-          // node.sort(direction);
-          alert('sort') // TODO
-        },
+        click: () => events.onSort(path),
         submenu: [
           {
             text: 'Ascending',
             className: 'jsoneditor-sort-asc',
             title: 'Sort the childs of this ' + TYPE_TITLES.type + ' in ascending order',
-            click: function () {
-              // node.sort('asc');
-              alert('asc') // TODO
-            }
+            click: () => events.onSort(path, 'asc')
           },
           {
             text: 'Descending',
             className: 'jsoneditor-sort-desc',
             title: 'Sort the childs of this ' + TYPE_TITLES.type +' in descending order',
-            click: function () {
-              // node.sort('desc');
-              alert('desc') // TODO
-            }
+            click: () => events.onSort(path, 'desc')
           }
         ]
       });
@@ -265,46 +250,31 @@ export default class JSONNode extends Component {
         title: 'Insert a new item with type \'value\' after this item (Ctrl+Ins)',
         submenuTitle: 'Select the type of the item to be inserted',
         className: 'jsoneditor-insert',
-        click: function () {
-          // node._onInsertBefore('', '', 'value');
-          alert('insert') // TODO
-        },
+        click: () => events.onInsert(path, '', ''),
         submenu: [
           {
             text: 'Value',
             className: 'jsoneditor-type-value',
             title: TYPE_TITLES.value,
-            click: function () {
-              // node._onInsertBefore('', '', 'value');
-              alert('insert value') // TODO
-            }
+            click: () => events.onInsert(path, '', '')
           },
           {
             text: 'Array',
             className: 'jsoneditor-type-array',
             title: TYPE_TITLES.array,
-            click: function () {
-              // node._onInsertBefore('', []);
-              alert('insert array') // TODO
-            }
+            click: () => events.onInsert(path, '', [])
           },
           {
             text: 'Object',
             className: 'jsoneditor-type-object',
             title: TYPE_TITLES.object,
-            click: function () {
-              // node._onInsertBefore('', {});
-              alert('insert object') // TODO
-            }
+            click: () => events.onInsert(path, '', {})
           },
           {
             text: 'String',
             className: 'jsoneditor-type-string',
             title: TYPE_TITLES.string,
-            click: function () {
-              // node._onInsertBefore('', '', 'string');
-              alert('insert string') // TODO
-            }
+            click: () => events.onInsert(path, '', '', 'string')
           }
         ]
       });
@@ -315,10 +285,7 @@ export default class JSONNode extends Component {
           text: 'Duplicate',
           title: 'Duplicate this item (Ctrl+D)',
           className: 'jsoneditor-duplicate',
-          click: function () {
-            // Node.onDuplicate(node);
-            alert('duplicate') // TODO
-          }
+          click: () => events.onDuplicate(path)
         });
 
         // create remove button
@@ -326,10 +293,7 @@ export default class JSONNode extends Component {
           text: 'Remove',
           title: 'Remove this item (Ctrl+Del)',
           className: 'jsoneditor-remove',
-          click: function () {
-            //Node.onRemove(node);
-            alert('remove') // TODO
-          }
+          click: () => events.onRemove(path)
         });
       }
     }
@@ -357,8 +321,8 @@ export default class JSONNode extends Component {
     const newProp = unescapeHTML(getInnerText(event.target))
 
     // remove last entry from the path to get the path of the parent object
-    const index = this.props.data.path.lastIndexOf('/')
-    const path = this.props.data.path.substr(0, index)
+    const index = this.props.path.lastIndexOf('/')
+    const path = this.props.path.substr(0, index)
 
     this.props.events.onChangeProperty(path, oldProp, newProp)
   }
@@ -366,7 +330,7 @@ export default class JSONNode extends Component {
   handleChangeValue (event) {
     const value = JSONNode._getValueFromEvent(event)
 
-    this.props.events.onChangeValue(this.props.data.path, value)
+    this.props.events.onChangeValue(this.props.path, value)
   }
 
   handleClickValue (event) {
@@ -382,7 +346,7 @@ export default class JSONNode extends Component {
   }
 
   handleExpand (event) {
-    this.props.events.onExpand(this.props.data.path, !this.props.data.expanded)
+    this.props.events.onExpand(this.props.path, !this.props.data.expanded)
   }
 
   handleContextMenu (event) {
@@ -393,7 +357,7 @@ export default class JSONNode extends Component {
     }
     else {
       this.props.events.showContextMenu({
-        path: this.props.data.path,
+        path: this.props.path,
         anchor: event.target,
         root: JSONNode._findRootElement(event)
       })
