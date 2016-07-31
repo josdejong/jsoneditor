@@ -24,7 +24,11 @@
  * @typedef {ObjectData | ArrayData | ValueData} Data
  *
  * @typedef {{
- *   name: string?
- *   expand: function?
+ *
  * }} Options
+ *
+ * @typedef {{
+ *   name: string?,
+ *   expand: function (path: Array.<string | number>)?
+ * }} SetOptions
  */

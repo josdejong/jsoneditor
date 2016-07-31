@@ -16,12 +16,7 @@
 <script>
   // create the editor
   const container = document.getElementById('container');
-  const options = {
-    name: 'myObject',
-    expand: function (path) {
-      return true
-    }
-  };
+  const options = {};
   const editor = jsoneditor(container, options);
   const json = {
     'array': [1, 2, 3],
@@ -31,7 +26,12 @@
     'object': {'a': 'b', 'c': 'd', 'e': [{"first": true}, {"second": true}]},
     'string': 'Hello World'
   };
-  editor.set(json);
+  editor.set(json, {
+    name: 'myObject',
+    expand: function (path) {
+      return true
+    }
+  });
 
   // set json
   document.getElementById('setJSON').onclick = function () {

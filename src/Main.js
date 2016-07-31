@@ -11,14 +11,12 @@ export default class Main extends Component {
   constructor (props) {
     super(props)
 
-    // TODO: create a function bindMethods(this)
     bindMethods(this)
 
     this.state = {
-      options: Object.assign({
-        name: null,
-        expand: Main.expand    // TODO: remove expand as option, should be passed as optional callback to editor.set
-      }, props.options || {}),
+      options: {
+        name: null
+      },
 
       data: {
         type: 'object',
@@ -88,27 +86,7 @@ export default class Main extends Component {
 
     const dataPath = toDataPath(this.state.data, path)
     const oldEntry = getIn(this.state.data, dataPath)
-    const newEntry = createDataEntry(type)
-
-    // convert contents from old value to new value where possible
-    // TODO: move into a function convertDataEntry
-    if (type === 'value' && oldEntry.type === 'string') {
-      newEntry.value = stringConvert(oldEntry.value)
-    }
-    if (type === 'string' && oldEntry.type === 'value') {
-      newEntry.value = oldEntry.value + ''
-    }
-    if (type === 'object' && oldEntry.type === 'array') {
-      newEntry.props = oldEntry.items.map((item, index) => {
-        return {
-          name: index + '',
-          value: item
-        }
-      })
-    }
-    if (type === 'array' && oldEntry.type === 'object') {
-      newEntry.items = oldEntry.props.map(prop => prop.value)
-    }
+    const newEntry = convertDataEntry(oldEntry, type)
 
     this.setState({
       data: setIn(this.state.data, dataPath, newEntry)
@@ -119,8 +97,6 @@ export default class Main extends Component {
     console.log('handleInsert', path, type)
 
     this.handleHideContextMenu()  // TODO: should be handled by the contextmenu itself
-
-    // TODO: this method is quite complicated. Can we simplify it?
 
     const afterProp = last(path)
     const parentPath = path.slice(0, path.length - 1)
@@ -160,8 +136,6 @@ export default class Main extends Component {
     console.log('handleDuplicate', path)
 
     this.handleHideContextMenu()  // TODO: should be handled by the contextmenu itself
-
-    // TODO: this method is quite complicated. Can we simplify it?
 
     const prop = last(path)
     const parentPath = path.slice(0, path.length - 1)
@@ -326,10 +300,13 @@ export default class Main extends Component {
   /**
    * Set JSON object in editor
    * @param {Object | Array | string | number | boolean | null} json   JSON data
+   * @param {SetOptions} [options]
    */
-  set (json) {
+  set (json, options = {}) {
     this.setState({
-      data: jsonToData([], json, this.state.options.expand)
+      options: setIn(this.state.options, ['name'], options && options.name || null),
+
+      data: jsonToData([], json, options.expand || Main.expand)
     })
   }
 
@@ -446,7 +423,7 @@ function dataToJson (data) {
 
 /**
  * Create a new data entry
- * @param {'object' | 'array' | 'value' | 'string'} [type]
+ * @param {'object' | 'array' | 'value' | 'string'} [type='value']
  * @return {*}
  */
 function createDataEntry (type) {
@@ -470,4 +447,37 @@ function createDataEntry (type) {
       value: ''
     }
   }
+}
+
+/**
+ * Convert an entry into a different type. When possible, data is retained
+ * @param {Data} entry
+ * @param {'object' | 'array' | 'value' | 'string'} type
+ */
+function convertDataEntry (entry, type) {
+  const convertedEntry = createDataEntry(type)
+
+  // convert contents from old value to new value where possible
+  if (type === 'value' && entry.type === 'string') {
+    convertedEntry.value = stringConvert(entry.value)
+  }
+
+  if (type === 'string' && entry.type === 'value') {
+    convertedEntry.value = entry.value + ''
+  }
+
+  if (type === 'object' && entry.type === 'array') {
+    convertedEntry.props = entry.items.map((item, index) => {
+      return {
+        name: index + '',
+        value: item
+      }
+    })
+  }
+
+  if (type === 'array' && entry.type === 'object') {
+    convertedEntry.items = entry.props.map(prop => prop.value)
+  }
+
+  return convertedEntry
 }
