@@ -47,7 +47,7 @@ export default class JSONNode extends Component {
   }
 
   renderJSONObject ({path, data, options, events}) {
-    const childCount = data.childs.length
+    const childCount = data.props.length
     const contents = [
       h('div', {class: 'jsoneditor-node jsoneditor-object'}, [
         this.renderExpandButton(),
@@ -59,23 +59,23 @@ export default class JSONNode extends Component {
     ]
 
     if (data.expanded) {
-      const childs = data.childs.map(child => {
+      const props = data.props.map(prop => {
         return h(JSONNode, {
-          path: path.concat(child.prop),
-          data: child,
+          path: path.concat(prop.name),
+          data: prop.value,
           options,
           events
         })
       })
 
-      contents.push(h('ul', {class: 'jsoneditor-list'}, childs))
+      contents.push(h('ul', {class: 'jsoneditor-list'}, props))
     }
 
     return h('li', {}, contents)
   }
 
   renderJSONArray ({path, data, options, events}) {
-    const childCount = data.childs.length
+    const childCount = data.items.length
     const contents = [
       h('div', {class: 'jsoneditor-node jsoneditor-array'}, [
         this.renderExpandButton(),
@@ -87,7 +87,7 @@ export default class JSONNode extends Component {
     ]
 
     if (data.expanded) {
-      const childs = data.childs.map((child, index) => {
+      const items = data.items.map((child, index) => {
         return h(JSONNode, {
           path: path.concat(index),
           data: child,
@@ -96,7 +96,7 @@ export default class JSONNode extends Component {
         })
       })
 
-      contents.push(h('ul', {class: 'jsoneditor-list'}, childs))
+      contents.push(h('ul', {class: 'jsoneditor-list'}, items))
     }
 
     return h('li', {}, contents)
@@ -259,31 +259,31 @@ export default class JSONNode extends Component {
         title: 'Insert a new item with type \'value\' after this item (Ctrl+Ins)',
         submenuTitle: 'Select the type of the item to be inserted',
         className: 'jsoneditor-insert',
-        click: () => events.onInsert(path, '', ''),
+        click: () => events.onInsert(path, 'value'),
         submenu: [
           {
             text: 'Value',
             className: 'jsoneditor-type-value',
             title: TYPE_TITLES.value,
-            click: () => events.onInsert(path, '', '')
+            click: () => events.onInsert(path, 'value')
           },
           {
             text: 'Array',
             className: 'jsoneditor-type-array',
             title: TYPE_TITLES.array,
-            click: () => events.onInsert(path, '', [])
+            click: () => events.onInsert(path, 'array')
           },
           {
             text: 'Object',
             className: 'jsoneditor-type-object',
             title: TYPE_TITLES.object,
-            click: () => events.onInsert(path, '', {})
+            click: () => events.onInsert(path, 'object')
           },
           {
             text: 'String',
             className: 'jsoneditor-type-string',
             title: TYPE_TITLES.string,
-            click: () => events.onInsert(path, '', '', 'string')
+            click: () => events.onInsert(path, 'string')
           }
         ]
       });
@@ -326,7 +326,7 @@ export default class JSONNode extends Component {
   }
 
   handleChangeProperty (event) {
-    const oldProp = this.props.data.prop
+    const oldProp = last(this.props.path)
     const newProp = unescapeHTML(getInnerText(event.target))
 
     // remove last entry from the path to get the path of the parent object

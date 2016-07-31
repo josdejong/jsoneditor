@@ -23,7 +23,7 @@ export default class Main extends Component {
       data: {
         type: 'object',
         expanded: true,
-        childs: []
+        props: []
       },
 
       events: {
@@ -73,8 +73,7 @@ export default class Main extends Component {
     const index = this._findIndex(path, oldProp)
     const newPath = path.concat(newProp)
 
-    this._setIn(path, ['childs', index, 'path'], newPath)
-    this._setIn(path, ['childs', index, 'prop'], newProp)
+    this._setIn(path, ['props', index, 'name'], newProp)
   }
 
   handleChangeType (path, type) {
@@ -83,8 +82,8 @@ export default class Main extends Component {
     this._setIn(path, ['type'], type)
   }
 
-  handleInsert (path, prop, value, type) {
-    console.log('handleInsert', path, prop, value, type)
+  handleInsert (path, type) {
+    console.log('handleInsert', path, type)
 
     this.handleHideContextMenu()  // TODO: should be handled by the contextmenu itself
 
@@ -94,25 +93,29 @@ export default class Main extends Component {
     const parentPath = path.slice(0, path.length - 1)
     const parent = this._getIn(parentPath)
 
-    const index = parent.type === 'array'
-        ? parseInt(afterProp)
-        : this._findIndex(parentPath, afterProp)
+    if (parent.type === 'array') {
+      this._updateIn(parentPath, ['items'], (items) => {
+        const index = parseInt(afterProp)
+        const updated = items.slice(0)
 
-    this._updateIn(parentPath, ['childs'], function (childs) {
-      const updated = childs.slice(0)
-      const type = isObject(value) ? 'object' : Array.isArray(value) ? 'array' : (type || 'value')
-      const newEntry = {
-        expanded: true,
-        type,
-        prop,
-        value,
-        childs: []
-      }
+        updated.splice(index + 1, 0, createDataEntry(type))
 
-      updated.splice(index + 1, 0, newEntry)
+        return updated
+      })
+    }
+    else { // parent.type === 'object'
+      this._updateIn(parentPath, ['props'], (props) => {
+        const index = this._findIndex(parentPath, afterProp)
+        const updated = props.slice(0)
 
-      return updated
-    })
+        updated.splice(index + 1, 0, {
+          name: '',
+          value: createDataEntry(type)
+        })
+
+        return updated
+      })
+    }
   }
 
   handleDuplicate (path) {
@@ -126,19 +129,30 @@ export default class Main extends Component {
     const parentPath = path.slice(0, path.length - 1)
     const parent = this._getIn(parentPath)
 
-    const index = parent.type === 'array'
-        ? parseInt(prop)
-        : this._findIndex(parentPath, prop)
+    if (parent.type === 'array') {
+      this._updateIn(parentPath, ['items'], (items) => {
+        const index = parseInt(prop)
+        const updated = items.slice(0)
+        const original = items[index]
+        const duplicate = cloneDeep(original)
 
-    this._updateIn(parentPath, ['childs'], function (childs) {
-      const updated = childs.slice(0)
-      const original = childs[index]
-      const duplicate = cloneDeep(original)
+        updated.splice(index + 1, 0, duplicate)
 
-      updated.splice(index + 1, 0, duplicate)
+        return updated
+      })
+    }
+    else { // parent.type === 'object'
+      this._updateIn(parentPath, ['props'], (props) => {
+        const index = this._findIndex(parentPath, prop)
+        const updated = props.slice(0)
+        const original = props[index]
+        const duplicate = cloneDeep(original)
 
-      return updated
-    })
+        updated.splice(index + 1, 0, duplicate)
+
+        return updated
+      })
+    }
   }
 
   handleRemove (path) {
@@ -146,11 +160,29 @@ export default class Main extends Component {
 
     this.handleHideContextMenu()  // TODO: should be handled by the contextmenu itself
 
-    this._deleteIn(path)
+    const parentPath = path.slice(0, path.length - 1)
+    const parent = this._getIn(parentPath)
+
+    if (parent.type === 'array') {
+      const dataPath = toDataPath(this.state.data, path)
+
+      this.setState({
+        data: deleteIn(this.state.data, dataPath)
+      })
+    }
+    else { // parent.type === 'object'
+      const dataPath = toDataPath(this.state.data, path)
+
+      dataPath.pop()  // remove the 'value' property, we want to remove the whole object property
+      this.setState({
+        data: deleteIn(this.state.data, dataPath)
+      })
+    }
   }
 
   /**
-   * Order the childs of an array in ascending or descending order
+   * Order the items of an array or the properties of an object in ascending
+   * or descending order
    * @param {Array.<string | number>} path
    * @param {'asc' | 'desc' | null} [order=null]  If not provided, will toggle current ordering
    */
@@ -159,7 +191,7 @@ export default class Main extends Component {
 
     this.handleHideContextMenu()  // TODO: should be handled by the contextmenu itself
 
-    const entry = this._getIn(path)
+    const object = this._getIn(path)
 
     let _order
     if (order === 'asc' || order === 'desc') {
@@ -167,23 +199,30 @@ export default class Main extends Component {
     }
     else {
       // toggle previous order
-      _order = entry.order !== 'asc' ? 'asc' : 'desc'
+      _order = object.order !== 'asc' ? 'asc' : 'desc'
       this._setIn(path, ['order'], _order)
     }
 
-    this._updateIn(path, ['childs'], function (childs) {
-      const ordered = childs.slice(0)
-      const compare = _order === 'desc' ? compareDesc : compareAsc
+    if (object.type === 'array') {
+      this._updateIn(path, ['items'], function (items) {
+        const ordered = items.slice(0)
+        const compare = _order === 'desc' ? compareDesc : compareAsc
 
-      if (entry.type === 'array') {
         ordered.sort((a, b) => compare(a.value, b.value))
-      }
-      else { // entry.type === 'object'
-        ordered.sort((a, b) => compare(a.prop, b.prop))
-      }
 
-      return ordered
-    })
+        return ordered
+      })
+    }
+    else { // object.type === 'object'
+      this._updateIn(path, ['props'], function (props) {
+        const ordered = props.slice(0)
+        const compare = _order === 'desc' ? compareDesc : compareAsc
+
+        ordered.sort((a, b) => compare(a.name, b.name))
+
+        return ordered
+      })
+    }
   }
 
   handleExpand(path, expand) {
@@ -223,50 +262,42 @@ export default class Main extends Component {
     this.handleShowContextMenu({})
   }
 
-  _getIn (path, modelProps = []) {
-    const modelPath = Main._pathToModelPath(this.state.data, path)
+  _getIn (path, dataProps = []) {
+    const dataPath = toDataPath(this.state.data, path)
 
-    return getIn(this.state.data, modelPath.concat(modelProps))
+    return getIn(this.state.data, dataPath.concat(dataProps))
   }
 
-  _setIn (path, modelProps = [], value) {
-    const modelPath = Main._pathToModelPath(this.state.data, path)
+  _setIn (path, dataProps = [], value) {
+    const dataPath = toDataPath(this.state.data, path)
 
     this.setState({
-      data: setIn(this.state.data, modelPath.concat(modelProps), value)
+      data: setIn(this.state.data, dataPath.concat(dataProps), value)
     })
   }
 
-  _updateIn (path, modelProps = [], callback) {
-    const modelPath = Main._pathToModelPath(this.state.data, path)
+  _updateIn (path, dataProps = [], callback) {
+    const dataPath = toDataPath(this.state.data, path)
 
     this.setState({
-      data: updateIn(this.state.data, modelPath.concat(modelProps), callback)
-    })
-  }
-
-  _deleteIn (path, modelProps = []) {
-    const modelPath = Main._pathToModelPath(this.state.data, path)
-
-    this.setState({
-      data: deleteIn(this.state.data, modelPath.concat(modelProps))
+      data: updateIn(this.state.data, dataPath.concat(dataProps), callback)
     })
   }
 
   _findIndex(path, prop) {
     const object = this._getIn(path)
-    return object.childs.findIndex(child => child.prop === prop)
+    return object.props.findIndex(p => p.name === prop)
   }
 
   // TODO: comment
   get () {
-    return Main._modelToJson(this.state.data)
+    return dataToJson(this.state.data)
   }
 
   // TODO: comment
   set (json) {
     this.setState({
-      data: Main._jsonToModel([], null, json, this.state.options.expand)
+      data: jsonToData([], json, this.state.options.expand)
     })
   }
 
@@ -282,92 +313,119 @@ export default class Main extends Component {
     return path.length === 0
   }
 
-  /**
-   * Convert a path of a JSON object into a path in the corresponding data model
-   * @param {Model} model
-   * @param {Array.<string | number>} path
-   * @return {Array.<string | number>} modelPath
-   * @private
-   */
-  static _pathToModelPath (model, path) {
-    if (path.length === 0) {
-      return []
-    }
+}
 
-    let index
-    if (typeof path[0] === 'number') {
-      // index of an array
-      index = path[0]
-    }
-    else {
-      // object property. find the index of this property
-      index = model.childs.findIndex(child => child.prop === path[0])
-    }
-
-    return ['childs', index]
-        .concat(Main._pathToModelPath(model.childs[index], path.slice(1)))
+/**
+ * Convert a path of a JSON object into a path in the corresponding data model
+ * @param {Data} data
+ * @param {Array.<string | number>} path
+ * @return {Array.<string | number>} dataPath
+ * @private
+ */
+function toDataPath (data, path) {
+  if (path.length === 0) {
+    return []
   }
 
-  /**
-   * Convert a JSON object into the internally used data model
-   * @param {Array.<string | number>} path
-   * @param {string | null} prop
-   * @param {Object | Array | string | number | boolean | null} value
-   * @param {function(path: Array.<string | number>)} expand
-   * @return {Model}
-   * @private
-   */
-  static _jsonToModel (path, prop, value, expand) {
-    if (Array.isArray(value)) {
-      return {
-        type: 'array',
-        expanded: expand(path),
-        prop,
-        childs: value.map((child, index) => Main._jsonToModel(path.concat(index), null, child, expand))
-      }
-    }
-    else if (isObject(value)) {
-      return {
-        type: 'object',
-        expanded: expand(path),
-        prop,
-        childs: Object.keys(value).map(prop => {
-          return Main._jsonToModel(path.concat(prop), prop, value[prop], expand)
-        })
-      }
-    }
-    else {
-      return {
-        type: 'value',
-        prop,
-        value
-      }
+  let index
+  if (data.type === 'array') {
+    // index of an array
+    index = path[0]
+
+    return ['items', index].concat(toDataPath(data.items[index], path.slice(1)))
+  }
+  else {
+    // object property. find the index of this property
+    index = data.props.findIndex(prop => prop.name === path[0])
+
+    return ['props', index, 'value'].concat(toDataPath(data.props[index].value, path.slice(1)))
+  }
+}
+
+/**
+ * Convert a JSON object into the internally used data model
+ * @param {Array.<string | number>} path
+ * @param {Object | Array | string | number | boolean | null} json
+ * @param {function(path: Array.<string | number>)} expand
+ * @return {Data}
+ */
+function jsonToData (path, json, expand) {
+  if (Array.isArray(json)) {
+    return {
+      type: 'array',
+      expanded: expand(path),
+      items: json.map((child, index) => jsonToData(path.concat(index), child, expand))
     }
   }
-
-  /**
-   * Convert the internal data model to a regular JSON object
-   * @param {Model} model
-   * @return {Object | Array | string | number | boolean | null} json
-   * @private
-   */
-  static _modelToJson (model) {
-    if (model.type === 'array') {
-      return model.childs.map(Main._modelToJson)
-    }
-    else if (model.type === 'object') {
-      const object = {}
-
-      model.childs.forEach(child => {
-        object[child.prop] = Main._modelToJson(child)
+  else if (isObject(json)) {
+    return {
+      type: 'object',
+      expanded: expand(path),
+      props: Object.keys(json).map(name => {
+        return {
+          name,
+          value: jsonToData(path.concat(name), json[name], expand)
+        }
       })
-
-      return object
-    }
-    else {
-      // type 'value' or 'string'
-      return model.value
     }
   }
+  else {
+    return {
+      type: 'json',
+      value: json
+    }
+  }
+}
 
+/**
+ * Convert the internal data model to a regular JSON object
+ * @param {Data} data
+ * @return {Object | Array | string | number | boolean | null} json
+ */
+function dataToJson (data) {
+  if (data.type === 'array') {
+    return data.items.map(dataToJson)
+  }
+  else if (data.type === 'object') {
+    const object = {}
+
+    data.props.forEach(prop => {
+      object[prop.name] = dataToJson(prop.value)
+    })
+
+    return object
+  }
+  else {
+    // type 'value' or 'string'
+    return data.value
+  }
+}
+
+
+/**
+ * Create a new data entry
+ * @param {'object' | 'array' | 'value' | 'string'} [type]
+ * @return {*}
+ */
+function createDataEntry (type) {
+  if (type === 'array') {
+    return {
+      type,
+      expanded: true,
+      items: []
+    }
+  }
+  else if (type === 'object') {
+    return {
+      type,
+      expanded: true,
+      props: []
+    }
+  }
+  else {
+    return {
+      type,
+      value: ''
+    }
+  }
 }
