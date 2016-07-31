@@ -119,16 +119,27 @@ export default class JSONNode extends Component {
   }
 
   renderProperty (path, data, options) {
-    if (path.length > 0) {
-      const content = last(path)
-      const isIndex = typeof content === 'number'
+    console.log('renderProperty', path, data)
 
-      return h('div', {
-        class: 'jsoneditor-property' + (isIndex ? ' jsoneditor-readonly' : ''),
-        contentEditable: !isIndex,
-        spellCheck: 'false',
-        onInput: this.handleChangeProperty
-      }, content)
+    if (path.length > 0) {
+      const prop = last(path)
+      const isIndex = typeof prop === 'number'
+
+      if (isIndex) { // array item
+        return h('div', {
+          class: 'jsoneditor-property jsoneditor-readonly',
+          contentEditable: 'false',
+          spellCheck: 'false'
+        }, prop)
+      }
+      else { // object property
+        return h('div', {
+          class: 'jsoneditor-property',
+          contentEditable: 'true',
+          spellCheck: 'false',
+          onInput: this.handleChangeProperty
+        }, prop)
+      }
     }
     else {
       // root node
@@ -136,7 +147,7 @@ export default class JSONNode extends Component {
 
       return h('div', {
         class: 'jsoneditor-property jsoneditor-readonly',
-        contentEditable: false,
+        contentEditable: 'false',
         spellCheck: 'false',
         onInput: this.handleChangeProperty
       }, content)

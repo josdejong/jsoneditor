@@ -1,8 +1,8 @@
 import { h, Component } from 'preact'
-import * as pointer from 'json-pointer'
 
 import { setIn, updateIn, getIn, deleteIn, cloneDeep } from './utils/objectUtils'
 import { compareAsc, compareDesc, last } from './utils/arrayUtils'
+import { stringConvert } from  './utils/typeUtils'
 import { isObject } from './utils/typeUtils'
 import bindMethods from './utils/bindMethods'
 import JSONNode from './JSONNode'
@@ -71,7 +71,6 @@ export default class Main extends Component {
     console.log('handleChangeProperty', path, oldProp, newProp)
 
     const index = this._findIndex(path, oldProp)
-    const newPath = path.concat(newProp)
 
     this._setIn(path, ['props', index, 'name'], newProp)
   }
@@ -79,7 +78,31 @@ export default class Main extends Component {
   handleChangeType (path, type) {
     console.log('handleChangeType', path, type)
 
-    this._setIn(path, ['type'], type)
+    const oldEntry = this._getIn(path)
+    const oldType = oldEntry.type
+
+    const newEntry = createDataEntry(type)
+
+    // convert contents from old value to new value where possible
+    if (type === 'value' && oldType === 'string') {
+      newEntry.value = stringConvert(oldEntry.value)
+    }
+    if (type === 'string' && oldType === 'value') {
+      newEntry.value = oldEntry.value + ''
+    }
+    if (type === 'object' && oldType === 'array') {
+      newEntry.props = oldEntry.items.map((item, index) => {
+        return {
+          name: index + '',
+          value: item
+        }
+      })
+    }
+    if (type === 'array' && oldType === 'object') {
+      newEntry.items = oldEntry.props.map(prop => prop.value)
+    }
+
+    this._setIn(path, [], newEntry)
   }
 
   handleInsert (path, type) {
@@ -262,6 +285,7 @@ export default class Main extends Component {
     this.handleShowContextMenu({})
   }
 
+  // TODO: remove _getIn, _setIn, etc
   _getIn (path, dataProps = []) {
     const dataPath = toDataPath(this.state.data, path)
 
