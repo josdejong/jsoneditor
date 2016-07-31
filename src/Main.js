@@ -371,7 +371,7 @@ function jsonToData (path, json, expand) {
   }
   else {
     return {
-      type: 'json',
+      type: 'value',
       value: json
     }
   }
@@ -383,21 +383,21 @@ function jsonToData (path, json, expand) {
  * @return {Object | Array | string | number | boolean | null} json
  */
 function dataToJson (data) {
-  if (data.type === 'array') {
-    return data.items.map(dataToJson)
-  }
-  else if (data.type === 'object') {
-    const object = {}
+  switch (data.type) {
+    case 'array':
+      return data.items.map(dataToJson)
 
-    data.props.forEach(prop => {
-      object[prop.name] = dataToJson(prop.value)
-    })
+    case 'object':
+      const object = {}
 
-    return object
-  }
-  else {
-    // type 'value' or 'string'
-    return data.value
+      data.props.forEach(prop => {
+        object[prop.name] = dataToJson(prop.value)
+      })
+
+      return object
+
+    default: // type 'string' or 'value'
+      return data.value
   }
 }
 

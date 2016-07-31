@@ -336,20 +336,20 @@ export default class JSONNode extends Component {
   }
 
   handleChangeValue (event) {
-    const value = JSONNode._getValueFromEvent(event)
+    const value = this._getValueFromEvent(event)
 
     this.props.events.onChangeValue(this.props.path, value)
   }
 
   handleClickValue (event) {
     if (event.ctrlKey && event.button === 0) { // Ctrl+Left click
-      JSONNode._openLinkIfUrl(event)
+      this._openLinkIfUrl(event)
     }
   }
 
   handleKeyDownValue (event) {
     if (event.ctrlKey && event.which === 13) { // Ctrl+Enter
-      JSONNode._openLinkIfUrl(event)
+      this._openLinkIfUrl(event)
     }
   }
 
@@ -377,8 +377,8 @@ export default class JSONNode extends Component {
    * @param event
    * @private
    */
-  static _openLinkIfUrl (event) {
-    const value = JSONNode._getValueFromEvent(event)
+  _openLinkIfUrl (event) {
+    const value = this._getValueFromEvent(event)
 
     if (isUrl(value)) {
       event.preventDefault()
@@ -388,10 +388,18 @@ export default class JSONNode extends Component {
     }
   }
 
-  static _getValueFromEvent (event) {
-    return stringConvert(unescapeHTML(getInnerText(event.target)))
+  /**
+   * Get the value of the target of an event, and convert it to it's type
+   * @param event
+   * @return {string | number | boolean | null}
+   * @private
+   */
+  _getValueFromEvent (event) {
+    const stringValue = unescapeHTML(getInnerText(event.target))
+    return this.props.data.type === 'string'
+        ? stringValue
+        : stringConvert(stringValue)
   }
-
 
   /**
    * Find the root DOM element of the JSONEditor
