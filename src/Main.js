@@ -64,33 +64,41 @@ export default class Main extends Component {
   handleChangeValue (path, value) {
     console.log('handleChangeValue', path, value)
 
-    this._setIn(path, ['value'], value)
+    const dataPath = toDataPath(this.state.data, path)
+
+    this.setState({
+      data: setIn(this.state.data, dataPath.concat(['value']), value)
+    })
   }
 
   handleChangeProperty (path, oldProp, newProp) {
     console.log('handleChangeProperty', path, oldProp, newProp)
 
-    const index = this._findIndex(path, oldProp)
+    const dataPath = toDataPath(this.state.data, path)
+    const object = getIn(this.state.data, dataPath)
+    const index = object.props.findIndex(p => p.name === oldProp)
 
-    this._setIn(path, ['props', index, 'name'], newProp)
+    this.setState({
+      data: setIn(this.state.data, dataPath.concat(['props', index, 'name']), newProp)
+    })
   }
 
   handleChangeType (path, type) {
     console.log('handleChangeType', path, type)
 
-    const oldEntry = this._getIn(path)
-    const oldType = oldEntry.type
-
+    const dataPath = toDataPath(this.state.data, path)
+    const oldEntry = getIn(this.state.data, dataPath)
     const newEntry = createDataEntry(type)
 
     // convert contents from old value to new value where possible
-    if (type === 'value' && oldType === 'string') {
+    // TODO: move into a function convertDataEntry
+    if (type === 'value' && oldEntry.type === 'string') {
       newEntry.value = stringConvert(oldEntry.value)
     }
-    if (type === 'string' && oldType === 'value') {
+    if (type === 'string' && oldEntry.type === 'value') {
       newEntry.value = oldEntry.value + ''
     }
-    if (type === 'object' && oldType === 'array') {
+    if (type === 'object' && oldEntry.type === 'array') {
       newEntry.props = oldEntry.items.map((item, index) => {
         return {
           name: index + '',
@@ -98,11 +106,13 @@ export default class Main extends Component {
         }
       })
     }
-    if (type === 'array' && oldType === 'object') {
+    if (type === 'array' && oldEntry.type === 'object') {
       newEntry.items = oldEntry.props.map(prop => prop.value)
     }
 
-    this._setIn(path, [], newEntry)
+    this.setState({
+      data: setIn(this.state.data, dataPath, newEntry)
+    })
   }
 
   handleInsert (path, type) {
@@ -114,29 +124,34 @@ export default class Main extends Component {
 
     const afterProp = last(path)
     const parentPath = path.slice(0, path.length - 1)
-    const parent = this._getIn(parentPath)
+    const dataPath = toDataPath(this.state.data, parentPath)
+    const parent = getIn(this.state.data, dataPath)
 
     if (parent.type === 'array') {
-      this._updateIn(parentPath, ['items'], (items) => {
-        const index = parseInt(afterProp)
-        const updated = items.slice(0)
+      this.setState({
+        data: updateIn(this.state.data, dataPath.concat(['items']), (items) => {
+          const index = parseInt(afterProp)
+          const updatedItems = items.slice(0)
 
-        updated.splice(index + 1, 0, createDataEntry(type))
+          updatedItems.splice(index + 1, 0, createDataEntry(type))
 
-        return updated
+          return updatedItems
+        })
       })
     }
     else { // parent.type === 'object'
-      this._updateIn(parentPath, ['props'], (props) => {
-        const index = this._findIndex(parentPath, afterProp)
-        const updated = props.slice(0)
+      this.setState({
+        data: updateIn(this.state.data, dataPath.concat(['props']), (props) => {
+          const index = props.findIndex(p => p.name === afterProp)
+          const updatedProps = props.slice(0)
 
-        updated.splice(index + 1, 0, {
-          name: '',
-          value: createDataEntry(type)
+          updatedProps.splice(index + 1, 0, {
+            name: '',
+            value: createDataEntry(type)
+          })
+
+          return updatedProps
         })
-
-        return updated
       })
     }
   }
@@ -150,30 +165,35 @@ export default class Main extends Component {
 
     const prop = last(path)
     const parentPath = path.slice(0, path.length - 1)
-    const parent = this._getIn(parentPath)
+    const dataPath = toDataPath(this.state.data, parentPath)
+    const parent = getIn(this.state.data, dataPath)
 
     if (parent.type === 'array') {
-      this._updateIn(parentPath, ['items'], (items) => {
-        const index = parseInt(prop)
-        const updated = items.slice(0)
-        const original = items[index]
-        const duplicate = cloneDeep(original)
+      this.setState({
+        data: updateIn(this.state.data, dataPath.concat(['items']), (items) => {
+          const index = parseInt(prop)
+          const updatedItems = items.slice(0)
+          const original = items[index]
+          const duplicate = cloneDeep(original)
 
-        updated.splice(index + 1, 0, duplicate)
+          updatedItems.splice(index + 1, 0, duplicate)
 
-        return updated
+          return updatedItems
+        })
       })
     }
     else { // parent.type === 'object'
-      this._updateIn(parentPath, ['props'], (props) => {
-        const index = this._findIndex(parentPath, prop)
-        const updated = props.slice(0)
-        const original = props[index]
-        const duplicate = cloneDeep(original)
+      this.setState({
+        data: updateIn(this.state.data, dataPath.concat(['props']), (props) => {
+          const index = props.findIndex(p => p.name === prop)
+          const updated = props.slice(0)
+          const original = props[index]
+          const duplicate = cloneDeep(original)
 
-        updated.splice(index + 1, 0, duplicate)
+          updated.splice(index + 1, 0, duplicate)
 
-        return updated
+          return updated
+        })
       })
     }
   }
@@ -184,7 +204,7 @@ export default class Main extends Component {
     this.handleHideContextMenu()  // TODO: should be handled by the contextmenu itself
 
     const parentPath = path.slice(0, path.length - 1)
-    const parent = this._getIn(parentPath)
+    const parent = getIn(this.state.data, toDataPath(this.state.data, parentPath))
 
     if (parent.type === 'array') {
       const dataPath = toDataPath(this.state.data, path)
@@ -214,7 +234,8 @@ export default class Main extends Component {
 
     this.handleHideContextMenu()  // TODO: should be handled by the contextmenu itself
 
-    const object = this._getIn(path)
+    const dataPath = toDataPath(this.state.data, path)
+    const object = getIn(this.state.data, dataPath)
 
     let _order
     if (order === 'asc' || order === 'desc') {
@@ -223,27 +244,34 @@ export default class Main extends Component {
     else {
       // toggle previous order
       _order = object.order !== 'asc' ? 'asc' : 'desc'
-      this._setIn(path, ['order'], _order)
+
+      this.setState({
+        data: setIn(this.state.data, dataPath.concat(['order']), _order)
+      })
     }
 
     if (object.type === 'array') {
-      this._updateIn(path, ['items'], function (items) {
-        const ordered = items.slice(0)
-        const compare = _order === 'desc' ? compareDesc : compareAsc
+      this.setState({
+        data: updateIn(this.state.data, dataPath.concat(['items']), (items) =>{
+          const ordered = items.slice(0)
+          const compare = _order === 'desc' ? compareDesc : compareAsc
 
-        ordered.sort((a, b) => compare(a.value, b.value))
+          ordered.sort((a, b) => compare(a.value, b.value))
 
-        return ordered
+          return ordered
+        })
       })
     }
     else { // object.type === 'object'
-      this._updateIn(path, ['props'], function (props) {
-        const ordered = props.slice(0)
-        const compare = _order === 'desc' ? compareDesc : compareAsc
+      this.setState({
+        data: updateIn(this.state.data, dataPath.concat(['props']), (props) => {
+          const orderedProps = props.slice(0)
+          const compare = _order === 'desc' ? compareDesc : compareAsc
 
-        ordered.sort((a, b) => compare(a.name, b.name))
+          orderedProps.sort((a, b) => compare(a.name, b.name))
 
-        return ordered
+          return orderedProps
+        })
       })
     }
   }
@@ -251,7 +279,11 @@ export default class Main extends Component {
   handleExpand(path, expand) {
     console.log('handleExpand', path, expand)
 
-    this._setIn(path, ['expanded'], expand)
+    const dataPath = toDataPath(this.state.data, path)
+
+    this.setState({
+      data: setIn(this.state.data, dataPath.concat(['expanded']), expand)
+    })
   }
 
   /**
@@ -267,12 +299,18 @@ export default class Main extends Component {
     // TODO: remove this cached this.state.contextMenuPath and do a brute-force sweep over the data instead?
     // hide previous context menu (if any)
     if (this.state.contextMenuPath !== null) {
-      this._setIn(this.state.contextMenuPath, ['contextMenu'], null)
+      const dataPath = toDataPath(this.state.data, this.state.contextMenuPath)
+      this.setState({
+        data: setIn(this.state.data, dataPath.concat(['contextMenu']), null)
+      })
     }
 
     // show new menu
     if (Array.isArray(path)) {
-      this._setIn(path, ['contextMenu'], {anchor, root})
+      const dataPath = toDataPath(this.state.data, path)
+      this.setState({
+        data: setIn(this.state.data, dataPath.concat(['contextMenu']), {anchor, root})
+      })
     }
 
     this.setState({
@@ -285,45 +323,25 @@ export default class Main extends Component {
     this.handleShowContextMenu({})
   }
 
-  // TODO: remove _getIn, _setIn, etc
-  _getIn (path, dataProps = []) {
-    const dataPath = toDataPath(this.state.data, path)
-
-    return getIn(this.state.data, dataPath.concat(dataProps))
-  }
-
-  _setIn (path, dataProps = [], value) {
-    const dataPath = toDataPath(this.state.data, path)
-
-    this.setState({
-      data: setIn(this.state.data, dataPath.concat(dataProps), value)
-    })
-  }
-
-  _updateIn (path, dataProps = [], callback) {
-    const dataPath = toDataPath(this.state.data, path)
-
-    this.setState({
-      data: updateIn(this.state.data, dataPath.concat(dataProps), callback)
-    })
-  }
-
-  _findIndex(path, prop) {
-    const object = this._getIn(path)
-    return object.props.findIndex(p => p.name === prop)
-  }
-
-  // TODO: comment
-  get () {
-    return dataToJson(this.state.data)
-  }
-
-  // TODO: comment
+  /**
+   * Set JSON object in editor
+   * @param {Object | Array | string | number | boolean | null} json   JSON data
+   */
   set (json) {
     this.setState({
       data: jsonToData([], json, this.state.options.expand)
     })
   }
+
+  /**
+   * Get JSON from the editor
+   * @returns {Object | Array | string | number | boolean | null} json
+   */
+  get () {
+    return dataToJson(this.state.data)
+  }
+
+  // TODO: create getText and setText
 
   /**
    * Default function to determine whether or not to expand a node initially

@@ -119,8 +119,6 @@ export default class JSONNode extends Component {
   }
 
   renderProperty (path, data, options) {
-    console.log('renderProperty', path, data)
-
     if (path.length > 0) {
       const prop = last(path)
       const isIndex = typeof prop === 'number'
