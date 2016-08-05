@@ -53,7 +53,6 @@ export default class JSONNode extends Component {
         this.renderExpandButton(),
         this.renderContextMenuButton(),
         this.renderProperty(path, data, options),
-        this.renderSeparator(), // TODO: remove separator for Object and Array (gives an issue in Preact)
         this.renderReadonly(`{${childCount}}`, `Array containing ${childCount} items`)
       ])
     ]
@@ -81,7 +80,6 @@ export default class JSONNode extends Component {
         this.renderExpandButton(),
         this.renderContextMenuButton(),
         this.renderProperty(path, data, options),
-        this.renderSeparator(), // TODO: remove separator for Object and Array (gives an issue in Preact)
         this.renderReadonly(`[${childCount}]`, `Array containing ${childCount} items`)
       ])
     ]
@@ -105,7 +103,7 @@ export default class JSONNode extends Component {
   renderJSONValue ({path, data, options}) {
     return h('li', {}, [
       h('div', {class: 'jsoneditor-node'}, [
-        h('div', {class: 'jsoneditor-button-placeholder'}),
+        h('div', {class: 'jsoneditor-button-placeholder', contentEditable: 'false'}),
         this.renderContextMenuButton(),
         this.renderProperty(path, data, options),
         this.renderSeparator(),
@@ -115,7 +113,7 @@ export default class JSONNode extends Component {
   }
 
   renderReadonly (text, title = null) {
-    return h('div', {class: 'jsoneditor-readonly', contentEditable: false, title}, text)
+    return h('div', {class: 'jsoneditor-readonly', contentEditable: 'false', title}, text)
   }
 
   renderProperty (path, data, options) {
@@ -153,7 +151,7 @@ export default class JSONNode extends Component {
   }
 
   renderSeparator() {
-    return h('div', {class: 'jsoneditor-separator'}, ':')
+    return h('div', {class: 'jsoneditor-separator', contentEditable: 'false'}, ':')
   }
 
   renderValue (value) {
@@ -163,7 +161,7 @@ export default class JSONNode extends Component {
 
     return h('div', {
       class: valueClass,
-      contentEditable: true,
+      contentEditable: 'true',
       spellCheck: 'false',
       onInput: this.handleChangeValue,
       onClick: this.handleClickValue,
@@ -174,7 +172,7 @@ export default class JSONNode extends Component {
 
   renderExpandButton () {
     const className = `jsoneditor-button jsoneditor-${this.props.data.expanded ? 'expanded' : 'collapsed'}`
-    return h('div', {class: 'jsoneditor-button-container'},
+    return h('div', {class: 'jsoneditor-button-container', contentEditable: 'false'},
         h('button', {class: className, onClick: this.handleExpand})
     )
   }
@@ -183,7 +181,7 @@ export default class JSONNode extends Component {
     const className = 'jsoneditor-button jsoneditor-contextmenu' +
         (this.props.data.contextMenu ? ' jsoneditor-visible' : '')
 
-    return h('div', {class: 'jsoneditor-button-container'},
+    return h('div', {class: 'jsoneditor-button-container', contentEditable: 'false'},
         this.props.data.contextMenu
             ? this.renderContextMenu(this.props.data.contextMenu)
             : null,

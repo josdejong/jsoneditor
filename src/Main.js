@@ -47,8 +47,8 @@ export default class Main extends Component {
   }
 
   render() {
-    return h('div', {class: 'jsoneditor', onClick: this.handleHideContextMenu}, [
-      h('ul', {class: 'jsoneditor-list'}, [
+    return h('div', {class: 'jsoneditor', contentEditable: 'false', onClick: this.handleHideContextMenu}, [
+      h('ul', {class: 'jsoneditor-list', contentEditable: 'false'}, [
         h(JSONNode, {
           data: this.state.data,
           events: this.state.events,

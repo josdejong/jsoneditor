@@ -20,6 +20,8 @@
   const editor = jsoneditor(container, options);
   const json = {
     'array': [1, 2, 3],
+    'emptyArray': [],
+    'emptyObject': {},
     'boolean': true,
     'null': null,
     'number': 123,
@@ -28,9 +30,9 @@
   };
   editor.set(json, {
     name: 'myObject',
-    expand: function (path) {
-      return true
-    }
+//    expand: function (path) {
+//      return true
+//    }
   });
 
   // set json
