@@ -30,15 +30,19 @@
   };
   editor.set(json, {
     name: 'myObject',
-//    expand: function (path) {
-//      return true
-//    }
+    expand: function (path) {
+      return true
+    }
   });
 
   // set json
   document.getElementById('setJSON').onclick = function () {
     console.time('set')
-    editor.set(largeJSON);
+    editor.set(largeJSON, {
+      expand: function (path) {
+        return true
+      }
+    });
     console.timeEnd('set')
   };
 

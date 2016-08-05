@@ -32,6 +32,7 @@ export default class JSONNode extends Component {
     this.handleKeyDownValue = this.handleKeyDownValue.bind(this)
     this.handleExpand = this.handleExpand.bind(this)
     this.handleContextMenu = this.handleContextMenu.bind(this)
+    this.handleAppendContextMenu = this.handleAppendContextMenu.bind(this)
   }
 
   render (props) {
@@ -67,6 +68,10 @@ export default class JSONNode extends Component {
         })
       })
 
+      if (props.length === 0) {
+        props.push(this.renderAppend('(empty object)'))
+      }
+
       contents.push(h('ul', {class: 'jsoneditor-list'}, props))
     }
 
@@ -94,6 +99,10 @@ export default class JSONNode extends Component {
         })
       })
 
+      if (items.length === 0) {
+        items.push(this.renderAppend('(empty array)'))
+      }
+
       contents.push(h('ul', {class: 'jsoneditor-list'}, items))
     }
 
@@ -103,7 +112,7 @@ export default class JSONNode extends Component {
   renderJSONValue ({path, data, options}) {
     return h('li', {}, [
       h('div', {class: 'jsoneditor-node'}, [
-        h('div', {class: 'jsoneditor-button-placeholder', contentEditable: 'false'}),
+        this.renderPlaceholder(),
         this.renderContextMenuButton(),
         this.renderProperty(path, data, options),
         this.renderSeparator(),
@@ -112,8 +121,27 @@ export default class JSONNode extends Component {
     ])
   }
 
+  /**
+   * Render contents for an empty object or array
+   * @param {string} text
+   * @return {*}
+   */
+  renderAppend (text) {
+    return h('li', {}, [
+      h('div', {class: 'jsoneditor-node'}, [
+        this.renderPlaceholder(),
+        this.renderAppendContextMenuButton(),
+        this.renderReadonly(text)
+      ])
+    ])
+  }
+
+  renderPlaceholder () {
+    return h('div', {class: 'jsoneditor-button-placeholder'})
+  }
+
   renderReadonly (text, title = null) {
-    return h('div', {class: 'jsoneditor-readonly', contentEditable: 'false', title}, text)
+    return h('div', {class: 'jsoneditor-readonly', title}, text)
   }
 
   renderProperty (path, data, options) {
@@ -124,7 +152,6 @@ export default class JSONNode extends Component {
       if (isIndex) { // array item
         return h('div', {
           class: 'jsoneditor-property jsoneditor-readonly',
-          contentEditable: 'false',
           spellCheck: 'false'
         }, prop)
       }
@@ -143,7 +170,6 @@ export default class JSONNode extends Component {
 
       return h('div', {
         class: 'jsoneditor-property jsoneditor-readonly',
-        contentEditable: 'false',
         spellCheck: 'false',
         onInput: this.handleChangeProperty
       }, content)
@@ -151,7 +177,7 @@ export default class JSONNode extends Component {
   }
 
   renderSeparator() {
-    return h('div', {class: 'jsoneditor-separator', contentEditable: 'false'}, ':')
+    return h('div', {class: 'jsoneditor-separator'}, ':')
   }
 
   renderValue (value) {
@@ -172,7 +198,7 @@ export default class JSONNode extends Component {
 
   renderExpandButton () {
     const className = `jsoneditor-button jsoneditor-${this.props.data.expanded ? 'expanded' : 'collapsed'}`
-    return h('div', {class: 'jsoneditor-button-container', contentEditable: 'false'},
+    return h('div', {class: 'jsoneditor-button-container'},
         h('button', {class: className, onClick: this.handleExpand})
     )
   }
@@ -181,7 +207,7 @@ export default class JSONNode extends Component {
     const className = 'jsoneditor-button jsoneditor-contextmenu' +
         (this.props.data.contextMenu ? ' jsoneditor-visible' : '')
 
-    return h('div', {class: 'jsoneditor-button-container', contentEditable: 'false'},
+    return h('div', {class: 'jsoneditor-button-container'},
         this.props.data.contextMenu
             ? this.renderContextMenu(this.props.data.contextMenu)
             : null,
@@ -319,6 +345,64 @@ export default class JSONNode extends Component {
     return h(ContextMenu, {anchor, root, items})
   }
 
+  renderAppendContextMenuButton () {
+    const className = 'jsoneditor-button jsoneditor-contextmenu' +
+        (this.props.data.contextMenu ? ' jsoneditor-visible' : '')
+
+    // FIXME: show context menu, add right handlers
+    return h('div', {class: 'jsoneditor-button-container'},
+        this.props.data.contextMenu
+            ? this.renderAppendContextMenu(this.props.data.contextMenu)
+            : null,
+        h('button', {class: className, onClick: this.handleAppendContextMenu})
+    )
+  }
+
+  renderAppendContextMenu ({anchor, root}) {
+    const path = this.props.path
+    const events = this.props.events
+    const items = [] // array with menu items
+
+    // create insert button
+    items.push({
+      text: 'Insert',
+      title: 'Insert a new item with type \'value\' after this item (Ctrl+Ins)',
+      submenuTitle: 'Select the type of the item to be inserted',
+      className: 'jsoneditor-insert',
+      click: () => events.onAppend(path, 'value'),
+      submenu: [
+        {
+          text: 'Value',
+          className: 'jsoneditor-type-value',
+          title: TYPE_TITLES.value,
+          click: () => events.onAppend(path, 'value')
+        },
+        {
+          text: 'Array',
+          className: 'jsoneditor-type-array',
+          title: TYPE_TITLES.array,
+          click: () => events.onAppend(path, 'array')
+        },
+        {
+          text: 'Object',
+          className: 'jsoneditor-type-object',
+          title: TYPE_TITLES.object,
+          click: () => events.onAppend(path, 'object')
+        },
+        {
+          text: 'String',
+          className: 'jsoneditor-type-string',
+          title: TYPE_TITLES.string,
+          click: () => events.onAppend(path, 'string')
+        }
+      ]
+    });
+
+    // TODO: implement a hook to adjust the context menu
+
+    return h(ContextMenu, {anchor, root, items})
+  }
+
   shouldComponentUpdate(nextProps, nextState) {
     // WARNING: we suppose that JSONNode is stateless, we don't check changes in the state, only in props
     return Object.keys(nextProps).some(prop => this.props[prop] !== nextProps[prop])
@@ -377,6 +461,12 @@ export default class JSONNode extends Component {
         root: JSONNode._findRootElement(event)
       })
     }
+  }
+
+  handleAppendContextMenu(event) {
+    event.stopPropagation() // stop propagation, because else Main.js will hide the context menu again
+
+    this.props.events.onAppend(this.props.path, 'value')
   }
 
   /**

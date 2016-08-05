@@ -29,6 +29,7 @@ export default class Main extends Component {
         onChangeValue: this.handleChangeValue,
         onChangeType: this.handleChangeType,
         onInsert: this.handleInsert,
+        onAppend: this.handleAppend,
         onDuplicate: this.handleDuplicate,
         onRemove: this.handleRemove,
         onSort: this.handleSort,
@@ -122,6 +123,41 @@ export default class Main extends Component {
           const updatedProps = props.slice(0)
 
           updatedProps.splice(index + 1, 0, {
+            name: '',
+            value: createDataEntry(type)
+          })
+
+          return updatedProps
+        })
+      })
+    }
+  }
+
+  handleAppend (path, type) {
+    console.log('handleAppend', path, type)
+
+    this.handleHideContextMenu()  // TODO: should be handled by the contextmenu itself
+
+    const dataPath = toDataPath(this.state.data, path)
+    const object = getIn(this.state.data, dataPath)
+
+    if (object.type === 'array') {
+      this.setState({
+        data: updateIn(this.state.data, dataPath.concat(['items']), (items) => {
+          const updatedItems = items.slice(0)
+
+          updatedItems.push(createDataEntry(type))
+
+          return updatedItems
+        })
+      })
+    }
+    else { // object.type === 'object'
+      this.setState({
+        data: updateIn(this.state.data, dataPath.concat(['props']), (props) => {
+          const updatedProps = props.slice(0)
+
+          updatedProps.push({
             name: '',
             value: createDataEntry(type)
           })
