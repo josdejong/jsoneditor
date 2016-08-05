@@ -34,21 +34,15 @@ export default class Main extends Component {
         onRemove: this.handleRemove,
         onSort: this.handleSort,
 
-        onExpand: this.handleExpand,
-
-        showContextMenu: this.handleShowContextMenu,
-        hideContextMenu: this.handleHideContextMenu
+        onExpand: this.handleExpand
       },
-
-      /** @type {string | null} */
-      contextMenuPath: null,  // json pointer to the node having menu visible
 
       search: null
     }
   }
 
   render() {
-    return h('div', {class: 'jsoneditor', contentEditable: 'false', onClick: this.handleHideContextMenu}, [
+    return h('div', {class: 'jsoneditor', contentEditable: 'false', onClick: JSONNode.hideContextMenu}, [
       h('ul', {class: 'jsoneditor-list', contentEditable: 'false'}, [
         h(JSONNode, {
           data: this.state.data,
@@ -97,8 +91,6 @@ export default class Main extends Component {
   handleInsert (path, type) {
     console.log('handleInsert', path, type)
 
-    this.handleHideContextMenu()  // TODO: should be handled by the contextmenu itself
-
     const afterProp = last(path)
     const parentPath = path.slice(0, path.length - 1)
     const dataPath = toDataPath(this.state.data, parentPath)
@@ -136,8 +128,6 @@ export default class Main extends Component {
   handleAppend (path, type) {
     console.log('handleAppend', path, type)
 
-    this.handleHideContextMenu()  // TODO: should be handled by the contextmenu itself
-
     const dataPath = toDataPath(this.state.data, path)
     const object = getIn(this.state.data, dataPath)
 
@@ -170,8 +160,6 @@ export default class Main extends Component {
 
   handleDuplicate (path) {
     console.log('handleDuplicate', path)
-
-    this.handleHideContextMenu()  // TODO: should be handled by the contextmenu itself
 
     const prop = last(path)
     const parentPath = path.slice(0, path.length - 1)
@@ -211,8 +199,6 @@ export default class Main extends Component {
   handleRemove (path) {
     console.log('handleRemove', path)
 
-    this.handleHideContextMenu()  // TODO: should be handled by the contextmenu itself
-
     const parentPath = path.slice(0, path.length - 1)
     const parent = getIn(this.state.data, toDataPath(this.state.data, parentPath))
 
@@ -241,8 +227,6 @@ export default class Main extends Component {
    */
   handleSort (path, order = null) {
     console.log('handleSort', path, order)
-
-    this.handleHideContextMenu()  // TODO: should be handled by the contextmenu itself
 
     const dataPath = toDataPath(this.state.data, path)
     const object = getIn(this.state.data, dataPath)
@@ -294,43 +278,6 @@ export default class Main extends Component {
     this.setState({
       data: setIn(this.state.data, dataPath.concat(['expanded']), expand)
     })
-  }
-
-  /**
-   * Set ContextMenu to a json pointer, or hide the context menu by passing null as path
-   * @param {Array.<string | number> | null} path
-   * @param {Element} anchor
-   * @param {Element} root
-   * @private
-   */
-  handleShowContextMenu({path, anchor, root}) {
-    console.log('handleShowContextMenu', path, anchor, root)
-
-    // TODO: remove this cached this.state.contextMenuPath and do a brute-force sweep over the data instead?
-    // hide previous context menu (if any)
-    if (this.state.contextMenuPath !== null) {
-      const dataPath = toDataPath(this.state.data, this.state.contextMenuPath)
-      this.setState({
-        data: setIn(this.state.data, dataPath.concat(['contextMenu']), null)
-      })
-    }
-
-    // show new menu
-    if (Array.isArray(path)) {
-      const dataPath = toDataPath(this.state.data, path)
-      this.setState({
-        data: setIn(this.state.data, dataPath.concat(['contextMenu']), {anchor, root})
-      })
-    }
-
-    this.setState({
-      contextMenuPath: Array.isArray(path) ? path :  null  // store path of current menu, just to easily find it next time
-    })
-  }
-
-  handleHideContextMenu () {
-    // FIXME: find a different way to show/hide the context menu. create a single instance in the Main, pass a reference to it into the JSON nodes?
-    this.handleShowContextMenu({})
   }
 
   /**

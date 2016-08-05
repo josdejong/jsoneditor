@@ -20,12 +20,22 @@ const TYPE_TITLES = {
     'but always returned as string.'
 };
 
+/**
+ * @type {JSONNode | null} activeContextMenu  singleton holding the JSONNode having
+ *                                            the active (visible) context menu
+ */
+let activeContextMenu = null
 
 export default class JSONNode extends Component {
   constructor (props) {
     super(props)
 
-    // TODO: create a function bindMethods(this)
+    this.state = {
+      menu: null,        // context menu
+      appendMenu: null,  // append context menu (used in placeholder of empty object/array)
+    }
+
+    // TODO: use function bindMethods(this). Gives issues for some reason, we lose focus whilst typing
     this.handleChangeProperty = this.handleChangeProperty.bind(this)
     this.handleChangeValue = this.handleChangeValue.bind(this)
     this.handleClickValue = this.handleClickValue.bind(this)
@@ -205,17 +215,30 @@ export default class JSONNode extends Component {
 
   renderContextMenuButton () {
     const className = 'jsoneditor-button jsoneditor-contextmenu' +
-        (this.props.data.contextMenu ? ' jsoneditor-visible' : '')
+        (this.state.menu ? ' jsoneditor-visible' : '')
 
-    return h('div', {class: 'jsoneditor-button-container'},
-        this.props.data.contextMenu
-            ? this.renderContextMenu(this.props.data.contextMenu)
-            : null,
-        h('button', {class: className, onClick: this.handleContextMenu})
-    )
+    return h('div', {class: 'jsoneditor-button-container'}, [
+      this.renderContextMenu(this.state.menu),
+      h('button', {class: className, onClick: this.handleContextMenu})
+    ])
   }
 
-  renderContextMenu ({anchor, root}) {
+  renderAppendContextMenuButton () {
+    const className = 'jsoneditor-button jsoneditor-contextmenu' +
+        (this.state.appendMenu ? ' jsoneditor-visible' : '')
+
+    return h('div', {class: 'jsoneditor-button-container'}, [
+      this.renderAppendContextMenu(),
+      h('button', {class: className, onClick: this.handleAppendContextMenu})
+    ])
+  }
+
+  renderContextMenu () {
+    if (!this.state.menu) {
+      return null
+    }
+
+    const {anchor, root} = this.state.menu
     const path = this.props.path
     const hasParent = path.length > 0
     const type = this.props.data.type
@@ -345,20 +368,12 @@ export default class JSONNode extends Component {
     return h(ContextMenu, {anchor, root, items})
   }
 
-  renderAppendContextMenuButton () {
-    const className = 'jsoneditor-button jsoneditor-contextmenu' +
-        (this.props.data.contextMenu ? ' jsoneditor-visible' : '')
+  renderAppendContextMenu () {
+    if (!this.state.appendMenu) {
+      return null
+    }
 
-    // FIXME: show context menu, add right handlers
-    return h('div', {class: 'jsoneditor-button-container'},
-        this.props.data.contextMenu
-            ? this.renderAppendContextMenu(this.props.data.contextMenu)
-            : null,
-        h('button', {class: className, onClick: this.handleAppendContextMenu})
-    )
-  }
-
-  renderAppendContextMenu ({anchor, root}) {
+    const {anchor, root} = this.state.appendMenu
     const path = this.props.path
     const events = this.props.events
     const items = [] // array with menu items
@@ -404,8 +419,9 @@ export default class JSONNode extends Component {
   }
 
   shouldComponentUpdate(nextProps, nextState) {
-    // WARNING: we suppose that JSONNode is stateless, we don't check changes in the state, only in props
-    return Object.keys(nextProps).some(prop => this.props[prop] !== nextProps[prop])
+    // TODO: replace with an old fashioned for loop for some more speed
+    return Object.keys(nextProps).some(prop => this.props[prop] !== nextProps[prop]) ||
+        Object.keys(nextState).some(prop => this.state[prop] !== nextState[prop])
   }
 
   static _rootName (data, options) {
@@ -449,24 +465,57 @@ export default class JSONNode extends Component {
   }
 
   handleContextMenu (event) {
-    event.stopPropagation() // stop propagation, because else Main.js will hide the context menu again
+    event.stopPropagation()
 
-    if (this.props.data.contextMenu) {
-      this.props.events.hideContextMenu()
+    if (this.state.menu) {
+      // hide context menu
+      JSONNode.hideContextMenu()
     }
     else {
-      this.props.events.showContextMenu({
-        path: this.props.path,
-        anchor: event.target,
-        root: JSONNode._findRootElement(event)
+      // hide any currently visible context menu
+      JSONNode.hideContextMenu()
+
+      // show context menu
+      this.setState({
+        menu: {
+          anchor: event.target,
+          root: JSONNode._findRootElement(event)
+        }
       })
+      activeContextMenu = this
     }
   }
 
   handleAppendContextMenu(event) {
-    event.stopPropagation() // stop propagation, because else Main.js will hide the context menu again
+    event.stopPropagation()
 
-    this.props.events.onAppend(this.props.path, 'value')
+    if (this.state.appendMenu) {
+      // hide append context menu
+      JSONNode.hideContextMenu()
+    }
+    else {
+      // hide any currently visible context menu
+      JSONNode.hideContextMenu()
+
+      // show append context menu
+      this.setState({
+        appendMenu: {
+          anchor: event.target,
+          root: JSONNode._findRootElement(event)
+        }
+      })
+      activeContextMenu = this
+    }
+  }
+
+  static hideContextMenu () {
+    if (activeContextMenu) {
+      activeContextMenu.setState({
+        menu: null,
+        appendMenu: null
+      })
+      activeContextMenu = null
+    }
   }
 
   /**
