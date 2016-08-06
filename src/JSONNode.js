@@ -57,13 +57,13 @@ export default class JSONNode extends Component {
     }
   }
 
-  renderJSONObject ({path, data, options, events}) {
+  renderJSONObject ({prop, data, options, events}) {
     const childCount = data.props.length
     const contents = [
       h('div', {class: 'jsoneditor-node jsoneditor-object'}, [
         this.renderExpandButton(),
         this.renderContextMenuButton(),
-        this.renderProperty(path, data, options),
+        this.renderProperty(prop, data, options),
         this.renderReadonly(`{${childCount}}`, `Array containing ${childCount} items`)
       ])
     ]
@@ -71,7 +71,8 @@ export default class JSONNode extends Component {
     if (data.expanded) {
       const props = data.props.map(prop => {
         return h(JSONNode, {
-          path: path.concat(prop.name),
+          parent: this,
+          prop: prop.name,
           data: prop.value,
           options,
           events
@@ -88,13 +89,13 @@ export default class JSONNode extends Component {
     return h('li', {}, contents)
   }
 
-  renderJSONArray ({path, data, options, events}) {
+  renderJSONArray ({prop, data, options, events}) {
     const childCount = data.items.length
     const contents = [
       h('div', {class: 'jsoneditor-node jsoneditor-array'}, [
         this.renderExpandButton(),
         this.renderContextMenuButton(),
-        this.renderProperty(path, data, options),
+        this.renderProperty(prop, data, options),
         this.renderReadonly(`[${childCount}]`, `Array containing ${childCount} items`)
       ])
     ]
@@ -102,7 +103,8 @@ export default class JSONNode extends Component {
     if (data.expanded) {
       const items = data.items.map((child, index) => {
         return h(JSONNode, {
-          path: path.concat(index),
+          parent: this,
+          prop: index,
           data: child,
           options,
           events
@@ -119,12 +121,12 @@ export default class JSONNode extends Component {
     return h('li', {}, contents)
   }
 
-  renderJSONValue ({path, data, options}) {
+  renderJSONValue ({prop, data, options}) {
     return h('li', {}, [
       h('div', {class: 'jsoneditor-node'}, [
         this.renderPlaceholder(),
         this.renderContextMenuButton(),
-        this.renderProperty(path, data, options),
+        this.renderProperty(prop, data, options),
         this.renderSeparator(),
         this.renderValue(data.value)
       ])
@@ -154,9 +156,8 @@ export default class JSONNode extends Component {
     return h('div', {class: 'jsoneditor-readonly', title}, text)
   }
 
-  renderProperty (path, data, options) {
-    if (path.length > 0) {
-      const prop = last(path)
+  renderProperty (prop, data, options) {
+    if (prop !== null) {
       const isIndex = typeof prop === 'number'
 
       if (isIndex) { // array item
@@ -239,8 +240,8 @@ export default class JSONNode extends Component {
     }
 
     const {anchor, root} = this.state.menu
-    const path = this.props.path
-    const hasParent = path.length > 0
+    const path = this.getPath()
+    const hasParent = this.props.parent !== null
     const type = this.props.data.type
     const events = this.props.events
     const items = [] // array with menu items
@@ -344,7 +345,7 @@ export default class JSONNode extends Component {
         ]
       });
 
-      if (this.props.path !== '') {
+      if (hasParent) {
         // create duplicate button
         items.push({
           text: 'Duplicate',
@@ -374,7 +375,7 @@ export default class JSONNode extends Component {
     }
 
     const {anchor, root} = this.state.appendMenu
-    const path = this.props.path
+    const path = this.getPath()
     const events = this.props.events
     const items = [] // array with menu items
 
@@ -419,9 +420,21 @@ export default class JSONNode extends Component {
   }
 
   shouldComponentUpdate(nextProps, nextState) {
-    // TODO: replace with an old fashioned for loop for some more speed
-    return Object.keys(nextProps).some(prop => this.props[prop] !== nextProps[prop]) ||
-        Object.keys(nextState).some(prop => this.state[prop] !== nextState[prop])
+    let prop
+
+    for (prop in nextProps) {
+      if (nextProps.hasOwnProperty(prop) && this.props[prop] !== nextProps[prop]) {
+        return true
+      }
+    }
+
+    for (prop in nextState) {
+      if (nextState.hasOwnProperty(prop) && this.state[prop] !== nextState[prop]) {
+        return true
+      }
+    }
+
+    return false
   }
 
   static _rootName (data, options) {
@@ -433,11 +446,9 @@ export default class JSONNode extends Component {
   }
 
   handleChangeProperty (event) {
-    const oldProp = last(this.props.path)
+    const parentPath = this.props.parent.getPath()
+    const oldProp = this.props.prop
     const newProp = unescapeHTML(getInnerText(event.target))
-
-    // remove last entry from the path to get the path of the parent object
-    const parentPath = this.props.path.slice(0, this.props.path.length - 1)
 
     this.props.events.onChangeProperty(parentPath, oldProp, newProp)
   }
@@ -445,7 +456,7 @@ export default class JSONNode extends Component {
   handleChangeValue (event) {
     const value = this._getValueFromEvent(event)
 
-    this.props.events.onChangeValue(this.props.path, value)
+    this.props.events.onChangeValue(this.getPath(), value)
   }
 
   handleClickValue (event) {
@@ -461,7 +472,7 @@ export default class JSONNode extends Component {
   }
 
   handleExpand (event) {
-    this.props.events.onExpand(this.props.path, !this.props.data.expanded)
+    this.props.events.onExpand(this.getPath(), !this.props.data.expanded)
   }
 
   handleContextMenu (event) {
@@ -508,6 +519,9 @@ export default class JSONNode extends Component {
     }
   }
 
+  /**
+   * Singleton function to hide the currently visible context menu if any.
+   */
   static hideContextMenu () {
     if (activeContextMenu) {
       activeContextMenu.setState({
@@ -532,6 +546,22 @@ export default class JSONNode extends Component {
 
       window.open(value, '_blank')
     }
+  }
+
+  /**
+   * Get the path of this JSONNode
+   * @return {Array.<string | number>}
+   */
+  getPath () {
+    const path = this.props.parent
+        ? this.props.parent.getPath()
+        : []
+
+    if (this.props.prop !== null) {
+      path.push(this.props.prop)
+    }
+
+    return path
   }
 
   /**

@@ -48,7 +48,8 @@ export default class Main extends Component {
           data: this.state.data,
           events: this.state.events,
           options: this.state.options,
-          path: []
+          parent: null,
+          prop: null
         })
       ])
     ])
@@ -88,6 +89,7 @@ export default class Main extends Component {
     })
   }
 
+  // TODO: change to handleInsert(path, after, type)
   handleInsert (path, type) {
     console.log('handleInsert', path, type)
 
@@ -158,6 +160,7 @@ export default class Main extends Component {
     }
   }
 
+  // TODO: change to handleDuplicate(path, prop)
   handleDuplicate (path) {
     console.log('handleDuplicate', path)
 
@@ -196,6 +199,7 @@ export default class Main extends Component {
     }
   }
 
+  // TODO: change to handleRemove(path, prop)
   handleRemove (path) {
     console.log('handleRemove', path)
 
