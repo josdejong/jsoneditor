@@ -89,13 +89,10 @@ export default class Main extends Component {
     })
   }
 
-  // TODO: change to handleInsert(path, after, type)
-  handleInsert (path, type) {
-    console.log('handleInsert', path, type)
+  handleInsert (path, afterProp, type) {
+    console.log('handleInsert', path, afterProp, type)
 
-    const afterProp = last(path)
-    const parentPath = path.slice(0, path.length - 1)
-    const dataPath = toDataPath(this.state.data, parentPath)
+    const dataPath = toDataPath(this.state.data, path)
     const parent = getIn(this.state.data, dataPath)
 
     if (parent.type === 'array') {
@@ -160,16 +157,13 @@ export default class Main extends Component {
     }
   }
 
-  // TODO: change to handleDuplicate(path, prop)
-  handleDuplicate (path) {
+  handleDuplicate (path, prop) {
     console.log('handleDuplicate', path)
 
-    const prop = last(path)
-    const parentPath = path.slice(0, path.length - 1)
-    const dataPath = toDataPath(this.state.data, parentPath)
-    const parent = getIn(this.state.data, dataPath)
+    const dataPath = toDataPath(this.state.data, path)
+    const object = getIn(this.state.data, dataPath)
 
-    if (parent.type === 'array') {
+    if (object.type === 'array') {
       this.setState({
         data: updateIn(this.state.data, dataPath.concat(['items']), (items) => {
           const index = parseInt(prop)
@@ -183,7 +177,7 @@ export default class Main extends Component {
         })
       })
     }
-    else { // parent.type === 'object'
+    else { // object.type === 'object'
       this.setState({
         data: updateIn(this.state.data, dataPath.concat(['props']), (props) => {
           const index = props.findIndex(p => p.name === prop)
@@ -199,22 +193,20 @@ export default class Main extends Component {
     }
   }
 
-  // TODO: change to handleRemove(path, prop)
-  handleRemove (path) {
+  handleRemove (path, prop) {
     console.log('handleRemove', path)
 
-    const parentPath = path.slice(0, path.length - 1)
-    const parent = getIn(this.state.data, toDataPath(this.state.data, parentPath))
+    const object = getIn(this.state.data, toDataPath(this.state.data, path))
 
-    if (parent.type === 'array') {
-      const dataPath = toDataPath(this.state.data, path)
+    if (object.type === 'array') {
+      const dataPath = toDataPath(this.state.data, path.concat(prop))
 
       this.setState({
         data: deleteIn(this.state.data, dataPath)
       })
     }
-    else { // parent.type === 'object'
-      const dataPath = toDataPath(this.state.data, path)
+    else { // object.type === 'object'
+      const dataPath = toDataPath(this.state.data, path.concat(prop))
 
       dataPath.pop()  // remove the 'value' property, we want to remove the whole object property
       this.setState({

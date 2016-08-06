@@ -303,6 +303,9 @@ export default class JSONNode extends Component {
     }
 
     if (hasParent) {
+      const parentPath = this.props.parent.getPath()
+      const prop = this.props.prop
+
       if (items.length) {
         // create a separator
         items.push({
@@ -316,52 +319,50 @@ export default class JSONNode extends Component {
         title: 'Insert a new item with type \'value\' after this item (Ctrl+Ins)',
         submenuTitle: 'Select the type of the item to be inserted',
         className: 'jsoneditor-insert',
-        click: () => events.onInsert(path, 'value'),
+        click: () => events.onInsert(parentPath, prop, 'value'),
         submenu: [
           {
             text: 'Value',
             className: 'jsoneditor-type-value',
             title: TYPE_TITLES.value,
-            click: () => events.onInsert(path, 'value')
+            click: () => events.onInsert(parentPath, prop,'value')
           },
           {
             text: 'Array',
             className: 'jsoneditor-type-array',
             title: TYPE_TITLES.array,
-            click: () => events.onInsert(path, 'array')
+            click: () => events.onInsert(parentPath, prop, 'array')
           },
           {
             text: 'Object',
             className: 'jsoneditor-type-object',
             title: TYPE_TITLES.object,
-            click: () => events.onInsert(path, 'object')
+            click: () => events.onInsert(parentPath, prop, 'object')
           },
           {
             text: 'String',
             className: 'jsoneditor-type-string',
             title: TYPE_TITLES.string,
-            click: () => events.onInsert(path, 'string')
+            click: () => events.onInsert(parentPath, prop, 'string')
           }
         ]
       });
 
-      if (hasParent) {
-        // create duplicate button
-        items.push({
-          text: 'Duplicate',
-          title: 'Duplicate this item (Ctrl+D)',
-          className: 'jsoneditor-duplicate',
-          click: () => events.onDuplicate(path)
-        });
+      // create duplicate button
+      items.push({
+        text: 'Duplicate',
+        title: 'Duplicate this item (Ctrl+D)',
+        className: 'jsoneditor-duplicate',
+        click: () => events.onDuplicate(parentPath, prop)
+      });
 
-        // create remove button
-        items.push({
-          text: 'Remove',
-          title: 'Remove this item (Ctrl+Del)',
-          className: 'jsoneditor-remove',
-          click: () => events.onRemove(path)
-        });
-      }
+      // create remove button
+      items.push({
+        text: 'Remove',
+        title: 'Remove this item (Ctrl+Del)',
+        className: 'jsoneditor-remove',
+        click: () => events.onRemove(parentPath, prop)
+      });
     }
 
     // TODO: implement a hook to adjust the context menu
