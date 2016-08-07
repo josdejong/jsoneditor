@@ -7,23 +7,24 @@ import { isObject } from './utils/typeUtils'
 import bindMethods from './utils/bindMethods'
 import JSONNode from './JSONNode'
 
-export default class Main extends Component {
+export default class TreeMode extends Component {
+  // TODO: define propTypes
+
   constructor (props) {
     super(props)
 
     bindMethods(this)
 
+    const name   = this.props.options && this.props.options.name || null
+    const expand = this.props.options && this.props.options.expand || TreeMode.expand
+    
     this.state = {
       options: {
-        name: null
+        name
       },
 
-      data: {
-        type: 'object',
-        expanded: true,
-        props: []
-      },
-
+      data: jsonToData([], this.props.data || {}, expand),
+      
       events: {
         onChangeProperty: this.handleChangeProperty,
         onChangeValue: this.handleChangeValue,
@@ -285,7 +286,7 @@ export default class Main extends Component {
     this.setState({
       options: setIn(this.state.options, ['name'], options && options.name || null),
 
-      data: jsonToData([], json, options.expand || Main.expand)
+      data: jsonToData([], json, options.expand || TreeMode.expand)
     })
   }
 

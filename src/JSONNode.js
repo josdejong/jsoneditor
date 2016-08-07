@@ -27,6 +27,8 @@ const TYPE_TITLES = {
 let activeContextMenu = null
 
 export default class JSONNode extends Component {
+  // TODO: define propTypes
+
   constructor (props) {
     super(props)
 

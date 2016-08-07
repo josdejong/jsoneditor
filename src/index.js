@@ -1,5 +1,5 @@
 import { h, render } from 'preact'
-import Main from './Main'
+import TreeMode from './TreeMode'
 
 /**
  * Factory function to create a new JSONEditor
@@ -9,7 +9,8 @@ import Main from './Main'
  * @constructor
  */
 export default function jsoneditor (container, options) {
-  const elem = render(h(Main, {options}), container)
+  // TODO: use JSONEditor instead of TreeMode
+  const elem = render(h(TreeMode, {options}), container)
   return elem._component
 }
 
