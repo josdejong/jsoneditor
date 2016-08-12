@@ -19,7 +19,6 @@ export default class JSONEditor extends Component {
 
   render () {
     return h(TreeMode, {
-      ref: 'tree-mode',
       options: this.state.options,
       data: this.state.data
     }, [])
@@ -31,16 +30,7 @@ export default class JSONEditor extends Component {
    * @param {SetOptions} [options]
    */
   set (json, options = {}) {
-    if (this.refs['tree-mode']) {
-      this.refs['tree-mode'].set(json, options)
-    }
-    else {
-      // not yet rendered
-      this.setState({
-        data: json,
-        options
-      })
-    }
+    // TODO: set state via redux action
   }
 
   /**
@@ -48,12 +38,6 @@ export default class JSONEditor extends Component {
    * @returns {Object | Array | string | number | boolean | null} json
    */
   get () {
-    if (this.refs['tree-mode']) {
-      return this.refs['tree-mode'].get()
-    }
-    else {
-      // not yet rendered
-      return this.state.data
-    }
+    // TODO: get state from redux store
   }
 }

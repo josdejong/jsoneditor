@@ -298,7 +298,8 @@ export default class TreeMode extends Component {
     return dataToJson(this.state.data)
   }
 
-  // TODO: create getText and setText
+  // TODO: implement expand
+  // TODO: implement getText and setText
 
   /**
    * Default function to determine whether or not to expand a node initially
