@@ -1,6 +1,6 @@
 {
   "name": "jsoneditor",
-  "version": "5.5.6",
+  "version": "6.0.0-BETA",
   "main": "./index",
   "description": "A web-based tool to view, edit, format, and validate JSON",
   "tags": [
@@ -10,7 +10,7 @@
     "formatter"
   ],
   "author": "Jos de Jong <wjosdejong@gmail.com>",
-  "license": "Apache-2.0",
+  "license": "MIT",
   "homepage": "https://github.com/josdejong/jsoneditor",
   "repository": {
     "type": "git",
@@ -18,38 +18,36 @@
   },
   "bugs": "https://github.com/josdejong/jsoneditor/issues",
   "scripts": {
-    "build": "react-dev-server --static dist --build; mv dist/bundle.js dist/jsoneditor.js; uglifyjs dist/jsoneditor.js -o dist/jsoneditor.min.js; cp src/jsoneditor.css dist",
-    "watch": "react-dev-server --static src --index develop.html",
-    "test": "mocha test"
+    "build": "gulp",
+    "test": "ava test/*.test.js test/**/*.test.js",
+    "watch": "gulp watch"
   },
   "dependencies": {
-    "ajv": "3.8.8",
+    "ajv": "4.4.0",
     "brace": "0.8.0",
-    "javascript-natural-sort": "0.7.1"
+    "javascript-natural-sort": "0.7.1",
+    "preact": "5.6.0"
   },
   "devDependencies": {
-    "babel-plugin-transform-react-jsx": "6.8.0",
-    "browserify": "13.0.1",
-    "buble": "0.12.5",
-    "debug": "2.2.0",
+    "ava": "0.16.0",
+    "babel-core": "6.13.2",
+    "babel-loader": "6.2.4",
+    "css-loader": "0.23.1",
     "gulp": "3.9.1",
-    "gulp-clean-css": "2.0.5",
-    "gulp-concat-css": "2.2.0",
     "gulp-shell": "0.5.2",
     "gulp-util": "3.0.7",
     "json-loader": "0.5.4",
-    "json-pointer": "0.5.0",
-    "mithril": "0.2.5",
+    "less": "2.7.1",
+    "less-loader": "2.2.3",
     "mkdirp": "0.5.1",
-    "mocha": "2.4.5",
-    "preact": "5.6.0",
-    "reify": "0.3.6",
-    "rollup": "0.34.1",
-    "rollup-plugin-buble": "0.12.1",
-    "rollup-plugin-commonjs": "3.1.0",
-    "rollup-plugin-node-resolve": "1.7.1",
-    "rollup-plugin-npm": "2.0.0",
-    "uglify-js": "2.6.2",
-    "webpack": "1.12.14"
+    "style-loader": "0.13.1",
+    "svg-url-loader": "1.1.0",
+    "webpack": "1.13.1"
+  },
+  "ava": {
+    "require": [
+      "babel-register"
+    ],
+    "babel": "inherit"
   }
 }
