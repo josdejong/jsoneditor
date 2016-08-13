@@ -7,7 +7,6 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.97.6/css/materialize.min.css">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.97.6/js/materialize.min.js"></script>
 
-  <link href="../dist/jsoneditor.css" rel="stylesheet" type="text/css">
   <script src="../dist/jsoneditor.js"></script>
 
   <style>
@@ -73,7 +72,7 @@
     "url": "http://jsoneditoronline.org"
   };
 
-  editor = new JSONEditor(container, options, json);
+  editor = jsoneditor(container, options, json);
 
   console.log('json', json);
   console.log('string', JSON.stringify(json));

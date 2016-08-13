@@ -19,12 +19,11 @@ image. Both full and minified version are available.
 
 ## Load
 
-To implement JSONEditor in a web application, load the javascript and css file
+To implement JSONEditor in a web application, load the javascript file
 in the head of the HTML page:
 
-```html
-<link href="jsoneditor/dist/jsoneditor.min.css" rel="stylesheet" type="text/css">
-<script src="jsoneditor/dist/jsoneditor.min.js"></script>
+```html\
+<script src="jsoneditor/dist/jsoneditor.js"></script>
 ```
 
 ## Use
@@ -42,7 +41,7 @@ var container = document.getElementById("jsoneditor");
 var options = {
     mode: 'tree'
 };
-var editor = new JSONEditor(container, options);
+var editor = jsoneditor(container, options);
 ```
 
 To set JSON data in the editor:
@@ -88,7 +87,7 @@ var json = editor.get();
 <script>
     // create the editor
     var container = document.getElementById("jsoneditor");
-    var editor = new JSONEditor(container);
+    var editor = jsoneditor(container);
 
     // set json
     function setJSON () {

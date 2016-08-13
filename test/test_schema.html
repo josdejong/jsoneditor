@@ -3,7 +3,6 @@
 <head>
   <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
 
-  <link href="../dist/jsoneditor.css" rel="stylesheet" type="text/css">
   <script src="../dist/jsoneditor.js"></script>
 
   <style type="text/css">
@@ -87,7 +86,7 @@
     ]
   };
 
-  var editor = new JSONEditor(container, options, json);
+  var editor = jsoneditor(container, options, json);
 
   console.log('json', json);
   console.log('schema', schema);

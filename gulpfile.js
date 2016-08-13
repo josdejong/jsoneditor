@@ -115,7 +115,7 @@ gulp.task('bundle-minimalist', ['mkdir'], function (done) {
 // TODO: zip file using archiver
 var pkg = 'jsoneditor-' + require('./package.json').version + '.zip';
 gulp.task('zip', shell.task([
-      'zip ' + pkg + ' ' + 'README.md NOTICE LICENSE HISTORY.md index.html src dist docs examples -r '
+      'zip ' + pkg + ' ' + 'README.md LICENSE HISTORY.md index.html src dist docs examples -r '
 ]));
 
 // The watch task (to automatically rebuild when the source code changes)

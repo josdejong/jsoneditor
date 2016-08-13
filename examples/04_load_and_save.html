@@ -37,7 +37,7 @@
 
 <script>
   // create the editor
-  var editor = new JSONEditor(document.getElementById('jsoneditor'));
+  var editor = jsoneditor(document.getElementById('jsoneditor'));
 
   // Load a JSON document
   FileReaderJS.setupInput(document.getElementById('loadDocument'), {

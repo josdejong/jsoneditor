@@ -2,9 +2,9 @@
 
 ## JSONEditor
 
-### Constructor
+### Construction
 
-#### `JSONEditor(container [, options [, json]])`
+#### `jsoneditor(container [, options [, json]])`
 
 Constructs a new JSONEditor.
 

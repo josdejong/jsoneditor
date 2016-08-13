@@ -3,7 +3,6 @@
 <head>
   <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
 
-  <link href="../dist/jsoneditor.css" rel="stylesheet" type="text/css">
   <script src="../dist/jsoneditor.js"></script>
 
   <style type="text/css">
@@ -73,7 +72,7 @@
     "url": "http://jsoneditoronline.org"
   };
 
-  editor = new JSONEditor(container, options, json);
+  editor = jsoneditor(container, options, json);
 
   console.log('json', json);
   console.log('string', JSON.stringify(json));

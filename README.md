@@ -58,7 +58,7 @@ with bower:
 
 #### More
 
-There is a directive available for using JSONEditor in Angular.js:
+There is a directive available for using `jsoneditor` in Angular.js:
 
 [https://github.com/angular-tools/ng-jsoneditor](https://github.com/angular-tools/ng-jsoneditor)
 
@@ -72,8 +72,7 @@ There is a directive available for using JSONEditor in Angular.js:
     <!-- when using the mode "code", it's important to specify charset utf-8 -->
     <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
 
-    <link href="jsoneditor/dist/jsoneditor.min.css" rel="stylesheet" type="text/css">
-    <script src="jsoneditor/dist/jsoneditor.min.js"></script>
+    <script src="jsoneditor/dist/jsoneditor.js"></script>
 </head>
 <body>
     <div id="jsoneditor" style="width: 400px; height: 400px;"></div>
@@ -82,7 +81,7 @@ There is a directive available for using JSONEditor in Angular.js:
         // create the editor
         var container = document.getElementById("jsoneditor");
         var options = {};
-        var editor = new JSONEditor(container, options);
+        var editor = jsoneditor(container, options);
 
         // set json
         var json = {
@@ -120,8 +119,8 @@ jsoneditor:
   npm run build
   ```
 
-  This will generate the files `./jsoneditor.js`, `./jsoneditor.css`, and  
-  minified versions in the dist of the project.
+  This will generate the file `./dist/jsoneditor.js` and
+  `./dist/jsoneditor-minimalist.js` and corresponding source maps.
 
 - To automatically build when a source file has changed:
 
@@ -129,27 +128,5 @@ jsoneditor:
   npm run watch
   ```
 
-  This will update `./jsoneditor.js` and `./jsoneditor.css` in the dist folder
-  on every change, but it will **NOT** update the minified versions as that's
-  an expensive operation.
-
-
-## Custom builds
-
-The source code of JSONEditor consists of CommonJS modules. JSONEditor can be bundled in a customized way using a module bundler like [browserify](http://browserify.org/) or [webpack](http://webpack.github.io/). First, install all dependencies of jsoneditor:
-
-    npm install
-
-To create a custom bundle of the source code using browserify:
-
-    browserify ./index.js -o ./jsoneditor.custom.js -s JSONEditor
-
-The Ace editor, used in mode `code`, accounts for about 75% of the total
-size of the library. To exclude the Ace editor from the bundle:
-
-    browserify ./index.js -o ./jsoneditor.custom.js -s JSONEditor -x brace -x brace/mode/json -x brace/ext/searchbox
-
-To minify the generated bundle, use [uglifyjs](https://github.com/mishoo/UglifyJS2):
-
-    uglifyjs ./jsoneditor.custom.js -o ./jsoneditor.custom.min.js -m -c
-
+  This will update `./dist/jsoneditor.js` on every change in the source code,
+  but it will **NOT** update the minimalist version.
