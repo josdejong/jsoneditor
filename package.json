@@ -19,7 +19,7 @@
   "bugs": "https://github.com/josdejong/jsoneditor/issues",
   "scripts": {
     "build": "gulp",
-    "test": "ava test/*.test.js test/**/*.test.js",
+    "test": "ava test/*.test.js test/**/*.test.js --verbose",
     "watch": "gulp watch"
   },
   "dependencies": {

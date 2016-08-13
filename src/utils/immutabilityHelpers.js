@@ -1,6 +1,17 @@
 'use strict';
 
 /**
+ * Immutability helpers
+ *
+ * inspiration:
+ *
+ * https://www.npmjs.com/package/seamless-immutable
+ * https://www.npmjs.com/package/ih
+ * https://www.npmjs.com/package/mutatis
+ */
+
+
+/**
  * helper function to get a nested property in an object or array
  *
  * @param {Object | Array} object

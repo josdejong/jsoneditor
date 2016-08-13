@@ -1,7 +1,8 @@
 import { h, Component } from 'preact'
 
-import { setIn, updateIn, getIn, deleteIn, cloneDeep } from './utils/objectUtils'
-import { compareAsc, compareDesc, last } from './utils/arrayUtils'
+import { cloneDeep } from './utils/objectUtils'
+import { setIn, updateIn, getIn, deleteIn } from './utils/immutabilityHelpers'
+import { compareAsc, compareDesc } from './utils/arrayUtils'
 import { stringConvert } from  './utils/typeUtils'
 import { isObject } from './utils/typeUtils'
 import bindMethods from './utils/bindMethods'
