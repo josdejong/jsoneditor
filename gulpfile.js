@@ -128,7 +128,4 @@ gulp.task('watch', ['bundle'], function () {
 });
 
 // The default task (called when you run `gulp`)
-gulp.task('default', [
-  'bundle',
-  'bundle-minimalist'
-]);
+gulp.task('default', [ 'bundle', 'bundle-minimalist' ]);
