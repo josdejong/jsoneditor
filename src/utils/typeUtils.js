@@ -31,19 +31,6 @@ export function valueType(value) {
 }
 
 /**
- * Test whether a value is an object (and not an Array or Date or primitive value)
- *
- * @param {*} value
- * @return {boolean}
- */
-export function isObject (value) {
-  return typeof value === 'object' &&
-      value &&  // not null
-      !Array.isArray(value) &&
-      value.toString() === '[object Object]'
-}
-
-/**
  * Test whether a text contains a url (matches when a string starts
  * with 'http://*' or 'https://*' and has no whitespace characters)
  * @param {String} text

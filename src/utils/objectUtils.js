@@ -1,5 +1,18 @@
-import { isObject } from  './typeUtils'
 
+// TODO: unit test isObject
+
+/**
+ * Test whether a value is an object (and not an Array or Date or primitive value)
+ *
+ * @param {*} value
+ * @return {boolean}
+ */
+export function isObject (value) {
+  return typeof value === 'object' &&
+      value !== null &&
+      !Array.isArray(value) &&
+      value.toString() === '[object Object]'
+}
 
 // TODO: unit test clone
 
