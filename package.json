@@ -1,6 +1,6 @@
 {
   "name": "jsoneditor",
-  "version": "5.5.6",
+  "version": "5.5.7",
   "main": "./index",
   "description": "A web-based tool to view, edit, format, and validate JSON",
   "tags": [

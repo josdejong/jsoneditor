@@ -24,8 +24,8 @@
  * Copyright (c) 2011-2016 Jos de Jong, http://jsoneditoronline.org
  *
  * @author  Jos de Jong, <wjosdejong@gmail.com>
- * @version 5.5.6
- * @date    2016-06-15
+ * @version 5.5.7
+ * @date    2016-08-17
  */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
@@ -15549,7 +15549,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	    // TODO: consistent naming
 
-	    if (this.editable.field) {
+	    if (this.editor.options.mode === 'tree') {
 	      // a cell for the dragarea column
 	      dom.tdDrag = document.createElement('td');
 

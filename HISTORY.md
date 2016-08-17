@@ -3,7 +3,7 @@
 https://github.com/josdejong/jsoneditor
 
 
-## not yet released, version 5.5.7
+## 2016-08-17, version 5.5.7
 
 - Fixed #308: wrong positioning of label "empty array" when `onEditable`
   returns false.
