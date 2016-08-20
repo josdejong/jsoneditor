@@ -1,27 +1,31 @@
 
 /**
  * @typedef {{
- *   type: string,
+ *   type: 'array',
  *   expanded: boolean?,
  *   menu: boolean?,
- *   props: Array.<{name: string, value: Data}>?
+ *   props: Array.<{name: string, value: JSONData}>?
  * }} ObjectData
  *
  * @typedef {{
- *   type: string,
+ *   type: 'object',
  *   expanded: boolean?,
  *   menu: boolean?,
- *   items: Data[]?
+ *   items: JSONData[]?
  * }} ArrayData
  *
  * @typedef {{
- *   type: string,
+ *   type: 'value' | 'string',
  *   expanded: boolean?,
  *   menu: boolean?,
  *   value: *?
  * }} ValueData
  *
- * @typedef {ObjectData | ArrayData | ValueData} Data
+ * @typedef {Array.<string | number>} Path
+ *
+ * @typedef {ObjectData | ArrayData | ValueData} JSONData
+ *
+ * @typedef {'object' | 'array' | 'value' | 'string'} JSONDataType
  *
  * @typedef {{
  *
@@ -29,6 +33,6 @@
  *
  * @typedef {{
  *   name: string?,
- *   expand: function (path: Array.<string | number>)?
+ *   expand: function (path: Path)?
  * }} SetOptions
  */

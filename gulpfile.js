@@ -4,6 +4,7 @@ var gutil = require('gulp-util');
 var shell = require('gulp-shell');
 var mkdirp = require('mkdirp');
 var webpack = require('webpack');
+var WebpackDevServer = require('webpack-dev-server');
 
 var NAME    = 'jsoneditor';
 var NAME_MINIMALIST = 'jsoneditor-minimalist';
@@ -37,6 +38,7 @@ var loaders = [
 var compiler = webpack({
   entry: ENTRY,
   devtool: 'source-map',
+  debug: true,
   output: {
     library: 'jsoneditor',
     libraryTarget: 'umd',
@@ -57,6 +59,7 @@ var compiler = webpack({
 var compilerMinimalist = webpack({
   entry: ENTRY,
   devtool: 'source-map',
+  debug: true,
   output: {
     library: 'jsoneditor',
     libraryTarget: 'umd',
@@ -87,7 +90,7 @@ gulp.task('bundle', ['mkdir'], function (done) {
 
   compiler.run(function (err, stats) {
     if (err) {
-      gutil.log(err);
+      throw new gutil.PluginError('webpack', err);
     }
 
     gutil.log('bundled ' + NAME + '.js');
@@ -103,7 +106,7 @@ gulp.task('bundle-minimalist', ['mkdir'], function (done) {
 
   compilerMinimalist.run(function (err, stats) {
     if (err) {
-      gutil.log(err);
+      throw new gutil.PluginError('webpack', err);
     }
 
     gutil.log('bundled ' + NAME_MINIMALIST + '.js');
