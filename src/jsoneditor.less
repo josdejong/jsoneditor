@@ -120,6 +120,28 @@ div.jsoneditor-value.jsoneditor-url {
   text-decoration: underline;
 }
 
+div.jsoneditor-empty {
+  border: 1px dotted lightgray;
+  border-radius: 2px;
+  padding: 0 5px;
+  line-height: 17px;
+}
+
+div.jsoneditor-empty::after,
+div.jsoneditor-empty::after {
+  pointer-events: none;
+  color: lightgray;
+  font-size: 8pt;
+}
+
+div.jsoneditor-property.jsoneditor-empty::after {
+  content: 'prop';
+}
+
+div.jsoneditor-value.jsoneditor-empty::after {
+  content: 'value';
+}
+
 .jsoneditor-button-placeholder {
   width: 20px;
   padding: 0;

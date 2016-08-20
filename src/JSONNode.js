@@ -170,7 +170,7 @@ export default class JSONNode extends Component {
       }
       else { // object property
         return h('div', {
-          class: 'jsoneditor-property',
+          class: 'jsoneditor-property' + (prop.length === 0 ? ' jsoneditor-empty' : ''),
           contentEditable: 'true',
           spellCheck: 'false',
           onInput: this.handleChangeProperty
@@ -194,9 +194,14 @@ export default class JSONNode extends Component {
   }
 
   renderValue (value) {
+    const escapedValue = escapeHTML(value)
     const type = valueType (value)
     const _isUrl = isUrl(value)
-    const valueClass = 'jsoneditor-value jsoneditor-' + type + (_isUrl ? ' jsoneditor-url' : '')
+    const isEmpty = escapedValue.length === 0
+    const valueClass = 'jsoneditor-value ' +
+        'jsoneditor-' + type +
+        (_isUrl ? ' jsoneditor-url' : '') +
+        (isEmpty ? ' jsoneditor-empty' : '')
 
     return h('div', {
       class: valueClass,
@@ -206,7 +211,7 @@ export default class JSONNode extends Component {
       onClick: this.handleClickValue,
       onKeyDown: this.handleKeyDownValue,
       title: _isUrl ? 'Ctrl+Click or ctrl+Enter to open url' : null
-    }, escapeHTML(value))
+    }, escapedValue)
   }
 
   renderExpandButton () {

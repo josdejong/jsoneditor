@@ -16,6 +16,7 @@ export default class TreeMode extends Component {
   constructor (props) {
     super(props)
 
+    // TODO: don't put name and expand like this in the constructor
     const name   = this.props.options && this.props.options.name || null
     const expand = this.props.options && this.props.options.expand || TreeMode.expand
 
