@@ -125,7 +125,7 @@ jsoneditor:
 - To automatically build when a source file has changed:
 
   ```
-  npm run watch
+  npm start
   ```
 
   This will update `./dist/jsoneditor.js` on every change in the source code,
