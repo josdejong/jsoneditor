@@ -217,7 +217,13 @@ export default class JSONNode extends Component {
   renderExpandButton () {
     const className = `jsoneditor-button jsoneditor-${this.props.data.expanded ? 'expanded' : 'collapsed'}`
     return h('div', {class: 'jsoneditor-button-container'},
-        h('button', {class: className, onClick: this.handleExpand})
+        h('button', {
+          class: className,
+          onClick: this.handleExpand,
+          title:
+            'Click to expand/collapse this field. \n' +
+            'Ctrl+Click to expand/collapse including all childs.'
+        })
     )
   }
 
@@ -480,7 +486,10 @@ export default class JSONNode extends Component {
   }
 
   handleExpand (event) {
-    this.props.events.onExpand(this.getPath(), !this.props.data.expanded)
+    const recurse = event.ctrlKey
+    const expanded = !this.props.data.expanded
+
+    this.props.events.onExpand(this.getPath(), expanded, recurse)
   }
 
   handleContextMenu (event) {

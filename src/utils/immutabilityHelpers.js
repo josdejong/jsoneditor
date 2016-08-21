@@ -17,7 +17,7 @@ import { isObject, clone } from  './objectUtils'
  * helper function to get a nested property in an object or array
  *
  * @param {Object | Array} object
- * @param {Array.<string | number>} path
+ * @param {Path} path
  * @return {* | undefined} Returns the field when found, or undefined when the
  *                         path doesn't exist
  */
@@ -43,12 +43,10 @@ export function getIn (object, path) {
  * helper function to replace a nested property in an object with a new value
  * without mutating the object itself.
  *
- * Note: does not work with Arrays!
- *
- * @param {Object} object
- * @param {Array.<string>} path
+ * @param {Object | Array} object
+ * @param {Path} path
  * @param {*} value
- * @return {Object} Returns a new, updated object
+ * @return {Object | Array} Returns a new, updated object or array
  */
 export function setIn (object, path, value) {
   if (path.length === 0) {
@@ -67,16 +65,22 @@ export function setIn (object, path, value) {
     updated = clone(object)
   }
 
-  updated[key] = setIn(updated[key], path.slice(1), value)
-
-  return updated
+  const updatedValue = setIn(updated[key], path.slice(1), value)
+  if (updated[key] === updatedValue) {
+    // return original object unchanged when the new value is identical to the old one
+    return object
+  }
+  else {
+    updated[key] = updatedValue
+    return updated
+  }
 }
 /**
  * helper function to replace a nested property in an object with a new value
  * without mutating the object itself.
  *
  * @param {Object | Array} object
- * @param {Array.<string | number>} path
+ * @param {Path} path
  * @param {function} callback
  * @return {Object | Array} Returns a new, updated object or array
  */
@@ -97,9 +101,15 @@ export function updateIn (object, path, callback) {
     updated = clone(object)
   }
 
-  updated[key] = updateIn(updated[key], path.slice(1), callback)
-
-  return updated
+  const updatedValue = updateIn(object[key], path.slice(1), callback)
+  if (updated[key] === updatedValue) {
+    // return original object unchanged when the new value is identical to the old one
+    return object
+  }
+  else {
+    updated[key] = updatedValue
+    return updated
+  }
 }
 
 /**
@@ -107,7 +117,7 @@ export function updateIn (object, path, callback) {
  * without mutating the object itself.
  *
  * @param {Object | Array} object
- * @param {Array.<string | number>} path
+ * @param {Path} path
  * @return {Object | Array} Returns a new, updated object or array
  */
 export function deleteIn (object, path) {

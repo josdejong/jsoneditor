@@ -1,12 +1,12 @@
 import { h, Component } from 'preact'
 
-import { setIn } from './utils/immutabilityHelpers'
+import { setIn, updateIn } from './utils/immutabilityHelpers'
 import {
   changeValue, changeProperty, changeType,
   insert, append, duplicate, remove,
   sort,
   expand,
-  jsonToData, dataToJson
+  jsonToData, dataToJson, toDataPath
 } from './jsonData'
 import JSONNode from './JSONNode'
 
@@ -106,10 +106,21 @@ export default class TreeMode extends Component {
     })
   }
 
-  handleExpand = (path, doExpand) => {
-    this.setState({
-      data: expand(this.state.data, path, doExpand)
-    })
+  handleExpand = (path, expanded, recurse) => {
+    if (recurse) {
+      const dataPath = toDataPath(this.state.data, path)
+
+      this.setState({
+        data: updateIn (this.state.data, dataPath, function (child) {
+          return expand(child, (path) => true, expanded)
+        })
+      })
+    }
+    else {
+      this.setState({
+        data: expand(this.state.data, path, expanded)
+      })
+    }
   }
 
   /**
@@ -131,6 +142,26 @@ export default class TreeMode extends Component {
    */
   get () {
     return dataToJson(this.state.data)
+  }
+
+  /**
+   * Expand one or multiple objects or arrays
+   * @param {Path | function (path: Path) : boolean} callback
+   */
+  expand (callback) {
+    this.setState({
+      data: expand(this.state.data, callback, true)
+    })
+  }
+
+  /**
+   * Collapse one or multiple objects or arrays
+   * @param {Path | function (path: Path) : boolean} callback
+   */
+  collapse (callback) {
+    this.setState({
+      data: expand(this.state.data, callback, false)
+    })
   }
 
   // TODO: implement expand

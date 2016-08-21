@@ -136,6 +136,22 @@ test('setIn change object into array', t => {
   t.deepEqual (updated, [, , 'foo'])
 })
 
+test('setIn identical value should return the original object', t => {
+  const obj = {a:1, b:2}
+
+  const updated = setIn(obj, ['b'], 2)
+
+  t.is(updated, obj) // strict equal
+})
+
+test('setIn identical value should return the original object (2)', t => {
+  const obj = {a:1, b: { c: 2}}
+
+  const updated = setIn(obj, ['b', 'c'], 2)
+
+  t.is(updated, obj) // strict equal
+})
+
 test('updateIn', t => {
   const obj = {
     a: {
@@ -208,6 +224,16 @@ test('updateIn (3)', t => {
     },
     d: 3
   })
+})
+
+test('updateIn return identical value should return the original object', t => {
+  const obj = {
+    a: 2,
+    b: 3
+  }
+
+  const updated = updateIn(obj, ['b' ], (value) => 3)
+  t.is(updated, obj)
 })
 
 test('deleteIn', t => {

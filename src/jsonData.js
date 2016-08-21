@@ -246,19 +246,78 @@ export function sort (data, path, order = null) {
 }
 
 /**
- * Expand or collapse an item or property
+ * Expand or collapse one or multiple items or properties
  * @param {JSONData} data
- * @param {Path} path
- * @param {boolean} expand
+ * @param {function(path: Path) : boolean | Path} callback
+ *              When a path, the object/array at this path will be expanded/collapsed
+ *              When a function, all objects and arrays for which callback
+ *              returns true will be expanded/collapsed
+ * @param {boolean} expanded  New expanded state: true to expand, false to collapse
  * @return {JSONData}
  */
-export function expand (data, path, expand) {
-  console.log('expand', path, expand)
+export function expand (data, callback, expanded) {
+  // console.log('expand', callback, expand)
 
-  const dataPath = toDataPath(data, path)
+  if (typeof callback === 'function') {
+    return expandRecursive(data, [], callback, expanded)
+  }
+  else if (Array.isArray(callback)) {
+    const dataPath = toDataPath(data, callback)
 
-  return setIn(data, dataPath.concat(['expanded']), expand)
+    return setIn(data, dataPath.concat(['expanded']), expanded)
+  }
+  else {
+    throw new Error('Callback function or path expected')
+  }
 }
+
+/**
+ * Traverse the json data, change the expanded state of all items/properties for
+ * which `callback` returns true
+ * @param {JSONData} data
+ * @param {Path} path
+ * @param {function(path: Path)} callback
+ *              All objects and arrays for which callback returns true will be
+ *              expanded/collapsed
+ * @param {boolean} expanded  New expanded state: true to expand, false to collapse
+ * @return {*}
+ */
+export function expandRecursive (data, path, callback, expanded) {
+  switch (data.type) {
+    case 'array': {
+      let updatedData = callback(path)
+          ? setIn(data, ['expanded'], expanded)
+          : data
+      let updatedItems = updatedData.items
+
+      updatedData.items.forEach((item, index) => {
+        updatedItems = setIn(updatedItems, [index],
+            expandRecursive(item, path.concat(index), callback, expanded))
+      })
+
+      return setIn(updatedData, ['items'], updatedItems)
+    }
+
+    case 'object': {
+      let updatedData = callback(path)
+          ? setIn(data, ['expanded'], expanded)
+          : data
+      let updatedProps = updatedData.props
+
+      updatedData.props.forEach((prop, index) => {
+        updatedProps = setIn(updatedProps, [index, 'value'],
+            expandRecursive(prop.value, path.concat(prop.name), callback, expanded))
+      })
+
+      return setIn(updatedData, ['props'], updatedProps)
+    }
+
+    default: // type 'string' or 'value'
+      // don't do anything: a value can't be expanded, only arrays and objects can
+      return data
+  }
+}
+
 
 /**
  * Convert a path of a JSON object into a path in the corresponding data model

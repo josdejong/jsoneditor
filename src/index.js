@@ -36,11 +36,50 @@ function jsoneditor (container, options) {
      */
     get: function () {
       return component.get()
-    }
+    },
 
     // TODO: implement getText
     // TODO: implement setText
-    // TODO: implement expand
+
+
+    /**
+     * Expand one or multiple objects or arrays.
+     *
+     * Example usage:
+     *
+     *     // expand one item at a specific path
+     *     editor.expand(['foo', 1, 'bar'])
+     *
+     *     // expand all items nested at a maximum depth of 2
+     *     editor.expand(function (path) {
+     *       return path.length <= 2
+     *     })
+     *
+     * @param {Path | function (path: Path) : boolean} callback
+     */
+    expand (callback) {
+      component.expand(callback)
+    },
+
+    /**
+     * Collapse one or multiple objects or arrays
+     *
+     * Example usage:
+     *
+     *     // collapse one item at a specific path
+     *     editor.collapse(['foo', 1, 'bar'])
+     *
+     *     // collapse all items nested deeper than 2
+     *     editor.collapse(function (path) {
+     *       return path.length > 2
+     *     })
+     *
+     * @param {Path | function (path: Path) : boolean} callback
+     */
+    collapse (callback) {
+      component.collapse(callback)
+    },
+
   }
 }
 
