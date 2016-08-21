@@ -44,13 +44,31 @@
     opacity: 0.5;
   }
 
+  .jsoneditor-vertical-menu-separator {
+    width: 8px;
+    display: inline-block;
+  }
+
   button.jsoneditor-expand-all {
     background-position: 0 -120px;
   }
-
   button.jsoneditor-collapse-all {
     background-position: 0 -96px;
   }
+
+  button.jsoneditor-undo {
+    background-position: -24px -96px;
+  }
+  button.jsoneditor-undo:disabled {
+    background-position: -24px -120px;
+  }
+  button.jsoneditor-redo {
+    background-position: -48px -96px;
+  }
+  button.jsoneditor-redo:disabled {
+    background-position: -48px -120px;
+  }
+
 }
 
 .jsoneditor-treemode {

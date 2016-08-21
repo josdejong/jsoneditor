@@ -20,12 +20,17 @@ export default class TreeMode extends Component {
     const name   = this.props.options && this.props.options.name || null
     const expand = this.props.options && this.props.options.expand || TreeMode.expand
 
+    const data = jsonToData([], this.props.data || {}, expand)
+
     this.state = {
       options: {
         name
       },
 
-      data: jsonToData([], this.props.data || {}, expand),
+      data,
+
+      history: [data],
+      historyIndex: 0,
       
       events: {
         onChangeProperty: this.handleChangeProperty,
@@ -56,6 +61,19 @@ export default class TreeMode extends Component {
             class: 'jsoneditor-collapse-all',
             title: 'Collapse all objects and arrays',
             onClick: this.handleCollapseAll
+          }),
+          h('div', {class: 'jsoneditor-vertical-menu-separator'}),
+          h('button', {
+            class: 'jsoneditor-undo',
+            title: 'Undo last action',
+            disabled: !this.canUndo(),
+            onClick: this.handleUndo
+          }),
+          h('button', {
+            class: 'jsoneditor-redo',
+            title: 'Redo',
+            disabled: !this.canRedo(),
+            onClick: this.handleRedo
           })
       ]),
 
@@ -74,67 +92,47 @@ export default class TreeMode extends Component {
   }
 
   handleChangeValue = (path, value) => {
-    this.setState({
-      data: changeValue(this.state.data, path, value)
-    })
+    this.setData(changeValue(this.state.data, path, value))
   }
 
   handleChangeProperty = (path, oldProp, newProp) => {
-    this.setState({
-      data: changeProperty(this.state.data, path, oldProp, newProp)
-    })
+    this.setData(changeProperty(this.state.data, path, oldProp, newProp))
   }
 
   handleChangeType = (path, type) => {
-    this.setState({
-      data: changeType(this.state.data, path, type)
-    })
+    this.setData(changeType(this.state.data, path, type))
   }
 
   handleInsert = (path, afterProp, type) => {
-    this.setState({
-      data: insert(this.state.data, path, afterProp, type)
-    })
+    this.setData(insert(this.state.data, path, afterProp, type))
   }
 
   handleAppend = (path, type) => {
-    this.setState({
-      data: append(this.state.data, path, type)
-    })
+    this.setData(append(this.state.data, path, type))
   }
 
   handleDuplicate = (path, type) => {
-    this.setState({
-      data: duplicate(this.state.data, path, type)
-    })
+    this.setData(duplicate(this.state.data, path, type))
   }
 
   handleRemove = (path, prop) => {
-    this.setState({
-      data: remove(this.state.data, path, prop)
-    })
+    this.setData(remove(this.state.data, path, prop))
   }
 
   handleSort = (path, order = null) => {
-    this.setState({
-      data: sort(this.state.data, path, order)
-    })
+    this.setData(sort(this.state.data, path, order))
   }
 
   handleExpand = (path, expanded, recurse) => {
     if (recurse) {
       const dataPath = toDataPath(this.state.data, path)
 
-      this.setState({
-        data: updateIn (this.state.data, dataPath, function (child) {
-          return expand(child, (path) => true, expanded)
-        })
-      })
+      this.setData(updateIn (this.state.data, dataPath, function (child) {
+        return expand(child, (path) => true, expanded)
+      }))
     }
     else {
-      this.setState({
-        data: expand(this.state.data, path, expanded)
-      })
+      this.setData(expand(this.state.data, path, expanded))
     }
   }
 
@@ -142,17 +140,51 @@ export default class TreeMode extends Component {
     const all = (path) => true
     const expanded = true
 
-    this.setState({
-      data: expand(this.state.data, all, expanded)
-    })
+    this.setData(expand(this.state.data, all, expanded))
   }
 
   handleCollapseAll = () => {
     const all = (path) => true
     const expanded = false
 
+    this.setData(expand(this.state.data, all, expanded))
+  }
+
+  canUndo = () => {
+    return this.state.historyIndex < this.state.history.length - 1
+  }
+
+  canRedo = () => {
+    return this.state.historyIndex > 0
+  }
+
+  handleUndo = () => {
+    if (this.canUndo()) {
+      const historyIndex = this.state.historyIndex + 1
+      const data = this.state.history[historyIndex]
+
+      this.setState({ data, historyIndex })
+    }
+  }
+
+  handleRedo = () => {
+    if (this.canRedo()) {
+      const historyIndex = this.state.historyIndex - 1
+      const data = this.state.history[historyIndex]
+
+      this.setState({ data, historyIndex })
+    }
+  }
+
+  setData (data) {
+    const history = [data]
+        .concat(this.state.history.slice(this.state.historyIndex))
+        .slice(0, 1000)
+
     this.setState({
-      data: expand(this.state.data, all, expanded)
+      data,
+      history,
+      historyIndex: 0
     })
   }
 
@@ -162,10 +194,14 @@ export default class TreeMode extends Component {
    * @param {SetOptions} [options]
    */
   set (json, options = {}) {
+    const data = jsonToData([], json, options.expand || TreeMode.expand)
+
     this.setState({
       options: setIn(this.state.options, ['name'], options && options.name || null),
 
-      data: jsonToData([], json, options.expand || TreeMode.expand)
+      data,
+      history: [data],
+      historyIndex: 0
     })
   }
 
