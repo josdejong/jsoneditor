@@ -17,7 +17,7 @@ import { isObject } from './utils/objectUtils'
  * @return {JSONData}
  */
 export function changeValue (data, path, value) {
-  console.log('changeValue', data, value)
+  // console.log('changeValue', data, value)
 
   const dataPath = toDataPath(data, path)
 
@@ -33,7 +33,7 @@ export function changeValue (data, path, value) {
  * @return {JSONData}
  */
 export function changeProperty (data, path, oldProp, newProp) {
-  console.log('changeProperty', path, oldProp, newProp)
+  // console.log('changeProperty', path, oldProp, newProp)
 
   const dataPath = toDataPath(data, path)
   const object = getIn(data, dataPath)
@@ -50,7 +50,7 @@ export function changeProperty (data, path, oldProp, newProp) {
  * @return {JSONData}
  */
 export function changeType (data, path, type) {
-  console.log('changeType', path, type)
+  // console.log('changeType', path, type)
 
   const dataPath = toDataPath(data, path)
   const oldEntry = getIn(data, dataPath)
@@ -68,7 +68,7 @@ export function changeType (data, path, type) {
  * @return {JSONData}
  */
 export function insert (data, path, afterProp, type) {
-  console.log('insert', path, afterProp, type)
+  // console.log('insert', path, afterProp, type)
 
   const dataPath = toDataPath(data, path)
   const parent = getIn(data, dataPath)
@@ -106,7 +106,7 @@ export function insert (data, path, afterProp, type) {
  * @return {JSONData}
  */
 export function append (data, path, type) {
-  console.log('append', path, type)
+  // console.log('append', path, type)
 
   const dataPath = toDataPath(data, path)
   const object = getIn(data, dataPath)
@@ -142,7 +142,7 @@ export function append (data, path, type) {
  * @return {JSONData}
  */
 export function duplicate (data, path, prop) {
-  console.log('duplicate', path, prop)
+  // console.log('duplicate', path, prop)
 
   const dataPath = toDataPath(data, path)
   const object = getIn(data, dataPath)
@@ -181,7 +181,7 @@ export function duplicate (data, path, prop) {
  * @return {JSONData}
  */
 export function remove (data, path, prop) {
-  console.log('remove', path, prop)
+  // console.log('remove', path, prop)
 
   const object = getIn(data, toDataPath(data, path))
 
@@ -207,7 +207,7 @@ export function remove (data, path, prop) {
  * @return {JSONData}
  */
 export function sort (data, path, order = null) {
-  console.log('sort', path, order)
+  // console.log('sort', path, order)
 
   const dataPath = toDataPath(data, path)
   const object = getIn(data, dataPath)
