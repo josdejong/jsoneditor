@@ -45,15 +45,30 @@ export default class TreeMode extends Component {
   }
 
   render (props, state) {
-    return h('div', {class: 'jsoneditor', contentEditable: 'false', onClick: JSONNode.hideContextMenu}, [
-      h('ul', {class: 'jsoneditor-list', contentEditable: 'false'}, [
-        h(JSONNode, {
-          data: state.data,
-          events: state.events,
-          options: state.options,
-          parent: null,
-          prop: null
-        })
+    return h('div', {class: 'jsoneditor'}, [
+      h('div', {class: 'jsoneditor-menu'}, [
+          h('button', {
+            class: 'jsoneditor-expand-all',
+            title: 'Expand all objects and arrays',
+            onClick: this.handleExpandAll
+          }),
+          h('button', {
+            class: 'jsoneditor-collapse-all',
+            title: 'Collapse all objects and arrays',
+            onClick: this.handleCollapseAll
+          })
+      ]),
+
+      h('div', {class: 'jsoneditor-treemode', contentEditable: 'false', onClick: JSONNode.hideContextMenu}, [
+        h('ul', {class: 'jsoneditor-list', contentEditable: 'false'}, [
+          h(JSONNode, {
+            data: state.data,
+            events: state.events,
+            options: state.options,
+            parent: null,
+            prop: null
+          })
+        ])
       ])
     ])
   }
@@ -121,6 +136,24 @@ export default class TreeMode extends Component {
         data: expand(this.state.data, path, expanded)
       })
     }
+  }
+
+  handleExpandAll = () => {
+    const all = (path) => true
+    const expanded = true
+
+    this.setState({
+      data: expand(this.state.data, all, expanded)
+    })
+  }
+
+  handleCollapseAll = () => {
+    const all = (path) => true
+    const expanded = false
+
+    this.setState({
+      data: expand(this.state.data, all, expanded)
+    })
   }
 
   /**
