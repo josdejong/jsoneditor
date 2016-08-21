@@ -142,7 +142,7 @@ export function append (data, path, type) {
  * @return {JSONData}
  */
 export function duplicate (data, path, prop) {
-  console.log('duplicate', path)
+  console.log('duplicate', path, prop)
 
   const dataPath = toDataPath(data, path)
   const object = getIn(data, dataPath)
@@ -181,7 +181,7 @@ export function duplicate (data, path, prop) {
  * @return {JSONData}
  */
 export function remove (data, path, prop) {
-  console.log('remove', path)
+  console.log('remove', path, prop)
 
   const object = getIn(data, toDataPath(data, path))
 

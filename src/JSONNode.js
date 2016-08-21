@@ -71,21 +71,24 @@ export default class JSONNode extends Component {
     ]
 
     if (data.expanded) {
-      const props = data.props.map(prop => {
-        return h(JSONNode, {
-          parent: this,
-          prop: prop.name,
-          data: prop.value,
-          options,
-          events
+      if (data.props.length > 0) {
+        const props = data.props.map(prop => {
+          return h(JSONNode, {
+            parent: this,
+            prop: prop.name,
+            data: prop.value,
+            options,
+            events
+          })
         })
-      })
 
-      if (props.length === 0) {
-        props.push(this.renderAppend('(empty object)'))
+        contents.push(h('ul', {key: 'props', class: 'jsoneditor-list'}, props))
       }
-
-      contents.push(h('ul', {class: 'jsoneditor-list'}, props))
+      else {
+        contents.push(h('ul', {key: 'append', class: 'jsoneditor-list'}, [
+          this.renderAppend('(empty object)')
+        ]))
+      }
     }
 
     return h('li', {}, contents)
@@ -103,21 +106,23 @@ export default class JSONNode extends Component {
     ]
 
     if (data.expanded) {
-      const items = data.items.map((child, index) => {
-        return h(JSONNode, {
-          parent: this,
-          prop: index,
-          data: child,
-          options,
-          events
+      if (data.items.length > 0) {
+        const items = data.items.map((child, index) => {
+          return h(JSONNode, {
+            parent: this,
+            prop: index,
+            data: child,
+            options,
+            events
+          })
         })
-      })
-
-      if (items.length === 0) {
-        items.push(this.renderAppend('(empty array)'))
+        contents.push(h('ul', {key: 'items', class: 'jsoneditor-list'}, items))
       }
-
-      contents.push(h('ul', {class: 'jsoneditor-list'}, items))
+      else {
+        contents.push(h('ul', {key: 'append', class: 'jsoneditor-list'}, [
+          this.renderAppend('(empty array)')
+        ]))
+      }
     }
 
     return h('li', {}, contents)
@@ -141,7 +146,7 @@ export default class JSONNode extends Component {
    * @return {*}
    */
   renderAppend (text) {
-    return h('li', {}, [
+    return h('li', {key: 'append'}, [
       h('div', {class: 'jsoneditor-node'}, [
         this.renderPlaceholder(),
         this.renderAppendContextMenuButton(),
