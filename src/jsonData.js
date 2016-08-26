@@ -46,7 +46,10 @@ export function changeProperty (data, path, oldProp, newProp) {
   const object = getIn(data, dataPath)
   const index = object.props.findIndex(p => p.name === oldProp)
 
-  return setIn(data, dataPath.concat(['props', index, 'name']), newProp)
+  // prevent duplicate property names
+  const uniqueNewProp = findUniqueName(newProp, object.props.map(p => p.name))
+
+  return setIn(data, dataPath.concat(['props', index, 'name']), uniqueNewProp)
 }
 
 /**
@@ -172,6 +175,9 @@ export function duplicate (data, path, prop) {
       const updated = props.slice(0)
       const original = props[index]
       const duplicate = cloneDeep(original)
+
+      // prevent duplicate property names
+      duplicate.name = findUniqueName(duplicate.name, props.map(p => p.name))
 
       updated.splice(index + 1, 0, duplicate)
 
