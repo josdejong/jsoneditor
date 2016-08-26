@@ -2,7 +2,6 @@ import { h, Component } from 'preact'
 
 import ContextMenu from './ContextMenu'
 import { escapeHTML, unescapeHTML } from './utils/stringUtils'
-import { last } from './utils/arrayUtils'
 import { getInnerText } from './utils/domUtils'
 import {stringConvert, valueType, isUrl} from  './utils/typeUtils'
 
@@ -18,7 +17,9 @@ const TYPE_TITLES = {
   'string': 'Item type "string". ' +
     'Item type is not determined from the value, ' +
     'but always returned as string.'
-};
+}
+
+const URL_TITLE = 'Ctrl+Click or Ctrl+Enter to open url'
 
 /**
  * @type {JSONNode | null} activeContextMenu  singleton holding the JSONNode having
@@ -178,18 +179,18 @@ export default class JSONNode extends Component {
           class: 'jsoneditor-property' + (prop.length === 0 ? ' jsoneditor-empty' : ''),
           contentEditable: 'true',
           spellCheck: 'false',
-          onInput: this.handleChangeProperty
+          onBlur: this.handleChangeProperty
         }, prop)
       }
     }
     else {
       // root node
-      const content = JSONNode._rootName(data, options)
+      const content = JSONNode._getRootName(data, options)
 
       return h('div', {
         class: 'jsoneditor-property jsoneditor-readonly',
         spellCheck: 'false',
-        onInput: this.handleChangeProperty
+        onBlur: this.handleChangeProperty
       }, content)
     }
   }
@@ -203,20 +204,71 @@ export default class JSONNode extends Component {
     const type = valueType (value)
     const _isUrl = isUrl(value)
     const isEmpty = escapedValue.length === 0
-    const valueClass = 'jsoneditor-value ' +
-        'jsoneditor-' + type +
-        (_isUrl ? ' jsoneditor-url' : '') +
-        (isEmpty ? ' jsoneditor-empty' : '')
 
     return h('div', {
-      class: valueClass,
+      class: JSONNode._getValueClass(type, _isUrl, isEmpty),
       contentEditable: 'true',
       spellCheck: 'false',
-      onInput: this.handleChangeValue,
+      onBlur: this.handleChangeValue,
+      onInput: this.updateValueStyling,
       onClick: this.handleClickValue,
       onKeyDown: this.handleKeyDownValue,
-      title: _isUrl ? 'Ctrl+Click or ctrl+Enter to open url' : null
+      title: _isUrl ? URL_TITLE : null
     }, escapedValue)
+  }
+
+  /**
+   * Note: this function manipulates the className and title of the editable div
+   * outside of Preact, so the user gets immediate feedback
+   * @param event
+   */
+  updateValueStyling = (event) => {
+    const value = this._getValueFromEvent(event)
+    const type = valueType (value)
+    const _isUrl = isUrl(value)
+    const isEmpty = false  // not needed, our div has a border and is clearly visible
+
+    // find the editable div, the root
+    let target = event.target
+    while (target.contentEditable !== 'true') {
+      target = target.parentNode
+    }
+
+    target.className = JSONNode._getValueClass(type, _isUrl, isEmpty)
+    target.title = _isUrl ? URL_TITLE : ''
+
+    // remove all classNames from childs (needed for IE and Edge)
+    JSONNode._removeChildClasses(target)
+  }
+
+  /**
+   * Create the className for the property value
+   * @param {string} type
+   * @param {boolean} isUrl
+   * @param {boolean} isEmpty
+   * @return {string}
+   * @private
+   */
+  static _getValueClass (type, isUrl, isEmpty) {
+    return 'jsoneditor-value ' +
+        'jsoneditor-' + type +
+        (isUrl ? ' jsoneditor-url' : '') +
+        (isEmpty ? ' jsoneditor-empty' : '')
+  }
+
+  /**
+   * Recursively remove all classes from the childs of this element
+   * @param elem
+   * @private
+   */
+  static _removeChildClasses (elem) {
+    for (let i = 0; i < elem.childNodes.length; i++) {
+      const child = elem.childNodes[i]
+      if (child.class) {
+        child.class = ''
+      }
+      JSONNode._removeChildClasses(child)
+    }
   }
 
   renderExpandButton () {
@@ -294,10 +346,10 @@ export default class JSONNode extends Component {
           click: () => events.onChangeType(path, 'string')
         }
       ]
-    });
+    })
 
     if (type === 'array' || type === 'object') {
-      var direction = ((this.sortOrder == 'asc') ? 'desc': 'asc');
+      var direction = ((this.sortOrder == 'asc') ? 'desc': 'asc')
       items.push({
         text: 'Sort',
         title: 'Sort the childs of this ' + TYPE_TITLES.type,
@@ -317,7 +369,7 @@ export default class JSONNode extends Component {
             click: () => events.onSort(path, 'desc')
           }
         ]
-      });
+      })
     }
 
     if (hasParent) {
@@ -328,7 +380,7 @@ export default class JSONNode extends Component {
         // create a separator
         items.push({
           'type': 'separator'
-        });
+        })
       }
 
       // create insert button
@@ -364,7 +416,7 @@ export default class JSONNode extends Component {
             click: () => events.onInsert(parentPath, prop, 'string')
           }
         ]
-      });
+      })
 
       // create duplicate button
       items.push({
@@ -372,7 +424,7 @@ export default class JSONNode extends Component {
         title: 'Duplicate this item (Ctrl+D)',
         className: 'jsoneditor-duplicate',
         click: () => events.onDuplicate(parentPath, prop)
-      });
+      })
 
       // create remove button
       items.push({
@@ -380,7 +432,7 @@ export default class JSONNode extends Component {
         title: 'Remove this item (Ctrl+Del)',
         className: 'jsoneditor-remove',
         click: () => events.onRemove(parentPath, prop)
-      });
+      })
     }
 
     // TODO: implement a hook to adjust the context menu
@@ -431,7 +483,7 @@ export default class JSONNode extends Component {
           click: () => events.onAppend(path, 'string')
         }
       ]
-    });
+    })
 
     // TODO: implement a hook to adjust the context menu
 
@@ -456,7 +508,7 @@ export default class JSONNode extends Component {
     return false
   }
 
-  static _rootName (data, options) {
+  static _getRootName (data, options) {
     return typeof options.name === 'string'
         ? options.name
         : (data.type === 'object' || data.type === 'array')

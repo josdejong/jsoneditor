@@ -1,4 +1,4 @@
-import { h, render, Component } from 'preact'
+import { h, Component } from 'preact'
 
 export let CONTEXT_MENU_HEIGHT = 240
 
