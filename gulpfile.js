@@ -39,6 +39,7 @@ var compiler = webpack({
   entry: ENTRY,
   devtool: 'source-map',
   debug: true,
+  bail: true,
   output: {
     library: 'jsoneditor',
     libraryTarget: 'umd',
@@ -78,6 +79,19 @@ var compilerMinimalist = webpack({
   cache: true
 });
 
+function handleCompilerCallback (err, stats) {
+  if (err) {
+    gutil.log(err.toString());
+  }
+
+  if (stats && stats.compilation && stats.compilation.errors) {
+    // output soft errors
+    stats.compilation.errors.forEach(function (err) {
+      gutil.log(err.toString());
+    });
+  }
+}
+
 // make dist folder
 gulp.task('mkdir', function () {
   mkdirp.sync(DIST);
@@ -89,9 +103,7 @@ gulp.task('bundle', ['mkdir'], function (done) {
   bannerPlugin.banner = createBanner();
 
   compiler.run(function (err, stats) {
-    if (err) {
-      throw new gutil.PluginError('webpack', err);
-    }
+    handleCompilerCallback(err, stats)
 
     gutil.log('bundled ' + NAME + '.js');
 
@@ -105,9 +117,7 @@ gulp.task('bundle-minimalist', ['mkdir'], function (done) {
   bannerPlugin.banner = createBanner();
 
   compilerMinimalist.run(function (err, stats) {
-    if (err) {
-      throw new gutil.PluginError('webpack', err);
-    }
+    handleCompilerCallback(err, stats)
 
     gutil.log('bundled ' + NAME_MINIMALIST + '.js');
 
