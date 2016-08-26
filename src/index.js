@@ -21,6 +21,8 @@ function jsoneditor (container, options) {
     _options: options,
     _component: component,
 
+    // TODO: implement setMode
+
     /**
      * Set JSON object in editor
      * @param {Object | Array | string | number | boolean | null} json JSON data
@@ -80,8 +82,9 @@ function jsoneditor (container, options) {
       component.collapse(callback)
     },
 
+    // TODO: implement destroy
+
   }
 }
 
-// TODO: use export default jsoneditor, doesn't work out of the box in webpack
 module.exports = jsoneditor

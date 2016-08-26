@@ -3,11 +3,14 @@
  * All functions are pure and don't mutate the JSONData.
  */
 
-import { cloneDeep } from './utils/objectUtils'
+import { cloneDeep, isObject } from './utils/objectUtils'
 import { setIn, updateIn, getIn, deleteIn } from './utils/immutabilityHelpers'
 import { compareAsc, compareDesc } from './utils/arrayUtils'
 import { stringConvert } from  './utils/typeUtils'
-import { isObject } from './utils/objectUtils'
+import { findUniqueName } from  './utils/stringUtils'
+
+// TODO: rewrite the functions into jsonpatch functions, including a function `patch`
+
 
 /**
  * Change the value of a property or item
@@ -34,6 +37,10 @@ export function changeValue (data, path, value) {
  */
 export function changeProperty (data, path, oldProp, newProp) {
   // console.log('changeProperty', path, oldProp, newProp)
+
+  if (oldProp === newProp) {
+    return data
+  }
 
   const dataPath = toDataPath(data, path)
   const object = getIn(data, dataPath)

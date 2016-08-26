@@ -41,20 +41,16 @@
 
   // set json
   document.getElementById('setJSON').onclick = function () {
-    console.time('set')
     editor.set(largeJSON, {
       expand: function (path) {
         return true
       }
     });
-    console.timeEnd('set')
   };
 
   // get json
   document.getElementById('getJSON').onclick = function () {
-    console.time('get')
     const json = editor.get();
-    console.timeEnd('get')
     alert(JSON.stringify(json, null, 2));
   };
 

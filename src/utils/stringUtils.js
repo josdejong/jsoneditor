@@ -91,3 +91,22 @@ export function escapeJSON (text) {
 
   return escaped
 }
+
+/**
+ * Find a unique name. Suffix the name with ' (copy)', '(copy 2)', etc
+ * until a unique name is found
+ * @param {string} name
+ * @param {Array.<string>} invalidNames
+ */
+export function findUniqueName (name, invalidNames) {
+  let validName = name
+  let i = 1
+
+  while (invalidNames.includes(validName)) {
+    const copy = 'copy' + (i > 1 ? (' ' + i) : '')
+    validName = `${name} (${copy})`
+    i++
+  }
+
+  return validName
+}
