@@ -175,12 +175,14 @@ export default class JSONNode extends Component {
         }, prop)
       }
       else { // object property
+        const escapedProp = escapeHTML(prop)
+
         return h('div', {
           class: 'jsoneditor-property' + (prop.length === 0 ? ' jsoneditor-empty' : ''),
           contentEditable: 'true',
           spellCheck: 'false',
           onBlur: this.handleChangeProperty
-        }, prop)
+        }, escapedProp)
       }
     }
     else {
@@ -520,12 +522,14 @@ export default class JSONNode extends Component {
     const parentPath = this.props.parent.getPath()
     const oldProp = this.props.prop
     const newProp = unescapeHTML(getInnerText(event.target))
+    console.log('newProp', newProp)
 
     this.props.events.onChangeProperty(parentPath, oldProp, newProp)
   }
 
   handleChangeValue (event) {
     const value = this._getValueFromEvent(event)
+    console.log('value', value)
 
     this.props.events.onChangeValue(this.getPath(), value)
   }
