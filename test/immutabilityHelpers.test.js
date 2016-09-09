@@ -20,8 +20,8 @@ test('getIn', t => {
   }
 
   t.deepEqual(getIn(obj, ['a', 'b']), {c: 2})
-  t.is(getIn(obj, ['e', 1, 'f']), 5)
-  t.is(getIn(obj, ['e', 999, 'f']), undefined)
+  t.is(getIn(obj, ['e', '1', 'f']), 5)
+  t.is(getIn(obj, ['e', '999', 'f']), undefined)
   t.is(getIn(obj, ['non', 'existing', 'path']), undefined)
 })
 
@@ -61,15 +61,7 @@ test('setIn basic', t => {
 test('setIn non existing path', t => {
   const obj = {}
 
-  const updated = setIn(obj, ['a', 'b', 'c'], 4)
-
-  t.deepEqual (updated, {
-    a: {
-      b: {
-        c: 4
-      }
-    }
-  })
+  t.throws(() => setIn(obj, ['a', 'b', 'c'], 4), /Path does not exist/)
 })
 
 test('setIn replace value with object should throw an exception', t => {
@@ -78,9 +70,7 @@ test('setIn replace value with object should throw an exception', t => {
     d: 3
   }
 
-  t.throws(function () {
-    const updated = setIn(obj, ['a', 'b', 'c'], 4)
-  }, /Cannot override existing property/)
+  t.throws(()  => setIn(obj, ['a', 'b', 'c'], 4), /Path does not exist/)
 })
 
 test('setIn replace value inside nested array', t => {
@@ -96,7 +86,7 @@ test('setIn replace value inside nested array', t => {
     d: 5
   }
 
-  const updated = setIn(obj, ['a', 2, 'c'], 8)
+  const updated = setIn(obj, ['a', '2', 'c'], 8)
 
   t.deepEqual (updated, {
     a: [
@@ -254,7 +244,7 @@ test('deleteIn array', t => {
     e: 5
   }
 
-  const updated = deleteIn(obj, ['a', 'b', 1, 'c'])
+  const updated = deleteIn(obj, ['a', 'b', '1', 'c'])
   t.deepEqual (updated, {
     a: {
       b: [1, {d: 3} , 4]
@@ -271,4 +261,11 @@ test('deleteIn array', t => {
   })
 
   t.truthy (obj !== updated)
+})
+
+test('deleteIn non existing path', t => {
+  const obj = { a: {}}
+
+  const updated = deleteIn(obj, ['a', 'b'])
+  t.truthy (updated === obj)
 })

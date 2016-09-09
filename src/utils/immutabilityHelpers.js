@@ -1,6 +1,7 @@
 'use strict';
 
-import { isObject, clone } from  './objectUtils'
+import clone from 'lodash/clone'
+import { isObjectOrArray } from  './typeUtils'
 
 /**
  * Immutability helpers
@@ -26,7 +27,7 @@ export function getIn (object, path) {
   let i = 0
 
   while(i < path.length) {
-    if (Array.isArray(value) || isObject(value)) {
+    if (isObjectOrArray(value)) {
       value = value[path[i]]
     }
     else {
@@ -53,17 +54,20 @@ export function setIn (object, path, value) {
     return value
   }
 
-  const key = path[0]
-  const updated = cloneOrCreate(key, object)
+  if (!isObjectOrArray(object)) {
+    throw new Error('Path does not exist')
+  }
 
-  const updatedValue = setIn(updated[key], path.slice(1), value)
-  if (updated[key] === updatedValue) {
+  const key = path[0]
+  const updatedValue = setIn(object[key], path.slice(1), value)
+  if (object[key] === updatedValue) {
     // return original object unchanged when the new value is identical to the old one
     return object
   }
   else {
-    updated[key] = updatedValue
-    return updated
+    const updatedObject = clone(object)
+    updatedObject[key] = updatedValue
+    return updatedObject
   }
 }
 /**
@@ -80,17 +84,20 @@ export function updateIn (object, path, callback) {
     return callback(object)
   }
 
-  const key = path[0]
-  const updated = cloneOrCreate(key, object)
+  if (!isObjectOrArray(object)) {
+    throw new Error('Path doesn\'t exist')
+  }
 
+  const key = path[0]
   const updatedValue = updateIn(object[key], path.slice(1), callback)
-  if (updated[key] === updatedValue) {
+  if (object[key] === updatedValue) {
     // return original object unchanged when the new value is identical to the old one
     return object
   }
   else {
-    updated[key] = updatedValue
-    return updated
+    const updatedObject = clone(object)
+    updatedObject[key] = updatedValue
+    return updatedObject
   }
 }
 
@@ -107,48 +114,39 @@ export function deleteIn (object, path) {
     return object
   }
 
+  if (!isObjectOrArray(object)) {
+    return object
+  }
+
   if (path.length === 1) {
     const key = path[0]
-    const updated = clone(object)
-    if (Array.isArray(updated)) {
-      updated.splice(key, 1)
+    if (object[key] === undefined) {
+      // key doesn't exist. return object unchanged
+      return object
     }
     else {
-      delete updated[key]
-    }
+      const updatedObject = clone(object)
 
-    return updated
+      if (Array.isArray(updatedObject)) {
+        updatedObject.splice(key, 1)
+      }
+      else {
+        delete updatedObject[key]
+      }
+
+      return updatedObject
+    }
   }
 
   const key = path[0]
-  const child = object[key]
-  if (Array.isArray(child) || isObject(child)) {
-    const updated = clone(object)
-    updated[key] = deleteIn(child, path.slice(1))
-    return updated
-  }
-  else {
-    // child property doesn't exist. just do nothing
+  const updatedValue = deleteIn(object[key], path.slice(1))
+  if (object[key] === updatedValue) {
+    // object is unchanged
     return object
   }
-}
-
-/**
- * Helper function to clone an array or object, or to create a new object
- * when `object` is undefined. When object is anything else, the function will
- * throw an error
- * @param {string | number} key
- * @param {Object | Array | undefined} object
- * @return {Array | Object}
- */
-function cloneOrCreate (key, object) {
-  if (object === undefined) {
-    return (typeof key === 'number') ? [] : {} // create new object or array
+  else {
+    const updatedObject = clone(object)
+    updatedObject[key] = updatedValue
+    return updatedObject
   }
-
-  if (typeof object === 'object' || Array.isArray(object)) {
-    return clone(object)
-  }
-
-  throw new Error('Cannot override existing property ' + JSON.stringify(object))
 }

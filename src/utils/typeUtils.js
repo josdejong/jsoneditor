@@ -1,4 +1,28 @@
 
+// TODO: unit test isObject
+
+/**
+ * Test whether a value is an Object (and not an Array!)
+ *
+ * @param {*} value
+ * @return {boolean}
+ */
+export function isObject (value) {
+  return typeof value === 'object' &&
+      value !== null &&
+      !Array.isArray(value)
+}
+
+/**
+ * Test whether a value is an Object or an Array
+ *
+ * @param {*} value
+ * @return {boolean}
+ */
+export function isObjectOrArray (value) {
+  return typeof value === 'object' && value !== null
+}
+
 /**
  * Get the type of a value
  * @param {*} value

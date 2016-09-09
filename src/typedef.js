@@ -17,7 +17,7 @@
  *   value: *?
  * }} ValueData
  *
- * @typedef {Array.<string | number>} Path
+ * @typedef {Array.<string>} Path
  *
  * @typedef {ObjectData | ArrayData | ValueData} JSONData
  *

@@ -3,10 +3,9 @@
  * All functions are pure and don't mutate the JSONData.
  */
 
-import { isObject } from './utils/objectUtils'
 import { setIn, updateIn, getIn, deleteIn } from './utils/immutabilityHelpers'
 import { compareAsc, compareDesc } from './utils/arrayUtils'
-import { stringConvert } from  './utils/typeUtils'
+import { isObject, stringConvert } from  './utils/typeUtils'
 import { findUniqueName } from  './utils/stringUtils'
 import isEqual from 'lodash/isEqual'
 import cloneDeep from 'lodash/isEqual'
