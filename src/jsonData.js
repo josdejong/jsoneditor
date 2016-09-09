@@ -120,6 +120,7 @@ export function insertAfter (data, path, afterProp, type) {
  * @param {JSONData} value  // TODO: pass json instead of JSONData as value
  * @return {JSONData}
  */
+// TODO: remove insert, use add instead
 export function insert (data, path, value) {
   // console.log('insert', path, value)
 
@@ -516,10 +517,12 @@ export function dataToJson (data) {
  * @return {{data: JSONData, revert: Object}}
  * @private
  */
-function _patchAdd (data, path, value) {
+function add (data, path, value) {
   const parentPath = path.slice(0, path.length - 1)
-  const parent = getIn(data, toDataPath(data, parentPath))
+  const dataPath = toDataPath(data, parentPath)
+  const parent = getIn(data, dataPath)
   const resolvedPath = resolvePathIndex(data, path)
+  const prop = resolvedPath[resolvedPath.length - 1]
 
   // FIXME: should not be needed to do try/catch. Create a function exists(data, path), or rewrite toDataPath such that you don't need to pass data
   let oldValue = undefined
@@ -528,7 +531,28 @@ function _patchAdd (data, path, value) {
   }
   catch (err) {}
 
-  const updatedData = insert(data, resolvedPath, value)
+  let updatedData
+  if (parent.type === 'array') {
+    // TODO: create an immutable helper function to insert an item in an Array
+    updatedData = updateIn(data, dataPath.concat('items'), (items) => {
+      const index = parseInt(prop)
+      const updatedItems = items.slice(0)
+
+      updatedItems.splice(index, 0, value)
+
+      return updatedItems
+    })
+  }
+  else { // parent.type === 'object'
+    // TODO: create an immutable helper function to append an item to an Array
+    updatedData = updateIn(data, dataPath.concat('props'), (props) => {
+      const newProp = {
+        name: prop,
+        value
+      }
+      return props.concat(newProp)
+    })
+  }
 
   return {
     data: updatedData,
@@ -582,7 +606,7 @@ export function patchData (data, patch) {
           const parentPath = path.slice(0, path.length - 1)
           const value = jsonToData(parentPath, action.value, expand)
 
-          const result = _patchAdd(updatedData, path, value)
+          const result = add(updatedData, path, value)
           updatedData = result.data
           revert.unshift(result.revert)
 
@@ -624,7 +648,7 @@ export function patchData (data, patch) {
           const from = parseJSONPointer(action.from)
           const value = getIn(updatedData, toDataPath(updatedData, from))
 
-          const result = _patchAdd(updatedData, path, value)
+          const result = add(updatedData, path, value)
           updatedData = result.data
           revert.unshift(result.revert)
 
@@ -638,7 +662,7 @@ export function patchData (data, patch) {
             const value = getIn(updatedData, toDataPath(updatedData, from))
 
             updatedData = remove(updatedData, from)
-            const result = _patchAdd(updatedData, path, value)
+            const result = add(updatedData, path, value)
             updatedData = result.data
 
             if (result.revert.op === 'replace') {
