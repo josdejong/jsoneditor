@@ -161,7 +161,7 @@ export function insert (data, path, value) {
  * @param {JSONDataType} type
  * @return {JSONData}
  */
-// TODO: remove append, use insert instead
+// TODO: remove append, use add instead
 export function append (data, path, type) {
   // console.log('append', path, type)
 
@@ -195,11 +195,21 @@ export function append (data, path, type) {
  * Replace an existing item
  * @param {JSONData} data
  * @param {Path} path
- * @param {JSONData} value  // TODO: pass json instead of JSONData as value
- * @return {JSONData}
+ * @param {JSONData} value
+ * @return {{data: JSONData, revert: Object}}
  */
 export function replace (data, path, value) {
-  return setIn(data, toDataPath(data, path), value)
+  const dataPath = toDataPath(data, path)
+  const oldValue = dataToJson(getIn(data, dataPath))
+
+  return {
+    data: setIn(data, dataPath, value),
+    revert: {
+      op: 'replace',
+      path: compileJSONPointer(path),
+      value: oldValue
+    }
+  }
 }
 
 /**
@@ -248,26 +258,31 @@ export function duplicate (data, path, prop) {
  * Remove an item or property
  * @param {JSONData} data
  * @param {Path} path
- * @return {JSONData}
+ * @return {{data: JSONData, revert: Object}}
  */
 export function remove (data, path) {
   // console.log('remove', path)
 
   const parentPath = path.slice(0, path.length - 1)
-  const object = getIn(data, toDataPath(data, parentPath))
+  const parent = getIn(data, toDataPath(data, parentPath))
+  const value = dataToJson(getIn(data, toDataPath(data, path)))
 
-  // TODO: throw error if path does not exist
-
-  if (object.type === 'array') {
+  if (parent.type === 'array') {
     const dataPath = toDataPath(data, path)
 
-    return deleteIn(data, dataPath)
+    return {
+      data: deleteIn(data, dataPath),
+      revert: {op: 'add', path: compileJSONPointer(path), value}
+    }
   }
   else { // object.type === 'object'
     const dataPath = toDataPath(data, path)
 
     dataPath.pop()  // remove the 'value' property, we want to remove the whole object property
-    return deleteIn(data, dataPath)
+    return {
+      data: deleteIn(data, dataPath),
+      revert: {op: 'add', path: compileJSONPointer(path), value}
+    }
   }
 }
 
@@ -603,8 +618,7 @@ export function patchData (data, patch) {
       switch (action.op) {
         case 'add': {
           const path = parseJSONPointer(action.path)
-          const parentPath = path.slice(0, path.length - 1)
-          const value = jsonToData(parentPath, action.value, expand)
+          const value = jsonToData(path, action.value, expand)
 
           const result = add(updatedData, path, value)
           updatedData = result.data
@@ -617,28 +631,20 @@ export function patchData (data, patch) {
           const path = parseJSONPointer(action.path)
           const value = dataToJson(getIn(updatedData, toDataPath(updatedData, path)))
 
-          updatedData = remove(updatedData, path)
-          revert.unshift({
-            op: 'add',
-            path: action.path,
-            value
-          })
+          const result = remove(updatedData, path)
+          updatedData = result.data
+          revert.unshift(result.revert)
 
           break
         }
 
         case 'replace': {
           const path = parseJSONPointer(action.path)
-          const oldValue = dataToJson(getIn(updatedData, toDataPath(updatedData, path)))
-          const parentPath = path.slice(0, path.length - 1)
-          const newValue = jsonToData(parentPath, action.value, expand)
+          const newValue = jsonToData(path, action.value, expand)
 
-          updatedData = replace(updatedData, path, newValue)
-          revert.unshift({
-            op: 'replace',
-            path: action.path,
-            value: oldValue
-          })
+          const result = replace(updatedData, path, newValue)
+          updatedData = result.data
+          revert.unshift(result.revert)
 
           break
         }
@@ -661,7 +667,7 @@ export function patchData (data, patch) {
             const from = parseJSONPointer(action.from)
             const value = getIn(updatedData, toDataPath(updatedData, from))
 
-            updatedData = remove(updatedData, from)
+            updatedData = remove(updatedData, from).data
             const result = add(updatedData, path, value)
             updatedData = result.data
 
