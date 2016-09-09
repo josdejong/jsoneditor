@@ -114,47 +114,6 @@ export function insertAfter (data, path, afterProp, type) {
 }
 
 /**
- * Insert a new item
- * @param {JSONData} data
- * @param {Path} path
- * @param {JSONData} value  // TODO: pass json instead of JSONData as value
- * @return {JSONData}
- */
-// TODO: remove insert, use add instead
-export function insert (data, path, value) {
-  // console.log('insert', path, value)
-
-  const parentPath = path.slice(0, path.length - 1)
-  const prop = path[path.length - 1]
-  const dataPath = toDataPath(data, parentPath)
-  const parent = getIn(data, dataPath)
-
-  // TODO: throw error if parentPath does not exist?
-
-  // FIXME: updateIn should fail when the path doesn't yet exist
-
-  if (parent.type === 'array') {
-  return updateIn(data, dataPath.concat('items'), (items) => {
-      const index = parseInt(prop)
-      const updatedItems = items.slice(0)
-
-      updatedItems.splice(index, 0, value)
-
-      return updatedItems
-    })
-  }
-  else { // parent.type === 'object'
-    return updateIn(data, dataPath.concat('props'), (props) => {
-      const newProp = {
-        name: prop,
-        value
-      }
-      return props.concat(newProp)
-    })
-  }
-}
-
-/**
  * Append a new item at the end of an object or array
  * @param {JSONData} data
  * @param {Path} path
@@ -219,6 +178,7 @@ export function replace (data, path, value) {
  * @param {string | number} prop
  * @return {JSONData}
  */
+// TODO: remove this function, use copy
 export function duplicate (data, path, prop) {
   // console.log('duplicate', path, prop)
 
@@ -257,31 +217,32 @@ export function duplicate (data, path, prop) {
 /**
  * Remove an item or property
  * @param {JSONData} data
- * @param {Path} path
+ * @param {string} path
  * @return {{data: JSONData, revert: Object}}
  */
 export function remove (data, path) {
   // console.log('remove', path)
+  const _path = parseJSONPointer(path)
 
-  const parentPath = path.slice(0, path.length - 1)
+  const parentPath = _path.slice(0, _path.length - 1)
   const parent = getIn(data, toDataPath(data, parentPath))
-  const value = dataToJson(getIn(data, toDataPath(data, path)))
+  const value = dataToJson(getIn(data, toDataPath(data, _path)))
 
   if (parent.type === 'array') {
-    const dataPath = toDataPath(data, path)
+    const dataPath = toDataPath(data, _path)
 
     return {
       data: deleteIn(data, dataPath),
-      revert: {op: 'add', path: compileJSONPointer(path), value}
+      revert: {op: 'add', path, value}
     }
   }
   else { // object.type === 'object'
-    const dataPath = toDataPath(data, path)
+    const dataPath = toDataPath(data, _path)
 
     dataPath.pop()  // remove the 'value' property, we want to remove the whole object property
     return {
       data: deleteIn(data, dataPath),
-      revert: {op: 'add', path: compileJSONPointer(path), value}
+      revert: {op: 'add', path, value}
     }
   }
 }
@@ -527,16 +488,18 @@ export function dataToJson (data) {
 
 /**
  * @param {JSONData} data
- * @param {Path} path
+ * @param {string} path
  * @param {JSONData} value
  * @return {{data: JSONData, revert: Object}}
  * @private
  */
 function add (data, path, value) {
-  const parentPath = path.slice(0, path.length - 1)
+  const _path = parseJSONPointer(path)
+
+  const parentPath = _path.slice(0, _path.length - 1)
   const dataPath = toDataPath(data, parentPath)
   const parent = getIn(data, dataPath)
-  const resolvedPath = resolvePathIndex(data, path)
+  const resolvedPath = resolvePathIndex(data, _path)
   const prop = resolvedPath[resolvedPath.length - 1]
 
   // FIXME: should not be needed to do try/catch. Create a function exists(data, path), or rewrite toDataPath such that you don't need to pass data
@@ -574,6 +537,90 @@ function add (data, path, value) {
     revert: (parent.type === 'object' && oldValue !== undefined)
         ? {op: 'replace', path: compileJSONPointer(resolvedPath), value: dataToJson(oldValue)}
         : {op: 'remove', path: compileJSONPointer(resolvedPath)}
+  }
+}
+
+/**
+ * Copy a value
+ * @param {JSONData} data
+ * @param {string} path
+ * @param {string} from
+ * @return {{data: JSONData, revert: Object}}
+ * @private
+ */
+// TODO: add an optional parameter `beforeProp` or `afterProp`
+export function copy (data, path, from) {
+  const value = getIn(data, toDataPath(data, parseJSONPointer(from)))
+
+  return add(data, path, value)
+}
+
+/**
+ * Move a value
+ * @param {JSONData} data
+ * @param {string} path
+ * @param {string} from
+ * @return {{data: JSONData, revert: Object}}
+ * @private
+ */
+export function move (data, path, from) {
+  if (path !== from) {
+    const value = getIn(data, toDataPath(data, parseJSONPointer(from)))
+
+    const result1 = remove(data, from)
+    let updatedData = result1.data
+
+    const result2 = add(updatedData, path, value)
+    updatedData = result2.data
+
+    if (result2.revert.op === 'replace') {
+      return {
+        data: updatedData,
+        revert: [
+          {op: 'move', from: path, path: from},
+          {op: 'add', path, value: result2.revert.value}
+        ]
+      }
+    }
+    else { // result2.revert.op === 'remove'
+      return {
+        data: updatedData,
+        revert: [
+          {op: 'move', from: path, path: from}
+        ]
+      }
+    }
+  }
+  else {
+    // nothing to do
+    return {
+      data,
+      revert: []
+    }
+  }
+}
+
+/**
+ * Test whether the data contains the provided value at the specified path.
+ * Throws an error when the test fails.
+ * @param {JSONData} data
+ * @param {string} path
+ * @param {*} value
+ */
+export function test (data, path, value) {
+  const _path = parseJSONPointer(path)
+  const actualValue = getIn(data, toDataPath(data, _path))
+
+  if (value === undefined) {
+    throw new Error('Test failed, no value provided')
+  }
+
+  if (actualValue === undefined) {
+    throw new Error('Test failed, path not found')
+  }
+
+  if (!isEqual(dataToJson(actualValue), value)) {
+    throw new Error('Test failed, value differs')
   }
 }
 
@@ -620,7 +667,7 @@ export function patchData (data, patch) {
           const path = parseJSONPointer(action.path)
           const value = jsonToData(path, action.value, expand)
 
-          const result = add(updatedData, path, value)
+          const result = add(updatedData, action.path, value)
           updatedData = result.data
           revert.unshift(result.revert)
 
@@ -628,10 +675,7 @@ export function patchData (data, patch) {
         }
 
         case 'remove': {
-          const path = parseJSONPointer(action.path)
-          const value = dataToJson(getIn(updatedData, toDataPath(updatedData, path)))
-
-          const result = remove(updatedData, path)
+          const result = remove(updatedData, action.path)
           updatedData = result.data
           revert.unshift(result.revert)
 
@@ -650,11 +694,7 @@ export function patchData (data, patch) {
         }
 
         case 'copy': {
-          const path = parseJSONPointer(action.path)
-          const from = parseJSONPointer(action.from)
-          const value = getIn(updatedData, toDataPath(updatedData, from))
-
-          const result = add(updatedData, path, value)
+          const result = copy(updatedData, action.path, action.from)
           updatedData = result.data
           revert.unshift(result.revert)
 
@@ -662,45 +702,15 @@ export function patchData (data, patch) {
         }
 
         case 'move': {
-          if (action.path !== action.from) {
-            const path = parseJSONPointer(action.path)
-            const from = parseJSONPointer(action.from)
-            const value = getIn(updatedData, toDataPath(updatedData, from))
-
-            updatedData = remove(updatedData, from).data
-            const result = add(updatedData, path, value)
-            updatedData = result.data
-
-            if (result.revert.op === 'replace') {
-              revert.unshift({op: 'add', path: action.path, value: result.revert.value})
-              revert.unshift({op: 'move', from: action.path, path: action.from})
-            }
-            else {
-              revert.unshift({op: 'move', from: action.path, path: action.from})
-            }
-          }
+          const result = move(updatedData, action.path, action.from)
+          updatedData = result.data
+          revert = result.revert.concat(revert)
 
           break
         }
 
         case 'test': {
-          // FIXME: should not be needed to do try/catch. Create a function exists(data, path), or rewrite toDataPath such that you don't need to pass data
-          const path = parseJSONPointer(action.path)
-          let value
-          try {
-            value = getIn(data, toDataPath(data, path))
-          }
-          catch (err) {}
-
-          if (action.value === undefined) {
-            throw new Error('Test failed, no value provided')
-          }
-          if (value === undefined) {
-            throw new Error('Test failed, path not found')
-          }
-          if (!isEqual(dataToJson(value), action.value)) {
-            throw new Error('Test failed, value differs')
-          }
+          test(updatedData, action.path, action.value)
 
           break
         }
@@ -786,7 +796,7 @@ export function convertDataType (data, type) {
 
 /**
  * Parse a JSON Pointer
- * WARNING: this is not a complete JSONPointer implementation
+ * WARNING: this is not a complete string implementation
  * @param {string} pointer
  * @return {Array}
  */
@@ -799,7 +809,7 @@ export function parseJSONPointer (pointer) {
 
 /**
  * Compile a JSON Pointer
- * WARNING: this is not a complete JSONPointer implementation
+ * WARNING: this is not a complete string implementation
  * @param {Path} path
  * @return {string}
  */
