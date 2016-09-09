@@ -2,11 +2,12 @@ import { h, Component } from 'preact'
 
 import { setIn, updateIn } from './utils/immutabilityHelpers'
 import {
-  changeValue, changeProperty, changeType,
-  insert, append, duplicate, remove,
-  sort,
-  expand,
-  jsonToData, dataToJson, toDataPath
+    changeValue, changeProperty, changeType,
+    insertAfter, append, duplicate, remove,
+    sort,
+    expand,
+    jsonToData, dataToJson, toDataPath,
+    createDataEntry
 } from './jsonData'
 import JSONNode from './JSONNode'
 
@@ -104,7 +105,7 @@ export default class TreeMode extends Component {
   }
 
   handleInsert = (path, afterProp, type) => {
-    this.setData(insert(this.state.data, path, afterProp, type))
+    this.setData(insertAfter(this.state.data, path, afterProp, type))
   }
 
   handleAppend = (path, type) => {
@@ -116,7 +117,7 @@ export default class TreeMode extends Component {
   }
 
   handleRemove = (path, prop) => {
-    this.setData(remove(this.state.data, path, prop))
+    this.setData(remove(this.state.data, path.concat(prop)))
   }
 
   handleSort = (path, order = null) => {

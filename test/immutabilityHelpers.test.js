@@ -72,22 +72,15 @@ test('setIn non existing path', t => {
   })
 })
 
-test('setIn replace value with object', t => {
+test('setIn replace value with object should throw an exception', t => {
   const obj = {
     a: 42,
     d: 3
   }
 
-  const updated = setIn(obj, ['a', 'b', 'c'], 4)
-
-  t.deepEqual (updated, {
-    a: {
-      b: {
-        c: 4
-      }
-    },
-    d: 3
-  })
+  t.throws(function () {
+    const updated = setIn(obj, ['a', 'b', 'c'], 4)
+  }, /Cannot override existing property/)
 })
 
 test('setIn replace value inside nested array', t => {
@@ -116,24 +109,6 @@ test('setIn replace value inside nested array', t => {
     ],
     d: 5
   })
-})
-
-test('setIn change array into object', t => {
-  const obj = [1,2,3]
-
-  const updated = setIn(obj, ['foo'], 'bar')
-
-  t.deepEqual (updated, {
-    foo: 'bar'
-  })
-})
-
-test('setIn change object into array', t => {
-  const obj = {a:1, b:2}
-
-  const updated = setIn(obj, [2], 'foo')
-
-  t.deepEqual (updated, [, , 'foo'])
 })
 
 test('setIn identical value should return the original object', t => {

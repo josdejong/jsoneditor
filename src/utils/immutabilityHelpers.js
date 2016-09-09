@@ -54,16 +54,7 @@ export function setIn (object, path, value) {
   }
 
   const key = path[0]
-  let updated
-  if (typeof key === 'string' && !isObject(object)) {
-    updated = {}
-  }
-  else if (typeof key === 'number' && !Array.isArray(object)) {
-    updated = []
-  }
-  else {
-    updated = clone(object)
-  }
+  const updated = cloneOrCreate(key, object)
 
   const updatedValue = setIn(updated[key], path.slice(1), value)
   if (updated[key] === updatedValue) {
@@ -90,16 +81,7 @@ export function updateIn (object, path, callback) {
   }
 
   const key = path[0]
-  let updated
-  if (typeof key === 'string' && !isObject(object)) {
-    updated = {}  // change into an object
-  }
-  else if (typeof key === 'number' && !Array.isArray(object)) {
-    updated = []  // change into an array
-  }
-  else {
-    updated = clone(object)
-  }
+  const updated = cloneOrCreate(key, object)
 
   const updatedValue = updateIn(object[key], path.slice(1), callback)
   if (updated[key] === updatedValue) {
@@ -149,4 +131,24 @@ export function deleteIn (object, path) {
     // child property doesn't exist. just do nothing
     return object
   }
+}
+
+/**
+ * Helper function to clone an array or object, or to create a new object
+ * when `object` is undefined. When object is anything else, the function will
+ * throw an error
+ * @param {string | number} key
+ * @param {Object | Array | undefined} object
+ * @return {Array | Object}
+ */
+function cloneOrCreate (key, object) {
+  if (object === undefined) {
+    return (typeof key === 'number') ? [] : {} // create new object or array
+  }
+
+  if (typeof object === 'object' || Array.isArray(object)) {
+    return clone(object)
+  }
+
+  throw new Error('Cannot override existing property ' + JSON.stringify(object))
 }
