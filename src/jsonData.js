@@ -486,6 +486,7 @@ export function patchData (data, patch) {
           const path = parseJSONPointer(action.path)
           let newValue = jsonToData(path, action.value, expand)
 
+          // TODO: move setting type to jsonToData
           if (action.jsoneditor && action.jsoneditor.type) {
             // insert with type 'string' or 'value'
             newValue.type = action.jsoneditor.type

@@ -2,8 +2,7 @@ import { h, Component } from 'preact'
 
 import { setIn, updateIn } from './utils/immutabilityHelpers'
 import {
-  expand,
-  jsonToData, dataToJson, toDataPath, patchData, compileJSONPointer
+  expand, jsonToData, dataToJson, toDataPath, patchData, compileJSONPointer
 } from './jsonData'
 import {
   duplicate, insert, append, changeType, changeValue, changeProperty, sort
@@ -16,15 +15,12 @@ export default class TreeMode extends Component {
   constructor (props) {
     super(props)
 
-    // TODO: don't put name and expand like this in the constructor
-    const name   = this.props.options && this.props.options.name || null
     const expand = this.props.options && this.props.options.expand || TreeMode.expand
-
     const data = jsonToData([], this.props.data || {}, expand)
 
     this.state = {
       options: {
-        name
+        name: null
       },
 
       data,
@@ -248,10 +244,11 @@ export default class TreeMode extends Component {
    * @param {SetOptions} [options]
    */
   set (json, options = {}) {
+    const name = options && options.name || null // the root name
     const data = jsonToData([], json, options.expand || TreeMode.expand)
 
     this.setState({
-      options: setIn(this.state.options, ['name'], options && options.name || null),
+      options: setIn(this.state.options, ['name'], name),
 
       data,
       // TODO: do we want to keep history when .set(json) is called?
