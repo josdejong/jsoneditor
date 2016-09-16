@@ -14,6 +14,186 @@ const expandNever = function (path) {
 }
 
 /**
+ * Convert a JSON object into the internally used data model
+ * @param {Path} path
+ * @param {Object | Array | string | number | boolean | null} json
+ * @param {function(path: Path)} expand
+ * @return {JSONData}
+ */
+// TODO: change signature to jsonToData(json, expand=(path) => false, path=[])
+export function jsonToData (path, json, expand) {
+  if (Array.isArray(json)) {
+    return {
+      type: 'array',
+      expanded: expand(path),
+      items: json.map((child, index) => jsonToData(path.concat(index), child, expand))
+    }
+  }
+  else if (isObject(json)) {
+    return {
+      type: 'object',
+      expanded: expand(path),
+      props: Object.keys(json).map(name => {
+        return {
+          name,
+          value: jsonToData(path.concat(name), json[name], expand)
+        }
+      })
+    }
+  }
+  else {
+    return {
+      type: 'value',
+      value: json
+    }
+  }
+}
+
+/**
+ * Convert the internal data model to a regular JSON object
+ * @param {JSONData} data
+ * @return {Object | Array | string | number | boolean | null} json
+ */
+export function dataToJson (data) {
+  switch (data.type) {
+    case 'array':
+      return data.items.map(dataToJson)
+
+    case 'object':
+      const object = {}
+
+      data.props.forEach(prop => {
+        object[prop.name] = dataToJson(prop.value)
+      })
+
+      return object
+
+    default: // type 'string' or 'value'
+      return data.value
+  }
+}
+
+/**
+ * Convert a path of a JSON object into a path in the corresponding data model
+ * @param {JSONData} data
+ * @param {Path} path
+ * @return {Path} dataPath
+ * @private
+ */
+export function toDataPath (data, path) {
+  if (path.length === 0) {
+    return []
+  }
+
+  let index
+  if (data.type === 'array') {
+    // index of an array
+    index = path[0]
+
+    return ['items', index].concat(toDataPath(data.items[index], path.slice(1)))
+  }
+  else {
+    // object property. find the index of this property
+    index = data.props.findIndex(prop => prop.name === path[0])
+
+    return ['props', index, 'value'].concat(toDataPath(data.props[index].value, path.slice(1)))
+  }
+}
+
+/**
+ * Apply a patch to a JSONData object
+ * @param {JSONData} data
+ * @param {Array} patch    A JSON patch
+ * @return {{data: JSONData, revert: Array.<Object>, error: Error | null}}
+ */
+export function patchData (data, patch) {
+  const expand = expandNever   // TODO: customizable expand function
+
+  try {
+    let updatedData = data
+    let revert = []
+
+    patch.forEach(function (action) {
+      switch (action.op) {
+        case 'add': {
+          const path = parseJSONPointer(action.path)
+          const value = jsonToData(path, action.value, expand)
+          const afterProp = getIn(action, ['jsoneditor', 'afterProp'])
+
+          const result = add(updatedData, action.path, value, afterProp)
+          updatedData = result.data
+          revert.unshift(result.revert)
+
+          break
+        }
+
+        case 'remove': {
+          const result = remove(updatedData, action.path)
+          updatedData = result.data
+          revert.unshift(result.revert)
+
+          break
+        }
+
+        case 'replace': {
+          const path = parseJSONPointer(action.path)
+          let newValue = jsonToData(path, action.value, expand)
+
+          // TODO: move setting type to jsonToData
+          if (action.jsoneditor && action.jsoneditor.type) {
+            // insert with type 'string' or 'value'
+            newValue.type = action.jsoneditor.type
+          }
+
+          const result = replace(updatedData, path, newValue)
+          updatedData = result.data
+          revert.unshift(result.revert)
+
+          break
+        }
+
+        case 'copy': {
+          const afterProp = getIn(action, ['jsoneditor', 'afterProp'])
+          const result = copy(updatedData, action.path, action.from, afterProp)
+          updatedData = result.data
+          revert.unshift(result.revert)
+
+          break
+        }
+
+        case 'move': {
+          const afterProp = getIn(action, ['jsoneditor', 'afterProp'])
+          const result = move(updatedData, action.path, action.from, afterProp)
+          updatedData = result.data
+          revert = result.revert.concat(revert)
+
+          break
+        }
+
+        case 'test': {
+          test(updatedData, action.path, action.value)
+
+          break
+        }
+
+        default: {
+          throw new Error('Unknown jsonpatch op ' + JSON.stringify(action.op))
+        }
+      }
+    })
+
+    return {
+      data: updatedData,
+      revert,
+      error: null
+    }
+  }
+  catch (error) {
+    return {data, revert: [], error}
+  }
+}
+
+/**
  * Replace an existing item
  * @param {JSONData} data
  * @param {Path} path
@@ -71,199 +251,6 @@ export function remove (data, path) {
       data: deleteIn(data, dataPath),
       revert: {op: 'add', path, value, jsoneditor}
     }
-  }
-}
-
-/**
- * Expand or collapse one or multiple items or properties
- * @param {JSONData} data
- * @param {function(path: Path) : boolean | Path} callback
- *              When a path, the object/array at this path will be expanded/collapsed
- *              When a function, all objects and arrays for which callback
- *              returns true will be expanded/collapsed
- * @param {boolean} expanded  New expanded state: true to expand, false to collapse
- * @return {JSONData}
- */
-export function expand (data, callback, expanded) {
-  // console.log('expand', callback, expand)
-
-  if (typeof callback === 'function') {
-    return expandRecursive(data, [], callback, expanded)
-  }
-  else if (Array.isArray(callback)) {
-    const dataPath = toDataPath(data, callback)
-
-    return setIn(data, dataPath.concat(['expanded']), expanded)
-  }
-  else {
-    throw new Error('Callback function or path expected')
-  }
-}
-
-/**
- * Traverse the json data, change the expanded state of all items/properties for
- * which `callback` returns true
- * @param {JSONData} data
- * @param {Path} path
- * @param {function(path: Path)} callback
- *              All objects and arrays for which callback returns true will be
- *              expanded/collapsed
- * @param {boolean} expanded  New expanded state: true to expand, false to collapse
- * @return {*}
- * @private
- */
-function expandRecursive (data, path, callback, expanded) {
-  switch (data.type) {
-    case 'array': {
-      let updatedData = callback(path)
-          ? setIn(data, ['expanded'], expanded)
-          : data
-      let updatedItems = updatedData.items
-
-      updatedData.items.forEach((item, index) => {
-        updatedItems = setIn(updatedItems, [index],
-            expandRecursive(item, path.concat(index), callback, expanded))
-      })
-
-      return setIn(updatedData, ['items'], updatedItems)
-    }
-
-    case 'object': {
-      let updatedData = callback(path)
-          ? setIn(data, ['expanded'], expanded)
-          : data
-      let updatedProps = updatedData.props
-
-      updatedData.props.forEach((prop, index) => {
-        updatedProps = setIn(updatedProps, [index, 'value'],
-            expandRecursive(prop.value, path.concat(prop.name), callback, expanded))
-      })
-
-      return setIn(updatedData, ['props'], updatedProps)
-    }
-
-    default: // type 'string' or 'value'
-      // don't do anything: a value can't be expanded, only arrays and objects can
-      return data
-  }
-}
-
-
-/**
- * Convert a path of a JSON object into a path in the corresponding data model
- * @param {JSONData} data
- * @param {Path} path
- * @return {Path} dataPath
- * @private
- */
-export function toDataPath (data, path) {
-  if (path.length === 0) {
-    return []
-  }
-
-  let index
-  if (data.type === 'array') {
-    // index of an array
-    index = path[0]
-
-    return ['items', index].concat(toDataPath(data.items[index], path.slice(1)))
-  }
-  else {
-    // object property. find the index of this property
-    index = data.props.findIndex(prop => prop.name === path[0])
-
-    return ['props', index, 'value'].concat(toDataPath(data.props[index].value, path.slice(1)))
-  }
-}
-
-/**
- * Test whether a path exists in the json data
- * @param {JSONData} data
- * @param {Path} path
- * @return {boolean} Returns true if the path exists, else returns false
- * @private
- */
-export function pathExists (data, path) {
-  if (data === undefined) {
-    return false
-  }
-
-  if (path.length === 0) {
-    return true
-  }
-
-  let index
-  if (data.type === 'array') {
-    // index of an array
-    index = path[0]
-    return pathExists(data.items[index], path.slice(1))
-  }
-  else {
-    // object property. find the index of this property
-    index = data.props.findIndex(prop => prop.name === path[0])
-    const prop = data.props[index]
-
-    return pathExists(prop && prop.value, path.slice(1))
-  }
-}
-
-/**
- * Convert a JSON object into the internally used data model
- * @param {Path} path
- * @param {Object | Array | string | number | boolean | null} json
- * @param {function(path: Path)} expand
- * @return {JSONData}
- */
-// TODO: change signature to jsonToData(json, expand=(path) => false, path=[])
-export function jsonToData (path, json, expand) {
-  if (Array.isArray(json)) {
-    return {
-      type: 'array',
-      expanded: expand(path),
-      items: json.map((child, index) => jsonToData(path.concat(index), child, expand))
-    }
-  }
-  else if (isObject(json)) {
-    return {
-      type: 'object',
-      expanded: expand(path),
-      props: Object.keys(json).map(name => {
-        return {
-          name,
-          value: jsonToData(path.concat(name), json[name], expand)
-        }
-      })
-    }
-  }
-  else {
-    return {
-      type: 'value',
-      value: json
-    }
-  }
-}
-
-/**
- * Convert the internal data model to a regular JSON object
- * @param {JSONData} data
- * @return {Object | Array | string | number | boolean | null} json
- */
-export function dataToJson (data) {
-  switch (data.type) {
-    case 'array':
-      return data.items.map(dataToJson)
-
-    case 'object':
-      const object = {}
-
-      data.props.forEach(prop => {
-        object[prop.name] = dataToJson(prop.value)
-      })
-
-      return object
-
-    default: // type 'string' or 'value'
-      return data.value
   }
 }
 
@@ -424,6 +411,111 @@ export function test (data, path, value) {
 }
 
 /**
+ * Expand or collapse one or multiple items or properties
+ * @param {JSONData} data
+ * @param {function(path: Path) : boolean | Path} callback
+ *              When a path, the object/array at this path will be expanded/collapsed
+ *              When a function, all objects and arrays for which callback
+ *              returns true will be expanded/collapsed
+ * @param {boolean} expanded  New expanded state: true to expand, false to collapse
+ * @return {JSONData}
+ */
+export function expand (data, callback, expanded) {
+  // console.log('expand', callback, expand)
+
+  if (typeof callback === 'function') {
+    return expandRecursive(data, [], callback, expanded)
+  }
+  else if (Array.isArray(callback)) {
+    const dataPath = toDataPath(data, callback)
+
+    return setIn(data, dataPath.concat(['expanded']), expanded)
+  }
+  else {
+    throw new Error('Callback function or path expected')
+  }
+}
+
+/**
+ * Traverse the json data, change the expanded state of all items/properties for
+ * which `callback` returns true
+ * @param {JSONData} data
+ * @param {Path} path
+ * @param {function(path: Path)} callback
+ *              All objects and arrays for which callback returns true will be
+ *              expanded/collapsed
+ * @param {boolean} expanded  New expanded state: true to expand, false to collapse
+ * @return {*}
+ * @private
+ */
+function expandRecursive (data, path, callback, expanded) {
+  switch (data.type) {
+    case 'array': {
+      let updatedData = callback(path)
+          ? setIn(data, ['expanded'], expanded)
+          : data
+      let updatedItems = updatedData.items
+
+      updatedData.items.forEach((item, index) => {
+        updatedItems = setIn(updatedItems, [index],
+            expandRecursive(item, path.concat(index), callback, expanded))
+      })
+
+      return setIn(updatedData, ['items'], updatedItems)
+    }
+
+    case 'object': {
+      let updatedData = callback(path)
+          ? setIn(data, ['expanded'], expanded)
+          : data
+      let updatedProps = updatedData.props
+
+      updatedData.props.forEach((prop, index) => {
+        updatedProps = setIn(updatedProps, [index, 'value'],
+            expandRecursive(prop.value, path.concat(prop.name), callback, expanded))
+      })
+
+      return setIn(updatedData, ['props'], updatedProps)
+    }
+
+    default: // type 'string' or 'value'
+      // don't do anything: a value can't be expanded, only arrays and objects can
+      return data
+  }
+}
+
+/**
+ * Test whether a path exists in the json data
+ * @param {JSONData} data
+ * @param {Path} path
+ * @return {boolean} Returns true if the path exists, else returns false
+ * @private
+ */
+export function pathExists (data, path) {
+  if (data === undefined) {
+    return false
+  }
+
+  if (path.length === 0) {
+    return true
+  }
+
+  let index
+  if (data.type === 'array') {
+    // index of an array
+    index = path[0]
+    return pathExists(data.items[index], path.slice(1))
+  }
+  else {
+    // object property. find the index of this property
+    index = data.props.findIndex(prop => prop.name === path[0])
+    const prop = data.props[index]
+
+    return pathExists(prop && prop.value, path.slice(1))
+  }
+}
+
+/**
  * Resolve the index for `arr/-`, replace it with an index value equal to the
  * length of the array
  * @param {JSONData} data
@@ -445,99 +537,6 @@ export function resolvePathIndex (data, path) {
   }
 
   return path
-}
-
-/**
- * Apply a patch to a JSONData object
- * @param {JSONData} data
- * @param {Array} patch    A JSON patch
- * @return {{data: JSONData, revert: Array.<Object>, error: Error | null}}
- */
-export function patchData (data, patch) {
-  const expand = expandNever   // TODO: customizable expand function
-
-  try {
-    let updatedData = data
-    let revert = []
-
-    patch.forEach(function (action) {
-      switch (action.op) {
-        case 'add': {
-          const path = parseJSONPointer(action.path)
-          const value = jsonToData(path, action.value, expand)
-          const afterProp = getIn(action, ['jsoneditor', 'afterProp'])
-
-          const result = add(updatedData, action.path, value, afterProp)
-          updatedData = result.data
-          revert.unshift(result.revert)
-
-          break
-        }
-
-        case 'remove': {
-          const result = remove(updatedData, action.path)
-          updatedData = result.data
-          revert.unshift(result.revert)
-
-          break
-        }
-
-        case 'replace': {
-          const path = parseJSONPointer(action.path)
-          let newValue = jsonToData(path, action.value, expand)
-
-          // TODO: move setting type to jsonToData
-          if (action.jsoneditor && action.jsoneditor.type) {
-            // insert with type 'string' or 'value'
-            newValue.type = action.jsoneditor.type
-          }
-
-          const result = replace(updatedData, path, newValue)
-          updatedData = result.data
-          revert.unshift(result.revert)
-
-          break
-        }
-
-        case 'copy': {
-          const afterProp = getIn(action, ['jsoneditor', 'afterProp'])
-          const result = copy(updatedData, action.path, action.from, afterProp)
-          updatedData = result.data
-          revert.unshift(result.revert)
-
-          break
-        }
-
-        case 'move': {
-          const afterProp = getIn(action, ['jsoneditor', 'afterProp'])
-          const result = move(updatedData, action.path, action.from, afterProp)
-          updatedData = result.data
-          revert = result.revert.concat(revert)
-
-          break
-        }
-
-        case 'test': {
-          test(updatedData, action.path, action.value)
-
-          break
-        }
-
-        default: {
-          throw new Error('Unknown jsonpatch op ' + JSON.stringify(action.op))
-        }
-      }
-    })
-
-    return {
-      data: updatedData,
-      revert,
-      error: null
-    }
-  }
-  catch (error) {
-    return {data, revert: [], error}
-  }
 }
 
 /**
