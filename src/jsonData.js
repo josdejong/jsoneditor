@@ -4,150 +4,13 @@
  */
 
 import { setIn, updateIn, getIn, deleteIn } from './utils/immutabilityHelpers'
-import { compareAsc, compareDesc } from './utils/arrayUtils'
-import { isObject, stringConvert } from  './utils/typeUtils'
-import { findUniqueName } from  './utils/stringUtils'
+import { isObject } from  './utils/typeUtils'
 import isEqual from 'lodash/isEqual'
-import cloneDeep from 'lodash/isEqual'
 
 // TODO: rewrite the functions into jsonpatch functions, including a function `patch`
 
 const expandNever = function (path) {
   return false
-}
-
-/**
- * Change the value of a property or item
- * @param {JSONData} data
- * @param {Path} path
- * @param {*} value
- * @return {JSONData}
- */
-export function changeValue (data, path, value) {
-  // console.log('changeValue', data, value)
-
-  const dataPath = toDataPath(data, path)
-
-  return setIn(data, dataPath.concat('value'), value)
-}
-
-/**
- * Change a property name
- * @param {JSONData} data
- * @param {Path} path
- * @param {string} oldProp
- * @param {string} newProp
- * @return {JSONData}
- */
-export function changeProperty (data, path, oldProp, newProp) {
-  // console.log('changeProperty', path, oldProp, newProp)
-
-  if (oldProp === newProp) {
-    return data
-  }
-
-  const dataPath = toDataPath(data, path)
-  const object = getIn(data, dataPath)
-  const index = object.props.findIndex(p => p.name === oldProp)
-
-  // prevent duplicate property names
-  const uniqueNewProp = findUniqueName(newProp, object.props.map(p => p.name))
-
-  return setIn(data, dataPath.concat(['props', index, 'name']), uniqueNewProp)
-}
-
-/**
- * Change the type of a property or item
- * @param {JSONData} data
- * @param {Path} path
- * @param {JSONDataType} type
- * @return {JSONData}
- */
-export function changeType (data, path, type) {
-  // console.log('changeType', path, type)
-
-  const dataPath = toDataPath(data, path)
-  const oldEntry = getIn(data, dataPath)
-  const newEntry = convertDataType(oldEntry, type)
-
-  return setIn(data, dataPath, newEntry)
-}
-
-/**
- * Insert a new item after specified property or item
- * @param {JSONData} data
- * @param {Path} path
- * @param {string | number} afterProp
- * @param {JSONDataType} type
- * @return {JSONData}
- */
-// TODO: remove function insertAfter, create insert(data, path, value, afterProp) instead
-export function insertAfter (data, path, afterProp, type) {
-  // console.log('insertAfter', path, afterProp, type)
-
-  const dataPath = toDataPath(data, path)
-  const parent = getIn(data, dataPath)
-
-  if (parent.type === 'array') {
-    return updateIn(data, dataPath.concat('items'), (items) => {
-      const index = parseInt(afterProp)
-      const updatedItems = items.slice(0)
-
-      updatedItems.splice(index + 1, 0, createDataEntry(type))
-
-      return updatedItems
-    })
-  }
-  else { // parent.type === 'object'
-    return updateIn(data, dataPath.concat('props'), (props) => {
-      const index = props.findIndex(p => p.name === afterProp)
-      const updatedProps = props.slice(0)
-
-      updatedProps.splice(index + 1, 0, {
-        name: '',
-        value: createDataEntry(type)
-      })
-
-      return updatedProps
-    })
-  }
-}
-
-/**
- * Append a new item at the end of an object or array
- * @param {JSONData} data
- * @param {Path} path
- * @param {JSONDataType} type
- * @return {JSONData}
- */
-// TODO: remove append, use add instead
-export function append (data, path, type) {
-  // console.log('append', path, type)
-
-  const dataPath = toDataPath(data, path)
-  const object = getIn(data, dataPath)
-
-  if (object.type === 'array') {
-    return updateIn(data, dataPath.concat('items'), (items) => {
-      const updatedItems = items.slice(0)
-
-      updatedItems.push(createDataEntry(type))
-
-      return updatedItems
-    })
-  }
-  else { // object.type === 'object'
-    return updateIn(data, dataPath.concat('props'), (props) => {
-      const updatedProps = props.slice(0)
-
-      updatedProps.push({
-        name: '',
-        value: createDataEntry(type)
-      })
-
-      return updatedProps
-    })
-  }
 }
 
 /**
@@ -172,49 +35,6 @@ export function replace (data, path, value) {
 }
 
 /**
- * Duplicate a property or item
- * @param {JSONData} data
- * @param {Path} path
- * @param {string | number} prop
- * @return {JSONData}
- */
-// TODO: remove this function, use copy
-export function duplicate (data, path, prop) {
-  // console.log('duplicate', path, prop)
-
-  const dataPath = toDataPath(data, path)
-  const object = getIn(data, dataPath)
-
-  if (object.type === 'array') {
-    return updateIn(data, dataPath.concat('items'), (items) => {
-      const index = parseInt(prop)
-      const updatedItems = items.slice(0)
-      const original = items[index]
-      const duplicate = cloneDeep(original)
-
-      updatedItems.splice(index + 1, 0, duplicate)
-
-      return updatedItems
-    })
-  }
-  else { // object.type === 'object'
-    return updateIn(data, dataPath.concat('props'), (props) => {
-      const index = props.findIndex(p => p.name === prop)
-      const updated = props.slice(0)
-      const original = props[index]
-      const clone = cloneDeep(original)
-
-      // prevent duplicate property names
-      clone.name = findUniqueName(clone.name, props.map(p => p.name))
-
-      updated.splice(index + 1, 0, clone)
-
-      return updated
-    })
-  }
-}
-
-/**
  * Remove an item or property
  * @param {JSONData} data
  * @param {string} path
@@ -226,14 +46,21 @@ export function remove (data, path) {
 
   const parentPath = _path.slice(0, _path.length - 1)
   const parent = getIn(data, toDataPath(data, parentPath))
-  const value = dataToJson(getIn(data, toDataPath(data, _path)))
+  const dataValue = getIn(data, toDataPath(data, _path))
+  const value = dataToJson(dataValue)
+
+  // extra information attached to the patch
+  const jsoneditor = {
+    type: dataValue.type
+    // FIXME: store before
+  }
 
   if (parent.type === 'array') {
     const dataPath = toDataPath(data, _path)
 
     return {
       data: deleteIn(data, dataPath),
-      revert: {op: 'add', path, value}
+      revert: {op: 'add', path, value, jsoneditor}
     }
   }
   else { // object.type === 'object'
@@ -242,55 +69,8 @@ export function remove (data, path) {
     dataPath.pop()  // remove the 'value' property, we want to remove the whole object property
     return {
       data: deleteIn(data, dataPath),
-      revert: {op: 'add', path, value}
+      revert: {op: 'add', path, value, jsoneditor}
     }
-  }
-}
-
-/**
- * Order the items of an array or the properties of an object in ascending
- * or descending order
- * @param {JSONData} data
- * @param {Path} path
- * @param {'asc' | 'desc' | null} [order=null]  If not provided, will toggle current ordering
- * @return {JSONData}
- */
-export function sort (data, path, order = null) {
-  // console.log('sort', path, order)
-
-  const dataPath = toDataPath(data, path)
-  const object = getIn(data, dataPath)
-
-  let _order
-  if (order === 'asc' || order === 'desc') {
-    _order = order
-  }
-  else {
-    // toggle previous order
-    _order = object.order !== 'asc' ? 'asc' : 'desc'
-
-    data = setIn(data, dataPath.concat(['order']), _order)
-  }
-
-  if (object.type === 'array') {
-    return updateIn(data, dataPath.concat(['items']), (items) =>{
-      const ordered = items.slice(0)
-      const compare = _order === 'desc' ? compareDesc : compareAsc
-
-      ordered.sort((a, b) => compare(a.value, b.value))
-
-      return ordered
-    })
-  }
-  else { // object.type === 'object'
-    return updateIn(data, dataPath.concat(['props']), (props) => {
-      const orderedProps = props.slice(0)
-      const compare = _order === 'desc' ? compareDesc : compareAsc
-
-      orderedProps.sort((a, b) => compare(a.name, b.name))
-
-      return orderedProps
-    })
   }
 }
 
@@ -330,6 +110,7 @@ export function expand (data, callback, expanded) {
  *              expanded/collapsed
  * @param {boolean} expanded  New expanded state: true to expand, false to collapse
  * @return {*}
+ * @private
  */
 function expandRecursive (data, path, callback, expanded) {
   switch (data.type) {
@@ -490,10 +271,13 @@ export function dataToJson (data) {
  * @param {JSONData} data
  * @param {string} path
  * @param {JSONData} value
+ * @param {string} [afterProp]   In case of an object, the property
+ *                               after which this new property must be added
+ *                               can be specified
  * @return {{data: JSONData, revert: Object}}
  * @private
  */
-function add (data, path, value) {
+export function add (data, path, value, afterProp) {
   const _path = parseJSONPointer(path)
 
   const parentPath = _path.slice(0, _path.length - 1)
@@ -524,11 +308,19 @@ function add (data, path, value) {
   else { // parent.type === 'object'
     // TODO: create an immutable helper function to append an item to an Array
     updatedData = updateIn(data, dataPath.concat('props'), (props) => {
-      const newProp = {
-        name: prop,
-        value
+      const newProp = { name: prop, value }
+
+      if (afterProp === undefined) {
+        // append
+        return props.concat(newProp)
       }
-      return props.concat(newProp)
+      else {
+        // insert after prop
+        const updatedProps = props.slice(0)
+        const index = props.findIndex(p => p.name === afterProp)
+        updatedProps.splice(index + 1, 0, newProp)
+        return updatedProps
+      }
     })
   }
 
@@ -545,14 +337,16 @@ function add (data, path, value) {
  * @param {JSONData} data
  * @param {string} path
  * @param {string} from
+ * @param {string} [afterProp]   In case of an object, the property
+ *                               after which this new property must be added
+ *                               can be specified
  * @return {{data: JSONData, revert: Object}}
  * @private
  */
-// TODO: add an optional parameter `beforeProp` or `afterProp`
-export function copy (data, path, from) {
+export function copy (data, path, from, afterProp) {
   const value = getIn(data, toDataPath(data, parseJSONPointer(from)))
 
-  return add(data, path, value)
+  return add(data, path, value, afterProp)
 }
 
 /**
@@ -560,18 +354,23 @@ export function copy (data, path, from) {
  * @param {JSONData} data
  * @param {string} path
  * @param {string} from
+ * @param {string} [afterProp]   In case of an object, the property
+ *                               after which this new property must be added
+ *                               can be specified
  * @return {{data: JSONData, revert: Object}}
  * @private
  */
-export function move (data, path, from) {
+export function move (data, path, from, afterProp) {
   if (path !== from) {
     const value = getIn(data, toDataPath(data, parseJSONPointer(from)))
 
     const result1 = remove(data, from)
     let updatedData = result1.data
 
-    const result2 = add(updatedData, path, value)
+    const result2 = add(updatedData, path, value, afterProp)
     updatedData = result2.data
+
+    // FIXME: the revert action should store afterProp
 
     if (result2.revert.op === 'replace') {
       return {
@@ -666,8 +465,9 @@ export function patchData (data, patch) {
         case 'add': {
           const path = parseJSONPointer(action.path)
           const value = jsonToData(path, action.value, expand)
+          const afterProp = getIn(action, ['jsoneditor', 'afterProp'])
 
-          const result = add(updatedData, action.path, value)
+          const result = add(updatedData, action.path, value, afterProp)
           updatedData = result.data
           revert.unshift(result.revert)
 
@@ -684,7 +484,12 @@ export function patchData (data, patch) {
 
         case 'replace': {
           const path = parseJSONPointer(action.path)
-          const newValue = jsonToData(path, action.value, expand)
+          let newValue = jsonToData(path, action.value, expand)
+
+          if (action.jsoneditor && action.jsoneditor.type) {
+            // insert with type 'string' or 'value'
+            newValue.type = action.jsoneditor.type
+          }
 
           const result = replace(updatedData, path, newValue)
           updatedData = result.data
@@ -694,7 +499,8 @@ export function patchData (data, patch) {
         }
 
         case 'copy': {
-          const result = copy(updatedData, action.path, action.from)
+          const afterProp = getIn(action, ['jsoneditor', 'afterProp'])
+          const result = copy(updatedData, action.path, action.from, afterProp)
           updatedData = result.data
           revert.unshift(result.revert)
 
@@ -702,7 +508,8 @@ export function patchData (data, patch) {
         }
 
         case 'move': {
-          const result = move(updatedData, action.path, action.from)
+          const afterProp = getIn(action, ['jsoneditor', 'afterProp'])
+          const result = move(updatedData, action.path, action.from, afterProp)
           updatedData = result.data
           revert = result.revert.concat(revert)
 
@@ -730,68 +537,6 @@ export function patchData (data, patch) {
   catch (error) {
     return {data, revert: [], error}
   }
-}
-
-/**
- * Create a new data entry
- * @param {JSONDataType} [type='value']
- * @return {JSONData}
- */
-export function createDataEntry (type) {
-  if (type === 'array') {
-    return {
-      type,
-      expanded: true,
-      items: []
-    }
-  }
-  else if (type === 'object') {
-    return {
-      type,
-      expanded: true,
-      props: []
-    }
-  }
-  else {
-    return {
-      type,
-      value: ''
-    }
-  }
-}
-
-/**
- * Convert a JSONData object into a different type. When possible, data is retained
- * @param {JSONData} data
- * @param {JSONDataType} type
- * @return {JSONData}
- */
-export function convertDataType (data, type) {
-  const convertedEntry = createDataEntry(type)
-
-  // convert contents from old value to new value where possible
-  if (type === 'value' && data.type === 'string') {
-    convertedEntry.value = stringConvert(data.value)
-  }
-
-  if (type === 'string' && data.type === 'value') {
-    convertedEntry.value = data.value + ''
-  }
-
-  if (type === 'object' && data.type === 'array') {
-    convertedEntry.props = data.items.map((item, index) => {
-      return {
-        name: index + '',
-        value: item
-      }
-    })
-  }
-
-  if (type === 'array' && data.type === 'object') {
-    convertedEntry.items = data.props.map(prop => prop.value)
-  }
-
-  return convertedEntry
 }
 
 /**

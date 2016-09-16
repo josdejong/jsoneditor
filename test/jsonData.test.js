@@ -5,8 +5,6 @@ import {
 } from '../src/jsonData'
 
 
-// TODO: test all functions like append, insert, duplicate etc.
-
 const JSON_EXAMPLE = {
   obj: {
     arr: [1,2, {a:3,b:4}]

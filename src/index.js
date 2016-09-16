@@ -82,6 +82,15 @@ function jsoneditor (container, options) {
       component.collapse(callback)
     },
 
+    /**
+     * Apply a JSONPatch to the current JSON document
+     * @param {Array} actions   JSONPatch actions
+     * @return {Array} Returns a JSONPatch to revert the applied patch
+     */
+    patch (actions) {
+      return component.patch(actions)
+    }
+
     // TODO: implement destroy
 
   }

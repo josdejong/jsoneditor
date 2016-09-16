@@ -34,3 +34,22 @@ export function compareAsc (a, b) {
 export function compareDesc (a, b) {
   return a > b ? -1 : a < b ? 1 : 0
 }
+
+/**
+ * Test whether all items of an array are strictly equal
+ * @param {Array} a
+ * @param {Array} b
+ */
+export function strictShallowEqual (a, b) {
+  if (a.length !== b.length) {
+    return false
+  }
+
+  for (let i = 0; i < a.length; i++) {
+    if (a[i] !== b[i]) {
+      return false
+    }
+  }
+
+  return true
+}

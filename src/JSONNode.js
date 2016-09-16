@@ -3,7 +3,7 @@ import { h, Component } from 'preact'
 import ContextMenu from './ContextMenu'
 import { escapeHTML, unescapeHTML } from './utils/stringUtils'
 import { getInnerText } from './utils/domUtils'
-import {stringConvert, valueType, isUrl} from  './utils/typeUtils'
+import { stringConvert, valueType, isUrl } from  './utils/typeUtils'
 
 // TYPE_TITLES with explanation for the different types
 const TYPE_TITLES = {
@@ -166,7 +166,7 @@ export default class JSONNode extends Component {
 
   renderProperty (prop, data, options) {
     if (prop !== null) {
-      const isIndex = typeof prop === 'number'
+      const isIndex = typeof prop === 'number' // FIXME: pass an explicit prop isIndex
 
       if (isIndex) { // array item
         return h('div', {
@@ -375,9 +375,6 @@ export default class JSONNode extends Component {
     }
 
     if (hasParent) {
-      const parentPath = this.props.parent.getPath()
-      const prop = this.props.prop
-
       if (items.length) {
         // create a separator
         items.push({
@@ -391,31 +388,31 @@ export default class JSONNode extends Component {
         title: 'Insert a new item with type \'value\' after this item (Ctrl+Ins)',
         submenuTitle: 'Select the type of the item to be inserted',
         className: 'jsoneditor-insert',
-        click: () => events.onInsert(parentPath, prop, 'value'),
+        click: () => events.onInsert(path, 'value'),
         submenu: [
           {
             text: 'Value',
             className: 'jsoneditor-type-value',
             title: TYPE_TITLES.value,
-            click: () => events.onInsert(parentPath, prop,'value')
+            click: () => events.onInsert(path, 'value')
           },
           {
             text: 'Array',
             className: 'jsoneditor-type-array',
             title: TYPE_TITLES.array,
-            click: () => events.onInsert(parentPath, prop, 'array')
+            click: () => events.onInsert(path, 'array')
           },
           {
             text: 'Object',
             className: 'jsoneditor-type-object',
             title: TYPE_TITLES.object,
-            click: () => events.onInsert(parentPath, prop, 'object')
+            click: () => events.onInsert(path, 'object')
           },
           {
             text: 'String',
             className: 'jsoneditor-type-string',
             title: TYPE_TITLES.string,
-            click: () => events.onInsert(parentPath, prop, 'string')
+            click: () => events.onInsert(path, 'string')
           }
         ]
       })
@@ -425,7 +422,7 @@ export default class JSONNode extends Component {
         text: 'Duplicate',
         title: 'Duplicate this item (Ctrl+D)',
         className: 'jsoneditor-duplicate',
-        click: () => events.onDuplicate(parentPath, prop)
+        click: () => events.onDuplicate(path)
       })
 
       // create remove button
@@ -433,7 +430,7 @@ export default class JSONNode extends Component {
         text: 'Remove',
         title: 'Remove this item (Ctrl+Del)',
         className: 'jsoneditor-remove',
-        click: () => events.onRemove(parentPath, prop)
+        click: () => events.onRemove(path)
       })
     }
 
@@ -522,16 +519,19 @@ export default class JSONNode extends Component {
     const parentPath = this.props.parent.getPath()
     const oldProp = this.props.prop
     const newProp = unescapeHTML(getInnerText(event.target))
-    console.log('newProp', newProp)
 
-    this.props.events.onChangeProperty(parentPath, oldProp, newProp)
+    if (newProp !== oldProp) {
+      this.props.events.onChangeProperty(parentPath, oldProp, newProp)
+    }
   }
 
   handleChangeValue (event) {
     const value = this._getValueFromEvent(event)
-    console.log('value', value)
 
-    this.props.events.onChangeValue(this.getPath(), value)
+    if (value !== this.props.data.value) {
+      console.log('oldValue', this.props.data.value, value)
+      this.props.events.onChangeValue(this.getPath(), value)
+    }
   }
 
   handleClickValue (event) {
@@ -628,7 +628,7 @@ export default class JSONNode extends Component {
 
   /**
    * Get the path of this JSONNode
-   * @return {Array.<string | number>}
+   * @return {Path}
    */
   getPath () {
     const path = this.props.parent

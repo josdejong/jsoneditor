@@ -2,13 +2,12 @@ import { h, Component } from 'preact'
 
 import { setIn, updateIn } from './utils/immutabilityHelpers'
 import {
-    changeValue, changeProperty, changeType,
-    insertAfter, append, duplicate, remove,
-    sort,
-    expand,
-    jsonToData, dataToJson, toDataPath,
-    createDataEntry
+  expand,
+  jsonToData, dataToJson, toDataPath, patchData, compileJSONPointer
 } from './jsonData'
+import {
+  duplicate, insert, append, changeType, changeValue, changeProperty, sort
+} from './actions'
 import JSONNode from './JSONNode'
 
 export default class TreeMode extends Component {
@@ -93,62 +92,73 @@ export default class TreeMode extends Component {
   }
 
   handleChangeValue = (path, value) => {
-    this.setData(changeValue(this.state.data, path, value))
+    this.handlePatch(changeValue(this.state.data, path, value))
   }
 
-  handleChangeProperty = (path, oldProp, newProp) => {
-    this.setData(changeProperty(this.state.data, path, oldProp, newProp))
+  handleChangeProperty = (parentPath, oldProp, newProp) => {
+    this.handlePatch(changeProperty(this.state.data, parentPath, oldProp, newProp))
   }
 
   handleChangeType = (path, type) => {
-    this.setData(changeType(this.state.data, path, type))
+    this.handlePatch(changeType(this.state.data, path, type))
   }
 
-  handleInsert = (path, afterProp, type) => {
-    this.setData(insertAfter(this.state.data, path, afterProp, type))
+  handleInsert = (path, type) => {
+    this.handlePatch(insert(this.state.data, path, type))
   }
 
-  handleAppend = (path, type) => {
-    this.setData(append(this.state.data, path, type))
+  handleAppend = (parentPath, type) => {
+    this.handlePatch(append(this.state.data, parentPath, type))
   }
 
-  handleDuplicate = (path, type) => {
-    this.setData(duplicate(this.state.data, path, type))
+  handleDuplicate = (path) => {
+    this.handlePatch(duplicate(this.state.data, path))
   }
 
-  handleRemove = (path, prop) => {
-    this.setData(remove(this.state.data, path.concat(prop)))
+  handleRemove = (path) => {
+    const patch = [{
+      op: 'remove',
+      path: compileJSONPointer(path)
+    }]
+
+    this.handlePatch(patch)
   }
 
   handleSort = (path, order = null) => {
-    this.setData(sort(this.state.data, path, order))
+    this.handlePatch(sort(this.state.data, path, order))
   }
 
   handleExpand = (path, expanded, recurse) => {
     if (recurse) {
       const dataPath = toDataPath(this.state.data, path)
 
-      this.setData(updateIn (this.state.data, dataPath, function (child) {
-        return expand(child, (path) => true, expanded)
-      }))
+      this.setState({
+        data: updateIn(this.state.data, dataPath, function (child) {
+          return expand(child, (path) => true, expanded)
+        })
+      })
     }
     else {
-      this.setData(expand(this.state.data, path, expanded))
+      this.setState({
+        data: expand(this.state.data, path, expanded)
+      })
     }
   }
 
   handleExpandAll = () => {
-    const all = (path) => true
     const expanded = true
 
-    this.setData(expand(this.state.data, all, expanded))
+    this.setState({
+      data: expand(this.state.data, expandAll, expanded)
+    })
   }
 
   handleCollapseAll = () => {
-    const all = (path) => true
     const expanded = false
 
-    this.setData(expand(this.state.data, all, expanded))
+    this.setState({
+      data: expand(this.state.data, expandAll, expanded)
+    })
   }
 
   canUndo = () => {
@@ -177,7 +187,30 @@ export default class TreeMode extends Component {
     }
   }
 
-  setData (data) {
+  /**
+   * Apply a JSONPatch to the current JSON document and emit a change event
+   * @param {Array} actions
+   */
+  handlePatch = (actions) => {
+    // apply changes
+    const revert = this.patch(actions)
+
+    // emit change event
+    if (this.props.options && this.props.options.onChange) {
+      this.props.options.onChange(actions, revert)
+    }
+  }
+
+  /**
+   * Apply a JSONPatch to the current JSON document
+   * @param {Array} actions   JSONPatch actions
+   * @return {Array} Returns a JSONPatch to revert the applied patch
+   */
+  patch (actions) {
+    const result = patchData(this.state.data, actions)
+    const data = result.data
+
+    // TODO: store patch and revert in history
     const history = [data]
         .concat(this.state.history.slice(this.state.historyIndex))
         .slice(0, 1000)
@@ -187,6 +220,8 @@ export default class TreeMode extends Component {
       history,
       historyIndex: 0
     })
+
+    return result.revert
   }
 
   /**
@@ -249,4 +284,9 @@ export default class TreeMode extends Component {
     return path.length === 0
   }
 
+}
+
+
+function expandAll (path) {
+  return true
 }

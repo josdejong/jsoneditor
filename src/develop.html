@@ -24,7 +24,13 @@
 <script>
   // create the editor
   const container = document.getElementById('container');
-  const options = {};
+  const options = {
+    onChange: function (patch, revert) {
+      console.log('onChange patch=', patch, ', revert=', revert)
+      window.patch = patch
+      window.revert = revert
+    }
+  };
   const editor = jsoneditor(container, options);
   const json = {
     'array': [1, 2, 3],
