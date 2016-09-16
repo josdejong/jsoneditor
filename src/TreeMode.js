@@ -67,13 +67,13 @@ export default class TreeMode extends Component {
             class: 'jsoneditor-undo',
             title: 'Undo last action',
             disabled: !this.canUndo(),
-            onClick: this.handleUndo
+            onClick: this.undo
           }),
           h('button', {
             class: 'jsoneditor-redo',
             title: 'Redo',
             disabled: !this.canRedo(),
-            onClick: this.handleRedo
+            onClick: this.redo
           })
       ]),
 
@@ -161,36 +161,11 @@ export default class TreeMode extends Component {
     })
   }
 
-  canUndo = () => {
-    return this.state.historyIndex < this.state.history.length - 1
-  }
-
-  canRedo = () => {
-    return this.state.historyIndex > 0
-  }
-
-  handleUndo = () => {
-    if (this.canUndo()) {
-      const historyIndex = this.state.historyIndex + 1
-      const data = this.state.history[historyIndex]
-
-      this.setState({ data, historyIndex })
-    }
-  }
-
-  handleRedo = () => {
-    if (this.canRedo()) {
-      const historyIndex = this.state.historyIndex - 1
-      const data = this.state.history[historyIndex]
-
-      this.setState({ data, historyIndex })
-    }
-  }
-
   /**
    * Apply a JSONPatch to the current JSON document and emit a change event
    * @param {Array} actions
    */
+      // TODO: rename all handle* methods to _handle*
   handlePatch = (actions) => {
     // apply changes
     const revert = this.patch(actions)
@@ -198,6 +173,46 @@ export default class TreeMode extends Component {
     // emit change event
     if (this.props.options && this.props.options.onChange) {
       this.props.options.onChange(actions, revert)
+    }
+  }
+
+  canUndo = () => {
+    return this.state.historyIndex < this.state.history.length
+  }
+
+  canRedo = () => {
+    return this.state.historyIndex > 0
+  }
+
+  undo = () => {
+    if (this.canUndo()) {
+      const history = this.state.history
+      const historyIndex = this.state.historyIndex
+      const undo = history[historyIndex].undo
+
+      // FIXME: should call a patch method with does not adjust history but does emit a change event
+      this.handlePatch(undo)
+
+      this.setState({
+        history,
+        historyIndex: historyIndex + 1
+      })
+    }
+  }
+
+  redo = () => {
+    if (this.canRedo()) {
+      const history = this.state.history
+      const historyIndex = this.state.historyIndex - 1
+      const redo = history[historyIndex].redo
+
+      // FIXME: should call a patch method with does not adjust history but does emit a change event
+      this.handlePatch(redo)
+
+      this.setState({
+        history,
+        historyIndex
+      })
     }
   }
 
@@ -210,8 +225,11 @@ export default class TreeMode extends Component {
     const result = patchData(this.state.data, actions)
     const data = result.data
 
-    // TODO: store patch and revert in history
-    const history = [data]
+    const newEntry = {
+      redo: actions,
+      undo: result.revert
+    }
+    const history = [newEntry]
         .concat(this.state.history.slice(this.state.historyIndex))
         .slice(0, 1000)
 
@@ -236,7 +254,8 @@ export default class TreeMode extends Component {
       options: setIn(this.state.options, ['name'], options && options.name || null),
 
       data,
-      history: [data],
+      // TODO: do we want to keep history when .set(json) is called?
+      history: [],
       historyIndex: 0
     })
   }
@@ -269,7 +288,6 @@ export default class TreeMode extends Component {
     })
   }
 
-  // TODO: implement expand
   // TODO: implement getText and setText
 
   /**

@@ -529,7 +529,6 @@ export default class JSONNode extends Component {
     const value = this._getValueFromEvent(event)
 
     if (value !== this.props.data.value) {
-      console.log('oldValue', this.props.data.value, value)
       this.props.events.onChangeValue(this.getPath(), value)
     }
   }
