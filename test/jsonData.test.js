@@ -15,19 +15,19 @@ const JSON_EXAMPLE = {
 }
 
 const JSON_DATA_EXAMPLE = {
-  type: 'object',
+  type: 'Object',
   expanded: true,
   props: [
     {
       name: 'obj',
       value: {
-        type: 'object',
+        type: 'Object',
         expanded: true,
         props: [
           {
             name: 'arr',
             value: {
-              type: 'array',
+              type: 'Array',
               expanded: true,
               items: [
                 {
@@ -39,7 +39,7 @@ const JSON_DATA_EXAMPLE = {
                   value: 2
                 },
                 {
-                  type: 'object',
+                  type: 'Object',
                   expanded: true,
                   props: [
                     {
@@ -89,19 +89,19 @@ const JSON_DATA_EXAMPLE = {
 }
 
 const JSON_DATA_EXAMPLE_COLLAPSED_1 = {
-  type: 'object',
+  type: 'Object',
   expanded: true,
   props: [
     {
       name: 'obj',
       value: {
-        type: 'object',
+        type: 'Object',
         expanded: true,
         props: [
           {
             name: 'arr',
             value: {
-              type: 'array',
+              type: 'Array',
               expanded: true,
               items: [
                 {
@@ -113,7 +113,7 @@ const JSON_DATA_EXAMPLE_COLLAPSED_1 = {
                   value: 2
                 },
                 {
-                  type: 'object',
+                  type: 'Object',
                   expanded: false,
                   props: [
                     {
@@ -163,19 +163,19 @@ const JSON_DATA_EXAMPLE_COLLAPSED_1 = {
 }
 
 const JSON_DATA_EXAMPLE_COLLAPSED_2 = {
-  type: 'object',
+  type: 'Object',
   expanded: true,
   props: [
     {
       name: 'obj',
       value: {
-        type: 'object',
+        type: 'Object',
         expanded: false,
         props: [
           {
             name: 'arr',
             value: {
-              type: 'array',
+              type: 'Array',
               expanded: false,
               items: [
                 {
@@ -187,7 +187,7 @@ const JSON_DATA_EXAMPLE_COLLAPSED_2 = {
                   value: 2
                 },
                 {
-                  type: 'object',
+                  type: 'Object',
                   expanded: false,
                   props: [
                     {

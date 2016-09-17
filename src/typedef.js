@@ -1,13 +1,12 @@
-// TODO: rename type 'array' to 'Array' and 'object' to 'Object'
 /**
  * @typedef {{
- *   type: 'array',
+ *   type: 'Array',
  *   expanded: boolean?,
  *   props: Array.<{name: string, value: JSONData}>?
  * }} ObjectData
  *
  * @typedef {{
- *   type: 'object',
+ *   type: 'Object',
  *   expanded: boolean?,
  *   items: JSONData[]?
  * }} ArrayData
@@ -21,7 +20,7 @@
  *
  * @typedef {ObjectData | ArrayData | ValueData} JSONData
  *
- * @typedef {'object' | 'array' | 'value' | 'string'} JSONDataType
+ * @typedef {'Object' | 'Array' | 'value' | 'string'} JSONDataType
  *
  * @typedef {Array.<{op: string, path?: string, from?: string, value?: *}>} JSONPatch
  *

@@ -17,13 +17,22 @@ export function changeValue (data, path, value) {
   const dataPath = toDataPath(data, path)
   const oldDataValue = getIn(data, dataPath)
 
-  return [{
+  let patch = [{
     op: 'replace',
     path: compileJSONPointer(path),
-    value: value,
-    jsoneditor: { type: oldDataValue.type } // TODO: send type only in case of 'string'
-    // TODO: send some information to ensure the correct order of fields?
+    value: value
   }]
+
+  // when the old type is not something that can be detected from the
+  // value itself, store the type information
+  if(!isNativeType(oldDataValue.type)) {
+    // it's a string
+    patch[0].jsoneditor = {
+      type: oldDataValue.type
+    }
+  }
+
+  return patch
 }
 
 /**
@@ -35,7 +44,7 @@ export function changeValue (data, path, value) {
  * @return {Array}
  */
 export function changeProperty (data, parentPath, oldProp, newProp) {
-  console.log('changeProperty', parentPath, oldProp, newProp)
+  // console.log('changeProperty', parentPath, oldProp, newProp)
 
   const dataPath = toDataPath(data, parentPath)
   const parent = getIn(data, dataPath)
@@ -101,7 +110,7 @@ export function duplicate (data, path) {
   const dataPath = toDataPath(data, parentPath)
   const parent = getIn(data, dataPath)
 
-  if (parent.type === 'array') {
+  if (parent.type === 'Array') {
     const index = parseInt(path[path.length - 1]) + 1
     return [{
       op: 'copy',
@@ -109,7 +118,7 @@ export function duplicate (data, path) {
       path: compileJSONPointer(parentPath.concat(index))
     }]
   }
-  else { // object.type === 'object'
+  else { // object.type === 'Object'
     const afterProp = path[path.length - 1]
     const newProp = findUniqueName(afterProp, parent.props.map(p => p.name))
 
@@ -142,7 +151,7 @@ export function insert (data, path, type) {
   const parent = getIn(data, dataPath)
   const value = createEntry(type)
 
-  if (parent.type === 'array') {
+  if (parent.type === 'Array') {
     const index = parseInt(path[path.length - 1]) + 1
     return [{
       op: 'add',
@@ -150,7 +159,7 @@ export function insert (data, path, type) {
       value
     }]
   }
-  else { // object.type === 'object'
+  else { // object.type === 'Object'
     const afterProp = path[path.length - 1]
     const newProp = findUniqueName('', parent.props.map(p => p.name))
 
@@ -182,14 +191,14 @@ export function append (data, parentPath, type) {
   const parent = getIn(data, dataPath)
   const value = createEntry(type)
 
-  if (parent.type === 'array') {
+  if (parent.type === 'Array') {
     return [{
       op: 'add',
       path: compileJSONPointer(parentPath.concat('-')),
       value
     }]
   }
-  else { // object.type === 'object'
+  else { // object.type === 'Object'
     const newProp = findUniqueName('', parent.props.map(p => p.name))
 
     return [{
@@ -215,7 +224,7 @@ export function sort (data, path, order = null) {
   const dataPath = toDataPath(data, path)
   const object = getIn(data, dataPath)
 
-  if (object.type === 'array') {
+  if (object.type === 'Array') {
     const orderedItems = object.items.slice(0)
 
     // order the items by value
@@ -231,12 +240,12 @@ export function sort (data, path, order = null) {
       op: 'replace',
       path: compileJSONPointer(path),
       value: dataToJson({
-        type: 'array',
+        type: 'Array',
         items: orderedItems
       })
     }]
   }
-  else { // object.type === 'object'
+  else { // object.type === 'Object'
     const orderedProps = object.props.slice(0)
 
     // order the properties by key
@@ -252,7 +261,7 @@ export function sort (data, path, order = null) {
       op: 'replace',
       path: compileJSONPointer(path),
       value: dataToJson({
-        type: 'object',
+        type: 'Object',
         props: orderedProps
       }),
       jsoneditor: {
@@ -268,10 +277,10 @@ export function sort (data, path, order = null) {
  * @return {Array | Object | string}
  */
 export function createEntry (type) {
-  if (type === 'array') {
+  if (type === 'Array') {
     return []
   }
-  else if (type === 'object') {
+  else if (type === 'Object') {
     return {}
   }
   else {
@@ -305,7 +314,7 @@ export function convertType (value, type) {
     }
   }
 
-  if (type === 'object') {
+  if (type === 'Object') {
     let object = {}
 
     if (Array.isArray(value)) {
@@ -315,7 +324,7 @@ export function convertType (value, type) {
     return object
   }
 
-  if (type === 'array') {
+  if (type === 'Array') {
     let array = []
 
     if (isObject(value)) {
@@ -328,4 +337,14 @@ export function convertType (value, type) {
   }
 
   throw new Error(`Unknown type '${type}'`)
+}
+
+/**
+ * Test whether a type is a native JSON type:
+ * Native types are: Array, Object, or value
+ * @param {JSONDataType} type
+ * @return {boolean}
+ */
+export function isNativeType (type) {
+  return type === 'Object' || type === 'Array' || type === 'value'
 }

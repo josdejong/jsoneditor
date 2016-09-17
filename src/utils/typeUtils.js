@@ -48,10 +48,10 @@ export function valueType(value) {
     return 'regexp'
   }
   if (Array.isArray(value)) {
-    return 'array'
+    return 'Array'
   }
 
-  return 'object'
+  return 'Object'
 }
 
 /**

@@ -10,9 +10,9 @@ const TYPE_TITLES = {
   'value': 'Item type "value". ' +
     'The item type is automatically determined from the value ' +
     'and can be a string, number, boolean, or null.',
-  'object': 'Item type "object". ' +
+  'Object': 'Item type "object". ' +
     'An object contains an unordered set of key/value pairs.',
-  'array': 'Item type "array". ' +
+  'Array': 'Item type "array". ' +
     'An array contains an ordered collection of values.',
   'string': 'Item type "string". ' +
     'Item type is not determined from the value, ' +
@@ -40,10 +40,10 @@ export default class JSONNode extends Component {
   }
 
   render (props, state) {
-    if (props.data.type === 'array') {
+    if (props.data.type === 'Array') {
       return this.renderJSONArray(props)
     }
-    else if (props.data.type === 'object') {
+    else if (props.data.type === 'Object') {
       return this.renderJSONObject(props)
     }
     else {
@@ -322,15 +322,15 @@ export default class JSONNode extends Component {
         },
         {
           text: 'Array',
-          className: 'jsoneditor-type-array' + (type == 'array' ? ' jsoneditor-selected' : ''),
+          className: 'jsoneditor-type-array' + (type == 'Array' ? ' jsoneditor-selected' : ''),
           title: TYPE_TITLES.array,
-          click: () => events.onChangeType(path, 'array')
+          click: () => events.onChangeType(path, 'Array')
         },
         {
           text: 'Object',
-          className: 'jsoneditor-type-object' + (type == 'object' ? ' jsoneditor-selected' : ''),
+          className: 'jsoneditor-type-object' + (type == 'Object' ? ' jsoneditor-selected' : ''),
           title: TYPE_TITLES.object,
-          click: () => events.onChangeType(path, 'object')
+          click: () => events.onChangeType(path, 'Object')
         },
         {
           text: 'String',
@@ -341,7 +341,7 @@ export default class JSONNode extends Component {
       ]
     })
 
-    if (type === 'array' || type === 'object') {
+    if (type === 'Array' || type === 'Object') {
       var direction = ((this.sortOrder == 'asc') ? 'desc': 'asc')
       items.push({
         text: 'Sort',
@@ -391,13 +391,13 @@ export default class JSONNode extends Component {
             text: 'Array',
             className: 'jsoneditor-type-array',
             title: TYPE_TITLES.array,
-            click: () => events.onInsert(path, 'array')
+            click: () => events.onInsert(path, 'Array')
           },
           {
             text: 'Object',
             className: 'jsoneditor-type-object',
             title: TYPE_TITLES.object,
-            click: () => events.onInsert(path, 'object')
+            click: () => events.onInsert(path, 'Object')
           },
           {
             text: 'String',
@@ -458,13 +458,13 @@ export default class JSONNode extends Component {
           text: 'Array',
           className: 'jsoneditor-type-array',
           title: TYPE_TITLES.array,
-          click: () => events.onAppend(path, 'array')
+          click: () => events.onAppend(path, 'Array')
         },
         {
           text: 'Object',
           className: 'jsoneditor-type-object',
           title: TYPE_TITLES.object,
-          click: () => events.onAppend(path, 'object')
+          click: () => events.onAppend(path, 'Object')
         },
         {
           text: 'String',
@@ -501,7 +501,7 @@ export default class JSONNode extends Component {
   static getRootName (data, options) {
     return typeof options.name === 'string'
         ? options.name
-        : (data.type === 'object' || data.type === 'array')
+        : (data.type === 'Object' || data.type === 'Array')
         ? data.type
         : valueType(data.value)
   }

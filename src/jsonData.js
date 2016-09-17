@@ -24,14 +24,14 @@ const expandNever = function (path) {
 export function jsonToData (path, json, expand) {
   if (Array.isArray(json)) {
     return {
-      type: 'array',
+      type: 'Array',
       expanded: expand(path),
       items: json.map((child, index) => jsonToData(path.concat(index), child, expand))
     }
   }
   else if (isObject(json)) {
     return {
-      type: 'object',
+      type: 'Object',
       expanded: expand(path),
       props: Object.keys(json).map(name => {
         return {
@@ -56,10 +56,10 @@ export function jsonToData (path, json, expand) {
  */
 export function dataToJson (data) {
   switch (data.type) {
-    case 'array':
+    case 'Array':
       return data.items.map(dataToJson)
 
-    case 'object':
+    case 'Object':
       const object = {}
 
       data.props.forEach(prop => {
@@ -86,7 +86,7 @@ export function toDataPath (data, path) {
   }
 
   let index
-  if (data.type === 'array') {
+  if (data.type === 'Array') {
     // index of an array
     index = path[0]
 
@@ -235,7 +235,7 @@ export function remove (data, path) {
     // FIXME: store before
   }
 
-  if (parent.type === 'array') {
+  if (parent.type === 'Array') {
     const dataPath = toDataPath(data, _path)
 
     return {
@@ -243,7 +243,7 @@ export function remove (data, path) {
       revert: {op: 'add', path, value, jsoneditor}
     }
   }
-  else { // object.type === 'object'
+  else { // object.type === 'Object'
     const dataPath = toDataPath(data, _path)
 
     dataPath.pop()  // remove the 'value' property, we want to remove the whole object property
@@ -281,7 +281,7 @@ export function add (data, path, value, afterProp) {
   catch (err) {}
 
   let updatedData
-  if (parent.type === 'array') {
+  if (parent.type === 'Array') {
     // TODO: create an immutable helper function to insert an item in an Array
     updatedData = updateIn(data, dataPath.concat('items'), (items) => {
       const index = parseInt(prop)
@@ -292,7 +292,7 @@ export function add (data, path, value, afterProp) {
       return updatedItems
     })
   }
-  else { // parent.type === 'object'
+  else { // parent.type === 'Object'
     // TODO: create an immutable helper function to append an item to an Array
     updatedData = updateIn(data, dataPath.concat('props'), (props) => {
       const newProp = { name: prop, value }
@@ -313,7 +313,7 @@ export function add (data, path, value, afterProp) {
 
   return {
     data: updatedData,
-    revert: (parent.type === 'object' && oldValue !== undefined)
+    revert: (parent.type === 'Object' && oldValue !== undefined)
         ? {op: 'replace', path: compileJSONPointer(resolvedPath), value: dataToJson(oldValue)}
         : {op: 'remove', path: compileJSONPointer(resolvedPath)}
   }
@@ -450,7 +450,7 @@ export function expand (data, callback, expanded) {
  */
 function expandRecursive (data, path, callback, expanded) {
   switch (data.type) {
-    case 'array': {
+    case 'Array': {
       let updatedData = callback(path)
           ? setIn(data, ['expanded'], expanded)
           : data
@@ -464,7 +464,7 @@ function expandRecursive (data, path, callback, expanded) {
       return setIn(updatedData, ['items'], updatedItems)
     }
 
-    case 'object': {
+    case 'Object': {
       let updatedData = callback(path)
           ? setIn(data, ['expanded'], expanded)
           : data
@@ -501,7 +501,7 @@ export function pathExists (data, path) {
   }
 
   let index
-  if (data.type === 'array') {
+  if (data.type === 'Array') {
     // index of an array
     index = path[0]
     return pathExists(data.items[index], path.slice(1))
@@ -527,7 +527,7 @@ export function resolvePathIndex (data, path) {
     const parentPath = path.slice(0, path.length - 1)
     const parent = getIn(data, toDataPath(data, parentPath))
 
-    if (parent.type === 'array') {
+    if (parent.type === 'Array') {
       const index = parent.items.length
       const resolvedPath = path.slice(0)
       resolvedPath[resolvedPath.length - 1] = index
