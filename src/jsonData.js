@@ -7,11 +7,12 @@ import { setIn, updateIn, getIn, deleteIn } from './utils/immutabilityHelpers'
 import { isObject } from  './utils/typeUtils'
 import isEqual from 'lodash/isEqual'
 
-// TODO: rewrite the functions into jsonpatch functions, including a function `patch`
-
-const expandNever = function (path) {
-  return false
+const expandAll = function (path) {
+  return true
 }
+
+// TODO: double check whether all patch functions handle each of the
+// extra properties in .jsoneditor: `before`, `type`, `order`
 
 /**
  * Convert a JSON object into the internally used data model
@@ -20,7 +21,7 @@ const expandNever = function (path) {
  * @param {function(path: Path)} expand
  * @return {JSONData}
  */
-// TODO: change signature to jsonToData(json, expand=(path) => false, path=[])
+// TODO: change signature to jsonToData(json [, expand=(path) => false [, path=[]]])
 export function jsonToData (path, json, expand) {
   if (Array.isArray(json)) {
     return {
@@ -107,20 +108,28 @@ export function toDataPath (data, path) {
  * @return {{data: JSONData, revert: Array.<Object>, error: Error | null}}
  */
 export function patchData (data, patch) {
-  const expand = expandNever   // TODO: customizable expand function
+  const expand = expandAll   // TODO: customizable expand function
 
   try {
     let updatedData = data
     let revert = []
 
     patch.forEach(function (action) {
+      const options = action.jsoneditor
+
       switch (action.op) {
         case 'add': {
           const path = parseJSONPointer(action.path)
-          const value = jsonToData(path, action.value, expand)
-          const afterProp = getIn(action, ['jsoneditor', 'afterProp'])
+          const newValue = jsonToData(path, action.value, expand)
 
-          const result = add(updatedData, action.path, value, afterProp)
+          // TODO: move setting type to jsonToData
+          if (options && options.type) {
+            // insert with type 'string' or 'value'
+            newValue.type = options.type
+          }
+          // TODO: handle options.order
+
+          const result = add(updatedData, action.path, newValue, options)
           updatedData = result.data
           revert.unshift(result.revert)
 
@@ -140,10 +149,11 @@ export function patchData (data, patch) {
           let newValue = jsonToData(path, action.value, expand)
 
           // TODO: move setting type to jsonToData
-          if (action.jsoneditor && action.jsoneditor.type) {
+          if (options && options.type) {
             // insert with type 'string' or 'value'
-            newValue.type = action.jsoneditor.type
+            newValue.type = options.type
           }
+          // TODO: handle options.order
 
           const result = replace(updatedData, path, newValue)
           updatedData = result.data
@@ -153,8 +163,7 @@ export function patchData (data, patch) {
         }
 
         case 'copy': {
-          const afterProp = getIn(action, ['jsoneditor', 'afterProp'])
-          const result = copy(updatedData, action.path, action.from, afterProp)
+          const result = copy(updatedData, action.path, action.from, options)
           updatedData = result.data
           revert.unshift(result.revert)
 
@@ -162,8 +171,7 @@ export function patchData (data, patch) {
         }
 
         case 'move': {
-          const afterProp = getIn(action, ['jsoneditor', 'afterProp'])
-          const result = move(updatedData, action.path, action.from, afterProp)
+          const result = move(updatedData, action.path, action.from, options)
           updatedData = result.data
           revert = result.revert.concat(revert)
 
@@ -205,11 +213,15 @@ export function replace (data, path, value) {
   const oldValue = dataToJson(getIn(data, dataPath))
 
   return {
+    // FIXME: keep the expanded state where possible
     data: setIn(data, dataPath, value),
     revert: {
       op: 'replace',
       path: compileJSONPointer(path),
-      value: oldValue
+      value: oldValue,
+      jsoneditor: {
+        type: oldValue.type
+      }
     }
   }
 }
@@ -222,34 +234,44 @@ export function replace (data, path, value) {
  */
 export function remove (data, path) {
   // console.log('remove', path)
-  const _path = parseJSONPointer(path)
+  const pathArray = parseJSONPointer(path)
 
-  const parentPath = _path.slice(0, _path.length - 1)
+  const parentPath = pathArray.slice(0, pathArray.length - 1)
   const parent = getIn(data, toDataPath(data, parentPath))
-  const dataValue = getIn(data, toDataPath(data, _path))
+  const dataValue = getIn(data, toDataPath(data, pathArray))
   const value = dataToJson(dataValue)
 
-  // extra information attached to the patch
-  const jsoneditor = {
-    type: dataValue.type
-    // FIXME: store before
-  }
-
   if (parent.type === 'Array') {
-    const dataPath = toDataPath(data, _path)
+    const dataPath = toDataPath(data, pathArray)
 
     return {
       data: deleteIn(data, dataPath),
-      revert: {op: 'add', path, value, jsoneditor}
+      revert: {
+        op: 'add',
+        path,
+        value,
+        jsoneditor: {
+          type: dataValue.type
+        }
+      }
     }
   }
   else { // object.type === 'Object'
-    const dataPath = toDataPath(data, _path)
+    const dataPath = toDataPath(data, pathArray)
+    const prop = pathArray[pathArray.length - 1]
 
     dataPath.pop()  // remove the 'value' property, we want to remove the whole object property
     return {
       data: deleteIn(data, dataPath),
-      revert: {op: 'add', path, value, jsoneditor}
+      revert: {
+        op: 'add',
+        path,
+        value,
+        jsoneditor: {
+          type: dataValue.type,
+          before: findNextProp(parent, prop)
+        }
+      }
     }
   }
 }
@@ -258,19 +280,17 @@ export function remove (data, path) {
  * @param {JSONData} data
  * @param {string} path
  * @param {JSONData} value
- * @param {string} [afterProp]   In case of an object, the property
- *                               after which this new property must be added
- *                               can be specified
+ * @param {{before?: string}} [options]
  * @return {{data: JSONData, revert: Object}}
  * @private
  */
-export function add (data, path, value, afterProp) {
-  const _path = parseJSONPointer(path)
+export function add (data, path, value, options) {
+  const pathArray = parseJSONPointer(path)
 
-  const parentPath = _path.slice(0, _path.length - 1)
+  const parentPath = pathArray.slice(0, pathArray.length - 1)
   const dataPath = toDataPath(data, parentPath)
   const parent = getIn(data, dataPath)
-  const resolvedPath = resolvePathIndex(data, _path)
+  const resolvedPath = resolvePathIndex(data, pathArray)
   const prop = resolvedPath[resolvedPath.length - 1]
 
   // FIXME: should not be needed to do try/catch. Create a function exists(data, path), or rewrite toDataPath such that you don't need to pass data
@@ -297,25 +317,41 @@ export function add (data, path, value, afterProp) {
     updatedData = updateIn(data, dataPath.concat('props'), (props) => {
       const newProp = { name: prop, value }
 
-      if (afterProp === undefined) {
+      if (!options || typeof options.before !== 'string') {
         // append
         return props.concat(newProp)
       }
       else {
         // insert after prop
         const updatedProps = props.slice(0)
-        const index = props.findIndex(p => p.name === afterProp)
-        updatedProps.splice(index + 1, 0, newProp)
+        const index = props.findIndex(p => p.name === options.before)
+        updatedProps.splice(index, 0, newProp)
         return updatedProps
       }
     })
   }
 
-  return {
-    data: updatedData,
-    revert: (parent.type === 'Object' && oldValue !== undefined)
-        ? {op: 'replace', path: compileJSONPointer(resolvedPath), value: dataToJson(oldValue)}
-        : {op: 'remove', path: compileJSONPointer(resolvedPath)}
+  if (parent.type === 'Object' && oldValue !== undefined) {
+    return {
+      data: updatedData,
+      revert: {
+        op: 'replace',
+        path: compileJSONPointer(resolvedPath),
+        value: dataToJson(oldValue),
+        jsoneditor: {
+          type: oldValue.type
+        }
+      }
+    }
+  }
+  else {
+    return {
+      data: updatedData,
+      revert: {
+        op: 'remove',
+        path: compileJSONPointer(resolvedPath)
+      }
+    }
   }
 }
 
@@ -324,16 +360,14 @@ export function add (data, path, value, afterProp) {
  * @param {JSONData} data
  * @param {string} path
  * @param {string} from
- * @param {string} [afterProp]   In case of an object, the property
- *                               after which this new property must be added
- *                               can be specified
+ * @param {{before?: string}} [options]
  * @return {{data: JSONData, revert: Object}}
  * @private
  */
-export function copy (data, path, from, afterProp) {
+export function copy (data, path, from, options) {
   const value = getIn(data, toDataPath(data, parseJSONPointer(from)))
 
-  return add(data, path, value, afterProp)
+  return add(data, path, value, options)
 }
 
 /**
@@ -341,40 +375,20 @@ export function copy (data, path, from, afterProp) {
  * @param {JSONData} data
  * @param {string} path
  * @param {string} from
- * @param {string} [afterProp]   In case of an object, the property
- *                               after which this new property must be added
- *                               can be specified
+ * @param {{before?: string}} [options]
  * @return {{data: JSONData, revert: Object}}
  * @private
  */
-export function move (data, path, from, afterProp) {
+export function move (data, path, from, options) {
   if (path !== from) {
     const value = getIn(data, toDataPath(data, parseJSONPointer(from)))
 
     const result1 = remove(data, from)
-    let updatedData = result1.data
+    const result2 = add(result1.data, path, value, options)
 
-    const result2 = add(updatedData, path, value, afterProp)
-    updatedData = result2.data
-
-    // FIXME: the revert action should store afterProp
-
-    if (result2.revert.op === 'replace') {
-      return {
-        data: updatedData,
-        revert: [
-          {op: 'move', from: path, path: from},
-          {op: 'add', path, value: result2.revert.value}
-        ]
-      }
-    }
-    else { // result2.revert.op === 'remove'
-      return {
-        data: updatedData,
-        revert: [
-          {op: 'move', from: path, path: from}
-        ]
-      }
+    return {
+      data: result2.data,
+      revert: result1.revert.concat(result2.revert)
     }
   }
   else {
@@ -394,8 +408,8 @@ export function move (data, path, from, afterProp) {
  * @param {*} value
  */
 export function test (data, path, value) {
-  const _path = parseJSONPointer(path)
-  const actualValue = getIn(data, toDataPath(data, _path))
+  const pathArray = parseJSONPointer(path)
+  const actualValue = getIn(data, toDataPath(data, pathArray))
 
   if (value === undefined) {
     throw new Error('Test failed, no value provided')
@@ -537,6 +551,20 @@ export function resolvePathIndex (data, path) {
   }
 
   return path
+}
+
+/**
+ * Find the property after provided property
+ * @param {JSONData} parent
+ * @param {string} prop
+ * @return {string | null} Returns the name of the next property,
+ *                         or null if there is none
+ */
+export function findNextProp (parent, prop) {
+  const index = parent.props.findIndex(p => p.name === prop)
+  const next = parent.props[index + 1]
+
+  return next && next.name || null
 }
 
 /**

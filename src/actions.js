@@ -1,8 +1,9 @@
-import { compileJSONPointer, toDataPath, dataToJson } from './jsonData'
+import { compileJSONPointer, toDataPath, dataToJson, findNextProp } from './jsonData'
 import { findUniqueName } from  './utils/stringUtils'
 import { getIn } from  './utils/immutabilityHelpers'
 import { isObject, stringConvert } from  './utils/typeUtils'
 import { compareAsc, compareDesc, strictShallowEqual } from './utils/arrayUtils'
+
 
 /**
  * Create a JSONPatch to change the value of a property or item
@@ -17,22 +18,14 @@ export function changeValue (data, path, value) {
   const dataPath = toDataPath(data, path)
   const oldDataValue = getIn(data, dataPath)
 
-  let patch = [{
+  return [{
     op: 'replace',
     path: compileJSONPointer(path),
-    value: value
-  }]
-
-  // when the old type is not something that can be detected from the
-  // value itself, store the type information
-  if(!isNativeType(oldDataValue.type)) {
-    // it's a string
-    patch[0].jsoneditor = {
+    value: value,
+    jsoneditor: {
       type: oldDataValue.type
     }
-  }
-
-  return patch
+  }]
 }
 
 /**
@@ -49,11 +42,6 @@ export function changeProperty (data, parentPath, oldProp, newProp) {
   const dataPath = toDataPath(data, parentPath)
   const parent = getIn(data, dataPath)
 
-  // find property after this one
-  const index = parent.props.findIndex(p => p.name === oldProp)
-  const next = parent.props[index + 1]
-  const nextProp = next && next.name
-
   // prevent duplicate property names
   const uniqueNewProp = findUniqueName(newProp, parent.props.map(p => p.name))
 
@@ -62,7 +50,7 @@ export function changeProperty (data, parentPath, oldProp, newProp) {
     from: compileJSONPointer(parentPath.concat(oldProp)),
     path: compileJSONPointer(parentPath.concat(uniqueNewProp)),
     jsoneditor: {
-      before: nextProp
+      before: findNextProp(parent, oldProp)
     }
   }]
 }
@@ -75,19 +63,19 @@ export function changeProperty (data, parentPath, oldProp, newProp) {
  * @return {Array}
  */
 export function changeType (data, path, type) {
-
   const dataPath = toDataPath(data, path)
-  const oldEntry = dataToJson(getIn(data, dataPath))
-  const newEntry = convertType(oldEntry, type)
+  const oldValue = dataToJson(getIn(data, dataPath))
+  const newValue = convertType(oldValue, type)
 
-  console.log('changeType', path, type, oldEntry, newEntry)
+  // console.log('changeType', path, type, oldValue, newValue)
 
   return [{
     op: 'replace',
     path: compileJSONPointer(path),
-    value: newEntry,
-    jsoneditor: { type } // TODO: send type only in case of 'string'
-    // TODO: send some information to ensure the correct order of fields?
+    value: newValue,
+    jsoneditor: {
+      type
+    }
   }]
 }
 
@@ -119,14 +107,16 @@ export function duplicate (data, path) {
     }]
   }
   else { // object.type === 'Object'
-    const afterProp = path[path.length - 1]
-    const newProp = findUniqueName(afterProp, parent.props.map(p => p.name))
+    const prop = path[path.length - 1]
+    const newProp = findUniqueName(prop, parent.props.map(p => p.name))
 
     return [{
       op: 'copy',
       from: compileJSONPointer(path),
       path: compileJSONPointer(parentPath.concat(newProp)),
-      jsoneditor: { afterProp }
+      jsoneditor: {
+        before: findNextProp(parent, prop)
+      }
     }]
   }
 }
@@ -156,18 +146,24 @@ export function insert (data, path, type) {
     return [{
       op: 'add',
       path: compileJSONPointer(parentPath.concat(index + '')),
-      value
+      value,
+      jsoneditor: {
+        type
+      }
     }]
   }
   else { // object.type === 'Object'
-    const afterProp = path[path.length - 1]
+    const prop = path[path.length - 1]
     const newProp = findUniqueName('', parent.props.map(p => p.name))
 
     return [{
       op: 'add',
       path: compileJSONPointer(parentPath.concat(newProp)),
       value,
-      jsoneditor: { afterProp }
+      jsoneditor: {
+        type,
+        before: findNextProp(parent, prop)
+      }
     }]
   }
 }
@@ -195,7 +191,10 @@ export function append (data, parentPath, type) {
     return [{
       op: 'add',
       path: compileJSONPointer(parentPath.concat('-')),
-      value
+      value,
+      jsoneditor: {
+        type
+      }
     }]
   }
   else { // object.type === 'Object'
@@ -204,9 +203,23 @@ export function append (data, parentPath, type) {
     return [{
       op: 'add',
       path: compileJSONPointer(parentPath.concat(newProp)),
-      value
+      value,
+      jsoneditor: {
+        type
+      }
     }]
   }
+}
+
+/**
+ * Create a JSONPatch for a remove action
+ * @param {Path} path
+ */
+export function remove (path) {
+  return [{
+    op: 'remove',
+    path: compileJSONPointer(path)
+  }]
 }
 
 /**
@@ -337,14 +350,4 @@ export function convertType (value, type) {
   }
 
   throw new Error(`Unknown type '${type}'`)
-}
-
-/**
- * Test whether a type is a native JSON type:
- * Native types are: Array, Object, or value
- * @param {JSONDataType} type
- * @return {boolean}
- */
-export function isNativeType (type) {
-  return type === 'Object' || type === 'Array' || type === 'value'
 }

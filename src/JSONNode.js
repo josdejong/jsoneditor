@@ -322,13 +322,13 @@ export default class JSONNode extends Component {
         },
         {
           text: 'Array',
-          className: 'jsoneditor-type-array' + (type == 'Array' ? ' jsoneditor-selected' : ''),
+          className: 'jsoneditor-type-Array' + (type == 'Array' ? ' jsoneditor-selected' : ''),
           title: TYPE_TITLES.array,
           click: () => events.onChangeType(path, 'Array')
         },
         {
           text: 'Object',
-          className: 'jsoneditor-type-object' + (type == 'Object' ? ' jsoneditor-selected' : ''),
+          className: 'jsoneditor-type-Object' + (type == 'Object' ? ' jsoneditor-selected' : ''),
           title: TYPE_TITLES.object,
           click: () => events.onChangeType(path, 'Object')
         },
@@ -389,13 +389,13 @@ export default class JSONNode extends Component {
           },
           {
             text: 'Array',
-            className: 'jsoneditor-type-array',
+            className: 'jsoneditor-type-Array',
             title: TYPE_TITLES.array,
             click: () => events.onInsert(path, 'Array')
           },
           {
             text: 'Object',
-            className: 'jsoneditor-type-object',
+            className: 'jsoneditor-type-Object',
             title: TYPE_TITLES.object,
             click: () => events.onInsert(path, 'Object')
           },
@@ -456,13 +456,13 @@ export default class JSONNode extends Component {
         },
         {
           text: 'Array',
-          className: 'jsoneditor-type-array',
+          className: 'jsoneditor-type-Array',
           title: TYPE_TITLES.array,
           click: () => events.onAppend(path, 'Array')
         },
         {
           text: 'Object',
-          className: 'jsoneditor-type-object',
+          className: 'jsoneditor-type-Object',
           title: TYPE_TITLES.object,
           click: () => events.onAppend(path, 'Object')
         },

@@ -5,7 +5,7 @@ import {
   expand, jsonToData, dataToJson, toDataPath, patchData, compileJSONPointer
 } from './jsonData'
 import {
-  duplicate, insert, append, changeType, changeValue, changeProperty, sort
+  duplicate, insert, append, remove, changeType, changeValue, changeProperty, sort
 } from './actions'
 import JSONNode from './JSONNode'
 
@@ -121,12 +121,7 @@ export default class TreeMode extends Component {
 
   /** @private */
   handleRemove = (path) => {
-    const patch = [{
-      op: 'remove',
-      path: compileJSONPointer(path)
-    }]
-
-    this.handlePatch(patch)
+    this.handlePatch(remove(path))
   }
 
   /** @private */
