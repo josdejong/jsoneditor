@@ -37,18 +37,9 @@ export default class JSONNode extends Component {
       menu: null,        // context menu
       appendMenu: null,  // append context menu (used in placeholder of empty object/array)
     }
-
-    // TODO: use function bindMethods(this). Gives issues for some reason, we lose focus whilst typing
-    this.handleChangeProperty = this.handleChangeProperty.bind(this)
-    this.handleChangeValue = this.handleChangeValue.bind(this)
-    this.handleClickValue = this.handleClickValue.bind(this)
-    this.handleKeyDownValue = this.handleKeyDownValue.bind(this)
-    this.handleExpand = this.handleExpand.bind(this)
-    this.handleContextMenu = this.handleContextMenu.bind(this)
-    this.handleAppendContextMenu = this.handleAppendContextMenu.bind(this)
   }
 
-  render (props) {
+  render (props, state) {
     if (props.data.type === 'array') {
       return this.renderJSONArray(props)
     }
@@ -187,7 +178,7 @@ export default class JSONNode extends Component {
     }
     else {
       // root node
-      const content = JSONNode._getRootName(data, options)
+      const content = JSONNode.getRootName(data, options)
 
       return h('div', {
         class: 'jsoneditor-property jsoneditor-readonly',
@@ -204,18 +195,18 @@ export default class JSONNode extends Component {
   renderValue (value) {
     const escapedValue = escapeHTML(value)
     const type = valueType (value)
-    const _isUrl = isUrl(value)
+    const isUrl = isUrl(value)
     const isEmpty = escapedValue.length === 0
 
     return h('div', {
-      class: JSONNode._getValueClass(type, _isUrl, isEmpty),
+      class: JSONNode.getValueClass(type, isUrl, isEmpty),
       contentEditable: 'true',
       spellCheck: 'false',
       onBlur: this.handleChangeValue,
       onInput: this.updateValueStyling,
       onClick: this.handleClickValue,
       onKeyDown: this.handleKeyDownValue,
-      title: _isUrl ? URL_TITLE : null
+      title: isUrl ? URL_TITLE : null
     }, escapedValue)
   }
 
@@ -225,9 +216,9 @@ export default class JSONNode extends Component {
    * @param event
    */
   updateValueStyling = (event) => {
-    const value = this._getValueFromEvent(event)
+    const value = this.getValueFromEvent(event)
     const type = valueType (value)
-    const _isUrl = isUrl(value)
+    const isUrl = isUrl(value)
     const isEmpty = false  // not needed, our div has a border and is clearly visible
 
     // find the editable div, the root
@@ -236,11 +227,11 @@ export default class JSONNode extends Component {
       target = target.parentNode
     }
 
-    target.className = JSONNode._getValueClass(type, _isUrl, isEmpty)
-    target.title = _isUrl ? URL_TITLE : ''
+    target.className = JSONNode.getValueClass(type, isUrl, isEmpty)
+    target.title = isUrl ? URL_TITLE : ''
 
     // remove all classNames from childs (needed for IE and Edge)
-    JSONNode._removeChildClasses(target)
+    JSONNode.removeChildClasses(target)
   }
 
   /**
@@ -251,7 +242,7 @@ export default class JSONNode extends Component {
    * @return {string}
    * @private
    */
-  static _getValueClass (type, isUrl, isEmpty) {
+  static getValueClass (type, isUrl, isEmpty) {
     return 'jsoneditor-value ' +
         'jsoneditor-' + type +
         (isUrl ? ' jsoneditor-url' : '') +
@@ -263,13 +254,13 @@ export default class JSONNode extends Component {
    * @param elem
    * @private
    */
-  static _removeChildClasses (elem) {
+  static removeChildClasses (elem) {
     for (let i = 0; i < elem.childNodes.length; i++) {
       const child = elem.childNodes[i]
       if (child.class) {
         child.class = ''
       }
-      JSONNode._removeChildClasses(child)
+      JSONNode.removeChildClasses(child)
     }
   }
 
@@ -507,7 +498,7 @@ export default class JSONNode extends Component {
     return false
   }
 
-  static _getRootName (data, options) {
+  static getRootName (data, options) {
     return typeof options.name === 'string'
         ? options.name
         : (data.type === 'object' || data.type === 'array')
@@ -515,7 +506,7 @@ export default class JSONNode extends Component {
         : valueType(data.value)
   }
 
-  handleChangeProperty (event) {
+  handleChangeProperty = (event) => {
     const parentPath = this.props.parent.getPath()
     const oldProp = this.props.prop
     const newProp = unescapeHTML(getInnerText(event.target))
@@ -525,34 +516,34 @@ export default class JSONNode extends Component {
     }
   }
 
-  handleChangeValue (event) {
-    const value = this._getValueFromEvent(event)
+  handleChangeValue = (event) => {
+    const value = this.getValueFromEvent(event)
 
     if (value !== this.props.data.value) {
       this.props.events.onChangeValue(this.getPath(), value)
     }
   }
 
-  handleClickValue (event) {
+  handleClickValue = (event) => {
     if (event.ctrlKey && event.button === 0) { // Ctrl+Left click
-      this._openLinkIfUrl(event)
+      this.openLinkIfUrl(event)
     }
   }
 
-  handleKeyDownValue (event) {
+  handleKeyDownValue = (event) => {
     if (event.ctrlKey && event.which === 13) { // Ctrl+Enter
-      this._openLinkIfUrl(event)
+      this.openLinkIfUrl(event)
     }
   }
 
-  handleExpand (event) {
+  handleExpand = (event) => {
     const recurse = event.ctrlKey
     const expanded = !this.props.data.expanded
 
     this.props.events.onExpand(this.getPath(), expanded, recurse)
   }
 
-  handleContextMenu (event) {
+  handleContextMenu = (event) => {
     event.stopPropagation()
 
     if (this.state.menu) {
@@ -567,14 +558,14 @@ export default class JSONNode extends Component {
       this.setState({
         menu: {
           anchor: event.target,
-          root: JSONNode._findRootElement(event)
+          root: JSONNode.findRootElement(event)
         }
       })
       activeContextMenu = this
     }
   }
 
-  handleAppendContextMenu(event) {
+  handleAppendContextMenu = (event) => {
     event.stopPropagation()
 
     if (this.state.appendMenu) {
@@ -589,7 +580,7 @@ export default class JSONNode extends Component {
       this.setState({
         appendMenu: {
           anchor: event.target,
-          root: JSONNode._findRootElement(event)
+          root: JSONNode.findRootElement(event)
         }
       })
       activeContextMenu = this
@@ -614,8 +605,8 @@ export default class JSONNode extends Component {
    * @param event
    * @private
    */
-  _openLinkIfUrl (event) {
-    const value = this._getValueFromEvent(event)
+  openLinkIfUrl (event) {
+    const value = this.getValueFromEvent(event)
 
     if (isUrl(value)) {
       event.preventDefault()
@@ -647,7 +638,7 @@ export default class JSONNode extends Component {
    * @return {string | number | boolean | null}
    * @private
    */
-  _getValueFromEvent (event) {
+  getValueFromEvent (event) {
     const stringValue = unescapeHTML(getInnerText(event.target))
     return this.props.data.type === 'string'
         ? stringValue
@@ -661,7 +652,7 @@ export default class JSONNode extends Component {
    * @return {*}
    * @private
    */
-  static _findRootElement (event) {
+  static findRootElement (event) {
     function isEditorElement (elem) {
       return elem.className.split(' ').indexOf('jsoneditor') !== -1
     }

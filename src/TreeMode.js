@@ -89,30 +89,37 @@ export default class TreeMode extends Component {
     ])
   }
 
+  /** @private */
   handleChangeValue = (path, value) => {
     this.handlePatch(changeValue(this.state.data, path, value))
   }
 
+  /** @private */
   handleChangeProperty = (parentPath, oldProp, newProp) => {
     this.handlePatch(changeProperty(this.state.data, parentPath, oldProp, newProp))
   }
 
+  /** @private */
   handleChangeType = (path, type) => {
     this.handlePatch(changeType(this.state.data, path, type))
   }
 
+  /** @private */
   handleInsert = (path, type) => {
     this.handlePatch(insert(this.state.data, path, type))
   }
 
+  /** @private */
   handleAppend = (parentPath, type) => {
     this.handlePatch(append(this.state.data, parentPath, type))
   }
 
+  /** @private */
   handleDuplicate = (path) => {
     this.handlePatch(duplicate(this.state.data, path))
   }
 
+  /** @private */
   handleRemove = (path) => {
     const patch = [{
       op: 'remove',
@@ -122,10 +129,12 @@ export default class TreeMode extends Component {
     this.handlePatch(patch)
   }
 
+  /** @private */
   handleSort = (path, order = null) => {
     this.handlePatch(sort(this.state.data, path, order))
   }
 
+  /** @private */
   handleExpand = (path, expanded, recurse) => {
     if (recurse) {
       const dataPath = toDataPath(this.state.data, path)
@@ -143,32 +152,34 @@ export default class TreeMode extends Component {
     }
   }
 
+  /** @private */
   handleExpandAll = () => {
     const expanded = true
 
     this.setState({
-      data: expand(this.state.data, expandAll, expanded)
+      data: expand(this.state.data, TreeMode.expandAll, expanded)
     })
   }
 
+  /** @private */
   handleCollapseAll = () => {
     const expanded = false
 
     this.setState({
-      data: expand(this.state.data, expandAll, expanded)
+      data: expand(this.state.data, TreeMode.expandAll, expanded)
     })
   }
 
   /**
    * Apply a JSONPatch to the current JSON document and emit a change event
    * @param {JSONPatch} actions
+   * @private
    */
-      // TODO: rename all handle* methods to _handle*
   handlePatch = (actions) => {
     // apply changes
     const revert = this.patch(actions)
 
-    this._emitOnChange (actions, revert)
+    this.emitOnChange (actions, revert)
   }
 
   /**
@@ -177,7 +188,7 @@ export default class TreeMode extends Component {
    * @param {JSONPatch} revert
    * @private
    */
-  _emitOnChange (patch, revert) {
+  emitOnChange (patch, revert) {
     if (this.props.options && this.props.options.onChange) {
       this.props.options.onChange(patch, revert)
     }
@@ -205,7 +216,7 @@ export default class TreeMode extends Component {
         historyIndex: historyIndex + 1
       })
 
-      this._emitOnChange (historyItem.undo, historyItem.redo)
+      this.emitOnChange (historyItem.undo, historyItem.redo)
     }
   }
 
@@ -223,7 +234,7 @@ export default class TreeMode extends Component {
         historyIndex
       })
 
-      this._emitOnChange (historyItem.redo, historyItem.undo)
+      this.emitOnChange (historyItem.redo, historyItem.undo)
     }
   }
 
@@ -314,9 +325,15 @@ export default class TreeMode extends Component {
     return path.length === 0
   }
 
+
+  /**
+   * Callback function to expand all nodes
+   *
+   * @param {Array.<string>} path
+   * @return {boolean}
+   */
+  static expandAll (path) {
+    return true
+  }
 }
 
-
-function expandAll (path) {
-  return true
-}
