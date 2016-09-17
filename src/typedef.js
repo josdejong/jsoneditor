@@ -23,6 +23,8 @@
  *
  * @typedef {'object' | 'array' | 'value' | 'string'} JSONDataType
  *
+ * @typedef {Array.<{op: string, path?: string, from?: string, value?: *}>} JSONPatch
+ *
  * @typedef {{
  *
  * }} Options

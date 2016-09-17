@@ -9,6 +9,8 @@ import {
 } from './actions'
 import JSONNode from './JSONNode'
 
+const MAX_HISTORY_ITEMS = 1000   // maximum number of undo/redo items to be kept in memory
+
 export default class TreeMode extends Component {
   // TODO: define propTypes
 
@@ -159,16 +161,25 @@ export default class TreeMode extends Component {
 
   /**
    * Apply a JSONPatch to the current JSON document and emit a change event
-   * @param {Array} actions
+   * @param {JSONPatch} actions
    */
       // TODO: rename all handle* methods to _handle*
   handlePatch = (actions) => {
     // apply changes
     const revert = this.patch(actions)
 
-    // emit change event
+    this._emitOnChange (actions, revert)
+  }
+
+  /**
+   * Emit an onChange event when there is a listener for it.
+   * @param {JSONPatch} patch
+   * @param {JSONPatch} revert
+   * @private
+   */
+  _emitOnChange (patch, revert) {
     if (this.props.options && this.props.options.onChange) {
-      this.props.options.onChange(actions, revert)
+      this.props.options.onChange(patch, revert)
     }
   }
 
@@ -184,15 +195,17 @@ export default class TreeMode extends Component {
     if (this.canUndo()) {
       const history = this.state.history
       const historyIndex = this.state.historyIndex
-      const undo = history[historyIndex].undo
+      const historyItem = history[historyIndex]
 
-      // FIXME: should call a patch method with does not adjust history but does emit a change event
-      this.handlePatch(undo)
+      const result = patchData(this.state.data, historyItem.undo)
 
       this.setState({
+        data: result.data,
         history,
         historyIndex: historyIndex + 1
       })
+
+      this._emitOnChange (historyItem.undo, historyItem.redo)
     }
   }
 
@@ -200,34 +213,36 @@ export default class TreeMode extends Component {
     if (this.canRedo()) {
       const history = this.state.history
       const historyIndex = this.state.historyIndex - 1
-      const redo = history[historyIndex].redo
+      const historyItem = history[historyIndex]
 
-      // FIXME: should call a patch method with does not adjust history but does emit a change event
-      this.handlePatch(redo)
+      const result = patchData(this.state.data, historyItem.redo)
 
       this.setState({
+        data: result.data,
         history,
         historyIndex
       })
+
+      this._emitOnChange (historyItem.redo, historyItem.undo)
     }
   }
 
   /**
    * Apply a JSONPatch to the current JSON document
-   * @param {Array} actions   JSONPatch actions
-   * @return {Array} Returns a JSONPatch to revert the applied patch
+   * @param {JSONPatch} actions   JSONPatch actions
+   * @return {JSONPatch} Returns a JSONPatch to revert the applied patch
    */
   patch (actions) {
     const result = patchData(this.state.data, actions)
     const data = result.data
 
-    const newEntry = {
+    const historyItem = {
       redo: actions,
       undo: result.revert
     }
-    const history = [newEntry]
+    const history = [historyItem]
         .concat(this.state.history.slice(this.state.historyIndex))
-        .slice(0, 1000)
+        .slice(0, MAX_HISTORY_ITEMS)
 
     this.setState({
       data,
@@ -292,7 +307,7 @@ export default class TreeMode extends Component {
    *
    * Rule: expand the root node only
    *
-   * @param {Array.<string | number>} path
+   * @param {Array.<string>} path
    * @return {boolean}
    */
   static expand (path) {
