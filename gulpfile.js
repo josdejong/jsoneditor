@@ -48,7 +48,7 @@ var compiler = webpack({
   },
   plugins: [
     bannerPlugin,
-    new webpack.optimize.UglifyJsPlugin()
+    // new webpack.optimize.UglifyJsPlugin()
   ],
   module: {
     loaders: loaders
@@ -71,7 +71,7 @@ var compilerMinimalist = webpack({
     bannerPlugin,
     new webpack.IgnorePlugin(new RegExp('^brace$')),
     new webpack.IgnorePlugin(new RegExp('^ajv')),
-    new webpack.optimize.UglifyJsPlugin()
+    // new webpack.optimize.UglifyJsPlugin()
   ],
   module: {
     loaders: loaders

@@ -195,18 +195,18 @@ export default class JSONNode extends Component {
   renderValue (value) {
     const escapedValue = escapeHTML(value)
     const type = valueType (value)
-    const isUrl = isUrl(value)
+    const itsAnUrl = isUrl(value)
     const isEmpty = escapedValue.length === 0
 
     return h('div', {
-      class: JSONNode.getValueClass(type, isUrl, isEmpty),
+      class: JSONNode.getValueClass(type, itsAnUrl, isEmpty),
       contentEditable: 'true',
       spellCheck: 'false',
       onBlur: this.handleChangeValue,
       onInput: this.updateValueStyling,
       onClick: this.handleClickValue,
       onKeyDown: this.handleKeyDownValue,
-      title: isUrl ? URL_TITLE : null
+      title: itsAnUrl ? URL_TITLE : null
     }, escapedValue)
   }
 
@@ -218,7 +218,7 @@ export default class JSONNode extends Component {
   updateValueStyling = (event) => {
     const value = this.getValueFromEvent(event)
     const type = valueType (value)
-    const isUrl = isUrl(value)
+    const itsAnUrl = isUrl(value)
     const isEmpty = false  // not needed, our div has a border and is clearly visible
 
     // find the editable div, the root
@@ -227,8 +227,8 @@ export default class JSONNode extends Component {
       target = target.parentNode
     }
 
-    target.className = JSONNode.getValueClass(type, isUrl, isEmpty)
-    target.title = isUrl ? URL_TITLE : ''
+    target.className = JSONNode.getValueClass(type, itsAnUrl, isEmpty)
+    target.title = itsAnUrl ? URL_TITLE : ''
 
     // remove all classNames from childs (needed for IE and Edge)
     JSONNode.removeChildClasses(target)
