@@ -18,7 +18,7 @@ export default class TreeMode extends Component {
     super(props)
 
     const expand = this.props.options && this.props.options.expand || TreeMode.expand
-    const data = jsonToData([], this.props.data || {}, expand)
+    const data = jsonToData(this.props.data || {}, expand, [])
 
     this.state = {
       options: {
@@ -266,7 +266,7 @@ export default class TreeMode extends Component {
    */
   set (json, options = {}) {
     const name = options && options.name || null // the root name
-    const data = jsonToData([], json, options.expand || TreeMode.expand)
+    const data = jsonToData(json, options.expand || TreeMode.expand, [])
 
     this.setState({
       options: setIn(this.state.options, ['name'], name),

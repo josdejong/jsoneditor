@@ -16,18 +16,17 @@ const expandAll = function (path) {
 
 /**
  * Convert a JSON object into the internally used data model
- * @param {Path} path
  * @param {Object | Array | string | number | boolean | null} json
- * @param {function(path: Path)} expand
+ * @param {function(path: Path)} [expand]
+ * @param {Path} [path=[]]
  * @return {JSONData}
  */
-// TODO: change signature to jsonToData(json [, expand=(path) => false [, path=[]]])
-export function jsonToData (path, json, expand) {
+export function jsonToData (json, expand = expandAll, path = []) {
   if (Array.isArray(json)) {
     return {
       type: 'Array',
       expanded: expand(path),
-      items: json.map((child, index) => jsonToData(path.concat(index), child, expand))
+      items: json.map((child, index) => jsonToData(child, expand, path.concat(index)))
     }
   }
   else if (isObject(json)) {
@@ -37,7 +36,7 @@ export function jsonToData (path, json, expand) {
       props: Object.keys(json).map(name => {
         return {
           name,
-          value: jsonToData(path.concat(name), json[name], expand)
+          value: jsonToData(json[name], expand, path.concat(name))
         }
       })
     }
@@ -120,7 +119,7 @@ export function patchData (data, patch) {
       switch (action.op) {
         case 'add': {
           const path = parseJSONPointer(action.path)
-          const newValue = jsonToData(path, action.value, expand)
+          const newValue = jsonToData(action.value, expand, path)
 
           // TODO: move setting type to jsonToData
           if (options && options.type) {
@@ -146,7 +145,7 @@ export function patchData (data, patch) {
 
         case 'replace': {
           const path = parseJSONPointer(action.path)
-          let newValue = jsonToData(path, action.value, expand)
+          let newValue = jsonToData(action.value, expand, path)
 
           // TODO: move setting type to jsonToData
           if (options && options.type) {

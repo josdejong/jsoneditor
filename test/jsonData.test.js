@@ -241,7 +241,7 @@ test('jsonToData', t => {
     return true
   }
 
-  t.deepEqual(jsonToData([], JSON_EXAMPLE, expand), JSON_DATA_EXAMPLE)
+  t.deepEqual(jsonToData(JSON_EXAMPLE, expand, []), JSON_DATA_EXAMPLE)
 })
 
 test('dataToJson', t => {
@@ -302,7 +302,7 @@ test('jsonpatch add', t => {
     {op: 'add', path: '/obj/b', value: {foo: 'bar'}}
   ]
 
-  const data = jsonToData([], json, (path) => false)
+  const data = jsonToData(json)
   const result = patchData(data, patch)
   const patchedData = result.data
   const revert = result.revert
@@ -327,7 +327,7 @@ test('jsonpatch add: append to matrix', t => {
     {op: 'add', path: '/arr/-', value: 4}
   ]
 
-  const data = jsonToData([], json, (path) => false)
+  const data = jsonToData(json)
   const result = patchData(data, patch)
   const patchedData = result.data
   const revert = result.revert
@@ -354,7 +354,7 @@ test('jsonpatch remove', t => {
     {op: 'remove', path: '/arr/1'},
   ]
 
-  const data = jsonToData([], json, (path) => false)
+  const data = jsonToData(json)
   const result = patchData(data, patch)
   const patchedData = result.data
   const revert = result.revert
@@ -370,7 +370,7 @@ test('jsonpatch remove', t => {
   ])
 
   // test revert
-  const data2 = jsonToData([], patchedJson, (path) => false)
+  const data2 = jsonToData(patchedJson)
   const result2 = patchData(data2, revert)
   const patchedData2 = result2.data
   const revert2 = result2.revert
@@ -391,7 +391,7 @@ test('jsonpatch replace', t => {
     {op: 'replace', path: '/arr/1', value: 200},
   ]
 
-  const data = jsonToData([], json, (path) => false)
+  const data = jsonToData(json)
   const result = patchData(data, patch)
   const patchedData = result.data
   const revert = result.revert
@@ -407,7 +407,7 @@ test('jsonpatch replace', t => {
   ])
 
   // test revert
-  const data2 = jsonToData([], patchedJson, (path) => false)
+  const data2 = jsonToData(patchedJson)
   const result2 = patchData(data2, revert)
   const patchedData2 = result2.data
   const revert2 = result2.revert
@@ -430,7 +430,7 @@ test('jsonpatch copy', t => {
     {op: 'copy', from: '/obj', path: '/arr/2'},
   ]
 
-  const data = jsonToData([], json, (path) => false)
+  const data = jsonToData(json)
   const result = patchData(data, patch)
   const patchedData = result.data
   const revert = result.revert
@@ -445,7 +445,7 @@ test('jsonpatch copy', t => {
   ])
 
   // test revert
-  const data2 = jsonToData([], patchedJson, (path) => false)
+  const data2 = jsonToData(patchedJson)
   const result2 = patchData(data2, revert)
   const patchedData2 = result2.data
   const revert2 = result2.revert
@@ -467,7 +467,7 @@ test('jsonpatch move', t => {
     {op: 'move', from: '/obj', path: '/arr/2'},
   ]
 
-  const data = jsonToData([], json, (path) => false)
+  const data = jsonToData(json)
   const result = patchData(data, patch)
   const patchedData = result.data
   const revert = result.revert
@@ -482,7 +482,7 @@ test('jsonpatch move', t => {
   ])
 
   // test revert
-  const data2 = jsonToData([], patchedJson, (path) => false)
+  const data2 = jsonToData(patchedJson)
   const result2 = patchData(data2, revert)
   const patchedData2 = result2.data
   const revert2 = result2.revert
@@ -502,7 +502,7 @@ test('jsonpatch move and replace', t => {
     {op: 'move', from: '/obj', path: '/arr'},
   ]
 
-  const data = jsonToData([], json, (path) => false)
+  const data = jsonToData(json)
   const result = patchData(data, patch)
   const patchedData = result.data
   const revert = result.revert
@@ -517,7 +517,7 @@ test('jsonpatch move and replace', t => {
   ])
 
   // test revert
-  const data2 = jsonToData([], patchedJson, (path) => false)
+  const data2 = jsonToData(patchedJson)
   const result2 = patchData(data2, revert)
   const patchedData2 = result2.data
   const revert2 = result2.revert
@@ -540,7 +540,7 @@ test('jsonpatch test (ok)', t => {
     {op: 'add', path: '/added', value: 'ok'}
   ]
 
-  const data = jsonToData([], json, (path) => false)
+  const data = jsonToData(json)
   const result = patchData(data, patch)
   const patchedData = result.data
   const revert = result.revert
@@ -568,7 +568,7 @@ test('jsonpatch test (fail: path not found)', t => {
     {op: 'add', path: '/added', value: 'ok'}
   ]
 
-  const data = jsonToData([], json, (path) => false)
+  const data = jsonToData(json)
   const result = patchData(data, patch)
   const patchedData = result.data
   const revert = result.revert
@@ -594,7 +594,7 @@ test('jsonpatch test (fail: value not equal)', t => {
     {op: 'add', path: '/added', value: 'ok'}
   ]
 
-  const data = jsonToData([], json, (path) => false)
+  const data = jsonToData(json)
   const result = patchData(data, patch)
   const patchedData = result.data
   const revert = result.revert
