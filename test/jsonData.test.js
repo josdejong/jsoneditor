@@ -525,11 +525,8 @@ test('jsonpatch move and replace', t => {
 
   t.deepEqual(patchedJson2, json)
   t.deepEqual(revert2, [
-    {op: 'remove', path: '/arr'},
     {op: 'move', from: '/obj', path: '/arr'}
   ])
-
-  // TODO: would be nice when dataPatch could simplify revert2: see that the 'remove' action is redundant
 })
 
 test('jsonpatch test (ok)', t => {

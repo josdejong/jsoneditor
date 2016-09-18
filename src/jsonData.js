@@ -190,9 +190,12 @@ export function patchData (data, patch) {
       }
     })
 
+    // TODO: Simplify revert when possible:
+    //       when a previous action takes place on the same path, remove the first
+
     return {
       data: updatedData,
-      revert,
+      revert: simplifyPatch(revert),
       error: null
     }
   }
@@ -275,6 +278,38 @@ export function remove (data, path) {
     }
   }
 }
+
+/**
+ * Remove redundant actions from a JSONPatch array.
+ * Actions are redundant when they are followed by an action
+ * acting on the same path.
+ * @param {JSONPatch} patch
+ * @return {Array}
+ */
+export function simplifyPatch(patch) {
+  const simplifiedPatch = []
+  const paths = {}
+
+  // loop over the patch from last to first
+  for (var i = patch.length - 1; i >= 0; i--) {
+    const action = patch[i]
+    if (action.op === 'test') {
+      // ignore test actions
+      simplifiedPatch.unshift(action)
+    }
+    else {
+      // test whether this path was already used
+      // if not, add this action to the simplified patch
+      if (paths[action.path] === undefined) {
+        paths[action.path] = true
+        simplifiedPatch.unshift(action)
+      }
+    }
+  }
+
+  return simplifiedPatch
+}
+
 
 /**
  * @param {JSONData} data
