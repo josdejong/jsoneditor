@@ -365,8 +365,8 @@ test('jsonpatch remove', t => {
     obj: {}
   })
   t.deepEqual(revert, [
-    {op: 'add', path: '/arr/1', value: 2},
-    {op: 'add', path: '/obj/a', value: 4}
+    {op: 'add', path: '/arr/1', value: 2, jsoneditor: {type: 'value'}},
+    {op: 'add', path: '/obj/a', value: 4, jsoneditor: {type: 'value', before: null}}
   ])
 
   // test revert
@@ -402,8 +402,8 @@ test('jsonpatch replace', t => {
     obj: {a: 400}
   })
   t.deepEqual(revert, [
-    {op: 'replace', path: '/arr/1', value: 2},
-    {op: 'replace', path: '/obj/a', value: 4}
+    {op: 'replace', path: '/arr/1', value: 2, jsoneditor: {type: 'value'}},
+    {op: 'replace', path: '/obj/a', value: 4, jsoneditor: {type: 'value'}}
   ])
 
   // test revert
@@ -414,7 +414,10 @@ test('jsonpatch replace', t => {
   const patchedJson2 = dataToJson(patchedData2)
 
   t.deepEqual(patchedJson2, json)
-  t.deepEqual(revert2, patch)
+  t.deepEqual(revert2, [
+    {op: 'replace', path: '/obj/a', value: 400, jsoneditor: {type: 'value'}},
+    {op: 'replace', path: '/arr/1', value: 200, jsoneditor: {type: 'value'}}
+  ])
 })
 
 test('jsonpatch copy', t => {
@@ -450,7 +453,7 @@ test('jsonpatch copy', t => {
 
   t.deepEqual(patchedJson2, json)
   t.deepEqual(revert2, [
-    {op: 'add', path: '/arr/2', value: {a: 4}}
+    {op: 'add', path: '/arr/2', value: {a: 4}, jsoneditor: {type: 'Object'}}
   ])
 })
 
@@ -470,6 +473,7 @@ test('jsonpatch move', t => {
   const revert = result.revert
   const patchedJson = dataToJson(patchedData)
 
+  t.is(result.error, null)
   t.deepEqual(patchedJson, {
     arr: [1, 2, {a:4}, 3]
   })
@@ -508,8 +512,8 @@ test('jsonpatch move and replace', t => {
     arr: {a:4}
   })
   t.deepEqual(revert, [
-    {op: 'move', from: '/arr', path: '/obj'},
-    {op: 'add', path: '/arr', value: [1,2,3]}
+    {op:'move', from: '/arr', path: '/obj'},
+    {op:'add', path:'/arr', value: [1,2,3], jsoneditor: {type: 'Array'}}
   ])
 
   // test revert
@@ -524,6 +528,8 @@ test('jsonpatch move and replace', t => {
     {op: 'remove', path: '/arr'},
     {op: 'move', from: '/obj', path: '/arr'}
   ])
+
+  // TODO: would be nice when dataPatch could simplify revert2: see that the 'remove' action is redundant
 })
 
 test('jsonpatch test (ok)', t => {
@@ -605,3 +611,5 @@ test('jsonpatch test (fail: value not equal)', t => {
   t.deepEqual(revert, [])
   t.is(result.error.toString(), 'Error: Test failed, value differs')
 })
+
+// TODO: test `jsoneditor.before` JSONPatch property

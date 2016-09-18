@@ -131,7 +131,7 @@ export function patchData (data, patch) {
 
           const result = add(updatedData, action.path, newValue, options)
           updatedData = result.data
-          revert.unshift(result.revert)
+          revert = result.revert.concat(revert)
 
           break
         }
@@ -139,7 +139,7 @@ export function patchData (data, patch) {
         case 'remove': {
           const result = remove(updatedData, action.path)
           updatedData = result.data
-          revert.unshift(result.revert)
+          revert = result.revert.concat(revert)
 
           break
         }
@@ -157,7 +157,7 @@ export function patchData (data, patch) {
 
           const result = replace(updatedData, path, newValue)
           updatedData = result.data
-          revert.unshift(result.revert)
+          revert = result.revert.concat(revert)
 
           break
         }
@@ -165,7 +165,7 @@ export function patchData (data, patch) {
         case 'copy': {
           const result = copy(updatedData, action.path, action.from, options)
           updatedData = result.data
-          revert.unshift(result.revert)
+          revert = result.revert.concat(revert)
 
           break
         }
@@ -206,23 +206,23 @@ export function patchData (data, patch) {
  * @param {JSONData} data
  * @param {Path} path
  * @param {JSONData} value
- * @return {{data: JSONData, revert: Object}}
+ * @return {{data: JSONData, revert: JSONPatch}}
  */
 export function replace (data, path, value) {
   const dataPath = toDataPath(data, path)
-  const oldValue = dataToJson(getIn(data, dataPath))
+  const oldValue = getIn(data, dataPath)
 
   return {
     // FIXME: keep the expanded state where possible
     data: setIn(data, dataPath, value),
-    revert: {
+    revert: [{
       op: 'replace',
       path: compileJSONPointer(path),
-      value: oldValue,
+      value: dataToJson(oldValue),
       jsoneditor: {
         type: oldValue.type
       }
-    }
+    }]
   }
 }
 
@@ -230,7 +230,7 @@ export function replace (data, path, value) {
  * Remove an item or property
  * @param {JSONData} data
  * @param {string} path
- * @return {{data: JSONData, revert: Object}}
+ * @return {{data: JSONData, revert: JSONPatch}}
  */
 export function remove (data, path) {
   // console.log('remove', path)
@@ -246,14 +246,14 @@ export function remove (data, path) {
 
     return {
       data: deleteIn(data, dataPath),
-      revert: {
+      revert: [{
         op: 'add',
         path,
         value,
         jsoneditor: {
           type: dataValue.type
         }
-      }
+      }]
     }
   }
   else { // object.type === 'Object'
@@ -263,7 +263,7 @@ export function remove (data, path) {
     dataPath.pop()  // remove the 'value' property, we want to remove the whole object property
     return {
       data: deleteIn(data, dataPath),
-      revert: {
+      revert: [{
         op: 'add',
         path,
         value,
@@ -271,7 +271,7 @@ export function remove (data, path) {
           type: dataValue.type,
           before: findNextProp(parent, prop)
         }
-      }
+      }]
     }
   }
 }
@@ -281,7 +281,7 @@ export function remove (data, path) {
  * @param {string} path
  * @param {JSONData} value
  * @param {{before?: string}} [options]
- * @return {{data: JSONData, revert: Object}}
+ * @return {{data: JSONData, revert: JSONPatch}}
  * @private
  */
 export function add (data, path, value, options) {
@@ -334,23 +334,23 @@ export function add (data, path, value, options) {
   if (parent.type === 'Object' && oldValue !== undefined) {
     return {
       data: updatedData,
-      revert: {
+      revert: [{
         op: 'replace',
         path: compileJSONPointer(resolvedPath),
         value: dataToJson(oldValue),
         jsoneditor: {
           type: oldValue.type
         }
-      }
+      }]
     }
   }
   else {
     return {
       data: updatedData,
-      revert: {
+      revert: [{
         op: 'remove',
         path: compileJSONPointer(resolvedPath)
-      }
+      }]
     }
   }
 }
@@ -361,7 +361,7 @@ export function add (data, path, value, options) {
  * @param {string} path
  * @param {string} from
  * @param {{before?: string}} [options]
- * @return {{data: JSONData, revert: Object}}
+ * @return {{data: JSONData, revert: JSONPatch}}
  * @private
  */
 export function copy (data, path, from, options) {
@@ -376,26 +376,35 @@ export function copy (data, path, from, options) {
  * @param {string} path
  * @param {string} from
  * @param {{before?: string}} [options]
- * @return {{data: JSONData, revert: Object}}
+ * @return {{data: JSONData, revert: JSONPatch}}
  * @private
  */
 export function move (data, path, from, options) {
-  if (path !== from) {
-    const value = getIn(data, toDataPath(data, parseJSONPointer(from)))
+  const dataValue = getIn(data, toDataPath(data, parseJSONPointer(from)))
 
-    const result1 = remove(data, from)
-    const result2 = add(result1.data, path, value, options)
+  const result1 = remove(data, from)
+  const result2 = add(result1.data, path, dataValue, options)
 
+  if (result2.revert[0].op === 'replace') {
     return {
       data: result2.data,
-      revert: result1.revert.concat(result2.revert)
+      revert: [
+        { op: 'move', from: path, path: from },
+        {
+          op: 'add',
+          path,
+          value: result2.revert[0].value,
+          jsoneditor: result2.revert[0].jsoneditor
+        }
+      ]
     }
   }
-  else {
-    // nothing to do
+  else { // result2.revert[0].op === 'remove'
     return {
-      data,
-      revert: []
+      data: result2.data,
+      revert: [
+        {op: 'move', from: path, path: from}
+      ]
     }
   }
 }
