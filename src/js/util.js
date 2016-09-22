@@ -661,6 +661,12 @@ exports.parsePath = function parsePath(jsonPath) {
     }
 
     var value = jsonPath.substring(1, end);
+    if (value[0] === '\'') {
+      // ajv produces string prop names with single quotes, so we need
+      // to reformat them into valid double-quoted JSON strings
+      value = '\"' + value.substring(1, value.length - 1) + '\"';
+    }
+
     prop = value === '*' ? value : JSON.parse(value); // parse string and number
     remainder = jsonPath.substr(end + 1);
   }

@@ -73,6 +73,7 @@ describe('util', function () {
       assert.deepEqual(util.parsePath('.foo[2]'), ['foo', 2]);
       assert.deepEqual(util.parsePath('.foo[2].bar'), ['foo', 2, 'bar']);
       assert.deepEqual(util.parsePath('.foo["prop with spaces"]'), ['foo', 'prop with spaces']);
+      assert.deepEqual(util.parsePath('.foo[\'prop with single quotes as outputted by ajv library\']'), ['foo', 'prop with single quotes as outputted by ajv library']);
       assert.deepEqual(util.parsePath('.foo[*].bar'), ['foo', '*', 'bar']);
     });
 
