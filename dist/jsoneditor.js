@@ -25,7 +25,7 @@
  *
  * @author  Jos de Jong, <wjosdejong@gmail.com>
  * @version 5.5.7
- * @date    2016-08-17
+ * @date    2016-09-22
  */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
@@ -10601,6 +10601,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }
 
 	    var value = jsonPath.substring(1, end);
+	    if (value[0] === '\'') {
+	      // ajv produces string prop names with single quotes, so we need
+	      // to reformat them into valid double-quoted JSON strings
+	      value = '\"' + value.substring(1, value.length - 1) + '\"';
+	    }
+
 	    prop = value === '*' ? value : JSON.parse(value); // parse string and number
 	    remainder = jsonPath.substr(end + 1);
 	  }
