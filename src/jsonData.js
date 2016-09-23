@@ -633,10 +633,6 @@ export function parseJSONPointer (pointer) {
  */
 export function compileJSONPointer (path) {
   return '/' + path
-      .map(p => {
-        return typeof p === 'string'  // TODO: remove this check when the path is all strings
-            ? p.replace(/~/g, '~0').replace(/\//g, '~1')
-            : p
-      })
+      .map(p => String(p).replace(/~/g, '~0').replace(/\//g, '~1'))
       .join('/')
 }
