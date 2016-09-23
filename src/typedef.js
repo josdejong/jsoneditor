@@ -25,7 +25,10 @@
  * @typedef {Array.<{op: string, path?: string, from?: string, value?: *}>} JSONPatch
  *
  * @typedef {{
- *   mode: 'tree' | 'text'
+ *   mode: 'tree' | 'text',
+ *   indentation: number | string,
+ *   onChange: function (patch: JSONPatch, revert: JSONPatch),
+ *   onError:  function (err: Error)
  * }} Options
  *
  * @typedef {{

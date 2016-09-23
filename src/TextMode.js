@@ -18,12 +18,12 @@ export default class TextMode extends Component {
         h('button', {
           class: 'jsoneditor-format',
           title: 'Format the JSON document',
-          onClick: this.format
+          onClick: this.handleFormat
         }),
         h('button', {
           class: 'jsoneditor-compact',
           title: 'Compact the JSON document',
-          onClick: this.compact
+          onClick: this.handleCompact
         })
           // TODO: implement a button "Fix JSON"
       ]),
@@ -58,10 +58,40 @@ export default class TextMode extends Component {
     })
   }
 
+  /** @private */
+  handleFormat = () => {
+    try {
+      this.format()
+    }
+    catch (err) {
+      this.handleError(err)
+    }
+  }
+
+  /** @private */
+  handleCompact = () => {
+    try {
+      this.compact()
+    }
+    catch (err) {
+      this.handleError(err)
+    }
+  }
+
+  /** @private */
+  handleError (err) {
+    if (this.props.options && this.props.options.onError) {
+      this.props.options.onError(err)
+    }
+    else {
+      console.error(err)
+    }
+  }
+
   /**
    * Format the json
    */
-  format = () => {
+  format () {
     var json = this.get()
     var text = JSON.stringify(json, null, this.getIndentation())
     this.setText(text)
@@ -70,7 +100,7 @@ export default class TextMode extends Component {
   /**
    * Compact the json
    */
-  compact = () => {
+  compact () {
     var json = this.get()
     var text = JSON.stringify(json)
     this.setText(text)

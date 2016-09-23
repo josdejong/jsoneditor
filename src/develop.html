@@ -37,7 +37,10 @@
       window.patch = patch
       window.revert = revert
     },
-//    mode: 'text',
+    onError: function (err) {
+      console.error(err)
+      alert(err)
+    },
     indentation: 4
   }
   const editor = jsoneditor(container, options)
