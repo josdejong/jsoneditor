@@ -428,7 +428,10 @@ export function move (data, path, from, options) {
           op: 'add',
           path,
           value: result2.revert[0].value,
-          jsoneditor: result2.revert[0].jsoneditor
+          jsoneditor: {
+            before: options.before,
+            type: result2.revert[0].jsoneditor.type
+          }
         }
       ]
     }
@@ -437,7 +440,14 @@ export function move (data, path, from, options) {
     return {
       data: result2.data,
       revert: [
-        {op: 'move', from: path, path: from}
+        {
+          op: 'move',
+          from: path,
+          path: from,
+          jsoneditor: {
+            before: options.before
+          }
+        }
       ]
     }
   }
