@@ -339,20 +339,18 @@ export function add (data, path, value, options) {
       updatedData = insertAt(data, dataPath.concat('items', prop), value)
   }
   else { // parent.type === 'Object'
-    // TODO: create an immutable helper function to update a property in an Object
-    updatedData = updateIn(data, dataPath.concat('props'), (props) => {
-      const newProp = { name: prop, value }
+    const newProp = { name: prop, value }
+    const insertBefore = options && typeof options.before === 'string'
 
-      if (!options || typeof options.before !== 'string') {
-        // append
-        return props.concat(newProp)
+    updatedData = updateIn(data, dataPath.concat('props'), (props) => {
+      if (insertBefore) {
+        // insert after prop
+        const index = props.findIndex(p => p.name === options.before)
+        return insertAt(props, [index], newProp)
       }
       else {
-        // insert after prop
-        const updatedProps = props.slice(0)
-        const index = props.findIndex(p => p.name === options.before)
-        updatedProps.splice(index, 0, newProp)
-        return updatedProps
+        // append
+        return props.concat(newProp)
       }
     })
   }
@@ -419,24 +417,15 @@ export function move (data, path, from, options) {
   const beforeNeeded = (parent.type === 'Object' && before)
 
   if (result2.revert[0].op === 'replace') {
+    const value = result2.revert[0].value
     const type = result2.revert[0].jsoneditor.type
+    const options = beforeNeeded ? { type, before } : { type }
 
     return {
       data: result2.data,
       revert: [
-        {
-          op: 'move',
-          from: path,
-          path: from
-        },
-        {
-          op: 'add',
-          path,
-          value: result2.revert[0].value,
-          jsoneditor: beforeNeeded
-              ? { type, before }
-              : { type }
-        }
+        { op: 'move', from: path, path: from },
+        { op: 'add', path, value, jsoneditor: options}
       ]
     }
   }
@@ -614,6 +603,16 @@ export function findNextProp (parent, prop) {
   const next = parent.props[index + 1]
 
   return next && next.name || null
+}
+
+/**
+ * Find the index of a property
+ * @param {ObjectData} parent
+ * @param {string} prop
+ * @return {number}  Returns the index when found, -1 when not found
+ */
+export function findPropertyIndex (parent, prop) {
+  return parent.props.findIndex(p => p.name === prop) || -1
 }
 
 /**

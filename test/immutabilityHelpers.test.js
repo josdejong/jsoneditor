@@ -273,6 +273,6 @@ test('deleteIn non existing path', t => {
 test('insertAt', t => {
   const obj = { a: [1,2,3]}
 
-  const updated = insertAt(obj, ['ab', '2'], 8)
+  const updated = insertAt(obj, ['a', '2'], 8)
   t.deepEqual(updated, {a: [1,2,8,3]})
 })

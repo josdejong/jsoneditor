@@ -152,17 +152,21 @@ export function deleteIn (object, path) {
 }
 
 /**
- * Insert a new item in an array
- * @param {Array} array
+ * Insert a new item in an array at a specific index.
+ * Example usage:
+ *
+ *     insertAt({arr: [1,2,3]}, ['arr', '2'], 'inserted')  // [1,2,'inserted',3]
+ *
+ * @param {Object | Array} object
  * @param {Path} path
  * @param {*} value
  * @return {Array}
  */
-export function insertAt (array, path, value) {
+export function insertAt (object, path, value) {
   const parentPath = path.slice(0, path.length - 1)
   const index = path[path.length - 1]
 
-  return updateIn(array, parentPath, (items) => {
+  return updateIn(object, parentPath, (items) => {
     if (!Array.isArray(items)) {
       throw new TypeError('Array expected at path ' + JSON.stringify(parentPath))
     }
