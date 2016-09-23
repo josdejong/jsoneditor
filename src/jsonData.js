@@ -97,7 +97,7 @@ export function toDataPath (data, path) {
   }
   else {
     // object property. find the index of this property
-    const index = data.props.findIndex(prop => prop.name === path[0])
+    const index = findPropertyIndex(data, path[0])
     const prop = data.props[index]
     if (!prop) {
       throw new Error('Object property "' + path[0] + '" not found')
@@ -339,19 +339,13 @@ export function add (data, path, value, options) {
       updatedData = insertAt(data, dataPath.concat('items', prop), value)
   }
   else { // parent.type === 'Object'
-    const newProp = { name: prop, value }
-    const insertBefore = options && typeof options.before === 'string'
+    updatedData = updateIn(data, dataPath, (object) => {
+      const newProp = { name: prop, value }
+      const index = (options && typeof options.before === 'string')
+          ? findPropertyIndex(object, options.before)  // insert before
+          : object.props.length                        // append
 
-    updatedData = updateIn(data, dataPath.concat('props'), (props) => {
-      if (insertBefore) {
-        // insert after prop
-        const index = props.findIndex(p => p.name === options.before)
-        return insertAt(props, [index], newProp)
-      }
-      else {
-        // append
-        return props.concat(newProp)
-      }
+      return insertAt(object, ['props', index], newProp)
     })
   }
 
@@ -560,7 +554,7 @@ export function pathExists (data, path) {
   }
   else {
     // object property. find the index of this property
-    index = data.props.findIndex(prop => prop.name === path[0])
+    index = findPropertyIndex(data, path[0])
     const prop = data.props[index]
 
     return pathExists(prop && prop.value, path.slice(1))
@@ -599,20 +593,23 @@ export function resolvePathIndex (data, path) {
  *                         or null if there is none
  */
 export function findNextProp (parent, prop) {
-  const index = parent.props.findIndex(p => p.name === prop)
-  const next = parent.props[index + 1]
+  const index = findPropertyIndex(parent, prop)
+  if (index === -1) {
+    return null
+  }
 
+  const next = parent.props[index + 1]
   return next && next.name || null
 }
 
 /**
  * Find the index of a property
- * @param {ObjectData} parent
+ * @param {ObjectData} object
  * @param {string} prop
  * @return {number}  Returns the index when found, -1 when not found
  */
-export function findPropertyIndex (parent, prop) {
-  return parent.props.findIndex(p => p.name === prop) || -1
+export function findPropertyIndex (object, prop) {
+  return object.props.findIndex(p => p.name === prop)
 }
 
 /**
