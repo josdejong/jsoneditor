@@ -66,6 +66,7 @@ export default class JSONNode extends Component {
       if (data.props.length > 0) {
         const props = data.props.map(prop => {
           return h(JSONNode, {
+            key: prop.name,
             parent: this,
             prop: prop.name,
             data: prop.value,
@@ -101,6 +102,7 @@ export default class JSONNode extends Component {
       if (data.items.length > 0) {
         const items = data.items.map((child, index) => {
           return h(JSONNode, {
+            key: index,
             parent: this,
             prop: index,
             data: child,
