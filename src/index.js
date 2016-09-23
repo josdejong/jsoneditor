@@ -1,7 +1,15 @@
 import { h, render } from 'preact'
 import TreeMode from './TreeMode'
+import TextMode from './TextMode'
 
 import '!style!css!less!./jsoneditor.less'
+
+// TODO: allow adding new modes
+const modes = {
+  tree: TreeMode,
+  text: TextMode,
+  default: TreeMode
+}
 
 /**
  * Create a new json editor
@@ -11,7 +19,10 @@ import '!style!css!less!./jsoneditor.less'
  * @constructor
  */
 function jsoneditor (container, options) {
-  const elem = render(h(TreeMode, {options}), container)
+  const mode = options && options.mode
+  const constructor = modes[mode] || modes['default']
+
+  const elem = render(h(constructor, {options}), container)
   const component = elem._component
 
   return {
@@ -20,6 +31,7 @@ function jsoneditor (container, options) {
     _container: container,
     _options: options,
     _component: component,
+    _modes: modes,
 
     // TODO: implement setMode
 

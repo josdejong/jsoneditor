@@ -29,7 +29,9 @@
       console.log('onChange patch=', patch, ', revert=', revert)
       window.patch = patch
       window.revert = revert
-    }
+    },
+    mode: 'text',
+    indentation: 4
   };
   const editor = jsoneditor(container, options);
   const json = {

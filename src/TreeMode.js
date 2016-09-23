@@ -48,7 +48,8 @@ export default class TreeMode extends Component {
   }
 
   render (props, state) {
-    return h('div', {class: 'jsoneditor'}, [
+    // TODO: make mode tree dynamic
+    return h('div', {class: 'jsoneditor jsoneditor-mode-tree'}, [
       h('div', {class: 'jsoneditor-menu'}, [
           h('button', {
             class: 'jsoneditor-expand-all',
@@ -75,8 +76,8 @@ export default class TreeMode extends Component {
           })
       ]),
 
-      h('div', {class: 'jsoneditor-treemode', contentEditable: 'false', onClick: JSONNode.hideContextMenu}, [
-        h('ul', {class: 'jsoneditor-list', contentEditable: 'false'}, [
+      h('div', {class: 'jsoneditor-contents jsoneditor-tree-contents', onClick: JSONNode.hideContextMenu}, [
+        h('ul', {class: 'jsoneditor-list'}, [
           h(JSONNode, {
             data: state.data,
             events: state.events,

@@ -25,7 +25,7 @@
  * @typedef {Array.<{op: string, path?: string, from?: string, value?: *}>} JSONPatch
  *
  * @typedef {{
- *
+ *   mode: 'tree' | 'text'
  * }} Options
  *
  * @typedef {{
