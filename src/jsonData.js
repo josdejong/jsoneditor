@@ -90,7 +90,7 @@ export function toDataPath (data, path) {
     const index = path[0]
     const item = data.items[index]
     if (!item) {
-      throw new Error('Array item ' + index + ' not found')
+      throw new Error('Array item "' + index + '" not found')
     }
 
     return ['items', index].concat(toDataPath(item, path.slice(1)))

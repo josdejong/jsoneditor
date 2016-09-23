@@ -1,5 +1,6 @@
 import { h, Component } from 'preact'
 import { parseJSON } from './utils/jsonUtils'
+import { jsonToData, dataToJson, patchData } from './jsonData'
 
 export default class TextMode extends Component {
   // TODO: define propTypes
@@ -109,11 +110,23 @@ export default class TextMode extends Component {
   /**
    * Apply a JSONPatch to the current JSON document
    * @param {JSONPatch} actions   JSONPatch actions
-   * @return {JSONPatch} Returns a JSONPatch to revert the applied patch
+   * @return {JSONPatchResult} Returns a JSONPatch result containing the
+   *                           patch, a patch to revert the action, and
+   *                           an error object which is null when successful
    */
   patch (actions) {
-    // TODO: implement patch
-    throw new Error('Patch not yet implemented')
+    const json = this.get()
+
+    const data = jsonToData(json)
+    const result = patchData(data, actions)
+
+    this.set(dataToJson(result.data))
+
+    return {
+      patch: actions,
+      revert: result.revert,
+      error: result.error
+    }
   }
 
   /**

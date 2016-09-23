@@ -25,6 +25,12 @@
  * @typedef {Array.<{op: string, path?: string, from?: string, value?: *}>} JSONPatch
  *
  * @typedef {{
+ *   patch: JSONPatch,
+ *   revert: JSONPatch,
+ *   error: null | Error
+ * }} JSONPatchResult
+ *
+ * @typedef {{
  *   mode: 'tree' | 'text',
  *   indentation: number | string,
  *   onChange: function (patch: JSONPatch, revert: JSONPatch),

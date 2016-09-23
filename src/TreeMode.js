@@ -236,7 +236,9 @@ export default class TreeMode extends Component {
   /**
    * Apply a JSONPatch to the current JSON document
    * @param {JSONPatch} actions   JSONPatch actions
-   * @return {JSONPatch} Returns a JSONPatch to revert the applied patch
+   * @return {JSONPatchResult} Returns a JSONPatch result containing the
+   *                           patch, a patch to revert the action, and
+   *                           an error object which is null when successful
    */
   patch (actions) {
     const result = patchData(this.state.data, actions)
@@ -256,7 +258,11 @@ export default class TreeMode extends Component {
       historyIndex: 0
     })
 
-    return result.revert
+    return {
+      patch: actions,
+      revert: result.revert,
+      error: result.error
+    }
   }
 
   /**
