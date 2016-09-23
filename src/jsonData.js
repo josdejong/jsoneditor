@@ -334,13 +334,6 @@ export function add (data, path, value, options) {
   const resolvedPath = resolvePathIndex(data, pathArray)
   const prop = resolvedPath[resolvedPath.length - 1]
 
-  // FIXME: should not be needed to do try/catch. Create a function exists(data, path), or rewrite toDataPath such that you don't need to pass data
-  let oldValue = undefined
-  try {
-    oldValue = getIn(data, toDataPath(data, resolvedPath))
-  }
-  catch (err) {}
-
   let updatedData
   if (parent.type === 'Array') {
     // TODO: create an immutable helper function to insert an item in an Array
@@ -372,7 +365,9 @@ export function add (data, path, value, options) {
     })
   }
 
-  if (parent.type === 'Object' && oldValue !== undefined) {
+  if (parent.type === 'Object' && pathExists(data, resolvedPath)) {
+    const oldValue = getIn(data, toDataPath(data, resolvedPath))
+
     return {
       data: updatedData,
       revert: [{
