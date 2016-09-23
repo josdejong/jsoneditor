@@ -1,5 +1,5 @@
 import test from 'ava';
-import { getIn, setIn, updateIn, deleteIn } from '../src/utils/immutabilityHelpers'
+import { getIn, setIn, updateIn, deleteIn, insertAt } from '../src/utils/immutabilityHelpers'
 
 
 test('getIn', t => {
@@ -268,4 +268,11 @@ test('deleteIn non existing path', t => {
 
   const updated = deleteIn(obj, ['a', 'b'])
   t.truthy (updated === obj)
+})
+
+test('insertAt', t => {
+  const obj = { a: [1,2,3]}
+
+  const updated = insertAt(obj, ['ab', '2'], 8)
+  t.deepEqual(updated, {a: [1,2,8,3]})
 })

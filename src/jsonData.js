@@ -3,7 +3,7 @@
  * All functions are pure and don't mutate the JSONData.
  */
 
-import { setIn, updateIn, getIn, deleteIn } from './utils/immutabilityHelpers'
+import { setIn, updateIn, getIn, deleteIn, insertAt } from './utils/immutabilityHelpers'
 import { isObject } from  './utils/typeUtils'
 import isEqual from 'lodash/isEqual'
 
@@ -336,18 +336,10 @@ export function add (data, path, value, options) {
 
   let updatedData
   if (parent.type === 'Array') {
-    // TODO: create an immutable helper function to insert an item in an Array
-    updatedData = updateIn(data, dataPath.concat('items'), (items) => {
-      const index = parseInt(prop)
-      const updatedItems = items.slice(0)
-
-      updatedItems.splice(index, 0, value)
-
-      return updatedItems
-    })
+      updatedData = insertAt(data, dataPath.concat('items', prop), value)
   }
   else { // parent.type === 'Object'
-    // TODO: create an immutable helper function to append an item to an Array
+    // TODO: create an immutable helper function to update a property in an Object
     updatedData = updateIn(data, dataPath.concat('props'), (props) => {
       const newProp = { name: prop, value }
 

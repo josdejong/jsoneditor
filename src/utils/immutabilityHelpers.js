@@ -150,3 +150,27 @@ export function deleteIn (object, path) {
     return updatedObject
   }
 }
+
+/**
+ * Insert a new item in an array
+ * @param {Array} array
+ * @param {Path} path
+ * @param {*} value
+ * @return {Array}
+ */
+export function insertAt (array, path, value) {
+  const parentPath = path.slice(0, path.length - 1)
+  const index = path[path.length - 1]
+
+  return updateIn(array, parentPath, (items) => {
+    if (!Array.isArray(items)) {
+      throw new TypeError('Array expected at path ' + JSON.stringify(parentPath))
+    }
+
+    const updatedItems = items.slice(0)
+
+    updatedItems.splice(index, 0, value)
+
+    return updatedItems
+  })
+}
