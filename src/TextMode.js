@@ -29,7 +29,11 @@ export default class TextMode extends Component {
       ]),
 
       h('div', {class: 'jsoneditor-contents'}, [
-        h('textarea', {class: 'jsoneditor-text', value: this.state.text})
+        h('textarea', {
+          class: 'jsoneditor-text',
+          value: this.state.text,
+          onChange: this.handleChange
+        })
       ])
     ])
   }
@@ -41,6 +45,17 @@ export default class TextMode extends Component {
    */
   getIndentation () {
     return this.props.options && this.props.options.indentation || 2
+  }
+
+  /**
+   * handle changed text input in the textarea
+   * @param {Event} event
+   * @private
+   */
+  handleChange = (event) => {
+    this.setState({
+      text: event.target.value
+    })
   }
 
   /**
@@ -89,12 +104,18 @@ export default class TextMode extends Component {
     return parseJSON(this.state.text)
   }
 
-  // TODO: comment
+  /**
+   * Set a string containing a JSON document
+   * @param {string} text
+   */
   setText (text) {
     this.setState({ text })
   }
 
-  // TODO: comment
+  /**
+   * Get the JSON document as text
+   * @return {string} text
+   */
   getText () {
     return this.state.text
   }

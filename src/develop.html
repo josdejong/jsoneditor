@@ -10,7 +10,7 @@
   <script src="../dist/jsoneditor.js"></script>
   <style>
     #container {
-      /*height: 300px;*/
+      height: 300px;
     }
   </style>
 </head>
@@ -18,22 +18,29 @@
 <p>
   <button id="setJSON">Set JSON</button>
   <button id="getJSON">Get JSON</button>
+
+  <label for="mode">mode:
+    <select id="mode">
+      <option value="text">text</option>
+      <option value="tree" selected>tree</option>
+    </select>
+  </label>
 </p>
 <div id="container"></div>
 
 <script>
   // create the editor
-  const container = document.getElementById('container');
+  const container = document.getElementById('container')
   const options = {
     onChange: function (patch, revert) {
       console.log('onChange patch=', patch, ', revert=', revert)
       window.patch = patch
       window.revert = revert
     },
-    mode: 'text',
+//    mode: 'text',
     indentation: 4
-  };
-  const editor = jsoneditor(container, options);
+  }
+  const editor = jsoneditor(container, options)
   const json = {
     'array': [1, 2, 3],
     'emptyArray': [],
@@ -43,13 +50,13 @@
     'number': 123,
     'object': {'a': 'b', 'c': 'd', 'e': [{"first": true}, {"second": true}]},
     'string': 'Hello World'
-  };
+  }
   editor.set(json, {
     name: 'myObject',
     expand: function (path) {
       return true
     }
-  });
+  })
 
   // set json
   document.getElementById('setJSON').onclick = function () {
@@ -57,14 +64,20 @@
       expand: function (path) {
         return true
       }
-    });
-  };
+    })
+  }
 
   // get json
   document.getElementById('getJSON').onclick = function () {
-    const json = editor.get();
-    alert(JSON.stringify(json, null, 2));
-  };
+    const json = editor.get()
+    alert(JSON.stringify(json, null, 2))
+  }
+
+  // change mode
+  document.getElementById('mode').onchange = function (event) {
+    const mode = event.target.value
+    editor.setMode(mode)
+  }
 
   const largeJSON = {
     "version": "1.0",

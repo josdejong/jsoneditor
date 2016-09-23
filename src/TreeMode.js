@@ -1,13 +1,12 @@
 import { h, Component } from 'preact'
 
 import { setIn, updateIn } from './utils/immutabilityHelpers'
-import {
-  expand, jsonToData, dataToJson, toDataPath, patchData, compileJSONPointer
-} from './jsonData'
+import { expand, jsonToData, dataToJson, toDataPath, patchData } from './jsonData'
 import {
   duplicate, insert, append, remove, changeType, changeValue, changeProperty, sort
 } from './actions'
 import JSONNode from './JSONNode'
+import { parseJSON } from './utils/jsonUtils'
 
 const MAX_HISTORY_ITEMS = 1000   // maximum number of undo/redo items to be kept in memory
 
@@ -77,7 +76,7 @@ export default class TreeMode extends Component {
       ]),
 
       h('div', {class: 'jsoneditor-contents jsoneditor-tree-contents', onClick: JSONNode.hideContextMenu}, [
-        h('ul', {class: 'jsoneditor-list'}, [
+        h('ul', {class: 'jsoneditor-list jsoneditor-root'}, [
           h(JSONNode, {
             data: state.data,
             events: state.events,
@@ -288,6 +287,23 @@ export default class TreeMode extends Component {
   }
 
   /**
+   * Set a string containing a JSON document
+   * @param {string} text
+   */
+  setText (text) {
+    this.set(parseJSON(text))
+  }
+
+  /**
+   * Get the JSON document as text
+   * @return {string} text
+   */
+  getText () {
+    const indentation = this.props.options && this.props.options.indentation || 2
+    return JSON.stringify(this.get(), null, indentation)
+  }
+
+  /**
    * Expand one or multiple objects or arrays
    * @param {Path | function (path: Path) : boolean} callback
    */
@@ -306,8 +322,6 @@ export default class TreeMode extends Component {
       data: expand(this.state.data, callback, false)
     })
   }
-
-  // TODO: implement getText and setText
 
   /**
    * Default function to determine whether or not to expand a node initially
