@@ -492,6 +492,43 @@ test('jsonpatch move', t => {
   t.deepEqual(revert2, patch)
 })
 
+test('jsonpatch move before', t => {
+  const json = {
+    arr: [1,2,3],
+    obj: {a : 4},
+    zzz: 'zzz'
+  }
+
+  const patch = [
+    {op: 'move', from: '/obj', path: '/arr/2'},
+  ]
+
+  const data = jsonToData(json)
+  const result = patchData(data, patch)
+  const patchedData = result.data
+  const revert = result.revert
+  const patchedJson = dataToJson(patchedData)
+
+  t.is(result.error, null)
+  t.deepEqual(patchedJson, {
+    arr: [1, 2, {a:4}, 3],
+    zzz: 'zzz'
+  })
+  t.deepEqual(revert, [
+    {op: 'move', from: '/arr/2', path: '/obj', jsoneditor: {before: 'zzz'}}
+  ])
+
+  // test revert
+  const data2 = jsonToData(patchedJson)
+  const result2 = patchData(data2, revert)
+  const patchedData2 = result2.data
+  const revert2 = result2.revert
+  const patchedJson2 = dataToJson(patchedData2)
+
+  t.deepEqual(patchedJson2, json)
+  t.deepEqual(revert2, patch)
+})
+
 test('jsonpatch move and replace', t => {
   const json = {
     arr: [1,2,3],
@@ -608,5 +645,3 @@ test('jsonpatch test (fail: value not equal)', t => {
   t.deepEqual(revert, [])
   t.is(result.error.toString(), 'Error: Test failed, value differs')
 })
-
-// TODO: test `jsoneditor.before` JSONPatch property

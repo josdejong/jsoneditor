@@ -85,18 +85,26 @@ export function toDataPath (data, path) {
     return []
   }
 
-  let index
   if (data.type === 'Array') {
     // index of an array
-    index = path[0]
+    const index = path[0]
+    const item = data.items[index]
+    if (!item) {
+      throw new Error('Array item ' + index + ' not found')
+    }
 
-    return ['items', index].concat(toDataPath(data.items[index], path.slice(1)))
+    return ['items', index].concat(toDataPath(item, path.slice(1)))
   }
   else {
     // object property. find the index of this property
-    index = data.props.findIndex(prop => prop.name === path[0])
+    const index = data.props.findIndex(prop => prop.name === path[0])
+    const prop = data.props[index]
+    if (!prop) {
+      throw new Error('Object property "' + path[0] + '" not found')
+    }
 
-    return ['props', index, 'value'].concat(toDataPath(data.props[index].value, path.slice(1)))
+    return ['props', index, 'value']
+        .concat(toDataPath(prop && prop.value, path.slice(1)))
   }
 }
 
@@ -320,7 +328,6 @@ export function simplifyPatch(patch) {
  */
 export function add (data, path, value, options) {
   const pathArray = parseJSONPointer(path)
-
   const parentPath = pathArray.slice(0, pathArray.length - 1)
   const dataPath = toDataPath(data, parentPath)
   const parent = getIn(data, dataPath)
@@ -372,9 +379,7 @@ export function add (data, path, value, options) {
         op: 'replace',
         path: compileJSONPointer(resolvedPath),
         value: dataToJson(oldValue),
-        jsoneditor: {
-          type: oldValue.type
-        }
+        jsoneditor: { type: oldValue.type }
       }]
     }
   }
@@ -414,24 +419,36 @@ export function copy (data, path, from, options) {
  * @private
  */
 export function move (data, path, from, options) {
-  const dataValue = getIn(data, toDataPath(data, parseJSONPointer(from)))
+  const fromArray = parseJSONPointer(from)
+  const dataValue = getIn(data, toDataPath(data, fromArray))
+
+  const parentPath = fromArray.slice(0, fromArray.length - 1)
+  const parent = getIn(data, toDataPath(data, parentPath))
 
   const result1 = remove(data, from)
   const result2 = add(result1.data, path, dataValue, options)
 
+  const before = result1.revert[0].jsoneditor.before
+  const beforeNeeded = (parent.type === 'Object' && before)
+
   if (result2.revert[0].op === 'replace') {
+    const type = result2.revert[0].jsoneditor.type
+
     return {
       data: result2.data,
       revert: [
-        { op: 'move', from: path, path: from },
+        {
+          op: 'move',
+          from: path,
+          path: from
+        },
         {
           op: 'add',
           path,
           value: result2.revert[0].value,
-          jsoneditor: {
-            before: options.before,
-            type: result2.revert[0].jsoneditor.type
-          }
+          jsoneditor: beforeNeeded
+              ? { type, before }
+              : { type }
         }
       ]
     }
@@ -439,16 +456,9 @@ export function move (data, path, from, options) {
   else { // result2.revert[0].op === 'remove'
     return {
       data: result2.data,
-      revert: [
-        {
-          op: 'move',
-          from: path,
-          path: from,
-          jsoneditor: {
-            before: options.before
-          }
-        }
-      ]
+      revert: beforeNeeded
+          ? [{ op: 'move', from: path, path: from, jsoneditor: {before} }]
+          : [{ op: 'move', from: path, path: from }]
     }
   }
 }
@@ -461,17 +471,16 @@ export function move (data, path, from, options) {
  * @param {*} value
  */
 export function test (data, path, value) {
-  const pathArray = parseJSONPointer(path)
-  const actualValue = getIn(data, toDataPath(data, pathArray))
-
   if (value === undefined) {
     throw new Error('Test failed, no value provided')
   }
 
-  if (actualValue === undefined) {
+  const pathArray = parseJSONPointer(path)
+  if (!pathExists(data, pathArray)) {
     throw new Error('Test failed, path not found')
   }
 
+  const actualValue = getIn(data, toDataPath(data, pathArray))
   if (!isEqual(dataToJson(actualValue), value)) {
     throw new Error('Test failed, value differs')
   }
