@@ -48,7 +48,7 @@ var compiler = webpack({
   },
   plugins: [
     bannerPlugin,
-    // new webpack.optimize.UglifyJsPlugin()   // TODO: don't minify when watching
+    new webpack.optimize.UglifyJsPlugin()   // TODO: don't minify when watching
   ],
   module: {
     loaders: loaders
@@ -71,7 +71,8 @@ var compilerMinimalist = webpack({
     bannerPlugin,
     new webpack.IgnorePlugin(new RegExp('^brace$')),
     new webpack.IgnorePlugin(new RegExp('^ajv')),
-    // new webpack.optimize.UglifyJsPlugin()   // TODO: don't minify when watching
+    new webpack.IgnorePlugin(new RegExp('jsonlint$')),
+    new webpack.optimize.UglifyJsPlugin()   // TODO: don't minify when watching
   ],
   module: {
     loaders: loaders
