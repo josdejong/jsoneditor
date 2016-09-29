@@ -1,6 +1,7 @@
 import { h, Component } from 'preact'
 
-import ContextMenu from './ContextMenu'
+import ActionMenu from './menu/ActionMenu'
+import AppendActionMenu from './menu/AppendActionMenu'
 import { escapeHTML, unescapeHTML } from './utils/stringUtils'
 import { getInnerText } from './utils/domUtils'
 import { stringConvert, valueType, isUrl } from  './utils/typeUtils'
@@ -56,7 +57,7 @@ export default class JSONNode extends Component {
     const contents = [
       h('div', {class: 'jsoneditor-node jsoneditor-object'}, [
         this.renderExpandButton(),
-        this.renderContextMenuButton(),
+        this.renderActionMenuButton(),
         this.renderProperty(prop, data, options),
         this.renderReadonly(`{${childCount}}`, `Array containing ${childCount} items`)
       ])
@@ -92,7 +93,7 @@ export default class JSONNode extends Component {
     const contents = [
       h('div', {class: 'jsoneditor-node jsoneditor-array'}, [
         this.renderExpandButton(),
-        this.renderContextMenuButton(),
+        this.renderActionMenuButton(),
         this.renderProperty(prop, data, options),
         this.renderReadonly(`[${childCount}]`, `Array containing ${childCount} items`)
       ])
@@ -126,7 +127,7 @@ export default class JSONNode extends Component {
     return h('li', {}, [
       h('div', {class: 'jsoneditor-node'}, [
         this.renderPlaceholder(),
-        this.renderContextMenuButton(),
+        this.renderActionMenuButton(),
         this.renderProperty(prop, data, options),
         this.renderSeparator(),
         this.renderValue(data.value)
@@ -279,12 +280,12 @@ export default class JSONNode extends Component {
     )
   }
 
-  renderContextMenuButton () {
+  renderActionMenuButton () {
     const className = 'jsoneditor-button jsoneditor-contextmenu' +
         (this.state.menu ? ' jsoneditor-visible' : '')
 
     return h('div', {class: 'jsoneditor-button-container'}, [
-      this.renderContextMenu(this.state.menu),
+      this.renderActionMenu(),
       h('button', {class: className, onClick: this.handleContextMenu})
     ])
   }
@@ -299,187 +300,33 @@ export default class JSONNode extends Component {
     ])
   }
 
-  renderContextMenu () {
-    if (!this.state.menu) {
+  renderActionMenu () {
+    if (this.state.menu) {
+      return h(ActionMenu, {
+        anchor: this.state.menu.anchor,
+        root: this.state.menu.root,
+        path: this.getPath(),
+        type: this.props.data.type,
+        events: this.props.events
+      })
+    }
+    else {
       return null
     }
-
-    const {anchor, root} = this.state.menu
-    const path = this.getPath()
-    const hasParent = this.props.parent !== null
-    const type = this.props.data.type
-    const events = this.props.events
-    const items = [] // array with menu items
-
-    items.push({
-      text: 'Type',
-      title: 'Change the type of this field',
-      className: 'jsoneditor-type-' + type,
-      submenu: [
-        {
-          text: 'Value',
-          className: 'jsoneditor-type-value' + (type == 'value' ? ' jsoneditor-selected' : ''),
-          title: TYPE_TITLES.value,
-          click: () => events.onChangeType(path, 'value')
-        },
-        {
-          text: 'Array',
-          className: 'jsoneditor-type-Array' + (type == 'Array' ? ' jsoneditor-selected' : ''),
-          title: TYPE_TITLES.array,
-          click: () => events.onChangeType(path, 'Array')
-        },
-        {
-          text: 'Object',
-          className: 'jsoneditor-type-Object' + (type == 'Object' ? ' jsoneditor-selected' : ''),
-          title: TYPE_TITLES.object,
-          click: () => events.onChangeType(path, 'Object')
-        },
-        {
-          text: 'String',
-          className: 'jsoneditor-type-string' + (type == 'string' ? ' jsoneditor-selected' : ''),
-          title: TYPE_TITLES.string,
-          click: () => events.onChangeType(path, 'string')
-        }
-      ]
-    })
-
-    if (type === 'Array' || type === 'Object') {
-      var direction = ((this.sortOrder == 'asc') ? 'desc': 'asc')
-      items.push({
-        text: 'Sort',
-        title: 'Sort the childs of this ' + TYPE_TITLES.type,
-        className: 'jsoneditor-sort-' + direction,
-        click: () => events.onSort(path),
-        submenu: [
-          {
-            text: 'Ascending',
-            className: 'jsoneditor-sort-asc',
-            title: 'Sort the childs of this ' + TYPE_TITLES.type + ' in ascending order',
-            click: () => events.onSort(path, 'asc')
-          },
-          {
-            text: 'Descending',
-            className: 'jsoneditor-sort-desc',
-            title: 'Sort the childs of this ' + TYPE_TITLES.type +' in descending order',
-            click: () => events.onSort(path, 'desc')
-          }
-        ]
-      })
-    }
-
-    if (hasParent) {
-      if (items.length) {
-        // create a separator
-        items.push({
-          'type': 'separator'
-        })
-      }
-
-      // create insert button
-      items.push({
-        text: 'Insert',
-        title: 'Insert a new item with type \'value\' after this item (Ctrl+Ins)',
-        submenuTitle: 'Select the type of the item to be inserted',
-        className: 'jsoneditor-insert',
-        click: () => events.onInsert(path, 'value'),
-        submenu: [
-          {
-            text: 'Value',
-            className: 'jsoneditor-type-value',
-            title: TYPE_TITLES.value,
-            click: () => events.onInsert(path, 'value')
-          },
-          {
-            text: 'Array',
-            className: 'jsoneditor-type-Array',
-            title: TYPE_TITLES.array,
-            click: () => events.onInsert(path, 'Array')
-          },
-          {
-            text: 'Object',
-            className: 'jsoneditor-type-Object',
-            title: TYPE_TITLES.object,
-            click: () => events.onInsert(path, 'Object')
-          },
-          {
-            text: 'String',
-            className: 'jsoneditor-type-string',
-            title: TYPE_TITLES.string,
-            click: () => events.onInsert(path, 'string')
-          }
-        ]
-      })
-
-      // create duplicate button
-      items.push({
-        text: 'Duplicate',
-        title: 'Duplicate this item (Ctrl+D)',
-        className: 'jsoneditor-duplicate',
-        click: () => events.onDuplicate(path)
-      })
-
-      // create remove button
-      items.push({
-        text: 'Remove',
-        title: 'Remove this item (Ctrl+Del)',
-        className: 'jsoneditor-remove',
-        click: () => events.onRemove(path)
-      })
-    }
-
-    // TODO: implement a hook to adjust the context menu
-
-    return h(ContextMenu, {anchor, root, items})
   }
 
   renderAppendContextMenu () {
-    if (!this.state.appendMenu) {
+    if (this.state.appendMenu) {
+      return h(AppendActionMenu, {
+        anchor: this.state.menu.anchor,
+        root: this.state.menu.root,
+        path: this.getPath(),
+        events: this.props.events
+      })
+    }
+    else {
       return null
     }
-
-    const {anchor, root} = this.state.appendMenu
-    const path = this.getPath()
-    const events = this.props.events
-    const items = [] // array with menu items
-
-    // create insert button
-    items.push({
-      text: 'Insert',
-      title: 'Insert a new item with type \'value\' after this item (Ctrl+Ins)',
-      submenuTitle: 'Select the type of the item to be inserted',
-      className: 'jsoneditor-insert',
-      click: () => events.onAppend(path, 'value'),
-      submenu: [
-        {
-          text: 'Value',
-          className: 'jsoneditor-type-value',
-          title: TYPE_TITLES.value,
-          click: () => events.onAppend(path, 'value')
-        },
-        {
-          text: 'Array',
-          className: 'jsoneditor-type-Array',
-          title: TYPE_TITLES.array,
-          click: () => events.onAppend(path, 'Array')
-        },
-        {
-          text: 'Object',
-          className: 'jsoneditor-type-Object',
-          title: TYPE_TITLES.object,
-          click: () => events.onAppend(path, 'Object')
-        },
-        {
-          text: 'String',
-          className: 'jsoneditor-type-string',
-          title: TYPE_TITLES.string,
-          click: () => events.onAppend(path, 'string')
-        }
-      ]
-    })
-
-    // TODO: implement a hook to adjust the context menu
-
-    return h(ContextMenu, {anchor, root, items})
   }
 
   shouldComponentUpdate(nextProps, nextState) {

@@ -2,7 +2,7 @@ import { h, Component } from 'preact'
 
 export let CONTEXT_MENU_HEIGHT = 240
 
-export default class ContextMenu extends Component {
+export default class Menu extends Component {
   constructor(props) {
     super(props)
 
@@ -23,9 +23,14 @@ export default class ContextMenu extends Component {
 
     this.renderMenuItem = this.renderMenuItem.bind(this)
   }
-  
-  render () {
-    if (!this.props.items) {
+
+  /**
+   * @param {{items: Array}} props
+   * @param state
+   * @return {*}
+   */
+  render (props, state) {
+    if (!props.items) {
       return null
     }
 
@@ -36,7 +41,7 @@ export default class ContextMenu extends Component {
         ((this.state.orientation === 'top') ? 'jsoneditor-contextmenu-top' : 'jsoneditor-contextmenu-bottom')
 
     return h('div', {class: className},
-      this.props.items.map(this.renderMenuItem)
+      props.items.map(this.renderMenuItem)
     )
   }
 
