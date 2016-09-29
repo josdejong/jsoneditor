@@ -37,10 +37,14 @@
       window.patch = patch
       window.revert = revert
     },
+    onChangeMode: function (mode, prevMode) {
+      console.log('switched mode from', prevMode, 'to', mode)
+    },
     onError: function (err) {
       console.error(err)
       alert(err)
     },
+    modes: ['text', 'tree'],
     indentation: 4
   }
   const editor = jsoneditor(container, options)

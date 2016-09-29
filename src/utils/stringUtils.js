@@ -110,3 +110,12 @@ export function findUniqueName (name, invalidNames) {
 
   return validName
 }
+
+/**
+ * Transform a text into lower case with the first character upper case
+ * @param {string} text
+ * @return {string}
+ */
+export function toCapital(text) {
+  return text[0].toUpperCase() + text.substr(1).toLowerCase()
+}

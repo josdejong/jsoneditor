@@ -32,6 +32,7 @@
  *
  * @typedef {{
  *   mode: 'tree' | 'text',
+ *   modes: string[],
  *   indentation: number | string,
  *   onChange: function (patch: JSONPatch, revert: JSONPatch),
  *   onError:  function (err: Error)

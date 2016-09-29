@@ -20,8 +20,6 @@ export default class Menu extends Component {
       expanding: null,  // menu index of expanding menu item
       collapsing: null  // menu index of collapsing menu item
     }
-
-    this.renderMenuItem = this.renderMenuItem.bind(this)
   }
 
   /**
@@ -45,7 +43,7 @@ export default class Menu extends Component {
     )
   }
 
-  renderMenuItem (item, index) {
+  renderMenuItem = (item, index) => {
     if (item.type === 'separator') {
       return h('div', {class: 'jsoneditor-menu-separator'})
     }

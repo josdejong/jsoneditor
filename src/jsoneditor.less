@@ -306,6 +306,11 @@ div.jsoneditor-contextmenu.jsoneditor-contextmenu-top {
   bottom: 20px;
 }
 
+div.jsoneditor-modemenu.jsoneditor-modemenu {
+  top: 26px;
+  left: 0;
+}
+
 div.jsoneditor-menu-item {
   line-height: 0;
   font-size: 0;
@@ -500,6 +505,28 @@ button.jsoneditor-type-Array.jsoneditor-selected span.jsoneditor-icon {
   background-position: -96px 0;
 }
 
+div.jsoneditor-modes {
+  position: relative;
+  display: inline-block;
+  vertical-align: top;
+
+  button {
+    background: none;
+    width: auto;
+    padding: 2px 6px;
+  }
+
+  button.jsoneditor-type-modes {
+    width: 120px;
+    height: auto;
+    padding: 2px 6px;
+    border-radius: 0;
+
+    &:hover {
+      border: none;
+    }
+  }
+}
 
 textarea.jsoneditor-text {
   width: 100%;

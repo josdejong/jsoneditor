@@ -6,6 +6,7 @@ import {
   duplicate, insert, append, remove, changeType, changeValue, changeProperty, sort
 } from './actions'
 import JSONNode from './JSONNode'
+import ModeButton from './menu/ModeButton'
 import { parseJSON } from './utils/jsonUtils'
 
 const MAX_HISTORY_ITEMS = 1000   // maximum number of undo/redo items to be kept in memory
@@ -16,11 +17,11 @@ export default class TreeMode extends Component {
   constructor (props) {
     super(props)
 
-    const expand = this.props.options && this.props.options.expand || TreeMode.expand
+    const expand = this.props.options.expand || TreeMode.expand
     const data = jsonToData(this.props.data || {}, expand, [])
 
     this.state = {
-      options: {
+      nodeOptions: {
         name: null
       },
 
@@ -28,7 +29,7 @@ export default class TreeMode extends Component {
 
       history: [data],
       historyIndex: 0,
-      
+
       events: {
         onChangeProperty: this.handleChangeProperty,
         onChangeValue: this.handleChangeValue,
@@ -49,44 +50,65 @@ export default class TreeMode extends Component {
   render (props, state) {
     // TODO: make mode tree dynamic
     return h('div', {class: 'jsoneditor jsoneditor-mode-tree'}, [
-      h('div', {class: 'jsoneditor-menu'}, [
-          h('button', {
-            class: 'jsoneditor-expand-all',
-            title: 'Expand all objects and arrays',
-            onClick: this.handleExpandAll
-          }),
-          h('button', {
-            class: 'jsoneditor-collapse-all',
-            title: 'Collapse all objects and arrays',
-            onClick: this.handleCollapseAll
-          }),
-          h('div', {class: 'jsoneditor-vertical-menu-separator'}),
-          h('button', {
-            class: 'jsoneditor-undo',
-            title: 'Undo last action',
-            disabled: !this.canUndo(),
-            onClick: this.undo
-          }),
-          h('button', {
-            class: 'jsoneditor-redo',
-            title: 'Redo',
-            disabled: !this.canRedo(),
-            onClick: this.redo
-          })
-      ]),
+      this.renderMenu(),
 
-      h('div', {class: 'jsoneditor-contents jsoneditor-tree-contents', onClick: JSONNode.hideContextMenu}, [
+      h('div', {class: 'jsoneditor-contents jsoneditor-tree-contents', onClick: this.handleHideMenus}, [
         h('ul', {class: 'jsoneditor-list jsoneditor-root'}, [
           h(JSONNode, {
             data: state.data,
             events: state.events,
-            options: state.options,
+            options: state.nodeOptions,
             parent: null,
             prop: null
           })
         ])
       ])
     ])
+  }
+
+  renderMenu () {
+    return h('div', {class: 'jsoneditor-menu'}, [
+      h('button', {
+        class: 'jsoneditor-expand-all',
+        title: 'Expand all objects and arrays',
+        onClick: this.handleExpandAll
+      }),
+      h('button', {
+        class: 'jsoneditor-collapse-all',
+        title: 'Collapse all objects and arrays',
+        onClick: this.handleCollapseAll
+      }),
+
+      h('div', {class: 'jsoneditor-vertical-menu-separator'}),
+
+      h('div', {style: 'display:inline-block'}, [
+        h('button', {
+          class: 'jsoneditor-undo',
+          title: 'Undo last action',
+          disabled: !this.canUndo(),
+          onClick: this.undo
+        }),
+      ]),
+      h('button', {
+        class: 'jsoneditor-redo',
+        title: 'Redo',
+        disabled: !this.canRedo(),
+        onClick: this.redo
+      }),
+
+      h('div', {class: 'jsoneditor-vertical-menu-separator'}),
+
+      this.props.options.modes && h(ModeButton, {
+        modes: this.props.options.modes,
+        mode: this.props.mode,
+        onMode: this.props.onMode
+      })
+    ])
+  }
+
+  /** @private */
+  handleHideMenus = () => {
+    JSONNode.hideActionMenu()
   }
 
   /** @private */
@@ -184,7 +206,7 @@ export default class TreeMode extends Component {
    * @private
    */
   emitOnChange (patch, revert) {
-    if (this.props.options && this.props.options.onChange) {
+    if (this.props.options.onChange) {
       this.props.options.onChange(patch, revert)
     }
   }
@@ -275,7 +297,7 @@ export default class TreeMode extends Component {
     const data = jsonToData(json, options.expand || TreeMode.expand, [])
 
     this.setState({
-      options: setIn(this.state.options, ['name'], name),
+      nodeOptions: setIn(this.state.nodeOptions, ['name'], name),
 
       data,
       // TODO: do we want to keep history when .set(json) is called?
@@ -305,7 +327,7 @@ export default class TreeMode extends Component {
    * @return {string} text
    */
   getText () {
-    const indentation = this.props.options && this.props.options.indentation || 2
+    const indentation = this.props.options.indentation || 2
     return JSON.stringify(this.get(), null, indentation)
   }
 

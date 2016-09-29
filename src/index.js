@@ -17,7 +17,7 @@ const modes = {
  * @return {Object}
  * @constructor
  */
-function jsoneditor (container, options) {
+function jsoneditor (container, options = {}) {
 
   const editor = {
     isJSONEditor: true,
@@ -132,7 +132,11 @@ function jsoneditor (container, options) {
 
       // create new component
       element = render(
-          h(constructor, {options: editor._options}),
+          h(constructor, {
+            mode,
+            options: editor._options,
+            onMode: editor.setMode
+          }),
           editor._container)
 
       // set JSON (this can throw an error)
@@ -150,9 +154,14 @@ function jsoneditor (container, options) {
           editor._element.parentNode.removeChild(editor._element)
         }
 
+        const prevMode = editor._mode
         editor._mode = mode
         editor._element = element
         editor._component = element._component
+
+        if (editor._options.onChangeMode && prevMode) {
+          editor._options.onChangeMode(mode, prevMode)
+        }
       }
       else {
         // remove the just created component (where setText failed)

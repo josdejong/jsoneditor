@@ -1,6 +1,7 @@
 import { h, Component } from 'preact'
 import { parseJSON } from './utils/jsonUtils'
 import { jsonToData, dataToJson, patchData } from './jsonData'
+import ModeButton from './menu/ModeButton'
 
 export default class TextMode extends Component {
   // TODO: define propTypes
@@ -25,8 +26,19 @@ export default class TextMode extends Component {
           class: 'jsoneditor-compact',
           title: 'Compact the JSON document',
           onClick: this.handleCompact
+        }),
+
+        // TODO: implement a button "Fix JSON"
+
+        h('div', {class: 'jsoneditor-vertical-menu-separator'}),
+
+        this.props.options.modes && h(ModeButton, {
+          open: this.state.modeMenuOpen,
+          modes: this.props.options.modes,
+          mode: this.props.mode,
+          onMode: this.props.onMode,
+          onClick: this.handleShowModeMenu
         })
-          // TODO: implement a button "Fix JSON"
       ]),
 
       h('div', {class: 'jsoneditor-contents'}, [

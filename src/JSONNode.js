@@ -397,11 +397,11 @@ export default class JSONNode extends Component {
 
     if (this.state.menu) {
       // hide context menu
-      JSONNode.hideContextMenu()
+      JSONNode.hideActionMenu()
     }
     else {
       // hide any currently visible context menu
-      JSONNode.hideContextMenu()
+      JSONNode.hideActionMenu()
 
       // show context menu
       this.setState({
@@ -419,11 +419,11 @@ export default class JSONNode extends Component {
 
     if (this.state.appendMenu) {
       // hide append context menu
-      JSONNode.hideContextMenu()
+      JSONNode.hideActionMenu()
     }
     else {
       // hide any currently visible context menu
-      JSONNode.hideContextMenu()
+      JSONNode.hideActionMenu()
 
       // show append context menu
       this.setState({
@@ -439,7 +439,7 @@ export default class JSONNode extends Component {
   /**
    * Singleton function to hide the currently visible context menu if any.
    */
-  static hideContextMenu () {
+  static hideActionMenu () {
     if (activeContextMenu) {
       activeContextMenu.setState({
         menu: null,
@@ -499,10 +499,11 @@ export default class JSONNode extends Component {
    * Search is done based on the CSS class 'jsoneditor'
    * @param event
    * @return {*}
-   * @private
    */
+  // TODO: move to TreeMode?
   static findRootElement (event) {
     function isEditorElement (elem) {
+      // FIXME: this is a bit tricky. can we use a special attribute or something?
       return elem.className.split(' ').indexOf('jsoneditor') !== -1
     }
 
