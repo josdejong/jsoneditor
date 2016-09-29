@@ -33,11 +33,10 @@ export default class TextMode extends Component {
         h('div', {class: 'jsoneditor-vertical-menu-separator'}),
 
         this.props.options.modes && h(ModeButton, {
-          open: this.state.modeMenuOpen,
           modes: this.props.options.modes,
           mode: this.props.mode,
           onMode: this.props.onMode,
-          onClick: this.handleShowModeMenu
+          onError: this.handleError
         })
       ]),
 
@@ -92,7 +91,7 @@ export default class TextMode extends Component {
   }
 
   /** @private */
-  handleError (err) {
+  handleError = (err) => {
     if (this.props.options && this.props.options.onError) {
       this.props.options.onError(err)
     }

@@ -3,7 +3,7 @@ import { toCapital } from '../utils/stringUtils'
 
 export default class ModeMenu extends Component {
   /**
-   * @param {{open, modes, mode, onMode}} props
+   * @param {{open, modes, mode, onMode, onError}} props
    * @param {Obect} state
    * @return {JSX.Element}
    */
@@ -15,8 +15,13 @@ export default class ModeMenu extends Component {
           class: 'jsoneditor-menu-button jsoneditor-type-modes' +
               ((mode === props.mode) ? ' jsoneditor-selected' : ''),
           onClick: () => {
-            props.onMode(mode)
-            this.setState({ open: false })
+            try {
+              props.onMode(mode)
+              this.setState({ open: false })
+            }
+            catch (err) {
+              props.onError(err)
+            }
           }
         }, toCapital(mode))
       })

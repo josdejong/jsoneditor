@@ -101,7 +101,8 @@ export default class TreeMode extends Component {
       this.props.options.modes && h(ModeButton, {
         modes: this.props.options.modes,
         mode: this.props.mode,
-        onMode: this.props.onMode
+        onMode: this.props.onMode,
+        onError: this.handleError
       })
     ])
   }
@@ -197,6 +198,16 @@ export default class TreeMode extends Component {
     const revert = this.patch(actions)
 
     this.emitOnChange (actions, revert)
+  }
+
+  /** @private */
+  handleError = (err) => {
+    if (this.props.options && this.props.options.onError) {
+      this.props.options.onError(err)
+    }
+    else {
+      console.error(err)
+    }
   }
 
   /**
