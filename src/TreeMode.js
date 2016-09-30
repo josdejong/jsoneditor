@@ -198,9 +198,9 @@ export default class TreeMode extends Component {
    */
   handlePatch = (actions) => {
     // apply changes
-    const revert = this.patch(actions)
+    const result = this.patch(actions)
 
-    this.emitOnChange (actions, revert)
+    this.emitOnChange (actions, result.revert)
   }
 
   /** @private */

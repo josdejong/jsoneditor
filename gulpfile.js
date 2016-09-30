@@ -71,7 +71,6 @@ var compilerMinimalist = webpack({
     bannerPlugin,
     new webpack.NormalModuleReplacementPlugin(new RegExp('^brace$'), EMPTY),
     new webpack.NormalModuleReplacementPlugin(new RegExp('^ajv'), EMPTY),
-    new webpack.NormalModuleReplacementPlugin(new RegExp('jsonlint$'), EMPTY),
     new webpack.optimize.UglifyJsPlugin()   // TODO: don't minify when watching
   ],
   module: {

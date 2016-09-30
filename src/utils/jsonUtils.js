@@ -1,4 +1,4 @@
-let jsonlint = require('../assets/jsonlint/jsonlint')
+import jsonlint from '../assets/jsonlint/jsonlint'
 
 /**
  * Parse JSON using the parser built-in in the browser.
@@ -28,11 +28,11 @@ export function parseJSON(jsonString) {
  * @throws Error
  */
 export function validate(jsonString) {
-  if (jsonlint && jsonlint.parse) {
+  if (jsonlint) {
     // use embedded jsonlint
     jsonlint.parse(jsonString)
   }
-  else if (window.jsonlint && window.jsonlint.parse) {
+  else if (window.jsonlint) {
     // use global jsonlint
     window.jsonlint.parse(jsonString)
   }

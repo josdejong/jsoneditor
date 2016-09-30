@@ -2,7 +2,7 @@
  * Jison generated parser
  * Refactored into an ES6 module
  **/
-export var parser = (function(){
+var parser = (function(){
   var parser = {trace: function trace() { },
     yy: {},
     symbols_: {"error":2,"JSONString":3,"STRING":4,"JSONNumber":5,"NUMBER":6,"JSONNullLiteral":7,"NULL":8,"JSONBooleanLiteral":9,"TRUE":10,"FALSE":11,"JSONText":12,"JSONValue":13,"EOF":14,"JSONObject":15,"JSONArray":16,"{":17,"}":18,"JSONMemberList":19,"JSONMember":20,":":21,",":22,"[":23,"]":24,"JSONElementList":25,"$accept":0,"$end":1},
@@ -417,4 +417,8 @@ export var parser = (function(){
   return parser;
 })();
 
-export var parse = parser.parse.bind(parser);
+
+export default {
+  parse: parser.parse.bind(parser),
+  parser
+}
