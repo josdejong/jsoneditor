@@ -4,7 +4,6 @@ var gutil = require('gulp-util');
 var shell = require('gulp-shell');
 var mkdirp = require('mkdirp');
 var webpack = require('webpack');
-var WebpackDevServer = require('webpack-dev-server');
 
 var NAME    = 'jsoneditor';
 var NAME_MINIMALIST = 'jsoneditor-minimalist';
