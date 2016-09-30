@@ -11,6 +11,7 @@ var NAME_MINIMALIST = 'jsoneditor-minimalist';
 var ENTRY   = './src/index.js';
 var HEADER  = './src/header.js';
 var DIST    = './dist';
+var EMPTY = __dirname + '/src/utils/empty.js'
 
 // generate banner with today's date and correct version
 function createBanner() {
@@ -69,9 +70,9 @@ var compilerMinimalist = webpack({
   },
   plugins: [
     bannerPlugin,
-    new webpack.IgnorePlugin(new RegExp('^brace$')),
-    new webpack.IgnorePlugin(new RegExp('^ajv')),
-    new webpack.IgnorePlugin(new RegExp('jsonlint$')),
+    new webpack.NormalModuleReplacementPlugin(new RegExp('^brace$'), EMPTY),
+    new webpack.NormalModuleReplacementPlugin(new RegExp('^ajv'), EMPTY),
+    new webpack.NormalModuleReplacementPlugin(new RegExp('jsonlint$'), EMPTY),
     new webpack.optimize.UglifyJsPlugin()   // TODO: don't minify when watching
   ],
   module: {

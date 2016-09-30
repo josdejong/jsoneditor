@@ -23,18 +23,18 @@
     "test": "ava test/*.test.js test/**/*.test.js --verbose"
   },
   "dependencies": {
-    "ajv": "4.7.0",
+    "ajv": "4.7.5",
     "brace": "0.8.0",
     "javascript-natural-sort": "0.7.1",
-    "lodash": "4.15.0",
-    "preact": "6.0.2"
+    "lodash": "4.16.2",
+    "preact": "6.1.0"
   },
   "devDependencies": {
     "ava": "0.16.0",
-    "babel-core": "6.14.0",
+    "babel-core": "6.16.0",
     "babel-loader": "6.2.5",
-    "babel-preset-stage-2": "6.13.0",
-    "babel-preset-stage-3": "6.11.0",
+    "babel-preset-stage-2": "6.16.0",
+    "babel-preset-stage-3": "6.16.0",
     "css-loader": "0.25.0",
     "gulp": "3.9.1",
     "gulp-shell": "0.5.2",
