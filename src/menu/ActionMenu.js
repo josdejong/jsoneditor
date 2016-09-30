@@ -8,7 +8,7 @@ import {
 
 export default class ActionMenu extends Component {
   /**
-   * @param {{anchor, root, path, type, events}} props
+   * @param {{open, anchor, root, path, type, events, onRequestClose}} props
    * @param state
    * @return {JSX.Element}
    */
@@ -34,8 +34,7 @@ export default class ActionMenu extends Component {
     // TODO: implement a hook to adjust the action menu
 
     return h(Menu, {
-      anchor: props.anchor,
-      root: props.root,
+      ...props,
       items
     })
   }

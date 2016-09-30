@@ -1,4 +1,5 @@
 import { h, Component } from 'preact'
+import { findParentNode } from '../utils/domUtils'
 
 export let CONTEXT_MENU_HEIGHT = 240
 
@@ -6,16 +7,7 @@ export default class Menu extends Component {
   constructor(props) {
     super(props)
 
-    // determine orientation
-    const anchorRect = this.props.anchor.getBoundingClientRect()
-    const rootRect = this.props.root.getBoundingClientRect()
-    const orientation = (rootRect.bottom - anchorRect.bottom < CONTEXT_MENU_HEIGHT &&
-            anchorRect.top - rootRect.top > CONTEXT_MENU_HEIGHT)
-        ? 'top'
-        : 'bottom'
-
     this.state = {
-      orientation,
       expanded: null,   // menu index of expanded menu item
       expanding: null,  // menu index of expanding menu item
       collapsing: null  // menu index of collapsing menu item
@@ -23,22 +15,33 @@ export default class Menu extends Component {
   }
 
   /**
-   * @param {{items: Array}} props
+   * @param {{open: boolean, items: Array, anchor, root, onRequestClose: function}} props
    * @param state
    * @return {*}
    */
   render (props, state) {
-    if (!props.items) {
+    if (!props.open) {
       return null
     }
+
+    // determine orientation
+    const anchorRect = this.props.anchor.getBoundingClientRect()
+    const rootRect = this.props.root.getBoundingClientRect()
+    const orientation = (rootRect.bottom - anchorRect.bottom < CONTEXT_MENU_HEIGHT &&
+    anchorRect.top - rootRect.top > CONTEXT_MENU_HEIGHT)
+        ? 'top'
+        : 'bottom'
 
     // TODO: create a non-visible button to set the focus to the menu
     // TODO: implement (customizable) quick keys
 
-    const className = 'jsoneditor-contextmenu ' +
-        ((this.state.orientation === 'top') ? 'jsoneditor-contextmenu-top' : 'jsoneditor-contextmenu-bottom')
+    const className = 'jsoneditor-actionmenu ' +
+        ((orientation === 'top') ? 'jsoneditor-actionmenu-top' : 'jsoneditor-actionmenu-bottom')
 
-    return h('div', {class: className},
+    return h('div', {
+      class: className,
+      'data-menu': 'true'
+    },
       props.items.map(this.renderMenuItem)
     )
   }
@@ -49,9 +52,15 @@ export default class Menu extends Component {
     }
 
     if (item.click && item.submenu) {
+      // FIXME: don't create functions in the render function
+      const onClick = (event) => {
+        item.click()
+        this.props.onRequestClose()
+      }
+
       // two buttons: direct click and a small button to expand the submenu
       return h('div', {class: 'jsoneditor-menu-item'}, [
-          h('button', {class: 'jsoneditor-menu-button jsoneditor-menu-default ' + item.className, title: item.title, onClick: item.click }, [
+          h('button', {class: 'jsoneditor-menu-button jsoneditor-menu-default ' + item.className, title: item.title, onClick }, [
             h('span', {class: 'jsoneditor-icon'}),
             h('span', {class: 'jsoneditor-text'}, item.text)
           ]),
@@ -73,9 +82,15 @@ export default class Menu extends Component {
       ])
     }
     else {
+      // FIXME: don't create functions in the render function
+      const onClick = (event) => {
+        item.click()
+        this.props.onRequestClose()
+      }
+
       // just a button (no submenu)
       return h('div', {class: 'jsoneditor-menu-item'}, [
-        h('button', {class: 'jsoneditor-menu-button ' + item.className, title: item.title, onClick: item.click }, [
+        h('button', {class: 'jsoneditor-menu-button ' + item.className, title: item.title, onClick }, [
           h('span', {class: 'jsoneditor-icon'}),
           h('span', {class: 'jsoneditor-text'}, item.text)
         ]),
@@ -92,8 +107,14 @@ export default class Menu extends Component {
     const collapsing = this.state.collapsing === index
 
     const contents = submenu.map(item => {
+      // FIXME: don't create functions in the render function
+      const onClick = () => {
+        item.click()
+        this.props.onRequestClose()
+      }
+
       return h('div', {class: 'jsoneditor-menu-item'}, [
-        h('button', {class: 'jsoneditor-menu-button ' + item.className, title: item.title, onClick: item.click }, [
+        h('button', {class: 'jsoneditor-menu-button ' + item.className, title: item.title, onClick }, [
           h('span', {class: 'jsoneditor-icon'}),
           h('span', {class: 'jsoneditor-text'}, item.text)
         ]),
@@ -128,4 +149,49 @@ export default class Menu extends Component {
       }, 300)
     }
   }
+
+  componentDidMount () {
+    this.updateRequestCloseListener()
+  }
+
+  componentDidUpdate () {
+    this.updateRequestCloseListener()
+  }
+
+  componentWillUnmount () {
+    this.removeRequestCloseListener()
+  }
+
+  updateRequestCloseListener () {
+    if (this.props.open) {
+      this.addRequestCloseListener()
+    }
+    else {
+      this.removeRequestCloseListener()
+    }
+  }
+
+  addRequestCloseListener () {
+    if (!this.handleRequestClose) {
+      // Attach event listener on next tick, else the current click to open
+      // the menu will immediately result in requestClose event as well
+      setTimeout(() => {
+        this.handleRequestClose = (event) => {
+          if (!findParentNode(event.target, 'data-menu', 'true')) {
+            this.props.onRequestClose()
+          }
+        }
+        window.addEventListener('click', this.handleRequestClose)
+      }, 0)
+    }
+  }
+
+  removeRequestCloseListener () {
+    if (this.handleRequestClose) {
+      window.removeEventListener('click', this.handleRequestClose)
+      this.handleRequestClose = null
+    }
+  }
+
+  handleRequestClose = null
 }

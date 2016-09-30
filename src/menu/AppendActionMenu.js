@@ -16,8 +16,7 @@ export default class AppendActionMenu extends Component {
     // TODO: implement a hook to adjust the action menu
 
     return h(Menu, {
-      anchor: props.anchor,
-      root: props.root,
+      ...props,
       items
     })
   }

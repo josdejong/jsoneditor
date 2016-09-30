@@ -275,21 +275,21 @@ button.jsoneditor-button.jsoneditor-expanded {
   background-position: -2px -74px;
 }
 
-button.jsoneditor-button.jsoneditor-contextmenu {
+button.jsoneditor-button.jsoneditor-actionmenu {
   background-position: -50px -74px;
 }
 
-button.jsoneditor-button.jsoneditor-contextmenu:hover,
-button.jsoneditor-button.jsoneditor-contextmenu:focus,
-button.jsoneditor-button.jsoneditor-contextmenu.jsoneditor-visible {
+button.jsoneditor-button.jsoneditor-actionmenu:hover,
+button.jsoneditor-button.jsoneditor-actionmenu:focus,
+button.jsoneditor-button.jsoneditor-actionmenu.jsoneditor-visible {
   background-position: -50px -50px;
 }
 
 
 
-/******************************* Context Menu *********************************/
+/******************************* Action Menu **********************************/
 
-div.jsoneditor-contextmenu {
+div.jsoneditor-actionmenu {
   position: absolute;
   box-sizing: border-box;
   z-index: 99999;
@@ -301,7 +301,7 @@ div.jsoneditor-contextmenu {
   box-shadow: 2px 2px 12px rgba(128, 128, 128, 0.3);
 }
 
-div.jsoneditor-contextmenu.jsoneditor-contextmenu-top {
+div.jsoneditor-actionmenu.jsoneditor-actionmenu-top {
   top: auto;
   bottom: 20px;
 }
@@ -521,6 +521,7 @@ div.jsoneditor-modes {
     height: auto;
     padding: 2px 6px;
     border-radius: 0;
+    opacity: 1;
 
     &:hover {
       border: none;

@@ -1,7 +1,7 @@
 import { h, Component } from 'preact'
 
-import ActionMenu from './menu/ActionMenu'
-import AppendActionMenu from './menu/AppendActionMenu'
+import ActionButton from './menu/ActionButton'
+import AppendActionButton from './menu/AppendActionButton'
 import { escapeHTML, unescapeHTML } from './utils/stringUtils'
 import { getInnerText } from './utils/domUtils'
 import { stringConvert, valueType, isUrl } from  './utils/typeUtils'
@@ -34,6 +34,7 @@ export default class JSONNode extends Component {
   constructor (props) {
     super(props)
 
+    // TODO: remove state
     this.state = {
       menu: null,        // context menu
       appendMenu: null,  // append context menu (used in placeholder of empty object/array)
@@ -281,52 +282,18 @@ export default class JSONNode extends Component {
   }
 
   renderActionMenuButton () {
-    const className = 'jsoneditor-button jsoneditor-contextmenu' +
-        (this.state.menu ? ' jsoneditor-visible' : '')
-
-    return h('div', {class: 'jsoneditor-button-container'}, [
-      this.renderActionMenu(),
-      h('button', {class: className, onClick: this.handleContextMenu})
-    ])
+    return h(ActionButton, {
+      path: this.getPath(),
+      type: this.props.data.type,
+      events: this.props.events
+    })
   }
 
   renderAppendContextMenuButton () {
-    const className = 'jsoneditor-button jsoneditor-contextmenu' +
-        (this.state.appendMenu ? ' jsoneditor-visible' : '')
-
-    return h('div', {class: 'jsoneditor-button-container'}, [
-      this.renderAppendContextMenu(),
-      h('button', {class: className, onClick: this.handleAppendContextMenu})
-    ])
-  }
-
-  renderActionMenu () {
-    if (this.state.menu) {
-      return h(ActionMenu, {
-        anchor: this.state.menu.anchor,
-        root: this.state.menu.root,
-        path: this.getPath(),
-        type: this.props.data.type,
-        events: this.props.events
-      })
-    }
-    else {
-      return null
-    }
-  }
-
-  renderAppendContextMenu () {
-    if (this.state.appendMenu) {
-      return h(AppendActionMenu, {
-        anchor: this.state.menu.anchor,
-        root: this.state.menu.root,
-        path: this.getPath(),
-        events: this.props.events
-      })
-    }
-    else {
-      return null
-    }
+    return h(AppendActionButton, {
+      path: this.getPath(),
+      events: this.props.events
+    })
   }
 
   shouldComponentUpdate(nextProps, nextState) {
@@ -500,7 +467,7 @@ export default class JSONNode extends Component {
    * @param event
    * @return {*}
    */
-  // TODO: move to TreeMode?
+  // TODO: cleanup
   static findRootElement (event) {
     function isEditorElement (elem) {
       // FIXME: this is a bit tricky. can we use a special attribute or something?

@@ -1,10 +1,11 @@
 import { h, Component } from 'preact'
 import { toCapital } from '../utils/stringUtils'
+import { findParentNode } from '../utils/domUtils'
 
 export default class ModeMenu extends Component {
   /**
-   * @param {{open, modes, mode, onMode, onError}} props
-   * @param {Obect} state
+   * @param {{open, modes, mode, onMode, onRequestClose, onError}} props
+   * @param {Object} state
    * @return {JSX.Element}
    */
   render (props, state) {
@@ -17,7 +18,7 @@ export default class ModeMenu extends Component {
           onClick: () => {
             try {
               props.onMode(mode)
-              this.setState({ open: false })
+              props.onRequestClose()
             }
             catch (err) {
               props.onError(err)
@@ -27,8 +28,8 @@ export default class ModeMenu extends Component {
       })
 
       return h('div', {
-        class: 'jsoneditor-contextmenu jsoneditor-modemenu',
-        'isnodemenu': 'true',
+        class: 'jsoneditor-actionmenu jsoneditor-modemenu',
+        nodemenu: 'true',
       }, items)
     }
     else {
@@ -63,7 +64,7 @@ export default class ModeMenu extends Component {
       // the menu will immediately result in requestClose event as well
       setTimeout(() => {
         this.handleRequestClose = (event) => {
-          if (!ModeMenu.inNodeMenu(event.target)) {
+          if (!findParentNode(event.target, 'data-menu', 'true')) {
             this.props.onRequestClose()
           }
         }
@@ -77,25 +78,6 @@ export default class ModeMenu extends Component {
       window.removeEventListener('click', this.handleRequestClose)
       this.handleRequestClose = null
     }
-  }
-
-  /**
-   * Test whether any of the parent nodes of this element is the root of the
-   * NodeMenu (has an attribute isNodeMenu:true)
-   * @param elem
-   * @return {boolean}
-   */
-  static inNodeMenu (elem) {
-    let parent = elem
-
-    while (parent && parent.getAttribute) {
-      if (parent.getAttribute('isnodemenu')) {
-        return true
-      }
-      parent = parent.parentNode
-    }
-
-    return false
   }
 
   handleRequestClose = null

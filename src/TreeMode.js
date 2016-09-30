@@ -49,7 +49,10 @@ export default class TreeMode extends Component {
 
   render (props, state) {
     // TODO: make mode tree dynamic
-    return h('div', {class: 'jsoneditor jsoneditor-mode-tree'}, [
+    return h('div', {
+      class: 'jsoneditor jsoneditor-mode-tree',
+      'data-jsoneditor': 'true'
+    }, [
       this.renderMenu(),
 
       h('div', {class: 'jsoneditor-contents jsoneditor-tree-contents', onClick: this.handleHideMenus}, [

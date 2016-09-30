@@ -69,6 +69,31 @@ export function getInnerText (element, buffer) {
   return ''
 }
 
+
+
+/**
+ * Find the parent node of an element which has an attribute with given value.
+ * Can return the element itself too.
+ * @param {Element} elem
+ * @param {string} attr
+ * @param {string} value
+ * @return {Element | null} Returns the parent element when found,
+ *                          or null otherwise
+ */
+export function findParentNode (elem, attr, value) {
+  let parent = elem
+
+  while (parent && parent.getAttribute) {
+    if (parent.getAttribute(attr) == value) {
+      return parent
+    }
+    parent = parent.parentNode
+  }
+
+  return null
+}
+
+
 /**
  * Returns the version of Internet Explorer or a -1
  * (indicating the use of another browser).
