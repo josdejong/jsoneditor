@@ -5,9 +5,9 @@ import TreeMode from './TreeMode'
 
 import '!style!css!less!./jsoneditor.less'
 
-// TODO: allow adding new modes
 const modes = {
   code: CodeMode,
+  form: TreeMode,
   text: TextMode,
   tree: TreeMode,
   view: TreeMode

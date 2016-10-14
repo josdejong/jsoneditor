@@ -6,7 +6,8 @@ import {
   duplicate, insert, append, remove, changeType, changeValue, changeProperty, sort
 } from './actions'
 import JSONNode from './JSONNode'
-import JSONNodeViewer from './JSONNodeViewer'
+import JSONNodeView from './JSONNodeView'
+import JSONNodeForm from './JSONNodeForm'
 import ModeButton from './menu/ModeButton'
 import { parseJSON } from './utils/jsonUtils'
 
@@ -47,10 +48,11 @@ export default class TreeMode extends Component {
   }
 
   render (props, state) {
-    console.log('mode', props.mode)
-    const Node = props.mode === 'view'
-        ? JSONNodeViewer
-        : JSONNode
+    const Node = (props.mode === 'view')
+        ? JSONNodeView
+        : (props.mode === 'form')
+            ? JSONNodeForm
+            : JSONNode
 
     return h('div', {
       class: `jsoneditor jsoneditor-mode-${props.mode}`,

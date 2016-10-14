@@ -23,9 +23,10 @@
 
   <label for="mode">mode:
     <select id="mode">
-      <option value="code">code</option>
       <option value="text">text</option>
+      <option value="code">code</option>
       <option value="tree" selected>tree</option>
+      <option value="form">form</option>
       <option value="view">view</option>
     </select>
   </label>
@@ -54,7 +55,7 @@
       alert(err)
     },
     mode: mode,
-    modes: ['text', 'code', 'tree', 'view'],
+    modes: ['text', 'code', 'tree', 'form', 'view'],
     indentation: 4
   }
   const editor = jsoneditor(container, options)
