@@ -31,13 +31,13 @@
  * }} JSONPatchResult
  *
  * @typedef {{
- *   mode: 'code' | 'form' | 'text' | 'tree' | 'view',
- *   modes: string[],
- *   indentation: number | string,
- *   onChange: function (patch: JSONPatch, revert: JSONPatch),
- *   onChangeText: function (),
- *   onChangeMode: function (mode: string, prevMode: string),
- *   onError:  function (err: Error)
+ *   mode?: 'code' | 'form' | 'text' | 'tree' | 'view',
+ *   modes?: string[],
+ *   indentation?: number | string,
+ *   onChange?: function (patch: JSONPatch, revert: JSONPatch),
+ *   onChangeText?: function (),
+ *   onChangeMode?: function (mode: string, prevMode: string),
+ *   onError?:  function (err: Error)
  * }} Options
  *
  * @typedef {{

@@ -21,9 +21,9 @@
 
 <script>
   // create the editor
-  var container = document.getElementById('jsoneditor');
-  var options = {};
-  var editor = jsoneditor(container, options);
+  var container = document.getElementById('jsoneditor')
+  var options = {}
+  var editor = jsoneditor(container, options)
 
   // set json
   document.getElementById('setJSON').onclick = function () {
@@ -34,15 +34,15 @@
       'number': 123,
       'object': {'a': 'b', 'c': 'd'},
       'string': 'Hello World'
-    };
-    editor.set(json);
-  };
+    }
+    editor.set(json)
+  }
 
   // get json
   document.getElementById('getJSON').onclick = function () {
-    var json = editor.get();
-    alert(JSON.stringify(json, null, 2));
-  };
+    var json = editor.get()
+    alert(JSON.stringify(json, null, 2))
+  }
 </script>
 </body>
 </html>

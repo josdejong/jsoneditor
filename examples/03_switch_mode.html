@@ -37,18 +37,20 @@
 <div id="jsoneditor"></div>
 
 <script>
-  var container = document.getElementById('jsoneditor');
+  var container = document.getElementById('jsoneditor')
 
   var options = {
     mode: 'tree',
-    modes: ['code', 'form', 'text', 'tree', 'view'], // allowed modes
+    modes: ['text', 'code', 'tree', 'form', 'view'], // allowed modes
     onError: function (err) {
-      alert(err.toString());
+      alert(err.toString())
     },
-    onModeChange: function (newMode, oldMode) {
-      console.log('Mode switched from', oldMode, 'to', newMode);
+    onChangeMode: function (mode, prevMode) {
+      console.log('Mode switched from', prevMode, 'to', mode)
     }
-  };
+  }
+
+  var editor = jsoneditor(container, options)
 
   var json = {
     "array": [1, 2, 3],
@@ -57,9 +59,9 @@
     "number": 123,
     "object": {"a": "b", "c": "d"},
     "string": "Hello World"
-  };
+  }
 
-  var editor = jsoneditor(container, options, json);
+  editor.set(json)
 </script>
 </body>
 </html>

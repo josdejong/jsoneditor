@@ -17,16 +17,18 @@
 </head>
 <body>
 <p>
-  This editor is read-only (mode='viewer').
+  This editor is read-only (mode='view').
 </p>
 <div id="jsoneditor"></div>
 
 <script>
-  var container = document.getElementById('jsoneditor');
+  var container = document.getElementById('jsoneditor')
 
   var options = {
     mode: 'view'
-  };
+  }
+
+  var editor = jsoneditor(container, options)
 
   var json = {
     'array': [1, 2, 3],
@@ -35,9 +37,9 @@
     'number': 123,
     'object': {'a': 'b', 'c': 'd'},
     'string': 'Hello World'
-  };
+  }
+  editor.set(json)
 
-  var editor = jsoneditor(container, options, json);
 </script>
 </body>
 </html>

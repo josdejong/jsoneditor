@@ -1,8 +1,9 @@
-var module = '../../../dist/jsoneditor';
+var module = '../../../dist/jsoneditor'
+
 require([module], function (jsoneditor) {
   // create the editor
-  var container = document.getElementById('jsoneditor');
-  var editor = jsoneditor(container);
+  var container = document.getElementById('jsoneditor')
+  var editor = jsoneditor(container)
 
   // set json
   document.getElementById('setJSON').onclick = function () {
@@ -14,12 +15,12 @@ require([module], function (jsoneditor) {
       'object': {'a': 'b', 'c': 'd'},
       'string': 'Hello World'
     };
-    editor.set(json);
+    editor.set(json)
   };
 
   // get json
   document.getElementById('getJSON').onclick = function () {
     var json = editor.get();
-    alert(JSON.stringify(json, null, 2));
+    alert(JSON.stringify(json, null, 2))
   };
 });

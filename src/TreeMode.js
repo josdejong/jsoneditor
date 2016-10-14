@@ -75,7 +75,7 @@ export default class TreeMode extends Component {
   }
 
   renderMenu () {
-    return h('div', {class: 'jsoneditor-menu'}, [
+    let items = [
       h('button', {
         class: 'jsoneditor-expand-all',
         title: 'Expand all objects and arrays',
@@ -85,34 +85,44 @@ export default class TreeMode extends Component {
         class: 'jsoneditor-collapse-all',
         title: 'Collapse all objects and arrays',
         onClick: this.handleCollapseAll
-      }),
-
-      h('div', {class: 'jsoneditor-vertical-menu-separator'}),
-
-      h('div', {style: 'display:inline-block'}, [
-        h('button', {
-          class: 'jsoneditor-undo',
-          title: 'Undo last action',
-          disabled: !this.canUndo(),
-          onClick: this.undo
-        }),
-      ]),
-      h('button', {
-        class: 'jsoneditor-redo',
-        title: 'Redo',
-        disabled: !this.canRedo(),
-        onClick: this.redo
-      }),
-
-      h('div', {class: 'jsoneditor-vertical-menu-separator'}),
-
-      this.props.options.modes && h(ModeButton, {
-        modes: this.props.options.modes,
-        mode: this.props.mode,
-        onChangeMode: this.props.onChangeMode,
-        onError: this.handleError
       })
-    ])
+    ]
+
+    if (this.props.mode !== 'view') {
+      items = items.concat([
+        h('div', {class: 'jsoneditor-vertical-menu-separator'}),
+
+        h('div', {style: 'display:inline-block'}, [
+          h('button', {
+            class: 'jsoneditor-undo',
+            title: 'Undo last action',
+            disabled: !this.canUndo(),
+            onClick: this.undo
+          }),
+        ]),
+        h('button', {
+          class: 'jsoneditor-redo',
+          title: 'Redo',
+          disabled: !this.canRedo(),
+          onClick: this.redo
+        })
+      ])
+    }
+
+    if (this.props.options.modes ) {
+      items = items.concat([
+        h('div', {class: 'jsoneditor-vertical-menu-separator'}),
+
+        h(ModeButton, {
+          modes: this.props.options.modes,
+          mode: this.props.mode,
+          onChangeMode: this.props.onChangeMode,
+          onError: this.handleError
+        })
+      ])
+    }
+
+    return h('div', {class: 'jsoneditor-menu'}, items)
   }
 
   /** @private */
