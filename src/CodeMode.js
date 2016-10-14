@@ -66,7 +66,7 @@ export default class CodeMode extends TextMode {
       aceEditor.setShowPrintMargin(false)
       aceEditor.setFontSize(13)
       aceEditor.getSession().setMode('ace/mode/json')
-      aceEditor.getSession().setTabSize(options.indentation)
+      aceEditor.getSession().setTabSize(options.indentation || 2)
       aceEditor.getSession().setUseSoftTabs(true)
       aceEditor.getSession().setUseWrapMode(true)
       aceEditor.commands.bindKey('Ctrl-L', null)    // disable Ctrl+L (is used by the browser to select the address bar)
@@ -105,8 +105,10 @@ export default class CodeMode extends TextMode {
   }
 
   handleChange = () => {
-    // TODO: handle changes
-    // console.log('ace editor changed')
+    if (this.props.options && this.props.options.onChangeText) {
+      // TODO: pass a diff
+      this.props.options.onChangeText()
+    }
   }
 
   /**

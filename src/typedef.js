@@ -35,6 +35,8 @@
  *   modes: string[],
  *   indentation: number | string,
  *   onChange: function (patch: JSONPatch, revert: JSONPatch),
+ *   onChangeText: function (),
+ *   onChangeMode: function (mode: string, prevMode: string),
  *   onError:  function (err: Error)
  * }} Options
  *

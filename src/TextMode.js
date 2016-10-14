@@ -44,7 +44,7 @@ export default class TextMode extends Component {
         h('textarea', {
           class: 'jsoneditor-text',
           value: this.state.text,
-          onChange: this.handleChange
+          onInput: this.handleChange
         })
       ])
     ])
@@ -93,6 +93,10 @@ export default class TextMode extends Component {
    */
   handleChange = (event) => {
     this.setText(event.target.value)
+
+    if (this.props.options && this.props.options.onChangeText) {
+      this.props.options.onChangeText()
+    }
   }
 
   /** @protected */

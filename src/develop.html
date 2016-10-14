@@ -39,6 +39,9 @@
       window.patch = patch
       window.revert = revert
     },
+    onChangeText: function () {
+      console.log('onChangeText')
+    },
     onChangeMode: function (mode, prevMode) {
       console.log('switched mode from', prevMode, 'to', mode)
       document.getElementById('mode').value = mode
