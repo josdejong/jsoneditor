@@ -2,20 +2,9 @@
 
 ### Install
 
-with npm:
+using npm:
 
     npm install jsoneditor
-
-with bower:
-
-    bower install jsoneditor
-
-download:
-
-[http://jsoneditoronline.org/downloads/](http://jsoneditoronline.org/downloads/)
-
-The library consists of three files: one javascript file, one css file and an
-image. Both full and minified version are available.
 
 ## Load
 
@@ -37,11 +26,11 @@ In the body, create an div element with an id and a size:
 After the page is loaded, load the editor with javascript:
 
 ```js
-var container = document.getElementById("jsoneditor");
+var container = document.getElementById("jsoneditor")
 var options = {
     mode: 'tree'
-};
-var editor = jsoneditor(container, options);
+}
+var editor = jsoneditor(container, options)
 ```
 
 To set JSON data in the editor:
@@ -54,14 +43,14 @@ var json = {
     "Number": 123,
     "Object": {"a": "b", "c": "d"},
     "String": "Hello World"
-};
-editor.set(json);
+}
+editor.set(json)
 ```
 
 To get JSON data from the editor:
 
 ```js
-var json = editor.get();
+var json = editor.get()
 ```
 
 
@@ -74,20 +63,19 @@ var json = editor.get();
     <!-- when using the mode "code", it's important to specify charset utf-8 -->
     <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
 
-    <link href="jsoneditor/dist/jsoneditor.min.css" rel="stylesheet" type="text/css">
-    <script src="jsoneditor/dist/jsoneditor.min.js"></script>
+    <script src="jsoneditor/dist/jsoneditor.js"></script>
 </head>
 <body>
 <p>
-    <button onclick="setJSON();">Set JSON</button>
-    <button onclick="getJSON();">Get JSON</button>
+    <button onclick="setJSON()">Set JSON</button>
+    <button onclick="getJSON()">Get JSON</button>
 </p>
 <div id="jsoneditor" style="width: 400px; height: 400px;"></div>
 
 <script>
     // create the editor
-    var container = document.getElementById("jsoneditor");
-    var editor = jsoneditor(container);
+    var container = document.getElementById('jsoneditor')
+    var editor = jsoneditor(container)
 
     // set json
     function setJSON () {
@@ -98,14 +86,14 @@ var json = editor.get();
             "Number": 123,
             "Object": {"a": "b", "c": "d"},
             "String": "Hello World"
-        };
-        editor.set(json);
+        }
+        editor.set(json)
     }
 
     // get json
     function getJSON() {
-        var json = editor.get();
-        alert(JSON.stringify(json, null, 2));
+        var json = editor.get()
+        alert(JSON.stringify(json, null, 2))
     }
 </script>
 </body>

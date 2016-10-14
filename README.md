@@ -47,16 +47,37 @@ Supported browsers: Chrome, Firefox, Safari, Opera, Internet Explorer 9+.
 
 ## Install
 
-with npm (recommended):
+Install via npm:
 
     npm install jsoneditor
 
-with bower:
+### Versions
 
-    bower install jsoneditor
+There are two versions of jsoneditor available: a full version and
+a minimalist version.
+
+#### Full version
+
+If you're not sure which version to use, use the full version: jsoneditor.js.
+
+#### Minimalist version
+
+The minimalist version, jsoneditor-minimalist.js, has excluded the following libraries:
+
+- `ace` (via `brace`), used for the code editor.
+- `ajv`, used for JSON schema validation.
+
+This reduces the the size of the minified and gzipped JavaScript considerably.
+
+When to use the minimalist version?
+
+- If you don't need the mode "code" and don't need JSON schema validation.
+- Or if you want to provide `ace` and/or `ajv` yourself via the configuration
+  options, for example when you already use Ace in other parts of your
+  web application too and don't want to bundle the library twice.
 
 
-#### More
+### More
 
 There is a directive available for using `jsoneditor` in Angular.js:
 
@@ -79,7 +100,7 @@ There is a directive available for using `jsoneditor` in Angular.js:
 
     <script>
         // create the editor
-        var container = document.getElementById("jsoneditor");
+        var container = document.getElementById('jsoneditor');
         var options = {};
         var editor = jsoneditor(container, options);
 

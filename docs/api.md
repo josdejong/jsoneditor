@@ -4,7 +4,7 @@
 
 ### Construction
 
-#### `jsoneditor(container [, options [, json]])`
+#### `jsoneditor(container [, options])`
 
 Constructs a new JSONEditor.
 
@@ -19,13 +19,9 @@ Constructs a new JSONEditor.
   Optional object with options. The available options are described under
   [Configuration options](#configuration-options).
 
-- `{JSON} json`
-
-  Initial JSON data to be loaded into the JSONEditor. Alternatively, the method `JSONEditor.set(json)` can be used to load JSON data into the editor.
-
 *Returns:*
 
-- `{JSONEditor} editor`
+- `{Object} editor`
 
   New instance of a JSONEditor.
 
@@ -234,10 +230,10 @@ A tree editor:
 
 ```js
 var options = {
-    "mode": "tree",
-    "search": true
-};
-var editor = new JSONEditor(container, options);
+    mode: 'tree',
+    search: true
+}
+var editor = new JSONEditor(container, options)
 var json = {
     "Array": [1, 2, 3],
     "Boolean": true,
@@ -245,21 +241,21 @@ var json = {
     "Number": 123,
     "Object": {"a": "b", "c": "d"},
     "String": "Hello World"
-};
-editor.set(json);
-editor.expandAll();
+}
+editor.set(json)
+editor.expandAll()
 
-var json = editor.get(json);
+var json = editor.get(json)
 ```
 
 A text editor:
 
 ```js
 var options = {
-    "mode": "text",
-    "indentation": 2
-};
-var editor = new JSONEditor(container, options);
+    mode: 'text',
+    indentation: 2
+}
+var editor = new JSONEditor(container, options)
 var json = {
     "Array": [1, 2, 3],
     "Boolean": true,
@@ -267,10 +263,10 @@ var json = {
     "Number": 123,
     "Object": {"a": "b", "c": "d"},
     "String": "Hello World"
-};
-editor.set(json);
+}
+editor.set(json)
 
-var json = editor.get();
+var json = editor.get()
 ```
 
 ## JSON parsing and stringification
@@ -278,17 +274,17 @@ var json = editor.get();
 In general to parse or stringify JSON data, the browsers built in JSON parser can be used. To create a formatted string from a JSON object, use:
 
 ```js
-var formattedString = JSON.stringify(json, null, 2);
+var formattedString = JSON.stringify(json, null, 2)
 ```
 
 to create a compacted string from a JSON object, use:
 
 ```js
-var compactString = JSON.stringify(json);
+var compactString = JSON.stringify(json)
 ```
 
 To parse a String to a JSON object, use:
 
 ```js
-var json = JSON.parse(string);
+var json = JSON.parse(string)
 ```
