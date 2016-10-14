@@ -6,22 +6,6 @@ import { escapeHTML, unescapeHTML } from './utils/stringUtils'
 import { getInnerText } from './utils/domUtils'
 import { stringConvert, valueType, isUrl } from  './utils/typeUtils'
 
-// TYPE_TITLES with explanation for the different types
-const TYPE_TITLES = {
-  'value': 'Item type "value". ' +
-    'The item type is automatically determined from the value ' +
-    'and can be a string, number, boolean, or null.',
-  'Object': 'Item type "object". ' +
-    'An object contains an unordered set of key/value pairs.',
-  'Array': 'Item type "array". ' +
-    'An array contains an ordered collection of values.',
-  'string': 'Item type "string". ' +
-    'Item type is not determined from the value, ' +
-    'but always returned as string.'
-}
-
-const URL_TITLE = 'Ctrl+Click or Ctrl+Enter to open url'
-
 /**
  * @type {JSONNode | null} activeContextMenu  singleton holding the JSONNode having
  *                                            the active (visible) context menu
@@ -29,12 +13,11 @@ const URL_TITLE = 'Ctrl+Click or Ctrl+Enter to open url'
 let activeContextMenu = null
 
 export default class JSONNode extends Component {
-  // TODO: define propTypes
+  static URL_TITLE = 'Ctrl+Click or Ctrl+Enter to open url'
 
   constructor (props) {
     super(props)
 
-    // TODO: remove state
     this.state = {
       menu: null,        // context menu
       appendMenu: null,  // append context menu (used in placeholder of empty object/array)
@@ -67,7 +50,7 @@ export default class JSONNode extends Component {
     if (data.expanded) {
       if (data.props.length > 0) {
         const props = data.props.map(prop => {
-          return h(JSONNode, {
+          return h(this.constructor, {
             key: prop.name,
             parent: this,
             prop: prop.name,
@@ -103,7 +86,7 @@ export default class JSONNode extends Component {
     if (data.expanded) {
       if (data.items.length > 0) {
         const items = data.items.map((child, index) => {
-          return h(JSONNode, {
+          return h(this.constructor, {
             key: index,
             parent: this,
             prop: index,
@@ -145,7 +128,7 @@ export default class JSONNode extends Component {
     return h('li', {key: 'append'}, [
       h('div', {class: 'jsoneditor-node'}, [
         this.renderPlaceholder(),
-        this.renderAppendContextMenuButton(),
+        this.renderAppendMenuButton(),
         this.renderReadonly(text)
       ])
     ])
@@ -210,7 +193,7 @@ export default class JSONNode extends Component {
       onInput: this.updateValueStyling,
       onClick: this.handleClickValue,
       onKeyDown: this.handleKeyDownValue,
-      title: itsAnUrl ? URL_TITLE : null
+      title: itsAnUrl ? JSONNode.URL_TITLE : null
     }, escapedValue)
   }
 
@@ -232,7 +215,7 @@ export default class JSONNode extends Component {
     }
 
     target.className = JSONNode.getValueClass(type, itsAnUrl, isEmpty)
-    target.title = itsAnUrl ? URL_TITLE : ''
+    target.title = itsAnUrl ? JSONNode.URL_TITLE : ''
 
     // remove all classNames from childs (needed for IE and Edge)
     JSONNode.removeChildClasses(target)
@@ -244,7 +227,7 @@ export default class JSONNode extends Component {
    * @param {boolean} isUrl
    * @param {boolean} isEmpty
    * @return {string}
-   * @private
+   * @public
    */
   static getValueClass (type, isUrl, isEmpty) {
     return 'jsoneditor-value ' +
@@ -256,7 +239,7 @@ export default class JSONNode extends Component {
   /**
    * Recursively remove all classes from the childs of this element
    * @param elem
-   * @private
+   * @public
    */
   static removeChildClasses (elem) {
     for (let i = 0; i < elem.childNodes.length; i++) {
@@ -289,7 +272,7 @@ export default class JSONNode extends Component {
     })
   }
 
-  renderAppendContextMenuButton () {
+  renderAppendMenuButton () {
     return h(AppendActionButton, {
       path: this.getPath(),
       events: this.props.events

@@ -6,14 +6,13 @@ import {
   duplicate, insert, append, remove, changeType, changeValue, changeProperty, sort
 } from './actions'
 import JSONNode from './JSONNode'
+import JSONNodeViewer from './JSONNodeViewer'
 import ModeButton from './menu/ModeButton'
 import { parseJSON } from './utils/jsonUtils'
 
 const MAX_HISTORY_ITEMS = 1000   // maximum number of undo/redo items to be kept in memory
 
 export default class TreeMode extends Component {
-  // TODO: define propTypes
-
   constructor (props) {
     super(props)
 
@@ -48,16 +47,20 @@ export default class TreeMode extends Component {
   }
 
   render (props, state) {
-    // TODO: make mode tree dynamic: can be 'tree', 'form', 'view'
+    console.log('mode', props.mode)
+    const Node = props.mode === 'view'
+        ? JSONNodeViewer
+        : JSONNode
+
     return h('div', {
-      class: 'jsoneditor jsoneditor-mode-tree',
+      class: `jsoneditor jsoneditor-mode-${props.mode}`,
       'data-jsoneditor': 'true'
     }, [
       this.renderMenu(),
 
       h('div', {class: 'jsoneditor-contents jsoneditor-tree-contents', onClick: this.handleHideMenus}, [
         h('ul', {class: 'jsoneditor-list jsoneditor-root'}, [
-          h(JSONNode, {
+          h(Node, {
             data: state.data,
             events: state.events,
             options: state.nodeOptions,

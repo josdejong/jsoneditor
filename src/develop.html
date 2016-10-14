@@ -26,6 +26,7 @@
       <option value="code">code</option>
       <option value="text">text</option>
       <option value="tree" selected>tree</option>
+      <option value="view">view</option>
     </select>
   </label>
 </p>
@@ -53,7 +54,7 @@
       alert(err)
     },
     mode: mode,
-    modes: ['text', 'code', 'tree'],
+    modes: ['text', 'code', 'tree', 'view'],
     indentation: 4
   }
   const editor = jsoneditor(container, options)
@@ -65,7 +66,8 @@
     'null': null,
     'number': 123,
     'object': {'a': 'b', 'c': 'd', 'e': [{"first": true}, {"second": true}]},
-    'string': 'Hello World'
+    'string': 'Hello World',
+    'url': 'http://jsoneditoronline.org'
   }
   editor.set(json, {
     name: 'myObject',

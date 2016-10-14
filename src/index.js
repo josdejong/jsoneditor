@@ -9,7 +9,8 @@ import '!style!css!less!./jsoneditor.less'
 const modes = {
   code: CodeMode,
   text: TextMode,
-  tree: TreeMode
+  tree: TreeMode,
+  view: TreeMode
 }
 
 /**
