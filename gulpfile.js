@@ -4,6 +4,17 @@ var gutil = require('gulp-util')
 var shell = require('gulp-shell')
 var mkdirp = require('mkdirp')
 var webpack = require('webpack')
+var browserSync = require('browser-sync').create()
+
+var WATCH = 'watch'
+var WATCHING = process.argv[2] === WATCH
+
+if (WATCHING) {
+  gutil.log('Watching src/*.')
+  gutil.log('The bundle ./dist/jsoneditor.js will be updated automatically  ')
+  gutil.log('on changes in the source code this bundle will not be minified.')
+  gutil.log('Also, ./dist/minimalist code is not updated on changes.')
+}
 
 var NAME    = 'jsoneditor'
 var NAME_MINIMALIST = 'jsoneditor-minimalist'
@@ -35,6 +46,10 @@ var loaders = [
 ]
 
 // create a single instance of the compiler to allow caching
+var plugins = [bannerPlugin]
+if (!WATCHING) {
+  plugins.push(new webpack.optimize.UglifyJsPlugin())
+}
 var compiler = webpack({
   entry: ENTRY,
   devtool: 'source-map',
@@ -46,10 +61,7 @@ var compiler = webpack({
     path: DIST,
     filename: NAME + '.js'
   },
-  plugins: [
-    bannerPlugin,
-    new webpack.optimize.UglifyJsPlugin()   // TODO: don't minify when watching
-  ],
+  plugins: plugins,
   module: {
     loaders: loaders
   },
@@ -71,7 +83,7 @@ var compilerMinimalist = webpack({
     bannerPlugin,
     new webpack.NormalModuleReplacementPlugin(new RegExp('^brace$'), EMPTY),
     new webpack.NormalModuleReplacementPlugin(new RegExp('^ajv'), EMPTY),
-    new webpack.optimize.UglifyJsPlugin()   // TODO: don't minify when watching
+    new webpack.optimize.UglifyJsPlugin()
   ],
   module: {
     loaders: loaders
@@ -131,13 +143,25 @@ gulp.task('zip', shell.task([
       'zip ' + pkg + ' ' + 'README.md LICENSE HISTORY.md index.html src dist docs examples -r '
 ]))
 
+// execute all tasks and reload the browser afterwards
+gulp.task('bundle-and-reload', ['bundle'], function (done) {
+  browserSync.reload();
+
+  done();
+});
+
 // The watch task (to automatically rebuild when the source code changes)
 // Does only generate jsoneditor.js and jsoneditor.css, and copy the image
 // Does NOT minify the code and does NOT generate the minimalist version
-gulp.task('watch', ['bundle'], function () {
-  // TODO: don't minify when in watch mode
+gulp.task(WATCH, ['bundle'], function() {
+  browserSync.init({
+    open: 'local',
+    server: '.',
+    startPath: '/src/develop.html',
+    minify: false
+  })
 
-  gulp.watch(['src/**/*'], ['bundle'])
+  gulp.watch('src/**/*', ['bundle-and-reload'])
 })
 
 // The default task (called when you run `gulp`)

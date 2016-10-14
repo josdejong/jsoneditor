@@ -35,6 +35,7 @@
     "babel-loader": "6.2.5",
     "babel-preset-stage-2": "6.16.0",
     "babel-preset-stage-3": "6.16.0",
+    "browser-sync": "2.17.3",
     "css-loader": "0.25.0",
     "gulp": "3.9.1",
     "gulp-shell": "0.5.2",
