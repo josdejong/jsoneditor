@@ -165,4 +165,4 @@ gulp.task(WATCH, ['bundle'], function() {
 })
 
 // The default task (called when you run `gulp`)
-gulp.task('default', [ 'bundle', 'bundle-minimalist', 'copy' ])
+gulp.task('default', [ 'bundle', 'bundle-minimalist' ])
