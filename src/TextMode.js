@@ -3,8 +3,30 @@ import { parseJSON } from './utils/jsonUtils'
 import { jsonToData, dataToJson, patchData } from './jsonData'
 import ModeButton from './menu/ModeButton'
 
+/**
+ * TextMode
+ *
+ * Usage:
+ *
+ *     <TextMode
+ *         options={Object}
+ *         onChange={function(text: string)}
+ *         onChangeMode={function(mode: string)}
+ *     />
+ *
+ * Methods:
+ *
+ *     setText(text)
+ *     getText() : text
+ *     set(json : JSON)
+ *     get() : JSON
+ *     patch(actions: JSONPatch)
+ *     format()
+ *     compact()
+ *     destroy()
+ *
+ */
 export default class TextMode extends Component {
-  // TODO: define propTypes
 
   constructor (props) {
     super(props)
@@ -16,29 +38,7 @@ export default class TextMode extends Component {
 
   render (props, state) {
     return h('div', {class: 'jsoneditor jsoneditor-mode-text'}, [
-      h('div', {class: 'jsoneditor-menu'}, [
-        h('button', {
-          class: 'jsoneditor-format',
-          title: 'Format the JSON document',
-          onClick: this.handleFormat
-        }),
-        h('button', {
-          class: 'jsoneditor-compact',
-          title: 'Compact the JSON document',
-          onClick: this.handleCompact
-        }),
-
-        // TODO: implement a button "Fix JSON"
-
-        h('div', {class: 'jsoneditor-vertical-menu-separator'}),
-
-        this.props.options.modes && h(ModeButton, {
-          modes: this.props.options.modes,
-          mode: this.props.mode,
-          onMode: this.props.onMode,
-          onError: this.handleError
-        })
-      ]),
+      this.renderMenu(),
 
       h('div', {class: 'jsoneditor-contents'}, [
         h('textarea', {
@@ -50,10 +50,37 @@ export default class TextMode extends Component {
     ])
   }
 
+  /** @protected */
+  renderMenu () {
+    return h('div', {class: 'jsoneditor-menu'}, [
+      h('button', {
+        class: 'jsoneditor-format',
+        title: 'Format the JSON document',
+        onClick: this.handleFormat
+      }),
+      h('button', {
+        class: 'jsoneditor-compact',
+        title: 'Compact the JSON document',
+        onClick: this.handleCompact
+      }),
+
+      // TODO: implement a button "Repair"
+
+      h('div', {class: 'jsoneditor-vertical-menu-separator'}),
+
+      this.props.options.modes && h(ModeButton, {
+        modes: this.props.options.modes,
+        mode: this.props.mode,
+        onChangeMode: this.props.onChangeMode,
+        onError: this.handleError
+      })
+    ])
+  }
+
   /**
    * Get the configured indentation
    * @return {number}
-   * @private
+   * @protected
    */
   getIndentation () {
     return this.props.options && this.props.options.indentation || 2
@@ -62,15 +89,13 @@ export default class TextMode extends Component {
   /**
    * handle changed text input in the textarea
    * @param {Event} event
-   * @private
+   * @protected
    */
   handleChange = (event) => {
-    this.setState({
-      text: event.target.value
-    })
+    this.setText(event.target.value)
   }
 
-  /** @private */
+  /** @protected */
   handleFormat = () => {
     try {
       this.format()
@@ -80,7 +105,7 @@ export default class TextMode extends Component {
     }
   }
 
-  /** @private */
+  /** @protected */
   handleCompact = () => {
     try {
       this.compact()
@@ -90,7 +115,7 @@ export default class TextMode extends Component {
     }
   }
 
-  /** @private */
+  /** @protected */
   handleError = (err) => {
     if (this.props.options && this.props.options.onError) {
       this.props.options.onError(err)
@@ -145,9 +170,7 @@ export default class TextMode extends Component {
    * @param {Object | Array | string | number | boolean | null} json   JSON data
    */
   set (json) {
-    this.setState({
-      text: JSON.stringify(json, null, this.getIndentation())
-    })
+    this.setText(JSON.stringify(json, null, this.getIndentation()))
   }
 
   /**
@@ -155,7 +178,7 @@ export default class TextMode extends Component {
    * @returns {Object | Array | string | number | boolean | null} json
    */
   get () {
-    return parseJSON(this.state.text)
+    return parseJSON(this.getText())
   }
 
   /**
@@ -172,5 +195,12 @@ export default class TextMode extends Component {
    */
   getText () {
     return this.state.text
+  }
+
+  /**
+   * Destroy the editor
+   */
+  destroy () {
+
   }
 }

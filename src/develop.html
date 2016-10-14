@@ -7,7 +7,7 @@
   <!-- For IE and Edge -->
   <!--<script src="https://cdnjs.cloudflare.com/ajax/libs/es6-shim/0.35.1/es6-shim.min.js"></script>-->
 
-  <script src="../dist/jsoneditor-minimalist.js"></script>
+  <script src="../dist/jsoneditor.js"></script>
   <style>
     #container {
       height: 300px;
@@ -21,6 +21,7 @@
 
   <label for="mode">mode:
     <select id="mode">
+      <option value="code">code</option>
       <option value="text">text</option>
       <option value="tree" selected>tree</option>
     </select>
@@ -30,6 +31,7 @@
 
 <script>
   // create the editor
+  const mode = document.getElementById('mode').value
   const container = document.getElementById('container')
   const options = {
     onChange: function (patch, revert) {
@@ -39,12 +41,14 @@
     },
     onChangeMode: function (mode, prevMode) {
       console.log('switched mode from', prevMode, 'to', mode)
+      document.getElementById('mode').value = mode
     },
     onError: function (err) {
       console.error(err)
       alert(err)
     },
-    modes: ['text', 'tree'],
+    mode: mode,
+    modes: ['text', 'code', 'tree'],
     indentation: 4
   }
   const editor = jsoneditor(container, options)

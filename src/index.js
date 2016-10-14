@@ -1,13 +1,15 @@
 import { h, render } from 'preact'
-import TreeMode from './TreeMode'
+import CodeMode from './CodeMode'
 import TextMode from './TextMode'
+import TreeMode from './TreeMode'
 
 import '!style!css!less!./jsoneditor.less'
 
 // TODO: allow adding new modes
 const modes = {
-  tree: TreeMode,
-  text: TextMode
+  code: CodeMode,
+  text: TextMode,
+  tree: TreeMode
 }
 
 /**
@@ -121,6 +123,7 @@ function jsoneditor (container, options = {}) {
     }
 
     let success = false
+    let initialChildCount = editor._container.children.length
     let element
     try {
       // find the constructor for the selected mode
@@ -130,12 +133,22 @@ function jsoneditor (container, options = {}) {
             'Choose from: ' + Object.keys(modes).join(', '))
       }
 
+      function handleChangeMode (mode) {
+        const prevMode = editor._mode
+
+        editor.setMode(mode)
+
+        if (editor._options.onChangeMode) {
+          editor._options.onChangeMode(mode, prevMode)
+        }
+      }
+
       // create new component
       element = render(
           h(constructor, {
             mode,
             options: editor._options,
-            onMode: editor.setMode
+            onChangeMode: handleChangeMode
           }),
           editor._container)
 
@@ -150,22 +163,22 @@ function jsoneditor (container, options = {}) {
       if (success) {
         // destroy previous component
         if (editor._element) {
-          // TODO: call editor._component.destroy() instead
+          editor._element._component.destroy()
           editor._element.parentNode.removeChild(editor._element)
         }
 
-        const prevMode = editor._mode
         editor._mode = mode
         editor._element = element
         editor._component = element._component
-
-        if (editor._options.onChangeMode && prevMode) {
-          editor._options.onChangeMode(mode, prevMode)
-        }
       }
       else {
-        // remove the just created component (where setText failed)
-        element.parentNode.removeChild(element)
+        // TODO: fall back to text mode when loading code mode failed?
+
+        // remove the just created component if any (where construction or setText failed)
+        const childCount = editor._container.children.length
+        if (childCount !== initialChildCount) {
+          editor._container.removeChild(editor._container.lastChild)
+        }
       }
     }
   }

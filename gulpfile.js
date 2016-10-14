@@ -81,8 +81,8 @@ var compilerMinimalist = webpack({
   },
   plugins: [
     bannerPlugin,
-    new webpack.NormalModuleReplacementPlugin(new RegExp('^brace$'), EMPTY),
-    new webpack.NormalModuleReplacementPlugin(new RegExp('^ajv'), EMPTY),
+    new webpack.NormalModuleReplacementPlugin(new RegExp('^./assets/ace$'), EMPTY),
+    new webpack.NormalModuleReplacementPlugin(new RegExp('^ajv$'), EMPTY),
     new webpack.optimize.UglifyJsPlugin()
   ],
   module: {
@@ -165,4 +165,4 @@ gulp.task(WATCH, ['bundle'], function() {
 })
 
 // The default task (called when you run `gulp`)
-gulp.task('default', [ 'bundle', 'bundle-minimalist' ])
+gulp.task('default', [ 'bundle', 'bundle-minimalist', 'copy' ])

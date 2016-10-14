@@ -4,7 +4,7 @@ import { findParentNode } from '../utils/domUtils'
 
 export default class ModeMenu extends Component {
   /**
-   * @param {{open, modes, mode, onMode, onRequestClose, onError}} props
+   * @param {{open, modes, mode, onChangeMode, onRequestClose, onError}} props
    * @param {Object} state
    * @return {JSX.Element}
    */
@@ -17,7 +17,7 @@ export default class ModeMenu extends Component {
               ((mode === props.mode) ? ' jsoneditor-selected' : ''),
           onClick: () => {
             try {
-              props.onMode(mode)
+              props.onChangeMode(mode)
               props.onRequestClose()
             }
             catch (err) {

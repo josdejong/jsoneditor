@@ -19,7 +19,6 @@ export function parseJSON(jsonString) {
   }
 }
 
-
 /**
  * Validate a string containing a JSON object
  * This method uses JSONLint to validate the String. If JSONLint is not

@@ -1,0 +1,61 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <title>JSONEditor | Custom Ace Editor</title>
+
+  <!-- we use the minimalist jsoneditor, which doesn't have Ace Editor included -->
+  <script src="../dist/jsoneditor-minimalist.js"></script>
+
+  <!-- load your own instance of Ace Editor and all plugins that you need -->
+  <!-- jsoneditor requires ext-searchbox and mode-json                    -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.2.5/ace.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.2.5/ext-searchbox.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.2.5/mode-json.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.2.5/theme-twilight.js"></script>
+
+  <style type="text/css">
+    #jsoneditor {
+      width: 500px;
+      height: 500px;
+    }
+  </style>
+</head>
+<body>
+
+<p>
+  In this example, the we use the minimalist version of jsoneditor and load
+  and configure Ace editor our selves.
+</p>
+
+<div id="jsoneditor"></div>
+
+<script>
+  // create the editor, set mode to 'code' (powered by ace editor)
+  var container = document.getElementById('jsoneditor')
+  var options = {
+    mode: 'code',
+    onLoadAce: function (aceEditor, container, options) {
+      // we can adjust configuration of the ace editor,
+      // or create a completely new instance of ace editor.
+
+      // let's set a custom theme and font size
+      aceEditor.setTheme('ace/theme/twilight')
+      aceEditor.setFontSize(16)
+
+      return aceEditor
+    }
+  }
+  var editor = jsoneditor(container, options)
+
+  var json = {
+    'array': [1, 2, 3],
+    'boolean': true,
+    'null': null,
+    'number': 123,
+    'object': {'a': 'b', 'c': 'd'},
+    'string': 'Hello World'
+  }
+  editor.set(json)
+</script>
+</body>
+</html>

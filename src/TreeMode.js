@@ -48,7 +48,7 @@ export default class TreeMode extends Component {
   }
 
   render (props, state) {
-    // TODO: make mode tree dynamic
+    // TODO: make mode tree dynamic: can be 'tree', 'form', 'view'
     return h('div', {
       class: 'jsoneditor jsoneditor-mode-tree',
       'data-jsoneditor': 'true'
@@ -104,7 +104,7 @@ export default class TreeMode extends Component {
       this.props.options.modes && h(ModeButton, {
         modes: this.props.options.modes,
         mode: this.props.mode,
-        onMode: this.props.onMode,
+        onChangeMode: this.props.onChangeMode,
         onError: this.handleError
       })
     ])
@@ -363,6 +363,13 @@ export default class TreeMode extends Component {
     this.setState({
       data: expand(this.state.data, callback, false)
     })
+  }
+
+  /**
+   * Destroy the editor
+   */
+  destroy () {
+
   }
 
   /**

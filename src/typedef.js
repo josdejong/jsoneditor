@@ -31,7 +31,7 @@
  * }} JSONPatchResult
  *
  * @typedef {{
- *   mode: 'tree' | 'text',
+ *   mode: 'tree' | 'text' | 'code',
  *   modes: string[],
  *   indentation: number | string,
  *   onChange: function (patch: JSONPatch, revert: JSONPatch),
