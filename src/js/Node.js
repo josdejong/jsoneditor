@@ -1416,7 +1416,7 @@ Node.prototype.validate = function () {
     var duplicateKeys = [];
     for (var i = 0; i < this.childs.length; i++) {
       var child = this.childs[i];
-      if (keys[child.field]) {
+      if (keys.hasOwnProperty(child.field)) {
         duplicateKeys.push(child.field);
       }
       keys[child.field] = true;

@@ -3,6 +3,12 @@
 https://github.com/josdejong/jsoneditor
 
 
+## not yet released, version 5.5.9
+
+- Fixed #329: Editor showing duplicate key warnings for keys defined on the
+  Object prototype, like `toString` and `watch`.
+
+
 ## 2016-09-27, version 5.5.8
 
 - Fixed #314: JSON schema validation throwing an error "Unexpected token ' in
