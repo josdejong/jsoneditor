@@ -619,6 +619,10 @@ export function findPropertyIndex (object, prop) {
  * @return {Array}
  */
 export function parseJSONPointer (pointer) {
+  if (pointer === '/') {
+    return []
+  }
+
   const path = pointer.split('/')
   path.shift() // remove the first empty entry
 

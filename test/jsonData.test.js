@@ -285,6 +285,8 @@ test('parseJSONPointer', t => {
   t.deepEqual(parseJSONPointer('/obj/a'), ['obj', 'a'])
   t.deepEqual(parseJSONPointer('/arr/-'), ['arr', '-'])
   t.deepEqual(parseJSONPointer('/foo/~1~0 ~0~1'), ['foo', '/~ ~/'])
+  t.deepEqual(parseJSONPointer('/obj'), ['obj'])
+  t.deepEqual(parseJSONPointer('/'), [])
 })
 
 test('compileJSONPointer', t => {
