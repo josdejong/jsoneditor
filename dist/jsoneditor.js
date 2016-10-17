@@ -24,8 +24,8 @@
  * Copyright (c) 2011-2016 Jos de Jong, http://jsoneditoronline.org
  *
  * @author  Jos de Jong, <wjosdejong@gmail.com>
- * @version 5.5.8
- * @date    2016-09-27
+ * @version 5.5.9
+ * @date    2016-10-17
  */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
@@ -13344,7 +13344,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    var duplicateKeys = [];
 	    for (var i = 0; i < this.childs.length; i++) {
 	      var child = this.childs[i];
-	      if (keys[child.field]) {
+	      if (keys.hasOwnProperty(child.field)) {
 	        duplicateKeys.push(child.field);
 	      }
 	      keys[child.field] = true;

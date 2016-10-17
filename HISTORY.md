@@ -3,7 +3,7 @@
 https://github.com/josdejong/jsoneditor
 
 
-## not yet released, version 5.5.9
+## 2016-10-17, version 5.5.9
 
 - Fixed #329: Editor showing duplicate key warnings for keys defined on the
   Object prototype, like `toString` and `watch`.
