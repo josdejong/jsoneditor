@@ -23,7 +23,7 @@
     "test": "ava test/*.test.js test/**/*.test.js --verbose"
   },
   "dependencies": {
-    "ajv": "4.7.7",
+    "ajv": "4.8.2",
     "brace": "0.8.0",
     "javascript-natural-sort": "0.7.1",
     "lodash": "4.16.4",
@@ -35,7 +35,7 @@
     "babel-loader": "6.2.5",
     "babel-preset-stage-2": "6.17.0",
     "babel-preset-stage-3": "6.17.0",
-    "browser-sync": "2.17.3",
+    "browser-sync": "2.17.5",
     "css-loader": "0.25.0",
     "graceful-fs": "4.1.9",
     "gulp": "3.9.1",
