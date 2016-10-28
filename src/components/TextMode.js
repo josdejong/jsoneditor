@@ -1,6 +1,6 @@
 import { h, Component } from 'preact'
-import { parseJSON } from './utils/jsonUtils'
-import { jsonToData, dataToJson, patchData } from './jsonData'
+import { parseJSON } from '../utils/jsonUtils'
+import { jsonToData, dataToJson, patchData } from '../jsonData'
 import ModeButton from './menu/ModeButton'
 
 /**

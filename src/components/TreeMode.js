@@ -1,15 +1,15 @@
 import { h, Component } from 'preact'
 
-import { setIn, updateIn } from './utils/immutabilityHelpers'
-import { expand, jsonToData, dataToJson, toDataPath, patchData } from './jsonData'
+import { setIn, updateIn } from '../utils/immutabilityHelpers'
+import { expand, jsonToData, dataToJson, toDataPath, patchData } from '../jsonData'
+import { parseJSON } from '../utils/jsonUtils'
 import {
   duplicate, insert, append, remove, changeType, changeValue, changeProperty, sort
-} from './actions'
+} from '../actions'
 import JSONNode from './JSONNode'
 import JSONNodeView from './JSONNodeView'
 import JSONNodeForm from './JSONNodeForm'
 import ModeButton from './menu/ModeButton'
-import { parseJSON } from './utils/jsonUtils'
 
 const MAX_HISTORY_ITEMS = 1000   // maximum number of undo/redo items to be kept in memory
 

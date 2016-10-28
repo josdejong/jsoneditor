@@ -1,6 +1,6 @@
 import { h, Component } from 'preact'
-import { toCapital } from '../utils/stringUtils'
-import { findParentNode } from '../utils/domUtils'
+import { toCapital } from '../../utils/stringUtils'
+import { findParentNode } from '../../utils/domUtils'
 
 export default class ModeMenu extends Component {
   /**

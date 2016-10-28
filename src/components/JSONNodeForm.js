@@ -1,6 +1,6 @@
 import { h } from 'preact'
 
-import { escapeHTML } from './utils/stringUtils'
+import { escapeHTML } from '../utils/stringUtils'
 import JSONNode from './JSONNode'
 
 /**

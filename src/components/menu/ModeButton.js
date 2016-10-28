@@ -1,6 +1,6 @@
 import { h, Component } from 'preact'
 import ModeMenu from './ModeMenu'
-import { toCapital } from '../utils/stringUtils'
+import { toCapital } from '../../utils/stringUtils'
 
 export default class ModeButton extends Component {
   constructor (props) {

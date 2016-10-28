@@ -1,5 +1,5 @@
 import { h, Component } from 'preact'
-import { findParentNode } from '../utils/domUtils'
+import { findParentNode } from '../../utils/domUtils'
 
 export let CONTEXT_MENU_HEIGHT = 240
 

@@ -2,9 +2,9 @@ import { h, Component } from 'preact'
 
 import ActionButton from './menu/ActionButton'
 import AppendActionButton from './menu/AppendActionButton'
-import { escapeHTML, unescapeHTML } from './utils/stringUtils'
-import { getInnerText } from './utils/domUtils'
-import { stringConvert, valueType, isUrl } from  './utils/typeUtils'
+import { escapeHTML, unescapeHTML } from '../utils/stringUtils'
+import { getInnerText } from '../utils/domUtils'
+import { stringConvert, valueType, isUrl } from  '../utils/typeUtils'
 
 /**
  * @type {JSONNode | null} activeContextMenu  singleton holding the JSONNode having

@@ -1,9 +1,9 @@
 import { h } from 'preact'
 
-import { escapeHTML } from './utils/stringUtils'
+import { escapeHTML } from '../utils/stringUtils'
+import { valueType, isUrl } from  '../utils/typeUtils'
 import JSONNode from './JSONNode'
 import JSONNodeForm from './JSONNodeForm'
-import { valueType, isUrl } from  './utils/typeUtils'
 
 /**
  * JSONNodeView

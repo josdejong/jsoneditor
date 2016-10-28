@@ -1,6 +1,6 @@
 import { h } from 'preact'
 import TextMode from './TextMode'
-import ace from './assets/ace'
+import ace from '../assets/ace'
 
 /**
  * CodeMode (powered by Ace editor)
@@ -58,7 +58,7 @@ export default class CodeMode extends TextMode {
       aceEditor = _ace.edit(container)
 
       // bundle and load jsoneditor theme for ace editor
-      require('./assets/ace/theme-jsoneditor')
+      require('../assets/ace/theme-jsoneditor')
 
       // configure ace editor
       aceEditor.$blockScrolling = Infinity

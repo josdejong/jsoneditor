@@ -1,6 +1,6 @@
 import { h, Component } from 'preact'
 import ActionMenu from './ActionMenu'
-import { findParentNode } from '../utils/domUtils'
+import { findParentNode } from '../../utils/domUtils'
 
 export default class ActionButton extends Component {
   constructor (props) {
