@@ -1,0 +1,58 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <title>Synchronize two editors | JSONEditor</title>
+
+  <script src="../dist/jsoneditor.js"></script>
+
+  <style type="text/css">
+    body {
+      font-family: arial, sans-serif;
+    }
+
+    #jsoneditor1,
+    #jsoneditor2 {
+      display: inline-block;
+      width: 350px;
+      height: 500px;
+      margin-right: 24px;
+    }
+  </style>
+</head>
+<body>
+
+<p>
+  This example demonstrates how to keep two editors synchronized by listening for
+  the onChange event.
+</p>
+
+<div id="jsoneditor1"></div>
+<div id="jsoneditor2"></div>
+
+<script>
+  var json = {
+    'array': [1, 2, 3],
+    'boolean': true,
+    'null': null,
+    'number': 123,
+    'object': {'a': 'b', 'c': 'd'},
+    'string': 'Hello World'
+  }
+
+  var editor1 = jsoneditor(document.getElementById('jsoneditor1'), {
+    onChange: function (patch, revert) {
+      editor2.patch(patch)
+    }
+  })
+  editor1.set(json)
+
+  var editor2 = jsoneditor(document.getElementById('jsoneditor2'), {
+    onChange: function (patch, revert) {
+      editor1.patch(patch)
+    }
+  })
+  editor2.set(json)
+
+</script>
+</body>
+</html>

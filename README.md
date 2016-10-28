@@ -143,7 +143,8 @@ jsoneditor:
   This will generate the file `./dist/jsoneditor.js` and
   `./dist/jsoneditor-minimalist.js` and corresponding source maps.
 
-- To automatically build when a source file has changed:
+- For development, start a develop server which automatically updates the
+  library when a source file has changed:
 
   ```
   npm start
