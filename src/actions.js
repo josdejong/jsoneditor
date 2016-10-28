@@ -145,7 +145,7 @@ export function insert (data, path, type) {
     const index = parseInt(path[path.length - 1]) + 1
     return [{
       op: 'add',
-      path: compileJSONPointer(parentPath.concat(index + '')),
+      path: compileJSONPointer(parentPath.concat(index)),
       value,
       jsoneditor: {
         type

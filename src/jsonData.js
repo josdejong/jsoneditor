@@ -117,97 +117,101 @@ export function toDataPath (data, path) {
 export function patchData (data, patch) {
   const expand = expandAll   // TODO: customizable expand function
 
-  try {
-    let updatedData = data
-    let revert = []
+  let updatedData = data
+  let revert = []
 
-    patch.forEach(function (action) {
-      const options = action.jsoneditor
+  for (let i = 0; i < patch.length; i++) {
+    const action = patch[i]
+    const options = action.jsoneditor
 
-      switch (action.op) {
-        case 'add': {
-          const path = parseJSONPointer(action.path)
-          const newValue = jsonToData(action.value, expand, path)
+    switch (action.op) {
+      case 'add': {
+        const path = parseJSONPointer(action.path)
+        const newValue = jsonToData(action.value, expand, path)
 
-          // TODO: move setting type to jsonToData
-          if (options && options.type) {
-            // insert with type 'string' or 'value'
-            newValue.type = options.type
-          }
-          // TODO: handle options.order
+        // TODO: move setting type to jsonToData
+        if (options && options.type) {
+          // insert with type 'string' or 'value'
+          newValue.type = options.type
+        }
+        // TODO: handle options.order
 
-          const result = add(updatedData, action.path, newValue, options)
-          updatedData = result.data
-          revert = result.revert.concat(revert)
+        const result = add(updatedData, action.path, newValue, options)
+        updatedData = result.data
+        revert = result.revert.concat(revert)
 
-          break
+        break
+      }
+
+      case 'remove': {
+        const result = remove(updatedData, action.path)
+        updatedData = result.data
+        revert = result.revert.concat(revert)
+
+        break
+      }
+
+      case 'replace': {
+        const path = parseJSONPointer(action.path)
+        let newValue = jsonToData(action.value, expand, path)
+
+        // TODO: move setting type to jsonToData
+        if (options && options.type) {
+          // insert with type 'string' or 'value'
+          newValue.type = options.type
+        }
+        // TODO: handle options.order
+
+        const result = replace(updatedData, path, newValue)
+        updatedData = result.data
+        revert = result.revert.concat(revert)
+
+        break
+      }
+
+      case 'copy': {
+        const result = copy(updatedData, action.path, action.from, options)
+        updatedData = result.data
+        revert = result.revert.concat(revert)
+
+        break
+      }
+
+      case 'move': {
+        const result = move(updatedData, action.path, action.from, options)
+        updatedData = result.data
+        revert = result.revert.concat(revert)
+
+        break
+      }
+
+      case 'test': {
+        // when a test fails, cancel the whole patch and return the error
+        const error = test(updatedData, action.path, action.value)
+        if (error) {
+          return { data, revert: [], error}
         }
 
-        case 'remove': {
-          const result = remove(updatedData, action.path)
-          updatedData = result.data
-          revert = result.revert.concat(revert)
+        break
+      }
 
-          break
-        }
-
-        case 'replace': {
-          const path = parseJSONPointer(action.path)
-          let newValue = jsonToData(action.value, expand, path)
-
-          // TODO: move setting type to jsonToData
-          if (options && options.type) {
-            // insert with type 'string' or 'value'
-            newValue.type = options.type
-          }
-          // TODO: handle options.order
-
-          const result = replace(updatedData, path, newValue)
-          updatedData = result.data
-          revert = result.revert.concat(revert)
-
-          break
-        }
-
-        case 'copy': {
-          const result = copy(updatedData, action.path, action.from, options)
-          updatedData = result.data
-          revert = result.revert.concat(revert)
-
-          break
-        }
-
-        case 'move': {
-          const result = move(updatedData, action.path, action.from, options)
-          updatedData = result.data
-          revert = result.revert.concat(revert)
-
-          break
-        }
-
-        case 'test': {
-          test(updatedData, action.path, action.value)
-
-          break
-        }
-
-        default: {
-          throw new Error('Unknown jsonpatch op ' + JSON.stringify(action.op))
+      default: {
+        // unknown jsonpatch operation. Cancel the whole patch and return an error
+        return {
+          data,
+          revert: [],
+          error: new Error('Unknown jsonpatch op ' + JSON.stringify(action.op))
         }
       }
-    })
-
-    // TODO: Simplify revert when possible:
-    //       when a previous action takes place on the same path, remove the first
-
-    return {
-      data: updatedData,
-      revert: simplifyPatch(revert),
-      error: null
     }
   }
-  catch (error) {
-    return {data, revert: [], error}
+
+  // TODO: Simplify revert when possible:
+  //       when a previous action takes place on the same path, remove the first
+  return {
+    data: updatedData,
+    revert: simplifyPatch(revert),
+    error: null
   }
 }
 
@@ -336,7 +340,7 @@ export function add (data, path, value, options) {
 
   let updatedData
   if (parent.type === 'Array') {
-      updatedData = insertAt(data, dataPath.concat('items', prop), value)
+    updatedData = insertAt(data, dataPath.concat('items', prop), value)
   }
   else { // parent.type === 'Object'
     updatedData = updateIn(data, dataPath, (object) => {
@@ -439,20 +443,21 @@ export function move (data, path, from, options) {
  * @param {JSONData} data
  * @param {string} path
  * @param {*} value
+ * @return {null | Error} Returns an error when the tests, returns null otherwise
  */
 export function test (data, path, value) {
   if (value === undefined) {
-    throw new Error('Test failed, no value provided')
+    return new Error('Test failed, no value provided')
   }
 
   const pathArray = parseJSONPointer(path)
   if (!pathExists(data, pathArray)) {
-    throw new Error('Test failed, path not found')
+    return new Error('Test failed, path not found')
   }
 
   const actualValue = getIn(data, toDataPath(data, pathArray))
   if (!isEqual(dataToJson(actualValue), value)) {
-    throw new Error('Test failed, value differs')
+    return new Error('Test failed, value differs')
   }
 }
 
@@ -614,15 +619,11 @@ export function findPropertyIndex (object, prop) {
 
 /**
  * Parse a JSON Pointer
- * WARNING: this is not a complete string implementation
+ * WARNING: this is not a complete implementation
  * @param {string} pointer
  * @return {Array}
  */
 export function parseJSONPointer (pointer) {
-  if (pointer === '/') {
-    return []
-  }
-
   const path = pointer.split('/')
   path.shift() // remove the first empty entry
 
@@ -631,12 +632,12 @@ export function parseJSONPointer (pointer) {
 
 /**
  * Compile a JSON Pointer
- * WARNING: this is not a complete string implementation
+ * WARNING: this is not a complete implementation
  * @param {Path} path
  * @return {string}
  */
 export function compileJSONPointer (path) {
-  return '/' + path
-      .map(p => String(p).replace(/~/g, '~0').replace(/\//g, '~1'))
-      .join('/')
+  return path
+      .map(p => '/' + String(p).replace(/~/g, '~0').replace(/\//g, '~1'))
+      .join('')
 }
