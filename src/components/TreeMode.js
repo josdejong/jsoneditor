@@ -84,7 +84,7 @@ export default class TreeMode extends Component {
       })
     ]
 
-    if (this.props.mode !== 'view') {
+    if (this.props.mode !== 'view' && this.props.options.history != false) {
       items = items.concat([
         h('div', {class: 'jsoneditor-vertical-menu-separator'}),
 
@@ -291,19 +291,27 @@ export default class TreeMode extends Component {
     const result = patchData(this.state.data, actions)
     const data = result.data
 
-    const historyItem = {
-      redo: actions,
-      undo: result.revert
-    }
-    const history = [historyItem]
-        .concat(this.state.history.slice(this.state.historyIndex))
-        .slice(0, MAX_HISTORY_ITEMS)
+    if (this.props.options.history != false) {
+      // update data and store history
+      const historyItem = {
+        redo: actions,
+        undo: result.revert
+      }
 
-    this.setState({
-      data,
-      history,
-      historyIndex: 0
-    })
+      const history = [historyItem]
+          .concat(this.state.history.slice(this.state.historyIndex))
+          .slice(0, MAX_HISTORY_ITEMS)
+
+      this.setState({
+        data,
+        history,
+        historyIndex: 0
+      })
+    }
+    else {
+      // update data and don't store history
+      this.setState({ data })
+    }
 
     return {
       patch: actions,

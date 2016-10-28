@@ -314,6 +314,7 @@ export default class JSONNode extends Component {
         : valueType(data.value)
   }
 
+  /** @private */
   handleChangeProperty = (event) => {
     const parentPath = this.props.parent.getPath()
     const oldProp = this.props.prop
@@ -324,6 +325,7 @@ export default class JSONNode extends Component {
     }
   }
 
+  /** @private */
   handleChangeValue = (event) => {
     const value = this.getValueFromEvent(event)
 
@@ -332,18 +334,21 @@ export default class JSONNode extends Component {
     }
   }
 
+  /** @private */
   handleClickValue = (event) => {
     if (event.ctrlKey && event.button === 0) { // Ctrl+Left click
       this.openLinkIfUrl(event)
     }
   }
 
+  /** @private */
   handleKeyDownValue = (event) => {
     if (event.ctrlKey && event.which === 13) { // Ctrl+Enter
       this.openLinkIfUrl(event)
     }
   }
 
+  /** @private */
   handleExpand = (event) => {
     const recurse = event.ctrlKey
     const expanded = !this.props.data.expanded
@@ -351,6 +356,7 @@ export default class JSONNode extends Component {
     this.props.events.onExpand(this.getPath(), expanded, recurse)
   }
 
+  /** @private */
   handleContextMenu = (event) => {
     event.stopPropagation()
 
@@ -373,6 +379,7 @@ export default class JSONNode extends Component {
     }
   }
 
+  /** @private */
   handleAppendContextMenu = (event) => {
     event.stopPropagation()
 
@@ -397,6 +404,7 @@ export default class JSONNode extends Component {
 
   /**
    * Singleton function to hide the currently visible context menu if any.
+   * @private
    */
   static hideActionMenu () {
     if (activeContextMenu) {
@@ -411,7 +419,7 @@ export default class JSONNode extends Component {
   /**
    * When this JSONNode holds an URL as value, open this URL in a new browser tab
    * @param event
-   * @private
+   * @protected
    */
   openLinkIfUrl (event) {
     const value = this.getValueFromEvent(event)
@@ -440,10 +448,6 @@ export default class JSONNode extends Component {
     return path
   }
 
-  isFieldEditable () {
-
-  }
-
   /**
    * Get the value of the target of an event, and convert it to it's type
    * @param event
@@ -463,7 +467,7 @@ export default class JSONNode extends Component {
    * @param event
    * @return {*}
    */
-  // TODO: cleanup
+  // TODO: make redundant and cleanup
   static findRootElement (event) {
     function isEditorElement (elem) {
       // FIXME: this is a bit tricky. can we use a special attribute or something?
