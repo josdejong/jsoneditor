@@ -2,6 +2,7 @@ import { h, render } from 'preact'
 import CodeMode from './CodeMode'
 import TextMode from './TextMode'
 import TreeMode from './TreeMode'
+import { compileJSONPointer, parseJSONPointer } from './jsonData'
 
 import '!style!css!less!./jsoneditor.less'
 
@@ -28,6 +29,11 @@ function jsoneditor (container, options = {}) {
 
   const editor = {
     isJSONEditor: true,
+
+    utils: {
+      compileJSONPointer,
+      parseJSONPointer
+    },
 
     _container: container,
     _options: options,

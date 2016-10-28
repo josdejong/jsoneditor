@@ -31,17 +31,19 @@
  * }} JSONPatchResult
  *
  * @typedef {{
+ *   name: string?,
  *   mode?: 'code' | 'form' | 'text' | 'tree' | 'view',
  *   modes?: string[],
  *   indentation?: number | string,
  *   onChange?: function (patch: JSONPatch, revert: JSONPatch),
  *   onChangeText?: function (),
  *   onChangeMode?: function (mode: string, prevMode: string),
- *   onError?:  function (err: Error)
+ *   onError?:  function (err: Error),
+ *   isPropertyEditable?: function (Path) : boolean
+ *   isValueEditable?: function (Path) : boolean
  * }} Options
  *
  * @typedef {{
- *   name: string?,
  *   expand: function (path: Path)?
  * }} SetOptions
  */

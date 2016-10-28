@@ -21,10 +21,6 @@ export default class TreeMode extends Component {
     const data = jsonToData(this.props.data || {}, expand, [])
 
     this.state = {
-      nodeOptions: {
-        name: null
-      },
-
       data,
 
       history: [data],
@@ -65,7 +61,7 @@ export default class TreeMode extends Component {
           h(Node, {
             data: state.data,
             events: state.events,
-            options: state.nodeOptions,
+            options: props.options,
             parent: null,
             prop: null
           })
@@ -322,13 +318,9 @@ export default class TreeMode extends Component {
    * @param {SetOptions} [options]
    */
   set (json, options = {}) {
-    const name = options && options.name || null // the root name
-    const data = jsonToData(json, options.expand || TreeMode.expand, [])
-
     this.setState({
-      nodeOptions: setIn(this.state.nodeOptions, ['name'], name),
+      data: jsonToData(json, options.expand || TreeMode.expand, []),
 
-      data,
       // TODO: do we want to keep history when .set(json) is called?
       history: [],
       historyIndex: 0

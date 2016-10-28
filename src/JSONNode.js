@@ -114,7 +114,7 @@ export default class JSONNode extends Component {
         this.renderActionMenuButton(),
         this.renderProperty(prop, data, options),
         this.renderSeparator(),
-        this.renderValue(data.value)
+        this.renderValue(data.value, options)
       ])
     ])
   }
@@ -143,35 +143,35 @@ export default class JSONNode extends Component {
   }
 
   renderProperty (prop, data, options) {
-    if (prop !== null) {
-      const isIndex = typeof prop === 'number' // FIXME: pass an explicit prop isIndex
-
-      if (isIndex) { // array item
-        return h('div', {
-          class: 'jsoneditor-property jsoneditor-readonly',
-          spellCheck: 'false'
-        }, prop)
-      }
-      else { // object property
-        const escapedProp = escapeHTML(prop)
-
-        return h('div', {
-          class: 'jsoneditor-property' + (prop.length === 0 ? ' jsoneditor-empty' : ''),
-          contentEditable: 'true',
-          spellCheck: 'false',
-          onBlur: this.handleChangeProperty
-        }, escapedProp)
-      }
-    }
-    else {
+    if (prop === null) {
       // root node
-      const content = JSONNode.getRootName(data, options)
+      const rootName = JSONNode.getRootName(data, options)
 
       return h('div', {
         class: 'jsoneditor-property jsoneditor-readonly',
         spellCheck: 'false',
         onBlur: this.handleChangeProperty
-      }, content)
+      }, rootName)
+    }
+
+    const isIndex = typeof prop === 'number' // FIXME: pass an explicit prop isIndex or editable
+    const editable = !isIndex && (!options.isPropertyEditable || options.isPropertyEditable(this.getPath()))
+
+    if (editable) {
+      const escapedProp = escapeHTML(prop)
+
+      return h('div', {
+        class: 'jsoneditor-property' + (prop.length === 0 ? ' jsoneditor-empty' : ''),
+        contentEditable: 'true',
+        spellCheck: 'false',
+        onBlur: this.handleChangeProperty
+      }, escapedProp)
+    }
+    else {
+      return h('div', {
+        class: 'jsoneditor-property jsoneditor-readonly',
+        spellCheck: 'false'
+      }, prop)
     }
   }
 
@@ -179,22 +179,31 @@ export default class JSONNode extends Component {
     return h('div', {class: 'jsoneditor-separator'}, ':')
   }
 
-  renderValue (value) {
+  renderValue (value, options) {
     const escapedValue = escapeHTML(value)
     const type = valueType (value)
     const itsAnUrl = isUrl(value)
     const isEmpty = escapedValue.length === 0
 
-    return h('div', {
-      class: JSONNode.getValueClass(type, itsAnUrl, isEmpty),
-      contentEditable: 'true',
-      spellCheck: 'false',
-      onBlur: this.handleChangeValue,
-      onInput: this.updateValueStyling,
-      onClick: this.handleClickValue,
-      onKeyDown: this.handleKeyDownValue,
-      title: itsAnUrl ? JSONNode.URL_TITLE : null
-    }, escapedValue)
+    const editable = !options.isValueEditable || options.isValueEditable(this.getPath())
+    if (editable) {
+      return h('div', {
+        class: JSONNode.getValueClass(type, itsAnUrl, isEmpty),
+        contentEditable: 'true',
+        spellCheck: 'false',
+        onBlur: this.handleChangeValue,
+        onInput: this.updateValueStyling,
+        onClick: this.handleClickValue,
+        onKeyDown: this.handleKeyDownValue,
+        title: itsAnUrl ? JSONNode.URL_TITLE : null
+      }, escapedValue)
+    }
+    else {
+      return h('div', {
+        class: 'jsoneditor-readonly',
+        title: itsAnUrl ? JSONNode.URL_TITLE : null
+      }, escapedValue)
+    }
   }
 
   /**
@@ -429,6 +438,10 @@ export default class JSONNode extends Component {
     }
 
     return path
+  }
+
+  isFieldEditable () {
+
   }
 
   /**

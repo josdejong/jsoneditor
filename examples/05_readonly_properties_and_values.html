@@ -1,7 +1,7 @@
 <!DOCTYPE HTML>
 <html>
 <head>
-  <title>Custom editable fields | JSONEditor</title>
+  <title>Read-only properties and values | JSONEditor</title>
 
   <script src="../dist/jsoneditor.js"></script>
 
@@ -27,26 +27,22 @@
     var container = document.getElementById('jsoneditor');
 
     var options = {
-      onEditable: function (node) {
-        // node is an object like:
-        //   {
-        //     field: 'FIELD',
-        //     value: 'VALUE',
-        //     path: ['PATH', 'TO', 'NODE']
-        //   }
-        switch (node.field) {
-          case '_id':
-            return false;
-
-          case 'name':
-            return {
-              field: false,
-              value: true
-            }
-
-          default:
-            return true;
+      // all properties are editable except '_id' and 'name'
+      isPropertyEditable: function (path) {
+        if (path.length === 1 && path[0] === '_id' || path[0] === 'name') {
+          return false
         }
+
+        return true
+      },
+
+      // all values are editable except '_id'
+      isValueEditable: function (path) {
+        if (path.length === 1 && path[0] === '_id') {
+          return false
+        }
+
+        return true
       }
     }
 
@@ -56,7 +52,8 @@
       age: 32
     }
 
-    var editor = jsoneditor(container, options, json)
+    var editor = jsoneditor(container, options)
+    editor.set(json)
   </script>
 </body>
 </html>

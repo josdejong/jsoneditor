@@ -41,6 +41,7 @@
   const mode = document.getElementById('mode').value
   const container = document.getElementById('container')
   const options = {
+    name: 'myObject',
     onChange: function (patch, revert) {
       console.log('onChange patch=', patch, ', revert=', revert)
       window.patch = patch
@@ -74,7 +75,6 @@
     'url': 'http://jsoneditoronline.org'
   }
   editor.set(json, {
-    name: 'myObject',
     expand: function (path) {
       return true
     }
