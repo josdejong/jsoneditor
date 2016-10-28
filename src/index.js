@@ -1,7 +1,7 @@
 import { h, render } from 'preact'
-import CodeMode from './CodeMode'
-import TextMode from './TextMode'
-import TreeMode from './TreeMode'
+import CodeMode from './components/CodeMode'
+import TextMode from './components/TextMode'
+import TreeMode from './components/TreeMode'
 import { compileJSONPointer, parseJSONPointer } from './jsonData'
 
 import '!style!css!less!./jsoneditor.less'
