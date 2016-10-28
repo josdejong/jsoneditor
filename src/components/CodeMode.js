@@ -1,4 +1,4 @@
-import { h } from 'preact'
+import { createElement as h, Component } from 'react'
 import TextMode from './TextMode'
 import ace from '../assets/ace'
 
@@ -36,11 +36,12 @@ export default class CodeMode extends TextMode {
     this.aceEditor = null
   }
 
-  render (props, state) {
-    return h('div', {class: 'jsoneditor jsoneditor-mode-code'}, [
+  render () {
+    const { props, state } = this
+    return h('div', {className: 'jsoneditor jsoneditor-mode-code'}, [
       this.renderMenu(),
 
-      h('div', {class: 'jsoneditor-contents', id: this.id})
+      h('div', {className: 'jsoneditor-contents', id: this.id})
     ])
   }
 

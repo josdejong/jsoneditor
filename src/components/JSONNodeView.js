@@ -1,4 +1,4 @@
-import { h } from 'preact'
+import { createElement as h } from 'react'
 
 import { escapeHTML } from '../utils/stringUtils'
 import { valueType, isUrl } from  '../utils/typeUtils'
@@ -22,13 +22,13 @@ export default class JSONNodeView extends JSONNodeForm {
 
     if (itsAnUrl) {
       return h('a', {
-        class: className,
+        className: className,
         href: escapedValue
       }, escapedValue)
     }
     else {
       return h('div', {
-        class: className,
+        className: className,
         onClick: this.handleClickValue
       }, escapedValue)
     }

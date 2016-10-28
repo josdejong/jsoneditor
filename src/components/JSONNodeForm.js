@@ -1,5 +1,4 @@
-import { h } from 'preact'
-
+import { createElement as h } from 'react'
 import { escapeHTML } from '../utils/stringUtils'
 import JSONNode from './JSONNode'
 
@@ -27,14 +26,14 @@ export default class JSONNodeForm extends JSONNode {
 
       if (isIndex) { // array item
         return h('div', {
-          class: 'jsoneditor-property jsoneditor-readonly'
+          className: 'jsoneditor-property jsoneditor-readonly'
         }, prop)
       }
       else { // object property
         const escapedProp = escapeHTML(prop, options.escapeUnicode)
 
         return h('div', {
-          class: 'jsoneditor-property' + (prop.length === 0 ? ' jsoneditor-empty' : '')
+          className: 'jsoneditor-property' + (prop.length === 0 ? ' jsoneditor-empty' : '')
         }, escapedProp)
       }
     }
@@ -43,7 +42,7 @@ export default class JSONNodeForm extends JSONNode {
       const content = JSONNode.getRootName(data, options)
 
       return h('div', {
-        class: 'jsoneditor-property jsoneditor-readonly'
+        className: 'jsoneditor-property jsoneditor-readonly'
       }, content)
     }
   }

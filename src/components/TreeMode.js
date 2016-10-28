@@ -1,4 +1,4 @@
-import { h, Component } from 'preact'
+import { createElement as h, Component } from 'react'
 
 import { updateIn } from '../utils/immutabilityHelpers'
 import { expand, jsonToData, dataToJson, toDataPath, patchData } from '../jsonData'
@@ -43,7 +43,9 @@ export default class TreeMode extends Component {
     }
   }
 
-  render (props, state) {
+  render () {
+    const { props, state } = this
+
     const Node = (props.mode === 'view')
         ? JSONNodeView
         : (props.mode === 'form')
@@ -51,13 +53,13 @@ export default class TreeMode extends Component {
             : JSONNode
 
     return h('div', {
-      class: `jsoneditor jsoneditor-mode-${props.mode}`,
+      className: `jsoneditor jsoneditor-mode-${props.mode}`,
       'data-jsoneditor': 'true'
     }, [
       this.renderMenu(),
 
-      h('div', {class: 'jsoneditor-contents jsoneditor-tree-contents', onClick: this.handleHideMenus}, [
-        h('ul', {class: 'jsoneditor-list jsoneditor-root'}, [
+      h('div', {className: 'jsoneditor-contents jsoneditor-tree-contents', onClick: this.handleHideMenus}, [
+        h('ul', {className: 'jsoneditor-list jsoneditor-root'}, [
           h(Node, {
             data: state.data,
             events: state.events,
@@ -73,12 +75,12 @@ export default class TreeMode extends Component {
   renderMenu () {
     let items = [
       h('button', {
-        class: 'jsoneditor-expand-all',
+        className: 'jsoneditor-expand-all',
         title: 'Expand all objects and arrays',
         onClick: this.handleExpandAll
       }),
       h('button', {
-        class: 'jsoneditor-collapse-all',
+        className: 'jsoneditor-collapse-all',
         title: 'Collapse all objects and arrays',
         onClick: this.handleCollapseAll
       })
@@ -86,18 +88,18 @@ export default class TreeMode extends Component {
 
     if (this.props.mode !== 'view' && this.props.options.history != false) {
       items = items.concat([
-        h('div', {class: 'jsoneditor-vertical-menu-separator'}),
+        h('div', {className: 'jsoneditor-vertical-menu-separator'}),
 
-        h('div', {style: 'display:inline-block'}, [
+        h('div', {style: {display: 'inline-block'}}, [
           h('button', {
-            class: 'jsoneditor-undo',
+            className: 'jsoneditor-undo',
             title: 'Undo last action',
             disabled: !this.canUndo(),
             onClick: this.undo
           }),
         ]),
         h('button', {
-          class: 'jsoneditor-redo',
+          className: 'jsoneditor-redo',
           title: 'Redo',
           disabled: !this.canRedo(),
           onClick: this.redo
@@ -107,7 +109,7 @@ export default class TreeMode extends Component {
 
     if (this.props.options.modes ) {
       items = items.concat([
-        h('div', {class: 'jsoneditor-vertical-menu-separator'}),
+        h('div', {className: 'jsoneditor-vertical-menu-separator'}),
 
         h(ModeButton, {
           modes: this.props.options.modes,
@@ -118,7 +120,7 @@ export default class TreeMode extends Component {
       ])
     }
 
-    return h('div', {class: 'jsoneditor-menu'}, items)
+    return h('div', {className: 'jsoneditor-menu'}, items)
   }
 
   /** @private */

@@ -1,4 +1,4 @@
-import { h, Component } from 'preact'
+import { createElement as h, Component } from 'react'
 
 import ActionButton from './menu/ActionButton'
 import AppendActionButton from './menu/AppendActionButton'
@@ -24,7 +24,9 @@ export default class JSONNode extends Component {
     }
   }
 
-  render (props, state) {
+  render () {
+    const { props } = this
+
     if (props.data.type === 'Array') {
       return this.renderJSONArray(props)
     }
@@ -39,7 +41,7 @@ export default class JSONNode extends Component {
   renderJSONObject ({prop, data, options, events}) {
     const childCount = data.props.length
     const contents = [
-      h('div', {class: 'jsoneditor-node jsoneditor-object'}, [
+      h('div', {className: 'jsoneditor-node jsoneditor-object'}, [
         this.renderExpandButton(),
         this.renderActionMenuButton(),
         this.renderProperty(prop, data, options),
@@ -60,10 +62,10 @@ export default class JSONNode extends Component {
           })
         })
 
-        contents.push(h('ul', {key: 'props', class: 'jsoneditor-list'}, props))
+        contents.push(h('ul', {key: 'props', className: 'jsoneditor-list'}, props))
       }
       else {
-        contents.push(h('ul', {key: 'append', class: 'jsoneditor-list'}, [
+        contents.push(h('ul', {key: 'append', className: 'jsoneditor-list'}, [
           this.renderAppend('(empty object)')
         ]))
       }
@@ -75,7 +77,7 @@ export default class JSONNode extends Component {
   renderJSONArray ({prop, data, options, events}) {
     const childCount = data.items.length
     const contents = [
-      h('div', {class: 'jsoneditor-node jsoneditor-array'}, [
+      h('div', {className: 'jsoneditor-node jsoneditor-array'}, [
         this.renderExpandButton(),
         this.renderActionMenuButton(),
         this.renderProperty(prop, data, options),
@@ -95,10 +97,10 @@ export default class JSONNode extends Component {
             events
           })
         })
-        contents.push(h('ul', {key: 'items', class: 'jsoneditor-list'}, items))
+        contents.push(h('ul', {key: 'items', className: 'jsoneditor-list'}, items))
       }
       else {
-        contents.push(h('ul', {key: 'append', class: 'jsoneditor-list'}, [
+        contents.push(h('ul', {key: 'append', className: 'jsoneditor-list'}, [
           this.renderAppend('(empty array)')
         ]))
       }
@@ -109,7 +111,7 @@ export default class JSONNode extends Component {
 
   renderJSONValue ({prop, data, options}) {
     return h('li', {}, [
-      h('div', {class: 'jsoneditor-node'}, [
+      h('div', {className: 'jsoneditor-node'}, [
         this.renderPlaceholder(),
         this.renderActionMenuButton(),
         this.renderProperty(prop, data, options),
@@ -126,7 +128,7 @@ export default class JSONNode extends Component {
    */
   renderAppend (text) {
     return h('li', {key: 'append'}, [
-      h('div', {class: 'jsoneditor-node'}, [
+      h('div', {className: 'jsoneditor-node'}, [
         this.renderPlaceholder(),
         this.renderAppendMenuButton(),
         this.renderReadonly(text)
@@ -135,11 +137,11 @@ export default class JSONNode extends Component {
   }
 
   renderPlaceholder () {
-    return h('div', {class: 'jsoneditor-button-placeholder'})
+    return h('div', {className: 'jsoneditor-button-placeholder'})
   }
 
   renderReadonly (text, title = null) {
-    return h('div', {class: 'jsoneditor-readonly', title}, text)
+    return h('div', {className: 'jsoneditor-readonly', title}, text)
   }
 
   renderProperty (prop, data, options) {
@@ -148,7 +150,7 @@ export default class JSONNode extends Component {
       const rootName = JSONNode.getRootName(data, options)
 
       return h('div', {
-        class: 'jsoneditor-property jsoneditor-readonly',
+        className: 'jsoneditor-property jsoneditor-readonly',
         spellCheck: 'false',
         onBlur: this.handleChangeProperty
       }, rootName)
@@ -161,7 +163,7 @@ export default class JSONNode extends Component {
       const escapedProp = escapeHTML(prop, options.escapeUnicode)
 
       return h('div', {
-        class: 'jsoneditor-property' + (prop.length === 0 ? ' jsoneditor-empty' : ''),
+        className: 'jsoneditor-property' + (prop.length === 0 ? ' jsoneditor-empty' : ''),
         contentEditable: 'true',
         spellCheck: 'false',
         onBlur: this.handleChangeProperty
@@ -169,14 +171,14 @@ export default class JSONNode extends Component {
     }
     else {
       return h('div', {
-        class: 'jsoneditor-property jsoneditor-readonly',
+        className: 'jsoneditor-property jsoneditor-readonly',
         spellCheck: 'false'
       }, prop)
     }
   }
 
   renderSeparator() {
-    return h('div', {class: 'jsoneditor-separator'}, ':')
+    return h('div', {className: 'jsoneditor-separator'}, ':')
   }
 
   renderValue (value, options) {
@@ -188,7 +190,7 @@ export default class JSONNode extends Component {
     const editable = !options.isValueEditable || options.isValueEditable(this.getPath())
     if (editable) {
       return h('div', {
-        class: JSONNode.getValueClass(type, itsAnUrl, isEmpty),
+        className: JSONNode.getValueClass(type, itsAnUrl, isEmpty),
         contentEditable: 'true',
         spellCheck: 'false',
         onBlur: this.handleChangeValue,
@@ -200,7 +202,7 @@ export default class JSONNode extends Component {
     }
     else {
       return h('div', {
-        class: 'jsoneditor-readonly',
+        className: 'jsoneditor-readonly',
         title: itsAnUrl ? JSONNode.URL_TITLE : null
       }, escapedValue)
     }
@@ -262,9 +264,9 @@ export default class JSONNode extends Component {
 
   renderExpandButton () {
     const className = `jsoneditor-button jsoneditor-${this.props.data.expanded ? 'expanded' : 'collapsed'}`
-    return h('div', {class: 'jsoneditor-button-container'},
+    return h('div', {className: 'jsoneditor-button-container'},
         h('button', {
-          class: className,
+          className: className,
           onClick: this.handleExpand,
           title:
             'Click to expand/collapse this field. \n' +
