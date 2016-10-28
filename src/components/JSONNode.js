@@ -158,7 +158,7 @@ export default class JSONNode extends Component {
     const editable = !isIndex && (!options.isPropertyEditable || options.isPropertyEditable(this.getPath()))
 
     if (editable) {
-      const escapedProp = escapeHTML(prop)
+      const escapedProp = escapeHTML(prop, options.escapeUnicode)
 
       return h('div', {
         class: 'jsoneditor-property' + (prop.length === 0 ? ' jsoneditor-empty' : ''),
@@ -180,7 +180,7 @@ export default class JSONNode extends Component {
   }
 
   renderValue (value, options) {
-    const escapedValue = escapeHTML(value)
+    const escapedValue = escapeHTML(value, options.escapeUnicode)
     const type = valueType (value)
     const itsAnUrl = isUrl(value)
     const isEmpty = escapedValue.length === 0

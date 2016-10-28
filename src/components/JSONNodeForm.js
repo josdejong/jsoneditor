@@ -31,7 +31,7 @@ export default class JSONNodeForm extends JSONNode {
         }, prop)
       }
       else { // object property
-        const escapedProp = escapeHTML(prop)
+        const escapedProp = escapeHTML(prop, options.escapeUnicode)
 
         return h('div', {
           class: 'jsoneditor-property' + (prop.length === 0 ? ' jsoneditor-empty' : '')

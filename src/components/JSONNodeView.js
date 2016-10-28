@@ -14,7 +14,7 @@ export default class JSONNodeView extends JSONNodeForm {
 
   // render a readonly value
   renderValue (value) {
-    const escapedValue = escapeHTML(value)
+    const escapedValue = escapeHTML(value, options.escapeUnicode)
     const type = valueType (value)
     const isEmpty = escapedValue.length === 0
     const itsAnUrl = isUrl(value)

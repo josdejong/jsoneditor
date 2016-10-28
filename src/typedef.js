@@ -40,7 +40,8 @@
  *   onChangeMode?: function (mode: string, prevMode: string),
  *   onError?:  function (err: Error),
  *   isPropertyEditable?: function (Path) : boolean
- *   isValueEditable?: function (Path) : boolean
+ *   isValueEditable?: function (Path) : boolean,
+ *   escapeUnicode:? boolean
  * }} Options
  *
  * @typedef {{

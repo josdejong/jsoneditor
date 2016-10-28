@@ -1,5 +1,6 @@
 import { h, Component } from 'preact'
 import { parseJSON } from '../utils/jsonUtils'
+import { escapeUnicodeChars } from '../utils/stringUtils'
 import { jsonToData, dataToJson, patchData } from '../jsonData'
 import ModeButton from './menu/ModeButton'
 
@@ -190,7 +191,11 @@ export default class TextMode extends Component {
    * @param {string} text
    */
   setText (text) {
-    this.setState({ text })
+    this.setState({
+      text: this.props.options.escapeUnicode
+          ? escapeUnicodeChars(text)
+          : text
+    })
   }
 
   /**

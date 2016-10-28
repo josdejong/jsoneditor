@@ -60,7 +60,8 @@
     },
     mode: mode,
     modes: ['text', 'code', 'tree', 'form', 'view'],
-    indentation: 4
+    indentation: 4,
+    escapeUnicode: true
   }
   const editor = jsoneditor(container, options)
   const json = {
@@ -72,6 +73,7 @@
     'number': 123,
     'object': {'a': 'b', 'c': 'd', 'e': [{"first": true}, {"second": true}]},
     'string': 'Hello World',
+    'unicode': 'A unicode character: \u260E',
     'url': 'http://jsoneditoronline.org'
   }
   editor.set(json, {

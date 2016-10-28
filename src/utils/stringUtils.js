@@ -31,7 +31,7 @@ export function escapeHTML (text, escapeUnicode = false) {
  * @param {string} text
  * @return {string}
  */
-function escapeUnicodeChars (text) {
+export function escapeUnicodeChars (text) {
   // see https://www.wikiwand.com/en/UTF-16
   // note: we leave surrogate pairs as two individual chars,
   // as JSON doesn't interpret them as a single unicode char.

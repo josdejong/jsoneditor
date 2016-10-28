@@ -1,6 +1,6 @@
 import { h, Component } from 'preact'
 
-import { setIn, updateIn } from '../utils/immutabilityHelpers'
+import { updateIn } from '../utils/immutabilityHelpers'
 import { expand, jsonToData, dataToJson, toDataPath, patchData } from '../jsonData'
 import { parseJSON } from '../utils/jsonUtils'
 import {
