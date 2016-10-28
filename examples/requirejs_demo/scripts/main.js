@@ -14,13 +14,13 @@ require([module], function (jsoneditor) {
       'number': 123,
       'object': {'a': 'b', 'c': 'd'},
       'string': 'Hello World'
-    };
+    }
     editor.set(json)
-  };
+  }
 
   // get json
   document.getElementById('getJSON').onclick = function () {
-    var json = editor.get();
+    var json = editor.get()
     alert(JSON.stringify(json, null, 2))
-  };
-});
+  }
+})

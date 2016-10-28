@@ -49,22 +49,22 @@
       }
     },
     "required": ["firstName", "lastName"]
-  };
+  }
 
   var json = {
     firstName: 'John',
     lastName: 'Doe',
     gender: null,
     age: 28
-  };
+  }
 
   var options = {
     schema: schema
-  };
+  }
 
   // create the editor
-  var container = document.getElementById('jsoneditor');
-  var editor = jsoneditor(container, options, json);
+  var container = document.getElementById('jsoneditor')
+  var editor = jsoneditor(container, options, json)
 </script>
 </body>
 </html>
