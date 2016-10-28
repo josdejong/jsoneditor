@@ -81,7 +81,7 @@ var compilerMinimalist = webpack({
   },
   plugins: [
     bannerPlugin,
-    new webpack.NormalModuleReplacementPlugin(new RegExp('^./assets/ace$'), EMPTY),
+    new webpack.NormalModuleReplacementPlugin(new RegExp('/assets/ace$'), EMPTY),
     new webpack.NormalModuleReplacementPlugin(new RegExp('^ajv$'), EMPTY),
     new webpack.optimize.UglifyJsPlugin()
   ],
