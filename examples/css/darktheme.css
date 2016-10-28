@@ -6,22 +6,31 @@ div.jsoneditor-menu {
 div.jsoneditor-menu {
   background-color: #4b4b4b;
 }
-div.jsoneditor-tree,
-div.jsoneditor textarea.jsoneditor-text {
+div.jsoneditor-tree-contents,
+textarea.jsoneditor-text {
   background-color: #666666;
   color: #ffffff;
 }
-div.jsoneditor-field,
+
+.jsoneditor-menu button.jsoneditor-undo:disabled {
+  background-position: -24px -96px;
+}
+.jsoneditor-menu button.jsoneditor-redo:disabled {
+  background-position: -48px -96px;
+}
+
+div.jsoneditor-property,
 div.jsoneditor-value {
   color: #ffffff;
 }
-table.jsoneditor-search div.jsoneditor-frame {
-  background: #808080;
+
+.jsoneditor-property:hover,
+.jsoneditor-value:hover {
+  background-color: #808080;
 }
 
-tr.jsoneditor-highlight,
-tr.jsoneditor-selected {
-  background-color: #808080;
+.jsoneditor-readonly:hover {
+  background-color: transparent;
 }
 
 div.jsoneditor-field[contenteditable=true]:focus,
@@ -31,21 +40,17 @@ div.jsoneditor-value[contenteditable=true]:hover,
 div.jsoneditor-field.jsoneditor-highlight,
 div.jsoneditor-value.jsoneditor-highlight {
   background-color: #808080;
-  border-color: #808080;
 }
 
-div.jsoneditor-field.highlight-active,
-div.jsoneditor-field.highlight-active:focus,
-div.jsoneditor-field.highlight-active:hover,
-div.jsoneditor-value.highlight-active,
-div.jsoneditor-value.highlight-active:focus,
-div.jsoneditor-value.highlight-active:hover {
-  background-color: #b1b1b1;
-  border-color: #b1b1b1;
+button.jsoneditor-button.jsoneditor-actionmenu {
+  background-position: -50px -50px;
 }
 
-div.jsoneditor-tree button:focus {
-  background-color: #868686;
+button.jsoneditor-button:hover,
+button.jsoneditor-button:focus,
+button.jsoneditor-button:active {
+  background-color: #808080;
+  outline: #808080 solid 1px;
 }
 
 /* coloring of JSON in tree mode */
@@ -56,7 +61,7 @@ div.jsoneditor td.jsoneditor-separator {
   color: #acacac;
 }
 div.jsoneditor-value.jsoneditor-string {
-  color: #00ff88;
+  color: #8bb54b;
 }
 div.jsoneditor-value.jsoneditor-object,
 div.jsoneditor-value.jsoneditor-array {
@@ -69,7 +74,7 @@ div.jsoneditor-value.jsoneditor-boolean {
   color: #ff8048;
 }
 div.jsoneditor-value.jsoneditor-null {
-  color: #49a7fc;
+  color: #3B8EEA;
 }
 div.jsoneditor-value.jsoneditor-invalid {
   color: white;

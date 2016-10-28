@@ -21,6 +21,10 @@ const modes = {
  * @constructor
  */
 function jsoneditor (container, options = {}) {
+  if (arguments.length > 2) {
+    throw new Error ('Passing JSON via the constructor has been deprecated. ' +
+        'Please pass JSON via editor.set(json).')
+  }
 
   const editor = {
     isJSONEditor: true,
