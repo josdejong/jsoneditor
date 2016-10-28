@@ -34,6 +34,7 @@
  *   name: string?,
  *   mode?: 'code' | 'form' | 'text' | 'tree' | 'view',
  *   modes?: string[],
+ *   history?: boolean,
  *   indentation?: number | string,
  *   onChange?: function (patch: JSONPatch, revert: JSONPatch),
  *   onChangeText?: function (),
