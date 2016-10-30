@@ -9,24 +9,22 @@ import isEqual from 'lodash/isEqual'
 
 /**
  * Expand function which will expand all nodes
- * @param path
+ * @param {Path} path
  * @return {boolean}
  */
 export function expandAll (path) {
   return true
 }
 
-// TODO: double check whether all patch functions handle each of the
-// extra properties in .jsoneditor: `before`, `type`, ...
-
 /**
  * Convert a JSON object into the internally used data model
  * @param {Object | Array | string | number | boolean | null} json
  * @param {function(path: Path)} [expand]
  * @param {Path} [path=[]]
+ * @param {JSONDataType} [type='value']  Optional json data type for the created value
  * @return {JSONData}
  */
-export function jsonToData (json, expand = expandAll, path = []) {
+export function jsonToData (json, expand = expandAll, path = [], type = 'value') {
   if (Array.isArray(json)) {
     return {
       type: 'Array',
@@ -48,7 +46,7 @@ export function jsonToData (json, expand = expandAll, path = []) {
   }
   else {
     return {
-      type: 'value',
+      type,
       value: json
     }
   }
@@ -132,14 +130,7 @@ export function patchData (data, patch, expand = expandAll) {
     switch (action.op) {
       case 'add': {
         const path = parseJSONPointer(action.path)
-        const newValue = jsonToData(action.value, expand, path)
-
-        // TODO: move setting type to jsonToData
-        if (options && options.type) {
-          // insert with type 'string' or 'value'
-          newValue.type = options.type
-        }
-
+        const newValue = jsonToData(action.value, expand, path, options && options.type)
         const result = add(updatedData, action.path, newValue, options)
         updatedData = result.data
         revert = result.revert.concat(revert)
@@ -157,13 +148,7 @@ export function patchData (data, patch, expand = expandAll) {
 
       case 'replace': {
         const path = parseJSONPointer(action.path)
-        let newValue = jsonToData(action.value, expand, path)
-
-        if (options && options.type) {
-          // insert with type 'string' or 'value'
-          newValue.type = options.type
-        }
-
+        const newValue = jsonToData(action.value, expand, path, options && options.type)
         const result = replace(updatedData, path, newValue)
         updatedData = result.data
         revert = result.revert.concat(revert)
@@ -229,7 +214,6 @@ export function replace (data, path, value) {
   const oldValue = getIn(data, dataPath)
 
   return {
-    // FIXME: keep the expanded state where possible
     data: setIn(data, dataPath, value),
     revert: [{
       op: 'replace',
