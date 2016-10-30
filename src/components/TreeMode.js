@@ -1,7 +1,7 @@
 import { h, Component } from 'preact'
 
-import { updateIn } from '../utils/immutabilityHelpers'
-import { expand, jsonToData, dataToJson, toDataPath, patchData } from '../jsonData'
+import { updateIn, getIn } from '../utils/immutabilityHelpers'
+import { expand, jsonToData, dataToJson, toDataPath, patchData, pathExists } from '../jsonData'
 import { parseJSON } from '../utils/jsonUtils'
 import {
   duplicate, insert, append, remove, changeType, changeValue, changeProperty, sort
@@ -17,8 +17,7 @@ export default class TreeMode extends Component {
   constructor (props) {
     super(props)
 
-    const expand = this.props.options.expand || TreeMode.expand
-    const data = jsonToData(this.props.data || {}, expand, [])
+    const data = jsonToData(this.props.data || {}, TreeMode.expandAll, [])
 
     this.state = {
       data,
@@ -282,13 +281,22 @@ export default class TreeMode extends Component {
 
   /**
    * Apply a JSONPatch to the current JSON document
-   * @param {JSONPatch} actions   JSONPatch actions
+   * @param {JSONPatch} actions       JSONPatch actions
+   * @param {PatchOptions} [options]  If no expand function is provided, the
+   *                                  expanded state will be kept as is for
+   *                                  existing paths. New paths will be fully
+   *                                  expanded.
    * @return {JSONPatchResult} Returns a JSONPatch result containing the
    *                           patch, a patch to revert the action, and
    *                           an error object which is null when successful
    */
-  patch (actions) {
-    const result = patchData(this.state.data, actions)
+  patch (actions, options = {}) {
+    if (!Array.isArray(actions)) {
+      throw new TypeError('Array with patch actions expected')
+    }
+
+    const expand = options.expand || (path => this.expandKeepOrExpandAll(path))
+    const result = patchData(this.state.data, actions, expand)
     const data = result.data
 
     if (this.props.options.history != false) {
@@ -323,13 +331,17 @@ export default class TreeMode extends Component {
   /**
    * Set JSON object in editor
    * @param {Object | Array | string | number | boolean | null} json   JSON data
-   * @param {SetOptions} [options]
+   * @param {SetOptions} [options]  If no expand function is provided,
+   *                                The root will be expanded and all other nodes
+   *                                will be collapsed.
    */
   set (json, options = {}) {
-    this.setState({
-      data: jsonToData(json, options.expand || TreeMode.expand, []),
+    const expand = options.expand || TreeMode.expandRoot
 
-      // TODO: do we want to keep history when .set(json) is called?
+    this.setState({
+      data: jsonToData(json, expand, []),
+
+      // TODO: do we want to keep history when .set(json) is called? (currently we remove history)
       history: [],
       historyIndex: 0
     })
@@ -381,6 +393,36 @@ export default class TreeMode extends Component {
   }
 
   /**
+   * Test whether a path exists in the editor
+   * @param {Path} path
+   */
+  exists (path) {
+    return pathExists(this.state.data, path)
+  }
+
+  /**
+   * Test whether an Array or Object at a certain path is expanded.
+   * When the node does not exist, the function throws an error
+   * @param {Path} path
+   * @return {boolean} Returns true when expanded, false otherwise
+   */
+  isExpanded (path) {
+    return getIn(this.state.data, toDataPath(this.state.data, path)).expanded
+  }
+
+  /**
+   * Expand function which keeps the expanded state the same as the current data.
+   * When the path doesn't yet exist, it will be expanded.
+   * @param {Path} path
+   * @return {boolean}
+   */
+  expandKeepOrExpandAll (path) {
+    return this.exists(path)
+        ? this.isExpanded(path)
+        : TreeMode.expandAll(path)
+  }
+
+  /**
    * Destroy the editor
    */
   destroy () {
@@ -395,10 +437,9 @@ export default class TreeMode extends Component {
    * @param {Array.<string>} path
    * @return {boolean}
    */
-  static expand (path) {
+  static expandRoot (path) {
     return path.length === 0
   }
-
 
   /**
    * Callback function to expand all nodes

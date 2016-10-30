@@ -7,12 +7,17 @@ import { setIn, updateIn, getIn, deleteIn, insertAt } from './utils/immutability
 import { isObject } from  './utils/typeUtils'
 import isEqual from 'lodash/isEqual'
 
-const expandAll = function (path) {
+/**
+ * Expand function which will expand all nodes
+ * @param path
+ * @return {boolean}
+ */
+export function expandAll (path) {
   return true
 }
 
 // TODO: double check whether all patch functions handle each of the
-// extra properties in .jsoneditor: `before`, `type`, `order`
+// extra properties in .jsoneditor: `before`, `type`, ...
 
 /**
  * Convert a JSON object into the internally used data model
@@ -112,11 +117,11 @@ export function toDataPath (data, path) {
  * Apply a patch to a JSONData object
  * @param {JSONData} data
  * @param {Array} patch    A JSON patch
+ * @param {function(path: Path)} [expand]  Optional function to determine
+ *                                         what nodes must be expanded
  * @return {{data: JSONData, revert: Array.<Object>, error: Error | null}}
  */
-export function patchData (data, patch) {
-  const expand = expandAll   // TODO: customizable expand function
-
+export function patchData (data, patch, expand = expandAll) {
   let updatedData = data
   let revert = []
 
@@ -134,7 +139,6 @@ export function patchData (data, patch) {
           // insert with type 'string' or 'value'
           newValue.type = options.type
         }
-        // TODO: handle options.order
 
         const result = add(updatedData, action.path, newValue, options)
         updatedData = result.data
@@ -155,12 +159,10 @@ export function patchData (data, patch) {
         const path = parseJSONPointer(action.path)
         let newValue = jsonToData(action.value, expand, path)
 
-        // TODO: move setting type to jsonToData
         if (options && options.type) {
           // insert with type 'string' or 'value'
           newValue.type = options.type
         }
-        // TODO: handle options.order
 
         const result = replace(updatedData, path, newValue)
         updatedData = result.data

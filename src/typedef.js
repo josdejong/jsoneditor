@@ -48,4 +48,8 @@
  * @typedef {{
  *   expand: function (path: Path)?
  * }} SetOptions
+ *
+ * @typedef {{
+ *   expand: function (path: Path)?
+ * }} PatchOptions
  */
