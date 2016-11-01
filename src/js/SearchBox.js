@@ -52,12 +52,14 @@ function SearchBox (editor, container) {
   tbodySearch.appendChild(tr);
 
   var refreshSearch = document.createElement('button');
+  refreshSearch.type = 'button';
   refreshSearch.className = 'jsoneditor-refresh';
   td = document.createElement('td');
   td.appendChild(refreshSearch);
   tr.appendChild(td);
 
   var search = document.createElement('input');
+  // search.type = 'button';
   this.dom.search = search;
   search.oninput = function (event) {
     searchBox._onDelayedSearch(event);
@@ -81,6 +83,7 @@ function SearchBox (editor, container) {
   tr.appendChild(td);
 
   var searchNext = document.createElement('button');
+  searchNext.type = 'button';
   searchNext.title = 'Next result (Enter)';
   searchNext.className = 'jsoneditor-next';
   searchNext.onclick = function () {
@@ -91,6 +94,7 @@ function SearchBox (editor, container) {
   tr.appendChild(td);
 
   var searchPrevious = document.createElement('button');
+  searchPrevious.type = 'button';
   searchPrevious.title = 'Previous result (Shift+Enter)';
   searchPrevious.className = 'jsoneditor-previous';
   searchPrevious.onclick = function () {

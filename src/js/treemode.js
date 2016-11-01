@@ -676,6 +676,7 @@ treemode._createFrame = function () {
 
   // create expand all button
   var expandAll = document.createElement('button');
+  expandAll.type = 'button';
   expandAll.className = 'jsoneditor-expand-all';
   expandAll.title = 'Expand all fields';
   expandAll.onclick = function () {
@@ -685,6 +686,7 @@ treemode._createFrame = function () {
 
   // create expand all button
   var collapseAll = document.createElement('button');
+  collapseAll.type = 'button';
   collapseAll.title = 'Collapse all fields';
   collapseAll.className = 'jsoneditor-collapse-all';
   collapseAll.onclick = function () {
@@ -696,6 +698,7 @@ treemode._createFrame = function () {
   if (this.history) {
     // create undo button
     var undo = document.createElement('button');
+    undo.type = 'button';
     undo.className = 'jsoneditor-undo jsoneditor-separator';
     undo.title = 'Undo last action (Ctrl+Z)';
     undo.onclick = function () {
@@ -706,6 +709,7 @@ treemode._createFrame = function () {
 
     // create redo button
     var redo = document.createElement('button');
+    redo.type = 'button';
     redo.className = 'jsoneditor-redo';
     redo.title = 'Redo (Ctrl+Shift+Z)';
     redo.onclick = function () {

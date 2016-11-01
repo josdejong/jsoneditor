@@ -164,6 +164,7 @@ Node.prototype.setError = function (error, child) {
     popover.appendChild(document.createTextNode(error.message));
 
     var button = document.createElement('button');
+    button.type = 'button';
     button.className = 'jsoneditor-schema-error';
     button.appendChild(popover);
 
@@ -1485,6 +1486,7 @@ Node.prototype.getDom = function() {
       // create draggable area
       if (this.parent) {
         var domDrag = document.createElement('button');
+        domDrag.type = 'button';
         dom.drag = domDrag;
         domDrag.className = 'jsoneditor-dragarea';
         domDrag.title = 'Drag to move this field (Alt+Shift+Arrows)';
@@ -1496,6 +1498,7 @@ Node.prototype.getDom = function() {
     // create context menu
     var tdMenu = document.createElement('td');
     var menu = document.createElement('button');
+    menu.type = 'button';
     dom.menu = menu;
     menu.className = 'jsoneditor-contextmenu';
     menu.title = 'Click to open the actions menu (Ctrl+M)';
@@ -2123,6 +2126,7 @@ Node.prototype._createDomValue = function () {
 Node.prototype._createDomExpandButton = function () {
   // create expand button
   var expand = document.createElement('button');
+  expand.type = 'button';
   if (this._hasChilds()) {
     expand.className = this.expanded ? 'jsoneditor-expanded' : 'jsoneditor-collapsed';
     expand.title =

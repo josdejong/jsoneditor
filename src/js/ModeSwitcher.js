@@ -72,6 +72,7 @@ function ModeSwitcher(container, modes, current, onSwitch) {
 
   // create the html element
   var box = document.createElement('button');
+  box.type = 'button';
   box.className = 'jsoneditor-modes jsoneditor-separator';
   box.innerHTML = currentTitle + ' &#x25BE;';
   box.title = 'Switch editor mode';

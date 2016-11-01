@@ -42,6 +42,7 @@ function ContextMenu (items, options) {
 
   // create a (non-visible) button to set the focus to the menu
   var focusButton = document.createElement('button');
+  focusButton.type = 'button';
   dom.focusButton = focusButton;
   var li = document.createElement('li');
   li.style.overflow = 'hidden';
@@ -68,6 +69,7 @@ function ContextMenu (items, options) {
 
         // create a button in the menu item
         var button = document.createElement('button');
+        button.type = 'button';
         button.className = item.className;
         domItem.button = button;
         if (item.title) {
@@ -96,6 +98,7 @@ function ContextMenu (items, options) {
             button.className += ' jsoneditor-default';
 
             var buttonExpand = document.createElement('button');
+            buttonExpand.type = 'button';
             domItem.buttonExpand = buttonExpand;
             buttonExpand.className = 'jsoneditor-expand';
             buttonExpand.innerHTML = '<div class="jsoneditor-expand"></div>';
