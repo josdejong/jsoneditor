@@ -3,10 +3,11 @@
 https://github.com/josdejong/jsoneditor
 
 
-## not yet released, version 5.5.10
+## 2016-11-02, version 5.5.10
 
 - Fixed #85: pressing enter in an input in a form containing a JSONEditor too
   breaks submitting the form.
+
 
 ## 2016-10-17, version 5.5.9
 

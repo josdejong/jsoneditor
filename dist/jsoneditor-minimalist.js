@@ -24,8 +24,8 @@
  * Copyright (c) 2011-2016 Jos de Jong, http://jsoneditoronline.org
  *
  * @author  Jos de Jong, <wjosdejong@gmail.com>
- * @version 5.5.9
- * @date    2016-10-17
+ * @version 5.5.10
+ * @date    2016-11-02
  */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
@@ -1152,6 +1152,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	  // create expand all button
 	  var expandAll = document.createElement('button');
+	  expandAll.type = 'button';
 	  expandAll.className = 'jsoneditor-expand-all';
 	  expandAll.title = 'Expand all fields';
 	  expandAll.onclick = function () {
@@ -1161,6 +1162,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	  // create expand all button
 	  var collapseAll = document.createElement('button');
+	  collapseAll.type = 'button';
 	  collapseAll.title = 'Collapse all fields';
 	  collapseAll.className = 'jsoneditor-collapse-all';
 	  collapseAll.onclick = function () {
@@ -1172,6 +1174,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  if (this.history) {
 	    // create undo button
 	    var undo = document.createElement('button');
+	    undo.type = 'button';
 	    undo.className = 'jsoneditor-undo jsoneditor-separator';
 	    undo.title = 'Undo last action (Ctrl+Z)';
 	    undo.onclick = function () {
@@ -1182,6 +1185,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	    // create redo button
 	    var redo = document.createElement('button');
+	    redo.type = 'button';
 	    redo.className = 'jsoneditor-redo';
 	    redo.title = 'Redo (Ctrl+Shift+Z)';
 	    redo.onclick = function () {
@@ -3300,12 +3304,14 @@ return /******/ (function(modules) { // webpackBootstrap
 	  tbodySearch.appendChild(tr);
 
 	  var refreshSearch = document.createElement('button');
+	  refreshSearch.type = 'button';
 	  refreshSearch.className = 'jsoneditor-refresh';
 	  td = document.createElement('td');
 	  td.appendChild(refreshSearch);
 	  tr.appendChild(td);
 
 	  var search = document.createElement('input');
+	  // search.type = 'button';
 	  this.dom.search = search;
 	  search.oninput = function (event) {
 	    searchBox._onDelayedSearch(event);
@@ -3329,6 +3335,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  tr.appendChild(td);
 
 	  var searchNext = document.createElement('button');
+	  searchNext.type = 'button';
 	  searchNext.title = 'Next result (Enter)';
 	  searchNext.className = 'jsoneditor-next';
 	  searchNext.onclick = function () {
@@ -3339,6 +3346,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  tr.appendChild(td);
 
 	  var searchPrevious = document.createElement('button');
+	  searchPrevious.type = 'button';
 	  searchPrevious.title = 'Previous result (Shift+Enter)';
 	  searchPrevious.className = 'jsoneditor-previous';
 	  searchPrevious.onclick = function () {
@@ -3608,6 +3616,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	  // create a (non-visible) button to set the focus to the menu
 	  var focusButton = document.createElement('button');
+	  focusButton.type = 'button';
 	  dom.focusButton = focusButton;
 	  var li = document.createElement('li');
 	  li.style.overflow = 'hidden';
@@ -3634,6 +3643,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	        // create a button in the menu item
 	        var button = document.createElement('button');
+	        button.type = 'button';
 	        button.className = item.className;
 	        domItem.button = button;
 	        if (item.title) {
@@ -3662,6 +3672,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            button.className += ' jsoneditor-default';
 
 	            var buttonExpand = document.createElement('button');
+	            buttonExpand.type = 'button';
 	            domItem.buttonExpand = buttonExpand;
 	            buttonExpand.className = 'jsoneditor-expand';
 	            buttonExpand.innerHTML = '<div class="jsoneditor-expand"></div>';
@@ -4193,6 +4204,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    popover.appendChild(document.createTextNode(error.message));
 
 	    var button = document.createElement('button');
+	    button.type = 'button';
 	    button.className = 'jsoneditor-schema-error';
 	    button.appendChild(popover);
 
@@ -5514,6 +5526,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	      // create draggable area
 	      if (this.parent) {
 	        var domDrag = document.createElement('button');
+	        domDrag.type = 'button';
 	        dom.drag = domDrag;
 	        domDrag.className = 'jsoneditor-dragarea';
 	        domDrag.title = 'Drag to move this field (Alt+Shift+Arrows)';
@@ -5525,6 +5538,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    // create context menu
 	    var tdMenu = document.createElement('td');
 	    var menu = document.createElement('button');
+	    menu.type = 'button';
 	    dom.menu = menu;
 	    menu.className = 'jsoneditor-contextmenu';
 	    menu.title = 'Click to open the actions menu (Ctrl+M)';
@@ -6152,6 +6166,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	Node.prototype._createDomExpandButton = function () {
 	  // create expand button
 	  var expand = document.createElement('button');
+	  expand.type = 'button';
 	  if (this._hasChilds()) {
 	    expand.className = this.expanded ? 'jsoneditor-expanded' : 'jsoneditor-collapsed';
 	    expand.title =
@@ -7664,6 +7679,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	      var tdMenu = document.createElement('td');
 	      dom.tdMenu = tdMenu;
 	      var menu = document.createElement('button');
+	      menu.type = 'button';
 	      menu.className = 'jsoneditor-contextmenu';
 	      menu.title = 'Click to open the actions menu (Ctrl+M)';
 	      dom.menu = menu;
@@ -7918,6 +7934,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	  // create the html element
 	  var box = document.createElement('button');
+	  box.type = 'button';
 	  box.className = 'jsoneditor-modes jsoneditor-separator';
 	  box.innerHTML = currentTitle + ' &#x25BE;';
 	  box.title = 'Switch editor mode';
@@ -8061,6 +8078,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	  // create format button
 	  var buttonFormat = document.createElement('button');
+	  buttonFormat.type = 'button';
 	  buttonFormat.className = 'jsoneditor-format';
 	  buttonFormat.title = 'Format JSON data, with proper indentation and line feeds (Ctrl+\\)';
 	  this.menu.appendChild(buttonFormat);
@@ -8076,6 +8094,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	  // create compact button
 	  var buttonCompact = document.createElement('button');
+	  buttonCompact.type = 'button';
 	  buttonCompact.className = 'jsoneditor-compact';
 	  buttonCompact.title = 'Compact JSON data, remove all whitespaces (Ctrl+Shift+\\)';
 	  this.menu.appendChild(buttonCompact);
