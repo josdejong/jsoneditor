@@ -567,3 +567,37 @@ textarea.jsoneditor-text {
   font-size: @fontSize;
   color: @black;
 }
+
+div.jsoneditor-code {
+  width: 100%;
+  height: 100%;
+  min-height: @contentsMinHeight;
+}
+
+/* JSON schema errors displayed at the bottom of the editor in mode text and code */
+
+.jsoneditor-text-errors {
+  width: 100%;
+  border-collapse: collapse;
+  background-color: #ffef8b;
+  border-top: 1px solid #ffd700;
+
+  font-family: @fontFamily;
+  font-size: @fontSize;
+
+  td {
+    padding: 3px 6px;
+    vertical-align: middle;
+  }
+
+  .jsoneditor-schema-error {
+    user-select: none;
+    outline: none;
+    border: none;
+    width: 24px;
+    height: 24px;
+    padding: 0;
+    margin: 0 4px 0 0;
+    background: url('img/jsoneditor-icons.svg')  -168px -46px;
+  }
+}

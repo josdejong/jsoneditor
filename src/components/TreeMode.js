@@ -112,7 +112,7 @@ export default class TreeMode extends Component {
           modes: this.props.options.modes,
           mode: this.props.mode,
           onChangeMode: this.props.onChangeMode,
-          onError: this.handleError
+          onError: this.props.onError
         })
       ])
     }
@@ -211,16 +211,6 @@ export default class TreeMode extends Component {
     const result = this.patch(actions)
 
     this.emitOnChange (actions, result.revert)
-  }
-
-  /** @private */
-  handleError = (err) => {
-    if (this.props.options && this.props.options.onError) {
-      this.props.options.onError(err)
-    }
-    else {
-      console.error(err)
-    }
   }
 
   /**
@@ -373,6 +363,16 @@ export default class TreeMode extends Component {
   }
 
   /**
+   * Set a JSON schema for validation of the JSON object.
+   * To remove the schema, call JSONEditor.setSchema(null)
+   * @param {Object | null} schema
+   */
+  setSchema (schema) {
+    // TODO: implement setSchema for TreeMode
+    console.error('setSchema not yet implemented for TreeMode')
+  }
+
+  /**
    * Expand one or multiple objects or arrays
    * @param {Path | function (path: Path) : boolean} callback
    */
@@ -420,13 +420,6 @@ export default class TreeMode extends Component {
     return this.exists(path)
         ? this.isExpanded(path)
         : TreeMode.expandAll(path)
-  }
-
-  /**
-   * Destroy the editor
-   */
-  destroy () {
-
   }
 
   /**

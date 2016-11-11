@@ -32,17 +32,19 @@
  *
  * @typedef {{
  *   name: string?,
- *   mode?: 'code' | 'form' | 'text' | 'tree' | 'view',
- *   modes?: string[],
- *   history?: boolean,
- *   indentation?: number | string,
- *   onChange?: function (patch: JSONPatch, revert: JSONPatch),
- *   onChangeText?: function (),
- *   onChangeMode?: function (mode: string, prevMode: string),
- *   onError?:  function (err: Error),
- *   isPropertyEditable?: function (Path) : boolean
- *   isValueEditable?: function (Path) : boolean,
- *   escapeUnicode:? boolean
+ *   mode: 'code' | 'form' | 'text' | 'tree' | 'view'?,
+ *   modes: string[]?,
+ *   history: boolean?,
+ *   indentation: number | string?,
+ *   onChange: function (patch: JSONPatch, revert: JSONPatch)?,
+ *   onChangeText: function ()?,
+ *   onChangeMode: function (mode: string, prevMode: string)?,
+ *   onError:  function (err: Error)?,
+ *   isPropertyEditable: function (Path)?
+ *   isValueEditable: function (Path)?,
+ *   escapeUnicode: boolean?,
+ *   ajv: Object?
+ *   ace: Object?
  * }} Options
  *
  * @typedef {{

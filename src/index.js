@@ -1,4 +1,4 @@
-import { h, render } from 'preact'
+import { h, render,  } from 'preact'
 import CodeMode from './components/CodeMode'
 import TextMode from './components/TextMode'
 import TreeMode from './components/TreeMode'
@@ -30,13 +30,9 @@ function jsoneditor (container, options = {}) {
   const editor = {
     isJSONEditor: true,
 
-    utils: {
-      compileJSONPointer,
-      parseJSONPointer
-    },
-
     _container: container,
     _options: options,
+    _schema: null,
     _modes: modes,
     _mode: null,
     _element: null,
@@ -74,6 +70,16 @@ function jsoneditor (container, options = {}) {
    */
   editor.getText = function () {
     return editor._component.getText()
+  }
+
+  /**
+   * Set a JSON schema for validation of the JSON object.
+   * To remove the schema, call JSONEditor.setSchema(null)
+   * @param {Object | null} schema
+   */
+  editor.setSchema = function (schema) {
+    editor._schema = schema || null
+    editor._component.setSchema(schema)
   }
 
   /**
@@ -154,14 +160,32 @@ function jsoneditor (container, options = {}) {
         }
       }
 
+      function handleError (err) {
+        if (editor._options && editor._options.onError) {
+          editor._options.onError(err)
+        }
+        else {
+          console.error(err)
+        }
+      }
+
       // create new component
       element = render(
           h(constructor, {
             mode,
             options: editor._options,
-            onChangeMode: handleChangeMode
+            onChangeMode: handleChangeMode,
+            onError: handleError
           }),
           editor._container)
+
+      // apply JSON schema (if any)
+      try {
+        element._component.setSchema(editor._schema)
+      }
+      catch (err) {
+        handleError(err)
+      }
 
       // set JSON (this can throw an error)
       const text = editor._component ? editor._component.getText() : '{}'
@@ -174,8 +198,7 @@ function jsoneditor (container, options = {}) {
       if (success) {
         // destroy previous component
         if (editor._element) {
-          editor._element._component.destroy()
-          editor._element.parentNode.removeChild(editor._element)
+          unrender(container, editor._element)
         }
 
         editor._mode = mode
@@ -185,7 +208,8 @@ function jsoneditor (container, options = {}) {
       else {
         // TODO: fall back to text mode when loading code mode failed?
 
-        // remove the just created component if any (where construction or setText failed)
+        // remove the just created component if an error occurred during construction
+        // (for example when construction or setText failed)
         const childCount = editor._container.children.length
         if (childCount !== initialChildCount) {
           editor._container.removeChild(editor._container.lastChild)
@@ -194,11 +218,31 @@ function jsoneditor (container, options = {}) {
     }
   }
 
-  // TODO: implement destroy
+  /**
+   * Remove the editor from the DOM and clean up workers
+   */
+  editor.destroy = function () {
+    unrender(container, editor._element)
+  }
 
   editor.setMode(options && options.mode || 'tree')
 
   return editor
+}
+
+// expose util functions
+jsoneditor.utils = {
+  compileJSONPointer,
+  parseJSONPointer
+}
+
+/**
+ * Destroy a rendered preact component
+ * @param container
+ * @param root
+ */
+function unrender (container, root) {
+  render('', container, root);
 }
 
 module.exports = jsoneditor

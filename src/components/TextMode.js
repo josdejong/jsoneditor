@@ -1,6 +1,8 @@
 import { h, Component } from 'preact'
+import Ajv from 'ajv'
 import { parseJSON } from '../utils/jsonUtils'
 import { escapeUnicodeChars } from '../utils/stringUtils'
+import { enrichSchemaError, limitErrors } from '../utils/schemaUtils'
 import { jsonToData, dataToJson, patchData } from '../jsonData'
 import ModeButton from './menu/ModeButton'
 
@@ -13,6 +15,7 @@ import ModeButton from './menu/ModeButton'
  *         options={Object}
  *         onChange={function(text: string)}
  *         onChangeMode={function(mode: string)}
+ *         onError={function(error: Error)}
  *     />
  *
  * Methods:
@@ -33,7 +36,8 @@ export default class TextMode extends Component {
     super(props)
 
     this.state = {
-      text: '{}'
+      text: '{}',
+      compiledSchema: null
     }
   }
 
@@ -47,7 +51,9 @@ export default class TextMode extends Component {
           value: this.state.text,
           onInput: this.handleChange
         })
-      ])
+      ]),
+
+      this.renderSchemaErrors ()
     ])
   }
 
@@ -73,9 +79,84 @@ export default class TextMode extends Component {
         modes: this.props.options.modes,
         mode: this.props.mode,
         onChangeMode: this.props.onChangeMode,
-        onError: this.handleError
+        onError: this.props.onError
       })
     ])
+  }
+
+  /** @protected */
+  renderSchemaErrors () {
+    // TODO: move the JSON Schema stuff into a separate Component?
+    if (!this.state.compiledSchema) {
+      return null
+    }
+
+    try {
+      // TODO: only validate again when json is changed since last validation
+      const json = this.get(); // this can fail when there is no valid json
+      const valid = this.state.compiledSchema(json)
+      if (!valid) {
+        const allErrors = this.state.compiledSchema.errors.map(enrichSchemaError)
+        const limitedErrors = limitErrors(allErrors)
+
+        return h('table', {class: 'jsoneditor-text-errors'},
+          h('tbody', {}, limitedErrors.map(TextMode.renderSchemaError))
+        )
+      }
+    }
+    catch (err) {
+      // no valid JSON, don't validate
+      return null
+    }
+  }
+
+  /**
+   * Render a table row of a single JSON schema error
+   * @param {Error | string} error
+   * @return {JSX.Element}
+   */
+  static renderSchemaError (error) {
+    const icon = h('input', {type: 'button', class: 'jsoneditor-schema-error'})
+
+    if (typeof error === 'string') {
+      return h('tr', {},
+        h('td', {}, icon),
+        h('td', {colSpan: 2}, h('pre', {}, error))
+      )
+    }
+    else {
+      return h('tr', {}, [
+        h('td', {}, icon),
+        h('td', {}, error.dataPath),
+        h('td', {}, error.message)
+      ])
+    }
+  }
+
+  /**
+   * Set a JSON schema for validation of the JSON object.
+   * To remove the schema, call JSONEditor.setSchema(null)
+   * @param {Object | null} schema
+   */
+  setSchema (schema) {
+    if (schema) {
+      const ajv = this.props.options.ajv ||
+          Ajv && Ajv({ allErrors: true, verbose: true })
+
+      if (!ajv) {
+        throw new Error('Cannot validate JSON: ajv not available. ' +
+            'Provide ajv via options or use a JSONEditor bundle including ajv.')
+      }
+
+      this.setState({
+        compiledSchema: ajv.compile(schema)
+      })
+    }
+    else {
+      this.setState({
+        compiledSchema: null
+      })
+    }
   }
 
   /**
@@ -106,7 +187,7 @@ export default class TextMode extends Component {
       this.format()
     }
     catch (err) {
-      this.handleError(err)
+      this.props.onError(err)
     }
   }
 
@@ -116,17 +197,7 @@ export default class TextMode extends Component {
       this.compact()
     }
     catch (err) {
-      this.handleError(err)
-    }
-  }
-
-  /** @protected */
-  handleError = (err) => {
-    if (this.props.options && this.props.options.onError) {
-      this.props.options.onError(err)
-    }
-    else {
-      console.error(err)
+      this.props.onError(err)
     }
   }
 
@@ -204,12 +275,5 @@ export default class TextMode extends Component {
    */
   getText () {
     return this.state.text
-  }
-
-  /**
-   * Destroy the editor
-   */
-  destroy () {
-
   }
 }

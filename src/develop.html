@@ -13,7 +13,7 @@
 
   <style>
     #container {
-      height: 500px;
+      height: 400px;
       width: 100%;
       max-width : 800px;
     }
@@ -24,11 +24,13 @@
   <button id="setJSON">Set JSON</button>
   <button id="getJSON">Get JSON</button>
 
+  <button id="toggleSchema">Toggle JSON Schema</button>
+
   <label for="mode">mode:
     <select id="mode">
       <option value="text">text</option>
-      <option value="code">code</option>
-      <option value="tree" selected>tree</option>
+      <option value="code" selected>code</option>
+      <option value="tree">tree</option>
       <option value="form">form</option>
       <option value="view">view</option>
     </select>
@@ -83,6 +85,28 @@
     }
   })
 
+  const schema = {
+    "title": "Example Schema",
+    "type": "object",
+    "properties": {
+      "firstName": {
+        "type": "string"
+      },
+      "lastName": {
+        "type": "string"
+      },
+      "gender": {
+        "enum": ["male", "female"]
+      },
+      "age": {
+        "description": "Age in years",
+        "type": "integer",
+        "minimum": 0
+      }
+    },
+    "required": ["firstName", "lastName"]
+  }
+
   // set json
   document.getElementById('setJSON').onclick = function () {
     editor.set(largeJson, {
@@ -90,6 +114,13 @@
         return true
       }
     })
+  }
+
+  // set schema
+  let hasSchema = false
+  document.getElementById('toggleSchema').onclick = function () {
+    editor.setSchema(hasSchema ? null : schema)
+    hasSchema = !hasSchema
   }
 
   // get json

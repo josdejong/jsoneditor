@@ -59,12 +59,14 @@
   }
 
   var options = {
-    schema: schema
+    modes: ['code', 'tree']
   }
 
   // create the editor
   var container = document.getElementById('jsoneditor')
-  var editor = jsoneditor(container, options, json)
+  var editor = jsoneditor(container, options)
+  editor.setSchema(schema)
+  editor.set(json)
 </script>
 </body>
 </html>
