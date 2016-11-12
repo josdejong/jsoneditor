@@ -86,8 +86,9 @@ export default class Ace extends Component {
   }
 
   componentWillUnmount () {
-    // neatly destroy ace editor, it has created a worker for validation
+    // neatly destroy ace editor instance
     this.aceEditor.destroy()
+    this.aceEditor = null
   }
 
   handleChange = () => {
