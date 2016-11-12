@@ -31,6 +31,11 @@
  * }} JSONPatchResult
  *
  * @typedef {{
+ *   dataPath: string,
+ *   message: string
+ * }} JSONSchemaError
+ *
+ * @typedef {{
  *   name: string?,
  *   mode: 'code' | 'form' | 'text' | 'tree' | 'view'?,
  *   modes: string[]?,

@@ -447,6 +447,8 @@ export function test (data, path, value) {
   }
 }
 
+// TODO: move expand, collapse, mergeErrors to actions.js
+
 /**
  * Expand or collapse one or multiple items or properties
  * @param {JSONData} data
@@ -520,6 +522,45 @@ function expandRecursive (data, path, callback, expanded) {
       return data
   }
 }
+
+/**
+ * Merge one or multiple errors (for example JSON schema errors)
+ * into the data
+ *
+ * @param {JSONData} data
+ * @param {Array.<JSONSchemaError>} errors
+ */
+export function addErrors (data, errors) {
+  let updatedData = data
+
+  errors.forEach(error => {
+    const dataPath = toDataPath(data, parseJSONPointer(error.dataPath))
+    // TODO: do we want to be able to store multiple errors per item?
+    updatedData = setIn(updatedData, dataPath.concat('error'), error)
+  })
+
+  return updatedData
+}
+
+/**
+ * Remove errors which where added using addErrors
+ *
+ * @param {JSONData} data
+ * @param {Array.<JSONSchemaError>} errors
+ */
+export function removeErrors (data, errors) {
+  let updatedData = data
+
+  errors.forEach(error => {
+    const dataPath = toDataPath(data, parseJSONPointer(error.dataPath))
+    updatedData = deleteIn(updatedData, dataPath.concat('error'))
+  })
+
+  return updatedData
+}
+
+// TODO: implement a function removeAllErrors (data)
+
 
 /**
  * Test whether a path exists in the json data

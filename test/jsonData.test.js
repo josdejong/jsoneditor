@@ -1,7 +1,8 @@
 import test from 'ava';
 import {
-    jsonToData, dataToJson, expand, patchData, pathExists,
-    parseJSONPointer, compileJSONPointer
+    jsonToData, dataToJson, patchData, pathExists,
+    parseJSONPointer, compileJSONPointer,
+    expand, addErrors, removeErrors
 } from '../src/jsonData'
 
 
@@ -224,6 +225,87 @@ const JSON_DATA_EXAMPLE_COLLAPSED_2 = {
       value: {
         type: 'value',
         value: null
+      }
+    },
+    {
+      name: 'bool',
+      value: {
+        type: 'value',
+        value: false
+      }
+    }
+  ]
+}
+
+const JSON_SCHEMA_ERRORS = [
+  {dataPath: '/obj/arr/2/b', message: 'String expected'},
+  {dataPath: '/nill', message: 'Null expected'}
+]
+
+const JSON_DATA_EXAMPLE_ERRORS = {
+  type: 'Object',
+  expanded: true,
+  props: [
+    {
+      name: 'obj',
+      value: {
+        type: 'Object',
+        expanded: true,
+        props: [
+          {
+            name: 'arr',
+            value: {
+              type: 'Array',
+              expanded: true,
+              items: [
+                {
+                  type: 'value',
+                  value: 1
+                },
+                {
+                  type: 'value',
+                  value: 2
+                },
+                {
+                  type: 'Object',
+                  expanded: true,
+                  props: [
+                    {
+                      name: 'a',
+                      value: {
+                        type: 'value',
+                        value: 3
+                      }
+                    },
+                    {
+                      name: 'b',
+                      value: {
+                        type: 'value',
+                        value: 4,
+                        error: JSON_SCHEMA_ERRORS[0]
+                      }
+                    }
+                  ]
+                },
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      name: 'str',
+      value: {
+        type: 'value',
+        value: 'hello world'
+      }
+    },
+    {
+      name: 'nill',
+      value: {
+        type: 'value',
+        value: null,
+        error: JSON_SCHEMA_ERRORS[1]
       }
     },
     {
@@ -649,4 +731,12 @@ test('jsonpatch test (fail: value not equal)', t => {
   })
   t.deepEqual(revert, [])
   t.is(result.error.toString(), 'Error: Test failed, value differs')
+})
+
+test('add and remove errors', t => {
+  const dataWithErrors = addErrors(JSON_DATA_EXAMPLE, JSON_SCHEMA_ERRORS)
+  t.deepEqual(dataWithErrors, JSON_DATA_EXAMPLE_ERRORS)
+
+  const dataWithoutErrors = removeErrors(dataWithErrors, JSON_SCHEMA_ERRORS)
+  t.deepEqual(dataWithoutErrors, JSON_DATA_EXAMPLE)
 })
