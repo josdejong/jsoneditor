@@ -87,14 +87,14 @@ export default class TextMode extends Component {
   /** @protected */
   renderSchemaErrors () {
     // TODO: move the JSON Schema stuff into a separate Component?
-    if (!this.state.compiledSchema) {
-      return null
-    }
 
     try {
       // TODO: only validate again when json is changed since last validation
       const json = this.get(); // this can fail when there is no valid json
-      const valid = this.state.compiledSchema(json)
+      const valid = this.state.compiledSchema
+          ? this.state.compiledSchema(json)
+          : true
+
       if (!valid) {
         const allErrors = this.state.compiledSchema.errors.map(enrichSchemaError)
         const limitedErrors = limitErrors(allErrors)
@@ -103,33 +103,43 @@ export default class TextMode extends Component {
           h('tbody', {}, limitedErrors.map(TextMode.renderSchemaError))
         )
       }
+      else {
+        return null
+      }
     }
     catch (err) {
-      // no valid JSON, don't validate
+      // no valid JSON
+      // TODO: display errors in text mode somehow? shouldn't be too much in your face
+      // maybe a warning icon top right?
+      // return h('table', {class: 'jsoneditor-text-errors'},
+      //     h('tbody', {}, TextMode.renderSchemaError(err))
+      // )
       return null
     }
   }
 
   /**
    * Render a table row of a single JSON schema error
-   * @param {Error | string} error
+   * @param {Error | Object | string} error
    * @return {JSX.Element}
    */
   static renderSchemaError (error) {
     const icon = h('input', {type: 'button', class: 'jsoneditor-schema-error'})
 
-    if (typeof error === 'string') {
-      return h('tr', {},
-        h('td', {}, icon),
-        h('td', {colSpan: 2}, h('pre', {}, error))
-      )
-    }
-    else {
+    if (error && error.data && error.schema) {
+      // this is an ajv error message
       return h('tr', {}, [
         h('td', {}, icon),
         h('td', {}, error.dataPath),
         h('td', {}, error.message)
       ])
+    }
+    else {
+      // any other error message
+      return h('tr', {},
+        h('td', {}, icon),
+        h('td', {colSpan: 2}, h('code', {}, String(error)))
+      )
     }
   }
 
