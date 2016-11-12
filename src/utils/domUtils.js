@@ -93,6 +93,18 @@ export function findParentNode (elem, attr, value) {
   return null
 }
 
+/**
+ * Test whether the child rect fits completely inside the parent rect.
+ * @param {ClientRect} parent
+ * @param {ClientRect} child
+ * @param {number} [margin=0]
+ */
+export function insideRect (parent, child, margin = 0) {
+  return child.left   - margin >= parent.left
+      && child.right  + margin <= parent.right
+      && child.top    - margin >= parent.top
+      && child.bottom + margin <= parent.bottom
+}
 
 /**
  * Returns the version of Internet Explorer or a -1

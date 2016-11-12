@@ -447,8 +447,6 @@ export function test (data, path, value) {
   }
 }
 
-// TODO: move expand, collapse, mergeErrors to actions.js
-
 /**
  * Expand or collapse one or multiple items or properties
  * @param {JSONData} data
@@ -533,11 +531,13 @@ function expandRecursive (data, path, callback, expanded) {
 export function addErrors (data, errors) {
   let updatedData = data
 
-  errors.forEach(error => {
-    const dataPath = toDataPath(data, parseJSONPointer(error.dataPath))
-    // TODO: do we want to be able to store multiple errors per item?
-    updatedData = setIn(updatedData, dataPath.concat('error'), error)
-  })
+  if (errors) {
+    errors.forEach(error => {
+      const dataPath = toDataPath(data, parseJSONPointer(error.dataPath))
+      // TODO: do we want to be able to store multiple errors per item?
+      updatedData = setIn(updatedData, dataPath.concat('error'), error)
+    })
+  }
 
   return updatedData
 }

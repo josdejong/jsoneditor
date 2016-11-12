@@ -1,15 +1,27 @@
 import { h, Component } from 'preact'
 
+import Ajv from 'ajv'
 import { updateIn, getIn } from '../utils/immutabilityHelpers'
-import { expand, jsonToData, dataToJson, toDataPath, patchData, pathExists } from '../jsonData'
 import { parseJSON } from '../utils/jsonUtils'
+import { enrichSchemaError } from '../utils/schemaUtils'
 import {
-  duplicate, insert, append, remove, changeType, changeValue, changeProperty, sort
+    jsonToData, dataToJson, toDataPath, patchData, pathExists,
+    expand, addErrors
+} from '../jsonData'
+import {
+    duplicate, insert, append, remove,
+    changeType, changeValue, changeProperty, sort
 } from '../actions'
 import JSONNode from './JSONNode'
 import JSONNodeView from './JSONNodeView'
 import JSONNodeForm from './JSONNodeForm'
 import ModeButton from './menu/ModeButton'
+
+const AJV_OPTIONS = {
+  allErrors: true,
+  verbose: true,
+  jsonPointers: true
+}
 
 const MAX_HISTORY_ITEMS = 1000   // maximum number of undo/redo items to be kept in memory
 
@@ -49,23 +61,25 @@ export default class TreeMode extends Component {
             ? JSONNodeForm
             : JSONNode
 
+    const data = addErrors(state.data, this.getErrors())
+
     return h('div', {
       class: `jsoneditor jsoneditor-mode-${props.mode}`,
       'data-jsoneditor': 'true'
     }, [
       this.renderMenu(),
 
-      h('div', {class: 'jsoneditor-contents jsoneditor-tree-contents', onClick: this.handleHideMenus}, [
-        h('ul', {class: 'jsoneditor-list jsoneditor-root'}, [
+      h('div', {class: 'jsoneditor-contents jsoneditor-tree-contents', onClick: this.handleHideMenus},
+        h('ul', {class: 'jsoneditor-list jsoneditor-root'},
           h(Node, {
-            data: state.data,
+            data,
             events: state.events,
             options: props.options,
             parent: null,
             prop: null
           })
-        ])
-      ])
+        )
+      )
     ])
   }
 
@@ -118,6 +132,23 @@ export default class TreeMode extends Component {
     }
 
     return h('div', {class: 'jsoneditor-menu'}, items)
+  }
+
+  /**
+   * Validate the JSON against the configured JSON schema
+   * Returns an array with the errors when not valid, returns an empty array
+   * when valid.
+   * @return {Array.<JSONSchemaError>}
+   */
+  getErrors () {
+    if (this.state.compiledSchema) {
+      const valid = this.state.compiledSchema(dataToJson(this.state.data))
+      if (!valid) {
+        return this.state.compiledSchema.errors.map(enrichSchemaError)
+      }
+    }
+
+    return []
   }
 
   /** @private */
@@ -367,9 +398,25 @@ export default class TreeMode extends Component {
    * To remove the schema, call JSONEditor.setSchema(null)
    * @param {Object | null} schema
    */
+  // TODO: deduplicate this function, it's also implemented in TextMode
   setSchema (schema) {
-    // TODO: implement setSchema for TreeMode
-    console.error('setSchema not yet implemented for TreeMode')
+    if (schema) {
+      const ajv = this.props.options.ajv || Ajv && Ajv(AJV_OPTIONS)
+
+      if (!ajv) {
+        throw new Error('Cannot validate JSON: ajv not available. ' +
+            'Provide ajv via options or use a JSONEditor bundle including ajv.')
+      }
+
+      this.setState({
+        compiledSchema: ajv.compile(schema)
+      })
+    }
+    else {
+      this.setState({
+        compiledSchema: null
+      })
+    }
   }
 
   /**

@@ -3,7 +3,7 @@ import { h, Component } from 'preact'
 import ActionButton from './menu/ActionButton'
 import AppendActionButton from './menu/AppendActionButton'
 import { escapeHTML, unescapeHTML } from '../utils/stringUtils'
-import { getInnerText } from '../utils/domUtils'
+import { getInnerText, insideRect } from '../utils/domUtils'
 import { stringConvert, valueType, isUrl } from  '../utils/typeUtils'
 
 /**
@@ -43,7 +43,8 @@ export default class JSONNode extends Component {
         this.renderExpandButton(),
         this.renderActionMenuButton(),
         this.renderProperty(prop, data, options),
-        this.renderReadonly(`{${childCount}}`, `Array containing ${childCount} items`)
+        this.renderReadonly(`{${childCount}}`, `Array containing ${childCount} items`),
+        this.renderError(data.error)
       ])
     ]
 
@@ -79,7 +80,8 @@ export default class JSONNode extends Component {
         this.renderExpandButton(),
         this.renderActionMenuButton(),
         this.renderProperty(prop, data, options),
-        this.renderReadonly(`[${childCount}]`, `Array containing ${childCount} items`)
+        this.renderReadonly(`[${childCount}]`, `Array containing ${childCount} items`),
+        this.renderError(data.error)
       ])
     ]
 
@@ -114,7 +116,8 @@ export default class JSONNode extends Component {
         this.renderActionMenuButton(),
         this.renderProperty(prop, data, options),
         this.renderSeparator(),
-        this.renderValue(data.value, options)
+        this.renderValue(data.value, options),
+        this.renderError(data.error)
       ])
     ])
   }
@@ -203,6 +206,50 @@ export default class JSONNode extends Component {
         class: 'jsoneditor-readonly',
         title: itsAnUrl ? JSONNode.URL_TITLE : null
       }, escapedValue)
+    }
+  }
+
+  renderError (error) {
+    if (error) {
+      return h('button', {
+        type: 'button',
+        class: 'jsoneditor-schema-error',
+        onFocus: this.updatePopoverDirection,
+        onMouseOver: this.updatePopoverDirection
+      },
+        h('div', {class: 'jsoneditor-popover jsoneditor-right'}, error.message)
+      )
+    }
+    else {
+      return null
+    }
+  }
+
+  /**
+   * Find the best position for the popover: right, above, below, or left
+   * from the warning icon.
+   * @param event
+   */
+  updatePopoverDirection = (event) => {
+    if (event.target.nodeName === 'BUTTON') {
+      const popover = event.target.firstChild
+
+      const directions = ['right', 'above', 'below', 'left']
+      for (let i = 0; i < directions.length; i++) {
+        const  direction = directions[i]
+        popover.className = 'jsoneditor-popover jsoneditor-' + direction
+
+        // FIXME: the contentRect is that of the whole contents, not the visible window
+        const contents = this.base.parentNode.parentNode
+        const contentRect = contents.getBoundingClientRect()
+        const popoverRect = popover.getBoundingClientRect()
+        const margin = 20 // account for a scroll bar
+
+        if (insideRect(contentRect, popoverRect, margin)) {
+          // we found a location that fits, stop here
+          break
+        }
+      }
     }
   }
 

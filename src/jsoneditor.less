@@ -1,3 +1,5 @@
+@import url('./popover.less');
+
 @fontFamily: droid sans mono, consolas, monospace, courier new, courier, sans-serif;
 @fontSize: 10pt;
 @black: #1A1A1A;
@@ -597,15 +599,16 @@ div.jsoneditor-code {
       }
     }
   }
+}
 
-  .jsoneditor-schema-error {
-    user-select: none;
-    outline: none;
-    border: none;
-    width: 24px;
-    height: 24px;
-    padding: 0;
-    margin: 0 4px 0 0;
-    background: url('img/jsoneditor-icons.svg')  -168px -46px;
-  }
+
+.jsoneditor-schema-error {
+  //user-select: none;
+  outline: none;
+  border: none;
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  margin: 0 4px;
+  background: url('img/jsoneditor-icons.svg')  -171px -49px;
 }
