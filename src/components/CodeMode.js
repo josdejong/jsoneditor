@@ -60,20 +60,4 @@ export default class CodeMode extends TextMode {
       this.props.options.onChangeText()
     }
   }
-
-  /**
-   * Set a string containing a JSON document
-   * @param {string} text
-   */
-  setText (text) {
-    this.setState({text})
-  }
-
-  /**
-   * Get the JSON document as text
-   * @return {string} text
-   */
-  getText () {
-    return this.state.text
-  }
 }

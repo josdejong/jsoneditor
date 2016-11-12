@@ -177,6 +177,7 @@ export default class TextMode extends Component {
     this.setText(event.target.value)
 
     if (this.props.options && this.props.options.onChangeText) {
+      // TODO: pass a diff
       this.props.options.onChangeText()
     }
   }
