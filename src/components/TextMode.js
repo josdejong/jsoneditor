@@ -6,6 +6,12 @@ import { enrichSchemaError, limitErrors } from '../utils/schemaUtils'
 import { jsonToData, dataToJson, patchData } from '../jsonData'
 import ModeButton from './menu/ModeButton'
 
+const AJV_OPTIONS = {
+  allErrors: true,
+  verbose: true,
+  jsonPointers: true
+}
+
 /**
  * TextMode
  *
@@ -59,6 +65,7 @@ export default class TextMode extends Component {
 
   /** @protected */
   renderMenu () {
+    // TODO: move Menu into a separate Component
     return h('div', {class: 'jsoneditor-menu'}, [
       h('button', {
         class: 'jsoneditor-format',
@@ -86,7 +93,7 @@ export default class TextMode extends Component {
 
   /** @protected */
   renderSchemaErrors () {
-    // TODO: move the JSON Schema stuff into a separate Component?
+    // TODO: move the JSON Schema stuff into a separate Component
 
     try {
       // TODO: only validate again when json is changed since last validation
@@ -99,8 +106,12 @@ export default class TextMode extends Component {
         const allErrors = this.state.compiledSchema.errors.map(enrichSchemaError)
         const limitedErrors = limitErrors(allErrors)
 
-        return h('table', {class: 'jsoneditor-text-errors'},
-          h('tbody', {}, limitedErrors.map(TextMode.renderSchemaError))
+        console.log('errors', allErrors)
+
+        return h('div', { class: 'jsoneditor-errors'},
+          h('table', {},
+            h('tbody', {}, limitedErrors.map(TextMode.renderSchemaError))
+          )
         )
       }
       else {
@@ -126,7 +137,7 @@ export default class TextMode extends Component {
   static renderSchemaError (error) {
     const icon = h('input', {type: 'button', class: 'jsoneditor-schema-error'})
 
-    if (error && error.data && error.schema) {
+    if (error && error.schema && error.schemaPath) {
       // this is an ajv error message
       return h('tr', {}, [
         h('td', {}, icon),
@@ -136,6 +147,7 @@ export default class TextMode extends Component {
     }
     else {
       // any other error message
+      console.log('error???', error)
       return h('tr', {},
         h('td', {}, icon),
         h('td', {colSpan: 2}, h('code', {}, String(error)))
@@ -150,8 +162,7 @@ export default class TextMode extends Component {
    */
   setSchema (schema) {
     if (schema) {
-      const ajv = this.props.options.ajv ||
-          Ajv && Ajv({ allErrors: true, verbose: true })
+      const ajv = this.props.options.ajv || Ajv && Ajv(AJV_OPTIONS)
 
       if (!ajv) {
         throw new Error('Cannot validate JSON: ajv not available. ' +

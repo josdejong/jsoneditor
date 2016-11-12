@@ -576,23 +576,26 @@ div.jsoneditor-code {
 
 /* JSON schema errors displayed at the bottom of the editor in mode text and code */
 
-.jsoneditor-text-errors {
+.jsoneditor-errors {
   width: 100%;
-  border-collapse: collapse;
   background-color: #ffef8b;
   border-top: 1px solid #ffd700;
 
-  font-family: @fontFamily;
-  font-size: @fontSize;
+  table {
+    border-collapse: collapse;
 
-  td {
-    padding: 3px 6px;
-    vertical-align: middle;
-  }
+    font-family: @fontFamily;
+    font-size: @fontSize;
 
-  code {
-    display: block;
-    white-space: pre-wrap;
+    td {
+      padding: 3px 6px;
+      vertical-align: middle;
+
+      code {
+        display: block;
+        white-space: pre-wrap;
+      }
+    }
   }
 
   .jsoneditor-schema-error {
