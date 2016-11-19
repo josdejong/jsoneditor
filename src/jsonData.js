@@ -461,7 +461,7 @@ export function expand (data, callback, expanded) {
   // console.log('expand', callback, expand)
 
   if (typeof callback === 'function') {
-    return transform (data, function (value, path, root) {
+    return transform (data, function (value, path) {
       if (value.type === 'Array' || value.type === 'Object') {
         if (callback(path)) {
           return setIn(value, ['expanded'], expanded)
@@ -503,18 +503,51 @@ export function addErrors (data, errors) {
 }
 
 /**
- * Merge one or multiple errors (for example JSON schema errors)
- * into the data
+ * Search some text in all properties and values
  *
  * @param {JSONData} data
- * @param {string} search
+ * @param {string} text
+ * @return {JSONData} Returns an updated `data` object containing the search results
  */
-export function setSearch (data, search) {
-  let updatedData = data
+export function search (data, text) {
+  return transform(data, function (value) {
+    // search in values
+    if (value.type === 'value') {
+      if (containsCaseInsensitive(value.value, text)) {
+        return setIn(value, ['search'], true)
+      }
+      else {
+        return deleteIn(value, ['search'])
+      }
+    }
 
-  // TODO: traverse over the data, add a field search: 'field'|'value' to all matching fields/values
+    // search object property names
+    if (value.type === 'Object') {
+      let updatedProps = value.props
+      updatedProps.forEach((prop, index) => {
+        if (containsCaseInsensitive(prop.name, text)) {
+          updatedProps = setIn(updatedProps, [index, 'search'], true)
+        }
+        else {
+          updatedProps = deleteIn(updatedProps, [index, 'search'])
+        }
+      })
 
-  return updatedData
+      return setIn(value, ['props'], updatedProps)
+    }
+
+    return value
+  })
+}
+
+/**
+ * Do a case insensitive search for a search text in a text
+ * @param {String} text
+ * @param {String} search
+ * @return {boolean} Returns true if `search` is found in `text`
+ */
+export function containsCaseInsensitive (text, search) {
+  return String(text).toLowerCase().indexOf(search.toLowerCase()) !== -1
 }
 
 /**
@@ -543,8 +576,8 @@ function recurseTransform (value, path, root, callback) {
       let updatedItems = updatedValue.items
 
       updatedValue.items.forEach((item, index) => {
-        updatedItems = setIn(updatedItems, [index],
-            recurseTransform(item, path.concat(String(index)), root, callback))
+        const updatedItem = recurseTransform(item, path.concat(String(index)), root, callback)
+        updatedItems = setIn(updatedItems, [index], updatedItem)
       })
 
       updatedValue = setIn(updatedValue, ['items'], updatedItems)
@@ -556,8 +589,8 @@ function recurseTransform (value, path, root, callback) {
       let updatedProps = updatedValue.props
 
       updatedValue.props.forEach((prop, index) => {
-        updatedProps = setIn(updatedProps, [index, 'value'],
-            recurseTransform(prop.value, path.concat(prop.name), root, callback))
+        const updatedItem = recurseTransform(prop.value, path.concat(prop.name), root, callback)
+        updatedProps = setIn(updatedProps, [index, 'value'], updatedItem)
       })
 
       updatedValue = setIn(updatedValue, ['props'], updatedProps)
