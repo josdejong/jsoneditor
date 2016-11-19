@@ -461,7 +461,15 @@ export function expand (data, callback, expanded) {
   // console.log('expand', callback, expand)
 
   if (typeof callback === 'function') {
-    return expandRecursive(data, [], callback, expanded)
+    return transform (data, function (value, path, root) {
+      if (value.type === 'Array' || value.type === 'Object') {
+        if (callback(path)) {
+          return setIn(value, ['expanded'], expanded)
+        }
+      }
+
+      return value
+    })
   }
   else if (Array.isArray(callback)) {
     const dataPath = toDataPath(data, callback)
@@ -470,56 +478,6 @@ export function expand (data, callback, expanded) {
   }
   else {
     throw new Error('Callback function or path expected')
-  }
-}
-
-/**
- * Traverse the json data, change the expanded state of all items/properties for
- * which `callback` returns true
- * @param {JSONData} data
- * @param {Path} path
- * @param {function(path: Path)} callback
- *              All objects and arrays for which callback returns true will be
- *              expanded/collapsed
- * @param {boolean} expanded  New expanded state: true to expand, false to collapse
- * @return {*}
- * @private
- */
-function expandRecursive (data, path, callback, expanded) {
-  // TODO: use the function transform here?
-
-  switch (data.type) {
-    case 'Array': {
-      let updatedData = callback(path)
-          ? setIn(data, ['expanded'], expanded)
-          : data
-      let updatedItems = updatedData.items
-
-      updatedData.items.forEach((item, index) => {
-        updatedItems = setIn(updatedItems, [index],
-            expandRecursive(item, path.concat(index), callback, expanded))
-      })
-
-      return setIn(updatedData, ['items'], updatedItems)
-    }
-
-    case 'Object': {
-      let updatedData = callback(path)
-          ? setIn(data, ['expanded'], expanded)
-          : data
-      let updatedProps = updatedData.props
-
-      updatedData.props.forEach((prop, index) => {
-        updatedProps = setIn(updatedProps, [index, 'value'],
-            expandRecursive(prop.value, path.concat(prop.name), callback, expanded))
-      })
-
-      return setIn(updatedData, ['props'], updatedProps)
-    }
-
-    default: // type 'string' or 'value'
-      // don't do anything: a value can't be expanded, only arrays and objects can
-      return data
   }
 }
 
