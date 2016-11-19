@@ -1,8 +1,8 @@
 import test from 'ava';
 import {
-    jsonToData, dataToJson, patchData, pathExists,
+    jsonToData, dataToJson, patchData, pathExists, transform,
     parseJSONPointer, compileJSONPointer,
-    expand, addErrors, removeErrors
+    expand, addErrors
 } from '../src/jsonData'
 
 
@@ -736,7 +736,77 @@ test('jsonpatch test (fail: value not equal)', t => {
 test('add and remove errors', t => {
   const dataWithErrors = addErrors(JSON_DATA_EXAMPLE, JSON_SCHEMA_ERRORS)
   t.deepEqual(dataWithErrors, JSON_DATA_EXAMPLE_ERRORS)
+})
 
-  const dataWithoutErrors = removeErrors(dataWithErrors, JSON_SCHEMA_ERRORS)
-  t.deepEqual(dataWithoutErrors, JSON_DATA_EXAMPLE)
+test('transform', t => {
+  // {obj: {a: 2}, arr: [3]}
+  const data = {
+    type: 'Object',
+    props: [
+      {
+        name: 'obj',
+        value: {
+          type: 'Object',
+          props: [
+            {
+              name: 'a',
+              value: {
+                type: 'value',
+                value: 2
+              }
+            }
+          ]
+        }
+      },
+      {
+        name: 'arr',
+        value: {
+          type: 'Array',
+          items: [
+            {
+              type: 'value',
+              value: 3
+            }
+          ]
+        }
+      }
+    ]
+  }
+
+
+  let log = []
+  const transformed = transform(data, function (value, path, root) {
+    t.truthy(root === data)
+
+    log.push([value, path, root])
+
+    if (path.length === 2 && path[0] === 'obj' && path[1] === 'a') {
+      // change the value
+      return { type: 'value', value: 42 }
+    }
+
+    // leave the value unchanged
+    return value
+  })
+
+  // console.log('transformed', JSON.stringify(transformed, null, 2))
+
+  const EXPECTED_LOG = [
+    [data, [], data],
+    [data.props[0].value, ['obj'], data],
+    [data.props[0].value.props[0].value, ['obj', 'a'], data],
+    [data.props[1].value, ['arr'], data],
+    [data.props[1].value.items[0], ['arr', '0'], data],
+  ]
+
+  // log.forEach((row, index) => {
+  //   t.deepEqual(log[index], EXPECTED_LOG[index], 'should have equal log at index ' + index )
+  // })
+  t.deepEqual(log, EXPECTED_LOG)
+  t.truthy(transformed !== data)
+  t.truthy(transformed.props[0].value !== data.props[0].value)
+  t.truthy(transformed.props[0].value.props[0].value !== data.props[0].value.props[0].value)
+  t.truthy(data.props[1].value === data.props[1].value)
+  t.truthy(data.props[1].value.items[0] === data.props[1].value.items[0])
+
 })

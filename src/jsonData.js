@@ -486,6 +486,8 @@ export function expand (data, callback, expanded) {
  * @private
  */
 function expandRecursive (data, path, callback, expanded) {
+  // TODO: use the function transform here?
+
   switch (data.type) {
     case 'Array': {
       let updatedData = callback(path)
@@ -543,24 +545,74 @@ export function addErrors (data, errors) {
 }
 
 /**
- * Remove errors which where added using addErrors
+ * Merge one or multiple errors (for example JSON schema errors)
+ * into the data
  *
  * @param {JSONData} data
- * @param {Array.<JSONSchemaError>} errors
+ * @param {string} search
  */
-export function removeErrors (data, errors) {
+export function setSearch (data, search) {
   let updatedData = data
 
-  errors.forEach(error => {
-    const dataPath = toDataPath(data, parseJSONPointer(error.dataPath))
-    updatedData = deleteIn(updatedData, dataPath.concat('error'))
-  })
+  // TODO: traverse over the data, add a field search: 'field'|'value' to all matching fields/values
 
   return updatedData
 }
 
-// TODO: implement a function removeAllErrors (data)
+/**
+ *
+ * @param {JSONData} data
+ * @param {function(value: JSONData, path: Path, root: JSONData)} callback
+ * @return {JSONData} Returns the transformed data
+ */
+export function transform (data, callback) {
+  return recurseTransform (data, [], data, callback)
+}
 
+/**
+ * Recursively transform JSONData
+ * @param {JSONData} value
+ * @param {Path} path
+ * @param {JSONData | null} root    The root object, object at path=[]
+ * @param {function(value: JSONData, path: Path, root: JSONData)} callback
+ * @return {JSONData} Returns the transformed data
+ */
+function recurseTransform (value, path, root, callback) {
+  let updatedValue = callback(value, path, root)
+
+  switch (value.type) {
+    case 'Array': {
+      let updatedItems = updatedValue.items
+
+      updatedValue.items.forEach((item, index) => {
+        updatedItems = setIn(updatedItems, [index],
+            recurseTransform(item, path.concat(String(index)), root, callback))
+      })
+
+      updatedValue = setIn(updatedValue, ['items'], updatedItems)
+
+      break
+    }
+
+    case 'Object': {
+      let updatedProps = updatedValue.props
+
+      updatedValue.props.forEach((prop, index) => {
+        updatedProps = setIn(updatedProps, [index, 'value'],
+            recurseTransform(prop.value, path.concat(prop.name), root, callback))
+      })
+
+      updatedValue = setIn(updatedValue, ['props'], updatedProps)
+
+      break
+    }
+
+    default: // type 'string' or 'value'
+      // don't do anything: a value can't be expanded, only arrays and objects can
+  }
+
+  return updatedValue
+}
 
 /**
  * Test whether a path exists in the json data
