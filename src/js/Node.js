@@ -1952,7 +1952,14 @@ Node.prototype.updateDom = function (options) {
       util.addClassName(this.dom.tr, 'jsoneditor-expandable');
     }
     else if (this.type == 'object') {
-      domValue.innerHTML = '{' + count + '}';
+      var objName;
+      if (typeof this.editor.options.onObjectName === 'function') {
+        objName = this.editor.options.onObjectName({
+          path: this.getPath(),
+          children: this.childs
+        });
+      }
+      domValue.innerHTML = '{' + (objName || count) + '}';
       util.addClassName(this.dom.tr, 'jsoneditor-expandable');
     }
     else {
