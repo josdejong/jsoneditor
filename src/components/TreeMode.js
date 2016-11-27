@@ -1,12 +1,12 @@
 import { h, Component } from 'preact'
 
 import Ajv from 'ajv'
-import { updateIn, getIn } from '../utils/immutabilityHelpers'
+import { updateIn, getIn, setIn } from '../utils/immutabilityHelpers'
 import { parseJSON } from '../utils/jsonUtils'
 import { enrichSchemaError } from '../utils/schemaUtils'
 import {
     jsonToData, dataToJson, toDataPath, patchData, pathExists,
-    expand, addErrors
+    expand, addErrors, search
 } from '../jsonData'
 import {
     duplicate, insert, append, remove,
@@ -16,6 +16,7 @@ import JSONNode from './JSONNode'
 import JSONNodeView from './JSONNodeView'
 import JSONNodeForm from './JSONNodeForm'
 import ModeButton from './menu/ModeButton'
+import Search from './menu/Search'
 
 const AJV_OPTIONS = {
   allErrors: true,
@@ -24,6 +25,7 @@ const AJV_OPTIONS = {
 }
 
 const MAX_HISTORY_ITEMS = 1000   // maximum number of undo/redo items to be kept in memory
+const SEARCH_DEBOUNCE = 300      // milliseconds
 
 export default class TreeMode extends Component {
   constructor (props) {
@@ -50,7 +52,10 @@ export default class TreeMode extends Component {
         onExpand: this.handleExpand
       },
 
-      search: null
+      search: {
+        text: '',
+        selectedPath: null
+      }
     }
   }
 
@@ -61,7 +66,16 @@ export default class TreeMode extends Component {
             ? JSONNodeForm
             : JSONNode
 
-    const data = addErrors(state.data, this.getErrors())
+    // enrich the data with JSON Schema errors and search results
+    let data = state.data
+    const errors = this.getErrors()
+    if (errors.length) {
+      data = addErrors(data, this.getErrors())
+    }
+    if (this.state.search.text) {
+      data = search(data, this.state.search.text)
+      console.log('data', data)
+    }
 
     return h('div', {
       class: `jsoneditor jsoneditor-mode-${props.mode}`,
@@ -128,6 +142,19 @@ export default class TreeMode extends Component {
           onChangeMode: this.props.onChangeMode,
           onError: this.props.onError
         })
+      ])
+    }
+
+    if (this.props.options.search !== false) {
+      // option search is true or undefined
+      items = items.concat([
+        h('div', {class: 'jsoneditor-menu-panel-right'},
+          h(Search, {
+            text: this.state.search.text,
+            onChange: this.handleSearch,
+            delay: SEARCH_DEBOUNCE
+          })
+        )
       ])
     }
 
@@ -230,6 +257,11 @@ export default class TreeMode extends Component {
     this.setState({
       data: expand(this.state.data, TreeMode.expandAll, expanded)
     })
+  }
+
+  /** @private */
+  handleSearch = (text) => {
+    this.setState(setIn(this.state, ['search', 'text'], text))
   }
 
   /**

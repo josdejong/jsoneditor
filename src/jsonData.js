@@ -509,6 +509,7 @@ export function addErrors (data, errors) {
  * @param {string} text
  * @return {JSONData} Returns an updated `data` object containing the search results
  */
+// TODO: change search to return an array with paths, create a separate method addSearch similar to addErrors
 export function search (data, text) {
   return transform(data, function (value) {
     // search in values
