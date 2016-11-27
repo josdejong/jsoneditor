@@ -1,14 +1,14 @@
 import test from 'ava';
 import {
-    jsonToData, dataToJson, patchData, pathExists, transform, search,
+    jsonToData, dataToJson, patchData, pathExists, transform, traverse,
     parseJSONPointer, compileJSONPointer,
-    expand, addErrors
+    expand, addErrors, search, addSearchResults
 } from '../src/jsonData'
 
 
 const JSON_EXAMPLE = {
   obj: {
-    arr: [1,2, {a:3,b:4}]
+    arr: [1,2, {first:3,last:4}]
   },
   str: 'hello world',
   nill: null,
@@ -44,14 +44,14 @@ const JSON_DATA_EXAMPLE = {
                   expanded: true,
                   props: [
                     {
-                      name: 'a',
+                      name: 'first',
                       value: {
                         type: 'value',
                         value: 3
                       }
                     },
                     {
-                      name: 'b',
+                      name: 'last',
                       value: {
                         type: 'value',
                         value: 4
@@ -118,14 +118,14 @@ const JSON_DATA_EXAMPLE_COLLAPSED_1 = {
                   expanded: false,
                   props: [
                     {
-                      name: 'a',
+                      name: 'first',
                       value: {
                         type: 'value',
                         value: 3
                       }
                     },
                     {
-                      name: 'b',
+                      name: 'last',
                       value: {
                         type: 'value',
                         value: 4
@@ -192,14 +192,14 @@ const JSON_DATA_EXAMPLE_COLLAPSED_2 = {
                   expanded: false,
                   props: [
                     {
-                      name: 'a',
+                      name: 'first',
                       value: {
                         type: 'value',
                         value: 3
                       }
                     },
                     {
-                      name: 'b',
+                      name: 'last',
                       value: {
                         type: 'value',
                         value: 4
@@ -237,14 +237,13 @@ const JSON_DATA_EXAMPLE_COLLAPSED_2 = {
   ]
 }
 
-// after search for 'O' (case insensitive)
-const JSON_DATA_EXAMPLE_SEARCH_1 = {
+// after search for 'L' (case insensitive)
+const JSON_DATA_EXAMPLE_SEARCH_L = {
   type: 'Object',
   expanded: true,
   props: [
     {
       name: 'obj',
-      search: true,
       value: {
         type: 'Object',
         expanded: true,
@@ -268,21 +267,22 @@ const JSON_DATA_EXAMPLE_SEARCH_1 = {
                   expanded: true,
                   props: [
                     {
-                      name: 'a',
+                      name: 'first',
                       value: {
                         type: 'value',
                         value: 3
                       }
                     },
                     {
-                      name: 'b',
+                      name: 'last',
                       value: {
                         type: 'value',
-                        value: 4
+                        value: 4,
+                        searchProperty: true
                       }
                     }
                   ]
-                },
+                }
               ]
             }
           }
@@ -294,98 +294,25 @@ const JSON_DATA_EXAMPLE_SEARCH_1 = {
       value: {
         type: 'value',
         value: 'hello world',
-        search: true
+        searchValue: true
       }
     },
     {
       name: 'nill',
       value: {
         type: 'value',
-        value: null
-      }
-    },
-    {
-      name: 'bool',
-      search: true,
-      value: {
-        type: 'value',
-        value: false
-      }
-    }
-  ]
-}
-
-// after search for '2'
-const JSON_DATA_EXAMPLE_SEARCH_2 = {
-  type: 'Object',
-  expanded: true,
-  props: [
-    {
-      name: 'obj',
-      value: {
-        type: 'Object',
-        expanded: true,
-        props: [
-          {
-            name: 'arr',
-            value: {
-              type: 'Array',
-              expanded: true,
-              items: [
-                {
-                  type: 'value',
-                  value: 1
-                },
-                {
-                  type: 'value',
-                  value: 2,
-                  search: true
-                },
-                {
-                  type: 'Object',
-                  expanded: true,
-                  props: [
-                    {
-                      name: 'a',
-                      value: {
-                        type: 'value',
-                        value: 3
-                      }
-                    },
-                    {
-                      name: 'b',
-                      value: {
-                        type: 'value',
-                        value: 4
-                      }
-                    }
-                  ]
-                },
-              ]
-            }
-          }
-        ]
-      }
-    },
-    {
-      name: 'str',
-      value: {
-        type: 'value',
-        value: 'hello world'
-      }
-    },
-    {
-      name: 'nill',
-      value: {
-        type: 'value',
-        value: null
+        value: null,
+        searchProperty: true,
+        searchValue: true
       }
     },
     {
       name: 'bool',
       value: {
         type: 'value',
-        value: false
+        value: false,
+        searchProperty: true,
+        searchValue: true
       }
     }
   ]
@@ -426,7 +353,7 @@ const JSON_DATA_SMALL = {
 
 
 const JSON_SCHEMA_ERRORS = [
-  {dataPath: '/obj/arr/2/b', message: 'String expected'},
+  {dataPath: '/obj/arr/2/last', message: 'String expected'},
   {dataPath: '/nill', message: 'Null expected'}
 ]
 
@@ -459,14 +386,14 @@ const JSON_DATA_EXAMPLE_ERRORS = {
                   expanded: true,
                   props: [
                     {
-                      name: 'a',
+                      name: 'first',
                       value: {
                         type: 'value',
                         value: 3
                       }
                     },
                     {
-                      name: 'b',
+                      name: 'last',
                       value: {
                         type: 'value',
                         value: 4,
@@ -545,7 +472,7 @@ test('expand a callback should not change the object when nothing happens', t =>
 })
 
 test('pathExists', t => {
-  t.is(pathExists(JSON_DATA_EXAMPLE, ['obj', 'arr', 2, 'a']), true)
+  t.is(pathExists(JSON_DATA_EXAMPLE, ['obj', 'arr', 2, 'first']), true)
   t.is(pathExists(JSON_DATA_EXAMPLE, ['obj', 'foo']), false)
   t.is(pathExists(JSON_DATA_EXAMPLE, ['obj', 'foo', 'bar']), false)
   t.is(pathExists(JSON_DATA_EXAMPLE, []), true)
@@ -931,7 +858,7 @@ test('transform', t => {
   
   let log = []
   const transformed = transform(JSON_DATA_SMALL, function (value, path, root) {
-    t.truthy(root === JSON_DATA_SMALL)
+    t.is(root, JSON_DATA_SMALL)
 
     log.push([value, path, root])
 
@@ -958,20 +885,56 @@ test('transform', t => {
   //   t.deepEqual(log[index], EXPECTED_LOG[index], 'should have equal log at index ' + index )
   // })
   t.deepEqual(log, EXPECTED_LOG)
-  t.truthy(transformed !== JSON_DATA_SMALL)
-  t.truthy(transformed.props[0].value !== JSON_DATA_SMALL.props[0].value)
-  t.truthy(transformed.props[0].value.props[0].value !== JSON_DATA_SMALL.props[0].value.props[0].value)
-  t.truthy(JSON_DATA_SMALL.props[1].value === JSON_DATA_SMALL.props[1].value)
-  t.truthy(JSON_DATA_SMALL.props[1].value.items[0] === JSON_DATA_SMALL.props[1].value.items[0])
+  t.not(transformed, JSON_DATA_SMALL)
+  t.not(transformed.props[0].value, JSON_DATA_SMALL.props[0].value)
+  t.not(transformed.props[0].value.props[0].value, JSON_DATA_SMALL.props[0].value.props[0].value)
+  t.is(transformed.props[1].value, JSON_DATA_SMALL.props[1].value)
+  t.is(transformed.props[1].value.items[0], JSON_DATA_SMALL.props[1].value.items[0])
 
+})
+
+test('traverse', t => {
+  // {obj: {a: 2}, arr: [3]}
+
+  let log = []
+  const returnValue = traverse(JSON_DATA_SMALL, function (value, path, root) {
+    t.is(root, JSON_DATA_SMALL)
+
+    log.push([value, path, root])
+  })
+
+  t.is(returnValue, undefined)
+
+  const EXPECTED_LOG = [
+    [JSON_DATA_SMALL, [], JSON_DATA_SMALL],
+    [JSON_DATA_SMALL.props[0].value, ['obj'], JSON_DATA_SMALL],
+    [JSON_DATA_SMALL.props[0].value.props[0].value, ['obj', 'a'], JSON_DATA_SMALL],
+    [JSON_DATA_SMALL.props[1].value, ['arr'], JSON_DATA_SMALL],
+    [JSON_DATA_SMALL.props[1].value.items[0], ['arr', '0'], JSON_DATA_SMALL],
+  ]
+
+  // log.forEach((row, index) => {
+  //   t.deepEqual(log[index], EXPECTED_LOG[index], 'should have equal log at index ' + index )
+  // })
+  t.deepEqual(log, EXPECTED_LOG)
 })
 
 
 test('search', t => {
-  const result1 = search(JSON_DATA_EXAMPLE, 'O')
-  t.deepEqual(result1, JSON_DATA_EXAMPLE_SEARCH_1)
+  const searchResults = search(JSON_DATA_EXAMPLE, 'L')
+  // console.log(searchResults)
 
-  // search for something else. Should clean up earlier search results
-  const result2 = search(result1, '2')
-  t.deepEqual(result2, JSON_DATA_EXAMPLE_SEARCH_2)
+  t.deepEqual(searchResults, [
+    {dataPath: ['nill'], property: true},
+    {dataPath: ['bool'], property: true},
+    {dataPath: ['obj', 'arr', '2', 'last'], property: true},
+    {dataPath: ['str'], value: true},
+    {dataPath: ['nill'], value: true},
+    {dataPath: ['bool'], value: true}
+  ])
+
+  const updatedData = addSearchResults(JSON_DATA_EXAMPLE, searchResults)
+  // console.log(JSON.stringify(updatedData, null, 2))
+
+  t.deepEqual(updatedData, JSON_DATA_EXAMPLE_SEARCH_L)
 })

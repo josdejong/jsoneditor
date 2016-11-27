@@ -15,7 +15,7 @@ export default class Search extends Component {
     // TODO: show number of search results left from the input box
     // TODO: prev/next
     // TODO: focus on search results
-    // TODO: expand next search result if not expanded
+    // TODO: expand the focused search result if not expanded
 
     return h('div', {class: 'jsoneditor-search'},
       h('input', {type: 'text', value: state.text, onInput: this.handleChange})

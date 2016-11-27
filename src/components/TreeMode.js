@@ -6,7 +6,7 @@ import { parseJSON } from '../utils/jsonUtils'
 import { enrichSchemaError } from '../utils/schemaUtils'
 import {
     jsonToData, dataToJson, toDataPath, patchData, pathExists,
-    expand, addErrors, search
+    expand, addErrors, search, addSearchResults
 } from '../jsonData'
 import {
     duplicate, insert, append, remove,
@@ -66,16 +66,19 @@ export default class TreeMode extends Component {
             ? JSONNodeForm
             : JSONNode
 
-    // enrich the data with JSON Schema errors and search results
+    // enrich the data with JSON Schema errors
     let data = state.data
     const errors = this.getErrors()
     if (errors.length) {
       data = addErrors(data, this.getErrors())
     }
-    if (this.state.search.text) {
-      data = search(data, this.state.search.text)
-      console.log('data', data)
+
+    // enrich the data with search results
+    const searchResults = this.state.search.text ? search(data, this.state.search.text) : null
+    if (searchResults) {
+      data = addSearchResults(data, searchResults)
     }
+    // TODO: pass number of search results to search box in top menu
 
     return h('div', {
       class: `jsoneditor jsoneditor-mode-${props.mode}`,

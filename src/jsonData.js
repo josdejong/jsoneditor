@@ -117,7 +117,7 @@ export function toDataPath (data, path) {
  * @param {Array} patch    A JSON patch
  * @param {function(path: Path)} [expand]  Optional function to determine
  *                                         what nodes must be expanded
- * @return {{data: JSONData, revert: Array.<Object>, error: Error | null}}
+ * @return {{data: JSONData, revert: Object[], error: Error | null}}
  */
 export function patchData (data, patch, expand = expandAll) {
   let updatedData = data
@@ -486,7 +486,7 @@ export function expand (data, callback, expanded) {
  * into the data
  *
  * @param {JSONData} data
- * @param {Array.<JSONSchemaError>} errors
+ * @param {JSONSchemaError[]} errors
  */
 export function addErrors (data, errors) {
   let updatedData = data
@@ -507,38 +507,61 @@ export function addErrors (data, errors) {
  *
  * @param {JSONData} data
  * @param {string} text
- * @return {JSONData} Returns an updated `data` object containing the search results
+ * @return {SearchResult[]} Returns a list with search results
  */
-// TODO: change search to return an array with paths, create a separate method addSearch similar to addErrors
 export function search (data, text) {
-  return transform(data, function (value) {
-    // search in values
-    if (value.type === 'value') {
-      if (containsCaseInsensitive(value.value, text)) {
-        return setIn(value, ['search'], true)
-      }
-      else {
-        return deleteIn(value, ['search'])
-      }
-    }
+  let results = []
 
-    // search object property names
-    if (value.type === 'Object') {
-      let updatedProps = value.props
-      updatedProps.forEach((prop, index) => {
-        if (containsCaseInsensitive(prop.name, text)) {
-          updatedProps = setIn(updatedProps, [index, 'search'], true)
+  traverse(data, function (value, path) {
+      // search in values
+      if (value.type === 'value') {
+        if (containsCaseInsensitive(value.value, text)) {
+          results.push({
+            dataPath: path,
+            value: true
+          })
         }
-        else {
-          updatedProps = deleteIn(updatedProps, [index, 'search'])
-        }
-      })
+      }
 
-      return setIn(value, ['props'], updatedProps)
-    }
-
-    return value
+      // search object property names
+      if (value.type === 'Object') {
+        value.props.forEach((prop) => {
+          if (containsCaseInsensitive(prop.name, text)) {
+            results.push({
+              dataPath: path.concat(prop.name),
+              property: true
+            })
+          }
+        })
+      }
   })
+
+  return results
+}
+
+/**
+ * Merge searchResults into the data
+ *
+ * @param {JSONData} data
+ * @param {SearchResult[]} searchResults
+ */
+export function addSearchResults (data, searchResults) {
+  let updatedData = data
+
+  if (searchResults) {
+    searchResults.forEach(function (searchResult) {
+      if (searchResult.value) {
+        const dataPath = toDataPath(data, searchResult.dataPath).concat('searchValue')
+        updatedData = setIn(updatedData, dataPath, true)
+      }
+      if (searchResult.property) {
+        const dataPath = toDataPath(data, searchResult.dataPath).concat('searchProperty')
+        updatedData = setIn(updatedData, dataPath, true)
+      }
+    })
+  }
+
+  return updatedData
 }
 
 /**
@@ -552,7 +575,7 @@ export function containsCaseInsensitive (text, search) {
 }
 
 /**
- *
+ * Recursively transform JSONData: a recursive "map" function
  * @param {JSONData} data
  * @param {function(value: JSONData, path: Path, root: JSONData)} callback
  * @return {JSONData} Returns the transformed data
@@ -600,10 +623,49 @@ function recurseTransform (value, path, root, callback) {
     }
 
     default: // type 'string' or 'value'
-      // don't do anything: a value can't be expanded, only arrays and objects can
+      // no childs to traverse
   }
 
   return updatedValue
+}
+
+/**
+ * Recursively loop over a JSONData object: a recursive "forEach" function.
+ * @param {JSONData} data
+ * @param {function(value: JSONData, path: Path, root: JSONData)} callback
+ */
+export function traverse (data, callback) {
+  return recurseTraverse (data, [], data, callback)
+}
+
+/**
+ * Recursively traverse a JSONData object
+ * @param {JSONData} value
+ * @param {Path} path
+ * @param {JSONData | null} root    The root object, object at path=[]
+ * @param {function(value: JSONData, path: Path, root: JSONData)} callback
+ */
+function recurseTraverse (value, path, root, callback) {
+  callback(value, path, root)
+
+  switch (value.type) {
+    case 'Array': {
+      value.items.forEach((item, index) => {
+        recurseTraverse(item, path.concat(String(index)), root, callback)
+      })
+      break
+    }
+
+    case 'Object': {
+      value.props.forEach((prop) => {
+        recurseTraverse(prop.value, path.concat(prop.name), root, callback)
+      })
+      break
+    }
+
+    default: // type 'string' or 'value'
+      // no childs to traverse
+  }
 }
 
 /**

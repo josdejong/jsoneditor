@@ -59,4 +59,11 @@
  * @typedef {{
  *   expand: function (path: Path)?
  * }} PatchOptions
+ *
+ * @typedef {{
+ *   dataPath: Path,
+ *   property: boolean?,
+ *   value: boolean?
+ * }} SearchResult
+ * // TODO: SearchResult.dataPath is an array, JSONSchemaError.dataPath is a string -> make this consistent
  */

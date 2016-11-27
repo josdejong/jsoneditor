@@ -36,13 +36,13 @@ export default class JSONNode extends Component {
     }
   }
 
-  renderJSONObject ({prop, data, search, options, events}) {
+  renderJSONObject ({prop, data, options, events}) {
     const childCount = data.props.length
     const contents = [
       h('div', {class: 'jsoneditor-node jsoneditor-object'}, [
         this.renderExpandButton(),
         this.renderActionMenuButton(),
-        this.renderProperty(prop, data, search, options),
+        this.renderProperty(prop, data, options),
         this.renderReadonly(`{${childCount}}`, `Array containing ${childCount} items`),
         this.renderError(data.error)
       ])
@@ -56,7 +56,6 @@ export default class JSONNode extends Component {
             parent: this,
             prop: prop.name,
             data: prop.value,
-            search: prop.search,
             options,
             events
           })
@@ -74,13 +73,13 @@ export default class JSONNode extends Component {
     return h('li', {}, contents)
   }
 
-  renderJSONArray ({prop, data, search, options, events}) {
+  renderJSONArray ({prop, data, options, events}) {
     const childCount = data.items.length
     const contents = [
       h('div', {class: 'jsoneditor-node jsoneditor-array'}, [
         this.renderExpandButton(),
         this.renderActionMenuButton(),
-        this.renderProperty(prop, data, search, options),
+        this.renderProperty(prop, data, options),
         this.renderReadonly(`[${childCount}]`, `Array containing ${childCount} items`),
         this.renderError(data.error)
       ])
@@ -110,14 +109,14 @@ export default class JSONNode extends Component {
     return h('li', {}, contents)
   }
 
-  renderJSONValue ({prop, data, search, options}) {
+  renderJSONValue ({prop, data, options}) {
     return h('li', {}, [
       h('div', {class: 'jsoneditor-node'}, [
         this.renderPlaceholder(),
         this.renderActionMenuButton(),
-        this.renderProperty(prop, data, search, options),
+        this.renderProperty(prop, data, options),
         this.renderSeparator(),
-        this.renderValue(data.value, data.search, options),
+        this.renderValue(data.value, data.searchValue, options),
         this.renderError(data.error)
       ])
     ])
@@ -146,7 +145,7 @@ export default class JSONNode extends Component {
     return h('div', {class: 'jsoneditor-readonly', title}, text)
   }
 
-  renderProperty (prop, data, search, options) {
+  renderProperty (prop, data, options) {
     if (prop === null) {
       // root node
       const rootName = JSONNode.getRootName(data, options)
@@ -162,7 +161,7 @@ export default class JSONNode extends Component {
     const editable = !isIndex && (!options.isPropertyEditable || options.isPropertyEditable(this.getPath()))
 
     const emptyClassName = (prop.length === 0 ? ' jsoneditor-empty' : '')
-    const searchClassName = search ? ' jsoneditor-highlight': '';
+    const searchClassName = data.searchProperty ? ' jsoneditor-highlight': '';
 
     if (editable) {
       const escapedProp = escapeHTML(prop, options.escapeUnicode)
@@ -186,7 +185,7 @@ export default class JSONNode extends Component {
     return h('div', {class: 'jsoneditor-separator'}, ':')
   }
 
-  renderValue (value, searchResult, options) {
+  renderValue (value, searchValue, options) {
     const escapedValue = escapeHTML(value, options.escapeUnicode)
     const type = valueType (value)
     const itsAnUrl = isUrl(value)
@@ -195,7 +194,7 @@ export default class JSONNode extends Component {
     const editable = !options.isValueEditable || options.isValueEditable(this.getPath())
     if (editable) {
       return h('div', {
-        class: JSONNode.getValueClass(type, itsAnUrl, isEmpty, searchResult),
+        class: JSONNode.getValueClass(type, itsAnUrl, isEmpty, searchValue),
         contentEditable: 'true',
         spellCheck: 'false',
         onBlur: this.handleChangeValue,
@@ -286,17 +285,16 @@ export default class JSONNode extends Component {
    * @param {string} type
    * @param {boolean} isUrl
    * @param {boolean} isEmpty
-   * @param {boolean | 'selected'} [searchResult]
+   * @param {boolean} [searchValue]
    * @return {string}
    * @public
    */
-  static getValueClass (type, isUrl, isEmpty, searchResult) {
+  static getValueClass (type, isUrl, isEmpty, searchValue) {
     return 'jsoneditor-value ' +
         'jsoneditor-' + type +
         (isUrl ? ' jsoneditor-url' : '') +
         (isEmpty ? ' jsoneditor-empty' : '') +
-        (searchResult === 'selected' ? ' jsoneditor-highlight-primary' :
-            searchResult ? ' jsoneditor-highlight' : '')
+        (searchValue ? ' jsoneditor-highlight' : '')
   }
 
   /**
