@@ -6,7 +6,7 @@ import { parseJSON } from '../utils/jsonUtils'
 import { enrichSchemaError } from '../utils/schemaUtils'
 import {
     jsonToData, dataToJson, toDataPath, patchData, pathExists,
-    expand, addErrors, search, addSearchResults
+    expand, addErrors, search, addSearchResults, addFocus
 } from '../jsonData'
 import {
     duplicate, insert, append, remove,
@@ -77,7 +77,11 @@ export default class TreeMode extends Component {
     const searchResults = this.state.search.text ? search(data, this.state.search.text) : null
     if (searchResults) {
       data = addSearchResults(data, searchResults)
+
+      data = addFocus(data, searchResults[0]) // TODO: change to using focus from state
+
     }
+    console.log('render', data)
     // TODO: pass number of search results to search box in top menu
 
     return h('div', {

@@ -151,6 +151,7 @@ export default class JSONNode extends Component {
       const rootName = JSONNode.getRootName(data, options)
 
       return h('div', {
+        ref: 'property',
         class: 'jsoneditor-property jsoneditor-readonly',
         spellCheck: 'false',
         onBlur: this.handleChangeProperty
@@ -194,6 +195,7 @@ export default class JSONNode extends Component {
     const editable = !options.isValueEditable || options.isValueEditable(this.getPath())
     if (editable) {
       return h('div', {
+        ref: 'value',
         class: JSONNode.getValueClass(type, itsAnUrl, isEmpty, searchValue),
         contentEditable: 'true',
         spellCheck: 'false',
@@ -340,7 +342,7 @@ export default class JSONNode extends Component {
     })
   }
 
-  shouldComponentUpdate(nextProps, nextState) {
+  shouldComponentUpdate (nextProps, nextState) {
     let prop
 
     for (prop in nextProps) {
@@ -356,6 +358,19 @@ export default class JSONNode extends Component {
     }
 
     return false
+  }
+
+  componentDidUpdate (prevProps, prevState) {
+    // TODO: focus to input field
+    // if (this.props.data.focusProperty && !prevProps.data.focusProperty) {
+    //   console.log('focus property', this.getPath())
+    //   this.refs.property.focus()
+    // }
+    //
+    // if (this.props.data.focusValue && !prevProps.data.focusValue) {
+    //   console.log('focus value', this.getPath())
+    //   this.refs.value.focus()
+    // }
   }
 
   static getRootName (data, options) {
@@ -488,6 +503,7 @@ export default class JSONNode extends Component {
    * Get the path of this JSONNode
    * @return {Path}
    */
+  // TODO: get rid of getPath, it's not nice having a reference to the parent in the child
   getPath () {
     const path = this.props.parent
         ? this.props.parent.getPath()

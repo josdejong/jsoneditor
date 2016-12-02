@@ -544,6 +544,7 @@ export function search (data, text) {
  *
  * @param {JSONData} data
  * @param {SearchResult[]} searchResults
+ * @return {JSONData} Returns an updated copy of data
  */
 export function addSearchResults (data, searchResults) {
   let updatedData = data
@@ -554,6 +555,7 @@ export function addSearchResults (data, searchResults) {
         const dataPath = toDataPath(data, searchResult.dataPath).concat('searchValue')
         updatedData = setIn(updatedData, dataPath, true)
       }
+
       if (searchResult.property) {
         const dataPath = toDataPath(data, searchResult.dataPath).concat('searchProperty')
         updatedData = setIn(updatedData, dataPath, true)
@@ -562,6 +564,25 @@ export function addSearchResults (data, searchResults) {
   }
 
   return updatedData
+}
+
+/**
+ * Merge a object describing where the focus is to the data
+ *
+ * @param {JSONData} data
+ * @param {SearchResult} focusOn
+ * @return {JSONData} Returns an updated copy of data
+ */
+export function addFocus (data, focusOn) {
+  if (focusOn.value) {
+    const dataPath = toDataPath(data, focusOn.dataPath).concat('focusValue')
+    return setIn(data, dataPath, true)
+  }
+
+  if (focusOn.property) {
+    const dataPath = toDataPath(data, focusOn.dataPath).concat('focusProperty')
+    return setIn(data, dataPath, true)
+  }
 }
 
 /**
