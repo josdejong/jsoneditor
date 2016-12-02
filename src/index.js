@@ -1,4 +1,5 @@
-import { h, render,  } from 'preact'
+import { createElement as h, Component } from 'react'
+import { render } from 'react-dom'
 import CodeMode from './components/CodeMode'
 import TextMode from './components/TextMode'
 import TreeMode from './components/TreeMode'
@@ -142,6 +143,7 @@ function jsoneditor (container, options = {}) {
     let success = false
     let initialChildCount = editor._container.children.length
     let element
+    let component
     try {
       // find the constructor for the selected mode
       const constructor = editor._modes[mode]
@@ -170,7 +172,7 @@ function jsoneditor (container, options = {}) {
       }
 
       // create new component
-      element = render(
+      component = render(
           h(constructor, {
             mode,
             options: editor._options,
@@ -189,10 +191,14 @@ function jsoneditor (container, options = {}) {
 
       // set JSON (this can throw an error)
       const text = editor._component ? editor._component.getText() : '{}'
-      element._component.setText(text)
+      component.setText(text)
+      element = editor._container.lastChild
 
       // when setText didn't fail, we will reach this point
       success = true
+    }
+    catch (err) {
+      console.error(err)
     }
     finally {
       if (success) {
@@ -203,7 +209,7 @@ function jsoneditor (container, options = {}) {
 
         editor._mode = mode
         editor._element = element
-        editor._component = element._component
+        editor._component = component
       }
       else {
         // TODO: fall back to text mode when loading code mode failed?

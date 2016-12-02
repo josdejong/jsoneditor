@@ -46,9 +46,15 @@ var loaders = [
 ]
 
 // create a single instance of the compiler to allow caching
-var plugins = [bannerPlugin]
+var plugins = [
+    bannerPlugin,]
 if (!WATCHING) {
   plugins.push(new webpack.optimize.UglifyJsPlugin())
+  plugins.push(new webpack.DefinePlugin({
+    'process.env': {
+      NODE_ENV: JSON.stringify('production')
+    }
+  }))
 }
 var compiler = webpack({
   entry: ENTRY,
@@ -83,7 +89,12 @@ var compilerMinimalist = webpack({
     bannerPlugin,
     new webpack.NormalModuleReplacementPlugin(new RegExp('/assets/ace$'), EMPTY),
     new webpack.NormalModuleReplacementPlugin(new RegExp('^ajv$'), EMPTY),
-    new webpack.optimize.UglifyJsPlugin()
+    new webpack.optimize.UglifyJsPlugin(),
+    new webpack.DefinePlugin({
+      'process.env': {
+        NODE_ENV: JSON.stringify('production')
+      }
+    })
   ],
   module: {
     loaders: loaders

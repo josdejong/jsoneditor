@@ -1,4 +1,4 @@
-import { h, Component } from 'preact'
+import { createElement as h, Component } from 'react'
 import Menu from './Menu'
 import { createAppend } from './entries'
 
@@ -8,7 +8,9 @@ export default class AppendActionMenu extends Component {
    * @param state
    * @return {JSX.Element}
    */
-  render (props, state) {
+  render () {
+    const { props, state} = this
+
     const items = [
       createAppend(props.path, props.events.onAppend)
     ]

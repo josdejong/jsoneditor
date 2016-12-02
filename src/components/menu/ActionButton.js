@@ -1,4 +1,4 @@
-import { h, Component } from 'preact'
+import { createElement as h, Component } from 'react'
 import ActionMenu from './ActionMenu'
 import { findParentNode } from '../../utils/domUtils'
 
@@ -18,17 +18,19 @@ export default class ActionButton extends Component {
    * @param state
    * @return {*}
    */
-  render (props, state) {
+  render () {
+    const { props, state} = this
+
     const className = 'jsoneditor-button jsoneditor-actionmenu' +
         (this.state.open ? ' jsoneditor-visible' : '')
 
-    return h('div', {class: 'jsoneditor-button-container'}, [
+    return h('div', {className: 'jsoneditor-button-container'}, [
       h(ActionMenu, {
         ...props, // path, type, events
         ...state, // open, anchor, root
         onRequestClose: this.handleRequestClose
       }),
-      h('button', {class: className, onClick: this.handleOpen})
+      h('button', {className: className, onClick: this.handleOpen})
     ])
   }
 

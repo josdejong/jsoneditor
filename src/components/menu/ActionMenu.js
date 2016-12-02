@@ -1,4 +1,4 @@
-import { h, Component } from 'preact'
+import { createElement as h, Component } from 'react'
 import Menu from './Menu'
 import {
     createChangeType, createSort,
@@ -12,7 +12,9 @@ export default class ActionMenu extends Component {
    * @param state
    * @return {JSX.Element}
    */
-  render (props, state) {
+  render () {
+    const { props, state} = this
+
     let items = [] // array with menu items
 
     items.push(createChangeType(props.path, props.type, props.events.onChangeType))

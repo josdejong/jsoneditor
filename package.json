@@ -27,7 +27,8 @@
     "brace": "0.9.0",
     "javascript-natural-sort": "0.7.1",
     "lodash": "4.16.6",
-    "preact": "6.4.0"
+    "react": "^15.3.2",
+    "react-dom": "^15.3.2"
   },
   "devDependencies": {
     "ava": "0.16.0",

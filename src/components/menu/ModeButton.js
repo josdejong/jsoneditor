@@ -1,4 +1,4 @@
-import { h, Component } from 'preact'
+import { createElement as h, Component } from 'react'
 import ModeMenu from './ModeMenu'
 import { toCapital } from '../../utils/stringUtils'
 
@@ -16,8 +16,10 @@ export default class ModeButton extends Component {
    * @param state
    * @return {*}
    */
-  render (props, state) {
-    return h('div', {class: 'jsoneditor-modes'}, [
+  render () {
+    const { props, state} = this
+
+    return h('div', {className: 'jsoneditor-modes'}, [
       h('button', {
         title: 'Switch mode',
         onClick: this.handleOpen

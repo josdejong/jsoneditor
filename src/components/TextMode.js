@@ -1,4 +1,4 @@
-import { h, Component } from 'preact'
+import { createElement as h, Component } from 'react'
 import Ajv from 'ajv'
 import { parseJSON } from '../utils/jsonUtils'
 import { escapeUnicodeChars } from '../utils/stringUtils'
@@ -47,13 +47,15 @@ export default class TextMode extends Component {
     }
   }
 
-  render (props, state) {
-    return h('div', {class: 'jsoneditor jsoneditor-mode-text'}, [
+  render () {
+    const { props, state} = this
+
+    return h('div', {className: 'jsoneditor jsoneditor-mode-text'}, [
       this.renderMenu(),
 
-      h('div', {class: 'jsoneditor-contents'}, [
+      h('div', {className: 'jsoneditor-contents'}, [
         h('textarea', {
-          class: 'jsoneditor-text',
+          className: 'jsoneditor-text',
           value: this.state.text,
           onInput: this.handleChange
         })
@@ -66,21 +68,21 @@ export default class TextMode extends Component {
   /** @protected */
   renderMenu () {
     // TODO: move Menu into a separate Component
-    return h('div', {class: 'jsoneditor-menu'}, [
+    return h('div', {className: 'jsoneditor-menu'}, [
       h('button', {
-        class: 'jsoneditor-format',
+        className: 'jsoneditor-format',
         title: 'Format the JSON document',
         onClick: this.handleFormat
       }),
       h('button', {
-        class: 'jsoneditor-compact',
+        className: 'jsoneditor-compact',
         title: 'Compact the JSON document',
         onClick: this.handleCompact
       }),
 
       // TODO: implement a button "Repair"
 
-      h('div', {class: 'jsoneditor-vertical-menu-separator'}),
+      h('div', {className: 'jsoneditor-vertical-menu-separator'}),
 
       this.props.options.modes && h(ModeButton, {
         modes: this.props.options.modes,

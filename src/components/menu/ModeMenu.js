@@ -1,4 +1,4 @@
-import { h, Component } from 'preact'
+import { createElement as h, Component } from 'react'
 import { toCapital } from '../../utils/stringUtils'
 import { findParentNode } from '../../utils/domUtils'
 
@@ -8,12 +8,14 @@ export default class ModeMenu extends Component {
    * @param {Object} state
    * @return {JSX.Element}
    */
-  render (props, state) {
+  render () {
+    const { props, state} = this
+
     if (props.open) {
       const items = props.modes.map(mode => {
         return h('button', {
           title: `Switch to ${mode} mode`,
-          class: 'jsoneditor-menu-button jsoneditor-type-modes' +
+          className: 'jsoneditor-menu-button jsoneditor-type-modes' +
               ((mode === props.mode) ? ' jsoneditor-selected' : ''),
           onClick: () => {
             try {
@@ -28,7 +30,7 @@ export default class ModeMenu extends Component {
       })
 
       return h('div', {
-        class: 'jsoneditor-actionmenu jsoneditor-modemenu',
+        className: 'jsoneditor-actionmenu jsoneditor-modemenu',
         nodemenu: 'true',
       }, items)
     }
