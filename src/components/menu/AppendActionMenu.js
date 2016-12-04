@@ -12,7 +12,7 @@ export default class AppendActionMenu extends Component {
     const { props, state} = this
 
     const items = [
-      createAppend(props.path, props.events.onAppend)
+        createAppend(props.path, props.events.onAppend)
     ]
 
     // TODO: implement a hook to adjust the action menu

@@ -26,11 +26,16 @@ export default class ActionButton extends Component {
 
     return h('div', {className: 'jsoneditor-button-container'}, [
       h(ActionMenu, {
+        key: 'menu',
         ...props, // path, type, events
         ...state, // open, anchor, root
         onRequestClose: this.handleRequestClose
       }),
-      h('button', {className: className, onClick: this.handleOpen})
+      h('button', {
+        key: 'button',
+        className,
+        onClick: this.handleOpen
+      })
     ])
   }
 

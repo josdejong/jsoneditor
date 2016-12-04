@@ -48,18 +48,17 @@ export default class TextMode extends Component {
   }
 
   render () {
-    const { props, state} = this
-
     return h('div', {className: 'jsoneditor jsoneditor-mode-text'}, [
       this.renderMenu(),
 
-      h('div', {className: 'jsoneditor-contents'}, [
+      h('div', {key: 'contents', className: 'jsoneditor-contents'},
         h('textarea', {
           className: 'jsoneditor-text',
           value: this.state.text,
-          onInput: this.handleChange
+          onChange: this.handleChange,
+          onInput: this.handleInput
         })
-      ]),
+      ),
 
       this.renderSchemaErrors ()
     ])
@@ -68,13 +67,15 @@ export default class TextMode extends Component {
   /** @protected */
   renderMenu () {
     // TODO: move Menu into a separate Component
-    return h('div', {className: 'jsoneditor-menu'}, [
+    return h('div', {key: 'menu', className: 'jsoneditor-menu'}, [
       h('button', {
+        key: 'format',
         className: 'jsoneditor-format',
         title: 'Format the JSON document',
         onClick: this.handleFormat
       }),
       h('button', {
+        key: 'compact',
         className: 'jsoneditor-compact',
         title: 'Compact the JSON document',
         onClick: this.handleCompact
@@ -82,9 +83,13 @@ export default class TextMode extends Component {
 
       // TODO: implement a button "Repair"
 
-      h('div', {className: 'jsoneditor-vertical-menu-separator'}),
+      h('div', {
+        key: 'separator',
+        className: 'jsoneditor-vertical-menu-separator'
+      }),
 
       this.props.options.modes && h(ModeButton, {
+        key: 'mode',
         modes: this.props.options.modes,
         mode: this.props.mode,
         onChangeMode: this.props.onChangeMode,
@@ -110,7 +115,7 @@ export default class TextMode extends Component {
 
         console.log('errors', allErrors)
 
-        return h('div', { class: 'jsoneditor-errors'},
+        return h('div', { className: 'jsoneditor-errors'},
           h('table', {},
             h('tbody', {}, limitedErrors.map(TextMode.renderSchemaError))
           )
@@ -124,7 +129,7 @@ export default class TextMode extends Component {
       // no valid JSON
       // TODO: display errors in text mode somehow? shouldn't be too much in your face
       // maybe a warning icon top right?
-      // return h('table', {class: 'jsoneditor-text-errors'},
+      // return h('table', {className: 'jsoneditor-text-errors'},
       //     h('tbody', {}, TextMode.renderSchemaError(err))
       // )
       return null
@@ -137,22 +142,22 @@ export default class TextMode extends Component {
    * @return {JSX.Element}
    */
   static renderSchemaError (error) {
-    const icon = h('input', {type: 'button', class: 'jsoneditor-schema-error'})
+    const icon = h('input', {type: 'button', className: 'jsoneditor-schema-error'})
 
     if (error && error.schema && error.schemaPath) {
       // this is an ajv error message
       return h('tr', {}, [
-        h('td', {}, icon),
-        h('td', {}, error.dataPath),
-        h('td', {}, error.message)
+        h('td', {key: 'icon'}, icon),
+        h('td', {key: 'path'}, error.dataPath),
+        h('td', {key: 'message'}, error.message)
       ])
     }
     else {
       // any other error message
       console.log('error???', error)
       return h('tr', {},
-        h('td', {}, icon),
-        h('td', {colSpan: 2}, h('code', {}, String(error)))
+        h('td', {key: 'icon'}, icon),
+        h('td', {key: 'message', colSpan: 2}, h('code', {}, String(error)))
       )
     }
   }
@@ -191,12 +196,16 @@ export default class TextMode extends Component {
     return this.props.options && this.props.options.indentation || 2
   }
 
+  handleChange = (event) => {
+    // do nothing...
+  }
+
   /**
    * handle changed text input in the textarea
    * @param {Event} event
    * @protected
    */
-  handleChange = (event) => {
+  handleInput = (event) => {
     this.setText(event.target.value)
 
     if (this.props.options && this.props.options.onChangeText) {
@@ -229,8 +238,8 @@ export default class TextMode extends Component {
    * Format the json
    */
   format () {
-    var json = this.get()
-    var text = JSON.stringify(json, null, this.getIndentation())
+    const json = this.get()
+    const text = JSON.stringify(json, null, this.getIndentation())
     this.setText(text)
   }
 
@@ -238,8 +247,8 @@ export default class TextMode extends Component {
    * Compact the json
    */
   compact () {
-    var json = this.get()
-    var text = JSON.stringify(json)
+    const json = this.get()
+    const text = JSON.stringify(json)
     this.setText(text)
   }
 

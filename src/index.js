@@ -1,5 +1,5 @@
 import { createElement as h, Component } from 'react'
-import { render } from 'react-dom'
+import { render, unmountComponentAtNode} from 'react-dom'
 import CodeMode from './components/CodeMode'
 import TextMode from './components/TextMode'
 import TreeMode from './components/TreeMode'
@@ -36,7 +36,6 @@ function jsoneditor (container, options = {}) {
     _schema: null,
     _modes: modes,
     _mode: null,
-    _element: null,
     _component: null
   }
 
@@ -142,8 +141,7 @@ function jsoneditor (container, options = {}) {
 
     let success = false
     let initialChildCount = editor._container.children.length
-    let element
-    let component
+    let component = null
     try {
       // find the constructor for the selected mode
       const constructor = editor._modes[mode]
@@ -183,7 +181,7 @@ function jsoneditor (container, options = {}) {
 
       // apply JSON schema (if any)
       try {
-        element._component.setSchema(editor._schema)
+        component.setSchema(editor._schema)
       }
       catch (err) {
         handleError(err)
@@ -192,7 +190,6 @@ function jsoneditor (container, options = {}) {
       // set JSON (this can throw an error)
       const text = editor._component ? editor._component.getText() : '{}'
       component.setText(text)
-      element = editor._container.lastChild
 
       // when setText didn't fail, we will reach this point
       success = true
@@ -202,13 +199,7 @@ function jsoneditor (container, options = {}) {
     }
     finally {
       if (success) {
-        // destroy previous component
-        if (editor._element) {
-          unrender(container, editor._element)
-        }
-
         editor._mode = mode
-        editor._element = element
         editor._component = component
       }
       else {
@@ -228,7 +219,7 @@ function jsoneditor (container, options = {}) {
    * Remove the editor from the DOM and clean up workers
    */
   editor.destroy = function () {
-    unrender(container, editor._element)
+    unmountComponentAtNode(editor._container)
   }
 
   editor.setMode(options && options.mode || 'tree')
@@ -240,15 +231,6 @@ function jsoneditor (container, options = {}) {
 jsoneditor.utils = {
   compileJSONPointer,
   parseJSONPointer
-}
-
-/**
- * Destroy a rendered preact component
- * @param container
- * @param root
- */
-function unrender (container, root) {
-  render('', container, root);
 }
 
 module.exports = jsoneditor

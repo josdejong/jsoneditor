@@ -1,4 +1,4 @@
-import { h, Component } from 'preact'
+import { createElement as h, Component } from 'react'
 import ace from '../assets/ace'
 
 /**
@@ -19,7 +19,7 @@ export default class Ace extends Component {
   }
 
   render (props, state) {
-    return h('div', {id: this.id,  class: 'jsoneditor-code'})
+    return h('div', {ref: 'container',  className: 'jsoneditor-code'})
   }
 
   shouldComponentUpdate () {
@@ -28,7 +28,7 @@ export default class Ace extends Component {
   }
 
   componentDidMount () {
-    const container = this.base
+    const container = this.refs.container
 
     // use ace from bundle, and if not available
     // try to use from options or else from global

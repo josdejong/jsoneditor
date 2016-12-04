@@ -81,9 +81,7 @@ export default class TreeMode extends Component {
       data = addSearchResults(data, searchResults)
 
       data = addFocus(data, searchResults[0]) // TODO: change to using focus from state
-
     }
-    console.log('render', data)
     // TODO: pass number of search results to search box in top menu
 
     return h('div', {
@@ -92,7 +90,7 @@ export default class TreeMode extends Component {
     }, [
       this.renderMenu(),
 
-      h('div', {className: 'jsoneditor-contents jsoneditor-tree-contents', onClick: this.handleHideMenus},
+      h('div', {key: 'contents', className: 'jsoneditor-contents jsoneditor-tree-contents', onClick: this.handleHideMenus},
         h('ul', {className: 'jsoneditor-list jsoneditor-root'},
           h(Node, {
             data,
@@ -109,11 +107,13 @@ export default class TreeMode extends Component {
   renderMenu () {
     let items = [
       h('button', {
+        key: 'expand-all',
         className: 'jsoneditor-expand-all',
         title: 'Expand all objects and arrays',
         onClick: this.handleExpandAll
       }),
       h('button', {
+        key: 'collapse-all',
         className: 'jsoneditor-collapse-all',
         title: 'Collapse all objects and arrays',
         onClick: this.handleCollapseAll
@@ -122,17 +122,17 @@ export default class TreeMode extends Component {
 
     if (this.props.mode !== 'view' && this.props.options.history != false) {
       items = items.concat([
-        h('div', {className: 'jsoneditor-vertical-menu-separator'}),
+        h('div', {key: 'history-separator', className: 'jsoneditor-vertical-menu-separator'}),
 
-        h('div', {style: {display: 'inline-block'}}, [
-          h('button', {
-            className: 'jsoneditor-undo',
-            title: 'Undo last action',
-            disabled: !this.canUndo(),
-            onClick: this.undo
-          }),
-        ]),
         h('button', {
+          key: 'undo',
+          className: 'jsoneditor-undo',
+          title: 'Undo last action',
+          disabled: !this.canUndo(),
+          onClick: this.undo
+        }),
+        h('button', {
+          key: 'redo',
           className: 'jsoneditor-redo',
           title: 'Redo',
           disabled: !this.canRedo(),
@@ -143,9 +143,10 @@ export default class TreeMode extends Component {
 
     if (this.props.options.modes ) {
       items = items.concat([
-        h('div', {className: 'jsoneditor-vertical-menu-separator'}),
+        h('div', {key: 'mode-separator', className: 'jsoneditor-vertical-menu-separator'}),
 
         h(ModeButton, {
+          key: 'mode',
           modes: this.props.options.modes,
           mode: this.props.mode,
           onChangeMode: this.props.onChangeMode,
@@ -157,7 +158,7 @@ export default class TreeMode extends Component {
     if (this.props.options.search !== false) {
       // option search is true or undefined
       items = items.concat([
-        h('div', {class: 'jsoneditor-menu-panel-right'},
+        h('div', {key: 'search', className: 'jsoneditor-menu-panel-right'},
           h(Search, {
             text: this.state.search.text,
             onChange: this.handleSearch,
@@ -167,7 +168,7 @@ export default class TreeMode extends Component {
       ])
     }
 
-    return h('div', {className: 'jsoneditor-menu'}, items)
+    return h('div', {key: 'menu', className: 'jsoneditor-menu'}, items)
   }
 
   /**

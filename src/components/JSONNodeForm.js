@@ -26,6 +26,7 @@ export default class JSONNodeForm extends JSONNode {
 
       if (isIndex) { // array item
         return h('div', {
+          key: 'property',
           className: 'jsoneditor-property jsoneditor-readonly'
         }, prop)
       }
@@ -33,6 +34,7 @@ export default class JSONNodeForm extends JSONNode {
         const escapedProp = escapeHTML(prop, options.escapeUnicode)
 
         return h('div', {
+          key: 'property',
           className: 'jsoneditor-property' + (prop.length === 0 ? ' jsoneditor-empty' : '')
         }, escapedProp)
       }
@@ -42,6 +44,7 @@ export default class JSONNodeForm extends JSONNode {
       const content = JSONNode.getRootName(data, options)
 
       return h('div', {
+        key: 'property',
         className: 'jsoneditor-property jsoneditor-readonly'
       }, content)
     }

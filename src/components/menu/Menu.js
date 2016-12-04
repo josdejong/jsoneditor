@@ -20,9 +20,7 @@ export default class Menu extends Component {
    * @return {*}
    */
   render () {
-    const { props, state} = this
-
-    if (!props.open) {
+    if (!this.props.open) {
       return null
     }
 
@@ -44,13 +42,13 @@ export default class Menu extends Component {
       className: className,
       'data-menu': 'true'
     },
-      props.items.map(this.renderMenuItem)
+      this.props.items.map(this.renderMenuItem)
     )
   }
 
   renderMenuItem = (item, index) => {
     if (item.type === 'separator') {
-      return h('div', {className: 'jsoneditor-menu-separator'})
+      return h('div', {key: index, className: 'jsoneditor-menu-separator'})
     }
 
     if (item.click && item.submenu) {
@@ -61,24 +59,24 @@ export default class Menu extends Component {
       }
 
       // two buttons: direct click and a small button to expand the submenu
-      return h('div', {className: 'jsoneditor-menu-item'}, [
-          h('button', {className: 'jsoneditor-menu-button jsoneditor-menu-default ' + item.className, title: item.title, onClick }, [
-            h('span', {className: 'jsoneditor-icon'}),
-            h('span', {className: 'jsoneditor-text'}, item.text)
+      return h('div', {key: index, className: 'jsoneditor-menu-item'}, [
+          h('button', {key: 'default', className: 'jsoneditor-menu-button jsoneditor-menu-default ' + item.className, title: item.title, onClick }, [
+            h('span', {key: 'icon', className: 'jsoneditor-icon'}),
+            h('span', {key: 'text', className: 'jsoneditor-text'}, item.text)
           ]),
-          h('button', {className: 'jsoneditor-menu-button jsoneditor-menu-expand', onClick: this.createExpandHandler(index) }, [
+          h('button', {key: 'expand', className: 'jsoneditor-menu-button jsoneditor-menu-expand', onClick: this.createExpandHandler(index) },
             h('span', {className: 'jsoneditor-icon jsoneditor-icon-expand'})
-          ]),
+          ),
           this.renderSubMenu(item.submenu, index)
       ])
     }
     else if (item.submenu) {
       // button expands the submenu
-      return h('div', {className: 'jsoneditor-menu-item'}, [
-        h('button', {className: 'jsoneditor-menu-button ' + item.className, title: item.title, onClick: this.createExpandHandler(index) }, [
-          h('span', {className: 'jsoneditor-icon'}),
-          h('span', {className: 'jsoneditor-text'}, item.text),
-          h('span', {className: 'jsoneditor-icon jsoneditor-icon-expand'}),
+      return h('div', {key: index, className: 'jsoneditor-menu-item'}, [
+        h('button', {key: 'default', className: 'jsoneditor-menu-button ' + item.className, title: item.title, onClick: this.createExpandHandler(index) }, [
+          h('span', {key: 'icon', className: 'jsoneditor-icon'}),
+          h('span', {key: 'text', className: 'jsoneditor-text'}, item.text),
+          h('span', {key: 'expand', className: 'jsoneditor-icon jsoneditor-icon-expand'}),
         ]),
         this.renderSubMenu(item.submenu, index)
       ])
@@ -91,12 +89,12 @@ export default class Menu extends Component {
       }
 
       // just a button (no submenu)
-      return h('div', {className: 'jsoneditor-menu-item'}, [
+      return h('div', {key: index, className: 'jsoneditor-menu-item'},
         h('button', {className: 'jsoneditor-menu-button ' + item.className, title: item.title, onClick }, [
-          h('span', {className: 'jsoneditor-icon'}),
-          h('span', {className: 'jsoneditor-text'}, item.text)
+          h('span', {key: 'icon', className: 'jsoneditor-icon'}),
+          h('span', {key: 'text', className: 'jsoneditor-text'}, item.text)
         ]),
-      ])
+      )
     }
   }
 
@@ -108,26 +106,26 @@ export default class Menu extends Component {
     const expanded = this.state.expanded === index
     const collapsing = this.state.collapsing === index
 
-    const contents = submenu.map(item => {
+    const contents = submenu.map((item, index) => {
       // FIXME: don't create functions in the render function
       const onClick = () => {
         item.click()
         this.props.onRequestClose()
       }
 
-      return h('div', {className: 'jsoneditor-menu-item'}, [
+      return h('div', {key: index, className: 'jsoneditor-menu-item'},
         h('button', {className: 'jsoneditor-menu-button ' + item.className, title: item.title, onClick }, [
-          h('span', {className: 'jsoneditor-icon'}),
-          h('span', {className: 'jsoneditor-text'}, item.text)
+          h('span', {key: 'icon', className: 'jsoneditor-icon'}),
+          h('span', {key: 'text', className: 'jsoneditor-text'}, item.text)
         ]),
-      ])
+      )
     })
 
     const className = 'jsoneditor-submenu ' +
         (expanded ? ' jsoneditor-expanded' : '') +
         (collapsing ? ' jsoneditor-collapsing' : '')
 
-    return h('div', {className: className}, contents)
+    return h('div', {key: 'submenu', className: className}, contents)
   }
 
   createExpandHandler (index) {

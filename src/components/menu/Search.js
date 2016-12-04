@@ -1,4 +1,4 @@
-import { h, Component } from 'preact'
+import { createElement as h, Component } from 'react'
 
 import '!style!css!less!./Search.less'
 
@@ -11,14 +11,14 @@ export default class Search extends Component {
     }
   }
 
-  render (props, state) {
+  render () {
     // TODO: show number of search results left from the input box
     // TODO: prev/next
     // TODO: focus on search results
     // TODO: expand the focused search result if not expanded
 
-    return h('div', {class: 'jsoneditor-search'},
-      h('input', {type: 'text', value: state.text, onInput: this.handleChange})
+    return h('div', {className: 'jsoneditor-search'},
+      h('input', {type: 'text', value: this.state.text, onInput: this.handleChange})
     )
   }
 

@@ -21,11 +21,13 @@ export default class ModeButton extends Component {
 
     return h('div', {className: 'jsoneditor-modes'}, [
       h('button', {
+        key: 'button',
         title: 'Switch mode',
         onClick: this.handleOpen
       }, `${toCapital(props.mode)} \u25BC`),
 
       h(ModeMenu, {
+        key: 'menu',
         ...props,
         open: state.open,
         onRequestClose: this.handleRequestClose

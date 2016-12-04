@@ -39,6 +39,18 @@
 <div id="container"></div>
 
 <script>
+  // prevent contentEditable warnings of React
+  // https://github.com/facebook/draft-js/issues/53#issuecomment-188280259
+  console.error = (function() {
+    const error = console.error
+
+    return function(exception) {
+      if ((exception + '').indexOf('Warning: A component is `contentEditable`') != 0) {
+        error.apply(console, arguments)
+      }
+    }
+  })()
+
   // create the editor
   const mode = document.getElementById('mode').value
   const container = document.getElementById('container')
@@ -135,7 +147,6 @@
     const mode = event.target.value
     editor.setMode(mode)
   }
-
 
 </script>
 </body>

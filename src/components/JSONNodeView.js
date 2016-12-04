@@ -22,12 +22,14 @@ export default class JSONNodeView extends JSONNodeForm {
 
     if (itsAnUrl) {
       return h('a', {
+        key: 'value',
         className: className,
         href: escapedValue
       }, escapedValue)
     }
     else {
       return h('div', {
+        key: 'value',
         className: className,
         onClick: this.handleClickValue
       }, escapedValue)

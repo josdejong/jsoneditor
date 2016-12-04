@@ -14,13 +14,14 @@ export default class ModeMenu extends Component {
     if (props.open) {
       const items = props.modes.map(mode => {
         return h('button', {
+          key: mode,
           title: `Switch to ${mode} mode`,
           className: 'jsoneditor-menu-button jsoneditor-type-modes' +
               ((mode === props.mode) ? ' jsoneditor-selected' : ''),
           onClick: () => {
             try {
-              props.onChangeMode(mode)
               props.onRequestClose()
+              props.onChangeMode(mode)
             }
             catch (err) {
               props.onError(err)
@@ -30,8 +31,7 @@ export default class ModeMenu extends Component {
       })
 
       return h('div', {
-        className: 'jsoneditor-actionmenu jsoneditor-modemenu',
-        nodemenu: 'true',
+        className: 'jsoneditor-actionmenu jsoneditor-modemenu'
       }, items)
     }
     else {
