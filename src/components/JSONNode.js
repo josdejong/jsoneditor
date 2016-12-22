@@ -1,3 +1,5 @@
+// @flow weak
+
 import { createElement as h, Component } from 'react'
 
 import ActionButton from './menu/ActionButton'
@@ -15,13 +17,9 @@ let activeContextMenu = null
 export default class JSONNode extends Component {
   static URL_TITLE = 'Ctrl+Click or Ctrl+Enter to open url'
 
-  constructor (props) {
-    super(props)
-
-    this.state = {
-      menu: null,        // context menu
-      appendMenu: null,  // append context menu (used in placeholder of empty object/array)
-    }
+  state = {
+    menu: null,        // context menu
+    appendMenu: null,  // append context menu (used in placeholder of empty object/array)
   }
 
   render () {
@@ -484,7 +482,7 @@ export default class JSONNode extends Component {
 
   /**
    * Singleton function to hide the currently visible context menu if any.
-   * @private
+   * @protected
    */
   static hideActionMenu () {
     if (activeContextMenu) {

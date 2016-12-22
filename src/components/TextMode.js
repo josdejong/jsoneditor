@@ -1,3 +1,5 @@
+// @flow weak
+
 import { createElement as h, Component } from 'react'
 import Ajv from 'ajv'
 import { parseJSON } from '../utils/jsonUtils'
@@ -18,7 +20,9 @@ const AJV_OPTIONS = {
  * Usage:
  *
  *     <TextMode
- *         options={Object}
+ *         text={string}
+ *         json={JSON}
+ *         ...options
  *         onChange={function(text: string)}
  *         onChangeMode={function(mode: string)}
  *         onError={function(error: Error)}
@@ -37,6 +41,7 @@ const AJV_OPTIONS = {
  *
  */
 export default class TextMode extends Component {
+  state: Object
 
   constructor (props) {
     super(props)
@@ -45,6 +50,34 @@ export default class TextMode extends Component {
       text: '{}',
       compiledSchema: null
     }
+  }
+
+  componentWillMount () {
+    this.applyProps(this.props, {})
+  }
+
+  componentWillReceiveProps (nextProps) {
+    this.applyProps(nextProps, this.props)
+  }
+
+  // TODO: create some sort of watcher structure for these props? Is there a Reactpattern for that?
+  applyProps (nextProps, currentProps) {
+    // Apply text
+    if (nextProps.text !== currentProps.text) {
+      this.setText(nextProps.text)
+    }
+
+    // Apply json
+    if (nextProps.json !== currentProps.json) {
+      this.set(nextProps.json)
+    }
+
+    // Apply JSON Schema
+    if (nextProps.schema !== currentProps.schema) {
+      this.setSchema(nextProps.schema)
+    }
+
+    // TODO: apply patchText
   }
 
   render () {
@@ -88,9 +121,10 @@ export default class TextMode extends Component {
         className: 'jsoneditor-vertical-menu-separator'
       }),
 
-      this.props.options.modes && h(ModeButton, {
+      this.props.modes && h(ModeButton, {
         key: 'mode',
-        modes: this.props.options.modes,
+        // TODO: simply pass all options?
+        modes: this.props.modes,
         mode: this.props.mode,
         onChangeMode: this.props.onChangeMode,
         onError: this.props.onError
@@ -113,9 +147,7 @@ export default class TextMode extends Component {
         const allErrors = this.state.compiledSchema.errors.map(enrichSchemaError)
         const limitedErrors = limitErrors(allErrors)
 
-        console.log('errors', allErrors)
-
-        return h('div', { className: 'jsoneditor-errors'},
+        return h('div', { key: 'errors', className: 'jsoneditor-errors'},
           h('table', {},
             h('tbody', {}, limitedErrors.map(TextMode.renderSchemaError))
           )
@@ -139,14 +171,15 @@ export default class TextMode extends Component {
   /**
    * Render a table row of a single JSON schema error
    * @param {Error | Object | string} error
+   * @param {number} index
    * @return {JSX.Element}
    */
-  static renderSchemaError (error) {
+  static renderSchemaError (error, index) {
     const icon = h('input', {type: 'button', className: 'jsoneditor-schema-error'})
 
     if (error && error.schema && error.schemaPath) {
       // this is an ajv error message
-      return h('tr', {}, [
+      return h('tr', { key: index }, [
         h('td', {key: 'icon'}, icon),
         h('td', {key: 'path'}, error.dataPath),
         h('td', {key: 'message'}, error.message)
@@ -155,7 +188,7 @@ export default class TextMode extends Component {
     else {
       // any other error message
       console.log('error???', error)
-      return h('tr', {},
+      return h('tr', { key: index },
         h('td', {key: 'icon'}, icon),
         h('td', {key: 'message', colSpan: 2}, h('code', {}, String(error)))
       )
@@ -169,7 +202,7 @@ export default class TextMode extends Component {
    */
   setSchema (schema) {
     if (schema) {
-      const ajv = this.props.options.ajv || Ajv && Ajv(AJV_OPTIONS)
+      const ajv = this.props.ajv || Ajv && Ajv(AJV_OPTIONS)
 
       if (!ajv) {
         throw new Error('Cannot validate JSON: ajv not available. ' +
@@ -188,13 +221,23 @@ export default class TextMode extends Component {
   }
 
   /**
-   * Get the configured indentation
-   * @return {number}
-   * @protected
+   * Get the configured indentation. When not configured, returns the default value 2
    */
-  getIndentation () {
-    return this.props.options && this.props.options.indentation || 2
+  static getIndentation (props?: {indentation?: number}) : number {
+    return props && props.indentation || 2
   }
+
+  static format (text, indentation) {
+    const json = parseJSON(text)
+    return JSON.stringify(json, null, indentation)
+  }
+
+  static compact (text) {
+    const json = parseJSON(text)
+    return JSON.stringify(json)
+  }
+
+  // TODO: move the static functions above into a separate util file
 
   handleChange = (event) => {
     // do nothing...
@@ -206,18 +249,14 @@ export default class TextMode extends Component {
    * @protected
    */
   handleInput = (event) => {
-    this.setText(event.target.value)
-
-    if (this.props.options && this.props.options.onChangeText) {
-      // TODO: pass a diff
-      this.props.options.onChangeText()
-    }
+    this.handleChangeText(event.target.value)
   }
 
   /** @protected */
   handleFormat = () => {
     try {
-      this.format()
+      const formatted = TextMode.format(this.getText(), TextMode.getIndentation(this.props))
+      this.handleChangeText(formatted)
     }
     catch (err) {
       this.props.onError(err)
@@ -227,7 +266,8 @@ export default class TextMode extends Component {
   /** @protected */
   handleCompact = () => {
     try {
-      this.compact()
+      const compacted = TextMode.compact(this.getText())
+      this.handleChangeText(compacted)
     }
     catch (err) {
       this.props.onError(err)
@@ -235,22 +275,22 @@ export default class TextMode extends Component {
   }
 
   /**
-   * Format the json
+   * Apply new text to the state, and emit an onChangeText event if there is a change
    */
-  format () {
-    const json = this.get()
-    const text = JSON.stringify(json, null, this.getIndentation())
-    this.setText(text)
+  handleChangeText = (text: string) => {
+    if (this.props.onChangeText && text !== this.state.text) {
+      const appliedText = this.setText(text)
+      this.props.onChangeText(appliedText)
+    }
+    else {
+      this.setText(text)
+    }
+
+    // TODO: also invoke a patch action
   }
 
-  /**
-   * Compact the json
-   */
-  compact () {
-    const json = this.get()
-    const text = JSON.stringify(json)
-    this.setText(text)
-  }
+  // TODO: implement method patchText
+  // TODO: implement callback onPatchText
 
   /**
    * Apply a JSONPatch to the current JSON document
@@ -279,7 +319,7 @@ export default class TextMode extends Component {
    * @param {Object | Array | string | number | boolean | null} json   JSON data
    */
   set (json) {
-    this.setText(JSON.stringify(json, null, this.getIndentation()))
+    this.setText(JSON.stringify(json, null, TextMode.getIndentation(this.props)))
   }
 
   /**
@@ -292,14 +332,15 @@ export default class TextMode extends Component {
 
   /**
    * Set a string containing a JSON document
-   * @param {string} text
    */
-  setText (text) {
-    this.setState({
-      text: this.props.options.escapeUnicode
-          ? escapeUnicodeChars(text)
-          : text
-    })
+  setText (text: string) : string {
+    const normalizedText = this.props.escapeUnicode
+        ? escapeUnicodeChars(text)
+        : text
+
+    this.setState({ text: normalizedText })
+
+    return normalizedText
   }
 
   /**
@@ -310,3 +351,6 @@ export default class TextMode extends Component {
     return this.state.text
   }
 }
+
+// TODO: define propTypes
+

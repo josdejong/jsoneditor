@@ -59,6 +59,43 @@ export default class TreeMode extends Component {
     }
   }
 
+  componentWillMount () {
+    this.applyProps(this.props, {})
+  }
+
+  componentWillReceiveProps (nextProps) {
+    this.applyProps(nextProps, this.props)
+  }
+
+  // TODO: create some sort of watcher structure for these props? Is there a Reactpattern for that?
+  applyProps (nextProps, currentProps) {
+    // Apply text
+    if (nextProps.text !== currentProps.text) {
+      this.patch([{
+        op: 'replace',
+        path: '',
+        value: parseJSON(nextProps.text) // FIXME: this can fail, handle error correctly
+      }])
+    }
+
+    // Apply json
+    if (nextProps.json !== currentProps.json) {
+      this.patch([{
+        op: 'replace',
+        path: '',
+        value: nextProps.json
+      }])
+    }
+
+    // Apply JSON Schema
+    if (nextProps.schema !== currentProps.schema) {
+      this.setSchema(nextProps.schema)
+    }
+
+    // TODO: apply patchText
+    // TODO: apply patch
+  }
+
   render () {
     const { props, state } = this
 
@@ -95,7 +132,7 @@ export default class TreeMode extends Component {
           h(Node, {
             data,
             events: state.events,
-            options: props.options,
+            options: props,
             parent: null,
             prop: null
           })
@@ -120,7 +157,7 @@ export default class TreeMode extends Component {
       })
     ]
 
-    if (this.props.mode !== 'view' && this.props.options.history != false) {
+    if (this.props.mode !== 'view' && this.props.history != false) {
       items = items.concat([
         h('div', {key: 'history-separator', className: 'jsoneditor-vertical-menu-separator'}),
 
@@ -141,13 +178,13 @@ export default class TreeMode extends Component {
       ])
     }
 
-    if (this.props.options.modes ) {
+    if (this.props.modes ) {
       items = items.concat([
         h('div', {key: 'mode-separator', className: 'jsoneditor-vertical-menu-separator'}),
 
         h(ModeButton, {
           key: 'mode',
-          modes: this.props.options.modes,
+          modes: this.props.modes,
           mode: this.props.mode,
           onChangeMode: this.props.onChangeMode,
           onError: this.props.onError
@@ -155,7 +192,7 @@ export default class TreeMode extends Component {
       ])
     }
 
-    if (this.props.options.search !== false) {
+    if (this.props.search !== false) {
       // option search is true or undefined
       items = items.concat([
         h('div', {key: 'search', className: 'jsoneditor-menu-panel-right'},
@@ -283,18 +320,34 @@ export default class TreeMode extends Component {
     // apply changes
     const result = this.patch(actions)
 
-    this.emitOnChange (actions, result.revert)
+    this.emitOnChange (actions, result.revert, result.data)
   }
 
   /**
    * Emit an onChange event when there is a listener for it.
    * @param {JSONPatch} patch
    * @param {JSONPatch} revert
+   * @param {JSONData} data
    * @private
    */
-  emitOnChange (patch, revert) {
-    if (this.props.options.onChange) {
-      this.props.options.onChange(patch, revert)
+  emitOnChange (patch, revert, data) {
+    if (this.props.onPatch) {
+      this.props.onPatch(patch, revert)
+    }
+
+    if (this.props.onChange || this.props.onChangeText) {
+      const json = dataToJson(data)
+
+      if (this.props.onChange) {
+        this.props.onChange(json)
+      }
+
+      if (this.props.onChangeText) {
+        const indentation = this.props.indentation || 2
+        const text = JSON.stringify(json, null, indentation)
+
+        this.props.onChangeText(text)
+      }
     }
   }
 
@@ -362,7 +415,7 @@ export default class TreeMode extends Component {
     const result = patchData(this.state.data, actions, expand)
     const data = result.data
 
-    if (this.props.options.history != false) {
+    if (this.props.history != false) {
       // update data and store history
       const historyItem = {
         redo: actions,
@@ -387,19 +440,19 @@ export default class TreeMode extends Component {
     return {
       patch: actions,
       revert: result.revert,
-      error: result.error
+      error: result.error,
+      data  // FIXME: shouldn't pass data here
     }
   }
 
   /**
    * Set JSON object in editor
    * @param {Object | Array | string | number | boolean | null} json   JSON data
-   * @param {SetOptions} [options]  If no expand function is provided,
-   *                                The root will be expanded and all other nodes
-   *                                will be collapsed.
    */
-  set (json, options = {}) {
-    const expand = options.expand || TreeMode.expandRoot
+  set (json) {
+    // FIXME: when both json and expand are being changed via React, this.props must be updated before set(json) is called
+    // TODO: document option expand
+    const expand = this.props.expand || TreeMode.expandRoot
 
     this.setState({
       data: jsonToData(json, expand, []),
@@ -431,7 +484,7 @@ export default class TreeMode extends Component {
    * @return {string} text
    */
   getText () {
-    const indentation = this.props.options.indentation || 2
+    const indentation = this.props.indentation || 2
     return JSON.stringify(this.get(), null, indentation)
   }
 
@@ -443,7 +496,7 @@ export default class TreeMode extends Component {
   // TODO: deduplicate this function, it's also implemented in TextMode
   setSchema (schema) {
     if (schema) {
-      const ajv = this.props.options.ajv || Ajv && Ajv(AJV_OPTIONS)
+      const ajv = this.props.ajv || Ajv && Ajv(AJV_OPTIONS)
 
       if (!ajv) {
         throw new Error('Cannot validate JSON: ajv not available. ' +
@@ -534,3 +587,5 @@ export default class TreeMode extends Component {
   }
 }
 
+
+// TODO: describe PropTypes

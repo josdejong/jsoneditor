@@ -77,7 +77,11 @@
     indentation: 4,
     escapeUnicode: true,
     history: true,
-    search: true
+    search: true,
+
+    expand: function (path) {
+      return true
+    }
   }
   const editor = jsoneditor(container, options)
   const json = {
@@ -92,11 +96,7 @@
     'unicode': 'A unicode character: \u260E',
     'url': 'http://jsoneditoronline.org'
   }
-  editor.set(json, {
-    expand: function (path) {
-      return true
-    }
-  })
+  editor.set(json)
 
   const schema = {
     "title": "Example Schema",

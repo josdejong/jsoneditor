@@ -1,3 +1,5 @@
+// @flow
+
 import { createElement as h, Component } from 'react'
 import ace from '../assets/ace'
 
@@ -12,13 +14,10 @@ import ace from '../assets/ace'
  *
  */
 export default class Ace extends Component {
-  constructor (props) {
-    super(props)
+  aceEditor = null
+  settingValue = false // Used to prevent Ace from emitting onChange event whilst we're setting a value programmatically
 
-    this.aceEditor = null
-  }
-
-  render (props, state) {
+  render () {
     return h('div', {ref: 'container',  className: 'jsoneditor-code'})
   }
 
@@ -64,35 +63,45 @@ export default class Ace extends Component {
         : aceEditor
 
     // register onchange event
-    this.aceEditor.on('change', this.handleChange)
-
-    // set value, the text contents for the editor
-    this.aceEditor.setValue(this.props.value || '', -1)
-  }
-
-  componentWillReceiveProps (nextProps) {
-    if (nextProps.value !== this.aceEditor.getValue()) {
-      this.aceEditor.setValue(nextProps.value, -1)
+    if (this.aceEditor) {
+      this.aceEditor.on('change', this.handleChange)
     }
 
-    if (nextProps.indentation != undefined) {
+    // set value, the text contents for the editor
+    if (this.aceEditor) {
+      this.aceEditor.setValue(this.props.value || '', -1)
+    }
+  }
+
+  componentWillReceiveProps (nextProps: {value: string, indentation?: number}) {
+    if (this.aceEditor && nextProps.value !== this.aceEditor.getValue()) {
+      this.settingValue = true
+      this.aceEditor.setValue(nextProps.value, -1)
+      this.settingValue = false
+    }
+
+    if (this.aceEditor && nextProps.indentation != undefined) {
       this.aceEditor.getSession().setTabSize(this.props.indentation)
     }
 
     // TODO: only resize only when needed
     setTimeout(() => {
-      this.aceEditor.resize(false);
+      if (this.aceEditor) {
+        this.aceEditor.resize(false);
+      }
     }, 0)
   }
 
   componentWillUnmount () {
     // neatly destroy ace editor instance
-    this.aceEditor.destroy()
-    this.aceEditor = null
+    if (this.aceEditor) {
+      this.aceEditor.destroy()
+      this.aceEditor = null
+    }
   }
 
   handleChange = () => {
-    if (this.props && this.props.onChange) {
+    if (this.props && this.props.onChange && this.aceEditor && !this.settingValue) {
       // TODO: pass a diff
       this.props.onChange(this.aceEditor.getValue())
     }

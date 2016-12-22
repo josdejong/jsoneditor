@@ -1,5 +1,6 @@
-import { createElement as h, Component } from 'react'
-import { render, unmountComponentAtNode} from 'react-dom'
+import React, { createElement as h, Component } from 'react'
+import ReactDOM, { render, unmountComponentAtNode} from 'react-dom'
+import JSONEditor from './components/JSONEditor'
 import CodeMode from './components/CodeMode'
 import TextMode from './components/TextMode'
 import TreeMode from './components/TreeMode'
@@ -45,6 +46,7 @@ function jsoneditor (container, options = {}) {
    * @param {SetOptions} [options]
    */
   editor.set = function (json, options = {}) {
+    // TODO: remove options from editor.set, move them to global options instead
     editor._component.set(json, options)
   }
 
@@ -70,6 +72,30 @@ function jsoneditor (container, options = {}) {
    */
   editor.getText = function () {
     return editor._component.getText()
+  }
+
+  /**
+   * Format the json.
+   * Only applicable for mode 'text' and 'code' (in other modes nothing will
+   * happen)
+   */
+  editor.format = function () {
+    const formatted = TextMode.format(editor._component.getText(), TextMode.getIndentation(this.props))
+    editor._component.setText(formatted)
+
+    // TODO: test whether this doesn't destroy the current state
+  }
+
+  /**
+   * Compact the json.
+   * Only applicable for mode 'text' and 'code' (in other modes nothing will
+   * happen)
+   */
+  editor.compact = function () {
+    const compacted = TextMode.compact(editor._component.getText())
+    editor._component.setText(compacted)
+
+    // TODO: test whether this doesn't destroy the current state
   }
 
   /**
@@ -134,6 +160,8 @@ function jsoneditor (container, options = {}) {
    * @param {'tree' | 'text'} mode
    */
   editor.setMode = function (mode) {
+    // TODO: strongly simplify .setMode, no error handling or logic here
+
     if (mode === editor._mode) {
       // mode stays the same. do nothing
       return
@@ -172,8 +200,8 @@ function jsoneditor (container, options = {}) {
       // create new component
       component = render(
           h(constructor, {
+              ...options,
             mode,
-            options: editor._options,
             onChangeMode: handleChangeMode,
             onError: handleError
           }),
@@ -232,5 +260,12 @@ jsoneditor.utils = {
   compileJSONPointer,
   parseJSONPointer
 }
+
+// expose React component
+jsoneditor.JSONEditor = JSONEditor
+
+// expose React itself
+jsoneditor.React = React
+jsoneditor.ReactDOM = ReactDOM
 
 module.exports = jsoneditor

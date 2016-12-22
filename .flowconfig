@@ -1,0 +1,10 @@
+[ignore]
+
+[include]
+./src
+
+[libs]
+
+[options]
+module.name_mapper.extension='less' -> '<PROJECT_ROOT>/src/flow/LessModule.js'
+suppress_comment=\\(.\\|\n\\)*\\$FlowFixMe

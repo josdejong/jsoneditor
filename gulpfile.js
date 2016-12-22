@@ -47,7 +47,8 @@ var loaders = [
 
 // create a single instance of the compiler to allow caching
 var plugins = [
-    bannerPlugin,]
+    bannerPlugin
+]
 if (!WATCHING) {
   plugins.push(new webpack.optimize.UglifyJsPlugin())
   plugins.push(new webpack.DefinePlugin({

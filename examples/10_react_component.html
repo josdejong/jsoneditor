@@ -1,0 +1,94 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>React component | JSONEditor</title>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/15.4.1/react.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/15.4.1/react-dom.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/6.4.4/babel.min.js"></script>
+
+</head>
+<body>
+  <p>
+    This demo shows how to load JSONEditor as a React Component
+  </p>
+
+  <div id="root"></div>
+
+  <!-- load JSONEditor -->
+  <script src="../dist/jsoneditor.js"></script>
+
+  <script>
+    // FIXME: should use JSONEditor source code instead of bundled version (multiple versions of React can give conflicts)
+    // use React and ReactDOM as embedded in the library
+    const React = jsoneditor.React
+    const ReactDOM = jsoneditor.ReactDOM
+  </script>
+
+  <script type="text/babel">
+    // FIXME: should use JSONEditor source code instead of bundled version (multiple versions of React can give conflicts)
+    // Note that in a full React application, the editor would be loaded as:
+    // import {JSONEditor} from 'jsoneditor'
+    const JSONEditor = jsoneditor.JSONEditor
+
+    const json =  {
+      'array': [1, 2, 3],
+      'boolean': true,
+      'null': null,
+      'number': 123,
+      'object': {'a': 'b', 'c': 'd'},
+      'string': 'Hello World'
+    }
+
+    class App extends React.Component {
+      constructor (props) {
+        super(props)
+
+        this.state = {
+          text: JSON.stringify(json, null, 2)
+        }
+
+        this.onChange = this.onChange.bind(this)
+        this.onChangeText = this.onChangeText.bind(this)
+      }
+
+      render () {
+        return <JSONEditor
+            mode="code"
+            modes={['text', 'code', 'tree', 'form', 'view']}
+            text={this.state.text}
+            onChange={this.onChange}
+            onChangeText={this.onChangeText}
+        />
+      }
+
+      onChange (json) {
+        console.log('onChange', json)
+      }
+
+      onChangeText (text) {
+        console.log('onChangeText', text)
+
+        this.setState({ text })
+      }
+    }
+
+    ReactDOM.render(
+      <App />,
+      document.getElementById('root')
+    )
+  </script>
+
+  <script>
+    Array.prototype.slice
+        .call(document.querySelectorAll('script[type="text/babel"]'))
+        .forEach(function(script) {
+          var el = document.createElement('script');
+          el.innerHTML = Babel.transform(script.innerText, { presets: ['es2015', 'react'] }).code;
+          script.parentNode.insertBefore(el, script);
+        });
+  </script>
+
+</body>
+</html>

@@ -1,3 +1,5 @@
+// @flow
+
 import { createElement as h, Component } from 'react'
 import TextMode from './TextMode'
 import Ace from './Ace'
@@ -28,11 +30,12 @@ import Ace from './Ace'
  *
  */
 export default class CodeMode extends TextMode {
-  constructor (props) {
+  constructor (props: {options: {onLoadAce: Function, indentation: number}}) {
     super(props)
 
     this.state = {
-      text: '{}'
+      text: '{}',
+      compiledSchema: null
     }
   }
 
@@ -42,22 +45,15 @@ export default class CodeMode extends TextMode {
 
       h('div', {key: 'contents', className: 'jsoneditor-contents'}, h(Ace, {
         value: this.state.text,
-        onChange: this.handleChange,
-        onLoadAce: this.props.options.onLoadAce,
-        indentation: this.props.options.indentation,
-        ace: this.props.options.ace
+        onChange: this.handleChangeText,
+        onLoadAce: this.props.onLoadAce,
+        indentation: this.props.indentation,
+        ace: this.props.ace
       })),
 
       this.renderSchemaErrors ()
     ])
   }
-
-  handleChange = (text) => {
-    this.setState({ text })
-
-    if (this.props.options && this.props.options.onChangeText) {
-      // TODO: pass a diff
-      this.props.options.onChangeText()
-    }
-  }
 }
+
+// TODO: define propTypes

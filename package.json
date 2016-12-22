@@ -20,25 +20,28 @@
   "scripts": {
     "start": "gulp watch",
     "build": "gulp",
+    "flow": "flow; test $? -eq 0 -o $? -eq 2",
     "test": "ava test/*.test.js test/**/*.test.js --verbose"
   },
   "dependencies": {
-    "ajv": "4.8.2",
+    "ajv": "4.9.2",
     "brace": "0.9.0",
     "javascript-natural-sort": "0.7.1",
-    "lodash": "4.16.6",
-    "react": "^15.3.2",
-    "react-dom": "^15.3.2"
+    "lodash": "4.17.2",
+    "react": "15.4.1",
+    "react-dom": "15.4.1"
   },
   "devDependencies": {
-    "ava": "0.16.0",
-    "babel-core": "6.18.2",
-    "babel-loader": "6.2.7",
+    "ava": "0.17.0",
+    "babel-core": "6.20.0",
+    "babel-loader": "6.2.9",
+    "babel-plugin-transform-flow-strip-types": "6.18.0",
     "babel-preset-stage-2": "6.18.0",
     "babel-preset-stage-3": "6.17.0",
-    "browser-sync": "2.17.5",
-    "css-loader": "0.25.0",
-    "graceful-fs": "4.1.10",
+    "browser-sync": "2.18.2",
+    "css-loader": "0.26.1",
+    "flow-bin": "0.36.0",
+    "graceful-fs": "4.1.11",
     "gulp": "3.9.1",
     "gulp-shell": "0.5.2",
     "gulp-util": "3.0.7",
@@ -48,7 +51,7 @@
     "mkdirp": "0.5.1",
     "style-loader": "0.13.1",
     "svg-url-loader": "1.1.0",
-    "webpack": "1.13.3"
+    "webpack": "1.14.0"
   },
   "ava": {
     "require": [
