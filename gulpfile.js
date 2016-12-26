@@ -1,13 +1,14 @@
-var fs = require('fs')
-var gulp = require('gulp')
-var gutil = require('gulp-util')
-var shell = require('gulp-shell')
-var mkdirp = require('mkdirp')
-var webpack = require('webpack')
-var browserSync = require('browser-sync').create()
+const fs = require('fs')
+const gulp = require('gulp')
+const gulpMultiProcess = require('gulp-multi-process')
+const gutil = require('gulp-util')
+const shell = require('gulp-shell')
+const mkdirp = require('mkdirp')
+const webpack = require('webpack')
+const browserSync = require('browser-sync').create()
 
-var WATCH = 'watch'
-var WATCHING = process.argv[2] === WATCH
+const WATCH = 'watch'
+const WATCHING = process.argv[2] === WATCH
 
 if (WATCHING) {
   gutil.log('Watching src/*.')
@@ -16,29 +17,44 @@ if (WATCHING) {
   gutil.log('Also, ./dist/minimalist code is not updated on changes.')
 }
 
-var NAME    = 'jsoneditor'
-var NAME_MINIMALIST = 'jsoneditor-minimalist'
-var ENTRY   = './src/index.js'
-var HEADER  = './src/header.js'
-var DIST    = './dist'
-var EMPTY = __dirname + '/src/utils/empty.js'
+const NAME            = 'jsoneditor.js'
+const NAME_MINIMALIST = 'jsoneditor-minimalist.js'
+const NAME_REACT      = 'jsoneditor-react.js'
+const NAME_REACT_MINIMALIST = 'jsoneditor-react-minimalist.js'
+const ENTRY           = './src/index.js'
+const ENTRY_REACT     = './src/components/JSONEditor.js'
+const HEADER          = './src/header.js'
+const DIST            = './dist'
+const EMPTY           = __dirname + '/src/utils/empty.js'
 
 // generate banner with today's date and correct version
 function createBanner() {
-  var today = gutil.date(new Date(), 'yyyy-mm-dd') // today, formatted as yyyy-mm-dd
-  var version = require('./package.json').version  // math.js version
+  const today = gutil.date(new Date(), 'yyyy-mm-dd') // today, formatted as yyyy-mm-dd
+  const version = require('./package.json').version  // math.js version
 
   return String(fs.readFileSync(HEADER))
       .replace('@@date', today)
       .replace('@@version', version)
 }
 
-var bannerPlugin = new webpack.BannerPlugin(createBanner(), {
+const bannerPlugin = new webpack.BannerPlugin(createBanner(), {
   entryOnly: true,
   raw: true
 })
 
-var loaders = [
+const minifyPlugin = new webpack.optimize.UglifyJsPlugin()
+
+const excludeAcePlugin = new webpack.NormalModuleReplacementPlugin(new RegExp('/assets/ace$'), EMPTY)
+
+const excludeAjvPlugin = new webpack.NormalModuleReplacementPlugin(new RegExp('^ajv$'), EMPTY)
+
+const productionEnvPlugin = new webpack.DefinePlugin({
+  'process.env': {
+    NODE_ENV: JSON.stringify('production')
+  }
+})
+
+const loaders = [
   { test: /\.js$/, exclude: /node_modules/, loader: 'babel-loader' },
   { test: /\.json$/, loader: 'json' },
   { test: /\.less$/, loaders: '!style!css!less!' },
@@ -46,61 +62,100 @@ var loaders = [
 ]
 
 // create a single instance of the compiler to allow caching
-var plugins = [
-    bannerPlugin
-]
-if (!WATCHING) {
-  plugins.push(new webpack.optimize.UglifyJsPlugin())
-  plugins.push(new webpack.DefinePlugin({
-    'process.env': {
-      NODE_ENV: JSON.stringify('production')
-    }
-  }))
-}
-var compiler = webpack({
+const compiler = webpack({
   entry: ENTRY,
   devtool: 'source-map',
   debug: true,
+  cache: true,
   bail: true,
   output: {
     library: 'jsoneditor',
     libraryTarget: 'umd',
     path: DIST,
-    filename: NAME + '.js'
+    filename: NAME
   },
-  plugins: plugins,
+  plugins: WATCHING
+      ? [bannerPlugin]
+      : [bannerPlugin, productionEnvPlugin, minifyPlugin],
   module: {
-    loaders: loaders
-  },
-  cache: true
+    loaders
+  }
 })
 
 // create a single instance of the compiler to allow caching
-var compilerMinimalist = webpack({
+const compilerMinimalist = webpack({
   entry: ENTRY,
   devtool: 'source-map',
   debug: true,
+  cache: true,
   output: {
     library: 'jsoneditor',
     libraryTarget: 'umd',
     path: DIST,
-    filename: NAME_MINIMALIST + '.js'
+    filename: NAME_MINIMALIST
   },
   plugins: [
     bannerPlugin,
-    new webpack.NormalModuleReplacementPlugin(new RegExp('/assets/ace$'), EMPTY),
-    new webpack.NormalModuleReplacementPlugin(new RegExp('^ajv$'), EMPTY),
-    new webpack.optimize.UglifyJsPlugin(),
-    new webpack.DefinePlugin({
-      'process.env': {
-        NODE_ENV: JSON.stringify('production')
-      }
-    })
+    productionEnvPlugin,
+    excludeAcePlugin,
+    excludeAjvPlugin,
+    minifyPlugin
   ],
   module: {
-    loaders: loaders
+    loaders
+  }
+})
+
+const externals = {
+  'react': 'commonjs react'
+}
+
+// FIXME: get the react bundles working
+// create a single instance of the compiler to allow caching
+const compilerReact = webpack({
+  entry: ENTRY_REACT,
+  devtool: 'source-map',
+  debug: true,
+  cache: true,
+  bail: true,
+  output: {
+    path: DIST,
+    filename: NAME_REACT
   },
-  cache: true
+  plugins: [
+    bannerPlugin,
+    productionEnvPlugin,
+    minifyPlugin
+  ],
+  module: {
+    loaders
+  },
+  externals
+})
+
+// FIXME: get the react bundles working
+// create a single instance of the compiler to allow caching
+const compilerReactMinimalist = webpack({
+  entry: ENTRY_REACT,
+  devtool: 'source-map',
+  debug: true,
+  cache: true,
+  bail: true,
+  output: {
+    path: DIST,
+    filename: NAME_REACT_MINIMALIST
+  },
+  plugins: [
+    bannerPlugin,
+    productionEnvPlugin,
+    excludeAcePlugin,
+    excludeAjvPlugin,
+    minifyPlugin
+  ],
+  module: {
+    loaders
+  },
+  externals
 })
 
 function handleCompilerCallback (err, stats) {
@@ -116,41 +171,38 @@ function handleCompilerCallback (err, stats) {
   }
 }
 
+function createBundleTask (compiler) {
+  return function (done) {
+    // update the banner contents (has a date in it which should stay up to date)
+    bannerPlugin.banner = createBanner()
+
+    compiler.run(function (err, stats) {
+      handleCompilerCallback(err, stats)
+
+      done()
+    })
+  }
+}
+
 // make dist folder
 gulp.task('mkdir', function () {
   mkdirp.sync(DIST)
 })
 
 // bundle javascript
-gulp.task('bundle', ['mkdir'], function (done) {
-  // update the banner contents (has a date in it which should stay up to date)
-  bannerPlugin.banner = createBanner()
-
-  compiler.run(function (err, stats) {
-    handleCompilerCallback(err, stats)
-
-    gutil.log('bundled ' + NAME + '.js')
-
-    done()
-  })
-})
+gulp.task('bundle', ['mkdir'], createBundleTask(compiler))
 
 // bundle minimalist version of javascript
-gulp.task('bundle-minimalist', ['mkdir'], function (done) {
-  // update the banner contents (has a date in it which should stay up to date)
-  bannerPlugin.banner = createBanner()
+gulp.task('bundle-minimalist', ['mkdir'], createBundleTask(compilerMinimalist))
 
-  compilerMinimalist.run(function (err, stats) {
-    handleCompilerCallback(err, stats)
+// bundle react version
+gulp.task('bundle-react', ['mkdir'], createBundleTask(compilerReact))
 
-    gutil.log('bundled ' + NAME_MINIMALIST + '.js')
-
-    done()
-  })
-})
+// bundle react minimalist version
+gulp.task('bundle-react-minimalist', ['mkdir'], createBundleTask(compilerReactMinimalist))
 
 // TODO: zip file using archiver
-var pkg = 'jsoneditor-' + require('./package.json').version + '.zip'
+const pkg = 'jsoneditor-' + require('./package.json').version + '.zip'
 gulp.task('zip', shell.task([
       'zip ' + pkg + ' ' + 'README.md LICENSE HISTORY.md index.html src dist docs examples -r '
 ]))
@@ -177,4 +229,11 @@ gulp.task(WATCH, ['bundle'], function() {
 })
 
 // The default task (called when you run `gulp`)
-gulp.task('default', [ 'bundle', 'bundle-minimalist' ])
+gulp.task('default', function(done) {
+  return gulpMultiProcess([
+    'bundle',
+    'bundle-minimalist',
+    'bundle-react',
+    'bundle-react-minimalist'
+  ], done);
+})

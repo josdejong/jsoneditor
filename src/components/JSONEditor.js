@@ -1,7 +1,6 @@
 // @flow
 
 import { createElement as h, Component, PropTypes } from 'react'
-import { render, unmountComponentAtNode} from 'react-dom'
 import CodeMode from './CodeMode'
 import TextMode from './TextMode'
 import TreeMode from './TreeMode'

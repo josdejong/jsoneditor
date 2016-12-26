@@ -1,7 +1,7 @@
 {
   "name": "jsoneditor",
   "version": "6.0.0-BETA",
-  "main": "./src/index",
+  "main": "./index.js",
   "description": "A web-based tool to view, edit, format, and validate JSON",
   "tags": [
     "json",
@@ -43,6 +43,7 @@
     "flow-bin": "0.36.0",
     "graceful-fs": "4.1.11",
     "gulp": "3.9.1",
+    "gulp-multi-process": "0.1.0",
     "gulp-shell": "0.5.2",
     "gulp-util": "3.0.7",
     "json-loader": "0.5.4",

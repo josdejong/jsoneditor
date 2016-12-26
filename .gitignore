@@ -2,5 +2,6 @@
 dist
 downloads
 node_modules
+flow-typed
 *.zip
 npm-debug.log
