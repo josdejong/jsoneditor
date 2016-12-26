@@ -56,13 +56,20 @@
   const container = document.getElementById('container')
   const options = {
     name: 'myObject',
-    onChange: function (patch, revert) {
-      console.log('onChange patch=', patch, ', revert=', revert)
+    onPatch: function (patch, revert) {
+      console.log('onPatch patch=', patch, ', revert=', revert)
       window.patch = patch
       window.revert = revert
     },
-    onChangeText: function () {
-      console.log('onChangeText')
+    onPatchText: function (patch, revert) {
+      // FIXME: implement onPatchText
+      console.log('onPatchText patch=', patch, ', revert=', revert)
+    },
+    onChange: function (json) {
+      console.log('onChange json=', json)
+    },
+    onChangeText: function (text) {
+      console.log('onChangeText', text)
     },
     onChangeMode: function (mode, prevMode) {
       console.log('switched mode from', prevMode, 'to', mode)

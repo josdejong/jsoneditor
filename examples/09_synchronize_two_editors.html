@@ -18,6 +18,10 @@
       height: 500px;
       margin-right: 24px;
     }
+
+    code {
+      background: #e5e5e5;
+    }
   </style>
 </head>
 <body>
@@ -25,7 +29,7 @@
 <h1>Synchronize two editors</h1>
 <p>
   This example demonstrates how to keep two editors synchronized by listening for
-  the onChange event.
+  the <code>onPatch</code> event. Other related events are <code>onChange</code> and <code>onChangeText</code>.
 </p>
 
 <div id="jsoneditor1"></div>
@@ -42,14 +46,14 @@
   }
 
   var editor1 = jsoneditor(document.getElementById('jsoneditor1'), {
-    onChange: function (patch, revert) {
+    onPatch: function (patch, revert) {
       editor2.patch(patch)
     }
   })
   editor1.set(json)
 
   var editor2 = jsoneditor(document.getElementById('jsoneditor2'), {
-    onChange: function (patch, revert) {
+    onPatch: function (patch, revert) {
       editor1.patch(patch)
     }
   })
