@@ -200,6 +200,8 @@ export default class TreeMode extends Component {
             text: this.state.search.text,
             resultsCount: searchResultsCount,
             onChange: this.handleSearch,
+            onNext: this.handleNext,
+            onPrevious: this.handlePrevious,
             delay: SEARCH_DEBOUNCE
           })
         )
@@ -310,6 +312,18 @@ export default class TreeMode extends Component {
   /** @private */
   handleSearch = (text) => {
     this.setState(setIn(this.state, ['search', 'text'], text))
+  }
+
+  /** @private */
+  handleNext = () => {
+    // TODO: implement select next search result
+    console.log('next search result...')
+  }
+
+  /** @private */
+  handlePrevious = () => {
+    // TODO: implement select previous search result
+    console.log('previous search result...')
   }
 
   /**

@@ -18,15 +18,34 @@ export default class Search extends Component {
   }
 
   render () {
-    // TODO: prev/next
     // TODO: focus on search results
     // TODO: expand the focused search result if not expanded
 
     return h('div', {className: 'jsoneditor-search'}, [
       this.renderResultsCount(this.props.resultsCount),
-      h('div', {key: 'box', className: 'jsoneditor-search-box'},
-          h('input', {type: 'text', value: this.state.text, onInput: this.handleChange})
-      )
+      h('div', {key: 'box', className: 'jsoneditor-search-box'}, [
+          h('input', {
+            key: 'input',
+            type: 'text',
+            className: 'jsoneditor-search-text',
+            value: this.state.text,
+            onInput: this.handleChange
+          }),
+          h('input', {
+            key: 'next',
+            type: 'button',
+            className: 'jsoneditor-search-next',
+            title: 'Next result',
+            onClick: this.props.onPrevious
+          }),
+          h('input', {
+            key: 'previous',
+            type: 'button',
+            className: 'jsoneditor-search-previous',
+            title: 'Previous result',
+            onClick: this.props.onNext
+          })
+      ])
     ])
   }
 
@@ -72,5 +91,8 @@ export default class Search extends Component {
 
 Search.propTypes = {
   text: PropTypes.string,
-  resultsCount: PropTypes.number
+  resultsCount: PropTypes.number,
+  onChange: PropTypes.func,
+  onPrevious: PropTypes.func,
+  onNext: PropTypes.func,
 }
