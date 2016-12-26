@@ -114,7 +114,7 @@ export default class TreeMode extends Component {
 
     // enrich the data with search results
     const searchResults = this.state.search.text ? search(data, this.state.search.text) : null
-    if (searchResults) {
+    if (searchResults && searchResults.length > 0) {
       data = addSearchResults(data, searchResults)
 
       data = addFocus(data, searchResults[0]) // TODO: change to using focus from state
@@ -125,7 +125,7 @@ export default class TreeMode extends Component {
       className: `jsoneditor jsoneditor-mode-${props.mode}`,
       'data-jsoneditor': 'true'
     }, [
-      this.renderMenu(),
+      this.renderMenu(searchResults ? searchResults.length : null),
 
       h('div', {key: 'contents', className: 'jsoneditor-contents jsoneditor-tree-contents', onClick: this.handleHideMenus},
         h('ul', {className: 'jsoneditor-list jsoneditor-root'},
@@ -141,7 +141,7 @@ export default class TreeMode extends Component {
     ])
   }
 
-  renderMenu () {
+  renderMenu (searchResultsCount: number) {
     let items = [
       h('button', {
         key: 'expand-all',
@@ -198,6 +198,7 @@ export default class TreeMode extends Component {
         h('div', {key: 'search', className: 'jsoneditor-menu-panel-right'},
           h(Search, {
             text: this.state.search.text,
+            resultsCount: searchResultsCount,
             onChange: this.handleSearch,
             delay: SEARCH_DEBOUNCE
           })

@@ -1,8 +1,14 @@
-import { createElement as h, Component } from 'react'
+// @flow weak
+
+import { createElement as h, Component, PropTypes } from 'react'
 
 import '!style!css!less!./Search.less'
 
 export default class Search extends Component {
+  state: {
+    text: string
+  }
+
   constructor (props) {
     super (props)
 
@@ -12,19 +18,37 @@ export default class Search extends Component {
   }
 
   render () {
-    // TODO: show number of search results left from the input box
     // TODO: prev/next
     // TODO: focus on search results
     // TODO: expand the focused search result if not expanded
 
-    return h('div', {className: 'jsoneditor-search'},
-      h('input', {type: 'text', value: this.state.text, onInput: this.handleChange})
-    )
+    return h('div', {className: 'jsoneditor-search'}, [
+      this.renderResultsCount(this.props.resultsCount),
+      h('div', {key: 'box', className: 'jsoneditor-search-box'},
+          h('input', {type: 'text', value: this.state.text, onInput: this.handleChange})
+      )
+    ])
+  }
+
+  renderResultsCount (resultsCount : number | null) {
+    if (resultsCount == null) {
+      return null
+    }
+
+    if (resultsCount == 0) {
+      return h('div', {key: 'count', className: 'jsoneditor-results'}, '(no results)')
+    }
+
+    if (resultsCount > 0) {
+      return h('div', {key: 'count', className: 'jsoneditor-results'}, this.props.resultsCount + ' results')
+    }
+
+    return null
   }
 
   componentWillReceiveProps (nextProps) {
     if (nextProps.text !== this.props.text) {
-      // clear a pending onChange callback (if any
+      // clear a pending onChange callback (if any)
       clearTimeout(this.timeout)
     }
   }
@@ -44,4 +68,9 @@ export default class Search extends Component {
   }
 
   timeout = null
+}
+
+Search.propTypes = {
+  text: PropTypes.string,
+  resultsCount: PropTypes.number
 }

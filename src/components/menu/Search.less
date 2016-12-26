@@ -1,15 +1,27 @@
 @theme-color: #3883fa;
 
 div.jsoneditor-search {
-  background: white;
-  border: 2px solid @theme-color;
-  box-sizing: border-box;
+  font-family: arial, sans-serif;
+  font-size: 10pt;
 
-  input {
-    border: none;
-    outline: none;
-    height: 22px;
-    line-height: 22px;
-    padding: 2px;
+  div.jsoneditor-results {
+    display: inline-block;
+    margin-right: 5px;
+  }
+
+  div.jsoneditor-search-box {
+    display: inline-block;
+
+    background: white;
+    border: 2px solid @theme-color;
+    box-sizing: border-box;
+
+    input {
+      border: none;
+      outline: none;
+      height: 22px;
+      line-height: 22px;
+      padding: 2px;
+    }
   }
 }
