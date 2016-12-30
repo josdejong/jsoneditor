@@ -54,12 +54,14 @@ export default class Search extends Component {
       return null
     }
 
-    if (resultsCount == 0) {
+    if (resultsCount === 0) {
       return h('div', {key: 'count', className: 'jsoneditor-results'}, '(no results)')
     }
 
     if (resultsCount > 0) {
-      return h('div', {key: 'count', className: 'jsoneditor-results'}, this.props.resultsCount + ' results')
+      const suffix = resultsCount === 1 ? ' result' : ' results'
+
+      return h('div', {key: 'count', className: 'jsoneditor-results'}, this.props.resultsCount + suffix)
     }
 
     return null

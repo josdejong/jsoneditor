@@ -115,11 +115,16 @@ export default class TreeMode extends Component {
     // enrich the data with search results
     const searchResults = this.state.search.text ? search(data, this.state.search.text) : null
     if (searchResults && searchResults.length > 0) {
-      data = addSearchResults(data, searchResults)
+      const activeSearchResult = searchResults[0] // TODO: store active search result in state
 
-      data = addFocus(data, searchResults[0]) // TODO: change to using focus from state
+      data = addSearchResults(data, searchResults, activeSearchResult)
+
+      // TODO: highlight
+
+      // data = addFocus(data, searchResults[0]) // TODO: change to using focus from state
     }
-    // TODO: pass number of search results to search box in top menu
+
+    console.log('data', data)
 
     return h('div', {
       className: `jsoneditor jsoneditor-mode-${props.mode}`,

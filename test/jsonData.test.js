@@ -278,7 +278,7 @@ const JSON_DATA_EXAMPLE_SEARCH_L = {
                       value: {
                         type: 'value',
                         value: 4,
-                        searchProperty: true
+                        searchProperty: 'normal'
                       }
                     }
                   ]
@@ -294,7 +294,7 @@ const JSON_DATA_EXAMPLE_SEARCH_L = {
       value: {
         type: 'value',
         value: 'hello world',
-        searchValue: true
+        searchValue: 'normal'
       }
     },
     {
@@ -302,8 +302,8 @@ const JSON_DATA_EXAMPLE_SEARCH_L = {
       value: {
         type: 'value',
         value: null,
-        searchProperty: true,
-        searchValue: true
+        searchProperty: 'active',
+        searchValue: 'normal'
       }
     },
     {
@@ -311,8 +311,8 @@ const JSON_DATA_EXAMPLE_SEARCH_L = {
       value: {
         type: 'value',
         value: false,
-        searchProperty: true,
-        searchValue: true
+        searchProperty: 'normal',
+        searchValue: 'normal'
       }
     }
   ]
@@ -925,16 +925,17 @@ test('search', t => {
   // console.log(searchResults)
 
   t.deepEqual(searchResults, [
-    {dataPath: ['nill'], property: true},
-    {dataPath: ['bool'], property: true},
-    {dataPath: ['obj', 'arr', '2', 'last'], property: true},
-    {dataPath: ['str'], value: true},
-    {dataPath: ['nill'], value: true},
-    {dataPath: ['bool'], value: true}
+    {dataPath: ['nill'], type: 'property'},
+    {dataPath: ['bool'], type: 'property'},
+    {dataPath: ['obj', 'arr', '2', 'last'], type: 'property'},
+    {dataPath: ['str'], type: 'value'},
+    {dataPath: ['nill'], type: 'value'},
+    {dataPath: ['bool'], type: 'value'}
   ])
 
-  const updatedData = addSearchResults(JSON_DATA_EXAMPLE, searchResults)
-  // console.log(JSON.stringify(updatedData, null, 2))
+  const activeSearchResult = searchResults[0]
+  const updatedData = addSearchResults(JSON_DATA_EXAMPLE, searchResults, activeSearchResult)
+  //console.log(JSON.stringify(updatedData, null, 2))
 
   t.deepEqual(updatedData, JSON_DATA_EXAMPLE_SEARCH_L)
 })

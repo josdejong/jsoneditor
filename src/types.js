@@ -71,6 +71,11 @@ type JSONArrayType = Array<JSON>;
 
 export type Path = string[]
 
+export type SearchResult = {
+  dataPath: Path,
+  type: 'value' | 'property'
+}
+
 export type SetOptions = {
   expand?: (path: Path) => boolean
 }

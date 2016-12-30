@@ -1,3 +1,5 @@
+// @flow weak
+
 /**
  * This file contains functions to act on a JSONData object.
  * All functions are pure and don't mutate the JSONData.
@@ -6,6 +8,8 @@
 import { setIn, updateIn, getIn, deleteIn, insertAt } from './utils/immutabilityHelpers'
 import { isObject } from  './utils/typeUtils'
 import isEqual from 'lodash/isEqual'
+
+import type {SearchResult} from './types'
 
 /**
  * Expand function which will expand all nodes
@@ -509,16 +513,16 @@ export function addErrors (data, errors) {
  * @param {string} text
  * @return {SearchResult[]} Returns a list with search results
  */
-export function search (data, text) {
-  let results = []
+export function search (data, text): SearchResult[] {
+  let results: SearchResult[] = []
 
-  traverse(data, function (value, path) {
+  traverse(data, function (value, path, root) {
       // search in values
       if (value.type === 'value') {
         if (containsCaseInsensitive(value.value, text)) {
           results.push({
             dataPath: path,
-            value: true
+            type: 'value'
           })
         }
       }
@@ -529,7 +533,7 @@ export function search (data, text) {
           if (containsCaseInsensitive(prop.name, text)) {
             results.push({
               dataPath: path.concat(prop.name),
-              property: true
+              type: 'property'
             })
           }
         })
@@ -541,24 +545,22 @@ export function search (data, text) {
 
 /**
  * Merge searchResults into the data
- *
- * @param {JSONData} data
- * @param {SearchResult[]} searchResults
- * @return {JSONData} Returns an updated copy of data
  */
-export function addSearchResults (data, searchResults) {
+export function addSearchResults (data, searchResults: SearchResult[], activeSearchResult: SearchResult) {
   let updatedData = data
 
   if (searchResults) {
     searchResults.forEach(function (searchResult) {
-      if (searchResult.value) {
+      if (searchResult.type === 'value') {
         const dataPath = toDataPath(data, searchResult.dataPath).concat('searchValue')
-        updatedData = setIn(updatedData, dataPath, true)
+        const value = isEqual(searchResult, activeSearchResult) ? 'active' : 'normal'
+        updatedData = setIn(updatedData, dataPath, value)
       }
 
-      if (searchResult.property) {
+      if (searchResult.type === 'property') {
         const dataPath = toDataPath(data, searchResult.dataPath).concat('searchProperty')
-        updatedData = setIn(updatedData, dataPath, true)
+        const value = isEqual(searchResult, activeSearchResult) ? 'active' : 'normal'
+        updatedData = setIn(updatedData, dataPath, value)
       }
     })
   }

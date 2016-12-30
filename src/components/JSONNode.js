@@ -295,7 +295,7 @@ export default class JSONNode extends Component {
    * @param {string} type
    * @param {boolean} isUrl
    * @param {boolean} isEmpty
-   * @param {boolean} [searchValue]
+   * @param {'normal' | 'active'} [searchValue]
    * @return {string}
    * @public
    */
@@ -304,7 +304,9 @@ export default class JSONNode extends Component {
         'jsoneditor-' + type +
         (isUrl ? ' jsoneditor-url' : '') +
         (isEmpty ? ' jsoneditor-empty' : '') +
-        (searchValue ? ' jsoneditor-highlight' : '')
+        (searchValue === 'active'
+            ? ' jsoneditor-highlight-active'
+            : (searchValue ? ' jsoneditor-highlight' : ''))
   }
 
   /**
@@ -372,16 +374,19 @@ export default class JSONNode extends Component {
   }
 
   componentDidUpdate (prevProps, prevState) {
-    // TODO: focus to input field
-    // if (this.props.data.focusProperty && !prevProps.data.focusProperty) {
-    //   console.log('focus property', this.getPath())
-    //   this.refs.property.focus()
-    // }
-    //
-    // if (this.props.data.focusValue && !prevProps.data.focusValue) {
-    //   console.log('focus value', this.getPath())
-    //   this.refs.value.focus()
-    // }
+    if (this.props.data.focusProperty && !prevProps.data.focusProperty) {
+      console.log('focus property', this.getPath()) // TODO: cleanup
+      if (this.refs.property) {
+        this.refs.property.focus()
+      }
+    }
+
+    if (this.props.data.focusValue && !prevProps.data.focusValue) {
+      console.log('focus value', this.getPath()) // TODO: cleanup
+      if (this.refs.value) {
+        this.refs.value.focus()
+      }
+    }
   }
 
   static getRootName (data, options) {
