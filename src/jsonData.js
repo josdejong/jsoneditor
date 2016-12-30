@@ -517,27 +517,25 @@ export function search (data, text): SearchResult[] {
   let results: SearchResult[] = []
 
   traverse(data, function (value, path, root) {
-      // search in values
-      if (value.type === 'value') {
-        if (containsCaseInsensitive(value.value, text)) {
-          results.push({
-            dataPath: path,
-            type: 'value'
-          })
-        }
-      }
+    // check property name
+    const prop = last(path)
 
-      // search object property names
-      if (value.type === 'Object') {
-        value.props.forEach((prop) => {
-          if (containsCaseInsensitive(prop.name, text)) {
-            results.push({
-              dataPath: path.concat(prop.name),
-              type: 'property'
-            })
-          }
-        })
+    if (typeof prop === 'string' && containsCaseInsensitive(prop, text)) {
+      // only add search result when this is an object property name,
+      // don't add search result for array indices
+      const parentPath = path.slice(0, path.length - 1)
+      const parent = getIn(root, toDataPath(data, parentPath))
+      if (parent.type === 'Object') {
+        results.push({ dataPath: path, type: 'property' })
       }
+    }
+
+    // check value
+    if (value.type === 'value') {
+      if (containsCaseInsensitive(value.value, text)) {
+        results.push({ dataPath: path, type: 'value' })
+      }
+    }
   })
 
   return results
@@ -796,4 +794,11 @@ export function compileJSONPointer (path) {
   return path
       .map(p => '/' + String(p).replace(/~/g, '~0').replace(/\//g, '~1'))
       .join('')
+}
+
+/**
+ * Returns the last item of an array
+ */
+function last (array: Array): any {
+  return array[array.length - 1]
 }

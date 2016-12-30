@@ -278,7 +278,7 @@ const JSON_DATA_EXAMPLE_SEARCH_L = {
                       value: {
                         type: 'value',
                         value: 4,
-                        searchProperty: 'normal'
+                        searchProperty: 'active'
                       }
                     }
                   ]
@@ -302,7 +302,7 @@ const JSON_DATA_EXAMPLE_SEARCH_L = {
       value: {
         type: 'value',
         value: null,
-        searchProperty: 'active',
+        searchProperty: 'normal',
         searchValue: 'normal'
       }
     },
@@ -925,11 +925,11 @@ test('search', t => {
   // console.log(searchResults)
 
   t.deepEqual(searchResults, [
-    {dataPath: ['nill'], type: 'property'},
-    {dataPath: ['bool'], type: 'property'},
     {dataPath: ['obj', 'arr', '2', 'last'], type: 'property'},
     {dataPath: ['str'], type: 'value'},
+    {dataPath: ['nill'], type: 'property'},
     {dataPath: ['nill'], type: 'value'},
+    {dataPath: ['bool'], type: 'property'},
     {dataPath: ['bool'], type: 'value'}
   ])
 
