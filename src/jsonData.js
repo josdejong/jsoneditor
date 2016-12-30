@@ -543,6 +543,54 @@ export function search (data, text): SearchResult[] {
 }
 
 /**
+ * Find the next search result given a current search result
+ * - When the current search result is the last one, the search will wrap around
+ *   and return the first result as next.
+ * - When current search result is not found, the first search result will be
+ *   returned as next
+ * - When `searchResults` is empty, null will be returned
+ */
+export function nextSearchResult (searchResults: SearchResult[], current: SearchResult): SearchResult | null {
+  if (searchResults.length === 0) {
+    return null
+  }
+
+  const index = searchResults.findIndex(searchResult => isEqual(searchResult, current))
+  if (index !== -1) {
+    return index < searchResults.length - 1
+        ? searchResults[index + 1]
+        : searchResults[0]
+  }
+  else {
+    return searchResults[0]
+  }
+}
+
+/**
+ * Find the previous search result given a current search result
+ * - When the current search result is the first one, the search will wrap around
+ *   and return the last result as next.
+ * - When current search result is not found, the last search result will be
+ *   returned as next
+ * - When `searchResults` is empty, null will be returned
+ */
+export function previousSearchResult (searchResults: SearchResult[], current: SearchResult): SearchResult | null {
+  if (searchResults.length === 0) {
+    return null
+  }
+
+  const index = searchResults.findIndex(searchResult => isEqual(searchResult, current))
+  if (index !== -1) {
+    return index > 0
+        ? searchResults[index - 1]
+        : last(searchResults)
+  }
+  else {
+    return searchResults[0]
+  }
+}
+
+/**
  * Merge searchResults into the data
  */
 export function addSearchResults (data, searchResults: SearchResult[], activeSearchResult: SearchResult) {

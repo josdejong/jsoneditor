@@ -2,7 +2,7 @@ import test from 'ava';
 import {
     jsonToData, dataToJson, patchData, pathExists, transform, traverse,
     parseJSONPointer, compileJSONPointer,
-    expand, addErrors, search, addSearchResults
+    expand, addErrors, search, addSearchResults, nextSearchResult, previousSearchResult
 } from '../src/jsonData'
 
 
@@ -938,4 +938,60 @@ test('search', t => {
   // console.log(JSON.stringify(updatedData, null, 2))
 
   t.deepEqual(updatedData, JSON_DATA_EXAMPLE_SEARCH_L)
+})
+
+test('nextSearchResult', t => {
+  const searchResults = [
+    {dataPath: ['obj', 'arr', '2', 'last'], type: 'property'},
+    {dataPath: ['str'], type: 'value'},
+    {dataPath: ['nill'], type: 'property'},
+    {dataPath: ['nill'], type: 'value'},
+    {dataPath: ['bool'], type: 'property'},
+    {dataPath: ['bool'], type: 'value'}
+  ]
+
+  t.deepEqual(nextSearchResult(searchResults,
+      {dataPath: ['nill'], type: 'property'}),
+      {dataPath: ['nill'], type: 'value'})
+
+  // wrap around
+  t.deepEqual(nextSearchResult(searchResults,
+      {dataPath: ['bool'], type: 'value'}),
+      {dataPath: ['obj', 'arr', '2', 'last'], type: 'property'})
+
+  // return first when current is not found
+  t.deepEqual(nextSearchResult(searchResults,
+      {dataPath: ['non', 'existing'], type: 'value'}),
+      {dataPath: ['obj', 'arr', '2', 'last'], type: 'property'})
+
+  // return null when searchResults are empty
+  t.deepEqual(nextSearchResult([], {dataPath: ['non', 'existing'], type: 'value'}), null)
+})
+
+test('previousSearchResult', t => {
+  const searchResults = [
+    {dataPath: ['obj', 'arr', '2', 'last'], type: 'property'},
+    {dataPath: ['str'], type: 'value'},
+    {dataPath: ['nill'], type: 'property'},
+    {dataPath: ['nill'], type: 'value'},
+    {dataPath: ['bool'], type: 'property'},
+    {dataPath: ['bool'], type: 'value'}
+  ]
+
+  t.deepEqual(previousSearchResult(searchResults,
+      {dataPath: ['nill'], type: 'property'}),
+      {dataPath: ['str'], type: 'value'})
+
+  // wrap around
+  t.deepEqual(previousSearchResult(searchResults,
+      {dataPath: ['obj', 'arr', '2', 'last'], type: 'property'}),
+      {dataPath: ['bool'], type: 'value'})
+
+  // return first when current is not found
+  t.deepEqual(previousSearchResult(searchResults,
+      {dataPath: ['non', 'existing'], type: 'value'}),
+      {dataPath: ['obj', 'arr', '2', 'last'], type: 'property'})
+
+  // return null when searchResults are empty
+  t.deepEqual(previousSearchResult([], {dataPath: ['non', 'existing'], type: 'value'}), null)
 })
