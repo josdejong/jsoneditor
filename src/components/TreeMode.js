@@ -124,7 +124,7 @@ export default class TreeMode extends Component {
       // data = addFocus(data, searchResults[0]) // TODO: change to using focus from state
     }
 
-    console.log('data', data)
+    // console.log('data', data)
 
     return h('div', {
       className: `jsoneditor jsoneditor-mode-${props.mode}`,

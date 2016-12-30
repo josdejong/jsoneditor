@@ -21,7 +21,8 @@
     "start": "gulp watch",
     "build": "gulp",
     "flow": "flow; test $? -eq 0 -o $? -eq 2",
-    "test": "ava test/*.test.js test/**/*.test.js --verbose"
+    "test": "ava --verbose",
+    "watch:test": "ava --verbose --watch"
   },
   "dependencies": {
     "ajv": "4.9.2",
@@ -55,9 +56,16 @@
     "webpack": "1.14.0"
   },
   "ava": {
+    "files": [
+      "test/**/*.test.js"
+    ],
+    "source": [
+      "./src/**/*"
+    ],
     "require": [
       "babel-register"
     ],
+    "concurrency": 4,
     "babel": "inherit"
   }
 }

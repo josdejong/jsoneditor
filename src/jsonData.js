@@ -516,17 +516,18 @@ export function addErrors (data, errors) {
 export function search (data, text): SearchResult[] {
   let results: SearchResult[] = []
 
-  traverse(data, function (value, path, root) {
+  traverse(data, function (value, path) {
     // check property name
-    const prop = last(path)
-
-    if (typeof prop === 'string' && containsCaseInsensitive(prop, text)) {
-      // only add search result when this is an object property name,
-      // don't add search result for array indices
-      const parentPath = path.slice(0, path.length - 1)
-      const parent = getIn(root, toDataPath(data, parentPath))
-      if (parent.type === 'Object') {
-        results.push({ dataPath: path, type: 'property' })
+    if (path.length > 0) {
+      const prop = last(path)
+      if (containsCaseInsensitive(prop, text)) {
+        // only add search result when this is an object property name,
+        // don't add search result for array indices
+        const parentPath = allButLast(path)
+        const parent = getIn(data, toDataPath(data, parentPath))
+        if (parent.type === 'Object') {
+          results.push({ dataPath: path, type: 'property' })
+        }
       }
     }
 
@@ -550,15 +551,16 @@ export function addSearchResults (data, searchResults: SearchResult[], activeSea
   if (searchResults) {
     searchResults.forEach(function (searchResult) {
       if (searchResult.type === 'value') {
-        const dataPath = toDataPath(data, searchResult.dataPath).concat('searchValue')
+        const dataPath = toDataPath(data, searchResult.dataPath).concat('searchResult')
         const value = isEqual(searchResult, activeSearchResult) ? 'active' : 'normal'
         updatedData = setIn(updatedData, dataPath, value)
       }
 
       if (searchResult.type === 'property') {
-        const dataPath = toDataPath(data, searchResult.dataPath).concat('searchProperty')
+        const valueDataPath = toDataPath(data, searchResult.dataPath)
+        const propertyDataPath = allButLast(valueDataPath).concat('searchResult')
         const value = isEqual(searchResult, activeSearchResult) ? 'active' : 'normal'
-        updatedData = setIn(updatedData, dataPath, value)
+        updatedData = setIn(updatedData, propertyDataPath, value)
       }
     })
   }
@@ -591,7 +593,7 @@ export function addFocus (data, focusOn) {
  * @param {String} search
  * @return {boolean} Returns true if `search` is found in `text`
  */
-export function containsCaseInsensitive (text, search) {
+export function containsCaseInsensitive (text: string, search: string): boolean {
   return String(text).toLowerCase().indexOf(search.toLowerCase()) !== -1
 }
 
@@ -799,6 +801,13 @@ export function compileJSONPointer (path) {
 /**
  * Returns the last item of an array
  */
-function last (array: Array): any {
+function last (array: []): any {
   return array[array.length - 1]
+}
+
+/**
+ * Returns a copy of the array having the last item removed
+ */
+function allButLast (array: []): any {
+  return array.slice(0, array.length - 1)
 }

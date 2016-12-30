@@ -152,3 +152,15 @@ jsoneditor:
 
   This will update `./dist/jsoneditor.js` on every change in the source code,
   but it will **NOT** update the minimalist version.
+
+- Run unit tests:
+
+  ```
+  npm test
+  ```
+
+  or to watch for changes and re-run tests automatically:
+
+  ```
+  npm run watch:test
+  ```

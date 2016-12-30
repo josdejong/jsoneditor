@@ -1,29 +1,9 @@
 // @flow
 
 /**
- * @typedef {{
- *   type: 'Array',
- *   expanded: boolean?,
- *   props: Array.<{name: string, value: JSONData}>?
- * }} ObjectData
- *
- * @typedef {{
- *   type: 'Object',
- *   expanded: boolean?,
- *   items: JSONData[]?
- * }} ArrayData
- *
- * @typedef {{
- *   type: 'value' | 'string',
- *   value: *?
- * }} ValueData
- *
- * @typedef {Array.<string>} Path
- *
- * @typedef {ObjectData | ArrayData | ValueData} JSONData
  *
  * @typedef {'Object' | 'Array' | 'value' | 'string'} JSONDataType
-
+ *
  * @typedef {{
  *   patch: JSONPatch,
  *   revert: JSONPatch,
@@ -57,34 +37,61 @@
  *   expand: function (path: Path)?
  * }} PatchOptions
  *
- * @typedef {{
- *   dataPath: Path,
- *   property: boolean?,
- *   value: boolean?
- * }} SearchResult
- * // TODO: SearchResult.dataPath is an array, JSONSchemaError.dataPath is a string -> make this consistent
  */
 
-type JSONType = | string | number | boolean | null | JSONObjectType | JSONArrayType;
-type JSONObjectType = { [key:string]: JSON };
-type JSONArrayType = Array<JSON>;
+
+/**************************** GENERIC JSON TYPES ******************************/
+
+export type JSONType = | string | number | boolean | null | JSONObjectType | JSONArrayType;
+export type JSONObjectType = { [key:string]: JSONType };
+export type JSONArrayType = Array<JSONType>;
+
+
+/********************** TYPES FOR THE JSON DATA MODEL *************************/
+
+export type SearchResultStatus = 'normal' | 'active'
+export type SearchResultType = 'value' | 'property'
+
+export type PropertyData = {
+  name: string,
+  value: JSONData,
+  searchResult: ?SearchResultStatus
+}
+
+export type ObjectData = {
+  type: 'Object',
+  expanded: ?boolean,
+  props: PropertyData[]
+}
+
+export type ArrayData = {
+  type: 'Array',
+  expanded: ?boolean,
+  items: ?JSONData[]
+}
+
+export type ValueData = {
+  type: 'value' | 'string',
+  value: ?any,
+  searchResult: ?SearchResultStatus
+}
+
+export type JSONData = ObjectData | ArrayData | ValueData
+
+
 
 export type Path = string[]
 
 export type SearchResult = {
   dataPath: Path,
-  type: 'value' | 'property'
+  type: SearchResultType
 }
+// TODO: SearchResult.dataPath is an array, JSONSchemaError.dataPath is a string -> make this consistent
 
+
+// TODO: remove SetOptions, merge into Options (everywhere in the public API)
 export type SetOptions = {
   expand?: (path: Path) => boolean
-}
-
-export type JSONEditorMode = {
-  setSchema: (schema?: Object) => void,
-  set: (JSON) => void,
-  setText: (text: string) => void,
-  getText: () => string
 }
 
 export type JSONPatchAction = {

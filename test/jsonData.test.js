@@ -277,9 +277,9 @@ const JSON_DATA_EXAMPLE_SEARCH_L = {
                       name: 'last',
                       value: {
                         type: 'value',
-                        value: 4,
-                        searchProperty: 'active'
-                      }
+                        value: 4
+                      },
+                      searchResult: 'active'
                     }
                   ]
                 }
@@ -294,7 +294,7 @@ const JSON_DATA_EXAMPLE_SEARCH_L = {
       value: {
         type: 'value',
         value: 'hello world',
-        searchValue: 'normal'
+        searchResult: 'normal'
       }
     },
     {
@@ -302,18 +302,18 @@ const JSON_DATA_EXAMPLE_SEARCH_L = {
       value: {
         type: 'value',
         value: null,
-        searchProperty: 'normal',
-        searchValue: 'normal'
-      }
+        searchResult: 'normal'
+      },
+      searchResult: 'normal'
     },
     {
       name: 'bool',
       value: {
         type: 'value',
         value: false,
-        searchProperty: 'normal',
-        searchValue: 'normal'
-      }
+        searchResult: 'normal'
+      },
+      searchResult: 'normal'
     }
   ]
 }
@@ -935,7 +935,7 @@ test('search', t => {
 
   const activeSearchResult = searchResults[0]
   const updatedData = addSearchResults(JSON_DATA_EXAMPLE, searchResults, activeSearchResult)
-  //console.log(JSON.stringify(updatedData, null, 2))
+  // console.log(JSON.stringify(updatedData, null, 2))
 
   t.deepEqual(updatedData, JSON_DATA_EXAMPLE_SEARCH_L)
 })

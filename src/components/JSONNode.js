@@ -8,6 +8,10 @@ import { escapeHTML, unescapeHTML } from '../utils/stringUtils'
 import { getInnerText, insideRect } from '../utils/domUtils'
 import { stringConvert, valueType, isUrl } from  '../utils/typeUtils'
 
+import type {
+  PropertyData, ObjectData, ArrayData, JSONData,
+  SearchResult, SearchResultStatus } from '../types'
+
 /**
  * @type {JSONNode | null} activeContextMenu  singleton holding the JSONNode having
  *                                            the active (visible) context menu
@@ -36,13 +40,13 @@ export default class JSONNode extends Component {
     }
   }
 
-  renderJSONObject ({prop, data, options, events}) {
+  renderJSONObject ({prop, index, data, options, events}) {
     const childCount = data.props.length
     const contents = [
       h('div', {key: 'node', className: 'jsoneditor-node jsoneditor-object'}, [
         this.renderExpandButton(),
         this.renderActionMenuButton(),
-        this.renderProperty(prop, data, options),
+        this.renderProperty(prop, index, data, options),
         this.renderReadonly(`{${childCount}}`, `Array containing ${childCount} items`),
         this.renderError(data.error)
       ])
@@ -54,7 +58,7 @@ export default class JSONNode extends Component {
           return h(this.constructor, {
             key: prop.name,
             parent: this,
-            prop: prop.name,
+            prop: prop,
             data: prop.value,
             options,
             events
@@ -73,13 +77,13 @@ export default class JSONNode extends Component {
     return h('li', {}, contents)
   }
 
-  renderJSONArray ({prop, data, options, events}) {
+  renderJSONArray ({prop, index, data, options, events}) {
     const childCount = data.items.length
     const contents = [
       h('div', {key: 'node', className: 'jsoneditor-node jsoneditor-array'}, [
         this.renderExpandButton(),
         this.renderActionMenuButton(),
-        this.renderProperty(prop, data, options),
+        this.renderProperty(prop, index, data, options),
         this.renderReadonly(`[${childCount}]`, `Array containing ${childCount} items`),
         this.renderError(data.error)
       ])
@@ -91,7 +95,7 @@ export default class JSONNode extends Component {
           return h(this.constructor, {
             key: index,
             parent: this,
-            prop: index,
+            index,
             data: child,
             options,
             events
@@ -109,14 +113,14 @@ export default class JSONNode extends Component {
     return h('li', {}, contents)
   }
 
-  renderJSONValue ({prop, data, options}) {
+  renderJSONValue ({prop, index, data, options}) {
     return h('li', {},
       h('div', {className: 'jsoneditor-node'}, [
         this.renderPlaceholder(),
         this.renderActionMenuButton(),
-        this.renderProperty(prop, data, options),
+        this.renderProperty(prop, index, data, options),
         this.renderSeparator(),
-        this.renderValue(data.value, data.searchValue, options),
+        this.renderValue(data.value, data.searchResult, options),
         this.renderError(data.error)
       ])
     )
@@ -145,8 +149,10 @@ export default class JSONNode extends Component {
     return h('div', {key: 'readonly', className: 'jsoneditor-readonly', title}, text)
   }
 
-  renderProperty (prop, data, options) {
-    if (prop === null) {
+  renderProperty (prop: ?PropertyData, index: ?number, data: JSONData, options) {
+    const isIndex = typeof index === 'number'
+
+    if (!prop && !isIndex) {
       // root node
       const rootName = JSONNode.getRootName(data, options)
 
@@ -159,29 +165,27 @@ export default class JSONNode extends Component {
       }, rootName)
     }
 
-    const isIndex = typeof prop === 'number' // FIXME: pass an explicit prop isIndex or editable
     const editable = !isIndex && (!options.isPropertyEditable || options.isPropertyEditable(this.getPath()))
 
-    const emptyClassName = (prop.length === 0 ? ' jsoneditor-empty' : '')
-    const searchClassName = data.searchProperty ? ' jsoneditor-highlight': '';
+    const emptyClassName = (prop && prop.name.length === 0) ? ' jsoneditor-empty' : ''
+    const searchClassName = prop ? JSONNode.getSearchResultClass(prop.searchResult) : ''
+    const escapedPropName = prop ? escapeHTML(prop.name, options.escapeUnicode) : null
 
     if (editable) {
-      const escapedProp = escapeHTML(prop, options.escapeUnicode)
-
       return h('div', {
         key: 'property',
         className: 'jsoneditor-property' + emptyClassName + searchClassName,
         contentEditable: 'true',
         spellCheck: 'false',
         onBlur: this.handleChangeProperty
-      }, escapedProp)
+      }, escapedPropName)
     }
     else {
       return h('div', {
         key: 'property',
         className: 'jsoneditor-property jsoneditor-readonly' + searchClassName,
         spellCheck: 'false'
-      }, prop)
+      }, isIndex ? index : escapedPropName)
     }
   }
 
@@ -189,7 +193,7 @@ export default class JSONNode extends Component {
     return h('div', {key: 'separator', className: 'jsoneditor-separator'}, ':')
   }
 
-  renderValue (value, searchValue, options) {
+  renderValue (value, searchResult, options) {
     const escapedValue = escapeHTML(value, options.escapeUnicode)
     const type = valueType (value)
     const itsAnUrl = isUrl(value)
@@ -200,7 +204,8 @@ export default class JSONNode extends Component {
       return h('div', {
         key: 'value',
         ref: 'value',
-        className: JSONNode.getValueClass(type, itsAnUrl, isEmpty, searchValue),
+        className: JSONNode.getValueClass(type, itsAnUrl, isEmpty) +
+            JSONNode.getSearchResultClass(searchResult),
         contentEditable: 'true',
         spellCheck: 'false',
         onBlur: this.handleChangeValue,
@@ -283,7 +288,10 @@ export default class JSONNode extends Component {
       target = target.parentNode
     }
 
-    target.className = JSONNode.getValueClass(type, itsAnUrl, isEmpty)
+    console.log('value', this.props)
+
+    target.className = JSONNode.getValueClass(type, itsAnUrl, isEmpty) +
+        JSONNode.getSearchResultClass(this.props.data.searchResult)
     target.title = itsAnUrl ? JSONNode.URL_TITLE : ''
 
     // remove all classNames from childs (needed for IE and Edge)
@@ -295,18 +303,29 @@ export default class JSONNode extends Component {
    * @param {string} type
    * @param {boolean} isUrl
    * @param {boolean} isEmpty
-   * @param {'normal' | 'active'} [searchValue]
    * @return {string}
    * @public
    */
-  static getValueClass (type, isUrl, isEmpty, searchValue) {
+  static getValueClass (type, isUrl, isEmpty) {
     return 'jsoneditor-value ' +
         'jsoneditor-' + type +
         (isUrl ? ' jsoneditor-url' : '') +
-        (isEmpty ? ' jsoneditor-empty' : '') +
-        (searchValue === 'active'
-            ? ' jsoneditor-highlight-active'
-            : (searchValue ? ' jsoneditor-highlight' : ''))
+        (isEmpty ? ' jsoneditor-empty' : '')
+  }
+
+  /**
+   * Get the css style given a search result type
+   */
+  static getSearchResultClass (searchResultStatus: ?SearchResultStatus) {
+    if (searchResultStatus === 'active') {
+      return ' jsoneditor-highlight-active'
+    }
+
+    if (searchResultStatus === 'normal') {
+      return ' jsoneditor-highlight'
+    }
+
+    return ''
   }
 
   /**
@@ -400,7 +419,7 @@ export default class JSONNode extends Component {
   /** @private */
   handleChangeProperty = (event) => {
     const parentPath = this.props.parent.getPath()
-    const oldProp = this.props.prop
+    const oldProp = this.props.prop.name
     const newProp = unescapeHTML(getInnerText(event.target))
 
     if (newProp !== oldProp) {
@@ -525,8 +544,12 @@ export default class JSONNode extends Component {
         ? this.props.parent.getPath()
         : []
 
-    if (this.props.prop !== null) {
-      path.push(this.props.prop)
+    if (typeof this.props.index === 'number') {
+      path.push(String(this.props.index))
+    }
+
+    if (this.props.prop) {
+      path.push(this.props.prop.name)
     }
 
     return path
