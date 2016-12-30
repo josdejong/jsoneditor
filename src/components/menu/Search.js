@@ -36,14 +36,14 @@ export default class Search extends Component {
             type: 'button',
             className: 'jsoneditor-search-next',
             title: 'Next result',
-            onClick: this.props.onPrevious
+            onClick: this.props.onNext
           }),
           h('input', {
             key: 'previous',
             type: 'button',
             className: 'jsoneditor-search-previous',
             title: 'Previous result',
-            onClick: this.props.onNext
+            onClick: this.props.onPrevious
           })
       ])
     ])

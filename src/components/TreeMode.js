@@ -1,12 +1,13 @@
 import { createElement as h, Component } from 'react'
 
 import Ajv from 'ajv'
+import isEqual from 'lodash/isEqual'
 import { updateIn, getIn, setIn } from '../utils/immutabilityHelpers'
 import { parseJSON } from '../utils/jsonUtils'
 import { enrichSchemaError } from '../utils/schemaUtils'
 import {
     jsonToData, dataToJson, toDataPath, patchData, pathExists,
-    expand, addErrors, search, addSearchResults, addFocus
+    expand, addErrors, search, addSearchResults, nextSearchResult, previousSearchResult
 } from '../jsonData'
 import {
     duplicate, insert, append, remove,
@@ -54,7 +55,7 @@ export default class TreeMode extends Component {
 
       search: {
         text: '',
-        selectedPath: null
+        active: null // active search result
       }
     }
   }
@@ -114,14 +115,8 @@ export default class TreeMode extends Component {
 
     // enrich the data with search results
     const searchResults = this.state.search.text ? search(data, this.state.search.text) : null
-    if (searchResults && searchResults.length > 0) {
-      const activeSearchResult = searchResults[0] // TODO: store active search result in state
-
-      data = addSearchResults(data, searchResults, activeSearchResult)
-
-      // TODO: highlight
-
-      // data = addFocus(data, searchResults[0]) // TODO: change to using focus from state
+    if (searchResults) {
+      data = addSearchResults(data, searchResults, this.state.search.active)
     }
 
     // console.log('data', data)
@@ -316,19 +311,42 @@ export default class TreeMode extends Component {
 
   /** @private */
   handleSearch = (text) => {
-    this.setState(setIn(this.state, ['search', 'text'], text))
+    const searchResults = search(this.state.data, text)
+
+    this.setState(setIn(this.state, ['search'], {
+      text,
+      active: searchResults[0] || null
+    }))
+
+    // TODO: focus on the active result
   }
 
   /** @private */
   handleNext = () => {
     // TODO: implement select next search result
-    console.log('next search result...')
+    const searchResults = search(this.state.data, this.state.search.text)
+    if (searchResults) {
+      const next = nextSearchResult(searchResults, this.state.search.active)
+
+      this.setState(setIn(this.state, ['search', 'active'], next))
+
+      // TODO: focus on the active result
+    }
   }
 
   /** @private */
   handlePrevious = () => {
     // TODO: implement select previous search result
     console.log('previous search result...')
+
+    const searchResults = search(this.state.data, this.state.search.text)
+    if (searchResults) {
+      const previous = previousSearchResult(searchResults, this.state.search.active)
+
+      this.setState(setIn(this.state, ['search', 'active'], previous))
+
+      // TODO: focus on the active result
+    }
   }
 
   /**

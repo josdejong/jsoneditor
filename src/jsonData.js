@@ -9,7 +9,7 @@ import { setIn, updateIn, getIn, deleteIn, insertAt } from './utils/immutability
 import { isObject } from  './utils/typeUtils'
 import isEqual from 'lodash/isEqual'
 
-import type {SearchResult} from './types'
+import type {JSONData, SearchResult} from './types'
 
 /**
  * Expand function which will expand all nodes
@@ -508,12 +508,8 @@ export function addErrors (data, errors) {
 
 /**
  * Search some text in all properties and values
- *
- * @param {JSONData} data
- * @param {string} text
- * @return {SearchResult[]} Returns a list with search results
  */
-export function search (data, text): SearchResult[] {
+export function search (data: JSONData, text: string): SearchResult[] {
   let results: SearchResult[] = []
 
   traverse(data, function (value, path) {
@@ -593,25 +589,23 @@ export function previousSearchResult (searchResults: SearchResult[], current: Se
 /**
  * Merge searchResults into the data
  */
-export function addSearchResults (data, searchResults: SearchResult[], activeSearchResult: SearchResult) {
+export function addSearchResults (data: JSONData, searchResults: SearchResult[], activeSearchResult: SearchResult) {
   let updatedData = data
 
-  if (searchResults) {
-    searchResults.forEach(function (searchResult) {
-      if (searchResult.type === 'value') {
-        const dataPath = toDataPath(data, searchResult.dataPath).concat('searchResult')
-        const value = isEqual(searchResult, activeSearchResult) ? 'active' : 'normal'
-        updatedData = setIn(updatedData, dataPath, value)
-      }
+  searchResults.forEach(function (searchResult) {
+    if (searchResult.type === 'value') {
+      const dataPath = toDataPath(data, searchResult.dataPath).concat('searchResult')
+      const value = isEqual(searchResult, activeSearchResult) ? 'active' : 'normal'
+      updatedData = setIn(updatedData, dataPath, value)
+    }
 
-      if (searchResult.type === 'property') {
-        const valueDataPath = toDataPath(data, searchResult.dataPath)
-        const propertyDataPath = allButLast(valueDataPath).concat('searchResult')
-        const value = isEqual(searchResult, activeSearchResult) ? 'active' : 'normal'
-        updatedData = setIn(updatedData, propertyDataPath, value)
-      }
-    })
-  }
+    if (searchResult.type === 'property') {
+      const valueDataPath = toDataPath(data, searchResult.dataPath)
+      const propertyDataPath = allButLast(valueDataPath).concat('searchResult')
+      const value = isEqual(searchResult, activeSearchResult) ? 'active' : 'normal'
+      updatedData = setIn(updatedData, propertyDataPath, value)
+    }
+  })
 
   return updatedData
 }
@@ -623,7 +617,7 @@ export function addSearchResults (data, searchResults: SearchResult[], activeSea
  * @param {SearchResult} focusOn
  * @return {JSONData} Returns an updated copy of data
  */
-export function addFocus (data, focusOn) {
+export function addFocus (data: JSONData, focusOn: SearchResult) {
   if (focusOn.value) {
     const dataPath = toDataPath(data, focusOn.dataPath).concat('focusValue')
     return setIn(data, dataPath, true)
