@@ -8,9 +8,7 @@ import { escapeHTML, unescapeHTML } from '../utils/stringUtils'
 import { getInnerText, insideRect } from '../utils/domUtils'
 import { stringConvert, valueType, isUrl } from  '../utils/typeUtils'
 
-import type {
-  PropertyData, ObjectData, ArrayData, JSONData,
-  SearchResult, SearchResultStatus } from '../types'
+import type { PropertyData, JSONData, SearchResultStatus } from '../types'
 
 /**
  * @type {JSONNode | null} activeContextMenu  singleton holding the JSONNode having
@@ -393,14 +391,15 @@ export default class JSONNode extends Component {
   }
 
   componentDidUpdate (prevProps, prevState) {
-    if (this.props.data.focusProperty && !prevProps.data.focusProperty) {
+    if (this.props.prop && this.props.prop.focus &&
+        !(prevProps.props.prop && prevProps.props.prop.focus)) {
       console.log('focus property', this.getPath()) // TODO: cleanup
       if (this.refs.property) {
         this.refs.property.focus()
       }
     }
 
-    if (this.props.data.focusValue && !prevProps.data.focusValue) {
+    if (this.props.data.focus && !prevProps.data.focus) {
       console.log('focus value', this.getPath()) // TODO: cleanup
       if (this.refs.value) {
         this.refs.value.focus()

@@ -50,7 +50,7 @@ export type JSONArrayType = Array<JSONType>;
 /********************** TYPES FOR THE JSON DATA MODEL *************************/
 
 export type SearchResultStatus = 'normal' | 'active'
-export type SearchResultType = 'value' | 'property'
+export type DataPointerType = 'value' | 'property'
 
 export type PropertyData = {
   name: string,
@@ -82,11 +82,11 @@ export type JSONData = ObjectData | ArrayData | ValueData
 
 export type Path = string[]
 
-export type SearchResult = {
+export type DataPointer = {
   dataPath: Path,
-  type: SearchResultType
+  type: DataPointerType
 }
-// TODO: SearchResult.dataPath is an array, JSONSchemaError.dataPath is a string -> make this consistent
+// TODO: DataPointer.dataPath is an array, JSONSchemaError.dataPath is a string -> make this consistent
 
 
 // TODO: remove SetOptions, merge into Options (everywhere in the public API)

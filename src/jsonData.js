@@ -9,7 +9,7 @@ import { setIn, updateIn, getIn, deleteIn, insertAt } from './utils/immutability
 import { isObject } from  './utils/typeUtils'
 import isEqual from 'lodash/isEqual'
 
-import type {JSONData, SearchResult} from './types'
+import type {JSONData, DataPointer} from './types'
 
 /**
  * Expand function which will expand all nodes
@@ -509,8 +509,8 @@ export function addErrors (data, errors) {
 /**
  * Search some text in all properties and values
  */
-export function search (data: JSONData, text: string): SearchResult[] {
-  let results: SearchResult[] = []
+export function search (data: JSONData, text: string): DataPointer[] {
+  let results: DataPointer[] = []
 
   traverse(data, function (value, path) {
     // check property name
@@ -546,7 +546,7 @@ export function search (data: JSONData, text: string): SearchResult[] {
  *   returned as next
  * - When `searchResults` is empty, null will be returned
  */
-export function nextSearchResult (searchResults: SearchResult[], current: SearchResult): SearchResult | null {
+export function nextSearchResult (searchResults: DataPointer[], current: DataPointer): DataPointer | null {
   if (searchResults.length === 0) {
     return null
   }
@@ -570,7 +570,7 @@ export function nextSearchResult (searchResults: SearchResult[], current: Search
  *   returned as next
  * - When `searchResults` is empty, null will be returned
  */
-export function previousSearchResult (searchResults: SearchResult[], current: SearchResult): SearchResult | null {
+export function previousSearchResult (searchResults: DataPointer[], current: DataPointer): DataPointer | null {
   if (searchResults.length === 0) {
     return null
   }
@@ -589,7 +589,7 @@ export function previousSearchResult (searchResults: SearchResult[], current: Se
 /**
  * Merge searchResults into the data
  */
-export function addSearchResults (data: JSONData, searchResults: SearchResult[], activeSearchResult: SearchResult) {
+export function addSearchResults (data: JSONData, searchResults: DataPointer[], activeSearchResult: DataPointer) {
   let updatedData = data
 
   searchResults.forEach(function (searchResult) {
@@ -612,21 +612,20 @@ export function addSearchResults (data: JSONData, searchResults: SearchResult[],
 
 /**
  * Merge a object describing where the focus is to the data
- *
- * @param {JSONData} data
- * @param {SearchResult} focusOn
- * @return {JSONData} Returns an updated copy of data
  */
-export function addFocus (data: JSONData, focusOn: SearchResult) {
-  if (focusOn.value) {
-    const dataPath = toDataPath(data, focusOn.dataPath).concat('focusValue')
+export function addFocus (data: JSONData, focusOn: DataPointer) {
+  if (focusOn.type == 'value') {
+    const dataPath = toDataPath(data, focusOn.dataPath).concat('focus')
     return setIn(data, dataPath, true)
   }
 
-  if (focusOn.property) {
-    const dataPath = toDataPath(data, focusOn.dataPath).concat('focusProperty')
-    return setIn(data, dataPath, true)
+  if (focusOn.type === 'property') {
+    const valueDataPath = toDataPath(data, focusOn.dataPath)
+    const propertyDataPath = allButLast(valueDataPath).concat('focus')
+    return setIn(data, propertyDataPath, true)
   }
+
+  return data
 }
 
 /**

@@ -7,7 +7,8 @@ import { parseJSON } from '../utils/jsonUtils'
 import { enrichSchemaError } from '../utils/schemaUtils'
 import {
     jsonToData, dataToJson, toDataPath, patchData, pathExists,
-    expand, addErrors, search, addSearchResults, nextSearchResult, previousSearchResult
+    expand, addErrors, addFocus,
+  search, addSearchResults, nextSearchResult, previousSearchResult
 } from '../jsonData'
 import {
     duplicate, insert, append, remove,
@@ -118,6 +119,10 @@ export default class TreeMode extends Component {
     if (searchResults) {
       data = addSearchResults(data, searchResults, this.state.search.active)
     }
+    // TODO: moveTo active search result (not focus!)
+    // if (this.state.search.active) {
+    //   data = addFocus(data, this.state.search.active)
+    // }
 
     // console.log('data', data)
 
