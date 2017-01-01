@@ -328,7 +328,6 @@ export default class TreeMode extends Component {
 
   /** @private */
   handleNext = () => {
-    // TODO: implement select next search result
     const searchResults = search(this.state.data, this.state.search.text)
     if (searchResults) {
       const next = nextSearchResult(searchResults, this.state.search.active)
@@ -341,9 +340,6 @@ export default class TreeMode extends Component {
 
   /** @private */
   handlePrevious = () => {
-    // TODO: implement select previous search result
-    console.log('previous search result...')
-
     const searchResults = search(this.state.data, this.state.search.text)
     if (searchResults) {
       const previous = previousSearchResult(searchResults, this.state.search.active)

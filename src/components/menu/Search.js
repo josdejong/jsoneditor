@@ -23,7 +23,11 @@ export default class Search extends Component {
 
     return h('div', {className: 'jsoneditor-search'}, [
       this.renderResultsCount(this.props.resultsCount),
-      h('div', {key: 'box', className: 'jsoneditor-search-box'}, [
+      h('form', {
+        key: 'box',
+        className: 'jsoneditor-search-box',
+        onSubmit: this.handleSubmit
+      }, [
           h('input', {
             key: 'input',
             type: 'text',
@@ -74,17 +78,33 @@ export default class Search extends Component {
     }
   }
 
+  handleSubmit = (event) => {
+    event.stopPropagation()
+    event.preventDefault()
+
+    if (this.timeout != null) {
+      // there is a pending change
+      this.debouncedOnChange()
+    }
+    else {
+      // no pending change, go to next result
+      this.props.onNext()
+    }
+  }
+
   handleChange = (event) => {
     const text = event.target.value
 
     this.setState ({ text })
 
     const delay = this.props.delay || 0
-    clearTimeout(this.timeout)
-    this.timeout = setTimeout(this.callbackOnChange, delay)
+    this.timeout = setTimeout(this.debouncedOnChange, delay)
   }
 
-  callbackOnChange = () => {
+  debouncedOnChange = () => {
+    clearTimeout(this.timeout)
+    this.timeout = null
+
     this.props.onChange(this.state.text)
   }
 
