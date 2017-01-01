@@ -1,5 +1,6 @@
 .idea
 dist
+lib
 downloads
 node_modules
 flow-typed

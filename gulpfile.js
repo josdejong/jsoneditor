@@ -4,6 +4,7 @@ const gulpMultiProcess = require('gulp-multi-process')
 const gutil = require('gulp-util')
 const shell = require('gulp-shell')
 const mkdirp = require('mkdirp')
+const babel = require('gulp-babel')
 const webpack = require('webpack')
 const browserSync = require('browser-sync').create()
 
@@ -25,6 +26,7 @@ const ENTRY           = './src/index.js'
 const ENTRY_REACT     = './src/components/JSONEditor.js'
 const HEADER          = './src/header.js'
 const DIST            = './dist'
+const LIB             = './lib'
 const EMPTY           = __dirname + '/src/utils/empty.js'
 
 // generate banner with today's date and correct version
@@ -187,6 +189,7 @@ function createBundleTask (compiler) {
 // make dist folder
 gulp.task('mkdir', function () {
   mkdirp.sync(DIST)
+  mkdirp.sync(LIB)
 })
 
 // bundle javascript
@@ -195,10 +198,25 @@ gulp.task('bundle', ['mkdir'], createBundleTask(compiler))
 // bundle minimalist version of javascript
 gulp.task('bundle-minimalist', ['mkdir'], createBundleTask(compilerMinimalist))
 
+// compile the source code into es5 code
+gulp.task('compile-es5-lib', ['mkdir'], function () {
+  // TODO: compile *.less too
+  return gulp
+      .src([
+        'src/**/*.js',
+        '!src/flow/**/*.js',
+        '!src/resources/**/*.js'
+      ])
+      .pipe(babel())
+      .pipe(gulp.dest(LIB));
+})
+
 // bundle react version
+// TODO: remove bundle-react again? (use ./lib instead)
 gulp.task('bundle-react', ['mkdir'], createBundleTask(compilerReact))
 
 // bundle react minimalist version
+// TODO: remove bundle-react-minimalist again? (use ./lib instead)
 gulp.task('bundle-react-minimalist', ['mkdir'], createBundleTask(compilerReactMinimalist))
 
 // TODO: zip file using archiver
@@ -233,7 +251,6 @@ gulp.task('default', function(done) {
   return gulpMultiProcess([
     'bundle',
     'bundle-minimalist',
-    'bundle-react',
-    'bundle-react-minimalist'
+    'compile-es5-lib'
   ], done);
 })

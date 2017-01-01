@@ -44,6 +44,7 @@
     "flow-bin": "0.36.0",
     "graceful-fs": "4.1.11",
     "gulp": "3.9.1",
+    "gulp-babel": "6.1.2",
     "gulp-multi-process": "0.1.0",
     "gulp-shell": "0.5.2",
     "gulp-util": "3.0.7",
