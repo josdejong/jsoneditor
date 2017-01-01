@@ -9,7 +9,7 @@ import { setIn, updateIn, getIn, deleteIn, insertAt } from './utils/immutability
 import { isObject } from  './utils/typeUtils'
 import isEqual from 'lodash/isEqual'
 
-import type {JSONData, DataPointer} from './types'
+import type {JSONData, DataPointer, Path} from './types'
 
 /**
  * Expand function which will expand all nodes
@@ -113,6 +113,17 @@ export function toDataPath (data, path) {
     return ['props', index, 'value']
         .concat(toDataPath(prop && prop.value, path.slice(1)))
   }
+}
+
+/**
+ * Convert a path of a JSON object into a path in the corresponding data model
+ * @param {JSONData} data
+ * @param {Path} path
+ * @return {Path} dataPath
+ * @private
+ */
+export function toPath (data, dataPath) {
+
 }
 
 /**
@@ -458,10 +469,10 @@ export function test (data, path, value) {
  *              When a path, the object/array at this path will be expanded/collapsed
  *              When a function, all objects and arrays for which callback
  *              returns true will be expanded/collapsed
- * @param {boolean} expanded  New expanded state: true to expand, false to collapse
+ * @param {boolean} [expanded=true]  New expanded state: true to expand, false to collapse
  * @return {JSONData}
  */
-export function expand (data, callback, expanded) {
+export function expand (data, callback, expanded: boolean = true) {
   // console.log('expand', callback, expand)
 
   if (typeof callback === 'function') {
@@ -483,6 +494,23 @@ export function expand (data, callback, expanded) {
   else {
     throw new Error('Callback function or path expected')
   }
+}
+
+/**
+ * Expand all Objects and Arrays on a path
+ */
+export function expandPath (data: JSONData, path: Path) {
+  let updatedData = data
+
+  if (path) {
+    for (let i = 0; i < path.length; i++) {
+      const pathPart = path.slice(0, i + 1)
+      // console.log('expandPath', path, i, pathPart)
+      updatedData = expand(updatedData, pathPart, true)
+    }
+  }
+
+  return updatedData
 }
 
 /**
@@ -522,7 +550,7 @@ export function search (data: JSONData, text: string): DataPointer[] {
         const parentPath = allButLast(path)
         const parent = getIn(data, toDataPath(data, parentPath))
         if (parent.type === 'Object') {
-          results.push({ dataPath: path, type: 'property' })
+          results.push({ path, type: 'property' })
         }
       }
     }
@@ -530,7 +558,7 @@ export function search (data: JSONData, text: string): DataPointer[] {
     // check value
     if (value.type === 'value') {
       if (containsCaseInsensitive(value.value, text)) {
-        results.push({ dataPath: path, type: 'value' })
+        results.push({ path, type: 'value' })
       }
     }
   })
@@ -594,13 +622,13 @@ export function addSearchResults (data: JSONData, searchResults: DataPointer[], 
 
   searchResults.forEach(function (searchResult) {
     if (searchResult.type === 'value') {
-      const dataPath = toDataPath(data, searchResult.dataPath).concat('searchResult')
+      const dataPath = toDataPath(data, searchResult.path).concat('searchResult')
       const value = isEqual(searchResult, activeSearchResult) ? 'active' : 'normal'
       updatedData = setIn(updatedData, dataPath, value)
     }
 
     if (searchResult.type === 'property') {
-      const valueDataPath = toDataPath(data, searchResult.dataPath)
+      const valueDataPath = toDataPath(data, searchResult.path)
       const propertyDataPath = allButLast(valueDataPath).concat('searchResult')
       const value = isEqual(searchResult, activeSearchResult) ? 'active' : 'normal'
       updatedData = setIn(updatedData, propertyDataPath, value)
@@ -615,12 +643,12 @@ export function addSearchResults (data: JSONData, searchResults: DataPointer[], 
  */
 export function addFocus (data: JSONData, focusOn: DataPointer) {
   if (focusOn.type == 'value') {
-    const dataPath = toDataPath(data, focusOn.dataPath).concat('focus')
+    const dataPath = toDataPath(data, focusOn.path).concat('focus')
     return setIn(data, dataPath, true)
   }
 
   if (focusOn.type === 'property') {
-    const valueDataPath = toDataPath(data, focusOn.dataPath)
+    const valueDataPath = toDataPath(data, focusOn.path)
     const propertyDataPath = allButLast(valueDataPath).concat('focus')
     return setIn(data, propertyDataPath, true)
   }

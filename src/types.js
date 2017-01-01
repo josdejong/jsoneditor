@@ -83,7 +83,7 @@ export type JSONData = ObjectData | ArrayData | ValueData
 export type Path = string[]
 
 export type DataPointer = {
-  dataPath: Path,
+  path: Path,
   type: DataPointerType
 }
 // TODO: DataPointer.dataPath is an array, JSONSchemaError.dataPath is a string -> make this consistent

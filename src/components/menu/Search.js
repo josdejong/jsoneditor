@@ -18,8 +18,7 @@ export default class Search extends Component {
   }
 
   render () {
-    // TODO: focus on search results
-    // TODO: expand the focused search result if not expanded
+    // TODO: scroll to active search result
 
     return h('div', {className: 'jsoneditor-search'}, [
       this.renderResultsCount(this.props.resultsCount),

@@ -1,13 +1,12 @@
 import { createElement as h, Component } from 'react'
 
 import Ajv from 'ajv'
-import isEqual from 'lodash/isEqual'
 import { updateIn, getIn, setIn } from '../utils/immutabilityHelpers'
 import { parseJSON } from '../utils/jsonUtils'
 import { enrichSchemaError } from '../utils/schemaUtils'
 import {
     jsonToData, dataToJson, toDataPath, patchData, pathExists,
-    expand, addErrors, addFocus,
+    expand, expandPath, addErrors,
   search, addSearchResults, nextSearchResult, previousSearchResult
 } from '../jsonData'
 import {
@@ -317,13 +316,14 @@ export default class TreeMode extends Component {
   /** @private */
   handleSearch = (text) => {
     const searchResults = search(this.state.data, text)
+    const active = searchResults[0] || null
 
-    this.setState(setIn(this.state, ['search'], {
-      text,
-      active: searchResults[0] || null
-    }))
+    this.setState({
+      search: { text, active },
+      data: expandPath(this.state.data,active && active.path)
+    })
 
-    // TODO: focus on the active result
+    // TODO: scroll to the active result
   }
 
   /** @private */
@@ -332,9 +332,12 @@ export default class TreeMode extends Component {
     if (searchResults) {
       const next = nextSearchResult(searchResults, this.state.search.active)
 
-      this.setState(setIn(this.state, ['search', 'active'], next))
+      this.setState({
+        search: setIn(this.state.search, ['active'], next),
+        data: expandPath(this.state.data, next && next.path)
+      })
 
-      // TODO: focus on the active result
+      // TODO: scroll to the active result
     }
   }
 
@@ -344,9 +347,12 @@ export default class TreeMode extends Component {
     if (searchResults) {
       const previous = previousSearchResult(searchResults, this.state.search.active)
 
-      this.setState(setIn(this.state, ['search', 'active'], previous))
+      this.setState({
+        search: setIn(this.state.search, ['active'], previous),
+        data: expandPath(this.state.data, previous && previous.path)
+      })
 
-      // TODO: focus on the active result
+      // TODO: scroll to the active result
     }
   }
 
