@@ -66,7 +66,7 @@ textmode.create = function (container, options) {
 
   // determine theme
   this.theme = options.theme || DEFAULT_THEME;
-  if (this.theme === DEFAULT_THEME) {
+  if (this.theme === DEFAULT_THEME && window.ace) {
     require('./ace/theme-jsoneditor');
   }
 
