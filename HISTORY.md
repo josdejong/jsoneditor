@@ -8,7 +8,7 @@ https://github.com/josdejong/jsoneditor
 - Fixed embedded version of jsoneditor ace theme not being loaded in
   minimalist version (see #55).
 - Fixed a styling issue in the SearchBox of Ace editor (mode `code`).
-- Fixed #54: CSS more robust against global settings of div position.
+- Fixed #347: CSS more robust against global settings of div position.
 - Added docs and example on how to use a custom version of Ace editor.
 
 
