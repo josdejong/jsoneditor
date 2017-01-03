@@ -84,7 +84,7 @@ function minify(name) {
   gutil.log('Mapped ' + fileMap);
 }
 
-// make dist and dist/img folders
+// make dist folder structure
 gulp.task('mkdir', function () {
   mkdirp.sync(DIST);
   mkdirp.sync(DIST + '/img');
@@ -144,7 +144,7 @@ gulp.task('bundle-css', ['mkdir'], function () {
 // create a folder img and copy the icons
 gulp.task('copy-img', ['mkdir'], function () {
   gulp.src(IMAGE)
-      .pipe(gulp.dest(DIST +'/img'));
+      .pipe(gulp.dest(DIST + '/img'));
   gutil.log('Copied images');
 });
 

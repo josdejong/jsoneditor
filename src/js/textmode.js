@@ -16,6 +16,8 @@ var textmode = {};
 
 var MAX_ERRORS = 3; // maximum number of displayed errors at the bottom
 
+var DEFAULT_THEME = 'ace/theme/jsoneditor';
+
 /**
  * Create a text editor
  * @param {Element} container
@@ -63,7 +65,10 @@ textmode.create = function (container, options) {
   }
 
   // determine theme
-  this.theme = options.theme || 'ace/theme/jsoneditor';
+  this.theme = options.theme || DEFAULT_THEME;
+  if (this.theme === DEFAULT_THEME) {
+    require('./ace/theme-jsoneditor');
+  }
 
   var me = this;
   this.container = container;

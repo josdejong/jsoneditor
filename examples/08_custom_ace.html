@@ -1,0 +1,72 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <title>JSONEditor | Custom Ace</title>
+
+  <!-- load a custom version of Ace editor -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.2.6/ace.js"></script>
+
+  <!-- load the minimalist version of JSONEditor, which doesn't have Ace embedded -->
+  <link href="../dist/jsoneditor.css" rel="stylesheet" type="text/css">
+  <script src="../dist/jsoneditor-minimalist.js"></script>
+
+  <style type="text/css">
+    #jsoneditor {
+      width: 500px;
+      height: 500px;
+    }
+
+    body, html {
+      font-family: "DejaVu Sans", sans-serif;
+    }
+
+    p, li {
+      width: 500px;
+      font-size: 10.5pt;
+    }
+
+    code {
+      background: #f5f5f5;
+    }
+  </style>
+
+</head>
+<body>
+<h1>Custom Ace editor</h1>
+<p>
+  This example demonstrates how to load a custom version of Ace editor into JSONEditor.
+</p>
+<p>
+  By default, JSONEditor <code>code</code> mode loads the following Ace plugins:
+</p>
+<ul>
+  <li>ace/mode/json</li>
+  <li>ace/ext/searchbox</li>
+  <li>ace/theme/jsoneditor</li>
+</ul>
+<p>
+  The jsoneditor theme comes embedded with JSONEditor. The other two plugins (json and searchbox) must be available in the folder of the custom Ace editor, or already be loaded via a script tag.
+</p>
+
+<div id="jsoneditor"></div>
+
+<script>
+  // create the editor
+  var container = document.getElementById('jsoneditor');
+  var options = {
+    modes: ['text', 'code', 'tree', 'form', 'view'],
+    mode: 'code',
+    ace: ace
+  };
+  var json = {
+    'array': [1, 2, 3],
+    'boolean': true,
+    'null': null,
+    'number': 123,
+    'object': {'a': 'b', 'c': 'd'},
+    'string': 'Hello World'
+  };
+  var editor = new JSONEditor(container, options, json);
+</script>
+</body>
+</html>

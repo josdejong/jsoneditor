@@ -3,6 +3,13 @@
 https://github.com/josdejong/jsoneditor
 
 
+## (not yet released), version 5.5.11
+
+- Fixed embedded version of jsoneditor ace theme not being loaded in
+  minimalist version (see #55).
+- Added docs and example on how to use a custom version of Ace editor.
+
+
 ## 2016-11-02, version 5.5.10
 
 - Fixed #85: pressing enter in an input in a form containing a JSONEditor too
