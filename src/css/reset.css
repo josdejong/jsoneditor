@@ -1,5 +1,9 @@
 /* reset styling (prevent conflicts with bootstrap, materialize.css, etc.) */
 
+div.jsoneditor div {
+  position: static;
+}
+
 div.jsoneditor .jsoneditor-search input {
   height: auto;
   border: inherit;
