@@ -1,13 +1,15 @@
 import { createElement as h, Component } from 'react'
-
+import jump from '../assets/jump.js/src/jump'
 import Ajv from 'ajv'
+
 import { updateIn, getIn, setIn } from '../utils/immutabilityHelpers'
 import { parseJSON } from '../utils/jsonUtils'
 import { enrichSchemaError } from '../utils/schemaUtils'
 import {
     jsonToData, dataToJson, toDataPath, patchData, pathExists,
     expand, expandPath, addErrors,
-  search, addSearchResults, nextSearchResult, previousSearchResult
+    search, addSearchResults, nextSearchResult, previousSearchResult,
+    compileJSONPointer
 } from '../jsonData'
 import {
     duplicate, insert, append, remove,
@@ -33,6 +35,8 @@ export default class TreeMode extends Component {
     super(props)
 
     const data = jsonToData(this.props.data || {}, TreeMode.expandAll, [])
+
+    this.id = Math.round(Math.random() * 1e5) // TODO: create a uuid here?
 
     this.state = {
       data,
@@ -131,7 +135,12 @@ export default class TreeMode extends Component {
     }, [
       this.renderMenu(searchResults ? searchResults.length : null),
 
-      h('div', {key: 'contents', className: 'jsoneditor-contents jsoneditor-tree-contents', onClick: this.handleHideMenus},
+      h('div', {
+            key: 'contents',
+            ref: 'contents',
+            className: 'jsoneditor-contents jsoneditor-tree-contents',
+            onClick: this.handleHideMenus, id: this.id
+      },
         h('ul', {className: 'jsoneditor-list jsoneditor-root'},
           h(Node, {
             data,
@@ -316,14 +325,23 @@ export default class TreeMode extends Component {
   /** @private */
   handleSearch = (text) => {
     const searchResults = search(this.state.data, text)
-    const active = searchResults[0] || null
 
-    this.setState({
-      search: { text, active },
-      data: expandPath(this.state.data,active && active.path)
-    })
+    if (searchResults.length > 0) {
+      const active = searchResults[0]
 
-    // TODO: scroll to the active result
+      this.setState({
+        search: { text, active },
+        data: expandPath(this.state.data, active.path)
+      })
+
+      // scroll to active search result
+      this.scrollTo(active.path)
+    }
+    else {
+      this.setState({
+        search: { text, active: null }
+      })
+    }
   }
 
   /** @private */
@@ -337,7 +355,11 @@ export default class TreeMode extends Component {
         data: expandPath(this.state.data, next && next.path)
       })
 
-      // TODO: scroll to the active result
+      // scroll to the active result
+      const name = compileJSONPointer(next.path)
+
+      // scroll to the active result
+      this.scrollTo(next.path)
     }
   }
 
@@ -352,7 +374,8 @@ export default class TreeMode extends Component {
         data: expandPath(this.state.data, previous && previous.path)
       })
 
-      // TODO: scroll to the active result
+      // scroll to the active result
+      this.scrollTo(previous.path)
     }
   }
 
@@ -366,6 +389,21 @@ export default class TreeMode extends Component {
     const result = this.patch(actions)
 
     this.emitOnChange (actions, result.revert, result.data)
+  }
+
+  /**
+   * Scroll the window vertically to the node with given path
+   * @param {Path} path
+   * @private
+   */
+  scrollTo = (path) => {
+    const name = compileJSONPointer(path)
+    const container = this.refs.contents
+    const elem = container.querySelector('div[name="' + name + '"]')
+
+    if (elem) {
+      jump(elem, { container, offset: -100, duration: 400 })
+    }
   }
 
   /**

@@ -540,28 +540,30 @@ export function addErrors (data, errors) {
 export function search (data: JSONData, text: string): DataPointer[] {
   let results: DataPointer[] = []
 
-  traverse(data, function (value, path) {
-    // check property name
-    if (path.length > 0) {
-      const prop = last(path)
-      if (containsCaseInsensitive(prop, text)) {
-        // only add search result when this is an object property name,
-        // don't add search result for array indices
-        const parentPath = allButLast(path)
-        const parent = getIn(data, toDataPath(data, parentPath))
-        if (parent.type === 'Object') {
-          results.push({ path, type: 'property' })
+  if (text !== '') {
+    traverse(data, function (value, path) {
+      // check property name
+      if (path.length > 0) {
+        const prop = last(path)
+        if (containsCaseInsensitive(prop, text)) {
+          // only add search result when this is an object property name,
+          // don't add search result for array indices
+          const parentPath = allButLast(path)
+          const parent = getIn(data, toDataPath(data, parentPath))
+          if (parent.type === 'Object') {
+            results.push({path, type: 'property'})
+          }
         }
       }
-    }
 
-    // check value
-    if (value.type === 'value') {
-      if (containsCaseInsensitive(value.value, text)) {
-        results.push({ path, type: 'value' })
+      // check value
+      if (value.type === 'value') {
+        if (containsCaseInsensitive(value.value, text)) {
+          results.push({path, type: 'value'})
+        }
       }
-    }
-  })
+    })
+  }
 
   return results
 }

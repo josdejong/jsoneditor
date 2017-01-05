@@ -1,13 +1,13 @@
 // @flow weak
 
 import { createElement as h, Component } from 'react'
-//import { Element as ScrollElement } from 'react-scroll'
 
 import ActionButton from './menu/ActionButton'
 import AppendActionButton from './menu/AppendActionButton'
 import { escapeHTML, unescapeHTML } from '../utils/stringUtils'
 import { getInnerText, insideRect } from '../utils/domUtils'
 import { stringConvert, valueType, isUrl } from  '../utils/typeUtils'
+import { compileJSONPointer } from  '../jsonData'
 
 import type { PropertyData, JSONData, SearchResultStatus } from '../types'
 
@@ -41,7 +41,7 @@ export default class JSONNode extends Component {
 
   renderJSONObject ({prop, index, data, options, events}) {
     const childCount = data.props.length
-    const node = h('div', {key: 'node', className: 'jsoneditor-node jsoneditor-object'}, [
+    const node = h('div', {name: compileJSONPointer(this.getPath()), key: 'node', className: 'jsoneditor-node jsoneditor-object'}, [
       this.renderExpandButton(),
       this.renderActionMenuButton(),
       this.renderProperty(prop, index, data, options),
@@ -80,7 +80,7 @@ export default class JSONNode extends Component {
 
   renderJSONArray ({prop, index, data, options, events}) {
     const childCount = data.items.length
-    const node = h('div', {key: 'node', className: 'jsoneditor-node jsoneditor-array'}, [
+    const node = h('div', {name: compileJSONPointer(this.getPath()), key: 'node', className: 'jsoneditor-node jsoneditor-array'}, [
       this.renderExpandButton(),
       this.renderActionMenuButton(),
       this.renderProperty(prop, index, data, options),
@@ -117,7 +117,7 @@ export default class JSONNode extends Component {
   }
 
   renderJSONValue ({prop, index, data, options}) {
-    return h('div', {className: 'jsoneditor-node'}, [
+    return h('div', {name: compileJSONPointer(this.getPath()), className: 'jsoneditor-node'}, [
       this.renderPlaceholder(),
       this.renderActionMenuButton(),
       this.renderProperty(prop, index, data, options),
