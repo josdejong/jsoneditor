@@ -1,6 +1,7 @@
 // @flow weak
 
 import { createElement as h, Component } from 'react'
+import { Element as ScrollElement } from 'react-scroll'
 
 import ActionButton from './menu/ActionButton'
 import AppendActionButton from './menu/AppendActionButton'
@@ -53,26 +54,29 @@ export default class JSONNode extends Component {
     if (data.expanded) {
       if (data.props.length > 0) {
         const props = data.props.map(prop => {
-          return h(this.constructor, {
-            key: prop.name,
-            parent: this,
-            prop: prop,
-            data: prop.value,
-            options,
-            events
-          })
+          return h('li', {key : prop.name},
+            h(this.constructor, {
+              parent: this,
+              prop: prop,
+              data: prop.value,
+              options,
+              events
+            })
+          )
         })
 
         contents.push(h('ul', {key: 'props', className: 'jsoneditor-list'}, props))
       }
       else {
         contents.push(h('ul', {key: 'append', className: 'jsoneditor-list'},
-          this.renderAppend('(empty object)')
+          h('li', {},
+            this.renderAppend('(empty object)')
+          )
         ))
       }
     }
 
-    return h('li', {}, contents)
+    return h('div', {}, contents)
   }
 
   renderJSONArray ({prop, index, data, options, events}) {
@@ -90,38 +94,39 @@ export default class JSONNode extends Component {
     if (data.expanded) {
       if (data.items.length > 0) {
         const items = data.items.map((child, index) => {
-          return h(this.constructor, {
-            key: index,
-            parent: this,
-            index,
-            data: child,
-            options,
-            events
-          })
+          return h('li', {key : index},
+            h(this.constructor, {
+              parent: this,
+              index,
+              data: child,
+              options,
+              events
+            })
+          )
         })
         contents.push(h('ul', {key: 'items', className: 'jsoneditor-list'}, items))
       }
       else {
         contents.push(h('ul', {key: 'append', className: 'jsoneditor-list'},
-          this.renderAppend('(empty array)')
+          h('li', {},
+            this.renderAppend('(empty array)')
+          )
         ))
       }
     }
 
-    return h('li', {}, contents)
+    return h('div', {}, contents)
   }
 
   renderJSONValue ({prop, index, data, options}) {
-    return h('li', {},
-      h('div', {className: 'jsoneditor-node'}, [
-        this.renderPlaceholder(),
-        this.renderActionMenuButton(),
-        this.renderProperty(prop, index, data, options),
-        this.renderSeparator(),
-        this.renderValue(data.value, data.searchResult, options),
-        this.renderError(data.error)
-      ])
-    )
+    return h('div', {className: 'jsoneditor-node'}, [
+      this.renderPlaceholder(),
+      this.renderActionMenuButton(),
+      this.renderProperty(prop, index, data, options),
+      this.renderSeparator(),
+      this.renderValue(data.value, data.searchResult, options),
+      this.renderError(data.error)
+    ])
   }
 
   /**
@@ -130,13 +135,11 @@ export default class JSONNode extends Component {
    * @return {*}
    */
   renderAppend (text) {
-    return h('li', {key: 'append'},
-      h('div', {className: 'jsoneditor-node'}, [
-        this.renderPlaceholder(),
-        this.renderAppendMenuButton(),
-        this.renderReadonly(text)
-      ])
-    )
+    return h('div', {className: 'jsoneditor-node'}, [
+      this.renderPlaceholder(),
+      this.renderAppendMenuButton(),
+      this.renderReadonly(text)
+    ])
   }
 
   renderPlaceholder () {
