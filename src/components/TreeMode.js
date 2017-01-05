@@ -334,8 +334,8 @@ export default class TreeMode extends Component {
         data: expandPath(this.state.data, active.path)
       })
 
-      // scroll to active search result
-      this.scrollTo(active.path)
+      // scroll to active search result (on next tick, after this path has been expanded)
+      setTimeout(() => this.scrollTo(active.path))
     }
     else {
       this.setState({
@@ -355,11 +355,8 @@ export default class TreeMode extends Component {
         data: expandPath(this.state.data, next && next.path)
       })
 
-      // scroll to the active result
-      const name = compileJSONPointer(next.path)
-
-      // scroll to the active result
-      this.scrollTo(next.path)
+      // scroll to the active result (on next tick, after this path has been expanded)
+      setTimeout(() => this.scrollTo(next.path))
     }
   }
 
@@ -374,8 +371,8 @@ export default class TreeMode extends Component {
         data: expandPath(this.state.data, previous && previous.path)
       })
 
-      // scroll to the active result
-      this.scrollTo(previous.path)
+      // scroll to the active result (on next tick, after this path has been expanded)
+      setTimeout(() => this.scrollTo(previous.path))
     }
   }
 

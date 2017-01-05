@@ -503,9 +503,10 @@ export function expandPath (data: JSONData, path: Path) {
   let updatedData = data
 
   if (path) {
+    updatedData = expand(updatedData, [], true) // expand root
+
     for (let i = 0; i < path.length; i++) {
       const pathPart = path.slice(0, i + 1)
-      // console.log('expandPath', path, i, pathPart)
       updatedData = expand(updatedData, pathPart, true)
     }
   }
