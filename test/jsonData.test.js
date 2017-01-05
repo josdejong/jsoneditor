@@ -922,15 +922,15 @@ test('traverse', t => {
 
 test('search', t => {
   const searchResults = search(JSON_DATA_EXAMPLE, 'L')
-  // console.log(searchResults)
+  //console.log(JSON.stringify(searchResults, null, 2))
 
   t.deepEqual(searchResults, [
-    {dataPath: ['obj', 'arr', '2', 'last'], type: 'property'},
-    {dataPath: ['str'], type: 'value'},
-    {dataPath: ['nill'], type: 'property'},
-    {dataPath: ['nill'], type: 'value'},
-    {dataPath: ['bool'], type: 'property'},
-    {dataPath: ['bool'], type: 'value'}
+    {path: ['obj', 'arr', '2', 'last'], type: 'property'},
+    {path: ['str'], type: 'value'},
+    {path: ['nill'], type: 'property'},
+    {path: ['nill'], type: 'value'},
+    {path: ['bool'], type: 'property'},
+    {path: ['bool'], type: 'value'}
   ])
 
   const activeSearchResult = searchResults[0]
@@ -942,56 +942,56 @@ test('search', t => {
 
 test('nextSearchResult', t => {
   const searchResults = [
-    {dataPath: ['obj', 'arr', '2', 'last'], type: 'property'},
-    {dataPath: ['str'], type: 'value'},
-    {dataPath: ['nill'], type: 'property'},
-    {dataPath: ['nill'], type: 'value'},
-    {dataPath: ['bool'], type: 'property'},
-    {dataPath: ['bool'], type: 'value'}
+    {path: ['obj', 'arr', '2', 'last'], type: 'property'},
+    {path: ['str'], type: 'value'},
+    {path: ['nill'], type: 'property'},
+    {path: ['nill'], type: 'value'},
+    {path: ['bool'], type: 'property'},
+    {path: ['bool'], type: 'value'}
   ]
 
   t.deepEqual(nextSearchResult(searchResults,
-      {dataPath: ['nill'], type: 'property'}),
-      {dataPath: ['nill'], type: 'value'})
+      {path: ['nill'], type: 'property'}),
+      {path: ['nill'], type: 'value'})
 
   // wrap around
   t.deepEqual(nextSearchResult(searchResults,
-      {dataPath: ['bool'], type: 'value'}),
-      {dataPath: ['obj', 'arr', '2', 'last'], type: 'property'})
+      {path: ['bool'], type: 'value'}),
+      {path: ['obj', 'arr', '2', 'last'], type: 'property'})
 
   // return first when current is not found
   t.deepEqual(nextSearchResult(searchResults,
-      {dataPath: ['non', 'existing'], type: 'value'}),
-      {dataPath: ['obj', 'arr', '2', 'last'], type: 'property'})
+      {path: ['non', 'existing'], type: 'value'}),
+      {path: ['obj', 'arr', '2', 'last'], type: 'property'})
 
   // return null when searchResults are empty
-  t.deepEqual(nextSearchResult([], {dataPath: ['non', 'existing'], type: 'value'}), null)
+  t.deepEqual(nextSearchResult([], {path: ['non', 'existing'], type: 'value'}), null)
 })
 
 test('previousSearchResult', t => {
   const searchResults = [
-    {dataPath: ['obj', 'arr', '2', 'last'], type: 'property'},
-    {dataPath: ['str'], type: 'value'},
-    {dataPath: ['nill'], type: 'property'},
-    {dataPath: ['nill'], type: 'value'},
-    {dataPath: ['bool'], type: 'property'},
-    {dataPath: ['bool'], type: 'value'}
+    {path: ['obj', 'arr', '2', 'last'], type: 'property'},
+    {path: ['str'], type: 'value'},
+    {path: ['nill'], type: 'property'},
+    {path: ['nill'], type: 'value'},
+    {path: ['bool'], type: 'property'},
+    {path: ['bool'], type: 'value'}
   ]
 
   t.deepEqual(previousSearchResult(searchResults,
-      {dataPath: ['nill'], type: 'property'}),
-      {dataPath: ['str'], type: 'value'})
+      {path: ['nill'], type: 'property'}),
+      {path: ['str'], type: 'value'})
 
   // wrap around
   t.deepEqual(previousSearchResult(searchResults,
-      {dataPath: ['obj', 'arr', '2', 'last'], type: 'property'}),
-      {dataPath: ['bool'], type: 'value'})
+      {path: ['obj', 'arr', '2', 'last'], type: 'property'}),
+      {path: ['bool'], type: 'value'})
 
   // return first when current is not found
   t.deepEqual(previousSearchResult(searchResults,
-      {dataPath: ['non', 'existing'], type: 'value'}),
-      {dataPath: ['obj', 'arr', '2', 'last'], type: 'property'})
+      {path: ['non', 'existing'], type: 'value'}),
+      {path: ['obj', 'arr', '2', 'last'], type: 'property'})
 
   // return null when searchResults are empty
-  t.deepEqual(previousSearchResult([], {dataPath: ['non', 'existing'], type: 'value'}), null)
+  t.deepEqual(previousSearchResult([], {path: ['non', 'existing'], type: 'value'}), null)
 })
