@@ -1,7 +1,7 @@
 // @flow weak
 
 import { createElement as h, Component } from 'react'
-import { Element as ScrollElement } from 'react-scroll'
+//import { Element as ScrollElement } from 'react-scroll'
 
 import ActionButton from './menu/ActionButton'
 import AppendActionButton from './menu/AppendActionButton'
@@ -41,16 +41,15 @@ export default class JSONNode extends Component {
 
   renderJSONObject ({prop, index, data, options, events}) {
     const childCount = data.props.length
-    const contents = [
-      h('div', {key: 'node', className: 'jsoneditor-node jsoneditor-object'}, [
-        this.renderExpandButton(),
-        this.renderActionMenuButton(),
-        this.renderProperty(prop, index, data, options),
-        this.renderReadonly(`{${childCount}}`, `Array containing ${childCount} items`),
-        this.renderError(data.error)
-      ])
-    ]
+    const node = h('div', {key: 'node', className: 'jsoneditor-node jsoneditor-object'}, [
+      this.renderExpandButton(),
+      this.renderActionMenuButton(),
+      this.renderProperty(prop, index, data, options),
+      this.renderReadonly(`{${childCount}}`, `Array containing ${childCount} items`),
+      this.renderError(data.error)
+    ])
 
+    let childs
     if (data.expanded) {
       if (data.props.length > 0) {
         const props = data.props.map(prop => {
@@ -65,32 +64,31 @@ export default class JSONNode extends Component {
           )
         })
 
-        contents.push(h('ul', {key: 'props', className: 'jsoneditor-list'}, props))
+        childs = h('ul', {key: 'childs', className: 'jsoneditor-list'}, props)
       }
       else {
-        contents.push(h('ul', {key: 'append', className: 'jsoneditor-list'},
+        childs = h('ul', {key: 'childs', className: 'jsoneditor-list'},
           h('li', {},
             this.renderAppend('(empty object)')
           )
-        ))
+        )
       }
     }
 
-    return h('div', {}, contents)
+    return h('div', {}, [node, childs])
   }
 
   renderJSONArray ({prop, index, data, options, events}) {
     const childCount = data.items.length
-    const contents = [
-      h('div', {key: 'node', className: 'jsoneditor-node jsoneditor-array'}, [
-        this.renderExpandButton(),
-        this.renderActionMenuButton(),
-        this.renderProperty(prop, index, data, options),
-        this.renderReadonly(`[${childCount}]`, `Array containing ${childCount} items`),
-        this.renderError(data.error)
-      ])
-    ]
+    const node = h('div', {key: 'node', className: 'jsoneditor-node jsoneditor-array'}, [
+      this.renderExpandButton(),
+      this.renderActionMenuButton(),
+      this.renderProperty(prop, index, data, options),
+      this.renderReadonly(`[${childCount}]`, `Array containing ${childCount} items`),
+      this.renderError(data.error)
+    ])
 
+    let childs
     if (data.expanded) {
       if (data.items.length > 0) {
         const items = data.items.map((child, index) => {
@@ -104,18 +102,18 @@ export default class JSONNode extends Component {
             })
           )
         })
-        contents.push(h('ul', {key: 'items', className: 'jsoneditor-list'}, items))
+        childs = h('ul', {key: 'childs', className: 'jsoneditor-list'}, items)
       }
       else {
-        contents.push(h('ul', {key: 'append', className: 'jsoneditor-list'},
+        childs = h('ul', {key: 'childs', className: 'jsoneditor-list'},
           h('li', {},
             this.renderAppend('(empty array)')
           )
-        ))
+        )
       }
     }
 
-    return h('div', {}, contents)
+    return h('div', {}, [node, childs])
   }
 
   renderJSONValue ({prop, index, data, options}) {
