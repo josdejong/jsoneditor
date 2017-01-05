@@ -397,9 +397,10 @@ export default class TreeMode extends Component {
     const name = compileJSONPointer(path)
     const container = this.refs.contents
     const elem = container.querySelector('div[name="' + name + '"]')
+    const offset = -(container.getBoundingClientRect().height / 4)
 
     if (elem) {
-      jump(elem, { container, offset: -100, duration: 400 })
+      jump(elem, { container, offset, duration: 400 })
     }
   }
 
