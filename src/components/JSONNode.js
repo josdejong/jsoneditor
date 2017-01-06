@@ -41,7 +41,7 @@ export default class JSONNode extends Component {
 
   renderJSONObject ({prop, index, data, options, events}) {
     const childCount = data.props.length
-    const node = h('div', {name: compileJSONPointer(this.getPath()), key: 'node', className: 'jsoneditor-node jsoneditor-object'}, [
+    const node = h('div', {name: compileJSONPointer(this.props.path), key: 'node', className: 'jsoneditor-node jsoneditor-object'}, [
       this.renderExpandButton(),
       this.renderActionMenuButton(),
       this.renderProperty(prop, index, data, options),
@@ -55,7 +55,7 @@ export default class JSONNode extends Component {
         const props = data.props.map(prop => {
           return h('li', {key: prop.id},
             h(this.constructor, {
-              parent: this,
+              path: this.props.path.concat(prop.name),
               prop,
               data: prop.value,
               options,
@@ -81,7 +81,7 @@ export default class JSONNode extends Component {
   // TODO: extract a function renderChilds shared by both renderJSONObject and renderJSONArray (rename .props and .items to .childs?)
   renderJSONArray ({prop, index, data, options, events}) {
     const childCount = data.items.length
-    const node = h('div', {name: compileJSONPointer(this.getPath()), key: 'node', className: 'jsoneditor-node jsoneditor-array'}, [
+    const node = h('div', {name: compileJSONPointer(this.props.path), key: 'node', className: 'jsoneditor-node jsoneditor-array'}, [
       this.renderExpandButton(),
       this.renderActionMenuButton(),
       this.renderProperty(prop, index, data, options),
@@ -95,7 +95,7 @@ export default class JSONNode extends Component {
         const items = data.items.map((item, index) => {
           return h('li', {key : item.id},
             h(this.constructor, {
-              parent: this,
+              path: this.props.path.concat(String(index)),
               index,
               data: item.value,
               options,
@@ -118,7 +118,7 @@ export default class JSONNode extends Component {
   }
 
   renderJSONValue ({prop, index, data, options}) {
-    return h('div', {name: compileJSONPointer(this.getPath()), className: 'jsoneditor-node'}, [
+    return h('div', {name: compileJSONPointer(this.props.path), className: 'jsoneditor-node'}, [
       this.renderPlaceholder(),
       this.renderActionMenuButton(),
       this.renderProperty(prop, index, data, options),
@@ -165,7 +165,7 @@ export default class JSONNode extends Component {
       }, rootName)
     }
 
-    const editable = !isIndex && (!options.isPropertyEditable || options.isPropertyEditable(this.getPath()))
+    const editable = !isIndex && (!options.isPropertyEditable || options.isPropertyEditable(this.props.path))
 
     const emptyClassName = (prop && prop.name.length === 0) ? ' jsoneditor-empty' : ''
     const searchClassName = prop ? JSONNode.getSearchResultClass(prop.searchResult) : ''
@@ -199,7 +199,7 @@ export default class JSONNode extends Component {
     const itsAnUrl = isUrl(value)
     const isEmpty = escapedValue.length === 0
 
-    const editable = !options.isValueEditable || options.isValueEditable(this.getPath())
+    const editable = !options.isValueEditable || options.isValueEditable(this.props.path)
     if (editable) {
       return h('div', {
         key: 'value',
@@ -358,7 +358,7 @@ export default class JSONNode extends Component {
   renderActionMenuButton () {
     return h(ActionButton, {
       key: 'action',
-      path: this.getPath(),
+      path: this.props.path,
       type: this.props.data.type,
       events: this.props.events
     })
@@ -367,7 +367,7 @@ export default class JSONNode extends Component {
   renderAppendMenuButton () {
     return h(AppendActionButton, {
       key: 'append',
-      path: this.getPath(),
+      path: this.props.path,
       events: this.props.events
     })
   }
@@ -393,14 +393,14 @@ export default class JSONNode extends Component {
   componentDidUpdate (prevProps, prevState) {
     if (this.props.prop && this.props.prop.focus &&
         !(prevProps.props.prop && prevProps.props.prop.focus)) {
-      console.log('focus property', this.getPath()) // TODO: cleanup
+      console.log('focus property', this.props.path) // TODO: cleanup
       if (this.refs.property) {
         this.refs.property.focus()
       }
     }
 
     if (this.props.data.focus && !prevProps.data.focus) {
-      console.log('focus value', this.getPath()) // TODO: cleanup
+      console.log('focus value', this.props.path) // TODO: cleanup
       if (this.refs.value) {
         this.refs.value.focus()
       }
@@ -417,7 +417,7 @@ export default class JSONNode extends Component {
 
   /** @private */
   handleChangeProperty = (event) => {
-    const parentPath = this.props.parent.getPath()
+    const parentPath = allButLast(this.props.path)
     const oldProp = this.props.prop.name
     const newProp = unescapeHTML(getInnerText(event.target))
 
@@ -431,7 +431,7 @@ export default class JSONNode extends Component {
     const value = this.getValueFromEvent(event)
 
     if (value !== this.props.data.value) {
-      this.props.events.onChangeValue(this.getPath(), value)
+      this.props.events.onChangeValue(this.props.path, value)
     }
   }
 
@@ -454,7 +454,7 @@ export default class JSONNode extends Component {
     const recurse = event.ctrlKey
     const expanded = !this.props.data.expanded
 
-    this.props.events.onExpand(this.getPath(), expanded, recurse)
+    this.props.events.onExpand(this.props.path, expanded, recurse)
   }
 
   /** @private */
@@ -534,27 +534,6 @@ export default class JSONNode extends Component {
   }
 
   /**
-   * Get the path of this JSONNode
-   * @return {Path}
-   */
-  // TODO: get rid of getPath, it's not nice having a reference to the parent in the child
-  getPath () {
-    const path = this.props.parent
-        ? this.props.parent.getPath()
-        : []
-
-    if (typeof this.props.index === 'number') {
-      path.push(String(this.props.index))
-    }
-
-    if (this.props.prop) {
-      path.push(this.props.prop.name)
-    }
-
-    return path
-  }
-
-  /**
    * Get the value of the target of an event, and convert it to it's type
    * @param event
    * @return {string | number | boolean | null}
@@ -592,4 +571,11 @@ export default class JSONNode extends Component {
     return null
   }
 
+}
+
+/**
+ * Returns a copy of the array having the last item removed
+ */
+function allButLast (array: []): any {
+  return array.slice(0, array.length - 1)
 }

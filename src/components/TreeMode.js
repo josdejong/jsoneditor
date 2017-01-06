@@ -141,7 +141,7 @@ export default class TreeMode extends Component {
             data,
             events: state.events,
             options: props,
-            parent: null,
+            path: [],
             prop: null
           })
         )
