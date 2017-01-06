@@ -2,19 +2,6 @@
 
 /**
  *
- * @typedef {'Object' | 'Array' | 'value' | 'string'} JSONDataType
- *
- * @typedef {{
- *   patch: JSONPatch,
- *   revert: JSONPatch,
- *   error: null | Error
- * }} JSONPatchResult
- *
- * @typedef {{
- *   dataPath: string,
- *   message: string
- * }} JSONSchemaError
- *
  * @typedef {{
  *   name: string?,
  *   mode: 'code' | 'form' | 'text' | 'tree' | 'view'?,
@@ -33,10 +20,6 @@
  *   ace: Object?
  * }} Options
  *
- * @typedef {{
- *   expand: function (path: Path)?
- * }} PatchOptions
- *
  */
 
 
@@ -53,9 +36,15 @@ export type SearchResultStatus = 'normal' | 'active'
 export type DataPointerType = 'value' | 'property'
 
 export type PropertyData = {
+  id: number,
   name: string,
   value: JSONData,
   searchResult: ?SearchResultStatus
+}
+
+export type ItemData = {
+  id: number,
+  value: JSONData
 }
 
 export type ObjectData = {
@@ -67,7 +56,7 @@ export type ObjectData = {
 export type ArrayData = {
   type: 'Array',
   expanded: ?boolean,
-  items: ?JSONData[]
+  items: ItemData[]
 }
 
 export type ValueData = {
@@ -77,6 +66,8 @@ export type ValueData = {
 }
 
 export type JSONData = ObjectData | ArrayData | ValueData
+
+export type JSONDataType = 'Object' | 'Array' | 'value' | 'string'
 
 
 
@@ -96,8 +87,25 @@ export type SetOptions = {
 
 export type JSONPatchAction = {
   op: string,     // TODO: define allowed ops
-  path?: string,
+  path: string,
   from?: string,
-  value?: any
+  value?: any,
+  jsoneditor?: PatchOptions
 }
 export type JSONPatch = JSONPatchAction[]
+
+export type PatchOptions = {
+  type: JSONDataType,
+  expand: (Path) => boolean
+}
+
+export type JSONPatchResult = {
+  patch: JSONPatch,
+  revert: JSONPatch,
+  error: null | Error
+}
+
+export type JSONSchemaError = {
+  dataPath: string,
+  message: string
+}

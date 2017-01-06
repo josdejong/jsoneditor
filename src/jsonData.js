@@ -9,7 +9,10 @@ import { setIn, updateIn, getIn, deleteIn, insertAt } from './utils/immutability
 import { isObject } from  './utils/typeUtils'
 import isEqual from 'lodash/isEqual'
 
-import type {JSONData, DataPointer, Path} from './types'
+import type {
+  JSONData, ObjectData, ItemData, DataPointer, Path,
+  JSONPatch, JSONPatchAction, PatchOptions, JSONPatchResult
+} from './types'
 
 /**
  * Expand function which will expand all nodes
@@ -33,15 +36,21 @@ export function jsonToData (json, expand = expandAll, path = [], type = 'value')
     return {
       type: 'Array',
       expanded: expand(path),
-      items: json.map((child, index) => jsonToData(child, expand, path.concat(index)))
+      items: json.map((child, index) => {
+        return {
+          id: getId(), // TODO: use id based on index (only has to be unique within this array)
+          value: jsonToData(child, expand, path.concat(index))
+        }
+      })
     }
   }
   else if (isObject(json)) {
     return {
       type: 'Object',
       expanded: expand(path),
-      props: Object.keys(json).map(name => {
+      props: Object.keys(json).map((name, index) => {
         return {
+          id: getId(), // TODO: use id based on index (only has to be unique within this array)
           name,
           value: jsonToData(json[name], expand, path.concat(name))
         }
@@ -61,10 +70,10 @@ export function jsonToData (json, expand = expandAll, path = [], type = 'value')
  * @param {JSONData} data
  * @return {Object | Array | string | number | boolean | null} json
  */
-export function dataToJson (data) {
+export function dataToJson (data: JSONData) {
   switch (data.type) {
     case 'Array':
-      return data.items.map(dataToJson)
+      return data.items.map(item => dataToJson(item.value))
 
     case 'Object':
       const object = {}
@@ -87,7 +96,7 @@ export function dataToJson (data) {
  * @return {Path} dataPath
  * @private
  */
-export function toDataPath (data, path) {
+export function toDataPath (data: JSONData, path: Path) : Path {
   if (path.length === 0) {
     return []
   }
@@ -95,14 +104,14 @@ export function toDataPath (data, path) {
   if (data.type === 'Array') {
     // index of an array
     const index = path[0]
-    const item = data.items[index]
+    const item = data.items[parseInt(index)]
     if (!item) {
       throw new Error('Array item "' + index + '" not found')
     }
 
-    return ['items', index].concat(toDataPath(item, path.slice(1)))
+    return ['items', index, 'value'].concat(toDataPath(item.value, path.slice(1)))
   }
-  else {
+  else if (data.type === 'Object') {
     // object property. find the index of this property
     const index = findPropertyIndex(data, path[0])
     const prop = data.props[index]
@@ -111,19 +120,11 @@ export function toDataPath (data, path) {
     }
 
     return ['props', index, 'value']
-        .concat(toDataPath(prop && prop.value, path.slice(1)))
+        .concat(toDataPath(prop.value, path.slice(1)))
   }
-}
-
-/**
- * Convert a path of a JSON object into a path in the corresponding data model
- * @param {JSONData} data
- * @param {Path} path
- * @return {Path} dataPath
- * @private
- */
-export function toPath (data, dataPath) {
-
+  else {
+    return []
+  }
 }
 
 /**
@@ -134,13 +135,15 @@ export function toPath (data, dataPath) {
  *                                         what nodes must be expanded
  * @return {{data: JSONData, revert: Object[], error: Error | null}}
  */
-export function patchData (data, patch, expand = expandAll) {
+export function patchData (data: JSONData, patch: JSONPatchAction[], expand = expandAll) {
   let updatedData = data
   let revert = []
 
   for (let i = 0; i < patch.length; i++) {
     const action = patch[i]
     const options = action.jsoneditor
+
+    // TODO: check whether action.op and action.path exist
 
     switch (action.op) {
       case 'add': {
@@ -172,6 +175,14 @@ export function patchData (data, patch, expand = expandAll) {
       }
 
       case 'copy': {
+        if (!action.from) {
+          return {
+            data,
+            revert: [],
+            error: new Error('Property "from" expected in copy action ' + JSON.stringify(action))
+          }
+        }
+
         const result = copy(updatedData, action.path, action.from, options)
         updatedData = result.data
         revert = result.revert.concat(revert)
@@ -180,6 +191,14 @@ export function patchData (data, patch, expand = expandAll) {
       }
 
       case 'move': {
+        if (!action.from) {
+          return {
+            data,
+            revert: [],
+            error: new Error('Property "from" expected in move action ' + JSON.stringify(action))
+          }
+        }
+
         const result = move(updatedData, action.path, action.from, options)
         updatedData = result.data
         revert = result.revert.concat(revert)
@@ -224,7 +243,7 @@ export function patchData (data, patch, expand = expandAll) {
  * @param {JSONData} value
  * @return {{data: JSONData, revert: JSONPatch}}
  */
-export function replace (data, path, value) {
+export function replace (data: JSONData, path: Path, value: JSONData) {
   const dataPath = toDataPath(data, path)
   const oldValue = getIn(data, dataPath)
 
@@ -247,7 +266,7 @@ export function replace (data, path, value) {
  * @param {string} path
  * @return {{data: JSONData, revert: JSONPatch}}
  */
-export function remove (data, path) {
+export function remove (data: JSONData, path: string) {
   // console.log('remove', path)
   const pathArray = parseJSONPointer(path)
 
@@ -258,6 +277,9 @@ export function remove (data, path) {
 
   if (parent.type === 'Array') {
     const dataPath = toDataPath(data, pathArray)
+
+    // remove the 'value' property, we want to remove the whole item from the items array
+    dataPath.pop()
 
     return {
       data: deleteIn(data, dataPath),
@@ -275,7 +297,9 @@ export function remove (data, path) {
     const dataPath = toDataPath(data, pathArray)
     const prop = pathArray[pathArray.length - 1]
 
-    dataPath.pop()  // remove the 'value' property, we want to remove the whole object property
+    // remove the 'value' property, we want to remove the whole object property from props
+    dataPath.pop()
+
     return {
       data: deleteIn(data, dataPath),
       revert: [{
@@ -298,12 +322,12 @@ export function remove (data, path) {
  * @param {JSONPatch} patch
  * @return {Array}
  */
-export function simplifyPatch(patch) {
+export function simplifyPatch(patch: JSONPatch) {
   const simplifiedPatch = []
   const paths = {}
 
   // loop over the patch from last to first
-  for (var i = patch.length - 1; i >= 0; i--) {
+  for (let i = patch.length - 1; i >= 0; i--) {
     const action = patch[i]
     if (action.op === 'test') {
       // ignore test actions
@@ -331,7 +355,7 @@ export function simplifyPatch(patch) {
  * @return {{data: JSONData, revert: JSONPatch}}
  * @private
  */
-export function add (data, path, value, options) {
+export function add (data: JSONData, path: string, value: JSONData, options) {
   const pathArray = parseJSONPointer(path)
   const parentPath = pathArray.slice(0, pathArray.length - 1)
   const dataPath = toDataPath(data, parentPath)
@@ -341,16 +365,29 @@ export function add (data, path, value, options) {
 
   let updatedData
   if (parent.type === 'Array') {
-    updatedData = insertAt(data, dataPath.concat('items', prop), value)
+    const newItem = {
+      id: getId(), // TODO: create a unique id within current id's instead of using a global, ever incrementing id
+      value
+    }
+    updatedData = insertAt(data, dataPath.concat('items', prop), newItem)
   }
   else { // parent.type === 'Object'
     updatedData = updateIn(data, dataPath, (object) => {
-      const newProp = { name: prop, value }
-      const index = (options && typeof options.before === 'string')
-          ? findPropertyIndex(object, options.before)  // insert before
-          : object.props.length                        // append
+      const existingIndex = findPropertyIndex(object, prop)
+      if (existingIndex !== -1) {
+        // replace existing item
+        return setIn(object, ['props', existingIndex, 'value'], value)
+      }
+      else {
+        // insert new item
+        const newId = getId()
+        const newProp = { id: newId, name: prop, value }
+        const index = (options && typeof options.before === 'string')
+            ? findPropertyIndex(object, options.before)  // insert before
+            : object.props.length                        // append
 
-      return insertAt(object, ['props', index], newProp)
+        return insertAt(object, ['props', index], newProp)
+      }
     })
   }
 
@@ -387,7 +424,7 @@ export function add (data, path, value, options) {
  * @return {{data: JSONData, revert: JSONPatch}}
  * @private
  */
-export function copy (data, path, from, options) {
+export function copy (data: JSONData, path: string, from: string, options) {
   const value = getIn(data, toDataPath(data, parseJSONPointer(from)))
 
   return add(data, path, value, options)
@@ -402,7 +439,7 @@ export function copy (data, path, from, options) {
  * @return {{data: JSONData, revert: JSONPatch}}
  * @private
  */
-export function move (data, path, from, options) {
+export function move (data: JSONData, path: string, from: string, options) {
   const fromArray = parseJSONPointer(from)
   const dataValue = getIn(data, toDataPath(data, fromArray))
 
@@ -446,7 +483,7 @@ export function move (data, path, from, options) {
  * @param {*} value
  * @return {null | Error} Returns an error when the tests, returns null otherwise
  */
-export function test (data, path, value) {
+export function test (data: JSONData, path: string, value: any) {
   if (value === undefined) {
     return new Error('Test failed, no value provided')
   }
@@ -462,6 +499,8 @@ export function test (data, path, value) {
   }
 }
 
+type ExpandCallback = (Path) => boolean
+
 /**
  * Expand or collapse one or multiple items or properties
  * @param {JSONData} data
@@ -472,7 +511,7 @@ export function test (data, path, value) {
  * @param {boolean} [expanded=true]  New expanded state: true to expand, false to collapse
  * @return {JSONData}
  */
-export function expand (data, callback, expanded: boolean = true) {
+export function expand (data: JSONData, callback: Path | (Path) => boolean, expanded: boolean = true) {
   // console.log('expand', callback, expand)
 
   if (typeof callback === 'function') {
@@ -499,7 +538,7 @@ export function expand (data, callback, expanded: boolean = true) {
 /**
  * Expand all Objects and Arrays on a path
  */
-export function expandPath (data: JSONData, path: Path) {
+export function expandPath (data: JSONData, path: Path) : JSONData {
   let updatedData = data
 
   if (path) {
@@ -521,7 +560,7 @@ export function expandPath (data: JSONData, path: Path) {
  * @param {JSONData} data
  * @param {JSONSchemaError[]} errors
  */
-export function addErrors (data, errors) {
+export function addErrors (data: JSONData, errors) {
   let updatedData = data
 
   if (errors) {
@@ -642,24 +681,6 @@ export function addSearchResults (data: JSONData, searchResults: DataPointer[], 
 }
 
 /**
- * Merge a object describing where the focus is to the data
- */
-export function addFocus (data: JSONData, focusOn: DataPointer) {
-  if (focusOn.type == 'value') {
-    const dataPath = toDataPath(data, focusOn.path).concat('focus')
-    return setIn(data, dataPath, true)
-  }
-
-  if (focusOn.type === 'property') {
-    const valueDataPath = toDataPath(data, focusOn.path)
-    const propertyDataPath = allButLast(valueDataPath).concat('focus')
-    return setIn(data, propertyDataPath, true)
-  }
-
-  return data
-}
-
-/**
  * Do a case insensitive search for a search text in a text
  * @param {String} text
  * @param {String} search
@@ -669,13 +690,15 @@ export function containsCaseInsensitive (text: string, search: string): boolean 
   return String(text).toLowerCase().indexOf(search.toLowerCase()) !== -1
 }
 
+type RecurseCallback = (JSONData, Path, JSONData) => JSONData
+
 /**
  * Recursively transform JSONData: a recursive "map" function
  * @param {JSONData} data
  * @param {function(value: JSONData, path: Path, root: JSONData)} callback
  * @return {JSONData} Returns the transformed data
  */
-export function transform (data, callback) {
+export function transform (data: JSONData, callback: RecurseCallback) {
   return recurseTransform (data, [], data, callback)
 }
 
@@ -687,39 +710,32 @@ export function transform (data, callback) {
  * @param {function(value: JSONData, path: Path, root: JSONData)} callback
  * @return {JSONData} Returns the transformed data
  */
-function recurseTransform (value, path, root, callback) {
+function recurseTransform (value: JSONData, path: Path, root?: JSONData, callback: RecurseCallback) : JSONData{
   let updatedValue = callback(value, path, root)
 
-  switch (value.type) {
-    case 'Array': {
-      let updatedItems = updatedValue.items
+  if (value.type === 'Array') {
+    let updatedItems = updatedValue.items
 
-      updatedValue.items.forEach((item, index) => {
-        const updatedItem = recurseTransform(item, path.concat(String(index)), root, callback)
-        updatedItems = setIn(updatedItems, [index], updatedItem)
-      })
+    updatedValue.items.forEach((item, index) => {
+      const updatedItem = recurseTransform(item.value, path.concat(String(index)), root, callback)
+      updatedItems = setIn(updatedItems, [index, 'value'], updatedItem)
+    })
 
-      updatedValue = setIn(updatedValue, ['items'], updatedItems)
-
-      break
-    }
-
-    case 'Object': {
-      let updatedProps = updatedValue.props
-
-      updatedValue.props.forEach((prop, index) => {
-        const updatedItem = recurseTransform(prop.value, path.concat(prop.name), root, callback)
-        updatedProps = setIn(updatedProps, [index, 'value'], updatedItem)
-      })
-
-      updatedValue = setIn(updatedValue, ['props'], updatedProps)
-
-      break
-    }
-
-    default: // type 'string' or 'value'
-      // no childs to traverse
+    updatedValue = setIn(updatedValue, ['items'], updatedItems)
   }
+
+  if (value.type === 'Object') {
+    let updatedProps = updatedValue.props
+
+    updatedValue.props.forEach((prop, index) => {
+      const updatedItem = recurseTransform(prop.value, path.concat(prop.name), root, callback)
+      updatedProps = setIn(updatedProps, [index, 'value'], updatedItem)
+    })
+
+    updatedValue = setIn(updatedValue, ['props'], updatedProps)
+  }
+
+  // (for type 'string' or 'value' there are no childs to traverse)
 
   return updatedValue
 }
@@ -729,7 +745,7 @@ function recurseTransform (value, path, root, callback) {
  * @param {JSONData} data
  * @param {function(value: JSONData, path: Path, root: JSONData)} callback
  */
-export function traverse (data, callback) {
+export function traverse (data: JSONData, callback: RecurseCallback) {
   return recurseTraverse (data, [], data, callback)
 }
 
@@ -740,13 +756,13 @@ export function traverse (data, callback) {
  * @param {JSONData | null} root    The root object, object at path=[]
  * @param {function(value: JSONData, path: Path, root: JSONData)} callback
  */
-function recurseTraverse (value, path, root, callback) {
+function recurseTraverse (value: JSONData, path: Path, root: JSONData, callback: RecurseCallback) {
   callback(value, path, root)
 
   switch (value.type) {
     case 'Array': {
-      value.items.forEach((item, index) => {
-        recurseTraverse(item, path.concat(String(index)), root, callback)
+      value.items.forEach((item: ItemData, index) => {
+        recurseTraverse(item.value, path.concat(String(index)), root, callback)
       })
       break
     }
@@ -783,7 +799,9 @@ export function pathExists (data, path) {
   if (data.type === 'Array') {
     // index of an array
     index = path[0]
-    return pathExists(data.items[index], path.slice(1))
+    const item = data.items[index]
+
+    return pathExists(item && item.value, path.slice(1))
   }
   else {
     // object property. find the index of this property
@@ -825,7 +843,7 @@ export function resolvePathIndex (data, path) {
  * @return {string | null} Returns the name of the next property,
  *                         or null if there is none
  */
-export function findNextProp (parent, prop) {
+export function findNextProp (parent: ObjectData, prop: string) : string | null {
   const index = findPropertyIndex(parent, prop)
   if (index === -1) {
     return null
@@ -841,7 +859,7 @@ export function findNextProp (parent, prop) {
  * @param {string} prop
  * @return {number}  Returns the index when found, -1 when not found
  */
-export function findPropertyIndex (object, prop) {
+export function findPropertyIndex (object: ObjectData, prop: string) {
   return object.props.findIndex(p => p.name === prop)
 }
 
@@ -851,7 +869,7 @@ export function findPropertyIndex (object, prop) {
  * @param {string} pointer
  * @return {Array}
  */
-export function parseJSONPointer (pointer) {
+export function parseJSONPointer (pointer: string) {
   const path = pointer.split('/')
   path.shift() // remove the first empty entry
 
@@ -864,10 +882,31 @@ export function parseJSONPointer (pointer) {
  * @param {Path} path
  * @return {string}
  */
-export function compileJSONPointer (path) {
+export function compileJSONPointer (path: Path) {
   return path
       .map(p => '/' + String(p).replace(/~/g, '~0').replace(/\//g, '~1'))
       .join('')
+}
+
+/**
+ * Get a new "unique" id. Id's are created from an incremental counter.
+ * @return {number}
+ */
+// TODO: use createUniqueId instead of getId()
+function getId () : number {
+  _id++
+  return _id
+}
+let _id = 0
+
+/**
+ * Find a unique id from an array with properties each having an id field.
+ * The
+ * @param {{id: string}} array
+ */
+// TODO: use createUniqueId instead of getId()
+function createUniqueId (array) {
+  return Math.max(...array.map(item => item.id)) + 1
 }
 
 /**

@@ -118,16 +118,11 @@ export default class TreeMode extends Component {
     }
 
     // enrich the data with search results
+    // TODO: performance improvements in search would be nice though it's acceptable right now
     const searchResults = this.state.search.text ? search(data, this.state.search.text) : null
     if (searchResults) {
       data = addSearchResults(data, searchResults, this.state.search.active)
     }
-    // TODO: moveTo active search result (not focus!)
-    // if (this.state.search.active) {
-    //   data = addFocus(data, this.state.search.active)
-    // }
-
-    // console.log('data', data)
 
     return h('div', {
       className: `jsoneditor jsoneditor-mode-${props.mode}`,

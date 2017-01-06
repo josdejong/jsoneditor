@@ -20,45 +20,58 @@ const JSON_DATA_EXAMPLE = {
   expanded: true,
   props: [
     {
+      id: '[ID]',
       name: 'obj',
       value: {
         type: 'Object',
         expanded: true,
         props: [
           {
+            id: '[ID]',
             name: 'arr',
             value: {
               type: 'Array',
               expanded: true,
               items: [
                 {
-                  type: 'value',
-                  value: 1
+                  id: '[ID]',
+                  value: {
+                    type: 'value',
+                    value: 1
+                  }
                 },
                 {
-                  type: 'value',
-                  value: 2
+                  id: '[ID]',
+                  value: {
+                    type: 'value',
+                    value: 2
+                  }
                 },
                 {
-                  type: 'Object',
-                  expanded: true,
-                  props: [
-                    {
-                      name: 'first',
-                      value: {
-                        type: 'value',
-                        value: 3
+                  id: '[ID]',
+                  value: {
+                    type: 'Object',
+                    expanded: true,
+                    props: [
+                      {
+                        id: '[ID]',
+                        name: 'first',
+                        value: {
+                          type: 'value',
+                          value: 3
+                        }
+                      },
+                      {
+                        id: '[ID]',
+                        name: 'last',
+                        value: {
+                          type: 'value',
+                          value: 4
+                        }
                       }
-                    },
-                    {
-                      name: 'last',
-                      value: {
-                        type: 'value',
-                        value: 4
-                      }
-                    }
-                  ]
-                },
+                    ]
+                  }
+                }
               ]
             }
           }
@@ -66,6 +79,7 @@ const JSON_DATA_EXAMPLE = {
       }
     },
     {
+      id: '[ID]',
       name: 'str',
       value: {
         type: 'value',
@@ -73,6 +87,7 @@ const JSON_DATA_EXAMPLE = {
       }
     },
     {
+      id: '[ID]',
       name: 'nill',
       value: {
         type: 'value',
@@ -80,6 +95,7 @@ const JSON_DATA_EXAMPLE = {
       }
     },
     {
+      id: '[ID]',
       name: 'bool',
       value: {
         type: 'value',
@@ -89,50 +105,66 @@ const JSON_DATA_EXAMPLE = {
   ]
 }
 
+// TODO: instead of all slightly different copies of JSON_DATA_EXAMPLE, built them up via setIn, updateIn based on JSON_DATA_EXAMPLE
+
 const JSON_DATA_EXAMPLE_COLLAPSED_1 = {
   type: 'Object',
   expanded: true,
   props: [
     {
+      id: '[ID]',
       name: 'obj',
       value: {
         type: 'Object',
         expanded: true,
         props: [
           {
+            id: '[ID]',
             name: 'arr',
             value: {
               type: 'Array',
               expanded: true,
               items: [
+
                 {
-                  type: 'value',
-                  value: 1
+                  id: '[ID]',
+                  value: {
+                    type: 'value',
+                    value: 1
+                  }
                 },
                 {
-                  type: 'value',
-                  value: 2
+                  id: '[ID]',
+                  value: {
+                    type: 'value',
+                    value: 2
+                  }
                 },
                 {
-                  type: 'Object',
-                  expanded: false,
-                  props: [
-                    {
-                      name: 'first',
-                      value: {
-                        type: 'value',
-                        value: 3
+                  id: '[ID]',
+                  value: {
+                    type: 'Object',
+                    expanded: false,
+                    props: [
+                      {
+                        id: '[ID]',
+                        name: 'first',
+                        value: {
+                          type: 'value',
+                          value: 3
+                        }
+                      },
+                      {
+                        id: '[ID]',
+                        name: 'last',
+                        value: {
+                          type: 'value',
+                          value: 4
+                        }
                       }
-                    },
-                    {
-                      name: 'last',
-                      value: {
-                        type: 'value',
-                        value: 4
-                      }
-                    }
-                  ]
-                },
+                    ]
+                  }
+                }
               ]
             }
           }
@@ -140,6 +172,7 @@ const JSON_DATA_EXAMPLE_COLLAPSED_1 = {
       }
     },
     {
+      id: '[ID]',
       name: 'str',
       value: {
         type: 'value',
@@ -147,6 +180,7 @@ const JSON_DATA_EXAMPLE_COLLAPSED_1 = {
       }
     },
     {
+      id: '[ID]',
       name: 'nill',
       value: {
         type: 'value',
@@ -154,6 +188,7 @@ const JSON_DATA_EXAMPLE_COLLAPSED_1 = {
       }
     },
     {
+      id: '[ID]',
       name: 'bool',
       value: {
         type: 'value',
@@ -168,45 +203,58 @@ const JSON_DATA_EXAMPLE_COLLAPSED_2 = {
   expanded: true,
   props: [
     {
+      id: '[ID]',
       name: 'obj',
       value: {
         type: 'Object',
         expanded: false,
         props: [
           {
+            id: '[ID]',
             name: 'arr',
             value: {
               type: 'Array',
               expanded: false,
               items: [
                 {
-                  type: 'value',
-                  value: 1
+                  id: '[ID]',
+                  value: {
+                    type: 'value',
+                    value: 1
+                  }
                 },
                 {
-                  type: 'value',
-                  value: 2
+                  id: '[ID]',
+                  value: {
+                    type: 'value',
+                    value: 2
+                  }
                 },
                 {
-                  type: 'Object',
-                  expanded: false,
-                  props: [
-                    {
-                      name: 'first',
-                      value: {
-                        type: 'value',
-                        value: 3
+                  id: '[ID]',
+                  value: {
+                    type: 'Object',
+                    expanded: false,
+                    props: [
+                      {
+                        id: '[ID]',
+                        name: 'first',
+                        value: {
+                          type: 'value',
+                          value: 3
+                        }
+                      },
+                      {
+                        id: '[ID]',
+                        name: 'last',
+                        value: {
+                          type: 'value',
+                          value: 4
+                        }
                       }
-                    },
-                    {
-                      name: 'last',
-                      value: {
-                        type: 'value',
-                        value: 4
-                      }
-                    }
-                  ]
-                },
+                    ]
+                  }
+                }
               ]
             }
           }
@@ -214,6 +262,7 @@ const JSON_DATA_EXAMPLE_COLLAPSED_2 = {
       }
     },
     {
+      id: '[ID]',
       name: 'str',
       value: {
         type: 'value',
@@ -221,6 +270,7 @@ const JSON_DATA_EXAMPLE_COLLAPSED_2 = {
       }
     },
     {
+      id: '[ID]',
       name: 'nill',
       value: {
         type: 'value',
@@ -228,6 +278,7 @@ const JSON_DATA_EXAMPLE_COLLAPSED_2 = {
       }
     },
     {
+      id: '[ID]',
       name: 'bool',
       value: {
         type: 'value',
@@ -243,45 +294,58 @@ const JSON_DATA_EXAMPLE_SEARCH_L = {
   expanded: true,
   props: [
     {
+      id: '[ID]',
       name: 'obj',
       value: {
         type: 'Object',
         expanded: true,
         props: [
           {
+            id: '[ID]',
             name: 'arr',
             value: {
               type: 'Array',
               expanded: true,
               items: [
                 {
-                  type: 'value',
-                  value: 1
+                  id: '[ID]',
+                  value: {
+                    type: 'value',
+                    value: 1
+                  }
                 },
                 {
-                  type: 'value',
-                  value: 2
+                  id: '[ID]',
+                  value: {
+                    type: 'value',
+                    value: 2
+                  }
                 },
                 {
-                  type: 'Object',
-                  expanded: true,
-                  props: [
-                    {
-                      name: 'first',
-                      value: {
-                        type: 'value',
-                        value: 3
-                      }
-                    },
-                    {
-                      name: 'last',
-                      value: {
-                        type: 'value',
-                        value: 4
+                  id: '[ID]',
+                  value: {
+                    type: 'Object',
+                    expanded: true,
+                    props: [
+                      {
+                        id: '[ID]',
+                        name: 'first',
+                        value: {
+                          type: 'value',
+                          value: 3
+                        }
                       },
-                      searchResult: 'active'
-                    }
-                  ]
+                      {
+                        id: '[ID]',
+                        name: 'last',
+                        value: {
+                          type: 'value',
+                          value: 4
+                        },
+                        searchResult: 'active'
+                      }
+                    ]
+                  }
                 }
               ]
             }
@@ -290,6 +354,7 @@ const JSON_DATA_EXAMPLE_SEARCH_L = {
       }
     },
     {
+      id: '[ID]',
       name: 'str',
       value: {
         type: 'value',
@@ -298,6 +363,7 @@ const JSON_DATA_EXAMPLE_SEARCH_L = {
       }
     },
     {
+      id: '[ID]',
       name: 'nill',
       value: {
         type: 'value',
@@ -307,6 +373,7 @@ const JSON_DATA_EXAMPLE_SEARCH_L = {
       searchResult: 'normal'
     },
     {
+      id: '[ID]',
       name: 'bool',
       value: {
         type: 'value',
@@ -322,11 +389,13 @@ const JSON_DATA_SMALL = {
   type: 'Object',
   props: [
     {
+      id: '[ID]',
       name: 'obj',
       value: {
         type: 'Object',
         props: [
           {
+            id: '[ID]',
             name: 'a',
             value: {
               type: 'value',
@@ -337,13 +406,17 @@ const JSON_DATA_SMALL = {
       }
     },
     {
+      id: '[ID]',
       name: 'arr',
       value: {
         type: 'Array',
         items: [
           {
-            type: 'value',
-            value: 3
+            id: '[ID]',
+            value: {
+              type: 'value',
+              value: 3
+            }
           }
         ]
       }
@@ -362,46 +435,59 @@ const JSON_DATA_EXAMPLE_ERRORS = {
   expanded: true,
   props: [
     {
+      id: '[ID]',
       name: 'obj',
       value: {
         type: 'Object',
         expanded: true,
         props: [
           {
+            id: '[ID]',
             name: 'arr',
             value: {
               type: 'Array',
               expanded: true,
               items: [
                 {
-                  type: 'value',
-                  value: 1
+                  id: '[ID]',
+                  value: {
+                    type: 'value',
+                    value: 1
+                  }
                 },
                 {
-                  type: 'value',
-                  value: 2
+                  id: '[ID]',
+                  value: {
+                    type: 'value',
+                    value: 2
+                  }
                 },
                 {
-                  type: 'Object',
-                  expanded: true,
-                  props: [
-                    {
-                      name: 'first',
-                      value: {
-                        type: 'value',
-                        value: 3
+                  id: '[ID]',
+                  value: {
+                    type: 'Object',
+                    expanded: true,
+                    props: [
+                      {
+                        id: '[ID]',
+                        name: 'first',
+                        value: {
+                          type: 'value',
+                          value: 3
+                        }
+                      },
+                      {
+                        id: '[ID]',
+                        name: 'last',
+                        value: {
+                          type: 'value',
+                          value: 4,
+                          error: JSON_SCHEMA_ERRORS[0]
+                        }
                       }
-                    },
-                    {
-                      name: 'last',
-                      value: {
-                        type: 'value',
-                        value: 4,
-                        error: JSON_SCHEMA_ERRORS[0]
-                      }
-                    }
-                  ]
-                },
+                    ]
+                  }
+                }
               ]
             }
           }
@@ -409,6 +495,7 @@ const JSON_DATA_EXAMPLE_ERRORS = {
       }
     },
     {
+      id: '[ID]',
       name: 'str',
       value: {
         type: 'value',
@@ -416,6 +503,7 @@ const JSON_DATA_EXAMPLE_ERRORS = {
       }
     },
     {
+      id: '[ID]',
       name: 'nill',
       value: {
         type: 'value',
@@ -424,6 +512,7 @@ const JSON_DATA_EXAMPLE_ERRORS = {
       }
     },
     {
+      id: '[ID]',
       name: 'bool',
       value: {
         type: 'value',
@@ -438,7 +527,10 @@ test('jsonToData', t => {
     return true
   }
 
-  t.deepEqual(jsonToData(JSON_EXAMPLE, expand, []), JSON_DATA_EXAMPLE)
+  const jsonData = jsonToData(JSON_EXAMPLE, expand, [])
+  replaceIds(jsonData)
+
+  t.deepEqual(jsonData, JSON_DATA_EXAMPLE)
 })
 
 test('dataToJson', t => {
@@ -622,6 +714,21 @@ test('jsonpatch replace', t => {
   ])
 })
 
+test('jsonpatch replace (keep ids intact)', t => {
+  const json = { value: 42 }
+  const patch = [
+    {op: 'replace', path: '/value', value: 100}
+  ]
+
+  const data = jsonToData(json)
+  const valueId = data.props[0].id
+
+  const patchedData = patchData(data, patch).data
+  const patchedValueId = patchedData.props[0].id
+
+  t.is(patchedValueId, valueId)
+})
+
 test('jsonpatch copy', t => {
   const json = {
     arr: [1,2,3],
@@ -659,6 +766,34 @@ test('jsonpatch copy', t => {
   ])
 })
 
+// test('jsonpatch copy (create new ids)', t => {
+//   const json = { foo: { bar: 42 } }
+//   const patch = [
+//     {op: 'copy', from: '/foo', path: '/copied'}
+//   ]
+//
+//   const data = jsonToData(json)
+//   const objectId = data.id
+//   const fooId = data.props[0].value.id
+//   const barId = data.props[0].value.props[0].value.id
+//
+//   const patchedData = patchData(data, patch).data
+//   const patchedObjectId = patchedData.id
+//   const patchedFooId = patchedData.props[0].value.id
+//   const patchedBarId = patchedData.props[0].value.props[0].value.id
+//   const patchedCopiedId = patchedData.props[1].value.id
+//   const patchedCopiedBarId = patchedData.props[1].value.props[0].value.id
+//
+//   t.is(patchedData.props[0].name, 'foo')
+//   t.is(patchedData.props[1].name, 'copied')
+//
+//   t.is(patchedObjectId, objectId, 'same object id')
+//   t.is(patchedFooId, fooId, 'same foo id')
+//   t.is(patchedBarId, barId, 'same bar id')
+//   t.not(patchedCopiedId, patchedFooId, 'different copied foo id')
+//   t.not(patchedCopiedBarId, patchedBarId, 'different copied bar id')
+// })
+//
 test('jsonpatch move', t => {
   const json = {
     arr: [1,2,3],
@@ -732,6 +867,54 @@ test('jsonpatch move before', t => {
 })
 
 test('jsonpatch move and replace', t => {
+  const json = { a: 2, b: 3 }
+
+  const patch = [
+    {op: 'move', from: '/a', path: '/b'},
+  ]
+
+  const data = jsonToData(json)
+  const result = patchData(data, patch)
+  const patchedData = result.data
+  const revert = result.revert
+  const patchedJson = dataToJson(patchedData)
+
+  replaceIds(patchedData)
+  t.deepEqual(patchedData, {
+    "type": "Object",
+    "expanded": true,
+    "props": [
+      {
+        "id": "[ID]",
+        "name": "b",
+        "value": {
+          "type": "value",
+          "value": 2
+        }
+      }
+    ]
+  })
+
+  t.deepEqual(patchedJson, { b : 2 })
+  t.deepEqual(revert, [
+    {op:'move', from: '/b', path: '/a'},
+    {op:'add', path:'/b', value: 3, jsoneditor: {type: 'value', before: 'b'}}
+  ])
+
+  // test revert
+  const data2 = jsonToData(patchedJson)
+  const result2 = patchData(data2, revert)
+  const patchedData2 = result2.data
+  const revert2 = result2.revert
+  const patchedJson2 = dataToJson(patchedData2)
+
+  t.deepEqual(patchedJson2, json)
+  t.deepEqual(revert2, [
+    {op: 'move', from: '/a', path: '/b'}
+  ])
+})
+
+test('jsonpatch move and replace (nested)', t => {
   const json = {
     arr: [1,2,3],
     obj: {a : 4}
@@ -766,6 +949,44 @@ test('jsonpatch move and replace', t => {
   t.deepEqual(revert2, [
     {op: 'move', from: '/obj', path: '/arr'}
   ])
+})
+
+test('jsonpatch move (keep id intact)', t => {
+  const json = { value: 42 }
+  const patch = [
+    {op: 'move', from: '/value', path: '/moved'}
+  ]
+
+  const data = jsonToData(json)
+  const objectId = data.id
+  const valueId = data.props[0].value.id
+
+  const patchedData = patchData(data, patch).data
+
+  const patchedObjectId = patchedData.id
+  const patchedValueId = patchedData.props[0].value.id
+
+  t.is(patchedObjectId, objectId)
+  t.is(patchedValueId, valueId)
+})
+
+test('jsonpatch move and replace (keep ids intact)', t => {
+  const json = { a: 2, b: 3 }
+  const patch = [
+    {op: 'move', from: '/a', path: '/b'}
+  ]
+
+  const data = jsonToData(json)
+  const bId = data.props[1].id
+
+  t.is(data.props[0].name, 'a')
+  t.is(data.props[1].name, 'b')
+
+  const patchedData = patchData(data, patch).data
+  const patchedBId = patchedData.props[0].id
+
+  t.is(patchedData.props[0].name, 'b')
+  t.is(patchedBId, bId)
 })
 
 test('jsonpatch test (ok)', t => {
@@ -855,7 +1076,7 @@ test('add and remove errors', t => {
 
 test('transform', t => {
   // {obj: {a: 2}, arr: [3]}
-  
+
   let log = []
   const transformed = transform(JSON_DATA_SMALL, function (value, path, root) {
     t.is(root, JSON_DATA_SMALL)
@@ -878,18 +1099,18 @@ test('transform', t => {
     [JSON_DATA_SMALL.props[0].value, ['obj'], JSON_DATA_SMALL],
     [JSON_DATA_SMALL.props[0].value.props[0].value, ['obj', 'a'], JSON_DATA_SMALL],
     [JSON_DATA_SMALL.props[1].value, ['arr'], JSON_DATA_SMALL],
-    [JSON_DATA_SMALL.props[1].value.items[0], ['arr', '0'], JSON_DATA_SMALL],
+    [JSON_DATA_SMALL.props[1].value.items[0].value, ['arr', '0'], JSON_DATA_SMALL],
   ]
 
-  // log.forEach((row, index) => {
-  //   t.deepEqual(log[index], EXPECTED_LOG[index], 'should have equal log at index ' + index )
-  // })
+  log.forEach((row, index) => {
+    t.deepEqual(log[index], EXPECTED_LOG[index], 'should have equal log at index ' + index )
+  })
   t.deepEqual(log, EXPECTED_LOG)
   t.not(transformed, JSON_DATA_SMALL)
   t.not(transformed.props[0].value, JSON_DATA_SMALL.props[0].value)
   t.not(transformed.props[0].value.props[0].value, JSON_DATA_SMALL.props[0].value.props[0].value)
   t.is(transformed.props[1].value, JSON_DATA_SMALL.props[1].value)
-  t.is(transformed.props[1].value.items[0], JSON_DATA_SMALL.props[1].value.items[0])
+  t.is(transformed.props[1].value.items[0].value, JSON_DATA_SMALL.props[1].value.items[0].value)
 
 })
 
@@ -910,19 +1131,19 @@ test('traverse', t => {
     [JSON_DATA_SMALL.props[0].value, ['obj'], JSON_DATA_SMALL],
     [JSON_DATA_SMALL.props[0].value.props[0].value, ['obj', 'a'], JSON_DATA_SMALL],
     [JSON_DATA_SMALL.props[1].value, ['arr'], JSON_DATA_SMALL],
-    [JSON_DATA_SMALL.props[1].value.items[0], ['arr', '0'], JSON_DATA_SMALL],
+    [JSON_DATA_SMALL.props[1].value.items[0].value, ['arr', '0'], JSON_DATA_SMALL],
   ]
 
-  // log.forEach((row, index) => {
-  //   t.deepEqual(log[index], EXPECTED_LOG[index], 'should have equal log at index ' + index )
-  // })
+  log.forEach((row, index) => {
+    t.deepEqual(log[index], EXPECTED_LOG[index], 'should have equal log at index ' + index )
+  })
   t.deepEqual(log, EXPECTED_LOG)
 })
 
 
 test('search', t => {
   const searchResults = search(JSON_DATA_EXAMPLE, 'L')
-  //console.log(JSON.stringify(searchResults, null, 2))
+  // printJSON(searchResults)
 
   t.deepEqual(searchResults, [
     {path: ['obj', 'arr', '2', 'last'], type: 'property'},
@@ -935,7 +1156,7 @@ test('search', t => {
 
   const activeSearchResult = searchResults[0]
   const updatedData = addSearchResults(JSON_DATA_EXAMPLE, searchResults, activeSearchResult)
-  // console.log(JSON.stringify(updatedData, null, 2))
+  // printJSON(updatedData)
 
   t.deepEqual(updatedData, JSON_DATA_EXAMPLE_SEARCH_L)
 })
@@ -995,3 +1216,28 @@ test('previousSearchResult', t => {
   // return null when searchResults are empty
   t.deepEqual(previousSearchResult([], {path: ['non', 'existing'], type: 'value'}), null)
 })
+
+// helper function to replace all id properties with a constant value
+function replaceIds (data, value = '[ID]') {
+  if (data.type === 'Object') {
+    data.props.forEach(prop => {
+      prop.id = value
+      replaceIds(prop.value, value)
+    })
+  }
+
+  if (data.type === 'Array') {
+    data.items.forEach(item => {
+      item.id = value
+      replaceIds(item.value, value)
+    })
+  }
+}
+
+// helper function to print JSON in the console
+function printJSON (json, message = null) {
+  if (message) {
+    console.log(message)
+  }
+  console.log(JSON.stringify(json, null, 2))
+}

@@ -53,10 +53,10 @@ export default class JSONNode extends Component {
     if (data.expanded) {
       if (data.props.length > 0) {
         const props = data.props.map(prop => {
-          return h('li', {key : prop.name},
+          return h('li', {key: prop.id},
             h(this.constructor, {
               parent: this,
-              prop: prop,
+              prop,
               data: prop.value,
               options,
               events
@@ -78,6 +78,7 @@ export default class JSONNode extends Component {
     return h('div', {}, [node, childs])
   }
 
+  // TODO: extract a function renderChilds shared by both renderJSONObject and renderJSONArray (rename .props and .items to .childs?)
   renderJSONArray ({prop, index, data, options, events}) {
     const childCount = data.items.length
     const node = h('div', {name: compileJSONPointer(this.getPath()), key: 'node', className: 'jsoneditor-node jsoneditor-array'}, [
@@ -91,12 +92,12 @@ export default class JSONNode extends Component {
     let childs
     if (data.expanded) {
       if (data.items.length > 0) {
-        const items = data.items.map((child, index) => {
-          return h('li', {key : index},
+        const items = data.items.map((item, index) => {
+          return h('li', {key : item.id},
             h(this.constructor, {
               parent: this,
               index,
-              data: child,
+              data: item.value,
               options,
               events
             })
@@ -286,8 +287,6 @@ export default class JSONNode extends Component {
     while (target.contentEditable !== 'true') {
       target = target.parentNode
     }
-
-    console.log('value', this.props)
 
     target.className = JSONNode.getValueClass(type, itsAnUrl, isEmpty) +
         JSONNode.getSearchResultClass(this.props.data.searchResult)
