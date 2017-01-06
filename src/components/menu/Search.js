@@ -52,7 +52,7 @@ export default class Search extends Component {
     ])
   }
 
-  renderResultsCount (resultsCount : number | null) {
+  renderResultsCount (resultsCount : ?number) {
     if (resultsCount == null) {
       return null
     }

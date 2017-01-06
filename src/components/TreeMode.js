@@ -1,3 +1,5 @@
+// @flow weak
+
 import { createElement as h, Component } from 'react'
 import jump from '../assets/jump.js/src/jump'
 import Ajv from 'ajv'
@@ -21,6 +23,8 @@ import JSONNodeForm from './JSONNodeForm'
 import ModeButton from './menu/ModeButton'
 import Search from './menu/Search'
 
+import type { JSONData, JSONPatch } from '../types'
+
 const AJV_OPTIONS = {
   allErrors: true,
   verbose: true,
@@ -31,6 +35,9 @@ const MAX_HISTORY_ITEMS = 1000   // maximum number of undo/redo items to be kept
 const SEARCH_DEBOUNCE = 300      // milliseconds
 
 export default class TreeMode extends Component {
+  id: number
+  state: Object
+
   constructor (props) {
     super(props)
 
@@ -149,7 +156,7 @@ export default class TreeMode extends Component {
     ])
   }
 
-  renderMenu (searchResultsCount: number) {
+  renderMenu (searchResultsCount: ?number) {
     let items = [
       h('button', {
         key: 'expand-all',
@@ -351,7 +358,7 @@ export default class TreeMode extends Component {
       })
 
       // scroll to the active result (on next tick, after this path has been expanded)
-      setTimeout(() => this.scrollTo(next.path))
+      setTimeout(() => this.scrollTo(next && next.path))
     }
   }
 
@@ -367,7 +374,7 @@ export default class TreeMode extends Component {
       })
 
       // scroll to the active result (on next tick, after this path has been expanded)
-      setTimeout(() => this.scrollTo(previous.path))
+      setTimeout(() => this.scrollTo(previous && previous.path))
     }
   }
 
@@ -401,12 +408,9 @@ export default class TreeMode extends Component {
 
   /**
    * Emit an onChange event when there is a listener for it.
-   * @param {JSONPatch} patch
-   * @param {JSONPatch} revert
-   * @param {JSONData} data
    * @private
    */
-  emitOnChange (patch, revert, data) {
+  emitOnChange (patch: JSONPatch, revert: JSONPatch, data: JSONData) {
     if (this.props.onPatch) {
       this.props.onPatch(patch, revert)
     }
@@ -449,7 +453,7 @@ export default class TreeMode extends Component {
         historyIndex: historyIndex + 1
       })
 
-      this.emitOnChange (historyItem.undo, historyItem.redo)
+      this.emitOnChange (historyItem.undo, historyItem.redo, result.data)
     }
   }
 
@@ -467,7 +471,7 @@ export default class TreeMode extends Component {
         historyIndex
       })
 
-      this.emitOnChange (historyItem.redo, historyItem.undo)
+      this.emitOnChange (historyItem.redo, historyItem.undo, result.data)
     }
   }
 

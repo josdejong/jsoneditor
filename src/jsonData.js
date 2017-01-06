@@ -542,7 +542,7 @@ export function expand (data: JSONData, callback: Path | (Path) => boolean, expa
 /**
  * Expand all Objects and Arrays on a path
  */
-export function expandPath (data: JSONData, path: Path) : JSONData {
+export function expandPath (data: JSONData, path: ?Path) : JSONData {
   let updatedData = data
 
   if (path) {
