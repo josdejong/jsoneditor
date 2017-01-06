@@ -3,7 +3,7 @@
 https://github.com/josdejong/jsoneditor
 
 
-## (not yet released), version 5.5.11
+## 2017-01-06, version 5.5.11
 
 - Fixed embedded version of jsoneditor ace theme not being loaded in
   minimalist version (see #55).

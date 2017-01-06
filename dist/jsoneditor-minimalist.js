@@ -21,11 +21,11 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  *
- * Copyright (c) 2011-2016 Jos de Jong, http://jsoneditoronline.org
+ * Copyright (c) 2011-2017 Jos de Jong, http://jsoneditoronline.org
  *
  * @author  Jos de Jong, <wjosdejong@gmail.com>
- * @version 5.5.10
- * @date    2016-11-02
+ * @version 5.5.11
+ * @date    2017-01-06
  */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
@@ -7999,6 +7999,8 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var MAX_ERRORS = 3; // maximum number of displayed errors at the bottom
 
+	var DEFAULT_THEME = 'ace/theme/jsoneditor';
+
 	/**
 	 * Create a text editor
 	 * @param {Element} container
@@ -8046,7 +8048,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	  }
 
 	  // determine theme
-	  this.theme = options.theme || 'ace/theme/jsoneditor';
+	  this.theme = options.theme || DEFAULT_THEME;
+	  if (this.theme === DEFAULT_THEME && window.ace) {
+	    __webpack_require__(17);
+	  }
 
 	  var me = this;
 	  this.container = container;
@@ -8484,7 +8489,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	// load required ace modules
 	__webpack_require__(14);
 	__webpack_require__(16);
-	__webpack_require__(17);
 
 	module.exports = ace;
 
