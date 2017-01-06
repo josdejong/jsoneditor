@@ -1,13 +1,6 @@
 'use strict';
 
-var ace;
-try {
-  ace = require('./ace');
-}
-catch (err) {
-  // failed to load ace, no problem, we will fall back to plain text
-}
-
+var ace = require('./ace');
 var ModeSwitcher = require('./ModeSwitcher');
 var util = require('./util');
 
@@ -53,6 +46,7 @@ textmode.create = function (container, options) {
 
   // grab ace from options if provided
   var _ace = options.ace ? options.ace : ace;
+  // TODO: make the option options.ace deprecated, it's not needed anymore (see #309)
 
   // determine mode
   this.mode = (options.mode == 'code') ? 'code' : 'text';
@@ -66,8 +60,13 @@ textmode.create = function (container, options) {
 
   // determine theme
   this.theme = options.theme || DEFAULT_THEME;
-  if (this.theme === DEFAULT_THEME && window.ace) {
-    require('./ace/theme-jsoneditor');
+  if (this.theme === DEFAULT_THEME && _ace) {
+    try {
+      require('./ace/theme-jsoneditor');
+    }
+    catch (err) {
+      console.error(err);
+    }
   }
 
   var me = this;

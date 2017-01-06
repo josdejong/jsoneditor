@@ -3,6 +3,12 @@
 https://github.com/josdejong/jsoneditor
 
 
+## not yet released, version 5.5.12
+
+- Fixed #309: already loaded version of Ace being overwritten by the embedded
+  version of JSONEditor.
+
+
 ## 2017-01-06, version 5.5.11
 
 - Fixed embedded version of jsoneditor ace theme not being loaded in
