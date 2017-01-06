@@ -63,6 +63,13 @@ const loaders = [
   { test: /\.svg$/, loader: 'svg-url-loader' }
 ]
 
+const resolve = {
+  'alias': {
+    'react': 'preact-compat',
+        'react-dom': 'preact-compat'
+  }
+}
+
 // create a single instance of the compiler to allow caching
 const compiler = webpack({
   entry: ENTRY,
@@ -81,7 +88,8 @@ const compiler = webpack({
       : [bannerPlugin, productionEnvPlugin, minifyPlugin],
   module: {
     loaders
-  }
+  },
+  resolve
 })
 
 // create a single instance of the compiler to allow caching
@@ -105,7 +113,8 @@ const compilerMinimalist = webpack({
   ],
   module: {
     loaders
-  }
+  },
+  resolve
 })
 
 const externals = {
