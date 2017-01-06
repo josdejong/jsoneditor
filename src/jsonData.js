@@ -352,10 +352,11 @@ export function simplifyPatch(patch: JSONPatch) {
  * @param {string} path
  * @param {JSONData} value
  * @param {{before?: string}} [options]
+ * @param {number} [id]   Optional id for the new item
  * @return {{data: JSONData, revert: JSONPatch}}
  * @private
  */
-export function add (data: JSONData, path: string, value: JSONData, options) {
+export function add (data: JSONData, path: string, value: JSONData, options, id = getId()) {
   const pathArray = parseJSONPointer(path)
   const parentPath = pathArray.slice(0, pathArray.length - 1)
   const dataPath = toDataPath(data, parentPath)
@@ -366,7 +367,7 @@ export function add (data: JSONData, path: string, value: JSONData, options) {
   let updatedData
   if (parent.type === 'Array') {
     const newItem = {
-      id: getId(), // TODO: create a unique id within current id's instead of using a global, ever incrementing id
+      id, // TODO: create a unique id within current id's instead of using a global, ever incrementing id
       value
     }
     updatedData = insertAt(data, dataPath.concat('items', prop), newItem)
@@ -380,8 +381,7 @@ export function add (data: JSONData, path: string, value: JSONData, options) {
       }
       else {
         // insert new item
-        const newId = getId()
-        const newProp = { id: newId, name: prop, value }
+        const newProp = { id, name: prop, value }
         const index = (options && typeof options.before === 'string')
             ? findPropertyIndex(object, options.before)  // insert before
             : object.props.length                        // append
@@ -441,13 +441,17 @@ export function copy (data: JSONData, path: string, from: string, options) {
  */
 export function move (data: JSONData, path: string, from: string, options) {
   const fromArray = parseJSONPointer(from)
-  const dataValue = getIn(data, toDataPath(data, fromArray))
+  const prop = getIn(data, allButLast(toDataPath(data, fromArray)))
+  const dataValue = prop.value
+  const id = prop.id // we want to use the existing id in case the move is a renaming a property
+  // FIXME: only reuse the existing id when move is renaming a property in the same object
 
-  const parentPath = fromArray.slice(0, fromArray.length - 1)
-  const parent = getIn(data, toDataPath(data, parentPath))
+  const parentPathFrom = allButLast(fromArray)
+  const parent = getIn(data, toDataPath(data, parentPathFrom))
 
   const result1 = remove(data, from)
-  const result2 = add(result1.data, path, dataValue, options)
+  const result2 = add(result1.data, path, dataValue, options, id)
+  // FIXME: passing id as parameter is ugly, make that redundant (use replace instead of remove/add? (that would give less predictive output :( ))
 
   const before = result1.revert[0].jsoneditor.before
   const beforeNeeded = (parent.type === 'Object' && before)
@@ -706,11 +710,11 @@ export function transform (data: JSONData, callback: RecurseCallback) {
  * Recursively transform JSONData
  * @param {JSONData} value
  * @param {Path} path
- * @param {JSONData | null} root    The root object, object at path=[]
+ * @param {JSONData} root    The root object, object at path=[]
  * @param {function(value: JSONData, path: Path, root: JSONData)} callback
  * @return {JSONData} Returns the transformed data
  */
-function recurseTransform (value: JSONData, path: Path, root?: JSONData, callback: RecurseCallback) : JSONData{
+function recurseTransform (value: JSONData, path: Path, root: JSONData, callback: RecurseCallback) : JSONData{
   let updatedValue = callback(value, path, root)
 
   if (value.type === 'Array') {

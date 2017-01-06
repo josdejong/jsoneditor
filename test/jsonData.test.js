@@ -766,34 +766,35 @@ test('jsonpatch copy', t => {
   ])
 })
 
-// test('jsonpatch copy (create new ids)', t => {
-//   const json = { foo: { bar: 42 } }
-//   const patch = [
-//     {op: 'copy', from: '/foo', path: '/copied'}
-//   ]
-//
-//   const data = jsonToData(json)
-//   const objectId = data.id
-//   const fooId = data.props[0].value.id
-//   const barId = data.props[0].value.props[0].value.id
-//
-//   const patchedData = patchData(data, patch).data
-//   const patchedObjectId = patchedData.id
-//   const patchedFooId = patchedData.props[0].value.id
-//   const patchedBarId = patchedData.props[0].value.props[0].value.id
-//   const patchedCopiedId = patchedData.props[1].value.id
-//   const patchedCopiedBarId = patchedData.props[1].value.props[0].value.id
-//
-//   t.is(patchedData.props[0].name, 'foo')
-//   t.is(patchedData.props[1].name, 'copied')
-//
-//   t.is(patchedObjectId, objectId, 'same object id')
-//   t.is(patchedFooId, fooId, 'same foo id')
-//   t.is(patchedBarId, barId, 'same bar id')
-//   t.not(patchedCopiedId, patchedFooId, 'different copied foo id')
-//   t.not(patchedCopiedBarId, patchedBarId, 'different copied bar id')
-// })
-//
+test('jsonpatch copy (keeps the same ids)', t => {
+  const json = { foo: { bar: 42 } }
+  const patch = [
+    {op: 'copy', from: '/foo', path: '/copied'}
+  ]
+
+  const data = jsonToData(json)
+  const fooId = data.props[0].id
+  const barId = data.props[0].value.props[0].id
+
+  const patchedData = patchData(data, patch).data
+  const patchedFooId = patchedData.props[0].id
+  const patchedBarId = patchedData.props[0].value.props[0].id
+  const copiedId = patchedData.props[1].id
+  const patchedCopiedBarId = patchedData.props[1].value.props[0].id
+
+  t.is(patchedData.props[0].name, 'foo')
+  t.is(patchedData.props[1].name, 'copied')
+
+  t.is(patchedFooId, fooId, 'same foo id')
+  t.is(patchedBarId, barId, 'same bar id')
+
+  t.not(copiedId, fooId, 'different id of property copied')
+
+  // The id's of the copied childs are the same, that's okish, they will not bite each other
+  // FIXME: better solution for id's either always unique, or unique per object/array
+  t.is(patchedCopiedBarId, patchedBarId, 'same copied bar id')
+})
+
 test('jsonpatch move', t => {
   const json = {
     arr: [1,2,3],
@@ -874,10 +875,14 @@ test('jsonpatch move and replace', t => {
   ]
 
   const data = jsonToData(json)
+
   const result = patchData(data, patch)
   const patchedData = result.data
   const revert = result.revert
   const patchedJson = dataToJson(patchedData)
+
+  // id of the replaced B must be kept intact
+  t.is(patchedData.props[0].id, data.props[1].id)
 
   replaceIds(patchedData)
   t.deepEqual(patchedData, {
@@ -958,15 +963,11 @@ test('jsonpatch move (keep id intact)', t => {
   ]
 
   const data = jsonToData(json)
-  const objectId = data.id
-  const valueId = data.props[0].value.id
+  const valueId = data.props[0].id
 
   const patchedData = patchData(data, patch).data
+  const patchedValueId = patchedData.props[0].id
 
-  const patchedObjectId = patchedData.id
-  const patchedValueId = patchedData.props[0].value.id
-
-  t.is(patchedObjectId, objectId)
   t.is(patchedValueId, valueId)
 })
 
@@ -983,10 +984,9 @@ test('jsonpatch move and replace (keep ids intact)', t => {
   t.is(data.props[1].name, 'b')
 
   const patchedData = patchData(data, patch).data
-  const patchedBId = patchedData.props[0].id
 
   t.is(patchedData.props[0].name, 'b')
-  t.is(patchedBId, bId)
+  t.is(patchedData.props[0].id, bId)
 })
 
 test('jsonpatch test (ok)', t => {
