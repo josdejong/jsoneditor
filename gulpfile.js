@@ -63,6 +63,7 @@ const loaders = [
   { test: /\.svg$/, loader: 'svg-url-loader' }
 ]
 
+// TODO: see if preact can give the same sort of errors and warnings as react does, if so switch to preact for development too
 const resolve = {
   'alias': {
     'react': 'preact-compat',
@@ -89,7 +90,7 @@ const compiler = webpack({
   module: {
     loaders
   },
-  resolve
+  resolve: WATCHING ? null : resolve
 })
 
 // create a single instance of the compiler to allow caching
@@ -114,7 +115,7 @@ const compilerMinimalist = webpack({
   module: {
     loaders
   },
-  resolve
+  resolve: WATCHING ? null : resolve
 })
 
 const externals = {

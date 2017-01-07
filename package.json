@@ -30,7 +30,9 @@
     "javascript-natural-sort": "0.7.1",
     "lodash": "4.17.4",
     "preact": "7.1.0",
-    "preact-compat": "3.9.4"
+    "preact-compat": "3.9.4",
+    "react": "15.4.1",
+    "react-dom": "15.4.1"
   },
   "devDependencies": {
     "ava": "0.17.0",
