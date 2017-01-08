@@ -179,13 +179,18 @@ function jsoneditor (container, options = {}) {
       }
 
       function handleChangeMode (mode) {
-        const prevMode = editor._mode
+        // we execute editor.setMode on the next tick, after the click event
+        // has been finished. This is a workaround for preact which does not
+        // neatly replace a rendered app whilst the event is still being handled.
+        setTimeout(() => {
+          const prevMode = editor._mode
 
-        editor.setMode(mode)
+          editor.setMode(mode)
 
-        if (editor._options.onChangeMode) {
-          editor._options.onChangeMode(mode, prevMode)
-        }
+          if (editor._options.onChangeMode) {
+            editor._options.onChangeMode(mode, prevMode)
+          }
+        })
       }
 
       function handleError (err) {

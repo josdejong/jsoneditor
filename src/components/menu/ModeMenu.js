@@ -30,18 +30,13 @@ export default class ModeMenu extends Component {
   }
 
   handleClick = () => {
-    // we trigger the onChangeMode on the next tick, after the click event
-    // has been finished. This is a workaround for preact not neatly replacing
-    // a rendered app whilst the event is still being handled.
-    setTimeout(() => {
-      try {
-        this.props.onRequestClose()
-        this.props.onChangeMode(mode)
-      }
-      catch (err) {
-        this.props.onError(err)
-      }
-    })
+    try {
+      this.props.onRequestClose()
+      this.props.onChangeMode(mode)
+    }
+    catch (err) {
+      this.props.onError(err)
+    }
   }
 
   componentDidMount () {
