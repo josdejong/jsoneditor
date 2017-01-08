@@ -9,24 +9,14 @@ export default class ModeMenu extends Component {
    * @return {JSX.Element}
    */
   render () {
-    const { props, state} = this
-
-    if (props.open) {
-      const items = props.modes.map(mode => {
+    if (this.props.open) {
+      const items = this.props.modes.map(mode => {
         return h('button', {
           key: mode,
           title: `Switch to ${mode} mode`,
           className: 'jsoneditor-menu-button jsoneditor-type-modes' +
-              ((mode === props.mode) ? ' jsoneditor-selected' : ''),
-          onClick: () => {
-            try {
-              props.onRequestClose()
-              props.onChangeMode(mode)
-            }
-            catch (err) {
-              props.onError(err)
-            }
-          }
+              ((mode === this.props.mode) ? ' jsoneditor-selected' : ''),
+          onClick: this.handleClick
         }, toCapital(mode))
       })
 
@@ -37,6 +27,21 @@ export default class ModeMenu extends Component {
     else {
       return null
     }
+  }
+
+  handleClick = () => {
+    // we trigger the onChangeMode on the next tick, after the click event
+    // has been finished. This is a workaround for preact not neatly replacing
+    // a rendered app whilst the event is still being handled.
+    setTimeout(() => {
+      try {
+        this.props.onRequestClose()
+        this.props.onChangeMode(mode)
+      }
+      catch (err) {
+        this.props.onError(err)
+      }
+    })
   }
 
   componentDidMount () {
