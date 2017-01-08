@@ -149,7 +149,7 @@ export default class JSONNode extends Component {
     return h('div', {key: 'readonly', className: 'jsoneditor-readonly', title}, text)
   }
 
-  renderProperty (prop: ?PropertyData, index: ?number, data: JSONData, options) {
+  renderProperty (prop: ?PropertyData, index: ?number, data: JSONData, options: {escapeUnicode: boolean, isPropertyEditable: (Path) => boolean}) {
     const isIndex = typeof index === 'number'
 
     if (!prop && !isIndex) {

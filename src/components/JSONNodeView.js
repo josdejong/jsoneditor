@@ -12,26 +12,31 @@ import JSONNodeForm from './JSONNodeForm'
  */
 export default class JSONNodeView extends JSONNodeForm {
 
-  // render a readonly value
-  renderValue (value) {
+  // render a readonly value but with colors
+  renderValue (value, searchResult, options) {
     const escapedValue = escapeHTML(value, options.escapeUnicode)
     const type = valueType (value)
-    const isEmpty = escapedValue.length === 0
     const itsAnUrl = isUrl(value)
-    const className = JSONNode.getValueClass(type, itsAnUrl, isEmpty)
+    const isEmpty = escapedValue.length === 0
 
-    if (itsAnUrl) {
-      return h('a', {
+    const editable = !options.isValueEditable || options.isValueEditable(this.props.path)
+    if (editable) {
+      return h('div', {
         key: 'value',
-        className: className,
-        href: escapedValue
+        ref: 'value',
+        className: JSONNode.getValueClass(type, itsAnUrl, isEmpty) +
+        JSONNode.getSearchResultClass(searchResult),
+        contentEditable: 'false',
+        spellCheck: 'false',
+        onClick: this.handleClickValue,
+        title: itsAnUrl ? JSONNode.URL_TITLE : null
       }, escapedValue)
     }
     else {
       return h('div', {
         key: 'value',
-        className: className,
-        onClick: this.handleClickValue
+        className: 'jsoneditor-readonly',
+        title: itsAnUrl ? JSONNode.URL_TITLE : null
       }, escapedValue)
     }
   }

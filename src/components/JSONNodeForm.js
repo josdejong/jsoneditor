@@ -1,6 +1,8 @@
-import { createElement as h } from 'react'
-import { escapeHTML } from '../utils/stringUtils'
+// @flow
+
 import JSONNode from './JSONNode'
+
+import type { PropertyData, JSONData } from '../types'
 
 /**
  * JSONNodeForm
@@ -20,33 +22,13 @@ export default class JSONNodeForm extends JSONNode {
   }
 
   // render a readonly property
-  renderProperty (prop, data, options) {
-    if (prop !== null) {
-      const isIndex = typeof prop === 'number' // FIXME: pass an explicit prop isIndex
+  renderProperty (prop: ?PropertyData, index: ?number, data: JSONData, options: {escapeUnicode: boolean, isPropertyEditable: (Path) => boolean}) {
+    const formOptions = Object.assign({}, options, { isPropertyEditable })
 
-      if (isIndex) { // array item
-        return h('div', {
-          key: 'property',
-          className: 'jsoneditor-property jsoneditor-readonly'
-        }, prop)
-      }
-      else { // object property
-        const escapedProp = escapeHTML(prop, options.escapeUnicode)
-
-        return h('div', {
-          key: 'property',
-          className: 'jsoneditor-property' + (prop.length === 0 ? ' jsoneditor-empty' : '')
-        }, escapedProp)
-      }
-    }
-    else {
-      // root node
-      const content = JSONNode.getRootName(data, options)
-
-      return h('div', {
-        key: 'property',
-        className: 'jsoneditor-property jsoneditor-readonly'
-      }, content)
-    }
+    return JSONNode.prototype.renderProperty.call(this, prop, index, data, formOptions)
   }
+}
+
+function isPropertyEditable () {
+  return false
 }
