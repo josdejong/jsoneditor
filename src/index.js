@@ -6,7 +6,7 @@ import TextMode from './components/TextMode'
 import TreeMode from './components/TreeMode'
 import { compileJSONPointer, parseJSONPointer } from './jsonData'
 
-import '!style!css!less!./jsoneditor.less'
+import './jsoneditor.less'
 
 const modes = {
   code: CodeMode,

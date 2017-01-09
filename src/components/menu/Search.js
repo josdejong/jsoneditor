@@ -2,7 +2,7 @@
 
 import { createElement as h, Component, PropTypes } from 'react'
 
-import '!style!css!less!./Search.less'
+import './Search.less'
 
 export default class Search extends Component {
   state: {

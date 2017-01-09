@@ -1,3 +1,4 @@
+const path = require('path')
 const fs = require('fs')
 const gulp = require('gulp')
 const gulpMultiProcess = require('gulp-multi-process')
@@ -18,16 +19,16 @@ if (WATCHING) {
   gutil.log('Also, ./dist/minimalist code is not updated on changes.')
 }
 
-const NAME            = 'jsoneditor.js'
+const NAME = 'jsoneditor.js'
 const NAME_MINIMALIST = 'jsoneditor-minimalist.js'
-const NAME_REACT      = 'jsoneditor-react.js'
+const NAME_REACT = 'jsoneditor-react.js'
 const NAME_REACT_MINIMALIST = 'jsoneditor-react-minimalist.js'
-const ENTRY           = './src/index.js'
-const ENTRY_REACT     = './src/components/JSONEditor.js'
-const HEADER          = './src/header.js'
-const DIST            = './dist'
-const LIB             = './lib'
-const EMPTY           = __dirname + '/src/utils/empty.js'
+const ENTRY = './src/index.js'
+const ENTRY_REACT = './src/components/JSONEditor.js'
+const HEADER = './src/header.js'
+const DIST = path.resolve(__dirname, './dist')
+const LIB = './lib'
+const EMPTY = __dirname + '/src/utils/empty.js'
 
 // generate banner with today's date and correct version
 function createBanner() {
@@ -39,7 +40,8 @@ function createBanner() {
       .replace('@@version', version)
 }
 
-const bannerPlugin = new webpack.BannerPlugin(createBanner(), {
+const bannerPlugin = new webpack.BannerPlugin({
+  banner: createBanner(),
   entryOnly: true,
   raw: true
 })
@@ -56,18 +58,20 @@ const productionEnvPlugin = new webpack.DefinePlugin({
   }
 })
 
-const loaders = [
-  { test: /\.js$/, exclude: /node_modules/, loader: 'babel-loader' },
-  { test: /\.json$/, loader: 'json' },
-  { test: /\.less$/, loaders: '!style!css!less!' },
-  { test: /\.svg$/, loader: 'svg-url-loader' }
+const rules = [
+  {test: /\.js$/, exclude: /node_modules/, loader: 'babel-loader'},
+  { test: /\.json$/, loader: 'json-loader' },
+  {
+    test: /\.less$/,
+    loaders: ['style-loader', 'css-loader', 'less-loader'],
+  },
+  {test: /\.svg$/, loader: 'svg-url-loader'},
 ]
 
 // create a single instance of the compiler to allow caching
 const compiler = webpack({
   entry: ENTRY,
   devtool: 'source-map',
-  debug: true,
   cache: true,
   bail: true,
   output: {
@@ -80,7 +84,7 @@ const compiler = webpack({
       ? [bannerPlugin]
       : [bannerPlugin, productionEnvPlugin, minifyPlugin],
   module: {
-    loaders
+    rules
   }
 })
 
@@ -88,7 +92,6 @@ const compiler = webpack({
 const compilerMinimalist = webpack({
   entry: ENTRY,
   devtool: 'source-map',
-  debug: true,
   cache: true,
   output: {
     library: 'jsoneditor',
@@ -104,7 +107,7 @@ const compilerMinimalist = webpack({
     minifyPlugin
   ],
   module: {
-    loaders
+    rules
   }
 })
 
@@ -117,7 +120,6 @@ const externals = {
 const compilerReact = webpack({
   entry: ENTRY_REACT,
   devtool: 'source-map',
-  debug: true,
   cache: true,
   bail: true,
   output: {
@@ -130,7 +132,7 @@ const compilerReact = webpack({
     minifyPlugin
   ],
   module: {
-    loaders
+    rules
   },
   externals
 })
@@ -140,7 +142,6 @@ const compilerReact = webpack({
 const compilerReactMinimalist = webpack({
   entry: ENTRY_REACT,
   devtool: 'source-map',
-  debug: true,
   cache: true,
   bail: true,
   output: {
@@ -155,12 +156,12 @@ const compilerReactMinimalist = webpack({
     minifyPlugin
   ],
   module: {
-    loaders
+    rules
   },
   externals
 })
 
-function handleCompilerCallback (err, stats) {
+function handleCompilerCallback(err, stats) {
   if (err) {
     gutil.log(err.toString())
   }
@@ -173,7 +174,7 @@ function handleCompilerCallback (err, stats) {
   }
 }
 
-function createBundleTask (compiler) {
+function createBundleTask(compiler) {
   return function (done) {
     // update the banner contents (has a date in it which should stay up to date)
     bannerPlugin.banner = createBanner()
@@ -222,7 +223,7 @@ gulp.task('bundle-react-minimalist', ['mkdir'], createBundleTask(compilerReactMi
 // TODO: zip file using archiver
 const pkg = 'jsoneditor-' + require('./package.json').version + '.zip'
 gulp.task('zip', shell.task([
-      'zip ' + pkg + ' ' + 'README.md LICENSE HISTORY.md index.html src dist docs examples -r '
+  'zip ' + pkg + ' ' + 'README.md LICENSE HISTORY.md index.html src dist docs examples -r '
 ]))
 
 // execute all tasks and reload the browser afterwards
@@ -235,7 +236,7 @@ gulp.task('bundle-and-reload', ['bundle'], function (done) {
 // The watch task (to automatically rebuild when the source code changes)
 // Does only generate jsoneditor.js and jsoneditor.css, and copy the image
 // Does NOT minify the code and does NOT generate the minimalist version
-gulp.task(WATCH, ['bundle'], function() {
+gulp.task(WATCH, ['bundle'], function () {
   browserSync.init({
     open: 'local',
     server: '.',
@@ -245,9 +246,8 @@ gulp.task(WATCH, ['bundle'], function() {
 
   gulp.watch('src/**/*', ['bundle-and-reload'])
 })
-
 // The default task (called when you run `gulp`)
-gulp.task('default', function(done) {
+gulp.task('default', function (done) {
   return gulpMultiProcess([
     'bundle',
     'bundle-minimalist',
