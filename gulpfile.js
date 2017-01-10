@@ -131,6 +131,8 @@ const compilerReact = webpack({
   cache: true,
   bail: true,
   output: {
+    library: 'JSONEditor',
+    libraryTarget: 'umd',
     path: DIST,
     filename: NAME_REACT
   },
