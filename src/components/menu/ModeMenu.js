@@ -16,7 +16,15 @@ export default class ModeMenu extends Component {
           title: `Switch to ${mode} mode`,
           className: 'jsoneditor-menu-button jsoneditor-type-modes' +
               ((mode === this.props.mode) ? ' jsoneditor-selected' : ''),
-          onClick: this.handleClick
+          onClick: () => {
+            try {
+              this.props.onRequestClose()
+              this.props.onChangeMode(mode)
+            }
+            catch (err) {
+              this.props.onError(err)
+            }
+          }
         }, toCapital(mode))
       })
 
@@ -26,16 +34,6 @@ export default class ModeMenu extends Component {
     }
     else {
       return null
-    }
-  }
-
-  handleClick = () => {
-    try {
-      this.props.onRequestClose()
-      this.props.onChangeMode(mode)
-    }
-    catch (err) {
-      this.props.onError(err)
     }
   }
 
