@@ -7,6 +7,7 @@ https://github.com/josdejong/jsoneditor
 
 - Fixed #309: already loaded version of Ace being overwritten by the embedded
   version of JSONEditor.
+- Fixed #368: Mode selection drop down not fully visible on small screen.
 
 
 ## 2017-01-06, version 5.5.11
