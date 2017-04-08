@@ -31,6 +31,8 @@ var DEFAULT_THEME = 'ace/theme/jsoneditor';
  *                                                       triggered on change
  *                             {function} onModeChange   Callback method
  *                                                       triggered after setMode
+ *                             {function} onEditable     Determine if textarea is readOnly
+ *                                                       readOnly defaults true
  *                             {Object} ace              A custom instance of
  *                                                       Ace editor.
  *                             {boolean} escapeUnicode   If true, unicode
@@ -201,6 +203,13 @@ textmode.create = function (container, options) {
     textarea.spellcheck = false;
     this.content.appendChild(textarea);
     this.textarea = textarea;
+
+    var emptyNode = {};
+    var isReadOnly = (this.options.onEditable
+        && typeof(this.options.onEditable === 'Function')
+        && !this.options.onEditable(emptyNode));
+
+    this.textarea.readOnly = isReadOnly;
 
     // register onchange event
     if (this.textarea.oninput === null) {
