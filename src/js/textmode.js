@@ -206,7 +206,7 @@ textmode.create = function (container, options) {
 
     var emptyNode = {};
     var isReadOnly = (this.options.onEditable
-        && typeof(this.options.onEditable === 'Function')
+        && typeof(this.options.onEditable === 'function')
         && !this.options.onEditable(emptyNode));
 
     this.textarea.readOnly = isReadOnly;
