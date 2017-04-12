@@ -24,6 +24,8 @@ var DEFAULT_THEME = 'ace/theme/jsoneditor';
  *                                                       triggered on change
  *                             {function} onModeChange   Callback method
  *                                                       triggered after setMode
+ *                             {function} onEditable     Determine if textarea is readOnly
+ *                                                       readOnly defaults true
  *                             {Object} ace              A custom instance of
  *                                                       Ace editor.
  *                             {boolean} escapeUnicode   If true, unicode
@@ -138,6 +140,11 @@ textmode.create = function (container, options) {
     });
   }
 
+  var emptyNode = {};
+  var isReadOnly = (this.options.onEditable
+  && typeof(this.options.onEditable === 'function')
+  && !this.options.onEditable(emptyNode));
+
   this.content = document.createElement('div');
   this.content.className = 'jsoneditor-outer';
   this.frame.appendChild(this.content);
@@ -153,6 +160,7 @@ textmode.create = function (container, options) {
     var aceEditor = _ace.edit(this.editorDom);
     aceEditor.$blockScrolling = Infinity;
     aceEditor.setTheme(this.theme);
+    aceEditor.setOptions({ readOnly: isReadOnly });
     aceEditor.setShowPrintMargin(false);
     aceEditor.setFontSize(13);
     aceEditor.getSession().setMode('ace/mode/json');
@@ -200,6 +208,7 @@ textmode.create = function (container, options) {
     textarea.spellcheck = false;
     this.content.appendChild(textarea);
     this.textarea = textarea;
+    this.textarea.readOnly = isReadOnly;
 
     // register onchange event
     if (this.textarea.oninput === null) {
