@@ -9,7 +9,10 @@ can be loaded as CommonJS module, AMD module, or as a regular javascript file.
 
 Supported browsers: Chrome, Firefox, Safari, Opera, Internet Explorer 9+.
 
-Cross browser testing for JSONEditor is generously provided by <a href="https://www.browserstack.com" target="_blank"><img alt="BrowserStack" src="https://raw.github.com/josdejong/jsoneditor/master/misc/browserstack.png" style="height: 41px"></a>
+<p>
+Cross browser testing for JSONEditor is generously provided by
+<a href="https://www.browserstack.com" target="_blank"><img alt="BrowserStack" src="https://raw.github.com/josdejong/jsoneditor/master/misc/browserstack.png" style="height: 41px; vertical-align: middle;"></a>
+</p>
 
 <img alt="json editor" src="https://raw.github.com/josdejong/jsoneditor/master/misc/jsoneditor.png"> &nbsp; <img alt="code editor" src="https://raw.github.com/josdejong/jsoneditor/master/misc/codeeditor.png">
 
