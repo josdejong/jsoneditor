@@ -856,7 +856,11 @@ Node.prototype.focus = function(elementName) {
 
       case 'value':
       default:
-        if (dom.value && !this._hasChilds()) {
+        if (dom.select) {
+          // enum select box
+          dom.select.focus();
+        }
+        else if (dom.value && !this._hasChilds()) {
           dom.value.focus();
           util.selectContentEditable(dom.value);
         }
