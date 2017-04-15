@@ -43,8 +43,12 @@
   var options = {
     mode: 'text',
     modes: ['text', 'code'],
-    onEditable: function() { //absence of key makes the text area not readOnly
-      return false; // returning false makes the text area readOnly
+    onEditable: function (node) {
+      if (!node.path) {
+        // In modes code and text, node is empty: no path, field, or value
+        // returning false makes the text area read-only
+        return false;
+      }
     },
     onError: function (err) {
       alert(err.toString());

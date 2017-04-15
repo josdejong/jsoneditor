@@ -70,7 +70,8 @@ function minify(name) {
   var result = uglify.minify([DIST + '/' + name + '.js'], {
     outSourceMap: name + '.map',
     output: {
-      comments: /@license/
+      comments: /@license/,
+      max_line_len: 64000 // extra large because we have embedded code for workers
     }
   });
 

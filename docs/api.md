@@ -54,7 +54,11 @@ Constructs a new JSONEditor.
 
 - `{function} onEditable`
 
-  Set a callback function  to determine whether individual nodes are editable or read-only. Only applicable when option `mode` is `tree`. The callback is invoked as `editable(node)`, where `node` is an object `{field: string, value: string, path: string[]}`. The function must either return a boolean value to set both the nodes field and value editable or read-only, or return an object `{field: boolean, value: boolean}`.
+  Set a callback function  to determine whether individual nodes are editable or read-only. Only applicable when option `mode` is `tree`, `text`, or `code`.
+
+  In case of mode `tree`, the callback is invoked as `editable(node)`, where `node` is an object `{field: string, value: string, path: string[]}`. The function must either return a boolean value to set both the nodes field and value editable or read-only, or return an object `{field: boolean, value: boolean}` to set set the read-only attribute for field and value individually.
+
+  In modes `text` and `code`, the callback is invoked as `editable(node)` where `node` is an empty object (no field, value, or path). In that case the function can return false to make the text or code editor completely read-only.
 
 - `{function} onError`
 
