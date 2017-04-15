@@ -73,6 +73,23 @@ Node.prototype._updateEditability = function () {
 };
 
 /**
+ * Determine the ID of a node if the node's type is "object".
+ * @private
+ */
+Node.prototype._updateObjectID = function() {
+  this.objectID = '';
+
+  if (!this.editor) return;
+  if (this.editor.options.mode !== 'tree' &&
+      this.editor.options.mode !== 'form' &&
+      this.editor.options.mode !== 'view') return;
+  if (typeof this.editor.options.onObjectID !== 'function') return;
+
+  var idField = this.editor.options.onObjectID(this.getPath());
+  if (idField) this.objectID = idField;
+};
+
+/**
  * Get the path of this node
  * @return {String[]} Array containing the path to this node
  */
@@ -1479,6 +1496,7 @@ Node.prototype.getDom = function() {
   }
 
   this._updateEditability();
+  this._updateObjectID();
 
   // create row
   dom.tr = document.createElement('tr');
@@ -1956,7 +1974,20 @@ Node.prototype.updateDom = function (options) {
       util.addClassName(this.dom.tr, 'jsoneditor-expandable');
     }
     else if (this.type == 'object') {
-      domValue.innerHTML = '{' + count + '}';
+      var objectID = this.objectID;
+      var idNode = this.childs && this.childs.find(function(node) {
+        return node && node.field === objectID;
+      });
+
+      if (idNode && idNode.field && idNode.value) {
+        domValue.innerHTML =
+          '{' + count + '} ' +
+          '<span>' + idNode.field + ': ' + idNode.value + '</span>';
+      }
+      else {
+        domValue.innerHTML = '{' + count + '}';
+      }
+
       util.addClassName(this.dom.tr, 'jsoneditor-expandable');
     }
     else {

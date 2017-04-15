@@ -60,6 +60,10 @@ Constructs a new JSONEditor.
 
   In modes `text` and `code`, the callback is invoked as `editable(node)` where `node` is an empty object (no field, value, or path). In that case the function can return false to make the text or code editor completely read-only.
 
+- `{function} onObjectID`
+
+  Set a callback function to determine the ID field for a node of type "object". Applicable when option `mode` is `tree`, `view`, or `form`. The callback is invoked as `onObjectID(path)`, where `path` is a `string[]`. The function must return a string indicating the field designated as the ID field. In the case that an object doesn't have an identifier field, the function may return an empty string, `null`, or `undefined`.
+
 - `{function} onError`
 
   Set a callback function triggered when an error occurs. Invoked with the error as first argument. The callback is only invoked
