@@ -9,6 +9,10 @@ can be loaded as CommonJS module, AMD module, or as a regular javascript file.
 
 Supported browsers: Chrome, Firefox, Safari, Opera, Internet Explorer 9+.
 
+Cross browser testing for JSONEditor is generously provided by <a href="https://www.browserstack.com" target="_blank">BrowserStack</a>
+
+<a href="https://www.browserstack.com" target="_blank"><img alt="BrowserStack" src="https://raw.github.com/josdejong/jsoneditor/master/misc/browserstack.png"></a>
+
 <img alt="json editor" src="https://raw.github.com/josdejong/jsoneditor/master/misc/jsoneditor.png"> &nbsp; <img alt="code editor" src="https://raw.github.com/josdejong/jsoneditor/master/misc/codeeditor.png">
 
 
@@ -60,7 +64,7 @@ with bower:
 
 There is a directive available for using JSONEditor in Angular.js:
 
-[https://github.com/angular-tools/ng-jsoneditor](https://github.com/angular-tools/ng-jsoneditor)
+[https://github.com/isonet/angular-jsoneditor](https://github.com/isonet/angular-jsoneditor)
 
 
 ## Use
