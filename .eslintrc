@@ -4,6 +4,6 @@
   },
   "plugins": [],
   "rules": {
-
+    "strict": 0
   }
 }
