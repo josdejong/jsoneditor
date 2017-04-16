@@ -20,5 +20,6 @@
     "comma-style": ["error", "last"],
     //"eqeqeq": "error",
     "no-extend-native": "error"
+    //"max-statements": ["error", 10]
   }
 }
