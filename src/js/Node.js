@@ -1282,7 +1282,7 @@ Node.prototype._updateDomValue = function () {
       // create select box when this node has an enum object
       if (!this.dom.select) {
         this.dom.select = document.createElement('select');
-        this.id = this.field + "_" + new Date().getUTCMilliseconds();
+        this.id = this.field + '_' + new Date().getUTCMilliseconds();
         this.dom.select.id = this.id;
         this.dom.select.name = this.dom.select.id;
 
@@ -1312,9 +1312,9 @@ Node.prototype._updateDomValue = function () {
       // If the enum is inside a composite type display
       // both the simple input and the dropdown field
       if(this.schema && (
-          !this.schema.hasOwnProperty("oneOf") &&
-          !this.schema.hasOwnProperty("anyOf") &&
-          !this.schema.hasOwnProperty("allOf"))
+          !this.schema.hasOwnProperty('oneOf') &&
+          !this.schema.hasOwnProperty('anyOf') &&
+          !this.schema.hasOwnProperty('allOf'))
       ) {
         this.valueFieldHTML = this.dom.tdValue.innerHTML;
         this.dom.tdValue.style.visibility = 'hidden';

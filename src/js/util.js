@@ -552,7 +552,7 @@ exports.getInternetExplorerVersion = function getInternetExplorerVersion() {
     if (navigator.appName == 'Microsoft Internet Explorer')
     {
       var ua = navigator.userAgent;
-      var re  = new RegExp("MSIE ([0-9]{1,}[\.0-9]{0,})");
+      var re  = new RegExp('MSIE ([0-9]{1,}[\.0-9]{0,})');
       if (re.exec(ua) != null) {
         rv = parseFloat( RegExp.$1 );
       }
@@ -569,7 +569,7 @@ exports.getInternetExplorerVersion = function getInternetExplorerVersion() {
  * @returns {boolean} isFirefox
  */
 exports.isFirefox = function isFirefox () {
-  return (navigator.userAgent.indexOf("Firefox") != -1);
+  return (navigator.userAgent.indexOf('Firefox') != -1);
 };
 
 /**
@@ -593,8 +593,8 @@ exports.addEventListener = function addEventListener(element, action, listener, 
     if (useCapture === undefined)
       useCapture = false;
 
-    if (action === "mousewheel" && exports.isFirefox()) {
-      action = "DOMMouseScroll";  // For Firefox
+    if (action === 'mousewheel' && exports.isFirefox()) {
+      action = 'DOMMouseScroll';  // For Firefox
     }
 
     element.addEventListener(action, listener, useCapture);
@@ -604,7 +604,7 @@ exports.addEventListener = function addEventListener(element, action, listener, 
     var f = function () {
       return listener.call(element, window.event);
     };
-    element.attachEvent("on" + action, f);
+    element.attachEvent('on' + action, f);
     return f;
   }
 };
@@ -621,14 +621,14 @@ exports.removeEventListener = function removeEventListener(element, action, list
     if (useCapture === undefined)
       useCapture = false;
 
-    if (action === "mousewheel" && exports.isFirefox()) {
-      action = "DOMMouseScroll";  // For Firefox
+    if (action === 'mousewheel' && exports.isFirefox()) {
+      action = 'DOMMouseScroll';  // For Firefox
     }
 
     element.removeEventListener(action, listener, useCapture);
   } else if (element.detachEvent) {
     // Old IE browsers
-    element.detachEvent("on" + action, listener);
+    element.detachEvent('on' + action, listener);
   }
 };
 
