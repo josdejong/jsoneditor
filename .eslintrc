@@ -17,7 +17,8 @@
     "camelcase": "error",
     "new-cap": ["error", { "capIsNewExceptions": ["Ajv"] }],
     "quote-props": ["error", "as-needed"],
-    "comma-style": ["error", "last"]
-    //"eqeqeq": "error"
+    "comma-style": ["error", "last"],
+    //"eqeqeq": "error",
+    "no-extend-native": "error"
   }
 }
