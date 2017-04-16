@@ -14,6 +14,7 @@
     "quotes": [1, "single"],
     "brace-style": ["error", "stroustrup", { "allowSingleLine": true }],
     "one-var": ["error", { "var": "never" }],
-    "camelcase": "error"
+    "camelcase": "error",
+    "new-cap": ["error", { "capIsNewExceptions": ["Ajv"] }]
   }
 }
