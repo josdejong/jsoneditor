@@ -169,7 +169,7 @@ exports.escapeUnicodeChars = function (text) {
   // as JSON doesn't interpret them as a single unicode char.
   return text.replace(/[\u007F-\uFFFF]/g, function(c) {
     return '\\u'+('0000' + c.charCodeAt(0).toString(16)).slice(-4);
-  })
+  });
 };
 
 /**
@@ -674,7 +674,7 @@ exports.parsePath = function parsePath(jsonPath) {
     throw new SyntaxError('Failed to parse path');
   }
 
-  return [prop].concat(parsePath(remainder))
+  return [prop].concat(parsePath(remainder));
 };
 
 /**

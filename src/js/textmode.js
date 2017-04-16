@@ -451,7 +451,7 @@ textmode.validate = function () {
     if (limit) {
       errors = errors.slice(0, MAX_ERRORS);
       var hidden = this.validateSchema.errors.length - MAX_ERRORS;
-      errors.push('(' + hidden + ' more errors...)')
+      errors.push('(' + hidden + ' more errors...)');
     }
 
     var validationErrors = document.createElement('div');
@@ -467,7 +467,7 @@ textmode.validate = function () {
                 '<td>' + error.message + '</td>';
           }
 
-          return '<tr><td><button class="jsoneditor-schema-error"></button></td>' + message + '</tr>'
+          return '<tr><td><button class="jsoneditor-schema-error"></button></td>' + message + '</tr>';
         }).join('') +
         '</tbody>' +
         '</table>';

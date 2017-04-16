@@ -17,7 +17,7 @@ function ModeSwitcher(container, modes, current, onSwitch) {
       'text': 'Code',
       'title': 'Switch to code highlighter',
       'click': function () {
-        onSwitch('code')
+        onSwitch('code');
       }
     },
     form: {

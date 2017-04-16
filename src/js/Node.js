@@ -1438,7 +1438,7 @@ Node.prototype.validate = function () {
               error: {
                 message: 'duplicate key "' + node.field + '"'
               }
-            }
+            };
           });
     }
   }
@@ -2022,13 +2022,13 @@ Node._findEnum = function (schema) {
 
   var composite = schema.oneOf || schema.anyOf || schema.allOf;
   if (composite) {
-    var match = composite.filter(function (entry) {return entry.enum});
+    var match = composite.filter(function (entry) {return entry.enum;});
     if (match.length > 0) {
       return match[0].enum;
     }
   }
 
-  return null
+  return null;
 };
 
 /**
@@ -2044,14 +2044,14 @@ Node._findSchema = function (schema, path) {
   for (var i = 0; i < path.length && childSchema; i++) {
     var key = path[i];
     if (typeof key === 'string' && childSchema.properties) {
-      childSchema = childSchema.properties[key] || null
+      childSchema = childSchema.properties[key] || null;
     }
     else if (typeof key === 'number' && childSchema.items) {
-      childSchema = childSchema.items
+      childSchema = childSchema.items;
     }
   }
 
-  return childSchema
+  return childSchema;
 };
 
 /**
