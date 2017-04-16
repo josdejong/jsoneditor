@@ -481,13 +481,13 @@ exports.getInnerText = function getInnerText(element, buffer) {
   var first = (buffer == undefined);
   if (first) {
     buffer = {
-      'text': '',
-      'flush': function () {
+      text: '',
+      flush: function () {
         var text = this.text;
         this.text = '';
         return text;
       },
-      'set': function (text) {
+      set: function (text) {
         this.text = text;
       }
     };

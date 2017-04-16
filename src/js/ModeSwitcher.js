@@ -14,37 +14,37 @@ function ModeSwitcher(container, modes, current, onSwitch) {
   // available modes
   var availableModes = {
     code: {
-      'text': 'Code',
-      'title': 'Switch to code highlighter',
-      'click': function () {
+      text: 'Code',
+      title: 'Switch to code highlighter',
+      click: function () {
         onSwitch('code');
       }
     },
     form: {
-      'text': 'Form',
-      'title': 'Switch to form editor',
-      'click': function () {
+      text: 'Form',
+      title: 'Switch to form editor',
+      click: function () {
         onSwitch('form');
       }
     },
     text: {
-      'text': 'Text',
-      'title': 'Switch to plain text editor',
-      'click': function () {
+      text: 'Text',
+      title: 'Switch to plain text editor',
+      click: function () {
         onSwitch('text');
       }
     },
     tree: {
-      'text': 'Tree',
-      'title': 'Switch to tree editor',
-      'click': function () {
+      text: 'Tree',
+      title: 'Switch to tree editor',
+      click: function () {
         onSwitch('tree');
       }
     },
     view: {
-      'text': 'View',
-      'title': 'Switch to tree view',
-      'click': function () {
+      text: 'View',
+      title: 'Switch to tree view',
+      click: function () {
         onSwitch('view');
       }
     }

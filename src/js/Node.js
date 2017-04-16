@@ -567,8 +567,8 @@ Node.prototype.appendChild = function(node) {
       node.showChilds();
     }
 
-    this.updateDom({'updateIndexes': true});
-    node.updateDom({'recurse': true});
+    this.updateDom({updateIndexes: true});
+    node.updateDom({recurse: true});
   }
 };
 
@@ -669,8 +669,8 @@ Node.prototype.insertBefore = function(node, beforeNode) {
       node.showChilds();
     }
 
-    this.updateDom({'updateIndexes': true});
-    node.updateDom({'recurse': true});
+    this.updateDom({updateIndexes: true});
+    node.updateDom({recurse: true});
   }
 };
 
@@ -716,8 +716,8 @@ Node.prototype.search = function(text) {
     if (index != -1) {
       this.searchField = true;
       results.push({
-        'node': this,
-        'elem': 'field'
+        node: this,
+        elem: 'field'
       });
     }
 
@@ -757,8 +757,8 @@ Node.prototype.search = function(text) {
       if (index != -1) {
         this.searchValue = true;
         results.push({
-          'node': this,
-          'elem': 'value'
+          node: this,
+          elem: 'value'
         });
       }
     }
@@ -986,7 +986,7 @@ Node.prototype.removeChild = function(node) {
       var removedNode = this.childs.splice(index, 1)[0];
       removedNode.parent = null;
 
-      this.updateDom({'updateIndexes': true});
+      this.updateDom({updateIndexes: true});
 
       return removedNode;
     }
@@ -1104,7 +1104,7 @@ Node.prototype.changeType = function (newType) {
     this.focus();
   }
 
-  this.updateDom({'updateIndexes': true});
+  this.updateDom({updateIndexes: true});
 };
 
 /**
@@ -1518,7 +1518,7 @@ Node.prototype.getDom = function() {
   dom.tree = this._createDomTree();
   tdField.appendChild(dom.tree);
 
-  this.updateDom({'updateIndexes': true});
+  this.updateDom({updateIndexes: true});
 
   return dom.tr;
 };
@@ -3179,14 +3179,14 @@ Node.prototype._hasChilds = function () {
 
 // titles with explanation for the different types
 Node.TYPE_TITLES = {
-  'auto': 'Field type "auto". ' +
+  auto: 'Field type "auto". ' +
       'The field type is automatically determined from the value ' +
       'and can be a string, number, boolean, or null.',
-  'object': 'Field type "object". ' +
+  object: 'Field type "object". ' +
       'An object contains an unordered set of key/value pairs.',
-  'array': 'Field type "array". ' +
+  array: 'Field type "array". ' +
       'An array contains an ordered collection of values.',
-  'string': 'Field type "string". ' +
+  string: 'Field type "string". ' +
       'Field type is not determined from the value, ' +
       'but always returned as string.'
 };
@@ -3283,7 +3283,7 @@ Node.prototype.showContextMenu = function (anchor, onClose) {
     if (items.length) {
       // create a separator
       items.push({
-        'type': 'separator'
+        type: 'separator'
       });
     }
 
