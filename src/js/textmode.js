@@ -291,7 +291,7 @@ textmode.destroy = function () {
   }
 
   this.textarea = null;
-  
+
   this._debouncedValidate = null;
 };
 

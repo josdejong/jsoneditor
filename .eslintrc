@@ -8,6 +8,7 @@
     "indent": ["error", 2, { "SwitchCase": 1, "VariableDeclarator": 2 }],
     "semi": [1, "always"],
     "semi-spacing": [1, {"before": false, "after": true}],
-    "no-extra-semi": 2
+    "no-extra-semi": 2,
+    "no-trailing-spaces": 1
   }
 }
