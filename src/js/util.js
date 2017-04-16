@@ -549,8 +549,7 @@ exports.getInnerText = function getInnerText(element, buffer) {
 exports.getInternetExplorerVersion = function getInternetExplorerVersion() {
   if (_ieVersion == -1) {
     var rv = -1; // Return value assumes failure.
-    if (navigator.appName == 'Microsoft Internet Explorer')
-    {
+    if (navigator.appName == 'Microsoft Internet Explorer') {
       var ua = navigator.userAgent;
       var re  = new RegExp('MSIE ([0-9]{1,}[\.0-9]{0,})');
       if (re.exec(ua) != null) {
@@ -599,7 +598,8 @@ exports.addEventListener = function addEventListener(element, action, listener, 
 
     element.addEventListener(action, listener, useCapture);
     return listener;
-  } else if (element.attachEvent) {
+  }
+  else if (element.attachEvent) {
     // Old IE browsers
     var f = function () {
       return listener.call(element, window.event);
@@ -626,7 +626,8 @@ exports.removeEventListener = function removeEventListener(element, action, list
     }
 
     element.removeEventListener(action, listener, useCapture);
-  } else if (element.detachEvent) {
+  }
+  else if (element.detachEvent) {
     // Old IE browsers
     element.detachEvent('on' + action, listener);
   }

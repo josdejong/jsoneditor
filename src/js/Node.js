@@ -1319,7 +1319,8 @@ Node.prototype._updateDomValue = function () {
         this.valueFieldHTML = this.dom.tdValue.innerHTML;
         this.dom.tdValue.style.visibility = 'hidden';
         this.dom.tdValue.innerHTML = '';
-      } else {
+      }
+      else {
         delete this.valueFieldHTML;
       }
     }
