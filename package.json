@@ -20,7 +20,8 @@
   "scripts": {
     "build": "gulp",
     "watch": "gulp watch",
-    "test": "mocha test"
+    "test": "mocha test",
+    "lint": "eslint -c .eslintrc --cache ."
   },
   "dependencies": {
     "ajv": "4.11.6",
@@ -28,6 +29,7 @@
     "javascript-natural-sort": "0.7.1"
   },
   "devDependencies": {
+    "eslint": "^3.19.0",
     "gulp": "3.9.1",
     "gulp-clean-css": "3.0.4",
     "gulp-concat-css": "2.3.0",

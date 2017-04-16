@@ -1,0 +1,9 @@
+dist/
+docs/
+examples/
+misc/
+test/
+gulpfile.js
+index.js
+/src/js/ace/**/*.*
+/src/js/assets/**/*.*
