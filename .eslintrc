@@ -10,5 +10,6 @@
     "semi-spacing": [1, {"before": false, "after": true}],
     "no-extra-semi": 2,
     "no-trailing-spaces": 1
+    //"max-len": ["error", 80]
   }
 }
