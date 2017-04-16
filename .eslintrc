@@ -6,12 +6,12 @@
   "rules": {
     "strict": 0,
     "indent": ["error", 2, { "SwitchCase": 1, "VariableDeclarator": 2 }],
-    "semi": [1, "always"],
-    "semi-spacing": [1, {"before": false, "after": true}],
+    "semi": ["error", "always"],
+    "semi-spacing": ["error", {"before": false, "after": true}],
     "no-extra-semi": 2,
     "no-trailing-spaces": 1,
     //"max-len": ["error", 80]
-    "quotes": [1, "single"],
+    "quotes": ["error", "single"],
     "brace-style": ["error", "stroustrup", { "allowSingleLine": true }],
     "one-var": ["error", { "var": "never" }],
     "camelcase": "error",
