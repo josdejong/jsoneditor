@@ -12,6 +12,7 @@
     "no-trailing-spaces": 1,
     //"max-len": ["error", 80]
     "quotes": [1, "single"],
-    "brace-style": ["error", "stroustrup", { "allowSingleLine": true }]
+    "brace-style": ["error", "stroustrup", { "allowSingleLine": true }],
+    "one-var": ["error", { "var": "never" }]
   }
 }

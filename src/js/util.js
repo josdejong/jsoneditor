@@ -357,7 +357,8 @@ exports.stripFormatting = function stripFormatting(divElement) {
  * @param {Element} contentEditableElement   A content editable div
  */
 exports.setEndOfContentEditable = function setEndOfContentEditable(contentEditableElement) {
-  var range, selection;
+  var range;
+  var selection;
   if(document.createRange) {
     range = document.createRange();//Create a range (a range is a like the selection but invisible)
     range.selectNodeContents(contentEditableElement);//Select the entire contents of the element with the range
@@ -378,7 +379,8 @@ exports.selectContentEditable = function selectContentEditable(contentEditableEl
     return;
   }
 
-  var sel, range;
+  var sel;
+  var range;
   if (window.getSelection && document.createRange) {
     range = document.createRange();
     range.selectNodeContents(contentEditableElement);
@@ -639,7 +641,8 @@ exports.removeEventListener = function removeEventListener(element, action, list
  * @return {Array}
  */
 exports.parsePath = function parsePath(jsonPath) {
-  var prop, remainder;
+  var prop;
+  var remainder;
 
   if (jsonPath.length === 0) {
     return [];
@@ -738,7 +741,8 @@ exports.insideRect = function (parent, child, margin) {
 exports.debounce = function debounce(func, wait, immediate) {
   var timeout;
   return function() {
-    var context = this, args = arguments;
+    var context = this;
+    var args = arguments;
     var later = function() {
       timeout = null;
       if (!immediate) func.apply(context, args);

@@ -261,7 +261,8 @@ Node.prototype.getField = function() {
  *                         'array', 'object', or 'string'
  */
 Node.prototype.setValue = function(value, type) {
-  var childValue, child;
+  var childValue;
+  var child;
 
   // first clear all current childs (if any)
   var childs = this.childs;
@@ -1588,9 +1589,20 @@ Node.onDrag = function (nodes, event) {
   var editor = nodes[0].editor;
   var mouseY = event.pageY - editor.drag.offsetY;
   var mouseX = event.pageX;
-  var trThis, trPrev, trNext, trFirst, trLast, trRoot;
-  var nodePrev, nodeNext;
-  var topThis, topPrev, topFirst, heightThis, bottomNext, heightNext;
+  var trThis;
+  var trPrev;
+  var trNext;
+  var trFirst;
+  var trLast;
+  var trRoot;
+  var nodePrev;
+  var nodeNext;
+  var topThis;
+  var topPrev;
+  var topFirst;
+  var heightThis;
+  var bottomNext;
+  var heightNext;
   var moved = false;
 
   // TODO: add an ESC option, which resets to the original position
@@ -2204,11 +2216,11 @@ Node.prototype._createDomTree = function () {
  * @param {Event} event
  */
 Node.prototype.onEvent = function (event) {
-  var type = event.type,
-      target = event.target || event.srcElement,
-      dom = this.dom,
-      node = this,
-      expandable = this._hasChilds();
+  var type = event.type;
+  var target = event.target || event.srcElement;
+  var dom = this.dom;
+  var node = this;
+  var expandable = this._hasChilds();
 
   // check if mouse is on menu or on dragarea.
   // If so, highlight current row and its childs
@@ -2393,7 +2405,10 @@ Node.prototype.onKeyDown = function (event) {
   var shiftKey = event.shiftKey;
   var altKey = event.altKey;
   var handled = false;
-  var prevNode, nextNode, nextDom, nextDom2;
+  var prevNode;
+  var nextNode;
+  var nextDom;
+  var nextDom2;
   var editable = this.editor.options.mode === 'tree';
   var oldSelection;
   var oldBeforeNode;
@@ -3420,9 +3435,9 @@ Node.prototype._getType = function(value) {
  * @private
  */
 Node.prototype._stringCast = function(str) {
-  var lower = str.toLowerCase(),
-      num = Number(str),          // will nicely fail with '123ab'
-      numFloat = parseFloat(str); // will nicely fail with '  '
+  var lower = str.toLowerCase();
+  var num = Number(str);          // will nicely fail with '123ab'
+  var numFloat = parseFloat(str); // will nicely fail with '  '
 
   if (str == '') {
     return '';
