@@ -344,7 +344,8 @@ JSONEditor.prototype.refresh = function () {
  * @param {Object | Array} mode  A mode object or an array with multiple mode objects.
  */
 JSONEditor.registerMode = function (mode) {
-  var i, prop;
+  var i;
+  var prop;
 
   if (util.isArray(mode)) {
     // multiple modes

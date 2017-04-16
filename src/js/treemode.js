@@ -410,10 +410,10 @@ treemode.validate = function () {
             return {
               node: root.findNode(error.dataPath),
               error: error
-            }
+            };
           })
           .filter(function hasNode (entry) {
-            return entry.node != null
+            return entry.node != null;
           });
     }
   }
@@ -1022,7 +1022,7 @@ treemode._findTopLevelNodes = function (start, end) {
       // startChild is a parent of endChild or vice versa
       startChild = root;
       endChild = root;
-      root = root.parent
+      root = root.parent;
     }
     else {
       // we have selected the root node (which doesn't have a parent)
@@ -1126,11 +1126,11 @@ treemode._createTable = function () {
   this.colgroupContent = document.createElement('colgroup');
   if (this.options.mode === 'tree') {
     col = document.createElement('col');
-    col.width = "24px";
+    col.width = '24px';
     this.colgroupContent.appendChild(col);
   }
   col = document.createElement('col');
-  col.width = "24px";
+  col.width = '24px';
   this.colgroupContent.appendChild(col);
   col = document.createElement('col');
   this.colgroupContent.appendChild(col);

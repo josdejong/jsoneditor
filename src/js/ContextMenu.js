@@ -339,7 +339,10 @@ ContextMenu.prototype._onKeyDown = function (event) {
   var target = event.target;
   var keynum = event.which;
   var handled = false;
-  var buttons, targetIndex, prevButton, nextButton;
+  var buttons;
+  var targetIndex;
+  var prevButton;
+  var nextButton;
 
   if (keynum == 27) { // ESC
     // hide the menu on ESC key

@@ -169,7 +169,7 @@ exports.escapeUnicodeChars = function (text) {
   // as JSON doesn't interpret them as a single unicode char.
   return text.replace(/[\u007F-\uFFFF]/g, function(c) {
     return '\\u'+('0000' + c.charCodeAt(0).toString(16)).slice(-4);
-  })
+  });
 };
 
 /**
@@ -357,7 +357,8 @@ exports.stripFormatting = function stripFormatting(divElement) {
  * @param {Element} contentEditableElement   A content editable div
  */
 exports.setEndOfContentEditable = function setEndOfContentEditable(contentEditableElement) {
-  var range, selection;
+  var range;
+  var selection;
   if(document.createRange) {
     range = document.createRange();//Create a range (a range is a like the selection but invisible)
     range.selectNodeContents(contentEditableElement);//Select the entire contents of the element with the range
@@ -378,7 +379,8 @@ exports.selectContentEditable = function selectContentEditable(contentEditableEl
     return;
   }
 
-  var sel, range;
+  var sel;
+  var range;
   if (window.getSelection && document.createRange) {
     range = document.createRange();
     range.selectNodeContents(contentEditableElement);
@@ -479,13 +481,13 @@ exports.getInnerText = function getInnerText(element, buffer) {
   var first = (buffer == undefined);
   if (first) {
     buffer = {
-      'text': '',
-      'flush': function () {
+      text: '',
+      flush: function () {
         var text = this.text;
         this.text = '';
         return text;
       },
-      'set': function (text) {
+      set: function (text) {
         this.text = text;
       }
     };
@@ -549,10 +551,9 @@ exports.getInnerText = function getInnerText(element, buffer) {
 exports.getInternetExplorerVersion = function getInternetExplorerVersion() {
   if (_ieVersion == -1) {
     var rv = -1; // Return value assumes failure.
-    if (navigator.appName == 'Microsoft Internet Explorer')
-    {
+    if (navigator.appName == 'Microsoft Internet Explorer') {
       var ua = navigator.userAgent;
-      var re  = new RegExp("MSIE ([0-9]{1,}[\.0-9]{0,})");
+      var re  = new RegExp('MSIE ([0-9]{1,}[\.0-9]{0,})');
       if (re.exec(ua) != null) {
         rv = parseFloat( RegExp.$1 );
       }
@@ -569,7 +570,7 @@ exports.getInternetExplorerVersion = function getInternetExplorerVersion() {
  * @returns {boolean} isFirefox
  */
 exports.isFirefox = function isFirefox () {
-  return (navigator.userAgent.indexOf("Firefox") != -1);
+  return (navigator.userAgent.indexOf('Firefox') != -1);
 };
 
 /**
@@ -593,18 +594,19 @@ exports.addEventListener = function addEventListener(element, action, listener, 
     if (useCapture === undefined)
       useCapture = false;
 
-    if (action === "mousewheel" && exports.isFirefox()) {
-      action = "DOMMouseScroll";  // For Firefox
+    if (action === 'mousewheel' && exports.isFirefox()) {
+      action = 'DOMMouseScroll';  // For Firefox
     }
 
     element.addEventListener(action, listener, useCapture);
     return listener;
-  } else if (element.attachEvent) {
+  }
+  else if (element.attachEvent) {
     // Old IE browsers
     var f = function () {
       return listener.call(element, window.event);
     };
-    element.attachEvent("on" + action, f);
+    element.attachEvent('on' + action, f);
     return f;
   }
 };
@@ -621,14 +623,15 @@ exports.removeEventListener = function removeEventListener(element, action, list
     if (useCapture === undefined)
       useCapture = false;
 
-    if (action === "mousewheel" && exports.isFirefox()) {
-      action = "DOMMouseScroll";  // For Firefox
+    if (action === 'mousewheel' && exports.isFirefox()) {
+      action = 'DOMMouseScroll';  // For Firefox
     }
 
     element.removeEventListener(action, listener, useCapture);
-  } else if (element.detachEvent) {
+  }
+  else if (element.detachEvent) {
     // Old IE browsers
-    element.detachEvent("on" + action, listener);
+    element.detachEvent('on' + action, listener);
   }
 };
 
@@ -638,7 +641,8 @@ exports.removeEventListener = function removeEventListener(element, action, list
  * @return {Array}
  */
 exports.parsePath = function parsePath(jsonPath) {
-  var prop, remainder;
+  var prop;
+  var remainder;
 
   if (jsonPath.length === 0) {
     return [];
@@ -674,7 +678,7 @@ exports.parsePath = function parsePath(jsonPath) {
     throw new SyntaxError('Failed to parse path');
   }
 
-  return [prop].concat(parsePath(remainder))
+  return [prop].concat(parsePath(remainder));
 };
 
 /**
@@ -737,7 +741,8 @@ exports.insideRect = function (parent, child, margin) {
 exports.debounce = function debounce(func, wait, immediate) {
   var timeout;
   return function() {
-    var context = this, args = arguments;
+    var context = this;
+    var args = arguments;
     var later = function() {
       timeout = null;
       if (!immediate) func.apply(context, args);

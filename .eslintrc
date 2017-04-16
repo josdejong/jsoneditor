@@ -1,0 +1,25 @@
+{
+  "env": {
+    "browser": true
+  },
+  "plugins": [],
+  "rules": {
+    "strict": 0,
+    "indent": ["error", 2, { "SwitchCase": 1, "VariableDeclarator": 2 }],
+    "semi": ["error", "always"],
+    "semi-spacing": ["error", {"before": false, "after": true}],
+    "no-extra-semi": 2,
+    "no-trailing-spaces": 1,
+    //"max-len": ["error", 80]
+    "quotes": ["error", "single"],
+    "brace-style": ["error", "stroustrup", { "allowSingleLine": true }],
+    "one-var": ["error", { "var": "never" }],
+    "camelcase": "error",
+    "new-cap": ["error", { "capIsNewExceptions": ["Ajv"] }],
+    "quote-props": ["error", "as-needed"],
+    "comma-style": ["error", "last"],
+    //"eqeqeq": "error",
+    "no-extend-native": "error"
+    //"max-statements": ["error", 10]
+  }
+}

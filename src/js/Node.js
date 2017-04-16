@@ -261,7 +261,8 @@ Node.prototype.getField = function() {
  *                         'array', 'object', or 'string'
  */
 Node.prototype.setValue = function(value, type) {
-  var childValue, child;
+  var childValue;
+  var child;
 
   // first clear all current childs (if any)
   var childs = this.childs;
@@ -566,8 +567,8 @@ Node.prototype.appendChild = function(node) {
       node.showChilds();
     }
 
-    this.updateDom({'updateIndexes': true});
-    node.updateDom({'recurse': true});
+    this.updateDom({updateIndexes: true});
+    node.updateDom({recurse: true});
   }
 };
 
@@ -668,8 +669,8 @@ Node.prototype.insertBefore = function(node, beforeNode) {
       node.showChilds();
     }
 
-    this.updateDom({'updateIndexes': true});
-    node.updateDom({'recurse': true});
+    this.updateDom({updateIndexes: true});
+    node.updateDom({recurse: true});
   }
 };
 
@@ -715,8 +716,8 @@ Node.prototype.search = function(text) {
     if (index != -1) {
       this.searchField = true;
       results.push({
-        'node': this,
-        'elem': 'field'
+        node: this,
+        elem: 'field'
       });
     }
 
@@ -756,8 +757,8 @@ Node.prototype.search = function(text) {
       if (index != -1) {
         this.searchValue = true;
         results.push({
-          'node': this,
-          'elem': 'value'
+          node: this,
+          elem: 'value'
         });
       }
     }
@@ -985,7 +986,7 @@ Node.prototype.removeChild = function(node) {
       var removedNode = this.childs.splice(index, 1)[0];
       removedNode.parent = null;
 
-      this.updateDom({'updateIndexes': true});
+      this.updateDom({updateIndexes: true});
 
       return removedNode;
     }
@@ -1103,7 +1104,7 @@ Node.prototype.changeType = function (newType) {
     this.focus();
   }
 
-  this.updateDom({'updateIndexes': true});
+  this.updateDom({updateIndexes: true});
 };
 
 /**
@@ -1282,7 +1283,7 @@ Node.prototype._updateDomValue = function () {
       // create select box when this node has an enum object
       if (!this.dom.select) {
         this.dom.select = document.createElement('select');
-        this.id = this.field + "_" + new Date().getUTCMilliseconds();
+        this.id = this.field + '_' + new Date().getUTCMilliseconds();
         this.dom.select.id = this.id;
         this.dom.select.name = this.dom.select.id;
 
@@ -1312,14 +1313,15 @@ Node.prototype._updateDomValue = function () {
       // If the enum is inside a composite type display
       // both the simple input and the dropdown field
       if(this.schema && (
-          !this.schema.hasOwnProperty("oneOf") &&
-          !this.schema.hasOwnProperty("anyOf") &&
-          !this.schema.hasOwnProperty("allOf"))
+          !this.schema.hasOwnProperty('oneOf') &&
+          !this.schema.hasOwnProperty('anyOf') &&
+          !this.schema.hasOwnProperty('allOf'))
       ) {
         this.valueFieldHTML = this.dom.tdValue.innerHTML;
         this.dom.tdValue.style.visibility = 'hidden';
         this.dom.tdValue.innerHTML = '';
-      } else {
+      }
+      else {
         delete this.valueFieldHTML;
       }
     }
@@ -1438,7 +1440,7 @@ Node.prototype.validate = function () {
               error: {
                 message: 'duplicate key "' + node.field + '"'
               }
-            }
+            };
           });
     }
   }
@@ -1516,7 +1518,7 @@ Node.prototype.getDom = function() {
   dom.tree = this._createDomTree();
   tdField.appendChild(dom.tree);
 
-  this.updateDom({'updateIndexes': true});
+  this.updateDom({updateIndexes: true});
 
   return dom.tr;
 };
@@ -1587,9 +1589,20 @@ Node.onDrag = function (nodes, event) {
   var editor = nodes[0].editor;
   var mouseY = event.pageY - editor.drag.offsetY;
   var mouseX = event.pageX;
-  var trThis, trPrev, trNext, trFirst, trLast, trRoot;
-  var nodePrev, nodeNext;
-  var topThis, topPrev, topFirst, heightThis, bottomNext, heightNext;
+  var trThis;
+  var trPrev;
+  var trNext;
+  var trFirst;
+  var trLast;
+  var trRoot;
+  var nodePrev;
+  var nodeNext;
+  var topThis;
+  var topPrev;
+  var topFirst;
+  var heightThis;
+  var bottomNext;
+  var heightNext;
   var moved = false;
 
   // TODO: add an ESC option, which resets to the original position
@@ -2022,13 +2035,13 @@ Node._findEnum = function (schema) {
 
   var composite = schema.oneOf || schema.anyOf || schema.allOf;
   if (composite) {
-    var match = composite.filter(function (entry) {return entry.enum});
+    var match = composite.filter(function (entry) {return entry.enum;});
     if (match.length > 0) {
       return match[0].enum;
     }
   }
 
-  return null
+  return null;
 };
 
 /**
@@ -2044,14 +2057,14 @@ Node._findSchema = function (schema, path) {
   for (var i = 0; i < path.length && childSchema; i++) {
     var key = path[i];
     if (typeof key === 'string' && childSchema.properties) {
-      childSchema = childSchema.properties[key] || null
+      childSchema = childSchema.properties[key] || null;
     }
     else if (typeof key === 'number' && childSchema.items) {
-      childSchema = childSchema.items
+      childSchema = childSchema.items;
     }
   }
 
-  return childSchema
+  return childSchema;
 };
 
 /**
@@ -2203,11 +2216,11 @@ Node.prototype._createDomTree = function () {
  * @param {Event} event
  */
 Node.prototype.onEvent = function (event) {
-  var type = event.type,
-      target = event.target || event.srcElement,
-      dom = this.dom,
-      node = this,
-      expandable = this._hasChilds();
+  var type = event.type;
+  var target = event.target || event.srcElement;
+  var dom = this.dom;
+  var node = this;
+  var expandable = this._hasChilds();
 
   // check if mouse is on menu or on dragarea.
   // If so, highlight current row and its childs
@@ -2392,7 +2405,10 @@ Node.prototype.onKeyDown = function (event) {
   var shiftKey = event.shiftKey;
   var altKey = event.altKey;
   var handled = false;
-  var prevNode, nextNode, nextDom, nextDom2;
+  var prevNode;
+  var nextNode;
+  var nextDom;
+  var nextDom2;
   var editable = this.editor.options.mode === 'tree';
   var oldSelection;
   var oldBeforeNode;
@@ -3163,14 +3179,14 @@ Node.prototype._hasChilds = function () {
 
 // titles with explanation for the different types
 Node.TYPE_TITLES = {
-  'auto': 'Field type "auto". ' +
+  auto: 'Field type "auto". ' +
       'The field type is automatically determined from the value ' +
       'and can be a string, number, boolean, or null.',
-  'object': 'Field type "object". ' +
+  object: 'Field type "object". ' +
       'An object contains an unordered set of key/value pairs.',
-  'array': 'Field type "array". ' +
+  array: 'Field type "array". ' +
       'An array contains an ordered collection of values.',
-  'string': 'Field type "string". ' +
+  string: 'Field type "string". ' +
       'Field type is not determined from the value, ' +
       'but always returned as string.'
 };
@@ -3267,7 +3283,7 @@ Node.prototype.showContextMenu = function (anchor, onClose) {
     if (items.length) {
       // create a separator
       items.push({
-        'type': 'separator'
+        type: 'separator'
       });
     }
 
@@ -3419,9 +3435,9 @@ Node.prototype._getType = function(value) {
  * @private
  */
 Node.prototype._stringCast = function(str) {
-  var lower = str.toLowerCase(),
-      num = Number(str),          // will nicely fail with '123ab'
-      numFloat = parseFloat(str); // will nicely fail with '  '
+  var lower = str.toLowerCase();
+  var num = Number(str);          // will nicely fail with '123ab'
+  var numFloat = parseFloat(str); // will nicely fail with '  '
 
   if (str == '') {
     return '';

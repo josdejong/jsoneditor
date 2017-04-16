@@ -16,62 +16,62 @@ function History (editor) {
 
   // map with all supported actions
   this.actions = {
-    'editField': {
-      'undo': function (params) {
+    editField: {
+      undo: function (params) {
         params.node.updateField(params.oldValue);
       },
-      'redo': function (params) {
+      redo: function (params) {
         params.node.updateField(params.newValue);
       }
     },
-    'editValue': {
-      'undo': function (params) {
+    editValue: {
+      undo: function (params) {
         params.node.updateValue(params.oldValue);
       },
-      'redo': function (params) {
+      redo: function (params) {
         params.node.updateValue(params.newValue);
       }
     },
-    'changeType': {
-      'undo': function (params) {
+    changeType: {
+      undo: function (params) {
         params.node.changeType(params.oldType);
       },
-      'redo': function (params) {
+      redo: function (params) {
         params.node.changeType(params.newType);
       }
     },
 
-    'appendNodes': {
-      'undo': function (params) {
+    appendNodes: {
+      undo: function (params) {
         params.nodes.forEach(function (node) {
           params.parent.removeChild(node);
         });
       },
-      'redo': function (params) {
+      redo: function (params) {
         params.nodes.forEach(function (node) {
           params.parent.appendChild(node);
         });
       }
     },
-    'insertBeforeNodes': {
-      'undo': function (params) {
+    insertBeforeNodes: {
+      undo: function (params) {
         params.nodes.forEach(function (node) {
           params.parent.removeChild(node);
         });
       },
-      'redo': function (params) {
+      redo: function (params) {
         params.nodes.forEach(function (node) {
           params.parent.insertBefore(node, params.beforeNode);
         });
       }
     },
-    'insertAfterNodes': {
-      'undo': function (params) {
+    insertAfterNodes: {
+      undo: function (params) {
         params.nodes.forEach(function (node) {
           params.parent.removeChild(node);
         });
       },
-      'redo': function (params) {
+      redo: function (params) {
         var afterNode = params.afterNode;
         params.nodes.forEach(function (node) {
           params.parent.insertAfter(params.node, afterNode);
@@ -79,27 +79,27 @@ function History (editor) {
         });
       }
     },
-    'removeNodes': {
-      'undo': function (params) {
+    removeNodes: {
+      undo: function (params) {
         var parent = params.parent;
         var beforeNode = parent.childs[params.index] || parent.append;
         params.nodes.forEach(function (node) {
           parent.insertBefore(node, beforeNode);
         });
       },
-      'redo': function (params) {
+      redo: function (params) {
         params.nodes.forEach(function (node) {
           params.parent.removeChild(node);
         });
       }
     },
-    'duplicateNodes': {
-      'undo': function (params) {
+    duplicateNodes: {
+      undo: function (params) {
         params.nodes.forEach(function (node) {
           params.parent.removeChild(node);
         });
       },
-      'redo': function (params) {
+      redo: function (params) {
         var afterNode = params.afterNode;
         params.nodes.forEach(function (node) {
           params.parent.insertAfter(node, afterNode);
@@ -107,28 +107,28 @@ function History (editor) {
         });
       }
     },
-    'moveNodes': {
-      'undo': function (params) {
+    moveNodes: {
+      undo: function (params) {
         params.nodes.forEach(function (node) {
           params.oldBeforeNode.parent.moveBefore(node, params.oldBeforeNode);
         });
       },
-      'redo': function (params) {
+      redo: function (params) {
         params.nodes.forEach(function (node) {
           params.newBeforeNode.parent.moveBefore(node, params.newBeforeNode);
         });
       }
     },
 
-    'sort': {
-      'undo': function (params) {
+    sort: {
+      undo: function (params) {
         var node = params.node;
         node.hideChilds();
         node.sort = params.oldSort;
         node.childs = params.oldChilds;
         node.showChilds();
       },
-      'redo': function (params) {
+      redo: function (params) {
         var node = params.node;
         node.hideChilds();
         node.sort = params.newSort;
@@ -162,9 +162,9 @@ History.prototype.onChange = function () {};
 History.prototype.add = function (action, params) {
   this.index++;
   this.history[this.index] = {
-    'action': action,
-    'params': params,
-    'timestamp': new Date()
+    action: action,
+    params: params,
+    timestamp: new Date()
   };
 
   // remove redo actions which are invalid now
