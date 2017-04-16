@@ -4,6 +4,7 @@
   },
   "plugins": [],
   "rules": {
-    "strict": 0
+    "strict": 0,
+    "indent": ["error", 2, { "SwitchCase": 1, "VariableDeclarator": 2 }]
   }
 }
