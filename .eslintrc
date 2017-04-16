@@ -16,6 +16,7 @@
     "one-var": ["error", { "var": "never" }],
     "camelcase": "error",
     "new-cap": ["error", { "capIsNewExceptions": ["Ajv"] }],
-    "quote-props": ["error", "as-needed"]
+    "quote-props": ["error", "as-needed"],
+    "comma-style": ["error", "last"]
   }
 }
