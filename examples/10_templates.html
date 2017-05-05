@@ -1,0 +1,59 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <title>JSONEditor | JSON schema validation</title>
+
+  <link href="../dist/jsoneditor.css" rel="stylesheet" type="text/css">
+  <script src="../dist/jsoneditor.js"></script>
+
+  <style type="text/css">
+    body {
+      width: 600px;
+      font: 11pt sans-serif;
+    }
+    #jsoneditor {
+      width: 100%;
+      height: 500px;
+    }
+
+  </style>
+</head>
+<body>
+<h1>JSON schema validation</h1>
+<p>
+  This example demonstrates JSON schema validation. The JSON object in this example must contain properties <code>firstName</code> and <code>lastName</code>, can can optionally have a property <code>age</code> which must be a positive integer.
+</p>
+<p>
+  See <a href="http://json-schema.org/" target="_blank">http://json-schema.org/</a> for more information.
+</p>
+
+<div id="jsoneditor"></div>
+
+<script>
+
+  var json = {
+    firstName: 'John',
+    lastName: 'Doe',
+    gender: null,
+    age: 28
+  };
+
+  var options = {
+      templates: [
+          {
+              "menu": "Special Node",
+              "name": "SpecialNode",
+              "data": {
+                  "field1": "value1",
+                  "field2": "value2"
+              }
+          }
+      ]
+  };
+
+  // create the editor
+  var container = document.getElementById('jsoneditor');
+  var editor = new JSONEditor(container, options, json);
+</script>
+</body>
+</html>
