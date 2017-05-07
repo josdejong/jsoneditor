@@ -1,7 +1,7 @@
 <!DOCTYPE HTML>
 <html>
 <head>
-  <title>JSONEditor | JSON schema validation</title>
+  <title>JSONEditor | Item templates</title>
 
   <link href="../dist/jsoneditor.css" rel="stylesheet" type="text/css">
   <script src="../dist/jsoneditor.js"></script>
@@ -19,33 +19,42 @@
   </style>
 </head>
 <body>
-<h1>JSON schema validation</h1>
+<h1>Item templates</h1>
 <p>
-  This example demonstrates JSON schema validation. The JSON object in this example must contain properties <code>firstName</code> and <code>lastName</code>, can can optionally have a property <code>age</code> which must be a positive integer.
-</p>
-<p>
-  See <a href="http://json-schema.org/" target="_blank">http://json-schema.org/</a> for more information.
+  Using item templates, the options in the context menu under "insert" and "append" can be extended with extra options, containing a domain specific template like a "Person", "Contact", "Order", "Address", etc.
 </p>
 
 <div id="jsoneditor"></div>
 
 <script>
 
-  var json = {
-    firstName: 'John',
-    lastName: 'Doe',
-    gender: null,
-    age: 28
-  };
+  var json = [
+    {
+      firstName: 'John',
+      lastName: 'Doe',
+      age: 28
+    }
+  ];
 
   var options = {
       templates: [
           {
-              "menu": "Special Node",
-              "name": "SpecialNode",
-              "data": {
-                  "field1": "value1",
-                  "field2": "value2"
+              menu: 'Person',
+              name: 'PersonTemplate',
+              data: {
+                  'firstName': 'John',
+                  'lastName': 'Do',
+                  'age': 28
+              }
+          },
+          {
+              menu: 'Address',
+              name: 'AddressTemplate',
+              data: {
+                  'street': "",
+                  'city': "",
+                  'state': "",
+                  'ZIP code': ""
               }
           }
       ]
@@ -54,6 +63,7 @@
   // create the editor
   var container = document.getElementById('jsoneditor');
   var editor = new JSONEditor(container, options, json);
+  editor.expandAll();
 </script>
 </body>
 </html>
