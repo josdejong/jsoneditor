@@ -8,6 +8,7 @@ var ContextMenu = require('./ContextMenu');
 var Node = require('./Node');
 var ModeSwitcher = require('./ModeSwitcher');
 var util = require('./util');
+var Autocomplete = require('./autocomplete');
 
 // create a mixin with the functions for tree mode
 var treemode = {};
@@ -107,7 +108,8 @@ treemode._setOptions = function (options) {
     history: true,
     mode: 'tree',
     name: undefined,   // field name of root node
-    schema: null
+    schema: null,
+    autocomplete: null
   };
 
   // copy all options
@@ -1051,7 +1053,9 @@ treemode._findTopLevelNodes = function (start, end) {
  */
 treemode._onKeyDown = function (event) {
   var keynum = event.which || event.keyCode;
+  var altKey = event.altKey;
   var ctrlKey = event.ctrlKey;
+  var metaKey = event.metaKey;
   var shiftKey = event.shiftKey;
   var handled = false;
 
@@ -1095,6 +1099,24 @@ treemode._onKeyDown = function (event) {
       this._onRedo();
       handled = true;
     }
+  }
+
+  if ((this.options.autocomplete) && (!handled)) {
+      if (!ctrlKey && !altKey && !metaKey) {
+          handled = false;
+          if (event.target.className.indexOf("jsoneditor-field") < 0) {
+              var node = Node.getNodeFromTarget(event.target);
+              //if (event.target.innerText.startsWith('*')) {
+                  setTimeout(function (hnode, element) {
+                      if (element.innerText.length > 0)
+                          this.options.autocomplete.GetOptions(hnode, element, keynum);
+                      else
+                          this.options.autocomplete.Hide();
+
+                  }.bind(this, node, event.target), 100);
+              //}
+          }
+      } 
   }
 
   if (handled) {

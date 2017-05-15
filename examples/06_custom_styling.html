@@ -3,8 +3,12 @@
 <head>
   <title>JSONEditor | Custom styling</title>
 
+
   <link href="../dist/jsoneditor.css" rel="stylesheet" type="text/css">
+  <!--<link href="css/horsey.css" rel="stylesheet" type="text/css">-->
   <script src="../dist/jsoneditor.js"></script>
+  <!--<script src="horsey.js"></script>-->
+  <script src="../src/js/autocomplete.js"></script>
 
   <style type="text/css">
     #jsoneditor {
@@ -33,9 +37,70 @@
 
 <script>
   // create the editor
-  var container = document.getElementById('jsoneditor');
+    var container = document.getElementById('jsoneditor');
+    var pv = completely({
+        fontSize: '10pt',
+        fontFamily: 'droid sans mono, consolas, monospace, courier new, courier, sans-serif'
+    });
   var options = {
-    modes: ['text', 'tree']
+      modes: ['text', 'tree'],
+      autocomplete: {
+          trigerOn: ['*'],
+          GetOptions: function (node, element, key) {
+              var YaskON = {
+                  stringify: function (o, prefix) {
+                      prefix = prefix || '';
+                      switch (typeof o) {
+                          case 'object':
+                              var output = "";
+                              if (Array.isArray(o)) {
+                                  o.forEach(function (e, index) {
+                                      output += prefix + '[' + index + ']' + '\n';
+                                      if (typeof e == 'object') output += this.stringify(e, prefix + '[' + index + ']');                                      
+                                  }.bind(this));
+                                  return output;
+                              }
+                              output = "";
+                              for (var k in o) {
+                                  if (o.hasOwnProperty(k)) {
+                                      if (prefix == "") output += this.stringify(o[k], k);
+                                      //else output += this.stringify(o[k], prefix + '.' + k);
+                                  }
+                              }
+                              if (prefix != "") output += prefix + '\n'
+                              return output;
+                          case 'function':
+                              return "";
+                          default:
+                              return prefix + '\n';
+                      }
+                  }
+              };
+              var data = {};
+              pv.startFrom = 0;
+              var text = element.innerText;//.substring(1);
+              var lastPoint = text.lastIndexOf('.');
+              if ((lastPoint > 0) && (text.length > 1)) {
+                  var fnode = node.editor.node.findNode('.' + text.substring(0, lastPoint));
+                  if (fnode && typeof fnode.getValue() == 'object') {
+                      data = fnode.getValue();
+                      pv.startFrom = text.lastIndexOf('.') + 1;
+                  } 
+              }
+              else
+                  data = node.editor.get();
+
+              var optionsStr = YaskON.stringify(data);
+              var options = optionsStr.split("\n");
+              if (options.length > 0)
+                pv.Show(element, options);
+
+              return options;
+          },
+          Hide: function () {
+              pv.hideDropDown();
+          }
+      }
   };
   var json = {
     'array': [1, 2, 3],
