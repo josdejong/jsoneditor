@@ -25,7 +25,7 @@
  *
  * @author  Jos de Jong, <wjosdejong@gmail.com>
  * @version 5.6.0
- * @date    2017-04-15
+ * @date    2017-05-16
  */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
@@ -164,7 +164,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    // validate options
 	    if (options) {
 	      var VALID_OPTIONS = [
-	        'ace', 'theme',
+	        'ace', 'theme','autocomplete',
 	        'ajv', 'schema',
 	        'onChange', 'onEditable', 'onError', 'onModeChange',
 	        'escapeUnicode', 'history', 'search', 'mode', 'modes', 'name', 'indentation', 'sortObjectKeys'
@@ -8514,6 +8514,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	var ModeSwitcher = __webpack_require__(12);
 	var util = __webpack_require__(5);
 
+
 	// create a mixin with the functions for tree mode
 	var treemode = {};
 
@@ -8612,7 +8613,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	    history: true,
 	    mode: 'tree',
 	    name: undefined,   // field name of root node
-	    schema: null
+	    schema: null,
+	    autocomplete: null
 	  };
 
 	  // copy all options
@@ -9556,7 +9558,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	 */
 	treemode._onKeyDown = function (event) {
 	  var keynum = event.which || event.keyCode;
+	  var altKey = event.altKey;
 	  var ctrlKey = event.ctrlKey;
+	  var metaKey = event.metaKey;
 	  var shiftKey = event.shiftKey;
 	  var handled = false;
 
@@ -9600,6 +9604,25 @@ return /******/ (function(modules) { // webpackBootstrap
 	      this._onRedo();
 	      handled = true;
 	    }
+	  }
+
+	  if ((this.options.autocomplete) && (!handled)) {
+	      if (!ctrlKey && !altKey && !metaKey && (event.key.length == 1 || keynum == 8 || keynum == 46)) {
+	          handled = false;
+	          if ((this.options.autocomplete.ApplyTo.indexOf('values') >= 0 && event.target.className.indexOf("jsoneditor-value") >= 0) || 
+	              (this.options.autocomplete.ApplyTo.indexOf('name') >= 0 && event.target.className.indexOf("jsoneditor-field") >= 0)) {
+	              var node = Node.getNodeFromTarget(event.target);
+	              if (this.options.autocomplete.ActivationChar == null || event.target.innerText.startsWith(this.options.autocomplete.ActivationChar)) { // Activate autocomplete
+	                  setTimeout(function (hnode, element) {
+	                      if (element.innerText.length > 0)
+	                          this.options.autocomplete.Show(hnode, element);
+	                      else
+	                          this.options.autocomplete.Hide();
+
+	                  }.bind(this, node, event.target), 100);
+	              }
+	          }
+	      } 
 	  }
 
 	  if (handled) {

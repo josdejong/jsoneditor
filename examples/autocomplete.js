@@ -1,6 +1,6 @@
 ﻿'use strict';
 
-function completely(config) {
+function autocomplete(config) {
     config = config || {};
     config.fontSize = config.fontSize || '16px';
     config.fontFamily = config.fontFamily || 'sans-serif';
@@ -167,11 +167,10 @@ function completely(config) {
     }
 
     var rs = {
-        onArrowDown: function () { },               // defaults to no action.
-        onArrowUp: function () { },               // defaults to no action.
-        onEnter: function () { },               // defaults to no action.
-        onTab: function () { },               // defaults to no action.
-        onChange: function () { }, // defaults to repainting.
+        onArrowDown: function () { }, // defaults to no action.
+        onArrowUp: function () { },   // defaults to no action.
+        onEnter: function () { },     // defaults to no action.
+        onTab: function () { },       // defaults to no action.
         startFrom: 0,
         options: [],
         element: null,
@@ -213,11 +212,6 @@ function completely(config) {
             this.elementHint.style.color = config.hintColor;
             this.elementHint.onfocus = function () { this.element.focus(); }.bind(this);
 
-            /*
-            registerOnTextChange(this.element, function (text) { // note the function needs to be wrapped as API-users will define their onChange
-                rs.onChange(text);
-            });*/
-
             if (this.element.addEventListener) {
                 this.element.removeEventListener("keydown", keyDownHandler);
                 this.element.addEventListener("keydown", keyDownHandler, false);
@@ -243,12 +237,13 @@ function completely(config) {
             if (this.elementHint) {
                 this.elementHint.remove();
                 this.elementHint = null;
+                dropDownController.hide();
+                this.element.style.zIndex = this.elementStyle.zIndex;
+                this.element.style.position = this.elementStyle.position;
+                this.element.style.backgroundColor = this.elementStyle.backgroundColor;
+                this.element.style.borderColor = this.elementStyle.borderColor;
             }
-            dropDownController.hide();            
-            this.element.style.zIndex = this.elementStyle.zIndex;
-            this.element.style.position = this.elementStyle.position;
-            this.element.style.backgroundColor = this.elementStyle.backgroundColor;
-            this.element.style.borderColor = this.elementStyle.borderColor;
+            
         },
         repaint: function (element) {
             var text = element.innerText;
@@ -270,7 +265,6 @@ function completely(config) {
                     break;
                 }
             }
-
             // moving the dropDown and refreshing it.
             dropDown.style.left = calculateWidthForText(leftSide) + 'px';
             dropDownController.refresh(token, this.options);
@@ -284,7 +278,7 @@ function completely(config) {
     var dropDownController = createDropDownController(dropDown, rs);
 
     var keyDownHandler = function (e) {
-        console.log("Keydown:" + e.keyCode);
+        //console.log("Keydown:" + e.keyCode);
         e = e || window.event;
         var keyCode = e.keyCode;
 
@@ -294,34 +288,30 @@ function completely(config) {
         if (keyCode == 34) { return; } // page down (do nothing);
 
         if (keyCode == 27) { //escape
-            dropDownController.hide();
-            this.elementHint.innerText = this.element.innerText; // ensure that no hint is left.
-            this.element.focus();
+            rs.hideDropDown();
+            rs.element.focus();
+            e.preventDefault();
+            e.stopPropagation();
             return;
         }
 
-        if (keyCode == 39 || keyCode == 35 || keyCode == 9) { // right,  end, tab  (autocomplete triggered)
-            if (keyCode == 9) { // for tabs we need to ensure that we override the default behaviour: move to the next focusable HTML-element 
-                e.preventDefault();
-                e.stopPropagation();
+        if (keyCode == 39 || keyCode == 35 || keyCode == 9 || keyCode == 190) { // right,  end, tab, '.'  (autocomplete triggered)
+            if (keyCode == 9) {                 
                 if (this.elementHint.innerText.length == 0) {
-                    rs.onTab(); // tab was called with no action.
-                    // users might want to re-enable its default behaviour or handle the call somehow.
+                    rs.onTab(); 
                 }
             }
-            if (this.elementHint.innerText.length > 0) { // if there is a hint
-                dropDownController.hide();
+            if (this.elementHint.innerText.length > 0) { // if there is a hint               
                 if (this.element.innerText != this.elementHint.innerText) {
                     this.element.innerText = this.elementHint.innerText;
+                    rs.hideDropDown();
                     setEndOfContenteditable(this.element);
-                    var hasTextChanged = registerOnTextChangeOldValue != this.element.innerText
-                    registerOnTextChangeOldValue = this.element.innerText; // <-- to avoid dropDown to appear again. 
-                    // for example imagine the array contains the following words: bee, beef, beetroot
-                    // user has hit enter to get 'bee' it would be prompted with the dropDown again (as beef and beetroot also match)
-                    if (hasTextChanged) {
-                        rs.onChange(this.element.innerText); // <-- forcing it.
+                    if (keyCode == 9) {                
+                        rs.element.focus();
+                        e.preventDefault();
+                        e.stopPropagation();
                     }
-                }
+                }                
             }
             return;
         }
@@ -334,24 +324,17 @@ function completely(config) {
                 dropDownController.hide();
 
                 if (wasDropDownHidden) {
-                    this.elementHint.innerText = this.element.innerText; // ensure that no hint is left.
-                    this.element.focus();
+                    rs.hideDropDown();
+                    rs.element.focus();
                     rs.onEnter();
                     return;
                 }
 
                 this.element.innerText = this.elementHint.innerText;
-                var hasTextChanged = registerOnTextChangeOldValue != this.element.innerText
-                registerOnTextChangeOldValue = this.element.innerText; // <-- to avoid dropDown to appear again. 
-                // for example imagine the array contains the following words: bee, beef, beetroot
-                // user has hit enter to get 'bee' it would be prompted with the dropDown again (as beef and beetroot also match)
-                if (hasTextChanged) {
-                    rs.onChange(this.element.innerText); // <-- forcing it.
-                }
+                rs.hideDropDown();
+                setEndOfContenteditable(this.element);
                 e.preventDefault();
                 e.stopPropagation();
-                setEndOfContenteditable(this.element);
-
             }
             return;
         }
@@ -378,50 +361,17 @@ function completely(config) {
 
     var onBlurHandler = function (e) {
         rs.hideDropDown();
+        //console.log("Lost focus.");
     }.bind(rs);
 
     dropDownController.onmouseselection = function (text, rs) {
-        rs.element.innerText = rs.elementHint.innerText = leftSide + text;
-        rs.hideDropDown();
+        rs.element.innerText = rs.elementHint.innerText = leftSide + text;        
+        rs.hideDropDown();   
+        window.setTimeout(function () {
+            rs.element.focus();
+            setEndOfContenteditable(rs.element);  
+        }, 1);              
     };
-
-    var registerOnTextChangeOldValue;
-
-    /**
-     * Register a callback function to detect changes to the content of the input-type-text.
-     * Those changes are typically followed by user's action: a key-stroke event but sometimes it might be a mouse click.
-    **/
-    var registerOnTextChange = function (txt, callback) {
-        registerOnTextChangeOldValue = txt.value;
-        var handler = function () {
-            var value = txt.value;
-            if (registerOnTextChangeOldValue !== value) {
-                registerOnTextChangeOldValue = value;
-                callback(value);
-            }
-        };
-
-        //  
-        // For user's actions, we listen to both input events and key up events
-        // It appears that input events are not enough so we defensively listen to key up events too.
-        // source: http://help.dottoro.com/ljhxklln.php
-        //
-        // The cost of listening to three sources should be negligible as the handler will invoke callback function
-        // only if the text.value was effectively changed. 
-        //  
-        // 
-        if (txt.addEventListener) {
-            txt.addEventListener("input", handler, false);
-            txt.addEventListener('keyup', handler, false);
-            txt.addEventListener('change', handler, false);
-        } else { // is this a fair assumption: that attachEvent will exist ?
-            txt.attachEvent('oninput', handler); // IE<9
-            txt.attachEvent('onkeyup', handler); // IE<9
-            txt.attachEvent('onchange', handler); // IE<9
-        }
-    };
-
-    
 
     return rs;
 }

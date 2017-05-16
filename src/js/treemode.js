@@ -8,7 +8,7 @@ var ContextMenu = require('./ContextMenu');
 var Node = require('./Node');
 var ModeSwitcher = require('./ModeSwitcher');
 var util = require('./util');
-var Autocomplete = require('./autocomplete');
+
 
 // create a mixin with the functions for tree mode
 var treemode = {};
@@ -1102,19 +1102,20 @@ treemode._onKeyDown = function (event) {
   }
 
   if ((this.options.autocomplete) && (!handled)) {
-      if (!ctrlKey && !altKey && !metaKey) {
+      if (!ctrlKey && !altKey && !metaKey && (event.key.length == 1 || keynum == 8 || keynum == 46)) {
           handled = false;
-          if (event.target.className.indexOf("jsoneditor-field") < 0) {
+          if ((this.options.autocomplete.ApplyTo.indexOf('values') >= 0 && event.target.className.indexOf("jsoneditor-value") >= 0) || 
+              (this.options.autocomplete.ApplyTo.indexOf('name') >= 0 && event.target.className.indexOf("jsoneditor-field") >= 0)) {
               var node = Node.getNodeFromTarget(event.target);
-              //if (event.target.innerText.startsWith('*')) {
+              if (this.options.autocomplete.ActivationChar == null || event.target.innerText.startsWith(this.options.autocomplete.ActivationChar)) { // Activate autocomplete
                   setTimeout(function (hnode, element) {
                       if (element.innerText.length > 0)
-                          this.options.autocomplete.GetOptions(hnode, element, keynum);
+                          this.options.autocomplete.Show(hnode, element);
                       else
                           this.options.autocomplete.Hide();
 
                   }.bind(this, node, event.target), 100);
-              //}
+              }
           }
       } 
   }
