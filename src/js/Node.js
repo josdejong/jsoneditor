@@ -3193,10 +3193,10 @@ Node.prototype.addTemplates = function (menu, append) {
     };
     templates.forEach(function (template) {
         menu.push({
-            text: template.text,
-            className: (template.className || 'jsoneditor-type-object'),
-            title: template.title,
-            click: (append ? appendData.bind(this, template.field, template.value) : insertData.bind(this, template.field, template.value))
+            text: template.menu,
+            className: (template.class || 'jsoneditor-type-object'),
+            title: template.menu,
+            click: (append ? appendData.bind(this, template.name, template.data) : insertData.bind(this, template.name, template.data))
         });
     });
 };
