@@ -3,6 +3,11 @@
 https://github.com/josdejong/jsoneditor
 
 
+## not yet released, version 5.7.0
+
+- Implemented support for template items. Thanks @israelito3000.
+
+
 ## 2017-04-15, version 5.6.0
 
 - Implemented readonly option for modes `text` and `code.`

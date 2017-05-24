@@ -80,7 +80,7 @@ function JSONEditor (container, options, json) {
     if (options) {
       var VALID_OPTIONS = [
         'ace', 'theme',
-        'ajv', 'schema',
+        'ajv', 'schema','templates',
         'onChange', 'onEditable', 'onError', 'onModeChange',
         'escapeUnicode', 'history', 'search', 'mode', 'modes', 'name', 'indentation', 'sortObjectKeys'
       ];
@@ -288,11 +288,11 @@ JSONEditor.prototype.setSchema = function (schema) {
     }
 
     if (ajv) {
-      this.validateSchema = ajv.compile(schema);
+        this.validateSchema = ajv.compile(schema);
 
-      // add schema to the options, so that when switching to an other mode,
-      // the set schema is not lost
-      this.options.schema = schema;
+        // add schema to the options, so that when switching to an other mode,
+        // the set schema is not lost
+        this.options.schema = schema;
 
       // validate now
       this.validate();

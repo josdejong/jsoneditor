@@ -1,0 +1,69 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <title>JSONEditor | Item templates</title>
+
+  <link href="../dist/jsoneditor.css" rel="stylesheet" type="text/css">
+  <script src="../dist/jsoneditor.js"></script>
+
+  <style type="text/css">
+    body {
+      width: 600px;
+      font: 11pt sans-serif;
+    }
+    #jsoneditor {
+      width: 100%;
+      height: 500px;
+    }
+
+  </style>
+</head>
+<body>
+<h1>Item templates</h1>
+<p>
+  Using item templates, the options in the context menu under "insert" and "append" can be extended with extra options, containing a domain specific template like a "Person", "Contact", "Order", "Address", etc.
+</p>
+
+<div id="jsoneditor"></div>
+
+<script>
+
+  var json = [
+    {
+      firstName: 'John',
+      lastName: 'Doe',
+      age: 28
+    }
+  ];
+
+  var options = {
+      templates: [
+          {
+              menu: 'Person',
+              name: 'PersonTemplate',
+              data: {
+                  'firstName': 'John',
+                  'lastName': 'Do',
+                  'age': 28
+              }
+          },
+          {
+              menu: 'Address',
+              name: 'AddressTemplate',
+              data: {
+                  'street': "",
+                  'city': "",
+                  'state': "",
+                  'ZIP code': ""
+              }
+          }
+      ]
+  };
+
+  // create the editor
+  var container = document.getElementById('jsoneditor');
+  var editor = new JSONEditor(container, options, json);
+  editor.expandAll();
+</script>
+</body>
+</html>

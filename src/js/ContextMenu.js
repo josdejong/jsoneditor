@@ -321,7 +321,11 @@ ContextMenu.prototype._onExpandItem = function (domItem) {
     var height = ul.clientHeight; // force a reflow in Firefox
     setTimeout(function () {
       if (me.expandedItem == domItem) {
-        ul.style.height = (ul.childNodes.length * 24) + 'px';
+        var childsHeight = 0;
+        for (var i = 0; i < ul.childNodes.length; i++) {
+          childsHeight += ul.childNodes[i].clientHeight;
+        }
+        ul.style.height = childsHeight + 'px';
         ul.style.padding = '5px 10px';
       }
     }, 0);
