@@ -39,18 +39,21 @@
   var options = {
       templates: [
           {
-              menu: 'Person',
-              name: 'PersonTemplate',
-              data: {
+              text: 'Person',
+              title: 'Insert a Person Node',
+              className: 'jsoneditor-type-object',
+              field: 'PersonTemplate',
+              value: {
                   'firstName': 'John',
                   'lastName': 'Do',
                   'age': 28
               }
           },
           {
-              menu: 'Address',
-              name: 'AddressTemplate',
-              data: {
+              text: 'Address',
+              title: 'Insert a Address Node',
+              field: 'AddressTemplate',
+              value: {
                   'street': "",
                   'city': "",
                   'state': "",
