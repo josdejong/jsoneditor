@@ -1,0 +1,92 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <title>JSONEditor | Auto Complete</title>
+    
+  <link href="../dist/jsoneditor.css" rel="stylesheet" type="text/css">
+  <script src="../dist/jsoneditor.js"></script>
+
+
+  <style type="text/css">
+    #jsoneditor {
+      width: 500px;
+      height: 500px;
+    }
+
+    p {
+      width: 500px;
+      font-family: "DejaVu Sans", sans-serif;
+    }
+  </style>
+
+  <!--<link href="./css/darktheme.css" rel="stylesheet" type="text/css">-->
+
+</head>
+<body>
+<p>
+    This example demonstrates how to autocomplete works, options available are dynamics and consist in all the strings found in the json
+</p>
+
+<div id="jsoneditor"></div>
+
+<script>
+
+  // create the editor
+  var container = document.getElementById('jsoneditor');
+  var options = {
+      modes: ['text', 'tree'],
+      autocomplete: {          
+          ApplyTo:['value'],
+          GetOptions: function (autocomplete, node, text) {
+
+              // Return all strings in json
+              function stringify(o, prefix) {
+                  prefix = prefix || '';
+                  switch (typeof o) {
+                      case 'object':
+                          var output = "";
+                          if (Array.isArray(o)) {
+                              if ((prefix != "") && (prefix != text)) output += prefix + '\n';
+                              o.forEach(function (e, index) {
+                                  output += stringify(e, null);
+                              }.bind(this));
+                              return output;
+                          }
+                          output = "";
+                          for (var k in o) {
+                              if (o.hasOwnProperty(k)) {
+                                  if (prefix == "") output += stringify(o[k], k);
+                              }
+                          }
+                          if ((prefix != "") && (prefix != text)) output += prefix + '\n';
+                          return output;
+                      case 'function':
+                          return "";
+                      default:
+                          var output = "";
+                          if ((prefix != "") && (prefix != text)) output += prefix + '\n';
+                          if ((o != "") && (o != text)) output += o + '\n';
+                          return output;
+                  }
+              }
+           
+              var data = node.editor.get();
+              var optionsStr = stringify(data, null);
+              var options = optionsStr.split("\n");
+
+              return options;              
+          }
+      }
+  };
+  var json = {
+      'array': [{'field1':'v1', 'field2':'v2'}, 2, 3],
+      'boolean': true,
+      'null': null,
+      'number': 123,
+      'object': {'a': 'b', 'c': 'd'},
+      'string': 'Hello World'
+  };
+  var editor = new JSONEditor(container, options, json);
+</script>
+</body>
+</html>
