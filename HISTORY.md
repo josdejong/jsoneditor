@@ -3,7 +3,7 @@
 https://github.com/josdejong/jsoneditor
 
 
-## not yet released, version 5.7.0
+## 2017-05-26, version 5.7.0
 
 - Implemented support for template items. Thanks @israelito3000.
 
