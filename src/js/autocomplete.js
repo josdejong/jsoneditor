@@ -1,9 +1,34 @@
 ﻿'use strict';
 
-function autocomplete(config) {
+(function (arr) {
+    arr.forEach(function (item) {
+        if (item.hasOwnProperty('remove')) {
+            return;
+        }
+        Object.defineProperty(item, 'remove', {
+            configurable: true,
+            enumerable: true,
+            writable: true,
+            value: function remove() {
+                if (this.parentNode != null)
+                this.parentNode.removeChild(this);
+            }
+        });
+    });
+})([Element.prototype, CharacterData.prototype, DocumentType.prototype]);
+
+if (!String.prototype.startsWith) {
+    String.prototype.startsWith = function (searchString, position) {
+        position = position || 0;
+        return this.substr(position, searchString.length) === searchString;
+    };
+}
+
+function completely(config) {
     config = config || {};
-    config.fontSize = config.fontSize || '16px';
-    config.fontFamily = config.fontFamily || 'sans-serif';
+    config.ConfirmKeys = config.ConfirmKeys || [39, 35, 9] // right, end, tab 
+    config.fontSize = config.fontSize || '';
+    config.fontFamily = config.fontFamily || '';
     config.promptInnerHTML = config.promptInnerHTML || '';
     config.color = config.color || '#333';
     config.hintColor = config.hintColor || '#aaa';
@@ -183,6 +208,16 @@ function autocomplete(config) {
                 this.elementHint.remove();
                 this.elementHint = null;
             }
+
+            if (config.fontSize == '') {
+                config.fontSize = window.getComputedStyle(element).getPropertyValue('font-size');
+                dropDown.style.fontSize = config.fontSize;
+            }
+            if (config.fontFamily == '') {
+                config.fontFamily = window.getComputedStyle(element).getPropertyValue('font-family');
+                dropDown.style.fontFamily = config.fontFamily;
+            }
+
             var w = element.getBoundingClientRect().right - element.getBoundingClientRect().left;
             dropDown.style.marginLeft = '0';
             dropDown.style.marginTop = element.getBoundingClientRect().height + 'px';
@@ -268,7 +303,7 @@ function autocomplete(config) {
             // moving the dropDown and refreshing it.
             dropDown.style.left = calculateWidthForText(leftSide) + 'px';
             dropDownController.refresh(token, this.options);
-            this.elementHint.style.width = calculateWidthForText(this.elementHint.innerText) + 'px'
+            this.elementHint.style.width = calculateWidthForText(this.elementHint.innerText) + 10 + 'px'
             var wasDropDownHidden = (dropDown.style.visibility == 'hidden');
             if (!wasDropDownHidden)
                 this.elementHint.style.width = calculateWidthForText(this.elementHint.innerText) + dropDown.clientWidth + 'px';
@@ -294,8 +329,8 @@ function autocomplete(config) {
             e.stopPropagation();
             return;
         }
-
-        if (keyCode == 39 || keyCode == 35 || keyCode == 9 || keyCode == 190) { // right,  end, tab, '.'  (autocomplete triggered)
+        config.ConfirmKeys
+        if (config.ConfirmKeys.indexOf(keyCode) >= 0) { //  (autocomplete triggered)
             if (keyCode == 9) {                 
                 if (this.elementHint.innerText.length == 0) {
                     rs.onTab(); 
@@ -376,5 +411,4 @@ function autocomplete(config) {
     return rs;
 }
 
-if (window.module != undefined)
-    module.exports = completely;
+module.exports = completely;

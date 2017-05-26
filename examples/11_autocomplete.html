@@ -5,7 +5,7 @@
     
   <link href="../dist/jsoneditor.css" rel="stylesheet" type="text/css">
   <script src="../dist/jsoneditor.js"></script>
-  <script src="autocomplete.js"></script>
+
 
   <style type="text/css">
     #jsoneditor {
@@ -34,19 +34,19 @@
 
 <script>
   // create the editor
-    var container = document.getElementById('jsoneditor');
-    var pv = autocomplete({
-        fontSize: '10pt',
-        fontFamily: 'droid sans mono, consolas, monospace, courier new, courier, sans-serif'
-    });
-
+  var container = document.getElementById('jsoneditor');
   var options = {
       modes: ['text', 'tree'],
       autocomplete: {
-          ActivationChar: '',
-          ApplyTo:['values'],
-          Show: function (node, element) {
+          Config: {
+              ConfirmKeys: [39, 35, 9, 190] // Confirm Autocomplete Keys: [right, end, tab, '.']  // By default are only [right, end, tab]
+          },
+          ActivationChar: '*', // ActivationChar indicate if the value starts with this Char then autocompletion will be activated. ('' will be ignored).
+          ApplyTo:['value'],
+          GetOptions: function (autocomplete, node, text) {
+              
               var YaskON = {
+                  // Return first level json paths by the node 'o'
                   stringify: function (o, prefix, activationChar) {
                       prefix = prefix || '';
                       switch (typeof o) {
@@ -74,14 +74,14 @@
                   }
               };
               var data = {};
-              pv.startFrom = 0;
-              var text = element.innerText;
+              autocomplete.startFrom = 0;
               var lastPoint = text.lastIndexOf('.');
               if ((lastPoint > 0) && (text.length > 1)) {
                   var fnode = node.editor.node.findNode('.' + text.substring(this.ActivationChar.length, lastPoint));
                 if (fnode && typeof fnode.getValue() == 'object') {
                     data = fnode.getValue();
-                    pv.startFrom = text.lastIndexOf('.') + 1;
+                    // Indicate that autocompletion should start after the . (ignoring the first part)
+                    autocomplete.startFrom = text.lastIndexOf('.') + 1;
                 }                  
               }
               else
@@ -90,11 +90,7 @@
               var optionsStr = YaskON.stringify(data, null, this.ActivationChar);
               var options = optionsStr.split("\n");
 
-              if (options.length > 0)
-                pv.Show(element, options);
-          },
-          Hide: function () {
-              pv.hideDropDown();
+              return options;              
           }
       }
   };
