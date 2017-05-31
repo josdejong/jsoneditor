@@ -371,7 +371,7 @@ function completely(config) {
     }.bind(rs);
 
     var onBlurHandler = function (e) {
-        //rs.hideDropDown();
+        rs.hideDropDown();
         //console.log("Lost focus.");
     }.bind(rs);
 
