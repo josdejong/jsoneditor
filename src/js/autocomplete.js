@@ -26,16 +26,10 @@ if (!String.prototype.startsWith) {
 
 function completely(config) {
     config = config || {};
-    config.ConfirmKeys = config.ConfirmKeys || [39, 35, 9] // right, end, tab 
-    config.fontSize = config.fontSize || '';
-    config.fontFamily = config.fontFamily || '';
-    config.promptInnerHTML = config.promptInnerHTML || '';
-    config.color = config.color || '#333';
-    config.hintColor = config.hintColor || '#aaa';
-    config.backgroundColor = config.backgroundColor || '#fff';
-    config.dropDownBorderColor = config.dropDownBorderColor || '#aaa';
-    config.dropDownZIndex = config.dropDownZIndex || '100'; // to ensure we are in front of everybody
-    config.dropDownOnHoverBackgroundColor = config.dropDownOnHoverBackgroundColor || '#ddd';
+    config.confirmKeys = config.confirmKeys || [39, 35, 9] // right, end, tab 
+
+    var fontSize = '';
+    var fontFamily = '';    
 
     var wrapper = document.createElement('div');
     wrapper.style.position = 'relative';
@@ -45,25 +39,9 @@ function completely(config) {
     wrapper.style.padding = '0';
 
     var dropDown = document.createElement('div');
+    dropDown.className = 'autocomplete dropdown';
     dropDown.style.position = 'absolute';
     dropDown.style.visibility = 'hidden';
-    dropDown.style.outline = '0';
-    dropDown.style.margin = '0';
-    dropDown.style.paddingLeft = '2pt';
-    dropDown.style.paddingRight = '10pt';
-    dropDown.style.textAlign = 'left';
-    dropDown.style.fontSize = config.fontSize;
-    dropDown.style.fontFamily = config.fontFamily;
-    dropDown.style.backgroundColor = config.backgroundColor;
-    dropDown.style.zIndex = config.dropDownZIndex;
-    dropDown.style.cursor = 'default';
-    dropDown.style.borderStyle = 'solid';
-    dropDown.style.borderWidth = '1px';
-    dropDown.style.borderColor = config.dropDownBorderColor;
-    dropDown.style.overflowX = 'hidden';
-    dropDown.style.whiteSpace = 'pre';
-    dropDown.style.overflowY = 'scroll';  // note: this might be ugly when the scrollbar is not required. however in this way the width of the dropDown takes into account
-
 
     var spacer;
     var leftSide; // <-- it will contain the leftSide part of the textfield (the bit that was already autocompleted)
@@ -95,7 +73,8 @@ function completely(config) {
                 for (var i = 0; i < array.length; i++) {
                     if (array[i].indexOf(token) !== 0) { continue; }
                     var divRow = document.createElement('div');
-                    divRow.style.color = config.color;
+                    divRow.className = 'item';
+                    //divRow.style.color = config.color;
                     divRow.onmouseover = onMouseOver;
                     divRow.onmouseout = onMouseOut;
                     divRow.onmousedown = onMouseDown;
@@ -127,9 +106,9 @@ function completely(config) {
             },
             highlight: function (index) {
                 if (oldIndex != -1 && rows[oldIndex]) {
-                    rows[oldIndex].style.backgroundColor = config.backgroundColor;
+                    rows[oldIndex].className = "item";
                 }
-                rows[index].style.backgroundColor = config.dropDownOnHoverBackgroundColor; // <-- should be config
+                rows[index].className = "item hover"; 
                 oldIndex = index;
             },
             move: function (step) { // moves the selection either up or down (unless it's not possible) step is either +1 or -1.
@@ -175,8 +154,8 @@ function completely(config) {
             spacer.style.border = '0';
             spacer.style.left = '0';
             spacer.style.whiteSpace = 'pre';
-            spacer.style.fontSize = config.fontSize;
-            spacer.style.fontFamily = config.fontFamily;
+            spacer.style.fontSize = fontSize;
+            spacer.style.fontFamily = fontFamily;
             spacer.style.fontWeight = 'normal';
             document.body.appendChild(spacer);
         }
@@ -208,16 +187,14 @@ function completely(config) {
                 this.elementHint.remove();
                 this.elementHint = null;
             }
-
-            if (config.fontSize == '') {
-                config.fontSize = window.getComputedStyle(element).getPropertyValue('font-size');
-                dropDown.style.fontSize = config.fontSize;
+            
+            if (fontSize == '') {
+                fontSize = window.getComputedStyle(element).getPropertyValue('font-size');
             }
-            if (config.fontFamily == '') {
-                config.fontFamily = window.getComputedStyle(element).getPropertyValue('font-family');
-                dropDown.style.fontFamily = config.fontFamily;
+            if (fontFamily == '') {
+                fontFamily = window.getComputedStyle(element).getPropertyValue('font-family');
             }
-
+            
             var w = element.getBoundingClientRect().right - element.getBoundingClientRect().left;
             dropDown.style.marginLeft = '0';
             dropDown.style.marginTop = element.getBoundingClientRect().height + 'px';
@@ -237,15 +214,14 @@ function completely(config) {
             this.element.style.position = 'relative';
             this.element.style.backgroundColor = 'transparent';
             this.element.style.borderColor = 'transparent';
-            
 
             this.elementHint = element.cloneNode();
+            this.elementHint.className = 'autocomplete hint';
             this.elementHint.style.zIndex = 2;
             this.elementHint.style.position = 'absolute';
-            this.elementHint.style.top = '0';
-            this.elementHint.style.left = '0';
-            this.elementHint.style.color = config.hintColor;
             this.elementHint.onfocus = function () { this.element.focus(); }.bind(this);
+
+
 
             if (this.element.addEventListener) {
                 this.element.removeEventListener("keydown", keyDownHandler);
@@ -329,8 +305,8 @@ function completely(config) {
             e.stopPropagation();
             return;
         }
-        config.ConfirmKeys
-        if (config.ConfirmKeys.indexOf(keyCode) >= 0) { //  (autocomplete triggered)
+
+        if (config.confirmKeys.indexOf(keyCode) >= 0) { //  (autocomplete triggered)
             if (keyCode == 9) {                 
                 if (this.elementHint.innerText.length == 0) {
                     rs.onTab(); 
@@ -395,7 +371,7 @@ function completely(config) {
     }.bind(rs);
 
     var onBlurHandler = function (e) {
-        rs.hideDropDown();
+        //rs.hideDropDown();
         //console.log("Lost focus.");
     }.bind(rs);
 
