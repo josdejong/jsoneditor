@@ -53,7 +53,7 @@ treemode.create = function (container, options) {
   this._setOptions(options);
 
   if (options.autocomplete)
-      this.autocomplete = new autocomplete(options.autocomplete.Config);
+      this.autocomplete = new autocomplete(options.autocomplete.config);
 
   if (this.options.history && this.options.mode !== 'view') {
     this.history = new History(this);
@@ -1107,13 +1107,13 @@ treemode._onKeyDown = function (event) {
   if ((this.options.autocomplete) && (!handled)) {
       if (!ctrlKey && !altKey && !metaKey && (event.key.length == 1 || keynum == 8 || keynum == 46)) {
           handled = false;
-          if ((this.options.autocomplete.ApplyTo.indexOf('value') >= 0 && event.target.className.indexOf("jsoneditor-value") >= 0) || 
-              (this.options.autocomplete.ApplyTo.indexOf('name') >= 0 && event.target.className.indexOf("jsoneditor-field") >= 0)) {
+          if ((this.options.autocomplete.applyTo.indexOf('value') >= 0 && event.target.className.indexOf("jsoneditor-value") >= 0) || 
+              (this.options.autocomplete.applyTo.indexOf('name') >= 0 && event.target.className.indexOf("jsoneditor-field") >= 0)) {
               var node = Node.getNodeFromTarget(event.target);
-              if (this.options.autocomplete.ActivationChar == null || event.target.innerText.startsWith(this.options.autocomplete.ActivationChar)) { // Activate autocomplete
+              if (this.options.autocomplete.activationChar == null || event.target.innerText.startsWith(this.options.autocomplete.activationChar)) { // Activate autocomplete
                   setTimeout(function (hnode, element) {
                       if (element.innerText.length > 0) {
-                          var options = this.options.autocomplete.GetOptions(this.autocomplete, hnode, element.innerText);
+                          var options = this.options.autocomplete.getOptions(this.autocomplete, hnode, element.innerText);
                           if (options.length > 0)
                               this.autocomplete.Show(element, options);
                       }

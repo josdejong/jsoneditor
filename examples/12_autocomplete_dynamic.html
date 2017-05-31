@@ -36,8 +36,8 @@
   var options = {
       modes: ['text', 'tree'],
       autocomplete: {          
-          ApplyTo:['value'],
-          GetOptions: function (autocomplete, node, text) {
+          applyTo:['value'],
+          getOptions: function (autocomplete, node, text) {
 
               // Return all strings in json
               function stringify(o, prefix) {

@@ -25,6 +25,7 @@
 <body>
 <p>
     This example demonstrates how to autocomplete works with an ActivationChar option, press "*" in any value and continue with autocompletion.
+    The autocomplete returns the posible jsonpaths of the existing json document.
 </p>
 
 <div id="jsoneditor"></div>
@@ -35,12 +36,12 @@
   var options = {
       modes: ['text', 'tree'],
       autocomplete: {
-          Config: {
+          config: {
               ConfirmKeys: [39, 35, 9, 190] // Confirm Autocomplete Keys: [right, end, tab, '.']  // By default are only [right, end, tab]
           },
-          ActivationChar: '*', // ActivationChar indicate if the value starts with this Char then autocompletion will be activated. ('' will be ignored).
-          ApplyTo:['value'],
-          GetOptions: function (autocomplete, node, text) {
+          activationChar: '*', // ActivationChar indicate if the value starts with this Char then autocompletion will be activated. ('' will be ignored).
+          applyTo:['value'],
+          getOptions: function (autocomplete, node, text) {
               
               var YaskON = {
                   // Return first level json paths by the node 'o'
@@ -74,7 +75,7 @@
               autocomplete.startFrom = 0;
               var lastPoint = text.lastIndexOf('.');
               if ((lastPoint > 0) && (text.length > 1)) {
-                  var fnode = node.editor.node.findNode('.' + text.substring(this.ActivationChar.length, lastPoint));
+                  var fnode = node.editor.node.findNode('.' + text.substring(this.activationChar.length, lastPoint));
                 if (fnode && typeof fnode.getValue() == 'object') {
                     data = fnode.getValue();
                     // Indicate that autocompletion should start after the . (ignoring the first part)
@@ -84,7 +85,7 @@
               else
                   data = node.editor.get();
 
-              var optionsStr = YaskON.stringify(data, null, this.ActivationChar);
+              var optionsStr = YaskON.stringify(data, null, this.activationChar);
               var options = optionsStr.split("\n");
 
               return options;              
