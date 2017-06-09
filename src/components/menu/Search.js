@@ -1,6 +1,7 @@
 // @flow weak
 
-import { createElement as h, Component, PropTypes } from 'react'
+import { createElement as h, Component } from 'react'
+import PropTypes from 'prop-types'
 
 import '!style!css!less!./Search.less'
 

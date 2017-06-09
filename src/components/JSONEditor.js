@@ -1,6 +1,7 @@
 // @flow
 
-import { createElement as h, Component, PropTypes } from 'react'
+import { createElement as h, Component } from 'react'
+import PropTypes from 'prop-types'
 import CodeMode from './CodeMode'
 import TextMode from './TextMode'
 import TreeMode from './TreeMode'
