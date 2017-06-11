@@ -22,6 +22,7 @@ import JSONNodeView from './JSONNodeView'
 import JSONNodeForm from './JSONNodeForm'
 import ModeButton from './menu/ModeButton'
 import Search from './menu/Search'
+import { keyComboFromEvent } from '../utils/keyBindings'
 
 import type { JSONData, JSONPatch } from '../types'
 
@@ -45,6 +46,14 @@ export default class TreeMode extends Component {
 
     this.id = Math.round(Math.random() * 1e5) // TODO: create a uuid here?
 
+    // TODO: make key bindings configurable
+    const keyBindings = {
+      'duplicate': ['Ctrl+D', 'Command+D'],
+      'insert':    ['Ctrl+Insert', 'Command+Insert'],
+      'remove':    ['Ctrl+Delete', 'Command+Delete'],
+      'openUrl':   ['Ctrl+4', 'Ctrl+Enter', 'Command+Enter']
+    }
+
     this.state = {
       data,
 
@@ -61,13 +70,18 @@ export default class TreeMode extends Component {
         onRemove: this.handleRemove,
         onSort: this.handleSort,
 
-        onExpand: this.handleExpand
+        onExpand: this.handleExpand,
+
+        // TODO: now we're passing not just events but also other methods. reorganize this or rename 'state.events'
+        findKeyBinding: this.findKeyBinding
       },
 
       search: {
         text: '',
         active: null // active search result
-      }
+      },
+
+      keyCombos: this.bindingsByCombos (keyBindings)
     }
   }
 
@@ -133,6 +147,9 @@ export default class TreeMode extends Component {
 
     return h('div', {
       className: `jsoneditor jsoneditor-mode-${props.mode}`,
+      'onKeyDown': (event) => {
+        // console.log('keydown', keyComboFromEvent(event), this.findKeyBinding(keyComboFromEvent(event)))
+      },
       'data-jsoneditor': 'true'
     }, [
       this.renderMenu(searchResults ? searchResults.length : null),
@@ -227,6 +244,27 @@ export default class TreeMode extends Component {
   }
 
   /**
+   * Turn a map with key bindings by name into a map by combo
+   * @param {Object.<String, Array.string>} keyBindings
+   * @return {Object.<String, string>} Returns keyCombos
+   */
+  bindingsByCombos (keyBindings) {
+    const keyCombos = {}
+
+    Object.keys(keyBindings).forEach ((name) => {
+      keyBindings[name].forEach(combo => keyCombos[combo.toUpperCase()] = name)
+    })
+
+    return keyCombos
+  }
+
+  findKeyBinding = (event) => {
+    const keyCombo = keyComboFromEvent(event)
+
+    return this.state.keyCombos[keyCombo.toUpperCase()] || null
+  }
+
+  /**
    * Validate the JSON against the configured JSON schema
    * Returns an array with the errors when not valid, returns an empty array
    * when valid.
@@ -266,11 +304,13 @@ export default class TreeMode extends Component {
   /** @private */
   handleInsert = (path, type) => {
     this.handlePatch(insert(this.state.data, path, type))
+    // FIXME: apply focus to new field
   }
 
   /** @private */
   handleAppend = (parentPath, type) => {
     this.handlePatch(append(this.state.data, parentPath, type))
+    // FIXME: apply focus to new field
   }
 
   /** @private */
@@ -281,6 +321,7 @@ export default class TreeMode extends Component {
   /** @private */
   handleRemove = (path) => {
     this.handlePatch(remove(path))
+    // FIXME: apply focus next/prev field
   }
 
   /** @private */

@@ -41,7 +41,12 @@ export default class JSONNode extends Component {
 
   renderJSONObject ({prop, index, data, options, events}) {
     const childCount = data.props.length
-    const node = h('div', {name: compileJSONPointer(this.props.path), key: 'node', className: 'jsoneditor-node jsoneditor-object'}, [
+    const node = h('div', {
+        name: compileJSONPointer(this.props.path),
+        onKeyDown: this.handleKeyDown,
+        key: 'node',
+        className: 'jsoneditor-node jsoneditor-object'
+      }, [
       this.renderExpandButton(),
       this.renderActionMenuButton(),
       this.renderProperty(prop, index, data, options),
@@ -81,7 +86,12 @@ export default class JSONNode extends Component {
   // TODO: extract a function renderChilds shared by both renderJSONObject and renderJSONArray (rename .props and .items to .childs?)
   renderJSONArray ({prop, index, data, options, events}) {
     const childCount = data.items.length
-    const node = h('div', {name: compileJSONPointer(this.props.path), key: 'node', className: 'jsoneditor-node jsoneditor-array'}, [
+    const node = h('div', {
+        name: compileJSONPointer(this.props.path),
+        onKeyDown: this.handleKeyDown,
+        key: 'node',
+        className: 'jsoneditor-node jsoneditor-array'
+      }, [
       this.renderExpandButton(),
       this.renderActionMenuButton(),
       this.renderProperty(prop, index, data, options),
@@ -118,7 +128,11 @@ export default class JSONNode extends Component {
   }
 
   renderJSONValue ({prop, index, data, options}) {
-    return h('div', {name: compileJSONPointer(this.props.path), className: 'jsoneditor-node'}, [
+    return h('div', {
+        name: compileJSONPointer(this.props.path),
+        onKeyDown: this.handleKeyDown,
+        className: 'jsoneditor-node'
+      }, [
       this.renderPlaceholder(),
       this.renderActionMenuButton(),
       this.renderProperty(prop, index, data, options),
@@ -134,7 +148,10 @@ export default class JSONNode extends Component {
    * @return {*}
    */
   renderAppend (text) {
-    return h('div', {className: 'jsoneditor-node'}, [
+    return h('div', {
+        className: 'jsoneditor-node',
+        onKeyDown: this.handleKeyDownAppend
+      }, [
       this.renderPlaceholder(),
       this.renderAppendMenuButton(),
       this.renderReadonly(text)
@@ -149,7 +166,7 @@ export default class JSONNode extends Component {
     return h('div', {key: 'readonly', className: 'jsoneditor-readonly', title}, text)
   }
 
-  renderProperty (prop: ?PropertyData, index: ?number, data: JSONData, options: {escapeUnicode: boolean, isPropertyEditable: (Path) => boolean}) {
+  renderProperty (prop: ?PropertyData, index: ?number, data: JSONData, options: {escapeUnicode: boolean, isPropertyEditable: (path: string) => boolean}) {
     const isIndex = typeof index === 'number'
 
     if (!prop && !isIndex) {
@@ -443,8 +460,40 @@ export default class JSONNode extends Component {
   }
 
   /** @private */
+  handleKeyDown = (event) => {
+    const keyBinding = this.props.events.findKeyBinding(event)
+
+    if (keyBinding === 'duplicate') {
+      event.preventDefault()
+      this.props.events.onDuplicate(this.props.path)
+    }
+
+    if (keyBinding === 'insert') {
+      event.preventDefault()
+      this.props.events.onInsert(this.props.path, 'value')
+    }
+
+    if (keyBinding === 'remove') {
+      event.preventDefault()
+      this.props.events.onRemove(this.props.path)
+    }
+  }
+
+  /** @private */
+  handleKeyDownAppend = (event) => {
+    const keyBinding = this.props.events.findKeyBinding(event)
+
+    if (keyBinding === 'insert') {
+      event.preventDefault()
+      this.props.events.onAppend(this.props.path, 'value')
+    }
+  }
+
+  /** @private */
   handleKeyDownValue = (event) => {
-    if (event.ctrlKey && event.which === 13) { // Ctrl+Enter
+    const keyBinding = this.props.events.findKeyBinding(event)
+
+    if (keyBinding === 'openUrl') {
       this.openLinkIfUrl(event)
     }
   }
