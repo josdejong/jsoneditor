@@ -1,15 +1,16 @@
 
 div.jsoneditor div.autocomplete.dropdown {
     position: absolute;
-    background-color: #fff;
-    border: 1px solid #aaa;
+    background: white;
+    box-shadow: 2px 2px 12px rgba(128, 128, 128, 0.3);
+    border: 1px solid #d3d3d3;
     z-index: 100;
     overflow-x: hidden;
-    overflow-y: scroll;
+    overflow-y: auto;
     cursor: default;
     margin: 0;
     padding-left: 2pt;
-    padding-right: 10pt;
+    padding-right: 5pt;
     text-align: left;
     outline: 0;
     font-family: droid sans mono, consolas, monospace, courier new, courier, sans-serif;

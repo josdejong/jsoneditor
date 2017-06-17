@@ -36,41 +36,10 @@
   var options = {
       modes: ['text', 'tree'],
       autocomplete: {
-          config: {
-              confirmKeys: [39, 35, 9, 190] // Confirm Autocomplete Keys: [right, end, tab, '.']  // By default are only [right, end, tab]
-          },
+          confirmKeys: [39, 35, 9, 190], // Confirm Autocomplete Keys: [right, end, tab, '.']  // By default are only [right, end, tab]
           activationChar: '*', // ActivationChar indicate if the value starts with this Char then autocompletion will be activated. ('' will be ignored).
           applyTo:['value'],
           getOptions: function (autocomplete, node, text) {
-              
-              var YaskON = {
-                  // Return first level json paths by the node 'o'
-                  stringify: function (o, prefix, activationChar) {
-                      prefix = prefix || '';
-                      switch (typeof o) {
-                          case 'object':
-                              var output = "";
-                              if (Array.isArray(o)) {
-                                  o.forEach(function (e, index) {
-                                      output += activationChar + prefix + '[' + index + ']' + '\n';
-                                  }.bind(this));
-                                  return output;
-                              }
-                              output = "";
-                              for (var k in o) {
-                                  if (o.hasOwnProperty(k)) {
-                                      if (prefix == "") output += this.stringify(o[k], k, activationChar);
-                                  }
-                              }
-                              if (prefix != "") output += activationChar + prefix + '\n'
-                              return output;
-                          case 'function':
-                              return "";
-                          default:
-                              return prefix + '\n';
-                      }
-                  }
-              };
               var data = {};
               autocomplete.startFrom = 0;
               var lastPoint = text.lastIndexOf('.');
@@ -91,15 +60,43 @@
               return options;              
           }
       }
-  };
-  var json = {
-      'array': [{'field1':'v1', 'field2':'v2'}, 2, 3],
-      'boolean': true,
-      'null': null,
-      'number': 123,
-      'object': {'a': 'b', 'c': 'd'},
-      'string': 'Hello World'
-  };
+    };
+    var YaskON = {
+        // Return first level json paths by the node 'o'
+        stringify: function (o, prefix, activationChar) {
+            prefix = prefix || '';
+            switch (typeof o) {
+                case 'object':
+                    var output = "";
+                    if (Array.isArray(o)) {
+                        o.forEach(function (e, index) {
+                            output += activationChar + prefix + '[' + index + ']' + '\n';
+                        }.bind(this));
+                        return output;
+                    }
+                    output = "";
+                    for (var k in o) {
+                        if (o.hasOwnProperty(k)) {
+                            if (prefix == "") output += this.stringify(o[k], k, activationChar);
+                        }
+                    }
+                    if (prefix != "") output += activationChar + prefix + '\n'
+                    return output;
+                case 'function':
+                    return "";
+                default:
+                    return prefix + '\n';
+            }
+        }
+    };
+    var json = {
+        'array': [{ 'field1': 'v1', 'field2': 'v2' }, 2, 3],
+        'boolean': true,
+        'null': null,
+        'number': 123,
+        'object': { 'a': 'b', 'c': 'd' },
+        'string': 'Hello World'
+    };
   var editor = new JSONEditor(container, options, json);
 </script>
 </body>

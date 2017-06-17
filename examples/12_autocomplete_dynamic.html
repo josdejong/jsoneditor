@@ -5,6 +5,7 @@
     
   <link href="../dist/jsoneditor.css" rel="stylesheet" type="text/css">
   <script src="../dist/jsoneditor.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.4/lodash.min.js"></script>
 
 
   <style type="text/css">
@@ -38,46 +39,27 @@
       autocomplete: {          
           applyTo:['value'],
           getOptions: function (autocomplete, node, text) {
-
-              // Return all strings in json
-              function stringify(o, prefix) {
-                  prefix = prefix || '';
-                  switch (typeof o) {
-                      case 'object':
-                          var output = "";
-                          if (Array.isArray(o)) {
-                              if ((prefix != "") && (prefix != text)) output += prefix + '\n';
-                              o.forEach(function (e, index) {
-                                  output += stringify(e, null);
-                              }.bind(this));
-                              return output;
-                          }
-                          output = "";
-                          for (var k in o) {
-                              if (o.hasOwnProperty(k)) {
-                                  if (prefix == "") output += stringify(o[k], k);
-                              }
-                          }
-                          if ((prefix != "") && (prefix != text)) output += prefix + '\n';
-                          return output;
-                      case 'function':
-                          return "";
-                      default:
-                          var output = "";
-                          if ((prefix != "") && (prefix != text)) output += prefix + '\n';
-                          if ((o != "") && (o != text)) output += o + '\n';
-                          return output;
-                  }
-              }
-           
-              var data = node.editor.get();
-              var optionsStr = stringify(data, null);
-              var options = optionsStr.split("\n");
-
-              return options;              
+              return new Promise(function (resolve, reject) {
+                  var data = node.editor.get();
+                  var options = extractUniqueWords(data);
+                  if (options.length > 0) resolve(options); else reject();
+              });                       
           }
       }
-  };
+    };
+
+    
+
+// ...
+
+function extractUniqueWords (json) {
+  return _.uniq(_.flatMapDeep(json, function (value, key) {
+    return _.isObject(value) 
+        ? [key] 
+        : [key, String(value)]
+  }))
+}
+
   var json = {
       'array': [{'field1':'v1', 'field2':'v2'}, 2, 3],
       'boolean': true,

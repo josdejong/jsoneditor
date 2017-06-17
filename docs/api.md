@@ -114,6 +114,69 @@ Constructs a new JSONEditor.
 
   Set the Ace editor theme, uses included 'ace/theme/jsoneditor' by default. Please note that only the default theme is included with jsoneditor, so if you specify another one you need to make sure it is loaded.
 
+- `{Object} templates`
+
+  Array of templates that will appear in the context menu, Each template is a json object precreated that can be added as a object value to any node in your document. 
+
+  The following example allow you can create a "Person" node and a "Address" node, each one will appear in your context menu, once you selected the whole json object will be created.
+
+    ```js
+  var options = {
+    templates: [
+          {
+              text: 'Person',
+              title: 'Insert a Person Node',
+              className: 'jsoneditor-type-object',
+              field: 'PersonTemplate',
+              value: {
+                  'firstName': 'John',
+                  'lastName': 'Do',
+                  'age': 28
+              }
+          },
+          {
+              text: 'Address',
+              title: 'Insert a Address Node',
+              field: 'AddressTemplate',
+              value: {
+                  'street': "",
+                  'city': "",
+                  'state': "",
+                  'ZIP code': ""
+              }
+          }
+      ]
+  }
+  ```
+
+- `{Object} autocomplete`
+
+  *autocomplete* will enable this feature in your editor in tree mode, the object have the following **subelements**:
+
+  - `{Object} confirmKeys`
+
+     Indicate the KeyCodes for trigger confirm completion, by default those keys are:  [39, 35, 9] which are the code for [right, end, tab]
+
+  - `{Object} applyTo`
+
+     Indicate where the autocomplete is going to be activated, under field in json node or/and under value in a json node, default is: ['field','value']
+     
+  - `{string} activationChar`
+
+     This is a single char string, indicates that the text should starts with this char in order to process and display the autocompletion, a typical example is in some editors you type '@' and then you see a dropdownbox where you can link to an specific author.
+
+  - `{Function} getOptions (autocomplete, node, text, elementType)`
+
+     This function will return your possible options for create the autocomplete selection, you can control dynamically which options you want to display according to the current active editing node.
+	 You can return a promise (for async) as well the options array (sync).
+     
+     *Parameters:*
+     
+     - autocomplete : The instance of the autocomplete engine.     
+     - node : The current active editing node. (node include field and value)     
+     - text : The text in the current node part. (basically the text that the user is editing)     
+     - elementType : Can be "field" or "value" depending if the user is editing a field name or a value of a node.
+     
 
 ### Methods
 

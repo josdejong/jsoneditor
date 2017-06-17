@@ -53,7 +53,7 @@ treemode.create = function (container, options) {
   this._setOptions(options);
 
   if (options.autocomplete)
-      this.autocomplete = new autocomplete(options.autocomplete.config);
+      this.autocomplete = new autocomplete(options.autocomplete);
 
   if (this.options.history && this.options.mode !== 'view') {
     this.history = new History(this);
@@ -1107,15 +1107,26 @@ treemode._onKeyDown = function (event) {
   if ((this.options.autocomplete) && (!handled)) {
       if (!ctrlKey && !altKey && !metaKey && (event.key.length == 1 || keynum == 8 || keynum == 46)) {
           handled = false;
-          if ((this.options.autocomplete.applyTo.indexOf('value') >= 0 && event.target.className.indexOf("jsoneditor-value") >= 0) || 
-              (this.options.autocomplete.applyTo.indexOf('name') >= 0 && event.target.className.indexOf("jsoneditor-field") >= 0)) {
+          var jsonElementType = "";
+          if (event.target.className.indexOf("jsoneditor-value") >= 0) jsonElementType = "value";
+          if (event.target.className.indexOf("jsoneditor-field") >= 0) jsonElementType = "field";
+
+          if ((this.options.autocomplete.applyTo.indexOf('value') >= 0 && jsonElementType == "value") || 
+              (this.options.autocomplete.applyTo.indexOf('field') >= 0 && jsonElementType == "field")) {
               var node = Node.getNodeFromTarget(event.target);
               if (this.options.autocomplete.activationChar == null || event.target.innerText.startsWith(this.options.autocomplete.activationChar)) { // Activate autocomplete
                   setTimeout(function (hnode, element) {
                       if (element.innerText.length > 0) {
-                          var options = this.options.autocomplete.getOptions(this.autocomplete, hnode, element.innerText);
-                          if (options.length > 0)
-                              this.autocomplete.Show(element, options);
+                          var result = this.options.autocomplete.getOptions(this.autocomplete, hnode, element.innerText, jsonElementType);
+                          if (typeof result.then === 'function') {
+                              // probably a promise
+                              if (result.then(function (options) {
+                                  this.autocomplete.show(element, options);
+                              }.bind(this)));
+                          } else {
+                              // definitely not a promise
+                              this.autocomplete.show(element, result);
+                          }
                       }
                       else
                           this.autocomplete.hideDropDown();

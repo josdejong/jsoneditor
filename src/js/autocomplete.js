@@ -1,29 +1,5 @@
 ﻿'use strict';
 
-(function (arr) {
-    arr.forEach(function (item) {
-        if (item.hasOwnProperty('remove')) {
-            return;
-        }
-        Object.defineProperty(item, 'remove', {
-            configurable: true,
-            enumerable: true,
-            writable: true,
-            value: function remove() {
-                if (this.parentNode != null)
-                this.parentNode.removeChild(this);
-            }
-        });
-    });
-})([Element.prototype, CharacterData.prototype, DocumentType.prototype]);
-
-if (!String.prototype.startsWith) {
-    String.prototype.startsWith = function (searchString, position) {
-        position = position || 0;
-        return this.substr(position, searchString.length) === searchString;
-    };
-}
-
 function completely(config) {
     config = config || {};
     config.confirmKeys = config.confirmKeys || [39, 35, 9] // right, end, tab 
@@ -181,7 +157,7 @@ function completely(config) {
         elementHint: null,
         elementStyle: null,
         wrapper: wrapper,      // Only to allow  easy access to the HTML elements to the final user (possibly for minor customizations)
-        Show: function (element, options) {
+        show: function (element, options) {
             this.wrapper.remove();
             if (this.elementHint) {
                 this.elementHint.remove();
