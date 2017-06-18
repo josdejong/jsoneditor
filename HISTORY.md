@@ -6,6 +6,7 @@ https://github.com/josdejong/jsoneditor
 ## 2017-05-26, version 5.7.0
 
 - Implemented support for template items. Thanks @israelito3000.
+- Upgraded dependencies to the latest versions. Thanks @andreykaipov.
 
 
 ## 2017-04-15, version 5.6.0
