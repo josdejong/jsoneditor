@@ -23,7 +23,7 @@
     "test": "mocha test"
   },
   "dependencies": {
-    "ajv": "4.11.6",
+    "ajv": "5.1.0",
     "brace": "0.10.0",
     "javascript-natural-sort": "0.7.1"
   },
