@@ -32,19 +32,20 @@
 
 <script>
   // create the editor
-  var container = document.getElementById('jsoneditor');
+    var container = document.getElementById('jsoneditor');
+    var activationChar = '*';
   var options = {
       modes: ['text', 'tree'],
       autocomplete: {
           confirmKeys: [39, 35, 9, 190], // Confirm Autocomplete Keys: [right, end, tab, '.']  // By default are only [right, end, tab]
-          activationChar: '*', // ActivationChar indicate if the value starts with this Char then autocompletion will be activated. ('' will be ignored).
           applyTo:['value'],
           getOptions: function (autocomplete, node, text) {
+              if (!text.startsWith(activationChar)) return [];
               var data = {};
               autocomplete.startFrom = 0;
               var lastPoint = text.lastIndexOf('.');
               if ((lastPoint > 0) && (text.length > 1)) {
-                  var fnode = node.editor.node.findNode('.' + text.substring(this.activationChar.length, lastPoint));
+                  var fnode = node.editor.node.findNode('.' + text.substring(activationChar.length, lastPoint));
                 if (fnode && typeof fnode.getValue() == 'object') {
                     data = fnode.getValue();
                     // Indicate that autocompletion should start after the . (ignoring the first part)
@@ -54,13 +55,13 @@
               else
                   data = node.editor.get();
 
-              var optionsStr = YaskON.stringify(data, null, this.activationChar);
+              var optionsStr = YaskON.stringify(data, null, activationChar);
               var options = optionsStr.split("\n");
-
               return options;              
           }
       }
     };
+
     var YaskON = {
         // Return first level json paths by the node 'o'
         stringify: function (o, prefix, activationChar) {
@@ -89,6 +90,7 @@
             }
         }
     };
+
     var json = {
         'array': [{ 'field1': 'v1', 'field2': 'v2' }, 2, 3],
         'boolean': true,

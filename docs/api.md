@@ -161,10 +161,6 @@ Constructs a new JSONEditor.
 
      Indicate where the autocomplete is going to be activated, under field in json node or/and under value in a json node, default is: ['field','value']
      
-  - `{string} activationChar`
-
-     This is a single char string, indicates that the text should starts with this char in order to process and display the autocompletion, a typical example is in some editors you type '@' and then you see a dropdownbox where you can link to an specific author.
-
   - `{Function} getOptions (autocomplete, node, text, elementType)`
 
      This function will return your possible options for create the autocomplete selection, you can control dynamically which options you want to display according to the current active editing node.
