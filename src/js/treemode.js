@@ -1115,20 +1115,23 @@ treemode._onKeyDown = function (event) {
               (this.options.autocomplete.applyTo.indexOf('field') >= 0 && jsonElementType == "field")) {
               var node = Node.getNodeFromTarget(event.target);
               // Activate autocomplete
-              if (event.target.innerText.length > 0) {
-                  var result = this.options.autocomplete.getOptions(this.autocomplete, node, event.target.innerText, jsonElementType);
-                  if (typeof result.then === 'function') {
-                      // probably a promise
-                      if (result.then(function (options) {
-                          this.autocomplete.show(event.target, options);
-                      }.bind(this)));
-                  } else {
-                      // definitely not a promise
-                      this.autocomplete.show(event.target, result);
+              setTimeout(function (hnode, element) {
+                  if (element.innerText.length > 0) {
+                      var result = this.options.autocomplete.getOptions(this.autocomplete, hnode, element.innerText, jsonElementType);
+                      if (typeof result.then === 'function') {
+                          // probably a promise
+                          if (result.then(function (options) {
+                              this.autocomplete.show(element, options);
+                          }.bind(this)));
+                      } else {
+                          // definitely not a promise
+                          this.autocomplete.show(element, result);
+                      }
                   }
-              }
-              else
-                  this.autocomplete.hideDropDown();
+                  else
+                      this.autocomplete.hideDropDown();
+
+              }.bind(this, node, event.target), 50);
           }
       } 
   }
