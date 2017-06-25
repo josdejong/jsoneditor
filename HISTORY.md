@@ -3,6 +3,12 @@
 https://github.com/josdejong/jsoneditor
 
 
+## 2017-06-25, version 5.7.1
+
+- Upgraded dependency `ajv` to version `5.2.0`. Resolves warnings in
+  Webpack build processes.
+
+
 ## 2017-05-26, version 5.7.0
 
 - Implemented support for template items. Thanks @israelito3000.
