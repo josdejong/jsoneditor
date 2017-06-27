@@ -3,6 +3,12 @@
 https://github.com/josdejong/jsoneditor
 
 
+## 2017-06-27, version 5.7.2
+
+- Fixed broken minified bundles in folder `dist`
+  (reverted to `uglify-js@2.8.22` for now).
+
+
 ## 2017-06-25, version 5.7.1
 
 - Upgraded dependency `ajv` to version `5.2.0`. Resolves warnings in
