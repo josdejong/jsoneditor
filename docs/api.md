@@ -157,10 +157,6 @@ Constructs a new JSONEditor.
 
      Indicate the KeyCodes for trigger confirm completion, by default those keys are:  [39, 35, 9] which are the code for [right, end, tab]
 
-  - `{Object} applyTo`
-
-     Indicate where the autocomplete is going to be activated, under field in json node or/and under value in a json node, default is: ['field','value']
-     
   - `{Function} getOptions (autocomplete, node, text, elementType)`
 
      This function will return your possible options for create the autocomplete selection, you can control dynamically which options you want to display according to the current active editing node.
@@ -168,10 +164,9 @@ Constructs a new JSONEditor.
      
      *Parameters:*
      
-     - autocomplete : The instance of the autocomplete engine.     
-     - node : The current active editing node. (node include field and value)     
-     - text : The text in the current node part. (basically the text that the user is editing)     
-     - elementType : Can be "field" or "value" depending if the user is editing a field name or a value of a node.
+     - text : The text in the current node part. (basically the text that the user is editing)  
+     - path : The document json object that is being edited.
+     - input : Can be "field" or "value" depending if the user is editing a field name or a value of a node.   
      
 
 ### Methods

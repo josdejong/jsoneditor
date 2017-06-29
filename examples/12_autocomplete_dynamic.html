@@ -38,17 +38,14 @@
       modes: ['text', 'tree'],
       autocomplete: {          
           applyTo:['value'],
-          getOptions: function (autocomplete, node, text) {
+          getOptions: function (text, path) {
               return new Promise(function (resolve, reject) {
-                  var data = node.editor.get();
-                  var options = extractUniqueWords(data);
+                  var options = extractUniqueWords(path);
                   if (options.length > 0) resolve(options); else reject();
               });                       
           }
       }
-    };
-
-    
+    };    
 
 // ...
 

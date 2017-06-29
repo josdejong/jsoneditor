@@ -5,6 +5,7 @@
     
   <link href="../dist/jsoneditor.css" rel="stylesheet" type="text/css">
   <script src="../dist/jsoneditor.js"></script>
+  <script src="jsonpath.min.js"></script>
 
 
   <style type="text/css">
@@ -38,26 +39,24 @@
       modes: ['text', 'tree'],
       autocomplete: {
           confirmKeys: [39, 35, 9, 190], // Confirm Autocomplete Keys: [right, end, tab, '.']  // By default are only [right, end, tab]
-          applyTo:['value'],
-          getOptions: function (autocomplete, node, text) {
-              if (!text.startsWith(activationChar)) return [];
+          
+          getOptions: function (text, path, input) {
+              if (!text.startsWith(activationChar) || input != 'value') return [];
               var data = {};
-              autocomplete.startFrom = 0;
+              var startFrom = 0;
               var lastPoint = text.lastIndexOf('.');
               if ((lastPoint > 0) && (text.length > 1)) {
-                  var fnode = node.editor.node.findNode('.' + text.substring(activationChar.length, lastPoint));
-                if (fnode && typeof fnode.getValue() == 'object') {
-                    data = fnode.getValue();
+                  data = jsonpath.query(path, '$.' + text.substring(activationChar.length, lastPoint));
+                  if (data.length > 0) data = data[0]; else data = {};
                     // Indicate that autocompletion should start after the . (ignoring the first part)
-                    autocomplete.startFrom = text.lastIndexOf('.') + 1;
-                }                  
+                  startFrom = text.lastIndexOf('.') + 1;                                  
               }
               else
-                  data = node.editor.get();
+                  data = path;
 
               var optionsStr = YaskON.stringify(data, null, activationChar);
               var options = optionsStr.split("\n");
-              return options;              
+              return { startFrom: startFrom, options: options };
           }
       }
     };

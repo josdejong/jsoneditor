@@ -157,7 +157,8 @@ function completely(config) {
         elementHint: null,
         elementStyle: null,
         wrapper: wrapper,      // Only to allow  easy access to the HTML elements to the final user (possibly for minor customizations)
-        show: function (element, options) {
+        show: function (element, startPos, options) {
+            this.startFrom = startPos;
             this.wrapper.remove();
             if (this.elementHint) {
                 this.elementHint.remove();

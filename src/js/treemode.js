@@ -1111,28 +1111,31 @@ treemode._onKeyDown = function (event) {
           if (event.target.className.indexOf("jsoneditor-value") >= 0) jsonElementType = "value";
           if (event.target.className.indexOf("jsoneditor-field") >= 0) jsonElementType = "field";
 
-          if ((this.options.autocomplete.applyTo.indexOf('value') >= 0 && jsonElementType == "value") ||
-              (this.options.autocomplete.applyTo.indexOf('field') >= 0 && jsonElementType == "field")) {
-              var node = Node.getNodeFromTarget(event.target);
-              // Activate autocomplete
-              setTimeout(function (hnode, element) {
-                  if (element.innerText.length > 0) {
-                      var result = this.options.autocomplete.getOptions(this.autocomplete, hnode, element.innerText, jsonElementType);
-                      if (typeof result.then === 'function') {
-                          // probably a promise
-                          if (result.then(function (options) {
-                              this.autocomplete.show(element, options);
-                          }.bind(this)));
-                      } else {
-                          // definitely not a promise
-                          this.autocomplete.show(element, result);
-                      }
+          var node = Node.getNodeFromTarget(event.target);
+          // Activate autocomplete
+          setTimeout(function (hnode, element) {
+              if (element.innerText.length > 0) {
+                  var result = this.options.autocomplete.getOptions(element.innerText, editor.get(), jsonElementType);
+                  if (typeof result.then === 'function') {
+                      // probably a promise
+                      if (result.then(function (obj) {
+                          if (obj.options)
+                              this.autocomplete.show(element, obj.startFrom, obj.options);
+                          else
+                              this.autocomplete.show(element, 0, obj);
+                      }.bind(this)));
+                  } else {
+                      // definitely not a promise
+                      if (result.options)
+                          this.autocomplete.show(element, result.startFrom, result.options);
+                      else
+                          this.autocomplete.show(element, 0, result);
                   }
-                  else
-                      this.autocomplete.hideDropDown();
+              }
+              else
+                  this.autocomplete.hideDropDown();
 
-              }.bind(this, node, event.target), 50);
-          }
+          }.bind(this, node, event.target), 50);
       } 
   }
 
