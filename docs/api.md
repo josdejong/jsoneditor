@@ -153,21 +153,27 @@ Constructs a new JSONEditor.
 
   *autocomplete* will enable this feature in your editor in tree mode, the object have the following **subelements**:
 
-  - `{Object} confirmKeys`
+  - `{number[]} confirmKeys`
 
      Indicate the KeyCodes for trigger confirm completion, by default those keys are:  [39, 35, 9] which are the code for [right, end, tab]
 
-  - `{Function} getOptions (autocomplete, node, text, elementType)`
+  - `{Function} getOptions (text: string, path: string[], input: string)`
 
      This function will return your possible options for create the autocomplete selection, you can control dynamically which options you want to display according to the current active editing node.
-	 You can return a promise (for async) as well the options array (sync).
      
      *Parameters:*
      
-     - text : The text in the current node part. (basically the text that the user is editing)  
-     - path : The document json object that is being edited.
-     - input : Can be "field" or "value" depending if the user is editing a field name or a value of a node.   
-     
+     - `text` : The text in the current node part. (basically the text that the user is editing)
+     - `path` : The document json object that is being edited.
+     - `input` : Can be "field" or "value" depending if the user is editing a field name or a value of a node.
+
+     *Returns:*
+
+     - Can return an array with autocomplete options (strings), for example `['apple','cranberry','raspberry','pie']`
+     - Can return `null` when there are no autocomplete options.
+     - Can return an object `{startFrom: number, options: string[]}`. Here `startFrom` determines the start character from where the existing text will be replaced. `startFrom` is `0` by default, replacing the whole text.
+     - Can return a `Promise` resolving one of the return types above to support asynchronously retrieving a list with options.
+
 
 ### Methods
 
