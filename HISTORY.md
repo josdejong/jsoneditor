@@ -3,7 +3,7 @@
 https://github.com/josdejong/jsoneditor
 
 
-## not yet released, version 5.8.0
+## 2017-07-02, version 5.8.0
 
 - Implemented support for autocompletion. Thanks @israelito3000.
 

@@ -777,23 +777,25 @@ exports.textDiff = function textDiff(oldText, newText) {
   return {start: start, end: newEnd};
 };
 
-// Polyfill for array remove
-(function (arr) {
+if (typeof Element !== 'undefined') {
+  // Polyfill for array remove
+  (function (arr) {
     arr.forEach(function (item) {
-        if (item.hasOwnProperty('remove')) {
-            return;
+      if (item.hasOwnProperty('remove')) {
+        return;
+      }
+      Object.defineProperty(item, 'remove', {
+        configurable: true,
+        enumerable: true,
+        writable: true,
+        value: function remove() {
+          if (this.parentNode != null)
+            this.parentNode.removeChild(this);
         }
-        Object.defineProperty(item, 'remove', {
-            configurable: true,
-            enumerable: true,
-            writable: true,
-            value: function remove() {
-                if (this.parentNode != null)
-                    this.parentNode.removeChild(this);
-            }
-        });
+      });
     });
-})([Element.prototype, CharacterData.prototype, DocumentType.prototype]);
+  })([Element.prototype, CharacterData.prototype, DocumentType.prototype]);
+}
 
 
 // Polyfill for startsWith
