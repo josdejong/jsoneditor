@@ -3,6 +3,11 @@
 https://github.com/josdejong/jsoneditor
 
 
+## 2017-07-03, version 5.8.1
+
+- Fixed broken minified bundles in folder `dist` (again...).
+
+
 ## 2017-07-02, version 5.8.0
 
 - Implemented support for autocompletion. Thanks @israelito3000.
