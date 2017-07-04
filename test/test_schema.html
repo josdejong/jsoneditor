@@ -57,13 +57,17 @@
         "minimum": 0
       },
       "hobbies": {
-        "type": "array",
-        "items": {
-          "type": "string"
-        }
+        "$ref": "hobbies.json"
       }
     },
     "required": ["firstName", "lastName"]
+  };
+
+  var hobbiesSchema = {
+    "type": "array",
+    "items": {
+      "type": "string"
+    }
   };
 
   var options = {
@@ -72,7 +76,8 @@
     onError: function (err) {
       console.error(err);
     },
-    schema: schema
+    schema: schema,
+    schemaRefs: {"hobbies.json": hobbiesSchema}
   };
 
   var json = {

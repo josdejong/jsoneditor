@@ -47,20 +47,41 @@
         "description": "Age in years",
         "type": "integer",
         "minimum": 0
+      },
+      "job": {
+        "$ref": "job"
       }
     },
     "required": ["firstName", "lastName"]
+  };
+
+  var job = {
+    "title": "Job description",
+    "type": "object",
+    "properties": {
+      "company": {
+        "type": "string"
+      },
+      "role": {
+        "type": "string"
+      }
+    }
   };
 
   var json = {
     firstName: 'John',
     lastName: 'Doe',
     gender: null,
-    age: 28
+    age: 28,
+    job: {
+      company: 'freelance',
+      role: 'developer'
+    }
   };
 
   var options = {
-    schema: schema
+    schema: schema,
+    schemaRefs: {"job": job}
   };
 
   // create the editor

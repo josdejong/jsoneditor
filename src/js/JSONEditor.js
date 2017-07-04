@@ -79,7 +79,7 @@ function JSONEditor (container, options, json) {
     // validate options
     if (options) {
       var VALID_OPTIONS = [
-        'ajv', 'schema','templates',
+        'ajv', 'schema', 'schemaRefs','templates',
         'ace', 'theme','autocomplete',
         'onChange', 'onEditable', 'onError', 'onModeChange',
         'escapeUnicode', 'history', 'search', 'mode', 'modes', 'name', 'indentation', 'sortObjectKeys'
@@ -270,6 +270,40 @@ JSONEditor.prototype._onError = function(err) {
 };
 
 /**
+ * Returns ajv instance, initiates if not exists
+ * @returns {Object} ajv
+ */
+JSONEditor.prototype._getAjvInstance = function () {
+  if (!this.ajv) {
+    try {
+      // grab ajv from options if provided, else create a new instance
+      this.ajv = this.options.ajv || Ajv({ allErrors: true, verbose: true });
+
+    }
+    catch (err) {
+      console.warn('Failed to create an instance of Ajv, JSON Schema validation is not available. Please use a JSONEditor bundle including Ajv, or pass an instance of Ajv as via the configuration option `ajv`.');
+    }
+  } 
+  return this.ajv;
+};
+
+/**
+ * Set reference schema object for schema which is depended with other schemas using <pre><code>$ref</code></pre>
+ * @param {Object} schema Schema object
+ * @param {String} ref    reference key
+ */
+JSONEditor.prototype.setSchemaRef = function (schema, ref) {
+  if (schema && ref) {
+    var ajv = this._getAjvInstance();
+
+    if (ajv) {
+      ajv.removeSchema(ref);
+      ajv.addSchema(schema, ref);
+    }
+  }
+};
+
+/**
  * Set a JSON schema for validation of the JSON object.
  * To remove the schema, call JSONEditor.setSchema(null)
  * @param {Object | null} schema
@@ -277,15 +311,7 @@ JSONEditor.prototype._onError = function(err) {
 JSONEditor.prototype.setSchema = function (schema) {
   // compile a JSON schema validator if a JSON schema is provided
   if (schema) {
-    var ajv;
-    try {
-      // grab ajv from options if provided, else create a new instance
-      ajv = this.options.ajv || Ajv({ allErrors: true, verbose: true });
-
-    }
-    catch (err) {
-      console.warn('Failed to create an instance of Ajv, JSON Schema validation is not available. Please use a JSONEditor bundle including Ajv, or pass an instance of Ajv as via the configuration option `ajv`.');
-    }
+    var ajv = this._getAjvInstance();
 
     if (ajv) {
         this.validateSchema = ajv.compile(schema);

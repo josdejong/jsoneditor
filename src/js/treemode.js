@@ -112,6 +112,7 @@ treemode._setOptions = function (options) {
     mode: 'tree',
     name: undefined,   // field name of root node
     schema: null,
+    schemaRefs: null,
     autocomplete: null
   };
 
@@ -124,6 +125,13 @@ treemode._setOptions = function (options) {
     }
   }
 
+  // set schema refs before schema compile, is available
+  if (this.options.schemaRefs) {
+    for (var ref in this.options.schemaRefs) {
+      this.setSchemaRef(this.options.schemaRefs[ref], ref);
+    }
+  }
+  
   // compile a JSON schema validator if a JSON schema is provided
   this.setSchema(this.options.schema);
 

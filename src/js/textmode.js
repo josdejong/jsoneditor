@@ -220,6 +220,12 @@ textmode.create = function (container, options) {
     }
   }
 
+  if (this.options.schemaRefs) {
+    for (var ref in this.options.schemaRefs) {
+      this.setSchemaRef(this.options.schemaRefs[ref], ref);
+    }
+  }
+
   this.setSchema(this.options.schema);
 };
 
