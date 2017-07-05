@@ -134,50 +134,52 @@ function appendNodeFactory(Node) {
   AppendNode.prototype.showContextMenu = function (anchor, onClose) {
     var node = this;
     var titles = Node.TYPE_TITLES;
+    var appendSubmenu = [
+        {
+            text: 'Auto',
+            className: 'jsoneditor-type-auto',
+            title: titles.auto,
+            click: function () {
+                node._onAppend('', '', 'auto');
+            }
+        },
+        {
+            text: 'Array',
+            className: 'jsoneditor-type-array',
+            title: titles.array,
+            click: function () {
+                node._onAppend('', []);
+            }
+        },
+        {
+            text: 'Object',
+            className: 'jsoneditor-type-object',
+            title: titles.object,
+            click: function () {
+                node._onAppend('', {});
+            }
+        },
+        {
+            text: 'String',
+            className: 'jsoneditor-type-string',
+            title: titles.string,
+            click: function () {
+                node._onAppend('', '', 'string');
+            }
+        }
+    ];
+    node.addTemplates(appendSubmenu, true);
     var items = [
       // create append button
       {
-        'text': 'Append',
+        'text': 'Append!',
         'title': 'Append a new field with type \'auto\' (Ctrl+Shift+Ins)',
         'submenuTitle': 'Select the type of the field to be appended',
         'className': 'jsoneditor-insert',
         'click': function () {
           node._onAppend('', '', 'auto');
         },
-        'submenu': [
-          {
-            'text': 'Auto',
-            'className': 'jsoneditor-type-auto',
-            'title': titles.auto,
-            'click': function () {
-              node._onAppend('', '', 'auto');
-            }
-          },
-          {
-            'text': 'Array',
-            'className': 'jsoneditor-type-array',
-            'title': titles.array,
-            'click': function () {
-              node._onAppend('', []);
-            }
-          },
-          {
-            'text': 'Object',
-            'className': 'jsoneditor-type-object',
-            'title': titles.object,
-            'click': function () {
-              node._onAppend('', {});
-            }
-          },
-          {
-            'text': 'String',
-            'className': 'jsoneditor-type-string',
-            'title': titles.string,
-            'click': function () {
-              node._onAppend('', '', 'string');
-            }
-          }
-        ]
+        'submenu': appendSubmenu
       }
     ];
 

@@ -3,6 +3,34 @@
 https://github.com/josdejong/jsoneditor
 
 
+## 2017-07-03, version 5.8.1
+
+- Fixed broken minified bundles in folder `dist` (again...).
+
+
+## 2017-07-02, version 5.8.0
+
+- Implemented support for autocompletion. Thanks @israelito3000.
+
+
+## 2017-06-27, version 5.7.2
+
+- Fixed broken minified bundles in folder `dist`
+  (reverted to `uglify-js@2.8.22` for now).
+
+
+## 2017-06-25, version 5.7.1
+
+- Upgraded dependency `ajv` to version `5.2.0`. Resolves warnings in
+  Webpack build processes.
+
+
+## 2017-05-26, version 5.7.0
+
+- Implemented support for template items. Thanks @israelito3000.
+- Upgraded dependencies to the latest versions. Thanks @andreykaipov.
+
+
 ## 2017-04-15, version 5.6.0
 
 - Implemented readonly option for modes `text` and `code.`

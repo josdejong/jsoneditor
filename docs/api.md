@@ -114,6 +114,66 @@ Constructs a new JSONEditor.
 
   Set the Ace editor theme, uses included 'ace/theme/jsoneditor' by default. Please note that only the default theme is included with jsoneditor, so if you specify another one you need to make sure it is loaded.
 
+- `{Object} templates`
+
+  Array of templates that will appear in the context menu, Each template is a json object precreated that can be added as a object value to any node in your document. 
+
+  The following example allow you can create a "Person" node and a "Address" node, each one will appear in your context menu, once you selected the whole json object will be created.
+
+    ```js
+  var options = {
+    templates: [
+          {
+              text: 'Person',
+              title: 'Insert a Person Node',
+              className: 'jsoneditor-type-object',
+              field: 'PersonTemplate',
+              value: {
+                  'firstName': 'John',
+                  'lastName': 'Do',
+                  'age': 28
+              }
+          },
+          {
+              text: 'Address',
+              title: 'Insert a Address Node',
+              field: 'AddressTemplate',
+              value: {
+                  'street': "",
+                  'city': "",
+                  'state': "",
+                  'ZIP code': ""
+              }
+          }
+      ]
+  }
+  ```
+
+- `{Object} autocomplete`
+
+  *autocomplete* will enable this feature in your editor in tree mode, the object have the following **subelements**:
+
+  - `{number[]} confirmKeys`
+
+     Indicate the KeyCodes for trigger confirm completion, by default those keys are:  [39, 35, 9] which are the code for [right, end, tab]
+
+  - `{Function} getOptions (text: string, path: string[], input: string)`
+
+     This function will return your possible options for create the autocomplete selection, you can control dynamically which options you want to display according to the current active editing node.
+     
+     *Parameters:*
+     
+     - `text` : The text in the current node part. (basically the text that the user is editing)
+     - `path` : The document json object that is being edited.
+     - `input` : Can be "field" or "value" depending if the user is editing a field name or a value of a node.
+
+     *Returns:*
+
+     - Can return an array with autocomplete options (strings), for example `['apple','cranberry','raspberry','pie']`
+     - Can return `null` when there are no autocomplete options.
+     - Can return an object `{startFrom: number, options: string[]}`. Here `startFrom` determines the start character from where the existing text will be replaced. `startFrom` is `0` by default, replacing the whole text.
+     - Can return a `Promise` resolving one of the return types above to support asynchronously retrieving a list with options.
+
 
 ### Methods
 
