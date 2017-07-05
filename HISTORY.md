@@ -3,6 +3,12 @@
 https://github.com/josdejong/jsoneditor
 
 
+## not yet released, version 5.8.2
+
+- Select first option from `modes` instead of `tree` when `mode` is not
+  configured. Thanks @bag-man.
+
+
 ## 2017-07-03, version 5.8.1
 
 - Fixed broken minified bundles in folder `dist` (again...).
