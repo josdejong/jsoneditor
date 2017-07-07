@@ -38,7 +38,7 @@
     autocomplete: {
       confirmKeys: [39, 35, 9, 190], // Confirm Autocomplete Keys: [right, end, tab, '.']  // By default are only [right, end, tab]
 
-      getOptions: function (editor, text, path, input) {
+      getOptions: function (text, path, input, editor) {
         if (!text.startsWith(activationChar) || input !== 'value') return [];
         var data = {};
         var startFrom = 0;

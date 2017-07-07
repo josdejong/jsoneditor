@@ -157,15 +157,16 @@ Constructs a new JSONEditor.
 
      Indicate the KeyCodes for trigger confirm completion, by default those keys are:  [39, 35, 9] which are the code for [right, end, tab]
 
-  - `{Function} getOptions (editor: object, text: string, path: string, input: string)`
+  - `{Function} getOptions (editor: object, text: string, path: string[], input: string)`
 
      This function will return your possible options for create the autocomplete selection, you can control dynamically which options you want to display according to the current active editing node.
      
      *Parameters:*
-     - `editor` : The editor instance object that the node belongs to.
+
      - `text`   : The text in the current node part. (basically the text that the user is editing)
-     - `path`   : The json path of the node that is being edited.
+     - `path`   : The path of the node that is being edited.
      - `input`  : Can be "field" or "value" depending if the user is editing a field name or a value of a node.
+	 - `editor` : The editor instance object that the node belongs to.
 
      *Returns:*
 
