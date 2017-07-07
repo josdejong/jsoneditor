@@ -1,4 +1,4 @@
-<!DOCTYPE HTML>
+﻿<!DOCTYPE HTML>
 <html>
 <head>
   <title>JSONEditor | Advanced Auto Complete</title>
@@ -38,19 +38,20 @@
     autocomplete: {
       confirmKeys: [39, 35, 9, 190], // Confirm Autocomplete Keys: [right, end, tab, '.']  // By default are only [right, end, tab]
 
-      getOptions: function (text, path, input) {
+      getOptions: function (editor, text, path, input) {
         if (!text.startsWith(activationChar) || input !== 'value') return [];
         var data = {};
         var startFrom = 0;
         var lastPoint = text.lastIndexOf('.');
+        var jsonObj = editor.get();
         if ((lastPoint > 0) && (text.length > 1)) {
-          data = jsonpath.query(path, '$.' + text.substring(activationChar.length, lastPoint));
-          if (data.length > 0) data = data[0]; else data = {};
-          // Indicate that autocompletion should start after the . (ignoring the first part)
-          startFrom = text.lastIndexOf('.') + 1;
+            data = jsonpath.query(jsonObj, '$.' + text.substring(activationChar.length, lastPoint));
+            if (data.length > 0) data = data[0]; else data = {};
+            // Indicate that autocompletion should start after the . (ignoring the first part)
+            startFrom = text.lastIndexOf('.') + 1;
         }
         else
-          data = path;
+            data = jsonObj;
 
         var optionsStr = YaskON.stringify(data, null, activationChar);
         var options = optionsStr.split('\n');
