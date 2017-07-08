@@ -24,8 +24,8 @@
  * Copyright (c) 2011-2017 Jos de Jong, http://jsoneditoronline.org
  *
  * @author  Jos de Jong, <wjosdejong@gmail.com>
- * @version 5.8.1
- * @date    2017-07-03
+ * @version 5.8.2
+ * @date    2017-07-08
  */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
@@ -215,7 +215,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  this.options = options || {};
 	  this.json = json || {};
 
-	  var mode = this.options.mode || 'tree';
+	  var mode = this.options.modes ? this.options.modes[0] : this.options.mode || 'tree';
 	  this.setMode(mode);
 	};
 
@@ -9567,7 +9567,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	          // Activate autocomplete
 	          setTimeout(function (hnode, element) {
 	              if (element.innerText.length > 0) {
-	                  var result = this.options.autocomplete.getOptions(element.innerText, editor.get(), jsonElementType);
+	                  var result = this.options.autocomplete.getOptions(element.innerText, hnode.getPath(), jsonElementType, hnode.editor);
 	                  if (typeof result.then === 'function') {
 	                      // probably a promise
 	                      if (result.then(function (obj) {
@@ -12460,16 +12460,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	 */
 	Node.prototype.getLevel = function() {
 	  return (this.parent ? this.parent.getLevel() + 1 : 0);
-	};
-
-	/**
-	 * Get path of the root node till the current node
-	 * @return {Node[]} Returns an array with nodes
-	 */
-	Node.prototype.getNodePath = function() {
-	  var path = this.parent ? this.parent.getNodePath() : [];
-	  path.push(this);
-	  return path;
 	};
 
 	/**

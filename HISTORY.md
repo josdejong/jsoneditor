@@ -3,10 +3,12 @@
 https://github.com/josdejong/jsoneditor
 
 
-## not yet released, version 5.8.2
+## 2017-07-08, version 5.8.2
 
 - Select first option from `modes` instead of `tree` when `mode` is not
   configured. Thanks @bag-man.
+- Some fixes and improvements in the API of autocompletion.
+  Thanks @israelito3000.
 
 
 ## 2017-07-03, version 5.8.1
