@@ -35,9 +35,9 @@
     modes: ['text', 'tree'],
     autocomplete: {
       applyTo:['value'],
-      getOptions: function (text, path) {
+      getOptions: function (text, path, input, editor) {
         return new Promise(function (resolve, reject) {
-          var options = extractUniqueWords(path);
+          var options = extractUniqueWords(editor.get());
           if (options.length > 0) resolve(options); else reject();
         });
       }
