@@ -102,6 +102,11 @@ Constructs a new JSONEditor.
 
   See [http://json-schema.org/](http://json-schema.org/) for more information.
 
+- `{Object} schemaRefs`
+
+  Schemas that are referenced using the `$ref` property from the JSON schema that are set in the `schema` option,
+  the object structure in the form of `{reference_key: schemaObject}`
+
 - `{boolean} search`
 
   Enables a search box in the upper right corner of the JSONEditor. True by default. Only applicable when `mode` is 'tree', 'view', or 'form'.
@@ -224,7 +229,7 @@ Set a field name for the root node.
 
   Field name of the root node. If undefined, the current name will be removed.
 
-#### `JSONEditor.setSchema(schema)`
+#### `JSONEditor.setSchema(schema [,schemaRefs])`
 
 Set a JSON schema for validation of the JSON object. See also option `schema`.
 See [http://json-schema.org/](http://json-schema.org/) for more information on the JSON schema definition.
@@ -234,6 +239,10 @@ See [http://json-schema.org/](http://json-schema.org/) for more information on t
 - `{Object} schema`
 
   A JSON schema.
+
+- `{Object} schemaRefs`
+
+  Optional, Schemas that are referenced using the `$ref` property from the JSON schema, the object structure in the form of `{reference_key: schemaObject}`
 
 #### `JSONEditor.setText(jsonString)`
 
