@@ -112,6 +112,7 @@ treemode._setOptions = function (options) {
     mode: 'tree',
     name: undefined,   // field name of root node
     schema: null,
+    schemaRefs: null,
     autocomplete: null
   };
 
@@ -125,7 +126,7 @@ treemode._setOptions = function (options) {
   }
 
   // compile a JSON schema validator if a JSON schema is provided
-  this.setSchema(this.options.schema);
+  this.setSchema(this.options.schema, this.options.schemaRefs);
 
   // create a debounced validate function
   this._debouncedValidate = util.debounce(this.validate.bind(this), this.DEBOUNCE_INTERVAL);
