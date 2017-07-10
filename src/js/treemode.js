@@ -125,15 +125,8 @@ treemode._setOptions = function (options) {
     }
   }
 
-  // set schema refs before schema compile, is available
-  if (this.options.schemaRefs) {
-    for (var ref in this.options.schemaRefs) {
-      this.setSchemaRef(this.options.schemaRefs[ref], ref);
-    }
-  }
-  
   // compile a JSON schema validator if a JSON schema is provided
-  this.setSchema(this.options.schema);
+  this.setSchema(this.options.schema, this.options.schemaRefs);
 
   // create a debounced validate function
   this._debouncedValidate = util.debounce(this.validate.bind(this), this.DEBOUNCE_INTERVAL);

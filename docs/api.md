@@ -228,7 +228,7 @@ Set a field name for the root node.
 
   Field name of the root node. If undefined, the current name will be removed.
 
-#### `JSONEditor.setSchema(schema)`
+#### `JSONEditor.setSchema(schema [,schemaRefs])`
 
 Set a JSON schema for validation of the JSON object. See also option `schema`.
 See [http://json-schema.org/](http://json-schema.org/) for more information on the JSON schema definition.
@@ -239,19 +239,9 @@ See [http://json-schema.org/](http://json-schema.org/) for more information on t
 
   A JSON schema.
 
-#### `JSONEditor.setSchemaRef(schema, ref)`
+- `{Object} schemaRefs`
 
-Set a schema that are referenced from the schema that are set on the `schema` option. See also option `schemaRefs`.
-
-*Parameters:*
-
-- `{Object} schema`
-
-  A JSON schema.
-
-- `{String} ref`
-
-  The reference key.
+  Optional, Schemas that are referenced using the `$ref` property from the JSON schema, the object structure in the form of `{reference_key: schemaObject}`
 
 #### `JSONEditor.setText(jsonString)`
 

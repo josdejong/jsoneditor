@@ -270,55 +270,40 @@ JSONEditor.prototype._onError = function(err) {
 };
 
 /**
- * Returns ajv instance, initiates if not exists
- * @returns {Object} ajv
+ * Set a JSON schema for validation of the JSON object.
+ * To remove the schema, call JSONEditor.setSchema(null)
+ * @param {Object | null} schema
+ * @param {Object.<string, Object>=} schemaRefs Schemas that are referenced using the `$ref` property from the JSON schema that are set in the `schema` option,
+ +  the object structure in the form of `{reference_key: schemaObject}`
  */
-JSONEditor.prototype._getAjvInstance = function () {
-  if (!this.ajv) {
+JSONEditor.prototype.setSchema = function (schema, schemaRefs) {
+  // compile a JSON schema validator if a JSON schema is provided
+  if (schema) {
+    var ajv;
     try {
       // grab ajv from options if provided, else create a new instance
-      this.ajv = this.options.ajv || Ajv({ allErrors: true, verbose: true });
+      ajv = this.options.ajv || Ajv({ allErrors: true, verbose: true });
 
     }
     catch (err) {
       console.warn('Failed to create an instance of Ajv, JSON Schema validation is not available. Please use a JSONEditor bundle including Ajv, or pass an instance of Ajv as via the configuration option `ajv`.');
     }
-  } 
-  return this.ajv;
-};
-
-/**
- * Set reference schema object for schema which is depended with other schemas using <pre><code>$ref</code></pre>
- * @param {Object} schema Schema object
- * @param {String} ref    reference key
- */
-JSONEditor.prototype.setSchemaRef = function (schema, ref) {
-  if (schema && ref) {
-    var ajv = this._getAjvInstance();
 
     if (ajv) {
-      ajv.removeSchema(ref);
-      ajv.addSchema(schema, ref);
-    }
-  }
-};
+      if(schemaRefs) {
+        for (var ref in schemaRefs) {
+          ajv.removeSchema(ref);  // When updating a schema - old refs has to be removed first
+          if(schemaRefs[ref]) {
+            ajv.addSchema(schemaRefs[ref], ref);
+          }
+        }
+        this.options.schemaRefs = schemaRefs;
+      }
+      this.validateSchema = ajv.compile(schema);
 
-/**
- * Set a JSON schema for validation of the JSON object.
- * To remove the schema, call JSONEditor.setSchema(null)
- * @param {Object | null} schema
- */
-JSONEditor.prototype.setSchema = function (schema) {
-  // compile a JSON schema validator if a JSON schema is provided
-  if (schema) {
-    var ajv = this._getAjvInstance();
-
-    if (ajv) {
-        this.validateSchema = ajv.compile(schema);
-
-        // add schema to the options, so that when switching to an other mode,
-        // the set schema is not lost
-        this.options.schema = schema;
+      // add schema to the options, so that when switching to an other mode,
+      // the set schema is not lost
+      this.options.schema = schema;
 
       // validate now
       this.validate();
@@ -330,6 +315,7 @@ JSONEditor.prototype.setSchema = function (schema) {
     // remove current schema
     this.validateSchema = null;
     this.options.schema = null;
+    this.options.schemaRefs = null;
     this.validate(); // to clear current error messages
     this.refresh();  // update DOM
   }
