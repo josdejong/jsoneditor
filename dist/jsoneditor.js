@@ -26091,16 +26091,36 @@ return /******/ (function(modules) { // webpackBootstrap
 	        }
 	    };
 
-	    this.$stopWorker = function() {
-	        if (this.$worker) {
-	            this.$worker.terminate();
-	            this.$worker = null;
-	        }
+	   //ADD BY YUPENG TO REMOVE Worker
+		this.arr = [];
+		this.$stopWorker = function() {
+			var index = 0;
+			for(var i = this.arr.length - 1 ; i >= 0 ; i--){
+				if(this.arr[i] !== null){
+					index ++;
+				}
+				if(index >= 2 && this.arr[i]){
+					this.arr[i].terminate();
+					this.arr[i] = null;
+				}
+			}
 	    };
+
+	    // this.$stopWorker = function() {
+	    //     if (this.$worker) {
+	    //         this.$worker.terminate();
+	    //         this.$worker = null;
+	    //     }
+	    // };
+
+		//end by yupeng
 
 	    this.$startWorker = function() {
 	        try {
 	            this.$worker = this.$mode.createWorker(this);
+				//ADD BY YUPENG 
+				this.arr.push(this.$worker);
+				//end by yupeng
 	        } catch (e) {
 	            config.warn("Could not load worker", e);
 	            this.$worker = null;
