@@ -3,6 +3,14 @@
 https://github.com/josdejong/jsoneditor
 
 
+## 2017-07-10, version 5.8.3
+
+- Fixed #429: JSONEditor no longer accepting an empty array for option
+  `modes`. Thanks @trystan2k.
+- Fixed JSONEditor picking the first entry of `modes` as initial mode
+  instead of option `mode`.
+
+
 ## 2017-07-08, version 5.8.2
 
 - Select first option from `modes` instead of `tree` when `mode` is not
