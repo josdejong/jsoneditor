@@ -3,8 +3,10 @@
 https://github.com/josdejong/jsoneditor
 
 
-## 2017-07-10, version 5.8.3
+## 2017-07-10, version 5.9.0
 
+- Implemented support for JSON schema references `$ref`, see #302.
+  Thanks @meirotstein.
 - Fixed #429: JSONEditor no longer accepting an empty array for option
   `modes`. Thanks @trystan2k.
 - Fixed JSONEditor picking the first entry of `modes` as initial mode

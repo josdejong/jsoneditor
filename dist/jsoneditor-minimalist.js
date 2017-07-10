@@ -24,8 +24,8 @@
  * Copyright (c) 2011-2017 Jos de Jong, http://jsoneditoronline.org
  *
  * @author  Jos de Jong, <wjosdejong@gmail.com>
- * @version 5.8.2
- * @date    2017-07-08
+ * @version 5.9.0
+ * @date    2017-07-10
  */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
@@ -164,7 +164,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    // validate options
 	    if (options) {
 	      var VALID_OPTIONS = [
-	        'ajv', 'schema','templates',
+	        'ajv', 'schema', 'schemaRefs','templates',
 	        'ace', 'theme','autocomplete',
 	        'onChange', 'onEditable', 'onError', 'onModeChange',
 	        'escapeUnicode', 'history', 'search', 'mode', 'modes', 'name', 'indentation', 'sortObjectKeys'
@@ -215,7 +215,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  this.options = options || {};
 	  this.json = json || {};
 
-	  var mode = this.options.modes ? this.options.modes[0] : this.options.mode || 'tree';
+	  var mode = this.options.mode || (this.options.modes && this.options.modes[0]) || 'tree';
 	  this.setMode(mode);
 	};
 
@@ -358,8 +358,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * Set a JSON schema for validation of the JSON object.
 	 * To remove the schema, call JSONEditor.setSchema(null)
 	 * @param {Object | null} schema
+	 * @param {Object.<string, Object>=} schemaRefs Schemas that are referenced using the `$ref` property from the JSON schema that are set in the `schema` option,
+	 +  the object structure in the form of `{reference_key: schemaObject}`
 	 */
-	JSONEditor.prototype.setSchema = function (schema) {
+	JSONEditor.prototype.setSchema = function (schema, schemaRefs) {
 	  // compile a JSON schema validator if a JSON schema is provided
 	  if (schema) {
 	    var ajv;
@@ -373,11 +375,20 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }
 
 	    if (ajv) {
-	        this.validateSchema = ajv.compile(schema);
+	      if(schemaRefs) {
+	        for (var ref in schemaRefs) {
+	          ajv.removeSchema(ref);  // When updating a schema - old refs has to be removed first
+	          if(schemaRefs[ref]) {
+	            ajv.addSchema(schemaRefs[ref], ref);
+	          }
+	        }
+	        this.options.schemaRefs = schemaRefs;
+	      }
+	      this.validateSchema = ajv.compile(schema);
 
-	        // add schema to the options, so that when switching to an other mode,
-	        // the set schema is not lost
-	        this.options.schema = schema;
+	      // add schema to the options, so that when switching to an other mode,
+	      // the set schema is not lost
+	      this.options.schema = schema;
 
 	      // validate now
 	      this.validate();
@@ -389,6 +400,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    // remove current schema
 	    this.validateSchema = null;
 	    this.options.schema = null;
+	    this.options.schemaRefs = null;
 	    this.validate(); // to clear current error messages
 	    this.refresh();  // update DOM
 	  }
@@ -588,6 +600,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    mode: 'tree',
 	    name: undefined,   // field name of root node
 	    schema: null,
+	    schemaRefs: null,
 	    autocomplete: null
 	  };
 
@@ -601,7 +614,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  }
 
 	  // compile a JSON schema validator if a JSON schema is provided
-	  this.setSchema(this.options.schema);
+	  this.setSchema(this.options.schema, this.options.schemaRefs);
 
 	  // create a debounced validate function
 	  this._debouncedValidate = util.debounce(this.validate.bind(this), this.DEBOUNCE_INTERVAL);
@@ -8677,7 +8690,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }
 	  }
 
-	  this.setSchema(this.options.schema);
+	  this.setSchema(this.options.schema, this.options.schemaRefs);
 	};
 
 	/**
