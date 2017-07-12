@@ -22,6 +22,7 @@ import JSONNodeView from './JSONNodeView'
 import JSONNodeForm from './JSONNodeForm'
 import ModeButton from './menu/ModeButton'
 import Search from './menu/Search'
+import { moveUp, moveDown, moveLeft, moveRight } from './util/domSelector'
 import { keyComboFromEvent } from '../utils/keyBindings'
 
 import type { JSONData, JSONPatch } from '../types'
@@ -51,7 +52,23 @@ export default class TreeMode extends Component {
       'duplicate': ['Ctrl+D', 'Command+D'],
       'insert':    ['Ctrl+Insert', 'Command+Insert'],
       'remove':    ['Ctrl+Delete', 'Command+Delete'],
-      'openUrl':   ['Ctrl+4', 'Ctrl+Enter', 'Command+Enter']
+      'up':        ['Alt+Up', 'Option+Up'],
+      'down':      ['Alt+Down', 'Option+Down'],
+      'left':      ['Alt+Left', 'Option+Left'],
+      'right':     ['Alt+Right', 'Option+Right'],
+      'openUrl':   ['Ctrl+Enter', 'Command+Enter']
+      // TODO: implement all quick keys
+      // Ctrl+Shift+Arrow Up/Down	Select multiple fields
+      // Shift+Alt+Arrows	Move current field or selected fields up/down/left/right
+      // Ctrl+Ins	Insert a new field with type auto
+      // Ctrl+Shift+Ins	Append a new field with type auto
+      // Ctrl+E	Expand or collapse field
+      // Ctrl+F	Find
+      // F3, Ctrl+G	Find next
+      // Shift+F3, Ctrl+Shift+G	Find previous
+      // Ctrl+M	Show actions menu
+      // Ctrl+Z	Undo last action
+      // Ctrl+Shift+Z	Redo
     }
 
     this.state = {
@@ -147,9 +164,7 @@ export default class TreeMode extends Component {
 
     return h('div', {
       className: `jsoneditor jsoneditor-mode-${props.mode}`,
-      'onKeyDown': (event) => {
-        // console.log('keydown', keyComboFromEvent(event), this.findKeyBinding(keyComboFromEvent(event)))
-      },
+      'onKeyDown': this.handleKeyDown,
       'data-jsoneditor': 'true'
     }, [
       this.renderMenu(searchResults ? searchResults.length : null),
@@ -279,6 +294,30 @@ export default class TreeMode extends Component {
     }
 
     return []
+  }
+
+  handleKeyDown = (event) => {
+    const keyBinding = this.findKeyBinding(event)
+
+    if (keyBinding === 'up') {
+      event.preventDefault()
+      moveUp(event.target)
+    }
+
+    if (keyBinding === 'down') {
+      event.preventDefault()
+      moveDown(event.target)
+    }
+
+    if (keyBinding === 'left') {
+      event.preventDefault()
+      moveLeft(event.target)
+    }
+
+    if (keyBinding === 'right') {
+      event.preventDefault()
+      moveRight(event.target)
+    }
   }
 
   /** @private */

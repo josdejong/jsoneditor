@@ -149,6 +149,7 @@ export default class JSONNode extends Component {
    */
   renderAppend (text) {
     return h('div', {
+        name: compileJSONPointer(this.props.path) + '/#',
         className: 'jsoneditor-node',
         onKeyDown: this.handleKeyDownAppend
       }, [
@@ -504,52 +505,6 @@ export default class JSONNode extends Component {
     const expanded = !this.props.data.expanded
 
     this.props.events.onExpand(this.props.path, expanded, recurse)
-  }
-
-  /** @private */
-  handleContextMenu = (event) => {
-    event.stopPropagation()
-
-    if (this.state.menu) {
-      // hide context menu
-      JSONNode.hideActionMenu()
-    }
-    else {
-      // hide any currently visible context menu
-      JSONNode.hideActionMenu()
-
-      // show context menu
-      this.setState({
-        menu: {
-          anchor: event.target,
-          root: JSONNode.findRootElement(event)
-        }
-      })
-      activeContextMenu = this
-    }
-  }
-
-  /** @private */
-  handleAppendContextMenu = (event) => {
-    event.stopPropagation()
-
-    if (this.state.appendMenu) {
-      // hide append context menu
-      JSONNode.hideActionMenu()
-    }
-    else {
-      // hide any currently visible context menu
-      JSONNode.hideActionMenu()
-
-      // show append context menu
-      this.setState({
-        appendMenu: {
-          anchor: event.target,
-          root: JSONNode.findRootElement(event)
-        }
-      })
-      activeContextMenu = this
-    }
   }
 
   /**

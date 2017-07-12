@@ -70,6 +70,24 @@ export function getInnerText (element, buffer) {
 }
 
 
+/**
+ * Select all text of a content editable div.
+ * http://stackoverflow.com/a/3806004/1262753
+ * @param {Element} contentEditableElement   A content editable div
+ */
+export function selectContentEditable(contentEditableElement) {
+  if (!contentEditableElement || contentEditableElement.nodeName !== 'DIV') {
+    return
+  }
+
+  if (window.getSelection && document.createRange) {
+    const range = document.createRange();
+    range.selectNodeContents(contentEditableElement)
+    const sel = window.getSelection()
+    sel.removeAllRanges()
+    sel.addRange(range)
+  }
+}
 
 /**
  * Find the parent node of an element which has an attribute with given value.
