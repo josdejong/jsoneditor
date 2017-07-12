@@ -69,6 +69,21 @@ export function getInnerText (element, buffer) {
   return ''
 }
 
+/**
+ * Get text selection
+ * http://stackoverflow.com/questions/4687808/contenteditable-selected-text-save-and-restore
+ * @return {Range | TextRange | null} range
+ */
+export function getSelection() {
+  if (window.getSelection) {
+    const sel = window.getSelection()
+    if (sel.getRangeAt && sel.rangeCount) {
+      return sel.getRangeAt(0)
+    }
+  }
+
+  return null
+}
 
 /**
  * Select all text of a content editable div.

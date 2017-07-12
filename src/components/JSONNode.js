@@ -176,7 +176,6 @@ export default class JSONNode extends Component {
 
       return h('div', {
         key: 'property',
-        ref: 'property',
         className: 'jsoneditor-property jsoneditor-readonly',
         spellCheck: 'false',
         onBlur: this.handleChangeProperty
@@ -221,7 +220,6 @@ export default class JSONNode extends Component {
     if (editable) {
       return h('div', {
         key: 'value',
-        ref: 'value',
         className: JSONNode.getValueClass(type, itsAnUrl, isEmpty) +
             JSONNode.getSearchResultClass(searchResult),
         contentEditable: 'true',
@@ -246,7 +244,6 @@ export default class JSONNode extends Component {
     if (error) {
       return h('button', {
           key: 'error',
-          ref: 'error',
           type: 'button',
           className: 'jsoneditor-schema-error',
           onFocus: this.updatePopoverDirection,
@@ -274,9 +271,7 @@ export default class JSONNode extends Component {
         const  direction = directions[i]
         popover.className = 'jsoneditor-popover jsoneditor-' + direction
 
-        // FIXME: the contentRect is that of the whole contents, not the visible window
-        // TODO: use a ref on the root of the node instead of this parentNode chain?
-        const contents = this.refs.error.parentNode.parentNode.parentNode
+        const contents = event.target.parentNode.parentNode.parentNode
         const contentRect = contents.getBoundingClientRect()
         const popoverRect = popover.getBoundingClientRect()
         const margin = 20 // account for a scroll bar
@@ -406,23 +401,6 @@ export default class JSONNode extends Component {
     }
 
     return false
-  }
-
-  componentDidUpdate (prevProps, prevState) {
-    if (this.props.prop && this.props.prop.focus &&
-        !(prevProps.props.prop && prevProps.props.prop.focus)) {
-      console.log('focus property', this.props.path) // TODO: cleanup
-      if (this.refs.property) {
-        this.refs.property.focus()
-      }
-    }
-
-    if (this.props.data.focus && !prevProps.data.focus) {
-      console.log('focus value', this.props.path) // TODO: cleanup
-      if (this.refs.value) {
-        this.refs.value.focus()
-      }
-    }
   }
 
   static getRootName (data, options) {

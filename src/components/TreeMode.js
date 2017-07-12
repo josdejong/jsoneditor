@@ -22,7 +22,9 @@ import JSONNodeView from './JSONNodeView'
 import JSONNodeForm from './JSONNodeForm'
 import ModeButton from './menu/ModeButton'
 import Search from './menu/Search'
-import { moveUp, moveDown, moveLeft, moveRight } from './util/domSelector'
+import {
+  moveUp, moveDown, moveLeft, moveRight, moveDownSibling, findNode
+} from './utils/domSelector'
 import { keyComboFromEvent } from '../utils/keyBindings'
 
 import type { JSONData, JSONPatch } from '../types'
@@ -343,24 +345,47 @@ export default class TreeMode extends Component {
   /** @private */
   handleInsert = (path, type) => {
     this.handlePatch(insert(this.state.data, path, type))
-    // FIXME: apply focus to new field
+
+    // apply focus to new node
+    this.focusToNext(path)
   }
 
   /** @private */
   handleAppend = (parentPath, type) => {
     this.handlePatch(append(this.state.data, parentPath, type))
-    // FIXME: apply focus to new field
+
+    // apply focus to new node
+    this.focusToNext(parentPath)
   }
 
   /** @private */
   handleDuplicate = (path) => {
     this.handlePatch(duplicate(this.state.data, path))
+
+    // apply focus to the duplicated node
+    this.focusToNext(path)
   }
 
   /** @private */
   handleRemove = (path) => {
+    // apply focus to next sibling element if existing, else to the previous element
+    const fromElement = findNode(this.refs.contents, compileJSONPointer(path))
+    const success = moveDownSibling(fromElement, 'property')
+    if (!success) {
+      moveUp(fromElement, 'property')
+    }
+
     this.handlePatch(remove(path))
-    // FIXME: apply focus next/prev field
+  }
+
+  focusToNext (path) {
+    // apply focus to new element
+    setTimeout(() => {
+      const element = findNode(this.refs.contents, compileJSONPointer(path))
+      if (element) {
+        moveDown(element, 'property')
+      }
+    })
   }
 
   /** @private */

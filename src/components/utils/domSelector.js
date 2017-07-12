@@ -1,50 +1,76 @@
-import { selectContentEditable } from '../../utils/domUtils'
+import { selectContentEditable, getSelection as getDOMSelection } from '../../utils/domUtils'
 
 // singleton
 let lastInputName = null
 
 /**
  * Move the selection to the input field above current selected input
- * Heavily relies on classNames of the JSONEditor DOM
  * @param {Element} fromElement
+ * @param {String} [inputName] Optional name of the input where to move the focus
+ * @return {boolean} Returns true when successfully moved down
  */
-export function moveUp (fromElement) {
+export function moveUp (fromElement, inputName = null) {
   const prev = findPreviousNode(fromElement)
   if (prev) {
     if (!lastInputName) {
-      lastInputName = getInputName(fromElement)
+      lastInputName = inputName || getInputName(fromElement)
     }
 
     const container = findContainer(fromElement)
-    setSelection(container, prev.getAttribute('name'), lastInputName)
+    return setSelection(container, prev.getAttribute('name'), lastInputName)
   }
+
+  return false
 }
 
 /**
  * Move the selection to the input field below current selected input
- * Heavily relies on classNames of the JSONEditor DOM
  * @param {Element} fromElement
+ * @param {String} [inputName] Optional name of the input where to move the focus
+ * @return {boolean} Returns true when successfully moved up
  */
-export function moveDown (fromElement) {
-  const prev = findNextNode(fromElement)
-  if (prev) {
+export function moveDown (fromElement, inputName = null) {
+  const next = findNextNode(fromElement)
+  if (next) {
     if (!lastInputName) {
-      lastInputName = getInputName(fromElement)
+      lastInputName = inputName || getInputName(fromElement)
     }
 
     const container = findContainer(fromElement)
-    setSelection(container, prev.getAttribute('name'), lastInputName)
+    return setSelection(container, next.getAttribute('name'), lastInputName)
   }
+
+  return false
+}
+
+/**
+ * Move the selection to the input field below current selected input,
+ * to the first that is not a child of current node
+ * @param {Element} fromElement
+ * @param {String} [inputName] Optional name of the input where to move the focus
+ * @return {boolean} Returns true when successfully moved up
+ */
+export function moveDownSibling (fromElement, inputName = null) {
+  const next = findNextSibling(fromElement)
+  if (next) {
+    if (!lastInputName) {
+      lastInputName = inputName || getInputName(fromElement)
+    }
+
+    const container = findContainer(fromElement)
+    return setSelection(container, next.getAttribute('name'), lastInputName)
+  }
+
+  return false
 }
 
 /**
  * Move the selection to the input field left from current selected input
- * Heavily relies on classNames of the JSONEditor DOM
  * @param {Element} fromElement
  */
 export function moveLeft (fromElement) {
   const container = findContainer(fromElement)
-  const node = findNode(fromElement, 'jsoneditor-node')
+  const node = findBaseNode(fromElement)
   const inputName = getInputName(fromElement)
   lastInputName = findInput(node, inputName, 'left')
   setSelection(container, node.getAttribute('name'), lastInputName)
@@ -52,12 +78,11 @@ export function moveLeft (fromElement) {
 
 /**
  * Move the selection to the input field right from current selected input
- * Heavily relies on classNames of the JSONEditor DOM
  * @param {Element} fromElement
  */
 export function moveRight (fromElement) {
   const container = findContainer(fromElement)
-  const node = findNode(fromElement, 'jsoneditor-node')
+  const node = findBaseNode(fromElement)
   const inputName = getInputName(fromElement)
   lastInputName = findInput(node, inputName, 'right')
   setSelection(container, node.getAttribute('name'), lastInputName)
@@ -66,11 +91,13 @@ export function moveRight (fromElement) {
 /**
  * Set selection to a specific node and input field
  * @param {Element} container
- * @param {JSONPointer} path
+ * @param {String} path
  * @param {string} inputName
+ * @return {boolean} Returns true when successfully set
  */
+// TODO: pass string[] as path instead of JSONPointer?
 export function setSelection (container, path, inputName) {
-  const node = container.querySelector(`div[name="${path}"]`)
+  const node = findNode(container, path)
   if (node) {
     const closestInputName = findInput(node, inputName, 'closest')
     const element = findInputName(node, closestInputName)
@@ -79,12 +106,38 @@ export function setSelection (container, path, inputName) {
       if (element.nodeName === 'DIV') {
         selectContentEditable(element)
       }
+      return true
     }
   }
+
+  return false
 }
 
+export function findNode (container, path) {
+  return container.querySelector(`div[name="${path}"]`)
+}
+
+// TODO: fully implement getSelection, or cleanup if not needed
+// function getSelectedElement () {
+//   const selection = getDOMSelection()
+//   return selection ? selection.startContainer : null
+// }
+//
+// export function getSelection () {
+//   const element = getSelectedElement()
+//   const node = findBaseNode(element)
+//
+//   return {
+//     path: node.getAttribute('name') // TODO: return parsed JSONPointer instead?
+//   }
+// }
+
 function findContainer (element) {
-  return findNode (element, 'jsoneditor-tree-contents')
+  return findParent (element, 'jsoneditor-tree-contents')
+}
+
+function findBaseNode (element) {
+  return findParent (element, 'jsoneditor-node')
 }
 
 /**
@@ -93,10 +146,10 @@ function findContainer (element) {
  * @param {string} className
  * @return {Element} Returns the base element of the node
  */
-function findNode (element, className) {
+function findParent (element, className) {
   let e = element
   do {
-    if (e && e.className.includes(className)) {
+    if (e && e.className && e.className.includes(className)) {
       return e
     }
 
@@ -109,9 +162,9 @@ function findNode (element, className) {
 
 function findPreviousNode (element) {
   const container = findContainer(element)
-  const node = findNode(element, 'jsoneditor-node')
+  const node = findBaseNode(element)
 
-  // TODO: implement a faster way to find the previous node, by walking the DOM tree back, instead of a slow find all query
+  // TODO: is the following querySelectorAll a performance bottleneck?
   const all = Array.from(container.querySelectorAll('div.jsoneditor-node'))
   const index = all.indexOf(node)
 
@@ -120,13 +173,25 @@ function findPreviousNode (element) {
 
 function findNextNode (element) {
   const container = findContainer(element)
-  const node = findNode(element, 'jsoneditor-node')
+  const node = findBaseNode(element)
 
-  // TODO: implement a faster way to find the previous node, by walking the DOM tree, instead of a slow find all query
+  // TODO: is the following querySelectorAll a performance bottleneck?
   const all = Array.from(container.querySelectorAll('div.jsoneditor-node'))
   const index = all.indexOf(node)
 
   return all[index + 1]
+}
+
+function findNextSibling (element) {
+  const container = findContainer(element)
+  const node = findBaseNode(element)
+
+  // TODO: is the following querySelectorAll a performance bottleneck?
+  const all = Array.from(container.querySelectorAll('div.jsoneditor-node'))
+  const index = all.indexOf(node)
+
+  const path = node.getAttribute('name')
+  return all.slice(index).find(e => !e.getAttribute('name').startsWith(path))
 }
 
 /**
