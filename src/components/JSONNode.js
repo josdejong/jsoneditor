@@ -2,27 +2,20 @@
 
 import { createElement as h, Component } from 'react'
 
-import ActionButton from './menu/ActionButton'
-import AppendActionButton from './menu/AppendActionButton'
+import ActionMenu from './menu/ActionMenu'
 import { escapeHTML, unescapeHTML } from '../utils/stringUtils'
-import { getInnerText, insideRect } from '../utils/domUtils'
+import { getInnerText, insideRect, findParentNode } from '../utils/domUtils'
 import { stringConvert, valueType, isUrl } from  '../utils/typeUtils'
 import { compileJSONPointer } from  '../jsonData'
 
 import type { PropertyData, JSONData, SearchResultStatus } from '../types'
 
-/**
- * @type {JSONNode | null} activeContextMenu  singleton holding the JSONNode having
- *                                            the active (visible) context menu
- */
-let activeContextMenu = null
-
 export default class JSONNode extends Component {
   static URL_TITLE = 'Ctrl+Click or Ctrl+Enter to open url'
 
   state = {
-    menu: null,        // context menu
-    appendMenu: null,  // append context menu (used in placeholder of empty object/array)
+    menu: null,       // can contain object {anchor, root}
+    appendMenu: null, // can contain object {anchor, root}
   }
 
   render () {
@@ -48,6 +41,7 @@ export default class JSONNode extends Component {
         className: 'jsoneditor-node jsoneditor-object'
       }, [
       this.renderExpandButton(),
+      this.renderActionMenu('update', this.state.menu, this.handleCloseActionMenu),
       this.renderActionMenuButton(),
       this.renderProperty(prop, index, data, options),
       this.renderReadonly(`{${childCount}}`, `Array containing ${childCount} items`),
@@ -93,6 +87,7 @@ export default class JSONNode extends Component {
         className: 'jsoneditor-node jsoneditor-array'
       }, [
       this.renderExpandButton(),
+      this.renderActionMenu('update', this.state.menu, this.handleCloseActionMenu),
       this.renderActionMenuButton(),
       this.renderProperty(prop, index, data, options),
       this.renderReadonly(`[${childCount}]`, `Array containing ${childCount} items`),
@@ -134,6 +129,7 @@ export default class JSONNode extends Component {
         className: 'jsoneditor-node'
       }, [
       this.renderPlaceholder(),
+      this.renderActionMenu('update', this.state.menu, this.handleCloseActionMenu),
       this.renderActionMenuButton(),
       this.renderProperty(prop, index, data, options),
       this.renderSeparator(),
@@ -154,7 +150,8 @@ export default class JSONNode extends Component {
         onKeyDown: this.handleKeyDownAppend
       }, [
       this.renderPlaceholder(),
-      this.renderAppendMenuButton(),
+      this.renderActionMenu('append', this.state.appendMenu, this.handleCloseAppendActionMenu),
+      this.renderAppendActionMenuButton(),
       this.renderReadonly(text)
     ])
   }
@@ -167,6 +164,7 @@ export default class JSONNode extends Component {
     return h('div', {key: 'readonly', className: 'jsoneditor-readonly', title}, text)
   }
 
+  // TODO: simplify the method renderProperty
   renderProperty (prop: ?PropertyData, index: ?number, data: JSONData, options: {escapeUnicode: boolean, isPropertyEditable: (path: string) => boolean}) {
     const isIndex = typeof index === 'number'
 
@@ -368,21 +366,87 @@ export default class JSONNode extends Component {
     )
   }
 
-  renderActionMenuButton () {
-    return h(ActionButton, {
-      key: 'action',
+  // TODO: simplify code for the two action menus
+  renderActionMenu (menuType, menuState, onClose) {
+    if (!menuState) {
+      return null
+    }
+
+    return h(ActionMenu, {
+      key: 'menu',
       path: this.props.path,
+      events: this.props.events,
       type: this.props.data.type,
-      events: this.props.events
+
+      menuType,
+      open: true,
+      anchor: menuState.anchor,
+      root: menuState.root,
+
+      onRequestClose: onClose
     })
   }
 
-  renderAppendMenuButton () {
-    return h(AppendActionButton, {
-      key: 'append',
-      path: this.props.path,
-      events: this.props.events
+  renderActionMenuButton () {
+    const className = 'jsoneditor-button jsoneditor-actionmenu' +
+        ((this.state.open) ? ' jsoneditor-visible' : '')
+
+    return h('div', {className: 'jsoneditor-button-container', key: 'action'}, [
+      h('button', {
+        key: 'button',
+        ref: 'actionMenuButton',
+        className,
+        onClick: this.handleOpenActionMenu
+      })
+    ])
+  }
+
+  renderAppendActionMenuButton () {
+    const className = 'jsoneditor-button jsoneditor-actionmenu' +
+        ((this.state.appendOpen) ? ' jsoneditor-visible' : '')
+
+    return h('div', {className: 'jsoneditor-button-container', key: 'action'}, [
+      h('button', {
+        key: 'button',
+        ref: 'appendActionMenuButton',
+        className,
+        onClick: this.handleOpenAppendActionMenu
+      })
+    ])
+  }
+
+  handleOpenActionMenu = (event) => {
+    // TODO: don't use refs, find root purely via DOM?
+    const root = findParentNode(this.refs.actionMenuButton, 'data-jsoneditor', 'true')
+
+    this.setState({
+      menu: {
+        open: true,
+        anchor: this.refs.actionMenuButton,
+        root
+      }
     })
+  }
+
+  handleCloseActionMenu = () => {
+    this.setState({ menu: null })
+  }
+
+  handleOpenAppendActionMenu = (event) => {
+    // TODO: don't use refs, find root purely via DOM?
+    const root = findParentNode(this.refs.appendActionMenuButton, 'data-jsoneditor', 'true')
+
+    this.setState({
+      appendMenu: {
+        open: true,
+        anchor: this.refs.actionMenuButton,
+        root
+      }
+    })
+  }
+
+  handleCloseAppendActionMenu = () => {
+    this.setState({ appendMenu: null })
   }
 
   shouldComponentUpdate (nextProps, nextState) {
@@ -456,6 +520,18 @@ export default class JSONNode extends Component {
       event.preventDefault()
       this.props.events.onRemove(this.props.path)
     }
+
+    if (keyBinding === 'expand') {
+      event.preventDefault()
+      const recurse = false
+      const expanded = !this.props.data.expanded
+      this.props.events.onExpand(this.props.path, expanded, recurse)
+    }
+
+    if (keyBinding === 'actionMenu') {
+      event.preventDefault()
+      this.handleOpenActionMenu(event)
+    }
   }
 
   /** @private */
@@ -465,6 +541,11 @@ export default class JSONNode extends Component {
     if (keyBinding === 'insert') {
       event.preventDefault()
       this.props.events.onAppend(this.props.path, 'value')
+    }
+
+    if (keyBinding === 'actionMenu') {
+      event.preventDefault()
+      this.handleOpenAppendActionMenu(event)
     }
   }
 
@@ -483,20 +564,6 @@ export default class JSONNode extends Component {
     const expanded = !this.props.data.expanded
 
     this.props.events.onExpand(this.props.path, expanded, recurse)
-  }
-
-  /**
-   * Singleton function to hide the currently visible context menu if any.
-   * @protected
-   */
-  static hideActionMenu () {
-    if (activeContextMenu) {
-      activeContextMenu.setState({
-        menu: null,
-        appendMenu: null
-      })
-      activeContextMenu = null
-    }
   }
 
   /**

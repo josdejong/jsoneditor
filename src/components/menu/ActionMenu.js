@@ -3,17 +3,26 @@ import Menu from './Menu'
 import {
     createChangeType, createSort,
     createSeparator,
-    createInsert, createDuplicate, createRemove
-} from './entries'
+    createInsert, createAppend, createDuplicate, createRemove
+} from './items'
 
 export default class ActionMenu extends Component {
   /**
-   * @param {{open, anchor, root, path, type, events, onRequestClose}} props
-   * @param state
-   * @return {JSX.Element}
+   * props = {open, anchor, root, path, type, menuType, events, onRequestClose}
    */
+
   render () {
-    const { props, state} = this
+    const items = this.props.menuType === 'append'  // update or append
+        ? this.createAppendMenuItems()
+        : this.createActionMenuItems()
+
+    // TODO: implement a hook to adjust the action menu items
+
+    return h(Menu, { ...this.props, items })
+  }
+
+  createActionMenuItems () {
+    const props = this.props
 
     let items = [] // array with menu items
 
@@ -33,11 +42,12 @@ export default class ActionMenu extends Component {
       items.push(createRemove(props.path, props.events.onRemove))
     }
 
-    // TODO: implement a hook to adjust the action menu
+    return items
+  }
 
-    return h(Menu, {
-      ...props,
-      items
-    })
+  createAppendMenuItems () {
+    return [
+      createAppend(this.props.path, this.props.events.onAppend)
+    ]
   }
 }

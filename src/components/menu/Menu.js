@@ -4,6 +4,10 @@ import { findParentNode } from '../../utils/domUtils'
 export let CONTEXT_MENU_HEIGHT = 240
 
 export default class Menu extends Component {
+
+  /**
+   * @param {{open: boolean, items: Array, anchor, root, onRequestClose: function}} props
+   */
   constructor(props) {
     super(props)
 
@@ -14,11 +18,6 @@ export default class Menu extends Component {
     }
   }
 
-  /**
-   * @param {{open: boolean, items: Array, anchor, root, onRequestClose: function}} props
-   * @param state
-   * @return {*}
-   */
   render () {
     if (!this.props.open) {
       return null
@@ -159,7 +158,8 @@ export default class Menu extends Component {
   }
 
   componentWillUnmount () {
-    this.removeRequestCloseListener()
+    // remove on next tick, since a listener can be created on next tick too
+    setTimeout(() => this.removeRequestCloseListener())
   }
 
   updateRequestCloseListener () {
@@ -172,18 +172,14 @@ export default class Menu extends Component {
   }
 
   addRequestCloseListener () {
-    if (!this.handleRequestClose) {
-      // Attach event listener on next tick, else the current click to open
-      // the menu will immediately result in requestClose event as well
-      setTimeout(() => {
-        this.handleRequestClose = (event) => {
-          if (!findParentNode(event.target, 'data-menu', 'true')) {
-            this.props.onRequestClose()
-          }
-        }
+    // Attach event listener on next tick, else the current click to open
+    // the menu will immediately result in requestClose event as well
+    setTimeout(() => {
+      if (this.props.open && !this.handleRequestClose) {
+        this.handleRequestClose = (event) => this.props.onRequestClose()
         window.addEventListener('click', this.handleRequestClose)
-      }, 0)
-    }
+      }
+    })
   }
 
   removeRequestCloseListener () {

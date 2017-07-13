@@ -22,25 +22,25 @@ export function createChangeType (path, type, onChangeType) {
     submenu: [
       {
         text: 'Value',
-        className: 'jsoneditor-type-value' + (type == 'value' ? ' jsoneditor-selected' : ''),
+        className: 'jsoneditor-type-value' + (type === 'value' ? ' jsoneditor-selected' : ''),
         title: TYPE_TITLES.value,
         click: () => onChangeType(path, 'value')
       },
       {
         text: 'Array',
-        className: 'jsoneditor-type-Array' + (type == 'Array' ? ' jsoneditor-selected' : ''),
+        className: 'jsoneditor-type-Array' + (type === 'Array' ? ' jsoneditor-selected' : ''),
         title: TYPE_TITLES.array,
         click: () => onChangeType(path, 'Array')
       },
       {
         text: 'Object',
-        className: 'jsoneditor-type-Object' + (type == 'Object' ? ' jsoneditor-selected' : ''),
+        className: 'jsoneditor-type-Object' + (type === 'Object' ? ' jsoneditor-selected' : ''),
         title: TYPE_TITLES.object,
         click: () => onChangeType(path, 'Object')
       },
       {
         text: 'String',
-        className: 'jsoneditor-type-string' + (type == 'string' ? ' jsoneditor-selected' : ''),
+        className: 'jsoneditor-type-string' + (type === 'string' ? ' jsoneditor-selected' : ''),
         title: TYPE_TITLES.string,
         click: () => onChangeType(path, 'string')
       }
@@ -49,7 +49,7 @@ export function createChangeType (path, type, onChangeType) {
 }
 
 export function createSort (path, order, onSort) {
-  var direction = ((order == 'asc') ? 'desc': 'asc')
+  const direction = ((order === 'asc') ? 'desc': 'asc')
   return {
     text: 'Sort',
     title: 'Sort the childs of this ' + TYPE_TITLES.type,

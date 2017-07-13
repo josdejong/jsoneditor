@@ -38,6 +38,28 @@ const AJV_OPTIONS = {
 const MAX_HISTORY_ITEMS = 1000   // maximum number of undo/redo items to be kept in memory
 const SEARCH_DEBOUNCE = 300      // milliseconds
 
+// TODO: make key bindings configurable
+const KEY_BINDINGS = {
+  'duplicate': ['Ctrl+D', 'Command+D'],
+  'insert':    ['Ctrl+Insert', 'Command+Insert'],
+  'remove':    ['Ctrl+Delete', 'Command+Delete'],
+  'expand':    ['Ctrl+E', 'Command+E'],
+  'actionMenu':['Ctrl+M', 'Command+M'],
+  'up':        ['Alt+Up', 'Option+Up'],
+  'down':      ['Alt+Down', 'Option+Down'],
+  'left':      ['Alt+Left', 'Option+Left'],
+  'right':     ['Alt+Right', 'Option+Right'],
+  'openUrl':   ['Ctrl+Enter', 'Command+Enter']
+  // TODO: implement all quick keys
+  // Ctrl+Shift+Arrow Up/Down	Select multiple fields
+  // Shift+Alt+Arrows	Move current field or selected fields up/down/left/right
+  // Ctrl+F	Find
+  // F3, Ctrl+G	Find next
+  // Shift+F3, Ctrl+Shift+G	Find previous
+  // Ctrl+Z	Undo last action
+  // Ctrl+Shift+Z	Redo
+}
+
 export default class TreeMode extends Component {
   id: number
   state: Object
@@ -48,30 +70,6 @@ export default class TreeMode extends Component {
     const data = jsonToData(this.props.data || {}, TreeMode.expandAll, [])
 
     this.id = Math.round(Math.random() * 1e5) // TODO: create a uuid here?
-
-    // TODO: make key bindings configurable
-    const keyBindings = {
-      'duplicate': ['Ctrl+D', 'Command+D'],
-      'insert':    ['Ctrl+Insert', 'Command+Insert'],
-      'remove':    ['Ctrl+Delete', 'Command+Delete'],
-      'up':        ['Alt+Up', 'Option+Up'],
-      'down':      ['Alt+Down', 'Option+Down'],
-      'left':      ['Alt+Left', 'Option+Left'],
-      'right':     ['Alt+Right', 'Option+Right'],
-      'openUrl':   ['Ctrl+Enter', 'Command+Enter']
-      // TODO: implement all quick keys
-      // Ctrl+Shift+Arrow Up/Down	Select multiple fields
-      // Shift+Alt+Arrows	Move current field or selected fields up/down/left/right
-      // Ctrl+Ins	Insert a new field with type auto
-      // Ctrl+Shift+Ins	Append a new field with type auto
-      // Ctrl+E	Expand or collapse field
-      // Ctrl+F	Find
-      // F3, Ctrl+G	Find next
-      // Shift+F3, Ctrl+Shift+G	Find previous
-      // Ctrl+M	Show actions menu
-      // Ctrl+Z	Undo last action
-      // Ctrl+Shift+Z	Redo
-    }
 
     this.state = {
       data,
@@ -100,7 +98,7 @@ export default class TreeMode extends Component {
         active: null // active search result
       },
 
-      keyCombos: this.bindingsByCombos (keyBindings)
+      keyCombos: this.bindingsByCombos (KEY_BINDINGS)
     }
   }
 
@@ -175,7 +173,7 @@ export default class TreeMode extends Component {
             key: 'contents',
             ref: 'contents',
             className: 'jsoneditor-contents jsoneditor-tree-contents',
-            onClick: this.handleHideMenus, id: this.id
+            id: this.id
       },
         h('ul', {className: 'jsoneditor-list jsoneditor-root'},
           h(Node, {
@@ -320,11 +318,6 @@ export default class TreeMode extends Component {
       event.preventDefault()
       moveRight(event.target)
     }
-  }
-
-  /** @private */
-  handleHideMenus = () => {
-    JSONNode.hideActionMenu()
   }
 
   /** @private */

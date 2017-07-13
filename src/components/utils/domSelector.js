@@ -1,4 +1,4 @@
-import { selectContentEditable, getSelection as getDOMSelection } from '../../utils/domUtils'
+import { selectContentEditable } from '../../utils/domUtils'
 
 // singleton
 let lastInputName = null
