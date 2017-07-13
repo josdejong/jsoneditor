@@ -3,6 +3,11 @@
 https://github.com/josdejong/jsoneditor
 
 
+## 2017-07-13, version 5.9.2
+
+- Fixed a bug in the JSON sanitizer.
+
+
 ## 2017-07-13, version 5.9.1
 
 - `setText` method of tree mode now automatically sanitizes JSON input
