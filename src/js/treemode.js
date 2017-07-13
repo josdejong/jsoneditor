@@ -216,7 +216,16 @@ treemode.getText = function() {
  * @param {String} jsonText
  */
 treemode.setText = function(jsonText) {
-  this.set(util.parse(jsonText));
+  try {
+    this.set(util.parse(jsonText)); // this can throw an error
+  }
+  catch (err) {
+    // try to sanitize json, replace JavaScript notation with JSON notation
+    var sanitizedJsonText = util.sanitize(jsonText);
+
+    // try to parse again
+    this.set(util.parse(sanitizedJsonText)); // this can throw an error
+  }
 };
 
 /**

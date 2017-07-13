@@ -3,6 +3,14 @@
 https://github.com/josdejong/jsoneditor
 
 
+## 2017-07-13, version 5.9.1
+
+- `setText` method of tree mode now automatically sanitizes JSON input
+  when needed.
+- Fixed #430: automatically fix unescaped control characters in
+  JSON input.
+
+
 ## 2017-07-10, version 5.9.0
 
 - Implemented support for JSON schema references `$ref`, see #302.
