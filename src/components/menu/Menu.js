@@ -32,7 +32,6 @@ export default class Menu extends Component {
         : 'bottom'
 
     // TODO: create a non-visible button to set the focus to the menu
-    // TODO: implement (customizable) quick keys
 
     const className = 'jsoneditor-actionmenu ' +
         ((orientation === 'top') ? 'jsoneditor-actionmenu-top' : 'jsoneditor-actionmenu-bottom')
@@ -40,7 +39,6 @@ export default class Menu extends Component {
     return h('div', {
       className: className,
       'data-menu': 'true',
-      ref: '',
     },
       this.props.items.map(this.renderMenuItem)
     )
@@ -152,6 +150,8 @@ export default class Menu extends Component {
 
   componentDidMount () {
     this.updateRequestCloseListener()
+
+
   }
 
   componentDidUpdate () {
