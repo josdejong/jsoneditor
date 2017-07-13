@@ -24,8 +24,8 @@
  * Copyright (c) 2011-2017 Jos de Jong, http://jsoneditoronline.org
  *
  * @author  Jos de Jong, <wjosdejong@gmail.com>
- * @version 5.9.0
- * @date    2017-07-10
+ * @version 5.9.1
+ * @date    2017-07-13
  */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
@@ -8680,7 +8680,16 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * @param {String} jsonText
 	 */
 	treemode.setText = function(jsonText) {
-	  this.set(util.parse(jsonText));
+	  try {
+	    this.set(util.parse(jsonText)); // this can throw an error
+	  }
+	  catch (err) {
+	    // try to sanitize json, replace JavaScript notation with JSON notation
+	    var sanitizedJsonText = util.sanitize(jsonText);
+
+	    // try to parse again
+	    this.set(util.parse(sanitizedJsonText)); // this can throw an error
+	  }
 	};
 
 	/**
@@ -10118,6 +10127,14 @@ return /******/ (function(modules) { // webpackBootstrap
 	    jsString = match[3];
 	  }
 
+	  var controlChars = {
+	    '\b': '\\b',
+	    '\f': '\\f',
+	    '\n': '\\n',
+	    '\r': '\\r',
+	    '\t': '\\t'
+	  };
+
 	  // helper functions to get the current/prev/next character
 	  function curr () { return jsString.charAt(i);     }
 	  function next()  { return jsString.charAt(i + 1); }
@@ -10166,6 +10183,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	        chars.push('\\');
 	      }
 
+	      // replace unescaped control characters with escaped ones
+	      if (controlChars.hasOwnProperty(c)) {
+	        chars.push(controlChars[c])
+	        i++;
+	        c = curr();
+	      }
+
 	      // handle escape character
 	      if (c === '\\') {
 	        i++;
@@ -10176,8 +10200,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	          chars.push('\\');
 	        }
 	      }
-	      chars.push(c);
 
+	      chars.push(c);
 	      i++;
 	      c = curr();
 	    }

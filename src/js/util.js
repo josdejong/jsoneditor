@@ -42,6 +42,14 @@ exports.sanitize = function (jsString) {
     jsString = match[3];
   }
 
+  var controlChars = {
+    '\b': '\\b',
+    '\f': '\\f',
+    '\n': '\\n',
+    '\r': '\\r',
+    '\t': '\\t'
+  };
+
   // helper functions to get the current/prev/next character
   function curr () { return jsString.charAt(i);     }
   function next()  { return jsString.charAt(i + 1); }
@@ -90,6 +98,13 @@ exports.sanitize = function (jsString) {
         chars.push('\\');
       }
 
+      // replace unescaped control characters with escaped ones
+      if (controlChars.hasOwnProperty(c)) {
+        chars.push(controlChars[c])
+        i++;
+        c = curr();
+      }
+
       // handle escape character
       if (c === '\\') {
         i++;
@@ -100,8 +115,8 @@ exports.sanitize = function (jsString) {
           chars.push('\\');
         }
       }
-      chars.push(c);
 
+      chars.push(c);
       i++;
       c = curr();
     }
