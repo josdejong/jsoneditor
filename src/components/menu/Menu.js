@@ -39,7 +39,8 @@ export default class Menu extends Component {
 
     return h('div', {
       className: className,
-      'data-menu': 'true'
+      'data-menu': 'true',
+      ref: '',
     },
       this.props.items.map(this.renderMenuItem)
     )
@@ -175,8 +176,12 @@ export default class Menu extends Component {
     // Attach event listener on next tick, else the current click to open
     // the menu will immediately result in requestClose event as well
     setTimeout(() => {
-      if (this.props.open && !this.handleRequestClose) {
-        this.handleRequestClose = (event) => this.props.onRequestClose()
+      if (!this.handleRequestClose) {
+        this.handleRequestClose = (event) => {
+          if (!findParentNode(event.target, 'data-menu', 'true')) {
+            this.props.onRequestClose()
+          }
+        }
         window.addEventListener('click', this.handleRequestClose)
       }
     })

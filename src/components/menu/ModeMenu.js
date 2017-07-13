@@ -46,7 +46,8 @@ export default class ModeMenu extends Component {
   }
 
   componentWillUnmount () {
-    this.removeRequestCloseListener()
+    // remove on next tick, since a listener can be created on next tick too
+    setTimeout(() => this.removeRequestCloseListener())
   }
 
   updateRequestCloseListener () {
@@ -59,18 +60,18 @@ export default class ModeMenu extends Component {
   }
 
   addRequestCloseListener () {
-    if (!this.handleRequestClose) {
-      // Attach event listener on next tick, else the current click to open
-      // the menu will immediately result in requestClose event as well
-      setTimeout(() => {
+    // Attach event listener on next tick, else the current click to open
+    // the menu will immediately result in requestClose event as well
+    setTimeout(() => {
+      if (!this.handleRequestClose) {
         this.handleRequestClose = (event) => {
           if (!findParentNode(event.target, 'data-menu', 'true')) {
             this.props.onRequestClose()
           }
         }
         window.addEventListener('click', this.handleRequestClose)
-      }, 0)
-    }
+      }
+    })
   }
 
   removeRequestCloseListener () {
