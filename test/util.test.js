@@ -30,6 +30,15 @@ describe('util', function () {
       assert.equal(util.sanitize('"foo\\\'bar"'), '"foo\'bar"');
     });
 
+    it('should escape unescaped control characters', function () {
+      assert.equal(util.sanitize('"hello\bworld"'), '"hello\\bworld"')
+      assert.equal(util.sanitize('"hello\fworld"'), '"hello\\fworld"')
+      assert.equal(util.sanitize('"hello\nworld"'), '"hello\\nworld"')
+      assert.equal(util.sanitize('"hello\rworld"'), '"hello\\rworld"')
+      assert.equal(util.sanitize('"hello\tworld"'), '"hello\\tworld"')
+      assert.equal(util.sanitize('{"value\n": "dc=hcm,dc=com"}'), '{"value\\n": "dc=hcm,dc=com"}')
+    })
+
     it('remove comments', function () {
       assert.equal(util.sanitize('/* foo */ {}'), ' {}');
       assert.equal(util.sanitize('/* foo */ {}'), ' {}');

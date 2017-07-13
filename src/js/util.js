@@ -95,28 +95,26 @@ exports.sanitize = function (jsString) {
     while (i < jsString.length && c !== quote) {
       if (c === '"' && prev() !== '\\') {
         // unescaped double quote, escape it
-        chars.push('\\');
+        chars.push('\\"');
       }
-
-      // replace unescaped control characters with escaped ones
-      if (controlChars.hasOwnProperty(c)) {
+      else if (controlChars.hasOwnProperty(c)) {
+        // replace unescaped control characters with escaped ones
         chars.push(controlChars[c])
-        i++;
-        c = curr();
       }
-
-      // handle escape character
-      if (c === '\\') {
+      else if (c === '\\') {
+        // remove the escape character when followed by a single quote ', not needed
         i++;
         c = curr();
-
-        // remove the escape character when followed by a single quote ', not needed
         if (c !== '\'') {
           chars.push('\\');
         }
+        chars.push(c);
+      }
+      else {
+        // regular character
+        chars.push(c);
       }
 
-      chars.push(c);
       i++;
       c = curr();
     }
