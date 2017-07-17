@@ -44,6 +44,10 @@ var util = require('./util');
  *                               {boolean} sortObjectKeys If true, object keys are
  *                                                        sorted before display.
  *                                                        false by default.
+ *                               {Object[]} toolbarPlugins  Array of custom toolbar
+ *                                                          buttons.  Must contain
+ *                                                          `title`, `className`, and
+ *                                                          `onclick` properties.
  * @param {Object | undefined} json JSON object
  */
 function JSONEditor (container, options, json) {
@@ -82,7 +86,8 @@ function JSONEditor (container, options, json) {
         'ajv', 'schema', 'schemaRefs','templates',
         'ace', 'theme','autocomplete',
         'onChange', 'onEditable', 'onError', 'onModeChange',
-        'escapeUnicode', 'history', 'search', 'mode', 'modes', 'name', 'indentation', 'sortObjectKeys'
+        'escapeUnicode', 'history', 'search', 'mode', 'modes', 'name', 'indentation', 'sortObjectKeys',
+        'toolbarPlugins'
       ];
 
       Object.keys(options).forEach(function (option) {

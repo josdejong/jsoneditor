@@ -753,6 +753,31 @@ treemode._createFrame = function () {
     });
   }
 
+  // create custom toolbar buttons
+  if (this.options && this.options.toolbarPlugins && this.options.toolbarPlugins.length) {
+    for (var i in this.options.toolbarPlugins) {
+      var customButtonOpts = this.options.toolbarPlugins[i];
+
+      // skip this plugin if these properties don't exist
+      if (!customButtonOpts.title || !customButtonOpts.className || !customButtonOpts.onclick) {
+        console.error("Toolbar plugin is being skipped for missing mandatory properties (title, className, onclick): " +
+                        JSON.stringify(customButtonOpts));
+        continue;
+      }
+
+      // create the basic button
+      var customButton = document.createElement('button');
+      customButton.type = 'button';
+
+      // merge the provided options to the button
+      for (var option in customButtonOpts) {
+        customButton[option] = customButtonOpts[option];
+      }
+
+      this.menu.appendChild(customButton);
+    }
+  }
+
   // create search box
   if (this.options.search) {
     this.searchBox = new SearchBox(this, this.menu);

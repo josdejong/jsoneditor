@@ -180,6 +180,23 @@ Constructs a new JSONEditor.
      - Can return an object `{startFrom: number, options: string[]}`. Here `startFrom` determines the start character from where the existing text will be replaced. `startFrom` is `0` by default, replacing the whole text.
      - Can return a `Promise` resolving one of the return types above to support asynchronously retrieving a list with options.
 
+- `{Object[]} toolbarPlugins`
+
+  Adds custom buttons to the toolbar. Contains **subelements**:
+
+  - `{string} title`
+
+     The button's title text, for example `Expand to fullscreen`.
+
+  - `{string} className`
+
+     To be consistent with standard buttons, use `jsoneditor-<name>`, for example `jsoneditor-fullscreen`.
+     To add a spacer on the left, include class `jsoneditor-separator`, for example `jsoneditor-fullscreen jsoneditor-separator`.
+
+  - `{Function} onclick`
+
+     The callback function when the custom button is clicked. Called without parameters.
+
 
 ### Methods
 
