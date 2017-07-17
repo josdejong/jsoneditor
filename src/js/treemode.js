@@ -699,7 +699,7 @@ treemode._createFrame = function () {
   };
   this.menu.appendChild(expandAll);
 
-  // create expand all button
+  // create collapse all button
   var collapseAll = document.createElement('button');
   collapseAll.type = 'button';
   collapseAll.title = 'Collapse all fields';
