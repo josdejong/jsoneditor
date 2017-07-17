@@ -48,6 +48,16 @@ var util = require('./util');
  *                                                          buttons.  Must contain
  *                                                          `title`, `className`, and
  *                                                          `onclick` properties.
+ *                               {Object[]} contextMenuPlugins  Array of custom toolbar
+ *                                                              buttons.  Must contain
+ *                                                              'text', `title`, `className`,
+ *                                                              and either `_click` or
+ *                                                              `submenu` properties.
+ *                               {Object[]} multiContextMenuPlugins     Array of custom toolbar
+ *                                                                      buttons.  Must contain
+ *                                                                      'text', `title`, `className`,
+ *                                                                      and either `_click` or
+ *                                                                      `submenu` properties.
  * @param {Object | undefined} json JSON object
  */
 function JSONEditor (container, options, json) {
@@ -87,7 +97,7 @@ function JSONEditor (container, options, json) {
         'ace', 'theme','autocomplete',
         'onChange', 'onEditable', 'onError', 'onModeChange',
         'escapeUnicode', 'history', 'search', 'mode', 'modes', 'name', 'indentation', 'sortObjectKeys',
-        'toolbarPlugins'
+        'toolbarPlugins', 'contextMenuPlugins', 'multiContextMenuPlugins'
       ];
 
       Object.keys(options).forEach(function (option) {

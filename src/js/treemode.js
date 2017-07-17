@@ -1250,8 +1250,67 @@ treemode.showContextMenu = function (anchor, onClose) {
     }
   });
 
+  // create custom multi-select context menu buttons
+  if (this.options && this.options.multiContextMenuPlugins && this.options.multiContextMenuPlugins.length) {
+    for (var i in this.options.multiContextMenuPlugins) {
+      var pluginConfig = this.options.multiContextMenuPlugins[i];
+
+      // recursively validate and process the plugin configurations
+      pluginConfig = this._processContextMenuPlugin(pluginConfig, editor.multiselection.nodes);
+
+      // add the action
+      if (pluginConfig) {
+        items.push(pluginConfig);
+      }
+    }
+  }
+
   var menu = new ContextMenu(items, {close: onClose});
   menu.show(anchor, this.content);
+};
+
+/**
+ * Recursively process a Context Menu plugin configuration
+ * @param {Object} pluginConfig
+ * @param {Node} nodes   the selected nodes
+ * @return {Object} plugin config or null
+ * @private
+ */
+treemode._processContextMenuPlugin = function(pluginConfig) {
+  // skip this plugin if these properties don't exist
+  if (pluginConfig.type == 'separator') {
+    // separators don't have mandatory properties
+  } else if (!pluginConfig.text || !pluginConfig.title || !pluginConfig.className) {
+    console.error("Context Menu plugin is being skipped for missing mandatory properties (text, title, className): " +
+                    JSON.stringify(pluginConfig));
+    return null;
+  } else if (!pluginConfig._click && !pluginConfig.submenu) {
+    console.error("Context Menu plugin is being skipped for not including at least on of the properties (_click, submenu): " +
+                    JSON.stringify(pluginConfig));
+    return null;
+  }
+
+  // wrap the callback so we can pass the node
+  if (typeof pluginConfig._click === 'function') {
+    pluginConfig.click = function() {
+      this._click(nodes);
+    };
+  }
+
+  // recursively process submenus
+  if (pluginConfig.submenu instanceof Array) {
+    var processedSubMenu = [];
+    for (var i in pluginConfig.submenu) {
+      var submenuPlugin = this._processContextMenuPlugin(pluginConfig.submenu[i], nodes);
+
+      if (submenuPlugin) {
+        processedSubMenu.push(submenuPlugin);
+      }
+    }
+    pluginConfig.submenu = processedSubMenu;
+  }
+
+  return pluginConfig;
 };
 
 
