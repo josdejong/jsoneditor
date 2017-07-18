@@ -217,9 +217,9 @@ Constructs a new JSONEditor.
 
      To be consistent with standard buttons, use `jsoneditor-<name>`, for example `jsoneditor-fullscreen`.
 
-  - `{Function} _click (nodes)`
+  - `{Function} click (node)`
 
-     The callback function when the custom action is clicked. Called with the selected nodes.
+     The callback function when the custom action is clicked. Called with the selected node.
 
   - `{Object[]} submenu`
 
@@ -245,7 +245,7 @@ Constructs a new JSONEditor.
 
      To be consistent with standard buttons, use `jsoneditor-<name>`, for example `jsoneditor-fullscreen`.
 
-  - `{Function} _click (nodes)`
+  - `{Function} click (nodes)`
 
      The callback function when the custom action is clicked. Called with the selected nodes.
 

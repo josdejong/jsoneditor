@@ -76,7 +76,7 @@
         text: 'Click',
         title: 'Action with click',
         className: 'jsoneditor-action1',
-        _click: function(node) {
+        click: function(node) {
           alert('Action 1');
           alert(node);
         }
@@ -90,22 +90,22 @@
             text: 'Submenu 1',
             title: 'New subaction 1',
             className: 'jsoneditor-sa1',
-            _click: function(node) { alert('subaction 1'); }
+            click: function(node) { alert('subaction 1'); }
           },
           {
             title: 'Invalid Submenu 1',
             className: 'jsoneditor-invalidsa1',
-            _click: function(node) { alert('subaction 1'); }
+            click: function(node) { alert('subaction 1'); }
           },
           {
             text: 'submenu 2',
             className: 'jsoneditor-invalidsa2',
-            _click: function(node) { alert('subaction 2'); }
+            click: function(node) { alert('subaction 2'); }
           },
           {
             text: 'submenu 3',
             title: 'Invalid Submenu 3',
-            _click: function(node) { alert('subaction 3'); }
+            click: function(node) { alert('subaction 3'); }
           },
           {
             text: 'submenu 4',
@@ -118,7 +118,7 @@
         text: 'Submenu+Click',
         title: 'Action with submenu and click',
         className: 'jsoneditor-action3',
-        _click: function(node) {
+        click: function(node) {
           alert('Action 3');
           alert(node);
         },
@@ -127,14 +127,14 @@
             text: 'Submenu 1',
             title: 'New subaction 1',
             className: 'jsoneditor-sa1',
-            _click: function(node) { alert('subaction 1'); }
+            click: function(node) { alert('subaction 1'); }
           }
         ]
       },
       {
         text: 'Custom C',
         title: 'New action 3',
-        _click: function(node) {
+        click: function(node) {
           alert('Action 3');
         }
       }
@@ -144,22 +144,22 @@
         text: 'Multi1',
         title: 'New multiselect action 1',
         className: 'jsoneditor-msaction1',
-        _click: function(nodes) { alert('Action 1'); }
+        click: function(nodes) { alert('Action 1'); }
       },
       {
         title: 'New multiselect action 2',
         className: 'jsoneditor-msaction2',
-        _click: function(nodes) { alert('Action 2'); }
+        click: function(nodes) { alert('Action 2'); }
       },
       {
         text: 'Multi3',
         className: 'jsoneditor-msaction3',
-        _click: function(nodes) { alert('Action 3'); }
+        click: function(nodes) { alert('Action 3'); }
       },
       {
         text: 'Multi4',
         title: 'New multiselect action 4',
-        _click: function(nodes) { alert('Action 4'); }
+        click: function(nodes) { alert('Action 4'); }
       },
       {
         text: 'Multi5',

@@ -9,9 +9,12 @@ var util = require('./util');
  * @param {Object} [options]  Object with options. Available options:
  *                            {function} close    Callback called when the
  *                                                context menu is being closed.
+ * @param {Object or Object[]} [selectedElements]
+ *                              the selected element or elements to which
+ *                              this ContextMenu applies
  * @constructor
  */
-function ContextMenu (items, options) {
+function ContextMenu (items, options, selectedElements) {
   this.dom = {};
 
   var me = this;
@@ -50,7 +53,7 @@ function ContextMenu (items, options) {
   li.appendChild(focusButton);
   list.appendChild(li);
 
-  function createMenuItems (list, domItems, items) {
+  function createMenuItems (list, domItems, items, selectedElements) {
     items.forEach(function (item) {
       if (item.type == 'separator') {
         // create a separator
@@ -79,7 +82,7 @@ function ContextMenu (items, options) {
           button.onclick = function (event) {
             event.preventDefault();
             me.hide();
-            item.click();
+            item.click(selectedElements);
           };
         }
         li.appendChild(button);
@@ -133,7 +136,7 @@ function ContextMenu (items, options) {
           ul.className = 'jsoneditor-menu';
           ul.style.height = '0';
           li.appendChild(ul);
-          createMenuItems(ul, domSubItems, item.submenu);
+          createMenuItems(ul, domSubItems, item.submenu, selectedElements);
         }
         else {
           // no submenu, just a button with clickhandler
@@ -144,7 +147,7 @@ function ContextMenu (items, options) {
       }
     });
   }
-  createMenuItems(list, this.dom.items, items);
+  createMenuItems(list, this.dom.items, items, selectedElements);
 
   // TODO: when the editor is small, show the submenu on the right instead of inline?
 

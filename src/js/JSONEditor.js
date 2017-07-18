@@ -51,12 +51,12 @@ var util = require('./util');
  *                               {Object[]} contextMenuPlugins  Array of custom toolbar
  *                                                              buttons.  Must contain
  *                                                              'text', `title`, `className`,
- *                                                              and either `_click` or
+ *                                                              and either `click` or
  *                                                              `submenu` properties.
  *                               {Object[]} multiContextMenuPlugins     Array of custom toolbar
  *                                                                      buttons.  Must contain
  *                                                                      'text', `title`, `className`,
- *                                                                      and either `_click` or
+ *                                                                      and either `click` or
  *                                                                      `submenu` properties.
  * @param {Object | undefined} json JSON object
  */

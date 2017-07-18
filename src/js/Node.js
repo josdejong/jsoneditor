@@ -3413,7 +3413,7 @@ Node.prototype.showContextMenu = function (anchor, onClose) {
   if (this.editor.options && this.editor.options.contextMenuPlugins && this.editor.options.contextMenuPlugins.length) {
     for (var i in this.editor.options.contextMenuPlugins) {
       // recursively validate and process the plugin configurations
-      var pluginConfig = this._processContextMenuPlugin(this.editor.options.contextMenuPlugins[i], node);
+      var pluginConfig = this._processContextMenuPlugin(this.editor.options.contextMenuPlugins[i]);
 
       // add the action
       if (pluginConfig) {
@@ -3422,18 +3422,17 @@ Node.prototype.showContextMenu = function (anchor, onClose) {
     }
   }
 
-  var menu = new ContextMenu(items, {close: onClose});
+  var menu = new ContextMenu(items, {close: onClose}, this);
   menu.show(anchor, this.editor.content);
 };
 
 /**
  * Recursively process a Context Menu plugin configuration
  * @param {Object} pluginConfig
- * @param {Node} node   the selected node
  * @return {Object} plugin config or null
  * @private
  */
-Node.prototype._processContextMenuPlugin = function(pluginConfig, node) {
+Node.prototype._processContextMenuPlugin = function(pluginConfig) {
   // skip this plugin if these properties don't exist
   if (pluginConfig.type == 'separator') {
     // separators don't have mandatory properties
@@ -3441,24 +3440,17 @@ Node.prototype._processContextMenuPlugin = function(pluginConfig, node) {
     console.error("Context Menu plugin is being skipped for missing mandatory properties (text, title, className): " +
                     JSON.stringify(pluginConfig));
     return null;
-  } else if (!pluginConfig._click && !pluginConfig.submenu) {
-    console.error("Context Menu plugin is being skipped for not including at least on of the properties (_click, submenu): " +
+  } else if (!pluginConfig.click && !pluginConfig.submenu) {
+    console.error("Context Menu plugin is being skipped for not including at least on of the properties (click, submenu): " +
                     JSON.stringify(pluginConfig));
     return null;
-  }
-
-  // wrap the callback so we can pass the node
-  if (typeof pluginConfig._click === 'function') {
-    pluginConfig.click = function() {
-      this._click(node);
-    };
   }
 
   // recursively process submenus
   if (pluginConfig.submenu instanceof Array) {
     var processedSubMenu = [];
     for (var i in pluginConfig.submenu) {
-      var submenuPlugin = this._processContextMenuPlugin(pluginConfig.submenu[i], node);
+      var submenuPlugin = this._processContextMenuPlugin(pluginConfig.submenu[i]);
 
       if (submenuPlugin) {
         processedSubMenu.push(submenuPlugin);

@@ -1235,8 +1235,8 @@ treemode.showContextMenu = function (anchor, onClose) {
     text: 'Duplicate',
     title: 'Duplicate selected fields (Ctrl+D)',
     className: 'jsoneditor-duplicate',
-    click: function () {
-      Node.onDuplicate(editor.multiselection.nodes);
+    click: function (nodes) {
+      Node.onDuplicate();
     }
   });
 
@@ -1245,8 +1245,8 @@ treemode.showContextMenu = function (anchor, onClose) {
     text: 'Remove',
     title: 'Remove selected fields (Ctrl+Del)',
     className: 'jsoneditor-remove',
-    click: function () {
-      Node.onRemove(editor.multiselection.nodes);
+    click: function (nodes) {
+      Node.onRemove(nodes);
     }
   });
 
@@ -1256,7 +1256,7 @@ treemode.showContextMenu = function (anchor, onClose) {
       var pluginConfig = this.options.multiContextMenuPlugins[i];
 
       // recursively validate and process the plugin configurations
-      pluginConfig = this._processContextMenuPlugin(pluginConfig, editor.multiselection.nodes);
+      pluginConfig = this._processContextMenuPlugin(pluginConfig);
 
       // add the action
       if (pluginConfig) {
@@ -1265,14 +1265,13 @@ treemode.showContextMenu = function (anchor, onClose) {
     }
   }
 
-  var menu = new ContextMenu(items, {close: onClose});
+  var menu = new ContextMenu(items, {close: onClose}, editor.multiselection.nodes);
   menu.show(anchor, this.content);
 };
 
 /**
  * Recursively process a Context Menu plugin configuration
  * @param {Object} pluginConfig
- * @param {Node} nodes   the selected nodes
  * @return {Object} plugin config or null
  * @private
  */
@@ -1284,24 +1283,17 @@ treemode._processContextMenuPlugin = function(pluginConfig) {
     console.error("Context Menu plugin is being skipped for missing mandatory properties (text, title, className): " +
                     JSON.stringify(pluginConfig));
     return null;
-  } else if (!pluginConfig._click && !pluginConfig.submenu) {
-    console.error("Context Menu plugin is being skipped for not including at least on of the properties (_click, submenu): " +
+  } else if (!pluginConfig.click && !pluginConfig.submenu) {
+    console.error("Context Menu plugin is being skipped for not including at least on of the properties (click, submenu): " +
                     JSON.stringify(pluginConfig));
     return null;
-  }
-
-  // wrap the callback so we can pass the node
-  if (typeof pluginConfig._click === 'function') {
-    pluginConfig.click = function() {
-      this._click(nodes);
-    };
   }
 
   // recursively process submenus
   if (pluginConfig.submenu instanceof Array) {
     var processedSubMenu = [];
     for (var i in pluginConfig.submenu) {
-      var submenuPlugin = this._processContextMenuPlugin(pluginConfig.submenu[i], nodes);
+      var submenuPlugin = this._processContextMenuPlugin(pluginConfig.submenu[i]);
 
       if (submenuPlugin) {
         processedSubMenu.push(submenuPlugin);
