@@ -1,0 +1,192 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+
+  <link href="../dist/jsoneditor.css" rel="stylesheet" type="text/css">
+  <script src="../dist/jsoneditor.js"></script>
+
+  <style type="text/css">
+    body {
+      font: 10.5pt arial;
+      color: #4d4d4d;
+      line-height: 150%;
+      width: 500px;
+      padding-left: 40px;
+    }
+
+    code {
+      background-color: #f5f5f5;
+    }
+
+    #jsoneditor {
+      width: 500px;
+      height: 500px;
+    }
+  </style>
+</head>
+<body>
+
+<p>
+  Switch editor mode using the mode box.
+  Note that the mode can be changed programmatically as well using the method
+  <code>editor.setMode(mode)</code>, try it in the console of your browser.
+</p>
+
+<div id="jsoneditor"></div>
+
+<script>
+  var container = document.getElementById('jsoneditor');
+
+  var options = {
+    mode: 'tree',
+    modes: ['code', 'form', 'text', 'tree', 'view'], // allowed modes
+    onError: function (err) {
+      console.error(err);
+    },
+    toolbarPlugins: [
+      {
+        title: 'Custom button 1 with separator',
+        className: 'jsoneditor-button1 jsoneditor-separator',
+        onclick: function() { alert('Button 1'); }
+      },
+      {
+        title: 'Custom button 2 without separator',
+        className: 'jsoneditor-button2',
+        onclick: function() { alert('Button 2'); }
+      },
+      {
+        className: 'jsoneditor-invalidbutton1',
+        onclick: function() { alert('Invalid button 1'); }
+      },
+      {
+        title: 'Invalid button 2',
+        onclick: function() { alert('Invalid button 2'); }
+      },
+      {
+        title: 'Invalid button 3',
+        className: 'jsoneditor-invalidbutton3'
+      }
+    ],
+    contextMenuPlugins: [
+      {
+        type: 'separator'
+      },
+      {
+        text: 'Click',
+        title: 'Action with click',
+        className: 'jsoneditor-action1',
+        _click: function(node) {
+          alert('Action 1');
+          alert(node);
+        }
+      },
+      {
+        text: 'Submenu',
+        title: 'Action with submenu',
+        className: 'jsoneditor-action2',
+        submenu: [
+          {
+            text: 'Submenu 1',
+            title: 'New subaction 1',
+            className: 'jsoneditor-sa1',
+            _click: function(node) { alert('subaction 1'); }
+          },
+          {
+            title: 'Invalid Submenu 1',
+            className: 'jsoneditor-invalidsa1',
+            _click: function(node) { alert('subaction 1'); }
+          },
+          {
+            text: 'submenu 2',
+            className: 'jsoneditor-invalidsa2',
+            _click: function(node) { alert('subaction 2'); }
+          },
+          {
+            text: 'submenu 3',
+            title: 'Invalid Submenu 3',
+            _click: function(node) { alert('subaction 3'); }
+          },
+          {
+            text: 'submenu 4',
+            title: 'Invalid submenu 4',
+            className: 'jsoneditor-invalidsa4',
+          }
+        ]
+      },
+      {
+        text: 'Submenu+Click',
+        title: 'Action with submenu and click',
+        className: 'jsoneditor-action3',
+        _click: function(node) {
+          alert('Action 3');
+          alert(node);
+        },
+        submenu: [
+          {
+            text: 'Submenu 1',
+            title: 'New subaction 1',
+            className: 'jsoneditor-sa1',
+            _click: function(node) { alert('subaction 1'); }
+          }
+        ]
+      },
+      {
+        text: 'Custom C',
+        title: 'New action 3',
+        _click: function(node) {
+          alert('Action 3');
+        }
+      }
+    ],
+    multiContextMenuPlugins: [
+      {
+        text: 'Multi1',
+        title: 'New multiselect action 1',
+        className: 'jsoneditor-msaction1',
+        _click: function(nodes) { alert('Action 1'); }
+      },
+      {
+        title: 'New multiselect action 2',
+        className: 'jsoneditor-msaction2',
+        _click: function(nodes) { alert('Action 2'); }
+      },
+      {
+        text: 'Multi3',
+        className: 'jsoneditor-msaction3',
+        _click: function(nodes) { alert('Action 3'); }
+      },
+      {
+        text: 'Multi4',
+        title: 'New multiselect action 4',
+        _click: function(nodes) { alert('Action 4'); }
+      },
+      {
+        text: 'Multi5',
+        title: 'New multiselect action 5',
+        className: 'jsoneditor-msaction5',
+      }
+    ]
+  };
+
+  var json = {
+    "firstName": "Jos",
+    "lastName": "de Jong",
+    gender: null,
+    "age": 34.2,
+    "hobbies": [
+        "programming",
+        "movies",
+        "bicycling"
+    ]
+  };
+
+  var editor = new JSONEditor(container, options, json);
+
+  console.log('json', json);
+  console.log('toolbarPlugins', options.toolbarPlugins);
+  console.log('contextMenuPlugins', options.contextMenuPlugins);
+  console.log('multiContextMenuPlugins', options.multiContextMenuPlugins);
+</script>
+</body>
+</html>
