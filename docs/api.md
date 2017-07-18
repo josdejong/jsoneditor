@@ -221,6 +221,10 @@ Constructs a new JSONEditor.
 
      The callback function when the custom action is clicked. Called with the selected node.
 
+  - `{string} submenuTitle`
+
+     The submenu expander's title (tooltip) text, for example `A longer description of the submenu`.
+
   - `{Object[]} submenu`
 
      Submenu items of the same type as `contextMenuPlugins`.
@@ -248,6 +252,10 @@ Constructs a new JSONEditor.
   - `{Function} click (nodes)`
 
      The callback function when the custom action is clicked. Called with the selected nodes.
+
+  - `{string} submenuTitle`
+
+     The submenu expander's title (tooltip) text, for example `A longer description of the submenu`.
 
   - `{Object[]} submenu`
 
