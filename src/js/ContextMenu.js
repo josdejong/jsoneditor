@@ -64,6 +64,11 @@ function ContextMenu (items, options, selectedElements) {
         list.appendChild(li);
       }
       else {
+        // check if the item should be enabled
+        if (item.enabled && item.enabled instanceof Function && !item.enabled(selectedElements)) {
+          return false;
+        }
+
         var domItem = {};
 
         // create a menu item

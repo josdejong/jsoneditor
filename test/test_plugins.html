@@ -73,6 +73,18 @@
         type: 'separator'
       },
       {
+        text: 'Disabled',
+        title: 'This action should be disabled',
+        className: 'jsoneditor-disabledaction1',
+        enabled: function(node) {
+          return false;
+        },
+        click: function(node) {
+          alert('This action should be disabled');
+          console.error('This action should be disabled');
+        }
+      },
+      {
         text: 'Click',
         title: 'Action with click',
         className: 'jsoneditor-action1',

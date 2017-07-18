@@ -217,6 +217,10 @@ Constructs a new JSONEditor.
 
      To be consistent with standard buttons, use `jsoneditor-<name>`, for example `jsoneditor-fullscreen`.
 
+  - `{Function} enabled (node)`
+
+     The optional callback function to enable/disable this plugin (enabled by default). Called with the selected node.
+
   - `{Function} click (node)`
 
      The callback function when the custom action is clicked. Called with the selected node.
@@ -248,6 +252,10 @@ Constructs a new JSONEditor.
   - `{string} className`
 
      To be consistent with standard buttons, use `jsoneditor-<name>`, for example `jsoneditor-fullscreen`.
+
+  - `{Function} enabled (nodes)`
+
+     The optional callback function to enable/disable this plugin (enabled by default). Called with the selected nodes.
 
   - `{Function} click (nodes)`
 
