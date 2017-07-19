@@ -47,6 +47,8 @@ const KEY_BINDINGS = {
   'insert':       ['Ctrl+Insert', 'Command+Insert'],
   'remove':       ['Ctrl+Delete', 'Command+Delete'],
   'actionMenu':   ['Ctrl+M', 'Command+M'],
+  'undo':         ['Ctrl+Z', 'Command+Z'],
+  'redo':         ['Ctrl+Shift+Z', 'Command+Shift+Z'],
   'find':         ['Ctrl+F', 'Command+F'],
   'findNext':     ['F3', 'Ctrl+G', 'Command+G'],
   'findPrevious': ['Shift+F3', 'Ctrl+Shift+G', 'Command+Shift+G'],
@@ -71,6 +73,8 @@ export default class TreeMode extends Component {
     'down': (event) => moveDown(event.target),
     'left': (event) => moveLeft(event.target),
     'right': (event) => moveRight(event.target),
+    'undo': (event) => this.undo(),
+    'redo': (event) => this.redo(),
     'find': (event) => selectFind(event.target),
     'findNext': (event) => this.handleNext(),
     'findPrevious': (event) => this.handlePrevious()
