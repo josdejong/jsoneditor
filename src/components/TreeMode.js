@@ -46,6 +46,7 @@ const KEY_BINDINGS = {
   'duplicate':    ['Ctrl+D', 'Command+D'],
   'insert':       ['Ctrl+Insert', 'Command+Insert'],
   'remove':       ['Ctrl+Delete', 'Command+Delete'],
+  'expand':       ['Ctrl+E', 'Command+E'],
   'actionMenu':   ['Ctrl+M', 'Command+M'],
   'undo':         ['Ctrl+Z', 'Command+Z'],
   'redo':         ['Ctrl+Shift+Z', 'Command+Shift+Z'],
