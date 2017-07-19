@@ -4,7 +4,7 @@ import { createElement as h, Component } from 'react'
 
 import ActionMenu from './menu/ActionMenu'
 import { escapeHTML, unescapeHTML } from '../utils/stringUtils'
-import { getInnerText, insideRect, findParentNode } from '../utils/domUtils'
+import { getInnerText, insideRect, findParentWithAttribute } from '../utils/domUtils'
 import { stringConvert, valueType, isUrl } from  '../utils/typeUtils'
 import { compileJSONPointer } from  '../jsonData'
 
@@ -417,7 +417,7 @@ export default class JSONNode extends Component {
 
   handleOpenActionMenu = (event) => {
     // TODO: don't use refs, find root purely via DOM?
-    const root = findParentNode(this.refs.actionMenuButton, 'data-jsoneditor', 'true')
+    const root = findParentWithAttribute(this.refs.actionMenuButton, 'data-jsoneditor', 'true')
 
     this.setState({
       menu: {
@@ -434,7 +434,7 @@ export default class JSONNode extends Component {
 
   handleOpenAppendActionMenu = (event) => {
     // TODO: don't use refs, find root purely via DOM?
-    const root = findParentNode(this.refs.appendActionMenuButton, 'data-jsoneditor', 'true')
+    const root = findParentWithAttribute(this.refs.appendActionMenuButton, 'data-jsoneditor', 'true')
 
     this.setState({
       appendMenu: {
@@ -594,32 +594,6 @@ export default class JSONNode extends Component {
         ? stringValue
         : stringConvert(stringValue)
   }
-
-  /**
-   * Find the root DOM element of the JSONEditor
-   * Search is done based on the CSS class 'jsoneditor'
-   * @param event
-   * @return {*}
-   */
-  // TODO: make redundant and cleanup
-  static findRootElement (event) {
-    function isEditorElement (elem) {
-      // FIXME: this is a bit tricky. can we use a special attribute or something?
-      return elem.className.split(' ').indexOf('jsoneditor') !== -1
-    }
-
-    let elem = event.target
-    while (elem) {
-      if (isEditorElement(elem)) {
-        return elem
-      }
-
-      elem = elem.parentNode
-    }
-
-    return null
-  }
-
 }
 
 /**

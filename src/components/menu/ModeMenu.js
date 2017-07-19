@@ -1,12 +1,10 @@
 import { createElement as h, Component } from 'react'
 import { toCapital } from '../../utils/stringUtils'
-import { findParentNode } from '../../utils/domUtils'
+import { findParentWithAttribute } from '../../utils/domUtils'
 
 export default class ModeMenu extends Component {
   /**
-   * @param {{open, modes, mode, onChangeMode, onRequestClose, onError}} props
-   * @param {Object} state
-   * @return {JSX.Element}
+   * {{open, modes, mode, onChangeMode, onRequestClose, onError}} props
    */
   render () {
     if (this.props.open) {
@@ -65,7 +63,7 @@ export default class ModeMenu extends Component {
     setTimeout(() => {
       if (!this.handleRequestClose) {
         this.handleRequestClose = (event) => {
-          if (!findParentNode(event.target, 'data-menu', 'true')) {
+          if (!findParentWithAttribute(event.target, 'data-menu', 'true')) {
             this.props.onRequestClose()
           }
         }

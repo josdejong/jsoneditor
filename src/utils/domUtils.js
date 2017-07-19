@@ -5,12 +5,12 @@
  * @return {String} innerText
  */
 export function getInnerText (element, buffer) {
-  var first = (buffer == undefined)
+  const first = (buffer === undefined)
   if (first) {
     buffer = {
       'text': '',
       'flush': function () {
-        var text = this.text
+        const text = this.text
         this.text = ''
         return text
       },
@@ -27,23 +27,23 @@ export function getInnerText (element, buffer) {
 
   // divs or other HTML elements
   if (element.hasChildNodes()) {
-    var childNodes = element.childNodes
-    var innerText = ''
+    const childNodes = element.childNodes
+    let innerText = ''
 
-    for (var i = 0, iMax = childNodes.length; i < iMax; i++) {
-      var child = childNodes[i]
+    for (let i = 0, iMax = childNodes.length; i < iMax; i++) {
+      const child = childNodes[i]
 
-      if (child.nodeName == 'DIV' || child.nodeName == 'P') {
-        var prevChild = childNodes[i - 1]
-        var prevName = prevChild ? prevChild.nodeName : undefined
-        if (prevName && prevName != 'DIV' && prevName != 'P' && prevName != 'BR') {
+      if (child.nodeName === 'DIV' || child.nodeName === 'P') {
+        const prevChild = childNodes[i - 1]
+        const prevName = prevChild ? prevChild.nodeName : undefined
+        if (prevName && prevName !== 'DIV' && prevName !== 'P' && prevName !== 'BR') {
           innerText += '\n'
           buffer.flush()
         }
         innerText += getInnerText(child, buffer)
         buffer.set('\n')
       }
-      else if (child.nodeName == 'BR') {
+      else if (child.nodeName === 'BR') {
         innerText += buffer.flush()
         buffer.set('\n')
       }
@@ -55,7 +55,7 @@ export function getInnerText (element, buffer) {
     return innerText
   }
   else {
-    if (element.nodeName == 'P' && getInternetExplorerVersion() != -1) {
+    if (element.nodeName === 'P' && getInternetExplorerVersion() !== -1) {
       // On Internet Explorer, a <p> with hasChildNodes()==false is
       // rendered with a new line. Note that a <p> with
       // hasChildNodes()==true is rendered without a new line
@@ -108,22 +108,59 @@ export function selectContentEditable(contentEditableElement) {
  * Find the parent node of an element which has an attribute with given value.
  * Can return the element itself too.
  * @param {Element} elem
- * @param {string} attr
- * @param {string} value
+ * @param {string} attribute
+ * @param {string} [value]
  * @return {Element | null} Returns the parent element when found,
  *                          or null otherwise
  */
-export function findParentNode (elem, attr, value) {
+export function findParentWithAttribute (elem, attribute, value) {
   let parent = elem
 
   while (parent && parent.getAttribute) {
-    if (parent.getAttribute(attr) == value) {
+    const match = (value === undefined)
+        ? parent.hasAttribute(attribute)
+        : parent.getAttribute(attribute) === value
+
+    if (match) {
       return parent
     }
+
     parent = parent.parentNode
   }
 
   return null
+}
+
+/**
+ * Find the first parent element having a specific class name
+ * @param {Element} element
+ * @param {string} className
+ * @return {Element} Returns the base element of the node
+ */
+export function findParentWithClassName (element, className) {
+  let parent = element
+
+  while (parent) {
+    if (hasClassName(parent, className)) {
+      return parent
+    }
+
+    parent = parent.parentNode
+  }
+
+  return null
+}
+
+/**
+ * Test whether a HTML element contains a specific className
+ * @param {Element} element
+ * @param {boolean} className
+ * @return {boolean}
+ */
+export function hasClassName (element, className) {
+  return element && element.className
+      ? element.className.split(' ').indexOf(className) !== -1
+      : false
 }
 
 /**
@@ -146,13 +183,13 @@ export function insideRect (parent, child, margin = 0) {
  * @return {Number} Internet Explorer version, or -1 in case of an other browser
  */
 export function getInternetExplorerVersion() {
-  if (_ieVersion == -1) {
-    var rv = -1 // Return value assumes failure.
-    if (navigator.appName == 'Microsoft Internet Explorer')
+  if (_ieVersion === -1) {
+    let rv = -1 // Return value assumes failure.
+    if (navigator.appName === 'Microsoft Internet Explorer')
     {
-      var ua = navigator.userAgent
-      var re  = new RegExp("MSIE ([0-9]{1,}[\.0-9]{0,})")
-      if (re.exec(ua) != null) {
+      const ua = navigator.userAgent
+      const re  = new RegExp("MSIE ([0-9]{1,}[\.0-9]{0,})")
+      if (re.exec(ua) !== null) {
         rv = parseFloat( RegExp.$1 )
       }
     }
@@ -168,4 +205,4 @@ export function getInternetExplorerVersion() {
  * @type {Number}
  * @private
  */
-var _ieVersion = -1
+let _ieVersion = -1

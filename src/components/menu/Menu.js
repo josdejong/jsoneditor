@@ -1,5 +1,5 @@
 import { createElement as h, Component } from 'react'
-import { findParentNode } from '../../utils/domUtils'
+import { findParentWithAttribute } from '../../utils/domUtils'
 
 export let CONTEXT_MENU_HEIGHT = 240
 
@@ -178,7 +178,7 @@ export default class Menu extends Component {
     setTimeout(() => {
       if (!this.handleRequestClose) {
         this.handleRequestClose = (event) => {
-          if (!findParentNode(event.target, 'data-menu', 'true')) {
+          if (!findParentWithAttribute(event.target, 'data-menu', 'true')) {
             this.props.onRequestClose()
           }
         }

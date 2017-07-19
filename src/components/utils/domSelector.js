@@ -1,4 +1,7 @@
-import { selectContentEditable, getSelection as getDOMSelection } from '../../utils/domUtils'
+import {
+  selectContentEditable, hasClassName,
+  findParentWithAttribute, findParentWithClassName
+} from '../../utils/domUtils'
 import { compileJSONPointer, parseJSONPointer } from '../../jsonData'
 
 // singleton
@@ -172,21 +175,6 @@ export function findNode (container, path) {
   return container.querySelector(`div[${PATH_ATTRIBUTE}="${compileJSONPointer(path)}"]`)
 }
 
-// TODO: fully implement getSelection, or cleanup if not needed
-// function getSelectedElement () {
-//   const selection = getDOMSelection()
-//   return selection ? selection.startContainer : null
-// }
-//
-// export function getSelection () {
-//   const element = getSelectedElement()
-//   const node = findBaseNode(element)
-//
-//   return {
-//     path: node.getAttribute(PATH_ATTRIBUTE) // TODO: return parsed JSONPointer instead?
-//   }
-// }
-
 function findContentsContainer (element) {
   return findParentWithClassName (element, CONTENTS_CONTAINER_CLASS_NAME)
 }
@@ -210,49 +198,6 @@ export function searchHasFocus () {
   else {
     return false
   }
-}
-
-/**
- * Find the first parent element having a specific class name
- * @param {Element} element
- * @param {string} className
- * @return {Element} Returns the base element of the node
- */
-function findParentWithClassName (element, className) {
-  let e = element
-  do {
-    if (hasClassName(e, className)) {
-      return e
-    }
-
-    e = e.parentNode
-  }
-  while (e)
-
-  return null
-}
-
-/**
- * Find the base element of a node from one of it's childs
- * @param {Element} element
- * @param {string} attribute
- * @param {string} value
- * @return {Element} Returns the base element of the node
- */
-function findParentWithAttribute (element, attribute, value) {
-  let e = element
-  do {
-    if (e && e.hasAttribute && e.hasAttribute(attribute)) {
-      if (value === undefined || e.getAttribute(attribute) === value) {
-        return e
-      }
-    }
-
-    e = e.parentNode
-  }
-  while (e)
-
-  return null
 }
 
 function findPreviousNode (element) {
@@ -339,18 +284,6 @@ function findInputName (node, name) {
   }
 
   return null
-}
-
-/**
- * Test whether a HTML element contains a specific className
- * @param {Element} element
- * @param {boolean} className
- * @return {boolean}
- */
-function hasClassName (element, className) {
-  return element && element.className
-      ? element.className.split(' ').indexOf(className) !== -1
-      : false
 }
 
 /**
