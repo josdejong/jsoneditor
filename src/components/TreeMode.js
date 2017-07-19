@@ -23,7 +23,8 @@ import JSONNodeForm from './JSONNodeForm'
 import ModeButton from './menu/ModeButton'
 import Search from './menu/Search'
 import {
-  moveUp, moveDown, moveLeft, moveRight, moveDownSibling, findNode
+  moveUp, moveDown, moveLeft, moveRight, moveDownSibling,
+  findNode, selectFind, searchHasFocus, setSelection
 } from './utils/domSelector'
 import { keyComboFromEvent } from '../utils/keyBindings'
 
@@ -37,25 +38,26 @@ const AJV_OPTIONS = {
 
 const MAX_HISTORY_ITEMS = 1000   // maximum number of undo/redo items to be kept in memory
 const SEARCH_DEBOUNCE = 300      // milliseconds
+const SCROLL_DURATION = 400      // milliseconds
 
 // TODO: make key bindings configurable
+// TODO: implement support for namespaces for key bindings
 const KEY_BINDINGS = {
-  'duplicate': ['Ctrl+D', 'Command+D'],
-  'insert':    ['Ctrl+Insert', 'Command+Insert'],
-  'remove':    ['Ctrl+Delete', 'Command+Delete'],
-  'expand':    ['Ctrl+E', 'Command+E'],
-  'actionMenu':['Ctrl+M', 'Command+M'],
-  'up':        ['Alt+Up', 'Option+Up'],
-  'down':      ['Alt+Down', 'Option+Down'],
-  'left':      ['Alt+Left', 'Option+Left'],
-  'right':     ['Alt+Right', 'Option+Right'],
-  'openUrl':   ['Ctrl+Enter', 'Command+Enter']
+  'duplicate':    ['Ctrl+D', 'Command+D'],
+  'insert':       ['Ctrl+Insert', 'Command+Insert'],
+  'remove':       ['Ctrl+Delete', 'Command+Delete'],
+  'actionMenu':   ['Ctrl+M', 'Command+M'],
+  'find':         ['Ctrl+F', 'Command+F'],
+  'findNext':     ['F3', 'Ctrl+G', 'Command+G'],
+  'findPrevious': ['Shift+F3', 'Ctrl+Shift+G', 'Command+Shift+G'],
+  'up':           ['Alt+Up', 'Option+Up'],
+  'down':         ['Alt+Down', 'Option+Down'],
+  'left':         ['Alt+Left', 'Option+Left'],
+  'right':        ['Alt+Right', 'Option+Right'],
+  'openUrl':      ['Ctrl+Enter', 'Command+Enter']
   // TODO: implement all quick keys
   // Ctrl+Shift+Arrow Up/Down	Select multiple fields
   // Shift+Alt+Arrows	Move current field or selected fields up/down/left/right
-  // Ctrl+F	Find
-  // F3, Ctrl+G	Find next
-  // Shift+F3, Ctrl+Shift+G	Find previous
   // Ctrl+Z	Undo last action
   // Ctrl+Shift+Z	Redo
 }
@@ -63,6 +65,16 @@ const KEY_BINDINGS = {
 export default class TreeMode extends Component {
   id: number
   state: Object
+
+  keyDownActions = {
+    'up': (event) => moveUp(event.target),
+    'down': (event) => moveDown(event.target),
+    'left': (event) => moveLeft(event.target),
+    'right': (event) => moveRight(event.target),
+    'find': (event) => selectFind(event.target),
+    'findNext': (event) => this.handleNext(),
+    'findPrevious': (event) => this.handlePrevious()
+  }
 
   constructor (props) {
     super(props)
@@ -167,7 +179,7 @@ export default class TreeMode extends Component {
       'onKeyDown': this.handleKeyDown,
       'data-jsoneditor': 'true'
     }, [
-      this.renderMenu(searchResults ? searchResults.length : null),
+      this.renderMenu(searchResults),
 
       h('div', {
             key: 'contents',
@@ -188,7 +200,7 @@ export default class TreeMode extends Component {
     ])
   }
 
-  renderMenu (searchResultsCount: ?number) {
+  renderMenu (searchResults: Array) {
     let items = [
       h('button', {
         key: 'expand-all',
@@ -204,7 +216,7 @@ export default class TreeMode extends Component {
       })
     ]
 
-    if (this.props.mode !== 'view' && this.props.history != false) {
+    if (this.props.mode !== 'view' && this.props.history !== false) {
       items = items.concat([
         h('div', {key: 'history-separator', className: 'jsoneditor-vertical-menu-separator'}),
 
@@ -245,10 +257,11 @@ export default class TreeMode extends Component {
         h('div', {key: 'search', className: 'jsoneditor-menu-panel-right'},
           h(Search, {
             text: this.state.search.text,
-            resultsCount: searchResultsCount,
+            searchResults,
             onChange: this.handleSearch,
             onNext: this.handleNext,
             onPrevious: this.handlePrevious,
+            findKeyBinding: this.findKeyBinding,
             delay: SEARCH_DEBOUNCE
           })
         )
@@ -298,25 +311,11 @@ export default class TreeMode extends Component {
 
   handleKeyDown = (event) => {
     const keyBinding = this.findKeyBinding(event)
+    const action = this.keyDownActions[keyBinding]
 
-    if (keyBinding === 'up') {
+    if (action) {
       event.preventDefault()
-      moveUp(event.target)
-    }
-
-    if (keyBinding === 'down') {
-      event.preventDefault()
-      moveDown(event.target)
-    }
-
-    if (keyBinding === 'left') {
-      event.preventDefault()
-      moveLeft(event.target)
-    }
-
-    if (keyBinding === 'right') {
-      event.preventDefault()
-      moveRight(event.target)
+      action(event)
     }
   }
 
@@ -362,7 +361,7 @@ export default class TreeMode extends Component {
   /** @private */
   handleRemove = (path) => {
     // apply focus to next sibling element if existing, else to the previous element
-    const fromElement = findNode(this.refs.contents, compileJSONPointer(path))
+    const fromElement = findNode(this.refs.contents, path)
     const success = moveDownSibling(fromElement, 'property')
     if (!success) {
       moveUp(fromElement, 'property')
@@ -371,10 +370,14 @@ export default class TreeMode extends Component {
     this.handlePatch(remove(path))
   }
 
+  /**
+   * Move focus to the next search result
+   * @param {Path} path
+   */
   focusToNext (path) {
     // apply focus to new element
     setTimeout(() => {
-      const element = findNode(this.refs.contents, compileJSONPointer(path))
+      const element = findNode(this.refs.contents, path)
       if (element) {
         moveDown(element, 'property')
       }
@@ -456,7 +459,15 @@ export default class TreeMode extends Component {
       })
 
       // scroll to the active result (on next tick, after this path has been expanded)
-      setTimeout(() => this.scrollTo(next && next.path))
+      setTimeout(() => {
+        if (next && next.path) {
+          this.scrollTo(next.path)
+
+          if (!searchHasFocus()) {
+            setSelection(this.refs.contents, next.path, next.type)
+          }
+        }
+      })
     }
   }
 
@@ -472,7 +483,15 @@ export default class TreeMode extends Component {
       })
 
       // scroll to the active result (on next tick, after this path has been expanded)
-      setTimeout(() => this.scrollTo(previous && previous.path))
+      setTimeout(() => {
+        if (previous && previous.path) {
+          this.scrollTo(previous && previous.path)
+
+          if (!searchHasFocus()) {
+            setSelection(this.refs.contents, previous.path, previous.type)
+          }
+        }
+      })
     }
   }
 
@@ -494,13 +513,12 @@ export default class TreeMode extends Component {
    * @private
    */
   scrollTo = (path) => {
-    const name = compileJSONPointer(path)
     const container = this.refs.contents
-    const elem = container.querySelector('div[name="' + name + '"]')
+    const elem = container.querySelector(`div[data-path="${compileJSONPointer(path)}"]`)
     const offset = -(container.getBoundingClientRect().height / 4)
 
     if (elem) {
-      jump(elem, { container, offset, duration: 400 })
+      jump(elem, { container, offset, duration: SCROLL_DURATION })
     }
   }
 

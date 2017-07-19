@@ -2,6 +2,8 @@
 
 import { createElement as h, Component } from 'react'
 import PropTypes from 'prop-types'
+import { keyComboFromEvent } from '../../utils/keyBindings'
+import { findEditorContainer, setSelection } from '../utils/domSelector'
 
 import '!style!css!less!./Search.less'
 
@@ -19,10 +21,8 @@ export default class Search extends Component {
   }
 
   render () {
-    // TODO: scroll to active search result
-
     return h('div', {className: 'jsoneditor-search'}, [
-      this.renderResultsCount(this.props.resultsCount),
+      this.renderResultsCount(this.props.searchResults),
       h('form', {
         key: 'box',
         className: 'jsoneditor-search-box',
@@ -33,7 +33,8 @@ export default class Search extends Component {
             type: 'text',
             className: 'jsoneditor-search-text',
             value: this.state.text,
-            onInput: this.handleChange
+            onInput: this.handleChange,
+            onKeyDown: this.handleKeyDown
           }),
           h('input', {
             key: 'next',
@@ -53,19 +54,21 @@ export default class Search extends Component {
     ])
   }
 
-  renderResultsCount (resultsCount : ?number) {
-    if (resultsCount == null) {
+  renderResultsCount (searchResults : Array) {
+    if (!searchResults) {
       return null
     }
 
-    if (resultsCount === 0) {
+    const count = searchResults.length
+
+    if (count === 0) {
       return h('div', {key: 'count', className: 'jsoneditor-results'}, '(no results)')
     }
 
-    if (resultsCount > 0) {
-      const suffix = resultsCount === 1 ? ' result' : ' results'
+    if (count > 0) {
+      const suffix = count === 1 ? ' result' : ' results'
 
-      return h('div', {key: 'count', className: 'jsoneditor-results'}, this.props.resultsCount + suffix)
+      return h('div', {key: 'count', className: 'jsoneditor-results'}, count + suffix)
     }
 
     return null
@@ -82,7 +85,7 @@ export default class Search extends Component {
     event.stopPropagation()
     event.preventDefault()
 
-    if (this.timeout != null) {
+    if (this.timeout !== null) {
       // there is a pending change
       this.debouncedOnChange()
     }
@@ -99,6 +102,19 @@ export default class Search extends Component {
 
     const delay = this.props.delay || 0
     this.timeout = setTimeout(this.debouncedOnChange, delay)
+  }
+
+  handleKeyDown = (event) => {
+    // TODO: make submit (Enter) and focus to search result (Ctrl+Enter) customizable
+    const combo = keyComboFromEvent(event)
+    if (combo === 'Ctrl+Enter' || combo === 'Command+Enter') {
+      event.preventDefault()
+      const active = this.props.searchResults[0]
+      if (active) {
+        const container = findEditorContainer(event.target)
+        setSelection(container, active.path, active.type)
+      }
+    }
   }
 
   debouncedOnChange = () => {

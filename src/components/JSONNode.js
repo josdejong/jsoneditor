@@ -35,7 +35,7 @@ export default class JSONNode extends Component {
   renderJSONObject ({prop, index, data, options, events}) {
     const childCount = data.props.length
     const node = h('div', {
-        name: compileJSONPointer(this.props.path),
+        'data-path': compileJSONPointer(this.props.path),
         onKeyDown: this.handleKeyDown,
         key: 'node',
         className: 'jsoneditor-node jsoneditor-object'
@@ -81,7 +81,7 @@ export default class JSONNode extends Component {
   renderJSONArray ({prop, index, data, options, events}) {
     const childCount = data.items.length
     const node = h('div', {
-        name: compileJSONPointer(this.props.path),
+        'data-path': compileJSONPointer(this.props.path),
         onKeyDown: this.handleKeyDown,
         key: 'node',
         className: 'jsoneditor-node jsoneditor-array'
@@ -124,7 +124,7 @@ export default class JSONNode extends Component {
 
   renderJSONValue ({prop, index, data, options}) {
     return h('div', {
-        name: compileJSONPointer(this.props.path),
+        'data-path': compileJSONPointer(this.props.path),
         onKeyDown: this.handleKeyDown,
         className: 'jsoneditor-node'
       }, [
@@ -145,7 +145,7 @@ export default class JSONNode extends Component {
    */
   renderAppend (text) {
     return h('div', {
-        name: compileJSONPointer(this.props.path) + '/#',
+        'data-path': compileJSONPointer(this.props.path) + '/#',
         className: 'jsoneditor-node',
         onKeyDown: this.handleKeyDownAppend
       }, [
