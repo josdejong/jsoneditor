@@ -1,7 +1,11 @@
 import { createElement as h, Component } from 'react'
-import { findParentWithAttribute } from '../../utils/domUtils'
+import { keyComboFromEvent } from '../../utils/keyBindings'
+import { findParentWithClassName } from '../../utils/domUtils'
 
 export let CONTEXT_MENU_HEIGHT = 240
+
+const MENU_CLASS_NAME = 'jsoneditor-actionmenu'
+const MENU_ITEM_CLASS_NAME = 'jsoneditor-menu-item'
 
 export default class Menu extends Component {
 
@@ -33,12 +37,13 @@ export default class Menu extends Component {
 
     // TODO: create a non-visible button to set the focus to the menu
 
-    const className = 'jsoneditor-actionmenu ' +
+    const className = MENU_CLASS_NAME + ' ' +
         ((orientation === 'top') ? 'jsoneditor-actionmenu-top' : 'jsoneditor-actionmenu-bottom')
 
     return h('div', {
       className: className,
-      'data-menu': 'true',
+      ref: 'menu',
+      onKeyDown: this.handleKeyDown
     },
       this.props.items.map(this.renderMenuItem)
     )
@@ -151,16 +156,31 @@ export default class Menu extends Component {
   componentDidMount () {
     this.updateRequestCloseListener()
 
-
+    if (this.props.open) {
+      this.focusToFirstEntry ()
+    }
   }
 
-  componentDidUpdate () {
+  componentDidUpdate (prevProps, prevState) {
     this.updateRequestCloseListener()
+
+    if (this.props.open && !prevProps.open) {
+      this.focusToFirstEntry ()
+    }
   }
 
   componentWillUnmount () {
     // remove on next tick, since a listener can be created on next tick too
     setTimeout(() => this.removeRequestCloseListener())
+  }
+
+  focusToFirstEntry () {
+    if (this.refs.menu) {
+      const firstButton = this.refs.menu.querySelector('button')
+      if (firstButton) {
+        firstButton.focus()
+      }
+    }
   }
 
   updateRequestCloseListener () {
@@ -178,9 +198,7 @@ export default class Menu extends Component {
     setTimeout(() => {
       if (!this.handleRequestClose) {
         this.handleRequestClose = (event) => {
-          if (!findParentWithAttribute(event.target, 'data-menu', 'true')) {
-            this.props.onRequestClose()
-          }
+          this.props.onRequestClose()
         }
         window.addEventListener('click', this.handleRequestClose)
       }
@@ -192,6 +210,52 @@ export default class Menu extends Component {
       window.removeEventListener('click', this.handleRequestClose)
       this.handleRequestClose = null
     }
+  }
+
+  // TODO: implement the same in ModeMenu
+  handleKeyDown = (event) => {
+    const combo = keyComboFromEvent (event)
+    if (combo === 'Up') {
+      event.preventDefault()
+
+      const items = Menu.getItems (event.target)
+      const index = items.findIndex(item => item === event.target.parentNode)
+      const prev = items[index - 1]
+      if (prev) {
+        prev.querySelector('button').focus()
+      }
+    }
+
+    if (combo === 'Down') {
+      event.preventDefault()
+
+      const items = Menu.getItems (event.target)
+      const index = items.findIndex(item => item === event.target.parentNode)
+      const next = items[index + 1]
+      if (next) {
+        next.querySelector('button').focus()
+      }
+    }
+
+    if (combo === 'Left') {
+      const left = event.target.previousSibling
+      if (left && left.nodeName === 'BUTTON') {
+        left.focus()
+      }
+    }
+
+    if (combo === 'Right') {
+      const right = event.target.nextSibling
+      if (right && right.nodeName === 'BUTTON') {
+        right.focus()
+      }
+    }
+  }
+
+  static getItems (element) {
+    const menu = findParentWithClassName(element, MENU_CLASS_NAME)
+    return Array.from(menu.querySelectorAll('.' + MENU_ITEM_CLASS_NAME))
+        .filter(item => window.getComputedStyle(item).visibility === 'visible')
   }
 
   handleRequestClose = null

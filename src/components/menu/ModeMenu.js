@@ -1,6 +1,5 @@
 import { createElement as h, Component } from 'react'
 import { toCapital } from '../../utils/stringUtils'
-import { findParentWithAttribute } from '../../utils/domUtils'
 
 export default class ModeMenu extends Component {
   /**
@@ -63,9 +62,7 @@ export default class ModeMenu extends Component {
     setTimeout(() => {
       if (!this.handleRequestClose) {
         this.handleRequestClose = (event) => {
-          if (!findParentWithAttribute(event.target, 'data-menu', 'true')) {
             this.props.onRequestClose()
-          }
         }
         window.addEventListener('click', this.handleRequestClose)
       }

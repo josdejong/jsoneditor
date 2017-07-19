@@ -58,11 +58,8 @@ const KEY_BINDINGS = {
   'left':         ['Alt+Left', 'Option+Left'],
   'right':        ['Alt+Right', 'Option+Right'],
   'openUrl':      ['Ctrl+Enter', 'Command+Enter']
-  // TODO: implement all quick keys
-  // Ctrl+Shift+Arrow Up/Down	Select multiple fields
-  // Shift+Alt+Arrows	Move current field or selected fields up/down/left/right
-  // Ctrl+Z	Undo last action
-  // Ctrl+Shift+Z	Redo
+  // TODO: implement Ctrl+Shift+Arrow Up/Down	Select multiple fields
+  // TODO: implement Shift+Alt+Arrows	Move current field or selected fields up/down/left/right
 }
 
 export default class TreeMode extends Component {
