@@ -150,9 +150,13 @@ History.prototype.onChange = function () {};
 
 /**
  * Add a new action to the history
- * @param {String} action  The executed action. Available actions: "editField",
+ * @param {String or Object}    action
+ *                         The executed action. Built-in actions can be
+ *                         referenced by name: "editField",
  *                         "editValue", "changeType", "appendNode",
- *                         "removeNode", "duplicateNode", "moveNode"
+ *                         "removeNode", "duplicateNode", "moveNode".
+ *                         Alternatively, an action Object can be provided
+ *                         with undo and redo functions.
  * @param {Object} params  Object containing parameters describing the change.
  *                         The parameters in params depend on the action (for
  *                         example for "editValue" the Node, old value, and new
@@ -210,7 +214,7 @@ History.prototype.undo = function () {
   if (this.canUndo()) {
     var obj = this.history[this.index];
     if (obj) {
-      var action = this.actions[obj.action];
+      var action = obj.action instanceof Object ? obj.action : this.actions[obj.action];
       if (action && action.undo) {
         action.undo(obj.params);
         if (obj.params.oldSelection) {
@@ -237,7 +241,7 @@ History.prototype.redo = function () {
 
     var obj = this.history[this.index];
     if (obj) {
-      var action = this.actions[obj.action];
+      var action = obj.action instanceof Object ? obj.action : this.actions[obj.action];
       if (action && action.redo) {
         action.redo(obj.params);
         if (obj.params.newSelection) {
