@@ -23,6 +23,18 @@
       width: 500px;
       height: 500px;
     }
+
+    div.jsoneditor-menu > button.jsoneditor-button1 {
+      background: white;
+    }
+
+    div.jsoneditor-contextmenu button.jsoneditor-action1 div.jsoneditor-icon {
+      background: black;
+    }
+
+    div.jsoneditor-contextmenu button.jsoneditor-sa1 div.jsoneditor-icon {
+      background: red;
+    }
   </style>
 </head>
 <body>
@@ -140,8 +152,8 @@
           {
             text: 'Submenu 1',
             title: 'New subaction 1',
-            className: 'jsoneditor-sa1',
-            click: function(node) { alert('subaction 1'); }
+            className: 'jsoneditor-sa21',
+            click: function(node) { alert('subaction 2-1'); }
           }
         ]
       },

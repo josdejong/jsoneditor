@@ -3446,6 +3446,11 @@ Node.prototype._processContextMenuPlugin = function(pluginConfig) {
     return null;
   }
 
+  // add a plugin class to hide the icon
+  if (!pluginConfig.className || pluginConfig.className.indexOf('jsoneditor-plugin ') === -1) {
+    pluginConfig.className = 'jsoneditor-plugin ' + (pluginConfig.className || '');
+  }
+
   // recursively process submenus
   if (pluginConfig.submenu instanceof Array) {
     var processedSubMenu = [];

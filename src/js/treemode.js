@@ -774,6 +774,9 @@ treemode._createFrame = function () {
         customButton[option] = customButtonOpts[option];
       }
 
+      // add a plugin class to hide the icon
+      customButton.className = 'jsoneditor-plugin ' + (customButton.className || '');
+
       this.menu.appendChild(customButton);
     }
   }
@@ -1287,6 +1290,11 @@ treemode._processContextMenuPlugin = function(pluginConfig) {
     console.error("Context Menu plugin is being skipped for not including at least on of the properties (click, submenu): " +
                     JSON.stringify(pluginConfig));
     return null;
+  }
+
+  // add a plugin class to hide the icon
+  if (!pluginConfig.className || pluginConfig.className.indexOf('jsoneditor-plugin ') === -1) {
+    pluginConfig.className = 'jsoneditor-plugin ' + (pluginConfig.className || '');
   }
 
   // recursively process submenus
