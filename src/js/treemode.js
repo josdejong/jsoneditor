@@ -699,7 +699,7 @@ treemode._createFrame = function () {
   };
   this.menu.appendChild(expandAll);
 
-  // create expand all button
+  // create collapse all button
   var collapseAll = document.createElement('button');
   collapseAll.type = 'button';
   collapseAll.title = 'Collapse all fields';
@@ -1197,7 +1197,7 @@ treemode._createTable = function () {
 /**
  * Show a contextmenu for this node.
  * Used for multiselection
- * @param {HTMLElement} anchor   Anchor element to attache the context menu to.
+ * @param {HTMLElement} anchor   Anchor element to attach the context menu to.
  * @param {function} [onClose]   Callback method called when the context menu
  *                               is being closed.
  */
