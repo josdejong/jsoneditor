@@ -23,7 +23,7 @@ import JSONNodeForm from './JSONNodeForm'
 import ModeButton from './menu/ModeButton'
 import Search from './menu/Search'
 import {
-  moveUp, moveDown, moveLeft, moveRight, moveDownSibling,
+  moveUp, moveDown, moveLeft, moveRight, moveDownSibling, moveHome, moveEnd,
   findNode, selectFind, searchHasFocus, setSelection
 } from './utils/domSelector'
 import { keyComboFromEvent } from '../utils/keyBindings'
@@ -41,7 +41,6 @@ const SEARCH_DEBOUNCE = 300      // milliseconds
 const SCROLL_DURATION = 400      // milliseconds
 
 // TODO: make key bindings configurable
-// TODO: implement support for namespaces for key bindings
 const KEY_BINDINGS = {
   'duplicate':    ['Ctrl+D', 'Command+D'],
   'insert':       ['Ctrl+Insert', 'Command+Insert'],
@@ -57,6 +56,8 @@ const KEY_BINDINGS = {
   'down':         ['Alt+Down', 'Option+Down'],
   'left':         ['Alt+Left', 'Option+Left'],
   'right':        ['Alt+Right', 'Option+Right'],
+  'home':         ['Alt+Home', 'Option+Home'],
+  'end':          ['Alt+End', 'Option+End'],
   'openUrl':      ['Ctrl+Enter', 'Command+Enter']
   // TODO: implement Ctrl+Shift+Arrow Up/Down	Select multiple fields
   // TODO: implement Shift+Alt+Arrows	Move current field or selected fields up/down/left/right
@@ -71,6 +72,8 @@ export default class TreeMode extends Component {
     'down': (event) => moveDown(event.target),
     'left': (event) => moveLeft(event.target),
     'right': (event) => moveRight(event.target),
+    'home': (event) => moveHome(event.target),
+    'end': (event) => moveEnd(event.target),
     'undo': (event) => this.undo(),
     'redo': (event) => this.redo(),
     'find': (event) => selectFind(event.target),

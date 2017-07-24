@@ -46,21 +46,10 @@ const INPUT_NAME_RULES = {
  * Move the selection to the input field above current selected input
  * @param {Element} fromElement
  * @param {String} [inputName] Optional name of the input where to move the focus
- * @return {boolean} Returns true when successfully moved down
+ * @return {boolean} Returns true when successfully moved up
  */
 export function moveUp (fromElement, inputName = null) {
-  const prev = findPreviousNode(fromElement)
-  if (prev) {
-    if (!lastInputName) {
-      lastInputName = inputName || getInputName(fromElement)
-    }
-
-    const container = findContentsContainer(fromElement)
-    const path = parseJSONPointer(prev.getAttribute(PATH_ATTRIBUTE))
-    return setSelection(container, path, lastInputName)
-  }
-
-  return false
+  return moveTo(fromElement, findPreviousNode(fromElement), inputName)
 }
 
 /**
@@ -70,18 +59,7 @@ export function moveUp (fromElement, inputName = null) {
  * @return {boolean} Returns true when successfully moved up
  */
 export function moveDown (fromElement, inputName = null) {
-  const next = findNextNode(fromElement)
-  if (next) {
-    if (!lastInputName) {
-      lastInputName = inputName || getInputName(fromElement)
-    }
-
-    const container = findContentsContainer(fromElement)
-    const path = parseJSONPointer(next.getAttribute(PATH_ATTRIBUTE))
-    return setSelection(container, path, lastInputName)
-  }
-
-  return false
+  return moveTo(fromElement, findNextNode(fromElement), inputName)
 }
 
 /**
@@ -92,18 +70,50 @@ export function moveDown (fromElement, inputName = null) {
  * @return {boolean} Returns true when successfully moved up
  */
 export function moveDownSibling (fromElement, inputName = null) {
-  const next = findNextSibling(fromElement)
-  if (next) {
+  return moveTo(fromElement, findNextSibling(fromElement), inputName)
+}
+
+/**
+ * Move the selection to the first node
+ * @param {Element} fromElement
+ * @param {String} [inputName] Optional name of the input where to move the focus
+ * @return {boolean} Returns true when successfully moved to home
+ */
+export function moveHome (fromElement, inputName = null) {
+  return moveTo(fromElement, findFirstNode(fromElement), inputName)
+}
+
+/**
+ * Move the selection to the last node
+ * @param {Element} fromElement
+ * @param {String} [inputName] Optional name of the input where to move the focus
+ * @return {boolean} Returns true when successfully moved to home
+ */
+export function moveEnd (fromElement, inputName = null) {
+  return moveTo(fromElement, findLastNode(fromElement), inputName)
+}
+
+/**
+ * Move from an element to another element
+ * @param {Element} fromElement
+ * @param {Element} toElement
+ * @param {string} [inputName]
+ * @return {boolean} Returns true when successfully moved
+ */
+function moveTo (fromElement, toElement, inputName = null) {
+  if (toElement) {
     if (!lastInputName) {
       lastInputName = inputName || getInputName(fromElement)
     }
 
     const container = findContentsContainer(fromElement)
-    const path = parseJSONPointer(next.getAttribute(PATH_ATTRIBUTE))
+    const path = parseJSONPointer(toElement.getAttribute(PATH_ATTRIBUTE))
+
     return setSelection(container, path, lastInputName)
   }
-
-  return false
+  else {
+    return false
+  }
 }
 
 /**
@@ -220,6 +230,24 @@ function findNextNode (element) {
   const index = all.indexOf(node)
 
   return all[index + 1]
+}
+
+function findFirstNode (element) {
+  const container = findContentsContainer(element)
+
+  // TODO: is the following querySelectorAll a performance bottleneck?
+  const all = Array.from(container.querySelectorAll('div.' + NODE_CONTAINER_CLASS_NAME))
+
+  return all[0]
+}
+
+function findLastNode (element) {
+  const container = findContentsContainer(element)
+
+  // TODO: is the following querySelectorAll a performance bottleneck?
+  const all = Array.from(container.querySelectorAll('div.' + NODE_CONTAINER_CLASS_NAME))
+
+  return all[all.length - 1]
 }
 
 function findNextSibling (element) {
