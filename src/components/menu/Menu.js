@@ -212,7 +212,6 @@ export default class Menu extends Component {
     }
   }
 
-  // TODO: implement the same in ModeMenu
   handleKeyDown = (event) => {
     const combo = keyComboFromEvent (event)
     if (combo === 'Up') {

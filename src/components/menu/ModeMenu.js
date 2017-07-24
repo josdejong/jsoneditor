@@ -1,5 +1,9 @@
 import { createElement as h, Component } from 'react'
 import { toCapital } from '../../utils/stringUtils'
+import { keyComboFromEvent } from '../../utils/keyBindings'
+
+const MENU_CLASS_NAME = 'jsoneditor-actionmenu'
+const MODE_MENU_CLASS_NAME = MENU_CLASS_NAME + ' jsoneditor-modemenu'
 
 export default class ModeMenu extends Component {
   /**
@@ -26,7 +30,9 @@ export default class ModeMenu extends Component {
       })
 
       return h('div', {
-        className: 'jsoneditor-actionmenu jsoneditor-modemenu'
+        className: MODE_MENU_CLASS_NAME,
+        ref: 'menu',
+        onKeyDown: this.handleKeyDown
       }, items)
     }
     else {
@@ -36,10 +42,18 @@ export default class ModeMenu extends Component {
 
   componentDidMount () {
     this.updateRequestCloseListener()
+
+    if (this.props.open) {
+      this.focusToFirstEntry ()
+    }
   }
 
-  componentDidUpdate () {
+  componentDidUpdate (prevProps) {
     this.updateRequestCloseListener()
+
+    if (this.props.open && !prevProps.open) {
+      this.focusToFirstEntry ()
+    }
   }
 
   componentWillUnmount () {
@@ -73,6 +87,35 @@ export default class ModeMenu extends Component {
     if (this.handleRequestClose) {
       window.removeEventListener('click', this.handleRequestClose)
       this.handleRequestClose = null
+    }
+  }
+
+  focusToFirstEntry () {
+    if (this.refs.menu) {
+      const firstButton = this.refs.menu.querySelector('button')
+      if (firstButton) {
+        firstButton.focus()
+      }
+    }
+  }
+
+  handleKeyDown = (event) => {
+    const combo = keyComboFromEvent (event)
+
+    if (combo === 'Up') {
+      event.preventDefault()
+
+      if (event.target.previousSibling) {
+        event.target.previousSibling.focus()
+      }
+    }
+
+    if (combo === 'Down') {
+      event.preventDefault()
+
+      if (event.target.nextSibling) {
+        event.target.nextSibling.focus()
+      }
     }
   }
 

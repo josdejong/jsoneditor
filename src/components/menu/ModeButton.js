@@ -12,9 +12,7 @@ export default class ModeButton extends Component {
   }
 
   /**
-   * @param {{modes: string[], mode: string, onChangeMode: function, onError: function}} props
-   * @param state
-   * @return {*}
+   * props {{modes: string[], mode: string, onChangeMode: function, onError: function}}
    */
   render () {
     const { props, state} = this
