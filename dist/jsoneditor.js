@@ -24,8 +24,8 @@
  * Copyright (c) 2011-2017 Jos de Jong, http://jsoneditoronline.org
  *
  * @author  Jos de Jong, <wjosdejong@gmail.com>
- * @version 5.9.2
- * @date    2017-07-13
+ * @version 5.9.3
+ * @date    2017-07-24
  */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
@@ -9163,7 +9163,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  };
 	  this.menu.appendChild(expandAll);
 
-	  // create expand all button
+	  // create collapse all button
 	  var collapseAll = document.createElement('button');
 	  collapseAll.type = 'button';
 	  collapseAll.title = 'Collapse all fields';
@@ -9661,7 +9661,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	/**
 	 * Show a contextmenu for this node.
 	 * Used for multiselection
-	 * @param {HTMLElement} anchor   Anchor element to attache the context menu to.
+	 * @param {HTMLElement} anchor   Anchor element to attach the context menu to.
 	 * @param {function} [onClose]   Callback method called when the context menu
 	 *                               is being closed.
 	 */
@@ -11745,7 +11745,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	          var divIcon = document.createElement('div');
 	          divIcon.className = 'jsoneditor-icon';
 	          button.appendChild(divIcon);
-	          button.appendChild(document.createTextNode(item.text));
+	          var divText = document.createElement('div');
+	          divText.className = 'jsoneditor-text' +
+	              (item.click ? '' : ' jsoneditor-right-margin');
+	          divText.appendChild(document.createTextNode(item.text));
+	          button.appendChild(divText);
 
 	          var buttonSubmenu;
 	          if (item.click) {
@@ -11792,7 +11796,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	        }
 	        else {
 	          // no submenu, just a button with clickhandler
-	          button.innerHTML = '<div class="jsoneditor-icon"></div>' + item.text;
+	          button.innerHTML = '<div class="jsoneditor-icon"></div>' +
+	              '<div class="jsoneditor-text">' + item.text + '</div>';
 	        }
 
 	        domItems.push(domItem);
@@ -12495,6 +12500,16 @@ return /******/ (function(modules) { // webpackBootstrap
 	 */
 	Node.prototype.getLevel = function() {
 	  return (this.parent ? this.parent.getLevel() + 1 : 0);
+	};
+
+	/**
+	 * Get jsonpath of the current node
+	 * @return {Node[]} Returns an array with nodes
+	 */
+	Node.prototype.getNodePath = function () {
+	  var path = this.parent ? this.parent.getNodePath() : [];
+	  path.push(this);
+	  return path;
 	};
 
 	/**
@@ -15910,7 +15925,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    var items = [
 	      // create append button
 	      {
-	        'text': 'Append!',
+	        'text': 'Append',
 	        'title': 'Append a new field with type \'auto\' (Ctrl+Shift+Ins)',
 	        'submenuTitle': 'Select the type of the field to be appended',
 	        'className': 'jsoneditor-insert',
