@@ -3,9 +3,9 @@
 https://github.com/josdejong/jsoneditor
 
 
-## not yet released, version 5.9.3
+## 2017-07-24, version 5.9.3
 
-- Fixed broken multi-selection.
+- Fixed broken multi-selection (regression).
 
 
 ## 2017-07-13, version 5.9.2

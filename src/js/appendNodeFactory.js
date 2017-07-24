@@ -172,7 +172,7 @@ function appendNodeFactory(Node) {
     var items = [
       // create append button
       {
-        'text': 'Append!',
+        'text': 'Append',
         'title': 'Append a new field with type \'auto\' (Ctrl+Shift+Ins)',
         'submenuTitle': 'Select the type of the field to be appended',
         'className': 'jsoneditor-insert',
