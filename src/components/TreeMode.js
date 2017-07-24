@@ -26,7 +26,8 @@ import {
   moveUp, moveDown, moveLeft, moveRight, moveDownSibling, moveHome, moveEnd,
   findNode, selectFind, searchHasFocus, setSelection
 } from './utils/domSelector'
-import { keyComboFromEvent } from '../utils/keyBindings'
+import { createFindKeyBinding } from '../utils/keyBindings'
+import { KEY_BINDINGS } from '../constants'
 
 import type { JSONData, JSONPatch } from '../types'
 
@@ -39,29 +40,6 @@ const AJV_OPTIONS = {
 const MAX_HISTORY_ITEMS = 1000   // maximum number of undo/redo items to be kept in memory
 const SEARCH_DEBOUNCE = 300      // milliseconds
 const SCROLL_DURATION = 400      // milliseconds
-
-// TODO: make key bindings configurable
-const KEY_BINDINGS = {
-  'duplicate':    ['Ctrl+D', 'Command+D'],
-  'insert':       ['Ctrl+Insert', 'Command+Insert'],
-  'remove':       ['Ctrl+Delete', 'Command+Delete'],
-  'expand':       ['Ctrl+E', 'Command+E'],
-  'actionMenu':   ['Ctrl+M', 'Command+M'],
-  'undo':         ['Ctrl+Z', 'Command+Z'],
-  'redo':         ['Ctrl+Shift+Z', 'Command+Shift+Z'],
-  'find':         ['Ctrl+F', 'Command+F'],
-  'findNext':     ['F3', 'Ctrl+G', 'Command+G'],
-  'findPrevious': ['Shift+F3', 'Ctrl+Shift+G', 'Command+Shift+G'],
-  'up':           ['Alt+Up', 'Option+Up'],
-  'down':         ['Alt+Down', 'Option+Down'],
-  'left':         ['Alt+Left', 'Option+Left'],
-  'right':        ['Alt+Right', 'Option+Right'],
-  'home':         ['Alt+Home', 'Option+Home'],
-  'end':          ['Alt+End', 'Option+End'],
-  'openUrl':      ['Ctrl+Enter', 'Command+Enter']
-  // TODO: implement Ctrl+Shift+Arrow Up/Down	Select multiple fields
-  // TODO: implement Shift+Alt+Arrows	Move current field or selected fields up/down/left/right
-}
 
 export default class TreeMode extends Component {
   id: number
@@ -88,6 +66,9 @@ export default class TreeMode extends Component {
 
     this.id = Math.round(Math.random() * 1e5) // TODO: create a uuid here?
 
+    // TODO: make key bindings customizable
+    this.findKeyBinding = createFindKeyBinding(KEY_BINDINGS)
+
     this.state = {
       data,
 
@@ -113,9 +94,7 @@ export default class TreeMode extends Component {
       search: {
         text: '',
         active: null // active search result
-      },
-
-      keyCombos: this.bindingsByCombos (KEY_BINDINGS)
+      }
     }
   }
 
@@ -181,7 +160,7 @@ export default class TreeMode extends Component {
 
     return h('div', {
       className: `jsoneditor jsoneditor-mode-${props.mode}`,
-      'onKeyDown': this.handleKeyDown,
+      onKeyDown: this.handleKeyDown,
       'data-jsoneditor': 'true'
     }, [
       this.renderMenu(searchResults),
@@ -274,27 +253,6 @@ export default class TreeMode extends Component {
     }
 
     return h('div', {key: 'menu', className: 'jsoneditor-menu'}, items)
-  }
-
-  /**
-   * Turn a map with key bindings by name into a map by combo
-   * @param {Object.<String, Array.string>} keyBindings
-   * @return {Object.<String, string>} Returns keyCombos
-   */
-  bindingsByCombos (keyBindings) {
-    const keyCombos = {}
-
-    Object.keys(keyBindings).forEach ((name) => {
-      keyBindings[name].forEach(combo => keyCombos[combo.toUpperCase()] = name)
-    })
-
-    return keyCombos
-  }
-
-  findKeyBinding = (event) => {
-    const keyCombo = keyComboFromEvent(event)
-
-    return this.state.keyCombos[keyCombo.toUpperCase()] || null
   }
 
   /**

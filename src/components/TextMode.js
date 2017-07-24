@@ -6,6 +6,9 @@ import { parseJSON } from '../utils/jsonUtils'
 import { escapeUnicodeChars } from '../utils/stringUtils'
 import { enrichSchemaError, limitErrors } from '../utils/schemaUtils'
 import { jsonToData, dataToJson, patchData } from '../jsonData'
+import { createFindKeyBinding } from '../utils/keyBindings'
+import { KEY_BINDINGS } from '../constants'
+
 import ModeButton from './menu/ModeButton'
 
 const AJV_OPTIONS = {
@@ -43,8 +46,16 @@ const AJV_OPTIONS = {
 export default class TextMode extends Component {
   state: Object
 
+  keyDownActions = {
+    'format': (event) => this.handleCompact(),
+    'compact': (event) => this.handleFormat()
+  }
+
   constructor (props) {
     super(props)
+
+    // TODO: make key bindings customizable
+    this.findKeyBinding = createFindKeyBinding(KEY_BINDINGS)
 
     this.state = {
       text: '{}',
@@ -81,7 +92,10 @@ export default class TextMode extends Component {
   }
 
   render () {
-    return h('div', {className: 'jsoneditor jsoneditor-mode-text'}, [
+    return h('div', {
+      className: 'jsoneditor jsoneditor-mode-text',
+      onKeyDown: this.handleKeyDown
+    }, [
       this.renderMenu(),
 
       h('div', {key: 'contents', className: 'jsoneditor-contents'},
@@ -241,6 +255,16 @@ export default class TextMode extends Component {
 
   handleChange = (event) => {
     // do nothing...
+  }
+
+  handleKeyDown = (event) => {
+    const keyBinding = this.findKeyBinding(event)
+    const action = this.keyDownActions[keyBinding]
+
+    if (action) {
+      event.preventDefault()
+      action(event)
+    }
   }
 
   /**

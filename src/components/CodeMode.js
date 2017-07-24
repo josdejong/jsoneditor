@@ -40,7 +40,10 @@ export default class CodeMode extends TextMode {
   }
 
   render () {
-    return h('div', {className: 'jsoneditor jsoneditor-mode-code'}, [
+    return h('div', {
+      className: 'jsoneditor jsoneditor-mode-code',
+      onKeyDown: this.handleKeyDown
+    }, [
       this.renderMenu(),
 
       h('div', {key: 'contents', className: 'jsoneditor-contents'}, h(Ace, {

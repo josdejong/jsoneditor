@@ -34,6 +34,27 @@ export function keyComboFromEvent (event) {
   return combi.join('+')
 }
 
+/**
+ * Create a function which can quickly find a keyBinding from a set of
+ * keyBindings.
+ * @param {Object.<String, String[]>} keyBindings
+ * @return {function} Returns a findKeyBinding function
+ */
+export function createFindKeyBinding (keyBindings) {
+  // turn the map with key bindings by name (multiple per binding) into a map by key combo
+  const keyCombos = {}
+  Object.keys(keyBindings).forEach ((name) => {
+    keyBindings[name].forEach(combo => keyCombos[combo.toUpperCase()] = name)
+  })
+
+  return function findKeyBinding (event){
+    const keyCombo = keyComboFromEvent(event)
+
+    return keyCombos[keyCombo.toUpperCase()] || null
+  }
+}
+
+
 const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0
 
 const metaCodes = {
