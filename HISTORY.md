@@ -3,6 +3,11 @@
 https://github.com/josdejong/jsoneditor
 
 
+## not yet released, version 5.9.3
+
+- Fixed broken multi-selection.
+
+
 ## 2017-07-13, version 5.9.2
 
 - Fixed a bug in the JSON sanitizer.
