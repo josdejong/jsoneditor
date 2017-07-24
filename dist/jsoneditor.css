@@ -504,13 +504,14 @@ div.jsoneditor-contextmenu {
 div.jsoneditor-contextmenu ul,
 div.jsoneditor-contextmenu li {
   box-sizing: content-box;
+  position: relative;
 }
 
 div.jsoneditor-contextmenu ul {
   position: relative;
   left: 0;
   top: 0;
-  width: 124px;
+  width: 128px;
   background: white;
   border: 1px solid #d3d3d3;
   box-shadow: 2px 2px 12px rgba(128, 128, 128, 0.3);
@@ -520,10 +521,11 @@ div.jsoneditor-contextmenu ul {
 }
 
 div.jsoneditor-contextmenu ul li button {
-  padding: 0;
+  position: relative;
+  padding: 0 4px 0 0;
   margin: 0;
-  width: 124px;
-  height: 24px;
+  width: 128px;
+  height: auto;
   border: none;
   cursor: pointer;
   color: #4d4d4d;
@@ -531,7 +533,6 @@ div.jsoneditor-contextmenu ul li button {
   font-size: 10pt;
   font-family: arial, sans-serif;
   box-sizing: border-box;
-  line-height: 26px;
   text-align: left;
 }
 
@@ -550,7 +551,8 @@ div.jsoneditor-contextmenu ul li button:focus {
 }
 
 div.jsoneditor-contextmenu ul li button.jsoneditor-default {
-  width: 92px;
+  width: 96px;
+  /* 128px - 32px */
 }
 
 div.jsoneditor-contextmenu ul li button.jsoneditor-expand {
@@ -561,7 +563,9 @@ div.jsoneditor-contextmenu ul li button.jsoneditor-expand {
 }
 
 div.jsoneditor-contextmenu div.jsoneditor-icon {
-  float: left;
+  position: absolute;
+  top: 0;
+  left: 0;
   width: 24px;
   height: 24px;
   border: none;
@@ -570,8 +574,23 @@ div.jsoneditor-contextmenu div.jsoneditor-icon {
   background-image: url("img/jsoneditor-icons.svg");
 }
 
+div.jsoneditor-contextmenu ul li ul div.jsoneditor-icon {
+  margin-left: 24px;
+}
+
+div.jsoneditor-contextmenu div.jsoneditor-text {
+  padding: 4px 0 4px 24px;
+  word-wrap: break-word;
+}
+
+div.jsoneditor-contextmenu div.jsoneditor-text.jsoneditor-right-margin {
+  padding-right: 24px;
+}
+
 div.jsoneditor-contextmenu ul li button div.jsoneditor-expand {
-  float: right;
+  position: absolute;
+  top: 0;
+  right: 0;
   width: 24px;
   height: 24px;
   padding: 0;

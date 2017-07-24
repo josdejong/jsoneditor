@@ -373,6 +373,16 @@ Node.prototype.getLevel = function() {
 };
 
 /**
+ * Get jsonpath of the current node
+ * @return {Node[]} Returns an array with nodes
+ */
+Node.prototype.getNodePath = function () {
+  var path = this.parent ? this.parent.getNodePath() : [];
+  path.push(this);
+  return path;
+};
+
+/**
  * Create a clone of a node
  * The complete state of a clone is copied, including whether it is expanded or
  * not. The DOM elements are not cloned.

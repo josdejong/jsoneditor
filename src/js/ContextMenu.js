@@ -98,7 +98,11 @@ function ContextMenu (items, options, selectedElements) {
           var divIcon = document.createElement('div');
           divIcon.className = 'jsoneditor-icon';
           button.appendChild(divIcon);
-          button.appendChild(document.createTextNode(item.text));
+          var divText = document.createElement('div');
+          divText.className = 'jsoneditor-text' +
+              (item.click ? '' : ' jsoneditor-right-margin');
+          divText.appendChild(document.createTextNode(item.text));
+          button.appendChild(divText);
 
           var buttonSubmenu;
           if (item.click) {
@@ -145,7 +149,8 @@ function ContextMenu (items, options, selectedElements) {
         }
         else {
           // no submenu, just a button with clickhandler
-          button.innerHTML = '<div class="jsoneditor-icon"></div>' + item.text;
+          button.innerHTML = '<div class="jsoneditor-icon"></div>' +
+              '<div class="jsoneditor-text">' + item.text + '</div>';
         }
 
         domItems.push(domItem);
