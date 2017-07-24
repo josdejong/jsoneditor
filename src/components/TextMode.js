@@ -54,9 +54,6 @@ export default class TextMode extends Component {
   constructor (props) {
     super(props)
 
-    // TODO: make key bindings customizable
-    this.findKeyBinding = createFindKeyBinding(KEY_BINDINGS)
-
     this.state = {
       text: '{}',
       compiledSchema: null
@@ -86,6 +83,14 @@ export default class TextMode extends Component {
     // Apply JSON Schema
     if (nextProps.schema !== currentProps.schema) {
       this.setSchema(nextProps.schema)
+    }
+
+    // Apply key bindings
+    if (!this.findKeyBinding ||
+        JSON.stringify(nextProps.keyBindings) !== JSON.stringify(currentProps.keyBindings)) {
+      // merge default and custom key bindings
+      const keyBindings = Object.assign({}, KEY_BINDINGS, nextProps.keyBindings)
+      this.findKeyBinding = createFindKeyBinding(keyBindings)
     }
 
     // TODO: apply patchText

@@ -1,0 +1,56 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Custom key bindings | JSONEditor</title>
+
+  <script src="../dist/jsoneditor.js"></script>
+
+  <style type="text/css">
+    body {
+      width: 100%;
+      max-width: 500px;
+      margin: 0;
+      padding: 10px;
+      box-sizing: border-box;
+      font-family: sans-serif;
+    }
+
+    h1 {
+      font-size: 120%;
+    }
+  </style>
+</head>
+<body>
+<h1>Custom key bindings</h1>
+<p>
+  In this example, the key bindings for <code>format</code> and <code>compact</code> are changed to respectively <code>Ctrl+Alt+1</code> and <code>Ctrl+Alt+2</code> instead of the default <code>Ctrl+\</code> and <code>Ctrl+Shift+\</code>.
+</p>
+<p>
+  It's important to define key bindings for both Windows and Mac: <code>Command+Option+1</code> and <code>Command+Option+2</code> in this case.
+</p>
+<div id="jsoneditor"></div>
+
+<script>
+  // create the editor
+  var container = document.getElementById('jsoneditor')
+  var options = {
+    modes: ['code', 'text'],
+    keyBindings: {
+      compact: ['Ctrl+Alt+1', 'Command+Option+1'],
+      format: ['Ctrl+Alt+2', 'Command+Option+2']
+    }
+  }
+  var json = {
+    'array': [1, 2, 3],
+    'boolean': true,
+    'null': null,
+    'number': 123,
+    'object': {'a': 'b', 'c': 'd'},
+    'string': 'Hello World'
+  }
+  var editor = jsoneditor(container, options)
+  editor.set(json)
+</script>
+</body>
+</html>

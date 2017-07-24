@@ -80,7 +80,11 @@
       alert(err)
     },
     mode: mode,
-    modes: ['text', 'code', 'tree', 'form', 'view'],
+    modes: ['text', 'code', 'tree', 'form', 'view'],    keyBindings: {
+      compact: ['Ctrl+\\', 'Command+\\', 'Ctrl+Alt+1', 'Command+Option+1'],
+      format: ['Ctrl+Shift+\\', 'Command+Shift+\\', 'Ctrl+Alt+2', 'Command+Option+2'],
+      duplicate: ['Ctrl+D', 'Ctrl+Shift+D', 'Command+D', 'Command+Shift+D']
+    },
     indentation: 4,
     escapeUnicode: true,
     history: true,

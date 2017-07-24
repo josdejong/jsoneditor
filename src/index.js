@@ -255,7 +255,8 @@ function jsoneditor (container, options = {}) {
     unmountComponentAtNode(editor._container)
   }
 
-  editor.setMode(options && options.mode || 'tree')
+  const mode = options && options.mode || (options.modes && options.modes[0]) || 'tree';
+  editor.setMode(mode)
 
   return editor
 }

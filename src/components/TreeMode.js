@@ -66,9 +66,6 @@ export default class TreeMode extends Component {
 
     this.id = Math.round(Math.random() * 1e5) // TODO: create a uuid here?
 
-    // TODO: make key bindings customizable
-    this.findKeyBinding = createFindKeyBinding(KEY_BINDINGS)
-
     this.state = {
       data,
 
@@ -88,7 +85,7 @@ export default class TreeMode extends Component {
         onExpand: this.handleExpand,
 
         // TODO: now we're passing not just events but also other methods. reorganize this or rename 'state.events'
-        findKeyBinding: this.findKeyBinding
+        findKeyBinding: this.handleFindKeyBinding
       },
 
       search: {
@@ -106,7 +103,7 @@ export default class TreeMode extends Component {
     this.applyProps(nextProps, this.props)
   }
 
-  // TODO: create some sort of watcher structure for these props? Is there a Reactpattern for that?
+  // TODO: create some sort of watcher structure for these props? Is there a React pattern for that?
   applyProps (nextProps, currentProps) {
     // Apply text
     if (nextProps.text !== currentProps.text) {
@@ -129,6 +126,14 @@ export default class TreeMode extends Component {
     // Apply JSON Schema
     if (nextProps.schema !== currentProps.schema) {
       this.setSchema(nextProps.schema)
+    }
+
+    // Apply key bindings
+    if (!this.findKeyBinding ||
+        JSON.stringify(nextProps.keyBindings) !== JSON.stringify(currentProps.keyBindings)) {
+      // merge default and custom key bindings
+      const keyBindings = Object.assign({}, KEY_BINDINGS, nextProps.keyBindings)
+      this.findKeyBinding = createFindKeyBinding(keyBindings)
     }
 
     // TODO: apply patchText
@@ -368,6 +373,12 @@ export default class TreeMode extends Component {
         data: expand(this.state.data, path, expanded)
       })
     }
+  }
+
+  /** @private */
+  handleFindKeyBinding = (event) => {
+    // findKeyBinding can change on the fly, so we can't bind it statically
+    return this.findKeyBinding (event)
   }
 
   /** @private */

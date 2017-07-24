@@ -1,5 +1,9 @@
 // inspiration: https://github.com/andrepolischuk/keycomb
 
+// TODO: write unit tests for keyBindings
+
+// FIXME: implement an escape sequence for the separator +
+
 /**
  * Get a named key from a key code.
  * For example:
@@ -44,16 +48,36 @@ export function createFindKeyBinding (keyBindings) {
   // turn the map with key bindings by name (multiple per binding) into a map by key combo
   const keyCombos = {}
   Object.keys(keyBindings).forEach ((name) => {
-    keyBindings[name].forEach(combo => keyCombos[combo.toUpperCase()] = name)
+    keyBindings[name].forEach(combo => keyCombos[normalizeKeyCombo(combo)] = name)
   })
 
-  return function findKeyBinding (event){
+  return function findKeyBinding (event) {
     const keyCombo = keyComboFromEvent(event)
+    console.log('keyCombo', keyCombo)
 
-    return keyCombos[keyCombo.toUpperCase()] || null
+    return keyCombos[normalizeKeyCombo(keyCombo)] || null
   }
 }
 
+/**
+ * Normalize a key combo:
+ *
+ * - to upper case
+ * - replace aliases like "?" with "/"
+ *
+ * @param {string} combo
+ * @return {string}
+ */
+function normalizeKeyCombo (combo) {
+  const upper = combo.toUpperCase()
+
+  const last = upper[upper.length - 1]
+  if (last in aliases) {
+    return upper.substring(0, upper.length - 1) + aliases[last]
+  }
+
+  return upper
+}
 
 const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0
 
@@ -164,4 +188,29 @@ const codes = {
   '220': '\\',
   '221': ']',
   '222': '\''
+}
+
+// all secondary characters of the keyboard buttons (used via Shift)
+const aliases = {
+  '~': '`',
+  '!': '1',
+  '@': '2',
+  '#': '3',
+  '$': '4',
+  '%': '5',
+  '^': '6',
+  '&': '7',
+  '*': '8',
+  '(': '9',
+  ')': '0',
+  '_': '-',
+  '+': '=',
+  '{': '[',
+  '}': ']',
+  '|': '\\',
+  ':': ';',
+  '"': '',
+  '<': ',',
+  '>': '.',
+  '?': '/'
 }

@@ -37,7 +37,7 @@ Constructs a new JSONEditor.
   library used for JSON schema validation. Example:
 
   ```js
-  var options = {
+  const options = {
     ajv: Ajv({ allErrors: true, verbose: true })
   }
   ```
@@ -71,6 +71,25 @@ Constructs a new JSONEditor.
 - `{boolean} history`
 
   Enables history, adds a button Undo and Redo to the menu of the JSONEditor. True by default. Only applicable when `mode` is 'tree' or 'form'.
+
+- `{Object<String, String[]>} keyBindings`
+
+  Override default key bindings. For example to replace the binding to duplicate a node from `Ctrl+D` to `Ctrl+Shift+D`:
+
+  ```js
+  const options = {
+    keyBindings: {
+      duplicate: ['Ctrl+Shift+D', 'Command+Shift+D']
+    }
+  }
+  ```
+
+  It's important to define bindings for both Windows and Mac. The meta keys on Windows are `Ctrl`, `Shift`, `Alt`, and on Mac they are respectively `Command`, `Shift`, and `Option`.
+
+  All available key bindings are described on the page [Key Bindings](#key_bindings.md).
+
+  Key bindings are case insensitive.
+
 
 - `{String} mode`
 
@@ -229,12 +248,12 @@ Get JSON data as string.
 A tree editor:
 
 ```js
-var options = {
+const options = {
     mode: 'tree',
     search: true
 }
-var editor = new JSONEditor(container, options)
-var json = {
+const editor = new JSONEditor(container, options)
+let json = {
     "Array": [1, 2, 3],
     "Boolean": true,
     "Null": null,
@@ -245,18 +264,18 @@ var json = {
 editor.set(json)
 editor.expandAll()
 
-var json = editor.get(json)
+json = editor.get(json)
 ```
 
 A text editor:
 
 ```js
-var options = {
+const options = {
     mode: 'text',
     indentation: 2
 }
-var editor = new JSONEditor(container, options)
-var json = {
+const editor = new JSONEditor(container, options)
+let json = {
     "Array": [1, 2, 3],
     "Boolean": true,
     "Null": null,
@@ -266,7 +285,7 @@ var json = {
 }
 editor.set(json)
 
-var json = editor.get()
+json = editor.get()
 ```
 
 ## JSON parsing and stringification
@@ -274,17 +293,17 @@ var json = editor.get()
 In general to parse or stringify JSON data, the browsers built in JSON parser can be used. To create a formatted string from a JSON object, use:
 
 ```js
-var formattedString = JSON.stringify(json, null, 2)
+const formattedString = JSON.stringify(json, null, 2)
 ```
 
 to create a compacted string from a JSON object, use:
 
 ```js
-var compactString = JSON.stringify(json)
+const compactString = JSON.stringify(json)
 ```
 
 To parse a String to a JSON object, use:
 
 ```js
-var json = JSON.parse(string)
+const json = JSON.parse(string)
 ```
