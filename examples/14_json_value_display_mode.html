@@ -1,0 +1,132 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <title>JSONEditor | JSON schema validation</title>
+
+  <link href="../dist/jsoneditor.css" rel="stylesheet" type="text/css">
+  <script src="../dist/jsoneditor.js"></script>
+
+  <style type="text/css">
+    body {
+      width: 600px;
+      font: 11pt sans-serif;
+    }
+    .jsoneditor {
+      width: 100%;
+      height: 250px;
+    }
+
+    table tr th {
+      text-align: left;
+    }
+  </style>
+</head>
+<body>
+<h1>Value display mode</h1>
+<p>
+  This example demonstrates the different value display modes:
+  <table>
+    <tr>
+      <th>value</th>
+      <td>displays the value of a node</td>
+    </tr>
+    <tr>
+      <th>schema</th>
+      <td>displays the schema type of a node</td>
+    </tr>
+    <tr>
+      <th>schema-if-null</th>
+      <td>displays the schema type of a node if its value is null</td>
+    </tr>
+  </table>
+</p>
+
+<h2>Value</h2>
+<div class="jsoneditor" id="jsoneditor1"></div>
+<h2>Schema</h2>
+<div class="jsoneditor" id="jsoneditor2"></div>
+<h2>Schema if null</h2>
+<div class="jsoneditor" id="jsoneditor3"></div>
+
+<script>
+  var schema = {
+    "title": "Example Schema",
+    "type": "object",
+    "properties": {
+      "firstName": {
+        "type": "string"
+      },
+      "lastName": {
+        "type": "string"
+      },
+      "gender": {
+        "enum": ["male", "female"]
+      },
+      "age": {
+        "description": "Age in years",
+        "type": "integer",
+        "minimum": 0
+      },
+      "job": {
+        "$ref": "job"
+      }
+    },
+    "required": ["firstName", "lastName"]
+  };
+
+  var job = {
+    "title": "Job description",
+    "type": "object",
+    "properties": {
+      "company": {
+        "$ref": "company"
+      },
+      "role": {
+        "type": "string"
+      }
+    }
+  };
+  var company = {
+    "title": "Company description",
+    // "type": "string"
+    "$ref": "companyType"
+  };
+  var companyType = {
+    "title": "Company type description",
+    "type": "string"
+  };
+
+  var json = {
+    firstName: 'John',
+    lastName: null,
+    gender: null,
+    age: null,
+    job: {
+      company: null,
+      role: 'developer'
+    }
+  };
+
+  var options = {
+    schema: schema,
+    schemaRefs: {"job": job, "company": company, "companyType": companyType},
+    valueDisplayMode: 'value',
+    // valueDisplayModes: ['value','schema','schema-if-null'],
+    onValueDisplayModeChange: function(mode) {
+      console.log("onValueDisplayModeChange:", "'"+mode+"'");
+    },
+    modes: ['tree', 'view']
+  };
+
+  // create the editor
+  // options.valueDisplayMode = 'schema';
+  var container = document.getElementById('jsoneditor1');
+  var editor = new JSONEditor(container, options, json);
+
+  options.valueDisplayMode = 'schema';
+  var editor2 = new JSONEditor(document.getElementById('jsoneditor2'), options, json);
+  options.valueDisplayMode = 'schema-if-null';
+  var editor3 = new JSONEditor(document.getElementById('jsoneditor3'), options, json);
+</script>
+</body>
+</html>

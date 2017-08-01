@@ -44,6 +44,9 @@ var util = require('./util');
  *                               {boolean} sortObjectKeys If true, object keys are
  *                                                        sorted before display.
  *                                                        false by default.
+ *                               {string} valueDisplayMode  Value display type. Available values:
+ *                                                          'value' (default), 'schema',
+ *                                                          'schema-if-null'
  * @param {Object | undefined} json JSON object
  */
 function JSONEditor (container, options, json) {
@@ -81,8 +84,9 @@ function JSONEditor (container, options, json) {
       var VALID_OPTIONS = [
         'ajv', 'schema', 'schemaRefs','templates',
         'ace', 'theme','autocomplete',
-        'onChange', 'onEditable', 'onError', 'onModeChange',
-        'escapeUnicode', 'history', 'search', 'mode', 'modes', 'name', 'indentation', 'sortObjectKeys'
+        'onChange', 'onEditable', 'onError', 'onModeChange', 'onValueDisplayModeChange',
+        'escapeUnicode', 'history', 'search', 'mode', 'modes', 'name', 'indentation', 'sortObjectKeys',
+        'valueDisplayMode'
       ];
 
       Object.keys(options).forEach(function (option) {
@@ -132,6 +136,9 @@ JSONEditor.prototype._create = function (container, options, json) {
 
   var mode = this.options.mode || (this.options.modes && this.options.modes[0]) || 'tree';
   this.setMode(mode);
+  
+  var valueDisplayMode = this.options.valueDisplayMode || 'value';
+  this.setValueDisplayMode(valueDisplayMode);
 };
 
 /**
@@ -252,6 +259,57 @@ JSONEditor.prototype.setMode = function (mode) {
  */
 JSONEditor.prototype.getMode = function () {
   return this.options.mode;
+};
+
+/**
+ * Change the value display mode of the editor.
+ * JSONEditor will be extended with all methods needed for the chosen mode.
+ * @param {String} mode     Available modes: 'value' (default), 'schema', 'schema-if-null'.
+ */
+JSONEditor.prototype.setValueDisplayMode = function (valueDisplayMode) {
+  var container = this.container;
+  var options = util.extend({}, this.options);
+  var oldMode = options.valueDisplayMode;
+  var data;
+  var name;
+
+  options.valueDisplayMode = valueDisplayMode;
+  var config = JSONEditor.modes[this.options.mode];
+  if (config) {
+    try {
+      if (typeof config.load === 'function') {
+        try {
+          config.load.call(this);
+        }
+        catch (err) {
+          console.error(err);
+        }
+      }
+
+      if (typeof options.onValueDisplayModeChange === 'function' && valueDisplayMode !== oldMode) {
+        try {
+          options.onValueDisplayModeChange(valueDisplayMode, oldMode);
+        }
+        catch (err) {
+          console.error(err);
+        }
+      }
+    }
+    catch (err) {
+      this._onError(err);
+    }
+  }
+  else {
+    throw new Error('Unknown value display mode "' + options.valueDisplayMode + '"');
+  }
+};
+
+/**
+ * Get the current value display mode
+ * @return {string}
+ */
+JSONEditor.prototype.getValueDisplayMode = function () {
+  return this.options.valueDisplayMode;
 };
 
 /**
