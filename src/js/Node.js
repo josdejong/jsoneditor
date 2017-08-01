@@ -1226,12 +1226,12 @@ Node.prototype._findSchemaRef = function (reference) {
           return this._findSchemaRef(ref.properties[this.field].$ref);
         }
       }
-      // console.warn("Could not find schema ref", reference);
+      // console.warn('Could not find schema ref', reference);
       return undefined;
     }
     return ref.type;
   }
-  console.warn("Schema ref %s undefined", reference);
+  console.warn('Schema ref %s undefined', reference);
   return undefined;
 };
 

@@ -42,11 +42,11 @@
 </p>
 
 <h2>Value</h2>
-<div class="jsoneditor" id="jsoneditor1"></div>
+<div class="jsoneditor" id="jsoneditor-value"></div>
 <h2>Schema</h2>
-<div class="jsoneditor" id="jsoneditor2"></div>
+<div class="jsoneditor" id="jsoneditor-schema"></div>
 <h2>Schema if null</h2>
-<div class="jsoneditor" id="jsoneditor3"></div>
+<div class="jsoneditor" id="jsoneditor-schema-if-null"></div>
 
 <script>
   var schema = {
@@ -88,7 +88,6 @@
   };
   var company = {
     "title": "Company description",
-    // "type": "string"
     "$ref": "companyType"
   };
   var companyType = {
@@ -111,7 +110,6 @@
     schema: schema,
     schemaRefs: {"job": job, "company": company, "companyType": companyType},
     valueDisplayMode: 'value',
-    // valueDisplayModes: ['value','schema','schema-if-null'],
     onValueDisplayModeChange: function(mode) {
       console.log("onValueDisplayModeChange:", "'"+mode+"'");
     },
@@ -119,14 +117,13 @@
   };
 
   // create the editor
-  // options.valueDisplayMode = 'schema';
-  var container = document.getElementById('jsoneditor1');
-  var editor = new JSONEditor(container, options, json);
+  var editor = new JSONEditor(document.getElementById('jsoneditor-value'), options, json);
 
   options.valueDisplayMode = 'schema';
-  var editor2 = new JSONEditor(document.getElementById('jsoneditor2'), options, json);
+  var editor2 = new JSONEditor(document.getElementById('jsoneditor-schema'), options, json);
+  
   options.valueDisplayMode = 'schema-if-null';
-  var editor3 = new JSONEditor(document.getElementById('jsoneditor3'), options, json);
+  var editor3 = new JSONEditor(document.getElementById('jsoneditor-schema-if-null'), options, json);
 </script>
 </body>
 </html>
