@@ -240,7 +240,8 @@ ContextMenu.prototype.show = function (anchor, contentWindow) {
   // create and attach event listeners
   var me = this;
   var list = this.dom.list;
-  this.eventListeners.mousedown = util.addEventListener(window, 'mousedown', function (event) {
+  var rootNode = list.getRootNode && list.getRootNode() || window;
+  this.eventListeners.mousedown = util.addEventListener(rootNode, 'mousedown', function (event) {
     // hide menu on click outside of the menu
     var target = event.target;
     if ((target != list) && !me._isChildOf(target, list)) {
@@ -249,7 +250,7 @@ ContextMenu.prototype.show = function (anchor, contentWindow) {
       event.preventDefault();
     }
   });
-  this.eventListeners.keydown = util.addEventListener(window, 'keydown', function (event) {
+  this.eventListeners.keydown = util.addEventListener(rootNode, 'keydown', function (event) {
     me._onKeyDown(event);
   });
 
