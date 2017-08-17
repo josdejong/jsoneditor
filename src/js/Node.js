@@ -373,10 +373,10 @@ Node.prototype.getLevel = function() {
 };
 
 /**
- * Get path of the root node till the current node
+ * Get jsonpath of the current node
  * @return {Node[]} Returns an array with nodes
  */
-Node.prototype.getNodePath = function() {
+Node.prototype.getNodePath = function () {
   var path = this.parent ? this.parent.getNodePath() : [];
   path.push(this);
   return path;

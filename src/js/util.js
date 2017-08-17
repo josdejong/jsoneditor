@@ -42,6 +42,14 @@ exports.sanitize = function (jsString) {
     jsString = match[3];
   }
 
+  var controlChars = {
+    '\b': '\\b',
+    '\f': '\\f',
+    '\n': '\\n',
+    '\r': '\\r',
+    '\t': '\\t'
+  };
+
   // helper functions to get the current/prev/next character
   function curr () { return jsString.charAt(i);     }
   function next()  { return jsString.charAt(i + 1); }
@@ -87,20 +95,25 @@ exports.sanitize = function (jsString) {
     while (i < jsString.length && c !== quote) {
       if (c === '"' && prev() !== '\\') {
         // unescaped double quote, escape it
-        chars.push('\\');
+        chars.push('\\"');
       }
-
-      // handle escape character
-      if (c === '\\') {
+      else if (controlChars.hasOwnProperty(c)) {
+        // replace unescaped control characters with escaped ones
+        chars.push(controlChars[c])
+      }
+      else if (c === '\\') {
+        // remove the escape character when followed by a single quote ', not needed
         i++;
         c = curr();
-
-        // remove the escape character when followed by a single quote ', not needed
         if (c !== '\'') {
           chars.push('\\');
         }
+        chars.push(c);
       }
-      chars.push(c);
+      else {
+        // regular character
+        chars.push(c);
+      }
 
       i++;
       c = curr();
@@ -776,3 +789,32 @@ exports.textDiff = function textDiff(oldText, newText) {
 
   return {start: start, end: newEnd};
 };
+
+if (typeof Element !== 'undefined') {
+  // Polyfill for array remove
+  (function (arr) {
+    arr.forEach(function (item) {
+      if (item.hasOwnProperty('remove')) {
+        return;
+      }
+      Object.defineProperty(item, 'remove', {
+        configurable: true,
+        enumerable: true,
+        writable: true,
+        value: function remove() {
+          if (this.parentNode != null)
+            this.parentNode.removeChild(this);
+        }
+      });
+    });
+  })([Element.prototype, CharacterData.prototype, DocumentType.prototype]);
+}
+
+
+// Polyfill for startsWith
+if (!String.prototype.startsWith) {
+    String.prototype.startsWith = function (searchString, position) {
+        position = position || 0;
+        return this.substr(position, searchString.length) === searchString;
+    };
+}

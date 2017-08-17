@@ -1,37 +1,37 @@
 <!DOCTYPE HTML>
 <html>
 <head>
-  <title>JSONEditor | Custom styling</title>
+    <title>JSONEditor | Custom styling</title>
 
-  <link href="../dist/jsoneditor.css" rel="stylesheet" type="text/css">
-  <script src="../dist/jsoneditor.js"></script>
+    <link href="../dist/jsoneditor.css" rel="stylesheet" type="text/css">
+    <script src="../dist/jsoneditor.js"></script>
 
-  <style type="text/css">
-    #jsoneditor {
-      width: 500px;
-      height: 500px;
-    }
+    <style type="text/css">
+        #jsoneditor {
+            width: 500px;
+            height: 500px;
+        }
 
-    p {
-      width: 500px;
-      font-family: "DejaVu Sans", sans-serif;
-    }
-  </style>
+        p {
+            width: 500px;
+            font-family: "DejaVu Sans", sans-serif;
+        }
+    </style>
 
-  <link href="./css/darktheme.css" rel="stylesheet" type="text/css">
+    <link href="./css/darktheme.css" rel="stylesheet" type="text/css">
 
 </head>
 <body>
-<p>
-  This example demonstrates how to customize the look of JSONEditor,
-  the editor below has a dark theme. Note that the example isn't worked
-  out for the mode <code>code</code>. To do that, you can load and configure
-  a custom theme for the Ace editor.
-</p>
+    <p>
+        This example demonstrates how to customize the look of JSONEditor,
+        the editor below has a dark theme. Note that the example isn't worked
+        out for the mode <code>code</code>. To do that, you can load and configure
+        a custom theme for the Ace editor.
+    </p>
 
-<div id="jsoneditor"></div>
+    <div id="jsoneditor"></div>
 
-<script>
+    <script>
   // create the editor
   var container = document.getElementById('jsoneditor');
   var options = {
@@ -46,6 +46,6 @@
     'string': 'Hello World'
   };
   var editor = new JSONEditor(container, options, json);
-</script>
+    </script>
 </body>
 </html>

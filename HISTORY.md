@@ -3,9 +3,68 @@
 https://github.com/josdejong/jsoneditor
 
 
-## not yet released, version 5.7.0
+## 2017-07-24, version 5.9.3
+
+- Fixed broken multi-selection (regression).
+
+
+## 2017-07-13, version 5.9.2
+
+- Fixed a bug in the JSON sanitizer.
+
+
+## 2017-07-13, version 5.9.1
+
+- `setText` method of tree mode now automatically sanitizes JSON input
+  when needed.
+- Fixed #430: automatically fix unescaped control characters in
+  JSON input.
+
+
+## 2017-07-10, version 5.9.0
+
+- Implemented support for JSON schema references `$ref`, see #302.
+  Thanks @meirotstein.
+- Fixed #429: JSONEditor no longer accepting an empty array for option
+  `modes`. Thanks @trystan2k.
+- Fixed JSONEditor picking the first entry of `modes` as initial mode
+  instead of option `mode`.
+
+
+## 2017-07-08, version 5.8.2
+
+- Select first option from `modes` instead of `tree` when `mode` is not
+  configured. Thanks @bag-man.
+- Some fixes and improvements in the API of autocompletion.
+  Thanks @israelito3000.
+
+
+## 2017-07-03, version 5.8.1
+
+- Fixed broken minified bundles in folder `dist` (again...).
+
+
+## 2017-07-02, version 5.8.0
+
+- Implemented support for autocompletion. Thanks @israelito3000.
+
+
+## 2017-06-27, version 5.7.2
+
+- Fixed broken minified bundles in folder `dist`
+  (reverted to `uglify-js@2.8.22` for now).
+
+
+## 2017-06-25, version 5.7.1
+
+- Upgraded dependency `ajv` to version `5.2.0`. Resolves warnings in
+  Webpack build processes.
+
+
+## 2017-05-26, version 5.7.0
 
 - Implemented support for template items. Thanks @israelito3000.
+- Upgraded dependencies to the latest versions. Thanks @andreykaipov.
 
 
 ## 2017-04-15, version 5.6.0

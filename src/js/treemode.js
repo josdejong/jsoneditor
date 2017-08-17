@@ -8,6 +8,7 @@ var ContextMenu = require('./ContextMenu');
 var Node = require('./Node');
 var ModeSwitcher = require('./ModeSwitcher');
 var util = require('./util');
+var autocomplete = require('./autocomplete');
 
 // create a mixin with the functions for tree mode
 var treemode = {};
@@ -50,6 +51,9 @@ treemode.create = function (container, options) {
   this.focusTarget = null;
 
   this._setOptions(options);
+
+  if (options.autocomplete)
+      this.autocomplete = new autocomplete(options.autocomplete);
 
   if (this.options.history && this.options.mode !== 'view') {
     this.history = new History(this);
@@ -107,7 +111,9 @@ treemode._setOptions = function (options) {
     history: true,
     mode: 'tree',
     name: undefined,   // field name of root node
-    schema: null
+    schema: null,
+    schemaRefs: null,
+    autocomplete: null
   };
 
   // copy all options
@@ -120,7 +126,7 @@ treemode._setOptions = function (options) {
   }
 
   // compile a JSON schema validator if a JSON schema is provided
-  this.setSchema(this.options.schema);
+  this.setSchema(this.options.schema, this.options.schemaRefs);
 
   // create a debounced validate function
   this._debouncedValidate = util.debounce(this.validate.bind(this), this.DEBOUNCE_INTERVAL);
@@ -210,7 +216,16 @@ treemode.getText = function() {
  * @param {String} jsonText
  */
 treemode.setText = function(jsonText) {
-  this.set(util.parse(jsonText));
+  try {
+    this.set(util.parse(jsonText)); // this can throw an error
+  }
+  catch (err) {
+    // try to sanitize json, replace JavaScript notation with JSON notation
+    var sanitizedJsonText = util.sanitize(jsonText);
+
+    // try to parse again
+    this.set(util.parse(sanitizedJsonText)); // this can throw an error
+  }
 };
 
 /**
@@ -684,7 +699,7 @@ treemode._createFrame = function () {
   };
   this.menu.appendChild(expandAll);
 
-  // create expand all button
+  // create collapse all button
   var collapseAll = document.createElement('button');
   collapseAll.type = 'button';
   collapseAll.title = 'Collapse all fields';
@@ -1051,7 +1066,9 @@ treemode._findTopLevelNodes = function (start, end) {
  */
 treemode._onKeyDown = function (event) {
   var keynum = event.which || event.keyCode;
+  var altKey = event.altKey;
   var ctrlKey = event.ctrlKey;
+  var metaKey = event.metaKey;
   var shiftKey = event.shiftKey;
   var handled = false;
 
@@ -1095,6 +1112,41 @@ treemode._onKeyDown = function (event) {
       this._onRedo();
       handled = true;
     }
+  }
+
+  if ((this.options.autocomplete) && (!handled)) {
+      if (!ctrlKey && !altKey && !metaKey && (event.key.length == 1 || keynum == 8 || keynum == 46)) {
+          handled = false;
+          var jsonElementType = "";
+          if (event.target.className.indexOf("jsoneditor-value") >= 0) jsonElementType = "value";
+          if (event.target.className.indexOf("jsoneditor-field") >= 0) jsonElementType = "field";
+
+          var node = Node.getNodeFromTarget(event.target);
+          // Activate autocomplete
+          setTimeout(function (hnode, element) {
+              if (element.innerText.length > 0) {
+                  var result = this.options.autocomplete.getOptions(element.innerText, hnode.getPath(), jsonElementType, hnode.editor);
+                  if (typeof result.then === 'function') {
+                      // probably a promise
+                      if (result.then(function (obj) {
+                          if (obj.options)
+                              this.autocomplete.show(element, obj.startFrom, obj.options);
+                          else
+                              this.autocomplete.show(element, 0, obj);
+                      }.bind(this)));
+                  } else {
+                      // definitely not a promise
+                      if (result.options)
+                          this.autocomplete.show(element, result.startFrom, result.options);
+                      else
+                          this.autocomplete.show(element, 0, result);
+                  }
+              }
+              else
+                  this.autocomplete.hideDropDown();
+
+          }.bind(this, node, event.target), 50);
+      } 
   }
 
   if (handled) {
@@ -1145,7 +1197,7 @@ treemode._createTable = function () {
 /**
  * Show a contextmenu for this node.
  * Used for multiselection
- * @param {HTMLElement} anchor   Anchor element to attache the context menu to.
+ * @param {HTMLElement} anchor   Anchor element to attach the context menu to.
  * @param {function} [onClose]   Callback method called when the context menu
  *                               is being closed.
  */
