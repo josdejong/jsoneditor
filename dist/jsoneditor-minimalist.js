@@ -24,8 +24,8 @@
  * Copyright (c) 2011-2017 Jos de Jong, http://jsoneditoronline.org
  *
  * @author  Jos de Jong, <wjosdejong@gmail.com>
- * @version 5.9.3
- * @date    2017-07-24
+ * @version 5.9.4
+ * @date    2017-08-20
  */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
@@ -3682,6 +3682,14 @@ return /******/ (function(modules) { // webpackBootstrap
 	var util = __webpack_require__(4);
 
 	/**
+	 * Node.getRootNode shim
+	 * @param  {Node} node node to check
+	 * @return {Node}      node's rootNode or `window` if there is ShadowDOM is not supported.
+	 */
+	function getRootNode(node){
+	    return node.getRootNode && node.getRootNode() || window;
+	}
+	/**
 	 * A context menu
 	 * @param {Object[]} items    Array containing the menu structure
 	 *                            TODO: describe structure
@@ -3919,7 +3927,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	  // create and attach event listeners
 	  var me = this;
 	  var list = this.dom.list;
-	  this.eventListeners.mousedown = util.addEventListener(window, 'mousedown', function (event) {
+	  var rootNode = getRootNode(list);
+	  this.eventListeners.mousedown = util.addEventListener(rootNode, 'mousedown', function (event) {
 	    // hide menu on click outside of the menu
 	    var target = event.target;
 	    if ((target != list) && !me._isChildOf(target, list)) {
@@ -3928,7 +3937,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	      event.preventDefault();
 	    }
 	  });
-	  this.eventListeners.keydown = util.addEventListener(window, 'keydown', function (event) {
+	  this.eventListeners.keydown = util.addEventListener(rootNode, 'keydown', function (event) {
 	    me._onKeyDown(event);
 	  });
 
@@ -3959,11 +3968,12 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	  // remove all event listeners
 	  // all event listeners are supposed to be attached to document.
+	  var rootNode = getRootNode(this.dom.list);
 	  for (var name in this.eventListeners) {
 	    if (this.eventListeners.hasOwnProperty(name)) {
 	      var fn = this.eventListeners[name];
 	      if (fn) {
-	        util.removeEventListener(window, name, fn);
+	        util.removeEventListener(rootNode, name, fn);
 	      }
 	      delete this.eventListeners[name];
 	    }

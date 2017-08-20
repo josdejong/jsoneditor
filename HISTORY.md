@@ -3,6 +3,11 @@
 https://github.com/josdejong/jsoneditor
 
 
+## 2017-08-20, version 5.9.4
+
+- Fixed #447: context menus not working in Shadow DOM. Thanks @tomalec.
+
+
 ## 2017-07-24, version 5.9.3
 
 - Fixed broken multi-selection (regression).
