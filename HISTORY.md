@@ -3,6 +3,13 @@
 https://github.com/josdejong/jsoneditor
 
 
+## 2017-08-26, version 5.9.5
+
+- Fixed a regression introduced in `v5.9.4`: after using the context
+  menu once, it was not possible to set focus to an other input field
+  anymore.
+
+
 ## 2017-08-20, version 5.9.4
 
 - Fixed #447: context menus not working in Shadow DOM. Thanks @tomalec.
