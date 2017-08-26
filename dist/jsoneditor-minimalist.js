@@ -24,8 +24,8 @@
  * Copyright (c) 2011-2017 Jos de Jong, http://jsoneditoronline.org
  *
  * @author  Jos de Jong, <wjosdejong@gmail.com>
- * @version 5.9.4
- * @date    2017-08-20
+ * @version 5.9.5
+ * @date    2017-08-26
  */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
@@ -3689,6 +3689,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	function getRootNode(node){
 	    return node.getRootNode && node.getRootNode() || window;
 	}
+
 	/**
 	 * A context menu
 	 * @param {Object[]} items    Array containing the menu structure
@@ -3920,6 +3921,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	    this.dom.menu.style.bottom = '0px';
 	  }
 
+	  // find the root node of the page (window, or a shadow dom root element)
+	  this.rootNode = getRootNode(anchor);
+
 	  // attach the menu to the parent of the anchor
 	  var parent = anchor.parentNode;
 	  parent.insertBefore(this.dom.root, parent.firstChild);
@@ -3927,8 +3931,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  // create and attach event listeners
 	  var me = this;
 	  var list = this.dom.list;
-	  var rootNode = getRootNode(list);
-	  this.eventListeners.mousedown = util.addEventListener(rootNode, 'mousedown', function (event) {
+	  this.eventListeners.mousedown = util.addEventListener(this.rootNode, 'mousedown', function (event) {
 	    // hide menu on click outside of the menu
 	    var target = event.target;
 	    if ((target != list) && !me._isChildOf(target, list)) {
@@ -3937,7 +3940,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	      event.preventDefault();
 	    }
 	  });
-	  this.eventListeners.keydown = util.addEventListener(rootNode, 'keydown', function (event) {
+	  this.eventListeners.keydown = util.addEventListener(this.rootNode, 'keydown', function (event) {
 	    me._onKeyDown(event);
 	  });
 
@@ -3968,12 +3971,11 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	  // remove all event listeners
 	  // all event listeners are supposed to be attached to document.
-	  var rootNode = getRootNode(this.dom.list);
 	  for (var name in this.eventListeners) {
 	    if (this.eventListeners.hasOwnProperty(name)) {
 	      var fn = this.eventListeners[name];
 	      if (fn) {
-	        util.removeEventListener(rootNode, name, fn);
+	        util.removeEventListener(this.rootNode, name, fn);
 	      }
 	      delete this.eventListeners[name];
 	    }
