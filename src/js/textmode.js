@@ -77,6 +77,7 @@ textmode.create = function (container, options) {
   this.aceEditor = undefined;  // ace code editor
   this.textarea = undefined;  // plain text editor (fallback when Ace is not available)
   this.validateSchema = null;
+  this.curserInfoElements = {};
 
   // create a debounced validate function
   this._debouncedValidate = util.debounce(this.validate.bind(this), this.DEBOUNCE_INTERVAL);
@@ -140,6 +141,51 @@ textmode.create = function (container, options) {
     });
   }
 
+  // create curser and count info
+  var curserAndCountInfo = document.createElement('div');
+  curserAndCountInfo.className = 'jsoneditor-curserinfo';
+
+  var countLabel = document.createElement('span');
+  countLabel.className = 'jsoneditor-curserinfo-label';
+  countLabel.innerText = 'characters selected';
+  countLabel.style.display = 'none';
+
+  var countVal = document.createElement('span');
+  countVal.className = 'jsoneditor-curserinfo-count';
+  countVal.innerText = 0;
+  countVal.style.display = 'none';
+
+  this.curserInfoElements.countLabel = countLabel;
+  this.curserInfoElements.countVal = countVal;
+
+  curserAndCountInfo.appendChild(countVal);
+  curserAndCountInfo.appendChild(countLabel);
+
+
+  // var lnLabel = document.createElement('span');
+  // lnLabel.className = 'jsoneditor-curserinfo-label';
+  // lnLabel.innerText = 'Ln:';
+
+  // this.curserInfoElements.lnVal = document.createElement('span');
+  // this.curserInfoElements.lnVal.className = 'jsoneditor-curserinfo-count';
+  // this.curserInfoElements.lnVal.innerText = 0;
+
+  // curserAndCountInfo.appendChild(lnLabel);
+  // curserAndCountInfo.appendChild(this.curserInfoElements.lnVal);
+
+  // var colLabel = document.createElement('span');
+  // colLabel.className = 'jsoneditor-curserinfo-label';
+  // colLabel.innerText = 'Col:';
+
+  // this.curserInfoElements.colVal = document.createElement('span');
+  // this.curserInfoElements.colVal.className = 'jsoneditor-curserinfo-count';
+  // this.curserInfoElements.colVal.innerText = 0;
+
+  // curserAndCountInfo.appendChild(colLabel);
+  // curserAndCountInfo.appendChild(this.curserInfoElements.colVal);
+
+  this.menu.appendChild(curserAndCountInfo);
+
   var emptyNode = {};
   var isReadOnly = (this.options.onEditable
   && typeof(this.options.onEditable === 'function')
@@ -200,6 +246,7 @@ textmode.create = function (container, options) {
 
     // register onchange event
     aceEditor.on('change', this._onChange.bind(this));
+    aceEditor.on('changeSelection', this._onSelect.bind(this));
   }
   else {
     // load a plain text textarea
@@ -218,6 +265,10 @@ textmode.create = function (container, options) {
       // oninput is undefined. For IE8-
       this.textarea.onchange = this._onChange.bind(this);
     }
+
+    textarea.onselect = this._onSelect.bind(this);
+    textarea.onmousedown = this._onMouseDown.bind(this);
+    textarea.onblur = this._onBlur.bind(this);
   }
 
   this.setSchema(this.options.schema, this.options.schemaRefs);
@@ -245,6 +296,25 @@ textmode._onChange = function () {
 };
 
 /**
+ * Handle text selection
+ * Calculates the cursor position and selection range and updates menu
+ * @private
+ */
+textmode._onSelect = function () {
+  var selectionRange = {};
+    
+  if (this.textarea) {    
+    selectionRange = util.getInputSelection(this.textarea);
+  } else if (this.aceEditor) {
+    this._setSelectionCountDisplay(this.aceEditor.getSelectedText().length); 
+  }
+
+  if (selectionRange.start !== selectionRange.end) {
+    this._setSelectionCountDisplay(Math.abs(selectionRange.end - selectionRange.start));
+  }
+};
+
+/**
  * Event handler for keydown. Handles shortcut keys
  * @param {Event} event
  * @private
@@ -268,6 +338,37 @@ textmode._onKeyDown = function (event) {
   if (handled) {
     event.preventDefault();
     event.stopPropagation();
+  }
+
+  this._setSelectionCountDisplay();
+};
+
+/**
+ * Event handler for mousedown.
+ * @param {Event} event
+ * @private
+ */
+textmode._onMouseDown = function (event) {
+  this._setSelectionCountDisplay();
+};
+
+/**
+ * Event handler for blur.
+ * @param {Event} event
+ * @private
+ */
+textmode._onBlur = function (event) {
+  this._setSelectionCountDisplay();
+};
+
+textmode._setSelectionCountDisplay = function (value) {
+  if(value && this.curserInfoElements.countVal) {
+    this.curserInfoElements.countVal.innerText = value;
+    this.curserInfoElements.countVal.style.display = 'inline';
+    this.curserInfoElements.countLabel.style.display = 'inline';
+  } else {
+    this.curserInfoElements.countVal.style.display = 'none';
+    this.curserInfoElements.countLabel.style.display = 'none';
   }
 };
 
@@ -405,7 +506,6 @@ textmode.setText = function(jsonText) {
 
     this.options.onChange = originalOnChange;
   }
-
   // validate JSON schema
   this.validate();
 };
@@ -445,7 +545,7 @@ textmode.validate = function () {
     }
   }
 
-  if (errors.length > 0) {
+  if (errors.length > 0) {  
     // limit the number of displayed errors
     var limit = errors.length > MAX_ERRORS;
     if (limit) {

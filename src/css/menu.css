@@ -89,6 +89,20 @@ div.jsoneditor-menu > div.jsoneditor-modes > button.jsoneditor-separator {
   margin-left: 10px;
 }
 
+div.jsoneditor-menu > div.jsoneditor-curserinfo {
+  line-height: 30px;
+}
+
+div.jsoneditor-menu > div.jsoneditor-curserinfo > .jsoneditor-curserinfo-label {
+  margin: 0 2px 0 4px;
+}
+
+div.jsoneditor-menu > div.jsoneditor-curserinfo > span {
+  color: white;
+  opacity: 0.8;
+  font-size: 10pt;
+}
+
 div.jsoneditor-menu a {
   font-family: arial, sans-serif;
   font-size: 10pt;
