@@ -144,46 +144,6 @@ textmode.create = function (container, options) {
   // create curser and count info
   var curserAndCountInfo = document.createElement('div');
   curserAndCountInfo.className = 'jsoneditor-curserinfo';
-
-  var countLabel = document.createElement('span');
-  countLabel.className = 'jsoneditor-curserinfo-label';
-  countLabel.innerText = 'characters selected';
-  countLabel.style.display = 'none';
-
-  var countVal = document.createElement('span');
-  countVal.className = 'jsoneditor-curserinfo-count';
-  countVal.innerText = 0;
-  countVal.style.display = 'none';
-
-  this.curserInfoElements.countLabel = countLabel;
-  this.curserInfoElements.countVal = countVal;
-
-  curserAndCountInfo.appendChild(countVal);
-  curserAndCountInfo.appendChild(countLabel);
-
-
-  // var lnLabel = document.createElement('span');
-  // lnLabel.className = 'jsoneditor-curserinfo-label';
-  // lnLabel.innerText = 'Ln:';
-
-  // this.curserInfoElements.lnVal = document.createElement('span');
-  // this.curserInfoElements.lnVal.className = 'jsoneditor-curserinfo-count';
-  // this.curserInfoElements.lnVal.innerText = 0;
-
-  // curserAndCountInfo.appendChild(lnLabel);
-  // curserAndCountInfo.appendChild(this.curserInfoElements.lnVal);
-
-  // var colLabel = document.createElement('span');
-  // colLabel.className = 'jsoneditor-curserinfo-label';
-  // colLabel.innerText = 'Col:';
-
-  // this.curserInfoElements.colVal = document.createElement('span');
-  // this.curserInfoElements.colVal.className = 'jsoneditor-curserinfo-count';
-  // this.curserInfoElements.colVal.innerText = 0;
-
-  // curserAndCountInfo.appendChild(colLabel);
-  // curserAndCountInfo.appendChild(this.curserInfoElements.colVal);
-
   this.menu.appendChild(curserAndCountInfo);
 
   var emptyNode = {};
@@ -231,6 +191,31 @@ textmode.create = function (container, options) {
       });
     }
 
+    var lnLabel = document.createElement('span');
+    lnLabel.className = 'jsoneditor-curserinfo-label';
+    lnLabel.innerText = 'Ln:';
+
+    var lnVal = document.createElement('span');
+    lnVal.className = 'jsoneditor-curserinfo-val';
+    lnVal.innerText = 0;
+
+    curserAndCountInfo.appendChild(lnLabel);
+    curserAndCountInfo.appendChild(lnVal);
+
+    var colLabel = document.createElement('span');
+    colLabel.className = 'jsoneditor-curserinfo-label';
+    colLabel.innerText = 'Col:';
+
+    var colVal = document.createElement('span');
+    colVal.className = 'jsoneditor-curserinfo-val';
+    colVal.innerText = 0;
+
+    curserAndCountInfo.appendChild(colLabel);
+    curserAndCountInfo.appendChild(colVal);
+
+    this.curserInfoElements.colVal = colVal;
+    this.curserInfoElements.lnVal = lnVal;
+
     var poweredBy = document.createElement('a');
     poweredBy.appendChild(document.createTextNode('powered by ace'));
     poweredBy.href = 'http://ace.ajax.org';
@@ -271,6 +256,22 @@ textmode.create = function (container, options) {
     textarea.onblur = this._onBlur.bind(this);
   }
 
+  var countLabel = document.createElement('span');
+  countLabel.className = 'jsoneditor-curserinfo-label';
+  countLabel.innerText = 'selected';
+  countLabel.style.display = 'none';
+
+  var countVal = document.createElement('span');
+  countVal.className = 'jsoneditor-curserinfo-count';
+  countVal.innerText = 0;
+  countVal.style.display = 'none';
+
+  this.curserInfoElements.countLabel = countLabel;
+  this.curserInfoElements.countVal = countVal;
+
+  curserAndCountInfo.appendChild(countVal);
+  curserAndCountInfo.appendChild(countLabel);
+
   this.setSchema(this.options.schema, this.options.schemaRefs);
 };
 
@@ -306,7 +307,11 @@ textmode._onSelect = function () {
   if (this.textarea) {    
     selectionRange = util.getInputSelection(this.textarea);
   } else if (this.aceEditor) {
-    this._setSelectionCountDisplay(this.aceEditor.getSelectedText().length); 
+    var curserPos = this.aceEditor.getCursorPosition();
+    var selectedText = this.aceEditor.getSelectedText();
+    this.curserInfoElements.lnVal.innerText = curserPos.row + 1;
+    this.curserInfoElements.colVal.innerText = curserPos.column + 1;
+    this._setSelectionCountDisplay(selectedText.length);
   }
 
   if (selectionRange.start !== selectionRange.end) {

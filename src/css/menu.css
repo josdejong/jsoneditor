@@ -97,6 +97,14 @@ div.jsoneditor-menu > div.jsoneditor-curserinfo > .jsoneditor-curserinfo-label {
   margin: 0 2px 0 4px;
 }
 
+div.jsoneditor-menu > div.jsoneditor-curserinfo > .jsoneditor-curserinfo-val {
+  margin-right: 4px;
+}
+
+div.jsoneditor-menu > div.jsoneditor-curserinfo > .jsoneditor-curserinfo-count {
+  margin-left: 4px;
+}
+
 div.jsoneditor-menu > div.jsoneditor-curserinfo > span {
   color: white;
   opacity: 0.8;
