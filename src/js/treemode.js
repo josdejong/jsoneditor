@@ -5,6 +5,7 @@ var Highlighter = require('./Highlighter');
 var History = require('./History');
 var SearchBox = require('./SearchBox');
 var ContextMenu = require('./ContextMenu');
+var TreePath = require('./TreePath');
 var Node = require('./Node');
 var ModeSwitcher = require('./ModeSwitcher');
 var util = require('./util');
@@ -757,6 +758,15 @@ treemode._createFrame = function () {
   if (this.options.search) {
     this.searchBox = new SearchBox(this, this.menu);
   }
+
+  if(true) {  //TODO add option here
+    // create second menu row for treepath
+    var menu2 = document.createElement('div');
+    menu2.className = 'jsoneditor-menu2';
+    this.frame.appendChild(menu2);
+
+    this.treePath = new TreePath(menu2);
+  }
 };
 
 /**
@@ -810,6 +820,10 @@ treemode._onEvent = function (event) {
 
   var node = Node.getNodeFromTarget(event.target);
 
+  if (true && node && (event.type == 'keydown' || event.type == 'mousedown')) { //TODO check option
+    this._updateTreePath(node.getNodePath());
+  }
+
   if (node && node.selected) {
     if (event.type == 'click') {
       if (event.target == node.dom.menu) {
@@ -847,6 +861,24 @@ treemode._onEvent = function (event) {
 
   if (node) {
     node.onEvent(event);
+  }
+};
+
+/**
+ * Update TreePath components
+ * @param {Array<Node>} pathNodes list of nodes in path from root to selection 
+ * @private
+ */
+treemode._updateTreePath = function(pathNodes) {
+  if(pathNodes && pathNodes.length) {
+    var pathObjs = [];
+    pathNodes.forEach(function (node) {
+      var path = {
+        name: node.field || (isNaN(node.index) ? node.type : node.index)
+      }
+      pathObjs.push(path);
+    });
+    this.treePath.setPath(pathObjs);
   }
 };
 
