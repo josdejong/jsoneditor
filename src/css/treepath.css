@@ -5,4 +5,14 @@ div.jsoneditor-treepath {
   opacity: 0.8;
   font-family: arial, sans-serif;
   font-size: 10pt;
+  overflow-y: auto;
+}
+
+div.jsoneditor-treepath span.jsoneditor-treepath-element{
+  margin: 1px;
+}
+
+div.jsoneditor-treepath span.jsoneditor-treepath-element:hover {
+  cursor:pointer;
+  text-decoration:underline;
 }

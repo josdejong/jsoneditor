@@ -766,6 +766,7 @@ treemode._createFrame = function () {
     this.frame.appendChild(menu2);
 
     this.treePath = new TreePath(menu2);
+    this.treePath.onSectionSelected(this._onTreePathSectionSelected.bind(this));
   }
 };
 
@@ -869,16 +870,28 @@ treemode._onEvent = function (event) {
  * @param {Array<Node>} pathNodes list of nodes in path from root to selection 
  * @private
  */
-treemode._updateTreePath = function(pathNodes) {
+treemode._updateTreePath = function (pathNodes) {
   if(pathNodes && pathNodes.length) {
     var pathObjs = [];
     pathNodes.forEach(function (node) {
       var path = {
-        name: node.field || (isNaN(node.index) ? node.type : node.index)
+        name: node.field || (isNaN(node.index) ? node.type : node.index),
+        node: node
       }
       pathObjs.push(path);
     });
     this.treePath.setPath(pathObjs);
+  }
+};
+
+/**
+ * Callback for tree path section selection - focus the selected node in the tree
+ * @param {Object} pathObj path object that was represents the selected section node
+ * @private
+ */
+treemode._onTreePathSectionSelected = function (pathObj) {
+  if(pathObj && pathObj.node) {
+    pathObj.node.focus();
   }
 };
 
