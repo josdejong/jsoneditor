@@ -540,6 +540,20 @@ Node.prototype.hideChilds = function() {
 
 
 /**
+ * Goes through the path from the node to the root and ensures that it is expanded
+ */
+Node.prototype.expandTo = function() {
+  var currentNode = this.parent;
+  while (currentNode) {
+    if (!currentNode.expanded) {
+      currentNode.expand();
+    }
+    currentNode = currentNode.parent;
+  }
+};
+
+
+/**
  * Add a new child to the node.
  * Only applicable when Node value is of type array or object
  * @param {Node} node

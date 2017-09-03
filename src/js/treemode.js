@@ -906,6 +906,7 @@ treemode._updateTreePath = function (pathNodes) {
  */
 treemode._onTreePathSectionSelected = function (pathObj) {
   if(pathObj && pathObj.node) {
+    pathObj.node.expandTo();
     pathObj.node.focus();
   }
 };
@@ -923,6 +924,7 @@ treemode._onTreePathMenuItemSelected = function (pathObj, selection) {
     });
     if(selectionObj && selectionObj.node) {
       this._updateTreePath(selectionObj.node.getNodePath());
+      selectionObj.node.expandTo();
       selectionObj.node.focus();
     }
   }
