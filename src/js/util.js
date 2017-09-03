@@ -872,3 +872,15 @@ if (!String.prototype.startsWith) {
         return this.substr(position, searchString.length) === searchString;
     };
 }
+
+// Polyfill for Array.find
+if (!Array.prototype.find) {
+  Array.prototype.find = function(callback) {    
+    for (var i = 0; i < this.length; i++) {
+      var element = this[i];
+      if ( callback.call(this, element, i, this) ) {
+        return element;
+      }
+    }
+  }
+}

@@ -767,6 +767,7 @@ treemode._createFrame = function () {
 
     this.treePath = new TreePath(menu2);
     this.treePath.onSectionSelected(this._onTreePathSectionSelected.bind(this));
+    this.treePath.onContextMenuItemSelected(this._onTreePathMenuItemSelected.bind(this));
   }
 };
 
@@ -871,16 +872,29 @@ treemode._onEvent = function (event) {
  * @private
  */
 treemode._updateTreePath = function (pathNodes) {
-  if(pathNodes && pathNodes.length) {
+  if (pathNodes && pathNodes.length) {
     var pathObjs = [];
     pathNodes.forEach(function (node) {
-      var path = {
-        name: node.field || (isNaN(node.index) ? node.type : node.index),
-        node: node
+      var pathObj = {
+        name: getName(node),
+        node: node,
+        children: []
       }
-      pathObjs.push(path);
+      if (node.childs && node.childs.length) {
+        node.childs.forEach(function (childNode) {
+          pathObj.children.push({
+            name: getName(childNode),
+            node: childNode
+          });
+        });
+      }
+      pathObjs.push(pathObj);
     });
     this.treePath.setPath(pathObjs);
+  }
+
+  function getName(node) {
+    return node.field || (isNaN(node.index) ? node.type : node.index);
   }
 };
 
@@ -892,6 +906,24 @@ treemode._updateTreePath = function (pathNodes) {
 treemode._onTreePathSectionSelected = function (pathObj) {
   if(pathObj && pathObj.node) {
     pathObj.node.focus();
+  }
+};
+
+/**
+ * Callback for tree path menu item selection - rebuild the path accrding to the new selection and focus the selected node in the tree
+ * @param {Object} pathObj path object that was represents the parent section node
+ * @param {String} selection selected section child
+ * @private
+ */
+treemode._onTreePathMenuItemSelected = function (pathObj, selection) {
+  if(pathObj && pathObj.children.length) {
+    var selectionObj = pathObj.children.find(function (obj) {
+      return obj.name === selection;
+    });
+    if(selectionObj && selectionObj.node) {
+      this._updateTreePath(selectionObj.node.getNodePath());
+      selectionObj.node.focus();
+    }
   }
 };
 
