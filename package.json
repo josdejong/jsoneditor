@@ -29,11 +29,7 @@
     "brace": "0.9.1",
     "javascript-natural-sort": "0.7.1",
     "lodash": "4.17.4",
-    "preact": "7.1.0",
-    "preact-compat": "3.9.4",
-    "prop-types": "15.5.10",
-    "react": "15.4.1",
-    "react-dom": "15.4.1"
+    "prop-types": "15.5.10"
   },
   "devDependencies": {
     "ava": "0.17.0",
@@ -56,6 +52,10 @@
     "less": "2.7.2",
     "less-loader": "2.2.3",
     "mkdirp": "0.5.1",
+    "preact": "7.1.0",
+    "preact-compat": "3.9.4",
+    "react": "15.4.1",
+    "react-dom": "15.4.1",
     "style-loader": "0.13.1",
     "svg-url-loader": "1.1.0",
     "webpack": "1.14.0"

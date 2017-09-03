@@ -1,1 +1,1 @@
-module.exports = require('./dist/jsoneditor-react')
+module.exports = require('./lib/components/JSONEditor')
