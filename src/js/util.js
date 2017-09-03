@@ -794,7 +794,7 @@ exports.textDiff = function textDiff(oldText, newText) {
 /**
  * Return an object with the selection range or cursor position (if both have the same value)
  * Support also old browsers (IE8-)
- * Source: http://ourcodeworld.com/articles/read/282/how-to-get-the-current-cursor-position-and-selection-within-a-text-input-or-textarea-in-javascript * 
+ * Source: http://ourcodeworld.com/articles/read/282/how-to-get-the-current-cursor-position-and-selection-within-a-text-input-or-textarea-in-javascript
  * @param {DOMElement} el A dom element of a textarea or input text.
  * @return {Object} reference Object with 2 properties (start and end) with the identifier of the location of the cursor and selected text.
  **/
