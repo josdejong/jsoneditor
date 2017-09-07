@@ -2040,18 +2040,35 @@ Node._findEnum = function (schema) {
  */
 Node._findSchema = function (schema, path) {
   var childSchema = schema;
+  var foundSchema = childSchema;
 
-  for (var i = 0; i < path.length && childSchema; i++) {
-    var key = path[i];
-    if (typeof key === 'string' && childSchema.properties) {
-      childSchema = childSchema.properties[key] || null
-    }
-    else if (typeof key === 'number' && childSchema.items) {
-      childSchema = childSchema.items
-    }
+  var allSchemas = schema.oneOf || schema.anyOf || schema.allOf;
+  if (!allSchemas) {
+    allSchemas = [schema];
   }
 
-  return childSchema
+  for (var j = 0; j < allSchemas.length; j++) {
+    childSchema = allSchemas[j];
+
+    for (var i = 0; i < path.length && childSchema; i++) {
+      var key = path[i];
+
+      if (typeof key === 'string' && childSchema.properties) {
+        childSchema = childSchema.properties[key] || null;
+        if (childSchema) {
+          foundSchema = childSchema;
+        }
+      }
+      else if (typeof key === 'number' && childSchema.items) {
+        childSchema = childSchema.items;
+        if (childSchema) {
+          foundSchema = childSchema;
+        }
+      }
+    }
+
+  }
+  return foundSchema
 };
 
 /**
@@ -3347,7 +3364,7 @@ Node.prototype.showContextMenu = function (anchor, onClose) {
         });
     }
 
-    
+
 
     // create insert button
     var insertSubmenu = [
