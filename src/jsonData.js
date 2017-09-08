@@ -31,7 +31,7 @@ export function expandAll (path) {
  * @param {JSONDataType} [type='value']  Optional json data type for the created value
  * @return {JSONData}
  */
-export function jsonToData (json, expand = expandAll, path = [], type = 'value') {
+export function jsonToData (json, expand = expandAll, path = [], type = 'value') : JSONData {
   if (Array.isArray(json)) {
     return {
       type: 'Array',
@@ -57,7 +57,7 @@ export function jsonToData (json, expand = expandAll, path = [], type = 'value')
       })
     }
   }
-  else {
+  else { // value
     return {
       type,
       value: json
@@ -166,7 +166,7 @@ export function expand (data: JSONData, callback: Path | (Path) => boolean, expa
 /**
  * Expand all Objects and Arrays on a path
  */
-export function expandPath (data: JSONData, path: ?Path) : JSONData {
+export function expandPath (data: JSONData, path?: Path) : JSONData {
   let updatedData = data
 
   if (path) {

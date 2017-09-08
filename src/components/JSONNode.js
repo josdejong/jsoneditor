@@ -165,7 +165,7 @@ export default class JSONNode extends Component {
   }
 
   // TODO: simplify the method renderProperty
-  renderProperty (prop: ?PropertyData, index: ?number, data: JSONData, options: {escapeUnicode: boolean, isPropertyEditable: (Path) => boolean}) {
+  renderProperty (prop?: PropertyData, index?: number, data: JSONData, options: {escapeUnicode: boolean, isPropertyEditable: (Path) => boolean}) {
     const isIndex = typeof index === 'number'
 
     if (!prop && !isIndex) {
@@ -325,7 +325,7 @@ export default class JSONNode extends Component {
   /**
    * Get the css style given a search result type
    */
-  static getSearchResultClass (searchResultStatus: ?SearchResultStatus) {
+  static getSearchResultClass (searchResultStatus?: SearchResultStatus) {
     if (searchResultStatus === 'active') {
       return ' jsoneditor-highlight-active'
     }

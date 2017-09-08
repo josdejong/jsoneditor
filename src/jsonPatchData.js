@@ -207,7 +207,7 @@ export function remove (data: JSONData, path: string) {
  * @param {JSONPatch} patch
  * @return {Array}
  */
-function simplifyPatch(patch: JSONPatch) {
+export function simplifyPatch(patch: JSONPatch) {
   const simplifiedPatch = []
   const paths = {}
 

@@ -43,7 +43,7 @@ export default class JSONEditor extends Component {
     }
   }
 
-  componentWillReceiveProps (nextProps: {mode: ?string}) {
+  componentWillReceiveProps (nextProps: {mode?: string}) {
     if (nextProps.mode !== this.props.mode) {
       this.setState({ mode: nextProps.mode })
     }

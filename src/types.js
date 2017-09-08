@@ -39,7 +39,7 @@ export type PropertyData = {
   id: number,
   name: string,
   value: JSONData,
-  searchResult: ?SearchResultStatus
+  searchResult?: SearchResultStatus
 }
 
 export type ItemData = {
@@ -49,20 +49,20 @@ export type ItemData = {
 
 export type ObjectData = {
   type: 'Object',
-  expanded: ?boolean,
+  expanded?: boolean,
   props: PropertyData[]
 }
 
 export type ArrayData = {
   type: 'Array',
-  expanded: ?boolean,
+  expanded?: boolean,
   items: ItemData[]
 }
 
 export type ValueData = {
   type: 'value' | 'string',
-  value: ?any,
-  searchResult: ?SearchResultStatus
+  value?: any,
+  searchResult?: SearchResultStatus
 }
 
 export type JSONData = ObjectData | ArrayData | ValueData
