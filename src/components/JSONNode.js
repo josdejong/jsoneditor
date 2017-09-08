@@ -8,7 +8,7 @@ import { getInnerText, insideRect, findParentWithAttribute } from '../utils/domU
 import { stringConvert, valueType, isUrl } from  '../utils/typeUtils'
 import { compileJSONPointer } from  '../jsonData'
 
-import type { PropertyData, JSONData, SearchResultStatus } from '../types'
+import type { PropertyData, JSONData, SearchResultStatus, Path } from '../types'
 
 export default class JSONNode extends Component {
   static URL_TITLE = 'Ctrl+Click or Ctrl+Enter to open url'
@@ -165,7 +165,7 @@ export default class JSONNode extends Component {
   }
 
   // TODO: simplify the method renderProperty
-  renderProperty (prop: ?PropertyData, index: ?number, data: JSONData, options: {escapeUnicode: boolean, isPropertyEditable: (path: string) => boolean}) {
+  renderProperty (prop: ?PropertyData, index: ?number, data: JSONData, options: {escapeUnicode: boolean, isPropertyEditable: (Path) => boolean}) {
     const isIndex = typeof index === 'number'
 
     if (!prop && !isIndex) {

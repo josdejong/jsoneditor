@@ -2,7 +2,7 @@
 
 import JSONNode from './JSONNode'
 
-import type { PropertyData, JSONData } from '../types'
+import type { PropertyData, JSONData, Path } from '../types'
 
 /**
  * JSONNodeForm

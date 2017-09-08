@@ -262,6 +262,8 @@ export default class TextMode extends Component {
     // do nothing...
   }
 
+  findKeyBinding = createFindKeyBinding(KEY_BINDINGS)
+
   handleKeyDown = (event) => {
     const keyBinding = this.findKeyBinding(event)
     const action = this.keyDownActions[keyBinding]
@@ -382,4 +384,3 @@ export default class TextMode extends Component {
 }
 
 // TODO: define propTypes
-

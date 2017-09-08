@@ -7,12 +7,15 @@
 
 import { setIn, updateIn, getIn, deleteIn, insertAt } from './utils/immutabilityHelpers'
 import { isObject } from  './utils/typeUtils'
+import { last, allButLast } from  './utils/arrayUtils'
 import isEqual from 'lodash/isEqual'
 
 import type {
   JSONData, ObjectData, ItemData, DataPointer, Path,
   JSONPatch, JSONPatchAction, PatchOptions, JSONPatchResult
 } from './types'
+
+type RecurseCallback = (value: JSONData, path: Path, root: JSONData) => JSONData
 
 /**
  * Expand function which will expand all nodes
@@ -519,7 +522,7 @@ export function expand (data: JSONData, callback: Path | (Path) => boolean, expa
   // console.log('expand', callback, expand)
 
   if (typeof callback === 'function') {
-    return transform (data, function (value, path) {
+    return transform(data, function (value: JSONData, path: Path, root: JSONData) : JSONData {
       if (value.type === 'Array' || value.type === 'Object') {
         if (callback(path)) {
           return setIn(value, ['expanded'], expanded)
@@ -694,8 +697,6 @@ export function containsCaseInsensitive (text: string, search: string): boolean 
   return String(text).toLowerCase().indexOf(search.toLowerCase()) !== -1
 }
 
-type RecurseCallback = (JSONData, Path, JSONData) => JSONData
-
 /**
  * Recursively transform JSONData: a recursive "map" function
  * @param {JSONData} data
@@ -714,7 +715,7 @@ export function transform (data: JSONData, callback: RecurseCallback) {
  * @param {function(value: JSONData, path: Path, root: JSONData)} callback
  * @return {JSONData} Returns the transformed data
  */
-function recurseTransform (value: JSONData, path: Path, root: JSONData, callback: RecurseCallback) : JSONData{
+function recurseTransform (value: JSONData, path: Path, root: JSONData, callback: RecurseCallback) : JSONData {
   let updatedValue = callback(value, path, root)
 
   if (value.type === 'Array') {
@@ -911,18 +912,4 @@ let _id = 0
 // TODO: use createUniqueId instead of getId()
 function createUniqueId (array) {
   return Math.max(...array.map(item => item.id)) + 1
-}
-
-/**
- * Returns the last item of an array
- */
-function last (array: []): any {
-  return array[array.length - 1]
-}
-
-/**
- * Returns a copy of the array having the last item removed
- */
-function allButLast (array: []): any {
-  return array.slice(0, array.length - 1)
 }

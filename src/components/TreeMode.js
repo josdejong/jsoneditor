@@ -6,6 +6,7 @@ import Ajv from 'ajv'
 
 import { updateIn, getIn, setIn } from '../utils/immutabilityHelpers'
 import { parseJSON } from '../utils/jsonUtils'
+import { allButLast } from '../utils/arrayUtils'
 import { enrichSchemaError } from '../utils/schemaUtils'
 import {
     jsonToData, dataToJson, toDataPath, patchData, pathExists,
@@ -189,7 +190,7 @@ export default class TreeMode extends Component {
     ])
   }
 
-  renderMenu (searchResults: Array) {
+  renderMenu (searchResults: [] | null) {
     let items = [
       h('button', {
         key: 'expand-all',
@@ -276,6 +277,8 @@ export default class TreeMode extends Component {
 
     return []
   }
+
+  findKeyBinding = createFindKeyBinding(KEY_BINDINGS)
 
   handleKeyDown = (event) => {
     const keyBinding = this.findKeyBinding(event)
@@ -408,7 +411,7 @@ export default class TreeMode extends Component {
 
       this.setState({
         search: { text, active },
-        data: expandPath(this.state.data, active.path)
+        data: expandPath(this.state.data, allButLast(active.path))
       })
 
       // scroll to active search result (on next tick, after this path has been expanded)
@@ -429,7 +432,7 @@ export default class TreeMode extends Component {
 
       this.setState({
         search: setIn(this.state.search, ['active'], next),
-        data: expandPath(this.state.data, next && next.path)
+        data: next ? expandPath(this.state.data, allButLast(next.path)) : this.state.data
       })
 
       // scroll to the active result (on next tick, after this path has been expanded)
@@ -453,7 +456,7 @@ export default class TreeMode extends Component {
 
       this.setState({
         search: setIn(this.state.search, ['active'], previous),
-        data: expandPath(this.state.data, previous && previous.path)
+        data: previous ? expandPath(this.state.data, allButLast(previous.path)) : this.state.data
       })
 
       // scroll to the active result (on next tick, after this path has been expanded)
@@ -756,6 +759,5 @@ export default class TreeMode extends Component {
     return true
   }
 }
-
 
 // TODO: describe PropTypes

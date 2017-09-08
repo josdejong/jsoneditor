@@ -54,7 +54,7 @@ export default class Search extends Component {
     ])
   }
 
-  renderResultsCount (searchResults : Array) {
+  renderResultsCount (searchResults : []) {
     if (!searchResults) {
       return null
     }

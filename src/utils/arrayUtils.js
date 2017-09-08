@@ -8,6 +8,13 @@ export function last (array) {
 }
 
 /**
+ * Returns a copy of the array having the last item removed
+ */
+export function allButLast (array: []): [] {
+  return array.slice(0, -1)
+}
+
+/**
  * Comparator to sort an array in ascending order
  *
  * Usage:
