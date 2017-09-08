@@ -1,27 +1,24 @@
 import isEqual from 'lodash/isEqual'
 
-import type {
-  JSONData, Path,
-  JSONPatch, JSONPatchAction, PatchOptions, JSONPatchResult
-} from './types'
+import type { ESON, Path, JSONPatch, ESONPatchAction, ESONPatchOptions, ESONPatchResult } from './types'
 import { setIn, updateIn, getIn, deleteIn, insertAt } from './utils/immutabilityHelpers'
 import { allButLast } from  './utils/arrayUtils'
 import {
-  jsonToData, dataToJson, toDataPath,
+  jsonToEson, esonToJson, toEsonPath,
   parseJSONPointer, compileJSONPointer,
   expandAll, pathExists, resolvePathIndex, findPropertyIndex, findNextProp, getId
-} from './jsonData'
+} from './eson'
 
 /**
- * Apply a patch to a JSONData object
- * @param {JSONData} data
+ * Apply a patch to a ESON object
+ * @param {ESON} eson
  * @param {Array} patch    A JSON patch
  * @param {function(path: Path)} [expand]  Optional function to determine
  *                                         what nodes must be expanded
- * @return {{data: JSONData, revert: Object[], error: Error | null}}
+ * @return {{data: ESON, revert: Object[], error: Error | null}}
  */
-export function patchData (data: JSONData, patch: JSONPatchAction[], expand = expandAll) {
-  let updatedData = data
+export function patchEson (eson: ESON, patch: ESONPatchAction[], expand = expandAll) {
+  let updatedEson = eson
   let revert = []
 
   for (let i = 0; i < patch.length; i++) {
@@ -33,17 +30,17 @@ export function patchData (data: JSONData, patch: JSONPatchAction[], expand = ex
     switch (action.op) {
       case 'add': {
         const path = parseJSONPointer(action.path)
-        const newValue = jsonToData(action.value, expand, path, options && options.type)
-        const result = add(updatedData, action.path, newValue, options)
-        updatedData = result.data
+        const newValue = jsonToEson(action.value, expand, path, options && options.type)
+        const result = add(updatedEson, action.path, newValue, options)
+        updatedEson = result.data
         revert = result.revert.concat(revert)
 
         break
       }
 
       case 'remove': {
-        const result = remove(updatedData, action.path)
-        updatedData = result.data
+        const result = remove(updatedEson, action.path)
+        updatedEson = result.data
         revert = result.revert.concat(revert)
 
         break
@@ -51,9 +48,9 @@ export function patchData (data: JSONData, patch: JSONPatchAction[], expand = ex
 
       case 'replace': {
         const path = parseJSONPointer(action.path)
-        const newValue = jsonToData(action.value, expand, path, options && options.type)
-        const result = replace(updatedData, path, newValue)
-        updatedData = result.data
+        const newValue = jsonToEson(action.value, expand, path, options && options.type)
+        const result = replace(updatedEson, path, newValue)
+        updatedEson = result.data
         revert = result.revert.concat(revert)
 
         break
@@ -62,14 +59,14 @@ export function patchData (data: JSONData, patch: JSONPatchAction[], expand = ex
       case 'copy': {
         if (!action.from) {
           return {
-            data,
+            data: eson,
             revert: [],
             error: new Error('Property "from" expected in copy action ' + JSON.stringify(action))
           }
         }
 
-        const result = copy(updatedData, action.path, action.from, options)
-        updatedData = result.data
+        const result = copy(updatedEson, action.path, action.from, options)
+        updatedEson = result.data
         revert = result.revert.concat(revert)
 
         break
@@ -78,14 +75,14 @@ export function patchData (data: JSONData, patch: JSONPatchAction[], expand = ex
       case 'move': {
         if (!action.from) {
           return {
-            data,
+            data: eson,
             revert: [],
             error: new Error('Property "from" expected in move action ' + JSON.stringify(action))
           }
         }
 
-        const result = move(updatedData, action.path, action.from, options)
-        updatedData = result.data
+        const result = move(updatedEson, action.path, action.from, options)
+        updatedEson = result.data
         revert = result.revert.concat(revert)
 
         break
@@ -93,9 +90,9 @@ export function patchData (data: JSONData, patch: JSONPatchAction[], expand = ex
 
       case 'test': {
         // when a test fails, cancel the whole patch and return the error
-        const error = test(updatedData, action.path, action.value)
+        const error = test(updatedEson, action.path, action.value)
         if (error) {
-          return { data, revert: [], error}
+          return { data: eson, revert: [], error}
         }
 
         break
@@ -104,7 +101,7 @@ export function patchData (data: JSONData, patch: JSONPatchAction[], expand = ex
       default: {
         // unknown jsonpatch operation. Cancel the whole patch and return an error
         return {
-          data,
+          data: eson,
           revert: [],
           error: new Error('Unknown jsonpatch op ' + JSON.stringify(action.op))
         }
@@ -115,7 +112,7 @@ export function patchData (data: JSONData, patch: JSONPatchAction[], expand = ex
   // TODO: Simplify revert when possible:
   //       when a previous action takes place on the same path, remove the first
   return {
-    data: updatedData,
+    data: updatedEson,
     revert: simplifyPatch(revert),
     error: null
   }
@@ -123,21 +120,21 @@ export function patchData (data: JSONData, patch: JSONPatchAction[], expand = ex
 
 /**
  * Replace an existing item
- * @param {JSONData} data
+ * @param {ESON} data
  * @param {Path} path
- * @param {JSONData} value
- * @return {{data: JSONData, revert: JSONPatch}}
+ * @param {ESON} value
+ * @return {{data: ESON, revert: JSONPatch}}
  */
-export function replace (data: JSONData, path: Path, value: JSONData) {
-  const dataPath = toDataPath(data, path)
-  const oldValue = getIn(data, dataPath)
+export function replace (data: ESON, path: Path, value: ESON) {
+  const esonPath = toEsonPath(data, path)
+  const oldValue = getIn(data, esonPath)
 
   return {
-    data: setIn(data, dataPath, value),
+    data: setIn(data, esonPath, value),
     revert: [{
       op: 'replace',
       path: compileJSONPointer(path),
-      value: dataToJson(oldValue),
+      value: esonToJson(oldValue),
       jsoneditor: {
         type: oldValue.type
       }
@@ -147,27 +144,27 @@ export function replace (data: JSONData, path: Path, value: JSONData) {
 
 /**
  * Remove an item or property
- * @param {JSONData} data
+ * @param {ESON} data
  * @param {string} path
- * @return {{data: JSONData, revert: JSONPatch}}
+ * @return {{data: ESON, revert: JSONPatch}}
  */
-export function remove (data: JSONData, path: string) {
+export function remove (data: ESON, path: string) {
   // console.log('remove', path)
   const pathArray = parseJSONPointer(path)
 
   const parentPath = pathArray.slice(0, pathArray.length - 1)
-  const parent = getIn(data, toDataPath(data, parentPath))
-  const dataValue = getIn(data, toDataPath(data, pathArray))
-  const value = dataToJson(dataValue)
+  const parent = getIn(data, toEsonPath(data, parentPath))
+  const dataValue = getIn(data, toEsonPath(data, pathArray))
+  const value = esonToJson(dataValue)
 
   if (parent.type === 'Array') {
-    const dataPath = toDataPath(data, pathArray)
+    const esonPath = toEsonPath(data, pathArray)
 
     // remove the 'value' property, we want to remove the whole item from the items array
-    dataPath.pop()
+    esonPath.pop()
 
     return {
-      data: deleteIn(data, dataPath),
+      data: deleteIn(data, esonPath),
       revert: [{
         op: 'add',
         path,
@@ -179,14 +176,14 @@ export function remove (data: JSONData, path: string) {
     }
   }
   else { // object.type === 'Object'
-    const dataPath = toDataPath(data, pathArray)
+    const esonPath = toEsonPath(data, pathArray)
     const prop = pathArray[pathArray.length - 1]
 
     // remove the 'value' property, we want to remove the whole object property from props
-    dataPath.pop()
+    esonPath.pop()
 
     return {
-      data: deleteIn(data, dataPath),
+      data: deleteIn(data, esonPath),
       revert: [{
         op: 'add',
         path,
@@ -233,32 +230,32 @@ export function simplifyPatch(patch: JSONPatch) {
 
 
 /**
- * @param {JSONData} data
+ * @param {ESON} data
  * @param {string} path
- * @param {JSONData} value
+ * @param {ESON} value
  * @param {{before?: string}} [options]
  * @param {number} [id]   Optional id for the new item
- * @return {{data: JSONData, revert: JSONPatch}}
+ * @return {{data: ESON, revert: JSONPatch}}
  * @private
  */
-export function add (data: JSONData, path: string, value: JSONData, options, id = getId()) {
+export function add (data: ESON, path: string, value: ESON, options, id = getId()) {
   const pathArray = parseJSONPointer(path)
   const parentPath = pathArray.slice(0, pathArray.length - 1)
-  const dataPath = toDataPath(data, parentPath)
-  const parent = getIn(data, dataPath)
+  const esonPath = toEsonPath(data, parentPath)
+  const parent = getIn(data, esonPath)
   const resolvedPath = resolvePathIndex(data, pathArray)
   const prop = resolvedPath[resolvedPath.length - 1]
 
-  let updatedData
+  let updatedEson
   if (parent.type === 'Array') {
     const newItem = {
       id, // TODO: create a unique id within current id's instead of using a global, ever incrementing id
       value
     }
-    updatedData = insertAt(data, dataPath.concat('items', prop), newItem)
+    updatedEson = insertAt(data, esonPath.concat('items', prop), newItem)
   }
   else { // parent.type === 'Object'
-    updatedData = updateIn(data, dataPath, (object) => {
+    updatedEson = updateIn(data, esonPath, (object) => {
       const existingIndex = findPropertyIndex(object, prop)
       if (existingIndex !== -1) {
         // replace existing item
@@ -277,21 +274,21 @@ export function add (data: JSONData, path: string, value: JSONData, options, id 
   }
 
   if (parent.type === 'Object' && pathExists(data, resolvedPath)) {
-    const oldValue = getIn(data, toDataPath(data, resolvedPath))
+    const oldValue = getIn(data, toEsonPath(data, resolvedPath))
 
     return {
-      data: updatedData,
+      data: updatedEson,
       revert: [{
         op: 'replace',
         path: compileJSONPointer(resolvedPath),
-        value: dataToJson(oldValue),
+        value: esonToJson(oldValue),
         jsoneditor: { type: oldValue.type }
       }]
     }
   }
   else {
     return {
-      data: updatedData,
+      data: updatedEson,
       revert: [{
         op: 'remove',
         path: compileJSONPointer(resolvedPath)
@@ -302,37 +299,37 @@ export function add (data: JSONData, path: string, value: JSONData, options, id 
 
 /**
  * Copy a value
- * @param {JSONData} data
+ * @param {ESON} data
  * @param {string} path
  * @param {string} from
  * @param {{before?: string}} [options]
- * @return {{data: JSONData, revert: JSONPatch}}
+ * @return {{data: ESON, revert: JSONPatch}}
  * @private
  */
-export function copy (data: JSONData, path: string, from: string, options) {
-  const value = getIn(data, toDataPath(data, parseJSONPointer(from)))
+export function copy (data: ESON, path: string, from: string, options) {
+  const value = getIn(data, toEsonPath(data, parseJSONPointer(from)))
 
   return add(data, path, value, options)
 }
 
 /**
  * Move a value
- * @param {JSONData} data
+ * @param {ESON} data
  * @param {string} path
  * @param {string} from
  * @param {{before?: string}} [options]
- * @return {{data: JSONData, revert: JSONPatch}}
+ * @return {{data: ESON, revert: JSONPatch}}
  * @private
  */
-export function move (data: JSONData, path: string, from: string, options) {
+export function move (data: ESON, path: string, from: string, options) {
   const fromArray = parseJSONPointer(from)
-  const prop = getIn(data, allButLast(toDataPath(data, fromArray)))
+  const prop = getIn(data, allButLast(toEsonPath(data, fromArray)))
   const dataValue = prop.value
   const id = prop.id // we want to use the existing id in case the move is a renaming a property
   // FIXME: only reuse the existing id when move is renaming a property in the same object
 
   const parentPathFrom = allButLast(fromArray)
-  const parent = getIn(data, toDataPath(data, parentPathFrom))
+  const parent = getIn(data, toEsonPath(data, parentPathFrom))
 
   const result1 = remove(data, from)
   const result2 = add(result1.data, path, dataValue, options, id)
@@ -367,12 +364,12 @@ export function move (data: JSONData, path: string, from: string, options) {
 /**
  * Test whether the data contains the provided value at the specified path.
  * Throws an error when the test fails.
- * @param {JSONData} data
+ * @param {ESON} data
  * @param {string} path
  * @param {*} value
  * @return {null | Error} Returns an error when the tests, returns null otherwise
  */
-export function test (data: JSONData, path: string, value: any) {
+export function test (data: ESON, path: string, value: any) {
   if (value === undefined) {
     return new Error('Test failed, no value provided')
   }
@@ -382,8 +379,8 @@ export function test (data: JSONData, path: string, value: any) {
     return new Error('Test failed, path not found')
   }
 
-  const actualValue = getIn(data, toDataPath(data, pathArray))
-  if (!isEqual(dataToJson(actualValue), value)) {
+  const actualValue = getIn(data, toEsonPath(data, pathArray))
+  if (!isEqual(esonToJson(actualValue), value)) {
     return new Error('Test failed, value differs')
   }
 }

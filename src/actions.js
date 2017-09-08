@@ -1,4 +1,4 @@
-import { compileJSONPointer, toDataPath, dataToJson, findNextProp } from './jsonData'
+import { compileJSONPointer, toEsonPath, esonToJson, findNextProp } from './eson'
 import { findUniqueName } from  './utils/stringUtils'
 import { getIn } from  './utils/immutabilityHelpers'
 import { isObject, stringConvert } from  './utils/typeUtils'
@@ -7,7 +7,7 @@ import { compareAsc, compareDesc, strictShallowEqual } from './utils/arrayUtils'
 
 /**
  * Create a JSONPatch to change the value of a property or item
- * @param {JSONData} data
+ * @param {ESON} data
  * @param {Path} path
  * @param {*} value
  * @return {Array}
@@ -15,8 +15,8 @@ import { compareAsc, compareDesc, strictShallowEqual } from './utils/arrayUtils'
 export function changeValue (data, path, value) {
   // console.log('changeValue', data, value)
 
-  const dataPath = toDataPath(data, path)
-  const oldDataValue = getIn(data, dataPath)
+  const esonPath = toEsonPath(data, path)
+  const oldDataValue = getIn(data, esonPath)
 
   return [{
     op: 'replace',
@@ -30,7 +30,7 @@ export function changeValue (data, path, value) {
 
 /**
  * Create a JSONPatch to change a property name
- * @param {JSONData} data
+ * @param {ESON} data
  * @param {Path} parentPath
  * @param {string} oldProp
  * @param {string} newProp
@@ -39,8 +39,8 @@ export function changeValue (data, path, value) {
 export function changeProperty (data, parentPath, oldProp, newProp) {
   // console.log('changeProperty', parentPath, oldProp, newProp)
 
-  const dataPath = toDataPath(data, parentPath)
-  const parent = getIn(data, dataPath)
+  const esonPath = toEsonPath(data, parentPath)
+  const parent = getIn(data, esonPath)
 
   // prevent duplicate property names
   const uniqueNewProp = findUniqueName(newProp, parent.props.map(p => p.name))
@@ -57,14 +57,14 @@ export function changeProperty (data, parentPath, oldProp, newProp) {
 
 /**
  * Create a JSONPatch to change the type of a property or item
- * @param {JSONData} data
+ * @param {ESON} data
  * @param {Path} path
- * @param {JSONDataType} type
+ * @param {ESONType} type
  * @return {Array}
  */
 export function changeType (data, path, type) {
-  const dataPath = toDataPath(data, path)
-  const oldValue = dataToJson(getIn(data, dataPath))
+  const esonPath = toEsonPath(data, path)
+  const oldValue = esonToJson(getIn(data, esonPath))
   const newValue = convertType(oldValue, type)
 
   // console.log('changeType', path, type, oldValue, newValue)
@@ -86,7 +86,7 @@ export function changeType (data, path, type) {
  * a unique property name for the duplicated node in case of duplicating
  * and object property
  *
- * @param {JSONData} data
+ * @param {ESON} data
  * @param {Path} path
  * @return {Array}
  */
@@ -95,8 +95,8 @@ export function duplicate (data, path) {
 
   const parentPath = path.slice(0, path.length - 1)
 
-  const dataPath = toDataPath(data, parentPath)
-  const parent = getIn(data, dataPath)
+  const esonPath = toEsonPath(data, parentPath)
+  const parent = getIn(data, esonPath)
 
   if (parent.type === 'Array') {
     const index = parseInt(path[path.length - 1]) + 1
@@ -128,17 +128,17 @@ export function duplicate (data, path) {
  * a unique property name for the inserted node in case of duplicating
  * and object property
  *
- * @param {JSONData} data
+ * @param {ESON} data
  * @param {Path} path
- * @param {JSONDataType} type
+ * @param {ESONType} type
  * @return {Array}
  */
 export function insert (data, path, type) {
   // console.log('insert', path, type)
 
   const parentPath = path.slice(0, path.length - 1)
-  const dataPath = toDataPath(data, parentPath)
-  const parent = getIn(data, dataPath)
+  const esonPath = toEsonPath(data, parentPath)
+  const parent = getIn(data, esonPath)
   const value = createEntry(type)
 
   if (parent.type === 'Array') {
@@ -175,16 +175,16 @@ export function insert (data, path, type) {
  * a unique property name for the inserted node in case of duplicating
  * and object property
  *
- * @param {JSONData} data
+ * @param {ESON} data
  * @param {Path} parentPath
- * @param {JSONDataType} type
+ * @param {ESONType} type
  * @return {Array}
  */
 export function append (data, parentPath, type) {
   // console.log('append', parentPath, value)
 
-  const dataPath = toDataPath(data, parentPath)
-  const parent = getIn(data, dataPath)
+  const esonPath = toEsonPath(data, parentPath)
+  const parent = getIn(data, esonPath)
   const value = createEntry(type)
 
   if (parent.type === 'Array') {
@@ -225,7 +225,7 @@ export function remove (path) {
 /**
  * Create a JSONPatch to order the items of an array or the properties of an object in ascending
  * or descending order
- * @param {JSONData} data
+ * @param {ESON} data
  * @param {Path} path
  * @param {'asc' | 'desc' | null} [order=null]  If not provided, will toggle current ordering
  * @return {Array}
@@ -234,8 +234,8 @@ export function sort (data, path, order = null) {
   // console.log('sort', path, order)
 
   const compare = order === 'desc' ? compareDesc : compareAsc
-  const dataPath = toDataPath(data, path)
-  const object = getIn(data, dataPath)
+  const esonPath = toEsonPath(data, path)
+  const object = getIn(data, esonPath)
 
   if (object.type === 'Array') {
     const orderedItems = object.items.slice(0)
@@ -252,7 +252,7 @@ export function sort (data, path, order = null) {
     return [{
       op: 'replace',
       path: compileJSONPointer(path),
-      value: dataToJson({
+      value: esonToJson({
         type: 'Array',
         items: orderedItems
       })
@@ -273,7 +273,7 @@ export function sort (data, path, order = null) {
     return [{
       op: 'replace',
       path: compileJSONPointer(path),
-      value: dataToJson({
+      value: esonToJson({
         type: 'Object',
         props: orderedProps
       }),
@@ -286,7 +286,7 @@ export function sort (data, path, order = null) {
 
 /**
  * Create a JSON entry
- * @param {JSONDataType} type
+ * @param {ESONType} type
  * @return {Array | Object | string}
  */
 export function createEntry (type) {
@@ -304,7 +304,7 @@ export function createEntry (type) {
 /**
  * Convert a JSON object into a different type. When possible, data is retained
  * @param {*} value
- * @param {JSONDataType} type
+ * @param {ESONType} type
  * @return {*}
  */
 export function convertType (value, type) {

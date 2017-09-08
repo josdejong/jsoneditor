@@ -25,59 +25,60 @@
 
 /**************************** GENERIC JSON TYPES ******************************/
 
-export type JSONType = | string | number | boolean | null | JSONObjectType | JSONArrayType;
-export type JSONObjectType = { [key:string]: JSONType };
-export type JSONArrayType = Array<JSONType>;
+export type JSONType = | string | number | boolean | null | JSONObjectType | JSONArrayType
+export type JSONObjectType = { [key:string]: JSONType }
+export type JSONArrayType = JSONType[]
 
 
-/********************** TYPES FOR THE JSON DATA MODEL *************************/
+/********************** TYPES FOR THE ESON OBJECT MODEL *************************/
 
 export type SearchResultStatus = 'normal' | 'active'
-export type DataPointerType = 'value' | 'property'
+export type ESONPointerType = 'value' | 'property'
 
-export type PropertyData = {
+export type ESONObjectProperty = {
   id: number,
   name: string,
-  value: JSONData,
+  value: ESON,
   searchResult?: SearchResultStatus
 }
 
-export type ItemData = {
+export type ESONArrayItem = {
   id: number,
-  value: JSONData
+  value: ESON
 }
 
-export type ObjectData = {
+export type ESONObject = {
   type: 'Object',
   expanded?: boolean,
-  props: PropertyData[]
+  props: ESONObjectProperty[]
 }
 
-export type ArrayData = {
+export type ESONArray = {
   type: 'Array',
   expanded?: boolean,
-  items: ItemData[]
+  items: ESONArrayItem[]
 }
 
-export type ValueData = {
+export type ESONValue = {
   type: 'value' | 'string',
   value?: any,
   searchResult?: SearchResultStatus
 }
 
-export type JSONData = ObjectData | ArrayData | ValueData
+export type ESON = ESONObject | ESONArray | ESONValue
 
-export type JSONDataType = 'Object' | 'Array' | 'value' | 'string'
+export type ESONType = 'Object' | 'Array' | 'value' | 'string'
 
+export type Path = string[]  // TODO: Path must become redundant, replace with JSONPath or ESONPath everywhere
+export type JSONPath = string[]
+export type ESONPath = string[]
 
-
-export type Path = string[]
-
-export type DataPointer = {
-  path: Path,
-  type: DataPointerType
+export type ESONPointer = {
+  path: ESONPath,
+  type: ESONPointerType
 }
-// TODO: DataPointer.dataPath is an array, JSONSchemaError.dataPath is a string -> make this consistent
+
+// TODO: ESONPointer.path is an array, JSONSchemaError.path is a string -> make this consistent
 
 
 // TODO: remove SetOptions, merge into Options (everywhere in the public API)
@@ -85,27 +86,27 @@ export type SetOptions = {
   expand?: (path: Path) => boolean
 }
 
-export type JSONPatchAction = {
+export type ESONPatchAction = {
   op: string,     // TODO: define allowed ops
   path: string,
   from?: string,
   value?: any,
-  jsoneditor?: PatchOptions
+  jsoneditor?: ESONPatchOptions
 }
-export type JSONPatch = JSONPatchAction[]
+export type ESONPatch = ESONPatchAction[]
 
-export type PatchOptions = {
-  type: JSONDataType,
+export type ESONPatchOptions = {
+  type: ESONType,
   expand: (Path) => boolean
 }
 
-export type JSONPatchResult = {
-  patch: JSONPatch,
-  revert: JSONPatch,
+export type ESONPatchResult = {
+  patch: ESONPatch,
+  revert: ESONPatch,
   error: null | Error
 }
 
 export type JSONSchemaError = {
-  dataPath: string,
+  path: string, // TODO: change type to JSONPath
   message: string
 }

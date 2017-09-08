@@ -64,7 +64,7 @@ describe('util', function () {
 
   });
 
-  describe('jsonPath', function () {
+  describe('path', function () {
 
     it ('should parse a json path', function () {
       assert.deepEqual(util.parsePath(''), []);

@@ -5,8 +5,8 @@ import Ajv from 'ajv'
 import { parseJSON } from '../utils/jsonUtils'
 import { escapeUnicodeChars } from '../utils/stringUtils'
 import { enrichSchemaError, limitErrors } from '../utils/schemaUtils'
-import { jsonToData, dataToJson } from '../jsonData'
-import { patchData } from '../jsonPatchData'
+import { jsonToEson, esonToJson } from '../eson'
+import { patchEson } from '../patchEson'
 import { createFindKeyBinding } from '../utils/keyBindings'
 import { KEY_BINDINGS } from '../constants'
 
@@ -201,7 +201,7 @@ export default class TextMode extends Component {
       // this is an ajv error message
       return h('tr', { key: index }, [
         h('td', {key: 'icon'}, icon),
-        h('td', {key: 'path'}, error.dataPath),
+        h('td', {key: 'path'}, error.esonPath),
         h('td', {key: 'message'}, error.message)
       ])
     }
@@ -327,17 +327,17 @@ export default class TextMode extends Component {
   /**
    * Apply a JSONPatch to the current JSON document
    * @param {JSONPatch} actions   JSONPatch actions
-   * @return {JSONPatchResult} Returns a JSONPatch result containing the
+   * @return {ESONPatchAction} Returns a JSONPatch result containing the
    *                           patch, a patch to revert the action, and
    *                           an error object which is null when successful
    */
   patch (actions) {
     const json = this.get()
 
-    const data = jsonToData(json)
-    const result = patchData(data, actions)
+    const data = jsonToEson(json)
+    const result = patchEson(data, actions)
 
-    this.set(dataToJson(result.data))
+    this.set(esonToJson(result.data))
 
     return {
       patch: actions,

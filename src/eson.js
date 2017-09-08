@@ -1,8 +1,8 @@
 // @flow weak
 
 /**
- * This file contains functions to act on a JSONData object.
- * All functions are pure and don't mutate the JSONData.
+ * This file contains functions to act on a ESON object.
+ * All functions are pure and don't mutate the ESON.
  */
 
 import { setIn, getIn } from './utils/immutabilityHelpers'
@@ -10,9 +10,13 @@ import { isObject } from  './utils/typeUtils'
 import { last, allButLast } from  './utils/arrayUtils'
 import isEqual from 'lodash/isEqual'
 
-import type { JSONData, ObjectData, ItemData, DataPointer, Path } from './types'
+import type {
+  ESON, ESONObject, ESONArrayItem, ESONPointer, ESONType, ESONPath,
+  Path,
+  JSONPath, JSONType
+} from './types'
 
-type RecurseCallback = (value: JSONData, path: Path, root: JSONData) => JSONData
+type RecurseCallback = (value: ESON, path: Path, root: ESON) => ESON
 
 /**
  * Expand function which will expand all nodes
@@ -24,14 +28,14 @@ export function expandAll (path) {
 }
 
 /**
- * Convert a JSON object into the internally used data model
+ * Convert a JSON object into ESON
  * @param {Object | Array | string | number | boolean | null} json
- * @param {function(path: Path)} [expand]
- * @param {Path} [path=[]]
- * @param {JSONDataType} [type='value']  Optional json data type for the created value
- * @return {JSONData}
+ * @param {function(path: JSONPath)} [expand]
+ * @param {JSONPath} [path=[]]
+ * @param {ESONType} [type='value']  Optional eson type for the created value
+ * @return {ESON}
  */
-export function jsonToData (json, expand = expandAll, path = [], type = 'value') : JSONData {
+export function jsonToEson (json, expand = expandAll, path: JSONPath = [], type: ESONType = 'value') : ESON {
   if (Array.isArray(json)) {
     return {
       type: 'Array',
@@ -39,7 +43,7 @@ export function jsonToData (json, expand = expandAll, path = [], type = 'value')
       items: json.map((child, index) => {
         return {
           id: getId(), // TODO: use id based on index (only has to be unique within this array)
-          value: jsonToData(child, expand, path.concat(index))
+          value: jsonToEson(child, expand, path.concat(index))
         }
       })
     }
@@ -52,75 +56,75 @@ export function jsonToData (json, expand = expandAll, path = [], type = 'value')
         return {
           id: getId(), // TODO: use id based on index (only has to be unique within this array)
           name,
-          value: jsonToData(json[name], expand, path.concat(name))
+          value: jsonToEson(json[name], expand, path.concat(name))
         }
       })
     }
   }
   else { // value
     return {
-      type,
+      type: (type === 'string') ? 'string' : 'value',
       value: json
     }
   }
 }
 
 /**
- * Convert the internal data model to a regular JSON object
- * @param {JSONData} data
+ * Convert an ESON object to a JSON object
+ * @param {ESON} eson
  * @return {Object | Array | string | number | boolean | null} json
  */
-export function dataToJson (data: JSONData) {
-  switch (data.type) {
+export function esonToJson (eson: ESON) {
+  switch (eson.type) {
     case 'Array':
-      return data.items.map(item => dataToJson(item.value))
+      return eson.items.map(item => esonToJson(item.value))
 
     case 'Object':
       const object = {}
 
-      data.props.forEach(prop => {
-        object[prop.name] = dataToJson(prop.value)
+      eson.props.forEach(prop => {
+        object[prop.name] = esonToJson(prop.value)
       })
 
       return object
 
     default: // type 'string' or 'value'
-      return data.value
+      return eson.value
   }
 }
 
 /**
- * Convert a path of a JSON object into a path in the corresponding data model
- * @param {JSONData} data
- * @param {Path} path
- * @return {Path} dataPath
+ * Convert a path of a JSON object into a path in the corresponding ESON object
+ * @param {ESON} eson
+ * @param {JSONPath} path
+ * @return {ESONPath} esonPath
  * @private
  */
-export function toDataPath (data: JSONData, path: Path) : Path {
+export function toEsonPath (eson: ESON, path: JSONPath) : ESONPath {
   if (path.length === 0) {
     return []
   }
 
-  if (data.type === 'Array') {
+  if (eson.type === 'Array') {
     // index of an array
     const index = path[0]
-    const item = data.items[parseInt(index)]
+    const item = eson.items[parseInt(index)]
     if (!item) {
       throw new Error('Array item "' + index + '" not found')
     }
 
-    return ['items', index, 'value'].concat(toDataPath(item.value, path.slice(1)))
+    return ['items', index, 'value'].concat(toEsonPath(item.value, path.slice(1)))
   }
-  else if (data.type === 'Object') {
+  else if (eson.type === 'Object') {
     // object property. find the index of this property
-    const index = findPropertyIndex(data, path[0])
-    const prop = data.props[index]
+    const index = findPropertyIndex(eson, path[0])
+    const prop = eson.props[index]
     if (!prop) {
       throw new Error('Object property "' + path[0] + '" not found')
     }
 
     return ['props', index, 'value']
-        .concat(toDataPath(prop.value, path.slice(1)))
+        .concat(toEsonPath(prop.value, path.slice(1)))
   }
   else {
     return []
@@ -131,19 +135,19 @@ type ExpandCallback = (Path) => boolean
 
 /**
  * Expand or collapse one or multiple items or properties
- * @param {JSONData} data
+ * @param {ESON} eson
  * @param {function(path: Path) : boolean | Path} callback
  *              When a path, the object/array at this path will be expanded/collapsed
  *              When a function, all objects and arrays for which callback
  *              returns true will be expanded/collapsed
  * @param {boolean} [expanded=true]  New expanded state: true to expand, false to collapse
- * @return {JSONData}
+ * @return {ESON}
  */
-export function expand (data: JSONData, callback: Path | (Path) => boolean, expanded: boolean = true) {
+export function expand (eson: ESON, callback: Path | (Path) => boolean, expanded: boolean = true) {
   // console.log('expand', callback, expand)
 
   if (typeof callback === 'function') {
-    return transform(data, function (value: JSONData, path: Path, root: JSONData) : JSONData {
+    return transform(eson, function (value: ESON, path: Path, root: ESON) : ESON {
       if (value.type === 'Array' || value.type === 'Object') {
         if (callback(path)) {
           return setIn(value, ['expanded'], expanded)
@@ -154,9 +158,9 @@ export function expand (data: JSONData, callback: Path | (Path) => boolean, expa
     })
   }
   else if (Array.isArray(callback)) {
-    const dataPath: Path = toDataPath(data, callback)
+    const esonPath: Path = toEsonPath(eson, callback)
 
-    return setIn(data, dataPath.concat(['expanded']), expanded)
+    return setIn(eson, esonPath.concat(['expanded']), expanded)
   }
   else {
     throw new Error('Callback function or path expected')
@@ -166,50 +170,49 @@ export function expand (data: JSONData, callback: Path | (Path) => boolean, expa
 /**
  * Expand all Objects and Arrays on a path
  */
-export function expandPath (data: JSONData, path?: Path) : JSONData {
-  let updatedData = data
+export function expandPath (eson: ESON, path?: JSONPath) : ESON {
+  let updatedEson = eson
 
   if (path) {
-    updatedData = expand(updatedData, [], true) // expand root
+    updatedEson = expand(updatedEson, [], true) // expand root
 
     for (let i = 0; i < path.length; i++) {
       const pathPart = path.slice(0, i + 1)
-      updatedData = expand(updatedData, pathPart, true)
+      updatedEson = expand(updatedEson, pathPart, true)
     }
   }
 
-  return updatedData
+  return updatedEson
 }
 
 /**
- * Merge one or multiple errors (for example JSON schema errors)
- * into the data
+ * Merge one or multiple errors (for example JSON schema errors) into the ESON object
  *
- * @param {JSONData} data
+ * @param {ESON} eson
  * @param {JSONSchemaError[]} errors
  */
-export function addErrors (data: JSONData, errors) {
-  let updatedData = data
+export function addErrors (eson: ESON, errors) {
+  let updatedEson = eson
 
   if (errors) {
     errors.forEach(error => {
-      const dataPath = toDataPath(data, parseJSONPointer(error.dataPath))
+      const esonPath = toEsonPath(eson, parseJSONPointer(error.esonPath))
       // TODO: do we want to be able to store multiple errors per item?
-      updatedData = setIn(updatedData, dataPath.concat('error'), error)
+      updatedEson = setIn(updatedEson, esonPath.concat('error'), error)
     })
   }
 
-  return updatedData
+  return updatedEson
 }
 
 /**
  * Search some text in all properties and values
  */
-export function search (data: JSONData, text: string): DataPointer[] {
-  let results: DataPointer[] = []
+export function search (eson: ESON, text: string): ESONPointer[] {
+  let results: ESONPointer[] = []
 
   if (text !== '') {
-    traverse(data, function (value, path) {
+    traverse(eson, function (value, path: JSONPath) {
       // check property name
       if (path.length > 0) {
         const prop = last(path)
@@ -217,7 +220,7 @@ export function search (data: JSONData, text: string): DataPointer[] {
           // only add search result when this is an object property name,
           // don't add search result for array indices
           const parentPath = allButLast(path)
-          const parent = getIn(data, toDataPath(data, parentPath))
+          const parent = getIn(eson, toEsonPath(eson, parentPath))
           if (parent.type === 'Object') {
             results.push({path, type: 'property'})
           }
@@ -244,7 +247,7 @@ export function search (data: JSONData, text: string): DataPointer[] {
  *   returned as next
  * - When `searchResults` is empty, null will be returned
  */
-export function nextSearchResult (searchResults: DataPointer[], current: DataPointer): DataPointer | null {
+export function nextSearchResult (searchResults: ESONPointer[], current: ESONPointer): ESONPointer | null {
   if (searchResults.length === 0) {
     return null
   }
@@ -268,7 +271,7 @@ export function nextSearchResult (searchResults: DataPointer[], current: DataPoi
  *   returned as next
  * - When `searchResults` is empty, null will be returned
  */
-export function previousSearchResult (searchResults: DataPointer[], current: DataPointer): DataPointer | null {
+export function previousSearchResult (searchResults: ESONPointer[], current: ESONPointer): ESONPointer | null {
   if (searchResults.length === 0) {
     return null
   }
@@ -285,27 +288,27 @@ export function previousSearchResult (searchResults: DataPointer[], current: Dat
 }
 
 /**
- * Merge searchResults into the data
+ * Merge searchResults into the eson object
  */
-export function addSearchResults (data: JSONData, searchResults: DataPointer[], activeSearchResult: DataPointer) {
-  let updatedData = data
+export function addSearchResults (eson: ESON, searchResults: ESONPointer[], activeSearchResult: ESONPointer) {
+  let updatedEson = eson
 
   searchResults.forEach(function (searchResult) {
     if (searchResult.type === 'value') {
-      const dataPath = toDataPath(data, searchResult.path).concat('searchResult')
+      const esonPath = toEsonPath(updatedEson, searchResult.path).concat('searchResult')
       const value = isEqual(searchResult, activeSearchResult) ? 'active' : 'normal'
-      updatedData = setIn(updatedData, dataPath, value)
+      updatedEson = setIn(updatedEson, esonPath, value)
     }
 
     if (searchResult.type === 'property') {
-      const valueDataPath = toDataPath(data, searchResult.path)
-      const propertyDataPath = allButLast(valueDataPath).concat('searchResult')
+      const esonPath = toEsonPath(updatedEson, searchResult.path)
+      const propertyPath = allButLast(esonPath).concat('searchResult')
       const value = isEqual(searchResult, activeSearchResult) ? 'active' : 'normal'
-      updatedData = setIn(updatedData, propertyDataPath, value)
+      updatedEson = setIn(updatedEson, propertyPath, value)
     }
   })
 
-  return updatedData
+  return updatedEson
 }
 
 /**
@@ -319,25 +322,25 @@ export function containsCaseInsensitive (text: string, search: string): boolean 
 }
 
 /**
- * Recursively transform JSONData: a recursive "map" function
- * @param {JSONData} data
- * @param {function(value: JSONData, path: Path, root: JSONData)} callback
- * @return {JSONData} Returns the transformed data
+ * Recursively transform ESON: a recursive "map" function
+ * @param {ESON} eson
+ * @param {function(value: ESON, path: Path, root: ESON)} callback
+ * @return {ESON} Returns the transformed eson object
  */
-export function transform (data: JSONData, callback: RecurseCallback) {
-  return recurseTransform (data, [], data, callback)
+export function transform (eson: ESON, callback: RecurseCallback) : ESON {
+  return recurseTransform (eson, [], eson, callback)
 }
 
 /**
- * Recursively transform JSONData
- * @param {JSONData} value
- * @param {Path} path
- * @param {JSONData} root    The root object, object at path=[]
- * @param {function(value: JSONData, path: Path, root: JSONData)} callback
- * @return {JSONData} Returns the transformed data
+ * Recursively transform ESON
+ * @param {ESON} value
+ * @param {JSONPath} path
+ * @param {ESON} root    The root object, object at path=[]
+ * @param {function(value: ESON, path: Path, root: ESON)} callback
+ * @return {ESON} Returns the transformed eson object
  */
-function recurseTransform (value: JSONData, path: Path, root: JSONData, callback: RecurseCallback) : JSONData {
-  let updatedValue = callback(value, path, root)
+function recurseTransform (value: ESON, path: JSONPath, root: ESON, callback: RecurseCallback) : ESON {
+  let updatedValue: ESON = callback(value, path, root)
 
   if (value.type === 'Array') {
     let updatedItems = updatedValue.items
@@ -367,27 +370,27 @@ function recurseTransform (value: JSONData, path: Path, root: JSONData, callback
 }
 
 /**
- * Recursively loop over a JSONData object: a recursive "forEach" function.
- * @param {JSONData} data
- * @param {function(value: JSONData, path: Path, root: JSONData)} callback
+ * Recursively loop over a ESON object: a recursive "forEach" function.
+ * @param {ESON} eson
+ * @param {function(value: ESON, path: JSONPath, root: ESON)} callback
  */
-export function traverse (data: JSONData, callback: RecurseCallback) {
-  return recurseTraverse (data, [], data, callback)
+export function traverse (eson: ESON, callback: RecurseCallback) {
+  return recurseTraverse (eson, [], eson, callback)
 }
 
 /**
- * Recursively traverse a JSONData object
- * @param {JSONData} value
- * @param {Path} path
- * @param {JSONData | null} root    The root object, object at path=[]
- * @param {function(value: JSONData, path: Path, root: JSONData)} callback
+ * Recursively traverse a ESON object
+ * @param {ESON} value
+ * @param {JSONPath} path
+ * @param {ESON | null} root    The root object, object at path=[]
+ * @param {function(value: ESON, path: Path, root: ESON)} callback
  */
-function recurseTraverse (value: JSONData, path: Path, root: JSONData, callback: RecurseCallback) {
+function recurseTraverse (value: ESON, path: JSONPath, root: ESON, callback: RecurseCallback) {
   callback(value, path, root)
 
   switch (value.type) {
     case 'Array': {
-      value.items.forEach((item: ItemData, index) => {
+      value.items.forEach((item: ESONArrayItem, index) => {
         recurseTraverse(item.value, path.concat(String(index)), root, callback)
       })
       break
@@ -406,14 +409,14 @@ function recurseTraverse (value: JSONData, path: Path, root: JSONData, callback:
 }
 
 /**
- * Test whether a path exists in the json data
- * @param {JSONData} data
- * @param {Path} path
+ * Test whether a path exists in the eson object
+ * @param {ESON} eson
+ * @param {JSONPath} path
  * @return {boolean} Returns true if the path exists, else returns false
  * @private
  */
-export function pathExists (data, path) {
-  if (data === undefined) {
+export function pathExists (eson, path) {
+  if (eson === undefined) {
     return false
   }
 
@@ -421,18 +424,17 @@ export function pathExists (data, path) {
     return true
   }
 
-  let index
-  if (data.type === 'Array') {
+  if (eson.type === 'Array') {
     // index of an array
-    index = path[0]
-    const item = data.items[index]
+    const index = path[0]
+    const item = eson.items[index]
 
     return pathExists(item && item.value, path.slice(1))
   }
   else {
     // object property. find the index of this property
-    index = findPropertyIndex(data, path[0])
-    const prop = data.props[index]
+    const index = findPropertyIndex(eson, path[0])
+    const prop = eson.props[index]
 
     return pathExists(prop && prop.value, path.slice(1))
   }
@@ -441,14 +443,14 @@ export function pathExists (data, path) {
 /**
  * Resolve the index for `arr/-`, replace it with an index value equal to the
  * length of the array
- * @param {JSONData} data
+ * @param {ESON} eson
  * @param {Path} path
  * @return {Path}
  */
-export function resolvePathIndex (data, path) {
+export function resolvePathIndex (eson, path) {
   if (path[path.length - 1] === '-') {
     const parentPath = path.slice(0, path.length - 1)
-    const parent = getIn(data, toDataPath(data, parentPath))
+    const parent = getIn(eson, toEsonPath(eson, parentPath))
 
     if (parent.type === 'Array') {
       const index = parent.items.length
@@ -464,12 +466,12 @@ export function resolvePathIndex (data, path) {
 
 /**
  * Find the property after provided property
- * @param {JSONData} parent
+ * @param {ESON} parent
  * @param {string} prop
  * @return {string | null} Returns the name of the next property,
  *                         or null if there is none
  */
-export function findNextProp (parent: ObjectData, prop: string) : string | null {
+export function findNextProp (parent: ESONObject, prop: string) : string | null {
   const index = findPropertyIndex(parent, prop)
   if (index === -1) {
     return null
@@ -481,13 +483,15 @@ export function findNextProp (parent: ObjectData, prop: string) : string | null 
 
 /**
  * Find the index of a property
- * @param {ObjectData} object
+ * @param {ESONObject} object
  * @param {string} prop
  * @return {number}  Returns the index when found, -1 when not found
  */
-export function findPropertyIndex (object: ObjectData, prop: string) {
+export function findPropertyIndex (object: ESONObject, prop: string) {
   return object.props.findIndex(p => p.name === prop)
 }
+
+// TODO: move parseJSONPointer and compileJSONPointer to a separate file
 
 /**
  * Parse a JSON Pointer
@@ -513,6 +517,8 @@ export function compileJSONPointer (path: Path) {
       .map(p => '/' + String(p).replace(/~/g, '~0').replace(/\//g, '~1'))
       .join('')
 }
+
+// TODO: move getId and createUniqueId to a separate file
 
 /**
  * Get a new "unique" id. Id's are created from an incremental counter.

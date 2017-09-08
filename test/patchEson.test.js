@@ -1,6 +1,6 @@
 import test from 'ava';
-import { jsonToData, dataToJson } from '../src/jsonData'
-import { patchData } from '../src/jsonPatchData'
+import { jsonToEson, esonToJson } from '../src/eson'
+import { patchEson } from '../src/patchEson'
 
 test('jsonpatch add', t => {
   const json = {
@@ -12,11 +12,11 @@ test('jsonpatch add', t => {
     {op: 'add', path: '/obj/b', value: {foo: 'bar'}}
   ]
 
-  const data = jsonToData(json)
-  const result = patchData(data, patch)
+  const data = jsonToEson(json)
+  const result = patchEson(data, patch)
   const patchedData = result.data
   const revert = result.revert
-  const patchedJson = dataToJson(patchedData)
+  const patchedJson = esonToJson(patchedData)
 
   t.deepEqual(patchedJson, {
     arr: [1,2,3],
@@ -37,11 +37,11 @@ test('jsonpatch add: append to matrix', t => {
     {op: 'add', path: '/arr/-', value: 4}
   ]
 
-  const data = jsonToData(json)
-  const result = patchData(data, patch)
+  const data = jsonToEson(json)
+  const result = patchEson(data, patch)
   const patchedData = result.data
   const revert = result.revert
-  const patchedJson = dataToJson(patchedData)
+  const patchedJson = esonToJson(patchedData)
 
   t.deepEqual(patchedJson, {
     arr: [1,2,3,4],
@@ -64,11 +64,11 @@ test('jsonpatch remove', t => {
     {op: 'remove', path: '/arr/1'},
   ]
 
-  const data = jsonToData(json)
-  const result = patchData(data, patch)
+  const data = jsonToEson(json)
+  const result = patchEson(data, patch)
   const patchedData = result.data
   const revert = result.revert
-  const patchedJson = dataToJson(patchedData)
+  const patchedJson = esonToJson(patchedData)
 
   t.deepEqual(patchedJson, {
     arr: [1,3],
@@ -80,11 +80,11 @@ test('jsonpatch remove', t => {
   ])
 
   // test revert
-  const data2 = jsonToData(patchedJson)
-  const result2 = patchData(data2, revert)
+  const data2 = jsonToEson(patchedJson)
+  const result2 = patchEson(data2, revert)
   const patchedData2 = result2.data
   const revert2 = result2.revert
-  const patchedJson2 = dataToJson(patchedData2)
+  const patchedJson2 = esonToJson(patchedData2)
 
   t.deepEqual(patchedJson2, json)
   t.deepEqual(revert2, patch)
@@ -101,11 +101,11 @@ test('jsonpatch replace', t => {
     {op: 'replace', path: '/arr/1', value: 200},
   ]
 
-  const data = jsonToData(json)
-  const result = patchData(data, patch)
+  const data = jsonToEson(json)
+  const result = patchEson(data, patch)
   const patchedData = result.data
   const revert = result.revert
-  const patchedJson = dataToJson(patchedData)
+  const patchedJson = esonToJson(patchedData)
 
   t.deepEqual(patchedJson, {
     arr: [1,200,3],
@@ -117,11 +117,11 @@ test('jsonpatch replace', t => {
   ])
 
   // test revert
-  const data2 = jsonToData(patchedJson)
-  const result2 = patchData(data2, revert)
+  const data2 = jsonToEson(patchedJson)
+  const result2 = patchEson(data2, revert)
   const patchedData2 = result2.data
   const revert2 = result2.revert
-  const patchedJson2 = dataToJson(patchedData2)
+  const patchedJson2 = esonToJson(patchedData2)
 
   t.deepEqual(patchedJson2, json)
   t.deepEqual(revert2, [
@@ -136,10 +136,10 @@ test('jsonpatch replace (keep ids intact)', t => {
     {op: 'replace', path: '/value', value: 100}
   ]
 
-  const data = jsonToData(json)
+  const data = jsonToEson(json)
   const valueId = data.props[0].id
 
-  const patchedData = patchData(data, patch).data
+  const patchedData = patchEson(data, patch).data
   const patchedValueId = patchedData.props[0].id
 
   t.is(patchedValueId, valueId)
@@ -155,11 +155,11 @@ test('jsonpatch copy', t => {
     {op: 'copy', from: '/obj', path: '/arr/2'},
   ]
 
-  const data = jsonToData(json)
-  const result = patchData(data, patch)
+  const data = jsonToEson(json)
+  const result = patchEson(data, patch)
   const patchedData = result.data
   const revert = result.revert
-  const patchedJson = dataToJson(patchedData)
+  const patchedJson = esonToJson(patchedData)
 
   t.deepEqual(patchedJson, {
     arr: [1, 2, {a:4}, 3],
@@ -170,11 +170,11 @@ test('jsonpatch copy', t => {
   ])
 
   // test revert
-  const data2 = jsonToData(patchedJson)
-  const result2 = patchData(data2, revert)
+  const data2 = jsonToEson(patchedJson)
+  const result2 = patchEson(data2, revert)
   const patchedData2 = result2.data
   const revert2 = result2.revert
-  const patchedJson2 = dataToJson(patchedData2)
+  const patchedJson2 = esonToJson(patchedData2)
 
   t.deepEqual(patchedJson2, json)
   t.deepEqual(revert2, [
@@ -188,11 +188,11 @@ test('jsonpatch copy (keeps the same ids)', t => {
     {op: 'copy', from: '/foo', path: '/copied'}
   ]
 
-  const data = jsonToData(json)
+  const data = jsonToEson(json)
   const fooId = data.props[0].id
   const barId = data.props[0].value.props[0].id
 
-  const patchedData = patchData(data, patch).data
+  const patchedData = patchEson(data, patch).data
   const patchedFooId = patchedData.props[0].id
   const patchedBarId = patchedData.props[0].value.props[0].id
   const copiedId = patchedData.props[1].id
@@ -221,11 +221,11 @@ test('jsonpatch move', t => {
     {op: 'move', from: '/obj', path: '/arr/2'},
   ]
 
-  const data = jsonToData(json)
-  const result = patchData(data, patch)
+  const data = jsonToEson(json)
+  const result = patchEson(data, patch)
   const patchedData = result.data
   const revert = result.revert
-  const patchedJson = dataToJson(patchedData)
+  const patchedJson = esonToJson(patchedData)
 
   t.is(result.error, null)
   t.deepEqual(patchedJson, {
@@ -236,11 +236,11 @@ test('jsonpatch move', t => {
   ])
 
   // test revert
-  const data2 = jsonToData(patchedJson)
-  const result2 = patchData(data2, revert)
+  const data2 = jsonToEson(patchedJson)
+  const result2 = patchEson(data2, revert)
   const patchedData2 = result2.data
   const revert2 = result2.revert
-  const patchedJson2 = dataToJson(patchedData2)
+  const patchedJson2 = esonToJson(patchedData2)
 
   t.deepEqual(patchedJson2, json)
   t.deepEqual(revert2, patch)
@@ -257,11 +257,11 @@ test('jsonpatch move before', t => {
     {op: 'move', from: '/obj', path: '/arr/2'},
   ]
 
-  const data = jsonToData(json)
-  const result = patchData(data, patch)
+  const data = jsonToEson(json)
+  const result = patchEson(data, patch)
   const patchedData = result.data
   const revert = result.revert
-  const patchedJson = dataToJson(patchedData)
+  const patchedJson = esonToJson(patchedData)
 
   t.is(result.error, null)
   t.deepEqual(patchedJson, {
@@ -273,11 +273,11 @@ test('jsonpatch move before', t => {
   ])
 
   // test revert
-  const data2 = jsonToData(patchedJson)
-  const result2 = patchData(data2, revert)
+  const data2 = jsonToEson(patchedJson)
+  const result2 = patchEson(data2, revert)
   const patchedData2 = result2.data
   const revert2 = result2.revert
-  const patchedJson2 = dataToJson(patchedData2)
+  const patchedJson2 = esonToJson(patchedData2)
 
   t.deepEqual(patchedJson2, json)
   t.deepEqual(revert2, patch)
@@ -290,12 +290,12 @@ test('jsonpatch move and replace', t => {
     {op: 'move', from: '/a', path: '/b'},
   ]
 
-  const data = jsonToData(json)
+  const data = jsonToEson(json)
 
-  const result = patchData(data, patch)
+  const result = patchEson(data, patch)
   const patchedData = result.data
   const revert = result.revert
-  const patchedJson = dataToJson(patchedData)
+  const patchedJson = esonToJson(patchedData)
 
   // id of the replaced B must be kept intact
   t.is(patchedData.props[0].id, data.props[1].id)
@@ -323,11 +323,11 @@ test('jsonpatch move and replace', t => {
   ])
 
   // test revert
-  const data2 = jsonToData(patchedJson)
-  const result2 = patchData(data2, revert)
+  const data2 = jsonToEson(patchedJson)
+  const result2 = patchEson(data2, revert)
   const patchedData2 = result2.data
   const revert2 = result2.revert
-  const patchedJson2 = dataToJson(patchedData2)
+  const patchedJson2 = esonToJson(patchedData2)
 
   t.deepEqual(patchedJson2, json)
   t.deepEqual(revert2, [
@@ -345,11 +345,11 @@ test('jsonpatch move and replace (nested)', t => {
     {op: 'move', from: '/obj', path: '/arr'},
   ]
 
-  const data = jsonToData(json)
-  const result = patchData(data, patch)
+  const data = jsonToEson(json)
+  const result = patchEson(data, patch)
   const patchedData = result.data
   const revert = result.revert
-  const patchedJson = dataToJson(patchedData)
+  const patchedJson = esonToJson(patchedData)
 
   t.deepEqual(patchedJson, {
     arr: {a:4}
@@ -360,11 +360,11 @@ test('jsonpatch move and replace (nested)', t => {
   ])
 
   // test revert
-  const data2 = jsonToData(patchedJson)
-  const result2 = patchData(data2, revert)
+  const data2 = jsonToEson(patchedJson)
+  const result2 = patchEson(data2, revert)
   const patchedData2 = result2.data
   const revert2 = result2.revert
-  const patchedJson2 = dataToJson(patchedData2)
+  const patchedJson2 = esonToJson(patchedData2)
 
   t.deepEqual(patchedJson2, json)
   t.deepEqual(revert2, [
@@ -378,10 +378,10 @@ test('jsonpatch move (keep id intact)', t => {
     {op: 'move', from: '/value', path: '/moved'}
   ]
 
-  const data = jsonToData(json)
+  const data = jsonToEson(json)
   const valueId = data.props[0].id
 
-  const patchedData = patchData(data, patch).data
+  const patchedData = patchEson(data, patch).data
   const patchedValueId = patchedData.props[0].id
 
   t.is(patchedValueId, valueId)
@@ -393,13 +393,13 @@ test('jsonpatch move and replace (keep ids intact)', t => {
     {op: 'move', from: '/a', path: '/b'}
   ]
 
-  const data = jsonToData(json)
+  const data = jsonToEson(json)
   const bId = data.props[1].id
 
   t.is(data.props[0].name, 'a')
   t.is(data.props[1].name, 'b')
 
-  const patchedData = patchData(data, patch).data
+  const patchedData = patchEson(data, patch).data
 
   t.is(patchedData.props[0].name, 'b')
   t.is(patchedData.props[0].id, bId)
@@ -416,11 +416,11 @@ test('jsonpatch test (ok)', t => {
     {op: 'add', path: '/added', value: 'ok'}
   ]
 
-  const data = jsonToData(json)
-  const result = patchData(data, patch)
+  const data = jsonToEson(json)
+  const result = patchEson(data, patch)
   const patchedData = result.data
   const revert = result.revert
-  const patchedJson = dataToJson(patchedData)
+  const patchedJson = esonToJson(patchedData)
 
   t.deepEqual(patchedJson, {
     arr: [1,2,3],
@@ -444,11 +444,11 @@ test('jsonpatch test (fail: path not found)', t => {
     {op: 'add', path: '/added', value: 'ok'}
   ]
 
-  const data = jsonToData(json)
-  const result = patchData(data, patch)
+  const data = jsonToEson(json)
+  const result = patchEson(data, patch)
   const patchedData = result.data
   const revert = result.revert
-  const patchedJson = dataToJson(patchedData)
+  const patchedJson = esonToJson(patchedData)
 
   // patch shouldn't be applied
   t.deepEqual(patchedJson, {
@@ -470,11 +470,11 @@ test('jsonpatch test (fail: value not equal)', t => {
     {op: 'add', path: '/added', value: 'ok'}
   ]
 
-  const data = jsonToData(json)
-  const result = patchData(data, patch)
+  const data = jsonToEson(json)
+  const result = patchEson(data, patch)
   const patchedData = result.data
   const revert = result.revert
-  const patchedJson = dataToJson(patchedData)
+  const patchedJson = esonToJson(patchedData)
 
   // patch shouldn't be applied
   t.deepEqual(patchedJson, {

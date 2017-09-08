@@ -9,12 +9,12 @@ import { parseJSON } from '../utils/jsonUtils'
 import { allButLast } from '../utils/arrayUtils'
 import { enrichSchemaError } from '../utils/schemaUtils'
 import {
-    jsonToData, dataToJson, toDataPath, pathExists,
+    jsonToEson, esonToJson, toEsonPath, pathExists,
     expand, expandPath, addErrors,
     search, addSearchResults, nextSearchResult, previousSearchResult,
     compileJSONPointer
-} from '../jsonData'
-import { patchData } from '../jsonPatchData'
+} from '../eson'
+import { patchEson } from '../patchEson'
 import {
     duplicate, insert, append, remove,
     changeType, changeValue, changeProperty, sort
@@ -31,7 +31,7 @@ import {
 import { createFindKeyBinding } from '../utils/keyBindings'
 import { KEY_BINDINGS } from '../constants'
 
-import type { JSONData, JSONPatch } from '../types'
+import type { ESON, ESONPatch } from '../types'
 
 const AJV_OPTIONS = {
   allErrors: true,
@@ -64,7 +64,7 @@ export default class TreeMode extends Component {
   constructor (props) {
     super(props)
 
-    const data = jsonToData(this.props.data || {}, TreeMode.expandAll, [])
+    const data = jsonToEson(this.props.data || {}, TreeMode.expandAll, [])
 
     this.id = Math.round(Math.random() * 1e5) // TODO: create a uuid here?
 
@@ -270,7 +270,7 @@ export default class TreeMode extends Component {
    */
   getErrors () {
     if (this.state.compiledSchema) {
-      const valid = this.state.compiledSchema(dataToJson(this.state.data))
+      const valid = this.state.compiledSchema(esonToJson(this.state.data))
       if (!valid) {
         return this.state.compiledSchema.errors.map(enrichSchemaError)
       }
@@ -364,10 +364,10 @@ export default class TreeMode extends Component {
   /** @private */
   handleExpand = (path, expanded, recurse) => {
     if (recurse) {
-      const dataPath = toDataPath(this.state.data, path)
+      const esonPath = toEsonPath(this.state.data, path)
 
       this.setState({
-        data: updateIn(this.state.data, dataPath, function (child) {
+        data: updateIn(this.state.data, esonPath, function (child) {
           return expand(child, (path) => true, expanded)
         })
       })
@@ -474,8 +474,8 @@ export default class TreeMode extends Component {
   }
 
   /**
-   * Apply a JSONPatch to the current JSON document and emit a change event
-   * @param {JSONPatch} actions
+   * Apply a ESONPatch to the current JSON document and emit a change event
+   * @param {ESONPatch} actions
    * @private
    */
   handlePatch = (actions) => {
@@ -504,13 +504,13 @@ export default class TreeMode extends Component {
    * Emit an onChange event when there is a listener for it.
    * @private
    */
-  emitOnChange (patch: JSONPatch, revert: JSONPatch, data: JSONData) {
+  emitOnChange (patch: ESONPatch, revert: ESONPatch, data: ESON) {
     if (this.props.onPatch) {
       this.props.onPatch(patch, revert)
     }
 
     if (this.props.onChange || this.props.onChangeText) {
-      const json = dataToJson(data)
+      const json = esonToJson(data)
 
       if (this.props.onChange) {
         this.props.onChange(json)
@@ -539,7 +539,7 @@ export default class TreeMode extends Component {
       const historyIndex = this.state.historyIndex
       const historyItem = history[historyIndex]
 
-      const result = patchData(this.state.data, historyItem.undo)
+      const result = patchEson(this.state.data, historyItem.undo)
 
       this.setState({
         data: result.data,
@@ -557,7 +557,7 @@ export default class TreeMode extends Component {
       const historyIndex = this.state.historyIndex - 1
       const historyItem = history[historyIndex]
 
-      const result = patchData(this.state.data, historyItem.redo)
+      const result = patchEson(this.state.data, historyItem.redo)
 
       this.setState({
         data: result.data,
@@ -570,13 +570,13 @@ export default class TreeMode extends Component {
   }
 
   /**
-   * Apply a JSONPatch to the current JSON document
-   * @param {JSONPatch} actions       JSONPatch actions
-   * @param {PatchOptions} [options]  If no expand function is provided, the
+   * Apply a ESONPatch to the current JSON document
+   * @param {ESONPatch} actions       ESONPatch actions
+   * @param {ESONPatchOptions} [options]  If no expand function is provided, the
    *                                  expanded state will be kept as is for
    *                                  existing paths. New paths will be fully
    *                                  expanded.
-   * @return {JSONPatchResult} Returns a JSONPatch result containing the
+   * @return {ESONPatchAction} Returns a ESONPatch result containing the
    *                           patch, a patch to revert the action, and
    *                           an error object which is null when successful
    */
@@ -586,7 +586,7 @@ export default class TreeMode extends Component {
     }
 
     const expand = options.expand || (path => this.expandKeepOrExpandAll(path))
-    const result = patchData(this.state.data, actions, expand)
+    const result = patchEson(this.state.data, actions, expand)
     const data = result.data
 
     if (this.props.history != false) {
@@ -629,7 +629,7 @@ export default class TreeMode extends Component {
     const expand = this.props.expand || TreeMode.expandRoot
 
     this.setState({
-      data: jsonToData(json, expand, []),
+      data: jsonToEson(json, expand, []),
 
       // TODO: do we want to keep history when .set(json) is called? (currently we remove history)
       history: [],
@@ -642,7 +642,7 @@ export default class TreeMode extends Component {
    * @returns {Object | Array | string | number | boolean | null} json
    */
   get () {
-    return dataToJson(this.state.data)
+    return esonToJson(this.state.data)
   }
 
   /**
@@ -723,7 +723,7 @@ export default class TreeMode extends Component {
    * @return {boolean} Returns true when expanded, false otherwise
    */
   isExpanded (path) {
-    return getIn(this.state.data, toDataPath(this.state.data, path)).expanded
+    return getIn(this.state.data, toEsonPath(this.state.data, path)).expanded
   }
 
   /**

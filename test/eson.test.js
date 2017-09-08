@@ -1,9 +1,9 @@
 import test from 'ava';
 import {
-    jsonToData, dataToJson, pathExists, transform, traverse,
+    jsonToEson, esonToJson, pathExists, transform, traverse,
     parseJSONPointer, compileJSONPointer,
     expand, addErrors, search, addSearchResults, nextSearchResult, previousSearchResult
-} from '../src/jsonData'
+} from '../src/eson'
 
 
 const JSON_EXAMPLE = {
@@ -100,6 +100,31 @@ const JSON_DATA_EXAMPLE = {
       value: {
         type: 'value',
         value: false
+      }
+    }
+  ]
+}
+
+const JSON_DUPLICATE_PROPERTY_EXAMPLE = {
+  type: 'Object',
+  expanded: true,
+  props: [
+    {
+      id: '[ID]',
+      name: 'name',
+      value: {
+        type: 'value',
+        expanded: true,
+        value: 'Joe'
+      }
+    },
+    {
+      id: '[ID]',
+      name: 'name',
+      value: {
+        type: 'value',
+        expanded: true,
+        value: 'Joe'
       }
     }
   ]
@@ -426,8 +451,8 @@ const JSON_DATA_SMALL = {
 
 
 const JSON_SCHEMA_ERRORS = [
-  {dataPath: '/obj/arr/2/last', message: 'String expected'},
-  {dataPath: '/nill', message: 'Null expected'}
+  {esonPath: '/obj/arr/2/last', message: 'String expected'},
+  {esonPath: '/nill', message: 'Null expected'}
 ]
 
 const JSON_DATA_EXAMPLE_ERRORS = {
@@ -522,19 +547,19 @@ const JSON_DATA_EXAMPLE_ERRORS = {
   ]
 }
 
-test('jsonToData', t => {
+test('jsonToEson', t => {
   function expand (path) {
     return true
   }
 
-  const jsonData = jsonToData(JSON_EXAMPLE, expand, [])
-  replaceIds(jsonData)
+  const ESON = jsonToEson(JSON_EXAMPLE, expand, [])
+  replaceIds(ESON)
 
-  t.deepEqual(jsonData, JSON_DATA_EXAMPLE)
+  t.deepEqual(ESON, JSON_DATA_EXAMPLE)
 })
 
-test('dataToJson', t => {
-  t.deepEqual(dataToJson(JSON_DATA_EXAMPLE), JSON_EXAMPLE)
+test('esonToJson', t => {
+  t.deepEqual(esonToJson(JSON_DATA_EXAMPLE), JSON_EXAMPLE)
 })
 
 test('expand a single path', t => {

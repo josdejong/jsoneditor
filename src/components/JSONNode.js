@@ -6,9 +6,9 @@ import ActionMenu from './menu/ActionMenu'
 import { escapeHTML, unescapeHTML } from '../utils/stringUtils'
 import { getInnerText, insideRect, findParentWithAttribute } from '../utils/domUtils'
 import { stringConvert, valueType, isUrl } from  '../utils/typeUtils'
-import { compileJSONPointer } from  '../jsonData'
+import { compileJSONPointer } from  '../eson'
 
-import type { PropertyData, JSONData, SearchResultStatus, Path } from '../types'
+import type { ESONObjectProperty, ESON, SearchResultStatus, Path } from '../types'
 
 export default class JSONNode extends Component {
   static URL_TITLE = 'Ctrl+Click or Ctrl+Enter to open url'
@@ -165,7 +165,7 @@ export default class JSONNode extends Component {
   }
 
   // TODO: simplify the method renderProperty
-  renderProperty (prop?: PropertyData, index?: number, data: JSONData, options: {escapeUnicode: boolean, isPropertyEditable: (Path) => boolean}) {
+  renderProperty (prop?: ESONObjectProperty, index?: number, data: ESON, options: {escapeUnicode: boolean, isPropertyEditable: (Path) => boolean}) {
     const isIndex = typeof index === 'number'
 
     if (!prop && !isIndex) {

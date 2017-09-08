@@ -2,7 +2,7 @@ import {
   selectContentEditable, hasClassName,
   findParentWithAttribute, findParentWithClassName
 } from '../../utils/domUtils'
-import { compileJSONPointer, parseJSONPointer } from '../../jsonData'
+import { compileJSONPointer, parseJSONPointer } from '../../eson'
 
 // singleton
 let lastInputName = null
