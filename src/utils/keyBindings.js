@@ -53,7 +53,6 @@ export function createFindKeyBinding (keyBindings) {
 
   return function findKeyBinding (event) {
     const keyCombo = keyComboFromEvent(event)
-    console.log('keyCombo', keyCombo)
 
     return keyCombos[normalizeKeyCombo(keyCombo)] || null
   }

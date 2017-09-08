@@ -9,11 +9,12 @@ import { parseJSON } from '../utils/jsonUtils'
 import { allButLast } from '../utils/arrayUtils'
 import { enrichSchemaError } from '../utils/schemaUtils'
 import {
-    jsonToData, dataToJson, toDataPath, patchData, pathExists,
+    jsonToData, dataToJson, toDataPath, pathExists,
     expand, expandPath, addErrors,
     search, addSearchResults, nextSearchResult, previousSearchResult,
     compileJSONPointer
 } from '../jsonData'
+import { patchData } from '../jsonPatchData'
 import {
     duplicate, insert, append, remove,
     changeType, changeValue, changeProperty, sort
