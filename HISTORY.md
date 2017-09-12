@@ -3,6 +3,12 @@
 https://github.com/josdejong/jsoneditor
 
 
+## not yet released, version 5.9.6
+
+- Display a dropdown for enums inside composite schemas.
+  Thanks @hachichaud.
+
+
 ## 2017-08-26, version 5.9.5
 
 - Fixed a regression introduced in `v5.9.4`: after using the context
