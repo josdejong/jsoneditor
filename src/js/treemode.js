@@ -115,7 +115,7 @@ treemode._setOptions = function (options) {
     schema: null,
     schemaRefs: null,
     autocomplete: null,
-    treePath : false
+    navigationBar : false
   };
 
   // copy all options
@@ -760,7 +760,7 @@ treemode._createFrame = function () {
     this.searchBox = new SearchBox(this, this.menu);
   }
 
-  if(this.options.treePath) {
+  if(this.options.navigationBar) {
     // create second menu row for treepath
     var menu2 = document.createElement('div');
     menu2.className = 'jsoneditor-menu2';
@@ -823,7 +823,7 @@ treemode._onEvent = function (event) {
 
   var node = Node.getNodeFromTarget(event.target);
 
-  if (this.options && this.options.treePath && node && (event.type == 'keydown' || event.type == 'mousedown')) {
+  if (this.options && this.options.navigationBar && node && (event.type == 'keydown' || event.type == 'mousedown')) {
     this._updateTreePath(node.getNodePath());
   }
 
