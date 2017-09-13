@@ -2056,13 +2056,13 @@ Node._findSchema = function (schema, path) {
       if (typeof key === 'string' && childSchema.properties) {
         childSchema = childSchema.properties[key] || null;
         if (childSchema) {
-          foundSchema = childSchema;
+          foundSchema = Node._findSchema(childSchema, path.slice(i, path.length));
         }
       }
       else if (typeof key === 'number' && childSchema.items) {
         childSchema = childSchema.items;
         if (childSchema) {
-          foundSchema = childSchema;
+          foundSchema = Node._findSchema(childSchema, path.slice(i, path.length));
         }
       }
     }
