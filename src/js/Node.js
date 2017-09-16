@@ -1998,7 +1998,9 @@ Node.prototype._updateSchema = function () {
   //Locating the schema of the node and checking for any enum type
   if(this.editor && this.editor.options) {
     // find the part of the json schema matching this nodes path
-    this.schema = Node._findSchema(this.editor.options.schema, this.getPath());
+    this.schema = this.editor.options.schema 
+        ? Node._findSchema(this.editor.options.schema, this.getPath())
+        : null;
     if (this.schema) {
       this.enum = Node._findEnum(this.schema);
     }
@@ -2301,11 +2303,11 @@ Node.prototype.onEvent = function (event) {
         break;
 
       case 'click':
-        if (event.ctrlKey || !this.editable.value) {
-          if (util.isUrl(this.value)) {
-            window.open(this.value, '_blank');
-          }
+      if (event.ctrlKey || !this.editable.value) {
+        if (util.isUrl(this.value)) {
+          window.open(this.value, '_blank');
         }
+      }
         break;
 
       case 'keyup':
