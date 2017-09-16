@@ -2303,11 +2303,13 @@ Node.prototype.onEvent = function (event) {
         break;
 
       case 'click':
-      if (event.ctrlKey || !this.editable.value) {
-        if (util.isUrl(this.value)) {
-          window.open(this.value, '_blank');
+        if (event.ctrlKey && this.editable.value) {
+          // if read-only, we use the regular click behavior of an anchor
+          if (util.isUrl(this.value)) {
+            event.preventDefault();
+            window.open(this.value, '_blank');
+          }
         }
-      }
         break;
 
       case 'keyup':

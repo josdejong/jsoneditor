@@ -3,10 +3,11 @@
 https://github.com/josdejong/jsoneditor
 
 
-## not yet released, version 5.9.6
+## not yet released, version 5.10.0
 
 - Display a dropdown for enums inside composite schemas.
   Thanks @hachichaud.
+- Fixed #461: Urls opening twice on Firefox and Safari.
 
 
 ## 2017-08-26, version 5.9.5
