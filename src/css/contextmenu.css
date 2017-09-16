@@ -89,6 +89,10 @@ div.jsoneditor-contextmenu div.jsoneditor-icon {
   background-image: url('img/jsoneditor-icons.svg');
 }
 
+div.jsoneditor-contextmenu button.jsoneditor-plugin div.jsoneditor-icon {
+  background: transparent;
+}
+
 div.jsoneditor-contextmenu ul li ul div.jsoneditor-icon {
   margin-left: 24px;
 }

@@ -3440,8 +3440,62 @@ Node.prototype.showContextMenu = function (anchor, onClose) {
     }
   }
 
-  var menu = new ContextMenu(items, {close: onClose});
+  // create custom context menu buttons
+  if (this.editor.options && this.editor.options.contextMenuPlugins && this.editor.options.contextMenuPlugins.length) {
+    for (var i in this.editor.options.contextMenuPlugins) {
+      // recursively validate and process the plugin configurations
+      var pluginConfig = this._processContextMenuPlugin(this.editor.options.contextMenuPlugins[i]);
+
+      // add the action
+      if (pluginConfig) {
+        items.push(pluginConfig);
+      }
+    }
+  }
+
+  var menu = new ContextMenu(items, {close: onClose}, this);
   menu.show(anchor, this.editor.content);
+};
+
+/**
+ * Recursively process a Context Menu plugin configuration
+ * @param {Object} pluginConfig
+ * @return {Object} plugin config or null
+ * @private
+ */
+Node.prototype._processContextMenuPlugin = function(pluginConfig) {
+  // skip this plugin if these properties don't exist
+  if (pluginConfig.type == 'separator') {
+    // separators don't have mandatory properties
+  } else if (!pluginConfig.text || !pluginConfig.title || !pluginConfig.className) {
+    console.error("Context Menu plugin is being skipped for missing mandatory properties (text, title, className): " +
+                    JSON.stringify(pluginConfig));
+    return null;
+  } else if (!pluginConfig.click && !pluginConfig.submenu) {
+    console.error("Context Menu plugin is being skipped for not including at least on of the properties (click, submenu): " +
+                    JSON.stringify(pluginConfig));
+    return null;
+  }
+
+  // add a plugin class to hide the icon
+  if (!pluginConfig.className || pluginConfig.className.indexOf('jsoneditor-plugin ') === -1) {
+    pluginConfig.className = 'jsoneditor-plugin ' + (pluginConfig.className || '');
+  }
+
+  // recursively process submenus
+  if (pluginConfig.submenu instanceof Array) {
+    var processedSubMenu = [];
+    for (var i in pluginConfig.submenu) {
+      var submenuPlugin = this._processContextMenuPlugin(pluginConfig.submenu[i]);
+
+      if (submenuPlugin) {
+        processedSubMenu.push(submenuPlugin);
+      }
+    }
+    pluginConfig.submenu = processedSubMenu;
+  }
+
+  return pluginConfig;
 };
 
 /**

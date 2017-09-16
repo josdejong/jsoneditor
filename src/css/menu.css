@@ -31,6 +31,10 @@ div.jsoneditor-menu > div.jsoneditor-modes > button {
   float: left;
 }
 
+div.jsoneditor-menu > button.jsoneditor-plugin {
+  background: #d3d3d3;
+}
+
 div.jsoneditor-menu > button:hover,
 div.jsoneditor-menu > div.jsoneditor-modes > button:hover {
   background-color: rgba(255,255,255,0.2);

@@ -132,14 +132,13 @@ function appendNodeFactory(Node) {
    *                               is being closed.
    */
   AppendNode.prototype.showContextMenu = function (anchor, onClose) {
-    var node = this;
     var titles = Node.TYPE_TITLES;
     var appendSubmenu = [
         {
             text: 'Auto',
             className: 'jsoneditor-type-auto',
             title: titles.auto,
-            click: function () {
+            click: function (node) {
                 node._onAppend('', '', 'auto');
             }
         },
@@ -147,7 +146,7 @@ function appendNodeFactory(Node) {
             text: 'Array',
             className: 'jsoneditor-type-array',
             title: titles.array,
-            click: function () {
+            click: function (node) {
                 node._onAppend('', []);
             }
         },
@@ -155,7 +154,7 @@ function appendNodeFactory(Node) {
             text: 'Object',
             className: 'jsoneditor-type-object',
             title: titles.object,
-            click: function () {
+            click: function (node) {
                 node._onAppend('', {});
             }
         },
@@ -163,7 +162,7 @@ function appendNodeFactory(Node) {
             text: 'String',
             className: 'jsoneditor-type-string',
             title: titles.string,
-            click: function () {
+            click: function (node) {
                 node._onAppend('', '', 'string');
             }
         }
@@ -176,14 +175,14 @@ function appendNodeFactory(Node) {
         'title': 'Append a new field with type \'auto\' (Ctrl+Shift+Ins)',
         'submenuTitle': 'Select the type of the field to be appended',
         'className': 'jsoneditor-insert',
-        'click': function () {
+        'click': function (node) {
           node._onAppend('', '', 'auto');
         },
         'submenu': appendSubmenu
       }
     ];
 
-    var menu = new ContextMenu(items, {close: onClose});
+    var menu = new ContextMenu(items, {close: onClose}, this);
     menu.show(anchor, this.editor.content);
   };
 

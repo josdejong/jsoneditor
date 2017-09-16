@@ -753,6 +753,34 @@ treemode._createFrame = function () {
     });
   }
 
+  // create custom toolbar buttons
+  if (this.options && this.options.toolbarPlugins && this.options.toolbarPlugins.length) {
+    for (var i in this.options.toolbarPlugins) {
+      var customButtonOpts = this.options.toolbarPlugins[i];
+
+      // skip this plugin if these properties don't exist
+      if (!customButtonOpts.title || !customButtonOpts.className || !customButtonOpts.onclick) {
+        console.error("Toolbar plugin is being skipped for missing mandatory properties (title, className, onclick): " +
+                        JSON.stringify(customButtonOpts));
+        continue;
+      }
+
+      // create the basic button
+      var customButton = document.createElement('button');
+      customButton.type = 'button';
+
+      // merge the provided options to the button
+      for (var option in customButtonOpts) {
+        customButton[option] = customButtonOpts[option];
+      }
+
+      // add a plugin class to hide the icon
+      customButton.className = 'jsoneditor-plugin ' + (customButton.className || '');
+
+      this.menu.appendChild(customButton);
+    }
+  }
+
   // create search box
   if (this.options.search) {
     this.searchBox = new SearchBox(this, this.menu);
@@ -1210,8 +1238,8 @@ treemode.showContextMenu = function (anchor, onClose) {
     text: 'Duplicate',
     title: 'Duplicate selected fields (Ctrl+D)',
     className: 'jsoneditor-duplicate',
-    click: function () {
-      Node.onDuplicate(editor.multiselection.nodes);
+    click: function (nodes) {
+      Node.onDuplicate();
     }
   });
 
@@ -1220,13 +1248,69 @@ treemode.showContextMenu = function (anchor, onClose) {
     text: 'Remove',
     title: 'Remove selected fields (Ctrl+Del)',
     className: 'jsoneditor-remove',
-    click: function () {
-      Node.onRemove(editor.multiselection.nodes);
+    click: function (nodes) {
+      Node.onRemove(nodes);
     }
   });
 
-  var menu = new ContextMenu(items, {close: onClose});
+  // create custom multi-select context menu buttons
+  if (this.options && this.options.multiContextMenuPlugins && this.options.multiContextMenuPlugins.length) {
+    for (var i in this.options.multiContextMenuPlugins) {
+      var pluginConfig = this.options.multiContextMenuPlugins[i];
+
+      // recursively validate and process the plugin configurations
+      pluginConfig = this._processContextMenuPlugin(pluginConfig);
+
+      // add the action
+      if (pluginConfig) {
+        items.push(pluginConfig);
+      }
+    }
+  }
+
+  var menu = new ContextMenu(items, {close: onClose}, editor.multiselection.nodes);
   menu.show(anchor, this.content);
+};
+
+/**
+ * Recursively process a Context Menu plugin configuration
+ * @param {Object} pluginConfig
+ * @return {Object} plugin config or null
+ * @private
+ */
+treemode._processContextMenuPlugin = function(pluginConfig) {
+  // skip this plugin if these properties don't exist
+  if (pluginConfig.type == 'separator') {
+    // separators don't have mandatory properties
+  } else if (!pluginConfig.text || !pluginConfig.title || !pluginConfig.className) {
+    console.error("Context Menu plugin is being skipped for missing mandatory properties (text, title, className): " +
+                    JSON.stringify(pluginConfig));
+    return null;
+  } else if (!pluginConfig.click && !pluginConfig.submenu) {
+    console.error("Context Menu plugin is being skipped for not including at least on of the properties (click, submenu): " +
+                    JSON.stringify(pluginConfig));
+    return null;
+  }
+
+  // add a plugin class to hide the icon
+  if (!pluginConfig.className || pluginConfig.className.indexOf('jsoneditor-plugin ') === -1) {
+    pluginConfig.className = 'jsoneditor-plugin ' + (pluginConfig.className || '');
+  }
+
+  // recursively process submenus
+  if (pluginConfig.submenu instanceof Array) {
+    var processedSubMenu = [];
+    for (var i in pluginConfig.submenu) {
+      var submenuPlugin = this._processContextMenuPlugin(pluginConfig.submenu[i]);
+
+      if (submenuPlugin) {
+        processedSubMenu.push(submenuPlugin);
+      }
+    }
+    pluginConfig.submenu = processedSubMenu;
+  }
+
+  return pluginConfig;
 };
 
 

@@ -180,6 +180,95 @@ Constructs a new JSONEditor.
      - Can return an object `{startFrom: number, options: string[]}`. Here `startFrom` determines the start character from where the existing text will be replaced. `startFrom` is `0` by default, replacing the whole text.
      - Can return a `Promise` resolving one of the return types above to support asynchronously retrieving a list with options.
 
+- `{Object[]} toolbarPlugins`
+
+  Adds custom buttons to the toolbar. Contains **subelements**:
+
+  - `{string} title`
+
+     The button's title text, for example `Expand to fullscreen`.
+
+  - `{string} className`
+
+     To be consistent with standard buttons, use `jsoneditor-<name>`, for example `jsoneditor-fullscreen`.
+     To add a spacer on the left, include class `jsoneditor-separator`, for example `jsoneditor-fullscreen jsoneditor-separator`.
+
+  - `{Function} onclick`
+
+     The callback function when the custom button is clicked. Called without parameters.
+
+- `{Object[]} contextMenuPlugins`
+
+  Adds custom actions to the context menu when a single node is selected. Contains **subelements**:
+
+  - `{string} type`
+
+     If type === 'separator', this object represents a separator in the context menu.  All other properties will be ignored.
+
+  - `{string} text`
+
+     The action's text, for example `Action Name`.
+
+  - `{string} title`
+
+     The action's title (tooltip) text, for example `A longer description of the action`.
+
+  - `{string} className`
+
+     To be consistent with standard buttons, use `jsoneditor-<name>`, for example `jsoneditor-fullscreen`.
+
+  - `{Function} enabled (node)`
+
+     The optional callback function to enable/disable this plugin (enabled by default). Called with the selected node.
+
+  - `{Function} click (node)`
+
+     The callback function when the custom action is clicked. Called with the selected node.
+
+  - `{string} submenuTitle`
+
+     The submenu expander's title (tooltip) text, for example `A longer description of the submenu`.
+
+  - `{Object[]} submenu`
+
+     Submenu items of the same type as `contextMenuPlugins`.
+
+- `{Object[]} multiContextMenuPlugins`
+
+  Adds custom actions to the context menu when multiple nodes are selected. Contains **subelements**:
+
+  - `{string} type`
+
+     If type === 'separator', this object represents a separator in the context menu.  All other properties will be ignored.
+
+  - `{string} text`
+
+     The action's text, for example `Action Name`.
+
+  - `{string} title`
+
+     The action's title (tooltip) text, for example `A longer description of the action`.
+
+  - `{string} className`
+
+     To be consistent with standard buttons, use `jsoneditor-<name>`, for example `jsoneditor-fullscreen`.
+
+  - `{Function} enabled (nodes)`
+
+     The optional callback function to enable/disable this plugin (enabled by default). Called with the selected nodes.
+
+  - `{Function} click (nodes)`
+
+     The callback function when the custom action is clicked. Called with the selected nodes.
+
+  - `{string} submenuTitle`
+
+     The submenu expander's title (tooltip) text, for example `A longer description of the submenu`.
+
+  - `{Object[]} submenu`
+
+     Submenu items of the same type as `multiContextMenuPlugins`.
+
 
 ### Methods
 
