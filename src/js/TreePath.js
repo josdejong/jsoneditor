@@ -44,7 +44,7 @@ TreePath.prototype.setPath = function (pathObjs) {
       if (pathObj.children.length) {
         sepEl = document.createElement('span');
         sepEl.className = 'jsoneditor-treepath-seperator';
-        sepEl.innerHTML = '&#8811;';
+        sepEl.innerHTML = '&#9658;';
 
         sepEl.onclick = function () {
           var items = [];

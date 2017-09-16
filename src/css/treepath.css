@@ -11,18 +11,13 @@ div.jsoneditor-treepath div.jsoneditor-contextmenu-root {
 
 div.jsoneditor-treepath span.jsoneditor-treepath-element{
   margin: 1px;
-  color: white;
-  opacity: 0.8;
   font-family: arial, sans-serif;
   font-size: 10pt;
 }
 
 div.jsoneditor-treepath span.jsoneditor-treepath-seperator {
   margin: 2px;
-  font-size: 11pt;
-  font-weight: bold;
-  color: white;
-  opacity: 0.8;
+  font-size: 9pt;
   font-family: arial, sans-serif;
 }
 
