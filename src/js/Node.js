@@ -1206,6 +1206,36 @@ Node.prototype._onChangeField = function () {
 };
 
 /**
+ * Find schema reference in the editor options (recursively if necessary)
+ * @private
+ * @param {string} [reference]  schema ref for which we're looking for the type
+ * @return {string} Returns the schema type for the schema ref
+ */
+Node.prototype._findSchemaRef = function (reference) {
+  var ref = this.editor.options.schemaRefs[reference];
+  if (ref) {
+    if (!ref.type && ref.$ref) {
+      return this._findSchemaRef(ref.$ref);
+    }
+    if (ref.type === 'object') {
+      if (ref.properties && ref.properties[this.field]) {
+        if (ref.properties[this.field].type) {
+          return ref.properties[this.field].type;
+        }
+        if (ref.properties[this.field].$ref) {
+          return this._findSchemaRef(ref.properties[this.field].$ref);
+        }
+      }
+      // console.warn('Could not find schema ref', reference);
+      return undefined;
+    }
+    return ref.type;
+  }
+  console.warn('Schema ref %s undefined', reference);
+  return undefined;
+};
+
+/**
  * Update dom value:
  * - the text color of the value, depending on the type of the value
  * - the height of the field, depending on the width
@@ -1217,12 +1247,23 @@ Node.prototype._updateDomValue = function () {
   if (domValue) {
     var classNames = ['jsoneditor-value'];
 
-
     // set text color depending on value type
     var value = this.value;
     var type = (this.type == 'auto') ? util.type(value) : this.type;
     var isUrl = type == 'string' && util.isUrl(value);
     classNames.push('jsoneditor-' + type);
+    if (this.schema && (this.editor.options.valueDisplayMode === 'schema' || this.editor.options.valueDisplayMode === 'schema-if-null')) {
+      if (type === 'null' || this.editor.options.valueDisplayMode === 'schema') {
+        var schemaType = this.schema.type;
+        if (!schemaType && this.schema.$ref) {
+          schemaType = this._findSchemaRef(this.schema.$ref);
+        }
+        if (schemaType) {
+          classNames.push('jsoneditor-expected-' + schemaType);
+          domValue.textContent = schemaType;
+        }
+      }
+    }
     if (isUrl) {
       classNames.push('jsoneditor-url');
     }

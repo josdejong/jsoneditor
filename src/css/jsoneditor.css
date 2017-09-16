@@ -118,6 +118,20 @@ div.jsoneditor-value.jsoneditor-null {
   color: #004ED0;
 }
 
+div.jsoneditor-value.jsoneditor-null.jsoneditor-expected-number,
+div.jsoneditor-value.jsoneditor-null.jsoneditor-expected-string,
+div.jsoneditor-value.jsoneditor-null.jsoneditor-expected-integer {
+  color: #ee422e;
+  font-style: italic;
+}
+
+div.jsoneditor-value.jsoneditor-expected-number,
+div.jsoneditor-value.jsoneditor-expected-string,
+div.jsoneditor-value.jsoneditor-expected-integer {
+  color: #008000;
+  font-style: italic;
+}
+
 div.jsoneditor-value.jsoneditor-invalid {
   color: #000000;
 }
