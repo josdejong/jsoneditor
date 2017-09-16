@@ -34,6 +34,7 @@ TreePath.prototype.setPath = function (pathObjs) {
   if (pathObjs && pathObjs.length) {
     pathObjs.forEach(function (pathObj, idx) {
       var pathEl = document.createElement('span');
+      var sepEl;
       pathEl.className = 'jsoneditor-treepath-element';
       pathEl.innerText = pathObj.name;
       pathEl.onclick = _onSegmentClick.bind(me, pathObj);
@@ -41,7 +42,7 @@ TreePath.prototype.setPath = function (pathObjs) {
       me.path.appendChild(pathEl);
 
       if (pathObj.children.length) {
-        var sepEl = document.createElement('span');
+        sepEl = document.createElement('span');
         sepEl.className = 'jsoneditor-treepath-seperator';
         sepEl.innerHTML = '&#8811;';
 
@@ -59,6 +60,13 @@ TreePath.prototype.setPath = function (pathObjs) {
         };
 
         me.path.appendChild(sepEl, me.container);
+      }
+
+      if(idx === pathObjs.length - 1) {
+        var leftRectPos = (sepEl || pathEl).getBoundingClientRect().left;
+        if(me.path.offsetWidth < leftRectPos) {
+          me.path.scrollLeft = leftRectPos;
+        }
       }
     });
   }

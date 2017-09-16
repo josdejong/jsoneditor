@@ -1,7 +1,12 @@
 
 div.jsoneditor-treepath {
   padding: 3px 0 2px 5px;
-  word-wrap: break-word;
+  overflow: hidden;
+}
+
+div.jsoneditor-treepath div.jsoneditor-contextmenu-root {
+  position: absolute;
+  left: 0;
 }
 
 div.jsoneditor-treepath span.jsoneditor-treepath-element{
