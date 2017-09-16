@@ -24,8 +24,8 @@
  * Copyright (c) 2011-2017 Jos de Jong, http://jsoneditoronline.org
  *
  * @author  Jos de Jong, <wjosdejong@gmail.com>
- * @version 5.9.5
- * @date    2017-08-26
+ * @version 5.9.6
+ * @date    2017-09-16
  */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
@@ -6164,7 +6164,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	  //Locating the schema of the node and checking for any enum type
 	  if(this.editor && this.editor.options) {
 	    // find the part of the json schema matching this nodes path
-	    this.schema = Node._findSchema(this.editor.options.schema, this.getPath());
+	    this.schema = this.editor.options.schema 
+	        ? Node._findSchema(this.editor.options.schema, this.getPath())
+	        : null;
 	    if (this.schema) {
 	      this.enum = Node._findEnum(this.schema);
 	    }
@@ -6206,18 +6208,35 @@ return /******/ (function(modules) { // webpackBootstrap
 	 */
 	Node._findSchema = function (schema, path) {
 	  var childSchema = schema;
+	  var foundSchema = childSchema;
 
-	  for (var i = 0; i < path.length && childSchema; i++) {
-	    var key = path[i];
-	    if (typeof key === 'string' && childSchema.properties) {
-	      childSchema = childSchema.properties[key] || null
-	    }
-	    else if (typeof key === 'number' && childSchema.items) {
-	      childSchema = childSchema.items
-	    }
+	  var allSchemas = schema.oneOf || schema.anyOf || schema.allOf;
+	  if (!allSchemas) {
+	    allSchemas = [schema];
 	  }
 
-	  return childSchema
+	  for (var j = 0; j < allSchemas.length; j++) {
+	    childSchema = allSchemas[j];
+
+	    for (var i = 0; i < path.length && childSchema; i++) {
+	      var key = path[i];
+
+	      if (typeof key === 'string' && childSchema.properties) {
+	        childSchema = childSchema.properties[key] || null;
+	        if (childSchema) {
+	          foundSchema = Node._findSchema(childSchema, path.slice(i, path.length));
+	        }
+	      }
+	      else if (typeof key === 'number' && childSchema.items) {
+	        childSchema = childSchema.items;
+	        if (childSchema) {
+	          foundSchema = Node._findSchema(childSchema, path.slice(i, path.length));
+	        }
+	      }
+	    }
+
+	  }
+	  return foundSchema
 	};
 
 	/**
@@ -6450,8 +6469,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	        break;
 
 	      case 'click':
-	        if (event.ctrlKey || !this.editable.value) {
+	        if (event.ctrlKey && this.editable.value) {
+	          // if read-only, we use the regular click behavior of an anchor
 	          if (util.isUrl(this.value)) {
+	            event.preventDefault();
 	            window.open(this.value, '_blank');
 	          }
 	        }
@@ -7513,7 +7534,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        });
 	    }
 
-	    
+
 
 	    // create insert button
 	    var insertSubmenu = [
