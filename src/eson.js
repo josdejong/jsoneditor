@@ -196,7 +196,7 @@ export function addErrors (eson: ESON, errors) {
 
   if (errors) {
     errors.forEach(error => {
-      const esonPath = toEsonPath(eson, parseJSONPointer(error.esonPath))
+      const esonPath = toEsonPath(eson, parseJSONPointer(error.dataPath))
       // TODO: do we want to be able to store multiple errors per item?
       updatedEson = setIn(updatedEson, esonPath.concat('error'), error)
     })
