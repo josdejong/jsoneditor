@@ -182,7 +182,11 @@ Constructs a new JSONEditor.
 
 - `{boolean} navigationBar`
 
-  Adds navigation bar to the menu - the navigation bar visualize the current position on the tree structure as well as allows breadcrumbs navigation. False by default. Only applicable when `mode` is 'tree', 'form' or 'view'.
+  Adds navigation bar to the menu - the navigation bar visualize the current position on the tree structure as well as allows breadcrumbs navigation. True by default. Only applicable when `mode` is 'tree', 'form' or 'view'.
+
+- `{boolean} statusBar`
+
+  Adds status bar to the buttom of the editor - the status bar shows the cursor position (currently only for 'code' `mode`) and a count of the selected charcters. True by default. Only applicable when `mode` is 'code' or 'text'.
 
 ### Methods
 
