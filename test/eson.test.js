@@ -451,8 +451,8 @@ const JSON_DATA_SMALL = {
 
 
 const JSON_SCHEMA_ERRORS = [
-  {esonPath: '/obj/arr/2/last', message: 'String expected'},
-  {esonPath: '/nill', message: 'Null expected'}
+  {dataPath: '/obj/arr/2/last', message: 'String expected'},
+  {dataPath: '/nill', message: 'Null expected'}
 ]
 
 const JSON_DATA_EXAMPLE_ERRORS = {

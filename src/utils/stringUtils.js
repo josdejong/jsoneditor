@@ -11,17 +11,19 @@ export function escapeHTML (text, escapeUnicode = false) {
     return String(text)
   }
   else {
-    var htmlEscaped = String(text)
-        .replace(/  /g, ' \u00a0') // replace double space with an nbsp and space
-        .replace(/^ /, '\u00a0')   // space at start
-        .replace(/ $/, '\u00a0')   // space at end
-
-    var json = JSON.stringify(htmlEscaped)
-    var html = json.substring(1, json.length - 1)
+    let htmlEscaped = String(text)
     if (escapeUnicode === true) {
-      html = escapeUnicodeChars(html)
+      // FIXME: should not unescape the just created non-breaking spaces \u00A0 ?
+      htmlEscaped = escapeUnicodeChars(htmlEscaped)
     }
-    return html
+
+    htmlEscaped = htmlEscaped
+        .replace(/  /g, ' \u00A0') // replace double space with an nbsp and space
+        .replace(/^ /, '\u00A0')   // space at start
+        .replace(/ $/, '\u00A0')   // space at end
+
+    const json = JSON.stringify(htmlEscaped)
+    return json.substring(1, json.length - 1) // remove enclosing double quotes
   }
 }
 
