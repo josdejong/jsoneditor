@@ -210,9 +210,14 @@ div.jsoneditor-outer {
   box-sizing: border-box;
 }
 
-div.jsoneditor-menu2 + div.jsoneditor-outer {
+div.jsoneditor-outer.has-nav-bar {
   margin: -61px 0 0 0;
   padding: 61px 0 0 0;
+}
+
+div.jsoneditor-outer.has-status-bar {
+  margin: -35px 0 -16px 0;
+  padding: 35px 0 16px 0;
 }
 
 textarea.jsoneditor-text,

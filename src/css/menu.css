@@ -89,28 +89,6 @@ div.jsoneditor-menu > div.jsoneditor-modes > button.jsoneditor-separator {
   margin-left: 10px;
 }
 
-div.jsoneditor-menu > div.jsoneditor-curserinfo {
-  line-height: 30px;
-}
-
-div.jsoneditor-menu > div.jsoneditor-curserinfo > .jsoneditor-curserinfo-label {
-  margin: 0 2px 0 4px;
-}
-
-div.jsoneditor-menu > div.jsoneditor-curserinfo > .jsoneditor-curserinfo-val {
-  margin-right: 4px;
-}
-
-div.jsoneditor-menu > div.jsoneditor-curserinfo > .jsoneditor-curserinfo-count {
-  margin-left: 4px;
-}
-
-div.jsoneditor-menu > div.jsoneditor-curserinfo > span {
-  color: white;
-  opacity: 0.8;
-  font-size: 10pt;
-}
-
 div.jsoneditor-menu a {
   font-family: arial, sans-serif;
   font-size: 10pt;
@@ -129,28 +107,4 @@ div.jsoneditor-menu a.jsoneditor-poweredBy {
   right: 0;
   top: 0;
   padding: 10px;
-}
-
-div.jsoneditor-menu2 {
-  width: 100%;
-  height: 26px;
-  padding: 2px;
-  margin: 0;
-  -moz-box-sizing: border-box;
-  -webkit-box-sizing: border-box;
-  box-sizing: border-box;
-  color: #1A1A1A;
-  background-color: #e6e6e6;
-  border-bottom: 1px solid #3883fa;
-}
-
-div.jsoneditor-menu2:before {
-  content: '';
-  width: 100%;
-  height: 1px;
-  background-color: white;
-  opacity: 0.8;
-  position: absolute;
-  left: 0;
-  margin-top: -3px;
 }

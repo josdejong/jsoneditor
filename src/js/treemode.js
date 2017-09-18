@@ -115,7 +115,7 @@ treemode._setOptions = function (options) {
     schema: null,
     schemaRefs: null,
     autocomplete: null,
-    navigationBar : false
+    navigationBar : true
   };
 
   // copy all options
@@ -762,11 +762,11 @@ treemode._createFrame = function () {
 
   if(this.options.navigationBar) {
     // create second menu row for treepath
-    var menu2 = document.createElement('div');
-    menu2.className = 'jsoneditor-menu2';
-    this.frame.appendChild(menu2);
+    this.navBar = document.createElement('div');
+    this.navBar.className = 'jsoneditor-navigation-bar nav-bar-empty';
+    this.frame.appendChild(this.navBar);
 
-    this.treePath = new TreePath(menu2);
+    this.treePath = new TreePath(this.navBar);
     this.treePath.onSectionSelected(this._onTreePathSectionSelected.bind(this));
     this.treePath.onContextMenuItemSelected(this._onTreePathMenuItemSelected.bind(this));
   }
@@ -874,6 +874,8 @@ treemode._onEvent = function (event) {
  */
 treemode._updateTreePath = function (pathNodes) {
   if (pathNodes && pathNodes.length) {
+    util.removeClassName(this.navBar, 'nav-bar-empty');
+    
     var pathObjs = [];
     pathNodes.forEach(function (node) {
       var pathObj = {
@@ -892,6 +894,8 @@ treemode._updateTreePath = function (pathNodes) {
       pathObjs.push(pathObj);
     });
     this.treePath.setPath(pathObjs);
+  } else {
+    util.addClassName(this.navBar, 'nav-bar-empty');
   }
 
   function getName(node) {
@@ -1242,6 +1246,9 @@ treemode._onKeyDown = function (event) {
 treemode._createTable = function () {
   var contentOuter = document.createElement('div');
   contentOuter.className = 'jsoneditor-outer';
+  if(this.options.navigationBar) {
+    util.addClassName(contentOuter, 'has-nav-bar');
+  }
   this.contentOuter = contentOuter;
 
   this.content = document.createElement('div');

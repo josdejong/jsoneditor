@@ -36,6 +36,11 @@ var DEFAULT_THEME = 'ace/theme/jsoneditor';
 textmode.create = function (container, options) {
   // read options
   options = options || {};
+  
+  if(typeof options.statusBar === 'undefined') {
+    options.statusBar = true;
+  }
+
   this.options = options;
 
   // indentation
@@ -77,7 +82,6 @@ textmode.create = function (container, options) {
   this.aceEditor = undefined;  // ace code editor
   this.textarea = undefined;  // plain text editor (fallback when Ace is not available)
   this.validateSchema = null;
-  this.curserInfoElements = {};
 
   // create a debounced validate function
   this._debouncedValidate = util.debounce(this.validate.bind(this), this.DEBOUNCE_INTERVAL);
@@ -141,11 +145,6 @@ textmode.create = function (container, options) {
     });
   }
 
-  // create curser and count info
-  var curserAndCountInfo = document.createElement('div');
-  curserAndCountInfo.className = 'jsoneditor-curserinfo';
-  this.menu.appendChild(curserAndCountInfo);
-
   var emptyNode = {};
   var isReadOnly = (this.options.onEditable
   && typeof(this.options.onEditable === 'function')
@@ -191,31 +190,6 @@ textmode.create = function (container, options) {
       });
     }
 
-    var lnLabel = document.createElement('span');
-    lnLabel.className = 'jsoneditor-curserinfo-label';
-    lnLabel.innerText = 'Ln:';
-
-    var lnVal = document.createElement('span');
-    lnVal.className = 'jsoneditor-curserinfo-val';
-    lnVal.innerText = 0;
-
-    curserAndCountInfo.appendChild(lnLabel);
-    curserAndCountInfo.appendChild(lnVal);
-
-    var colLabel = document.createElement('span');
-    colLabel.className = 'jsoneditor-curserinfo-label';
-    colLabel.innerText = 'Col:';
-
-    var colVal = document.createElement('span');
-    colVal.className = 'jsoneditor-curserinfo-val';
-    colVal.innerText = 0;
-
-    curserAndCountInfo.appendChild(colLabel);
-    curserAndCountInfo.appendChild(colVal);
-
-    this.curserInfoElements.colVal = colVal;
-    this.curserInfoElements.lnVal = lnVal;
-
     var poweredBy = document.createElement('a');
     poweredBy.appendChild(document.createTextNode('powered by ace'));
     poweredBy.href = 'http://ace.ajax.org';
@@ -256,23 +230,60 @@ textmode.create = function (container, options) {
     textarea.onblur = this._onBlur.bind(this);
   }
 
-  var countLabel = document.createElement('span');
-  countLabel.className = 'jsoneditor-curserinfo-label';
-  countLabel.innerText = 'selected';
-  countLabel.style.display = 'none';
+  if (options.statusBar) {
+      
+      util.addClassName(this.content, 'has-status-bar');
 
-  var countVal = document.createElement('span');
-  countVal.className = 'jsoneditor-curserinfo-count';
-  countVal.innerText = 0;
-  countVal.style.display = 'none';
+      this.curserInfoElements = {};      
+      var statusBar = document.createElement('div');
+      statusBar.className = 'jsoneditor-statusbar';
+      this.frame.appendChild(statusBar);
 
-  this.curserInfoElements.countLabel = countLabel;
-  this.curserInfoElements.countVal = countVal;
+      if (this.mode == 'code') {
+        var lnLabel = document.createElement('span');
+        lnLabel.className = 'jsoneditor-curserinfo-label';
+        lnLabel.innerText = 'Ln:';
+  
+        var lnVal = document.createElement('span');
+        lnVal.className = 'jsoneditor-curserinfo-val';
+        lnVal.innerText = 0;
+  
+        statusBar.appendChild(lnLabel);
+        statusBar.appendChild(lnVal);
+  
+        var colLabel = document.createElement('span');
+        colLabel.className = 'jsoneditor-curserinfo-label';
+        colLabel.innerText = 'Col:';
+  
+        var colVal = document.createElement('span');
+        colVal.className = 'jsoneditor-curserinfo-val';
+        colVal.innerText = 0;
+  
+        statusBar.appendChild(colLabel);
+        statusBar.appendChild(colVal);
+  
+        this.curserInfoElements.colVal = colVal;
+        this.curserInfoElements.lnVal = lnVal;
+      } 
+    
+      var countLabel = document.createElement('span');
+      countLabel.className = 'jsoneditor-curserinfo-label';
+      countLabel.innerText = 'selected';
+      countLabel.style.display = 'none';
 
-  curserAndCountInfo.appendChild(countVal);
-  curserAndCountInfo.appendChild(countLabel);
+      var countVal = document.createElement('span');
+      countVal.className = 'jsoneditor-curserinfo-count';
+      countVal.innerText = 0;
+      countVal.style.display = 'none';
 
-  this.setSchema(this.options.schema, this.options.schemaRefs);
+      this.curserInfoElements.countLabel = countLabel;
+      this.curserInfoElements.countVal = countVal;
+
+      statusBar.appendChild(countVal);
+      statusBar.appendChild(countLabel);    
+  }
+
+  this.setSchema(this.options.schema, this.options.schemaRefs);  
 };
 
 /**
@@ -302,20 +313,19 @@ textmode._onChange = function () {
  * @private
  */
 textmode._onSelect = function () {
-  var selectionRange = {};
-    
-  if (this.textarea) {    
-    selectionRange = util.getInputSelection(this.textarea);
-  } else if (this.aceEditor) {
-    var curserPos = this.aceEditor.getCursorPosition();
-    var selectedText = this.aceEditor.getSelectedText();
-    this.curserInfoElements.lnVal.innerText = curserPos.row + 1;
-    this.curserInfoElements.colVal.innerText = curserPos.column + 1;
-    this._setSelectionCountDisplay(selectedText.length);
-  }
-
-  if (selectionRange.start !== selectionRange.end) {
-    this._setSelectionCountDisplay(Math.abs(selectionRange.end - selectionRange.start));
+  if(this.options.statusBar) {
+    if (this.textarea) {
+      var selectionRange = util.getInputSelection(this.textarea);
+      if (selectionRange.start !== selectionRange.end) {
+        this._setSelectionCountDisplay(Math.abs(selectionRange.end - selectionRange.start));
+      }
+    } else if (this.aceEditor) {
+      var curserPos = this.aceEditor.getCursorPosition();
+      var selectedText = this.aceEditor.getSelectedText();
+      this.curserInfoElements.lnVal.innerText = curserPos.row + 1;
+      this.curserInfoElements.colVal.innerText = curserPos.column + 1;
+      this._setSelectionCountDisplay(selectedText.length);
+    }
   }
 };
 
@@ -367,13 +377,15 @@ textmode._onBlur = function (event) {
 };
 
 textmode._setSelectionCountDisplay = function (value) {
-  if(value && this.curserInfoElements.countVal) {
-    this.curserInfoElements.countVal.innerText = value;
-    this.curserInfoElements.countVal.style.display = 'inline';
-    this.curserInfoElements.countLabel.style.display = 'inline';
-  } else {
-    this.curserInfoElements.countVal.style.display = 'none';
-    this.curserInfoElements.countLabel.style.display = 'none';
+  if (this.options.statusBar) {
+    if (value && this.curserInfoElements.countVal) {
+      this.curserInfoElements.countVal.innerText = value;
+      this.curserInfoElements.countVal.style.display = 'inline';
+      this.curserInfoElements.countLabel.style.display = 'inline';
+    } else {
+      this.curserInfoElements.countVal.style.display = 'none';
+      this.curserInfoElements.countLabel.style.display = 'none';
+    }
   }
 };
 
