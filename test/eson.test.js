@@ -1,6 +1,8 @@
+import { readFileSync } from 'fs'
 import test from 'ava';
+import { setIn } from '../src/utils/immutabilityHelpers'
 import {
-    jsonToEson, esonToJson, pathExists, transform, traverse,
+    jsonToEson, esonToJson, toEsonPath, pathExists, transform, traverse,
     parseJSONPointer, compileJSONPointer,
     expand, addErrors, search, applySearchResults, nextSearchResult, previousSearchResult,
     applySelection
@@ -9,908 +11,34 @@ import {
 
 // TODO: move all JSON documents in separate json files to keep the test readable?
 
-const JSON_EXAMPLE = {
-  obj: {
-    arr: [1,2, {first:3,last:4}]
-  },
-  str: 'hello world',
-  nill: null,
-  bool: false
-}
-
-const ESON = {
-  type: 'Object',
-  expanded: true,
-  props: [
-    {
-      id: '[ID]',
-      name: 'obj',
-      value: {
-        type: 'Object',
-        expanded: true,
-        props: [
-          {
-            id: '[ID]',
-            name: 'arr',
-            value: {
-              type: 'Array',
-              expanded: true,
-              items: [
-                {
-                  id: '[ID]',
-                  value: {
-                    type: 'value',
-                    value: 1
-                  }
-                },
-                {
-                  id: '[ID]',
-                  value: {
-                    type: 'value',
-                    value: 2
-                  }
-                },
-                {
-                  id: '[ID]',
-                  value: {
-                    type: 'Object',
-                    expanded: true,
-                    props: [
-                      {
-                        id: '[ID]',
-                        name: 'first',
-                        value: {
-                          type: 'value',
-                          value: 3
-                        }
-                      },
-                      {
-                        id: '[ID]',
-                        name: 'last',
-                        value: {
-                          type: 'value',
-                          value: 4
-                        }
-                      }
-                    ]
-                  }
-                }
-              ]
-            }
-          }
-        ]
-      }
-    },
-    {
-      id: '[ID]',
-      name: 'str',
-      value: {
-        type: 'value',
-        value: 'hello world'
-      }
-    },
-    {
-      id: '[ID]',
-      name: 'nill',
-      value: {
-        type: 'value',
-        value: null
-      }
-    },
-    {
-      id: '[ID]',
-      name: 'bool',
-      value: {
-        type: 'value',
-        value: false
-      }
-    }
-  ]
-}
-
 // TODO: instead of all slightly different copies of ESON, built them up via setIn, updateIn based on ESON
 
-const ESON_COLLAPSED_1 = {
-  type: 'Object',
-  expanded: true,
-  props: [
-    {
-      id: '[ID]',
-      name: 'obj',
-      value: {
-        type: 'Object',
-        expanded: true,
-        props: [
-          {
-            id: '[ID]',
-            name: 'arr',
-            value: {
-              type: 'Array',
-              expanded: true,
-              items: [
-
-                {
-                  id: '[ID]',
-                  value: {
-                    type: 'value',
-                    value: 1
-                  }
-                },
-                {
-                  id: '[ID]',
-                  value: {
-                    type: 'value',
-                    value: 2
-                  }
-                },
-                {
-                  id: '[ID]',
-                  value: {
-                    type: 'Object',
-                    expanded: false,
-                    props: [
-                      {
-                        id: '[ID]',
-                        name: 'first',
-                        value: {
-                          type: 'value',
-                          value: 3
-                        }
-                      },
-                      {
-                        id: '[ID]',
-                        name: 'last',
-                        value: {
-                          type: 'value',
-                          value: 4
-                        }
-                      }
-                    ]
-                  }
-                }
-              ]
-            }
-          }
-        ]
-      }
-    },
-    {
-      id: '[ID]',
-      name: 'str',
-      value: {
-        type: 'value',
-        value: 'hello world'
-      }
-    },
-    {
-      id: '[ID]',
-      name: 'nill',
-      value: {
-        type: 'value',
-        value: null
-      }
-    },
-    {
-      id: '[ID]',
-      name: 'bool',
-      value: {
-        type: 'value',
-        value: false
-      }
-    }
-  ]
-}
-
-const ESON_COLLAPSED_2 = {
-  type: 'Object',
-  expanded: true,
-  props: [
-    {
-      id: '[ID]',
-      name: 'obj',
-      value: {
-        type: 'Object',
-        expanded: false,
-        props: [
-          {
-            id: '[ID]',
-            name: 'arr',
-            value: {
-              type: 'Array',
-              expanded: false,
-              items: [
-                {
-                  id: '[ID]',
-                  value: {
-                    type: 'value',
-                    value: 1
-                  }
-                },
-                {
-                  id: '[ID]',
-                  value: {
-                    type: 'value',
-                    value: 2
-                  }
-                },
-                {
-                  id: '[ID]',
-                  value: {
-                    type: 'Object',
-                    expanded: false,
-                    props: [
-                      {
-                        id: '[ID]',
-                        name: 'first',
-                        value: {
-                          type: 'value',
-                          value: 3
-                        }
-                      },
-                      {
-                        id: '[ID]',
-                        name: 'last',
-                        value: {
-                          type: 'value',
-                          value: 4
-                        }
-                      }
-                    ]
-                  }
-                }
-              ]
-            }
-          }
-        ]
-      }
-    },
-    {
-      id: '[ID]',
-      name: 'str',
-      value: {
-        type: 'value',
-        value: 'hello world'
-      }
-    },
-    {
-      id: '[ID]',
-      name: 'nill',
-      value: {
-        type: 'value',
-        value: null
-      }
-    },
-    {
-      id: '[ID]',
-      name: 'bool',
-      value: {
-        type: 'value',
-        value: false
-      }
-    }
-  ]
-}
-
-// after search for 'L' (case insensitive)
-const ESON_SEARCH_L = {
-  type: 'Object',
-  expanded: true,
-  props: [
-    {
-      id: '[ID]',
-      name: 'obj',
-      value: {
-        type: 'Object',
-        expanded: true,
-        props: [
-          {
-            id: '[ID]',
-            name: 'arr',
-            value: {
-              type: 'Array',
-              expanded: true,
-              items: [
-                {
-                  id: '[ID]',
-                  value: {
-                    type: 'value',
-                    value: 1
-                  }
-                },
-                {
-                  id: '[ID]',
-                  value: {
-                    type: 'value',
-                    value: 2
-                  }
-                },
-                {
-                  id: '[ID]',
-                  value: {
-                    type: 'Object',
-                    expanded: true,
-                    props: [
-                      {
-                        id: '[ID]',
-                        name: 'first',
-                        value: {
-                          type: 'value',
-                          value: 3
-                        }
-                      },
-                      {
-                        id: '[ID]',
-                        name: 'last',
-                        value: {
-                          type: 'value',
-                          value: 4
-                        },
-                        searchResult: 'active'
-                      }
-                    ]
-                  }
-                }
-              ]
-            }
-          }
-        ]
-      }
-    },
-    {
-      id: '[ID]',
-      name: 'str',
-      value: {
-        type: 'value',
-        value: 'hello world',
-        searchResult: 'normal'
-      }
-    },
-    {
-      id: '[ID]',
-      name: 'nill',
-      value: {
-        type: 'value',
-        value: null,
-        searchResult: 'normal'
-      },
-      searchResult: 'normal'
-    },
-    {
-      id: '[ID]',
-      name: 'bool',
-      value: {
-        type: 'value',
-        value: false,
-        searchResult: 'normal'
-      },
-      searchResult: 'normal'
-    }
-  ]
-}
-
-const ESON_SELECTED_OBJECT = {
-  type: 'Object',
-  expanded: true,
-  props: [
-    {
-      id: '[ID]',
-      name: 'obj',
-      value: {
-        type: 'Object',
-        expanded: true,
-        selected: true,
-        props: [
-          {
-            id: '[ID]',
-            name: 'arr',
-            value: {
-              type: 'Array',
-              expanded: true,
-              items: [
-                {
-                  id: '[ID]',
-                  value: {
-                    type: 'value',
-                    value: 1
-                  }
-                },
-                {
-                  id: '[ID]',
-                  value: {
-                    type: 'value',
-                    value: 2
-                  }
-                },
-                {
-                  id: '[ID]',
-                  value: {
-                    type: 'Object',
-                    expanded: true,
-                    props: [
-                      {
-                        id: '[ID]',
-                        name: 'first',
-                        value: {
-                          type: 'value',
-                          value: 3
-                        }
-                      },
-                      {
-                        id: '[ID]',
-                        name: 'last',
-                        value: {
-                          type: 'value',
-                          value: 4
-                        }
-                      }
-                    ]
-                  }
-                }
-              ]
-            }
-          }
-        ]
-      }
-    },
-    {
-      id: '[ID]',
-      name: 'str',
-      value: {
-        type: 'value',
-        value: 'hello world',
-        selected: true
-      }
-    },
-    {
-      id: '[ID]',
-      name: 'nill',
-      value: {
-        type: 'value',
-        value: null,
-        selected: true
-      }
-    },
-    {
-      id: '[ID]',
-      name: 'bool',
-      value: {
-        type: 'value',
-        value: false
-      }
-    }
-  ]
-}
-
-const ESON_SELECTED_ARRAY = {
-  type: 'Object',
-  expanded: true,
-  props: [
-    {
-      id: '[ID]',
-      name: 'obj',
-      value: {
-        type: 'Object',
-        expanded: true,
-        props: [
-          {
-            id: '[ID]',
-            name: 'arr',
-            value: {
-              type: 'Array',
-              expanded: true,
-              items: [
-                {
-                  id: '[ID]',
-                  value: {
-                    type: 'value',
-                    selected: true,
-                    value: 1
-                  }
-                },
-                {
-                  id: '[ID]',
-                  value: {
-                    type: 'value',
-                    selected: true,
-                    value: 2
-                  }
-                },
-                {
-                  id: '[ID]',
-                  value: {
-                    type: 'Object',
-                    expanded: true,
-                    props: [
-                      {
-                        id: '[ID]',
-                        name: 'first',
-                        value: {
-                          type: 'value',
-                          value: 3
-                        }
-                      },
-                      {
-                        id: '[ID]',
-                        name: 'last',
-                        value: {
-                          type: 'value',
-                          value: 4
-                        }
-                      }
-                    ]
-                  }
-                }
-              ]
-            }
-          }
-        ]
-      }
-    },
-    {
-      id: '[ID]',
-      name: 'str',
-      value: {
-        type: 'value',
-        value: 'hello world'
-      }
-    },
-    {
-      id: '[ID]',
-      name: 'nill',
-      value: {
-        type: 'value',
-        value: null
-      }
-    },
-    {
-      id: '[ID]',
-      name: 'bool',
-      value: {
-        type: 'value',
-        value: false
-      }
-    }
-  ]
-}
-
-const ESON_SELECTED_VALUE = {
-  type: 'Object',
-  expanded: true,
-  props: [
-    {
-      id: '[ID]',
-      name: 'obj',
-      value: {
-        type: 'Object',
-        expanded: true,
-        props: [
-          {
-            id: '[ID]',
-            name: 'arr',
-            value: {
-              type: 'Array',
-              expanded: true,
-              items: [
-                {
-                  id: '[ID]',
-                  value: {
-                    type: 'value',
-                    value: 1
-                  }
-                },
-                {
-                  id: '[ID]',
-                  value: {
-                    type: 'value',
-                    value: 2
-                  }
-                },
-                {
-                  id: '[ID]',
-                  value: {
-                    type: 'Object',
-                    expanded: true,
-                    props: [
-                      {
-                        id: '[ID]',
-                        name: 'first',
-                        value: {
-                          type: 'value',
-                          selected: true,
-                          value: 3
-                        }
-                      },
-                      {
-                        id: '[ID]',
-                        name: 'last',
-                        value: {
-                          type: 'value',
-                          value: 4
-                        }
-                      }
-                    ]
-                  }
-                }
-              ]
-            }
-          }
-        ]
-      }
-    },
-    {
-      id: '[ID]',
-      name: 'str',
-      value: {
-        type: 'value',
-        value: 'hello world'
-      }
-    },
-    {
-      id: '[ID]',
-      name: 'nill',
-      value: {
-        type: 'value',
-        value: null
-      }
-    },
-    {
-      id: '[ID]',
-      name: 'bool',
-      value: {
-        type: 'value',
-        value: false
-      }
-    }
-  ]
-}
-
-const ESON_SELECTED_PARENT = {
-  type: 'Object',
-  expanded: true,
-  props: [
-    {
-      id: '[ID]',
-      name: 'obj',
-      value: {
-        type: 'Object',
-        expanded: true,
-        props: [
-          {
-            id: '[ID]',
-            name: 'arr',
-            value: {
-              type: 'Array',
-              expanded: true,
-              items: [
-                {
-                  id: '[ID]',
-                  value: {
-                    type: 'value',
-                    value: 1
-                  }
-                },
-                {
-                  id: '[ID]',
-                  value: {
-                    type: 'value',
-                    value: 2
-                  }
-                },
-                {
-                  id: '[ID]',
-                  value: {
-                    type: 'Object',
-                    expanded: true,
-                    selected: true,
-                    props: [
-                      {
-                        id: '[ID]',
-                        name: 'first',
-                        value: {
-                          type: 'value',
-                          value: 3
-                        }
-                      },
-                      {
-                        id: '[ID]',
-                        name: 'last',
-                        value: {
-                          type: 'value',
-                          value: 4
-                        }
-                      }
-                    ]
-                  }
-                }
-              ]
-            }
-          }
-        ]
-      }
-    },
-    {
-      id: '[ID]',
-      name: 'str',
-      value: {
-        type: 'value',
-        value: 'hello world'
-      }
-    },
-    {
-      id: '[ID]',
-      name: 'nill',
-      value: {
-        type: 'value',
-        value: null
-      }
-    },
-    {
-      id: '[ID]',
-      name: 'bool',
-      value: {
-        type: 'value',
-        value: false
-      }
-    }
-  ]
-}
-
-const ESON_SMALL = {
-  type: 'Object',
-  props: [
-    {
-      id: '[ID]',
-      name: 'obj',
-      value: {
-        type: 'Object',
-        props: [
-          {
-            id: '[ID]',
-            name: 'a',
-            value: {
-              type: 'value',
-              value: 2
-            }
-          }
-        ]
-      }
-    },
-    {
-      id: '[ID]',
-      name: 'arr',
-      value: {
-        type: 'Array',
-        items: [
-          {
-            id: '[ID]',
-            value: {
-              type: 'value',
-              value: 3
-            }
-          }
-        ]
-      }
-    }
-  ]
-}
-
-
-const JSON_SCHEMA_ERRORS = [
-  {dataPath: '/obj/arr/2/last', message: 'String expected'},
-  {dataPath: '/nill', message: 'Null expected'}
-]
-
-const ESON_ERRORS = {
-  type: 'Object',
-  expanded: true,
-  props: [
-    {
-      id: '[ID]',
-      name: 'obj',
-      value: {
-        type: 'Object',
-        expanded: true,
-        props: [
-          {
-            id: '[ID]',
-            name: 'arr',
-            value: {
-              type: 'Array',
-              expanded: true,
-              items: [
-                {
-                  id: '[ID]',
-                  value: {
-                    type: 'value',
-                    value: 1
-                  }
-                },
-                {
-                  id: '[ID]',
-                  value: {
-                    type: 'value',
-                    value: 2
-                  }
-                },
-                {
-                  id: '[ID]',
-                  value: {
-                    type: 'Object',
-                    expanded: true,
-                    props: [
-                      {
-                        id: '[ID]',
-                        name: 'first',
-                        value: {
-                          type: 'value',
-                          value: 3
-                        }
-                      },
-                      {
-                        id: '[ID]',
-                        name: 'last',
-                        value: {
-                          type: 'value',
-                          value: 4,
-                          error: JSON_SCHEMA_ERRORS[0]
-                        }
-                      }
-                    ]
-                  }
-                }
-              ]
-            }
-          }
-        ]
-      }
-    },
-    {
-      id: '[ID]',
-      name: 'str',
-      value: {
-        type: 'value',
-        value: 'hello world'
-      }
-    },
-    {
-      id: '[ID]',
-      name: 'nill',
-      value: {
-        type: 'value',
-        value: null,
-        error: JSON_SCHEMA_ERRORS[1]
-      }
-    },
-    {
-      id: '[ID]',
-      name: 'bool',
-      value: {
-        type: 'value',
-        value: false
-      }
-    }
-  ]
-}
+const JSON1 = loadJSON('./resources/json1.json')
+const ESON1 = loadJSON('./resources/eson1.json')
+const ESON2 = loadJSON('./resources/eson2.json')
 
 test('jsonToEson', t => {
   function expand (path) {
     return true
   }
 
-  const ESON = jsonToEson(JSON_EXAMPLE, expand, [])
-  replaceIds(ESON)
+  const eson = jsonToEson(JSON1, expand, [])
+  replaceIds(eson)
 
-  t.deepEqual(ESON, ESON)
+  t.deepEqual(eson, ESON1)
 })
 
 test('esonToJson', t => {
-  t.deepEqual(esonToJson(ESON), JSON_EXAMPLE)
+  t.deepEqual(esonToJson(ESON1), JSON1)
 })
 
 test('expand a single path', t => {
-  const collapsed = expand(ESON, ['obj', 'arr', 2], false)
+  const path = ['obj', 'arr', 2]
+  const collapsed = expand(ESON1, path, false)
 
-  t.deepEqual(collapsed, ESON_COLLAPSED_1)
+  const expected = setIn(ESON1, toEsonPath(ESON1, path).concat('expanded'), false)
+
+  t.deepEqual(collapsed, expected)
 })
 
 test('expand a callback', t => {
@@ -918,9 +46,14 @@ test('expand a callback', t => {
     return path.length >= 1
   }
   const expanded = false
-  const collapsed = expand(ESON, callback, expanded)
+  const collapsed = expand(ESON1, callback, expanded)
 
-  t.deepEqual(collapsed, ESON_COLLAPSED_2)
+  let expected = ESON1
+  expected = setIn(expected, toEsonPath(ESON1, ['obj']).concat('expanded'), false)
+  expected = setIn(expected, toEsonPath(ESON1, ['obj', 'arr']).concat('expanded'), false)
+  expected = setIn(expected, toEsonPath(ESON1, ['obj', 'arr', '2']).concat('expanded'), false)
+
+  t.deepEqual(collapsed, expected)
 })
 
 test('expand a callback should not change the object when nothing happens', t => {
@@ -928,16 +61,16 @@ test('expand a callback should not change the object when nothing happens', t =>
     return false
   }
   const expanded = false
-  const collapsed = expand(ESON, callback, expanded)
+  const collapsed = expand(ESON1, callback, expanded)
 
-  t.is(collapsed, ESON)
+  t.is(collapsed, ESON1)
 })
 
 test('pathExists', t => {
-  t.is(pathExists(ESON, ['obj', 'arr', 2, 'first']), true)
-  t.is(pathExists(ESON, ['obj', 'foo']), false)
-  t.is(pathExists(ESON, ['obj', 'foo', 'bar']), false)
-  t.is(pathExists(ESON, []), true)
+  t.is(pathExists(ESON1, ['obj', 'arr', 2, 'first']), true)
+  t.is(pathExists(ESON1, ['obj', 'foo']), false)
+  t.is(pathExists(ESON1, ['obj', 'foo', 'bar']), false)
+  t.is(pathExists(ESON1, []), true)
 })
 
 test('parseJSONPointer', t => {
@@ -957,16 +90,26 @@ test('compileJSONPointer', t => {
 })
 
 test('add and remove errors', t => {
-  const dataWithErrors = addErrors(ESON, JSON_SCHEMA_ERRORS)
-  t.deepEqual(dataWithErrors, ESON_ERRORS)
+  const jsonSchemaErrors = [
+    {dataPath: '/obj/arr/2/last', message: 'String expected'},
+    {dataPath: '/nill', message: 'Null expected'}
+  ]
+
+  const actual = addErrors(ESON1, jsonSchemaErrors)
+
+  let expected = ESON1
+  expected = setIn(expected, toEsonPath(ESON1, ['obj', 'arr', '2', 'last']).concat(['error']), jsonSchemaErrors[0])
+  expected = setIn(expected, toEsonPath(ESON1, ['nill']).concat(['error']), jsonSchemaErrors[1])
+
+  t.deepEqual(actual, expected)
 })
 
 test('transform', t => {
   // {obj: {a: 2}, arr: [3]}
 
   let log = []
-  const transformed = transform(ESON_SMALL, function (value, path, root) {
-    t.is(root, ESON_SMALL)
+  const transformed = transform(ESON2, function (value, path, root) {
+    t.is(root, ESON2)
 
     log.push([value, path, root])
 
@@ -982,22 +125,22 @@ test('transform', t => {
   // console.log('transformed', JSON.stringify(transformed, null, 2))
 
   const EXPECTED_LOG = [
-    [ESON_SMALL, [], ESON_SMALL],
-    [ESON_SMALL.props[0].value, ['obj'], ESON_SMALL],
-    [ESON_SMALL.props[0].value.props[0].value, ['obj', 'a'], ESON_SMALL],
-    [ESON_SMALL.props[1].value, ['arr'], ESON_SMALL],
-    [ESON_SMALL.props[1].value.items[0].value, ['arr', '0'], ESON_SMALL],
+    [ESON2, [], ESON2],
+    [ESON2.props[0].value, ['obj'], ESON2],
+    [ESON2.props[0].value.props[0].value, ['obj', 'a'], ESON2],
+    [ESON2.props[1].value, ['arr'], ESON2],
+    [ESON2.props[1].value.items[0].value, ['arr', '0'], ESON2],
   ]
 
   log.forEach((row, index) => {
     t.deepEqual(log[index], EXPECTED_LOG[index], 'should have equal log at index ' + index )
   })
   t.deepEqual(log, EXPECTED_LOG)
-  t.not(transformed, ESON_SMALL)
-  t.not(transformed.props[0].value, ESON_SMALL.props[0].value)
-  t.not(transformed.props[0].value.props[0].value, ESON_SMALL.props[0].value.props[0].value)
-  t.is(transformed.props[1].value, ESON_SMALL.props[1].value)
-  t.is(transformed.props[1].value.items[0].value, ESON_SMALL.props[1].value.items[0].value)
+  t.not(transformed, ESON2)
+  t.not(transformed.props[0].value, ESON2.props[0].value)
+  t.not(transformed.props[0].value.props[0].value, ESON2.props[0].value.props[0].value)
+  t.is(transformed.props[1].value, ESON2.props[1].value)
+  t.is(transformed.props[1].value.items[0].value, ESON2.props[1].value.items[0].value)
 
 })
 
@@ -1005,8 +148,8 @@ test('traverse', t => {
   // {obj: {a: 2}, arr: [3]}
 
   let log = []
-  const returnValue = traverse(ESON_SMALL, function (value, path, root) {
-    t.is(root, ESON_SMALL)
+  const returnValue = traverse(ESON2, function (value, path, root) {
+    t.is(root, ESON2)
 
     log.push([value, path, root])
   })
@@ -1014,11 +157,11 @@ test('traverse', t => {
   t.is(returnValue, undefined)
 
   const EXPECTED_LOG = [
-    [ESON_SMALL, [], ESON_SMALL],
-    [ESON_SMALL.props[0].value, ['obj'], ESON_SMALL],
-    [ESON_SMALL.props[0].value.props[0].value, ['obj', 'a'], ESON_SMALL],
-    [ESON_SMALL.props[1].value, ['arr'], ESON_SMALL],
-    [ESON_SMALL.props[1].value.items[0].value, ['arr', '0'], ESON_SMALL],
+    [ESON2, [], ESON2],
+    [ESON2.props[0].value, ['obj'], ESON2],
+    [ESON2.props[0].value.props[0].value, ['obj', 'a'], ESON2],
+    [ESON2.props[1].value, ['arr'], ESON2],
+    [ESON2.props[1].value.items[0].value, ['arr', '0'], ESON2],
   ]
 
   log.forEach((row, index) => {
@@ -1029,7 +172,7 @@ test('traverse', t => {
 
 
 test('search', t => {
-  const searchResults = search(ESON, 'L')
+  const searchResults = search(ESON1, 'L')
   // printJSON(searchResults)
 
   t.deepEqual(searchResults, [
@@ -1042,10 +185,18 @@ test('search', t => {
   ])
 
   const activeSearchResult = searchResults[0]
-  const updatedData = applySearchResults(ESON, searchResults, activeSearchResult)
+  const updatedData = applySearchResults(ESON1, searchResults, activeSearchResult)
   // printJSON(updatedData)
 
-  t.deepEqual(updatedData, ESON_SEARCH_L)
+  let expected = ESON1
+  expected = setIn(expected, toEsonPath(ESON1, ['obj', 'arr', '2', 'last']).slice(0, -1).concat(['searchResult']), 'active')
+  expected = setIn(expected, toEsonPath(ESON1, ['str']).concat(['searchResult']), 'normal')
+  expected = setIn(expected, toEsonPath(ESON1, ['nill']).slice(0, -1).concat(['searchResult']), 'normal')
+  expected = setIn(expected, toEsonPath(ESON1, ['nill']).concat(['searchResult']), 'normal')
+  expected = setIn(expected, toEsonPath(ESON1, ['bool']).slice(0, -1).concat(['searchResult']), 'normal')
+  expected = setIn(expected, toEsonPath(ESON1, ['bool']).concat(['searchResult']), 'normal')
+
+  t.deepEqual(updatedData, expected)
 })
 
 test('nextSearchResult', t => {
@@ -1109,9 +260,15 @@ test('selection (object)', t => {
     start: {path: ['obj', 'arr', '2', 'last']},
     end: {path: ['nill']}
   }
-  const result = applySelection(ESON, selection)
 
-  t.deepEqual(result, ESON_SELECTED_OBJECT)
+  const actual = applySelection(ESON1, selection)
+
+  let expected = ESON1
+  expected = setIn(expected, toEsonPath(ESON1, ['obj']).concat(['selected']), true)
+  expected = setIn(expected, toEsonPath(ESON1, ['str']).concat(['selected']), true)
+  expected = setIn(expected, toEsonPath(ESON1, ['nill']).concat(['selected']), true)
+
+  t.deepEqual(actual, expected)
 })
 
 test('selection (array)', t => {
@@ -1120,9 +277,13 @@ test('selection (array)', t => {
     end: {path: ['obj', 'arr', '0']} // note the "wrong" order of start and end
   }
 
-  const result = applySelection(ESON, selection)
+  const actual = applySelection(ESON1, selection)
 
-  t.deepEqual(result, ESON_SELECTED_ARRAY)
+  let expected = ESON1
+  expected = setIn(expected, toEsonPath(ESON1, ['obj', 'arr', '0']).concat(['selected']), true)
+  expected = setIn(expected, toEsonPath(ESON1, ['obj', 'arr', '1']).concat(['selected']), true)
+
+  t.deepEqual(actual, expected)
 })
 
 test('selection (value)', t => {
@@ -1131,20 +292,24 @@ test('selection (value)', t => {
     end: {path: ['obj', 'arr', '2', 'first']}
   }
 
-  const result = applySelection(ESON, selection)
+  const actual = applySelection(ESON1, selection)
 
-  t.deepEqual(result, ESON_SELECTED_VALUE)
+  const expected = setIn(ESON1, toEsonPath(ESON1, ['obj', 'arr', '2', 'first']).concat(['selected']), true)
+
+  t.deepEqual(actual, expected)
 })
 
 test('selection (single parent)', t => {
   const selection = {
-    start: {path: ['obj', 'arr', '2']},
-    end: {path: ['obj', 'arr', '2']}
+    start: {path: ['obj', 'arr']},
+    end: {path: ['obj', 'arr']}
   }
 
-  const result = applySelection(ESON, selection)
+  const actual = applySelection(ESON1, selection)
 
-  t.deepEqual(result, ESON_SELECTED_PARENT)
+  const expected = setIn(ESON1, toEsonPath(ESON1, ['obj', 'arr']).concat(['selected']), true)
+
+  t.deepEqual(actual, expected)
 })
 
 // helper function to replace all id properties with a constant value
@@ -1170,4 +335,8 @@ function printJSON (json, message = null) {
     console.log(message)
   }
   console.log(JSON.stringify(json, null, 2))
+}
+
+function loadJSON (filename) {
+  return JSON.parse(readFileSync(__dirname + '/' + filename, 'utf-8'))
 }

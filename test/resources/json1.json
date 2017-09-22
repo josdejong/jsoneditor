@@ -1,0 +1,8 @@
+{
+  "obj": {
+    "arr": [1,2, {"first":3,"last":4}]
+  },
+  "str": "hello world",
+  "nill": null,
+  "bool": false
+}
