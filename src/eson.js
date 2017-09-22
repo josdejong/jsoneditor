@@ -5,13 +5,13 @@
  * All functions are pure and don't mutate the ESON.
  */
 
-import { setIn, getIn } from './utils/immutabilityHelpers'
+import { setIn, getIn, updateIn } from './utils/immutabilityHelpers'
 import { isObject } from  './utils/typeUtils'
 import { last, allButLast } from  './utils/arrayUtils'
 import isEqual from 'lodash/isEqual'
 
 import type {
-  ESON, ESONObject, ESONArrayItem, ESONPointer, ESONType, ESONPath,
+  ESON, ESONObject, ESONArrayItem, ESONPointer, ESONSelection, ESONType, ESONPath,
   Path,
   JSONPath, JSONType
 } from './types'
@@ -222,7 +222,7 @@ export function search (eson: ESON, text: string): ESONPointer[] {
           const parentPath = allButLast(path)
           const parent = getIn(eson, toEsonPath(eson, parentPath))
           if (parent.type === 'Object') {
-            results.push({path, type: 'property'})
+            results.push({path, field: 'property'})
           }
         }
       }
@@ -230,7 +230,7 @@ export function search (eson: ESON, text: string): ESONPointer[] {
       // check value
       if (value.type === 'value') {
         if (containsCaseInsensitive(value.value, text)) {
-          results.push({path, type: 'value'})
+          results.push({path, field: 'value'})
         }
       }
     })
@@ -290,17 +290,17 @@ export function previousSearchResult (searchResults: ESONPointer[], current: ESO
 /**
  * Merge searchResults into the eson object
  */
-export function addSearchResults (eson: ESON, searchResults: ESONPointer[], activeSearchResult: ESONPointer) {
+export function applySearchResults (eson: ESON, searchResults: ESONPointer[], activeSearchResult: ESONPointer) {
   let updatedEson = eson
 
   searchResults.forEach(function (searchResult) {
-    if (searchResult.type === 'value') {
+    if (searchResult.field === 'value') {
       const esonPath = toEsonPath(updatedEson, searchResult.path).concat('searchResult')
       const value = isEqual(searchResult, activeSearchResult) ? 'active' : 'normal'
       updatedEson = setIn(updatedEson, esonPath, value)
     }
 
-    if (searchResult.type === 'property') {
+    if (searchResult.field === 'property') {
       const esonPath = toEsonPath(updatedEson, searchResult.path)
       const propertyPath = allButLast(esonPath).concat('searchResult')
       const value = isEqual(searchResult, activeSearchResult) ? 'active' : 'normal'
@@ -312,13 +312,65 @@ export function addSearchResults (eson: ESON, searchResults: ESONPointer[], acti
 }
 
 /**
- * Do a case insensitive search for a search text in a text
- * @param {String} text
- * @param {String} search
- * @return {boolean} Returns true if `search` is found in `text`
+ * Merge searchResults into the eson object
  */
-export function containsCaseInsensitive (text: string, search: string): boolean {
-  return String(text).toLowerCase().indexOf(search.toLowerCase()) !== -1
+export function applySelection (eson: ESON, selection: ESONSelection) {
+  if (!selection || !selection.start || !selection.end) {
+    return eson
+  }
+
+  // find the parent node shared by both start and end of the selection
+  const rootPath = findSharedPath(selection.start.path, selection.end.path)
+  const rootEsonPath = toEsonPath(eson, rootPath)
+
+  if (rootPath.length === selection.start.path.length || rootPath.length === selection.end.path.length) {
+    // select the root itself
+    return setIn(eson, rootEsonPath.concat(['selected']), true)
+  }
+  else {
+    // select multiple childs of an object or array
+    return updateIn(eson, rootEsonPath, (root) => {
+      if (root.type === 'Object') {
+          const startIndex = findPropertyIndex(root, selection.start.path[rootPath.length])
+          const endIndex   = findPropertyIndex(root, selection.end.path[rootPath.length])
+          const minIndex = Math.min(startIndex, endIndex)
+          const maxIndex = Math.max(startIndex, endIndex) + 1 // include max index itself
+
+          const propsBefore = root.props.slice(0, minIndex)
+          const propsUpdated = root.props.slice(minIndex, maxIndex)
+              .map((prop, index) => setIn(prop, ['value', 'selected'], true))
+          const propsAfter = root.props.slice(maxIndex)
+
+          return setIn(root, ['props'], propsBefore.concat(propsUpdated, propsAfter))
+      }
+      else if (root.type === 'Array') {
+        const startIndex = parseInt(selection.start.path[rootPath.length])
+        const endIndex   = parseInt(selection.end.path[rootPath.length])
+        const minIndex = Math.min(startIndex, endIndex)
+        const maxIndex = Math.max(startIndex, endIndex) + 1 // include max index itself
+
+        const itemsBefore = root.items.slice(0, minIndex)
+        const itemsUpdated = root.items.slice(minIndex, maxIndex)
+            .map((item, index) => setIn(item, ['value', 'selected'], true))
+        const itemsAfter = root.items.slice(maxIndex)
+
+        return setIn(root, ['items'], itemsBefore.concat(itemsUpdated, itemsAfter))
+      }
+    })
+  }
+}
+
+/**
+ * Find the common path of two paths.
+ * For example findCommonRoot(['arr', '1', 'name'], ['arr', '1', 'address', 'contact']) returns ['arr', '1']
+ */
+function findSharedPath (path1: JSONPath, path2: JSONPath): JSONPath {
+  let i = 0;
+  while (i < path1.length && path1[i] === path2[i]) {
+    i++;
+  }
+
+  return path1.slice(0, i)
 }
 
 /**
@@ -519,6 +571,16 @@ export function compileJSONPointer (path: Path) {
 }
 
 // TODO: move getId and createUniqueId to a separate file
+
+/**
+ * Do a case insensitive search for a search text in a text
+ * @param {String} text
+ * @param {String} search
+ * @return {boolean} Returns true if `search` is found in `text`
+ */
+export function containsCaseInsensitive (text: string, search: string): boolean {
+  return String(text).toLowerCase().indexOf(search.toLowerCase()) !== -1
+}
 
 /**
  * Get a new "unique" id. Id's are created from an incremental counter.

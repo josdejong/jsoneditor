@@ -11,7 +11,8 @@ import { enrichSchemaError } from '../utils/schemaUtils'
 import {
     jsonToEson, esonToJson, toEsonPath, pathExists,
     expand, expandPath, addErrors,
-    search, addSearchResults, nextSearchResult, previousSearchResult,
+    search, applySearchResults, nextSearchResult, previousSearchResult,
+    applySelection,
     compileJSONPointer
 } from '../eson'
 import { patchEson } from '../patchEson'
@@ -93,6 +94,11 @@ export default class TreeMode extends Component {
       search: {
         text: '',
         active: null // active search result
+      },
+
+      selection: {
+        start: null, // ESONPointer
+        end: null,   // ESONPointer
       }
     }
   }
@@ -162,7 +168,10 @@ export default class TreeMode extends Component {
     // TODO: performance improvements in search would be nice though it's acceptable right now
     const searchResults = this.state.search.text ? search(data, this.state.search.text) : null
     if (searchResults) {
-      data = addSearchResults(data, searchResults, this.state.search.active)
+      data = applySearchResults(data, searchResults, this.state.search.active)
+    }
+    if (this.state.selection) {
+      data = applySelection(data, this.state.selection)
     }
 
     return h('div', {
@@ -178,7 +187,7 @@ export default class TreeMode extends Component {
             className: 'jsoneditor-contents jsoneditor-tree-contents',
             id: this.id
       },
-        h('ul', {className: 'jsoneditor-list jsoneditor-root'},
+        h('ul', {className: 'jsoneditor-list jsoneditor-root' + (data.selected ? ' jsoneditor-selected' : '')},
           h(Node, {
             data,
             events: state.events,

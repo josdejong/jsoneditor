@@ -52,7 +52,7 @@ export default class JSONNode extends Component {
     if (data.expanded) {
       if (data.props.length > 0) {
         const props = data.props.map(prop => {
-          return h('li', {key: prop.id},
+          return h('li', { key: prop.id, className: (prop.value.selected ? ' jsoneditor-selected' : '') },
             h(this.constructor, {
               path: this.props.path.concat(prop.name),
               prop,
@@ -98,7 +98,7 @@ export default class JSONNode extends Component {
     if (data.expanded) {
       if (data.items.length > 0) {
         const items = data.items.map((item, index) => {
-          return h('li', {key : item.id},
+          return h('li', { key : item.id, className: (item.value.selected ? ' jsoneditor-selected' : '')},
             h(this.constructor, {
               path: this.props.path.concat(String(index)),
               index,

@@ -33,7 +33,7 @@ export type JSONArrayType = JSONType[]
 /********************** TYPES FOR THE ESON OBJECT MODEL *************************/
 
 export type SearchResultStatus = 'normal' | 'active'
-export type ESONPointerType = 'value' | 'property'
+export type ESONPointerField = 'value' | 'property'
 
 export type ESONObjectProperty = {
   id: number,
@@ -50,18 +50,21 @@ export type ESONArrayItem = {
 export type ESONObject = {
   type: 'Object',
   expanded?: boolean,
+  selected?: boolean,
   props: ESONObjectProperty[]
 }
 
 export type ESONArray = {
   type: 'Array',
   expanded?: boolean,
+  selected?: boolean,
   items: ESONArrayItem[]
 }
 
 export type ESONValue = {
   type: 'value' | 'string',
   value?: any,
+  selected?: boolean,
   searchResult?: SearchResultStatus
 }
 
@@ -74,8 +77,13 @@ export type JSONPath = string[]
 export type ESONPath = string[]
 
 export type ESONPointer = {
-  path: ESONPath,
-  type: ESONPointerType
+  path: JSONPath, // TODO: change path to an ESONPath?
+  field?: ESONPointerField
+}
+
+export type ESONSelection = {
+  start: ESONPointer,
+  end: ESONPointer
 }
 
 // TODO: ESONPointer.path is an array, JSONSchemaError.path is a string -> make this consistent
