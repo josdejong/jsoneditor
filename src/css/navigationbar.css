@@ -6,9 +6,8 @@ div.jsoneditor-navigation-bar {
   -moz-box-sizing: border-box;
   -webkit-box-sizing: border-box;
   box-sizing: border-box;
-  color: #1A1A1A;
-  background-color: #e6e6e6;
-  border-bottom: 1px solid #3883fa;
+  color: #808080;
+  background-color: #dcdcdc;
 }
 
 div.jsoneditor-navigation-bar:before {

@@ -1,20 +1,9 @@
 div.jsoneditor-statusbar {
-  line-height: 16px;
+  line-height: 17px;
   height: 17px;
-  color: #1A1A1A;
-  background-color: #e6e6e6;
+  color: #808080;
+  background-color: #dcdcdc;
   margin-top: -17px;
-}
-
-div.jsoneditor-statusbar:before {
-  content: '';
-  width: 100%;
-  height: 1px;
-  background-color: #3883fa;  
-  position: absolute;
-  left: 0;
-  margin-top: 1px;
-  z-index: 999;
 }
 
 div.jsoneditor-statusbar > .jsoneditor-curserinfo-label {
