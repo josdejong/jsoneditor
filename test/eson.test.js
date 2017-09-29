@@ -1,11 +1,11 @@
 import { readFileSync } from 'fs'
 import test from 'ava';
-import { setIn } from '../src/utils/immutabilityHelpers'
+import { setIn, getIn } from '../src/utils/immutabilityHelpers'
 import {
     jsonToEson, esonToJson, toEsonPath, pathExists, transform, traverse,
     parseJSONPointer, compileJSONPointer,
     expand, addErrors, search, applySearchResults, nextSearchResult, previousSearchResult,
-    applySelection
+    applySelection, getSelection
 } from '../src/eson'
 
 const JSON1 = loadJSON('./resources/json1.json')
@@ -288,22 +288,18 @@ test('selection (value)', t => {
   }
 
   const actual = applySelection(ESON1, selection)
-
   const expected = setIn(ESON1, toEsonPath(ESON1, ['obj', 'arr', '2', 'first']).concat(['selected']), true)
-
   t.deepEqual(actual, expected)
 })
 
-test('selection (single parent)', t => {
+test('selection (node)', t => {
   const selection = {
     start: {path: ['obj', 'arr']},
     end: {path: ['obj', 'arr']}
   }
 
   const actual = applySelection(ESON1, selection)
-
   const expected = setIn(ESON1, toEsonPath(ESON1, ['obj', 'arr']).concat(['selected']), true)
-
   t.deepEqual(actual, expected)
 })
 

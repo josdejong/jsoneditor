@@ -324,40 +324,41 @@ export function applySelection (eson: ESON, selection: ESONSelection) {
   const rootEsonPath = toEsonPath(eson, rootPath)
 
   if (rootPath.length === selection.start.path.length || rootPath.length === selection.end.path.length) {
-    // select the root itself
+    // select a single node
     return setIn(eson, rootEsonPath.concat(['selected']), true)
   }
   else {
     // select multiple childs of an object or array
     return updateIn(eson, rootEsonPath, (root) => {
-      if (root.type === 'Object') {
-          const startIndex = findPropertyIndex(root, selection.start.path[rootPath.length])
-          const endIndex   = findPropertyIndex(root, selection.end.path[rootPath.length])
-          const minIndex = Math.min(startIndex, endIndex)
-          const maxIndex = Math.max(startIndex, endIndex) + 1 // include max index itself
+      const start = selection.start.path[rootPath.length]
+      const end = selection.end.path[rootPath.length]
+      const { minIndex, maxIndex } = findSelectionIndices(root, start, end)
 
-          const propsBefore = root.props.slice(0, minIndex)
-          const propsUpdated = root.props.slice(minIndex, maxIndex)
-              .map((prop, index) => setIn(prop, ['value', 'selected'], true))
-          const propsAfter = root.props.slice(maxIndex)
+      const childsKey = (root.type === 'Object') ? 'props' : 'items' // property name of the array with props/items
+      const childsBefore = root[childsKey].slice(0, minIndex)
+      const childsUpdated = root[childsKey].slice(minIndex, maxIndex)
+          .map((child, index) => setIn(child, ['value', 'selected'], true))
+      const childsAfter = root[childsKey].slice(maxIndex)
 
-          return setIn(root, ['props'], propsBefore.concat(propsUpdated, propsAfter))
-      }
-      else if (root.type === 'Array') {
-        const startIndex = parseInt(selection.start.path[rootPath.length])
-        const endIndex   = parseInt(selection.end.path[rootPath.length])
-        const minIndex = Math.min(startIndex, endIndex)
-        const maxIndex = Math.max(startIndex, endIndex) + 1 // include max index itself
-
-        const itemsBefore = root.items.slice(0, minIndex)
-        const itemsUpdated = root.items.slice(minIndex, maxIndex)
-            .map((item, index) => setIn(item, ['value', 'selected'], true))
-        const itemsAfter = root.items.slice(maxIndex)
-
-        return setIn(root, ['items'], itemsBefore.concat(itemsUpdated, itemsAfter))
-      }
+      return setIn(root, [childsKey], childsBefore.concat(childsUpdated, childsAfter))
     })
   }
+}
+
+/**
+ * Find the min and max index of a start and end child.
+ * Start and end can be a property name in case of an Object,
+ * or a matrix index (string with a number) in case of an Array.
+ */
+export function findSelectionIndices (root: ESON, start: string, end: string) : { minIndex: number, maxIndex: number } {
+  // if no object we assume it's an Array
+  const startIndex = root.type === 'Object' ? findPropertyIndex(root, start) : parseInt(start)
+  const endIndex   = root.type === 'Object' ? findPropertyIndex(root, end)   : parseInt(end)
+
+  const minIndex = Math.min(startIndex, endIndex)
+  const maxIndex = Math.max(startIndex, endIndex) + 1 // include max index itself
+
+  return { minIndex, maxIndex }
 }
 
 /**
