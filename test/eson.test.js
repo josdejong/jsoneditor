@@ -8,11 +8,6 @@ import {
     applySelection
 } from '../src/eson'
 
-
-// TODO: move all JSON documents in separate json files to keep the test readable?
-
-// TODO: instead of all slightly different copies of ESON, built them up via setIn, updateIn based on ESON
-
 const JSON1 = loadJSON('./resources/json1.json')
 const ESON1 = loadJSON('./resources/eson1.json')
 const ESON2 = loadJSON('./resources/eson2.json')

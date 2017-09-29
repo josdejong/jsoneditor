@@ -29,7 +29,8 @@
     "brace": "0.9.1",
     "javascript-natural-sort": "0.7.1",
     "lodash": "4.17.4",
-    "prop-types": "15.5.10"
+    "prop-types": "15.5.10",
+    "react-hammerjs": "0.5.0"
   },
   "devDependencies": {
     "ava": "0.17.0",

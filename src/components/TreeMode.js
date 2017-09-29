@@ -1,6 +1,8 @@
 // @flow weak
 
 import { createElement as h, Component } from 'react'
+import isEqual from 'lodash/isEqual'
+import Hammer from 'react-hammerjs'
 import jump from '../assets/jump.js/src/jump'
 import Ajv from 'ajv'
 
@@ -13,7 +15,7 @@ import {
     expand, expandPath, addErrors,
     search, applySearchResults, nextSearchResult, previousSearchResult,
     applySelection,
-    compileJSONPointer
+    compileJSONPointer, parseJSONPointer
 } from '../eson'
 import { patchEson } from '../patchEson'
 import {
@@ -32,7 +34,7 @@ import {
 import { createFindKeyBinding } from '../utils/keyBindings'
 import { KEY_BINDINGS } from '../constants'
 
-import type { ESON, ESONPatch } from '../types'
+import type { ESON, ESONPatch, JSONPath } from '../types'
 
 const AJV_OPTIONS = {
   allErrors: true,
@@ -182,19 +184,26 @@ export default class TreeMode extends Component {
       this.renderMenu(searchResults),
 
       h('div', {
-            key: 'contents',
-            ref: 'contents',
-            className: 'jsoneditor-contents jsoneditor-tree-contents',
-            id: this.id
+        key: 'contents',
+        ref: 'contents',
+        className: 'jsoneditor-contents jsoneditor-tree-contents'
       },
-        h('ul', {className: 'jsoneditor-list jsoneditor-root' + (data.selected ? ' jsoneditor-selected' : '')},
-          h(Node, {
-            data,
-            events: state.events,
-            options: props,
-            path: [],
-            prop: null
-          })
+        h(Hammer, {
+              id: this.id,
+              direction:  'DIRECTION_VERTICAL',
+              onTap: this.handleTap,
+              onPanStart: this.handlePanStart,
+              onPan: this.handlePan
+        },
+          h('ul', {className: 'jsoneditor-list jsoneditor-root' + (data.selected ? ' jsoneditor-selected' : '')},
+            h(Node, {
+              data,
+              events: state.events,
+              options: props,
+              path: [],
+              prop: null
+            })
+          )
         )
       )
     ])
@@ -492,6 +501,42 @@ export default class TreeMode extends Component {
     const result = this.patch(actions)
 
     this.emitOnChange (actions, result.revert, result.data)
+  }
+
+  handleTap = (event) => {
+    if (this.state.selection) {
+      this.setState({ selection: null })
+    }
+  }
+
+  handlePanStart = (event) => {
+    const path = this.findDataPathFromElement(event.target.firstChild)
+    if (path) {
+      this.setState({
+        selection: {
+          start: {path},
+          end: {path}
+        }
+      })
+    }
+  }
+
+  handlePan = (event) => {
+    const path = this.findDataPathFromElement(event.target.firstChild)
+    if (path && this.state.selection && !isEqual(path, this.state.selection.end.path)) {
+      this.setState({
+        selection: {
+          start: this.state.selection.start,
+          end: {path}
+        }
+      })
+    }
+  }
+
+  findDataPathFromElement (element: Element) : JSONPath | null {
+    // The .replace is to change paths like `/myarray/-` into `/myarray`
+    const attr = element && element.getAttribute && element.getAttribute('data-path').replace(/\/-$/, '')
+    return attr ? parseJSONPointer(attr) : null
   }
 
   /**

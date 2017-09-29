@@ -145,7 +145,7 @@ export default class JSONNode extends Component {
    */
   renderAppend (text) {
     return h('div', {
-        'data-path': compileJSONPointer(this.props.path) + '/#',
+        'data-path': compileJSONPointer(this.props.path) + '/-',
         className: 'jsoneditor-node',
         onKeyDown: this.handleKeyDownAppend
       }, [
