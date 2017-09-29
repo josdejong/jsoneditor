@@ -1,6 +1,9 @@
-import test from 'ava';
-import { jsonToEson, esonToJson } from '../src/eson'
-import { patchEson } from '../src/patchEson'
+import { readFileSync } from 'fs'
+import test from 'ava'
+import { jsonToEson, esonToJson, toEsonPath } from '../src/eson'
+import { patchEson, cut } from '../src/patchEson'
+
+const ESON1 = loadJSON('./resources/eson1.json')
 
 test('jsonpatch add', t => {
   const json = {
@@ -500,4 +503,17 @@ function replaceIds (data, value = '[ID]') {
       replaceIds(item.value, value)
     })
   }
+}
+
+// helper function to print JSON in the console
+function printJSON (json, message = null) {
+  if (message) {
+    console.log(message)
+  }
+  console.log(JSON.stringify(json, null, 2))
+}
+
+// helper function to load a JSON file
+function loadJSON (filename) {
+  return JSON.parse(readFileSync(__dirname + '/' + filename, 'utf-8'))
 }

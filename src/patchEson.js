@@ -1,12 +1,13 @@
 import isEqual from 'lodash/isEqual'
+import initial from 'lodash/initial'
 
-import type { ESON, Path, JSONPatch, ESONPatchAction, ESONPatchOptions, ESONPatchResult } from './types'
+import type { ESON, Path, ESONPatch, ESONPatchOptions, ESONPatchResult, ESONSelection } from './types'
 import { setIn, updateIn, getIn, deleteIn, insertAt } from './utils/immutabilityHelpers'
-import { allButLast } from  './utils/arrayUtils'
 import {
   jsonToEson, esonToJson, toEsonPath,
   parseJSONPointer, compileJSONPointer,
-  expandAll, pathExists, resolvePathIndex, findPropertyIndex, findNextProp, getId
+  expandAll, pathExists, resolvePathIndex, findPropertyIndex, findNextProp, getId,
+  pathsFromSelection
 } from './eson'
 
 /**
@@ -17,7 +18,7 @@ import {
  *                                         what nodes must be expanded
  * @return {{data: ESON, revert: Object[], error: Error | null}}
  */
-export function patchEson (eson: ESON, patch: ESONPatchAction[], expand = expandAll) {
+export function patchEson (eson: ESON, patch: ESONPatch, expand = expandAll) {
   let updatedEson = eson
   let revert = []
 
@@ -99,11 +100,11 @@ export function patchEson (eson: ESON, patch: ESONPatchAction[], expand = expand
       }
 
       default: {
-        // unknown jsonpatch operation. Cancel the whole patch and return an error
+        // unknown ESONPatch operation. Cancel the whole patch and return an error
         return {
           data: eson,
           revert: [],
-          error: new Error('Unknown jsonpatch op ' + JSON.stringify(action.op))
+          error: new Error('Unknown ESONPatch op ' + JSON.stringify(action.op))
         }
       }
     }
@@ -123,7 +124,7 @@ export function patchEson (eson: ESON, patch: ESONPatchAction[], expand = expand
  * @param {ESON} data
  * @param {Path} path
  * @param {ESON} value
- * @return {{data: ESON, revert: JSONPatch}}
+ * @return {{data: ESON, revert: ESONPatch}}
  */
 export function replace (data: ESON, path: Path, value: ESON) {
   const esonPath = toEsonPath(data, path)
@@ -146,7 +147,7 @@ export function replace (data: ESON, path: Path, value: ESON) {
  * Remove an item or property
  * @param {ESON} data
  * @param {string} path
- * @return {{data: ESON, revert: JSONPatch}}
+ * @return {{data: ESON, revert: ESONPatch}}
  */
 export function remove (data: ESON, path: string) {
   // console.log('remove', path)
@@ -198,13 +199,13 @@ export function remove (data: ESON, path: string) {
 }
 
 /**
- * Remove redundant actions from a JSONPatch array.
+ * Remove redundant actions from a ESONPatch array.
  * Actions are redundant when they are followed by an action
  * acting on the same path.
- * @param {JSONPatch} patch
+ * @param {ESONPatch} patch
  * @return {Array}
  */
-export function simplifyPatch(patch: JSONPatch) {
+export function simplifyPatch(patch: ESONPatch) {
   const simplifiedPatch = []
   const paths = {}
 
@@ -235,7 +236,7 @@ export function simplifyPatch(patch: JSONPatch) {
  * @param {ESON} value
  * @param {{before?: string}} [options]
  * @param {number} [id]   Optional id for the new item
- * @return {{data: ESON, revert: JSONPatch}}
+ * @return {{data: ESON, revert: ESONPatch}}
  * @private
  */
 export function add (data: ESON, path: string, value: ESON, options, id = getId()) {
@@ -303,7 +304,7 @@ export function add (data: ESON, path: string, value: ESON, options, id = getId(
  * @param {string} path
  * @param {string} from
  * @param {{before?: string}} [options]
- * @return {{data: ESON, revert: JSONPatch}}
+ * @return {{data: ESON, revert: ESONPatch}}
  * @private
  */
 export function copy (data: ESON, path: string, from: string, options) {
@@ -318,17 +319,17 @@ export function copy (data: ESON, path: string, from: string, options) {
  * @param {string} path
  * @param {string} from
  * @param {{before?: string}} [options]
- * @return {{data: ESON, revert: JSONPatch}}
+ * @return {{data: ESON, revert: ESONPatch}}
  * @private
  */
 export function move (data: ESON, path: string, from: string, options) {
   const fromArray = parseJSONPointer(from)
-  const prop = getIn(data, allButLast(toEsonPath(data, fromArray)))
+  const prop = getIn(data, initial(toEsonPath(data, fromArray)))
   const dataValue = prop.value
   const id = prop.id // we want to use the existing id in case the move is a renaming a property
   // FIXME: only reuse the existing id when move is renaming a property in the same object
 
-  const parentPathFrom = allButLast(fromArray)
+  const parentPathFrom = initial(fromArray)
   const parent = getIn(data, toEsonPath(data, parentPathFrom))
 
   const result1 = remove(data, from)

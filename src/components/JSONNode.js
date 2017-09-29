@@ -1,6 +1,7 @@
 // @flow weak
 
 import { createElement as h, Component } from 'react'
+import initial from 'lodash/initial'
 
 import ActionMenu from './menu/ActionMenu'
 import { escapeHTML, unescapeHTML } from '../utils/stringUtils'
@@ -477,7 +478,7 @@ export default class JSONNode extends Component {
 
   /** @private */
   handleChangeProperty = (event) => {
-    const parentPath = allButLast(this.props.path)
+    const parentPath = initial(this.props.path)
     const oldProp = this.props.prop.name
     const newProp = unescapeHTML(getInnerText(event.target))
 
@@ -594,11 +595,4 @@ export default class JSONNode extends Component {
         ? stringValue
         : stringConvert(stringValue)
   }
-}
-
-/**
- * Returns a copy of the array having the last item removed
- */
-function allButLast (array: []): any {
-  return array.slice(0, array.length - 1)
 }

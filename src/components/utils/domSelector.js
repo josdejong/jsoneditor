@@ -193,7 +193,8 @@ export function findEditorContainer (element) {
   return findParentWithAttribute (element, EDITOR_CONTAINER_ATTRIBUTE, 'true')
 }
 
-function findBaseNode (element) {
+// TODO: find a better name for this function
+export function findBaseNode (element) {
   return findParentWithClassName (element, NODE_CONTAINER_CLASS_NAME)
 }
 

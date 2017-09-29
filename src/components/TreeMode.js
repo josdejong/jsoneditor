@@ -2,19 +2,22 @@
 
 import { createElement as h, Component } from 'react'
 import isEqual from 'lodash/isEqual'
+import reverse from 'lodash/reverse'
+import initial from 'lodash/initial'
+import last from 'lodash/last'
 import Hammer from 'react-hammerjs'
 import jump from '../assets/jump.js/src/jump'
 import Ajv from 'ajv'
 
 import { updateIn, getIn, setIn } from '../utils/immutabilityHelpers'
 import { parseJSON } from '../utils/jsonUtils'
-import { allButLast } from '../utils/arrayUtils'
+import { findUniqueName } from '../utils/stringUtils'
 import { enrichSchemaError } from '../utils/schemaUtils'
 import {
     jsonToEson, esonToJson, toEsonPath, pathExists,
     expand, expandPath, addErrors,
     search, applySearchResults, nextSearchResult, previousSearchResult,
-    applySelection,
+    applySelection, pathsFromSelection, contentsFromPaths,
     compileJSONPointer, parseJSONPointer
 } from '../eson'
 import { patchEson } from '../patchEson'
@@ -29,12 +32,12 @@ import ModeButton from './menu/ModeButton'
 import Search from './menu/Search'
 import {
   moveUp, moveDown, moveLeft, moveRight, moveDownSibling, moveHome, moveEnd,
-  findNode, selectFind, searchHasFocus, setSelection
+  findNode, findBaseNode, selectFind, searchHasFocus, setSelection
 } from './utils/domSelector'
 import { createFindKeyBinding } from '../utils/keyBindings'
 import { KEY_BINDINGS } from '../constants'
 
-import type { ESON, ESONPatch, JSONPath } from '../types'
+import type { ESON, ESONPatch, JSONPath, ESONSelection } from '../types'
 
 const AJV_OPTIONS = {
   allErrors: true,
@@ -50,19 +53,7 @@ export default class TreeMode extends Component {
   id: number
   state: Object
 
-  keyDownActions = {
-    'up': (event) => moveUp(event.target),
-    'down': (event) => moveDown(event.target),
-    'left': (event) => moveLeft(event.target),
-    'right': (event) => moveRight(event.target),
-    'home': (event) => moveHome(event.target),
-    'end': (event) => moveEnd(event.target),
-    'undo': (event) => this.undo(),
-    'redo': (event) => this.redo(),
-    'find': (event) => selectFind(event.target),
-    'findNext': (event) => this.handleNext(),
-    'findPrevious': (event) => this.handlePrevious()
-  }
+  keyDownActions = null
 
   constructor (props) {
     super(props)
@@ -70,6 +61,23 @@ export default class TreeMode extends Component {
     const data = jsonToEson(this.props.data || {}, TreeMode.expandAll, [])
 
     this.id = Math.round(Math.random() * 1e5) // TODO: create a uuid here?
+
+    this.keyDownActions = {
+      'up': this.moveUp,
+      'down': this.moveDown,
+      'left': this.moveLeft,
+      'right': this.moveRight,
+      'home': this.moveHome,
+      'end': this.moveEnd,
+      'cut': this.handleCut,
+      'copy': this.handleCopy,
+      'paste': this.handlePaste,
+      'undo': this.handleUndo,
+      'redo': this.handleRedo,
+      'find': this.handleFocusFind,
+      'findNext': this.handleNext,
+      'findPrevious': this.handlePrevious
+    }
 
     this.state = {
       data,
@@ -101,7 +109,9 @@ export default class TreeMode extends Component {
       selection: {
         start: null, // ESONPointer
         end: null,   // ESONPointer
-      }
+      },
+
+      clipboard: null // array entries {prop: string, value: JSON}
     }
   }
 
@@ -193,7 +203,8 @@ export default class TreeMode extends Component {
               direction:  'DIRECTION_VERTICAL',
               onTap: this.handleTap,
               onPanStart: this.handlePanStart,
-              onPan: this.handlePan
+              onPan: this.handlePan,
+              onPanEnd: this.handlePanEnd
         },
           h('ul', {className: 'jsoneditor-list jsoneditor-root' + (data.selected ? ' jsoneditor-selected' : '')},
             h(Node, {
@@ -304,27 +315,22 @@ export default class TreeMode extends Component {
     const action = this.keyDownActions[keyBinding]
 
     if (action) {
-      event.preventDefault()
       action(event)
     }
   }
 
-  /** @private */
   handleChangeValue = (path, value) => {
     this.handlePatch(changeValue(this.state.data, path, value))
   }
 
-  /** @private */
   handleChangeProperty = (parentPath, oldProp, newProp) => {
     this.handlePatch(changeProperty(this.state.data, parentPath, oldProp, newProp))
   }
 
-  /** @private */
   handleChangeType = (path, type) => {
     this.handlePatch(changeType(this.state.data, path, type))
   }
 
-  /** @private */
   handleInsert = (path, type) => {
     this.handlePatch(insert(this.state.data, path, type))
 
@@ -332,7 +338,6 @@ export default class TreeMode extends Component {
     this.focusToNext(path)
   }
 
-  /** @private */
   handleAppend = (parentPath, type) => {
     this.handlePatch(append(this.state.data, parentPath, type))
 
@@ -340,7 +345,6 @@ export default class TreeMode extends Component {
     this.focusToNext(parentPath)
   }
 
-  /** @private */
   handleDuplicate = (path) => {
     this.handlePatch(duplicate(this.state.data, path))
 
@@ -348,7 +352,6 @@ export default class TreeMode extends Component {
     this.focusToNext(path)
   }
 
-  /** @private */
   handleRemove = (path) => {
     // apply focus to next sibling element if existing, else to the previous element
     const fromElement = findNode(this.refs.contents, path)
@@ -358,6 +361,114 @@ export default class TreeMode extends Component {
     }
 
     this.handlePatch(remove(path))
+  }
+
+  moveUp = (event) => {
+    event.preventDefault()
+    moveUp(event.target)
+  }
+
+  moveDown = (event) => {
+    event.preventDefault()
+    moveDown(event.target)
+  }
+
+  moveLeft = (event) => {
+    event.preventDefault()
+    moveLeft(event.target)
+  }
+
+  moveRight = (event) => {
+    event.preventDefault()
+    moveRight(event.target)
+  }
+
+  moveHome = (event) => {
+    event.preventDefault()
+    moveHome(event.target)
+  }
+
+  moveEnd = (event) => {
+    event.preventDefault()
+    moveEnd(event.target)
+  }
+
+  handleCut = (event) => {
+    const { data, selection } = this.state
+
+    if (selection) {
+      event.preventDefault()
+
+      const paths = pathsFromSelection(data, selection)
+      const clipboard = contentsFromPaths(data, paths)
+
+      this.setState({ clipboard, selection: null })
+
+      // note that we reverse the order, else we will mess up indices to be deleted in case of an array
+      const patch = reverse(paths).map(path => ({op: 'remove', path: compileJSONPointer(path)}))
+
+      this.handlePatch(patch)
+    }
+    else {
+      // clear clipboard
+      this.setState({ clipboard: null, selection: null })
+    }
+  }
+
+  handleCopy = (event) => {
+    const { data, selection } = this.state
+
+    if (selection) {
+      event.preventDefault()
+
+      const paths = pathsFromSelection(data, selection)
+      const clipboard = contentsFromPaths(data, paths)
+
+      this.setState({ clipboard })
+    }
+    else {
+      // clear clipboard
+      this.setState({ clipboard: null, selection: null })
+    }
+  }
+
+  handlePaste = (event) => {
+    const { data, clipboard } = this.state
+
+    if (clipboard && clipboard.length > 0) {
+      event.preventDefault()
+
+      // FIXME: handle pasting in an empty object or array
+
+      const path = this.findDataPathFromElement(event.target)
+      if (path && path.length > 0) {
+        const parentPath = initial(path)
+        const parent = getIn(data, toEsonPath(data, parentPath))
+        const isObject = parent.type === 'Object'
+
+        if (parent.type === 'Object') {
+          const existingProps = parent.props.map(p => p.name)
+          const prop = last(path)
+          const patch = clipboard.map(entry => ({
+            op: 'add',
+            path: compileJSONPointer(parentPath.concat(findUniqueName(entry.name, existingProps))),
+            value: entry.value,
+            jsoneditor: { before: prop }
+          }))
+
+          this.handlePatch(patch)
+        }
+        else { // parent.type === 'Array'
+          const patch = clipboard.map(entry => ({
+            op: 'add',
+            path: compileJSONPointer(path),
+            value: entry.value
+          }))
+
+          this.handlePatch(patch)
+        }
+      }
+    }
   }
 
   /**
@@ -374,12 +485,10 @@ export default class TreeMode extends Component {
     })
   }
 
-  /** @private */
   handleSort = (path, order = null) => {
     this.handlePatch(sort(this.state.data, path, order))
   }
 
-  /** @private */
   handleExpand = (path, expanded, recurse) => {
     if (recurse) {
       const esonPath = toEsonPath(this.state.data, path)
@@ -397,13 +506,11 @@ export default class TreeMode extends Component {
     }
   }
 
-  /** @private */
   handleFindKeyBinding = (event) => {
     // findKeyBinding can change on the fly, so we can't bind it statically
     return this.findKeyBinding (event)
   }
 
-  /** @private */
   handleExpandAll = () => {
     const expanded = true
 
@@ -412,7 +519,6 @@ export default class TreeMode extends Component {
     })
   }
 
-  /** @private */
   handleCollapseAll = () => {
     const expanded = false
 
@@ -421,7 +527,6 @@ export default class TreeMode extends Component {
     })
   }
 
-  /** @private */
   handleSearch = (text) => {
     const searchResults = search(this.state.data, text)
 
@@ -430,7 +535,7 @@ export default class TreeMode extends Component {
 
       this.setState({
         search: { text, active },
-        data: expandPath(this.state.data, allButLast(active.path))
+        data: expandPath(this.state.data, initial(active.path))
       })
 
       // scroll to active search result (on next tick, after this path has been expanded)
@@ -443,15 +548,21 @@ export default class TreeMode extends Component {
     }
   }
 
-  /** @private */
-  handleNext = () => {
+  handleFocusFind = (event) => {
+    event.preventDefault()
+    selectFind(event.target)
+  }
+
+  handleNext = (event) => {
+    event.preventDefault()
+
     const searchResults = search(this.state.data, this.state.search.text)
     if (searchResults) {
       const next = nextSearchResult(searchResults, this.state.search.active)
 
       this.setState({
         search: setIn(this.state.search, ['active'], next),
-        data: next ? expandPath(this.state.data, allButLast(next.path)) : this.state.data
+        data: next ? expandPath(this.state.data, initial(next.path)) : this.state.data
       })
 
       // scroll to the active result (on next tick, after this path has been expanded)
@@ -467,15 +578,16 @@ export default class TreeMode extends Component {
     }
   }
 
-  /** @private */
-  handlePrevious = () => {
+  handlePrevious = (event) => {
+    event.preventDefault()
+
     const searchResults = search(this.state.data, this.state.search.text)
     if (searchResults) {
       const previous = previousSearchResult(searchResults, this.state.search.active)
 
       this.setState({
         search: setIn(this.state.search, ['active'], previous),
-        data: previous ? expandPath(this.state.data, allButLast(previous.path)) : this.state.data
+        data: previous ? expandPath(this.state.data, initial(previous.path)) : this.state.data
       })
 
       // scroll to the active result (on next tick, after this path has been expanded)
@@ -533,10 +645,24 @@ export default class TreeMode extends Component {
     }
   }
 
+  handlePanEnd = (event) => {
+    const path = this.findDataPathFromElement(event.target.firstChild)
+    if (path) {
+      // TODO: implement a better solution to keep focus in the editor than selecting the action menu. Most also be solved for undo/redo for example
+      const element = findNode(this.refs.contents, path)
+      const actionMenuButton = element && element.querySelector('button.jsoneditor-actionmenu')
+      if (actionMenuButton) {
+        actionMenuButton.focus()
+      }
+    }
+  }
+
   findDataPathFromElement (element: Element) : JSONPath | null {
+    const base = findBaseNode(element)
+    const attr = base && base.getAttribute && base.getAttribute('data-path')
+
     // The .replace is to change paths like `/myarray/-` into `/myarray`
-    const attr = element && element.getAttribute && element.getAttribute('data-path').replace(/\/-$/, '')
-    return attr ? parseJSONPointer(attr) : null
+    return attr ? parseJSONPointer(attr.replace(/\/-$/, '')) : null
   }
 
   /**
@@ -579,6 +705,16 @@ export default class TreeMode extends Component {
     }
   }
 
+  handleUndo = (event) => {
+    event.preventDefault()
+    this.undo()
+  }
+
+  handleRedo = (event) => {
+    event.preventDefault()
+    this.redo()
+  }
+
   canUndo = () => {
     return this.state.historyIndex < this.state.history.length
   }
@@ -588,6 +724,7 @@ export default class TreeMode extends Component {
   }
 
   undo = () => {
+    console.log('undo')
     if (this.canUndo()) {
       const history = this.state.history
       const historyIndex = this.state.historyIndex

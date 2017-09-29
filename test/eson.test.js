@@ -1,16 +1,38 @@
 import { readFileSync } from 'fs'
-import test from 'ava';
+import test from 'ava'
 import { setIn, getIn } from '../src/utils/immutabilityHelpers'
 import {
-    jsonToEson, esonToJson, toEsonPath, pathExists, transform, traverse,
+    jsonToEson, esonToJson, toEsonPath, toJsonPath, pathExists, transform, traverse,
     parseJSONPointer, compileJSONPointer,
     expand, addErrors, search, applySearchResults, nextSearchResult, previousSearchResult,
-    applySelection, getSelection
+    applySelection, pathsFromSelection
 } from '../src/eson'
 
 const JSON1 = loadJSON('./resources/json1.json')
 const ESON1 = loadJSON('./resources/eson1.json')
 const ESON2 = loadJSON('./resources/eson2.json')
+
+test('toEsonPath', t => {
+  const jsonPath = ['obj', 'arr', '2', 'last']
+  const esonPath = [
+    'props', '0', 'value',
+    'props', '0', 'value',
+    'items', '2', 'value',
+    'props', '1', 'value'
+  ]
+  t.deepEqual(toEsonPath(ESON1, jsonPath), esonPath)
+})
+
+test('toJsonPath', t => {
+  const jsonPath = ['obj', 'arr', '2', 'last']
+  const esonPath = [
+    'props', '0', 'value',
+    'props', '0', 'value',
+    'items', '2', 'value',
+    'props', '1', 'value'
+  ]
+  t.deepEqual(toJsonPath(ESON1, esonPath), jsonPath)
+})
 
 test('jsonToEson', t => {
   function expand (path) {
@@ -303,6 +325,42 @@ test('selection (node)', t => {
   t.deepEqual(actual, expected)
 })
 
+test('pathsFromSelection (object)', t => {
+  const selection = {
+    start: {path: ['obj', 'arr', '2', 'last']},
+    end: {path: ['nill']}
+  }
+
+  t.deepEqual(pathsFromSelection(ESON1, selection), [
+    ['obj'],
+    ['str'],
+    ['nill']
+  ])
+})
+
+test('pathsFromSelection (array)', t => {
+  const selection = {
+    start: {path: ['obj', 'arr', '1']},
+    end: {path: ['obj', 'arr', '0']} // note the "wrong" order of start and end
+  }
+
+  t.deepEqual(pathsFromSelection(ESON1, selection), [
+    ['obj', 'arr', '0'],
+    ['obj', 'arr', '1']
+  ])
+})
+
+test('pathsFromSelection (value)', t => {
+  const selection = {
+    start: {path: ['obj', 'arr', '2', 'first']},
+    end: {path: ['obj', 'arr', '2', 'first']}
+  }
+
+  t.deepEqual(pathsFromSelection(ESON1, selection), [
+    ['obj', 'arr', '2', 'first'],
+  ])
+})
+
 // helper function to replace all id properties with a constant value
 function replaceIds (data, value = '[ID]') {
   if (data.type === 'Object') {
@@ -328,6 +386,7 @@ function printJSON (json, message = null) {
   console.log(JSON.stringify(json, null, 2))
 }
 
+// helper function to load a JSON file
 function loadJSON (filename) {
   return JSON.parse(readFileSync(__dirname + '/' + filename, 'utf-8'))
 }

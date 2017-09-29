@@ -1,20 +1,4 @@
 /**
- * Returns the last item of an array
- * @param {Array} array
- * @return {*}
- */
-export function last (array) {
-  return array[array.length - 1]
-}
-
-/**
- * Returns a copy of the array having the last item removed
- */
-export function allButLast (array: []): [] {
-  return array.slice(0, -1)
-}
-
-/**
  * Comparator to sort an array in ascending order
  *
  * Usage:
