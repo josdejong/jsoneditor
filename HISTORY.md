@@ -3,6 +3,13 @@
 https://github.com/josdejong/jsoneditor
 
 
+## not yet released, version 5.10.0
+
+- Implemented a navigation bar showing the path. Thanks @meirotstein.
+- Implemented a status bar showing cursor location.
+  Thanks @meirotstein.
+
+
 ## 2017-09-16, version 5.9.6
 
 - Fixed displaying a dropdown for enums inside composite schemas.
