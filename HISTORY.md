@@ -3,6 +3,13 @@
 https://github.com/josdejong/jsoneditor
 
 
+## 2017-09-16, version 5.9.6
+
+- Fixed displaying a dropdown for enums inside composite schemas.
+  Thanks @hachichaud.
+- Fixed #461: Urls opening twice on Firefox and Safari.
+
+
 ## 2017-08-26, version 5.9.5
 
 - Fixed a regression introduced in `v5.9.4`: after using the context
