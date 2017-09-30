@@ -1,0 +1,23 @@
+div.jsoneditor-statusbar {
+  line-height: 17px;
+  height: 17px;
+  color: #808080;
+  background-color: #dcdcdc;
+  margin-top: -17px;
+}
+
+div.jsoneditor-statusbar > .jsoneditor-curserinfo-label {
+  margin: 0 2px 0 4px;
+}
+
+div.jsoneditor-statusbar > .jsoneditor-curserinfo-val {
+  margin-right: 4px;
+}
+
+div.jsoneditor-statusbar > .jsoneditor-curserinfo-count {
+  margin-left: 4px;
+}
+
+div.jsoneditor-statusbar > span {
+  font-size: 12px;
+}

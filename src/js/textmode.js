@@ -36,6 +36,11 @@ var DEFAULT_THEME = 'ace/theme/jsoneditor';
 textmode.create = function (container, options) {
   // read options
   options = options || {};
+  
+  if(typeof options.statusBar === 'undefined') {
+    options.statusBar = true;
+  }
+
   this.options = options;
 
   // indentation
@@ -200,6 +205,7 @@ textmode.create = function (container, options) {
 
     // register onchange event
     aceEditor.on('change', this._onChange.bind(this));
+    aceEditor.on('changeSelection', this._onSelect.bind(this));
   }
   else {
     // load a plain text textarea
@@ -218,9 +224,66 @@ textmode.create = function (container, options) {
       // oninput is undefined. For IE8-
       this.textarea.onchange = this._onChange.bind(this);
     }
+
+    textarea.onselect = this._onSelect.bind(this);
+    textarea.onmousedown = this._onMouseDown.bind(this);
+    textarea.onblur = this._onBlur.bind(this);
   }
 
-  this.setSchema(this.options.schema, this.options.schemaRefs);
+  if (options.statusBar) {
+      
+      util.addClassName(this.content, 'has-status-bar');
+
+      this.curserInfoElements = {};      
+      var statusBar = document.createElement('div');
+      statusBar.className = 'jsoneditor-statusbar';
+      this.frame.appendChild(statusBar);
+
+      if (this.mode == 'code') {
+        var lnLabel = document.createElement('span');
+        lnLabel.className = 'jsoneditor-curserinfo-label';
+        lnLabel.innerText = 'Ln:';
+  
+        var lnVal = document.createElement('span');
+        lnVal.className = 'jsoneditor-curserinfo-val';
+        lnVal.innerText = 0;
+  
+        statusBar.appendChild(lnLabel);
+        statusBar.appendChild(lnVal);
+  
+        var colLabel = document.createElement('span');
+        colLabel.className = 'jsoneditor-curserinfo-label';
+        colLabel.innerText = 'Col:';
+  
+        var colVal = document.createElement('span');
+        colVal.className = 'jsoneditor-curserinfo-val';
+        colVal.innerText = 0;
+  
+        statusBar.appendChild(colLabel);
+        statusBar.appendChild(colVal);
+  
+        this.curserInfoElements.colVal = colVal;
+        this.curserInfoElements.lnVal = lnVal;
+      } 
+    
+      var countLabel = document.createElement('span');
+      countLabel.className = 'jsoneditor-curserinfo-label';
+      countLabel.innerText = 'selected';
+      countLabel.style.display = 'none';
+
+      var countVal = document.createElement('span');
+      countVal.className = 'jsoneditor-curserinfo-count';
+      countVal.innerText = 0;
+      countVal.style.display = 'none';
+
+      this.curserInfoElements.countLabel = countLabel;
+      this.curserInfoElements.countVal = countVal;
+
+      statusBar.appendChild(countVal);
+      statusBar.appendChild(countLabel);    
+  }
+
+  this.setSchema(this.options.schema, this.options.schemaRefs);  
 };
 
 /**
@@ -240,6 +303,28 @@ textmode._onChange = function () {
     }
     catch (err) {
       console.error('Error in onChange callback: ', err);
+    }
+  }
+};
+
+/**
+ * Handle text selection
+ * Calculates the cursor position and selection range and updates menu
+ * @private
+ */
+textmode._onSelect = function () {
+  if(this.options.statusBar) {
+    if (this.textarea) {
+      var selectionRange = util.getInputSelection(this.textarea);
+      if (selectionRange.start !== selectionRange.end) {
+        this._setSelectionCountDisplay(Math.abs(selectionRange.end - selectionRange.start));
+      }
+    } else if (this.aceEditor) {
+      var curserPos = this.aceEditor.getCursorPosition();
+      var selectedText = this.aceEditor.getSelectedText();
+      this.curserInfoElements.lnVal.innerText = curserPos.row + 1;
+      this.curserInfoElements.colVal.innerText = curserPos.column + 1;
+      this._setSelectionCountDisplay(selectedText.length);
     }
   }
 };
@@ -268,6 +353,39 @@ textmode._onKeyDown = function (event) {
   if (handled) {
     event.preventDefault();
     event.stopPropagation();
+  }
+
+  this._setSelectionCountDisplay();
+};
+
+/**
+ * Event handler for mousedown.
+ * @param {Event} event
+ * @private
+ */
+textmode._onMouseDown = function (event) {
+  this._setSelectionCountDisplay();
+};
+
+/**
+ * Event handler for blur.
+ * @param {Event} event
+ * @private
+ */
+textmode._onBlur = function (event) {
+  this._setSelectionCountDisplay();
+};
+
+textmode._setSelectionCountDisplay = function (value) {
+  if (this.options.statusBar) {
+    if (value && this.curserInfoElements.countVal) {
+      this.curserInfoElements.countVal.innerText = value;
+      this.curserInfoElements.countVal.style.display = 'inline';
+      this.curserInfoElements.countLabel.style.display = 'inline';
+    } else {
+      this.curserInfoElements.countVal.style.display = 'none';
+      this.curserInfoElements.countLabel.style.display = 'none';
+    }
   }
 };
 
@@ -405,7 +523,6 @@ textmode.setText = function(jsonText) {
 
     this.options.onChange = originalOnChange;
   }
-
   // validate JSON schema
   this.validate();
 };
@@ -445,7 +562,7 @@ textmode.validate = function () {
     }
   }
 
-  if (errors.length > 0) {
+  if (errors.length > 0) {  
     // limit the number of displayed errors
     var limit = errors.length > MAX_ERRORS;
     if (limit) {

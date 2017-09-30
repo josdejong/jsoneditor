@@ -82,7 +82,8 @@ function JSONEditor (container, options, json) {
         'ajv', 'schema', 'schemaRefs','templates',
         'ace', 'theme','autocomplete',
         'onChange', 'onEditable', 'onError', 'onModeChange',
-        'escapeUnicode', 'history', 'search', 'mode', 'modes', 'name', 'indentation', 'sortObjectKeys'
+        'escapeUnicode', 'history', 'search', 'mode', 'modes', 'name', 'indentation', 
+        'sortObjectKeys', 'navigationBar', 'statusBar'
       ];
 
       Object.keys(options).forEach(function (option) {

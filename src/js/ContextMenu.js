@@ -211,8 +211,12 @@ ContextMenu.prototype.show = function (anchor, contentWindow) {
 
   // determine whether to display the menu below or above the anchor
   var showBelow = true;
+  var parent = anchor.parentNode;
+  var anchorRect = anchor.getBoundingClientRect();
+  var parentRect = parent.getBoundingClientRect()
+
   if (contentWindow) {
-    var anchorRect = anchor.getBoundingClientRect();
+    
     var contentRect = contentWindow.getBoundingClientRect();
 
     if (anchorRect.bottom + this.maxHeight < contentRect.bottom) {
@@ -227,18 +231,21 @@ ContextMenu.prototype.show = function (anchor, contentWindow) {
     }
   }
 
+  var leftGap = anchorRect.left - parentRect.left;
+  var topGap = anchorRect.top - parentRect.top;
+
   // position the menu
   if (showBelow) {
     // display the menu below the anchor
     var anchorHeight = anchor.offsetHeight;
-    this.dom.menu.style.left = '0px';
-    this.dom.menu.style.top = anchorHeight + 'px';
+    this.dom.menu.style.left = leftGap + 'px';
+    this.dom.menu.style.top = topGap + anchorHeight + 'px';
     this.dom.menu.style.bottom = '';
   }
   else {
     // display the menu above the anchor
-    this.dom.menu.style.left = '0px';
-    this.dom.menu.style.top = '';
+    this.dom.menu.style.left = leftGap + 'px';
+    this.dom.menu.style.top = topGap + 'px';
     this.dom.menu.style.bottom = '0px';
   }
 
@@ -246,7 +253,6 @@ ContextMenu.prototype.show = function (anchor, contentWindow) {
   this.rootNode = getRootNode(anchor);
 
   // attach the menu to the parent of the anchor
-  var parent = anchor.parentNode;
   parent.insertBefore(this.dom.root, parent.firstChild);
 
   // create and attach event listeners
