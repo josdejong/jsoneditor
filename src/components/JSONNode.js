@@ -1,9 +1,10 @@
 // @flow weak
 
-import { createElement as h, Component } from 'react'
+import { createElement as h, PureComponent } from 'react'
 import initial from 'lodash/initial'
 
 import ActionMenu from './menu/ActionMenu'
+import FloatingMenu from './menu/FloatingMenu'
 import { escapeHTML, unescapeHTML } from '../utils/stringUtils'
 import { getInnerText, insideRect, findParentWithAttribute } from '../utils/domUtils'
 import { stringConvert, valueType, isUrl } from  '../utils/typeUtils'
@@ -11,7 +12,7 @@ import { compileJSONPointer } from  '../eson'
 
 import type { ESONObjectProperty, ESON, SearchResultStatus, Path } from '../types'
 
-export default class JSONNode extends Component {
+export default class JSONNode extends PureComponent {
   static URL_TITLE = 'Ctrl+Click or Ctrl+Enter to open url'
 
   state = {
@@ -42,8 +43,16 @@ export default class JSONNode extends Component {
         className: 'jsoneditor-node jsoneditor-object'
       }, [
       this.renderExpandButton(),
-      this.renderActionMenu('update', this.state.menu, this.handleCloseActionMenu),
-      this.renderActionMenuButton(),
+      // this.renderActionMenu('update', this.state.menu, this.handleCloseActionMenu),
+      // this.renderActionMenuButton(),
+      this.renderFloatingMenu([
+        {type: 'sort'},
+        {type: 'duplicate'},
+        {type: 'cut'},
+        {type: 'copy'},
+        {type: 'paste'},
+        {type: 'remove'}
+      ]),
       this.renderProperty(prop, index, data, options),
       this.renderReadonly(`{${childCount}}`, `Array containing ${childCount} items`),
       this.renderError(data.error)
@@ -88,8 +97,16 @@ export default class JSONNode extends Component {
         className: 'jsoneditor-node jsoneditor-array'
       }, [
       this.renderExpandButton(),
-      this.renderActionMenu('update', this.state.menu, this.handleCloseActionMenu),
-      this.renderActionMenuButton(),
+      // this.renderActionMenu('update', this.state.menu, this.handleCloseActionMenu),
+      // this.renderActionMenuButton(),
+      this.renderFloatingMenu([
+        {type: 'sort'},
+        {type: 'duplicate'},
+        {type: 'cut'},
+        {type: 'copy'},
+        {type: 'paste'},
+        {type: 'remove'}
+      ]),
       this.renderProperty(prop, index, data, options),
       this.renderReadonly(`[${childCount}]`, `Array containing ${childCount} items`),
       this.renderError(data.error)
@@ -130,8 +147,16 @@ export default class JSONNode extends Component {
         className: 'jsoneditor-node'
       }, [
       this.renderPlaceholder(),
-      this.renderActionMenu('update', this.state.menu, this.handleCloseActionMenu),
-      this.renderActionMenuButton(),
+      // this.renderActionMenu('update', this.state.menu, this.handleCloseActionMenu),
+      // this.renderActionMenuButton(),
+      this.renderFloatingMenu([
+        // {text: 'String', onClick: this.props.events.onChangeType, type: 'checkbox', checked: false},
+        {type: 'duplicate'},
+        {type: 'cut'},
+        {type: 'copy'},
+        {type: 'paste'},
+        {type: 'remove'}
+      ]),
       this.renderProperty(prop, index, data, options),
       this.renderSeparator(),
       this.renderValue(data.value, data.searchResult, options),
@@ -151,8 +176,8 @@ export default class JSONNode extends Component {
         onKeyDown: this.handleKeyDownAppend
       }, [
       this.renderPlaceholder(),
-      this.renderActionMenu('append', this.state.appendMenu, this.handleCloseAppendActionMenu),
-      this.renderAppendActionMenuButton(),
+      // this.renderActionMenu('append', this.state.appendMenu, this.handleCloseAppendActionMenu),
+      // this.renderAppendActionMenuButton(),
       this.renderReadonly(text)
     ])
   }
@@ -402,6 +427,15 @@ export default class JSONNode extends Component {
     ])
   }
 
+  renderFloatingMenu (items) {
+    return h(FloatingMenu, {
+      key: 'menu',
+      path: this.props.path,
+      events: this.props.events,
+      items
+    })
+  }
+
   renderAppendActionMenuButton () {
     const className = 'jsoneditor-button jsoneditor-actionmenu' +
         ((this.state.appendOpen) ? ' jsoneditor-visible' : '')
@@ -448,24 +482,6 @@ export default class JSONNode extends Component {
 
   handleCloseAppendActionMenu = () => {
     this.setState({ appendMenu: null })
-  }
-
-  shouldComponentUpdate (nextProps, nextState) {
-    let prop
-
-    for (prop in nextProps) {
-      if (nextProps.hasOwnProperty(prop) && this.props[prop] !== nextProps[prop]) {
-        return true
-      }
-    }
-
-    for (prop in nextState) {
-      if (nextState.hasOwnProperty(prop) && this.state[prop] !== nextState[prop]) {
-        return true
-      }
-    }
-
-    return false
   }
 
   static getRootName (data, options) {

@@ -69,9 +69,9 @@ export default class TreeMode extends Component {
       'right': this.moveRight,
       'home': this.moveHome,
       'end': this.moveEnd,
-      'cut': this.handleCut,
-      'copy': this.handleCopy,
-      'paste': this.handlePaste,
+      'cut': this.handleKeyDownCut,
+      'copy': this.handleKeyDownCopy,
+      'paste': this.handleKeyDownPaste,
       'undo': this.handleUndo,
       'redo': this.handleRedo,
       'find': this.handleFocusFind,
@@ -94,6 +94,10 @@ export default class TreeMode extends Component {
         onDuplicate: this.handleDuplicate,
         onRemove: this.handleRemove,
         onSort: this.handleSort,
+
+        onCut: this.handleMenuCut,
+        onCopy: this.handleMenuCopy,
+        onPaste: this.handleMenuPaste,
 
         onExpand: this.handleExpand,
 
@@ -393,12 +397,57 @@ export default class TreeMode extends Component {
     moveEnd(event.target)
   }
 
-  handleCut = (event) => {
-    const { data, selection } = this.state
-
+  handleKeyDownCut = (event) => {
+    const { selection } = this.state
     if (selection) {
       event.preventDefault()
+    }
+    this.handleCut(selection)
+  }
 
+  handleKeyDownCopy = (event) => {
+    const { selection } = this.state
+    if (selection) {
+      event.preventDefault()
+    }
+    this.handleCopy(selection)
+  }
+
+  handleKeyDownPaste = (event) => {
+    const { clipboard, selection } = this.state
+    if (clipboard && clipboard.length > 0) {
+      event.preventDefault()
+      if (selection) {
+        this.handlePaste(clipboard, selection, null)
+      }
+      else {
+        // no selection -> paste after current path
+        const path = this.findDataPathFromElement(event.target)
+        this.handlePaste(clipboard, null, path)
+      }
+    }
+  }
+
+    handleMenuCut = (path) => {
+      const selection = { start: { path }, end: { path }}
+      this.handleCut(selection)
+    }
+
+    handleMenuCopy = (path) => {
+      const selection = { start: { path }, end: { path }}
+      this.handleCopy(selection)
+    }
+
+    handleMenuPaste = (path) => {
+      const { clipboard } = this.state
+      if (clipboard && clipboard.length > 0) {
+        this.handlePaste(clipboard, null, path)
+      }
+    }
+
+  handleCut = (selection: ESONSelection) => {
+    if (selection && selection.start && selection.end) {
+      const data = this.state.data
       const paths = pathsFromSelection(data, selection)
       const clipboard = contentsFromPaths(data, paths)
 
@@ -415,12 +464,9 @@ export default class TreeMode extends Component {
     }
   }
 
-  handleCopy = (event) => {
-    const { data, selection } = this.state
-
-    if (selection) {
-      event.preventDefault()
-
+  handleCopy = (selection: ESONSelection) => {
+    if (selection && selection.start && selection.end) {
+      const data = this.state.data
       const paths = pathsFromSelection(data, selection)
       const clipboard = contentsFromPaths(data, paths)
 
@@ -432,15 +478,12 @@ export default class TreeMode extends Component {
     }
   }
 
-  handlePaste = (event) => {
-    const { data, clipboard } = this.state
+  handlePaste = (clipboard, selection: ESONSelection, path: JSONPath) => {
+    const { data } = this.state
 
     if (clipboard && clipboard.length > 0) {
-      event.preventDefault()
-
       // FIXME: handle pasting in an empty object or array
 
-      const path = this.findDataPathFromElement(event.target)
       if (path && path.length > 0) {
         const parentPath = initial(path)
         const parent = getIn(data, toEsonPath(data, parentPath))
@@ -467,6 +510,9 @@ export default class TreeMode extends Component {
 
           this.handlePatch(patch)
         }
+      }
+      else if (selection){
+        console.log('TODO: replace selection')
       }
     }
   }
@@ -649,11 +695,12 @@ export default class TreeMode extends Component {
     const path = this.findDataPathFromElement(event.target.firstChild)
     if (path) {
       // TODO: implement a better solution to keep focus in the editor than selecting the action menu. Most also be solved for undo/redo for example
-      const element = findNode(this.refs.contents, path)
-      const actionMenuButton = element && element.querySelector('button.jsoneditor-actionmenu')
-      if (actionMenuButton) {
-        actionMenuButton.focus()
-      }
+      // --> focus to menu?
+      // const element = findNode(this.refs.contents, path)
+      // const actionMenuButton = element && element.querySelector('button.jsoneditor-actionmenu')
+      // if (actionMenuButton) {
+      //   actionMenuButton.focus()
+      // }
     }
   }
 

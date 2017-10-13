@@ -5,6 +5,9 @@
 @black: #1A1A1A;
 @contentsMinHeight: 150px;
 @theme-color: #3883fa;
+@floating-menu-background: #4d4d4d;
+@floating-menu-color: #fff;
+@selectedColor: #e5e5e5;
 
 .jsoneditor {
   border: 1px solid @theme-color;
@@ -257,7 +260,7 @@ div.jsoneditor-value.jsoneditor-empty::after {
 }
 
 .jsoneditor-selected {
-  background-color: #f0f0f0;
+  background-color: @selectedColor;
 }
 
 .jsoneditor-highlight {
@@ -556,6 +559,74 @@ button.jsoneditor-type-Array.jsoneditor-selected span.jsoneditor-icon {
   background-position: -96px 0;
 }
 
+/******************************* Floatting Menu **********************************/
+
+div.jsoneditor-node {
+
+  div.jsoneditor-floating-menu-container {
+    display: none;
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    z-index: 999;
+
+    div.jsoneditor-floating-menu {
+      margin: 10px;
+      white-space: nowrap;
+      border-radius: 5px;
+      box-shadow: 0 2px 6px 0 rgba(0,0,0,.24);
+
+      &:after {
+          content:'';
+          position: absolute;
+          top: 100%;
+          left: 10%;
+          margin-left: -10px;
+          margin-top: -10px;
+          width: 0;
+          height: 0;
+          border-top: solid 10px @floating-menu-background;
+          border-left: solid 10px transparent;
+          border-right: solid 10px transparent;
+      }
+
+      button.jsoneditor-floating-menu-item {
+        color: @floating-menu-color;
+        background: @floating-menu-background;
+        border: none;
+        border-right: 1px solid lighten(@floating-menu-background, 10%);
+        padding: 10px;
+        cursor: pointer;
+
+        &:hover {
+          background: lighten(@floating-menu-background, 10%);
+        }
+
+        &:first-child {
+          border-top-left-radius: 5px;
+          border-bottom-left-radius: 5px;
+        }
+
+        &:last-child {
+          border-top-right-radius: 5px;
+          border-bottom-right-radius: 5px;
+          border-right: none;
+        }
+      }
+    }
+  }
+
+  &:hover {
+    background-color: @selectedColor;
+
+    div.jsoneditor-floating-menu-container {
+      display: inherit;
+    }
+  }
+}
+
+
+/*******************************  **********************************/
 div.jsoneditor-modes {
   position: relative;
   display: inline-block;
