@@ -8,7 +8,7 @@ import FloatingMenu from './menu/FloatingMenu'
 import { escapeHTML, unescapeHTML } from '../utils/stringUtils'
 import { getInnerText, insideRect, findParentWithAttribute } from '../utils/domUtils'
 import { stringConvert, valueType, isUrl } from  '../utils/typeUtils'
-import { compileJSONPointer } from  '../eson'
+import { compileJSONPointer, SELECTED, SELECTED_END } from  '../eson'
 
 import type { ESONObjectProperty, ESON, SearchResultStatus, Path } from '../types'
 
@@ -18,6 +18,7 @@ export default class JSONNode extends PureComponent {
   state = {
     menu: null,       // can contain object {anchor, root}
     appendMenu: null, // can contain object {anchor, root}
+    hover: false
   }
 
   render () {
@@ -45,16 +46,9 @@ export default class JSONNode extends PureComponent {
       this.renderExpandButton(),
       // this.renderActionMenu('update', this.state.menu, this.handleCloseActionMenu),
       // this.renderActionMenuButton(),
-      this.renderFloatingMenu([
-        {type: 'sort'},
-        {type: 'duplicate'},
-        {type: 'cut'},
-        {type: 'copy'},
-        {type: 'paste'},
-        {type: 'remove'}
-      ]),
       this.renderProperty(prop, index, data, options),
       this.renderReadonly(`{${childCount}}`, `Array containing ${childCount} items`),
+      // this.renderFloatingMenuButton(),
       this.renderError(data.error)
     ])
 
@@ -62,7 +56,7 @@ export default class JSONNode extends PureComponent {
     if (data.expanded) {
       if (data.props.length > 0) {
         const props = data.props.map(prop => {
-          return h('li', { key: prop.id, className: (prop.value.selected ? ' jsoneditor-selected' : '') },
+          return h('li', { key: prop.id, className: JSONNode.selectedClassName(prop.value.selected) },
             h(this.constructor, {
               path: this.props.path.concat(prop.name),
               prop,
@@ -84,7 +78,28 @@ export default class JSONNode extends PureComponent {
       }
     }
 
-    return h('div', {}, [node, childs])
+    const floatingMenu = this.renderFloatingMenu([
+      {type: 'sort'},
+      {type: 'duplicate'},
+      {type: 'cut'},
+      {type: 'copy'},
+      {type: 'paste'},
+      {type: 'remove'}
+    ])
+
+    return h('div', {
+      className: 'jsoneditor-node-container ' + (this.state.hover ? ' jsoneditor-node-hover': ''),
+      onMouseOver: this.handleMouseOver,
+      onMouseLeave: this.handleMouseLeave
+    }, [node, floatingMenu, childs])
+  }
+
+  static selectedClassName(selected: number) {
+    return (selected === SELECTED)
+        ? ' jsoneditor-selected'
+        : (selected === SELECTED_END)
+          ? 'jsoneditor-selected jsoneditor-selected-end'
+          : ''
   }
 
   // TODO: extract a function renderChilds shared by both renderJSONObject and renderJSONArray (rename .props and .items to .childs?)
@@ -99,16 +114,9 @@ export default class JSONNode extends PureComponent {
       this.renderExpandButton(),
       // this.renderActionMenu('update', this.state.menu, this.handleCloseActionMenu),
       // this.renderActionMenuButton(),
-      this.renderFloatingMenu([
-        {type: 'sort'},
-        {type: 'duplicate'},
-        {type: 'cut'},
-        {type: 'copy'},
-        {type: 'paste'},
-        {type: 'remove'}
-      ]),
       this.renderProperty(prop, index, data, options),
       this.renderReadonly(`[${childCount}]`, `Array containing ${childCount} items`),
+      // this.renderFloatingMenuButton(),
       this.renderError(data.error)
     ])
 
@@ -116,7 +124,7 @@ export default class JSONNode extends PureComponent {
     if (data.expanded) {
       if (data.items.length > 0) {
         const items = data.items.map((item, index) => {
-          return h('li', { key : item.id, className: (item.value.selected ? ' jsoneditor-selected' : '')},
+          return h('li', { key : item.id, className: JSONNode.selectedClassName(prop.value.selected)},
             h(this.constructor, {
               path: this.props.path.concat(String(index)),
               index,
@@ -137,11 +145,25 @@ export default class JSONNode extends PureComponent {
       }
     }
 
-    return h('div', {}, [node, childs])
+    const floatingMenu = this.renderFloatingMenu([
+      {type: 'sort'},
+      {type: 'duplicate'},
+      {type: 'cut'},
+      {type: 'copy'},
+      {type: 'paste'},
+      {type: 'remove'}
+    ])
+
+    return h('div', {
+      className: 'jsoneditor-node-container ' + (this.state.hover ? ' jsoneditor-node-hover': ''),
+      onMouseOver: this.handleMouseOver,
+      onMouseLeave: this.handleMouseLeave
+    }, [node, floatingMenu, childs])
   }
 
   renderJSONValue ({prop, index, data, options}) {
-    return h('div', {
+    const node = h('div', {
+        key: 'value',
         'data-path': compileJSONPointer(this.props.path),
         onKeyDown: this.handleKeyDown,
         className: 'jsoneditor-node'
@@ -149,19 +171,27 @@ export default class JSONNode extends PureComponent {
       this.renderPlaceholder(),
       // this.renderActionMenu('update', this.state.menu, this.handleCloseActionMenu),
       // this.renderActionMenuButton(),
-      this.renderFloatingMenu([
-        // {text: 'String', onClick: this.props.events.onChangeType, type: 'checkbox', checked: false},
-        {type: 'duplicate'},
-        {type: 'cut'},
-        {type: 'copy'},
-        {type: 'paste'},
-        {type: 'remove'}
-      ]),
       this.renderProperty(prop, index, data, options),
       this.renderSeparator(),
       this.renderValue(data.value, data.searchResult, options),
+      // this.renderFloatingMenuButton(),
       this.renderError(data.error)
     ])
+
+    const floatingMenu = this.renderFloatingMenu([
+      // {text: 'String', onClick: this.props.events.onChangeType, type: 'checkbox', checked: false},
+      {type: 'duplicate'},
+      {type: 'cut'},
+      {type: 'copy'},
+      {type: 'paste'},
+      {type: 'remove'}
+    ])
+
+    return h('div', {
+      className: 'jsoneditor-node-container ' + (this.state.hover ? ' jsoneditor-node-hover': ''),
+      onMouseOver: this.handleMouseOver,
+      onMouseLeave: this.handleMouseLeave
+    }, [node, floatingMenu])
   }
 
   /**
@@ -427,6 +457,20 @@ export default class JSONNode extends PureComponent {
     ])
   }
 
+  // TODO: cleanup
+  renderFloatingMenuButton () {
+    const className = 'jsoneditor-button jsoneditor-floatingmenu' +
+        ((this.state.open) ? ' jsoneditor-visible' : '')
+
+    return h('div', {className: 'jsoneditor-button-container', key: 'action'}, [
+      h('button', {
+        key: 'button',
+        className,
+        onClick: this.handleOpenActionMenu
+      })
+    ])
+  }
+
   renderFloatingMenu (items) {
     return h(FloatingMenu, {
       key: 'menu',
@@ -448,6 +492,26 @@ export default class JSONNode extends PureComponent {
         onClick: this.handleOpenAppendActionMenu
       })
     ])
+  }
+
+  handleMouseOver = (event) => {
+    event.stopPropagation()
+
+    if (hoveredNode !== this) {
+
+      if (hoveredNode) {
+        // FIXME: this may give issues when the hovered node doesn't exist anymore. check whether mounted
+        hoveredNode.setState({hover: false})
+      }
+
+      this.setState({hover: true})
+      hoveredNode = this
+    }
+  }
+
+  handleMouseLeave = (event) => {
+    event.stopPropagation()
+    this.setState({hover: false})
   }
 
   handleOpenActionMenu = (event) => {
@@ -612,3 +676,6 @@ export default class JSONNode extends PureComponent {
         : stringConvert(stringValue)
   }
 }
+
+// singleton holding the node that's currently being hovered
+let hoveredNode = null

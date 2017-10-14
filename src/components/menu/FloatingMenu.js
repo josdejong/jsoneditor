@@ -3,7 +3,6 @@
 import { createElement as h, PureComponent } from 'react'
 import { keyComboFromEvent } from '../../utils/keyBindings'
 
-const MENU_CONTAINER_CLASS_NAME = 'jsoneditor-floating-menu-container'
 const MENU_CLASS_NAME = 'jsoneditor-floating-menu'
 const MENU_ITEM_CLASS_NAME = 'jsoneditor-floating-menu-item'
 
@@ -89,17 +88,15 @@ const CREATE_TYPE = {
 
 export default class FloatingMenu extends PureComponent {
   render () {
-    return h('div', {className: MENU_CONTAINER_CLASS_NAME},
-      h('div', {className: MENU_CLASS_NAME}, this.props.items.map(item => {
-        const type = typeof item === 'string' ? item : item.type
-        const createType = CREATE_TYPE[type]
-        if (createType) {
-          return createType(this.props.path, this.props.events)
-        }
-        else {
-          throw new Error('Unknown type of menu item for floating menu: ' + JSON.stringify(item))
-        }
-      })
-    ))
+    return h('div', {className: MENU_CLASS_NAME}, this.props.items.map(item => {
+      const type = typeof item === 'string' ? item : item.type
+      const createType = CREATE_TYPE[type]
+      if (createType) {
+        return createType(this.props.path, this.props.events)
+      }
+      else {
+        throw new Error('Unknown type of menu item for floating menu: ' + JSON.stringify(item))
+      }
+    }))
   }
 }

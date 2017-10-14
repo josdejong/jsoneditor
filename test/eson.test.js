@@ -5,7 +5,8 @@ import {
     jsonToEson, esonToJson, toEsonPath, toJsonPath, pathExists, transform, traverse,
     parseJSONPointer, compileJSONPointer,
     expand, addErrors, search, applySearchResults, nextSearchResult, previousSearchResult,
-    applySelection, pathsFromSelection
+    applySelection, pathsFromSelection,
+    SELECTED, SELECTED_END
 } from '../src/eson'
 
 const JSON1 = loadJSON('./resources/json1.json')
@@ -281,9 +282,9 @@ test('selection (object)', t => {
   const actual = applySelection(ESON1, selection)
 
   let expected = ESON1
-  expected = setIn(expected, toEsonPath(ESON1, ['obj']).concat(['selected']), true)
-  expected = setIn(expected, toEsonPath(ESON1, ['str']).concat(['selected']), true)
-  expected = setIn(expected, toEsonPath(ESON1, ['nill']).concat(['selected']), true)
+  expected = setIn(expected, toEsonPath(ESON1, ['obj']).concat(['selected']), SELECTED_END)
+  expected = setIn(expected, toEsonPath(ESON1, ['str']).concat(['selected']), SELECTED)
+  expected = setIn(expected, toEsonPath(ESON1, ['nill']).concat(['selected']), SELECTED)
 
   t.deepEqual(actual, expected)
 })
@@ -296,9 +297,10 @@ test('selection (array)', t => {
 
   const actual = applySelection(ESON1, selection)
 
+  // FIXME: SELECTE_END should be selection.start, not the first
   let expected = ESON1
-  expected = setIn(expected, toEsonPath(ESON1, ['obj', 'arr', '0']).concat(['selected']), true)
-  expected = setIn(expected, toEsonPath(ESON1, ['obj', 'arr', '1']).concat(['selected']), true)
+  expected = setIn(expected, toEsonPath(ESON1, ['obj', 'arr', '0']).concat(['selected']), SELECTED_END)
+  expected = setIn(expected, toEsonPath(ESON1, ['obj', 'arr', '1']).concat(['selected']), SELECTED)
 
   t.deepEqual(actual, expected)
 })
@@ -310,7 +312,7 @@ test('selection (value)', t => {
   }
 
   const actual = applySelection(ESON1, selection)
-  const expected = setIn(ESON1, toEsonPath(ESON1, ['obj', 'arr', '2', 'first']).concat(['selected']), true)
+  const expected = setIn(ESON1, toEsonPath(ESON1, ['obj', 'arr', '2', 'first']).concat(['selected']), SELECTED_END)
   t.deepEqual(actual, expected)
 })
 
@@ -321,7 +323,7 @@ test('selection (node)', t => {
   }
 
   const actual = applySelection(ESON1, selection)
-  const expected = setIn(ESON1, toEsonPath(ESON1, ['obj', 'arr']).concat(['selected']), true)
+  const expected = setIn(ESON1, toEsonPath(ESON1, ['obj', 'arr']).concat(['selected']), SELECTED_END)
   t.deepEqual(actual, expected)
 })
 

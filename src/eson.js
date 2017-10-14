@@ -20,6 +20,9 @@ import type {
 
 type RecurseCallback = (value: ESON, path: Path, root: ESON) => ESON
 
+export const SELECTED = 1
+export const SELECTED_END = 2
+
 /**
  * Expand function which will expand all nodes
  * @param {Path} path
@@ -363,7 +366,8 @@ export function applySelection (eson: ESON, selection: ESONSelection) {
 
   if (rootPath.length === selection.start.path.length || rootPath.length === selection.end.path.length) {
     // select a single node
-    return setIn(eson, rootEsonPath.concat(['selected']), true)
+    return setIn(eson, rootEsonPath.concat(['selected']), SELECTED_END)
+    // FIXME: actually mark the end index as SELECTED_END, currently we select the first index
   }
   else {
     // select multiple childs of an object or array
@@ -375,8 +379,9 @@ export function applySelection (eson: ESON, selection: ESONSelection) {
       const childsKey = (root.type === 'Object') ? 'props' : 'items' // property name of the array with props/items
       const childsBefore = root[childsKey].slice(0, minIndex)
       const childsUpdated = root[childsKey].slice(minIndex, maxIndex)
-          .map(child => setIn(child, ['value', 'selected'], true))
+          .map((child, index) => setIn(child, ['value', 'selected'], index === 0 ? SELECTED_END : SELECTED))
       const childsAfter = root[childsKey].slice(maxIndex)
+      // FIXME: actually mark the end index as SELECTED_END, currently we select the first index
 
       return setIn(root, [childsKey], childsBefore.concat(childsUpdated, childsAfter))
     })

@@ -662,8 +662,9 @@ export default class TreeMode extends Component {
   }
 
   handleTap = (event) => {
+    const path = this.findDataPathFromElement(event.target.firstChild)
     if (this.state.selection) {
-      this.setState({ selection: null })
+      this.setState({ selection: {start: {path}, end: {path}}})
     }
   }
 
