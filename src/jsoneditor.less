@@ -9,7 +9,8 @@
 @floating-menu-color: #fff;
 // @selectedColor: #e5e5e5;
 @selectedColor: #ffed99;
-@hoverColor: rgba(10, 10, 10, 0.05);
+@hoverColor: #f2f2f2;
+@hoverAndSelectedColor: #F2E191;
 
 .jsoneditor {
   border: 1px solid @theme-color;
@@ -119,16 +120,17 @@
   flex: 0 0 auto;
 }
 
-ul.jsoneditor-list {
+div.jsoneditor-list {
   list-style-type: none;
   padding-left: 20px;
   margin: 0;
   font-size: 0;
 }
 
-/* no left padding for the root ul element */
-.jsoneditor-contents > ul.jsoneditor-list {
+/* no left padding for the root div element */
+.jsoneditor-contents > div.jsoneditor-list {
   padding-left: 2px;
+  padding-bottom: 24px;
 }
 
 .jsoneditor-property,
@@ -259,10 +261,6 @@ div.jsoneditor-property.jsoneditor-empty::after {
 
 div.jsoneditor-value.jsoneditor-empty::after {
   content: 'value';
-}
-
-.jsoneditor-selected {
-  background-color: @selectedColor;
 }
 
 .jsoneditor-highlight {
@@ -567,8 +565,90 @@ div.jsoneditor-node-container {
   position: relative;
   transition: background-color 100ms ease-in;
 
+  // TODO: can the hover/select css be simplified?
+
+  &.jsoneditor-selected {
+    background-color: @selectedColor;
+
+    &.jsoneditor-hover {
+      background-color: @hoverAndSelectedColor;
+
+      &.jsoneditor-hover-after {
+        background-color: @selectedColor;
+
+        div.jsoneditor-insert-area {
+          border: 1px dashed gray;
+          background-color: @hoverColor;
+        }
+
+        &.jsoneditor-selected-after {
+          div.jsoneditor-insert-area {
+            border: 1px dashed #f4af41;
+            background-color: @hoverAndSelectedColor;
+          }
+        }
+      }
+    }
+
+    &.jsoneditor-selected-after {
+      background-color: inherit;
+
+      &.jsoneditor-hover {
+        background-color: @hoverColor;
+
+        &.jsoneditor-hover-after {
+          background-color: inherit;
+        }
+      }
+
+      div.jsoneditor-insert-area {
+        border: 1px dashed #f4af41;
+        background: @selectedColor;
+      }
+    }
+
+    // hovering nested elements
+    .jsoneditor-hover {
+      background-color: @hoverAndSelectedColor;
+
+      &.jsoneditor-hover-after {
+        background-color: inherit;
+
+        div.jsoneditor-insert-area {
+          border: 1px dashed #f4af41;
+          background: @hoverAndSelectedColor;
+        }
+      }
+    }
+  }
+
+  &.jsoneditor-hover {
+    background-color: @hoverColor;
+
+    &.jsoneditor-hover-after {
+      background-color: inherit;
+
+      div.jsoneditor-insert-area {
+        border: 1px dashed gray;
+        background-color: @hoverColor;
+      }
+    }
+  }
+
+  div.jsoneditor-insert-area {
+    @height: 8px;
+
+    position: absolute;
+    width: 100%;
+    height: @height;
+    left: 0;
+    bottom: -@height/2;
+    border: 1px transparent;
+    box-sizing: border-box;
+    z-index: 1; // must be on top of next node, it overlaps a bit
+  }
+
   div.jsoneditor-floating-menu {
-    display: none;
     position: absolute;
     bottom: 100%;
     right: 0;
@@ -599,7 +679,9 @@ div.jsoneditor-node-container {
       border-right: 1px solid lighten(@floating-menu-background, 10%);
       padding: 10px;
       cursor: pointer;
+      outline: none;
 
+      &:focus,
       &:hover {
         background: lighten(@floating-menu-background, 10%);
       }
@@ -616,14 +698,6 @@ div.jsoneditor-node-container {
       }
     }
   }
-
-  &.jsoneditor-node-hover {
-    background-color: @hoverColor;
-  }
-}
-
-.jsoneditor-selected-end > .jsoneditor-node-container > div.jsoneditor-floating-menu {
-  display: inherit;
 }
 
 /*******************************  **********************************/

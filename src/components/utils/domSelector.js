@@ -10,7 +10,7 @@ let lastInputName = null
 // TODO: create a constants file with the CSS names that are used in domSelector
 const SEARCH_TEXT_CLASS_NAME = 'jsoneditor-search-text'
 const SEARCH_COMPONENT_CLASS_NAME = 'jsoneditor-search'
-const NODE_CONTAINER_CLASS_NAME = 'jsoneditor-node'
+const NODE_CONTAINER_CLASS_NAME = 'jsoneditor-node-container'
 const CONTENTS_CONTAINER_CLASS_NAME = 'jsoneditor-tree-contents'
 const PROPERTY_CLASS_NAME = 'jsoneditor-property'
 const VALUE_CLASS_NAME = 'jsoneditor-value'

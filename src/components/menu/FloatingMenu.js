@@ -84,11 +84,49 @@ const CREATE_TYPE = {
     onClick: () => events.onRemove(path),
     title: 'Remove'
   }, 'Remove'),
+
+  insertStructure: (path, events) => h('button', {
+    key: 'insertStructure',
+    className: MENU_ITEM_CLASS_NAME,
+    // onClick: () => events.onRemove(path),
+    title: 'Insert a new object with the same data structure as the item above'
+  }, 'Insert structure'),
+
+  insertValue: (path, events) => h('button', {
+    key: 'insertValue',
+    className: MENU_ITEM_CLASS_NAME,
+    // onClick: () => events.onRemove(path),
+    title: 'Insert value'
+  }, 'Insert value'),
+
+  insertObject: (path, events) => h('button', {
+    key: 'insertObject',
+    className: MENU_ITEM_CLASS_NAME,
+    // onClick: () => events.onRemove(path),
+    title: 'Insert Object'
+  }, 'Insert Object'),
+
+  insertArray: (path, events) => h('button', {
+    key: 'insertArray',
+    className: MENU_ITEM_CLASS_NAME,
+    // onClick: () => events.onRemove(path),
+    title: 'Insert Array'
+  }, 'Insert Array'),
+
 }
 
 export default class FloatingMenu extends PureComponent {
+  componentDidMount () {
+    setTimeout(() => {
+      const firstButton = this.refs.root && this.refs.root.querySelector('button')
+      if (firstButton) {
+        firstButton.focus()
+      }
+    })
+  }
+
   render () {
-    return h('div', {className: MENU_CLASS_NAME}, this.props.items.map(item => {
+    return h('div', {ref: 'root', className: MENU_CLASS_NAME}, this.props.items.map(item => {
       const type = typeof item === 'string' ? item : item.type
       const createType = CREATE_TYPE[type]
       if (createType) {

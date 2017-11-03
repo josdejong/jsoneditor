@@ -8,9 +8,24 @@ import FloatingMenu from './menu/FloatingMenu'
 import { escapeHTML, unescapeHTML } from '../utils/stringUtils'
 import { getInnerText, insideRect, findParentWithAttribute } from '../utils/domUtils'
 import { stringConvert, valueType, isUrl } from  '../utils/typeUtils'
-import { compileJSONPointer, SELECTED, SELECTED_END } from  '../eson'
+import { compileJSONPointer, SELECTED, SELECTED_END, SELECTED_AFTER, SELECTED_BEFORE } from  '../eson'
 
 import type { ESONObjectProperty, ESON, SearchResultStatus, Path } from '../types'
+
+// TODO: rename SELECTED, SELECTED_END, etc to AREA_*? It's used for both selection and hovering
+const SELECTED_CLASS_NAMES = {
+  [SELECTED]: ' jsoneditor-selected',
+  [SELECTED_END]: ' jsoneditor-selected jsoneditor-selected-end',
+  [SELECTED_AFTER]: ' jsoneditor-selected jsoneditor-selected-after',
+  [SELECTED_BEFORE]: ' jsoneditor-selected jsoneditor-selected-before',
+}
+
+const HOVERED_CLASS_NAMES = {
+  [SELECTED]: ' jsoneditor-hover',
+  [SELECTED_END]: ' jsoneditor-hover jsoneditor-hover-end',
+  [SELECTED_AFTER]: ' jsoneditor-hover jsoneditor-hover-after',
+  [SELECTED_BEFORE]: ' jsoneditor-hover jsoneditor-hover-before',
+}
 
 export default class JSONNode extends PureComponent {
   static URL_TITLE = 'Ctrl+Click or Ctrl+Enter to open url'
@@ -19,6 +34,12 @@ export default class JSONNode extends PureComponent {
     menu: null,       // can contain object {anchor, root}
     appendMenu: null, // can contain object {anchor, root}
     hover: false
+  }
+
+  componentWillUnmount () {
+    if (hoveredNode === this) {
+      hoveredNode = null
+    }
   }
 
   render () {
@@ -38,9 +59,8 @@ export default class JSONNode extends PureComponent {
   renderJSONObject ({prop, index, data, options, events}) {
     const childCount = data.props.length
     const node = h('div', {
-        'data-path': compileJSONPointer(this.props.path),
-        onKeyDown: this.handleKeyDown,
         key: 'node',
+        onKeyDown: this.handleKeyDown,
         className: 'jsoneditor-node jsoneditor-object'
       }, [
       this.renderExpandButton(),
@@ -55,60 +75,49 @@ export default class JSONNode extends PureComponent {
     let childs
     if (data.expanded) {
       if (data.props.length > 0) {
-        const props = data.props.map(prop => {
-          return h('li', { key: prop.id, className: JSONNode.selectedClassName(prop.value.selected) },
-            h(this.constructor, {
-              path: this.props.path.concat(prop.name),
-              prop,
-              data: prop.value,
-              options,
-              events
-            })
-          )
-        })
+        const props = data.props.map(prop => h(this.constructor, {
+          key: prop.id,
+          path: this.props.path.concat(prop.name),
+          prop,
+          data: prop.value,
+          options,
+          events
+        }))
 
-        childs = h('ul', {key: 'childs', className: 'jsoneditor-list'}, props)
+        childs = h('div', {key: 'childs', className: 'jsoneditor-list'}, props)
       }
       else {
-        childs = h('ul', {key: 'childs', className: 'jsoneditor-list'},
-          h('li', {},
-            this.renderAppend('(empty object)')
-          )
+        childs = h('div', {key: 'childs', className: 'jsoneditor-list'},
+          this.renderAppend('(empty object)')
         )
       }
     }
 
-    const floatingMenu = this.renderFloatingMenu([
-      {type: 'sort'},
-      {type: 'duplicate'},
-      {type: 'cut'},
-      {type: 'copy'},
-      {type: 'paste'},
-      {type: 'remove'}
-    ])
+    const floatingMenu = (data.selected === SELECTED_END)
+        ? this.renderFloatingMenu([
+            {type: 'sort'},
+            {type: 'duplicate'},
+            {type: 'cut'},
+            {type: 'copy'},
+            {type: 'paste'},
+            {type: 'remove'}
+          ])
+        : null
 
     return h('div', {
-      className: 'jsoneditor-node-container ' + (this.state.hover ? ' jsoneditor-node-hover': ''),
+      'data-path': compileJSONPointer(this.props.path),
+      className: this.getContainerClassName(data.selected, this.state.hover),
       onMouseOver: this.handleMouseOver,
       onMouseLeave: this.handleMouseLeave
     }, [node, floatingMenu, childs])
-  }
-
-  static selectedClassName(selected: number) {
-    return (selected === SELECTED)
-        ? ' jsoneditor-selected'
-        : (selected === SELECTED_END)
-          ? 'jsoneditor-selected jsoneditor-selected-end'
-          : ''
   }
 
   // TODO: extract a function renderChilds shared by both renderJSONObject and renderJSONArray (rename .props and .items to .childs?)
   renderJSONArray ({prop, index, data, options, events}) {
     const childCount = data.items.length
     const node = h('div', {
-        'data-path': compileJSONPointer(this.props.path),
-        onKeyDown: this.handleKeyDown,
         key: 'node',
+        onKeyDown: this.handleKeyDown,
         className: 'jsoneditor-node jsoneditor-array'
       }, [
       this.renderExpandButton(),
@@ -123,39 +132,38 @@ export default class JSONNode extends PureComponent {
     let childs
     if (data.expanded) {
       if (data.items.length > 0) {
-        const items = data.items.map((item, index) => {
-          return h('li', { key : item.id, className: JSONNode.selectedClassName(prop.value.selected)},
-            h(this.constructor, {
-              path: this.props.path.concat(String(index)),
-              index,
-              data: item.value,
-              options,
-              events
-            })
-          )
-        })
-        childs = h('ul', {key: 'childs', className: 'jsoneditor-list'}, items)
+        const items = data.items.map((item, index) => h(this.constructor, {
+          key : item.id,
+          path: this.props.path.concat(String(index)),
+          index,
+          data: item.value,
+          options,
+          events
+        }))
+
+        childs = h('div', {key: 'childs', className: 'jsoneditor-list'}, items)
       }
       else {
-        childs = h('ul', {key: 'childs', className: 'jsoneditor-list'},
-          h('li', {},
-            this.renderAppend('(empty array)')
-          )
+        childs = h('div', {key: 'childs', className: 'jsoneditor-list'},
+          this.renderAppend('(empty array)')
         )
       }
     }
 
-    const floatingMenu = this.renderFloatingMenu([
-      {type: 'sort'},
-      {type: 'duplicate'},
-      {type: 'cut'},
-      {type: 'copy'},
-      {type: 'paste'},
-      {type: 'remove'}
-    ])
+    const floatingMenu = (data.selected === SELECTED_END)
+        ? this.renderFloatingMenu([
+            {type: 'sort'},
+            {type: 'duplicate'},
+            {type: 'cut'},
+            {type: 'copy'},
+            {type: 'paste'},
+            {type: 'remove'}
+          ])
+        : null
 
     return h('div', {
-      className: 'jsoneditor-node-container ' + (this.state.hover ? ' jsoneditor-node-hover': ''),
+      'data-path': compileJSONPointer(this.props.path),
+      className: this.getContainerClassName(data.selected, this.state.hover),
       onMouseOver: this.handleMouseOver,
       onMouseLeave: this.handleMouseLeave
     }, [node, floatingMenu, childs])
@@ -163,8 +171,7 @@ export default class JSONNode extends PureComponent {
 
   renderJSONValue ({prop, index, data, options}) {
     const node = h('div', {
-        key: 'value',
-        'data-path': compileJSONPointer(this.props.path),
+        key: 'node',
         onKeyDown: this.handleKeyDown,
         className: 'jsoneditor-node'
       }, [
@@ -178,20 +185,43 @@ export default class JSONNode extends PureComponent {
       this.renderError(data.error)
     ])
 
-    const floatingMenu = this.renderFloatingMenu([
-      // {text: 'String', onClick: this.props.events.onChangeType, type: 'checkbox', checked: false},
-      {type: 'duplicate'},
-      {type: 'cut'},
-      {type: 'copy'},
-      {type: 'paste'},
-      {type: 'remove'}
-    ])
+    const floatingMenu = (data.selected === SELECTED_END)
+        ? this.renderFloatingMenu([
+            // {text: 'String', onClick: this.props.events.onChangeType, type: 'checkbox', checked: false},
+            {type: 'duplicate'},
+            {type: 'cut'},
+            {type: 'copy'},
+            {type: 'paste'},
+            {type: 'remove'}
+          ])
+        : null
+
+    const insertArea = this.renderInsertArea()
 
     return h('div', {
-      className: 'jsoneditor-node-container ' + (this.state.hover ? ' jsoneditor-node-hover': ''),
+      'data-path': compileJSONPointer(this.props.path),
+      className: this.getContainerClassName(data.selected, this.state.hover),
       onMouseOver: this.handleMouseOver,
       onMouseLeave: this.handleMouseLeave
-    }, [node, floatingMenu])
+    }, [node, floatingMenu, insertArea])
+  }
+
+  renderInsertArea () {
+    const floatingMenu = (this.props.data.selected === SELECTED_AFTER)
+        ? this.renderFloatingMenu([
+            {type: 'insertStructure'},
+            {type: 'insertValue'},
+            {type: 'insertObject'},
+            {type: 'insertArray'},
+            {type: 'paste'},
+          ])
+        : null
+
+    return h('div', {
+      key: 'menu',
+      className: 'jsoneditor-insert-area',
+      'data-area': 'after'
+    }, [floatingMenu])
   }
 
   /**
@@ -309,6 +339,12 @@ export default class JSONNode extends PureComponent {
     else {
       return null
     }
+  }
+
+  getContainerClassName (selected, hover) {
+    return 'jsoneditor-node-container' +
+      (hover ? (HOVERED_CLASS_NAMES[hover]) : '') +
+      (selected ? (SELECTED_CLASS_NAMES[selected]) : '')
   }
 
   /**
@@ -473,7 +509,7 @@ export default class JSONNode extends PureComponent {
 
   renderFloatingMenu (items) {
     return h(FloatingMenu, {
-      key: 'menu',
+      key: 'floating-menu',
       path: this.props.path,
       events: this.props.events,
       items
@@ -495,23 +531,31 @@ export default class JSONNode extends PureComponent {
   }
 
   handleMouseOver = (event) => {
-    event.stopPropagation()
+    if (event.buttons === 0) { // no mouse button down, no dragging
+      event.stopPropagation()
 
-    if (hoveredNode !== this) {
+      const hover = (event.target.className.indexOf('jsoneditor-insert-area') !== -1)
+          ? SELECTED_AFTER
+          : SELECTED
 
-      if (hoveredNode) {
-        // FIXME: this may give issues when the hovered node doesn't exist anymore. check whether mounted
-        hoveredNode.setState({hover: false})
+      if (hoveredNode && hoveredNode !== this) {
+        // FIXME: this gives issues when the hovered node doesn't exist anymore. check whether mounted?
+        hoveredNode.setState({hover: null})
       }
 
-      this.setState({hover: true})
-      hoveredNode = this
+      if (hover !== this.state.hover) {
+        this.setState({hover})
+        hoveredNode = this
+      }
     }
   }
 
   handleMouseLeave = (event) => {
     event.stopPropagation()
-    this.setState({hover: false})
+    // FIXME: this gives issues when the hovered node doesn't exist anymore. check whether mounted?
+      hoveredNode.setState({hover: false})
+
+      this.setState({hover: null})
   }
 
   handleOpenActionMenu = (event) => {

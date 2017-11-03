@@ -33,7 +33,7 @@ export type JSONArrayType = JSONType[]
 /********************** TYPES FOR THE ESON OBJECT MODEL *************************/
 
 export type SearchResultStatus = 'normal' | 'active'
-export type ESONPointerField = 'value' | 'property'
+export type ESONPointerArea = 'value' | 'property' | 'before' | 'after'
 
 export type ESONObjectProperty = {
   id: number,
@@ -78,7 +78,7 @@ export type ESONPath = string[]
 
 export type ESONPointer = {
   path: JSONPath, // TODO: change path to an ESONPath?
-  field?: ESONPointerField
+  area?: ESONPointerArea
 }
 
 export type ESONSelection = {

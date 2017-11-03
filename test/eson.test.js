@@ -194,12 +194,12 @@ test('search', t => {
   // printJSON(searchResults)
 
   t.deepEqual(searchResults, [
-    {path: ['obj', 'arr', '2', 'last'], field: 'property'},
-    {path: ['str'], field: 'value'},
-    {path: ['nill'], field: 'property'},
-    {path: ['nill'], field: 'value'},
-    {path: ['bool'], field: 'property'},
-    {path: ['bool'], field: 'value'}
+    {path: ['obj', 'arr', '2', 'last'], area: 'property'},
+    {path: ['str'], area: 'value'},
+    {path: ['nill'], area: 'property'},
+    {path: ['nill'], area: 'value'},
+    {path: ['bool'], area: 'property'},
+    {path: ['bool'], area: 'value'}
   ])
 
   const activeSearchResult = searchResults[0]
@@ -219,30 +219,30 @@ test('search', t => {
 
 test('nextSearchResult', t => {
   const searchResults = [
-    {path: ['obj', 'arr', '2', 'last'], field: 'property'},
-    {path: ['str'], field: 'value'},
-    {path: ['nill'], field: 'property'},
-    {path: ['nill'], field: 'value'},
-    {path: ['bool'], field: 'property'},
-    {path: ['bool'], field: 'value'}
+    {path: ['obj', 'arr', '2', 'last'], area: 'property'},
+    {path: ['str'], area: 'value'},
+    {path: ['nill'], area: 'property'},
+    {path: ['nill'], area: 'value'},
+    {path: ['bool'], area: 'property'},
+    {path: ['bool'], area: 'value'}
   ]
 
   t.deepEqual(nextSearchResult(searchResults,
-      {path: ['nill'], field: 'property'}),
-      {path: ['nill'], field: 'value'})
+      {path: ['nill'], area: 'property'}),
+      {path: ['nill'], area: 'value'})
 
   // wrap around
   t.deepEqual(nextSearchResult(searchResults,
-      {path: ['bool'], field: 'value'}),
-      {path: ['obj', 'arr', '2', 'last'], field: 'property'})
+      {path: ['bool'], area: 'value'}),
+      {path: ['obj', 'arr', '2', 'last'], area: 'property'})
 
   // return first when current is not found
   t.deepEqual(nextSearchResult(searchResults,
-      {path: ['non', 'existing'], field: 'value'}),
-      {path: ['obj', 'arr', '2', 'last'], field: 'property'})
+      {path: ['non', 'existing'], area: 'value'}),
+      {path: ['obj', 'arr', '2', 'last'], area: 'property'})
 
   // return null when searchResults are empty
-  t.deepEqual(nextSearchResult([], {path: ['non', 'existing'], field: 'value'}), null)
+  t.deepEqual(nextSearchResult([], {path: ['non', 'existing'], area: 'value'}), null)
 })
 
 test('previousSearchResult', t => {

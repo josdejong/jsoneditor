@@ -37,7 +37,7 @@ import {
 import { createFindKeyBinding } from '../utils/keyBindings'
 import { KEY_BINDINGS } from '../constants'
 
-import type { ESON, ESONPatch, JSONPath, ESONSelection } from '../types'
+import type { ESON, ESONPatch, JSONPath, ESONSelection, ESONPointer } from '../types'
 
 const AJV_OPTIONS = {
   allErrors: true,
@@ -100,6 +100,8 @@ export default class TreeMode extends Component {
         onPaste: this.handleMenuPaste,
 
         onExpand: this.handleExpand,
+
+        onSelect: this.handleSelect,
 
         // TODO: now we're passing not just events but also other methods. reorganize this or rename 'state.events'
         findKeyBinding: this.handleFindKeyBinding
@@ -205,12 +207,14 @@ export default class TreeMode extends Component {
         h(Hammer, {
               id: this.id,
               direction:  'DIRECTION_VERTICAL',
-              onTap: this.handleTap,
-              onPanStart: this.handlePanStart,
               onPan: this.handlePan,
               onPanEnd: this.handlePanEnd
         },
-          h('ul', {className: 'jsoneditor-list jsoneditor-root' + (data.selected ? ' jsoneditor-selected' : '')},
+          h('div', {
+              onMouseDown: this.handleTouchStart,
+              onTouchStart: this.handleTouchStart,
+              className: 'jsoneditor-list jsoneditor-root' +
+                  (data.selected ? ' jsoneditor-selected' : '')},
             h(Node, {
               data,
               events: state.events,
@@ -364,6 +368,7 @@ export default class TreeMode extends Component {
       moveUp(fromElement, 'property')
     }
 
+    this.setState({ selection : null })
     this.handlePatch(remove(path))
   }
 
@@ -535,6 +540,11 @@ export default class TreeMode extends Component {
     this.handlePatch(sort(this.state.data, path, order))
   }
 
+  handleSelect = (selection: ESONSelection) => {
+    console.log('handleSelect', selection)
+    this.setState({ selection })
+  }
+
   handleExpand = (path, expanded, recurse) => {
     if (recurse) {
       const esonPath = toEsonPath(this.state.data, path)
@@ -661,22 +671,13 @@ export default class TreeMode extends Component {
     this.emitOnChange (actions, result.revert, result.data)
   }
 
-  handleTap = (event) => {
-    const path = this.findDataPathFromElement(event.target.firstChild)
-    if (this.state.selection) {
-      this.setState({ selection: {start: {path}, end: {path}}})
+  handleTouchStart = (event) => {
+    const pointer = this.findESONPointerFromElement(event.target)
+    if (pointer) {
+      this.setState({ selection: {start: pointer, end: pointer}})
     }
-  }
-
-  handlePanStart = (event) => {
-    const path = this.findDataPathFromElement(event.target.firstChild)
-    if (path) {
-      this.setState({
-        selection: {
-          start: {path},
-          end: {path}
-        }
-      })
+    else {
+      this.setState({ selection: null })
     }
   }
 
@@ -711,6 +712,13 @@ export default class TreeMode extends Component {
 
     // The .replace is to change paths like `/myarray/-` into `/myarray`
     return attr ? parseJSONPointer(attr.replace(/\/-$/, '')) : null
+  }
+
+  findESONPointerFromElement (element: Element) : ESONPointer {
+    const path = this.findDataPathFromElement(element)
+    const area = element && element.getAttribute && element.getAttribute('data-area') || null
+
+    return { path, area }
   }
 
   /**

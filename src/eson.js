@@ -22,6 +22,8 @@ type RecurseCallback = (value: ESON, path: Path, root: ESON) => ESON
 
 export const SELECTED = 1
 export const SELECTED_END = 2
+export const SELECTED_BEFORE = 3
+export const SELECTED_AFTER = 4
 
 /**
  * Expand function which will expand all nodes
@@ -263,7 +265,7 @@ export function search (eson: ESON, text: string): ESONPointer[] {
           const parentPath = initial(path)
           const parent = getIn(eson, toEsonPath(eson, parentPath))
           if (parent.type === 'Object') {
-            results.push({path, field: 'property'})
+            results.push({path, area: 'property'})
           }
         }
       }
@@ -271,7 +273,7 @@ export function search (eson: ESON, text: string): ESONPointer[] {
       // check value
       if (value.type === 'value') {
         if (containsCaseInsensitive(value.value, text)) {
-          results.push({path, field: 'value'})
+          results.push({path, area: 'value'})
         }
       }
     })
@@ -335,13 +337,13 @@ export function applySearchResults (eson: ESON, searchResults: ESONPointer[], ac
   let updatedEson = eson
 
   searchResults.forEach(function (searchResult) {
-    if (searchResult.field === 'value') {
+    if (searchResult.area === 'value') {
       const esonPath = toEsonPath(updatedEson, searchResult.path).concat('searchResult')
       const value = isEqual(searchResult, activeSearchResult) ? 'active' : 'normal'
       updatedEson = setIn(updatedEson, esonPath, value)
     }
 
-    if (searchResult.field === 'property') {
+    if (searchResult.area === 'property') {
       const esonPath = toEsonPath(updatedEson, searchResult.path)
       const propertyPath = initial(esonPath).concat('searchResult')
       const value = isEqual(searchResult, activeSearchResult) ? 'active' : 'normal'
@@ -366,8 +368,10 @@ export function applySelection (eson: ESON, selection: ESONSelection) {
 
   if (rootPath.length === selection.start.path.length || rootPath.length === selection.end.path.length) {
     // select a single node
-    return setIn(eson, rootEsonPath.concat(['selected']), SELECTED_END)
+    const selectionType = (selection.start.area === 'after') ? SELECTED_AFTER : SELECTED_END
+console.log('selectionType', selectionType, selection)
     // FIXME: actually mark the end index as SELECTED_END, currently we select the first index
+    return setIn(eson, rootEsonPath.concat(['selected']), selectionType)
   }
   else {
     // select multiple childs of an object or array
