@@ -53,42 +53,42 @@ const CREATE_TYPE = {
   duplicate: (path, events) => h('button', {
     key: 'duplicate',
     className: MENU_ITEM_CLASS_NAME,
-    onClick: () => events.onDuplicate(path),
+    onClick: () => events.onDuplicate(),
     title: 'Duplicate'
   }, 'Duplicate'),
 
   cut: (path, events) => h('button', {
     key: 'cut',
     className: MENU_ITEM_CLASS_NAME,
-    onClick: () => events.onCut(path),
+    onClick: () => events.onCut(),
     title: 'Cut'
   }, 'Cut'),
 
   copy: (path, events) => h('button', {
     key: 'copy',
     className: MENU_ITEM_CLASS_NAME,
-    onClick: () => events.onCopy(path),
+    onClick: () => events.onCopy(),
     title: 'Copy'
   }, 'Copy'),
 
   paste: (path, events) => h('button', {
     key: 'paste',
     className: MENU_ITEM_CLASS_NAME,
-    onClick: () => events.onPaste(path),
+    onClick: () => events.onPaste(),
     title: 'Paste'
   }, 'Paste'),
 
   remove: (path, events) => h('button', {
     key: 'remove',
     className: MENU_ITEM_CLASS_NAME,
-    onClick: () => events.onRemove(null), // do not pass path: we want to remove selection
+    onClick: () => events.onRemove(),
     title: 'Remove'
   }, 'Remove'),
 
   insertStructure: (path, events) => h('button', {
     key: 'insertStructure',
     className: MENU_ITEM_CLASS_NAME,
-    onClick: () => events.onInsertStructure(path),
+    onClick: () => events.onInsertStructure(),
     title: 'Insert a new object with the same data structure as the item above'
   }, 'Insert structure'),
 

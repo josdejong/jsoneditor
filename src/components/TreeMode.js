@@ -72,6 +72,7 @@ export default class TreeMode extends Component {
       'cut': this.handleKeyDownCut,
       'copy': this.handleKeyDownCopy,
       'paste': this.handleKeyDownPaste,
+      'duplicate': this.handleKeyDownDuplicate,
       'undo': this.handleUndo,
       'redo': this.handleRedo,
       'find': this.handleFocusFind,
@@ -372,11 +373,11 @@ export default class TreeMode extends Component {
     this.focusToNext(parentPath)
   }
 
-  handleDuplicate = (path) => {
-    this.handlePatch(duplicate(this.state.data, path))
-
-    // apply focus to the duplicated node
-    this.focusToNext(path)
+  handleDuplicate = () => {
+    if (this.state.selection) {
+      this.handlePatch(duplicate(this.state.data, this.state.selection))
+      // TODO: focus to duplicated selection
+    }
   }
 
   handleRemove = (path) => {
@@ -452,6 +453,17 @@ export default class TreeMode extends Component {
 
       const path = this.findDataPathFromElement(event.target)
       this.handlePatch(insertBefore(data, path, clipboard))
+    }
+  }
+
+  handleKeyDownDuplicate = (event) => {
+    const path = this.findDataPathFromElement(event.target)
+    if (path) {
+      const selection = { start: {path}, end: {path} }
+      this.handlePatch(duplicate(this.state.data, selection))
+
+      // apply focus to the duplicated node
+      this.focusToNext(path)
     }
   }
 

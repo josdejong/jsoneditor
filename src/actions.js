@@ -92,37 +92,44 @@ export function changeType (data, path, type) {
  * and object property
  *
  * @param {ESON} data
- * @param {Path} path
+ * @param {ESONSelection} selection
  * @return {Array}
  */
-export function duplicate (data, path) {
+export function duplicate (data, selection) {
   // console.log('duplicate', path)
 
-  const parentPath = path.slice(0, path.length - 1)
+  const rootPath = findRootPath(selection)
+  const start = selection.start.path[rootPath.length]
+  const end = selection.end.path[rootPath.length]
+  const root = getIn(data, toEsonPath(data, rootPath))
+  const { maxIndex } = findSelectionIndices(root, start, end)
+  const paths = pathsFromSelection(data, selection)
 
-  const esonPath = toEsonPath(data, parentPath)
-  const parent = getIn(data, esonPath)
-
-  if (parent.type === 'Array') {
-    const index = parseInt(path[path.length - 1]) + 1
-    return [{
+  if (root.type === 'Array') {
+    return paths.map((path, offset) => ({
       op: 'copy',
       from: compileJSONPointer(path),
-      path: compileJSONPointer(parentPath.concat(index))
-    }]
+      path: compileJSONPointer(rootPath.concat(maxIndex + offset))
+    }))
   }
   else { // object.type === 'Object'
-    const prop = path[path.length - 1]
-    const newProp = findUniqueName(prop, parent.props.map(p => p.name))
+    const { maxIndex } = findSelectionIndices(root, start, end)
+    const nextProp = root.props && root.props[maxIndex]
+    const before = nextProp ? nextProp.name : null
 
-    return [{
-      op: 'copy',
-      from: compileJSONPointer(path),
-      path: compileJSONPointer(parentPath.concat(newProp)),
-      jsoneditor: {
-        before: findNextProp(parent, prop)
+    return paths.map(path => {
+      const prop = last(path)
+      const newProp = findUniqueName(prop, root.props.map(p => p.name))
+
+      return {
+        op: 'copy',
+        from: compileJSONPointer(path),
+        path: compileJSONPointer(rootPath.concat(newProp)),
+        jsoneditor: {
+          before
+        }
       }
-    }]
+    })
   }
 }
 
@@ -226,7 +233,7 @@ export function insertBefore (data, path, values) {  // TODO: find a better name
  * and object property
  *
  * @param {ESON} data
- * @param {Selection} selection
+ * @param {ESONSelection} selection
  * @param {Array.<{name?: string, value: JSONType, type?: ESONType}>} values
  * @return {Array}
  */
@@ -235,10 +242,8 @@ export function replace (data, selection, values) {  // TODO: find a better name
   const rootPath = findRootPath(selection)
   const start = selection.start.path[rootPath.length]
   const end = selection.end.path[rootPath.length]
-  console.log('rootPath', rootPath, start, end)
   const root = getIn(data, toEsonPath(data, rootPath))
   const { minIndex, maxIndex } = findSelectionIndices(root, start, end)
-  console.log('selection', minIndex, maxIndex)
 
   if (root.type === 'Array') {
     const removeActions = removeAll(pathsFromSelection(data, selection))
