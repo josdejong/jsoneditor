@@ -114,10 +114,7 @@ export default class TreeMode extends Component {
         active: null // active search result
       },
 
-      selection: {
-        start: null, // ESONPointer
-        end: null,   // ESONPointer
-      },
+      selection: null,
 
       clipboard: null // array entries {name: string, value: JSONType}
     }
