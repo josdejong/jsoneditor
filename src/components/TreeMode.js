@@ -506,8 +506,9 @@ export default class TreeMode extends Component {
     const { data, selection, clipboard } = this.state
 
     if (selection && clipboard && clipboard.length > 0) {
-      // FIXME: handle pasting in an empty object or array
+      this.setState({ selection: null })
       this.handlePatch(replace(data, selection, clipboard))
+      // TODO: select the pasted contents
     }
   }
 
@@ -710,7 +711,7 @@ export default class TreeMode extends Component {
     const path = this.findDataPathFromElement(element)
     const area = element && element.getAttribute && element.getAttribute('data-area') || null
 
-    return { path, area }
+    return path ? { path, area } : null
   }
 
   /**

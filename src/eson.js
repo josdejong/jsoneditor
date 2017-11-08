@@ -358,7 +358,7 @@ export function applySearchResults (eson: ESON, searchResults: ESONPointer[], ac
  * Merge searchResults into the eson object
  */
 export function applySelection (eson: ESON, selection: ESONSelection) {
-  if (!selection || !selection.start || !selection.end) {
+  if (!selection) {
     return eson
   }
 
