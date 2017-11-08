@@ -1,4 +1,9 @@
-import { compileJSONPointer, toEsonPath, esonToJson, findNextProp } from './eson'
+import last from 'lodash/last'
+import initial from 'lodash/initial'
+import {
+  compileJSONPointer, toEsonPath, esonToJson, findNextProp,
+  pathsFromSelection, findRootPath, findSelectionIndices
+} from './eson'
 import { findUniqueName } from  './utils/stringUtils'
 import { getIn } from  './utils/immutabilityHelpers'
 import { isObject, stringConvert } from  './utils/typeUtils'
@@ -169,6 +174,108 @@ export function insert (data, path, type) {
 }
 
 /**
+ * Create a JSONPatch for an insert action.
+ *
+ * This function needs the current data in order to be able to determine
+ * a unique property name for the inserted node in case of duplicating
+ * and object property
+ *
+ * @param {ESON} data
+ * @param {Path} path
+ * @param {Array.<{name?: string, value: JSONType, type?: ESONType}>} values
+ * @return {Array}
+ */
+export function insertBefore (data, path, values) {  // TODO: find a better name and define datastructure for values
+  const parentPath = initial(path)
+  const esonPath = toEsonPath(data, parentPath)
+  const parent = getIn(data, esonPath)
+
+  if (parent.type === 'Array') {
+    const startIndex = parseInt(last(path))
+    return values.map((entry, offset) => ({
+      op: 'add',
+      path: compileJSONPointer(parentPath.concat(startIndex + offset)),
+      value: entry.value,
+      jsoneditor: {
+        type: entry.type
+      }
+    }))
+  }
+  else { // object.type === 'Object'
+    const before = last(path)
+    return values.map(entry => {
+      const newProp = findUniqueName(entry.name, parent.props.map(p => p.name))
+      return {
+        op: 'add',
+        path: compileJSONPointer(parentPath.concat(newProp)),
+        value: entry.value,
+        jsoneditor: {
+          type: entry.type,
+          before
+        }
+      }
+    })
+  }
+}
+
+/**
+ * Create a JSONPatch for an insert action.
+ *
+ * This function needs the current data in order to be able to determine
+ * a unique property name for the inserted node in case of duplicating
+ * and object property
+ *
+ * @param {ESON} data
+ * @param {Selection} selection
+ * @param {Array.<{name?: string, value: JSONType, type?: ESONType}>} values
+ * @return {Array}
+ */
+export function replace (data, selection, values) {  // TODO: find a better name and define datastructure for values
+
+  const rootPath = findRootPath(selection)
+  const start = selection.start.path[rootPath.length]
+  const end = selection.end.path[rootPath.length]
+  console.log('rootPath', rootPath, start, end)
+  const root = getIn(data, toEsonPath(data, rootPath))
+  const { minIndex, maxIndex } = findSelectionIndices(root, start, end)
+  console.log('selection', minIndex, maxIndex)
+
+  if (root.type === 'Array') {
+    const removeActions = removeAll(pathsFromSelection(data, selection))
+    const insertActions = values.map((entry, offset) => ({
+      op: 'add',
+      path: compileJSONPointer(rootPath.concat(minIndex + offset)),
+      value: entry.value,
+      jsoneditor: {
+        type: entry.type
+      }
+    }))
+
+    return removeActions.concat(insertActions)
+  }
+  else { // object.type === 'Object'
+    const nextProp = root.props && root.props[maxIndex]
+    const before = nextProp ? nextProp.name : null
+
+    const removeActions = removeAll(pathsFromSelection(data, selection))
+    const insertActions = values.map(entry => {
+      const newProp = findUniqueName(entry.name, root.props.map(p => p.name))
+      return {
+        op: 'add',
+        path: compileJSONPointer(rootPath.concat(newProp)),
+        value: entry.value,
+        jsoneditor: {
+          type: entry.type,
+          before
+        }
+      }
+    })
+
+    return removeActions.concat(insertActions)
+  }
+}
+
+/**
  * Create a JSONPatch for an append action.
  *
  * This function needs the current data in order to be able to determine
@@ -214,6 +321,7 @@ export function append (data, parentPath, type) {
 /**
  * Create a JSONPatch for a remove action
  * @param {Path} path
+ * @return {ESONPatch}
  */
 export function remove (path) {
   return [{
@@ -221,6 +329,19 @@ export function remove (path) {
     path: compileJSONPointer(path)
   }]
 }
+
+/**
+ * Create a JSONPatch for a multiple remove action
+ * @param {Path[]} paths
+ * @return {ESONPatch}
+ */
+export function removeAll (paths) {
+  return paths.map(path => ({
+    op: 'remove',
+    path: compileJSONPointer(path)
+  }))
+}
+// TODO: test removeAll
 
 /**
  * Create a JSONPatch to order the items of an array or the properties of an object in ascending

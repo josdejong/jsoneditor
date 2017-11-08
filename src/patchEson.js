@@ -1,13 +1,12 @@
 import isEqual from 'lodash/isEqual'
 import initial from 'lodash/initial'
 
-import type { ESON, Path, ESONPatch, ESONPatchOptions, ESONPatchResult, ESONSelection } from './types'
+import type { ESON, Path, ESONPatch } from './types'
 import { setIn, updateIn, getIn, deleteIn, insertAt } from './utils/immutabilityHelpers'
 import {
   jsonToEson, esonToJson, toEsonPath,
   parseJSONPointer, compileJSONPointer,
-  expandAll, pathExists, resolvePathIndex, findPropertyIndex, findNextProp, getId,
-  pathsFromSelection
+  expandAll, pathExists, resolvePathIndex, findPropertyIndex, findNextProp, getId
 } from './eson'
 
 /**

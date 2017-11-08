@@ -6,13 +6,13 @@ import { keyComboFromEvent } from '../../utils/keyBindings'
 const MENU_CLASS_NAME = 'jsoneditor-floating-menu'
 const MENU_ITEM_CLASS_NAME = 'jsoneditor-floating-menu-item'
 
-// Array:             Sort | Map | Filter | Duplicate | Cut | Copy | Remove
+// Array:             Sort | Map | Filter | Duplicate | Cut | Copy | Paste | Remove
 //                         advanced sort (asc, desc, nested fields, custom comparator)
 //                         sort, map, filter, open a popup covering the editor (not the whole page)
 //                         (or if it's small, can be a dropdown)
-// Object:            Sort | Duplicate | Cut | Copy | Remove
+// Object:            Sort | Duplicate | Cut | Copy | Paste | Remove
 //                         simple sort (asc/desc)
-// Value:             [x] String | Duplicate | Cut | Copy | Remove
+// Value:             [x] String | Duplicate | Cut | Copy | Paste | Remove
 //                         String is a checkmark
 // Between:           Insert Structure | Insert Value | Insert Object | Insert Array | Paste
 //    inserting (value selected):  [field] [value]
@@ -81,52 +81,55 @@ const CREATE_TYPE = {
   remove: (path, events) => h('button', {
     key: 'remove',
     className: MENU_ITEM_CLASS_NAME,
-    onClick: () => events.onRemove(path),
+    onClick: () => events.onRemove(null), // do not pass path: we want to remove selection
     title: 'Remove'
   }, 'Remove'),
 
   insertStructure: (path, events) => h('button', {
     key: 'insertStructure',
     className: MENU_ITEM_CLASS_NAME,
-    // onClick: () => events.onRemove(path),
+    onClick: () => events.onInsertStructure(path),
     title: 'Insert a new object with the same data structure as the item above'
   }, 'Insert structure'),
 
   insertValue: (path, events) => h('button', {
     key: 'insertValue',
     className: MENU_ITEM_CLASS_NAME,
-    // onClick: () => events.onRemove(path),
+    onClick: () => events.onInsert(path, 'value'),
     title: 'Insert value'
   }, 'Insert value'),
 
   insertObject: (path, events) => h('button', {
     key: 'insertObject',
     className: MENU_ITEM_CLASS_NAME,
-    // onClick: () => events.onRemove(path),
+    onClick: () => events.onInsert(path, 'Object'),
     title: 'Insert Object'
   }, 'Insert Object'),
 
   insertArray: (path, events) => h('button', {
     key: 'insertArray',
     className: MENU_ITEM_CLASS_NAME,
-    // onClick: () => events.onRemove(path),
+    onClick: () => events.onInsert(path, 'Array'),
     title: 'Insert Array'
   }, 'Insert Array'),
 
 }
 
 export default class FloatingMenu extends PureComponent {
-  componentDidMount () {
-    setTimeout(() => {
-      const firstButton = this.refs.root && this.refs.root.querySelector('button')
-      if (firstButton) {
-        firstButton.focus()
-      }
-    })
-  }
+  // TODO: use or cleanup
+  // componentDidMount () {
+  //   setTimeout(() => {
+  //     const firstButton = this.refs.root && this.refs.root.querySelector('button')
+  //     // TODO: find a better way to ensure the JSONEditor has focus so the quickkeys work
+  //     // console.log(document.activeElement)
+  //     if (firstButton && document.activeElement === document.body) {
+  //       firstButton.focus()
+  //     }
+  //   })
+  // }
 
   render () {
-    return h('div', {ref: 'root', className: MENU_CLASS_NAME}, this.props.items.map(item => {
+    const items = this.props.items.map(item => {
       const type = typeof item === 'string' ? item : item.type
       const createType = CREATE_TYPE[type]
       if (createType) {
@@ -135,6 +138,17 @@ export default class FloatingMenu extends PureComponent {
       else {
         throw new Error('Unknown type of menu item for floating menu: ' + JSON.stringify(item))
       }
-    }))
+    })
+
+    return h('div', {
+      // ref: 'root',
+      className: MENU_CLASS_NAME,
+      onMouseDown: this.handleTouchStart,
+      onTouchStart: this.handleTouchStart,
+    }, items)
+  }
+
+  handleTouchStart = (event) => {
+    event.stopPropagation()
   }
 }

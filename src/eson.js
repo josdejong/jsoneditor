@@ -363,33 +363,23 @@ export function applySelection (eson: ESON, selection: ESONSelection) {
   }
 
   // find the parent node shared by both start and end of the selection
-  const rootPath = findSharedPath(selection.start.path, selection.end.path)
+  const rootPath = findRootPath(selection)
   const rootEsonPath = toEsonPath(eson, rootPath)
 
-  if (rootPath.length === selection.start.path.length || rootPath.length === selection.end.path.length) {
-    // select a single node
-    const selectionType = (selection.start.area === 'after') ? SELECTED_AFTER : SELECTED_END
-console.log('selectionType', selectionType, selection)
+  return updateIn(eson, rootEsonPath, (root) => {
+    const start = selection.start.path[rootPath.length]
+    const end = selection.end.path[rootPath.length]
+    const { minIndex, maxIndex } = findSelectionIndices(root, start, end)
+
+    const childsKey = (root.type === 'Object') ? 'props' : 'items' // property name of the array with props/items
+    const childsBefore = root[childsKey].slice(0, minIndex)
+    const childsUpdated = root[childsKey].slice(minIndex, maxIndex)
+        .map((child, index) => setIn(child, ['value', 'selected'], index === 0 ? SELECTED_END : SELECTED))
+    const childsAfter = root[childsKey].slice(maxIndex)
     // FIXME: actually mark the end index as SELECTED_END, currently we select the first index
-    return setIn(eson, rootEsonPath.concat(['selected']), selectionType)
-  }
-  else {
-    // select multiple childs of an object or array
-    return updateIn(eson, rootEsonPath, (root) => {
-      const start = selection.start.path[rootPath.length]
-      const end = selection.end.path[rootPath.length]
-      const { minIndex, maxIndex } = findSelectionIndices(root, start, end)
 
-      const childsKey = (root.type === 'Object') ? 'props' : 'items' // property name of the array with props/items
-      const childsBefore = root[childsKey].slice(0, minIndex)
-      const childsUpdated = root[childsKey].slice(minIndex, maxIndex)
-          .map((child, index) => setIn(child, ['value', 'selected'], index === 0 ? SELECTED_END : SELECTED))
-      const childsAfter = root[childsKey].slice(maxIndex)
-      // FIXME: actually mark the end index as SELECTED_END, currently we select the first index
-
-      return setIn(root, [childsKey], childsBefore.concat(childsUpdated, childsAfter))
-    })
-  }
+    return setIn(root, [childsKey], childsBefore.concat(childsUpdated, childsAfter))
+  })
 }
 
 /**
@@ -413,26 +403,19 @@ export function findSelectionIndices (root: ESON, start: string, end: string) : 
  */
 export function pathsFromSelection (eson: ESON, selection: ESONSelection): JSONPath[] {
   // find the parent node shared by both start and end of the selection
-  const rootPath = findSharedPath(selection.start.path, selection.end.path)
+  const rootPath = findRootPath(selection)
   const rootEsonPath = toEsonPath(eson, rootPath)
 
-  if (rootPath.length === selection.start.path.length || rootPath.length === selection.end.path.length) {
-    // select a single node
-    return [ rootPath ]
-  }
-  else {
-    // select multiple childs of an object or array
-    const root = getIn(eson, rootEsonPath)
-    const start = selection.start.path[rootPath.length]
-    const end = selection.end.path[rootPath.length]
-    const { minIndex, maxIndex } = findSelectionIndices(root, start, end)
+  const root = getIn(eson, rootEsonPath)
+  const start = selection.start.path[rootPath.length]
+  const end = selection.end.path[rootPath.length]
+  const { minIndex, maxIndex } = findSelectionIndices(root, start, end)
 
-    if (root.type === 'Object') {
-      return times(maxIndex - minIndex, i => rootPath.concat(root.props[i + minIndex].name))
-    }
-    else { // root.type === 'Array'
-      return times(maxIndex - minIndex, i => rootPath.concat(String(i + minIndex)))
-    }
+  if (root.type === 'Object') {
+    return times(maxIndex - minIndex, i => rootPath.concat(root.props[i + minIndex].name))
+  }
+  else { // root.type === 'Array'
+    return times(maxIndex - minIndex, i => rootPath.concat(String(i + minIndex)))
   }
 }
 
@@ -448,10 +431,29 @@ export function contentsFromPaths (data: ESON, paths: JSONPath[]) {
     return {
       name: getIn(data, initial(esonPath).concat('name')) || String(esonPath[esonPath.length - 2]),
       value: esonToJson(getIn(data, esonPath))
+      // FIXME: also store the type and expanded state
     }
   })
 }
 
+/**
+ * Find the root path of a selection: the parent node shared by both start
+ * and end of the selection
+ * @param {Selection} selection
+ * @return {JSONPath}
+ */
+export function findRootPath(selection) {
+  const sharedPath = findSharedPath(selection.start.path, selection.end.path)
+
+  if (sharedPath.length === selection.start.path.length &&
+      sharedPath.length === selection.end.path.length) {
+    // there is just one node selected, return it's parent
+    return initial(sharedPath)
+  }
+  else {
+    return sharedPath
+  }
+}
 
 /**
  * Find the common path of two paths.

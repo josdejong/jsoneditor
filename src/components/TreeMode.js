@@ -22,8 +22,8 @@ import {
 } from '../eson'
 import { patchEson } from '../patchEson'
 import {
-    duplicate, insert, append, remove,
-    changeType, changeValue, changeProperty, sort
+    duplicate, insert, insertBefore, append, remove, removeAll, replace,
+    createEntry, changeType, changeValue, changeProperty, sort
 } from '../actions'
 import JSONNode from './JSONNode'
 import JSONNodeView from './JSONNodeView'
@@ -90,14 +90,15 @@ export default class TreeMode extends Component {
         onChangeValue: this.handleChangeValue,
         onChangeType: this.handleChangeType,
         onInsert: this.handleInsert,
+        onInsertStructure: this.handleInsertStructure,
         onAppend: this.handleAppend,
         onDuplicate: this.handleDuplicate,
         onRemove: this.handleRemove,
         onSort: this.handleSort,
 
-        onCut: this.handleMenuCut,
-        onCopy: this.handleMenuCopy,
-        onPaste: this.handleMenuPaste,
+        onCut: this.handleCut,
+        onCopy: this.handleCopy,
+        onPaste: this.handlePaste,
 
         onExpand: this.handleExpand,
 
@@ -117,7 +118,7 @@ export default class TreeMode extends Component {
         end: null,   // ESONPointer
       },
 
-      clipboard: null // array entries {prop: string, value: JSON}
+      clipboard: null // array entries {name: string, value: JSONType}
     }
   }
 
@@ -128,6 +129,15 @@ export default class TreeMode extends Component {
   componentWillReceiveProps (nextProps) {
     this.applyProps(nextProps, this.props)
   }
+
+  // TODO: use or cleanup
+  // componentDidMount () {
+  //   document.addEventListener('keydown', this.handleKeyDown)
+  // }
+  //
+  // componentWillUnmount () {
+  //   document.removeEventListener('keydown', this.handleKeyDown)
+  // }
 
   // TODO: create some sort of watcher structure for these props? Is there a React pattern for that?
   applyProps (nextProps, currentProps) {
@@ -340,10 +350,19 @@ export default class TreeMode extends Component {
   }
 
   handleInsert = (path, type) => {
-    this.handlePatch(insert(this.state.data, path, type))
+    this.handlePatch(insert(this.state.data, path, createEntry(type), type))
+
+    this.setState({ selection : null }) // TODO: select the inserted entry
 
     // apply focus to new node
     this.focusToNext(path)
+  }
+
+  handleInsertStructure = (path) => {
+    // TODO: implement handleInsertStructure
+    console.log('handleInsertStructure', path)
+    alert('not yet implemented...')
+
   }
 
   handleAppend = (parentPath, type) => {
@@ -361,15 +380,24 @@ export default class TreeMode extends Component {
   }
 
   handleRemove = (path) => {
-    // apply focus to next sibling element if existing, else to the previous element
-    const fromElement = findNode(this.refs.contents, path)
-    const success = moveDownSibling(fromElement, 'property')
-    if (!success) {
-      moveUp(fromElement, 'property')
-    }
+    if (path) {
+      // apply focus to next sibling element if existing, else to the previous element
+      const fromElement = findNode(this.refs.contents, path)
+      const success = moveDownSibling(fromElement, 'property')
+      if (!success) {
+        moveUp(fromElement, 'property')
+      }
 
-    this.setState({ selection : null })
-    this.handlePatch(remove(path))
+      this.setState({ selection : null })
+      this.handlePatch(remove(path))
+    }
+    else if (this.state.selection) {
+      // remove selection
+      // TODO: select next property? (same as when removing a path?)
+      const paths = pathsFromSelection(this.state.data, this.state.selection)
+      this.setState({ selection: null })
+      this.handlePatch(removeAll(paths))
+    }
   }
 
   moveUp = (event) => {
@@ -403,54 +431,32 @@ export default class TreeMode extends Component {
   }
 
   handleKeyDownCut = (event) => {
-    const { selection } = this.state
-    if (selection) {
+    if (this.state.selection) {
       event.preventDefault()
     }
-    this.handleCut(selection)
+    this.handleCut()
   }
 
   handleKeyDownCopy = (event) => {
-    const { selection } = this.state
-    if (selection) {
+    if (this.state.selection) {
       event.preventDefault()
     }
-    this.handleCopy(selection)
+    this.handleCopy()
   }
 
   handleKeyDownPaste = (event) => {
-    const { clipboard, selection } = this.state
+    const { clipboard, data } = this.state
+
     if (clipboard && clipboard.length > 0) {
       event.preventDefault()
-      if (selection) {
-        this.handlePaste(clipboard, selection, null)
-      }
-      else {
-        // no selection -> paste after current path
-        const path = this.findDataPathFromElement(event.target)
-        this.handlePaste(clipboard, null, path)
-      }
+
+      const path = this.findDataPathFromElement(event.target)
+      this.handlePatch(insertBefore(data, path, clipboard))
     }
   }
 
-    handleMenuCut = (path) => {
-      const selection = { start: { path }, end: { path }}
-      this.handleCut(selection)
-    }
-
-    handleMenuCopy = (path) => {
-      const selection = { start: { path }, end: { path }}
-      this.handleCopy(selection)
-    }
-
-    handleMenuPaste = (path) => {
-      const { clipboard } = this.state
-      if (clipboard && clipboard.length > 0) {
-        this.handlePaste(clipboard, null, path)
-      }
-    }
-
-  handleCut = (selection: ESONSelection) => {
+  handleCut = () => {
+    const selection = this.state.selection
     if (selection && selection.start && selection.end) {
       const data = this.state.data
       const paths = pathsFromSelection(data, selection)
@@ -469,7 +475,8 @@ export default class TreeMode extends Component {
     }
   }
 
-  handleCopy = (selection: ESONSelection) => {
+  handleCopy = () => {
+    const selection = this.state.selection
     if (selection && selection.start && selection.end) {
       const data = this.state.data
       const paths = pathsFromSelection(data, selection)
@@ -483,42 +490,12 @@ export default class TreeMode extends Component {
     }
   }
 
-  handlePaste = (clipboard, selection: ESONSelection, path: JSONPath) => {
-    const { data } = this.state
+  handlePaste = () => {
+    const { data, selection, clipboard } = this.state
 
-    if (clipboard && clipboard.length > 0) {
+    if (selection && clipboard && clipboard.length > 0) {
       // FIXME: handle pasting in an empty object or array
-
-      if (path && path.length > 0) {
-        const parentPath = initial(path)
-        const parent = getIn(data, toEsonPath(data, parentPath))
-        const isObject = parent.type === 'Object'
-
-        if (parent.type === 'Object') {
-          const existingProps = parent.props.map(p => p.name)
-          const prop = last(path)
-          const patch = clipboard.map(entry => ({
-            op: 'add',
-            path: compileJSONPointer(parentPath.concat(findUniqueName(entry.name, existingProps))),
-            value: entry.value,
-            jsoneditor: { before: prop }
-          }))
-
-          this.handlePatch(patch)
-        }
-        else { // parent.type === 'Array'
-          const patch = clipboard.map(entry => ({
-            op: 'add',
-            path: compileJSONPointer(path),
-            value: entry.value
-          }))
-
-          this.handlePatch(patch)
-        }
-      }
-      else if (selection){
-        console.log('TODO: replace selection')
-      }
+      this.handlePatch(replace(data, selection, clipboard))
     }
   }
 
@@ -673,7 +650,10 @@ export default class TreeMode extends Component {
 
   handleTouchStart = (event) => {
     const pointer = this.findESONPointerFromElement(event.target)
-    if (pointer) {
+    const clickedOnEmptySpace = (event.target.nodeName === 'DIV') &&
+        (event.target.contentEditable !== 'true')
+
+    if (clickedOnEmptySpace && pointer) {
       this.setState({ selection: {start: pointer, end: pointer}})
     }
     else {
