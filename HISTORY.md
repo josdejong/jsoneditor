@@ -9,7 +9,8 @@ https://github.com/josdejong/jsoneditor
 - Implemented a status bar showing cursor location.
   Thanks @meirotstein.
 - Implemented repairing JSON objects containing left and right single
-  and double quotes (which you get when typing a JSON object in Word).
+  and double quotes (which you get when typing a JSON object in Word)
+  in `text` and `code` mode.
 
 
 ## 2017-09-16, version 5.9.6

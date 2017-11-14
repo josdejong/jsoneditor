@@ -136,6 +136,22 @@ textmode.create = function (container, options) {
     }
   };
 
+  // create repair button
+  var buttonRepair = document.createElement('button');
+  buttonRepair.type = 'button';
+  buttonRepair.className = 'jsoneditor-repair';
+  buttonRepair.title = 'Repair JSON data: fix quotes and escape characters, remove comments and JSONP notation.';
+  this.menu.appendChild(buttonRepair);
+  buttonRepair.onclick = function () {
+    try {
+      me.repair();
+      me._onChange();
+    }
+    catch (err) {
+      me._onError(err);
+    }
+  };
+
   // create mode box
   if (this.options && this.options.modes && this.options.modes.length) {
     this.modeSwitcher = new ModeSwitcher(this.menu, this.options.modes, this.options.mode, function onSwitch(mode) {
@@ -414,7 +430,7 @@ textmode.destroy = function () {
 };
 
 /**
- * Compact the code in the formatter
+ * Compact the code in the text editor
  */
 textmode.compact = function () {
   var json = this.get();
@@ -423,12 +439,21 @@ textmode.compact = function () {
 };
 
 /**
- * Format the code in the formatter
+ * Format the code in the text editor
  */
 textmode.format = function () {
   var json = this.get();
   var text = JSON.stringify(json, null, this.indentation);
   this.setText(text);
+};
+
+/**
+ * Repair the code in the text editor
+ */
+textmode.repair = function () {
+  var text = this.getText();
+  var sanitizedText = util.sanitize(text);
+  this.setText(sanitizedText);
 };
 
 /**
