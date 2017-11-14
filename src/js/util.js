@@ -50,6 +50,15 @@ exports.sanitize = function (jsString) {
     '\t': '\\t'
   };
 
+  var quote = '\'';
+  var quoteDbl = '"';
+  var quoteLeft = '\u2018';
+  var quoteRight = '\u2019';
+  var quoteDblLeft = '\u201C';
+  var quoteDblRight = '\u201D';
+  var graveAccent = '\u0060';
+  var acuteAccent = '\u00B4';
+
   // helper functions to get the current/prev/next character
   function curr () { return jsString.charAt(i);     }
   function next()  { return jsString.charAt(i + 1); }
@@ -88,11 +97,11 @@ exports.sanitize = function (jsString) {
   }
 
   // parse single or double quoted string
-  function parseString(quote) {
+  function parseString(endQuote) {
     chars.push('"');
     i++;
     var c = curr();
-    while (i < jsString.length && c !== quote) {
+    while (i < jsString.length && c !== endQuote) {
       if (c === '"' && prev() !== '\\') {
         // unescaped double quote, escape it
         chars.push('\\"');
@@ -118,7 +127,7 @@ exports.sanitize = function (jsString) {
       i++;
       c = curr();
     }
-    if (c === quote) {
+    if (c === endQuote) {
       chars.push('"');
       i++;
     }
@@ -154,8 +163,20 @@ exports.sanitize = function (jsString) {
     else if (c === '/' && next() === '/') {
       skipComment();
     }
-    else if (c === '\'' || c === '"') {
-      parseString(c);
+    else if (c === quote) {
+      parseString(quote);
+    }
+    else if (c === quoteDbl) {
+      parseString(quoteDbl);
+    }
+    else if (c === graveAccent) {
+      parseString(acuteAccent);
+    }
+    else if (c === quoteLeft) {
+      parseString(quoteRight);
+    }
+    else if (c === quoteDblLeft) {
+      parseString(quoteDblRight);
     }
     else if (/[a-zA-Z_$]/.test(c) && ['{', ','].indexOf(lastNonWhitespace()) !== -1) {
       // an unquoted object key (like a in '{a:2}')
