@@ -163,6 +163,11 @@ exports.sanitize = function (jsString) {
     else if (c === '/' && next() === '/') {
       skipComment();
     }
+    else if (c === '\u00A0' || (c >= '\u2000' && c <= '\u200A') || c === '\u202F' || c === '\u205F' || c === '\u3000') {
+      // special white spaces (like non breaking space)
+      chars.push(' ')
+      i++
+    }
     else if (c === quote) {
       parseString(quote);
     }

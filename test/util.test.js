@@ -32,6 +32,11 @@ describe('util', function () {
       assert.equal(util.sanitize('"foo\\\'bar"'), '"foo\'bar"');
     });
 
+    it('should replace special white characters', function () {
+      assert.equal(util.sanitize('{"a":\u00a0"foo\u00a0bar"}'), '{"a": "foo\u00a0bar"}');
+      assert.equal(util.sanitize('{"a":\u2009"foo"}'), '{"a": "foo"}');
+    });
+
     it('should escape unescaped control characters', function () {
       assert.equal(util.sanitize('"hello\bworld"'), '"hello\\bworld"')
       assert.equal(util.sanitize('"hello\fworld"'), '"hello\\fworld"')
@@ -41,7 +46,7 @@ describe('util', function () {
       assert.equal(util.sanitize('{"value\n": "dc=hcm,dc=com"}'), '{"value\\n": "dc=hcm,dc=com"}')
     })
 
-    it.only('should replace left/right quotes', function () {
+    it('should replace left/right quotes', function () {
       assert.equal(util.sanitize('\u2018foo\u2019'), '"foo"')
       assert.equal(util.sanitize('\u201Cfoo\u201D'), '"foo"')
       assert.equal(util.sanitize('\u0060foo\u00B4'), '"foo"')

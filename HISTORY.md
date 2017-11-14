@@ -11,6 +11,8 @@ https://github.com/josdejong/jsoneditor
 - Implemented repairing JSON objects containing left and right single
   and double quotes (which you get when typing a JSON object in Word)
   in `text` and `code` mode.
+- Implemented repairing JSON objects containing special white space
+  characters like non-breaking space.
 
 
 ## 2017-09-16, version 5.9.6
