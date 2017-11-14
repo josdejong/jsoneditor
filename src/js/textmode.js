@@ -140,7 +140,7 @@ textmode.create = function (container, options) {
   var buttonRepair = document.createElement('button');
   buttonRepair.type = 'button';
   buttonRepair.className = 'jsoneditor-repair';
-  buttonRepair.title = 'Repair JSON data: fix quotes and escape characters, remove comments and JSONP notation.';
+  buttonRepair.title = 'Repair JSON: fix quotes and escape characters, remove comments and JSONP notation, turn JavaScript objects into JSON.';
   this.menu.appendChild(buttonRepair);
   buttonRepair.onclick = function () {
     try {
