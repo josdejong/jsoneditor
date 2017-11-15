@@ -3,6 +3,13 @@
 https://github.com/josdejong/jsoneditor
 
 
+## 2017-11-15, version 5.10.1
+
+- Some styling tweaks in the navigation bar and status bar.
+- Don't display status bar in `text` mode (which doesn't yet support
+  row and col counts).
+
+
 ## 2017-11-15, version 5.10.0
 
 - Implemented a navigation bar showing the path. Thanks @meirotstein.

@@ -216,8 +216,8 @@ div.jsoneditor-outer.has-nav-bar {
 }
 
 div.jsoneditor-outer.has-status-bar {
-  margin: -35px 0 -16px 0;
-  padding: 35px 0 16px 0;
+  margin: -35px 0 -26px 0;
+  padding: 35px 0 26px 0;
 }
 
 textarea.jsoneditor-text,
@@ -249,7 +249,7 @@ textarea.jsoneditor-text {
 
 tr.jsoneditor-highlight,
 tr.jsoneditor-selected {
-  background-color: #e6e6e6;
+  background-color: #d3d3d3;
 }
 
 tr.jsoneditor-selected button.jsoneditor-dragarea,

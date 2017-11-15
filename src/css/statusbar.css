@@ -1,9 +1,15 @@
 div.jsoneditor-statusbar {
-  line-height: 17px;
-  height: 17px;
+  line-height: 26px;
+  height: 26px;
+  margin-top: -26px;
   color: #808080;
-  background-color: #dcdcdc;
-  margin-top: -17px;
+  background-color: #ebebeb;
+  border-top: 1px solid #d3d3d3;
+  -moz-box-sizing: border-box;
+  -webkit-box-sizing: border-box;
+  box-sizing: border-box;
+  font-size: 10pt;
+
 }
 
 div.jsoneditor-statusbar > .jsoneditor-curserinfo-label {
@@ -11,13 +17,9 @@ div.jsoneditor-statusbar > .jsoneditor-curserinfo-label {
 }
 
 div.jsoneditor-statusbar > .jsoneditor-curserinfo-val {
-  margin-right: 4px;
+  margin-right: 12px;
 }
 
 div.jsoneditor-statusbar > .jsoneditor-curserinfo-count {
   margin-left: 4px;
-}
-
-div.jsoneditor-statusbar > span {
-  font-size: 12px;
 }
