@@ -3,7 +3,7 @@
 https://github.com/josdejong/jsoneditor
 
 
-## not yet released, version 5.10.0
+## 2017-11-15, version 5.10.0
 
 - Implemented a navigation bar showing the path. Thanks @meirotstein.
 - Implemented a status bar showing cursor location.
@@ -13,6 +13,7 @@ https://github.com/josdejong/jsoneditor
   in `text` and `code` mode.
 - Implemented repairing JSON objects containing special white space
   characters like non-breaking space.
+- Upgraded dependency `ajv` to version `5.3.0`.
 - Fixed #481: A polyfill required `DocumentType` which is not defined
   in all environments.
 

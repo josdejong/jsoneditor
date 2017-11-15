@@ -228,6 +228,16 @@ div.jsoneditor-outer {
   box-sizing: border-box;
 }
 
+div.jsoneditor-outer.has-nav-bar {
+  margin: -61px 0 0 0;
+  padding: 61px 0 0 0;
+}
+
+div.jsoneditor-outer.has-status-bar {
+  margin: -35px 0 -16px 0;
+  padding: 35px 0 16px 0;
+}
+
 textarea.jsoneditor-text,
 .ace-jsoneditor {
   min-height: 150px;
@@ -831,6 +841,10 @@ div.jsoneditor-menu > button.jsoneditor-format {
   background-position: -72px -120px;
 }
 
+div.jsoneditor-menu > button.jsoneditor-repair {
+  background-position: -96px -96px;
+}
+
 div.jsoneditor-menu > div.jsoneditor-modes {
   display: inline-block;
   float: left;
@@ -976,4 +990,84 @@ div.jsoneditor div.autocomplete.hint {
   color: #aaa;
   top: 4px;
   left: 4px;
+}
+div.jsoneditor-treepath {
+  padding: 3px 0 2px 5px;
+  overflow: hidden;
+}
+
+div.jsoneditor-treepath div.jsoneditor-contextmenu-root {
+  position: absolute;
+  left: 0;
+}
+
+div.jsoneditor-treepath span.jsoneditor-treepath-element {
+  margin: 1px;
+  font-family: arial, sans-serif;
+  font-size: 10pt;
+}
+
+div.jsoneditor-treepath span.jsoneditor-treepath-seperator {
+  margin: 2px;
+  font-size: 9pt;
+  font-family: arial, sans-serif;
+}
+
+div.jsoneditor-treepath span.jsoneditor-treepath-element:hover,
+div.jsoneditor-treepath span.jsoneditor-treepath-seperator:hover {
+  cursor: pointer;
+  text-decoration: underline;
+}
+div.jsoneditor-statusbar {
+  line-height: 17px;
+  height: 17px;
+  color: #808080;
+  background-color: #dcdcdc;
+  margin-top: -17px;
+}
+
+div.jsoneditor-statusbar > .jsoneditor-curserinfo-label {
+  margin: 0 2px 0 4px;
+}
+
+div.jsoneditor-statusbar > .jsoneditor-curserinfo-val {
+  margin-right: 4px;
+}
+
+div.jsoneditor-statusbar > .jsoneditor-curserinfo-count {
+  margin-left: 4px;
+}
+
+div.jsoneditor-statusbar > span {
+  font-size: 12px;
+}
+div.jsoneditor-navigation-bar {
+  width: 100%;
+  height: 26px;
+  padding: 2px;
+  margin: 0;
+  -moz-box-sizing: border-box;
+  -webkit-box-sizing: border-box;
+  box-sizing: border-box;
+  color: #808080;
+  background-color: #dcdcdc;
+}
+
+div.jsoneditor-navigation-bar:before {
+  content: '';
+  width: 100%;
+  height: 1px;
+  background-color: white;
+  opacity: 0.8;
+  position: absolute;
+  left: 0;
+  margin-top: -3px;
+}
+
+div.jsoneditor-navigation-bar.nav-bar-empty:after {
+  content: 'Select a node ...';
+  color: rgba(104, 104, 91, 0.56);
+  position: absolute;
+  margin-left: 6px;
+  margin-top: -1px;
 }
