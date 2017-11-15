@@ -872,8 +872,8 @@ exports.getInputSelection = function(el) {
 
 if (typeof Element !== 'undefined') {
   // Polyfill for array remove
-  (function (arr) {
-    arr.forEach(function (item) {
+  (function () {
+    function polyfill (item) {
       if (item.hasOwnProperty('remove')) {
         return;
       }
@@ -886,8 +886,12 @@ if (typeof Element !== 'undefined') {
             this.parentNode.removeChild(this);
         }
       });
-    });
-  })([Element.prototype, CharacterData.prototype, DocumentType.prototype]);
+    }
+
+    if (typeof Element !== 'undefined')       { polyfill(Element.prototype); }
+    if (typeof CharacterData !== 'undefined') { polyfill(CharacterData.prototype); }
+    if (typeof DocumentType !== 'undefined')  { polyfill(DocumentType.prototype); }
+  })();
 }
 
 

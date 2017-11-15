@@ -13,6 +13,8 @@ https://github.com/josdejong/jsoneditor
   in `text` and `code` mode.
 - Implemented repairing JSON objects containing special white space
   characters like non-breaking space.
+- Fixed #481: A polyfill required `DocumentType` which is not defined
+  in all environments.
 
 
 ## 2017-09-16, version 5.9.6
