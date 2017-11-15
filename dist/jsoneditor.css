@@ -234,8 +234,8 @@ div.jsoneditor-outer.has-nav-bar {
 }
 
 div.jsoneditor-outer.has-status-bar {
-  margin: -35px 0 -16px 0;
-  padding: 35px 0 16px 0;
+  margin: -35px 0 -26px 0;
+  padding: 35px 0 26px 0;
 }
 
 textarea.jsoneditor-text,
@@ -265,7 +265,7 @@ textarea.jsoneditor-text {
 
 tr.jsoneditor-highlight,
 tr.jsoneditor-selected {
-  background-color: #e6e6e6;
+  background-color: #d3d3d3;
 }
 
 tr.jsoneditor-selected button.jsoneditor-dragarea,
@@ -992,7 +992,7 @@ div.jsoneditor div.autocomplete.hint {
   left: 4px;
 }
 div.jsoneditor-treepath {
-  padding: 3px 0 2px 5px;
+  padding: 0 5px;
   overflow: hidden;
 }
 
@@ -1019,11 +1019,16 @@ div.jsoneditor-treepath span.jsoneditor-treepath-seperator:hover {
   text-decoration: underline;
 }
 div.jsoneditor-statusbar {
-  line-height: 17px;
-  height: 17px;
+  line-height: 26px;
+  height: 26px;
+  margin-top: -26px;
   color: #808080;
-  background-color: #dcdcdc;
-  margin-top: -17px;
+  background-color: #ebebeb;
+  border-top: 1px solid #d3d3d3;
+  -moz-box-sizing: border-box;
+  -webkit-box-sizing: border-box;
+  box-sizing: border-box;
+  font-size: 10pt;
 }
 
 div.jsoneditor-statusbar > .jsoneditor-curserinfo-label {
@@ -1031,43 +1036,30 @@ div.jsoneditor-statusbar > .jsoneditor-curserinfo-label {
 }
 
 div.jsoneditor-statusbar > .jsoneditor-curserinfo-val {
-  margin-right: 4px;
+  margin-right: 12px;
 }
 
 div.jsoneditor-statusbar > .jsoneditor-curserinfo-count {
   margin-left: 4px;
 }
-
-div.jsoneditor-statusbar > span {
-  font-size: 12px;
-}
 div.jsoneditor-navigation-bar {
   width: 100%;
   height: 26px;
-  padding: 2px;
+  line-height: 26px;
+  padding: 0;
   margin: 0;
+  border-bottom: 1px solid #d3d3d3;
   -moz-box-sizing: border-box;
   -webkit-box-sizing: border-box;
   box-sizing: border-box;
   color: #808080;
-  background-color: #dcdcdc;
-}
-
-div.jsoneditor-navigation-bar:before {
-  content: '';
-  width: 100%;
-  height: 1px;
-  background-color: white;
-  opacity: 0.8;
-  position: absolute;
-  left: 0;
-  margin-top: -3px;
+  background-color: #ebebeb;
+  font-size: 10pt;
 }
 
 div.jsoneditor-navigation-bar.nav-bar-empty:after {
   content: 'Select a node ...';
   color: rgba(104, 104, 91, 0.56);
   position: absolute;
-  margin-left: 6px;
-  margin-top: -1px;
+  margin-left: 5px;
 }

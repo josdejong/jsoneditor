@@ -24,7 +24,7 @@
  * Copyright (c) 2011-2017 Jos de Jong, http://jsoneditoronline.org
  *
  * @author  Jos de Jong, <wjosdejong@gmail.com>
- * @version 5.10.0
+ * @version 5.10.1
  * @date    2017-11-15
  */
 (function webpackUniversalModuleDefinition(root, factory) {
@@ -16614,15 +16614,14 @@ return /******/ (function(modules) { // webpackBootstrap
 	  }
 
 	  if (options.statusBar) {
-	      
-	      util.addClassName(this.content, 'has-status-bar');
+	      if (this.mode === 'code') {
+	        util.addClassName(this.content, 'has-status-bar');
 
-	      this.curserInfoElements = {};      
-	      var statusBar = document.createElement('div');
-	      statusBar.className = 'jsoneditor-statusbar';
-	      this.frame.appendChild(statusBar);
+	        this.curserInfoElements = {};
+	        var statusBar = document.createElement('div');
+	        statusBar.className = 'jsoneditor-statusbar';
+	        this.frame.appendChild(statusBar);
 
-	      if (this.mode == 'code') {
 	        var lnLabel = document.createElement('span');
 	        lnLabel.className = 'jsoneditor-curserinfo-label';
 	        lnLabel.innerText = 'Ln:';
@@ -16647,23 +16646,23 @@ return /******/ (function(modules) { // webpackBootstrap
 	  
 	        this.curserInfoElements.colVal = colVal;
 	        this.curserInfoElements.lnVal = lnVal;
-	      } 
-	    
-	      var countLabel = document.createElement('span');
-	      countLabel.className = 'jsoneditor-curserinfo-label';
-	      countLabel.innerText = 'selected';
-	      countLabel.style.display = 'none';
 
-	      var countVal = document.createElement('span');
-	      countVal.className = 'jsoneditor-curserinfo-count';
-	      countVal.innerText = 0;
-	      countVal.style.display = 'none';
+	        var countLabel = document.createElement('span');
+	        countLabel.className = 'jsoneditor-curserinfo-label';
+	        countLabel.innerText = 'characters selected';
+	        countLabel.style.display = 'none';
 
-	      this.curserInfoElements.countLabel = countLabel;
-	      this.curserInfoElements.countVal = countVal;
+	        var countVal = document.createElement('span');
+	        countVal.className = 'jsoneditor-curserinfo-count';
+	        countVal.innerText = 0;
+	        countVal.style.display = 'none';
 
-	      statusBar.appendChild(countVal);
-	      statusBar.appendChild(countLabel);    
+	        this.curserInfoElements.countLabel = countLabel;
+	        this.curserInfoElements.countVal = countVal;
+
+	        statusBar.appendChild(countVal);
+	        statusBar.appendChild(countLabel);
+	      }
 	  }
 
 	  this.setSchema(this.options.schema, this.options.schemaRefs);  
@@ -16702,9 +16701,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	      if (selectionRange.start !== selectionRange.end) {
 	        this._setSelectionCountDisplay(Math.abs(selectionRange.end - selectionRange.start));
 	      }
-	    } else if (this.aceEditor) {
+	    } else if (this.aceEditor && this.curserInfoElements) {
 	      var curserPos = this.aceEditor.getCursorPosition();
 	      var selectedText = this.aceEditor.getSelectedText();
+
 	      this.curserInfoElements.lnVal.innerText = curserPos.row + 1;
 	      this.curserInfoElements.colVal.innerText = curserPos.column + 1;
 	      this._setSelectionCountDisplay(selectedText.length);
@@ -16760,8 +16760,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 
 	textmode._setSelectionCountDisplay = function (value) {
-	  if (this.options.statusBar) {
-	    if (value && this.curserInfoElements.countVal) {
+	  if (this.options.statusBar && this.curserInfoElements) {
+	    if (value && this.curserInfoElements && this.curserInfoElements.countVal) {
 	      this.curserInfoElements.countVal.innerText = value;
 	      this.curserInfoElements.countVal.style.display = 'inline';
 	      this.curserInfoElements.countLabel.style.display = 'inline';
