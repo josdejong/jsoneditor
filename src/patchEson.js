@@ -115,7 +115,7 @@ export function patchEson (eson: ESON, patch: ESONPatch, expand = expandAll) {
   //       when a previous action takes place on the same path, remove the first
   return {
     data: updatedEson,
-    revert: simplifyPatch(revert),
+    revert,
     error: null
   }
 }
@@ -189,38 +189,6 @@ export function remove (data: ESON, path: string) {
     }
   }
 }
-
-/**
- * Remove redundant actions from a ESONPatch array.
- * Actions are redundant when they are followed by an action
- * acting on the same path.
- * @param {ESONPatch} patch
- * @return {Array}
- */
-export function simplifyPatch(patch: ESONPatch) {
-  const simplifiedPatch = []
-  const paths = {}
-
-  // loop over the patch from last to first
-  for (let i = patch.length - 1; i >= 0; i--) {
-    const action = patch[i]
-    if (action.op === 'test') {
-      // ignore test actions
-      simplifiedPatch.unshift(action)
-    }
-    else {
-      // test whether this path was already used
-      // if not, add this action to the simplified patch
-      if (paths[action.path] === undefined) {
-        paths[action.path] = true
-        simplifiedPatch.unshift(action)
-      }
-    }
-  }
-
-  return simplifiedPatch
-}
-
 
 /**
  * @param {ESON} data

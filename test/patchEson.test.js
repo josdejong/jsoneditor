@@ -334,6 +334,7 @@ test('jsonpatch move and replace', t => {
 
   t.deepEqual(patchedJson2, json)
   t.deepEqual(revert2, [
+    {op: 'remove', path: '/b'},
     {op: 'move', from: '/a', path: '/b'}
   ])
 })
@@ -371,6 +372,7 @@ test('jsonpatch move and replace (nested)', t => {
 
   t.deepEqual(patchedJson2, json)
   t.deepEqual(revert2, [
+    {op: 'remove', path: '/arr'},
     {op: 'move', from: '/obj', path: '/arr'}
   ])
 })
