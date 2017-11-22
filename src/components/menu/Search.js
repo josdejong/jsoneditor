@@ -82,16 +82,13 @@ export default class Search extends Component {
   }
 
   handleSubmit = (event) => {
-    event.stopPropagation()
-    event.preventDefault()
-
     if (this.timeout !== null) {
       // there is a pending change
       this.debouncedOnChange()
     }
     else {
       // no pending change, go to next result
-      this.props.onNext()
+      this.props.onNext(event)
     }
   }
 
