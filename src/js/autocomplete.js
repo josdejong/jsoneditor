@@ -1,4 +1,4 @@
-﻿'use strict';
+'use strict';
 
 function completely(config) {
     config = config || {};
