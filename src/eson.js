@@ -5,7 +5,7 @@
  * All functions are pure and don't mutate the ESON.
  */
 
-import { setIn, getIn, updateIn } from './utils/immutabilityHelpers'
+import { setIn, getIn, updateIn, deleteIn } from './utils/immutabilityHelpers'
 import { isObject } from  './utils/typeUtils'
 import isEqual from 'lodash/isEqual'
 import times from 'lodash/times'
@@ -174,7 +174,35 @@ export function toJsonPath (eson: ESON, esonPath: ESONPath) : JSONPath {
   }
 }
 
-type ExpandCallback = (Path) => boolean
+/**
+ * Get a nested property from an ESON object using a JSON path
+ */
+export function getInEson (eson: ESON, jsonPath: JSONPath) {
+  return getIn(eson, toEsonPath(eson, jsonPath))
+}
+
+/**
+ * Set the value of a nested property in an ESON object using a JSON path
+ */
+export function setInEson (eson: ESON, jsonPath: JSONPath, value: JSONType) {
+  return setIn(eson, toEsonPath(eson, jsonPath), value)
+}
+
+/**
+ * Set the value of a nested property in an ESON object using a JSON path
+ */
+export function updateInEson (eson: ESON, jsonPath: JSONPath, callback) {
+  return updateIn(eson, toEsonPath(eson, jsonPath), callback)
+}
+
+/**
+ * Set the value of a nested property in an ESON object using a JSON path
+ */
+export function deleteInEson (eson: ESON, jsonPath: JSONPath) : JSONType {
+  // with initial we remove the 'value' property,
+  // we want to remove the whole item from the items array
+  return deleteIn(eson, initial(toEsonPath(eson, jsonPath)))
+}
 
 /**
  * Expand or collapse one or multiple items or properties
@@ -263,7 +291,7 @@ export function search (eson: ESON, text: string): ESONPointer[] {
           // only add search result when this is an object property name,
           // don't add search result for array indices
           const parentPath = initial(path)
-          const parent = getIn(eson, toEsonPath(eson, parentPath))
+          const parent = getInEson(eson, parentPath)
           if (parent.type === 'Object') {
             results.push({path, area: 'property'})
           }
@@ -374,7 +402,7 @@ export function applySelection (eson: ESON, selection: Selection) {
     // find the parent node shared by both start and end of the selection
     const rootPath = findRootPath(selection)
 
-    return updateIn(eson, toEsonPath(eson, rootPath), (root) => {
+    return updateInEson(eson, rootPath, (root) => {
       const { minIndex, maxIndex } = findSelectionIndices(root, rootPath, selection)
 
       const childsKey = (root.type === 'Object') ? 'props' : 'items' // property name of the array with props/items
@@ -415,7 +443,7 @@ export function findSelectionIndices (root: ESON, rootPath: JSONPath, selection:
 export function pathsFromSelection (eson: ESON, selection: Selection): JSONPath[] {
   // find the parent node shared by both start and end of the selection
   const rootPath = findRootPath(selection)
-  const root = getIn(eson, toEsonPath(eson, rootPath))
+  const root = getInEson(eson, rootPath)
 
   const { minIndex, maxIndex } = findSelectionIndices(root, rootPath, selection)
 
@@ -613,7 +641,7 @@ export function pathExists (eson: ESON, path: JSONPath) {
 export function resolvePathIndex (eson, path) {
   if (path[path.length - 1] === '-') {
     const parentPath = path.slice(0, path.length - 1)
-    const parent = getIn(eson, toEsonPath(eson, parentPath))
+    const parent = getInEson(eson, parentPath)
 
     if (parent.type === 'Array') {
       const index = parent.items.length

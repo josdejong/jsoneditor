@@ -1,10 +1,12 @@
 import isEqual from 'lodash/isEqual'
 import initial from 'lodash/initial'
+import last from 'lodash/last'
 
 import type { ESON, Path, ESONPatch } from './types'
-import { setIn, updateIn, getIn, deleteIn, insertAt } from './utils/immutabilityHelpers'
+import { setIn, updateIn, getIn, insertAt } from './utils/immutabilityHelpers'
 import {
   jsonToEson, esonToJson, toEsonPath,
+  getInEson, setInEson, deleteInEson,
   parseJSONPointer, compileJSONPointer,
   expandAll, pathExists, resolvePathIndex, findPropertyIndex, findNextProp, getId
 } from './eson'
@@ -126,11 +128,10 @@ export function patchEson (eson: ESON, patch: ESONPatch, expand = expandAll) {
  * @return {{data: ESON, revert: ESONPatch}}
  */
 export function replace (data: ESON, path: Path, value: ESON) {
-  const esonPath = toEsonPath(data, path)
-  const oldValue = getIn(data, esonPath)
+  const oldValue = getInEson(data, path)
 
   return {
-    data: setIn(data, esonPath, value),
+    data: setInEson(data, path, value),
     revert: [{
       op: 'replace',
       path: compileJSONPointer(path),
@@ -148,23 +149,19 @@ export function replace (data: ESON, path: Path, value: ESON) {
  * @param {string} path
  * @return {{data: ESON, revert: ESONPatch}}
  */
+// FIXME: path should be a path instead of a string? (all functions in patchEson)
 export function remove (data: ESON, path: string) {
   // console.log('remove', path)
   const pathArray = parseJSONPointer(path)
 
-  const parentPath = pathArray.slice(0, pathArray.length - 1)
-  const parent = getIn(data, toEsonPath(data, parentPath))
-  const dataValue = getIn(data, toEsonPath(data, pathArray))
+  const parentPath = initial(pathArray)
+  const parent = getInEson(data, parentPath)
+  const dataValue = getInEson(data, pathArray)
   const value = esonToJson(dataValue)
 
   if (parent.type === 'Array') {
-    const esonPath = toEsonPath(data, pathArray)
-
-    // remove the 'value' property, we want to remove the whole item from the items array
-    esonPath.pop()
-
     return {
-      data: deleteIn(data, esonPath),
+      data: deleteInEson(data, pathArray),
       revert: [{
         op: 'add',
         path,
@@ -176,14 +173,10 @@ export function remove (data: ESON, path: string) {
     }
   }
   else { // object.type === 'Object'
-    const esonPath = toEsonPath(data, pathArray)
-    const prop = pathArray[pathArray.length - 1]
-
-    // remove the 'value' property, we want to remove the whole object property from props
-    esonPath.pop()
+    const prop = last(pathArray)
 
     return {
-      data: deleteIn(data, esonPath),
+      data: deleteInEson(data, pathArray),
       revert: [{
         op: 'add',
         path,
@@ -274,7 +267,7 @@ export function add (data: ESON, path: string, value: ESON, options, id = getId(
   }
 
   if (parent.type === 'Object' && pathExists(data, resolvedPath)) {
-    const oldValue = getIn(data, toEsonPath(data, resolvedPath))
+    const oldValue = getInEson(data, resolvedPath)
 
     return {
       data: updatedEson,
@@ -307,7 +300,7 @@ export function add (data: ESON, path: string, value: ESON, options, id = getId(
  * @private
  */
 export function copy (data: ESON, path: string, from: string, options) {
-  const value = getIn(data, toEsonPath(data, parseJSONPointer(from)))
+  const value = getInEson(data, parseJSONPointer(from))
 
   return add(data, path, value, options)
 }
@@ -329,7 +322,7 @@ export function move (data: ESON, path: string, from: string, options) {
   // FIXME: only reuse the existing id when move is renaming a property in the same object
 
   const parentPathFrom = initial(fromArray)
-  const parent = getIn(data, toEsonPath(data, parentPathFrom))
+  const parent = getInEson(data, parentPathFrom)
 
   const result1 = remove(data, from)
   const result2 = add(result1.data, path, dataValue, options, id)
@@ -379,7 +372,7 @@ export function test (data: ESON, path: string, value: any) {
     return new Error('Test failed, path not found')
   }
 
-  const actualValue = getIn(data, toEsonPath(data, pathArray))
+  const actualValue = getInEson(data, pathArray)
   if (!isEqual(esonToJson(actualValue), value)) {
     return new Error('Test failed, value differs')
   }

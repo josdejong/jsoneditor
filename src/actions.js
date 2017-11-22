@@ -1,11 +1,10 @@
 import last from 'lodash/last'
 import initial from 'lodash/initial'
 import {
-  compileJSONPointer, toEsonPath, esonToJson, findNextProp,
+  compileJSONPointer, getInEson, esonToJson, findNextProp,
   pathsFromSelection, findRootPath, findSelectionIndices
 } from './eson'
 import { findUniqueName } from  './utils/stringUtils'
-import { getIn } from  './utils/immutabilityHelpers'
 import { isObject, stringConvert } from  './utils/typeUtils'
 import { compareAsc, compareDesc, strictShallowEqual } from './utils/arrayUtils'
 
@@ -19,9 +18,7 @@ import { compareAsc, compareDesc, strictShallowEqual } from './utils/arrayUtils'
  */
 export function changeValue (data, path, value) {
   // console.log('changeValue', data, value)
-
-  const esonPath = toEsonPath(data, path)
-  const oldDataValue = getIn(data, esonPath)
+  const oldDataValue = getInEson(data, path)
 
   return [{
     op: 'replace',
@@ -43,9 +40,7 @@ export function changeValue (data, path, value) {
  */
 export function changeProperty (data, parentPath, oldProp, newProp) {
   // console.log('changeProperty', parentPath, oldProp, newProp)
-
-  const esonPath = toEsonPath(data, parentPath)
-  const parent = getIn(data, esonPath)
+  const parent = getInEson(data, parentPath)
 
   // prevent duplicate property names
   const uniqueNewProp = findUniqueName(newProp, parent.props.map(p => p.name))
@@ -68,8 +63,7 @@ export function changeProperty (data, parentPath, oldProp, newProp) {
  * @return {Array}
  */
 export function changeType (data, path, type) {
-  const esonPath = toEsonPath(data, path)
-  const oldValue = esonToJson(getIn(data, esonPath))
+  const oldValue = esonToJson(getInEson(data, path))
   const newValue = convertType(oldValue, type)
 
   // console.log('changeType', path, type, oldValue, newValue)
@@ -102,7 +96,7 @@ export function duplicate (data, selection) {
   }
 
   const rootPath = findRootPath(selection)
-  const root = getIn(data, toEsonPath(data, rootPath))
+  const root = getInEson(data, rootPath)
   const { maxIndex } = findSelectionIndices(root, rootPath, selection)
   const paths = pathsFromSelection(data, selection)
 
@@ -147,8 +141,7 @@ export function duplicate (data, selection) {
  */
 export function insertBefore (data, path, values) {  // TODO: find a better name and define datastructure for values
   const parentPath = initial(path)
-  const esonPath = toEsonPath(data, parentPath)
-  const parent = getIn(data, esonPath)
+  const parent = getInEson(data, parentPath)
 
   if (parent.type === 'Array') {
     const startIndex = parseInt(last(path))
@@ -192,7 +185,7 @@ export function insertBefore (data, path, values) {  // TODO: find a better name
  */
 export function replace (data, selection, values) {  // TODO: find a better name and define datastructure for values
   const rootPath = findRootPath(selection)
-  const root = getIn(data, toEsonPath(data, rootPath))
+  const root = getInEson(data, rootPath)
   const { minIndex, maxIndex } = findSelectionIndices(root, rootPath, selection)
 
   if (root.type === 'Array') {
@@ -245,8 +238,7 @@ export function replace (data, selection, values) {  // TODO: find a better name
 export function append (data, parentPath, type) {
   // console.log('append', parentPath, value)
 
-  const esonPath = toEsonPath(data, parentPath)
-  const parent = getIn(data, esonPath)
+  const parent = getInEson(data, parentPath)
   const value = createEntry(type)
 
   if (parent.type === 'Array') {
@@ -310,8 +302,7 @@ export function sort (data, path, order = null) {
   // console.log('sort', path, order)
 
   const compare = order === 'desc' ? compareDesc : compareAsc
-  const esonPath = toEsonPath(data, path)
-  const object = getIn(data, esonPath)
+  const object = getInEson(data, path)
 
   if (object.type === 'Array') {
     const orderedItems = object.items.slice(0)

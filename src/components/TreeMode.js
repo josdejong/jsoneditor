@@ -4,17 +4,15 @@ import { createElement as h, Component } from 'react'
 import isEqual from 'lodash/isEqual'
 import reverse from 'lodash/reverse'
 import initial from 'lodash/initial'
-import last from 'lodash/last'
 import Hammer from 'react-hammerjs'
 import jump from '../assets/jump.js/src/jump'
 import Ajv from 'ajv'
 
-import { updateIn, getIn, setIn } from '../utils/immutabilityHelpers'
+import { setIn } from '../utils/immutabilityHelpers'
 import { parseJSON } from '../utils/jsonUtils'
-import { findUniqueName } from '../utils/stringUtils'
 import { enrichSchemaError } from '../utils/schemaUtils'
 import {
-    jsonToEson, esonToJson, toEsonPath, pathExists,
+    jsonToEson, esonToJson, getInEson, updateInEson, pathExists,
     expand, expandPath, addErrors,
     search, applySearchResults, nextSearchResult, previousSearchResult,
     applySelection, pathsFromSelection, contentsFromPaths,
@@ -548,10 +546,8 @@ export default class TreeMode extends Component {
 
   handleExpand = (path, expanded, recurse) => {
     if (recurse) {
-      const esonPath = toEsonPath(this.state.data, path)
-
       this.setState({
-        data: updateIn(this.state.data, esonPath, function (child) {
+        data: updateInEson(this.state.data, path, function (child) {
           return expand(child, (path) => true, expanded)
         })
       })
@@ -986,7 +982,7 @@ export default class TreeMode extends Component {
    * @return {boolean} Returns true when expanded, false otherwise
    */
   isExpanded (path) {
-    return getIn(this.state.data, toEsonPath(this.state.data, path)).expanded
+    return getInEson(this.state.data, path).expanded
   }
 
   /**
