@@ -25,7 +25,7 @@
  *
  * @author  Jos de Jong, <wjosdejong@gmail.com>
  * @version 5.10.1
- * @date    2017-11-15
+ * @date    2017-11-20
  */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
@@ -14048,7 +14048,18 @@ return /******/ (function(modules) { // webpackBootstrap
 	    for (var i = 0; i < path.length && childSchema; i++) {
 	      var key = path[i];
 
-	      if (typeof key === 'string' && childSchema.properties) {
+	      if (typeof key === 'string' && childSchema.patternProperties && i == path.length - 1) {
+	        for (var prop in childSchema.patternProperties) {
+	          foundSchema = Node._findSchema(childSchema.patternProperties[prop], path.slice(i, path.length));
+	        }
+	      }
+	      else if (childSchema.items && childSchema.items.properties) {
+	        childSchema = childSchema.items.properties[key];
+	        if (childSchema) {
+	          foundSchema = Node._findSchema(childSchema, path.slice(i, path.length));
+	        }
+	      }
+	      else if (typeof key === 'string' && childSchema.properties) {
 	        childSchema = childSchema.properties[key] || null;
 	        if (childSchema) {
 	          foundSchema = Node._findSchema(childSchema, path.slice(i, path.length));
