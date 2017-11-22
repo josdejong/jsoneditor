@@ -104,12 +104,14 @@ export default class JSONNode extends PureComponent {
           ])
         : null
 
+    const insertArea = this.renderInsertBeforeArea()
+
     return h('div', {
       'data-path': compileJSONPointer(this.props.path),
       className: this.getContainerClassName(data.selected, this.state.hover),
       onMouseOver: this.handleMouseOver,
       onMouseLeave: this.handleMouseLeave
-    }, [node, floatingMenu, childs])
+    }, [node, floatingMenu, insertArea, childs])
   }
 
   // TODO: extract a function renderChilds shared by both renderJSONObject and renderJSONArray (rename .props and .items to .childs?)
@@ -161,12 +163,14 @@ export default class JSONNode extends PureComponent {
           ])
         : null
 
+    const insertArea = this.renderInsertBeforeArea()
+
     return h('div', {
       'data-path': compileJSONPointer(this.props.path),
       className: this.getContainerClassName(data.selected, this.state.hover),
       onMouseOver: this.handleMouseOver,
       onMouseLeave: this.handleMouseLeave
-    }, [node, floatingMenu, childs])
+    }, [node, floatingMenu, insertArea, childs])
   }
 
   renderJSONValue ({prop, index, data, options}) {

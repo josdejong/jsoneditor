@@ -576,13 +576,13 @@ div.jsoneditor-node-container {
       &.jsoneditor-hover-insert-area {
         background-color: @selectedColor;
 
-        div.jsoneditor-insert-area {
+        > div.jsoneditor-insert-area {
           border: 1px dashed gray;
           background-color: @hoverColor;
         }
 
         &.jsoneditor-selected-insert-area {
-          div.jsoneditor-insert-area {
+          > div.jsoneditor-insert-area {
             border: 1px dashed #f4af41;
             background-color: @hoverAndSelectedColor;
           }
@@ -601,7 +601,7 @@ div.jsoneditor-node-container {
         }
       }
 
-      div.jsoneditor-insert-area {
+      > div.jsoneditor-insert-area {
         border: 1px dashed #f4af41;
         background: @selectedColor;
       }
@@ -614,7 +614,7 @@ div.jsoneditor-node-container {
       &.jsoneditor-hover-insert-area {
         background-color: inherit;
 
-        div.jsoneditor-insert-area {
+        > div.jsoneditor-insert-area {
           border: 1px dashed #f4af41;
           background: @hoverAndSelectedColor;
         }
@@ -628,7 +628,7 @@ div.jsoneditor-node-container {
     &.jsoneditor-hover-insert-area {
       background-color: inherit;
 
-      div.jsoneditor-insert-area {
+      > div.jsoneditor-insert-area {
         border: 1px dashed gray;
         background-color: @hoverColor;
       }
