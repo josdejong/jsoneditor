@@ -3,8 +3,11 @@
 https://github.com/josdejong/jsoneditor
 
 
-## not yet released, version 5.10.2
+## 2017-11-22, version 5.11.0
 
+- Upgraded dependencies
+  - `ajv@5.4.0`
+  - `brace@0.11.0`
 - Fixed dropdown for JSON Schema enums when defined inside pattern
   properties. Thanks @alquist.
 - Fixed code containing a non UTF-8 character. Thanks @alshakero.
