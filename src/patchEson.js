@@ -111,8 +111,6 @@ export function patchEson (eson: ESON, patch: ESONPatch, expand = expandAll) {
     }
   }
 
-  // TODO: Simplify revert when possible:
-  //       when a previous action takes place on the same path, remove the first
   return {
     data: updatedEson,
     revert,
