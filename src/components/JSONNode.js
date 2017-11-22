@@ -16,15 +16,15 @@ import type { ESONObjectProperty, ESON, SearchResultStatus, Path } from '../type
 const SELECTED_CLASS_NAMES = {
   [SELECTED]: ' jsoneditor-selected',
   [SELECTED_END]: ' jsoneditor-selected jsoneditor-selected-end',
-  [SELECTED_AFTER]: ' jsoneditor-selected jsoneditor-selected-after',
-  [SELECTED_BEFORE]: ' jsoneditor-selected jsoneditor-selected-before',
+  [SELECTED_AFTER]: ' jsoneditor-selected jsoneditor-selected-insert-area',
+  [SELECTED_BEFORE]: ' jsoneditor-selected jsoneditor-selected-insert-area',
 }
 
 const HOVERED_CLASS_NAMES = {
   [SELECTED]: ' jsoneditor-hover',
   [SELECTED_END]: ' jsoneditor-hover jsoneditor-hover-end',
-  [SELECTED_AFTER]: ' jsoneditor-hover jsoneditor-hover-after',
-  [SELECTED_BEFORE]: ' jsoneditor-hover jsoneditor-hover-before',
+  [SELECTED_AFTER]: ' jsoneditor-hover jsoneditor-hover-insert-area',
+  [SELECTED_BEFORE]: ' jsoneditor-hover jsoneditor-hover-insert-area',
 }
 
 export default class JSONNode extends PureComponent {
@@ -196,7 +196,7 @@ export default class JSONNode extends PureComponent {
           ])
         : null
 
-    const insertArea = this.renderInsertArea()
+    const insertArea = this.renderInsertBeforeArea()
 
     return h('div', {
       'data-path': compileJSONPointer(this.props.path),
@@ -206,8 +206,8 @@ export default class JSONNode extends PureComponent {
     }, [node, floatingMenu, insertArea])
   }
 
-  renderInsertArea () {
-    const floatingMenu = (this.props.data.selected === SELECTED_AFTER)
+  renderInsertBeforeArea () {
+    const floatingMenu = (this.props.data.selected === SELECTED_BEFORE)
         ? this.renderFloatingMenu([
             {type: 'insertStructure'},
             {type: 'insertValue'},
@@ -220,7 +220,7 @@ export default class JSONNode extends PureComponent {
     return h('div', {
       key: 'menu',
       className: 'jsoneditor-insert-area',
-      'data-area': 'after'
+      'data-area': 'before'
     }, [floatingMenu])
   }
 

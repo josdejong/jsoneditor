@@ -33,7 +33,7 @@ export type JSONArrayType = JSONType[]
 /********************** TYPES FOR THE ESON OBJECT MODEL *************************/
 
 export type SearchResultStatus = 'normal' | 'active'
-export type ESONPointerArea = 'value' | 'property' | 'before' | 'after'
+export type ESONPointerArea = 'value' | 'property'
 
 export type ESONObjectProperty = {
   id: number,
@@ -81,9 +81,11 @@ export type ESONPointer = {
   area?: ESONPointerArea
 }
 
-export type ESONSelection = {
-  start: ESONPointer,
-  end: ESONPointer
+export type Selection = {
+  start?: JSONPath,
+  end?: JSONPath,
+  before?: JSONPath,
+  after?: JSONPath
 }
 
 // TODO: ESONPointer.path is an array, JSONSchemaError.path is a string -> make this consistent

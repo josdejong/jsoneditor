@@ -13,7 +13,7 @@ import initial from 'lodash/initial'
 import last from 'lodash/last'
 
 import type {
-  ESON, ESONObject, ESONArrayItem, ESONPointer, ESONSelection, ESONType, ESONPath,
+  ESON, ESONObject, ESONArrayItem, ESONPointer, Selection, ESONType, ESONPath,
   Path,
   JSONPath, JSONType
 } from './types'
@@ -357,29 +357,36 @@ export function applySearchResults (eson: ESON, searchResults: ESONPointer[], ac
 /**
  * Merge searchResults into the eson object
  */
-export function applySelection (eson: ESON, selection: ESONSelection) {
+export function applySelection (eson: ESON, selection: Selection) {
   if (!selection) {
     return eson
   }
 
-  // find the parent node shared by both start and end of the selection
-  const rootPath = findRootPath(selection)
-  const rootEsonPath = toEsonPath(eson, rootPath)
+  if (selection.before) {
+    const esonPath = toEsonPath(eson, selection.before)
+    return setIn(eson, esonPath.concat('selected'), SELECTED_BEFORE)
+  }
+  else if (selection.after) {
+    const esonPath = toEsonPath(eson, selection.after)
+    return setIn(eson, esonPath.concat('selected'), SELECTED_AFTER)
+  }
+  else { // selection.start and selection.end
+    // find the parent node shared by both start and end of the selection
+    const rootPath = findRootPath(selection)
 
-  return updateIn(eson, rootEsonPath, (root) => {
-    const start = selection.start.path[rootPath.length]
-    const end = selection.end.path[rootPath.length]
-    const { minIndex, maxIndex } = findSelectionIndices(root, start, end)
+    return updateIn(eson, toEsonPath(eson, rootPath), (root) => {
+      const { minIndex, maxIndex } = findSelectionIndices(root, rootPath, selection)
 
-    const childsKey = (root.type === 'Object') ? 'props' : 'items' // property name of the array with props/items
-    const childsBefore = root[childsKey].slice(0, minIndex)
-    const childsUpdated = root[childsKey].slice(minIndex, maxIndex)
-        .map((child, index) => setIn(child, ['value', 'selected'], index === 0 ? SELECTED_END : SELECTED))
-    const childsAfter = root[childsKey].slice(maxIndex)
-    // FIXME: actually mark the end index as SELECTED_END, currently we select the first index
+      const childsKey = (root.type === 'Object') ? 'props' : 'items' // property name of the array with props/items
+      const childsBefore = root[childsKey].slice(0, minIndex)
+      const childsUpdated = root[childsKey].slice(minIndex, maxIndex)
+          .map((child, index) => setIn(child, ['value', 'selected'], index === 0 ? SELECTED_END : SELECTED))
+      const childsAfter = root[childsKey].slice(maxIndex)
+      // FIXME: actually mark the end index as SELECTED_END, currently we select the first index
 
-    return setIn(root, [childsKey], childsBefore.concat(childsUpdated, childsAfter))
-  })
+      return setIn(root, [childsKey], childsBefore.concat(childsUpdated, childsAfter))
+    })
+  }
 }
 
 /**
@@ -387,13 +394,17 @@ export function applySelection (eson: ESON, selection: ESONSelection) {
  * Start and end can be a property name in case of an Object,
  * or a matrix index (string with a number) in case of an Array.
  */
-export function findSelectionIndices (root: ESON, start: string, end: string) : { minIndex: number, maxIndex: number } {
+export function findSelectionIndices (root: ESON, rootPath: JSONPath, selection: Selection) : { minIndex: number, maxIndex: number } {
+  const start = (selection.after || selection.before || selection.start)[rootPath.length]
+  const end = (selection.after || selection.before || selection.end)[rootPath.length]
+
   // if no object we assume it's an Array
   const startIndex = root.type === 'Object' ? findPropertyIndex(root, start) : parseInt(start)
   const endIndex   = root.type === 'Object' ? findPropertyIndex(root, end)   : parseInt(end)
 
   const minIndex = Math.min(startIndex, endIndex)
-  const maxIndex = Math.max(startIndex, endIndex) + 1 // include max index itself
+  const maxIndex = Math.max(startIndex, endIndex) +
+      ((selection.after || selection.before) ? 0 : 1) // include max index itself
 
   return { minIndex, maxIndex }
 }
@@ -401,15 +412,12 @@ export function findSelectionIndices (root: ESON, start: string, end: string) : 
 /**
  * Get the JSON paths from a selection, sorted from first to last
  */
-export function pathsFromSelection (eson: ESON, selection: ESONSelection): JSONPath[] {
+export function pathsFromSelection (eson: ESON, selection: Selection): JSONPath[] {
   // find the parent node shared by both start and end of the selection
   const rootPath = findRootPath(selection)
-  const rootEsonPath = toEsonPath(eson, rootPath)
+  const root = getIn(eson, toEsonPath(eson, rootPath))
 
-  const root = getIn(eson, rootEsonPath)
-  const start = selection.start.path[rootPath.length]
-  const end = selection.end.path[rootPath.length]
-  const { minIndex, maxIndex } = findSelectionIndices(root, start, end)
+  const { minIndex, maxIndex } = findSelectionIndices(root, rootPath, selection)
 
   if (root.type === 'Object') {
     return times(maxIndex - minIndex, i => rootPath.concat(root.props[i + minIndex].name))
@@ -443,15 +451,23 @@ export function contentsFromPaths (data: ESON, paths: JSONPath[]) {
  * @return {JSONPath}
  */
 export function findRootPath(selection) {
-  const sharedPath = findSharedPath(selection.start.path, selection.end.path)
-
-  if (sharedPath.length === selection.start.path.length &&
-      sharedPath.length === selection.end.path.length) {
-    // there is just one node selected, return it's parent
-    return initial(sharedPath)
+  if (selection.before) {
+    return initial(selection.before)
   }
-  else {
-    return sharedPath
+  else if (selection.after) {
+    return initial(selection.after)
+  }
+  else { // .start and .end
+    const sharedPath = findSharedPath(selection.start, selection.end)
+
+    if (sharedPath.length === selection.start.length &&
+        sharedPath.length === selection.end.length) {
+      // there is just one node selected, return it's parent
+      return initial(sharedPath)
+    }
+    else {
+      return sharedPath
+    }
   }
 }
 

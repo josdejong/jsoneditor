@@ -37,7 +37,7 @@ import {
 import { createFindKeyBinding } from '../utils/keyBindings'
 import { KEY_BINDINGS } from '../constants'
 
-import type { ESON, ESONPatch, JSONPath, ESONSelection, ESONPointer } from '../types'
+import type { ESON, ESONPatch, JSONPath, Selection, ESONPointer } from '../types'
 
 const AJV_OPTIONS = {
   allErrors: true,
@@ -348,17 +348,21 @@ export default class TreeMode extends Component {
   }
 
   handleInsert = (path, type) => {
-    this.handlePatch(insert(this.state.data, path, createEntry(type), type))
+    this.handlePatch(insertBefore(this.state.data, path, [{
+      type,
+      name: '',
+      value: createEntry(type)
+    }]))
 
     this.setState({ selection : null }) // TODO: select the inserted entry
 
     // apply focus to new node
-    this.focusToNext(path)
+    this.focusToPrevious(path)
   }
 
   handleInsertStructure = (path) => {
     // TODO: implement handleInsertStructure
-    console.log('handleInsertStructure', path)
+    console.log('TODO: handleInsertStructure', path)
     alert('not yet implemented...')
 
   }
@@ -456,7 +460,7 @@ export default class TreeMode extends Component {
   handleKeyDownDuplicate = (event) => {
     const path = this.findDataPathFromElement(event.target)
     if (path) {
-      const selection = { start: {path}, end: {path} }
+      const selection = { start: path, end: path }
       this.handlePatch(duplicate(this.state.data, selection))
 
       // apply focus to the duplicated node
@@ -510,11 +514,10 @@ export default class TreeMode extends Component {
   }
 
   /**
-   * Move focus to the next search result
+   * Move focus to the next node
    * @param {Path} path
    */
   focusToNext (path) {
-    // apply focus to new element
     setTimeout(() => {
       const element = findNode(this.refs.contents, path)
       if (element) {
@@ -523,12 +526,24 @@ export default class TreeMode extends Component {
     })
   }
 
+  /**
+   * Move focus to the previous node
+   * @param {Path} path
+   */
+  focusToPrevious (path) {
+    setTimeout(() => {
+      const element = findNode(this.refs.contents, path)
+      if (element) {
+        moveUp(element, 'property')
+      }
+    })
+  }
+
   handleSort = (path, order = null) => {
     this.handlePatch(sort(this.state.data, path, order))
   }
 
-  handleSelect = (selection: ESONSelection) => {
-    console.log('handleSelect', selection)
+  handleSelect = (selection: Selection) => {
     this.setState({ selection })
   }
 
@@ -664,7 +679,7 @@ export default class TreeMode extends Component {
         (event.target.contentEditable !== 'true')
 
     if (clickedOnEmptySpace && pointer) {
-      this.setState({ selection: {start: pointer, end: pointer}})
+      this.setState({ selection: this.selectionFromESONPointer(pointer)})
     }
     else {
       this.setState({ selection: null })
@@ -672,12 +687,13 @@ export default class TreeMode extends Component {
   }
 
   handlePan = (event) => {
+    const selection = this.state.selection
     const path = this.findDataPathFromElement(event.target.firstChild)
-    if (path && this.state.selection && !isEqual(path, this.state.selection.end.path)) {
+    if (path && selection && !isEqual(path, selection.end)) {
       this.setState({
         selection: {
-          start: this.state.selection.start,
-          end: {path}
+          start: selection.start || selection.before || selection.after,
+          end: path
         }
       })
     }
@@ -709,6 +725,18 @@ export default class TreeMode extends Component {
     const area = element && element.getAttribute && element.getAttribute('data-area') || null
 
     return path ? { path, area } : null
+  }
+
+  selectionFromESONPointer (pointer: ESONPointer) : Selection {
+    if (pointer.area === 'after') {
+      return {after: pointer.path}
+    }
+    else if (pointer.area === 'before') {
+      return {before: pointer.path}
+    }
+    else {
+      return {start: pointer.path, end: pointer.path}
+    }
   }
 
   /**
@@ -770,7 +798,6 @@ export default class TreeMode extends Component {
   }
 
   undo = () => {
-    console.log('undo')
     if (this.canUndo()) {
       const history = this.state.history
       const historyIndex = this.state.historyIndex

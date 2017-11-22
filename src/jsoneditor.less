@@ -573,7 +573,7 @@ div.jsoneditor-node-container {
     &.jsoneditor-hover {
       background-color: @hoverAndSelectedColor;
 
-      &.jsoneditor-hover-after {
+      &.jsoneditor-hover-insert-area {
         background-color: @selectedColor;
 
         div.jsoneditor-insert-area {
@@ -581,7 +581,7 @@ div.jsoneditor-node-container {
           background-color: @hoverColor;
         }
 
-        &.jsoneditor-selected-after {
+        &.jsoneditor-selected-insert-area {
           div.jsoneditor-insert-area {
             border: 1px dashed #f4af41;
             background-color: @hoverAndSelectedColor;
@@ -590,13 +590,13 @@ div.jsoneditor-node-container {
       }
     }
 
-    &.jsoneditor-selected-after {
+    &.jsoneditor-selected-insert-area {
       background-color: inherit;
 
       &.jsoneditor-hover {
         background-color: @hoverColor;
 
-        &.jsoneditor-hover-after {
+        &.jsoneditor-hover-insert-area {
           background-color: inherit;
         }
       }
@@ -611,7 +611,7 @@ div.jsoneditor-node-container {
     .jsoneditor-hover {
       background-color: @hoverAndSelectedColor;
 
-      &.jsoneditor-hover-after {
+      &.jsoneditor-hover-insert-area {
         background-color: inherit;
 
         div.jsoneditor-insert-area {
@@ -625,7 +625,7 @@ div.jsoneditor-node-container {
   &.jsoneditor-hover {
     background-color: @hoverColor;
 
-    &.jsoneditor-hover-after {
+    &.jsoneditor-hover-insert-area {
       background-color: inherit;
 
       div.jsoneditor-insert-area {
@@ -642,7 +642,7 @@ div.jsoneditor-node-container {
     width: 100%;
     height: @height;
     left: 0;
-    bottom: -@height/2;
+    top: -@height/2;
     border: 1px transparent;
     box-sizing: border-box;
     z-index: 1; // must be on top of next node, it overlaps a bit

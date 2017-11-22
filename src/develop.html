@@ -12,6 +12,10 @@
   <script src="./resources/largeJson.js"></script>
 
   <style>
+    body, input, select {
+      font-family: sans-serif;
+      font-size: 11pt;
+    }
     #container {
       height: 400px;
       width: 100%;
@@ -35,6 +39,10 @@
       <option value="view">view</option>
     </select>
   </label>
+
+  <label>
+    <input type="checkbox" id="logEvents" > Log events
+  </label>
 </p>
 <div id="container"></div>
 
@@ -57,22 +65,22 @@
   const options = {
     name: 'myObject',
     onPatch: function (patch, revert) {
-      console.log('onPatch patch=', patch, ', revert=', revert)
+      log('onPatch patch=', patch, ', revert=', revert)
       window.patch = patch
       window.revert = revert
     },
     onPatchText: function (patch, revert) {
       // FIXME: implement onPatchText
-      console.log('onPatchText patch=', patch, ', revert=', revert)
+      log('onPatchText patch=', patch, ', revert=', revert)
     },
     onChange: function (json) {
-      console.log('onChange json=', json)
+      log('onChange json=', json)
     },
     onChangeText: function (text) {
-      console.log('onChangeText', text)
+      log('onChangeText', text)
     },
     onChangeMode: function (mode, prevMode) {
-      console.log('switched mode from', prevMode, 'to', mode)
+      log('switched mode from', prevMode, 'to', mode)
       document.getElementById('mode').value = mode
     },
     onError: function (err) {
@@ -157,6 +165,12 @@
   document.getElementById('mode').onchange = function (event) {
     const mode = event.target.value
     editor.setMode(mode)
+  }
+
+  function log (...args) {
+    if (document.getElementById('logEvents').checked) {
+      console.log(...args)
+    }
   }
 
 </script>
