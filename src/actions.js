@@ -283,10 +283,12 @@ export function remove (path) {
  * @return {ESONPatch}
  */
 export function removeAll (paths) {
-  return paths.map(path => ({
-    op: 'remove',
-    path: compileJSONPointer(path)
-  }))
+  return paths
+      .map(path => ({
+        op: 'remove',
+        path: compileJSONPointer(path)
+      }))
+      .reverse() // reverse is needed for arrays: delete the last index first
 }
 // TODO: test removeAll
 
