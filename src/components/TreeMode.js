@@ -364,7 +364,6 @@ export default class TreeMode extends Component {
     // TODO: implement handleInsertStructure
     console.log('TODO: handleInsertStructure', path)
     alert('not yet implemented...')
-
   }
 
   handleAppend = (parentPath, type) => {

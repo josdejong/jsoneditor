@@ -275,8 +275,8 @@ test('previousSearchResult', t => {
 
 test('selection (object)', t => {
   const selection = {
-    start: {path: ['obj', 'arr', '2', 'last']},
-    end: {path: ['nill']}
+    start: ['obj', 'arr', '2', 'last'],
+    end: ['nill']
   }
 
   const actual = applySelection(ESON1, selection)
@@ -291,8 +291,8 @@ test('selection (object)', t => {
 
 test('selection (array)', t => {
   const selection = {
-    start: {path: ['obj', 'arr', '1']},
-    end: {path: ['obj', 'arr', '0']} // note the "wrong" order of start and end
+    start: ['obj', 'arr', '1'],
+    end: ['obj', 'arr', '0'] // note the "wrong" order of start and end
   }
 
   const actual = applySelection(ESON1, selection)
@@ -307,8 +307,8 @@ test('selection (array)', t => {
 
 test('selection (value)', t => {
   const selection = {
-    start: {path: ['obj', 'arr', '2', 'first']},
-    end: {path: ['obj', 'arr', '2', 'first']}
+    start: ['obj', 'arr', '2', 'first'],
+    end: ['obj', 'arr', '2', 'first']
   }
 
   const actual = applySelection(ESON1, selection)
@@ -318,8 +318,8 @@ test('selection (value)', t => {
 
 test('selection (node)', t => {
   const selection = {
-    start: {path: ['obj', 'arr']},
-    end: {path: ['obj', 'arr']}
+    start: ['obj', 'arr'],
+    end: ['obj', 'arr']
   }
 
   const actual = applySelection(ESON1, selection)
@@ -329,8 +329,8 @@ test('selection (node)', t => {
 
 test('pathsFromSelection (object)', t => {
   const selection = {
-    start: {path: ['obj', 'arr', '2', 'last']},
-    end: {path: ['nill']}
+    start: ['obj', 'arr', '2', 'last'],
+    end: ['nill']
   }
 
   t.deepEqual(pathsFromSelection(ESON1, selection), [
@@ -342,8 +342,8 @@ test('pathsFromSelection (object)', t => {
 
 test('pathsFromSelection (array)', t => {
   const selection = {
-    start: {path: ['obj', 'arr', '1']},
-    end: {path: ['obj', 'arr', '0']} // note the "wrong" order of start and end
+    start: ['obj', 'arr', '1'],
+    end: ['obj', 'arr', '0'] // note the "wrong" order of start and end
   }
 
   t.deepEqual(pathsFromSelection(ESON1, selection), [
@@ -354,13 +354,29 @@ test('pathsFromSelection (array)', t => {
 
 test('pathsFromSelection (value)', t => {
   const selection = {
-    start: {path: ['obj', 'arr', '2', 'first']},
-    end: {path: ['obj', 'arr', '2', 'first']}
+    start: ['obj', 'arr', '2', 'first'],
+    end: ['obj', 'arr', '2', 'first']
   }
 
   t.deepEqual(pathsFromSelection(ESON1, selection), [
     ['obj', 'arr', '2', 'first'],
   ])
+})
+
+test('pathsFromSelection (before)', t => {
+  const selection = {
+    before: ['obj', 'arr', '2', 'first']
+  }
+
+  t.deepEqual(pathsFromSelection(ESON1, selection), [])
+})
+
+test('pathsFromSelection (after)', t => {
+  const selection = {
+    after: ['obj', 'arr', '2', 'first']
+  }
+
+  t.deepEqual(pathsFromSelection(ESON1, selection), [])
 })
 
 // helper function to replace all id properties with a constant value
