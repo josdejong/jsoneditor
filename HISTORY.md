@@ -3,6 +3,12 @@
 https://github.com/josdejong/jsoneditor
 
 
+## not yet released, version 5.10.2
+
+- Fixed dropdown for JSON Schema enums when defined inside pattern
+  properties. Thanks @alquist.
+
+
 ## 2017-11-15, version 5.10.1
 
 - Some styling tweaks in the navigation bar and status bar.
