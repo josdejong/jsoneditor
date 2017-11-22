@@ -7,6 +7,7 @@ https://github.com/josdejong/jsoneditor
 
 - Fixed dropdown for JSON Schema enums when defined inside pattern
   properties. Thanks @alquist.
+- Fixed code containing a non UTF-8 character. Thanks @alshakero.
 
 
 ## 2017-11-15, version 5.10.1
