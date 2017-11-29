@@ -36,10 +36,23 @@ export default class JSONNode extends PureComponent {
     hover: false
   }
 
+  constructor (props) {
+    super(props)
+
+    this.path = this.getPath(props)
+  }
+
+  componentWillMount (props) {
+  }
+
   componentWillUnmount () {
     if (hoveredNode === this) {
       hoveredNode = null
     }
+  }
+
+  componentWillReceiveProps (nextProps) {
+    this.path = this.getPath(nextProps)
   }
 
   render () {
@@ -77,7 +90,7 @@ export default class JSONNode extends PureComponent {
       if (data.props.length > 0) {
         const props = data.props.map(prop => h(this.constructor, {
           key: prop.id,
-          path: this.props.path.concat(prop.name),
+          parent: this,
           prop,
           data: prop.value,
           options,
@@ -107,7 +120,7 @@ export default class JSONNode extends PureComponent {
     const insertArea = this.renderInsertBeforeArea()
 
     return h('div', {
-      'data-path': compileJSONPointer(this.props.path),
+      'data-path': compileJSONPointer(this.path),
       className: this.getContainerClassName(data.selected, this.state.hover),
       onMouseOver: this.handleMouseOver,
       onMouseLeave: this.handleMouseLeave
@@ -136,7 +149,7 @@ export default class JSONNode extends PureComponent {
       if (data.items.length > 0) {
         const items = data.items.map((item, index) => h(this.constructor, {
           key : item.id,
-          path: this.props.path.concat(String(index)),
+          parent: this,
           index,
           data: item.value,
           options,
@@ -166,7 +179,7 @@ export default class JSONNode extends PureComponent {
     const insertArea = this.renderInsertBeforeArea()
 
     return h('div', {
-      'data-path': compileJSONPointer(this.props.path),
+      'data-path': compileJSONPointer(this.path),
       className: this.getContainerClassName(data.selected, this.state.hover),
       onMouseOver: this.handleMouseOver,
       onMouseLeave: this.handleMouseLeave
@@ -203,7 +216,7 @@ export default class JSONNode extends PureComponent {
     const insertArea = this.renderInsertBeforeArea()
 
     return h('div', {
-      'data-path': compileJSONPointer(this.props.path),
+      'data-path': compileJSONPointer(this.path),
       className: this.getContainerClassName(data.selected, this.state.hover),
       onMouseOver: this.handleMouseOver,
       onMouseLeave: this.handleMouseLeave
@@ -235,7 +248,7 @@ export default class JSONNode extends PureComponent {
    */
   renderAppend (text) {
     return h('div', {
-        'data-path': compileJSONPointer(this.props.path) + '/-',
+        'data-path': compileJSONPointer(this.path) + '/-',
         className: 'jsoneditor-node',
         onKeyDown: this.handleKeyDownAppend
       }, [
@@ -270,7 +283,7 @@ export default class JSONNode extends PureComponent {
       }, rootName)
     }
 
-    const editable = !isIndex && (!options.isPropertyEditable || options.isPropertyEditable(this.props.path))
+    const editable = !isIndex && (!options.isPropertyEditable || options.isPropertyEditable(this.path))
 
     const emptyClassName = (prop && prop.name.length === 0) ? ' jsoneditor-empty' : ''
     const searchClassName = prop ? JSONNode.getSearchResultClass(prop.searchResult) : ''
@@ -304,7 +317,7 @@ export default class JSONNode extends PureComponent {
     const itsAnUrl = isUrl(value)
     const isEmpty = escapedValue.length === 0
 
-    const editable = !options.isValueEditable || options.isValueEditable(this.props.path)
+    const editable = !options.isValueEditable || options.isValueEditable(this.path)
     if (editable) {
       return h('div', {
         key: 'value',
@@ -470,7 +483,7 @@ export default class JSONNode extends PureComponent {
 
     return h(ActionMenu, {
       key: 'menu',
-      path: this.props.path,
+      path: this.path,
       events: this.props.events,
       type: this.props.data.type,
 
@@ -514,7 +527,7 @@ export default class JSONNode extends PureComponent {
   renderFloatingMenu (items) {
     return h(FloatingMenu, {
       key: 'floating-menu',
-      path: this.props.path,
+      path: this.path,
       events: this.props.events,
       items
     })
@@ -606,7 +619,7 @@ export default class JSONNode extends PureComponent {
 
   /** @private */
   handleChangeProperty = (event) => {
-    const parentPath = initial(this.props.path)
+    const parentPath = initial(this.path)
     const oldProp = this.props.prop.name
     const newProp = unescapeHTML(getInnerText(event.target))
 
@@ -620,7 +633,7 @@ export default class JSONNode extends PureComponent {
     const value = this.getValueFromEvent(event)
 
     if (value !== this.props.data.value) {
-      this.props.events.onChangeValue(this.props.path, value)
+      this.props.events.onChangeValue(this.path, value)
     }
   }
 
@@ -637,24 +650,24 @@ export default class JSONNode extends PureComponent {
 
     if (keyBinding === 'duplicate') {
       event.preventDefault()
-      this.props.events.onDuplicate(this.props.path)
+      this.props.events.onDuplicate(this.path)
     }
 
     if (keyBinding === 'insert') {
       event.preventDefault()
-      this.props.events.onInsert(this.props.path, 'value')
+      this.props.events.onInsert(this.path, 'value')
     }
 
     if (keyBinding === 'remove') {
       event.preventDefault()
-      this.props.events.onRemove(this.props.path)
+      this.props.events.onRemove(this.path)
     }
 
     if (keyBinding === 'expand') {
       event.preventDefault()
       const recurse = false
       const expanded = !this.props.data.expanded
-      this.props.events.onExpand(this.props.path, expanded, recurse)
+      this.props.events.onExpand(this.path, expanded, recurse)
     }
 
     if (keyBinding === 'actionMenu') {
@@ -669,7 +682,7 @@ export default class JSONNode extends PureComponent {
 
     if (keyBinding === 'insert') {
       event.preventDefault()
-      this.props.events.onAppend(this.props.path, 'value')
+      this.props.events.onAppend(this.path, 'value')
     }
 
     if (keyBinding === 'actionMenu') {
@@ -692,7 +705,7 @@ export default class JSONNode extends PureComponent {
     const recurse = event.ctrlKey
     const expanded = !this.props.data.expanded
 
-    this.props.events.onExpand(this.props.path, expanded, recurse)
+    this.props.events.onExpand(this.path, expanded, recurse)
   }
 
   /**
@@ -709,6 +722,17 @@ export default class JSONNode extends PureComponent {
 
       window.open(value, '_blank')
     }
+  }
+
+  // FIXME: this construction with passing parents to determine the path is not very nice. Move determining of the path to the ESON model. We cannot generate the path whilst rendering, that defeats the efficiency of PureComponent
+  getPath (props = this.props) {
+    const parentPath = props.parent ? props.parent.path : []
+
+    return props.prop
+        ? parentPath.concat(props.prop.name)
+        : typeof props.index !== 'undefined'
+            ? parentPath.concat(props.index)
+            : parentPath
   }
 
   /**
