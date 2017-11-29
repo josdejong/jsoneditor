@@ -1,7 +1,7 @@
 'use strict';
 
 import clone from 'lodash/clone'
-import { isObjectOrArray } from  './typeUtils'
+import { isObjectOrArray, isObject } from  './typeUtils'
 
 /**
  * Immutability helpers
@@ -11,6 +11,7 @@ import { isObjectOrArray } from  './typeUtils'
  * https://www.npmjs.com/package/seamless-immutable
  * https://www.npmjs.com/package/ih
  * https://www.npmjs.com/package/mutatis
+ * https://github.com/mariocasciaro/object-path-immutable
  */
 
 
@@ -70,6 +71,35 @@ export function setIn (object, path, value) {
     return updatedObject
   }
 }
+
+export function transform (object, callback, path = []) {
+  const updated = callback(object, path)
+
+  if (Array.isArray(updated)) {
+    let changed = false
+    let updatedItems = []
+    for (let i = 0; i < updated.length; i++) {
+      updatedItems[i] = transform(updated[i], callback, path.concat(i))
+      changed = changed || updatedItems[i] !== updated[i]
+    }
+    return changed ? updatedItems : updated
+  }
+  else if (isObject(updated)) {
+    let changed = false
+    let updatedProps = {}
+    for (let key in updated) {
+      if (updated.hasOwnProperty(key)) {
+        updatedProps[key] = transform(updated[key], callback, path.concat(key))
+        changed = changed || updatedProps[key] !== updated[key]
+      }
+    }
+    return changed ? updatedProps : updated
+  }
+  else {  // updated is a value
+    return updated
+  }
+}
+
 /**
  * helper function to replace a nested property in an object with a new value
  * without mutating the object itself.

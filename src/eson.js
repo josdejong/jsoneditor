@@ -5,7 +5,7 @@
  * All functions are pure and don't mutate the ESON.
  */
 
-import { setIn, getIn, updateIn, deleteIn } from './utils/immutabilityHelpers'
+import { setIn, getIn, updateIn, deleteIn, transform } from './utils/immutabilityHelpers'
 import { isObject } from  './utils/typeUtils'
 import isEqual from 'lodash/isEqual'
 import times from 'lodash/times'
@@ -24,6 +24,51 @@ export const SELECTED = 1
 export const SELECTED_END = 2
 export const SELECTED_BEFORE = 3
 export const SELECTED_AFTER = 4
+
+/**
+ *
+ * @param {JSONType} json
+ * @param {JSONPath} path
+ * @return {ESON}
+ */
+// TODO: rename to jsonToEson after refactoring of ESON is finished
+export function toEson2 (json, path = []) {
+  const id = createId()
+
+  if (isObject(json)) {
+    let eson = {}
+    const keys = Object.keys(json)
+    keys.forEach((key) => eson[key] = toEson2(json[key], path.concat(key)))
+    eson._meta = { id, path, type: 'Object', keys }
+    return eson
+  }
+  else if (Array.isArray(json)) {
+    let eson = {}
+    json.forEach((value, index) => eson[index] = toEson2(value, path.concat(index)))
+    eson._meta = { id, path, type: 'Array', length: json.length }
+    return eson
+  }
+  else { // json is a number, string, boolean, or null
+    return {
+      _meta: { id, path, type: 'value', value: json }
+    }
+  }
+}
+
+/**
+ * Map over an eson array
+ * @param {ESONArray} esonArray
+ * @param {function (value, index, array)} callback
+ * @return {Array}
+ */
+export function mapEsonArray (esonArray, callback) {
+  const length = esonArray._meta.length
+  let result = []
+  for (let i = 0; i < length; i++) {
+    result[i] = callback(esonArray[i], i, esonArray)
+  }
+  return result
+}
 
 /**
  * Expand function which will expand all nodes
@@ -49,7 +94,7 @@ export function jsonToEson (json, expand = expandAll, path: JSONPath = [], type:
       expanded: expand(path),
       items: json.map((child, index) => {
         return {
-          id: getId(), // TODO: use id based on index (only has to be unique within this array)
+          id: createId(), // TODO: use id based on index (only has to be unique within this array)
           value: jsonToEson(child, expand, path.concat(index))
         }
       })
@@ -61,7 +106,7 @@ export function jsonToEson (json, expand = expandAll, path: JSONPath = [], type:
       expanded: expand(path),
       props: Object.keys(json).map((name, index) => {
         return {
-          id: getId(), // TODO: use id based on index (only has to be unique within this array)
+          id: createId(), // TODO: use id based on index (only has to be unique within this array)
           name,
           value: jsonToEson(json[name], expand, path.concat(name))
         }
@@ -207,31 +252,25 @@ export function deleteInEson (eson: ESON, jsonPath: JSONPath) : JSONType {
 /**
  * Expand or collapse one or multiple items or properties
  * @param {ESON} eson
- * @param {function(path: Path) : boolean | Path} callback
+ * @param {function(Path) : boolean | Path} filterCallback
  *              When a path, the object/array at this path will be expanded/collapsed
  *              When a function, all objects and arrays for which callback
  *              returns true will be expanded/collapsed
  * @param {boolean} [expanded=true]  New expanded state: true to expand, false to collapse
  * @return {ESON}
  */
-export function expand (eson: ESON, callback: Path | (Path) => boolean, expanded: boolean = true) {
+export function expand (eson, filterCallback, expanded = true) {
   // console.log('expand', callback, expand)
 
-  if (typeof callback === 'function') {
-    return transform(eson, function (value: ESON, path: Path, root: ESON) : ESON {
-      if (value.type === 'Array' || value.type === 'Object') {
-        if (callback(path)) {
-          return setIn(value, ['expanded'], expanded)
-        }
-      }
-
-      return value
+  if (typeof filterCallback === 'function') {
+    return transform(eson, function (value, path) {
+      return (value && value._meta && (value._meta.type === 'Array' || value._meta.type === 'Object') && filterCallback(path))
+          ? setIn(value, ['_meta', 'expanded'], expanded)
+          : value
     })
   }
-  else if (Array.isArray(callback)) {
-    const esonPath: Path = toEsonPath(eson, callback)
-
-    return setIn(eson, esonPath.concat(['expanded']), expanded)
+  else if (Array.isArray(filterCallback)) {
+    return setIn(eson, filterCallback.concat(['_meta', 'expanded']), expanded)
   }
   else {
     throw new Error('Callback function or path expected')
@@ -511,54 +550,54 @@ function findSharedPath (path1: JSONPath, path2: JSONPath): JSONPath {
 
   return path1.slice(0, i)
 }
-
-/**
- * Recursively transform ESON: a recursive "map" function
- * @param {ESON} eson
- * @param {function(value: ESON, path: Path, root: ESON)} callback
- * @return {ESON} Returns the transformed eson object
- */
-export function transform (eson: ESON, callback: RecurseCallback) : ESON {
-  return recurseTransform (eson, [], eson, callback)
-}
-
-/**
- * Recursively transform ESON
- * @param {ESON} value
- * @param {JSONPath} path
- * @param {ESON} root    The root object, object at path=[]
- * @param {function(value: ESON, path: Path, root: ESON)} callback
- * @return {ESON} Returns the transformed eson object
- */
-function recurseTransform (value: ESON, path: JSONPath, root: ESON, callback: RecurseCallback) : ESON {
-  let updatedValue: ESON = callback(value, path, root)
-
-  if (value.type === 'Array') {
-    let updatedItems = updatedValue.items
-
-    updatedValue.items.forEach((item, index) => {
-      const updatedItem = recurseTransform(item.value, path.concat(String(index)), root, callback)
-      updatedItems = setIn(updatedItems, [index, 'value'], updatedItem)
-    })
-
-    updatedValue = setIn(updatedValue, ['items'], updatedItems)
-  }
-
-  if (value.type === 'Object') {
-    let updatedProps = updatedValue.props
-
-    updatedValue.props.forEach((prop, index) => {
-      const updatedItem = recurseTransform(prop.value, path.concat(prop.name), root, callback)
-      updatedProps = setIn(updatedProps, [index, 'value'], updatedItem)
-    })
-
-    updatedValue = setIn(updatedValue, ['props'], updatedProps)
-  }
-
-  // (for type 'string' or 'value' there are no childs to traverse)
-
-  return updatedValue
-}
+//
+// /**
+//  * Recursively transform ESON: a recursive "map" function
+//  * @param {ESON} eson
+//  * @param {function(value: ESON, path: Path, root: ESON)} callback
+//  * @return {ESON} Returns the transformed eson object
+//  */
+// export function transform (eson: ESON, callback: RecurseCallback) : ESON {
+//   return recurseTransform (eson, [], eson, callback)
+// }
+//
+// /**
+//  * Recursively transform ESON
+//  * @param {ESON} value
+//  * @param {JSONPath} path
+//  * @param {ESON} root    The root object, object at path=[]
+//  * @param {function(value: ESON, path: Path, root: ESON)} callback
+//  * @return {ESON} Returns the transformed eson object
+//  */
+// function recurseTransform (value: ESON, path: JSONPath, root: ESON, callback: RecurseCallback) : ESON {
+//   let updatedValue: ESON = callback(value, path, root)
+//
+//   if (value.type === 'Array') {
+//     let updatedItems = updatedValue.items
+//
+//     updatedValue.items.forEach((item, index) => {
+//       const updatedItem = recurseTransform(item.value, path.concat(String(index)), root, callback)
+//       updatedItems = setIn(updatedItems, [index, 'value'], updatedItem)
+//     })
+//
+//     updatedValue = setIn(updatedValue, ['items'], updatedItems)
+//   }
+//
+//   if (value.type === 'Object') {
+//     let updatedProps = updatedValue.props
+//
+//     updatedValue.props.forEach((prop, index) => {
+//       const updatedItem = recurseTransform(prop.value, path.concat(prop.name), root, callback)
+//       updatedProps = setIn(updatedProps, [index, 'value'], updatedItem)
+//     })
+//
+//     updatedValue = setIn(updatedValue, ['props'], updatedProps)
+//   }
+//
+//   // (for type 'string' or 'value' there are no childs to traverse)
+//
+//   return updatedValue
+// }
 
 /**
  * Recursively loop over a ESON object: a recursive "forEach" function.
@@ -709,7 +748,7 @@ export function compileJSONPointer (path: Path) {
       .join('')
 }
 
-// TODO: move getId and createUniqueId to a separate file
+// TODO: move createId to a separate file
 
 /**
  * Do a case insensitive search for a search text in a text
@@ -725,19 +764,8 @@ export function containsCaseInsensitive (text: string, search: string): boolean 
  * Get a new "unique" id. Id's are created from an incremental counter.
  * @return {number}
  */
-// TODO: use createUniqueId instead of getId()
-export function getId () : number {
+export function createId () : number {
   _id++
   return _id
 }
 let _id = 0
-
-/**
- * Find a unique id from an array with properties each having an id field.
- * The
- * @param {{id: string}} array
- */
-// TODO: use createUniqueId instead of getId()
-function createUniqueId (array) {
-  return Math.max(...array.map(item => item.id)) + 1
-}

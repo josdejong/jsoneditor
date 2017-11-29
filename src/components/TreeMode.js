@@ -8,11 +8,11 @@ import Hammer from 'react-hammerjs'
 import jump from '../assets/jump.js/src/jump'
 import Ajv from 'ajv'
 
-import { setIn } from '../utils/immutabilityHelpers'
+import { setIn, updateIn } from '../utils/immutabilityHelpers'
 import { parseJSON } from '../utils/jsonUtils'
 import { enrichSchemaError } from '../utils/schemaUtils'
 import {
-    jsonToEson, esonToJson, getInEson, updateInEson, pathExists,
+    toEson2, jsonToEson, esonToJson, getInEson, updateInEson, pathExists,
     expand, expandPath, addErrors,
     search, applySearchResults, nextSearchResult, previousSearchResult,
     applySelection, pathsFromSelection, contentsFromPaths,
@@ -20,7 +20,7 @@ import {
 } from '../eson'
 import { patchEson } from '../patchEson'
 import {
-    duplicate, insert, insertBefore, append, remove, removeAll, replace,
+    duplicate, insertBefore, append, remove, removeAll, replace,
     createEntry, changeType, changeValue, changeProperty, sort
 } from '../actions'
 import JSONNode from './JSONNode'
@@ -56,7 +56,9 @@ export default class TreeMode extends Component {
   constructor (props) {
     super(props)
 
-    const data = jsonToEson(this.props.data || {}, TreeMode.expandAll, [])
+    const json = this.props.json || {}
+    const expandCallback = this.props.expand || TreeMode.expandRoot
+    const eson = expand(toEson2(json), expandCallback)
 
     this.id = Math.round(Math.random() * 1e5) // TODO: create a uuid here?
 
@@ -79,9 +81,10 @@ export default class TreeMode extends Component {
     }
 
     this.state = {
-      data,
+      json,
+      eson,
 
-      history: [data],
+      history: [eson],
       historyIndex: 0,
 
       events: {
@@ -148,11 +151,17 @@ export default class TreeMode extends Component {
 
     // Apply json
     if (nextProps.json !== currentProps.json) {
-      this.patch([{
-        op: 'replace',
-        path: '',
-        value: nextProps.json
-      }])
+      // FIXME: merge _meta from existing eson
+      this.setState({
+        json: nextProps.json,
+        eson: toEson2(nextProps.json) // FIXME: how to handle expand?
+      })
+      // TODO: cleanup
+      // this.patch([{
+      //   op: 'replace',
+      //   path: '',
+      //   value: nextProps.json
+      // }])
     }
 
     // Apply JSON Schema
@@ -172,7 +181,7 @@ export default class TreeMode extends Component {
     // TODO: apply patch
   }
 
-  render () {
+  render() {
     const { props, state } = this
 
     const Node = (props.mode === 'view')
@@ -182,21 +191,23 @@ export default class TreeMode extends Component {
             : JSONNode
 
     // enrich the data with JSON Schema errors
-    let data = state.data
-    const errors = this.getErrors()
-    if (errors.length) {
-      data = addErrors(data, this.getErrors())
-    }
+    let eson = state.eson
+    // TODO: reimplement errors
+    // const errors = this.getErrors()
+    // if (errors.length) {
+    //   data = addErrors(data, this.getErrors())
+    // }
 
     // enrich the data with search results
-    // TODO: performance improvements in search would be nice though it's acceptable right now
-    const searchResults = this.state.search.text ? search(data, this.state.search.text) : null
-    if (searchResults) {
-      data = applySearchResults(data, searchResults, this.state.search.active)
-    }
-    if (this.state.selection) {
-      data = applySelection(data, this.state.selection)
-    }
+    // TODO: reimplement search and selection
+    const searchResults = []
+    // const searchResults = this.state.search.text ? search(data, this.state.search.text) : null
+    // if (searchResults) {
+    //   data = applySearchResults(data, searchResults, this.state.search.active)
+    // }
+    // if (this.state.selection) {
+    //   data = applySelection(data, this.state.selection)
+    // }
 
     return h('div', {
       className: `jsoneditor jsoneditor-mode-${props.mode}`,
@@ -220,12 +231,11 @@ export default class TreeMode extends Component {
               onMouseDown: this.handleTouchStart,
               onTouchStart: this.handleTouchStart,
               className: 'jsoneditor-list jsoneditor-root' +
-                  (data.selected ? ' jsoneditor-selected' : '')},
+                  (eson._meta.selected ? ' jsoneditor-selected' : '')},
             h(Node, {
-              data,
+              eson,
               events: state.events,
               options: props,
-              path: [],
               prop: null
             })
           )
@@ -313,7 +323,7 @@ export default class TreeMode extends Component {
    */
   getErrors () {
     if (this.state.compiledSchema) {
-      const valid = this.state.compiledSchema(esonToJson(this.state.data))
+      const valid = this.state.compiledSchema(this.state.json)
       if (!valid) {
         return this.state.compiledSchema.errors.map(enrichSchemaError)
       }
@@ -547,14 +557,14 @@ export default class TreeMode extends Component {
   handleExpand = (path, expanded, recurse) => {
     if (recurse) {
       this.setState({
-        data: updateInEson(this.state.data, path, function (child) {
+        eson: updateIn(this.state.eson, path, function (child) {
           return expand(child, (path) => true, expanded)
         })
       })
     }
     else {
       this.setState({
-        data: expand(this.state.data, path, expanded)
+        eson: expand(this.state.eson, path, expanded)
       })
     }
   }
@@ -885,10 +895,11 @@ export default class TreeMode extends Component {
   set (json) {
     // FIXME: when both json and expand are being changed via React, this.props must be updated before set(json) is called
     // TODO: document option expand
-    const expand = this.props.expand || TreeMode.expandRoot
+    const expandCallback = this.props.expand || TreeMode.expandRoot
 
     this.setState({
-      data: jsonToEson(json, expand, []),
+      json: json,
+      eson: expand(toEson2(json), expandCallback), // FIXME: expand eson
 
       // TODO: do we want to keep history when .set(json) is called? (currently we remove history)
       history: [],
@@ -901,7 +912,7 @@ export default class TreeMode extends Component {
    * @returns {Object | Array | string | number | boolean | null} json
    */
   get () {
-    return esonToJson(this.state.data)
+    return this.state.json
   }
 
   /**

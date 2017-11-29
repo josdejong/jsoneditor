@@ -42,6 +42,7 @@
     "babel-preset-stage-3": "6.17.0",
     "browser-sync": "2.18.6",
     "css-loader": "0.26.1",
+    "deep-map": "1.5.0",
     "flow-bin": "0.37.4",
     "graceful-fs": "4.1.11",
     "gulp": "3.9.1",

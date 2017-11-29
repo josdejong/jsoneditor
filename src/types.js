@@ -20,7 +20,11 @@
  *   ace: Object?
  * }} Options
  *
+ * @typedef {string[]} Path
+ *
  */
+
+// FIXME: redefine all ESON related types
 
 
 /**************************** GENERIC JSON TYPES ******************************/
@@ -48,24 +52,32 @@ export type ESONArrayItem = {
 }
 
 export type ESONObject = {
-  type: 'Object',
-  expanded?: boolean,
-  selected?: boolean,
-  props: ESONObjectProperty[]
+  _meta: {
+    type: 'Object',
+    path: JSONPath,
+    expanded?: boolean,
+    selected?: boolean,
+  }
 }
 
 export type ESONArray = {
-  type: 'Array',
-  expanded?: boolean,
-  selected?: boolean,
-  items: ESONArrayItem[]
+  _meta: {
+    type: 'Array',
+    path: JSONPath,
+    expanded?: boolean,
+    selected?: boolean,
+    length: number
+  }
 }
 
 export type ESONValue = {
-  type: 'value' | 'string',
-  value?: any,
-  selected?: boolean,
-  searchResult?: SearchResultStatus
+  _meta: {
+    type: 'value' | 'string',
+    path: JSONPath,
+    value: null | boolean | string | number,
+    selected?: boolean,
+    searchResult?: SearchResultStatus
+  }
 }
 
 export type ESON = ESONObject | ESONArray | ESONValue

@@ -10,7 +10,21 @@
 export function isObject (value) {
   return typeof value === 'object' &&
       value !== null &&
-      !Array.isArray(value)
+      !Array.isArray(value) &&
+      (!value._meta || typeof value._meta.value === 'undefined')
+}
+
+/**
+ * Test whether a value is not an object or array, but null, number, string, or
+ * boolean.
+ * @param {*} value
+ * @return {boolean}
+ */
+export function isValue (value) {
+  return (value === null ||
+      typeof value === 'number' ||
+      typeof value === 'string' ||
+      typeof value === 'boolean')
 }
 
 /**

@@ -4,10 +4,12 @@ import { setIn, getIn } from '../src/utils/immutabilityHelpers'
 import {
     jsonToEson, esonToJson, toEsonPath, toJsonPath, pathExists, transform, traverse,
     parseJSONPointer, compileJSONPointer,
+    toEson2,
     expand, addErrors, search, applySearchResults, nextSearchResult, previousSearchResult,
     applySelection, pathsFromSelection,
     SELECTED, SELECTED_END
 } from '../src/eson'
+import deepMap from "deep-map/lib/index"
 
 const JSON1 = loadJSON('./resources/json1.json')
 const ESON1 = loadJSON('./resources/eson1.json')
@@ -33,6 +35,25 @@ test('toJsonPath', t => {
     'props', '1', 'value'
   ]
   t.deepEqual(toJsonPath(ESON1, esonPath), jsonPath)
+})
+
+test('toEson2', t => {
+  t.deepEqual(replaceIds2(toEson2(1)),     {_meta: {id: '[ID]', path: [], type: 'value', value: 1}})
+  t.deepEqual(replaceIds2(toEson2("foo")), {_meta: {id: '[ID]', path: [], type: 'value', value: "foo"}})
+  t.deepEqual(replaceIds2(toEson2(null)),  {_meta: {id: '[ID]', path: [], type: 'value', value: null}})
+  t.deepEqual(replaceIds2(toEson2(false)), {_meta: {id: '[ID]', path: [], type: 'value', value: false}})
+  t.deepEqual(replaceIds2(toEson2({a:1, b: 2})), {
+    _meta: {id: '[ID]', path: [], type: 'Object', keys: ['a', 'b']},
+    a: {_meta: {id: '[ID]', path: ['a'], type: 'value', value: 1}},
+    b: {_meta: {id: '[ID]', path: ['b'], type: 'value', value: 2}}
+  })
+
+  printJSON(replaceIds2(toEson2([1,2])))
+  t.deepEqual(replaceIds2(toEson2([1,2])), {
+    _meta: {id: '[ID]', path: [], type: 'Array', length: 2},
+    0: {_meta: {id: '[ID]', path: [0], type: 'value', value: 1}},
+    1: {_meta: {id: '[ID]', path: [1], type: 'value', value: 2}}
+  })
 })
 
 test('jsonToEson', t => {
@@ -394,6 +415,11 @@ function replaceIds (data, value = '[ID]') {
       replaceIds(item.value, value)
     })
   }
+}
+
+// helper function to replace all id properties with a constant value
+function replaceIds2 (data, key = 'id', value = '[ID]') {
+  return deepMap(data, (v, k) => k === key ? value : v)
 }
 
 // helper function to print JSON in the console

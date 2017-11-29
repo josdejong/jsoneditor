@@ -8,7 +8,7 @@ import {
   jsonToEson, esonToJson, toEsonPath,
   getInEson, setInEson, deleteInEson,
   parseJSONPointer, compileJSONPointer,
-  expandAll, pathExists, resolvePathIndex, findPropertyIndex, findNextProp, getId
+  expandAll, pathExists, resolvePathIndex, findPropertyIndex, findNextProp, createId
 } from './eson'
 
 /**
@@ -197,7 +197,7 @@ export function remove (data: ESON, path: string) {
  * @return {{data: ESON, revert: ESONPatch}}
  * @private
  */
-export function add (data: ESON, path: string, value: ESON, options, id = getId()) {
+export function add (data: ESON, path: string, value: ESON, options, id = createId()) {
   const pathArray = parseJSONPointer(path)
   const parentPath = pathArray.slice(0, pathArray.length - 1)
   const esonPath = toEsonPath(data, parentPath)
