@@ -1,0 +1,21 @@
+div.jsoneditor-navigation-bar {
+  width: 100%;
+  height: 26px;
+  line-height: 26px;
+  padding: 0;
+  margin: 0;
+  border-bottom: 1px solid #d3d3d3;
+  -moz-box-sizing: border-box;
+  -webkit-box-sizing: border-box;
+  box-sizing: border-box;
+  color: #808080;
+  background-color: #ebebeb;
+  font-size: 10pt;
+}
+
+div.jsoneditor-navigation-bar.nav-bar-empty:after {
+  content: 'Select a node ...';
+  color: rgba(104, 104, 91, 0.56);
+  position: absolute;
+  margin-left: 5px;
+}

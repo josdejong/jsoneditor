@@ -14,6 +14,8 @@ describe('util', function () {
 
     it('should replace JavaScript with JSON', function () {
       assert.equal(util.sanitize('{a:2}'), '{"a":2}');
+      assert.equal(util.sanitize('{a: 2}'), '{"a": 2}');
+      assert.equal(util.sanitize('{\n  a: 2\n}'), '{\n  "a": 2\n}');
       assert.equal(util.sanitize('{\'a\':2}'), '{"a":2}');
       assert.equal(util.sanitize('{a:\'foo\'}'), '{"a":"foo"}');
       assert.equal(util.sanitize('{a:\'foo\',b:\'bar\'}'), '{"a":"foo","b":"bar"}');
@@ -30,6 +32,11 @@ describe('util', function () {
       assert.equal(util.sanitize('"foo\\\'bar"'), '"foo\'bar"');
     });
 
+    it('should replace special white characters', function () {
+      assert.equal(util.sanitize('{"a":\u00a0"foo\u00a0bar"}'), '{"a": "foo\u00a0bar"}');
+      assert.equal(util.sanitize('{"a":\u2009"foo"}'), '{"a": "foo"}');
+    });
+
     it('should escape unescaped control characters', function () {
       assert.equal(util.sanitize('"hello\bworld"'), '"hello\\bworld"')
       assert.equal(util.sanitize('"hello\fworld"'), '"hello\\fworld"')
@@ -37,6 +44,12 @@ describe('util', function () {
       assert.equal(util.sanitize('"hello\rworld"'), '"hello\\rworld"')
       assert.equal(util.sanitize('"hello\tworld"'), '"hello\\tworld"')
       assert.equal(util.sanitize('{"value\n": "dc=hcm,dc=com"}'), '{"value\\n": "dc=hcm,dc=com"}')
+    })
+
+    it('should replace left/right quotes', function () {
+      assert.equal(util.sanitize('\u2018foo\u2019'), '"foo"')
+      assert.equal(util.sanitize('\u201Cfoo\u201D'), '"foo"')
+      assert.equal(util.sanitize('\u0060foo\u00B4'), '"foo"')
     })
 
     it('remove comments', function () {

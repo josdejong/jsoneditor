@@ -71,6 +71,9 @@ div.jsoneditor-menu > button.jsoneditor-compact {
 div.jsoneditor-menu > button.jsoneditor-format {
   background-position: -72px -120px;
 }
+div.jsoneditor-menu > button.jsoneditor-repair {
+  background-position: -96px -96px;
+}
 
 div.jsoneditor-menu > div.jsoneditor-modes {
   display: inline-block;

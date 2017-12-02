@@ -210,6 +210,16 @@ div.jsoneditor-outer {
   box-sizing: border-box;
 }
 
+div.jsoneditor-outer.has-nav-bar {
+  margin: -61px 0 0 0;
+  padding: 61px 0 0 0;
+}
+
+div.jsoneditor-outer.has-status-bar {
+  margin: -35px 0 -26px 0;
+  padding: 35px 0 26px 0;
+}
+
 textarea.jsoneditor-text,
 .ace-jsoneditor {
   min-height: 150px;
@@ -239,7 +249,7 @@ textarea.jsoneditor-text {
 
 tr.jsoneditor-highlight,
 tr.jsoneditor-selected {
-  background-color: #e6e6e6;
+  background-color: #d3d3d3;
 }
 
 tr.jsoneditor-selected button.jsoneditor-dragarea,

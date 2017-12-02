@@ -5,6 +5,7 @@ var Highlighter = require('./Highlighter');
 var History = require('./History');
 var SearchBox = require('./SearchBox');
 var ContextMenu = require('./ContextMenu');
+var TreePath = require('./TreePath');
 var Node = require('./Node');
 var ModeSwitcher = require('./ModeSwitcher');
 var util = require('./util');
@@ -113,7 +114,8 @@ treemode._setOptions = function (options) {
     name: undefined,   // field name of root node
     schema: null,
     schemaRefs: null,
-    autocomplete: null
+    autocomplete: null,
+    navigationBar : true
   };
 
   // copy all options
@@ -757,6 +759,17 @@ treemode._createFrame = function () {
   if (this.options.search) {
     this.searchBox = new SearchBox(this, this.menu);
   }
+
+  if(this.options.navigationBar) {
+    // create second menu row for treepath
+    this.navBar = document.createElement('div');
+    this.navBar.className = 'jsoneditor-navigation-bar nav-bar-empty';
+    this.frame.appendChild(this.navBar);
+
+    this.treePath = new TreePath(this.navBar);
+    this.treePath.onSectionSelected(this._onTreePathSectionSelected.bind(this));
+    this.treePath.onContextMenuItemSelected(this._onTreePathMenuItemSelected.bind(this));
+  }
 };
 
 /**
@@ -810,6 +823,10 @@ treemode._onEvent = function (event) {
 
   var node = Node.getNodeFromTarget(event.target);
 
+  if (this.options && this.options.navigationBar && node && (event.type == 'keydown' || event.type == 'mousedown')) {
+    this._updateTreePath(node.getNodePath());
+  }
+
   if (node && node.selected) {
     if (event.type == 'click') {
       if (event.target == node.dom.menu) {
@@ -847,6 +864,73 @@ treemode._onEvent = function (event) {
 
   if (node) {
     node.onEvent(event);
+  }
+};
+
+/**
+ * Update TreePath components
+ * @param {Array<Node>} pathNodes list of nodes in path from root to selection 
+ * @private
+ */
+treemode._updateTreePath = function (pathNodes) {
+  if (pathNodes && pathNodes.length) {
+    util.removeClassName(this.navBar, 'nav-bar-empty');
+    
+    var pathObjs = [];
+    pathNodes.forEach(function (node) {
+      var pathObj = {
+        name: getName(node),
+        node: node,
+        children: []
+      }
+      if (node.childs && node.childs.length) {
+        node.childs.forEach(function (childNode) {
+          pathObj.children.push({
+            name: getName(childNode),
+            node: childNode
+          });
+        });
+      }
+      pathObjs.push(pathObj);
+    });
+    this.treePath.setPath(pathObjs);
+  } else {
+    util.addClassName(this.navBar, 'nav-bar-empty');
+  }
+
+  function getName(node) {
+    return node.field || (isNaN(node.index) ? node.type : node.index);
+  }
+};
+
+/**
+ * Callback for tree path section selection - focus the selected node in the tree
+ * @param {Object} pathObj path object that was represents the selected section node
+ * @private
+ */
+treemode._onTreePathSectionSelected = function (pathObj) {
+  if(pathObj && pathObj.node) {
+    pathObj.node.expandTo();
+    pathObj.node.focus();
+  }
+};
+
+/**
+ * Callback for tree path menu item selection - rebuild the path accrding to the new selection and focus the selected node in the tree
+ * @param {Object} pathObj path object that was represents the parent section node
+ * @param {String} selection selected section child
+ * @private
+ */
+treemode._onTreePathMenuItemSelected = function (pathObj, selection) {
+  if(pathObj && pathObj.children.length) {
+    var selectionObj = pathObj.children.find(function (obj) {
+      return obj.name === selection;
+    });
+    if(selectionObj && selectionObj.node) {
+      this._updateTreePath(selectionObj.node.getNodePath());
+      selectionObj.node.expandTo();
+      selectionObj.node.focus();
+    }
   }
 };
 
@@ -1162,6 +1246,9 @@ treemode._onKeyDown = function (event) {
 treemode._createTable = function () {
   var contentOuter = document.createElement('div');
   contentOuter.className = 'jsoneditor-outer';
+  if(this.options.navigationBar) {
+    util.addClassName(contentOuter, 'has-nav-bar');
+  }
   this.contentOuter = contentOuter;
 
   this.content = document.createElement('div');

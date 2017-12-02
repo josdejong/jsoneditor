@@ -3,6 +3,57 @@
 https://github.com/josdejong/jsoneditor
 
 
+## 2017-11-22, version 5.11.0
+
+- Upgraded dependencies
+  - `ajv@5.4.0`
+  - `brace@0.11.0`
+- Fixed dropdown for JSON Schema enums when defined inside pattern
+  properties. Thanks @alquist.
+- Fixed code containing a non UTF-8 character. Thanks @alshakero.
+
+
+## 2017-11-15, version 5.10.1
+
+- Some styling tweaks in the navigation bar and status bar.
+- Don't display status bar in `text` mode (which doesn't yet support
+  row and col counts).
+
+
+## 2017-11-15, version 5.10.0
+
+- Implemented a navigation bar showing the path. Thanks @meirotstein.
+- Implemented a status bar showing cursor location.
+  Thanks @meirotstein.
+- Implemented repairing JSON objects containing left and right single
+  and double quotes (which you get when typing a JSON object in Word)
+  in `text` and `code` mode.
+- Implemented repairing JSON objects containing special white space
+  characters like non-breaking space.
+- Upgraded dependency `ajv` to version `5.3.0`.
+- Fixed #481: A polyfill required `DocumentType` which is not defined
+  in all environments.
+
+
+## 2017-09-16, version 5.9.6
+
+- Fixed displaying a dropdown for enums inside composite schemas.
+  Thanks @hachichaud.
+- Fixed #461: Urls opening twice on Firefox and Safari.
+
+
+## 2017-08-26, version 5.9.5
+
+- Fixed a regression introduced in `v5.9.4`: after using the context
+  menu once, it was not possible to set focus to an other input field
+  anymore.
+
+
+## 2017-08-20, version 5.9.4
+
+- Fixed #447: context menus not working in Shadow DOM. Thanks @tomalec.
+
+
 ## 2017-07-24, version 5.9.3
 
 - Fixed broken multi-selection (regression).

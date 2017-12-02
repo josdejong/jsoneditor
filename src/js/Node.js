@@ -540,6 +540,20 @@ Node.prototype.hideChilds = function() {
 
 
 /**
+ * Goes through the path from the node to the root and ensures that it is expanded
+ */
+Node.prototype.expandTo = function() {
+  var currentNode = this.parent;
+  while (currentNode) {
+    if (!currentNode.expanded) {
+      currentNode.expand();
+    }
+    currentNode = currentNode.parent;
+  }
+};
+
+
+/**
  * Add a new child to the node.
  * Only applicable when Node value is of type array or object
  * @param {Node} node
@@ -1998,7 +2012,9 @@ Node.prototype._updateSchema = function () {
   //Locating the schema of the node and checking for any enum type
   if(this.editor && this.editor.options) {
     // find the part of the json schema matching this nodes path
-    this.schema = Node._findSchema(this.editor.options.schema, this.getPath());
+    this.schema = this.editor.options.schema 
+        ? Node._findSchema(this.editor.options.schema, this.getPath())
+        : null;
     if (this.schema) {
       this.enum = Node._findEnum(this.schema);
     }
@@ -2040,18 +2056,46 @@ Node._findEnum = function (schema) {
  */
 Node._findSchema = function (schema, path) {
   var childSchema = schema;
+  var foundSchema = childSchema;
 
-  for (var i = 0; i < path.length && childSchema; i++) {
-    var key = path[i];
-    if (typeof key === 'string' && childSchema.properties) {
-      childSchema = childSchema.properties[key] || null
-    }
-    else if (typeof key === 'number' && childSchema.items) {
-      childSchema = childSchema.items
-    }
+  var allSchemas = schema.oneOf || schema.anyOf || schema.allOf;
+  if (!allSchemas) {
+    allSchemas = [schema];
   }
 
-  return childSchema
+  for (var j = 0; j < allSchemas.length; j++) {
+    childSchema = allSchemas[j];
+
+    for (var i = 0; i < path.length && childSchema; i++) {
+      var key = path[i];
+
+      if (typeof key === 'string' && childSchema.patternProperties && i == path.length - 1) {
+        for (var prop in childSchema.patternProperties) {
+          foundSchema = Node._findSchema(childSchema.patternProperties[prop], path.slice(i, path.length));
+        }
+      }
+      else if (childSchema.items && childSchema.items.properties) {
+        childSchema = childSchema.items.properties[key];
+        if (childSchema) {
+          foundSchema = Node._findSchema(childSchema, path.slice(i, path.length));
+        }
+      }
+      else if (typeof key === 'string' && childSchema.properties) {
+        childSchema = childSchema.properties[key] || null;
+        if (childSchema) {
+          foundSchema = Node._findSchema(childSchema, path.slice(i, path.length));
+        }
+      }
+      else if (typeof key === 'number' && childSchema.items) {
+        childSchema = childSchema.items;
+        if (childSchema) {
+          foundSchema = Node._findSchema(childSchema, path.slice(i, path.length));
+        }
+      }
+    }
+
+  }
+  return foundSchema
 };
 
 /**
@@ -2284,8 +2328,10 @@ Node.prototype.onEvent = function (event) {
         break;
 
       case 'click':
-        if (event.ctrlKey || !this.editable.value) {
+        if (event.ctrlKey && this.editable.value) {
+          // if read-only, we use the regular click behavior of an anchor
           if (util.isUrl(this.value)) {
+            event.preventDefault();
             window.open(this.value, '_blank');
           }
         }
@@ -3347,7 +3393,7 @@ Node.prototype.showContextMenu = function (anchor, onClose) {
         });
     }
 
-    
+
 
     // create insert button
     var insertSubmenu = [

@@ -3,6 +3,15 @@
 var util = require('./util');
 
 /**
+ * Node.getRootNode shim
+ * @param  {Node} node node to check
+ * @return {Node}      node's rootNode or `window` if there is ShadowDOM is not supported.
+ */
+function getRootNode(node){
+    return node.getRootNode && node.getRootNode() || window;
+}
+
+/**
  * A context menu
  * @param {Object[]} items    Array containing the menu structure
  *                            TODO: describe structure
@@ -202,8 +211,12 @@ ContextMenu.prototype.show = function (anchor, contentWindow) {
 
   // determine whether to display the menu below or above the anchor
   var showBelow = true;
+  var parent = anchor.parentNode;
+  var anchorRect = anchor.getBoundingClientRect();
+  var parentRect = parent.getBoundingClientRect()
+
   if (contentWindow) {
-    var anchorRect = anchor.getBoundingClientRect();
+    
     var contentRect = contentWindow.getBoundingClientRect();
 
     if (anchorRect.bottom + this.maxHeight < contentRect.bottom) {
@@ -218,29 +231,34 @@ ContextMenu.prototype.show = function (anchor, contentWindow) {
     }
   }
 
+  var leftGap = anchorRect.left - parentRect.left;
+  var topGap = anchorRect.top - parentRect.top;
+
   // position the menu
   if (showBelow) {
     // display the menu below the anchor
     var anchorHeight = anchor.offsetHeight;
-    this.dom.menu.style.left = '0px';
-    this.dom.menu.style.top = anchorHeight + 'px';
+    this.dom.menu.style.left = leftGap + 'px';
+    this.dom.menu.style.top = topGap + anchorHeight + 'px';
     this.dom.menu.style.bottom = '';
   }
   else {
     // display the menu above the anchor
-    this.dom.menu.style.left = '0px';
-    this.dom.menu.style.top = '';
+    this.dom.menu.style.left = leftGap + 'px';
+    this.dom.menu.style.top = topGap + 'px';
     this.dom.menu.style.bottom = '0px';
   }
 
+  // find the root node of the page (window, or a shadow dom root element)
+  this.rootNode = getRootNode(anchor);
+
   // attach the menu to the parent of the anchor
-  var parent = anchor.parentNode;
   parent.insertBefore(this.dom.root, parent.firstChild);
 
   // create and attach event listeners
   var me = this;
   var list = this.dom.list;
-  this.eventListeners.mousedown = util.addEventListener(window, 'mousedown', function (event) {
+  this.eventListeners.mousedown = util.addEventListener(this.rootNode, 'mousedown', function (event) {
     // hide menu on click outside of the menu
     var target = event.target;
     if ((target != list) && !me._isChildOf(target, list)) {
@@ -249,7 +267,7 @@ ContextMenu.prototype.show = function (anchor, contentWindow) {
       event.preventDefault();
     }
   });
-  this.eventListeners.keydown = util.addEventListener(window, 'keydown', function (event) {
+  this.eventListeners.keydown = util.addEventListener(this.rootNode, 'keydown', function (event) {
     me._onKeyDown(event);
   });
 
@@ -284,7 +302,7 @@ ContextMenu.prototype.hide = function () {
     if (this.eventListeners.hasOwnProperty(name)) {
       var fn = this.eventListeners[name];
       if (fn) {
-        util.removeEventListener(window, name, fn);
+        util.removeEventListener(this.rootNode, name, fn);
       }
       delete this.eventListeners[name];
     }
