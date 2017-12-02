@@ -162,6 +162,10 @@ Constructs a new JSONEditor.
 
      Indicate the KeyCodes for trigger confirm completion, by default those keys are:  [39, 35, 9] which are the code for [right, end, tab]
 
+  - `{boolean} caseSensitive`
+
+     Indicate if the autocomplete is going to be strict case-sensitive to match the options.
+
   - `{Function} getOptions (text: string, path: string[], input: string, editor: JSONEditor)`
 
      This function will return your possible options for create the autocomplete selection, you can control dynamically which options you want to display according to the current active editing node.
