@@ -59,7 +59,7 @@ function completely(config) {
                     divRow.onmouseout = onMouseOut;
                     divRow.onmousedown = onMouseDown;
                     divRow.__hint = array[i];
-                    divRow.innerHTML = token + '<b>' + array[i].substring(token.length) + '</b>';
+                    divRow.innerHTML = array[i].substring(0, token.length) + '<b>' + array[i].substring(token.length) + '</b>';
                     rows.push(divRow);
                     elem.appendChild(divRow);
                 }
