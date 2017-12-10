@@ -36,6 +36,7 @@
   var options = {
     autocomplete: {
       confirmKeys: [39, 35, 9, 190], // Confirm Autocomplete Keys: [right, end, tab, '.']  // By default are only [right, end, tab]
+      caseSensitive: false,
 
       getOptions: function (text, path, input, editor) {
         if (!text.startsWith(activationChar) || input !== 'value') return [];
