@@ -3,6 +3,12 @@
 https://github.com/josdejong/jsoneditor
 
 
+## not yet released, version 5.13.0
+
+- Implemented #482: Include `caseSensitive` option for autocomplete.
+  Thanks @israelito3000.
+
+
 ## 2017-11-22, version 5.11.0
 
 - Upgraded dependencies
