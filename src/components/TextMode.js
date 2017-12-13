@@ -5,7 +5,7 @@ import Ajv from 'ajv'
 import { parseJSON } from '../utils/jsonUtils'
 import { escapeUnicodeChars } from '../utils/stringUtils'
 import { enrichSchemaError, limitErrors } from '../utils/schemaUtils'
-import { jsonToEson, esonToJson } from '../eson'
+import { jsonToEsonOld, esonToJson } from '../eson'
 import { patchEson } from '../patchEson'
 import { createFindKeyBinding } from '../utils/keyBindings'
 import { KEY_BINDINGS } from '../constants'
@@ -334,7 +334,7 @@ export default class TextMode extends Component {
   patch (actions) {
     const json = this.get()
 
-    const data = jsonToEson(json)
+    const data = jsonToEsonOld(json)
     const result = patchEson(data, actions)
 
     this.set(esonToJson(result.data))

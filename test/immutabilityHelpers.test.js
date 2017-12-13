@@ -276,25 +276,3 @@ test('insertAt', t => {
   const updated = insertAt(obj, ['a', '2'], 8)
   t.deepEqual(updated, {a: [1,2,8,3]})
 })
-
-test('transform (no change)', t => {
-  const obj = { a: [1,2,3]}
-
-  const updated = transform(obj, (value, path) => value)
-  t.deepEqual(updated, obj)
-  t.is(updated, obj)
-})
-
-test('transform (change based on value)', t => {
-  const obj = { a: [1,2,3]}
-
-  const updated = transform(obj, (value, path) => value === 2 ? 20 : value)
-  t.deepEqual(updated, { a: [1,20,3]})
-})
-
-test('transform (change based on path)', t => {
-  const obj = { a: [1,2,3]}
-
-  const updated = transform(obj, (value, path) => path.join('.') === 'a.1' ? 20 : value)
-  t.deepEqual(updated, { a: [1,20,3]})
-})

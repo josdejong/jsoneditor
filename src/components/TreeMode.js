@@ -12,8 +12,8 @@ import { setIn, updateIn } from '../utils/immutabilityHelpers'
 import { parseJSON } from '../utils/jsonUtils'
 import { enrichSchemaError } from '../utils/schemaUtils'
 import {
-    toEson2, jsonToEson, esonToJson, getInEson, updateInEson, pathExists,
-    expand, expandPath, addErrors,
+  jsonToEson, esonToJson, getInEson, updateInEson, pathExists,
+    expand, expandOne, expandPath, addErrors,
     search, applySearchResults, nextSearchResult, previousSearchResult,
     applySelection, pathsFromSelection, contentsFromPaths,
     compileJSONPointer, parseJSONPointer
@@ -58,7 +58,7 @@ export default class TreeMode extends Component {
 
     const json = this.props.json || {}
     const expandCallback = this.props.expand || TreeMode.expandRoot
-    const eson = expand(toEson2(json), expandCallback)
+    const eson = expand(jsonToEson(json), expandCallback)
 
     this.id = Math.round(Math.random() * 1e5) // TODO: create a uuid here?
 
@@ -154,7 +154,7 @@ export default class TreeMode extends Component {
       // FIXME: merge _meta from existing eson
       this.setState({
         json: nextProps.json,
-        eson: toEson2(nextProps.json) // FIXME: how to handle expand?
+        eson: jsonToEson(nextProps.json) // FIXME: how to handle expand?
       })
       // TODO: cleanup
       // this.patch([{
@@ -564,7 +564,7 @@ export default class TreeMode extends Component {
     }
     else {
       this.setState({
-        eson: expand(this.state.eson, path, expanded)
+        eson: expandOne(this.state.eson, path, expanded)
       })
     }
   }
@@ -899,7 +899,7 @@ export default class TreeMode extends Component {
 
     this.setState({
       json: json,
-      eson: expand(toEson2(json), expandCallback), // FIXME: expand eson
+      eson: expand(jsonToEson(json), expandCallback),
 
       // TODO: do we want to keep history when .set(json) is called? (currently we remove history)
       history: [],

@@ -22,6 +22,7 @@
     "build": "gulp",
     "flow": "flow; test $? -eq 0 -o $? -eq 2",
     "test": "ava --verbose",
+    "test-eson": "ava --verbose test/eson.test.js",
     "watch:test": "ava --verbose --watch"
   },
   "dependencies": {

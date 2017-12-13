@@ -5,7 +5,7 @@
  * All functions are pure and don't mutate the ESON.
  */
 
-import { setIn, getIn, updateIn, deleteIn, transform } from './utils/immutabilityHelpers'
+import { setIn, getIn, updateIn, deleteIn } from './utils/immutabilityHelpers'
 import { isObject } from  './utils/typeUtils'
 import isEqual from 'lodash/isEqual'
 import times from 'lodash/times'
@@ -31,20 +31,19 @@ export const SELECTED_AFTER = 4
  * @param {JSONPath} path
  * @return {ESON}
  */
-// TODO: rename to jsonToEson after refactoring of ESON is finished
-export function toEson2 (json, path = []) {
+export function jsonToEson (json, path = []) {
   const id = createId()
 
   if (isObject(json)) {
     let eson = {}
     const keys = Object.keys(json)
-    keys.forEach((key) => eson[key] = toEson2(json[key], path.concat(key)))
+    keys.forEach((key) => eson[key] = jsonToEson(json[key], path.concat(key)))
     eson._meta = { id, path, type: 'Object', keys }
     return eson
   }
   else if (Array.isArray(json)) {
     let eson = {}
-    json.forEach((value, index) => eson[index] = toEson2(value, path.concat(index)))
+    json.forEach((value, index) => eson[index] = jsonToEson(value, path.concat(index)))
     eson._meta = { id, path, type: 'Array', length: json.length }
     return eson
   }
@@ -87,7 +86,7 @@ export function expandAll (path) {
  * @param {ESONType} [type='value']  Optional eson type for the created value
  * @return {ESON}
  */
-export function jsonToEson (json, expand = expandAll, path: JSONPath = [], type: ESONType = 'value') : ESON {
+export function jsonToEsonOld (json, expand = expandAll, path: JSONPath = [], type: ESONType = 'value') : ESON {
   if (Array.isArray(json)) {
     return {
       type: 'Array',
@@ -95,7 +94,7 @@ export function jsonToEson (json, expand = expandAll, path: JSONPath = [], type:
       items: json.map((child, index) => {
         return {
           id: createId(), // TODO: use id based on index (only has to be unique within this array)
-          value: jsonToEson(child, expand, path.concat(index))
+          value: jsonToEsonOld(child, expand, path.concat(index))
         }
       })
     }
@@ -108,7 +107,7 @@ export function jsonToEson (json, expand = expandAll, path: JSONPath = [], type:
         return {
           id: createId(), // TODO: use id based on index (only has to be unique within this array)
           name,
-          value: jsonToEson(json[name], expand, path.concat(name))
+          value: jsonToEsonOld(json[name], expand, path.concat(name))
         }
       })
     }
@@ -250,7 +249,36 @@ export function deleteInEson (eson: ESON, jsonPath: JSONPath) : JSONType {
 }
 
 /**
- * Expand or collapse one or multiple items or properties
+ * Transform an eson object, traverse over the whole object (excluding the _meta)
+ * objects, and allow replacing Objects/Arrays/values
+ * @param {ESON} eson
+ * @param {function (eson, path)} callback
+ * @param {Path} path
+ * @return {ESON}
+ */
+export function transform (eson, callback, path = []) {
+  const updated = callback(eson, path)
+
+  if (updated._meta.type === 'Object' || updated._meta.type === 'Array') {
+    let changed = false
+    let updatedProps = {}
+    for (let key in updated) {
+      if (updated.hasOwnProperty(key) && key !== '_meta') { // don't traverse the _meta objects
+        const childPath = path.concat(updated._meta.type === 'Array' ? parseInt(key) : key)
+        updatedProps[key] = transform(updated[key], callback, childPath)
+        changed = changed || (updatedProps[key] !== updated[key])
+      }
+    }
+    updatedProps._meta = updated._meta
+    return changed ? updatedProps : updated
+  }
+  else {  // eson._meta.type === 'value'
+    return updated
+  }
+}
+
+/**
+ * Expand or collapse all items matching a filter callback
  * @param {ESON} eson
  * @param {function(Path) : boolean | Path} filterCallback
  *              When a path, the object/array at this path will be expanded/collapsed
@@ -260,36 +288,41 @@ export function deleteInEson (eson: ESON, jsonPath: JSONPath) : JSONType {
  * @return {ESON}
  */
 export function expand (eson, filterCallback, expanded = true) {
-  // console.log('expand', callback, expand)
-
-  if (typeof filterCallback === 'function') {
-    return transform(eson, function (value, path) {
-      return (value && value._meta && (value._meta.type === 'Array' || value._meta.type === 'Object') && filterCallback(path))
-          ? setIn(value, ['_meta', 'expanded'], expanded)
-          : value
-    })
-  }
-  else if (Array.isArray(filterCallback)) {
-    return setIn(eson, filterCallback.concat(['_meta', 'expanded']), expanded)
-  }
-  else {
-    throw new Error('Callback function or path expected')
-  }
+  return transform(eson, function (value, path) {
+    return ((value._meta.type === 'Array' || value._meta.type === 'Object') && filterCallback(path))
+        ? expandOne(value, [], expanded)
+        : value
+  })
 }
 
 /**
- * Expand all Objects and Arrays on a path
+ * Expand or collapse one or multiple items or properties
+ * @param {ESON} eson
+ * @param {Path} path  Path to be expanded
+ * @param {boolean} [expanded=true]  New expanded state: true to expand, false to collapse
+ * @return {ESON}
  */
-export function expandPath (eson: ESON, path?: JSONPath) : ESON {
+export function expandOne (eson, path, expanded = true) {
+  return setIn(eson, path.concat(['_meta', 'expanded']), expanded)
+}
+
+/**
+ * Expand all parent Objects and Arrays along a path
+ * @param {ESON} eson
+ * @param {Path} path  Path to be expanded
+ * @param {boolean} [expanded=true]  New expanded state: true to expand, false to collapse
+ * @return {ESON}
+ */
+export function expandPath (eson, path, expanded = true) {
   let updatedEson = eson
 
-  if (path) {
-    updatedEson = expand(updatedEson, [], true) // expand root
+  // TODO: rewrite to path.reduce(...)
 
-    for (let i = 0; i < path.length; i++) {
-      const pathPart = path.slice(0, i + 1)
-      updatedEson = expand(updatedEson, pathPart, true)
-    }
+  updatedEson = expandOne(updatedEson, [], expanded) // expand root
+
+  for (let i = 0; i < path.length; i++) {
+    const pathPart = path.slice(0, i + 1)
+    updatedEson = expandOne(updatedEson, pathPart, expanded)
   }
 
   return updatedEson

@@ -1,11 +1,11 @@
 import { readFileSync } from 'fs'
 import test from 'ava'
-import { setIn, getIn } from '../src/utils/immutabilityHelpers'
+import { setIn, getIn, deleteIn } from '../src/utils/immutabilityHelpers'
 import {
-    jsonToEson, esonToJson, toEsonPath, toJsonPath, pathExists, transform, traverse,
+  esonToJson, toEsonPath, toJsonPath, pathExists, transform, traverse,
     parseJSONPointer, compileJSONPointer,
-    toEson2,
-    expand, addErrors, search, applySearchResults, nextSearchResult, previousSearchResult,
+  jsonToEson,
+    expand, expandOne, expandPath, addErrors, search, applySearchResults, nextSearchResult, previousSearchResult,
     applySelection, pathsFromSelection,
     SELECTED, SELECTED_END
 } from '../src/eson'
@@ -37,34 +37,23 @@ test('toJsonPath', t => {
   t.deepEqual(toJsonPath(ESON1, esonPath), jsonPath)
 })
 
-test('toEson2', t => {
-  t.deepEqual(replaceIds2(toEson2(1)),     {_meta: {id: '[ID]', path: [], type: 'value', value: 1}})
-  t.deepEqual(replaceIds2(toEson2("foo")), {_meta: {id: '[ID]', path: [], type: 'value', value: "foo"}})
-  t.deepEqual(replaceIds2(toEson2(null)),  {_meta: {id: '[ID]', path: [], type: 'value', value: null}})
-  t.deepEqual(replaceIds2(toEson2(false)), {_meta: {id: '[ID]', path: [], type: 'value', value: false}})
-  t.deepEqual(replaceIds2(toEson2({a:1, b: 2})), {
+test('jsonToEson', t => {
+  t.deepEqual(replaceIds2(jsonToEson(1)),     {_meta: {id: '[ID]', path: [], type: 'value', value: 1}})
+  t.deepEqual(replaceIds2(jsonToEson("foo")), {_meta: {id: '[ID]', path: [], type: 'value', value: "foo"}})
+  t.deepEqual(replaceIds2(jsonToEson(null)),  {_meta: {id: '[ID]', path: [], type: 'value', value: null}})
+  t.deepEqual(replaceIds2(jsonToEson(false)), {_meta: {id: '[ID]', path: [], type: 'value', value: false}})
+  t.deepEqual(replaceIds2(jsonToEson({a:1, b: 2})), {
     _meta: {id: '[ID]', path: [], type: 'Object', keys: ['a', 'b']},
     a: {_meta: {id: '[ID]', path: ['a'], type: 'value', value: 1}},
     b: {_meta: {id: '[ID]', path: ['b'], type: 'value', value: 2}}
   })
 
-  printJSON(replaceIds2(toEson2([1,2])))
-  t.deepEqual(replaceIds2(toEson2([1,2])), {
+  // printJSON(replaceIds2(jsonToEson([1,2])))
+  t.deepEqual(replaceIds2(jsonToEson([1,2])), {
     _meta: {id: '[ID]', path: [], type: 'Array', length: 2},
     0: {_meta: {id: '[ID]', path: [0], type: 'value', value: 1}},
     1: {_meta: {id: '[ID]', path: [1], type: 'value', value: 2}}
   })
-})
-
-test('jsonToEson', t => {
-  function expand (path) {
-    return true
-  }
-
-  const eson = jsonToEson(JSON1, expand, [])
-  replaceIds(eson)
-
-  t.deepEqual(eson, ESON1)
 })
 
 test('esonToJson', t => {
@@ -72,37 +61,127 @@ test('esonToJson', t => {
 })
 
 test('expand a single path', t => {
+  const eson = jsonToEson({
+    "obj": {
+      "arr": [1,2, {"first":3,"last":4}]
+    },
+    "str": "hello world",
+    "nill": null,
+    "bool": false
+  })
+
   const path = ['obj', 'arr', 2]
-  const collapsed = expand(ESON1, path, false)
+  const collapsed = expandOne(eson, path, false)
+  t.is(collapsed.obj.arr[2]._meta.expanded, false)
+  t.deepEqual(deleteIn(collapsed, path.concat(['_meta', 'expanded'])), eson)
 
-  const expected = setIn(ESON1, toEsonPath(ESON1, path).concat('expanded'), false)
+  const expanded = expandOne(eson, path, true)
+  t.is(expanded.obj.arr[2]._meta.expanded, true)
+  t.deepEqual(deleteIn(expanded, path.concat(['_meta', 'expanded'])), eson)
+})
 
-  t.deepEqual(collapsed, expected)
+test('expand all objects/arrays on a path', t => {
+  const eson = jsonToEson({
+    "obj": {
+      "arr": [1,2, {"first":3,"last":4}]
+    },
+    "str": "hello world",
+    "nill": null,
+    "bool": false
+  })
+
+  const path = ['obj', 'arr', 2]
+
+  const collapsed = expandPath(eson, path, false)
+  t.is(collapsed._meta.expanded, false)
+  t.is(collapsed.obj._meta.expanded, false)
+  t.is(collapsed.obj.arr._meta.expanded, false)
+  t.is(collapsed.obj.arr[2]._meta.expanded, false)
+
+  const expanded = expandPath(eson, path, true)
+  t.is(expanded._meta.expanded, true)
+  t.is(expanded.obj._meta.expanded, true)
+  t.is(expanded.obj.arr._meta.expanded, true)
+  t.is(expanded.obj.arr[2]._meta.expanded, true)
+
+  let orig = expanded
+  orig = deleteIn(orig, [].concat(['_meta', 'expanded']))
+  orig = deleteIn(orig, ['obj'].concat(['_meta', 'expanded']))
+  orig = deleteIn(orig, ['obj', 'arr'].concat(['_meta', 'expanded']))
+  orig = deleteIn(orig, ['obj', 'arr', 2].concat(['_meta', 'expanded']))
+
+  t.deepEqual(orig, eson)
 })
 
 test('expand a callback', t => {
-  function callback (path) {
+  const eson = jsonToEson({
+    "obj": {
+      "arr": [1,2, {"first":3,"last":4}]
+    },
+    "str": "hello world",
+    "nill": null,
+    "bool": false
+  })
+
+  function filterCallback (path) {
     return path.length >= 1
   }
-  const expanded = false
-  const collapsed = expand(ESON1, callback, expanded)
+  const expandedValue = false
+  const collapsed = expand(eson, filterCallback, expandedValue)
+  t.is(collapsed.obj.arr._meta.expanded, expandedValue)
+  t.is(collapsed.obj.arr._meta.expanded, expandedValue)
+  t.is(collapsed.obj.arr[2]._meta.expanded, expandedValue)
 
-  let expected = ESON1
-  expected = setIn(expected, toEsonPath(ESON1, ['obj']).concat('expanded'), false)
-  expected = setIn(expected, toEsonPath(ESON1, ['obj', 'arr']).concat('expanded'), false)
-  expected = setIn(expected, toEsonPath(ESON1, ['obj', 'arr', '2']).concat('expanded'), false)
-
-  t.deepEqual(collapsed, expected)
+  let orig = collapsed
+  orig = deleteIn(orig, ['obj'].concat(['_meta', 'expanded']))
+  orig = deleteIn(orig, ['obj', 'arr'].concat(['_meta', 'expanded']))
+  orig = deleteIn(orig, ['obj', 'arr', 2].concat(['_meta', 'expanded']))
+  t.deepEqual(orig, eson)
 })
 
 test('expand a callback should not change the object when nothing happens', t => {
+  const eson = jsonToEson({a: [1,2,3], b: {c: 4}})
   function callback (path) {
     return false
   }
   const expanded = false
-  const collapsed = expand(ESON1, callback, expanded)
+  const collapsed = expand(eson, callback, expanded)
 
-  t.is(collapsed, ESON1)
+  t.is(collapsed, eson)
+})
+
+test('transform (no change)', t => {
+  const eson = jsonToEson({a: [1,2,3], b: {c: 4}})
+  const updated = transform(eson, (value, path) => value)
+  t.deepEqual(updated, eson)
+  t.is(updated, eson)
+})
+
+test('transform (change based on value)', t => {
+  const eson = jsonToEson({a: [1,2,3], b: {c: 4}})
+
+  const updated = transform(eson,
+      (value, path) => value._meta.value === 2 ? jsonToEson(20, path) : value)
+  const expected = jsonToEson({a: [1,20,3], b: {c: 4}})
+
+  replaceIds(updated)
+  replaceIds(expected)
+
+  t.deepEqual(updated, expected)
+  t.is(updated.b, eson.b) // should not have replaced b
+})
+
+test('transform (change based on path)', t => {
+  const eson = jsonToEson({a: [1,2,3], b: {c: 4}})
+
+  const updated = transform(eson,
+      (value, path) => path.join('.') === 'a.1' ? jsonToEson(20, path) : value)
+  const expected = jsonToEson({a: [1,20,3], b: {c: 4}})
+
+  replaceIds(updated)
+  replaceIds(expected)
+  t.deepEqual(updated, expected)
+  t.is(updated.b, eson.b) // should not have replaced b
 })
 
 test('pathExists', t => {
@@ -141,46 +220,6 @@ test('add and remove errors', t => {
   expected = setIn(expected, toEsonPath(ESON1, ['nill']).concat(['error']), jsonSchemaErrors[1])
 
   t.deepEqual(actual, expected)
-})
-
-test('transform', t => {
-  // {obj: {a: 2}, arr: [3]}
-
-  let log = []
-  const transformed = transform(ESON2, function (value, path, root) {
-    t.is(root, ESON2)
-
-    log.push([value, path, root])
-
-    if (path.length === 2 && path[0] === 'obj' && path[1] === 'a') {
-      // change the value
-      return { type: 'value', value: 42 }
-    }
-
-    // leave the value unchanged
-    return value
-  })
-
-  // console.log('transformed', JSON.stringify(transformed, null, 2))
-
-  const EXPECTED_LOG = [
-    [ESON2, [], ESON2],
-    [ESON2.props[0].value, ['obj'], ESON2],
-    [ESON2.props[0].value.props[0].value, ['obj', 'a'], ESON2],
-    [ESON2.props[1].value, ['arr'], ESON2],
-    [ESON2.props[1].value.items[0].value, ['arr', '0'], ESON2],
-  ]
-
-  log.forEach((row, index) => {
-    t.deepEqual(log[index], EXPECTED_LOG[index], 'should have equal log at index ' + index )
-  })
-  t.deepEqual(log, EXPECTED_LOG)
-  t.not(transformed, ESON2)
-  t.not(transformed.props[0].value, ESON2.props[0].value)
-  t.not(transformed.props[0].value.props[0].value, ESON2.props[0].value.props[0].value)
-  t.is(transformed.props[1].value, ESON2.props[1].value)
-  t.is(transformed.props[1].value.items[0].value, ESON2.props[1].value.items[0].value)
-
 })
 
 test('traverse', t => {
@@ -401,19 +440,15 @@ test('pathsFromSelection (after)', t => {
 })
 
 // helper function to replace all id properties with a constant value
-function replaceIds (data, value = '[ID]') {
-  if (data.type === 'Object') {
-    data.props.forEach(prop => {
-      prop.id = value
-      replaceIds(prop.value, value)
-    })
-  }
+function replaceIds (eson, value = '[ID]') {
+  eson._meta.id = value
 
-  if (data.type === 'Array') {
-    data.items.forEach(item => {
-      item.id = value
-      replaceIds(item.value, value)
-    })
+  if (eson._meta.type === 'Object' || eson._meta.type === 'Array') {
+    for (let key in eson) {
+      if (eson.hasOwnProperty(key) && key !== '_meta') {
+        replaceIds(eson[key], value)
+      }
+    }
   }
 }
 

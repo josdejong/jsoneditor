@@ -5,7 +5,7 @@ import last from 'lodash/last'
 import type { ESON, Path, ESONPatch } from './types'
 import { setIn, updateIn, getIn, insertAt } from './utils/immutabilityHelpers'
 import {
-  jsonToEson, esonToJson, toEsonPath,
+  jsonToEson, jsonToEsonOld, esonToJson, toEsonPath,
   getInEson, setInEson, deleteInEson,
   parseJSONPointer, compileJSONPointer,
   expandAll, pathExists, resolvePathIndex, findPropertyIndex, findNextProp, createId
@@ -32,7 +32,7 @@ export function patchEson (eson: ESON, patch: ESONPatch, expand = expandAll) {
     switch (action.op) {
       case 'add': {
         const path = parseJSONPointer(action.path)
-        const newValue = jsonToEson(action.value, expand, path, options && options.type)
+        const newValue = jsonToEsonOld(action.value, expand, path, options && options.type)
         const result = add(updatedEson, action.path, newValue, options)
         updatedEson = result.data
         revert = result.revert.concat(revert)
@@ -50,7 +50,7 @@ export function patchEson (eson: ESON, patch: ESONPatch, expand = expandAll) {
 
       case 'replace': {
         const path = parseJSONPointer(action.path)
-        const newValue = jsonToEson(action.value, expand, path, options && options.type)
+        const newValue = jsonToEsonOld(action.value, expand, path, options && options.type)
         const result = replace(updatedEson, path, newValue)
         updatedEson = result.data
         revert = result.revert.concat(revert)

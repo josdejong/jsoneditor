@@ -1,6 +1,6 @@
 import { readFileSync } from 'fs'
 import test from 'ava'
-import { jsonToEson, esonToJson, toEsonPath } from '../src/eson'
+import { jsonToEsonOld, esonToJson, toEsonPath } from '../src/eson'
 import { patchEson, cut } from '../src/patchEson'
 
 const ESON1 = loadJSON('./resources/eson1.json')
@@ -15,7 +15,7 @@ test('jsonpatch add', t => {
     {op: 'add', path: '/obj/b', value: {foo: 'bar'}}
   ]
 
-  const data = jsonToEson(json)
+  const data = jsonToEsonOld(json)
   const result = patchEson(data, patch)
   const patchedData = result.data
   const revert = result.revert
@@ -40,7 +40,7 @@ test('jsonpatch add: append to matrix', t => {
     {op: 'add', path: '/arr/-', value: 4}
   ]
 
-  const data = jsonToEson(json)
+  const data = jsonToEsonOld(json)
   const result = patchEson(data, patch)
   const patchedData = result.data
   const revert = result.revert
@@ -67,7 +67,7 @@ test('jsonpatch remove', t => {
     {op: 'remove', path: '/arr/1'},
   ]
 
-  const data = jsonToEson(json)
+  const data = jsonToEsonOld(json)
   const result = patchEson(data, patch)
   const patchedData = result.data
   const revert = result.revert
@@ -83,7 +83,7 @@ test('jsonpatch remove', t => {
   ])
 
   // test revert
-  const data2 = jsonToEson(patchedJson)
+  const data2 = jsonToEsonOld(patchedJson)
   const result2 = patchEson(data2, revert)
   const patchedData2 = result2.data
   const revert2 = result2.revert
@@ -104,7 +104,7 @@ test('jsonpatch replace', t => {
     {op: 'replace', path: '/arr/1', value: 200},
   ]
 
-  const data = jsonToEson(json)
+  const data = jsonToEsonOld(json)
   const result = patchEson(data, patch)
   const patchedData = result.data
   const revert = result.revert
@@ -120,7 +120,7 @@ test('jsonpatch replace', t => {
   ])
 
   // test revert
-  const data2 = jsonToEson(patchedJson)
+  const data2 = jsonToEsonOld(patchedJson)
   const result2 = patchEson(data2, revert)
   const patchedData2 = result2.data
   const revert2 = result2.revert
@@ -139,7 +139,7 @@ test('jsonpatch replace (keep ids intact)', t => {
     {op: 'replace', path: '/value', value: 100}
   ]
 
-  const data = jsonToEson(json)
+  const data = jsonToEsonOld(json)
   const valueId = data.props[0].id
 
   const patchedData = patchEson(data, patch).data
@@ -158,7 +158,7 @@ test('jsonpatch copy', t => {
     {op: 'copy', from: '/obj', path: '/arr/2'},
   ]
 
-  const data = jsonToEson(json)
+  const data = jsonToEsonOld(json)
   const result = patchEson(data, patch)
   const patchedData = result.data
   const revert = result.revert
@@ -173,7 +173,7 @@ test('jsonpatch copy', t => {
   ])
 
   // test revert
-  const data2 = jsonToEson(patchedJson)
+  const data2 = jsonToEsonOld(patchedJson)
   const result2 = patchEson(data2, revert)
   const patchedData2 = result2.data
   const revert2 = result2.revert
@@ -191,7 +191,7 @@ test('jsonpatch copy (keeps the same ids)', t => {
     {op: 'copy', from: '/foo', path: '/copied'}
   ]
 
-  const data = jsonToEson(json)
+  const data = jsonToEsonOld(json)
   const fooId = data.props[0].id
   const barId = data.props[0].value.props[0].id
 
@@ -224,7 +224,7 @@ test('jsonpatch move', t => {
     {op: 'move', from: '/obj', path: '/arr/2'},
   ]
 
-  const data = jsonToEson(json)
+  const data = jsonToEsonOld(json)
   const result = patchEson(data, patch)
   const patchedData = result.data
   const revert = result.revert
@@ -239,7 +239,7 @@ test('jsonpatch move', t => {
   ])
 
   // test revert
-  const data2 = jsonToEson(patchedJson)
+  const data2 = jsonToEsonOld(patchedJson)
   const result2 = patchEson(data2, revert)
   const patchedData2 = result2.data
   const revert2 = result2.revert
@@ -260,7 +260,7 @@ test('jsonpatch move before', t => {
     {op: 'move', from: '/obj', path: '/arr/2'},
   ]
 
-  const data = jsonToEson(json)
+  const data = jsonToEsonOld(json)
   const result = patchEson(data, patch)
   const patchedData = result.data
   const revert = result.revert
@@ -276,7 +276,7 @@ test('jsonpatch move before', t => {
   ])
 
   // test revert
-  const data2 = jsonToEson(patchedJson)
+  const data2 = jsonToEsonOld(patchedJson)
   const result2 = patchEson(data2, revert)
   const patchedData2 = result2.data
   const revert2 = result2.revert
@@ -293,7 +293,7 @@ test('jsonpatch move and replace', t => {
     {op: 'move', from: '/a', path: '/b'},
   ]
 
-  const data = jsonToEson(json)
+  const data = jsonToEsonOld(json)
 
   const result = patchEson(data, patch)
   const patchedData = result.data
@@ -326,7 +326,7 @@ test('jsonpatch move and replace', t => {
   ])
 
   // test revert
-  const data2 = jsonToEson(patchedJson)
+  const data2 = jsonToEsonOld(patchedJson)
   const result2 = patchEson(data2, revert)
   const patchedData2 = result2.data
   const revert2 = result2.revert
@@ -349,7 +349,7 @@ test('jsonpatch move and replace (nested)', t => {
     {op: 'move', from: '/obj', path: '/arr'},
   ]
 
-  const data = jsonToEson(json)
+  const data = jsonToEsonOld(json)
   const result = patchEson(data, patch)
   const patchedData = result.data
   const revert = result.revert
@@ -364,7 +364,7 @@ test('jsonpatch move and replace (nested)', t => {
   ])
 
   // test revert
-  const data2 = jsonToEson(patchedJson)
+  const data2 = jsonToEsonOld(patchedJson)
   const result2 = patchEson(data2, revert)
   const patchedData2 = result2.data
   const revert2 = result2.revert
@@ -383,7 +383,7 @@ test('jsonpatch move (keep id intact)', t => {
     {op: 'move', from: '/value', path: '/moved'}
   ]
 
-  const data = jsonToEson(json)
+  const data = jsonToEsonOld(json)
   const valueId = data.props[0].id
 
   const patchedData = patchEson(data, patch).data
@@ -398,7 +398,7 @@ test('jsonpatch move and replace (keep ids intact)', t => {
     {op: 'move', from: '/a', path: '/b'}
   ]
 
-  const data = jsonToEson(json)
+  const data = jsonToEsonOld(json)
   const bId = data.props[1].id
 
   t.is(data.props[0].name, 'a')
@@ -421,7 +421,7 @@ test('jsonpatch test (ok)', t => {
     {op: 'add', path: '/added', value: 'ok'}
   ]
 
-  const data = jsonToEson(json)
+  const data = jsonToEsonOld(json)
   const result = patchEson(data, patch)
   const patchedData = result.data
   const revert = result.revert
@@ -449,7 +449,7 @@ test('jsonpatch test (fail: path not found)', t => {
     {op: 'add', path: '/added', value: 'ok'}
   ]
 
-  const data = jsonToEson(json)
+  const data = jsonToEsonOld(json)
   const result = patchEson(data, patch)
   const patchedData = result.data
   const revert = result.revert
@@ -475,7 +475,7 @@ test('jsonpatch test (fail: value not equal)', t => {
     {op: 'add', path: '/added', value: 'ok'}
   ]
 
-  const data = jsonToEson(json)
+  const data = jsonToEsonOld(json)
   const result = patchEson(data, patch)
   const patchedData = result.data
   const revert = result.revert

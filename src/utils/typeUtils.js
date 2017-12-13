@@ -73,7 +73,7 @@ export function valueType(value) {
  * with 'http://*' or 'https://*' and has no whitespace characters)
  * @param {String} text
  */
-var isUrlRegex = /^https?:\/\/\S+$/
+const isUrlRegex = /^https?:\/\/\S+$/
 export function isUrl (text) {
   return (typeof text === 'string') && isUrlRegex.test(text)
 }
@@ -89,16 +89,16 @@ export function stringConvert (str) {
   const num = Number(str)           // will nicely fail with '123ab'
   const numFloat = parseFloat(str)  // will nicely fail with '  '
 
-  if (str == '') {
+  if (str === '') {
     return ''
   }
-  else if (str == 'null') {
+  else if (str === 'null') {
     return null
   }
-  else if (str == 'true') {
+  else if (str === 'true') {
     return true
   }
-  else if (str == 'false') {
+  else if (str === 'false') {
     return false
   }
   else if (!isNaN(num) && !isNaN(numFloat)) {
