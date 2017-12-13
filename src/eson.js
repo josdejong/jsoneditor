@@ -8,6 +8,7 @@
 import { setIn, getIn, updateIn, deleteIn } from './utils/immutabilityHelpers'
 import { isObject } from  './utils/typeUtils'
 import isEqual from 'lodash/isEqual'
+import isEmpty from 'lodash/isEmpty'
 import times from 'lodash/times'
 import initial from 'lodash/initial'
 import last from 'lodash/last'
@@ -350,84 +351,115 @@ export function addErrors (eson: ESON, errors) {
 
 /**
  * Search some text in all properties and values
+ * @param {ESON} eson
+ * @param {String} text
+ * @return {{eson: ESON, matches: ESONPointer[], active: ESONPointer}} Returns search result:
+ *              An updated eson object containing the search results,
+ *              and an array with the paths of all matches
  */
-export function search (eson: ESON, text: string): ESONPointer[] {
-  let results: ESONPointer[] = []
+export function search (eson, text) {
+  let matches = []
 
-  if (text !== '') {
-    traverse(eson, function (value, path: JSONPath) {
-      // check property name
-      if (path.length > 0) {
-        const prop = last(path)
-        if (containsCaseInsensitive(prop, text)) {
-          // only add search result when this is an object property name,
-          // don't add search result for array indices
-          const parentPath = initial(path)
-          const parent = getInEson(eson, parentPath)
-          if (parent.type === 'Object') {
-            results.push({path, area: 'property'})
-          }
-        }
-      }
+  // TODO: keep active result from previous search if any?
 
-      // check value
-      if (value.type === 'value') {
-        if (containsCaseInsensitive(value.value, text)) {
-          results.push({path, area: 'value'})
-        }
-      }
-    })
-  }
+  const updatedEson = transform (eson, function (value, path) {
+    let updatedValue = value
 
-  return results
-}
+    // check property name
+    const prop = last(path)
+    if (typeof prop === 'string' && containsCaseInsensitive(prop, text)) {
+      const searchState = isEmpty(matches) ? 'active' : 'normal'
+      matches.push({path, area: 'property'})
+      updatedValue = setIn(updatedValue, ['_meta', 'searchProperty'], searchState)
+    }
+    else {
+      updatedValue = deleteIn(updatedValue, ['_meta', 'searchProperty'])
+    }
 
-/**
- * Find the next search result given a current search result
- * - When the current search result is the last one, the search will wrap around
- *   and return the first result as next.
- * - When current search result is not found, the first search result will be
- *   returned as next
- * - When `searchResults` is empty, null will be returned
- */
-export function nextSearchResult (searchResults: ESONPointer[], current: ESONPointer): ESONPointer | null {
-  if (searchResults.length === 0) {
-    return null
-  }
+    // check value
+    if (value._meta.type === 'value' && containsCaseInsensitive(value._meta.value, text)) {
+      const searchState = isEmpty(matches) ? 'active' : 'normal'
+      matches.push({path, area: 'value'})
+      updatedValue = setIn(updatedValue, ['_meta', 'searchValue'], searchState)
+    }
+    else {
+      updatedValue = deleteIn(updatedValue, ['_meta', 'searchValue'])
+    }
 
-  const index = searchResults.findIndex(searchResult => isEqual(searchResult, current))
-  if (index !== -1) {
-    return index < searchResults.length - 1
-        ? searchResults[index + 1]
-        : searchResults[0]
-  }
-  else {
-    return searchResults[0]
-  }
+    return updatedValue
+  })
+
+  return { eson: updatedEson, matches, active: matches[0] || null }
 }
 
 /**
  * Find the previous search result given a current search result
- * - When the current search result is the first one, the search will wrap around
- *   and return the last result as next.
- * - When current search result is not found, the last search result will be
- *   returned as next
- * - When `searchResults` is empty, null will be returned
+ * When the current search result is the first one, the search will wrap around
+ * and return the last result as next.
+ *
+ * @param {ESON} eson
+ * @param {ESONPointer[]} matches
+ * @param {ESONPointer} active
+ * @return {{eson: ESON, matches: ESONPointer[], active: ESONPointer}}
  */
-export function previousSearchResult (searchResults: ESONPointer[], current: ESONPointer): ESONPointer | null {
-  if (searchResults.length === 0) {
-    return null
+export function previousSearchResult (eson, matches, active) {
+  if (matches.length === 0) {
+    return { eson, matches, active }
   }
 
-  const index = searchResults.findIndex(searchResult => isEqual(searchResult, current))
-  if (index !== -1) {
-    return index > 0
-        ? searchResults[index - 1]
-        : last(searchResults)
+  const index = matches.findIndex(searchResult => isEqual(searchResult, active))
+  const previous = (index !== -1)
+      ? index > 0
+          ? matches[index - 1]
+          : last(matches)
+      : matches[0]
+
+  return {
+    eson: setSearchStatus(setSearchStatus(eson, active, 'normal'), previous, 'active'),
+    matches,
+    active: previous
   }
-  else {
-    return searchResults[0]
+}
+
+/**
+ * Find the next search result given a current search result
+ * When the current search result is the last one, the search will wrap around
+ * and return the first result as next.
+ *
+ * @param {ESON} eson
+ * @param {ESONPointer[]} matches
+ * @param {ESONPointer} active
+ * @return {{eson: ESON, matches: ESONPointer[], active: ESONPointer}}
+ */
+export function nextSearchResult (eson, matches, active) {
+  if (isEmpty(matches)) {
+    return { eson, matches, active }
   }
+
+  const index = matches.findIndex(match => isEqual(match, active))
+  const next = (index !== -1)
+      ? index < matches.length - 1
+          ? matches[index + 1]
+          : matches[0]
+      : matches[0]
+
+  return {
+    eson: setSearchStatus(setSearchStatus(eson, active, 'normal'), next, 'active'),
+    matches,
+    active: next
+  }
+}
+
+/**
+ * @param {ESON} eson
+ * @param {ESONPointer} esonPointer
+ * @param {SearchResultStatus} searchStatus
+ * @return {Object|Array}
+ */
+function setSearchStatus (eson, esonPointer, searchStatus) {
+  const metaProp = esonPointer.area === 'property' ? 'searchProperty': 'searchValue'
+
+  return setIn(eson, esonPointer.path.concat(['_meta', metaProp]), searchStatus)
 }
 
 /**

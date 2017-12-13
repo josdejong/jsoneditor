@@ -591,14 +591,12 @@ export default class TreeMode extends Component {
   }
 
   handleSearch = (text) => {
-    const searchResults = search(this.state.data, text)
+    const { eson, matches, active } = search(this.state.eson, text)
 
-    if (searchResults.length > 0) {
-      const active = searchResults[0]
-
+    if (matches.length > 0) {
       this.setState({
-        search: { text, active },
-        data: expandPath(this.state.data, initial(active.path))
+        search: { text, active, matches },
+        eson: expandPath(eson, initial(active.path))
       })
 
       // scroll to active search result (on next tick, after this path has been expanded)
@@ -606,7 +604,7 @@ export default class TreeMode extends Component {
     }
     else {
       this.setState({
-        search: { text, active: null }
+        search: { text, active, matches }
       })
     }
   }
@@ -619,22 +617,22 @@ export default class TreeMode extends Component {
   handleNext = (event) => {
     event.preventDefault()
 
-    const searchResults = search(this.state.data, this.state.search.text)
-    if (searchResults) {
-      const next = nextSearchResult(searchResults, this.state.search.active)
+    if (this.state.search) {
+      const { eson, active } = nextSearchResult(this.state.eson, this.state.search.matches, this.state.search.active)
 
       this.setState({
-        search: setIn(this.state.search, ['active'], next),
-        data: next ? expandPath(this.state.data, initial(next.path)) : this.state.data
+        search: setIn(this.state.search, ['active'], active),
+        eson
       })
 
       // scroll to the active result (on next tick, after this path has been expanded)
+      // TODO: this code is duplicate with handlePrevious, move into a separate function
       setTimeout(() => {
-        if (next && next.path) {
-          this.scrollTo(next.path)
+        if (active && active.path) {
+          this.scrollTo(active.path)
 
           if (!searchHasFocus()) {
-            setSelection(this.refs.contents, next.path, next.type)
+            setSelection(this.refs.contents, active.path, active.area)
           }
         }
       })
@@ -646,20 +644,20 @@ export default class TreeMode extends Component {
 
     const searchResults = search(this.state.data, this.state.search.text)
     if (searchResults) {
-      const previous = previousSearchResult(searchResults, this.state.search.active)
+      const { eson, active } = previousSearchResult(this.state.eson, this.state.search.matches, this.state.search.active)
 
       this.setState({
-        search: setIn(this.state.search, ['active'], previous),
-        data: previous ? expandPath(this.state.data, initial(previous.path)) : this.state.data
+        search: setIn(this.state.search, ['active'], active),
+        eson
       })
 
       // scroll to the active result (on next tick, after this path has been expanded)
       setTimeout(() => {
-        if (previous && previous.path) {
-          this.scrollTo(previous && previous.path)
+        if (active && active.path) {
+          this.scrollTo(active.path)
 
           if (!searchHasFocus()) {
-            setSelection(this.refs.contents, previous.path, previous.type)
+            setSelection(this.refs.contents, active.path, active.area)
           }
         }
       })

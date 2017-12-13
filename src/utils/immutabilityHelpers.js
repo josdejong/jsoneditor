@@ -122,7 +122,7 @@ export function deleteIn (object, path) {
 
   if (path.length === 1) {
     const key = path[0]
-    if (object[key] === undefined) {
+    if (!(key in object)) {
       // key doesn't exist. return object unchanged
       return object
     }
