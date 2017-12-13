@@ -352,7 +352,7 @@ export function addErrors (eson: ESON, errors) {
 /**
  * Search some text in all properties and values
  * @param {ESON} eson
- * @param {String} text
+ * @param {String} text Search text
  * @return {{eson: ESON, matches: ESONPointer[], active: ESONPointer}} Returns search result:
  *              An updated eson object containing the search results,
  *              and an array with the paths of all matches
@@ -367,7 +367,7 @@ export function search (eson, text) {
 
     // check property name
     const prop = last(path)
-    if (typeof prop === 'string' && containsCaseInsensitive(prop, text)) {
+    if (typeof prop === 'string' && text !== '' && containsCaseInsensitive(prop, text)) {
       const searchState = isEmpty(matches) ? 'active' : 'normal'
       matches.push({path, area: 'property'})
       updatedValue = setIn(updatedValue, ['_meta', 'searchProperty'], searchState)
@@ -377,7 +377,7 @@ export function search (eson, text) {
     }
 
     // check value
-    if (value._meta.type === 'value' && containsCaseInsensitive(value._meta.value, text)) {
+    if (value._meta.type === 'value' && text !== '' && containsCaseInsensitive(value._meta.value, text)) {
       const searchState = isEmpty(matches) ? 'active' : 'normal'
       matches.push({path, area: 'value'})
       updatedValue = setIn(updatedValue, ['_meta', 'searchValue'], searchState)

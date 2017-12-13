@@ -198,23 +198,12 @@ export default class TreeMode extends Component {
     //   data = addErrors(data, this.getErrors())
     // }
 
-    // enrich the data with search results
-    // TODO: reimplement search and selection
-    const searchResults = []
-    // const searchResults = this.state.search.text ? search(data, this.state.search.text) : null
-    // if (searchResults) {
-    //   data = applySearchResults(data, searchResults, this.state.search.active)
-    // }
-    // if (this.state.selection) {
-    //   data = applySelection(data, this.state.selection)
-    // }
-
     return h('div', {
       className: `jsoneditor jsoneditor-mode-${props.mode}`,
       onKeyDown: this.handleKeyDown,
       'data-jsoneditor': 'true'
     }, [
-      this.renderMenu(searchResults),
+      this.renderMenu(),
 
       h('div', {
         key: 'contents',
@@ -244,7 +233,7 @@ export default class TreeMode extends Component {
     ])
   }
 
-  renderMenu (searchResults: [] | null) {
+  renderMenu () {
     let items = [
       h('button', {
         key: 'expand-all',
@@ -301,7 +290,7 @@ export default class TreeMode extends Component {
         h('div', {key: 'search', className: 'jsoneditor-menu-panel-right'},
           h(Search, {
             text: this.state.search.text,
-            searchResults,
+            resultCount: this.state.search.matches ? this.state.search.matches.length : 0,
             onChange: this.handleSearch,
             onNext: this.handleNext,
             onPrevious: this.handlePrevious,
@@ -592,7 +581,6 @@ export default class TreeMode extends Component {
 
   handleSearch = (text) => {
     const { eson, matches, active } = search(this.state.eson, text)
-
     if (matches.length > 0) {
       this.setState({
         search: { text, active, matches },
@@ -604,7 +592,8 @@ export default class TreeMode extends Component {
     }
     else {
       this.setState({
-        search: { text, active, matches }
+        search: { text, active, matches },
+        eson
       })
     }
   }

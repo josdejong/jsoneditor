@@ -22,7 +22,7 @@ export default class Search extends Component {
 
   render () {
     return h('div', {className: 'jsoneditor-search'}, [
-      this.renderResultsCount(this.props.searchResults),
+      this.renderResultsCount(this.props.resultCount),
       h('form', {
         key: 'box',
         className: 'jsoneditor-search-box',
@@ -54,21 +54,19 @@ export default class Search extends Component {
     ])
   }
 
-  renderResultsCount (searchResults : []) {
-    if (!searchResults) {
+  renderResultsCount (resultCount) {
+    if (resultCount === 0) {
       return null
     }
 
-    const count = searchResults.length
-
-    if (count === 0) {
+    if (resultCount === 0) {
       return h('div', {key: 'count', className: 'jsoneditor-results'}, '(no results)')
     }
 
-    if (count > 0) {
-      const suffix = count === 1 ? ' result' : ' results'
+    if (resultCount > 0) {
+      const suffix = resultCount === 1 ? ' result' : ' results'
 
-      return h('div', {key: 'count', className: 'jsoneditor-results'}, count + suffix)
+      return h('div', {key: 'count', className: 'jsoneditor-results'}, resultCount + suffix)
     }
 
     return null
