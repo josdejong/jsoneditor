@@ -183,7 +183,7 @@ export default class JSONNode extends PureComponent {
       // this.renderActionMenuButton(),
       this.renderProperty(prop, index, eson, options),
       this.renderSeparator(),
-      this.renderValue(eson._meta.value, eson._meta.searchResult, options),
+      this.renderValue(eson._meta.value, eson._meta.searchValue, options),
       // this.renderFloatingMenuButton(),
       this.renderError(eson._meta.error)
     ])
@@ -272,7 +272,7 @@ export default class JSONNode extends PureComponent {
     const editable = !isIndex && (!options.isPropertyEditable || options.isPropertyEditable(this.props.eson._meta.path))
 
     const emptyClassName = (prop != null && prop.length === 0) ? ' jsoneditor-empty' : ''
-    const searchClassName = prop != null ? JSONNode.getSearchResultClass(prop.searchResult) : ''
+    const searchClassName = prop != null ? JSONNode.getSearchResultClass(eson._meta.searchProperty) : ''
     const escapedPropName = prop != null ? escapeHTML(prop, options.escapeUnicode) : null
 
     if (editable) {
@@ -395,7 +395,7 @@ export default class JSONNode extends PureComponent {
     }
 
     target.className = JSONNode.getValueClass(type, itsAnUrl, isEmpty) +
-        JSONNode.getSearchResultClass(this.props.eson._meta.searchResult)
+        JSONNode.getSearchResultClass(this.props.eson._meta.searchValue)
     target.title = itsAnUrl ? JSONNode.URL_TITLE : ''
 
     // remove all classNames from childs (needed for IE and Edge)

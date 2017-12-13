@@ -642,8 +642,7 @@ export default class TreeMode extends Component {
   handlePrevious = (event) => {
     event.preventDefault()
 
-    const searchResults = search(this.state.data, this.state.search.text)
-    if (searchResults) {
+    if (this.state.search) {
       const { eson, active } = previousSearchResult(this.state.eson, this.state.search.matches, this.state.search.active)
 
       this.setState({

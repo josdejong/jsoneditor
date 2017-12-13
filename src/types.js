@@ -57,6 +57,8 @@ export type ESONObject = {
     path: JSONPath,
     expanded?: boolean,
     selected?: boolean,
+    searchProperty?: SearchResultStatus,
+    searchValue?: SearchResultStatus
   }
 }
 
@@ -64,9 +66,11 @@ export type ESONArray = {
   _meta: {
     type: 'Array',
     path: JSONPath,
+    length: number
     expanded?: boolean,
     selected?: boolean,
-    length: number
+    searchProperty?: SearchResultStatus,
+    searchValue?: SearchResultStatus
   }
 }
 
@@ -76,7 +80,8 @@ export type ESONValue = {
     path: JSONPath,
     value: null | boolean | string | number,
     selected?: boolean,
-    searchResult?: SearchResultStatus
+    searchProperty?: SearchResultStatus,
+    searchValue?: SearchResultStatus
   }
 }
 
