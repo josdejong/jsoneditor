@@ -9,6 +9,7 @@ import { setIn, getIn, updateIn, deleteIn } from './utils/immutabilityHelpers'
 import { isObject } from  './utils/typeUtils'
 import isEqual from 'lodash/isEqual'
 import isEmpty from 'lodash/isEmpty'
+import range from 'lodash/range'
 import times from 'lodash/times'
 import initial from 'lodash/initial'
 import last from 'lodash/last'
@@ -337,25 +338,38 @@ export function expandPath (eson, path, expanded = true) {
  * @param {JSONSchemaError[]} errors
  * @return {ESON}
  */
-export function updateErrors (eson, errors = []) {
-  let updatedEson = eson
+export function applyErrors (eson, errors = []) {
+  const errorPaths = errors.map(error => error.dataPath)
 
-  if (!isEmpty(errors)) {
-    errors.forEach(error => {
-      const path = parseJSONPointer(error.dataPath)
-      // TODO: do we want to be able to store multiple errors per item?
-      updatedEson = setIn(updatedEson, path.concat(['_meta', 'error']), error)
-    })
-  }
+  const esonWithErrors = errors.reduce((eson, error) => {
+    const path = parseJSONPointer(error.dataPath)
+    // TODO: do we want to be able to store multiple errors per item?
+    return setIn(eson, path.concat(['_meta', 'error']), error)
+  }, eson)
 
   // cleanup any old error messages
-  updatedEson = transform(updatedEson, function (value, path) {
-    return (value._meta.error && !contains(errors, value._meta.error))
-        ? deleteIn(value, ['_meta', 'error'])
-        : value
+  return cleanupMetaData(esonWithErrors, 'error', errorPaths)
+}
+
+/**
+ * Cleanup meta data from an eson object
+ * @param {ESON} eson                 Object to be cleaned up
+ * @param {String} field              Field name, for example 'error' or 'selected'
+ * @param {String[] | JSONPath[]} [ignorePaths=[]]   An optional array with paths to be ignored
+ * @return {ESON}
+ */
+export function cleanupMetaData(eson, field, ignorePaths = []) {
+  const pathsMap = {}
+  ignorePaths.forEach(path => {
+    const pathString = (typeof path === 'string') ? path : compileJSONPointer(path)
+    pathsMap[pathString] = true
   })
 
-  return updatedEson
+  return transform(eson, function (value, path) {
+    return (value._meta[field] && !pathsMap[compileJSONPointer(path)])
+        ? deleteIn(value, ['_meta', field])
+        : value
+  })
 }
 
 /**
@@ -472,61 +486,70 @@ function setSearchStatus (eson, esonPointer, searchStatus) {
 }
 
 /**
- * Merge searchResults into the eson object
+ * Merge selection status into the eson object, cleanup previous selection
+ * @param {ESON} eson
+ * @param {Selection} selection
+ * @return {ESON} Returns updated eson object
  */
-export function applySearchResults (eson: ESON, searchResults: ESONPointer[], activeSearchResult: ESONPointer) {
-  let updatedEson = eson
-
-  searchResults.forEach(function (searchResult) {
-    if (searchResult.area === 'value') {
-      const esonPath = toEsonPath(updatedEson, searchResult.path).concat('searchResult')
-      const value = isEqual(searchResult, activeSearchResult) ? 'active' : 'normal'
-      updatedEson = setIn(updatedEson, esonPath, value)
-    }
-
-    if (searchResult.area === 'property') {
-      const esonPath = toEsonPath(updatedEson, searchResult.path)
-      const propertyPath = initial(esonPath).concat('searchResult')
-      const value = isEqual(searchResult, activeSearchResult) ? 'active' : 'normal'
-      updatedEson = setIn(updatedEson, propertyPath, value)
-    }
-  })
-
-  return updatedEson
-}
-
-/**
- * Merge searchResults into the eson object
- */
-export function applySelection (eson: ESON, selection: Selection) {
+export function applySelection (eson, selection) {
   if (!selection) {
-    return eson
+    return cleanupMetaData(eson, 'selected')
   }
-
-  if (selection.before) {
-    const esonPath = toEsonPath(eson, selection.before)
-    return setIn(eson, esonPath.concat('selected'), SELECTED_BEFORE)
+  else if (selection.before) {
+    const updatedEson = setIn(eson, selection.before.concat(['_meta', 'selected']), SELECTED_BEFORE)
+    return cleanupMetaData(updatedEson, 'selected', [selection.before])
   }
   else if (selection.after) {
-    const esonPath = toEsonPath(eson, selection.after)
-    return setIn(eson, esonPath.concat('selected'), SELECTED_AFTER)
+    const updatedEson = setIn(eson, selection.after.concat(['_meta', 'selected']), SELECTED_AFTER)
+    return cleanupMetaData(updatedEson, 'selected', [selection.after])
   }
   else { // selection.start and selection.end
     // find the parent node shared by both start and end of the selection
     const rootPath = findRootPath(selection)
+    let selectedPaths = null
 
-    return updateInEson(eson, rootPath, (root) => {
-      const { minIndex, maxIndex } = findSelectionIndices(root, rootPath, selection)
+    const updatedEson = updateIn(eson, rootPath, (root) => {
+      const start = selection.start[rootPath.length]
+      const end   = selection.end[rootPath.length]
 
-      const childsKey = (root.type === 'Object') ? 'props' : 'items' // property name of the array with props/items
-      const childsBefore = root[childsKey].slice(0, minIndex)
-      const childsUpdated = root[childsKey].slice(minIndex, maxIndex)
-          .map((child, index) => setIn(child, ['value', 'selected'], index === 0 ? SELECTED_END : SELECTED))
-      const childsAfter = root[childsKey].slice(maxIndex)
-      // FIXME: actually mark the end index as SELECTED_END, currently we select the first index
+      // TODO: simplify the update function. Use pathsFromSelection ?
 
-      return setIn(root, [childsKey], childsBefore.concat(childsUpdated, childsAfter))
+      if (root._meta.type === 'Object') {
+        const startIndex = root._meta.keys.indexOf(start)
+        const endIndex   = root._meta.keys.indexOf(end)
+
+        const minIndex = Math.min(startIndex, endIndex)
+        const maxIndex = Math.max(startIndex, endIndex) + 1 // include max index itself
+
+        const selectedProps = root._meta.keys.slice(minIndex, maxIndex)
+        selectedPaths = selectedProps.map(prop => rootPath.concat(prop))
+        let updatedRoot = Object.assign({}, root)
+        selectedProps.forEach(prop => {
+          updatedRoot[prop] = setIn(updatedRoot[prop], ['_meta', 'selected'], prop === end ? SELECTED_END : SELECTED)
+        })
+
+        return updatedRoot
+      }
+      else { // root._meta.type === 'Array'
+        const startIndex = parseInt(start)
+        const endIndex   = parseInt(end)
+
+        const minIndex = Math.min(startIndex, endIndex)
+        const maxIndex = Math.max(startIndex, endIndex) + 1 // include max index itself
+
+        const selectedIndices = range(minIndex, maxIndex)
+        selectedPaths = selectedIndices.map(index => rootPath.concat(index))
+
+        let updatedRoot = Object.assign({}, root)
+        selectedIndices.forEach(index => {
+          updatedRoot[index] = setIn(updatedRoot[index], ['_meta', 'selected'], index === endIndex ? SELECTED_END : SELECTED)
+        })
+
+        return updatedRoot
+      }
     })
+
+    return cleanupMetaData(updatedEson, 'selected', selectedPaths)
   }
 }
 
@@ -598,10 +621,10 @@ export function findRootPath(selection) {
   else if (selection.after) {
     return initial(selection.after)
   }
-  else { // .start and .end
+  else { // selection.start and selection.end
     const sharedPath = findSharedPath(selection.start, selection.end)
 
-    if (sharedPath.length === selection.start.length &&
+    if (sharedPath.length === selection.start.length ||
         sharedPath.length === selection.end.length) {
       // there is just one node selected, return it's parent
       return initial(sharedPath)

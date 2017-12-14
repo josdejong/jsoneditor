@@ -5,7 +5,7 @@ import {
   esonToJson, toEsonPath, toJsonPath, pathExists, transform, traverse,
     parseJSONPointer, compileJSONPointer,
   jsonToEson,
-    expand, expandOne, expandPath, updateErrors, search, nextSearchResult, previousSearchResult,
+    expand, expandOne, expandPath, applyErrors, search, nextSearchResult, previousSearchResult,
     applySelection, pathsFromSelection,
     SELECTED, SELECTED_END
 } from '../src/eson'
@@ -222,7 +222,7 @@ test('add and remove errors', t => {
     {dataPath: '/nill', message: 'Null expected'}
   ]
 
-  const actual1 = updateErrors(eson, jsonSchemaErrors)
+  const actual1 = applyErrors(eson, jsonSchemaErrors)
 
   let expected = eson
   expected = setIn(expected, ['obj', 'arr', '2', 'last', '_meta', 'error'], jsonSchemaErrors[0])
@@ -230,11 +230,11 @@ test('add and remove errors', t => {
   t.deepEqual(actual1, expected)
 
   // re-applying the same errors should not change eson
-  const actual2 = updateErrors(actual1, jsonSchemaErrors)
+  const actual2 = applyErrors(actual1, jsonSchemaErrors)
   t.is(actual2, actual1)
 
   // clear errors
-  const actual3 = updateErrors(actual2, [])
+  const actual3 = applyErrors(actual2, [])
   t.deepEqual(actual3, eson)
   t.is(actual3.str, eson.str) // shouldn't have touched values not affected by the errors
 })
@@ -384,56 +384,97 @@ test('previousSearchResult', t => {
 })
 
 test('selection (object)', t => {
+  const eson = jsonToEson({
+    "obj": {
+      "arr": [1,2, {"first":3,"last":4}]
+    },
+    "str": "hello world",
+    "nill": null,
+    "bool": false
+  })
   const selection = {
     start: ['obj', 'arr', '2', 'last'],
     end: ['nill']
   }
 
-  const actual = applySelection(ESON1, selection)
+  const actual = applySelection(eson, selection)
 
-  let expected = ESON1
-  expected = setIn(expected, toEsonPath(ESON1, ['obj']).concat(['selected']), SELECTED_END)
-  expected = setIn(expected, toEsonPath(ESON1, ['str']).concat(['selected']), SELECTED)
-  expected = setIn(expected, toEsonPath(ESON1, ['nill']).concat(['selected']), SELECTED)
-
+  let expected = eson
+  expected = setIn(expected, ['obj', '_meta', 'selected'], SELECTED)
+  expected = setIn(expected, ['str', '_meta', 'selected'], SELECTED)
+  expected = setIn(expected, ['nill', '_meta', 'selected'], SELECTED_END)
   t.deepEqual(actual, expected)
+
+  // test whether old selection results are cleaned up
+  const selection2 = {
+    start: ['nill'],
+    end: ['bool']
+  }
+  const actual2 = applySelection(actual, selection2)
+  let expected2 = eson
+  expected2 = setIn(expected2, ['nill', '_meta', 'selected'], SELECTED)
+  expected2 = setIn(expected2, ['bool', '_meta', 'selected'], SELECTED_END)
+  t.deepEqual(actual2, expected2)
 })
 
 test('selection (array)', t => {
+  const eson = jsonToEson({
+    "obj": {
+      "arr": [1,2, {"first":3,"last":4}]
+    },
+    "str": "hello world",
+    "nill": null,
+    "bool": false
+  })
   const selection = {
     start: ['obj', 'arr', '1'],
     end: ['obj', 'arr', '0'] // note the "wrong" order of start and end
   }
 
-  const actual = applySelection(ESON1, selection)
+  const actual = applySelection(eson, selection)
 
-  // FIXME: SELECTE_END should be selection.start, not the first
-  let expected = ESON1
-  expected = setIn(expected, toEsonPath(ESON1, ['obj', 'arr', '0']).concat(['selected']), SELECTED_END)
-  expected = setIn(expected, toEsonPath(ESON1, ['obj', 'arr', '1']).concat(['selected']), SELECTED)
+  let expected = eson
+  expected = setIn(expected, ['obj', 'arr', '0', '_meta', 'selected'], SELECTED_END)
+  expected = setIn(expected, ['obj', 'arr', '1', '_meta', 'selected'], SELECTED)
 
   t.deepEqual(actual, expected)
 })
 
 test('selection (value)', t => {
+  const eson = jsonToEson({
+    "obj": {
+      "arr": [1,2, {"first":3,"last":4}]
+    },
+    "str": "hello world",
+    "nill": null,
+    "bool": false
+  })
   const selection = {
     start: ['obj', 'arr', '2', 'first'],
     end: ['obj', 'arr', '2', 'first']
   }
 
-  const actual = applySelection(ESON1, selection)
-  const expected = setIn(ESON1, toEsonPath(ESON1, ['obj', 'arr', '2', 'first']).concat(['selected']), SELECTED_END)
+  const actual = applySelection(eson, selection)
+  const expected = setIn(eson, ['obj', 'arr', '2', 'first', '_meta', 'selected'], SELECTED_END)
   t.deepEqual(actual, expected)
 })
 
 test('selection (node)', t => {
+  const eson = jsonToEson({
+    "obj": {
+      "arr": [1,2, {"first":3,"last":4}]
+    },
+    "str": "hello world",
+    "nill": null,
+    "bool": false
+  })
   const selection = {
     start: ['obj', 'arr'],
     end: ['obj', 'arr']
   }
 
-  const actual = applySelection(ESON1, selection)
-  const expected = setIn(ESON1, toEsonPath(ESON1, ['obj', 'arr']).concat(['selected']), SELECTED_END)
+  const actual = applySelection(eson, selection)
+  const expected = setIn(eson, ['obj', 'arr', '_meta', 'selected'], SELECTED_END)
   t.deepEqual(actual, expected)
 })
 

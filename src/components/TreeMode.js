@@ -8,13 +8,13 @@ import Hammer from 'react-hammerjs'
 import jump from '../assets/jump.js/src/jump'
 import Ajv from 'ajv'
 
-import { setIn, updateIn } from '../utils/immutabilityHelpers'
+import { getIn, setIn, updateIn } from '../utils/immutabilityHelpers'
 import { parseJSON } from '../utils/jsonUtils'
 import { enrichSchemaError } from '../utils/schemaUtils'
 import {
-  jsonToEson, esonToJson, getInEson, updateInEson, pathExists,
-    expand, expandOne, expandPath, updateErrors,
-    search, applySearchResults, nextSearchResult, previousSearchResult,
+    jsonToEson, esonToJson, pathExists,
+    expand, expandOne, expandPath, applyErrors,
+    search, nextSearchResult, previousSearchResult,
     applySelection, pathsFromSelection, contentsFromPaths,
     compileJSONPointer, parseJSONPointer
 } from '../eson'
@@ -195,9 +195,10 @@ export default class TreeMode extends Component {
 
     let eson = state.eson
 
-    // enrich the data with JSON Schema errors
-    // TODO: for optimization, we can apply errors only when the eson is changed? (a wrapper around setState or something?) Takes about 7ms in large documents
-    eson = updateErrors(eson, this.getErrors())
+    // enrich the eson with selection and JSON Schema errors
+    // TODO: for optimization, we can apply errors only when the eson is changed? (a wrapper around setState or something?)
+    eson = applyErrors(eson, this.getErrors())
+    eson = applySelection(eson, this.state.selection)
 
     return h('div', {
       className: `jsoneditor jsoneditor-mode-${props.mode}`,
@@ -981,7 +982,7 @@ export default class TreeMode extends Component {
    * @return {boolean} Returns true when expanded, false otherwise
    */
   isExpanded (path) {
-    return getInEson(this.state.data, path).expanded
+    return getIn(this.state.eson, path)._meta.expanded
   }
 
   /**

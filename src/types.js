@@ -134,6 +134,6 @@ export type ESONPatchResult = {
 }
 
 export type JSONSchemaError = {
-  path: string, // TODO: change type to JSONPath
+  dataPath: string, // TODO: change type to JSONPath
   message: string
 }
