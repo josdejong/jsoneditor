@@ -196,11 +196,8 @@ export default class TreeMode extends Component {
     let eson = state.eson
 
     // enrich the data with JSON Schema errors
-    // TODO: for optimization, we can apply errors only when the eson is changed? (a wrapper around setState or something?)
-    const errors = this.getErrors()
-    if (errors.length) {
-      eson = updateErrors(eson, this.getErrors())
-    }
+    // TODO: for optimization, we can apply errors only when the eson is changed? (a wrapper around setState or something?) Takes about 7ms in large documents
+    eson = updateErrors(eson, this.getErrors())
 
     return h('div', {
       className: `jsoneditor jsoneditor-mode-${props.mode}`,
@@ -571,7 +568,7 @@ export default class TreeMode extends Component {
     const expanded = true
 
     this.setState({
-      data: expand(this.state.data, TreeMode.expandAll, expanded)
+      eson: expand(this.state.eson, TreeMode.expandAll, expanded)
     })
   }
 
@@ -579,11 +576,12 @@ export default class TreeMode extends Component {
     const expanded = false
 
     this.setState({
-      data: expand(this.state.data, TreeMode.expandAll, expanded)
+      eson: expand(this.state.eson, TreeMode.expandAll, expanded)
     })
   }
 
   handleSearch = (text) => {
+    // FIXME: also apply search when eson is changed
     const { eson, matches, active } = search(this.state.eson, text)
     if (matches.length > 0) {
       this.setState({
@@ -954,7 +952,7 @@ export default class TreeMode extends Component {
    */
   expand (callback) {
     this.setState({
-      data: expand(this.state.data, callback, true)
+      eson: expand(this.state.eson, callback, true)
     })
   }
 
@@ -964,7 +962,7 @@ export default class TreeMode extends Component {
    */
   collapse (callback) {
     this.setState({
-      data: expand(this.state.data, callback, false)
+      eson: expand(this.state.eson, callback, false)
     })
   }
 
