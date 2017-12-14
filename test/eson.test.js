@@ -5,7 +5,7 @@ import {
   esonToJson, toEsonPath, toJsonPath, pathExists, transform, traverse,
     parseJSONPointer, compileJSONPointer,
   jsonToEson,
-    expand, expandOne, expandPath, addErrors, search, nextSearchResult, previousSearchResult,
+    expand, expandOne, expandPath, updateErrors, search, nextSearchResult, previousSearchResult,
     applySelection, pathsFromSelection,
     SELECTED, SELECTED_END
 } from '../src/eson'
@@ -208,18 +208,35 @@ test('compileJSONPointer', t => {
 })
 
 test('add and remove errors', t => {
+  const eson = jsonToEson({
+    "obj": {
+      "arr": [1,2, {"first":3,"last":4}]
+    },
+    "str": "hello world",
+    "nill": null,
+    "bool": false
+  })
+
   const jsonSchemaErrors = [
     {dataPath: '/obj/arr/2/last', message: 'String expected'},
     {dataPath: '/nill', message: 'Null expected'}
   ]
 
-  const actual = addErrors(ESON1, jsonSchemaErrors)
+  const actual1 = updateErrors(eson, jsonSchemaErrors)
 
-  let expected = ESON1
-  expected = setIn(expected, toEsonPath(ESON1, ['obj', 'arr', '2', 'last']).concat(['error']), jsonSchemaErrors[0])
-  expected = setIn(expected, toEsonPath(ESON1, ['nill']).concat(['error']), jsonSchemaErrors[1])
+  let expected = eson
+  expected = setIn(expected, ['obj', 'arr', '2', 'last', '_meta', 'error'], jsonSchemaErrors[0])
+  expected = setIn(expected, ['nill', '_meta', 'error'], jsonSchemaErrors[1])
+  t.deepEqual(actual1, expected)
 
-  t.deepEqual(actual, expected)
+  // re-applying the same errors should not change eson
+  const actual2 = updateErrors(actual1, jsonSchemaErrors)
+  t.is(actual2, actual1)
+
+  // clear errors
+  const actual3 = updateErrors(actual2, [])
+  t.deepEqual(actual3, eson)
+  t.is(actual3.str, eson.str) // shouldn't have touched values not affected by the errors
 })
 
 test('traverse', t => {

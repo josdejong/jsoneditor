@@ -13,7 +13,7 @@ import { parseJSON } from '../utils/jsonUtils'
 import { enrichSchemaError } from '../utils/schemaUtils'
 import {
   jsonToEson, esonToJson, getInEson, updateInEson, pathExists,
-    expand, expandOne, expandPath, addErrors,
+    expand, expandOne, expandPath, updateErrors,
     search, applySearchResults, nextSearchResult, previousSearchResult,
     applySelection, pathsFromSelection, contentsFromPaths,
     compileJSONPointer, parseJSONPointer
@@ -112,8 +112,11 @@ export default class TreeMode extends Component {
 
       search: {
         text: '',
+        matches: null,
         active: null // active search result
       },
+
+      errors: null,
 
       selection: null,
 
@@ -190,13 +193,14 @@ export default class TreeMode extends Component {
             ? JSONNodeForm
             : JSONNode
 
-    // enrich the data with JSON Schema errors
     let eson = state.eson
-    // TODO: reimplement errors
-    // const errors = this.getErrors()
-    // if (errors.length) {
-    //   data = addErrors(data, this.getErrors())
-    // }
+
+    // enrich the data with JSON Schema errors
+    // TODO: for optimization, we can apply errors only when the eson is changed? (a wrapper around setState or something?)
+    const errors = this.getErrors()
+    if (errors.length) {
+      eson = updateErrors(eson, this.getErrors())
+    }
 
     return h('div', {
       className: `jsoneditor jsoneditor-mode-${props.mode}`,

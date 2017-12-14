@@ -331,20 +331,29 @@ export function expandPath (eson, path, expanded = true) {
 
 /**
  * Merge one or multiple errors (for example JSON schema errors) into the ESON object
+ * Cleanup old error messages
  *
  * @param {ESON} eson
  * @param {JSONSchemaError[]} errors
+ * @return {ESON}
  */
-export function addErrors (eson: ESON, errors) {
+export function updateErrors (eson, errors = []) {
   let updatedEson = eson
 
-  if (errors) {
+  if (!isEmpty(errors)) {
     errors.forEach(error => {
-      const esonPath = toEsonPath(eson, parseJSONPointer(error.dataPath))
+      const path = parseJSONPointer(error.dataPath)
       // TODO: do we want to be able to store multiple errors per item?
-      updatedEson = setIn(updatedEson, esonPath.concat('error'), error)
+      updatedEson = setIn(updatedEson, path.concat(['_meta', 'error']), error)
     })
   }
+
+  // cleanup any old error messages
+  updatedEson = transform(updatedEson, function (value, path) {
+    return (value._meta.error && !contains(errors, value._meta.error))
+        ? deleteIn(value, ['_meta', 'error'])
+        : value
+  })
 
   return updatedEson
 }
@@ -823,6 +832,16 @@ export function compileJSONPointer (path: Path) {
  */
 export function containsCaseInsensitive (text: string, search: string): boolean {
   return String(text).toLowerCase().indexOf(search.toLowerCase()) !== -1
+}
+
+/**
+ * Test whether an array contains a specific item
+ * @param {Array} array
+ * @param {*} item
+ * @return {boolean} Returnts true when item is in array, false otherwise.
+ */
+function contains (array, item) {
+  return array.indexOf(item) !== -1
 }
 
 /**

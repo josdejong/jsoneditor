@@ -70,7 +70,7 @@ export default class JSONNode extends PureComponent {
       this.renderProperty(prop, index, eson, options),
       this.renderReadonly(`{${keys.length}}`, `Array containing ${keys.length} items`),
       // this.renderFloatingMenuButton(),
-      this.renderError(eson._meta.error) // FIXME: render error
+      this.renderError(eson._meta.error)
     ])
 
     let childs
