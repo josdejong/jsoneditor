@@ -72,6 +72,33 @@ export function mapEsonArray (esonArray, callback) {
 }
 
 /**
+ * Splice an eson Array: delete items and insert items
+ * @param {ESON} esonArray
+ * @param {number} start
+ * @param {number} deleteCount
+ * @param {Array} [insertItems]
+ */
+export function spliceEsonArray(esonArray, start, deleteCount, insertItems = []) {
+  let splicedArray = {}
+  const originalLength = esonArray._meta.length
+
+  for (let i = 0; i < start; i++) {
+    splicedArray[i] = esonArray[i]
+  }
+  for (let i = 0; i < insertItems.length; i++) {
+    splicedArray[i + start] = insertItems[i]
+  }
+  for (let i = start + deleteCount; i < originalLength; i++) {
+    splicedArray[i - deleteCount] = esonArray[i]
+  }
+
+  const length = originalLength - deleteCount + insertItems.length
+  splicedArray._meta = setIn(esonArray._meta, ['length'], length)
+
+  return splicedArray
+}
+
+/**
  * Expand function which will expand all nodes
  * @param {Path} path
  * @return {boolean}

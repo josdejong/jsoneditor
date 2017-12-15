@@ -3,11 +3,12 @@ import test from 'ava'
 import { setIn, getIn, deleteIn } from '../src/utils/immutabilityHelpers'
 import {
   esonToJson, toEsonPath, toJsonPath, pathExists, transform, traverse,
-    parseJSONPointer, compileJSONPointer,
+  parseJSONPointer, compileJSONPointer,
   jsonToEson,
-    expand, expandOne, expandPath, applyErrors, search, nextSearchResult, previousSearchResult,
-    applySelection, pathsFromSelection,
-    SELECTED, SELECTED_END
+  expand, expandOne, expandPath, applyErrors, search, nextSearchResult,
+  previousSearchResult,
+  applySelection, pathsFromSelection,
+  SELECTED, SELECTED_END, spliceEsonArray
 } from '../src/eson'
 import deepMap from "deep-map/lib/index"
 
@@ -528,6 +529,15 @@ test('pathsFromSelection (after)', t => {
   }
 
   t.deepEqual(pathsFromSelection(ESON1, selection), [])
+})
+
+test('spliceEsonArray', t => {
+  const eson = jsonToEson([1,2,3])
+
+  t.deepEqual(replaceIds(spliceEsonArray(eson, 1, 1)), replaceIds(jsonToEson([1,3])))
+  t.deepEqual(replaceIds(spliceEsonArray(eson, 1, 5)), replaceIds(jsonToEson([1])))
+  t.deepEqual(replaceIds(spliceEsonArray(eson, 1, 0, [10])), replaceIds(jsonToEson([1,5,3])))
+  t.deepEqual(replaceIds(spliceEsonArray(eson, 1, 0, [10,20])), replaceIds(jsonToEson([1,10,20,3])))
 })
 
 // helper function to replace all id properties with a constant value
