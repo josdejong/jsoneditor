@@ -5,7 +5,7 @@
  * All functions are pure and don't mutate the ESON.
  */
 
-import { setIn, getIn, updateIn, deleteIn } from './utils/immutabilityHelpers'
+import { setIn, getIn, updateIn, deleteIn, cloneWithSymbols } from './utils/immutabilityHelpers'
 import { isObject } from  './utils/typeUtils'
 import isEqual from 'lodash/isEqual'
 import isEmpty from 'lodash/isEmpty'
@@ -27,6 +27,8 @@ export const SELECTED_END = 2
 export const SELECTED_BEFORE = 3
 export const SELECTED_AFTER = 4
 
+export const META = Symbol('meta')
+
 /**
  *
  * @param {JSONType} json
@@ -40,19 +42,19 @@ export function jsonToEson (json, path = []) {
     let eson = {}
     const keys = Object.keys(json)
     keys.forEach((key) => eson[key] = jsonToEson(json[key], path.concat(key)))
-    eson._meta = { id, path, type: 'Object', keys }
+    // TODO: rename keys to props
+    eson[META] = { id, path, type: 'Object', keys }
     return eson
   }
   else if (Array.isArray(json)) {
-    let eson = {}
-    json.forEach((value, index) => eson[index] = jsonToEson(value, path.concat(index)))
-    eson._meta = { id, path, type: 'Array', length: json.length }
+    let eson = json.map((value, index) => jsonToEson(value, path.concat(index)))
+    eson[META] = { id, path, type: 'Array' }
     return eson
   }
   else { // json is a number, string, boolean, or null
-    return {
-      _meta: { id, path, type: 'value', value: json }
-    }
+    let eson = {}
+    eson[META] = { id, path, type: 'value', value: json }
+    return eson
   }
 }
 
@@ -63,39 +65,12 @@ export function jsonToEson (json, path = []) {
  * @return {Array}
  */
 export function mapEsonArray (esonArray, callback) {
-  const length = esonArray._meta.length
+  const length = esonArray[META].length
   let result = []
   for (let i = 0; i < length; i++) {
     result[i] = callback(esonArray[i], i, esonArray)
   }
   return result
-}
-
-/**
- * Splice an eson Array: delete items and insert items
- * @param {ESON} esonArray
- * @param {number} start
- * @param {number} deleteCount
- * @param {Array} [insertItems]
- */
-export function spliceEsonArray(esonArray, start, deleteCount, insertItems = []) {
-  let splicedArray = {}
-  const originalLength = esonArray._meta.length
-
-  for (let i = 0; i < start; i++) {
-    splicedArray[i] = esonArray[i]
-  }
-  for (let i = 0; i < insertItems.length; i++) {
-    splicedArray[i + start] = insertItems[i]
-  }
-  for (let i = start + deleteCount; i < originalLength; i++) {
-    splicedArray[i - deleteCount] = esonArray[i]
-  }
-
-  const length = originalLength - deleteCount + insertItems.length
-  splicedArray._meta = setIn(esonArray._meta, ['length'], length)
-
-  return splicedArray
 }
 
 /**
@@ -288,20 +263,29 @@ export function deleteInEson (eson: ESON, jsonPath: JSONPath) : JSONType {
 export function transform (eson, callback, path = []) {
   const updated = callback(eson, path)
 
-  if (updated._meta.type === 'Object' || updated._meta.type === 'Array') {
+  if (updated[META].type === 'Object') {
     let changed = false
-    let updatedProps = {}
+    let updatedObj = {}
     for (let key in updated) {
-      if (updated.hasOwnProperty(key) && key !== '_meta') { // don't traverse the _meta objects
-        const childPath = path.concat(updated._meta.type === 'Array' ? parseInt(key) : key)
-        updatedProps[key] = transform(updated[key], callback, childPath)
-        changed = changed || (updatedProps[key] !== updated[key])
+      if (updated.hasOwnProperty(key)) {
+        updatedObj[key] = transform(updated[key], callback, path.concat(key))
+        changed = changed || (updatedObj[key] !== updated[key])
       }
     }
-    updatedProps._meta = updated._meta
-    return changed ? updatedProps : updated
+    updatedObj[META] = updated[META]
+    return changed ? updatedObj : updated
   }
-  else {  // eson._meta.type === 'value'
+  else if (updated[META].type === 'Array') {
+    let changed = false
+    let updatedArr = []
+    for (let i = 0; i < updated.length; i++) {
+      updatedArr[i] = transform(updated[i], callback, path.concat(i))
+        changed = changed || (updatedArr[i] !== updated[i])
+    }
+    updatedArr[META] = updated[META]
+    return changed ? updatedArr : updated
+  }
+  else {  // eson[META].type === 'value'
     return updated
   }
 }
@@ -318,7 +302,7 @@ export function transform (eson, callback, path = []) {
  */
 export function expand (eson, filterCallback, expanded = true) {
   return transform(eson, function (value, path) {
-    return ((value._meta.type === 'Array' || value._meta.type === 'Object') && filterCallback(path))
+    return ((value[META].type === 'Array' || value[META].type === 'Object') && filterCallback(path))
         ? expandOne(value, [], expanded)
         : value
   })
@@ -332,7 +316,7 @@ export function expand (eson, filterCallback, expanded = true) {
  * @return {ESON}
  */
 export function expandOne (eson, path, expanded = true) {
-  return setIn(eson, path.concat(['_meta', 'expanded']), expanded)
+  return setIn(eson, path.concat([META, 'expanded']), expanded)
 }
 
 /**
@@ -371,7 +355,7 @@ export function applyErrors (eson, errors = []) {
   const esonWithErrors = errors.reduce((eson, error) => {
     const path = parseJSONPointer(error.dataPath)
     // TODO: do we want to be able to store multiple errors per item?
-    return setIn(eson, path.concat(['_meta', 'error']), error)
+    return setIn(eson, path.concat([META, 'error']), error)
   }, eson)
 
   // cleanup any old error messages
@@ -393,8 +377,8 @@ export function cleanupMetaData(eson, field, ignorePaths = []) {
   })
 
   return transform(eson, function (value, path) {
-    return (value._meta[field] && !pathsMap[compileJSONPointer(path)])
-        ? deleteIn(value, ['_meta', field])
+    return (value[META][field] && !pathsMap[compileJSONPointer(path)])
+        ? deleteIn(value, [META, field])
         : value
   })
 }
@@ -420,20 +404,20 @@ export function search (eson, text) {
     if (typeof prop === 'string' && text !== '' && containsCaseInsensitive(prop, text)) {
       const searchState = isEmpty(matches) ? 'active' : 'normal'
       matches.push({path, area: 'property'})
-      updatedValue = setIn(updatedValue, ['_meta', 'searchProperty'], searchState)
+      updatedValue = setIn(updatedValue, [META, 'searchProperty'], searchState)
     }
     else {
-      updatedValue = deleteIn(updatedValue, ['_meta', 'searchProperty'])
+      updatedValue = deleteIn(updatedValue, [META, 'searchProperty'])
     }
 
     // check value
-    if (value._meta.type === 'value' && text !== '' && containsCaseInsensitive(value._meta.value, text)) {
+    if (value[META].type === 'value' && text !== '' && containsCaseInsensitive(value[META].value, text)) {
       const searchState = isEmpty(matches) ? 'active' : 'normal'
       matches.push({path, area: 'value'})
-      updatedValue = setIn(updatedValue, ['_meta', 'searchValue'], searchState)
+      updatedValue = setIn(updatedValue, [META, 'searchValue'], searchState)
     }
     else {
-      updatedValue = deleteIn(updatedValue, ['_meta', 'searchValue'])
+      updatedValue = deleteIn(updatedValue, [META, 'searchValue'])
     }
 
     return updatedValue
@@ -509,7 +493,7 @@ export function nextSearchResult (eson, matches, active) {
 function setSearchStatus (eson, esonPointer, searchStatus) {
   const metaProp = esonPointer.area === 'property' ? 'searchProperty': 'searchValue'
 
-  return setIn(eson, esonPointer.path.concat(['_meta', metaProp]), searchStatus)
+  return setIn(eson, esonPointer.path.concat([META, metaProp]), searchStatus)
 }
 
 /**
@@ -523,11 +507,11 @@ export function applySelection (eson, selection) {
     return cleanupMetaData(eson, 'selected')
   }
   else if (selection.before) {
-    const updatedEson = setIn(eson, selection.before.concat(['_meta', 'selected']), SELECTED_BEFORE)
+    const updatedEson = setIn(eson, selection.before.concat([META, 'selected']), SELECTED_BEFORE)
     return cleanupMetaData(updatedEson, 'selected', [selection.before])
   }
   else if (selection.after) {
-    const updatedEson = setIn(eson, selection.after.concat(['_meta', 'selected']), SELECTED_AFTER)
+    const updatedEson = setIn(eson, selection.after.concat([META, 'selected']), SELECTED_AFTER)
     return cleanupMetaData(updatedEson, 'selected', [selection.after])
   }
   else { // selection.start and selection.end
@@ -541,23 +525,24 @@ export function applySelection (eson, selection) {
 
       // TODO: simplify the update function. Use pathsFromSelection ?
 
-      if (root._meta.type === 'Object') {
-        const startIndex = root._meta.keys.indexOf(start)
-        const endIndex   = root._meta.keys.indexOf(end)
+      if (root[META].type === 'Object') {
+        const startIndex = root[META].keys.indexOf(start)
+        const endIndex   = root[META].keys.indexOf(end)
 
         const minIndex = Math.min(startIndex, endIndex)
         const maxIndex = Math.max(startIndex, endIndex) + 1 // include max index itself
 
-        const selectedProps = root._meta.keys.slice(minIndex, maxIndex)
+        const selectedProps = root[META].keys.slice(minIndex, maxIndex)
         selectedPaths = selectedProps.map(prop => rootPath.concat(prop))
-        let updatedRoot = Object.assign({}, root)
+        let updatedObj = cloneWithSymbols(root)
         selectedProps.forEach(prop => {
-          updatedRoot[prop] = setIn(updatedRoot[prop], ['_meta', 'selected'], prop === end ? SELECTED_END : SELECTED)
+          updatedObj[prop] = setIn(updatedObj[prop], [META, 'selected'],
+              prop === end ? SELECTED_END : SELECTED)
         })
 
-        return updatedRoot
+        return updatedObj
       }
-      else { // root._meta.type === 'Array'
+      else { // root[META].type === 'Array'
         const startIndex = parseInt(start)
         const endIndex   = parseInt(end)
 
@@ -567,12 +552,14 @@ export function applySelection (eson, selection) {
         const selectedIndices = range(minIndex, maxIndex)
         selectedPaths = selectedIndices.map(index => rootPath.concat(index))
 
-        let updatedRoot = Object.assign({}, root)
+        let updatedArr = root.slice()
+        updatedArr = cloneWithSymbols(root)
         selectedIndices.forEach(index => {
-          updatedRoot[index] = setIn(updatedRoot[index], ['_meta', 'selected'], index === endIndex ? SELECTED_END : SELECTED)
+          updatedArr[index] = setIn(updatedArr[index], [META, 'selected'],
+              index === endIndex ? SELECTED_END : SELECTED)
         })
 
-        return updatedRoot
+        return updatedArr
       }
     })
 

@@ -29,6 +29,7 @@
   "dependencies": {
     "ajv": "4.10.4",
     "brace": "0.9.1",
+    "console.table": "0.9.1",
     "javascript-natural-sort": "0.7.1",
     "lodash": "4.17.4",
     "prop-types": "15.5.10",

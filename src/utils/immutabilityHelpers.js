@@ -1,6 +1,5 @@
 'use strict';
 
-import clone from 'lodash/clone'
 import { isObjectOrArray, isObject } from  './typeUtils'
 
 /**
@@ -14,6 +13,40 @@ import { isObjectOrArray, isObject } from  './typeUtils'
  * https://github.com/mariocasciaro/object-path-immutable
  */
 
+/**
+ * Shallow clone of an Object, Array, or value
+ * Also copies any symbols on the Objects and Arrays
+ * @param {*} value
+ * @return {*}
+ */
+export function cloneWithSymbols (value) {
+  if (Array.isArray(value)) {
+    // copy array items
+    let arr = value.slice()
+
+    // copy all symbols
+    Object.getOwnPropertySymbols(value).forEach(symbol => arr[symbol] = value[symbol])
+
+    return arr
+  }
+  else if (typeof value === 'object') {
+    // copy properties
+    let obj = {}
+    for (let prop in value) {
+      if (value.hasOwnProperty(prop)) {
+        obj[prop] = value[prop]
+      }
+    }
+
+    // copy all symbols
+    Object.getOwnPropertySymbols(value).forEach(symbol => obj[symbol] = value[symbol])
+
+    return obj
+  }
+  else {
+    return value
+  }
+}
 
 /**
  * helper function to get a nested property in an object or array
@@ -66,7 +99,7 @@ export function setIn (object, path, value) {
     return object
   }
   else {
-    const updatedObject = clone(object)
+    const updatedObject = cloneWithSymbols(object)
     updatedObject[key] = updatedValue
     return updatedObject
   }
@@ -97,7 +130,7 @@ export function updateIn (object, path, callback) {
     return object
   }
   else {
-    const updatedObject = clone(object)
+    const updatedObject = cloneWithSymbols(object)
     updatedObject[key] = updatedValue
     return updatedObject
   }
@@ -127,7 +160,7 @@ export function deleteIn (object, path) {
       return object
     }
     else {
-      const updatedObject = clone(object)
+      const updatedObject = cloneWithSymbols(object)
 
       if (Array.isArray(updatedObject)) {
         updatedObject.splice(key, 1)
@@ -147,7 +180,7 @@ export function deleteIn (object, path) {
     return object
   }
   else {
-    const updatedObject = clone(object)
+    const updatedObject = cloneWithSymbols(object)
     updatedObject[key] = updatedValue
     return updatedObject
   }

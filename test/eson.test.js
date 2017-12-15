@@ -2,15 +2,18 @@ import { readFileSync } from 'fs'
 import test from 'ava'
 import { setIn, getIn, deleteIn } from '../src/utils/immutabilityHelpers'
 import {
+  META,
   esonToJson, toEsonPath, toJsonPath, pathExists, transform, traverse,
   parseJSONPointer, compileJSONPointer,
   jsonToEson,
   expand, expandOne, expandPath, applyErrors, search, nextSearchResult,
   previousSearchResult,
   applySelection, pathsFromSelection,
-  SELECTED, SELECTED_END, spliceEsonArray
+  SELECTED, SELECTED_END
 } from '../src/eson'
-import deepMap from "deep-map/lib/index"
+import 'console.table'
+import lodashTransform from 'lodash/transform'
+import repeat from 'lodash/repeat'
 
 const JSON1 = loadJSON('./resources/json1.json')
 const ESON1 = loadJSON('./resources/eson1.json')
@@ -39,22 +42,23 @@ test('toJsonPath', t => {
 })
 
 test('jsonToEson', t => {
-  t.deepEqual(replaceIds2(jsonToEson(1)),     {_meta: {id: '[ID]', path: [], type: 'value', value: 1}})
-  t.deepEqual(replaceIds2(jsonToEson("foo")), {_meta: {id: '[ID]', path: [], type: 'value', value: "foo"}})
-  t.deepEqual(replaceIds2(jsonToEson(null)),  {_meta: {id: '[ID]', path: [], type: 'value', value: null}})
-  t.deepEqual(replaceIds2(jsonToEson(false)), {_meta: {id: '[ID]', path: [], type: 'value', value: false}})
-  t.deepEqual(replaceIds2(jsonToEson({a:1, b: 2})), {
-    _meta: {id: '[ID]', path: [], type: 'Object', keys: ['a', 'b']},
-    a: {_meta: {id: '[ID]', path: ['a'], type: 'value', value: 1}},
-    b: {_meta: {id: '[ID]', path: ['b'], type: 'value', value: 2}}
+  assertDeepEqualEson(t, jsonToEson(1),     {[META]: {id: '[ID]', path: [], type: 'value', value: 1}})
+  assertDeepEqualEson(t, jsonToEson("foo"), {[META]: {id: '[ID]', path: [], type: 'value', value: "foo"}})
+  assertDeepEqualEson(t, jsonToEson(null),  {[META]: {id: '[ID]', path: [], type: 'value', value: null}})
+  assertDeepEqualEson(t, jsonToEson(false), {[META]: {id: '[ID]', path: [], type: 'value', value: false}})
+  assertDeepEqualEson(t, jsonToEson({a:1, b: 2}), {
+    [META]: {id: '[ID]', path: [], type: 'Object', keys: ['a', 'b']},
+    a: {[META]: {id: '[ID]', path: ['a'], type: 'value', value: 1}},
+    b: {[META]: {id: '[ID]', path: ['b'], type: 'value', value: 2}}
   })
 
-  // printJSON(replaceIds2(jsonToEson([1,2])))
-  t.deepEqual(replaceIds2(jsonToEson([1,2])), {
-    _meta: {id: '[ID]', path: [], type: 'Array', length: 2},
-    0: {_meta: {id: '[ID]', path: [0], type: 'value', value: 1}},
-    1: {_meta: {id: '[ID]', path: [1], type: 'value', value: 2}}
-  })
+  const actual = jsonToEson([1,2])
+  const expected = [
+    {[META]: {id: '[ID]', path: [0], type: 'value', value: 1}},
+    {[META]: {id: '[ID]', path: [1], type: 'value', value: 2}}
+  ]
+  expected[META] = {id: '[ID]', path: [], type: 'Array'}
+  assertDeepEqualEson(t, actual, expected)
 })
 
 test('esonToJson', t => {
@@ -73,12 +77,12 @@ test('expand a single path', t => {
 
   const path = ['obj', 'arr', 2]
   const collapsed = expandOne(eson, path, false)
-  t.is(collapsed.obj.arr[2]._meta.expanded, false)
-  t.deepEqual(deleteIn(collapsed, path.concat(['_meta', 'expanded'])), eson)
+  t.is(collapsed.obj.arr[2][META].expanded, false)
+  assertDeepEqualEson(t, deleteIn(collapsed, path.concat([META, 'expanded'])), eson)
 
   const expanded = expandOne(eson, path, true)
-  t.is(expanded.obj.arr[2]._meta.expanded, true)
-  t.deepEqual(deleteIn(expanded, path.concat(['_meta', 'expanded'])), eson)
+  t.is(expanded.obj.arr[2][META].expanded, true)
+  assertDeepEqualEson(t, deleteIn(expanded, path.concat([META, 'expanded'])), eson)
 })
 
 test('expand all objects/arrays on a path', t => {
@@ -94,24 +98,24 @@ test('expand all objects/arrays on a path', t => {
   const path = ['obj', 'arr', 2]
 
   const collapsed = expandPath(eson, path, false)
-  t.is(collapsed._meta.expanded, false)
-  t.is(collapsed.obj._meta.expanded, false)
-  t.is(collapsed.obj.arr._meta.expanded, false)
-  t.is(collapsed.obj.arr[2]._meta.expanded, false)
+  t.is(collapsed[META].expanded, false)
+  t.is(collapsed.obj[META].expanded, false)
+  t.is(collapsed.obj.arr[META].expanded, false)
+  t.is(collapsed.obj.arr[2][META].expanded, false)
 
   const expanded = expandPath(eson, path, true)
-  t.is(expanded._meta.expanded, true)
-  t.is(expanded.obj._meta.expanded, true)
-  t.is(expanded.obj.arr._meta.expanded, true)
-  t.is(expanded.obj.arr[2]._meta.expanded, true)
+  t.is(expanded[META].expanded, true)
+  t.is(expanded.obj[META].expanded, true)
+  t.is(expanded.obj.arr[META].expanded, true)
+  t.is(expanded.obj.arr[2][META].expanded, true)
 
   let orig = expanded
-  orig = deleteIn(orig, [].concat(['_meta', 'expanded']))
-  orig = deleteIn(orig, ['obj'].concat(['_meta', 'expanded']))
-  orig = deleteIn(orig, ['obj', 'arr'].concat(['_meta', 'expanded']))
-  orig = deleteIn(orig, ['obj', 'arr', 2].concat(['_meta', 'expanded']))
+  orig = deleteIn(orig, [].concat([META, 'expanded']))
+  orig = deleteIn(orig, ['obj'].concat([META, 'expanded']))
+  orig = deleteIn(orig, ['obj', 'arr'].concat([META, 'expanded']))
+  orig = deleteIn(orig, ['obj', 'arr', 2].concat([META, 'expanded']))
 
-  t.deepEqual(orig, eson)
+  assertDeepEqualEson(t, orig, eson)
 })
 
 test('expand a callback', t => {
@@ -129,15 +133,16 @@ test('expand a callback', t => {
   }
   const expandedValue = false
   const collapsed = expand(eson, filterCallback, expandedValue)
-  t.is(collapsed.obj.arr._meta.expanded, expandedValue)
-  t.is(collapsed.obj.arr._meta.expanded, expandedValue)
-  t.is(collapsed.obj.arr[2]._meta.expanded, expandedValue)
+  t.is(collapsed[META].expanded, undefined)
+  t.is(collapsed.obj[META].expanded, expandedValue)
+  t.is(collapsed.obj.arr[META].expanded, expandedValue)
+  t.is(collapsed.obj.arr[2][META].expanded, expandedValue)
 
   let orig = collapsed
-  orig = deleteIn(orig, ['obj'].concat(['_meta', 'expanded']))
-  orig = deleteIn(orig, ['obj', 'arr'].concat(['_meta', 'expanded']))
-  orig = deleteIn(orig, ['obj', 'arr', 2].concat(['_meta', 'expanded']))
-  t.deepEqual(orig, eson)
+  orig = deleteIn(orig, ['obj'].concat([META, 'expanded']))
+  orig = deleteIn(orig, ['obj', 'arr'].concat([META, 'expanded']))
+  orig = deleteIn(orig, ['obj', 'arr', 2].concat([META, 'expanded']))
+  assertDeepEqualEson(t, orig, eson)
 })
 
 test('expand a callback should not change the object when nothing happens', t => {
@@ -154,7 +159,7 @@ test('expand a callback should not change the object when nothing happens', t =>
 test('transform (no change)', t => {
   const eson = jsonToEson({a: [1,2,3], b: {c: 4}})
   const updated = transform(eson, (value, path) => value)
-  t.deepEqual(updated, eson)
+  assertDeepEqualEson(t, updated, eson)
   t.is(updated, eson)
 })
 
@@ -162,13 +167,10 @@ test('transform (change based on value)', t => {
   const eson = jsonToEson({a: [1,2,3], b: {c: 4}})
 
   const updated = transform(eson,
-      (value, path) => value._meta.value === 2 ? jsonToEson(20, path) : value)
+      (value, path) => value[META].value === 2 ? jsonToEson(20, path) : value)
   const expected = jsonToEson({a: [1,20,3], b: {c: 4}})
 
-  replaceIds(updated)
-  replaceIds(expected)
-
-  t.deepEqual(updated, expected)
+  assertDeepEqualEson(t, updated, expected)
   t.is(updated.b, eson.b) // should not have replaced b
 })
 
@@ -179,9 +181,7 @@ test('transform (change based on path)', t => {
       (value, path) => path.join('.') === 'a.1' ? jsonToEson(20, path) : value)
   const expected = jsonToEson({a: [1,20,3], b: {c: 4}})
 
-  replaceIds(updated)
-  replaceIds(expected)
-  t.deepEqual(updated, expected)
+  assertDeepEqualEson(t, updated, expected)
   t.is(updated.b, eson.b) // should not have replaced b
 })
 
@@ -226,9 +226,9 @@ test('add and remove errors', t => {
   const actual1 = applyErrors(eson, jsonSchemaErrors)
 
   let expected = eson
-  expected = setIn(expected, ['obj', 'arr', '2', 'last', '_meta', 'error'], jsonSchemaErrors[0])
-  expected = setIn(expected, ['nill', '_meta', 'error'], jsonSchemaErrors[1])
-  t.deepEqual(actual1, expected)
+  expected = setIn(expected, ['obj', 'arr', '2', 'last', META, 'error'], jsonSchemaErrors[0])
+  expected = setIn(expected, ['nill', META, 'error'], jsonSchemaErrors[1])
+  assertDeepEqualEson(t, actual1, expected)
 
   // re-applying the same errors should not change eson
   const actual2 = applyErrors(actual1, jsonSchemaErrors)
@@ -236,7 +236,7 @@ test('add and remove errors', t => {
 
   // clear errors
   const actual3 = applyErrors(actual2, [])
-  t.deepEqual(actual3, eson)
+  assertDeepEqualEson(t, actual3, eson)
   t.is(actual3.str, eson.str) // shouldn't have touched values not affected by the errors
 })
 
@@ -292,14 +292,14 @@ test('search', t => {
   t.deepEqual(active, {path: ['obj', 'arr', 2, 'last'], area: 'property'})
 
   let expected = esonWithSearch
-  expected = setIn(expected, ['obj', 'arr', '2', 'last', '_meta', 'searchProperty'], 'active')
-  expected = setIn(expected, ['str', '_meta', 'searchValue'], 'normal')
-  expected = setIn(expected, ['nill', '_meta', 'searchProperty'], 'normal')
-  expected = setIn(expected, ['nill', '_meta', 'searchValue'], 'normal')
-  expected = setIn(expected, ['bool', '_meta', 'searchProperty'], 'normal')
-  expected = setIn(expected, ['bool', '_meta', 'searchValue'], 'normal')
+  expected = setIn(expected, ['obj', 'arr', '2', 'last', META, 'searchProperty'], 'active')
+  expected = setIn(expected, ['str', META, 'searchValue'], 'normal')
+  expected = setIn(expected, ['nill', META, 'searchProperty'], 'normal')
+  expected = setIn(expected, ['nill', META, 'searchValue'], 'normal')
+  expected = setIn(expected, ['bool', META, 'searchProperty'], 'normal')
+  expected = setIn(expected, ['bool', META, 'searchValue'], 'normal')
 
-  t.deepEqual(esonWithSearch, expected)
+  assertDeepEqualEson(t, esonWithSearch, expected)
 })
 
 test('nextSearchResult', t => {
@@ -320,27 +320,27 @@ test('nextSearchResult', t => {
   ])
 
   t.deepEqual(searchResult.active, {path: ['obj', 'arr'], area: 'property'})
-  t.is(getIn(searchResult.eson, ['obj', 'arr', '_meta', 'searchProperty']), 'active')
-  t.is(getIn(searchResult.eson, ['obj', 'arr', 2, 'last', '_meta', 'searchProperty']), 'normal')
-  t.is(getIn(searchResult.eson, ['bool', '_meta', 'searchValue']), 'normal')
+  t.is(getIn(searchResult.eson, ['obj', 'arr', META, 'searchProperty']), 'active')
+  t.is(getIn(searchResult.eson, ['obj', 'arr', 2, 'last', META, 'searchProperty']), 'normal')
+  t.is(getIn(searchResult.eson, ['bool', META, 'searchValue']), 'normal')
 
   const second = nextSearchResult(searchResult.eson, searchResult.matches, searchResult.active)
   t.deepEqual(second.active, {path: ['obj', 'arr', 2, 'last'], area: 'property'})
-  t.is(getIn(second.eson, ['obj', 'arr', '_meta', 'searchProperty']), 'normal')
-  t.is(getIn(second.eson, ['obj', 'arr', 2, 'last', '_meta', 'searchProperty']), 'active')
-  t.is(getIn(second.eson, ['bool', '_meta', 'searchValue']), 'normal')
+  t.is(getIn(second.eson, ['obj', 'arr', META, 'searchProperty']), 'normal')
+  t.is(getIn(second.eson, ['obj', 'arr', 2, 'last', META, 'searchProperty']), 'active')
+  t.is(getIn(second.eson, ['bool', META, 'searchValue']), 'normal')
 
   const third = nextSearchResult(second.eson, second.matches, second.active)
   t.deepEqual(third.active, {path: ['bool'], area: 'value'})
-  t.is(getIn(third.eson, ['obj', 'arr', '_meta', 'searchProperty']), 'normal')
-  t.is(getIn(third.eson, ['obj', 'arr', 2, 'last', '_meta', 'searchProperty']), 'normal')
-  t.is(getIn(third.eson, ['bool', '_meta', 'searchValue']), 'active')
+  t.is(getIn(third.eson, ['obj', 'arr', META, 'searchProperty']), 'normal')
+  t.is(getIn(third.eson, ['obj', 'arr', 2, 'last', META, 'searchProperty']), 'normal')
+  t.is(getIn(third.eson, ['bool', META, 'searchValue']), 'active')
 
   const wrappedAround = nextSearchResult(third.eson, third.matches, third.active)
   t.deepEqual(wrappedAround.active, {path: ['obj', 'arr'], area: 'property'})
-  t.is(getIn(wrappedAround.eson, ['obj', 'arr', '_meta', 'searchProperty']), 'active')
-  t.is(getIn(wrappedAround.eson, ['obj', 'arr', 2, 'last', '_meta', 'searchProperty']), 'normal')
-  t.is(getIn(wrappedAround.eson, ['bool', '_meta', 'searchValue']), 'normal')
+  t.is(getIn(wrappedAround.eson, ['obj', 'arr', META, 'searchProperty']), 'active')
+  t.is(getIn(wrappedAround.eson, ['obj', 'arr', 2, 'last', META, 'searchProperty']), 'normal')
+  t.is(getIn(wrappedAround.eson, ['bool', META, 'searchValue']), 'normal')
 })
 
 test('previousSearchResult', t => {
@@ -361,27 +361,27 @@ test('previousSearchResult', t => {
   ])
 
   t.deepEqual(searchResult.active, {path: ['obj', 'arr'], area: 'property'})
-  t.is(getIn(searchResult.eson, ['obj', 'arr', '_meta', 'searchProperty']), 'active')
-  t.is(getIn(searchResult.eson, ['obj', 'arr', 2, 'last', '_meta', 'searchProperty']), 'normal')
-  t.is(getIn(searchResult.eson, ['bool', '_meta', 'searchValue']), 'normal')
+  t.is(getIn(searchResult.eson, ['obj', 'arr', META, 'searchProperty']), 'active')
+  t.is(getIn(searchResult.eson, ['obj', 'arr', 2, 'last', META, 'searchProperty']), 'normal')
+  t.is(getIn(searchResult.eson, ['bool', META, 'searchValue']), 'normal')
 
   const third = previousSearchResult(searchResult.eson, searchResult.matches, searchResult.active)
   t.deepEqual(third.active, {path: ['bool'], area: 'value'})
-  t.is(getIn(third.eson, ['obj', 'arr', '_meta', 'searchProperty']), 'normal')
-  t.is(getIn(third.eson, ['obj', 'arr', 2, 'last', '_meta', 'searchProperty']), 'normal')
-  t.is(getIn(third.eson, ['bool', '_meta', 'searchValue']), 'active')
+  t.is(getIn(third.eson, ['obj', 'arr', META, 'searchProperty']), 'normal')
+  t.is(getIn(third.eson, ['obj', 'arr', 2, 'last', META, 'searchProperty']), 'normal')
+  t.is(getIn(third.eson, ['bool', META, 'searchValue']), 'active')
 
   const second = previousSearchResult(third.eson, third.matches, third.active)
   t.deepEqual(second.active, {path: ['obj', 'arr', 2, 'last'], area: 'property'})
-  t.is(getIn(second.eson, ['obj', 'arr', '_meta', 'searchProperty']), 'normal')
-  t.is(getIn(second.eson, ['obj', 'arr', 2, 'last', '_meta', 'searchProperty']), 'active')
-  t.is(getIn(second.eson, ['bool', '_meta', 'searchValue']), 'normal')
+  t.is(getIn(second.eson, ['obj', 'arr', META, 'searchProperty']), 'normal')
+  t.is(getIn(second.eson, ['obj', 'arr', 2, 'last', META, 'searchProperty']), 'active')
+  t.is(getIn(second.eson, ['bool', META, 'searchValue']), 'normal')
 
   const first = previousSearchResult(second.eson, second.matches, second.active)
   t.deepEqual(first.active, {path: ['obj', 'arr'], area: 'property'})
-  t.is(getIn(first.eson, ['obj', 'arr', '_meta', 'searchProperty']), 'active')
-  t.is(getIn(first.eson, ['obj', 'arr', 2, 'last', '_meta', 'searchProperty']), 'normal')
-  t.is(getIn(first.eson, ['bool', '_meta', 'searchValue']), 'normal')
+  t.is(getIn(first.eson, ['obj', 'arr', META, 'searchProperty']), 'active')
+  t.is(getIn(first.eson, ['obj', 'arr', 2, 'last', META, 'searchProperty']), 'normal')
+  t.is(getIn(first.eson, ['bool', META, 'searchValue']), 'normal')
 })
 
 test('selection (object)', t => {
@@ -401,10 +401,10 @@ test('selection (object)', t => {
   const actual = applySelection(eson, selection)
 
   let expected = eson
-  expected = setIn(expected, ['obj', '_meta', 'selected'], SELECTED)
-  expected = setIn(expected, ['str', '_meta', 'selected'], SELECTED)
-  expected = setIn(expected, ['nill', '_meta', 'selected'], SELECTED_END)
-  t.deepEqual(actual, expected)
+  expected = setIn(expected, ['obj', META, 'selected'], SELECTED)
+  expected = setIn(expected, ['str', META, 'selected'], SELECTED)
+  expected = setIn(expected, ['nill', META, 'selected'], SELECTED_END)
+  assertDeepEqualEson(t, actual, expected)
 
   // test whether old selection results are cleaned up
   const selection2 = {
@@ -413,9 +413,9 @@ test('selection (object)', t => {
   }
   const actual2 = applySelection(actual, selection2)
   let expected2 = eson
-  expected2 = setIn(expected2, ['nill', '_meta', 'selected'], SELECTED)
-  expected2 = setIn(expected2, ['bool', '_meta', 'selected'], SELECTED_END)
-  t.deepEqual(actual2, expected2)
+  expected2 = setIn(expected2, ['nill', META, 'selected'], SELECTED)
+  expected2 = setIn(expected2, ['bool', META, 'selected'], SELECTED_END)
+  assertDeepEqualEson(t, actual2, expected2)
 })
 
 test('selection (array)', t => {
@@ -435,10 +435,10 @@ test('selection (array)', t => {
   const actual = applySelection(eson, selection)
 
   let expected = eson
-  expected = setIn(expected, ['obj', 'arr', '0', '_meta', 'selected'], SELECTED_END)
-  expected = setIn(expected, ['obj', 'arr', '1', '_meta', 'selected'], SELECTED)
+  expected = setIn(expected, ['obj', 'arr', '0', META, 'selected'], SELECTED_END)
+  expected = setIn(expected, ['obj', 'arr', '1', META, 'selected'], SELECTED)
 
-  t.deepEqual(actual, expected)
+  assertDeepEqualEson(t, actual, expected)
 })
 
 test('selection (value)', t => {
@@ -456,8 +456,8 @@ test('selection (value)', t => {
   }
 
   const actual = applySelection(eson, selection)
-  const expected = setIn(eson, ['obj', 'arr', '2', 'first', '_meta', 'selected'], SELECTED_END)
-  t.deepEqual(actual, expected)
+  const expected = setIn(eson, ['obj', 'arr', '2', 'first', META, 'selected'], SELECTED_END)
+  assertDeepEqualEson(t, actual, expected)
 })
 
 test('selection (node)', t => {
@@ -475,8 +475,8 @@ test('selection (node)', t => {
   }
 
   const actual = applySelection(eson, selection)
-  const expected = setIn(eson, ['obj', 'arr', '_meta', 'selected'], SELECTED_END)
-  t.deepEqual(actual, expected)
+  const expected = setIn(eson, ['obj', 'arr', META, 'selected'], SELECTED_END)
+  assertDeepEqualEson(t, actual, expected)
 })
 
 test('pathsFromSelection (object)', t => {
@@ -531,31 +531,34 @@ test('pathsFromSelection (after)', t => {
   t.deepEqual(pathsFromSelection(ESON1, selection), [])
 })
 
-test('spliceEsonArray', t => {
-  const eson = jsonToEson([1,2,3])
+function assertDeepEqualEson (t, actual, expected, path = [], ignoreIds = true) {
+  const actualMeta = ignoreIds ? normalizeMetaIds(actual[META]) : actual[META]
+  const expectedMeta = ignoreIds ? normalizeMetaIds(expected[META]) : expected[META]
 
-  t.deepEqual(replaceIds(spliceEsonArray(eson, 1, 1)), replaceIds(jsonToEson([1,3])))
-  t.deepEqual(replaceIds(spliceEsonArray(eson, 1, 5)), replaceIds(jsonToEson([1])))
-  t.deepEqual(replaceIds(spliceEsonArray(eson, 1, 0, [10])), replaceIds(jsonToEson([1,5,3])))
-  t.deepEqual(replaceIds(spliceEsonArray(eson, 1, 0, [10,20])), replaceIds(jsonToEson([1,10,20,3])))
-})
+  t.deepEqual(actualMeta, expectedMeta, `Meta data not equal, path=[${path.join(', ')}]`)
 
-// helper function to replace all id properties with a constant value
-function replaceIds (eson, value = '[ID]') {
-  eson._meta.id = value
-
-  if (eson._meta.type === 'Object' || eson._meta.type === 'Array') {
-    for (let key in eson) {
-      if (eson.hasOwnProperty(key) && key !== '_meta') {
-        replaceIds(eson[key], value)
-      }
-    }
+  if (actualMeta.type === 'Array') {
+    t.deepEqual(actual.length, expected.length, 'Actual lengths of arrays should be equal, path=[${path.join(\', \')}]')
+    actual.forEach((item, index) => assertDeepEqualEson(t, actual[index], expected[index], path.concat(index)), ignoreIds)
+  }
+  else if (actualMeta.type === 'Object') {
+    t.deepEqual(Object.keys(actual).sort(), Object.keys(expected).sort(), 'Actual properties should be equal, path=[${path.join(\', \')}]')
+    actualMeta.keys.forEach(key => assertDeepEqualEson(t, actual[key], expected[key], path.concat(key)), ignoreIds)
+  }
+  else {  // actual[META].type === 'value'
+    t.deepEqual(Object.keys(actual), [], 'Value should not contain additional properties, path=[${path.join(\', \')}]')
   }
 }
 
-// helper function to replace all id properties with a constant value
-function replaceIds2 (data, key = 'id', value = '[ID]') {
-  return deepMap(data, (v, k) => k === key ? value : v)
+function normalizeMetaIds (meta) {
+  return lodashTransform(meta, (result, value, key) => {
+    if (key === 'id') {
+      result[key] = '[ID]'
+    }
+    else {
+      result[key] = value
+    }
+  }, {})
 }
 
 // helper function to print JSON in the console
@@ -564,6 +567,33 @@ function printJSON (json, message = null) {
     console.log(message)
   }
   console.log(JSON.stringify(json, null, 2))
+}
+
+function printESON (eson, message = null) {
+  if (message) {
+    console.log(message)
+  }
+
+  let data = []
+
+  transform(eson, function (value, path) {
+    // const strPath = padEnd(, 20)
+    // console.log(`${strPath} ${'value' in value[META] ? value[META].value : ''} ${JSON.stringify(value[META])}`)
+
+    data.push({
+      path: '[' + path.join(', ') + ']',
+      value: repeat('  ', path.length) + (value[META].type === 'Object'
+          ? '{...}'
+          : value[META].type === 'Array'
+              ? '[...]'
+              : JSON.stringify(value[META].value)),
+      meta: JSON.stringify(value[META])
+    })
+
+    return value
+  })
+
+  console.table(data)
 }
 
 // helper function to load a JSON file
