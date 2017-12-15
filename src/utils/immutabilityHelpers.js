@@ -125,6 +125,7 @@ export function updateIn (object, path, callback) {
 
   const key = path[0]
   const updatedValue = updateIn(object[key], path.slice(1), callback)
+  // TODO: create a function applyProp(...) which does the following if/else construct
   if (object[key] === updatedValue) {
     // return original object unchanged when the new value is identical to the old one
     return object
@@ -206,8 +207,7 @@ export function insertAt (object, path, value) {
       throw new TypeError('Array expected at path ' + JSON.stringify(parentPath))
     }
 
-    const updatedItems = items.slice(0)
-
+    const updatedItems = cloneWithSymbols(items)
     updatedItems.splice(index, 0, value)
 
     return updatedItems

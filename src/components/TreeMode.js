@@ -12,6 +12,7 @@ import { getIn, setIn, updateIn } from '../utils/immutabilityHelpers'
 import { parseJSON } from '../utils/jsonUtils'
 import { enrichSchemaError } from '../utils/schemaUtils'
 import {
+    META,
     jsonToEson, esonToJson, pathExists,
     expand, expandOne, expandPath, applyErrors,
     search, nextSearchResult, previousSearchResult,
@@ -154,7 +155,7 @@ export default class TreeMode extends Component {
 
     // Apply json
     if (nextProps.json !== currentProps.json) {
-      // FIXME: merge _meta from existing eson
+      // FIXME: merge meta data from existing eson
       this.setState({
         json: nextProps.json,
         eson: jsonToEson(nextProps.json) // FIXME: how to handle expand?
@@ -222,7 +223,7 @@ export default class TreeMode extends Component {
               onMouseDown: this.handleTouchStart,
               onTouchStart: this.handleTouchStart,
               className: 'jsoneditor-list jsoneditor-root' +
-                  (eson._meta.selected ? ' jsoneditor-selected' : '')},
+                  (eson[META].selected ? ' jsoneditor-selected' : '')},
             h(Node, {
               eson,
               events: state.events,
@@ -982,7 +983,7 @@ export default class TreeMode extends Component {
    * @return {boolean} Returns true when expanded, false otherwise
    */
   isExpanded (path) {
-    return getIn(this.state.eson, path)._meta.expanded
+    return getIn(this.state.eson, path)[META].expanded
   }
 
   /**
