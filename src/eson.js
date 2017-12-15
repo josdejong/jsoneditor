@@ -15,7 +15,7 @@ import initial from 'lodash/initial'
 import last from 'lodash/last'
 
 import type {
-  ESON, ESONObject, ESONArrayItem, ESONPointer, Selection, ESONType, ESONPath,
+  ESON, ESONObject, ESONArrayItem, ESONPointer, Selection, ESONPath,
   Path,
   JSONPath, JSONType
 } from './types'
@@ -28,6 +28,15 @@ export const SELECTED_BEFORE = 3
 export const SELECTED_AFTER = 4
 
 export const META = Symbol('meta')
+
+/**
+ * Expand function which will expand all nodes
+ * @param {Path} path
+ * @return {boolean}
+ */
+export function expandAll (path) {
+  return true
+}
 
 /**
  *
@@ -59,57 +68,6 @@ export function jsonToEson (json, path = []) {
 }
 
 /**
- * Expand function which will expand all nodes
- * @param {Path} path
- * @return {boolean}
- */
-export function expandAll (path) {
-  return true
-}
-
-/**
- * Convert a JSON object into ESON
- * @param {Object | Array | string | number | boolean | null} json
- * @param {function(path: JSONPath)} [expand]
- * @param {JSONPath} [path=[]]
- * @param {ESONType} [type='value']  Optional eson type for the created value
- * @return {ESON}
- */
-export function jsonToEsonOld (json, expand = expandAll, path: JSONPath = [], type: ESONType = 'value') : ESON {
-  if (Array.isArray(json)) {
-    return {
-      type: 'Array',
-      expanded: expand(path),
-      items: json.map((child, index) => {
-        return {
-          id: createId(), // TODO: use id based on index (only has to be unique within this array)
-          value: jsonToEsonOld(child, expand, path.concat(index))
-        }
-      })
-    }
-  }
-  else if (isObject(json)) {
-    return {
-      type: 'Object',
-      expanded: expand(path),
-      props: Object.keys(json).map((name, index) => {
-        return {
-          id: createId(), // TODO: use id based on index (only has to be unique within this array)
-          name,
-          value: jsonToEsonOld(json[name], expand, path.concat(name))
-        }
-      })
-    }
-  }
-  else { // value
-    return {
-      type: (type === 'string') ? 'string' : 'value',
-      value: json
-    }
-  }
-}
-
-/**
  * Convert an ESON object to a JSON object
  * @param {ESON} eson
  * @return {Object | Array | string | number | boolean | null} json
@@ -131,103 +89,6 @@ export function esonToJson (eson: ESON) {
     default: // type 'string' or 'value'
       return eson[META].value
   }
-}
-
-/**
- * Convert a path of a JSON object into a path in the corresponding ESON object
- * @param {ESON} eson
- * @param {JSONPath} path
- * @return {ESONPath} esonPath
- * @private
- */
-export function toEsonPath (eson: ESON, path: JSONPath) : ESONPath {
-  if (path.length === 0) {
-    return []
-  }
-
-  if (eson.type === 'Array') {
-    // index of an array
-    const index = path[0]
-    const item = eson.items[parseInt(index)]
-    if (!item) {
-      throw new Error('Array item "' + index + '" not found')
-    }
-
-    return ['items', String(index), 'value'].concat(toEsonPath(item.value, path.slice(1)))
-  }
-  else if (eson.type === 'Object') {
-    // object property. find the index of this property
-    const index = findPropertyIndex(eson, path[0])
-    const prop = eson.props[index]
-    if (!prop) {
-      throw new Error('Object property "' + path[0] + '" not found')
-    }
-
-    return ['props', String(index), 'value']
-        .concat(toEsonPath(prop.value, path.slice(1)))
-  }
-  else {
-    return []
-  }
-}
-
-/**
- * Convert an ESON object to a JSON object
- * @param {ESON} eson
- * @param {ESONPath} esonPath
- * @return {JSONPath} path
- */
-export function toJsonPath (eson: ESON, esonPath: ESONPath) : JSONPath {
-  if (esonPath.length === 0) {
-    return []
-  }
-
-  if (eson.type === 'Array') {
-    // index of an array
-    const index = esonPath[1]
-    const item = eson.items[parseInt(index)]
-    if (!item) {
-      throw new Error('Array item "' + index + '" not found')
-    }
-
-    return [index].concat(toJsonPath(item.value, esonPath.slice(3)))
-  }
-  else if (eson.type === 'Object') {
-    // object property. find the index of this property
-    const index = esonPath[1]
-    const prop = eson.props[parseInt(index)]
-    if (!prop) {
-      throw new Error('Object property "' + esonPath[1] + '" not found')
-    }
-
-    return [prop.name].concat(toJsonPath(prop.value, esonPath.slice(3)))
-  }
-  else {
-    return []
-  }
-}
-
-/**
- * Get a nested property from an ESON object using a JSON path
- */
-export function getInEson (eson: ESON, jsonPath: JSONPath) {
-  return getIn(eson, toEsonPath(eson, jsonPath))
-}
-
-/**
- * Set the value of a nested property in an ESON object using a JSON path
- */
-export function setInEson (eson: ESON, jsonPath: JSONPath, value: JSONType) {
-  return setIn(eson, toEsonPath(eson, jsonPath), value)
-}
-
-/**
- * Set the value of a nested property in an ESON object using a JSON path
- */
-export function deleteInEson (eson: ESON, jsonPath: JSONPath) : JSONType {
-  // with initial we remove the 'value' property,
-  // we want to remove the whole item from the items array
-  return deleteIn(eson, initial(toEsonPath(eson, jsonPath)))
 }
 
 /**
@@ -569,14 +430,19 @@ export function applySelection (eson, selection) {
  * Find the min and max index of a start and end child.
  * Start and end can be a property name in case of an Object,
  * or a matrix index (string with a number) in case of an Array.
+ *
+ * @param {ESON} root
+ * @param {Path} rootPath
+ * @param {Selection} selection
+ * @return {{minIndex: number, maxIndex: number}}
  */
-export function findSelectionIndices (root: ESON, rootPath: JSONPath, selection: Selection) : { minIndex: number, maxIndex: number } {
+export function findSelectionIndices (root, rootPath, selection) {
   const start = (selection.after || selection.before || selection.start)[rootPath.length]
   const end = (selection.after || selection.before || selection.end)[rootPath.length]
 
   // if no object we assume it's an Array
-  const startIndex = root.type === 'Object' ? findPropertyIndex(root, start) : parseInt(start)
-  const endIndex   = root.type === 'Object' ? findPropertyIndex(root, end)   : parseInt(end)
+  const startIndex = root[META].type === 'Object' ? root[META].keys.indexOf(start) : parseInt(start)
+  const endIndex   = root[META].type === 'Object' ? root[META].keys.indexOf(end) : parseInt(end)
 
   const minIndex = Math.min(startIndex, endIndex)
   const maxIndex = Math.max(startIndex, endIndex) +
@@ -588,15 +454,15 @@ export function findSelectionIndices (root: ESON, rootPath: JSONPath, selection:
 /**
  * Get the JSON paths from a selection, sorted from first to last
  */
-export function pathsFromSelection (eson: ESON, selection: Selection): JSONPath[] {
+export function pathsFromSelection (eson, selection: Selection): JSONPath[] {
   // find the parent node shared by both start and end of the selection
   const rootPath = findRootPath(selection)
-  const root = getInEson(eson, rootPath)
+  const root = getIn(eson, rootPath)
 
   const { minIndex, maxIndex } = findSelectionIndices(root, rootPath, selection)
 
-  if (root.type === 'Object') {
-    return times(maxIndex - minIndex, i => rootPath.concat(root.props[i + minIndex].name))
+  if (root[META].type === 'Object') {
+    return times(maxIndex - minIndex, i => rootPath.concat(root[META].keys[i + minIndex]))
   }
   else { // root.type === 'Array'
     return times(maxIndex - minIndex, i => rootPath.concat(String(i + minIndex)))
@@ -611,10 +477,9 @@ export function pathsFromSelection (eson: ESON, selection: Selection): JSONPath[
  */
 export function contentsFromPaths (data: ESON, paths: JSONPath[]) {
   return paths.map(path => {
-    const esonPath = toEsonPath(data, path)
     return {
-      name: getIn(data, initial(esonPath).concat('name')) || String(esonPath[esonPath.length - 2]),
-      value: esonToJson(getIn(data, esonPath))
+      name: getIn(data, last(path)),
+      value: esonToJson(getIn(data, path))
       // FIXME: also store the type and expanded state
     }
   })
@@ -658,93 +523,6 @@ function findSharedPath (path1: JSONPath, path2: JSONPath): JSONPath {
   }
 
   return path1.slice(0, i)
-}
-//
-// /**
-//  * Recursively transform ESON: a recursive "map" function
-//  * @param {ESON} eson
-//  * @param {function(value: ESON, path: Path, root: ESON)} callback
-//  * @return {ESON} Returns the transformed eson object
-//  */
-// export function transform (eson: ESON, callback: RecurseCallback) : ESON {
-//   return recurseTransform (eson, [], eson, callback)
-// }
-//
-// /**
-//  * Recursively transform ESON
-//  * @param {ESON} value
-//  * @param {JSONPath} path
-//  * @param {ESON} root    The root object, object at path=[]
-//  * @param {function(value: ESON, path: Path, root: ESON)} callback
-//  * @return {ESON} Returns the transformed eson object
-//  */
-// function recurseTransform (value: ESON, path: JSONPath, root: ESON, callback: RecurseCallback) : ESON {
-//   let updatedValue: ESON = callback(value, path, root)
-//
-//   if (value.type === 'Array') {
-//     let updatedItems = updatedValue.items
-//
-//     updatedValue.items.forEach((item, index) => {
-//       const updatedItem = recurseTransform(item.value, path.concat(String(index)), root, callback)
-//       updatedItems = setIn(updatedItems, [index, 'value'], updatedItem)
-//     })
-//
-//     updatedValue = setIn(updatedValue, ['items'], updatedItems)
-//   }
-//
-//   if (value.type === 'Object') {
-//     let updatedProps = updatedValue.props
-//
-//     updatedValue.props.forEach((prop, index) => {
-//       const updatedItem = recurseTransform(prop.value, path.concat(prop.name), root, callback)
-//       updatedProps = setIn(updatedProps, [index, 'value'], updatedItem)
-//     })
-//
-//     updatedValue = setIn(updatedValue, ['props'], updatedProps)
-//   }
-//
-//   // (for type 'string' or 'value' there are no childs to traverse)
-//
-//   return updatedValue
-// }
-
-/**
- * Recursively loop over a ESON object: a recursive "forEach" function.
- * @param {ESON} eson
- * @param {function(value: ESON, path: JSONPath, root: ESON)} callback
- */
-export function traverse (eson: ESON, callback: RecurseCallback) {
-  return recurseTraverse (eson, [], eson, callback)
-}
-
-/**
- * Recursively traverse a ESON object
- * @param {ESON} value
- * @param {JSONPath} path
- * @param {ESON | null} root    The root object, object at path=[]
- * @param {function(value: ESON, path: Path, root: ESON)} callback
- */
-function recurseTraverse (value: ESON, path: JSONPath, root: ESON, callback: RecurseCallback) {
-  callback(value, path, root)
-
-  switch (value.type) {
-    case 'Array': {
-      value.items.forEach((item: ESONArrayItem, index) => {
-        recurseTraverse(item.value, path.concat(String(index)), root, callback)
-      })
-      break
-    }
-
-    case 'Object': {
-      value.props.forEach((prop) => {
-        recurseTraverse(prop.value, path.concat(prop.name), root, callback)
-      })
-      break
-    }
-
-    default: // type 'string' or 'value'
-      // no childs to traverse
-  }
 }
 
 /**
@@ -808,12 +586,12 @@ export function findNextProp (parent, prop) {
 
 /**
  * Find the index of a property
- * @param {ESONObject} object
+ * @param {ESON} object
  * @param {string} prop
  * @return {number}  Returns the index when found, -1 when not found
  */
-export function findPropertyIndex (object: ESONObject, prop: string) {
-  return object.props.findIndex(p => p.name === prop)
+export function findPropertyIndex (object, prop) {
+  return object[META].keys.indexOf(prop)
 }
 
 // TODO: move parseJSONPointer and compileJSONPointer to a separate file

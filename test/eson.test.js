@@ -3,7 +3,7 @@ import test from 'ava'
 import { setIn, getIn, deleteIn } from '../src/utils/immutabilityHelpers'
 import {
   META,
-  esonToJson, toEsonPath, toJsonPath, pathExists, transform, traverse,
+  esonToJson, pathExists, transform,
   parseJSONPointer, compileJSONPointer,
   jsonToEson,
   expand, expandOne, expandPath, applyErrors, search, nextSearchResult,
@@ -15,8 +15,6 @@ import 'console.table'
 import repeat from 'lodash/repeat'
 import { assertDeepEqualEson } from './utils/assertDeepEqualEson'
 
-const JSON1 = loadJSON('./resources/json1.json')
-const ESON1 = loadJSON('./resources/eson1.json')
 const ESON2 = loadJSON('./resources/eson2.json')
 
 test('jsonToEson', t => {
@@ -236,33 +234,6 @@ test('add and remove errors', t => {
   t.is(actual3.str, eson.str) // shouldn't have touched values not affected by the errors
 })
 
-test('traverse', t => {
-  // {obj: {a: 2}, arr: [3]}
-
-  let log = []
-  const returnValue = traverse(ESON2, function (value, path, root) {
-    t.is(root, ESON2)
-
-    log.push([value, path, root])
-  })
-
-  t.is(returnValue, undefined)
-
-  const EXPECTED_LOG = [
-    [ESON2, [], ESON2],
-    [ESON2.props[0].value, ['obj'], ESON2],
-    [ESON2.props[0].value.props[0].value, ['obj', 'a'], ESON2],
-    [ESON2.props[1].value, ['arr'], ESON2],
-    [ESON2.props[1].value.items[0].value, ['arr', '0'], ESON2],
-  ]
-
-  log.forEach((row, index) => {
-    t.deepEqual(log[index], EXPECTED_LOG[index], 'should have equal log at index ' + index )
-  })
-  t.deepEqual(log, EXPECTED_LOG)
-})
-
-
 test('search', t => {
   const eson = jsonToEson({
     "obj": {
@@ -476,12 +447,20 @@ test('selection (node)', t => {
 })
 
 test('pathsFromSelection (object)', t => {
+  const eson = jsonToEson({
+    "obj": {
+      "arr": [1,2, {"first":3,"last":4}]
+    },
+    "str": "hello world",
+    "nill": null,
+    "bool": false
+  })
   const selection = {
     start: ['obj', 'arr', '2', 'last'],
     end: ['nill']
   }
 
-  t.deepEqual(pathsFromSelection(ESON1, selection), [
+  t.deepEqual(pathsFromSelection(eson, selection), [
     ['obj'],
     ['str'],
     ['nill']
@@ -489,42 +468,74 @@ test('pathsFromSelection (object)', t => {
 })
 
 test('pathsFromSelection (array)', t => {
+  const eson = jsonToEson({
+    "obj": {
+      "arr": [1,2, {"first":3,"last":4}]
+    },
+    "str": "hello world",
+    "nill": null,
+    "bool": false
+  })
   const selection = {
     start: ['obj', 'arr', '1'],
     end: ['obj', 'arr', '0'] // note the "wrong" order of start and end
   }
 
-  t.deepEqual(pathsFromSelection(ESON1, selection), [
+  t.deepEqual(pathsFromSelection(eson, selection), [
     ['obj', 'arr', '0'],
     ['obj', 'arr', '1']
   ])
 })
 
 test('pathsFromSelection (value)', t => {
+  const eson = jsonToEson({
+    "obj": {
+      "arr": [1,2, {"first":3,"last":4}]
+    },
+    "str": "hello world",
+    "nill": null,
+    "bool": false
+  })
   const selection = {
     start: ['obj', 'arr', '2', 'first'],
     end: ['obj', 'arr', '2', 'first']
   }
 
-  t.deepEqual(pathsFromSelection(ESON1, selection), [
+  t.deepEqual(pathsFromSelection(eson, selection), [
     ['obj', 'arr', '2', 'first'],
   ])
 })
 
 test('pathsFromSelection (before)', t => {
+  const eson = jsonToEson({
+    "obj": {
+      "arr": [1,2, {"first":3,"last":4}]
+    },
+    "str": "hello world",
+    "nill": null,
+    "bool": false
+  })
   const selection = {
     before: ['obj', 'arr', '2', 'first']
   }
 
-  t.deepEqual(pathsFromSelection(ESON1, selection), [])
+  t.deepEqual(pathsFromSelection(eson, selection), [])
 })
 
 test('pathsFromSelection (after)', t => {
+  const eson = jsonToEson({
+    "obj": {
+      "arr": [1,2, {"first":3,"last":4}]
+    },
+    "str": "hello world",
+    "nill": null,
+    "bool": false
+  })
   const selection = {
     after: ['obj', 'arr', '2', 'first']
   }
 
-  t.deepEqual(pathsFromSelection(ESON1, selection), [])
+  t.deepEqual(pathsFromSelection(eson, selection), [])
 })
 
 // helper function to print JSON in the console

@@ -336,19 +336,19 @@ export default class TreeMode extends Component {
   }
 
   handleChangeValue = (path, value) => {
-    this.handlePatch(changeValue(this.state.data, path, value))
+    this.handlePatch(changeValue(this.state.eson, path, value))
   }
 
   handleChangeProperty = (parentPath, oldProp, newProp) => {
-    this.handlePatch(changeProperty(this.state.data, parentPath, oldProp, newProp))
+    this.handlePatch(changeProperty(this.state.eson, parentPath, oldProp, newProp))
   }
 
   handleChangeType = (path, type) => {
-    this.handlePatch(changeType(this.state.data, path, type))
+    this.handlePatch(changeType(this.state.eson, path, type))
   }
 
   handleInsert = (path, type) => {
-    this.handlePatch(insertBefore(this.state.data, path, [{
+    this.handlePatch(insertBefore(this.state.eson, path, [{
       type,
       name: '',
       value: createEntry(type)
@@ -367,7 +367,7 @@ export default class TreeMode extends Component {
   }
 
   handleAppend = (parentPath, type) => {
-    this.handlePatch(append(this.state.data, parentPath, type))
+    this.handlePatch(append(this.state.eson, parentPath, type))
 
     // apply focus to new node
     this.focusToNext(parentPath)
@@ -375,7 +375,7 @@ export default class TreeMode extends Component {
 
   handleDuplicate = () => {
     if (this.state.selection) {
-      this.handlePatch(duplicate(this.state.data, this.state.selection))
+      this.handlePatch(duplicate(this.state.eson, this.state.selection))
       // TODO: focus to duplicated selection
     }
   }
@@ -395,7 +395,7 @@ export default class TreeMode extends Component {
     else if (this.state.selection) {
       // remove selection
       // TODO: select next property? (same as when removing a path?)
-      const paths = pathsFromSelection(this.state.data, this.state.selection)
+      const paths = pathsFromSelection(this.state.eson, this.state.selection)
       this.setState({ selection: null })
       this.handlePatch(removeAll(paths))
     }
@@ -446,13 +446,13 @@ export default class TreeMode extends Component {
   }
 
   handleKeyDownPaste = (event) => {
-    const { clipboard, data } = this.state
+    const { clipboard, eson } = this.state
 
     if (clipboard && clipboard.length > 0) {
       event.preventDefault()
 
       const path = this.findDataPathFromElement(event.target)
-      this.handlePatch(insertBefore(data, path, clipboard))
+      this.handlePatch(insertBefore(eson, path, clipboard))
     }
   }
 
@@ -460,7 +460,7 @@ export default class TreeMode extends Component {
     const path = this.findDataPathFromElement(event.target)
     if (path) {
       const selection = { start: path, end: path }
-      this.handlePatch(duplicate(this.state.data, selection))
+      this.handlePatch(duplicate(this.state.eson, selection))
 
       // apply focus to the duplicated node
       this.focusToNext(path)
@@ -470,9 +470,9 @@ export default class TreeMode extends Component {
   handleCut = () => {
     const selection = this.state.selection
     if (selection && selection.start && selection.end) {
-      const data = this.state.data
-      const paths = pathsFromSelection(data, selection)
-      const clipboard = contentsFromPaths(data, paths)
+      const eson = this.state.eson
+      const paths = pathsFromSelection(eson, selection)
+      const clipboard = contentsFromPaths(eson, paths)
 
       this.setState({ clipboard, selection: null })
 
@@ -490,9 +490,9 @@ export default class TreeMode extends Component {
   handleCopy = () => {
     const selection = this.state.selection
     if (selection && selection.start && selection.end) {
-      const data = this.state.data
-      const paths = pathsFromSelection(data, selection)
-      const clipboard = contentsFromPaths(data, paths)
+      const eson = this.state.eson
+      const paths = pathsFromSelection(eson, selection)
+      const clipboard = contentsFromPaths(eson, paths)
 
       this.setState({ clipboard })
     }
@@ -503,11 +503,11 @@ export default class TreeMode extends Component {
   }
 
   handlePaste = () => {
-    const { data, selection, clipboard } = this.state
+    const { eson, selection, clipboard } = this.state
 
     if (selection && clipboard && clipboard.length > 0) {
       this.setState({ selection: null })
-      this.handlePatch(replace(data, selection, clipboard))
+      this.handlePatch(replace(eson, selection, clipboard))
       // TODO: select the pasted contents
     }
   }
@@ -539,7 +539,7 @@ export default class TreeMode extends Component {
   }
 
   handleSort = (path, order = null) => {
-    this.handlePatch(sort(this.state.data, path, order))
+    this.handlePatch(sort(this.state.eson, path, order))
   }
 
   handleSelect = (selection: Selection) => {
@@ -753,13 +753,13 @@ export default class TreeMode extends Component {
    * Emit an onChange event when there is a listener for it.
    * @private
    */
-  emitOnChange (patch: ESONPatch, revert: ESONPatch, data: ESON) {
+  emitOnChange (patch: ESONPatch, revert: ESONPatch, eson: ESON) {
     if (this.props.onPatch) {
       this.props.onPatch(patch, revert)
     }
 
     if (this.props.onChange || this.props.onChangeText) {
-      const json = esonToJson(data)
+      const json = esonToJson(eson)
 
       if (this.props.onChange) {
         this.props.onChange(json)
@@ -798,10 +798,10 @@ export default class TreeMode extends Component {
       const historyIndex = this.state.historyIndex
       const historyItem = history[historyIndex]
 
-      const result = patchEson(this.state.data, historyItem.undo)
+      const result = patchEson(this.state.eson, historyItem.undo)
 
       this.setState({
-        data: result.data,
+        eson: result.data,
         history,
         historyIndex: historyIndex + 1
       })
@@ -816,10 +816,10 @@ export default class TreeMode extends Component {
       const historyIndex = this.state.historyIndex - 1
       const historyItem = history[historyIndex]
 
-      const result = patchEson(this.state.data, historyItem.redo)
+      const result = patchEson(this.state.eson, historyItem.redo)
 
       this.setState({
-        data: result.data,
+        eson: result.data,
         history,
         historyIndex
       })
@@ -845,10 +845,10 @@ export default class TreeMode extends Component {
     }
 
     const expand = options.expand || (path => this.expandKeepOrExpandAll(path))
-    const result = patchEson(this.state.data, actions, expand)
-    const data = result.data
+    const result = patchEson(this.state.eson, actions, expand)
+    const eson = result.data
 
-    if (this.props.history != false) {
+    if (this.props.history !== false) {
       // update data and store history
       const historyItem = {
         redo: actions,
@@ -860,21 +860,21 @@ export default class TreeMode extends Component {
           .slice(0, MAX_HISTORY_ITEMS)
 
       this.setState({
-        data,
+        eson,
         history,
         historyIndex: 0
       })
     }
     else {
       // update data and don't store history
-      this.setState({ data })
+      this.setState({ eson })
     }
 
     return {
       patch: actions,
       revert: result.revert,
       error: result.error,
-      data  // FIXME: shouldn't pass data here
+      data: eson  // FIXME: shouldn't pass data here
     }
   }
 
@@ -973,7 +973,7 @@ export default class TreeMode extends Component {
    * @param {Path} path
    */
   exists (path) {
-    return pathExists(this.state.data, path)
+    return pathExists(this.state.eson, path)
   }
 
   /**
