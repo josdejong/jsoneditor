@@ -394,22 +394,22 @@ test('jsonpatch move (keep id intact)', t => {
   t.is(patchedValueId, valueId)
 })
 
-// test('jsonpatch move and replace (keep ids intact)', t => {
-//   const json = { a: 2, b: 3 }
-//   const patch = [
-//     {op: 'move', from: '/a', path: '/b'}
-//   ]
-//
-//   const data = jsonToEson(json)
-//   const bId = data.b[META].id
-//
-//   t.deepEqual(data[META].keys, ['a', 'b'])
-//
-//   const patchedData = patchEson(data, patch).data
-//
-//   t.is(patchedData.b[META].id, bId)
-//   t.deepEqual(data[META].keys, ['b'])
-// })
+test('jsonpatch move and replace (keep ids intact)', t => {
+  const json = { a: 2, b: 3 }
+  const patch = [
+    {op: 'move', from: '/a', path: '/b'}
+  ]
+
+  const data = jsonToEson(json)
+  const bId = data.b[META].id
+
+  t.deepEqual(data[META].props, ['a', 'b'])
+
+  const patchedData = patchEson(data, patch).data
+
+  t.is(patchedData.b[META].id, bId)
+  t.deepEqual(patchedData[META].props, ['b'])
+})
 
 test('jsonpatch test (ok)', t => {
   const json = {

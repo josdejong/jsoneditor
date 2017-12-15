@@ -179,11 +179,11 @@ export function remove (data, path) {
   }
   else { // object.type === 'Object'
     const prop = last(pathArray)
-    const index = parent[META].keys.indexOf(prop)
-    const nextProp = parent[META].keys[index + 1] || null
+    const index = parent[META].props.indexOf(prop)
+    const nextProp = parent[META].props[index + 1] || null
 
     let updatedParent = deleteIn(parent, [prop])
-    updatedParent[META] = deleteIn(parent[META], ['keys', index], parent[META].keys)
+    updatedParent[META] = deleteIn(parent[META], ['props', index], parent[META].props)
 
     return {
       data: setIn(data, parentPath, updatePaths(updatedParent, parentPath)),
@@ -224,7 +224,7 @@ export function add (data, path, value, options) {
   else { // parent.type === 'Object'
     updatedEson = updateIn(data, parentPath, (parent) => {
       const oldValue = getIn(data, pathArray)
-      const props = parent[META].keys
+      const props = parent[META].props
       const existingIndex = props.indexOf(prop)
 
       if (existingIndex !== -1) {
@@ -235,7 +235,6 @@ export function add (data, path, value, options) {
         newValue[META] = setIn(newValue[META], ['id'], oldValue[META].id)
         // console.log('copied id from existing value' + oldValue[META].id)
 
-        // TODO: update paths of existing value
         return setIn(parent, [prop], newValue)
       }
       else {
@@ -247,7 +246,7 @@ export function add (data, path, value, options) {
         let updatedKeys = props.slice()
         updatedKeys.splice(index, 0, prop)
         const updatedParent = setIn(parent, [prop], updatePaths(value, parentPath.concat(prop)))
-        return setIn(updatedParent, [META, 'keys'], updatedKeys)
+        return setIn(updatedParent, [META, 'props'], updatedKeys)
       }
     })
   }

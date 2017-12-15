@@ -20,7 +20,7 @@ export function assertDeepEqualEson (t, actual, expected, path = [], ignoreIds =
   }
   else if (actualMeta.type === 'Object') {
     t.deepEqual(Object.keys(actual).sort(), Object.keys(expected).sort(), 'Actual properties should be equal, path=[${path.join(\', \')}]')
-    actualMeta.keys.forEach(key => assertDeepEqualEson(t, actual[key], expected[key], path.concat(key)), ignoreIds)
+    actualMeta.props.forEach(key => assertDeepEqualEson(t, actual[key], expected[key], path.concat(key)), ignoreIds)
   }
   else {  // actual[META].type === 'value'
     t.deepEqual(Object.keys(actual), [], 'Value should not contain additional properties, path=[${path.join(\', \')}]')

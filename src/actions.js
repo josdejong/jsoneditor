@@ -45,7 +45,7 @@ export function changeProperty (eson, parentPath, oldProp, newProp) {
   const parent = getIn(eson, parentPath)
 
   // prevent duplicate property names
-  const uniqueNewProp = findUniqueName(newProp, parent[META].keys)
+  const uniqueNewProp = findUniqueName(newProp, parent[META].props)
 
   return [{
     op: 'move',
@@ -110,11 +110,11 @@ export function duplicate (eson, selection) {
     }))
   }
   else { // object.type === 'Object'
-    const before = root[META].keys[maxIndex] || null
+    const before = root[META].props[maxIndex] || null
 
     return paths.map(path => {
       const prop = last(path)
-      const newProp = findUniqueName(prop, root[META].keys)
+      const newProp = findUniqueName(prop, root[META].props)
 
       return {
         op: 'copy',
@@ -158,7 +158,7 @@ export function insertBefore (eson, path, values) {  // TODO: find a better name
   else { // object.type === 'Object'
     const before = last(path)
     return values.map(entry => {
-      const newProp = findUniqueName(entry.name, parent[META].keys)
+      const newProp = findUniqueName(entry.name, parent[META].props)
       return {
         op: 'add',
         path: compileJSONPointer(parentPath.concat(newProp)),
@@ -203,11 +203,11 @@ export function replace (eson, selection, values) {  // TODO: find a better name
     return removeActions.concat(insertActions)
   }
   else { // object.type === 'Object'
-    const before = root[META].keys[maxIndex] || null
+    const before = root[META].props[maxIndex] || null
 
     const removeActions = removeAll(pathsFromSelection(eson, selection))
     const insertActions = values.map(entry => {
-      const newProp = findUniqueName(entry.name, root[META].keys)
+      const newProp = findUniqueName(entry.name, root[META].props)
       return {
         op: 'add',
         path: compileJSONPointer(rootPath.concat(newProp)),
@@ -252,7 +252,7 @@ export function append (eson, parentPath, type) {
     }]
   }
   else { // object.type === 'Object'
-    const newProp = findUniqueName('', parent[META].keys)
+    const newProp = findUniqueName('', parent[META].props)
 
     return [{
       op: 'add',
@@ -327,24 +327,21 @@ export function sort (eson, path, order = null) {
   else { // object.type === 'Object'
 
     // order the properties by key
-    const orderedKeys = object[META].keys.slice().sort((a, b) => compare(a.name, b.name))
+    const orderedProps = object[META].props.slice().sort((a, b) => compare(a.name, b.name))
 
     // when no order is provided, test whether ordering ascending
     // changed anything. If not, sort descending
-    if (!order && strictShallowEqual(object[META].keys, orderedKeys)) {
-      orderedKeys.reverse()
+    if (!order && strictShallowEqual(object[META].props, orderedProps)) {
+      orderedProps.reverse()
     }
 
-    const orderedProps = cloneWithSymbols(object)
-    orderedProps[META] = setIn(object[META], ['keys'], orderedKeys)
+    const orderedObject = cloneWithSymbols(object)
+    orderedObject[META] = setIn(object[META], ['props'], orderedProps)
 
     return [{
       op: 'replace',
       path: compileJSONPointer(path),
-      value: esonToJson({
-        type: 'Object',
-        props: orderedProps
-      }),
+      value: esonToJson(orderedObject),
       jsoneditor: {
         order: orderedProps.map(prop => prop.name)
       }

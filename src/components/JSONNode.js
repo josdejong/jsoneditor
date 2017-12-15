@@ -58,7 +58,7 @@ export default class JSONNode extends PureComponent {
   }
 
   renderJSONObject ({prop, index, eson, options, events}) {
-    const keys = eson[META].keys
+    const props = eson[META].props
     const node = h('div', {
         key: 'node',
         onKeyDown: this.handleKeyDown,
@@ -68,24 +68,24 @@ export default class JSONNode extends PureComponent {
       // this.renderActionMenu('update', this.state.menu, this.handleCloseActionMenu),
       // this.renderActionMenuButton(),
       this.renderProperty(prop, index, eson, options),
-      this.renderReadonly(`{${keys.length}}`, `Array containing ${keys.length} items`),
+      this.renderReadonly(`{${props.length}}`, `Array containing ${props.length} items`),
       // this.renderFloatingMenuButton(),
       this.renderError(eson[META].error)
     ])
 
     let childs
     if (eson[META].expanded) {
-      if (keys.length > 0) {
-        const props = keys.map(key => h(this.constructor, {
-          key: eson[key][META].id,
+      if (props.length > 0) {
+        const propsChilds = props.map(prop => h(this.constructor, {
+          key: eson[prop][META].id,
           // parent: this,
-          prop: key,
-          eson: eson[key],
+          prop,
+          eson: eson[prop],
           options,
           events
         }))
 
-        childs = h('div', {key: 'childs', className: 'jsoneditor-list'}, props)
+        childs = h('div', {key: 'childs', className: 'jsoneditor-list'}, propsChilds)
       }
       else {
         childs = h('div', {key: 'childs', className: 'jsoneditor-list'},

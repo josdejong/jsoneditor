@@ -23,7 +23,7 @@ test('jsonToEson', t => {
   assertDeepEqualEson(t, jsonToEson(null),  {[META]: {id: '[ID]', path: [], type: 'value', value: null}})
   assertDeepEqualEson(t, jsonToEson(false), {[META]: {id: '[ID]', path: [], type: 'value', value: false}})
   assertDeepEqualEson(t, jsonToEson({a:1, b: 2}), {
-    [META]: {id: '[ID]', path: [], type: 'Object', keys: ['a', 'b']},
+    [META]: {id: '[ID]', path: [], type: 'Object', props: ['a', 'b']},
     a: {[META]: {id: '[ID]', path: ['a'], type: 'value', value: 1}},
     b: {[META]: {id: '[ID]', path: ['b'], type: 'value', value: 2}}
   })

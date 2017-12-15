@@ -49,10 +49,9 @@ export function jsonToEson (json, path = []) {
 
   if (isObject(json)) {
     let eson = {}
-    const keys = Object.keys(json)
-    keys.forEach((key) => eson[key] = jsonToEson(json[key], path.concat(key)))
-    // TODO: rename keys to props
-    eson[META] = { id, path, type: 'Object', keys }
+    const props = Object.keys(json)
+    props.forEach((prop) => eson[prop] = jsonToEson(json[prop], path.concat(prop)))
+    eson[META] = { id, path, type: 'Object', props }
     return eson
   }
   else if (Array.isArray(json)) {
@@ -80,7 +79,7 @@ export function esonToJson (eson: ESON) {
     case 'Object':
       const object = {}
 
-      eson[META].keys.forEach(prop => {
+      eson[META].props.forEach(prop => {
         object[prop] = esonToJson(eson[prop])
       })
 
@@ -385,13 +384,13 @@ export function applySelection (eson, selection) {
       // TODO: simplify the update function. Use pathsFromSelection ?
 
       if (root[META].type === 'Object') {
-        const startIndex = root[META].keys.indexOf(start)
-        const endIndex   = root[META].keys.indexOf(end)
+        const startIndex = root[META].props.indexOf(start)
+        const endIndex   = root[META].props.indexOf(end)
 
         const minIndex = Math.min(startIndex, endIndex)
         const maxIndex = Math.max(startIndex, endIndex) + 1 // include max index itself
 
-        const selectedProps = root[META].keys.slice(minIndex, maxIndex)
+        const selectedProps = root[META].props.slice(minIndex, maxIndex)
         selectedPaths = selectedProps.map(prop => rootPath.concat(prop))
         let updatedObj = cloneWithSymbols(root)
         selectedProps.forEach(prop => {
@@ -441,8 +440,8 @@ export function findSelectionIndices (root, rootPath, selection) {
   const end = (selection.after || selection.before || selection.end)[rootPath.length]
 
   // if no object we assume it's an Array
-  const startIndex = root[META].type === 'Object' ? root[META].keys.indexOf(start) : parseInt(start)
-  const endIndex   = root[META].type === 'Object' ? root[META].keys.indexOf(end) : parseInt(end)
+  const startIndex = root[META].type === 'Object' ? root[META].props.indexOf(start) : parseInt(start)
+  const endIndex   = root[META].type === 'Object' ? root[META].props.indexOf(end) : parseInt(end)
 
   const minIndex = Math.min(startIndex, endIndex)
   const maxIndex = Math.max(startIndex, endIndex) +
@@ -462,7 +461,7 @@ export function pathsFromSelection (eson, selection: Selection): JSONPath[] {
   const { minIndex, maxIndex } = findSelectionIndices(root, rootPath, selection)
 
   if (root[META].type === 'Object') {
-    return times(maxIndex - minIndex, i => rootPath.concat(root[META].keys[i + minIndex]))
+    return times(maxIndex - minIndex, i => rootPath.concat(root[META].props[i + minIndex]))
   }
   else { // root.type === 'Array'
     return times(maxIndex - minIndex, i => rootPath.concat(String(i + minIndex)))
@@ -580,18 +579,8 @@ export function resolvePathIndex (eson, path) {
  *                         or null if there is none
  */
 export function findNextProp (parent, prop) {
-  const index = parent[META].keys.indexOf(prop)
-  return parent[META].keys[index + 1] || null
-}
-
-/**
- * Find the index of a property
- * @param {ESON} object
- * @param {string} prop
- * @return {number}  Returns the index when found, -1 when not found
- */
-export function findPropertyIndex (object, prop) {
-  return object[META].keys.indexOf(prop)
+  const index = parent[META].props.indexOf(prop)
+  return parent[META].props[index + 1] || null
 }
 
 // TODO: move parseJSONPointer and compileJSONPointer to a separate file
