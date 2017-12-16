@@ -177,7 +177,7 @@ export function remove (data, path) {
       }]
     }
   }
-  else { // object.type === 'Object'
+  else { // parent[META].type === 'Object'
     const prop = last(pathArray)
     const index = parent[META].props.indexOf(prop)
     const nextProp = parent[META].props[index + 1] || null
@@ -221,7 +221,7 @@ export function add (data, path, value, options) {
   if (parent[META].type === 'Array') {
     updatedEson = updatePaths(insertAt(data, resolvedPath, value))
   }
-  else { // parent.type === 'Object'
+  else { // parent[META].type === 'Object'
     updatedEson = updateIn(data, parentPath, (parent) => {
       const oldValue = getIn(data, pathArray)
       const props = parent[META].props

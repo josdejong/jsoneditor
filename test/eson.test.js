@@ -1,3 +1,5 @@
+'use strict'
+
 import { readFileSync } from 'fs'
 import test from 'ava'
 import { setIn, getIn, deleteIn } from '../src/utils/immutabilityHelpers'
@@ -243,10 +245,10 @@ test('search', t => {
     "nill": null,
     "bool": false
   })
-  const searchResult = search(eson, 'L')
-  const esonWithSearch = searchResult.eson
-  const matches = searchResult.matches
-  const active = searchResult.active
+  const result = search(eson, 'L')
+  const esonWithSearch = result.eson
+  const matches = result.searchResult.matches
+  const active = result.searchResult.active
 
   t.deepEqual(matches, [
     {path: ['obj', 'arr', '2', 'last'], area: 'property'},
@@ -278,33 +280,33 @@ test('nextSearchResult', t => {
     "nill": null,
     "bool": false
   })
-  const searchResult = search(eson, 'A')
+  const first = search(eson, 'A')
 
-  t.deepEqual(searchResult.matches, [
+  t.deepEqual(first.searchResult.matches, [
     {path: ['obj', 'arr'], area: 'property'},
     {path: ['obj', 'arr', '2', 'last'], area: 'property'},
     {path: ['bool'], area: 'value'}
   ])
 
-  t.deepEqual(searchResult.active, {path: ['obj', 'arr'], area: 'property'})
-  t.is(getIn(searchResult.eson, ['obj', 'arr', META, 'searchProperty']), 'active')
-  t.is(getIn(searchResult.eson, ['obj', 'arr', '2', 'last', META, 'searchProperty']), 'normal')
-  t.is(getIn(searchResult.eson, ['bool', META, 'searchValue']), 'normal')
+  t.deepEqual(first.searchResult.active, {path: ['obj', 'arr'], area: 'property'})
+  t.is(getIn(first.eson, ['obj', 'arr', META, 'searchProperty']), 'active')
+  t.is(getIn(first.eson, ['obj', 'arr', '2', 'last', META, 'searchProperty']), 'normal')
+  t.is(getIn(first.eson, ['bool', META, 'searchValue']), 'normal')
 
-  const second = nextSearchResult(searchResult.eson, searchResult.matches, searchResult.active)
-  t.deepEqual(second.active, {path: ['obj', 'arr', '2', 'last'], area: 'property'})
+  const second = nextSearchResult(first.eson, first.searchResult)
+  t.deepEqual(second.searchResult.active, {path: ['obj', 'arr', '2', 'last'], area: 'property'})
   t.is(getIn(second.eson, ['obj', 'arr', META, 'searchProperty']), 'normal')
   t.is(getIn(second.eson, ['obj', 'arr', '2', 'last', META, 'searchProperty']), 'active')
   t.is(getIn(second.eson, ['bool', META, 'searchValue']), 'normal')
 
-  const third = nextSearchResult(second.eson, second.matches, second.active)
-  t.deepEqual(third.active, {path: ['bool'], area: 'value'})
+  const third = nextSearchResult(second.eson, second.searchResult)
+  t.deepEqual(third.searchResult.active, {path: ['bool'], area: 'value'})
   t.is(getIn(third.eson, ['obj', 'arr', META, 'searchProperty']), 'normal')
   t.is(getIn(third.eson, ['obj', 'arr', '2', 'last', META, 'searchProperty']), 'normal')
   t.is(getIn(third.eson, ['bool', META, 'searchValue']), 'active')
 
-  const wrappedAround = nextSearchResult(third.eson, third.matches, third.active)
-  t.deepEqual(wrappedAround.active, {path: ['obj', 'arr'], area: 'property'})
+  const wrappedAround = nextSearchResult(third.eson, third.searchResult)
+  t.deepEqual(wrappedAround.searchResult.active, {path: ['obj', 'arr'], area: 'property'})
   t.is(getIn(wrappedAround.eson, ['obj', 'arr', META, 'searchProperty']), 'active')
   t.is(getIn(wrappedAround.eson, ['obj', 'arr', '2', 'last', META, 'searchProperty']), 'normal')
   t.is(getIn(wrappedAround.eson, ['bool', META, 'searchValue']), 'normal')
@@ -319,33 +321,33 @@ test('previousSearchResult', t => {
     "nill": null,
     "bool": false
   })
-  const searchResult = search(eson, 'A')
+  const init = search(eson, 'A')
 
-  t.deepEqual(searchResult.matches, [
+  t.deepEqual(init.searchResult.matches, [
     {path: ['obj', 'arr'], area: 'property'},
     {path: ['obj', 'arr', '2', 'last'], area: 'property'},
     {path: ['bool'], area: 'value'}
   ])
 
-  t.deepEqual(searchResult.active, {path: ['obj', 'arr'], area: 'property'})
-  t.is(getIn(searchResult.eson, ['obj', 'arr', META, 'searchProperty']), 'active')
-  t.is(getIn(searchResult.eson, ['obj', 'arr', '2', 'last', META, 'searchProperty']), 'normal')
-  t.is(getIn(searchResult.eson, ['bool', META, 'searchValue']), 'normal')
+  t.deepEqual(init.searchResult.active, {path: ['obj', 'arr'], area: 'property'})
+  t.is(getIn(init.eson, ['obj', 'arr', META, 'searchProperty']), 'active')
+  t.is(getIn(init.eson, ['obj', 'arr', '2', 'last', META, 'searchProperty']), 'normal')
+  t.is(getIn(init.eson, ['bool', META, 'searchValue']), 'normal')
 
-  const third = previousSearchResult(searchResult.eson, searchResult.matches, searchResult.active)
-  t.deepEqual(third.active, {path: ['bool'], area: 'value'})
+  const third = previousSearchResult(init.eson, init.searchResult)
+  t.deepEqual(third.searchResult.active, {path: ['bool'], area: 'value'})
   t.is(getIn(third.eson, ['obj', 'arr', META, 'searchProperty']), 'normal')
   t.is(getIn(third.eson, ['obj', 'arr', '2', 'last', META, 'searchProperty']), 'normal')
   t.is(getIn(third.eson, ['bool', META, 'searchValue']), 'active')
 
-  const second = previousSearchResult(third.eson, third.matches, third.active)
-  t.deepEqual(second.active, {path: ['obj', 'arr', '2', 'last'], area: 'property'})
+  const second = previousSearchResult(third.eson, third.searchResult)
+  t.deepEqual(second.searchResult.active, {path: ['obj', 'arr', '2', 'last'], area: 'property'})
   t.is(getIn(second.eson, ['obj', 'arr', META, 'searchProperty']), 'normal')
   t.is(getIn(second.eson, ['obj', 'arr', '2', 'last', META, 'searchProperty']), 'active')
   t.is(getIn(second.eson, ['bool', META, 'searchValue']), 'normal')
 
-  const first = previousSearchResult(second.eson, second.matches, second.active)
-  t.deepEqual(first.active, {path: ['obj', 'arr'], area: 'property'})
+  const first = previousSearchResult(second.eson, second.searchResult)
+  t.deepEqual(first.searchResult.active, {path: ['obj', 'arr'], area: 'property'})
   t.is(getIn(first.eson, ['obj', 'arr', META, 'searchProperty']), 'active')
   t.is(getIn(first.eson, ['obj', 'arr', '2', 'last', META, 'searchProperty']), 'normal')
   t.is(getIn(first.eson, ['bool', META, 'searchValue']), 'normal')

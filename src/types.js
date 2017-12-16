@@ -22,6 +22,8 @@
  *
  * @typedef {string[]} Path
  *
+ * @typedef {{matches: ESONPointer[], active: ESONPointer, text: String}} SearchResult
+ *
  */
 
 // FIXME: redefine all ESON related types

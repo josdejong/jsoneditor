@@ -111,7 +111,7 @@ export default class TreeMode extends Component {
         findKeyBinding: this.handleFindKeyBinding
       },
 
-      search: {
+      searchResult: {
         text: '',
         matches: null,
         active: null // active search result
@@ -287,13 +287,13 @@ export default class TreeMode extends Component {
       ])
     }
 
-    if (this.props.search !== false) {
+    if (this.props.searchResult !== false) {
       // option search is true or undefined
       items = items.concat([
         h('div', {key: 'search', className: 'jsoneditor-menu-panel-right'},
           h(Search, {
-            text: this.state.search.text,
-            resultCount: this.state.search.matches ? this.state.search.matches.length : 0,
+            text: this.state.searchResult.text,
+            resultCount: this.state.searchResult.matches ? this.state.searchResult.matches.length : 0,
             onChange: this.handleSearch,
             onNext: this.handleNext,
             onPrevious: this.handlePrevious,
@@ -584,20 +584,20 @@ export default class TreeMode extends Component {
 
   handleSearch = (text) => {
     // FIXME: also apply search when eson is changed
-    const { eson, matches, active } = search(this.state.eson, text)
-    if (matches.length > 0) {
+    const { eson, searchResult } = search(this.state.eson, text)
+    if (searchResult.matches.length > 0) {
       this.setState({
-        search: { text, active, matches },
-        eson: expandPath(eson, initial(active.path))
+        eson: expandPath(eson, initial(searchResult.active.path)),
+        searchResult
       })
 
       // scroll to active search result (on next tick, after this path has been expanded)
-      setTimeout(() => this.scrollTo(active.path))
+      setTimeout(() => this.scrollTo(searchResult.active.path))
     }
     else {
       this.setState({
-        search: { text, active, matches },
-        eson
+        eson,
+        searchResult
       })
     }
   }
@@ -610,22 +610,22 @@ export default class TreeMode extends Component {
   handleNext = (event) => {
     event.preventDefault()
 
-    if (this.state.search) {
-      const { eson, active } = nextSearchResult(this.state.eson, this.state.search.matches, this.state.search.active)
+    if (this.state.searchResult) {
+      const { eson, searchResult } = nextSearchResult(this.state.eson, this.state.searchResult)
 
       this.setState({
-        search: setIn(this.state.search, ['active'], active),
-        eson
+        eson,
+        searchResult
       })
 
       // scroll to the active result (on next tick, after this path has been expanded)
       // TODO: this code is duplicate with handlePrevious, move into a separate function
       setTimeout(() => {
-        if (active && active.path) {
-          this.scrollTo(active.path)
+        if (searchResult.active && searchResult.active.path) {
+          this.scrollTo(searchResult.active.path)
 
           if (!searchHasFocus()) {
-            setSelection(this.refs.contents, active.path, active.area)
+            setSelection(this.refs.contents, searchResult.active.path, searchResult.active.area)
           }
         }
       })
@@ -635,21 +635,21 @@ export default class TreeMode extends Component {
   handlePrevious = (event) => {
     event.preventDefault()
 
-    if (this.state.search) {
-      const { eson, active } = previousSearchResult(this.state.eson, this.state.search.matches, this.state.search.active)
+    if (this.state.searchResult) {
+      const { eson, searchResult } = previousSearchResult(this.state.eson, this.state.searchResult)
 
       this.setState({
-        search: setIn(this.state.search, ['active'], active),
-        eson
+        eson,
+        searchResult
       })
 
       // scroll to the active result (on next tick, after this path has been expanded)
       setTimeout(() => {
-        if (active && active.path) {
-          this.scrollTo(active.path)
+        if (searchResult.active && searchResult.active.path) {
+          this.scrollTo(searchResult.active.path)
 
           if (!searchHasFocus()) {
-            setSelection(this.refs.contents, active.path, active.area)
+            setSelection(this.refs.contents, searchResult.active.path, searchResult.active.area)
           }
         }
       })
@@ -800,6 +800,7 @@ export default class TreeMode extends Component {
 
       const result = patchEson(this.state.eson, historyItem.undo)
 
+      // FIXME: apply search
       this.setState({
         eson: result.data,
         history,
@@ -818,6 +819,7 @@ export default class TreeMode extends Component {
 
       const result = patchEson(this.state.eson, historyItem.redo)
 
+      // FIXME: apply search
       this.setState({
         eson: result.data,
         history,
@@ -859,6 +861,7 @@ export default class TreeMode extends Component {
           .concat(this.state.history.slice(this.state.historyIndex))
           .slice(0, MAX_HISTORY_ITEMS)
 
+      // FIXME: apply search
       this.setState({
         eson,
         history,
@@ -867,6 +870,7 @@ export default class TreeMode extends Component {
     }
     else {
       // update data and don't store history
+      // FIXME: apply search
       this.setState({ eson })
     }
 
@@ -887,6 +891,7 @@ export default class TreeMode extends Component {
     // TODO: document option expand
     const expandCallback = this.props.expand || TreeMode.expandRoot
 
+    // FIXME: apply search
     this.setState({
       json: json,
       eson: expand(jsonToEson(json), expandCallback),
@@ -902,7 +907,8 @@ export default class TreeMode extends Component {
    * @returns {Object | Array | string | number | boolean | null} json
    */
   get () {
-    return this.state.json
+    // FIXME: keep a copy of the json file up to date with the internal eson
+    return esonToJson(this.state.eson)
   }
 
   /**

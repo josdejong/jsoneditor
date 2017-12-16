@@ -27,7 +27,7 @@ export function changeValue (eson, path, value) {
     path: compileJSONPointer(path),
     value: value,
     jsoneditor: {
-      type: oldDataValue.type
+      type: oldDataValue[META].type
     }
   }]
 }
@@ -102,14 +102,14 @@ export function duplicate (eson, selection) {
   const { maxIndex } = findSelectionIndices(root, rootPath, selection)
   const paths = pathsFromSelection(eson, selection)
 
-  if (root.type === 'Array') {
+  if (root[META].type === 'Array') {
     return paths.map((path, offset) => ({
       op: 'copy',
       from: compileJSONPointer(path),
       path: compileJSONPointer(rootPath.concat(maxIndex + offset))
     }))
   }
-  else { // object.type === 'Object'
+  else { // root[META].type === 'Object'
     const before = root[META].props[maxIndex] || null
 
     return paths.map(path => {
@@ -144,7 +144,7 @@ export function insertBefore (eson, path, values) {  // TODO: find a better name
   const parentPath = initial(path)
   const parent = getIn(eson, parentPath)
 
-  if (parent.type === 'Array') {
+  if (parent[META].type === 'Array') {
     const startIndex = parseInt(last(path))
     return values.map((entry, offset) => ({
       op: 'add',
@@ -155,7 +155,7 @@ export function insertBefore (eson, path, values) {  // TODO: find a better name
       }
     }))
   }
-  else { // object.type === 'Object'
+  else { // parent[META].type === 'Object'
     const before = last(path)
     return values.map(entry => {
       const newProp = findUniqueName(entry.name, parent[META].props)
@@ -189,7 +189,7 @@ export function replace (eson, selection, values) {  // TODO: find a better name
   const root = getIn(eson, rootPath)
   const { minIndex, maxIndex } = findSelectionIndices(root, rootPath, selection)
 
-  if (root.type === 'Array') {
+  if (root[META].type === 'Array') {
     const removeActions = removeAll(pathsFromSelection(eson, selection))
     const insertActions = values.map((entry, offset) => ({
       op: 'add',
@@ -202,7 +202,7 @@ export function replace (eson, selection, values) {  // TODO: find a better name
 
     return removeActions.concat(insertActions)
   }
-  else { // object.type === 'Object'
+  else { // root[META].type === 'Object'
     const before = root[META].props[maxIndex] || null
 
     const removeActions = removeAll(pathsFromSelection(eson, selection))
@@ -241,7 +241,7 @@ export function append (eson, parentPath, type) {
   const parent = getIn(eson, parentPath)
   const value = createEntry(type)
 
-  if (parent.type === 'Array') {
+  if (parent[META].type === 'Array') {
     return [{
       op: 'add',
       path: compileJSONPointer(parentPath.concat('-')),
@@ -251,7 +251,7 @@ export function append (eson, parentPath, type) {
       }
     }]
   }
-  else { // object.type === 'Object'
+  else { // parent[META].type === 'Object'
     const newProp = findUniqueName('', parent[META].props)
 
     return [{
@@ -306,11 +306,11 @@ export function sort (eson, path, order = null) {
   const compare = order === 'desc' ? compareDesc : compareAsc
   const object = getIn(eson, path)
 
-  if (object.type === 'Array') {
-    const orderedItems = object.slice()
+  if (object[META].type === 'Array') {
+    const orderedItems = cloneWithSymbols(object)
 
     // order the items by value
-    orderedItems.sort((a, b) => compare(a.value, b.value))
+    orderedItems.sort((a, b) => compare(a[META].value, b[META].value))
 
     // when no order is provided, test whether ordering ascending
     // changed anything. If not, sort descending
@@ -318,16 +318,18 @@ export function sort (eson, path, order = null) {
       orderedItems.reverse()
     }
 
+    // TODO: refactor into a set of move actions, so we keep eson state of the items
+
     return [{
       op: 'replace',
       path: compileJSONPointer(path),
-      value: orderedItems
+      value: esonToJson(orderedItems)
     }]
   }
-  else { // object.type === 'Object'
+  else { // object[META].type === 'Object'
 
     // order the properties by key
-    const orderedProps = object[META].props.slice().sort((a, b) => compare(a.name, b.name))
+    const orderedProps = object[META].props.slice().sort(compare)
 
     // when no order is provided, test whether ordering ascending
     // changed anything. If not, sort descending
@@ -338,12 +340,14 @@ export function sort (eson, path, order = null) {
     const orderedObject = cloneWithSymbols(object)
     orderedObject[META] = setIn(object[META], ['props'], orderedProps)
 
+    // TODO: refactor into a set of move actions, so we keep eson state of the items
+
     return [{
       op: 'replace',
       path: compileJSONPointer(path),
       value: esonToJson(orderedObject),
       jsoneditor: {
-        order: orderedProps.map(prop => prop.name)
+        order: orderedProps // TODO: order isn't used right now in patchEson.
       }
     }]
   }

@@ -15,12 +15,10 @@ import initial from 'lodash/initial'
 import last from 'lodash/last'
 
 import type {
-  ESON, ESONObject, ESONArrayItem, ESONPointer, Selection, ESONPath,
+  ESON, ESONPointer, Selection,
   Path,
   JSONPath, JSONType
 } from './types'
-
-type RecurseCallback = (value: ESON, path: Path, root: ESON) => ESON
 
 export const SELECTED = 1
 export const SELECTED_END = 2
@@ -245,7 +243,7 @@ export function cleanupMetaData(eson, field, ignorePaths = []) {
  * Search some text in all properties and values
  * @param {ESON} eson
  * @param {String} text Search text
- * @return {{eson: ESON, matches: ESONPointer[], active: ESONPointer}} Returns search result:
+ * @return {SearchResult} Returns search result:
  *              An updated eson object containing the search results,
  *              and an array with the paths of all matches
  */
@@ -281,7 +279,14 @@ export function search (eson, text) {
     return updatedValue
   })
 
-  return { eson: updatedEson, matches, active: matches[0] || null }
+  return {
+    eson: updatedEson,
+    searchResult: {
+      text,
+      matches,
+      active: matches[0] || null
+    }
+  }
 }
 
 /**
@@ -290,26 +295,24 @@ export function search (eson, text) {
  * and return the last result as next.
  *
  * @param {ESON} eson
- * @param {ESONPointer[]} matches
- * @param {ESONPointer} active
- * @return {{eson: ESON, matches: ESONPointer[], active: ESONPointer}}
+ * @param {SearchResult} searchResult
+ * @return {{eson: ESON, searchResult: SearchResult}}
  */
-export function previousSearchResult (eson, matches, active) {
-  if (matches.length === 0) {
-    return { eson, matches, active }
+export function previousSearchResult (eson, searchResult) {
+  if (searchResult.matches.length === 0) {
+    return { eson, searchResult }
   }
 
-  const index = matches.findIndex(searchResult => isEqual(searchResult, active))
+  const index = searchResult.matches.findIndex(match => isEqual(match, searchResult.active))
   const previous = (index !== -1)
       ? index > 0
-          ? matches[index - 1]
-          : last(matches)
-      : matches[0]
+          ? searchResult.matches[index - 1]
+          : last(searchResult.matches)
+      : searchResult.matches[0]
 
   return {
-    eson: setSearchStatus(setSearchStatus(eson, active, 'normal'), previous, 'active'),
-    matches,
-    active: previous
+    eson: setSearchStatus(setSearchStatus(eson, searchResult.active, 'normal'), previous, 'active'),
+    searchResult: Object.assign({}, searchResult, { active: previous})
   }
 }
 
@@ -319,26 +322,24 @@ export function previousSearchResult (eson, matches, active) {
  * and return the first result as next.
  *
  * @param {ESON} eson
- * @param {ESONPointer[]} matches
- * @param {ESONPointer} active
- * @return {{eson: ESON, matches: ESONPointer[], active: ESONPointer}}
+ * @param {SearchResult} searchResult
+ * @return {{eson: ESON, searchResult: SearchResult}}
  */
-export function nextSearchResult (eson, matches, active) {
-  if (isEmpty(matches)) {
-    return { eson, matches, active }
+export function nextSearchResult (eson, searchResult) {
+  if (isEmpty(searchResult.matches)) {
+    return { eson, searchResult }
   }
 
-  const index = matches.findIndex(match => isEqual(match, active))
+  const index = searchResult.matches.findIndex(match => isEqual(match, searchResult.active))
   const next = (index !== -1)
-      ? index < matches.length - 1
-          ? matches[index + 1]
-          : matches[0]
-      : matches[0]
+      ? index < searchResult.matches.length - 1
+          ? searchResult.matches[index + 1]
+          : searchResult.matches[0]
+      : searchResult.matches[0]
 
   return {
-    eson: setSearchStatus(setSearchStatus(eson, active, 'normal'), next, 'active'),
-    matches,
-    active: next
+    eson: setSearchStatus(setSearchStatus(eson, searchResult.active, 'normal'), next, 'active'),
+    searchResult: Object.assign({}, searchResult, { active: next})
   }
 }
 
@@ -463,7 +464,7 @@ export function pathsFromSelection (eson, selection: Selection): JSONPath[] {
   if (root[META].type === 'Object') {
     return times(maxIndex - minIndex, i => rootPath.concat(root[META].props[i + minIndex]))
   }
-  else { // root.type === 'Array'
+  else { // root[META].type === 'Array'
     return times(maxIndex - minIndex, i => rootPath.concat(String(i + minIndex)))
   }
 }
@@ -477,7 +478,7 @@ export function pathsFromSelection (eson, selection: Selection): JSONPath[] {
 export function contentsFromPaths (data: ESON, paths: JSONPath[]) {
   return paths.map(path => {
     return {
-      name: getIn(data, last(path)),
+      name: last(path),
       value: esonToJson(getIn(data, path))
       // FIXME: also store the type and expanded state
     }
@@ -544,7 +545,7 @@ export function pathExists (eson, path) {
     // index of an array
     return pathExists(eson[parseInt(path[0])], path.slice(1))
   }
-  else { // eson.type === 'Object'
+  else { // Object
     // object property. find the index of this property
     return pathExists(eson[path[0]], path.slice(1))
   }

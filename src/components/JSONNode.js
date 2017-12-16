@@ -254,10 +254,11 @@ export default class JSONNode extends PureComponent {
   }
 
   // TODO: simplify the method renderProperty
-  renderProperty (prop?: ESONObjectProperty, index?: number, eson: ESON, options: {escapeUnicode: boolean, isPropertyEditable: (Path) => boolean}) {
+  renderProperty (prop?: String, index?: number, eson: ESON, options: {escapeUnicode: boolean, isPropertyEditable: (Path) => boolean}) {
     const isIndex = typeof index === 'number'
+    const isProp = typeof prop === 'string'
 
-    if (!prop && !isIndex) {
+    if (!isProp && !isIndex) {
       // root node
       const rootName = JSONNode.getRootName(eson, options)
 
@@ -604,7 +605,7 @@ export default class JSONNode extends PureComponent {
   /** @private */
   handleChangeProperty = (event) => {
     const parentPath = initial(this.props.eson[META].path)
-    const oldProp = this.props.prop.name
+    const oldProp = this.props.prop
     const newProp = unescapeHTML(getInnerText(event.target))
 
     if (newProp !== oldProp) {
