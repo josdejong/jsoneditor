@@ -10,7 +10,7 @@ import { getInnerText, insideRect, findParentWithAttribute } from '../utils/domU
 import { stringConvert, valueType, isUrl } from  '../utils/typeUtils'
 import { compileJSONPointer, META, SELECTED, SELECTED_END, SELECTED_AFTER, SELECTED_BEFORE } from  '../eson'
 
-import type { ESONObjectProperty, ESON, SearchResultStatus, Path } from '../types'
+import type { ESON, SearchResultStatus, Path } from '../types'
 
 // TODO: rename SELECTED, SELECTED_END, etc to AREA_*? It's used for both selection and hovering
 const SELECTED_CLASS_NAMES = {

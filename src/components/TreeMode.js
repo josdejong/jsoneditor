@@ -36,7 +36,10 @@ import {
 import { createFindKeyBinding } from '../utils/keyBindings'
 import { KEY_BINDINGS } from '../constants'
 
-import type { ESON, ESONPatch, JSONPath, Selection, ESONPointer } from '../types'
+import type {
+  ESON, ESONPatch, Selection, ESONPointer,
+  Path
+} from '../types'
 
 const AJV_OPTIONS = {
   allErrors: true,
@@ -707,7 +710,7 @@ export default class TreeMode extends Component {
     }
   }
 
-  findDataPathFromElement (element: Element) : JSONPath | null {
+  findDataPathFromElement (element: Element) : Path | null {
     const base = findBaseNode(element)
     const attr = base && base.getAttribute && base.getAttribute('data-path')
 

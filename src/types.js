@@ -8,7 +8,7 @@
  *   modes: string[]?,
  *   history: boolean?,
  *   indentation: number | string?,
- *   onChange: function (patch: JSONPatch, revert: JSONPatch)?,
+ *   onChange: function (patch: ESONPatch, revert: ESONPatch)?,
  *   onChangeText: function ()?,
  *   onChangeMode: function (mode: string, prevMode: string)?,
  *   onError:  function (err: Error)?,
@@ -41,22 +41,10 @@ export type JSONArrayType = JSONType[]
 export type SearchResultStatus = 'normal' | 'active'
 export type ESONPointerArea = 'value' | 'property'
 
-export type ESONObjectProperty = {
-  id: number,
-  name: string,
-  value: ESON,
-  searchResult?: SearchResultStatus
-}
-
-export type ESONArrayItem = {
-  id: number,
-  value: ESON
-}
-
 export type ESONObject = {
   _meta: {
     type: 'Object',
-    path: JSONPath,
+    path: Path,
     expanded?: boolean,
     selected?: boolean,
     searchProperty?: SearchResultStatus,
@@ -67,7 +55,7 @@ export type ESONObject = {
 export type ESONArray = {
   _meta: {
     type: 'Array',
-    path: JSONPath,
+    path: Path,
     length: number
     expanded?: boolean,
     selected?: boolean,
@@ -79,7 +67,7 @@ export type ESONArray = {
 export type ESONValue = {
   _meta: {
     type: 'value' | 'string',
-    path: JSONPath,
+    path: Path,
     value: null | boolean | string | number,
     selected?: boolean,
     searchProperty?: SearchResultStatus,
@@ -91,28 +79,18 @@ export type ESON = ESONObject | ESONArray | ESONValue
 
 export type ESONType = 'Object' | 'Array' | 'value' | 'string'
 
-export type Path = string[]  // TODO: Path must become redundant, replace with JSONPath or ESONPath everywhere
-export type JSONPath = string[]
-export type ESONPath = string[]
+export type Path = string[]
 
 export type ESONPointer = {
-  path: JSONPath, // TODO: change path to an ESONPath?
+  path: Path,
   area?: ESONPointerArea
 }
 
 export type Selection = {
-  start?: JSONPath,
-  end?: JSONPath,
-  before?: JSONPath,
-  after?: JSONPath
-}
-
-// TODO: ESONPointer.path is an array, JSONSchemaError.path is a string -> make this consistent
-
-
-// TODO: remove SetOptions, merge into Options (everywhere in the public API)
-export type SetOptions = {
-  expand?: (path: Path) => boolean
+  start?: Path,
+  end?: Path,
+  before?: Path,
+  after?: Path
 }
 
 export type ESONPatchAction = {
@@ -120,7 +98,7 @@ export type ESONPatchAction = {
   path: string,
   from?: string,
   value?: any,
-  jsoneditor?: ESONPatchOptions
+  meta?: ESONPatchOptions
 }
 export type ESONPatch = ESONPatchAction[]
 
@@ -129,13 +107,8 @@ export type ESONPatchOptions = {
   expand: (Path) => boolean
 }
 
-export type ESONPatchResult = {
-  patch: ESONPatch,
-  revert: ESONPatch,
-  error: null | Error
-}
-
+// TODO: ESONPointer.path is an array, JSONSchemaError.path is a string -> make this consistent
 export type JSONSchemaError = {
-  dataPath: string, // TODO: change type to JSONPath
+  dataPath: string, // TODO: change type to Path
   message: string
 }

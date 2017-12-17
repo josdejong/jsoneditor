@@ -17,7 +17,7 @@ import last from 'lodash/last'
 import type {
   ESON, ESONPointer, Selection,
   Path,
-  JSONPath, JSONType
+  JSONType
 } from './types'
 
 export const SELECTED = 1
@@ -447,7 +447,7 @@ export function findSelectionIndices (root, rootPath, selection) {
 /**
  * Get the JSON paths from a selection, sorted from first to last
  */
-export function pathsFromSelection (eson, selection: Selection): JSONPath[] {
+export function pathsFromSelection (eson, selection: Selection): Path[] {
   // find the parent node shared by both start and end of the selection
   const rootPath = findRootPath(selection)
   const root = getIn(eson, rootPath)
@@ -465,10 +465,10 @@ export function pathsFromSelection (eson, selection: Selection): JSONPath[] {
 /**
  * Get the contents of a list with paths
  * @param {ESON} data
- * @param {JSONPath[]} paths
+ * @param {Path[]} paths
  * @return {Array.<{name: string, value: JSONType}>}
  */
-export function contentsFromPaths (data: ESON, paths: JSONPath[]) {
+export function contentsFromPaths (data: ESON, paths: Path[]) {
   return paths.map(path => {
     return {
       name: last(path),
@@ -482,7 +482,7 @@ export function contentsFromPaths (data: ESON, paths: JSONPath[]) {
  * Find the root path of a selection: the parent node shared by both start
  * and end of the selection
  * @param {Selection} selection
- * @return {JSONPath}
+ * @return {Path}
  */
 export function findRootPath(selection) {
   if (selection.before) {
@@ -509,7 +509,7 @@ export function findRootPath(selection) {
  * Find the common path of two paths.
  * For example findCommonRoot(['arr', '1', 'name'], ['arr', '1', 'address', 'contact']) returns ['arr', '1']
  */
-function findSharedPath (path1: JSONPath, path2: JSONPath): JSONPath {
+function findSharedPath (path1: Path, path2: Path): Path {
   let i = 0;
   while (i < path1.length && path1[i] === path2[i]) {
     i++;
@@ -614,16 +614,6 @@ export function compileJSONPointer (path: Path) {
  */
 export function containsCaseInsensitive (text: string, search: string): boolean {
   return String(text).toLowerCase().indexOf(search.toLowerCase()) !== -1
-}
-
-/**
- * Test whether an array contains a specific item
- * @param {Array} array
- * @param {*} item
- * @return {boolean} Returnts true when item is in array, false otherwise.
- */
-function contains (array, item) {
-  return array.indexOf(item) !== -1
 }
 
 /**

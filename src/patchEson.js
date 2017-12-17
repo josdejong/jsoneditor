@@ -162,7 +162,6 @@ export function replace (data, path, value) {
  * @param {Path} path
  * @return {{data: ESON, revert: ESONPatch}}
  */
-// FIXME: path should be a path instead of a string? (all functions in patchEson)
 export function remove (data, path) {
   // console.log('remove', path)
 
@@ -215,9 +214,7 @@ export function remove (data, path) {
  * @return {{data: ESON, revert: ESONPatch}}
  * @private
  */
-// TODO: refactor path to an array with strings
 export function add (data, path, value, options) {
-  // FIXME: apply id to new created values
   const parentPath = initial(path)
   const parent = getIn(data, parentPath)
   const resolvedPath = resolvePathIndex(data, path)
@@ -312,7 +309,6 @@ export function move (data, path, from, options) {
 
   const result1 = remove(data, from)
   const result2 = add(result1.data, path, dataValue, options)
-  // FIXME: passing id as parameter is ugly, make that redundant (use replace instead of remove/add? (that would give less predictive output :( ))
 
   const before = result1.revert[0].meta.before
   const beforeNeeded = (parent[META].type === 'Object' && before)

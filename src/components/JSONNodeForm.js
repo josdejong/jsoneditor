@@ -2,7 +2,7 @@
 
 import JSONNode from './JSONNode'
 
-import type { ESONObjectProperty, ESON, Path } from '../types'
+import type { ESON, Path } from '../types'
 
 /**
  * JSONNodeForm
@@ -22,7 +22,7 @@ export default class JSONNodeForm extends JSONNode {
   }
 
   // render a readonly property
-  renderProperty (prop?: ESONObjectProperty, index?: number, data: ESON, options: {escapeUnicode: boolean, isPropertyEditable: (Path) => boolean}) {
+  renderProperty (prop?: String, index?: number, eson: ESON, options: {escapeUnicode: boolean, isPropertyEditable: (Path) => boolean}) {
     const formOptions = Object.assign({}, options, { isPropertyEditable })
 
     return JSONNode.prototype.renderProperty.call(this, prop, index, data, formOptions)
