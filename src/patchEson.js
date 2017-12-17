@@ -28,17 +28,18 @@ export function patchEson (eson, patch, expand = expandAll) {
 
   for (let i = 0; i < patch.length; i++) {
     const action = patch[i]
+    const path = action.path ? parseJSONPointer(action.path) : null
+    const from = action.from ? parseJSONPointer(action.from) : null
     const options = action.jsoneditor
 
     // TODO: check whether action.op and action.path exist
 
     switch (action.op) {
       case 'add': {
-        const path = parseJSONPointer(action.path)
         const newValue = jsonToEson(action.value, path)
         // FIXME: apply expanded state
         // FIXME: apply options.type
-        const result = add(updatedEson, action.path, newValue, options)
+        const result = add(updatedEson, path, newValue, options)
         updatedEson = result.data
         revert = result.revert.concat(revert)
 
@@ -46,7 +47,7 @@ export function patchEson (eson, patch, expand = expandAll) {
       }
 
       case 'remove': {
-        const result = remove(updatedEson, action.path)
+        const result = remove(updatedEson, path)
         updatedEson = result.data
         revert = result.revert.concat(revert)
 
@@ -54,7 +55,6 @@ export function patchEson (eson, patch, expand = expandAll) {
       }
 
       case 'replace': {
-        const path = parseJSONPointer(action.path)
         const newValue = jsonToEson(action.value, path)
         // FIXME: apply expanded state
         // FIXME: apply options.type
@@ -74,7 +74,7 @@ export function patchEson (eson, patch, expand = expandAll) {
           }
         }
 
-        const result = copy(updatedEson, action.path, action.from, options)
+        const result = copy(updatedEson, path, from, options)
         updatedEson = result.data
         revert = result.revert.concat(revert)
 
@@ -90,7 +90,7 @@ export function patchEson (eson, patch, expand = expandAll) {
           }
         }
 
-        const result = move(updatedEson, action.path, action.from, options)
+        const result = move(updatedEson, path, from, options)
         updatedEson = result.data
         revert = result.revert.concat(revert)
 
@@ -99,7 +99,7 @@ export function patchEson (eson, patch, expand = expandAll) {
 
       case 'test': {
         // when a test fails, cancel the whole patch and return the error
-        const error = test(updatedEson, action.path, action.value)
+        const error = test(updatedEson, path, action.value)
         if (error) {
           return { data: eson, revert: [], error}
         }
@@ -151,25 +151,24 @@ export function replace (data, path, value) {
 /**
  * Remove an item or property
  * @param {ESON} data
- * @param {string} path
+ * @param {Path} path
  * @return {{data: ESON, revert: ESONPatch}}
  */
 // FIXME: path should be a path instead of a string? (all functions in patchEson)
 export function remove (data, path) {
   // console.log('remove', path)
-  const pathArray = parseJSONPointer(path)
 
-  const parentPath = initial(pathArray)
+  const parentPath = initial(path)
   const parent = getIn(data, parentPath)
-  const dataValue = getIn(data, pathArray)
+  const dataValue = getIn(data, path)
   const value = esonToJson(dataValue)
 
   if (parent[META].type === 'Array') {
     return {
-      data: updatePaths(deleteIn(data, pathArray)),
+      data: updatePaths(deleteIn(data, path)),
       revert: [{
         op: 'add',
-        path,
+        path: compileJSONPointer(path),
         value,
         jsoneditor: {
           type: dataValue[META].type
@@ -178,7 +177,7 @@ export function remove (data, path) {
     }
   }
   else { // parent[META].type === 'Object'
-    const prop = last(pathArray)
+    const prop = last(path)
     const index = parent[META].props.indexOf(prop)
     const nextProp = parent[META].props[index + 1] || null
 
@@ -189,7 +188,7 @@ export function remove (data, path) {
       data: setIn(data, parentPath, updatePaths(updatedParent, parentPath)),
       revert: [{
         op: 'add',
-        path,
+        path: compileJSONPointer(path),
         value,
         jsoneditor: {
           type: dataValue[META].type,
@@ -202,7 +201,7 @@ export function remove (data, path) {
 
 /**
  * @param {ESON} data
- * @param {string} path
+ * @param {Path} path
  * @param {ESON} value
  * @param {{before?: string}} [options]
  * @return {{data: ESON, revert: ESONPatch}}
@@ -211,10 +210,9 @@ export function remove (data, path) {
 // TODO: refactor path to an array with strings
 export function add (data, path, value, options) {
   // FIXME: apply id to new created values
-  const pathArray = parseJSONPointer(path)
-  const parentPath = initial(pathArray)
+  const parentPath = initial(path)
   const parent = getIn(data, parentPath)
-  const resolvedPath = resolvePathIndex(data, pathArray)
+  const resolvedPath = resolvePathIndex(data, path)
   const prop = last(resolvedPath)
 
   let updatedEson
@@ -223,7 +221,7 @@ export function add (data, path, value, options) {
   }
   else { // parent[META].type === 'Object'
     updatedEson = updateIn(data, parentPath, (parent) => {
-      const oldValue = getIn(data, pathArray)
+      const oldValue = getIn(data, path)
       const props = parent[META].props
       const existingIndex = props.indexOf(prop)
 
@@ -231,7 +229,7 @@ export function add (data, path, value, options) {
         // replace existing item
         // update path
         // FIXME: also update value's id
-        let newValue = updatePaths(cloneWithSymbols(value), pathArray)
+        let newValue = updatePaths(cloneWithSymbols(value), path)
         newValue[META] = setIn(newValue[META], ['id'], oldValue[META].id)
         // console.log('copied id from existing value' + oldValue[META].id)
 
@@ -278,14 +276,14 @@ export function add (data, path, value, options) {
 /**
  * Copy a value
  * @param {ESON} data
- * @param {string} path
- * @param {string} from
+ * @param {Path} path
+ * @param {Path} from
  * @param {{before?: string}} [options]
  * @return {{data: ESON, revert: ESONPatch}}
  * @private
  */
 export function copy (data, path, from, options) {
-  const value = getIn(data, parseJSONPointer(from))
+  const value = getIn(data, from)
 
   // create new id for the copied item
   let updatedValue = cloneWithSymbols(value)
@@ -297,17 +295,16 @@ export function copy (data, path, from, options) {
 /**
  * Move a value
  * @param {ESON} data
- * @param {string} path
- * @param {string} from
+ * @param {Path} path
+ * @param {Path} from
  * @param {{before?: string}} [options]
  * @return {{data: ESON, revert: ESONPatch}}
  * @private
  */
 export function move (data, path, from, options) {
-  const fromArray = parseJSONPointer(from)
-  const dataValue = getIn(data, fromArray)
+  const dataValue = getIn(data, from)
 
-  const parentPathFrom = initial(fromArray)
+  const parentPathFrom = initial(from)
   const parent = getIn(data, parentPathFrom)
 
   const result1 = remove(data, from)
@@ -325,8 +322,8 @@ export function move (data, path, from, options) {
     return {
       data: result2.data,
       revert: [
-        { op: 'move', from: path, path: from },
-        { op: 'add', path, value, jsoneditor: options}
+        { op: 'move', from: compileJSONPointer(path), path: compileJSONPointer(from) },
+        { op: 'add', path: compileJSONPointer(path), value, jsoneditor: options}
       ]
     }
   }
@@ -334,8 +331,8 @@ export function move (data, path, from, options) {
     return {
       data: result2.data,
       revert: beforeNeeded
-          ? [{ op: 'move', from: path, path: from, jsoneditor: { before } }]
-          : [{ op: 'move', from: path, path: from }]
+          ? [{ op: 'move', from: compileJSONPointer(path), path: compileJSONPointer(from), jsoneditor: { before } }]
+          : [{ op: 'move', from: compileJSONPointer(path), path: compileJSONPointer(from) }]
     }
   }
 }
@@ -344,7 +341,7 @@ export function move (data, path, from, options) {
  * Test whether the data contains the provided value at the specified path.
  * Throws an error when the test fails.
  * @param {ESON} data
- * @param {string} path
+ * @param {Path} path
  * @param {*} value
  * @return {null | Error} Returns an error when the tests, returns null otherwise
  */
@@ -353,12 +350,11 @@ export function test (data, path, value) {
     return new Error('Test failed, no value provided')
   }
 
-  const pathArray = parseJSONPointer(path)
-  if (!pathExists(data, pathArray)) {
+  if (!pathExists(data, path)) {
     return new Error('Test failed, path not found')
   }
 
-  const actualValue = getIn(data, pathArray)
+  const actualValue = getIn(data, path)
   if (!isEqual(esonToJson(actualValue), value)) {
     return new Error('Test failed, value differs')
   }
