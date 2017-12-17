@@ -180,11 +180,7 @@ export function expandOne (eson, path, expanded = true) {
  * @return {ESON}
  */
 export function expandPath (eson, path, expanded = true) {
-  let updatedEson = eson
-
-  // TODO: rewrite to path.reduce(...)
-
-  updatedEson = expandOne(updatedEson, [], expanded) // expand root
+  let updatedEson = expandOne(eson, [], expanded) // expand root
 
   for (let i = 0; i < path.length; i++) {
     const pathPart = path.slice(0, i + 1)
