@@ -135,8 +135,17 @@ export function patchEson (eson, patch, expand = expandAll) {
 export function replace (data, path, value) {
   const oldValue = getIn(data, path)
 
+  // keep the original id
+  let newValue = value
+  newValue = setIn(newValue, [META, 'id'], oldValue[META].id)
+
+  // FIXME: get the original expanded state of the copied value from JSON-Patch
+  if (newValue[META].type === 'Object' || newValue[META].type === 'Array') {
+    newValue = setIn(newValue, [META, 'expanded'], true)
+  }
+
   return {
-    data: setIn(data, path, value),
+    data: setIn(data, path, newValue),
     revert: [{
       op: 'replace',
       path: compileJSONPointer(path),

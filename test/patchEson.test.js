@@ -153,21 +153,20 @@ test('jsonpatch replace', t => {
   ])
 })
 
-// // FIXME: keep ids intact
-// test('jsonpatch replace (keep ids intact)', t => {
-//   const json = { value: 42 }
-//   const patch = [
-//     {op: 'replace', path: '/value', value: 100}
-//   ]
-//
-//   const data = jsonToEson(json)
-//   const valueId = data.value[META].id
-//
-//   const patchedData = patchEson(data, patch).data
-//   const patchedValueId = patchedData.value[META].id
-//
-//   t.is(patchedValueId, valueId)
-// })
+test('jsonpatch replace (keep ids intact)', t => {
+  const json = { value: 42 }
+  const patch = [
+    {op: 'replace', path: '/value', value: 100}
+  ]
+
+  const data = jsonToEson(json)
+  const valueId = data.value[META].id
+
+  const patchedData = patchEson(data, patch).data
+  const patchedValueId = patchedData.value[META].id
+
+  t.is(patchedValueId, valueId)
+})
 
 test('jsonpatch copy', t => {
   const json = {
