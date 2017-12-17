@@ -26,7 +26,7 @@ export function changeValue (eson, path, value) {
     op: 'replace',
     path: compileJSONPointer(path),
     value: value,
-    jsoneditor: {
+    meta: {
       type: oldDataValue[META].type
     }
   }]
@@ -51,7 +51,7 @@ export function changeProperty (eson, parentPath, oldProp, newProp) {
     op: 'move',
     from: compileJSONPointer(parentPath.concat(oldProp)),
     path: compileJSONPointer(parentPath.concat(uniqueNewProp)),
-    jsoneditor: {
+    meta: {
       before: findNextProp(parent, oldProp)
     }
   }]
@@ -74,7 +74,7 @@ export function changeType (eson, path, type) {
     op: 'replace',
     path: compileJSONPointer(path),
     value: newValue,
-    jsoneditor: {
+    meta: {
       type
     }
   }]
@@ -120,7 +120,7 @@ export function duplicate (eson, selection) {
         op: 'copy',
         from: compileJSONPointer(path),
         path: compileJSONPointer(rootPath.concat(newProp)),
-        jsoneditor: {
+        meta: {
           before
         }
       }
@@ -150,7 +150,7 @@ export function insertBefore (eson, path, values) {  // TODO: find a better name
       op: 'add',
       path: compileJSONPointer(parentPath.concat(startIndex + offset)),
       value: entry.value,
-      jsoneditor: {
+      meta: {
         type: entry.type
       }
     }))
@@ -163,7 +163,7 @@ export function insertBefore (eson, path, values) {  // TODO: find a better name
         op: 'add',
         path: compileJSONPointer(parentPath.concat(newProp)),
         value: entry.value,
-        jsoneditor: {
+        meta: {
           type: entry.type,
           before
         }
@@ -195,7 +195,7 @@ export function replace (eson, selection, values) {  // TODO: find a better name
       op: 'add',
       path: compileJSONPointer(rootPath.concat(minIndex + offset)),
       value: entry.value,
-      jsoneditor: {
+      meta: {
         type: entry.type
       }
     }))
@@ -212,7 +212,7 @@ export function replace (eson, selection, values) {  // TODO: find a better name
         op: 'add',
         path: compileJSONPointer(rootPath.concat(newProp)),
         value: entry.value,
-        jsoneditor: {
+        meta: {
           type: entry.type,
           before
         }
@@ -246,7 +246,7 @@ export function append (eson, parentPath, type) {
       op: 'add',
       path: compileJSONPointer(parentPath.concat('-')),
       value,
-      jsoneditor: {
+      meta: {
         type
       }
     }]
@@ -258,7 +258,7 @@ export function append (eson, parentPath, type) {
       op: 'add',
       path: compileJSONPointer(parentPath.concat(newProp)),
       value,
-      jsoneditor: {
+      meta: {
         type
       }
     }]
@@ -346,7 +346,7 @@ export function sort (eson, path, order = null) {
       op: 'replace',
       path: compileJSONPointer(path),
       value: esonToJson(orderedObject),
-      jsoneditor: {
+      meta: {
         order: orderedProps // TODO: order isn't used right now in patchEson.
       }
     }]

@@ -30,7 +30,7 @@ export function patchEson (eson, patch, expand = expandAll) {
     const action = patch[i]
     const path = action.path ? parseJSONPointer(action.path) : null
     const from = action.from ? parseJSONPointer(action.from) : null
-    const options = action.jsoneditor
+    const options = action.meta
 
     // TODO: check whether action.op and action.path exist
 
@@ -141,7 +141,7 @@ export function replace (data, path, value) {
       op: 'replace',
       path: compileJSONPointer(path),
       value: esonToJson(oldValue),
-      jsoneditor: {
+      meta: {
         type: oldValue[META].type
       }
     }]
@@ -170,7 +170,7 @@ export function remove (data, path) {
         op: 'add',
         path: compileJSONPointer(path),
         value,
-        jsoneditor: {
+        meta: {
           type: dataValue[META].type
         }
       }]
@@ -190,7 +190,7 @@ export function remove (data, path) {
         op: 'add',
         path: compileJSONPointer(path),
         value,
-        jsoneditor: {
+        meta: {
           type: dataValue[META].type,
           before: nextProp
         }
@@ -258,7 +258,7 @@ export function add (data, path, value, options) {
         op: 'replace',
         path: compileJSONPointer(resolvedPath),
         value: esonToJson(oldValue),
-        jsoneditor: { type: oldValue[META].type }
+        meta: { type: oldValue[META].type }
       }]
     }
   }
@@ -311,19 +311,19 @@ export function move (data, path, from, options) {
   const result2 = add(result1.data, path, dataValue, options)
   // FIXME: passing id as parameter is ugly, make that redundant (use replace instead of remove/add? (that would give less predictive output :( ))
 
-  const before = result1.revert[0].jsoneditor.before
+  const before = result1.revert[0].meta.before
   const beforeNeeded = (parent[META].type === 'Object' && before)
 
   if (result2.revert[0].op === 'replace') {
     const value = result2.revert[0].value
-    const type = result2.revert[0].jsoneditor.type
+    const type = result2.revert[0].meta.type
     const options = beforeNeeded ? { type, before } : { type }
 
     return {
       data: result2.data,
       revert: [
         { op: 'move', from: compileJSONPointer(path), path: compileJSONPointer(from) },
-        { op: 'add', path: compileJSONPointer(path), value, jsoneditor: options}
+        { op: 'add', path: compileJSONPointer(path), value, meta: options}
       ]
     }
   }
@@ -331,7 +331,7 @@ export function move (data, path, from, options) {
     return {
       data: result2.data,
       revert: beforeNeeded
-          ? [{ op: 'move', from: compileJSONPointer(path), path: compileJSONPointer(from), jsoneditor: { before } }]
+          ? [{ op: 'move', from: compileJSONPointer(path), path: compileJSONPointer(from), meta: { before } }]
           : [{ op: 'move', from: compileJSONPointer(path), path: compileJSONPointer(from) }]
     }
   }

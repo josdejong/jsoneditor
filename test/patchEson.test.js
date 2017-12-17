@@ -98,8 +98,8 @@ test('jsonpatch remove', t => {
     obj: {}
   }))
   t.deepEqual(revert, [
-    {op: 'add', path: '/arr/1', value: 2, jsoneditor: {type: 'value'}},
-    {op: 'add', path: '/obj/a', value: 4, jsoneditor: {type: 'value', before: null}}
+    {op: 'add', path: '/arr/1', value: 2, meta: {type: 'value'}},
+    {op: 'add', path: '/obj/a', value: 4, meta: {type: 'value', before: null}}
   ])
 
   // test revert
@@ -135,8 +135,8 @@ test('jsonpatch replace', t => {
     obj: {a: 400}
   }))
   t.deepEqual(revert, [
-    {op: 'replace', path: '/arr/1', value: 2, jsoneditor: {type: 'value'}},
-    {op: 'replace', path: '/obj/a', value: 4, jsoneditor: {type: 'value'}}
+    {op: 'replace', path: '/arr/1', value: 2, meta: {type: 'value'}},
+    {op: 'replace', path: '/obj/a', value: 4, meta: {type: 'value'}}
   ])
 
   // test revert
@@ -148,8 +148,8 @@ test('jsonpatch replace', t => {
 
   t.deepEqual(patchedJson2, json)
   t.deepEqual(revert2, [
-    {op: 'replace', path: '/obj/a', value: 400, jsoneditor: {type: 'value'}},
-    {op: 'replace', path: '/arr/1', value: 200, jsoneditor: {type: 'value'}}
+    {op: 'replace', path: '/obj/a', value: 400, meta: {type: 'value'}},
+    {op: 'replace', path: '/arr/1', value: 200, meta: {type: 'value'}}
   ])
 })
 
@@ -202,7 +202,7 @@ test('jsonpatch copy', t => {
 
   t.deepEqual(patchedJson2, json)
   t.deepEqual(revert2, [
-    {op: 'add', path: '/arr/2', value: {a: 4}, jsoneditor: {type: 'Object'}}
+    {op: 'add', path: '/arr/2', value: {a: 4}, meta: {type: 'Object'}}
   ])
 })
 
@@ -289,7 +289,7 @@ test('jsonpatch move before', t => {
     zzz: 'zzz'
   })
   t.deepEqual(revert, [
-    {op: 'move', from: '/arr/2', path: '/obj', jsoneditor: {before: 'zzz'}}
+    {op: 'move', from: '/arr/2', path: '/obj', meta: {before: 'zzz'}}
   ])
 
   // test revert
@@ -324,7 +324,7 @@ test('jsonpatch move and replace', t => {
   t.deepEqual(patchedJson, { b : 2 })
   t.deepEqual(revert, [
     {op:'move', from: '/b', path: '/a'},
-    {op:'add', path:'/b', value: 3, jsoneditor: {type: 'value', before: 'b'}}
+    {op:'add', path:'/b', value: 3, meta: {type: 'value', before: 'b'}}
   ])
 
   // test revert
@@ -362,7 +362,7 @@ test('jsonpatch move and replace (nested)', t => {
   })
   t.deepEqual(revert, [
     {op:'move', from: '/arr', path: '/obj'},
-    {op:'add', path:'/arr', value: [1,2,3], jsoneditor: {type: 'Array'}}
+    {op:'add', path:'/arr', value: [1,2,3], meta: {type: 'Array'}}
   ])
 
   // test revert
