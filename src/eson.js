@@ -101,25 +101,25 @@ export function transform (eson, callback, path = []) {
 
   if (updated[META].type === 'Object') {
     let changed = false
-    let updatedObj = {}
+    let updatedChilds = {}
     for (let key in updated) {
       if (updated.hasOwnProperty(key)) {
-        updatedObj[key] = transform(updated[key], callback, path.concat(key))
-        changed = changed || (updatedObj[key] !== updated[key])
+        updatedChilds[key] = transform(updated[key], callback, path.concat(key))
+        changed = changed || (updatedChilds[key] !== updated[key])
       }
     }
-    updatedObj[META] = updated[META]
-    return changed ? updatedObj : updated
+    updatedChilds[META] = updated[META]
+    return changed ? updatedChilds : updated
   }
   else if (updated[META].type === 'Array') {
     let changed = false
-    let updatedArr = []
+    let updatedChilds = []
     for (let i = 0; i < updated.length; i++) {
-      updatedArr[i] = transform(updated[i], callback, path.concat(String(i)))
-        changed = changed || (updatedArr[i] !== updated[i])
+      updatedChilds[i] = transform(updated[i], callback, path.concat(String(i)))
+        changed = changed || (updatedChilds[i] !== updated[i])
     }
-    updatedArr[META] = updated[META]
-    return changed ? updatedArr : updated
+    updatedChilds[META] = updated[META]
+    return changed ? updatedChilds : updated
   }
   else {  // eson[META].type === 'value'
     return updated
@@ -135,10 +135,7 @@ export function transform (eson, callback, path = []) {
 export function updatePaths(eson, path = []) {
   return transform(eson, function (value, path) {
     if (!isEqual(value[META].path, path)) {
-      // TODO: extend setIn to support symbols
-      let updatedValue = cloneWithSymbols(value)
-      updatedValue[META] = setIn(value[META], ['path'], path)
-      return updatedValue
+      return setIn(value, [META, 'path'], path)
     }
     else {
       return value

@@ -337,8 +337,7 @@ export function sort (eson, path, order = null) {
       orderedProps.reverse()
     }
 
-    const orderedObject = cloneWithSymbols(object)
-    orderedObject[META] = setIn(object[META], ['props'], orderedProps)
+    const orderedObject = setIn(object, [META, 'props'], orderedProps)
 
     // TODO: refactor into a set of move actions, so we keep eson state of the items
 

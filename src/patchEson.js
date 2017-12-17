@@ -136,8 +136,7 @@ export function replace (data, path, value) {
   const oldValue = getIn(data, path)
 
   // keep the original id
-  let newValue = value
-  newValue = setIn(newValue, [META, 'id'], oldValue[META].id)
+  let newValue = setIn(value, [META, 'id'], oldValue[META].id)
 
   // FIXME: get the original expanded state of the copied value from JSON-Patch
   if (newValue[META].type === 'Object' || newValue[META].type === 'Array') {
@@ -190,8 +189,8 @@ export function remove (data, path) {
     const index = parent[META].props.indexOf(prop)
     const nextProp = parent[META].props[index + 1] || null
 
-    let updatedParent = deleteIn(parent, [prop])
-    updatedParent[META] = deleteIn(parent[META], ['props', index], parent[META].props)
+    let updatedParent = deleteIn(parent, [prop]) // delete property itself
+    updatedParent = deleteIn(updatedParent, [META, 'props', index]) // delete property from the props list
 
     return {
       data: setIn(data, parentPath, updatePaths(updatedParent, parentPath)),
@@ -235,14 +234,9 @@ export function add (data, path, value, options) {
       const existingIndex = props.indexOf(prop)
 
       if (existingIndex !== -1) {
-        // replace existing item
-        // update path
-        // FIXME: also update value's id
-        let newValue = updatePaths(cloneWithSymbols(value), path)
-        newValue[META] = setIn(newValue[META], ['id'], oldValue[META].id)
-        // console.log('copied id from existing value' + oldValue[META].id)
-
-        return setIn(parent, [prop], newValue)
+        // replace existing item, keep existing id
+        const newValue = setIn(value, [META, 'id'], oldValue[META].id)
+        return setIn(parent, [prop], updatePaths(newValue, path))
       }
       else {
         // insert new item
