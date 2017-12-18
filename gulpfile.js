@@ -75,6 +75,10 @@ function minify(name) {
     }
   });
 
+  if (result.error) {
+    throw result.error
+  }
+
   var fileMin = DIST + '/' + name + '.min.js';
   var fileMap = DIST + '/' + name + '.map';
 

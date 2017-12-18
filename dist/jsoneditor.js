@@ -24,8 +24,8 @@
  * Copyright (c) 2011-2017 Jos de Jong, http://jsoneditoronline.org
  *
  * @author  Jos de Jong, <wjosdejong@gmail.com>
- * @version 5.11.0
- * @date    2017-11-22
+ * @version 5.12.0
+ * @date    2017-12-18
  */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
@@ -615,11 +615,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * @param {String} key Optional schema key. Can be passed to `validate` method instead of schema object or id/ref. One schema per instance can have empty `id` and `key`.
 	 * @param {Boolean} _skipValidation true to skip schema validation. Used internally, option validateSchema should be used instead.
 	 * @param {Boolean} _meta true if schema is a meta-schema. Used internally, addMetaSchema should be used instead.
+	 * @return {Ajv} this for method chaining
 	 */
 	function addSchema(schema, key, _skipValidation, _meta) {
 	  if (Array.isArray(schema)){
 	    for (var i=0; i<schema.length; i++) this.addSchema(schema[i], undefined, _skipValidation, _meta);
-	    return;
+	    return this;
 	  }
 	  var id = this._getId(schema);
 	  if (id !== undefined && typeof id != 'string')
@@ -627,6 +628,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  key = resolve.normalizeId(key || id);
 	  checkUnique(this, key);
 	  this._schemas[key] = this._addSchema(schema, _skipValidation, _meta, true);
+	  return this;
 	}
 
 
@@ -637,9 +639,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * @param {Object} schema schema object
 	 * @param {String} key optional schema key
 	 * @param {Boolean} skipValidation true to skip schema validation, can be used to override validateSchema option for meta-schema
+	 * @return {Ajv} this for method chaining
 	 */
 	function addMetaSchema(schema, key, skipValidation) {
 	  this.addSchema(schema, key, skipValidation, true);
+	  return this;
 	}
 
 
@@ -736,25 +740,26 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * Even if schema is referenced by other schemas it still can be removed as other schemas have local references.
 	 * @this   Ajv
 	 * @param  {String|Object|RegExp} schemaKeyRef key, ref, pattern to match key/ref or schema object
+	 * @return {Ajv} this for method chaining
 	 */
 	function removeSchema(schemaKeyRef) {
 	  if (schemaKeyRef instanceof RegExp) {
 	    _removeAllSchemas(this, this._schemas, schemaKeyRef);
 	    _removeAllSchemas(this, this._refs, schemaKeyRef);
-	    return;
+	    return this;
 	  }
 	  switch (typeof schemaKeyRef) {
 	    case 'undefined':
 	      _removeAllSchemas(this, this._schemas);
 	      _removeAllSchemas(this, this._refs);
 	      this._cache.clear();
-	      return;
+	      return this;
 	    case 'string':
 	      var schemaObj = _getSchemaObj(this, schemaKeyRef);
 	      if (schemaObj) this._cache.del(schemaObj.cacheKey);
 	      delete this._schemas[schemaKeyRef];
 	      delete this._refs[schemaKeyRef];
-	      return;
+	      return this;
 	    case 'object':
 	      var serialize = this._opts.serialize;
 	      var cacheKey = serialize ? serialize(schemaKeyRef) : schemaKeyRef;
@@ -766,6 +771,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        delete this._refs[id];
 	      }
 	  }
+	  return this;
 	}
 
 
@@ -916,10 +922,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * @this   Ajv
 	 * @param {String} name format name
 	 * @param {String|RegExp|Function} format string is converted to RegExp; function should return boolean (true when valid)
+	 * @return {Ajv} this for method chaining
 	 */
 	function addFormat(name, format) {
 	  if (typeof format == 'string') format = new RegExp(format);
 	  this._formats[name] = format;
+	  return this;
 	}
 
 
@@ -7420,6 +7428,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * @this  Ajv
 	 * @param {String} keyword custom keyword, should be unique (including different from all standard, custom and macro keywords).
 	 * @param {Object} definition keyword definition object with properties `type` (type(s) which the keyword applies to), `validate` or `compile`.
+	 * @return {Ajv} this for method chaining
 	 */
 	function addKeyword(keyword, definition) {
 	  /* jshint validthis: true */
@@ -7497,6 +7506,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	  function checkDataType(dataType) {
 	    if (!RULES.types[dataType]) throw new Error('Unknown type ' + dataType);
 	  }
+
+	  return this;
 	}
 
 
@@ -7517,6 +7528,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * Remove keyword
 	 * @this  Ajv
 	 * @param {String} keyword pre-defined or custom keyword.
+	 * @return {Ajv} this for method chaining
 	 */
 	function removeKeyword(keyword) {
 	  /* jshint validthis: true */
@@ -7533,6 +7545,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	      }
 	    }
 	  }
+	  return this;
 	}
 
 
@@ -16031,6 +16044,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	function completely(config) {
 	    config = config || {};
 	    config.confirmKeys = config.confirmKeys || [39, 35, 9] // right, end, tab 
+	    config.caseSensitive = config.caseSensitive || false    // autocomplete case sensitive
 
 	    var fontSize = '';
 	    var fontFamily = '';    
@@ -16075,7 +16089,10 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	                rows = [];
 	                for (var i = 0; i < array.length; i++) {
-	                    if (array[i].indexOf(token) !== 0) { continue; }
+
+	                    if (  (config.caseSensitive && array[i].indexOf(token) !== 0)
+	                        ||(!config.caseSensitive && array[i].toLowerCase().indexOf(token.toLowerCase()) !== 0)) { continue; }
+
 	                    var divRow = document.createElement('div');
 	                    divRow.className = 'item';
 	                    //divRow.style.color = config.color;
@@ -16083,14 +16100,15 @@ return /******/ (function(modules) { // webpackBootstrap
 	                    divRow.onmouseout = onMouseOut;
 	                    divRow.onmousedown = onMouseDown;
 	                    divRow.__hint = array[i];
-	                    divRow.innerHTML = token + '<b>' + array[i].substring(token.length) + '</b>';
+	                    divRow.innerHTML = array[i].substring(0, token.length) + '<b>' + array[i].substring(token.length) + '</b>';
 	                    rows.push(divRow);
 	                    elem.appendChild(divRow);
 	                }
 	                if (rows.length === 0) {
 	                    return; // nothing to show.
 	                }
-	                if (rows.length === 1 && token === rows[0].__hint) {
+	                if (rows.length === 1 && (   (token.toLowerCase() === rows[0].__hint.toLowerCase() && !config.caseSensitive) 
+	                                           ||(token === rows[0].__hint && config.caseSensitive))){
 	                    return; // do not show the dropDown if it has only one element which matches what we have just displayed.
 	                }
 
@@ -16276,8 +16294,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	            
 	            for (var i = 0; i < optionsLength; i++) {
 	                var opt = this.options[i];
-	                if (opt.indexOf(token) === 0) {         // <-- how about upperCase vs. lowercase
-	                    this.elementHint.innerText = leftSide + opt;
+	                if (   (!config.caseSensitive && opt.toLowerCase().indexOf(token.toLowerCase()) === 0)
+	                    || (config.caseSensitive && opt.indexOf(token) === 0)) {   // <-- how about upperCase vs. lowercase
+	                    this.elementHint.innerText = leftSide + token + opt.substring(token.length);
+	                    this.elementHint.realInnerText = leftSide + opt;
 	                    break;
 	                }
 	            }
@@ -16311,6 +16331,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	            return;
 	        }
 
+	        var text = this.element.innerText;
+	        text = text.replace('\n', '');
+	        var startFrom = this.startFrom;
+
 	        if (config.confirmKeys.indexOf(keyCode) >= 0) { //  (autocomplete triggered)
 	            if (keyCode == 9) {                 
 	                if (this.elementHint.innerText.length == 0) {
@@ -16318,8 +16342,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	                }
 	            }
 	            if (this.elementHint.innerText.length > 0) { // if there is a hint               
-	                if (this.element.innerText != this.elementHint.innerText) {
-	                    this.element.innerText = this.elementHint.innerText;
+	                if (this.element.innerText != this.elementHint.realInnerText) {
+	                    this.element.innerText = this.elementHint.realInnerText;
 	                    rs.hideDropDown();
 	                    setEndOfContenteditable(this.element);
 	                    if (keyCode == 9) {                
@@ -16346,7 +16370,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                    return;
 	                }
 
-	                this.element.innerText = this.elementHint.innerText;
+	                this.element.innerText = this.elementHint.realInnerText;
 	                rs.hideDropDown();
 	                setEndOfContenteditable(this.element);
 	                e.preventDefault();
@@ -16356,18 +16380,22 @@ return /******/ (function(modules) { // webpackBootstrap
 	        }
 
 	        if (keyCode == 40) {     // down
+	            var token = text.substring(this.startFrom);
 	            var m = dropDownController.move(+1);
 	            if (m == '') { rs.onArrowDown(); }
-	            this.elementHint.innerText = leftSide + m;
+	            this.elementHint.innerText = leftSide + token + m.substring(token.length);
+	            this.elementHint.realInnerText = leftSide + m;
 	            e.preventDefault();
 	            e.stopPropagation();
 	            return;
 	        }
 
 	        if (keyCode == 38) {    // up
+	            var token = text.substring(this.startFrom);
 	            var m = dropDownController.move(-1);
 	            if (m == '') { rs.onArrowUp(); }
-	            this.elementHint.innerText = leftSide + m;
+	            this.elementHint.innerText = leftSide + token + m.substring(token.length);
+	            this.elementHint.realInnerText = leftSide + m;
 	            e.preventDefault();
 	            e.stopPropagation();
 	            return;

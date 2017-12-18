@@ -24,8 +24,8 @@
  * Copyright (c) 2011-2017 Jos de Jong, http://jsoneditoronline.org
  *
  * @author  Jos de Jong, <wjosdejong@gmail.com>
- * @version 5.11.0
- * @date    2017-11-22
+ * @version 5.12.0
+ * @date    2017-12-18
  */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
@@ -8498,6 +8498,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	function completely(config) {
 	    config = config || {};
 	    config.confirmKeys = config.confirmKeys || [39, 35, 9] // right, end, tab 
+	    config.caseSensitive = config.caseSensitive || false    // autocomplete case sensitive
 
 	    var fontSize = '';
 	    var fontFamily = '';    
@@ -8542,7 +8543,10 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	                rows = [];
 	                for (var i = 0; i < array.length; i++) {
-	                    if (array[i].indexOf(token) !== 0) { continue; }
+
+	                    if (  (config.caseSensitive && array[i].indexOf(token) !== 0)
+	                        ||(!config.caseSensitive && array[i].toLowerCase().indexOf(token.toLowerCase()) !== 0)) { continue; }
+
 	                    var divRow = document.createElement('div');
 	                    divRow.className = 'item';
 	                    //divRow.style.color = config.color;
@@ -8550,14 +8554,15 @@ return /******/ (function(modules) { // webpackBootstrap
 	                    divRow.onmouseout = onMouseOut;
 	                    divRow.onmousedown = onMouseDown;
 	                    divRow.__hint = array[i];
-	                    divRow.innerHTML = token + '<b>' + array[i].substring(token.length) + '</b>';
+	                    divRow.innerHTML = array[i].substring(0, token.length) + '<b>' + array[i].substring(token.length) + '</b>';
 	                    rows.push(divRow);
 	                    elem.appendChild(divRow);
 	                }
 	                if (rows.length === 0) {
 	                    return; // nothing to show.
 	                }
-	                if (rows.length === 1 && token === rows[0].__hint) {
+	                if (rows.length === 1 && (   (token.toLowerCase() === rows[0].__hint.toLowerCase() && !config.caseSensitive) 
+	                                           ||(token === rows[0].__hint && config.caseSensitive))){
 	                    return; // do not show the dropDown if it has only one element which matches what we have just displayed.
 	                }
 
@@ -8743,8 +8748,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	            
 	            for (var i = 0; i < optionsLength; i++) {
 	                var opt = this.options[i];
-	                if (opt.indexOf(token) === 0) {         // <-- how about upperCase vs. lowercase
-	                    this.elementHint.innerText = leftSide + opt;
+	                if (   (!config.caseSensitive && opt.toLowerCase().indexOf(token.toLowerCase()) === 0)
+	                    || (config.caseSensitive && opt.indexOf(token) === 0)) {   // <-- how about upperCase vs. lowercase
+	                    this.elementHint.innerText = leftSide + token + opt.substring(token.length);
+	                    this.elementHint.realInnerText = leftSide + opt;
 	                    break;
 	                }
 	            }
@@ -8778,6 +8785,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	            return;
 	        }
 
+	        var text = this.element.innerText;
+	        text = text.replace('\n', '');
+	        var startFrom = this.startFrom;
+
 	        if (config.confirmKeys.indexOf(keyCode) >= 0) { //  (autocomplete triggered)
 	            if (keyCode == 9) {                 
 	                if (this.elementHint.innerText.length == 0) {
@@ -8785,8 +8796,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	                }
 	            }
 	            if (this.elementHint.innerText.length > 0) { // if there is a hint               
-	                if (this.element.innerText != this.elementHint.innerText) {
-	                    this.element.innerText = this.elementHint.innerText;
+	                if (this.element.innerText != this.elementHint.realInnerText) {
+	                    this.element.innerText = this.elementHint.realInnerText;
 	                    rs.hideDropDown();
 	                    setEndOfContenteditable(this.element);
 	                    if (keyCode == 9) {                
@@ -8813,7 +8824,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                    return;
 	                }
 
-	                this.element.innerText = this.elementHint.innerText;
+	                this.element.innerText = this.elementHint.realInnerText;
 	                rs.hideDropDown();
 	                setEndOfContenteditable(this.element);
 	                e.preventDefault();
@@ -8823,18 +8834,22 @@ return /******/ (function(modules) { // webpackBootstrap
 	        }
 
 	        if (keyCode == 40) {     // down
+	            var token = text.substring(this.startFrom);
 	            var m = dropDownController.move(+1);
 	            if (m == '') { rs.onArrowDown(); }
-	            this.elementHint.innerText = leftSide + m;
+	            this.elementHint.innerText = leftSide + token + m.substring(token.length);
+	            this.elementHint.realInnerText = leftSide + m;
 	            e.preventDefault();
 	            e.stopPropagation();
 	            return;
 	        }
 
 	        if (keyCode == 38) {    // up
+	            var token = text.substring(this.startFrom);
 	            var m = dropDownController.move(-1);
 	            if (m == '') { rs.onArrowUp(); }
-	            this.elementHint.innerText = leftSide + m;
+	            this.elementHint.innerText = leftSide + token + m.substring(token.length);
+	            this.elementHint.realInnerText = leftSide + m;
 	            e.preventDefault();
 	            e.stopPropagation();
 	            return;
