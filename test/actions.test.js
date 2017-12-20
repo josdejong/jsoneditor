@@ -75,3 +75,10 @@ test('sort nested Object', t => {
   t.deepEqual(patchEson(eson, sort(eson, ['obj'], 'asc')).data.obj[META].props, ['a', 'b', 'c'])
   t.deepEqual(patchEson(eson, sort(eson, ['obj'], 'desc')).data.obj[META].props, ['c', 'b', 'a'])
 })
+
+test('sort nested Object (larger)', t => {
+  const eson = jsonToEson({obj: {h:1, c:1, e:1, d:1, g:1, b:1, a:1, f:1}})
+  const actual = patchEson(eson, sort(eson, ['obj'])).data
+
+  t.deepEqual(actual.obj[META].props, ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'])
+})

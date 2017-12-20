@@ -302,26 +302,24 @@ export function removeAll (paths) {
  * @return {Array}
  */
 export function sort (eson, path, order = null) {
-  // console.log('sort', path, order)
-
   const compare = order === 'desc' ? compareDesc : compareAsc
   const reverseCompare = (a, b) => -compare(a, b)
   const object = getIn(eson, path)
 
   if (object[META].type === 'Array') {
     const items = object.map(item => item[META].value)
-    const createAction = (value, fromIndex, toIndex, array) => ({
+    const createAction = ({item, fromIndex, toIndex}) => ({
       op: 'move',
       from: compileJSONPointer(path.concat(String(fromIndex))),
       path: compileJSONPointer(path.concat(String(toIndex)))
     })
 
-    const actions = sortWithComparator(items, compare, createAction)
+    const actions = sortWithComparator(items, compare).map(createAction)
 
     // when no order is provided, test whether ordering ascending
     // changed anything. If not, sort descending
     if (!order && isEmpty(actions)) {
-      return sortWithComparator(items, reverseCompare, createAction)
+      return sortWithComparator(items, reverseCompare).map(createAction)
     }
 
     return actions
@@ -329,32 +327,45 @@ export function sort (eson, path, order = null) {
   else { // object[META].type === 'Object'
 
     const props = object[META].props
-    const createAction = (value, fromIndex, toIndex, objectProps) => ({
+    const createAction = ({item, beforeItem, fromIndex, toIndex}) => ({
       op: 'move',
-      from: compileJSONPointer(path.concat(value)),
-      path: compileJSONPointer(path.concat(value)),
+      from: compileJSONPointer(path.concat(item)),
+      path: compileJSONPointer(path.concat(item)),
       meta: {
-        before: props[toIndex]
+        before: beforeItem
       }
     })
 
-    const actions = sortWithComparator(props, compare, createAction)
+    const actions = sortWithComparator(props, compare).map(createAction)
 
     // when no order is provided, test whether ordering ascending
     // changed anything. If not, sort descending
     if (!order && isEmpty(actions)) {
-      return sortWithComparator(props, reverseCompare, createAction)
+      return sortWithComparator(props, reverseCompare).map(createAction)
     }
 
     return actions
   }
 }
 
-// TODO: comment
-function sortWithComparator (items, comparator, createAction) {
+/**
+ * Sort an array with items using given comparator, and generate move actions
+ * (json patch) to apply the ordering.
+ *
+ * @param {Array} items
+ * @param {function (a, b)} comparator  Accepts to values,
+ *                                      returns 1 when a is larger than b
+ *                                      returns 0 when a is equal to b
+ *                                      returns -1 when a is smaller than b
+ * @return {Array.<{item: *, beforeItem: *, fromIndex: number, toIndex: number}>}
+ *                Returns an array with move actions that need to be
+ *                performed to order the items of the array.
+ *                This can be turned into json-patch actions
+ */
+function sortWithComparator (items, comparator) {
   const orderedItems = items.slice()
 
-  let actions = []
+  let moveActions = []
   for (let i = 0; i < orderedItems.length; i++) {
     let firstIndex = i
     for (let j = i; j < orderedItems.length; j++) {
@@ -364,15 +375,21 @@ function sortWithComparator (items, comparator, createAction) {
     }
 
     if (i !== firstIndex) {
-      const firstItem = orderedItems[firstIndex]
+      const item = orderedItems[firstIndex]
+      const beforeItem = orderedItems[i]
       orderedItems.splice(firstIndex, 1)
-      orderedItems.unshift(firstItem)
+      orderedItems.unshift(item)
 
-      actions.push(createAction(firstItem, firstIndex, i))
+      moveActions.push({
+        item,
+        fromIndex: firstIndex,
+        toIndex: i,
+        beforeItem
+      })
     }
   }
 
-  return actions
+  return moveActions
 }
 
 /**
