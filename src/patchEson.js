@@ -138,11 +138,6 @@ export function replace (data, path, value) {
   // keep the original id
   let newValue = setIn(value, [META, 'id'], oldValue[META].id)
 
-  // FIXME: get the original expanded state of the copied value from JSON-Patch
-  if (newValue[META].type === 'Object' || newValue[META].type === 'Array') {
-    newValue = setIn(newValue, [META, 'expanded'], true)
-  }
-
   return {
     data: setIn(data, path, newValue),
     revert: [{

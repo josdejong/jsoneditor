@@ -1,5 +1,6 @@
 import last from 'lodash/last'
 import initial from 'lodash/initial'
+import isEmpty from 'lodash/isEmpty'
 import {
   META,
   compileJSONPointer, esonToJson, findNextProp,
@@ -304,52 +305,74 @@ export function sort (eson, path, order = null) {
   // console.log('sort', path, order)
 
   const compare = order === 'desc' ? compareDesc : compareAsc
+  const reverseCompare = (a, b) => -compare(a, b)
   const object = getIn(eson, path)
 
   if (object[META].type === 'Array') {
-    const orderedItems = cloneWithSymbols(object)
+    const items = object.map(item => item[META].value)
+    const createAction = (value, fromIndex, toIndex, array) => ({
+      op: 'move',
+      from: compileJSONPointer(path.concat(String(fromIndex))),
+      path: compileJSONPointer(path.concat(String(toIndex)))
+    })
 
-    // order the items by value
-    orderedItems.sort((a, b) => compare(a[META].value, b[META].value))
+    const actions = sortWithComparator(items, compare, createAction)
 
     // when no order is provided, test whether ordering ascending
     // changed anything. If not, sort descending
-    if (!order && strictShallowEqual(object, orderedItems)) {
-      orderedItems.reverse()
+    if (!order && isEmpty(actions)) {
+      return sortWithComparator(items, reverseCompare, createAction)
     }
 
-    // TODO: refactor into a set of move actions, so we keep eson state of the items
-
-    return [{
-      op: 'replace',
-      path: compileJSONPointer(path),
-      value: esonToJson(orderedItems)
-    }]
+    return actions
   }
   else { // object[META].type === 'Object'
 
-    // order the properties by key
-    const orderedProps = object[META].props.slice().sort(compare)
+    const props = object[META].props
+    const createAction = (value, fromIndex, toIndex, objectProps) => ({
+      op: 'move',
+      from: compileJSONPointer(path.concat(value)),
+      path: compileJSONPointer(path.concat(value)),
+      meta: {
+        before: props[toIndex]
+      }
+    })
+
+    const actions = sortWithComparator(props, compare, createAction)
 
     // when no order is provided, test whether ordering ascending
     // changed anything. If not, sort descending
-    if (!order && strictShallowEqual(object[META].props, orderedProps)) {
-      orderedProps.reverse()
+    if (!order && isEmpty(actions)) {
+      return sortWithComparator(props, reverseCompare, createAction)
     }
 
-    const orderedObject = setIn(object, [META, 'props'], orderedProps)
-
-    // TODO: refactor into a set of move actions, so we keep eson state of the items
-
-    return [{
-      op: 'replace',
-      path: compileJSONPointer(path),
-      value: esonToJson(orderedObject),
-      meta: {
-        order: orderedProps // TODO: order isn't used right now in patchEson.
-      }
-    }]
+    return actions
   }
+}
+
+// TODO: comment
+function sortWithComparator (items, comparator, createAction) {
+  const orderedItems = items.slice()
+
+  let actions = []
+  for (let i = 0; i < orderedItems.length; i++) {
+    let firstIndex = i
+    for (let j = i; j < orderedItems.length; j++) {
+      if (comparator(orderedItems[firstIndex], orderedItems[j]) > 0) {
+        firstIndex = j
+      }
+    }
+
+    if (i !== firstIndex) {
+      const firstItem = orderedItems[firstIndex]
+      orderedItems.splice(firstIndex, 1)
+      orderedItems.unshift(firstItem)
+
+      actions.push(createAction(firstItem, firstIndex, i))
+    }
+  }
+
+  return actions
 }
 
 /**

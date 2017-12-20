@@ -24,6 +24,7 @@
     "test": "ava --verbose",
     "test-eson": "ava --verbose test/eson.test.js",
     "test-patch": "ava --verbose test/patchEson.test.js",
+    "test-actions": "ava --verbose test/actions.test.js",
     "watch:test": "ava --verbose --watch"
   },
   "dependencies": {

@@ -17,8 +17,6 @@ import 'console.table'
 import repeat from 'lodash/repeat'
 import { assertDeepEqualEson } from './utils/assertDeepEqualEson'
 
-const ESON2 = loadJSON('./resources/eson2.json')
-
 test('jsonToEson', t => {
   assertDeepEqualEson(t, jsonToEson(1),     {[META]: {id: '[ID]', path: [], type: 'value', value: 1}})
   assertDeepEqualEson(t, jsonToEson("foo"), {[META]: {id: '[ID]', path: [], type: 'value', value: "foo"}})
