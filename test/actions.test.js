@@ -18,14 +18,13 @@ import {patchEson} from '../src/patchEson'
 // TODO: test remove
 // TODO: test removeAll
 
-// FIXME: sort root array
-// test('sort root Array', t => {
-//   const eson = jsonToEson([1,3,2])
-//
-//   t.deepEqual(patchEson(eson, sort(eson, [])), jsonToEson([1,2,3]))
-//   t.deepEqual(patchEson(eson, sort(eson, [], 'asc')), jsonToEson([1,2,3]))
-//   t.deepEqual(patchEson(eson, sort(eson, [], 'desc')), jsonToEson([3,2,1]))
-// })
+test('sort root Array', t => {
+  const eson = jsonToEson([1,3,2])
+
+  assertDeepEqualEson(t, patchEson(eson, sort(eson, [])).data, jsonToEson([1,2,3]))
+  assertDeepEqualEson(t, patchEson(eson, sort(eson, [], 'asc')).data, jsonToEson([1,2,3]))
+  assertDeepEqualEson(t, patchEson(eson, sort(eson, [], 'desc')).data, jsonToEson([3,2,1]))
+})
 
 test('sort nested Array', t => {
   const eson = jsonToEson({arr: [4,1,8,5,3,9,2,7,6]})
@@ -47,14 +46,13 @@ test('sort nested Array reverse order', t => {
 })
 
 
-// FIXME: sort root object
-// test('sort root Object', t => {
-//   const eson = jsonToEson({c: 2, b: 3, a:4})
-//
-//   t.deepEqual(esonToJson(patchEson(eson, sort(eson, [])).data[META].props), ['a', 'b', 'c'])
-//   t.deepEqual(esonToJson(patchEson(eson, sort(eson, [], 'asc')).data[META].props), ['a', 'b', 'c'])
-//   t.deepEqual(esonToJson(patchEson(eson, sort(eson, [], 'desc')).data[META].props), ['c', 'b', 'a'])
-// })
+test('sort root Object', t => {
+  const eson = jsonToEson({c: 2, b: 3, a:4})
+
+  t.deepEqual(patchEson(eson, sort(eson, [])).data[META].props, ['a', 'b', 'c'])
+  t.deepEqual(patchEson(eson, sort(eson, [], 'asc')).data[META].props, ['a', 'b', 'c'])
+  t.deepEqual(patchEson(eson, sort(eson, [], 'desc')).data[META].props, ['c', 'b', 'a'])
+})
 
 test('sort nested Object', t => {
   const eson = jsonToEson({obj: {c: 2, b: 3, a:4}})
