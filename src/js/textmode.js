@@ -327,7 +327,7 @@ textmode._onChange = function () {
  */
 textmode._onSelect = function () {
   if(this.options.statusBar) {
-    this._setCursorInfoDisplay();
+    this._updateCursorInfoDisplay();
   }
 };
 
@@ -357,7 +357,7 @@ textmode._onKeyDown = function (event) {
     event.stopPropagation();
   }
 
-  this._setCursorInfoDisplay();
+  this._updateCursorInfoDisplay();
 };
 
 /**
@@ -366,7 +366,7 @@ textmode._onKeyDown = function (event) {
  * @private
  */
 textmode._onMouseDown = function (event) {
-  this._setCursorInfoDisplay();
+  this._updateCursorInfoDisplay();
 };
 
 /**
@@ -375,18 +375,18 @@ textmode._onMouseDown = function (event) {
  * @private
  */
 textmode._onBlur = function (event) {
-  this._setCursorInfoDisplay();
+  this._updateCursorInfoDisplay();
 };
 
 /**
  * Update the status bar cursor info
  */
-textmode._setCursorInfoDisplay = function () {
+textmode._updateCursorInfoDisplay = function () {
   if(this.options.statusBar) {
     var me = this;
     var line, col, count;
     if (this.textarea) {
-      setTimeout(function() { //this to varify we get the most updated textarea cursor selection
+      setTimeout(function() { //this to verify we get the most updated textarea cursor selection
         var selectionRange = util.getInputSelection(me.textarea);      
         line = selectionRange.row;
         col = selectionRange.col;
