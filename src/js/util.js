@@ -863,9 +863,15 @@ exports.getInputSelection = function(el) {
       }
   }
 
+  var textTillCaret = el.value.substring(0,end);
+  var row = (textTillCaret.match(/\n/g) || []).length + 1;
+  var col = textTillCaret.length - textTillCaret.lastIndexOf("\n");
+
   return {
       start: start,
-      end: end
+      end: end,
+      col: col,
+      row: row
   };
 }
 
