@@ -3,6 +3,12 @@
 https://github.com/josdejong/jsoneditor
 
 
+## not yet released, version 5.12.1
+
+- Fixed #494: properties not escaped in the navigation bar.
+  Thanks @meirotstein.
+
+
 ## 2017-12-18, version 5.12.0
 
 - Implemented #482: Include `caseSensitive` option for autocomplete.
