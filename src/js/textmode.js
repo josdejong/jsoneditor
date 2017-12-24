@@ -98,7 +98,7 @@ textmode.create = function (container, options) {
   this.frame.onkeydown = function (event) {
     me._onKeyDown(event);
   };
-
+  
   // create menu
   this.menu = document.createElement('div');
   this.menu.className = 'jsoneditor-menu';
@@ -247,55 +247,53 @@ textmode.create = function (container, options) {
   }
 
   if (options.statusBar) {
-      if (this.mode === 'code') {
-        util.addClassName(this.content, 'has-status-bar');
+    util.addClassName(this.content, 'has-status-bar');
 
-        this.curserInfoElements = {};
-        var statusBar = document.createElement('div');
-        statusBar.className = 'jsoneditor-statusbar';
-        this.frame.appendChild(statusBar);
+    this.curserInfoElements = {};
+    var statusBar = document.createElement('div');
+    statusBar.className = 'jsoneditor-statusbar';
+    this.frame.appendChild(statusBar);
 
-        var lnLabel = document.createElement('span');
-        lnLabel.className = 'jsoneditor-curserinfo-label';
-        lnLabel.innerText = 'Ln:';
-  
-        var lnVal = document.createElement('span');
-        lnVal.className = 'jsoneditor-curserinfo-val';
-        lnVal.innerText = 0;
-  
-        statusBar.appendChild(lnLabel);
-        statusBar.appendChild(lnVal);
-  
-        var colLabel = document.createElement('span');
-        colLabel.className = 'jsoneditor-curserinfo-label';
-        colLabel.innerText = 'Col:';
-  
-        var colVal = document.createElement('span');
-        colVal.className = 'jsoneditor-curserinfo-val';
-        colVal.innerText = 0;
-  
-        statusBar.appendChild(colLabel);
-        statusBar.appendChild(colVal);
-  
-        this.curserInfoElements.colVal = colVal;
-        this.curserInfoElements.lnVal = lnVal;
+    var lnLabel = document.createElement('span');
+    lnLabel.className = 'jsoneditor-curserinfo-label';
+    lnLabel.innerText = 'Ln:';
 
-        var countLabel = document.createElement('span');
-        countLabel.className = 'jsoneditor-curserinfo-label';
-        countLabel.innerText = 'characters selected';
-        countLabel.style.display = 'none';
+    var lnVal = document.createElement('span');
+    lnVal.className = 'jsoneditor-curserinfo-val';
+    lnVal.innerText = 0;
 
-        var countVal = document.createElement('span');
-        countVal.className = 'jsoneditor-curserinfo-count';
-        countVal.innerText = 0;
-        countVal.style.display = 'none';
+    statusBar.appendChild(lnLabel);
+    statusBar.appendChild(lnVal);
 
-        this.curserInfoElements.countLabel = countLabel;
-        this.curserInfoElements.countVal = countVal;
+    var colLabel = document.createElement('span');
+    colLabel.className = 'jsoneditor-curserinfo-label';
+    colLabel.innerText = 'Col:';
 
-        statusBar.appendChild(countVal);
-        statusBar.appendChild(countLabel);
-      }
+    var colVal = document.createElement('span');
+    colVal.className = 'jsoneditor-curserinfo-val';
+    colVal.innerText = 0;
+
+    statusBar.appendChild(colLabel);
+    statusBar.appendChild(colVal);
+
+    this.curserInfoElements.colVal = colVal;
+    this.curserInfoElements.lnVal = lnVal;
+
+    var countLabel = document.createElement('span');
+    countLabel.className = 'jsoneditor-curserinfo-label';
+    countLabel.innerText = 'characters selected';
+    countLabel.style.display = 'none';
+
+    var countVal = document.createElement('span');
+    countVal.className = 'jsoneditor-curserinfo-count';
+    countVal.innerText = 0;
+    countVal.style.display = 'none';
+
+    this.curserInfoElements.countLabel = countLabel;
+    this.curserInfoElements.countVal = countVal;
+
+    statusBar.appendChild(countVal);
+    statusBar.appendChild(countLabel);
   }
 
   this.setSchema(this.options.schema, this.options.schemaRefs);  
@@ -329,19 +327,7 @@ textmode._onChange = function () {
  */
 textmode._onSelect = function () {
   if(this.options.statusBar) {
-    if (this.textarea) {
-      var selectionRange = util.getInputSelection(this.textarea);
-      if (selectionRange.start !== selectionRange.end) {
-        this._setSelectionCountDisplay(Math.abs(selectionRange.end - selectionRange.start));
-      }
-    } else if (this.aceEditor && this.curserInfoElements) {
-      var curserPos = this.aceEditor.getCursorPosition();
-      var selectedText = this.aceEditor.getSelectedText();
-
-      this.curserInfoElements.lnVal.innerText = curserPos.row + 1;
-      this.curserInfoElements.colVal.innerText = curserPos.column + 1;
-      this._setSelectionCountDisplay(selectedText.length);
-    }
+    this._updateCursorInfoDisplay();
   }
 };
 
@@ -371,7 +357,7 @@ textmode._onKeyDown = function (event) {
     event.stopPropagation();
   }
 
-  this._setSelectionCountDisplay();
+  this._updateCursorInfoDisplay();
 };
 
 /**
@@ -380,7 +366,7 @@ textmode._onKeyDown = function (event) {
  * @private
  */
 textmode._onMouseDown = function (event) {
-  this._setSelectionCountDisplay();
+  this._updateCursorInfoDisplay();
 };
 
 /**
@@ -389,18 +375,46 @@ textmode._onMouseDown = function (event) {
  * @private
  */
 textmode._onBlur = function (event) {
-  this._setSelectionCountDisplay();
+  this._updateCursorInfoDisplay();
 };
 
-textmode._setSelectionCountDisplay = function (value) {
-  if (this.options.statusBar && this.curserInfoElements) {
-    if (value && this.curserInfoElements && this.curserInfoElements.countVal) {
-      this.curserInfoElements.countVal.innerText = value;
-      this.curserInfoElements.countVal.style.display = 'inline';
-      this.curserInfoElements.countLabel.style.display = 'inline';
-    } else {
-      this.curserInfoElements.countVal.style.display = 'none';
-      this.curserInfoElements.countLabel.style.display = 'none';
+/**
+ * Update the status bar cursor info
+ */
+textmode._updateCursorInfoDisplay = function () {
+  if(this.options.statusBar) {
+    var me = this;
+    var line, col, count;
+    if (this.textarea) {
+      setTimeout(function() { //this to verify we get the most updated textarea cursor selection
+        var selectionRange = util.getInputSelection(me.textarea);      
+        line = selectionRange.row;
+        col = selectionRange.col;
+        if (selectionRange.start !== selectionRange.end) {
+          count = selectionRange.end - selectionRange.start;
+        }
+        updateDisplay();
+      },0);
+      
+    } else if (this.aceEditor && this.curserInfoElements) {
+      var curserPos = this.aceEditor.getCursorPosition();
+      var selectedText = this.aceEditor.getSelectedText();
+
+      line = curserPos.row + 1;
+      col = curserPos.column + 1;
+      count = selectedText.length;
+      updateDisplay();
+    }
+
+    function updateDisplay() {
+
+      if (me.curserInfoElements.countVal.innerText !== count) {
+        me.curserInfoElements.countVal.innerText = count;
+        me.curserInfoElements.countVal.style.display = count ? 'inline' : 'none';
+        me.curserInfoElements.countLabel.style.display = count ? 'inline' : 'none';
+      } 
+      me.curserInfoElements.lnVal.innerText = line;
+      me.curserInfoElements.colVal.innerText = col;
     }
   }
 };
