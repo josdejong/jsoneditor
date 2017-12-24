@@ -393,7 +393,7 @@ textmode._updateCursorInfoDisplay = function () {
         if (selectionRange.start !== selectionRange.end) {
           count = selectionRange.end - selectionRange.start;
         }
-        updateDisplay.apply(me);
+        updateDisplay();
       },0);
       
     } else if (this.aceEditor && this.curserInfoElements) {
@@ -403,18 +403,18 @@ textmode._updateCursorInfoDisplay = function () {
       line = curserPos.row + 1;
       col = curserPos.column + 1;
       count = selectedText.length;
-      updateDisplay.apply(me);
+      updateDisplay();
     }
 
     function updateDisplay() {
 
-      if (this.curserInfoElements.countVal.innerText !== count) {
-        this.curserInfoElements.countVal.innerText = count;
-        this.curserInfoElements.countVal.style.display = count ? 'inline' : 'none';
-        this.curserInfoElements.countLabel.style.display = count ? 'inline' : 'none';
+      if (me.curserInfoElements.countVal.innerText !== count) {
+        me.curserInfoElements.countVal.innerText = count;
+        me.curserInfoElements.countVal.style.display = count ? 'inline' : 'none';
+        me.curserInfoElements.countLabel.style.display = count ? 'inline' : 'none';
       } 
-      this.curserInfoElements.lnVal.innerText = line;
-      this.curserInfoElements.colVal.innerText = col;
+      me.curserInfoElements.lnVal.innerText = line;
+      me.curserInfoElements.colVal.innerText = col;
     }
   }
 };
