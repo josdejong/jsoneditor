@@ -899,7 +899,7 @@ treemode._updateTreePath = function (pathNodes) {
   }
 
   function getName(node) {
-    return node.field || (isNaN(node.index) ? node.type : node.index);
+    return node.fieldInnerText || node.field || (isNaN(node.index) ? node.type : node.index);
   }
 };
 
