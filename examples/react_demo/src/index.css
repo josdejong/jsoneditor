@@ -1,5 +1,10 @@
-body {
+html, body, #root {
   margin: 0;
   padding: 0;
   font-family: sans-serif;
+}
+
+#root {
+  box-sizing: border-box;
+  padding: 10px;
 }

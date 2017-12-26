@@ -1,0 +1,9 @@
+
+.app {
+  width: 100%;
+  max-width: 600px;
+}
+
+.app h1 {
+  font-size: 120%;
+}

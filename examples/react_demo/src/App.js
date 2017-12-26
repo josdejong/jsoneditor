@@ -26,7 +26,8 @@ class App extends Component {
 
   render() {
     return (
-      <div className="App">
+      <div className="app">
+        <h1>JSONEditor React demo</h1>
         <JSONEditor
             mode="tree"
             modes={['text', 'code', 'tree', 'form', 'view']}
