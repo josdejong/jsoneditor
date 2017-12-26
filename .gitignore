@@ -17,8 +17,12 @@
 .env.development.local
 .env.test.local
 .env.production.local
-.idea   # webstorm
-.vscode # visual studio code
+
+# webstorm
+.idea
+
+# visual studio code
+.vscode
 
 npm-debug.log*
 yarn-debug.log*
