@@ -1,9 +1,25 @@
-.idea
-.vscode
-dist
-lib
-downloads
-node_modules
-flow-typed
-*.zip
-npm-debug.log
+# See https://help.github.com/ignore-files/ for more about ignoring files.
+
+# dependencies
+/node_modules
+
+# testing
+/coverage
+
+# production
+/build
+/lib
+/dist
+
+# misc
+.DS_Store
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+.idea   # webstorm
+.vscode # visual studio code
+
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*

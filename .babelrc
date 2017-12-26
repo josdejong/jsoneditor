@@ -1,4 +1,20 @@
 {
-  "presets": ["es2015", "stage-2"],
-  "plugins": ["transform-flow-strip-types"]
+  "plugins": [
+    "transform-class-properties",
+    "transform-object-rest-spread",
+    "transform-react-jsx",
+    ["transform-runtime", {
+      "polyfill": false,
+      "regenerator": true
+    }]
+  ],
+  "presets": [
+    ["env", {
+      "targets": {
+        "browsers": ["last 2 versions", "ie >= 9", "safari >= 7"]
+      },
+      "modules": "commonjs",
+      "loose": true
+    }]
+  ]
 }
