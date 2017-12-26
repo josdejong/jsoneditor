@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>JSONEditor vanilla demo</title>
+
+  <!-- For IE and Edge -->
+  <!--<script src="https://cdnjs.cloudflare.com/ajax/libs/es6-shim/0.35.1/es6-shim.min.js"></script>-->
+
+  <script src="../../dist/jsoneditor.js"></script>
+
+  <script src="./resources/largeJson.js"></script>
+
+  <style>
+    body, input, select {
+      font-family: sans-serif;
+      font-size: 11pt;
+    }
+    #editor {
+      height: 400px;
+      width: 100%;
+      max-width : 800px;
+    }
+  </style>
+</head>
+<body>
+<p>
+  <button id="setJSON">Set JSON</button>
+  <button id="getJSON">Get JSON</button>
+
+  <button id="toggleSchema">Toggle JSON Schema</button>
+
+  <label for="mode">mode:
+    <select id="mode">
+      <option value="text">text</option>
+      <option value="code">code</option>
+      <option value="tree" selected>tree</option>
+      <option value="form">form</option>
+      <option value="view">view</option>
+    </select>
+  </label>
+
+  <label>
+    <input type="checkbox" id="logEvents" /> Log events
+  </label>
+</p>
+<div id="container"></div>
+
+<script>
+  // prevent contentEditable warnings of React
+  // https://github.com/facebook/draft-js/issues/53#issuecomment-188280259
+  console.error = (function() {
+    const error = console.error
+
+    return function(exception) {
+      if ((exception + '').indexOf('Warning: A component is `contentEditable`') !== 0) {
+        error.apply(console, arguments)
+      }
+    }
+  })()
+
+  // create the editor
+  const mode = document.getElementById('mode').value
+  const container = document.getElementById('container')
+  const options = {
+    name: 'myObject',
+    onPatch: function (patch, revert) {
+      log('onPatch patch=', patch, ', revert=', revert)
+      window.patch = patch
+      window.revert = revert
+    },
+    onPatchText: function (patch, revert) {
+      // FIXME: implement onPatchText
+      log('onPatchText patch=', patch, ', revert=', revert)
+    },
+    onChange: function (json) {
+      log('onChange json=', json)
+    },
+    onChangeText: function (text) {
+      log('onChangeText', text)
+    },
+    onChangeMode: function (mode, prevMode) {
+      log('switched mode from', prevMode, 'to', mode)
+      document.getElementById('mode').value = mode
+    },
+    onError: function (err) {
+      console.error(err)
+      alert(err)
+    },
+    mode: mode,
+    modes: ['text', 'code', 'tree', 'form', 'view'],    keyBindings: {
+      compact: ['Ctrl+\\', 'Command+\\', 'Ctrl+Alt+1', 'Command+Option+1'],
+      format: ['Ctrl+Shift+\\', 'Command+Shift+\\', 'Ctrl+Alt+2', 'Command+Option+2'],
+      duplicate: ['Ctrl+D', 'Ctrl+Shift+D', 'Command+D', 'Command+Shift+D']
+    },
+    indentation: 4,
+    escapeUnicode: true,
+    history: true,
+    search: true,
+
+    expand: function (path) {
+      return true
+    }
+  }
+  const editor = jsoneditor(container, options)
+  const json = {
+    'array': [1, 2, 3],
+    'emptyArray': [],
+    'emptyObject': {},
+    'firstName': null,
+    'boolean': true,
+    'null': null,
+    'number': 123,
+    'object': {'a': 'b', 'c': 'd', 'e': [{"first": true}, {"second": true}]},
+    'string': 'Hello World',
+    'unicode': 'A unicode character: \u260E',
+    'url': 'http://jsoneditoronline.org'
+  }
+  editor.set(json)
+
+  const schema = {
+    "title": "Example Schema",
+    "type": "object",
+    "properties": {
+      "firstName": {
+        "type": "string"
+      },
+      "lastName": {
+        "type": "string"
+      },
+      "gender": {
+        "enum": ["male", "female"]
+      },
+      "age": {
+        "description": "Age in years",
+        "type": "integer",
+        "minimum": 0
+      }
+    },
+    "required": ["firstName", "lastName"]
+  }
+
+  // set json
+  document.getElementById('setJSON').onclick = function () {
+    editor.set(largeJson, {
+      expand: function (path) {
+        return true
+      }
+    })
+  }
+
+  // set schema
+  let hasSchema = false
+  document.getElementById('toggleSchema').onclick = function () {
+    editor.setSchema(hasSchema ? null : schema)
+    hasSchema = !hasSchema
+  }
+
+  // get json
+  document.getElementById('getJSON').onclick = function () {
+    const json = editor.get()
+    alert(JSON.stringify(json, null, 2))
+  }
+
+  // change mode
+  document.getElementById('mode').onchange = function (event) {
+    const mode = event.target.value
+    editor.setMode(mode)
+  }
+
+  function log (...args) {
+    if (document.getElementById('logEvents').checked) {
+      console.log(...args)
+    }
+  }
+
+</script>
+</body>
+</html>

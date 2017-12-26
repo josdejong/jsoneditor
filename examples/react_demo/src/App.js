@@ -7,7 +7,7 @@ import './App.css'
 //
 //     import JSONEditor from 'jsoneditor/react'
 //
-import JSONEditor from '../../../react'
+import JSONEditor from 'jsoneditor/lib/components/JSONEditor'
 
 
 const json =  {
@@ -21,7 +21,7 @@ const json =  {
 
 class App extends Component {
   state = {
-    text: JSON.stringify(json)
+    json
   }
 
   render() {
@@ -30,7 +30,7 @@ class App extends Component {
         <JSONEditor
             mode="tree"
             modes={['text', 'code', 'tree', 'form', 'view']}
-            text={this.state.text}
+            json={this.state.json}
             onChange={this.onChange}
             onChangeText={this.onChangeText}
         />

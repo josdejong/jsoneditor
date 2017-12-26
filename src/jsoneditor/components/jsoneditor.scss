@@ -1,0 +1,788 @@
+@import './popover.scss';
+
+$fontFamily: droid sans mono, consolas, monospace, courier new, courier, sans-serif;
+$fontSize: 10pt;
+$black: #1A1A1A;
+$contentsMinHeight: 150px;
+$theme-color: #3883fa;   // TODO: create a central file with the theme colors
+$floating-menu-background: #4d4d4d;
+$floating-menu-color: #fff;
+// $selectedColor: #e5e5e5;
+$selectedColor: #ffed99;
+$hoverColor: #f2f2f2;
+$hoverAndSelectedColor: #ffdb80;
+
+// TODO: split this scss file into separate files per React component
+
+.jsoneditor {
+  border: 1px solid $theme-color;
+  width: 100%;
+  height: 100%;
+
+  display: inline-flex;
+  flex-direction: column;
+
+  line-height: normal;
+}
+
+.jsoneditor-menu {
+  width: 100%;
+  box-sizing: border-box;
+
+  color: white;
+  background-color: $theme-color;
+  flex: 0 0 auto;
+
+  button {
+    width: 26px;
+    height: 26px;
+    margin: 2px;
+    padding: 0;
+    border-radius: 2px;
+    border: 1px solid transparent;
+    background: transparent url('img/jsoneditor-icons.svg');
+    color: white;
+    opacity: 0.8;
+
+    font-family: arial, sans-serif;
+    font-size: 10pt;
+  }
+
+  button:hover {
+    background-color: rgba(255,255,255,0.2);
+    border: 1px solid rgba(255,255,255,0.4);
+  }
+  button:focus,
+  button:active {
+    background-color: rgba(255,255,255,0.3);
+  }
+  button:disabled {
+    opacity: 0.5;
+  }
+
+  .jsoneditor-vertical-menu-separator {
+    width: 8px;
+    display: inline-block;
+  }
+
+  button.jsoneditor-expand-all {
+    background-position: 0 -120px;
+  }
+  button.jsoneditor-collapse-all {
+    background-position: 0 -96px;
+  }
+
+  button.jsoneditor-undo {
+    background-position: -24px -96px;
+  }
+  button.jsoneditor-undo:disabled {
+    background-position: -24px -120px;
+  }
+  button.jsoneditor-redo {
+    background-position: -48px -96px;
+  }
+  button.jsoneditor-redo:disabled {
+    background-position: -48px -120px;
+  }
+
+  button.jsoneditor-compact {
+    background-position: -72px -96px;
+  }
+  button.jsoneditor-format {
+    background-position: -72px -120px;
+  }
+}
+
+.jsoneditor-contents {
+  width: 100%;
+  height: 100%;
+  min-height: $contentsMinHeight;
+
+  overflow: hidden;
+  padding: 0;
+  margin: 0;
+  flex: 1 1 auto;
+}
+
+.jsoneditor-tree-contents {
+  padding: 2px 0;
+  overflow: auto;
+}
+
+.jsoneditor-node {
+  position: relative;
+
+  font: 14px Arial;
+
+  display: inline-flex;
+  flex-direction: row;
+}
+
+.jsoneditor-node > div {
+  flex: 0 0 auto;
+}
+
+div.jsoneditor-list {
+  list-style-type: none;
+  padding-left: 20px;
+  margin: 0;
+  font-size: 0;
+}
+
+/* no left padding for the root div element */
+.jsoneditor-contents > div.jsoneditor-list {
+  padding-left: 2px;
+  padding-bottom: 24px;
+}
+
+.jsoneditor-property,
+.jsoneditor-value,
+.jsoneditor-readonly,
+.jsoneditor-separator {
+  line-height: 20px;
+
+  font-family: $fontFamily;
+  font-size: $fontSize;
+}
+
+.jsoneditor-property,
+.jsoneditor-value,
+.jsoneditor-readonly {
+  min-width: 24px;
+  word-break: normal;
+
+  padding: 0 5px;
+
+  color: $black;
+  outline: none;
+}
+
+.jsoneditor-button-container {
+  font-size: 0;
+}
+
+.jsoneditor-property,
+.jsoneditor-value {
+  border-radius: 1px;
+  flex: 1 1 auto !important;
+
+  p {
+    margin: 0;
+    padding: 0;
+  }
+}
+
+.jsoneditor-property:focus,
+.jsoneditor-value:focus {
+  box-shadow: 0 0 3px 1px #008fd5;
+  z-index: 1;
+}
+
+.jsoneditor-property:hover,
+.jsoneditor-value:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.jsoneditor-mode-form {
+  .jsoneditor-property:hover {
+    background-color: inherit;
+  }
+}
+
+.jsoneditor-mode-view {
+  .jsoneditor-property:hover,
+  .jsoneditor-value:hover {
+    background-color: inherit;
+  }
+}
+
+
+.jsoneditor-separator {
+  color: #808080;
+}
+
+.jsoneditor-readonly {
+  color: #808080;
+}
+
+.jsoneditor-readonly:focus,
+.jsoneditor-readonly:hover {
+  border-color: transparent;
+  background-color: inherit;
+}
+
+
+.jsoneditor-value.jsoneditor-string {
+  color: #008000;
+}
+
+.jsoneditor-value.jsoneditor-object,
+.jsoneditor-value.jsoneditor-array {
+  min-width: 16px;
+  color: #808080;
+}
+
+.jsoneditor-value.jsoneditor-number {
+  color: #ee422e;
+}
+
+.jsoneditor-value.jsoneditor-boolean {
+  color: #ff8c00;
+}
+
+.jsoneditor-value.jsoneditor-null {
+  color: #004ED0;
+}
+
+.jsoneditor-value.jsoneditor-invalid {
+  color: #000000;
+}
+
+div.jsoneditor-value.jsoneditor-url {
+  color: green;
+  text-decoration: underline;
+}
+
+div.jsoneditor-empty {
+  border: 1px dotted lightgray;
+  border-radius: 2px;
+  padding: 0 5px;
+  line-height: 17px;
+}
+
+div.jsoneditor-empty::after,
+div.jsoneditor-empty::after {
+  pointer-events: none;
+  color: lightgray;
+  font-size: 8pt;
+}
+
+div.jsoneditor-property.jsoneditor-empty::after {
+  content: 'prop';
+}
+
+div.jsoneditor-value.jsoneditor-empty::after {
+  content: 'value';
+}
+
+.jsoneditor-highlight {
+  background-color: yellow;
+}
+
+.jsoneditor-highlight:hover {
+  background-color: #f0f000;
+}
+
+.jsoneditor-highlight-active {
+  background-color: #ffd700;
+}
+
+.jsoneditor-highlight-active:hover {
+  background-color: #f3cd00;
+}
+
+.jsoneditor-button-placeholder {
+  width: 20px;
+  padding: 0;
+  margin: 0;
+
+  line-height: 20px;
+}
+
+button.jsoneditor-button {
+  position: relative;
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  margin: 0;
+  border: none;
+  cursor: pointer;
+  background: transparent url('img/jsoneditor-icons.svg');
+}
+
+button.jsoneditor-button:focus {
+  /* TODO: nice outline for buttons with focus
+  outline: #97B0F8 solid 2px;
+  box-shadow: 0 0 8px #97B0F8;
+  */
+  background-color: #f5f5f5;
+  outline: #e5e5e5 solid 1px;
+}
+
+/* FIXME: change icons from size 24x24 to 20x20 */
+
+button.jsoneditor-button.jsoneditor-collapsed {
+  background-position: -2px -50px;
+}
+
+button.jsoneditor-button.jsoneditor-expanded {
+  background-position: -2px -74px;
+}
+
+button.jsoneditor-button.jsoneditor-drag {
+  background-position: -74px -74px;
+  cursor: move;
+}
+
+button.jsoneditor-button.jsoneditor-actionmenu {
+  background-position: -50px -74px;
+}
+
+button.jsoneditor-button.jsoneditor-actionmenu:hover,
+button.jsoneditor-button.jsoneditor-actionmenu:focus,
+button.jsoneditor-button.jsoneditor-actionmenu.jsoneditor-visible {
+  background-position: -50px -50px;
+}
+
+
+
+/******************************* Action Menu **********************************/
+
+// TODO: move into a separate file like menu/Menu.less
+
+div.jsoneditor-actionmenu {
+  position: absolute;
+  box-sizing: border-box;
+  z-index: 99999;
+  top: 20px;
+  left: 18px;  /* 20px - 2px  where 2px half the difference between 24x24 icons of the menu and the 20x20 icons of the editor */
+  background: white;
+
+  border: 1px solid #d3d3d3;
+  box-shadow: 2px 2px 12px rgba(128, 128, 128, 0.3);
+}
+
+div.jsoneditor-actionmenu.jsoneditor-actionmenu-top {
+  top: auto;
+  bottom: 20px;
+}
+
+div.jsoneditor-modemenu.jsoneditor-modemenu {
+  top: 26px;
+  left: 0;
+}
+
+div.jsoneditor-menu-item {
+  line-height: 0;
+  font-size: 0;
+}
+
+button.jsoneditor-menu-button {
+  width: 136px;
+  height: 24px;
+  padding: 0;
+  margin: 0;
+  line-height: 24px;
+
+  background: transparent;
+  border: transparent;
+  display: inline-block;
+  box-sizing: border-box;
+
+  cursor: pointer;
+  color: #4d4d4d;
+
+  font-size: 10pt;
+  font-family: arial, sans-serif;
+  text-align: left;
+}
+
+button.jsoneditor-menu-button:hover,
+button.jsoneditor-menu-button:focus {
+  color: $black;
+  background-color: #f5f5f5;
+  outline: none;
+}
+
+button.jsoneditor-menu-button.jsoneditor-selected {
+  color: white;
+  background-color: #ee422e;
+}
+
+button.jsoneditor-menu-default {
+  width: 104px;  /* 136px - 32px */
+}
+
+button.jsoneditor-menu-expand {
+  width: 32px;
+  float: right;
+  border-left: 1px solid #e5e5e5;
+}
+
+span.jsoneditor-icon {
+  float: left;
+  width: 24px;
+  height: 24px;
+  border: none;
+  padding: 0;
+  margin: 0;
+  background-image: url('img/jsoneditor-icons.svg');
+}
+
+span.jsoneditor-icon.jsoneditor-icon-expand {
+  float: right;
+  width: 24px;
+  margin: 0 4px;
+
+  background-position: 0 -72px !important;
+  opacity: 0.4;
+}
+
+div.jsoneditor-menu-item button.jsoneditor-menu-button:hover span.jsoneditor-icon-expand,
+div.jsoneditor-menu-item button:focus span.jsoneditor-icon-expand {
+  opacity: 1;
+}
+
+span.jsoneditor-text {
+  display: inline-block;
+  line-height: 24px;
+}
+
+div.jsoneditor-menu-separator {
+  height: 0;
+  border-top: 1px solid #e5e5e5;
+  padding-top: 5px;
+  margin-top: 5px;
+}
+
+div.jsoneditor-menu-panel-right {
+  float: right;
+  max-width: 100%;
+}
+
+button.jsoneditor-remove span.jsoneditor-icon {
+  background-position: -24px -24px;
+}
+button.jsoneditor-remove:hover span.jsoneditor-icon,
+button.jsoneditor-remove:focus span.jsoneditor-icon {
+  background-position: -24px 0;
+}
+
+button.jsoneditor-insert span.jsoneditor-icon {
+  background-position: 0 -24px;
+}
+button.jsoneditor-insert:hover span.jsoneditor-icon,
+button.jsoneditor-insert:focus span.jsoneditor-icon {
+  background-position: 0 0;
+}
+
+button.jsoneditor-duplicate span.jsoneditor-icon {
+  background-position: -48px -24px;
+}
+button.jsoneditor-duplicate:hover span.jsoneditor-icon,
+button.jsoneditor-duplicate:focus span.jsoneditor-icon {
+  background-position: -48px 0;
+}
+
+button.jsoneditor-sort-asc span.jsoneditor-icon {
+  background-position: -168px -24px;
+}
+button.jsoneditor-sort-asc:hover span.jsoneditor-icon,
+button.jsoneditor-sort-asc:focus span.jsoneditor-icon {
+  background-position: -168px 0;
+}
+
+button.jsoneditor-sort-desc span.jsoneditor-icon {
+  background-position: -192px -24px;
+}
+button.jsoneditor-sort-desc:hover span.jsoneditor-icon,
+button.jsoneditor-sort-desc:focus span.jsoneditor-icon {
+  background-position: -192px 0;
+}
+
+div.jsoneditor-submenu {
+  visibility: hidden;
+  max-height: 0;
+
+  overflow: hidden;
+
+  transition: max-height 0.3s ease-out;
+
+  box-shadow: inset 0  10px 10px -10px rgba(128, 128, 128, 0.5),
+              inset 0 -10px 10px -10px rgba(128, 128, 128, 0.5)
+}
+
+div.jsoneditor-submenu.jsoneditor-expanded {
+  visibility: visible;
+  max-height: 104px;   /* 4 * 24px + 2 * 5px */
+  /* FIXME: shouldn't rely on max-height equal to 4 items, should be flexible */
+}
+
+div.jsoneditor-submenu.jsoneditor-collapsing {
+  visibility: visible;
+  max-height: 0;
+}
+
+div.jsoneditor-submenu button {
+  padding-left: 24px;
+}
+
+div.jsoneditor-submenu div.jsoneditor-menu-item:first-child {
+  margin-top: 5px;
+}
+
+div.jsoneditor-submenu div.jsoneditor-menu-item:last-child {
+  margin-bottom: 5px;
+}
+
+button.jsoneditor-type-string span.jsoneditor-icon {
+  background-position: -144px -24px;
+}
+button.jsoneditor-type-string:hover span.jsoneditor-icon,
+button.jsoneditor-type-string:focus span.jsoneditor-icon,
+button.jsoneditor-type-string.jsoneditor-selected span.jsoneditor-icon {
+  background-position: -144px 0;
+}
+
+button.jsoneditor-type-value span.jsoneditor-icon {
+  background-position: -120px -24px;
+}
+button.jsoneditor-type-value:hover span.jsoneditor-icon,
+button.jsoneditor-type-value:focus span.jsoneditor-icon,
+button.jsoneditor-type-value.jsoneditor-selected span.jsoneditor-icon {
+  background-position: -120px 0;
+}
+
+button.jsoneditor-type-Object span.jsoneditor-icon {
+  background-position: -72px -24px;
+}
+button.jsoneditor-type-Object:hover span.jsoneditor-icon,
+button.jsoneditor-type-Object:focus span.jsoneditor-icon,
+button.jsoneditor-type-Object.jsoneditor-selected span.jsoneditor-icon {
+  background-position: -72px 0;
+}
+
+button.jsoneditor-type-Array span.jsoneditor-icon {
+  background-position: -96px -24px;
+}
+button.jsoneditor-type-Array:hover span.jsoneditor-icon,
+button.jsoneditor-type-Array:focus span.jsoneditor-icon,
+button.jsoneditor-type-Array.jsoneditor-selected span.jsoneditor-icon {
+  background-position: -96px 0;
+}
+
+/******************************* Floatting Menu **********************************/
+
+div.jsoneditor-node-container {
+  position: relative;
+  transition: background-color 100ms ease-in;
+
+  // TODO: can the hover/select css be simplified?
+
+  &.jsoneditor-selected {
+    background-color: $selectedColor;
+
+    &.jsoneditor-hover {
+      background-color: $hoverAndSelectedColor;
+
+      &.jsoneditor-hover-insert-area {
+        background-color: $selectedColor;
+
+        > div.jsoneditor-insert-area {
+          border: 1px dashed gray;
+          background-color: $hoverColor;
+        }
+
+        &.jsoneditor-selected-insert-area {
+          > div.jsoneditor-insert-area {
+            border: 1px dashed #f4af41;
+            background-color: $hoverAndSelectedColor;
+          }
+        }
+      }
+    }
+
+    &.jsoneditor-selected-insert-area {
+      background-color: inherit;
+
+      &.jsoneditor-hover {
+        background-color: $hoverColor;
+
+        &.jsoneditor-hover-insert-area {
+          background-color: inherit;
+        }
+      }
+
+      > div.jsoneditor-insert-area {
+        border: 1px dashed #f4af41;
+        background: $selectedColor;
+      }
+    }
+
+    // hovering nested elements
+    div.jsoneditor-hover {
+      background-color: $hoverAndSelectedColor;
+
+      &.jsoneditor-hover-insert-area {
+        background-color: inherit;
+
+        > div.jsoneditor-insert-area {
+          border: 1px dashed #f4af41;
+          background: $hoverAndSelectedColor;
+        }
+      }
+    }
+  }
+
+  &.jsoneditor-hover {
+    background-color: $hoverColor;
+
+    &.jsoneditor-hover-insert-area {
+      background-color: inherit;
+
+      > div.jsoneditor-insert-area {
+        border: 1px dashed gray;
+        background-color: $hoverColor;
+      }
+    }
+  }
+
+  div.jsoneditor-insert-area {
+    $height: 8px;
+
+    position: absolute;
+    width: 100%;
+    height: $height;
+    left: 0;
+    top: -$height/2;
+    border: 1px transparent;
+    box-sizing: border-box;
+    z-index: 1; // must be on top of next node, it overlaps a bit
+  }
+
+  div.jsoneditor-floating-menu {
+    position: absolute;
+    bottom: 100%;
+    right: 0;
+    z-index: 999;
+
+    margin: 10px;
+    white-space: nowrap;
+    border-radius: 5px;
+    box-shadow: 0 2px 6px 0 rgba(0,0,0,.24);
+
+    &:after {
+        content:'';
+        position: absolute;
+        top: 100%;
+        left: 35px;
+        margin-left: -10px;
+        width: 0;
+        height: 0;
+        border-top: solid 10px $floating-menu-background;
+        border-left: solid 10px transparent;
+        border-right: solid 10px transparent;
+    }
+
+    button.jsoneditor-floating-menu-item {
+      color: $floating-menu-color;
+      background: $floating-menu-background;
+      border: none;
+      border-right: 1px solid lighten($floating-menu-background, 10%);
+      padding: 10px;
+      cursor: pointer;
+      outline: none;
+
+      &:focus,
+      &:hover {
+        background: lighten($floating-menu-background, 10%);
+      }
+
+      &:first-child {
+        border-top-left-radius: 5px;
+        border-bottom-left-radius: 5px;
+      }
+
+      &:last-child {
+        border-top-right-radius: 5px;
+        border-bottom-right-radius: 5px;
+        border-right: none;
+      }
+    }
+  }
+}
+
+/*******************************  **********************************/
+div.jsoneditor-modes {
+  position: relative;
+  display: inline-block;
+  vertical-align: top;
+
+  button {
+    background: none;
+    width: auto;
+    padding: 2px 6px;
+  }
+
+  button.jsoneditor-type-modes {
+    width: 120px;
+    height: auto;
+    padding: 2px 6px;
+    border-radius: 0;
+    opacity: 1;
+
+    &:hover {
+      border: none;
+    }
+  }
+}
+
+textarea.jsoneditor-text {
+  width: 100%;
+  height: 100%;
+  min-height: $contentsMinHeight;
+
+  margin: 0;
+  box-sizing: border-box;
+  outline-width: 0;
+  border: none;
+  background-color: #fff;
+  resize: none;
+
+  font-family: $fontFamily;
+  font-size: $fontSize;
+  color: $black;
+}
+
+div.jsoneditor-code {
+  width: 100%;
+  height: 100%;
+  min-height: $contentsMinHeight;
+}
+
+/* JSON schema errors displayed at the bottom of the editor in mode text and code */
+
+.jsoneditor-errors {
+  width: 100%;
+  background-color: #ffef8b;
+  border-top: 1px solid #ffd700;
+
+  table {
+    border-collapse: collapse;
+
+    font-family: $fontFamily;
+    font-size: $fontSize;
+
+    td {
+      padding: 3px 6px;
+      vertical-align: middle;
+
+      code {
+        display: block;
+        white-space: pre-wrap;
+      }
+    }
+  }
+}
+
+
+.jsoneditor-schema-error {
+  //user-select: none;
+  outline: none;
+  border: none;
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  margin: 0 4px;
+  background: url('img/jsoneditor-icons.svg')  -171px -49px;
+}

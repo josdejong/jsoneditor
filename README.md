@@ -164,3 +164,8 @@ jsoneditor:
   ```
   npm run watch:test
   ```
+
+
+## License
+
+MIT

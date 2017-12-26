@@ -1,0 +1,22 @@
+
+body, input, select {
+  font-family: sans-serif;
+  font-size: 11pt;
+}
+
+.demo {
+  .menu {
+    margin: 20px 0;
+
+    button, label {
+      margin-right: 10px;
+    }
+  }
+
+  .contents {
+    height: 400px;
+    width: 100%;
+    max-width : 800px;
+  }
+}
+

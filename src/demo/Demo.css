@@ -1,0 +1,13 @@
+body, input, select {
+  font-family: sans-serif;
+  font-size: 11pt; }
+
+.demo .menu {
+  margin: 20px 0; }
+  .demo .menu button, .demo .menu label {
+    margin-right: 10px; }
+
+.demo .contents {
+  height: 400px;
+  width: 100%;
+  max-width: 800px; }

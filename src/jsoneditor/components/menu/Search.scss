@@ -1,0 +1,84 @@
+$theme-color: #3883fa;
+
+div.jsoneditor-search {
+  font-family: arial, sans-serif;
+  font-size: 10pt;
+
+  div.jsoneditor-results {
+    display: inline-block;
+    margin-right: 5px;
+  }
+
+  form.jsoneditor-search-box {
+    display: inline-flex;
+    position: relative;
+    max-width: 100%;
+
+    background-color: white;
+    border: 2px solid $theme-color;
+    box-sizing: border-box;
+
+    $search-icon-width: 22px;
+
+    &::before {
+      position: absolute;
+      display: inline-block;
+      width: $search-icon-width;
+      height: 100%;
+      background: transparent url('../img/jsoneditor-icons.svg') -97px -71px;
+      content: '';
+    }
+
+    input.jsoneditor-search-text {
+      display: inline-block;
+      position: relative;
+
+      border: none;
+      outline: none;
+      width: 120px;
+      max-width: 100%;
+      height: 22px;
+      line-height: 22px;
+      padding: 2px 2px 2px $search-icon-width;
+      background: transparent;
+    }
+
+    input[type=button] {
+      display: inline-block;
+      position: relative;
+
+      width: 16px;
+      height: 100%;
+      line-height: 22px;
+      margin: 2px 0;
+      padding: 0;
+      border: none;
+      background: transparent url('../img/jsoneditor-icons.svg');
+      opacity: 0.8;
+
+      font-family: arial, sans-serif;
+      font-size: 10pt;
+    }
+
+    input[type=button]:hover {
+      background-color: transparent;
+    }
+
+    input.jsoneditor-search-next {
+      cursor: pointer;
+      background-position: -124px -73px;
+    }
+    input.jsoneditor-search-next:hover {
+      background-position: -124px -49px;
+    }
+
+    input.jsoneditor-search-previous {
+      cursor: pointer;
+      background-position: -148px -73px;
+      margin-right: 2px;
+    }
+    input.jsoneditor-search-previous:hover {
+      background-position: -148px -49px;
+    }
+  }
+}
