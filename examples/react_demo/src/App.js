@@ -7,7 +7,7 @@ import './App.css'
 //
 //     import JSONEditor from 'jsoneditor/react'
 //
-import JSONEditor from 'jsoneditor/lib/components/JSONEditor'
+import JSONEditor from '../../../react'
 
 
 const json =  {
