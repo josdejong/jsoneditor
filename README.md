@@ -143,26 +143,17 @@ jsoneditor:
   This will generate the file `./dist/jsoneditor.js` and
   `./dist/jsoneditor-minimalist.js` and corresponding source maps.
 
-- For development, start a develop server which automatically updates the
-  library when a source file has changed:
+- For development, start a develop server which automatically reloads
+  when a source file has changed:
 
   ```
   npm start
   ```
 
-  This will update `./dist/jsoneditor.js` on every change in the source code,
-  but it will **NOT** update the minimalist version.
-
-- Run unit tests:
+- Run unit tests (Jest):
 
   ```
   npm test
-  ```
-
-  or to watch for changes and re-run tests automatically:
-
-  ```
-  npm run watch:test
   ```
 
 
