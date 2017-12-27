@@ -16,7 +16,7 @@
       font-family: sans-serif;
       font-size: 11pt;
     }
-    #editor {
+    #container {
       height: 400px;
       width: 100%;
       max-width : 800px;
@@ -141,7 +141,7 @@
   }
 
   // set json
-  document.getElementById('setJSON').onclick = function () {
+  document.getElementById('setJSON').onclick = async function () {
     editor.set(largeJson, {
       expand: function (path) {
         return true

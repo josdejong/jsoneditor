@@ -1,4 +1,4 @@
-export const largeJson = {
+const largeJson = {
   "version": "1.0",
   "encoding": "UTF-8",
   "feed": {
@@ -12603,3 +12603,12 @@ export const largeJson = {
     ]
   }
 }
+
+// export for node.js or web
+if (typeof module !== 'undefined' && typeof exports !== 'undefined') {
+  exports.largeJson = largeJson
+}
+else {
+  window.largeJson = largeJson
+}
+

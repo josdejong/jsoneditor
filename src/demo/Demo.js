@@ -52,17 +52,18 @@ class App extends Component {
     this.state = {
       logging: false,
 
-      options: {
+      editorProps: {
         json,
         schema: null,
 
-        name: 'myObject',
         onPatch: this.handlePatch,
         onPatchText: this.handlePatchText,
         onChange: this.handleChange,
         onChangeText: this.handleChangeText,
         onChangeMode: this.handleChangeMode,
         onError: this.handleError,
+
+        name: 'myObject',
         mode: 'tree',
         modes: ['text', 'code', 'tree', 'form', 'view'],
         keyBindings: {
@@ -74,7 +75,6 @@ class App extends Component {
         escapeUnicode: true,
         history: true,
         search: true,
-
         expand: expandAll
       }
     }
@@ -87,7 +87,7 @@ class App extends Component {
         <button onClick={this.handleGetJson}>Get JSON</button>
 
         <label>mode:
-          <select value={this.state.options.mode} onChange={this.handleSetMode}>
+          <select value={this.state.editorProps.mode} onChange={this.handleSetMode}>
             <option value="text">text</option>
             <option value="code">code</option>
             <option value="tree">tree</option>
@@ -98,7 +98,7 @@ class App extends Component {
 
         <label>
           <input type="checkbox"
-                 value={this.state.options.schema !== null}
+                 value={this.state.editorProps.schema !== null}
                  onChange={this.handleToggleJSONSchema} /> JSON Schema
         </label>
 
@@ -107,29 +107,30 @@ class App extends Component {
                  value={this.state.logging}
                  onChange={this.handleToggleLogging} /> Log events
         </label>
+
+        <button onClick={this.forceChangeState}>Change state</button>
       </div>
       <div className="contents">
-        <JSONEditor {...this.state.options} />
+        <JSONEditor {...this.state.editorProps} />
       </div>
     </div>
   }
 
   handleSetJson = () => {
     this.setState({
-      options: setIn(this.state.options, ['json'], largeJson)
+      editorProps: setIn(this.state.editorProps, ['json'], largeJson)
     })
   }
 
   handleGetJson = () => {
-    // FIXME: get updating json in the state working
-    const json = this.state.options.json
+    const json = this.state.editorProps.json
     alert(JSON.stringify(json, null, 2))
   }
 
   handleSetMode = (event) => {
     const mode = event.target.value
     this.setState({
-      options: setIn(this.state.options, ['mode'], mode)
+      editorProps: setIn(this.state.editorProps, ['mode'], mode)
     })
   }
 
@@ -139,18 +140,18 @@ class App extends Component {
   }
 
   handleToggleJSONSchema = (event) => {
-    const s = event.target.checked ? schema : null
+    const value = event.target.checked ? schema : null
     this.setState({
-      options: setIn(this.state.options, ['schema'], s)
+      editorProps: setIn(this.state.editorProps, ['schema'], value)
     })
   }
 
   handleChange = (json) => {
     this.log('onChange json=', json)
-    // FIXME: update the json in the state (after JSONEditor neatly updates it instead of generating new json every time
-    // this.setState({
-    //   options: setIn(this.state.options, ['json'], json)
-    // })
+
+    this.setState({
+      editorProps: setIn(this.state.editorProps, ['json'], json)
+    })
   }
 
   handleChangeText = (text) => {
@@ -172,7 +173,7 @@ class App extends Component {
     this.log('switched mode from', prevMode, 'to', mode)
 
     this.setState({
-      options: setIn(this.state.options, ['mode'], mode)
+      editorProps: setIn(this.state.editorProps, ['mode'], mode)
     })
   }
 

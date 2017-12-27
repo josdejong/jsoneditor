@@ -1,4 +1,5 @@
 import { createElement as h, PureComponent } from 'react'
+import PropTypes from 'prop-types'
 import initial from 'lodash/initial'
 
 import ActionMenu from './menu/ActionMenu'
@@ -26,13 +27,26 @@ const HOVERED_CLASS_NAMES = {
 export default class JSONNode extends PureComponent {
   static URL_TITLE = 'Ctrl+Click or Ctrl+Enter to open url'
 
+  static propTypes = {
+    prop: PropTypes.string,   // in case of an object property
+    index: PropTypes.number,  // in case of an array item
+    eson: PropTypes.oneOfType([ PropTypes.object, PropTypes.array ]).isRequired,
+
+    events: PropTypes.object.isRequired,
+
+    // options
+    options: PropTypes.shape({
+      name: PropTypes.string,   // name of the root item
+      isPropertyEditable: PropTypes.func,
+      isValueEditable: PropTypes.func,
+      escapeUnicode: PropTypes.bool
+    })
+  }
+
   state = {
     menu: null,       // can contain object {anchor, root}
     appendMenu: null, // can contain object {anchor, root}
     hover: false
-  }
-
-  componentWillMount (props) {
   }
 
   componentWillUnmount () {
@@ -42,6 +56,7 @@ export default class JSONNode extends PureComponent {
   }
 
   render () {
+    // console.log('JSONNode.render ' + JSON.stringify(this.props.eson[META].path))
     if (this.props.eson[META].type === 'Object') {
       return this.renderJSONObject(this.props)
     }
@@ -64,7 +79,7 @@ export default class JSONNode extends PureComponent {
       // this.renderActionMenu('update', this.state.menu, this.handleCloseActionMenu),
       // this.renderActionMenuButton(),
       this.renderProperty(prop, index, eson, options),
-      this.renderReadonly(`{${props.length}}`, `Array containing ${props.length} items`),
+      this.renderReadonly(`{${props.length}}`, `Object containing ${props.length} items`),
       // this.renderFloatingMenuButton(),
       this.renderError(eson[META].error)
     ])
@@ -77,8 +92,8 @@ export default class JSONNode extends PureComponent {
           // parent: this,
           prop,
           eson: eson[prop],
-          options,
-          events
+          events,
+          options
         }))
 
         childs = h('div', {key: 'childs', className: 'jsoneditor-list'}, propsChilds)

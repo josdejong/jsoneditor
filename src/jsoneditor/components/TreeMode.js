@@ -1,7 +1,8 @@
-import { createElement as h, Component } from 'react'
+import { createElement as h, PureComponent } from 'react'
 import isEqual from 'lodash/isEqual'
 import reverse from 'lodash/reverse'
 import initial from 'lodash/initial'
+import pick from 'lodash/pick'
 import Hammer from 'react-hammerjs'
 import jump from '../assets/jump.js/src/jump'
 import Ajv from 'ajv'
@@ -44,7 +45,7 @@ const MAX_HISTORY_ITEMS = 1000   // maximum number of undo/redo items to be kept
 const SEARCH_DEBOUNCE = 300      // milliseconds
 const SCROLL_DURATION = 400      // milliseconds
 
-export default class TreeMode extends Component {
+export default class TreeMode extends PureComponent {
   id = Math.round(Math.random() * 1e5) // TODO: create a uuid here?
 
   // TODO: define propTypes
@@ -110,6 +111,8 @@ export default class TreeMode extends Component {
         findKeyBinding: this.handleFindKeyBinding
       },
 
+      options: {},
+
       searchResult: {
         text: '',
         matches: null,
@@ -155,8 +158,6 @@ export default class TreeMode extends Component {
     // Apply json
     if (nextProps.json !== this.state.json) {
       // FIXME: merge meta data from existing eson
-      // FIXME: keep state as is
-
       const expandCallback = this.props.expand || TreeMode.expandRoot
       const json = nextProps.json
       const eson = expand(jsonToEson(json), expandCallback)
@@ -165,7 +166,7 @@ export default class TreeMode extends Component {
         json,
         eson
       })
-      // TODO: cleanup
+      // FIXME: use patch again -> patch should keep existing meta data when for the unchanged parts of the json
       // this.patch([{
       //   op: 'replace',
       //   path: '',
@@ -188,18 +189,22 @@ export default class TreeMode extends Component {
 
     // TODO: apply patchText
     // TODO: apply patch
+
+    // Apply JSONNode options
+    const options = pick(nextProps, ['name', 'isPropertyEditable', 'isValueEditable', 'escapeUnicode'])
+    if (!isEqual(options, this.state.options)) {
+      this.setState({ options })
+    }
   }
 
   render() {
-    const { props, state } = this
-
-    const Node = (props.mode === 'view')
+    const Node = (this.props.mode === 'view')
         ? JSONNodeView
-        : (props.mode === 'form')
+        : (this.props.mode === 'form')
             ? JSONNodeForm
             : JSONNode
 
-    let eson = state.eson
+    let eson = this.state.eson
 
     // enrich the eson with selection and JSON Schema errors
     // TODO: for optimization, we can apply errors only when the eson is changed? (a wrapper around setState or something?)
@@ -207,7 +212,7 @@ export default class TreeMode extends Component {
     eson = applySelection(eson, this.state.selection)
 
     return h('div', {
-      className: `jsoneditor jsoneditor-mode-${props.mode}`,
+      className: `jsoneditor jsoneditor-mode-${this.props.mode}`,
       onKeyDown: this.handleKeyDown,
       'data-jsoneditor': 'true'
     }, [
@@ -231,9 +236,8 @@ export default class TreeMode extends Component {
                   (eson[META].selected ? ' jsoneditor-selected' : '')},
             h(Node, {
               eson,
-              events: state.events,
-              options: props,
-              prop: null
+              events: this.state.events,
+              options: this.state.options
             })
           )
         )
@@ -679,7 +683,7 @@ export default class TreeMode extends Component {
     // apply changes
     const result = this.patch(actions)
 
-    this.emitOnChange (actions, result.revert, result.data)
+    this.emitOnChange (actions, result.revert, result.eson, result.json)
   }
 
   handleTouchStart = (event) => {
@@ -781,28 +785,31 @@ export default class TreeMode extends Component {
 
   /**
    * Emit an onChange event when there is a listener for it.
+   * events will be fired on the next tick (after any changed state is applied)
    * @private
    * @param {ESONPatch} patch
    * @param {ESONPatch} revert
    * @param {ESON} eson
+   * @param {JSON} json
    */
-  emitOnChange (patch, revert, eson) {
-    if (this.props.onPatch) {
-      this.props.onPatch(patch, revert)
+  emitOnChange (patch, revert, eson, json) {
+    const onPatch = this.props.onPatch
+    if (onPatch) {
+      setTimeout(() => onPatch(patch, revert))
     }
 
-    if (this.props.onChange || this.props.onChangeText) {
-      const json = esonToJson(eson)
-
-      if (this.props.onChange) {
-        this.props.onChange(json)
+    const onChange = this.props.onChange
+    const onChangeText = this.props.onChangeText
+    if (onChange || onChangeText) {
+      if (onChange) {
+        setTimeout(() => onChange(json))
       }
 
-      if (this.props.onChangeText) {
+      if (onChangeText) {
         const indentation = this.props.indentation || 2
         const text = JSON.stringify(json, null, indentation)
 
-        this.props.onChangeText(text)
+        setTimeout(() => onChangeText(text))
       }
     }
   }
@@ -840,7 +847,7 @@ export default class TreeMode extends Component {
         historyIndex: historyIndex + 1
       })
 
-      this.emitOnChange (historyItem.undo, historyItem.redo, result.data)
+      this.emitOnChange(historyItem.undo, historyItem.redo, result.eson, result.json)
     }
   }
 
@@ -859,7 +866,7 @@ export default class TreeMode extends Component {
         historyIndex
       })
 
-      this.emitOnChange (historyItem.redo, historyItem.undo, result.data)
+      this.emitOnChange(historyItem.redo, historyItem.undo, result.eson, result.json)
     }
   }
 
@@ -882,6 +889,7 @@ export default class TreeMode extends Component {
     const expand = options.expand || (path => this.expandKeepOrExpandAll(path))
     const result = patchEson(this.state.eson, actions, expand)
     const eson = result.data
+    const json = esonToJson(eson) // FIXME: apply the patch to the json too, instead of completely replacing it
 
     if (this.props.history !== false) {
       // update data and store history
@@ -897,6 +905,7 @@ export default class TreeMode extends Component {
       // FIXME: apply search
       this.setState({
         eson,
+        json,
         history,
         historyIndex: 0
       })
@@ -904,14 +913,19 @@ export default class TreeMode extends Component {
     else {
       // update data and don't store history
       // FIXME: apply search
-      this.setState({ eson })
+      this.setState({
+        eson,
+        json
+      })
     }
 
     return {
       patch: actions,
       revert: result.revert,
       error: result.error,
-      data: eson  // FIXME: shouldn't pass data here
+      data: eson,   // FIXME: shouldn't pass data here?
+      eson,         // FIXME: shouldn't pass eson here
+      json          // FIXME: shouldn't pass json here
     }
   }
 
@@ -940,8 +954,7 @@ export default class TreeMode extends Component {
    * @returns {Object | Array | string | number | boolean | null} json
    */
   get () {
-    // FIXME: keep a copy of the json file up to date with the internal eson
-    return esonToJson(this.state.eson)
+    return this.state.json
   }
 
   /**

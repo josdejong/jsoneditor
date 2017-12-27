@@ -344,7 +344,7 @@ function setSearchStatus (eson, esonPointer, searchStatus) {
 /**
  * Merge selection status into the eson object, cleanup previous selection
  * @param {ESON} eson
- * @param {Selection} selection
+ * @param {Selection} [selection]
  * @return {ESON} Returns updated eson object
  */
 export function applySelection (eson, selection) {
@@ -462,7 +462,7 @@ export function pathsFromSelection (eson, selection) {
  * Get the contents of a list with paths
  * @param {ESON} data
  * @param {Path[]} paths
- * @return {Array.<{name: string, value: JSONType}>}
+ * @return {Array.<{name: string, value: JSON}>}
  */
 export function contentsFromPaths (data, paths) {
   return paths.map(path => {
