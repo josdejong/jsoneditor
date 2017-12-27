@@ -156,9 +156,9 @@ export default class TreeMode extends PureComponent {
     // Apply json
     if (nextProps.json !== this.state.json) {
       // FIXME: merge meta data from existing eson
-      const expandCallback = this.props.expand || TreeMode.expandRoot
+      const callback = this.props.expand || TreeMode.expandRoot
       const json = nextProps.json
-      const eson = expand(jsonToEson(json), expandCallback)
+      const eson = expand(jsonToEson(json), callback)
 
       this.setState({
         json,
@@ -571,7 +571,7 @@ export default class TreeMode extends PureComponent {
     if (recurse) {
       this.setState({
         eson: updateIn(this.state.eson, path, function (child) {
-          return expand(child, (path) => true, expanded)
+          return expand(child, (path) => expanded)
         })
       })
     }
@@ -588,18 +588,14 @@ export default class TreeMode extends PureComponent {
   }
 
   handleExpandAll = () => {
-    const expanded = true
-
     this.setState({
-      eson: expand(this.state.eson, TreeMode.expandAll, expanded)
+      eson: expand(this.state.eson, TreeMode.expandAll)
     })
   }
 
   handleCollapseAll = () => {
-    const expanded = false
-
     this.setState({
-      eson: expand(this.state.eson, TreeMode.expandAll, expanded)
+      eson: expand(this.state.eson, TreeMode.collapseAll)
     })
   }
 
@@ -1008,9 +1004,18 @@ export default class TreeMode extends PureComponent {
    * @param {Path | function (path: Path) : boolean} callback
    */
   expand (callback) {
-    this.setState({
-      eson: expand(this.state.eson, callback, true)
-    })
+    if (Array.isArray(callback)) {
+      this.setState({
+        eson: expandPath(this.state.eson, callback, true)
+      })
+    }
+    else { // callback is a function
+      this.setState({
+        eson: expand(this.state.eson, (path) => {
+          return callback(path) === true ? true : undefined
+        })
+      })
+    }
   }
 
   /**
@@ -1018,9 +1023,18 @@ export default class TreeMode extends PureComponent {
    * @param {Path | function (path: Path) : boolean} callback
    */
   collapse (callback) {
-    this.setState({
-      eson: expand(this.state.eson, callback, false)
-    })
+    if (Array.isArray(callback)) {
+      this.setState({
+        eson: expandPath(this.state.eson, callback, true)
+      })
+    }
+    else { // callback is a function
+      this.setState({
+        eson: expand(this.state.eson, (path) => {
+          return callback(path) === true ? false : undefined
+        })
+      })
+    }
   }
 
   /**
@@ -1073,6 +1087,16 @@ export default class TreeMode extends PureComponent {
    */
   static expandAll (path) {
     return true
+  }
+
+  /**
+   * Callback function to collapse all nodes
+   *
+   * @param {Array.<string>} path
+   * @return {boolean}
+   */
+  static collapseAll (path) {
+    return false
   }
 }
 

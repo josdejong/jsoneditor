@@ -112,15 +112,16 @@ test('expand a callback', () => {
     "bool": false
   })
 
-  function filterCallback (path) {
-    return path.length >= 1
+  function callback (path) {
+    return (path.length >= 1)
+        ? false     // collapse
+        : undefined // leave untouched
   }
-  const expandedValue = false
-  const collapsed = expand(eson, filterCallback, expandedValue)
+  const collapsed = expand(eson, callback)
   expect(collapsed[META].expanded).toEqual(undefined)
-  expect(collapsed.obj[META].expanded).toEqual(expandedValue)
-  expect(collapsed.obj.arr[META].expanded).toEqual(expandedValue)
-  expect(collapsed.obj.arr[2][META].expanded).toEqual(expandedValue)
+  expect(collapsed.obj[META].expanded).toEqual(false)
+  expect(collapsed.obj.arr[META].expanded).toEqual(false)
+  expect(collapsed.obj.arr[2][META].expanded).toEqual(false)
 
   let orig = collapsed
   orig = deleteIn(orig, ['obj'].concat([META, 'expanded']))
@@ -132,10 +133,9 @@ test('expand a callback', () => {
 test('expand a callback should not change the object when nothing happens', () => {
   const eson = jsonToEson({a: [1,2,3], b: {c: 4}})
   function callback (path) {
-    return false
+    return undefined
   }
-  const expanded = false
-  const collapsed = expand(eson, callback, expanded)
+  const collapsed = expand(eson, callback)
 
   expect(collapsed).toBe(eson)
 })

@@ -62,7 +62,7 @@ export default class TextMode extends Component {
     this.applyProps(nextProps, this.props)
   }
 
-  // TODO: create some sort of watcher structure for these props? Is there a Reactpattern for that?
+  // TODO: create some sort of watcher structure for these props? Is there a React pattern for that?
   applyProps (nextProps, currentProps) {
     // Apply text
     if (nextProps.text !== currentProps.text) {
@@ -87,6 +87,7 @@ export default class TextMode extends Component {
       this.findKeyBinding = createFindKeyBinding(keyBindings)
     }
 
+    // TODO: apply patch
     // TODO: apply patchText
   }
 

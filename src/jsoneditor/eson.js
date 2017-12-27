@@ -138,19 +138,23 @@ export function updatePaths(eson, path = []) {
 /**
  * Expand or collapse all items matching a filter callback
  * @param {ESON} eson
- * @param {function(Path) : boolean | Path} filterCallback
- *              When a path, the object/array at this path will be expanded/collapsed
- *              When a function, all objects and arrays for which callback
- *              returns true will be expanded/collapsed
- * @param {boolean} [expanded=true]  New expanded state: true to expand, false to collapse
+ * @param {function(Path) : boolean | undefined} callback
+ *              All objects and arrays for which callback returns true will be expanded
+ *              All objects and arrays for which callback returns false will be collapsed
+ *              All objects and arrays for which callback returns undefined will be left as is
  * @return {ESON}
  */
-export function expand (eson, filterCallback, expanded = true) {
-  // TODO: adjust expand to have a filterCallback which can return true, false, or undefined. In the latter case, the expanded state is left as is.
+export function expand (eson, callback) {
   return transform(eson, function (value, path) {
-    return ((value[META].type === 'Array' || value[META].type === 'Object') && filterCallback(path))
-        ? expandOne(value, [], expanded)
-        : value
+    if (value[META].type === 'Array' || value[META].type === 'Object') {
+      const expanded = callback(path)
+      return (typeof expanded === 'boolean')
+          ? expandOne(value, [], expanded) // adjust expanded state
+          : value  // leave as is when returned value is null or undefined
+    }
+    else {
+      return value
+    }
   })
 }
 
