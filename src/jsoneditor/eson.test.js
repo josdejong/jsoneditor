@@ -268,6 +268,21 @@ test('search', () => {
   assertDeepEqualEson(esonWithSearch, expected)
 })
 
+test('search number', () => {
+  const eson = jsonToEson({
+    "2": "two",
+    "arr": ["a", "b", "c", "2"]
+  })
+  const result = search(eson, '2')
+  const matches = result.searchResult.matches
+
+  // should not match an array index, only props and values
+  expect(matches).toEqual([
+    {path: ['2'], area: 'property'},
+    {path: ['arr', '3'], area: 'value'}
+  ])
+})
+
 test('nextSearchResult', () => {
   const eson = jsonToEson({
     "obj": {

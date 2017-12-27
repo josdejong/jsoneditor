@@ -84,8 +84,8 @@ export function esonToJson (eson) {
  * Transform an eson object, traverse over the whole object (excluding the _meta)
  * objects, and allow replacing Objects/Arrays/values
  * @param {ESON} eson
- * @param {function (eson, path)} callback
- * @param {Path} path
+ * @param {function (ESON, Path) : ESON} callback
+ * @param {Path} [path]
  * @return {ESON}
  */
 export function transform (eson, callback, path = []) {
@@ -243,7 +243,8 @@ export function search (eson, text) {
 
     // check property name
     const prop = last(path)
-    if (typeof prop === 'string' && text !== '' && containsCaseInsensitive(prop, text)) {
+    if (text !== '' && containsCaseInsensitive(prop, text) &&
+        getIn(eson, initial(path))[META].type === 'Object') { // parent must be an Object
       const searchState = isEmpty(matches) ? 'active' : 'normal'
       matches.push({path, area: 'property'})
       updatedValue = setIn(updatedValue, [META, 'searchProperty'], searchState)
