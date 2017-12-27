@@ -29,7 +29,7 @@ export default class JSONNode extends PureComponent {
   static propTypes = {
     prop: PropTypes.string,   // in case of an object property
     index: PropTypes.number,  // in case of an array item
-    eson: PropTypes.oneOfType([ PropTypes.object, PropTypes.array ]).isRequired,
+    eson: PropTypes.oneOfType([ PropTypes.object, PropTypes.array ]).isRequired, // TODO: rename "eson" to "value"?
 
     emit: PropTypes.func.isRequired,
     findKeyBinding: PropTypes.func.isRequired,
@@ -58,43 +58,39 @@ export default class JSONNode extends PureComponent {
   render () {
     // console.log('JSONNode.render ' + JSON.stringify(this.props.eson[META].path))
     if (this.props.eson[META].type === 'Object') {
-      return this.renderJSONObject(this.props)
+      return this.renderJSONObject()
     }
     else if (this.props.eson[META].type === 'Array') {
-      return this.renderJSONArray(this.props)
+      return this.renderJSONArray()
     }
     else { // no Object or Array
-      return this.renderJSONValue(this.props)
+      return this.renderJSONValue()
     }
   }
 
-  renderJSONObject ({prop, index, eson, options, emit, findKeyBinding}) {
-    const props = eson[META].props
+  renderJSONObject () {
+    const props = this.props.eson[META].props
     const node = h('div', {
         key: 'node',
         onKeyDown: this.handleKeyDown,
         className: 'jsoneditor-node jsoneditor-object'
       }, [
       this.renderExpandButton(),
-      // this.renderActionMenu('update', this.state.menu, this.handleCloseActionMenu),
-      // this.renderActionMenuButton(),
-      this.renderProperty(prop, index, eson, options),
+      this.renderProperty(this.props.prop, this.props.index, this.props.eson, this.props.options),
       this.renderReadonly(`{${props.length}}`, `Object containing ${props.length} items`),
-      // this.renderFloatingMenuButton(),
-      this.renderError(eson[META].error)
+      this.renderError(this.props.eson[META].error)
     ])
 
     let childs
-    if (eson[META].expanded) {
+    if (this.props.eson[META].expanded) {
       if (props.length > 0) {
         const propsChilds = props.map(prop => h(this.constructor, {
-          key: eson[prop][META].id,
-          // parent: this,
+          key: this.props.eson[prop][META].id,
           prop,
-          eson: eson[prop],
-          emit,
-          findKeyBinding,
-          options
+          eson: this.props.eson[prop],
+          emit: this.props.emit,
+          findKeyBinding: this.props.findKeyBinding,
+          options: this.props.options
         }))
 
         childs = h('div', {key: 'childs', className: 'jsoneditor-list'}, propsChilds)
@@ -106,7 +102,7 @@ export default class JSONNode extends PureComponent {
       }
     }
 
-    const floatingMenu = (eson[META].selected === SELECTED_END)
+    const floatingMenu = (this.props.eson[META].selected === SELECTED_END)
         ? this.renderFloatingMenu([
             {type: 'sort'},
             {type: 'duplicate'},
@@ -121,38 +117,34 @@ export default class JSONNode extends PureComponent {
 
     return h('div', {
       'data-path': compileJSONPointer(this.props.eson[META].path),
-      className: this.getContainerClassName(eson[META].selected, this.state.hover),
+      className: this.getContainerClassName(this.props.eson[META].selected, this.state.hover),
       onMouseOver: this.handleMouseOver,
       onMouseLeave: this.handleMouseLeave
     }, [node, floatingMenu, insertArea, childs])
   }
 
-  renderJSONArray ({prop, index, eson, options, emit, findKeyBinding}) {
+  renderJSONArray () {
     const node = h('div', {
         key: 'node',
         onKeyDown: this.handleKeyDown,
         className: 'jsoneditor-node jsoneditor-array'
       }, [
       this.renderExpandButton(),
-      // this.renderActionMenu('update', this.state.menu, this.handleCloseActionMenu),
-      // this.renderActionMenuButton(),
-      this.renderProperty(prop, index, eson, options),
-      this.renderReadonly(`[${eson.length}]`, `Array containing ${eson.length} items`),
-      // this.renderFloatingMenuButton(),
-      this.renderError(eson[META].error)
+      this.renderProperty(this.props.prop, this.props.index, this.props.eson, this.props.options),
+      this.renderReadonly(`[${this.props.eson.length}]`, `Array containing ${this.props.eson.length} items`),
+      this.renderError(this.props.eson[META].error)
     ])
 
     let childs
-    if (eson[META].expanded) {
-      if (eson.length > 0) {
-        const items = eson.map((item, index) => h(this.constructor, {
+    if (this.props.eson[META].expanded) {
+      if (this.props.eson.length > 0) {
+        const items = this.props.eson.map((item, index) => h(this.constructor, {
           key : item[META].id,
-          // parent: this,
           index,
           eson: item,
-          options,
-          emit,
-          findKeyBinding
+          options: this.props.options,
+          emit: this.props.emit,
+          findKeyBinding: this.props.findKeyBinding
         }))
 
         childs = h('div', {key: 'childs', className: 'jsoneditor-list'}, items)
@@ -164,7 +156,7 @@ export default class JSONNode extends PureComponent {
       }
     }
 
-    const floatingMenu = (eson[META].selected === SELECTED_END)
+    const floatingMenu = (this.props.eson[META].selected === SELECTED_END)
         ? this.renderFloatingMenu([
             {type: 'sort'},
             {type: 'duplicate'},
@@ -179,13 +171,13 @@ export default class JSONNode extends PureComponent {
 
     return h('div', {
       'data-path': compileJSONPointer(this.props.eson[META].path),
-      className: this.getContainerClassName(eson[META].selected, this.state.hover),
+      className: this.getContainerClassName(this.props.eson[META].selected, this.state.hover),
       onMouseOver: this.handleMouseOver,
       onMouseLeave: this.handleMouseLeave
     }, [node, floatingMenu, insertArea, childs])
   }
 
-  renderJSONValue ({prop, index, eson, options}) {
+  renderJSONValue () {
     const node = h('div', {
         key: 'node',
         onKeyDown: this.handleKeyDown,
@@ -194,14 +186,14 @@ export default class JSONNode extends PureComponent {
       this.renderPlaceholder(),
       // this.renderActionMenu('update', this.state.menu, this.handleCloseActionMenu),
       // this.renderActionMenuButton(),
-      this.renderProperty(prop, index, eson, options),
+      this.renderProperty(this.props.prop, this.props.index, this.props.eson, this.props.options),
       this.renderSeparator(),
-      this.renderValue(eson[META].value, eson[META].searchValue, options),
+      this.renderValue(this.props.eson[META].value, this.props.eson[META].searchValue, this.props.options),
       // this.renderFloatingMenuButton(),
-      this.renderError(eson[META].error)
+      this.renderError(this.props.eson[META].error)
     ])
 
-    const floatingMenu = (eson[META].selected === SELECTED_END)
+    const floatingMenu = (this.props.eson[META].selected === SELECTED_END)
         ? this.renderFloatingMenu([
             // {text: 'String', onClick: this.props.emit('changeType', {type: 'checkbox', checked: false}}),
             {type: 'duplicate'},
@@ -216,7 +208,7 @@ export default class JSONNode extends PureComponent {
 
     return h('div', {
       'data-path': compileJSONPointer(this.props.eson[META].path),
-      className: this.getContainerClassName(eson[META].selected, this.state.hover),
+      className: this.getContainerClassName(this.props.eson[META].selected, this.state.hover),
       onMouseOver: this.handleMouseOver,
       onMouseLeave: this.handleMouseLeave
     }, [node, floatingMenu, insertArea])
@@ -271,7 +263,7 @@ export default class JSONNode extends PureComponent {
   /**
    * Render a property field of a JSONNode
    * @param {string} [prop]
-   * @param {string} [index]
+   * @param {number} [index]
    * @param {ESON} eson
    * @param {{escapeUnicode: boolean, isPropertyEditable: function(Path) : boolean}} options
    */
