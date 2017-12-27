@@ -1,4 +1,5 @@
 import { createElement as h, PureComponent } from 'react'
+import mitt from 'mitt'
 import isEqual from 'lodash/isEqual'
 import reverse from 'lodash/reverse'
 import initial from 'lodash/initial'
@@ -73,12 +74,30 @@ export default class TreeMode extends PureComponent {
       'copy': this.handleKeyDownCopy,
       'paste': this.handleKeyDownPaste,
       'duplicate': this.handleKeyDownDuplicate,
+      'remove': this.handleKeyDownRemove,
       'undo': this.handleUndo,
       'redo': this.handleRedo,
       'find': this.handleFocusFind,
       'findNext': this.handleNext,
       'findPrevious': this.handlePrevious
     }
+
+    this.emitter = mitt()
+    this.emitter.on('changeProperty', this.handleChangeProperty)
+    this.emitter.on('changeValue', this.handleChangeValue)
+    this.emitter.on('changeType', this.handleChangeType)
+    this.emitter.on('insert', this.handleInsert)
+    this.emitter.on('insertStructure', this.handleInsertStructure)
+    this.emitter.on('append', this.handleAppend)
+    this.emitter.on('duplicate', this.handleDuplicate)
+    this.emitter.on('remove', this.handleRemove)
+    this.emitter.on('sort', this.handleSort)
+    this.emitter.on('cut', this.handleCut)
+    this.emitter.on('copy', this.handleCopy)
+    this.emitter.on('paste', this.handlePaste)
+    this.emitter.on('expand', this.handleExpand)
+    this.emitter.on('select', this.handleSelect)
+
 
     this.state = {
       json,
@@ -88,28 +107,7 @@ export default class TreeMode extends PureComponent {
       historyIndex: 0,
 
       // TODO: use an event emitter instead? (like with vue.js)
-      events: {
-        onChangeProperty: this.handleChangeProperty,
-        onChangeValue: this.handleChangeValue,
-        onChangeType: this.handleChangeType,
-        onInsert: this.handleInsert,
-        onInsertStructure: this.handleInsertStructure,
-        onAppend: this.handleAppend,
-        onDuplicate: this.handleDuplicate,
-        onRemove: this.handleRemove,
-        onSort: this.handleSort,
-
-        onCut: this.handleCut,
-        onCopy: this.handleCopy,
-        onPaste: this.handlePaste,
-
-        onExpand: this.handleExpand,
-
-        onSelect: this.handleSelect,
-
-        // TODO: now we're passing not just events but also other methods. reorganize this or rename 'state.events'
-        findKeyBinding: this.handleFindKeyBinding
-      },
+      emit: this.emitter.emit,
 
       options: {},
 
@@ -236,7 +234,8 @@ export default class TreeMode extends PureComponent {
                   (eson[META].selected ? ' jsoneditor-selected' : '')},
             h(Node, {
               eson,
-              events: this.state.events,
+              emit: this.emitter.emit,
+              findKeyBinding: this.findKeyBinding,
               options: this.state.options
             })
           )
@@ -344,19 +343,19 @@ export default class TreeMode extends PureComponent {
     }
   }
 
-  handleChangeValue = (path, value) => {
+  handleChangeValue = ({path, value}) => {
     this.handlePatch(changeValue(this.state.eson, path, value))
   }
 
-  handleChangeProperty = (parentPath, oldProp, newProp) => {
+  handleChangeProperty = ({parentPath, oldProp, newProp}) => {
     this.handlePatch(changeProperty(this.state.eson, parentPath, oldProp, newProp))
   }
 
-  handleChangeType = (path, type) => {
+  handleChangeType = ({path, type}) => {
     this.handlePatch(changeType(this.state.eson, path, type))
   }
 
-  handleInsert = (path, type) => {
+  handleInsert = ({path, type}) => {
     this.handlePatch(insertBefore(this.state.eson, path, [{
       type,
       name: '',
@@ -369,13 +368,13 @@ export default class TreeMode extends PureComponent {
     this.focusToPrevious(path)
   }
 
-  handleInsertStructure = (path) => {
+  handleInsertStructure = ({path}) => {
     // TODO: implement handleInsertStructure
     console.log('TODO: handleInsertStructure', path)
     alert('not yet implemented...')
   }
 
-  handleAppend = (parentPath, type) => {
+  handleAppend = ({parentPath, type}) => {
     this.handlePatch(append(this.state.eson, parentPath, type))
 
     // apply focus to new node
@@ -389,19 +388,8 @@ export default class TreeMode extends PureComponent {
     }
   }
 
-  handleRemove = (path) => {
-    if (path) {
-      // apply focus to next sibling element if existing, else to the previous element
-      const fromElement = findNode(this.refs.contents, path)
-      const success = moveDownSibling(fromElement, 'property')
-      if (!success) {
-        moveUp(fromElement, 'property')
-      }
-
-      this.setState({ selection : null })
-      this.handlePatch(remove(path))
-    }
-    else if (this.state.selection) {
+  handleRemove = () => {
+    if (this.state.selection) {
       // remove selection
       // TODO: select next property? (same as when removing a path?)
       const paths = pathsFromSelection(this.state.eson, this.state.selection)
@@ -473,6 +461,21 @@ export default class TreeMode extends PureComponent {
 
       // apply focus to the duplicated node
       this.focusToNext(path)
+    }
+  }
+
+  handleKeyDownRemove = (event) => {
+    const path = this.findDataPathFromElement(event.target)
+    if (path) {
+      // apply focus to next sibling element if existing, else to the previous element
+      const fromElement = findNode(this.refs.contents, path)
+      const success = moveDownSibling(fromElement, 'property')
+      if (!success) {
+        moveUp(fromElement, 'property')
+      }
+
+      this.setState({ selection : null })
+      this.handlePatch(remove(path))
     }
   }
 
@@ -560,11 +563,11 @@ export default class TreeMode extends PureComponent {
    * Set selection
    * @param {Selection} selection
    */
-  handleSelect = (selection) => {
+  handleSelect = ({selection}) => {
     this.setState({ selection })
   }
 
-  handleExpand = (path, expanded, recurse) => {
+  handleExpand = ({path, expanded, recurse}) => {
     if (recurse) {
       this.setState({
         eson: updateIn(this.state.eson, path, function (child) {

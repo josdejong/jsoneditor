@@ -2,7 +2,6 @@ import { createElement as h, PureComponent } from 'react'
 import PropTypes from 'prop-types'
 import initial from 'lodash/initial'
 
-import ActionMenu from './menu/ActionMenu'
 import FloatingMenu from './menu/FloatingMenu'
 import { escapeHTML, unescapeHTML } from '../utils/stringUtils'
 import { getInnerText, insideRect, findParentWithAttribute } from '../utils/domUtils'
@@ -32,7 +31,8 @@ export default class JSONNode extends PureComponent {
     index: PropTypes.number,  // in case of an array item
     eson: PropTypes.oneOfType([ PropTypes.object, PropTypes.array ]).isRequired,
 
-    events: PropTypes.object.isRequired,
+    emit: PropTypes.func.isRequired,
+    findKeyBinding: PropTypes.func.isRequired,
 
     // options
     options: PropTypes.shape({
@@ -68,7 +68,7 @@ export default class JSONNode extends PureComponent {
     }
   }
 
-  renderJSONObject ({prop, index, eson, options, events}) {
+  renderJSONObject ({prop, index, eson, options, emit, findKeyBinding}) {
     const props = eson[META].props
     const node = h('div', {
         key: 'node',
@@ -92,7 +92,8 @@ export default class JSONNode extends PureComponent {
           // parent: this,
           prop,
           eson: eson[prop],
-          events,
+          emit,
+          findKeyBinding,
           options
         }))
 
@@ -126,7 +127,7 @@ export default class JSONNode extends PureComponent {
     }, [node, floatingMenu, insertArea, childs])
   }
 
-  renderJSONArray ({prop, index, eson, options, events}) {
+  renderJSONArray ({prop, index, eson, options, emit, findKeyBinding}) {
     const node = h('div', {
         key: 'node',
         onKeyDown: this.handleKeyDown,
@@ -150,7 +151,8 @@ export default class JSONNode extends PureComponent {
           index,
           eson: item,
           options,
-          events
+          emit,
+          findKeyBinding
         }))
 
         childs = h('div', {key: 'childs', className: 'jsoneditor-list'}, items)
@@ -201,7 +203,7 @@ export default class JSONNode extends PureComponent {
 
     const floatingMenu = (eson[META].selected === SELECTED_END)
         ? this.renderFloatingMenu([
-            // {text: 'String', onClick: this.props.events.onChangeType, type: 'checkbox', checked: false},
+            // {text: 'String', onClick: this.props.emit('changeType', {type: 'checkbox', checked: false}}),
             {type: 'duplicate'},
             {type: 'cut'},
             {type: 'copy'},
@@ -484,76 +486,13 @@ export default class JSONNode extends PureComponent {
     )
   }
 
-  // TODO: simplify code for the two action menus
-  renderActionMenu (menuType, menuState, onClose) {
-    if (!menuState) {
-      return null
-    }
-
-    return h(ActionMenu, {
-      key: 'menu',
-      path: this.props.eson[META].path,
-      events: this.props.events,
-      type: this.props.eson[META].type, // TODO: fix type
-
-      menuType,
-      open: true,
-      anchor: menuState.anchor,
-      root: menuState.root,
-
-      onRequestClose: onClose
-    })
-  }
-
-  renderActionMenuButton () {
-    const className = 'jsoneditor-button jsoneditor-actionmenu' +
-        ((this.state.open) ? ' jsoneditor-visible' : '')
-
-    return h('div', {className: 'jsoneditor-button-container', key: 'action'}, [
-      h('button', {
-        key: 'button',
-        ref: 'actionMenuButton',
-        className,
-        onClick: this.handleOpenActionMenu
-      })
-    ])
-  }
-
-  // TODO: cleanup
-  renderFloatingMenuButton () {
-    const className = 'jsoneditor-button jsoneditor-floatingmenu' +
-        ((this.state.open) ? ' jsoneditor-visible' : '')
-
-    return h('div', {className: 'jsoneditor-button-container', key: 'action'}, [
-      h('button', {
-        key: 'button',
-        className,
-        onClick: this.handleOpenActionMenu
-      })
-    ])
-  }
-
   renderFloatingMenu (items) {
     return h(FloatingMenu, {
       key: 'floating-menu',
       path: this.props.eson[META].path,
-      events: this.props.events,
+      emit: this.props.emit,
       items
     })
-  }
-
-  renderAppendActionMenuButton () {
-    const className = 'jsoneditor-button jsoneditor-actionmenu' +
-        ((this.state.appendOpen) ? ' jsoneditor-visible' : '')
-
-    return h('div', {className: 'jsoneditor-button-container', key: 'action'}, [
-      h('button', {
-        key: 'button',
-        ref: 'appendActionMenuButton',
-        className,
-        onClick: this.handleOpenAppendActionMenu
-      })
-    ])
   }
 
   handleMouseOver = (event) => {
@@ -631,16 +570,17 @@ export default class JSONNode extends PureComponent {
     const newProp = unescapeHTML(getInnerText(event.target))
 
     if (newProp !== oldProp) {
-      this.props.events.onChangeProperty(parentPath, oldProp, newProp)
+      this.props.emit('changeProperty', {parentPath, oldProp, newProp})
     }
   }
 
   /** @private */
   handleChangeValue = (event) => {
     const value = this.getValueFromEvent(event)
+    const path = this.props.eson[META].path
 
     if (value !== this.props.eson[META].value) {
-      this.props.events.onChangeValue(this.props.eson[META].path, value)
+      this.props.emit('changeValue', {path, value})
     }
   }
 
@@ -653,28 +593,28 @@ export default class JSONNode extends PureComponent {
 
   /** @private */
   handleKeyDown = (event) => {
-    const keyBinding = this.props.events.findKeyBinding(event)
+    const keyBinding = this.props.findKeyBinding(event)
 
     if (keyBinding === 'duplicate') {
       event.preventDefault()
-      this.props.events.onDuplicate(this.props.eson[META].path)
+      this.props.emit('duplicate', {path: this.props.eson[META].path})
     }
 
     if (keyBinding === 'insert') {
       event.preventDefault()
-      this.props.events.onInsert(this.props.eson[META].path, 'value')
+      this.props.emit('insert', {path: this.props.eson[META].path, type: 'value'})
     }
 
     if (keyBinding === 'remove') {
       event.preventDefault()
-      this.props.events.onRemove(this.props.eson[META].path)
+      this.props.emit('remove', {path: this.props.eson[META].path})
     }
 
     if (keyBinding === 'expand') {
       event.preventDefault()
       const recurse = false
       const expanded = !this.props.eson[META].expanded
-      this.props.events.onExpand(this.props.eson[META].path, expanded, recurse)
+      this.props.emit('expand', {path: this.props.eson[META].path, expanded, recurse})
     }
 
     if (keyBinding === 'actionMenu') {
@@ -685,11 +625,11 @@ export default class JSONNode extends PureComponent {
 
   /** @private */
   handleKeyDownAppend = (event) => {
-    const keyBinding = this.props.events.findKeyBinding(event)
+    const keyBinding = this.props.findKeyBinding(event)
 
     if (keyBinding === 'insert') {
       event.preventDefault()
-      this.props.events.onAppend(this.props.eson[META].path, 'value')
+      this.props.emit('append', {path: this.props.eson[META].path, type: 'value'})
     }
 
     if (keyBinding === 'actionMenu') {
@@ -700,7 +640,7 @@ export default class JSONNode extends PureComponent {
 
   /** @private */
   handleKeyDownValue = (event) => {
-    const keyBinding = this.props.events.findKeyBinding(event)
+    const keyBinding = this.props.findKeyBinding(event)
 
     if (keyBinding === 'openUrl') {
       this.openLinkIfUrl(event)
@@ -713,7 +653,7 @@ export default class JSONNode extends PureComponent {
     const path = this.props.eson[META].path
     const expanded = !this.props.eson[META].expanded
 
-    this.props.events.onExpand(path, expanded, recurse)
+    this.props.emit('expand', {path, expanded, recurse})
   }
 
   /**
