@@ -233,7 +233,7 @@ export default class TreeMode extends PureComponent {
               className: 'jsoneditor-list jsoneditor-root' +
                   (eson[META].selected ? ' jsoneditor-selected' : '')},
             h(Node, {
-              eson,
+              value: eson,
               emit: this.emitter.emit,
               findKeyBinding: this.findKeyBinding,
               options: this.state.options
@@ -850,7 +850,7 @@ export default class TreeMode extends PureComponent {
         historyIndex: historyIndex + 1
       })
 
-      this.emitOnChange(historyItem.undo, historyItem.redo, result.eson, result.json)
+      this.emitOnChange(historyItem.undo, historyItem.redo, result.data, esonToJson(result.data))
     }
   }
 
@@ -869,7 +869,7 @@ export default class TreeMode extends PureComponent {
         historyIndex
       })
 
-      this.emitOnChange(historyItem.redo, historyItem.undo, result.eson, result.json)
+      this.emitOnChange(historyItem.redo, historyItem.undo, result.data, esonToJson(result.data))
     }
   }
 
