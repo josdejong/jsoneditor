@@ -260,7 +260,7 @@ textmode.create = function (container, options) {
 
     var lnVal = document.createElement('span');
     lnVal.className = 'jsoneditor-curserinfo-val';
-    lnVal.innerText = 0;
+    lnVal.innerText = '1';
 
     statusBar.appendChild(lnLabel);
     statusBar.appendChild(lnVal);
@@ -271,7 +271,7 @@ textmode.create = function (container, options) {
 
     var colVal = document.createElement('span');
     colVal.className = 'jsoneditor-curserinfo-val';
-    colVal.innerText = 0;
+    colVal.innerText = '1';
 
     statusBar.appendChild(colLabel);
     statusBar.appendChild(colVal);
@@ -286,7 +286,7 @@ textmode.create = function (container, options) {
 
     var countVal = document.createElement('span');
     countVal.className = 'jsoneditor-curserinfo-count';
-    countVal.innerText = 0;
+    countVal.innerText = '0';
     countVal.style.display = 'none';
 
     this.curserInfoElements.countLabel = countLabel;
@@ -382,9 +382,10 @@ textmode._onBlur = function (event) {
  * Update the status bar cursor info
  */
 textmode._updateCursorInfoDisplay = function () {
+  var me = this;
+  var line, col, count;
+
   if(this.options.statusBar) {
-    var me = this;
-    var line, col, count;
     if (this.textarea) {
       setTimeout(function() { //this to verify we get the most updated textarea cursor selection
         var selectionRange = util.getInputSelection(me.textarea);      
@@ -405,17 +406,17 @@ textmode._updateCursorInfoDisplay = function () {
       count = selectedText.length;
       updateDisplay();
     }
+  }
 
-    function updateDisplay() {
+  function updateDisplay() {
 
-      if (me.curserInfoElements.countVal.innerText !== count) {
-        me.curserInfoElements.countVal.innerText = count;
-        me.curserInfoElements.countVal.style.display = count ? 'inline' : 'none';
-        me.curserInfoElements.countLabel.style.display = count ? 'inline' : 'none';
-      } 
-      me.curserInfoElements.lnVal.innerText = line;
-      me.curserInfoElements.colVal.innerText = col;
+    if (me.curserInfoElements.countVal.innerText !== count) {
+      me.curserInfoElements.countVal.innerText = count;
+      me.curserInfoElements.countVal.style.display = count ? 'inline' : 'none';
+      me.curserInfoElements.countLabel.style.display = count ? 'inline' : 'none';
     }
+    me.curserInfoElements.lnVal.innerText = line;
+    me.curserInfoElements.colVal.innerText = col;
   }
 };
 
