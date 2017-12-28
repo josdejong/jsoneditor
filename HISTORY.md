@@ -3,6 +3,12 @@
 https://github.com/josdejong/jsoneditor
 
 
+## not yet released, version 5.13.1
+
+- Fixed another occurrence of #494: properties not escaped in the
+  navigation bar.
+
+
 ## 2017-12-28, version 5.13.0
 
 - Implemented cursor position in text mode. Thanks @meirotstein.
