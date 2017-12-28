@@ -806,30 +806,34 @@ treemode._onRedo = function () {
  * @private
  */
 treemode._onEvent = function (event) {
-  if (event.type == 'keydown') {
+  if (event.type === 'keydown') {
     this._onKeyDown(event);
   }
 
-  if (event.type == 'focus') {
+  if (event.type === 'focus') {
     this.focusTarget = event.target;
   }
 
-  if (event.type == 'mousedown') {
+  if (event.type === 'mousedown') {
     this._startDragDistance(event);
   }
-  if (event.type == 'mousemove' || event.type == 'mouseup' || event.type == 'click') {
+  if (event.type === 'mousemove' || event.type === 'mouseup' || event.type === 'click') {
     this._updateDragDistance(event);
   }
 
   var node = Node.getNodeFromTarget(event.target);
 
-  if (this.options && this.options.navigationBar && node && (event.type == 'keydown' || event.type == 'mousedown')) {
-    this._updateTreePath(node.getNodePath());
+  if (node && this.options && this.options.navigationBar && node && (event.type === 'keydown' || event.type === 'mousedown')) {
+    // apply on next tick, right after the new key press is applied
+    var me = this;
+    setTimeout(function () {
+      me._updateTreePath(node.getNodePath());
+    })
   }
 
   if (node && node.selected) {
-    if (event.type == 'click') {
-      if (event.target == node.dom.menu) {
+    if (event.type === 'click') {
+      if (event.target === node.dom.menu) {
         this.showContextMenu(event.target);
 
         // stop propagation (else we will open the context menu of a single node)
@@ -842,20 +846,20 @@ treemode._onEvent = function (event) {
       }
     }
 
-    if (event.type == 'mousedown') {
+    if (event.type === 'mousedown') {
       // drag multiple nodes
       Node.onDragStart(this.multiselection.nodes, event);
     }
   }
   else {
-    if (event.type == 'mousedown') {
+    if (event.type === 'mousedown') {
       this.deselect();
 
-      if (node && event.target == node.dom.drag) {
+      if (node && event.target === node.dom.drag) {
         // drag a singe node
         Node.onDragStart(node, event);
       }
-      else if (!node || (event.target != node.dom.field && event.target != node.dom.value && event.target != node.dom.select)) {
+      else if (!node || (event.target !== node.dom.field && event.target !== node.dom.value && event.target !== node.dom.select)) {
         // select multiple nodes
         this._onMultiSelectStart(event);
       }
