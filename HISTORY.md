@@ -3,7 +3,7 @@
 https://github.com/josdejong/jsoneditor
 
 
-## not yet released, version 5.13.1
+## 2018-12-18, version 5.13.1
 
 - Fixed another occurrence of #494: properties not escaped in the
   navigation bar.
