@@ -107,8 +107,6 @@ class App extends Component {
                  value={this.state.logging}
                  onChange={this.handleToggleLogging} /> Log events
         </label>
-
-        <button onClick={this.forceChangeState}>Change state</button>
       </div>
       <div className="contents">
         <JSONEditor {...this.state.editorProps} />

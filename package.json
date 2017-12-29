@@ -64,8 +64,8 @@
     "build-js": "react-scripts build",
     "copy-css-lib": "cpy '**/*.css' '**/*.svg' '../../lib' --cwd='src/jsoneditor' --parents",
     "build-js-lib": "babel src/jsoneditor --out-dir lib --ignore spec.js,test.js",
-    "build-js-bundle": "webpack --config webpack.config.js",
-    "build-js-minimalist": "webpack --config webpack.config.minimalist.js",
+    "build-js-bundle": "webpack --config ./config/webpack.config.js",
+    "build-js-minimalist": "webpack --config ./config/webpack.config.minimalist.js",
     "build": "npm-run-all build-css copy-css-lib build-js-lib build-js-bundle build-js-minimalist",
     "test": "react-scripts test --env=jsdom",
     "eject": "react-scripts eject"

@@ -9,7 +9,7 @@ There are a few preferences regarding code contributions:
 - `jsoneditor` follows the node.js code style as described
   [here](http://nodeguide.com/style.html).
 - Send pull requests to the `develop` branch, not the `master` branch.
-- Only commit changes done in the source files under `./src`, not to the builds
-  which are located under the `./dist` folder.
+- Only commit changes done in the source files under `./src`, do not
+  commit builds located in the `./lib` and `./dist` folders.
 
 Thanks!
