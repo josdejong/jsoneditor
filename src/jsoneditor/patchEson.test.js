@@ -77,7 +77,7 @@ test('jsonpatch add: append to matrix', () => {
   ])
 })
 
-test('jsonpatch add: pass eson state', () => {
+test('jsonpatch add: apply eson state', () => {
   const json = {
     a: 2
   }
@@ -200,6 +200,40 @@ test('jsonpatch replace (keep ids intact)', () => {
   const patchedValueId = patchedData.value[META].id
 
   expect(patchedValueId).toEqual(valueId)
+})
+
+test('jsonpatch replace: apply eson state', () => {
+  const json = {
+    a: 2,
+    b: 4
+  }
+
+  const patch = [
+    {
+      op: 'replace',
+      path: '/b',
+      value: {c: {d: 3}},
+      meta: {
+        state: {
+          '': { expanded: true },
+          '/c/d': { expanded: true }
+        }
+      }
+    }
+  ]
+
+  const data = jsonToEson(json)
+  const result = patchEson(data, patch)
+  const patchedData = result.data
+
+  let expected = jsonToEson({
+    a: 2,
+    b: {c: {d: 3}}
+  })
+  expected = expandOne(expected, ['b'], true)
+  expected = expandOne(expected, ['b', 'c', 'd'], true)
+
+  assertDeepEqualEson(patchedData, expected)
 })
 
 test('jsonpatch copy', () => {

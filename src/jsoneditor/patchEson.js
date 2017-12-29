@@ -35,12 +35,11 @@ export function patchEson (eson, patch, expand = expandAll) {
 
     switch (action.op) {
       case 'add': {
-        let newValue = jsonToEson(action.value, path)
-        if (options && options.state) {
-          newValue = applyEsonState(newValue, options.state)
-        }
-        // FIXME: apply options.type
-        const result = add(updatedEson, path, newValue, options)
+        const newValue = jsonToEson(action.value, path)
+        const newValueWithState = (options && options.state)
+            ? applyEsonState(newValue, options.state)
+            : newValue
+        const result = add(updatedEson, path, newValueWithState, options)
         updatedEson = result.data
         revert = result.revert.concat(revert)
 
@@ -57,9 +56,10 @@ export function patchEson (eson, patch, expand = expandAll) {
 
       case 'replace': {
         const newValue = jsonToEson(action.value, path)
-        // FIXME: apply expanded state
-        // FIXME: apply options.type
-        const result = replace(updatedEson, path, newValue)
+        const newValueWithState = (options && options.state)
+            ? applyEsonState(newValue, options.state)
+            : newValue
+        const result = replace(updatedEson, path, newValueWithState)
         updatedEson = result.data
         revert = result.revert.concat(revert)
 
