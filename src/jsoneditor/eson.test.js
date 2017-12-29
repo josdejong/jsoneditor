@@ -10,7 +10,7 @@ import {
   expand, expandOne, expandPath, applyErrors, search, nextSearchResult,
   previousSearchResult,
   applySelection, pathsFromSelection,
-  SELECTED, SELECTED_END
+  SELECTED, SELECTED_END, getEsonState
 } from './eson'
 import 'console.table'
 import repeat from 'lodash/repeat'
@@ -551,6 +551,32 @@ test('pathsFromSelection (after)', () => {
 
   expect(pathsFromSelection(eson, selection)).toEqual([])
 })
+
+test('getEsonState', () => {
+  const eson = jsonToEson({
+    "obj": {
+      "arr": ["1",2, {"first":3,"last":4}]
+    },
+    "str": "hello world",
+    "nill": null,
+    "bool": false
+  })
+
+  eson.obj[META].expanded = true
+  eson.obj.arr[META].expanded = false
+  eson.obj.arr[0][META].type = 'string'
+  eson.obj.arr[2][META].expanded = true
+
+  const state = getEsonState(eson)
+
+  expect(state).toEqual({
+    '/obj': { expanded: true },
+    '/obj/arr/0': { type: 'string' },
+    '/obj/arr/2': { expanded: true },
+  })
+})
+
+// TODO: test applyEsonState
 
 // helper function to print JSON in the console
 function printJSON (json, message = null) {

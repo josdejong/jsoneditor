@@ -1,7 +1,7 @@
 'use strict'
 
 import { readFileSync } from 'fs'
-import { META, jsonToEson, esonToJson } from './eson'
+import { META, jsonToEson, esonToJson, expandOne } from './eson'
 import { patchEson } from './patchEson'
 import { assertDeepEqualEson } from './utils/assertDeepEqualEson'
 
@@ -75,6 +75,39 @@ test('jsonpatch add: append to matrix', () => {
   expect(revert).toEqual([
     {op: 'remove', path: '/arr/3'}
   ])
+})
+
+test('jsonpatch add: pass eson state', () => {
+  const json = {
+    a: 2
+  }
+
+  const patch = [
+    {
+      op: 'add',
+      path: '/b',
+      value: {c: {d: 3}},
+      meta: {
+        state: {
+          '': { expanded: true },
+          '/c/d': { expanded: true }
+        }
+      }
+    }
+  ]
+
+  const data = jsonToEson(json)
+  const result = patchEson(data, patch)
+  const patchedData = result.data
+
+  let expected = jsonToEson({
+    a: 2,
+    b: {c: {d: 3}}
+  })
+  expected = expandOne(expected, ['b'], true)
+  expected = expandOne(expected, ['b', 'c', 'd'], true)
+
+  assertDeepEqualEson(patchedData, expected)
 })
 
 test('jsonpatch remove', () => {

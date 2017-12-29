@@ -467,16 +467,65 @@ export function pathsFromSelection (eson, selection) {
  * Get the contents of a list with paths
  * @param {ESON} data
  * @param {Path[]} paths
- * @return {Array.<{name: string, value: JSON}>}
+ * @return {Array.<{name: string, value: JSON, state: Object}>}
  */
 export function contentsFromPaths (data, paths) {
   return paths.map(path => {
+    const esonValue = getIn(data, path)
     return {
       name: last(path),
-      value: esonToJson(getIn(data, path))
-      // FIXME: also store the type and expanded state
+      value: esonToJson(esonValue),
+      state: getEsonState(esonValue)
     }
   })
+}
+
+/**
+ * Get an object with paths and state (expanded, type) of an eson object
+ * @param {ESON} eson
+ * @return {Object.<key, Object>} An object with compiled JSON paths as key,
+ *                                And a META object as state
+ */
+export function getEsonState (eson) {
+  let state = {}
+
+  transform(eson, function (eson, path) {
+    let meta = {}
+    if (eson[META].expanded === true) {
+      meta.expanded = true
+    }
+    if (eson[META].type === 'string') {
+      meta.type = 'string'
+    }
+    if (!isEmpty(meta)) {
+      state[compileJSONPointer(path)] = meta
+    }
+
+    return eson
+  })
+
+  return state
+}
+
+/**
+ * Merge ESON meta data to an ESON object: expanded state, type
+ * @param {ESON} data
+ * @param {Object.<String, Object>} state
+ * @return {ESON}
+ */
+export function applyEsonState(data, state) {
+  let updatedData = data
+
+  for (let path in state) {
+    if (state.hasOwnProperty(path)) {
+      const metaPath = parseJSONPointer(path).concat(META)
+      updatedData = updateIn(updatedData, metaPath, function (meta) {
+        return Object.assign({}, meta, state[path])
+      })
+    }
+  }
+
+  return updatedData
 }
 
 /**

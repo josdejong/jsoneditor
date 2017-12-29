@@ -10,7 +10,7 @@ import {
   META,
   jsonToEson, esonToJson, updatePaths,
   parseJSONPointer, compileJSONPointer,
-  expandAll, pathExists, resolvePathIndex, createId
+  expandAll, pathExists, resolvePathIndex, createId, applyEsonState
 } from './eson'
 
 /**
@@ -35,8 +35,10 @@ export function patchEson (eson, patch, expand = expandAll) {
 
     switch (action.op) {
       case 'add': {
-        const newValue = jsonToEson(action.value, path)
-        // FIXME: apply expanded state
+        let newValue = jsonToEson(action.value, path)
+        if (options && options.state) {
+          newValue = applyEsonState(newValue, options.state)
+        }
         // FIXME: apply options.type
         const result = add(updatedEson, path, newValue, options)
         updatedEson = result.data

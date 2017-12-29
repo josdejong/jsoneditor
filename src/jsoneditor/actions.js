@@ -182,7 +182,7 @@ export function insertBefore (eson, path, values) {  // TODO: find a better name
  *
  * @param {ESON} eson
  * @param {Selection} selection
- * @param {Array.<{name?: string, value: JSONType, type?: ESONType}>} values
+ * @param {Array.<{name?: string, value: JSON, state: Object}>} values
  * @return {Array}
  */
 export function replace (eson, selection, values) {  // TODO: find a better name and define datastructure for values
@@ -197,7 +197,7 @@ export function replace (eson, selection, values) {  // TODO: find a better name
       path: compileJSONPointer(rootPath.concat(minIndex + offset)),
       value: entry.value,
       meta: {
-        type: entry.type
+        state: entry.state
       }
     }))
 
@@ -214,8 +214,8 @@ export function replace (eson, selection, values) {  // TODO: find a better name
         path: compileJSONPointer(rootPath.concat(newProp)),
         value: entry.value,
         meta: {
-          type: entry.type,
-          before
+          before,
+          state: entry.state
         }
       }
     })
