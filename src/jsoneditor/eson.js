@@ -385,11 +385,11 @@ export function applySelection (eson, selection) {
         const endIndex   = root[META].props.indexOf(end)
 
         const firstIndex = Math.min(startIndex, endIndex)
-        const lastIndex = Math.max(startIndex, endIndex) + 1 // include max index itself
+        const lastIndex = Math.max(startIndex, endIndex)
         const firstProp = root[META].props[firstIndex]
-        const lastProp = root[META].props[lastIndex - 1]
+        const lastProp = root[META].props[lastIndex]
 
-        const selectedProps = root[META].props.slice(firstIndex, lastIndex)
+        const selectedProps = root[META].props.slice(firstIndex, lastIndex + 1)// include max index itself
         selectedPaths = selectedProps.map(prop => rootPath.concat(prop))
         let updatedObj = cloneWithSymbols(root)
         selectedProps.forEach(prop => {
@@ -408,17 +408,17 @@ export function applySelection (eson, selection) {
         const endIndex   = parseInt(end, 10)
 
         const firstIndex = Math.min(startIndex, endIndex)
-        const lastIndex = Math.max(startIndex, endIndex) + 1 // include max index itself
+        const lastIndex = Math.max(startIndex, endIndex)
 
-        const selectedIndices = range(firstIndex, lastIndex)
+        const selectedIndices = range(firstIndex, lastIndex + 1)// include max index itself
         selectedPaths = selectedIndices.map(index => rootPath.concat(String(index)))
 
         let updatedArr = root.slice()
         updatedArr = cloneWithSymbols(root)
         selectedIndices.forEach(index => {
           const selected = SELECTED +
-              (index === start ? SELECTED_START : 0) +
-              (index === end ? SELECTED_END : 0) +
+              (index === startIndex ? SELECTED_START : 0) +
+              (index === endIndex ? SELECTED_END : 0) +
               (index === firstIndex ? SELECTED_FIRST : 0) +
               (index === lastIndex ? SELECTED_LAST : 0)
           updatedArr[index] = setIn(updatedArr[index], [META, 'selected'], selected)
