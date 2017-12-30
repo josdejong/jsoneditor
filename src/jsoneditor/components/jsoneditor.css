@@ -525,6 +525,22 @@ button.jsoneditor-type-Array.jsoneditor-selected span.jsoneditor-icon {
 div.jsoneditor-node-container {
   position: relative;
   transition: background-color 100ms ease-in; }
+  div.jsoneditor-node-container div.jsoneditor-insert-area {
+    position: absolute;
+    width: 100%;
+    height: 6px;
+    left: 0;
+    top: -3px;
+    box-sizing: border-box;
+    z-index: 1; }
+    div.jsoneditor-node-container div.jsoneditor-insert-area:after {
+      content: '';
+      position: absolute;
+      top: -7px;
+      right: 0;
+      width: 60px;
+      height: 20px;
+      background: inherit; }
   div.jsoneditor-node-container.jsoneditor-selected {
     background-color: #ffed99; }
     div.jsoneditor-node-container.jsoneditor-selected.jsoneditor-hover {
@@ -532,43 +548,34 @@ div.jsoneditor-node-container {
       div.jsoneditor-node-container.jsoneditor-selected.jsoneditor-hover.jsoneditor-hover-insert-area-after {
         background-color: #ffed99; }
         div.jsoneditor-node-container.jsoneditor-selected.jsoneditor-hover.jsoneditor-hover-insert-area-after > div.jsoneditor-insert-area {
-          border: 1px dashed gray;
-          background-color: #f2f2f2; }
+          border-color: #e5e5e5;
+          background-color: #e5e5e5; }
         div.jsoneditor-node-container.jsoneditor-selected.jsoneditor-hover.jsoneditor-hover-insert-area-after.jsoneditor-selected-insert-area-before > div.jsoneditor-insert-area {
-          border: 1px dashed #f4af41;
+          border-color: #ffdb80;
           background-color: #ffdb80; }
     div.jsoneditor-node-container.jsoneditor-selected.jsoneditor-selected-insert-area-before {
       background-color: inherit; }
       div.jsoneditor-node-container.jsoneditor-selected.jsoneditor-selected-insert-area-before.jsoneditor-hover {
-        background-color: #f2f2f2; }
+        background-color: #e5e5e5; }
         div.jsoneditor-node-container.jsoneditor-selected.jsoneditor-selected-insert-area-before.jsoneditor-hover.jsoneditor-hover-insert-area-after {
           background-color: inherit; }
       div.jsoneditor-node-container.jsoneditor-selected.jsoneditor-selected-insert-area-before > div.jsoneditor-insert-area {
-        border: 1px dashed #f4af41;
-        background: #ffed99; }
+        border-color: #ffed99;
+        background-color: #ffed99; }
     div.jsoneditor-node-container.jsoneditor-selected div.jsoneditor-hover {
       background-color: #ffdb80; }
       div.jsoneditor-node-container.jsoneditor-selected div.jsoneditor-hover.jsoneditor-hover-insert-area-after {
         background-color: inherit; }
         div.jsoneditor-node-container.jsoneditor-selected div.jsoneditor-hover.jsoneditor-hover-insert-area-after > div.jsoneditor-insert-area {
-          border: 1px dashed #f4af41;
-          background: #ffdb80; }
+          border-color: #ffdb80;
+          background-color: #ffdb80; }
   div.jsoneditor-node-container.jsoneditor-hover {
-    background-color: #f2f2f2; }
+    background-color: #e5e5e5; }
     div.jsoneditor-node-container.jsoneditor-hover.jsoneditor-hover-insert-area-after {
       background-color: inherit; }
       div.jsoneditor-node-container.jsoneditor-hover.jsoneditor-hover-insert-area-after > div.jsoneditor-insert-area {
-        border: 1px dashed gray;
-        background-color: #f2f2f2; }
-  div.jsoneditor-node-container div.jsoneditor-insert-area {
-    position: absolute;
-    width: 100%;
-    height: 8px;
-    left: 0;
-    top: -4px;
-    border: 1px transparent;
-    box-sizing: border-box;
-    z-index: 1; }
+        border-color: #e5e5e5;
+        background-color: #e5e5e5; }
   div.jsoneditor-node-container div.jsoneditor-floating-menu {
     position: absolute;
     bottom: 100%;

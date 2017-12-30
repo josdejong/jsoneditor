@@ -9,10 +9,14 @@ $floating-menu-background: #4d4d4d;
 $floating-menu-color: #fff;
 // $selectedColor: #e5e5e5;
 $selectedColor: #ffed99;
-$hoverColor: #f2f2f2;
+//$hoverColor: #f2f2f2;
+$hoverColor: #e5e5e5;
 $hoverAndSelectedColor: #ffdb80;
 
 // TODO: split this scss file into separate files per React component
+
+$line-height: 20px;
+$insert-area-height: 6px;
 
 .jsoneditor {
   border: 1px solid $theme-color;
@@ -139,7 +143,7 @@ div.jsoneditor-list {
 .jsoneditor-value,
 .jsoneditor-readonly,
 .jsoneditor-separator {
-  line-height: 20px;
+  line-height: $line-height;
 
   font-family: $fontFamily;
   font-size: $fontSize;
@@ -569,6 +573,42 @@ div.jsoneditor-node-container {
 
   // TODO: can the hover/select css be simplified?
 
+  div.jsoneditor-insert-area {
+    //background: gray;
+    position: absolute;
+    width: 100%;
+    height: $insert-area-height;
+    left: 0;
+    top: -$insert-area-height/2;
+    box-sizing: border-box;
+    z-index: 1; // must be on top of next node, it overlaps a bit
+
+    $top: -$line-height / 2 + 3px;
+
+    // FIXME: nice border color
+    //&:before {
+    //  content: '';
+    //  position: absolute;
+    //  right: 60px;
+    //  top: $top;
+    //  width: 0;
+    //  height: 0;
+    //  border-top: $line-height / 2 solid transparent;
+    //  border-right: $line-height / 2 solid red;
+    //  border-bottom: $line-height / 2 solid transparent;
+    //}
+
+    &:after {
+      content: '';
+      position: absolute;
+      top: $top;
+      right: 0;
+      width: 60px;
+      height: $line-height;
+      background: inherit;
+    }
+  }
+
   &.jsoneditor-selected {
     background-color: $selectedColor;
 
@@ -579,13 +619,13 @@ div.jsoneditor-node-container {
         background-color: $selectedColor;
 
         > div.jsoneditor-insert-area {
-          border: 1px dashed gray;
+          border-color: $hoverColor;
           background-color: $hoverColor;
         }
 
         &.jsoneditor-selected-insert-area-before {
           > div.jsoneditor-insert-area {
-            border: 1px dashed #f4af41;
+            border-color: $hoverAndSelectedColor;
             background-color: $hoverAndSelectedColor;
           }
         }
@@ -604,8 +644,8 @@ div.jsoneditor-node-container {
       }
 
       > div.jsoneditor-insert-area {
-        border: 1px dashed #f4af41;
-        background: $selectedColor;
+        border-color: $selectedColor;
+        background-color: $selectedColor;
       }
     }
 
@@ -617,8 +657,8 @@ div.jsoneditor-node-container {
         background-color: inherit;
 
         > div.jsoneditor-insert-area {
-          border: 1px dashed #f4af41;
-          background: $hoverAndSelectedColor;
+          border-color: $hoverAndSelectedColor;
+          background-color: $hoverAndSelectedColor;
         }
       }
     }
@@ -631,23 +671,10 @@ div.jsoneditor-node-container {
       background-color: inherit;
 
       > div.jsoneditor-insert-area {
-        border: 1px dashed gray;
+        border-color: $hoverColor;
         background-color: $hoverColor;
       }
     }
-  }
-
-  div.jsoneditor-insert-area {
-    $height: 8px;
-
-    position: absolute;
-    width: 100%;
-    height: $height;
-    left: 0;
-    top: -$height/2;
-    border: 1px transparent;
-    box-sizing: border-box;
-    z-index: 1; // must be on top of next node, it overlaps a bit
   }
 
   div.jsoneditor-floating-menu {
