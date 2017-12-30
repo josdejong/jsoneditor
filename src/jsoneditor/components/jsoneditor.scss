@@ -575,7 +575,7 @@ div.jsoneditor-node-container {
     &.jsoneditor-hover {
       background-color: $hoverAndSelectedColor;
 
-      &.jsoneditor-hover-insert-area {
+      &.jsoneditor-hover-insert-area-after {
         background-color: $selectedColor;
 
         > div.jsoneditor-insert-area {
@@ -583,7 +583,7 @@ div.jsoneditor-node-container {
           background-color: $hoverColor;
         }
 
-        &.jsoneditor-selected-insert-area {
+        &.jsoneditor-selected-insert-area-before {
           > div.jsoneditor-insert-area {
             border: 1px dashed #f4af41;
             background-color: $hoverAndSelectedColor;
@@ -592,13 +592,13 @@ div.jsoneditor-node-container {
       }
     }
 
-    &.jsoneditor-selected-insert-area {
+    &.jsoneditor-selected-insert-area-before {
       background-color: inherit;
 
       &.jsoneditor-hover {
         background-color: $hoverColor;
 
-        &.jsoneditor-hover-insert-area {
+        &.jsoneditor-hover-insert-area-after {
           background-color: inherit;
         }
       }
@@ -613,7 +613,7 @@ div.jsoneditor-node-container {
     div.jsoneditor-hover {
       background-color: $hoverAndSelectedColor;
 
-      &.jsoneditor-hover-insert-area {
+      &.jsoneditor-hover-insert-area-after {
         background-color: inherit;
 
         > div.jsoneditor-insert-area {
@@ -627,7 +627,7 @@ div.jsoneditor-node-container {
   &.jsoneditor-hover {
     background-color: $hoverColor;
 
-    &.jsoneditor-hover-insert-area {
+    &.jsoneditor-hover-insert-area-after {
       background-color: inherit;
 
       > div.jsoneditor-insert-area {
@@ -662,16 +662,29 @@ div.jsoneditor-node-container {
     box-shadow: 0 2px 6px 0 rgba(0,0,0,.24);
 
     &:after {
-        content:'';
-        position: absolute;
-        top: 100%;
-        left: 35px;
+      content: '';
+      position: absolute;
+      top: 100%;
+      left: 35px;
+      margin-left: -10px;
+      width: 0;
+      height: 0;
+      border-top: solid 10px $floating-menu-background;
+      border-bottom: none;
+      border-left: solid 10px transparent;
+      border-right: solid 10px transparent;
+    }
+
+    &.jsoneditor-floating-menu-bottom {
+      bottom: auto;
+      top: 100%;
+
+      &:after {
+        top: -10px;
         margin-left: -10px;
-        width: 0;
-        height: 0;
-        border-top: solid 10px $floating-menu-background;
-        border-left: solid 10px transparent;
-        border-right: solid 10px transparent;
+        border-top: none;
+        border-bottom: solid 10px $floating-menu-background;
+      }
     }
 
     button.jsoneditor-floating-menu-item {

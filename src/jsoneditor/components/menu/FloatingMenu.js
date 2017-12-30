@@ -2,6 +2,7 @@ import { createElement as h, PureComponent } from 'react'
 import PropTypes from 'prop-types'
 
 const MENU_CLASS_NAME = 'jsoneditor-floating-menu'
+const MENU_CLASS_NAME_BOTTOM = 'jsoneditor-floating-menu-bottom'
 const MENU_ITEM_CLASS_NAME = 'jsoneditor-floating-menu-item'
 
 // Array:             Sort | Map | Filter | Duplicate | Cut | Copy | Paste | Remove
@@ -134,7 +135,10 @@ export default class FloatingMenu extends PureComponent {
             type: PropTypes.string.isRequired
           })
         ]).isRequired
-    ).isRequired
+    ).isRequired,
+    path: PropTypes.arrayOf(PropTypes.string).isRequired,
+    emit: PropTypes.func.isRequired,
+    position: PropTypes.string  // 'top' or 'bottom'
   }
 
   render () {
@@ -150,7 +154,8 @@ export default class FloatingMenu extends PureComponent {
     })
 
     return h('div', {
-      className: MENU_CLASS_NAME,
+      className: MENU_CLASS_NAME +
+          (this.props.position === 'bottom' ? (' ' + MENU_CLASS_NAME_BOTTOM) : ''),
       onMouseDown: this.handleTouchStart,
       onTouchStart: this.handleTouchStart,
     }, items)

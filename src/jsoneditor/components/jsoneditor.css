@@ -529,35 +529,35 @@ div.jsoneditor-node-container {
     background-color: #ffed99; }
     div.jsoneditor-node-container.jsoneditor-selected.jsoneditor-hover {
       background-color: #ffdb80; }
-      div.jsoneditor-node-container.jsoneditor-selected.jsoneditor-hover.jsoneditor-hover-insert-area {
+      div.jsoneditor-node-container.jsoneditor-selected.jsoneditor-hover.jsoneditor-hover-insert-area-after {
         background-color: #ffed99; }
-        div.jsoneditor-node-container.jsoneditor-selected.jsoneditor-hover.jsoneditor-hover-insert-area > div.jsoneditor-insert-area {
+        div.jsoneditor-node-container.jsoneditor-selected.jsoneditor-hover.jsoneditor-hover-insert-area-after > div.jsoneditor-insert-area {
           border: 1px dashed gray;
           background-color: #f2f2f2; }
-        div.jsoneditor-node-container.jsoneditor-selected.jsoneditor-hover.jsoneditor-hover-insert-area.jsoneditor-selected-insert-area > div.jsoneditor-insert-area {
+        div.jsoneditor-node-container.jsoneditor-selected.jsoneditor-hover.jsoneditor-hover-insert-area-after.jsoneditor-selected-insert-area-before > div.jsoneditor-insert-area {
           border: 1px dashed #f4af41;
           background-color: #ffdb80; }
-    div.jsoneditor-node-container.jsoneditor-selected.jsoneditor-selected-insert-area {
+    div.jsoneditor-node-container.jsoneditor-selected.jsoneditor-selected-insert-area-before {
       background-color: inherit; }
-      div.jsoneditor-node-container.jsoneditor-selected.jsoneditor-selected-insert-area.jsoneditor-hover {
+      div.jsoneditor-node-container.jsoneditor-selected.jsoneditor-selected-insert-area-before.jsoneditor-hover {
         background-color: #f2f2f2; }
-        div.jsoneditor-node-container.jsoneditor-selected.jsoneditor-selected-insert-area.jsoneditor-hover.jsoneditor-hover-insert-area {
+        div.jsoneditor-node-container.jsoneditor-selected.jsoneditor-selected-insert-area-before.jsoneditor-hover.jsoneditor-hover-insert-area-after {
           background-color: inherit; }
-      div.jsoneditor-node-container.jsoneditor-selected.jsoneditor-selected-insert-area > div.jsoneditor-insert-area {
+      div.jsoneditor-node-container.jsoneditor-selected.jsoneditor-selected-insert-area-before > div.jsoneditor-insert-area {
         border: 1px dashed #f4af41;
         background: #ffed99; }
     div.jsoneditor-node-container.jsoneditor-selected div.jsoneditor-hover {
       background-color: #ffdb80; }
-      div.jsoneditor-node-container.jsoneditor-selected div.jsoneditor-hover.jsoneditor-hover-insert-area {
+      div.jsoneditor-node-container.jsoneditor-selected div.jsoneditor-hover.jsoneditor-hover-insert-area-after {
         background-color: inherit; }
-        div.jsoneditor-node-container.jsoneditor-selected div.jsoneditor-hover.jsoneditor-hover-insert-area > div.jsoneditor-insert-area {
+        div.jsoneditor-node-container.jsoneditor-selected div.jsoneditor-hover.jsoneditor-hover-insert-area-after > div.jsoneditor-insert-area {
           border: 1px dashed #f4af41;
           background: #ffdb80; }
   div.jsoneditor-node-container.jsoneditor-hover {
     background-color: #f2f2f2; }
-    div.jsoneditor-node-container.jsoneditor-hover.jsoneditor-hover-insert-area {
+    div.jsoneditor-node-container.jsoneditor-hover.jsoneditor-hover-insert-area-after {
       background-color: inherit; }
-      div.jsoneditor-node-container.jsoneditor-hover.jsoneditor-hover-insert-area > div.jsoneditor-insert-area {
+      div.jsoneditor-node-container.jsoneditor-hover.jsoneditor-hover-insert-area-after > div.jsoneditor-insert-area {
         border: 1px dashed gray;
         background-color: #f2f2f2; }
   div.jsoneditor-node-container div.jsoneditor-insert-area {
@@ -587,8 +587,17 @@ div.jsoneditor-node-container {
       width: 0;
       height: 0;
       border-top: solid 10px #4d4d4d;
+      border-bottom: none;
       border-left: solid 10px transparent;
       border-right: solid 10px transparent; }
+    div.jsoneditor-node-container div.jsoneditor-floating-menu.jsoneditor-floating-menu-bottom {
+      bottom: auto;
+      top: 100%; }
+      div.jsoneditor-node-container div.jsoneditor-floating-menu.jsoneditor-floating-menu-bottom:after {
+        top: -10px;
+        margin-left: -10px;
+        border-top: none;
+        border-bottom: solid 10px #4d4d4d; }
     div.jsoneditor-node-container div.jsoneditor-floating-menu button.jsoneditor-floating-menu-item {
       color: #fff;
       background: #4d4d4d;

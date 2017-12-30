@@ -13,9 +13,12 @@ import initial from 'lodash/initial'
 import last from 'lodash/last'
 
 export const SELECTED = 1
-export const SELECTED_END = 2
-export const SELECTED_BEFORE = 3
-export const SELECTED_AFTER = 4
+export const SELECTED_START = 2
+export const SELECTED_END = 4
+export const SELECTED_FIRST = 8
+export const SELECTED_LAST = 16
+export const SELECTED_BEFORE = 32
+export const SELECTED_AFTER = 64
 
 export const META = Symbol('meta')
 
@@ -349,7 +352,7 @@ function setSearchStatus (eson, esonPointer, searchStatus) {
 /**
  * Merge selection status into the eson object, cleanup previous selection
  * @param {ESON} eson
- * @param {Selection} [selection]
+ * @param {Selection | null} selection
  * @return {ESON} Returns updated eson object
  */
 export function applySelection (eson, selection) {
@@ -357,11 +360,13 @@ export function applySelection (eson, selection) {
     return cleanupMetaData(eson, 'selected')
   }
   else if (selection.before) {
-    const updatedEson = setIn(eson, selection.before.concat([META, 'selected']), SELECTED_BEFORE)
+    const updatedEson = setIn(eson, selection.before.concat([META, 'selected']),
+        SELECTED + SELECTED_BEFORE)
     return cleanupMetaData(updatedEson, 'selected', [selection.before])
   }
   else if (selection.after) {
-    const updatedEson = setIn(eson, selection.after.concat([META, 'selected']), SELECTED_AFTER)
+    const updatedEson = setIn(eson, selection.after.concat([META, 'selected']),
+        SELECTED + SELECTED_AFTER)
     return cleanupMetaData(updatedEson, 'selected', [selection.after])
   }
   else { // selection.start and selection.end
@@ -379,15 +384,21 @@ export function applySelection (eson, selection) {
         const startIndex = root[META].props.indexOf(start)
         const endIndex   = root[META].props.indexOf(end)
 
-        const minIndex = Math.min(startIndex, endIndex)
-        const maxIndex = Math.max(startIndex, endIndex) + 1 // include max index itself
+        const firstIndex = Math.min(startIndex, endIndex)
+        const lastIndex = Math.max(startIndex, endIndex) + 1 // include max index itself
+        const firstProp = root[META].props[firstIndex]
+        const lastProp = root[META].props[lastIndex - 1]
 
-        const selectedProps = root[META].props.slice(minIndex, maxIndex)
+        const selectedProps = root[META].props.slice(firstIndex, lastIndex)
         selectedPaths = selectedProps.map(prop => rootPath.concat(prop))
         let updatedObj = cloneWithSymbols(root)
         selectedProps.forEach(prop => {
-          updatedObj[prop] = setIn(updatedObj[prop], [META, 'selected'],
-              prop === end ? SELECTED_END : SELECTED)
+          const selected = SELECTED +
+              (prop === start ? SELECTED_START : 0) +
+              (prop === end ? SELECTED_END : 0) +
+              (prop === firstProp ? SELECTED_FIRST : 0) +
+              (prop === lastProp ? SELECTED_LAST : 0)
+          updatedObj[prop] = setIn(updatedObj[prop], [META, 'selected'], selected)
         })
 
         return updatedObj
@@ -396,17 +407,21 @@ export function applySelection (eson, selection) {
         const startIndex = parseInt(start, 10)
         const endIndex   = parseInt(end, 10)
 
-        const minIndex = Math.min(startIndex, endIndex)
-        const maxIndex = Math.max(startIndex, endIndex) + 1 // include max index itself
+        const firstIndex = Math.min(startIndex, endIndex)
+        const lastIndex = Math.max(startIndex, endIndex) + 1 // include max index itself
 
-        const selectedIndices = range(minIndex, maxIndex)
+        const selectedIndices = range(firstIndex, lastIndex)
         selectedPaths = selectedIndices.map(index => rootPath.concat(String(index)))
 
         let updatedArr = root.slice()
         updatedArr = cloneWithSymbols(root)
         selectedIndices.forEach(index => {
-          updatedArr[index] = setIn(updatedArr[index], [META, 'selected'],
-              index === endIndex ? SELECTED_END : SELECTED)
+          const selected = SELECTED +
+              (index === start ? SELECTED_START : 0) +
+              (index === end ? SELECTED_END : 0) +
+              (index === firstIndex ? SELECTED_FIRST : 0) +
+              (index === lastIndex ? SELECTED_LAST : 0)
+          updatedArr[index] = setIn(updatedArr[index], [META, 'selected'], selected)
         })
 
         return updatedArr

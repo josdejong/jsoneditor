@@ -6,22 +6,46 @@ import FloatingMenu from './menu/FloatingMenu'
 import { escapeHTML, unescapeHTML } from '../utils/stringUtils'
 import { getInnerText, insideRect } from '../utils/domUtils'
 import { stringConvert, valueType, isUrl } from  '../utils/typeUtils'
-import { compileJSONPointer, META, SELECTED, SELECTED_END, SELECTED_AFTER, SELECTED_BEFORE } from  '../eson'
+import {
+  compileJSONPointer,
+  META,
+  SELECTED, SELECTED_START, SELECTED_END, SELECTED_AFTER, SELECTED_BEFORE, SELECTED_FIRST, SELECTED_LAST
+} from  '../eson'
 
-// TODO: rename SELECTED, SELECTED_END, etc to AREA_*? It's used for both selection and hovering
-const SELECTED_CLASS_NAMES = {
-  [SELECTED]: ' jsoneditor-selected',
-  [SELECTED_END]: ' jsoneditor-selected jsoneditor-selected-end',
-  [SELECTED_AFTER]: ' jsoneditor-selected jsoneditor-selected-insert-area',
-  [SELECTED_BEFORE]: ' jsoneditor-selected jsoneditor-selected-insert-area',
-}
+const MENU_ITEMS_OBJECT = [
+  {type: 'sort'},
+  {type: 'duplicate'},
+  {type: 'cut'},
+  {type: 'copy'},
+  {type: 'paste'},
+  {type: 'remove'}
+]
 
-const HOVERED_CLASS_NAMES = {
-  [SELECTED]: ' jsoneditor-hover',
-  [SELECTED_END]: ' jsoneditor-hover jsoneditor-hover-end',
-  [SELECTED_AFTER]: ' jsoneditor-hover jsoneditor-hover-insert-area',
-  [SELECTED_BEFORE]: ' jsoneditor-hover jsoneditor-hover-insert-area',
-}
+const MENU_ITEMS_ARRAY = [
+  {type: 'sort'},
+  {type: 'duplicate'},
+  {type: 'cut'},
+  {type: 'copy'},
+  {type: 'paste'},
+  {type: 'remove'}
+]
+
+const MENU_ITEMS_VALUE = [
+  // {text: 'String', onClick: this.props.emit('changeType', {type: 'checkbox', checked: false}}),
+  {type: 'duplicate'},
+  {type: 'cut'},
+  {type: 'copy'},
+  {type: 'paste'},
+  {type: 'remove'}
+]
+
+const MENU_ITEMS_INSERT_BEFORE = [
+  {type: 'insertStructure'},
+  {type: 'insertValue'},
+  {type: 'insertObject'},
+  {type: 'insertArray'},
+  {type: 'paste'},
+]
 
 export default class JSONNode extends PureComponent {
   static URL_TITLE = 'Ctrl+Click or Ctrl+Enter to open url'
@@ -46,7 +70,7 @@ export default class JSONNode extends PureComponent {
   state = {
     menu: null,       // can contain object {anchor, root}
     appendMenu: null, // can contain object {anchor, root}
-    hover: false
+    hover: null
   }
 
   componentWillUnmount () {
@@ -104,17 +128,7 @@ export default class JSONNode extends PureComponent {
       }
     }
 
-    const floatingMenu = (meta.selected === SELECTED_END)
-        ? this.renderFloatingMenu([
-            {type: 'sort'},
-            {type: 'duplicate'},
-            {type: 'cut'},
-            {type: 'copy'},
-            {type: 'paste'},
-            {type: 'remove'}
-          ])
-        : null
-
+    const floatingMenu = this.renderFloatingMenu(MENU_ITEMS_OBJECT, meta.selected)
     const insertArea = this.renderInsertBeforeArea()
 
     return h('div', {
@@ -159,17 +173,7 @@ export default class JSONNode extends PureComponent {
       }
     }
 
-    const floatingMenu = (meta.selected === SELECTED_END)
-        ? this.renderFloatingMenu([
-            {type: 'sort'},
-            {type: 'duplicate'},
-            {type: 'cut'},
-            {type: 'copy'},
-            {type: 'paste'},
-            {type: 'remove'}
-          ])
-        : null
-
+    const floatingMenu = this.renderFloatingMenu(MENU_ITEMS_ARRAY, meta.selected)
     const insertArea = this.renderInsertBeforeArea()
 
     return h('div', {
@@ -194,16 +198,7 @@ export default class JSONNode extends PureComponent {
       this.renderError(meta.error)
     ])
 
-    const floatingMenu = (meta.selected === SELECTED_END)
-        ? this.renderFloatingMenu([
-            // {text: 'String', onClick: this.props.emit('changeType', {type: 'checkbox', checked: false}}),
-            {type: 'duplicate'},
-            {type: 'cut'},
-            {type: 'copy'},
-            {type: 'paste'},
-            {type: 'remove'}
-          ])
-        : null
+    const floatingMenu = this.renderFloatingMenu(MENU_ITEMS_VALUE, meta.selected)
 
     const insertArea = this.renderInsertBeforeArea()
 
@@ -216,14 +211,9 @@ export default class JSONNode extends PureComponent {
   }
 
   renderInsertBeforeArea () {
-    const floatingMenu = (this.props.value[META].selected === SELECTED_BEFORE)
-        ? this.renderFloatingMenu([
-            {type: 'insertStructure'},
-            {type: 'insertValue'},
-            {type: 'insertObject'},
-            {type: 'insertArray'},
-            {type: 'paste'},
-          ])
+    const floatingMenu = ((this.props.value[META].selected & SELECTED_BEFORE) !== 0)
+        ? this.renderFloatingMenu(MENU_ITEMS_INSERT_BEFORE,
+            SELECTED + SELECTED_END + SELECTED_FIRST)
         : null
 
     return h('div', {
@@ -356,9 +346,23 @@ export default class JSONNode extends PureComponent {
   }
 
   getContainerClassName (selected, hover) {
-    return 'jsoneditor-node-container' +
-      (hover ? (HOVERED_CLASS_NAMES[hover]) : '') +
-      (selected ? (SELECTED_CLASS_NAMES[selected]) : '')
+    let classNames = ['jsoneditor-node-container']
+
+    if ((selected & SELECTED) !== 0)        { classNames.push('jsoneditor-selected') }
+    if ((selected & SELECTED_START) !== 0)  { classNames.push('jsoneditor-selected-start') }
+    if ((selected & SELECTED_END) !== 0)    { classNames.push('jsoneditor-selected-end') }
+    if ((selected & SELECTED_FIRST) !== 0)  { classNames.push('jsoneditor-selected-first') }
+    if ((selected & SELECTED_LAST) !== 0)   { classNames.push('jsoneditor-selected-last') }
+    if ((selected & SELECTED_BEFORE) !== 0) { classNames.push('jsoneditor-selected-insert-area-before') }
+    if ((selected & SELECTED_AFTER) !== 0)  { classNames.push('jsoneditor-selected-insert-area-after') }
+
+    if ((hover & SELECTED) !== 0)         { classNames.push('jsoneditor-hover') }
+    if ((hover & SELECTED_START) !== 0)   { classNames.push('jsoneditor-hover-start') }
+    if ((hover & SELECTED_END) !== 0)     { classNames.push('jsoneditor-hover-end') }
+    if ((hover & SELECTED_BEFORE) !== 0)  { classNames.push('jsoneditor-hover-insert-area-before') }
+    if ((hover & SELECTED_AFTER) !== 0)   { classNames.push('jsoneditor-hover-insert-area-after') }
+
+    return classNames.join(' ')
   }
 
   /**
@@ -473,12 +477,20 @@ export default class JSONNode extends PureComponent {
     )
   }
 
-  renderFloatingMenu (items) {
+  renderFloatingMenu (items, selected) {
+    if ((selected & SELECTED_END) === 0) {
+      return null
+    }
+
+    const isLastOfMultiple = ((selected & SELECTED_LAST) !== 0) &&
+        ((selected & SELECTED_FIRST) === 0)
+
     return h(FloatingMenu, {
       key: 'floating-menu',
       path: this.props.value[META].path,
       emit: this.props.emit,
-      items
+      items,
+      position: isLastOfMultiple ? 'bottom' : 'top'
     })
   }
 
@@ -487,7 +499,7 @@ export default class JSONNode extends PureComponent {
       event.stopPropagation()
 
       const hover = (event.target.className.indexOf('jsoneditor-insert-area') !== -1)
-          ? SELECTED_AFTER
+          ? (SELECTED + SELECTED_AFTER)
           : SELECTED
 
       if (hoveredNode && hoveredNode !== this) {
@@ -505,7 +517,7 @@ export default class JSONNode extends PureComponent {
   handleMouseLeave = (event) => {
     event.stopPropagation()
     // FIXME: this gives issues when the hovered node doesn't exist anymore. check whether mounted?
-      hoveredNode.setState({hover: false})
+      hoveredNode.setState({hover: null})
 
       this.setState({hover: null})
   }
