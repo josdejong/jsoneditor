@@ -7,15 +7,16 @@ $contentsMinHeight: 150px;
 $theme-color: #3883fa;   // TODO: create a central file with the theme colors
 $floating-menu-background: #4d4d4d;
 $floating-menu-color: #fff;
-// $selectedColor: #e5e5e5;
 $selectedColor: #ffed99;
-//$hoverColor: #f2f2f2;
-$hoverColor: #e5e5e5;
+$hoverColor: #d3d3d3;
 $hoverAndSelectedColor: #ffdb80;
+$gray: #9d9d9d;
+$light-gray: #c0c0c0;
+$input-padding: 5px;
 
 // TODO: split this scss file into separate files per React component
 
-$line-height: 20px;
+$line-height: 18px;
 $insert-area-height: 6px;
 
 .jsoneditor {
@@ -136,13 +137,12 @@ div.jsoneditor-list {
 /* no left padding for the root div element */
 .jsoneditor-contents > div.jsoneditor-list {
   padding-left: 2px;
-  padding-bottom: 24px;
 }
 
 .jsoneditor-property,
 .jsoneditor-value,
 .jsoneditor-readonly,
-.jsoneditor-separator {
+.jsoneditor-delimiter {
   line-height: $line-height;
 
   font-family: $fontFamily;
@@ -152,13 +152,17 @@ div.jsoneditor-list {
 .jsoneditor-property,
 .jsoneditor-value,
 .jsoneditor-readonly {
-  min-width: 24px;
+  min-width: 16px;
   word-break: normal;
 
-  padding: 0 5px;
+  padding: 0 $input-padding;
 
   color: $black;
   outline: none;
+}
+
+.jsoneditor-readonly {
+  min-width: auto;
 }
 
 .jsoneditor-button-container {
@@ -201,18 +205,35 @@ div.jsoneditor-list {
 }
 
 
-.jsoneditor-separator {
-  color: #808080;
+.jsoneditor-delimiter,
+.jsoneditor-readonly {
+  color: $gray;
 }
 
-.jsoneditor-readonly {
-  color: #808080;
+.jsoneditor-delimiter-start {
+  margin-left: $input-padding;
+}
+
+.jsoneditor-delimiter-end {
+  margin-left: $line-height + $input-padding + 2px;
 }
 
 .jsoneditor-readonly:focus,
 .jsoneditor-readonly:hover {
   border-color: transparent;
   background-color: inherit;
+}
+
+.jsoneditor-tag {
+  color: white;
+  background: $light-gray;
+  border-radius: 2px;
+  padding: 0 4px;
+  margin-left: $input-padding;
+  margin-top: 2px;
+  height: 14px;
+  line-height: 14px;
+  font-size: 80%;
 }
 
 
@@ -223,7 +244,7 @@ div.jsoneditor-list {
 .jsoneditor-value.jsoneditor-object,
 .jsoneditor-value.jsoneditor-array {
   min-width: 16px;
-  color: #808080;
+  color: $gray;
 }
 
 .jsoneditor-value.jsoneditor-number {
@@ -250,7 +271,7 @@ div.jsoneditor-value.jsoneditor-url {
 div.jsoneditor-empty {
   border: 1px dotted lightgray;
   border-radius: 2px;
-  padding: 0 5px;
+  padding: 0 $input-padding;
   line-height: 17px;
 }
 
@@ -609,61 +630,6 @@ div.jsoneditor-node-container {
     }
   }
 
-  &.jsoneditor-selected {
-    background-color: $selectedColor;
-
-    &.jsoneditor-hover {
-      background-color: $hoverAndSelectedColor;
-
-      &.jsoneditor-hover-insert-area-after {
-        background-color: $selectedColor;
-
-        > div.jsoneditor-insert-area {
-          border-color: $hoverColor;
-          background-color: $hoverColor;
-        }
-
-        &.jsoneditor-selected-insert-area-before {
-          > div.jsoneditor-insert-area {
-            border-color: $hoverAndSelectedColor;
-            background-color: $hoverAndSelectedColor;
-          }
-        }
-      }
-    }
-
-    &.jsoneditor-selected-insert-area-before {
-      background-color: inherit;
-
-      &.jsoneditor-hover {
-        background-color: $hoverColor;
-
-        &.jsoneditor-hover-insert-area-after {
-          background-color: inherit;
-        }
-      }
-
-      > div.jsoneditor-insert-area {
-        border-color: $selectedColor;
-        background-color: $selectedColor;
-      }
-    }
-
-    // hovering nested elements
-    div.jsoneditor-hover {
-      background-color: $hoverAndSelectedColor;
-
-      &.jsoneditor-hover-insert-area-after {
-        background-color: inherit;
-
-        > div.jsoneditor-insert-area {
-          border-color: $hoverAndSelectedColor;
-          background-color: $hoverAndSelectedColor;
-        }
-      }
-    }
-  }
-
   &.jsoneditor-hover {
     background-color: $hoverColor;
 
@@ -673,6 +639,19 @@ div.jsoneditor-node-container {
       > div.jsoneditor-insert-area {
         border-color: $hoverColor;
         background-color: $hoverColor;
+      }
+    }
+  }
+
+  &.jsoneditor-selected {
+    background-color: $selectedColor;
+
+    &.jsoneditor-selected-insert-area-after {
+      background-color: inherit;
+
+      > div.jsoneditor-insert-area {
+        border-color: $selectedColor;
+        background-color: $selectedColor;
       }
     }
   }

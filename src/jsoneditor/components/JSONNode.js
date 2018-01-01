@@ -52,7 +52,6 @@ export default class JSONNode extends PureComponent {
 
   static propTypes = {
     prop: PropTypes.string,   // in case of an object property
-    index: PropTypes.number,  // in case of an array item
     value: PropTypes.oneOfType([ PropTypes.object, PropTypes.array ]).isRequired,
 
     emit: PropTypes.func.isRequired,
@@ -60,7 +59,6 @@ export default class JSONNode extends PureComponent {
 
     // options
     options: PropTypes.shape({
-      name: PropTypes.string,   // name of the root item
       isPropertyEditable: PropTypes.func,
       isValueEditable: PropTypes.func,
       escapeUnicode: PropTypes.bool
@@ -96,14 +94,22 @@ export default class JSONNode extends PureComponent {
   renderJSONObject () {
     const meta = this.props.value[META]
     const props = meta.props
-    const node = h('div', {
+    const nodeStart = h('div', {
         key: 'node',
         onKeyDown: this.handleKeyDown,
         className: 'jsoneditor-node jsoneditor-object'
       }, [
       this.renderExpandButton(),
+      // this.renderDelimiter('\u2610'),
       this.renderProperty(),
-      this.renderReadonly(`{${props.length}}`, `Object containing ${props.length} items`),
+      this.renderSeparator(),
+      this.renderDelimiter('{', 'jsoneditor-delimiter-start'),
+      !meta.expanded
+          ? [
+            this.renderTag(`${props.length} props`, `Object containing ${props.length} properties`),
+            this.renderDelimiter('}', 'jsoneditor-delimiter-start'),
+          ]
+          : null,
       this.renderError(meta.error)
     ])
 
@@ -130,34 +136,45 @@ export default class JSONNode extends PureComponent {
 
     const floatingMenu = this.renderFloatingMenu(MENU_ITEMS_OBJECT, meta.selected)
     const insertArea = this.renderInsertBeforeArea()
+    const nodeEnd = meta.expanded
+        ? this.renderDelimiter('}', 'jsoneditor-delimiter-end')
+        : null
 
     return h('div', {
       'data-path': compileJSONPointer(meta.path),
       className: this.getContainerClassName(meta.selected, this.state.hover),
       onMouseOver: this.handleMouseOver,
       onMouseLeave: this.handleMouseLeave
-    }, [node, floatingMenu, insertArea, childs])
+    }, [nodeStart, floatingMenu, insertArea, childs, nodeEnd])
   }
 
   renderJSONArray () {
     const meta = this.props.value[META]
-    const node = h('div', {
+    const count = this.props.value.length
+    const nodeStart = h('div', {
         key: 'node',
         onKeyDown: this.handleKeyDown,
         className: 'jsoneditor-node jsoneditor-array'
       }, [
       this.renderExpandButton(),
+      // this.renderDelimiter('\u2611'),
       this.renderProperty(),
-      this.renderReadonly(`[${this.props.value.length}]`, `Array containing ${this.props.value.length} items`),
+      this.renderSeparator(),
+      this.renderDelimiter('[', 'jsoneditor-delimiter-start'),
+      !meta.expanded
+          ? [
+            this.renderTag(`${count} items`, `Array containing ${count} items`),
+            this.renderDelimiter(']', 'jsoneditor-delimiter-start'),
+          ]
+          : null,
       this.renderError(meta.error)
     ])
 
     let childs
     if (meta.expanded) {
-      if (this.props.value.length > 0) {
-        const items = this.props.value.map((item, index) => h(this.constructor, {
+      if (count > 0) {
+        const items = this.props.value.map(item => h(this.constructor, {
           key : item[META].id,
-          index,
           value: item,
           options: this.props.options,
           emit: this.props.emit,
@@ -175,13 +192,16 @@ export default class JSONNode extends PureComponent {
 
     const floatingMenu = this.renderFloatingMenu(MENU_ITEMS_ARRAY, meta.selected)
     const insertArea = this.renderInsertBeforeArea()
+    const nodeEnd = meta.expanded
+        ? this.renderDelimiter(']', 'jsoneditor-delimiter-end')
+        : null
 
     return h('div', {
       'data-path': compileJSONPointer(meta.path),
       className: this.getContainerClassName(meta.selected, this.state.hover),
       onMouseOver: this.handleMouseOver,
       onMouseLeave: this.handleMouseLeave
-    }, [node, floatingMenu, insertArea, childs])
+    }, [nodeStart, floatingMenu, insertArea, childs, nodeEnd])
   }
 
   renderJSONValue () {
@@ -192,9 +212,12 @@ export default class JSONNode extends PureComponent {
         className: 'jsoneditor-node'
       }, [
       this.renderPlaceholder(),
+      // this.renderDelimiter('\u2611'),
       this.renderProperty(),
       this.renderSeparator(),
       this.renderValue(meta.value, meta.searchValue, this.props.options),
+      // this.renderDelimiter('\u21B2'),
+      // this.renderDelimiter('\u23CE'),
       this.renderError(meta.error)
     ])
 
@@ -247,54 +270,73 @@ export default class JSONNode extends PureComponent {
     return h('div', {key: 'readonly', className: 'jsoneditor-readonly', title}, text)
   }
 
+  renderTag (text, title = null) {
+    return h('div', {
+      key: 'readonly',
+      className: 'jsoneditor-tag',
+      onClick: this.handleExpand,
+      title
+    }, text)
+  }
+
   // TODO: simplify the method renderProperty
 
   /**
    * Render a property field of a JSONNode
    */
   renderProperty () {
-    const isIndex = typeof this.props.index === 'number'
     const isProp = typeof this.props.prop === 'string'
 
-    if (!isProp && !isIndex) {
-      // root node
-      const rootName = JSONNode.getRootName(this.props.value, this.props.options)
-
-      return h('div', {
-        key: 'property',
-        className: 'jsoneditor-property jsoneditor-readonly',
-        spellCheck: 'false',
-        onBlur: this.handleChangeProperty
-      }, rootName)
+    if (!isProp) {
+      return null
     }
 
-    const editable = !isIndex && (!this.props.options.isPropertyEditable || this.props.options.isPropertyEditable(this.props.value[META].path))
+    const editable = !this.props.options.isPropertyEditable ||
+        this.props.options.isPropertyEditable(this.props.value[META].path)
 
     const emptyClassName = (this.props.prop != null && this.props.prop.length === 0) ? ' jsoneditor-empty' : ''
     const searchClassName = this.props.prop != null ? JSONNode.getSearchResultClass(this.props.value[META].searchProperty) : ''
     const escapedPropName = this.props.prop != null ? escapeHTML(this.props.prop, this.props.options.escapeUnicode) : null
 
     if (editable) {
-      return h('div', {
-        key: 'property',
-        className: 'jsoneditor-property' + emptyClassName + searchClassName,
-        contentEditable: 'true',
-        suppressContentEditableWarning: true,
-        spellCheck: 'false',
-        onBlur: this.handleChangeProperty
-      }, escapedPropName)
+      return [
+        // this.renderDelimiter('"'),
+        h('div', {
+            key: 'property',
+            className: 'jsoneditor-property' + emptyClassName + searchClassName,
+            contentEditable: 'true',
+            suppressContentEditableWarning: true,
+            spellCheck: 'false',
+            onBlur: this.handleChangeProperty
+          }, escapedPropName),
+        // this.renderDelimiter('" '),
+      ]
     }
     else {
       return h('div', {
         key: 'property',
         className: 'jsoneditor-property jsoneditor-readonly' + searchClassName,
         spellCheck: 'false'
-      }, isIndex ? this.props.index : escapedPropName)
+      }, escapedPropName)
     }
   }
 
   renderSeparator() {
-    return h('div', {key: 'separator', className: 'jsoneditor-separator'}, ':')
+    const isProp = typeof this.props.prop === 'string'
+    if (!isProp) {
+      return null
+    }
+
+    return h('div', {key: 'separator', className: 'jsoneditor-delimiter'}, ':')
+  }
+
+  renderComma() {
+    // TODO: don't render when it's the last item/prop
+    return h('div', {key: 'comma', className: 'jsoneditor-delimiter'}, ',')
+  }
+
+  renderDelimiter (text, className = '') {
+    return h('div', {key: text, className: 'jsoneditor-delimiter ' + className}, text)
   }
 
   renderValue (value, searchResult, options) {
