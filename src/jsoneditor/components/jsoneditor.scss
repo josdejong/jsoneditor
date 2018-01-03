@@ -16,7 +16,7 @@ $input-padding: 5px;
 
 // TODO: split this scss file into separate files per React component
 
-$line-height: 18px;
+$line-height: 20px;
 $insert-area-height: 6px;
 
 .jsoneditor {
@@ -234,6 +234,7 @@ div.jsoneditor-list {
   height: 14px;
   line-height: 14px;
   font-size: 80%;
+  cursor: pointer;
 }
 
 
@@ -804,4 +805,5 @@ div.jsoneditor-code {
   padding: 0;
   margin: 0 4px;
   background: url('img/jsoneditor-icons.svg')  -171px -49px;
+  cursor: pointer;
 }
