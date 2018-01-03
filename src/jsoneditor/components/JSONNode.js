@@ -106,7 +106,8 @@ export default class JSONNode extends PureComponent {
       this.renderDelimiter('{', 'jsoneditor-delimiter-start'),
       !meta.expanded
           ? [
-            this.renderTag(`${props.length} props`, `Object containing ${props.length} properties`),
+            this.renderTag(`${props.length} ${props.length === 1 ? 'prop' : 'props'}`,
+                `Object containing ${props.length} ${props.length === 1 ? 'property' : 'properties'}`),
             this.renderDelimiter('}', 'jsoneditor-delimiter-start'),
           ]
           : null,
@@ -143,8 +144,8 @@ export default class JSONNode extends PureComponent {
     return h('div', {
       'data-path': compileJSONPointer(meta.path),
       className: this.getContainerClassName(meta.selected, this.state.hover),
-      onMouseOver: this.handleMouseOver,
-      onMouseLeave: this.handleMouseLeave
+      // onMouseOver: this.handleMouseOver,
+      // onMouseLeave: this.handleMouseLeave
     }, [nodeStart, floatingMenu, insertArea, childs, nodeEnd])
   }
 
@@ -163,7 +164,8 @@ export default class JSONNode extends PureComponent {
       this.renderDelimiter('[', 'jsoneditor-delimiter-start'),
       !meta.expanded
           ? [
-            this.renderTag(`${count} items`, `Array containing ${count} items`),
+            this.renderTag(`${count} ${count === 1 ? 'item' : 'items'}`,
+                `Array containing ${count} item${count === 1 ? 'item' : 'items'}`),
             this.renderDelimiter(']', 'jsoneditor-delimiter-start'),
           ]
           : null,
@@ -199,8 +201,8 @@ export default class JSONNode extends PureComponent {
     return h('div', {
       'data-path': compileJSONPointer(meta.path),
       className: this.getContainerClassName(meta.selected, this.state.hover),
-      onMouseOver: this.handleMouseOver,
-      onMouseLeave: this.handleMouseLeave
+      // onMouseOver: this.handleMouseOver,
+      // onMouseLeave: this.handleMouseLeave
     }, [nodeStart, floatingMenu, insertArea, childs, nodeEnd])
   }
 
@@ -228,8 +230,8 @@ export default class JSONNode extends PureComponent {
     return h('div', {
       'data-path': compileJSONPointer(meta.path),
       className: this.getContainerClassName(meta.selected, this.state.hover),
-      onMouseOver: this.handleMouseOver,
-      onMouseLeave: this.handleMouseLeave
+      // onMouseOver: this.handleMouseOver,
+      // onMouseLeave: this.handleMouseLeave
     }, [node, floatingMenu, insertArea])
   }
 
@@ -328,11 +330,6 @@ export default class JSONNode extends PureComponent {
     }
 
     return h('div', {key: 'separator', className: 'jsoneditor-delimiter'}, ':')
-  }
-
-  renderComma() {
-    // TODO: don't render when it's the last item/prop
-    return h('div', {key: 'comma', className: 'jsoneditor-delimiter'}, ',')
   }
 
   renderDelimiter (text, className = '') {

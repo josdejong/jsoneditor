@@ -129,14 +129,14 @@ $insert-area-height: 6px;
 
 div.jsoneditor-list {
   list-style-type: none;
-  padding-left: 20px;
+  border-left: 20px solid transparent;
   margin: 0;
   font-size: 0;
 }
 
 /* no left padding for the root div element */
 .jsoneditor-contents > div.jsoneditor-list {
-  padding-left: 2px;
+  border-left-width: 2px;
 }
 
 .jsoneditor-property,
@@ -208,14 +208,16 @@ div.jsoneditor-list {
 .jsoneditor-delimiter,
 .jsoneditor-readonly {
   color: $gray;
+  display: inline-block;
 }
 
 .jsoneditor-delimiter-start {
-  margin-left: $input-padding;
+  padding-left: $input-padding;
 }
 
 .jsoneditor-delimiter-end {
-  margin-left: $line-height + $input-padding + 2px;
+  padding-left: $input-padding;
+  border-left: $line-height solid transparent;
 }
 
 .jsoneditor-readonly:focus,
@@ -631,36 +633,51 @@ div.jsoneditor-node-container {
     }
   }
 
-  &.jsoneditor-hover {
-    background-color: $hoverColor;
-
-    &.jsoneditor-hover-insert-area-after {
-      background-color: inherit;
-
-      > div.jsoneditor-insert-area {
-        border-color: $hoverColor;
-        background-color: $hoverColor;
-      }
-    }
-  }
+  //&.jsoneditor-hover {
+  //  > .jsoneditor-node > .jsoneditor-delimiter-start,
+  //  > .jsoneditor-delimiter-end {
+  //    color: $theme-color;
+  //    font-weight: bold;
+  //  }
+  //}
 
   &.jsoneditor-selected {
-    background-color: $selectedColor;
+    .jsoneditor-node {
+      background-color: $selectedColor;
+    }
 
-    &.jsoneditor-selected-insert-area-after {
-      background-color: inherit;
+    .jsoneditor-delimiter-end {
+      background-color: $selectedColor;
+      border-left-color: $selectedColor;
+    }
 
-      > div.jsoneditor-insert-area {
-        border-color: $selectedColor;
-        background-color: $selectedColor;
-      }
+    .jsoneditor-list {
+      border-left-color: $selectedColor;
     }
   }
+
+  &.jsoneditor-hover {
+    > .jsoneditor-node > .jsoneditor-button-container,
+    > .jsoneditor-node > .jsoneditor-button-placeholder {
+      background-color: $hoverColor;
+    }
+
+    > .jsoneditor-list {
+      border-left-color: $hoverColor;
+    }
+
+    > .jsoneditor-delimiter-end {
+      //padding-left: $line-height + $input-padding + 2px;
+      border-left-color: $hoverColor;
+    }
+
+  }
+
 
   div.jsoneditor-floating-menu {
     position: absolute;
     bottom: 100%;
-    right: 0;
+    left: 0;
     z-index: 999;
 
     margin: 10px;

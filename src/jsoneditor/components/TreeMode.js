@@ -686,6 +686,11 @@ export default class TreeMode extends PureComponent {
   }
 
   handleTouchStart = (event) => {
+    if (event.button !== 0) {
+      // cancel when left mouse button is not down
+      return
+    }
+
     const pointer = this.findESONPointerFromElement(event.target)
     const clickedOnEmptySpace = (event.target.nodeName === 'DIV') &&
         (event.target.contentEditable !== 'true')
