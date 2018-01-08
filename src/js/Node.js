@@ -2151,7 +2151,6 @@ Node.prototype._createDomValue = function () {
       // create a link in case of read-only editor and value containing an url
       domValue = document.createElement('a');
       domValue.href = this.value;
-      domValue.target = '_blank';
       domValue.innerHTML = this._escapeHTML(this.value);
     }
     else {
