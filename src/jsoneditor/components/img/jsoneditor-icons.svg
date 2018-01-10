@@ -11,7 +11,7 @@
    height="144"
    id="svg4136"
    version="1.1"
-   inkscape:version="0.91 r"
+   inkscape:version="0.91 r13725"
    sodipodi:docname="jsoneditor-icons.svg">
   <title
      id="title6512">JSON Editor Icons</title>
@@ -39,16 +39,16 @@
      inkscape:pageopacity="0"
      inkscape:pageshadow="2"
      inkscape:window-width="1920"
-     inkscape:window-height="1028"
+     inkscape:window-height="1027"
      id="namedview4144"
      showgrid="true"
-     inkscape:zoom="4"
-     inkscape:cx="97.217248"
-     inkscape:cy="59.950227"
+     inkscape:zoom="5.6568542"
+     inkscape:cx="113.02949"
+     inkscape:cy="98.794192"
      inkscape:window-x="0"
      inkscape:window-y="0"
      inkscape:window-maximized="1"
-     inkscape:current-layer="svg4136"
+     inkscape:current-layer="g4394"
      showguides="false"
      borderlayer="false"
      inkscape:showpageshadow="true"
@@ -67,7 +67,7 @@
        width="16"
        height="16"
        id="svg_1"
-       style="fill:#1aae1c;fill-opacity:1;stroke:none;stroke-width:0" />
+       style="fill:#4c4c4c;fill-opacity:1;stroke:none;stroke-width:0" />
     <rect
        style="fill:#ec3f29;fill-opacity:0.94117647;stroke:none;stroke-width:0"
        x="28.000006"
@@ -890,4 +890,34 @@
      id="path4300-6"
      inkscape:connector-curvature="0"
      sodipodi:nodetypes="cccc" />
+  <path
+     inkscape:connector-curvature="0"
+     style="opacity:0.8;fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:1.96599996;stroke-miterlimit:4;stroke-dasharray:none"
+     d="m 202.49999,52 0,2 -2.49997,0 3.99997,5 3.99997,-5 -2.49998,0 0,-2 -2.99999,0 z"
+     id="path3055-0-77-3" />
+  <path
+     style="opacity:0.8;fill:none;stroke:#ffffff;stroke-width:1.96599996;stroke-linecap:square;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     d="m 196.98509,60.015 14.0298,-0.03"
+     id="path5244-5-0-5-5"
+     inkscape:connector-curvature="0"
+     sodipodi:nodetypes="cc" />
+  <path
+     id="path6191-6"
+     d="m 202.49999,68 0,-2 -2.49997,0 3.99997,-5 3.99997,5 -2.49998,0 0,2 -2.99999,0 z"
+     style="opacity:0.8;fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:1.96599996;stroke-miterlimit:4;stroke-dasharray:none"
+     inkscape:connector-curvature="0" />
+  <rect
+     x="196.00005"
+     y="51.999992"
+     width="15.999891"
+     height="16"
+     id="rect4432-3-2"
+     style="fill:#d3d3d3;fill-opacity:1;stroke:none;stroke-width:0" />
+  <rect
+     style="opacity:1;fill:none;fill-opacity:0.8;stroke:#ffffff;stroke-width:1.71429074;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+     id="rect4283-1"
+     width="10.285709"
+     height="10.285709"
+     x="198.85715"
+     y="54.857143" />
 </svg>

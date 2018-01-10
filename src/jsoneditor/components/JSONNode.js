@@ -9,7 +9,8 @@ import { stringConvert, valueType, isUrl } from  '../utils/typeUtils'
 import {
   compileJSONPointer,
   META,
-  SELECTED, SELECTED_START, SELECTED_END, SELECTED_AFTER, SELECTED_BEFORE, SELECTED_FIRST, SELECTED_LAST
+  SELECTED, SELECTED_START, SELECTED_END, SELECTED_AFTER, SELECTED_BEFORE,
+  SELECTED_FIRST, SELECTED_LAST
 } from  '../eson'
 
 const MENU_ITEMS_OBJECT = [
@@ -108,9 +109,12 @@ export default class JSONNode extends PureComponent {
           ? [
             this.renderTag(`${props.length} ${props.length === 1 ? 'prop' : 'props'}`,
                 `Object containing ${props.length} ${props.length === 1 ? 'property' : 'properties'}`),
-            this.renderDelimiter('}', 'jsoneditor-delimiter-start'),
+            this.renderDelimiter('}', 'jsoneditor-delimiter-end jsoneditor-delimiter-collapsed'),
+            this.renderInsertAfter()
           ]
-          : null,
+          : [
+            this.renderInsertBefore()
+          ],
       this.renderError(meta.error)
     ])
 
@@ -129,24 +133,27 @@ export default class JSONNode extends PureComponent {
         childs = h('div', {key: 'childs', className: 'jsoneditor-list'}, propsChilds)
       }
       else {
-        childs = h('div', {key: 'childs', className: 'jsoneditor-list'},
+        childs = h('div', {key: 'childs', className: 'jsoneditor-list', 'data-area': 'emptyBefore'},
           this.renderAppend('(empty object)')
         )
       }
     }
 
     const floatingMenu = this.renderFloatingMenu(MENU_ITEMS_OBJECT, meta.selected)
-    const insertArea = this.renderInsertBeforeArea()
     const nodeEnd = meta.expanded
-        ? this.renderDelimiter('}', 'jsoneditor-delimiter-end')
+        ? h('div', {key: 'node-end', className: 'jsoneditor-node-end', 'data-area': 'empty'}, [
+          this.renderDelimiter('}', 'jsoneditor-delimiter-end'),
+          this.renderInsertAfter()
+        ])
         : null
 
     return h('div', {
       'data-path': compileJSONPointer(meta.path),
+      'data-area': 'empty',
       className: this.getContainerClassName(meta.selected, this.state.hover),
       // onMouseOver: this.handleMouseOver,
       // onMouseLeave: this.handleMouseLeave
-    }, [nodeStart, floatingMenu, insertArea, childs, nodeEnd])
+    }, [floatingMenu, nodeStart, childs, nodeEnd])
   }
 
   renderJSONArray () {
@@ -158,7 +165,6 @@ export default class JSONNode extends PureComponent {
         className: 'jsoneditor-node jsoneditor-array'
       }, [
       this.renderExpandButton(),
-      // this.renderDelimiter('\u2611'),
       this.renderProperty(),
       this.renderSeparator(),
       this.renderDelimiter('[', 'jsoneditor-delimiter-start'),
@@ -166,9 +172,12 @@ export default class JSONNode extends PureComponent {
           ? [
             this.renderTag(`${count} ${count === 1 ? 'item' : 'items'}`,
                 `Array containing ${count} item${count === 1 ? 'item' : 'items'}`),
-            this.renderDelimiter(']', 'jsoneditor-delimiter-start'),
+            this.renderDelimiter(']', 'jsoneditor-delimiter-end jsoneditor-delimiter-collapsed'),
+            this.renderInsertAfter(),
           ]
-          : null,
+          : [
+            this.renderInsertBefore()
+          ],
       this.renderError(meta.error)
     ])
 
@@ -186,24 +195,27 @@ export default class JSONNode extends PureComponent {
         childs = h('div', {key: 'childs', className: 'jsoneditor-list'}, items)
       }
       else {
-        childs = h('div', {key: 'childs', className: 'jsoneditor-list'},
+        childs = h('div', {key: 'childs', className: 'jsoneditor-list', 'data-area': 'emptyBefore'},
           this.renderAppend('(empty array)')
         )
       }
     }
 
     const floatingMenu = this.renderFloatingMenu(MENU_ITEMS_ARRAY, meta.selected)
-    const insertArea = this.renderInsertBeforeArea()
     const nodeEnd = meta.expanded
-        ? this.renderDelimiter(']', 'jsoneditor-delimiter-end')
+        ? h('div', {key: 'node-end', className: 'jsoneditor-node-end', 'data-area': 'empty'}, [
+            this.renderDelimiter(']', 'jsoneditor-delimiter-end'),
+            this.renderInsertAfter()
+        ])
         : null
 
     return h('div', {
       'data-path': compileJSONPointer(meta.path),
+      'data-area': 'empty',
       className: this.getContainerClassName(meta.selected, this.state.hover),
       // onMouseOver: this.handleMouseOver,
       // onMouseLeave: this.handleMouseLeave
-    }, [nodeStart, floatingMenu, insertArea, childs, nodeEnd])
+    }, [floatingMenu, nodeStart, childs, nodeEnd])
   }
 
   renderJSONValue () {
@@ -214,38 +226,42 @@ export default class JSONNode extends PureComponent {
         className: 'jsoneditor-node'
       }, [
       this.renderPlaceholder(),
-      // this.renderDelimiter('\u2611'),
       this.renderProperty(),
       this.renderSeparator(),
       this.renderValue(meta.value, meta.searchValue, this.props.options),
-      // this.renderDelimiter('\u21B2'),
-      // this.renderDelimiter('\u23CE'),
+      this.renderInsertAfter(),
       this.renderError(meta.error)
     ])
 
     const floatingMenu = this.renderFloatingMenu(MENU_ITEMS_VALUE, meta.selected)
 
-    const insertArea = this.renderInsertBeforeArea()
+    // const insertArea = this.renderInsertBeforeArea()
 
     return h('div', {
       'data-path': compileJSONPointer(meta.path),
+      'data-area': 'empty',
       className: this.getContainerClassName(meta.selected, this.state.hover),
       // onMouseOver: this.handleMouseOver,
       // onMouseLeave: this.handleMouseLeave
-    }, [node, floatingMenu, insertArea])
+    }, [node, floatingMenu])
   }
 
-  renderInsertBeforeArea () {
-    const floatingMenu = ((this.props.value[META].selected & SELECTED_BEFORE) !== 0)
-        ? this.renderFloatingMenu(MENU_ITEMS_INSERT_BEFORE,
-            SELECTED + SELECTED_END + SELECTED_FIRST)
-        : null
-
+  renderInsertBefore () {
     return h('div', {
-      key: 'menu',
-      className: 'jsoneditor-insert-area',
+      key: 'insert',
+      className: 'jsoneditor-insert jsoneditor-insert-before',
+      title: 'Insert a new item or paste clipboard',
       'data-area': 'before'
-    }, [floatingMenu])
+    })
+  }
+
+  renderInsertAfter () {
+    return h('div', {
+      key: 'insert',
+      className: 'jsoneditor-insert jsoneditor-insert-after',
+      title: 'Insert a new item or paste clipboard after this line',
+      'data-area': 'after'
+    })
   }
 
   /**
@@ -256,20 +272,30 @@ export default class JSONNode extends PureComponent {
   renderAppend (text) {
     return h('div', {
         'data-path': compileJSONPointer(this.props.value[META].path) + '/-',
+        'data-area': 'empty',
         className: 'jsoneditor-node',
         onKeyDown: this.handleKeyDownAppend
       }, [
-      this.renderPlaceholder(),
+      this.renderPlaceholder('before'),
       this.renderReadonly(text)
     ])
   }
 
-  renderPlaceholder () {
-    return h('div', {key: 'placeholder', className: 'jsoneditor-button-placeholder'})
+  renderPlaceholder (dataArea = 'value') {
+    return h('div', {
+      key: 'placeholder',
+      'data-area': dataArea,
+      className: 'jsoneditor-button-placeholder'
+    })
   }
 
-  renderReadonly (text, title = null) {
-    return h('div', {key: 'readonly', className: 'jsoneditor-readonly', title}, text)
+  renderReadonly (text, title = null, dataArea = 'before') {
+    return h('div', {
+      key: 'readonly',
+      'data-area': dataArea,
+      className: 'jsoneditor-readonly',
+      title
+    }, text)
   }
 
   renderTag (text, title = null) {
@@ -302,7 +328,6 @@ export default class JSONNode extends PureComponent {
 
     if (editable) {
       return [
-        // this.renderDelimiter('"'),
         h('div', {
             key: 'property',
             className: 'jsoneditor-property' + emptyClassName + searchClassName,
@@ -311,7 +336,6 @@ export default class JSONNode extends PureComponent {
             spellCheck: 'false',
             onBlur: this.handleChangeProperty
           }, escapedPropName),
-        // this.renderDelimiter('" '),
       ]
     }
     else {
@@ -329,11 +353,19 @@ export default class JSONNode extends PureComponent {
       return null
     }
 
-    return h('div', {key: 'separator', className: 'jsoneditor-delimiter'}, ':')
+    return h('div', {
+      key: 'separator',
+      className: 'jsoneditor-delimiter',
+      'data-area': 'value'
+    }, ':')
   }
 
   renderDelimiter (text, className = '') {
-    return h('div', {key: text, className: 'jsoneditor-delimiter ' + className}, text)
+    return h('div', {
+      key: text,
+      'data-area': 'value',
+      className: 'jsoneditor-delimiter ' + className
+    }, text)
   }
 
   renderValue (value, searchResult, options) {
@@ -387,19 +419,31 @@ export default class JSONNode extends PureComponent {
   getContainerClassName (selected, hover) {
     let classNames = ['jsoneditor-node-container']
 
-    if ((selected & SELECTED) !== 0)        { classNames.push('jsoneditor-selected') }
-    if ((selected & SELECTED_START) !== 0)  { classNames.push('jsoneditor-selected-start') }
-    if ((selected & SELECTED_END) !== 0)    { classNames.push('jsoneditor-selected-end') }
-    if ((selected & SELECTED_FIRST) !== 0)  { classNames.push('jsoneditor-selected-first') }
-    if ((selected & SELECTED_LAST) !== 0)   { classNames.push('jsoneditor-selected-last') }
-    if ((selected & SELECTED_BEFORE) !== 0) { classNames.push('jsoneditor-selected-insert-area-before') }
-    if ((selected & SELECTED_AFTER) !== 0)  { classNames.push('jsoneditor-selected-insert-area-after') }
+    if ((selected & SELECTED_BEFORE) !== 0) {
+      classNames.push('jsoneditor-selected-insert-before')
+    }
+    else if ((selected & SELECTED_AFTER) !== 0) {
+      classNames.push('jsoneditor-selected-insert-after')
+    }
+    else {
+      if ((selected & SELECTED) !== 0)        { classNames.push('jsoneditor-selected') }
+      if ((selected & SELECTED_START) !== 0)  { classNames.push('jsoneditor-selected-start') }
+      if ((selected & SELECTED_END) !== 0)    { classNames.push('jsoneditor-selected-end') }
+      if ((selected & SELECTED_FIRST) !== 0)  { classNames.push('jsoneditor-selected-first') }
+      if ((selected & SELECTED_LAST) !== 0)   { classNames.push('jsoneditor-selected-last') }
+    }
 
-    if ((hover & SELECTED) !== 0)         { classNames.push('jsoneditor-hover') }
-    if ((hover & SELECTED_START) !== 0)   { classNames.push('jsoneditor-hover-start') }
-    if ((hover & SELECTED_END) !== 0)     { classNames.push('jsoneditor-hover-end') }
-    if ((hover & SELECTED_BEFORE) !== 0)  { classNames.push('jsoneditor-hover-insert-area-before') }
-    if ((hover & SELECTED_AFTER) !== 0)   { classNames.push('jsoneditor-hover-insert-area-after') }
+    if ((hover & SELECTED_BEFORE) !== 0) {
+      classNames.push('jsoneditor-hover-insert-before')
+    }
+    else if ((hover & SELECTED_AFTER) !== 0) {
+      classNames.push('jsoneditor-hover-insert-after')
+    }
+    else {
+      if ((hover & SELECTED) !== 0)         { classNames.push('jsoneditor-hover') }
+      if ((hover & SELECTED_START) !== 0)   { classNames.push('jsoneditor-hover-start') }
+      if ((hover & SELECTED_END) !== 0)     { classNames.push('jsoneditor-hover-end') }
+    }
 
     return classNames.join(' ')
   }

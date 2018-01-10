@@ -695,6 +695,9 @@ export default class TreeMode extends PureComponent {
     const clickedOnEmptySpace = (event.target.nodeName === 'DIV') &&
         (event.target.contentEditable !== 'true')
 
+    // TODO: cleanup
+    // console.log('handleTouchStart', clickedOnEmptySpace && pointer, pointer && this.selectionFromESONPointer(pointer))
+
     if (clickedOnEmptySpace && pointer) {
       this.setState({ selection: this.selectionFromESONPointer(pointer)})
     }
@@ -707,9 +710,17 @@ export default class TreeMode extends PureComponent {
     const selection = this.state.selection
     const path = this.findDataPathFromElement(event.target.firstChild)
     if (path && selection && !isEqual(path, selection.end)) {
+
+      // TODO: cleanup
+      // console.log('handlePan', {
+      //   start: selection.start || selection.before || selection.after || selection.empty || selection.emptyBefore,
+      //   end: path
+      // })
+
+      // FIXME: when selection.empty, start should be set to the next node
       this.setState({
         selection: {
-          start: selection.start || selection.before || selection.after,
+          start: selection.start || selection.before || selection.after || selection.empty || selection.emptyBefore,
           end: path
         }
       })
@@ -766,6 +777,12 @@ export default class TreeMode extends PureComponent {
     }
     else if (pointer.area === 'before') {
       return {before: pointer.path}
+    }
+    else if (pointer.area === 'empty') {
+      return {empty: pointer.path}
+    }
+    else if (pointer.area === 'emptyBefore') {
+      return {emptyBefore: pointer.path}
     }
     else {
       return {start: pointer.path, end: pointer.path}

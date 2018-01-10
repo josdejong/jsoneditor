@@ -42,7 +42,7 @@
  */
 
 /**
- * @typedef {'value' | 'property'} ESONPointerArea
+ * @typedef {'value' | 'property' | 'before' | 'after' | 'empty'} ESONPointerArea
  */
 
 /**

@@ -19,6 +19,8 @@ export const SELECTED_FIRST = 8
 export const SELECTED_LAST = 16
 export const SELECTED_BEFORE = 32
 export const SELECTED_AFTER = 64
+export const SELECTED_EMPTY = 128
+export const SELECTED_EMPTY_BEFORE = 256
 
 export const META = Symbol('meta')
 
@@ -361,13 +363,23 @@ export function applySelection (eson, selection) {
   }
   else if (selection.before) {
     const updatedEson = setIn(eson, selection.before.concat([META, 'selected']),
-        SELECTED + SELECTED_BEFORE)
+         SELECTED_BEFORE)
     return cleanupMetaData(updatedEson, 'selected', [selection.before])
   }
   else if (selection.after) {
     const updatedEson = setIn(eson, selection.after.concat([META, 'selected']),
-        SELECTED + SELECTED_AFTER)
+         SELECTED_AFTER)
     return cleanupMetaData(updatedEson, 'selected', [selection.after])
+  }
+  else if (selection.empty) {
+    const updatedEson = setIn(eson, selection.empty.concat([META, 'selected']),
+        SELECTED_EMPTY)
+    return cleanupMetaData(updatedEson, 'selected', [selection.empty])
+  }
+  else if (selection.emptyBefore) {
+    const updatedEson = setIn(eson, selection.emptyBefore.concat([META, 'selected']),
+        SELECTED_EMPTY_BEFORE)
+    return cleanupMetaData(updatedEson, 'selected', [selection.emptyBefore])
   }
   else { // selection.start and selection.end
     // find the parent node shared by both start and end of the selection
@@ -555,6 +567,12 @@ export function findRootPath(selection) {
   }
   else if (selection.after) {
     return initial(selection.after)
+  }
+  else if (selection.empty) {
+    return initial(selection.empty)
+  }
+  else if (selection.emptyBefore) {
+    return initial(selection.emptyBefore)
   }
   else { // selection.start and selection.end
     const sharedPath = findSharedPath(selection.start, selection.end)
