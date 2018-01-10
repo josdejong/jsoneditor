@@ -10,7 +10,8 @@ import {
   expand, expandOne, expandPath, applyErrors, search, nextSearchResult,
   previousSearchResult,
   applySelection, pathsFromSelection,
-  SELECTED, SELECTED_END, getEsonState
+  getEsonState,
+  SELECTED, SELECTED_START, SELECTED_END, SELECTED_FIRST, SELECTED_LAST
 } from './eson'
 import 'console.table'
 import repeat from 'lodash/repeat'
@@ -382,9 +383,9 @@ test('selection (object)', () => {
   const actual = applySelection(eson, selection)
 
   let expected = eson
-  expected = setIn(expected, ['obj', META, 'selected'], SELECTED)
+  expected = setIn(expected, ['obj', META, 'selected'], SELECTED + SELECTED_START + SELECTED_FIRST)
   expected = setIn(expected, ['str', META, 'selected'], SELECTED)
-  expected = setIn(expected, ['nill', META, 'selected'], SELECTED_END)
+  expected = setIn(expected, ['nill', META, 'selected'], SELECTED + SELECTED_END + SELECTED_LAST)
   assertDeepEqualEson(actual, expected)
 
   // test whether old selection results are cleaned up
@@ -394,8 +395,8 @@ test('selection (object)', () => {
   }
   const actual2 = applySelection(actual, selection2)
   let expected2 = eson
-  expected2 = setIn(expected2, ['nill', META, 'selected'], SELECTED)
-  expected2 = setIn(expected2, ['bool', META, 'selected'], SELECTED_END)
+  expected2 = setIn(expected2, ['nill', META, 'selected'], SELECTED + SELECTED_START + SELECTED_FIRST)
+  expected2 = setIn(expected2, ['bool', META, 'selected'], SELECTED + SELECTED_END + SELECTED_LAST)
   assertDeepEqualEson(actual2, expected2)
 })
 
@@ -416,8 +417,10 @@ test('selection (array)', () => {
   const actual = applySelection(eson, selection)
 
   let expected = eson
-  expected = setIn(expected, ['obj', 'arr', '0', META, 'selected'], SELECTED_END)
-  expected = setIn(expected, ['obj', 'arr', '1', META, 'selected'], SELECTED)
+  expected = setIn(expected, ['obj', 'arr', '0', META, 'selected'],
+      SELECTED + SELECTED_END + SELECTED_FIRST)
+  expected = setIn(expected, ['obj', 'arr', '1', META, 'selected'],
+      SELECTED + SELECTED_START + SELECTED_LAST)
 
   assertDeepEqualEson(actual, expected)
 })
@@ -437,7 +440,8 @@ test('selection (value)', () => {
   }
 
   const actual = applySelection(eson, selection)
-  const expected = setIn(eson, ['obj', 'arr', '2', 'first', META, 'selected'], SELECTED_END)
+  const expected = setIn(eson, ['obj', 'arr', '2', 'first', META, 'selected'],
+      SELECTED + SELECTED_START + SELECTED_END + SELECTED_FIRST + SELECTED_LAST)
   assertDeepEqualEson(actual, expected)
 })
 
@@ -456,7 +460,8 @@ test('selection (node)', () => {
   }
 
   const actual = applySelection(eson, selection)
-  const expected = setIn(eson, ['obj', 'arr', META, 'selected'], SELECTED_END)
+  const expected = setIn(eson, ['obj', 'arr', META, 'selected'],
+      SELECTED + SELECTED_START + SELECTED_END + SELECTED_FIRST + SELECTED_LAST)
   assertDeepEqualEson(actual, expected)
 })
 
@@ -530,7 +535,7 @@ test('pathsFromSelection (before)', () => {
     "bool": false
   })
   const selection = {
-    before: ['obj', 'arr', '2', 'first']
+    after: ['obj', 'arr', '2', 'first']
   }
 
   expect(pathsFromSelection(eson, selection)).toEqual([])
