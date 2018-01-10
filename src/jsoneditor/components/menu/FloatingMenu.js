@@ -84,31 +84,59 @@ const CREATE_TYPE = {
     title: 'Remove'
   }, 'Remove'),
 
-  insertStructure: (path, emit) => h('button', {
+  insertStructureAfter: (path, emit) => h('button', {
     key: 'insertStructure',
     className: MENU_ITEM_CLASS_NAME,
-    onClick: () => emit('insertStructure', {path}),
+    onClick: () => emit('insertStructureAfter', {path}),
     title: 'Insert a new object with the same data structure as the item above'
   }, 'Insert structure'),
 
-  insertValue: (path, emit) => h('button', {
-    key: 'insertValue',
+  insertValueAfter: (path, emit) => h('button', {
+    key: 'insertValueAfter',
     className: MENU_ITEM_CLASS_NAME,
-    onClick: () => emit('insert', {path, type: 'value'}),
+    onClick: () => emit('insertAfter', {path, type: 'value'}),
     title: 'Insert value'
   }, 'Insert value'),
 
-  insertObject: (path, emit) => h('button', {
-    key: 'insertObject',
+  insertObjectAfter: (path, emit) => h('button', {
+    key: 'insertObjectAfter',
     className: MENU_ITEM_CLASS_NAME,
-    onClick: () => emit('insert', {path, type: 'Object'}),
+    onClick: () => emit('insertAfter', {path, type: 'Object'}),
     title: 'Insert Object'
   }, 'Insert Object'),
 
-  insertArray: (path, emit) => h('button', {
-    key: 'insertArray',
+  insertArrayAfter: (path, emit) => h('button', {
+    key: 'insertArrayAfter',
     className: MENU_ITEM_CLASS_NAME,
-    onClick: () => emit('insert', {path, type: 'Array'}),
+    onClick: () => emit('insertAfter', {path, type: 'Array'}),
+    title: 'Insert Array'
+  }, 'Insert Array'),
+
+  insertStructureInside: (path, emit) => h('button', {
+    key: 'insertStructureInside',
+    className: MENU_ITEM_CLASS_NAME,
+    onClick: () => emit('insertStructureInside', {path}),
+    title: 'Insert a new object with the same data structure as the item above'
+  }, 'Insert structure'),
+
+  insertValueInside: (path, emit) => h('button', {
+    key: 'insertValueInside',
+    className: MENU_ITEM_CLASS_NAME,
+    onClick: () => emit('insertInside', {path, type: 'value'}),
+    title: 'Insert value'
+  }, 'Insert value'),
+
+  insertObjectInside: (path, emit) => h('button', {
+    key: 'insertObjectInside',
+    className: MENU_ITEM_CLASS_NAME,
+    onClick: () => emit('insertInside', {path, type: 'Object'}),
+    title: 'Insert Object'
+  }, 'Insert Object'),
+
+  insertArrayInside: (path, emit) => h('button', {
+    key: 'insertArrayInside',
+    className: MENU_ITEM_CLASS_NAME,
+    onClick: () => emit('insertInside', {path, type: 'Array'}),
     title: 'Insert Array'
   }, 'Insert Array'),
 

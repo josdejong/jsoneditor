@@ -181,6 +181,74 @@ export function insertBefore (eson, path, values) {  // TODO: find a better name
  * and object property
  *
  * @param {ESON} eson
+ * @param {Path} path
+ * @param {Array.<{name?: string, value: JSON, type?: ESONType}>} values
+ * @return {Array}
+ */
+export function insertAfter (eson, path, values) {  // TODO: find a better name and define datastructure for values
+  const parentPath = initial(path)
+  const parent = getIn(eson, parentPath)
+
+  if (parent[META].type === 'Array') {
+    const startIndex = parseInt(last(path), 10)
+    return values.map((entry, offset) => ({
+      op: 'add',
+      path: compileJSONPointer(parentPath.concat(startIndex + 1 + offset)), // +1 to insert after
+      value: entry.value,
+      meta: {
+        type: entry.type
+      }
+    }))
+  }
+  else { // parent[META].type === 'Object'
+    const prop = last(path)
+    const propIndex = parent[META].props.indexOf(prop)
+    const before = parent[META].props[propIndex + 1]
+    return values.map(entry => {
+      const newProp = findUniqueName(entry.name, parent[META].props)
+      return {
+        op: 'add',
+        path: compileJSONPointer(parentPath.concat(newProp)),
+        value: entry.value,
+        meta: {
+          type: entry.type,
+          before
+        }
+      }
+    })
+  }
+}
+
+/**
+ * Insert values at the start of an Object or Array
+ * @param {ESON} eson
+ * @param {Path} parentPath
+ * @param {Array.<{name?: string, value: JSON, type?: ESONType}>} values
+ * @return {Array}
+ */
+export function insertInside (eson, parentPath, values) {
+  const parent = getIn(eson, parentPath)
+
+  if (parent[META].type === 'Array') {
+    return insertBefore(eson, parentPath.concat('0'), values)
+  }
+  else if (parent[META].type === 'Object') {
+    const firstProp = parent[META].props[0] || null
+    return insertBefore(eson, parentPath.concat(firstProp), values)
+  }
+  else {
+    throw new Error('Cannot insert in a value, only in an Object or Array')
+  }
+}
+
+/**
+ * Create a JSONPatch for an insert action.
+ *
+ * This function needs the current data in order to be able to determine
+ * a unique property name for the inserted node in case of duplicating
+ * and object property
+ *
+ * @param {ESON} eson
  * @param {Selection} selection
  * @param {Array.<{name?: string, value: JSON, state: Object}>} values
  * @return {Array}

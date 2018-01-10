@@ -174,7 +174,8 @@
   .jsoneditor-node-end .jsoneditor-button-container:hover {
     visibility: visible; }
 
-.jsoneditor-root > .jsoneditor-node-container > .jsoneditor-node-end > .jsoneditor-button-container {
+.jsoneditor-root > .jsoneditor-node-container > .jsoneditor-node-end > .jsoneditor-button-container,
+.jsoneditor-root > .jsoneditor-node-container > .jsoneditor-node-end > div.jsoneditor-insert {
   display: none; }
 
 .jsoneditor-node > div {
@@ -416,6 +417,9 @@ div.jsoneditor-node-container {
   div.jsoneditor-node-container.jsoneditor-selected-insert-before > .jsoneditor-node-end > .jsoneditor-insert-before {
     background-image: url("img/jsoneditor-icons.svg");
     background-position: -2px -2px !important; }
+  div.jsoneditor-node-container.jsoneditor-selected-insert-before > .jsoneditor-list {
+    border-top: 1px dashed #c0c0c0;
+    margin-top: -1px; }
   div.jsoneditor-node-container.jsoneditor-hover > .jsoneditor-node > .jsoneditor-button-container,
   div.jsoneditor-node-container.jsoneditor-hover > .jsoneditor-node > .jsoneditor-button-placeholder {
     background-color: #d3d3d3; }

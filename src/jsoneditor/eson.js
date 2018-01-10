@@ -17,7 +17,7 @@ export const SELECTED_START = 2
 export const SELECTED_END = 4
 export const SELECTED_FIRST = 8
 export const SELECTED_LAST = 16
-export const SELECTED_BEFORE = 32
+export const SELECTED_INSIDE = 32
 export const SELECTED_AFTER = 64
 export const SELECTED_EMPTY = 128
 export const SELECTED_EMPTY_BEFORE = 256
@@ -361,10 +361,10 @@ export function applySelection (eson, selection) {
   if (!selection) {
     return cleanupMetaData(eson, 'selected')
   }
-  else if (selection.before) {
-    const updatedEson = setIn(eson, selection.before.concat([META, 'selected']),
-         SELECTED_BEFORE)
-    return cleanupMetaData(updatedEson, 'selected', [selection.before])
+  else if (selection.inside) {
+    const updatedEson = setIn(eson, selection.inside.concat([META, 'selected']),
+        SELECTED_INSIDE)
+    return cleanupMetaData(updatedEson, 'selected', [selection.inside])
   }
   else if (selection.after) {
     const updatedEson = setIn(eson, selection.after.concat([META, 'selected']),
@@ -455,8 +455,8 @@ export function applySelection (eson, selection) {
  * @return {{minIndex: number, maxIndex: number}}
  */
 export function findSelectionIndices (root, rootPath, selection) {
-  const start = (selection.after || selection.before || selection.start)[rootPath.length]
-  const end = (selection.after || selection.before || selection.end)[rootPath.length]
+  const start = (selection.after || selection.inside || selection.start)[rootPath.length]
+  const end = (selection.after || selection.inside || selection.end)[rootPath.length]
 
   // if no object we assume it's an Array
   const startIndex = root[META].type === 'Object' ? root[META].props.indexOf(start) : parseInt(start, 10)
@@ -464,7 +464,7 @@ export function findSelectionIndices (root, rootPath, selection) {
 
   const minIndex = Math.min(startIndex, endIndex)
   const maxIndex = Math.max(startIndex, endIndex) +
-      ((selection.after || selection.before) ? 0 : 1) // include max index itself
+      ((selection.after || selection.inside) ? 0 : 1) // include max index itself
 
   return { minIndex, maxIndex }
 }
@@ -562,8 +562,8 @@ export function applyEsonState(data, state) {
  * @return {Path}
  */
 export function findRootPath(selection) {
-  if (selection.before) {
-    return initial(selection.before)
+  if (selection.inside) {
+    return initial(selection.inside)
   }
   else if (selection.after) {
     return initial(selection.after)

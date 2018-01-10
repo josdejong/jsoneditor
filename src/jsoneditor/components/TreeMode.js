@@ -21,7 +21,7 @@ import {
 } from '../eson'
 import { patchEson } from '../patchEson'
 import {
-    duplicate, insertBefore, append, remove, removeAll, replace,
+    duplicate, insertBefore, insertAfter, insertInside, append, remove, removeAll, replace,
     createEntry, changeType, changeValue, changeProperty, sort
 } from '../actions'
 import JSONNode from './JSONNode'
@@ -86,7 +86,8 @@ export default class TreeMode extends PureComponent {
     this.emitter.on('changeProperty', this.handleChangeProperty)
     this.emitter.on('changeValue', this.handleChangeValue)
     this.emitter.on('changeType', this.handleChangeType)
-    this.emitter.on('insert', this.handleInsert)
+    this.emitter.on('insertAfter', this.handleInsertAfter)
+    this.emitter.on('insertInside', this.handleInsertInside)
     this.emitter.on('insertStructure', this.handleInsertStructure)
     this.emitter.on('append', this.handleAppend)
     this.emitter.on('duplicate', this.handleDuplicate)
@@ -97,7 +98,6 @@ export default class TreeMode extends PureComponent {
     this.emitter.on('paste', this.handlePaste)
     this.emitter.on('expand', this.handleExpand)
     this.emitter.on('select', this.handleSelect)
-
 
     this.state = {
       json,
@@ -355,17 +355,30 @@ export default class TreeMode extends PureComponent {
     this.handlePatch(changeType(this.state.eson, path, type))
   }
 
-  handleInsert = ({path, type}) => {
-    this.handlePatch(insertBefore(this.state.eson, path, [{
+  handleInsertInside = ({path, type}) => {
+    this.handlePatch(insertInside(this.state.eson, path, [{
       type,
       name: '',
-      value: createEntry(type)
+      value: createEntry(type) // TODO: give objects and arrays an expanded state
     }]))
 
     this.setState({ selection : null }) // TODO: select the inserted entry
 
     // apply focus to new node
-    this.focusToPrevious(path)
+    this.focusToNext(path)
+  }
+
+  handleInsertAfter = ({path, type}) => {
+    this.handlePatch(insertAfter(this.state.eson, path, [{
+      type,
+      name: '',
+      value: createEntry(type) // TODO: give objects and arrays an expanded state
+    }]))
+
+    this.setState({ selection : null }) // TODO: select the inserted entry
+
+    // apply focus to new node
+    this.focusToNext(path)
   }
 
   handleInsertStructure = ({path}) => {
@@ -519,7 +532,20 @@ export default class TreeMode extends PureComponent {
 
     if (selection && clipboard && clipboard.length > 0) {
       this.setState({ selection: null })
-      this.handlePatch(replace(eson, selection, clipboard))
+
+      if (selection.start && selection.end) {
+        this.handlePatch(replace(eson, selection, clipboard))
+      }
+      else if (selection.after) {
+        this.handlePatch(insertAfter(eson, selection.after, clipboard))
+      }
+      else if (selection.inside) {
+        this.handlePatch(insertInside(eson, selection.inside, clipboard))
+      }
+      else {
+        throw new Error(`Cannot paste at current selection ${JSON.stringify(selection)}`)
+      }
+
       // TODO: select the pasted contents
     }
   }
@@ -713,14 +739,14 @@ export default class TreeMode extends PureComponent {
 
       // TODO: cleanup
       // console.log('handlePan', {
-      //   start: selection.start || selection.before || selection.after || selection.empty || selection.emptyBefore,
+      //   start: selection.start || selection.inside || selection.after || selection.empty || selection.emptyBefore,
       //   end: path
       // })
 
       // FIXME: when selection.empty, start should be set to the next node
       this.setState({
         selection: {
-          start: selection.start || selection.before || selection.after || selection.empty || selection.emptyBefore,
+          start: selection.start || selection.inside || selection.after || selection.empty || selection.emptyBefore,
           end: path
         }
       })
@@ -775,8 +801,8 @@ export default class TreeMode extends PureComponent {
     if (pointer.area === 'after') {
       return {after: pointer.path}
     }
-    else if (pointer.area === 'before') {
-      return {before: pointer.path}
+    else if (pointer.area === 'inside') {
+      return {inside: pointer.path}
     }
     else if (pointer.area === 'empty') {
       return {empty: pointer.path}

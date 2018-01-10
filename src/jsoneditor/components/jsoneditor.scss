@@ -136,8 +136,11 @@ $insert-area-height: 6px;
   }
 }
 
-.jsoneditor-root > .jsoneditor-node-container > .jsoneditor-node-end > .jsoneditor-button-container {
-  display: none;
+.jsoneditor-root > .jsoneditor-node-container > .jsoneditor-node-end {
+  > .jsoneditor-button-container,
+  > div.jsoneditor-insert {
+    display: none;
+  }
 }
 
 .jsoneditor-node > div {
@@ -701,6 +704,11 @@ div.jsoneditor-node-container {
     > .jsoneditor-node-end > .jsoneditor-insert-before {
       background-image: url('img/jsoneditor-icons.svg');
       background-position: -2px -2px !important;
+    }
+
+    > .jsoneditor-list {
+      border-top: 1px dashed $light-gray;
+      margin-top: -1px;
     }
   }
 

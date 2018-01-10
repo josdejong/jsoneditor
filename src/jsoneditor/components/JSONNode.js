@@ -9,44 +9,9 @@ import { stringConvert, valueType, isUrl } from  '../utils/typeUtils'
 import {
   compileJSONPointer,
   META,
-  SELECTED, SELECTED_START, SELECTED_END, SELECTED_AFTER, SELECTED_BEFORE,
+  SELECTED, SELECTED_START, SELECTED_END, SELECTED_AFTER, SELECTED_INSIDE,
   SELECTED_FIRST, SELECTED_LAST
 } from  '../eson'
-
-const MENU_ITEMS_OBJECT = [
-  {type: 'sort'},
-  {type: 'duplicate'},
-  {type: 'cut'},
-  {type: 'copy'},
-  {type: 'paste'},
-  {type: 'remove'}
-]
-
-const MENU_ITEMS_ARRAY = [
-  {type: 'sort'},
-  {type: 'duplicate'},
-  {type: 'cut'},
-  {type: 'copy'},
-  {type: 'paste'},
-  {type: 'remove'}
-]
-
-const MENU_ITEMS_VALUE = [
-  // {text: 'String', onClick: this.props.emit('changeType', {type: 'checkbox', checked: false}}),
-  {type: 'duplicate'},
-  {type: 'cut'},
-  {type: 'copy'},
-  {type: 'paste'},
-  {type: 'remove'}
-]
-
-const MENU_ITEMS_INSERT_BEFORE = [
-  {type: 'insertStructure'},
-  {type: 'insertValue'},
-  {type: 'insertObject'},
-  {type: 'insertArray'},
-  {type: 'paste'},
-]
 
 export default class JSONNode extends PureComponent {
   static URL_TITLE = 'Ctrl+Click or Ctrl+Enter to open url'
@@ -139,7 +104,7 @@ export default class JSONNode extends PureComponent {
       }
     }
 
-    const floatingMenu = this.renderFloatingMenu(MENU_ITEMS_OBJECT, meta.selected)
+    const floatingMenu = this.renderFloatingMenu('Object', meta.selected)
     const nodeEnd = meta.expanded
         ? h('div', {key: 'node-end', className: 'jsoneditor-node-end', 'data-area': 'empty'}, [
           this.renderDelimiter('}', 'jsoneditor-delimiter-end'),
@@ -201,7 +166,7 @@ export default class JSONNode extends PureComponent {
       }
     }
 
-    const floatingMenu = this.renderFloatingMenu(MENU_ITEMS_ARRAY, meta.selected)
+    const floatingMenu = this.renderFloatingMenu('Array', meta.selected)
     const nodeEnd = meta.expanded
         ? h('div', {key: 'node-end', className: 'jsoneditor-node-end', 'data-area': 'empty'}, [
             this.renderDelimiter(']', 'jsoneditor-delimiter-end'),
@@ -233,7 +198,7 @@ export default class JSONNode extends PureComponent {
       this.renderError(meta.error)
     ])
 
-    const floatingMenu = this.renderFloatingMenu(MENU_ITEMS_VALUE, meta.selected)
+    const floatingMenu = this.renderFloatingMenu('value', meta.selected)
 
     // const insertArea = this.renderInsertBeforeArea()
 
@@ -251,7 +216,7 @@ export default class JSONNode extends PureComponent {
       key: 'insert',
       className: 'jsoneditor-insert jsoneditor-insert-before',
       title: 'Insert a new item or paste clipboard',
-      'data-area': 'before'
+      'data-area': 'inside'
     })
   }
 
@@ -276,7 +241,7 @@ export default class JSONNode extends PureComponent {
         className: 'jsoneditor-node',
         onKeyDown: this.handleKeyDownAppend
       }, [
-      this.renderPlaceholder('before'),
+      this.renderPlaceholder('inside'),
       this.renderReadonly(text)
     ])
   }
@@ -289,7 +254,7 @@ export default class JSONNode extends PureComponent {
     })
   }
 
-  renderReadonly (text, title = null, dataArea = 'before') {
+  renderReadonly (text, title = null, dataArea = 'inside') {
     return h('div', {
       key: 'readonly',
       'data-area': dataArea,
@@ -419,7 +384,7 @@ export default class JSONNode extends PureComponent {
   getContainerClassName (selected, hover) {
     let classNames = ['jsoneditor-node-container']
 
-    if ((selected & SELECTED_BEFORE) !== 0) {
+    if ((selected & SELECTED_INSIDE) !== 0) {
       classNames.push('jsoneditor-selected-insert-before')
     }
     else if ((selected & SELECTED_AFTER) !== 0) {
@@ -433,7 +398,7 @@ export default class JSONNode extends PureComponent {
       if ((selected & SELECTED_LAST) !== 0)   { classNames.push('jsoneditor-selected-last') }
     }
 
-    if ((hover & SELECTED_BEFORE) !== 0) {
+    if ((hover & SELECTED_INSIDE) !== 0) {
       classNames.push('jsoneditor-hover-insert-before')
     }
     else if ((hover & SELECTED_AFTER) !== 0) {
@@ -560,8 +525,10 @@ export default class JSONNode extends PureComponent {
     )
   }
 
-  renderFloatingMenu (items, selected) {
-    if ((selected & SELECTED_END) === 0) {
+  renderFloatingMenu (type, selected) {
+    if (((selected & SELECTED_END) === 0) &&
+        ((selected & SELECTED_INSIDE) === 0) &&
+        ((selected & SELECTED_AFTER) === 0)) {
       return null
     }
 
@@ -572,9 +539,66 @@ export default class JSONNode extends PureComponent {
       key: 'floating-menu',
       path: this.props.value[META].path,
       emit: this.props.emit,
-      items,
+      items: this.getFloatingMenuItems(type, selected),
       position: isLastOfMultiple ? 'bottom' : 'top'
     })
+  }
+
+  getFloatingMenuItems (type, selected) {
+    if ((selected & SELECTED_AFTER) !== 0) {
+      return [
+        {type: 'insertStructureAfter'},
+        {type: 'insertValueAfter'},
+        {type: 'insertObjectAfter'},
+        {type: 'insertArrayAfter'},
+        {type: 'paste'},
+      ]
+    }
+
+    if ((selected & SELECTED_INSIDE) !== 0) {
+      return [
+        {type: 'insertStructureInside'},
+        {type: 'insertValueInside'},
+        {type: 'insertObjectInside'},
+        {type: 'insertArrayInside'},
+        {type: 'paste'},
+      ]
+    }
+
+    if (type === 'Object') {
+      return [
+        {type: 'sort'},
+        {type: 'duplicate'},
+        {type: 'cut'},
+        {type: 'copy'},
+        {type: 'paste'},
+        {type: 'remove'}
+      ]
+    }
+
+    if (type === 'Array') {
+      return [
+        {type: 'sort'},
+        {type: 'duplicate'},
+        {type: 'cut'},
+        {type: 'copy'},
+        {type: 'paste'},
+        {type: 'remove'}
+      ]
+    }
+
+    if (type === 'value') {
+      return [
+        // {text: 'String', onClick: this.props.emit('changeType', {type: 'checkbox', checked: false}}),
+        {type: 'duplicate'},
+        {type: 'cut'},
+        {type: 'copy'},
+        {type: 'paste'},
+        {type: 'remove'}
+      ]
+    }
+
+    throw new Error(`Cannot create FloatingMenu items for type: ${type}, selected: ${selected})`)
   }
 
   handleMouseOver = (event) => {
