@@ -24,8 +24,8 @@
  * Copyright (c) 2011-2017 Jos de Jong, http://jsoneditoronline.org
  *
  * @author  Jos de Jong, <wjosdejong@gmail.com>
- * @version 5.13.1
- * @date    2017-12-28
+ * @version 5.13.2
+ * @date    2018-01-18
  */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
@@ -14177,7 +14177,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	      // create a link in case of read-only editor and value containing an url
 	      domValue = document.createElement('a');
 	      domValue.href = this.value;
-	      domValue.target = '_blank';
 	      domValue.innerHTML = this._escapeHTML(this.value);
 	    }
 	    else {
@@ -38301,7 +38300,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	}\
 	\
 	.ace-jsoneditor.ace_editor {\
-	font-family: droid sans mono, consolas, monospace, courier new, courier, sans-serif;\
+	font-family: \"dejavu sans mono\", \"droid sans mono\", consolas, monaco, \"lucida console\", \"courier new\", courier, monospace, sans-serif;\
 	line-height: 1.3;\
 	background-color: #fff;\
 	}\

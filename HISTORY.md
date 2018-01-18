@@ -3,14 +3,14 @@
 https://github.com/josdejong/jsoneditor
 
 
-## not yet released, version 5.13.2
+## 2018-01-18, version 5.13.2
 
 - Fixed view mode opening links in a new tab instead of current tab
   when Ctrl key is not down. Thanks @LEW21.
 - Fixed #502: code editor not showing a monospaced font some cases.
 
 
-## 2018-12-28, version 5.13.1
+## 2017-12-28, version 5.13.1
 
 - Fixed another occurrence of #494: properties not escaped in the
   navigation bar.
