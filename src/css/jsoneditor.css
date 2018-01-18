@@ -294,7 +294,7 @@ div.jsoneditor td,
 div.jsoneditor th,
 div.jsoneditor textarea,
 .jsoneditor-schema-error {
-  font-family: droid sans mono, consolas, monospace, courier new, courier, sans-serif;
+  font-family: "dejavu sans mono", "droid sans mono", consolas, monaco, "lucida console", "courier new", courier, monospace, sans-serif;
   font-size: 10pt;
   color: #1A1A1A;
 }
