@@ -389,10 +389,10 @@ textmode._updateCursorInfoDisplay = function () {
     if (this.textarea) {
       setTimeout(function() { //this to verify we get the most updated textarea cursor selection
         var selectionRange = util.getInputSelection(me.textarea);      
-        line = selectionRange.row;
-        col = selectionRange.col;
-        if (selectionRange.start !== selectionRange.end) {
-          count = selectionRange.end - selectionRange.start;
+        line = selectionRange.end.row;
+        col = selectionRange.end.column;
+        if (selectionRange.startIndex !== selectionRange.endIndex) {
+          count = selectionRange.endIndex - selectionRange.startIndex;
         }
         updateDisplay();
       },0);
@@ -641,6 +641,37 @@ textmode.validate = function () {
   if (this.aceEditor) {
     var force = false;
     this.aceEditor.resize(force);
+  }
+};
+
+/**
+ * Get the selection details
+ * @returns {{start:{row:Number, column:Number},end:{row:Number, column:Number},text:String}}
+ */
+textmode.getTextSelection = function () {
+  if (this.textarea) {
+    var selectionRange = util.getInputSelection(this.textarea);
+    return {
+      start: selectionRange.start,
+      end: selectionRange.end,
+      text: this.textarea.value.substring(selectionRange.startIndex, selectionRange.endIndex)
+    }
+  }
+
+  if (this.aceEditor) {
+    var curserPos = this.aceEditor.getSelectionRange();
+    var selectedText = this.aceEditor.getSelectedText();
+    return {
+      start: {
+        row: curserPos.start.row + 1,
+        column: curserPos.start.column + 1
+      },
+      end: {
+        row: curserPos.end.row + 1,
+        column: curserPos.end.column + 1
+      },
+      text: selectedText
+    };
   }
 };
 
