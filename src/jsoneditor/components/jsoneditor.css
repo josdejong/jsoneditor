@@ -196,7 +196,7 @@ div.jsoneditor-list {
 .jsoneditor-readonly,
 .jsoneditor-delimiter {
   line-height: 20px;
-  font-family: droid sans mono, consolas, monospace, courier new, courier, sans-serif;
+  font-family: "dejavu sans mono", "droid sans mono", consolas, monaco, "lucida console", "courier new", courier, monospace, sans-serif;
   font-size: 10pt; }
 
 .jsoneditor-property,
@@ -555,7 +555,7 @@ textarea.jsoneditor-text {
   border: none;
   background-color: #fff;
   resize: none;
-  font-family: droid sans mono, consolas, monospace, courier new, courier, sans-serif;
+  font-family: "dejavu sans mono", "droid sans mono", consolas, monaco, "lucida console", "courier new", courier, monospace, sans-serif;
   font-size: 10pt;
   color: #1A1A1A; }
 
@@ -571,7 +571,7 @@ div.jsoneditor-code {
   border-top: 1px solid #ffd700; }
   .jsoneditor-errors table {
     border-collapse: collapse;
-    font-family: droid sans mono, consolas, monospace, courier new, courier, sans-serif;
+    font-family: "dejavu sans mono", "droid sans mono", consolas, monaco, "lucida console", "courier new", courier, monospace, sans-serif;
     font-size: 10pt; }
     .jsoneditor-errors table td {
       padding: 3px 6px;
