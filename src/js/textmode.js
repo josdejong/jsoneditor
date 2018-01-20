@@ -329,6 +329,7 @@ textmode._onSelect = function () {
   if(this.options.statusBar) {
     this._updateCursorInfoDisplay();
   }
+  this._emitSelectionChange();
 };
 
 /**
@@ -358,6 +359,7 @@ textmode._onKeyDown = function (event) {
   }
 
   this._updateCursorInfoDisplay();
+  this._emitSelectionChange();
 };
 
 /**
@@ -367,6 +369,7 @@ textmode._onKeyDown = function (event) {
  */
 textmode._onMouseDown = function (event) {
   this._updateCursorInfoDisplay();
+  this._emitSelectionChange();
 };
 
 /**
@@ -376,6 +379,7 @@ textmode._onMouseDown = function (event) {
  */
 textmode._onBlur = function (event) {
   this._updateCursorInfoDisplay();
+  this._emitSelectionChange();
 };
 
 /**
@@ -674,6 +678,28 @@ textmode.getTextSelection = function () {
     };
   }
 };
+
+/**
+ * Callback registraion for selection changed 
+ * @param {selectionCallback} callback
+ * 
+ * @callback selectionCallback
+ * @param {String} text selected text
+ * @param {{row:Number, column:Number}} startPos selection start position
+ * @param {{row:Number, column:Number}} endPos selected end position
+ */
+textmode.onTextSelectionChanged = function (callback) {
+  if (typeof callback === 'function') {
+    this._selectionChangedHandler = util.debounce(callback, this.DEBOUNCE_INTERVAL);
+  }
+};
+
+textmode._emitSelectionChange = function () {
+  if(this._selectionChangedHandler) {
+    var currentSelection = this.getTextSelection();
+    this._selectionChangedHandler(currentSelection.text, currentSelection.start, currentSelection.end);
+  }
+}
 
 // define modes
 module.exports = [
