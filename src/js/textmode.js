@@ -425,6 +425,17 @@ textmode._updateCursorInfoDisplay = function () {
 };
 
 /**
+ * emits selection change callback, if given
+ * @private
+ */
+textmode._emitSelectionChange = function () {
+  if(this._selectionChangedHandler) {
+    var currentSelection = this.getTextSelection();
+    this._selectionChangedHandler(currentSelection.text, currentSelection.start, currentSelection.end);
+  }
+}
+
+/**
  * Destroy the editor. Clean up DOM, event listeners, and web workers.
  */
 textmode.destroy = function () {
@@ -694,12 +705,44 @@ textmode.onTextSelectionChanged = function (callback) {
   }
 };
 
-textmode._emitSelectionChange = function () {
-  if(this._selectionChangedHandler) {
-    var currentSelection = this.getTextSelection();
-    this._selectionChangedHandler(currentSelection.text, currentSelection.start, currentSelection.end);
+/**
+ * Set selection on editor's text
+ * @param {{row:Number, column:Number}} startPos selection start position
+ * @param {{row:Number, column:Number}} endPos selected end position
+ */
+textmode.setTextSelection = function (startPos, endPos) {
+
+  if (!startPos || !endPos) return;
+
+  if (this.textarea) {
+    var startIndex = util.getIndexForPosition(this.textarea, startPos.row, startPos.column);
+    var endIndex = util.getIndexForPosition(this.textarea, endPos.row, endPos.column);
+    if (startIndex > -1 && endIndex  > -1) {
+      if (this.textarea.setSelectionRange) { 
+        this.textarea.focus();
+        this.textarea.setSelectionRange(startIndex, endIndex);
+      } else if (this.textarea.createTextRange) { // IE < 9
+        var range = this.textarea.createTextRange();
+        range.collapse(true);
+        range.moveEnd('character', endIndex);
+        range.moveStart('character', startIndex);
+        range.select();
+      }
+    }
+  } else if (this.aceEditor) {
+    var range = {
+      start:{
+        row: startPos.row - 1,
+        column: startPos.column - 1
+      },
+      end:{
+        row: endPos.row - 1,
+        column: endPos.column - 1
+      }
+    };
+    this.aceEditor.selection.setRange(range);
   }
-}
+};
 
 // define modes
 module.exports = [

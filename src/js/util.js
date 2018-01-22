@@ -887,6 +887,25 @@ exports.getInputSelection = function(el) {
   }
 }
 
+/**
+ * Returns the index for certaion position in text element
+ * @param {DOMElement} el A dom element of a textarea or input text.
+ * @param {Number} row row value, > 0, if exceeds rows number - last row will be considered
+ * @param {Number} column column value, > 0, if exceeds column length - end of column will be considered
+ * @returns {Number} index of position in text, -1 if not found
+ */
+exports.getIndexForPosition = function(el, row, column) {
+  var text = el.value || '';
+  if (row > 0 && column > 0) {
+    var rows = text.split('\n', row);
+    row = Math.min(rows.length, row);
+    column = Math.min(rows[row - 1].length, column - 1);
+    var columnCount = (row == 1 ? column : column + 1); // count new line on multiple rows
+    return rows.slice(0, row - 1).join('\n').length + columnCount;
+  }
+  return -1;
+}
+
 
 if (typeof Element !== 'undefined') {
   // Polyfill for array remove
