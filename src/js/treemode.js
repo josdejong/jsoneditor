@@ -1027,7 +1027,7 @@ treemode._onMultiSelect = function (event) {
   }
 
   // deselect previous selection
-  this.deselect();
+  this.deselect(false, false);
 
   // find the selected nodes in the range from first to last
   var start = this.multiselection.start;
@@ -1068,8 +1068,10 @@ treemode._onMultiSelectEnd = function (event) {
  * deselect currently selected nodes
  * @param {boolean} [clearStartAndEnd=false]  If true, the `start` and `end`
  *                                            state is cleared too.
+ * @param {boolean} [noChangeEvent=false]     If true, do not emit onSelectionChanged event
  */
-treemode.deselect = function (clearStartAndEnd) {
+treemode.deselect = function (clearStartAndEnd, noChangeEvent) {
+  var selectionChanged = !!this.multiselection.nodes.length;
   this.multiselection.nodes.forEach(function (node) {
     node.setSelected(false);
   });
@@ -1078,6 +1080,12 @@ treemode.deselect = function (clearStartAndEnd) {
   if (clearStartAndEnd) {
     this.multiselection.start = null;
     this.multiselection.end = null;
+  }
+
+  if (!noChangeEvent && selectionChanged) {
+    if (this._selectionChangedHandler) {
+      this._selectionChangedHandler([]);
+    }
   }
 };
 
@@ -1091,7 +1099,7 @@ treemode.select = function (nodes) {
   }
 
   if (nodes) {
-    this.deselect();
+    this.deselect(false, false);
 
     this.multiselection.nodes = nodes.slice(0);
 
@@ -1099,6 +1107,10 @@ treemode.select = function (nodes) {
     nodes.forEach(function (node) {
       node.setSelected(true, node === first);
     });
+
+    if (this._selectionChangedHandler) {
+      this._selectionChangedHandler(nodes);
+    }
   }
 };
 
@@ -1320,6 +1332,27 @@ treemode.showContextMenu = function (anchor, onClose) {
 
   var menu = new ContextMenu(items, {close: onClose});
   menu.show(anchor, this.content);
+};
+
+/**
+ * Get current selected nodes
+ * @return {Array<Node>}
+ */
+treemode.getNodeSelection = function () {
+  return this.multiselection.nodes || [];
+};
+
+/**
+ * Callback registraion for selection change
+ * @param {selectionCallback} callback 
+ * 
+ * @callback selectionCallback
+ * @param {Array<Node>} nodes selected nodes 
+ */
+treemode.onNodeSelectionChanged = function (callback) {
+  if (typeof callback === 'function') {
+    this._selectionChangedHandler = util.debounce(callback, this.DEBOUNCE_INTERVAL);
+  }
 };
 
 

@@ -691,7 +691,7 @@ textmode.getTextSelection = function () {
 };
 
 /**
- * Callback registraion for selection changed 
+ * Callback registraion for selection change
  * @param {selectionCallback} callback
  * 
  * @callback selectionCallback
