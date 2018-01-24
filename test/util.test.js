@@ -110,5 +110,31 @@ describe('util', function () {
 
   });
 
+  describe('getIndexForPosition', function () {
+    var el = {
+      value: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.\nUt enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.\nDuis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.\nExcepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.'
+    };
+
+    it('happy flows - row and column in range', function () {
+      assert.equal(util.getIndexForPosition(el, 1, 1), 0);
+      assert.equal(util.getIndexForPosition(el, 2, 1), 124);
+      assert.equal(util.getIndexForPosition(el, 3, 8), 239);
+      assert.equal(util.getIndexForPosition(el, 4, 22), 356);
+    });
+
+    it('if range exceeds it should be considered as if it is last row or column length', function () {
+      assert.equal(util.getIndexForPosition(el, 1, 100000), 123);
+      assert.equal(util.getIndexForPosition(el, 100000, 1), 335);
+      assert.equal(util.getIndexForPosition(el, 100000, 100000), 445);
+    });
+
+    it('missing or wrong input sould return -1', function () {
+      assert.equal(util.getIndexForPosition(el), -1);
+      assert.equal(util.getIndexForPosition(el, undefined, 1), -1);
+      assert.equal(util.getIndexForPosition(el, 1, undefined), -1);
+      assert.equal(util.getIndexForPosition(el, -2, -2), -1);
+    });
+
+  })
   // TODO: thoroughly test all util methods
 });

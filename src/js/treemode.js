@@ -1355,6 +1355,45 @@ treemode.onNodeSelectionChanged = function (callback) {
   }
 };
 
+/**
+ * Select range of nodes.
+ * For selecting single node send only the first node parameter
+ * For clear selection do not send any parameter
+ * If the nodes are not from the same level the first common parent will be selected
+ * @param {Node} [node1] node for selection start 
+ * @param {Node} [node2] node for selection end
+ */
+treemode.setNodeSelection = function (node1, node2) {
+  var nodes = [];
+  if (node1) {
+    if (node2 && node2 !== node1) {
+      if (node1.parent === node2.parent) {
+        var start, end;
+        if (node1.getIndex() < node2.getIndex()) {
+          start = node1;
+          end = node2;
+        } else {
+          start = node2;
+          end = node1;
+        }
+        var current = start;
+        nodes.push(current);
+        do {
+          current = current.nextSibling();
+          nodes.push(current);
+        } while (current && current !== end);
+      } else {
+        nodes = this._findTopLevelNodes(node1, node2);
+      }
+    } else {
+      nodes.push(node1);
+    }
+  }
+  nodes.forEach(function(node) {
+    node.expandTo();
+  });
+  this.select(nodes);
+};
 
 // define modes
 module.exports = [

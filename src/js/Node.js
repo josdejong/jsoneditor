@@ -1551,7 +1551,7 @@ Node.onDragStart = function (nodes, event) {
   var firstNode = nodes[0];
   var lastNode = nodes[nodes.length - 1];
   var draggedNode = Node.getNodeFromTarget(event.target);
-  var beforeNode = lastNode._nextSibling();
+  var beforeNode = lastNode.nextSibling();
   var editor = firstNode.editor;
 
   // in case of multiple selected nodes, offsetY prevents the selection from
@@ -2550,7 +2550,7 @@ Node.prototype.onKeyDown = function (event) {
             !(lastNode.parent.childs.length == 1) &&
             nextNode2 && nextNode2.parent) {
           oldSelection = this.editor.getSelection();
-          oldBeforeNode = lastNode._nextSibling();
+          oldBeforeNode = lastNode.nextSibling();
 
           selectedNodes.forEach(function (node) {
             nextNode2.parent.moveBefore(node, nextNode2);
@@ -2597,7 +2597,7 @@ Node.prototype.onKeyDown = function (event) {
       prevNode = firstNode._previousNode();
       if (prevNode && prevNode.parent) {
         oldSelection = this.editor.getSelection();
-        oldBeforeNode = lastNode._nextSibling();
+        oldBeforeNode = lastNode.nextSibling();
 
         selectedNodes.forEach(function (node) {
           prevNode.parent.moveBefore(node, prevNode);
@@ -2633,7 +2633,7 @@ Node.prototype.onKeyDown = function (event) {
             (prevNode instanceof AppendNode)
             && !prevNode.isVisible()) {
           oldSelection = this.editor.getSelection();
-          oldBeforeNode = lastNode._nextSibling();
+          oldBeforeNode = lastNode.nextSibling();
 
           selectedNodes.forEach(function (node) {
             prevNode.parent.moveBefore(node, prevNode);
@@ -2686,7 +2686,7 @@ Node.prototype.onKeyDown = function (event) {
       var nextNode2 = nextNode && (nextNode._nextNode() || nextNode.parent.append);
       if (nextNode2 && nextNode2.parent) {
         oldSelection = this.editor.getSelection();
-        oldBeforeNode = lastNode._nextSibling();
+        oldBeforeNode = lastNode.nextSibling();
 
         selectedNodes.forEach(function (node) {
           nextNode2.parent.moveBefore(node, nextNode2);
@@ -3030,9 +3030,8 @@ Node.blurNodes = function (nodes) {
 /**
  * Get the next sibling of current node
  * @return {Node} nextSibling
- * @private
  */
-Node.prototype._nextSibling = function () {
+Node.prototype.nextSibling = function () {
   var index = this.parent.childs.indexOf(this);
   return this.parent.childs[index + 1] || this.parent.append;
 };
@@ -3040,7 +3039,6 @@ Node.prototype._nextSibling = function () {
 /**
  * Get the previously rendered node
  * @return {Node | null} previousNode
- * @private
  */
 Node.prototype._previousNode = function () {
   var prevNode = null;
