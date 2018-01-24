@@ -1,0 +1,126 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+
+  <link href="../dist/jsoneditor.css" rel="stylesheet" type="text/css">
+  <script src="../dist/jsoneditor.js"></script>
+
+  <style type="text/css">
+    body {
+      font: 10.5pt arial;
+      color: #4d4d4d;
+      line-height: 150%;
+      width: 500px;
+      padding-left: 40px;
+    }
+
+    code {
+      background-color: #f5f5f5;
+    }
+
+    code.multiline {
+      display: block;
+      white-space: pre-wrap 
+    }
+
+    #jsoneditor {
+      width: 500px;
+      height: 500px;
+    }
+  </style>
+</head>
+<body>
+
+<p>
+  Selection indication was done using the <code>on{Text/Node}SelectionChange</code> listeners.<br/>
+  you can try the following calls in the console of your browser:<br/>
+  <code class="multiline">
+    // text and code modes:
+    editor.getTextSelection()
+    editor.setTextSelection(startPos,endPos)
+    // tree mode:
+    editor.getNodeSelection()
+    editor.setNodeSelection(Node1,Node2)
+  </code>
+</p>
+
+<form>
+  <div id="jsoneditor"></div>
+  <div id="textModeSelection" style="display:none;">
+    <b>Selection:</b><div id="textRange"></div>
+    <b>Text:</b><div id="selectedText"></div>
+  </div>
+  <div id="treeModeSelection">
+    <b>Selection:  </b><span id="selectedCount"></span>
+    <div id="selectedNodes"></div>
+  </div>
+</form>
+
+<script>
+  var container, options, json, editor;
+
+  container = document.getElementById('jsoneditor');
+
+  options = {
+    mode: 'tree',
+    modes: ['code', 'form', 'text', 'tree', 'view'], // allowed modes
+    onError: function (err) {
+      alert(err.toString());
+    },
+    onChange: function () {
+      console.log('change');
+    },
+    onModeChange: function (mode) {
+      var treeMode = document.getElementById('treeModeSelection');
+      var textMode = document.getElementById('textModeSelection');
+
+      treeMode.style.display = textMode.style.display = 'none';
+
+      if (mode === 'code' || mode === 'text') {
+        textMode.style.display = 'inline';
+      } else {
+        treeMode.style.display = 'inline';
+      }
+    },
+    indentation: 4,
+    escapeUnicode: true,
+    onTextSelectionChange: function(text, start, end) {
+      var rangeEl = document.getElementById('textRange');
+      rangeEl.innerHTML = 'start: ' + JSON.stringify(start) + ', end: ' + JSON.stringify(end);
+      var textEl = document.getElementById('selectedText');
+      textEl.innerHTML = text;
+    },
+    onNodeSelectionChange: function(nodes) {
+      var nodesEl = document.getElementById('selectedNodes');
+      var nodesCountEl = document.getElementById('selectedCount');
+      nodesCountEl.innerHTML = nodes.length + ' nodes selected';
+      nodesEl.innerHTML = nodes.map(function(node) {
+        return node.field !== undefined
+        ? node._escapeHTML(node.field)
+        : (isNaN(node.index) ? node.type : node.index);
+      }).join(", ");
+    }
+  };
+
+  json = {
+    "array": [1, 2, [3,4,5]],
+    "boolean": true,
+    "htmlcode": '&quot;',
+    "escaped_unicode": '\\u20b9',
+    "unicode": '\u20b9,\uD83D\uDCA9',
+    "return": '\n',
+    "null": null,
+    "number": 123,
+    "object": {"a": "b", "c": "d"},
+    "string": "Hello World",
+    "url": "http://jsoneditoronline.org"
+  };
+
+  window.editor = new JSONEditor(container, options, json);
+
+  console.log('json', json);
+  console.log('string', JSON.stringify(json));
+</script>
+</body>
+</html>
