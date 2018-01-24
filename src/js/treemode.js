@@ -115,7 +115,8 @@ treemode._setOptions = function (options) {
     schema: null,
     schemaRefs: null,
     autocomplete: null,
-    navigationBar : true
+    navigationBar : true,
+    onNodeSelectionChange: null
   };
 
   // copy all options
@@ -132,6 +133,10 @@ treemode._setOptions = function (options) {
 
   // create a debounced validate function
   this._debouncedValidate = util.debounce(this.validate.bind(this), this.DEBOUNCE_INTERVAL);
+
+  if (options.onNodeSelectionChange) {
+    this.onNodeSelectionChange(options.onNodeSelectionChange);
+  }
 };
 
 /**
@@ -1349,7 +1354,7 @@ treemode.getNodeSelection = function () {
  * @callback selectionCallback
  * @param {Array<Node>} nodes selected nodes 
  */
-treemode.onNodeSelectionChanged = function (callback) {
+treemode.onNodeSelectionChange = function (callback) {
   if (typeof callback === 'function') {
     this._selectionChangedHandler = util.debounce(callback, this.DEBOUNCE_INTERVAL);
   }

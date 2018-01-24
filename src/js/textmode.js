@@ -31,6 +31,8 @@ var DEFAULT_THEME = 'ace/theme/jsoneditor';
  *                             {boolean} escapeUnicode   If true, unicode
  *                                                       characters are escaped.
  *                                                       false by default.
+ *                             {function} onTextSelectionChange Callback method, 
+ *                                                              triggered on text selection change
  * @private
  */
 textmode.create = function (container, options) {
@@ -74,6 +76,10 @@ textmode.create = function (container, options) {
     catch (err) {
       console.error(err);
     }
+  }
+
+  if (options.onTextSelectionChange) {
+    this.onTextSelectionChange(options.onTextSelectionChange);
   }
 
   var me = this;
@@ -699,7 +705,7 @@ textmode.getTextSelection = function () {
  * @param {{row:Number, column:Number}} startPos selection start position
  * @param {{row:Number, column:Number}} endPos selected end position
  */
-textmode.onTextSelectionChanged = function (callback) {
+textmode.onTextSelectionChange = function (callback) {
   if (typeof callback === 'function') {
     this._selectionChangedHandler = util.debounce(callback, this.DEBOUNCE_INTERVAL);
   }
