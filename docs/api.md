@@ -192,6 +192,38 @@ Constructs a new JSONEditor.
 
   Adds status bar to the buttom of the editor - the status bar shows the cursor position and a count of the selected charcters. True by default. Only applicable when `mode` is 'code' or 'text'.
 
+- `{function} onTextSelectionChange`
+
+  Set a callback function triggered when a text is selected in the JSONEditor.
+
+  callback signature should be:
+  ```js
+  /**
+  * @param {String} text selected text
+  * @param {{row:Number, column:Number}} startPos selection start position
+  * @param {{row:Number, column:Number}} endPos selected end position
+  */
+  function onTextSelectionChange(text, startPos, endPos) {
+    ...
+  }
+  ```
+  Only applicable when `mode` is 'code' or 'text'.
+
+- `{function} onNodeSelectionChange`
+
+  Set a callback function triggered when Nodes are selected in the JSONEditor.
+
+  callback signature should be:
+  ```js
+  /**
+  * @param {Array<Node>} nodes selected nodes
+  */
+  function onNodeSelectionChange(nodes) {
+    ...
+  }
+  ```
+  Only applicable when `mode` is 'tree'.
+
 ### Methods
 
 #### `JSONEditor.collapseAll()`
@@ -314,6 +346,53 @@ Get JSON data as string.
   is a compacted string. In order to get the JSON formatted with a certain
   number of spaces, use `JSON.stringify(JSONEditor.get(), null, 2)`.
 
+#### `JSONEditor.getTextSelection()`
+
+Get the current selected text with the selection range, Only applicable for mode 'text' and 'code'.
+
+*Returns:*
+
+- `{start:{row:Number, column:Number},end:{row:Number, column:Number},text:String} selection`
+
+#### `JSONEditor.setTextSelection(startPos, endPos)`
+
+Set text selection for a range, Only applicable for mode 'text' and 'code'.
+
+*Parameters:*
+
+- `{row:Number, column:Number} startPos`
+
+  Position for selection start
+
+- `{row:Number, column:Number} endPos`
+
+  Position for selection end
+
+#### `JSONEditor.getNodeSelection()`
+
+Get the current selected nodes, Only applicable for mode 'tree'.
+
+*Returns:*
+
+- `{Array<Node>} nodes`
+
+#### `JSONEditor.setNodeSelection(node1, node2)`
+
+Set selection for a range of nodes, Only applicable for mode 'tree'.
+
+- If no parameters sent - the current selection will be removed, if exists.
+- For single node selecion send a single parameter
+- If the nodes are not from the same level the first common parent will be selected
+
+*Parameters:*
+
+- `{Node} node1`
+
+  Node instance for selection start
+
+- `{Node} node2`
+
+  Node instance for selection end
 
 ### Examples
 
