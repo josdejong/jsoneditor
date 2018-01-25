@@ -890,8 +890,8 @@ exports.getInputSelection = function(el) {
 /**
  * Returns the index for certaion position in text element
  * @param {DOMElement} el A dom element of a textarea or input text.
- * @param {Number} row row value, > 0, if exceeds rows number - last row will be considered
- * @param {Number} column column value, > 0, if exceeds column length - end of column will be considered
+ * @param {Number} row row value, > 0, if exceeds rows number - last row will be returned
+ * @param {Number} column column value, > 0, if exceeds column length - end of column will be returned
  * @returns {Number} index of position in text, -1 if not found
  */
 exports.getIndexForPosition = function(el, row, column) {

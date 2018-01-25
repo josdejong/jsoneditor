@@ -1032,7 +1032,7 @@ treemode._onMultiSelect = function (event) {
   }
 
   // deselect previous selection
-  this.deselect(false, false);
+  this.deselect();
 
   // find the selected nodes in the range from first to last
   var start = this.multiselection.start;
@@ -1072,10 +1072,9 @@ treemode._onMultiSelectEnd = function (event) {
 /**
  * deselect currently selected nodes
  * @param {boolean} [clearStartAndEnd=false]  If true, the `start` and `end`
- *                                            state is cleared too.
- * @param {boolean} [noChangeEvent=false]     If true, do not emit onSelectionChanged event
+ *                                            state is cleared too. 
  */
-treemode.deselect = function (clearStartAndEnd, noChangeEvent) {
+treemode.deselect = function (clearStartAndEnd) {
   var selectionChanged = !!this.multiselection.nodes.length;
   this.multiselection.nodes.forEach(function (node) {
     node.setSelected(false);
@@ -1087,7 +1086,7 @@ treemode.deselect = function (clearStartAndEnd, noChangeEvent) {
     this.multiselection.end = null;
   }
 
-  if (!noChangeEvent && selectionChanged) {
+  if (selectionChanged) {
     if (this._selectionChangedHandler) {
       this._selectionChangedHandler([]);
     }
@@ -1104,7 +1103,7 @@ treemode.select = function (nodes) {
   }
 
   if (nodes) {
-    this.deselect(false, false);
+    this.deselect();
 
     this.multiselection.nodes = nodes.slice(0);
 
