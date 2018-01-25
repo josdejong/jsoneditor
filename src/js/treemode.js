@@ -1370,8 +1370,8 @@ treemode.onNodeSelectionChange = function (callback) {
  */
 treemode.setNodeSelection = function (node1, node2) {
   var nodes = [];
-  if (node1) {
-    if (node2 && node2 !== node1) {
+  if (node1 instanceof Node) {
+    if (node2 instanceof Node && node2 !== node1) {
       if (node1.parent === node2.parent) {
         var start, end;
         if (node1.getIndex() < node2.getIndex()) {
