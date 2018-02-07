@@ -3,6 +3,11 @@
 https://github.com/josdejong/jsoneditor
 
 
+## 2018-02-07, version 5.13.3
+
+- Fixed a positioning issue with JSON Schema errors in text/code mode.
+
+
 ## 2018-01-18, version 5.13.2
 
 - Fixed view mode opening links in a new tab instead of current tab
