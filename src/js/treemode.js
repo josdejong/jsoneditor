@@ -435,6 +435,8 @@ treemode.validate = function () {
     }
   }
 
+  var parentErrors = [];
+
   // display the error in the nodes with a problem
   this.errorNodes = duplicateErrors
       .concat(schemaErrors)
@@ -443,7 +445,11 @@ treemode.validate = function () {
         // original entries last
         return entry.node
             .findParents()
+            .filter(function (parent) {
+              return parentErrors.indexOf(parent) === -1;
+            })
             .map(function (parent) {
+              parentErrors.push(parent);
               return {
                 node: parent,
                 child: entry.node,
