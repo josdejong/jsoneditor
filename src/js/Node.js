@@ -1196,14 +1196,15 @@ Node.prototype._onChangeField = function () {
   // get current selection, then override the range such that we can select
   // the added/removed text on undo/redo
   var oldSelection = this.editor.getSelection();
+  var previous = this.previousField || '';
   if (oldSelection.range) {
-    var undoDiff = util.textDiff(this.field, this.previousField);
+    var undoDiff = util.textDiff(this.field, previous);
     oldSelection.range.startOffset = undoDiff.start;
     oldSelection.range.endOffset = undoDiff.end;
   }
   var newSelection = this.editor.getSelection();
   if (newSelection.range) {
-    var redoDiff = util.textDiff(this.previousField, this.field);
+    var redoDiff = util.textDiff(previous, this.field);
     newSelection.range.startOffset = redoDiff.start;
     newSelection.range.endOffset = redoDiff.end;
   }
