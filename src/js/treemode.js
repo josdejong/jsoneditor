@@ -1216,13 +1216,18 @@ treemode._onKeyDown = function (event) {
           setTimeout(function (hnode, element) {
               if (element.innerText.length > 0) {
                   var result = this.options.autocomplete.getOptions(element.innerText, hnode.getPath(), jsonElementType, hnode.editor);
-                  if (typeof result.then === 'function') {
+                  if (result === null) {
+                      this.autocomplete.hideDropDown();
+                  } else if (typeof result.then === 'function') {
                       // probably a promise
                       if (result.then(function (obj) {
-                          if (obj.options)
+                          if (obj === null) {
+                              this.autocomplete.hideDropDown();
+                          } else if (obj.options) {
                               this.autocomplete.show(element, obj.startFrom, obj.options);
-                          else
+                          } else {
                               this.autocomplete.show(element, 0, obj);
+                          }
                       }.bind(this)));
                   } else {
                       // definitely not a promise
