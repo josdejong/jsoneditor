@@ -3,6 +3,14 @@
 https://github.com/josdejong/jsoneditor
 
 
+## not yet released, version 5.13.4
+
+- Fixed a bug sometimes occurring when dragging items from array to
+  object, see #509. Thanks @43081j.
+- Fixed autocomplete not accepting returned `null` values, see #512.
+  Thanks @43081j.
+
+
 ## 2018-02-07, version 5.13.3
 
 - Fixed a positioning issue with JSON Schema errors in text/code mode.
