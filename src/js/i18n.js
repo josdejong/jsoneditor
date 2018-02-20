@@ -102,17 +102,19 @@ var _defs = {
     }
 };
 
+var _lang;
+var userLang = navigator.language || navigator.userLanguage;
+_lang = _locales.find(l => l === userLang);
+if (!_lang) {
+    _lang = 'en';
+}
 
 module.exports = {
     // supported locales
     _locales: _locales,
     translate: function (key, data, lang) {
         if (!lang) {
-            var userLang = navigator.language || navigator.userLanguage;
-            lang = _locales.find(l => l === userLang);
-            if (!lang) {
-                lang = 'en';
-            }
+            lang = _lang;
         }
         var text = _defs[lang][key];
         if (data) {
