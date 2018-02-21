@@ -112,6 +112,31 @@ if (!_lang) {
 module.exports = {
     // supported locales
     _locales: _locales,
+    _defs: _defs,
+    _lang: _lang,
+    setLanguage(lang) {
+        if (!lang) {
+            return;
+        }
+        var langFound = _locales.find(l => l === lang);
+        if (langFound) {
+            _lang = langFound;
+        } else {
+            console.error('Language not found');
+        }
+    },
+    setLanguages: function (languages) {
+        if (!languages) {
+            return;
+        }
+        for (var key in languages) {
+            _defs[key] = Object.assign({}, _defs[key], languages[key]);
+            var langFound = _locales.find(l => l === key);
+            if (!langFound) {
+                _locales.push(key);
+            }
+        }
+    },
     translate: function (key, data, lang) {
         if (!lang) {
             lang = _lang;

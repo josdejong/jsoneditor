@@ -10,7 +10,7 @@ var Node = require('./Node');
 var ModeSwitcher = require('./ModeSwitcher');
 var util = require('./util');
 var autocomplete = require('./autocomplete');
-var translate = require('./i18n').translate;
+var { translate, setLanguages, setLanguage}  = require('./i18n');
 
 // create a mixin with the functions for tree mode
 var treemode = {};
@@ -133,6 +133,9 @@ treemode._setOptions = function (options) {
 
   // create a debounced validate function
   this._debouncedValidate = util.debounce(this.validate.bind(this), this.DEBOUNCE_INTERVAL);
+
+  setLanguages(this.options.languages);
+  setLanguage(this.options.language)
 };
 
 /**
