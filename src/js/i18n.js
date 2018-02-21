@@ -102,11 +102,12 @@ var _defs = {
     }
 };
 
+var _defaultLang = 'en';
 var _lang;
 var userLang = navigator.language || navigator.userLanguage;
 _lang = _locales.find(l => l === userLang);
 if (!_lang) {
-    _lang = 'en';
+    _lang = _defaultLang;
 }
 
 module.exports = {
@@ -130,11 +131,11 @@ module.exports = {
             return;
         }
         for (var key in languages) {
-            _defs[key] = Object.assign({}, _defs[key], languages[key]);
             var langFound = _locales.find(l => l === key);
             if (!langFound) {
                 _locales.push(key);
             }
+            _defs[key] = Object.assign({}, _defs[_defaultLang], _defs[key], languages[key]);
         }
     },
     translate: function (key, data, lang) {
