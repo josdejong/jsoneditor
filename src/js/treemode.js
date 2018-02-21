@@ -436,23 +436,28 @@ treemode.validate = function () {
   }
 
   var errorNodes = duplicateErrors.concat(schemaErrors);
-  var parents = errorNodes
+  var parentPairs = errorNodes
       .reduce(function (all, entry) {
           return entry.node
               .findParents()
               .filter(function (parent) {
-                  return all.indexOf(parent) === -1;
+                  return !all.some(function (pair) {
+                    return pair[0] === parent;
+                  });
+              })
+              .map(function (parent) {
+                  return [parent, entry.node];
               })
               .concat(all);
       }, []);
 
-  this.errorNodes = parents
-      .map(function (parent) {
+  this.errorNodes = parentPairs
+      .map(function (pair) {
           return {
-            node: parent,
-            child: entry.node,
+            node: pair[0],
+            child: pair[1],
             error: {
-              message: parent.type === 'object'
+              message: pair[0].type === 'object'
                   ? 'Contains invalid properties' // object
                   : 'Contains invalid items'      // array
             }
