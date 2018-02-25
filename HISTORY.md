@@ -3,7 +3,7 @@
 https://github.com/josdejong/jsoneditor
 
 
-## not yet released, version 5.14.0
+## 2018-02-25, version 5.14.0
 
 - Implemented support for translations. Thanks @mariohmol.
 - Fixed a bug sometimes occurring when dragging items from array to
