@@ -9,6 +9,8 @@ https://github.com/josdejong/jsoneditor
   object, see #509. Thanks @43081j.
 - Fixed autocomplete not accepting returned `null` values, see #512.
   Thanks @43081j.
+- Fixed memory inefficiency when working with large JSON Schema's
+  generating many errors. Thanks @43081j.
 
 
 ## 2018-02-07, version 5.13.3
