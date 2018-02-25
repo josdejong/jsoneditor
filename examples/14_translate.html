@@ -2,10 +2,10 @@
 <html>
 
 <head>
-  <title>JSONEditor | Basic usage</title>
+  <title>JSONEditor | Translate</title>
 
   <link href="../dist/jsoneditor.css" rel="stylesheet" type="text/css">
-  <script src="../dist/jsoneditor.js"></script>
+  <script src="../dist/jsoneditor.min.js"></script>
 
   <style type="text/css">
     #jsoneditor {
@@ -16,6 +16,9 @@
 </head>
 
 <body>
+  <p>
+    JSONEditor has support for multiple languages (i18n), in this case uses <code>pt-BR</code>.
+  </p>
   <p>
     <button id="setJSON">Set JSON</button>
     <button id="getJSON">Get JSON</button>
@@ -28,7 +31,7 @@
     var options = {
       // switch between pt-BR or en for testing forcing a language
       // leave blank to get language
-      'language': 'en',  
+      'language': 'pt-BR',
       'languages': {
         'pt-BR': {
           'auto': 'Automático testing'

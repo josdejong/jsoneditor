@@ -10,7 +10,9 @@ var Node = require('./Node');
 var ModeSwitcher = require('./ModeSwitcher');
 var util = require('./util');
 var autocomplete = require('./autocomplete');
-var { translate, setLanguages, setLanguage}  = require('./i18n');
+var translate = require('./i18n').translate;
+var setLanguages = require('./i18n').setLanguages;
+var setLanguage = require('./i18n').setLanguage;
 
 // create a mixin with the functions for tree mode
 var treemode = {};

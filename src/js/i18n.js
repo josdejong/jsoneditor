@@ -105,7 +105,9 @@ var _defs = {
 var _defaultLang = 'en';
 var _lang;
 var userLang = navigator.language || navigator.userLanguage;
-_lang = _locales.find(l => l === userLang);
+_lang = _locales.find(function (l) {
+    return l === userLang;
+});
 if (!_lang) {
     _lang = _defaultLang;
 }
@@ -115,11 +117,13 @@ module.exports = {
     _locales: _locales,
     _defs: _defs,
     _lang: _lang,
-    setLanguage(lang) {
+    setLanguage: function (lang) {
         if (!lang) {
             return;
         }
-        var langFound = _locales.find(l => l === lang);
+        var langFound = _locales.find(function (l) {
+            return l === lang;
+        });
         if (langFound) {
             _lang = langFound;
         } else {
@@ -131,7 +135,9 @@ module.exports = {
             return;
         }
         for (var key in languages) {
-            var langFound = _locales.find(l => l === key);
+            var langFound = _locales.find(function (l) {
+                return l === key;
+            });
             if (!langFound) {
                 _locales.push(key);
             }

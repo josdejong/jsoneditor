@@ -3,8 +3,9 @@
 https://github.com/josdejong/jsoneditor
 
 
-## not yet released, version 5.13.4
+## not yet released, version 5.14.0
 
+- Implemented support for translations. Thanks @mariohmol.
 - Fixed a bug sometimes occurring when dragging items from array to
   object, see #509. Thanks @43081j.
 - Fixed autocomplete not accepting returned `null` values, see #512.
