@@ -10,6 +10,7 @@ var Node = require('./Node');
 var ModeSwitcher = require('./ModeSwitcher');
 var util = require('./util');
 var autocomplete = require('./autocomplete');
+var { translate, setLanguages, setLanguage}  = require('./i18n');
 
 // create a mixin with the functions for tree mode
 var treemode = {};
@@ -132,6 +133,9 @@ treemode._setOptions = function (options) {
 
   // create a debounced validate function
   this._debouncedValidate = util.debounce(this.validate.bind(this), this.DEBOUNCE_INTERVAL);
+
+  setLanguages(this.options.languages);
+  setLanguage(this.options.language)
 };
 
 /**
@@ -702,7 +706,7 @@ treemode._createFrame = function () {
   var expandAll = document.createElement('button');
   expandAll.type = 'button';
   expandAll.className = 'jsoneditor-expand-all';
-  expandAll.title = 'Expand all fields';
+  expandAll.title = translate('expandAll');
   expandAll.onclick = function () {
     editor.expandAll();
   };
@@ -711,7 +715,7 @@ treemode._createFrame = function () {
   // create collapse all button
   var collapseAll = document.createElement('button');
   collapseAll.type = 'button';
-  collapseAll.title = 'Collapse all fields';
+  collapseAll.title = translate('collapseAll');
   collapseAll.className = 'jsoneditor-collapse-all';
   collapseAll.onclick = function () {
     editor.collapseAll();
@@ -724,7 +728,7 @@ treemode._createFrame = function () {
     var undo = document.createElement('button');
     undo.type = 'button';
     undo.className = 'jsoneditor-undo jsoneditor-separator';
-    undo.title = 'Undo last action (Ctrl+Z)';
+    undo.title = translate('undo');
     undo.onclick = function () {
       editor._onUndo();
     };
@@ -735,7 +739,7 @@ treemode._createFrame = function () {
     var redo = document.createElement('button');
     redo.type = 'button';
     redo.className = 'jsoneditor-redo';
-    redo.title = 'Redo (Ctrl+Shift+Z)';
+    redo.title = translate('redo');
     redo.onclick = function () {
       editor._onRedo();
     };
@@ -1312,8 +1316,8 @@ treemode.showContextMenu = function (anchor, onClose) {
 
   // create duplicate button
   items.push({
-    text: 'Duplicate',
-    title: 'Duplicate selected fields (Ctrl+D)',
+    text: translate('duplicateText'),
+    title: translate('duplicateTitle'),
     className: 'jsoneditor-duplicate',
     click: function () {
       Node.onDuplicate(editor.multiselection.nodes);
@@ -1322,8 +1326,8 @@ treemode.showContextMenu = function (anchor, onClose) {
 
   // create remove button
   items.push({
-    text: 'Remove',
-    title: 'Remove selected fields (Ctrl+Del)',
+    text: translate('remove'),
+    title: translate('removeTitle'),
     className: 'jsoneditor-remove',
     click: function () {
       Node.onRemove(editor.multiselection.nodes);

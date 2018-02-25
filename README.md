@@ -67,9 +67,14 @@ with bower:
 
 #### More
 
-There is a directive available for using JSONEditor in Angular.js:
+
+There is a directive available for using JSONEditor in AngularJS:
 
 [https://github.com/isonet/angular-jsoneditor](https://github.com/isonet/angular-jsoneditor)
+
+Directive for Angular 5.x as well:
+
+[https://github.com/mariohmol/ang-jsoneditor](https://github.com/mariohmol/ang-jsoneditor)
 
 
 ## Use
