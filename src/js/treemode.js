@@ -435,28 +435,35 @@ treemode.validate = function () {
     }
   }
 
-  // display the error in the nodes with a problem
-  this.errorNodes = duplicateErrors
-      .concat(schemaErrors)
-      .reduce(function expandParents (all, entry) {
-        // expand parents, then merge such that parents come first and
-        // original entries last
-        return entry.node
-            .findParents()
-            .map(function (parent) {
-              return {
-                node: parent,
-                child: entry.node,
-                error: {
-                  message: parent.type === 'object'
-                      ? 'Contains invalid properties' // object
-                      : 'Contains invalid items'      // array
-                }
-              };
-            })
-            .concat(all, [entry]);
-      }, [])
-      // TODO: dedupe the parent nodes
+  var errorNodes = duplicateErrors.concat(schemaErrors);
+  var parentPairs = errorNodes
+      .reduce(function (all, entry) {
+          return entry.node
+              .findParents()
+              .filter(function (parent) {
+                  return !all.some(function (pair) {
+                    return pair[0] === parent;
+                  });
+              })
+              .map(function (parent) {
+                  return [parent, entry.node];
+              })
+              .concat(all);
+      }, []);
+
+  this.errorNodes = parentPairs
+      .map(function (pair) {
+          return {
+            node: pair[0],
+            child: pair[1],
+            error: {
+              message: pair[0].type === 'object'
+                  ? 'Contains invalid properties' // object
+                  : 'Contains invalid items'      // array
+            }
+          };
+      })
+      .concat(errorNodes)
       .map(function setError (entry) {
         entry.node.setError(entry.error, entry.child);
         return entry.node;
