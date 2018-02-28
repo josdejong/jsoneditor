@@ -86,7 +86,7 @@ div.jsoneditor-contextmenu div.jsoneditor-icon {
   border: none;
   padding: 0;
   margin: 0;
-  background-image: url('img/jsoneditor-icons.svg');
+  background-image: url('./img/jsoneditor-icons.svg');
 }
 
 div.jsoneditor-contextmenu ul li ul div.jsoneditor-icon {
@@ -110,7 +110,7 @@ div.jsoneditor-contextmenu ul li button div.jsoneditor-expand {
   height: 24px;
   padding: 0;
   margin: 0 4px 0 0;
-  background: url('img/jsoneditor-icons.svg') 0 -72px;
+  background: url('./img/jsoneditor-icons.svg') 0 -72px;
   opacity: 0.4;
 }
 

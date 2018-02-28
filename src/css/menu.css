@@ -21,7 +21,7 @@ div.jsoneditor-menu > div.jsoneditor-modes > button {
   padding: 0;
   border-radius: 2px;
   border: 1px solid transparent;
-  background: transparent url('img/jsoneditor-icons.svg');
+  background: transparent url('./img/jsoneditor-icons.svg');
   color: white;
   opacity: 0.8;
 
