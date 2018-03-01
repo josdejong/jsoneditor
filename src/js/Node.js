@@ -1164,13 +1164,13 @@ Node.prototype._getDomValue = function(silent) {
 Node.prototype._onChangeValue = function () {
   // get current selection, then override the range such that we can select
   // the added/removed text on undo/redo
-  var oldSelection = this.editor.getSelection();
+  var oldSelection = this.editor.getDomSelection();
   if (oldSelection.range) {
     var undoDiff = util.textDiff(String(this.value), String(this.previousValue));
     oldSelection.range.startOffset = undoDiff.start;
     oldSelection.range.endOffset = undoDiff.end;
   }
-  var newSelection = this.editor.getSelection();
+  var newSelection = this.editor.getDomSelection();
   if (newSelection.range) {
     var redoDiff = util.textDiff(String(this.previousValue), String(this.value));
     newSelection.range.startOffset = redoDiff.start;
@@ -1195,13 +1195,13 @@ Node.prototype._onChangeValue = function () {
 Node.prototype._onChangeField = function () {
   // get current selection, then override the range such that we can select
   // the added/removed text on undo/redo
-  var oldSelection = this.editor.getSelection();
+  var oldSelection = this.editor.getDomSelection();
   if (oldSelection.range) {
     var undoDiff = util.textDiff(this.field, this.previousField);
     oldSelection.range.startOffset = undoDiff.start;
     oldSelection.range.endOffset = undoDiff.end;
   }
-  var newSelection = this.editor.getSelection();
+  var newSelection = this.editor.getDomSelection();
   if (newSelection.range) {
     var redoDiff = util.textDiff(this.previousField, this.field);
     newSelection.range.startOffset = redoDiff.start;
@@ -1573,7 +1573,7 @@ Node.onDragStart = function (nodes, event) {
   editor.highlighter.lock();
   editor.drag = {
     oldCursor: document.body.style.cursor,
-    oldSelection: editor.getSelection(),
+    oldSelection: editor.getDomSelection(),
     oldBeforeNode: beforeNode,
     mouseX: event.pageX,
     offsetY: offsetY,
@@ -1771,7 +1771,7 @@ Node.onDragEnd = function (nodes, event) {
   var params = {
     nodes: nodes,
     oldSelection: editor.drag.oldSelection,
-    newSelection: editor.getSelection(),
+    newSelection: editor.getDomSelection(),
     oldBeforeNode: editor.drag.oldBeforeNode,
     newBeforeNode: beforeNode
   };
@@ -2323,7 +2323,7 @@ Node.prototype.onEvent = function (event) {
       case 'keydown':
       case 'mousedown':
           // TODO: cleanup
-        this.editor.selection = this.editor.getSelection();
+        this.editor.selection = this.editor.getDomSelection();
         break;
 
       case 'click':
@@ -2374,7 +2374,7 @@ Node.prototype.onEvent = function (event) {
 
       case 'keydown':
       case 'mousedown':
-        this.editor.selection = this.editor.getSelection();
+        this.editor.selection = this.editor.getDomSelection();
         break;
 
       case 'keyup':
@@ -2549,7 +2549,7 @@ Node.prototype.onKeyDown = function (event) {
         if (nextNode && nextNode instanceof AppendNode &&
             !(lastNode.parent.childs.length == 1) &&
             nextNode2 && nextNode2.parent) {
-          oldSelection = this.editor.getSelection();
+          oldSelection = this.editor.getDomSelection();
           oldBeforeNode = lastNode.nextSibling();
 
           selectedNodes.forEach(function (node) {
@@ -2562,7 +2562,7 @@ Node.prototype.onKeyDown = function (event) {
             oldBeforeNode: oldBeforeNode,
             newBeforeNode: nextNode2,
             oldSelection: oldSelection,
-            newSelection: this.editor.getSelection()
+            newSelection: this.editor.getDomSelection()
           });
         }
       }
@@ -2596,7 +2596,7 @@ Node.prototype.onKeyDown = function (event) {
       // find the previous node
       prevNode = firstNode._previousNode();
       if (prevNode && prevNode.parent) {
-        oldSelection = this.editor.getSelection();
+        oldSelection = this.editor.getDomSelection();
         oldBeforeNode = lastNode.nextSibling();
 
         selectedNodes.forEach(function (node) {
@@ -2609,7 +2609,7 @@ Node.prototype.onKeyDown = function (event) {
           oldBeforeNode: oldBeforeNode,
           newBeforeNode: prevNode,
           oldSelection: oldSelection,
-          newSelection: this.editor.getSelection()
+          newSelection: this.editor.getDomSelection()
         });
       }
       handled = true;
@@ -2632,7 +2632,7 @@ Node.prototype.onKeyDown = function (event) {
         if (prevNode && prevNode.parent &&
             (prevNode instanceof AppendNode)
             && !prevNode.isVisible()) {
-          oldSelection = this.editor.getSelection();
+          oldSelection = this.editor.getDomSelection();
           oldBeforeNode = lastNode.nextSibling();
 
           selectedNodes.forEach(function (node) {
@@ -2645,7 +2645,7 @@ Node.prototype.onKeyDown = function (event) {
             oldBeforeNode: oldBeforeNode,
             newBeforeNode: prevNode,
             oldSelection: oldSelection,
-            newSelection: this.editor.getSelection()
+            newSelection: this.editor.getDomSelection()
           });
         }
       }
@@ -2685,7 +2685,7 @@ Node.prototype.onKeyDown = function (event) {
       }
       var nextNode2 = nextNode && (nextNode._nextNode() || nextNode.parent.append);
       if (nextNode2 && nextNode2.parent) {
-        oldSelection = this.editor.getSelection();
+        oldSelection = this.editor.getDomSelection();
         oldBeforeNode = lastNode.nextSibling();
 
         selectedNodes.forEach(function (node) {
@@ -2698,7 +2698,7 @@ Node.prototype.onKeyDown = function (event) {
           oldBeforeNode: oldBeforeNode,
           newBeforeNode: nextNode2,
           oldSelection: oldSelection,
-          newSelection: this.editor.getSelection()
+          newSelection: this.editor.getDomSelection()
         });
       }
       handled = true;
@@ -2756,9 +2756,9 @@ Node.onRemove = function(nodes) {
     editor.highlighter.unhighlight();
 
     // adjust the focus
-    var oldSelection = editor.getSelection();
+    var oldSelection = editor.getDomSelection();
     Node.blurNodes(nodes);
-    var newSelection = editor.getSelection();
+    var newSelection = editor.getDomSelection();
 
     // remove the nodes
     nodes.forEach(function (node) {
@@ -2795,7 +2795,7 @@ Node.onDuplicate = function(nodes) {
     editor.deselect(editor.multiselection.nodes);
 
     // duplicate the nodes
-    var oldSelection = editor.getSelection();
+    var oldSelection = editor.getDomSelection();
     var afterNode = lastNode;
     var clones = nodes.map(function (node) {
       var clone = node.clone();
@@ -2811,7 +2811,7 @@ Node.onDuplicate = function(nodes) {
     else {
       editor.select(clones);
     }
-    var newSelection = editor.getSelection();
+    var newSelection = editor.getDomSelection();
 
     editor._onAction('duplicateNodes', {
       afterNode: lastNode,
@@ -2831,7 +2831,7 @@ Node.onDuplicate = function(nodes) {
  * @private
  */
 Node.prototype._onInsertBefore = function (field, value, type) {
-  var oldSelection = this.editor.getSelection();
+  var oldSelection = this.editor.getDomSelection();
 
   var newNode = new Node(this.editor, {
     field: (field != undefined) ? field : '',
@@ -2842,7 +2842,7 @@ Node.prototype._onInsertBefore = function (field, value, type) {
   this.parent.insertBefore(newNode, this);
   this.editor.highlighter.unhighlight();
   newNode.focus('field');
-  var newSelection = this.editor.getSelection();
+  var newSelection = this.editor.getDomSelection();
 
   this.editor._onAction('insertBeforeNodes', {
     nodes: [newNode],
@@ -2861,7 +2861,7 @@ Node.prototype._onInsertBefore = function (field, value, type) {
  * @private
  */
 Node.prototype._onInsertAfter = function (field, value, type) {
-  var oldSelection = this.editor.getSelection();
+  var oldSelection = this.editor.getDomSelection();
 
   var newNode = new Node(this.editor, {
     field: (field != undefined) ? field : '',
@@ -2872,7 +2872,7 @@ Node.prototype._onInsertAfter = function (field, value, type) {
   this.parent.insertAfter(newNode, this);
   this.editor.highlighter.unhighlight();
   newNode.focus('field');
-  var newSelection = this.editor.getSelection();
+  var newSelection = this.editor.getDomSelection();
 
   this.editor._onAction('insertAfterNodes', {
     nodes: [newNode],
@@ -2891,7 +2891,7 @@ Node.prototype._onInsertAfter = function (field, value, type) {
  * @private
  */
 Node.prototype._onAppend = function (field, value, type) {
-  var oldSelection = this.editor.getSelection();
+  var oldSelection = this.editor.getDomSelection();
 
   var newNode = new Node(this.editor, {
     field: (field != undefined) ? field : '',
@@ -2902,7 +2902,7 @@ Node.prototype._onAppend = function (field, value, type) {
   this.parent.appendChild(newNode);
   this.editor.highlighter.unhighlight();
   newNode.focus('field');
-  var newSelection = this.editor.getSelection();
+  var newSelection = this.editor.getDomSelection();
 
   this.editor._onAction('appendNodes', {
     nodes: [newNode],
@@ -2920,9 +2920,9 @@ Node.prototype._onAppend = function (field, value, type) {
 Node.prototype._onChangeType = function (newType) {
   var oldType = this.type;
   if (newType != oldType) {
-    var oldSelection = this.editor.getSelection();
+    var oldSelection = this.editor.getDomSelection();
     this.changeType(newType);
-    var newSelection = this.editor.getSelection();
+    var newSelection = this.editor.getDomSelection();
 
     this.editor._onAction('changeType', {
       node: this,

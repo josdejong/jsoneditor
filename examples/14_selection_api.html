@@ -40,8 +40,8 @@
     editor.getTextSelection()
     editor.setTextSelection(startPos,endPos)
     // tree mode:
-    editor.getNodeSelection()
-    editor.setNodeSelection(Node1,Node2)
+    editor.getSelection()
+    editor.setSelection(Node1,Node2)
   </code>
 </p>
 
@@ -91,7 +91,7 @@
       var textEl = document.getElementById('selectedText');
       textEl.innerHTML = text;
     },
-    onNodeSelectionChange: function(nodes) {
+    onSelectionChange: function(nodes) {
       var nodesEl = document.getElementById('selectedNodes');
       var nodesCountEl = document.getElementById('selectedCount');
       nodesCountEl.innerHTML = nodes.length + ' nodes selected';

@@ -116,7 +116,7 @@ treemode._setOptions = function (options) {
     schemaRefs: null,
     autocomplete: null,
     navigationBar : true,
-    onNodeSelectionChange: null
+    onSelectionChange: null
   };
 
   // copy all options
@@ -134,8 +134,8 @@ treemode._setOptions = function (options) {
   // create a debounced validate function
   this._debouncedValidate = util.debounce(this.validate.bind(this), this.DEBOUNCE_INTERVAL);
 
-  if (options.onNodeSelectionChange) {
-    this.onNodeSelectionChange(options.onNodeSelectionChange);
+  if (options.onSelectionChange) {
+    this.onSelectionChange(options.onSelectionChange);
   }
 };
 
@@ -543,7 +543,7 @@ treemode.stopAutoScroll = function () {
  *                            {Node[]} nodes                Nodes in case of multi selection
  *                            {Number} scrollTop            Scroll position
  */
-treemode.setSelection = function (selection) {
+treemode.setDomSelection = function (selection) {
   if (!selection) {
     return;
   }
@@ -573,7 +573,7 @@ treemode.setSelection = function (selection) {
  *                            {Node[]} nodes                Nodes in case of multi selection
  *                            {Number} scrollTop            Scroll position
  */
-treemode.getSelection = function () {
+treemode.getDomSelection = function () {
   var range = util.getSelectionOffset();
   if (range && range.container.nodeName !== 'DIV') { // filter on (editable) divs)
     range = null;
@@ -1342,7 +1342,7 @@ treemode.showContextMenu = function (anchor, onClose) {
  * Get current selected nodes
  * @return {Array<Node>}
  */
-treemode.getNodeSelection = function () {
+treemode.getSelection = function () {
   return this.multiselection.nodes || [];
 };
 
@@ -1353,7 +1353,7 @@ treemode.getNodeSelection = function () {
  * @callback selectionCallback
  * @param {Array<Node>} nodes selected nodes 
  */
-treemode.onNodeSelectionChange = function (callback) {
+treemode.onSelectionChange = function (callback) {
   if (typeof callback === 'function') {
     this._selectionChangedHandler = util.debounce(callback, this.DEBOUNCE_INTERVAL);
   }
@@ -1367,7 +1367,12 @@ treemode.onNodeSelectionChange = function (callback) {
  * @param {Node} [node1] node for selection start 
  * @param {Node} [node2] node for selection end
  */
-treemode.setNodeSelection = function (node1, node2) {
+treemode.setSelection = function (node1, node2) {
+  // check for old usage
+  if (node1.dom && node1.range) {
+    console.warn('setSelection/getSelection usage for text selection is depracated and should not be used, see documantaion for supported selection options');
+    this.setDomSelection(node1);
+  }
   var nodes = [];
   if (node1 instanceof Node) {
     if (node2 instanceof Node && node2 !== node1) {

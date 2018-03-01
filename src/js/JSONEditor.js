@@ -44,10 +44,10 @@ var util = require('./util');
  *                               {boolean} sortObjectKeys If true, object keys are
  *                                                        sorted before display.
  *                                                        false by default.
- *                               {function} onNodeSelectionChange Callback method, 
- *                                                                triggered on node selection change
- *                                                                Only applicable for modes
- *                                                                'tree', 'view', and 'form'
+ *                               {function} onSelectionChange Callback method, 
+ *                                                            triggered on node selection change
+ *                                                            Only applicable for modes
+ *                                                            'tree', 'view', and 'form'
  *                               {function} onTextSelectionChange Callback method, 
  *                                                                triggered on text selection change
  *                                                                Only applicable for modes
@@ -89,7 +89,7 @@ function JSONEditor (container, options, json) {
       var VALID_OPTIONS = [
         'ajv', 'schema', 'schemaRefs','templates',
         'ace', 'theme','autocomplete',
-        'onChange', 'onEditable', 'onError', 'onModeChange', 'onNodeSelectionChange', 'onTextSelectionChange',
+        'onChange', 'onEditable', 'onError', 'onModeChange', 'onSelectionChange', 'onTextSelectionChange',
         'escapeUnicode', 'history', 'search', 'mode', 'modes', 'name', 'indentation', 
         'sortObjectKeys', 'navigationBar', 'statusBar'
       ];

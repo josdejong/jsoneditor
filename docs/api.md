@@ -209,7 +209,7 @@ Constructs a new JSONEditor.
   ```
   Only applicable when `mode` is 'code' or 'text'.
 
-- `{function} onNodeSelectionChange`
+- `{function} onSelectionChange`
 
   Set a callback function triggered when Nodes are selected in the JSONEditor.
 
@@ -218,7 +218,7 @@ Constructs a new JSONEditor.
   /**
   * @param {Array<Node>} nodes selected nodes
   */
-  function onNodeSelectionChange(nodes) {
+  function onSelectionChange(nodes) {
     ...
   }
   ```
@@ -368,7 +368,7 @@ Set text selection for a range, Only applicable for mode 'text' and 'code'.
 
   Position for selection end
 
-#### `JSONEditor.getNodeSelection()`
+#### `JSONEditor.getSelection()`
 
 Get the current selected nodes, Only applicable for mode 'tree'.
 
@@ -376,7 +376,7 @@ Get the current selected nodes, Only applicable for mode 'tree'.
 
 - `{Array<Node>} nodes`
 
-#### `JSONEditor.setNodeSelection(node1, node2)`
+#### `JSONEditor.setSelection(node1, node2)`
 
 Set selection for a range of nodes, Only applicable for mode 'tree'.
 
