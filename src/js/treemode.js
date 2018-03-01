@@ -1364,26 +1364,26 @@ treemode.onSelectionChange = function (callback) {
  * For selecting single node send only the first node parameter
  * For clear selection do not send any parameter
  * If the nodes are not from the same level the first common parent will be selected
- * @param {Node} [node1] node for selection start 
- * @param {Node} [node2] node for selection end
+ * @param {Node} [startNode] node for selection start 
+ * @param {Node} [endNode] node for selection end
  */
-treemode.setSelection = function (node1, node2) {
+treemode.setSelection = function (startNode, endNode) {
   // check for old usage
-  if (node1.dom && node1.range) {
+  if (startNode.dom && startNode.range) {
     console.warn('setSelection/getSelection usage for text selection is depracated and should not be used, see documantaion for supported selection options');
-    this.setDomSelection(node1);
+    this.setDomSelection(startNode);
   }
   var nodes = [];
-  if (node1 instanceof Node) {
-    if (node2 instanceof Node && node2 !== node1) {
-      if (node1.parent === node2.parent) {
+  if (startNode instanceof Node) {
+    if (endNode instanceof Node && endNode !== startNode) {
+      if (startNode.parent === endNode.parent) {
         var start, end;
-        if (node1.getIndex() < node2.getIndex()) {
-          start = node1;
-          end = node2;
+        if (startNode.getIndex() < endNode.getIndex()) {
+          start = startNode;
+          end = endNode;
         } else {
-          start = node2;
-          end = node1;
+          start = endNode;
+          end = startNode;
         }
         var current = start;
         nodes.push(current);
@@ -1392,10 +1392,10 @@ treemode.setSelection = function (node1, node2) {
           nodes.push(current);
         } while (current && current !== end);
       } else {
-        nodes = this._findTopLevelNodes(node1, node2);
+        nodes = this._findTopLevelNodes(startNode, endNode);
       }
     } else {
-      nodes.push(node1);
+      nodes.push(startNode);
     }
   }
   nodes.forEach(function(node) {

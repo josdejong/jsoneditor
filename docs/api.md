@@ -376,21 +376,21 @@ Get the current selected nodes, Only applicable for mode 'tree'.
 
 - `{Array<Node>} nodes`
 
-#### `JSONEditor.setSelection(node1, node2)`
+#### `JSONEditor.setSelection(startNode, endNode)`
 
 Set selection for a range of nodes, Only applicable for mode 'tree'.
 
 - If no parameters sent - the current selection will be removed, if exists.
-- For single node selecion send a single parameter
+- For single node selecion send only the `startNode` parameter.
 - If the nodes are not from the same level the first common parent will be selected
 
 *Parameters:*
 
-- `{Node} node1`
+- `{Node} startNode`
 
   Node instance for selection start
 
-- `{Node} node2`
+- `{Node} endNode`
 
   Node instance for selection end
 
