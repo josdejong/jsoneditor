@@ -11,7 +11,7 @@ import {
   META,
   SELECTED, SELECTED_START, SELECTED_END, SELECTED_AFTER, SELECTED_INSIDE,
   SELECTED_FIRST, SELECTED_LAST
-} from  '../eson'
+} from '../eson'
 
 export default class JSONNode extends PureComponent {
   static URL_TITLE = 'Ctrl+Click or Ctrl+Enter to open url'
@@ -58,6 +58,7 @@ export default class JSONNode extends PureComponent {
   }
 
   renderJSONObject () {
+    // TODO: refactor renderJSONObject (too large/complex)
     const meta = this.props.value[META]
     const props = meta.props
     const nodeStart = h('div', {
@@ -122,6 +123,7 @@ export default class JSONNode extends PureComponent {
   }
 
   renderJSONArray () {
+    // TODO: refactor renderJSONArray (too large/complex)
     const meta = this.props.value[META]
     const count = this.props.value.length
     const nodeStart = h('div', {
@@ -534,13 +536,15 @@ export default class JSONNode extends PureComponent {
 
     const isLastOfMultiple = ((selected & SELECTED_LAST) !== 0) &&
         ((selected & SELECTED_FIRST) === 0)
+    const isAfter = ((selected & SELECTED_AFTER) !== 0)
+    // const isInside = ((selected & SELECTED_INSIDE) !== 0) // TODO: nicely position menu when selected inside
 
     return h(FloatingMenu, {
       key: 'floating-menu',
       path: this.props.value[META].path,
       emit: this.props.emit,
       items: this.getFloatingMenuItems(type, selected),
-      position: isLastOfMultiple ? 'bottom' : 'top'
+      position: isLastOfMultiple || isAfter ? 'bottom' : 'top'
     })
   }
 
