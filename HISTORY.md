@@ -3,7 +3,7 @@
 https://github.com/josdejong/jsoneditor
 
 
-## not yet released, version 5.14.1
+## 2018-03-21, version 5.14.1
 
 - Fixed absolute path of css image `jsoneditor-icons.svg`, which could.
   give issues with webpack plugin "file-loader". Thanks @landru29.
