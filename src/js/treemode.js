@@ -1088,7 +1088,7 @@ treemode.deselect = function (clearStartAndEnd) {
 
   if (selectionChanged) {
     if (this._selectionChangedHandler) {
-      this._selectionChangedHandler([]);
+      this._selectionChangedHandler();
     }
   }
 };
@@ -1113,7 +1113,8 @@ treemode.select = function (nodes) {
     });
 
     if (this._selectionChangedHandler) {
-      this._selectionChangedHandler(nodes);
+      var selection = this.getSelection();
+      this._selectionChangedHandler(selection.start, selection.end);
     }
   }
 };
@@ -1340,10 +1341,18 @@ treemode.showContextMenu = function (anchor, onClose) {
 
 /**
  * Get current selected nodes
- * @return {Array<Node>}
+ * @return {{start:SerializableNode, end: SerializableNode}} if no selection an empty object will be retured
  */
 treemode.getSelection = function () {
-  return this.multiselection.nodes || [];
+  var selection = {};
+  if (this.multiselection.nodes && this.multiselection.nodes.length) {
+    selection.start = this.multiselection.nodes[0].serialize();
+
+    if (this.multiselection.nodes.length > 1) {
+      selection.end = this.multiselection.nodes[this.multiselection.nodes.length - 1].serialize();
+    }
+  }
+  return selection;
 };
 
 /**
@@ -1351,7 +1360,8 @@ treemode.getSelection = function () {
  * @param {selectionCallback} callback 
  * 
  * @callback selectionCallback
- * @param {Array<Node>} nodes selected nodes 
+ * @param {SerializableNode=} start
+ * @param {SerializableNode=} end
  */
 treemode.onSelectionChange = function (callback) {
   if (typeof callback === 'function') {
@@ -1361,18 +1371,28 @@ treemode.onSelectionChange = function (callback) {
 
 /**
  * Select range of nodes.
- * For selecting single node send only the first node parameter
- * For clear selection do not send any parameter
+ * For selecting single node send only the start parameter
+ * For clear the selection do not send any parameter
  * If the nodes are not from the same level the first common parent will be selected
- * @param {Node} [startNode] node for selection start 
- * @param {Node} [endNode] node for selection end
+ * @param {{path: Array.<String>}} start object contains the path for selection start 
+ * @param {{path: Array.<String>}=} end object contains the path for selection end
  */
-treemode.setSelection = function (startNode, endNode) {
+treemode.setSelection = function (start, end) {
   // check for old usage
-  if (startNode.dom && startNode.range) {
+  if (start && start.dom && start.range) {
     console.warn('setSelection/getSelection usage for text selection is depracated and should not be used, see documantaion for supported selection options');
     this.setDomSelection(startNode);
   }
+
+  var startNode, endNode;
+
+  if (start && start.path) {
+    startNode = this.node.findNodeByPath(start.path);
+    if (end && end.path) {
+      endNode = this.node.findNodeByPath(end.path);
+    }
+  }
+
   var nodes = [];
   if (startNode instanceof Node) {
     if (endNode instanceof Node && endNode !== startNode) {

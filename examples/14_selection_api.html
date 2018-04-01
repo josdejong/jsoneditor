@@ -33,15 +33,15 @@
 <body>
 
 <p>
-  Selection indication was done using the <code>on{Text/Node}SelectionChange</code> listeners.<br/>
+  Selection indication was done using the <code>on[Text]SelectionChange</code> listeners.<br/>
   you can try the following calls in the console of your browser:<br/>
   <code class="multiline">
     // text and code modes:
     editor.getTextSelection()
-    editor.setTextSelection(startPos,endPos)
+    editor.setTextSelection(startPos, endPos)
     // tree mode:
     editor.getSelection()
-    editor.setSelection(Node1,Node2)
+    editor.setSelection(startNode, endNode)
   </code>
 </p>
 
@@ -52,7 +52,7 @@
     <b>Text:</b><div id="selectedText"></div>
   </div>
   <div id="treeModeSelection">
-    <b>Selection:  </b><span id="selectedCount"></span>
+    <b>Selection:</b>
     <div id="selectedNodes"></div>
   </div>
 </form>
@@ -91,15 +91,15 @@
       var textEl = document.getElementById('selectedText');
       textEl.innerHTML = text;
     },
-    onSelectionChange: function(nodes) {
+    onSelectionChange: function(start, end) {
       var nodesEl = document.getElementById('selectedNodes');
-      var nodesCountEl = document.getElementById('selectedCount');
-      nodesCountEl.innerHTML = nodes.length + ' nodes selected';
-      nodesEl.innerHTML = nodes.map(function(node) {
-        return node.field !== undefined
-        ? node._escapeHTML(node.field)
-        : (isNaN(node.index) ? node.type : node.index);
-      }).join(", ");
+      nodesEl.innerHTML = '';
+      if (start) {
+        nodesEl.innerHTML = ('start: '  + JSON.stringify(start));
+        if (end) {
+          nodesEl.innerHTML += ('<br/>end: '  + JSON.stringify(end));
+        }
+      }
     }
   };
 

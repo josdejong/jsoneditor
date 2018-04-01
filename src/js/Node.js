@@ -80,18 +80,61 @@ Node.prototype.getPath = function () {
   var node = this;
   var path = [];
   while (node) {
-    var field = !node.parent
-        ? undefined  // do not add an (optional) field name of the root node
-        :  (node.parent.type != 'array')
-            ? node.field
-            : node.index;
-
+    var field = node.getName();
     if (field !== undefined) {
       path.unshift(field);
     }
     node = node.parent;
   }
   return path;
+};
+
+/**
+ * Get node serializable name
+ * @returns {String|Number}
+ */
+Node.prototype.getName = function () {
+ return !this.parent
+ ? undefined  // do not add an (optional) field name of the root node
+ :  (this.parent.type != 'array')
+     ? this.field
+     : this.index;
+};
+
+/**
+ * Find child node by serializable path
+ * @param {Array<String>} path 
+ */
+Node.prototype.findNodeByPath = function (path) {
+  if (!path) {
+    return;
+  }
+
+  if (path.length == 0) {
+    return this;
+  }
+
+  if (path.length && this.childs && this.childs.length) {
+    for (var i=0; i < this.childs.length; ++i) {
+      if (path[0] === '' + this.childs[i].getName()) {
+        return this.childs[i].findNodeByPath(path.slice(1));
+      }
+    }
+  }
+};
+
+/**
+ * @typedef {{field: String, value: String|Object|Number|Boolean, path: Array.<String|Number>} SerializableNode
+ * 
+ * Returns serializable representation for the node
+ * @return {SerializedNode}
+ */
+Node.prototype.serialize = function () {
+  return {
+    field: this.getField(),
+    value: this.getValue(),
+    path: this.getPath()
+  };
 };
 
 /**

@@ -216,7 +216,10 @@ Constructs a new JSONEditor.
   callback signature should be:
   ```js
   /**
-  * @param {Array<Node>} nodes selected nodes
+  * @typedef {{field: String, value: String|Object|Number|Boolean, path: Array.<String|Number>} SerializableNode
+  * 
+  * @param {SerializableNode=} start
+  * @param {SerializableNode=} end
   */
   function onSelectionChange(nodes) {
     ...
@@ -374,9 +377,9 @@ Get the current selected nodes, Only applicable for mode 'tree'.
 
 *Returns:*
 
-- `{Array<Node>} nodes`
+- `{{start:SerializableNode, end: SerializableNode}}`
 
-#### `JSONEditor.setSelection(startNode, endNode)`
+#### `JSONEditor.setSelection(start, end)`
 
 Set selection for a range of nodes, Only applicable for mode 'tree'.
 
@@ -386,13 +389,13 @@ Set selection for a range of nodes, Only applicable for mode 'tree'.
 
 *Parameters:*
 
-- `{Node} startNode`
+- `{{path: Array.<String>}} start`
 
-  Node instance for selection start
+  Path for the start node
 
-- `{Node} endNode`
+- `{{path: Array.<String>}} end`
 
-  Node instance for selection end
+  Path for the end node
 
 ### Examples
 
