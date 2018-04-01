@@ -125,7 +125,7 @@ Constructs a new JSONEditor.
 
   The following example allow you can create a "Person" node and a "Address" node, each one will appear in your context menu, once you selected the whole json object will be created.
 
-    ```js
+  ```js
   var options = {
     templates: [
           {
@@ -226,6 +226,29 @@ Constructs a new JSONEditor.
   }
   ```
   Only applicable when `mode` is 'tree'.
+  
+- `{string} language`
+
+  The default language comes from the browser navigator, but you can force a specific language. So use here string as 'en' or 'pt-BR'. Built-in languages: `en`, `pt-BR`. Other translations can be specified via the option `languages`.
+
+
+- `{Object} languages`
+
+  You can override existing translations or provide a new translation for a specific language. To do it provide an object at languages with language and the keys/values to be inserted. For example:
+
+  ```
+  'languages': {
+    'pt-BR': {
+      'auto': 'Automático testing'
+    },
+    'en': {
+      'auto': 'Auto testing'
+    }
+  }
+  ```
+
+  All available fields for translation can be found in the source file `src/js/i18n.js`.
+
 
 ### Methods
 

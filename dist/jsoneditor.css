@@ -310,7 +310,7 @@ div.jsoneditor td,
 div.jsoneditor th,
 div.jsoneditor textarea,
 .jsoneditor-schema-error {
-  font-family: droid sans mono, consolas, monospace, courier new, courier, sans-serif;
+  font-family: "dejavu sans mono", "droid sans mono", consolas, monaco, "lucida console", "courier new", courier, monospace, sans-serif;
   font-size: 10pt;
   color: #1A1A1A;
 }
@@ -974,7 +974,7 @@ div.jsoneditor div.autocomplete.dropdown {
   padding-right: 5pt;
   text-align: left;
   outline: 0;
-  font-family: droid sans mono, consolas, monospace, courier new, courier, sans-serif;
+  font-family: "dejavu sans mono", "droid sans mono", consolas, monaco, "lucida console", "courier new", courier, monospace, sans-serif;
   font-size: 10pt;
 }
 
@@ -1021,7 +1021,7 @@ div.jsoneditor-treepath span.jsoneditor-treepath-seperator:hover {
 div.jsoneditor-statusbar {
   line-height: 26px;
   height: 26px;
-  margin-top: -26px;
+  margin-top: -1px;
   color: #808080;
   background-color: #ebebeb;
   border-top: 1px solid #d3d3d3;

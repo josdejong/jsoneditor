@@ -1,7 +1,7 @@
 div.jsoneditor-statusbar {
   line-height: 26px;
   height: 26px;
-  margin-top: -26px;
+  margin-top: -1px;
   color: #808080;
   background-color: #ebebeb;
   border-top: 1px solid #d3d3d3;
@@ -9,7 +9,6 @@ div.jsoneditor-statusbar {
   -webkit-box-sizing: border-box;
   box-sizing: border-box;
   font-size: 10pt;
-
 }
 
 div.jsoneditor-statusbar > .jsoneditor-curserinfo-label {

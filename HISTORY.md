@@ -3,13 +3,36 @@
 https://github.com/josdejong/jsoneditor
 
 
-## not yet released, version 5.13.2
+## 2018-03-21, version 5.14.1
+
+- Fixed absolute path of css image `jsoneditor-icons.svg`, which could.
+  give issues with webpack plugin "file-loader". Thanks @landru29.
+
+
+## 2018-02-25, version 5.14.0
+
+- Implemented support for translations. Thanks @mariohmol.
+- Fixed a bug sometimes occurring when dragging items from array to
+  object, see #509. Thanks @43081j.
+- Fixed autocomplete not accepting returned `null` values, see #512.
+  Thanks @43081j.
+- Fixed memory inefficiency when working with large JSON Schema's
+  generating many errors. Thanks @43081j.
+
+
+## 2018-02-07, version 5.13.3
+
+- Fixed a positioning issue with JSON Schema errors in text/code mode.
+
+
+## 2018-01-18, version 5.13.2
 
 - Fixed view mode opening links in a new tab instead of current tab
   when Ctrl key is not down. Thanks @LEW21.
+- Fixed #502: code editor not showing a monospaced font some cases.
 
 
-## 2018-12-28, version 5.13.1
+## 2017-12-28, version 5.13.1
 
 - Fixed another occurrence of #494: properties not escaped in the
   navigation bar.

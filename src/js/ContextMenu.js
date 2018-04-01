@@ -1,6 +1,7 @@
 'use strict';
 
 var util = require('./util');
+var translate = require('./i18n').translate;
 
 /**
  * Node.getRootNode shim
@@ -151,7 +152,7 @@ function ContextMenu (items, options) {
         else {
           // no submenu, just a button with clickhandler
           button.innerHTML = '<div class="jsoneditor-icon"></div>' +
-              '<div class="jsoneditor-text">' + item.text + '</div>';
+              '<div class="jsoneditor-text">' + translate(item.text) + '</div>';
         }
 
         domItems.push(domItem);

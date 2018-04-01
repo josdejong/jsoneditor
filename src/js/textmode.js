@@ -252,11 +252,17 @@ textmode.create = function (container, options) {
     textarea.onblur = this._onBlur.bind(this);
   }
 
+  var validationErrorsContainer = document.createElement('div');
+  validationErrorsContainer.className = 'validation-errors-container';
+  this.dom.validationErrorsContainer = validationErrorsContainer;
+  this.frame.appendChild(validationErrorsContainer);
+
   if (options.statusBar) {
     util.addClassName(this.content, 'has-status-bar');
 
     this.curserInfoElements = {};
     var statusBar = document.createElement('div');
+    this.dom.statusBar = statusBar;
     statusBar.className = 'jsoneditor-statusbar';
     this.frame.appendChild(statusBar);
 
@@ -651,9 +657,10 @@ textmode.validate = function () {
         '</table>';
 
     this.dom.validationErrors = validationErrors;
-    this.frame.appendChild(validationErrors);
+    this.dom.validationErrorsContainer.appendChild(validationErrors);
 
-    var height = validationErrors.clientHeight;
+    var height = validationErrors.clientHeight +
+        (this.dom.statusBar ? this.dom.statusBar.clientHeight : 0);
     this.content.style.marginBottom = (-height) + 'px';
     this.content.style.paddingBottom = height + 'px';
   }

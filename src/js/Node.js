@@ -4,6 +4,7 @@ var naturalSort = require('javascript-natural-sort');
 var ContextMenu = require('./ContextMenu');
 var appendNodeFactory = require('./appendNodeFactory');
 var util = require('./util');
+var translate = require('./i18n').translate;
 
 /**
  * @constructor Node
@@ -995,7 +996,7 @@ Node.prototype._move = function(node, beforeNode) {
 
   // check if this node is not a child of the node to be moved here
   if (node.containsNode(this)) {
-    throw new Error('Cannot move a field into a child of itself');
+    throw new Error(translate('validationCannotMove'));
   }
 
   // remove the original node
@@ -1239,14 +1240,15 @@ Node.prototype._onChangeField = function () {
   // get current selection, then override the range such that we can select
   // the added/removed text on undo/redo
   var oldSelection = this.editor.getDomSelection();
+  var previous = this.previousField || '';
   if (oldSelection.range) {
-    var undoDiff = util.textDiff(this.field, this.previousField);
+    var undoDiff = util.textDiff(this.field, previous);
     oldSelection.range.startOffset = undoDiff.start;
     oldSelection.range.endOffset = undoDiff.end;
   }
   var newSelection = this.editor.getDomSelection();
   if (newSelection.range) {
-    var redoDiff = util.textDiff(this.previousField, this.field);
+    var redoDiff = util.textDiff(previous, this.field);
     newSelection.range.startOffset = redoDiff.start;
     newSelection.range.endOffset = redoDiff.end;
   }
@@ -1306,7 +1308,7 @@ Node.prototype._updateDomValue = function () {
       domValue.title = this.type + ' containing ' + count + ' items';
     }
     else if (isUrl && this.editable.value) {
-      domValue.title = 'Ctrl+Click or Ctrl+Enter to open url in new window';
+      domValue.title = translate('openUrl');
     }
     else {
       domValue.title = '';
@@ -1493,7 +1495,7 @@ Node.prototype.validate = function () {
             return {
               node: node,
               error: {
-                message: 'duplicate key "' + node.field + '"'
+                message: translate('duplicateKey') + ' "' + node.field + '"'
               }
             }
           });
@@ -1550,7 +1552,7 @@ Node.prototype.getDom = function() {
         domDrag.type = 'button';
         dom.drag = domDrag;
         domDrag.className = 'jsoneditor-dragarea';
-        domDrag.title = 'Drag to move this field (Alt+Shift+Arrows)';
+        domDrag.title = translate('drag');
         tdDrag.appendChild(domDrag);
       }
     }
@@ -1562,7 +1564,7 @@ Node.prototype.getDom = function() {
     menu.type = 'button';
     dom.menu = menu;
     menu.className = 'jsoneditor-contextmenu';
-    menu.title = 'Click to open the actions menu (Ctrl+M)';
+    menu.title = translate('actionsMenu');
     tdMenu.appendChild(dom.menu);
     dom.tr.appendChild(tdMenu);
   }
@@ -2219,9 +2221,7 @@ Node.prototype._createDomExpandButton = function () {
   expand.type = 'button';
   if (this._hasChilds()) {
     expand.className = this.expanded ? 'jsoneditor-expanded' : 'jsoneditor-collapsed';
-    expand.title =
-        'Click to expand/collapse this field (Ctrl+E). \n' +
-        'Ctrl+Click to expand/collapse including all childs.';
+    expand.title = translate('expandTitle');
   }
   else {
     expand.className = 'jsoneditor-invisible';
@@ -3249,16 +3249,10 @@ Node.prototype._hasChilds = function () {
 
 // titles with explanation for the different types
 Node.TYPE_TITLES = {
-  'auto': 'Field type "auto". ' +
-      'The field type is automatically determined from the value ' +
-      'and can be a string, number, boolean, or null.',
-  'object': 'Field type "object". ' +
-      'An object contains an unordered set of key/value pairs.',
-  'array': 'Field type "array". ' +
-      'An array contains an ordered collection of values.',
-  'string': 'Field type "string". ' +
-      'Field type is not determined from the value, ' +
-      'but always returned as string.'
+  'auto': translate('autoType'),
+  'object': translate('objectType'),
+  'array': translate('arrayType'),
+  'string': translate('stringType')
 };
 
 Node.prototype.addTemplates = function (menu, append) {
@@ -3301,12 +3295,12 @@ Node.prototype.showContextMenu = function (anchor, onClose) {
 
   if (this.editable.value) {
     items.push({
-      text: 'Type',
-      title: 'Change the type of this field',
+      text: translate('type'),
+      title: translate('typeTitle'),
       className: 'jsoneditor-type-' + this.type,
       submenu: [
         {
-          text: 'Auto',
+          text: translate('auto'),
           className: 'jsoneditor-type-auto' +
               (this.type == 'auto' ? ' jsoneditor-selected' : ''),
           title: titles.auto,
@@ -3315,7 +3309,7 @@ Node.prototype.showContextMenu = function (anchor, onClose) {
           }
         },
         {
-          text: 'Array',
+          text: translate('array'),
           className: 'jsoneditor-type-array' +
               (this.type == 'array' ? ' jsoneditor-selected' : ''),
           title: titles.array,
@@ -3324,7 +3318,7 @@ Node.prototype.showContextMenu = function (anchor, onClose) {
           }
         },
         {
-          text: 'Object',
+          text: translate('object'),
           className: 'jsoneditor-type-object' +
               (this.type == 'object' ? ' jsoneditor-selected' : ''),
           title: titles.object,
@@ -3333,7 +3327,7 @@ Node.prototype.showContextMenu = function (anchor, onClose) {
           }
         },
         {
-          text: 'String',
+          text: translate('string'),
           className: 'jsoneditor-type-string' +
               (this.type == 'string' ? ' jsoneditor-selected' : ''),
           title: titles.string,
@@ -3348,25 +3342,25 @@ Node.prototype.showContextMenu = function (anchor, onClose) {
   if (this._hasChilds()) {
     var direction = ((this.sortOrder == 'asc') ? 'desc': 'asc');
     items.push({
-      text: 'Sort',
-      title: 'Sort the childs of this ' + this.type,
+      text: translate('sort'),
+      title: translate('sortTitle') + this.type,
       className: 'jsoneditor-sort-' + direction,
       click: function () {
         node.sort(direction);
       },
       submenu: [
         {
-          text: 'Ascending',
+          text: translate('ascending'),
           className: 'jsoneditor-sort-asc',
-          title: 'Sort the childs of this ' + this.type + ' in ascending order',
+          title: translate('ascendingTitle' , {type: this.type}),
           click: function () {
             node.sort('asc');
           }
         },
         {
-          text: 'Descending',
+          text: translate('descending'),
           className: 'jsoneditor-sort-desc',
-          title: 'Sort the childs of this ' + this.type +' in descending order',
+          title: translate('descendingTitle' , {type: this.type}),
           click: function () {
             node.sort('desc');
           }
@@ -3388,7 +3382,7 @@ Node.prototype.showContextMenu = function (anchor, onClose) {
     if (node == childs[childs.length - 1]) {
         var appendSubmenu = [
             {
-                text: 'Auto',
+                text: translate('auto'),
                 className: 'jsoneditor-type-auto',
                 title: titles.auto,
                 click: function () {
@@ -3396,7 +3390,7 @@ Node.prototype.showContextMenu = function (anchor, onClose) {
                 }
             },
             {
-                text: 'Array',
+                text: translate('array'),
                 className: 'jsoneditor-type-array',
                 title: titles.array,
                 click: function () {
@@ -3404,7 +3398,7 @@ Node.prototype.showContextMenu = function (anchor, onClose) {
                 }
             },
             {
-                text: 'Object',
+                text: translate('object'),
                 className: 'jsoneditor-type-object',
                 title: titles.object,
                 click: function () {
@@ -3412,7 +3406,7 @@ Node.prototype.showContextMenu = function (anchor, onClose) {
                 }
             },
             {
-                text: 'String',
+                text: translate('string'),
                 className: 'jsoneditor-type-string',
                 title: titles.string,
                 click: function () {
@@ -3422,9 +3416,9 @@ Node.prototype.showContextMenu = function (anchor, onClose) {
         ];
         node.addTemplates(appendSubmenu, true);
         items.push({
-            text: 'Append',
-            title: 'Append a new field with type \'auto\' after this field (Ctrl+Shift+Ins)',
-            submenuTitle: 'Select the type of the field to be appended',
+            text: translate('appendText'),
+            title: translate('appendTitle'),
+            submenuTitle: translate('appendSubmenuTitle'),
             className: 'jsoneditor-append',
             click: function () {
                 node._onAppend('', '', 'auto');
@@ -3438,7 +3432,7 @@ Node.prototype.showContextMenu = function (anchor, onClose) {
     // create insert button
     var insertSubmenu = [
         {
-            text: 'Auto',
+            text: translate('auto'),
             className: 'jsoneditor-type-auto',
             title: titles.auto,
             click: function () {
@@ -3446,7 +3440,7 @@ Node.prototype.showContextMenu = function (anchor, onClose) {
             }
         },
         {
-            text: 'Array',
+            text: translate('array'),
             className: 'jsoneditor-type-array',
             title: titles.array,
             click: function () {
@@ -3454,7 +3448,7 @@ Node.prototype.showContextMenu = function (anchor, onClose) {
             }
         },
         {
-            text: 'Object',
+            text: translate('object'),
             className: 'jsoneditor-type-object',
             title: titles.object,
             click: function () {
@@ -3462,7 +3456,7 @@ Node.prototype.showContextMenu = function (anchor, onClose) {
             }
         },
         {
-            text: 'String',
+            text: translate('string'),
             className: 'jsoneditor-type-string',
             title: titles.string,
             click: function () {
@@ -3472,9 +3466,9 @@ Node.prototype.showContextMenu = function (anchor, onClose) {
     ];
     node.addTemplates(insertSubmenu, false);
     items.push({
-      text: 'Insert',
-      title: 'Insert a new field with type \'auto\' before this field (Ctrl+Ins)',
-      submenuTitle: 'Select the type of the field to be inserted',
+      text: translate('insert'),
+      title: translate('insertTitle'),
+      submenuTitle: translate('insertSub'),
       className: 'jsoneditor-insert',
       click: function () {
         node._onInsertBefore('', '', 'auto');
@@ -3485,8 +3479,8 @@ Node.prototype.showContextMenu = function (anchor, onClose) {
     if (this.editable.field) {
       // create duplicate button
       items.push({
-        text: 'Duplicate',
-        title: 'Duplicate this field (Ctrl+D)',
+        text: translate('duplicateText'),
+        title: translate('duplicateField'),
         className: 'jsoneditor-duplicate',
         click: function () {
           Node.onDuplicate(node);
@@ -3495,8 +3489,8 @@ Node.prototype.showContextMenu = function (anchor, onClose) {
 
       // create remove button
       items.push({
-        text: 'Remove',
-        title: 'Remove this field (Ctrl+Del)',
+        text: translate('removeText'),
+        title: translate('removeField'),
         className: 'jsoneditor-remove',
         click: function () {
           Node.onRemove(node);

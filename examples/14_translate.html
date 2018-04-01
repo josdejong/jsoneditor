@@ -1,0 +1,57 @@
+<!DOCTYPE HTML>
+<html>
+
+<head>
+  <title>JSONEditor | Translate</title>
+
+  <link href="../dist/jsoneditor.css" rel="stylesheet" type="text/css">
+  <script src="../dist/jsoneditor.js"></script>
+
+  <style type="text/css">
+    #jsoneditor {
+      width: 500px;
+      height: 500px;
+    }
+  </style>
+</head>
+
+<body>
+  <p>
+    JSONEditor has support for multiple languages (i18n), in this case uses <code>pt-BR</code>.
+  </p>
+  <div id="jsoneditor"></div>
+
+  <script>
+    // create the editor
+    var container = document.getElementById('jsoneditor');
+    var options = {
+      // switch between pt-BR or en for testing forcing a language
+      // leave blank to get language
+      'language': 'pt-BR',
+      'languages': {
+        'pt-BR': {
+          'auto': 'Automático testing'
+        },
+        'en': {
+          'auto': 'Auto testing'
+        },
+        'newlang': {
+          'auto': 'Auto new lang'
+        }
+      }
+    };
+    var editor = new JSONEditor(container, options);
+
+    var json = {
+      'array': [1, 2, 3],
+      'boolean': true,
+      'null': null,
+      'number': 123,
+      'object': { 'a': 'b', 'c': 'd' },
+      'string': 'Hello World'
+    };
+    editor.set(json);
+  </script>
+</body>
+
+</html>

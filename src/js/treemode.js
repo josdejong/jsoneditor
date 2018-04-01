@@ -10,6 +10,9 @@ var Node = require('./Node');
 var ModeSwitcher = require('./ModeSwitcher');
 var util = require('./util');
 var autocomplete = require('./autocomplete');
+var translate = require('./i18n').translate;
+var setLanguages = require('./i18n').setLanguages;
+var setLanguage = require('./i18n').setLanguage;
 
 // create a mixin with the functions for tree mode
 var treemode = {};
@@ -137,6 +140,9 @@ treemode._setOptions = function (options) {
   if (options.onSelectionChange) {
     this.onSelectionChange(options.onSelectionChange);
   }
+  
+  setLanguages(this.options.languages);
+  setLanguage(this.options.language)
 };
 
 /**
@@ -440,28 +446,35 @@ treemode.validate = function () {
     }
   }
 
-  // display the error in the nodes with a problem
-  this.errorNodes = duplicateErrors
-      .concat(schemaErrors)
-      .reduce(function expandParents (all, entry) {
-        // expand parents, then merge such that parents come first and
-        // original entries last
-        return entry.node
-            .findParents()
-            .map(function (parent) {
-              return {
-                node: parent,
-                child: entry.node,
-                error: {
-                  message: parent.type === 'object'
-                      ? 'Contains invalid properties' // object
-                      : 'Contains invalid items'      // array
-                }
-              };
-            })
-            .concat(all, [entry]);
-      }, [])
-      // TODO: dedupe the parent nodes
+  var errorNodes = duplicateErrors.concat(schemaErrors);
+  var parentPairs = errorNodes
+      .reduce(function (all, entry) {
+          return entry.node
+              .findParents()
+              .filter(function (parent) {
+                  return !all.some(function (pair) {
+                    return pair[0] === parent;
+                  });
+              })
+              .map(function (parent) {
+                  return [parent, entry.node];
+              })
+              .concat(all);
+      }, []);
+
+  this.errorNodes = parentPairs
+      .map(function (pair) {
+          return {
+            node: pair[0],
+            child: pair[1],
+            error: {
+              message: pair[0].type === 'object'
+                  ? 'Contains invalid properties' // object
+                  : 'Contains invalid items'      // array
+            }
+          };
+      })
+      .concat(errorNodes)
       .map(function setError (entry) {
         entry.node.setError(entry.error, entry.child);
         return entry.node;
@@ -700,7 +713,7 @@ treemode._createFrame = function () {
   var expandAll = document.createElement('button');
   expandAll.type = 'button';
   expandAll.className = 'jsoneditor-expand-all';
-  expandAll.title = 'Expand all fields';
+  expandAll.title = translate('expandAll');
   expandAll.onclick = function () {
     editor.expandAll();
   };
@@ -709,7 +722,7 @@ treemode._createFrame = function () {
   // create collapse all button
   var collapseAll = document.createElement('button');
   collapseAll.type = 'button';
-  collapseAll.title = 'Collapse all fields';
+  collapseAll.title = translate('collapseAll');
   collapseAll.className = 'jsoneditor-collapse-all';
   collapseAll.onclick = function () {
     editor.collapseAll();
@@ -722,7 +735,7 @@ treemode._createFrame = function () {
     var undo = document.createElement('button');
     undo.type = 'button';
     undo.className = 'jsoneditor-undo jsoneditor-separator';
-    undo.title = 'Undo last action (Ctrl+Z)';
+    undo.title = translate('undo');
     undo.onclick = function () {
       editor._onUndo();
     };
@@ -733,7 +746,7 @@ treemode._createFrame = function () {
     var redo = document.createElement('button');
     redo.type = 'button';
     redo.className = 'jsoneditor-redo';
-    redo.title = 'Redo (Ctrl+Shift+Z)';
+    redo.title = translate('redo');
     redo.onclick = function () {
       editor._onRedo();
     };
@@ -1233,13 +1246,18 @@ treemode._onKeyDown = function (event) {
           setTimeout(function (hnode, element) {
               if (element.innerText.length > 0) {
                   var result = this.options.autocomplete.getOptions(element.innerText, hnode.getPath(), jsonElementType, hnode.editor);
-                  if (typeof result.then === 'function') {
+                  if (result === null) {
+                      this.autocomplete.hideDropDown();
+                  } else if (typeof result.then === 'function') {
                       // probably a promise
                       if (result.then(function (obj) {
-                          if (obj.options)
+                          if (obj === null) {
+                              this.autocomplete.hideDropDown();
+                          } else if (obj.options) {
                               this.autocomplete.show(element, obj.startFrom, obj.options);
-                          else
+                          } else {
                               this.autocomplete.show(element, 0, obj);
+                          }
                       }.bind(this)));
                   } else {
                       // definitely not a promise
@@ -1317,8 +1335,8 @@ treemode.showContextMenu = function (anchor, onClose) {
 
   // create duplicate button
   items.push({
-    text: 'Duplicate',
-    title: 'Duplicate selected fields (Ctrl+D)',
+    text: translate('duplicateText'),
+    title: translate('duplicateTitle'),
     className: 'jsoneditor-duplicate',
     click: function () {
       Node.onDuplicate(editor.multiselection.nodes);
@@ -1327,8 +1345,8 @@ treemode.showContextMenu = function (anchor, onClose) {
 
   // create remove button
   items.push({
-    text: 'Remove',
-    title: 'Remove selected fields (Ctrl+Del)',
+    text: translate('remove'),
+    title: translate('removeTitle'),
     className: 'jsoneditor-remove',
     click: function () {
       Node.onRemove(editor.multiselection.nodes);
