@@ -1384,6 +1384,21 @@ treemode.setSelection = function (start, end) {
     this.setDomSelection(startNode);
   }
 
+  var nodes = this.getNodesByRange(start, end);
+  
+  nodes.forEach(function(node) {
+    node.expandTo();
+  });
+  this.select(nodes);
+};
+
+/**
+ * Returns a set of Nodes according to a range of selection
+ * @param {{path: Array.<String>}} start object contains the path for selection start 
+ * @param {{path: Array.<String>}=} end object contains the path for selection end
+ * @return {Array.<Node>} Node intances on the given range
+ */
+treemode.getNodesByRange = function (start, end) {
   var startNode, endNode;
 
   if (start && start.path) {
@@ -1418,10 +1433,9 @@ treemode.setSelection = function (start, end) {
       nodes.push(startNode);
     }
   }
-  nodes.forEach(function(node) {
-    node.expandTo();
-  });
-  this.select(nodes);
+
+  return nodes;
+
 };
 
 // define modes
