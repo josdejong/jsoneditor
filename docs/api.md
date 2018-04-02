@@ -221,12 +221,12 @@ Constructs a new JSONEditor.
   * @param {SerializableNode=} start
   * @param {SerializableNode=} end
   */
-  function onSelectionChange(nodes) {
+  function onSelectionChange(start, end) {
     ...
   }
   ```
   Only applicable when `mode` is 'tree'.
-  
+
 - `{string} language`
 
   The default language comes from the browser navigator, but you can force a specific language. So use here string as 'en' or 'pt-BR'. Built-in languages: `en`, `pt-BR`. Other translations can be specified via the option `languages`.
@@ -407,7 +407,7 @@ Get the current selected nodes, Only applicable for mode 'tree'.
 Set selection for a range of nodes, Only applicable for mode 'tree'.
 
 - If no parameters sent - the current selection will be removed, if exists.
-- For single node selecion send only the `startNode` parameter.
+- For single node selecion send only the `start` parameter.
 - If the nodes are not from the same level the first common parent will be selected
 
 *Parameters:*
@@ -425,7 +425,7 @@ Set selection for a range of nodes, Only applicable for mode 'tree'.
 
 A utility function for getting a list of `Node` instances under certain range.
 
-This function can be used as complementary to `getSelection` and `onSelectionChange` if a list of __all__ the selected nodes is required 
+This function can be used as complementary to `getSelection` and `onSelectionChange` if a list of __all__ the selected nodes is required.
 
 *Parameters:*
 

@@ -140,7 +140,7 @@ treemode._setOptions = function (options) {
   if (options.onSelectionChange) {
     this.onSelectionChange(options.onSelectionChange);
   }
-  
+
   setLanguages(this.options.languages);
   setLanguage(this.options.language)
 };
@@ -1399,7 +1399,7 @@ treemode.setSelection = function (start, end) {
   // check for old usage
   if (start && start.dom && start.range) {
     console.warn('setSelection/getSelection usage for text selection is depracated and should not be used, see documantaion for supported selection options');
-    this.setDomSelection(startNode);
+    this.setDomSelection(start);
   }
 
   var nodes = this.getNodesByRange(start, end);
@@ -1412,8 +1412,8 @@ treemode.setSelection = function (start, end) {
 
 /**
  * Returns a set of Nodes according to a range of selection
- * @param {{path: Array.<String>}} start object contains the path for selection start 
- * @param {{path: Array.<String>}=} end object contains the path for selection end
+ * @param {{path: Array.<String>}} start object contains the path for range start 
+ * @param {{path: Array.<String>}=} end object contains the path for range end
  * @return {Array.<Node>} Node intances on the given range
  */
 treemode.getNodesByRange = function (start, end) {
