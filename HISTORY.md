@@ -661,7 +661,7 @@ https://github.com/josdejong/jsoneditor
 
 ## 2012-08-12, version 1.2.0
 
-- New: Added search functionality. Search results are expanded and highlighed.
+- New: Added search functionality. Search results are expanded and highlighted.
   Quickkeys in the search box: Enter (next), Shift+Enter (previous), Ctrl+Enter
   (search again).
 - New: The position of the vertical separator between left and right panel is
@@ -708,7 +708,7 @@ https://github.com/josdejong/jsoneditor
 ## 2012-03-01, version 0.9.10
 
 - Nicer looking select box for the field types, with icons.
-- Improved drag and drop: better visualized, and now working in all browers.
+- Improved drag and drop: better visualized, and now working in all browsers.
 - Previous values will be restored after changing the type of a field. When
   changing the type back, the previous value or childs will be restored.
 - When hovering buttons (fieldtype, duplicate, delete, add) or when dragging
@@ -741,7 +741,7 @@ https://github.com/josdejong/jsoneditor
 
 ## 2012-01-09, version 0.9.7
 
-- Added functionallity to expand/collapse a node and all its childs. Click
+- Added functionality to expand/collapse a node and all its childs. Click
   the expand button of a node while holding Ctrl down.
 - Small interface improvements
 
