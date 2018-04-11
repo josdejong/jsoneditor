@@ -190,7 +190,7 @@ Constructs a new JSONEditor.
 
 - `{boolean} statusBar`
 
-  Adds status bar to the buttom of the editor - the status bar shows the cursor position and a count of the selected charcters. True by default. Only applicable when `mode` is 'code' or 'text'.
+  Adds status bar to the bottom of the editor - the status bar shows the cursor position and a count of the selected characters. True by default. Only applicable when `mode` is 'code' or 'text'.
 
 - `{string} language`
 
