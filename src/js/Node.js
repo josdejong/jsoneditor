@@ -1739,7 +1739,7 @@ Node.onDrag = function (nodes, event) {
           nodePrev = Node.getNodeFromTarget(trPrev);
 
           var isDraggedNode = nodes.some(function (node) {
-            return node === nodePrev || nodePrev._isChildOf(node);
+            return node === nodePrev || nodePrev.isDescendantOf(node);
           });
 
           if (isDraggedNode) {
@@ -1851,12 +1851,12 @@ Node.onDragEnd = function (nodes, event) {
 };
 
 /**
- * Test if this node is a child of an other node
+ * Test if this node is a sescendant of an other node
  * @param {Node} node
- * @return {boolean} isChild
+ * @return {boolean} isDescendant
  * @private
  */
-Node.prototype._isChildOf = function (node) {
+Node.prototype.isDescendantOf = function (node) {
   var n = this.parent;
   while (n) {
     if (n == node) {

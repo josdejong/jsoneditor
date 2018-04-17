@@ -1364,10 +1364,18 @@ treemode.showContextMenu = function (anchor, onClose) {
 treemode.getSelection = function () {
   var selection = {};
   if (this.multiselection.nodes && this.multiselection.nodes.length) {
-    selection.start = this.multiselection.nodes[0].serialize();
-
-    if (this.multiselection.nodes.length > 1) {
-      selection.end = this.multiselection.nodes[this.multiselection.nodes.length - 1].serialize();
+    if (this.multiselection.nodes.length === 1) {
+      selection.start = selection.end = this.multiselection.nodes[0].serialize();
+    } else {
+      var selection1 = this.multiselection.nodes[0];
+      var selection2 = this.multiselection.nodes[this.multiselection.nodes.length - 1];
+      if (this.multiselection.start === selection1 || this.multiselection.start.isDescendantOf(selection1)) {
+        selection.start = selection1.serialize();
+        selection.end = selection2.serialize();
+      } else {
+        selection.start = selection2.serialize();
+        selection.end = selection1.serialize();
+      }
     }
   }
   return selection;
