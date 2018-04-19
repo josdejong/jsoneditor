@@ -216,7 +216,7 @@ Constructs a new JSONEditor.
   callback signature should be:
   ```js
   /**
-  * @typedef {{field: String, value: String|Object|Number|Boolean, path: Array.<String|Number>} SerializableNode
+  * @typedef {{value: String|Object|Number|Boolean, path: Array.<String|Number>}} SerializableNode
   * 
   * @param {SerializableNode=} start
   * @param {SerializableNode=} end
