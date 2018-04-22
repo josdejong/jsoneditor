@@ -400,7 +400,7 @@ Get the current selected nodes, Only applicable for mode 'tree'.
 
 *Returns:*
 
-- `{{start:SerializableNode, end: SerializableNode}}`
+- `{start:SerializableNode, end: SerializableNode}`
 
 #### `JSONEditor.setSelection(start, end)`
 
@@ -412,28 +412,28 @@ Set selection for a range of nodes, Only applicable for mode 'tree'.
 
 *Parameters:*
 
-- `{{path: Array.<String>}} start`
+- `{path: Array.<String>} start`
 
   Path for the start node
 
-- `{{path: Array.<String>}} end`
+- `{path: Array.<String>} end`
 
   Path for the end node
 
 
 #### `JSONEditor.getNodesByRange(start, end)`
 
-A utility function for getting a list of `Node` instances under certain range.
+A utility function for getting a list of `SerializableNode` under certain range.
 
 This function can be used as complementary to `getSelection` and `onSelectionChange` if a list of __all__ the selected nodes is required.
 
 *Parameters:*
 
-- `{{path: Array.<String>}} start`
+- `{path: Array.<String>} start`
 
   Path for the first node in range
 
-- `{{path: Array.<String>}} end`
+- `{path: Array.<String>} end`
 
   Path for the last node in range
 

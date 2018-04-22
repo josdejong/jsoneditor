@@ -117,7 +117,7 @@ Node.prototype.findNodeByPath = function (path) {
 
   if (path.length && this.childs && this.childs.length) {
     for (var i=0; i < this.childs.length; ++i) {
-      if (path[0] === '' + this.childs[i].getName()) {
+      if (('' + path[0]) === ('' + this.childs[i].getName())) {
         return this.childs[i].findNodeByPath(path.slice(1));
       }
     }
