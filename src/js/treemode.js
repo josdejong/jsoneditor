@@ -1053,6 +1053,14 @@ treemode._onMultiSelect = function (event) {
   if (start && end) {
     // find the top level childs, all having the same parent
     this.multiselection.nodes = this._findTopLevelNodes(start, end);
+    if (this.multiselection.nodes && this.multiselection.nodes.length) {
+      var firstNode = this.multiselection.nodes[0];
+      if (this.multiselection.start === firstNode || this.multiselection.start.isDescendantOf(firstNode)) {
+        this.multiselection.direction = 'down';
+      } else {
+        this.multiselection.direction = 'up';
+      }
+    }
     this.select(this.multiselection.nodes);
   }
 };
@@ -1364,12 +1372,10 @@ treemode.showContextMenu = function (anchor, onClose) {
 treemode.getSelection = function () {
   var selection = {};
   if (this.multiselection.nodes && this.multiselection.nodes.length) {
-    if (this.multiselection.nodes.length === 1) {
-      selection.start = selection.end = this.multiselection.nodes[0].serialize();
-    } else {
+    if (this.multiselection.nodes.length) {
       var selection1 = this.multiselection.nodes[0];
       var selection2 = this.multiselection.nodes[this.multiselection.nodes.length - 1];
-      if (this.multiselection.start === selection1 || this.multiselection.start.isDescendantOf(selection1)) {
+      if (this.multiselection.direction === 'down') {
         selection.start = selection1.serialize();
         selection.end = selection2.serialize();
       } else {
@@ -1410,7 +1416,7 @@ treemode.setSelection = function (start, end) {
     this.setDomSelection(start);
   }
 
-  var nodes = this.getNodesByRange(start, end);
+  var nodes = this._getNodeIntsncesByRange(start, end);
   
   nodes.forEach(function(node) {
     node.expandTo();
@@ -1423,8 +1429,9 @@ treemode.setSelection = function (start, end) {
  * @param {{path: Array.<String>}} start object contains the path for range start 
  * @param {{path: Array.<String>}=} end object contains the path for range end
  * @return {Array.<Node>} Node intances on the given range
+ * @private
  */
-treemode.getNodesByRange = function (start, end) {
+treemode._getNodeIntsncesByRange = function (start, end) {
   var startNode, endNode;
 
   if (start && start.path) {
@@ -1463,6 +1470,17 @@ treemode.getNodesByRange = function (start, end) {
   return nodes;
 
 };
+
+treemode.getNodesByRange = function (start, end) {
+  var nodes = this._getNodeIntsncesByRange(start, end);
+  var serializableNodes = [];
+
+  nodes.forEach(function (node){
+    serializableNodes.push(node.serialize());
+  });
+
+  return serializableNodes;
+}
 
 // define modes
 module.exports = [
