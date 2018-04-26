@@ -1370,7 +1370,10 @@ treemode.showContextMenu = function (anchor, onClose) {
  * @return {{start:SerializableNode, end: SerializableNode}} if no selection an empty object will be retured
  */
 treemode.getSelection = function () {
-  var selection = {};
+  var selection = {
+    start: null,
+    end: null
+  };
   if (this.multiselection.nodes && this.multiselection.nodes.length) {
     if (this.multiselection.nodes.length) {
       var selection1 = this.multiselection.nodes[0];

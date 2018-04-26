@@ -464,7 +464,7 @@ textmode._updateCursorInfo = function () {
 textmode._emitSelectionChange = function () {
   if(this._selectionChangedHandler) {
     var currentSelection = this.getTextSelection();
-    this._selectionChangedHandler(currentSelection.text, currentSelection.start, currentSelection.end);
+    this._selectionChangedHandler(currentSelection.start, currentSelection.end, currentSelection.text);
   }
 }
 
@@ -750,9 +750,9 @@ textmode.getTextSelection = function () {
  * @param {selectionCallback} callback
  * 
  * @callback selectionCallback
- * @param {String} text selected text
  * @param {{row:Number, column:Number}} startPos selection start position
  * @param {{row:Number, column:Number}} endPos selected end position
+ * @param {String} text selected text
  */
 textmode.onTextSelectionChange = function (callback) {
   if (typeof callback === 'function') {

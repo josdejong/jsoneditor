@@ -199,11 +199,11 @@ Constructs a new JSONEditor.
   callback signature should be:
   ```js
   /**
-  * @param {String} text selected text
   * @param {{row:Number, column:Number}} startPos selection start position
   * @param {{row:Number, column:Number}} endPos selected end position
+  * @param {String} text selected text
   */
-  function onTextSelectionChange(text, startPos, endPos) {
+  function onTextSelectionChange(startPos, endPos, text) {
     ...
   }
   ```

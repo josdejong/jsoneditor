@@ -85,7 +85,7 @@
     },
     indentation: 4,
     escapeUnicode: true,
-    onTextSelectionChange: function(text, start, end) {
+    onTextSelectionChange: function(start, end, text) {
       var rangeEl = document.getElementById('textRange');
       rangeEl.innerHTML = 'start: ' + JSON.stringify(start) + ', end: ' + JSON.stringify(end);
       var textEl = document.getElementById('selectedText');
