@@ -192,6 +192,41 @@ Constructs a new JSONEditor.
 
   Adds status bar to the bottom of the editor - the status bar shows the cursor position and a count of the selected characters. True by default. Only applicable when `mode` is 'code' or 'text'.
 
+- `{function} onTextSelectionChange`
+
+  Set a callback function triggered when a text is selected in the JSONEditor.
+
+  callback signature should be:
+  ```js
+  /**
+  * @param {{row:Number, column:Number}} startPos selection start position
+  * @param {{row:Number, column:Number}} endPos selected end position
+  * @param {String} text selected text
+  */
+  function onTextSelectionChange(startPos, endPos, text) {
+    ...
+  }
+  ```
+  Only applicable when `mode` is 'code' or 'text'.
+
+- `{function} onSelectionChange`
+
+  Set a callback function triggered when Nodes are selected in the JSONEditor.
+
+  callback signature should be:
+  ```js
+  /**
+  * @typedef {{value: String|Object|Number|Boolean, path: Array.<String|Number>}} SerializableNode
+  * 
+  * @param {SerializableNode=} start
+  * @param {SerializableNode=} end
+  */
+  function onSelectionChange(start, end) {
+    ...
+  }
+  ```
+  Only applicable when `mode` is 'tree'.
+
 - `{string} language`
 
   The default language comes from the browser navigator, but you can force a specific language. So use here string as 'en' or 'pt-BR'. Built-in languages: `en`, `pt-BR`. Other translations can be specified via the option `languages`.
@@ -337,6 +372,70 @@ Get JSON data as string.
   is a compacted string. In order to get the JSON formatted with a certain
   number of spaces, use `JSON.stringify(JSONEditor.get(), null, 2)`.
 
+#### `JSONEditor.getTextSelection()`
+
+Get the current selected text with the selection range, Only applicable for mode 'text' and 'code'.
+
+*Returns:*
+
+- `{start:{row:Number, column:Number},end:{row:Number, column:Number},text:String} selection`
+
+#### `JSONEditor.setTextSelection(startPos, endPos)`
+
+Set text selection for a range, Only applicable for mode 'text' and 'code'.
+
+*Parameters:*
+
+- `{row:Number, column:Number} startPos`
+
+  Position for selection start
+
+- `{row:Number, column:Number} endPos`
+
+  Position for selection end
+
+#### `JSONEditor.getSelection()`
+
+Get the current selected nodes, Only applicable for mode 'tree'.
+
+*Returns:*
+
+- `{start:SerializableNode, end: SerializableNode}`
+
+#### `JSONEditor.setSelection(start, end)`
+
+Set selection for a range of nodes, Only applicable for mode 'tree'.
+
+- If no parameters sent - the current selection will be removed, if exists.
+- For single node selecion send only the `start` parameter.
+- If the nodes are not from the same level the first common parent will be selected
+
+*Parameters:*
+
+- `{path: Array.<String>} start`
+
+  Path for the start node
+
+- `{path: Array.<String>} end`
+
+  Path for the end node
+
+
+#### `JSONEditor.getNodesByRange(start, end)`
+
+A utility function for getting a list of `SerializableNode` under certain range.
+
+This function can be used as complementary to `getSelection` and `onSelectionChange` if a list of __all__ the selected nodes is required.
+
+*Parameters:*
+
+- `{path: Array.<String>} start`
+
+  Path for the first node in range
+
+- `{path: Array.<String>} end`
+
+  Path for the last node in range
 
 ### Examples
 

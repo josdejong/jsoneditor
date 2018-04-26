@@ -118,7 +118,8 @@ treemode._setOptions = function (options) {
     schema: null,
     schemaRefs: null,
     autocomplete: null,
-    navigationBar : true
+    navigationBar : true,
+    onSelectionChange: null
   };
 
   // copy all options
@@ -135,6 +136,10 @@ treemode._setOptions = function (options) {
 
   // create a debounced validate function
   this._debouncedValidate = util.debounce(this.validate.bind(this), this.DEBOUNCE_INTERVAL);
+
+  if (options.onSelectionChange) {
+    this.onSelectionChange(options.onSelectionChange);
+  }
 
   setLanguages(this.options.languages);
   setLanguage(this.options.language)
@@ -551,7 +556,7 @@ treemode.stopAutoScroll = function () {
  *                            {Node[]} nodes                Nodes in case of multi selection
  *                            {Number} scrollTop            Scroll position
  */
-treemode.setSelection = function (selection) {
+treemode.setDomSelection = function (selection) {
   if (!selection) {
     return;
   }
@@ -581,7 +586,7 @@ treemode.setSelection = function (selection) {
  *                            {Node[]} nodes                Nodes in case of multi selection
  *                            {Number} scrollTop            Scroll position
  */
-treemode.getSelection = function () {
+treemode.getDomSelection = function () {
   var range = util.getSelectionOffset();
   if (range && range.container.nodeName !== 'DIV') { // filter on (editable) divs)
     range = null;
@@ -1048,6 +1053,14 @@ treemode._onMultiSelect = function (event) {
   if (start && end) {
     // find the top level childs, all having the same parent
     this.multiselection.nodes = this._findTopLevelNodes(start, end);
+    if (this.multiselection.nodes && this.multiselection.nodes.length) {
+      var firstNode = this.multiselection.nodes[0];
+      if (this.multiselection.start === firstNode || this.multiselection.start.isDescendantOf(firstNode)) {
+        this.multiselection.direction = 'down';
+      } else {
+        this.multiselection.direction = 'up';
+      }
+    }
     this.select(this.multiselection.nodes);
   }
 };
@@ -1080,9 +1093,10 @@ treemode._onMultiSelectEnd = function (event) {
 /**
  * deselect currently selected nodes
  * @param {boolean} [clearStartAndEnd=false]  If true, the `start` and `end`
- *                                            state is cleared too.
+ *                                            state is cleared too. 
  */
 treemode.deselect = function (clearStartAndEnd) {
+  var selectionChanged = !!this.multiselection.nodes.length;
   this.multiselection.nodes.forEach(function (node) {
     node.setSelected(false);
   });
@@ -1091,6 +1105,12 @@ treemode.deselect = function (clearStartAndEnd) {
   if (clearStartAndEnd) {
     this.multiselection.start = null;
     this.multiselection.end = null;
+  }
+
+  if (selectionChanged) {
+    if (this._selectionChangedHandler) {
+      this._selectionChangedHandler();
+    }
   }
 };
 
@@ -1112,6 +1132,11 @@ treemode.select = function (nodes) {
     nodes.forEach(function (node) {
       node.setSelected(true, node === first);
     });
+
+    if (this._selectionChangedHandler) {
+      var selection = this.getSelection();
+      this._selectionChangedHandler(selection.start, selection.end);
+    }
   }
 };
 
@@ -1340,6 +1365,125 @@ treemode.showContextMenu = function (anchor, onClose) {
   menu.show(anchor, this.content);
 };
 
+/**
+ * Get current selected nodes
+ * @return {{start:SerializableNode, end: SerializableNode}}
+ */
+treemode.getSelection = function () {
+  var selection = {
+    start: null,
+    end: null
+  };
+  if (this.multiselection.nodes && this.multiselection.nodes.length) {
+    if (this.multiselection.nodes.length) {
+      var selection1 = this.multiselection.nodes[0];
+      var selection2 = this.multiselection.nodes[this.multiselection.nodes.length - 1];
+      if (this.multiselection.direction === 'down') {
+        selection.start = selection1.serialize();
+        selection.end = selection2.serialize();
+      } else {
+        selection.start = selection2.serialize();
+        selection.end = selection1.serialize();
+      }
+    }
+  }
+  return selection;
+};
+
+/**
+ * Callback registraion for selection change
+ * @param {selectionCallback} callback 
+ * 
+ * @callback selectionCallback
+ * @param {SerializableNode=} start
+ * @param {SerializableNode=} end
+ */
+treemode.onSelectionChange = function (callback) {
+  if (typeof callback === 'function') {
+    this._selectionChangedHandler = util.debounce(callback, this.DEBOUNCE_INTERVAL);
+  }
+};
+
+/**
+ * Select range of nodes.
+ * For selecting single node send only the start parameter
+ * For clear the selection do not send any parameter
+ * If the nodes are not from the same level the first common parent will be selected
+ * @param {{path: Array.<String>}} start object contains the path for selection start 
+ * @param {{path: Array.<String>}=} end object contains the path for selection end
+ */
+treemode.setSelection = function (start, end) {
+  // check for old usage
+  if (start && start.dom && start.range) {
+    console.warn('setSelection/getSelection usage for text selection is depracated and should not be used, see documantaion for supported selection options');
+    this.setDomSelection(start);
+  }
+
+  var nodes = this._getNodeIntsncesByRange(start, end);
+  
+  nodes.forEach(function(node) {
+    node.expandTo();
+  });
+  this.select(nodes);
+};
+
+/**
+ * Returns a set of Nodes according to a range of selection
+ * @param {{path: Array.<String>}} start object contains the path for range start 
+ * @param {{path: Array.<String>}=} end object contains the path for range end
+ * @return {Array.<Node>} Node intances on the given range
+ * @private
+ */
+treemode._getNodeIntsncesByRange = function (start, end) {
+  var startNode, endNode;
+
+  if (start && start.path) {
+    startNode = this.node.findNodeByPath(start.path);
+    if (end && end.path) {
+      endNode = this.node.findNodeByPath(end.path);
+    }
+  }
+
+  var nodes = [];
+  if (startNode instanceof Node) {
+    if (endNode instanceof Node && endNode !== startNode) {
+      if (startNode.parent === endNode.parent) {
+        var start, end;
+        if (startNode.getIndex() < endNode.getIndex()) {
+          start = startNode;
+          end = endNode;
+        } else {
+          start = endNode;
+          end = startNode;
+        }
+        var current = start;
+        nodes.push(current);
+        do {
+          current = current.nextSibling();
+          nodes.push(current);
+        } while (current && current !== end);
+      } else {
+        nodes = this._findTopLevelNodes(startNode, endNode);
+      }
+    } else {
+      nodes.push(startNode);
+    }
+  }
+
+  return nodes;
+
+};
+
+treemode.getNodesByRange = function (start, end) {
+  var nodes = this._getNodeIntsncesByRange(start, end);
+  var serializableNodes = [];
+
+  nodes.forEach(function (node){
+    serializableNodes.push(node.serialize());
+  });
+
+  return serializableNodes;
+}
 
 // define modes
 module.exports = [
