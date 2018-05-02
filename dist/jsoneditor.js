@@ -24,8 +24,8 @@
  * Copyright (c) 2011-2017 Jos de Jong, http://jsoneditoronline.org
  *
  * @author  Jos de Jong, <wjosdejong@gmail.com>
- * @version 5.14.1
- * @date    2018-03-21
+ * @version 5.15.0
+ * @date    2018-05-02
  */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
@@ -129,6 +129,14 @@ return /******/ (function(modules) { // webpackBootstrap
 	 *                               {boolean} sortObjectKeys If true, object keys are
 	 *                                                        sorted before display.
 	 *                                                        false by default.
+	 *                               {function} onSelectionChange Callback method, 
+	 *                                                            triggered on node selection change
+	 *                                                            Only applicable for modes
+	 *                                                            'tree', 'view', and 'form'
+	 *                               {function} onTextSelectionChange Callback method, 
+	 *                                                                triggered on text selection change
+	 *                                                                Only applicable for modes
+	 *                                                                'text' and 'code'
 	 * @param {Object | undefined} json JSON object
 	 */
 	function JSONEditor (container, options, json) {
@@ -166,7 +174,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	      var VALID_OPTIONS = [
 	        'ajv', 'schema', 'schemaRefs','templates',
 	        'ace', 'theme','autocomplete',
-	        'onChange', 'onEditable', 'onError', 'onModeChange',
+	        'onChange', 'onEditable', 'onError', 'onModeChange', 'onSelectionChange', 'onTextSelectionChange',
 	        'escapeUnicode', 'history', 'search', 'mode', 'modes', 'name', 'indentation', 
 	        'sortObjectKeys', 'navigationBar', 'statusBar', 'languages', 'language'
 	      ];
@@ -8153,7 +8161,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	    schema: null,
 	    schemaRefs: null,
 	    autocomplete: null,
-	    navigationBar : true
+	    navigationBar : true,
+	    onSelectionChange: null
 	  };
 
 	  // copy all options
@@ -8170,6 +8179,10 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	  // create a debounced validate function
 	  this._debouncedValidate = util.debounce(this.validate.bind(this), this.DEBOUNCE_INTERVAL);
+
+	  if (options.onSelectionChange) {
+	    this.onSelectionChange(options.onSelectionChange);
+	  }
 
 	  setLanguages(this.options.languages);
 	  setLanguage(this.options.language)
@@ -8586,7 +8599,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	 *                            {Node[]} nodes                Nodes in case of multi selection
 	 *                            {Number} scrollTop            Scroll position
 	 */
-	treemode.setSelection = function (selection) {
+	treemode.setDomSelection = function (selection) {
 	  if (!selection) {
 	    return;
 	  }
@@ -8616,7 +8629,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	 *                            {Node[]} nodes                Nodes in case of multi selection
 	 *                            {Number} scrollTop            Scroll position
 	 */
-	treemode.getSelection = function () {
+	treemode.getDomSelection = function () {
 	  var range = util.getSelectionOffset();
 	  if (range && range.container.nodeName !== 'DIV') { // filter on (editable) divs)
 	    range = null;
@@ -9083,6 +9096,14 @@ return /******/ (function(modules) { // webpackBootstrap
 	  if (start && end) {
 	    // find the top level childs, all having the same parent
 	    this.multiselection.nodes = this._findTopLevelNodes(start, end);
+	    if (this.multiselection.nodes && this.multiselection.nodes.length) {
+	      var firstNode = this.multiselection.nodes[0];
+	      if (this.multiselection.start === firstNode || this.multiselection.start.isDescendantOf(firstNode)) {
+	        this.multiselection.direction = 'down';
+	      } else {
+	        this.multiselection.direction = 'up';
+	      }
+	    }
 	    this.select(this.multiselection.nodes);
 	  }
 	};
@@ -9115,9 +9136,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	/**
 	 * deselect currently selected nodes
 	 * @param {boolean} [clearStartAndEnd=false]  If true, the `start` and `end`
-	 *                                            state is cleared too.
+	 *                                            state is cleared too. 
 	 */
 	treemode.deselect = function (clearStartAndEnd) {
+	  var selectionChanged = !!this.multiselection.nodes.length;
 	  this.multiselection.nodes.forEach(function (node) {
 	    node.setSelected(false);
 	  });
@@ -9126,6 +9148,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	  if (clearStartAndEnd) {
 	    this.multiselection.start = null;
 	    this.multiselection.end = null;
+	  }
+
+	  if (selectionChanged) {
+	    if (this._selectionChangedHandler) {
+	      this._selectionChangedHandler();
+	    }
 	  }
 	};
 
@@ -9147,6 +9175,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	    nodes.forEach(function (node) {
 	      node.setSelected(true, node === first);
 	    });
+
+	    if (this._selectionChangedHandler) {
+	      var selection = this.getSelection();
+	      this._selectionChangedHandler(selection.start, selection.end);
+	    }
 	  }
 	};
 
@@ -9375,6 +9408,125 @@ return /******/ (function(modules) { // webpackBootstrap
 	  menu.show(anchor, this.content);
 	};
 
+	/**
+	 * Get current selected nodes
+	 * @return {{start:SerializableNode, end: SerializableNode}}
+	 */
+	treemode.getSelection = function () {
+	  var selection = {
+	    start: null,
+	    end: null
+	  };
+	  if (this.multiselection.nodes && this.multiselection.nodes.length) {
+	    if (this.multiselection.nodes.length) {
+	      var selection1 = this.multiselection.nodes[0];
+	      var selection2 = this.multiselection.nodes[this.multiselection.nodes.length - 1];
+	      if (this.multiselection.direction === 'down') {
+	        selection.start = selection1.serialize();
+	        selection.end = selection2.serialize();
+	      } else {
+	        selection.start = selection2.serialize();
+	        selection.end = selection1.serialize();
+	      }
+	    }
+	  }
+	  return selection;
+	};
+
+	/**
+	 * Callback registraion for selection change
+	 * @param {selectionCallback} callback 
+	 * 
+	 * @callback selectionCallback
+	 * @param {SerializableNode=} start
+	 * @param {SerializableNode=} end
+	 */
+	treemode.onSelectionChange = function (callback) {
+	  if (typeof callback === 'function') {
+	    this._selectionChangedHandler = util.debounce(callback, this.DEBOUNCE_INTERVAL);
+	  }
+	};
+
+	/**
+	 * Select range of nodes.
+	 * For selecting single node send only the start parameter
+	 * For clear the selection do not send any parameter
+	 * If the nodes are not from the same level the first common parent will be selected
+	 * @param {{path: Array.<String>}} start object contains the path for selection start 
+	 * @param {{path: Array.<String>}=} end object contains the path for selection end
+	 */
+	treemode.setSelection = function (start, end) {
+	  // check for old usage
+	  if (start && start.dom && start.range) {
+	    console.warn('setSelection/getSelection usage for text selection is depracated and should not be used, see documantaion for supported selection options');
+	    this.setDomSelection(start);
+	  }
+
+	  var nodes = this._getNodeIntsncesByRange(start, end);
+	  
+	  nodes.forEach(function(node) {
+	    node.expandTo();
+	  });
+	  this.select(nodes);
+	};
+
+	/**
+	 * Returns a set of Nodes according to a range of selection
+	 * @param {{path: Array.<String>}} start object contains the path for range start 
+	 * @param {{path: Array.<String>}=} end object contains the path for range end
+	 * @return {Array.<Node>} Node intances on the given range
+	 * @private
+	 */
+	treemode._getNodeIntsncesByRange = function (start, end) {
+	  var startNode, endNode;
+
+	  if (start && start.path) {
+	    startNode = this.node.findNodeByPath(start.path);
+	    if (end && end.path) {
+	      endNode = this.node.findNodeByPath(end.path);
+	    }
+	  }
+
+	  var nodes = [];
+	  if (startNode instanceof Node) {
+	    if (endNode instanceof Node && endNode !== startNode) {
+	      if (startNode.parent === endNode.parent) {
+	        var start, end;
+	        if (startNode.getIndex() < endNode.getIndex()) {
+	          start = startNode;
+	          end = endNode;
+	        } else {
+	          start = endNode;
+	          end = startNode;
+	        }
+	        var current = start;
+	        nodes.push(current);
+	        do {
+	          current = current.nextSibling();
+	          nodes.push(current);
+	        } while (current && current !== end);
+	      } else {
+	        nodes = this._findTopLevelNodes(startNode, endNode);
+	      }
+	    } else {
+	      nodes.push(startNode);
+	    }
+	  }
+
+	  return nodes;
+
+	};
+
+	treemode.getNodesByRange = function (start, end) {
+	  var nodes = this._getNodeIntsncesByRange(start, end);
+	  var serializableNodes = [];
+
+	  nodes.forEach(function (node){
+	    serializableNodes.push(node.serialize());
+	  });
+
+	  return serializableNodes;
+	}
 
 	// define modes
 	module.exports = [
@@ -9708,7 +9860,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	      if (action && action.undo) {
 	        action.undo(obj.params);
 	        if (obj.params.oldSelection) {
-	          this.editor.setSelection(obj.params.oldSelection);
+	          this.editor.setDomSelection(obj.params.oldSelection);
 	        }
 	      }
 	      else {
@@ -9735,7 +9887,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	      if (action && action.redo) {
 	        action.redo(obj.params);
 	        if (obj.params.newSelection) {
-	          this.editor.setSelection(obj.params.newSelection);
+	          this.editor.setDomSelection(obj.params.newSelection);
 	        }
 	      }
 	      else {
@@ -10592,11 +10744,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * @return {Object} reference Object with 2 properties (start and end) with the identifier of the location of the cursor and selected text.
 	 **/
 	exports.getInputSelection = function(el) {
-	  var start = 0, end = 0, normalizedValue, range, textInputRange, len, endRange;
+	  var startIndex = 0, endIndex = 0, normalizedValue, range, textInputRange, len, endRange;
 
 	  if (typeof el.selectionStart == "number" && typeof el.selectionEnd == "number") {
-	      start = el.selectionStart;
-	      end = el.selectionEnd;
+	      startIndex = el.selectionStart;
+	      endIndex = el.selectionEnd;
 	  } else {
 	      range = document.selection.createRange();
 
@@ -10608,38 +10760,69 @@ return /******/ (function(modules) { // webpackBootstrap
 	          textInputRange = el.createTextRange();
 	          textInputRange.moveToBookmark(range.getBookmark());
 
-	          // Check if the start and end of the selection are at the very end
+	          // Check if the startIndex and endIndex of the selection are at the very end
 	          // of the input, since moveStart/moveEnd doesn't return what we want
 	          // in those cases
 	          endRange = el.createTextRange();
 	          endRange.collapse(false);
 
 	          if (textInputRange.compareEndPoints("StartToEnd", endRange) > -1) {
-	              start = end = len;
+	              startIndex = endIndex = len;
 	          } else {
-	              start = -textInputRange.moveStart("character", -len);
-	              start += normalizedValue.slice(0, start).split("\n").length - 1;
+	              startIndex = -textInputRange.moveStart("character", -len);
+	              startIndex += normalizedValue.slice(0, startIndex).split("\n").length - 1;
 
 	              if (textInputRange.compareEndPoints("EndToEnd", endRange) > -1) {
-	                  end = len;
+	                  endIndex = len;
 	              } else {
-	                  end = -textInputRange.moveEnd("character", -len);
-	                  end += normalizedValue.slice(0, end).split("\n").length - 1;
+	                  endIndex = -textInputRange.moveEnd("character", -len);
+	                  endIndex += normalizedValue.slice(0, endIndex).split("\n").length - 1;
 	              }
 	          }
 	      }
 	  }
 
-	  var textTillCaret = el.value.substring(0,end);
-	  var row = (textTillCaret.match(/\n/g) || []).length + 1;
-	  var col = textTillCaret.length - textTillCaret.lastIndexOf("\n");
-
 	  return {
-	      start: start,
-	      end: end,
-	      col: col,
-	      row: row
+	      startIndex: startIndex,
+	      endIndex: endIndex,
+	      start: _positionForIndex(startIndex),
+	      end: _positionForIndex(endIndex)
 	  };
+
+	  /**
+	   * Returns textarea row and column position for certain index
+	   * @param {Number} index text index
+	   * @returns {{row: Number, col: Number}}
+	   */
+	  function _positionForIndex(index) {
+	    var textTillIndex = el.value.substring(0,index);
+	    var row = (textTillIndex.match(/\n/g) || []).length + 1;
+	    var col = textTillIndex.length - textTillIndex.lastIndexOf("\n");
+
+	    return {
+	      row: row,
+	      column: col
+	    }
+	  }
+	}
+
+	/**
+	 * Returns the index for certaion position in text element
+	 * @param {DOMElement} el A dom element of a textarea or input text.
+	 * @param {Number} row row value, > 0, if exceeds rows number - last row will be returned
+	 * @param {Number} column column value, > 0, if exceeds column length - end of column will be returned
+	 * @returns {Number} index of position in text, -1 if not found
+	 */
+	exports.getIndexForPosition = function(el, row, column) {
+	  var text = el.value || '';
+	  if (row > 0 && column > 0) {
+	    var rows = text.split('\n', row);
+	    row = Math.min(rows.length, row);
+	    column = Math.min(rows[row - 1].length, column - 1);
+	    var columnCount = (row == 1 ? column : column + 1); // count new line on multiple rows
+	    return rows.slice(0, row - 1).join('\n').length + columnCount;
+	  }
+	  return -1;
 	}
 
 
@@ -12290,18 +12473,60 @@ return /******/ (function(modules) { // webpackBootstrap
 	  var node = this;
 	  var path = [];
 	  while (node) {
-	    var field = !node.parent
-	        ? undefined  // do not add an (optional) field name of the root node
-	        :  (node.parent.type != 'array')
-	            ? node.field
-	            : node.index;
-
+	    var field = node.getName();
 	    if (field !== undefined) {
 	      path.unshift(field);
 	    }
 	    node = node.parent;
 	  }
 	  return path;
+	};
+
+	/**
+	 * Get node serializable name
+	 * @returns {String|Number}
+	 */
+	Node.prototype.getName = function () {
+	 return !this.parent
+	 ? undefined  // do not add an (optional) field name of the root node
+	 :  (this.parent.type != 'array')
+	     ? this.field
+	     : this.index;
+	};
+
+	/**
+	 * Find child node by serializable path
+	 * @param {Array<String>} path 
+	 */
+	Node.prototype.findNodeByPath = function (path) {
+	  if (!path) {
+	    return;
+	  }
+
+	  if (path.length == 0) {
+	    return this;
+	  }
+
+	  if (path.length && this.childs && this.childs.length) {
+	    for (var i=0; i < this.childs.length; ++i) {
+	      if (('' + path[0]) === ('' + this.childs[i].getName())) {
+	        return this.childs[i].findNodeByPath(path.slice(1));
+	      }
+	    }
+	  }
+	};
+
+	/**
+	 * @typedef {{value: String|Object|Number|Boolean, path: Array.<String|Number>}} SerializableNode
+	 * 
+	 * Returns serializable representation for the node
+	 * @return {SerializedNode}
+	 */
+	Node.prototype.serialize = function () {
+	  return {
+	    value: this.getValue(),
+	    path: this.getPath()
+	  };
 	};
 
 	/**
@@ -13374,13 +13599,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	Node.prototype._onChangeValue = function () {
 	  // get current selection, then override the range such that we can select
 	  // the added/removed text on undo/redo
-	  var oldSelection = this.editor.getSelection();
+	  var oldSelection = this.editor.getDomSelection();
 	  if (oldSelection.range) {
 	    var undoDiff = util.textDiff(String(this.value), String(this.previousValue));
 	    oldSelection.range.startOffset = undoDiff.start;
 	    oldSelection.range.endOffset = undoDiff.end;
 	  }
-	  var newSelection = this.editor.getSelection();
+	  var newSelection = this.editor.getDomSelection();
 	  if (newSelection.range) {
 	    var redoDiff = util.textDiff(String(this.previousValue), String(this.value));
 	    newSelection.range.startOffset = redoDiff.start;
@@ -13405,14 +13630,14 @@ return /******/ (function(modules) { // webpackBootstrap
 	Node.prototype._onChangeField = function () {
 	  // get current selection, then override the range such that we can select
 	  // the added/removed text on undo/redo
-	  var oldSelection = this.editor.getSelection();
+	  var oldSelection = this.editor.getDomSelection();
 	  var previous = this.previousField || '';
 	  if (oldSelection.range) {
 	    var undoDiff = util.textDiff(this.field, previous);
 	    oldSelection.range.startOffset = undoDiff.start;
 	    oldSelection.range.endOffset = undoDiff.end;
 	  }
-	  var newSelection = this.editor.getSelection();
+	  var newSelection = this.editor.getDomSelection();
 	  if (newSelection.range) {
 	    var redoDiff = util.textDiff(previous, this.field);
 	    newSelection.range.startOffset = redoDiff.start;
@@ -13762,7 +13987,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  var firstNode = nodes[0];
 	  var lastNode = nodes[nodes.length - 1];
 	  var draggedNode = Node.getNodeFromTarget(event.target);
-	  var beforeNode = lastNode._nextSibling();
+	  var beforeNode = lastNode.nextSibling();
 	  var editor = firstNode.editor;
 
 	  // in case of multiple selected nodes, offsetY prevents the selection from
@@ -13784,7 +14009,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  editor.highlighter.lock();
 	  editor.drag = {
 	    oldCursor: document.body.style.cursor,
-	    oldSelection: editor.getSelection(),
+	    oldSelection: editor.getDomSelection(),
 	    oldBeforeNode: beforeNode,
 	    mouseX: event.pageX,
 	    offsetY: offsetY,
@@ -13905,7 +14130,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	          nodePrev = Node.getNodeFromTarget(trPrev);
 
 	          var isDraggedNode = nodes.some(function (node) {
-	            return node === nodePrev || nodePrev._isChildOf(node);
+	            return node === nodePrev || nodePrev.isDescendantOf(node);
 	          });
 
 	          if (isDraggedNode) {
@@ -13982,7 +14207,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  var params = {
 	    nodes: nodes,
 	    oldSelection: editor.drag.oldSelection,
-	    newSelection: editor.getSelection(),
+	    newSelection: editor.getDomSelection(),
 	    oldBeforeNode: editor.drag.oldBeforeNode,
 	    newBeforeNode: beforeNode
 	  };
@@ -14017,12 +14242,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 
 	/**
-	 * Test if this node is a child of an other node
+	 * Test if this node is a sescendant of an other node
 	 * @param {Node} node
-	 * @return {boolean} isChild
+	 * @return {boolean} isDescendant
 	 * @private
 	 */
-	Node.prototype._isChildOf = function (node) {
+	Node.prototype.isDescendantOf = function (node) {
 	  var n = this.parent;
 	  while (n) {
 	    if (n == node) {
@@ -14532,7 +14757,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	      case 'keydown':
 	      case 'mousedown':
 	          // TODO: cleanup
-	        this.editor.selection = this.editor.getSelection();
+	        this.editor.selection = this.editor.getDomSelection();
 	        break;
 
 	      case 'click':
@@ -14583,7 +14808,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	      case 'keydown':
 	      case 'mousedown':
-	        this.editor.selection = this.editor.getSelection();
+	        this.editor.selection = this.editor.getDomSelection();
 	        break;
 
 	      case 'keyup':
@@ -14758,8 +14983,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	        if (nextNode && nextNode instanceof AppendNode &&
 	            !(lastNode.parent.childs.length == 1) &&
 	            nextNode2 && nextNode2.parent) {
-	          oldSelection = this.editor.getSelection();
-	          oldBeforeNode = lastNode._nextSibling();
+	          oldSelection = this.editor.getDomSelection();
+	          oldBeforeNode = lastNode.nextSibling();
 
 	          selectedNodes.forEach(function (node) {
 	            nextNode2.parent.moveBefore(node, nextNode2);
@@ -14771,7 +14996,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            oldBeforeNode: oldBeforeNode,
 	            newBeforeNode: nextNode2,
 	            oldSelection: oldSelection,
-	            newSelection: this.editor.getSelection()
+	            newSelection: this.editor.getDomSelection()
 	          });
 	        }
 	      }
@@ -14805,8 +15030,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	      // find the previous node
 	      prevNode = firstNode._previousNode();
 	      if (prevNode && prevNode.parent) {
-	        oldSelection = this.editor.getSelection();
-	        oldBeforeNode = lastNode._nextSibling();
+	        oldSelection = this.editor.getDomSelection();
+	        oldBeforeNode = lastNode.nextSibling();
 
 	        selectedNodes.forEach(function (node) {
 	          prevNode.parent.moveBefore(node, prevNode);
@@ -14818,7 +15043,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	          oldBeforeNode: oldBeforeNode,
 	          newBeforeNode: prevNode,
 	          oldSelection: oldSelection,
-	          newSelection: this.editor.getSelection()
+	          newSelection: this.editor.getDomSelection()
 	        });
 	      }
 	      handled = true;
@@ -14841,8 +15066,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	        if (prevNode && prevNode.parent &&
 	            (prevNode instanceof AppendNode)
 	            && !prevNode.isVisible()) {
-	          oldSelection = this.editor.getSelection();
-	          oldBeforeNode = lastNode._nextSibling();
+	          oldSelection = this.editor.getDomSelection();
+	          oldBeforeNode = lastNode.nextSibling();
 
 	          selectedNodes.forEach(function (node) {
 	            prevNode.parent.moveBefore(node, prevNode);
@@ -14854,7 +15079,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            oldBeforeNode: oldBeforeNode,
 	            newBeforeNode: prevNode,
 	            oldSelection: oldSelection,
-	            newSelection: this.editor.getSelection()
+	            newSelection: this.editor.getDomSelection()
 	          });
 	        }
 	      }
@@ -14894,8 +15119,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	      }
 	      var nextNode2 = nextNode && (nextNode._nextNode() || nextNode.parent.append);
 	      if (nextNode2 && nextNode2.parent) {
-	        oldSelection = this.editor.getSelection();
-	        oldBeforeNode = lastNode._nextSibling();
+	        oldSelection = this.editor.getDomSelection();
+	        oldBeforeNode = lastNode.nextSibling();
 
 	        selectedNodes.forEach(function (node) {
 	          nextNode2.parent.moveBefore(node, nextNode2);
@@ -14907,7 +15132,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	          oldBeforeNode: oldBeforeNode,
 	          newBeforeNode: nextNode2,
 	          oldSelection: oldSelection,
-	          newSelection: this.editor.getSelection()
+	          newSelection: this.editor.getDomSelection()
 	        });
 	      }
 	      handled = true;
@@ -14965,9 +15190,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	    editor.highlighter.unhighlight();
 
 	    // adjust the focus
-	    var oldSelection = editor.getSelection();
+	    var oldSelection = editor.getDomSelection();
 	    Node.blurNodes(nodes);
-	    var newSelection = editor.getSelection();
+	    var newSelection = editor.getDomSelection();
 
 	    // remove the nodes
 	    nodes.forEach(function (node) {
@@ -15004,7 +15229,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    editor.deselect(editor.multiselection.nodes);
 
 	    // duplicate the nodes
-	    var oldSelection = editor.getSelection();
+	    var oldSelection = editor.getDomSelection();
 	    var afterNode = lastNode;
 	    var clones = nodes.map(function (node) {
 	      var clone = node.clone();
@@ -15020,7 +15245,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    else {
 	      editor.select(clones);
 	    }
-	    var newSelection = editor.getSelection();
+	    var newSelection = editor.getDomSelection();
 
 	    editor._onAction('duplicateNodes', {
 	      afterNode: lastNode,
@@ -15040,7 +15265,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * @private
 	 */
 	Node.prototype._onInsertBefore = function (field, value, type) {
-	  var oldSelection = this.editor.getSelection();
+	  var oldSelection = this.editor.getDomSelection();
 
 	  var newNode = new Node(this.editor, {
 	    field: (field != undefined) ? field : '',
@@ -15051,7 +15276,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  this.parent.insertBefore(newNode, this);
 	  this.editor.highlighter.unhighlight();
 	  newNode.focus('field');
-	  var newSelection = this.editor.getSelection();
+	  var newSelection = this.editor.getDomSelection();
 
 	  this.editor._onAction('insertBeforeNodes', {
 	    nodes: [newNode],
@@ -15070,7 +15295,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * @private
 	 */
 	Node.prototype._onInsertAfter = function (field, value, type) {
-	  var oldSelection = this.editor.getSelection();
+	  var oldSelection = this.editor.getDomSelection();
 
 	  var newNode = new Node(this.editor, {
 	    field: (field != undefined) ? field : '',
@@ -15081,7 +15306,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  this.parent.insertAfter(newNode, this);
 	  this.editor.highlighter.unhighlight();
 	  newNode.focus('field');
-	  var newSelection = this.editor.getSelection();
+	  var newSelection = this.editor.getDomSelection();
 
 	  this.editor._onAction('insertAfterNodes', {
 	    nodes: [newNode],
@@ -15100,7 +15325,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * @private
 	 */
 	Node.prototype._onAppend = function (field, value, type) {
-	  var oldSelection = this.editor.getSelection();
+	  var oldSelection = this.editor.getDomSelection();
 
 	  var newNode = new Node(this.editor, {
 	    field: (field != undefined) ? field : '',
@@ -15111,7 +15336,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  this.parent.appendChild(newNode);
 	  this.editor.highlighter.unhighlight();
 	  newNode.focus('field');
-	  var newSelection = this.editor.getSelection();
+	  var newSelection = this.editor.getDomSelection();
 
 	  this.editor._onAction('appendNodes', {
 	    nodes: [newNode],
@@ -15129,9 +15354,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	Node.prototype._onChangeType = function (newType) {
 	  var oldType = this.type;
 	  if (newType != oldType) {
-	    var oldSelection = this.editor.getSelection();
+	    var oldSelection = this.editor.getDomSelection();
 	    this.changeType(newType);
-	    var newSelection = this.editor.getSelection();
+	    var newSelection = this.editor.getDomSelection();
 
 	    this.editor._onAction('changeType', {
 	      node: this,
@@ -15239,9 +15464,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	/**
 	 * Get the next sibling of current node
 	 * @return {Node} nextSibling
-	 * @private
 	 */
-	Node.prototype._nextSibling = function () {
+	Node.prototype.nextSibling = function () {
 	  var index = this.parent.childs.indexOf(this);
 	  return this.parent.childs[index + 1] || this.parent.append;
 	};
@@ -15249,7 +15473,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	/**
 	 * Get the previously rendered node
 	 * @return {Node | null} previousNode
-	 * @private
 	 */
 	Node.prototype._previousNode = function () {
 	  var prevNode = null;
@@ -16648,6 +16871,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	 *                             {boolean} escapeUnicode   If true, unicode
 	 *                                                       characters are escaped.
 	 *                                                       false by default.
+	 *                             {function} onTextSelectionChange Callback method, 
+	 *                                                              triggered on text selection change
 	 * @private
 	 */
 	textmode.create = function (container, options) {
@@ -16691,6 +16916,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	    catch (err) {
 	      console.error(err);
 	    }
+	  }
+
+	  if (options.onTextSelectionChange) {
+	    this.onTextSelectionChange(options.onTextSelectionChange);
 	  }
 
 	  var me = this;
@@ -16949,9 +17178,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * @private
 	 */
 	textmode._onSelect = function () {
-	  if(this.options.statusBar) {
-	    this._updateCursorInfoDisplay();
-	  }
+	  this._updateCursorInfo();
+	  this._emitSelectionChange();
 	};
 
 	/**
@@ -16980,7 +17208,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	    event.stopPropagation();
 	  }
 
-	  this._updateCursorInfoDisplay();
+	  this._updateCursorInfo();
+	  this._emitSelectionChange();
 	};
 
 	/**
@@ -16989,7 +17218,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * @private
 	 */
 	textmode._onMouseDown = function (event) {
-	  this._updateCursorInfoDisplay();
+	  this._updateCursorInfo();
+	  this._emitSelectionChange();
 	};
 
 	/**
@@ -16998,35 +17228,59 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * @private
 	 */
 	textmode._onBlur = function (event) {
-	  this._updateCursorInfoDisplay();
+	  this._updateCursorInfo();
+	  this._emitSelectionChange();
 	};
 
 	/**
-	 * Update the status bar cursor info
+	 * Update the cursor info and the status bar, if presented
 	 */
-	textmode._updateCursorInfoDisplay = function () {
+	textmode._updateCursorInfo = function () {
 	  var me = this;
 	  var line, col, count;
 
-	  if(this.options.statusBar) {
-	    if (this.textarea) {
-	      setTimeout(function() { //this to verify we get the most updated textarea cursor selection
-	        var selectionRange = util.getInputSelection(me.textarea);      
-	        line = selectionRange.row;
-	        col = selectionRange.col;
-	        if (selectionRange.start !== selectionRange.end) {
-	          count = selectionRange.end - selectionRange.start;
-	        }
-	        updateDisplay();
-	      },0);
+	  if (this.textarea) {
+	    setTimeout(function() { //this to verify we get the most updated textarea cursor selection
+	      var selectionRange = util.getInputSelection(me.textarea);
 	      
-	    } else if (this.aceEditor && this.curserInfoElements) {
-	      var curserPos = this.aceEditor.getCursorPosition();
-	      var selectedText = this.aceEditor.getSelectedText();
+	      if (selectionRange.startIndex !== selectionRange.endIndex) {
+	        count = selectionRange.endIndex - selectionRange.startIndex;
+	      }
+	      
+	      if (count && me.cursorInfo && me.cursorInfo.line === selectionRange.end.row && me.cursorInfo.column === selectionRange.end.column) {
+	        line = selectionRange.start.row;
+	        col = selectionRange.start.column;
+	      } else {
+	        line = selectionRange.end.row;
+	        col = selectionRange.end.column;
+	      }
+	      
+	      me.cursorInfo = {
+	        line: line,
+	        column: col,
+	        count: count
+	      }
 
-	      line = curserPos.row + 1;
-	      col = curserPos.column + 1;
-	      count = selectedText.length;
+	      if(me.options.statusBar) {
+	        updateDisplay();
+	      }
+	    },0);
+	    
+	  } else if (this.aceEditor && this.curserInfoElements) {
+	    var curserPos = this.aceEditor.getCursorPosition();
+	    var selectedText = this.aceEditor.getSelectedText();
+
+	    line = curserPos.row + 1;
+	    col = curserPos.column + 1;
+	    count = selectedText.length;
+
+	    me.cursorInfo = {
+	      line: line,
+	      column: col,
+	      count: count
+	    }
+
+	    if(this.options.statusBar) {
 	      updateDisplay();
 	    }
 	  }
@@ -17042,6 +17296,17 @@ return /******/ (function(modules) { // webpackBootstrap
 	    me.curserInfoElements.colVal.innerText = col;
 	  }
 	};
+
+	/**
+	 * emits selection change callback, if given
+	 * @private
+	 */
+	textmode._emitSelectionChange = function () {
+	  if(this._selectionChangedHandler) {
+	    var currentSelection = this.getTextSelection();
+	    this._selectionChangedHandler(currentSelection.start, currentSelection.end, currentSelection.text);
+	  }
+	}
 
 	/**
 	 * Destroy the editor. Clean up DOM, event listeners, and web workers.
@@ -17265,6 +17530,112 @@ return /******/ (function(modules) { // webpackBootstrap
 	  if (this.aceEditor) {
 	    var force = false;
 	    this.aceEditor.resize(force);
+	  }
+	};
+
+	/**
+	 * Get the selection details
+	 * @returns {{start:{row:Number, column:Number},end:{row:Number, column:Number},text:String}}
+	 */
+	textmode.getTextSelection = function () {
+	  var selection = {};
+	  if (this.textarea) {
+	    var selectionRange = util.getInputSelection(this.textarea);
+
+	    if (this.cursorInfo && this.cursorInfo.line === selectionRange.end.row && this.cursorInfo.column === selectionRange.end.column) {
+	      //selection direction is bottom => up
+	      selection.start = selectionRange.end;
+	      selection.end = selectionRange.start;
+	    } else {
+	      selection = selectionRange;
+	    }
+
+	    return {
+	      start: selection.start,
+	      end: selection.end,
+	      text: this.textarea.value.substring(selectionRange.startIndex, selectionRange.endIndex)
+	    }
+	  }
+
+	  if (this.aceEditor) {
+	    var aceSelection = this.aceEditor.getSelection();
+	    var selectedText = this.aceEditor.getSelectedText();
+	    var range = aceSelection.getRange();
+	    var lead = aceSelection.getSelectionLead();
+
+	    if (lead.row === range.end.row && lead.column === range.end.column) {
+	      selection = range;
+	    } else {
+	      //selection direction is bottom => up
+	      selection.start = range.end;
+	      selection.end = range.start;
+	    }
+	    
+	    return {
+	      start: {
+	        row: selection.start.row + 1,
+	        column: selection.start.column + 1
+	      },
+	      end: {
+	        row: selection.end.row + 1,
+	        column: selection.end.column + 1
+	      },
+	      text: selectedText
+	    };
+	  }
+	};
+
+	/**
+	 * Callback registraion for selection change
+	 * @param {selectionCallback} callback
+	 * 
+	 * @callback selectionCallback
+	 * @param {{row:Number, column:Number}} startPos selection start position
+	 * @param {{row:Number, column:Number}} endPos selected end position
+	 * @param {String} text selected text
+	 */
+	textmode.onTextSelectionChange = function (callback) {
+	  if (typeof callback === 'function') {
+	    this._selectionChangedHandler = util.debounce(callback, this.DEBOUNCE_INTERVAL);
+	  }
+	};
+
+	/**
+	 * Set selection on editor's text
+	 * @param {{row:Number, column:Number}} startPos selection start position
+	 * @param {{row:Number, column:Number}} endPos selected end position
+	 */
+	textmode.setTextSelection = function (startPos, endPos) {
+
+	  if (!startPos || !endPos) return;
+
+	  if (this.textarea) {
+	    var startIndex = util.getIndexForPosition(this.textarea, startPos.row, startPos.column);
+	    var endIndex = util.getIndexForPosition(this.textarea, endPos.row, endPos.column);
+	    if (startIndex > -1 && endIndex  > -1) {
+	      if (this.textarea.setSelectionRange) { 
+	        this.textarea.focus();
+	        this.textarea.setSelectionRange(startIndex, endIndex);
+	      } else if (this.textarea.createTextRange) { // IE < 9
+	        var range = this.textarea.createTextRange();
+	        range.collapse(true);
+	        range.moveEnd('character', endIndex);
+	        range.moveStart('character', startIndex);
+	        range.select();
+	      }
+	    }
+	  } else if (this.aceEditor) {
+	    var range = {
+	      start:{
+	        row: startPos.row - 1,
+	        column: startPos.column - 1
+	      },
+	      end:{
+	        row: endPos.row - 1,
+	        column: endPos.column - 1
+	      }
+	    };
+	    this.aceEditor.selection.setRange(range);
 	  }
 	};
 
