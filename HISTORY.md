@@ -3,6 +3,11 @@
 https://github.com/josdejong/jsoneditor
 
 
+## not yet released, version 5.15.1
+
+- Fixed index numbers of Array itesm not being updated after sorting.
+
+
 ## 2018-05-02, version 5.15.0
 
 - Implemented selection API: `onSelectionChanged`, `onTextSelectionChanged`,

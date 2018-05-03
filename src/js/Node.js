@@ -3003,6 +3003,14 @@ Node.prototype.sort = function (direction) {
   });
   this.sortOrder = (order == 1) ? 'asc' : 'desc';
 
+  // update the index numbering
+  if (this.type === 'array') {
+    this.childs.forEach(function (child, index) {
+      child.index = index;
+      child.updateDom();
+    });
+  }
+
   this.editor._onAction('sort', {
     node: this,
     oldChilds: oldChilds,
