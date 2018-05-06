@@ -96,11 +96,13 @@ function showMoreNodeFactory(Node) {
    */
   ShowMoreNode.prototype.updateDom = function(options) {
     if (this.isVisible()) {
+      // attach to the right child node (the first non-visible child)
+      this.dom.tr.node = this.parent.childs[this.parent.maxVisibleChilds];
+
       if (!this.dom.tr.parentNode) {
         var nextTr = this.parent._getNextTr();
         nextTr.parentNode.insertBefore(this.dom.tr, nextTr);
       }
-      // this.dom.tr.style.display = '';
 
       // update the counts in the text
       this.dom.moreText.nodeValue = this._getShowMoreText();
@@ -112,8 +114,6 @@ function showMoreNodeFactory(Node) {
       if (this.dom.tr && this.dom.tr.parentNode) {
         this.dom.tr.parentNode.removeChild(this.dom.tr);
       }
-
-      // this.dom.tr.style.display = 'none';
     }
   };
 
