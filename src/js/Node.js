@@ -3,6 +3,7 @@
 var naturalSort = require('javascript-natural-sort');
 var ContextMenu = require('./ContextMenu');
 var appendNodeFactory = require('./appendNodeFactory');
+var showMoreNodeFactory = require('./showMoreNodeFactory');
 var util = require('./util');
 var translate = require('./i18n').translate;
 
@@ -38,6 +39,12 @@ function Node (editor, params) {
 
 // debounce interval for keyboard input in milliseconds
 Node.prototype.DEBOUNCE_INTERVAL = 150;
+
+Node.prototype.MAX_VISIBLE_CHILDS = 100;
+Node.prototype.MAX_VISIBLE_CHILDS = 10; // TODO: remove this line, use 100 instead of 10
+
+// default value for the max visible childs of large arrays
+Node.prototype.maxVisibleChilds = Node.prototype.MAX_VISIBLE_CHILDS;
 
 /**
  * Determine whether the field and/or value of this node are editable
@@ -440,6 +447,7 @@ Node.prototype.clone = function() {
   clone.value = this.value;
   clone.valueInnerText = this.valueInnerText;
   clone.expanded = this.expanded;
+  clone.maxVisibleChilds = this.maxVisibleChilds;
 
   if (this.childs) {
     // an object or array
@@ -527,20 +535,45 @@ Node.prototype.showChilds = function() {
   var table = tr ? tr.parentNode : undefined;
   if (table) {
     // show row with append button
-    var append = this.getAppend();
-    var nextTr = tr.nextSibling;
-    if (nextTr) {
-      table.insertBefore(append, nextTr);
-    }
-    else {
-      table.appendChild(append);
+    var append = this.getAppendDom();
+    if (!append.parentNode) {
+      var nextTr = tr.nextSibling;
+      if (nextTr) {
+        table.insertBefore(append, nextTr);
+      }
+      else {
+        table.appendChild(append);
+      }
     }
 
     // show childs
-    this.childs.forEach(function (child) {
-      table.insertBefore(child.getDom(), append);
+    var iMax = Math.min(this.childs.length, this.maxVisibleChilds);
+    var nextTr = this._getNextTr();
+    for (var i = 0; i < iMax; i++) {
+      var child = this.childs[i];
+      if (!child.getDom().parentNode) {
+        table.insertBefore(child.getDom(), nextTr);
+      }
       child.showChilds();
-    });
+    }
+
+    // show "show more childs" if limited
+    var showMore = this.getShowMoreDom();
+    var nextTr = this._getNextTr();
+    if (!showMore.parentNode) {
+      table.insertBefore(showMore, nextTr);
+    }
+    this.showMore.updateDom(); // to update the counter
+  }
+};
+
+Node.prototype._getNextTr = function() {
+  if (this.showMore && this.showMore.getDom().parentNode) {
+    return this.showMore.getDom();
+  }
+
+  if (this.append && this.append.getDom().parentNode) {
+    return this.append.getDom();
   }
 };
 
@@ -570,7 +603,7 @@ Node.prototype.hideChilds = function() {
   }
 
   // hide append row
-  var append = this.getAppend();
+  var append = this.getAppendDom();
   if (append.parentNode) {
     append.parentNode.removeChild(append);
   }
@@ -579,6 +612,15 @@ Node.prototype.hideChilds = function() {
   this.childs.forEach(function (child) {
     child.hide();
   });
+
+  // hide "show more" row
+  var showMore = this.getShowMoreDom();
+  if (showMore.parentNode) {
+    showMore.parentNode.removeChild(showMore);
+  }
+
+  // reset max visible childs
+  delete this.maxVisibleChilds;
 };
 
 
@@ -614,7 +656,7 @@ Node.prototype.appendChild = function(node) {
     if (this.expanded) {
       // insert into the DOM, before the appendRow
       var newTr = node.getDom();
-      var appendTr = this.getAppend();
+      var appendTr = this.getAppendDom();
       var table = appendTr ? appendTr.parentNode : undefined;
       if (appendTr && table) {
         table.insertBefore(newTr, appendTr);
@@ -1084,7 +1126,7 @@ Node.prototype.changeType = function (newType) {
     var table = this.dom.tr ? this.dom.tr.parentNode : undefined;
     var lastTr;
     if (this.expanded) {
-      lastTr = this.getAppend();
+      lastTr = this.getAppendDom();
     }
     else {
       lastTr = this.getDom();
@@ -1719,9 +1761,9 @@ Node.onDrag = function (nodes, event) {
             topThis += 27;
             // TODO: dangerous to suppose the height of the appendNode a constant of 27 px.
           }
-        }
 
-        trNext = trNext.nextSibling;
+          trNext = trNext.nextSibling;
+        }
       }
       while (trNext && mouseY > topThis + heightNext);
 
@@ -2033,6 +2075,30 @@ Node.prototype.updateDom = function (options) {
     this._updateDomIndexes();
   }
 
+  // show/hide childs exceeding the maxVisibleChilds
+  if (this.childs) {
+    var iMax = Math.min(this.childs.length, this.maxVisibleChilds);
+    var child;
+
+    // append childs to DOM when not reaching maxVisibleChilds
+    var i = iMax - 1;
+    var nextTr = this._getNextTr();
+    if (nextTr)
+    while (this.childs[i] && !this.childs[i].getDom().parentNode) {
+      child = this.childs[i].getDom();
+      nextTr.parentNode.insertBefore(child, nextTr);
+      i--;
+    }
+
+    // remove childs from DOM when exceeding maxVisibleChilds
+    var j = iMax;
+    while (this.childs[j] && this.childs[j].getDom().parentNode) {
+      child = this.childs[j].getDom();
+      child.parentNode.removeChild(child);
+      i++;
+    }
+  }
+
   if (options && options.recurse === true) {
     // recurse is true or undefined. update childs recursively
     if (this.childs) {
@@ -2045,6 +2111,11 @@ Node.prototype.updateDom = function (options) {
   // update row with append button
   if (this.append) {
     this.append.updateDom();
+  }
+
+  // update "show more" text at the bottom of large arrays
+  if (this.showMore) {
+    this.showMore.updateDom();
   }
 };
 
@@ -2577,7 +2648,7 @@ Node.prototype.onKeyDown = function (event) {
     }
     else if (altKey && shiftKey && editable) { // Alt + Shift + Arrow left
       if (lastNode.expanded) {
-        var appendDom = lastNode.getAppend();
+        var appendDom = lastNode.getAppendDom();
         nextDom = appendDom ? appendDom.nextSibling : undefined;
       }
       else {
@@ -3004,12 +3075,7 @@ Node.prototype.sort = function (direction) {
   this.sortOrder = (order == 1) ? 'asc' : 'desc';
 
   // update the index numbering
-  if (this.type === 'array') {
-    this.childs.forEach(function (child, index) {
-      child.index = index;
-      child.updateDom();
-    });
-  }
+  this._updateDomIndexes();
 
   this.editor._onAction('sort', {
     node: this,
@@ -3024,14 +3090,25 @@ Node.prototype.sort = function (direction) {
 
 /**
  * Create a table row with an append button.
- * @return {HTMLElement | undefined} buttonAppend or undefined when inapplicable
+ * @return {HTMLElement | undefined} tr with the AppendNode contents
  */
-Node.prototype.getAppend = function () {
+Node.prototype.getAppendDom = function () {
   if (!this.append) {
     this.append = new AppendNode(this.editor);
     this.append.setParent(this);
   }
   return this.append.getDom();
+};
+
+/**
+ * Create a table row with an showMore button and text
+ * @return {HTMLElement | undefined} tr with the AppendNode contents
+ */
+Node.prototype.getShowMoreDom = function () {
+  if (!this.showMore) {
+    this.showMore = new ShowMoreNode(this.editor, this);
+  }
+  return this.showMore.getDom();
 };
 
 /**
@@ -3648,6 +3725,8 @@ Node.prototype._escapeJSON = function (text) {
 };
 
 // TODO: find a nicer solution to resolve this circular dependency between Node and AppendNode
+//       idea: introduce properties .isAppendNode and .isNode and use that instead of instanceof AppendNode checks
 var AppendNode = appendNodeFactory(Node);
+var ShowMoreNode = showMoreNodeFactory(Node);
 
 module.exports = Node;

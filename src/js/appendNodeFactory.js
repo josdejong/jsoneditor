@@ -77,7 +77,7 @@ function appendNodeFactory(Node) {
   /**
    * Update the HTML dom of the Node
    */
-  AppendNode.prototype.updateDom = function () {
+  AppendNode.prototype.updateDom = function(options) {
     var dom = this.dom;
     var tdAppend = dom.td;
     if (tdAppend) {
@@ -189,7 +189,7 @@ function appendNodeFactory(Node) {
   };
 
   /**
-   * Handle an event. The event is catched centrally by the editor
+   * Handle an event. The event is caught centrally by the editor
    * @param {Event} event
    */
   AppendNode.prototype.onEvent = function (event) {
