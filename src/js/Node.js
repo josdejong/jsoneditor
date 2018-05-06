@@ -793,8 +793,7 @@ Node.prototype.insertAfter = function(node, afterNode) {
 
 /**
  * Search in this node
- * The node will be expanded when the text is found one of its childs, else
- * it will be collapsed. Searches are case insensitive.
+ * Searches are case insensitive.
  * @param {String} text
  * @return {Node[]} results  Array with nodes containing the search text
  */
@@ -808,10 +807,10 @@ Node.prototype.search = function(text) {
   delete this.searchValue;
 
   // search in field
-  if (this.field != undefined) {
+  if (this.field !== undefined) {
     var field = String(this.field).toLowerCase();
     index = field.indexOf(search);
-    if (index != -1) {
+    if (index !== -1) {
       this.searchField = true;
       results.push({
         'node': this,
@@ -835,24 +834,13 @@ Node.prototype.search = function(text) {
       });
       results = results.concat(childResults);
     }
-
-    // update dom
-    if (search != undefined) {
-      var recurse = false;
-      if (childResults.length == 0) {
-        this.collapse(recurse);
-      }
-      else {
-        this.expand(recurse);
-      }
-    }
   }
   else {
     // string, auto
-    if (this.value != undefined ) {
+    if (this.value !== undefined ) {
       var value = String(this.value).toLowerCase();
       index = value.indexOf(search);
-      if (index != -1) {
+      if (index !== -1) {
         this.searchValue = true;
         results.push({
           'node': this,
@@ -874,14 +862,21 @@ Node.prototype.search = function(text) {
  * @param {function(boolean)} [callback]
  */
 Node.prototype.scrollTo = function(callback) {
-  if (!this.dom.tr || !this.dom.tr.parentNode) {
-    // if the node is not visible, expand its parents
-    var parent = this.parent;
-    var recurse = false;
-    while (parent) {
-      parent.expand(recurse);
-      parent = parent.parent;
+  // if the node is not visible, expand its parents
+  var node = this;
+  var recurse = false;
+  while (node && node.parent) {
+    // expand max visible childs of the parent if needed
+    var index = node.parent.type === 'array'
+        ? node.index
+        : node.parent.childs.indexOf(node);
+    while (node.parent.maxVisibleChilds < index + 1) {
+      node.parent.maxVisibleChilds += Node.prototype.MAX_VISIBLE_CHILDS;
     }
+
+    // expand the parent itself
+    node.parent.expand(recurse);
+    node = node.parent;
   }
 
   if (this.dom.tr && this.dom.tr.parentNode) {

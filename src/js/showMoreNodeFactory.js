@@ -106,7 +106,7 @@ function showMoreNodeFactory(Node) {
       this.dom.moreText.nodeValue = this._getShowMoreText();
 
       // update left margin
-      this.dom.moreContents.style.marginLeft = (this.getLevel() + 2) * 24 + 'px';
+      this.dom.moreContents.style.marginLeft = (this.getLevel() + 1) * 24 + 'px';
     }
     else {
       if (this.dom.tr && this.dom.tr.parentNode) {

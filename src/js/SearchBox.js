@@ -226,14 +226,14 @@ SearchBox.prototype._onSearch = function (forceSearch) {
 
   var value = this.dom.search.value;
   var text = (value.length > 0) ? value : undefined;
-  if (text != this.lastText || forceSearch) {
+  if (text !== this.lastText || forceSearch) {
     // only search again when changed
     this.lastText = text;
     this.results = this.editor.search(text);
-    this._setActiveResult(undefined);
+    this._setActiveResult(0, false);
 
     // display search results
-    if (text != undefined) {
+    if (text !== undefined) {
       var resultCount = this.results.length;
       switch (resultCount) {
         case 0: this.dom.results.innerHTML = 'no&nbsp;results'; break;
