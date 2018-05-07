@@ -693,7 +693,14 @@ Node.prototype.moveBefore = function(node, beforeNode) {
     }
 
     if (beforeNode instanceof AppendNode) {
-      this.appendChild(node);
+      // the this.childs.length + 1 is to reckon with the node that we're about to add
+      if (this.childs.length + 1 > this.maxVisibleChilds) {
+        var lastVisibleNode = this.childs[this.maxVisibleChilds - 1];
+        this.insertBefore(node, lastVisibleNode);
+      }
+      else {
+        this.appendChild(node);
+      }
     }
     else {
       this.insertBefore(node, beforeNode);
