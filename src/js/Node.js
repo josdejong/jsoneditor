@@ -1624,6 +1624,14 @@ Node.prototype.getDom = function() {
 };
 
 /**
+ * Test whether a Node is rendered and visible
+ * @returns {boolean}
+ */
+Node.prototype.isVisible = function () {
+  return this.dom && this.dom.tr && this.dom.tr.parentNode || false
+};
+
+/**
  * DragStart event, fired on mousedown on the dragarea at the left side of a Node
  * @param {Node[] | Node} nodes
  * @param {Event} event
@@ -2510,7 +2518,7 @@ Node.prototype.onEvent = function (event) {
   // focus
   // when clicked in whitespace left or right from the field or value, set focus
   var domTree = dom.tree;
-  if (target == domTree.parentNode && type == 'click' && !event.hasMoved) {
+  if (domTree && target == domTree.parentNode && type == 'click' && !event.hasMoved) {
     var left = (event.offsetX != undefined) ?
         (event.offsetX < (this.getLevel() + 1) * 24) :
         (event.pageX < util.getAbsoluteLeft(dom.tdSeparator));// for FF
@@ -2744,9 +2752,7 @@ Node.prototype.onKeyDown = function (event) {
       var prevDom = dom.previousSibling;
       if (prevDom) {
         prevNode = Node.getNodeFromTarget(prevDom);
-        if (prevNode && prevNode.parent &&
-            (prevNode instanceof AppendNode)
-            && !prevNode.isVisible()) {
+        if (prevNode && prevNode.parent && !prevNode.isVisible()) {
           oldSelection = this.editor.getDomSelection();
           oldBeforeNode = lastNode.nextSibling();
 
@@ -3179,7 +3185,7 @@ Node.prototype._previousNode = function () {
       prevDom = prevDom.previousSibling;
       prevNode = Node.getNodeFromTarget(prevDom);
     }
-    while (prevDom && (prevNode instanceof AppendNode && !prevNode.isVisible()));
+    while (prevDom && prevNode && !prevNode.isVisible());
   }
   return prevNode;
 };
@@ -3199,7 +3205,7 @@ Node.prototype._nextNode = function () {
       nextDom = nextDom.nextSibling;
       nextNode = Node.getNodeFromTarget(nextDom);
     }
-    while (nextDom && (nextNode instanceof AppendNode && !nextNode.isVisible()));
+    while (nextDom && nextNode && !nextNode.isVisible());
   }
 
   return nextNode;
@@ -3232,7 +3238,7 @@ Node.prototype._lastNode = function () {
   if (dom && dom.parentNode) {
     var lastDom = dom.parentNode.lastChild;
     lastNode =  Node.getNodeFromTarget(lastDom);
-    while (lastDom && (lastNode instanceof AppendNode && !lastNode.isVisible())) {
+    while (lastDom && lastNode && !lastNode.isVisible()) {
       lastDom = lastDom.previousSibling;
       lastNode =  Node.getNodeFromTarget(lastDom);
     }

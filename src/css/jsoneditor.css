@@ -193,6 +193,11 @@ div.jsoneditor-tree div.jsoneditor-show-more a {
   color: #808080;
 }
 
+div.jsoneditor-tree div.jsoneditor-show-more a:hover,
+div.jsoneditor-tree div.jsoneditor-show-more a:focus {
+  color: #ee422e;
+}
+
 div.jsoneditor {
   color: #1A1A1A;
   border: 1px solid #3883fa;
