@@ -579,21 +579,23 @@ Node.prototype._getNextTr = function() {
 
 /**
  * Hide the node with all its childs
+ * @param {{resetMaxVisibleChilds: boolean}} [options]
  */
-Node.prototype.hide = function() {
+Node.prototype.hide = function(options) {
   var tr = this.dom.tr;
   var table = tr ? tr.parentNode : undefined;
   if (table) {
     table.removeChild(tr);
   }
-  this.hideChilds();
+  this.hideChilds(options);
 };
 
 
 /**
  * Recursively hide all childs
+ * @param {{resetMaxVisibleChilds: boolean}} [options]
  */
-Node.prototype.hideChilds = function() {
+Node.prototype.hideChilds = function(options) {
   var childs = this.childs;
   if (!childs) {
     return;
@@ -620,7 +622,9 @@ Node.prototype.hideChilds = function() {
   }
 
   // reset max visible childs
-  delete this.maxVisibleChilds;
+  if (!options || options.resetMaxVisibleChilds) {
+    delete this.maxVisibleChilds;
+  }
 };
 
 
@@ -1136,7 +1140,7 @@ Node.prototype.changeType = function (newType) {
     var nextTr = (lastTr && lastTr.parentNode) ? lastTr.nextSibling : undefined;
 
     // hide current field and all its childs
-    this.hide();
+    this.hide({ resetMaxVisibleChilds: false });
     this.clearDom();
 
     // adjust the field and the value

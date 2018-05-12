@@ -101,7 +101,9 @@ function showMoreNodeFactory(Node) {
 
       if (!this.dom.tr.parentNode) {
         var nextTr = this.parent._getNextTr();
-        nextTr.parentNode.insertBefore(this.dom.tr, nextTr);
+        if (nextTr) {
+          nextTr.parentNode.insertBefore(this.dom.tr, nextTr);
+        }
       }
 
       // update the counts in the text
