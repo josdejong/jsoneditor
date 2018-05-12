@@ -40,8 +40,8 @@ function Node (editor, params) {
 // debounce interval for keyboard input in milliseconds
 Node.prototype.DEBOUNCE_INTERVAL = 150;
 
+// number of visible childs rendered initially in large arrays/objects (with a "show more" button to show more)
 Node.prototype.MAX_VISIBLE_CHILDS = 100;
-Node.prototype.MAX_VISIBLE_CHILDS = 10; // TODO: remove this line, use 100 instead of 10
 
 // default value for the max visible childs of large arrays
 Node.prototype.maxVisibleChilds = Node.prototype.MAX_VISIBLE_CHILDS;
