@@ -142,33 +142,6 @@ function showMoreNodeFactory(Node) {
    */
   ShowMoreNode.prototype.onEvent = function (event) {
     var type = event.type;
-    // var target = event.target || event.srcElement;
-    // var dom = this.dom;
-
-    // // highlight the append nodes parent
-    // var menu = dom.menu;
-    // if (target == menu) {
-    //   if (type == 'mouseover') {
-    //     this.editor.highlighter.highlight(this.parent);
-    //   }
-    //   else if (type == 'mouseout') {
-    //     this.editor.highlighter.unhighlight();
-    //   }
-    // }
-
-    // // context menu events
-    // if (type == 'click' && target == dom.menu) {
-    //   var highlighter = this.editor.highlighter;
-    //   highlighter.highlight(this.parent);
-    //   highlighter.lock();
-    //   util.addClassName(dom.menu, 'jsoneditor-selected');
-    //   this.showContextMenu(dom.menu, function () {
-    //     util.removeClassName(dom.menu, 'jsoneditor-selected');
-    //     highlighter.unlock();
-    //     highlighter.unhighlight();
-    //   });
-    // }
-
     if (type === 'keydown') {
       this.onKeyDown(event);
     }
