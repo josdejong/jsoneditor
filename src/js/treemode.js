@@ -1130,6 +1130,7 @@ treemode.select = function (nodes) {
 
     var first = nodes[0];
     nodes.forEach(function (node) {
+      node.expandPathToNode();
       node.setSelected(true, node === first);
     });
 

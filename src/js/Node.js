@@ -873,7 +873,17 @@ Node.prototype.search = function(text) {
  * @param {function(boolean)} [callback]
  */
 Node.prototype.scrollTo = function(callback) {
-  // if the node is not visible, expand its parents
+  this.expandPathToNode();
+
+  if (this.dom.tr && this.dom.tr.parentNode) {
+    this.editor.scrollTo(this.dom.tr.offsetTop, callback);
+  }
+};
+
+/**
+ * if the node is not visible, expand its parents
+ */
+Node.prototype.expandPathToNode = function () {
   var node = this;
   var recurse = false;
   while (node && node.parent) {
@@ -888,10 +898,6 @@ Node.prototype.scrollTo = function(callback) {
     // expand the parent itself
     node.parent.expand(recurse);
     node = node.parent;
-  }
-
-  if (this.dom.tr && this.dom.tr.parentNode) {
-    this.editor.scrollTo(this.dom.tr.offsetTop, callback);
   }
 };
 
