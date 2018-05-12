@@ -190,6 +190,7 @@ div.jsoneditor-tree div.jsoneditor-show-more {
 }
 
 div.jsoneditor-tree div.jsoneditor-show-more a {
+  display: inline-block;
   color: #808080;
 }
 

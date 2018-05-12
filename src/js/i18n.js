@@ -32,6 +32,9 @@ var _defs = {
         'removeText': 'Remove',
         'removeTitle': 'Remove selected fields (Ctrl+Del)',
         'removeField': 'Remove this field (Ctrl+Del)',
+        'showAll': 'show all',
+        'showMore': 'show more',
+        'showMoreStatus': 'displaying ${maxVisibleChilds} of ${totalChilds} items.',
         'sort': 'Sort',
         'sortTitle': 'Sort the childs of this ',
         'string': 'String',
@@ -81,6 +84,12 @@ var _defs = {
         'removeText': 'Remover',
         'removeTitle': 'Remover campos selecionados (Ctrl+Del)',
         'removeField': 'Remover este campo (Ctrl+Del)',
+        // TODO: correctly translate showAll
+        'showAll': 'mostre tudo',
+        // TODO: correctly translate showMore
+        'showMore': 'mostre mais',
+        // TODO: correctly translate showMoreStatus
+        'showMoreStatus': 'exibindo ${maxVisibleChilds} de ${totalChilds} itens.',
         'sort': 'Organizar',
         'sortTitle': 'Organizar os filhos deste ',
         'string': 'Texto',

@@ -40,7 +40,7 @@ function showMoreNodeFactory(Node) {
       var me = this;
       var parent = this.parent;
       var showMoreButton = document.createElement('a');
-      showMoreButton.appendChild(document.createTextNode('show\u00A0more'));
+      showMoreButton.appendChild(document.createTextNode(translate('showMore')));
       showMoreButton.href = '#';
       showMoreButton.onclick = function (event) {
         // TODO: use callback instead of accessing a method of the parent
@@ -53,7 +53,7 @@ function showMoreNodeFactory(Node) {
       };
 
       var showAllButton = document.createElement('a');
-      showAllButton.appendChild(document.createTextNode('show\u00A0all'));
+      showAllButton.appendChild(document.createTextNode(translate('showAll')));
       showAllButton.href = '#';
       showAllButton.onclick = function (event) {
         // TODO: use callback instead of accessing a method of the parent
@@ -120,10 +120,10 @@ function showMoreNodeFactory(Node) {
   };
 
   ShowMoreNode.prototype._getShowMoreText = function() {
-    // TODO: implement in translate
-    var childs = this.type === 'array' ? 'items' : 'properties';
-    return 'displaying ' + this.parent.maxVisibleChilds +
-        ' of ' + this.parent.childs.length + ' ' + childs + '. ';
+    return translate('showMoreStatus', {
+      maxVisibleChilds: this.parent.maxVisibleChilds,
+      totalChilds: this.parent.childs.length
+    }) + ' ';
   };
 
   /**
