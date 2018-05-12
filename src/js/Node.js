@@ -197,12 +197,21 @@ Node.prototype.findParents = function () {
  *                        icon will set focus to the invalid child node.
  */
 Node.prototype.setError = function (error, child) {
-  // ensure the dom exists
-  this.getDom();
-
   this.error = error;
+  this.errorChild = child;
+
+  if (this.dom && this.dom.tr) {
+    this.updateError()
+  }
+};
+
+/**
+ * Render the error
+ */
+Node.prototype.updateError = function() {
+  var error = this.error;
   var tdError = this.dom.tdError;
-  if (error) {
+  if (error && this.dom && this.dom.tr && !tdError) {
     if (!tdError) {
       tdError = document.createElement('td');
       this.dom.tdError = tdError;
@@ -238,6 +247,7 @@ Node.prototype.setError = function (error, child) {
 
     // when clicking the error icon, expand all nodes towards the invalid
     // child node, and set focus to the child node
+    var child = this.errorChild;
     if (child) {
       button.onclick = function showInvalidNode() {
         child.findParents().forEach(function (parent) {
@@ -2126,6 +2136,11 @@ Node.prototype.updateDom = function (options) {
         child.updateDom(options);
       });
     }
+  }
+
+  // update rendering of error
+  if (this.error) {
+    this.updateError()
   }
 
   // update row with append button
