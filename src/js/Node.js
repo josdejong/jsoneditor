@@ -2013,6 +2013,10 @@ Node.prototype.setSelected = function (selected, isFirst) {
       this.append.setSelected(selected);
     }
 
+    if (this.showMore) {
+      this.showMore.setSelected(selected);
+    }
+
     if (this.childs) {
       this.childs.forEach(function (child) {
         child.setSelected(selected);
