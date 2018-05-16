@@ -42,7 +42,6 @@ Node.prototype.DEBOUNCE_INTERVAL = 150;
 
 // number of visible childs rendered initially in large arrays/objects (with a "show more" button to show more)
 Node.prototype.MAX_VISIBLE_CHILDS = 100;
-Node.prototype.MAX_VISIBLE_CHILDS = 10; // FIXME: cleanup
 
 // default value for the max visible childs of large arrays
 Node.prototype.visibleChilds = Node.prototype.MAX_VISIBLE_CHILDS;
