@@ -44,7 +44,8 @@ function showMoreNodeFactory(Node) {
       showMoreButton.href = '#';
       showMoreButton.onclick = function (event) {
         // TODO: use callback instead of accessing a method of the parent
-        parent.maxVisibleChilds += Node.prototype.MAX_VISIBLE_CHILDS;
+        parent.maxVisibleChilds = Math.floor(parent.maxVisibleChilds / parent.MAX_VISIBLE_CHILDS + 1) *
+            parent.MAX_VISIBLE_CHILDS;
         me.updateDom();
         parent.showChilds();
 
@@ -81,6 +82,7 @@ function showMoreNodeFactory(Node) {
       moreTr.appendChild(document.createElement('td'));
       moreTr.appendChild(document.createElement('td'));
       moreTr.appendChild(tdContents);
+      moreTr.className = 'jsoneditor-show-more';
       this.dom.tr = moreTr;
       this.dom.moreContents = moreContents;
       this.dom.moreText = moreText;

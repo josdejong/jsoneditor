@@ -40,6 +40,7 @@ function appendNodeFactory(Node) {
 
     // a row for the append button
     var trAppend = document.createElement('tr');
+    trAppend.className = 'jsoneditor-append';
     trAppend.node = this;
     dom.tr = trAppend;
 

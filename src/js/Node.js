@@ -42,6 +42,7 @@ Node.prototype.DEBOUNCE_INTERVAL = 150;
 
 // number of visible childs rendered initially in large arrays/objects (with a "show more" button to show more)
 Node.prototype.MAX_VISIBLE_CHILDS = 100;
+Node.prototype.MAX_VISIBLE_CHILDS = 10; // FIXME: cleanup
 
 // default value for the max visible childs of large arrays
 Node.prototype.maxVisibleChilds = Node.prototype.MAX_VISIBLE_CHILDS;
@@ -755,6 +756,8 @@ Node.prototype.moveTo = function (node, index) {
  */
 Node.prototype.insertBefore = function(node, beforeNode) {
   if (this._hasChilds()) {
+    this.maxVisibleChilds++;
+
     if (beforeNode == this.append) {
       // append to the child nodes
 
@@ -786,6 +789,7 @@ Node.prototype.insertBefore = function(node, beforeNode) {
       }
 
       node.showChilds();
+      this.showChilds();
     }
 
     this.updateDom({'updateIndexes': true});
@@ -1097,6 +1101,8 @@ Node.prototype.removeChild = function(node) {
     var index = this.childs.indexOf(node);
 
     if (index != -1) {
+      this.maxVisibleChilds--;
+
       node.hide();
 
       // delete old search results
@@ -1753,7 +1759,7 @@ Node.onDrag = function (nodes, event) {
       }
     }
 
-    if (nodePrev) {
+    if (nodePrev && nodePrev.isVisible()) {
       // check if mouseY is really inside the found node
       trPrev = nodePrev.dom.tr;
       topPrev = trPrev ? util.getAbsoluteTop(trPrev) : 0;
@@ -1784,7 +1790,8 @@ Node.onDrag = function (nodes, event) {
               util.getAbsoluteTop(trNext.nextSibling) : 0;
           heightNext = trNext ? (bottomNext - topFirst) : 0;
 
-          if (nodeNext.parent.childs.length == nodes.length &&
+          if (nodeNext &&
+              nodeNext.parent.childs.length == nodes.length &&
               nodeNext.parent.childs[nodes.length - 1] == lastNode) {
             // We are about to remove the last child of this parent,
             // which will make the parents appendNode visible.
@@ -1805,7 +1812,7 @@ Node.onDrag = function (nodes, event) {
         var levelNext = nodeNext.getLevel();     // level to be
 
         // find the best fitting level (move upwards over the append nodes)
-        trPrev = nodeNext.dom.tr.previousSibling;
+        trPrev = nodeNext.dom.tr && nodeNext.dom.tr.previousSibling;
         while (levelNext < level && trPrev) {
           nodePrev = Node.getNodeFromTarget(trPrev);
 
@@ -1837,8 +1844,13 @@ Node.onDrag = function (nodes, event) {
           trPrev = trPrev.previousSibling;
         }
 
+        if (nodeNext instanceof AppendNode && !nodeNext.isVisible() &&
+            nodeNext.parent.showMore.isVisible()) {
+          nodeNext = nodeNext._nextNode();
+        }
+
         // move the node when its position is changed
-        if (trLast.nextSibling != nodeNext.dom.tr) {
+        if (nodeNext && nodeNext.dom.tr && trLast.nextSibling != nodeNext.dom.tr) {
           nodes.forEach(function (node) {
             nodeNext.parent.moveBefore(node, nodeNext);
           });
@@ -2103,30 +2115,6 @@ Node.prototype.updateDom = function (options) {
   if (options && options.updateIndexes === true) {
     // updateIndexes is true or undefined
     this._updateDomIndexes();
-  }
-
-  // show/hide childs exceeding the maxVisibleChilds
-  if (this.childs) {
-    var iMax = Math.min(this.childs.length, this.maxVisibleChilds);
-    var child;
-
-    // append childs to DOM when not reaching maxVisibleChilds
-    var i = iMax - 1;
-    var nextTr = this._getNextTr();
-    if (nextTr)
-    while (this.childs[i] && !this.childs[i].getDom().parentNode) {
-      child = this.childs[i].getDom();
-      nextTr.parentNode.insertBefore(child, nextTr);
-      i--;
-    }
-
-    // remove childs from DOM when exceeding maxVisibleChilds
-    var j = iMax;
-    while (this.childs[j] && this.childs[j].getDom().parentNode) {
-      child = this.childs[j].getDom();
-      child.parentNode.removeChild(child);
-      i++;
-    }
   }
 
   if (options && options.recurse === true) {
@@ -2829,6 +2817,16 @@ Node.prototype.onKeyDown = function (event) {
       else {
         nextNode = lastNode._nextNode();
       }
+
+      // when the next node is not visible, we've reached the "showMore" buttons
+      if (nextNode && !nextNode.isVisible()) {
+        nextNode = nextNode.parent.showMore;
+      }
+
+      if (nextNode && nextNode instanceof AppendNode) {
+        nextNode = lastNode;
+      }
+
       var nextNode2 = nextNode && (nextNode._nextNode() || nextNode.parent.append);
       if (nextNode2 && nextNode2.parent) {
         oldSelection = this.editor.getDomSelection();
@@ -3210,7 +3208,7 @@ Node.prototype._previousNode = function () {
       prevDom = prevDom.previousSibling;
       prevNode = Node.getNodeFromTarget(prevDom);
     }
-    while (prevDom && prevNode && !prevNode.isVisible());
+    while (prevDom && prevNode && (prevNode instanceof AppendNode && !prevNode.isVisible()));
   }
   return prevNode;
 };
@@ -3230,7 +3228,7 @@ Node.prototype._nextNode = function () {
       nextDom = nextDom.nextSibling;
       nextNode = Node.getNodeFromTarget(nextDom);
     }
-    while (nextDom && nextNode && !nextNode.isVisible());
+    while (nextDom && nextNode && (nextNode instanceof AppendNode && !nextNode.isVisible()));
   }
 
   return nextNode;
