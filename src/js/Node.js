@@ -45,7 +45,7 @@ Node.prototype.MAX_VISIBLE_CHILDS = 100;
 Node.prototype.MAX_VISIBLE_CHILDS = 10; // FIXME: cleanup
 
 // default value for the max visible childs of large arrays
-Node.prototype.maxVisibleChilds = Node.prototype.MAX_VISIBLE_CHILDS;
+Node.prototype.visibleChilds = Node.prototype.MAX_VISIBLE_CHILDS;
 
 /**
  * Determine whether the field and/or value of this node are editable
@@ -462,7 +462,7 @@ Node.prototype.clone = function() {
   clone.value = this.value;
   clone.valueInnerText = this.valueInnerText;
   clone.expanded = this.expanded;
-  clone.maxVisibleChilds = this.maxVisibleChilds;
+  clone.visibleChilds = this.visibleChilds;
 
   if (this.childs) {
     // an object or array
@@ -562,7 +562,7 @@ Node.prototype.showChilds = function() {
     }
 
     // show childs
-    var iMax = Math.min(this.childs.length, this.maxVisibleChilds);
+    var iMax = Math.min(this.childs.length, this.visibleChilds);
     var nextTr = this._getNextTr();
     for (var i = 0; i < iMax; i++) {
       var child = this.childs[i];
@@ -594,7 +594,7 @@ Node.prototype._getNextTr = function() {
 
 /**
  * Hide the node with all its childs
- * @param {{resetMaxVisibleChilds: boolean}} [options]
+ * @param {{resetVisibleChilds: boolean}} [options]
  */
 Node.prototype.hide = function(options) {
   var tr = this.dom.tr;
@@ -608,7 +608,7 @@ Node.prototype.hide = function(options) {
 
 /**
  * Recursively hide all childs
- * @param {{resetMaxVisibleChilds: boolean}} [options]
+ * @param {{resetVisibleChilds: boolean}} [options]
  */
 Node.prototype.hideChilds = function(options) {
   var childs = this.childs;
@@ -637,8 +637,8 @@ Node.prototype.hideChilds = function(options) {
   }
 
   // reset max visible childs
-  if (!options || options.resetMaxVisibleChilds) {
-    delete this.maxVisibleChilds;
+  if (!options || options.resetVisibleChilds) {
+    delete this.visibleChilds;
   }
 };
 
@@ -684,7 +684,7 @@ Node.prototype.appendChild = function(node, visible) {
 
       node.showChilds();
 
-      this.maxVisibleChilds++;
+      this.visibleChilds++;
     }
 
     this.updateDom({'updateIndexes': true});
@@ -716,8 +716,8 @@ Node.prototype.moveBefore = function(node, beforeNode) {
 
     if (beforeNode instanceof AppendNode) {
       // the this.childs.length + 1 is to reckon with the node that we're about to add
-      if (this.childs.length + 1 > this.maxVisibleChilds) {
-        var lastVisibleNode = this.childs[this.maxVisibleChilds - 1];
+      if (this.childs.length + 1 > this.visibleChilds) {
+        var lastVisibleNode = this.childs[this.visibleChilds - 1];
         this.insertBefore(node, lastVisibleNode);
       }
       else {
@@ -763,7 +763,7 @@ Node.prototype.moveTo = function (node, index) {
  */
 Node.prototype.insertBefore = function(node, beforeNode) {
   if (this._hasChilds()) {
-    this.maxVisibleChilds++;
+    this.visibleChilds++;
 
     if (beforeNode == this.append) {
       // append to the child nodes
@@ -908,12 +908,12 @@ Node.prototype.expandPathToNode = function () {
   var node = this;
   var recurse = false;
   while (node && node.parent) {
-    // expand max visible childs of the parent if needed
+    // expand visible childs of the parent if needed
     var index = node.parent.type === 'array'
         ? node.index
         : node.parent.childs.indexOf(node);
-    while (node.parent.maxVisibleChilds < index + 1) {
-      node.parent.maxVisibleChilds += Node.prototype.MAX_VISIBLE_CHILDS;
+    while (node.parent.visibleChilds < index + 1) {
+      node.parent.visibleChilds += Node.prototype.MAX_VISIBLE_CHILDS;
     }
 
     // expand the parent itself
@@ -1107,8 +1107,8 @@ Node.prototype.removeChild = function(node) {
   if (this.childs) {
     var index = this.childs.indexOf(node);
 
-    if (index != -1) {
-      this.maxVisibleChilds--;
+    if (index !== -1) {
+      this.visibleChilds--;
 
       node.hide();
 
@@ -1169,7 +1169,7 @@ Node.prototype.changeType = function (newType) {
     var nextTr = (lastTr && lastTr.parentNode) ? lastTr.nextSibling : undefined;
 
     // hide current field and all its childs
-    this.hide({ resetMaxVisibleChilds: false });
+    this.hide({ resetVisibleChilds: false });
     this.clearDom();
 
     // adjust the field and the value

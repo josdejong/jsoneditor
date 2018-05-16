@@ -34,7 +34,7 @@ var _defs = {
         'removeField': 'Remove this field (Ctrl+Del)',
         'showAll': 'show all',
         'showMore': 'show more',
-        'showMoreStatus': 'displaying ${maxVisibleChilds} of ${totalChilds} items.',
+        'showMoreStatus': 'displaying ${visibleChilds} of ${totalChilds} items.',
         'sort': 'Sort',
         'sortTitle': 'Sort the childs of this ',
         'string': 'String',
@@ -89,7 +89,7 @@ var _defs = {
         // TODO: correctly translate showMore
         'showMore': 'mostre mais',
         // TODO: correctly translate showMoreStatus
-        'showMoreStatus': 'exibindo ${maxVisibleChilds} de ${totalChilds} itens.',
+        'showMoreStatus': 'exibindo ${visibleChilds} de ${totalChilds} itens.',
         'sort': 'Organizar',
         'sortTitle': 'Organizar os filhos deste ',
         'string': 'Texto',

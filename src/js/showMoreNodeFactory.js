@@ -44,7 +44,7 @@ function showMoreNodeFactory(Node) {
       showMoreButton.href = '#';
       showMoreButton.onclick = function (event) {
         // TODO: use callback instead of accessing a method of the parent
-        parent.maxVisibleChilds = Math.floor(parent.maxVisibleChilds / parent.MAX_VISIBLE_CHILDS + 1) *
+        parent.visibleChilds = Math.floor(parent.visibleChilds / parent.MAX_VISIBLE_CHILDS + 1) *
             parent.MAX_VISIBLE_CHILDS;
         me.updateDom();
         parent.showChilds();
@@ -58,7 +58,7 @@ function showMoreNodeFactory(Node) {
       showAllButton.href = '#';
       showAllButton.onclick = function (event) {
         // TODO: use callback instead of accessing a method of the parent
-        parent.maxVisibleChilds = Infinity;
+        parent.visibleChilds = Infinity;
         me.updateDom();
         parent.showChilds();
 
@@ -99,7 +99,7 @@ function showMoreNodeFactory(Node) {
   ShowMoreNode.prototype.updateDom = function(options) {
     if (this.isVisible()) {
       // attach to the right child node (the first non-visible child)
-      this.dom.tr.node = this.parent.childs[this.parent.maxVisibleChilds];
+      this.dom.tr.node = this.parent.childs[this.parent.visibleChilds];
 
       if (!this.dom.tr.parentNode) {
         var nextTr = this.parent._getNextTr();
@@ -123,7 +123,7 @@ function showMoreNodeFactory(Node) {
 
   ShowMoreNode.prototype._getShowMoreText = function() {
     return translate('showMoreStatus', {
-      maxVisibleChilds: this.parent.maxVisibleChilds,
+      visibleChilds: this.parent.visibleChilds,
       totalChilds: this.parent.childs.length
     }) + ' ';
   };
@@ -131,11 +131,11 @@ function showMoreNodeFactory(Node) {
   /**
    * Check whether the ShowMoreNode is currently visible.
    * the ShowMoreNode is visible when it's parent has more childs than
-   * the current maxVisibleChilds
+   * the current visibleChilds
    * @return {boolean} isVisible
    */
   ShowMoreNode.prototype.isVisible = function () {
-    return this.parent.expanded && this.parent.childs.length > this.parent.maxVisibleChilds;
+    return this.parent.expanded && this.parent.childs.length > this.parent.visibleChilds;
   };
 
   /**
