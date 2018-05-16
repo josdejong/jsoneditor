@@ -322,7 +322,7 @@ Node.prototype.getField = function() {
  *                         'array', 'object', or 'string'
  */
 Node.prototype.setValue = function(value, type) {
-  var childValue, child;
+  var childValue, child, visible;
 
   // first clear all current childs (if any)
   var childs = this.childs;
@@ -358,7 +358,8 @@ Node.prototype.setValue = function(value, type) {
         child = new Node(this.editor, {
           value: childValue
         });
-        this.appendChild(child);
+        visible = i < this.MAX_VISIBLE_CHILDS;
+        this.appendChild(child, visible);
       }
     }
     this.value = '';
@@ -366,6 +367,7 @@ Node.prototype.setValue = function(value, type) {
   else if (this.type == 'object') {
     // object
     this.childs = [];
+    i = 0;
     for (var childField in value) {
       if (value.hasOwnProperty(childField)) {
         childValue = value[childField];
@@ -375,8 +377,10 @@ Node.prototype.setValue = function(value, type) {
             field: childField,
             value: childValue
           });
-          this.appendChild(child);
+          visible = i < this.MAX_VISIBLE_CHILDS;
+          this.appendChild(child, visible);
         }
+        i++;
       }
     }
     this.value = '';
@@ -657,8 +661,9 @@ Node.prototype.expandTo = function() {
  * Add a new child to the node.
  * Only applicable when Node value is of type array or object
  * @param {Node} node
+ * @param {boolean} [visible] If true, the child will be rendered
  */
-Node.prototype.appendChild = function(node) {
+Node.prototype.appendChild = function(node, visible) {
   if (this._hasChilds()) {
     // adjust the link to the parent
     node.setParent(this);
@@ -668,7 +673,7 @@ Node.prototype.appendChild = function(node) {
     }
     this.childs.push(node);
 
-    if (this.expanded) {
+    if (this.expanded && visible !== false) {
       // insert into the DOM, before the appendRow
       var newTr = node.getDom();
       var appendTr = this.getAppendDom();
@@ -678,6 +683,8 @@ Node.prototype.appendChild = function(node) {
       }
 
       node.showChilds();
+
+      this.maxVisibleChilds++;
     }
 
     this.updateDom({'updateIndexes': true});
