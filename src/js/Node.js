@@ -40,6 +40,9 @@ function Node (editor, params) {
 // debounce interval for keyboard input in milliseconds
 Node.prototype.DEBOUNCE_INTERVAL = 150;
 
+// search will stop iterating as soon as the max is reached
+Node.prototype.MAX_SEARCH_RESULTS = 999;
+
 // number of visible childs rendered initially in large arrays/objects (with a "show more" button to show more)
 Node.prototype.MAX_VISIBLE_CHILDS = 100;
 
@@ -826,10 +829,14 @@ Node.prototype.insertAfter = function(node, afterNode) {
  * Search in this node
  * Searches are case insensitive.
  * @param {String} text
+ * @param {Node[]} [results] Array where search results will be added
+ *                           used to count and limit the results whilst iterating
  * @return {Node[]} results  Array with nodes containing the search text
  */
-Node.prototype.search = function(text) {
-  var results = [];
+Node.prototype.search = function(text, results) {
+  if (!Array.isArray(results)) {
+    results = [];
+  }
   var index;
   var search = text ? text.toLowerCase() : undefined;
 
@@ -838,7 +845,7 @@ Node.prototype.search = function(text) {
   delete this.searchValue;
 
   // search in field
-  if (this.field !== undefined) {
+  if (this.field !== undefined && results.length <= this.MAX_SEARCH_RESULTS) {
     var field = String(this.field).toLowerCase();
     index = field.indexOf(search);
     if (index !== -1) {
@@ -859,16 +866,14 @@ Node.prototype.search = function(text) {
 
     // search the nodes childs
     if (this.childs) {
-      var childResults = [];
       this.childs.forEach(function (child) {
-        childResults = childResults.concat(child.search(text));
+        child.search(text, results);
       });
-      results = results.concat(childResults);
     }
   }
   else {
     // string, auto
-    if (this.value !== undefined ) {
+    if (this.value !== undefined  && results.length <= this.MAX_SEARCH_RESULTS) {
       var value = String(this.value).toLowerCase();
       index = value.indexOf(search);
       if (index !== -1) {
@@ -878,10 +883,10 @@ Node.prototype.search = function(text) {
           'elem': 'value'
         });
       }
-    }
 
-    // update dom
-    this._updateDomValue();
+      // update dom
+      this._updateDomValue();
+    }
   }
 
   return results;

@@ -8,6 +8,7 @@ https://github.com/josdejong/jsoneditor
 - Better handling of large JSON documents:
   - Only displays the first 100 items of large arrays, with buttons
     "show more" and "show all" to render more items.
+  - Search results are now limited to max 1000 matches.
   - Search does no longer expand the paths to all matches, instead
     it only expands the path of the current search result.
 - Fixed index numbers of Array items not being updated after sorting.
