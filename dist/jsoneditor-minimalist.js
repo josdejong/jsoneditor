@@ -24,8 +24,8 @@
  * Copyright (c) 2011-2017 Jos de Jong, http://jsoneditoronline.org
  *
  * @author  Jos de Jong, <wjosdejong@gmail.com>
- * @version 5.15.0
- * @date    2018-05-02
+ * @version 5.16.0
+ * @date    2018-05-23
  */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
@@ -94,7 +94,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	}
 
 	var treemode = __webpack_require__(1);
-	var textmode = __webpack_require__(15);
+	var textmode = __webpack_require__(16);
 	var util = __webpack_require__(4);
 
 	/**
@@ -504,9 +504,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	var ContextMenu = __webpack_require__(7);
 	var TreePath = __webpack_require__(9);
 	var Node = __webpack_require__(10);
-	var ModeSwitcher = __webpack_require__(13);
+	var ModeSwitcher = __webpack_require__(14);
 	var util = __webpack_require__(4);
-	var autocomplete = __webpack_require__(14);
+	var autocomplete = __webpack_require__(15);
 	var translate = __webpack_require__(8).translate;
 	var setLanguages = __webpack_require__(8).setLanguages;
 	var setLanguage = __webpack_require__(8).setLanguage;
@@ -1627,6 +1627,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	    var first = nodes[0];
 	    nodes.forEach(function (node) {
+	      node.expandPathToNode();
 	      node.setSelected(true, node === first);
 	    });
 
@@ -3980,19 +3981,30 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	  var value = this.dom.search.value;
 	  var text = (value.length > 0) ? value : undefined;
-	  if (text != this.lastText || forceSearch) {
+	  if (text !== this.lastText || forceSearch) {
 	    // only search again when changed
 	    this.lastText = text;
 	    this.results = this.editor.search(text);
-	    this._setActiveResult(undefined);
+	    var MAX_SEARCH_RESULTS = this.results[0]
+	        ? this.results[0].node.MAX_SEARCH_RESULTS
+	        : Infinity;
+
+	    this._setActiveResult(0, false);
 
 	    // display search results
-	    if (text != undefined) {
+	    if (text !== undefined) {
 	      var resultCount = this.results.length;
-	      switch (resultCount) {
-	        case 0: this.dom.results.innerHTML = 'no&nbsp;results'; break;
-	        case 1: this.dom.results.innerHTML = '1&nbsp;result'; break;
-	        default: this.dom.results.innerHTML = resultCount + '&nbsp;results'; break;
+	      if (resultCount === 0) {
+	        this.dom.results.innerHTML = 'no&nbsp;results';
+	      }
+	      else if (resultCount === 1) {
+	        this.dom.results.innerHTML = '1&nbsp;result';
+	      }
+	      else if (resultCount > MAX_SEARCH_RESULTS) {
+	        this.dom.results.innerHTML = MAX_SEARCH_RESULTS + '+&nbsp;results';
+	      }
+	      else {
+	        this.dom.results.innerHTML = resultCount + '&nbsp;results';
 	      }
 	    }
 	    else {
@@ -4602,6 +4614,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	        'removeText': 'Remove',
 	        'removeTitle': 'Remove selected fields (Ctrl+Del)',
 	        'removeField': 'Remove this field (Ctrl+Del)',
+	        'showAll': 'show all',
+	        'showMore': 'show more',
+	        'showMoreStatus': 'displaying ${visibleChilds} of ${totalChilds} items.',
 	        'sort': 'Sort',
 	        'sortTitle': 'Sort the childs of this ',
 	        'string': 'String',
@@ -4651,6 +4666,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	        'removeText': 'Remover',
 	        'removeTitle': 'Remover campos selecionados (Ctrl+Del)',
 	        'removeField': 'Remover este campo (Ctrl+Del)',
+	        // TODO: correctly translate showAll
+	        'showAll': 'mostre tudo',
+	        // TODO: correctly translate showMore
+	        'showMore': 'mostre mais',
+	        // TODO: correctly translate showMoreStatus
+	        'showMoreStatus': 'exibindo ${visibleChilds} de ${totalChilds} itens.',
 	        'sort': 'Organizar',
 	        'sortTitle': 'Organizar os filhos deste ',
 	        'string': 'Texto',
@@ -4849,6 +4870,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	var naturalSort = __webpack_require__(11);
 	var ContextMenu = __webpack_require__(7);
 	var appendNodeFactory = __webpack_require__(12);
+	var showMoreNodeFactory = __webpack_require__(13);
 	var util = __webpack_require__(4);
 	var translate = __webpack_require__(8).translate;
 
@@ -4884,6 +4906,15 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	// debounce interval for keyboard input in milliseconds
 	Node.prototype.DEBOUNCE_INTERVAL = 150;
+
+	// search will stop iterating as soon as the max is reached
+	Node.prototype.MAX_SEARCH_RESULTS = 999;
+
+	// number of visible childs rendered initially in large arrays/objects (with a "show more" button to show more)
+	Node.prototype.MAX_VISIBLE_CHILDS = 100;
+
+	// default value for the max visible childs of large arrays
+	Node.prototype.visibleChilds = Node.prototype.MAX_VISIBLE_CHILDS;
 
 	/**
 	 * Determine whether the field and/or value of this node are editable
@@ -5036,12 +5067,21 @@ return /******/ (function(modules) { // webpackBootstrap
 	 *                        icon will set focus to the invalid child node.
 	 */
 	Node.prototype.setError = function (error, child) {
-	  // ensure the dom exists
-	  this.getDom();
-
 	  this.error = error;
+	  this.errorChild = child;
+
+	  if (this.dom && this.dom.tr) {
+	    this.updateError()
+	  }
+	};
+
+	/**
+	 * Render the error
+	 */
+	Node.prototype.updateError = function() {
+	  var error = this.error;
 	  var tdError = this.dom.tdError;
-	  if (error) {
+	  if (error && this.dom && this.dom.tr && !tdError) {
 	    if (!tdError) {
 	      tdError = document.createElement('td');
 	      this.dom.tdError = tdError;
@@ -5077,6 +5117,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	    // when clicking the error icon, expand all nodes towards the invalid
 	    // child node, and set focus to the child node
+	    var child = this.errorChild;
 	    if (child) {
 	      button.onclick = function showInvalidNode() {
 	        child.findParents().forEach(function (parent) {
@@ -5150,7 +5191,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	 *                         'array', 'object', or 'string'
 	 */
 	Node.prototype.setValue = function(value, type) {
-	  var childValue, child;
+	  var childValue, child, visible;
 
 	  // first clear all current childs (if any)
 	  var childs = this.childs;
@@ -5186,7 +5227,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	        child = new Node(this.editor, {
 	          value: childValue
 	        });
-	        this.appendChild(child);
+	        visible = i < this.MAX_VISIBLE_CHILDS;
+	        this.appendChild(child, visible);
 	      }
 	    }
 	    this.value = '';
@@ -5194,6 +5236,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  else if (this.type == 'object') {
 	    // object
 	    this.childs = [];
+	    i = 0;
 	    for (var childField in value) {
 	      if (value.hasOwnProperty(childField)) {
 	        childValue = value[childField];
@@ -5203,8 +5246,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	            field: childField,
 	            value: childValue
 	          });
-	          this.appendChild(child);
+	          visible = i < this.MAX_VISIBLE_CHILDS;
+	          this.appendChild(child, visible);
 	        }
+	        i++;
 	      }
 	    }
 	    this.value = '';
@@ -5286,6 +5331,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  clone.value = this.value;
 	  clone.valueInnerText = this.valueInnerText;
 	  clone.expanded = this.expanded;
+	  clone.visibleChilds = this.visibleChilds;
 
 	  if (this.childs) {
 	    // an object or array
@@ -5373,40 +5419,67 @@ return /******/ (function(modules) { // webpackBootstrap
 	  var table = tr ? tr.parentNode : undefined;
 	  if (table) {
 	    // show row with append button
-	    var append = this.getAppend();
-	    var nextTr = tr.nextSibling;
-	    if (nextTr) {
-	      table.insertBefore(append, nextTr);
-	    }
-	    else {
-	      table.appendChild(append);
+	    var append = this.getAppendDom();
+	    if (!append.parentNode) {
+	      var nextTr = tr.nextSibling;
+	      if (nextTr) {
+	        table.insertBefore(append, nextTr);
+	      }
+	      else {
+	        table.appendChild(append);
+	      }
 	    }
 
 	    // show childs
-	    this.childs.forEach(function (child) {
-	      table.insertBefore(child.getDom(), append);
+	    var iMax = Math.min(this.childs.length, this.visibleChilds);
+	    var nextTr = this._getNextTr();
+	    for (var i = 0; i < iMax; i++) {
+	      var child = this.childs[i];
+	      if (!child.getDom().parentNode) {
+	        table.insertBefore(child.getDom(), nextTr);
+	      }
 	      child.showChilds();
-	    });
+	    }
+
+	    // show "show more childs" if limited
+	    var showMore = this.getShowMoreDom();
+	    var nextTr = this._getNextTr();
+	    if (!showMore.parentNode) {
+	      table.insertBefore(showMore, nextTr);
+	    }
+	    this.showMore.updateDom(); // to update the counter
+	  }
+	};
+
+	Node.prototype._getNextTr = function() {
+	  if (this.showMore && this.showMore.getDom().parentNode) {
+	    return this.showMore.getDom();
+	  }
+
+	  if (this.append && this.append.getDom().parentNode) {
+	    return this.append.getDom();
 	  }
 	};
 
 	/**
 	 * Hide the node with all its childs
+	 * @param {{resetVisibleChilds: boolean}} [options]
 	 */
-	Node.prototype.hide = function() {
+	Node.prototype.hide = function(options) {
 	  var tr = this.dom.tr;
 	  var table = tr ? tr.parentNode : undefined;
 	  if (table) {
 	    table.removeChild(tr);
 	  }
-	  this.hideChilds();
+	  this.hideChilds(options);
 	};
 
 
 	/**
 	 * Recursively hide all childs
+	 * @param {{resetVisibleChilds: boolean}} [options]
 	 */
-	Node.prototype.hideChilds = function() {
+	Node.prototype.hideChilds = function(options) {
 	  var childs = this.childs;
 	  if (!childs) {
 	    return;
@@ -5416,7 +5489,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  }
 
 	  // hide append row
-	  var append = this.getAppend();
+	  var append = this.getAppendDom();
 	  if (append.parentNode) {
 	    append.parentNode.removeChild(append);
 	  }
@@ -5425,6 +5498,17 @@ return /******/ (function(modules) { // webpackBootstrap
 	  this.childs.forEach(function (child) {
 	    child.hide();
 	  });
+
+	  // hide "show more" row
+	  var showMore = this.getShowMoreDom();
+	  if (showMore.parentNode) {
+	    showMore.parentNode.removeChild(showMore);
+	  }
+
+	  // reset max visible childs
+	  if (!options || options.resetVisibleChilds) {
+	    delete this.visibleChilds;
+	  }
 	};
 
 
@@ -5446,8 +5530,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * Add a new child to the node.
 	 * Only applicable when Node value is of type array or object
 	 * @param {Node} node
+	 * @param {boolean} [visible] If true, the child will be rendered
 	 */
-	Node.prototype.appendChild = function(node) {
+	Node.prototype.appendChild = function(node, visible) {
 	  if (this._hasChilds()) {
 	    // adjust the link to the parent
 	    node.setParent(this);
@@ -5457,16 +5542,18 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }
 	    this.childs.push(node);
 
-	    if (this.expanded) {
+	    if (this.expanded && visible !== false) {
 	      // insert into the DOM, before the appendRow
 	      var newTr = node.getDom();
-	      var appendTr = this.getAppend();
+	      var appendTr = this.getAppendDom();
 	      var table = appendTr ? appendTr.parentNode : undefined;
 	      if (appendTr && table) {
 	        table.insertBefore(newTr, appendTr);
 	      }
 
 	      node.showChilds();
+
+	      this.visibleChilds++;
 	    }
 
 	    this.updateDom({'updateIndexes': true});
@@ -5497,7 +5584,14 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }
 
 	    if (beforeNode instanceof AppendNode) {
-	      this.appendChild(node);
+	      // the this.childs.length + 1 is to reckon with the node that we're about to add
+	      if (this.childs.length + 1 > this.visibleChilds) {
+	        var lastVisibleNode = this.childs[this.visibleChilds - 1];
+	        this.insertBefore(node, lastVisibleNode);
+	      }
+	      else {
+	        this.appendChild(node);
+	      }
 	    }
 	    else {
 	      this.insertBefore(node, beforeNode);
@@ -5538,6 +5632,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	 */
 	Node.prototype.insertBefore = function(node, beforeNode) {
 	  if (this._hasChilds()) {
+	    this.visibleChilds++;
+
 	    if (beforeNode == this.append) {
 	      // append to the child nodes
 
@@ -5569,6 +5665,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	      }
 
 	      node.showChilds();
+	      this.showChilds();
 	    }
 
 	    this.updateDom({'updateIndexes': true});
@@ -5597,13 +5694,16 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	/**
 	 * Search in this node
-	 * The node will be expanded when the text is found one of its childs, else
-	 * it will be collapsed. Searches are case insensitive.
+	 * Searches are case insensitive.
 	 * @param {String} text
+	 * @param {Node[]} [results] Array where search results will be added
+	 *                           used to count and limit the results whilst iterating
 	 * @return {Node[]} results  Array with nodes containing the search text
 	 */
-	Node.prototype.search = function(text) {
-	  var results = [];
+	Node.prototype.search = function(text, results) {
+	  if (!Array.isArray(results)) {
+	    results = [];
+	  }
 	  var index;
 	  var search = text ? text.toLowerCase() : undefined;
 
@@ -5612,10 +5712,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	  delete this.searchValue;
 
 	  // search in field
-	  if (this.field != undefined) {
+	  if (this.field !== undefined && results.length <= this.MAX_SEARCH_RESULTS) {
 	    var field = String(this.field).toLowerCase();
 	    index = field.indexOf(search);
-	    if (index != -1) {
+	    if (index !== -1) {
 	      this.searchField = true;
 	      results.push({
 	        'node': this,
@@ -5633,40 +5733,27 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	    // search the nodes childs
 	    if (this.childs) {
-	      var childResults = [];
 	      this.childs.forEach(function (child) {
-	        childResults = childResults.concat(child.search(text));
+	        child.search(text, results);
 	      });
-	      results = results.concat(childResults);
-	    }
-
-	    // update dom
-	    if (search != undefined) {
-	      var recurse = false;
-	      if (childResults.length == 0) {
-	        this.collapse(recurse);
-	      }
-	      else {
-	        this.expand(recurse);
-	      }
 	    }
 	  }
 	  else {
 	    // string, auto
-	    if (this.value != undefined ) {
+	    if (this.value !== undefined  && results.length <= this.MAX_SEARCH_RESULTS) {
 	      var value = String(this.value).toLowerCase();
 	      index = value.indexOf(search);
-	      if (index != -1) {
+	      if (index !== -1) {
 	        this.searchValue = true;
 	        results.push({
 	          'node': this,
 	          'elem': 'value'
 	        });
 	      }
-	    }
 
-	    // update dom
-	    this._updateDomValue();
+	      // update dom
+	      this._updateDomValue();
+	    }
 	  }
 
 	  return results;
@@ -5678,18 +5765,31 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * @param {function(boolean)} [callback]
 	 */
 	Node.prototype.scrollTo = function(callback) {
-	  if (!this.dom.tr || !this.dom.tr.parentNode) {
-	    // if the node is not visible, expand its parents
-	    var parent = this.parent;
-	    var recurse = false;
-	    while (parent) {
-	      parent.expand(recurse);
-	      parent = parent.parent;
-	    }
-	  }
+	  this.expandPathToNode();
 
 	  if (this.dom.tr && this.dom.tr.parentNode) {
 	    this.editor.scrollTo(this.dom.tr.offsetTop, callback);
+	  }
+	};
+
+	/**
+	 * if the node is not visible, expand its parents
+	 */
+	Node.prototype.expandPathToNode = function () {
+	  var node = this;
+	  var recurse = false;
+	  while (node && node.parent) {
+	    // expand visible childs of the parent if needed
+	    var index = node.parent.type === 'array'
+	        ? node.index
+	        : node.parent.childs.indexOf(node);
+	    while (node.parent.visibleChilds < index + 1) {
+	      node.parent.visibleChilds += Node.prototype.MAX_VISIBLE_CHILDS;
+	    }
+
+	    // expand the parent itself
+	    node.parent.expand(recurse);
+	    node = node.parent;
 	  }
 	};
 
@@ -5878,7 +5978,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	  if (this.childs) {
 	    var index = this.childs.indexOf(node);
 
-	    if (index != -1) {
+	    if (index !== -1) {
+	      this.visibleChilds--;
+
 	      node.hide();
 
 	      // delete old search results
@@ -5930,7 +6032,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    var table = this.dom.tr ? this.dom.tr.parentNode : undefined;
 	    var lastTr;
 	    if (this.expanded) {
-	      lastTr = this.getAppend();
+	      lastTr = this.getAppendDom();
 	    }
 	    else {
 	      lastTr = this.getDom();
@@ -5938,7 +6040,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    var nextTr = (lastTr && lastTr.parentNode) ? lastTr.nextSibling : undefined;
 
 	    // hide current field and all its childs
-	    this.hide();
+	    this.hide({ resetVisibleChilds: false });
 	    this.clearDom();
 
 	    // adjust the field and the value
@@ -6426,6 +6528,14 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 
 	/**
+	 * Test whether a Node is rendered and visible
+	 * @returns {boolean}
+	 */
+	Node.prototype.isVisible = function () {
+	  return this.dom && this.dom.tr && this.dom.tr.parentNode || false
+	};
+
+	/**
 	 * DragStart event, fired on mousedown on the dragarea at the left side of a Node
 	 * @param {Node[] | Node} nodes
 	 * @param {Event} event
@@ -6527,7 +6637,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	      }
 	    }
 
-	    if (nodePrev) {
+	    if (nodePrev && nodePrev.isVisible()) {
 	      // check if mouseY is really inside the found node
 	      trPrev = nodePrev.dom.tr;
 	      topPrev = trPrev ? util.getAbsoluteTop(trPrev) : 0;
@@ -6558,16 +6668,17 @@ return /******/ (function(modules) { // webpackBootstrap
 	              util.getAbsoluteTop(trNext.nextSibling) : 0;
 	          heightNext = trNext ? (bottomNext - topFirst) : 0;
 
-	          if (nodeNext.parent.childs.length == nodes.length &&
+	          if (nodeNext &&
+	              nodeNext.parent.childs.length == nodes.length &&
 	              nodeNext.parent.childs[nodes.length - 1] == lastNode) {
 	            // We are about to remove the last child of this parent,
 	            // which will make the parents appendNode visible.
 	            topThis += 27;
 	            // TODO: dangerous to suppose the height of the appendNode a constant of 27 px.
 	          }
-	        }
 
-	        trNext = trNext.nextSibling;
+	          trNext = trNext.nextSibling;
+	        }
 	      }
 	      while (trNext && mouseY > topThis + heightNext);
 
@@ -6579,7 +6690,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        var levelNext = nodeNext.getLevel();     // level to be
 
 	        // find the best fitting level (move upwards over the append nodes)
-	        trPrev = nodeNext.dom.tr.previousSibling;
+	        trPrev = nodeNext.dom.tr && nodeNext.dom.tr.previousSibling;
 	        while (levelNext < level && trPrev) {
 	          nodePrev = Node.getNodeFromTarget(trPrev);
 
@@ -6611,8 +6722,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	          trPrev = trPrev.previousSibling;
 	        }
 
+	        if (nodeNext instanceof AppendNode && !nodeNext.isVisible() &&
+	            nodeNext.parent.showMore.isVisible()) {
+	          nodeNext = nodeNext._nextNode();
+	        }
+
 	        // move the node when its position is changed
-	        if (trLast.nextSibling != nodeNext.dom.tr) {
+	        if (nodeNext && nodeNext.dom.tr && trLast.nextSibling != nodeNext.dom.tr) {
 	          nodes.forEach(function (node) {
 	            nodeNext.parent.moveBefore(node, nodeNext);
 	          });
@@ -6775,6 +6891,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	      this.append.setSelected(selected);
 	    }
 
+	    if (this.showMore) {
+	      this.showMore.setSelected(selected);
+	    }
+
 	    if (this.childs) {
 	      this.childs.forEach(function (child) {
 	        child.setSelected(selected);
@@ -6879,8 +6999,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	    this._updateDomIndexes();
 	  }
 
+	  // update childs recursively
 	  if (options && options.recurse === true) {
-	    // recurse is true or undefined. update childs recursively
 	    if (this.childs) {
 	      this.childs.forEach(function (child) {
 	        child.updateDom(options);
@@ -6888,9 +7008,19 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }
 	  }
 
+	  // update rendering of error
+	  if (this.error) {
+	    this.updateError()
+	  }
+
 	  // update row with append button
 	  if (this.append) {
 	    this.append.updateDom();
+	  }
+
+	  // update "show more" text at the bottom of large arrays
+	  if (this.showMore) {
+	    this.showMore.updateDom();
 	  }
 	};
 
@@ -7283,7 +7413,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  // focus
 	  // when clicked in whitespace left or right from the field or value, set focus
 	  var domTree = dom.tree;
-	  if (target == domTree.parentNode && type == 'click' && !event.hasMoved) {
+	  if (domTree && target == domTree.parentNode && type == 'click' && !event.hasMoved) {
 	    var left = (event.offsetX != undefined) ?
 	        (event.offsetX < (this.getLevel() + 1) * 24) :
 	        (event.pageX < util.getAbsoluteLeft(dom.tdSeparator));// for FF
@@ -7423,7 +7553,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }
 	    else if (altKey && shiftKey && editable) { // Alt + Shift + Arrow left
 	      if (lastNode.expanded) {
-	        var appendDom = lastNode.getAppend();
+	        var appendDom = lastNode.getAppendDom();
 	        nextDom = appendDom ? appendDom.nextSibling : undefined;
 	      }
 	      else {
@@ -7517,9 +7647,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	      var prevDom = dom.previousSibling;
 	      if (prevDom) {
 	        prevNode = Node.getNodeFromTarget(prevDom);
-	        if (prevNode && prevNode.parent &&
-	            (prevNode instanceof AppendNode)
-	            && !prevNode.isVisible()) {
+	        if (prevNode && prevNode.parent && !prevNode.isVisible()) {
 	          oldSelection = this.editor.getDomSelection();
 	          oldBeforeNode = lastNode.nextSibling();
 
@@ -7571,6 +7699,16 @@ return /******/ (function(modules) { // webpackBootstrap
 	      else {
 	        nextNode = lastNode._nextNode();
 	      }
+
+	      // when the next node is not visible, we've reached the "showMore" buttons
+	      if (nextNode && !nextNode.isVisible()) {
+	        nextNode = nextNode.parent.showMore;
+	      }
+
+	      if (nextNode && nextNode instanceof AppendNode) {
+	        nextNode = lastNode;
+	      }
+
 	      var nextNode2 = nextNode && (nextNode._nextNode() || nextNode.parent.append);
 	      if (nextNode2 && nextNode2.parent) {
 	        oldSelection = this.editor.getDomSelection();
@@ -7849,6 +7987,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	  });
 	  this.sortOrder = (order == 1) ? 'asc' : 'desc';
 
+	  // update the index numbering
+	  this._updateDomIndexes();
+
 	  this.editor._onAction('sort', {
 	    node: this,
 	    oldChilds: oldChilds,
@@ -7862,14 +8003,25 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	/**
 	 * Create a table row with an append button.
-	 * @return {HTMLElement | undefined} buttonAppend or undefined when inapplicable
+	 * @return {HTMLElement | undefined} tr with the AppendNode contents
 	 */
-	Node.prototype.getAppend = function () {
+	Node.prototype.getAppendDom = function () {
 	  if (!this.append) {
 	    this.append = new AppendNode(this.editor);
 	    this.append.setParent(this);
 	  }
 	  return this.append.getDom();
+	};
+
+	/**
+	 * Create a table row with an showMore button and text
+	 * @return {HTMLElement | undefined} tr with the AppendNode contents
+	 */
+	Node.prototype.getShowMoreDom = function () {
+	  if (!this.showMore) {
+	    this.showMore = new ShowMoreNode(this.editor, this);
+	  }
+	  return this.showMore.getDom();
 	};
 
 	/**
@@ -7938,7 +8090,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	      prevDom = prevDom.previousSibling;
 	      prevNode = Node.getNodeFromTarget(prevDom);
 	    }
-	    while (prevDom && (prevNode instanceof AppendNode && !prevNode.isVisible()));
+	    while (prevDom && prevNode && (prevNode instanceof AppendNode && !prevNode.isVisible()));
 	  }
 	  return prevNode;
 	};
@@ -7958,7 +8110,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	      nextDom = nextDom.nextSibling;
 	      nextNode = Node.getNodeFromTarget(nextDom);
 	    }
-	    while (nextDom && (nextNode instanceof AppendNode && !nextNode.isVisible()));
+	    while (nextDom && nextNode && (nextNode instanceof AppendNode && !nextNode.isVisible()));
 	  }
 
 	  return nextNode;
@@ -7991,7 +8143,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  if (dom && dom.parentNode) {
 	    var lastDom = dom.parentNode.lastChild;
 	    lastNode =  Node.getNodeFromTarget(lastDom);
-	    while (lastDom && (lastNode instanceof AppendNode && !lastNode.isVisible())) {
+	    while (lastDom && lastNode && !lastNode.isVisible()) {
 	      lastDom = lastDom.previousSibling;
 	      lastNode =  Node.getNodeFromTarget(lastDom);
 	    }
@@ -8486,7 +8638,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 
 	// TODO: find a nicer solution to resolve this circular dependency between Node and AppendNode
+	//       idea: introduce properties .isAppendNode and .isNode and use that instead of instanceof AppendNode checks
 	var AppendNode = appendNodeFactory(Node);
+	var ShowMoreNode = showMoreNodeFactory(Node);
 
 	module.exports = Node;
 
@@ -8588,6 +8742,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	    // a row for the append button
 	    var trAppend = document.createElement('tr');
+	    trAppend.className = 'jsoneditor-append';
 	    trAppend.node = this;
 	    dom.tr = trAppend;
 
@@ -8625,7 +8780,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  /**
 	   * Update the HTML dom of the Node
 	   */
-	  AppendNode.prototype.updateDom = function () {
+	  AppendNode.prototype.updateDom = function(options) {
 	    var dom = this.dom;
 	    var tdAppend = dom.td;
 	    if (tdAppend) {
@@ -8737,7 +8892,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  };
 
 	  /**
-	   * Handle an event. The event is catched centrally by the editor
+	   * Handle an event. The event is caught centrally by the editor
 	   * @param {Event} event
 	   */
 	  AppendNode.prototype.onEvent = function (event) {
@@ -8782,6 +8937,167 @@ return /******/ (function(modules) { // webpackBootstrap
 
 /***/ },
 /* 13 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	var translate = __webpack_require__(8).translate;
+
+	/**
+	 * A factory function to create an ShowMoreNode, which depends on a Node
+	 * @param {function} Node
+	 */
+	function showMoreNodeFactory(Node) {
+	  /**
+	   * @constructor ShowMoreNode
+	   * @extends Node
+	   * @param {TreeEditor} editor
+	   * @param {Node} parent
+	   * Create a new ShowMoreNode. This is a special node which is created
+	   * for arrays or objects having more than 100 items
+	   */
+	  function ShowMoreNode (editor, parent) {
+	    /** @type {TreeEditor} */
+	    this.editor = editor;
+	    this.parent = parent;
+	    this.dom = {};
+	  }
+
+	  ShowMoreNode.prototype = new Node();
+
+	  /**
+	   * Return a table row with an append button.
+	   * @return {Element} dom   TR element
+	   */
+	  ShowMoreNode.prototype.getDom = function () {
+	    if (this.dom.tr) {
+	      return this.dom.tr;
+	    }
+
+	    this._updateEditability();
+
+	    // display "show more"
+	    if (!this.dom.tr) {
+	      var me = this;
+	      var parent = this.parent;
+	      var showMoreButton = document.createElement('a');
+	      showMoreButton.appendChild(document.createTextNode(translate('showMore')));
+	      showMoreButton.href = '#';
+	      showMoreButton.onclick = function (event) {
+	        // TODO: use callback instead of accessing a method of the parent
+	        parent.visibleChilds = Math.floor(parent.visibleChilds / parent.MAX_VISIBLE_CHILDS + 1) *
+	            parent.MAX_VISIBLE_CHILDS;
+	        me.updateDom();
+	        parent.showChilds();
+
+	        event.preventDefault();
+	        return false;
+	      };
+
+	      var showAllButton = document.createElement('a');
+	      showAllButton.appendChild(document.createTextNode(translate('showAll')));
+	      showAllButton.href = '#';
+	      showAllButton.onclick = function (event) {
+	        // TODO: use callback instead of accessing a method of the parent
+	        parent.visibleChilds = Infinity;
+	        me.updateDom();
+	        parent.showChilds();
+
+	        event.preventDefault();
+	        return false;
+	      };
+
+	      var moreContents = document.createElement('div');
+	      var moreText = document.createTextNode(this._getShowMoreText());
+	      moreContents.className = 'jsoneditor-show-more';
+	      moreContents.appendChild(moreText);
+	      moreContents.appendChild(showMoreButton);
+	      moreContents.appendChild(document.createTextNode('. '));
+	      moreContents.appendChild(showAllButton);
+	      moreContents.appendChild(document.createTextNode('. '));
+
+	      var tdContents = document.createElement('td');
+	      tdContents.appendChild(moreContents);
+
+	      var moreTr = document.createElement('tr');
+	      moreTr.appendChild(document.createElement('td'));
+	      moreTr.appendChild(document.createElement('td'));
+	      moreTr.appendChild(tdContents);
+	      moreTr.className = 'jsoneditor-show-more';
+	      this.dom.tr = moreTr;
+	      this.dom.moreContents = moreContents;
+	      this.dom.moreText = moreText;
+	    }
+
+	    this.updateDom();
+
+	    return this.dom.tr;
+	  };
+
+	  /**
+	   * Update the HTML dom of the Node
+	   */
+	  ShowMoreNode.prototype.updateDom = function(options) {
+	    if (this.isVisible()) {
+	      // attach to the right child node (the first non-visible child)
+	      this.dom.tr.node = this.parent.childs[this.parent.visibleChilds];
+
+	      if (!this.dom.tr.parentNode) {
+	        var nextTr = this.parent._getNextTr();
+	        if (nextTr) {
+	          nextTr.parentNode.insertBefore(this.dom.tr, nextTr);
+	        }
+	      }
+
+	      // update the counts in the text
+	      this.dom.moreText.nodeValue = this._getShowMoreText();
+
+	      // update left margin
+	      this.dom.moreContents.style.marginLeft = (this.getLevel() + 1) * 24 + 'px';
+	    }
+	    else {
+	      if (this.dom.tr && this.dom.tr.parentNode) {
+	        this.dom.tr.parentNode.removeChild(this.dom.tr);
+	      }
+	    }
+	  };
+
+	  ShowMoreNode.prototype._getShowMoreText = function() {
+	    return translate('showMoreStatus', {
+	      visibleChilds: this.parent.visibleChilds,
+	      totalChilds: this.parent.childs.length
+	    }) + ' ';
+	  };
+
+	  /**
+	   * Check whether the ShowMoreNode is currently visible.
+	   * the ShowMoreNode is visible when it's parent has more childs than
+	   * the current visibleChilds
+	   * @return {boolean} isVisible
+	   */
+	  ShowMoreNode.prototype.isVisible = function () {
+	    return this.parent.expanded && this.parent.childs.length > this.parent.visibleChilds;
+	  };
+
+	  /**
+	   * Handle an event. The event is caught centrally by the editor
+	   * @param {Event} event
+	   */
+	  ShowMoreNode.prototype.onEvent = function (event) {
+	    var type = event.type;
+	    if (type === 'keydown') {
+	      this.onKeyDown(event);
+	    }
+	  };
+
+	  return ShowMoreNode;
+	}
+
+	module.exports = showMoreNodeFactory;
+
+
+/***/ },
+/* 14 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -8902,7 +9218,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 14 */
+/* 15 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -9289,13 +9605,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = completely;
 
 /***/ },
-/* 15 */
+/* 16 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var ace = __webpack_require__(16);
-	var ModeSwitcher = __webpack_require__(13);
+	var ace = __webpack_require__(17);
+	var ModeSwitcher = __webpack_require__(14);
 	var util = __webpack_require__(4);
 
 	// create a mixin with the functions for text mode
@@ -9365,7 +9681,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  this.theme = options.theme || DEFAULT_THEME;
 	  if (this.theme === DEFAULT_THEME && _ace) {
 	    try {
-	      __webpack_require__(20);
+	      __webpack_require__(21);
 	    }
 	    catch (err) {
 	      console.error(err);
@@ -10111,7 +10427,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 16 */
+/* 17 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var ace
@@ -10125,8 +10441,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	    ace = __webpack_require__(!(function webpackMissingModule() { var e = new Error("Cannot find module \"brace\""); e.code = 'MODULE_NOT_FOUND'; throw e; }()));
 
 	    // load required Ace plugins
-	    __webpack_require__(17);
-	    __webpack_require__(19);
+	    __webpack_require__(18);
+	    __webpack_require__(20);
 	  }
 	  catch (err) {
 	    // failed to load brace (can be minimalist bundle).
@@ -10138,7 +10454,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 17 */
+/* 18 */
 /***/ function(module, exports, __webpack_require__) {
 
 	ace.define("ace/mode/json_highlight_rules",["require","exports","module","ace/lib/oop","ace/mode/text_highlight_rules"], function(acequire, exports, module) {
@@ -10440,7 +10756,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    };
 
 	    this.createWorker = function(session) {
-	        var worker = new WorkerClient(["ace"], __webpack_require__(18), "JsonWorker");
+	        var worker = new WorkerClient(["ace"], __webpack_require__(19), "JsonWorker");
 	        worker.attachToDocument(session.getDocument());
 
 	        worker.on("annotate", function(e) {
@@ -10463,14 +10779,14 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 18 */
+/* 19 */
 /***/ function(module, exports) {
 
 	module.exports.id = 'ace/mode/json_worker';
 	module.exports.src = "\"no use strict\";!function(window){function resolveModuleId(id,paths){for(var testPath=id,tail=\"\";testPath;){var alias=paths[testPath];if(\"string\"==typeof alias)return alias+tail;if(alias)return alias.location.replace(/\\/*$/,\"/\")+(tail||alias.main||alias.name);if(alias===!1)return\"\";var i=testPath.lastIndexOf(\"/\");if(-1===i)break;tail=testPath.substr(i)+tail,testPath=testPath.slice(0,i)}return id}if(!(void 0!==window.window&&window.document||window.acequire&&window.define)){window.console||(window.console=function(){var msgs=Array.prototype.slice.call(arguments,0);postMessage({type:\"log\",data:msgs})},window.console.error=window.console.warn=window.console.log=window.console.trace=window.console),window.window=window,window.ace=window,window.onerror=function(message,file,line,col,err){postMessage({type:\"error\",data:{message:message,data:err.data,file:file,line:line,col:col,stack:err.stack}})},window.normalizeModule=function(parentId,moduleName){if(-1!==moduleName.indexOf(\"!\")){var chunks=moduleName.split(\"!\");return window.normalizeModule(parentId,chunks[0])+\"!\"+window.normalizeModule(parentId,chunks[1])}if(\".\"==moduleName.charAt(0)){var base=parentId.split(\"/\").slice(0,-1).join(\"/\");for(moduleName=(base?base+\"/\":\"\")+moduleName;-1!==moduleName.indexOf(\".\")&&previous!=moduleName;){var previous=moduleName;moduleName=moduleName.replace(/^\\.\\//,\"\").replace(/\\/\\.\\//,\"/\").replace(/[^\\/]+\\/\\.\\.\\//,\"\")}}return moduleName},window.acequire=function acequire(parentId,id){if(id||(id=parentId,parentId=null),!id.charAt)throw Error(\"worker.js acequire() accepts only (parentId, id) as arguments\");id=window.normalizeModule(parentId,id);var module=window.acequire.modules[id];if(module)return module.initialized||(module.initialized=!0,module.exports=module.factory().exports),module.exports;if(!window.acequire.tlns)return console.log(\"unable to load \"+id);var path=resolveModuleId(id,window.acequire.tlns);return\".js\"!=path.slice(-3)&&(path+=\".js\"),window.acequire.id=id,window.acequire.modules[id]={},importScripts(path),window.acequire(parentId,id)},window.acequire.modules={},window.acequire.tlns={},window.define=function(id,deps,factory){if(2==arguments.length?(factory=deps,\"string\"!=typeof id&&(deps=id,id=window.acequire.id)):1==arguments.length&&(factory=id,deps=[],id=window.acequire.id),\"function\"!=typeof factory)return window.acequire.modules[id]={exports:factory,initialized:!0},void 0;deps.length||(deps=[\"require\",\"exports\",\"module\"]);var req=function(childId){return window.acequire(id,childId)};window.acequire.modules[id]={exports:{},factory:function(){var module=this,returnExports=factory.apply(this,deps.map(function(dep){switch(dep){case\"require\":return req;case\"exports\":return module.exports;case\"module\":return module;default:return req(dep)}}));return returnExports&&(module.exports=returnExports),module}}},window.define.amd={},acequire.tlns={},window.initBaseUrls=function(topLevelNamespaces){for(var i in topLevelNamespaces)acequire.tlns[i]=topLevelNamespaces[i]},window.initSender=function(){var EventEmitter=window.acequire(\"ace/lib/event_emitter\").EventEmitter,oop=window.acequire(\"ace/lib/oop\"),Sender=function(){};return function(){oop.implement(this,EventEmitter),this.callback=function(data,callbackId){postMessage({type:\"call\",id:callbackId,data:data})},this.emit=function(name,data){postMessage({type:\"event\",name:name,data:data})}}.call(Sender.prototype),new Sender};var main=window.main=null,sender=window.sender=null;window.onmessage=function(e){var msg=e.data;if(msg.event&&sender)sender._signal(msg.event,msg.data);else if(msg.command)if(main[msg.command])main[msg.command].apply(main,msg.args);else{if(!window[msg.command])throw Error(\"Unknown command:\"+msg.command);window[msg.command].apply(window,msg.args)}else if(msg.init){window.initBaseUrls(msg.tlns),acequire(\"ace/lib/es5-shim\"),sender=window.sender=window.initSender();var clazz=acequire(msg.module)[msg.classname];main=window.main=new clazz(sender)}}}}(this),ace.define(\"ace/lib/oop\",[\"require\",\"exports\",\"module\"],function(acequire,exports){\"use strict\";exports.inherits=function(ctor,superCtor){ctor.super_=superCtor,ctor.prototype=Object.create(superCtor.prototype,{constructor:{value:ctor,enumerable:!1,writable:!0,configurable:!0}})},exports.mixin=function(obj,mixin){for(var key in mixin)obj[key]=mixin[key];return obj},exports.implement=function(proto,mixin){exports.mixin(proto,mixin)}}),ace.define(\"ace/range\",[\"require\",\"exports\",\"module\"],function(acequire,exports){\"use strict\";var comparePoints=function(p1,p2){return p1.row-p2.row||p1.column-p2.column},Range=function(startRow,startColumn,endRow,endColumn){this.start={row:startRow,column:startColumn},this.end={row:endRow,column:endColumn}};(function(){this.isEqual=function(range){return this.start.row===range.start.row&&this.end.row===range.end.row&&this.start.column===range.start.column&&this.end.column===range.end.column},this.toString=function(){return\"Range: [\"+this.start.row+\"/\"+this.start.column+\"] -> [\"+this.end.row+\"/\"+this.end.column+\"]\"},this.contains=function(row,column){return 0==this.compare(row,column)},this.compareRange=function(range){var cmp,end=range.end,start=range.start;return cmp=this.compare(end.row,end.column),1==cmp?(cmp=this.compare(start.row,start.column),1==cmp?2:0==cmp?1:0):-1==cmp?-2:(cmp=this.compare(start.row,start.column),-1==cmp?-1:1==cmp?42:0)},this.comparePoint=function(p){return this.compare(p.row,p.column)},this.containsRange=function(range){return 0==this.comparePoint(range.start)&&0==this.comparePoint(range.end)},this.intersects=function(range){var cmp=this.compareRange(range);return-1==cmp||0==cmp||1==cmp},this.isEnd=function(row,column){return this.end.row==row&&this.end.column==column},this.isStart=function(row,column){return this.start.row==row&&this.start.column==column},this.setStart=function(row,column){\"object\"==typeof row?(this.start.column=row.column,this.start.row=row.row):(this.start.row=row,this.start.column=column)},this.setEnd=function(row,column){\"object\"==typeof row?(this.end.column=row.column,this.end.row=row.row):(this.end.row=row,this.end.column=column)},this.inside=function(row,column){return 0==this.compare(row,column)?this.isEnd(row,column)||this.isStart(row,column)?!1:!0:!1},this.insideStart=function(row,column){return 0==this.compare(row,column)?this.isEnd(row,column)?!1:!0:!1},this.insideEnd=function(row,column){return 0==this.compare(row,column)?this.isStart(row,column)?!1:!0:!1},this.compare=function(row,column){return this.isMultiLine()||row!==this.start.row?this.start.row>row?-1:row>this.end.row?1:this.start.row===row?column>=this.start.column?0:-1:this.end.row===row?this.end.column>=column?0:1:0:this.start.column>column?-1:column>this.end.column?1:0},this.compareStart=function(row,column){return this.start.row==row&&this.start.column==column?-1:this.compare(row,column)},this.compareEnd=function(row,column){return this.end.row==row&&this.end.column==column?1:this.compare(row,column)},this.compareInside=function(row,column){return this.end.row==row&&this.end.column==column?1:this.start.row==row&&this.start.column==column?-1:this.compare(row,column)},this.clipRows=function(firstRow,lastRow){if(this.end.row>lastRow)var end={row:lastRow+1,column:0};else if(firstRow>this.end.row)var end={row:firstRow,column:0};if(this.start.row>lastRow)var start={row:lastRow+1,column:0};else if(firstRow>this.start.row)var start={row:firstRow,column:0};return Range.fromPoints(start||this.start,end||this.end)},this.extend=function(row,column){var cmp=this.compare(row,column);if(0==cmp)return this;if(-1==cmp)var start={row:row,column:column};else var end={row:row,column:column};return Range.fromPoints(start||this.start,end||this.end)},this.isEmpty=function(){return this.start.row===this.end.row&&this.start.column===this.end.column},this.isMultiLine=function(){return this.start.row!==this.end.row},this.clone=function(){return Range.fromPoints(this.start,this.end)},this.collapseRows=function(){return 0==this.end.column?new Range(this.start.row,0,Math.max(this.start.row,this.end.row-1),0):new Range(this.start.row,0,this.end.row,0)},this.toScreenRange=function(session){var screenPosStart=session.documentToScreenPosition(this.start),screenPosEnd=session.documentToScreenPosition(this.end);return new Range(screenPosStart.row,screenPosStart.column,screenPosEnd.row,screenPosEnd.column)},this.moveBy=function(row,column){this.start.row+=row,this.start.column+=column,this.end.row+=row,this.end.column+=column}}).call(Range.prototype),Range.fromPoints=function(start,end){return new Range(start.row,start.column,end.row,end.column)},Range.comparePoints=comparePoints,Range.comparePoints=function(p1,p2){return p1.row-p2.row||p1.column-p2.column},exports.Range=Range}),ace.define(\"ace/apply_delta\",[\"require\",\"exports\",\"module\"],function(acequire,exports){\"use strict\";exports.applyDelta=function(docLines,delta){var row=delta.start.row,startColumn=delta.start.column,line=docLines[row]||\"\";switch(delta.action){case\"insert\":var lines=delta.lines;if(1===lines.length)docLines[row]=line.substring(0,startColumn)+delta.lines[0]+line.substring(startColumn);else{var args=[row,1].concat(delta.lines);docLines.splice.apply(docLines,args),docLines[row]=line.substring(0,startColumn)+docLines[row],docLines[row+delta.lines.length-1]+=line.substring(startColumn)}break;case\"remove\":var endColumn=delta.end.column,endRow=delta.end.row;row===endRow?docLines[row]=line.substring(0,startColumn)+line.substring(endColumn):docLines.splice(row,endRow-row+1,line.substring(0,startColumn)+docLines[endRow].substring(endColumn))}}}),ace.define(\"ace/lib/event_emitter\",[\"require\",\"exports\",\"module\"],function(acequire,exports){\"use strict\";var EventEmitter={},stopPropagation=function(){this.propagationStopped=!0},preventDefault=function(){this.defaultPrevented=!0};EventEmitter._emit=EventEmitter._dispatchEvent=function(eventName,e){this._eventRegistry||(this._eventRegistry={}),this._defaultHandlers||(this._defaultHandlers={});var listeners=this._eventRegistry[eventName]||[],defaultHandler=this._defaultHandlers[eventName];if(listeners.length||defaultHandler){\"object\"==typeof e&&e||(e={}),e.type||(e.type=eventName),e.stopPropagation||(e.stopPropagation=stopPropagation),e.preventDefault||(e.preventDefault=preventDefault),listeners=listeners.slice();for(var i=0;listeners.length>i&&(listeners[i](e,this),!e.propagationStopped);i++);return defaultHandler&&!e.defaultPrevented?defaultHandler(e,this):void 0}},EventEmitter._signal=function(eventName,e){var listeners=(this._eventRegistry||{})[eventName];if(listeners){listeners=listeners.slice();for(var i=0;listeners.length>i;i++)listeners[i](e,this)}},EventEmitter.once=function(eventName,callback){var _self=this;callback&&this.addEventListener(eventName,function newCallback(){_self.removeEventListener(eventName,newCallback),callback.apply(null,arguments)})},EventEmitter.setDefaultHandler=function(eventName,callback){var handlers=this._defaultHandlers;if(handlers||(handlers=this._defaultHandlers={_disabled_:{}}),handlers[eventName]){var old=handlers[eventName],disabled=handlers._disabled_[eventName];disabled||(handlers._disabled_[eventName]=disabled=[]),disabled.push(old);var i=disabled.indexOf(callback);-1!=i&&disabled.splice(i,1)}handlers[eventName]=callback},EventEmitter.removeDefaultHandler=function(eventName,callback){var handlers=this._defaultHandlers;if(handlers){var disabled=handlers._disabled_[eventName];if(handlers[eventName]==callback)handlers[eventName],disabled&&this.setDefaultHandler(eventName,disabled.pop());else if(disabled){var i=disabled.indexOf(callback);-1!=i&&disabled.splice(i,1)}}},EventEmitter.on=EventEmitter.addEventListener=function(eventName,callback,capturing){this._eventRegistry=this._eventRegistry||{};var listeners=this._eventRegistry[eventName];return listeners||(listeners=this._eventRegistry[eventName]=[]),-1==listeners.indexOf(callback)&&listeners[capturing?\"unshift\":\"push\"](callback),callback},EventEmitter.off=EventEmitter.removeListener=EventEmitter.removeEventListener=function(eventName,callback){this._eventRegistry=this._eventRegistry||{};var listeners=this._eventRegistry[eventName];if(listeners){var index=listeners.indexOf(callback);-1!==index&&listeners.splice(index,1)}},EventEmitter.removeAllListeners=function(eventName){this._eventRegistry&&(this._eventRegistry[eventName]=[])},exports.EventEmitter=EventEmitter}),ace.define(\"ace/anchor\",[\"require\",\"exports\",\"module\",\"ace/lib/oop\",\"ace/lib/event_emitter\"],function(acequire,exports){\"use strict\";var oop=acequire(\"./lib/oop\"),EventEmitter=acequire(\"./lib/event_emitter\").EventEmitter,Anchor=exports.Anchor=function(doc,row,column){this.$onChange=this.onChange.bind(this),this.attach(doc),column===void 0?this.setPosition(row.row,row.column):this.setPosition(row,column)};(function(){function $pointsInOrder(point1,point2,equalPointsInOrder){var bColIsAfter=equalPointsInOrder?point1.column<=point2.column:point1.column<point2.column;return point1.row<point2.row||point1.row==point2.row&&bColIsAfter}function $getTransformedPoint(delta,point,moveIfEqual){var deltaIsInsert=\"insert\"==delta.action,deltaRowShift=(deltaIsInsert?1:-1)*(delta.end.row-delta.start.row),deltaColShift=(deltaIsInsert?1:-1)*(delta.end.column-delta.start.column),deltaStart=delta.start,deltaEnd=deltaIsInsert?deltaStart:delta.end;return $pointsInOrder(point,deltaStart,moveIfEqual)?{row:point.row,column:point.column}:$pointsInOrder(deltaEnd,point,!moveIfEqual)?{row:point.row+deltaRowShift,column:point.column+(point.row==deltaEnd.row?deltaColShift:0)}:{row:deltaStart.row,column:deltaStart.column}}oop.implement(this,EventEmitter),this.getPosition=function(){return this.$clipPositionToDocument(this.row,this.column)},this.getDocument=function(){return this.document},this.$insertRight=!1,this.onChange=function(delta){if(!(delta.start.row==delta.end.row&&delta.start.row!=this.row||delta.start.row>this.row)){var point=$getTransformedPoint(delta,{row:this.row,column:this.column},this.$insertRight);this.setPosition(point.row,point.column,!0)}},this.setPosition=function(row,column,noClip){var pos;if(pos=noClip?{row:row,column:column}:this.$clipPositionToDocument(row,column),this.row!=pos.row||this.column!=pos.column){var old={row:this.row,column:this.column};this.row=pos.row,this.column=pos.column,this._signal(\"change\",{old:old,value:pos})}},this.detach=function(){this.document.removeEventListener(\"change\",this.$onChange)},this.attach=function(doc){this.document=doc||this.document,this.document.on(\"change\",this.$onChange)},this.$clipPositionToDocument=function(row,column){var pos={};return row>=this.document.getLength()?(pos.row=Math.max(0,this.document.getLength()-1),pos.column=this.document.getLine(pos.row).length):0>row?(pos.row=0,pos.column=0):(pos.row=row,pos.column=Math.min(this.document.getLine(pos.row).length,Math.max(0,column))),0>column&&(pos.column=0),pos}}).call(Anchor.prototype)}),ace.define(\"ace/document\",[\"require\",\"exports\",\"module\",\"ace/lib/oop\",\"ace/apply_delta\",\"ace/lib/event_emitter\",\"ace/range\",\"ace/anchor\"],function(acequire,exports){\"use strict\";var oop=acequire(\"./lib/oop\"),applyDelta=acequire(\"./apply_delta\").applyDelta,EventEmitter=acequire(\"./lib/event_emitter\").EventEmitter,Range=acequire(\"./range\").Range,Anchor=acequire(\"./anchor\").Anchor,Document=function(textOrLines){this.$lines=[\"\"],0===textOrLines.length?this.$lines=[\"\"]:Array.isArray(textOrLines)?this.insertMergedLines({row:0,column:0},textOrLines):this.insert({row:0,column:0},textOrLines)};(function(){oop.implement(this,EventEmitter),this.setValue=function(text){var len=this.getLength()-1;this.remove(new Range(0,0,len,this.getLine(len).length)),this.insert({row:0,column:0},text)},this.getValue=function(){return this.getAllLines().join(this.getNewLineCharacter())},this.createAnchor=function(row,column){return new Anchor(this,row,column)},this.$split=0===\"aaa\".split(/a/).length?function(text){return text.replace(/\\r\\n|\\r/g,\"\\n\").split(\"\\n\")}:function(text){return text.split(/\\r\\n|\\r|\\n/)},this.$detectNewLine=function(text){var match=text.match(/^.*?(\\r\\n|\\r|\\n)/m);this.$autoNewLine=match?match[1]:\"\\n\",this._signal(\"changeNewLineMode\")},this.getNewLineCharacter=function(){switch(this.$newLineMode){case\"windows\":return\"\\r\\n\";case\"unix\":return\"\\n\";default:return this.$autoNewLine||\"\\n\"}},this.$autoNewLine=\"\",this.$newLineMode=\"auto\",this.setNewLineMode=function(newLineMode){this.$newLineMode!==newLineMode&&(this.$newLineMode=newLineMode,this._signal(\"changeNewLineMode\"))},this.getNewLineMode=function(){return this.$newLineMode},this.isNewLine=function(text){return\"\\r\\n\"==text||\"\\r\"==text||\"\\n\"==text},this.getLine=function(row){return this.$lines[row]||\"\"},this.getLines=function(firstRow,lastRow){return this.$lines.slice(firstRow,lastRow+1)},this.getAllLines=function(){return this.getLines(0,this.getLength())},this.getLength=function(){return this.$lines.length},this.getTextRange=function(range){return this.getLinesForRange(range).join(this.getNewLineCharacter())},this.getLinesForRange=function(range){var lines;if(range.start.row===range.end.row)lines=[this.getLine(range.start.row).substring(range.start.column,range.end.column)];else{lines=this.getLines(range.start.row,range.end.row),lines[0]=(lines[0]||\"\").substring(range.start.column);var l=lines.length-1;range.end.row-range.start.row==l&&(lines[l]=lines[l].substring(0,range.end.column))}return lines},this.insertLines=function(row,lines){return console.warn(\"Use of document.insertLines is deprecated. Use the insertFullLines method instead.\"),this.insertFullLines(row,lines)},this.removeLines=function(firstRow,lastRow){return console.warn(\"Use of document.removeLines is deprecated. Use the removeFullLines method instead.\"),this.removeFullLines(firstRow,lastRow)},this.insertNewLine=function(position){return console.warn(\"Use of document.insertNewLine is deprecated. Use insertMergedLines(position, ['', '']) instead.\"),this.insertMergedLines(position,[\"\",\"\"])},this.insert=function(position,text){return 1>=this.getLength()&&this.$detectNewLine(text),this.insertMergedLines(position,this.$split(text))},this.insertInLine=function(position,text){var start=this.clippedPos(position.row,position.column),end=this.pos(position.row,position.column+text.length);return this.applyDelta({start:start,end:end,action:\"insert\",lines:[text]},!0),this.clonePos(end)},this.clippedPos=function(row,column){var length=this.getLength();void 0===row?row=length:0>row?row=0:row>=length&&(row=length-1,column=void 0);var line=this.getLine(row);return void 0==column&&(column=line.length),column=Math.min(Math.max(column,0),line.length),{row:row,column:column}},this.clonePos=function(pos){return{row:pos.row,column:pos.column}},this.pos=function(row,column){return{row:row,column:column}},this.$clipPosition=function(position){var length=this.getLength();return position.row>=length?(position.row=Math.max(0,length-1),position.column=this.getLine(length-1).length):(position.row=Math.max(0,position.row),position.column=Math.min(Math.max(position.column,0),this.getLine(position.row).length)),position},this.insertFullLines=function(row,lines){row=Math.min(Math.max(row,0),this.getLength());var column=0;this.getLength()>row?(lines=lines.concat([\"\"]),column=0):(lines=[\"\"].concat(lines),row--,column=this.$lines[row].length),this.insertMergedLines({row:row,column:column},lines)},this.insertMergedLines=function(position,lines){var start=this.clippedPos(position.row,position.column),end={row:start.row+lines.length-1,column:(1==lines.length?start.column:0)+lines[lines.length-1].length};return this.applyDelta({start:start,end:end,action:\"insert\",lines:lines}),this.clonePos(end)},this.remove=function(range){var start=this.clippedPos(range.start.row,range.start.column),end=this.clippedPos(range.end.row,range.end.column);return this.applyDelta({start:start,end:end,action:\"remove\",lines:this.getLinesForRange({start:start,end:end})}),this.clonePos(start)},this.removeInLine=function(row,startColumn,endColumn){var start=this.clippedPos(row,startColumn),end=this.clippedPos(row,endColumn);return this.applyDelta({start:start,end:end,action:\"remove\",lines:this.getLinesForRange({start:start,end:end})},!0),this.clonePos(start)},this.removeFullLines=function(firstRow,lastRow){firstRow=Math.min(Math.max(0,firstRow),this.getLength()-1),lastRow=Math.min(Math.max(0,lastRow),this.getLength()-1);var deleteFirstNewLine=lastRow==this.getLength()-1&&firstRow>0,deleteLastNewLine=this.getLength()-1>lastRow,startRow=deleteFirstNewLine?firstRow-1:firstRow,startCol=deleteFirstNewLine?this.getLine(startRow).length:0,endRow=deleteLastNewLine?lastRow+1:lastRow,endCol=deleteLastNewLine?0:this.getLine(endRow).length,range=new Range(startRow,startCol,endRow,endCol),deletedLines=this.$lines.slice(firstRow,lastRow+1);return this.applyDelta({start:range.start,end:range.end,action:\"remove\",lines:this.getLinesForRange(range)}),deletedLines},this.removeNewLine=function(row){this.getLength()-1>row&&row>=0&&this.applyDelta({start:this.pos(row,this.getLine(row).length),end:this.pos(row+1,0),action:\"remove\",lines:[\"\",\"\"]})},this.replace=function(range,text){if(range instanceof Range||(range=Range.fromPoints(range.start,range.end)),0===text.length&&range.isEmpty())return range.start;if(text==this.getTextRange(range))return range.end;this.remove(range);var end;return end=text?this.insert(range.start,text):range.start},this.applyDeltas=function(deltas){for(var i=0;deltas.length>i;i++)this.applyDelta(deltas[i])},this.revertDeltas=function(deltas){for(var i=deltas.length-1;i>=0;i--)this.revertDelta(deltas[i])},this.applyDelta=function(delta,doNotValidate){var isInsert=\"insert\"==delta.action;(isInsert?1>=delta.lines.length&&!delta.lines[0]:!Range.comparePoints(delta.start,delta.end))||(isInsert&&delta.lines.length>2e4&&this.$splitAndapplyLargeDelta(delta,2e4),applyDelta(this.$lines,delta,doNotValidate),this._signal(\"change\",delta))},this.$splitAndapplyLargeDelta=function(delta,MAX){for(var lines=delta.lines,l=lines.length,row=delta.start.row,column=delta.start.column,from=0,to=0;;){from=to,to+=MAX-1;var chunk=lines.slice(from,to);if(to>l){delta.lines=chunk,delta.start.row=row+from,delta.start.column=column;break}chunk.push(\"\"),this.applyDelta({start:this.pos(row+from,column),end:this.pos(row+to,column=0),action:delta.action,lines:chunk},!0)}},this.revertDelta=function(delta){this.applyDelta({start:this.clonePos(delta.start),end:this.clonePos(delta.end),action:\"insert\"==delta.action?\"remove\":\"insert\",lines:delta.lines.slice()})},this.indexToPosition=function(index,startRow){for(var lines=this.$lines||this.getAllLines(),newlineLength=this.getNewLineCharacter().length,i=startRow||0,l=lines.length;l>i;i++)if(index-=lines[i].length+newlineLength,0>index)return{row:i,column:index+lines[i].length+newlineLength};return{row:l-1,column:lines[l-1].length}},this.positionToIndex=function(pos,startRow){for(var lines=this.$lines||this.getAllLines(),newlineLength=this.getNewLineCharacter().length,index=0,row=Math.min(pos.row,lines.length),i=startRow||0;row>i;++i)index+=lines[i].length+newlineLength;return index+pos.column}}).call(Document.prototype),exports.Document=Document}),ace.define(\"ace/lib/lang\",[\"require\",\"exports\",\"module\"],function(acequire,exports){\"use strict\";exports.last=function(a){return a[a.length-1]},exports.stringReverse=function(string){return string.split(\"\").reverse().join(\"\")},exports.stringRepeat=function(string,count){for(var result=\"\";count>0;)1&count&&(result+=string),(count>>=1)&&(string+=string);return result};var trimBeginRegexp=/^\\s\\s*/,trimEndRegexp=/\\s\\s*$/;exports.stringTrimLeft=function(string){return string.replace(trimBeginRegexp,\"\")},exports.stringTrimRight=function(string){return string.replace(trimEndRegexp,\"\")},exports.copyObject=function(obj){var copy={};for(var key in obj)copy[key]=obj[key];return copy},exports.copyArray=function(array){for(var copy=[],i=0,l=array.length;l>i;i++)copy[i]=array[i]&&\"object\"==typeof array[i]?this.copyObject(array[i]):array[i];return copy},exports.deepCopy=function deepCopy(obj){if(\"object\"!=typeof obj||!obj)return obj;var copy;if(Array.isArray(obj)){copy=[];for(var key=0;obj.length>key;key++)copy[key]=deepCopy(obj[key]);return copy}if(\"[object Object]\"!==Object.prototype.toString.call(obj))return obj;copy={};for(var key in obj)copy[key]=deepCopy(obj[key]);return copy},exports.arrayToMap=function(arr){for(var map={},i=0;arr.length>i;i++)map[arr[i]]=1;return map},exports.createMap=function(props){var map=Object.create(null);for(var i in props)map[i]=props[i];return map},exports.arrayRemove=function(array,value){for(var i=0;array.length>=i;i++)value===array[i]&&array.splice(i,1)},exports.escapeRegExp=function(str){return str.replace(/([.*+?^${}()|[\\]\\/\\\\])/g,\"\\\\$1\")},exports.escapeHTML=function(str){return str.replace(/&/g,\"&#38;\").replace(/\"/g,\"&#34;\").replace(/'/g,\"&#39;\").replace(/</g,\"&#60;\")},exports.getMatchOffsets=function(string,regExp){var matches=[];return string.replace(regExp,function(str){matches.push({offset:arguments[arguments.length-2],length:str.length})}),matches},exports.deferredCall=function(fcn){var timer=null,callback=function(){timer=null,fcn()},deferred=function(timeout){return deferred.cancel(),timer=setTimeout(callback,timeout||0),deferred};return deferred.schedule=deferred,deferred.call=function(){return this.cancel(),fcn(),deferred},deferred.cancel=function(){return clearTimeout(timer),timer=null,deferred},deferred.isPending=function(){return timer},deferred},exports.delayedCall=function(fcn,defaultTimeout){var timer=null,callback=function(){timer=null,fcn()},_self=function(timeout){null==timer&&(timer=setTimeout(callback,timeout||defaultTimeout))};return _self.delay=function(timeout){timer&&clearTimeout(timer),timer=setTimeout(callback,timeout||defaultTimeout)},_self.schedule=_self,_self.call=function(){this.cancel(),fcn()},_self.cancel=function(){timer&&clearTimeout(timer),timer=null},_self.isPending=function(){return timer},_self}}),ace.define(\"ace/worker/mirror\",[\"require\",\"exports\",\"module\",\"ace/range\",\"ace/document\",\"ace/lib/lang\"],function(acequire,exports){\"use strict\";acequire(\"../range\").Range;var Document=acequire(\"../document\").Document,lang=acequire(\"../lib/lang\"),Mirror=exports.Mirror=function(sender){this.sender=sender;var doc=this.doc=new Document(\"\"),deferredUpdate=this.deferredUpdate=lang.delayedCall(this.onUpdate.bind(this)),_self=this;sender.on(\"change\",function(e){var data=e.data;if(data[0].start)doc.applyDeltas(data);else for(var i=0;data.length>i;i+=2){if(Array.isArray(data[i+1]))var d={action:\"insert\",start:data[i],lines:data[i+1]};else var d={action:\"remove\",start:data[i],end:data[i+1]};doc.applyDelta(d,!0)}return _self.$timeout?deferredUpdate.schedule(_self.$timeout):(_self.onUpdate(),void 0)})};(function(){this.$timeout=500,this.setTimeout=function(timeout){this.$timeout=timeout},this.setValue=function(value){this.doc.setValue(value),this.deferredUpdate.schedule(this.$timeout)},this.getValue=function(callbackId){this.sender.callback(this.doc.getValue(),callbackId)},this.onUpdate=function(){},this.isPending=function(){return this.deferredUpdate.isPending()}}).call(Mirror.prototype)}),ace.define(\"ace/mode/json/json_parse\",[\"require\",\"exports\",\"module\"],function(){\"use strict\";var at,ch,text,value,escapee={'\"':'\"',\"\\\\\":\"\\\\\",\"/\":\"/\",b:\"\\b\",f:\"\\f\",n:\"\\n\",r:\"\\r\",t:\"\t\"},error=function(m){throw{name:\"SyntaxError\",message:m,at:at,text:text}},next=function(c){return c&&c!==ch&&error(\"Expected '\"+c+\"' instead of '\"+ch+\"'\"),ch=text.charAt(at),at+=1,ch},number=function(){var number,string=\"\";for(\"-\"===ch&&(string=\"-\",next(\"-\"));ch>=\"0\"&&\"9\">=ch;)string+=ch,next();if(\".\"===ch)for(string+=\".\";next()&&ch>=\"0\"&&\"9\">=ch;)string+=ch;if(\"e\"===ch||\"E\"===ch)for(string+=ch,next(),(\"-\"===ch||\"+\"===ch)&&(string+=ch,next());ch>=\"0\"&&\"9\">=ch;)string+=ch,next();return number=+string,isNaN(number)?(error(\"Bad number\"),void 0):number},string=function(){var hex,i,uffff,string=\"\";if('\"'===ch)for(;next();){if('\"'===ch)return next(),string;if(\"\\\\\"===ch)if(next(),\"u\"===ch){for(uffff=0,i=0;4>i&&(hex=parseInt(next(),16),isFinite(hex));i+=1)uffff=16*uffff+hex;string+=String.fromCharCode(uffff)}else{if(\"string\"!=typeof escapee[ch])break;string+=escapee[ch]}else string+=ch}error(\"Bad string\")},white=function(){for(;ch&&\" \">=ch;)next()},word=function(){switch(ch){case\"t\":return next(\"t\"),next(\"r\"),next(\"u\"),next(\"e\"),!0;case\"f\":return next(\"f\"),next(\"a\"),next(\"l\"),next(\"s\"),next(\"e\"),!1;case\"n\":return next(\"n\"),next(\"u\"),next(\"l\"),next(\"l\"),null}error(\"Unexpected '\"+ch+\"'\")},array=function(){var array=[];if(\"[\"===ch){if(next(\"[\"),white(),\"]\"===ch)return next(\"]\"),array;for(;ch;){if(array.push(value()),white(),\"]\"===ch)return next(\"]\"),array;next(\",\"),white()}}error(\"Bad array\")},object=function(){var key,object={};if(\"{\"===ch){if(next(\"{\"),white(),\"}\"===ch)return next(\"}\"),object;for(;ch;){if(key=string(),white(),next(\":\"),Object.hasOwnProperty.call(object,key)&&error('Duplicate key \"'+key+'\"'),object[key]=value(),white(),\"}\"===ch)return next(\"}\"),object;next(\",\"),white()}}error(\"Bad object\")};return value=function(){switch(white(),ch){case\"{\":return object();case\"[\":return array();case'\"':return string();case\"-\":return number();default:return ch>=\"0\"&&\"9\">=ch?number():word()}},function(source,reviver){var result;return text=source,at=0,ch=\" \",result=value(),white(),ch&&error(\"Syntax error\"),\"function\"==typeof reviver?function walk(holder,key){var k,v,value=holder[key];if(value&&\"object\"==typeof value)for(k in value)Object.hasOwnProperty.call(value,k)&&(v=walk(value,k),void 0!==v?value[k]=v:delete value[k]);return reviver.call(holder,key,value)}({\"\":result},\"\"):result}}),ace.define(\"ace/mode/json_worker\",[\"require\",\"exports\",\"module\",\"ace/lib/oop\",\"ace/worker/mirror\",\"ace/mode/json/json_parse\"],function(acequire,exports){\"use strict\";var oop=acequire(\"../lib/oop\"),Mirror=acequire(\"../worker/mirror\").Mirror,parse=acequire(\"./json/json_parse\"),JsonWorker=exports.JsonWorker=function(sender){Mirror.call(this,sender),this.setTimeout(200)};oop.inherits(JsonWorker,Mirror),function(){this.onUpdate=function(){var value=this.doc.getValue(),errors=[];try{value&&parse(value)}catch(e){var pos=this.doc.indexToPosition(e.at-1);errors.push({row:pos.row,column:pos.column,text:e.message,type:\"error\"})}this.sender.emit(\"annotate\",errors)}}.call(JsonWorker.prototype)}),ace.define(\"ace/lib/es5-shim\",[\"require\",\"exports\",\"module\"],function(){function Empty(){}function doesDefinePropertyWork(object){try{return Object.defineProperty(object,\"sentinel\",{}),\"sentinel\"in object}catch(exception){}}function toInteger(n){return n=+n,n!==n?n=0:0!==n&&n!==1/0&&n!==-(1/0)&&(n=(n>0||-1)*Math.floor(Math.abs(n))),n}Function.prototype.bind||(Function.prototype.bind=function(that){var target=this;if(\"function\"!=typeof target)throw new TypeError(\"Function.prototype.bind called on incompatible \"+target);var args=slice.call(arguments,1),bound=function(){if(this instanceof bound){var result=target.apply(this,args.concat(slice.call(arguments)));return Object(result)===result?result:this}return target.apply(that,args.concat(slice.call(arguments)))};return target.prototype&&(Empty.prototype=target.prototype,bound.prototype=new Empty,Empty.prototype=null),bound});var defineGetter,defineSetter,lookupGetter,lookupSetter,supportsAccessors,call=Function.prototype.call,prototypeOfArray=Array.prototype,prototypeOfObject=Object.prototype,slice=prototypeOfArray.slice,_toString=call.bind(prototypeOfObject.toString),owns=call.bind(prototypeOfObject.hasOwnProperty);if((supportsAccessors=owns(prototypeOfObject,\"__defineGetter__\"))&&(defineGetter=call.bind(prototypeOfObject.__defineGetter__),defineSetter=call.bind(prototypeOfObject.__defineSetter__),lookupGetter=call.bind(prototypeOfObject.__lookupGetter__),lookupSetter=call.bind(prototypeOfObject.__lookupSetter__)),2!=[1,2].splice(0).length)if(function(){function makeArray(l){var a=Array(l+2);return a[0]=a[1]=0,a}var lengthBefore,array=[];return array.splice.apply(array,makeArray(20)),array.splice.apply(array,makeArray(26)),lengthBefore=array.length,array.splice(5,0,\"XXX\"),lengthBefore+1==array.length,lengthBefore+1==array.length?!0:void 0\n}()){var array_splice=Array.prototype.splice;Array.prototype.splice=function(start,deleteCount){return arguments.length?array_splice.apply(this,[void 0===start?0:start,void 0===deleteCount?this.length-start:deleteCount].concat(slice.call(arguments,2))):[]}}else Array.prototype.splice=function(pos,removeCount){var length=this.length;pos>0?pos>length&&(pos=length):void 0==pos?pos=0:0>pos&&(pos=Math.max(length+pos,0)),length>pos+removeCount||(removeCount=length-pos);var removed=this.slice(pos,pos+removeCount),insert=slice.call(arguments,2),add=insert.length;if(pos===length)add&&this.push.apply(this,insert);else{var remove=Math.min(removeCount,length-pos),tailOldPos=pos+remove,tailNewPos=tailOldPos+add-remove,tailCount=length-tailOldPos,lengthAfterRemove=length-remove;if(tailOldPos>tailNewPos)for(var i=0;tailCount>i;++i)this[tailNewPos+i]=this[tailOldPos+i];else if(tailNewPos>tailOldPos)for(i=tailCount;i--;)this[tailNewPos+i]=this[tailOldPos+i];if(add&&pos===lengthAfterRemove)this.length=lengthAfterRemove,this.push.apply(this,insert);else for(this.length=lengthAfterRemove+add,i=0;add>i;++i)this[pos+i]=insert[i]}return removed};Array.isArray||(Array.isArray=function(obj){return\"[object Array]\"==_toString(obj)});var boxedString=Object(\"a\"),splitString=\"a\"!=boxedString[0]||!(0 in boxedString);if(Array.prototype.forEach||(Array.prototype.forEach=function(fun){var object=toObject(this),self=splitString&&\"[object String]\"==_toString(this)?this.split(\"\"):object,thisp=arguments[1],i=-1,length=self.length>>>0;if(\"[object Function]\"!=_toString(fun))throw new TypeError;for(;length>++i;)i in self&&fun.call(thisp,self[i],i,object)}),Array.prototype.map||(Array.prototype.map=function(fun){var object=toObject(this),self=splitString&&\"[object String]\"==_toString(this)?this.split(\"\"):object,length=self.length>>>0,result=Array(length),thisp=arguments[1];if(\"[object Function]\"!=_toString(fun))throw new TypeError(fun+\" is not a function\");for(var i=0;length>i;i++)i in self&&(result[i]=fun.call(thisp,self[i],i,object));return result}),Array.prototype.filter||(Array.prototype.filter=function(fun){var value,object=toObject(this),self=splitString&&\"[object String]\"==_toString(this)?this.split(\"\"):object,length=self.length>>>0,result=[],thisp=arguments[1];if(\"[object Function]\"!=_toString(fun))throw new TypeError(fun+\" is not a function\");for(var i=0;length>i;i++)i in self&&(value=self[i],fun.call(thisp,value,i,object)&&result.push(value));return result}),Array.prototype.every||(Array.prototype.every=function(fun){var object=toObject(this),self=splitString&&\"[object String]\"==_toString(this)?this.split(\"\"):object,length=self.length>>>0,thisp=arguments[1];if(\"[object Function]\"!=_toString(fun))throw new TypeError(fun+\" is not a function\");for(var i=0;length>i;i++)if(i in self&&!fun.call(thisp,self[i],i,object))return!1;return!0}),Array.prototype.some||(Array.prototype.some=function(fun){var object=toObject(this),self=splitString&&\"[object String]\"==_toString(this)?this.split(\"\"):object,length=self.length>>>0,thisp=arguments[1];if(\"[object Function]\"!=_toString(fun))throw new TypeError(fun+\" is not a function\");for(var i=0;length>i;i++)if(i in self&&fun.call(thisp,self[i],i,object))return!0;return!1}),Array.prototype.reduce||(Array.prototype.reduce=function(fun){var object=toObject(this),self=splitString&&\"[object String]\"==_toString(this)?this.split(\"\"):object,length=self.length>>>0;if(\"[object Function]\"!=_toString(fun))throw new TypeError(fun+\" is not a function\");if(!length&&1==arguments.length)throw new TypeError(\"reduce of empty array with no initial value\");var result,i=0;if(arguments.length>=2)result=arguments[1];else for(;;){if(i in self){result=self[i++];break}if(++i>=length)throw new TypeError(\"reduce of empty array with no initial value\")}for(;length>i;i++)i in self&&(result=fun.call(void 0,result,self[i],i,object));return result}),Array.prototype.reduceRight||(Array.prototype.reduceRight=function(fun){var object=toObject(this),self=splitString&&\"[object String]\"==_toString(this)?this.split(\"\"):object,length=self.length>>>0;if(\"[object Function]\"!=_toString(fun))throw new TypeError(fun+\" is not a function\");if(!length&&1==arguments.length)throw new TypeError(\"reduceRight of empty array with no initial value\");var result,i=length-1;if(arguments.length>=2)result=arguments[1];else for(;;){if(i in self){result=self[i--];break}if(0>--i)throw new TypeError(\"reduceRight of empty array with no initial value\")}do i in this&&(result=fun.call(void 0,result,self[i],i,object));while(i--);return result}),Array.prototype.indexOf&&-1==[0,1].indexOf(1,2)||(Array.prototype.indexOf=function(sought){var self=splitString&&\"[object String]\"==_toString(this)?this.split(\"\"):toObject(this),length=self.length>>>0;if(!length)return-1;var i=0;for(arguments.length>1&&(i=toInteger(arguments[1])),i=i>=0?i:Math.max(0,length+i);length>i;i++)if(i in self&&self[i]===sought)return i;return-1}),Array.prototype.lastIndexOf&&-1==[0,1].lastIndexOf(0,-3)||(Array.prototype.lastIndexOf=function(sought){var self=splitString&&\"[object String]\"==_toString(this)?this.split(\"\"):toObject(this),length=self.length>>>0;if(!length)return-1;var i=length-1;for(arguments.length>1&&(i=Math.min(i,toInteger(arguments[1]))),i=i>=0?i:length-Math.abs(i);i>=0;i--)if(i in self&&sought===self[i])return i;return-1}),Object.getPrototypeOf||(Object.getPrototypeOf=function(object){return object.__proto__||(object.constructor?object.constructor.prototype:prototypeOfObject)}),!Object.getOwnPropertyDescriptor){var ERR_NON_OBJECT=\"Object.getOwnPropertyDescriptor called on a non-object: \";Object.getOwnPropertyDescriptor=function(object,property){if(\"object\"!=typeof object&&\"function\"!=typeof object||null===object)throw new TypeError(ERR_NON_OBJECT+object);if(owns(object,property)){var descriptor,getter,setter;if(descriptor={enumerable:!0,configurable:!0},supportsAccessors){var prototype=object.__proto__;object.__proto__=prototypeOfObject;var getter=lookupGetter(object,property),setter=lookupSetter(object,property);if(object.__proto__=prototype,getter||setter)return getter&&(descriptor.get=getter),setter&&(descriptor.set=setter),descriptor}return descriptor.value=object[property],descriptor}}}if(Object.getOwnPropertyNames||(Object.getOwnPropertyNames=function(object){return Object.keys(object)}),!Object.create){var createEmpty;createEmpty=null===Object.prototype.__proto__?function(){return{__proto__:null}}:function(){var empty={};for(var i in empty)empty[i]=null;return empty.constructor=empty.hasOwnProperty=empty.propertyIsEnumerable=empty.isPrototypeOf=empty.toLocaleString=empty.toString=empty.valueOf=empty.__proto__=null,empty},Object.create=function(prototype,properties){var object;if(null===prototype)object=createEmpty();else{if(\"object\"!=typeof prototype)throw new TypeError(\"typeof prototype[\"+typeof prototype+\"] != 'object'\");var Type=function(){};Type.prototype=prototype,object=new Type,object.__proto__=prototype}return void 0!==properties&&Object.defineProperties(object,properties),object}}if(Object.defineProperty){var definePropertyWorksOnObject=doesDefinePropertyWork({}),definePropertyWorksOnDom=\"undefined\"==typeof document||doesDefinePropertyWork(document.createElement(\"div\"));if(!definePropertyWorksOnObject||!definePropertyWorksOnDom)var definePropertyFallback=Object.defineProperty}if(!Object.defineProperty||definePropertyFallback){var ERR_NON_OBJECT_DESCRIPTOR=\"Property description must be an object: \",ERR_NON_OBJECT_TARGET=\"Object.defineProperty called on non-object: \",ERR_ACCESSORS_NOT_SUPPORTED=\"getters & setters can not be defined on this javascript engine\";Object.defineProperty=function(object,property,descriptor){if(\"object\"!=typeof object&&\"function\"!=typeof object||null===object)throw new TypeError(ERR_NON_OBJECT_TARGET+object);if(\"object\"!=typeof descriptor&&\"function\"!=typeof descriptor||null===descriptor)throw new TypeError(ERR_NON_OBJECT_DESCRIPTOR+descriptor);if(definePropertyFallback)try{return definePropertyFallback.call(Object,object,property,descriptor)}catch(exception){}if(owns(descriptor,\"value\"))if(supportsAccessors&&(lookupGetter(object,property)||lookupSetter(object,property))){var prototype=object.__proto__;object.__proto__=prototypeOfObject,delete object[property],object[property]=descriptor.value,object.__proto__=prototype}else object[property]=descriptor.value;else{if(!supportsAccessors)throw new TypeError(ERR_ACCESSORS_NOT_SUPPORTED);owns(descriptor,\"get\")&&defineGetter(object,property,descriptor.get),owns(descriptor,\"set\")&&defineSetter(object,property,descriptor.set)}return object}}Object.defineProperties||(Object.defineProperties=function(object,properties){for(var property in properties)owns(properties,property)&&Object.defineProperty(object,property,properties[property]);return object}),Object.seal||(Object.seal=function(object){return object}),Object.freeze||(Object.freeze=function(object){return object});try{Object.freeze(function(){})}catch(exception){Object.freeze=function(freezeObject){return function(object){return\"function\"==typeof object?object:freezeObject(object)}}(Object.freeze)}if(Object.preventExtensions||(Object.preventExtensions=function(object){return object}),Object.isSealed||(Object.isSealed=function(){return!1}),Object.isFrozen||(Object.isFrozen=function(){return!1}),Object.isExtensible||(Object.isExtensible=function(object){if(Object(object)===object)throw new TypeError;for(var name=\"\";owns(object,name);)name+=\"?\";object[name]=!0;var returnValue=owns(object,name);return delete object[name],returnValue}),!Object.keys){var hasDontEnumBug=!0,dontEnums=[\"toString\",\"toLocaleString\",\"valueOf\",\"hasOwnProperty\",\"isPrototypeOf\",\"propertyIsEnumerable\",\"constructor\"],dontEnumsLength=dontEnums.length;for(var key in{toString:null})hasDontEnumBug=!1;Object.keys=function(object){if(\"object\"!=typeof object&&\"function\"!=typeof object||null===object)throw new TypeError(\"Object.keys called on a non-object\");var keys=[];for(var name in object)owns(object,name)&&keys.push(name);if(hasDontEnumBug)for(var i=0,ii=dontEnumsLength;ii>i;i++){var dontEnum=dontEnums[i];owns(object,dontEnum)&&keys.push(dontEnum)}return keys}}Date.now||(Date.now=function(){return(new Date).getTime()});var ws=\"\t\\n\u000b\\f\\r   ᠎             　\\u2028\\u2029﻿\";if(!String.prototype.trim||ws.trim()){ws=\"[\"+ws+\"]\";var trimBeginRegexp=RegExp(\"^\"+ws+ws+\"*\"),trimEndRegexp=RegExp(ws+ws+\"*$\");String.prototype.trim=function(){return(this+\"\").replace(trimBeginRegexp,\"\").replace(trimEndRegexp,\"\")}}var toObject=function(o){if(null==o)throw new TypeError(\"can't convert \"+o+\" to object\");return Object(o)}});";
 
 /***/ },
-/* 19 */
+/* 20 */
 /***/ function(module, exports) {
 
 	ace.define("ace/ext/searchbox",["require","exports","module","ace/lib/dom","ace/lib/lang","ace/lib/event","ace/keyboard/hash_handler","ace/lib/keys"], function(acequire, exports, module) {
@@ -10983,7 +11299,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            
 
 /***/ },
-/* 20 */
+/* 21 */
 /***/ function(module, exports) {
 
 	/* ***** BEGIN LICENSE BLOCK *****

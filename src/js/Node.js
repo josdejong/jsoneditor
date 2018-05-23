@@ -2132,8 +2132,8 @@ Node.prototype.updateDom = function (options) {
     this._updateDomIndexes();
   }
 
+  // update childs recursively
   if (options && options.recurse === true) {
-    // recurse is true or undefined. update childs recursively
     if (this.childs) {
       this.childs.forEach(function (child) {
         child.updateDom(options);
