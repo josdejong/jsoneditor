@@ -3122,11 +3122,21 @@ Node.prototype.sort = function (path, direction) {
   }
   else { // this.type === 'array'
     this.childs.sort(function (a, b) {
-      var valueA = a.getNestedChild(path).value;
-      var valueB = b.getNestedChild(path).value;
+      var nodeA = a.getNestedChild(path);
+      var nodeB = b.getNestedChild(path);
+
+      if (!nodeA) {
+        return order;
+      }
+      if (!nodeB) {
+        return -order;
+      }
+
+      var valueA = nodeA.value;
+      var valueB = nodeB.value;
 
       if (typeof valueA !== 'string' && typeof valueB !== 'string') {
-        // both values are a number, boolean, or null
+        // both values are a number, boolean, or null -> use simple, fast sorting
         return valueA > valueB ? order : valueA < valueB ? -order : 0;
       }
 
@@ -3180,23 +3190,28 @@ Node.prototype.findChildByProperty = function(prop) {
 
 /**
  * Get the paths of the sortable child paths of this node
- * @return {Array}
+ * @return {string[]}
  */
 Node.prototype.getSortablePaths = function () {
   if (this.type === 'array') {
     if (this.childs.length > 0) {
       // sort on any of the property paths of nested objects
-      return this.childs[0]._getSortablePaths();
+      var pathsMap = {};
+      this.childs.forEach(function (child) {
+        child._getSortablePaths(pathsMap, '');
+      });
+
+      return Object.keys(pathsMap).sort();
     }
     else {
       // empty array, you can sort though it doesn't do anything
-      return [ [] ];
+      return [ '.' ];
     }
   }
 
   if (this.type === 'object') {
     // sort the object by its properties
-    return [ [] ];
+    return [ '.' ];
   }
 
   return [];
@@ -3204,38 +3219,30 @@ Node.prototype.getSortablePaths = function () {
 
 /**
  * Get the paths of the sortable child paths of this node
- * @return {Array}
+ * @param {Object<String, boolean>} pathsMap
+ * @param {string} rootPath
  */
-Node.prototype._getSortablePaths = function () {
+Node.prototype._getSortablePaths = function (pathsMap, rootPath) {
   if (this.type === 'array') {
     // not sortable
-    return [];
   }
-
-  if (this.type === 'object') {
-    var paths = [];
-
+  else if (this.type === 'object') {
     this.childs.forEach(function (child) {
       if (child.type === 'object') {
-        var childPaths = child._getSortablePaths();
-        if (childPaths.length > 0) {
-          paths = paths.concat(childPaths.map(function (childPath) {
-            return [child.field].concat(childPath);
-          }));
-        }
+        child._getSortablePaths(pathsMap, rootPath + '.' + child.field);
       }
       else if (child.type === 'array') {
         // not sortable
       }
       else { // type === 'auto' or type === 'string'
-        paths.push([child.field]);
+        var path = rootPath + '.' + child.field;
+        pathsMap[path] = true;
       }
     });
-
-    return paths;
   }
-
-  return [ [] ];
+  else {
+    pathsMap[rootPath + '.'] = true;
+  }
 };
 
 /**
@@ -3765,10 +3772,9 @@ Node.prototype._showSortModal = function () {
         var ok = modal.modalElem().querySelector('#ok');
 
         node.getSortablePaths().forEach(function (path) {
-          var pathStr = '.' + path.join('.');
           var option = document.createElement('option');
-          option.text = pathStr;
-          option.value = pathStr;
+          option.text = path;
+          option.value = path;
           sortBy.appendChild(option);
         });
 
