@@ -3135,6 +3135,66 @@ Node.prototype.sort = function (direction) {
 };
 
 /**
+ * Get the paths of the sortable child paths of this node
+ * @return {Array}
+ */
+Node.prototype.getSortablePaths = function () {
+  if (this.type === 'array') {
+    if (this.childs.length > 0) {
+      // sort on any of the property paths of nested objects
+      return this.childs[0]._getSortablePaths();
+    }
+    else {
+      // empty array, you can sort though it doesn't do anything
+      return [ [] ];
+    }
+  }
+
+  if (this.type === 'object') {
+    // sort the object by its properties
+    return [ [] ];
+  }
+
+  return [];
+};
+
+/**
+ * Get the paths of the sortable child paths of this node
+ * @return {Array}
+ */
+Node.prototype._getSortablePaths = function () {
+  if (this.type === 'array') {
+    // not sortable
+    return [];
+  }
+
+  if (this.type === 'object') {
+    var paths = [];
+
+    this.childs.forEach(function (child) {
+      if (child.type === 'object') {
+        var childPaths = child._getSortablePaths();
+        if (childPaths.length > 0) {
+          paths = paths.concat(childPaths.map(function (childPath) {
+            return [child.field].concat(childPath);
+          }));
+        }
+      }
+      else if (child.type === 'array') {
+        // not sortable
+      }
+      else { // type === 'auto' or type === 'string'
+        paths.push([child.field]);
+      }
+    });
+
+    return paths;
+  }
+
+  return [ [] ];
+};
+
+/**
  * Create a table row with an append button.
  * @return {HTMLElement | undefined} tr with the AppendNode contents
  */
