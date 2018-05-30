@@ -1,6 +1,7 @@
 'use strict';
 
 var naturalSort = require('javascript-natural-sort');
+var picoModal = require('picomodal');
 var ContextMenu = require('./ContextMenu');
 var appendNodeFactory = require('./appendNodeFactory');
 var showMoreNodeFactory = require('./showMoreNodeFactory');
@@ -389,7 +390,7 @@ Node.prototype.setValue = function(value, type) {
 
     // sort object keys
     if (this.editor.options.sortObjectKeys === true) {
-      this.sort('asc');
+      this.sort([], 'asc');
     }
   }
   else {
@@ -3096,29 +3097,42 @@ Node.prototype._onChangeType = function (newType) {
 /**
  * Sort the child's of the node. Only applicable when the node has type 'object'
  * or 'array'.
+ * @param {String[]} path      Path of the child value to be compared
  * @param {String} direction   Sorting direction. Available values: "asc", "desc"
  * @private
  */
-Node.prototype.sort = function (direction) {
+Node.prototype.sort = function (path, direction) {
   if (!this._hasChilds()) {
     return;
   }
 
-  var order = (direction == 'desc') ? -1 : 1;
-  var prop = (this.type == 'array') ? 'value': 'field';
-  this.hideChilds();
+  this.hideChilds(); // sorting is faster when the childs are not attached to the dom
 
+  // copy the childs array (the old one will be kept for an undo action
   var oldChilds = this.childs;
-  var oldSortOrder = this.sortOrder;
-
-  // copy the array (the old one will be kept for an undo action
   this.childs = this.childs.concat();
 
-  // sort the arrays
-  this.childs.sort(function (a, b) {
-    return order * naturalSort(a[prop], b[prop]);
-  });
-  this.sortOrder = (order == 1) ? 'asc' : 'desc';
+  // sort the childs array
+  var order = (direction === 'desc') ? -1 : 1;
+
+  if (this.type === 'object') {
+    this.childs.sort(function (a, b) {
+      return order * naturalSort(a.field, b.field);
+    });
+  }
+  else { // this.type === 'array'
+    this.childs.sort(function (a, b) {
+      var valueA = a.getNestedChild(path).value;
+      var valueB = b.getNestedChild(path).value;
+
+      if (typeof valueA !== 'string' && typeof valueB !== 'string') {
+        // both values are a number, boolean, or null
+        return valueA > valueB ? order : valueA < valueB ? -order : 0;
+      }
+
+      return order * naturalSort(valueA, valueB);
+    });
+  }
 
   // update the index numbering
   this._updateDomIndexes();
@@ -3126,12 +3140,42 @@ Node.prototype.sort = function (direction) {
   this.editor._onAction('sort', {
     node: this,
     oldChilds: oldChilds,
-    oldSort: oldSortOrder,
-    newChilds: this.childs,
-    newSort: this.sortOrder
+    newChilds: this.childs
   });
 
   this.showChilds();
+};
+
+/**
+ * Get a nested child given a path with properties
+ * @param {String[]} path
+ * @returns {Node}
+ */
+Node.prototype.getNestedChild = function (path) {
+  var i = 0;
+  var child = this;
+
+  while (child && i < path.length) {
+    child = child.findChildByProperty(path[i]);
+    i++;
+  }
+
+  return child;
+};
+
+/**
+ * Find a child by property name
+ * @param {string} prop
+ * @return {Node | undefined} Returns the child node when found, or undefined otherwise
+ */
+Node.prototype.findChildByProperty = function(prop) {
+  if (this.type !== 'object') {
+    return undefined;
+  }
+
+  return this.childs.find(function (child) {
+    return child.field === prop;
+  });
 };
 
 /**
@@ -3530,32 +3574,13 @@ Node.prototype.showContextMenu = function (anchor, onClose) {
   }
 
   if (this._hasChilds()) {
-    var direction = ((this.sortOrder == 'asc') ? 'desc': 'asc');
     items.push({
       text: translate('sort'),
       title: translate('sortTitle') + this.type,
-      className: 'jsoneditor-sort-' + direction,
+      className: 'jsoneditor-sort-asc',
       click: function () {
-        node.sort(direction);
-      },
-      submenu: [
-        {
-          text: translate('ascending'),
-          className: 'jsoneditor-sort-asc',
-          title: translate('ascendingTitle' , {type: this.type}),
-          click: function () {
-            node.sort('asc');
-          }
-        },
-        {
-          text: translate('descending'),
-          className: 'jsoneditor-sort-desc',
-          title: translate('descendingTitle' , {type: this.type}),
-          click: function () {
-            node.sort('desc');
-          }
-        }
-      ]
+        node._showSortModal()
+      }
     });
   }
 
@@ -3691,6 +3716,72 @@ Node.prototype.showContextMenu = function (anchor, onClose) {
 
   var menu = new ContextMenu(items, {close: onClose});
   menu.show(anchor, this.editor.content);
+};
+
+/**
+ * Show advanced sorting modal
+ * @private
+ */
+Node.prototype._showSortModal = function () {
+  var node = this;
+
+  picoModal({
+    parent: this.editor.frame,
+    content: '<div class="pico-modal-contents">' +
+        '<form onsubmit="alert(1)">' +
+        '<table>' +
+        '<tbody>' +
+        '<tr>' +
+        '  <td>Sort by:</td>' +
+        '  <td class="jsoneditor-modal-input">' +
+        '  <select id="sortBy">' +
+        '  </select>' +
+        '  </td>' +
+        '</tr>' +
+        '  <tr>' +
+        '  <td>Direction:</td>' +
+        '  <td class="jsoneditor-modal-input">' +
+        '  <select id="direction">' +
+        '    <option value="asc" selected>asc</option>' +
+        '    <option value="desc">desc</option>' +
+        '  </select>' +
+        '  </td>' +
+        '</tr>' +
+        '<tr>' +
+        '<td colspan="2" class="jsoneditor-modal-input">' +
+        '  <button type="submit" id="ok">Sort</button>' +
+        '</td>' +
+        '</tr>' +
+        '</tbody>' +
+        '</table>' +
+        '</form>' +
+        '</div>',
+    overlayClass: 'jsoneditor-modal-overlay',
+    modalClass: 'jsoneditor-modal'
+  })
+      .afterCreate(function (modal) {
+        var sortBy = modal.modalElem().querySelector('#sortBy');
+        var direction = modal.modalElem().querySelector('#direction');
+        var ok = modal.modalElem().querySelector('#ok');
+
+        node.getSortablePaths().forEach(function (path) {
+          var pathStr = '.' + path.join('.');
+          var option = document.createElement('option');
+          option.text = pathStr;
+          option.value = pathStr;
+          sortBy.appendChild(option);
+        });
+
+        ok.onclick = function () {
+          modal.close();
+
+          var path = sortBy.value;
+          var pathArray = (path === '.') ? [] : path.split('.').slice(1);
+
+          node.sort(pathArray, direction.value)
+        };
+      })
+      .show();
 };
 
 /**

@@ -33,9 +33,7 @@
   <code>editor.setMode(mode)</code>, try it in the console of your browser.
 </p>
 
-<form>
-  <div id="jsoneditor"></div>
-</form>
+<div id="jsoneditor"></div>
 
 <script>
   var container = document.getElementById('jsoneditor');
@@ -70,7 +68,8 @@
       location: {
         latitude: 51 + i / 10000,
         longitude: 4 + i / 10000,
-      }
+      },
+      random: Math.random()
     });
   }
 

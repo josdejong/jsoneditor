@@ -124,15 +124,15 @@ function History (editor) {
       'undo': function (params) {
         var node = params.node;
         node.hideChilds();
-        node.sort = params.oldSort;
         node.childs = params.oldChilds;
+        node._updateDomIndexes();
         node.showChilds();
       },
       'redo': function (params) {
         var node = params.node;
         node.hideChilds();
-        node.sort = params.newSort;
         node.childs = params.newChilds;
+        node._updateDomIndexes();
         node.showChilds();
       }
     }

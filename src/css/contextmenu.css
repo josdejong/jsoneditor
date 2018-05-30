@@ -260,3 +260,47 @@ div.jsoneditor-contextmenu button.jsoneditor-type-modes > div.jsoneditor-icon {
   background-image: none;
   width: 6px;
 }
+
+
+/* pico modal styling */
+
+.jsoneditor-modal-overlay {
+  position: absolute !important;
+
+  background: rgb(1,1,1) !important;
+  opacity: 0.3 !important;
+}
+
+.jsoneditor-modal {
+  position: absolute !important;
+
+  border-radius: 2px !important;
+  padding: 30px 20px 10px 20px !important;
+}
+
+.jsoneditor-modal table td {
+  padding: 5px 0;
+  padding-right: 20px;
+
+  text-align: left;
+  vertical-align: middle;
+  font-size: 10pt;
+  font-family: arial, sans-serif;
+}
+
+.jsoneditor-modal table td:first-child {
+}
+
+.jsoneditor-modal table td.jsoneditor-modal-input {
+  text-align: right;
+  padding-right: 0;
+}
+
+.jsoneditor-modal select {
+  min-width: 100px;
+}
+
+.jsoneditor-modal .pico-close {
+  background: none !important;
+  font-size: 24px !important;
+}

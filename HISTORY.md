@@ -3,6 +3,11 @@
 https://github.com/josdejong/jsoneditor
 
 
+## not yet released, version 5.17.0
+
+- Implemented advanced sorting for arrays.
+
+
 ## 2018-05-23, version 5.16.0
 
 - Better handling of JSON documents containing large arrays:
