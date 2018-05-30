@@ -3771,7 +3771,7 @@ Node.prototype._showSortModal = function () {
         var direction = modal.modalElem().querySelector('#direction');
         var ok = modal.modalElem().querySelector('#ok');
 
-        node.getSortablePaths().forEach(function (path) {
+        node.getSortablePaths().sort().forEach(function (path) {
           var option = document.createElement('option');
           option.text = path;
           option.value = path;
