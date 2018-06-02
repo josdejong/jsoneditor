@@ -28,6 +28,7 @@ var _defs = {
         'insertTitle': 'Insert a new field with type \'auto\' before this field (Ctrl+Ins)',
         'insertSub': 'Select the type of the field to be inserted',
         'object': 'Object',
+        'ok': 'Ok',
         'redo': 'Redo (Ctrl+Shift+Z)',
         'removeText': 'Remove',
         'removeTitle': 'Remove selected fields (Ctrl+Del)',
@@ -37,6 +38,13 @@ var _defs = {
         'showMoreStatus': 'displaying ${visibleChilds} of ${totalChilds} items.',
         'sort': 'Sort',
         'sortTitle': 'Sort the childs of this ',
+        'sortFieldLabel': 'Field:',
+        'sortDirectionLabel': 'Direction:',
+        'sortFieldTitle': 'Select the nested field by which to sort the array or object',
+        'sortAscending': 'Ascending',
+        'sortAscendingTitle': 'Sort the selected field in ascending order',
+        'sortDescending': 'Descending',
+        'sortDescendingTitle': 'Sort the selected field in descending order',
         'string': 'String',
         'type': 'Type',
         'typeTitle': 'Change the type of this field',
@@ -80,6 +88,7 @@ var _defs = {
         'insertTitle': 'Inserir um novo campo do tipo \'auto\' antes deste campo (Ctrl+Ins)',
         'insertSub': 'Selecionar o tipo de campo a ser inserido',
         'object': 'Objeto',
+        'ok': 'Ok',
         'redo': 'Refazer (Ctrl+Shift+Z)',
         'removeText': 'Remover',
         'removeTitle': 'Remover campos selecionados (Ctrl+Del)',
@@ -92,6 +101,20 @@ var _defs = {
         'showMoreStatus': 'exibindo ${visibleChilds} de ${totalChilds} itens.',
         'sort': 'Organizar',
         'sortTitle': 'Organizar os filhos deste ',
+        // TODO: correctly translate sortFieldLabel
+        'sortFieldLabel': 'Field:',
+        // TODO: correctly translate sortDirectionLabel
+        'sortDirectionLabel': 'Direction:',
+        // TODO: correctly translate sortFieldTitle
+        'sortFieldTitle': 'Select the nested field by which to sort the array or object',
+        // TODO: correctly translate sortAscending
+        'sortAscending': 'Ascending',
+        // TODO: correctly translate sortAscendingTitle
+        'sortAscendingTitle': 'Sort the selected field in ascending order',
+        // TODO: correctly translate sortDescending
+        'sortDescending': 'Descending',
+        // TODO: correctly translate sortDescendingTitle
+        'sortDescendingTitle': 'Sort the selected field in descending order',
         'string': 'Texto',
         'type': 'Tipo',
         'typeTitle': 'Mudar o tipo deste campo',

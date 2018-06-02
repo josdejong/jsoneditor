@@ -3732,30 +3732,31 @@ Node.prototype.showContextMenu = function (anchor, onClose) {
 Node.prototype._showSortModal = function () {
   var node = this;
 
+  // TODO: escape the translated text
   var content = '<div class="pico-modal-contents">' +
-      '<div class="pico-modal-header">Sort</div>' +
+      '<div class="pico-modal-header">' + translate('sort') + '</div>' +
       '<form>' +
       '<table>' +
       '<tbody>' +
       '<tr>' +
-      '  <td>Field:</td>' +
+      '  <td>' + translate('sortFieldLabel') + ' </td>' +
       '  <td class="jsoneditor-modal-input">' +
-      '  <select id="field" title="Select the nested field by which to sort the array or object">' +
+      '  <select id="field" title="' + translate('sortFieldTitle') + '">' +
       '  </select>' +
       '  </td>' +
       '</tr>' +
       '<tr>' +
-      '  <td>Direction:</td>' +
+      '  <td>' + translate('sortDirectionLabel') + ' </td>' +
       '  <td class="jsoneditor-modal-input">' +
       '  <div id="direction" class="jsoneditor-button-group">' +
       '<input type="button" ' +
-      'value="Ascending" ' +
-      'title="Sort the selected field in ascending order" ' +
+      'value="' + translate('sortAscending') + '" ' +
+      'title="'  + translate('sortAscendingTitle') + '" ' +
       'data-value="asc" ' +
       'class="jsoneditor-button-first jsoneditor-button-asc"/>' +
       '<input type="button" ' +
-      'value="Descending" ' +
-      'title="Sort the selected field in descending order" ' +
+      'value="' + translate('sortDescending') + '" ' +
+      'title="' + translate('sortDescendingTitle') + '" ' +
       'data-value="desc" ' +
       'class="jsoneditor-button-last jsoneditor-button-desc"/>' +
       '  </div>' +
@@ -3763,7 +3764,7 @@ Node.prototype._showSortModal = function () {
       '</tr>' +
       '<tr>' +
       '<td colspan="2" class="jsoneditor-modal-input jsoneditor-modal-actions">' +
-      '  <input type="submit" id="ok" value="Ok" />' +
+      '  <input type="submit" id="ok" value="' + translate('ok') + '" />' +
       '</td>' +
       '</tr>' +
       '</tbody>' +

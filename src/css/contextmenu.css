@@ -290,6 +290,9 @@ div.jsoneditor-contextmenu button.jsoneditor-type-modes > div.jsoneditor-icon {
   height: 30px;
   line-height: 30px;
 
+  font-family: arial, sans-serif;
+  font-size: 11pt;
+
   background: #3883fa;
   color: white;
 }
