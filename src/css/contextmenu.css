@@ -276,8 +276,22 @@ div.jsoneditor-contextmenu button.jsoneditor-type-modes > div.jsoneditor-icon {
   max-width: 100% !important;
 
   border-radius: 2px !important;
-  padding: 30px 20px 10px 20px !important;
+  padding: 45px 15px 15px 15px !important;
   box-shadow: 2px 2px 12px rgba(128, 128, 128, 0.3) !important;
+}
+
+.jsoneditor-modal .pico-modal-header {
+  position: absolute;
+  box-sizing: border-box;
+  top: 0;
+  left: 0;
+  width: 100%;
+  padding: 0 10px;
+  height: 30px;
+  line-height: 30px;
+
+  background: #3883fa;
+  color: white;
 }
 
 .jsoneditor-modal table td {
@@ -300,6 +314,10 @@ div.jsoneditor-contextmenu button.jsoneditor-type-modes > div.jsoneditor-icon {
   white-space: nowrap;
 }
 
+.jsoneditor-modal table td.jsoneditor-modal-actions {
+  padding-top: 15px;
+}
+
 .jsoneditor-modal select {
   min-width: 100px;
 }
@@ -307,7 +325,9 @@ div.jsoneditor-contextmenu button.jsoneditor-type-modes > div.jsoneditor-icon {
 .jsoneditor-modal .pico-close {
   background: none !important;
   font-size: 24px !important;
-  color: #4d4d4d;
+  top: 7px !important;
+  right: 7px !important;
+  color: white;
 }
 
 .jsoneditor-modal select,
@@ -316,10 +336,13 @@ div.jsoneditor-contextmenu button.jsoneditor-type-modes > div.jsoneditor-icon {
   border: 1px solid #d3d3d3;
   color: #4d4d4d;
   border-radius: 3px;
+  cursor: pointer;
 }
 
 .jsoneditor-modal select {
-  padding: 4px 28px 4px 10px;
+  padding: 3px 28px 3px 10px;
+  min-width: 100%;
+  max-width: 300px;
 
   /* https://stackoverflow.com/questions/20366166/bootstrap-3-styled-select-dropdown-looks-ugly-in-firefox-on-os-x */
   background: #f5f5f5 url("data:image/svg+xml,\

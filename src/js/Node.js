@@ -3733,13 +3733,14 @@ Node.prototype._showSortModal = function () {
   var node = this;
 
   var content = '<div class="pico-modal-contents">' +
+      '<div class="pico-modal-header">Sort</div>' +
       '<form>' +
       '<table>' +
       '<tbody>' +
       '<tr>' +
-      '  <td>Sort by:</td>' +
+      '  <td>Field:</td>' +
       '  <td class="jsoneditor-modal-input">' +
-      '  <select id="sortBy" title="Select the nested field by which to sort the array or object">' +
+      '  <select id="field" title="Select the nested field by which to sort the array or object">' +
       '  </select>' +
       '  </td>' +
       '</tr>' +
@@ -3761,8 +3762,8 @@ Node.prototype._showSortModal = function () {
       '  </td>' +
       '</tr>' +
       '<tr>' +
-      '<td colspan="2" class="jsoneditor-modal-input">' +
-      '  <input type="submit" id="ok" value="Sort" />' +
+      '<td colspan="2" class="jsoneditor-modal-input jsoneditor-modal-actions">' +
+      '  <input type="submit" id="ok" value="Ok" />' +
       '</td>' +
       '</tr>' +
       '</tbody>' +
@@ -3778,7 +3779,7 @@ Node.prototype._showSortModal = function () {
   })
       .afterCreate(function (modal) {
         var form = modal.modalElem().querySelector('form');
-        var sortBy = modal.modalElem().querySelector('#sortBy');
+        var field = modal.modalElem().querySelector('#field');
         var direction = modal.modalElem().querySelector('#direction');
 
         var paths = node.getSortablePaths().sort();
@@ -3787,7 +3788,7 @@ Node.prototype._showSortModal = function () {
           var option = document.createElement('option');
           option.text = path;
           option.value = path;
-          sortBy.appendChild(option);
+          field.appendChild(option);
         });
 
         function setDirection(value) {
@@ -3795,7 +3796,7 @@ Node.prototype._showSortModal = function () {
           direction.className = 'jsoneditor-button-group jsoneditor-button-group-value-' + direction.value;
         }
 
-        sortBy.value = node.sortedBy ? node.sortedBy.path : paths[0];
+        field.value = node.sortedBy ? node.sortedBy.path : paths[0];
         setDirection(node.sortedBy ? node.sortedBy.direction : 'asc');
 
         direction.onclick = function (event) {
@@ -3807,7 +3808,7 @@ Node.prototype._showSortModal = function () {
 
           modal.close();
 
-          var path = sortBy.value;
+          var path = field.value;
           var pathArray = (path === '.') ? [] : path.split('.').slice(1);
 
           node.sortedBy = {
