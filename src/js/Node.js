@@ -3735,13 +3735,13 @@ Node.prototype._showSortModal = function () {
   picoModal({
     parent: this.editor.frame,
     content: '<div class="pico-modal-contents">' +
-        '<form onsubmit="alert(1)">' +
+        '<form>' +
         '<table>' +
         '<tbody>' +
         '<tr>' +
         '  <td>Sort by:</td>' +
         '  <td class="jsoneditor-modal-input">' +
-        '  <select id="sortBy">' +
+        '  <select id="sortBy" title="A nested field on which to sort the array or object">' +
         '  </select>' +
         '  </td>' +
         '</tr>' +
@@ -3756,7 +3756,7 @@ Node.prototype._showSortModal = function () {
         '</tr>' +
         '<tr>' +
         '<td colspan="2" class="jsoneditor-modal-input">' +
-        '  <button type="submit" id="ok">Sort</button>' +
+        '  <input type="submit" id="ok" value="Sort" />' +
         '</td>' +
         '</tr>' +
         '</tbody>' +
@@ -3769,7 +3769,7 @@ Node.prototype._showSortModal = function () {
       .afterCreate(function (modal) {
         var sortBy = modal.modalElem().querySelector('#sortBy');
         var direction = modal.modalElem().querySelector('#direction');
-        var ok = modal.modalElem().querySelector('#ok');
+        var form = modal.modalElem().querySelector('form');
 
         node.getSortablePaths().sort().forEach(function (path) {
           var option = document.createElement('option');
@@ -3778,7 +3778,9 @@ Node.prototype._showSortModal = function () {
           sortBy.appendChild(option);
         });
 
-        ok.onclick = function () {
+        form.onsubmit = function (event) {
+          event.preventDefault();
+
           modal.close();
 
           var path = sortBy.value;
