@@ -11,6 +11,7 @@ div.jsoneditor-menu {
   color: white;
   background-color: #3883fa;
   border-bottom: 1px solid #3883fa;
+  overflow: hidden;
 }
 
 div.jsoneditor-menu > button,

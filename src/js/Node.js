@@ -3732,56 +3732,75 @@ Node.prototype.showContextMenu = function (anchor, onClose) {
 Node.prototype._showSortModal = function () {
   var node = this;
 
+  var content = '<div class="pico-modal-contents">' +
+      '<form>' +
+      '<table>' +
+      '<tbody>' +
+      '<tr>' +
+      '  <td>Sort by:</td>' +
+      '  <td class="jsoneditor-modal-input">' +
+      '  <select id="sortBy" title="Select the nested field by which to sort the array or object">' +
+      '  </select>' +
+      '  </td>' +
+      '</tr>' +
+      '<tr>' +
+      '  <td>Direction:</td>' +
+      '  <td class="jsoneditor-modal-input">' +
+      '  <div id="direction" class="jsoneditor-button-group">' +
+      '<input type="button" ' +
+      'value="Ascending" ' +
+      'title="Sort the selected field in ascending order" ' +
+      'data-value="asc" ' +
+      'class="jsoneditor-button-first jsoneditor-button-asc"/>' +
+      '<input type="button" ' +
+      'value="Descending" ' +
+      'title="Sort the selected field in descending order" ' +
+      'data-value="desc" ' +
+      'class="jsoneditor-button-last jsoneditor-button-desc"/>' +
+      '  </div>' +
+      '  </td>' +
+      '</tr>' +
+      '<tr>' +
+      '<td colspan="2" class="jsoneditor-modal-input">' +
+      '  <input type="submit" id="ok" value="Sort" />' +
+      '</td>' +
+      '</tr>' +
+      '</tbody>' +
+      '</table>' +
+      '</form>' +
+      '</div>';
+
   picoModal({
     parent: this.editor.frame,
-    content: '<div class="pico-modal-contents">' +
-        '<form>' +
-        '<table>' +
-        '<tbody>' +
-        '<tr>' +
-        '  <td>Sort by:</td>' +
-        '  <td class="jsoneditor-modal-input">' +
-        '  <select id="sortBy" title="A nested field on which to sort the array or object">' +
-        '  </select>' +
-        '  </td>' +
-        '</tr>' +
-        '  <tr>' +
-        '  <td>Direction:</td>' +
-        '  <td class="jsoneditor-modal-input">' +
-        '  <select id="direction">' +
-        '    <option value="asc" selected>Ascending</option>' +
-        '    <option value="desc">Descending</option>' +
-        '  </select>' +
-        '  </td>' +
-        '</tr>' +
-        '<tr>' +
-        '<td colspan="2" class="jsoneditor-modal-input">' +
-        '  <input type="submit" id="ok" value="Sort" />' +
-        '</td>' +
-        '</tr>' +
-        '</tbody>' +
-        '</table>' +
-        '</form>' +
-        '</div>',
+    content: content,
     overlayClass: 'jsoneditor-modal-overlay',
     modalClass: 'jsoneditor-modal'
   })
       .afterCreate(function (modal) {
+        var form = modal.modalElem().querySelector('form');
         var sortBy = modal.modalElem().querySelector('#sortBy');
         var direction = modal.modalElem().querySelector('#direction');
-        var form = modal.modalElem().querySelector('form');
 
-        node.getSortablePaths().sort().forEach(function (path) {
+        var paths = node.getSortablePaths().sort();
+
+        paths.forEach(function (path) {
           var option = document.createElement('option');
           option.text = path;
           option.value = path;
           sortBy.appendChild(option);
         });
 
-        if (node.sortedBy) {
-          sortBy.value = node.sortedBy.path;
-          direction.value = node.sortedBy.direction;
+        function setDirection(value) {
+          direction.value = value;
+          direction.className = 'jsoneditor-button-group jsoneditor-button-group-value-' + direction.value;
         }
+
+        sortBy.value = node.sortedBy ? node.sortedBy.path : paths[0];
+        setDirection(node.sortedBy ? node.sortedBy.direction : 'asc');
+
+        direction.onclick = function (event) {
+          setDirection(event.target.getAttribute('data-value'));
+        };
 
         form.onsubmit = function (event) {
           event.preventDefault();
@@ -3798,6 +3817,9 @@ Node.prototype._showSortModal = function () {
 
           node.sort(pathArray, direction.value)
         };
+      })
+      .afterClose(function (modal) {
+        modal.destroy();
       })
       .show();
 };

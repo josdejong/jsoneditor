@@ -273,6 +273,7 @@ div.jsoneditor-contextmenu button.jsoneditor-type-modes > div.jsoneditor-icon {
 
 .jsoneditor-modal {
   position: absolute !important;
+  max-width: 100% !important;
 
   border-radius: 2px !important;
   padding: 30px 20px 10px 20px !important;
@@ -296,6 +297,7 @@ div.jsoneditor-contextmenu button.jsoneditor-type-modes > div.jsoneditor-icon {
 .jsoneditor-modal table td.jsoneditor-modal-input {
   text-align: right;
   padding-right: 0;
+  white-space: nowrap;
 }
 
 .jsoneditor-modal select {
@@ -328,6 +330,31 @@ div.jsoneditor-contextmenu button.jsoneditor-type-modes > div.jsoneditor-icon {
   -webkit-appearance: none;
   -moz-appearance: none;
   appearance: none;
+}
+
+.jsoneditor-modal .jsoneditor-button-group input {
+  padding: 4px 10px;
+  margin: 0;
+  border-radius: 0;
+  border-left-style: none;
+}
+
+.jsoneditor-modal .jsoneditor-button-group input.jsoneditor-button-first {
+  border-top-left-radius: 3px;
+  border-bottom-left-radius: 3px;
+  border-left-style: solid;
+}
+
+.jsoneditor-modal .jsoneditor-button-group input.jsoneditor-button-last {
+  border-top-right-radius: 3px;
+  border-bottom-right-radius: 3px;
+}
+
+.jsoneditor-modal .jsoneditor-button-group.jsoneditor-button-group-value-asc input.jsoneditor-button-asc,
+.jsoneditor-modal .jsoneditor-button-group.jsoneditor-button-group-value-desc input.jsoneditor-button-desc {
+  background: #3883fa;
+  border-color: #3883fa;
+  color: white;
 }
 
 .jsoneditor-modal input {
