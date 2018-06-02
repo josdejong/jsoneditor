@@ -3749,8 +3749,8 @@ Node.prototype._showSortModal = function () {
         '  <td>Direction:</td>' +
         '  <td class="jsoneditor-modal-input">' +
         '  <select id="direction">' +
-        '    <option value="asc" selected>asc</option>' +
-        '    <option value="desc">desc</option>' +
+        '    <option value="asc" selected>Ascending</option>' +
+        '    <option value="desc">Descending</option>' +
         '  </select>' +
         '  </td>' +
         '</tr>' +
@@ -3778,6 +3778,11 @@ Node.prototype._showSortModal = function () {
           sortBy.appendChild(option);
         });
 
+        if (node.sortedBy) {
+          sortBy.value = node.sortedBy.path;
+          direction.value = node.sortedBy.direction;
+        }
+
         form.onsubmit = function (event) {
           event.preventDefault();
 
@@ -3785,6 +3790,11 @@ Node.prototype._showSortModal = function () {
 
           var path = sortBy.value;
           var pathArray = (path === '.') ? [] : path.split('.').slice(1);
+
+          node.sortedBy = {
+            path: path,
+            direction: direction.value
+          };
 
           node.sort(pathArray, direction.value)
         };

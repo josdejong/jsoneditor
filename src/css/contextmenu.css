@@ -276,6 +276,7 @@ div.jsoneditor-contextmenu button.jsoneditor-type-modes > div.jsoneditor-icon {
 
   border-radius: 2px !important;
   padding: 30px 20px 10px 20px !important;
+  box-shadow: 2px 2px 12px rgba(128, 128, 128, 0.3) !important;
 }
 
 .jsoneditor-modal table td {
@@ -316,7 +317,7 @@ div.jsoneditor-contextmenu button.jsoneditor-type-modes > div.jsoneditor-icon {
 }
 
 .jsoneditor-modal select {
-  padding: 6px 28px 6px 10px;
+  padding: 4px 28px 4px 10px;
 
   /* https://stackoverflow.com/questions/20366166/bootstrap-3-styled-select-dropdown-looks-ugly-in-firefox-on-os-x */
   background: #f5f5f5 url("data:image/svg+xml,\
@@ -330,5 +331,5 @@ div.jsoneditor-contextmenu button.jsoneditor-type-modes > div.jsoneditor-icon {
 }
 
 .jsoneditor-modal input {
-  padding: 6px 20px;
+  padding: 4px 20px;
 }
