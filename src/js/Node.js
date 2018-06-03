@@ -3741,8 +3741,10 @@ Node.prototype._showSortModal = function () {
       '<tr>' +
       '  <td>' + translate('sortFieldLabel') + ' </td>' +
       '  <td class="jsoneditor-modal-input">' +
-      '  <select id="field" title="' + translate('sortFieldTitle') + '">' +
-      '  </select>' +
+      '  <div class="jsoneditor-select-wrapper">' +
+      '    <select id="field" title="' + translate('sortFieldTitle') + '">' +
+      '    </select>' +
+      '  </div>' +
       '  </td>' +
       '</tr>' +
       '<tr>' +

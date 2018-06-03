@@ -321,10 +321,6 @@ div.jsoneditor-contextmenu button.jsoneditor-type-modes > div.jsoneditor-icon {
   padding-top: 15px;
 }
 
-.jsoneditor-modal select {
-  min-width: 100px;
-}
-
 .jsoneditor-modal .pico-close {
   background: none !important;
   font-size: 24px !important;
@@ -342,20 +338,40 @@ div.jsoneditor-contextmenu button.jsoneditor-type-modes > div.jsoneditor-icon {
   cursor: pointer;
 }
 
-.jsoneditor-modal select {
-  padding: 3px 28px 3px 10px;
-  min-width: 100%;
-  max-width: 300px;
+.jsoneditor-modal .jsoneditor-select-wrapper {
+    position: relative;
+}
 
-  /* https://stackoverflow.com/questions/20366166/bootstrap-3-styled-select-dropdown-looks-ugly-in-firefox-on-os-x */
-  background: #f5f5f5 url("data:image/svg+xml,\
-      <svg version='1.1' xmlns='http://www.w3.org/2000/svg' width='14px'\
-           height='14px' viewBox='0 0 1200 1000' fill='rgb(77,77,77)'>\
-        <path d='M1100 411l-198 -199l-353 353l-353 -353l-197 199l551 551z'/>\
-      </svg>") no-repeat calc(100% - 5px) 50%;
-  -webkit-appearance: none;
-  -moz-appearance: none;
-  appearance: none;
+.jsoneditor-modal .jsoneditor-select-wrapper:after {
+    content: "";
+    width: 0;
+    height: 0;
+    border-left: 5px solid transparent;
+    border-right: 5px solid transparent;
+    border-top: 6px solid #666;
+    position: absolute;
+    right: 8px;
+    top: 10px;
+    pointer-events: none;
+}
+
+.jsoneditor-modal select {
+    padding: 3px 24px 3px 10px;
+    width: 100%;
+    max-width: 300px;
+
+    -webkit-appearance:none;
+    -moz-appearance:none;
+    appearance: none;
+
+    text-indent: 0;
+    text-overflow: "";
+    font-size: inherit;
+    line-height: inherit;
+}
+
+.jsoneditor-modal select::-ms-expand {
+    display: none;
 }
 
 .jsoneditor-modal .jsoneditor-button-group input {
