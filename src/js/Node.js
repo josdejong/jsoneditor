@@ -3780,6 +3780,7 @@ Node.prototype._showSortModal = function () {
   })
       .afterCreate(function (modal) {
         var form = modal.modalElem().querySelector('form');
+        var ok = modal.modalElem().querySelector('#ok');
         var field = modal.modalElem().querySelector('#field');
         var direction = modal.modalElem().querySelector('#direction');
 
@@ -3804,8 +3805,9 @@ Node.prototype._showSortModal = function () {
           setDirection(event.target.getAttribute('data-value'));
         };
 
-        form.onsubmit = function (event) {
+        ok.onclick = function (event) {
           event.preventDefault();
+          event.stopPropagation();
 
           modal.close();
 
@@ -3819,6 +3821,10 @@ Node.prototype._showSortModal = function () {
 
           node.sort(pathArray, direction.value)
         };
+
+        if (form) { // form is not available when JSONEditor is created inside a form
+          form.onsubmit = ok.onclick;
+        }
       })
       .afterClose(function (modal) {
         modal.destroy();
