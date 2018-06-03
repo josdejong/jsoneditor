@@ -1,6 +1,7 @@
 'use strict';
 
 var ContextMenu = require('./ContextMenu');
+var translate = require('./i18n').translate;
 
 /**
  * Creates a component that visualize path selection in tree based editors
@@ -14,23 +15,25 @@ function TreePath(container) {
     container.appendChild(this.path);
     this.reset();
   }
-};
+}
 
 /**
  * Reset component to initial status
  */
 TreePath.prototype.reset = function () {
-  this.path.innerHTML = '';
-}
+  this.path.innerHTML = translate('selectNode');
+};
 
 /**
  * Renders the component UI according to a given path objects
- * @param {Array<name: String, childs: Array>} pathObjs a list of path objects
+ * @param {Array<{name: String, childs: Array}>} pathObjs a list of path objects
  * 
  */
 TreePath.prototype.setPath = function (pathObjs) {
   var me = this;
-  this.reset();
+
+  this.path.innerHTML = '';
+
   if (pathObjs && pathObjs.length) {
     pathObjs.forEach(function (pathObj, idx) {
       var pathEl = document.createElement('span');
@@ -75,13 +78,13 @@ TreePath.prototype.setPath = function (pathObjs) {
     if (this.selectionCallback) {
       this.selectionCallback(pathObj);
     }
-  };
+  }
 
   function _onContextMenuItemClick(pathObj, selection) {
     if (this.contextMenuCallback) {
       this.contextMenuCallback(pathObj, selection);
     }
-  };
+  }
 };
 
 /**

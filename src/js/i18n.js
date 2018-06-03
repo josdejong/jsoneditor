@@ -33,6 +33,7 @@ var _defs = {
         'removeText': 'Remove',
         'removeTitle': 'Remove selected fields (Ctrl+Del)',
         'removeField': 'Remove this field (Ctrl+Del)',
+        'selectANode': 'Select a node...',
         'showAll': 'show all',
         'showMore': 'show more',
         'showMoreStatus': 'displaying ${visibleChilds} of ${totalChilds} items.',
@@ -93,6 +94,8 @@ var _defs = {
         'removeText': 'Remover',
         'removeTitle': 'Remover campos selecionados (Ctrl+Del)',
         'removeField': 'Remover este campo (Ctrl+Del)',
+        // TODO: correctly translate selectNode
+        'selectNode': 'Select a node...',
         // TODO: correctly translate showAll
         'showAll': 'mostre tudo',
         // TODO: correctly translate showMore

@@ -3732,7 +3732,6 @@ Node.prototype.showContextMenu = function (anchor, onClose) {
 Node.prototype._showSortModal = function () {
   var node = this;
 
-  // TODO: escape the translated text
   var content = '<div class="pico-modal-contents">' +
       '<div class="pico-modal-header">' + translate('sort') + '</div>' +
       '<form>' +

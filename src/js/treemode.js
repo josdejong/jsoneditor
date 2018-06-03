@@ -296,6 +296,10 @@ treemode.clear = function () {
     this.tbody.removeChild(this.node.getDom());
     delete this.node;
   }
+
+  if (this.treePath) {
+    this.treePath.reset();
+  }
 };
 
 /**
