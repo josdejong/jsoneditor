@@ -783,6 +783,139 @@ div.jsoneditor-contextmenu button.jsoneditor-type-modes > div.jsoneditor-icon {
   background-image: none;
   width: 6px;
 }
+
+/* pico modal styling */
+
+.jsoneditor-modal-overlay {
+  position: absolute !important;
+  background: rgb(1,1,1) !important;
+  opacity: 0.3 !important;
+}
+
+.jsoneditor-modal {
+  position: absolute !important;
+  max-width: 100% !important;
+  border-radius: 2px !important;
+  padding: 45px 15px 15px 15px !important;
+  box-shadow: 2px 2px 12px rgba(128, 128, 128, 0.3) !important;
+}
+
+.jsoneditor-modal .pico-modal-header {
+  position: absolute;
+  box-sizing: border-box;
+  top: 0;
+  left: 0;
+  width: 100%;
+  padding: 0 10px;
+  height: 30px;
+  line-height: 30px;
+  font-family: arial, sans-serif;
+  font-size: 11pt;
+  background: #3883fa;
+  color: white;
+}
+
+.jsoneditor-modal table td {
+  padding: 5px 0;
+  padding-right: 20px;
+  text-align: left;
+  vertical-align: middle;
+  font-size: 10pt;
+  font-family: arial, sans-serif;
+  color: #4d4d4d;
+}
+
+
+
+.jsoneditor-modal table td.jsoneditor-modal-input {
+  text-align: right;
+  padding-right: 0;
+  white-space: nowrap;
+}
+
+.jsoneditor-modal table td.jsoneditor-modal-actions {
+  padding-top: 15px;
+}
+
+.jsoneditor-modal .pico-close {
+  background: none !important;
+  font-size: 24px !important;
+  top: 7px !important;
+  right: 7px !important;
+  color: white;
+}
+
+.jsoneditor-modal select,
+.jsoneditor-modal input {
+  background: #f5f5f5;
+  border: 1px solid #d3d3d3;
+  color: #4d4d4d;
+  border-radius: 3px;
+  cursor: pointer;
+}
+
+.jsoneditor-modal .jsoneditor-select-wrapper {
+  position: relative;
+}
+
+.jsoneditor-modal .jsoneditor-select-wrapper:after {
+  content: "";
+  width: 0;
+  height: 0;
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-top: 6px solid #666;
+  position: absolute;
+  right: 8px;
+  top: 10px;
+  pointer-events: none;
+}
+
+.jsoneditor-modal select {
+  padding: 3px 24px 3px 10px;
+  width: 100%;
+  max-width: 300px;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  text-indent: 0;
+  text-overflow: "";
+  font-size: inherit;
+  line-height: inherit;
+}
+
+.jsoneditor-modal select::-ms-expand {
+  display: none;
+}
+
+.jsoneditor-modal .jsoneditor-button-group input {
+  padding: 4px 10px;
+  margin: 0;
+  border-radius: 0;
+  border-left-style: none;
+}
+
+.jsoneditor-modal .jsoneditor-button-group input.jsoneditor-button-first {
+  border-top-left-radius: 3px;
+  border-bottom-left-radius: 3px;
+  border-left-style: solid;
+}
+
+.jsoneditor-modal .jsoneditor-button-group input.jsoneditor-button-last {
+  border-top-right-radius: 3px;
+  border-bottom-right-radius: 3px;
+}
+
+.jsoneditor-modal .jsoneditor-button-group.jsoneditor-button-group-value-asc input.jsoneditor-button-asc,
+.jsoneditor-modal .jsoneditor-button-group.jsoneditor-button-group-value-desc input.jsoneditor-button-desc {
+  background: #3883fa;
+  border-color: #3883fa;
+  color: white;
+}
+
+.jsoneditor-modal input {
+  padding: 4px 20px;
+}
 div.jsoneditor-menu {
   width: 100%;
   height: 35px;
@@ -1075,12 +1208,7 @@ div.jsoneditor-navigation-bar {
   box-sizing: border-box;
   color: #808080;
   background-color: #ebebeb;
+  overflow: hidden;
+  font-family: arial, sans-serif;
   font-size: 10pt;
-}
-
-div.jsoneditor-navigation-bar.nav-bar-empty:after {
-  content: 'Select a node ...';
-  color: rgba(104, 104, 91, 0.56);
-  position: absolute;
-  margin-left: 5px;
 }

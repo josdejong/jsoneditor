@@ -24,8 +24,8 @@
  * Copyright (c) 2011-2017 Jos de Jong, http://jsoneditoronline.org
  *
  * @author  Jos de Jong, <wjosdejong@gmail.com>
- * @version 5.16.0
- * @date    2018-05-23
+ * @version 5.17.0
+ * @date    2018-06-03
  */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
@@ -94,7 +94,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	}
 
 	var treemode = __webpack_require__(51);
-	var textmode = __webpack_require__(66);
+	var textmode = __webpack_require__(67);
 	var util = __webpack_require__(54);
 
 	/**
@@ -8050,9 +8050,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	var ContextMenu = __webpack_require__(57);
 	var TreePath = __webpack_require__(59);
 	var Node = __webpack_require__(60);
-	var ModeSwitcher = __webpack_require__(64);
+	var ModeSwitcher = __webpack_require__(65);
 	var util = __webpack_require__(54);
-	var autocomplete = __webpack_require__(65);
+	var autocomplete = __webpack_require__(66);
 	var translate = __webpack_require__(58).translate;
 	var setLanguages = __webpack_require__(58).setLanguages;
 	var setLanguage = __webpack_require__(58).setLanguage;
@@ -8338,6 +8338,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	    this.node.collapse();
 	    this.tbody.removeChild(this.node.getDom());
 	    delete this.node;
+	  }
+
+	  if (this.treePath) {
+	    this.treePath.reset();
 	  }
 	};
 
@@ -9771,15 +9775,15 @@ return /******/ (function(modules) { // webpackBootstrap
 	      'undo': function (params) {
 	        var node = params.node;
 	        node.hideChilds();
-	        node.sort = params.oldSort;
 	        node.childs = params.oldChilds;
+	        node._updateDomIndexes();
 	        node.showChilds();
 	      },
 	      'redo': function (params) {
 	        var node = params.node;
 	        node.hideChilds();
-	        node.sort = params.newSort;
 	        node.childs = params.newChilds;
+	        node._updateDomIndexes();
 	        node.showChilds();
 	      }
 	    }
@@ -12156,15 +12160,24 @@ return /******/ (function(modules) { // webpackBootstrap
 	        'insertTitle': 'Insert a new field with type \'auto\' before this field (Ctrl+Ins)',
 	        'insertSub': 'Select the type of the field to be inserted',
 	        'object': 'Object',
+	        'ok': 'Ok',
 	        'redo': 'Redo (Ctrl+Shift+Z)',
 	        'removeText': 'Remove',
 	        'removeTitle': 'Remove selected fields (Ctrl+Del)',
 	        'removeField': 'Remove this field (Ctrl+Del)',
+	        'selectANode': 'Select a node...',
 	        'showAll': 'show all',
 	        'showMore': 'show more',
 	        'showMoreStatus': 'displaying ${visibleChilds} of ${totalChilds} items.',
 	        'sort': 'Sort',
 	        'sortTitle': 'Sort the childs of this ',
+	        'sortFieldLabel': 'Field:',
+	        'sortDirectionLabel': 'Direction:',
+	        'sortFieldTitle': 'Select the nested field by which to sort the array or object',
+	        'sortAscending': 'Ascending',
+	        'sortAscendingTitle': 'Sort the selected field in ascending order',
+	        'sortDescending': 'Descending',
+	        'sortDescendingTitle': 'Sort the selected field in descending order',
 	        'string': 'String',
 	        'type': 'Type',
 	        'typeTitle': 'Change the type of this field',
@@ -12208,10 +12221,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	        'insertTitle': 'Inserir um novo campo do tipo \'auto\' antes deste campo (Ctrl+Ins)',
 	        'insertSub': 'Selecionar o tipo de campo a ser inserido',
 	        'object': 'Objeto',
+	        'ok': 'Ok',
 	        'redo': 'Refazer (Ctrl+Shift+Z)',
 	        'removeText': 'Remover',
 	        'removeTitle': 'Remover campos selecionados (Ctrl+Del)',
 	        'removeField': 'Remover este campo (Ctrl+Del)',
+	        // TODO: correctly translate selectNode
+	        'selectNode': 'Select a node...',
 	        // TODO: correctly translate showAll
 	        'showAll': 'mostre tudo',
 	        // TODO: correctly translate showMore
@@ -12220,6 +12236,20 @@ return /******/ (function(modules) { // webpackBootstrap
 	        'showMoreStatus': 'exibindo ${visibleChilds} de ${totalChilds} itens.',
 	        'sort': 'Organizar',
 	        'sortTitle': 'Organizar os filhos deste ',
+	        // TODO: correctly translate sortFieldLabel
+	        'sortFieldLabel': 'Field:',
+	        // TODO: correctly translate sortDirectionLabel
+	        'sortDirectionLabel': 'Direction:',
+	        // TODO: correctly translate sortFieldTitle
+	        'sortFieldTitle': 'Select the nested field by which to sort the array or object',
+	        // TODO: correctly translate sortAscending
+	        'sortAscending': 'Ascending',
+	        // TODO: correctly translate sortAscendingTitle
+	        'sortAscendingTitle': 'Sort the selected field in ascending order',
+	        // TODO: correctly translate sortDescending
+	        'sortDescending': 'Descending',
+	        // TODO: correctly translate sortDescendingTitle
+	        'sortDescendingTitle': 'Sort the selected field in descending order',
 	        'string': 'Texto',
 	        'type': 'Tipo',
 	        'typeTitle': 'Mudar o tipo deste campo',
@@ -12302,6 +12332,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	'use strict';
 
 	var ContextMenu = __webpack_require__(57);
+	var translate = __webpack_require__(58).translate;
 
 	/**
 	 * Creates a component that visualize path selection in tree based editors
@@ -12315,23 +12346,25 @@ return /******/ (function(modules) { // webpackBootstrap
 	    container.appendChild(this.path);
 	    this.reset();
 	  }
-	};
+	}
 
 	/**
 	 * Reset component to initial status
 	 */
 	TreePath.prototype.reset = function () {
-	  this.path.innerHTML = '';
-	}
+	  this.path.innerHTML = translate('selectNode');
+	};
 
 	/**
 	 * Renders the component UI according to a given path objects
-	 * @param {Array<name: String, childs: Array>} pathObjs a list of path objects
+	 * @param {Array<{name: String, childs: Array}>} pathObjs a list of path objects
 	 * 
 	 */
 	TreePath.prototype.setPath = function (pathObjs) {
 	  var me = this;
-	  this.reset();
+
+	  this.path.innerHTML = '';
+
 	  if (pathObjs && pathObjs.length) {
 	    pathObjs.forEach(function (pathObj, idx) {
 	      var pathEl = document.createElement('span');
@@ -12376,13 +12409,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	    if (this.selectionCallback) {
 	      this.selectionCallback(pathObj);
 	    }
-	  };
+	  }
 
 	  function _onContextMenuItemClick(pathObj, selection) {
 	    if (this.contextMenuCallback) {
 	      this.contextMenuCallback(pathObj, selection);
 	    }
-	  };
+	  }
 	};
 
 	/**
@@ -12414,9 +12447,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	'use strict';
 
 	var naturalSort = __webpack_require__(61);
+	var picoModal = __webpack_require__(62);
 	var ContextMenu = __webpack_require__(57);
-	var appendNodeFactory = __webpack_require__(62);
-	var showMoreNodeFactory = __webpack_require__(63);
+	var appendNodeFactory = __webpack_require__(63);
+	var showMoreNodeFactory = __webpack_require__(64);
 	var util = __webpack_require__(54);
 	var translate = __webpack_require__(58).translate;
 
@@ -12802,7 +12836,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	    // sort object keys
 	    if (this.editor.options.sortObjectKeys === true) {
-	      this.sort('asc');
+	      this.sort([], 'asc');
 	    }
 	  }
 	  else {
@@ -15509,29 +15543,52 @@ return /******/ (function(modules) { // webpackBootstrap
 	/**
 	 * Sort the child's of the node. Only applicable when the node has type 'object'
 	 * or 'array'.
+	 * @param {String[]} path      Path of the child value to be compared
 	 * @param {String} direction   Sorting direction. Available values: "asc", "desc"
 	 * @private
 	 */
-	Node.prototype.sort = function (direction) {
+	Node.prototype.sort = function (path, direction) {
 	  if (!this._hasChilds()) {
 	    return;
 	  }
 
-	  var order = (direction == 'desc') ? -1 : 1;
-	  var prop = (this.type == 'array') ? 'value': 'field';
-	  this.hideChilds();
+	  this.hideChilds(); // sorting is faster when the childs are not attached to the dom
 
+	  // copy the childs array (the old one will be kept for an undo action
 	  var oldChilds = this.childs;
-	  var oldSortOrder = this.sortOrder;
-
-	  // copy the array (the old one will be kept for an undo action
 	  this.childs = this.childs.concat();
 
-	  // sort the arrays
-	  this.childs.sort(function (a, b) {
-	    return order * naturalSort(a[prop], b[prop]);
-	  });
-	  this.sortOrder = (order == 1) ? 'asc' : 'desc';
+	  // sort the childs array
+	  var order = (direction === 'desc') ? -1 : 1;
+
+	  if (this.type === 'object') {
+	    this.childs.sort(function (a, b) {
+	      return order * naturalSort(a.field, b.field);
+	    });
+	  }
+	  else { // this.type === 'array'
+	    this.childs.sort(function (a, b) {
+	      var nodeA = a.getNestedChild(path);
+	      var nodeB = b.getNestedChild(path);
+
+	      if (!nodeA) {
+	        return order;
+	      }
+	      if (!nodeB) {
+	        return -order;
+	      }
+
+	      var valueA = nodeA.value;
+	      var valueB = nodeB.value;
+
+	      if (typeof valueA !== 'string' && typeof valueB !== 'string') {
+	        // both values are a number, boolean, or null -> use simple, fast sorting
+	        return valueA > valueB ? order : valueA < valueB ? -order : 0;
+	      }
+
+	      return order * naturalSort(valueA, valueB);
+	    });
+	  }
 
 	  // update the index numbering
 	  this._updateDomIndexes();
@@ -15539,12 +15596,99 @@ return /******/ (function(modules) { // webpackBootstrap
 	  this.editor._onAction('sort', {
 	    node: this,
 	    oldChilds: oldChilds,
-	    oldSort: oldSortOrder,
-	    newChilds: this.childs,
-	    newSort: this.sortOrder
+	    newChilds: this.childs
 	  });
 
 	  this.showChilds();
+	};
+
+	/**
+	 * Get a nested child given a path with properties
+	 * @param {String[]} path
+	 * @returns {Node}
+	 */
+	Node.prototype.getNestedChild = function (path) {
+	  var i = 0;
+	  var child = this;
+
+	  while (child && i < path.length) {
+	    child = child.findChildByProperty(path[i]);
+	    i++;
+	  }
+
+	  return child;
+	};
+
+	/**
+	 * Find a child by property name
+	 * @param {string} prop
+	 * @return {Node | undefined} Returns the child node when found, or undefined otherwise
+	 */
+	Node.prototype.findChildByProperty = function(prop) {
+	  if (this.type !== 'object') {
+	    return undefined;
+	  }
+
+	  return this.childs.find(function (child) {
+	    return child.field === prop;
+	  });
+	};
+
+	/**
+	 * Get the paths of the sortable child paths of this node
+	 * @return {string[]}
+	 */
+	Node.prototype.getSortablePaths = function () {
+	  if (this.type === 'array') {
+	    if (this.childs.length > 0) {
+	      // sort on any of the property paths of nested objects
+	      var pathsMap = {};
+	      this.childs.forEach(function (child) {
+	        child._getSortablePaths(pathsMap, '');
+	      });
+
+	      return Object.keys(pathsMap).sort();
+	    }
+	    else {
+	      // empty array, you can sort though it doesn't do anything
+	      return [ '.' ];
+	    }
+	  }
+
+	  if (this.type === 'object') {
+	    // sort the object by its properties
+	    return [ '.' ];
+	  }
+
+	  return [];
+	};
+
+	/**
+	 * Get the paths of the sortable child paths of this node
+	 * @param {Object<String, boolean>} pathsMap
+	 * @param {string} rootPath
+	 */
+	Node.prototype._getSortablePaths = function (pathsMap, rootPath) {
+	  if (this.type === 'array') {
+	    // not sortable
+	  }
+	  else if (this.type === 'object') {
+	    this.childs.forEach(function (child) {
+	      if (child.type === 'object') {
+	        child._getSortablePaths(pathsMap, rootPath + '.' + child.field);
+	      }
+	      else if (child.type === 'array') {
+	        // not sortable
+	      }
+	      else { // type === 'auto' or type === 'string'
+	        var path = rootPath + '.' + child.field;
+	        pathsMap[path] = true;
+	      }
+	    });
+	  }
+	  else {
+	    pathsMap[rootPath + '.'] = true;
+	  }
 	};
 
 	/**
@@ -15883,32 +16027,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	  }
 
 	  if (this._hasChilds()) {
-	    var direction = ((this.sortOrder == 'asc') ? 'desc': 'asc');
 	    items.push({
 	      text: translate('sort'),
 	      title: translate('sortTitle') + this.type,
-	      className: 'jsoneditor-sort-' + direction,
+	      className: 'jsoneditor-sort-asc',
 	      click: function () {
-	        node.sort(direction);
-	      },
-	      submenu: [
-	        {
-	          text: translate('ascending'),
-	          className: 'jsoneditor-sort-asc',
-	          title: translate('ascendingTitle' , {type: this.type}),
-	          click: function () {
-	            node.sort('asc');
-	          }
-	        },
-	        {
-	          text: translate('descending'),
-	          className: 'jsoneditor-sort-desc',
-	          title: translate('descendingTitle' , {type: this.type}),
-	          click: function () {
-	            node.sort('desc');
-	          }
-	        }
-	      ]
+	        node._showSortModal()
+	      }
 	    });
 	  }
 
@@ -16044,6 +16169,114 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	  var menu = new ContextMenu(items, {close: onClose});
 	  menu.show(anchor, this.editor.content);
+	};
+
+	/**
+	 * Show advanced sorting modal
+	 * @private
+	 */
+	Node.prototype._showSortModal = function () {
+	  var node = this;
+
+	  var content = '<div class="pico-modal-contents">' +
+	      '<div class="pico-modal-header">' + translate('sort') + '</div>' +
+	      '<form>' +
+	      '<table>' +
+	      '<tbody>' +
+	      '<tr>' +
+	      '  <td>' + translate('sortFieldLabel') + ' </td>' +
+	      '  <td class="jsoneditor-modal-input">' +
+	      '  <div class="jsoneditor-select-wrapper">' +
+	      '    <select id="field" title="' + translate('sortFieldTitle') + '">' +
+	      '    </select>' +
+	      '  </div>' +
+	      '  </td>' +
+	      '</tr>' +
+	      '<tr>' +
+	      '  <td>' + translate('sortDirectionLabel') + ' </td>' +
+	      '  <td class="jsoneditor-modal-input">' +
+	      '  <div id="direction" class="jsoneditor-button-group">' +
+	      '<input type="button" ' +
+	      'value="' + translate('sortAscending') + '" ' +
+	      'title="'  + translate('sortAscendingTitle') + '" ' +
+	      'data-value="asc" ' +
+	      'class="jsoneditor-button-first jsoneditor-button-asc"/>' +
+	      '<input type="button" ' +
+	      'value="' + translate('sortDescending') + '" ' +
+	      'title="' + translate('sortDescendingTitle') + '" ' +
+	      'data-value="desc" ' +
+	      'class="jsoneditor-button-last jsoneditor-button-desc"/>' +
+	      '  </div>' +
+	      '  </td>' +
+	      '</tr>' +
+	      '<tr>' +
+	      '<td colspan="2" class="jsoneditor-modal-input jsoneditor-modal-actions">' +
+	      '  <input type="submit" id="ok" value="' + translate('ok') + '" />' +
+	      '</td>' +
+	      '</tr>' +
+	      '</tbody>' +
+	      '</table>' +
+	      '</form>' +
+	      '</div>';
+
+	  picoModal({
+	    parent: this.editor.frame,
+	    content: content,
+	    overlayClass: 'jsoneditor-modal-overlay',
+	    modalClass: 'jsoneditor-modal'
+	  })
+	      .afterCreate(function (modal) {
+	        var form = modal.modalElem().querySelector('form');
+	        var ok = modal.modalElem().querySelector('#ok');
+	        var field = modal.modalElem().querySelector('#field');
+	        var direction = modal.modalElem().querySelector('#direction');
+
+	        var paths = node.getSortablePaths().sort();
+
+	        paths.forEach(function (path) {
+	          var option = document.createElement('option');
+	          option.text = path;
+	          option.value = path;
+	          field.appendChild(option);
+	        });
+
+	        function setDirection(value) {
+	          direction.value = value;
+	          direction.className = 'jsoneditor-button-group jsoneditor-button-group-value-' + direction.value;
+	        }
+
+	        field.value = node.sortedBy ? node.sortedBy.path : paths[0];
+	        setDirection(node.sortedBy ? node.sortedBy.direction : 'asc');
+
+	        direction.onclick = function (event) {
+	          setDirection(event.target.getAttribute('data-value'));
+	        };
+
+	        ok.onclick = function (event) {
+	          event.preventDefault();
+	          event.stopPropagation();
+
+	          modal.close();
+
+	          var path = field.value;
+	          var pathArray = (path === '.') ? [] : path.split('.').slice(1);
+
+	          node.sortedBy = {
+	            path: path,
+	            direction: direction.value
+	          };
+
+	          node.sort(pathArray, direction.value)
+	        };
+
+	        if (form) { // form is not available when JSONEditor is created inside a form
+	          form.onsubmit = ok.onclick;
+	        }
+	      })
+	      .afterClose(function (modal) {
+	        modal.destroy();
+	      })
+	      .show();
 	};
 
 	/**
@@ -16244,6 +16477,615 @@ return /******/ (function(modules) { // webpackBootstrap
 
 /***/ },
 /* 62 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/**
+	 * Permission is hereby granted, free of charge, to any person obtaining a copy
+	 * of this software and associated documentation files (the "Software"), to deal
+	 * in the Software without restriction, including without limitation the rights
+	 * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+	 * copies of the Software, and to permit persons to whom the Software is
+	 * furnished to do so, subject to the following conditions:
+	 *
+	 * The above copyright notice and this permission notice shall be included in
+	 * all copies or substantial portions of the Software.
+	 *
+	 * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+	 * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+	 * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+	 * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+	 * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+	 * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+	 * SOFTWARE.
+	 */
+
+	(function (root, factory) {
+	    "use strict";
+
+	    if (true) {
+	        !(__WEBPACK_AMD_DEFINE_ARRAY__ = [], __WEBPACK_AMD_DEFINE_FACTORY__ = (factory), __WEBPACK_AMD_DEFINE_RESULT__ = (typeof __WEBPACK_AMD_DEFINE_FACTORY__ === 'function' ? (__WEBPACK_AMD_DEFINE_FACTORY__.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__)) : __WEBPACK_AMD_DEFINE_FACTORY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
+	    }
+	    else if (typeof module === 'object' && module.exports) {
+	        module.exports = factory();
+	    }
+	    else {
+	        root.picoModal = factory();
+	    }
+	}(this, function () {
+
+	    /**
+	     * A self-contained modal library
+	     */
+	    "use strict";
+
+	    /** Returns whether a value is a dom node */
+	    function isNode(value) {
+	        if ( typeof Node === "object" ) {
+	            return value instanceof Node;
+	        }
+	        else {
+	            return value && typeof value === "object" && typeof value.nodeType === "number";
+	        }
+	    }
+
+	    /** Returns whether a value is a string */
+	    function isString(value) {
+	        return typeof value === "string";
+	    }
+
+	    /**
+	     * Generates observable objects that can be watched and triggered
+	     */
+	    function observable() {
+	        var callbacks = [];
+	        return {
+	            watch: callbacks.push.bind(callbacks),
+	            trigger: function(context, detail) {
+
+	                var unprevented = true;
+	                var event = {
+	                    detail: detail,
+	                    preventDefault: function preventDefault () {
+	                        unprevented = false;
+	                    }
+	                };
+
+	                for (var i = 0; i < callbacks.length; i++) {
+	                    callbacks[i](context, event);
+	                }
+
+	                return unprevented;
+	            }
+	        };
+	    }
+
+
+	    /** Whether an element is hidden */
+	    function isHidden ( elem ) {
+	        // @see http://stackoverflow.com/questions/19669786
+	        return window.getComputedStyle(elem).display === 'none';
+	    }
+
+
+	    /**
+	     * A small interface for creating and managing a dom element
+	     */
+	    function Elem( elem ) {
+	        this.elem = elem;
+	    }
+
+	    /** Creates a new div */
+	    Elem.make = function ( parent, tag ) {
+	        if ( typeof parent === "string" ) {
+	            parent = document.querySelector(parent);
+	        }
+	        var elem = document.createElement(tag || 'div');
+	        (parent || document.body).appendChild(elem);
+	        return new Elem(elem);
+	    };
+
+	    Elem.prototype = {
+
+	        /** Creates a child of this node */
+	        child: function (tag) {
+	            return Elem.make(this.elem, tag);
+	        },
+
+	        /** Applies a set of styles to an element */
+	        stylize: function(styles) {
+	            styles = styles || {};
+
+	            if ( typeof styles.opacity !== "undefined" ) {
+	                styles.filter = "alpha(opacity=" + (styles.opacity * 100) + ")";
+	            }
+
+	            for (var prop in styles) {
+	                if (styles.hasOwnProperty(prop)) {
+	                    this.elem.style[prop] = styles[prop];
+	                }
+	            }
+
+	            return this;
+	        },
+
+	        /** Adds a class name */
+	        clazz: function (clazz) {
+	            this.elem.className += " " + clazz;
+	            return this;
+	        },
+
+	        /** Sets the HTML */
+	        html: function (content) {
+	            if ( isNode(content) ) {
+	                this.elem.appendChild( content );
+	            }
+	            else {
+	                this.elem.innerHTML = content;
+	            }
+	            return this;
+	        },
+
+	        /** Adds a click handler to this element */
+	        onClick: function(callback) {
+	            this.elem.addEventListener('click', callback);
+	            return this;
+	        },
+
+	        /** Removes this element from the DOM */
+	        destroy: function() {
+	            this.elem.parentNode.removeChild(this.elem);
+	        },
+
+	        /** Hides this element */
+	        hide: function() {
+	            this.elem.style.display = "none";
+	        },
+
+	        /** Shows this element */
+	        show: function() {
+	            this.elem.style.display = "block";
+	        },
+
+	        /** Sets an attribute on this element */
+	        attr: function ( name, value ) {
+	            if (value !== undefined) {
+	                this.elem.setAttribute(name, value);
+	            }
+	            return this;
+	        },
+
+	        /** Executes a callback on all the ancestors of an element */
+	        anyAncestor: function ( predicate ) {
+	            var elem = this.elem;
+	            while ( elem ) {
+	                if ( predicate( new Elem(elem) ) ) {
+	                    return true;
+	                }
+	                else {
+	                    elem = elem.parentNode;
+	                }
+	            }
+	            return false;
+	        },
+
+	        /** Whether this element is visible */
+	        isVisible: function () {
+	            return !isHidden(this.elem);
+	        }
+	    };
+
+
+	    /** Generates the grey-out effect */
+	    function buildOverlay( getOption, close ) {
+	        return Elem.make( getOption("parent") )
+	            .clazz("pico-overlay")
+	            .clazz( getOption("overlayClass", "") )
+	            .stylize({
+	                display: "none",
+	                position: "fixed",
+	                top: "0px",
+	                left: "0px",
+	                height: "100%",
+	                width: "100%",
+	                zIndex: 10000
+	            })
+	            .stylize(getOption('overlayStyles', {
+	                opacity: 0.5,
+	                background: "#000"
+	            }))
+	            .onClick(function () {
+	                if ( getOption('overlayClose', true) ) {
+	                    close();
+	                }
+	            });
+	    }
+
+	    // An auto incrementing ID assigned to each modal
+	    var autoinc = 1;
+
+	    /** Builds the content of a modal */
+	    function buildModal( getOption, close ) {
+	        var width = getOption('width', 'auto');
+	        if ( typeof width === "number" ) {
+	            width = "" + width + "px";
+	        }
+
+	        var id = getOption("modalId", "pico-" + autoinc++);
+
+	        var elem = Elem.make( getOption("parent") )
+	            .clazz("pico-content")
+	            .clazz( getOption("modalClass", "") )
+	            .stylize({
+	                display: 'none',
+	                position: 'fixed',
+	                zIndex: 10001,
+	                left: "50%",
+	                top: "38.1966%",
+	                maxHeight: '90%',
+	                boxSizing: 'border-box',
+	                width: width,
+	                '-ms-transform': 'translate(-50%,-38.1966%)',
+	                '-moz-transform': 'translate(-50%,-38.1966%)',
+	                '-webkit-transform': 'translate(-50%,-38.1966%)',
+	                '-o-transform': 'translate(-50%,-38.1966%)',
+	                transform: 'translate(-50%,-38.1966%)'
+	            })
+	            .stylize(getOption('modalStyles', {
+	                overflow: 'auto',
+	                backgroundColor: "white",
+	                padding: "20px",
+	                borderRadius: "5px"
+	            }))
+	            .html( getOption('content') )
+	            .attr("id", id)
+	            .attr("role", "dialog")
+	            .attr("aria-labelledby", getOption("ariaLabelledBy"))
+	            .attr("aria-describedby", getOption("ariaDescribedBy", id))
+	            .onClick(function (event) {
+	                var isCloseClick = new Elem(event.target).anyAncestor(function (elem) {
+	                    return /\bpico-close\b/.test(elem.elem.className);
+	                });
+	                if ( isCloseClick ) {
+	                    close();
+	                }
+	            });
+
+	        return elem;
+	    }
+
+	    /** Builds the close button */
+	    function buildClose ( elem, getOption ) {
+	        if ( getOption('closeButton', true) ) {
+	            return elem.child('button')
+	                .html( getOption('closeHtml', "&#xD7;") )
+	                .clazz("pico-close")
+	                .clazz( getOption("closeClass", "") )
+	                .stylize( getOption('closeStyles', {
+	                    borderRadius: "2px",
+	                    border: 0,
+	                    padding: 0,
+	                    cursor: "pointer",
+	                    height: "15px",
+	                    width: "15px",
+	                    position: "absolute",
+	                    top: "5px",
+	                    right: "5px",
+	                    fontSize: "16px",
+	                    textAlign: "center",
+	                    lineHeight: "15px",
+	                    background: "#CCC"
+	                }) )
+	                .attr("aria-label", getOption("close-label", "Close"));
+	        }
+	    }
+
+	    /** Builds a method that calls a method and returns an element */
+	    function buildElemAccessor( builder ) {
+	        return function () {
+	            return builder().elem;
+	        };
+	    }
+
+
+	    // An observable that is triggered whenever the escape key is pressed
+	    var escapeKey = observable();
+
+	    // An observable that is triggered when the user hits the tab key
+	    var tabKey = observable();
+
+	    /** A global event handler to detect the escape key being pressed */
+	    document.documentElement.addEventListener('keydown', function onKeyPress (event) {
+	        var keycode = event.which || event.keyCode;
+
+	        // If this is the escape key
+	        if ( keycode === 27 ) {
+	            escapeKey.trigger();
+	        }
+
+	        // If this is the tab key
+	        else if ( keycode === 9 ) {
+	            tabKey.trigger(event);
+	        }
+	    });
+
+
+	    /** Attaches focus management events */
+	    function manageFocus ( iface, isEnabled ) {
+
+	        /** Whether an element matches a selector */
+	        function matches ( elem, selector ) {
+	            var fn = elem.msMatchesSelector || elem.webkitMatchesSelector || elem.matches;
+	            return fn.call(elem, selector);
+	        }
+
+	        /**
+	         * Returns whether an element is focusable
+	         * @see http://stackoverflow.com/questions/18261595
+	         */
+	        function canFocus( elem ) {
+	            if (
+	                isHidden(elem) ||
+	                matches(elem, ":disabled") ||
+	                elem.hasAttribute("contenteditable")
+	            ) {
+	                return false;
+	            }
+	            else {
+	                return elem.hasAttribute("tabindex") ||
+	                    matches(elem, "input,select,textarea,button,a[href],area[href],iframe");
+	            }
+	        }
+
+	        /** Returns the first descendant that can be focused */
+	        function firstFocusable ( elem ) {
+	            var items = elem.getElementsByTagName("*");
+	            for (var i = 0; i < items.length; i++) {
+	                if ( canFocus(items[i]) ) {
+	                    return items[i];
+	                }
+	            }
+	        }
+
+	        /** Returns the last descendant that can be focused */
+	        function lastFocusable ( elem ) {
+	            var items = elem.getElementsByTagName("*");
+	            for (var i = items.length; i--;) {
+	                if ( canFocus(items[i]) ) {
+	                    return items[i];
+	                }
+	            }
+	        }
+
+	        // The element focused before the modal opens
+	        var focused;
+
+	        // Records the currently focused element so state can be returned
+	        // after the modal closes
+	        iface.beforeShow(function getActiveFocus() {
+	            focused = document.activeElement;
+	        });
+
+	        // Shift focus into the modal
+	        iface.afterShow(function focusModal() {
+	            if ( isEnabled() ) {
+	                var focusable = firstFocusable(iface.modalElem());
+	                if ( focusable ) {
+	                    focusable.focus();
+	                }
+	            }
+	        });
+
+	        // Restore the previously focused element when the modal closes
+	        iface.afterClose(function returnFocus() {
+	            if ( isEnabled() && focused ) {
+	                focused.focus();
+	            }
+	            focused = null;
+	        });
+
+	        // Capture tab key presses and loop them within the modal
+	        tabKey.watch(function tabKeyPress (event) {
+	            if ( isEnabled() && iface.isVisible() ) {
+	                var first = firstFocusable(iface.modalElem());
+	                var last = lastFocusable(iface.modalElem());
+
+	                var from = event.shiftKey ? first : last;
+	                if ( from === document.activeElement ) {
+	                    (event.shiftKey ? last : first).focus();
+	                    event.preventDefault();
+	                }
+	            }
+	        });
+	    }
+
+	    /** Manages setting the 'overflow: hidden' on the body tag */
+	    function manageBodyOverflow(iface, isEnabled) {
+	        var origOverflow;
+	        var body = new Elem(document.body);
+
+	        iface.beforeShow(function () {
+	            // Capture the current values so they can be restored
+	            origOverflow = body.elem.style.overflow;
+
+	            if (isEnabled()) {
+	                body.stylize({ overflow: "hidden" });
+	            }
+	        });
+
+	        iface.afterClose(function () {
+	            body.stylize({ overflow: origOverflow });
+	        });
+	    }
+
+	    /**
+	     * Displays a modal
+	     */
+	    return function picoModal(options) {
+
+	        if ( isString(options) || isNode(options) ) {
+	            options = { content: options };
+	        }
+
+	        var afterCreateEvent = observable();
+	        var beforeShowEvent = observable();
+	        var afterShowEvent = observable();
+	        var beforeCloseEvent = observable();
+	        var afterCloseEvent = observable();
+
+	        /**
+	         * Returns a named option if it has been explicitly defined. Otherwise,
+	         * it returns the given default value
+	         */
+	        function getOption ( opt, defaultValue ) {
+	            var value = options[opt];
+	            if ( typeof value === "function" ) {
+	                value = value( defaultValue );
+	            }
+	            return value === undefined ? defaultValue : value;
+	        }
+
+
+	        // The various DOM elements that constitute the modal
+	        var modalElem = build.bind(window, 'modal');
+	        var shadowElem = build.bind(window, 'overlay');
+	        var closeElem = build.bind(window, 'close');
+
+	        // This will eventually contain the modal API returned to the user
+	        var iface;
+
+
+	        /** Hides this modal */
+	        function forceClose (detail) {
+	            shadowElem().hide();
+	            modalElem().hide();
+	            afterCloseEvent.trigger(iface, detail);
+	        }
+
+	        /** Gracefully hides this modal */
+	        function close (detail) {
+	            if ( beforeCloseEvent.trigger(iface, detail) ) {
+	                forceClose(detail);
+	            }
+	        }
+
+	        /** Wraps a method so it returns the modal interface */
+	        function returnIface ( callback ) {
+	            return function () {
+	                callback.apply(this, arguments);
+	                return iface;
+	            };
+	        }
+
+
+	        // The constructed dom nodes
+	        var built;
+
+	        /** Builds a method that calls a method and returns an element */
+	        function build (name, detail) {
+	            if ( !built ) {
+	                var modal = buildModal(getOption, close);
+	                built = {
+	                    modal: modal,
+	                    overlay: buildOverlay(getOption, close),
+	                    close: buildClose(modal, getOption)
+	                };
+	                afterCreateEvent.trigger(iface, detail);
+	            }
+	            return built[name];
+	        }
+
+	        iface = {
+
+	            /** Returns the wrapping modal element */
+	            modalElem: buildElemAccessor(modalElem),
+
+	            /** Returns the close button element */
+	            closeElem: buildElemAccessor(closeElem),
+
+	            /** Returns the overlay element */
+	            overlayElem: buildElemAccessor(shadowElem),
+
+	            /** Builds the dom without showing the modal */
+	            buildDom: returnIface(build.bind(null, null)),
+
+	            /** Returns whether this modal is currently being shown */
+	            isVisible: function () {
+	                return !!(built && modalElem && modalElem().isVisible());
+	            },
+
+	            /** Shows this modal */
+	            show: function (detail) {
+	                if ( beforeShowEvent.trigger(iface, detail) ) {
+	                    shadowElem().show();
+	                    closeElem();
+	                    modalElem().show();
+	                    afterShowEvent.trigger(iface, detail);
+	                }
+	                return this;
+	            },
+
+	            /** Hides this modal */
+	            close: returnIface(close),
+
+	            /**
+	             * Force closes this modal. This will not call beforeClose
+	             * events and will just immediately hide the modal
+	             */
+	            forceClose: returnIface(forceClose),
+
+	            /** Destroys this modal */
+	            destroy: function () {
+	                modalElem().destroy();
+	                shadowElem().destroy();
+	                shadowElem = modalElem = closeElem = undefined;
+	            },
+
+	            /**
+	             * Updates the options for this modal. This will only let you
+	             * change options that are re-evaluted regularly, such as
+	             * `overlayClose`.
+	             */
+	            options: function ( opts ) {
+	                Object.keys(opts).map(function (key) {
+	                    options[key] = opts[key];
+	                });
+	            },
+
+	            /** Executes after the DOM nodes are created */
+	            afterCreate: returnIface(afterCreateEvent.watch),
+
+	            /** Executes a callback before this modal is closed */
+	            beforeShow: returnIface(beforeShowEvent.watch),
+
+	            /** Executes a callback after this modal is shown */
+	            afterShow: returnIface(afterShowEvent.watch),
+
+	            /** Executes a callback before this modal is closed */
+	            beforeClose: returnIface(beforeCloseEvent.watch),
+
+	            /** Executes a callback after this modal is closed */
+	            afterClose: returnIface(afterCloseEvent.watch)
+	        };
+
+	        manageFocus(iface, getOption.bind(null, "focus", true));
+
+	        manageBodyOverflow(iface, getOption.bind(null, "bodyOverflow", true));
+
+	        // If a user presses the 'escape' key, close the modal.
+	        escapeKey.watch(function escapeKeyPress () {
+	            if ( getOption("escCloses", true) && iface.isVisible() ) {
+	                iface.close();
+	            }
+	        });
+
+	        return iface;
+	    };
+
+	}));
+
+
+/***/ },
+/* 63 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -16482,7 +17324,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 63 */
+/* 64 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -16643,7 +17485,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 64 */
+/* 65 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -16764,7 +17606,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 65 */
+/* 66 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -17151,13 +17993,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = completely;
 
 /***/ },
-/* 66 */
+/* 67 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var ace = __webpack_require__(67);
-	var ModeSwitcher = __webpack_require__(64);
+	var ace = __webpack_require__(68);
+	var ModeSwitcher = __webpack_require__(65);
 	var util = __webpack_require__(54);
 
 	// create a mixin with the functions for text mode
@@ -17227,7 +18069,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  this.theme = options.theme || DEFAULT_THEME;
 	  if (this.theme === DEFAULT_THEME && _ace) {
 	    try {
-	      __webpack_require__(73);
+	      __webpack_require__(74);
 	    }
 	    catch (err) {
 	      console.error(err);
@@ -17973,7 +18815,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 67 */
+/* 68 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var ace
@@ -17984,11 +18826,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	else {
 	  try {
 	    // load brace
-	    ace = __webpack_require__(68);
+	    ace = __webpack_require__(69);
 
 	    // load required Ace plugins
-	    __webpack_require__(70);
-	    __webpack_require__(72);
+	    __webpack_require__(71);
+	    __webpack_require__(73);
 	  }
 	  catch (err) {
 	    // failed to load brace (can be minimalist bundle).
@@ -18000,7 +18842,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 68 */
+/* 69 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* ***** BEGIN LICENSE BLOCK *****
@@ -22183,7 +23025,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    if (!global || !global.document)
 	        return;
 	    
-	    options.packaged = packaged || acequire.packaged || module.packaged || (global.define && __webpack_require__(69).packaged);
+	    options.packaged = packaged || acequire.packaged || module.packaged || (global.define && __webpack_require__(70).packaged);
 
 	    var scriptOptions = {};
 	    var scriptUrl = "";
@@ -38210,7 +39052,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	exports.acequire = acequire;
 
 	if (true)
-	    exports.define = __webpack_require__(69);
+	    exports.define = __webpack_require__(70);
 	exports.edit = function(el) {
 	    if (typeof el == "string") {
 	        var _id = el;
@@ -38277,14 +39119,14 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = window.ace.acequire("ace/ace");
 
 /***/ },
-/* 69 */
+/* 70 */
 /***/ function(module, exports) {
 
 	module.exports = function() { throw new Error("define cannot be used indirect"); };
 
 
 /***/ },
-/* 70 */
+/* 71 */
 /***/ function(module, exports, __webpack_require__) {
 
 	ace.define("ace/mode/json_highlight_rules",["require","exports","module","ace/lib/oop","ace/mode/text_highlight_rules"], function(acequire, exports, module) {
@@ -38586,7 +39428,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    };
 
 	    this.createWorker = function(session) {
-	        var worker = new WorkerClient(["ace"], __webpack_require__(71), "JsonWorker");
+	        var worker = new WorkerClient(["ace"], __webpack_require__(72), "JsonWorker");
 	        worker.attachToDocument(session.getDocument());
 
 	        worker.on("annotate", function(e) {
@@ -38609,14 +39451,14 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 71 */
+/* 72 */
 /***/ function(module, exports) {
 
 	module.exports.id = 'ace/mode/json_worker';
 	module.exports.src = "\"no use strict\";!function(window){function resolveModuleId(id,paths){for(var testPath=id,tail=\"\";testPath;){var alias=paths[testPath];if(\"string\"==typeof alias)return alias+tail;if(alias)return alias.location.replace(/\\/*$/,\"/\")+(tail||alias.main||alias.name);if(alias===!1)return\"\";var i=testPath.lastIndexOf(\"/\");if(-1===i)break;tail=testPath.substr(i)+tail,testPath=testPath.slice(0,i)}return id}if(!(void 0!==window.window&&window.document||window.acequire&&window.define)){window.console||(window.console=function(){var msgs=Array.prototype.slice.call(arguments,0);postMessage({type:\"log\",data:msgs})},window.console.error=window.console.warn=window.console.log=window.console.trace=window.console),window.window=window,window.ace=window,window.onerror=function(message,file,line,col,err){postMessage({type:\"error\",data:{message:message,data:err.data,file:file,line:line,col:col,stack:err.stack}})},window.normalizeModule=function(parentId,moduleName){if(-1!==moduleName.indexOf(\"!\")){var chunks=moduleName.split(\"!\");return window.normalizeModule(parentId,chunks[0])+\"!\"+window.normalizeModule(parentId,chunks[1])}if(\".\"==moduleName.charAt(0)){var base=parentId.split(\"/\").slice(0,-1).join(\"/\");for(moduleName=(base?base+\"/\":\"\")+moduleName;-1!==moduleName.indexOf(\".\")&&previous!=moduleName;){var previous=moduleName;moduleName=moduleName.replace(/^\\.\\//,\"\").replace(/\\/\\.\\//,\"/\").replace(/[^\\/]+\\/\\.\\.\\//,\"\")}}return moduleName},window.acequire=function acequire(parentId,id){if(id||(id=parentId,parentId=null),!id.charAt)throw Error(\"worker.js acequire() accepts only (parentId, id) as arguments\");id=window.normalizeModule(parentId,id);var module=window.acequire.modules[id];if(module)return module.initialized||(module.initialized=!0,module.exports=module.factory().exports),module.exports;if(!window.acequire.tlns)return console.log(\"unable to load \"+id);var path=resolveModuleId(id,window.acequire.tlns);return\".js\"!=path.slice(-3)&&(path+=\".js\"),window.acequire.id=id,window.acequire.modules[id]={},importScripts(path),window.acequire(parentId,id)},window.acequire.modules={},window.acequire.tlns={},window.define=function(id,deps,factory){if(2==arguments.length?(factory=deps,\"string\"!=typeof id&&(deps=id,id=window.acequire.id)):1==arguments.length&&(factory=id,deps=[],id=window.acequire.id),\"function\"!=typeof factory)return window.acequire.modules[id]={exports:factory,initialized:!0},void 0;deps.length||(deps=[\"require\",\"exports\",\"module\"]);var req=function(childId){return window.acequire(id,childId)};window.acequire.modules[id]={exports:{},factory:function(){var module=this,returnExports=factory.apply(this,deps.map(function(dep){switch(dep){case\"require\":return req;case\"exports\":return module.exports;case\"module\":return module;default:return req(dep)}}));return returnExports&&(module.exports=returnExports),module}}},window.define.amd={},acequire.tlns={},window.initBaseUrls=function(topLevelNamespaces){for(var i in topLevelNamespaces)acequire.tlns[i]=topLevelNamespaces[i]},window.initSender=function(){var EventEmitter=window.acequire(\"ace/lib/event_emitter\").EventEmitter,oop=window.acequire(\"ace/lib/oop\"),Sender=function(){};return function(){oop.implement(this,EventEmitter),this.callback=function(data,callbackId){postMessage({type:\"call\",id:callbackId,data:data})},this.emit=function(name,data){postMessage({type:\"event\",name:name,data:data})}}.call(Sender.prototype),new Sender};var main=window.main=null,sender=window.sender=null;window.onmessage=function(e){var msg=e.data;if(msg.event&&sender)sender._signal(msg.event,msg.data);else if(msg.command)if(main[msg.command])main[msg.command].apply(main,msg.args);else{if(!window[msg.command])throw Error(\"Unknown command:\"+msg.command);window[msg.command].apply(window,msg.args)}else if(msg.init){window.initBaseUrls(msg.tlns),acequire(\"ace/lib/es5-shim\"),sender=window.sender=window.initSender();var clazz=acequire(msg.module)[msg.classname];main=window.main=new clazz(sender)}}}}(this),ace.define(\"ace/lib/oop\",[\"require\",\"exports\",\"module\"],function(acequire,exports){\"use strict\";exports.inherits=function(ctor,superCtor){ctor.super_=superCtor,ctor.prototype=Object.create(superCtor.prototype,{constructor:{value:ctor,enumerable:!1,writable:!0,configurable:!0}})},exports.mixin=function(obj,mixin){for(var key in mixin)obj[key]=mixin[key];return obj},exports.implement=function(proto,mixin){exports.mixin(proto,mixin)}}),ace.define(\"ace/range\",[\"require\",\"exports\",\"module\"],function(acequire,exports){\"use strict\";var comparePoints=function(p1,p2){return p1.row-p2.row||p1.column-p2.column},Range=function(startRow,startColumn,endRow,endColumn){this.start={row:startRow,column:startColumn},this.end={row:endRow,column:endColumn}};(function(){this.isEqual=function(range){return this.start.row===range.start.row&&this.end.row===range.end.row&&this.start.column===range.start.column&&this.end.column===range.end.column},this.toString=function(){return\"Range: [\"+this.start.row+\"/\"+this.start.column+\"] -> [\"+this.end.row+\"/\"+this.end.column+\"]\"},this.contains=function(row,column){return 0==this.compare(row,column)},this.compareRange=function(range){var cmp,end=range.end,start=range.start;return cmp=this.compare(end.row,end.column),1==cmp?(cmp=this.compare(start.row,start.column),1==cmp?2:0==cmp?1:0):-1==cmp?-2:(cmp=this.compare(start.row,start.column),-1==cmp?-1:1==cmp?42:0)},this.comparePoint=function(p){return this.compare(p.row,p.column)},this.containsRange=function(range){return 0==this.comparePoint(range.start)&&0==this.comparePoint(range.end)},this.intersects=function(range){var cmp=this.compareRange(range);return-1==cmp||0==cmp||1==cmp},this.isEnd=function(row,column){return this.end.row==row&&this.end.column==column},this.isStart=function(row,column){return this.start.row==row&&this.start.column==column},this.setStart=function(row,column){\"object\"==typeof row?(this.start.column=row.column,this.start.row=row.row):(this.start.row=row,this.start.column=column)},this.setEnd=function(row,column){\"object\"==typeof row?(this.end.column=row.column,this.end.row=row.row):(this.end.row=row,this.end.column=column)},this.inside=function(row,column){return 0==this.compare(row,column)?this.isEnd(row,column)||this.isStart(row,column)?!1:!0:!1},this.insideStart=function(row,column){return 0==this.compare(row,column)?this.isEnd(row,column)?!1:!0:!1},this.insideEnd=function(row,column){return 0==this.compare(row,column)?this.isStart(row,column)?!1:!0:!1},this.compare=function(row,column){return this.isMultiLine()||row!==this.start.row?this.start.row>row?-1:row>this.end.row?1:this.start.row===row?column>=this.start.column?0:-1:this.end.row===row?this.end.column>=column?0:1:0:this.start.column>column?-1:column>this.end.column?1:0},this.compareStart=function(row,column){return this.start.row==row&&this.start.column==column?-1:this.compare(row,column)},this.compareEnd=function(row,column){return this.end.row==row&&this.end.column==column?1:this.compare(row,column)},this.compareInside=function(row,column){return this.end.row==row&&this.end.column==column?1:this.start.row==row&&this.start.column==column?-1:this.compare(row,column)},this.clipRows=function(firstRow,lastRow){if(this.end.row>lastRow)var end={row:lastRow+1,column:0};else if(firstRow>this.end.row)var end={row:firstRow,column:0};if(this.start.row>lastRow)var start={row:lastRow+1,column:0};else if(firstRow>this.start.row)var start={row:firstRow,column:0};return Range.fromPoints(start||this.start,end||this.end)},this.extend=function(row,column){var cmp=this.compare(row,column);if(0==cmp)return this;if(-1==cmp)var start={row:row,column:column};else var end={row:row,column:column};return Range.fromPoints(start||this.start,end||this.end)},this.isEmpty=function(){return this.start.row===this.end.row&&this.start.column===this.end.column},this.isMultiLine=function(){return this.start.row!==this.end.row},this.clone=function(){return Range.fromPoints(this.start,this.end)},this.collapseRows=function(){return 0==this.end.column?new Range(this.start.row,0,Math.max(this.start.row,this.end.row-1),0):new Range(this.start.row,0,this.end.row,0)},this.toScreenRange=function(session){var screenPosStart=session.documentToScreenPosition(this.start),screenPosEnd=session.documentToScreenPosition(this.end);return new Range(screenPosStart.row,screenPosStart.column,screenPosEnd.row,screenPosEnd.column)},this.moveBy=function(row,column){this.start.row+=row,this.start.column+=column,this.end.row+=row,this.end.column+=column}}).call(Range.prototype),Range.fromPoints=function(start,end){return new Range(start.row,start.column,end.row,end.column)},Range.comparePoints=comparePoints,Range.comparePoints=function(p1,p2){return p1.row-p2.row||p1.column-p2.column},exports.Range=Range}),ace.define(\"ace/apply_delta\",[\"require\",\"exports\",\"module\"],function(acequire,exports){\"use strict\";exports.applyDelta=function(docLines,delta){var row=delta.start.row,startColumn=delta.start.column,line=docLines[row]||\"\";switch(delta.action){case\"insert\":var lines=delta.lines;if(1===lines.length)docLines[row]=line.substring(0,startColumn)+delta.lines[0]+line.substring(startColumn);else{var args=[row,1].concat(delta.lines);docLines.splice.apply(docLines,args),docLines[row]=line.substring(0,startColumn)+docLines[row],docLines[row+delta.lines.length-1]+=line.substring(startColumn)}break;case\"remove\":var endColumn=delta.end.column,endRow=delta.end.row;row===endRow?docLines[row]=line.substring(0,startColumn)+line.substring(endColumn):docLines.splice(row,endRow-row+1,line.substring(0,startColumn)+docLines[endRow].substring(endColumn))}}}),ace.define(\"ace/lib/event_emitter\",[\"require\",\"exports\",\"module\"],function(acequire,exports){\"use strict\";var EventEmitter={},stopPropagation=function(){this.propagationStopped=!0},preventDefault=function(){this.defaultPrevented=!0};EventEmitter._emit=EventEmitter._dispatchEvent=function(eventName,e){this._eventRegistry||(this._eventRegistry={}),this._defaultHandlers||(this._defaultHandlers={});var listeners=this._eventRegistry[eventName]||[],defaultHandler=this._defaultHandlers[eventName];if(listeners.length||defaultHandler){\"object\"==typeof e&&e||(e={}),e.type||(e.type=eventName),e.stopPropagation||(e.stopPropagation=stopPropagation),e.preventDefault||(e.preventDefault=preventDefault),listeners=listeners.slice();for(var i=0;listeners.length>i&&(listeners[i](e,this),!e.propagationStopped);i++);return defaultHandler&&!e.defaultPrevented?defaultHandler(e,this):void 0}},EventEmitter._signal=function(eventName,e){var listeners=(this._eventRegistry||{})[eventName];if(listeners){listeners=listeners.slice();for(var i=0;listeners.length>i;i++)listeners[i](e,this)}},EventEmitter.once=function(eventName,callback){var _self=this;callback&&this.addEventListener(eventName,function newCallback(){_self.removeEventListener(eventName,newCallback),callback.apply(null,arguments)})},EventEmitter.setDefaultHandler=function(eventName,callback){var handlers=this._defaultHandlers;if(handlers||(handlers=this._defaultHandlers={_disabled_:{}}),handlers[eventName]){var old=handlers[eventName],disabled=handlers._disabled_[eventName];disabled||(handlers._disabled_[eventName]=disabled=[]),disabled.push(old);var i=disabled.indexOf(callback);-1!=i&&disabled.splice(i,1)}handlers[eventName]=callback},EventEmitter.removeDefaultHandler=function(eventName,callback){var handlers=this._defaultHandlers;if(handlers){var disabled=handlers._disabled_[eventName];if(handlers[eventName]==callback)handlers[eventName],disabled&&this.setDefaultHandler(eventName,disabled.pop());else if(disabled){var i=disabled.indexOf(callback);-1!=i&&disabled.splice(i,1)}}},EventEmitter.on=EventEmitter.addEventListener=function(eventName,callback,capturing){this._eventRegistry=this._eventRegistry||{};var listeners=this._eventRegistry[eventName];return listeners||(listeners=this._eventRegistry[eventName]=[]),-1==listeners.indexOf(callback)&&listeners[capturing?\"unshift\":\"push\"](callback),callback},EventEmitter.off=EventEmitter.removeListener=EventEmitter.removeEventListener=function(eventName,callback){this._eventRegistry=this._eventRegistry||{};var listeners=this._eventRegistry[eventName];if(listeners){var index=listeners.indexOf(callback);-1!==index&&listeners.splice(index,1)}},EventEmitter.removeAllListeners=function(eventName){this._eventRegistry&&(this._eventRegistry[eventName]=[])},exports.EventEmitter=EventEmitter}),ace.define(\"ace/anchor\",[\"require\",\"exports\",\"module\",\"ace/lib/oop\",\"ace/lib/event_emitter\"],function(acequire,exports){\"use strict\";var oop=acequire(\"./lib/oop\"),EventEmitter=acequire(\"./lib/event_emitter\").EventEmitter,Anchor=exports.Anchor=function(doc,row,column){this.$onChange=this.onChange.bind(this),this.attach(doc),column===void 0?this.setPosition(row.row,row.column):this.setPosition(row,column)};(function(){function $pointsInOrder(point1,point2,equalPointsInOrder){var bColIsAfter=equalPointsInOrder?point1.column<=point2.column:point1.column<point2.column;return point1.row<point2.row||point1.row==point2.row&&bColIsAfter}function $getTransformedPoint(delta,point,moveIfEqual){var deltaIsInsert=\"insert\"==delta.action,deltaRowShift=(deltaIsInsert?1:-1)*(delta.end.row-delta.start.row),deltaColShift=(deltaIsInsert?1:-1)*(delta.end.column-delta.start.column),deltaStart=delta.start,deltaEnd=deltaIsInsert?deltaStart:delta.end;return $pointsInOrder(point,deltaStart,moveIfEqual)?{row:point.row,column:point.column}:$pointsInOrder(deltaEnd,point,!moveIfEqual)?{row:point.row+deltaRowShift,column:point.column+(point.row==deltaEnd.row?deltaColShift:0)}:{row:deltaStart.row,column:deltaStart.column}}oop.implement(this,EventEmitter),this.getPosition=function(){return this.$clipPositionToDocument(this.row,this.column)},this.getDocument=function(){return this.document},this.$insertRight=!1,this.onChange=function(delta){if(!(delta.start.row==delta.end.row&&delta.start.row!=this.row||delta.start.row>this.row)){var point=$getTransformedPoint(delta,{row:this.row,column:this.column},this.$insertRight);this.setPosition(point.row,point.column,!0)}},this.setPosition=function(row,column,noClip){var pos;if(pos=noClip?{row:row,column:column}:this.$clipPositionToDocument(row,column),this.row!=pos.row||this.column!=pos.column){var old={row:this.row,column:this.column};this.row=pos.row,this.column=pos.column,this._signal(\"change\",{old:old,value:pos})}},this.detach=function(){this.document.removeEventListener(\"change\",this.$onChange)},this.attach=function(doc){this.document=doc||this.document,this.document.on(\"change\",this.$onChange)},this.$clipPositionToDocument=function(row,column){var pos={};return row>=this.document.getLength()?(pos.row=Math.max(0,this.document.getLength()-1),pos.column=this.document.getLine(pos.row).length):0>row?(pos.row=0,pos.column=0):(pos.row=row,pos.column=Math.min(this.document.getLine(pos.row).length,Math.max(0,column))),0>column&&(pos.column=0),pos}}).call(Anchor.prototype)}),ace.define(\"ace/document\",[\"require\",\"exports\",\"module\",\"ace/lib/oop\",\"ace/apply_delta\",\"ace/lib/event_emitter\",\"ace/range\",\"ace/anchor\"],function(acequire,exports){\"use strict\";var oop=acequire(\"./lib/oop\"),applyDelta=acequire(\"./apply_delta\").applyDelta,EventEmitter=acequire(\"./lib/event_emitter\").EventEmitter,Range=acequire(\"./range\").Range,Anchor=acequire(\"./anchor\").Anchor,Document=function(textOrLines){this.$lines=[\"\"],0===textOrLines.length?this.$lines=[\"\"]:Array.isArray(textOrLines)?this.insertMergedLines({row:0,column:0},textOrLines):this.insert({row:0,column:0},textOrLines)};(function(){oop.implement(this,EventEmitter),this.setValue=function(text){var len=this.getLength()-1;this.remove(new Range(0,0,len,this.getLine(len).length)),this.insert({row:0,column:0},text)},this.getValue=function(){return this.getAllLines().join(this.getNewLineCharacter())},this.createAnchor=function(row,column){return new Anchor(this,row,column)},this.$split=0===\"aaa\".split(/a/).length?function(text){return text.replace(/\\r\\n|\\r/g,\"\\n\").split(\"\\n\")}:function(text){return text.split(/\\r\\n|\\r|\\n/)},this.$detectNewLine=function(text){var match=text.match(/^.*?(\\r\\n|\\r|\\n)/m);this.$autoNewLine=match?match[1]:\"\\n\",this._signal(\"changeNewLineMode\")},this.getNewLineCharacter=function(){switch(this.$newLineMode){case\"windows\":return\"\\r\\n\";case\"unix\":return\"\\n\";default:return this.$autoNewLine||\"\\n\"}},this.$autoNewLine=\"\",this.$newLineMode=\"auto\",this.setNewLineMode=function(newLineMode){this.$newLineMode!==newLineMode&&(this.$newLineMode=newLineMode,this._signal(\"changeNewLineMode\"))},this.getNewLineMode=function(){return this.$newLineMode},this.isNewLine=function(text){return\"\\r\\n\"==text||\"\\r\"==text||\"\\n\"==text},this.getLine=function(row){return this.$lines[row]||\"\"},this.getLines=function(firstRow,lastRow){return this.$lines.slice(firstRow,lastRow+1)},this.getAllLines=function(){return this.getLines(0,this.getLength())},this.getLength=function(){return this.$lines.length},this.getTextRange=function(range){return this.getLinesForRange(range).join(this.getNewLineCharacter())},this.getLinesForRange=function(range){var lines;if(range.start.row===range.end.row)lines=[this.getLine(range.start.row).substring(range.start.column,range.end.column)];else{lines=this.getLines(range.start.row,range.end.row),lines[0]=(lines[0]||\"\").substring(range.start.column);var l=lines.length-1;range.end.row-range.start.row==l&&(lines[l]=lines[l].substring(0,range.end.column))}return lines},this.insertLines=function(row,lines){return console.warn(\"Use of document.insertLines is deprecated. Use the insertFullLines method instead.\"),this.insertFullLines(row,lines)},this.removeLines=function(firstRow,lastRow){return console.warn(\"Use of document.removeLines is deprecated. Use the removeFullLines method instead.\"),this.removeFullLines(firstRow,lastRow)},this.insertNewLine=function(position){return console.warn(\"Use of document.insertNewLine is deprecated. Use insertMergedLines(position, ['', '']) instead.\"),this.insertMergedLines(position,[\"\",\"\"])},this.insert=function(position,text){return 1>=this.getLength()&&this.$detectNewLine(text),this.insertMergedLines(position,this.$split(text))},this.insertInLine=function(position,text){var start=this.clippedPos(position.row,position.column),end=this.pos(position.row,position.column+text.length);return this.applyDelta({start:start,end:end,action:\"insert\",lines:[text]},!0),this.clonePos(end)},this.clippedPos=function(row,column){var length=this.getLength();void 0===row?row=length:0>row?row=0:row>=length&&(row=length-1,column=void 0);var line=this.getLine(row);return void 0==column&&(column=line.length),column=Math.min(Math.max(column,0),line.length),{row:row,column:column}},this.clonePos=function(pos){return{row:pos.row,column:pos.column}},this.pos=function(row,column){return{row:row,column:column}},this.$clipPosition=function(position){var length=this.getLength();return position.row>=length?(position.row=Math.max(0,length-1),position.column=this.getLine(length-1).length):(position.row=Math.max(0,position.row),position.column=Math.min(Math.max(position.column,0),this.getLine(position.row).length)),position},this.insertFullLines=function(row,lines){row=Math.min(Math.max(row,0),this.getLength());var column=0;this.getLength()>row?(lines=lines.concat([\"\"]),column=0):(lines=[\"\"].concat(lines),row--,column=this.$lines[row].length),this.insertMergedLines({row:row,column:column},lines)},this.insertMergedLines=function(position,lines){var start=this.clippedPos(position.row,position.column),end={row:start.row+lines.length-1,column:(1==lines.length?start.column:0)+lines[lines.length-1].length};return this.applyDelta({start:start,end:end,action:\"insert\",lines:lines}),this.clonePos(end)},this.remove=function(range){var start=this.clippedPos(range.start.row,range.start.column),end=this.clippedPos(range.end.row,range.end.column);return this.applyDelta({start:start,end:end,action:\"remove\",lines:this.getLinesForRange({start:start,end:end})}),this.clonePos(start)},this.removeInLine=function(row,startColumn,endColumn){var start=this.clippedPos(row,startColumn),end=this.clippedPos(row,endColumn);return this.applyDelta({start:start,end:end,action:\"remove\",lines:this.getLinesForRange({start:start,end:end})},!0),this.clonePos(start)},this.removeFullLines=function(firstRow,lastRow){firstRow=Math.min(Math.max(0,firstRow),this.getLength()-1),lastRow=Math.min(Math.max(0,lastRow),this.getLength()-1);var deleteFirstNewLine=lastRow==this.getLength()-1&&firstRow>0,deleteLastNewLine=this.getLength()-1>lastRow,startRow=deleteFirstNewLine?firstRow-1:firstRow,startCol=deleteFirstNewLine?this.getLine(startRow).length:0,endRow=deleteLastNewLine?lastRow+1:lastRow,endCol=deleteLastNewLine?0:this.getLine(endRow).length,range=new Range(startRow,startCol,endRow,endCol),deletedLines=this.$lines.slice(firstRow,lastRow+1);return this.applyDelta({start:range.start,end:range.end,action:\"remove\",lines:this.getLinesForRange(range)}),deletedLines},this.removeNewLine=function(row){this.getLength()-1>row&&row>=0&&this.applyDelta({start:this.pos(row,this.getLine(row).length),end:this.pos(row+1,0),action:\"remove\",lines:[\"\",\"\"]})},this.replace=function(range,text){if(range instanceof Range||(range=Range.fromPoints(range.start,range.end)),0===text.length&&range.isEmpty())return range.start;if(text==this.getTextRange(range))return range.end;this.remove(range);var end;return end=text?this.insert(range.start,text):range.start},this.applyDeltas=function(deltas){for(var i=0;deltas.length>i;i++)this.applyDelta(deltas[i])},this.revertDeltas=function(deltas){for(var i=deltas.length-1;i>=0;i--)this.revertDelta(deltas[i])},this.applyDelta=function(delta,doNotValidate){var isInsert=\"insert\"==delta.action;(isInsert?1>=delta.lines.length&&!delta.lines[0]:!Range.comparePoints(delta.start,delta.end))||(isInsert&&delta.lines.length>2e4&&this.$splitAndapplyLargeDelta(delta,2e4),applyDelta(this.$lines,delta,doNotValidate),this._signal(\"change\",delta))},this.$splitAndapplyLargeDelta=function(delta,MAX){for(var lines=delta.lines,l=lines.length,row=delta.start.row,column=delta.start.column,from=0,to=0;;){from=to,to+=MAX-1;var chunk=lines.slice(from,to);if(to>l){delta.lines=chunk,delta.start.row=row+from,delta.start.column=column;break}chunk.push(\"\"),this.applyDelta({start:this.pos(row+from,column),end:this.pos(row+to,column=0),action:delta.action,lines:chunk},!0)}},this.revertDelta=function(delta){this.applyDelta({start:this.clonePos(delta.start),end:this.clonePos(delta.end),action:\"insert\"==delta.action?\"remove\":\"insert\",lines:delta.lines.slice()})},this.indexToPosition=function(index,startRow){for(var lines=this.$lines||this.getAllLines(),newlineLength=this.getNewLineCharacter().length,i=startRow||0,l=lines.length;l>i;i++)if(index-=lines[i].length+newlineLength,0>index)return{row:i,column:index+lines[i].length+newlineLength};return{row:l-1,column:lines[l-1].length}},this.positionToIndex=function(pos,startRow){for(var lines=this.$lines||this.getAllLines(),newlineLength=this.getNewLineCharacter().length,index=0,row=Math.min(pos.row,lines.length),i=startRow||0;row>i;++i)index+=lines[i].length+newlineLength;return index+pos.column}}).call(Document.prototype),exports.Document=Document}),ace.define(\"ace/lib/lang\",[\"require\",\"exports\",\"module\"],function(acequire,exports){\"use strict\";exports.last=function(a){return a[a.length-1]},exports.stringReverse=function(string){return string.split(\"\").reverse().join(\"\")},exports.stringRepeat=function(string,count){for(var result=\"\";count>0;)1&count&&(result+=string),(count>>=1)&&(string+=string);return result};var trimBeginRegexp=/^\\s\\s*/,trimEndRegexp=/\\s\\s*$/;exports.stringTrimLeft=function(string){return string.replace(trimBeginRegexp,\"\")},exports.stringTrimRight=function(string){return string.replace(trimEndRegexp,\"\")},exports.copyObject=function(obj){var copy={};for(var key in obj)copy[key]=obj[key];return copy},exports.copyArray=function(array){for(var copy=[],i=0,l=array.length;l>i;i++)copy[i]=array[i]&&\"object\"==typeof array[i]?this.copyObject(array[i]):array[i];return copy},exports.deepCopy=function deepCopy(obj){if(\"object\"!=typeof obj||!obj)return obj;var copy;if(Array.isArray(obj)){copy=[];for(var key=0;obj.length>key;key++)copy[key]=deepCopy(obj[key]);return copy}if(\"[object Object]\"!==Object.prototype.toString.call(obj))return obj;copy={};for(var key in obj)copy[key]=deepCopy(obj[key]);return copy},exports.arrayToMap=function(arr){for(var map={},i=0;arr.length>i;i++)map[arr[i]]=1;return map},exports.createMap=function(props){var map=Object.create(null);for(var i in props)map[i]=props[i];return map},exports.arrayRemove=function(array,value){for(var i=0;array.length>=i;i++)value===array[i]&&array.splice(i,1)},exports.escapeRegExp=function(str){return str.replace(/([.*+?^${}()|[\\]\\/\\\\])/g,\"\\\\$1\")},exports.escapeHTML=function(str){return str.replace(/&/g,\"&#38;\").replace(/\"/g,\"&#34;\").replace(/'/g,\"&#39;\").replace(/</g,\"&#60;\")},exports.getMatchOffsets=function(string,regExp){var matches=[];return string.replace(regExp,function(str){matches.push({offset:arguments[arguments.length-2],length:str.length})}),matches},exports.deferredCall=function(fcn){var timer=null,callback=function(){timer=null,fcn()},deferred=function(timeout){return deferred.cancel(),timer=setTimeout(callback,timeout||0),deferred};return deferred.schedule=deferred,deferred.call=function(){return this.cancel(),fcn(),deferred},deferred.cancel=function(){return clearTimeout(timer),timer=null,deferred},deferred.isPending=function(){return timer},deferred},exports.delayedCall=function(fcn,defaultTimeout){var timer=null,callback=function(){timer=null,fcn()},_self=function(timeout){null==timer&&(timer=setTimeout(callback,timeout||defaultTimeout))};return _self.delay=function(timeout){timer&&clearTimeout(timer),timer=setTimeout(callback,timeout||defaultTimeout)},_self.schedule=_self,_self.call=function(){this.cancel(),fcn()},_self.cancel=function(){timer&&clearTimeout(timer),timer=null},_self.isPending=function(){return timer},_self}}),ace.define(\"ace/worker/mirror\",[\"require\",\"exports\",\"module\",\"ace/range\",\"ace/document\",\"ace/lib/lang\"],function(acequire,exports){\"use strict\";acequire(\"../range\").Range;var Document=acequire(\"../document\").Document,lang=acequire(\"../lib/lang\"),Mirror=exports.Mirror=function(sender){this.sender=sender;var doc=this.doc=new Document(\"\"),deferredUpdate=this.deferredUpdate=lang.delayedCall(this.onUpdate.bind(this)),_self=this;sender.on(\"change\",function(e){var data=e.data;if(data[0].start)doc.applyDeltas(data);else for(var i=0;data.length>i;i+=2){if(Array.isArray(data[i+1]))var d={action:\"insert\",start:data[i],lines:data[i+1]};else var d={action:\"remove\",start:data[i],end:data[i+1]};doc.applyDelta(d,!0)}return _self.$timeout?deferredUpdate.schedule(_self.$timeout):(_self.onUpdate(),void 0)})};(function(){this.$timeout=500,this.setTimeout=function(timeout){this.$timeout=timeout},this.setValue=function(value){this.doc.setValue(value),this.deferredUpdate.schedule(this.$timeout)},this.getValue=function(callbackId){this.sender.callback(this.doc.getValue(),callbackId)},this.onUpdate=function(){},this.isPending=function(){return this.deferredUpdate.isPending()}}).call(Mirror.prototype)}),ace.define(\"ace/mode/json/json_parse\",[\"require\",\"exports\",\"module\"],function(){\"use strict\";var at,ch,text,value,escapee={'\"':'\"',\"\\\\\":\"\\\\\",\"/\":\"/\",b:\"\\b\",f:\"\\f\",n:\"\\n\",r:\"\\r\",t:\"\t\"},error=function(m){throw{name:\"SyntaxError\",message:m,at:at,text:text}},next=function(c){return c&&c!==ch&&error(\"Expected '\"+c+\"' instead of '\"+ch+\"'\"),ch=text.charAt(at),at+=1,ch},number=function(){var number,string=\"\";for(\"-\"===ch&&(string=\"-\",next(\"-\"));ch>=\"0\"&&\"9\">=ch;)string+=ch,next();if(\".\"===ch)for(string+=\".\";next()&&ch>=\"0\"&&\"9\">=ch;)string+=ch;if(\"e\"===ch||\"E\"===ch)for(string+=ch,next(),(\"-\"===ch||\"+\"===ch)&&(string+=ch,next());ch>=\"0\"&&\"9\">=ch;)string+=ch,next();return number=+string,isNaN(number)?(error(\"Bad number\"),void 0):number},string=function(){var hex,i,uffff,string=\"\";if('\"'===ch)for(;next();){if('\"'===ch)return next(),string;if(\"\\\\\"===ch)if(next(),\"u\"===ch){for(uffff=0,i=0;4>i&&(hex=parseInt(next(),16),isFinite(hex));i+=1)uffff=16*uffff+hex;string+=String.fromCharCode(uffff)}else{if(\"string\"!=typeof escapee[ch])break;string+=escapee[ch]}else string+=ch}error(\"Bad string\")},white=function(){for(;ch&&\" \">=ch;)next()},word=function(){switch(ch){case\"t\":return next(\"t\"),next(\"r\"),next(\"u\"),next(\"e\"),!0;case\"f\":return next(\"f\"),next(\"a\"),next(\"l\"),next(\"s\"),next(\"e\"),!1;case\"n\":return next(\"n\"),next(\"u\"),next(\"l\"),next(\"l\"),null}error(\"Unexpected '\"+ch+\"'\")},array=function(){var array=[];if(\"[\"===ch){if(next(\"[\"),white(),\"]\"===ch)return next(\"]\"),array;for(;ch;){if(array.push(value()),white(),\"]\"===ch)return next(\"]\"),array;next(\",\"),white()}}error(\"Bad array\")},object=function(){var key,object={};if(\"{\"===ch){if(next(\"{\"),white(),\"}\"===ch)return next(\"}\"),object;for(;ch;){if(key=string(),white(),next(\":\"),Object.hasOwnProperty.call(object,key)&&error('Duplicate key \"'+key+'\"'),object[key]=value(),white(),\"}\"===ch)return next(\"}\"),object;next(\",\"),white()}}error(\"Bad object\")};return value=function(){switch(white(),ch){case\"{\":return object();case\"[\":return array();case'\"':return string();case\"-\":return number();default:return ch>=\"0\"&&\"9\">=ch?number():word()}},function(source,reviver){var result;return text=source,at=0,ch=\" \",result=value(),white(),ch&&error(\"Syntax error\"),\"function\"==typeof reviver?function walk(holder,key){var k,v,value=holder[key];if(value&&\"object\"==typeof value)for(k in value)Object.hasOwnProperty.call(value,k)&&(v=walk(value,k),void 0!==v?value[k]=v:delete value[k]);return reviver.call(holder,key,value)}({\"\":result},\"\"):result}}),ace.define(\"ace/mode/json_worker\",[\"require\",\"exports\",\"module\",\"ace/lib/oop\",\"ace/worker/mirror\",\"ace/mode/json/json_parse\"],function(acequire,exports){\"use strict\";var oop=acequire(\"../lib/oop\"),Mirror=acequire(\"../worker/mirror\").Mirror,parse=acequire(\"./json/json_parse\"),JsonWorker=exports.JsonWorker=function(sender){Mirror.call(this,sender),this.setTimeout(200)};oop.inherits(JsonWorker,Mirror),function(){this.onUpdate=function(){var value=this.doc.getValue(),errors=[];try{value&&parse(value)}catch(e){var pos=this.doc.indexToPosition(e.at-1);errors.push({row:pos.row,column:pos.column,text:e.message,type:\"error\"})}this.sender.emit(\"annotate\",errors)}}.call(JsonWorker.prototype)}),ace.define(\"ace/lib/es5-shim\",[\"require\",\"exports\",\"module\"],function(){function Empty(){}function doesDefinePropertyWork(object){try{return Object.defineProperty(object,\"sentinel\",{}),\"sentinel\"in object}catch(exception){}}function toInteger(n){return n=+n,n!==n?n=0:0!==n&&n!==1/0&&n!==-(1/0)&&(n=(n>0||-1)*Math.floor(Math.abs(n))),n}Function.prototype.bind||(Function.prototype.bind=function(that){var target=this;if(\"function\"!=typeof target)throw new TypeError(\"Function.prototype.bind called on incompatible \"+target);var args=slice.call(arguments,1),bound=function(){if(this instanceof bound){var result=target.apply(this,args.concat(slice.call(arguments)));return Object(result)===result?result:this}return target.apply(that,args.concat(slice.call(arguments)))};return target.prototype&&(Empty.prototype=target.prototype,bound.prototype=new Empty,Empty.prototype=null),bound});var defineGetter,defineSetter,lookupGetter,lookupSetter,supportsAccessors,call=Function.prototype.call,prototypeOfArray=Array.prototype,prototypeOfObject=Object.prototype,slice=prototypeOfArray.slice,_toString=call.bind(prototypeOfObject.toString),owns=call.bind(prototypeOfObject.hasOwnProperty);if((supportsAccessors=owns(prototypeOfObject,\"__defineGetter__\"))&&(defineGetter=call.bind(prototypeOfObject.__defineGetter__),defineSetter=call.bind(prototypeOfObject.__defineSetter__),lookupGetter=call.bind(prototypeOfObject.__lookupGetter__),lookupSetter=call.bind(prototypeOfObject.__lookupSetter__)),2!=[1,2].splice(0).length)if(function(){function makeArray(l){var a=Array(l+2);return a[0]=a[1]=0,a}var lengthBefore,array=[];return array.splice.apply(array,makeArray(20)),array.splice.apply(array,makeArray(26)),lengthBefore=array.length,array.splice(5,0,\"XXX\"),lengthBefore+1==array.length,lengthBefore+1==array.length?!0:void 0\n}()){var array_splice=Array.prototype.splice;Array.prototype.splice=function(start,deleteCount){return arguments.length?array_splice.apply(this,[void 0===start?0:start,void 0===deleteCount?this.length-start:deleteCount].concat(slice.call(arguments,2))):[]}}else Array.prototype.splice=function(pos,removeCount){var length=this.length;pos>0?pos>length&&(pos=length):void 0==pos?pos=0:0>pos&&(pos=Math.max(length+pos,0)),length>pos+removeCount||(removeCount=length-pos);var removed=this.slice(pos,pos+removeCount),insert=slice.call(arguments,2),add=insert.length;if(pos===length)add&&this.push.apply(this,insert);else{var remove=Math.min(removeCount,length-pos),tailOldPos=pos+remove,tailNewPos=tailOldPos+add-remove,tailCount=length-tailOldPos,lengthAfterRemove=length-remove;if(tailOldPos>tailNewPos)for(var i=0;tailCount>i;++i)this[tailNewPos+i]=this[tailOldPos+i];else if(tailNewPos>tailOldPos)for(i=tailCount;i--;)this[tailNewPos+i]=this[tailOldPos+i];if(add&&pos===lengthAfterRemove)this.length=lengthAfterRemove,this.push.apply(this,insert);else for(this.length=lengthAfterRemove+add,i=0;add>i;++i)this[pos+i]=insert[i]}return removed};Array.isArray||(Array.isArray=function(obj){return\"[object Array]\"==_toString(obj)});var boxedString=Object(\"a\"),splitString=\"a\"!=boxedString[0]||!(0 in boxedString);if(Array.prototype.forEach||(Array.prototype.forEach=function(fun){var object=toObject(this),self=splitString&&\"[object String]\"==_toString(this)?this.split(\"\"):object,thisp=arguments[1],i=-1,length=self.length>>>0;if(\"[object Function]\"!=_toString(fun))throw new TypeError;for(;length>++i;)i in self&&fun.call(thisp,self[i],i,object)}),Array.prototype.map||(Array.prototype.map=function(fun){var object=toObject(this),self=splitString&&\"[object String]\"==_toString(this)?this.split(\"\"):object,length=self.length>>>0,result=Array(length),thisp=arguments[1];if(\"[object Function]\"!=_toString(fun))throw new TypeError(fun+\" is not a function\");for(var i=0;length>i;i++)i in self&&(result[i]=fun.call(thisp,self[i],i,object));return result}),Array.prototype.filter||(Array.prototype.filter=function(fun){var value,object=toObject(this),self=splitString&&\"[object String]\"==_toString(this)?this.split(\"\"):object,length=self.length>>>0,result=[],thisp=arguments[1];if(\"[object Function]\"!=_toString(fun))throw new TypeError(fun+\" is not a function\");for(var i=0;length>i;i++)i in self&&(value=self[i],fun.call(thisp,value,i,object)&&result.push(value));return result}),Array.prototype.every||(Array.prototype.every=function(fun){var object=toObject(this),self=splitString&&\"[object String]\"==_toString(this)?this.split(\"\"):object,length=self.length>>>0,thisp=arguments[1];if(\"[object Function]\"!=_toString(fun))throw new TypeError(fun+\" is not a function\");for(var i=0;length>i;i++)if(i in self&&!fun.call(thisp,self[i],i,object))return!1;return!0}),Array.prototype.some||(Array.prototype.some=function(fun){var object=toObject(this),self=splitString&&\"[object String]\"==_toString(this)?this.split(\"\"):object,length=self.length>>>0,thisp=arguments[1];if(\"[object Function]\"!=_toString(fun))throw new TypeError(fun+\" is not a function\");for(var i=0;length>i;i++)if(i in self&&fun.call(thisp,self[i],i,object))return!0;return!1}),Array.prototype.reduce||(Array.prototype.reduce=function(fun){var object=toObject(this),self=splitString&&\"[object String]\"==_toString(this)?this.split(\"\"):object,length=self.length>>>0;if(\"[object Function]\"!=_toString(fun))throw new TypeError(fun+\" is not a function\");if(!length&&1==arguments.length)throw new TypeError(\"reduce of empty array with no initial value\");var result,i=0;if(arguments.length>=2)result=arguments[1];else for(;;){if(i in self){result=self[i++];break}if(++i>=length)throw new TypeError(\"reduce of empty array with no initial value\")}for(;length>i;i++)i in self&&(result=fun.call(void 0,result,self[i],i,object));return result}),Array.prototype.reduceRight||(Array.prototype.reduceRight=function(fun){var object=toObject(this),self=splitString&&\"[object String]\"==_toString(this)?this.split(\"\"):object,length=self.length>>>0;if(\"[object Function]\"!=_toString(fun))throw new TypeError(fun+\" is not a function\");if(!length&&1==arguments.length)throw new TypeError(\"reduceRight of empty array with no initial value\");var result,i=length-1;if(arguments.length>=2)result=arguments[1];else for(;;){if(i in self){result=self[i--];break}if(0>--i)throw new TypeError(\"reduceRight of empty array with no initial value\")}do i in this&&(result=fun.call(void 0,result,self[i],i,object));while(i--);return result}),Array.prototype.indexOf&&-1==[0,1].indexOf(1,2)||(Array.prototype.indexOf=function(sought){var self=splitString&&\"[object String]\"==_toString(this)?this.split(\"\"):toObject(this),length=self.length>>>0;if(!length)return-1;var i=0;for(arguments.length>1&&(i=toInteger(arguments[1])),i=i>=0?i:Math.max(0,length+i);length>i;i++)if(i in self&&self[i]===sought)return i;return-1}),Array.prototype.lastIndexOf&&-1==[0,1].lastIndexOf(0,-3)||(Array.prototype.lastIndexOf=function(sought){var self=splitString&&\"[object String]\"==_toString(this)?this.split(\"\"):toObject(this),length=self.length>>>0;if(!length)return-1;var i=length-1;for(arguments.length>1&&(i=Math.min(i,toInteger(arguments[1]))),i=i>=0?i:length-Math.abs(i);i>=0;i--)if(i in self&&sought===self[i])return i;return-1}),Object.getPrototypeOf||(Object.getPrototypeOf=function(object){return object.__proto__||(object.constructor?object.constructor.prototype:prototypeOfObject)}),!Object.getOwnPropertyDescriptor){var ERR_NON_OBJECT=\"Object.getOwnPropertyDescriptor called on a non-object: \";Object.getOwnPropertyDescriptor=function(object,property){if(\"object\"!=typeof object&&\"function\"!=typeof object||null===object)throw new TypeError(ERR_NON_OBJECT+object);if(owns(object,property)){var descriptor,getter,setter;if(descriptor={enumerable:!0,configurable:!0},supportsAccessors){var prototype=object.__proto__;object.__proto__=prototypeOfObject;var getter=lookupGetter(object,property),setter=lookupSetter(object,property);if(object.__proto__=prototype,getter||setter)return getter&&(descriptor.get=getter),setter&&(descriptor.set=setter),descriptor}return descriptor.value=object[property],descriptor}}}if(Object.getOwnPropertyNames||(Object.getOwnPropertyNames=function(object){return Object.keys(object)}),!Object.create){var createEmpty;createEmpty=null===Object.prototype.__proto__?function(){return{__proto__:null}}:function(){var empty={};for(var i in empty)empty[i]=null;return empty.constructor=empty.hasOwnProperty=empty.propertyIsEnumerable=empty.isPrototypeOf=empty.toLocaleString=empty.toString=empty.valueOf=empty.__proto__=null,empty},Object.create=function(prototype,properties){var object;if(null===prototype)object=createEmpty();else{if(\"object\"!=typeof prototype)throw new TypeError(\"typeof prototype[\"+typeof prototype+\"] != 'object'\");var Type=function(){};Type.prototype=prototype,object=new Type,object.__proto__=prototype}return void 0!==properties&&Object.defineProperties(object,properties),object}}if(Object.defineProperty){var definePropertyWorksOnObject=doesDefinePropertyWork({}),definePropertyWorksOnDom=\"undefined\"==typeof document||doesDefinePropertyWork(document.createElement(\"div\"));if(!definePropertyWorksOnObject||!definePropertyWorksOnDom)var definePropertyFallback=Object.defineProperty}if(!Object.defineProperty||definePropertyFallback){var ERR_NON_OBJECT_DESCRIPTOR=\"Property description must be an object: \",ERR_NON_OBJECT_TARGET=\"Object.defineProperty called on non-object: \",ERR_ACCESSORS_NOT_SUPPORTED=\"getters & setters can not be defined on this javascript engine\";Object.defineProperty=function(object,property,descriptor){if(\"object\"!=typeof object&&\"function\"!=typeof object||null===object)throw new TypeError(ERR_NON_OBJECT_TARGET+object);if(\"object\"!=typeof descriptor&&\"function\"!=typeof descriptor||null===descriptor)throw new TypeError(ERR_NON_OBJECT_DESCRIPTOR+descriptor);if(definePropertyFallback)try{return definePropertyFallback.call(Object,object,property,descriptor)}catch(exception){}if(owns(descriptor,\"value\"))if(supportsAccessors&&(lookupGetter(object,property)||lookupSetter(object,property))){var prototype=object.__proto__;object.__proto__=prototypeOfObject,delete object[property],object[property]=descriptor.value,object.__proto__=prototype}else object[property]=descriptor.value;else{if(!supportsAccessors)throw new TypeError(ERR_ACCESSORS_NOT_SUPPORTED);owns(descriptor,\"get\")&&defineGetter(object,property,descriptor.get),owns(descriptor,\"set\")&&defineSetter(object,property,descriptor.set)}return object}}Object.defineProperties||(Object.defineProperties=function(object,properties){for(var property in properties)owns(properties,property)&&Object.defineProperty(object,property,properties[property]);return object}),Object.seal||(Object.seal=function(object){return object}),Object.freeze||(Object.freeze=function(object){return object});try{Object.freeze(function(){})}catch(exception){Object.freeze=function(freezeObject){return function(object){return\"function\"==typeof object?object:freezeObject(object)}}(Object.freeze)}if(Object.preventExtensions||(Object.preventExtensions=function(object){return object}),Object.isSealed||(Object.isSealed=function(){return!1}),Object.isFrozen||(Object.isFrozen=function(){return!1}),Object.isExtensible||(Object.isExtensible=function(object){if(Object(object)===object)throw new TypeError;for(var name=\"\";owns(object,name);)name+=\"?\";object[name]=!0;var returnValue=owns(object,name);return delete object[name],returnValue}),!Object.keys){var hasDontEnumBug=!0,dontEnums=[\"toString\",\"toLocaleString\",\"valueOf\",\"hasOwnProperty\",\"isPrototypeOf\",\"propertyIsEnumerable\",\"constructor\"],dontEnumsLength=dontEnums.length;for(var key in{toString:null})hasDontEnumBug=!1;Object.keys=function(object){if(\"object\"!=typeof object&&\"function\"!=typeof object||null===object)throw new TypeError(\"Object.keys called on a non-object\");var keys=[];for(var name in object)owns(object,name)&&keys.push(name);if(hasDontEnumBug)for(var i=0,ii=dontEnumsLength;ii>i;i++){var dontEnum=dontEnums[i];owns(object,dontEnum)&&keys.push(dontEnum)}return keys}}Date.now||(Date.now=function(){return(new Date).getTime()});var ws=\"\t\\n\u000b\\f\\r   ᠎             　\\u2028\\u2029﻿\";if(!String.prototype.trim||ws.trim()){ws=\"[\"+ws+\"]\";var trimBeginRegexp=RegExp(\"^\"+ws+ws+\"*\"),trimEndRegexp=RegExp(ws+ws+\"*$\");String.prototype.trim=function(){return(this+\"\").replace(trimBeginRegexp,\"\").replace(trimEndRegexp,\"\")}}var toObject=function(o){if(null==o)throw new TypeError(\"can't convert \"+o+\" to object\");return Object(o)}});";
 
 /***/ },
-/* 72 */
+/* 73 */
 /***/ function(module, exports) {
 
 	ace.define("ace/ext/searchbox",["require","exports","module","ace/lib/dom","ace/lib/lang","ace/lib/event","ace/keyboard/hash_handler","ace/lib/keys"], function(acequire, exports, module) {
@@ -39129,7 +39971,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            
 
 /***/ },
-/* 73 */
+/* 74 */
 /***/ function(module, exports) {
 
 	/* ***** BEGIN LICENSE BLOCK *****
