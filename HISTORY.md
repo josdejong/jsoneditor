@@ -3,6 +3,11 @@
 https://github.com/josdejong/jsoneditor
 
 
+## 2018-06-03, version 5.17.1
+
+- Fixed a bug in a translation text.
+
+
 ## 2018-06-03, version 5.17.0
 
 - Implemented advanced sorting for arrays.

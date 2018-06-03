@@ -33,7 +33,7 @@ var _defs = {
         'removeText': 'Remove',
         'removeTitle': 'Remove selected fields (Ctrl+Del)',
         'removeField': 'Remove this field (Ctrl+Del)',
-        'selectANode': 'Select a node...',
+        'selectNode': 'Select a node...',
         'showAll': 'show all',
         'showMore': 'show more',
         'showMoreStatus': 'displaying ${visibleChilds} of ${totalChilds} items.',

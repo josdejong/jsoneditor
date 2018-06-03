@@ -24,7 +24,7 @@
  * Copyright (c) 2011-2017 Jos de Jong, http://jsoneditoronline.org
  *
  * @author  Jos de Jong, <wjosdejong@gmail.com>
- * @version 5.17.0
+ * @version 5.17.1
  * @date    2018-06-03
  */
 (function webpackUniversalModuleDefinition(root, factory) {
@@ -4619,7 +4619,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        'removeText': 'Remove',
 	        'removeTitle': 'Remove selected fields (Ctrl+Del)',
 	        'removeField': 'Remove this field (Ctrl+Del)',
-	        'selectANode': 'Select a node...',
+	        'selectNode': 'Select a node...',
 	        'showAll': 'show all',
 	        'showMore': 'show more',
 	        'showMoreStatus': 'displaying ${visibleChilds} of ${totalChilds} items.',
