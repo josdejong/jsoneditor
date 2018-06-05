@@ -2390,16 +2390,11 @@ Node.prototype._createDomTree = function () {
   tdValue.appendChild(dom.value);
   dom.tdValue = tdValue;
 
-  // create custom
-  var tdCustom = document.createElement('td');
-  tdCustom.className = 'jsoneditor-custom';
-
-  if(this.editor.options.onAddCustom && 
-     this.editor.options.onAddCustom instanceof Function){
-    tdCustom.appendChild(this.editor.options.onAddCustom());
+  // finalize dom tree
+  if(this.editor.options.onDomTreeElement && 
+     this.editor.options.onDomTreeElement instanceof Function){
+    this.editor.options.onDomTreeElement(tr);
   }
-
-  tr.appendChild(tdCustom);
 
   return domTree;
 };
