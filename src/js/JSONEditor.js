@@ -90,7 +90,7 @@ function JSONEditor (container, options, json) {
         'ajv', 'schema', 'schemaRefs','templates',
         'ace', 'theme','autocomplete',
         'onChange', 'onEditable', 'onError', 'onModeChange', 'onSelectionChange', 'onTextSelectionChange',
-        'escapeUnicode', 'history', 'search', 'mode', 'modes', 'name', 'indentation', 
+        'onAddCustom', 'escapeUnicode', 'history', 'search', 'mode', 'modes', 'name', 'indentation', 
         'sortObjectKeys', 'navigationBar', 'statusBar', 'languages', 'language'
       ];
 
