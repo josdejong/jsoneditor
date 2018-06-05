@@ -2393,7 +2393,7 @@ Node.prototype._createDomTree = function () {
   // finalize dom tree
   if(this.editor.options.onDomTreeElement && 
      this.editor.options.onDomTreeElement instanceof Function){
-    this.editor.options.onDomTreeElement(tr);
+    this.editor.options.onDomTreeElement(dom, tr);
   }
 
   return domTree;
