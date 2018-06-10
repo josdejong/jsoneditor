@@ -2390,6 +2390,12 @@ Node.prototype._createDomTree = function () {
   tdValue.appendChild(dom.value);
   dom.tdValue = tdValue;
 
+  // finalize dom tree
+  if(this.editor.options.onDomTreeElement && 
+     this.editor.options.onDomTreeElement instanceof Function){
+    this.editor.options.onDomTreeElement(dom, tr);
+  }
+
   return domTree;
 };
 
