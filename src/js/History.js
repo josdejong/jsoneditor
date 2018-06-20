@@ -120,7 +120,7 @@ function History (editor) {
       }
     },
 
-    'transform': {
+    'sort': {
       'undo': function (params) {
         var node = params.node;
         node.hideChilds();
@@ -134,6 +134,21 @@ function History (editor) {
         node.childs = params.newChilds;
         node.updateDom({updateIndexes: true});
         node.showChilds();
+      }
+    },
+
+    'transform': {
+      'undo': function (params) {
+        var node = params.node;
+        node.setValue(params.oldValue);
+
+        // TODO: would be nice to restore the state of the node and childs
+      },
+      'redo': function (params) {
+        var node = params.node;
+        node.setValue(params.newValue);
+
+        // TODO: would be nice to restore the state of the node and childs
       }
     }
 

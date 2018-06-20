@@ -685,10 +685,10 @@ Node.prototype.appendChild = function(node, visible, updateDom) {
     if (this.expanded && visible !== false) {
       // insert into the DOM, before the appendRow
       var newTr = node.getDom();
-      var appendTr = this.getAppendDom();
-      var table = appendTr ? appendTr.parentNode : undefined;
-      if (appendTr && table) {
-        table.insertBefore(newTr, appendTr);
+      var nextTr = this._getNextTr();
+      var table = nextTr ? nextTr.parentNode : undefined;
+      if (nextTr && table) {
+        table.insertBefore(newTr, nextTr);
       }
 
       node.showChilds();
@@ -3119,7 +3119,7 @@ Node.prototype.sort = function (path, direction) {
   // update the index numbering
   this._updateDomIndexes();
 
-  this.editor._onAction('transform', {
+  this.editor._onAction('sort', {
     node: this,
     oldChilds: oldChilds,
     newChilds: this.childs
@@ -3146,14 +3146,18 @@ Node.prototype.transform = function (query) {
 
   try {
     // apply the JMESPath query
-    var transformed = jmespath.search(this.getValue(), query);
+    var oldValue = this.getValue();
+    var newValue = jmespath.search(oldValue, query);
 
-    this.setValue(transformed);
+    this.setValue(newValue);
 
     this.editor._onAction('transform', {
       node: this,
+      oldValue: oldValue,
+      newValue: newValue,
       oldChilds: oldChilds,
       newChilds: this.childs
+      // TODO: use oldChilds/newChilds in history or clean it up
     });
 
     this.showChilds();

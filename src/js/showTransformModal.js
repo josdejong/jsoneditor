@@ -25,7 +25,7 @@ function showTransformModal (node, container) {
       '<tr>' +
       '  <td>' + translate('transformQueryLabel') + ' </td>' +
       '  <td class="jsoneditor-modal-input">' +
-      '    <input id="query" type="text" title="' + translate('transformQueryTitle') + '" value="[*]"/>' +
+      '    <input id="query" type="text" title="' + translate('transformQueryTitle') + '" value=""/>' +
       '  </td>' +
       '</tr>' +
       '<tr>' +
@@ -58,6 +58,8 @@ function showTransformModal (node, container) {
         var ok = modal.modalElem().querySelector('#ok');
         var query = modal.modalElem().querySelector('#query');
         var preview = modal.modalElem().querySelector('#preview');
+
+        query.value = Array.isArray(value) ? '[*]' : '@';
 
         function updatePreview() {
           try {
