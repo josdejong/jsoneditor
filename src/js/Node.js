@@ -399,7 +399,7 @@ Node.prototype.setValue = function(value, type) {
     this.childs = undefined;
     this.value = value;
   }
-  
+
   this.updateDom({'updateIndexes': true});
 
   this.previousValue = this.value;
@@ -3186,18 +3186,25 @@ Node.prototype.transform = function (query) {
   var oldChilds = this.childs;
   this.childs = this.childs.concat();
 
-  // apply the JMESPath query
-  var transformed = jmespath.search(this.getValue(), query);
+  try {
+    // apply the JMESPath query
+    var transformed = jmespath.search(this.getValue(), query);
 
-  this.setValue(transformed);
+    this.setValue(transformed);
 
-  this.editor._onAction('transform', {
-    node: this,
-    oldChilds: oldChilds,
-    newChilds: this.childs
-  });
+    this.editor._onAction('transform', {
+      node: this,
+      oldChilds: oldChilds,
+      newChilds: this.childs
+    });
 
-  this.showChilds();
+    this.showChilds();
+  }
+  catch (err) {
+    this.showChilds();
+
+    this.editor._onError(err);
+  }
 };
 
 /**

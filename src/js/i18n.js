@@ -51,6 +51,7 @@ var _defs = {
     'transformTitle': 'Filter, sort, or transform the childs of this ${type}',
     'transformQueryTitle': 'Enter a JMESPath query',
     'transformQueryLabel': 'Query',
+    'transformPreviewLabel': 'Preview',
     'type': 'Type',
     'typeTitle': 'Change the type of this field',
     'openUrl': 'Ctrl+Click or Ctrl+Enter to open url in new window',
