@@ -120,19 +120,19 @@ function History (editor) {
       }
     },
 
-    'sort': {
+    'transform': {
       'undo': function (params) {
         var node = params.node;
         node.hideChilds();
         node.childs = params.oldChilds;
-        node._updateDomIndexes();
+        node.updateDom({updateIndexes: true});
         node.showChilds();
       },
       'redo': function (params) {
         var node = params.node;
         node.hideChilds();
         node.childs = params.newChilds;
-        node._updateDomIndexes();
+        node.updateDom({updateIndexes: true});
         node.showChilds();
       }
     }

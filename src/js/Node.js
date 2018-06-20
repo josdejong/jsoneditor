@@ -1,10 +1,12 @@
 'use strict';
 
+var jmespath = require('jmespath');
 var naturalSort = require('javascript-natural-sort');
 var ContextMenu = require('./ContextMenu');
 var appendNodeFactory = require('./appendNodeFactory');
 var showMoreNodeFactory = require('./showMoreNodeFactory');
 var showSortModal = require('./showSortModal');
+var showTransformModal = require('./showTransformModal');
 var util = require('./util');
 var translate = require('./i18n').translate;
 
@@ -326,16 +328,15 @@ Node.prototype.getField = function() {
  */
 Node.prototype.setValue = function(value, type) {
   var childValue, child, visible;
+  var notUpdateDom = false;
 
   // first clear all current childs (if any)
   var childs = this.childs;
   if (childs) {
     while (childs.length) {
-      this.removeChild(childs[0]);
+      this.removeChild(childs[0], notUpdateDom);
     }
   }
-
-  // TODO: remove the DOM of this Node
 
   this.type = this._getType(value);
 
@@ -362,7 +363,7 @@ Node.prototype.setValue = function(value, type) {
           value: childValue
         });
         visible = i < this.MAX_VISIBLE_CHILDS;
-        this.appendChild(child, visible);
+        this.appendChild(child, visible, notUpdateDom);
       }
     }
     this.value = '';
@@ -381,7 +382,7 @@ Node.prototype.setValue = function(value, type) {
             value: childValue
           });
           visible = i < this.MAX_VISIBLE_CHILDS;
-          this.appendChild(child, visible);
+          this.appendChild(child, visible, notUpdateDom);
         }
         i++;
       }
@@ -398,6 +399,8 @@ Node.prototype.setValue = function(value, type) {
     this.childs = undefined;
     this.value = value;
   }
+  
+  this.updateDom({'updateIndexes': true});
 
   this.previousValue = this.value;
 };
@@ -664,9 +667,12 @@ Node.prototype.expandTo = function() {
  * Add a new child to the node.
  * Only applicable when Node value is of type array or object
  * @param {Node} node
- * @param {boolean} [visible] If true, the child will be rendered
+ * @param {boolean} [visible] If true (default), the child will be rendered
+ * @param {boolean} [updateDom]  If true (default), the DOM of both parent
+ *                               node and appended node will be updated
+ *                               (child count, indexes)
  */
-Node.prototype.appendChild = function(node, visible) {
+Node.prototype.appendChild = function(node, visible, updateDom) {
   if (this._hasChilds()) {
     // adjust the link to the parent
     node.setParent(this);
@@ -690,8 +696,10 @@ Node.prototype.appendChild = function(node, visible) {
       this.visibleChilds++;
     }
 
-    this.updateDom({'updateIndexes': true});
-    node.updateDom({'recurse': true});
+    if (updateDom !== false) {
+      this.updateDom({'updateIndexes': true});
+      node.updateDom({'recurse': true});
+    }
   }
 };
 
@@ -1105,15 +1113,19 @@ Node.prototype._move = function(node, beforeNode) {
  * Remove a child from the node.
  * Only applicable when Node value is of type array or object
  * @param {Node} node   The child node to be removed;
+ * @param {boolean} [updateDom]  If true (default), the DOM of the parent
+ *                               node will be updated (like child count)
  * @return {Node | undefined} node  The removed node on success,
  *                                             else undefined
  */
-Node.prototype.removeChild = function(node) {
+Node.prototype.removeChild = function(node, updateDom) {
   if (this.childs) {
     var index = this.childs.indexOf(node);
 
     if (index !== -1) {
-      this.visibleChilds--;
+      if (index < this.visibleChilds && this.expanded) {
+        this.visibleChilds--;
+      }
 
       node.hide();
 
@@ -1124,7 +1136,9 @@ Node.prototype.removeChild = function(node) {
       var removedNode = this.childs.splice(index, 1)[0];
       removedNode.parent = null;
 
-      this.updateDom({'updateIndexes': true});
+      if (updateDom !== false) {
+        this.updateDom({'updateIndexes': true});
+      }
 
       return removedNode;
     }
@@ -3147,7 +3161,37 @@ Node.prototype.sort = function (path, direction) {
   // update the index numbering
   this._updateDomIndexes();
 
-  this.editor._onAction('sort', {
+  this.editor._onAction('transform', {
+    node: this,
+    oldChilds: oldChilds,
+    newChilds: this.childs
+  });
+
+  this.showChilds();
+};
+
+/**
+ * Transform the node given a JMESPath query.
+ * @param {String} query    JMESPath query to apply
+ * @private
+ */
+Node.prototype.transform = function (query) {
+  if (!this._hasChilds()) {
+    return;
+  }
+
+  this.hideChilds(); // sorting is faster when the childs are not attached to the dom
+
+  // copy the childs array (the old one will be kept for an undo action
+  var oldChilds = this.childs;
+  this.childs = this.childs.concat();
+
+  // apply the JMESPath query
+  var transformed = jmespath.search(this.getValue(), query);
+
+  this.setValue(transformed);
+
+  this.editor._onAction('transform', {
     node: this,
     oldChilds: oldChilds,
     newChilds: this.childs
@@ -3583,10 +3627,19 @@ Node.prototype.showContextMenu = function (anchor, onClose) {
   if (this._hasChilds()) {
     items.push({
       text: translate('sort'),
-      title: translate('sortTitle') + this.type,
+      title: translate('sortTitle', {type: this.type}),
       className: 'jsoneditor-sort-asc',
       click: function () {
         showSortModal(node, node.editor.frame)
+      }
+    });
+
+    items.push({
+      text: translate('transform'),
+      title: translate('transformTitle', {type: this.type}),
+      className: 'jsoneditor-transform',
+      click: function () {
+        showTransformModal(node, node.editor.frame)
       }
     });
   }

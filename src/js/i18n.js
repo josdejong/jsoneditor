@@ -38,7 +38,7 @@ var _defs = {
         'showMore': 'show more',
         'showMoreStatus': 'displaying ${visibleChilds} of ${totalChilds} items.',
         'sort': 'Sort',
-        'sortTitle': 'Sort the childs of this ',
+        'sortTitle': 'Sort the childs of this ${type}',
         'sortFieldLabel': 'Field:',
         'sortDirectionLabel': 'Direction:',
         'sortFieldTitle': 'Select the nested field by which to sort the array or object',
@@ -47,6 +47,10 @@ var _defs = {
         'sortDescending': 'Descending',
         'sortDescendingTitle': 'Sort the selected field in descending order',
         'string': 'String',
+        'transform': 'Transform',
+        'transformTitle': 'Filter, sort, or transform the childs of this ${type}',
+        'transformQueryTitle': 'Enter a JMESPath query',
+        'transformQueryLabel': 'Query',
         'type': 'Type',
         'typeTitle': 'Change the type of this field',
         'openUrl': 'Ctrl+Click or Ctrl+Enter to open url in new window',
@@ -103,7 +107,7 @@ var _defs = {
         // TODO: correctly translate showMoreStatus
         'showMoreStatus': 'exibindo ${visibleChilds} de ${totalChilds} itens.',
         'sort': 'Organizar',
-        'sortTitle': 'Organizar os filhos deste ',
+        'sortTitle': 'Organizar os filhos deste ${type}',
         // TODO: correctly translate sortFieldLabel
         'sortFieldLabel': 'Field:',
         // TODO: correctly translate sortDirectionLabel
