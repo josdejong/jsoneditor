@@ -1068,48 +1068,6 @@ Node.prototype.containsNode = function(node) {
 };
 
 /**
- * Move given node into this node
- * @param {Node} node           the childNode to be moved
- * @param {Node} beforeNode     node will be inserted before given
- *                                         node. If no beforeNode is given,
- *                                         the node is appended at the end
- * @private
- */
-Node.prototype._move = function(node, beforeNode) {
-  if (node == beforeNode) {
-    // nothing to do...
-    return;
-  }
-
-  // check if this node is not a child of the node to be moved here
-  if (node.containsNode(this)) {
-    throw new Error(translate('validationCannotMove'));
-  }
-
-  // remove the original node
-  if (node.parent) {
-    node.parent.removeChild(node);
-  }
-
-  // create a clone of the node
-  var clone = node.clone();
-  node.clearDom();
-
-  // insert or append the node
-  if (beforeNode) {
-    this.insertBefore(clone, beforeNode);
-  }
-  else {
-    this.appendChild(clone);
-  }
-
-  /* TODO: adjust the field name (to prevent equal field names)
-   if (this.type == 'object') {
-   }
-   */
-};
-
-/**
  * Remove a child from the node.
  * Only applicable when Node value is of type array or object
  * @param {Node} node   The child node to be removed;
