@@ -10,6 +10,8 @@ var showTransformModal = require('./showTransformModal');
 var util = require('./util');
 var translate = require('./i18n').translate;
 
+var DEFAULT_MODAL_ANCHOR = document.body;
+
 /**
  * @constructor Node
  * Create a new Node
@@ -3141,6 +3143,7 @@ Node.prototype.transform = function (query) {
   this.hideChilds(); // sorting is faster when the childs are not attached to the dom
 
   // copy the childs array (the old one will be kept for an undo action
+  var oldType = this.type;
   var oldChilds = this.childs;
   this.childs = this.childs.concat();
 
@@ -3153,6 +3156,8 @@ Node.prototype.transform = function (query) {
 
     this.editor._onAction('transform', {
       node: this,
+      oldType: oldType,
+      newType: this.type,
       oldValue: oldValue,
       newValue: newValue,
       oldChilds: oldChilds,
@@ -3599,7 +3604,8 @@ Node.prototype.showContextMenu = function (anchor, onClose) {
       title: translate('sortTitle', {type: this.type}),
       className: 'jsoneditor-sort-asc',
       click: function () {
-        showSortModal(node, node.editor.frame)
+        var anchor = node.editor.options.modalAnchor || DEFAULT_MODAL_ANCHOR;
+        showSortModal(node, anchor)
       }
     });
 
@@ -3608,7 +3614,8 @@ Node.prototype.showContextMenu = function (anchor, onClose) {
       title: translate('transformTitle', {type: this.type}),
       className: 'jsoneditor-transform',
       click: function () {
-        showTransformModal(node, node.editor.frame)
+        var anchor = node.editor.options.modalAnchor || DEFAULT_MODAL_ANCHOR;
+        showTransformModal(node, anchor)
       }
     });
   }

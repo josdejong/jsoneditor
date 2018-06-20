@@ -249,6 +249,11 @@ Constructs a new JSONEditor.
 
   All available fields for translation can be found in the source file `src/js/i18n.js`.
 
+- `{HTMLElement} modalAnchor`
+
+  The container element where modals (like for sorting and filtering) are attached: an overlay will be created on top
+  of this container, and the modal will be created in the center of this container.
+
 
 ### Methods
 

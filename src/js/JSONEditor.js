@@ -51,7 +51,10 @@ var util = require('./util');
  *                               {function} onTextSelectionChange Callback method, 
  *                                                                triggered on text selection change
  *                                                                Only applicable for modes
- *                                                                'text' and 'code'
+ *                               {HTMLElement} modalAnchor        The anchor element to apply an
+ *                                                                overlay and display the modals in a
+ *                                                                centered location.
+ *                                                                Defaults to document.body
  * @param {Object | undefined} json JSON object
  */
 function JSONEditor (container, options, json) {
