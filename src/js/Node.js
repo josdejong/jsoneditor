@@ -219,7 +219,7 @@ Node.prototype.setError = function (error, child) {
 Node.prototype.updateError = function() {
   var error = this.error;
   var tdError = this.dom.tdError;
-  if (error && this.dom && this.dom.tr && !tdError) {
+  if (error && this.dom && this.dom.tr) {
     if (!tdError) {
       tdError = document.createElement('td');
       this.dom.tdError = tdError;

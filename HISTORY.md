@@ -9,6 +9,8 @@ https://github.com/josdejong/jsoneditor
   screen the modals are displayed.
 - Integrated JMESPath for advanced filtering, sorting, and transforming
   of JSON documents.
+- Fixed #544: JSON Schema errors sometimes not being displayed in the
+  editor.
 
 
 ## 2018-06-03, version 5.17.1
