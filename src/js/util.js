@@ -588,8 +588,7 @@ exports.getInnerText = function getInnerText(element, buffer) {
 exports.getInternetExplorerVersion = function getInternetExplorerVersion() {
   if (_ieVersion == -1) {
     var rv = -1; // Return value assumes failure.
-    if (navigator.appName == 'Microsoft Internet Explorer')
-    {
+    if (typeof navigator !== 'undefined' && navigator.appName == 'Microsoft Internet Explorer') {
       var ua = navigator.userAgent;
       var re  = new RegExp("MSIE ([0-9]{1,}[\.0-9]{0,})");
       if (re.exec(ua) != null) {
@@ -608,7 +607,7 @@ exports.getInternetExplorerVersion = function getInternetExplorerVersion() {
  * @returns {boolean} isFirefox
  */
 exports.isFirefox = function isFirefox () {
-  return (navigator.userAgent.indexOf("Firefox") != -1);
+  return (typeof navigator !== 'undefined' && navigator.userAgent.indexOf("Firefox") !== -1);
 };
 
 /**
