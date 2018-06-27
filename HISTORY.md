@@ -3,12 +3,12 @@
 https://github.com/josdejong/jsoneditor
 
 
-## not yet released, version 5.18.0
+## 2018-06-27, version 5.18.0
 
+- Implemented JMESPath support for advanced filtering, sorting, and
+  transforming of JSON documents.
 - Implemented a new option `modalAnchor` to control at which part of the
   screen the modals are displayed.
-- Integrated JMESPath for advanced filtering, sorting, and transforming
-  of JSON documents.
 - Fixed #544: JSON Schema errors sometimes not being displayed in the
   editor.
 

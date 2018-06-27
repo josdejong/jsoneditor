@@ -699,6 +699,15 @@ div.jsoneditor-contextmenu button.jsoneditor-sort-desc:focus > div.jsoneditor-ic
   background-position: -192px 0;
 }
 
+div.jsoneditor-contextmenu button.jsoneditor-transform > div.jsoneditor-icon {
+  background-position: -216px -24px;
+}
+
+div.jsoneditor-contextmenu button.jsoneditor-transform:hover > div.jsoneditor-icon,
+div.jsoneditor-contextmenu button.jsoneditor-transform:focus > div.jsoneditor-icon {
+  background-position: -216px 0;
+}
+
 /* ContextMenu - sub menu */
 
 div.jsoneditor-contextmenu ul li button.jsoneditor-selected,
@@ -798,6 +807,10 @@ div.jsoneditor-contextmenu button.jsoneditor-type-modes > div.jsoneditor-icon {
   border-radius: 2px !important;
   padding: 45px 15px 15px 15px !important;
   box-shadow: 2px 2px 12px rgba(128, 128, 128, 0.3) !important;
+  font-size: 10.5pt;
+  font-family: arial, sans-serif;
+  color: #4d4d4d;
+  line-height: 1.3em;
 }
 
 .jsoneditor-modal .pico-modal-header {
@@ -815,14 +828,24 @@ div.jsoneditor-contextmenu button.jsoneditor-type-modes > div.jsoneditor-icon {
   color: white;
 }
 
+.jsoneditor-modal table th,
 .jsoneditor-modal table td {
-  padding: 5px 0;
-  padding-right: 20px;
+  padding: 5px 20px 5px 0;
   text-align: left;
-  vertical-align: middle;
-  font-size: 10pt;
+  vertical-align: top;
+  font-weight: normal;
+  font-size: 10.5pt;
   font-family: arial, sans-serif;
   color: #4d4d4d;
+  line-height: 32px;
+}
+
+.jsoneditor-modal p:first-child {
+  margin-top: 0;
+}
+
+.jsoneditor-modal a {
+  color: #3883fa;
 }
 
 
@@ -846,16 +869,45 @@ div.jsoneditor-contextmenu button.jsoneditor-type-modes > div.jsoneditor-icon {
 }
 
 .jsoneditor-modal select,
-.jsoneditor-modal input {
-  background: #f5f5f5;
+.jsoneditor-modal textarea,
+.jsoneditor-modal input,
+.jsoneditor-modal #query {
+  background: #ffffff;
   border: 1px solid #d3d3d3;
   color: #4d4d4d;
   border-radius: 3px;
+  padding: 4px;
+  font-size: 10.5pt;
+  font-family: arial, sans-serif;
+}
+
+.jsoneditor-modal input[type="button"],
+.jsoneditor-modal input[type="submit"] {
+  background: #f5f5f5;
+  padding: 4px 20px;
+}
+
+.jsoneditor-modal select,
+.jsoneditor-modal input {
   cursor: pointer;
+}
+
+.jsoneditor-modal input {
+  padding: 4px;
+}
+
+.jsoneditor-modal input[type="text"] {
+  cursor: inherit;
+}
+
+.jsoneditor-modal input[disabled] {
+  background: #d3d3d3;
+  color: #808080;
 }
 
 .jsoneditor-modal .jsoneditor-select-wrapper {
   position: relative;
+  display: inline-block;
 }
 
 .jsoneditor-modal .jsoneditor-select-wrapper:after {
@@ -880,7 +932,7 @@ div.jsoneditor-contextmenu button.jsoneditor-type-modes > div.jsoneditor-icon {
   appearance: none;
   text-indent: 0;
   text-overflow: "";
-  font-size: inherit;
+  font-size: 10pt;
   line-height: inherit;
 }
 
@@ -913,8 +965,60 @@ div.jsoneditor-contextmenu button.jsoneditor-type-modes > div.jsoneditor-icon {
   color: white;
 }
 
-.jsoneditor-modal input {
-  padding: 4px 20px;
+.jsoneditor-modal #query,
+.jsoneditor-modal .jsoneditor-transform-preview {
+  width: 400px;
+}
+
+.jsoneditor-modal .jsoneditor-transform-preview {
+  font-family: monospace;
+  background: #f5f5f5;
+  height: 200px;
+}
+
+.jsoneditor-modal .jsoneditor-transform-preview.jsoneditor-error {
+  color: #ee422e;
+}
+
+.jsoneditor-modal .jsoneditor-jmespath-wizard {
+  line-height: 1.2em;
+  width: 100%;
+  background: #ffffe0;
+  border: 1px solid #ffe99a;
+  padding: 0 10px 10px;
+  border-radius: 3px;
+}
+
+.jsoneditor-modal .jsoneditor-jmespath-wizard-label {
+  font-style: italic;
+  margin: 4px 0 2px 0;
+}
+
+.jsoneditor-modal .jsoneditor-jmespath-filter-field {
+  width: auto;
+  max-width: 200px;
+}
+
+.jsoneditor-modal .jsoneditor-jmespath-filter-relation {
+  width: auto;
+}
+
+.jsoneditor-modal .jsoneditor-jmespath-filter-value {
+  width: 100px;
+}
+
+.jsoneditor-modal .jsoneditor-jmespath-sort-field {
+  width: auto;
+  max-width: 200px;
+}
+
+.jsoneditor-modal .jsoneditor-jmespath-sort-order {
+  width: auto;
+}
+
+.jsoneditor-modal .jsoneditor-jmespath-select-fields {
+  width: auto;
+  max-width: 100%;
 }
 div.jsoneditor-menu {
   width: 100%;

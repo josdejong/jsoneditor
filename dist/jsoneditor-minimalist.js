@@ -24,8 +24,8 @@
  * Copyright (c) 2011-2017 Jos de Jong, http://jsoneditoronline.org
  *
  * @author  Jos de Jong, <wjosdejong@gmail.com>
- * @version 5.17.1
- * @date    2018-06-03
+ * @version 5.18.0
+ * @date    2018-06-27
  */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
@@ -94,7 +94,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	}
 
 	var treemode = __webpack_require__(1);
-	var textmode = __webpack_require__(17);
+	var textmode = __webpack_require__(20);
 	var util = __webpack_require__(4);
 
 	/**
@@ -136,7 +136,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	 *                               {function} onTextSelectionChange Callback method, 
 	 *                                                                triggered on text selection change
 	 *                                                                Only applicable for modes
-	 *                                                                'text' and 'code'
+	 *                               {HTMLElement} modalAnchor        The anchor element to apply an
+	 *                                                                overlay and display the modals in a
+	 *                                                                centered location.
+	 *                                                                Defaults to document.body
 	 * @param {Object | undefined} json JSON object
 	 */
 	function JSONEditor (container, options, json) {
@@ -504,9 +507,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	var ContextMenu = __webpack_require__(7);
 	var TreePath = __webpack_require__(9);
 	var Node = __webpack_require__(10);
-	var ModeSwitcher = __webpack_require__(15);
+	var ModeSwitcher = __webpack_require__(18);
 	var util = __webpack_require__(4);
-	var autocomplete = __webpack_require__(16);
+	var autocomplete = __webpack_require__(19);
 	var translate = __webpack_require__(8).translate;
 	var setLanguages = __webpack_require__(8).setLanguages;
 	var setLanguage = __webpack_require__(8).setLanguage;
@@ -2230,15 +2233,30 @@ return /******/ (function(modules) { // webpackBootstrap
 	        var node = params.node;
 	        node.hideChilds();
 	        node.childs = params.oldChilds;
-	        node._updateDomIndexes();
+	        node.updateDom({updateIndexes: true});
 	        node.showChilds();
 	      },
 	      'redo': function (params) {
 	        var node = params.node;
 	        node.hideChilds();
 	        node.childs = params.newChilds;
-	        node._updateDomIndexes();
+	        node.updateDom({updateIndexes: true});
 	        node.showChilds();
+	      }
+	    },
+
+	    'transform': {
+	      'undo': function (params) {
+	        var node = params.node;
+	        node.setValue(params.oldValue);
+
+	        // TODO: would be nice to restore the state of the node and childs
+	      },
+	      'redo': function (params) {
+	        var node = params.node;
+	        node.setValue(params.newValue);
+
+	        // TODO: would be nice to restore the state of the node and childs
 	      }
 	    }
 
@@ -2966,8 +2984,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	exports.getInternetExplorerVersion = function getInternetExplorerVersion() {
 	  if (_ieVersion == -1) {
 	    var rv = -1; // Return value assumes failure.
-	    if (navigator.appName == 'Microsoft Internet Explorer')
-	    {
+	    if (typeof navigator !== 'undefined' && navigator.appName == 'Microsoft Internet Explorer') {
 	      var ua = navigator.userAgent;
 	      var re  = new RegExp("MSIE ([0-9]{1,}[\.0-9]{0,})");
 	      if (re.exec(ua) != null) {
@@ -2986,7 +3003,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * @returns {boolean} isFirefox
 	 */
 	exports.isFirefox = function isFirefox () {
-	  return (navigator.userAgent.indexOf("Firefox") != -1);
+	  return (typeof navigator !== 'undefined' && navigator.userAgent.indexOf("Firefox") !== -1);
 	};
 
 	/**
@@ -4588,195 +4605,224 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _locales = ['en', 'pt-BR'];
 	var _defs = {
-	    en: {
-	        'array': 'Array',
-	        'auto': 'Auto',
-	        'appendText': 'Append',
-	        'appendTitle': 'Append a new field with type \'auto\' after this field (Ctrl+Shift+Ins)',
-	        'appendSubmenuTitle': 'Select the type of the field to be appended',
-	        'appendTitleAuto': 'Append a new field with type \'auto\' (Ctrl+Shift+Ins)',
-	        'ascending': 'Ascending',
-	        'ascendingTitle': 'Sort the childs of this ${type} in ascending order',
-	        'actionsMenu': 'Click to open the actions menu (Ctrl+M)',
-	        'collapseAll': 'Collapse all fields',
-	        'descending': 'Descending',
-	        'descendingTitle': 'Sort the childs of this ${type} in descending order',
-	        'drag': 'Drag to move this field (Alt+Shift+Arrows)',
-	        'duplicateKey': 'duplicate key',
-	        'duplicateText': 'Duplicate',
-	        'duplicateTitle': 'Duplicate selected fields (Ctrl+D)',
-	        'duplicateField': 'Duplicate this field (Ctrl+D)',
-	        'empty': 'empty',
-	        'expandAll': 'Expand all fields',
-	        'expandTitle': 'Click to expand/collapse this field (Ctrl+E). \n' +
-	            'Ctrl+Click to expand/collapse including all childs.',
-	        'insert': 'Insert',
-	        'insertTitle': 'Insert a new field with type \'auto\' before this field (Ctrl+Ins)',
-	        'insertSub': 'Select the type of the field to be inserted',
-	        'object': 'Object',
-	        'ok': 'Ok',
-	        'redo': 'Redo (Ctrl+Shift+Z)',
-	        'removeText': 'Remove',
-	        'removeTitle': 'Remove selected fields (Ctrl+Del)',
-	        'removeField': 'Remove this field (Ctrl+Del)',
-	        'selectNode': 'Select a node...',
-	        'showAll': 'show all',
-	        'showMore': 'show more',
-	        'showMoreStatus': 'displaying ${visibleChilds} of ${totalChilds} items.',
-	        'sort': 'Sort',
-	        'sortTitle': 'Sort the childs of this ',
-	        'sortFieldLabel': 'Field:',
-	        'sortDirectionLabel': 'Direction:',
-	        'sortFieldTitle': 'Select the nested field by which to sort the array or object',
-	        'sortAscending': 'Ascending',
-	        'sortAscendingTitle': 'Sort the selected field in ascending order',
-	        'sortDescending': 'Descending',
-	        'sortDescendingTitle': 'Sort the selected field in descending order',
-	        'string': 'String',
-	        'type': 'Type',
-	        'typeTitle': 'Change the type of this field',
-	        'openUrl': 'Ctrl+Click or Ctrl+Enter to open url in new window',
-	        'undo': 'Undo last action (Ctrl+Z)',
-	        'validationCannotMove': 'Cannot move a field into a child of itself',
-	        'autoType': 'Field type "auto". ' +
-	            'The field type is automatically determined from the value ' +
-	            'and can be a string, number, boolean, or null.',
-	        'objectType': 'Field type "object". ' +
-	            'An object contains an unordered set of key/value pairs.',
-	        'arrayType': 'Field type "array". ' +
-	            'An array contains an ordered collection of values.',
-	        'stringType': 'Field type "string". ' +
-	            'Field type is not determined from the value, ' +
-	            'but always returned as string.'
-	    },
-	    'pt-BR': {
-	        'array': 'Lista',
-	        'auto': 'Automatico',
-	        'appendText': 'Adicionar',
-	        'appendTitle': 'Adicionar novo campo com tipo \'auto\' depois deste campo (Ctrl+Shift+Ins)',
-	        'appendSubmenuTitle': 'Selecione o tipo do campo a ser adicionado',
-	        'appendTitleAuto': 'Adicionar novo campo com tipo \'auto\' (Ctrl+Shift+Ins)',
-	        'ascending': 'Ascendente',
-	        'ascendingTitle': 'Organizar filhor do tipo ${type} em crescente',
-	        'actionsMenu': 'Clique para abrir o menu de ações (Ctrl+M)',
-	        'collapseAll': 'Fechar todos campos',
-	        'descending': 'Descendente',
-	        'descendingTitle': 'Organizar o filhos do tipo ${type} em decrescente',
-	        'duplicateKey': 'chave duplicada',
-	        'drag': 'Arraste para mover este campo (Alt+Shift+Arrows)',
-	        'duplicateText': 'Duplicar',
-	        'duplicateTitle': 'Duplicar campos selecionados (Ctrl+D)',
-	        'duplicateField': 'Duplicar este campo (Ctrl+D)',
-	        'empty': 'vazio',
-	        'expandAll': 'Expandir todos campos',
-	        'expandTitle': 'Clique para expandir/encolher este campo (Ctrl+E). \n' +
-	            'Ctrl+Click para expandir/encolher incluindo todos os filhos.',
-	        'insert': 'Inserir',
-	        'insertTitle': 'Inserir um novo campo do tipo \'auto\' antes deste campo (Ctrl+Ins)',
-	        'insertSub': 'Selecionar o tipo de campo a ser inserido',
-	        'object': 'Objeto',
-	        'ok': 'Ok',
-	        'redo': 'Refazer (Ctrl+Shift+Z)',
-	        'removeText': 'Remover',
-	        'removeTitle': 'Remover campos selecionados (Ctrl+Del)',
-	        'removeField': 'Remover este campo (Ctrl+Del)',
-	        // TODO: correctly translate selectNode
-	        'selectNode': 'Select a node...',
-	        // TODO: correctly translate showAll
-	        'showAll': 'mostre tudo',
-	        // TODO: correctly translate showMore
-	        'showMore': 'mostre mais',
-	        // TODO: correctly translate showMoreStatus
-	        'showMoreStatus': 'exibindo ${visibleChilds} de ${totalChilds} itens.',
-	        'sort': 'Organizar',
-	        'sortTitle': 'Organizar os filhos deste ',
-	        // TODO: correctly translate sortFieldLabel
-	        'sortFieldLabel': 'Field:',
-	        // TODO: correctly translate sortDirectionLabel
-	        'sortDirectionLabel': 'Direction:',
-	        // TODO: correctly translate sortFieldTitle
-	        'sortFieldTitle': 'Select the nested field by which to sort the array or object',
-	        // TODO: correctly translate sortAscending
-	        'sortAscending': 'Ascending',
-	        // TODO: correctly translate sortAscendingTitle
-	        'sortAscendingTitle': 'Sort the selected field in ascending order',
-	        // TODO: correctly translate sortDescending
-	        'sortDescending': 'Descending',
-	        // TODO: correctly translate sortDescendingTitle
-	        'sortDescendingTitle': 'Sort the selected field in descending order',
-	        'string': 'Texto',
-	        'type': 'Tipo',
-	        'typeTitle': 'Mudar o tipo deste campo',
-	        'openUrl': 'Ctrl+Click ou Ctrl+Enter para abrir link em nova janela',
-	        'undo': 'Desfazer último ação (Ctrl+Z)',
-	        'validationCannotMove': 'Não pode mover um campo como filho dele mesmo',
-	        'autoType': 'Campo do tipo "auto". ' +
-	            'O tipo do campo é determinao automaticamente a partir do seu valor ' +
-	            'e pode ser texto, número, verdade/falso ou nulo.',
-	        'objectType': 'Campo do tipo "objeto". ' +
-	            'Um objeto contém uma lista de pares com chave e valor.',
-	        'arrayType': 'Campo do tipo "lista". ' +
-	            'Uma lista contem uma coleção de valores ordenados.',
-	        'stringType': 'Campo do tipo "string". ' +
-	            'Campo do tipo nao é determinado através do seu valor, ' +
-	            'mas sempre retornara um texto.'
-	    }
+	  en: {
+	    'array': 'Array',
+	    'auto': 'Auto',
+	    'appendText': 'Append',
+	    'appendTitle': 'Append a new field with type \'auto\' after this field (Ctrl+Shift+Ins)',
+	    'appendSubmenuTitle': 'Select the type of the field to be appended',
+	    'appendTitleAuto': 'Append a new field with type \'auto\' (Ctrl+Shift+Ins)',
+	    'ascending': 'Ascending',
+	    'ascendingTitle': 'Sort the childs of this ${type} in ascending order',
+	    'actionsMenu': 'Click to open the actions menu (Ctrl+M)',
+	    'collapseAll': 'Collapse all fields',
+	    'descending': 'Descending',
+	    'descendingTitle': 'Sort the childs of this ${type} in descending order',
+	    'drag': 'Drag to move this field (Alt+Shift+Arrows)',
+	    'duplicateKey': 'duplicate key',
+	    'duplicateText': 'Duplicate',
+	    'duplicateTitle': 'Duplicate selected fields (Ctrl+D)',
+	    'duplicateField': 'Duplicate this field (Ctrl+D)',
+	    'empty': 'empty',
+	    'expandAll': 'Expand all fields',
+	    'expandTitle': 'Click to expand/collapse this field (Ctrl+E). \n' +
+	    'Ctrl+Click to expand/collapse including all childs.',
+	    'insert': 'Insert',
+	    'insertTitle': 'Insert a new field with type \'auto\' before this field (Ctrl+Ins)',
+	    'insertSub': 'Select the type of the field to be inserted',
+	    'object': 'Object',
+	    'ok': 'Ok',
+	    'redo': 'Redo (Ctrl+Shift+Z)',
+	    'removeText': 'Remove',
+	    'removeTitle': 'Remove selected fields (Ctrl+Del)',
+	    'removeField': 'Remove this field (Ctrl+Del)',
+	    'selectNode': 'Select a node...',
+	    'showAll': 'show all',
+	    'showMore': 'show more',
+	    'showMoreStatus': 'displaying ${visibleChilds} of ${totalChilds} items.',
+	    'sort': 'Sort',
+	    'sortTitle': 'Sort the childs of this ${type}',
+	    'sortFieldLabel': 'Field:',
+	    'sortDirectionLabel': 'Direction:',
+	    'sortFieldTitle': 'Select the nested field by which to sort the array or object',
+	    'sortAscending': 'Ascending',
+	    'sortAscendingTitle': 'Sort the selected field in ascending order',
+	    'sortDescending': 'Descending',
+	    'sortDescendingTitle': 'Sort the selected field in descending order',
+	    'string': 'String',
+	    'transform': 'Transform',
+	    'transformTitle': 'Filter, sort, or transform the childs of this ${type}',
+	    'transformQueryTitle': 'Enter a JMESPath query',
+	    'transformWizardLabel': 'Wizard',
+	    'transformWizardFilter': 'Filter',
+	    'transformWizardSortBy': 'Sort by',
+	    'transformWizardSelectFields': 'Select fields',
+	    'transformQueryLabel': 'Query',
+	    'transformPreviewLabel': 'Preview',
+	    'type': 'Type',
+	    'typeTitle': 'Change the type of this field',
+	    'openUrl': 'Ctrl+Click or Ctrl+Enter to open url in new window',
+	    'undo': 'Undo last action (Ctrl+Z)',
+	    'validationCannotMove': 'Cannot move a field into a child of itself',
+	    'autoType': 'Field type "auto". ' +
+	    'The field type is automatically determined from the value ' +
+	    'and can be a string, number, boolean, or null.',
+	    'objectType': 'Field type "object". ' +
+	    'An object contains an unordered set of key/value pairs.',
+	    'arrayType': 'Field type "array". ' +
+	    'An array contains an ordered collection of values.',
+	    'stringType': 'Field type "string". ' +
+	    'Field type is not determined from the value, ' +
+	    'but always returned as string.'
+	  },
+	  'pt-BR': {
+	    'array': 'Lista',
+	    'auto': 'Automatico',
+	    'appendText': 'Adicionar',
+	    'appendTitle': 'Adicionar novo campo com tipo \'auto\' depois deste campo (Ctrl+Shift+Ins)',
+	    'appendSubmenuTitle': 'Selecione o tipo do campo a ser adicionado',
+	    'appendTitleAuto': 'Adicionar novo campo com tipo \'auto\' (Ctrl+Shift+Ins)',
+	    'ascending': 'Ascendente',
+	    'ascendingTitle': 'Organizar filhor do tipo ${type} em crescente',
+	    'actionsMenu': 'Clique para abrir o menu de ações (Ctrl+M)',
+	    'collapseAll': 'Fechar todos campos',
+	    'descending': 'Descendente',
+	    'descendingTitle': 'Organizar o filhos do tipo ${type} em decrescente',
+	    'duplicateKey': 'chave duplicada',
+	    'drag': 'Arraste para mover este campo (Alt+Shift+Arrows)',
+	    'duplicateText': 'Duplicar',
+	    'duplicateTitle': 'Duplicar campos selecionados (Ctrl+D)',
+	    'duplicateField': 'Duplicar este campo (Ctrl+D)',
+	    'empty': 'vazio',
+	    'expandAll': 'Expandir todos campos',
+	    'expandTitle': 'Clique para expandir/encolher este campo (Ctrl+E). \n' +
+	    'Ctrl+Click para expandir/encolher incluindo todos os filhos.',
+	    'insert': 'Inserir',
+	    'insertTitle': 'Inserir um novo campo do tipo \'auto\' antes deste campo (Ctrl+Ins)',
+	    'insertSub': 'Selecionar o tipo de campo a ser inserido',
+	    'object': 'Objeto',
+	    'ok': 'Ok',
+	    'redo': 'Refazer (Ctrl+Shift+Z)',
+	    'removeText': 'Remover',
+	    'removeTitle': 'Remover campos selecionados (Ctrl+Del)',
+	    'removeField': 'Remover este campo (Ctrl+Del)',
+	    // TODO: correctly translate
+	    'selectNode': 'Select a node...',
+	    // TODO: correctly translate
+	    'showAll': 'mostre tudo',
+	    // TODO: correctly translate
+	    'showMore': 'mostre mais',
+	    // TODO: correctly translate
+	    'showMoreStatus': 'exibindo ${visibleChilds} de ${totalChilds} itens.',
+	    'sort': 'Organizar',
+	    'sortTitle': 'Organizar os filhos deste ${type}',
+	    // TODO: correctly translate
+	    'sortFieldLabel': 'Field:',
+	    // TODO: correctly translate
+	    'sortDirectionLabel': 'Direction:',
+	    // TODO: correctly translate
+	    'sortFieldTitle': 'Select the nested field by which to sort the array or object',
+	    // TODO: correctly translate
+	    'sortAscending': 'Ascending',
+	    // TODO: correctly translate
+	    'sortAscendingTitle': 'Sort the selected field in ascending order',
+	    // TODO: correctly translate
+	    'sortDescending': 'Descending',
+	    // TODO: correctly translate
+	    'sortDescendingTitle': 'Sort the selected field in descending order',
+	    'string': 'Texto',
+	    // TODO: correctly translate
+	    'transform': 'Transform',
+	    // TODO: correctly translate
+	    'transformTitle': 'Filter, sort, or transform the childs of this ${type}',
+	    // TODO: correctly translate
+	    'transformQueryTitle': 'Enter a JMESPath query',
+	    // TODO: correctly translate
+	    'transformWizardLabel': 'Wizard',
+	    // TODO: correctly translate
+	    'transformWizardFilter': 'Filter',
+	    // TODO: correctly translate
+	    'transformWizardSortBy': 'Sort by',
+	    // TODO: correctly translate
+	    'transformWizardSelectFields': 'Select fields',
+	    // TODO: correctly translate
+	    'transformQueryLabel': 'Query',
+	    // TODO: correctly translate
+	    'transformPreviewLabel': 'Preview',
+	    'type': 'Tipo',
+	    'typeTitle': 'Mudar o tipo deste campo',
+	    'openUrl': 'Ctrl+Click ou Ctrl+Enter para abrir link em nova janela',
+	    'undo': 'Desfazer último ação (Ctrl+Z)',
+	    'validationCannotMove': 'Não pode mover um campo como filho dele mesmo',
+	    'autoType': 'Campo do tipo "auto". ' +
+	    'O tipo do campo é determinao automaticamente a partir do seu valor ' +
+	    'e pode ser texto, número, verdade/falso ou nulo.',
+	    'objectType': 'Campo do tipo "objeto". ' +
+	    'Um objeto contém uma lista de pares com chave e valor.',
+	    'arrayType': 'Campo do tipo "lista". ' +
+	    'Uma lista contem uma coleção de valores ordenados.',
+	    'stringType': 'Campo do tipo "string". ' +
+	    'Campo do tipo nao é determinado através do seu valor, ' +
+	    'mas sempre retornara um texto.'
+	  }
 	};
 
 	var _defaultLang = 'en';
 	var _lang;
-	var userLang = navigator.language || navigator.userLanguage;
+	var userLang = typeof navigator !== 'undefined'
+	    ? navigator.language || navigator.userLanguage
+	    : undefined;
 	_lang = _locales.find(function (l) {
-	    return l === userLang;
+	  return l === userLang;
 	});
 	if (!_lang) {
-	    _lang = _defaultLang;
+	  _lang = _defaultLang;
 	}
 
 	module.exports = {
-	    // supported locales
-	    _locales: _locales,
-	    _defs: _defs,
-	    _lang: _lang,
-	    setLanguage: function (lang) {
-	        if (!lang) {
-	            return;
-	        }
-	        var langFound = _locales.find(function (l) {
-	            return l === lang;
-	        });
-	        if (langFound) {
-	            _lang = langFound;
-	        } else {
-	            console.error('Language not found');
-	        }
-	    },
-	    setLanguages: function (languages) {
-	        if (!languages) {
-	            return;
-	        }
-	        for (var key in languages) {
-	            var langFound = _locales.find(function (l) {
-	                return l === key;
-	            });
-	            if (!langFound) {
-	                _locales.push(key);
-	            }
-	            _defs[key] = Object.assign({}, _defs[_defaultLang], _defs[key], languages[key]);
-	        }
-	    },
-	    translate: function (key, data, lang) {
-	        if (!lang) {
-	            lang = _lang;
-	        }
-	        var text = _defs[lang][key];
-	        if (data) {
-	            for (key in data) {
-	                text = text.replace('${' + key + '}', data[key]);
-	            }
-	        }
-	        return text || key;
+	  // supported locales
+	  _locales: _locales,
+	  _defs: _defs,
+	  _lang: _lang,
+	  setLanguage: function (lang) {
+	    if (!lang) {
+	      return;
 	    }
+	    var langFound = _locales.find(function (l) {
+	      return l === lang;
+	    });
+	    if (langFound) {
+	      _lang = langFound;
+	    } else {
+	      console.error('Language not found');
+	    }
+	  },
+	  setLanguages: function (languages) {
+	    if (!languages) {
+	      return;
+	    }
+	    for (var key in languages) {
+	      var langFound = _locales.find(function (l) {
+	        return l === key;
+	      });
+	      if (!langFound) {
+	        _locales.push(key);
+	      }
+	      _defs[key] = Object.assign({}, _defs[_defaultLang], _defs[key], languages[key]);
+	    }
+	  },
+	  translate: function (key, data, lang) {
+	    if (!lang) {
+	      lang = _lang;
+	    }
+	    var text = _defs[lang][key];
+	    if (data) {
+	      for (key in data) {
+	        text = text.replace('${' + key + '}', data[key]);
+	      }
+	    }
+	    return text || key;
+	  }
 	};
 
 /***/ },
@@ -4900,13 +4946,17 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	'use strict';
 
-	var naturalSort = __webpack_require__(11);
-	var picoModal = __webpack_require__(12);
+	var jmespath = __webpack_require__(11);
+	var naturalSort = __webpack_require__(12);
 	var ContextMenu = __webpack_require__(7);
 	var appendNodeFactory = __webpack_require__(13);
 	var showMoreNodeFactory = __webpack_require__(14);
+	var showSortModal = __webpack_require__(15);
+	var showTransformModal = __webpack_require__(17);
 	var util = __webpack_require__(4);
 	var translate = __webpack_require__(8).translate;
+
+	var DEFAULT_MODAL_ANCHOR = document.body;
 
 	/**
 	 * @constructor Node
@@ -5115,7 +5165,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	Node.prototype.updateError = function() {
 	  var error = this.error;
 	  var tdError = this.dom.tdError;
-	  if (error && this.dom && this.dom.tr && !tdError) {
+	  if (error && this.dom && this.dom.tr) {
 	    if (!tdError) {
 	      tdError = document.createElement('td');
 	      this.dom.tdError = tdError;
@@ -5226,16 +5276,15 @@ return /******/ (function(modules) { // webpackBootstrap
 	 */
 	Node.prototype.setValue = function(value, type) {
 	  var childValue, child, visible;
+	  var notUpdateDom = false;
 
 	  // first clear all current childs (if any)
 	  var childs = this.childs;
 	  if (childs) {
 	    while (childs.length) {
-	      this.removeChild(childs[0]);
+	      this.removeChild(childs[0], notUpdateDom);
 	    }
 	  }
-
-	  // TODO: remove the DOM of this Node
 
 	  this.type = this._getType(value);
 
@@ -5262,7 +5311,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	          value: childValue
 	        });
 	        visible = i < this.MAX_VISIBLE_CHILDS;
-	        this.appendChild(child, visible);
+	        this.appendChild(child, visible, notUpdateDom);
 	      }
 	    }
 	    this.value = '';
@@ -5281,7 +5330,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            value: childValue
 	          });
 	          visible = i < this.MAX_VISIBLE_CHILDS;
-	          this.appendChild(child, visible);
+	          this.appendChild(child, visible, notUpdateDom);
 	        }
 	        i++;
 	      }
@@ -5298,6 +5347,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	    this.childs = undefined;
 	    this.value = value;
 	  }
+
+	  this.updateDom({'updateIndexes': true});
 
 	  this.previousValue = this.value;
 	};
@@ -5564,9 +5615,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * Add a new child to the node.
 	 * Only applicable when Node value is of type array or object
 	 * @param {Node} node
-	 * @param {boolean} [visible] If true, the child will be rendered
+	 * @param {boolean} [visible] If true (default), the child will be rendered
+	 * @param {boolean} [updateDom]  If true (default), the DOM of both parent
+	 *                               node and appended node will be updated
+	 *                               (child count, indexes)
 	 */
-	Node.prototype.appendChild = function(node, visible) {
+	Node.prototype.appendChild = function(node, visible, updateDom) {
 	  if (this._hasChilds()) {
 	    // adjust the link to the parent
 	    node.setParent(this);
@@ -5579,10 +5633,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	    if (this.expanded && visible !== false) {
 	      // insert into the DOM, before the appendRow
 	      var newTr = node.getDom();
-	      var appendTr = this.getAppendDom();
-	      var table = appendTr ? appendTr.parentNode : undefined;
-	      if (appendTr && table) {
-	        table.insertBefore(newTr, appendTr);
+	      var nextTr = this._getNextTr();
+	      var table = nextTr ? nextTr.parentNode : undefined;
+	      if (nextTr && table) {
+	        table.insertBefore(newTr, nextTr);
 	      }
 
 	      node.showChilds();
@@ -5590,8 +5644,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	      this.visibleChilds++;
 	    }
 
-	    this.updateDom({'updateIndexes': true});
-	    node.updateDom({'recurse': true});
+	    if (updateDom !== false) {
+	      this.updateDom({'updateIndexes': true});
+	      node.updateDom({'recurse': true});
+	    }
 	  }
 	};
 
@@ -5960,60 +6016,22 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 
 	/**
-	 * Move given node into this node
-	 * @param {Node} node           the childNode to be moved
-	 * @param {Node} beforeNode     node will be inserted before given
-	 *                                         node. If no beforeNode is given,
-	 *                                         the node is appended at the end
-	 * @private
-	 */
-	Node.prototype._move = function(node, beforeNode) {
-	  if (node == beforeNode) {
-	    // nothing to do...
-	    return;
-	  }
-
-	  // check if this node is not a child of the node to be moved here
-	  if (node.containsNode(this)) {
-	    throw new Error(translate('validationCannotMove'));
-	  }
-
-	  // remove the original node
-	  if (node.parent) {
-	    node.parent.removeChild(node);
-	  }
-
-	  // create a clone of the node
-	  var clone = node.clone();
-	  node.clearDom();
-
-	  // insert or append the node
-	  if (beforeNode) {
-	    this.insertBefore(clone, beforeNode);
-	  }
-	  else {
-	    this.appendChild(clone);
-	  }
-
-	  /* TODO: adjust the field name (to prevent equal field names)
-	   if (this.type == 'object') {
-	   }
-	   */
-	};
-
-	/**
 	 * Remove a child from the node.
 	 * Only applicable when Node value is of type array or object
 	 * @param {Node} node   The child node to be removed;
+	 * @param {boolean} [updateDom]  If true (default), the DOM of the parent
+	 *                               node will be updated (like child count)
 	 * @return {Node | undefined} node  The removed node on success,
 	 *                                             else undefined
 	 */
-	Node.prototype.removeChild = function(node) {
+	Node.prototype.removeChild = function(node, updateDom) {
 	  if (this.childs) {
 	    var index = this.childs.indexOf(node);
 
 	    if (index !== -1) {
-	      this.visibleChilds--;
+	      if (index < this.visibleChilds && this.expanded) {
+	        this.visibleChilds--;
+	      }
 
 	      node.hide();
 
@@ -6024,7 +6042,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	      var removedNode = this.childs.splice(index, 1)[0];
 	      removedNode.parent = null;
 
-	      this.updateDom({'updateIndexes': true});
+	      if (updateDom !== false) {
+	        this.updateDom({'updateIndexes': true});
+	      }
 
 	      return removedNode;
 	    }
@@ -8057,6 +8077,50 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 
 	/**
+	 * Transform the node given a JMESPath query.
+	 * @param {String} query    JMESPath query to apply
+	 * @private
+	 */
+	Node.prototype.transform = function (query) {
+	  if (!this._hasChilds()) {
+	    return;
+	  }
+
+	  this.hideChilds(); // sorting is faster when the childs are not attached to the dom
+
+	  // copy the childs array (the old one will be kept for an undo action
+	  var oldType = this.type;
+	  var oldChilds = this.childs;
+	  this.childs = this.childs.concat();
+
+	  try {
+	    // apply the JMESPath query
+	    var oldValue = this.getValue();
+	    var newValue = jmespath.search(oldValue, query);
+
+	    this.setValue(newValue);
+
+	    this.editor._onAction('transform', {
+	      node: this,
+	      oldType: oldType,
+	      newType: this.type,
+	      oldValue: oldValue,
+	      newValue: newValue,
+	      oldChilds: oldChilds,
+	      newChilds: this.childs
+	      // TODO: use oldChilds/newChilds in history or clean it up
+	    });
+
+	    this.showChilds();
+	  }
+	  catch (err) {
+	    this.showChilds();
+
+	    this.editor._onError(err);
+	  }
+	};
+
+	/**
 	 * Get a nested child given a path with properties
 	 * @param {String[]} path
 	 * @returns {Node}
@@ -8089,16 +8153,17 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 
 	/**
-	 * Get the paths of the sortable child paths of this node
+	 * Get the child paths of this node
+	 * @param {boolean} [includeObjects=false]  If true, object and array paths are returned as well
 	 * @return {string[]}
 	 */
-	Node.prototype.getSortablePaths = function () {
+	Node.prototype.getPaths = function (includeObjects) {
 	  if (this.type === 'array') {
 	    if (this.childs.length > 0) {
 	      // sort on any of the property paths of nested objects
 	      var pathsMap = {};
 	      this.childs.forEach(function (child) {
-	        child._getSortablePaths(pathsMap, '');
+	        child._getPaths(pathsMap, '', includeObjects);
 	      });
 
 	      return Object.keys(pathsMap).sort();
@@ -8118,30 +8183,29 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 
 	/**
-	 * Get the paths of the sortable child paths of this node
+	 * Get the child paths of this node
 	 * @param {Object<String, boolean>} pathsMap
+	 * @param {boolean} [includeObjects=false]  If true, object and array paths are returned as well
 	 * @param {string} rootPath
 	 */
-	Node.prototype._getSortablePaths = function (pathsMap, rootPath) {
-	  if (this.type === 'array') {
-	    // not sortable
+	Node.prototype._getPaths = function (pathsMap, rootPath, includeObjects) {
+	  if (includeObjects && (this.type === 'array' || this.type === 'object')) {
+	    pathsMap[rootPath || '.'] = true;
 	  }
-	  else if (this.type === 'object') {
+
+	  if (this.type === 'object') {
 	    this.childs.forEach(function (child) {
 	      if (child.type === 'object') {
-	        child._getSortablePaths(pathsMap, rootPath + '.' + child.field);
+	        // recurse
+	        child._getPaths(pathsMap, rootPath + '.' + child.field, includeObjects);
 	      }
-	      else if (child.type === 'array') {
-	        // not sortable
-	      }
-	      else { // type === 'auto' or type === 'string'
-	        var path = rootPath + '.' + child.field;
-	        pathsMap[path] = true;
+	      else if (child.type === 'auto' || child.type === 'string') {
+	        pathsMap[rootPath + '.' + child.field] = true;
 	      }
 	    });
 	  }
 	  else {
-	    pathsMap[rootPath + '.'] = true;
+	    pathsMap[rootPath || '.'] = true;
 	  }
 	};
 
@@ -8483,10 +8547,21 @@ return /******/ (function(modules) { // webpackBootstrap
 	  if (this._hasChilds()) {
 	    items.push({
 	      text: translate('sort'),
-	      title: translate('sortTitle') + this.type,
+	      title: translate('sortTitle', {type: this.type}),
 	      className: 'jsoneditor-sort-asc',
 	      click: function () {
-	        node._showSortModal()
+	        var anchor = node.editor.options.modalAnchor || DEFAULT_MODAL_ANCHOR;
+	        showSortModal(node, anchor)
+	      }
+	    });
+
+	    items.push({
+	      text: translate('transform'),
+	      title: translate('transformTitle', {type: this.type}),
+	      className: 'jsoneditor-transform',
+	      click: function () {
+	        var anchor = node.editor.options.modalAnchor || DEFAULT_MODAL_ANCHOR;
+	        showTransformModal(node, anchor)
 	      }
 	    });
 	  }
@@ -8623,114 +8698,6 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	  var menu = new ContextMenu(items, {close: onClose});
 	  menu.show(anchor, this.editor.content);
-	};
-
-	/**
-	 * Show advanced sorting modal
-	 * @private
-	 */
-	Node.prototype._showSortModal = function () {
-	  var node = this;
-
-	  var content = '<div class="pico-modal-contents">' +
-	      '<div class="pico-modal-header">' + translate('sort') + '</div>' +
-	      '<form>' +
-	      '<table>' +
-	      '<tbody>' +
-	      '<tr>' +
-	      '  <td>' + translate('sortFieldLabel') + ' </td>' +
-	      '  <td class="jsoneditor-modal-input">' +
-	      '  <div class="jsoneditor-select-wrapper">' +
-	      '    <select id="field" title="' + translate('sortFieldTitle') + '">' +
-	      '    </select>' +
-	      '  </div>' +
-	      '  </td>' +
-	      '</tr>' +
-	      '<tr>' +
-	      '  <td>' + translate('sortDirectionLabel') + ' </td>' +
-	      '  <td class="jsoneditor-modal-input">' +
-	      '  <div id="direction" class="jsoneditor-button-group">' +
-	      '<input type="button" ' +
-	      'value="' + translate('sortAscending') + '" ' +
-	      'title="'  + translate('sortAscendingTitle') + '" ' +
-	      'data-value="asc" ' +
-	      'class="jsoneditor-button-first jsoneditor-button-asc"/>' +
-	      '<input type="button" ' +
-	      'value="' + translate('sortDescending') + '" ' +
-	      'title="' + translate('sortDescendingTitle') + '" ' +
-	      'data-value="desc" ' +
-	      'class="jsoneditor-button-last jsoneditor-button-desc"/>' +
-	      '  </div>' +
-	      '  </td>' +
-	      '</tr>' +
-	      '<tr>' +
-	      '<td colspan="2" class="jsoneditor-modal-input jsoneditor-modal-actions">' +
-	      '  <input type="submit" id="ok" value="' + translate('ok') + '" />' +
-	      '</td>' +
-	      '</tr>' +
-	      '</tbody>' +
-	      '</table>' +
-	      '</form>' +
-	      '</div>';
-
-	  picoModal({
-	    parent: this.editor.frame,
-	    content: content,
-	    overlayClass: 'jsoneditor-modal-overlay',
-	    modalClass: 'jsoneditor-modal'
-	  })
-	      .afterCreate(function (modal) {
-	        var form = modal.modalElem().querySelector('form');
-	        var ok = modal.modalElem().querySelector('#ok');
-	        var field = modal.modalElem().querySelector('#field');
-	        var direction = modal.modalElem().querySelector('#direction');
-
-	        var paths = node.getSortablePaths().sort();
-
-	        paths.forEach(function (path) {
-	          var option = document.createElement('option');
-	          option.text = path;
-	          option.value = path;
-	          field.appendChild(option);
-	        });
-
-	        function setDirection(value) {
-	          direction.value = value;
-	          direction.className = 'jsoneditor-button-group jsoneditor-button-group-value-' + direction.value;
-	        }
-
-	        field.value = node.sortedBy ? node.sortedBy.path : paths[0];
-	        setDirection(node.sortedBy ? node.sortedBy.direction : 'asc');
-
-	        direction.onclick = function (event) {
-	          setDirection(event.target.getAttribute('data-value'));
-	        };
-
-	        ok.onclick = function (event) {
-	          event.preventDefault();
-	          event.stopPropagation();
-
-	          modal.close();
-
-	          var path = field.value;
-	          var pathArray = (path === '.') ? [] : path.split('.').slice(1);
-
-	          node.sortedBy = {
-	            path: path,
-	            direction: direction.value
-	          };
-
-	          node.sort(pathArray, direction.value)
-	        };
-
-	        if (form) { // form is not available when JSONEditor is created inside a form
-	          form.onsubmit = ok.onclick;
-	        }
-	      })
-	      .afterClose(function (modal) {
-	        modal.destroy();
-	      })
-	      .show();
 	};
 
 	/**
@@ -8880,6 +8847,1679 @@ return /******/ (function(modules) { // webpackBootstrap
 
 /***/ },
 /* 11 */
+/***/ function(module, exports, __webpack_require__) {
+
+	(function(exports) {
+	  "use strict";
+
+	  function isArray(obj) {
+	    if (obj !== null) {
+	      return Object.prototype.toString.call(obj) === "[object Array]";
+	    } else {
+	      return false;
+	    }
+	  }
+
+	  function isObject(obj) {
+	    if (obj !== null) {
+	      return Object.prototype.toString.call(obj) === "[object Object]";
+	    } else {
+	      return false;
+	    }
+	  }
+
+	  function strictDeepEqual(first, second) {
+	    // Check the scalar case first.
+	    if (first === second) {
+	      return true;
+	    }
+
+	    // Check if they are the same type.
+	    var firstType = Object.prototype.toString.call(first);
+	    if (firstType !== Object.prototype.toString.call(second)) {
+	      return false;
+	    }
+	    // We know that first and second have the same type so we can just check the
+	    // first type from now on.
+	    if (isArray(first) === true) {
+	      // Short circuit if they're not the same length;
+	      if (first.length !== second.length) {
+	        return false;
+	      }
+	      for (var i = 0; i < first.length; i++) {
+	        if (strictDeepEqual(first[i], second[i]) === false) {
+	          return false;
+	        }
+	      }
+	      return true;
+	    }
+	    if (isObject(first) === true) {
+	      // An object is equal if it has the same key/value pairs.
+	      var keysSeen = {};
+	      for (var key in first) {
+	        if (hasOwnProperty.call(first, key)) {
+	          if (strictDeepEqual(first[key], second[key]) === false) {
+	            return false;
+	          }
+	          keysSeen[key] = true;
+	        }
+	      }
+	      // Now check that there aren't any keys in second that weren't
+	      // in first.
+	      for (var key2 in second) {
+	        if (hasOwnProperty.call(second, key2)) {
+	          if (keysSeen[key2] !== true) {
+	            return false;
+	          }
+	        }
+	      }
+	      return true;
+	    }
+	    return false;
+	  }
+
+	  function isFalse(obj) {
+	    // From the spec:
+	    // A false value corresponds to the following values:
+	    // Empty list
+	    // Empty object
+	    // Empty string
+	    // False boolean
+	    // null value
+
+	    // First check the scalar values.
+	    if (obj === "" || obj === false || obj === null) {
+	        return true;
+	    } else if (isArray(obj) && obj.length === 0) {
+	        // Check for an empty array.
+	        return true;
+	    } else if (isObject(obj)) {
+	        // Check for an empty object.
+	        for (var key in obj) {
+	            // If there are any keys, then
+	            // the object is not empty so the object
+	            // is not false.
+	            if (obj.hasOwnProperty(key)) {
+	              return false;
+	            }
+	        }
+	        return true;
+	    } else {
+	        return false;
+	    }
+	  }
+
+	  function objValues(obj) {
+	    var keys = Object.keys(obj);
+	    var values = [];
+	    for (var i = 0; i < keys.length; i++) {
+	      values.push(obj[keys[i]]);
+	    }
+	    return values;
+	  }
+
+	  function merge(a, b) {
+	      var merged = {};
+	      for (var key in a) {
+	          merged[key] = a[key];
+	      }
+	      for (var key2 in b) {
+	          merged[key2] = b[key2];
+	      }
+	      return merged;
+	  }
+
+	  var trimLeft;
+	  if (typeof String.prototype.trimLeft === "function") {
+	    trimLeft = function(str) {
+	      return str.trimLeft();
+	    };
+	  } else {
+	    trimLeft = function(str) {
+	      return str.match(/^\s*(.*)/)[1];
+	    };
+	  }
+
+	  // Type constants used to define functions.
+	  var TYPE_NUMBER = 0;
+	  var TYPE_ANY = 1;
+	  var TYPE_STRING = 2;
+	  var TYPE_ARRAY = 3;
+	  var TYPE_OBJECT = 4;
+	  var TYPE_BOOLEAN = 5;
+	  var TYPE_EXPREF = 6;
+	  var TYPE_NULL = 7;
+	  var TYPE_ARRAY_NUMBER = 8;
+	  var TYPE_ARRAY_STRING = 9;
+
+	  var TOK_EOF = "EOF";
+	  var TOK_UNQUOTEDIDENTIFIER = "UnquotedIdentifier";
+	  var TOK_QUOTEDIDENTIFIER = "QuotedIdentifier";
+	  var TOK_RBRACKET = "Rbracket";
+	  var TOK_RPAREN = "Rparen";
+	  var TOK_COMMA = "Comma";
+	  var TOK_COLON = "Colon";
+	  var TOK_RBRACE = "Rbrace";
+	  var TOK_NUMBER = "Number";
+	  var TOK_CURRENT = "Current";
+	  var TOK_EXPREF = "Expref";
+	  var TOK_PIPE = "Pipe";
+	  var TOK_OR = "Or";
+	  var TOK_AND = "And";
+	  var TOK_EQ = "EQ";
+	  var TOK_GT = "GT";
+	  var TOK_LT = "LT";
+	  var TOK_GTE = "GTE";
+	  var TOK_LTE = "LTE";
+	  var TOK_NE = "NE";
+	  var TOK_FLATTEN = "Flatten";
+	  var TOK_STAR = "Star";
+	  var TOK_FILTER = "Filter";
+	  var TOK_DOT = "Dot";
+	  var TOK_NOT = "Not";
+	  var TOK_LBRACE = "Lbrace";
+	  var TOK_LBRACKET = "Lbracket";
+	  var TOK_LPAREN= "Lparen";
+	  var TOK_LITERAL= "Literal";
+
+	  // The "&", "[", "<", ">" tokens
+	  // are not in basicToken because
+	  // there are two token variants
+	  // ("&&", "[?", "<=", ">=").  This is specially handled
+	  // below.
+
+	  var basicTokens = {
+	    ".": TOK_DOT,
+	    "*": TOK_STAR,
+	    ",": TOK_COMMA,
+	    ":": TOK_COLON,
+	    "{": TOK_LBRACE,
+	    "}": TOK_RBRACE,
+	    "]": TOK_RBRACKET,
+	    "(": TOK_LPAREN,
+	    ")": TOK_RPAREN,
+	    "@": TOK_CURRENT
+	  };
+
+	  var operatorStartToken = {
+	      "<": true,
+	      ">": true,
+	      "=": true,
+	      "!": true
+	  };
+
+	  var skipChars = {
+	      " ": true,
+	      "\t": true,
+	      "\n": true
+	  };
+
+
+	  function isAlpha(ch) {
+	      return (ch >= "a" && ch <= "z") ||
+	             (ch >= "A" && ch <= "Z") ||
+	             ch === "_";
+	  }
+
+	  function isNum(ch) {
+	      return (ch >= "0" && ch <= "9") ||
+	             ch === "-";
+	  }
+	  function isAlphaNum(ch) {
+	      return (ch >= "a" && ch <= "z") ||
+	             (ch >= "A" && ch <= "Z") ||
+	             (ch >= "0" && ch <= "9") ||
+	             ch === "_";
+	  }
+
+	  function Lexer() {
+	  }
+	  Lexer.prototype = {
+	      tokenize: function(stream) {
+	          var tokens = [];
+	          this._current = 0;
+	          var start;
+	          var identifier;
+	          var token;
+	          while (this._current < stream.length) {
+	              if (isAlpha(stream[this._current])) {
+	                  start = this._current;
+	                  identifier = this._consumeUnquotedIdentifier(stream);
+	                  tokens.push({type: TOK_UNQUOTEDIDENTIFIER,
+	                               value: identifier,
+	                               start: start});
+	              } else if (basicTokens[stream[this._current]] !== undefined) {
+	                  tokens.push({type: basicTokens[stream[this._current]],
+	                              value: stream[this._current],
+	                              start: this._current});
+	                  this._current++;
+	              } else if (isNum(stream[this._current])) {
+	                  token = this._consumeNumber(stream);
+	                  tokens.push(token);
+	              } else if (stream[this._current] === "[") {
+	                  // No need to increment this._current.  This happens
+	                  // in _consumeLBracket
+	                  token = this._consumeLBracket(stream);
+	                  tokens.push(token);
+	              } else if (stream[this._current] === "\"") {
+	                  start = this._current;
+	                  identifier = this._consumeQuotedIdentifier(stream);
+	                  tokens.push({type: TOK_QUOTEDIDENTIFIER,
+	                               value: identifier,
+	                               start: start});
+	              } else if (stream[this._current] === "'") {
+	                  start = this._current;
+	                  identifier = this._consumeRawStringLiteral(stream);
+	                  tokens.push({type: TOK_LITERAL,
+	                               value: identifier,
+	                               start: start});
+	              } else if (stream[this._current] === "`") {
+	                  start = this._current;
+	                  var literal = this._consumeLiteral(stream);
+	                  tokens.push({type: TOK_LITERAL,
+	                               value: literal,
+	                               start: start});
+	              } else if (operatorStartToken[stream[this._current]] !== undefined) {
+	                  tokens.push(this._consumeOperator(stream));
+	              } else if (skipChars[stream[this._current]] !== undefined) {
+	                  // Ignore whitespace.
+	                  this._current++;
+	              } else if (stream[this._current] === "&") {
+	                  start = this._current;
+	                  this._current++;
+	                  if (stream[this._current] === "&") {
+	                      this._current++;
+	                      tokens.push({type: TOK_AND, value: "&&", start: start});
+	                  } else {
+	                      tokens.push({type: TOK_EXPREF, value: "&", start: start});
+	                  }
+	              } else if (stream[this._current] === "|") {
+	                  start = this._current;
+	                  this._current++;
+	                  if (stream[this._current] === "|") {
+	                      this._current++;
+	                      tokens.push({type: TOK_OR, value: "||", start: start});
+	                  } else {
+	                      tokens.push({type: TOK_PIPE, value: "|", start: start});
+	                  }
+	              } else {
+	                  var error = new Error("Unknown character:" + stream[this._current]);
+	                  error.name = "LexerError";
+	                  throw error;
+	              }
+	          }
+	          return tokens;
+	      },
+
+	      _consumeUnquotedIdentifier: function(stream) {
+	          var start = this._current;
+	          this._current++;
+	          while (this._current < stream.length && isAlphaNum(stream[this._current])) {
+	              this._current++;
+	          }
+	          return stream.slice(start, this._current);
+	      },
+
+	      _consumeQuotedIdentifier: function(stream) {
+	          var start = this._current;
+	          this._current++;
+	          var maxLength = stream.length;
+	          while (stream[this._current] !== "\"" && this._current < maxLength) {
+	              // You can escape a double quote and you can escape an escape.
+	              var current = this._current;
+	              if (stream[current] === "\\" && (stream[current + 1] === "\\" ||
+	                                               stream[current + 1] === "\"")) {
+	                  current += 2;
+	              } else {
+	                  current++;
+	              }
+	              this._current = current;
+	          }
+	          this._current++;
+	          return JSON.parse(stream.slice(start, this._current));
+	      },
+
+	      _consumeRawStringLiteral: function(stream) {
+	          var start = this._current;
+	          this._current++;
+	          var maxLength = stream.length;
+	          while (stream[this._current] !== "'" && this._current < maxLength) {
+	              // You can escape a single quote and you can escape an escape.
+	              var current = this._current;
+	              if (stream[current] === "\\" && (stream[current + 1] === "\\" ||
+	                                               stream[current + 1] === "'")) {
+	                  current += 2;
+	              } else {
+	                  current++;
+	              }
+	              this._current = current;
+	          }
+	          this._current++;
+	          var literal = stream.slice(start + 1, this._current - 1);
+	          return literal.replace("\\'", "'");
+	      },
+
+	      _consumeNumber: function(stream) {
+	          var start = this._current;
+	          this._current++;
+	          var maxLength = stream.length;
+	          while (isNum(stream[this._current]) && this._current < maxLength) {
+	              this._current++;
+	          }
+	          var value = parseInt(stream.slice(start, this._current));
+	          return {type: TOK_NUMBER, value: value, start: start};
+	      },
+
+	      _consumeLBracket: function(stream) {
+	          var start = this._current;
+	          this._current++;
+	          if (stream[this._current] === "?") {
+	              this._current++;
+	              return {type: TOK_FILTER, value: "[?", start: start};
+	          } else if (stream[this._current] === "]") {
+	              this._current++;
+	              return {type: TOK_FLATTEN, value: "[]", start: start};
+	          } else {
+	              return {type: TOK_LBRACKET, value: "[", start: start};
+	          }
+	      },
+
+	      _consumeOperator: function(stream) {
+	          var start = this._current;
+	          var startingChar = stream[start];
+	          this._current++;
+	          if (startingChar === "!") {
+	              if (stream[this._current] === "=") {
+	                  this._current++;
+	                  return {type: TOK_NE, value: "!=", start: start};
+	              } else {
+	                return {type: TOK_NOT, value: "!", start: start};
+	              }
+	          } else if (startingChar === "<") {
+	              if (stream[this._current] === "=") {
+	                  this._current++;
+	                  return {type: TOK_LTE, value: "<=", start: start};
+	              } else {
+	                  return {type: TOK_LT, value: "<", start: start};
+	              }
+	          } else if (startingChar === ">") {
+	              if (stream[this._current] === "=") {
+	                  this._current++;
+	                  return {type: TOK_GTE, value: ">=", start: start};
+	              } else {
+	                  return {type: TOK_GT, value: ">", start: start};
+	              }
+	          } else if (startingChar === "=") {
+	              if (stream[this._current] === "=") {
+	                  this._current++;
+	                  return {type: TOK_EQ, value: "==", start: start};
+	              }
+	          }
+	      },
+
+	      _consumeLiteral: function(stream) {
+	          this._current++;
+	          var start = this._current;
+	          var maxLength = stream.length;
+	          var literal;
+	          while(stream[this._current] !== "`" && this._current < maxLength) {
+	              // You can escape a literal char or you can escape the escape.
+	              var current = this._current;
+	              if (stream[current] === "\\" && (stream[current + 1] === "\\" ||
+	                                               stream[current + 1] === "`")) {
+	                  current += 2;
+	              } else {
+	                  current++;
+	              }
+	              this._current = current;
+	          }
+	          var literalString = trimLeft(stream.slice(start, this._current));
+	          literalString = literalString.replace("\\`", "`");
+	          if (this._looksLikeJSON(literalString)) {
+	              literal = JSON.parse(literalString);
+	          } else {
+	              // Try to JSON parse it as "<literal>"
+	              literal = JSON.parse("\"" + literalString + "\"");
+	          }
+	          // +1 gets us to the ending "`", +1 to move on to the next char.
+	          this._current++;
+	          return literal;
+	      },
+
+	      _looksLikeJSON: function(literalString) {
+	          var startingChars = "[{\"";
+	          var jsonLiterals = ["true", "false", "null"];
+	          var numberLooking = "-0123456789";
+
+	          if (literalString === "") {
+	              return false;
+	          } else if (startingChars.indexOf(literalString[0]) >= 0) {
+	              return true;
+	          } else if (jsonLiterals.indexOf(literalString) >= 0) {
+	              return true;
+	          } else if (numberLooking.indexOf(literalString[0]) >= 0) {
+	              try {
+	                  JSON.parse(literalString);
+	                  return true;
+	              } catch (ex) {
+	                  return false;
+	              }
+	          } else {
+	              return false;
+	          }
+	      }
+	  };
+
+	      var bindingPower = {};
+	      bindingPower[TOK_EOF] = 0;
+	      bindingPower[TOK_UNQUOTEDIDENTIFIER] = 0;
+	      bindingPower[TOK_QUOTEDIDENTIFIER] = 0;
+	      bindingPower[TOK_RBRACKET] = 0;
+	      bindingPower[TOK_RPAREN] = 0;
+	      bindingPower[TOK_COMMA] = 0;
+	      bindingPower[TOK_RBRACE] = 0;
+	      bindingPower[TOK_NUMBER] = 0;
+	      bindingPower[TOK_CURRENT] = 0;
+	      bindingPower[TOK_EXPREF] = 0;
+	      bindingPower[TOK_PIPE] = 1;
+	      bindingPower[TOK_OR] = 2;
+	      bindingPower[TOK_AND] = 3;
+	      bindingPower[TOK_EQ] = 5;
+	      bindingPower[TOK_GT] = 5;
+	      bindingPower[TOK_LT] = 5;
+	      bindingPower[TOK_GTE] = 5;
+	      bindingPower[TOK_LTE] = 5;
+	      bindingPower[TOK_NE] = 5;
+	      bindingPower[TOK_FLATTEN] = 9;
+	      bindingPower[TOK_STAR] = 20;
+	      bindingPower[TOK_FILTER] = 21;
+	      bindingPower[TOK_DOT] = 40;
+	      bindingPower[TOK_NOT] = 45;
+	      bindingPower[TOK_LBRACE] = 50;
+	      bindingPower[TOK_LBRACKET] = 55;
+	      bindingPower[TOK_LPAREN] = 60;
+
+	  function Parser() {
+	  }
+
+	  Parser.prototype = {
+	      parse: function(expression) {
+	          this._loadTokens(expression);
+	          this.index = 0;
+	          var ast = this.expression(0);
+	          if (this._lookahead(0) !== TOK_EOF) {
+	              var t = this._lookaheadToken(0);
+	              var error = new Error(
+	                  "Unexpected token type: " + t.type + ", value: " + t.value);
+	              error.name = "ParserError";
+	              throw error;
+	          }
+	          return ast;
+	      },
+
+	      _loadTokens: function(expression) {
+	          var lexer = new Lexer();
+	          var tokens = lexer.tokenize(expression);
+	          tokens.push({type: TOK_EOF, value: "", start: expression.length});
+	          this.tokens = tokens;
+	      },
+
+	      expression: function(rbp) {
+	          var leftToken = this._lookaheadToken(0);
+	          this._advance();
+	          var left = this.nud(leftToken);
+	          var currentToken = this._lookahead(0);
+	          while (rbp < bindingPower[currentToken]) {
+	              this._advance();
+	              left = this.led(currentToken, left);
+	              currentToken = this._lookahead(0);
+	          }
+	          return left;
+	      },
+
+	      _lookahead: function(number) {
+	          return this.tokens[this.index + number].type;
+	      },
+
+	      _lookaheadToken: function(number) {
+	          return this.tokens[this.index + number];
+	      },
+
+	      _advance: function() {
+	          this.index++;
+	      },
+
+	      nud: function(token) {
+	        var left;
+	        var right;
+	        var expression;
+	        switch (token.type) {
+	          case TOK_LITERAL:
+	            return {type: "Literal", value: token.value};
+	          case TOK_UNQUOTEDIDENTIFIER:
+	            return {type: "Field", name: token.value};
+	          case TOK_QUOTEDIDENTIFIER:
+	            var node = {type: "Field", name: token.value};
+	            if (this._lookahead(0) === TOK_LPAREN) {
+	                throw new Error("Quoted identifier not allowed for function names.");
+	            } else {
+	                return node;
+	            }
+	            break;
+	          case TOK_NOT:
+	            right = this.expression(bindingPower.Not);
+	            return {type: "NotExpression", children: [right]};
+	          case TOK_STAR:
+	            left = {type: "Identity"};
+	            right = null;
+	            if (this._lookahead(0) === TOK_RBRACKET) {
+	                // This can happen in a multiselect,
+	                // [a, b, *]
+	                right = {type: "Identity"};
+	            } else {
+	                right = this._parseProjectionRHS(bindingPower.Star);
+	            }
+	            return {type: "ValueProjection", children: [left, right]};
+	          case TOK_FILTER:
+	            return this.led(token.type, {type: "Identity"});
+	          case TOK_LBRACE:
+	            return this._parseMultiselectHash();
+	          case TOK_FLATTEN:
+	            left = {type: TOK_FLATTEN, children: [{type: "Identity"}]};
+	            right = this._parseProjectionRHS(bindingPower.Flatten);
+	            return {type: "Projection", children: [left, right]};
+	          case TOK_LBRACKET:
+	            if (this._lookahead(0) === TOK_NUMBER || this._lookahead(0) === TOK_COLON) {
+	                right = this._parseIndexExpression();
+	                return this._projectIfSlice({type: "Identity"}, right);
+	            } else if (this._lookahead(0) === TOK_STAR &&
+	                       this._lookahead(1) === TOK_RBRACKET) {
+	                this._advance();
+	                this._advance();
+	                right = this._parseProjectionRHS(bindingPower.Star);
+	                return {type: "Projection",
+	                        children: [{type: "Identity"}, right]};
+	            } else {
+	                return this._parseMultiselectList();
+	            }
+	            break;
+	          case TOK_CURRENT:
+	            return {type: TOK_CURRENT};
+	          case TOK_EXPREF:
+	            expression = this.expression(bindingPower.Expref);
+	            return {type: "ExpressionReference", children: [expression]};
+	          case TOK_LPAREN:
+	            var args = [];
+	            while (this._lookahead(0) !== TOK_RPAREN) {
+	              if (this._lookahead(0) === TOK_CURRENT) {
+	                expression = {type: TOK_CURRENT};
+	                this._advance();
+	              } else {
+	                expression = this.expression(0);
+	              }
+	              args.push(expression);
+	            }
+	            this._match(TOK_RPAREN);
+	            return args[0];
+	          default:
+	            this._errorToken(token);
+	        }
+	      },
+
+	      led: function(tokenName, left) {
+	        var right;
+	        switch(tokenName) {
+	          case TOK_DOT:
+	            var rbp = bindingPower.Dot;
+	            if (this._lookahead(0) !== TOK_STAR) {
+	                right = this._parseDotRHS(rbp);
+	                return {type: "Subexpression", children: [left, right]};
+	            } else {
+	                // Creating a projection.
+	                this._advance();
+	                right = this._parseProjectionRHS(rbp);
+	                return {type: "ValueProjection", children: [left, right]};
+	            }
+	            break;
+	          case TOK_PIPE:
+	            right = this.expression(bindingPower.Pipe);
+	            return {type: TOK_PIPE, children: [left, right]};
+	          case TOK_OR:
+	            right = this.expression(bindingPower.Or);
+	            return {type: "OrExpression", children: [left, right]};
+	          case TOK_AND:
+	            right = this.expression(bindingPower.And);
+	            return {type: "AndExpression", children: [left, right]};
+	          case TOK_LPAREN:
+	            var name = left.name;
+	            var args = [];
+	            var expression, node;
+	            while (this._lookahead(0) !== TOK_RPAREN) {
+	              if (this._lookahead(0) === TOK_CURRENT) {
+	                expression = {type: TOK_CURRENT};
+	                this._advance();
+	              } else {
+	                expression = this.expression(0);
+	              }
+	              if (this._lookahead(0) === TOK_COMMA) {
+	                this._match(TOK_COMMA);
+	              }
+	              args.push(expression);
+	            }
+	            this._match(TOK_RPAREN);
+	            node = {type: "Function", name: name, children: args};
+	            return node;
+	          case TOK_FILTER:
+	            var condition = this.expression(0);
+	            this._match(TOK_RBRACKET);
+	            if (this._lookahead(0) === TOK_FLATTEN) {
+	              right = {type: "Identity"};
+	            } else {
+	              right = this._parseProjectionRHS(bindingPower.Filter);
+	            }
+	            return {type: "FilterProjection", children: [left, right, condition]};
+	          case TOK_FLATTEN:
+	            var leftNode = {type: TOK_FLATTEN, children: [left]};
+	            var rightNode = this._parseProjectionRHS(bindingPower.Flatten);
+	            return {type: "Projection", children: [leftNode, rightNode]};
+	          case TOK_EQ:
+	          case TOK_NE:
+	          case TOK_GT:
+	          case TOK_GTE:
+	          case TOK_LT:
+	          case TOK_LTE:
+	            return this._parseComparator(left, tokenName);
+	          case TOK_LBRACKET:
+	            var token = this._lookaheadToken(0);
+	            if (token.type === TOK_NUMBER || token.type === TOK_COLON) {
+	                right = this._parseIndexExpression();
+	                return this._projectIfSlice(left, right);
+	            } else {
+	                this._match(TOK_STAR);
+	                this._match(TOK_RBRACKET);
+	                right = this._parseProjectionRHS(bindingPower.Star);
+	                return {type: "Projection", children: [left, right]};
+	            }
+	            break;
+	          default:
+	            this._errorToken(this._lookaheadToken(0));
+	        }
+	      },
+
+	      _match: function(tokenType) {
+	          if (this._lookahead(0) === tokenType) {
+	              this._advance();
+	          } else {
+	              var t = this._lookaheadToken(0);
+	              var error = new Error("Expected " + tokenType + ", got: " + t.type);
+	              error.name = "ParserError";
+	              throw error;
+	          }
+	      },
+
+	      _errorToken: function(token) {
+	          var error = new Error("Invalid token (" +
+	                                token.type + "): \"" +
+	                                token.value + "\"");
+	          error.name = "ParserError";
+	          throw error;
+	      },
+
+
+	      _parseIndexExpression: function() {
+	          if (this._lookahead(0) === TOK_COLON || this._lookahead(1) === TOK_COLON) {
+	              return this._parseSliceExpression();
+	          } else {
+	              var node = {
+	                  type: "Index",
+	                  value: this._lookaheadToken(0).value};
+	              this._advance();
+	              this._match(TOK_RBRACKET);
+	              return node;
+	          }
+	      },
+
+	      _projectIfSlice: function(left, right) {
+	          var indexExpr = {type: "IndexExpression", children: [left, right]};
+	          if (right.type === "Slice") {
+	              return {
+	                  type: "Projection",
+	                  children: [indexExpr, this._parseProjectionRHS(bindingPower.Star)]
+	              };
+	          } else {
+	              return indexExpr;
+	          }
+	      },
+
+	      _parseSliceExpression: function() {
+	          // [start:end:step] where each part is optional, as well as the last
+	          // colon.
+	          var parts = [null, null, null];
+	          var index = 0;
+	          var currentToken = this._lookahead(0);
+	          while (currentToken !== TOK_RBRACKET && index < 3) {
+	              if (currentToken === TOK_COLON) {
+	                  index++;
+	                  this._advance();
+	              } else if (currentToken === TOK_NUMBER) {
+	                  parts[index] = this._lookaheadToken(0).value;
+	                  this._advance();
+	              } else {
+	                  var t = this._lookahead(0);
+	                  var error = new Error("Syntax error, unexpected token: " +
+	                                        t.value + "(" + t.type + ")");
+	                  error.name = "Parsererror";
+	                  throw error;
+	              }
+	              currentToken = this._lookahead(0);
+	          }
+	          this._match(TOK_RBRACKET);
+	          return {
+	              type: "Slice",
+	              children: parts
+	          };
+	      },
+
+	      _parseComparator: function(left, comparator) {
+	        var right = this.expression(bindingPower[comparator]);
+	        return {type: "Comparator", name: comparator, children: [left, right]};
+	      },
+
+	      _parseDotRHS: function(rbp) {
+	          var lookahead = this._lookahead(0);
+	          var exprTokens = [TOK_UNQUOTEDIDENTIFIER, TOK_QUOTEDIDENTIFIER, TOK_STAR];
+	          if (exprTokens.indexOf(lookahead) >= 0) {
+	              return this.expression(rbp);
+	          } else if (lookahead === TOK_LBRACKET) {
+	              this._match(TOK_LBRACKET);
+	              return this._parseMultiselectList();
+	          } else if (lookahead === TOK_LBRACE) {
+	              this._match(TOK_LBRACE);
+	              return this._parseMultiselectHash();
+	          }
+	      },
+
+	      _parseProjectionRHS: function(rbp) {
+	          var right;
+	          if (bindingPower[this._lookahead(0)] < 10) {
+	              right = {type: "Identity"};
+	          } else if (this._lookahead(0) === TOK_LBRACKET) {
+	              right = this.expression(rbp);
+	          } else if (this._lookahead(0) === TOK_FILTER) {
+	              right = this.expression(rbp);
+	          } else if (this._lookahead(0) === TOK_DOT) {
+	              this._match(TOK_DOT);
+	              right = this._parseDotRHS(rbp);
+	          } else {
+	              var t = this._lookaheadToken(0);
+	              var error = new Error("Sytanx error, unexpected token: " +
+	                                    t.value + "(" + t.type + ")");
+	              error.name = "ParserError";
+	              throw error;
+	          }
+	          return right;
+	      },
+
+	      _parseMultiselectList: function() {
+	          var expressions = [];
+	          while (this._lookahead(0) !== TOK_RBRACKET) {
+	              var expression = this.expression(0);
+	              expressions.push(expression);
+	              if (this._lookahead(0) === TOK_COMMA) {
+	                  this._match(TOK_COMMA);
+	                  if (this._lookahead(0) === TOK_RBRACKET) {
+	                    throw new Error("Unexpected token Rbracket");
+	                  }
+	              }
+	          }
+	          this._match(TOK_RBRACKET);
+	          return {type: "MultiSelectList", children: expressions};
+	      },
+
+	      _parseMultiselectHash: function() {
+	        var pairs = [];
+	        var identifierTypes = [TOK_UNQUOTEDIDENTIFIER, TOK_QUOTEDIDENTIFIER];
+	        var keyToken, keyName, value, node;
+	        for (;;) {
+	          keyToken = this._lookaheadToken(0);
+	          if (identifierTypes.indexOf(keyToken.type) < 0) {
+	            throw new Error("Expecting an identifier token, got: " +
+	                            keyToken.type);
+	          }
+	          keyName = keyToken.value;
+	          this._advance();
+	          this._match(TOK_COLON);
+	          value = this.expression(0);
+	          node = {type: "KeyValuePair", name: keyName, value: value};
+	          pairs.push(node);
+	          if (this._lookahead(0) === TOK_COMMA) {
+	            this._match(TOK_COMMA);
+	          } else if (this._lookahead(0) === TOK_RBRACE) {
+	            this._match(TOK_RBRACE);
+	            break;
+	          }
+	        }
+	        return {type: "MultiSelectHash", children: pairs};
+	      }
+	  };
+
+
+	  function TreeInterpreter(runtime) {
+	    this.runtime = runtime;
+	  }
+
+	  TreeInterpreter.prototype = {
+	      search: function(node, value) {
+	          return this.visit(node, value);
+	      },
+
+	      visit: function(node, value) {
+	          var matched, current, result, first, second, field, left, right, collected, i;
+	          switch (node.type) {
+	            case "Field":
+	              if (value === null ) {
+	                  return null;
+	              } else if (isObject(value)) {
+	                  field = value[node.name];
+	                  if (field === undefined) {
+	                      return null;
+	                  } else {
+	                      return field;
+	                  }
+	              } else {
+	                return null;
+	              }
+	              break;
+	            case "Subexpression":
+	              result = this.visit(node.children[0], value);
+	              for (i = 1; i < node.children.length; i++) {
+	                  result = this.visit(node.children[1], result);
+	                  if (result === null) {
+	                      return null;
+	                  }
+	              }
+	              return result;
+	            case "IndexExpression":
+	              left = this.visit(node.children[0], value);
+	              right = this.visit(node.children[1], left);
+	              return right;
+	            case "Index":
+	              if (!isArray(value)) {
+	                return null;
+	              }
+	              var index = node.value;
+	              if (index < 0) {
+	                index = value.length + index;
+	              }
+	              result = value[index];
+	              if (result === undefined) {
+	                result = null;
+	              }
+	              return result;
+	            case "Slice":
+	              if (!isArray(value)) {
+	                return null;
+	              }
+	              var sliceParams = node.children.slice(0);
+	              var computed = this.computeSliceParams(value.length, sliceParams);
+	              var start = computed[0];
+	              var stop = computed[1];
+	              var step = computed[2];
+	              result = [];
+	              if (step > 0) {
+	                  for (i = start; i < stop; i += step) {
+	                      result.push(value[i]);
+	                  }
+	              } else {
+	                  for (i = start; i > stop; i += step) {
+	                      result.push(value[i]);
+	                  }
+	              }
+	              return result;
+	            case "Projection":
+	              // Evaluate left child.
+	              var base = this.visit(node.children[0], value);
+	              if (!isArray(base)) {
+	                return null;
+	              }
+	              collected = [];
+	              for (i = 0; i < base.length; i++) {
+	                current = this.visit(node.children[1], base[i]);
+	                if (current !== null) {
+	                  collected.push(current);
+	                }
+	              }
+	              return collected;
+	            case "ValueProjection":
+	              // Evaluate left child.
+	              base = this.visit(node.children[0], value);
+	              if (!isObject(base)) {
+	                return null;
+	              }
+	              collected = [];
+	              var values = objValues(base);
+	              for (i = 0; i < values.length; i++) {
+	                current = this.visit(node.children[1], values[i]);
+	                if (current !== null) {
+	                  collected.push(current);
+	                }
+	              }
+	              return collected;
+	            case "FilterProjection":
+	              base = this.visit(node.children[0], value);
+	              if (!isArray(base)) {
+	                return null;
+	              }
+	              var filtered = [];
+	              var finalResults = [];
+	              for (i = 0; i < base.length; i++) {
+	                matched = this.visit(node.children[2], base[i]);
+	                if (!isFalse(matched)) {
+	                  filtered.push(base[i]);
+	                }
+	              }
+	              for (var j = 0; j < filtered.length; j++) {
+	                current = this.visit(node.children[1], filtered[j]);
+	                if (current !== null) {
+	                  finalResults.push(current);
+	                }
+	              }
+	              return finalResults;
+	            case "Comparator":
+	              first = this.visit(node.children[0], value);
+	              second = this.visit(node.children[1], value);
+	              switch(node.name) {
+	                case TOK_EQ:
+	                  result = strictDeepEqual(first, second);
+	                  break;
+	                case TOK_NE:
+	                  result = !strictDeepEqual(first, second);
+	                  break;
+	                case TOK_GT:
+	                  result = first > second;
+	                  break;
+	                case TOK_GTE:
+	                  result = first >= second;
+	                  break;
+	                case TOK_LT:
+	                  result = first < second;
+	                  break;
+	                case TOK_LTE:
+	                  result = first <= second;
+	                  break;
+	                default:
+	                  throw new Error("Unknown comparator: " + node.name);
+	              }
+	              return result;
+	            case TOK_FLATTEN:
+	              var original = this.visit(node.children[0], value);
+	              if (!isArray(original)) {
+	                return null;
+	              }
+	              var merged = [];
+	              for (i = 0; i < original.length; i++) {
+	                current = original[i];
+	                if (isArray(current)) {
+	                  merged.push.apply(merged, current);
+	                } else {
+	                  merged.push(current);
+	                }
+	              }
+	              return merged;
+	            case "Identity":
+	              return value;
+	            case "MultiSelectList":
+	              if (value === null) {
+	                return null;
+	              }
+	              collected = [];
+	              for (i = 0; i < node.children.length; i++) {
+	                  collected.push(this.visit(node.children[i], value));
+	              }
+	              return collected;
+	            case "MultiSelectHash":
+	              if (value === null) {
+	                return null;
+	              }
+	              collected = {};
+	              var child;
+	              for (i = 0; i < node.children.length; i++) {
+	                child = node.children[i];
+	                collected[child.name] = this.visit(child.value, value);
+	              }
+	              return collected;
+	            case "OrExpression":
+	              matched = this.visit(node.children[0], value);
+	              if (isFalse(matched)) {
+	                  matched = this.visit(node.children[1], value);
+	              }
+	              return matched;
+	            case "AndExpression":
+	              first = this.visit(node.children[0], value);
+
+	              if (isFalse(first) === true) {
+	                return first;
+	              }
+	              return this.visit(node.children[1], value);
+	            case "NotExpression":
+	              first = this.visit(node.children[0], value);
+	              return isFalse(first);
+	            case "Literal":
+	              return node.value;
+	            case TOK_PIPE:
+	              left = this.visit(node.children[0], value);
+	              return this.visit(node.children[1], left);
+	            case TOK_CURRENT:
+	              return value;
+	            case "Function":
+	              var resolvedArgs = [];
+	              for (i = 0; i < node.children.length; i++) {
+	                  resolvedArgs.push(this.visit(node.children[i], value));
+	              }
+	              return this.runtime.callFunction(node.name, resolvedArgs);
+	            case "ExpressionReference":
+	              var refNode = node.children[0];
+	              // Tag the node with a specific attribute so the type
+	              // checker verify the type.
+	              refNode.jmespathType = TOK_EXPREF;
+	              return refNode;
+	            default:
+	              throw new Error("Unknown node type: " + node.type);
+	          }
+	      },
+
+	      computeSliceParams: function(arrayLength, sliceParams) {
+	        var start = sliceParams[0];
+	        var stop = sliceParams[1];
+	        var step = sliceParams[2];
+	        var computed = [null, null, null];
+	        if (step === null) {
+	          step = 1;
+	        } else if (step === 0) {
+	          var error = new Error("Invalid slice, step cannot be 0");
+	          error.name = "RuntimeError";
+	          throw error;
+	        }
+	        var stepValueNegative = step < 0 ? true : false;
+
+	        if (start === null) {
+	            start = stepValueNegative ? arrayLength - 1 : 0;
+	        } else {
+	            start = this.capSliceRange(arrayLength, start, step);
+	        }
+
+	        if (stop === null) {
+	            stop = stepValueNegative ? -1 : arrayLength;
+	        } else {
+	            stop = this.capSliceRange(arrayLength, stop, step);
+	        }
+	        computed[0] = start;
+	        computed[1] = stop;
+	        computed[2] = step;
+	        return computed;
+	      },
+
+	      capSliceRange: function(arrayLength, actualValue, step) {
+	          if (actualValue < 0) {
+	              actualValue += arrayLength;
+	              if (actualValue < 0) {
+	                  actualValue = step < 0 ? -1 : 0;
+	              }
+	          } else if (actualValue >= arrayLength) {
+	              actualValue = step < 0 ? arrayLength - 1 : arrayLength;
+	          }
+	          return actualValue;
+	      }
+
+	  };
+
+	  function Runtime(interpreter) {
+	    this._interpreter = interpreter;
+	    this.functionTable = {
+	        // name: [function, <signature>]
+	        // The <signature> can be:
+	        //
+	        // {
+	        //   args: [[type1, type2], [type1, type2]],
+	        //   variadic: true|false
+	        // }
+	        //
+	        // Each arg in the arg list is a list of valid types
+	        // (if the function is overloaded and supports multiple
+	        // types.  If the type is "any" then no type checking
+	        // occurs on the argument.  Variadic is optional
+	        // and if not provided is assumed to be false.
+	        abs: {_func: this._functionAbs, _signature: [{types: [TYPE_NUMBER]}]},
+	        avg: {_func: this._functionAvg, _signature: [{types: [TYPE_ARRAY_NUMBER]}]},
+	        ceil: {_func: this._functionCeil, _signature: [{types: [TYPE_NUMBER]}]},
+	        contains: {
+	            _func: this._functionContains,
+	            _signature: [{types: [TYPE_STRING, TYPE_ARRAY]},
+	                        {types: [TYPE_ANY]}]},
+	        "ends_with": {
+	            _func: this._functionEndsWith,
+	            _signature: [{types: [TYPE_STRING]}, {types: [TYPE_STRING]}]},
+	        floor: {_func: this._functionFloor, _signature: [{types: [TYPE_NUMBER]}]},
+	        length: {
+	            _func: this._functionLength,
+	            _signature: [{types: [TYPE_STRING, TYPE_ARRAY, TYPE_OBJECT]}]},
+	        map: {
+	            _func: this._functionMap,
+	            _signature: [{types: [TYPE_EXPREF]}, {types: [TYPE_ARRAY]}]},
+	        max: {
+	            _func: this._functionMax,
+	            _signature: [{types: [TYPE_ARRAY_NUMBER, TYPE_ARRAY_STRING]}]},
+	        "merge": {
+	            _func: this._functionMerge,
+	            _signature: [{types: [TYPE_OBJECT], variadic: true}]
+	        },
+	        "max_by": {
+	          _func: this._functionMaxBy,
+	          _signature: [{types: [TYPE_ARRAY]}, {types: [TYPE_EXPREF]}]
+	        },
+	        sum: {_func: this._functionSum, _signature: [{types: [TYPE_ARRAY_NUMBER]}]},
+	        "starts_with": {
+	            _func: this._functionStartsWith,
+	            _signature: [{types: [TYPE_STRING]}, {types: [TYPE_STRING]}]},
+	        min: {
+	            _func: this._functionMin,
+	            _signature: [{types: [TYPE_ARRAY_NUMBER, TYPE_ARRAY_STRING]}]},
+	        "min_by": {
+	          _func: this._functionMinBy,
+	          _signature: [{types: [TYPE_ARRAY]}, {types: [TYPE_EXPREF]}]
+	        },
+	        type: {_func: this._functionType, _signature: [{types: [TYPE_ANY]}]},
+	        keys: {_func: this._functionKeys, _signature: [{types: [TYPE_OBJECT]}]},
+	        values: {_func: this._functionValues, _signature: [{types: [TYPE_OBJECT]}]},
+	        sort: {_func: this._functionSort, _signature: [{types: [TYPE_ARRAY_STRING, TYPE_ARRAY_NUMBER]}]},
+	        "sort_by": {
+	          _func: this._functionSortBy,
+	          _signature: [{types: [TYPE_ARRAY]}, {types: [TYPE_EXPREF]}]
+	        },
+	        join: {
+	            _func: this._functionJoin,
+	            _signature: [
+	                {types: [TYPE_STRING]},
+	                {types: [TYPE_ARRAY_STRING]}
+	            ]
+	        },
+	        reverse: {
+	            _func: this._functionReverse,
+	            _signature: [{types: [TYPE_STRING, TYPE_ARRAY]}]},
+	        "to_array": {_func: this._functionToArray, _signature: [{types: [TYPE_ANY]}]},
+	        "to_string": {_func: this._functionToString, _signature: [{types: [TYPE_ANY]}]},
+	        "to_number": {_func: this._functionToNumber, _signature: [{types: [TYPE_ANY]}]},
+	        "not_null": {
+	            _func: this._functionNotNull,
+	            _signature: [{types: [TYPE_ANY], variadic: true}]
+	        }
+	    };
+	  }
+
+	  Runtime.prototype = {
+	    callFunction: function(name, resolvedArgs) {
+	      var functionEntry = this.functionTable[name];
+	      if (functionEntry === undefined) {
+	          throw new Error("Unknown function: " + name + "()");
+	      }
+	      this._validateArgs(name, resolvedArgs, functionEntry._signature);
+	      return functionEntry._func.call(this, resolvedArgs);
+	    },
+
+	    _validateArgs: function(name, args, signature) {
+	        // Validating the args requires validating
+	        // the correct arity and the correct type of each arg.
+	        // If the last argument is declared as variadic, then we need
+	        // a minimum number of args to be required.  Otherwise it has to
+	        // be an exact amount.
+	        var pluralized;
+	        if (signature[signature.length - 1].variadic) {
+	            if (args.length < signature.length) {
+	                pluralized = signature.length === 1 ? " argument" : " arguments";
+	                throw new Error("ArgumentError: " + name + "() " +
+	                                "takes at least" + signature.length + pluralized +
+	                                " but received " + args.length);
+	            }
+	        } else if (args.length !== signature.length) {
+	            pluralized = signature.length === 1 ? " argument" : " arguments";
+	            throw new Error("ArgumentError: " + name + "() " +
+	                            "takes " + signature.length + pluralized +
+	                            " but received " + args.length);
+	        }
+	        var currentSpec;
+	        var actualType;
+	        var typeMatched;
+	        for (var i = 0; i < signature.length; i++) {
+	            typeMatched = false;
+	            currentSpec = signature[i].types;
+	            actualType = this._getTypeName(args[i]);
+	            for (var j = 0; j < currentSpec.length; j++) {
+	                if (this._typeMatches(actualType, currentSpec[j], args[i])) {
+	                    typeMatched = true;
+	                    break;
+	                }
+	            }
+	            if (!typeMatched) {
+	                throw new Error("TypeError: " + name + "() " +
+	                                "expected argument " + (i + 1) +
+	                                " to be type " + currentSpec +
+	                                " but received type " + actualType +
+	                                " instead.");
+	            }
+	        }
+	    },
+
+	    _typeMatches: function(actual, expected, argValue) {
+	        if (expected === TYPE_ANY) {
+	            return true;
+	        }
+	        if (expected === TYPE_ARRAY_STRING ||
+	            expected === TYPE_ARRAY_NUMBER ||
+	            expected === TYPE_ARRAY) {
+	            // The expected type can either just be array,
+	            // or it can require a specific subtype (array of numbers).
+	            //
+	            // The simplest case is if "array" with no subtype is specified.
+	            if (expected === TYPE_ARRAY) {
+	                return actual === TYPE_ARRAY;
+	            } else if (actual === TYPE_ARRAY) {
+	                // Otherwise we need to check subtypes.
+	                // I think this has potential to be improved.
+	                var subtype;
+	                if (expected === TYPE_ARRAY_NUMBER) {
+	                  subtype = TYPE_NUMBER;
+	                } else if (expected === TYPE_ARRAY_STRING) {
+	                  subtype = TYPE_STRING;
+	                }
+	                for (var i = 0; i < argValue.length; i++) {
+	                    if (!this._typeMatches(
+	                            this._getTypeName(argValue[i]), subtype,
+	                                             argValue[i])) {
+	                        return false;
+	                    }
+	                }
+	                return true;
+	            }
+	        } else {
+	            return actual === expected;
+	        }
+	    },
+	    _getTypeName: function(obj) {
+	        switch (Object.prototype.toString.call(obj)) {
+	            case "[object String]":
+	              return TYPE_STRING;
+	            case "[object Number]":
+	              return TYPE_NUMBER;
+	            case "[object Array]":
+	              return TYPE_ARRAY;
+	            case "[object Boolean]":
+	              return TYPE_BOOLEAN;
+	            case "[object Null]":
+	              return TYPE_NULL;
+	            case "[object Object]":
+	              // Check if it's an expref.  If it has, it's been
+	              // tagged with a jmespathType attr of 'Expref';
+	              if (obj.jmespathType === TOK_EXPREF) {
+	                return TYPE_EXPREF;
+	              } else {
+	                return TYPE_OBJECT;
+	              }
+	        }
+	    },
+
+	    _functionStartsWith: function(resolvedArgs) {
+	        return resolvedArgs[0].lastIndexOf(resolvedArgs[1]) === 0;
+	    },
+
+	    _functionEndsWith: function(resolvedArgs) {
+	        var searchStr = resolvedArgs[0];
+	        var suffix = resolvedArgs[1];
+	        return searchStr.indexOf(suffix, searchStr.length - suffix.length) !== -1;
+	    },
+
+	    _functionReverse: function(resolvedArgs) {
+	        var typeName = this._getTypeName(resolvedArgs[0]);
+	        if (typeName === TYPE_STRING) {
+	          var originalStr = resolvedArgs[0];
+	          var reversedStr = "";
+	          for (var i = originalStr.length - 1; i >= 0; i--) {
+	              reversedStr += originalStr[i];
+	          }
+	          return reversedStr;
+	        } else {
+	          var reversedArray = resolvedArgs[0].slice(0);
+	          reversedArray.reverse();
+	          return reversedArray;
+	        }
+	    },
+
+	    _functionAbs: function(resolvedArgs) {
+	      return Math.abs(resolvedArgs[0]);
+	    },
+
+	    _functionCeil: function(resolvedArgs) {
+	        return Math.ceil(resolvedArgs[0]);
+	    },
+
+	    _functionAvg: function(resolvedArgs) {
+	        var sum = 0;
+	        var inputArray = resolvedArgs[0];
+	        for (var i = 0; i < inputArray.length; i++) {
+	            sum += inputArray[i];
+	        }
+	        return sum / inputArray.length;
+	    },
+
+	    _functionContains: function(resolvedArgs) {
+	        return resolvedArgs[0].indexOf(resolvedArgs[1]) >= 0;
+	    },
+
+	    _functionFloor: function(resolvedArgs) {
+	        return Math.floor(resolvedArgs[0]);
+	    },
+
+	    _functionLength: function(resolvedArgs) {
+	       if (!isObject(resolvedArgs[0])) {
+	         return resolvedArgs[0].length;
+	       } else {
+	         // As far as I can tell, there's no way to get the length
+	         // of an object without O(n) iteration through the object.
+	         return Object.keys(resolvedArgs[0]).length;
+	       }
+	    },
+
+	    _functionMap: function(resolvedArgs) {
+	      var mapped = [];
+	      var interpreter = this._interpreter;
+	      var exprefNode = resolvedArgs[0];
+	      var elements = resolvedArgs[1];
+	      for (var i = 0; i < elements.length; i++) {
+	          mapped.push(interpreter.visit(exprefNode, elements[i]));
+	      }
+	      return mapped;
+	    },
+
+	    _functionMerge: function(resolvedArgs) {
+	      var merged = {};
+	      for (var i = 0; i < resolvedArgs.length; i++) {
+	        var current = resolvedArgs[i];
+	        for (var key in current) {
+	          merged[key] = current[key];
+	        }
+	      }
+	      return merged;
+	    },
+
+	    _functionMax: function(resolvedArgs) {
+	      if (resolvedArgs[0].length > 0) {
+	        var typeName = this._getTypeName(resolvedArgs[0][0]);
+	        if (typeName === TYPE_NUMBER) {
+	          return Math.max.apply(Math, resolvedArgs[0]);
+	        } else {
+	          var elements = resolvedArgs[0];
+	          var maxElement = elements[0];
+	          for (var i = 1; i < elements.length; i++) {
+	              if (maxElement.localeCompare(elements[i]) < 0) {
+	                  maxElement = elements[i];
+	              }
+	          }
+	          return maxElement;
+	        }
+	      } else {
+	          return null;
+	      }
+	    },
+
+	    _functionMin: function(resolvedArgs) {
+	      if (resolvedArgs[0].length > 0) {
+	        var typeName = this._getTypeName(resolvedArgs[0][0]);
+	        if (typeName === TYPE_NUMBER) {
+	          return Math.min.apply(Math, resolvedArgs[0]);
+	        } else {
+	          var elements = resolvedArgs[0];
+	          var minElement = elements[0];
+	          for (var i = 1; i < elements.length; i++) {
+	              if (elements[i].localeCompare(minElement) < 0) {
+	                  minElement = elements[i];
+	              }
+	          }
+	          return minElement;
+	        }
+	      } else {
+	        return null;
+	      }
+	    },
+
+	    _functionSum: function(resolvedArgs) {
+	      var sum = 0;
+	      var listToSum = resolvedArgs[0];
+	      for (var i = 0; i < listToSum.length; i++) {
+	        sum += listToSum[i];
+	      }
+	      return sum;
+	    },
+
+	    _functionType: function(resolvedArgs) {
+	        switch (this._getTypeName(resolvedArgs[0])) {
+	          case TYPE_NUMBER:
+	            return "number";
+	          case TYPE_STRING:
+	            return "string";
+	          case TYPE_ARRAY:
+	            return "array";
+	          case TYPE_OBJECT:
+	            return "object";
+	          case TYPE_BOOLEAN:
+	            return "boolean";
+	          case TYPE_EXPREF:
+	            return "expref";
+	          case TYPE_NULL:
+	            return "null";
+	        }
+	    },
+
+	    _functionKeys: function(resolvedArgs) {
+	        return Object.keys(resolvedArgs[0]);
+	    },
+
+	    _functionValues: function(resolvedArgs) {
+	        var obj = resolvedArgs[0];
+	        var keys = Object.keys(obj);
+	        var values = [];
+	        for (var i = 0; i < keys.length; i++) {
+	            values.push(obj[keys[i]]);
+	        }
+	        return values;
+	    },
+
+	    _functionJoin: function(resolvedArgs) {
+	        var joinChar = resolvedArgs[0];
+	        var listJoin = resolvedArgs[1];
+	        return listJoin.join(joinChar);
+	    },
+
+	    _functionToArray: function(resolvedArgs) {
+	        if (this._getTypeName(resolvedArgs[0]) === TYPE_ARRAY) {
+	            return resolvedArgs[0];
+	        } else {
+	            return [resolvedArgs[0]];
+	        }
+	    },
+
+	    _functionToString: function(resolvedArgs) {
+	        if (this._getTypeName(resolvedArgs[0]) === TYPE_STRING) {
+	            return resolvedArgs[0];
+	        } else {
+	            return JSON.stringify(resolvedArgs[0]);
+	        }
+	    },
+
+	    _functionToNumber: function(resolvedArgs) {
+	        var typeName = this._getTypeName(resolvedArgs[0]);
+	        var convertedValue;
+	        if (typeName === TYPE_NUMBER) {
+	            return resolvedArgs[0];
+	        } else if (typeName === TYPE_STRING) {
+	            convertedValue = +resolvedArgs[0];
+	            if (!isNaN(convertedValue)) {
+	                return convertedValue;
+	            }
+	        }
+	        return null;
+	    },
+
+	    _functionNotNull: function(resolvedArgs) {
+	        for (var i = 0; i < resolvedArgs.length; i++) {
+	            if (this._getTypeName(resolvedArgs[i]) !== TYPE_NULL) {
+	                return resolvedArgs[i];
+	            }
+	        }
+	        return null;
+	    },
+
+	    _functionSort: function(resolvedArgs) {
+	        var sortedArray = resolvedArgs[0].slice(0);
+	        sortedArray.sort();
+	        return sortedArray;
+	    },
+
+	    _functionSortBy: function(resolvedArgs) {
+	        var sortedArray = resolvedArgs[0].slice(0);
+	        if (sortedArray.length === 0) {
+	            return sortedArray;
+	        }
+	        var interpreter = this._interpreter;
+	        var exprefNode = resolvedArgs[1];
+	        var requiredType = this._getTypeName(
+	            interpreter.visit(exprefNode, sortedArray[0]));
+	        if ([TYPE_NUMBER, TYPE_STRING].indexOf(requiredType) < 0) {
+	            throw new Error("TypeError");
+	        }
+	        var that = this;
+	        // In order to get a stable sort out of an unstable
+	        // sort algorithm, we decorate/sort/undecorate (DSU)
+	        // by creating a new list of [index, element] pairs.
+	        // In the cmp function, if the evaluated elements are
+	        // equal, then the index will be used as the tiebreaker.
+	        // After the decorated list has been sorted, it will be
+	        // undecorated to extract the original elements.
+	        var decorated = [];
+	        for (var i = 0; i < sortedArray.length; i++) {
+	          decorated.push([i, sortedArray[i]]);
+	        }
+	        decorated.sort(function(a, b) {
+	          var exprA = interpreter.visit(exprefNode, a[1]);
+	          var exprB = interpreter.visit(exprefNode, b[1]);
+	          if (that._getTypeName(exprA) !== requiredType) {
+	              throw new Error(
+	                  "TypeError: expected " + requiredType + ", received " +
+	                  that._getTypeName(exprA));
+	          } else if (that._getTypeName(exprB) !== requiredType) {
+	              throw new Error(
+	                  "TypeError: expected " + requiredType + ", received " +
+	                  that._getTypeName(exprB));
+	          }
+	          if (exprA > exprB) {
+	            return 1;
+	          } else if (exprA < exprB) {
+	            return -1;
+	          } else {
+	            // If they're equal compare the items by their
+	            // order to maintain relative order of equal keys
+	            // (i.e. to get a stable sort).
+	            return a[0] - b[0];
+	          }
+	        });
+	        // Undecorate: extract out the original list elements.
+	        for (var j = 0; j < decorated.length; j++) {
+	          sortedArray[j] = decorated[j][1];
+	        }
+	        return sortedArray;
+	    },
+
+	    _functionMaxBy: function(resolvedArgs) {
+	      var exprefNode = resolvedArgs[1];
+	      var resolvedArray = resolvedArgs[0];
+	      var keyFunction = this.createKeyFunction(exprefNode, [TYPE_NUMBER, TYPE_STRING]);
+	      var maxNumber = -Infinity;
+	      var maxRecord;
+	      var current;
+	      for (var i = 0; i < resolvedArray.length; i++) {
+	        current = keyFunction(resolvedArray[i]);
+	        if (current > maxNumber) {
+	          maxNumber = current;
+	          maxRecord = resolvedArray[i];
+	        }
+	      }
+	      return maxRecord;
+	    },
+
+	    _functionMinBy: function(resolvedArgs) {
+	      var exprefNode = resolvedArgs[1];
+	      var resolvedArray = resolvedArgs[0];
+	      var keyFunction = this.createKeyFunction(exprefNode, [TYPE_NUMBER, TYPE_STRING]);
+	      var minNumber = Infinity;
+	      var minRecord;
+	      var current;
+	      for (var i = 0; i < resolvedArray.length; i++) {
+	        current = keyFunction(resolvedArray[i]);
+	        if (current < minNumber) {
+	          minNumber = current;
+	          minRecord = resolvedArray[i];
+	        }
+	      }
+	      return minRecord;
+	    },
+
+	    createKeyFunction: function(exprefNode, allowedTypes) {
+	      var that = this;
+	      var interpreter = this._interpreter;
+	      var keyFunc = function(x) {
+	        var current = interpreter.visit(exprefNode, x);
+	        if (allowedTypes.indexOf(that._getTypeName(current)) < 0) {
+	          var msg = "TypeError: expected one of " + allowedTypes +
+	                    ", received " + that._getTypeName(current);
+	          throw new Error(msg);
+	        }
+	        return current;
+	      };
+	      return keyFunc;
+	    }
+
+	  };
+
+	  function compile(stream) {
+	    var parser = new Parser();
+	    var ast = parser.parse(stream);
+	    return ast;
+	  }
+
+	  function tokenize(stream) {
+	      var lexer = new Lexer();
+	      return lexer.tokenize(stream);
+	  }
+
+	  function search(data, expression) {
+	      var parser = new Parser();
+	      // This needs to be improved.  Both the interpreter and runtime depend on
+	      // each other.  The runtime needs the interpreter to support exprefs.
+	      // There's likely a clean way to avoid the cyclic dependency.
+	      var runtime = new Runtime();
+	      var interpreter = new TreeInterpreter(runtime);
+	      runtime._interpreter = interpreter;
+	      var node = parser.parse(expression);
+	      return interpreter.search(node, data);
+	  }
+
+	  exports.tokenize = tokenize;
+	  exports.compile = compile;
+	  exports.search = search;
+	  exports.strictDeepEqual = strictDeepEqual;
+	})( false ? this.jmespath = {} : exports);
+
+
+/***/ },
+/* 12 */
 /***/ function(module, exports) {
 
 	/*
@@ -8930,7 +10570,525 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 12 */
+/* 13 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	var util = __webpack_require__(4);
+	var ContextMenu = __webpack_require__(7);
+	var translate = __webpack_require__(8).translate;
+
+	/**
+	 * A factory function to create an AppendNode, which depends on a Node
+	 * @param {Node} Node
+	 */
+	function appendNodeFactory(Node) {
+	  /**
+	   * @constructor AppendNode
+	   * @extends Node
+	   * @param {TreeEditor} editor
+	   * Create a new AppendNode. This is a special node which is created at the
+	   * end of the list with childs for an object or array
+	   */
+	  function AppendNode (editor) {
+	    /** @type {TreeEditor} */
+	    this.editor = editor;
+	    this.dom = {};
+	  }
+
+	  AppendNode.prototype = new Node();
+
+	  /**
+	   * Return a table row with an append button.
+	   * @return {Element} dom   TR element
+	   */
+	  AppendNode.prototype.getDom = function () {
+	    // TODO: implement a new solution for the append node
+	    var dom = this.dom;
+
+	    if (dom.tr) {
+	      return dom.tr;
+	    }
+
+	    this._updateEditability();
+
+	    // a row for the append button
+	    var trAppend = document.createElement('tr');
+	    trAppend.className = 'jsoneditor-append';
+	    trAppend.node = this;
+	    dom.tr = trAppend;
+
+	    // TODO: consistent naming
+
+	    if (this.editor.options.mode === 'tree') {
+	      // a cell for the dragarea column
+	      dom.tdDrag = document.createElement('td');
+
+	      // create context menu
+	      var tdMenu = document.createElement('td');
+	      dom.tdMenu = tdMenu;
+	      var menu = document.createElement('button');
+	      menu.type = 'button';
+	      menu.className = 'jsoneditor-contextmenu';
+	      menu.title = 'Click to open the actions menu (Ctrl+M)';
+	      dom.menu = menu;
+	      tdMenu.appendChild(dom.menu);
+	    }
+
+	    // a cell for the contents (showing text 'empty')
+	    var tdAppend = document.createElement('td');
+	    var domText = document.createElement('div');
+	    domText.innerHTML = '(' + translate('empty') + ')';
+	    domText.className = 'jsoneditor-readonly';
+	    tdAppend.appendChild(domText);
+	    dom.td = tdAppend;
+	    dom.text = domText;
+
+	    this.updateDom();
+
+	    return trAppend;
+	  };
+
+	  /**
+	   * Update the HTML dom of the Node
+	   */
+	  AppendNode.prototype.updateDom = function(options) {
+	    var dom = this.dom;
+	    var tdAppend = dom.td;
+	    if (tdAppend) {
+	      tdAppend.style.paddingLeft = (this.getLevel() * 24 + 26) + 'px';
+	      // TODO: not so nice hard coded offset
+	    }
+
+	    var domText = dom.text;
+	    if (domText) {
+	      domText.innerHTML = '(' + translate('empty') + ' ' + this.parent.type + ')';
+	    }
+
+	    // attach or detach the contents of the append node:
+	    // hide when the parent has childs, show when the parent has no childs
+	    var trAppend = dom.tr;
+	    if (!this.isVisible()) {
+	      if (dom.tr.firstChild) {
+	        if (dom.tdDrag) {
+	          trAppend.removeChild(dom.tdDrag);
+	        }
+	        if (dom.tdMenu) {
+	          trAppend.removeChild(dom.tdMenu);
+	        }
+	        trAppend.removeChild(tdAppend);
+	      }
+	    }
+	    else {
+	      if (!dom.tr.firstChild) {
+	        if (dom.tdDrag) {
+	          trAppend.appendChild(dom.tdDrag);
+	        }
+	        if (dom.tdMenu) {
+	          trAppend.appendChild(dom.tdMenu);
+	        }
+	        trAppend.appendChild(tdAppend);
+	      }
+	    }
+	  };
+
+	  /**
+	   * Check whether the AppendNode is currently visible.
+	   * the AppendNode is visible when its parent has no childs (i.e. is empty).
+	   * @return {boolean} isVisible
+	   */
+	  AppendNode.prototype.isVisible = function () {
+	    return (this.parent.childs.length == 0);
+	  };
+
+	  /**
+	   * Show a contextmenu for this node
+	   * @param {HTMLElement} anchor   The element to attach the menu to.
+	   * @param {function} [onClose]   Callback method called when the context menu
+	   *                               is being closed.
+	   */
+	  AppendNode.prototype.showContextMenu = function (anchor, onClose) {
+	    var node = this;
+	    var titles = Node.TYPE_TITLES;
+	    var appendSubmenu = [
+	        {
+	            text: translate('auto'),
+	            className: 'jsoneditor-type-auto',
+	            title: titles.auto,
+	            click: function () {
+	                node._onAppend('', '', 'auto');
+	            }
+	        },
+	        {
+	            text: translate('array'),
+	            className: 'jsoneditor-type-array',
+	            title: titles.array,
+	            click: function () {
+	                node._onAppend('', []);
+	            }
+	        },
+	        {
+	            text: translate('object'),
+	            className: 'jsoneditor-type-object',
+	            title: titles.object,
+	            click: function () {
+	                node._onAppend('', {});
+	            }
+	        },
+	        {
+	            text: translate('string'),
+	            className: 'jsoneditor-type-string',
+	            title: titles.string,
+	            click: function () {
+	                node._onAppend('', '', 'string');
+	            }
+	        }
+	    ];
+	    node.addTemplates(appendSubmenu, true);
+	    var items = [
+	      // create append button
+	      {
+	        'text': translate('appendText'),
+	        'title': translate('appendTitleAuto'),
+	        'submenuTitle': translate('appendSubmenuTitle'),
+	        'className': 'jsoneditor-insert',
+	        'click': function () {
+	          node._onAppend('', '', 'auto');
+	        },
+	        'submenu': appendSubmenu
+	      }
+	    ];
+
+	    var menu = new ContextMenu(items, {close: onClose});
+	    menu.show(anchor, this.editor.content);
+	  };
+
+	  /**
+	   * Handle an event. The event is caught centrally by the editor
+	   * @param {Event} event
+	   */
+	  AppendNode.prototype.onEvent = function (event) {
+	    var type = event.type;
+	    var target = event.target || event.srcElement;
+	    var dom = this.dom;
+
+	    // highlight the append nodes parent
+	    var menu = dom.menu;
+	    if (target == menu) {
+	      if (type == 'mouseover') {
+	        this.editor.highlighter.highlight(this.parent);
+	      }
+	      else if (type == 'mouseout') {
+	        this.editor.highlighter.unhighlight();
+	      }
+	    }
+
+	    // context menu events
+	    if (type == 'click' && target == dom.menu) {
+	      var highlighter = this.editor.highlighter;
+	      highlighter.highlight(this.parent);
+	      highlighter.lock();
+	      util.addClassName(dom.menu, 'jsoneditor-selected');
+	      this.showContextMenu(dom.menu, function () {
+	        util.removeClassName(dom.menu, 'jsoneditor-selected');
+	        highlighter.unlock();
+	        highlighter.unhighlight();
+	      });
+	    }
+
+	    if (type == 'keydown') {
+	      this.onKeyDown(event);
+	    }
+	  };
+
+	  return AppendNode;
+	}
+
+	module.exports = appendNodeFactory;
+
+
+/***/ },
+/* 14 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	var translate = __webpack_require__(8).translate;
+
+	/**
+	 * A factory function to create an ShowMoreNode, which depends on a Node
+	 * @param {function} Node
+	 */
+	function showMoreNodeFactory(Node) {
+	  /**
+	   * @constructor ShowMoreNode
+	   * @extends Node
+	   * @param {TreeEditor} editor
+	   * @param {Node} parent
+	   * Create a new ShowMoreNode. This is a special node which is created
+	   * for arrays or objects having more than 100 items
+	   */
+	  function ShowMoreNode (editor, parent) {
+	    /** @type {TreeEditor} */
+	    this.editor = editor;
+	    this.parent = parent;
+	    this.dom = {};
+	  }
+
+	  ShowMoreNode.prototype = new Node();
+
+	  /**
+	   * Return a table row with an append button.
+	   * @return {Element} dom   TR element
+	   */
+	  ShowMoreNode.prototype.getDom = function () {
+	    if (this.dom.tr) {
+	      return this.dom.tr;
+	    }
+
+	    this._updateEditability();
+
+	    // display "show more"
+	    if (!this.dom.tr) {
+	      var me = this;
+	      var parent = this.parent;
+	      var showMoreButton = document.createElement('a');
+	      showMoreButton.appendChild(document.createTextNode(translate('showMore')));
+	      showMoreButton.href = '#';
+	      showMoreButton.onclick = function (event) {
+	        // TODO: use callback instead of accessing a method of the parent
+	        parent.visibleChilds = Math.floor(parent.visibleChilds / parent.MAX_VISIBLE_CHILDS + 1) *
+	            parent.MAX_VISIBLE_CHILDS;
+	        me.updateDom();
+	        parent.showChilds();
+
+	        event.preventDefault();
+	        return false;
+	      };
+
+	      var showAllButton = document.createElement('a');
+	      showAllButton.appendChild(document.createTextNode(translate('showAll')));
+	      showAllButton.href = '#';
+	      showAllButton.onclick = function (event) {
+	        // TODO: use callback instead of accessing a method of the parent
+	        parent.visibleChilds = Infinity;
+	        me.updateDom();
+	        parent.showChilds();
+
+	        event.preventDefault();
+	        return false;
+	      };
+
+	      var moreContents = document.createElement('div');
+	      var moreText = document.createTextNode(this._getShowMoreText());
+	      moreContents.className = 'jsoneditor-show-more';
+	      moreContents.appendChild(moreText);
+	      moreContents.appendChild(showMoreButton);
+	      moreContents.appendChild(document.createTextNode('. '));
+	      moreContents.appendChild(showAllButton);
+	      moreContents.appendChild(document.createTextNode('. '));
+
+	      var tdContents = document.createElement('td');
+	      tdContents.appendChild(moreContents);
+
+	      var moreTr = document.createElement('tr');
+	      moreTr.appendChild(document.createElement('td'));
+	      moreTr.appendChild(document.createElement('td'));
+	      moreTr.appendChild(tdContents);
+	      moreTr.className = 'jsoneditor-show-more';
+	      this.dom.tr = moreTr;
+	      this.dom.moreContents = moreContents;
+	      this.dom.moreText = moreText;
+	    }
+
+	    this.updateDom();
+
+	    return this.dom.tr;
+	  };
+
+	  /**
+	   * Update the HTML dom of the Node
+	   */
+	  ShowMoreNode.prototype.updateDom = function(options) {
+	    if (this.isVisible()) {
+	      // attach to the right child node (the first non-visible child)
+	      this.dom.tr.node = this.parent.childs[this.parent.visibleChilds];
+
+	      if (!this.dom.tr.parentNode) {
+	        var nextTr = this.parent._getNextTr();
+	        if (nextTr) {
+	          nextTr.parentNode.insertBefore(this.dom.tr, nextTr);
+	        }
+	      }
+
+	      // update the counts in the text
+	      this.dom.moreText.nodeValue = this._getShowMoreText();
+
+	      // update left margin
+	      this.dom.moreContents.style.marginLeft = (this.getLevel() + 1) * 24 + 'px';
+	    }
+	    else {
+	      if (this.dom.tr && this.dom.tr.parentNode) {
+	        this.dom.tr.parentNode.removeChild(this.dom.tr);
+	      }
+	    }
+	  };
+
+	  ShowMoreNode.prototype._getShowMoreText = function() {
+	    return translate('showMoreStatus', {
+	      visibleChilds: this.parent.visibleChilds,
+	      totalChilds: this.parent.childs.length
+	    }) + ' ';
+	  };
+
+	  /**
+	   * Check whether the ShowMoreNode is currently visible.
+	   * the ShowMoreNode is visible when it's parent has more childs than
+	   * the current visibleChilds
+	   * @return {boolean} isVisible
+	   */
+	  ShowMoreNode.prototype.isVisible = function () {
+	    return this.parent.expanded && this.parent.childs.length > this.parent.visibleChilds;
+	  };
+
+	  /**
+	   * Handle an event. The event is caught centrally by the editor
+	   * @param {Event} event
+	   */
+	  ShowMoreNode.prototype.onEvent = function (event) {
+	    var type = event.type;
+	    if (type === 'keydown') {
+	      this.onKeyDown(event);
+	    }
+	  };
+
+	  return ShowMoreNode;
+	}
+
+	module.exports = showMoreNodeFactory;
+
+
+/***/ },
+/* 15 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var picoModal = __webpack_require__(16);
+	var translate = __webpack_require__(8).translate;
+
+	/**
+	 * Show advanced sorting modal
+	 * @param {Node} node the node to be sorted
+	 * @param {HTMLElement} container   The container where to center
+	 *                                  the modal and create an overlay
+	 */
+	function showSortModal (node, container) {
+	  var content = '<div class="pico-modal-contents">' +
+	      '<div class="pico-modal-header">' + translate('sort') + '</div>' +
+	      '<form>' +
+	      '<table>' +
+	      '<tbody>' +
+	      '<tr>' +
+	      '  <td>' + translate('sortFieldLabel') + ' </td>' +
+	      '  <td class="jsoneditor-modal-input">' +
+	      '  <div class="jsoneditor-select-wrapper">' +
+	      '    <select id="field" title="' + translate('sortFieldTitle') + '">' +
+	      '    </select>' +
+	      '  </div>' +
+	      '  </td>' +
+	      '</tr>' +
+	      '<tr>' +
+	      '  <td>' + translate('sortDirectionLabel') + ' </td>' +
+	      '  <td class="jsoneditor-modal-input">' +
+	      '  <div id="direction" class="jsoneditor-button-group">' +
+	      '<input type="button" ' +
+	      'value="' + translate('sortAscending') + '" ' +
+	      'title="'  + translate('sortAscendingTitle') + '" ' +
+	      'data-value="asc" ' +
+	      'class="jsoneditor-button-first jsoneditor-button-asc"/>' +
+	      '<input type="button" ' +
+	      'value="' + translate('sortDescending') + '" ' +
+	      'title="' + translate('sortDescendingTitle') + '" ' +
+	      'data-value="desc" ' +
+	      'class="jsoneditor-button-last jsoneditor-button-desc"/>' +
+	      '  </div>' +
+	      '  </td>' +
+	      '</tr>' +
+	      '<tr>' +
+	      '<td colspan="2" class="jsoneditor-modal-input jsoneditor-modal-actions">' +
+	      '  <input type="submit" id="ok" value="' + translate('ok') + '" />' +
+	      '</td>' +
+	      '</tr>' +
+	      '</tbody>' +
+	      '</table>' +
+	      '</form>' +
+	      '</div>';
+
+	  picoModal({
+	    parent: container,
+	    content: content,
+	    overlayClass: 'jsoneditor-modal-overlay',
+	    modalClass: 'jsoneditor-modal'
+	  })
+	      .afterCreate(function (modal) {
+	        var form = modal.modalElem().querySelector('form');
+	        var ok = modal.modalElem().querySelector('#ok');
+	        var field = modal.modalElem().querySelector('#field');
+	        var direction = modal.modalElem().querySelector('#direction');
+
+	        var paths = node.getPaths().sort();
+
+	        paths.forEach(function (path) {
+	          var option = document.createElement('option');
+	          option.text = path;
+	          option.value = path;
+	          field.appendChild(option);
+	        });
+
+	        function setDirection(value) {
+	          direction.value = value;
+	          direction.className = 'jsoneditor-button-group jsoneditor-button-group-value-' + direction.value;
+	        }
+
+	        field.value = node.sortedBy ? node.sortedBy.path : paths[0];
+	        setDirection(node.sortedBy ? node.sortedBy.direction : 'asc');
+
+	        direction.onclick = function (event) {
+	          setDirection(event.target.getAttribute('data-value'));
+	        };
+
+	        ok.onclick = function (event) {
+	          event.preventDefault();
+	          event.stopPropagation();
+
+	          modal.close();
+
+	          var path = field.value;
+	          var pathArray = (path === '.') ? [] : path.split('.').slice(1);
+
+	          node.sortedBy = {
+	            path: path,
+	            direction: direction.value
+	          };
+
+	          node.sort(pathArray, direction.value)
+	        };
+
+	        if (form) { // form is not available when JSONEditor is created inside a form
+	          form.onsubmit = ok.onclick;
+	        }
+	      })
+	      .afterClose(function (modal) {
+	        modal.destroy();
+	      })
+	      .show();
+	}
+
+	module.exports = showSortModal;
+
+
+/***/ },
+/* 16 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/**
@@ -9539,407 +11697,304 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 13 */
+/* 17 */
 /***/ function(module, exports, __webpack_require__) {
 
-	'use strict';
-
-	var util = __webpack_require__(4);
-	var ContextMenu = __webpack_require__(7);
+	var jmespath = __webpack_require__(11);
+	var picoModal = __webpack_require__(16);
 	var translate = __webpack_require__(8).translate;
 
+	var MAX_PREVIEW_LINES = 100;
+
 	/**
-	 * A factory function to create an AppendNode, which depends on a Node
-	 * @param {Node} Node
+	 * Show advanced filter and transform modal using JMESPath
+	 * @param {Node} node the node to be transformed
+	 * @param {HTMLElement} container   The container where to center
+	 *                                  the modal and create an overlay
 	 */
-	function appendNodeFactory(Node) {
-	  /**
-	   * @constructor AppendNode
-	   * @extends Node
-	   * @param {TreeEditor} editor
-	   * Create a new AppendNode. This is a special node which is created at the
-	   * end of the list with childs for an object or array
-	   */
-	  function AppendNode (editor) {
-	    /** @type {TreeEditor} */
-	    this.editor = editor;
-	    this.dom = {};
-	  }
+	function showTransformModal (node, container) {
+	  var value = node.getValue();
 
-	  AppendNode.prototype = new Node();
+	  var content = '<label class="pico-modal-contents jsoneditor-transform-modal">' +
+	      '<div class="pico-modal-header">' + translate('transform') + '</div>' +
+	      '<form>' +
+	      '<p>' +
+	      'Enter a <a href="http://jmespath.org" target="_blank">JMESPath</a> query to filter, sort, or transform the JSON data.<br/>' +
+	      'To learn JMESPath, go to <a href="http://jmespath.org/tutorial.html" target="_blank">the interactive tutorial</a>.' +
+	      '</p>' +
+	      '<table>' +
+	      '<tbody>' +
+	      '<tr>' +
+	      '  <th>' + translate('transformWizardLabel') + ' </th>' +
+	      '  <td>' +
+	      '  <div id="wizard" class="jsoneditor-jmespath-wizard">' +
+	      '  <label>' +
+	      '    <div class="jsoneditor-jmespath-wizard-label">' + translate('transformWizardFilter') + '</div>' +
+	      '    <div class="jsoneditor-jmespath-filter">' +
+	      '      <div class="jsoneditor-select-wrapper">' +
+	      '        <select class="jsoneditor-jmespath-filter-field" id="filterField">' +
+	      '          <option value="" selected> </option>' +
+	      '        </select>' +
+	      '      </div>' +
+	      '      <div class="jsoneditor-select-wrapper">' +
+	      '        <select class="jsoneditor-jmespath-filter-relation" id="filterRelation">' +
+	      '          <option value="" selected> </option>' +
+	      '          <option value="==">==</option>' +
+	      '          <option value="!=">!=</option>' +
+	      '          <option value="<">&lt;</option>' +
+	      '          <option value="<=">&lt;=</option>' +
+	      '          <option value=">">&gt;</option>' +
+	      '          <option value=">=">&gt;=</option>' +
+	      '        </select>' +
+	      '      </div>' +
+	      '      <input class="jsoneditor-jmespath-filter-value" id="filterValue" />' +
+	      '    </div>' +
+	      '  </label>' +
+	      '  <label>' +
+	      '    <div class="jsoneditor-jmespath-wizard-label">' + translate('transformWizardSortBy') + '</div>' +
+	      '    <div class="jsoneditor-jmespath-filter">' +
+	      '      <div class="jsoneditor-select-wrapper">' +
+	      '        <select class="jsoneditor-jmespath-sort-field" id="sortField">' +
+	      '          <option value="" selected> </option>' +
+	      '        </select>' +
+	      '      </div>' +
+	      '      <div class="jsoneditor-select-wrapper">' +
+	      '        <select class="jsoneditor-jmespath-sort-order" id="sortOrder">' +
+	      '          <option value="" selected> </option>' +
+	      '          <option value="asc">Ascending</option>' +
+	      '          <option value="desc">Descending</option>' +
+	      '        </select>' +
+	      '      </div>' +
+	      '    </div>' +
+	      '  </label>' +
+	      '  <label id="selectFieldsPart">' +
+	      '    <div class="jsoneditor-jmespath-wizard-label">' + translate('transformWizardSelectFields') + '</div>' +
+	      '    <select class="jsoneditor-jmespath-select-fields" id="selectFields" multiple>' +
+	      '      <option value=""> </option>' +
+	      '    </select>' +
+	      '  </label>' +
+	      '  </div>' +
+	      '  </td>' +
+	      '</tr>' +
+	      '<tr>' +
+	      '  <th>' + translate('transformQueryLabel') + ' </th>' +
+	      '  <td class="jsoneditor-modal-input">' +
+	      '    <input id="query" type="text" title="' + translate('transformQueryTitle') + '" value=""/>' +
+	      '  </td>' +
+	      '</tr>' +
+	      '<tr>' +
+	      '  <th>' + translate('transformPreviewLabel') + ' </th>' +
+	      '  <td class="jsoneditor-modal-input">' +
+	      '    <textarea id="preview" ' +
+	      '        class="jsoneditor-transform-preview"' +
+	      '        readonly> </textarea>' +
+	      '  </td>' +
+	      '</tr>' +
+	      '<tr>' +
+	      '<td colspan="2" class="jsoneditor-modal-input jsoneditor-modal-actions">' +
+	      '  <input type="submit" id="ok" value="' + translate('ok') + '" />' +
+	      '</td>' +
+	      '</tr>' +
+	      '</tbody>' +
+	      '</table>' +
+	      '</form>' +
+	      '</div>';
 
-	  /**
-	   * Return a table row with an append button.
-	   * @return {Element} dom   TR element
-	   */
-	  AppendNode.prototype.getDom = function () {
-	    // TODO: implement a new solution for the append node
-	    var dom = this.dom;
+	  picoModal({
+	    parent: container,
+	    content: content,
+	    overlayClass: 'jsoneditor-modal-overlay',
+	    modalClass: 'jsoneditor-modal',
+	    focus: false
+	  })
+	      .afterCreate(function (modal) {
+	        var elem = modal.modalElem();
 
-	    if (dom.tr) {
-	      return dom.tr;
-	    }
+	        var form = elem.querySelector('form');
+	        var wizard = elem.querySelector('#wizard');
+	        var ok = elem.querySelector('#ok');
+	        var filterField = elem.querySelector('#filterField');
+	        var filterRelation = elem.querySelector('#filterRelation');
+	        var filterValue = elem.querySelector('#filterValue');
+	        var sortField = elem.querySelector('#sortField');
+	        var sortOrder = elem.querySelector('#sortOrder');
+	        var selectFields = elem.querySelector('#selectFields');
+	        var query = elem.querySelector('#query');
+	        var preview = elem.querySelector('#preview');
 
-	    this._updateEditability();
-
-	    // a row for the append button
-	    var trAppend = document.createElement('tr');
-	    trAppend.className = 'jsoneditor-append';
-	    trAppend.node = this;
-	    dom.tr = trAppend;
-
-	    // TODO: consistent naming
-
-	    if (this.editor.options.mode === 'tree') {
-	      // a cell for the dragarea column
-	      dom.tdDrag = document.createElement('td');
-
-	      // create context menu
-	      var tdMenu = document.createElement('td');
-	      dom.tdMenu = tdMenu;
-	      var menu = document.createElement('button');
-	      menu.type = 'button';
-	      menu.className = 'jsoneditor-contextmenu';
-	      menu.title = 'Click to open the actions menu (Ctrl+M)';
-	      dom.menu = menu;
-	      tdMenu.appendChild(dom.menu);
-	    }
-
-	    // a cell for the contents (showing text 'empty')
-	    var tdAppend = document.createElement('td');
-	    var domText = document.createElement('div');
-	    domText.innerHTML = '(' + translate('empty') + ')';
-	    domText.className = 'jsoneditor-readonly';
-	    tdAppend.appendChild(domText);
-	    dom.td = tdAppend;
-	    dom.text = domText;
-
-	    this.updateDom();
-
-	    return trAppend;
-	  };
-
-	  /**
-	   * Update the HTML dom of the Node
-	   */
-	  AppendNode.prototype.updateDom = function(options) {
-	    var dom = this.dom;
-	    var tdAppend = dom.td;
-	    if (tdAppend) {
-	      tdAppend.style.paddingLeft = (this.getLevel() * 24 + 26) + 'px';
-	      // TODO: not so nice hard coded offset
-	    }
-
-	    var domText = dom.text;
-	    if (domText) {
-	      domText.innerHTML = '(' + translate('empty') + ' ' + this.parent.type + ')';
-	    }
-
-	    // attach or detach the contents of the append node:
-	    // hide when the parent has childs, show when the parent has no childs
-	    var trAppend = dom.tr;
-	    if (!this.isVisible()) {
-	      if (dom.tr.firstChild) {
-	        if (dom.tdDrag) {
-	          trAppend.removeChild(dom.tdDrag);
+	        if (!Array.isArray(value)) {
+	          wizard.style.display = 'none';
+	          wizard.parentNode.style.fontStyle = 'italic';
+	          wizard.parentNode.appendChild(
+	              document.createTextNode('(wizard not available for objects, only for arrays)')
+	          );
 	        }
-	        if (dom.tdMenu) {
-	          trAppend.removeChild(dom.tdMenu);
-	        }
-	        trAppend.removeChild(tdAppend);
-	      }
-	    }
-	    else {
-	      if (!dom.tr.firstChild) {
-	        if (dom.tdDrag) {
-	          trAppend.appendChild(dom.tdDrag);
-	        }
-	        if (dom.tdMenu) {
-	          trAppend.appendChild(dom.tdMenu);
-	        }
-	        trAppend.appendChild(tdAppend);
-	      }
-	    }
-	  };
 
-	  /**
-	   * Check whether the AppendNode is currently visible.
-	   * the AppendNode is visible when its parent has no childs (i.e. is empty).
-	   * @return {boolean} isVisible
-	   */
-	  AppendNode.prototype.isVisible = function () {
-	    return (this.parent.childs.length == 0);
-	  };
+	        var paths = node.getPaths().sort();
+	        paths.forEach(function (path) {
+	          var formattedPath = preprocessPath(path);
+	          var filterOption = document.createElement('option');
+	          filterOption.text = formattedPath;
+	          filterOption.value = formattedPath;
+	          filterField.appendChild(filterOption);
 
-	  /**
-	   * Show a contextmenu for this node
-	   * @param {HTMLElement} anchor   The element to attach the menu to.
-	   * @param {function} [onClose]   Callback method called when the context menu
-	   *                               is being closed.
-	   */
-	  AppendNode.prototype.showContextMenu = function (anchor, onClose) {
-	    var node = this;
-	    var titles = Node.TYPE_TITLES;
-	    var appendSubmenu = [
-	        {
-	            text: translate('auto'),
-	            className: 'jsoneditor-type-auto',
-	            title: titles.auto,
-	            click: function () {
-	                node._onAppend('', '', 'auto');
+	          var sortOption = document.createElement('option');
+	          sortOption.text = formattedPath;
+	          sortOption.value = formattedPath;
+	          sortField.appendChild(sortOption);
+	        });
+
+	        var allPaths = node.getPaths(true)
+	            .sort()
+	            .filter(function(path) {
+	              return path !== '.';
+	            });
+
+	        if (allPaths.length > 0) {
+	          allPaths.forEach(function (path) {
+	            var formattedPath = preprocessPath(path);
+	            var option = document.createElement('option');
+	            option.text = formattedPath;
+	            option.value = formattedPath;
+	            selectFields.appendChild(option);
+	          });
+	        }
+	        else {
+	          elem.querySelector('#selectFieldsPart').style.display = 'none';
+	        }
+
+	        query.value = Array.isArray(value) ? '[*]' : '@';
+
+	        function preprocessPath(path) {
+	          if (path[0] === '.') {
+	            return (path === '.')
+	                ? '@'
+	                : path.slice(1);
+	          }
+	          else {
+	            return path;
+	          }
+	        }
+
+	        function generateQueryFromWizard () {
+	          if (filterField.value && filterRelation.value && filterValue.value) {
+	            var field1 = filterField.value;
+	            query.value = '[? ' +
+	                field1 + ' ' +
+	                filterRelation.value + ' ' +
+	                '`' + filterValue.value + '`' +
+	                ']';
+	          }
+	          else {
+	            query.value = '[*]';
+	          }
+
+	          if (sortField.value && sortOrder.value) {
+	            var field2 = sortField.value;
+	            if (sortOrder.value === 'desc') {
+	              query.value += ' | reverse(sort_by(@, &' + field2 + '))';
 	            }
-	        },
-	        {
-	            text: translate('array'),
-	            className: 'jsoneditor-type-array',
-	            title: titles.array,
-	            click: function () {
-	                node._onAppend('', []);
+	            else {
+	              query.value += ' | sort_by(@, &' + field2 + ')';
 	            }
-	        },
-	        {
-	            text: translate('object'),
-	            className: 'jsoneditor-type-object',
-	            title: titles.object,
-	            click: function () {
-	                node._onAppend('', {});
+	          }
+
+	          if (selectFields.value) {
+	            var values = [];
+	            for (var i=0; i < selectFields.options.length; i++) {
+	              if (selectFields.options[i].selected) {
+	                var value = selectFields.options[i].value;
+	                values.push(value);
+	              }
 	            }
-	        },
-	        {
-	            text: translate('string'),
-	            className: 'jsoneditor-type-string',
-	            title: titles.string,
-	            click: function () {
-	                node._onAppend('', '', 'string');
+
+	            if (query.value[query.value.length - 1] !== ']') {
+	              query.value += ' | [*]';
 	            }
+
+	            if (values.length === 1) {
+	              query.value += '.' + value;
+	            }
+	            else if (values.length > 1) {
+	              query.value += '.{' +
+	                  values.map(function (value) {
+	                    var parts = value.split('.');
+	                    var last = parts[parts.length - 1];
+	                    return last + ': ' + value;
+	                  }).join(', ') +
+	                  '}';
+	            }
+	            else { // values.length === 0
+	              // ignore
+	            }
+
+	            console.log('selectFields', values)
+	          }
+
+	          updatePreview();
 	        }
-	    ];
-	    node.addTemplates(appendSubmenu, true);
-	    var items = [
-	      // create append button
-	      {
-	        'text': translate('appendText'),
-	        'title': translate('appendTitleAuto'),
-	        'submenuTitle': translate('appendSubmenuTitle'),
-	        'className': 'jsoneditor-insert',
-	        'click': function () {
-	          node._onAppend('', '', 'auto');
-	        },
-	        'submenu': appendSubmenu
-	      }
-	    ];
 
-	    var menu = new ContextMenu(items, {close: onClose});
-	    menu.show(anchor, this.editor.content);
-	  };
+	        function updatePreview() {
+	          // TODO: debounce?
+	          try {
+	            var transformed = jmespath.search(value, query.value);
+	            var lines =  JSON.stringify(transformed, null, 2).split('\n');
 
-	  /**
-	   * Handle an event. The event is caught centrally by the editor
-	   * @param {Event} event
-	   */
-	  AppendNode.prototype.onEvent = function (event) {
-	    var type = event.type;
-	    var target = event.target || event.srcElement;
-	    var dom = this.dom;
+	            if (lines.length > MAX_PREVIEW_LINES) {
+	              lines = lines.slice(0, MAX_PREVIEW_LINES).concat(['...'])
+	            }
 
-	    // highlight the append nodes parent
-	    var menu = dom.menu;
-	    if (target == menu) {
-	      if (type == 'mouseover') {
-	        this.editor.highlighter.highlight(this.parent);
-	      }
-	      else if (type == 'mouseout') {
-	        this.editor.highlighter.unhighlight();
-	      }
-	    }
 
-	    // context menu events
-	    if (type == 'click' && target == dom.menu) {
-	      var highlighter = this.editor.highlighter;
-	      highlighter.highlight(this.parent);
-	      highlighter.lock();
-	      util.addClassName(dom.menu, 'jsoneditor-selected');
-	      this.showContextMenu(dom.menu, function () {
-	        util.removeClassName(dom.menu, 'jsoneditor-selected');
-	        highlighter.unlock();
-	        highlighter.unhighlight();
-	      });
-	    }
+	            preview.className = 'jsoneditor-transform-preview';
+	            preview.value = lines.join('\n');
+	            ok.disabled = false;
+	          }
+	          catch (err) {
+	            preview.className = 'jsoneditor-transform-preview jsoneditor-error';
+	            preview.value = err.toString();
+	            ok.disabled = true;
+	          }
+	        }
 
-	    if (type == 'keydown') {
-	      this.onKeyDown(event);
-	    }
-	  };
+	        filterField.onchange = generateQueryFromWizard;
+	        filterRelation.onchange = generateQueryFromWizard;
+	        filterValue.oninput = generateQueryFromWizard;
+	        sortField.oninput = generateQueryFromWizard;
+	        sortOrder.oninput = generateQueryFromWizard;
+	        selectFields.onchange = generateQueryFromWizard;
 
-	  return AppendNode;
+	        query.oninput = updatePreview;
+	        updatePreview();
+
+	        ok.onclick = function (event) {
+	          event.preventDefault();
+	          event.stopPropagation();
+
+	          modal.close();
+
+	          node.transform(query.value)
+	        };
+
+	        if (form) { // form is not available when JSONEditor is created inside a form
+	          form.onsubmit = ok.onclick;
+	        }
+
+	        setTimeout(function () {
+	          query.select();
+	          query.focus();
+	        });
+	      })
+	      .afterClose(function (modal) {
+	        modal.destroy();
+	      })
+	      .show();
 	}
 
-	module.exports = appendNodeFactory;
+	module.exports = showTransformModal;
 
 
 /***/ },
-/* 14 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-
-	var translate = __webpack_require__(8).translate;
-
-	/**
-	 * A factory function to create an ShowMoreNode, which depends on a Node
-	 * @param {function} Node
-	 */
-	function showMoreNodeFactory(Node) {
-	  /**
-	   * @constructor ShowMoreNode
-	   * @extends Node
-	   * @param {TreeEditor} editor
-	   * @param {Node} parent
-	   * Create a new ShowMoreNode. This is a special node which is created
-	   * for arrays or objects having more than 100 items
-	   */
-	  function ShowMoreNode (editor, parent) {
-	    /** @type {TreeEditor} */
-	    this.editor = editor;
-	    this.parent = parent;
-	    this.dom = {};
-	  }
-
-	  ShowMoreNode.prototype = new Node();
-
-	  /**
-	   * Return a table row with an append button.
-	   * @return {Element} dom   TR element
-	   */
-	  ShowMoreNode.prototype.getDom = function () {
-	    if (this.dom.tr) {
-	      return this.dom.tr;
-	    }
-
-	    this._updateEditability();
-
-	    // display "show more"
-	    if (!this.dom.tr) {
-	      var me = this;
-	      var parent = this.parent;
-	      var showMoreButton = document.createElement('a');
-	      showMoreButton.appendChild(document.createTextNode(translate('showMore')));
-	      showMoreButton.href = '#';
-	      showMoreButton.onclick = function (event) {
-	        // TODO: use callback instead of accessing a method of the parent
-	        parent.visibleChilds = Math.floor(parent.visibleChilds / parent.MAX_VISIBLE_CHILDS + 1) *
-	            parent.MAX_VISIBLE_CHILDS;
-	        me.updateDom();
-	        parent.showChilds();
-
-	        event.preventDefault();
-	        return false;
-	      };
-
-	      var showAllButton = document.createElement('a');
-	      showAllButton.appendChild(document.createTextNode(translate('showAll')));
-	      showAllButton.href = '#';
-	      showAllButton.onclick = function (event) {
-	        // TODO: use callback instead of accessing a method of the parent
-	        parent.visibleChilds = Infinity;
-	        me.updateDom();
-	        parent.showChilds();
-
-	        event.preventDefault();
-	        return false;
-	      };
-
-	      var moreContents = document.createElement('div');
-	      var moreText = document.createTextNode(this._getShowMoreText());
-	      moreContents.className = 'jsoneditor-show-more';
-	      moreContents.appendChild(moreText);
-	      moreContents.appendChild(showMoreButton);
-	      moreContents.appendChild(document.createTextNode('. '));
-	      moreContents.appendChild(showAllButton);
-	      moreContents.appendChild(document.createTextNode('. '));
-
-	      var tdContents = document.createElement('td');
-	      tdContents.appendChild(moreContents);
-
-	      var moreTr = document.createElement('tr');
-	      moreTr.appendChild(document.createElement('td'));
-	      moreTr.appendChild(document.createElement('td'));
-	      moreTr.appendChild(tdContents);
-	      moreTr.className = 'jsoneditor-show-more';
-	      this.dom.tr = moreTr;
-	      this.dom.moreContents = moreContents;
-	      this.dom.moreText = moreText;
-	    }
-
-	    this.updateDom();
-
-	    return this.dom.tr;
-	  };
-
-	  /**
-	   * Update the HTML dom of the Node
-	   */
-	  ShowMoreNode.prototype.updateDom = function(options) {
-	    if (this.isVisible()) {
-	      // attach to the right child node (the first non-visible child)
-	      this.dom.tr.node = this.parent.childs[this.parent.visibleChilds];
-
-	      if (!this.dom.tr.parentNode) {
-	        var nextTr = this.parent._getNextTr();
-	        if (nextTr) {
-	          nextTr.parentNode.insertBefore(this.dom.tr, nextTr);
-	        }
-	      }
-
-	      // update the counts in the text
-	      this.dom.moreText.nodeValue = this._getShowMoreText();
-
-	      // update left margin
-	      this.dom.moreContents.style.marginLeft = (this.getLevel() + 1) * 24 + 'px';
-	    }
-	    else {
-	      if (this.dom.tr && this.dom.tr.parentNode) {
-	        this.dom.tr.parentNode.removeChild(this.dom.tr);
-	      }
-	    }
-	  };
-
-	  ShowMoreNode.prototype._getShowMoreText = function() {
-	    return translate('showMoreStatus', {
-	      visibleChilds: this.parent.visibleChilds,
-	      totalChilds: this.parent.childs.length
-	    }) + ' ';
-	  };
-
-	  /**
-	   * Check whether the ShowMoreNode is currently visible.
-	   * the ShowMoreNode is visible when it's parent has more childs than
-	   * the current visibleChilds
-	   * @return {boolean} isVisible
-	   */
-	  ShowMoreNode.prototype.isVisible = function () {
-	    return this.parent.expanded && this.parent.childs.length > this.parent.visibleChilds;
-	  };
-
-	  /**
-	   * Handle an event. The event is caught centrally by the editor
-	   * @param {Event} event
-	   */
-	  ShowMoreNode.prototype.onEvent = function (event) {
-	    var type = event.type;
-	    if (type === 'keydown') {
-	      this.onKeyDown(event);
-	    }
-	  };
-
-	  return ShowMoreNode;
-	}
-
-	module.exports = showMoreNodeFactory;
-
-
-/***/ },
-/* 15 */
+/* 18 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -10060,7 +12115,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 16 */
+/* 19 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -10447,13 +12502,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = completely;
 
 /***/ },
-/* 17 */
+/* 20 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var ace = __webpack_require__(18);
-	var ModeSwitcher = __webpack_require__(15);
+	var ace = __webpack_require__(21);
+	var ModeSwitcher = __webpack_require__(18);
 	var util = __webpack_require__(4);
 
 	// create a mixin with the functions for text mode
@@ -10523,7 +12578,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  this.theme = options.theme || DEFAULT_THEME;
 	  if (this.theme === DEFAULT_THEME && _ace) {
 	    try {
-	      __webpack_require__(22);
+	      __webpack_require__(25);
 	    }
 	    catch (err) {
 	      console.error(err);
@@ -11269,7 +13324,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 18 */
+/* 21 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var ace
@@ -11283,8 +13338,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	    ace = __webpack_require__(!(function webpackMissingModule() { var e = new Error("Cannot find module \"brace\""); e.code = 'MODULE_NOT_FOUND'; throw e; }()));
 
 	    // load required Ace plugins
-	    __webpack_require__(19);
-	    __webpack_require__(21);
+	    __webpack_require__(22);
+	    __webpack_require__(24);
 	  }
 	  catch (err) {
 	    // failed to load brace (can be minimalist bundle).
@@ -11296,7 +13351,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 19 */
+/* 22 */
 /***/ function(module, exports, __webpack_require__) {
 
 	ace.define("ace/mode/json_highlight_rules",["require","exports","module","ace/lib/oop","ace/mode/text_highlight_rules"], function(acequire, exports, module) {
@@ -11598,7 +13653,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    };
 
 	    this.createWorker = function(session) {
-	        var worker = new WorkerClient(["ace"], __webpack_require__(20), "JsonWorker");
+	        var worker = new WorkerClient(["ace"], __webpack_require__(23), "JsonWorker");
 	        worker.attachToDocument(session.getDocument());
 
 	        worker.on("annotate", function(e) {
@@ -11621,14 +13676,14 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 20 */
+/* 23 */
 /***/ function(module, exports) {
 
 	module.exports.id = 'ace/mode/json_worker';
 	module.exports.src = "\"no use strict\";!function(window){function resolveModuleId(id,paths){for(var testPath=id,tail=\"\";testPath;){var alias=paths[testPath];if(\"string\"==typeof alias)return alias+tail;if(alias)return alias.location.replace(/\\/*$/,\"/\")+(tail||alias.main||alias.name);if(alias===!1)return\"\";var i=testPath.lastIndexOf(\"/\");if(-1===i)break;tail=testPath.substr(i)+tail,testPath=testPath.slice(0,i)}return id}if(!(void 0!==window.window&&window.document||window.acequire&&window.define)){window.console||(window.console=function(){var msgs=Array.prototype.slice.call(arguments,0);postMessage({type:\"log\",data:msgs})},window.console.error=window.console.warn=window.console.log=window.console.trace=window.console),window.window=window,window.ace=window,window.onerror=function(message,file,line,col,err){postMessage({type:\"error\",data:{message:message,data:err.data,file:file,line:line,col:col,stack:err.stack}})},window.normalizeModule=function(parentId,moduleName){if(-1!==moduleName.indexOf(\"!\")){var chunks=moduleName.split(\"!\");return window.normalizeModule(parentId,chunks[0])+\"!\"+window.normalizeModule(parentId,chunks[1])}if(\".\"==moduleName.charAt(0)){var base=parentId.split(\"/\").slice(0,-1).join(\"/\");for(moduleName=(base?base+\"/\":\"\")+moduleName;-1!==moduleName.indexOf(\".\")&&previous!=moduleName;){var previous=moduleName;moduleName=moduleName.replace(/^\\.\\//,\"\").replace(/\\/\\.\\//,\"/\").replace(/[^\\/]+\\/\\.\\.\\//,\"\")}}return moduleName},window.acequire=function acequire(parentId,id){if(id||(id=parentId,parentId=null),!id.charAt)throw Error(\"worker.js acequire() accepts only (parentId, id) as arguments\");id=window.normalizeModule(parentId,id);var module=window.acequire.modules[id];if(module)return module.initialized||(module.initialized=!0,module.exports=module.factory().exports),module.exports;if(!window.acequire.tlns)return console.log(\"unable to load \"+id);var path=resolveModuleId(id,window.acequire.tlns);return\".js\"!=path.slice(-3)&&(path+=\".js\"),window.acequire.id=id,window.acequire.modules[id]={},importScripts(path),window.acequire(parentId,id)},window.acequire.modules={},window.acequire.tlns={},window.define=function(id,deps,factory){if(2==arguments.length?(factory=deps,\"string\"!=typeof id&&(deps=id,id=window.acequire.id)):1==arguments.length&&(factory=id,deps=[],id=window.acequire.id),\"function\"!=typeof factory)return window.acequire.modules[id]={exports:factory,initialized:!0},void 0;deps.length||(deps=[\"require\",\"exports\",\"module\"]);var req=function(childId){return window.acequire(id,childId)};window.acequire.modules[id]={exports:{},factory:function(){var module=this,returnExports=factory.apply(this,deps.map(function(dep){switch(dep){case\"require\":return req;case\"exports\":return module.exports;case\"module\":return module;default:return req(dep)}}));return returnExports&&(module.exports=returnExports),module}}},window.define.amd={},acequire.tlns={},window.initBaseUrls=function(topLevelNamespaces){for(var i in topLevelNamespaces)acequire.tlns[i]=topLevelNamespaces[i]},window.initSender=function(){var EventEmitter=window.acequire(\"ace/lib/event_emitter\").EventEmitter,oop=window.acequire(\"ace/lib/oop\"),Sender=function(){};return function(){oop.implement(this,EventEmitter),this.callback=function(data,callbackId){postMessage({type:\"call\",id:callbackId,data:data})},this.emit=function(name,data){postMessage({type:\"event\",name:name,data:data})}}.call(Sender.prototype),new Sender};var main=window.main=null,sender=window.sender=null;window.onmessage=function(e){var msg=e.data;if(msg.event&&sender)sender._signal(msg.event,msg.data);else if(msg.command)if(main[msg.command])main[msg.command].apply(main,msg.args);else{if(!window[msg.command])throw Error(\"Unknown command:\"+msg.command);window[msg.command].apply(window,msg.args)}else if(msg.init){window.initBaseUrls(msg.tlns),acequire(\"ace/lib/es5-shim\"),sender=window.sender=window.initSender();var clazz=acequire(msg.module)[msg.classname];main=window.main=new clazz(sender)}}}}(this),ace.define(\"ace/lib/oop\",[\"require\",\"exports\",\"module\"],function(acequire,exports){\"use strict\";exports.inherits=function(ctor,superCtor){ctor.super_=superCtor,ctor.prototype=Object.create(superCtor.prototype,{constructor:{value:ctor,enumerable:!1,writable:!0,configurable:!0}})},exports.mixin=function(obj,mixin){for(var key in mixin)obj[key]=mixin[key];return obj},exports.implement=function(proto,mixin){exports.mixin(proto,mixin)}}),ace.define(\"ace/range\",[\"require\",\"exports\",\"module\"],function(acequire,exports){\"use strict\";var comparePoints=function(p1,p2){return p1.row-p2.row||p1.column-p2.column},Range=function(startRow,startColumn,endRow,endColumn){this.start={row:startRow,column:startColumn},this.end={row:endRow,column:endColumn}};(function(){this.isEqual=function(range){return this.start.row===range.start.row&&this.end.row===range.end.row&&this.start.column===range.start.column&&this.end.column===range.end.column},this.toString=function(){return\"Range: [\"+this.start.row+\"/\"+this.start.column+\"] -> [\"+this.end.row+\"/\"+this.end.column+\"]\"},this.contains=function(row,column){return 0==this.compare(row,column)},this.compareRange=function(range){var cmp,end=range.end,start=range.start;return cmp=this.compare(end.row,end.column),1==cmp?(cmp=this.compare(start.row,start.column),1==cmp?2:0==cmp?1:0):-1==cmp?-2:(cmp=this.compare(start.row,start.column),-1==cmp?-1:1==cmp?42:0)},this.comparePoint=function(p){return this.compare(p.row,p.column)},this.containsRange=function(range){return 0==this.comparePoint(range.start)&&0==this.comparePoint(range.end)},this.intersects=function(range){var cmp=this.compareRange(range);return-1==cmp||0==cmp||1==cmp},this.isEnd=function(row,column){return this.end.row==row&&this.end.column==column},this.isStart=function(row,column){return this.start.row==row&&this.start.column==column},this.setStart=function(row,column){\"object\"==typeof row?(this.start.column=row.column,this.start.row=row.row):(this.start.row=row,this.start.column=column)},this.setEnd=function(row,column){\"object\"==typeof row?(this.end.column=row.column,this.end.row=row.row):(this.end.row=row,this.end.column=column)},this.inside=function(row,column){return 0==this.compare(row,column)?this.isEnd(row,column)||this.isStart(row,column)?!1:!0:!1},this.insideStart=function(row,column){return 0==this.compare(row,column)?this.isEnd(row,column)?!1:!0:!1},this.insideEnd=function(row,column){return 0==this.compare(row,column)?this.isStart(row,column)?!1:!0:!1},this.compare=function(row,column){return this.isMultiLine()||row!==this.start.row?this.start.row>row?-1:row>this.end.row?1:this.start.row===row?column>=this.start.column?0:-1:this.end.row===row?this.end.column>=column?0:1:0:this.start.column>column?-1:column>this.end.column?1:0},this.compareStart=function(row,column){return this.start.row==row&&this.start.column==column?-1:this.compare(row,column)},this.compareEnd=function(row,column){return this.end.row==row&&this.end.column==column?1:this.compare(row,column)},this.compareInside=function(row,column){return this.end.row==row&&this.end.column==column?1:this.start.row==row&&this.start.column==column?-1:this.compare(row,column)},this.clipRows=function(firstRow,lastRow){if(this.end.row>lastRow)var end={row:lastRow+1,column:0};else if(firstRow>this.end.row)var end={row:firstRow,column:0};if(this.start.row>lastRow)var start={row:lastRow+1,column:0};else if(firstRow>this.start.row)var start={row:firstRow,column:0};return Range.fromPoints(start||this.start,end||this.end)},this.extend=function(row,column){var cmp=this.compare(row,column);if(0==cmp)return this;if(-1==cmp)var start={row:row,column:column};else var end={row:row,column:column};return Range.fromPoints(start||this.start,end||this.end)},this.isEmpty=function(){return this.start.row===this.end.row&&this.start.column===this.end.column},this.isMultiLine=function(){return this.start.row!==this.end.row},this.clone=function(){return Range.fromPoints(this.start,this.end)},this.collapseRows=function(){return 0==this.end.column?new Range(this.start.row,0,Math.max(this.start.row,this.end.row-1),0):new Range(this.start.row,0,this.end.row,0)},this.toScreenRange=function(session){var screenPosStart=session.documentToScreenPosition(this.start),screenPosEnd=session.documentToScreenPosition(this.end);return new Range(screenPosStart.row,screenPosStart.column,screenPosEnd.row,screenPosEnd.column)},this.moveBy=function(row,column){this.start.row+=row,this.start.column+=column,this.end.row+=row,this.end.column+=column}}).call(Range.prototype),Range.fromPoints=function(start,end){return new Range(start.row,start.column,end.row,end.column)},Range.comparePoints=comparePoints,Range.comparePoints=function(p1,p2){return p1.row-p2.row||p1.column-p2.column},exports.Range=Range}),ace.define(\"ace/apply_delta\",[\"require\",\"exports\",\"module\"],function(acequire,exports){\"use strict\";exports.applyDelta=function(docLines,delta){var row=delta.start.row,startColumn=delta.start.column,line=docLines[row]||\"\";switch(delta.action){case\"insert\":var lines=delta.lines;if(1===lines.length)docLines[row]=line.substring(0,startColumn)+delta.lines[0]+line.substring(startColumn);else{var args=[row,1].concat(delta.lines);docLines.splice.apply(docLines,args),docLines[row]=line.substring(0,startColumn)+docLines[row],docLines[row+delta.lines.length-1]+=line.substring(startColumn)}break;case\"remove\":var endColumn=delta.end.column,endRow=delta.end.row;row===endRow?docLines[row]=line.substring(0,startColumn)+line.substring(endColumn):docLines.splice(row,endRow-row+1,line.substring(0,startColumn)+docLines[endRow].substring(endColumn))}}}),ace.define(\"ace/lib/event_emitter\",[\"require\",\"exports\",\"module\"],function(acequire,exports){\"use strict\";var EventEmitter={},stopPropagation=function(){this.propagationStopped=!0},preventDefault=function(){this.defaultPrevented=!0};EventEmitter._emit=EventEmitter._dispatchEvent=function(eventName,e){this._eventRegistry||(this._eventRegistry={}),this._defaultHandlers||(this._defaultHandlers={});var listeners=this._eventRegistry[eventName]||[],defaultHandler=this._defaultHandlers[eventName];if(listeners.length||defaultHandler){\"object\"==typeof e&&e||(e={}),e.type||(e.type=eventName),e.stopPropagation||(e.stopPropagation=stopPropagation),e.preventDefault||(e.preventDefault=preventDefault),listeners=listeners.slice();for(var i=0;listeners.length>i&&(listeners[i](e,this),!e.propagationStopped);i++);return defaultHandler&&!e.defaultPrevented?defaultHandler(e,this):void 0}},EventEmitter._signal=function(eventName,e){var listeners=(this._eventRegistry||{})[eventName];if(listeners){listeners=listeners.slice();for(var i=0;listeners.length>i;i++)listeners[i](e,this)}},EventEmitter.once=function(eventName,callback){var _self=this;callback&&this.addEventListener(eventName,function newCallback(){_self.removeEventListener(eventName,newCallback),callback.apply(null,arguments)})},EventEmitter.setDefaultHandler=function(eventName,callback){var handlers=this._defaultHandlers;if(handlers||(handlers=this._defaultHandlers={_disabled_:{}}),handlers[eventName]){var old=handlers[eventName],disabled=handlers._disabled_[eventName];disabled||(handlers._disabled_[eventName]=disabled=[]),disabled.push(old);var i=disabled.indexOf(callback);-1!=i&&disabled.splice(i,1)}handlers[eventName]=callback},EventEmitter.removeDefaultHandler=function(eventName,callback){var handlers=this._defaultHandlers;if(handlers){var disabled=handlers._disabled_[eventName];if(handlers[eventName]==callback)handlers[eventName],disabled&&this.setDefaultHandler(eventName,disabled.pop());else if(disabled){var i=disabled.indexOf(callback);-1!=i&&disabled.splice(i,1)}}},EventEmitter.on=EventEmitter.addEventListener=function(eventName,callback,capturing){this._eventRegistry=this._eventRegistry||{};var listeners=this._eventRegistry[eventName];return listeners||(listeners=this._eventRegistry[eventName]=[]),-1==listeners.indexOf(callback)&&listeners[capturing?\"unshift\":\"push\"](callback),callback},EventEmitter.off=EventEmitter.removeListener=EventEmitter.removeEventListener=function(eventName,callback){this._eventRegistry=this._eventRegistry||{};var listeners=this._eventRegistry[eventName];if(listeners){var index=listeners.indexOf(callback);-1!==index&&listeners.splice(index,1)}},EventEmitter.removeAllListeners=function(eventName){this._eventRegistry&&(this._eventRegistry[eventName]=[])},exports.EventEmitter=EventEmitter}),ace.define(\"ace/anchor\",[\"require\",\"exports\",\"module\",\"ace/lib/oop\",\"ace/lib/event_emitter\"],function(acequire,exports){\"use strict\";var oop=acequire(\"./lib/oop\"),EventEmitter=acequire(\"./lib/event_emitter\").EventEmitter,Anchor=exports.Anchor=function(doc,row,column){this.$onChange=this.onChange.bind(this),this.attach(doc),column===void 0?this.setPosition(row.row,row.column):this.setPosition(row,column)};(function(){function $pointsInOrder(point1,point2,equalPointsInOrder){var bColIsAfter=equalPointsInOrder?point1.column<=point2.column:point1.column<point2.column;return point1.row<point2.row||point1.row==point2.row&&bColIsAfter}function $getTransformedPoint(delta,point,moveIfEqual){var deltaIsInsert=\"insert\"==delta.action,deltaRowShift=(deltaIsInsert?1:-1)*(delta.end.row-delta.start.row),deltaColShift=(deltaIsInsert?1:-1)*(delta.end.column-delta.start.column),deltaStart=delta.start,deltaEnd=deltaIsInsert?deltaStart:delta.end;return $pointsInOrder(point,deltaStart,moveIfEqual)?{row:point.row,column:point.column}:$pointsInOrder(deltaEnd,point,!moveIfEqual)?{row:point.row+deltaRowShift,column:point.column+(point.row==deltaEnd.row?deltaColShift:0)}:{row:deltaStart.row,column:deltaStart.column}}oop.implement(this,EventEmitter),this.getPosition=function(){return this.$clipPositionToDocument(this.row,this.column)},this.getDocument=function(){return this.document},this.$insertRight=!1,this.onChange=function(delta){if(!(delta.start.row==delta.end.row&&delta.start.row!=this.row||delta.start.row>this.row)){var point=$getTransformedPoint(delta,{row:this.row,column:this.column},this.$insertRight);this.setPosition(point.row,point.column,!0)}},this.setPosition=function(row,column,noClip){var pos;if(pos=noClip?{row:row,column:column}:this.$clipPositionToDocument(row,column),this.row!=pos.row||this.column!=pos.column){var old={row:this.row,column:this.column};this.row=pos.row,this.column=pos.column,this._signal(\"change\",{old:old,value:pos})}},this.detach=function(){this.document.removeEventListener(\"change\",this.$onChange)},this.attach=function(doc){this.document=doc||this.document,this.document.on(\"change\",this.$onChange)},this.$clipPositionToDocument=function(row,column){var pos={};return row>=this.document.getLength()?(pos.row=Math.max(0,this.document.getLength()-1),pos.column=this.document.getLine(pos.row).length):0>row?(pos.row=0,pos.column=0):(pos.row=row,pos.column=Math.min(this.document.getLine(pos.row).length,Math.max(0,column))),0>column&&(pos.column=0),pos}}).call(Anchor.prototype)}),ace.define(\"ace/document\",[\"require\",\"exports\",\"module\",\"ace/lib/oop\",\"ace/apply_delta\",\"ace/lib/event_emitter\",\"ace/range\",\"ace/anchor\"],function(acequire,exports){\"use strict\";var oop=acequire(\"./lib/oop\"),applyDelta=acequire(\"./apply_delta\").applyDelta,EventEmitter=acequire(\"./lib/event_emitter\").EventEmitter,Range=acequire(\"./range\").Range,Anchor=acequire(\"./anchor\").Anchor,Document=function(textOrLines){this.$lines=[\"\"],0===textOrLines.length?this.$lines=[\"\"]:Array.isArray(textOrLines)?this.insertMergedLines({row:0,column:0},textOrLines):this.insert({row:0,column:0},textOrLines)};(function(){oop.implement(this,EventEmitter),this.setValue=function(text){var len=this.getLength()-1;this.remove(new Range(0,0,len,this.getLine(len).length)),this.insert({row:0,column:0},text)},this.getValue=function(){return this.getAllLines().join(this.getNewLineCharacter())},this.createAnchor=function(row,column){return new Anchor(this,row,column)},this.$split=0===\"aaa\".split(/a/).length?function(text){return text.replace(/\\r\\n|\\r/g,\"\\n\").split(\"\\n\")}:function(text){return text.split(/\\r\\n|\\r|\\n/)},this.$detectNewLine=function(text){var match=text.match(/^.*?(\\r\\n|\\r|\\n)/m);this.$autoNewLine=match?match[1]:\"\\n\",this._signal(\"changeNewLineMode\")},this.getNewLineCharacter=function(){switch(this.$newLineMode){case\"windows\":return\"\\r\\n\";case\"unix\":return\"\\n\";default:return this.$autoNewLine||\"\\n\"}},this.$autoNewLine=\"\",this.$newLineMode=\"auto\",this.setNewLineMode=function(newLineMode){this.$newLineMode!==newLineMode&&(this.$newLineMode=newLineMode,this._signal(\"changeNewLineMode\"))},this.getNewLineMode=function(){return this.$newLineMode},this.isNewLine=function(text){return\"\\r\\n\"==text||\"\\r\"==text||\"\\n\"==text},this.getLine=function(row){return this.$lines[row]||\"\"},this.getLines=function(firstRow,lastRow){return this.$lines.slice(firstRow,lastRow+1)},this.getAllLines=function(){return this.getLines(0,this.getLength())},this.getLength=function(){return this.$lines.length},this.getTextRange=function(range){return this.getLinesForRange(range).join(this.getNewLineCharacter())},this.getLinesForRange=function(range){var lines;if(range.start.row===range.end.row)lines=[this.getLine(range.start.row).substring(range.start.column,range.end.column)];else{lines=this.getLines(range.start.row,range.end.row),lines[0]=(lines[0]||\"\").substring(range.start.column);var l=lines.length-1;range.end.row-range.start.row==l&&(lines[l]=lines[l].substring(0,range.end.column))}return lines},this.insertLines=function(row,lines){return console.warn(\"Use of document.insertLines is deprecated. Use the insertFullLines method instead.\"),this.insertFullLines(row,lines)},this.removeLines=function(firstRow,lastRow){return console.warn(\"Use of document.removeLines is deprecated. Use the removeFullLines method instead.\"),this.removeFullLines(firstRow,lastRow)},this.insertNewLine=function(position){return console.warn(\"Use of document.insertNewLine is deprecated. Use insertMergedLines(position, ['', '']) instead.\"),this.insertMergedLines(position,[\"\",\"\"])},this.insert=function(position,text){return 1>=this.getLength()&&this.$detectNewLine(text),this.insertMergedLines(position,this.$split(text))},this.insertInLine=function(position,text){var start=this.clippedPos(position.row,position.column),end=this.pos(position.row,position.column+text.length);return this.applyDelta({start:start,end:end,action:\"insert\",lines:[text]},!0),this.clonePos(end)},this.clippedPos=function(row,column){var length=this.getLength();void 0===row?row=length:0>row?row=0:row>=length&&(row=length-1,column=void 0);var line=this.getLine(row);return void 0==column&&(column=line.length),column=Math.min(Math.max(column,0),line.length),{row:row,column:column}},this.clonePos=function(pos){return{row:pos.row,column:pos.column}},this.pos=function(row,column){return{row:row,column:column}},this.$clipPosition=function(position){var length=this.getLength();return position.row>=length?(position.row=Math.max(0,length-1),position.column=this.getLine(length-1).length):(position.row=Math.max(0,position.row),position.column=Math.min(Math.max(position.column,0),this.getLine(position.row).length)),position},this.insertFullLines=function(row,lines){row=Math.min(Math.max(row,0),this.getLength());var column=0;this.getLength()>row?(lines=lines.concat([\"\"]),column=0):(lines=[\"\"].concat(lines),row--,column=this.$lines[row].length),this.insertMergedLines({row:row,column:column},lines)},this.insertMergedLines=function(position,lines){var start=this.clippedPos(position.row,position.column),end={row:start.row+lines.length-1,column:(1==lines.length?start.column:0)+lines[lines.length-1].length};return this.applyDelta({start:start,end:end,action:\"insert\",lines:lines}),this.clonePos(end)},this.remove=function(range){var start=this.clippedPos(range.start.row,range.start.column),end=this.clippedPos(range.end.row,range.end.column);return this.applyDelta({start:start,end:end,action:\"remove\",lines:this.getLinesForRange({start:start,end:end})}),this.clonePos(start)},this.removeInLine=function(row,startColumn,endColumn){var start=this.clippedPos(row,startColumn),end=this.clippedPos(row,endColumn);return this.applyDelta({start:start,end:end,action:\"remove\",lines:this.getLinesForRange({start:start,end:end})},!0),this.clonePos(start)},this.removeFullLines=function(firstRow,lastRow){firstRow=Math.min(Math.max(0,firstRow),this.getLength()-1),lastRow=Math.min(Math.max(0,lastRow),this.getLength()-1);var deleteFirstNewLine=lastRow==this.getLength()-1&&firstRow>0,deleteLastNewLine=this.getLength()-1>lastRow,startRow=deleteFirstNewLine?firstRow-1:firstRow,startCol=deleteFirstNewLine?this.getLine(startRow).length:0,endRow=deleteLastNewLine?lastRow+1:lastRow,endCol=deleteLastNewLine?0:this.getLine(endRow).length,range=new Range(startRow,startCol,endRow,endCol),deletedLines=this.$lines.slice(firstRow,lastRow+1);return this.applyDelta({start:range.start,end:range.end,action:\"remove\",lines:this.getLinesForRange(range)}),deletedLines},this.removeNewLine=function(row){this.getLength()-1>row&&row>=0&&this.applyDelta({start:this.pos(row,this.getLine(row).length),end:this.pos(row+1,0),action:\"remove\",lines:[\"\",\"\"]})},this.replace=function(range,text){if(range instanceof Range||(range=Range.fromPoints(range.start,range.end)),0===text.length&&range.isEmpty())return range.start;if(text==this.getTextRange(range))return range.end;this.remove(range);var end;return end=text?this.insert(range.start,text):range.start},this.applyDeltas=function(deltas){for(var i=0;deltas.length>i;i++)this.applyDelta(deltas[i])},this.revertDeltas=function(deltas){for(var i=deltas.length-1;i>=0;i--)this.revertDelta(deltas[i])},this.applyDelta=function(delta,doNotValidate){var isInsert=\"insert\"==delta.action;(isInsert?1>=delta.lines.length&&!delta.lines[0]:!Range.comparePoints(delta.start,delta.end))||(isInsert&&delta.lines.length>2e4&&this.$splitAndapplyLargeDelta(delta,2e4),applyDelta(this.$lines,delta,doNotValidate),this._signal(\"change\",delta))},this.$splitAndapplyLargeDelta=function(delta,MAX){for(var lines=delta.lines,l=lines.length,row=delta.start.row,column=delta.start.column,from=0,to=0;;){from=to,to+=MAX-1;var chunk=lines.slice(from,to);if(to>l){delta.lines=chunk,delta.start.row=row+from,delta.start.column=column;break}chunk.push(\"\"),this.applyDelta({start:this.pos(row+from,column),end:this.pos(row+to,column=0),action:delta.action,lines:chunk},!0)}},this.revertDelta=function(delta){this.applyDelta({start:this.clonePos(delta.start),end:this.clonePos(delta.end),action:\"insert\"==delta.action?\"remove\":\"insert\",lines:delta.lines.slice()})},this.indexToPosition=function(index,startRow){for(var lines=this.$lines||this.getAllLines(),newlineLength=this.getNewLineCharacter().length,i=startRow||0,l=lines.length;l>i;i++)if(index-=lines[i].length+newlineLength,0>index)return{row:i,column:index+lines[i].length+newlineLength};return{row:l-1,column:lines[l-1].length}},this.positionToIndex=function(pos,startRow){for(var lines=this.$lines||this.getAllLines(),newlineLength=this.getNewLineCharacter().length,index=0,row=Math.min(pos.row,lines.length),i=startRow||0;row>i;++i)index+=lines[i].length+newlineLength;return index+pos.column}}).call(Document.prototype),exports.Document=Document}),ace.define(\"ace/lib/lang\",[\"require\",\"exports\",\"module\"],function(acequire,exports){\"use strict\";exports.last=function(a){return a[a.length-1]},exports.stringReverse=function(string){return string.split(\"\").reverse().join(\"\")},exports.stringRepeat=function(string,count){for(var result=\"\";count>0;)1&count&&(result+=string),(count>>=1)&&(string+=string);return result};var trimBeginRegexp=/^\\s\\s*/,trimEndRegexp=/\\s\\s*$/;exports.stringTrimLeft=function(string){return string.replace(trimBeginRegexp,\"\")},exports.stringTrimRight=function(string){return string.replace(trimEndRegexp,\"\")},exports.copyObject=function(obj){var copy={};for(var key in obj)copy[key]=obj[key];return copy},exports.copyArray=function(array){for(var copy=[],i=0,l=array.length;l>i;i++)copy[i]=array[i]&&\"object\"==typeof array[i]?this.copyObject(array[i]):array[i];return copy},exports.deepCopy=function deepCopy(obj){if(\"object\"!=typeof obj||!obj)return obj;var copy;if(Array.isArray(obj)){copy=[];for(var key=0;obj.length>key;key++)copy[key]=deepCopy(obj[key]);return copy}if(\"[object Object]\"!==Object.prototype.toString.call(obj))return obj;copy={};for(var key in obj)copy[key]=deepCopy(obj[key]);return copy},exports.arrayToMap=function(arr){for(var map={},i=0;arr.length>i;i++)map[arr[i]]=1;return map},exports.createMap=function(props){var map=Object.create(null);for(var i in props)map[i]=props[i];return map},exports.arrayRemove=function(array,value){for(var i=0;array.length>=i;i++)value===array[i]&&array.splice(i,1)},exports.escapeRegExp=function(str){return str.replace(/([.*+?^${}()|[\\]\\/\\\\])/g,\"\\\\$1\")},exports.escapeHTML=function(str){return str.replace(/&/g,\"&#38;\").replace(/\"/g,\"&#34;\").replace(/'/g,\"&#39;\").replace(/</g,\"&#60;\")},exports.getMatchOffsets=function(string,regExp){var matches=[];return string.replace(regExp,function(str){matches.push({offset:arguments[arguments.length-2],length:str.length})}),matches},exports.deferredCall=function(fcn){var timer=null,callback=function(){timer=null,fcn()},deferred=function(timeout){return deferred.cancel(),timer=setTimeout(callback,timeout||0),deferred};return deferred.schedule=deferred,deferred.call=function(){return this.cancel(),fcn(),deferred},deferred.cancel=function(){return clearTimeout(timer),timer=null,deferred},deferred.isPending=function(){return timer},deferred},exports.delayedCall=function(fcn,defaultTimeout){var timer=null,callback=function(){timer=null,fcn()},_self=function(timeout){null==timer&&(timer=setTimeout(callback,timeout||defaultTimeout))};return _self.delay=function(timeout){timer&&clearTimeout(timer),timer=setTimeout(callback,timeout||defaultTimeout)},_self.schedule=_self,_self.call=function(){this.cancel(),fcn()},_self.cancel=function(){timer&&clearTimeout(timer),timer=null},_self.isPending=function(){return timer},_self}}),ace.define(\"ace/worker/mirror\",[\"require\",\"exports\",\"module\",\"ace/range\",\"ace/document\",\"ace/lib/lang\"],function(acequire,exports){\"use strict\";acequire(\"../range\").Range;var Document=acequire(\"../document\").Document,lang=acequire(\"../lib/lang\"),Mirror=exports.Mirror=function(sender){this.sender=sender;var doc=this.doc=new Document(\"\"),deferredUpdate=this.deferredUpdate=lang.delayedCall(this.onUpdate.bind(this)),_self=this;sender.on(\"change\",function(e){var data=e.data;if(data[0].start)doc.applyDeltas(data);else for(var i=0;data.length>i;i+=2){if(Array.isArray(data[i+1]))var d={action:\"insert\",start:data[i],lines:data[i+1]};else var d={action:\"remove\",start:data[i],end:data[i+1]};doc.applyDelta(d,!0)}return _self.$timeout?deferredUpdate.schedule(_self.$timeout):(_self.onUpdate(),void 0)})};(function(){this.$timeout=500,this.setTimeout=function(timeout){this.$timeout=timeout},this.setValue=function(value){this.doc.setValue(value),this.deferredUpdate.schedule(this.$timeout)},this.getValue=function(callbackId){this.sender.callback(this.doc.getValue(),callbackId)},this.onUpdate=function(){},this.isPending=function(){return this.deferredUpdate.isPending()}}).call(Mirror.prototype)}),ace.define(\"ace/mode/json/json_parse\",[\"require\",\"exports\",\"module\"],function(){\"use strict\";var at,ch,text,value,escapee={'\"':'\"',\"\\\\\":\"\\\\\",\"/\":\"/\",b:\"\\b\",f:\"\\f\",n:\"\\n\",r:\"\\r\",t:\"\t\"},error=function(m){throw{name:\"SyntaxError\",message:m,at:at,text:text}},next=function(c){return c&&c!==ch&&error(\"Expected '\"+c+\"' instead of '\"+ch+\"'\"),ch=text.charAt(at),at+=1,ch},number=function(){var number,string=\"\";for(\"-\"===ch&&(string=\"-\",next(\"-\"));ch>=\"0\"&&\"9\">=ch;)string+=ch,next();if(\".\"===ch)for(string+=\".\";next()&&ch>=\"0\"&&\"9\">=ch;)string+=ch;if(\"e\"===ch||\"E\"===ch)for(string+=ch,next(),(\"-\"===ch||\"+\"===ch)&&(string+=ch,next());ch>=\"0\"&&\"9\">=ch;)string+=ch,next();return number=+string,isNaN(number)?(error(\"Bad number\"),void 0):number},string=function(){var hex,i,uffff,string=\"\";if('\"'===ch)for(;next();){if('\"'===ch)return next(),string;if(\"\\\\\"===ch)if(next(),\"u\"===ch){for(uffff=0,i=0;4>i&&(hex=parseInt(next(),16),isFinite(hex));i+=1)uffff=16*uffff+hex;string+=String.fromCharCode(uffff)}else{if(\"string\"!=typeof escapee[ch])break;string+=escapee[ch]}else string+=ch}error(\"Bad string\")},white=function(){for(;ch&&\" \">=ch;)next()},word=function(){switch(ch){case\"t\":return next(\"t\"),next(\"r\"),next(\"u\"),next(\"e\"),!0;case\"f\":return next(\"f\"),next(\"a\"),next(\"l\"),next(\"s\"),next(\"e\"),!1;case\"n\":return next(\"n\"),next(\"u\"),next(\"l\"),next(\"l\"),null}error(\"Unexpected '\"+ch+\"'\")},array=function(){var array=[];if(\"[\"===ch){if(next(\"[\"),white(),\"]\"===ch)return next(\"]\"),array;for(;ch;){if(array.push(value()),white(),\"]\"===ch)return next(\"]\"),array;next(\",\"),white()}}error(\"Bad array\")},object=function(){var key,object={};if(\"{\"===ch){if(next(\"{\"),white(),\"}\"===ch)return next(\"}\"),object;for(;ch;){if(key=string(),white(),next(\":\"),Object.hasOwnProperty.call(object,key)&&error('Duplicate key \"'+key+'\"'),object[key]=value(),white(),\"}\"===ch)return next(\"}\"),object;next(\",\"),white()}}error(\"Bad object\")};return value=function(){switch(white(),ch){case\"{\":return object();case\"[\":return array();case'\"':return string();case\"-\":return number();default:return ch>=\"0\"&&\"9\">=ch?number():word()}},function(source,reviver){var result;return text=source,at=0,ch=\" \",result=value(),white(),ch&&error(\"Syntax error\"),\"function\"==typeof reviver?function walk(holder,key){var k,v,value=holder[key];if(value&&\"object\"==typeof value)for(k in value)Object.hasOwnProperty.call(value,k)&&(v=walk(value,k),void 0!==v?value[k]=v:delete value[k]);return reviver.call(holder,key,value)}({\"\":result},\"\"):result}}),ace.define(\"ace/mode/json_worker\",[\"require\",\"exports\",\"module\",\"ace/lib/oop\",\"ace/worker/mirror\",\"ace/mode/json/json_parse\"],function(acequire,exports){\"use strict\";var oop=acequire(\"../lib/oop\"),Mirror=acequire(\"../worker/mirror\").Mirror,parse=acequire(\"./json/json_parse\"),JsonWorker=exports.JsonWorker=function(sender){Mirror.call(this,sender),this.setTimeout(200)};oop.inherits(JsonWorker,Mirror),function(){this.onUpdate=function(){var value=this.doc.getValue(),errors=[];try{value&&parse(value)}catch(e){var pos=this.doc.indexToPosition(e.at-1);errors.push({row:pos.row,column:pos.column,text:e.message,type:\"error\"})}this.sender.emit(\"annotate\",errors)}}.call(JsonWorker.prototype)}),ace.define(\"ace/lib/es5-shim\",[\"require\",\"exports\",\"module\"],function(){function Empty(){}function doesDefinePropertyWork(object){try{return Object.defineProperty(object,\"sentinel\",{}),\"sentinel\"in object}catch(exception){}}function toInteger(n){return n=+n,n!==n?n=0:0!==n&&n!==1/0&&n!==-(1/0)&&(n=(n>0||-1)*Math.floor(Math.abs(n))),n}Function.prototype.bind||(Function.prototype.bind=function(that){var target=this;if(\"function\"!=typeof target)throw new TypeError(\"Function.prototype.bind called on incompatible \"+target);var args=slice.call(arguments,1),bound=function(){if(this instanceof bound){var result=target.apply(this,args.concat(slice.call(arguments)));return Object(result)===result?result:this}return target.apply(that,args.concat(slice.call(arguments)))};return target.prototype&&(Empty.prototype=target.prototype,bound.prototype=new Empty,Empty.prototype=null),bound});var defineGetter,defineSetter,lookupGetter,lookupSetter,supportsAccessors,call=Function.prototype.call,prototypeOfArray=Array.prototype,prototypeOfObject=Object.prototype,slice=prototypeOfArray.slice,_toString=call.bind(prototypeOfObject.toString),owns=call.bind(prototypeOfObject.hasOwnProperty);if((supportsAccessors=owns(prototypeOfObject,\"__defineGetter__\"))&&(defineGetter=call.bind(prototypeOfObject.__defineGetter__),defineSetter=call.bind(prototypeOfObject.__defineSetter__),lookupGetter=call.bind(prototypeOfObject.__lookupGetter__),lookupSetter=call.bind(prototypeOfObject.__lookupSetter__)),2!=[1,2].splice(0).length)if(function(){function makeArray(l){var a=Array(l+2);return a[0]=a[1]=0,a}var lengthBefore,array=[];return array.splice.apply(array,makeArray(20)),array.splice.apply(array,makeArray(26)),lengthBefore=array.length,array.splice(5,0,\"XXX\"),lengthBefore+1==array.length,lengthBefore+1==array.length?!0:void 0\n}()){var array_splice=Array.prototype.splice;Array.prototype.splice=function(start,deleteCount){return arguments.length?array_splice.apply(this,[void 0===start?0:start,void 0===deleteCount?this.length-start:deleteCount].concat(slice.call(arguments,2))):[]}}else Array.prototype.splice=function(pos,removeCount){var length=this.length;pos>0?pos>length&&(pos=length):void 0==pos?pos=0:0>pos&&(pos=Math.max(length+pos,0)),length>pos+removeCount||(removeCount=length-pos);var removed=this.slice(pos,pos+removeCount),insert=slice.call(arguments,2),add=insert.length;if(pos===length)add&&this.push.apply(this,insert);else{var remove=Math.min(removeCount,length-pos),tailOldPos=pos+remove,tailNewPos=tailOldPos+add-remove,tailCount=length-tailOldPos,lengthAfterRemove=length-remove;if(tailOldPos>tailNewPos)for(var i=0;tailCount>i;++i)this[tailNewPos+i]=this[tailOldPos+i];else if(tailNewPos>tailOldPos)for(i=tailCount;i--;)this[tailNewPos+i]=this[tailOldPos+i];if(add&&pos===lengthAfterRemove)this.length=lengthAfterRemove,this.push.apply(this,insert);else for(this.length=lengthAfterRemove+add,i=0;add>i;++i)this[pos+i]=insert[i]}return removed};Array.isArray||(Array.isArray=function(obj){return\"[object Array]\"==_toString(obj)});var boxedString=Object(\"a\"),splitString=\"a\"!=boxedString[0]||!(0 in boxedString);if(Array.prototype.forEach||(Array.prototype.forEach=function(fun){var object=toObject(this),self=splitString&&\"[object String]\"==_toString(this)?this.split(\"\"):object,thisp=arguments[1],i=-1,length=self.length>>>0;if(\"[object Function]\"!=_toString(fun))throw new TypeError;for(;length>++i;)i in self&&fun.call(thisp,self[i],i,object)}),Array.prototype.map||(Array.prototype.map=function(fun){var object=toObject(this),self=splitString&&\"[object String]\"==_toString(this)?this.split(\"\"):object,length=self.length>>>0,result=Array(length),thisp=arguments[1];if(\"[object Function]\"!=_toString(fun))throw new TypeError(fun+\" is not a function\");for(var i=0;length>i;i++)i in self&&(result[i]=fun.call(thisp,self[i],i,object));return result}),Array.prototype.filter||(Array.prototype.filter=function(fun){var value,object=toObject(this),self=splitString&&\"[object String]\"==_toString(this)?this.split(\"\"):object,length=self.length>>>0,result=[],thisp=arguments[1];if(\"[object Function]\"!=_toString(fun))throw new TypeError(fun+\" is not a function\");for(var i=0;length>i;i++)i in self&&(value=self[i],fun.call(thisp,value,i,object)&&result.push(value));return result}),Array.prototype.every||(Array.prototype.every=function(fun){var object=toObject(this),self=splitString&&\"[object String]\"==_toString(this)?this.split(\"\"):object,length=self.length>>>0,thisp=arguments[1];if(\"[object Function]\"!=_toString(fun))throw new TypeError(fun+\" is not a function\");for(var i=0;length>i;i++)if(i in self&&!fun.call(thisp,self[i],i,object))return!1;return!0}),Array.prototype.some||(Array.prototype.some=function(fun){var object=toObject(this),self=splitString&&\"[object String]\"==_toString(this)?this.split(\"\"):object,length=self.length>>>0,thisp=arguments[1];if(\"[object Function]\"!=_toString(fun))throw new TypeError(fun+\" is not a function\");for(var i=0;length>i;i++)if(i in self&&fun.call(thisp,self[i],i,object))return!0;return!1}),Array.prototype.reduce||(Array.prototype.reduce=function(fun){var object=toObject(this),self=splitString&&\"[object String]\"==_toString(this)?this.split(\"\"):object,length=self.length>>>0;if(\"[object Function]\"!=_toString(fun))throw new TypeError(fun+\" is not a function\");if(!length&&1==arguments.length)throw new TypeError(\"reduce of empty array with no initial value\");var result,i=0;if(arguments.length>=2)result=arguments[1];else for(;;){if(i in self){result=self[i++];break}if(++i>=length)throw new TypeError(\"reduce of empty array with no initial value\")}for(;length>i;i++)i in self&&(result=fun.call(void 0,result,self[i],i,object));return result}),Array.prototype.reduceRight||(Array.prototype.reduceRight=function(fun){var object=toObject(this),self=splitString&&\"[object String]\"==_toString(this)?this.split(\"\"):object,length=self.length>>>0;if(\"[object Function]\"!=_toString(fun))throw new TypeError(fun+\" is not a function\");if(!length&&1==arguments.length)throw new TypeError(\"reduceRight of empty array with no initial value\");var result,i=length-1;if(arguments.length>=2)result=arguments[1];else for(;;){if(i in self){result=self[i--];break}if(0>--i)throw new TypeError(\"reduceRight of empty array with no initial value\")}do i in this&&(result=fun.call(void 0,result,self[i],i,object));while(i--);return result}),Array.prototype.indexOf&&-1==[0,1].indexOf(1,2)||(Array.prototype.indexOf=function(sought){var self=splitString&&\"[object String]\"==_toString(this)?this.split(\"\"):toObject(this),length=self.length>>>0;if(!length)return-1;var i=0;for(arguments.length>1&&(i=toInteger(arguments[1])),i=i>=0?i:Math.max(0,length+i);length>i;i++)if(i in self&&self[i]===sought)return i;return-1}),Array.prototype.lastIndexOf&&-1==[0,1].lastIndexOf(0,-3)||(Array.prototype.lastIndexOf=function(sought){var self=splitString&&\"[object String]\"==_toString(this)?this.split(\"\"):toObject(this),length=self.length>>>0;if(!length)return-1;var i=length-1;for(arguments.length>1&&(i=Math.min(i,toInteger(arguments[1]))),i=i>=0?i:length-Math.abs(i);i>=0;i--)if(i in self&&sought===self[i])return i;return-1}),Object.getPrototypeOf||(Object.getPrototypeOf=function(object){return object.__proto__||(object.constructor?object.constructor.prototype:prototypeOfObject)}),!Object.getOwnPropertyDescriptor){var ERR_NON_OBJECT=\"Object.getOwnPropertyDescriptor called on a non-object: \";Object.getOwnPropertyDescriptor=function(object,property){if(\"object\"!=typeof object&&\"function\"!=typeof object||null===object)throw new TypeError(ERR_NON_OBJECT+object);if(owns(object,property)){var descriptor,getter,setter;if(descriptor={enumerable:!0,configurable:!0},supportsAccessors){var prototype=object.__proto__;object.__proto__=prototypeOfObject;var getter=lookupGetter(object,property),setter=lookupSetter(object,property);if(object.__proto__=prototype,getter||setter)return getter&&(descriptor.get=getter),setter&&(descriptor.set=setter),descriptor}return descriptor.value=object[property],descriptor}}}if(Object.getOwnPropertyNames||(Object.getOwnPropertyNames=function(object){return Object.keys(object)}),!Object.create){var createEmpty;createEmpty=null===Object.prototype.__proto__?function(){return{__proto__:null}}:function(){var empty={};for(var i in empty)empty[i]=null;return empty.constructor=empty.hasOwnProperty=empty.propertyIsEnumerable=empty.isPrototypeOf=empty.toLocaleString=empty.toString=empty.valueOf=empty.__proto__=null,empty},Object.create=function(prototype,properties){var object;if(null===prototype)object=createEmpty();else{if(\"object\"!=typeof prototype)throw new TypeError(\"typeof prototype[\"+typeof prototype+\"] != 'object'\");var Type=function(){};Type.prototype=prototype,object=new Type,object.__proto__=prototype}return void 0!==properties&&Object.defineProperties(object,properties),object}}if(Object.defineProperty){var definePropertyWorksOnObject=doesDefinePropertyWork({}),definePropertyWorksOnDom=\"undefined\"==typeof document||doesDefinePropertyWork(document.createElement(\"div\"));if(!definePropertyWorksOnObject||!definePropertyWorksOnDom)var definePropertyFallback=Object.defineProperty}if(!Object.defineProperty||definePropertyFallback){var ERR_NON_OBJECT_DESCRIPTOR=\"Property description must be an object: \",ERR_NON_OBJECT_TARGET=\"Object.defineProperty called on non-object: \",ERR_ACCESSORS_NOT_SUPPORTED=\"getters & setters can not be defined on this javascript engine\";Object.defineProperty=function(object,property,descriptor){if(\"object\"!=typeof object&&\"function\"!=typeof object||null===object)throw new TypeError(ERR_NON_OBJECT_TARGET+object);if(\"object\"!=typeof descriptor&&\"function\"!=typeof descriptor||null===descriptor)throw new TypeError(ERR_NON_OBJECT_DESCRIPTOR+descriptor);if(definePropertyFallback)try{return definePropertyFallback.call(Object,object,property,descriptor)}catch(exception){}if(owns(descriptor,\"value\"))if(supportsAccessors&&(lookupGetter(object,property)||lookupSetter(object,property))){var prototype=object.__proto__;object.__proto__=prototypeOfObject,delete object[property],object[property]=descriptor.value,object.__proto__=prototype}else object[property]=descriptor.value;else{if(!supportsAccessors)throw new TypeError(ERR_ACCESSORS_NOT_SUPPORTED);owns(descriptor,\"get\")&&defineGetter(object,property,descriptor.get),owns(descriptor,\"set\")&&defineSetter(object,property,descriptor.set)}return object}}Object.defineProperties||(Object.defineProperties=function(object,properties){for(var property in properties)owns(properties,property)&&Object.defineProperty(object,property,properties[property]);return object}),Object.seal||(Object.seal=function(object){return object}),Object.freeze||(Object.freeze=function(object){return object});try{Object.freeze(function(){})}catch(exception){Object.freeze=function(freezeObject){return function(object){return\"function\"==typeof object?object:freezeObject(object)}}(Object.freeze)}if(Object.preventExtensions||(Object.preventExtensions=function(object){return object}),Object.isSealed||(Object.isSealed=function(){return!1}),Object.isFrozen||(Object.isFrozen=function(){return!1}),Object.isExtensible||(Object.isExtensible=function(object){if(Object(object)===object)throw new TypeError;for(var name=\"\";owns(object,name);)name+=\"?\";object[name]=!0;var returnValue=owns(object,name);return delete object[name],returnValue}),!Object.keys){var hasDontEnumBug=!0,dontEnums=[\"toString\",\"toLocaleString\",\"valueOf\",\"hasOwnProperty\",\"isPrototypeOf\",\"propertyIsEnumerable\",\"constructor\"],dontEnumsLength=dontEnums.length;for(var key in{toString:null})hasDontEnumBug=!1;Object.keys=function(object){if(\"object\"!=typeof object&&\"function\"!=typeof object||null===object)throw new TypeError(\"Object.keys called on a non-object\");var keys=[];for(var name in object)owns(object,name)&&keys.push(name);if(hasDontEnumBug)for(var i=0,ii=dontEnumsLength;ii>i;i++){var dontEnum=dontEnums[i];owns(object,dontEnum)&&keys.push(dontEnum)}return keys}}Date.now||(Date.now=function(){return(new Date).getTime()});var ws=\"\t\\n\u000b\\f\\r   ᠎             　\\u2028\\u2029﻿\";if(!String.prototype.trim||ws.trim()){ws=\"[\"+ws+\"]\";var trimBeginRegexp=RegExp(\"^\"+ws+ws+\"*\"),trimEndRegexp=RegExp(ws+ws+\"*$\");String.prototype.trim=function(){return(this+\"\").replace(trimBeginRegexp,\"\").replace(trimEndRegexp,\"\")}}var toObject=function(o){if(null==o)throw new TypeError(\"can't convert \"+o+\" to object\");return Object(o)}});";
 
 /***/ },
-/* 21 */
+/* 24 */
 /***/ function(module, exports) {
 
 	ace.define("ace/ext/searchbox",["require","exports","module","ace/lib/dom","ace/lib/lang","ace/lib/event","ace/keyboard/hash_handler","ace/lib/keys"], function(acequire, exports, module) {
@@ -12141,7 +14196,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            
 
 /***/ },
-/* 22 */
+/* 25 */
 /***/ function(module, exports) {
 
 	/* ***** BEGIN LICENSE BLOCK *****
