@@ -50,6 +50,10 @@ var _defs = {
     'transform': 'Transform',
     'transformTitle': 'Filter, sort, or transform the childs of this ${type}',
     'transformQueryTitle': 'Enter a JMESPath query',
+    'transformWizardLabel': 'Wizard',
+    'transformWizardFilter': 'Filter',
+    'transformWizardSortBy': 'Sort by',
+    'transformWizardSelectFields': 'Select fields',
     'transformQueryLabel': 'Query',
     'transformPreviewLabel': 'Preview',
     'type': 'Type',
@@ -99,31 +103,49 @@ var _defs = {
     'removeText': 'Remover',
     'removeTitle': 'Remover campos selecionados (Ctrl+Del)',
     'removeField': 'Remover este campo (Ctrl+Del)',
-    // TODO: correctly translate selectNode
+    // TODO: correctly translate
     'selectNode': 'Select a node...',
-    // TODO: correctly translate showAll
+    // TODO: correctly translate
     'showAll': 'mostre tudo',
-    // TODO: correctly translate showMore
+    // TODO: correctly translate
     'showMore': 'mostre mais',
-    // TODO: correctly translate showMoreStatus
+    // TODO: correctly translate
     'showMoreStatus': 'exibindo ${visibleChilds} de ${totalChilds} itens.',
     'sort': 'Organizar',
     'sortTitle': 'Organizar os filhos deste ${type}',
-    // TODO: correctly translate sortFieldLabel
+    // TODO: correctly translate
     'sortFieldLabel': 'Field:',
-    // TODO: correctly translate sortDirectionLabel
+    // TODO: correctly translate
     'sortDirectionLabel': 'Direction:',
-    // TODO: correctly translate sortFieldTitle
+    // TODO: correctly translate
     'sortFieldTitle': 'Select the nested field by which to sort the array or object',
-    // TODO: correctly translate sortAscending
+    // TODO: correctly translate
     'sortAscending': 'Ascending',
-    // TODO: correctly translate sortAscendingTitle
+    // TODO: correctly translate
     'sortAscendingTitle': 'Sort the selected field in ascending order',
-    // TODO: correctly translate sortDescending
+    // TODO: correctly translate
     'sortDescending': 'Descending',
-    // TODO: correctly translate sortDescendingTitle
+    // TODO: correctly translate
     'sortDescendingTitle': 'Sort the selected field in descending order',
     'string': 'Texto',
+    // TODO: correctly translate
+    'transform': 'Transform',
+    // TODO: correctly translate
+    'transformTitle': 'Filter, sort, or transform the childs of this ${type}',
+    // TODO: correctly translate
+    'transformQueryTitle': 'Enter a JMESPath query',
+    // TODO: correctly translate
+    'transformWizardLabel': 'Wizard',
+    // TODO: correctly translate
+    'transformWizardFilter': 'Filter',
+    // TODO: correctly translate
+    'transformWizardSortBy': 'Sort by',
+    // TODO: correctly translate
+    'transformWizardSelectFields': 'Select fields',
+    // TODO: correctly translate
+    'transformQueryLabel': 'Query',
+    // TODO: correctly translate
+    'transformPreviewLabel': 'Preview',
     'type': 'Tipo',
     'typeTitle': 'Mudar o tipo deste campo',
     'openUrl': 'Ctrl+Click ou Ctrl+Enter para abrir link em nova janela',

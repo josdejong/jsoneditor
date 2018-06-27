@@ -3207,16 +3207,17 @@ Node.prototype.findChildByProperty = function(prop) {
 };
 
 /**
- * Get the paths of the sortable child paths of this node
+ * Get the child paths of this node
+ * @param {boolean} [includeObjects=false]  If true, object and array paths are returned as well
  * @return {string[]}
  */
-Node.prototype.getSortablePaths = function () {
+Node.prototype.getPaths = function (includeObjects) {
   if (this.type === 'array') {
     if (this.childs.length > 0) {
       // sort on any of the property paths of nested objects
       var pathsMap = {};
       this.childs.forEach(function (child) {
-        child._getSortablePaths(pathsMap, '');
+        child._getPaths(pathsMap, '', includeObjects);
       });
 
       return Object.keys(pathsMap).sort();
@@ -3236,30 +3237,29 @@ Node.prototype.getSortablePaths = function () {
 };
 
 /**
- * Get the paths of the sortable child paths of this node
+ * Get the child paths of this node
  * @param {Object<String, boolean>} pathsMap
+ * @param {boolean} [includeObjects=false]  If true, object and array paths are returned as well
  * @param {string} rootPath
  */
-Node.prototype._getSortablePaths = function (pathsMap, rootPath) {
-  if (this.type === 'array') {
-    // not sortable
+Node.prototype._getPaths = function (pathsMap, rootPath, includeObjects) {
+  if (includeObjects && (this.type === 'array' || this.type === 'object')) {
+    pathsMap[rootPath || '.'] = true;
   }
-  else if (this.type === 'object') {
+
+  if (this.type === 'object') {
     this.childs.forEach(function (child) {
       if (child.type === 'object') {
-        child._getSortablePaths(pathsMap, rootPath + '.' + child.field);
+        // recurse
+        child._getPaths(pathsMap, rootPath + '.' + child.field, includeObjects);
       }
-      else if (child.type === 'array') {
-        // not sortable
-      }
-      else { // type === 'auto' or type === 'string'
-        var path = rootPath + '.' + child.field;
-        pathsMap[path] = true;
+      else if (child.type === 'auto' || child.type === 'string') {
+        pathsMap[rootPath + '.' + child.field] = true;
       }
     });
   }
   else {
-    pathsMap[rootPath + '.'] = true;
+    pathsMap[rootPath || '.'] = true;
   }
 };
 
