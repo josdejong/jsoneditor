@@ -2370,8 +2370,9 @@ Node.prototype._createDomTree = function () {
 /**
  * Handle an event. The event is caught centrally by the editor
  * @param {Event} event
+ * @param {extendEvent} function with code for extend event behaviour.
  */
-Node.prototype.onEvent = function (event) {
+Node.prototype.onEvent = function (event, extendEvent) {
   var type = event.type,
       target = event.target || event.srcElement,
       dom = this.dom,
@@ -2550,6 +2551,9 @@ Node.prototype.onEvent = function (event) {
   if (type == 'keydown') {
     this.onKeyDown(event);
   }
+
+  // Execute event extension
+  if (extendEvent) extendEvent(this, event);
 };
 
 /**

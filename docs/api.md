@@ -226,6 +226,25 @@ Constructs a new JSONEditor.
   }
   ```
   Only applicable when `mode` is 'tree'.
+  
+- `{function} extendEvent`
+
+  Set a function that will be triggered after node event. This is added at the
+  end of a node event execution, not replaced. It means that actions for that
+  event will be executed and after that, if this function is provided, this code
+  will be executed. 
+
+  signature should be:
+  ```js
+  /**
+  * @param {Node} the Node where event has been triggered
+  * @param {event} the event triggered
+  */
+  function extendEvent(node, event) {
+    ...
+  }
+  ```
+  Only applicable when `mode` is 'form', 'tree' or 'view'.  
 
 - `{string} language`
 

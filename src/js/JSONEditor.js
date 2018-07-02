@@ -55,6 +55,13 @@ var util = require('./util');
  *                                                                overlay and display the modals in a
  *                                                                centered location.
  *                                                                Defaults to document.body
+ *                                                                'text' and 'code'
+ *                               {function} extendEvent Triggered after onEvent
+ *                                                      to extend event
+ *                                                      behaviour.
+ *                                                      Only applicable for
+ *                                                      modes 'form', 'tree' and
+ *                                                      'view'
  * @param {Object | undefined} json JSON object
  */
 function JSONEditor (container, options, json) {
@@ -93,8 +100,9 @@ function JSONEditor (container, options, json) {
         'ajv', 'schema', 'schemaRefs','templates',
         'ace', 'theme','autocomplete',
         'onChange', 'onEditable', 'onError', 'onModeChange', 'onSelectionChange', 'onTextSelectionChange',
-        'escapeUnicode', 'history', 'search', 'mode', 'modes', 'name', 'indentation', 
-        'sortObjectKeys', 'navigationBar', 'statusBar', 'languages', 'language'
+        'escapeUnicode', 'history', 'search', 'mode', 'modes', 'name', 'indentation',
+        'sortObjectKeys', 'navigationBar', 'statusBar', 'languages', 'language',
+        'extendEvent'
       ];
 
       Object.keys(options).forEach(function (option) {
