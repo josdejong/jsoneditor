@@ -3208,32 +3208,21 @@ Node.prototype.findChildByProperty = function(prop) {
 
 /**
  * Get the child paths of this node
- * @param {boolean} [includeObjects=false]  If true, object and array paths are returned as well
+ * @param {boolean} [includeObjects=false] If true, object and array paths are returned as well
  * @return {string[]}
  */
-Node.prototype.getPaths = function (includeObjects) {
+Node.prototype.getChildPaths = function (includeObjects) {
+  var pathsMap = {};
+
+  this._getChildPaths(pathsMap, '', includeObjects);
+
   if (this.type === 'array') {
-    if (this.childs.length > 0) {
-      // sort on any of the property paths of nested objects
-      var pathsMap = {};
-      this.childs.forEach(function (child) {
-        child._getPaths(pathsMap, '', includeObjects);
-      });
-
-      return Object.keys(pathsMap).sort();
-    }
-    else {
-      // empty array, you can sort though it doesn't do anything
-      return [ '.' ];
-    }
+    this.childs.forEach(function (child) {
+      child._getChildPaths(pathsMap, '', includeObjects);
+    });
   }
 
-  if (this.type === 'object') {
-    // sort the object by its properties
-    return [ '.' ];
-  }
-
-  return [];
+  return Object.keys(pathsMap).sort();
 };
 
 /**
@@ -3242,24 +3231,15 @@ Node.prototype.getPaths = function (includeObjects) {
  * @param {boolean} [includeObjects=false]  If true, object and array paths are returned as well
  * @param {string} rootPath
  */
-Node.prototype._getPaths = function (pathsMap, rootPath, includeObjects) {
-  if (includeObjects && (this.type === 'array' || this.type === 'object')) {
+Node.prototype._getChildPaths = function (pathsMap, rootPath, includeObjects) {
+  if (this.type === 'auto' || this.type === 'string' || includeObjects) {
     pathsMap[rootPath || '.'] = true;
   }
 
   if (this.type === 'object') {
     this.childs.forEach(function (child) {
-      if (child.type === 'object') {
-        // recurse
-        child._getPaths(pathsMap, rootPath + '.' + child.field, includeObjects);
-      }
-      else if (child.type === 'auto' || child.type === 'string') {
-        pathsMap[rootPath + '.' + child.field] = true;
-      }
+      child._getChildPaths(pathsMap, rootPath + '.' + child.field, includeObjects);
     });
-  }
-  else {
-    pathsMap[rootPath || '.'] = true;
   }
 };
 

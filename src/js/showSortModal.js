@@ -61,7 +61,7 @@ function showSortModal (node, container) {
         var field = modal.modalElem().querySelector('#field');
         var direction = modal.modalElem().querySelector('#direction');
 
-        var paths = node.getPaths().sort();
+        var paths = node.getChildPaths();
 
         paths.forEach(function (path) {
           var option = document.createElement('option');

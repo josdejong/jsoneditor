@@ -128,7 +128,7 @@ function showTransformModal (node, container) {
           );
         }
 
-        var paths = node.getPaths().sort();
+        var paths = node.getChildPaths();
         paths.forEach(function (path) {
           var formattedPath = preprocessPath(path);
           var filterOption = document.createElement('option');
@@ -142,11 +142,9 @@ function showTransformModal (node, container) {
           sortField.appendChild(sortOption);
         });
 
-        var allPaths = node.getPaths(true)
-            .sort()
-            .filter(function(path) {
-              return path !== '.';
-            });
+        var allPaths = node.getChildPaths(true).filter(function(path) {
+          return path !== '.';
+        });
 
         if (allPaths.length > 0) {
           allPaths.forEach(function (path) {
@@ -225,8 +223,6 @@ function showTransformModal (node, container) {
             else { // values.length === 0
               // ignore
             }
-
-            console.log('selectFields', values)
           }
 
           updatePreview();

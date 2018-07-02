@@ -3,6 +3,11 @@
 https://github.com/josdejong/jsoneditor
 
 
+## not yet released, version 5.18.1
+
+- Fixes and improvements in the Transform dialog.
+
+
 ## 2018-06-27, version 5.18.0
 
 - Implemented JMESPath support for advanced filtering, sorting, and
