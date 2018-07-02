@@ -175,10 +175,12 @@ function showTransformModal (node, container) {
         function generateQueryFromWizard () {
           if (filterField.value && filterRelation.value && filterValue.value) {
             var field1 = filterField.value;
+            // TODO: move _stringCast into a static util function
+            var value1 = JSON.stringify(node._stringCast(filterValue.value));
             query.value = '[? ' +
                 field1 + ' ' +
                 filterRelation.value + ' ' +
-                '`' + filterValue.value + '`' +
+                '`' + value1 + '`' +
                 ']';
           }
           else {
