@@ -1,6 +1,7 @@
 var jmespath = require('jmespath');
 var picoModal = require('picomodal');
 var translate = require('./i18n').translate;
+var debounce = require('./util').debounce;
 
 var MAX_PREVIEW_LINES = 100;
 
@@ -227,11 +228,10 @@ function showTransformModal (node, container) {
             }
           }
 
-          updatePreview();
+          debouncedUpdatePreview();
         }
 
         function updatePreview() {
-          // TODO: debounce?
           try {
             var transformed = jmespath.search(value, query.value);
             var lines =  JSON.stringify(transformed, null, 2).split('\n');
@@ -252,6 +252,8 @@ function showTransformModal (node, container) {
           }
         }
 
+        var debouncedUpdatePreview = debounce(updatePreview, 300);
+
         filterField.onchange = generateQueryFromWizard;
         filterRelation.onchange = generateQueryFromWizard;
         filterValue.oninput = generateQueryFromWizard;
@@ -259,8 +261,8 @@ function showTransformModal (node, container) {
         sortOrder.oninput = generateQueryFromWizard;
         selectFields.onchange = generateQueryFromWizard;
 
-        query.oninput = updatePreview;
-        updatePreview();
+        query.oninput = debouncedUpdatePreview;
+        debouncedUpdatePreview();
 
         ok.onclick = function (event) {
           event.preventDefault();
