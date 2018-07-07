@@ -78,7 +78,13 @@ function showTransformModal (node, container) {
       '<tr>' +
       '  <th>' + translate('transformQueryLabel') + ' </th>' +
       '  <td class="jsoneditor-modal-input">' +
-      '    <input id="query" type="text" title="' + translate('transformQueryTitle') + '" value=""/>' +
+      '    <textarea id="query" ' +
+      '              rows="4" ' +
+      '              autocomplete="off" ' +
+      '              autocorrect="off" ' +
+      '              autocapitalize="off" ' +
+      '              spellcheck="false"' +
+      '              title="' + translate('transformQueryTitle') + '">[*]</textarea>' +
       '  </td>' +
       '</tr>' +
       '<tr>' +
