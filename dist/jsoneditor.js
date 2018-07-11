@@ -24,8 +24,8 @@
  * Copyright (c) 2011-2017 Jos de Jong, http://jsoneditoronline.org
  *
  * @author  Jos de Jong, <wjosdejong@gmail.com>
- * @version 5.18.0
- * @date    2018-06-27
+ * @version 5.19.0
+ * @date    2018-07-11
  */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
@@ -94,7 +94,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	}
 
 	var treemode = __webpack_require__(51);
-	var textmode = __webpack_require__(70);
+	var textmode = __webpack_require__(71);
 	var util = __webpack_require__(54);
 
 	/**
@@ -8065,12 +8065,16 @@ return /******/ (function(modules) { // webpackBootstrap
 	var ContextMenu = __webpack_require__(57);
 	var TreePath = __webpack_require__(59);
 	var Node = __webpack_require__(60);
-	var ModeSwitcher = __webpack_require__(68);
+	var ModeSwitcher = __webpack_require__(69);
 	var util = __webpack_require__(54);
-	var autocomplete = __webpack_require__(69);
+	var autocomplete = __webpack_require__(70);
+	var showSortModal = __webpack_require__(65);
+	var showTransformModal = __webpack_require__(67);
 	var translate = __webpack_require__(58).translate;
 	var setLanguages = __webpack_require__(58).setLanguages;
 	var setLanguage = __webpack_require__(58).setLanguage;
+
+	var DEFAULT_MODAL_ANCHOR = document.body; // TODO: this constant is defined twice
 
 	// create a mixin with the functions for tree mode
 	var treemode = {};
@@ -8790,6 +8794,28 @@ return /******/ (function(modules) { // webpackBootstrap
 	    editor.collapseAll();
 	  };
 	  this.menu.appendChild(collapseAll);
+
+	  // create sort button
+	  var sort = document.createElement('button');
+	  sort.type = 'button';
+	  sort.className = 'jsoneditor-sort';
+	  sort.title = translate('sortTitleShort');
+	  sort.onclick = function () {
+	    var anchor = editor.options.modalAnchor || DEFAULT_MODAL_ANCHOR;
+	    showSortModal(editor.node, anchor)
+	  };
+	  this.menu.appendChild(sort);
+
+	  // create transform button
+	  var transform = document.createElement('button');
+	  transform.type = 'button';
+	  transform.title = translate('transformTitleShort');
+	  transform.className = 'jsoneditor-transform';
+	  transform.onclick = function () {
+	    var anchor = editor.options.modalAnchor || DEFAULT_MODAL_ANCHOR;
+	    showTransformModal(editor.node, anchor)
+	  };
+	  this.menu.appendChild(transform);
 
 	  // create undo/redo buttons
 	  if (this.history) {
@@ -12200,6 +12226,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    'showMoreStatus': 'displaying ${visibleChilds} of ${totalChilds} items.',
 	    'sort': 'Sort',
 	    'sortTitle': 'Sort the childs of this ${type}',
+	    'sortTitleShort': 'Sort contents',
 	    'sortFieldLabel': 'Field:',
 	    'sortDirectionLabel': 'Direction:',
 	    'sortFieldTitle': 'Select the nested field by which to sort the array or object',
@@ -12210,6 +12237,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    'string': 'String',
 	    'transform': 'Transform',
 	    'transformTitle': 'Filter, sort, or transform the childs of this ${type}',
+	    'transformTitleShort': 'Filter, sort, or transform contents',
 	    'transformQueryTitle': 'Enter a JMESPath query',
 	    'transformWizardLabel': 'Wizard',
 	    'transformWizardFilter': 'Filter',
@@ -12275,6 +12303,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	    'sort': 'Organizar',
 	    'sortTitle': 'Organizar os filhos deste ${type}',
 	    // TODO: correctly translate
+	    'sortTitleShort': 'Organizar os filhos',
+	    // TODO: correctly translate
 	    'sortFieldLabel': 'Field:',
 	    // TODO: correctly translate
 	    'sortDirectionLabel': 'Direction:',
@@ -12293,6 +12323,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	    'transform': 'Transform',
 	    // TODO: correctly translate
 	    'transformTitle': 'Filter, sort, or transform the childs of this ${type}',
+	    // TODO: correctly translate
+	    'transformTitleShort': 'Filter, sort, or transform contents',
 	    // TODO: correctly translate
 	    'transformQueryTitle': 'Enter a JMESPath query',
 	    // TODO: correctly translate
@@ -12514,7 +12546,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	var util = __webpack_require__(54);
 	var translate = __webpack_require__(58).translate;
 
-	var DEFAULT_MODAL_ANCHOR = document.body;
+	var DEFAULT_MODAL_ANCHOR = document.body; // TODO: this constant is defined twice
 
 	/**
 	 * @constructor Node
@@ -15712,32 +15744,21 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	/**
 	 * Get the child paths of this node
-	 * @param {boolean} [includeObjects=false]  If true, object and array paths are returned as well
+	 * @param {boolean} [includeObjects=false] If true, object and array paths are returned as well
 	 * @return {string[]}
 	 */
-	Node.prototype.getPaths = function (includeObjects) {
+	Node.prototype.getChildPaths = function (includeObjects) {
+	  var pathsMap = {};
+
+	  this._getChildPaths(pathsMap, '', includeObjects);
+
 	  if (this.type === 'array') {
-	    if (this.childs.length > 0) {
-	      // sort on any of the property paths of nested objects
-	      var pathsMap = {};
-	      this.childs.forEach(function (child) {
-	        child._getPaths(pathsMap, '', includeObjects);
-	      });
-
-	      return Object.keys(pathsMap).sort();
-	    }
-	    else {
-	      // empty array, you can sort though it doesn't do anything
-	      return [ '.' ];
-	    }
+	    this.childs.forEach(function (child) {
+	      child._getChildPaths(pathsMap, '', includeObjects);
+	    });
 	  }
 
-	  if (this.type === 'object') {
-	    // sort the object by its properties
-	    return [ '.' ];
-	  }
-
-	  return [];
+	  return Object.keys(pathsMap).sort();
 	};
 
 	/**
@@ -15746,24 +15767,15 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * @param {boolean} [includeObjects=false]  If true, object and array paths are returned as well
 	 * @param {string} rootPath
 	 */
-	Node.prototype._getPaths = function (pathsMap, rootPath, includeObjects) {
-	  if (includeObjects && (this.type === 'array' || this.type === 'object')) {
+	Node.prototype._getChildPaths = function (pathsMap, rootPath, includeObjects) {
+	  if (this.type === 'auto' || this.type === 'string' || includeObjects) {
 	    pathsMap[rootPath || '.'] = true;
 	  }
 
 	  if (this.type === 'object') {
 	    this.childs.forEach(function (child) {
-	      if (child.type === 'object') {
-	        // recurse
-	        child._getPaths(pathsMap, rootPath + '.' + child.field, includeObjects);
-	      }
-	      else if (child.type === 'auto' || child.type === 'string') {
-	        pathsMap[rootPath + '.' + child.field] = true;
-	      }
+	      child._getChildPaths(pathsMap, rootPath + '.' + child.field, includeObjects);
 	    });
-	  }
-	  else {
-	    pathsMap[rootPath || '.'] = true;
 	  }
 	};
 
@@ -18586,7 +18598,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    parent: container,
 	    content: content,
 	    overlayClass: 'jsoneditor-modal-overlay',
-	    modalClass: 'jsoneditor-modal'
+	    modalClass: 'jsoneditor-modal jsoneditor-modal-sort'
 	  })
 	      .afterCreate(function (modal) {
 	        var form = modal.modalElem().querySelector('form');
@@ -18594,7 +18606,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	        var field = modal.modalElem().querySelector('#field');
 	        var direction = modal.modalElem().querySelector('#direction');
 
-	        var paths = node.getPaths().sort();
+	        var paths = node.type === 'array'
+	            ? node.getChildPaths()
+	            : ['.'];
 
 	        paths.forEach(function (path) {
 	          var option = document.createElement('option');
@@ -19260,7 +19274,9 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var jmespath = __webpack_require__(61);
 	var picoModal = __webpack_require__(66);
+	var Selectr = __webpack_require__(68);
 	var translate = __webpack_require__(58).translate;
+	var debounce = __webpack_require__(54).debounce;
 
 	var MAX_PREVIEW_LINES = 100;
 
@@ -19273,9 +19289,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	function showTransformModal (node, container) {
 	  var value = node.getValue();
 
-	  var content = '<label class="pico-modal-contents jsoneditor-transform-modal">' +
+	  var content = '<label class="pico-modal-contents">' +
 	      '<div class="pico-modal-header">' + translate('transform') + '</div>' +
-	      '<form>' +
 	      '<p>' +
 	      'Enter a <a href="http://jmespath.org" target="_blank">JMESPath</a> query to filter, sort, or transform the JSON data.<br/>' +
 	      'To learn JMESPath, go to <a href="http://jmespath.org/tutorial.html" target="_blank">the interactive tutorial</a>.' +
@@ -19286,17 +19301,15 @@ return /******/ (function(modules) { // webpackBootstrap
 	      '  <th>' + translate('transformWizardLabel') + ' </th>' +
 	      '  <td>' +
 	      '  <div id="wizard" class="jsoneditor-jmespath-wizard">' +
-	      '  <label>' +
+	      '  <div>' +
 	      '    <div class="jsoneditor-jmespath-wizard-label">' + translate('transformWizardFilter') + '</div>' +
 	      '    <div class="jsoneditor-jmespath-filter">' +
-	      '      <div class="jsoneditor-select-wrapper">' +
-	      '        <select class="jsoneditor-jmespath-filter-field" id="filterField">' +
-	      '          <option value="" selected> </option>' +
+	      '      <div class="jsoneditor-inline jsoneditor-jmespath-filter-field" >' +
+	      '        <select id="filterField">' +
 	      '        </select>' +
 	      '      </div>' +
-	      '      <div class="jsoneditor-select-wrapper">' +
-	      '        <select class="jsoneditor-jmespath-filter-relation" id="filterRelation">' +
-	      '          <option value="" selected> </option>' +
+	      '      <div class="jsoneditor-inline jsoneditor-jmespath-filter-relation" >' +
+	      '        <select id="filterRelation">' +
 	      '          <option value="==">==</option>' +
 	      '          <option value="!=">!=</option>' +
 	      '          <option value="<">&lt;</option>' +
@@ -19305,39 +19318,44 @@ return /******/ (function(modules) { // webpackBootstrap
 	      '          <option value=">=">&gt;=</option>' +
 	      '        </select>' +
 	      '      </div>' +
-	      '      <input class="jsoneditor-jmespath-filter-value" id="filterValue" />' +
+	      '      <div class="jsoneditor-inline jsoneditor-jmespath-filter-value" >' +
+	      '        <input placeholder="value..." id="filterValue" />' +
+	      '      </div>' +
 	      '    </div>' +
-	      '  </label>' +
-	      '  <label>' +
+	      '  </div>' +
+	      '  <div>' +
 	      '    <div class="jsoneditor-jmespath-wizard-label">' + translate('transformWizardSortBy') + '</div>' +
 	      '    <div class="jsoneditor-jmespath-filter">' +
-	      '      <div class="jsoneditor-select-wrapper">' +
-	      '        <select class="jsoneditor-jmespath-sort-field" id="sortField">' +
-	      '          <option value="" selected> </option>' +
+	      '      <div class="jsoneditor-inline jsoneditor-jmespath-sort-field">' +
+	      '        <select id="sortField">' +
 	      '        </select>' +
 	      '      </div>' +
-	      '      <div class="jsoneditor-select-wrapper">' +
-	      '        <select class="jsoneditor-jmespath-sort-order" id="sortOrder">' +
-	      '          <option value="" selected> </option>' +
+	      '      <div class="jsoneditor-inline jsoneditor-jmespath-sort-order" >' +
+	      '        <select id="sortOrder">' +
 	      '          <option value="asc">Ascending</option>' +
 	      '          <option value="desc">Descending</option>' +
 	      '        </select>' +
 	      '      </div>' +
 	      '    </div>' +
-	      '  </label>' +
-	      '  <label id="selectFieldsPart">' +
+	      '  </div>' +
+	      '  <div id="selectFieldsPart">' +
 	      '    <div class="jsoneditor-jmespath-wizard-label">' + translate('transformWizardSelectFields') + '</div>' +
 	      '    <select class="jsoneditor-jmespath-select-fields" id="selectFields" multiple>' +
-	      '      <option value=""> </option>' +
 	      '    </select>' +
-	      '  </label>' +
+	      '  </div>' +
 	      '  </div>' +
 	      '  </td>' +
 	      '</tr>' +
 	      '<tr>' +
 	      '  <th>' + translate('transformQueryLabel') + ' </th>' +
 	      '  <td class="jsoneditor-modal-input">' +
-	      '    <input id="query" type="text" title="' + translate('transformQueryTitle') + '" value=""/>' +
+	      '    <textarea id="query" ' +
+	      '              rows="4" ' +
+	      '              autocomplete="off" ' +
+	      '              autocorrect="off" ' +
+	      '              autocapitalize="off" ' +
+	      '              spellcheck="false"' +
+	      '              title="' + translate('transformQueryTitle') + '">[*]</textarea>' +
 	      '  </td>' +
 	      '</tr>' +
 	      '<tr>' +
@@ -19350,25 +19368,23 @@ return /******/ (function(modules) { // webpackBootstrap
 	      '</tr>' +
 	      '<tr>' +
 	      '<td colspan="2" class="jsoneditor-modal-input jsoneditor-modal-actions">' +
-	      '  <input type="submit" id="ok" value="' + translate('ok') + '" />' +
+	      '  <input type="submit" id="ok" value="' + translate('ok') + '" autofocus />' +
 	      '</td>' +
 	      '</tr>' +
 	      '</tbody>' +
 	      '</table>' +
-	      '</form>' +
 	      '</div>';
 
 	  picoModal({
 	    parent: container,
 	    content: content,
 	    overlayClass: 'jsoneditor-modal-overlay',
-	    modalClass: 'jsoneditor-modal',
+	    modalClass: 'jsoneditor-modal jsoneditor-modal-transform',
 	    focus: false
 	  })
 	      .afterCreate(function (modal) {
 	        var elem = modal.modalElem();
 
-	        var form = elem.querySelector('form');
 	        var wizard = elem.querySelector('#wizard');
 	        var ok = elem.querySelector('#ok');
 	        var filterField = elem.querySelector('#filterField');
@@ -19388,7 +19404,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	          );
 	        }
 
-	        var paths = node.getPaths().sort();
+	        var paths = node.getChildPaths();
 	        paths.forEach(function (path) {
 	          var formattedPath = preprocessPath(path);
 	          var filterOption = document.createElement('option');
@@ -19402,11 +19418,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	          sortField.appendChild(sortOption);
 	        });
 
-	        var allPaths = node.getPaths(true)
-	            .sort()
-	            .filter(function(path) {
-	              return path !== '.';
-	            });
+	        var allPaths = node.getChildPaths(true).filter(function(path) {
+	          return path !== '.';
+	        });
 
 	        if (allPaths.length > 0) {
 	          allPaths.forEach(function (path) {
@@ -19420,6 +19434,24 @@ return /******/ (function(modules) { // webpackBootstrap
 	        else {
 	          elem.querySelector('#selectFieldsPart').style.display = 'none';
 	        }
+
+	        var selectrFilterField = new Selectr(filterField, { defaultSelected: false, clearable: true, allowDeselect: true, placeholder: 'field...' });
+	        var selectrFilterRelation = new Selectr(filterRelation, { defaultSelected: false, clearable: true, allowDeselect: true, placeholder: 'compare...' });
+	        var selectrSortField = new Selectr(sortField, { defaultSelected: false, clearable: true, allowDeselect: true, placeholder: 'field...' });
+	        var selectrSortOrder = new Selectr(sortOrder, { defaultSelected: false, clearable: true, allowDeselect: true, placeholder: 'order...' });
+	        var selectrSelectFields = new Selectr(selectFields, {multiple: true, clearable: true, defaultSelected: false});
+
+	        selectrFilterField.on('selectr.change', generateQueryFromWizard);
+	        selectrFilterRelation.on('selectr.change', generateQueryFromWizard);
+	        filterValue.oninput = generateQueryFromWizard;
+	        selectrSortField.on('selectr.change', generateQueryFromWizard);
+	        selectrSortOrder.on('selectr.change', generateQueryFromWizard);
+	        selectrSelectFields.on('selectr.change', generateQueryFromWizard);
+
+	        wizard.onclick = function (event) {
+	          // prevent the first clear button from getting focus when clicking anywhere in the modal
+	          event.preventDefault();
+	        };
 
 	        query.value = Array.isArray(value) ? '[*]' : '@';
 
@@ -19437,10 +19469,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	        function generateQueryFromWizard () {
 	          if (filterField.value && filterRelation.value && filterValue.value) {
 	            var field1 = filterField.value;
+	            // TODO: move _stringCast into a static util function
+	            var value1 = JSON.stringify(node._stringCast(filterValue.value));
 	            query.value = '[? ' +
 	                field1 + ' ' +
 	                filterRelation.value + ' ' +
-	                '`' + filterValue.value + '`' +
+	                '`' + value1 + '`' +
 	                ']';
 	          }
 	          else {
@@ -19485,15 +19519,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	            else { // values.length === 0
 	              // ignore
 	            }
-
-	            console.log('selectFields', values)
 	          }
 
-	          updatePreview();
+	          debouncedUpdatePreview();
 	        }
 
 	        function updatePreview() {
-	          // TODO: debounce?
 	          try {
 	            var transformed = jmespath.search(value, query.value);
 	            var lines =  JSON.stringify(transformed, null, 2).split('\n');
@@ -19514,15 +19545,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	          }
 	        }
 
-	        filterField.onchange = generateQueryFromWizard;
-	        filterRelation.onchange = generateQueryFromWizard;
-	        filterValue.oninput = generateQueryFromWizard;
-	        sortField.oninput = generateQueryFromWizard;
-	        sortOrder.oninput = generateQueryFromWizard;
-	        selectFields.onchange = generateQueryFromWizard;
+	        var debouncedUpdatePreview = debounce(updatePreview, 300);
 
-	        query.oninput = updatePreview;
-	        updatePreview();
+	        query.oninput = debouncedUpdatePreview;
+	        debouncedUpdatePreview();
 
 	        ok.onclick = function (event) {
 	          event.preventDefault();
@@ -19533,13 +19559,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	          node.transform(query.value)
 	        };
 
-	        if (form) { // form is not available when JSONEditor is created inside a form
-	          form.onsubmit = ok.onclick;
-	        }
-
 	        setTimeout(function () {
 	          query.select();
 	          query.focus();
+	          query.selectionStart = 3;
+	          query.selectionEnd = 3;
 	        });
 	      })
 	      .afterClose(function (modal) {
@@ -19553,6 +19577,2185 @@ return /******/ (function(modules) { // webpackBootstrap
 
 /***/ },
 /* 68 */
+/***/ function(module, exports) {
+
+	/*!
+	 * Selectr 2.4.0
+	 * https://github.com/Mobius1/Selectr
+	 *
+	 * Released under the MIT license
+	 */
+
+	'use strict';
+
+	/**
+	 * Default configuration options
+	 * @type {Object}
+	 */
+	var defaultConfig = {
+	  /**
+	   * Emulates browser behaviour by selecting the first option by default
+	   * @type {Boolean}
+	   */
+	  defaultSelected: true,
+
+	  /**
+	   * Sets the width of the container
+	   * @type {String}
+	   */
+	  width: "auto",
+
+	  /**
+	   * Enables/ disables the container
+	   * @type {Boolean}
+	   */
+	  disabled: false,
+
+	  /**
+	   * Enables / disables the search function
+	   * @type {Boolean}
+	   */
+	  searchable: true,
+
+	  /**
+	   * Enable disable the clear button
+	   * @type {Boolean}
+	   */
+	  clearable: false,
+
+	  /**
+	   * Sort the tags / multiselect options
+	   * @type {Boolean}
+	   */
+	  sortSelected: false,
+
+	  /**
+	   * Allow deselecting of select-one options
+	   * @type {Boolean}
+	   */
+	  allowDeselect: false,
+
+	  /**
+	   * Close the dropdown when scrolling (@AlexanderReiswich, #11)
+	   * @type {Boolean}
+	   */
+	  closeOnScroll: false,
+
+	  /**
+	   * Allow the use of the native dropdown (@jonnyscholes, #14)
+	   * @type {Boolean}
+	   */
+	  nativeDropdown: false,
+
+	  /**
+	   * Set the main placeholder
+	   * @type {String}
+	   */
+	  placeholder: "Select an option...",
+
+	  /**
+	   * Allow the tagging feature
+	   * @type {Boolean}
+	   */
+	  taggable: false,
+
+	  /**
+	   * Set the tag input placeholder (@labikmartin, #21, #22)
+	   * @type {String}
+	   */
+	  tagPlaceholder: "Enter a tag..."
+	};
+
+	/**
+	 * Event Emitter
+	 */
+	var Events = function() {};
+
+	/**
+	 * Event Prototype
+	 * @type {Object}
+	 */
+	Events.prototype = {
+	  /**
+	   * Add custom event listener
+	   * @param  {String} event Event type
+	   * @param  {Function} func   Callback
+	   * @return {Void}
+	   */
+	  on: function(event, func) {
+	    this._events = this._events || {};
+	    this._events[event] = this._events[event] || [];
+	    this._events[event].push(func);
+	  },
+
+	  /**
+	   * Remove custom event listener
+	   * @param  {String} event Event type
+	   * @param  {Function} func   Callback
+	   * @return {Void}
+	   */
+	  off: function(event, func) {
+	    this._events = this._events || {};
+	    if (event in this._events === false) return;
+	    this._events[event].splice(this._events[event].indexOf(func), 1);
+	  },
+
+	  /**
+	   * Fire a custom event
+	   * @param  {String} event Event type
+	   * @return {Void}
+	   */
+	  emit: function(event /* , args... */ ) {
+	    this._events = this._events || {};
+	    if (event in this._events === false) return;
+	    for (var i = 0; i < this._events[event].length; i++) {
+	      this._events[event][i].apply(this, Array.prototype.slice.call(arguments, 1));
+	    }
+	  }
+	};
+
+	/**
+	 * Event mixin
+	 * @param  {Object} obj
+	 * @return {Object}
+	 */
+	Events.mixin = function(obj) {
+	  var props = ['on', 'off', 'emit'];
+	  for (var i = 0; i < props.length; i++) {
+	    if (typeof obj === 'function') {
+	      obj.prototype[props[i]] = Events.prototype[props[i]];
+	    } else {
+	      obj[props[i]] = Events.prototype[props[i]];
+	    }
+	  }
+	  return obj;
+	};
+
+	/**
+	 * Helpers
+	 * @type {Object}
+	 */
+	var util = {
+	  extend: function(src, props) {
+	    props = props || {};
+	    var p;
+	    for (p in src) {
+	      if (src.hasOwnProperty(p)) {
+	        if (!props.hasOwnProperty(p)) {
+	          props[p] = src[p];
+	        }
+	      }
+	    }
+	    return props;
+	  },
+	  each: function(a, b, c) {
+	    if ("[object Object]" === Object.prototype.toString.call(a)) {
+	      for (var d in a) {
+	        if (Object.prototype.hasOwnProperty.call(a, d)) {
+	          b.call(c, d, a[d], a);
+	        }
+	      }
+	    } else {
+	      for (var e = 0, f = a.length; e < f; e++) {
+	        b.call(c, e, a[e], a);
+	      }
+	    }
+	  },
+	  createElement: function(e, a) {
+	    var d = document,
+	        el = d.createElement(e);
+	    if (a && "[object Object]" === Object.prototype.toString.call(a)) {
+	      var i;
+	      for (i in a)
+	        if (i in el) el[i] = a[i];
+	        else if ("html" === i) el.innerHTML = a[i];
+	        else if ("text" === i) {
+	          var t = d.createTextNode(a[i]);
+	          el.appendChild(t);
+	        } else el.setAttribute(i, a[i]);
+	    }
+	    return el;
+	  },
+	  hasClass: function(a, b) {
+	    if (a)
+	      return a.classList ? a.classList.contains(b) : !!a.className && !!a.className.match(new RegExp("(\\s|^)" + b + "(\\s|$)"));
+	  },
+	  addClass: function(a, b) {
+	    if (!util.hasClass(a, b)) {
+	      if (a.classList) {
+	        a.classList.add(b);
+	      } else {
+	        a.className = a.className.trim() + " " + b;
+	      }
+	    }
+	  },
+	  removeClass: function(a, b) {
+	    if (util.hasClass(a, b)) {
+	      if (a.classList) {
+	        a.classList.remove(b);
+	      } else {
+	        a.className = a.className.replace(new RegExp("(^|\\s)" + b.split(" ").join("|") + "(\\s|$)", "gi"), " ");
+	      }
+	    }
+	  },
+	  closest: function(el, fn) {
+	    return el && el !== document.body && (fn(el) ? el : util.closest(el.parentNode, fn));
+	  },
+	  isInt: function(val) {
+	    return typeof val === 'number' && isFinite(val) && Math.floor(val) === val;
+	  },
+	  debounce: function(a, b, c) {
+	    var d;
+	    return function() {
+	      var e = this,
+	          f = arguments,
+	          g = function() {
+	            d = null;
+	            if (!c) a.apply(e, f);
+	          },
+	          h = c && !d;
+	      clearTimeout(d);
+	      d = setTimeout(g, b);
+	      if (h) {
+	        a.apply(e, f);
+	      }
+	    };
+	  },
+	  rect: function(el, abs) {
+	    var w = window;
+	    var r = el.getBoundingClientRect();
+	    var x = abs ? w.pageXOffset : 0;
+	    var y = abs ? w.pageYOffset : 0;
+
+	    return {
+	      bottom: r.bottom + y,
+	      height: r.height,
+	      left: r.left + x,
+	      right: r.right + x,
+	      top: r.top + y,
+	      width: r.width
+	    };
+	  },
+	  includes: function(a, b) {
+	    return a.indexOf(b) > -1;
+	  },
+	  truncate: function(el) {
+	    while (el.firstChild) {
+	      el.removeChild(el.firstChild);
+	    }
+	  }
+	};
+
+
+	function isset(obj, prop) {
+	  return obj.hasOwnProperty(prop) && (obj[prop] === true || obj[prop].length);
+	}
+
+	/**
+	 * Append an item to the list
+	 * @param  {Object} item
+	 * @param  {Object} custom
+	 * @return {Void}
+	 */
+	function appendItem(item, parent, custom) {
+	  if (item.parentNode) {
+	    if (!item.parentNode.parentNode) {
+	      parent.appendChild(item.parentNode);
+	    }
+	  } else {
+	    parent.appendChild(item);
+	  }
+
+	  util.removeClass(item, "excluded");
+	  if (!custom) {
+	    item.innerHTML = item.textContent;
+	  }
+	}
+
+	/**
+	 * Render the item list
+	 * @return {Void}
+	 */
+	var render = function() {
+	  if (this.items.length) {
+	    var f = document.createDocumentFragment();
+
+	    if (this.config.pagination) {
+	      var pages = this.pages.slice(0, this.pageIndex);
+
+	      util.each(pages, function(i, items) {
+	        util.each(items, function(j, item) {
+	          appendItem(item, f, this.customOption);
+	        }, this);
+	      }, this);
+	    } else {
+	      util.each(this.items, function(i, item) {
+	        appendItem(item, f, this.customOption);
+	      }, this);
+	    }
+
+	    if (f.childElementCount) {
+	      util.removeClass(this.items[this.navIndex], "active");
+	      this.navIndex = f.querySelector(".selectr-option").idx;
+	      util.addClass(this.items[this.navIndex], "active");
+	    }
+
+	    this.tree.appendChild(f);
+	  }
+	};
+
+	/**
+	 * Dismiss / close the dropdown
+	 * @param  {obj} e
+	 * @return {void}
+	 */
+	var dismiss = function(e) {
+	  var target = e.target;
+	  if (!this.container.contains(target) && (this.opened || util.hasClass(this.container, "notice"))) {
+	    this.close();
+	  }
+	};
+
+	/**
+	 * Build a list item from the HTMLOptionElement
+	 * @param  {int} i      HTMLOptionElement index
+	 * @param  {HTMLOptionElement} option
+	 * @param  {bool} group  Has parent optgroup
+	 * @return {void}
+	 */
+	var createItem = function(option, data) {
+	  data = data || option;
+	  var content = this.customOption ? this.config.renderOption(data) : option.textContent;
+	  var opt = util.createElement("li", {
+	    class: "selectr-option",
+	    html: content,
+	    role: "treeitem",
+	    "aria-selected": false
+	  });
+
+	  opt.idx = option.idx;
+
+	  this.items.push(opt);
+
+	  if (option.defaultSelected) {
+	    this.defaultSelected.push(option.idx);
+	  }
+
+	  if (option.disabled) {
+	    opt.disabled = true;
+	    util.addClass(opt, "disabled");
+	  }
+
+	  return opt;
+	};
+
+	/**
+	 * Build the container
+	 * @return {Void}
+	 */
+	var build = function() {
+
+	  this.requiresPagination = this.config.pagination && this.config.pagination > 0;
+
+	  // Set width
+	  if (isset(this.config, "width")) {
+	    if (util.isInt(this.config.width)) {
+	      this.width = this.config.width + "px";
+	    } else {
+	      if (this.config.width === "auto") {
+	        this.width = "100%";
+	      } else if (util.includes(this.config.width, "%")) {
+	        this.width = this.config.width;
+	      }
+	    }
+	  }
+
+	  this.container = util.createElement("div", {
+	    class: "selectr-container"
+	  });
+
+	  // Custom className
+	  if (this.config.customClass) {
+	    util.addClass(this.container, this.config.customClass);
+	  }
+
+	  // Mobile device
+	  if (this.mobileDevice) {
+	    util.addClass(this.container, "selectr-mobile");
+	  } else {
+	    util.addClass(this.container, "selectr-desktop");
+	  }
+
+	  // Hide the HTMLSelectElement and prevent focus
+	  this.el.tabIndex = -1;
+
+	  // Native dropdown
+	  if (this.config.nativeDropdown || this.mobileDevice) {
+	    util.addClass(this.el, "selectr-visible");
+	  } else {
+	    util.addClass(this.el, "selectr-hidden");
+	  }
+
+	  this.selected = util.createElement("div", {
+	    class: "selectr-selected",
+	    disabled: this.disabled,
+	    tabIndex: 1, // enable tabIndex (#9)
+	    "aria-expanded": false
+	  });
+
+	  this.label = util.createElement(this.el.multiple ? "ul" : "span", {
+	    class: "selectr-label"
+	  });
+
+	  var dropdown = util.createElement("div", {
+	    class: "selectr-options-container"
+	  });
+
+	  this.tree = util.createElement("ul", {
+	    class: "selectr-options",
+	    role: "tree",
+	    "aria-hidden": true,
+	    "aria-expanded": false
+	  });
+
+	  this.notice = util.createElement("div", {
+	    class: "selectr-notice"
+	  });
+
+	  this.el.setAttribute("aria-hidden", true);
+
+	  if (this.disabled) {
+	    this.el.disabled = true;
+	  }
+
+	  if (this.el.multiple) {
+	    util.addClass(this.label, "selectr-tags");
+	    util.addClass(this.container, "multiple");
+
+	    // Collection of tags
+	    this.tags = [];
+
+	    // Collection of selected values
+	    this.selectedValues = this.getSelectedProperties('value');
+
+	    // Collection of selected indexes
+	    this.selectedIndexes = this.getSelectedProperties('idx');
+	  }
+
+	  this.selected.appendChild(this.label);
+
+	  if (this.config.clearable) {
+	    this.selectClear = util.createElement("button", {
+	      class: "selectr-clear",
+	      type: "button"
+	    });
+
+	    this.container.appendChild(this.selectClear);
+
+	    util.addClass(this.container, "clearable");
+	  }
+
+	  if (this.config.taggable) {
+	    var li = util.createElement('li', {
+	      class: 'input-tag'
+	    });
+	    this.input = util.createElement("input", {
+	      class: "selectr-tag-input",
+	      placeholder: this.config.tagPlaceholder,
+	      tagIndex: 0,
+	      autocomplete: "off",
+	      autocorrect: "off",
+	      autocapitalize: "off",
+	      spellcheck: "false",
+	      role: "textbox",
+	      type: "search"
+	    });
+
+	    li.appendChild(this.input);
+	    this.label.appendChild(li);
+	    util.addClass(this.container, "taggable");
+
+	    this.tagSeperators = [","];
+	    if (this.config.tagSeperators) {
+	      this.tagSeperators = this.tagSeperators.concat(this.config.tagSeperators);
+	    }
+	  }
+
+	  if (this.config.searchable) {
+	    this.input = util.createElement("input", {
+	      class: "selectr-input",
+	      tagIndex: -1,
+	      autocomplete: "off",
+	      autocorrect: "off",
+	      autocapitalize: "off",
+	      spellcheck: "false",
+	      role: "textbox",
+	      type: "search"
+	    });
+	    this.inputClear = util.createElement("button", {
+	      class: "selectr-input-clear",
+	      type: "button"
+	    });
+	    this.inputContainer = util.createElement("div", {
+	      class: "selectr-input-container"
+	    });
+
+	    this.inputContainer.appendChild(this.input);
+	    this.inputContainer.appendChild(this.inputClear);
+	    dropdown.appendChild(this.inputContainer);
+	  }
+
+	  dropdown.appendChild(this.notice);
+	  dropdown.appendChild(this.tree);
+
+	  // List of items for the dropdown
+	  this.items = [];
+
+	  // Establish options
+	  this.options = [];
+
+	  // Check for options in the element
+	  if (this.el.options.length) {
+	    this.options = [].slice.call(this.el.options);
+	  }
+
+	  // Element may have optgroups so
+	  // iterate element.children instead of element.options
+	  var group = false,
+	      j = 0;
+	  if (this.el.children.length) {
+	    util.each(this.el.children, function(i, element) {
+	      if (element.nodeName === "OPTGROUP") {
+
+	        group = util.createElement("ul", {
+	          class: "selectr-optgroup",
+	          role: "group",
+	          html: "<li class='selectr-optgroup--label'>" + element.label + "</li>"
+	        });
+
+	        util.each(element.children, function(x, el) {
+	          el.idx = j;
+	          group.appendChild(createItem.call(this, el, group));
+	          j++;
+	        }, this);
+	      } else {
+	        element.idx = j;
+	        createItem.call(this, element);
+	        j++;
+	      }
+	    }, this);
+	  }
+
+	  // Options defined by the data option
+	  if (this.config.data && Array.isArray(this.config.data)) {
+	    this.data = [];
+	    var optgroup = false,
+	        option;
+
+	    group = false;
+	    j = 0;
+
+	    util.each(this.config.data, function(i, opt) {
+	      // Check for group options
+	      if (isset(opt, "children")) {
+	        optgroup = util.createElement("optgroup", {
+	          label: opt.text
+	        });
+
+	        group = util.createElement("ul", {
+	          class: "selectr-optgroup",
+	          role: "group",
+	          html: "<li class='selectr-optgroup--label'>" + opt.text + "</li>"
+	        });
+
+	        util.each(opt.children, function(x, data) {
+	          option = new Option(data.text, data.value, false, data.hasOwnProperty("selected") && data.selected === true);
+
+	          option.disabled = isset(data, "disabled");
+
+	          this.options.push(option);
+
+	          optgroup.appendChild(option);
+
+	          option.idx = j;
+
+	          group.appendChild(createItem.call(this, option, data));
+
+	          this.data[j] = data;
+
+	          j++;
+	        }, this);
+	      } else {
+	        option = new Option(opt.text, opt.value, false, opt.hasOwnProperty("selected") && opt.selected === true);
+
+	        option.disabled = isset(opt, "disabled");
+
+	        this.options.push(option);
+
+	        option.idx = j;
+
+	        createItem.call(this, option, opt);
+
+	        this.data[j] = opt;
+
+	        j++;
+	      }
+	    }, this);
+	  }
+
+	  this.setSelected(true);
+
+	  var first;
+	  this.navIndex = 0;
+	  for (var i = 0; i < this.items.length; i++) {
+	    first = this.items[i];
+
+	    if (!util.hasClass(first, "disabled")) {
+
+	      util.addClass(first, "active");
+	      this.navIndex = i;
+	      break;
+	    }
+	  }
+
+	  // Check for pagination / infinite scroll
+	  if (this.requiresPagination) {
+	    this.pageIndex = 1;
+
+	    // Create the pages
+	    this.paginate();
+	  }
+
+	  this.container.appendChild(this.selected);
+	  this.container.appendChild(dropdown);
+
+	  this.placeEl = util.createElement("div", {
+	    class: "selectr-placeholder"
+	  });
+
+	  // Set the placeholder
+	  this.setPlaceholder();
+
+	  this.selected.appendChild(this.placeEl);
+
+	  // Disable if required
+	  if (this.disabled) {
+	    this.disable();
+	  }
+
+	  this.el.parentNode.insertBefore(this.container, this.el);
+	  this.container.appendChild(this.el);
+	};
+
+	/**
+	 * Navigate through the dropdown
+	 * @param  {obj} e
+	 * @return {void}
+	 */
+	var navigate = function(e) {
+	  e = e || window.event;
+
+	  // Filter out the keys we don"t want
+	  if (!this.items.length || !this.opened || !util.includes([13, 38, 40], e.which)) {
+	    this.navigating = false;
+	    return;
+	  }
+
+	  e.preventDefault();
+
+	  if (e.which === 13) {
+
+	    if (this.config.taggable && this.input.value.length > 0) {
+	      return false;
+	    }
+
+	    return this.change(this.navIndex);
+	  }
+
+	  var direction, prevEl = this.items[this.navIndex];
+
+	  switch (e.which) {
+	    case 38:
+	      direction = 0;
+	      if (this.navIndex > 0) {
+	        this.navIndex--;
+	      }
+	      break;
+	    case 40:
+	      direction = 1;
+	      if (this.navIndex < this.items.length - 1) {
+	        this.navIndex++;
+	      }
+	  }
+
+	  this.navigating = true;
+
+
+	  // Instead of wasting memory holding a copy of this.items
+	  // with disabled / excluded options omitted, skip them instead
+	  while (util.hasClass(this.items[this.navIndex], "disabled") || util.hasClass(this.items[this.navIndex], "excluded")) {
+	    if (direction) {
+	      this.navIndex++;
+	    } else {
+	      this.navIndex--;
+	    }
+
+	    if (this.searching) {
+	      if (this.navIndex > this.tree.lastElementChild.idx) {
+	        this.navIndex = this.tree.lastElementChild.idx;
+	        break;
+	      } else if (this.navIndex < this.tree.firstElementChild.idx) {
+	        this.navIndex = this.tree.firstElementChild.idx;
+	        break;
+	      }
+	    }
+	  }
+
+	  // Autoscroll the dropdown during navigation
+	  var r = util.rect(this.items[this.navIndex]);
+
+	  if (!direction) {
+	    if (this.navIndex === 0) {
+	      this.tree.scrollTop = 0;
+	    } else if (r.top - this.optsRect.top < 0) {
+	      this.tree.scrollTop = this.tree.scrollTop + (r.top - this.optsRect.top);
+	    }
+	  } else {
+	    if (this.navIndex === 0) {
+	      this.tree.scrollTop = 0;
+	    } else if ((r.top + r.height) > (this.optsRect.top + this.optsRect.height)) {
+	      this.tree.scrollTop = this.tree.scrollTop + ((r.top + r.height) - (this.optsRect.top + this.optsRect.height));
+	    }
+
+	    // Load another page if needed
+	    if (this.navIndex === this.tree.childElementCount - 1 && this.requiresPagination) {
+	      load.call(this);
+	    }
+	  }
+
+	  if (prevEl) {
+	    util.removeClass(prevEl, "active");
+	  }
+
+	  util.addClass(this.items[this.navIndex], "active");
+	};
+
+	/**
+	 * Add a tag
+	 * @param  {HTMLElement} item
+	 */
+	var addTag = function(item) {
+	  var that = this,
+	      r;
+
+	  var docFrag = document.createDocumentFragment();
+	  var option = this.options[item.idx];
+	  var data = this.data ? this.data[item.idx] : option;
+	  var content = this.customSelected ? this.config.renderSelection(data) : option.textContent;
+
+	  var tag = util.createElement("li", {
+	    class: "selectr-tag",
+	    html: content
+	  });
+	  var btn = util.createElement("button", {
+	    class: "selectr-tag-remove",
+	    type: "button"
+	  });
+
+	  tag.appendChild(btn);
+
+	  // Set property to check against later
+	  tag.idx = item.idx;
+	  tag.tag = option.value;
+
+	  this.tags.push(tag);
+
+	  if (this.config.sortSelected) {
+
+	    var tags = this.tags.slice();
+
+	    // Deal with values that contain numbers
+	    r = function(val, arr) {
+	      val.replace(/(\d+)|(\D+)/g, function(that, $1, $2) {
+	        arr.push([$1 || Infinity, $2 || ""]);
+	      });
+	    };
+
+	    tags.sort(function(a, b) {
+	      var x = [],
+	          y = [],
+	          ac, bc;
+	      if (that.config.sortSelected === true) {
+	        ac = a.tag;
+	        bc = b.tag;
+	      } else if (that.config.sortSelected === 'text') {
+	        ac = a.textContent;
+	        bc = b.textContent;
+	      }
+
+	      r(ac, x);
+	      r(bc, y);
+
+	      while (x.length && y.length) {
+	        var ax = x.shift();
+	        var by = y.shift();
+	        var nn = (ax[0] - by[0]) || ax[1].localeCompare(by[1]);
+	        if (nn) return nn;
+	      }
+
+	      return x.length - y.length;
+	    });
+
+	    util.each(tags, function(i, tg) {
+	      docFrag.appendChild(tg);
+	    });
+
+	    this.label.innerHTML = "";
+
+	  } else {
+	    docFrag.appendChild(tag);
+	  }
+
+	  if (this.config.taggable) {
+	    this.label.insertBefore(docFrag, this.input.parentNode);
+	  } else {
+	    this.label.appendChild(docFrag);
+	  }
+	};
+
+	/**
+	 * Remove a tag
+	 * @param  {HTMLElement} item
+	 * @return {void}
+	 */
+	var removeTag = function(item) {
+	  var tag = false;
+
+	  util.each(this.tags, function(i, t) {
+	    if (t.idx === item.idx) {
+	      tag = t;
+	    }
+	  }, this);
+
+	  if (tag) {
+	    this.label.removeChild(tag);
+	    this.tags.splice(this.tags.indexOf(tag), 1);
+	  }
+	};
+
+	/**
+	 * Load the next page of items
+	 * @return {void}
+	 */
+	var load = function() {
+	  var tree = this.tree;
+	  var scrollTop = tree.scrollTop;
+	  var scrollHeight = tree.scrollHeight;
+	  var offsetHeight = tree.offsetHeight;
+	  var atBottom = scrollTop >= (scrollHeight - offsetHeight);
+
+	  if ((atBottom && this.pageIndex < this.pages.length)) {
+	    var f = document.createDocumentFragment();
+
+	    util.each(this.pages[this.pageIndex], function(i, item) {
+	      appendItem(item, f, this.customOption);
+	    }, this);
+
+	    tree.appendChild(f);
+
+	    this.pageIndex++;
+
+	    this.emit("selectr.paginate", {
+	      items: this.items.length,
+	      total: this.data.length,
+	      page: this.pageIndex,
+	      pages: this.pages.length
+	    });
+	  }
+	};
+
+	/**
+	 * Clear a search
+	 * @return {void}
+	 */
+	var clearSearch = function() {
+	  if (this.config.searchable || this.config.taggable) {
+	    this.input.value = null;
+	    this.searching = false;
+	    if (this.config.searchable) {
+	      util.removeClass(this.inputContainer, "active");
+	    }
+
+	    if (util.hasClass(this.container, "notice")) {
+	      util.removeClass(this.container, "notice");
+	      util.addClass(this.container, "open");
+	      this.input.focus();
+	    }
+
+	    util.each(this.items, function(i, item) {
+	      // Items that didn't match need the class
+	      // removing to make them visible again
+	      util.removeClass(item, "excluded");
+	      // Remove the span element for underlining matched items
+	      if (!this.customOption) {
+	        item.innerHTML = item.textContent;
+	      }
+	    }, this);
+	  }
+	};
+
+	/**
+	 * Query matching for searches
+	 * @param  {string} query
+	 * @param  {HTMLOptionElement} option
+	 * @return {bool}
+	 */
+	var match = function(query, option) {
+	  var result = new RegExp(query, "i").exec(option.textContent);
+	  if (result) {
+	    return option.textContent.replace(result[0], "<span class='selectr-match'>" + result[0] + "</span>");
+	  }
+	  return false;
+	};
+
+	// Main Lib
+	var Selectr = function(el, config) {
+
+	  config = config || {};
+
+	  if (!el) {
+	    throw new Error("You must supply either a HTMLSelectElement or a CSS3 selector string.");
+	  }
+
+	  this.el = el;
+
+	  // CSS3 selector string
+	  if (typeof el === "string") {
+	    this.el = document.querySelector(el);
+	  }
+
+	  if (this.el === null) {
+	    throw new Error("The element you passed to Selectr can not be found.");
+	  }
+
+	  if (this.el.nodeName.toLowerCase() !== "select") {
+	    throw new Error("The element you passed to Selectr is not a HTMLSelectElement.");
+	  }
+
+	  this.render(config);
+	};
+
+	/**
+	 * Render the instance
+	 * @param  {object} config
+	 * @return {void}
+	 */
+	Selectr.prototype.render = function(config) {
+
+	  if (this.rendered) return;
+
+	  // Merge defaults with user set config
+	  this.config = util.extend(defaultConfig, config);
+
+	  // Store type
+	  this.originalType = this.el.type;
+
+	  // Store tabIndex
+	  this.originalIndex = this.el.tabIndex;
+
+	  // Store defaultSelected options for form reset
+	  this.defaultSelected = [];
+
+	  // Store the original option count
+	  this.originalOptionCount = this.el.options.length;
+
+	  if (this.config.multiple || this.config.taggable) {
+	    this.el.multiple = true;
+	  }
+
+	  // Disabled?
+	  this.disabled = isset(this.config, "disabled");
+
+	  this.opened = false;
+
+	  if (this.config.taggable) {
+	    this.config.searchable = false;
+	  }
+
+	  this.navigating = false;
+
+	  this.mobileDevice = false;
+	  if (/Android|webOS|iPhone|iPad|BlackBerry|Windows Phone|Opera Mini|IEMobile|Mobile/i.test(navigator.userAgent)) {
+	    this.mobileDevice = true;
+	  }
+
+	  this.customOption = this.config.hasOwnProperty("renderOption") && typeof this.config.renderOption === "function";
+	  this.customSelected = this.config.hasOwnProperty("renderSelection") && typeof this.config.renderSelection === "function";
+
+	  // Enable event emitter
+	  Events.mixin(this);
+
+	  build.call(this);
+
+	  this.bindEvents();
+
+	  this.update();
+
+	  this.optsRect = util.rect(this.tree);
+
+	  this.rendered = true;
+
+	  // Fixes macOS Safari bug #28
+	  if (!this.el.multiple) {
+	    this.el.selectedIndex = this.selectedIndex;
+	  }
+
+	  var that = this;
+	  setTimeout(function() {
+	    that.emit("selectr.init");
+	  }, 20);
+	};
+
+	Selectr.prototype.getSelected = function () {
+	  var selected = this.el.querySelectorAll('option:checked');
+	  return selected;
+	};
+
+	Selectr.prototype.getSelectedProperties = function (prop) {
+	  var selected = this.getSelected();
+	  var values = [].slice.call(selected)
+	      .map(function(option) { return option[prop]; })
+	      .filter(function(i) { return i!==null && i!==undefined; });
+	  return values;
+	};
+
+	/**
+	 * Attach the required event listeners
+	 */
+	Selectr.prototype.bindEvents = function() {
+
+	  var that = this;
+
+	  this.events = {};
+
+	  this.events.dismiss = dismiss.bind(this);
+	  this.events.navigate = navigate.bind(this);
+	  this.events.reset = this.reset.bind(this);
+
+	  if (this.config.nativeDropdown || this.mobileDevice) {
+
+	    this.container.addEventListener("touchstart", function(e) {
+	      if (e.changedTouches[0].target === that.el) {
+	        that.toggle();
+	      }
+	    });
+
+	    if (this.config.nativeDropdown || this.mobileDevice) {
+	      this.container.addEventListener("click", function(e) {
+	        e.preventDefault();  // Jos: Added to prevent emitting clear directly after select
+	        e.stopPropagation(); // Jos: Added to prevent emitting clear directly after select
+
+	        if (e.target === that.el) {
+	          that.toggle();
+	        }
+	      });
+	    }
+
+	    var getChangedOptions = function(last, current) {
+	      var added=[], removed=last.slice(0);
+	      var idx;
+	      for (var i=0; i<current.length; i++) {
+	        idx = removed.indexOf(current[i]);
+	        if (idx > -1)
+	          removed.splice(idx, 1);
+	        else
+	          added.push(current[i]);
+	      }
+	      return [added, removed];
+	    };
+
+	    // Listen for the change on the native select
+	    // and update accordingly
+	    this.el.addEventListener("change", function(e) {
+	      if (that.el.multiple) {
+	        var indexes = that.getSelectedProperties('idx');
+	        var changes = getChangedOptions(that.selectedIndexes, indexes);
+
+	        util.each(changes[0], function(i, idx) {
+	          that.select(idx);
+	        }, that);
+
+	        util.each(changes[1], function(i, idx) {
+	          that.deselect(idx);
+	        }, that);
+
+	      } else {
+	        if (that.el.selectedIndex > -1) {
+	          that.select(that.el.selectedIndex);
+	        }
+	      }
+	    });
+
+	  }
+
+	  // Open the dropdown with Enter key if focused
+	  if (this.config.nativeDropdown) {
+	    this.container.addEventListener("keydown", function(e) {
+	      if (e.key === "Enter" && that.selected === document.activeElement) {
+	        // Show the native
+	        that.toggle();
+
+	        // Focus on the native multiselect
+	        setTimeout(function() {
+	          that.el.focus();
+	        }, 200);
+	      }
+	    });
+	  }
+
+	  // Non-native dropdown
+	  this.selected.addEventListener("click", function(e) {
+
+	    if (!that.disabled) {
+	      that.toggle();
+	    }
+
+	    e.preventDefault();
+	    e.stopPropagation(); // Jos: Added to prevent emitting clear directly after select
+	  });
+
+	  // Remove tag
+	  this.label.addEventListener("click", function(e) {
+	    if (util.hasClass(e.target, "selectr-tag-remove")) {
+	      that.deselect(e.target.parentNode.idx);
+	    }
+	  });
+
+	  // Clear input
+	  if (this.selectClear) {
+	    this.selectClear.addEventListener("click", this.clear.bind(this));
+	  }
+
+	  // Prevent text selection
+	  this.tree.addEventListener("mousedown", function(e) {
+	    e.preventDefault();
+	  });
+
+	  // Select / deselect items
+	  this.tree.addEventListener("click", function(e) {
+	    e.preventDefault();  // Jos: Added to prevent emitting clear directly after select
+	    e.stopPropagation(); // Jos: Added to prevent emitting clear directly after select
+
+	    var item = util.closest(e.target, function(el) {
+	      return el && util.hasClass(el, "selectr-option");
+	    });
+
+	    if (item) {
+	      if (!util.hasClass(item, "disabled")) {
+	        if (util.hasClass(item, "selected")) {
+	          if (that.el.multiple || !that.el.multiple && that.config.allowDeselect) {
+	            that.deselect(item.idx);
+	          }
+	        } else {
+	          that.select(item.idx);
+	        }
+
+	        if (that.opened && !that.el.multiple) {
+	          that.close();
+	        }
+	      }
+	    }
+	  });
+
+	  // Mouseover list items
+	  this.tree.addEventListener("mouseover", function(e) {
+	    if (util.hasClass(e.target, "selectr-option")) {
+	      if (!util.hasClass(e.target, "disabled")) {
+	        util.removeClass(that.items[that.navIndex], "active");
+
+	        util.addClass(e.target, "active");
+
+	        that.navIndex = [].slice.call(that.items).indexOf(e.target);
+	      }
+	    }
+	  });
+
+	  // Searchable
+	  if (this.config.searchable) {
+	    // Show / hide the search input clear button
+
+	    this.input.addEventListener("focus", function(e) {
+	      that.searching = true;
+	    });
+
+	    this.input.addEventListener("blur", function(e) {
+	      that.searching = false;
+	    });
+
+	    this.input.addEventListener("keyup", function(e) {
+	      that.search();
+
+	      if (!that.config.taggable) {
+	        // Show / hide the search input clear button
+	        if (this.value.length) {
+	          util.addClass(this.parentNode, "active");
+	        } else {
+	          util.removeClass(this.parentNode, "active");
+	        }
+	      }
+	    });
+
+	    // Clear the search input
+	    this.inputClear.addEventListener("click", function(e) {
+	      that.input.value = null;
+	      clearSearch.call(that);
+
+	      if (!that.tree.childElementCount) {
+	        render.call(that);
+	      }
+	    });
+	  }
+
+	  if (this.config.taggable) {
+	    this.input.addEventListener("keyup", function(e) {
+
+	      that.search();
+
+	      if (that.config.taggable && this.value.length) {
+	        var val = this.value.trim();
+
+	        if (e.which === 13 || util.includes(that.tagSeperators, e.key)) {
+
+	          util.each(that.tagSeperators, function(i, k) {
+	            val = val.replace(k, '');
+	          });
+
+	          var option = that.add({
+	            value: val,
+	            text: val,
+	            selected: true
+	          }, true);
+
+	          if (!option) {
+	            this.value = '';
+	            that.setMessage('That tag is already in use.');
+	          } else {
+	            that.close();
+	            clearSearch.call(that);
+	          }
+	        }
+	      }
+	    });
+	  }
+
+	  this.update = util.debounce(function() {
+	    // Optionally close dropdown on scroll / resize (#11)
+	    if (that.opened && that.config.closeOnScroll) {
+	      that.close();
+	    }
+	    if (that.width) {
+	      that.container.style.width = that.width;
+	    }
+	    that.invert();
+	  }, 50);
+
+	  if (this.requiresPagination) {
+	    this.paginateItems = util.debounce(function() {
+	      load.call(this);
+	    }, 50);
+
+	    this.tree.addEventListener("scroll", this.paginateItems.bind(this));
+	  }
+
+	  // Dismiss when clicking outside the container
+	  document.addEventListener("click", this.events.dismiss);
+	  window.addEventListener("keydown", this.events.navigate);
+
+	  window.addEventListener("resize", this.update);
+	  window.addEventListener("scroll", this.update);
+
+	  // Listen for form.reset() (@ambrooks, #13)
+	  if (this.el.form) {
+	    this.el.form.addEventListener("reset", this.events.reset);
+	  }
+	};
+
+	/**
+	 * Check for selected options
+	 * @param {bool} reset
+	 */
+	Selectr.prototype.setSelected = function(reset) {
+
+	  // Select first option as with a native select-one element - #21, #24
+	  if (!this.config.data && !this.el.multiple && this.el.options.length) {
+	    // Browser has selected the first option by default
+	    if (this.el.selectedIndex === 0) {
+	      if (!this.el.options[0].defaultSelected && !this.config.defaultSelected) {
+	        this.el.selectedIndex = -1;
+	      }
+	    }
+
+	    this.selectedIndex = this.el.selectedIndex;
+
+	    if (this.selectedIndex > -1) {
+	      this.select(this.selectedIndex);
+	    }
+	  }
+
+	  // If we're changing a select-one to select-multiple via the config
+	  // and there are no selected options, the first option will be selected by the browser
+	  // Let's prevent that here.
+	  if (this.config.multiple && this.originalType === "select-one" && !this.config.data) {
+	    if (this.el.options[0].selected && !this.el.options[0].defaultSelected) {
+	      this.el.options[0].selected = false;
+	    }
+	  }
+
+	  util.each(this.options, function(i, option) {
+	    if (option.selected && option.defaultSelected) {
+	      this.select(option.idx);
+	    }
+	  }, this);
+
+	  if (this.config.selectedValue) {
+	    this.setValue(this.config.selectedValue);
+	  }
+
+	  if (this.config.data) {
+
+
+	    if (!this.el.multiple && this.config.defaultSelected && this.el.selectedIndex < 0) {
+	      this.select(0);
+	    }
+
+	    var j = 0;
+	    util.each(this.config.data, function(i, opt) {
+	      // Check for group options
+	      if (isset(opt, "children")) {
+	        util.each(opt.children, function(x, item) {
+	          if (item.hasOwnProperty("selected") && item.selected === true) {
+	            this.select(j);
+	          }
+	          j++;
+	        }, this);
+	      } else {
+	        if (opt.hasOwnProperty("selected") && opt.selected === true) {
+	          this.select(j);
+	        }
+	        j++;
+	      }
+	    }, this);
+	  }
+	};
+
+	/**
+	 * Destroy the instance
+	 * @return {void}
+	 */
+	Selectr.prototype.destroy = function() {
+
+	  if (!this.rendered) return;
+
+	  this.emit("selectr.destroy");
+
+	  // Revert to select-single if programtically set to multiple
+	  if (this.originalType === 'select-one') {
+	    this.el.multiple = false;
+	  }
+
+	  if (this.config.data) {
+	    this.el.innerHTML = "";
+	  }
+
+	  // Remove the className from select element
+	  util.removeClass(this.el, 'selectr-hidden');
+
+	  // Remove reset listener from parent form
+	  if (this.el.form) {
+	    util.off(this.el.form, "reset", this.events.reset);
+	  }
+
+	  // Remove event listeners attached to doc and win
+	  util.off(document, "click", this.events.dismiss);
+	  util.off(document, "keydown", this.events.navigate);
+	  util.off(window, "resize", this.update);
+	  util.off(window, "scroll", this.update);
+
+	  // Replace the container with the original select element
+	  this.container.parentNode.replaceChild(this.el, this.container);
+
+	  this.rendered = false;
+	};
+
+	/**
+	 * Change an options state
+	 * @param  {Number} index
+	 * @return {void}
+	 */
+	Selectr.prototype.change = function(index) {
+	  var item = this.items[index],
+	      option = this.options[index];
+
+	  if (option.disabled) {
+	    return;
+	  }
+
+	  if (option.selected && util.hasClass(item, "selected")) {
+	    this.deselect(index);
+	  } else {
+	    this.select(index);
+	  }
+
+	  if (this.opened && !this.el.multiple) {
+	    this.close();
+	  }
+	};
+
+	/**
+	 * Select an option
+	 * @param  {Number} index
+	 * @return {void}
+	 */
+	Selectr.prototype.select = function(index) {
+
+	  var item = this.items[index],
+	      options = [].slice.call(this.el.options),
+	      option = this.options[index];
+
+	  if (this.el.multiple) {
+	    if (util.includes(this.selectedIndexes, index)) {
+	      return false;
+	    }
+
+	    if (this.config.maxSelections && this.tags.length === this.config.maxSelections) {
+	      this.setMessage("A maximum of " + this.config.maxSelections + " items can be selected.", true);
+	      return false;
+	    }
+
+	    this.selectedValues.push(option.value);
+	    this.selectedIndexes.push(index);
+
+	    addTag.call(this, item);
+	  } else {
+	    var data = this.data ? this.data[index] : option;
+	    this.label.innerHTML = this.customSelected ? this.config.renderSelection(data) : option.textContent;
+
+	    this.selectedValue = option.value;
+	    this.selectedIndex = index;
+
+	    util.each(this.options, function(i, o) {
+	      var opt = this.items[i];
+
+	      if (i !== index) {
+	        if (opt) {
+	          util.removeClass(opt, "selected");
+	        }
+	        o.selected = false;
+	        o.removeAttribute("selected");
+	      }
+	    }, this);
+	  }
+
+	  if (!util.includes(options, option)) {
+	    this.el.add(option);
+	  }
+
+	  item.setAttribute("aria-selected", true);
+
+	  util.addClass(item, "selected");
+	  util.addClass(this.container, "has-selected");
+
+	  option.selected = true;
+	  option.setAttribute("selected", "");
+
+	  this.emit("selectr.change", option);
+
+	  this.emit("selectr.select", option);
+	};
+
+	/**
+	 * Deselect an option
+	 * @param  {Number} index
+	 * @return {void}
+	 */
+	Selectr.prototype.deselect = function(index, force) {
+	  var item = this.items[index],
+	      option = this.options[index];
+
+	  if (this.el.multiple) {
+	    var selIndex = this.selectedIndexes.indexOf(index);
+	    this.selectedIndexes.splice(selIndex, 1);
+
+	    var valIndex = this.selectedValues.indexOf(option.value);
+	    this.selectedValues.splice(valIndex, 1);
+
+	    removeTag.call(this, item);
+
+	    if (!this.tags.length) {
+	      util.removeClass(this.container, "has-selected");
+	    }
+	  } else {
+
+	    if (!force && !this.config.clearable && !this.config.allowDeselect) {
+	      return false;
+	    }
+
+	    this.label.innerHTML = "";
+	    this.selectedValue = null;
+
+	    this.el.selectedIndex = this.selectedIndex = -1;
+
+	    util.removeClass(this.container, "has-selected");
+	  }
+
+
+	  this.items[index].setAttribute("aria-selected", false);
+
+	  util.removeClass(this.items[index], "selected");
+
+	  option.selected = false;
+
+	  option.removeAttribute("selected");
+
+	  this.emit("selectr.change", null);
+
+	  this.emit("selectr.deselect", option);
+	};
+
+	/**
+	 * Programmatically set selected values
+	 * @param {String|Array} value - A string or an array of strings
+	 */
+	Selectr.prototype.setValue = function(value) {
+	  var isArray = Array.isArray(value);
+
+	  if (!isArray) {
+	    value = value.toString().trim();
+	  }
+
+	  // Can't pass array to select-one
+	  if (!this.el.multiple && isArray) {
+	    return false;
+	  }
+
+	  util.each(this.options, function(i, option) {
+	    if (isArray && util.includes(value.toString(), option.value) || option.value === value) {
+	      this.change(option.idx);
+	    }
+	  }, this);
+	};
+
+	/**
+	 * Set the selected value(s)
+	 * @param  {bool} toObject Return only the raw values or an object
+	 * @param  {bool} toJson   Return the object as a JSON string
+	 * @return {mixed}         Array or String
+	 */
+	Selectr.prototype.getValue = function(toObject, toJson) {
+	  var value;
+
+	  if (this.el.multiple) {
+	    if (toObject) {
+	      if (this.selectedIndexes.length) {
+	        value = {};
+	        value.values = [];
+	        util.each(this.selectedIndexes, function(i, index) {
+	          var option = this.options[index];
+	          value.values[i] = {
+	            value: option.value,
+	            text: option.textContent
+	          };
+	        }, this);
+	      }
+	    } else {
+	      value = this.selectedValues.slice();
+	    }
+	  } else {
+	    if (toObject) {
+	      var option = this.options[this.selectedIndex];
+	      value = {
+	        value: option.value,
+	        text: option.textContent
+	      };
+	    } else {
+	      value = this.selectedValue;
+	    }
+	  }
+
+	  if (toObject && toJson) {
+	    value = JSON.stringify(value);
+	  }
+
+	  return value;
+	};
+
+	/**
+	 * Add a new option or options
+	 * @param {object} data
+	 */
+	Selectr.prototype.add = function(data, checkDuplicate) {
+	  if (data) {
+
+	    this.data = this.data || [];
+	    this.items = this.items || [];
+	    this.options = this.options || [];
+
+	    if (Array.isArray(data)) {
+	      // We have an array on items
+	      util.each(data, function(i, obj) {
+	        this.add(obj, checkDuplicate);
+	      }, this);
+	    }
+	    // User passed a single object to the method
+	    // or Selectr passed an object from an array
+	    else if ("[object Object]" === Object.prototype.toString.call(data)) {
+
+	      if (checkDuplicate) {
+	        var dupe = false;
+
+	        util.each(this.options, function(i, option) {
+	          if (option.value.toLowerCase() === data.value.toLowerCase()) {
+	            dupe = true;
+	          }
+	        });
+
+	        if (dupe) {
+	          return false;
+	        }
+	      }
+
+	      var option = util.createElement('option', data);
+
+	      this.data.push(data);
+
+	      // Add the new option to the list
+	      this.options.push(option);
+
+	      // Add the index for later use
+	      option.idx = this.options.length > 0 ? this.options.length - 1 : 0;
+
+	      // Create a new item
+	      createItem.call(this, option);
+
+	      // Select the item if required
+	      if (data.selected) {
+	        this.select(option.idx);
+	      }
+
+	      return option;
+	    }
+
+	    // We may have had an empty select so update
+	    // the placeholder to reflect the changes.
+	    this.setPlaceholder();
+
+	    // Recount the pages
+	    if (this.config.pagination) {
+	      this.paginate();
+	    }
+
+	    return true;
+	  }
+	};
+
+	/**
+	 * Remove an option or options
+	 * @param  {Mixed} o Array, integer (index) or string (value)
+	 * @return {Void}
+	 */
+	Selectr.prototype.remove = function(o) {
+	  var options = [];
+	  if (Array.isArray(o)) {
+	    util.each(o, function(i, opt) {
+	      if (util.isInt(opt)) {
+	        options.push(this.getOptionByIndex(opt));
+	      } else if (typeof o === "string") {
+	        options.push(this.getOptionByValue(opt));
+	      }
+	    }, this);
+
+	  } else if (util.isInt(o)) {
+	    options.push(this.getOptionByIndex(o));
+	  } else if (typeof o === "string") {
+	    options.push(this.getOptionByValue(o));
+	  }
+
+	  if (options.length) {
+	    var index;
+	    util.each(options, function(i, option) {
+	      index = option.idx;
+
+	      // Remove the HTMLOptionElement
+	      this.el.remove(option);
+
+	      // Remove the reference from the option array
+	      this.options.splice(index, 1);
+
+	      // If the item has a parentNode (group element) it needs to be removed
+	      // otherwise the render function will still append it to the dropdown
+	      var parentNode = this.items[index].parentNode;
+
+	      if (parentNode) {
+	        parentNode.removeChild(this.items[index]);
+	      }
+
+	      // Remove reference from the items array
+	      this.items.splice(index, 1);
+
+	      // Reset the indexes
+	      util.each(this.options, function(i, opt) {
+	        opt.idx = i;
+	        this.items[i].idx = i;
+	      }, this);
+	    }, this);
+
+	    // We may have had an empty select now so update
+	    // the placeholder to reflect the changes.
+	    this.setPlaceholder();
+
+	    // Recount the pages
+	    if (this.config.pagination) {
+	      this.paginate();
+	    }
+	  }
+	};
+
+	/**
+	 * Remove all options
+	 */
+	Selectr.prototype.removeAll = function() {
+
+	  // Clear any selected options
+	  this.clear(true);
+
+	  // Remove the HTMLOptionElements
+	  util.each(this.el.options, function(i, option) {
+	    this.el.remove(option);
+	  }, this);
+
+	  // Empty the dropdown
+	  util.truncate(this.tree);
+
+	  // Reset variables
+	  this.items = [];
+	  this.options = [];
+	  this.data = [];
+
+	  this.navIndex = 0;
+
+	  if (this.requiresPagination) {
+	    this.requiresPagination = false;
+
+	    this.pageIndex = 1;
+	    this.pages = [];
+	  }
+
+	  // Update the placeholder
+	  this.setPlaceholder();
+	};
+
+	/**
+	 * Perform a search
+	 * @param  {string} query The query string
+	 */
+	Selectr.prototype.search = function(string) {
+
+	  if (this.navigating) return;
+
+	  string = string || this.input.value;
+
+	  var f = document.createDocumentFragment();
+
+	  // Remove message
+	  this.removeMessage();
+
+	  // Clear the dropdown
+	  util.truncate(this.tree);
+
+	  if (string.length > 1) {
+	    // Check the options for the matching string
+	    util.each(this.options, function(i, option) {
+	      var item = this.items[option.idx];
+	      var includes = util.includes(option.textContent.toLowerCase(), string.toLowerCase());
+
+	      if (includes && !option.disabled) {
+
+	        appendItem(item, f, this.customOption);
+
+	        util.removeClass(item, "excluded");
+
+	        // Underline the matching results
+	        if (!this.customOption) {
+	          item.innerHTML = match(string, option);
+	        }
+	      } else {
+	        util.addClass(item, "excluded");
+	      }
+	    }, this);
+
+
+	    if (!f.childElementCount) {
+	      if (!this.config.taggable) {
+	        this.setMessage("no results.");
+	      }
+	    } else {
+	      // Highlight top result (@binary-koan #26)
+	      var prevEl = this.items[this.navIndex];
+	      var firstEl = f.firstElementChild;
+
+	      util.removeClass(prevEl, "active");
+
+	      this.navIndex = firstEl.idx;
+
+	      util.addClass(firstEl, "active");
+	    }
+
+	  } else {
+	    render.call(this);
+	  }
+
+	  this.tree.appendChild(f);
+	};
+
+	/**
+	 * Toggle the dropdown
+	 * @return {void}
+	 */
+	Selectr.prototype.toggle = function() {
+	  if (!this.disabled) {
+	    if (this.opened) {
+	      this.close();
+	    } else {
+	      this.open();
+	    }
+	  }
+	};
+
+	/**
+	 * Open the dropdown
+	 * @return {void}
+	 */
+	Selectr.prototype.open = function() {
+
+	  var that = this;
+
+	  if (!this.options.length) {
+	    return false;
+	  }
+
+	  if (!this.opened) {
+	    this.emit("selectr.open");
+	  }
+
+	  this.opened = true;
+
+	  if (this.mobileDevice || this.config.nativeDropdown) {
+	    util.addClass(this.container, "native-open");
+
+	    if (this.config.data) {
+	      // Dump the options into the select
+	      // otherwise the native dropdown will be empty
+	      util.each(this.options, function(i, option) {
+	        this.el.add(option);
+	      }, this);
+	    }
+
+	    return;
+	  }
+
+	  util.addClass(this.container, "open");
+
+	  render.call(this);
+
+	  this.invert();
+
+	  this.tree.scrollTop = 0;
+
+	  util.removeClass(this.container, "notice");
+
+	  this.selected.setAttribute("aria-expanded", true);
+
+	  this.tree.setAttribute("aria-hidden", false);
+	  this.tree.setAttribute("aria-expanded", true);
+
+	  if (this.config.searchable && !this.config.taggable) {
+	    setTimeout(function() {
+	      that.input.focus();
+	      // Allow tab focus
+	      that.input.tabIndex = 0;
+	    }, 10);
+	  }
+	};
+
+	/**
+	 * Close the dropdown
+	 * @return {void}
+	 */
+	Selectr.prototype.close = function() {
+
+	  if (this.opened) {
+	    this.emit("selectr.close");
+	  }
+
+	  this.opened = false;
+
+	  if (this.mobileDevice || this.config.nativeDropdown) {
+	    util.removeClass(this.container, "native-open");
+	    return;
+	  }
+
+	  var notice = util.hasClass(this.container, "notice");
+
+	  if (this.config.searchable && !notice) {
+	    this.input.blur();
+	    // Disable tab focus
+	    this.input.tabIndex = -1;
+	    this.searching = false;
+	  }
+
+	  if (notice) {
+	    util.removeClass(this.container, "notice");
+	    this.notice.textContent = "";
+	  }
+
+	  util.removeClass(this.container, "open");
+	  util.removeClass(this.container, "native-open");
+
+	  this.selected.setAttribute("aria-expanded", false);
+
+	  this.tree.setAttribute("aria-hidden", true);
+	  this.tree.setAttribute("aria-expanded", false);
+
+	  util.truncate(this.tree);
+	  clearSearch.call(this);
+	};
+
+
+	/**
+	 * Enable the element
+	 * @return {void}
+	 */
+	Selectr.prototype.enable = function() {
+	  this.disabled = false;
+	  this.el.disabled = false;
+
+	  this.selected.tabIndex = this.originalIndex;
+
+	  if (this.el.multiple) {
+	    util.each(this.tags, function(i, t) {
+	      t.lastElementChild.tabIndex = 0;
+	    });
+	  }
+
+	  util.removeClass(this.container, "selectr-disabled");
+	};
+
+	/**
+	 * Disable the element
+	 * @param  {boolean} container Disable the container only (allow value submit with form)
+	 * @return {void}
+	 */
+	Selectr.prototype.disable = function(container) {
+	  if (!container) {
+	    this.el.disabled = true;
+	  }
+
+	  this.selected.tabIndex = -1;
+
+	  if (this.el.multiple) {
+	    util.each(this.tags, function(i, t) {
+	      t.lastElementChild.tabIndex = -1;
+	    });
+	  }
+
+	  this.disabled = true;
+	  util.addClass(this.container, "selectr-disabled");
+	};
+
+
+	/**
+	 * Reset to initial state
+	 * @return {void}
+	 */
+	Selectr.prototype.reset = function() {
+	  if (!this.disabled) {
+	    this.clear();
+
+	    this.setSelected(true);
+
+	    util.each(this.defaultSelected, function(i, idx) {
+	      this.select(idx);
+	    }, this);
+
+	    this.emit("selectr.reset");
+	  }
+	};
+
+	/**
+	 * Clear all selections
+	 * @return {void}
+	 */
+	Selectr.prototype.clear = function(force) {
+
+	  if (this.el.multiple) {
+	    // Loop over the selectedIndexes so we don't have to loop over all the options
+	    // which can be costly if there are a lot of them
+
+	    if (this.selectedIndexes.length) {
+	      // Copy the array or we'll get an error
+	      var indexes = this.selectedIndexes.slice();
+
+	      util.each(indexes, function(i, idx) {
+	        this.deselect(idx);
+	      }, this);
+	    }
+	  } else {
+	    if (this.selectedIndex > -1) {
+	      this.deselect(this.selectedIndex, force);
+	    }
+	  }
+
+	  this.emit("selectr.clear");
+	};
+
+	/**
+	 * Return serialised data
+	 * @param  {boolean} toJson
+	 * @return {mixed} Returns either an object or JSON string
+	 */
+	Selectr.prototype.serialise = function(toJson) {
+	  var data = [];
+	  util.each(this.options, function(i, option) {
+	    var obj = {
+	      value: option.value,
+	      text: option.textContent
+	    };
+
+	    if (option.selected) {
+	      obj.selected = true;
+	    }
+	    if (option.disabled) {
+	      obj.disabled = true;
+	    }
+	    data[i] = obj;
+	  });
+
+	  return toJson ? JSON.stringify(data) : data;
+	};
+
+	/**
+	 * Localised version of serialise() method
+	 */
+	Selectr.prototype.serialize = function(toJson) {
+	  return this.serialise(toJson);
+	};
+
+	/**
+	 * Sets the placeholder
+	 * @param {String} placeholder
+	 */
+	Selectr.prototype.setPlaceholder = function(placeholder) {
+	  // Set the placeholder
+	  placeholder = placeholder || this.config.placeholder || this.el.getAttribute("placeholder");
+
+	  if (!this.options.length) {
+	    placeholder = "No options available";
+	  }
+
+	  this.placeEl.innerHTML = placeholder;
+	};
+
+	/**
+	 * Paginate the option list
+	 * @return {Array}
+	 */
+	Selectr.prototype.paginate = function() {
+	  if (this.items.length) {
+	    var that = this;
+
+	    this.pages = this.items.map(function(v, i) {
+	      return i % that.config.pagination === 0 ? that.items.slice(i, i + that.config.pagination) : null;
+	    }).filter(function(pages) {
+	      return pages;
+	    });
+
+	    return this.pages;
+	  }
+	};
+
+	/**
+	 * Display a message
+	 * @param  {String} message The message
+	 */
+	Selectr.prototype.setMessage = function(message, close) {
+	  if (close) {
+	    this.close();
+	  }
+	  util.addClass(this.container, "notice");
+	  this.notice.textContent = message;
+	};
+
+	/**
+	 * Dismiss the current message
+	 */
+	Selectr.prototype.removeMessage = function() {
+	  util.removeClass(this.container, "notice");
+	  this.notice.innerHTML = "";
+	};
+
+	/**
+	 * Keep the dropdown within the window
+	 * @return {void}
+	 */
+	Selectr.prototype.invert = function() {
+	  var rt = util.rect(this.selected),
+	      oh = this.tree.parentNode.offsetHeight,
+	      wh = window.innerHeight,
+	      doInvert = rt.top + rt.height + oh > wh;
+
+	  if (doInvert) {
+	    util.addClass(this.container, "inverted");
+	    this.isInverted = true;
+	  } else {
+	    util.removeClass(this.container, "inverted");
+	    this.isInverted = false;
+	  }
+
+	  this.optsRect = util.rect(this.tree);
+	};
+
+	/**
+	 * Get an option via it's index
+	 * @param  {Integer} index The index of the HTMLOptionElement required
+	 * @return {HTMLOptionElement}
+	 */
+	Selectr.prototype.getOptionByIndex = function(index) {
+	  return this.options[index];
+	};
+
+	/**
+	 * Get an option via it's value
+	 * @param  {String} value The value of the HTMLOptionElement required
+	 * @return {HTMLOptionElement}
+	 */
+	Selectr.prototype.getOptionByValue = function(value) {
+	  var option = false;
+
+	  for (var i = 0, l = this.options.length; i < l; i++) {
+	    if (this.options[i].value.trim() === value.toString().trim()) {
+	      option = this.options[i];
+	      break;
+	    }
+	  }
+
+	  return option;
+	};
+
+	module.exports = Selectr;
+
+
+/***/ },
+/* 69 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -19673,7 +21876,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 69 */
+/* 70 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -20060,13 +22263,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = completely;
 
 /***/ },
-/* 70 */
+/* 71 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var ace = __webpack_require__(71);
-	var ModeSwitcher = __webpack_require__(68);
+	var ace = __webpack_require__(72);
+	var ModeSwitcher = __webpack_require__(69);
 	var util = __webpack_require__(54);
 
 	// create a mixin with the functions for text mode
@@ -20136,7 +22339,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  this.theme = options.theme || DEFAULT_THEME;
 	  if (this.theme === DEFAULT_THEME && _ace) {
 	    try {
-	      __webpack_require__(77);
+	      __webpack_require__(78);
 	    }
 	    catch (err) {
 	      console.error(err);
@@ -20882,7 +23085,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 71 */
+/* 72 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var ace
@@ -20893,11 +23096,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	else {
 	  try {
 	    // load brace
-	    ace = __webpack_require__(72);
+	    ace = __webpack_require__(73);
 
 	    // load required Ace plugins
-	    __webpack_require__(74);
-	    __webpack_require__(76);
+	    __webpack_require__(75);
+	    __webpack_require__(77);
 	  }
 	  catch (err) {
 	    // failed to load brace (can be minimalist bundle).
@@ -20909,7 +23112,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 72 */
+/* 73 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* ***** BEGIN LICENSE BLOCK *****
@@ -25092,7 +27295,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    if (!global || !global.document)
 	        return;
 	    
-	    options.packaged = packaged || acequire.packaged || module.packaged || (global.define && __webpack_require__(73).packaged);
+	    options.packaged = packaged || acequire.packaged || module.packaged || (global.define && __webpack_require__(74).packaged);
 
 	    var scriptOptions = {};
 	    var scriptUrl = "";
@@ -41119,7 +43322,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	exports.acequire = acequire;
 
 	if (true)
-	    exports.define = __webpack_require__(73);
+	    exports.define = __webpack_require__(74);
 	exports.edit = function(el) {
 	    if (typeof el == "string") {
 	        var _id = el;
@@ -41186,14 +43389,14 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = window.ace.acequire("ace/ace");
 
 /***/ },
-/* 73 */
+/* 74 */
 /***/ function(module, exports) {
 
 	module.exports = function() { throw new Error("define cannot be used indirect"); };
 
 
 /***/ },
-/* 74 */
+/* 75 */
 /***/ function(module, exports, __webpack_require__) {
 
 	ace.define("ace/mode/json_highlight_rules",["require","exports","module","ace/lib/oop","ace/mode/text_highlight_rules"], function(acequire, exports, module) {
@@ -41495,7 +43698,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    };
 
 	    this.createWorker = function(session) {
-	        var worker = new WorkerClient(["ace"], __webpack_require__(75), "JsonWorker");
+	        var worker = new WorkerClient(["ace"], __webpack_require__(76), "JsonWorker");
 	        worker.attachToDocument(session.getDocument());
 
 	        worker.on("annotate", function(e) {
@@ -41518,14 +43721,14 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 75 */
+/* 76 */
 /***/ function(module, exports) {
 
 	module.exports.id = 'ace/mode/json_worker';
 	module.exports.src = "\"no use strict\";!function(window){function resolveModuleId(id,paths){for(var testPath=id,tail=\"\";testPath;){var alias=paths[testPath];if(\"string\"==typeof alias)return alias+tail;if(alias)return alias.location.replace(/\\/*$/,\"/\")+(tail||alias.main||alias.name);if(alias===!1)return\"\";var i=testPath.lastIndexOf(\"/\");if(-1===i)break;tail=testPath.substr(i)+tail,testPath=testPath.slice(0,i)}return id}if(!(void 0!==window.window&&window.document||window.acequire&&window.define)){window.console||(window.console=function(){var msgs=Array.prototype.slice.call(arguments,0);postMessage({type:\"log\",data:msgs})},window.console.error=window.console.warn=window.console.log=window.console.trace=window.console),window.window=window,window.ace=window,window.onerror=function(message,file,line,col,err){postMessage({type:\"error\",data:{message:message,data:err.data,file:file,line:line,col:col,stack:err.stack}})},window.normalizeModule=function(parentId,moduleName){if(-1!==moduleName.indexOf(\"!\")){var chunks=moduleName.split(\"!\");return window.normalizeModule(parentId,chunks[0])+\"!\"+window.normalizeModule(parentId,chunks[1])}if(\".\"==moduleName.charAt(0)){var base=parentId.split(\"/\").slice(0,-1).join(\"/\");for(moduleName=(base?base+\"/\":\"\")+moduleName;-1!==moduleName.indexOf(\".\")&&previous!=moduleName;){var previous=moduleName;moduleName=moduleName.replace(/^\\.\\//,\"\").replace(/\\/\\.\\//,\"/\").replace(/[^\\/]+\\/\\.\\.\\//,\"\")}}return moduleName},window.acequire=function acequire(parentId,id){if(id||(id=parentId,parentId=null),!id.charAt)throw Error(\"worker.js acequire() accepts only (parentId, id) as arguments\");id=window.normalizeModule(parentId,id);var module=window.acequire.modules[id];if(module)return module.initialized||(module.initialized=!0,module.exports=module.factory().exports),module.exports;if(!window.acequire.tlns)return console.log(\"unable to load \"+id);var path=resolveModuleId(id,window.acequire.tlns);return\".js\"!=path.slice(-3)&&(path+=\".js\"),window.acequire.id=id,window.acequire.modules[id]={},importScripts(path),window.acequire(parentId,id)},window.acequire.modules={},window.acequire.tlns={},window.define=function(id,deps,factory){if(2==arguments.length?(factory=deps,\"string\"!=typeof id&&(deps=id,id=window.acequire.id)):1==arguments.length&&(factory=id,deps=[],id=window.acequire.id),\"function\"!=typeof factory)return window.acequire.modules[id]={exports:factory,initialized:!0},void 0;deps.length||(deps=[\"require\",\"exports\",\"module\"]);var req=function(childId){return window.acequire(id,childId)};window.acequire.modules[id]={exports:{},factory:function(){var module=this,returnExports=factory.apply(this,deps.map(function(dep){switch(dep){case\"require\":return req;case\"exports\":return module.exports;case\"module\":return module;default:return req(dep)}}));return returnExports&&(module.exports=returnExports),module}}},window.define.amd={},acequire.tlns={},window.initBaseUrls=function(topLevelNamespaces){for(var i in topLevelNamespaces)acequire.tlns[i]=topLevelNamespaces[i]},window.initSender=function(){var EventEmitter=window.acequire(\"ace/lib/event_emitter\").EventEmitter,oop=window.acequire(\"ace/lib/oop\"),Sender=function(){};return function(){oop.implement(this,EventEmitter),this.callback=function(data,callbackId){postMessage({type:\"call\",id:callbackId,data:data})},this.emit=function(name,data){postMessage({type:\"event\",name:name,data:data})}}.call(Sender.prototype),new Sender};var main=window.main=null,sender=window.sender=null;window.onmessage=function(e){var msg=e.data;if(msg.event&&sender)sender._signal(msg.event,msg.data);else if(msg.command)if(main[msg.command])main[msg.command].apply(main,msg.args);else{if(!window[msg.command])throw Error(\"Unknown command:\"+msg.command);window[msg.command].apply(window,msg.args)}else if(msg.init){window.initBaseUrls(msg.tlns),acequire(\"ace/lib/es5-shim\"),sender=window.sender=window.initSender();var clazz=acequire(msg.module)[msg.classname];main=window.main=new clazz(sender)}}}}(this),ace.define(\"ace/lib/oop\",[\"require\",\"exports\",\"module\"],function(acequire,exports){\"use strict\";exports.inherits=function(ctor,superCtor){ctor.super_=superCtor,ctor.prototype=Object.create(superCtor.prototype,{constructor:{value:ctor,enumerable:!1,writable:!0,configurable:!0}})},exports.mixin=function(obj,mixin){for(var key in mixin)obj[key]=mixin[key];return obj},exports.implement=function(proto,mixin){exports.mixin(proto,mixin)}}),ace.define(\"ace/range\",[\"require\",\"exports\",\"module\"],function(acequire,exports){\"use strict\";var comparePoints=function(p1,p2){return p1.row-p2.row||p1.column-p2.column},Range=function(startRow,startColumn,endRow,endColumn){this.start={row:startRow,column:startColumn},this.end={row:endRow,column:endColumn}};(function(){this.isEqual=function(range){return this.start.row===range.start.row&&this.end.row===range.end.row&&this.start.column===range.start.column&&this.end.column===range.end.column},this.toString=function(){return\"Range: [\"+this.start.row+\"/\"+this.start.column+\"] -> [\"+this.end.row+\"/\"+this.end.column+\"]\"},this.contains=function(row,column){return 0==this.compare(row,column)},this.compareRange=function(range){var cmp,end=range.end,start=range.start;return cmp=this.compare(end.row,end.column),1==cmp?(cmp=this.compare(start.row,start.column),1==cmp?2:0==cmp?1:0):-1==cmp?-2:(cmp=this.compare(start.row,start.column),-1==cmp?-1:1==cmp?42:0)},this.comparePoint=function(p){return this.compare(p.row,p.column)},this.containsRange=function(range){return 0==this.comparePoint(range.start)&&0==this.comparePoint(range.end)},this.intersects=function(range){var cmp=this.compareRange(range);return-1==cmp||0==cmp||1==cmp},this.isEnd=function(row,column){return this.end.row==row&&this.end.column==column},this.isStart=function(row,column){return this.start.row==row&&this.start.column==column},this.setStart=function(row,column){\"object\"==typeof row?(this.start.column=row.column,this.start.row=row.row):(this.start.row=row,this.start.column=column)},this.setEnd=function(row,column){\"object\"==typeof row?(this.end.column=row.column,this.end.row=row.row):(this.end.row=row,this.end.column=column)},this.inside=function(row,column){return 0==this.compare(row,column)?this.isEnd(row,column)||this.isStart(row,column)?!1:!0:!1},this.insideStart=function(row,column){return 0==this.compare(row,column)?this.isEnd(row,column)?!1:!0:!1},this.insideEnd=function(row,column){return 0==this.compare(row,column)?this.isStart(row,column)?!1:!0:!1},this.compare=function(row,column){return this.isMultiLine()||row!==this.start.row?this.start.row>row?-1:row>this.end.row?1:this.start.row===row?column>=this.start.column?0:-1:this.end.row===row?this.end.column>=column?0:1:0:this.start.column>column?-1:column>this.end.column?1:0},this.compareStart=function(row,column){return this.start.row==row&&this.start.column==column?-1:this.compare(row,column)},this.compareEnd=function(row,column){return this.end.row==row&&this.end.column==column?1:this.compare(row,column)},this.compareInside=function(row,column){return this.end.row==row&&this.end.column==column?1:this.start.row==row&&this.start.column==column?-1:this.compare(row,column)},this.clipRows=function(firstRow,lastRow){if(this.end.row>lastRow)var end={row:lastRow+1,column:0};else if(firstRow>this.end.row)var end={row:firstRow,column:0};if(this.start.row>lastRow)var start={row:lastRow+1,column:0};else if(firstRow>this.start.row)var start={row:firstRow,column:0};return Range.fromPoints(start||this.start,end||this.end)},this.extend=function(row,column){var cmp=this.compare(row,column);if(0==cmp)return this;if(-1==cmp)var start={row:row,column:column};else var end={row:row,column:column};return Range.fromPoints(start||this.start,end||this.end)},this.isEmpty=function(){return this.start.row===this.end.row&&this.start.column===this.end.column},this.isMultiLine=function(){return this.start.row!==this.end.row},this.clone=function(){return Range.fromPoints(this.start,this.end)},this.collapseRows=function(){return 0==this.end.column?new Range(this.start.row,0,Math.max(this.start.row,this.end.row-1),0):new Range(this.start.row,0,this.end.row,0)},this.toScreenRange=function(session){var screenPosStart=session.documentToScreenPosition(this.start),screenPosEnd=session.documentToScreenPosition(this.end);return new Range(screenPosStart.row,screenPosStart.column,screenPosEnd.row,screenPosEnd.column)},this.moveBy=function(row,column){this.start.row+=row,this.start.column+=column,this.end.row+=row,this.end.column+=column}}).call(Range.prototype),Range.fromPoints=function(start,end){return new Range(start.row,start.column,end.row,end.column)},Range.comparePoints=comparePoints,Range.comparePoints=function(p1,p2){return p1.row-p2.row||p1.column-p2.column},exports.Range=Range}),ace.define(\"ace/apply_delta\",[\"require\",\"exports\",\"module\"],function(acequire,exports){\"use strict\";exports.applyDelta=function(docLines,delta){var row=delta.start.row,startColumn=delta.start.column,line=docLines[row]||\"\";switch(delta.action){case\"insert\":var lines=delta.lines;if(1===lines.length)docLines[row]=line.substring(0,startColumn)+delta.lines[0]+line.substring(startColumn);else{var args=[row,1].concat(delta.lines);docLines.splice.apply(docLines,args),docLines[row]=line.substring(0,startColumn)+docLines[row],docLines[row+delta.lines.length-1]+=line.substring(startColumn)}break;case\"remove\":var endColumn=delta.end.column,endRow=delta.end.row;row===endRow?docLines[row]=line.substring(0,startColumn)+line.substring(endColumn):docLines.splice(row,endRow-row+1,line.substring(0,startColumn)+docLines[endRow].substring(endColumn))}}}),ace.define(\"ace/lib/event_emitter\",[\"require\",\"exports\",\"module\"],function(acequire,exports){\"use strict\";var EventEmitter={},stopPropagation=function(){this.propagationStopped=!0},preventDefault=function(){this.defaultPrevented=!0};EventEmitter._emit=EventEmitter._dispatchEvent=function(eventName,e){this._eventRegistry||(this._eventRegistry={}),this._defaultHandlers||(this._defaultHandlers={});var listeners=this._eventRegistry[eventName]||[],defaultHandler=this._defaultHandlers[eventName];if(listeners.length||defaultHandler){\"object\"==typeof e&&e||(e={}),e.type||(e.type=eventName),e.stopPropagation||(e.stopPropagation=stopPropagation),e.preventDefault||(e.preventDefault=preventDefault),listeners=listeners.slice();for(var i=0;listeners.length>i&&(listeners[i](e,this),!e.propagationStopped);i++);return defaultHandler&&!e.defaultPrevented?defaultHandler(e,this):void 0}},EventEmitter._signal=function(eventName,e){var listeners=(this._eventRegistry||{})[eventName];if(listeners){listeners=listeners.slice();for(var i=0;listeners.length>i;i++)listeners[i](e,this)}},EventEmitter.once=function(eventName,callback){var _self=this;callback&&this.addEventListener(eventName,function newCallback(){_self.removeEventListener(eventName,newCallback),callback.apply(null,arguments)})},EventEmitter.setDefaultHandler=function(eventName,callback){var handlers=this._defaultHandlers;if(handlers||(handlers=this._defaultHandlers={_disabled_:{}}),handlers[eventName]){var old=handlers[eventName],disabled=handlers._disabled_[eventName];disabled||(handlers._disabled_[eventName]=disabled=[]),disabled.push(old);var i=disabled.indexOf(callback);-1!=i&&disabled.splice(i,1)}handlers[eventName]=callback},EventEmitter.removeDefaultHandler=function(eventName,callback){var handlers=this._defaultHandlers;if(handlers){var disabled=handlers._disabled_[eventName];if(handlers[eventName]==callback)handlers[eventName],disabled&&this.setDefaultHandler(eventName,disabled.pop());else if(disabled){var i=disabled.indexOf(callback);-1!=i&&disabled.splice(i,1)}}},EventEmitter.on=EventEmitter.addEventListener=function(eventName,callback,capturing){this._eventRegistry=this._eventRegistry||{};var listeners=this._eventRegistry[eventName];return listeners||(listeners=this._eventRegistry[eventName]=[]),-1==listeners.indexOf(callback)&&listeners[capturing?\"unshift\":\"push\"](callback),callback},EventEmitter.off=EventEmitter.removeListener=EventEmitter.removeEventListener=function(eventName,callback){this._eventRegistry=this._eventRegistry||{};var listeners=this._eventRegistry[eventName];if(listeners){var index=listeners.indexOf(callback);-1!==index&&listeners.splice(index,1)}},EventEmitter.removeAllListeners=function(eventName){this._eventRegistry&&(this._eventRegistry[eventName]=[])},exports.EventEmitter=EventEmitter}),ace.define(\"ace/anchor\",[\"require\",\"exports\",\"module\",\"ace/lib/oop\",\"ace/lib/event_emitter\"],function(acequire,exports){\"use strict\";var oop=acequire(\"./lib/oop\"),EventEmitter=acequire(\"./lib/event_emitter\").EventEmitter,Anchor=exports.Anchor=function(doc,row,column){this.$onChange=this.onChange.bind(this),this.attach(doc),column===void 0?this.setPosition(row.row,row.column):this.setPosition(row,column)};(function(){function $pointsInOrder(point1,point2,equalPointsInOrder){var bColIsAfter=equalPointsInOrder?point1.column<=point2.column:point1.column<point2.column;return point1.row<point2.row||point1.row==point2.row&&bColIsAfter}function $getTransformedPoint(delta,point,moveIfEqual){var deltaIsInsert=\"insert\"==delta.action,deltaRowShift=(deltaIsInsert?1:-1)*(delta.end.row-delta.start.row),deltaColShift=(deltaIsInsert?1:-1)*(delta.end.column-delta.start.column),deltaStart=delta.start,deltaEnd=deltaIsInsert?deltaStart:delta.end;return $pointsInOrder(point,deltaStart,moveIfEqual)?{row:point.row,column:point.column}:$pointsInOrder(deltaEnd,point,!moveIfEqual)?{row:point.row+deltaRowShift,column:point.column+(point.row==deltaEnd.row?deltaColShift:0)}:{row:deltaStart.row,column:deltaStart.column}}oop.implement(this,EventEmitter),this.getPosition=function(){return this.$clipPositionToDocument(this.row,this.column)},this.getDocument=function(){return this.document},this.$insertRight=!1,this.onChange=function(delta){if(!(delta.start.row==delta.end.row&&delta.start.row!=this.row||delta.start.row>this.row)){var point=$getTransformedPoint(delta,{row:this.row,column:this.column},this.$insertRight);this.setPosition(point.row,point.column,!0)}},this.setPosition=function(row,column,noClip){var pos;if(pos=noClip?{row:row,column:column}:this.$clipPositionToDocument(row,column),this.row!=pos.row||this.column!=pos.column){var old={row:this.row,column:this.column};this.row=pos.row,this.column=pos.column,this._signal(\"change\",{old:old,value:pos})}},this.detach=function(){this.document.removeEventListener(\"change\",this.$onChange)},this.attach=function(doc){this.document=doc||this.document,this.document.on(\"change\",this.$onChange)},this.$clipPositionToDocument=function(row,column){var pos={};return row>=this.document.getLength()?(pos.row=Math.max(0,this.document.getLength()-1),pos.column=this.document.getLine(pos.row).length):0>row?(pos.row=0,pos.column=0):(pos.row=row,pos.column=Math.min(this.document.getLine(pos.row).length,Math.max(0,column))),0>column&&(pos.column=0),pos}}).call(Anchor.prototype)}),ace.define(\"ace/document\",[\"require\",\"exports\",\"module\",\"ace/lib/oop\",\"ace/apply_delta\",\"ace/lib/event_emitter\",\"ace/range\",\"ace/anchor\"],function(acequire,exports){\"use strict\";var oop=acequire(\"./lib/oop\"),applyDelta=acequire(\"./apply_delta\").applyDelta,EventEmitter=acequire(\"./lib/event_emitter\").EventEmitter,Range=acequire(\"./range\").Range,Anchor=acequire(\"./anchor\").Anchor,Document=function(textOrLines){this.$lines=[\"\"],0===textOrLines.length?this.$lines=[\"\"]:Array.isArray(textOrLines)?this.insertMergedLines({row:0,column:0},textOrLines):this.insert({row:0,column:0},textOrLines)};(function(){oop.implement(this,EventEmitter),this.setValue=function(text){var len=this.getLength()-1;this.remove(new Range(0,0,len,this.getLine(len).length)),this.insert({row:0,column:0},text)},this.getValue=function(){return this.getAllLines().join(this.getNewLineCharacter())},this.createAnchor=function(row,column){return new Anchor(this,row,column)},this.$split=0===\"aaa\".split(/a/).length?function(text){return text.replace(/\\r\\n|\\r/g,\"\\n\").split(\"\\n\")}:function(text){return text.split(/\\r\\n|\\r|\\n/)},this.$detectNewLine=function(text){var match=text.match(/^.*?(\\r\\n|\\r|\\n)/m);this.$autoNewLine=match?match[1]:\"\\n\",this._signal(\"changeNewLineMode\")},this.getNewLineCharacter=function(){switch(this.$newLineMode){case\"windows\":return\"\\r\\n\";case\"unix\":return\"\\n\";default:return this.$autoNewLine||\"\\n\"}},this.$autoNewLine=\"\",this.$newLineMode=\"auto\",this.setNewLineMode=function(newLineMode){this.$newLineMode!==newLineMode&&(this.$newLineMode=newLineMode,this._signal(\"changeNewLineMode\"))},this.getNewLineMode=function(){return this.$newLineMode},this.isNewLine=function(text){return\"\\r\\n\"==text||\"\\r\"==text||\"\\n\"==text},this.getLine=function(row){return this.$lines[row]||\"\"},this.getLines=function(firstRow,lastRow){return this.$lines.slice(firstRow,lastRow+1)},this.getAllLines=function(){return this.getLines(0,this.getLength())},this.getLength=function(){return this.$lines.length},this.getTextRange=function(range){return this.getLinesForRange(range).join(this.getNewLineCharacter())},this.getLinesForRange=function(range){var lines;if(range.start.row===range.end.row)lines=[this.getLine(range.start.row).substring(range.start.column,range.end.column)];else{lines=this.getLines(range.start.row,range.end.row),lines[0]=(lines[0]||\"\").substring(range.start.column);var l=lines.length-1;range.end.row-range.start.row==l&&(lines[l]=lines[l].substring(0,range.end.column))}return lines},this.insertLines=function(row,lines){return console.warn(\"Use of document.insertLines is deprecated. Use the insertFullLines method instead.\"),this.insertFullLines(row,lines)},this.removeLines=function(firstRow,lastRow){return console.warn(\"Use of document.removeLines is deprecated. Use the removeFullLines method instead.\"),this.removeFullLines(firstRow,lastRow)},this.insertNewLine=function(position){return console.warn(\"Use of document.insertNewLine is deprecated. Use insertMergedLines(position, ['', '']) instead.\"),this.insertMergedLines(position,[\"\",\"\"])},this.insert=function(position,text){return 1>=this.getLength()&&this.$detectNewLine(text),this.insertMergedLines(position,this.$split(text))},this.insertInLine=function(position,text){var start=this.clippedPos(position.row,position.column),end=this.pos(position.row,position.column+text.length);return this.applyDelta({start:start,end:end,action:\"insert\",lines:[text]},!0),this.clonePos(end)},this.clippedPos=function(row,column){var length=this.getLength();void 0===row?row=length:0>row?row=0:row>=length&&(row=length-1,column=void 0);var line=this.getLine(row);return void 0==column&&(column=line.length),column=Math.min(Math.max(column,0),line.length),{row:row,column:column}},this.clonePos=function(pos){return{row:pos.row,column:pos.column}},this.pos=function(row,column){return{row:row,column:column}},this.$clipPosition=function(position){var length=this.getLength();return position.row>=length?(position.row=Math.max(0,length-1),position.column=this.getLine(length-1).length):(position.row=Math.max(0,position.row),position.column=Math.min(Math.max(position.column,0),this.getLine(position.row).length)),position},this.insertFullLines=function(row,lines){row=Math.min(Math.max(row,0),this.getLength());var column=0;this.getLength()>row?(lines=lines.concat([\"\"]),column=0):(lines=[\"\"].concat(lines),row--,column=this.$lines[row].length),this.insertMergedLines({row:row,column:column},lines)},this.insertMergedLines=function(position,lines){var start=this.clippedPos(position.row,position.column),end={row:start.row+lines.length-1,column:(1==lines.length?start.column:0)+lines[lines.length-1].length};return this.applyDelta({start:start,end:end,action:\"insert\",lines:lines}),this.clonePos(end)},this.remove=function(range){var start=this.clippedPos(range.start.row,range.start.column),end=this.clippedPos(range.end.row,range.end.column);return this.applyDelta({start:start,end:end,action:\"remove\",lines:this.getLinesForRange({start:start,end:end})}),this.clonePos(start)},this.removeInLine=function(row,startColumn,endColumn){var start=this.clippedPos(row,startColumn),end=this.clippedPos(row,endColumn);return this.applyDelta({start:start,end:end,action:\"remove\",lines:this.getLinesForRange({start:start,end:end})},!0),this.clonePos(start)},this.removeFullLines=function(firstRow,lastRow){firstRow=Math.min(Math.max(0,firstRow),this.getLength()-1),lastRow=Math.min(Math.max(0,lastRow),this.getLength()-1);var deleteFirstNewLine=lastRow==this.getLength()-1&&firstRow>0,deleteLastNewLine=this.getLength()-1>lastRow,startRow=deleteFirstNewLine?firstRow-1:firstRow,startCol=deleteFirstNewLine?this.getLine(startRow).length:0,endRow=deleteLastNewLine?lastRow+1:lastRow,endCol=deleteLastNewLine?0:this.getLine(endRow).length,range=new Range(startRow,startCol,endRow,endCol),deletedLines=this.$lines.slice(firstRow,lastRow+1);return this.applyDelta({start:range.start,end:range.end,action:\"remove\",lines:this.getLinesForRange(range)}),deletedLines},this.removeNewLine=function(row){this.getLength()-1>row&&row>=0&&this.applyDelta({start:this.pos(row,this.getLine(row).length),end:this.pos(row+1,0),action:\"remove\",lines:[\"\",\"\"]})},this.replace=function(range,text){if(range instanceof Range||(range=Range.fromPoints(range.start,range.end)),0===text.length&&range.isEmpty())return range.start;if(text==this.getTextRange(range))return range.end;this.remove(range);var end;return end=text?this.insert(range.start,text):range.start},this.applyDeltas=function(deltas){for(var i=0;deltas.length>i;i++)this.applyDelta(deltas[i])},this.revertDeltas=function(deltas){for(var i=deltas.length-1;i>=0;i--)this.revertDelta(deltas[i])},this.applyDelta=function(delta,doNotValidate){var isInsert=\"insert\"==delta.action;(isInsert?1>=delta.lines.length&&!delta.lines[0]:!Range.comparePoints(delta.start,delta.end))||(isInsert&&delta.lines.length>2e4&&this.$splitAndapplyLargeDelta(delta,2e4),applyDelta(this.$lines,delta,doNotValidate),this._signal(\"change\",delta))},this.$splitAndapplyLargeDelta=function(delta,MAX){for(var lines=delta.lines,l=lines.length,row=delta.start.row,column=delta.start.column,from=0,to=0;;){from=to,to+=MAX-1;var chunk=lines.slice(from,to);if(to>l){delta.lines=chunk,delta.start.row=row+from,delta.start.column=column;break}chunk.push(\"\"),this.applyDelta({start:this.pos(row+from,column),end:this.pos(row+to,column=0),action:delta.action,lines:chunk},!0)}},this.revertDelta=function(delta){this.applyDelta({start:this.clonePos(delta.start),end:this.clonePos(delta.end),action:\"insert\"==delta.action?\"remove\":\"insert\",lines:delta.lines.slice()})},this.indexToPosition=function(index,startRow){for(var lines=this.$lines||this.getAllLines(),newlineLength=this.getNewLineCharacter().length,i=startRow||0,l=lines.length;l>i;i++)if(index-=lines[i].length+newlineLength,0>index)return{row:i,column:index+lines[i].length+newlineLength};return{row:l-1,column:lines[l-1].length}},this.positionToIndex=function(pos,startRow){for(var lines=this.$lines||this.getAllLines(),newlineLength=this.getNewLineCharacter().length,index=0,row=Math.min(pos.row,lines.length),i=startRow||0;row>i;++i)index+=lines[i].length+newlineLength;return index+pos.column}}).call(Document.prototype),exports.Document=Document}),ace.define(\"ace/lib/lang\",[\"require\",\"exports\",\"module\"],function(acequire,exports){\"use strict\";exports.last=function(a){return a[a.length-1]},exports.stringReverse=function(string){return string.split(\"\").reverse().join(\"\")},exports.stringRepeat=function(string,count){for(var result=\"\";count>0;)1&count&&(result+=string),(count>>=1)&&(string+=string);return result};var trimBeginRegexp=/^\\s\\s*/,trimEndRegexp=/\\s\\s*$/;exports.stringTrimLeft=function(string){return string.replace(trimBeginRegexp,\"\")},exports.stringTrimRight=function(string){return string.replace(trimEndRegexp,\"\")},exports.copyObject=function(obj){var copy={};for(var key in obj)copy[key]=obj[key];return copy},exports.copyArray=function(array){for(var copy=[],i=0,l=array.length;l>i;i++)copy[i]=array[i]&&\"object\"==typeof array[i]?this.copyObject(array[i]):array[i];return copy},exports.deepCopy=function deepCopy(obj){if(\"object\"!=typeof obj||!obj)return obj;var copy;if(Array.isArray(obj)){copy=[];for(var key=0;obj.length>key;key++)copy[key]=deepCopy(obj[key]);return copy}if(\"[object Object]\"!==Object.prototype.toString.call(obj))return obj;copy={};for(var key in obj)copy[key]=deepCopy(obj[key]);return copy},exports.arrayToMap=function(arr){for(var map={},i=0;arr.length>i;i++)map[arr[i]]=1;return map},exports.createMap=function(props){var map=Object.create(null);for(var i in props)map[i]=props[i];return map},exports.arrayRemove=function(array,value){for(var i=0;array.length>=i;i++)value===array[i]&&array.splice(i,1)},exports.escapeRegExp=function(str){return str.replace(/([.*+?^${}()|[\\]\\/\\\\])/g,\"\\\\$1\")},exports.escapeHTML=function(str){return str.replace(/&/g,\"&#38;\").replace(/\"/g,\"&#34;\").replace(/'/g,\"&#39;\").replace(/</g,\"&#60;\")},exports.getMatchOffsets=function(string,regExp){var matches=[];return string.replace(regExp,function(str){matches.push({offset:arguments[arguments.length-2],length:str.length})}),matches},exports.deferredCall=function(fcn){var timer=null,callback=function(){timer=null,fcn()},deferred=function(timeout){return deferred.cancel(),timer=setTimeout(callback,timeout||0),deferred};return deferred.schedule=deferred,deferred.call=function(){return this.cancel(),fcn(),deferred},deferred.cancel=function(){return clearTimeout(timer),timer=null,deferred},deferred.isPending=function(){return timer},deferred},exports.delayedCall=function(fcn,defaultTimeout){var timer=null,callback=function(){timer=null,fcn()},_self=function(timeout){null==timer&&(timer=setTimeout(callback,timeout||defaultTimeout))};return _self.delay=function(timeout){timer&&clearTimeout(timer),timer=setTimeout(callback,timeout||defaultTimeout)},_self.schedule=_self,_self.call=function(){this.cancel(),fcn()},_self.cancel=function(){timer&&clearTimeout(timer),timer=null},_self.isPending=function(){return timer},_self}}),ace.define(\"ace/worker/mirror\",[\"require\",\"exports\",\"module\",\"ace/range\",\"ace/document\",\"ace/lib/lang\"],function(acequire,exports){\"use strict\";acequire(\"../range\").Range;var Document=acequire(\"../document\").Document,lang=acequire(\"../lib/lang\"),Mirror=exports.Mirror=function(sender){this.sender=sender;var doc=this.doc=new Document(\"\"),deferredUpdate=this.deferredUpdate=lang.delayedCall(this.onUpdate.bind(this)),_self=this;sender.on(\"change\",function(e){var data=e.data;if(data[0].start)doc.applyDeltas(data);else for(var i=0;data.length>i;i+=2){if(Array.isArray(data[i+1]))var d={action:\"insert\",start:data[i],lines:data[i+1]};else var d={action:\"remove\",start:data[i],end:data[i+1]};doc.applyDelta(d,!0)}return _self.$timeout?deferredUpdate.schedule(_self.$timeout):(_self.onUpdate(),void 0)})};(function(){this.$timeout=500,this.setTimeout=function(timeout){this.$timeout=timeout},this.setValue=function(value){this.doc.setValue(value),this.deferredUpdate.schedule(this.$timeout)},this.getValue=function(callbackId){this.sender.callback(this.doc.getValue(),callbackId)},this.onUpdate=function(){},this.isPending=function(){return this.deferredUpdate.isPending()}}).call(Mirror.prototype)}),ace.define(\"ace/mode/json/json_parse\",[\"require\",\"exports\",\"module\"],function(){\"use strict\";var at,ch,text,value,escapee={'\"':'\"',\"\\\\\":\"\\\\\",\"/\":\"/\",b:\"\\b\",f:\"\\f\",n:\"\\n\",r:\"\\r\",t:\"\t\"},error=function(m){throw{name:\"SyntaxError\",message:m,at:at,text:text}},next=function(c){return c&&c!==ch&&error(\"Expected '\"+c+\"' instead of '\"+ch+\"'\"),ch=text.charAt(at),at+=1,ch},number=function(){var number,string=\"\";for(\"-\"===ch&&(string=\"-\",next(\"-\"));ch>=\"0\"&&\"9\">=ch;)string+=ch,next();if(\".\"===ch)for(string+=\".\";next()&&ch>=\"0\"&&\"9\">=ch;)string+=ch;if(\"e\"===ch||\"E\"===ch)for(string+=ch,next(),(\"-\"===ch||\"+\"===ch)&&(string+=ch,next());ch>=\"0\"&&\"9\">=ch;)string+=ch,next();return number=+string,isNaN(number)?(error(\"Bad number\"),void 0):number},string=function(){var hex,i,uffff,string=\"\";if('\"'===ch)for(;next();){if('\"'===ch)return next(),string;if(\"\\\\\"===ch)if(next(),\"u\"===ch){for(uffff=0,i=0;4>i&&(hex=parseInt(next(),16),isFinite(hex));i+=1)uffff=16*uffff+hex;string+=String.fromCharCode(uffff)}else{if(\"string\"!=typeof escapee[ch])break;string+=escapee[ch]}else string+=ch}error(\"Bad string\")},white=function(){for(;ch&&\" \">=ch;)next()},word=function(){switch(ch){case\"t\":return next(\"t\"),next(\"r\"),next(\"u\"),next(\"e\"),!0;case\"f\":return next(\"f\"),next(\"a\"),next(\"l\"),next(\"s\"),next(\"e\"),!1;case\"n\":return next(\"n\"),next(\"u\"),next(\"l\"),next(\"l\"),null}error(\"Unexpected '\"+ch+\"'\")},array=function(){var array=[];if(\"[\"===ch){if(next(\"[\"),white(),\"]\"===ch)return next(\"]\"),array;for(;ch;){if(array.push(value()),white(),\"]\"===ch)return next(\"]\"),array;next(\",\"),white()}}error(\"Bad array\")},object=function(){var key,object={};if(\"{\"===ch){if(next(\"{\"),white(),\"}\"===ch)return next(\"}\"),object;for(;ch;){if(key=string(),white(),next(\":\"),Object.hasOwnProperty.call(object,key)&&error('Duplicate key \"'+key+'\"'),object[key]=value(),white(),\"}\"===ch)return next(\"}\"),object;next(\",\"),white()}}error(\"Bad object\")};return value=function(){switch(white(),ch){case\"{\":return object();case\"[\":return array();case'\"':return string();case\"-\":return number();default:return ch>=\"0\"&&\"9\">=ch?number():word()}},function(source,reviver){var result;return text=source,at=0,ch=\" \",result=value(),white(),ch&&error(\"Syntax error\"),\"function\"==typeof reviver?function walk(holder,key){var k,v,value=holder[key];if(value&&\"object\"==typeof value)for(k in value)Object.hasOwnProperty.call(value,k)&&(v=walk(value,k),void 0!==v?value[k]=v:delete value[k]);return reviver.call(holder,key,value)}({\"\":result},\"\"):result}}),ace.define(\"ace/mode/json_worker\",[\"require\",\"exports\",\"module\",\"ace/lib/oop\",\"ace/worker/mirror\",\"ace/mode/json/json_parse\"],function(acequire,exports){\"use strict\";var oop=acequire(\"../lib/oop\"),Mirror=acequire(\"../worker/mirror\").Mirror,parse=acequire(\"./json/json_parse\"),JsonWorker=exports.JsonWorker=function(sender){Mirror.call(this,sender),this.setTimeout(200)};oop.inherits(JsonWorker,Mirror),function(){this.onUpdate=function(){var value=this.doc.getValue(),errors=[];try{value&&parse(value)}catch(e){var pos=this.doc.indexToPosition(e.at-1);errors.push({row:pos.row,column:pos.column,text:e.message,type:\"error\"})}this.sender.emit(\"annotate\",errors)}}.call(JsonWorker.prototype)}),ace.define(\"ace/lib/es5-shim\",[\"require\",\"exports\",\"module\"],function(){function Empty(){}function doesDefinePropertyWork(object){try{return Object.defineProperty(object,\"sentinel\",{}),\"sentinel\"in object}catch(exception){}}function toInteger(n){return n=+n,n!==n?n=0:0!==n&&n!==1/0&&n!==-(1/0)&&(n=(n>0||-1)*Math.floor(Math.abs(n))),n}Function.prototype.bind||(Function.prototype.bind=function(that){var target=this;if(\"function\"!=typeof target)throw new TypeError(\"Function.prototype.bind called on incompatible \"+target);var args=slice.call(arguments,1),bound=function(){if(this instanceof bound){var result=target.apply(this,args.concat(slice.call(arguments)));return Object(result)===result?result:this}return target.apply(that,args.concat(slice.call(arguments)))};return target.prototype&&(Empty.prototype=target.prototype,bound.prototype=new Empty,Empty.prototype=null),bound});var defineGetter,defineSetter,lookupGetter,lookupSetter,supportsAccessors,call=Function.prototype.call,prototypeOfArray=Array.prototype,prototypeOfObject=Object.prototype,slice=prototypeOfArray.slice,_toString=call.bind(prototypeOfObject.toString),owns=call.bind(prototypeOfObject.hasOwnProperty);if((supportsAccessors=owns(prototypeOfObject,\"__defineGetter__\"))&&(defineGetter=call.bind(prototypeOfObject.__defineGetter__),defineSetter=call.bind(prototypeOfObject.__defineSetter__),lookupGetter=call.bind(prototypeOfObject.__lookupGetter__),lookupSetter=call.bind(prototypeOfObject.__lookupSetter__)),2!=[1,2].splice(0).length)if(function(){function makeArray(l){var a=Array(l+2);return a[0]=a[1]=0,a}var lengthBefore,array=[];return array.splice.apply(array,makeArray(20)),array.splice.apply(array,makeArray(26)),lengthBefore=array.length,array.splice(5,0,\"XXX\"),lengthBefore+1==array.length,lengthBefore+1==array.length?!0:void 0\n}()){var array_splice=Array.prototype.splice;Array.prototype.splice=function(start,deleteCount){return arguments.length?array_splice.apply(this,[void 0===start?0:start,void 0===deleteCount?this.length-start:deleteCount].concat(slice.call(arguments,2))):[]}}else Array.prototype.splice=function(pos,removeCount){var length=this.length;pos>0?pos>length&&(pos=length):void 0==pos?pos=0:0>pos&&(pos=Math.max(length+pos,0)),length>pos+removeCount||(removeCount=length-pos);var removed=this.slice(pos,pos+removeCount),insert=slice.call(arguments,2),add=insert.length;if(pos===length)add&&this.push.apply(this,insert);else{var remove=Math.min(removeCount,length-pos),tailOldPos=pos+remove,tailNewPos=tailOldPos+add-remove,tailCount=length-tailOldPos,lengthAfterRemove=length-remove;if(tailOldPos>tailNewPos)for(var i=0;tailCount>i;++i)this[tailNewPos+i]=this[tailOldPos+i];else if(tailNewPos>tailOldPos)for(i=tailCount;i--;)this[tailNewPos+i]=this[tailOldPos+i];if(add&&pos===lengthAfterRemove)this.length=lengthAfterRemove,this.push.apply(this,insert);else for(this.length=lengthAfterRemove+add,i=0;add>i;++i)this[pos+i]=insert[i]}return removed};Array.isArray||(Array.isArray=function(obj){return\"[object Array]\"==_toString(obj)});var boxedString=Object(\"a\"),splitString=\"a\"!=boxedString[0]||!(0 in boxedString);if(Array.prototype.forEach||(Array.prototype.forEach=function(fun){var object=toObject(this),self=splitString&&\"[object String]\"==_toString(this)?this.split(\"\"):object,thisp=arguments[1],i=-1,length=self.length>>>0;if(\"[object Function]\"!=_toString(fun))throw new TypeError;for(;length>++i;)i in self&&fun.call(thisp,self[i],i,object)}),Array.prototype.map||(Array.prototype.map=function(fun){var object=toObject(this),self=splitString&&\"[object String]\"==_toString(this)?this.split(\"\"):object,length=self.length>>>0,result=Array(length),thisp=arguments[1];if(\"[object Function]\"!=_toString(fun))throw new TypeError(fun+\" is not a function\");for(var i=0;length>i;i++)i in self&&(result[i]=fun.call(thisp,self[i],i,object));return result}),Array.prototype.filter||(Array.prototype.filter=function(fun){var value,object=toObject(this),self=splitString&&\"[object String]\"==_toString(this)?this.split(\"\"):object,length=self.length>>>0,result=[],thisp=arguments[1];if(\"[object Function]\"!=_toString(fun))throw new TypeError(fun+\" is not a function\");for(var i=0;length>i;i++)i in self&&(value=self[i],fun.call(thisp,value,i,object)&&result.push(value));return result}),Array.prototype.every||(Array.prototype.every=function(fun){var object=toObject(this),self=splitString&&\"[object String]\"==_toString(this)?this.split(\"\"):object,length=self.length>>>0,thisp=arguments[1];if(\"[object Function]\"!=_toString(fun))throw new TypeError(fun+\" is not a function\");for(var i=0;length>i;i++)if(i in self&&!fun.call(thisp,self[i],i,object))return!1;return!0}),Array.prototype.some||(Array.prototype.some=function(fun){var object=toObject(this),self=splitString&&\"[object String]\"==_toString(this)?this.split(\"\"):object,length=self.length>>>0,thisp=arguments[1];if(\"[object Function]\"!=_toString(fun))throw new TypeError(fun+\" is not a function\");for(var i=0;length>i;i++)if(i in self&&fun.call(thisp,self[i],i,object))return!0;return!1}),Array.prototype.reduce||(Array.prototype.reduce=function(fun){var object=toObject(this),self=splitString&&\"[object String]\"==_toString(this)?this.split(\"\"):object,length=self.length>>>0;if(\"[object Function]\"!=_toString(fun))throw new TypeError(fun+\" is not a function\");if(!length&&1==arguments.length)throw new TypeError(\"reduce of empty array with no initial value\");var result,i=0;if(arguments.length>=2)result=arguments[1];else for(;;){if(i in self){result=self[i++];break}if(++i>=length)throw new TypeError(\"reduce of empty array with no initial value\")}for(;length>i;i++)i in self&&(result=fun.call(void 0,result,self[i],i,object));return result}),Array.prototype.reduceRight||(Array.prototype.reduceRight=function(fun){var object=toObject(this),self=splitString&&\"[object String]\"==_toString(this)?this.split(\"\"):object,length=self.length>>>0;if(\"[object Function]\"!=_toString(fun))throw new TypeError(fun+\" is not a function\");if(!length&&1==arguments.length)throw new TypeError(\"reduceRight of empty array with no initial value\");var result,i=length-1;if(arguments.length>=2)result=arguments[1];else for(;;){if(i in self){result=self[i--];break}if(0>--i)throw new TypeError(\"reduceRight of empty array with no initial value\")}do i in this&&(result=fun.call(void 0,result,self[i],i,object));while(i--);return result}),Array.prototype.indexOf&&-1==[0,1].indexOf(1,2)||(Array.prototype.indexOf=function(sought){var self=splitString&&\"[object String]\"==_toString(this)?this.split(\"\"):toObject(this),length=self.length>>>0;if(!length)return-1;var i=0;for(arguments.length>1&&(i=toInteger(arguments[1])),i=i>=0?i:Math.max(0,length+i);length>i;i++)if(i in self&&self[i]===sought)return i;return-1}),Array.prototype.lastIndexOf&&-1==[0,1].lastIndexOf(0,-3)||(Array.prototype.lastIndexOf=function(sought){var self=splitString&&\"[object String]\"==_toString(this)?this.split(\"\"):toObject(this),length=self.length>>>0;if(!length)return-1;var i=length-1;for(arguments.length>1&&(i=Math.min(i,toInteger(arguments[1]))),i=i>=0?i:length-Math.abs(i);i>=0;i--)if(i in self&&sought===self[i])return i;return-1}),Object.getPrototypeOf||(Object.getPrototypeOf=function(object){return object.__proto__||(object.constructor?object.constructor.prototype:prototypeOfObject)}),!Object.getOwnPropertyDescriptor){var ERR_NON_OBJECT=\"Object.getOwnPropertyDescriptor called on a non-object: \";Object.getOwnPropertyDescriptor=function(object,property){if(\"object\"!=typeof object&&\"function\"!=typeof object||null===object)throw new TypeError(ERR_NON_OBJECT+object);if(owns(object,property)){var descriptor,getter,setter;if(descriptor={enumerable:!0,configurable:!0},supportsAccessors){var prototype=object.__proto__;object.__proto__=prototypeOfObject;var getter=lookupGetter(object,property),setter=lookupSetter(object,property);if(object.__proto__=prototype,getter||setter)return getter&&(descriptor.get=getter),setter&&(descriptor.set=setter),descriptor}return descriptor.value=object[property],descriptor}}}if(Object.getOwnPropertyNames||(Object.getOwnPropertyNames=function(object){return Object.keys(object)}),!Object.create){var createEmpty;createEmpty=null===Object.prototype.__proto__?function(){return{__proto__:null}}:function(){var empty={};for(var i in empty)empty[i]=null;return empty.constructor=empty.hasOwnProperty=empty.propertyIsEnumerable=empty.isPrototypeOf=empty.toLocaleString=empty.toString=empty.valueOf=empty.__proto__=null,empty},Object.create=function(prototype,properties){var object;if(null===prototype)object=createEmpty();else{if(\"object\"!=typeof prototype)throw new TypeError(\"typeof prototype[\"+typeof prototype+\"] != 'object'\");var Type=function(){};Type.prototype=prototype,object=new Type,object.__proto__=prototype}return void 0!==properties&&Object.defineProperties(object,properties),object}}if(Object.defineProperty){var definePropertyWorksOnObject=doesDefinePropertyWork({}),definePropertyWorksOnDom=\"undefined\"==typeof document||doesDefinePropertyWork(document.createElement(\"div\"));if(!definePropertyWorksOnObject||!definePropertyWorksOnDom)var definePropertyFallback=Object.defineProperty}if(!Object.defineProperty||definePropertyFallback){var ERR_NON_OBJECT_DESCRIPTOR=\"Property description must be an object: \",ERR_NON_OBJECT_TARGET=\"Object.defineProperty called on non-object: \",ERR_ACCESSORS_NOT_SUPPORTED=\"getters & setters can not be defined on this javascript engine\";Object.defineProperty=function(object,property,descriptor){if(\"object\"!=typeof object&&\"function\"!=typeof object||null===object)throw new TypeError(ERR_NON_OBJECT_TARGET+object);if(\"object\"!=typeof descriptor&&\"function\"!=typeof descriptor||null===descriptor)throw new TypeError(ERR_NON_OBJECT_DESCRIPTOR+descriptor);if(definePropertyFallback)try{return definePropertyFallback.call(Object,object,property,descriptor)}catch(exception){}if(owns(descriptor,\"value\"))if(supportsAccessors&&(lookupGetter(object,property)||lookupSetter(object,property))){var prototype=object.__proto__;object.__proto__=prototypeOfObject,delete object[property],object[property]=descriptor.value,object.__proto__=prototype}else object[property]=descriptor.value;else{if(!supportsAccessors)throw new TypeError(ERR_ACCESSORS_NOT_SUPPORTED);owns(descriptor,\"get\")&&defineGetter(object,property,descriptor.get),owns(descriptor,\"set\")&&defineSetter(object,property,descriptor.set)}return object}}Object.defineProperties||(Object.defineProperties=function(object,properties){for(var property in properties)owns(properties,property)&&Object.defineProperty(object,property,properties[property]);return object}),Object.seal||(Object.seal=function(object){return object}),Object.freeze||(Object.freeze=function(object){return object});try{Object.freeze(function(){})}catch(exception){Object.freeze=function(freezeObject){return function(object){return\"function\"==typeof object?object:freezeObject(object)}}(Object.freeze)}if(Object.preventExtensions||(Object.preventExtensions=function(object){return object}),Object.isSealed||(Object.isSealed=function(){return!1}),Object.isFrozen||(Object.isFrozen=function(){return!1}),Object.isExtensible||(Object.isExtensible=function(object){if(Object(object)===object)throw new TypeError;for(var name=\"\";owns(object,name);)name+=\"?\";object[name]=!0;var returnValue=owns(object,name);return delete object[name],returnValue}),!Object.keys){var hasDontEnumBug=!0,dontEnums=[\"toString\",\"toLocaleString\",\"valueOf\",\"hasOwnProperty\",\"isPrototypeOf\",\"propertyIsEnumerable\",\"constructor\"],dontEnumsLength=dontEnums.length;for(var key in{toString:null})hasDontEnumBug=!1;Object.keys=function(object){if(\"object\"!=typeof object&&\"function\"!=typeof object||null===object)throw new TypeError(\"Object.keys called on a non-object\");var keys=[];for(var name in object)owns(object,name)&&keys.push(name);if(hasDontEnumBug)for(var i=0,ii=dontEnumsLength;ii>i;i++){var dontEnum=dontEnums[i];owns(object,dontEnum)&&keys.push(dontEnum)}return keys}}Date.now||(Date.now=function(){return(new Date).getTime()});var ws=\"\t\\n\u000b\\f\\r   ᠎             　\\u2028\\u2029﻿\";if(!String.prototype.trim||ws.trim()){ws=\"[\"+ws+\"]\";var trimBeginRegexp=RegExp(\"^\"+ws+ws+\"*\"),trimEndRegexp=RegExp(ws+ws+\"*$\");String.prototype.trim=function(){return(this+\"\").replace(trimBeginRegexp,\"\").replace(trimEndRegexp,\"\")}}var toObject=function(o){if(null==o)throw new TypeError(\"can't convert \"+o+\" to object\");return Object(o)}});";
 
 /***/ },
-/* 76 */
+/* 77 */
 /***/ function(module, exports) {
 
 	ace.define("ace/ext/searchbox",["require","exports","module","ace/lib/dom","ace/lib/lang","ace/lib/event","ace/keyboard/hash_handler","ace/lib/keys"], function(acequire, exports, module) {
@@ -42038,7 +44241,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            
 
 /***/ },
-/* 77 */
+/* 78 */
 /***/ function(module, exports) {
 
 	/* ***** BEGIN LICENSE BLOCK *****
