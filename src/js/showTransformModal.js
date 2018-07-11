@@ -17,7 +17,6 @@ function showTransformModal (node, container) {
 
   var content = '<label class="pico-modal-contents">' +
       '<div class="pico-modal-header">' + translate('transform') + '</div>' +
-      '<form>' +
       '<p>' +
       'Enter a <a href="http://jmespath.org" target="_blank">JMESPath</a> query to filter, sort, or transform the JSON data.<br/>' +
       'To learn JMESPath, go to <a href="http://jmespath.org/tutorial.html" target="_blank">the interactive tutorial</a>.' +
@@ -28,7 +27,7 @@ function showTransformModal (node, container) {
       '  <th>' + translate('transformWizardLabel') + ' </th>' +
       '  <td>' +
       '  <div id="wizard" class="jsoneditor-jmespath-wizard">' +
-      '  <label>' +
+      '  <div>' +
       '    <div class="jsoneditor-jmespath-wizard-label">' + translate('transformWizardFilter') + '</div>' +
       '    <div class="jsoneditor-jmespath-filter">' +
       '      <div class="jsoneditor-inline jsoneditor-jmespath-filter-field" >' +
@@ -49,8 +48,8 @@ function showTransformModal (node, container) {
       '        <input placeholder="value..." id="filterValue" />' +
       '      </div>' +
       '    </div>' +
-      '  </label>' +
-      '  <label>' +
+      '  </div>' +
+      '  <div>' +
       '    <div class="jsoneditor-jmespath-wizard-label">' + translate('transformWizardSortBy') + '</div>' +
       '    <div class="jsoneditor-jmespath-filter">' +
       '      <div class="jsoneditor-inline jsoneditor-jmespath-sort-field">' +
@@ -64,12 +63,12 @@ function showTransformModal (node, container) {
       '        </select>' +
       '      </div>' +
       '    </div>' +
-      '  </label>' +
-      '  <label id="selectFieldsPart">' +
+      '  </div>' +
+      '  <div id="selectFieldsPart">' +
       '    <div class="jsoneditor-jmespath-wizard-label">' + translate('transformWizardSelectFields') + '</div>' +
       '    <select class="jsoneditor-jmespath-select-fields" id="selectFields" multiple>' +
       '    </select>' +
-      '  </label>' +
+      '  </div>' +
       '  </div>' +
       '  </td>' +
       '</tr>' +
@@ -95,12 +94,11 @@ function showTransformModal (node, container) {
       '</tr>' +
       '<tr>' +
       '<td colspan="2" class="jsoneditor-modal-input jsoneditor-modal-actions">' +
-      '  <input type="submit" id="ok" value="' + translate('ok') + '" />' +
+      '  <input type="submit" id="ok" value="' + translate('ok') + '" autofocus />' +
       '</td>' +
       '</tr>' +
       '</tbody>' +
       '</table>' +
-      '</form>' +
       '</div>';
 
   picoModal({
@@ -113,7 +111,6 @@ function showTransformModal (node, container) {
       .afterCreate(function (modal) {
         var elem = modal.modalElem();
 
-        var form = elem.querySelector('form');
         var wizard = elem.querySelector('#wizard');
         var ok = elem.querySelector('#ok');
         var filterField = elem.querySelector('#filterField');
@@ -176,6 +173,11 @@ function showTransformModal (node, container) {
         selectrSortField.on('selectr.change', generateQueryFromWizard);
         selectrSortOrder.on('selectr.change', generateQueryFromWizard);
         selectrSelectFields.on('selectr.change', generateQueryFromWizard);
+
+        wizard.onclick = function (event) {
+          // prevent the first clear button from getting focus when clicking anywhere in the modal
+          event.preventDefault();
+        };
 
         query.value = Array.isArray(value) ? '[*]' : '@';
 
@@ -282,10 +284,6 @@ function showTransformModal (node, container) {
 
           node.transform(query.value)
         };
-
-        if (form) { // form is not available when JSONEditor is created inside a form
-          form.onsubmit = ok.onclick;
-        }
 
         setTimeout(function () {
           query.select();
