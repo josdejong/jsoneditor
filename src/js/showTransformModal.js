@@ -45,7 +45,9 @@ function showTransformModal (node, container) {
       '          <option value=">=">&gt;=</option>' +
       '        </select>' +
       '      </div>' +
-      '      <input class="jsoneditor-jmespath-filter-value" placeholder="value..." id="filterValue" />' +
+      '      <div class="jsoneditor-inline jsoneditor-jmespath-filter-value" >' +
+      '        <input placeholder="value..." id="filterValue" />' +
+      '      </div>' +
       '    </div>' +
       '  </label>' +
       '  <label>' +

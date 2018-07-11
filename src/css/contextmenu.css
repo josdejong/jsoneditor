@@ -472,7 +472,12 @@ div.jsoneditor-contextmenu button.jsoneditor-type-modes > div.jsoneditor-icon {
   position: relative;
   display: inline-block;
   width: 100%;
-  padding: 2px 0;
+  padding: 2px;
+}
+
+.jsoneditor-modal .jsoneditor-jmespath-filter {
+  display: flex;
+  flex-wrap: wrap;
 }
 
 .jsoneditor-modal .jsoneditor-jmespath-filter-field {
@@ -482,7 +487,8 @@ div.jsoneditor-contextmenu button.jsoneditor-type-modes > div.jsoneditor-icon {
   width: 100px;
 }
 .jsoneditor-modal .jsoneditor-jmespath-filter-value {
-  width: 170px;
+  min-width: 100px;
+  flex: 1;
 }
 
 .jsoneditor-modal .jsoneditor-jmespath-sort-field {
@@ -498,7 +504,7 @@ div.jsoneditor-contextmenu button.jsoneditor-type-modes > div.jsoneditor-icon {
 
 .jsoneditor-modal .selectr-selected {
   border-color: #d3d3d3;
-  padding: 3px 28px 4px 8px;
+  padding: 4px 28px 4px 8px;
 }
 
 .jsoneditor-modal .selectr-selected .selectr-tag {
