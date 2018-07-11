@@ -39,6 +39,7 @@ var _defs = {
     'showMoreStatus': 'displaying ${visibleChilds} of ${totalChilds} items.',
     'sort': 'Sort',
     'sortTitle': 'Sort the childs of this ${type}',
+    'sortTitleShort': 'Sort contents',
     'sortFieldLabel': 'Field:',
     'sortDirectionLabel': 'Direction:',
     'sortFieldTitle': 'Select the nested field by which to sort the array or object',
@@ -49,6 +50,7 @@ var _defs = {
     'string': 'String',
     'transform': 'Transform',
     'transformTitle': 'Filter, sort, or transform the childs of this ${type}',
+    'transformTitleShort': 'Filter, sort, or transform contents',
     'transformQueryTitle': 'Enter a JMESPath query',
     'transformWizardLabel': 'Wizard',
     'transformWizardFilter': 'Filter',
@@ -114,6 +116,8 @@ var _defs = {
     'sort': 'Organizar',
     'sortTitle': 'Organizar os filhos deste ${type}',
     // TODO: correctly translate
+    'sortTitleShort': 'Organizar os filhos',
+    // TODO: correctly translate
     'sortFieldLabel': 'Field:',
     // TODO: correctly translate
     'sortDirectionLabel': 'Direction:',
@@ -132,6 +136,8 @@ var _defs = {
     'transform': 'Transform',
     // TODO: correctly translate
     'transformTitle': 'Filter, sort, or transform the childs of this ${type}',
+    // TODO: correctly translate
+    'transformTitleShort': 'Filter, sort, or transform contents',
     // TODO: correctly translate
     'transformQueryTitle': 'Enter a JMESPath query',
     // TODO: correctly translate

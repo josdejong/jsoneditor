@@ -10,9 +10,13 @@ var Node = require('./Node');
 var ModeSwitcher = require('./ModeSwitcher');
 var util = require('./util');
 var autocomplete = require('./autocomplete');
+var showSortModal = require('./showSortModal');
+var showTransformModal = require('./showTransformModal');
 var translate = require('./i18n').translate;
 var setLanguages = require('./i18n').setLanguages;
 var setLanguage = require('./i18n').setLanguage;
+
+var DEFAULT_MODAL_ANCHOR = document.body; // TODO: this constant is defined twice
 
 // create a mixin with the functions for tree mode
 var treemode = {};
@@ -732,6 +736,28 @@ treemode._createFrame = function () {
     editor.collapseAll();
   };
   this.menu.appendChild(collapseAll);
+
+  // create sort button
+  var sort = document.createElement('button');
+  sort.type = 'button';
+  sort.className = 'jsoneditor-sort';
+  sort.title = translate('sortTitleShort');
+  sort.onclick = function () {
+    var anchor = editor.options.modalAnchor || DEFAULT_MODAL_ANCHOR;
+    showSortModal(editor.node, anchor)
+  };
+  this.menu.appendChild(sort);
+
+  // create transform button
+  var transform = document.createElement('button');
+  transform.type = 'button';
+  transform.title = translate('transformTitleShort');
+  transform.className = 'jsoneditor-transform';
+  transform.onclick = function () {
+    var anchor = editor.options.modalAnchor || DEFAULT_MODAL_ANCHOR;
+    showTransformModal(editor.node, anchor)
+  };
+  this.menu.appendChild(transform);
 
   // create undo/redo buttons
   if (this.history) {
