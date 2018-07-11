@@ -189,7 +189,6 @@ function showTransformModal (node, container) {
         }
 
         function generateQueryFromWizard () {
-          console.log('query...', arguments)
           if (filterField.value && filterRelation.value && filterValue.value) {
             var field1 = filterField.value;
             // TODO: move _stringCast into a static util function
