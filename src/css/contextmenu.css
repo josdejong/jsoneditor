@@ -281,7 +281,8 @@ div.jsoneditor-contextmenu button.jsoneditor-type-modes > div.jsoneditor-icon {
 
 .jsoneditor-modal {
   position: absolute !important;
-  max-width: 100% !important;
+  max-width: 95% !important;
+  width: auto !important;
 
   border-radius: 2px !important;
   padding: 45px 15px 15px 15px !important;
@@ -289,6 +290,10 @@ div.jsoneditor-contextmenu button.jsoneditor-type-modes > div.jsoneditor-icon {
 
   color: #4d4d4d;
   line-height: 1.3em;
+}
+
+.jsoneditor-modal.jsoneditor-modal-transform {
+  width: 600px !important;
 }
 
 .jsoneditor-modal .pico-modal-header {
@@ -306,6 +311,10 @@ div.jsoneditor-contextmenu button.jsoneditor-type-modes > div.jsoneditor-icon {
 
   background: #3883fa;
   color: white;
+}
+
+.jsoneditor-modal table {
+  width: 100%;
 }
 
 .jsoneditor-modal table th,
@@ -401,38 +410,6 @@ div.jsoneditor-contextmenu button.jsoneditor-type-modes > div.jsoneditor-icon {
   color: #808080;
 }
 
-.jsoneditor-modal .jsoneditor-select-wrapper {
-  position: relative;
-  display: inline-block;
-}
-
-.jsoneditor-modal .jsoneditor-select-wrapper:after {
-    content: "";
-    width: 0;
-    height: 0;
-    border-left: 5px solid transparent;
-    border-right: 5px solid transparent;
-    border-top: 6px solid #666;
-    position: absolute;
-    right: 8px;
-    top: 10px;
-    pointer-events: none;
-}
-
-.jsoneditor-modal select {
-    padding: 3px 24px 3px 10px;
-    width: 100%;
-    max-width: 300px;
-
-    -webkit-appearance:none;
-    -moz-appearance:none;
-    appearance: none;
-
-    text-indent: 0;
-    text-overflow: "";
-    line-height: inherit;
-}
-
 .jsoneditor-modal select::-ms-expand {
     display: none;
 }
@@ -464,7 +441,8 @@ div.jsoneditor-contextmenu button.jsoneditor-type-modes > div.jsoneditor-icon {
 
 .jsoneditor-modal #query,
 .jsoneditor-modal .jsoneditor-transform-preview {
-  width: 400px;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .jsoneditor-modal .jsoneditor-transform-preview {
@@ -490,26 +468,40 @@ div.jsoneditor-contextmenu button.jsoneditor-type-modes > div.jsoneditor-icon {
   margin: 4px 0 2px 0;
 }
 
+.jsoneditor-modal .jsoneditor-inline {
+  position: relative;
+  display: inline-block;
+  width: 100%;
+  padding: 2px 0;
+}
+
 .jsoneditor-modal .jsoneditor-jmespath-filter-field {
-  width: auto;
-  max-width: 200px;
+  width: 170px;
 }
 .jsoneditor-modal .jsoneditor-jmespath-filter-relation {
-  width: auto;
+  width: 100px;
 }
 .jsoneditor-modal .jsoneditor-jmespath-filter-value {
-  width: 100px;
+  width: 170px;
 }
 
 .jsoneditor-modal .jsoneditor-jmespath-sort-field {
-  width: auto;
-  max-width: 200px;
+  width: 170px;
 }
 .jsoneditor-modal .jsoneditor-jmespath-sort-order {
-  width: auto;
+  width: 150px;
 }
 
 .jsoneditor-modal .jsoneditor-jmespath-select-fields {
-  width: auto;
-  max-width: 100%;
+  width: 100%;
+}
+
+.jsoneditor-modal .selectr-selected {
+  border-color: #d3d3d3;
+  padding: 3px 28px 4px 8px;
+}
+
+.jsoneditor-modal .selectr-selected .selectr-tag {
+  background-color: #3883fa;
+  border-radius: 5px;
 }

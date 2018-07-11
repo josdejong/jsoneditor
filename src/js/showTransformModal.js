@@ -1,5 +1,6 @@
 var jmespath = require('jmespath');
 var picoModal = require('picomodal');
+var Selectr = require('./assets/selectr/selectr');
 var translate = require('./i18n').translate;
 var debounce = require('./util').debounce;
 
@@ -14,7 +15,7 @@ var MAX_PREVIEW_LINES = 100;
 function showTransformModal (node, container) {
   var value = node.getValue();
 
-  var content = '<label class="pico-modal-contents jsoneditor-transform-modal">' +
+  var content = '<label class="pico-modal-contents">' +
       '<div class="pico-modal-header">' + translate('transform') + '</div>' +
       '<form>' +
       '<p>' +
@@ -30,14 +31,12 @@ function showTransformModal (node, container) {
       '  <label>' +
       '    <div class="jsoneditor-jmespath-wizard-label">' + translate('transformWizardFilter') + '</div>' +
       '    <div class="jsoneditor-jmespath-filter">' +
-      '      <div class="jsoneditor-select-wrapper">' +
-      '        <select class="jsoneditor-jmespath-filter-field" id="filterField">' +
-      '          <option value="" selected> </option>' +
+      '      <div class="jsoneditor-inline jsoneditor-jmespath-filter-field" >' +
+      '        <select id="filterField">' +
       '        </select>' +
       '      </div>' +
-      '      <div class="jsoneditor-select-wrapper">' +
-      '        <select class="jsoneditor-jmespath-filter-relation" id="filterRelation">' +
-      '          <option value="" selected> </option>' +
+      '      <div class="jsoneditor-inline jsoneditor-jmespath-filter-relation" >' +
+      '        <select id="filterRelation">' +
       '          <option value="==">==</option>' +
       '          <option value="!=">!=</option>' +
       '          <option value="<">&lt;</option>' +
@@ -46,20 +45,18 @@ function showTransformModal (node, container) {
       '          <option value=">=">&gt;=</option>' +
       '        </select>' +
       '      </div>' +
-      '      <input class="jsoneditor-jmespath-filter-value" id="filterValue" />' +
+      '      <input class="jsoneditor-jmespath-filter-value" placeholder="value..." id="filterValue" />' +
       '    </div>' +
       '  </label>' +
       '  <label>' +
       '    <div class="jsoneditor-jmespath-wizard-label">' + translate('transformWizardSortBy') + '</div>' +
       '    <div class="jsoneditor-jmespath-filter">' +
-      '      <div class="jsoneditor-select-wrapper">' +
-      '        <select class="jsoneditor-jmespath-sort-field" id="sortField">' +
-      '          <option value="" selected> </option>' +
+      '      <div class="jsoneditor-inline jsoneditor-jmespath-sort-field">' +
+      '        <select id="sortField">' +
       '        </select>' +
       '      </div>' +
-      '      <div class="jsoneditor-select-wrapper">' +
-      '        <select class="jsoneditor-jmespath-sort-order" id="sortOrder">' +
-      '          <option value="" selected> </option>' +
+      '      <div class="jsoneditor-inline jsoneditor-jmespath-sort-order" >' +
+      '        <select id="sortOrder">' +
       '          <option value="asc">Ascending</option>' +
       '          <option value="desc">Descending</option>' +
       '        </select>' +
@@ -69,7 +66,6 @@ function showTransformModal (node, container) {
       '  <label id="selectFieldsPart">' +
       '    <div class="jsoneditor-jmespath-wizard-label">' + translate('transformWizardSelectFields') + '</div>' +
       '    <select class="jsoneditor-jmespath-select-fields" id="selectFields" multiple>' +
-      '      <option value=""> </option>' +
       '    </select>' +
       '  </label>' +
       '  </div>' +
@@ -109,7 +105,7 @@ function showTransformModal (node, container) {
     parent: container,
     content: content,
     overlayClass: 'jsoneditor-modal-overlay',
-    modalClass: 'jsoneditor-modal',
+    modalClass: 'jsoneditor-modal jsoneditor-modal-transform',
     focus: false
   })
       .afterCreate(function (modal) {
@@ -166,6 +162,19 @@ function showTransformModal (node, container) {
           elem.querySelector('#selectFieldsPart').style.display = 'none';
         }
 
+        var selectrFilterField = new Selectr(filterField, { defaultSelected: false, clearable: true, allowDeselect: true, placeholder: 'field...' });
+        var selectrFilterRelation = new Selectr(filterRelation, { defaultSelected: false, clearable: true, allowDeselect: true, placeholder: 'compare...' });
+        var selectrSortField = new Selectr(sortField, { defaultSelected: false, clearable: true, allowDeselect: true, placeholder: 'field...' });
+        var selectrSortOrder = new Selectr(sortOrder, { defaultSelected: false, clearable: true, allowDeselect: true, placeholder: 'order...' });
+        var selectrSelectFields = new Selectr(selectFields, {multiple: true, clearable: true, defaultSelected: false});
+
+        selectrFilterField.on('selectr.change', generateQueryFromWizard);
+        selectrFilterRelation.on('selectr.change', generateQueryFromWizard);
+        filterValue.oninput = generateQueryFromWizard;
+        selectrSortField.on('selectr.change', generateQueryFromWizard);
+        selectrSortOrder.on('selectr.change', generateQueryFromWizard);
+        selectrSelectFields.on('selectr.change', generateQueryFromWizard);
+
         query.value = Array.isArray(value) ? '[*]' : '@';
 
         function preprocessPath(path) {
@@ -180,6 +189,7 @@ function showTransformModal (node, container) {
         }
 
         function generateQueryFromWizard () {
+          console.log('query...', arguments)
           if (filterField.value && filterRelation.value && filterValue.value) {
             var field1 = filterField.value;
             // TODO: move _stringCast into a static util function
@@ -260,13 +270,6 @@ function showTransformModal (node, container) {
 
         var debouncedUpdatePreview = debounce(updatePreview, 300);
 
-        filterField.onchange = generateQueryFromWizard;
-        filterRelation.onchange = generateQueryFromWizard;
-        filterValue.oninput = generateQueryFromWizard;
-        sortField.oninput = generateQueryFromWizard;
-        sortOrder.oninput = generateQueryFromWizard;
-        selectFields.onchange = generateQueryFromWizard;
-
         query.oninput = debouncedUpdatePreview;
         debouncedUpdatePreview();
 
@@ -286,6 +289,8 @@ function showTransformModal (node, container) {
         setTimeout(function () {
           query.select();
           query.focus();
+          query.selectionStart = 3;
+          query.selectionEnd = 3;
         });
       })
       .afterClose(function (modal) {

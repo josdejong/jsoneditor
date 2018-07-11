@@ -53,7 +53,7 @@ function showSortModal (node, container) {
     parent: container,
     content: content,
     overlayClass: 'jsoneditor-modal-overlay',
-    modalClass: 'jsoneditor-modal'
+    modalClass: 'jsoneditor-modal jsoneditor-modal-sort'
   })
       .afterCreate(function (modal) {
         var form = modal.modalElem().querySelector('form');

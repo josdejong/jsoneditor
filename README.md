@@ -13,7 +13,7 @@ editor.
 The editor can be used as a component in your own web application. The library
 can be loaded as CommonJS module, AMD module, or as a regular javascript file.
 
-Supported browsers: Chrome, Firefox, Safari, Opera, Internet Explorer 9+.
+Supported browsers: Chrome, Firefox, Safari, Opera, Edge, Internet Explorer 11.
 
 <img alt="json editor" src="https://raw.github.com/josdejong/jsoneditor/master/misc/jsoneditor.png"> &nbsp; <img alt="code editor" src="https://raw.github.com/josdejong/jsoneditor/master/misc/codeeditor.png">
 
