@@ -3,8 +3,10 @@
 https://github.com/josdejong/jsoneditor
 
 
-## not yet released, version 5.18.1
+## not yet released, version 5.19.0
 
+- No more grayed out icons of the context menu, see #532.
+- Added Sort and Transform buttons to the main menu.
 - Fixes and improvements in the Transform dialog.
 
 
