@@ -174,7 +174,7 @@ function showTransformModal (node, container) {
         selectrSortOrder.on('selectr.change', generateQueryFromWizard);
         selectrSelectFields.on('selectr.change', generateQueryFromWizard);
 
-        wizard.onclick = function (event) {
+        elem.querySelector('.pico-modal-contents').onclick = function (event) {
           // prevent the first clear button from getting focus when clicking anywhere in the modal
           event.preventDefault();
         };
