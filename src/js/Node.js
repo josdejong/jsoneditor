@@ -2370,9 +2370,8 @@ Node.prototype._createDomTree = function () {
 /**
  * Handle an event. The event is caught centrally by the editor
  * @param {Event} event
- * @param {extendEvent} function with code for extend event behaviour.
  */
-Node.prototype.onEvent = function (event, extendEvent) {
+Node.prototype.onEvent = function (event) {
   var type = event.type,
       target = event.target || event.srcElement,
       dom = this.dom,
@@ -2552,8 +2551,35 @@ Node.prototype.onEvent = function (event, extendEvent) {
     this.onKeyDown(event);
   }
 
-  // Execute event extension
-  if (extendEvent) extendEvent(this, event);
+  if (typeof this.editor.options.onEvent === 'function') {
+    this._onEvent(event);
+  }
+};
+
+/**
+ * Trigger external onEvent provided in options if node is a JSON field or
+ * value.
+ * Information provided depends on the element:
+ *   - If event occurs in a field, {field: string, path: string[]}
+ *   - If event occurs in a value, {field: string, path: string[], value:
+ * string}
+ * @param {Event} event
+ * @private
+ */
+Node.prototype._onEvent = function (event) {
+  var element = event.target;
+  if (this.parent &&
+    (element === this.dom.field || element === this.dom.value)) {
+    var info = {
+      field: this.getField(),
+      path: this.getPath()
+    };
+    // For leaf values, include value
+    if (!this._hasChilds() &&element === this.dom.value) {
+      info.value = this.getValue();  
+    }
+    this.editor.options.onEvent(info, event);
+  }
 };
 
 /**

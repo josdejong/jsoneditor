@@ -35,8 +35,9 @@ var treemode = {};
  *                                                        characters are escaped.
  *                                                        false by default.
  *                               {Object} schema          A JSON Schema for validation
- *                               {function} extendEvent   Function triggered
- *                                                        after Node event.
+ *                               {function} onEvent       Function triggered
+ *                                                        when an event occurs
+ *                                                        in a field or value.
  * @private
  */
 treemode.create = function (container, options) {
@@ -64,9 +65,6 @@ treemode.create = function (container, options) {
   if (this.options.history && this.options.mode !== 'view') {
     this.history = new History(this);
   }
-
-  if (options.extendEvent)
-      this.extendEvent = this.options.extendEvent;
 
   this._createFrame();
   this._createTable();
@@ -125,7 +123,7 @@ treemode._setOptions = function (options) {
     autocomplete: null,
     navigationBar : true,
     onSelectionChange: null,
-    extendEvent: null
+    onEvent: null
   };
 
   // copy all options
@@ -895,7 +893,7 @@ treemode._onEvent = function (event) {
   }
 
   if (node) {
-    node.onEvent(event, this.options.extendEvent);
+    node.onEvent(event);
   }
 };
 

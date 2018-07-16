@@ -4,8 +4,8 @@ https://github.com/josdejong/jsoneditor
 
 ## 2018-07-02, version 5.19.0
 
-- Implemented API: `extendEvent` to let extend behaviour when an event is 
-fired in a node using internal structures and code.
+- Implemented API: `onEvent` triggered when an event occurs in a JSON field or 
+value. 
 
 
 ## 2018-06-27, version 5.18.0

@@ -56,12 +56,12 @@ var util = require('./util');
  *                                                                centered location.
  *                                                                Defaults to document.body
  *                                                                'text' and 'code'
- *                               {function} extendEvent Triggered after onEvent
- *                                                      to extend event
- *                                                      behaviour.
- *                                                      Only applicable for
- *                                                      modes 'form', 'tree' and
- *                                                      'view'
+ *                               {function} onEvent Callback method, triggered
+ *                                                  when an event occurs in
+ *                                                  a JSON field or value.
+ *                                                  Only applicable for
+ *                                                  modes 'form', 'tree' and
+ *                                                  'view'
  * @param {Object | undefined} json JSON object
  */
 function JSONEditor (container, options, json) {
@@ -102,7 +102,7 @@ function JSONEditor (container, options, json) {
         'onChange', 'onEditable', 'onError', 'onModeChange', 'onSelectionChange', 'onTextSelectionChange',
         'escapeUnicode', 'history', 'search', 'mode', 'modes', 'name', 'indentation',
         'sortObjectKeys', 'navigationBar', 'statusBar', 'languages', 'language',
-        'extendEvent'
+        'onEvent'
       ];
 
       Object.keys(options).forEach(function (option) {

@@ -227,20 +227,24 @@ Constructs a new JSONEditor.
   ```
   Only applicable when `mode` is 'tree'.
   
-- `{function} extendEvent`
+- `{function} onEvent`
 
-  Set a function that will be triggered after node event. This is added at the
-  end of a node event execution, not replaced. It means that actions for that
-  event will be executed and after that, if this function is provided, this code
-  will be executed. 
+  Set a callback function that will be triggered when an event will occur in 
+  a JSON field or value.
+  
+  In case of field event, node information will be 
+  `{field: string, path: string[]}`.
+  In case of value event, node information will be
+  `{field: string, path: string[], value: string}`
 
   signature should be:
   ```js
   /**
-  * @param {Node} the Node where event has been triggered
-  * @param {event} the event triggered
+  * @param {Node} the Node where event has been triggered 
+  identified by {field: string, path: string[] [, value: string]}`
+  * @param {event} the event fired
   */
-  function extendEvent(node, event) {
+  function onEvent(node, event) {
     ...
   }
   ```
