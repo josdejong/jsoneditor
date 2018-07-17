@@ -10,12 +10,8 @@ div.jsoneditor-navigation-bar {
   box-sizing: border-box;
   color: #808080;
   background-color: #ebebeb;
-  font-size: 10pt;
-}
+  overflow: hidden;
 
-div.jsoneditor-navigation-bar.nav-bar-empty:after {
-  content: 'Select a node ...';
-  color: rgba(104, 104, 91, 0.56);
-  position: absolute;
-  margin-left: 5px;
+  font-family: arial, sans-serif;
+  font-size: 10pt;
 }

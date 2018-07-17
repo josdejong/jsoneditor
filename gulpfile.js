@@ -138,7 +138,8 @@ gulp.task('bundle-css', ['mkdir'], function () {
     'src/css/autocomplete.css',
     'src/css/treepath.css',
     'src/css/statusbar.css',
-    'src/css/navigationbar.css'
+    'src/css/navigationbar.css',
+    'src/js/assets/selectr/selectr.css'
   ])
       .pipe(concatCss(NAME + '.css'))
       .pipe(gulp.dest(DIST))

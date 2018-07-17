@@ -2,6 +2,7 @@
 
 var util = require('./util');
 var ContextMenu = require('./ContextMenu');
+var translate = require('./i18n').translate;
 
 /**
  * A factory function to create an AppendNode, which depends on a Node
@@ -39,6 +40,7 @@ function appendNodeFactory(Node) {
 
     // a row for the append button
     var trAppend = document.createElement('tr');
+    trAppend.className = 'jsoneditor-append';
     trAppend.node = this;
     dom.tr = trAppend;
 
@@ -62,7 +64,7 @@ function appendNodeFactory(Node) {
     // a cell for the contents (showing text 'empty')
     var tdAppend = document.createElement('td');
     var domText = document.createElement('div');
-    domText.innerHTML = '(empty)';
+    domText.innerHTML = '(' + translate('empty') + ')';
     domText.className = 'jsoneditor-readonly';
     tdAppend.appendChild(domText);
     dom.td = tdAppend;
@@ -76,7 +78,7 @@ function appendNodeFactory(Node) {
   /**
    * Update the HTML dom of the Node
    */
-  AppendNode.prototype.updateDom = function () {
+  AppendNode.prototype.updateDom = function(options) {
     var dom = this.dom;
     var tdAppend = dom.td;
     if (tdAppend) {
@@ -86,7 +88,7 @@ function appendNodeFactory(Node) {
 
     var domText = dom.text;
     if (domText) {
-      domText.innerHTML = '(empty ' + this.parent.type + ')';
+      domText.innerHTML = '(' + translate('empty') + ' ' + this.parent.type + ')';
     }
 
     // attach or detach the contents of the append node:
@@ -136,7 +138,7 @@ function appendNodeFactory(Node) {
     var titles = Node.TYPE_TITLES;
     var appendSubmenu = [
         {
-            text: 'Auto',
+            text: translate('auto'),
             className: 'jsoneditor-type-auto',
             title: titles.auto,
             click: function () {
@@ -144,7 +146,7 @@ function appendNodeFactory(Node) {
             }
         },
         {
-            text: 'Array',
+            text: translate('array'),
             className: 'jsoneditor-type-array',
             title: titles.array,
             click: function () {
@@ -152,7 +154,7 @@ function appendNodeFactory(Node) {
             }
         },
         {
-            text: 'Object',
+            text: translate('object'),
             className: 'jsoneditor-type-object',
             title: titles.object,
             click: function () {
@@ -160,7 +162,7 @@ function appendNodeFactory(Node) {
             }
         },
         {
-            text: 'String',
+            text: translate('string'),
             className: 'jsoneditor-type-string',
             title: titles.string,
             click: function () {
@@ -172,9 +174,9 @@ function appendNodeFactory(Node) {
     var items = [
       // create append button
       {
-        'text': 'Append',
-        'title': 'Append a new field with type \'auto\' (Ctrl+Shift+Ins)',
-        'submenuTitle': 'Select the type of the field to be appended',
+        'text': translate('appendText'),
+        'title': translate('appendTitleAuto'),
+        'submenuTitle': translate('appendSubmenuTitle'),
         'className': 'jsoneditor-insert',
         'click': function () {
           node._onAppend('', '', 'auto');
@@ -188,7 +190,7 @@ function appendNodeFactory(Node) {
   };
 
   /**
-   * Handle an event. The event is catched centrally by the editor
+   * Handle an event. The event is caught centrally by the editor
    * @param {Event} event
    */
   AppendNode.prototype.onEvent = function (event) {

@@ -124,16 +124,31 @@ function History (editor) {
       'undo': function (params) {
         var node = params.node;
         node.hideChilds();
-        node.sort = params.oldSort;
         node.childs = params.oldChilds;
+        node.updateDom({updateIndexes: true});
         node.showChilds();
       },
       'redo': function (params) {
         var node = params.node;
         node.hideChilds();
-        node.sort = params.newSort;
         node.childs = params.newChilds;
+        node.updateDom({updateIndexes: true});
         node.showChilds();
+      }
+    },
+
+    'transform': {
+      'undo': function (params) {
+        var node = params.node;
+        node.setValue(params.oldValue);
+
+        // TODO: would be nice to restore the state of the node and childs
+      },
+      'redo': function (params) {
+        var node = params.node;
+        node.setValue(params.newValue);
+
+        // TODO: would be nice to restore the state of the node and childs
       }
     }
 
@@ -214,7 +229,7 @@ History.prototype.undo = function () {
       if (action && action.undo) {
         action.undo(obj.params);
         if (obj.params.oldSelection) {
-          this.editor.setSelection(obj.params.oldSelection);
+          this.editor.setDomSelection(obj.params.oldSelection);
         }
       }
       else {
@@ -241,7 +256,7 @@ History.prototype.redo = function () {
       if (action && action.redo) {
         action.redo(obj.params);
         if (obj.params.newSelection) {
-          this.editor.setSelection(obj.params.newSelection);
+          this.editor.setDomSelection(obj.params.newSelection);
         }
       }
       else {

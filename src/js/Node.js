@@ -1,9 +1,16 @@
 'use strict';
 
+var jmespath = require('jmespath');
 var naturalSort = require('javascript-natural-sort');
 var ContextMenu = require('./ContextMenu');
 var appendNodeFactory = require('./appendNodeFactory');
+var showMoreNodeFactory = require('./showMoreNodeFactory');
+var showSortModal = require('./showSortModal');
+var showTransformModal = require('./showTransformModal');
 var util = require('./util');
+var translate = require('./i18n').translate;
+
+var DEFAULT_MODAL_ANCHOR = document.body; // TODO: this constant is defined twice
 
 /**
  * @constructor Node
@@ -37,6 +44,15 @@ function Node (editor, params) {
 
 // debounce interval for keyboard input in milliseconds
 Node.prototype.DEBOUNCE_INTERVAL = 150;
+
+// search will stop iterating as soon as the max is reached
+Node.prototype.MAX_SEARCH_RESULTS = 999;
+
+// number of visible childs rendered initially in large arrays/objects (with a "show more" button to show more)
+Node.prototype.MAX_VISIBLE_CHILDS = 100;
+
+// default value for the max visible childs of large arrays
+Node.prototype.visibleChilds = Node.prototype.MAX_VISIBLE_CHILDS;
 
 /**
  * Determine whether the field and/or value of this node are editable
@@ -80,18 +96,60 @@ Node.prototype.getPath = function () {
   var node = this;
   var path = [];
   while (node) {
-    var field = !node.parent
-        ? undefined  // do not add an (optional) field name of the root node
-        :  (node.parent.type != 'array')
-            ? node.field
-            : node.index;
-
+    var field = node.getName();
     if (field !== undefined) {
       path.unshift(field);
     }
     node = node.parent;
   }
   return path;
+};
+
+/**
+ * Get node serializable name
+ * @returns {String|Number}
+ */
+Node.prototype.getName = function () {
+ return !this.parent
+ ? undefined  // do not add an (optional) field name of the root node
+ :  (this.parent.type != 'array')
+     ? this.field
+     : this.index;
+};
+
+/**
+ * Find child node by serializable path
+ * @param {Array<String>} path 
+ */
+Node.prototype.findNodeByPath = function (path) {
+  if (!path) {
+    return;
+  }
+
+  if (path.length == 0) {
+    return this;
+  }
+
+  if (path.length && this.childs && this.childs.length) {
+    for (var i=0; i < this.childs.length; ++i) {
+      if (('' + path[0]) === ('' + this.childs[i].getName())) {
+        return this.childs[i].findNodeByPath(path.slice(1));
+      }
+    }
+  }
+};
+
+/**
+ * @typedef {{value: String|Object|Number|Boolean, path: Array.<String|Number>}} SerializableNode
+ * 
+ * Returns serializable representation for the node
+ * @return {SerializedNode}
+ */
+Node.prototype.serialize = function () {
+  return {
+    value: this.getValue(),
+    path: this.getPath()
+  };
 };
 
 /**
@@ -147,12 +205,21 @@ Node.prototype.findParents = function () {
  *                        icon will set focus to the invalid child node.
  */
 Node.prototype.setError = function (error, child) {
-  // ensure the dom exists
-  this.getDom();
-
   this.error = error;
+  this.errorChild = child;
+
+  if (this.dom && this.dom.tr) {
+    this.updateError()
+  }
+};
+
+/**
+ * Render the error
+ */
+Node.prototype.updateError = function() {
+  var error = this.error;
   var tdError = this.dom.tdError;
-  if (error) {
+  if (error && this.dom && this.dom.tr) {
     if (!tdError) {
       tdError = document.createElement('td');
       this.dom.tdError = tdError;
@@ -188,6 +255,7 @@ Node.prototype.setError = function (error, child) {
 
     // when clicking the error icon, expand all nodes towards the invalid
     // child node, and set focus to the child node
+    var child = this.errorChild;
     if (child) {
       button.onclick = function showInvalidNode() {
         child.findParents().forEach(function (parent) {
@@ -261,17 +329,16 @@ Node.prototype.getField = function() {
  *                         'array', 'object', or 'string'
  */
 Node.prototype.setValue = function(value, type) {
-  var childValue, child;
+  var childValue, child, visible;
+  var notUpdateDom = false;
 
   // first clear all current childs (if any)
   var childs = this.childs;
   if (childs) {
     while (childs.length) {
-      this.removeChild(childs[0]);
+      this.removeChild(childs[0], notUpdateDom);
     }
   }
-
-  // TODO: remove the DOM of this Node
 
   this.type = this._getType(value);
 
@@ -297,7 +364,8 @@ Node.prototype.setValue = function(value, type) {
         child = new Node(this.editor, {
           value: childValue
         });
-        this.appendChild(child);
+        visible = i < this.MAX_VISIBLE_CHILDS;
+        this.appendChild(child, visible, notUpdateDom);
       }
     }
     this.value = '';
@@ -305,6 +373,7 @@ Node.prototype.setValue = function(value, type) {
   else if (this.type == 'object') {
     // object
     this.childs = [];
+    i = 0;
     for (var childField in value) {
       if (value.hasOwnProperty(childField)) {
         childValue = value[childField];
@@ -314,15 +383,17 @@ Node.prototype.setValue = function(value, type) {
             field: childField,
             value: childValue
           });
-          this.appendChild(child);
+          visible = i < this.MAX_VISIBLE_CHILDS;
+          this.appendChild(child, visible, notUpdateDom);
         }
+        i++;
       }
     }
     this.value = '';
 
     // sort object keys
     if (this.editor.options.sortObjectKeys === true) {
-      this.sort('asc');
+      this.sort([], 'asc');
     }
   }
   else {
@@ -330,6 +401,8 @@ Node.prototype.setValue = function(value, type) {
     this.childs = undefined;
     this.value = value;
   }
+
+  this.updateDom({'updateIndexes': true});
 
   this.previousValue = this.value;
 };
@@ -397,6 +470,7 @@ Node.prototype.clone = function() {
   clone.value = this.value;
   clone.valueInnerText = this.valueInnerText;
   clone.expanded = this.expanded;
+  clone.visibleChilds = this.visibleChilds;
 
   if (this.childs) {
     // an object or array
@@ -484,40 +558,67 @@ Node.prototype.showChilds = function() {
   var table = tr ? tr.parentNode : undefined;
   if (table) {
     // show row with append button
-    var append = this.getAppend();
-    var nextTr = tr.nextSibling;
-    if (nextTr) {
-      table.insertBefore(append, nextTr);
-    }
-    else {
-      table.appendChild(append);
+    var append = this.getAppendDom();
+    if (!append.parentNode) {
+      var nextTr = tr.nextSibling;
+      if (nextTr) {
+        table.insertBefore(append, nextTr);
+      }
+      else {
+        table.appendChild(append);
+      }
     }
 
     // show childs
-    this.childs.forEach(function (child) {
-      table.insertBefore(child.getDom(), append);
+    var iMax = Math.min(this.childs.length, this.visibleChilds);
+    var nextTr = this._getNextTr();
+    for (var i = 0; i < iMax; i++) {
+      var child = this.childs[i];
+      if (!child.getDom().parentNode) {
+        table.insertBefore(child.getDom(), nextTr);
+      }
       child.showChilds();
-    });
+    }
+
+    // show "show more childs" if limited
+    var showMore = this.getShowMoreDom();
+    var nextTr = this._getNextTr();
+    if (!showMore.parentNode) {
+      table.insertBefore(showMore, nextTr);
+    }
+    this.showMore.updateDom(); // to update the counter
+  }
+};
+
+Node.prototype._getNextTr = function() {
+  if (this.showMore && this.showMore.getDom().parentNode) {
+    return this.showMore.getDom();
+  }
+
+  if (this.append && this.append.getDom().parentNode) {
+    return this.append.getDom();
   }
 };
 
 /**
  * Hide the node with all its childs
+ * @param {{resetVisibleChilds: boolean}} [options]
  */
-Node.prototype.hide = function() {
+Node.prototype.hide = function(options) {
   var tr = this.dom.tr;
   var table = tr ? tr.parentNode : undefined;
   if (table) {
     table.removeChild(tr);
   }
-  this.hideChilds();
+  this.hideChilds(options);
 };
 
 
 /**
  * Recursively hide all childs
+ * @param {{resetVisibleChilds: boolean}} [options]
  */
-Node.prototype.hideChilds = function() {
+Node.prototype.hideChilds = function(options) {
   var childs = this.childs;
   if (!childs) {
     return;
@@ -527,7 +628,7 @@ Node.prototype.hideChilds = function() {
   }
 
   // hide append row
-  var append = this.getAppend();
+  var append = this.getAppendDom();
   if (append.parentNode) {
     append.parentNode.removeChild(append);
   }
@@ -536,6 +637,17 @@ Node.prototype.hideChilds = function() {
   this.childs.forEach(function (child) {
     child.hide();
   });
+
+  // hide "show more" row
+  var showMore = this.getShowMoreDom();
+  if (showMore.parentNode) {
+    showMore.parentNode.removeChild(showMore);
+  }
+
+  // reset max visible childs
+  if (!options || options.resetVisibleChilds) {
+    delete this.visibleChilds;
+  }
 };
 
 
@@ -557,8 +669,12 @@ Node.prototype.expandTo = function() {
  * Add a new child to the node.
  * Only applicable when Node value is of type array or object
  * @param {Node} node
+ * @param {boolean} [visible] If true (default), the child will be rendered
+ * @param {boolean} [updateDom]  If true (default), the DOM of both parent
+ *                               node and appended node will be updated
+ *                               (child count, indexes)
  */
-Node.prototype.appendChild = function(node) {
+Node.prototype.appendChild = function(node, visible, updateDom) {
   if (this._hasChilds()) {
     // adjust the link to the parent
     node.setParent(this);
@@ -568,20 +684,24 @@ Node.prototype.appendChild = function(node) {
     }
     this.childs.push(node);
 
-    if (this.expanded) {
+    if (this.expanded && visible !== false) {
       // insert into the DOM, before the appendRow
       var newTr = node.getDom();
-      var appendTr = this.getAppend();
-      var table = appendTr ? appendTr.parentNode : undefined;
-      if (appendTr && table) {
-        table.insertBefore(newTr, appendTr);
+      var nextTr = this._getNextTr();
+      var table = nextTr ? nextTr.parentNode : undefined;
+      if (nextTr && table) {
+        table.insertBefore(newTr, nextTr);
       }
 
       node.showChilds();
+
+      this.visibleChilds++;
     }
 
-    this.updateDom({'updateIndexes': true});
-    node.updateDom({'recurse': true});
+    if (updateDom !== false) {
+      this.updateDom({'updateIndexes': true});
+      node.updateDom({'recurse': true});
+    }
   }
 };
 
@@ -608,7 +728,14 @@ Node.prototype.moveBefore = function(node, beforeNode) {
     }
 
     if (beforeNode instanceof AppendNode) {
-      this.appendChild(node);
+      // the this.childs.length + 1 is to reckon with the node that we're about to add
+      if (this.childs.length + 1 > this.visibleChilds) {
+        var lastVisibleNode = this.childs[this.visibleChilds - 1];
+        this.insertBefore(node, lastVisibleNode);
+      }
+      else {
+        this.appendChild(node);
+      }
     }
     else {
       this.insertBefore(node, beforeNode);
@@ -649,6 +776,8 @@ Node.prototype.moveTo = function (node, index) {
  */
 Node.prototype.insertBefore = function(node, beforeNode) {
   if (this._hasChilds()) {
+    this.visibleChilds++;
+
     if (beforeNode == this.append) {
       // append to the child nodes
 
@@ -680,6 +809,7 @@ Node.prototype.insertBefore = function(node, beforeNode) {
       }
 
       node.showChilds();
+      this.showChilds();
     }
 
     this.updateDom({'updateIndexes': true});
@@ -708,13 +838,16 @@ Node.prototype.insertAfter = function(node, afterNode) {
 
 /**
  * Search in this node
- * The node will be expanded when the text is found one of its childs, else
- * it will be collapsed. Searches are case insensitive.
+ * Searches are case insensitive.
  * @param {String} text
+ * @param {Node[]} [results] Array where search results will be added
+ *                           used to count and limit the results whilst iterating
  * @return {Node[]} results  Array with nodes containing the search text
  */
-Node.prototype.search = function(text) {
-  var results = [];
+Node.prototype.search = function(text, results) {
+  if (!Array.isArray(results)) {
+    results = [];
+  }
   var index;
   var search = text ? text.toLowerCase() : undefined;
 
@@ -723,10 +856,10 @@ Node.prototype.search = function(text) {
   delete this.searchValue;
 
   // search in field
-  if (this.field != undefined) {
+  if (this.field !== undefined && results.length <= this.MAX_SEARCH_RESULTS) {
     var field = String(this.field).toLowerCase();
     index = field.indexOf(search);
-    if (index != -1) {
+    if (index !== -1) {
       this.searchField = true;
       results.push({
         'node': this,
@@ -744,40 +877,27 @@ Node.prototype.search = function(text) {
 
     // search the nodes childs
     if (this.childs) {
-      var childResults = [];
       this.childs.forEach(function (child) {
-        childResults = childResults.concat(child.search(text));
+        child.search(text, results);
       });
-      results = results.concat(childResults);
-    }
-
-    // update dom
-    if (search != undefined) {
-      var recurse = false;
-      if (childResults.length == 0) {
-        this.collapse(recurse);
-      }
-      else {
-        this.expand(recurse);
-      }
     }
   }
   else {
     // string, auto
-    if (this.value != undefined ) {
+    if (this.value !== undefined  && results.length <= this.MAX_SEARCH_RESULTS) {
       var value = String(this.value).toLowerCase();
       index = value.indexOf(search);
-      if (index != -1) {
+      if (index !== -1) {
         this.searchValue = true;
         results.push({
           'node': this,
           'elem': 'value'
         });
       }
-    }
 
-    // update dom
-    this._updateDomValue();
+      // update dom
+      this._updateDomValue();
+    }
   }
 
   return results;
@@ -789,18 +909,31 @@ Node.prototype.search = function(text) {
  * @param {function(boolean)} [callback]
  */
 Node.prototype.scrollTo = function(callback) {
-  if (!this.dom.tr || !this.dom.tr.parentNode) {
-    // if the node is not visible, expand its parents
-    var parent = this.parent;
-    var recurse = false;
-    while (parent) {
-      parent.expand(recurse);
-      parent = parent.parent;
-    }
-  }
+  this.expandPathToNode();
 
   if (this.dom.tr && this.dom.tr.parentNode) {
     this.editor.scrollTo(this.dom.tr.offsetTop, callback);
+  }
+};
+
+/**
+ * if the node is not visible, expand its parents
+ */
+Node.prototype.expandPathToNode = function () {
+  var node = this;
+  var recurse = false;
+  while (node && node.parent) {
+    // expand visible childs of the parent if needed
+    var index = node.parent.type === 'array'
+        ? node.index
+        : node.parent.childs.indexOf(node);
+    while (node.parent.visibleChilds < index + 1) {
+      node.parent.visibleChilds += Node.prototype.MAX_VISIBLE_CHILDS;
+    }
+
+    // expand the parent itself
+    node.parent.expand(recurse);
+    node = node.parent;
   }
 };
 
@@ -937,59 +1070,23 @@ Node.prototype.containsNode = function(node) {
 };
 
 /**
- * Move given node into this node
- * @param {Node} node           the childNode to be moved
- * @param {Node} beforeNode     node will be inserted before given
- *                                         node. If no beforeNode is given,
- *                                         the node is appended at the end
- * @private
- */
-Node.prototype._move = function(node, beforeNode) {
-  if (node == beforeNode) {
-    // nothing to do...
-    return;
-  }
-
-  // check if this node is not a child of the node to be moved here
-  if (node.containsNode(this)) {
-    throw new Error('Cannot move a field into a child of itself');
-  }
-
-  // remove the original node
-  if (node.parent) {
-    node.parent.removeChild(node);
-  }
-
-  // create a clone of the node
-  var clone = node.clone();
-  node.clearDom();
-
-  // insert or append the node
-  if (beforeNode) {
-    this.insertBefore(clone, beforeNode);
-  }
-  else {
-    this.appendChild(clone);
-  }
-
-  /* TODO: adjust the field name (to prevent equal field names)
-   if (this.type == 'object') {
-   }
-   */
-};
-
-/**
  * Remove a child from the node.
  * Only applicable when Node value is of type array or object
  * @param {Node} node   The child node to be removed;
+ * @param {boolean} [updateDom]  If true (default), the DOM of the parent
+ *                               node will be updated (like child count)
  * @return {Node | undefined} node  The removed node on success,
  *                                             else undefined
  */
-Node.prototype.removeChild = function(node) {
+Node.prototype.removeChild = function(node, updateDom) {
   if (this.childs) {
     var index = this.childs.indexOf(node);
 
-    if (index != -1) {
+    if (index !== -1) {
+      if (index < this.visibleChilds && this.expanded) {
+        this.visibleChilds--;
+      }
+
       node.hide();
 
       // delete old search results
@@ -999,7 +1096,9 @@ Node.prototype.removeChild = function(node) {
       var removedNode = this.childs.splice(index, 1)[0];
       removedNode.parent = null;
 
-      this.updateDom({'updateIndexes': true});
+      if (updateDom !== false) {
+        this.updateDom({'updateIndexes': true});
+      }
 
       return removedNode;
     }
@@ -1041,7 +1140,7 @@ Node.prototype.changeType = function (newType) {
     var table = this.dom.tr ? this.dom.tr.parentNode : undefined;
     var lastTr;
     if (this.expanded) {
-      lastTr = this.getAppend();
+      lastTr = this.getAppendDom();
     }
     else {
       lastTr = this.getDom();
@@ -1049,7 +1148,7 @@ Node.prototype.changeType = function (newType) {
     var nextTr = (lastTr && lastTr.parentNode) ? lastTr.nextSibling : undefined;
 
     // hide current field and all its childs
-    this.hide();
+    this.hide({ resetVisibleChilds: false });
     this.clearDom();
 
     // adjust the field and the value
@@ -1164,13 +1263,13 @@ Node.prototype._getDomValue = function(silent) {
 Node.prototype._onChangeValue = function () {
   // get current selection, then override the range such that we can select
   // the added/removed text on undo/redo
-  var oldSelection = this.editor.getSelection();
+  var oldSelection = this.editor.getDomSelection();
   if (oldSelection.range) {
     var undoDiff = util.textDiff(String(this.value), String(this.previousValue));
     oldSelection.range.startOffset = undoDiff.start;
     oldSelection.range.endOffset = undoDiff.end;
   }
-  var newSelection = this.editor.getSelection();
+  var newSelection = this.editor.getDomSelection();
   if (newSelection.range) {
     var redoDiff = util.textDiff(String(this.previousValue), String(this.value));
     newSelection.range.startOffset = redoDiff.start;
@@ -1195,15 +1294,16 @@ Node.prototype._onChangeValue = function () {
 Node.prototype._onChangeField = function () {
   // get current selection, then override the range such that we can select
   // the added/removed text on undo/redo
-  var oldSelection = this.editor.getSelection();
+  var oldSelection = this.editor.getDomSelection();
+  var previous = this.previousField || '';
   if (oldSelection.range) {
-    var undoDiff = util.textDiff(this.field, this.previousField);
+    var undoDiff = util.textDiff(this.field, previous);
     oldSelection.range.startOffset = undoDiff.start;
     oldSelection.range.endOffset = undoDiff.end;
   }
-  var newSelection = this.editor.getSelection();
+  var newSelection = this.editor.getDomSelection();
   if (newSelection.range) {
-    var redoDiff = util.textDiff(this.previousField, this.field);
+    var redoDiff = util.textDiff(previous, this.field);
     newSelection.range.startOffset = redoDiff.start;
     newSelection.range.endOffset = redoDiff.end;
   }
@@ -1263,7 +1363,7 @@ Node.prototype._updateDomValue = function () {
       domValue.title = this.type + ' containing ' + count + ' items';
     }
     else if (isUrl && this.editable.value) {
-      domValue.title = 'Ctrl+Click or Ctrl+Enter to open url in new window';
+      domValue.title = translate('openUrl');
     }
     else {
       domValue.title = '';
@@ -1450,7 +1550,7 @@ Node.prototype.validate = function () {
             return {
               node: node,
               error: {
-                message: 'duplicate key "' + node.field + '"'
+                message: translate('duplicateKey') + ' "' + node.field + '"'
               }
             }
           });
@@ -1507,7 +1607,7 @@ Node.prototype.getDom = function() {
         domDrag.type = 'button';
         dom.drag = domDrag;
         domDrag.className = 'jsoneditor-dragarea';
-        domDrag.title = 'Drag to move this field (Alt+Shift+Arrows)';
+        domDrag.title = translate('drag');
         tdDrag.appendChild(domDrag);
       }
     }
@@ -1519,7 +1619,7 @@ Node.prototype.getDom = function() {
     menu.type = 'button';
     dom.menu = menu;
     menu.className = 'jsoneditor-contextmenu';
-    menu.title = 'Click to open the actions menu (Ctrl+M)';
+    menu.title = translate('actionsMenu');
     tdMenu.appendChild(dom.menu);
     dom.tr.appendChild(tdMenu);
   }
@@ -1533,6 +1633,14 @@ Node.prototype.getDom = function() {
   this.updateDom({'updateIndexes': true});
 
   return dom.tr;
+};
+
+/**
+ * Test whether a Node is rendered and visible
+ * @returns {boolean}
+ */
+Node.prototype.isVisible = function () {
+  return this.dom && this.dom.tr && this.dom.tr.parentNode || false
 };
 
 /**
@@ -1551,7 +1659,7 @@ Node.onDragStart = function (nodes, event) {
   var firstNode = nodes[0];
   var lastNode = nodes[nodes.length - 1];
   var draggedNode = Node.getNodeFromTarget(event.target);
-  var beforeNode = lastNode._nextSibling();
+  var beforeNode = lastNode.nextSibling();
   var editor = firstNode.editor;
 
   // in case of multiple selected nodes, offsetY prevents the selection from
@@ -1573,7 +1681,7 @@ Node.onDragStart = function (nodes, event) {
   editor.highlighter.lock();
   editor.drag = {
     oldCursor: document.body.style.cursor,
-    oldSelection: editor.getSelection(),
+    oldSelection: editor.getDomSelection(),
     oldBeforeNode: beforeNode,
     mouseX: event.pageX,
     offsetY: offsetY,
@@ -1637,7 +1745,7 @@ Node.onDrag = function (nodes, event) {
       }
     }
 
-    if (nodePrev) {
+    if (nodePrev && nodePrev.isVisible()) {
       // check if mouseY is really inside the found node
       trPrev = nodePrev.dom.tr;
       topPrev = trPrev ? util.getAbsoluteTop(trPrev) : 0;
@@ -1668,16 +1776,17 @@ Node.onDrag = function (nodes, event) {
               util.getAbsoluteTop(trNext.nextSibling) : 0;
           heightNext = trNext ? (bottomNext - topFirst) : 0;
 
-          if (nodeNext.parent.childs.length == nodes.length &&
+          if (nodeNext &&
+              nodeNext.parent.childs.length == nodes.length &&
               nodeNext.parent.childs[nodes.length - 1] == lastNode) {
             // We are about to remove the last child of this parent,
             // which will make the parents appendNode visible.
             topThis += 27;
             // TODO: dangerous to suppose the height of the appendNode a constant of 27 px.
           }
-        }
 
-        trNext = trNext.nextSibling;
+          trNext = trNext.nextSibling;
+        }
       }
       while (trNext && mouseY > topThis + heightNext);
 
@@ -1689,12 +1798,12 @@ Node.onDrag = function (nodes, event) {
         var levelNext = nodeNext.getLevel();     // level to be
 
         // find the best fitting level (move upwards over the append nodes)
-        trPrev = nodeNext.dom.tr.previousSibling;
+        trPrev = nodeNext.dom.tr && nodeNext.dom.tr.previousSibling;
         while (levelNext < level && trPrev) {
           nodePrev = Node.getNodeFromTarget(trPrev);
 
           var isDraggedNode = nodes.some(function (node) {
-            return node === nodePrev || nodePrev._isChildOf(node);
+            return node === nodePrev || nodePrev.isDescendantOf(node);
           });
 
           if (isDraggedNode) {
@@ -1721,8 +1830,13 @@ Node.onDrag = function (nodes, event) {
           trPrev = trPrev.previousSibling;
         }
 
+        if (nodeNext instanceof AppendNode && !nodeNext.isVisible() &&
+            nodeNext.parent.showMore.isVisible()) {
+          nodeNext = nodeNext._nextNode();
+        }
+
         // move the node when its position is changed
-        if (trLast.nextSibling != nodeNext.dom.tr) {
+        if (nodeNext && nodeNext.dom.tr && trLast.nextSibling != nodeNext.dom.tr) {
           nodes.forEach(function (node) {
             nodeNext.parent.moveBefore(node, nodeNext);
           });
@@ -1771,7 +1885,7 @@ Node.onDragEnd = function (nodes, event) {
   var params = {
     nodes: nodes,
     oldSelection: editor.drag.oldSelection,
-    newSelection: editor.getSelection(),
+    newSelection: editor.getDomSelection(),
     oldBeforeNode: editor.drag.oldBeforeNode,
     newBeforeNode: beforeNode
   };
@@ -1806,12 +1920,12 @@ Node.onDragEnd = function (nodes, event) {
 };
 
 /**
- * Test if this node is a child of an other node
+ * Test if this node is a sescendant of an other node
  * @param {Node} node
- * @return {boolean} isChild
+ * @return {boolean} isDescendant
  * @private
  */
-Node.prototype._isChildOf = function (node) {
+Node.prototype.isDescendantOf = function (node) {
   var n = this.parent;
   while (n) {
     if (n == node) {
@@ -1883,6 +1997,10 @@ Node.prototype.setSelected = function (selected, isFirst) {
 
     if (this.append) {
       this.append.setSelected(selected);
+    }
+
+    if (this.showMore) {
+      this.showMore.setSelected(selected);
     }
 
     if (this.childs) {
@@ -1989,8 +2107,8 @@ Node.prototype.updateDom = function (options) {
     this._updateDomIndexes();
   }
 
+  // update childs recursively
   if (options && options.recurse === true) {
-    // recurse is true or undefined. update childs recursively
     if (this.childs) {
       this.childs.forEach(function (child) {
         child.updateDom(options);
@@ -1998,9 +2116,19 @@ Node.prototype.updateDom = function (options) {
     }
   }
 
+  // update rendering of error
+  if (this.error) {
+    this.updateError()
+  }
+
   // update row with append button
   if (this.append) {
     this.append.updateDom();
+  }
+
+  // update "show more" text at the bottom of large arrays
+  if (this.showMore) {
+    this.showMore.updateDom();
   }
 };
 
@@ -2151,7 +2279,6 @@ Node.prototype._createDomValue = function () {
       // create a link in case of read-only editor and value containing an url
       domValue = document.createElement('a');
       domValue.href = this.value;
-      domValue.target = '_blank';
       domValue.innerHTML = this._escapeHTML(this.value);
     }
     else {
@@ -2177,9 +2304,7 @@ Node.prototype._createDomExpandButton = function () {
   expand.type = 'button';
   if (this._hasChilds()) {
     expand.className = this.expanded ? 'jsoneditor-expanded' : 'jsoneditor-collapsed';
-    expand.title =
-        'Click to expand/collapse this field (Ctrl+E). \n' +
-        'Ctrl+Click to expand/collapse including all childs.';
+    expand.title = translate('expandTitle');
   }
   else {
     expand.className = 'jsoneditor-invisible';
@@ -2324,7 +2449,7 @@ Node.prototype.onEvent = function (event) {
       case 'keydown':
       case 'mousedown':
           // TODO: cleanup
-        this.editor.selection = this.editor.getSelection();
+        this.editor.selection = this.editor.getDomSelection();
         break;
 
       case 'click':
@@ -2375,7 +2500,7 @@ Node.prototype.onEvent = function (event) {
 
       case 'keydown':
       case 'mousedown':
-        this.editor.selection = this.editor.getSelection();
+        this.editor.selection = this.editor.getDomSelection();
         break;
 
       case 'keyup':
@@ -2396,7 +2521,7 @@ Node.prototype.onEvent = function (event) {
   // focus
   // when clicked in whitespace left or right from the field or value, set focus
   var domTree = dom.tree;
-  if (target == domTree.parentNode && type == 'click' && !event.hasMoved) {
+  if (domTree && target == domTree.parentNode && type == 'click' && !event.hasMoved) {
     var left = (event.offsetX != undefined) ?
         (event.offsetX < (this.getLevel() + 1) * 24) :
         (event.pageX < util.getAbsoluteLeft(dom.tdSeparator));// for FF
@@ -2536,7 +2661,7 @@ Node.prototype.onKeyDown = function (event) {
     }
     else if (altKey && shiftKey && editable) { // Alt + Shift + Arrow left
       if (lastNode.expanded) {
-        var appendDom = lastNode.getAppend();
+        var appendDom = lastNode.getAppendDom();
         nextDom = appendDom ? appendDom.nextSibling : undefined;
       }
       else {
@@ -2550,8 +2675,8 @@ Node.prototype.onKeyDown = function (event) {
         if (nextNode && nextNode instanceof AppendNode &&
             !(lastNode.parent.childs.length == 1) &&
             nextNode2 && nextNode2.parent) {
-          oldSelection = this.editor.getSelection();
-          oldBeforeNode = lastNode._nextSibling();
+          oldSelection = this.editor.getDomSelection();
+          oldBeforeNode = lastNode.nextSibling();
 
           selectedNodes.forEach(function (node) {
             nextNode2.parent.moveBefore(node, nextNode2);
@@ -2563,7 +2688,7 @@ Node.prototype.onKeyDown = function (event) {
             oldBeforeNode: oldBeforeNode,
             newBeforeNode: nextNode2,
             oldSelection: oldSelection,
-            newSelection: this.editor.getSelection()
+            newSelection: this.editor.getDomSelection()
           });
         }
       }
@@ -2597,8 +2722,8 @@ Node.prototype.onKeyDown = function (event) {
       // find the previous node
       prevNode = firstNode._previousNode();
       if (prevNode && prevNode.parent) {
-        oldSelection = this.editor.getSelection();
-        oldBeforeNode = lastNode._nextSibling();
+        oldSelection = this.editor.getDomSelection();
+        oldBeforeNode = lastNode.nextSibling();
 
         selectedNodes.forEach(function (node) {
           prevNode.parent.moveBefore(node, prevNode);
@@ -2610,7 +2735,7 @@ Node.prototype.onKeyDown = function (event) {
           oldBeforeNode: oldBeforeNode,
           newBeforeNode: prevNode,
           oldSelection: oldSelection,
-          newSelection: this.editor.getSelection()
+          newSelection: this.editor.getDomSelection()
         });
       }
       handled = true;
@@ -2630,11 +2755,9 @@ Node.prototype.onKeyDown = function (event) {
       var prevDom = dom.previousSibling;
       if (prevDom) {
         prevNode = Node.getNodeFromTarget(prevDom);
-        if (prevNode && prevNode.parent &&
-            (prevNode instanceof AppendNode)
-            && !prevNode.isVisible()) {
-          oldSelection = this.editor.getSelection();
-          oldBeforeNode = lastNode._nextSibling();
+        if (prevNode && prevNode.parent && !prevNode.isVisible()) {
+          oldSelection = this.editor.getDomSelection();
+          oldBeforeNode = lastNode.nextSibling();
 
           selectedNodes.forEach(function (node) {
             prevNode.parent.moveBefore(node, prevNode);
@@ -2646,7 +2769,7 @@ Node.prototype.onKeyDown = function (event) {
             oldBeforeNode: oldBeforeNode,
             newBeforeNode: prevNode,
             oldSelection: oldSelection,
-            newSelection: this.editor.getSelection()
+            newSelection: this.editor.getDomSelection()
           });
         }
       }
@@ -2684,10 +2807,20 @@ Node.prototype.onKeyDown = function (event) {
       else {
         nextNode = lastNode._nextNode();
       }
+
+      // when the next node is not visible, we've reached the "showMore" buttons
+      if (nextNode && !nextNode.isVisible()) {
+        nextNode = nextNode.parent.showMore;
+      }
+
+      if (nextNode && nextNode instanceof AppendNode) {
+        nextNode = lastNode;
+      }
+
       var nextNode2 = nextNode && (nextNode._nextNode() || nextNode.parent.append);
       if (nextNode2 && nextNode2.parent) {
-        oldSelection = this.editor.getSelection();
-        oldBeforeNode = lastNode._nextSibling();
+        oldSelection = this.editor.getDomSelection();
+        oldBeforeNode = lastNode.nextSibling();
 
         selectedNodes.forEach(function (node) {
           nextNode2.parent.moveBefore(node, nextNode2);
@@ -2699,7 +2832,7 @@ Node.prototype.onKeyDown = function (event) {
           oldBeforeNode: oldBeforeNode,
           newBeforeNode: nextNode2,
           oldSelection: oldSelection,
-          newSelection: this.editor.getSelection()
+          newSelection: this.editor.getDomSelection()
         });
       }
       handled = true;
@@ -2757,9 +2890,9 @@ Node.onRemove = function(nodes) {
     editor.highlighter.unhighlight();
 
     // adjust the focus
-    var oldSelection = editor.getSelection();
+    var oldSelection = editor.getDomSelection();
     Node.blurNodes(nodes);
-    var newSelection = editor.getSelection();
+    var newSelection = editor.getDomSelection();
 
     // remove the nodes
     nodes.forEach(function (node) {
@@ -2796,7 +2929,7 @@ Node.onDuplicate = function(nodes) {
     editor.deselect(editor.multiselection.nodes);
 
     // duplicate the nodes
-    var oldSelection = editor.getSelection();
+    var oldSelection = editor.getDomSelection();
     var afterNode = lastNode;
     var clones = nodes.map(function (node) {
       var clone = node.clone();
@@ -2812,7 +2945,7 @@ Node.onDuplicate = function(nodes) {
     else {
       editor.select(clones);
     }
-    var newSelection = editor.getSelection();
+    var newSelection = editor.getDomSelection();
 
     editor._onAction('duplicateNodes', {
       afterNode: lastNode,
@@ -2832,7 +2965,7 @@ Node.onDuplicate = function(nodes) {
  * @private
  */
 Node.prototype._onInsertBefore = function (field, value, type) {
-  var oldSelection = this.editor.getSelection();
+  var oldSelection = this.editor.getDomSelection();
 
   var newNode = new Node(this.editor, {
     field: (field != undefined) ? field : '',
@@ -2843,7 +2976,7 @@ Node.prototype._onInsertBefore = function (field, value, type) {
   this.parent.insertBefore(newNode, this);
   this.editor.highlighter.unhighlight();
   newNode.focus('field');
-  var newSelection = this.editor.getSelection();
+  var newSelection = this.editor.getDomSelection();
 
   this.editor._onAction('insertBeforeNodes', {
     nodes: [newNode],
@@ -2862,7 +2995,7 @@ Node.prototype._onInsertBefore = function (field, value, type) {
  * @private
  */
 Node.prototype._onInsertAfter = function (field, value, type) {
-  var oldSelection = this.editor.getSelection();
+  var oldSelection = this.editor.getDomSelection();
 
   var newNode = new Node(this.editor, {
     field: (field != undefined) ? field : '',
@@ -2873,7 +3006,7 @@ Node.prototype._onInsertAfter = function (field, value, type) {
   this.parent.insertAfter(newNode, this);
   this.editor.highlighter.unhighlight();
   newNode.focus('field');
-  var newSelection = this.editor.getSelection();
+  var newSelection = this.editor.getDomSelection();
 
   this.editor._onAction('insertAfterNodes', {
     nodes: [newNode],
@@ -2892,7 +3025,7 @@ Node.prototype._onInsertAfter = function (field, value, type) {
  * @private
  */
 Node.prototype._onAppend = function (field, value, type) {
-  var oldSelection = this.editor.getSelection();
+  var oldSelection = this.editor.getDomSelection();
 
   var newNode = new Node(this.editor, {
     field: (field != undefined) ? field : '',
@@ -2903,7 +3036,7 @@ Node.prototype._onAppend = function (field, value, type) {
   this.parent.appendChild(newNode);
   this.editor.highlighter.unhighlight();
   newNode.focus('field');
-  var newSelection = this.editor.getSelection();
+  var newSelection = this.editor.getDomSelection();
 
   this.editor._onAction('appendNodes', {
     nodes: [newNode],
@@ -2921,9 +3054,9 @@ Node.prototype._onAppend = function (field, value, type) {
 Node.prototype._onChangeType = function (newType) {
   var oldType = this.type;
   if (newType != oldType) {
-    var oldSelection = this.editor.getSelection();
+    var oldSelection = this.editor.getDomSelection();
     this.changeType(newType);
-    var newSelection = this.editor.getSelection();
+    var newSelection = this.editor.getDomSelection();
 
     this.editor._onAction('changeType', {
       node: this,
@@ -2938,51 +3071,199 @@ Node.prototype._onChangeType = function (newType) {
 /**
  * Sort the child's of the node. Only applicable when the node has type 'object'
  * or 'array'.
+ * @param {String[]} path      Path of the child value to be compared
  * @param {String} direction   Sorting direction. Available values: "asc", "desc"
  * @private
  */
-Node.prototype.sort = function (direction) {
+Node.prototype.sort = function (path, direction) {
   if (!this._hasChilds()) {
     return;
   }
 
-  var order = (direction == 'desc') ? -1 : 1;
-  var prop = (this.type == 'array') ? 'value': 'field';
-  this.hideChilds();
+  this.hideChilds(); // sorting is faster when the childs are not attached to the dom
 
+  // copy the childs array (the old one will be kept for an undo action
   var oldChilds = this.childs;
-  var oldSortOrder = this.sortOrder;
-
-  // copy the array (the old one will be kept for an undo action
   this.childs = this.childs.concat();
 
-  // sort the arrays
-  this.childs.sort(function (a, b) {
-    return order * naturalSort(a[prop], b[prop]);
-  });
-  this.sortOrder = (order == 1) ? 'asc' : 'desc';
+  // sort the childs array
+  var order = (direction === 'desc') ? -1 : 1;
+
+  if (this.type === 'object') {
+    this.childs.sort(function (a, b) {
+      return order * naturalSort(a.field, b.field);
+    });
+  }
+  else { // this.type === 'array'
+    this.childs.sort(function (a, b) {
+      var nodeA = a.getNestedChild(path);
+      var nodeB = b.getNestedChild(path);
+
+      if (!nodeA) {
+        return order;
+      }
+      if (!nodeB) {
+        return -order;
+      }
+
+      var valueA = nodeA.value;
+      var valueB = nodeB.value;
+
+      if (typeof valueA !== 'string' && typeof valueB !== 'string') {
+        // both values are a number, boolean, or null -> use simple, fast sorting
+        return valueA > valueB ? order : valueA < valueB ? -order : 0;
+      }
+
+      return order * naturalSort(valueA, valueB);
+    });
+  }
+
+  // update the index numbering
+  this._updateDomIndexes();
 
   this.editor._onAction('sort', {
     node: this,
     oldChilds: oldChilds,
-    oldSort: oldSortOrder,
-    newChilds: this.childs,
-    newSort: this.sortOrder
+    newChilds: this.childs
   });
 
   this.showChilds();
 };
 
 /**
- * Create a table row with an append button.
- * @return {HTMLElement | undefined} buttonAppend or undefined when inapplicable
+ * Transform the node given a JMESPath query.
+ * @param {String} query    JMESPath query to apply
+ * @private
  */
-Node.prototype.getAppend = function () {
+Node.prototype.transform = function (query) {
+  if (!this._hasChilds()) {
+    return;
+  }
+
+  this.hideChilds(); // sorting is faster when the childs are not attached to the dom
+
+  // copy the childs array (the old one will be kept for an undo action
+  var oldType = this.type;
+  var oldChilds = this.childs;
+  this.childs = this.childs.concat();
+
+  try {
+    // apply the JMESPath query
+    var oldValue = this.getValue();
+    var newValue = jmespath.search(oldValue, query);
+
+    this.setValue(newValue);
+
+    this.editor._onAction('transform', {
+      node: this,
+      oldType: oldType,
+      newType: this.type,
+      oldValue: oldValue,
+      newValue: newValue,
+      oldChilds: oldChilds,
+      newChilds: this.childs
+      // TODO: use oldChilds/newChilds in history or clean it up
+    });
+
+    this.showChilds();
+  }
+  catch (err) {
+    this.showChilds();
+
+    this.editor._onError(err);
+  }
+};
+
+/**
+ * Get a nested child given a path with properties
+ * @param {String[]} path
+ * @returns {Node}
+ */
+Node.prototype.getNestedChild = function (path) {
+  var i = 0;
+  var child = this;
+
+  while (child && i < path.length) {
+    child = child.findChildByProperty(path[i]);
+    i++;
+  }
+
+  return child;
+};
+
+/**
+ * Find a child by property name
+ * @param {string} prop
+ * @return {Node | undefined} Returns the child node when found, or undefined otherwise
+ */
+Node.prototype.findChildByProperty = function(prop) {
+  if (this.type !== 'object') {
+    return undefined;
+  }
+
+  return this.childs.find(function (child) {
+    return child.field === prop;
+  });
+};
+
+/**
+ * Get the child paths of this node
+ * @param {boolean} [includeObjects=false] If true, object and array paths are returned as well
+ * @return {string[]}
+ */
+Node.prototype.getChildPaths = function (includeObjects) {
+  var pathsMap = {};
+
+  this._getChildPaths(pathsMap, '', includeObjects);
+
+  if (this.type === 'array') {
+    this.childs.forEach(function (child) {
+      child._getChildPaths(pathsMap, '', includeObjects);
+    });
+  }
+
+  return Object.keys(pathsMap).sort();
+};
+
+/**
+ * Get the child paths of this node
+ * @param {Object<String, boolean>} pathsMap
+ * @param {boolean} [includeObjects=false]  If true, object and array paths are returned as well
+ * @param {string} rootPath
+ */
+Node.prototype._getChildPaths = function (pathsMap, rootPath, includeObjects) {
+  if (this.type === 'auto' || this.type === 'string' || includeObjects) {
+    pathsMap[rootPath || '.'] = true;
+  }
+
+  if (this.type === 'object') {
+    this.childs.forEach(function (child) {
+      child._getChildPaths(pathsMap, rootPath + '.' + child.field, includeObjects);
+    });
+  }
+};
+
+/**
+ * Create a table row with an append button.
+ * @return {HTMLElement | undefined} tr with the AppendNode contents
+ */
+Node.prototype.getAppendDom = function () {
   if (!this.append) {
     this.append = new AppendNode(this.editor);
     this.append.setParent(this);
   }
   return this.append.getDom();
+};
+
+/**
+ * Create a table row with an showMore button and text
+ * @return {HTMLElement | undefined} tr with the AppendNode contents
+ */
+Node.prototype.getShowMoreDom = function () {
+  if (!this.showMore) {
+    this.showMore = new ShowMoreNode(this.editor, this);
+  }
+  return this.showMore.getDom();
 };
 
 /**
@@ -3031,9 +3312,8 @@ Node.blurNodes = function (nodes) {
 /**
  * Get the next sibling of current node
  * @return {Node} nextSibling
- * @private
  */
-Node.prototype._nextSibling = function () {
+Node.prototype.nextSibling = function () {
   var index = this.parent.childs.indexOf(this);
   return this.parent.childs[index + 1] || this.parent.append;
 };
@@ -3041,7 +3321,6 @@ Node.prototype._nextSibling = function () {
 /**
  * Get the previously rendered node
  * @return {Node | null} previousNode
- * @private
  */
 Node.prototype._previousNode = function () {
   var prevNode = null;
@@ -3053,7 +3332,7 @@ Node.prototype._previousNode = function () {
       prevDom = prevDom.previousSibling;
       prevNode = Node.getNodeFromTarget(prevDom);
     }
-    while (prevDom && (prevNode instanceof AppendNode && !prevNode.isVisible()));
+    while (prevDom && prevNode && (prevNode instanceof AppendNode && !prevNode.isVisible()));
   }
   return prevNode;
 };
@@ -3073,7 +3352,7 @@ Node.prototype._nextNode = function () {
       nextDom = nextDom.nextSibling;
       nextNode = Node.getNodeFromTarget(nextDom);
     }
-    while (nextDom && (nextNode instanceof AppendNode && !nextNode.isVisible()));
+    while (nextDom && nextNode && (nextNode instanceof AppendNode && !nextNode.isVisible()));
   }
 
   return nextNode;
@@ -3106,7 +3385,7 @@ Node.prototype._lastNode = function () {
   if (dom && dom.parentNode) {
     var lastDom = dom.parentNode.lastChild;
     lastNode =  Node.getNodeFromTarget(lastDom);
-    while (lastDom && (lastNode instanceof AppendNode && !lastNode.isVisible())) {
+    while (lastDom && lastNode && !lastNode.isVisible()) {
       lastDom = lastDom.previousSibling;
       lastNode =  Node.getNodeFromTarget(lastDom);
     }
@@ -3209,16 +3488,10 @@ Node.prototype._hasChilds = function () {
 
 // titles with explanation for the different types
 Node.TYPE_TITLES = {
-  'auto': 'Field type "auto". ' +
-      'The field type is automatically determined from the value ' +
-      'and can be a string, number, boolean, or null.',
-  'object': 'Field type "object". ' +
-      'An object contains an unordered set of key/value pairs.',
-  'array': 'Field type "array". ' +
-      'An array contains an ordered collection of values.',
-  'string': 'Field type "string". ' +
-      'Field type is not determined from the value, ' +
-      'but always returned as string.'
+  'auto': translate('autoType'),
+  'object': translate('objectType'),
+  'array': translate('arrayType'),
+  'string': translate('stringType')
 };
 
 Node.prototype.addTemplates = function (menu, append) {
@@ -3261,12 +3534,12 @@ Node.prototype.showContextMenu = function (anchor, onClose) {
 
   if (this.editable.value) {
     items.push({
-      text: 'Type',
-      title: 'Change the type of this field',
+      text: translate('type'),
+      title: translate('typeTitle'),
       className: 'jsoneditor-type-' + this.type,
       submenu: [
         {
-          text: 'Auto',
+          text: translate('auto'),
           className: 'jsoneditor-type-auto' +
               (this.type == 'auto' ? ' jsoneditor-selected' : ''),
           title: titles.auto,
@@ -3275,7 +3548,7 @@ Node.prototype.showContextMenu = function (anchor, onClose) {
           }
         },
         {
-          text: 'Array',
+          text: translate('array'),
           className: 'jsoneditor-type-array' +
               (this.type == 'array' ? ' jsoneditor-selected' : ''),
           title: titles.array,
@@ -3284,7 +3557,7 @@ Node.prototype.showContextMenu = function (anchor, onClose) {
           }
         },
         {
-          text: 'Object',
+          text: translate('object'),
           className: 'jsoneditor-type-object' +
               (this.type == 'object' ? ' jsoneditor-selected' : ''),
           title: titles.object,
@@ -3293,7 +3566,7 @@ Node.prototype.showContextMenu = function (anchor, onClose) {
           }
         },
         {
-          text: 'String',
+          text: translate('string'),
           className: 'jsoneditor-type-string' +
               (this.type == 'string' ? ' jsoneditor-selected' : ''),
           title: titles.string,
@@ -3306,32 +3579,24 @@ Node.prototype.showContextMenu = function (anchor, onClose) {
   }
 
   if (this._hasChilds()) {
-    var direction = ((this.sortOrder == 'asc') ? 'desc': 'asc');
     items.push({
-      text: 'Sort',
-      title: 'Sort the childs of this ' + this.type,
-      className: 'jsoneditor-sort-' + direction,
+      text: translate('sort'),
+      title: translate('sortTitle', {type: this.type}),
+      className: 'jsoneditor-sort-asc',
       click: function () {
-        node.sort(direction);
-      },
-      submenu: [
-        {
-          text: 'Ascending',
-          className: 'jsoneditor-sort-asc',
-          title: 'Sort the childs of this ' + this.type + ' in ascending order',
-          click: function () {
-            node.sort('asc');
-          }
-        },
-        {
-          text: 'Descending',
-          className: 'jsoneditor-sort-desc',
-          title: 'Sort the childs of this ' + this.type +' in descending order',
-          click: function () {
-            node.sort('desc');
-          }
-        }
-      ]
+        var anchor = node.editor.options.modalAnchor || DEFAULT_MODAL_ANCHOR;
+        showSortModal(node, anchor)
+      }
+    });
+
+    items.push({
+      text: translate('transform'),
+      title: translate('transformTitle', {type: this.type}),
+      className: 'jsoneditor-transform',
+      click: function () {
+        var anchor = node.editor.options.modalAnchor || DEFAULT_MODAL_ANCHOR;
+        showTransformModal(node, anchor)
+      }
     });
   }
 
@@ -3348,7 +3613,7 @@ Node.prototype.showContextMenu = function (anchor, onClose) {
     if (node == childs[childs.length - 1]) {
         var appendSubmenu = [
             {
-                text: 'Auto',
+                text: translate('auto'),
                 className: 'jsoneditor-type-auto',
                 title: titles.auto,
                 click: function () {
@@ -3356,7 +3621,7 @@ Node.prototype.showContextMenu = function (anchor, onClose) {
                 }
             },
             {
-                text: 'Array',
+                text: translate('array'),
                 className: 'jsoneditor-type-array',
                 title: titles.array,
                 click: function () {
@@ -3364,7 +3629,7 @@ Node.prototype.showContextMenu = function (anchor, onClose) {
                 }
             },
             {
-                text: 'Object',
+                text: translate('object'),
                 className: 'jsoneditor-type-object',
                 title: titles.object,
                 click: function () {
@@ -3372,7 +3637,7 @@ Node.prototype.showContextMenu = function (anchor, onClose) {
                 }
             },
             {
-                text: 'String',
+                text: translate('string'),
                 className: 'jsoneditor-type-string',
                 title: titles.string,
                 click: function () {
@@ -3382,9 +3647,9 @@ Node.prototype.showContextMenu = function (anchor, onClose) {
         ];
         node.addTemplates(appendSubmenu, true);
         items.push({
-            text: 'Append',
-            title: 'Append a new field with type \'auto\' after this field (Ctrl+Shift+Ins)',
-            submenuTitle: 'Select the type of the field to be appended',
+            text: translate('appendText'),
+            title: translate('appendTitle'),
+            submenuTitle: translate('appendSubmenuTitle'),
             className: 'jsoneditor-append',
             click: function () {
                 node._onAppend('', '', 'auto');
@@ -3398,7 +3663,7 @@ Node.prototype.showContextMenu = function (anchor, onClose) {
     // create insert button
     var insertSubmenu = [
         {
-            text: 'Auto',
+            text: translate('auto'),
             className: 'jsoneditor-type-auto',
             title: titles.auto,
             click: function () {
@@ -3406,7 +3671,7 @@ Node.prototype.showContextMenu = function (anchor, onClose) {
             }
         },
         {
-            text: 'Array',
+            text: translate('array'),
             className: 'jsoneditor-type-array',
             title: titles.array,
             click: function () {
@@ -3414,7 +3679,7 @@ Node.prototype.showContextMenu = function (anchor, onClose) {
             }
         },
         {
-            text: 'Object',
+            text: translate('object'),
             className: 'jsoneditor-type-object',
             title: titles.object,
             click: function () {
@@ -3422,7 +3687,7 @@ Node.prototype.showContextMenu = function (anchor, onClose) {
             }
         },
         {
-            text: 'String',
+            text: translate('string'),
             className: 'jsoneditor-type-string',
             title: titles.string,
             click: function () {
@@ -3432,9 +3697,9 @@ Node.prototype.showContextMenu = function (anchor, onClose) {
     ];
     node.addTemplates(insertSubmenu, false);
     items.push({
-      text: 'Insert',
-      title: 'Insert a new field with type \'auto\' before this field (Ctrl+Ins)',
-      submenuTitle: 'Select the type of the field to be inserted',
+      text: translate('insert'),
+      title: translate('insertTitle'),
+      submenuTitle: translate('insertSub'),
       className: 'jsoneditor-insert',
       click: function () {
         node._onInsertBefore('', '', 'auto');
@@ -3445,8 +3710,8 @@ Node.prototype.showContextMenu = function (anchor, onClose) {
     if (this.editable.field) {
       // create duplicate button
       items.push({
-        text: 'Duplicate',
-        title: 'Duplicate this field (Ctrl+D)',
+        text: translate('duplicateText'),
+        title: translate('duplicateField'),
         className: 'jsoneditor-duplicate',
         click: function () {
           Node.onDuplicate(node);
@@ -3455,8 +3720,8 @@ Node.prototype.showContextMenu = function (anchor, onClose) {
 
       // create remove button
       items.push({
-        text: 'Remove',
-        title: 'Remove this field (Ctrl+Del)',
+        text: translate('removeText'),
+        title: translate('removeField'),
         className: 'jsoneditor-remove',
         click: function () {
           Node.onRemove(node);
@@ -3607,6 +3872,8 @@ Node.prototype._escapeJSON = function (text) {
 };
 
 // TODO: find a nicer solution to resolve this circular dependency between Node and AppendNode
+//       idea: introduce properties .isAppendNode and .isNode and use that instead of instanceof AppendNode checks
 var AppendNode = appendNodeFactory(Node);
+var ShowMoreNode = showMoreNodeFactory(Node);
 
 module.exports = Node;

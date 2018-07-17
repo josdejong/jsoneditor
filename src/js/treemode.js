@@ -10,6 +10,13 @@ var Node = require('./Node');
 var ModeSwitcher = require('./ModeSwitcher');
 var util = require('./util');
 var autocomplete = require('./autocomplete');
+var showSortModal = require('./showSortModal');
+var showTransformModal = require('./showTransformModal');
+var translate = require('./i18n').translate;
+var setLanguages = require('./i18n').setLanguages;
+var setLanguage = require('./i18n').setLanguage;
+
+var DEFAULT_MODAL_ANCHOR = document.body; // TODO: this constant is defined twice
 
 // create a mixin with the functions for tree mode
 var treemode = {};
@@ -115,7 +122,8 @@ treemode._setOptions = function (options) {
     schema: null,
     schemaRefs: null,
     autocomplete: null,
-    navigationBar : true
+    navigationBar : true,
+    onSelectionChange: null
   };
 
   // copy all options
@@ -132,6 +140,13 @@ treemode._setOptions = function (options) {
 
   // create a debounced validate function
   this._debouncedValidate = util.debounce(this.validate.bind(this), this.DEBOUNCE_INTERVAL);
+
+  if (options.onSelectionChange) {
+    this.onSelectionChange(options.onSelectionChange);
+  }
+
+  setLanguages(this.options.languages);
+  setLanguage(this.options.language)
 };
 
 /**
@@ -285,6 +300,10 @@ treemode.clear = function () {
     this.tbody.removeChild(this.node.getDom());
     delete this.node;
   }
+
+  if (this.treePath) {
+    this.treePath.reset();
+  }
 };
 
 /**
@@ -435,28 +454,35 @@ treemode.validate = function () {
     }
   }
 
-  // display the error in the nodes with a problem
-  this.errorNodes = duplicateErrors
-      .concat(schemaErrors)
-      .reduce(function expandParents (all, entry) {
-        // expand parents, then merge such that parents come first and
-        // original entries last
-        return entry.node
-            .findParents()
-            .map(function (parent) {
-              return {
-                node: parent,
-                child: entry.node,
-                error: {
-                  message: parent.type === 'object'
-                      ? 'Contains invalid properties' // object
-                      : 'Contains invalid items'      // array
-                }
-              };
-            })
-            .concat(all, [entry]);
-      }, [])
-      // TODO: dedupe the parent nodes
+  var errorNodes = duplicateErrors.concat(schemaErrors);
+  var parentPairs = errorNodes
+      .reduce(function (all, entry) {
+          return entry.node
+              .findParents()
+              .filter(function (parent) {
+                  return !all.some(function (pair) {
+                    return pair[0] === parent;
+                  });
+              })
+              .map(function (parent) {
+                  return [parent, entry.node];
+              })
+              .concat(all);
+      }, []);
+
+  this.errorNodes = parentPairs
+      .map(function (pair) {
+          return {
+            node: pair[0],
+            child: pair[1],
+            error: {
+              message: pair[0].type === 'object'
+                  ? 'Contains invalid properties' // object
+                  : 'Contains invalid items'      // array
+            }
+          };
+      })
+      .concat(errorNodes)
       .map(function setError (entry) {
         entry.node.setError(entry.error, entry.child);
         return entry.node;
@@ -538,7 +564,7 @@ treemode.stopAutoScroll = function () {
  *                            {Node[]} nodes                Nodes in case of multi selection
  *                            {Number} scrollTop            Scroll position
  */
-treemode.setSelection = function (selection) {
+treemode.setDomSelection = function (selection) {
   if (!selection) {
     return;
   }
@@ -568,7 +594,7 @@ treemode.setSelection = function (selection) {
  *                            {Node[]} nodes                Nodes in case of multi selection
  *                            {Number} scrollTop            Scroll position
  */
-treemode.getSelection = function () {
+treemode.getDomSelection = function () {
   var range = util.getSelectionOffset();
   if (range && range.container.nodeName !== 'DIV') { // filter on (editable) divs)
     range = null;
@@ -695,7 +721,7 @@ treemode._createFrame = function () {
   var expandAll = document.createElement('button');
   expandAll.type = 'button';
   expandAll.className = 'jsoneditor-expand-all';
-  expandAll.title = 'Expand all fields';
+  expandAll.title = translate('expandAll');
   expandAll.onclick = function () {
     editor.expandAll();
   };
@@ -704,12 +730,34 @@ treemode._createFrame = function () {
   // create collapse all button
   var collapseAll = document.createElement('button');
   collapseAll.type = 'button';
-  collapseAll.title = 'Collapse all fields';
+  collapseAll.title = translate('collapseAll');
   collapseAll.className = 'jsoneditor-collapse-all';
   collapseAll.onclick = function () {
     editor.collapseAll();
   };
   this.menu.appendChild(collapseAll);
+
+  // create sort button
+  var sort = document.createElement('button');
+  sort.type = 'button';
+  sort.className = 'jsoneditor-sort';
+  sort.title = translate('sortTitleShort');
+  sort.onclick = function () {
+    var anchor = editor.options.modalAnchor || DEFAULT_MODAL_ANCHOR;
+    showSortModal(editor.node, anchor)
+  };
+  this.menu.appendChild(sort);
+
+  // create transform button
+  var transform = document.createElement('button');
+  transform.type = 'button';
+  transform.title = translate('transformTitleShort');
+  transform.className = 'jsoneditor-transform';
+  transform.onclick = function () {
+    var anchor = editor.options.modalAnchor || DEFAULT_MODAL_ANCHOR;
+    showTransformModal(editor.node, anchor)
+  };
+  this.menu.appendChild(transform);
 
   // create undo/redo buttons
   if (this.history) {
@@ -717,7 +765,7 @@ treemode._createFrame = function () {
     var undo = document.createElement('button');
     undo.type = 'button';
     undo.className = 'jsoneditor-undo jsoneditor-separator';
-    undo.title = 'Undo last action (Ctrl+Z)';
+    undo.title = translate('undo');
     undo.onclick = function () {
       editor._onUndo();
     };
@@ -728,7 +776,7 @@ treemode._createFrame = function () {
     var redo = document.createElement('button');
     redo.type = 'button';
     redo.className = 'jsoneditor-redo';
-    redo.title = 'Redo (Ctrl+Shift+Z)';
+    redo.title = translate('redo');
     redo.onclick = function () {
       editor._onRedo();
     };
@@ -806,30 +854,34 @@ treemode._onRedo = function () {
  * @private
  */
 treemode._onEvent = function (event) {
-  if (event.type == 'keydown') {
+  if (event.type === 'keydown') {
     this._onKeyDown(event);
   }
 
-  if (event.type == 'focus') {
+  if (event.type === 'focus') {
     this.focusTarget = event.target;
   }
 
-  if (event.type == 'mousedown') {
+  if (event.type === 'mousedown') {
     this._startDragDistance(event);
   }
-  if (event.type == 'mousemove' || event.type == 'mouseup' || event.type == 'click') {
+  if (event.type === 'mousemove' || event.type === 'mouseup' || event.type === 'click') {
     this._updateDragDistance(event);
   }
 
   var node = Node.getNodeFromTarget(event.target);
 
-  if (this.options && this.options.navigationBar && node && (event.type == 'keydown' || event.type == 'mousedown')) {
-    this._updateTreePath(node.getNodePath());
+  if (node && this.options && this.options.navigationBar && node && (event.type === 'keydown' || event.type === 'mousedown')) {
+    // apply on next tick, right after the new key press is applied
+    var me = this;
+    setTimeout(function () {
+      me._updateTreePath(node.getNodePath());
+    })
   }
 
   if (node && node.selected) {
-    if (event.type == 'click') {
-      if (event.target == node.dom.menu) {
+    if (event.type === 'click') {
+      if (event.target === node.dom.menu) {
         this.showContextMenu(event.target);
 
         // stop propagation (else we will open the context menu of a single node)
@@ -842,20 +894,20 @@ treemode._onEvent = function (event) {
       }
     }
 
-    if (event.type == 'mousedown') {
+    if (event.type === 'mousedown') {
       // drag multiple nodes
       Node.onDragStart(this.multiselection.nodes, event);
     }
   }
   else {
-    if (event.type == 'mousedown') {
+    if (event.type === 'mousedown') {
       this.deselect();
 
-      if (node && event.target == node.dom.drag) {
+      if (node && event.target === node.dom.drag) {
         // drag a singe node
         Node.onDragStart(node, event);
       }
-      else if (!node || (event.target != node.dom.field && event.target != node.dom.value && event.target != node.dom.select)) {
+      else if (!node || (event.target !== node.dom.field && event.target !== node.dom.value && event.target !== node.dom.select)) {
         // select multiple nodes
         this._onMultiSelectStart(event);
       }
@@ -899,7 +951,9 @@ treemode._updateTreePath = function (pathNodes) {
   }
 
   function getName(node) {
-    return node.field || (isNaN(node.index) ? node.type : node.index);
+    return node.field !== undefined
+        ? node._escapeHTML(node.field)
+        : (isNaN(node.index) ? node.type : node.index);
   }
 };
 
@@ -1029,6 +1083,14 @@ treemode._onMultiSelect = function (event) {
   if (start && end) {
     // find the top level childs, all having the same parent
     this.multiselection.nodes = this._findTopLevelNodes(start, end);
+    if (this.multiselection.nodes && this.multiselection.nodes.length) {
+      var firstNode = this.multiselection.nodes[0];
+      if (this.multiselection.start === firstNode || this.multiselection.start.isDescendantOf(firstNode)) {
+        this.multiselection.direction = 'down';
+      } else {
+        this.multiselection.direction = 'up';
+      }
+    }
     this.select(this.multiselection.nodes);
   }
 };
@@ -1061,9 +1123,10 @@ treemode._onMultiSelectEnd = function (event) {
 /**
  * deselect currently selected nodes
  * @param {boolean} [clearStartAndEnd=false]  If true, the `start` and `end`
- *                                            state is cleared too.
+ *                                            state is cleared too. 
  */
 treemode.deselect = function (clearStartAndEnd) {
+  var selectionChanged = !!this.multiselection.nodes.length;
   this.multiselection.nodes.forEach(function (node) {
     node.setSelected(false);
   });
@@ -1072,6 +1135,12 @@ treemode.deselect = function (clearStartAndEnd) {
   if (clearStartAndEnd) {
     this.multiselection.start = null;
     this.multiselection.end = null;
+  }
+
+  if (selectionChanged) {
+    if (this._selectionChangedHandler) {
+      this._selectionChangedHandler();
+    }
   }
 };
 
@@ -1091,8 +1160,14 @@ treemode.select = function (nodes) {
 
     var first = nodes[0];
     nodes.forEach(function (node) {
+      node.expandPathToNode();
       node.setSelected(true, node === first);
     });
+
+    if (this._selectionChangedHandler) {
+      var selection = this.getSelection();
+      this._selectionChangedHandler(selection.start, selection.end);
+    }
   }
 };
 
@@ -1210,13 +1285,18 @@ treemode._onKeyDown = function (event) {
           setTimeout(function (hnode, element) {
               if (element.innerText.length > 0) {
                   var result = this.options.autocomplete.getOptions(element.innerText, hnode.getPath(), jsonElementType, hnode.editor);
-                  if (typeof result.then === 'function') {
+                  if (result === null) {
+                      this.autocomplete.hideDropDown();
+                  } else if (typeof result.then === 'function') {
                       // probably a promise
                       if (result.then(function (obj) {
-                          if (obj.options)
+                          if (obj === null) {
+                              this.autocomplete.hideDropDown();
+                          } else if (obj.options) {
                               this.autocomplete.show(element, obj.startFrom, obj.options);
-                          else
+                          } else {
                               this.autocomplete.show(element, 0, obj);
+                          }
                       }.bind(this)));
                   } else {
                       // definitely not a promise
@@ -1294,8 +1374,8 @@ treemode.showContextMenu = function (anchor, onClose) {
 
   // create duplicate button
   items.push({
-    text: 'Duplicate',
-    title: 'Duplicate selected fields (Ctrl+D)',
+    text: translate('duplicateText'),
+    title: translate('duplicateTitle'),
     className: 'jsoneditor-duplicate',
     click: function () {
       Node.onDuplicate(editor.multiselection.nodes);
@@ -1304,8 +1384,8 @@ treemode.showContextMenu = function (anchor, onClose) {
 
   // create remove button
   items.push({
-    text: 'Remove',
-    title: 'Remove selected fields (Ctrl+Del)',
+    text: translate('remove'),
+    title: translate('removeTitle'),
     className: 'jsoneditor-remove',
     click: function () {
       Node.onRemove(editor.multiselection.nodes);
@@ -1316,6 +1396,125 @@ treemode.showContextMenu = function (anchor, onClose) {
   menu.show(anchor, this.content);
 };
 
+/**
+ * Get current selected nodes
+ * @return {{start:SerializableNode, end: SerializableNode}}
+ */
+treemode.getSelection = function () {
+  var selection = {
+    start: null,
+    end: null
+  };
+  if (this.multiselection.nodes && this.multiselection.nodes.length) {
+    if (this.multiselection.nodes.length) {
+      var selection1 = this.multiselection.nodes[0];
+      var selection2 = this.multiselection.nodes[this.multiselection.nodes.length - 1];
+      if (this.multiselection.direction === 'down') {
+        selection.start = selection1.serialize();
+        selection.end = selection2.serialize();
+      } else {
+        selection.start = selection2.serialize();
+        selection.end = selection1.serialize();
+      }
+    }
+  }
+  return selection;
+};
+
+/**
+ * Callback registraion for selection change
+ * @param {selectionCallback} callback 
+ * 
+ * @callback selectionCallback
+ * @param {SerializableNode=} start
+ * @param {SerializableNode=} end
+ */
+treemode.onSelectionChange = function (callback) {
+  if (typeof callback === 'function') {
+    this._selectionChangedHandler = util.debounce(callback, this.DEBOUNCE_INTERVAL);
+  }
+};
+
+/**
+ * Select range of nodes.
+ * For selecting single node send only the start parameter
+ * For clear the selection do not send any parameter
+ * If the nodes are not from the same level the first common parent will be selected
+ * @param {{path: Array.<String>}} start object contains the path for selection start 
+ * @param {{path: Array.<String>}=} end object contains the path for selection end
+ */
+treemode.setSelection = function (start, end) {
+  // check for old usage
+  if (start && start.dom && start.range) {
+    console.warn('setSelection/getSelection usage for text selection is depracated and should not be used, see documantaion for supported selection options');
+    this.setDomSelection(start);
+  }
+
+  var nodes = this._getNodeIntsncesByRange(start, end);
+  
+  nodes.forEach(function(node) {
+    node.expandTo();
+  });
+  this.select(nodes);
+};
+
+/**
+ * Returns a set of Nodes according to a range of selection
+ * @param {{path: Array.<String>}} start object contains the path for range start 
+ * @param {{path: Array.<String>}=} end object contains the path for range end
+ * @return {Array.<Node>} Node intances on the given range
+ * @private
+ */
+treemode._getNodeIntsncesByRange = function (start, end) {
+  var startNode, endNode;
+
+  if (start && start.path) {
+    startNode = this.node.findNodeByPath(start.path);
+    if (end && end.path) {
+      endNode = this.node.findNodeByPath(end.path);
+    }
+  }
+
+  var nodes = [];
+  if (startNode instanceof Node) {
+    if (endNode instanceof Node && endNode !== startNode) {
+      if (startNode.parent === endNode.parent) {
+        var start, end;
+        if (startNode.getIndex() < endNode.getIndex()) {
+          start = startNode;
+          end = endNode;
+        } else {
+          start = endNode;
+          end = startNode;
+        }
+        var current = start;
+        nodes.push(current);
+        do {
+          current = current.nextSibling();
+          nodes.push(current);
+        } while (current && current !== end);
+      } else {
+        nodes = this._findTopLevelNodes(startNode, endNode);
+      }
+    } else {
+      nodes.push(startNode);
+    }
+  }
+
+  return nodes;
+
+};
+
+treemode.getNodesByRange = function (start, end) {
+  var nodes = this._getNodeIntsncesByRange(start, end);
+  var serializableNodes = [];
+
+  nodes.forEach(function (node){
+    serializableNodes.push(node.serialize());
+  });
+
+  return serializableNodes;
+}
 
 // define modes
 module.exports = [

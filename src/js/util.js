@@ -588,8 +588,7 @@ exports.getInnerText = function getInnerText(element, buffer) {
 exports.getInternetExplorerVersion = function getInternetExplorerVersion() {
   if (_ieVersion == -1) {
     var rv = -1; // Return value assumes failure.
-    if (navigator.appName == 'Microsoft Internet Explorer')
-    {
+    if (typeof navigator !== 'undefined' && navigator.appName == 'Microsoft Internet Explorer') {
       var ua = navigator.userAgent;
       var re  = new RegExp("MSIE ([0-9]{1,}[\.0-9]{0,})");
       if (re.exec(ua) != null) {
@@ -608,7 +607,7 @@ exports.getInternetExplorerVersion = function getInternetExplorerVersion() {
  * @returns {boolean} isFirefox
  */
 exports.isFirefox = function isFirefox () {
-  return (navigator.userAgent.indexOf("Firefox") != -1);
+  return (typeof navigator !== 'undefined' && navigator.userAgent.indexOf("Firefox") !== -1);
 };
 
 /**
@@ -825,11 +824,11 @@ exports.textDiff = function textDiff(oldText, newText) {
  * @return {Object} reference Object with 2 properties (start and end) with the identifier of the location of the cursor and selected text.
  **/
 exports.getInputSelection = function(el) {
-  var start = 0, end = 0, normalizedValue, range, textInputRange, len, endRange;
+  var startIndex = 0, endIndex = 0, normalizedValue, range, textInputRange, len, endRange;
 
   if (typeof el.selectionStart == "number" && typeof el.selectionEnd == "number") {
-      start = el.selectionStart;
-      end = el.selectionEnd;
+      startIndex = el.selectionStart;
+      endIndex = el.selectionEnd;
   } else {
       range = document.selection.createRange();
 
@@ -841,38 +840,69 @@ exports.getInputSelection = function(el) {
           textInputRange = el.createTextRange();
           textInputRange.moveToBookmark(range.getBookmark());
 
-          // Check if the start and end of the selection are at the very end
+          // Check if the startIndex and endIndex of the selection are at the very end
           // of the input, since moveStart/moveEnd doesn't return what we want
           // in those cases
           endRange = el.createTextRange();
           endRange.collapse(false);
 
           if (textInputRange.compareEndPoints("StartToEnd", endRange) > -1) {
-              start = end = len;
+              startIndex = endIndex = len;
           } else {
-              start = -textInputRange.moveStart("character", -len);
-              start += normalizedValue.slice(0, start).split("\n").length - 1;
+              startIndex = -textInputRange.moveStart("character", -len);
+              startIndex += normalizedValue.slice(0, startIndex).split("\n").length - 1;
 
               if (textInputRange.compareEndPoints("EndToEnd", endRange) > -1) {
-                  end = len;
+                  endIndex = len;
               } else {
-                  end = -textInputRange.moveEnd("character", -len);
-                  end += normalizedValue.slice(0, end).split("\n").length - 1;
+                  endIndex = -textInputRange.moveEnd("character", -len);
+                  endIndex += normalizedValue.slice(0, endIndex).split("\n").length - 1;
               }
           }
       }
   }
 
-  var textTillCaret = el.value.substring(0,end);
-  var row = (textTillCaret.match(/\n/g) || []).length + 1;
-  var col = textTillCaret.length - textTillCaret.lastIndexOf("\n");
-
   return {
-      start: start,
-      end: end,
-      col: col,
-      row: row
+      startIndex: startIndex,
+      endIndex: endIndex,
+      start: _positionForIndex(startIndex),
+      end: _positionForIndex(endIndex)
   };
+
+  /**
+   * Returns textarea row and column position for certain index
+   * @param {Number} index text index
+   * @returns {{row: Number, col: Number}}
+   */
+  function _positionForIndex(index) {
+    var textTillIndex = el.value.substring(0,index);
+    var row = (textTillIndex.match(/\n/g) || []).length + 1;
+    var col = textTillIndex.length - textTillIndex.lastIndexOf("\n");
+
+    return {
+      row: row,
+      column: col
+    }
+  }
+}
+
+/**
+ * Returns the index for certaion position in text element
+ * @param {DOMElement} el A dom element of a textarea or input text.
+ * @param {Number} row row value, > 0, if exceeds rows number - last row will be returned
+ * @param {Number} column column value, > 0, if exceeds column length - end of column will be returned
+ * @returns {Number} index of position in text, -1 if not found
+ */
+exports.getIndexForPosition = function(el, row, column) {
+  var text = el.value || '';
+  if (row > 0 && column > 0) {
+    var rows = text.split('\n', row);
+    row = Math.min(rows.length, row);
+    column = Math.min(rows[row - 1].length, column - 1);
+    var columnCount = (row == 1 ? column : column + 1); // count new line on multiple rows
+    return rows.slice(0, row - 1).join('\n').length + columnCount;
+  }
+  return -1;
 }
 
 

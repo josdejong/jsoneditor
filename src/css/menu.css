@@ -21,7 +21,7 @@ div.jsoneditor-menu > div.jsoneditor-modes > button {
   padding: 0;
   border-radius: 2px;
   border: 1px solid transparent;
-  background: transparent url('img/jsoneditor-icons.svg');
+  background: transparent url('./img/jsoneditor-icons.svg');
   color: white;
   opacity: 0.8;
 
@@ -52,6 +52,12 @@ div.jsoneditor-menu > button.jsoneditor-collapse-all {
 }
 div.jsoneditor-menu > button.jsoneditor-expand-all {
   background-position: 0 -120px;
+}
+div.jsoneditor-menu > button.jsoneditor-sort {
+  background-position: -120px -96px;
+}
+div.jsoneditor-menu > button.jsoneditor-transform {
+  background-position: -144px -96px;
 }
 div.jsoneditor-menu > button.jsoneditor-undo {
   background-position: -24px -96px;

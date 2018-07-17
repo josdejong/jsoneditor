@@ -44,6 +44,17 @@ var util = require('./util');
  *                               {boolean} sortObjectKeys If true, object keys are
  *                                                        sorted before display.
  *                                                        false by default.
+ *                               {function} onSelectionChange Callback method, 
+ *                                                            triggered on node selection change
+ *                                                            Only applicable for modes
+ *                                                            'tree', 'view', and 'form'
+ *                               {function} onTextSelectionChange Callback method, 
+ *                                                                triggered on text selection change
+ *                                                                Only applicable for modes
+ *                               {HTMLElement} modalAnchor        The anchor element to apply an
+ *                                                                overlay and display the modals in a
+ *                                                                centered location.
+ *                                                                Defaults to document.body
  * @param {Object | undefined} json JSON object
  */
 function JSONEditor (container, options, json) {
@@ -81,9 +92,9 @@ function JSONEditor (container, options, json) {
       var VALID_OPTIONS = [
         'ajv', 'schema', 'schemaRefs','templates',
         'ace', 'theme','autocomplete',
-        'onChange', 'onEditable', 'onError', 'onModeChange',
+        'onChange', 'onEditable', 'onError', 'onModeChange', 'onSelectionChange', 'onTextSelectionChange',
         'escapeUnicode', 'history', 'search', 'mode', 'modes', 'name', 'indentation', 
-        'sortObjectKeys', 'navigationBar', 'statusBar'
+        'sortObjectKeys', 'navigationBar', 'statusBar', 'languages', 'language'
       ];
 
       Object.keys(options).forEach(function (option) {

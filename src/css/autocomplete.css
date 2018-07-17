@@ -13,7 +13,7 @@ div.jsoneditor div.autocomplete.dropdown {
     padding-right: 5pt;
     text-align: left;
     outline: 0;
-    font-family: droid sans mono, consolas, monospace, courier new, courier, sans-serif;
+    font-family: "dejavu sans mono", "droid sans mono", consolas, monaco, "lucida console", "courier new", courier, monospace, sans-serif;
     font-size: 10pt;
 }
 

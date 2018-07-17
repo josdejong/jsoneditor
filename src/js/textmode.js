@@ -31,6 +31,8 @@ var DEFAULT_THEME = 'ace/theme/jsoneditor';
  *                             {boolean} escapeUnicode   If true, unicode
  *                                                       characters are escaped.
  *                                                       false by default.
+ *                             {function} onTextSelectionChange Callback method, 
+ *                                                              triggered on text selection change
  * @private
  */
 textmode.create = function (container, options) {
@@ -74,6 +76,10 @@ textmode.create = function (container, options) {
     catch (err) {
       console.error(err);
     }
+  }
+
+  if (options.onTextSelectionChange) {
+    this.onTextSelectionChange(options.onTextSelectionChange);
   }
 
   var me = this;
@@ -246,11 +252,17 @@ textmode.create = function (container, options) {
     textarea.onblur = this._onBlur.bind(this);
   }
 
+  var validationErrorsContainer = document.createElement('div');
+  validationErrorsContainer.className = 'validation-errors-container';
+  this.dom.validationErrorsContainer = validationErrorsContainer;
+  this.frame.appendChild(validationErrorsContainer);
+
   if (options.statusBar) {
     util.addClassName(this.content, 'has-status-bar');
 
     this.curserInfoElements = {};
     var statusBar = document.createElement('div');
+    this.dom.statusBar = statusBar;
     statusBar.className = 'jsoneditor-statusbar';
     this.frame.appendChild(statusBar);
 
@@ -260,7 +272,7 @@ textmode.create = function (container, options) {
 
     var lnVal = document.createElement('span');
     lnVal.className = 'jsoneditor-curserinfo-val';
-    lnVal.innerText = 0;
+    lnVal.innerText = '1';
 
     statusBar.appendChild(lnLabel);
     statusBar.appendChild(lnVal);
@@ -271,7 +283,7 @@ textmode.create = function (container, options) {
 
     var colVal = document.createElement('span');
     colVal.className = 'jsoneditor-curserinfo-val';
-    colVal.innerText = 0;
+    colVal.innerText = '1';
 
     statusBar.appendChild(colLabel);
     statusBar.appendChild(colVal);
@@ -286,7 +298,7 @@ textmode.create = function (container, options) {
 
     var countVal = document.createElement('span');
     countVal.className = 'jsoneditor-curserinfo-count';
-    countVal.innerText = 0;
+    countVal.innerText = '0';
     countVal.style.display = 'none';
 
     this.curserInfoElements.countLabel = countLabel;
@@ -326,9 +338,8 @@ textmode._onChange = function () {
  * @private
  */
 textmode._onSelect = function () {
-  if(this.options.statusBar) {
-    this._updateCursorInfoDisplay();
-  }
+  this._updateCursorInfo();
+  this._emitSelectionChange();
 };
 
 /**
@@ -357,7 +368,8 @@ textmode._onKeyDown = function (event) {
     event.stopPropagation();
   }
 
-  this._updateCursorInfoDisplay();
+  this._updateCursorInfo();
+  this._emitSelectionChange();
 };
 
 /**
@@ -366,7 +378,8 @@ textmode._onKeyDown = function (event) {
  * @private
  */
 textmode._onMouseDown = function (event) {
-  this._updateCursorInfoDisplay();
+  this._updateCursorInfo();
+  this._emitSelectionChange();
 };
 
 /**
@@ -375,49 +388,85 @@ textmode._onMouseDown = function (event) {
  * @private
  */
 textmode._onBlur = function (event) {
-  this._updateCursorInfoDisplay();
+  this._updateCursorInfo();
+  this._emitSelectionChange();
 };
 
 /**
- * Update the status bar cursor info
+ * Update the cursor info and the status bar, if presented
  */
-textmode._updateCursorInfoDisplay = function () {
-  if(this.options.statusBar) {
-    var me = this;
-    var line, col, count;
-    if (this.textarea) {
-      setTimeout(function() { //this to verify we get the most updated textarea cursor selection
-        var selectionRange = util.getInputSelection(me.textarea);      
-        line = selectionRange.row;
-        col = selectionRange.col;
-        if (selectionRange.start !== selectionRange.end) {
-          count = selectionRange.end - selectionRange.start;
-        }
-        updateDisplay();
-      },0);
-      
-    } else if (this.aceEditor && this.curserInfoElements) {
-      var curserPos = this.aceEditor.getCursorPosition();
-      var selectedText = this.aceEditor.getSelectedText();
+textmode._updateCursorInfo = function () {
+  var me = this;
+  var line, col, count;
 
-      line = curserPos.row + 1;
-      col = curserPos.column + 1;
-      count = selectedText.length;
+  if (this.textarea) {
+    setTimeout(function() { //this to verify we get the most updated textarea cursor selection
+      var selectionRange = util.getInputSelection(me.textarea);
+      
+      if (selectionRange.startIndex !== selectionRange.endIndex) {
+        count = selectionRange.endIndex - selectionRange.startIndex;
+      }
+      
+      if (count && me.cursorInfo && me.cursorInfo.line === selectionRange.end.row && me.cursorInfo.column === selectionRange.end.column) {
+        line = selectionRange.start.row;
+        col = selectionRange.start.column;
+      } else {
+        line = selectionRange.end.row;
+        col = selectionRange.end.column;
+      }
+      
+      me.cursorInfo = {
+        line: line,
+        column: col,
+        count: count
+      }
+
+      if(me.options.statusBar) {
+        updateDisplay();
+      }
+    },0);
+    
+  } else if (this.aceEditor && this.curserInfoElements) {
+    var curserPos = this.aceEditor.getCursorPosition();
+    var selectedText = this.aceEditor.getSelectedText();
+
+    line = curserPos.row + 1;
+    col = curserPos.column + 1;
+    count = selectedText.length;
+
+    me.cursorInfo = {
+      line: line,
+      column: col,
+      count: count
+    }
+
+    if(this.options.statusBar) {
       updateDisplay();
     }
+  }
 
-    function updateDisplay() {
+  function updateDisplay() {
 
-      if (me.curserInfoElements.countVal.innerText !== count) {
-        me.curserInfoElements.countVal.innerText = count;
-        me.curserInfoElements.countVal.style.display = count ? 'inline' : 'none';
-        me.curserInfoElements.countLabel.style.display = count ? 'inline' : 'none';
-      } 
-      me.curserInfoElements.lnVal.innerText = line;
-      me.curserInfoElements.colVal.innerText = col;
+    if (me.curserInfoElements.countVal.innerText !== count) {
+      me.curserInfoElements.countVal.innerText = count;
+      me.curserInfoElements.countVal.style.display = count ? 'inline' : 'none';
+      me.curserInfoElements.countLabel.style.display = count ? 'inline' : 'none';
     }
+    me.curserInfoElements.lnVal.innerText = line;
+    me.curserInfoElements.colVal.innerText = col;
   }
 };
+
+/**
+ * emits selection change callback, if given
+ * @private
+ */
+textmode._emitSelectionChange = function () {
+  if(this._selectionChangedHandler) {
+    var currentSelection = this.getTextSelection();
+    this._selectionChangedHandler(currentSelection.start, currentSelection.end, currentSelection.text);
+  }
+}
 
 /**
  * Destroy the editor. Clean up DOM, event listeners, and web workers.
@@ -629,9 +678,10 @@ textmode.validate = function () {
         '</table>';
 
     this.dom.validationErrors = validationErrors;
-    this.frame.appendChild(validationErrors);
+    this.dom.validationErrorsContainer.appendChild(validationErrors);
 
-    var height = validationErrors.clientHeight;
+    var height = validationErrors.clientHeight +
+        (this.dom.statusBar ? this.dom.statusBar.clientHeight : 0);
     this.content.style.marginBottom = (-height) + 'px';
     this.content.style.paddingBottom = height + 'px';
   }
@@ -640,6 +690,112 @@ textmode.validate = function () {
   if (this.aceEditor) {
     var force = false;
     this.aceEditor.resize(force);
+  }
+};
+
+/**
+ * Get the selection details
+ * @returns {{start:{row:Number, column:Number},end:{row:Number, column:Number},text:String}}
+ */
+textmode.getTextSelection = function () {
+  var selection = {};
+  if (this.textarea) {
+    var selectionRange = util.getInputSelection(this.textarea);
+
+    if (this.cursorInfo && this.cursorInfo.line === selectionRange.end.row && this.cursorInfo.column === selectionRange.end.column) {
+      //selection direction is bottom => up
+      selection.start = selectionRange.end;
+      selection.end = selectionRange.start;
+    } else {
+      selection = selectionRange;
+    }
+
+    return {
+      start: selection.start,
+      end: selection.end,
+      text: this.textarea.value.substring(selectionRange.startIndex, selectionRange.endIndex)
+    }
+  }
+
+  if (this.aceEditor) {
+    var aceSelection = this.aceEditor.getSelection();
+    var selectedText = this.aceEditor.getSelectedText();
+    var range = aceSelection.getRange();
+    var lead = aceSelection.getSelectionLead();
+
+    if (lead.row === range.end.row && lead.column === range.end.column) {
+      selection = range;
+    } else {
+      //selection direction is bottom => up
+      selection.start = range.end;
+      selection.end = range.start;
+    }
+    
+    return {
+      start: {
+        row: selection.start.row + 1,
+        column: selection.start.column + 1
+      },
+      end: {
+        row: selection.end.row + 1,
+        column: selection.end.column + 1
+      },
+      text: selectedText
+    };
+  }
+};
+
+/**
+ * Callback registraion for selection change
+ * @param {selectionCallback} callback
+ * 
+ * @callback selectionCallback
+ * @param {{row:Number, column:Number}} startPos selection start position
+ * @param {{row:Number, column:Number}} endPos selected end position
+ * @param {String} text selected text
+ */
+textmode.onTextSelectionChange = function (callback) {
+  if (typeof callback === 'function') {
+    this._selectionChangedHandler = util.debounce(callback, this.DEBOUNCE_INTERVAL);
+  }
+};
+
+/**
+ * Set selection on editor's text
+ * @param {{row:Number, column:Number}} startPos selection start position
+ * @param {{row:Number, column:Number}} endPos selected end position
+ */
+textmode.setTextSelection = function (startPos, endPos) {
+
+  if (!startPos || !endPos) return;
+
+  if (this.textarea) {
+    var startIndex = util.getIndexForPosition(this.textarea, startPos.row, startPos.column);
+    var endIndex = util.getIndexForPosition(this.textarea, endPos.row, endPos.column);
+    if (startIndex > -1 && endIndex  > -1) {
+      if (this.textarea.setSelectionRange) { 
+        this.textarea.focus();
+        this.textarea.setSelectionRange(startIndex, endIndex);
+      } else if (this.textarea.createTextRange) { // IE < 9
+        var range = this.textarea.createTextRange();
+        range.collapse(true);
+        range.moveEnd('character', endIndex);
+        range.moveStart('character', startIndex);
+        range.select();
+      }
+    }
+  } else if (this.aceEditor) {
+    var range = {
+      start:{
+        row: startPos.row - 1,
+        column: startPos.column - 1
+      },
+      end:{
+        row: endPos.row - 1,
+        column: endPos.column - 1
+      }
+    };
+    this.aceEditor.selection.setRange(range);
   }
 };
 
