@@ -905,6 +905,134 @@ exports.getIndexForPosition = function(el, row, column) {
   return -1;
 }
 
+exports.getPositionForPath = function(text, path) {
+  if (!path) {
+    return {};
+  }
+  var pathArr = this.parsePath(path);
+  var pathIdx = 0;
+  var currPath = pathArr[pathIdx];
+  var currIdx = 0;
+  var escaseKey = false;
+  var states = {
+    string: false,
+    prop: true,
+    value: false,
+    escape: false
+  }
+  var depth = 0;
+  var line = 1;
+  var row = 0;
+  var ret = {
+    line: null,
+    row: null
+  }
+  
+  for (var i = 0 ; i < text.length; ++i) {
+    var currChar = text.charAt(i);
+    states.escape = escaseKey;
+    escaseKey = false;
+
+    console.log(currChar);
+
+    ++row;
+
+    switch (currChar) {
+
+      case '{':
+        if (!states.string) {
+          states.prop = true;
+          states.value = false;
+          ++depth;
+        }
+        break;
+
+      case '}':
+        if (!states.string) {
+          states.prop = true;
+          states.value = false;
+          --depth;
+        }
+        break;
+
+      case '"':
+        if (!states.escape) {
+          states.string = !states.string;
+        }
+        break;
+
+      case '\\':
+        if (!states.escape) {
+          escaseKey = true;
+        }
+        break;
+
+      case ':':
+        if (!states.string) {
+          states.value = true;
+          states.prop = false;
+        }
+        break;
+
+      case ',':
+        if (!states.string) {
+          states.value = false;
+          states.prop = true;
+        }
+        break;
+      
+      case '\n':
+        ++line;
+        row = 0;
+        break;
+    }
+
+    if (pathIdx !== depth-1) {
+      continue;
+    }
+
+    if (states.prop && states.string) {
+      if (currIdx == -1 ||  // prop not equal
+          currChar === '"') // bypass string first char
+      { 
+        continue;
+      }
+      if (currIdx >= currPath.length) { // no match
+        currIdx = -1;
+        continue;
+      }
+      if (currPath[currIdx] === currChar) {
+        ++currIdx;
+      } else {
+        currIdx = -1;
+      }
+    }
+
+    if (states.value) {
+      if (currIdx === 0) {
+        continue;
+      }
+      if (currIdx === -1) {
+        currIdx = 0;
+      } else if (currIdx === currPath.length) { // path token match, move on to next token
+        currPath = pathArr[++pathIdx];
+        currIdx = 0;
+      }
+    }
+
+    if (!currPath) {
+      // console.log(path + " matched on line " + line + " row " + (row - currIdx));
+      return {
+        path: path,
+        line: line,
+        row: row - pathArr[pathArr.length - 1].length - 1
+      };
+    }
+  }
+
+  return {};
+}
+
 
 if (typeof Element !== 'undefined') {
   // Polyfill for array remove
