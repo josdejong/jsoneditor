@@ -106,6 +106,27 @@ Node.prototype.getPath = function () {
 };
 
 /**
+ * Get the path of this node with the type for each element in path.
+ * @return {[{name: String, type: String}]} Array containing the path to this
+ * node including, for each element, its type
+ */
+Node.prototype.getExtendedPath = function () {
+  var node = this;
+  var path = [];
+  while (node) {
+    var name = node.getName();
+    // note: name is undefined if it is an array
+    var element = {
+      name: name,
+      type: node.type
+    };
+    path.unshift(element);
+    node = node.parent;
+  }
+  return path;
+};
+
+/**
  * Get node serializable name
  * @returns {String|Number}
  */
@@ -2559,20 +2580,18 @@ Node.prototype.onEvent = function (event) {
 /**
  * Trigger external onEvent provided in options if node is a JSON field or
  * value.
- * Information provided depends on the element:
- *   - If event occurs in a field, {field: string, path: string[]}
- *   - If event occurs in a value, {field: string, path: string[], value:
- * string}
+ * Information provided depends on the element, value is only included if
+ * event occurs in a JSON value:
+ * {field: String, path: [{name: String, type: String}] [, value: String]}
  * @param {Event} event
  * @private
  */
 Node.prototype._onEvent = function (event) {
   var element = event.target;
-  if (this.parent &&
-    (element === this.dom.field || element === this.dom.value)) {
+  if (element === this.dom.field || element === this.dom.value) {
     var info = {
       field: this.getField(),
-      path: this.getPath()
+      path: this.getExtendedPath()
     };
     // For leaf values, include value
     if (!this._hasChilds() &&element === this.dom.value) {

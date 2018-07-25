@@ -233,15 +233,16 @@ Constructs a new JSONEditor.
   a JSON field or value.
   
   In case of field event, node information will be 
-  `{field: string, path: string[]}`.
+  `{field: String, path: [{name: String, type: String}]}`.
   In case of value event, node information will be
-  `{field: string, path: string[], value: string}`
+  `{field: String, path: [{name: String, type: String}], value: String}`
 
   signature should be:
   ```js
   /**
   * @param {Node} the Node where event has been triggered 
-  identified by {field: string, path: string[] [, value: string]}`
+  identified by {field: String, path: [{name: String, type: String}] [, 
+  value: String]}`
   * @param {event} the event fired
   */
   function onEvent(node, event) {
