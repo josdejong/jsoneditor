@@ -24,8 +24,8 @@
  * Copyright (c) 2011-2017 Jos de Jong, http://jsoneditoronline.org
  *
  * @author  Jos de Jong, <wjosdejong@gmail.com>
- * @version 5.19.0
- * @date    2018-07-11
+ * @version 5.19.1
+ * @date    2018-07-28
  */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
@@ -1831,9 +1831,18 @@ return /******/ (function(modules) { // webpackBootstrap
 	  }
 	  this.contentOuter = contentOuter;
 
+	  this.scrollableContent = document.createElement('div');
+	  this.scrollableContent.className = 'jsoneditor-tree';
+	  contentOuter.appendChild(this.scrollableContent);
+
+	  // the jsoneditor-tree-inner div with bottom padding is here to
+	  // keep space for the action menu dropdown. It's created as a
+	  // separate div instead of using scrollableContent to work around
+	  // and issue in the Chrome browser showing scrollable contents outside of the div
+	  // see https://github.com/josdejong/jsoneditor/issues/557
 	  this.content = document.createElement('div');
-	  this.content.className = 'jsoneditor-tree';
-	  contentOuter.appendChild(this.content);
+	  this.content.className = 'jsoneditor-tree-inner';
+	  this.scrollableContent.appendChild(this.content);
 
 	  this.table = document.createElement('table');
 	  this.table.className = 'jsoneditor-tree';
@@ -11890,7 +11899,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        selectrSortOrder.on('selectr.change', generateQueryFromWizard);
 	        selectrSelectFields.on('selectr.change', generateQueryFromWizard);
 
-	        wizard.onclick = function (event) {
+	        elem.querySelector('.pico-modal-contents').onclick = function (event) {
 	          // prevent the first clear button from getting focus when clicking anywhere in the modal
 	          event.preventDefault();
 	        };
