@@ -1331,9 +1331,18 @@ treemode._createTable = function () {
   }
   this.contentOuter = contentOuter;
 
+  this.scrollableContent = document.createElement('div');
+  this.scrollableContent.className = 'jsoneditor-tree';
+  contentOuter.appendChild(this.scrollableContent);
+
+  // the jsoneditor-tree-inner div with bottom padding is here to
+  // keep space for the action menu dropdown. It's created as a
+  // separate div instead of using scrollableContent to work around
+  // and issue in the Chrome browser showing scrollable contents outside of the div
+  // see https://github.com/josdejong/jsoneditor/issues/557
   this.content = document.createElement('div');
-  this.content.className = 'jsoneditor-tree';
-  contentOuter.appendChild(this.content);
+  this.content.className = 'jsoneditor-tree-inner';
+  this.scrollableContent.appendChild(this.content);
 
   this.table = document.createElement('table');
   this.table.className = 'jsoneditor-tree';

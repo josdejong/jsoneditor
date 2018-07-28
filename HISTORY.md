@@ -3,6 +3,12 @@
 https://github.com/josdejong/jsoneditor
 
 
+## 2018-07-28, version 5.19.1
+
+- Fixed #557: inner contents of the scrollable area being displayed outside of
+  the editor (on Chrome only).
+
+
 ## 2018-07-11, version 5.19.0
 
 - No more grayed out icons of the context menu, see #532.
