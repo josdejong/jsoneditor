@@ -330,21 +330,14 @@ Node.prototype.getField = function() {
  */
 Node.prototype.setValue = function(value, type) {
   var childValue, child, visible;
+  var i, j;
   var notUpdateDom = false;
-
-  // first clear all current childs (if any)
-  var childs = this.childs;
-  if (childs) {
-    while (childs.length) {
-      this.removeChild(childs[0], notUpdateDom);
-    }
-  }
 
   this.type = this._getType(value);
 
   // check if type corresponds with the provided type
-  if (type && type != this.type) {
-    if (type == 'string' && this.type == 'auto') {
+  if (type && type !== this.type) {
+    if (type === 'string' && this.type === 'auto') {
       this.type = type;
     }
     else {
@@ -354,40 +347,79 @@ Node.prototype.setValue = function(value, type) {
     }
   }
 
-  if (this.type == 'array') {
+  if (this.type === 'array') {
     // array
-    this.childs = [];
-    for (var i = 0, iMax = value.length; i < iMax; i++) {
+    if (!this.childs) {
+      this.childs = [];
+    }
+
+    for (i = 0; i < value.length; i++) {
       childValue = value[i];
       if (childValue !== undefined && !(childValue instanceof Function)) {
-        // ignore undefined and functions
-        child = new Node(this.editor, {
-          value: childValue
-        });
-        visible = i < this.MAX_VISIBLE_CHILDS;
-        this.appendChild(child, visible, notUpdateDom);
-      }
-    }
-    this.value = '';
-  }
-  else if (this.type == 'object') {
-    // object
-    this.childs = [];
-    i = 0;
-    for (var childField in value) {
-      if (value.hasOwnProperty(childField)) {
-        childValue = value[childField];
-        if (childValue !== undefined && !(childValue instanceof Function)) {
-          // ignore undefined and functions
+        if (i < this.childs.length) {
+          // reuse existing child, keep its state
+          child = this.childs[i];
+
+          child.fieldEditable = false;
+          child.index = i;
+          child.setValue(childValue);
+        }
+        else {
+          // create a new child
           child = new Node(this.editor, {
-            field: childField,
             value: childValue
           });
           visible = i < this.MAX_VISIBLE_CHILDS;
           this.appendChild(child, visible, notUpdateDom);
         }
+      }
+    }
+
+    // cleanup redundant childs
+    // we loop backward to prevent issues with shifting index numbers
+    for (j = this.childs.length; j >= value.length; j--) {
+      this.removeChild(this.childs[j], notUpdateDom);
+    }
+  }
+  else if (this.type === 'object') {
+    // object
+    if (!this.childs) {
+      this.childs = [];
+    }
+
+    // cleanup redundant childs
+    // we loop backward to prevent issues with shifting index numbers
+    for (j = this.childs.length - 1; j >= 0; j--) {
+      if (!value.hasOwnProperty(this.childs[j].field)) {
+        this.removeChild(this.childs[j], notUpdateDom);
+      }
+    }
+
+    i = 0;
+    for (var childField in value) {
+      if (value.hasOwnProperty(childField)) {
+        childValue = value[childField];
+        if (childValue !== undefined && !(childValue instanceof Function)) {
+          child = this.findChildByProperty(childField);
+
+          if (child) {
+            // reuse existing child, keep its state
+            child.setField(childField, true);
+            child.setValue(childValue);
+          }
+          else {
+            // create a new child
+            child = new Node(this.editor, {
+              field: childField,
+              value: childValue
+            });
+            visible = i < this.MAX_VISIBLE_CHILDS;
+            this.appendChild(child, visible, notUpdateDom);
+          }
+        }
         i++;
       }
+
     }
     this.value = '';
 
@@ -398,6 +430,7 @@ Node.prototype.setValue = function(value, type) {
   }
   else {
     // value
+    this.hideChilds();
     this.childs = undefined;
     this.value = value;
   }
