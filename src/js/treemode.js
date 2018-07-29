@@ -200,12 +200,11 @@ treemode.set = function (json, name) {
 };
 
 treemode.update = function (json) {
-  // TODO
-  // this.content.removeChild(this.table);  // Take the table offline
+  this.content.removeChild(this.table);  // Take the table offline
 
   this.node.setValue(json);
 
-  // this.content.appendChild(this.table);  // Put the table online again
+  this.content.appendChild(this.table);  // Put the table online again
 };
 
 /**

@@ -332,6 +332,7 @@ Node.prototype.setValue = function(value, type) {
   var childValue, child, visible;
   var i, j;
   var notUpdateDom = false;
+  var previousChilds = this.childs;
 
   this.type = this._getType(value);
 
@@ -431,13 +432,54 @@ Node.prototype.setValue = function(value, type) {
   else {
     // value
     this.hideChilds();
-    this.childs = undefined;
+
+    delete this.append;
+    delete this.showMore;
+    delete this.expanded;
+    delete this.childs;
+
     this.value = value;
+  }
+
+  // recreate the DOM if switching from an object/array to auto/string or vice versa
+  // needed to recreated the expand button for example
+  if (Array.isArray(previousChilds) !== Array.isArray(this.childs)) {
+    this.recreateDom();
   }
 
   this.updateDom({'updateIndexes': true});
 
   this.previousValue = this.value;
+};
+
+/**
+ * Remove the DOM of this node and it's childs and recreate it again
+ */
+Node.prototype.recreateDom = function() {
+  var table = this.dom.tr ? this.dom.tr.parentNode : undefined;
+  var lastTr;
+  if (this.expanded) {
+    lastTr = this.getAppendDom();
+  }
+  else {
+    lastTr = this.getDom();
+  }
+  var nextTr = (lastTr && lastTr.parentNode) ? lastTr.nextSibling : undefined;
+
+  // hide current field and all its childs
+  this.hide({ resetVisibleChilds: false });
+  this.clearDom();
+
+  // create new DOM
+  if (table) {
+    if (nextTr) {
+      table.insertBefore(this.getDom(), nextTr);
+    }
+    else {
+      table.appendChild(this.getDom());
+    }
+  }
+  this.showChilds();
 };
 
 /**
