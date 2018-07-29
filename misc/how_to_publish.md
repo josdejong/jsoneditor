@@ -33,13 +33,8 @@ correct date and version number in the header.
 
 ## Test
 
-Test whether the npm library is ok by installing it locally:
-
-    cd ../tmp-folder
-    npm install ./path/to/jsoneditor
-
-Check whether the examples in the library work ok, and whether the necessary
-files are included.
+Test whether the npm library is ok by opening some examples, and check whether
+the files under `dists` are created and have contents.
 
 
 ## Commit

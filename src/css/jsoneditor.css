@@ -218,7 +218,10 @@ div.jsoneditor-tree table.jsoneditor-tree {
   border-collapse: collapse;
   border-spacing: 0;
   width: 100%;
-  margin: 0 0 300px; /* keep space for the action menu dropdown */
+}
+
+div.jsoneditor-tree div.jsoneditor-tree-inner {
+  padding-bottom: 300px;
 }
 
 div.jsoneditor-outer {
