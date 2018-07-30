@@ -51,7 +51,7 @@
     onEvent: function(node, event) {
       if (event.type === 'click') {
         var message = 'click on <' + node.field +
-          '> under path <' + printPath(node.path) + 
+          '> under path <' + node.path + 
           '> with pretty path: <' + prettyPrintPath(node.path) + '>';
         if (node.value) message += ' with value <' + node.value + '>';
         console.log(message);
@@ -60,37 +60,33 @@
         var str = '';
         for (var i=0; i<path.length; i++) {
           var element = path[i];
-          if (element.name === undefined) continue;
-          if (i>0 && (path[i-1].type === 'array')) {
-            str += '[' + element.name + ']'
+          if (typeof element === 'number') {
+            str += '[' + element + ']'
           } else {
-            str += (str.length > 0) ? ','+element.name : element.name; 
+            if (str.length > 0) str += ',';
+            str += element; 
           }
-        }
-        return str;
-      }
-      function printPath(path) {
-        var str = '';
-        for (var i=0; i<path.length; i++) {
-          var element = path[i];
-          str += '[' + element.name + ',' + element.type + ']';
         }
         return str;
       }
     }
   };
 
-  //json = 1;
+  // json = 1;
   
-  //json = "zero";
+  // json = "zero";
 
-  //json = ["zero", "one", "two", [3,4,5,6]];
+  // json = ["zero", "one", "two", [3,4,5,6]];
   
-  //json = {"zero": 0}
+  // json = ["zero"];
 
-  //json = {
+  // json = {"0": "zero"};
+  
+  // json = {"[0]": "zero"};
+
+  // json = {
   //  "myarray": [1, 2, [3, 4, 5]]
-  //};
+  // };
   
   json = {
     "array": [1, 2, [3,4,5]],

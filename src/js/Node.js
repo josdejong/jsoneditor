@@ -106,27 +106,6 @@ Node.prototype.getPath = function () {
 };
 
 /**
- * Get the path of this node with the type for each element in path.
- * @return {[{name: String, type: String}]} Array containing the path to this
- * node including, for each element, its type
- */
-Node.prototype.getExtendedPath = function () {
-  var node = this;
-  var path = [];
-  while (node) {
-    var name = node.getName();
-    // note: name is undefined if it is an array
-    var element = {
-      name: name,
-      type: node.type
-    };
-    path.unshift(element);
-    node = node.parent;
-  }
-  return path;
-};
-
-/**
  * Get node serializable name
  * @returns {String|Number}
  */
@@ -2591,7 +2570,7 @@ Node.prototype._onEvent = function (event) {
   if (element === this.dom.field || element === this.dom.value) {
     var info = {
       field: this.getField(),
-      path: this.getExtendedPath()
+      path: this.getPath()
     };
     // For leaf values, include value
     if (!this._hasChilds() &&element === this.dom.value) {
