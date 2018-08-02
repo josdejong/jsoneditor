@@ -272,7 +272,7 @@ treemode.getName = function () {
  * - to the first button in the top menu
  */
 treemode.focus = function () {
-  var input = this.content.querySelector('[contenteditable=true]');
+  var input = this.scrollableContent.querySelector('[contenteditable=true]');
   if (input) {
     input.focus();
   }
@@ -505,7 +505,7 @@ treemode.refresh = function () {
  */
 treemode.startAutoScroll = function (mouseY) {
   var me = this;
-  var content = this.content;
+  var content = this.scrollableContent;
   var top = util.getAbsoluteTop(content);
   var height = content.clientHeight;
   var bottom = top + height;
@@ -569,9 +569,9 @@ treemode.setDomSelection = function (selection) {
     return;
   }
 
-  if ('scrollTop' in selection && this.content) {
+  if ('scrollTop' in selection && this.scrollableContent) {
     // TODO: animated scroll
-    this.content.scrollTop = selection.scrollTop;
+    this.scrollableContent.scrollTop = selection.scrollTop;
   }
   if (selection.nodes) {
     // multi-select
@@ -604,7 +604,7 @@ treemode.getDomSelection = function () {
     dom: this.focusTarget,
     range: range,
     nodes: this.multiselection.nodes.slice(0),
-    scrollTop: this.content ? this.content.scrollTop : 0
+    scrollTop: this.scrollableContent ? this.scrollableContent.scrollTop : 0
   };
 };
 
@@ -921,13 +921,13 @@ treemode._onEvent = function (event) {
 
 /**
  * Update TreePath components
- * @param {Array<Node>} pathNodes list of nodes in path from root to selection 
+ * @param {Array<Node>} pathNodes list of nodes in path from root to selection
  * @private
  */
 treemode._updateTreePath = function (pathNodes) {
   if (pathNodes && pathNodes.length) {
     util.removeClassName(this.navBar, 'nav-bar-empty');
-    
+
     var pathObjs = [];
     pathNodes.forEach(function (node) {
       var pathObj = {
@@ -1123,7 +1123,7 @@ treemode._onMultiSelectEnd = function (event) {
 /**
  * deselect currently selected nodes
  * @param {boolean} [clearStartAndEnd=false]  If true, the `start` and `end`
- *                                            state is cleared too. 
+ *                                            state is cleared too.
  */
 treemode.deselect = function (clearStartAndEnd) {
   var selectionChanged = !!this.multiselection.nodes.length;
@@ -1310,7 +1310,7 @@ treemode._onKeyDown = function (event) {
                   this.autocomplete.hideDropDown();
 
           }.bind(this, node, event.target), 50);
-      } 
+      }
   }
 
   if (handled) {
