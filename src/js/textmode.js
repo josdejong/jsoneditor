@@ -88,6 +88,7 @@ textmode.create = function (container, options) {
   this.aceEditor = undefined;  // ace code editor
   this.textarea = undefined;  // plain text editor (fallback when Ace is not available)
   this.validateSchema = null;
+  this.annotations = [];
 
   // create a debounced validate function
   this._debouncedValidate = util.debounce(this.validate.bind(this), this.DEBOUNCE_INTERVAL);
@@ -185,15 +186,23 @@ textmode.create = function (container, options) {
     this.content.appendChild(this.editorDom);
 
     var aceEditor = _ace.edit(this.editorDom);
+    var aceSession = aceEditor.getSession();
     aceEditor.$blockScrolling = Infinity;
     aceEditor.setTheme(this.theme);
     aceEditor.setOptions({ readOnly: isReadOnly });
     aceEditor.setShowPrintMargin(false);
     aceEditor.setFontSize(13);
-    aceEditor.getSession().setMode('ace/mode/json');
-    aceEditor.getSession().setTabSize(this.indentation);
-    aceEditor.getSession().setUseSoftTabs(true);
-    aceEditor.getSession().setUseWrapMode(true);
+    aceSession.setMode('ace/mode/json');
+    aceSession.setTabSize(this.indentation);
+    aceSession.setUseSoftTabs(true);
+    aceSession.setUseWrapMode(true);
+    
+    // replace ace setAnnotations with custom function that also covers jsoneditor annotations
+    var originalSetAnnotations = aceSession.setAnnotations;
+    aceSession.setAnnotations = function (annotations) {
+      originalSetAnnotations.call(this, annotations && annotations.length ? annotations : me.annotations);
+    };
+    
     aceEditor.commands.bindKey('Ctrl-L', null);    // disable Ctrl+L (is used by the browser to select the address bar)
     aceEditor.commands.bindKey('Command-L', null); // disable Ctrl+L (is used by the browser to select the address bar)
     this.aceEditor = aceEditor;
@@ -468,6 +477,10 @@ textmode._emitSelectionChange = function () {
   }
 }
 
+textmode._refreshAnnotations = function () {
+  this.aceEditor && this.aceEditor.getSession().setAnnotations();  
+}
+
 /**
  * Destroy the editor. Clean up DOM, event listeners, and web workers.
  */
@@ -612,7 +625,7 @@ textmode.setText = function(jsonText) {
     this.options.onChange = originalOnChange;
   }
   // validate JSON schema
-  this.validate();
+  this._debouncedValidate();
 };
 
 /**
@@ -620,6 +633,7 @@ textmode.setText = function(jsonText) {
  * Throws an exception when no JSON schema is configured
  */
 textmode.validate = function () {
+  var me = this;
   // clear all current errors
   if (this.dom.validationErrors) {
     this.dom.validationErrors.parentNode.removeChild(this.dom.validationErrors);
@@ -650,40 +664,65 @@ textmode.validate = function () {
     }
   }
 
-  if (errors.length > 0) {  
-    // limit the number of displayed errors
-    var limit = errors.length > MAX_ERRORS;
-    if (limit) {
-      errors = errors.slice(0, MAX_ERRORS);
-      var hidden = this.validateSchema.errors.length - MAX_ERRORS;
-      errors.push('(' + hidden + ' more errors...)')
+  if (errors.length > 0) {
+    if (this.aceEditor) {
+      var jsonText = this.getText();
+      var errorPaths = [];
+      errors.forEach(function(error){
+        errorPaths.push(error.dataPath);
+      });
+      var errorLocations = util.getPositionForPath(jsonText, errorPaths);      
+      me.annotations = errorLocations.map(function (errLoc) {
+        var validationError = errors.find(function(err){ return err.dataPath === errLoc.path; });
+        if (validationError) {
+          return {
+            row: errLoc.line - 1,
+            column: errLoc.row,
+            text: "Schema Validation Error: " + validationError.message,
+            type: "warning",
+            source: "jsoneditor",
+          }
+        }
+
+        return {};
+      });
+      me._refreshAnnotations();
+
+    } else {
+       // limit the number of displayed errors
+      var limit = errors.length > MAX_ERRORS;
+      if (limit) {
+        errors = errors.slice(0, MAX_ERRORS);
+        var hidden = this.validateSchema.errors.length - MAX_ERRORS;
+        errors.push('(' + hidden + ' more errors...)')
+      }
+
+      var validationErrors = document.createElement('div');
+      validationErrors.innerHTML = '<table class="jsoneditor-text-errors">' +
+          '<tbody>' +
+          errors.map(function (error) {
+            var message;
+            if (typeof error === 'string') {
+              message = '<td colspan="2"><pre>' + error + '</pre></td>';
+            }
+            else {
+              message = '<td>' + error.dataPath + '</td>' +
+                  '<td>' + error.message + '</td>';
+            }
+
+            return '<tr><td><button class="jsoneditor-schema-error"></button></td>' + message + '</tr>'
+          }).join('') +
+          '</tbody>' +
+          '</table>';
+
+      this.dom.validationErrors = validationErrors;
+      this.dom.validationErrorsContainer.appendChild(validationErrors);
+
+      var height = validationErrors.clientHeight +
+          (this.dom.statusBar ? this.dom.statusBar.clientHeight : 0);
+      this.content.style.marginBottom = (-height) + 'px';
+      this.content.style.paddingBottom = height + 'px';
     }
-
-    var validationErrors = document.createElement('div');
-    validationErrors.innerHTML = '<table class="jsoneditor-text-errors">' +
-        '<tbody>' +
-        errors.map(function (error) {
-          var message;
-          if (typeof error === 'string') {
-            message = '<td colspan="2"><pre>' + error + '</pre></td>';
-          }
-          else {
-            message = '<td>' + error.dataPath + '</td>' +
-                '<td>' + error.message + '</td>';
-          }
-
-          return '<tr><td><button class="jsoneditor-schema-error"></button></td>' + message + '</tr>'
-        }).join('') +
-        '</tbody>' +
-        '</table>';
-
-    this.dom.validationErrors = validationErrors;
-    this.dom.validationErrorsContainer.appendChild(validationErrors);
-
-    var height = validationErrors.clientHeight +
-        (this.dom.statusBar ? this.dom.statusBar.clientHeight : 0);
-    this.content.style.marginBottom = (-height) + 'px';
-    this.content.style.paddingBottom = height + 'px';
   }
 
   // update the height of the ace editor
