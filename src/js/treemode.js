@@ -618,7 +618,7 @@ treemode.getDomSelection = function () {
  *                                         when not.
  */
 treemode.scrollTo = function (top, callback) {
-  var content = this.content;
+  var content = this.scrollableContent;
   if (content) {
     var editor = this;
     // cancel any running animation
