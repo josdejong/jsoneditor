@@ -262,9 +262,19 @@ textmode.create = function (container, options) {
   }
 
   var validationErrorsContainer = document.createElement('div');
-  validationErrorsContainer.className = 'validation-errors-container';
+  validationErrorsContainer.className = 'jsoneditor-validation-errors-container';
   this.dom.validationErrorsContainer = validationErrorsContainer;
   this.frame.appendChild(validationErrorsContainer);
+
+  var additinalErrorsIndication = document.createElement('div');
+  additinalErrorsIndication.style.display = 'none';
+  additinalErrorsIndication.className = "jsoneditor-additional-errors fadein";
+  additinalErrorsIndication.innerHTML = "Scroll for more &#9663;";
+  this.dom.additinalErrorsIndication = additinalErrorsIndication;
+  validationErrorsContainer.appendChild(additinalErrorsIndication);
+  validationErrorsContainer.onscroll = function () {
+    additinalErrorsIndication.style.display = me.dom.validationErrorsContainer.scrollTop === 0 ? 'block' : 'none';
+  }
 
   if (options.statusBar) {
     util.addClassName(this.content, 'has-status-bar');
@@ -690,12 +700,12 @@ textmode.validate = function () {
 
     } else {
        // limit the number of displayed errors
-      var limit = errors.length > MAX_ERRORS;
-      if (limit) {
-        errors = errors.slice(0, MAX_ERRORS);
-        var hidden = this.validateSchema.errors.length - MAX_ERRORS;
-        errors.push('(' + hidden + ' more errors...)')
-      }
+      // var limit = errors.length > MAX_ERRORS;
+      // if (limit) {
+      //   errors = errors.slice(0, MAX_ERRORS);
+      //   var hidden = this.validateSchema.errors.length - MAX_ERRORS;
+      //   errors.push('(' + hidden + ' more errors...)')
+      // }
 
       var validationErrors = document.createElement('div');
       validationErrors.innerHTML = '<table class="jsoneditor-text-errors">' +
@@ -717,9 +727,14 @@ textmode.validate = function () {
 
       this.dom.validationErrors = validationErrors;
       this.dom.validationErrorsContainer.appendChild(validationErrors);
+      this.dom.additinalErrorsIndication.title = errors.length + " errors total";
 
-      var height = validationErrors.clientHeight +
-          (this.dom.statusBar ? this.dom.statusBar.clientHeight : 0);
+      if (this.dom.validationErrorsContainer.clientHeight < this.dom.validationErrorsContainer.scrollHeight) {
+        this.dom.additinalErrorsIndication.style.display = 'block';
+      }
+
+      var height = this.dom.validationErrorsContainer.clientHeight + (this.dom.statusBar ? this.dom.statusBar.clientHeight : 0);
+      // var height = validationErrors.clientHeight + (this.dom.statusBar ? this.dom.statusBar.clientHeight : 0);
       this.content.style.marginBottom = (-height) + 'px';
       this.content.style.paddingBottom = height + 'px';
     }
