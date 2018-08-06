@@ -348,8 +348,7 @@ treemode.focus = function () {
  */
 treemode.clear = function () {
   if (this.node) {
-    this.node.collapse();
-    this.tbody.removeChild(this.node.getDom());
+    this.node.hide();
     delete this.node;
   }
 

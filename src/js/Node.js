@@ -538,24 +538,21 @@ Node.prototype.getNodePath = function () {
  */
 Node.prototype.clone = function() {
   var clone = new Node(this.editor);
-  clone.type = this.type;
-  clone.field = this.field;
-  clone.fieldInnerText = this.fieldInnerText;
-  clone.fieldEditable = this.fieldEditable;
-  clone.value = this.value;
-  clone.valueInnerText = this.valueInnerText;
-  clone.expanded = this.expanded;
-  clone.visibleChilds = this.visibleChilds;
+
+  for (var prop in this) {
+    // we don't clone the DOM elements, that would give issues with what's currently in the DOM
+    if (this.hasOwnProperty(prop) && prop !== 'dom') {
+      clone[prop] = this[prop];
+    }
+  }
 
   if (this.childs) {
     // an object or array
-    var cloneChilds = [];
-    this.childs.forEach(function (child) {
+    clone.childs = this.childs.map(function (child) {
       var childClone = child.clone();
       childClone.setParent(clone);
-      cloneChilds.push(childClone);
+      return childClone;
     });
-    clone.childs = cloneChilds;
   }
   else {
     // a value
@@ -3262,16 +3259,12 @@ Node.prototype.sort = function (path, direction) {
  * @param {*} newValue
  */
 Node.prototype.update = function (newValue) {
-  // copy the childs array (the old one will be kept for an undo action
-  var oldType = this.type;
   var oldValue = this.getValue();
 
   this.setValue(newValue);
 
   this.editor._onAction('transform', {
     node: this,
-    oldType: oldType,
-    newType: this.type,
     oldValue: oldValue,
     newValue: newValue
   });
@@ -3289,11 +3282,6 @@ Node.prototype.transform = function (query) {
 
   this.hideChilds(); // sorting is faster when the childs are not attached to the dom
 
-  // copy the childs array (the old one will be kept for an undo action
-  var oldType = this.type;
-  var oldChilds = this.childs;
-  this.childs = this.childs.concat();
-
   try {
     // apply the JMESPath query
     var oldValue = this.getValue();
@@ -3303,13 +3291,8 @@ Node.prototype.transform = function (query) {
 
     this.editor._onAction('transform', {
       node: this,
-      oldType: oldType,
-      newType: this.type,
       oldValue: oldValue,
-      newValue: newValue,
-      oldChilds: oldChilds,
-      newChilds: this.childs
-      // TODO: use oldChilds/newChilds in history or clean it up
+      newValue: newValue
     });
 
     this.showChilds();
