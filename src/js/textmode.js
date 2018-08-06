@@ -543,15 +543,23 @@ textmode.resize = function () {
 
 /**
  * Set json data in the formatter
- * @param {Object} json
+ * @param {*} json
  */
 textmode.set = function(json) {
   this.setText(JSON.stringify(json, null, this.indentation));
 };
 
 /**
+ * Update data. Same as calling `set` in text/code mode.
+ * @param {*} json
+ */
+textmode.update = function(json) {
+  this.updateText(JSON.stringify(json, null, this.indentation));
+};
+
+/**
  * Get json data from the formatter
- * @return {Object} json
+ * @return {*} json
  */
 textmode.get = function() {
   var text = this.getText();
@@ -613,6 +621,15 @@ textmode.setText = function(jsonText) {
   }
   // validate JSON schema
   this.validate();
+};
+
+/**
+ * Update the text contents
+ * @param {string} jsonText
+ */
+textmode.updateText = function(jsonText) {
+  // TODO: check if there are changes and only apply when there are differences
+  this.setText(jsonText);
 };
 
 /**

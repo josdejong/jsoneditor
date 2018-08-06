@@ -199,6 +199,8 @@ treemode.set = function (json) {
  * @param {*} json
  */
 treemode.update = function (json) {
+  // TODO: check if there are changes and only apply when there are differences
+
   var selection = this.getSelection();
 
   this.content.removeChild(this.table);  // Take the table offline
