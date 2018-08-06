@@ -3258,6 +3258,26 @@ Node.prototype.sort = function (path, direction) {
 };
 
 /**
+ * Replace the value of the node, keep it's state
+ * @param {*} newValue
+ */
+Node.prototype.update = function (newValue) {
+  // copy the childs array (the old one will be kept for an undo action
+  var oldType = this.type;
+  var oldValue = this.getValue();
+
+  this.setValue(newValue);
+
+  this.editor._onAction('transform', {
+    node: this,
+    oldType: oldType,
+    newType: this.type,
+    oldValue: oldValue,
+    newValue: newValue
+  });
+};
+
+/**
  * Transform the node given a JMESPath query.
  * @param {String} query    JMESPath query to apply
  * @private

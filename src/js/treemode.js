@@ -206,9 +206,8 @@ treemode.update = function (json) {
 
   var selection = this.getSelection();
 
-  this.content.removeChild(this.table);  // Take the table offline
-  this.node.setValue(json);
-  this.content.appendChild(this.table);  // Put the table online again
+  // apply the changed json
+  this.node.update(json);
 
   // update search result if any
   if (this.searchBox && !this.searchBox.isEmpty()) {
