@@ -1404,7 +1404,7 @@ Node.prototype._onChangeValue = function () {
   }
 
   this.editor._onAction('editValue', {
-    node: this,
+    path: this.getPath(),
     oldValue: this.previousValue,
     newValue: this.value,
     oldSelection: oldSelection,
@@ -1436,7 +1436,7 @@ Node.prototype._onChangeField = function () {
   }
 
   this.editor._onAction('editField', {
-    node: this,
+    path: this.getPath(),
     oldValue: this.previousField,
     newValue: this.field,
     oldSelection: oldSelection,
@@ -2010,11 +2010,11 @@ Node.onDragEnd = function (nodes, event) {
   }
 
   var params = {
-    nodes: nodes,
+    paths: nodes.map(getPath),
     oldSelection: editor.drag.oldSelection,
     newSelection: editor.getDomSelection(),
-    oldBeforeNode: editor.drag.oldBeforeNode,
-    newBeforeNode: beforeNode
+    oldBeforePath: editor.drag.oldBeforeNode.getPath(),
+    newBeforePath: beforeNode.getPath()
   };
 
   if (params.oldBeforeNode != params.newBeforeNode) {
@@ -2811,9 +2811,9 @@ Node.prototype.onKeyDown = function (event) {
           this.focus(Node.focusElement || this._getElementName(target));
 
           this.editor._onAction('moveNodes', {
-            nodes: selectedNodes,
-            oldBeforeNode: oldBeforeNode,
-            newBeforeNode: nextNode2,
+            paths: selectedNodes.map(getPath),
+            oldBeforePath: oldBeforeNode.getPath(),
+            newBeforePath: nextNode2.getPath(),
             oldSelection: oldSelection,
             newSelection: this.editor.getDomSelection()
           });
@@ -2858,9 +2858,9 @@ Node.prototype.onKeyDown = function (event) {
         this.focus(Node.focusElement || this._getElementName(target));
 
         this.editor._onAction('moveNodes', {
-          nodes: selectedNodes,
-          oldBeforeNode: oldBeforeNode,
-          newBeforeNode: prevNode,
+          paths: selectedNodes.map(getPath),
+          oldBeforePath: oldBeforeNode.getPath(),
+          newBeforePath: prevNode.getPath(),
           oldSelection: oldSelection,
           newSelection: this.editor.getDomSelection()
         });
@@ -2892,9 +2892,9 @@ Node.prototype.onKeyDown = function (event) {
           this.focus(Node.focusElement || this._getElementName(target));
 
           this.editor._onAction('moveNodes', {
-            nodes: selectedNodes,
-            oldBeforeNode: oldBeforeNode,
-            newBeforeNode: prevNode,
+            paths: selectedNodes.map(getPath),
+            oldBeforePath: oldBeforeNode.getPath(),
+            newBeforePath: prevNode.getPath(),
             oldSelection: oldSelection,
             newSelection: this.editor.getDomSelection()
           });
@@ -2955,9 +2955,9 @@ Node.prototype.onKeyDown = function (event) {
         this.focus(Node.focusElement || this._getElementName(target));
 
         this.editor._onAction('moveNodes', {
-          nodes: selectedNodes,
-          oldBeforeNode: oldBeforeNode,
-          newBeforeNode: nextNode2,
+          paths: selectedNodes.map(getPath),
+          oldBeforePath: oldBeforeNode.getPath(),
+          newBeforePath: nextNode2.getPath(),
           oldSelection: oldSelection,
           newSelection: this.editor.getDomSelection()
         });
@@ -3028,8 +3028,8 @@ Node.onRemove = function(nodes) {
 
     // store history action
     editor._onAction('removeNodes', {
-      nodes: nodes.slice(0), // store a copy of the array!
-      parent: parent,
+      paths: nodes.map(getPath),
+      parentPath: parent.getPath(),
       index: firstIndex,
       oldSelection: oldSelection,
       newSelection: newSelection
@@ -3075,9 +3075,9 @@ Node.onDuplicate = function(nodes) {
     var newSelection = editor.getDomSelection();
 
     editor._onAction('duplicateNodes', {
-      afterNode: lastNode,
-      nodes: clones,
-      parent: parent,
+      afterPath: lastNode.getPath(),
+      paths: clones.map(getPath),
+      parentPath: parent.getPath(),
       oldSelection: oldSelection,
       newSelection: newSelection
     });
@@ -3106,9 +3106,9 @@ Node.prototype._onInsertBefore = function (field, value, type) {
   var newSelection = this.editor.getDomSelection();
 
   this.editor._onAction('insertBeforeNodes', {
-    nodes: [newNode],
-    beforeNode: this,
-    parent: this.parent,
+    paths: [newNode.getPath()],
+    beforePath: this.getPath(),
+    parentPath: this.parent.getPath(),
     oldSelection: oldSelection,
     newSelection: newSelection
   });
@@ -3136,9 +3136,9 @@ Node.prototype._onInsertAfter = function (field, value, type) {
   var newSelection = this.editor.getDomSelection();
 
   this.editor._onAction('insertAfterNodes', {
-    nodes: [newNode],
-    afterNode: this,
-    parent: this.parent,
+    paths: [newNode.getPath()],
+    afterPath: this.getPath(),
+    parentPath: this.parent.getPath(),
     oldSelection: oldSelection,
     newSelection: newSelection
   });
@@ -3166,8 +3166,8 @@ Node.prototype._onAppend = function (field, value, type) {
   var newSelection = this.editor.getDomSelection();
 
   this.editor._onAction('appendNodes', {
-    nodes: [newNode],
-    parent: this.parent,
+    paths: [newNode.getPath()],
+    parentPath: this.parent.getPath(),
     oldSelection: oldSelection,
     newSelection: newSelection
   });
@@ -3186,7 +3186,7 @@ Node.prototype._onChangeType = function (newType) {
     var newSelection = this.editor.getDomSelection();
 
     this.editor._onAction('changeType', {
-      node: this,
+      path: this.getPath(),
       oldType: oldType,
       newType: newType,
       oldSelection: oldSelection,
@@ -3249,7 +3249,7 @@ Node.prototype.sort = function (path, direction) {
   this._updateDomIndexes();
 
   this.editor._onAction('sort', {
-    node: this,
+    path: this.getPath(),
     oldChilds: oldChilds,
     newChilds: this.childs
   });
@@ -3269,7 +3269,7 @@ Node.prototype.update = function (newValue) {
   this.setValue(newValue);
 
   this.editor._onAction('transform', {
-    node: this,
+    path: this.getPath(),
     oldType: oldType,
     newType: this.type,
     oldValue: oldValue,
@@ -3302,7 +3302,7 @@ Node.prototype.transform = function (query) {
     this.setValue(newValue);
 
     this.editor._onAction('transform', {
-      node: this,
+      path: this.getPath(),
       oldType: oldType,
       newType: this.type,
       oldValue: oldValue,
@@ -4017,6 +4017,11 @@ Node.prototype._escapeJSON = function (text) {
 
   return escaped;
 };
+
+// helper function to the get path of a node
+function getPath (node) {
+  return node.getPath();
+}
 
 // TODO: find a nicer solution to resolve this circular dependency between Node and AppendNode
 //       idea: introduce properties .isAppendNode and .isNode and use that instead of instanceof AppendNode checks

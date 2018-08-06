@@ -1,7 +1,5 @@
 'use strict';
 
-var util = require('./util');
-
 /**
  * @constructor History
  * Store action history, enables undo and redo
@@ -14,122 +12,144 @@ function History (editor) {
 
   this.clear();
 
+  // helper function to find a Node from a path
+  function findNode(path) {
+    return editor.node.findNodeByPath(path)
+  }
+
+  // helper function to clone a Node
+  function cloneNode(node) {
+    return node.clone();
+  }
+
   // map with all supported actions
   this.actions = {
     'editField': {
       'undo': function (params) {
-        params.node.updateField(params.oldValue);
+        findNode(params.path).updateField(params.oldValue);
       },
       'redo': function (params) {
-        params.node.updateField(params.newValue);
+        findNode(params.path).updateField(params.newValue);
       }
     },
     'editValue': {
       'undo': function (params) {
-        params.node.updateValue(params.oldValue);
+        findNode(params.path).updateValue(params.oldValue);
       },
       'redo': function (params) {
-        params.node.updateValue(params.newValue);
+        findNode(params.path).updateValue(params.newValue);
       }
     },
     'changeType': {
       'undo': function (params) {
-        params.node.changeType(params.oldType);
+        findNode(params.path).changeType(params.oldType);
       },
       'redo': function (params) {
-        params.node.changeType(params.newType);
+        findNode(params.path).changeType(params.newType);
       }
     },
 
     'appendNodes': {
       'undo': function (params) {
-        params.nodes.forEach(function (node) {
-          params.parent.removeChild(node);
+        var parentNode = findNode(params.parentPath);
+        params.paths.map(findNode).forEach(function (node) {
+          parentNode.removeChild(node);
         });
-      },
+       },
       'redo': function (params) {
-        params.nodes.forEach(function (node) {
-          params.parent.appendChild(node);
+        var parentNode = findNode(params.parentPath);
+        params.paths.map(findNode).forEach(function (node) {
+          parentNode.appendChild(node);
         });
       }
     },
     'insertBeforeNodes': {
       'undo': function (params) {
-        params.nodes.forEach(function (node) {
-          params.parent.removeChild(node);
+        var parentNode = findNode(params.parentPath);
+        params.paths.map(findNode).forEach(function (node) {
+          parentNode.removeChild(node);
         });
       },
       'redo': function (params) {
-        params.nodes.forEach(function (node) {
-          params.parent.insertBefore(node, params.beforeNode);
+        var parentNode = findNode(params.parentPath);
+        var beforeNode = findNode(params.beforePath);
+        params.paths.map(findNode).forEach(function (node) {
+          parentNode.insertBefore(node, beforeNode);
         });
       }
     },
     'insertAfterNodes': {
       'undo': function (params) {
-        params.nodes.forEach(function (node) {
-          params.parent.removeChild(node);
+        var parentNode = findNode(params.parentPath);
+        params.paths.map(findNode).forEach(function (node) {
+          parentNode.removeChild(node);
         });
       },
       'redo': function (params) {
-        var afterNode = params.afterNode;
-        params.nodes.forEach(function (node) {
-          params.parent.insertAfter(params.node, afterNode);
+        var parentNode = findNode(params.parentPath);
+        var afterNode = findNode(params.afterPath);
+        params.paths.map(findNode).forEach(function (node) {
+          parentNode.insertAfter(node, afterNode);
           afterNode = node;
         });
       }
     },
     'removeNodes': {
       'undo': function (params) {
-        var parent = params.parent;
-        var beforeNode = parent.childs[params.index] || parent.append;
-        params.nodes.forEach(function (node) {
-          parent.insertBefore(node, beforeNode);
+        var parentNode = findNode(params.parentPath);
+        var beforeNode = parentNode.childs[params.index] || parentNode.append;
+        params.paths.map(findNode).forEach(function (node) {
+          parentNode.insertBefore(node, beforeNode);
         });
       },
       'redo': function (params) {
-        params.nodes.forEach(function (node) {
+        params.paths.map(findNode).forEach(function (node) {
           params.parent.removeChild(node);
         });
       }
     },
     'duplicateNodes': {
       'undo': function (params) {
-        params.nodes.forEach(function (node) {
-          params.parent.removeChild(node);
+        var parentNode = findNode(params.parentPath);
+        params.paths.map(findNode).forEach(function (node) {
+          parentNode.removeChild(node);
         });
       },
       'redo': function (params) {
-        var afterNode = params.afterNode;
-        params.nodes.forEach(function (node) {
-          params.parent.insertAfter(node, afterNode);
+        var parentNode = findNode(params.parentPath);
+        var afterNode = findNode(params.afterPath);
+        var nodes = params.paths.map(findNode).map(cloneNode);
+        nodes.forEach(function (node) {
+          parentNode.insertAfter(node, afterNode);
           afterNode = node;
         });
       }
     },
     'moveNodes': {
       'undo': function (params) {
-        params.nodes.forEach(function (node) {
-          params.oldBeforeNode.parent.moveBefore(node, params.oldBeforeNode);
+        var oldBeforeNode = findNode(params.oldBeforePath);
+        params.paths.map(findNode).forEach(function (node) {
+          oldBeforeNode.parent.moveBefore(node, oldBeforeNode);
         });
       },
       'redo': function (params) {
-        params.nodes.forEach(function (node) {
-          params.newBeforeNode.parent.moveBefore(node, params.newBeforeNode);
+        var newBeforeNode = findNode(params.newBeforePath);
+        params.paths.map(findNode).forEach(function (node) {
+          newBeforeNode.parent.moveBefore(node, newBeforeNode);
         });
       }
     },
 
     'sort': {
       'undo': function (params) {
-        var node = params.node;
+        var node = findNode(params.path);
         node.hideChilds();
         node.childs = params.oldChilds;
         node.updateDom({updateIndexes: true});
         node.showChilds();
       },
       'redo': function (params) {
-        var node = params.node;
+        var node = findNode(params.path);
         node.hideChilds();
         node.childs = params.newChilds;
         node.updateDom({updateIndexes: true});
@@ -139,14 +159,12 @@ function History (editor) {
 
     'transform': {
       'undo': function (params) {
-        var node = params.node;
-        node.setValue(params.oldValue);
+        findNode(params.path).setValue(params.oldValue);
 
         // TODO: would be nice to restore the state of the node and childs
       },
       'redo': function (params) {
-        var node = params.node;
-        node.setValue(params.newValue);
+        findNode(params.path).setValue(params.newValue);
 
         // TODO: would be nice to restore the state of the node and childs
       }
