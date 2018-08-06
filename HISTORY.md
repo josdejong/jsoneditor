@@ -3,6 +3,12 @@
 https://github.com/josdejong/jsoneditor
 
 
+## 2018-08-02, version 5.19.2
+
+- Fixed #558: scrolling to search results and automatically scrolling up/down
+  when dragging an item broken (regression since v5.19.1).
+
+
 ## 2018-07-28, version 5.19.1
 
 - Fixed #557: inner contents of the scrollable area being displayed outside of

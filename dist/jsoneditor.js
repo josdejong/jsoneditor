@@ -24,8 +24,8 @@
  * Copyright (c) 2011-2017 Jos de Jong, http://jsoneditoronline.org
  *
  * @author  Jos de Jong, <wjosdejong@gmail.com>
- * @version 5.19.1
- * @date    2018-07-28
+ * @version 5.19.2
+ * @date    2018-08-02
  */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
@@ -8330,7 +8330,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * - to the first button in the top menu
 	 */
 	treemode.focus = function () {
-	  var input = this.content.querySelector('[contenteditable=true]');
+	  var input = this.scrollableContent.querySelector('[contenteditable=true]');
 	  if (input) {
 	    input.focus();
 	  }
@@ -8563,7 +8563,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	 */
 	treemode.startAutoScroll = function (mouseY) {
 	  var me = this;
-	  var content = this.content;
+	  var content = this.scrollableContent;
 	  var top = util.getAbsoluteTop(content);
 	  var height = content.clientHeight;
 	  var bottom = top + height;
@@ -8627,9 +8627,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	    return;
 	  }
 
-	  if ('scrollTop' in selection && this.content) {
+	  if ('scrollTop' in selection && this.scrollableContent) {
 	    // TODO: animated scroll
-	    this.content.scrollTop = selection.scrollTop;
+	    this.scrollableContent.scrollTop = selection.scrollTop;
 	  }
 	  if (selection.nodes) {
 	    // multi-select
@@ -8662,7 +8662,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    dom: this.focusTarget,
 	    range: range,
 	    nodes: this.multiselection.nodes.slice(0),
-	    scrollTop: this.content ? this.content.scrollTop : 0
+	    scrollTop: this.scrollableContent ? this.scrollableContent.scrollTop : 0
 	  };
 	};
 
@@ -8676,7 +8676,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	 *                                         when not.
 	 */
 	treemode.scrollTo = function (top, callback) {
-	  var content = this.content;
+	  var content = this.scrollableContent;
 	  if (content) {
 	    var editor = this;
 	    // cancel any running animation
@@ -8979,13 +8979,13 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	/**
 	 * Update TreePath components
-	 * @param {Array<Node>} pathNodes list of nodes in path from root to selection 
+	 * @param {Array<Node>} pathNodes list of nodes in path from root to selection
 	 * @private
 	 */
 	treemode._updateTreePath = function (pathNodes) {
 	  if (pathNodes && pathNodes.length) {
 	    util.removeClassName(this.navBar, 'nav-bar-empty');
-	    
+
 	    var pathObjs = [];
 	    pathNodes.forEach(function (node) {
 	      var pathObj = {
@@ -9181,7 +9181,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	/**
 	 * deselect currently selected nodes
 	 * @param {boolean} [clearStartAndEnd=false]  If true, the `start` and `end`
-	 *                                            state is cleared too. 
+	 *                                            state is cleared too.
 	 */
 	treemode.deselect = function (clearStartAndEnd) {
 	  var selectionChanged = !!this.multiselection.nodes.length;
@@ -9368,7 +9368,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                  this.autocomplete.hideDropDown();
 
 	          }.bind(this, node, event.target), 50);
-	      } 
+	      }
 	  }
 
 	  if (handled) {
