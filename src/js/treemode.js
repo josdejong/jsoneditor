@@ -150,19 +150,13 @@ treemode._setOptions = function (options) {
 };
 
 /**
- * Set JSON object in editor
- * @param {Object | undefined} json      JSON data
- * @param {String}             [name]    Optional field name for the root node.
- *                                       Can also be set using setName(name).
+ * Set JSON object in editor.
+ * Will reset the state of the editor: expanded/collapsed nodes,
+ * search results, and selection.
+ *
+ * @param {*} json
  */
-treemode.set = function (json, name) {
-  // adjust field name for root node
-  if (name) {
-    // TODO: deprecated since version 2.2.0. Cleanup some day.
-    console.warn('Second parameter "name" is deprecated. Use setName(name) instead.');
-    this.options.name = name;
-  }
-
+treemode.set = function (json) {
   // verify if json is valid JSON, ignore when a function
   if (json instanceof Function || (json === undefined)) {
     this.clear();
@@ -199,7 +193,15 @@ treemode.set = function (json, name) {
   }
 };
 
+/**
+ * Update JSON object in editor. The current state of the editor will be
+ * maintained: expanded/collapsed nodes, search results, selection.
+ *
+ * @param {*} json
+ */
 treemode.update = function (json) {
+  var selection = this.getSelection();
+
   this.content.removeChild(this.table);  // Take the table offline
   this.node.setValue(json);
   this.content.appendChild(this.table);  // Put the table online again
@@ -207,6 +209,23 @@ treemode.update = function (json) {
   // update search result if any
   if (this.searchBox && !this.searchBox.isEmpty()) {
     this.searchBox.forceSearch();
+  }
+
+  // update selection if any
+  if (selection && selection.start && selection.end) {
+    // only keep/update the selection if both start and end node still exists,
+    // else we clear the selection
+    var startNode = this.node.findNodeByPath(selection.start.path);
+    var endNode = this.node.findNodeByPath(selection.end.path);
+    if (startNode && endNode) {
+      this.setSelection(selection.start, selection.end);
+    }
+    else {
+      this.setSelection({}, {}); // clear selection
+    }
+  }
+  else {
+    this.setSelection({}, {}); // clear selection
   }
 };
 
@@ -1461,7 +1480,7 @@ treemode.onSelectionChange = function (callback) {
  * For clear the selection do not send any parameter
  * If the nodes are not from the same level the first common parent will be selected
  * @param {{path: Array.<String>}} start object contains the path for selection start 
- * @param {{path: Array.<String>}=} end object contains the path for selection end
+ * @param {{path: Array.<String>}} end object contains the path for selection end
  */
 treemode.setSelection = function (start, end) {
   // check for old usage
@@ -1470,12 +1489,19 @@ treemode.setSelection = function (start, end) {
     this.setDomSelection(start);
   }
 
-  var nodes = this._getNodeIntsncesByRange(start, end);
+  var nodes = this._getNodeInstancesByRange(start, end);
   
   nodes.forEach(function(node) {
     node.expandTo();
   });
   this.select(nodes);
+};
+
+/**
+ * Clear selection (if any)
+ */
+treemode.clearSelection = function () {
+  this.setSelection({}, {});
 };
 
 /**
@@ -1485,7 +1511,7 @@ treemode.setSelection = function (start, end) {
  * @return {Array.<Node>} Node intances on the given range
  * @private
  */
-treemode._getNodeIntsncesByRange = function (start, end) {
+treemode._getNodeInstancesByRange = function (start, end) {
   var startNode, endNode;
 
   if (start && start.path) {
@@ -1526,7 +1552,7 @@ treemode._getNodeIntsncesByRange = function (start, end) {
 };
 
 treemode.getNodesByRange = function (start, end) {
-  var nodes = this._getNodeIntsncesByRange(start, end);
+  var nodes = this._getNodeInstancesByRange(start, end);
   var serializableNodes = [];
 
   nodes.forEach(function (node){

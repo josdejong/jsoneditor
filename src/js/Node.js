@@ -143,7 +143,7 @@ Node.prototype.findNodeByPath = function (path) {
  * @typedef {{value: String|Object|Number|Boolean, path: Array.<String|Number>}} SerializableNode
  * 
  * Returns serializable representation for the node
- * @return {SerializedNode}
+ * @return {SerializableNode}
  */
 Node.prototype.serialize = function () {
   return {
