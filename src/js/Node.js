@@ -449,7 +449,7 @@ Node.prototype.setValue = function(value, type) {
 
   this.updateDom({'updateIndexes': true});
 
-  this.previousValue = this.value;
+  this.previousValue = this.value; // used only to check for changes in DOM vs JS model
 };
 
 /**

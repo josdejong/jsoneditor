@@ -43,6 +43,7 @@
     <div class="main">
         <div>
             <button id="update">update JSON</button>
+            <button id="updateText">update JSON Text</button>
         </div>
         <div id="jsoneditor"></div>
     </div>
@@ -50,6 +51,7 @@
     <script>
       var container = document.getElementById('jsoneditor');
       var updateButton = document.getElementById('update');
+      var updateTextButton = document.getElementById('updateText');
 
       var options = {
         mode: 'tree',
@@ -86,7 +88,11 @@
 
       updateButton.onclick = function () {
         editor.update(updatedJson);
-      }
+      };
+
+      updateTextButton.onclick = function () {
+        editor.updateText(JSON.stringify(updatedJson, null, 2));
+      };
     </script>
 </body>
 </html>

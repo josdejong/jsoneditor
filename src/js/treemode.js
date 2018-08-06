@@ -150,9 +150,8 @@ treemode._setOptions = function (options) {
 };
 
 /**
- * Set JSON object in editor.
- * Will reset the state of the editor: expanded/collapsed nodes,
- * search results, and selection.
+ * Set new JSON object in editor.
+ * Resets the state of the editor (expanded nodes, search, selection).
  *
  * @param {*} json
  */
@@ -194,8 +193,8 @@ treemode.set = function (json) {
 };
 
 /**
- * Update JSON object in editor. The current state of the editor will be
- * maintained: expanded/collapsed nodes, search results, selection.
+ * Update JSON object in editor.
+ * Maintains the state of the editor (expanded nodes, search, selection).
  *
  * @param {*} json
  */
@@ -259,7 +258,8 @@ treemode.getText = function() {
 };
 
 /**
- * Set the text contents of the editor
+ * Set the text contents of the editor.
+ * Resets the state of the editor (expanded nodes, search, selection).
  * @param {String} jsonText
  */
 treemode.setText = function(jsonText) {
@@ -272,6 +272,24 @@ treemode.setText = function(jsonText) {
 
     // try to parse again
     this.set(util.parse(sanitizedJsonText)); // this can throw an error
+  }
+};
+
+/**
+ * Update the text contents of the editor.
+ * Maintains the state of the editor (expanded nodes, search, selection).
+ * @param {String} jsonText
+ */
+treemode.updateText = function(jsonText) {
+  try {
+    this.update(util.parse(jsonText)); // this can throw an error
+  }
+  catch (err) {
+    // try to sanitize json, replace JavaScript notation with JSON notation
+    var sanitizedJsonText = util.sanitize(jsonText);
+
+    // try to parse again
+    this.update(util.parse(sanitizedJsonText)); // this can throw an error
   }
 };
 
