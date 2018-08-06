@@ -89,16 +89,8 @@ function JSONEditor (container, options, json) {
 
     // validate options
     if (options) {
-      var VALID_OPTIONS = [
-        'ajv', 'schema', 'schemaRefs','templates',
-        'ace', 'theme','autocomplete',
-        'onChange', 'onEditable', 'onError', 'onModeChange', 'onSelectionChange', 'onTextSelectionChange',
-        'escapeUnicode', 'history', 'search', 'mode', 'modes', 'name', 'indentation', 
-        'sortObjectKeys', 'navigationBar', 'statusBar', 'languages', 'language'
-      ];
-
       Object.keys(options).forEach(function (option) {
-        if (VALID_OPTIONS.indexOf(option) === -1) {
+        if (JSONEditor.VALID_OPTIONS.indexOf(option) === -1) {
           console.warn('Unknown option "' + option + '". This option will be ignored');
         }
       });
@@ -129,6 +121,14 @@ JSONEditor.modes = {};
 
 // debounce interval for JSON schema vaidation in milliseconds
 JSONEditor.prototype.DEBOUNCE_INTERVAL = 150;
+
+JSONEditor.VALID_OPTIONS = [
+  'ajv', 'schema', 'schemaRefs','templates',
+  'ace', 'theme','autocomplete',
+  'onChange', 'onEditable', 'onError', 'onModeChange', 'onSelectionChange', 'onTextSelectionChange',
+  'escapeUnicode', 'history', 'search', 'mode', 'modes', 'name', 'indentation',
+  'sortObjectKeys', 'navigationBar', 'statusBar', 'languages', 'language'
+];
 
 /**
  * Create the JSONEditor

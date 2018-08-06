@@ -470,6 +470,11 @@ valid JSON and the editor is in mode `tree`, `view`, or `form`.
 
   Contents of the editor as string.
 
+### Constants
+
+- `{string[]} JSONEditor.VALID_OPTIONS`
+
+  An array with the names of all known options.
 
 ### Examples
 
