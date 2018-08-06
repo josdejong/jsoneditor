@@ -273,6 +273,84 @@ Expand all fields. Only applicable for mode 'tree', 'view', and 'form'.
 
 Set focus to the JSONEditor.
 
+#### `JSONEditor.get()`
+
+Get JSON data.
+
+This method throws an exception when the editor does not contain valid JSON,
+which can be the case when the editor is in mode `code` or `text`.
+
+*Returns:*
+
+- `{JSON} json`
+
+  JSON data from the JSONEditor.
+
+#### `JSONEditor.getMode()`
+
+Retrieve the current mode of the editor.
+
+*Returns:*
+
+- `{String} mode`
+
+  Current mode of the editor for example `tree` or `code`.
+
+#### `JSONEditor.getName()`
+
+Retrieve the current field name of the root node.
+
+*Returns:*
+
+- `{String | undefined} name`
+
+  Current field name of the root node, or undefined if not set.
+
+#### `JSONEditor.getNodesByRange(start, end)`
+
+A utility function for getting a list of `SerializableNode` under certain range.
+
+This function can be used as complementary to `getSelection` and `onSelectionChange` if a list of __all__ the selected nodes is required.
+
+*Parameters:*
+
+- `{path: Array.<String>} start`
+
+  Path for the first node in range
+
+- `{path: Array.<String>} end`
+
+  Path for the last node in range
+
+#### `JSONEditor.getSelection()`
+
+Get the current selected nodes, Only applicable for mode 'tree'.
+
+*Returns:*
+
+- `{start:SerializableNode, end: SerializableNode}`
+
+#### `JSONEditor.getText()`
+
+Get JSON data as string.
+
+*Returns:*
+
+- `{String} jsonString`
+
+  Contents of the editor as string. When the editor is in code `text` or `code`,
+  the returned text is returned as-is. For the other modes, the returned text
+  is a compacted string. In order to get the JSON formatted with a certain
+  number of spaces, use `JSON.stringify(JSONEditor.get(), null, 2)`.
+
+#### `JSONEditor.getTextSelection()`
+
+Get the current selected text with the selection range, Only applicable for mode 'text' and 'code'.
+
+*Returns:*
+
+- `{start:{row:Number, column:Number},end:{row:Number, column:Number},text:String} selection`
+
 #### `JSONEditor.set(json)`
 
 Set JSON data.
@@ -318,95 +396,6 @@ See [http://json-schema.org/](http://json-schema.org/) for more information on t
 
   Optional, Schemas that are referenced using the `$ref` property from the JSON schema, the object structure in the form of `{reference_key: schemaObject}`
 
-#### `JSONEditor.setText(jsonString)`
-
-Set text data in the editor.
-
-This method throws an exception when the provided jsonString does not contain
-valid JSON and the editor is in mode `tree`, `view`, or `form`.
-
-*Parameters:*
-
-- `{String} jsonString`
-
-  Contents of the editor as string.
-
-#### `JSONEditor.get()`
-
-Get JSON data. 
-
-This method throws an exception when the editor does not contain valid JSON, 
-which can be the case when the editor is in mode `code` or `text`.
-
-*Returns:*
-
-- `{JSON} json`
-
-  JSON data from the JSONEditor.
-
-#### `JSONEditor.getMode()`
-
-Retrieve the current mode of the editor.
-
-*Returns:*
-
-- `{String} mode`
-
-  Current mode of the editor for example `tree` or `code`.
-
-#### `JSONEditor.getName()`
-
-Retrieve the current field name of the root node.
-
-*Returns:*
-
-- `{String | undefined} name`
-
-  Current field name of the root node, or undefined if not set.
-
-#### `JSONEditor.getText()`
-
-Get JSON data as string.
-
-*Returns:*
-
-- `{String} jsonString`
-
-  Contents of the editor as string. When the editor is in code `text` or `code`,
-  the returned text is returned as-is. For the other modes, the returned text
-  is a compacted string. In order to get the JSON formatted with a certain
-  number of spaces, use `JSON.stringify(JSONEditor.get(), null, 2)`.
-
-#### `JSONEditor.getTextSelection()`
-
-Get the current selected text with the selection range, Only applicable for mode 'text' and 'code'.
-
-*Returns:*
-
-- `{start:{row:Number, column:Number},end:{row:Number, column:Number},text:String} selection`
-
-#### `JSONEditor.setTextSelection(startPos, endPos)`
-
-Set text selection for a range, Only applicable for mode 'text' and 'code'.
-
-*Parameters:*
-
-- `{row:Number, column:Number} startPos`
-
-  Position for selection start
-
-- `{row:Number, column:Number} endPos`
-
-  Position for selection end
-
-#### `JSONEditor.getSelection()`
-
-Get the current selected nodes, Only applicable for mode 'tree'.
-
-*Returns:*
-
-- `{start:SerializableNode, end: SerializableNode}`
-
 #### `JSONEditor.setSelection(start, end)`
 
 Set selection for a range of nodes, Only applicable for mode 'tree'.
@@ -425,22 +414,32 @@ Set selection for a range of nodes, Only applicable for mode 'tree'.
 
   Path for the end node
 
+#### `JSONEditor.setText(jsonString)`
 
-#### `JSONEditor.getNodesByRange(start, end)`
+Set text data in the editor.
 
-A utility function for getting a list of `SerializableNode` under certain range.
-
-This function can be used as complementary to `getSelection` and `onSelectionChange` if a list of __all__ the selected nodes is required.
+This method throws an exception when the provided jsonString does not contain
+valid JSON and the editor is in mode `tree`, `view`, or `form`.
 
 *Parameters:*
 
-- `{path: Array.<String>} start`
+- `{String} jsonString`
 
-  Path for the first node in range
+  Contents of the editor as string.
 
-- `{path: Array.<String>} end`
+#### `JSONEditor.setTextSelection(startPos, endPos)`
 
-  Path for the last node in range
+Set text selection for a range, Only applicable for mode 'text' and 'code'.
+
+*Parameters:*
+
+- `{row:Number, column:Number} startPos`
+
+  Position for selection start
+
+- `{row:Number, column:Number} endPos`
+
+  Position for selection end
 
 ### Examples
 
