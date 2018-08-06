@@ -50,7 +50,7 @@ Constructs a new JSONEditor.
 
 - `{function} onChange`
 
-  Set a callback function triggered when the contents of the JSONEditor change. Called without parameters. Will only be triggered on changes made by the user, not in case of programmatic changes via the functions `set` or `setText`.
+  Set a callback function triggered when the contents of the JSONEditor change. Called without parameters. Will only be triggered on changes made by the user, not in case of programmatic changes via the functions `set`, `setText`, `update`, or `updateText`.
 
 - `{function} onEditable`
 
@@ -354,6 +354,8 @@ Get the current selected text with the selection range, Only applicable for mode
 #### `JSONEditor.set(json)`
 
 Set JSON data.
+Resets the state of the editor (expanded nodes, search, selection).
+See also `JSONEditor.update(json)`.
 
 *Parameters:*
 
@@ -440,6 +442,34 @@ Set text selection for a range, Only applicable for mode 'text' and 'code'.
 - `{row:Number, column:Number} endPos`
 
   Position for selection end
+
+#### `JSONEditor.update(json)`
+
+Replace JSON data when the new data contains changes.
+In modes `tree`, `form`, and `view`, the state of the editor will be maintained (expanded nodes, search, selection).
+See also `JSONEditor.set(json)`.
+
+*Parameters:*
+
+- `{JSON} json`
+
+  JSON data to be displayed in the JSONEditor.
+
+#### `JSONEditor.updateText (json)`
+
+Replace text data when the new data contains changes.
+In modes `tree`, `form`, and `view`, the state of the editor will be maintained (expanded nodes, search, selection).
+See also `JSONEditor.setText(json)`.
+
+This method throws an exception when the provided jsonString does not contain
+valid JSON and the editor is in mode `tree`, `view`, or `form`.
+
+*Parameters:*
+
+- `{String} jsonString`
+
+  Contents of the editor as string.
+
 
 ### Examples
 

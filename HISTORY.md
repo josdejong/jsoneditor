@@ -3,6 +3,12 @@
 https://github.com/josdejong/jsoneditor
 
 
+## not yet released, version 5.20.0
+
+- Implemented new methods `update` and `updateText`, which maintain the state
+  of the editor (expanded nodes, search, selection).
+
+
 ## 2018-08-02, version 5.19.2
 
 - Fixed #558: scrolling to search results and automatically scrolling up/down
