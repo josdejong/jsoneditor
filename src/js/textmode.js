@@ -628,7 +628,11 @@ textmode.setText = function(jsonText) {
  * @param {string} jsonText
  */
 textmode.updateText = function(jsonText) {
-  // TODO: check if there are changes and only apply when there are differences
+  // don't update if there are no changes
+  if (this.getText() === jsonText) {
+    return;
+  }
+
   this.setText(jsonText);
 };
 

@@ -1295,6 +1295,58 @@ Node.prototype.changeType = function (newType) {
 };
 
 /**
+ * Test whether the JSON contents of this node are deep equal to provided JSON object.
+ * @param {*} json
+ */
+Node.prototype.deepEqual = function (json) {
+  var i;
+
+  if (this.type === 'array') {
+    if (!Array.isArray(json)) {
+      return false;
+    }
+
+    if (this.childs.length !== json.length) {
+      return false;
+    }
+
+    for (i = 0; i < this.childs.length; i++) {
+      if (!this.childs[i].deepEqual(json[i])) {
+        return false;
+      }
+    }
+  }
+  else if (this.type === 'object') {
+    if (typeof json !== 'object') {
+      return false;
+    }
+
+    if (this.childs.length !== Object.keys(json).length) {
+      return false;
+    }
+
+    for (i = 0; i < this.childs.length; i++) {
+      var child = this.childs[i];
+
+      if (!(child.field in json)) {
+        return false;
+      }
+
+      if (!child.deepEqual(json[child.field])) {
+        return false;
+      }
+    }
+  }
+  else {
+    if (this.value !== json) {
+      return false;
+    }
+  }
+
+  return true;
+};
+
+/**
  * Retrieve value from DOM
  * @param {boolean} [silent]  If true (default), no errors will be thrown in
  *                            case of invalid data

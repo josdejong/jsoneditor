@@ -199,7 +199,10 @@ treemode.set = function (json) {
  * @param {*} json
  */
 treemode.update = function (json) {
-  // TODO: check if there are changes and only apply when there are differences
+  // don't update if there are no changes
+  if (this.node.deepEqual(json)) {
+    return;
+  }
 
   var selection = this.getSelection();
 
