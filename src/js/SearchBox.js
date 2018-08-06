@@ -234,7 +234,18 @@ SearchBox.prototype._onSearch = function (forceSearch) {
         ? this.results[0].node.MAX_SEARCH_RESULTS
         : Infinity;
 
-    this._setActiveResult(0, false);
+    // try to maintain the current active result if this is still part of the new search results
+    var activeResultIndex = 0;
+    if (this.activeResult) {
+      for (var i = 0; i < this.results.length; i++) {
+        if (this.results[i].node === this.activeResult.node) {
+          activeResultIndex = i;
+          break;
+        }
+      }
+    }
+
+    this._setActiveResult(activeResultIndex, false);
 
     // display search results
     if (text !== undefined) {
@@ -307,6 +318,21 @@ SearchBox.prototype._onKeyUp = function (event) {
 SearchBox.prototype.clear = function () {
   this.dom.search.value = '';
   this._onSearch();
+};
+
+/**
+ * Refresh searchResults if there is a search value
+ */
+SearchBox.prototype.forceSearch = function () {
+  this._onSearch(true);
+};
+
+/**
+ * Test whether the search box value is empty
+ * @returns {boolean} Returns true when empty.
+ */
+SearchBox.prototype.isEmpty = function () {
+  return this.dom.search.value === '';
 };
 
 /**
