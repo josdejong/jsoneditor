@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 
-import JSONEditorDemo from "./JSONEditorDemo";
+import JSONEditorDemo from './JSONEditorDemo';
 import './App.css';
 
 class App extends Component {
@@ -27,7 +27,7 @@ class App extends Component {
           </div>
           <JSONEditorDemo
               json={this.state.json}
-              onChange={this.onChange}
+              onChangeJSON={this.onChangeJSON}
           />
           <div className="code">
             <pre>
@@ -41,7 +41,7 @@ class App extends Component {
     );
   }
 
-  onChange = (json) => {
+  onChangeJSON = (json) => {
     this.setState({ json });
   };
 

@@ -5,8 +5,13 @@ https://github.com/josdejong/jsoneditor
 
 ## not yet released, version 5.20.0
 
+_Good news: JSONEditor is finally framework friendly and can now be easily
+integrated in React, Vue, and Angular!_
+
 - Implemented new methods `update` and `updateText`, which maintain the state
-  of the editor (expanded nodes, search, selection).
+  of the editor (expanded nodes, search, selection). This makes it easy to
+  integrate in frameworks like React.
+- Implemented options `onChangeJSON(json)` and `onChangeText(jsonString)`.
 
 
 ## 2018-08-02, version 5.19.2

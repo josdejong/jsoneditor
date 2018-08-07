@@ -20,8 +20,12 @@ var DEFAULT_THEME = 'ace/theme/jsoneditor';
  *                                                       or "code".
  *                             {Number} indentation      Number of indentation
  *                                                       spaces. 2 by default.
- *                             {function} onChange       Callback method
- *                                                       triggered on change
+ *                             {function} onChange       Callback method triggered on change.
+ *                                                       Does not pass the changed contents.
+ *                             {function} onChangeText   Callback method, triggered
+ *                                                       in modes on change of contents,
+ *                                                       passing the changed contents
+ *                                                       as stringified JSON.
  *                             {function} onModeChange   Callback method
  *                                                       triggered after setMode
  *                             {function} onEditable     Determine if textarea is readOnly
@@ -328,6 +332,16 @@ textmode._onChange = function () {
     }
     catch (err) {
       console.error('Error in onChange callback: ', err);
+    }
+  }
+
+  // trigger the onChangeText callback
+  if (this.options.onChangeText) {
+    try {
+      this.options.onChangeText(this.getText());
+    }
+    catch (err) {
+      console.error('Error in onChangeText callback: ', err);
     }
   }
 };

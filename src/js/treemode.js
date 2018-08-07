@@ -33,7 +33,18 @@ var treemode = {};
  *                               {Boolean} history        Enable history (undo/redo).
  *                                                        True by default
  *                               {function} onChange      Callback method, triggered
- *                                                        on change of contents
+ *                                                        on change of contents.
+ *                                                        Does not pass the changed contents.
+ *                               {function} onChangeJSON  Callback method, triggered
+ *                                                        in modes on change of contents,
+ *                                                        passing the changed contents
+ *                                                        as JSON.
+ *                                                        Only applicable for modes
+ *                                                        'tree', 'view', and 'form'.
+ *                               {function} onChangeText  Callback method, triggered
+ *                                                        in modes on change of contents,
+ *                                                        passing the changed contents
+ *                                                        as stringified JSON.
  *                               {String} name            Field name for the root node.
  *                               {boolean} escapeUnicode  If true, unicode
  *                                                        characters are escaped.
@@ -459,6 +470,26 @@ treemode._onChange = function () {
     }
     catch (err) {
       console.error('Error in onChange callback: ', err);
+    }
+  }
+
+  // trigger the onChangeJSON callback
+  if (this.options.onChangeJSON) {
+    try {
+      this.options.onChangeJSON(this.get());
+    }
+    catch (err) {
+      console.error('Error in onChangeJSON callback: ', err);
+    }
+  }
+
+  // trigger the onChangeText callback
+  if (this.options.onChangeText) {
+    try {
+      this.options.onChangeText(this.getText());
+    }
+    catch (err) {
+      console.error('Error in onChangeText callback: ', err);
     }
   }
 };

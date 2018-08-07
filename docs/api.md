@@ -48,11 +48,30 @@ Constructs a new JSONEditor.
   }
   ```
 
-- `{function} onChange`
+- `{function} onChange()`
 
-  Set a callback function triggered when the contents of the JSONEditor change. Called without parameters. Will only be triggered on changes made by the user, not in case of programmatic changes via the functions `set`, `setText`, `update`, or `updateText`.
+  Set a callback function triggered when the contents of the JSONEditor change.
+  This callback does not pass the changed contents, use `get()` or `getText()` for that.
+  Note that `get()` can throw an exception in mode `text` or `code`, when the editor contains invalid JSON.
+  Will only be triggered on changes made by the user, not in case of programmatic changes via the functions `set`, `setText`, `update`, or `updateText`.
+  See also callback functions `onChangeJSON(json)` and `onChangeText(jsonString)`.
 
-- `{function} onEditable`
+- `{function} onChangeJSON(json)`
+
+  Set a callback function triggered when the contents of the JSONEditor change.
+  Passes the changed contents as a JSON object.
+  Only applicable when option `mode` is `tree`, `form`, or `view`.
+  The callback will only be triggered on changes made by the user, not in case of programmatic changes via the functions `set`, `setText`, `update`, or `updateText`.
+  See also callback function `onChangeText(jsonString)`.
+
+- `{function} onChangeText(jsonString)`
+
+  Set a callback function triggered when the contents of the JSONEditor change.
+  Passes the changed contents as a stringified JSON object.
+  The callback will only be triggered on changes made by the user, not in case of programmatic changes via the functions `set`, `setText`, `update`, or `updateText`.
+  See also callback function `onChangeJSON(json)`.
+
+- `{function} onEditable(node)`
 
   Set a callback function  to determine whether individual nodes are editable or read-only. Only applicable when option `mode` is `tree`, `text`, or `code`.
 
@@ -60,7 +79,7 @@ Constructs a new JSONEditor.
 
   In modes `text` and `code`, the callback is invoked as `editable(node)` where `node` is an empty object (no field, value, or path). In that case the function can return false to make the text or code editor completely read-only.
 
-- `{function} onError`
+- `{function} onError(error)`
 
   Set a callback function triggered when an error occurs. Invoked with the error as first argument. The callback is only invoked
   for errors triggered by a users action, like switching from code mode to tree mode or clicking the Format button whilst the editor doesn't contain valid JSON.
@@ -459,7 +478,7 @@ See also `JSONEditor.set(json)`.
 
 Replace text data when the new data contains changes.
 In modes `tree`, `form`, and `view`, the state of the editor will be maintained (expanded nodes, search, selection).
-See also `JSONEditor.setText(json)`.
+See also `JSONEditor.setText(jsonString)`.
 
 This method throws an exception when the provided jsonString does not contain
 valid JSON and the editor is in mode `tree`, `view`, or `form`.
