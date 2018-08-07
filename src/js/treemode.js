@@ -222,6 +222,9 @@ treemode.update = function (json) {
   this.node.update(json);
   this.onChangeDisabled = false;
 
+  // validate JSON schema
+  this.validate();
+
   // update search result if any
   if (this.searchBox && !this.searchBox.isEmpty()) {
     this.searchBox.forceSearch();
