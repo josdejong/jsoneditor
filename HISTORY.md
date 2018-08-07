@@ -12,6 +12,7 @@ integrated in React, Vue, and Angular!_
   of the editor (expanded nodes, search, selection). This makes it easy to
   integrate in frameworks like React.
 - Implemented options `onChangeJSON(json)` and `onChangeText(jsonString)`.
+- Added two React examples to the `examples` folder.
 
 
 ## 2018-08-02, version 5.19.2

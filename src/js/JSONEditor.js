@@ -104,7 +104,8 @@ function JSONEditor (container, options, json) {
     if (options.onChangeJSON) {
       if (options.mode === 'text' || options.mode === 'code' ||
           (options.modes && (options.modes.indexOf('text') !== -1 || options.modes.indexOf('code') !== -1))) {
-        console.warn('Option "onChangeJSON" is not applicable to modes "text" and "code". Use "onChangeText" instead.');
+        console.warn('Option "onChangeJSON" is not applicable to modes "text" and "code". ' +
+            'Use "onChangeText" or "onChange" instead.');
       }
     }
 
@@ -231,6 +232,11 @@ JSONEditor.prototype.getName = function () {
  *                          'text', and 'code'.
  */
 JSONEditor.prototype.setMode = function (mode) {
+  // if the mode is the same as current mode (and it's not the first time), do nothing.
+  if (mode === this.options.mode && this.create) {
+    return;
+  }
+
   var container = this.container;
   var options = util.extend({}, this.options);
   var oldMode = options.mode;

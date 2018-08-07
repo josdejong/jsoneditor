@@ -11,6 +11,7 @@ table.jsoneditor-search div.jsoneditor-results {
   color: white;
   padding-right: 5px;
   line-height: 24px;
+  padding-top: 2px;
 }
 
 table.jsoneditor-search {

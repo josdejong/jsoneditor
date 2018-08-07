@@ -322,6 +322,10 @@ textmode.create = function (container, options) {
  * @private
  */
 textmode._onChange = function () {
+  if (this.onChangeDisabled) {
+    return;
+  }
+
   // validate JSON schema (if configured)
   this._debouncedValidate();
 
@@ -626,12 +630,11 @@ textmode.setText = function(jsonText) {
   }
   if (this.aceEditor) {
     // prevent emitting onChange events while setting new text
-    var originalOnChange = this.options.onChange;
-    this.options.onChange = null;
+    this.onChangeDisabled = true;
 
     this.aceEditor.setValue(text, -1);
 
-    this.options.onChange = originalOnChange;
+    this.onChangeDisabled = false;
   }
   // validate JSON schema
   this.validate();
@@ -834,18 +837,27 @@ textmode.setTextSelection = function (startPos, endPos) {
   }
 };
 
+function load () {
+  try {
+    this.format()
+  }
+  catch (err) {
+    // in case of an error, just move on, failing formatting is not a big deal
+  }
+}
+
 // define modes
 module.exports = [
   {
     mode: 'text',
     mixin: textmode,
     data: 'text',
-    load: textmode.format
+    load: load
   },
   {
     mode: 'code',
     mixin: textmode,
     data: 'text',
-    load: textmode.format
+    load: load
   }
 ];
