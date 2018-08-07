@@ -678,17 +678,21 @@ textmode.validate = function () {
     if (this.aceEditor) {
       var jsonText = this.getText();
       var errorPaths = [];
-      errors.forEach(function(error){
-        errorPaths.push(error.dataPath);
-      });
-      var errorLocations = util.getPositionForPath(jsonText, errorPaths);      
+      errors.reduce(function(acc, curr) {
+        if(acc.indexOf(curr.dataPath) === -1) {
+          acc.push(curr.dataPath);
+        }; 
+        return acc;
+      }, errorPaths);      
+      var errorLocations = util.getPositionForPath(jsonText, errorPaths);   
       me.annotations = errorLocations.map(function (errLoc) {
-        var validationError = errors.find(function(err){ return err.dataPath === errLoc.path; });
+        var validationErrors = errors.filter(function(err){ return err.dataPath === errLoc.path; });
+        var validationError = validationErrors.reduce(function(acc, curr) { acc.message += '\n' + curr.message; return acc; });
         if (validationError) {
           return {
-            row: errLoc.line - 1,
-            column: errLoc.row,
-            text: "Schema Validation Error: " + validationError.message,
+            row: errLoc.line,
+            column: errLoc.column,
+            text: "Schema Validation Error: \n" + validationError.message,
             type: "warning",
             source: "jsoneditor",
           }
@@ -737,6 +741,11 @@ textmode.validate = function () {
       // var height = validationErrors.clientHeight + (this.dom.statusBar ? this.dom.statusBar.clientHeight : 0);
       this.content.style.marginBottom = (-height) + 'px';
       this.content.style.paddingBottom = height + 'px';
+    }
+  } else {
+    if (this.aceEditor) {
+      me.annotations = [];
+      me._refreshAnnotations();
     }
   }
 

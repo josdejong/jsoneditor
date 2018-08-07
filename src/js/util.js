@@ -1,6 +1,7 @@
 'use strict';
 
 var jsonlint = require('./assets/jsonlint/jsonlint');
+var jsonMap = require('json-source-map');
 
 /**
  * Parse JSON using the parser built-in in the browser.
@@ -913,143 +914,33 @@ exports.getIndexForPosition = function(el, row, column) {
  */
 exports.getPositionForPath = function(text, paths) {
   var me = this;
+  var result = [];
+  var jsmap;
   if (!paths || !paths.length) {
-    return {};
+    return result;
   }
-
-  var pathsArr = [];
-  var resultArr = [];
-  var currIdx = 0;
-  var escaseKey = false;
-  var states = {
-    string: false,
-    prop: true,
-    value: false,
-    escape: false
+  
+  try {
+    jsmap = jsonMap.parse(text);    
+  } catch (err) {
+    return result;
   }
-  var depth = 0;
-  var line = 1;
-  var row = 0;  
 
   paths.forEach(function (path) {
-    pathsArr.push(Object.defineProperty({ 
-      path: path,
-      items: me.parsePath(path), 
-      itemIdx: 0,
-      charIdx: 0,
-      check: false
-    }, 'curr', {
-      get: function() {
-        return this.items[this.itemIdx] || "";
-      }
-    }));
+    var pathArr = me.parsePath(path);
+    var pointerName = pathArr.length ? "/" + pathArr.join("/") : "";
+    var pointer = jsmap.pointers[pointerName];
+    if (pointer) {
+      result.push({
+        path: path,
+        line: pointer.key ? pointer.key.line : (pointer.value ? pointer.value.line : 0),
+        column: pointer.key ? pointer.key.column : (pointer.value ? pointer.value.column : 0)
+      });
+    }
   });
+
+  return result;
   
-  for (var i = 0 ; i < text.length; ++i) {
-    var currChar = text.charAt(i);
-    states.escape = escaseKey;
-    escaseKey = false;
-
-    ++row;
-
-    switch (currChar) {
-
-      case '{':
-        if (!states.string) {
-          states.prop = true;
-          states.value = false;
-          ++depth;
-        }
-        break;
-
-      case '}':
-        if (!states.string) {
-          states.prop = true;
-          states.value = false;
-          --depth;
-        }
-        break;
-
-      case '"':
-        if (!states.escape) {
-          states.string = !states.string;
-        }
-        break;
-
-      case '\\':
-        if (!states.escape) {
-          escaseKey = true;
-        }
-        break;
-
-      case ':':
-        if (!states.string) {
-          states.value = true;
-          states.prop = false;
-        }
-        break;
-
-      case ',':
-        if (!states.string) {
-          states.value = false;
-          states.prop = true;
-        }
-        break;
-      
-      case '\n':
-        ++line;
-        row = 0;
-        break;
-    }
-
-    if (states.prop && states.string) {
-
-      if (currChar === '"' && !states.escape) {// first char of string - reset index and skip
-        currIdx = -1;
-        continue;
-      } else {
-        ++currIdx;
-      }
-
-      pathsArr.forEach(function (path) {
-        if (path.curr && path.curr[currIdx] === currChar) {
-          path.check = true;
-        } else {
-          path.check = false;
-        }
-      });
-    }
-
-    if (states.value) {
-      var found = [];
-      pathsArr.forEach(function (path, idx) {
-        if (path.check) {          
-          if (path.itemIdx === path.items.length - 1) {
-            resultArr.push(
-              {
-                path: path.path,
-                line: line,
-                row: row - path.curr.length -1
-              }
-            );
-            found.push(idx);
-          } else {
-            ++path.itemIdx;
-            path.check = false;
-          }
-        }
-      });
-
-      found.forEach(function (idx) {
-        pathsArr.splice(idx, 1);
-      });
-
-      if (!pathsArr.length) {
-        break;
-      }      
-    }    
-  }
-  return resultArr;
 }
 
 
