@@ -13,6 +13,8 @@ integrated in React, Vue, and Angular!_
   integrate in frameworks like React.
 - Implemented options `onChangeJSON(json)` and `onChangeText(jsonString)`.
 - Added two React examples to the `examples` folder.
+- Fixed menu buttons "Sort" and "Transform" being available in modes `view`
+  and `form`.
 
 
 ## 2018-08-02, version 5.19.2

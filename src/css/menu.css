@@ -59,6 +59,12 @@ div.jsoneditor-menu > button.jsoneditor-sort {
 div.jsoneditor-menu > button.jsoneditor-transform {
   background-position: -144px -96px;
 }
+div.jsoneditor.jsoneditor-mode-view > div.jsoneditor-menu > button.jsoneditor-sort,
+div.jsoneditor.jsoneditor-mode-form > div.jsoneditor-menu > button.jsoneditor-sort,
+div.jsoneditor.jsoneditor-mode-view > div.jsoneditor-menu > button.jsoneditor-transform,
+div.jsoneditor.jsoneditor-mode-form > div.jsoneditor-menu > button.jsoneditor-transform {
+  display: none;
+}
 div.jsoneditor-menu > button.jsoneditor-undo {
   background-position: -24px -96px;
 }
