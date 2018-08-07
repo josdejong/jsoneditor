@@ -499,34 +499,6 @@ div.jsoneditor-tree .jsoneditor-schema-error {
 
 /* JSON schema errors displayed at the bottom of the editor in mode text and code */
 
-.jsoneditor .jsoneditor-validation-errors-container {
-  max-height: 130px;
-  overflow-y: auto;
-}
-
-.jsoneditor .jsoneditor-additional-errors {
-  position: absolute;
-  margin: auto;
-  bottom: 31px;
-  left: calc(50% - 92px);
-  color: #808080;
-  background-color: #ebebeb;
-  padding: 7px 15px;
-  border-radius: 8px;
-}
-
-.jsoneditor .jsoneditor-additional-errors.visible {
-  visibility: visible;
-  opacity: 1;
-  transition: opacity 2s linear;
-}
-
-.jsoneditor .jsoneditor-additional-errors.hidden {
-  visibility: hidden;
-  opacity: 0;
-  transition: visibility 0s 2s, opacity 2s linear;
-}
-
 .jsoneditor .jsoneditor-text-errors {
   width: 100%;
   border-collapse: collapse;
@@ -546,53 +518,6 @@ div.jsoneditor-tree .jsoneditor-schema-error {
   padding: 0;
   margin: 0 4px 0 0;
   background: url("img/jsoneditor-icons.svg")  -168px -48px;
-}
-
-.fadein {
-  -webkit-animation: fadein .3s;
-  animation: fadein .3s;
-  -moz-animation: fadein .3s;
-  -o-animation: fadein .3s;
-}
-
-@-webkit-keyframes fadein {
-  0% {
-    opacity: 0;
-  }
-
-  100% {
-    opacity: 1;
-  }
-}
-
-@-moz-keyframes fadein {
-  0% {
-    opacity: 0;
-  }
-
-  100% {
-    opacity: 1;
-  }
-}
-
-@keyframes fadein {
-  0% {
-    opacity: 0;
-  }
-
-  100% {
-    opacity: 1;
-  }
-}
-
-@-o-keyframes fadein {
-  0% {
-    opacity: 0;
-  }
-
-  100% {
-    opacity: 1;
-  }
 }
 /* ContextMenu - main menu */
 
