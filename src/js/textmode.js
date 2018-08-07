@@ -650,7 +650,9 @@ textmode.updateText = function(jsonText) {
     return;
   }
 
+  this.onChangeDisabled = true; // don't fire an onChange event
   this.setText(jsonText);
+  this.onChangeDisabled = false;
 };
 
 /**

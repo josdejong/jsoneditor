@@ -218,7 +218,9 @@ treemode.update = function (json) {
   var selection = this.getSelection();
 
   // apply the changed json
+  this.onChangeDisabled = true; // don't fire an onChange event
   this.node.update(json);
+  this.onChangeDisabled = false;
 
   // update search result if any
   if (this.searchBox && !this.searchBox.isEmpty()) {
@@ -460,6 +462,10 @@ treemode._onAction = function (action, params) {
  * @private
  */
 treemode._onChange = function () {
+  if (this.onChangeDisabled) {
+    return;
+  }
+
   // validate JSON schema (if configured)
   this._debouncedValidate();
 
@@ -1550,13 +1556,6 @@ treemode.setSelection = function (start, end) {
 };
 
 /**
- * Clear selection (if any)
- */
-treemode.clearSelection = function () {
-  this.setSelection({}, {});
-};
-
-/**
  * Returns a set of Nodes according to a range of selection
  * @param {{path: Array.<String>}} start object contains the path for range start 
  * @param {{path: Array.<String>}=} end object contains the path for range end
@@ -1612,7 +1611,7 @@ treemode.getNodesByRange = function (start, end) {
   });
 
   return serializableNodes;
-}
+};
 
 // define modes
 module.exports = [
