@@ -7,8 +7,6 @@ var util = require('./util');
 // create a mixin with the functions for text mode
 var textmode = {};
 
-var MAX_ERRORS = 3; // maximum number of displayed errors at the bottom
-
 var DEFAULT_THEME = 'ace/theme/jsoneditor';
 
 /**
@@ -664,6 +662,7 @@ textmode.validate = function () {
   if (this.dom.validationErrors) {
     this.dom.validationErrors.parentNode.removeChild(this.dom.validationErrors);
     this.dom.validationErrors = null;
+    this.dom.additinalErrorsIndication.style.display = 'none';
 
     this.content.style.marginBottom = '';
     this.content.style.paddingBottom = '';
@@ -719,14 +718,6 @@ textmode.validate = function () {
       me._refreshAnnotations();
 
     } else {
-       // limit the number of displayed errors
-      // var limit = errors.length > MAX_ERRORS;
-      // if (limit) {
-      //   errors = errors.slice(0, MAX_ERRORS);
-      //   var hidden = this.validateSchema.errors.length - MAX_ERRORS;
-      //   errors.push('(' + hidden + ' more errors...)')
-      // }
-
       var validationErrors = document.createElement('div');
       validationErrors.innerHTML = '<table class="jsoneditor-text-errors">' +
           '<tbody>' +
