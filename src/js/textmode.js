@@ -325,6 +325,22 @@ textmode.create = function (container, options) {
 
     statusBar.appendChild(countVal);
     statusBar.appendChild(countLabel);
+
+    var validationErrorIcon = document.createElement('span');
+    validationErrorIcon.className = 'jsoneditor-validation-error-icon';
+    validationErrorIcon.style.display = 'none';
+
+    var validationErrorCount = document.createElement('span');
+    validationErrorCount.className = 'jsoneditor-validation-error-count';    
+    validationErrorCount.style.display = 'none';
+
+    this.validationErrorIndication = {
+      validationErrorIcon: validationErrorIcon,
+      validationErrorCount: validationErrorCount
+    };
+
+    statusBar.appendChild(validationErrorCount);
+    statusBar.appendChild(validationErrorIcon);
   }
 
   this.setSchema(this.options.schema, this.options.schemaRefs);  
@@ -746,6 +762,16 @@ textmode.validate = function () {
     if (this.aceEditor) {
       me.annotations = [];
       me._refreshAnnotations();
+    }
+  }
+
+  if (me.options.statusBar) {
+    var showIndication = !!errors.length;
+    me.validationErrorIndication.validationErrorIcon.style.display = showIndication ? 'block' : 'none';
+    me.validationErrorIndication.validationErrorCount.style.display = showIndication ? 'block' : 'none';
+    if (showIndication) {
+      me.validationErrorIndication.validationErrorCount.innerText = errors.length;
+      me.validationErrorIndication.validationErrorIcon.title = errors.length + ' schema validation error(s) found';
     }
   }
 
