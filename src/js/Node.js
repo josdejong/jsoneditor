@@ -3245,6 +3245,53 @@ Node.prototype.update = function (newValue) {
 };
 
 /**
+ * Remove this node from the DOM
+ * @returns {{table: Element, nextTr?: Element}}
+ *            Returns the DOM elements that which be used to attach the node
+ *            to the DOM again, see _attachToDom.
+ * @private
+ */
+Node.prototype._detachFromDom = function () {
+  var table = this.dom.tr ? this.dom.tr.parentNode : undefined;
+  var lastTr;
+  if (this.expanded) {
+    lastTr = this.getAppendDom();
+  }
+  else {
+    lastTr = this.getDom();
+  }
+  var nextTr = (lastTr && lastTr.parentNode) ? lastTr.nextSibling : undefined;
+
+  this.hide({ resetVisibleChilds: false });
+
+  return {
+    table: table,
+    nextTr: nextTr
+  }
+};
+
+/**
+ * Attach this node to the DOM again
+ * @param {{table: Element, nextTr?: Element}} domAnchor
+ *            The DOM elements returned by _detachFromDom.
+ * @private
+ */
+Node.prototype._attachToDom = function (domAnchor) {
+  if (domAnchor.table) {
+    if (domAnchor.nextTr) {
+      domAnchor.table.insertBefore(this.getDom(), domAnchor.nextTr);
+    }
+    else {
+      domAnchor.table.appendChild(this.getDom());
+    }
+  }
+
+  if (this.expanded) {
+    this.showChilds();
+  }
+};
+
+/**
  * Transform the node given a JMESPath query.
  * @param {String} query    JMESPath query to apply
  * @private
