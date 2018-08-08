@@ -758,8 +758,8 @@ textmode.validate = function () {
 
   if (me.options.statusBar) {
     var showIndication = !!errors.length;
-    me.validationErrorIndication.validationErrorIcon.style.display = showIndication ? 'block' : 'none';
-    me.validationErrorIndication.validationErrorCount.style.display = showIndication ? 'block' : 'none';
+    me.validationErrorIndication.validationErrorIcon.style.display = showIndication ? 'inline' : 'none';
+    me.validationErrorIndication.validationErrorCount.style.display = showIndication ? 'inline' : 'none';
     if (showIndication) {
       me.validationErrorIndication.validationErrorCount.innerText = errors.length;
       me.validationErrorIndication.validationErrorIcon.title = errors.length + ' schema validation error(s) found';
