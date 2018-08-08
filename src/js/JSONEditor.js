@@ -20,7 +20,20 @@ var util = require('./util');
  *                                                    'tree' (default), 'view',
  *                                                    'form', 'text', and 'code'.
  *                               {function} onChange  Callback method, triggered
- *                                                    on change of contents
+ *                                                    on change of contents.
+ *                                                    Does not pass the contents itself.
+ *                                                    See also `onChangeJSON` and
+ *                                                    `onChangeText`.
+ *                               {function} onChangeJSON  Callback method, triggered
+ *                                                        in modes on change of contents,
+ *                                                        passing the changed contents
+ *                                                        as JSON.
+ *                                                        Only applicable for modes
+ *                                                        'tree', 'view', and 'form'.
+ *                               {function} onChangeText  Callback method, triggered
+ *                                                        in modes on change of contents,
+ *                                                        passing the changed contents
+ *                                                        as stringified JSON.
  *                               {function} onError   Callback method, triggered
  *                                                    when an error occurs
  *                               {Boolean} search     Enable search box.
@@ -87,18 +100,19 @@ function JSONEditor (container, options, json) {
       delete options.editable;
     }
 
+    // warn if onChangeJSON is used when mode can be `text` or `code`
+    if (options.onChangeJSON) {
+      if (options.mode === 'text' || options.mode === 'code' ||
+          (options.modes && (options.modes.indexOf('text') !== -1 || options.modes.indexOf('code') !== -1))) {
+        console.warn('Option "onChangeJSON" is not applicable to modes "text" and "code". ' +
+            'Use "onChangeText" or "onChange" instead.');
+      }
+    }
+
     // validate options
     if (options) {
-      var VALID_OPTIONS = [
-        'ajv', 'schema', 'schemaRefs','templates',
-        'ace', 'theme','autocomplete',
-        'onChange', 'onEditable', 'onError', 'onModeChange', 'onSelectionChange', 'onTextSelectionChange',
-        'escapeUnicode', 'history', 'search', 'mode', 'modes', 'name', 'indentation', 
-        'sortObjectKeys', 'navigationBar', 'statusBar', 'languages', 'language'
-      ];
-
       Object.keys(options).forEach(function (option) {
-        if (VALID_OPTIONS.indexOf(option) === -1) {
+        if (JSONEditor.VALID_OPTIONS.indexOf(option) === -1) {
           console.warn('Unknown option "' + option + '". This option will be ignored');
         }
       });
@@ -129,6 +143,15 @@ JSONEditor.modes = {};
 
 // debounce interval for JSON schema vaidation in milliseconds
 JSONEditor.prototype.DEBOUNCE_INTERVAL = 150;
+
+JSONEditor.VALID_OPTIONS = [
+  'ajv', 'schema', 'schemaRefs','templates',
+  'ace', 'theme','autocomplete',
+  'onChange', 'onChangeJSON', 'onChangeText',
+  'onEditable', 'onError', 'onModeChange', 'onSelectionChange', 'onTextSelectionChange',
+  'escapeUnicode', 'history', 'search', 'mode', 'modes', 'name', 'indentation',
+  'sortObjectKeys', 'navigationBar', 'statusBar', 'languages', 'language'
+];
 
 /**
  * Create the JSONEditor
@@ -209,6 +232,11 @@ JSONEditor.prototype.getName = function () {
  *                          'text', and 'code'.
  */
 JSONEditor.prototype.setMode = function (mode) {
+  // if the mode is the same as current mode (and it's not the first time), do nothing.
+  if (mode === this.options.mode && this.create) {
+    return;
+  }
+
   var container = this.container;
   var options = util.extend({}, this.options);
   var oldMode = options.mode;

@@ -48,11 +48,30 @@ Constructs a new JSONEditor.
   }
   ```
 
-- `{function} onChange`
+- `{function} onChange()`
 
-  Set a callback function triggered when the contents of the JSONEditor change. Called without parameters. Will only be triggered on changes made by the user, not in case of programmatic changes via the functions `set` or `setText`.
+  Set a callback function triggered when the contents of the JSONEditor change.
+  This callback does not pass the changed contents, use `get()` or `getText()` for that.
+  Note that `get()` can throw an exception in mode `text` or `code`, when the editor contains invalid JSON.
+  Will only be triggered on changes made by the user, not in case of programmatic changes via the functions `set`, `setText`, `update`, or `updateText`.
+  See also callback functions `onChangeJSON(json)` and `onChangeText(jsonString)`.
 
-- `{function} onEditable`
+- `{function} onChangeJSON(json)`
+
+  Set a callback function triggered when the contents of the JSONEditor change.
+  Passes the changed contents as a JSON object.
+  Only applicable when option `mode` is `tree`, `form`, or `view`.
+  The callback will only be triggered on changes made by the user, not in case of programmatic changes via the functions `set`, `setText`, `update`, or `updateText`.
+  See also callback function `onChangeText(jsonString)`.
+
+- `{function} onChangeText(jsonString)`
+
+  Set a callback function triggered when the contents of the JSONEditor change.
+  Passes the changed contents as a stringified JSON object.
+  The callback will only be triggered on changes made by the user, not in case of programmatic changes via the functions `set`, `setText`, `update`, or `updateText`.
+  See also callback function `onChangeJSON(json)`.
+
+- `{function} onEditable(node)`
 
   Set a callback function  to determine whether individual nodes are editable or read-only. Only applicable when option `mode` is `tree`, `text`, or `code`.
 
@@ -60,7 +79,7 @@ Constructs a new JSONEditor.
 
   In modes `text` and `code`, the callback is invoked as `editable(node)` where `node` is an empty object (no field, value, or path). In that case the function can return false to make the text or code editor completely read-only.
 
-- `{function} onError`
+- `{function} onError(error)`
 
   Set a callback function triggered when an error occurs. Invoked with the error as first argument. The callback is only invoked
   for errors triggered by a users action, like switching from code mode to tree mode or clicking the Format button whilst the editor doesn't contain valid JSON.
@@ -273,9 +292,89 @@ Expand all fields. Only applicable for mode 'tree', 'view', and 'form'.
 
 Set focus to the JSONEditor.
 
+#### `JSONEditor.get()`
+
+Get JSON data.
+
+This method throws an exception when the editor does not contain valid JSON,
+which can be the case when the editor is in mode `code` or `text`.
+
+*Returns:*
+
+- `{JSON} json`
+
+  JSON data from the JSONEditor.
+
+#### `JSONEditor.getMode()`
+
+Retrieve the current mode of the editor.
+
+*Returns:*
+
+- `{String} mode`
+
+  Current mode of the editor for example `tree` or `code`.
+
+#### `JSONEditor.getName()`
+
+Retrieve the current field name of the root node.
+
+*Returns:*
+
+- `{String | undefined} name`
+
+  Current field name of the root node, or undefined if not set.
+
+#### `JSONEditor.getNodesByRange(start, end)`
+
+A utility function for getting a list of `SerializableNode` under certain range.
+
+This function can be used as complementary to `getSelection` and `onSelectionChange` if a list of __all__ the selected nodes is required.
+
+*Parameters:*
+
+- `{path: Array.<String>} start`
+
+  Path for the first node in range
+
+- `{path: Array.<String>} end`
+
+  Path for the last node in range
+
+#### `JSONEditor.getSelection()`
+
+Get the current selected nodes, Only applicable for mode 'tree'.
+
+*Returns:*
+
+- `{start:SerializableNode, end: SerializableNode}`
+
+#### `JSONEditor.getText()`
+
+Get JSON data as string.
+
+*Returns:*
+
+- `{String} jsonString`
+
+  Contents of the editor as string. When the editor is in code `text` or `code`,
+  the returned text is returned as-is. For the other modes, the returned text
+  is a compacted string. In order to get the JSON formatted with a certain
+  number of spaces, use `JSON.stringify(JSONEditor.get(), null, 2)`.
+
+#### `JSONEditor.getTextSelection()`
+
+Get the current selected text with the selection range, Only applicable for mode 'text' and 'code'.
+
+*Returns:*
+
+- `{start:{row:Number, column:Number},end:{row:Number, column:Number},text:String} selection`
+
 #### `JSONEditor.set(json)`
 
 Set JSON data.
+Resets the state of the editor (expanded nodes, search, selection).
+See also `JSONEditor.update(json)`.
 
 *Parameters:*
 
@@ -318,95 +417,6 @@ See [http://json-schema.org/](http://json-schema.org/) for more information on t
 
   Optional, Schemas that are referenced using the `$ref` property from the JSON schema, the object structure in the form of `{reference_key: schemaObject}`
 
-#### `JSONEditor.setText(jsonString)`
-
-Set text data in the editor.
-
-This method throws an exception when the provided jsonString does not contain
-valid JSON and the editor is in mode `tree`, `view`, or `form`.
-
-*Parameters:*
-
-- `{String} jsonString`
-
-  Contents of the editor as string.
-
-#### `JSONEditor.get()`
-
-Get JSON data. 
-
-This method throws an exception when the editor does not contain valid JSON, 
-which can be the case when the editor is in mode `code` or `text`.
-
-*Returns:*
-
-- `{JSON} json`
-
-  JSON data from the JSONEditor.
-
-#### `JSONEditor.getMode()`
-
-Retrieve the current mode of the editor.
-
-*Returns:*
-
-- `{String} mode`
-
-  Current mode of the editor for example `tree` or `code`.
-
-#### `JSONEditor.getName()`
-
-Retrieve the current field name of the root node.
-
-*Returns:*
-
-- `{String | undefined} name`
-
-  Current field name of the root node, or undefined if not set.
-
-#### `JSONEditor.getText()`
-
-Get JSON data as string.
-
-*Returns:*
-
-- `{String} jsonString`
-
-  Contents of the editor as string. When the editor is in code `text` or `code`,
-  the returned text is returned as-is. For the other modes, the returned text
-  is a compacted string. In order to get the JSON formatted with a certain
-  number of spaces, use `JSON.stringify(JSONEditor.get(), null, 2)`.
-
-#### `JSONEditor.getTextSelection()`
-
-Get the current selected text with the selection range, Only applicable for mode 'text' and 'code'.
-
-*Returns:*
-
-- `{start:{row:Number, column:Number},end:{row:Number, column:Number},text:String} selection`
-
-#### `JSONEditor.setTextSelection(startPos, endPos)`
-
-Set text selection for a range, Only applicable for mode 'text' and 'code'.
-
-*Parameters:*
-
-- `{row:Number, column:Number} startPos`
-
-  Position for selection start
-
-- `{row:Number, column:Number} endPos`
-
-  Position for selection end
-
-#### `JSONEditor.getSelection()`
-
-Get the current selected nodes, Only applicable for mode 'tree'.
-
-*Returns:*
-
-- `{start:SerializableNode, end: SerializableNode}`
-
 #### `JSONEditor.setSelection(start, end)`
 
 Set selection for a range of nodes, Only applicable for mode 'tree'.
@@ -425,22 +435,65 @@ Set selection for a range of nodes, Only applicable for mode 'tree'.
 
   Path for the end node
 
+#### `JSONEditor.setText(jsonString)`
 
-#### `JSONEditor.getNodesByRange(start, end)`
+Set text data in the editor.
 
-A utility function for getting a list of `SerializableNode` under certain range.
-
-This function can be used as complementary to `getSelection` and `onSelectionChange` if a list of __all__ the selected nodes is required.
+This method throws an exception when the provided jsonString does not contain
+valid JSON and the editor is in mode `tree`, `view`, or `form`.
 
 *Parameters:*
 
-- `{path: Array.<String>} start`
+- `{String} jsonString`
 
-  Path for the first node in range
+  Contents of the editor as string.
 
-- `{path: Array.<String>} end`
+#### `JSONEditor.setTextSelection(startPos, endPos)`
 
-  Path for the last node in range
+Set text selection for a range, Only applicable for mode 'text' and 'code'.
+
+*Parameters:*
+
+- `{row:Number, column:Number} startPos`
+
+  Position for selection start
+
+- `{row:Number, column:Number} endPos`
+
+  Position for selection end
+
+#### `JSONEditor.update(json)`
+
+Replace JSON data when the new data contains changes.
+In modes `tree`, `form`, and `view`, the state of the editor will be maintained (expanded nodes, search, selection).
+See also `JSONEditor.set(json)`.
+
+*Parameters:*
+
+- `{JSON} json`
+
+  JSON data to be displayed in the JSONEditor.
+
+#### `JSONEditor.updateText (json)`
+
+Replace text data when the new data contains changes.
+In modes `tree`, `form`, and `view`, the state of the editor will be maintained (expanded nodes, search, selection).
+See also `JSONEditor.setText(jsonString)`.
+
+This method throws an exception when the provided jsonString does not contain
+valid JSON and the editor is in mode `tree`, `view`, or `form`.
+
+*Parameters:*
+
+- `{String} jsonString`
+
+  Contents of the editor as string.
+
+### Constants
+
+- `{string[]} JSONEditor.VALID_OPTIONS`
+
+  An array with the names of all known options.
 
 ### Examples
 

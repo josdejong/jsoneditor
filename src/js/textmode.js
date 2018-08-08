@@ -20,8 +20,12 @@ var DEFAULT_THEME = 'ace/theme/jsoneditor';
  *                                                       or "code".
  *                             {Number} indentation      Number of indentation
  *                                                       spaces. 2 by default.
- *                             {function} onChange       Callback method
- *                                                       triggered on change
+ *                             {function} onChange       Callback method triggered on change.
+ *                                                       Does not pass the changed contents.
+ *                             {function} onChangeText   Callback method, triggered
+ *                                                       in modes on change of contents,
+ *                                                       passing the changed contents
+ *                                                       as stringified JSON.
  *                             {function} onModeChange   Callback method
  *                                                       triggered after setMode
  *                             {function} onEditable     Determine if textarea is readOnly
@@ -318,6 +322,10 @@ textmode.create = function (container, options) {
  * @private
  */
 textmode._onChange = function () {
+  if (this.onChangeDisabled) {
+    return;
+  }
+
   // validate JSON schema (if configured)
   this._debouncedValidate();
 
@@ -328,6 +336,16 @@ textmode._onChange = function () {
     }
     catch (err) {
       console.error('Error in onChange callback: ', err);
+    }
+  }
+
+  // trigger the onChangeText callback
+  if (this.options.onChangeText) {
+    try {
+      this.options.onChangeText(this.getText());
+    }
+    catch (err) {
+      console.error('Error in onChangeText callback: ', err);
     }
   }
 };
@@ -612,12 +630,11 @@ textmode.setText = function(jsonText) {
   }
   if (this.aceEditor) {
     // prevent emitting onChange events while setting new text
-    var originalOnChange = this.options.onChange;
-    this.options.onChange = null;
+    this.onChangeDisabled = true;
 
     this.aceEditor.setValue(text, -1);
 
-    this.options.onChange = originalOnChange;
+    this.onChangeDisabled = false;
   }
   // validate JSON schema
   this.validate();
@@ -633,7 +650,9 @@ textmode.updateText = function(jsonText) {
     return;
   }
 
+  this.onChangeDisabled = true; // don't fire an onChange event
   this.setText(jsonText);
+  this.onChangeDisabled = false;
 };
 
 /**
@@ -820,18 +839,27 @@ textmode.setTextSelection = function (startPos, endPos) {
   }
 };
 
+function load () {
+  try {
+    this.format()
+  }
+  catch (err) {
+    // in case of an error, just move on, failing formatting is not a big deal
+  }
+}
+
 // define modes
 module.exports = [
   {
     mode: 'text',
     mixin: textmode,
     data: 'text',
-    load: textmode.format
+    load: load
   },
   {
     mode: 'code',
     mixin: textmode,
     data: 'text',
-    load: textmode.format
+    load: load
   }
 ];

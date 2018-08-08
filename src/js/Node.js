@@ -456,30 +456,12 @@ Node.prototype.setValue = function(value, type) {
  * Remove the DOM of this node and it's childs and recreate it again
  */
 Node.prototype.recreateDom = function() {
-  var table = this.dom.tr ? this.dom.tr.parentNode : undefined;
-  var lastTr;
-  if (this.expanded) {
-    lastTr = this.getAppendDom();
-  }
-  else {
-    lastTr = this.getDom();
-  }
-  var nextTr = (lastTr && lastTr.parentNode) ? lastTr.nextSibling : undefined;
+  var domAnchor = this._detachFromDom();
 
-  // hide current field and all its childs
-  this.hide({ resetVisibleChilds: false });
+  // delete the DOM
   this.clearDom();
 
-  // create new DOM
-  if (table) {
-    if (nextTr) {
-      table.insertBefore(this.getDom(), nextTr);
-    }
-    else {
-      table.appendChild(this.getDom());
-    }
-  }
-  this.showChilds();
+  this._attachToDom(domAnchor);
 };
 
 /**
@@ -538,24 +520,21 @@ Node.prototype.getNodePath = function () {
  */
 Node.prototype.clone = function() {
   var clone = new Node(this.editor);
-  clone.type = this.type;
-  clone.field = this.field;
-  clone.fieldInnerText = this.fieldInnerText;
-  clone.fieldEditable = this.fieldEditable;
-  clone.value = this.value;
-  clone.valueInnerText = this.valueInnerText;
-  clone.expanded = this.expanded;
-  clone.visibleChilds = this.visibleChilds;
+
+  for (var prop in this) {
+    // we don't clone the DOM elements, that would give issues with what's currently in the DOM
+    if (this.hasOwnProperty(prop) && prop !== 'dom') {
+      clone[prop] = this[prop];
+    }
+  }
 
   if (this.childs) {
     // an object or array
-    var cloneChilds = [];
-    this.childs.forEach(function (child) {
+    clone.childs = this.childs.map(function (child) {
       var childClone = child.clone();
       childClone.setParent(clone);
-      cloneChilds.push(childClone);
+      return childClone;
     });
-    clone.childs = cloneChilds;
   }
   else {
     // a value
@@ -1212,18 +1191,9 @@ Node.prototype.changeType = function (newType) {
   }
   else {
     // change from array to object, or from string/auto to object/array
-    var table = this.dom.tr ? this.dom.tr.parentNode : undefined;
-    var lastTr;
-    if (this.expanded) {
-      lastTr = this.getAppendDom();
-    }
-    else {
-      lastTr = this.getDom();
-    }
-    var nextTr = (lastTr && lastTr.parentNode) ? lastTr.nextSibling : undefined;
+    var domAnchor = this._detachFromDom();
 
-    // hide current field and all its childs
-    this.hide({ resetVisibleChilds: false });
+    // delete the old DOM
     this.clearDom();
 
     // adjust the field and the value
@@ -1267,16 +1237,7 @@ Node.prototype.changeType = function (newType) {
       this.expanded = false;
     }
 
-    // create new DOM
-    if (table) {
-      if (nextTr) {
-        table.insertBefore(this.getDom(), nextTr);
-      }
-      else {
-        table.appendChild(this.getDom());
-      }
-    }
-    this.showChilds();
+    this._attachToDom(domAnchor);
   }
 
   if (newType == 'auto' || newType == 'string') {
@@ -1321,20 +1282,30 @@ Node.prototype.deepEqual = function (json) {
       return false;
     }
 
-    if (this.childs.length !== Object.keys(json).length) {
-      return false;
-    }
-
+    // TODO: for better efficiency, we could create a property `isDuplicate` on all of the childs
+    // and keep that up to date. This should make deepEqual about 20% faster.
+    var props = {};
+    var propCount = 0;
     for (i = 0; i < this.childs.length; i++) {
       var child = this.childs[i];
+      if (!props[child.field]) {
+        // We can have childs with duplicate field names.
+        // We take the first, and ignore the others.
+        props[child.field] = true;
+        propCount++;
 
-      if (!(child.field in json)) {
-        return false;
-      }
+        if (!(child.field in json)) {
+          return false;
+        }
 
-      if (!child.deepEqual(json[child.field])) {
-        return false;
+        if (!child.deepEqual(json[child.field])) {
+          return false;
+        }
       }
+    }
+
+    if (propCount !== Object.keys(json).length) {
+      return false;
     }
   }
   else {
@@ -3262,19 +3233,62 @@ Node.prototype.sort = function (path, direction) {
  * @param {*} newValue
  */
 Node.prototype.update = function (newValue) {
-  // copy the childs array (the old one will be kept for an undo action
-  var oldType = this.type;
   var oldValue = this.getValue();
 
   this.setValue(newValue);
 
   this.editor._onAction('transform', {
     path: this.getPath(),
-    oldType: oldType,
-    newType: this.type,
     oldValue: oldValue,
     newValue: newValue
   });
+};
+
+/**
+ * Remove this node from the DOM
+ * @returns {{table: Element, nextTr?: Element}}
+ *            Returns the DOM elements that which be used to attach the node
+ *            to the DOM again, see _attachToDom.
+ * @private
+ */
+Node.prototype._detachFromDom = function () {
+  var table = this.dom.tr ? this.dom.tr.parentNode : undefined;
+  var lastTr;
+  if (this.expanded) {
+    lastTr = this.getAppendDom();
+  }
+  else {
+    lastTr = this.getDom();
+  }
+  var nextTr = (lastTr && lastTr.parentNode) ? lastTr.nextSibling : undefined;
+
+  this.hide({ resetVisibleChilds: false });
+
+  return {
+    table: table,
+    nextTr: nextTr
+  }
+};
+
+/**
+ * Attach this node to the DOM again
+ * @param {{table: Element, nextTr?: Element}} domAnchor
+ *            The DOM elements returned by _detachFromDom.
+ * @private
+ */
+Node.prototype._attachToDom = function (domAnchor) {
+  if (domAnchor.table) {
+    if (domAnchor.nextTr) {
+      domAnchor.table.insertBefore(this.getDom(), domAnchor.nextTr);
+    }
+    else {
+      domAnchor.table.appendChild(this.getDom());
+    }
+  }
+
+  if (this.expanded) {
+    this.showChilds();
+  }
 };
 
 /**
@@ -3289,11 +3303,6 @@ Node.prototype.transform = function (query) {
 
   this.hideChilds(); // sorting is faster when the childs are not attached to the dom
 
-  // copy the childs array (the old one will be kept for an undo action
-  var oldType = this.type;
-  var oldChilds = this.childs;
-  this.childs = this.childs.concat();
-
   try {
     // apply the JMESPath query
     var oldValue = this.getValue();
@@ -3303,13 +3312,8 @@ Node.prototype.transform = function (query) {
 
     this.editor._onAction('transform', {
       path: this.getPath(),
-      oldType: oldType,
-      newType: this.type,
       oldValue: oldValue,
-      newValue: newValue,
-      oldChilds: oldChilds,
-      newChilds: this.childs
-      // TODO: use oldChilds/newChilds in history or clean it up
+      newValue: newValue
     });
 
     this.showChilds();

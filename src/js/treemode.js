@@ -33,7 +33,18 @@ var treemode = {};
  *                               {Boolean} history        Enable history (undo/redo).
  *                                                        True by default
  *                               {function} onChange      Callback method, triggered
- *                                                        on change of contents
+ *                                                        on change of contents.
+ *                                                        Does not pass the changed contents.
+ *                               {function} onChangeJSON  Callback method, triggered
+ *                                                        in modes on change of contents,
+ *                                                        passing the changed contents
+ *                                                        as JSON.
+ *                                                        Only applicable for modes
+ *                                                        'tree', 'view', and 'form'.
+ *                               {function} onChangeText  Callback method, triggered
+ *                                                        in modes on change of contents,
+ *                                                        passing the changed contents
+ *                                                        as stringified JSON.
  *                               {String} name            Field name for the root node.
  *                               {boolean} escapeUnicode  If true, unicode
  *                                                        characters are escaped.
@@ -207,7 +218,12 @@ treemode.update = function (json) {
   var selection = this.getSelection();
 
   // apply the changed json
+  this.onChangeDisabled = true; // don't fire an onChange event
   this.node.update(json);
+  this.onChangeDisabled = false;
+
+  // validate JSON schema
+  this.validate();
 
   // update search result if any
   if (this.searchBox && !this.searchBox.isEmpty()) {
@@ -348,8 +364,7 @@ treemode.focus = function () {
  */
 treemode.clear = function () {
   if (this.node) {
-    this.node.collapse();
-    this.tbody.removeChild(this.node.getDom());
+    this.node.hide();
     delete this.node;
   }
 
@@ -450,6 +465,10 @@ treemode._onAction = function (action, params) {
  * @private
  */
 treemode._onChange = function () {
+  if (this.onChangeDisabled) {
+    return;
+  }
+
   // validate JSON schema (if configured)
   this._debouncedValidate();
 
@@ -460,6 +479,26 @@ treemode._onChange = function () {
     }
     catch (err) {
       console.error('Error in onChange callback: ', err);
+    }
+  }
+
+  // trigger the onChangeJSON callback
+  if (this.options.onChangeJSON) {
+    try {
+      this.options.onChangeJSON(this.get());
+    }
+    catch (err) {
+      console.error('Error in onChangeJSON callback: ', err);
+    }
+  }
+
+  // trigger the onChangeText callback
+  if (this.options.onChangeText) {
+    try {
+      this.options.onChangeText(this.getText());
+    }
+    catch (err) {
+      console.error('Error in onChangeText callback: ', err);
     }
   }
 };
@@ -1520,13 +1559,6 @@ treemode.setSelection = function (start, end) {
 };
 
 /**
- * Clear selection (if any)
- */
-treemode.clearSelection = function () {
-  this.setSelection({}, {});
-};
-
-/**
  * Returns a set of Nodes according to a range of selection
  * @param {{path: Array.<String>}} start object contains the path for range start 
  * @param {{path: Array.<String>}=} end object contains the path for range end
@@ -1582,7 +1614,7 @@ treemode.getNodesByRange = function (start, end) {
   });
 
   return serializableNodes;
-}
+};
 
 // define modes
 module.exports = [
