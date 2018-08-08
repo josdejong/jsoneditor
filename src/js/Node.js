@@ -456,30 +456,12 @@ Node.prototype.setValue = function(value, type) {
  * Remove the DOM of this node and it's childs and recreate it again
  */
 Node.prototype.recreateDom = function() {
-  var table = this.dom.tr ? this.dom.tr.parentNode : undefined;
-  var lastTr;
-  if (this.expanded) {
-    lastTr = this.getAppendDom();
-  }
-  else {
-    lastTr = this.getDom();
-  }
-  var nextTr = (lastTr && lastTr.parentNode) ? lastTr.nextSibling : undefined;
+  var domAnchor = this._detachFromDom();
 
-  // hide current field and all its childs
-  this.hide({ resetVisibleChilds: false });
+  // delete the DOM
   this.clearDom();
 
-  // create new DOM
-  if (table) {
-    if (nextTr) {
-      table.insertBefore(this.getDom(), nextTr);
-    }
-    else {
-      table.appendChild(this.getDom());
-    }
-  }
-  this.showChilds();
+  this._attachToDom(domAnchor);
 };
 
 /**
@@ -1209,18 +1191,9 @@ Node.prototype.changeType = function (newType) {
   }
   else {
     // change from array to object, or from string/auto to object/array
-    var table = this.dom.tr ? this.dom.tr.parentNode : undefined;
-    var lastTr;
-    if (this.expanded) {
-      lastTr = this.getAppendDom();
-    }
-    else {
-      lastTr = this.getDom();
-    }
-    var nextTr = (lastTr && lastTr.parentNode) ? lastTr.nextSibling : undefined;
+    var domAnchor = this._detachFromDom();
 
-    // hide current field and all its childs
-    this.hide({ resetVisibleChilds: false });
+    // delete the old DOM
     this.clearDom();
 
     // adjust the field and the value
@@ -1264,16 +1237,7 @@ Node.prototype.changeType = function (newType) {
       this.expanded = false;
     }
 
-    // create new DOM
-    if (table) {
-      if (nextTr) {
-        table.insertBefore(this.getDom(), nextTr);
-      }
-      else {
-        table.appendChild(this.getDom());
-      }
-    }
-    this.showChilds();
+    this._attachToDom(domAnchor);
   }
 
   if (newType == 'auto' || newType == 'string') {
