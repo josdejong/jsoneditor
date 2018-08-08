@@ -17,19 +17,18 @@ function History (editor) {
     return editor.node.findNodeByPath(path)
   }
 
-  // helper function to clone a Node
-  function cloneNode(node) {
-    return node.clone();
-  }
-
   // map with all supported actions
   this.actions = {
     'editField': {
       'undo': function (params) {
-        findNode(params.path).updateField(params.oldValue);
+        var parentNode = findNode(params.parentPath);
+        var node = parentNode.childs[params.index];
+        node.updateField(params.oldValue);
       },
       'redo': function (params) {
-        findNode(params.path).updateField(params.newValue);
+        var parentNode = findNode(params.parentPath);
+        var node = parentNode.childs[params.index];
+        node.updateField(params.newValue);
       }
     },
     'editValue': {
@@ -58,7 +57,7 @@ function History (editor) {
        },
       'redo': function (params) {
         var parentNode = findNode(params.parentPath);
-        params.paths.map(findNode).forEach(function (node) {
+        params.nodes.forEach(function (node) {
           parentNode.appendChild(node);
         });
       }
@@ -73,7 +72,7 @@ function History (editor) {
       'redo': function (params) {
         var parentNode = findNode(params.parentPath);
         var beforeNode = findNode(params.beforePath);
-        params.paths.map(findNode).forEach(function (node) {
+        params.nodes.forEach(function (node) {
           parentNode.insertBefore(node, beforeNode);
         });
       }
@@ -88,7 +87,7 @@ function History (editor) {
       'redo': function (params) {
         var parentNode = findNode(params.parentPath);
         var afterNode = findNode(params.afterPath);
-        params.paths.map(findNode).forEach(function (node) {
+        params.nodes.forEach(function (node) {
           parentNode.insertAfter(node, afterNode);
           afterNode = node;
         });
@@ -98,45 +97,57 @@ function History (editor) {
       'undo': function (params) {
         var parentNode = findNode(params.parentPath);
         var beforeNode = parentNode.childs[params.index] || parentNode.append;
-        params.paths.map(findNode).forEach(function (node) {
+        params.nodes.forEach(function (node) {
           parentNode.insertBefore(node, beforeNode);
         });
       },
       'redo': function (params) {
+        var parentNode = findNode(params.parentPath);
         params.paths.map(findNode).forEach(function (node) {
-          params.parent.removeChild(node);
+          parentNode.removeChild(node);
         });
       }
     },
     'duplicateNodes': {
       'undo': function (params) {
         var parentNode = findNode(params.parentPath);
-        params.paths.map(findNode).forEach(function (node) {
+        params.clonePaths.map(findNode).forEach(function (node) {
           parentNode.removeChild(node);
         });
       },
       'redo': function (params) {
         var parentNode = findNode(params.parentPath);
         var afterNode = findNode(params.afterPath);
-        var nodes = params.paths.map(findNode).map(cloneNode);
+        var nodes = params.paths.map(findNode);
         nodes.forEach(function (node) {
-          parentNode.insertAfter(node, afterNode);
-          afterNode = node;
+          var clone = node.clone();
+          parentNode.insertAfter(clone, afterNode);
+          afterNode = clone;
         });
       }
     },
     'moveNodes': {
       'undo': function (params) {
-        var oldBeforeNode = findNode(params.oldBeforePath);
-        params.paths.map(findNode).forEach(function (node) {
-          oldBeforeNode.parent.moveBefore(node, oldBeforeNode);
-        });
+        var oldParentNode = findNode(params.oldParentPath);
+        var newParentNode = findNode(params.newParentPath);
+        var offset = (oldParentNode === newParentNode && params.oldIndex > params.newIndex) ? params.count : 0;
+        var oldBeforeNode = oldParentNode.childs[params.oldIndex + offset] || oldParentNode.append;
+
+        for (var i = 0; i < params.count; i++) {
+          var node = newParentNode.childs[params.newIndex];
+          oldParentNode.moveBefore(node, oldBeforeNode);
+        }
       },
       'redo': function (params) {
-        var newBeforeNode = findNode(params.newBeforePath);
-        params.paths.map(findNode).forEach(function (node) {
-          newBeforeNode.parent.moveBefore(node, newBeforeNode);
-        });
+        var oldParentNode = findNode(params.oldParentPath);
+        var newParentNode = findNode(params.newParentPath);
+        var offset = (oldParentNode === newParentNode && params.oldIndex < params.newIndex) ? params.count : 0;
+        var newBeforeNode = newParentNode.childs[params.newIndex + offset] || newParentNode.append;
+
+        for (var i = 0; i < params.count; i++) {
+          var node = oldParentNode.childs[params.oldIndex];
+          newParentNode.moveBefore(node, newBeforeNode);
+        }
       }
     },
 
@@ -247,7 +258,12 @@ History.prototype.undo = function () {
       if (action && action.undo) {
         action.undo(obj.params);
         if (obj.params.oldSelection) {
-          this.editor.setDomSelection(obj.params.oldSelection);
+          try {
+            this.editor.setDomSelection(obj.params.oldSelection);
+          }
+          catch (err) {
+            console.error(err);
+          }
         }
       }
       else {
@@ -274,7 +290,12 @@ History.prototype.redo = function () {
       if (action && action.redo) {
         action.redo(obj.params);
         if (obj.params.newSelection) {
-          this.editor.setDomSelection(obj.params.newSelection);
+          try {
+            this.editor.setDomSelection(obj.params.newSelection);
+          }
+          catch (err) {
+            console.error(err);
+          }
         }
       }
       else {

@@ -76,6 +76,22 @@ function appendNodeFactory(Node) {
   };
 
   /**
+   * Append node doesn't have a path
+   * @returns {null}
+   */
+  AppendNode.prototype.getPath = function() {
+    return null;
+  };
+
+  /**
+   * Append node doesn't have an index
+   * @returns {null}
+   */
+  AppendNode.prototype.getIndex = function() {
+    return null;
+  };
+
+  /**
    * Update the HTML dom of the Node
    */
   AppendNode.prototype.updateDom = function(options) {
