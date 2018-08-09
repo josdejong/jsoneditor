@@ -139,10 +139,16 @@ function History (editor) {
           node.field = params.fieldNames[index];
           oldParentNode.moveBefore(node, oldBeforeNode);
         });
+
+        // This is a hack to work around an issue that we don't know tha original
+        // path of the new parent after dragging, as the node is already moved at that time.
+        if (params.newParentPathRedo === null) {
+          params.newParentPathRedo = newParentNode.getInternalPath();
+        }
       },
       'redo': function (params) {
-        var oldParentNode = findNode(params.oldParentPath);
-        var newParentNode = findNode(params.newParentPath);
+        var oldParentNode = findNode(params.oldParentPathRedo);
+        var newParentNode = findNode(params.newParentPathRedo);
         var newBeforeNode = newParentNode.childs[params.newIndexRedo] || newParentNode.append;
 
         // first copy the nodes, then move them

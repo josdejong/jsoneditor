@@ -1834,6 +1834,7 @@ Node.onDragStart = function (nodes, event) {
     oldPaths: nodes.map(getInternalPath),
     oldParent: parent,
     oldNextNode: parent.childs[lastNode.getIndex() + 1] || parent.append,
+    oldParentPathRedo: parent.getInternalPath(),
     oldIndexRedo: firstNode.getIndex(),
     mouseX: event.pageX,
     offsetY: offsetY,
@@ -2036,6 +2037,7 @@ Node.onDragEnd = function (nodes, event) {
   var sameParent = editor.drag.oldParent === firstNode.parent;
   var oldIndex = editor.drag.oldNextNode.getIndex();
   var newIndex = firstNode.getIndex();
+  var oldParentPathRedo = editor.drag.oldParentPathRedo;
 
   var oldIndexRedo = editor.drag.oldIndexRedo;
   var newIndexRedo = (sameParent && oldIndexRedo < newIndex)
@@ -2047,12 +2049,17 @@ Node.onDragEnd = function (nodes, event) {
     editor._onAction('moveNodes', {
       count: nodes.length,
       fieldNames: nodes.map(getField),
+
       oldParentPath: oldParentPath,
       newParentPath: newParentPath,
       oldIndex: oldIndex,
       newIndex: newIndex,
+
       oldIndexRedo: oldIndexRedo,
       newIndexRedo: newIndexRedo,
+      oldParentPathRedo: oldParentPathRedo,
+      newParentPathRedo: null, // This is a hack, value will be filled in during undo
+
       oldSelection: editor.drag.oldSelection,
       newSelection: editor.getDomSelection()
     });
@@ -2733,6 +2740,8 @@ Node.prototype.onKeyDown = function (event) {
   var oldParent;
   var oldIndexRedo;
   var newIndexRedo;
+  var oldParentPathRedo;
+  var newParentPathRedo;
   var nodes;
   var multiselection;
   var selectedNodes = this.editor.multiselection.nodes.length > 0
@@ -2846,6 +2855,8 @@ Node.prototype.onKeyDown = function (event) {
           oldNextNode = oldParent.childs[lastNode.getIndex() + 1] || oldParent.append;
           oldIndexRedo = firstNode.getIndex();
           newIndexRedo = nextNode2.getIndex();
+          oldParentPathRedo = oldParent.getInternalPath();
+          newParentPathRedo = nextNode2.parent.getInternalPath();
 
           selectedNodes.forEach(function (node) {
             nextNode2.parent.moveBefore(node, nextNode2);
@@ -2856,12 +2867,17 @@ Node.prototype.onKeyDown = function (event) {
           this.editor._onAction('moveNodes', {
             count: selectedNodes.length,
             fieldNames: selectedNodes.map(getField),
+
             oldParentPath: oldParent.getInternalPath(),
             newParentPath: firstNode.parent.getInternalPath(),
-            oldIndexRedo: oldIndexRedo,
-            newIndexRedo: newIndexRedo,
             oldIndex: oldNextNode.getIndex(),
             newIndex: firstNode.getIndex(),
+
+            oldIndexRedo: oldIndexRedo,
+            newIndexRedo: newIndexRedo,
+            oldParentPathRedo: oldParentPathRedo,
+            newParentPathRedo: newParentPathRedo,
+
             oldSelection: oldSelection,
             newSelection: this.editor.getDomSelection()
           });
@@ -2902,6 +2918,8 @@ Node.prototype.onKeyDown = function (event) {
         oldNextNode = oldParent.childs[lastNode.getIndex() + 1] || oldParent.append;
         oldIndexRedo = firstNode.getIndex();
         newIndexRedo = prevNode.getIndex();
+        oldParentPathRedo = oldParent.getInternalPath();
+        newParentPathRedo = prevNode.parent.getInternalPath();
 
         selectedNodes.forEach(function (node) {
           prevNode.parent.moveBefore(node, prevNode);
@@ -2911,12 +2929,17 @@ Node.prototype.onKeyDown = function (event) {
         this.editor._onAction('moveNodes', {
           count: selectedNodes.length,
           fieldNames: selectedNodes.map(getField),
+
           oldParentPath: oldParent.getInternalPath(),
           newParentPath: firstNode.parent.getInternalPath(),
-          oldIndexRedo: oldIndexRedo,
-          newIndexRedo: newIndexRedo,
           oldIndex: oldNextNode.getIndex(),
           newIndex: firstNode.getIndex(),
+
+          oldIndexRedo: oldIndexRedo,
+          newIndexRedo: newIndexRedo,
+          oldParentPathRedo: oldParentPathRedo,
+          newParentPathRedo: newParentPathRedo,
+
           oldSelection: oldSelection,
           newSelection: this.editor.getDomSelection()
         });
@@ -2944,6 +2967,8 @@ Node.prototype.onKeyDown = function (event) {
           oldNextNode = oldParent.childs[lastNode.getIndex() + 1] || oldParent.append;
           oldIndexRedo = firstNode.getIndex();
           newIndexRedo = prevNode.getIndex();
+          oldParentPathRedo = oldParent.getInternalPath();
+          newParentPathRedo = prevNode.parent.getInternalPath();
 
           selectedNodes.forEach(function (node) {
             prevNode.parent.moveBefore(node, prevNode);
@@ -2953,12 +2978,17 @@ Node.prototype.onKeyDown = function (event) {
           this.editor._onAction('moveNodes', {
             count: selectedNodes.length,
             fieldNames: selectedNodes.map(getField),
+
             oldParentPath: oldParent.getInternalPath(),
             newParentPath: firstNode.parent.getInternalPath(),
-            oldIndexRedo: oldIndexRedo,
-            newIndexRedo: newIndexRedo,
             oldIndex: oldNextNode.getIndex(),
             newIndex: firstNode.getIndex(),
+
+            oldIndexRedo: oldIndexRedo,
+            newIndexRedo: newIndexRedo,
+            oldParentPathRedo: oldParentPathRedo,
+            newParentPathRedo: newParentPathRedo,
+
             oldSelection: oldSelection,
             newSelection: this.editor.getDomSelection()
           });
@@ -3015,6 +3045,8 @@ Node.prototype.onKeyDown = function (event) {
         oldNextNode = oldParent.childs[lastNode.getIndex() + 1] || oldParent.append;
         oldIndexRedo = firstNode.getIndex();
         newIndexRedo = nextNode2.getIndex();
+        oldParentPathRedo = oldParent.getInternalPath();
+        newParentPathRedo = nextNode2.parent.getInternalPath();
 
         selectedNodes.forEach(function (node) {
           nextNode2.parent.moveBefore(node, nextNode2);
@@ -3026,6 +3058,8 @@ Node.prototype.onKeyDown = function (event) {
           fieldNames: selectedNodes.map(getField),
           oldParentPath: oldParent.getInternalPath(),
           newParentPath: firstNode.parent.getInternalPath(),
+          oldParentPathRedo: oldParentPathRedo,
+          newParentPathRedo: newParentPathRedo,
           oldIndexRedo: oldIndexRedo,
           newIndexRedo: newIndexRedo,
           oldIndex: oldNextNode.getIndex(),
