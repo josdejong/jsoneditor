@@ -531,21 +531,24 @@ Node.prototype.getNodePath = function () {
  */
 Node.prototype.clone = function() {
   var clone = new Node(this.editor);
-
-  for (var prop in this) {
-    // we don't clone the DOM elements, that would give issues with what's currently in the DOM
-    if (this.hasOwnProperty(prop) && prop !== 'dom') {
-      clone[prop] = this[prop];
-    }
-  }
+  clone.type = this.type;
+  clone.field = this.field;
+  clone.fieldInnerText = this.fieldInnerText;
+  clone.fieldEditable = this.fieldEditable;
+  clone.value = this.value;
+  clone.valueInnerText = this.valueInnerText;
+  clone.expanded = this.expanded;
+  clone.visibleChilds = this.visibleChilds;
 
   if (this.childs) {
     // an object or array
-    clone.childs = this.childs.map(function (child) {
+    var cloneChilds = [];
+    this.childs.forEach(function (child) {
       var childClone = child.clone();
       childClone.setParent(clone);
-      return childClone;
+      cloneChilds.push(childClone);
     });
+    clone.childs = cloneChilds;
   }
   else {
     // a value
