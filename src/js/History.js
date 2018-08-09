@@ -133,10 +133,12 @@ function History (editor) {
         var offset = (oldParentNode === newParentNode && params.oldIndex > params.newIndex) ? params.count : 0;
         var oldBeforeNode = oldParentNode.childs[params.oldIndex + offset] || oldParentNode.append;
 
-        for (var i = 0; i < params.count; i++) {
-          var node = newParentNode.childs[params.newIndex];
+        // first copy the nodes, then move them
+        var nodes = newParentNode.childs.slice(params.newIndex, params.newIndex + params.count);
+
+        nodes.forEach(function (node) {
           oldParentNode.moveBefore(node, oldBeforeNode);
-        }
+        });
       },
       'redo': function (params) {
         var oldParentNode = findNode(params.oldParentPath);
@@ -144,10 +146,12 @@ function History (editor) {
         var offset = (oldParentNode === newParentNode && params.oldIndex < params.newIndex) ? params.count : 0;
         var newBeforeNode = newParentNode.childs[params.newIndex + offset] || newParentNode.append;
 
-        for (var i = 0; i < params.count; i++) {
-          var node = oldParentNode.childs[params.oldIndex];
+        // first copy the nodes, then move them
+        var nodes = oldParentNode.childs.slice(params.oldIndex, params.oldIndex + params.count);
+
+        nodes.forEach(function (node) {
           newParentNode.moveBefore(node, newBeforeNode);
-        }
+        });
       }
     },
 
