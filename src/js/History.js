@@ -130,8 +130,7 @@ function History (editor) {
       'undo': function (params) {
         var oldParentNode = findNode(params.oldParentPath);
         var newParentNode = findNode(params.newParentPath);
-        var offset = (oldParentNode === newParentNode && params.oldIndex > params.newIndex) ? params.count : 0;
-        var oldBeforeNode = oldParentNode.childs[params.oldIndex + offset] || oldParentNode.append;
+        var oldBeforeNode = oldParentNode.childs[params.oldIndex] || oldParentNode.append;
 
         // first copy the nodes, then move them
         var nodes = newParentNode.childs.slice(params.newIndex, params.newIndex + params.count);
@@ -144,8 +143,7 @@ function History (editor) {
       'redo': function (params) {
         var oldParentNode = findNode(params.oldParentPath);
         var newParentNode = findNode(params.newParentPath);
-        var offset = (oldParentNode === newParentNode && params.oldIndex < params.newIndex) ? params.count : 0;
-        var newBeforeNode = newParentNode.childs[params.newIndex + offset] || newParentNode.append;
+        var newBeforeNode = newParentNode.childs[params.newIndex] || newParentNode.append;
 
         // first copy the nodes, then move them
         var nodes = oldParentNode.childs.slice(params.oldIndex, params.oldIndex + params.count);

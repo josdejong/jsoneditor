@@ -1807,6 +1807,7 @@ Node.onDragStart = function (nodes, event) {
 
   var firstNode = nodes[0];
   var lastNode = nodes[nodes.length - 1];
+  var parent = firstNode.parent;
   var draggedNode = Node.getNodeFromTarget(event.target);
   var editor = firstNode.editor;
 
@@ -1831,8 +1832,8 @@ Node.onDragStart = function (nodes, event) {
     oldCursor: document.body.style.cursor,
     oldSelection: editor.getDomSelection(),
     oldPaths: nodes.map(getInternalPath),
-    oldParent: firstNode.parent,
-    oldIndex: firstNode.getIndex(),
+    oldParent: parent,
+    oldNextNode: parent.childs[lastNode.getIndex() + 1] || parent.append,
     mouseX: event.pageX,
     offsetY: offsetY,
     level: firstNode.getLevel()
@@ -2031,7 +2032,7 @@ Node.onDragEnd = function (nodes, event) {
 
   var oldParentPath = editor.drag.oldParent.getInternalPath();
   var newParentPath = firstNode.parent.getInternalPath();
-  var oldIndex = editor.drag.oldIndex;
+  var oldIndex = editor.drag.oldNextNode.getIndex();
   var newIndex = firstNode.getIndex();
 
   if (JSON.stringify(oldParentPath) !== JSON.stringify(newParentPath) || oldIndex !== newIndex) {
@@ -2719,9 +2720,8 @@ Node.prototype.onKeyDown = function (event) {
   var prevNode, nextNode, nextDom, nextDom2;
   var editable = this.editor.options.mode === 'tree';
   var oldSelection;
-  var oldBeforeNode;
+  var oldNextNode;
   var oldParent;
-  var oldIndex;
   var nodes;
   var multiselection;
   var selectedNodes = this.editor.multiselection.nodes.length > 0
@@ -2832,7 +2832,7 @@ Node.prototype.onKeyDown = function (event) {
             nextNode2 && nextNode2.parent) {
           oldSelection = this.editor.getDomSelection();
           oldParent = firstNode.parent;
-          oldIndex = firstNode.getIndex();
+          oldNextNode = oldParent.childs[lastNode.getIndex() + 1] || oldParent.append;
 
           selectedNodes.forEach(function (node) {
             nextNode2.parent.moveBefore(node, nextNode2);
@@ -2844,7 +2844,7 @@ Node.prototype.onKeyDown = function (event) {
             fieldNames: selectedNodes.map(getField),
             oldParentPath: oldParent.getInternalPath(),
             newParentPath: firstNode.parent.getInternalPath(),
-            oldIndex: oldIndex,
+            oldIndex: oldNextNode.getIndex(),
             newIndex: firstNode.getIndex(),
             oldSelection: oldSelection,
             newSelection: this.editor.getDomSelection()
@@ -2883,7 +2883,7 @@ Node.prototype.onKeyDown = function (event) {
       if (prevNode && prevNode.parent) {
         oldSelection = this.editor.getDomSelection();
         oldParent = firstNode.parent;
-        oldIndex = firstNode.getIndex();
+        oldNextNode = oldParent.childs[lastNode.getIndex() + 1] || oldParent.append;
 
         selectedNodes.forEach(function (node) {
           prevNode.parent.moveBefore(node, prevNode);
@@ -2895,7 +2895,7 @@ Node.prototype.onKeyDown = function (event) {
           fieldNames: selectedNodes.map(getField),
           oldParentPath: oldParent.getInternalPath(),
           newParentPath: firstNode.parent.getInternalPath(),
-          oldIndex: oldIndex,
+          oldIndex: oldNextNode.getIndex(),
           newIndex: firstNode.getIndex(),
           oldSelection: oldSelection,
           newSelection: this.editor.getDomSelection()
@@ -2921,7 +2921,7 @@ Node.prototype.onKeyDown = function (event) {
         if (prevNode && prevNode.parent && !prevNode.isVisible()) {
           oldSelection = this.editor.getDomSelection();
           oldParent = firstNode.parent;
-          oldIndex = firstNode.getIndex();
+          oldNextNode = oldParent.childs[lastNode.getIndex() + 1] || oldParent.append;
 
           selectedNodes.forEach(function (node) {
             prevNode.parent.moveBefore(node, prevNode);
@@ -2933,7 +2933,7 @@ Node.prototype.onKeyDown = function (event) {
             fieldNames: selectedNodes.map(getField),
             oldParentPath: oldParent.getInternalPath(),
             newParentPath: firstNode.parent.getInternalPath(),
-            oldIndex: oldIndex,
+            oldIndex: oldNextNode.getIndex(),
             newIndex: firstNode.getIndex(),
             oldSelection: oldSelection,
             newSelection: this.editor.getDomSelection()
@@ -2988,7 +2988,7 @@ Node.prototype.onKeyDown = function (event) {
       if (nextNode2 && nextNode2.parent) {
         oldSelection = this.editor.getDomSelection();
         oldParent = firstNode.parent;
-        oldIndex = firstNode.getIndex();
+        oldNextNode = oldParent.childs[lastNode.getIndex() + 1] || oldParent.append;
 
         selectedNodes.forEach(function (node) {
           nextNode2.parent.moveBefore(node, nextNode2);
@@ -3000,7 +3000,7 @@ Node.prototype.onKeyDown = function (event) {
           fieldNames: selectedNodes.map(getField),
           oldParentPath: oldParent.getInternalPath(),
           newParentPath: firstNode.parent.getInternalPath(),
-          oldIndex: oldIndex,
+          oldIndex: oldNextNode.getIndex(),
           newIndex: firstNode.getIndex(),
           oldSelection: oldSelection,
           newSelection: this.editor.getDomSelection()
