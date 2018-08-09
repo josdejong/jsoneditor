@@ -2044,7 +2044,7 @@ Node.onDragEnd = function (nodes, event) {
       ? (newIndex + nodes.length)
       : newIndex;
 
-  if (sameParent || oldIndex !== newIndex) {
+  if (!sameParent || oldIndex !== newIndex) {
     // only register this action if the node is actually moved to another place
     editor._onAction('moveNodes', {
       count: nodes.length,
