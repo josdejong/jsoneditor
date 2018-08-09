@@ -730,9 +730,11 @@ treemode.getDomSelection = function () {
     path: node ? node.getInternalPath() : null,
     domName: domName,
     range: range,
-    paths: this.multiselection.nodes.map(function (node) {
-      return node.getInternalPath();
-    }),
+    paths: this.multiselection.length > 0
+        ? this.multiselection.nodes.map(function (node) {
+            return node.getInternalPath();
+          })
+        : null,
     scrollTop: this.scrollableContent ? this.scrollableContent.scrollTop : 0
   };
 };
