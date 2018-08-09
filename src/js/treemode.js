@@ -664,15 +664,29 @@ treemode.setDomSelection = function (selection) {
     // TODO: animated scroll
     this.scrollableContent.scrollTop = selection.scrollTop;
   }
-  if (selection.nodes) {
+  if (selection.paths) {
     // multi-select
-    this.select(selection.nodes);
+    var me = this;
+    var nodes = selection.paths.map(function (path) {
+      return me.node.findNodeByInternalPath(path);
+    });
+
+    this.select(nodes);
   }
-  if (selection.range) {
-    util.setSelectionOffset(selection.range);
+
+  // find the actual DOM element where to apply the focus
+  var node = selection.path
+      ? this.node.findNodeByInternalPath(selection.path)
+      : null;
+  var container = (node && selection.domName)
+      ? node.dom[selection.domName]
+      : null;
+  if (selection.range && container) {
+    var range = Object.assign({}, selection.range, { container: container });
+    util.setSelectionOffset(range);
   }
-  if (selection.dom) {
-    selection.dom.focus();
+  else if (node) { // just a fallback
+    node.focus();
   }
 };
 
@@ -686,15 +700,38 @@ treemode.setDomSelection = function (selection) {
  *                            {Number} scrollTop            Scroll position
  */
 treemode.getDomSelection = function () {
+  // find the node and field name of the current target,
+  // so we can store the current selection in a serializable
+  // way (internal node path and domName)
+  var node = Node.getNodeFromTarget(this.focusTarget);
+  var focusTarget = this.focusTarget;
+  var domName = node
+      ? Object.keys(node.dom).find(function (domName) {
+        return node.dom[domName] === focusTarget;
+      })
+      : null;
+
   var range = util.getSelectionOffset();
   if (range && range.container.nodeName !== 'DIV') { // filter on (editable) divs)
     range = null;
   }
+  if (range && range.container !== focusTarget) {
+    range = null;
+  }
+  if (range) {
+    // we cannot rely on the current instance of the container,
+    // we need to store the internal node path and field and
+    // find the actual DOM field when applying the selection
+    delete range.container;
+  }
 
   return {
-    dom: this.focusTarget,
+    path: node ? node.getInternalPath() : null,
+    domName: domName,
     range: range,
-    nodes: this.multiselection.nodes.slice(0),
+    paths: this.multiselection.nodes.map(function (node) {
+      return node.getInternalPath();
+    }),
     scrollTop: this.scrollableContent ? this.scrollableContent.scrollTop : 0
   };
 };
