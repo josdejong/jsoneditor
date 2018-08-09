@@ -136,7 +136,8 @@ function History (editor) {
         // first copy the nodes, then move them
         var nodes = newParentNode.childs.slice(params.newIndex, params.newIndex + params.count);
 
-        nodes.forEach(function (node) {
+        nodes.forEach(function (node, index) {
+          node.field = params.fieldNames[index];
           oldParentNode.moveBefore(node, oldBeforeNode);
         });
       },
@@ -149,7 +150,8 @@ function History (editor) {
         // first copy the nodes, then move them
         var nodes = oldParentNode.childs.slice(params.oldIndex, params.oldIndex + params.count);
 
-        nodes.forEach(function (node) {
+        nodes.forEach(function (node, index) {
+          node.field = params.fieldNames[index];
           newParentNode.moveBefore(node, newBeforeNode);
         });
       }

@@ -1990,20 +1990,23 @@ Node.onDragEnd = function (nodes, event) {
     nodes[0].dom.menu.focus();
   }
 
-  var params = {
-    count: nodes.length,
-    oldParentPath: editor.drag.oldParent.getPath(),
-    newParentPath: firstNode.parent.getPath(),
-    oldIndex: editor.drag.oldIndex,
-    newIndex: firstNode.getIndex(),
-    oldSelection: editor.drag.oldSelection,
-    newSelection: editor.getDomSelection()
-  };
+  var oldParentPath = editor.drag.oldParent.getPath();
+  var newParentPath = firstNode.parent.getPath();
+  var oldIndex = editor.drag.oldIndex;
+  var newIndex = firstNode.getIndex();
 
-  if (JSON.stringify(params.oldParentPath) !== JSON.stringify(params.newParentPath) ||
-      params.oldIndex !== params.newIndex) {
+  if (JSON.stringify(oldParentPath) !== JSON.stringify(newParentPath) || oldIndex !== newIndex) {
     // only register this action if the node is actually moved to another place
-    editor._onAction('moveNodes', params);
+    editor._onAction('moveNodes', {
+      count: nodes.length,
+      fieldNames: nodes.map(getField),
+      oldParentPath: oldParentPath,
+      newParentPath: newParentPath,
+      oldIndex: oldIndex,
+      newIndex: newIndex,
+      oldSelection: editor.drag.oldSelection,
+      newSelection: editor.getDomSelection()
+    });
   }
 
   document.body.style.cursor = editor.drag.oldCursor;
@@ -2799,6 +2802,7 @@ Node.prototype.onKeyDown = function (event) {
 
           this.editor._onAction('moveNodes', {
             count: selectedNodes.length,
+            fieldNames: selectedNodes.map(getField),
             oldParentPath: oldParent.getPath(),
             newParentPath: firstNode.parent.getPath(),
             oldIndex: oldIndex,
@@ -2849,6 +2853,7 @@ Node.prototype.onKeyDown = function (event) {
 
         this.editor._onAction('moveNodes', {
           count: selectedNodes.length,
+          fieldNames: selectedNodes.map(getField),
           oldParentPath: oldParent.getPath(),
           newParentPath: firstNode.parent.getPath(),
           oldIndex: oldIndex,
@@ -2886,6 +2891,7 @@ Node.prototype.onKeyDown = function (event) {
 
           this.editor._onAction('moveNodes', {
             count: selectedNodes.length,
+            fieldNames: selectedNodes.map(getField),
             oldParentPath: oldParent.getPath(),
             newParentPath: firstNode.parent.getPath(),
             oldIndex: oldIndex,
@@ -2952,6 +2958,7 @@ Node.prototype.onKeyDown = function (event) {
 
         this.editor._onAction('moveNodes', {
           count: selectedNodes.length,
+          fieldNames: selectedNodes.map(getField),
           oldParentPath: oldParent.getPath(),
           newParentPath: firstNode.parent.getPath(),
           oldIndex: oldIndex,
@@ -4060,9 +4067,14 @@ Node.prototype._escapeJSON = function (text) {
   return escaped;
 };
 
-// helper function to the get path of a node
+// helper function to get the path of a node
 function getPath (node) {
   return node.getPath();
+}
+
+// helper function to get the field of a node
+function getField (node) {
+  return node.getField();
 }
 
 // TODO: find a nicer solution to resolve this circular dependency between Node and AppendNode
