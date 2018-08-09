@@ -673,20 +673,21 @@ treemode.setDomSelection = function (selection) {
 
     this.select(nodes);
   }
-
-  // find the actual DOM element where to apply the focus
-  var node = selection.path
-      ? this.node.findNodeByInternalPath(selection.path)
-      : null;
-  var container = (node && selection.domName)
-      ? node.dom[selection.domName]
-      : null;
-  if (selection.range && container) {
-    var range = Object.assign({}, selection.range, { container: container });
-    util.setSelectionOffset(range);
-  }
-  else if (node) { // just a fallback
-    node.focus();
+  else {
+    // find the actual DOM element where to apply the focus
+    var node = selection.path
+        ? this.node.findNodeByInternalPath(selection.path)
+        : null;
+    var container = (node && selection.domName)
+        ? node.dom[selection.domName]
+        : null;
+    if (selection.range && container) {
+      var range = Object.assign({}, selection.range, { container: container });
+      util.setSelectionOffset(range);
+    }
+    else if (node) { // just a fallback
+      node.focus();
+    }
   }
 };
 
