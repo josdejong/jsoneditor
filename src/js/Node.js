@@ -462,6 +462,11 @@ Node.prototype.setValue = function(value, type) {
  * Remove the DOM of this node and it's childs and recreate it again
  */
 Node.prototype.recreateDom = function() {
+  // only recreate dom if there is a dom already
+  if (!this.dom || ! this.dom.tr || !this.dom.tr.parentNode) {
+    return;
+  }
+
   var domAnchor = this._detachFromDom();
 
   // delete the DOM
