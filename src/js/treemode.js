@@ -1082,9 +1082,9 @@ treemode._updateTreePath = function (pathNodes) {
   }
 
   function getName(node) {
-    return node.field !== undefined
-        ? node._escapeHTML(node.field)
-        : (isNaN(node.index) ? node.type : node.index);
+    return node.parent
+        ? ((node.parent.type === 'array') ? node.index : node.field)
+        : node.type;
   }
 };
 
