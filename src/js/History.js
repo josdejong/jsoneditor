@@ -143,10 +143,10 @@ function History (editor) {
       'redo': function (params) {
         var oldParentNode = findNode(params.oldParentPath);
         var newParentNode = findNode(params.newParentPath);
-        var newBeforeNode = newParentNode.childs[params.newIndex] || newParentNode.append;
+        var newBeforeNode = newParentNode.childs[params.newIndexRedo] || newParentNode.append;
 
         // first copy the nodes, then move them
-        var nodes = oldParentNode.childs.slice(params.oldIndex, params.oldIndex + params.count);
+        var nodes = oldParentNode.childs.slice(params.oldIndexRedo, params.oldIndexRedo + params.count);
 
         nodes.forEach(function (node, index) {
           node.field = params.fieldNames[index];
