@@ -571,8 +571,10 @@ Node.prototype.clone = function() {
   clone.field = this.field;
   clone.fieldInnerText = this.fieldInnerText;
   clone.fieldEditable = this.fieldEditable;
+  clone.previousField = this.previousField;
   clone.value = this.value;
   clone.valueInnerText = this.valueInnerText;
+  clone.previousValue = this.previousValue;
   clone.expanded = this.expanded;
   clone.visibleChilds = this.visibleChilds;
 
