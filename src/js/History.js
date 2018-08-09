@@ -14,7 +14,7 @@ function History (editor) {
 
   // helper function to find a Node from a path
   function findNode(path) {
-    return editor.node.findNodeByPath(path)
+    return editor.node.findNodeByInternalPath(path)
   }
 
   // map with all supported actions

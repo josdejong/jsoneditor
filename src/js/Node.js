@@ -106,6 +106,22 @@ Node.prototype.getPath = function () {
 };
 
 /**
+ * Get the internal path of this node, a list with the child indexes.
+ * @return {String[]} Array containing the internal path to this node
+ */
+Node.prototype.getInternalPath = function () {
+  var node = this;
+  var internalPath = [];
+  while (node) {
+    if (node.parent) {
+      internalPath.unshift(node.getIndex());
+    }
+    node = node.parent;
+  }
+  return internalPath;
+};
+
+/**
  * Get node serializable name
  * @returns {String|Number}
  */
@@ -137,6 +153,26 @@ Node.prototype.findNodeByPath = function (path) {
       }
     }
   }
+};
+
+/**
+ * Find child node by an internal path: the indexes of the childs nodes
+ * @param {Array<String>} internalPath
+ * @return {Node | undefined} Returns the node if the path exists.
+ *                            Returns undefined otherwise.
+ */
+Node.prototype.findNodeByInternalPath = function (internalPath) {
+  if (!internalPath) {
+    return undefined;
+  }
+
+  var node = this;
+  for (var i = 0; i < internalPath.length && node; i++) {
+    var childIndex = internalPath[i];
+    node = node.childs[childIndex];
+  }
+
+  return node;
 };
 
 /**
@@ -1389,7 +1425,7 @@ Node.prototype._onChangeValue = function () {
   }
 
   this.editor._onAction('editValue', {
-    path: this.getPath(),
+    path: this.getInternalPath(),
     oldValue: this.previousValue,
     newValue: this.value,
     oldSelection: oldSelection,
@@ -1421,7 +1457,7 @@ Node.prototype._onChangeField = function () {
   }
 
   this.editor._onAction('editField', {
-    parentPath: this.parent.getPath(),
+    parentPath: this.parent.getInternalPath(),
     index: this.getIndex(),
     oldValue: this.previousField,
     newValue: this.field,
@@ -1794,7 +1830,7 @@ Node.onDragStart = function (nodes, event) {
   editor.drag = {
     oldCursor: document.body.style.cursor,
     oldSelection: editor.getDomSelection(),
-    oldPaths: nodes.map(getPath),
+    oldPaths: nodes.map(getInternalPath),
     oldParent: firstNode.parent,
     oldIndex: firstNode.getIndex(),
     mouseX: event.pageX,
@@ -1993,8 +2029,8 @@ Node.onDragEnd = function (nodes, event) {
     nodes[0].dom.menu.focus();
   }
 
-  var oldParentPath = editor.drag.oldParent.getPath();
-  var newParentPath = firstNode.parent.getPath();
+  var oldParentPath = editor.drag.oldParent.getInternalPath();
+  var newParentPath = firstNode.parent.getInternalPath();
   var oldIndex = editor.drag.oldIndex;
   var newIndex = firstNode.getIndex();
 
@@ -2806,8 +2842,8 @@ Node.prototype.onKeyDown = function (event) {
           this.editor._onAction('moveNodes', {
             count: selectedNodes.length,
             fieldNames: selectedNodes.map(getField),
-            oldParentPath: oldParent.getPath(),
-            newParentPath: firstNode.parent.getPath(),
+            oldParentPath: oldParent.getInternalPath(),
+            newParentPath: firstNode.parent.getInternalPath(),
             oldIndex: oldIndex,
             newIndex: firstNode.getIndex(),
             oldSelection: oldSelection,
@@ -2857,8 +2893,8 @@ Node.prototype.onKeyDown = function (event) {
         this.editor._onAction('moveNodes', {
           count: selectedNodes.length,
           fieldNames: selectedNodes.map(getField),
-          oldParentPath: oldParent.getPath(),
-          newParentPath: firstNode.parent.getPath(),
+          oldParentPath: oldParent.getInternalPath(),
+          newParentPath: firstNode.parent.getInternalPath(),
           oldIndex: oldIndex,
           newIndex: firstNode.getIndex(),
           oldSelection: oldSelection,
@@ -2895,8 +2931,8 @@ Node.prototype.onKeyDown = function (event) {
           this.editor._onAction('moveNodes', {
             count: selectedNodes.length,
             fieldNames: selectedNodes.map(getField),
-            oldParentPath: oldParent.getPath(),
-            newParentPath: firstNode.parent.getPath(),
+            oldParentPath: oldParent.getInternalPath(),
+            newParentPath: firstNode.parent.getInternalPath(),
             oldIndex: oldIndex,
             newIndex: firstNode.getIndex(),
             oldSelection: oldSelection,
@@ -2962,8 +2998,8 @@ Node.prototype.onKeyDown = function (event) {
         this.editor._onAction('moveNodes', {
           count: selectedNodes.length,
           fieldNames: selectedNodes.map(getField),
-          oldParentPath: oldParent.getPath(),
-          newParentPath: firstNode.parent.getPath(),
+          oldParentPath: oldParent.getInternalPath(),
+          newParentPath: firstNode.parent.getInternalPath(),
           oldIndex: oldIndex,
           newIndex: firstNode.getIndex(),
           oldSelection: oldSelection,
@@ -3030,7 +3066,7 @@ Node.onRemove = function(nodes) {
     var newSelection = editor.getDomSelection();
 
     // store the paths before removing them (needed for history)
-    var paths = nodes.map(getPath);
+    var paths = nodes.map(getInternalPath);
 
     // remove the nodes
     nodes.forEach(function (node) {
@@ -3041,7 +3077,7 @@ Node.onRemove = function(nodes) {
     editor._onAction('removeNodes', {
       nodes: nodes,
       paths: paths,
-      parentPath: parent.getPath(),
+      parentPath: parent.getInternalPath(),
       index: firstIndex,
       oldSelection: oldSelection,
       newSelection: newSelection
@@ -3087,10 +3123,10 @@ Node.onDuplicate = function(nodes) {
     var newSelection = editor.getDomSelection();
 
     editor._onAction('duplicateNodes', {
-      paths: nodes.map(getPath),
-      clonePaths: clones.map(getPath),
-      afterPath: lastNode.getPath(),
-      parentPath: parent.getPath(),
+      paths: nodes.map(getInternalPath),
+      clonePaths: clones.map(getInternalPath),
+      afterPath: lastNode.getInternalPath(),
+      parentPath: parent.getInternalPath(),
       oldSelection: oldSelection,
       newSelection: newSelection
     });
@@ -3114,7 +3150,7 @@ Node.prototype._onInsertBefore = function (field, value, type) {
   });
   newNode.expand(true);
 
-  var beforePath = this.getPath();
+  var beforePath = this.getInternalPath();
 
   this.parent.insertBefore(newNode, this);
   this.editor.highlighter.unhighlight();
@@ -3123,9 +3159,9 @@ Node.prototype._onInsertBefore = function (field, value, type) {
 
   this.editor._onAction('insertBeforeNodes', {
     nodes: [newNode],
-    paths: [newNode.getPath()],
+    paths: [newNode.getInternalPath()],
     beforePath: beforePath,
-    parentPath: this.parent.getPath(),
+    parentPath: this.parent.getInternalPath(),
     oldSelection: oldSelection,
     newSelection: newSelection
   });
@@ -3154,9 +3190,9 @@ Node.prototype._onInsertAfter = function (field, value, type) {
 
   this.editor._onAction('insertAfterNodes', {
     nodes: [newNode],
-    paths: [newNode.getPath()],
-    afterPath: this.getPath(),
-    parentPath: this.parent.getPath(),
+    paths: [newNode.getInternalPath()],
+    afterPath: this.getInternalPath(),
+    parentPath: this.parent.getInternalPath(),
     oldSelection: oldSelection,
     newSelection: newSelection
   });
@@ -3185,8 +3221,8 @@ Node.prototype._onAppend = function (field, value, type) {
 
   this.editor._onAction('appendNodes', {
     nodes: [newNode],
-    paths: [newNode.getPath()],
-    parentPath: this.parent.getPath(),
+    paths: [newNode.getInternalPath()],
+    parentPath: this.parent.getInternalPath(),
     oldSelection: oldSelection,
     newSelection: newSelection
   });
@@ -3205,7 +3241,7 @@ Node.prototype._onChangeType = function (newType) {
     var newSelection = this.editor.getDomSelection();
 
     this.editor._onAction('changeType', {
-      path: this.getPath(),
+      path: this.getInternalPath(),
       oldType: oldType,
       newType: newType,
       oldSelection: oldSelection,
@@ -3268,7 +3304,7 @@ Node.prototype.sort = function (path, direction) {
   this._updateDomIndexes();
 
   this.editor._onAction('sort', {
-    path: this.getPath(),
+    path: this.getInternalPath(),
     oldChilds: oldChilds,
     newChilds: this.childs
   });
@@ -3286,7 +3322,7 @@ Node.prototype.update = function (newValue) {
   this.setValue(newValue);
 
   this.editor._onAction('transform', {
-    path: this.getPath(),
+    path: this.getInternalPath(),
     oldValue: oldValue,
     newValue: newValue
   });
@@ -3359,7 +3395,7 @@ Node.prototype.transform = function (query) {
     this.setValue(newValue);
 
     this.editor._onAction('transform', {
-      path: this.getPath(),
+      path: this.getInternalPath(),
       oldValue: oldValue,
       newValue: newValue
     });
@@ -4070,9 +4106,9 @@ Node.prototype._escapeJSON = function (text) {
   return escaped;
 };
 
-// helper function to get the path of a node
-function getPath (node) {
-  return node.getPath();
+// helper function to get the internal path of a node
+function getInternalPath (node) {
+  return node.getInternalPath();
 }
 
 // helper function to get the field of a node
