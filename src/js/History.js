@@ -180,12 +180,12 @@ function History (editor) {
 
     'transform': {
       'undo': function (params) {
-        findNode(params.path).setValue(params.oldValue);
+        findNode(params.path).setInternalValue(params.oldValue);
 
         // TODO: would be nice to restore the state of the node and childs
       },
       'redo': function (params) {
-        findNode(params.path).setValue(params.newValue);
+        findNode(params.path).setInternalValue(params.newValue);
 
         // TODO: would be nice to restore the state of the node and childs
       }

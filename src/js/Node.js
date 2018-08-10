@@ -31,7 +31,12 @@ function Node (editor, params) {
 
   if(params && (params instanceof Object)) {
     this.setField(params.field, params.fieldEditable);
-    this.setValue(params.value, params.type);
+    if ('value' in params) {
+      this.setValue(params.value, params.type);
+    }
+    if ('internalValue' in params) {
+      this.setInternalValue(params.internalValue);
+    }
   }
   else {
     this.setField('');
@@ -495,6 +500,111 @@ Node.prototype.setValue = function(value, type) {
 };
 
 /**
+ * Set internal value
+ * @param {*} internalValue  Internal value structure keeping type,
+ *                           order and duplicates in objects
+ */
+Node.prototype.setInternalValue = function(internalValue) {
+  var childValue, child, visible;
+  var i, j;
+  var notUpdateDom = false;
+  var previousChilds = this.childs;
+
+  this.type = internalValue.type;
+
+  if (internalValue.type === 'array') {
+    // array
+    if (!this.childs) {
+      this.childs = [];
+    }
+
+    for (i = 0; i < internalValue.childs.length; i++) {
+      childValue = internalValue.childs[i];
+      if (childValue !== undefined && !(childValue instanceof Function)) {
+        if (i < this.childs.length) {
+          // reuse existing child, keep its state
+          child = this.childs[i];
+
+          child.fieldEditable = false;
+          child.index = i;
+          child.setInternalValue(childValue);
+        }
+        else {
+          // create a new child
+          child = new Node(this.editor, {
+            internalValue: childValue
+          });
+          visible = i < this.MAX_VISIBLE_CHILDS;
+          this.appendChild(child, visible, notUpdateDom);
+        }
+      }
+    }
+
+    // cleanup redundant childs
+    // we loop backward to prevent issues with shifting index numbers
+    for (j = this.childs.length; j >= internalValue.childs.length; j--) {
+      this.removeChild(this.childs[j], notUpdateDom);
+    }
+  }
+  else if (internalValue.type === 'object') {
+    // object
+    if (!this.childs) {
+      this.childs = [];
+    }
+
+    for (i = 0; i < internalValue.childs.length; i++) {
+      childValue = internalValue.childs[i];
+      if (childValue !== undefined && !(childValue instanceof Function)) {
+        if (i < this.childs.length) {
+          // reuse existing child, keep its state
+          child = this.childs[i];
+
+          delete child.index;
+          child.setField(childValue.field, true);
+          child.setInternalValue(childValue.value);
+        }
+        else {
+          // create a new child
+          child = new Node(this.editor, {
+            field: childValue.field,
+            internalValue: childValue.value
+          });
+          visible = i < this.MAX_VISIBLE_CHILDS;
+          this.appendChild(child, visible, notUpdateDom);
+        }
+      }
+    }
+
+    // cleanup redundant childs
+    // we loop backward to prevent issues with shifting index numbers
+    for (j = this.childs.length; j >= internalValue.childs.length; j--) {
+      this.removeChild(this.childs[j], notUpdateDom);
+    }
+  }
+  else {
+    // value
+    this.hideChilds();
+
+    delete this.append;
+    delete this.showMore;
+    delete this.expanded;
+    delete this.childs;
+
+    this.value = internalValue.value;
+  }
+
+  // recreate the DOM if switching from an object/array to auto/string or vice versa
+  // needed to recreated the expand button for example
+  if (Array.isArray(previousChilds) !== Array.isArray(this.childs)) {
+    this.recreateDom();
+  }
+
+  this.updateDom({'updateIndexes': true});
+
+  this.previousValue = this.value; // used only to check for changes in DOM vs JS model
+};
+
+/**
  * Remove the DOM of this node and it's childs and recreate it again
  */
 Node.prototype.recreateDom = function() {
@@ -516,8 +626,6 @@ Node.prototype.recreateDom = function() {
  * @return {*} value
  */
 Node.prototype.getValue = function() {
-  //var childs, i, iMax;
-
   if (this.type == 'array') {
     var arr = [];
     this.childs.forEach (function (child) {
@@ -538,6 +646,42 @@ Node.prototype.getValue = function() {
     }
 
     return this.value;
+  }
+};
+
+/**
+ * Get internal value, a structure which maintains ordering and duplicates in objects
+ * @return {*} value
+ */
+Node.prototype.getInternalValue = function() {
+  if (this.type === 'array') {
+    return {
+      type: this.type,
+      childs: this.childs.map (function (child) {
+        return child.getInternalValue();
+      })
+    };
+  }
+  else if (this.type === 'object') {
+    return {
+      type: this.type,
+      childs: this.childs.map(function (child) {
+        return {
+          field: child.getField(),
+          value: child.getInternalValue()
+        }
+      })
+    };
+  }
+  else {
+    if (this.value === undefined) {
+      this._getDomValue();
+    }
+
+    return {
+      type: this.type,
+      value: this.value
+    };
   }
 };
 
@@ -3371,14 +3515,14 @@ Node.prototype.sort = function (path, direction) {
  * @param {*} newValue
  */
 Node.prototype.update = function (newValue) {
-  var oldValue = this.getValue();
+  var oldValue = this.getInternalValue();
 
   this.setValue(newValue);
 
   this.editor._onAction('transform', {
     path: this.getInternalPath(),
     oldValue: oldValue,
-    newValue: newValue
+    newValue: this.getInternalValue()
   });
 };
 
@@ -3443,7 +3587,7 @@ Node.prototype.transform = function (query) {
 
   try {
     // apply the JMESPath query
-    var oldValue = this.getValue();
+    var oldValue = this.getInternalValue();
     var newValue = jmespath.search(oldValue, query);
 
     this.setValue(newValue);
@@ -3451,7 +3595,7 @@ Node.prototype.transform = function (query) {
     this.editor._onAction('transform', {
       path: this.getInternalPath(),
       oldValue: oldValue,
-      newValue: newValue
+      newValue: this.getInternalValue()
     });
 
     this.showChilds();
