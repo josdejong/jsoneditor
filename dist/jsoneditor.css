@@ -1059,6 +1059,13 @@ div.jsoneditor-menu > button.jsoneditor-transform {
   background-position: -144px -96px;
 }
 
+div.jsoneditor.jsoneditor-mode-view > div.jsoneditor-menu > button.jsoneditor-sort,
+div.jsoneditor.jsoneditor-mode-form > div.jsoneditor-menu > button.jsoneditor-sort,
+div.jsoneditor.jsoneditor-mode-view > div.jsoneditor-menu > button.jsoneditor-transform,
+div.jsoneditor.jsoneditor-mode-form > div.jsoneditor-menu > button.jsoneditor-transform {
+  display: none;
+}
+
 div.jsoneditor-menu > button.jsoneditor-undo {
   background-position: -24px -96px;
 }
@@ -1136,6 +1143,7 @@ table.jsoneditor-search div.jsoneditor-results {
   color: white;
   padding-right: 5px;
   line-height: 24px;
+  padding-top: 2px;
 }
 
 table.jsoneditor-search {
