@@ -788,6 +788,10 @@ Node.prototype.appendChild = function(node, visible, updateDom) {
     if (this.type == 'array') {
       node.index = this.childs.length;
     }
+    if (this.type === 'object' && node.field == undefined) {
+      // initialize field value if needed
+      node.setField('');
+    }
     this.childs.push(node);
 
     if (this.expanded && visible !== false) {
@@ -854,27 +858,6 @@ Node.prototype.moveBefore = function(node, beforeNode) {
 };
 
 /**
- * Move a node from its current parent to this node
- * Only applicable when Node value is of type array or object.
- * If index is out of range, the node will be appended to the end
- * @param {Node} node
- * @param {Number} index
- */
-Node.prototype.moveTo = function (node, index) {
-  if (node.parent == this) {
-    // same parent
-    var currentIndex = this.childs.indexOf(node);
-    if (currentIndex < index) {
-      // compensate the index for removal of the node itself
-      index++;
-    }
-  }
-
-  var beforeNode = this.childs[index] || this.append;
-  this.moveBefore(node, beforeNode);
-};
-
-/**
  * Insert a new child before a given node
  * Only applicable when Node value is of type array or object
  * @param {Node} node
@@ -883,6 +866,11 @@ Node.prototype.moveTo = function (node, index) {
 Node.prototype.insertBefore = function(node, beforeNode) {
   if (this._hasChilds()) {
     this.visibleChilds++;
+
+    // initialize field value if needed
+    if (this.type === 'object' && node.field == undefined) {
+      node.setField('');
+    }
 
     if (beforeNode === this.append) {
       // append to the child nodes
@@ -2190,6 +2178,7 @@ Node.prototype.setSelected = function (selected, isFirst) {
  */
 Node.prototype.updateValue = function (value) {
   this.value = value;
+  this.previousValue = value;
   this.updateDom();
 };
 
@@ -2199,6 +2188,7 @@ Node.prototype.updateValue = function (value) {
  */
 Node.prototype.updateField = function (field) {
   this.field = field;
+  this.previousField = field;
   this.updateDom();
 };
 
