@@ -3,7 +3,7 @@
 https://github.com/josdejong/jsoneditor
 
 
-## not yet released, version 5.21.0
+## 2018-08-12, version 5.21.0
 
 - Show validation errors inline instead of at the bottom when in code
   mode. Thanks @meirotstein.
