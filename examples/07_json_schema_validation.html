@@ -43,6 +43,9 @@
       "gender": {
         "enum": ["male", "female"]
       },
+      "availableToHire": {
+        "type": "boolean"
+      },
       "age": {
         "description": "Age in years",
         "type": "integer",
@@ -58,12 +61,20 @@
   var job = {
     "title": "Job description",
     "type": "object",
+    "required": ["address"],
     "properties": {
       "company": {
         "type": "string"
       },
       "role": {
         "type": "string"
+      },
+      "address": {
+        "type": "string"
+      },
+      "salary": {
+        "type": "number",
+        "minimum": 120
       }
     }
   };
@@ -72,16 +83,20 @@
     firstName: 'John',
     lastName: 'Doe',
     gender: null,
-    age: 28,
+    age: "28",
+    availableToHire: 1,
     job: {
       company: 'freelance',
-      role: 'developer'
+      role: 'developer',
+      salary: 100
     }
   };
 
   var options = {
     schema: schema,
-    schemaRefs: {"job": job}
+    schemaRefs: {"job": job},
+    mode: 'tree',
+    modes: ['code', 'text', 'tree']
   };
 
   // create the editor

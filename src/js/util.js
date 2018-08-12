@@ -1,6 +1,7 @@
 'use strict';
 
 var jsonlint = require('./assets/jsonlint/jsonlint');
+var jsonMap = require('json-source-map');
 
 /**
  * Parse JSON using the parser built-in in the browser.
@@ -903,6 +904,43 @@ exports.getIndexForPosition = function(el, row, column) {
     return rows.slice(0, row - 1).join('\n').length + columnCount;
   }
   return -1;
+}
+
+/**
+ * Returns location of json paths in certain json string
+ * @param {String} text json string
+ * @param {Array<String>} paths array of json paths
+ * @returns {Array<{path: String, line: Number, row: Number}>}
+ */
+exports.getPositionForPath = function(text, paths) {
+  var me = this;
+  var result = [];
+  var jsmap;
+  if (!paths || !paths.length) {
+    return result;
+  }
+  
+  try {
+    jsmap = jsonMap.parse(text);    
+  } catch (err) {
+    return result;
+  }
+
+  paths.forEach(function (path) {
+    var pathArr = me.parsePath(path);
+    var pointerName = pathArr.length ? "/" + pathArr.join("/") : "";
+    var pointer = jsmap.pointers[pointerName];
+    if (pointer) {
+      result.push({
+        path: path,
+        line: pointer.key ? pointer.key.line : (pointer.value ? pointer.value.line : 0),
+        column: pointer.key ? pointer.key.column : (pointer.value ? pointer.value.column : 0)
+      });
+    }
+  });
+
+  return result;
+  
 }
 
 

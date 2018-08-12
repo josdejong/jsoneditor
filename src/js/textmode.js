@@ -7,8 +7,6 @@ var util = require('./util');
 // create a mixin with the functions for text mode
 var textmode = {};
 
-var MAX_ERRORS = 3; // maximum number of displayed errors at the bottom
-
 var DEFAULT_THEME = 'ace/theme/jsoneditor';
 
 /**
@@ -92,6 +90,7 @@ textmode.create = function (container, options) {
   this.aceEditor = undefined;  // ace code editor
   this.textarea = undefined;  // plain text editor (fallback when Ace is not available)
   this.validateSchema = null;
+  this.annotations = [];
 
   // create a debounced validate function
   this._debouncedValidate = util.debounce(this.validate.bind(this), this.DEBOUNCE_INTERVAL);
@@ -189,15 +188,23 @@ textmode.create = function (container, options) {
     this.content.appendChild(this.editorDom);
 
     var aceEditor = _ace.edit(this.editorDom);
+    var aceSession = aceEditor.getSession();
     aceEditor.$blockScrolling = Infinity;
     aceEditor.setTheme(this.theme);
     aceEditor.setOptions({ readOnly: isReadOnly });
     aceEditor.setShowPrintMargin(false);
     aceEditor.setFontSize(13);
-    aceEditor.getSession().setMode('ace/mode/json');
-    aceEditor.getSession().setTabSize(this.indentation);
-    aceEditor.getSession().setUseSoftTabs(true);
-    aceEditor.getSession().setUseWrapMode(true);
+    aceSession.setMode('ace/mode/json');
+    aceSession.setTabSize(this.indentation);
+    aceSession.setUseSoftTabs(true);
+    aceSession.setUseWrapMode(true);
+    
+    // replace ace setAnnotations with custom function that also covers jsoneditor annotations
+    var originalSetAnnotations = aceSession.setAnnotations;
+    aceSession.setAnnotations = function (annotations) {
+      originalSetAnnotations.call(this, annotations && annotations.length ? annotations : me.annotations);
+    };
+    
     aceEditor.commands.bindKey('Ctrl-L', null);    // disable Ctrl+L (is used by the browser to select the address bar)
     aceEditor.commands.bindKey('Command-L', null); // disable Ctrl+L (is used by the browser to select the address bar)
     this.aceEditor = aceEditor;
@@ -257,9 +264,19 @@ textmode.create = function (container, options) {
   }
 
   var validationErrorsContainer = document.createElement('div');
-  validationErrorsContainer.className = 'validation-errors-container';
+  validationErrorsContainer.className = 'jsoneditor-validation-errors-container';
   this.dom.validationErrorsContainer = validationErrorsContainer;
   this.frame.appendChild(validationErrorsContainer);
+
+  var additinalErrorsIndication = document.createElement('div');
+  additinalErrorsIndication.style.display = 'none';
+  additinalErrorsIndication.className = "jsoneditor-additional-errors fadein";
+  additinalErrorsIndication.innerHTML = "Scroll for more &#9663;";
+  this.dom.additinalErrorsIndication = additinalErrorsIndication;
+  validationErrorsContainer.appendChild(additinalErrorsIndication);
+  validationErrorsContainer.onscroll = function () {
+    additinalErrorsIndication.style.display = me.dom.validationErrorsContainer.scrollTop === 0 ? 'block' : 'none';
+  }
 
   if (options.statusBar) {
     util.addClassName(this.content, 'has-status-bar');
@@ -310,6 +327,22 @@ textmode.create = function (container, options) {
 
     statusBar.appendChild(countVal);
     statusBar.appendChild(countLabel);
+
+    var validationErrorIcon = document.createElement('span');
+    validationErrorIcon.className = 'jsoneditor-validation-error-icon';
+    validationErrorIcon.style.display = 'none';
+
+    var validationErrorCount = document.createElement('span');
+    validationErrorCount.className = 'jsoneditor-validation-error-count';    
+    validationErrorCount.style.display = 'none';
+
+    this.validationErrorIndication = {
+      validationErrorIcon: validationErrorIcon,
+      validationErrorCount: validationErrorCount
+    };
+
+    statusBar.appendChild(validationErrorCount);
+    statusBar.appendChild(validationErrorIcon);
   }
 
   this.setSchema(this.options.schema, this.options.schemaRefs);  
@@ -486,6 +519,10 @@ textmode._emitSelectionChange = function () {
   }
 }
 
+textmode._refreshAnnotations = function () {
+  this.aceEditor && this.aceEditor.getSession().setAnnotations();  
+}
+
 /**
  * Destroy the editor. Clean up DOM, event listeners, and web workers.
  */
@@ -637,7 +674,7 @@ textmode.setText = function(jsonText) {
     this.onChangeDisabled = false;
   }
   // validate JSON schema
-  this.validate();
+  this._debouncedValidate();
 };
 
 /**
@@ -660,10 +697,12 @@ textmode.updateText = function(jsonText) {
  * Throws an exception when no JSON schema is configured
  */
 textmode.validate = function () {
+  var me = this;
   // clear all current errors
   if (this.dom.validationErrors) {
     this.dom.validationErrors.parentNode.removeChild(this.dom.validationErrors);
     this.dom.validationErrors = null;
+    this.dom.additinalErrorsIndication.style.display = 'none';
 
     this.content.style.marginBottom = '';
     this.content.style.paddingBottom = '';
@@ -690,40 +729,81 @@ textmode.validate = function () {
     }
   }
 
-  if (errors.length > 0) {  
-    // limit the number of displayed errors
-    var limit = errors.length > MAX_ERRORS;
-    if (limit) {
-      errors = errors.slice(0, MAX_ERRORS);
-      var hidden = this.validateSchema.errors.length - MAX_ERRORS;
-      errors.push('(' + hidden + ' more errors...)')
+  if (errors.length > 0) {
+    if (this.aceEditor) {
+      var jsonText = this.getText();
+      var errorPaths = [];
+      errors.reduce(function(acc, curr) {
+        if(acc.indexOf(curr.dataPath) === -1) {
+          acc.push(curr.dataPath);
+        }; 
+        return acc;
+      }, errorPaths);      
+      var errorLocations = util.getPositionForPath(jsonText, errorPaths);   
+      me.annotations = errorLocations.map(function (errLoc) {
+        var validationErrors = errors.filter(function(err){ return err.dataPath === errLoc.path; });
+        var validationError = validationErrors.reduce(function(acc, curr) { acc.message += '\n' + curr.message; return acc; });
+        if (validationError) {
+          return {
+            row: errLoc.line,
+            column: errLoc.column,
+            text: "Schema Validation Error: \n" + validationError.message,
+            type: "warning",
+            source: "jsoneditor",
+          }
+        }
+
+        return {};
+      });
+      me._refreshAnnotations();
+
+    } else {
+      var validationErrors = document.createElement('div');
+      validationErrors.innerHTML = '<table class="jsoneditor-text-errors">' +
+          '<tbody>' +
+          errors.map(function (error) {
+            var message;
+            if (typeof error === 'string') {
+              message = '<td colspan="2"><pre>' + error + '</pre></td>';
+            }
+            else {
+              message = '<td>' + error.dataPath + '</td>' +
+                  '<td>' + error.message + '</td>';
+            }
+
+            return '<tr><td><button class="jsoneditor-schema-error"></button></td>' + message + '</tr>'
+          }).join('') +
+          '</tbody>' +
+          '</table>';
+
+      this.dom.validationErrors = validationErrors;
+      this.dom.validationErrorsContainer.appendChild(validationErrors);
+      this.dom.additinalErrorsIndication.title = errors.length + " errors total";
+
+      if (this.dom.validationErrorsContainer.clientHeight < this.dom.validationErrorsContainer.scrollHeight) {
+        this.dom.additinalErrorsIndication.style.display = 'block';
+      }
+
+      var height = this.dom.validationErrorsContainer.clientHeight + (this.dom.statusBar ? this.dom.statusBar.clientHeight : 0);
+      // var height = validationErrors.clientHeight + (this.dom.statusBar ? this.dom.statusBar.clientHeight : 0);
+      this.content.style.marginBottom = (-height) + 'px';
+      this.content.style.paddingBottom = height + 'px';
     }
+  } else {
+    if (this.aceEditor) {
+      me.annotations = [];
+      me._refreshAnnotations();
+    }
+  }
 
-    var validationErrors = document.createElement('div');
-    validationErrors.innerHTML = '<table class="jsoneditor-text-errors">' +
-        '<tbody>' +
-        errors.map(function (error) {
-          var message;
-          if (typeof error === 'string') {
-            message = '<td colspan="2"><pre>' + error + '</pre></td>';
-          }
-          else {
-            message = '<td>' + error.dataPath + '</td>' +
-                '<td>' + error.message + '</td>';
-          }
-
-          return '<tr><td><button class="jsoneditor-schema-error"></button></td>' + message + '</tr>'
-        }).join('') +
-        '</tbody>' +
-        '</table>';
-
-    this.dom.validationErrors = validationErrors;
-    this.dom.validationErrorsContainer.appendChild(validationErrors);
-
-    var height = validationErrors.clientHeight +
-        (this.dom.statusBar ? this.dom.statusBar.clientHeight : 0);
-    this.content.style.marginBottom = (-height) + 'px';
-    this.content.style.paddingBottom = height + 'px';
+  if (me.options.statusBar) {
+    var showIndication = !!errors.length;
+    me.validationErrorIndication.validationErrorIcon.style.display = showIndication ? 'inline' : 'none';
+    me.validationErrorIndication.validationErrorCount.style.display = showIndication ? 'inline' : 'none';
+    if (showIndication) {
+      me.validationErrorIndication.validationErrorCount.innerText = errors.length;
+      me.validationErrorIndication.validationErrorIcon.title = errors.length + ' schema validation error(s) found';
+    }
   }
 
   // update the height of the ace editor
