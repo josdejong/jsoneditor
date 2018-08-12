@@ -7,6 +7,7 @@ https://github.com/josdejong/jsoneditor
 
 - Show validation errors inline instead of at the bottom when in code
   mode. Thanks @meirotstein.
+- Fix #562: allow `$` character in property names of of a JSON schema.
 
 
 ## 2018-08-10, version 5.20.0

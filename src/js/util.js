@@ -684,7 +684,7 @@ exports.parsePath = function parsePath(jsonPath) {
   }
 
   // find a match like '.prop'
-  var match = jsonPath.match(/^\.(\w+)/);
+  var match = jsonPath.match(/^\.([\w$]+)/);
   if (match) {
     prop = match[1];
     remainder = jsonPath.substr(prop.length + 1);
