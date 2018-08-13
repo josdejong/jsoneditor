@@ -2,6 +2,11 @@
 
 https://github.com/josdejong/jsoneditor
 
+## 2018-07-02, version 5.19.0
+
+- Implemented API: `onEvent` triggered when an event occurs in a JSON field or 
+value. 
+
 
 ## 2018-08-12, version 5.21.0
 

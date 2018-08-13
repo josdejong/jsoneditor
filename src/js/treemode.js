@@ -50,6 +50,9 @@ var treemode = {};
  *                                                        characters are escaped.
  *                                                        false by default.
  *                               {Object} schema          A JSON Schema for validation
+ *                               {function} onEvent       Function triggered
+ *                                                        when an event occurs
+ *                                                        in a field or value.
  * @private
  */
 treemode.create = function (container, options) {
@@ -134,7 +137,8 @@ treemode._setOptions = function (options) {
     schemaRefs: null,
     autocomplete: null,
     navigationBar : true,
-    onSelectionChange: null
+    onSelectionChange: null,
+    onEvent: null
   };
 
   // copy all options

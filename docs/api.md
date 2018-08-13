@@ -245,6 +245,29 @@ Constructs a new JSONEditor.
   }
   ```
   Only applicable when `mode` is 'tree'.
+  
+- `{function} onEvent`
+
+  Set a callback function that will be triggered when an event will occur in 
+  a JSON field or value.
+  
+  In case of field event, node information will be 
+  `{field: string, path: {string|number}[]}`.
+  In case of value event, node information will be
+  `{field: string, path: {string|number}[], value: string}`
+
+  signature should be:
+  ```js
+  /**
+  * @param {Node} the Node where event has been triggered 
+  identified by {field: string, path: {string|number}[] [, value: string]}`
+  * @param {event} the event fired
+  */
+  function onEvent(node, event) {
+    ...
+  }
+  ```
+  Only applicable when `mode` is 'form', 'tree' or 'view'.  
 
 - `{string} language`
 

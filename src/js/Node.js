@@ -95,7 +95,8 @@ Node.prototype._updateEditability = function () {
 
 /**
  * Get the path of this node
- * @return {String[]} Array containing the path to this node
+ * @return {{string|number}[]} Array containing the path to this node.
+ * Element is a number if is the index of an array, a string otherwise.
  */
 Node.prototype.getPath = function () {
   var node = this;
@@ -2684,6 +2685,11 @@ Node.prototype.onEvent = function (event) {
       node = this,
       expandable = this._hasChilds();
 
+
+  if (typeof this.editor.options.onEvent === 'function') {
+    this._onEvent(event);
+  }
+
   // check if mouse is on menu or on dragarea.
   // If so, highlight current row and its childs
   if (target == dom.drag || target == dom.menu) {
@@ -2855,6 +2861,30 @@ Node.prototype.onEvent = function (event) {
 
   if (type == 'keydown') {
     this.onKeyDown(event);
+  }
+};
+
+/**
+ * Trigger external onEvent provided in options if node is a JSON field or
+ * value.
+ * Information provided depends on the element, value is only included if
+ * event occurs in a JSON value:
+ * {field: string, path: {string|number}[] [, value: string]}
+ * @param {Event} event
+ * @private
+ */
+Node.prototype._onEvent = function (event) {
+  var element = event.target;
+  if (element === this.dom.field || element === this.dom.value) {
+    var info = {
+      field: this.getField(),
+      path: this.getPath()
+    };
+    // For leaf values, include value
+    if (!this._hasChilds() &&element === this.dom.value) {
+      info.value = this.getValue();  
+    }
+    this.editor.options.onEvent(info, event);
   }
 };
 

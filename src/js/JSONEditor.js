@@ -68,6 +68,13 @@ var util = require('./util');
  *                                                                overlay and display the modals in a
  *                                                                centered location.
  *                                                                Defaults to document.body
+ *                                                                'text' and 'code'
+ *                               {function} onEvent Callback method, triggered
+ *                                                  when an event occurs in
+ *                                                  a JSON field or value.
+ *                                                  Only applicable for
+ *                                                  modes 'form', 'tree' and
+ *                                                  'view'
  * @param {Object | undefined} json JSON object
  */
 function JSONEditor (container, options, json) {
@@ -148,7 +155,7 @@ JSONEditor.VALID_OPTIONS = [
   'ajv', 'schema', 'schemaRefs','templates',
   'ace', 'theme','autocomplete',
   'onChange', 'onChangeJSON', 'onChangeText',
-  'onEditable', 'onError', 'onModeChange', 'onSelectionChange', 'onTextSelectionChange',
+  'onEditable', 'onError', 'onEvent', 'onModeChange', 'onSelectionChange', 'onTextSelectionChange',
   'escapeUnicode', 'history', 'search', 'mode', 'modes', 'name', 'indentation',
   'sortObjectKeys', 'navigationBar', 'statusBar', 'languages', 'language'
 ];
