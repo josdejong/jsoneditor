@@ -24,8 +24,8 @@
  * Copyright (c) 2011-2017 Jos de Jong, http://jsoneditoronline.org
  *
  * @author  Jos de Jong, <wjosdejong@gmail.com>
- * @version 5.21.0
- * @date    2018-08-12
+ * @version 5.22.0
+ * @date    2018-08-13
  */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
@@ -153,6 +153,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	 *                                                                overlay and display the modals in a
 	 *                                                                centered location.
 	 *                                                                Defaults to document.body
+	 *                                                                'text' and 'code'
+	 *                               {function} onEvent Callback method, triggered
+	 *                                                  when an event occurs in
+	 *                                                  a JSON field or value.
+	 *                                                  Only applicable for
+	 *                                                  modes 'form', 'tree' and
+	 *                                                  'view'
 	 * @param {Object | undefined} json JSON object
 	 */
 	function JSONEditor (container, options, json) {
@@ -233,7 +240,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  'ajv', 'schema', 'schemaRefs','templates',
 	  'ace', 'theme','autocomplete',
 	  'onChange', 'onChangeJSON', 'onChangeText',
-	  'onEditable', 'onError', 'onModeChange', 'onSelectionChange', 'onTextSelectionChange',
+	  'onEditable', 'onError', 'onEvent', 'onModeChange', 'onSelectionChange', 'onTextSelectionChange',
 	  'escapeUnicode', 'history', 'search', 'mode', 'modes', 'name', 'indentation',
 	  'sortObjectKeys', 'navigationBar', 'statusBar', 'languages', 'language'
 	];
@@ -578,6 +585,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	 *                                                        characters are escaped.
 	 *                                                        false by default.
 	 *                               {Object} schema          A JSON Schema for validation
+	 *                               {function} onEvent       Function triggered
+	 *                                                        when an event occurs
+	 *                                                        in a field or value.
 	 * @private
 	 */
 	treemode.create = function (container, options) {
@@ -662,7 +672,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	    schemaRefs: null,
 	    autocomplete: null,
 	    navigationBar : true,
-	    onSelectionChange: null
+	    onSelectionChange: null,
+	    onEvent: null
 	  };
 
 	  // copy all options
@@ -5770,7 +5781,8 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	/**
 	 * Get the path of this node
-	 * @return {String[]} Array containing the path to this node
+	 * @return {{string|number}[]} Array containing the path to this node.
+	 * Element is a number if is the index of an array, a string otherwise.
 	 */
 	Node.prototype.getPath = function () {
 	  var node = this;
@@ -8359,6 +8371,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	      node = this,
 	      expandable = this._hasChilds();
 
+
+	  if (typeof this.editor.options.onEvent === 'function') {
+	    this._onEvent(event);
+	  }
+
 	  // check if mouse is on menu or on dragarea.
 	  // If so, highlight current row and its childs
 	  if (target == dom.drag || target == dom.menu) {
@@ -8530,6 +8547,30 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	  if (type == 'keydown') {
 	    this.onKeyDown(event);
+	  }
+	};
+
+	/**
+	 * Trigger external onEvent provided in options if node is a JSON field or
+	 * value.
+	 * Information provided depends on the element, value is only included if
+	 * event occurs in a JSON value:
+	 * {field: string, path: {string|number}[] [, value: string]}
+	 * @param {Event} event
+	 * @private
+	 */
+	Node.prototype._onEvent = function (event) {
+	  var element = event.target;
+	  if (element === this.dom.field || element === this.dom.value) {
+	    var info = {
+	      field: this.getField(),
+	      path: this.getPath()
+	    };
+	    // For leaf values, include value
+	    if (!this._hasChilds() &&element === this.dom.value) {
+	      info.value = this.getValue();  
+	    }
+	    this.editor.options.onEvent(info, event);
 	  }
 	};
 
