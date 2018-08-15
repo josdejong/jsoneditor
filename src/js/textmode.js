@@ -421,8 +421,16 @@ textmode._onMouseDown = function (event) {
  * @private
  */
 textmode._onBlur = function (event) {
-  this._updateCursorInfo();
-  this._emitSelectionChange();
+  var me = this;
+  // this allows to avoid blur when clicking inner elements (like the errors panel)
+  // just make sure to set the isFocused to true on the inner element onclick callback
+  setTimeout(function(){
+    if (!me.isFocused) {
+      me._updateCursorInfo();
+      me._emitSelectionChange();
+    }
+    me.isFocused = false;
+  });
 };
 
 /**
@@ -690,16 +698,16 @@ textmode.validate = function () {
   }
 
   if (errors.length > 0) {
+    var jsonText = this.getText();
+    var errorPaths = [];
+    errors.reduce(function(acc, curr) {
+      if(acc.indexOf(curr.dataPath) === -1) {
+        acc.push(curr.dataPath);
+      }; 
+      return acc;
+    }, errorPaths);      
+    var errorLocations = util.getPositionForPath(jsonText, errorPaths);
     if (this.aceEditor) {
-      var jsonText = this.getText();
-      var errorPaths = [];
-      errors.reduce(function(acc, curr) {
-        if(acc.indexOf(curr.dataPath) === -1) {
-          acc.push(curr.dataPath);
-        }; 
-        return acc;
-      }, errorPaths);      
-      var errorLocations = util.getPositionForPath(jsonText, errorPaths);   
       me.annotations = errorLocations.map(function (errLoc) {
         var validationErrors = errors.filter(function(err){ return err.dataPath === errLoc.path; });
         var validationError = validationErrors.reduce(function(acc, curr) { acc.message += '\n' + curr.message; return acc; });
@@ -719,22 +727,40 @@ textmode.validate = function () {
 
     } else {
       var validationErrors = document.createElement('div');
-      validationErrors.innerHTML = '<table class="jsoneditor-text-errors">' +
-          '<tbody>' +
-          errors.map(function (error) {
-            var message;
-            if (typeof error === 'string') {
-              message = '<td colspan="2"><pre>' + error + '</pre></td>';
-            }
-            else {
-              message = '<td>' + error.dataPath + '</td>' +
-                  '<td>' + error.message + '</td>';
-            }
+      validationErrors.innerHTML = '<table class="jsoneditor-text-errors"><tbody></tbody></table>';
+      var tbody = validationErrors.getElementsByTagName('tbody')[0];
 
-            return '<tr><td><button class="jsoneditor-schema-error"></button></td>' + message + '</tr>'
-          }).join('') +
-          '</tbody>' +
-          '</table>';
+      errors.forEach(function (error) {
+        var message;
+        if (typeof error === 'string') {
+          message = '<td colspan="2"><pre>' + error + '</pre></td>';
+        }
+        else {
+          message = 
+              '<td>' + error.dataPath + '</td>' +
+              '<td>' + error.message + '</td>';
+        }
+
+        var line;
+
+        if (error.dataPath) {
+          var errLoc = errorLocations.find(function(loc) { return loc.path === error.dataPath; });
+          if (errLoc) {
+            line = errLoc.line + 1;
+          }
+        }
+
+        var trEl = document.createElement('tr');
+        trEl.innerHTML =  ('<td><button class="jsoneditor-schema-error"></button></td><td>'+ (!isNaN(line) ? ('Ln ' + line) : '') +'</td>' + message);
+        trEl.onclick = function() {
+          me.isFocused = true;
+          if (!isNaN(line)) {
+            me.setTextSelection({row: line, column: 1}, {row: line, column: 1000});
+          }
+        };
+
+        tbody.appendChild(trEl);
+      });
 
       this.dom.validationErrors = validationErrors;
       this.dom.validationErrorsContainer.appendChild(validationErrors);
