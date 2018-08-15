@@ -271,7 +271,7 @@ textmode.create = function (container, options) {
   this.dom.additinalErrorsIndication = additinalErrorsIndication;
   validationErrorsContainer.appendChild(additinalErrorsIndication);
   validationErrorsContainer.onscroll = function () {
-    additinalErrorsIndication.style.display = me.dom.validationErrorsContainer.scrollTop === 0 ? 'block' : 'none';
+    additinalErrorsIndication.style.display = (me.annotations.length && me.dom.validationErrorsContainer.scrollTop === 0) ? 'block' : 'none';
   }
 
   if (options.statusBar) {
