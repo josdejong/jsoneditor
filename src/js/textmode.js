@@ -779,14 +779,14 @@ textmode.validate = function () {
       var errorLocations = util.getPositionForPath(jsonText, errorPaths);   
       me.annotations = errorLocations.map(function (errLoc) {
         var validationErrors = errors.filter(function(err){ return err.dataPath === errLoc.path; });
-        var validationError = validationErrors.reduce(function(acc, curr) { acc.message += '\n' + curr.message; return acc; });
-        if (validationError) {
+        var message = validationErrors.map(function(err) { return err.message }).join('\n');
+        if (message) {
           return {
             row: errLoc.line,
             column: errLoc.column,
-            text: "Schema Validation Error: \n" + validationError.message,
-            type: "warning",
-            source: "jsoneditor",
+            text: 'Schema validation error' + (validationErrors.length !== 1 ? 's' : '') + ': \n' + message,
+            type: 'warning',
+            source: 'jsoneditor',
           }
         }
 
