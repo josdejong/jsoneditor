@@ -717,6 +717,19 @@ exports.parsePath = function parsePath(jsonPath) {
 };
 
 /**
+ * Stringify an array with a path in a JSON path like '.items[3].name'
+ * @param {Array.<string | number>} path
+ * @returns {string}
+ */
+exports.stringifyPath = function stringifyPath(path) {
+  return path
+      .map(function (p) {
+        return typeof p === 'number' ? ('[' + p + ']') : ('.' + p);
+      })
+      .join('');
+};
+
+/**
  * Improve the error message of a JSON schema error
  * @param {Object} error
  * @return {Object} The error
@@ -743,6 +756,17 @@ exports.improveSchemaError = function (error) {
   }
 
   return error;
+};
+
+/**
+ * Test whether a custom validation error has the correct structure
+ * @param {*} validationError The error to be checked.
+ * @returns {boolean} Returns true if the structure is ok, false otherwise
+ */
+exports.isValidValidationError = function (validationError) {
+  return typeof validationError === 'object' &&
+      Array.isArray(validationError.path) &&
+      typeof validationError.message === 'string';
 };
 
 /**

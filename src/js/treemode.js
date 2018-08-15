@@ -524,13 +524,15 @@ treemode.validate = function () {
     return;
   }
 
+  var json = root.getValue();
+
   // check for duplicate keys
   var duplicateErrors = root.validate();
 
-  // validate the JSON
+  // execute JSON schema validation
   var schemaErrors = [];
   if (this.validateSchema) {
-    var valid = this.validateSchema(root.getValue());
+    var valid = this.validateSchema(json);
     if (!valid) {
       // apply all new errors
       schemaErrors = this.validateSchema.errors
@@ -549,7 +551,10 @@ treemode.validate = function () {
     }
   }
 
-  var errorNodes = duplicateErrors.concat(schemaErrors);
+  // execute custom validation
+  var customValidationErrors = this._validateCustom(json);
+
+  var errorNodes = duplicateErrors.concat(schemaErrors, customValidationErrors);
   var parentPairs = errorNodes
       .reduce(function (all, entry) {
           return entry.node
@@ -582,6 +587,58 @@ treemode.validate = function () {
         entry.node.setError(entry.error, entry.child);
         return entry.node;
       });
+};
+
+/**
+ * execute custom validation if configured. Returns an empty array if not.
+ */
+treemode._validateCustom = function (json) {
+  try {
+    if (this.options.onValidate) {
+      var root = this.node;
+      var customValidationPathErrors = this.options.onValidate(json);
+
+      if (Array.isArray(customValidationPathErrors)) {
+        return customValidationPathErrors
+            .filter(function (error) {
+              var valid = util.isValidValidationError(error);
+
+              if (!valid) {
+                console.warn('Ignoring a custom validation error with invalid structure. ' +
+                    'Expected structure: {path: [...], message: "..."}. ' +
+                    'Actual error:', error);
+              }
+
+              return valid;
+            })
+            .map(function (error) {
+              var node;
+              try {
+                node = (error && error.path) ? root.findNodeByPath(error.path) : null
+              }
+              catch (err) {
+                // stay silent here, we throw a generic warning if no node is found
+              }
+              if (!node) {
+                console.warn('Ignoring validation error: node not found. Path:', error.path, 'Error:', error);
+              }
+
+              return {
+                node: node,
+                error: error
+              }
+            })
+            .filter(function (entry) {
+              return entry && entry.node && entry.error && entry.error.message
+            });
+      }
+    }
+  }
+  catch (err) {
+    console.error(err);
+  }
+
+  return [];
 };
 
 /**

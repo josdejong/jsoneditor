@@ -3,6 +3,11 @@
 https://github.com/josdejong/jsoneditor
 
 
+## not yet released, version 5.23.0
+
+- Implemented support for custom validation using a new `onValidate` callback.
+
+
 ## 2018-08-13, version 5.22.0
 
 - Implemented `onEvent` callback triggered when an event occurs in a JSON

@@ -720,12 +720,49 @@ textmode.validate = function () {
   }
 
   // only validate the JSON when parsing the JSON succeeded
-  if (doValidate && this.validateSchema) {
-    var valid = this.validateSchema(json);
-    if (!valid) {
-      errors = this.validateSchema.errors.map(function (error) {
-        return util.improveSchemaError(error);
-      });
+  if (doValidate) {
+    // execute JSON schema validation (ajv)
+    if (this.validateSchema) {
+      var valid = this.validateSchema(json);
+      if (!valid) {
+        errors = this.validateSchema.errors.map(function (error) {
+          return util.improveSchemaError(error);
+        });
+      }
+    }
+
+    // execute custom validation
+    if (this.options.onValidate) {
+      try {
+        var customValidationPathErrors = this.options.onValidate(json);
+
+        if (Array.isArray(customValidationPathErrors)) {
+          var customValidationErrors = customValidationPathErrors
+              .filter(function (error) {
+                var valid = util.isValidValidationError(error);
+
+                if (!valid) {
+                  console.warn('Ignoring a custom validation error with invalid structure. ' +
+                      'Expected structure: {path: [...], message: "..."}. ' +
+                      'Actual error:', error);
+                }
+
+                return valid;
+              })
+              .map(function (error) {
+                // change data structure into the structure matching the JSON schema errors
+                return {
+                  dataPath: util.stringifyPath(error.path),
+                  message: error.message
+                }
+              });
+
+          errors = errors.concat(customValidationErrors);
+        }
+      }
+      catch (err) {
+        console.error(err);
+      }
     }
   }
 
@@ -736,7 +773,7 @@ textmode.validate = function () {
       errors.reduce(function(acc, curr) {
         if(acc.indexOf(curr.dataPath) === -1) {
           acc.push(curr.dataPath);
-        }; 
+        }
         return acc;
       }, errorPaths);      
       var errorLocations = util.getPositionForPath(jsonText, errorPaths);   

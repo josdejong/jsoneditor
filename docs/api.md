@@ -89,6 +89,31 @@ Constructs a new JSONEditor.
   Set a callback function triggered right after the mode is changed by the user. Only applicable when
   the mode can be changed by the user (i.e. when option `modes` is set).
 
+- `{function} onValidate(json)`
+
+  Set a callback function for custom validation. Available in all modes.
+
+  On a change of the JSON, the callback function is invoked with the changed data. The function should return
+  an array with errors (or an empty array when the document is valid). The returned errors must have the following
+  structure: `{path: Array.<string | number>, message: string}`. Example:
+
+  ```js
+  var options = {
+    onValidate: function (json) {
+      var errors = [];
+
+      if (json && json.customer && !json.customer.address) {
+        errors.push({
+          path: ['customer'],
+          message: 'Required property "address" missing.'
+        });
+      }
+
+      return errors;
+    }
+  }
+  ```
+
 - `{boolean} escapeUnicode`
 
   If true, unicode characters are escaped and displayed as their hexadecimal code (like `\u260E`) instead of of the character itself (like `☎`). False by default.
