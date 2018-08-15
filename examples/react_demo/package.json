@@ -3,11 +3,12 @@
   "version": "0.1.0",
   "private": true,
   "devDependencies": {
-    "react-scripts": "0.8.4"
+    "react-scripts": "1.1.4"
   },
   "dependencies": {
-    "react": "15.4.1",
-    "react-dom": "15.4.1"
+    "jsoneditor": "file:../..",
+    "react": "16.4.2",
+    "react-dom": "16.4.2"
   },
   "scripts": {
     "start": "react-scripts start",
