@@ -67,6 +67,7 @@ treemode.create = function (container, options) {
     nodes: []
   };
   this.validateSchema = null; // will be set in .setSchema(schema)
+  this.validationSequence = 0;
   this.errorNodes = [];
 
   this.node = null;
@@ -512,13 +513,6 @@ treemode._onChange = function () {
  * Throws an exception when no JSON schema is configured
  */
 treemode.validate = function () {
-  // clear all current errors
-  if (this.errorNodes) {
-    this.errorNodes.forEach(function (node) {
-      node.setError(null);
-    });
-  }
-
   var root = this.node;
   if (!root) { // TODO: this should be redundant but is needed on mode switch
     return;
@@ -551,36 +545,58 @@ treemode.validate = function () {
     }
   }
 
-  // execute custom validation
-  var customValidationErrors = this._validateCustom(json);
+  // execute custom validation and after than merge and render all errors
+  this.validationSequence++;
+  var me = this;
+  var seq = this.validationSequence;
+  this._validateCustom(json)
+      .then(function (customValidationErrors) {
+        // only apply when there was no other validation started whilst resolving async results
+        if (seq === me.validationSequence) {
+          var errorNodes = [].concat(duplicateErrors, schemaErrors, customValidationErrors || []);
+          me._renderValidationErrors(errorNodes);
+        }
+      })
+      .catch(function (err) {
+        console.error(err);
+      });
+};
 
-  var errorNodes = duplicateErrors.concat(schemaErrors, customValidationErrors);
+treemode._renderValidationErrors = function (errorNodes) {
+  // clear all current errors
+  if (this.errorNodes) {
+    this.errorNodes.forEach(function (node) {
+      node.setError(null);
+    });
+  }
+
+  // render the new errors
   var parentPairs = errorNodes
       .reduce(function (all, entry) {
-          return entry.node
-              .findParents()
-              .filter(function (parent) {
-                  return !all.some(function (pair) {
-                    return pair[0] === parent;
-                  });
-              })
-              .map(function (parent) {
-                  return [parent, entry.node];
-              })
-              .concat(all);
+        return entry.node
+            .findParents()
+            .filter(function (parent) {
+              return !all.some(function (pair) {
+                return pair[0] === parent;
+              });
+            })
+            .map(function (parent) {
+              return [parent, entry.node];
+            })
+            .concat(all);
       }, []);
 
   this.errorNodes = parentPairs
       .map(function (pair) {
-          return {
-            node: pair[0],
-            child: pair[1],
-            error: {
-              message: pair[0].type === 'object'
-                  ? 'Contains invalid properties' // object
-                  : 'Contains invalid items'      // array
-            }
-          };
+        return {
+          node: pair[0],
+          child: pair[1],
+          error: {
+            message: pair[0].type === 'object'
+                ? 'Contains invalid properties' // object
+                : 'Contains invalid items'      // array
+          }
+        };
       })
       .concat(errorNodes)
       .map(function setError (entry) {
@@ -590,55 +606,66 @@ treemode.validate = function () {
 };
 
 /**
- * execute custom validation if configured. Returns an empty array if not.
+ * Execute custom validation if configured.
+ *
+ * Returns a promise resolving with the custom errors (or nothing).
  */
 treemode._validateCustom = function (json) {
   try {
     if (this.options.onValidate) {
       var root = this.node;
-      var customValidationPathErrors = this.options.onValidate(json);
+      var customValidateResults = this.options.onValidate(json);
 
-      if (Array.isArray(customValidationPathErrors)) {
-        return customValidationPathErrors
-            .filter(function (error) {
-              var valid = util.isValidValidationError(error);
+      var resultPromise = util.isPromise(customValidateResults)
+          ? customValidateResults
+          : Promise.resolve(customValidateResults);
 
-              if (!valid) {
-                console.warn('Ignoring a custom validation error with invalid structure. ' +
-                    'Expected structure: {path: [...], message: "..."}. ' +
-                    'Actual error:', error);
-              }
+      return resultPromise.then(function (customValidationPathErrors) {
+        if (Array.isArray(customValidationPathErrors)) {
+          return customValidationPathErrors
+              .filter(function (error) {
+                var valid = util.isValidValidationError(error);
 
-              return valid;
-            })
-            .map(function (error) {
-              var node;
-              try {
-                node = (error && error.path) ? root.findNodeByPath(error.path) : null
-              }
-              catch (err) {
-                // stay silent here, we throw a generic warning if no node is found
-              }
-              if (!node) {
-                console.warn('Ignoring validation error: node not found. Path:', error.path, 'Error:', error);
-              }
+                if (!valid) {
+                  console.warn('Ignoring a custom validation error with invalid structure. ' +
+                      'Expected structure: {path: [...], message: "..."}. ' +
+                      'Actual error:', error);
+                }
 
-              return {
-                node: node,
-                error: error
-              }
-            })
-            .filter(function (entry) {
-              return entry && entry.node && entry.error && entry.error.message
-            });
-      }
+                return valid;
+              })
+              .map(function (error) {
+                var node;
+                try {
+                  node = (error && error.path) ? root.findNodeByPath(error.path) : null
+                }
+                catch (err) {
+                  // stay silent here, we throw a generic warning if no node is found
+                }
+                if (!node) {
+                  console.warn('Ignoring validation error: node not found. Path:', error.path, 'Error:', error);
+                }
+
+                return {
+                  node: node,
+                  error: error
+                }
+              })
+              .filter(function (entry) {
+                return entry && entry.node && entry.error && entry.error.message
+              });
+        }
+        else {
+          return null;
+        }
+      });
     }
   }
   catch (err) {
-    console.error(err);
+    return Promise.reject(err);
   }
 
-  return [];
+  return Promise.resolve(null);
 };
 
 /**

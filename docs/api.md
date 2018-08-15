@@ -94,8 +94,10 @@ Constructs a new JSONEditor.
   Set a callback function for custom validation. Available in all modes.
 
   On a change of the JSON, the callback function is invoked with the changed data. The function should return
-  an array with errors (or an empty array when the document is valid). The returned errors must have the following
-  structure: `{path: Array.<string | number>, message: string}`. Example:
+  an array with errors or null if there are no errors. The function can also return a `Promise` resolving with
+  the errors retrieved via an asynchronous validation (like sending a request to a server for validation).
+  The returned errors must have the following structure: `{path: Array.<string | number>, message: string}`.
+  Example:
 
   ```js
   var options = {
@@ -113,6 +115,8 @@ Constructs a new JSONEditor.
     }
   }
   ```
+
+  See also option `schema` for JSON schema validation.
 
 - `{boolean} escapeUnicode`
 
@@ -145,6 +149,8 @@ Constructs a new JSONEditor.
   that a value must have.
 
   See [http://json-schema.org/](http://json-schema.org/) for more information.
+
+  See also option `onValidate` for custom validation.
 
 - `{Object} schemaRefs`
 

@@ -759,6 +759,15 @@ exports.improveSchemaError = function (error) {
 };
 
 /**
+ * Test whether something is a Promise
+ * @param {*} object
+ * @returns {boolean} Returns true when object is a promise, false otherwise
+ */
+exports.isPromise = function (object) {
+  return object && typeof object.then === 'function' && typeof object.catch === 'function';
+};
+
+/**
  * Test whether a custom validation error has the correct structure
  * @param {*} validationError The error to be checked.
  * @returns {boolean} Returns true if the structure is ok, false otherwise

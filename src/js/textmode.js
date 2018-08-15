@@ -90,6 +90,7 @@ textmode.create = function (container, options) {
   this.aceEditor = undefined;  // ace code editor
   this.textarea = undefined;  // plain text editor (fallback when Ace is not available)
   this.validateSchema = null;
+  this.validationSequence = 0;
   this.annotations = [];
 
   // create a debounced validate function
@@ -697,19 +698,8 @@ textmode.updateText = function(jsonText) {
  * Throws an exception when no JSON schema is configured
  */
 textmode.validate = function () {
-  var me = this;
-  // clear all current errors
-  if (this.dom.validationErrors) {
-    this.dom.validationErrors.parentNode.removeChild(this.dom.validationErrors);
-    this.dom.validationErrors = null;
-    this.dom.additinalErrorsIndication.style.display = 'none';
-
-    this.content.style.marginBottom = '';
-    this.content.style.paddingBottom = '';
-  }
-
   var doValidate = false;
-  var errors = [];
+  var schemaErrors = [];
   var json;
   try {
     json = this.get(); // this can fail when there is no valid json
@@ -725,19 +715,50 @@ textmode.validate = function () {
     if (this.validateSchema) {
       var valid = this.validateSchema(json);
       if (!valid) {
-        errors = this.validateSchema.errors.map(function (error) {
+        schemaErrors = this.validateSchema.errors.map(function (error) {
           return util.improveSchemaError(error);
         });
       }
     }
 
-    // execute custom validation
-    if (this.options.onValidate) {
-      try {
-        var customValidationPathErrors = this.options.onValidate(json);
+    // execute custom validation and after than merge and render all errors
+    this.validationSequence++;
+    var me = this;
+    var seq = this.validationSequence;
+    this._validateCustom(json)
+        .then(function (customValidationErrors) {
+          // only apply when there was no other validation started whilst resolving async results
+          if (seq === me.validationSequence) {
+            var errors = schemaErrors.concat(customValidationErrors || []);
+            me._renderValidationErrors(errors);
+          }
+        })
+        .catch(function (err) {
+          console.error(err);
+        });
+  }
+  else {
+    this._renderValidationErrors([]);
+  }
+};
 
+/**
+ * Execute custom validation if configured.
+ *
+ * Returns a promise resolving with the custom errors (or nothing).
+ */
+textmode._validateCustom = function (json) {
+  if (this.options.onValidate) {
+    try {
+      var customValidateResults = this.options.onValidate(json);
+
+      var resultPromise = util.isPromise(customValidateResults)
+          ? customValidateResults
+          : Promise.resolve(customValidateResults);
+
+      return resultPromise.then(function (customValidationPathErrors) {
         if (Array.isArray(customValidationPathErrors)) {
-          var customValidationErrors = customValidationPathErrors
+          return customValidationPathErrors
               .filter(function (error) {
                 var valid = util.isValidValidationError(error);
 
@@ -756,16 +777,32 @@ textmode.validate = function () {
                   message: error.message
                 }
               });
-
-          errors = errors.concat(customValidationErrors);
         }
-      }
-      catch (err) {
-        console.error(err);
-      }
+        else {
+          return null;
+        }
+      });
+    }
+    catch (err) {
+      return Promise.reject(err);
     }
   }
 
+  return Promise.resolve(null);
+};
+
+textmode._renderValidationErrors = function(errors) {
+  // clear all current errors
+  if (this.dom.validationErrors) {
+    this.dom.validationErrors.parentNode.removeChild(this.dom.validationErrors);
+    this.dom.validationErrors = null;
+    this.dom.additinalErrorsIndication.style.display = 'none';
+
+    this.content.style.marginBottom = '';
+    this.content.style.paddingBottom = '';
+  }
+
+  // render the new errors
   if (errors.length > 0) {
     if (this.aceEditor) {
       var jsonText = this.getText();
@@ -775,9 +812,9 @@ textmode.validate = function () {
           acc.push(curr.dataPath);
         }
         return acc;
-      }, errorPaths);      
-      var errorLocations = util.getPositionForPath(jsonText, errorPaths);   
-      me.annotations = errorLocations.map(function (errLoc) {
+      }, errorPaths);
+      var errorLocations = util.getPositionForPath(jsonText, errorPaths);
+      this.annotations = errorLocations.map(function (errLoc) {
         var validationErrors = errors.filter(function(err){ return err.dataPath === errLoc.path; });
         var message = validationErrors.map(function(err) { return err.message }).join('\n');
         if (message) {
@@ -792,7 +829,7 @@ textmode.validate = function () {
 
         return {};
       });
-      me._refreshAnnotations();
+      this._refreshAnnotations();
 
     } else {
       var validationErrors = document.createElement('div');
@@ -828,18 +865,18 @@ textmode.validate = function () {
     }
   } else {
     if (this.aceEditor) {
-      me.annotations = [];
-      me._refreshAnnotations();
+      this.annotations = [];
+      this._refreshAnnotations();
     }
   }
 
-  if (me.options.statusBar) {
+  if (this.options.statusBar) {
     var showIndication = !!errors.length;
-    me.validationErrorIndication.validationErrorIcon.style.display = showIndication ? 'inline' : 'none';
-    me.validationErrorIndication.validationErrorCount.style.display = showIndication ? 'inline' : 'none';
+    this.validationErrorIndication.validationErrorIcon.style.display = showIndication ? 'inline' : 'none';
+    this.validationErrorIndication.validationErrorCount.style.display = showIndication ? 'inline' : 'none';
     if (showIndication) {
-      me.validationErrorIndication.validationErrorCount.innerText = errors.length;
-      me.validationErrorIndication.validationErrorIcon.title = errors.length + ' schema validation error(s) found';
+      this.validationErrorIndication.validationErrorCount.innerText = errors.length;
+      this.validationErrorIndication.validationErrorIcon.title = errors.length + ' schema validation error(s) found';
     }
   }
 

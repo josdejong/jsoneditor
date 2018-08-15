@@ -54,7 +54,7 @@
       // - at lease one member of the team must be adult
       var errors = [];
 
-      if (Array.isArray(json.team)) {
+      if (json && Array.isArray(json.team)) {
         // check whether each team member has name and age filled in correctly
         json.team.forEach(function (member, index) {
           if (typeof member !== 'object') {
