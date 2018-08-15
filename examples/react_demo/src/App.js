@@ -1,14 +1,9 @@
-import React, { Component } from 'react'
-import './App.css'
+import React, { Component } from 'react';
+import './App.css';
+import JSONEditor from '../../../dist/jsoneditor-react'
 
-// Load the react version of JSONEditor
-//
 // When installed via npm, import as:
-//
-//     import JSONEditor from 'jsoneditor/react'
-//
-import JSONEditor from '../../../react'
-
+// import JSONEditor from 'jsoneditor/dist/jsoneditor-react'
 
 const json =  {
   'array': [1, 2, 3],
@@ -20,33 +15,38 @@ const json =  {
 }
 
 class App extends Component {
-  state = {
-    json
+  constructor (props) {
+    super(props)
+
+    this.state = {
+      text: JSON.stringify(json, null, 2)
+    }
+
+    this.onChange = this.onChange.bind(this)
+    this.onChangeText = this.onChangeText.bind(this)
   }
 
   render() {
     return (
-      <div className="app">
-        <h1>JSONEditor React demo</h1>
-        <JSONEditor
-            mode="tree"
-            modes={['text', 'code', 'tree', 'form', 'view']}
-            json={this.state.json}
-            onChange={this.onChange}
-            onChangeText={this.onChangeText}
-        />
+      <div className="App">
+        <div className="App-header">
+          <img src={logo} className="App-logo" alt="logo" />
+          <h2>Welcome to React</h2>
+        </div>
+        <p className="App-intro">
+          This example shows how to use JSONEditor in React.
+        </p>
+        <p>
+          <JSONEditor
+              mode="code"
+              modes={['text', 'code', 'tree', 'form', 'view']}
+              text={this.state.text}
+              onChange={this.onChange}
+              onChangeText={this.onChangeText}
+          />
+        </p>
       </div>
     )
-  }
-
-  onChange = (json) => {
-    console.log('onChange', json)
-  }
-
-  onChangeText = (text) => {
-    console.log('onChangeText', text)
-
-    this.setState({ text })
   }
 }
 
