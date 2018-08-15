@@ -24,8 +24,8 @@
  * Copyright (c) 2011-2017 Jos de Jong, http://jsoneditoronline.org
  *
  * @author  Jos de Jong, <wjosdejong@gmail.com>
- * @version 5.22.0
- * @date    2018-08-13
+ * @version 5.23.0
+ * @date    2018-08-15
  */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
@@ -238,9 +238,10 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	JSONEditor.VALID_OPTIONS = [
 	  'ajv', 'schema', 'schemaRefs','templates',
-	  'ace', 'theme','autocomplete',
+	  'ace', 'theme', 'autocomplete',
 	  'onChange', 'onChangeJSON', 'onChangeText',
-	  'onEditable', 'onError', 'onEvent', 'onModeChange', 'onSelectionChange', 'onTextSelectionChange',
+	  'onEditable', 'onError', 'onEvent', 'onModeChange', 'onValidate',
+	  'onSelectionChange', 'onTextSelectionChange',
 	  'escapeUnicode', 'history', 'search', 'mode', 'modes', 'name', 'indentation',
 	  'sortObjectKeys', 'navigationBar', 'statusBar', 'languages', 'language'
 	];
@@ -602,6 +603,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    nodes: []
 	  };
 	  this.validateSchema = null; // will be set in .setSchema(schema)
+	  this.validationSequence = 0;
 	  this.errorNodes = [];
 
 	  this.node = null;
@@ -1047,25 +1049,20 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * Throws an exception when no JSON schema is configured
 	 */
 	treemode.validate = function () {
-	  // clear all current errors
-	  if (this.errorNodes) {
-	    this.errorNodes.forEach(function (node) {
-	      node.setError(null);
-	    });
-	  }
-
 	  var root = this.node;
 	  if (!root) { // TODO: this should be redundant but is needed on mode switch
 	    return;
 	  }
 
+	  var json = root.getValue();
+
 	  // check for duplicate keys
 	  var duplicateErrors = root.validate();
 
-	  // validate the JSON
+	  // execute JSON schema validation
 	  var schemaErrors = [];
 	  if (this.validateSchema) {
-	    var valid = this.validateSchema(root.getValue());
+	    var valid = this.validateSchema(json);
 	    if (!valid) {
 	      // apply all new errors
 	      schemaErrors = this.validateSchema.errors
@@ -1084,39 +1081,127 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }
 	  }
 
-	  var errorNodes = duplicateErrors.concat(schemaErrors);
+	  // execute custom validation and after than merge and render all errors
+	  this.validationSequence++;
+	  var me = this;
+	  var seq = this.validationSequence;
+	  this._validateCustom(json)
+	      .then(function (customValidationErrors) {
+	        // only apply when there was no other validation started whilst resolving async results
+	        if (seq === me.validationSequence) {
+	          var errorNodes = [].concat(duplicateErrors, schemaErrors, customValidationErrors || []);
+	          me._renderValidationErrors(errorNodes);
+	        }
+	      })
+	      .catch(function (err) {
+	        console.error(err);
+	      });
+	};
+
+	treemode._renderValidationErrors = function (errorNodes) {
+	  // clear all current errors
+	  if (this.errorNodes) {
+	    this.errorNodes.forEach(function (node) {
+	      node.setError(null);
+	    });
+	  }
+
+	  // render the new errors
 	  var parentPairs = errorNodes
 	      .reduce(function (all, entry) {
-	          return entry.node
-	              .findParents()
-	              .filter(function (parent) {
-	                  return !all.some(function (pair) {
-	                    return pair[0] === parent;
-	                  });
-	              })
-	              .map(function (parent) {
-	                  return [parent, entry.node];
-	              })
-	              .concat(all);
+	        return entry.node
+	            .findParents()
+	            .filter(function (parent) {
+	              return !all.some(function (pair) {
+	                return pair[0] === parent;
+	              });
+	            })
+	            .map(function (parent) {
+	              return [parent, entry.node];
+	            })
+	            .concat(all);
 	      }, []);
 
 	  this.errorNodes = parentPairs
 	      .map(function (pair) {
-	          return {
-	            node: pair[0],
-	            child: pair[1],
-	            error: {
-	              message: pair[0].type === 'object'
-	                  ? 'Contains invalid properties' // object
-	                  : 'Contains invalid items'      // array
-	            }
-	          };
+	        return {
+	          node: pair[0],
+	          child: pair[1],
+	          error: {
+	            message: pair[0].type === 'object'
+	                ? 'Contains invalid properties' // object
+	                : 'Contains invalid items'      // array
+	          }
+	        };
 	      })
 	      .concat(errorNodes)
 	      .map(function setError (entry) {
 	        entry.node.setError(entry.error, entry.child);
 	        return entry.node;
 	      });
+	};
+
+	/**
+	 * Execute custom validation if configured.
+	 *
+	 * Returns a promise resolving with the custom errors (or nothing).
+	 */
+	treemode._validateCustom = function (json) {
+	  try {
+	    if (this.options.onValidate) {
+	      var root = this.node;
+	      var customValidateResults = this.options.onValidate(json);
+
+	      var resultPromise = util.isPromise(customValidateResults)
+	          ? customValidateResults
+	          : Promise.resolve(customValidateResults);
+
+	      return resultPromise.then(function (customValidationPathErrors) {
+	        if (Array.isArray(customValidationPathErrors)) {
+	          return customValidationPathErrors
+	              .filter(function (error) {
+	                var valid = util.isValidValidationError(error);
+
+	                if (!valid) {
+	                  console.warn('Ignoring a custom validation error with invalid structure. ' +
+	                      'Expected structure: {path: [...], message: "..."}. ' +
+	                      'Actual error:', error);
+	                }
+
+	                return valid;
+	              })
+	              .map(function (error) {
+	                var node;
+	                try {
+	                  node = (error && error.path) ? root.findNodeByPath(error.path) : null
+	                }
+	                catch (err) {
+	                  // stay silent here, we throw a generic warning if no node is found
+	                }
+	                if (!node) {
+	                  console.warn('Ignoring validation error: node not found. Path:', error.path, 'Error:', error);
+	                }
+
+	                return {
+	                  node: node,
+	                  error: error
+	                }
+	              })
+	              .filter(function (entry) {
+	                return entry && entry.node && entry.error && entry.error.message
+	              });
+	        }
+	        else {
+	          return null;
+	        }
+	      });
+	    }
+	  }
+	  catch (err) {
+	    return Promise.reject(err);
+	  }
+
+	  return Promise.resolve(null);
 	};
 
 	/**
@@ -4220,6 +4305,19 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 
 	/**
+	 * Stringify an array with a path in a JSON path like '.items[3].name'
+	 * @param {Array.<string | number>} path
+	 * @returns {string}
+	 */
+	exports.stringifyPath = function stringifyPath(path) {
+	  return path
+	      .map(function (p) {
+	        return typeof p === 'number' ? ('[' + p + ']') : ('.' + p);
+	      })
+	      .join('');
+	};
+
+	/**
 	 * Improve the error message of a JSON schema error
 	 * @param {Object} error
 	 * @return {Object} The error
@@ -4246,6 +4344,26 @@ return /******/ (function(modules) { // webpackBootstrap
 	  }
 
 	  return error;
+	};
+
+	/**
+	 * Test whether something is a Promise
+	 * @param {*} object
+	 * @returns {boolean} Returns true when object is a promise, false otherwise
+	 */
+	exports.isPromise = function (object) {
+	  return object && typeof object.then === 'function' && typeof object.catch === 'function';
+	};
+
+	/**
+	 * Test whether a custom validation error has the correct structure
+	 * @param {*} validationError The error to be checked.
+	 * @returns {boolean} Returns true if the structure is ok, false otherwise
+	 */
+	exports.isValidValidationError = function (validationError) {
+	  return typeof validationError === 'object' &&
+	      Array.isArray(validationError.path) &&
+	      typeof validationError.message === 'string';
 	};
 
 	/**
@@ -5937,7 +6055,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  this.errorChild = child;
 
 	  if (this.dom && this.dom.tr) {
-	    this.updateError()
+	    this.updateError();
 	  }
 	};
 
@@ -5948,6 +6066,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	  var error = this.error;
 	  var tdError = this.dom.tdError;
 	  if (error && this.dom && this.dom.tr) {
+	    util.addClassName(this.dom.tr, 'jsoneditor-validation-error');
+
 	    if (!tdError) {
 	      tdError = document.createElement('td');
 	      this.dom.tdError = tdError;
@@ -6003,6 +6123,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	    tdError.appendChild(button);
 	  }
 	  else {
+	    util.removeClassName(this.dom.tr, 'jsoneditor-validation-error');
+
 	    if (tdError) {
 	      this.dom.tdError.parentNode.removeChild(this.dom.tdError);
 	      delete this.dom.tdError;
@@ -15997,6 +16119,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  this.aceEditor = undefined;  // ace code editor
 	  this.textarea = undefined;  // plain text editor (fallback when Ace is not available)
 	  this.validateSchema = null;
+	  this.validationSequence = 0;
 	  this.annotations = [];
 
 	  // create a debounced validate function
@@ -16604,19 +16727,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * Throws an exception when no JSON schema is configured
 	 */
 	textmode.validate = function () {
-	  var me = this;
-	  // clear all current errors
-	  if (this.dom.validationErrors) {
-	    this.dom.validationErrors.parentNode.removeChild(this.dom.validationErrors);
-	    this.dom.validationErrors = null;
-	    this.dom.additinalErrorsIndication.style.display = 'none';
-
-	    this.content.style.marginBottom = '';
-	    this.content.style.paddingBottom = '';
-	  }
-
 	  var doValidate = false;
-	  var errors = [];
+	  var schemaErrors = [];
 	  var json;
 	  try {
 	    json = this.get(); // this can fail when there is no valid json
@@ -16627,15 +16739,99 @@ return /******/ (function(modules) { // webpackBootstrap
 	  }
 
 	  // only validate the JSON when parsing the JSON succeeded
-	  if (doValidate && this.validateSchema) {
-	    var valid = this.validateSchema(json);
-	    if (!valid) {
-	      errors = this.validateSchema.errors.map(function (error) {
-	        return util.improveSchemaError(error);
+	  if (doValidate) {
+	    // execute JSON schema validation (ajv)
+	    if (this.validateSchema) {
+	      var valid = this.validateSchema(json);
+	      if (!valid) {
+	        schemaErrors = this.validateSchema.errors.map(function (error) {
+	          return util.improveSchemaError(error);
+	        });
+	      }
+	    }
+
+	    // execute custom validation and after than merge and render all errors
+	    this.validationSequence++;
+	    var me = this;
+	    var seq = this.validationSequence;
+	    this._validateCustom(json)
+	        .then(function (customValidationErrors) {
+	          // only apply when there was no other validation started whilst resolving async results
+	          if (seq === me.validationSequence) {
+	            var errors = schemaErrors.concat(customValidationErrors || []);
+	            me._renderValidationErrors(errors);
+	          }
+	        })
+	        .catch(function (err) {
+	          console.error(err);
+	        });
+	  }
+	  else {
+	    this._renderValidationErrors([]);
+	  }
+	};
+
+	/**
+	 * Execute custom validation if configured.
+	 *
+	 * Returns a promise resolving with the custom errors (or nothing).
+	 */
+	textmode._validateCustom = function (json) {
+	  if (this.options.onValidate) {
+	    try {
+	      var customValidateResults = this.options.onValidate(json);
+
+	      var resultPromise = util.isPromise(customValidateResults)
+	          ? customValidateResults
+	          : Promise.resolve(customValidateResults);
+
+	      return resultPromise.then(function (customValidationPathErrors) {
+	        if (Array.isArray(customValidationPathErrors)) {
+	          return customValidationPathErrors
+	              .filter(function (error) {
+	                var valid = util.isValidValidationError(error);
+
+	                if (!valid) {
+	                  console.warn('Ignoring a custom validation error with invalid structure. ' +
+	                      'Expected structure: {path: [...], message: "..."}. ' +
+	                      'Actual error:', error);
+	                }
+
+	                return valid;
+	              })
+	              .map(function (error) {
+	                // change data structure into the structure matching the JSON schema errors
+	                return {
+	                  dataPath: util.stringifyPath(error.path),
+	                  message: error.message
+	                }
+	              });
+	        }
+	        else {
+	          return null;
+	        }
 	      });
+	    }
+	    catch (err) {
+	      return Promise.reject(err);
 	    }
 	  }
 
+	  return Promise.resolve(null);
+	};
+
+	textmode._renderValidationErrors = function(errors) {
+	  // clear all current errors
+	  if (this.dom.validationErrors) {
+	    this.dom.validationErrors.parentNode.removeChild(this.dom.validationErrors);
+	    this.dom.validationErrors = null;
+	    this.dom.additinalErrorsIndication.style.display = 'none';
+
+	    this.content.style.marginBottom = '';
+	    this.content.style.paddingBottom = '';
+	  }
+
+	  // render the new errors
 	  if (errors.length > 0) {
 	    if (this.aceEditor) {
 	      var jsonText = this.getText();
@@ -16643,26 +16839,26 @@ return /******/ (function(modules) { // webpackBootstrap
 	      errors.reduce(function(acc, curr) {
 	        if(acc.indexOf(curr.dataPath) === -1) {
 	          acc.push(curr.dataPath);
-	        }; 
+	        }
 	        return acc;
-	      }, errorPaths);      
-	      var errorLocations = util.getPositionForPath(jsonText, errorPaths);   
-	      me.annotations = errorLocations.map(function (errLoc) {
+	      }, errorPaths);
+	      var errorLocations = util.getPositionForPath(jsonText, errorPaths);
+	      this.annotations = errorLocations.map(function (errLoc) {
 	        var validationErrors = errors.filter(function(err){ return err.dataPath === errLoc.path; });
-	        var validationError = validationErrors.reduce(function(acc, curr) { acc.message += '\n' + curr.message; return acc; });
-	        if (validationError) {
+	        var message = validationErrors.map(function(err) { return err.message }).join('\n');
+	        if (message) {
 	          return {
 	            row: errLoc.line,
 	            column: errLoc.column,
-	            text: "Schema Validation Error: \n" + validationError.message,
-	            type: "warning",
-	            source: "jsoneditor",
+	            text: 'Schema validation error' + (validationErrors.length !== 1 ? 's' : '') + ': \n' + message,
+	            type: 'warning',
+	            source: 'jsoneditor',
 	          }
 	        }
 
 	        return {};
 	      });
-	      me._refreshAnnotations();
+	      this._refreshAnnotations();
 
 	    } else {
 	      var validationErrors = document.createElement('div');
@@ -16698,18 +16894,18 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }
 	  } else {
 	    if (this.aceEditor) {
-	      me.annotations = [];
-	      me._refreshAnnotations();
+	      this.annotations = [];
+	      this._refreshAnnotations();
 	    }
 	  }
 
-	  if (me.options.statusBar) {
+	  if (this.options.statusBar) {
 	    var showIndication = !!errors.length;
-	    me.validationErrorIndication.validationErrorIcon.style.display = showIndication ? 'inline' : 'none';
-	    me.validationErrorIndication.validationErrorCount.style.display = showIndication ? 'inline' : 'none';
+	    this.validationErrorIndication.validationErrorIcon.style.display = showIndication ? 'inline' : 'none';
+	    this.validationErrorIndication.validationErrorCount.style.display = showIndication ? 'inline' : 'none';
 	    if (showIndication) {
-	      me.validationErrorIndication.validationErrorCount.innerText = errors.length;
-	      me.validationErrorIndication.validationErrorIcon.title = errors.length + ' schema validation error(s) found';
+	      this.validationErrorIndication.validationErrorCount.innerText = errors.length;
+	      this.validationErrorIndication.validationErrorIcon.title = errors.length + ' schema validation error(s) found';
 	    }
 	  }
 

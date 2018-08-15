@@ -3,7 +3,7 @@
 https://github.com/josdejong/jsoneditor
 
 
-## not yet released, version 5.23.0
+## 2018-08-15, version 5.23.0
 
 - Implemented support for custom validation using a new `onValidate` callback.
 - In tree mode, nodes containing a validation error now have a className
