@@ -251,7 +251,7 @@ Node.prototype.setError = function (error, child) {
   this.errorChild = child;
 
   if (this.dom && this.dom.tr) {
-    this.updateError()
+    this.updateError();
   }
 };
 
@@ -262,6 +262,8 @@ Node.prototype.updateError = function() {
   var error = this.error;
   var tdError = this.dom.tdError;
   if (error && this.dom && this.dom.tr) {
+    util.addClassName(this.dom.tr, 'jsoneditor-validation-error');
+
     if (!tdError) {
       tdError = document.createElement('td');
       this.dom.tdError = tdError;
@@ -317,6 +319,8 @@ Node.prototype.updateError = function() {
     tdError.appendChild(button);
   }
   else {
+    util.removeClassName(this.dom.tr, 'jsoneditor-validation-error');
+
     if (tdError) {
       this.dom.tdError.parentNode.removeChild(this.dom.tdError);
       delete this.dom.tdError;
