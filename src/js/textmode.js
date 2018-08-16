@@ -339,6 +339,12 @@ textmode.create = function (container, options) {
 
     statusBar.appendChild(validationErrorCount);
     statusBar.appendChild(validationErrorIcon);
+
+    this.parseErrorIndication = document.createElement('span');
+    this.parseErrorIndication.className = 'jsoneditor-parse-error-icon';
+    this.parseErrorIndication.title = 'parse error - check that the json is valid';
+    this.parseErrorIndication.style.display = 'none';
+    statusBar.appendChild(this.parseErrorIndication);
   }
 
   this.setSchema(this.options.schema, this.options.schemaRefs);  
@@ -678,22 +684,39 @@ textmode.validate = function () {
 
   var doValidate = false;
   var errors = [];
+  var validationErrorsCount = 0;
+
   var json;
   try {
     json = this.get(); // this can fail when there is no valid json
+    this.parseErrorIndication.style.display = 'none';
     doValidate = true;
   }
   catch (err) {
-    // no valid JSON, don't validate
+    if (this.getText()) {
+      this.parseErrorIndication.style.display = 'block';
+      // try to extract the line number from the jsonlint error message
+      var match = /\w*line\s*(\d+)\w*/g.exec(err.message);
+      var line;
+      if (match) {
+        line = +match[1];
+      }
+      errors.push({
+        type: 'error',
+        message: err.message,
+        line: line
+      });
+    }
   }
 
   // only validate the JSON when parsing the JSON succeeded
   if (doValidate && this.validateSchema) {
     var valid = this.validateSchema(json);
     if (!valid) {
-      errors = this.validateSchema.errors.map(function (error) {
+      errors = errors.concat(this.validateSchema.errors.map(function (error) {
+        error.type = "validation";
         return util.improveSchemaError(error);
-      });
+      }));
     }
   }
 
@@ -737,13 +760,15 @@ textmode.validate = function () {
         }
         else {
           message = 
-              '<td>' + error.dataPath + '</td>' +
+              '<td>' + (error.dataPath || '') + '</td>' +
               '<td>' + error.message + '</td>';
         }
 
         var line;
 
-        if (error.dataPath) {
+        if (!isNaN(error.line)) {
+          line = error.line;
+        } else if (error.dataPath) {
           var errLoc = errorLocations.find(function(loc) { return loc.path === error.dataPath; });
           if (errLoc) {
             line = errLoc.line + 1;
@@ -751,7 +776,15 @@ textmode.validate = function () {
         }
 
         var trEl = document.createElement('tr');
-        trEl.innerHTML =  ('<td><button class="jsoneditor-schema-error"></button></td><td>'+ (!isNaN(line) ? ('Ln ' + line) : '') +'</td>' + message);
+        trEl.className = !isNaN(line) ? 'jump-to-line' : '';
+        if (error.type === 'error') {
+          trEl.className += ' parse-error';
+        } else {
+          trEl.className += ' validation-error';
+          ++validationErrorsCount;
+        }
+        
+        trEl.innerHTML =  ('<td><button class="jsoneditor-schema-error"></button></td><td style="white-space:nowrap;">'+ (!isNaN(line) ? ('Ln ' + line) : '') +'</td>' + message);
         trEl.onclick = function() {
           me.isFocused = true;
           if (!isNaN(line)) {
@@ -771,7 +804,6 @@ textmode.validate = function () {
       }
 
       var height = this.dom.validationErrorsContainer.clientHeight + (this.dom.statusBar ? this.dom.statusBar.clientHeight : 0);
-      // var height = validationErrors.clientHeight + (this.dom.statusBar ? this.dom.statusBar.clientHeight : 0);
       this.content.style.marginBottom = (-height) + 'px';
       this.content.style.paddingBottom = height + 'px';
     }
@@ -783,12 +815,13 @@ textmode.validate = function () {
   }
 
   if (me.options.statusBar) {
-    var showIndication = !!errors.length;
+    validationErrorsCount = validationErrorsCount || me.annotations.length;
+    var showIndication = !!validationErrorsCount;
     me.validationErrorIndication.validationErrorIcon.style.display = showIndication ? 'inline' : 'none';
     me.validationErrorIndication.validationErrorCount.style.display = showIndication ? 'inline' : 'none';
     if (showIndication) {
-      me.validationErrorIndication.validationErrorCount.innerText = errors.length;
-      me.validationErrorIndication.validationErrorIcon.title = errors.length + ' schema validation error(s) found';
+      me.validationErrorIndication.validationErrorCount.innerText = validationErrorsCount;
+      me.validationErrorIndication.validationErrorIcon.title = validationErrorsCount + ' schema validation error(s) found';
     }
   }
 
