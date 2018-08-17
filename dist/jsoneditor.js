@@ -24,8 +24,8 @@
  * Copyright (c) 2011-2017 Jos de Jong, http://jsoneditoronline.org
  *
  * @author  Jos de Jong, <wjosdejong@gmail.com>
- * @version 5.23.0
- * @date    2018-08-15
+ * @version 5.23.1
+ * @date    2018-08-17
  */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
@@ -16983,15 +16983,18 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	  try {
 	    // apply the JMESPath query
-	    var oldValue = this.getInternalValue();
-	    var newValue = jmespath.search(oldValue, query);
+	    var oldInternalValue = this.getInternalValue();
 
+	    var oldValue = this.getValue();
+	    var newValue = jmespath.search(oldValue, query);
 	    this.setValue(newValue);
+
+	    var newInternalValue = this.getInternalValue();
 
 	    this.editor._onAction('transform', {
 	      path: this.getInternalPath(),
-	      oldValue: oldValue,
-	      newValue: this.getInternalValue()
+	      oldValue: oldInternalValue,
+	      newValue: newInternalValue
 	    });
 
 	    this.showChilds();
