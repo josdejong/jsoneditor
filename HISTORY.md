@@ -3,6 +3,11 @@
 https://github.com/josdejong/jsoneditor
 
 
+## 2018-08-17, version 5.23.1
+
+- Fixed #566: transform function broken, regression since `v5.20.0`.
+
+
 ## 2018-08-15, version 5.23.0
 
 - Implemented support for custom validation using a new `onValidate` callback.

@@ -3621,15 +3621,18 @@ Node.prototype.transform = function (query) {
 
   try {
     // apply the JMESPath query
-    var oldValue = this.getInternalValue();
-    var newValue = jmespath.search(oldValue, query);
+    var oldInternalValue = this.getInternalValue();
 
+    var oldValue = this.getValue();
+    var newValue = jmespath.search(oldValue, query);
     this.setValue(newValue);
+
+    var newInternalValue = this.getInternalValue();
 
     this.editor._onAction('transform', {
       path: this.getInternalPath(),
-      oldValue: oldValue,
-      newValue: this.getInternalValue()
+      oldValue: oldInternalValue,
+      newValue: newInternalValue
     });
 
     this.showChilds();
