@@ -3,12 +3,11 @@ import Ajv from 'ajv'
 import { parseJSON } from '../utils/jsonUtils'
 import { escapeUnicodeChars } from '../utils/stringUtils'
 import { enrichSchemaError, limitErrors } from '../utils/schemaUtils'
-import { jsonToEson, esonToJson } from '../eson'
-import { patchEson } from '../patchEson'
 import { createFindKeyBinding } from '../utils/keyBindings'
 import { KEY_BINDINGS } from '../constants'
 
 import ModeButton from './menu/ModeButton'
+import { immutableJsonPatch } from '../immutableJsonPatch'
 
 const AJV_OPTIONS = {
   allErrors: true,
@@ -331,10 +330,9 @@ export default class TextMode extends Component {
   patch (actions) {
     const json = this.get()
 
-    const data = jsonToEson(json)
-    const result = patchEson(data, actions)
+    const result = immutableJsonPatch(json, actions)
 
-    this.set(esonToJson(result.data))
+    this.set(result.data)
 
     return {
       patch: actions,

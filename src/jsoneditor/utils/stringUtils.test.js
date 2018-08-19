@@ -18,8 +18,8 @@ test('unescapeHTML', () => {
 })
 
 test('findUniqueName', () => {
-  expect(findUniqueName('other', ['a', 'b', 'c'])).toEqual('other')
-  expect(findUniqueName('b', ['a', 'b', 'c'])).toEqual('b (copy)')
-  expect(findUniqueName('b', ['a', 'b', 'c', 'b (copy)'])).toEqual('b (copy 2)')
-  expect(findUniqueName('b', ['a', 'b', 'c', 'b (copy)', 'b (copy 2)'])).toEqual('b (copy 3)')
+  expect(findUniqueName('other', {'a': true, 'b': true, 'c': true})).toEqual('other')
+  expect(findUniqueName('b', {'a': true, 'b': true, 'c': true})).toEqual('b (copy)')
+  expect(findUniqueName('b', {'a': true, 'b': true, 'c': true, 'b (copy)': true})).toEqual('b (copy 2)')
+  expect(findUniqueName('b', {'a': true, 'b': true, 'c': true, 'b (copy)': true, 'b (copy 2)': true})).toEqual('b (copy 3)')
 })

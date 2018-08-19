@@ -50,8 +50,6 @@ export default class JSONEditor extends PureComponent {
   }
 
   handleChangeMode = (mode) => {
-    console.log('changeMode', mode, this.props.onChangeMode)
-
     if (this.props.onChangeMode) {
       this.props.onChangeMode(mode, this.props.mode)
     }

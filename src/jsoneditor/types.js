@@ -57,7 +57,20 @@
  */
 
 /**
- * @typedef {'Object' | 'Array' | 'value' | 'string'} ESONType
+ * @typedef {'object' | 'array' | 'value' | 'string'} ESONType
+ */
+
+/**
+ * @typedef {{
+ *   op: 'add' | 'remove' | 'replace' | 'copy' | 'move' | 'test',
+ *   path: string,
+ *   from?: string,
+ *   value?: *
+ * }} JSONPatchAction
+ */
+
+/**
+ * @typedef {JSONPatchAction[]} JSONPatch
  */
 
 /**

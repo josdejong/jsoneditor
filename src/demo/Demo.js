@@ -159,7 +159,7 @@ class App extends Component {
 
   handlePatch = (patch, revert) => {
     this.log('onPatch patch=', patch, ', revert=', revert)
-    window.patch = patch
+    window.immutableJsonPatch = patch
     window.revert = revert
   }
 

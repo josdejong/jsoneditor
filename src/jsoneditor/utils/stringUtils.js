@@ -98,13 +98,13 @@ export function escapeJSON (text) {
  * Find a unique name. Suffix the name with ' (copy)', '(copy 2)', etc
  * until a unique name is found
  * @param {string} name
- * @param {Array.<string>} invalidNames
+ * @param {Object} existingProps    Object with existing props
  */
-export function findUniqueName (name, invalidNames) {
+export function findUniqueName (name, existingProps) {
   let validName = name
   let i = 1
 
-  while (invalidNames.includes(validName)) {
+  while (validName in existingProps) {
     const copy = 'copy' + (i > 1 ? (' ' + i) : '')
     validName = `${name} (${copy})`
     i++

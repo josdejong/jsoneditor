@@ -66,7 +66,7 @@
     name: 'myObject',
     onPatch: function (patch, revert) {
       log('onPatch patch=', patch, ', revert=', revert)
-      window.patch = patch
+      window.immutableJsonPatch = patch
       window.revert = revert
     },
     onPatchText: function (patch, revert) {

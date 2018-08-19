@@ -1,72 +1,61 @@
 import last from 'lodash/last'
 import initial from 'lodash/initial'
 import isEmpty from 'lodash/isEmpty'
-import {
-  META,
-  compileJSONPointer, esonToJson, findNextProp,
-  pathsFromSelection, findRootPath, findSelectionIndices
-} from './eson'
+import { findRootPath, findSelectionIndices, pathsFromSelection } from './eson'
 import { getIn } from './utils/immutabilityHelpers'
-import { findUniqueName } from  './utils/stringUtils'
-import { isObject, stringConvert } from  './utils/typeUtils'
+import { findUniqueName } from './utils/stringUtils'
+import { isObject, stringConvert } from './utils/typeUtils'
 import { compareAsc, compareDesc } from './utils/arrayUtils'
-
+import { compileJSONPointer } from './jsonPointer'
 
 /**
  * Create a JSONPatch to change the value of a property or item
- * @param {ESON} eson
+ * @param {JSON} eson
  * @param {Path} path
  * @param {*} value
  * @return {Array}
  */
 export function changeValue (eson, path, value) {
   // console.log('changeValue', data, value)
-  const oldDataValue = getIn(eson, path)
 
   return [{
     op: 'replace',
     path: compileJSONPointer(path),
-    value: value,
-    meta: {
-      type: oldDataValue[META].type
-    }
+    value
   }]
 }
 
 /**
  * Create a JSONPatch to change a property name
- * @param {ESON} eson
+ * @param {JSON} json
  * @param {Path} parentPath
  * @param {string} oldProp
  * @param {string} newProp
  * @return {Array}
  */
-export function changeProperty (eson, parentPath, oldProp, newProp) {
+export function changeProperty (json, parentPath, oldProp, newProp) {
   // console.log('changeProperty', parentPath, oldProp, newProp)
-  const parent = getIn(eson, parentPath)
+  const parent = getIn(json, parentPath)
 
   // prevent duplicate property names
-  const uniqueNewProp = findUniqueName(newProp, parent[META].props)
+  const uniqueNewProp = findUniqueName(newProp, parent)
 
   return [{
     op: 'move',
     from: compileJSONPointer(parentPath.concat(oldProp)),
-    path: compileJSONPointer(parentPath.concat(uniqueNewProp)),
-    meta: {
-      before: findNextProp(parent, oldProp)
-    }
+    path: compileJSONPointer(parentPath.concat(uniqueNewProp))
   }]
 }
 
 /**
  * Create a JSONPatch to change the type of a property or item
- * @param {ESON} eson
+ * @param {JSON} json
  * @param {Path} path
  * @param {ESONType} type
  * @return {Array}
  */
-export function changeType (eson, path, type) {
-  const oldValue = esonToJson(getIn(eson, path))
+export function changeType (json, path, type) {
+  const oldValue = getIn(json, path)
   const newValue = convertType(oldValue, type)
 
   // console.log('changeType', path, type, oldValue, newValue)
@@ -74,10 +63,7 @@ export function changeType (eson, path, type) {
   return [{
     op: 'replace',
     path: compileJSONPointer(path),
-    value: newValue,
-    meta: {
-      type
-    }
+    value: newValue
   }]
 }
 
@@ -88,42 +74,37 @@ export function changeType (eson, path, type) {
  * a unique property name for the duplicated node in case of duplicating
  * and object property
  *
- * @param {ESON} eson
+ * @param {JSON} json
  * @param {Selection} selection
  * @return {Array}
  */
-export function duplicate (eson, selection) {
+export function duplicate (json, selection) {
   // console.log('duplicate', path)
   if (!selection.start || !selection.end) {
     return []
   }
 
   const rootPath = findRootPath(selection)
-  const root = getIn(eson, rootPath)
+  const root = getIn(json, rootPath)
   const { maxIndex } = findSelectionIndices(root, rootPath, selection)
-  const paths = pathsFromSelection(eson, selection)
+  const paths = pathsFromSelection(json, selection)
 
-  if (root[META].type === 'Array') {
+  if (Array.isArray(root)) {
     return paths.map((path, offset) => ({
       op: 'copy',
       from: compileJSONPointer(path),
       path: compileJSONPointer(rootPath.concat(maxIndex + offset))
     }))
   }
-  else { // root[META].type === 'Object'
-    const before = root[META].props[maxIndex] || null
-
+  else { // 'object'
     return paths.map(path => {
       const prop = last(path)
-      const newProp = findUniqueName(prop, root[META].props)
+      const newProp = findUniqueName(prop, root)
 
       return {
         op: 'copy',
         from: compileJSONPointer(path),
-        path: compileJSONPointer(rootPath.concat(newProp)),
-        meta: {
-          before
-        }
+        path: compileJSONPointer(rootPath.concat(newProp))
       }
     })
   }
@@ -136,38 +117,31 @@ export function duplicate (eson, selection) {
  * a unique property name for the inserted node in case of duplicating
  * and object property
  *
- * @param {ESON} eson
+ * @param {JSON} json
  * @param {Path} path
- * @param {Array.<{name?: string, value: JSON, type?: ESONType}>} values
+ * @param {Array.<{name?: string, value: JSON}>} values
  * @return {Array}
  */
-export function insertBefore (eson, path, values) {  // TODO: find a better name and define datastructure for values
+export function insertBefore (json, path, values) {  // TODO: find a better name and define datastructure for values
+  // TODO: refactor. path should be parent path
   const parentPath = initial(path)
-  const parent = getIn(eson, parentPath)
+  const parent = getIn(json, parentPath)
 
-  if (parent[META].type === 'Array') {
+  if (Array.isArray(parent)) {
     const startIndex = parseInt(last(path), 10)
     return values.map((entry, offset) => ({
       op: 'add',
       path: compileJSONPointer(parentPath.concat(startIndex + offset)),
-      value: entry.value,
-      meta: {
-        type: entry.type
-      }
+      value: entry.value
     }))
   }
-  else { // parent[META].type === 'Object'
-    const before = last(path)
+  else { // 'object'
     return values.map(entry => {
-      const newProp = findUniqueName(entry.name, parent[META].props)
+      const newProp = findUniqueName(entry.name, parent)
       return {
         op: 'add',
         path: compileJSONPointer(parentPath.concat(newProp)),
-        value: entry.value,
-        meta: {
-          type: entry.type,
-          before
-        }
+        value: entry.value
       }
     })
   }
@@ -180,40 +154,31 @@ export function insertBefore (eson, path, values) {  // TODO: find a better name
  * a unique property name for the inserted node in case of duplicating
  * and object property
  *
- * @param {ESON} eson
+ * @param {JSON} json
  * @param {Path} path
- * @param {Array.<{name?: string, value: JSON, type?: ESONType}>} values
+ * @param {Array.<{name?: string, value: JSON}>} values
  * @return {Array}
  */
-export function insertAfter (eson, path, values) {  // TODO: find a better name and define datastructure for values
+export function insertAfter (json, path, values) {  // TODO: find a better name and define datastructure for values
+  // TODO: refactor. path should be parent path
   const parentPath = initial(path)
-  const parent = getIn(eson, parentPath)
+  const parent = getIn(json, parentPath)
 
-  if (parent[META].type === 'Array') {
+  if (Array.isArray(parent)) {
     const startIndex = parseInt(last(path), 10)
     return values.map((entry, offset) => ({
       op: 'add',
       path: compileJSONPointer(parentPath.concat(startIndex + 1 + offset)), // +1 to insert after
-      value: entry.value,
-      meta: {
-        type: entry.type
-      }
+      value: entry.value
     }))
   }
-  else { // parent[META].type === 'Object'
-    const prop = last(path)
-    const propIndex = parent[META].props.indexOf(prop)
-    const before = parent[META].props[propIndex + 1]
+  else { // 'object'
     return values.map(entry => {
-      const newProp = findUniqueName(entry.name, parent[META].props)
+      const newProp = findUniqueName(entry.name, parent)
       return {
         op: 'add',
         path: compileJSONPointer(parentPath.concat(newProp)),
-        value: entry.value,
-        meta: {
-          type: entry.type,
-          before
-        }
+        value: entry.value
       }
     })
   }
@@ -221,20 +186,20 @@ export function insertAfter (eson, path, values) {  // TODO: find a better name 
 
 /**
  * Insert values at the start of an Object or Array
- * @param {ESON} eson
+ * @param {JSON} json
  * @param {Path} parentPath
- * @param {Array.<{name?: string, value: JSON, type?: ESONType}>} values
+ * @param {Array.<{name?: string, value: JSON}>} values
  * @return {Array}
  */
-export function insertInside (eson, parentPath, values) {
-  const parent = getIn(eson, parentPath)
+export function insertInside (json, parentPath, values) {
+  const parent = getIn(json, parentPath)
 
-  if (parent[META].type === 'Array') {
-    return insertBefore(eson, parentPath.concat('0'), values)
+  if (Array.isArray(parent)) {
+    return insertBefore(json, parentPath.concat('0'), values)
   }
-  else if (parent[META].type === 'Object') {
-    const firstProp = parent[META].props[0] || null
-    return insertBefore(eson, parentPath.concat(firstProp), values)
+  else if (parent && typeof parent === 'object') {
+    // TODO: refactor. path should be parent path
+    return insertBefore(json, parentPath.concat('foobar'), values)
   }
   else {
     throw new Error('Cannot insert in a value, only in an Object or Array')
@@ -248,43 +213,34 @@ export function insertInside (eson, parentPath, values) {
  * a unique property name for the inserted node in case of duplicating
  * and object property
  *
- * @param {ESON} eson
+ * @param {JSON} json
  * @param {Selection} selection
- * @param {Array.<{name?: string, value: JSON, state: Object}>} values
+ * @param {Array.<{name?: string, value: JSON}>} values
  * @return {Array}
  */
-export function replace (eson, selection, values) {  // TODO: find a better name and define datastructure for values
+export function replace (json, selection, values) {  // TODO: find a better name and define datastructure for values
   const rootPath = findRootPath(selection)
-  const root = getIn(eson, rootPath)
+  const root = getIn(json, rootPath)
   const { minIndex, maxIndex } = findSelectionIndices(root, rootPath, selection)
 
-  if (root[META].type === 'Array') {
-    const removeActions = removeAll(pathsFromSelection(eson, selection))
+  if (Array.isArray(root)) {
+    const removeActions = removeAll(pathsFromSelection(json, selection))
     const insertActions = values.map((entry, offset) => ({
       op: 'add',
       path: compileJSONPointer(rootPath.concat(minIndex + offset)),
-      value: entry.value,
-      meta: {
-        state: entry.state
-      }
+      value: entry.value
     }))
 
     return removeActions.concat(insertActions)
   }
-  else { // root[META].type === 'Object'
-    const before = root[META].props[maxIndex] || null
-
-    const removeActions = removeAll(pathsFromSelection(eson, selection))
+  else { // root is Object
+    const removeActions = removeAll(pathsFromSelection(json, selection))
     const insertActions = values.map(entry => {
-      const newProp = findUniqueName(entry.name, root[META].props)
+      const newProp = findUniqueName(entry.name, root)
       return {
         op: 'add',
         path: compileJSONPointer(rootPath.concat(newProp)),
-        value: entry.value,
-        meta: {
-          before,
-          state: entry.state
-        }
+        value: entry.value
       }
     })
 
@@ -299,37 +255,31 @@ export function replace (eson, selection, values) {  // TODO: find a better name
  * a unique property name for the inserted node in case of duplicating
  * and object property
  *
- * @param {ESON} eson
+ * @param {JSON} json
  * @param {Path} parentPath
  * @param {ESONType} type
  * @return {Array}
  */
-export function append (eson, parentPath, type) {
+export function append (json, parentPath, type) {
   // console.log('append', parentPath, value)
 
-  const parent = getIn(eson, parentPath)
+  const parent = getIn(json, parentPath)
   const value = createEntry(type)
 
-  if (parent[META].type === 'Array') {
+  if (Array.isArray(parent)) {
     return [{
       op: 'add',
       path: compileJSONPointer(parentPath.concat('-')),
-      value,
-      meta: {
-        type
-      }
+      value
     }]
   }
-  else { // parent[META].type === 'Object'
-    const newProp = findUniqueName('', parent[META].props)
+  else { // 'object'
+    const newProp = findUniqueName('', parent)
 
     return [{
       op: 'add',
       path: compileJSONPointer(parentPath.concat(newProp)),
-      value,
-      meta: {
-        type
-      }
+      value
     }]
   }
 }
@@ -364,55 +314,35 @@ export function removeAll (paths) {
 /**
  * Create a JSONPatch to order the items of an array or the properties of an object in ascending
  * or descending order
- * @param {ESON} eson
+ * @param {JSON} json
  * @param {Path} path
  * @param {'asc' | 'desc' | null} [order=null]  If not provided, will toggle current ordering
  * @return {Array}
  */
-export function sort (eson, path, order = null) {
+export function sort (json, path, order = null) {
   const compare = order === 'desc' ? compareDesc : compareAsc
   const reverseCompare = (a, b) => -compare(a, b)
-  const object = getIn(eson, path)
+  const object = getIn(json, path)
 
-  if (object[META].type === 'Array') {
-    const items = object.map(item => item[META].value)
+  if (Array.isArray(object)) {
     const createAction = ({item, fromIndex, toIndex}) => ({
       op: 'move',
       from: compileJSONPointer(path.concat(String(fromIndex))),
       path: compileJSONPointer(path.concat(String(toIndex)))
     })
 
-    const actions = sortWithComparator(items, compare).map(createAction)
+    const actions = sortWithComparator(object, compare).map(createAction)
 
     // when no order is provided, test whether ordering ascending
     // changed anything. If not, sort descending
     if (!order && isEmpty(actions)) {
-      return sortWithComparator(items, reverseCompare).map(createAction)
+      return sortWithComparator(object, reverseCompare).map(createAction)
     }
 
     return actions
   }
-  else { // object[META].type === 'Object'
-
-    const props = object[META].props
-    const createAction = ({item, beforeItem, fromIndex, toIndex}) => ({
-      op: 'move',
-      from: compileJSONPointer(path.concat(item)),
-      path: compileJSONPointer(path.concat(item)),
-      meta: {
-        before: beforeItem
-      }
-    })
-
-    const actions = sortWithComparator(props, compare).map(createAction)
-
-    // when no order is provided, test whether ordering ascending
-    // changed anything. If not, sort descending
-    if (!order && isEmpty(actions)) {
-      return sortWithComparator(props, reverseCompare).map(createAction)
-    }
-
-    return actions
+  else { // object is an Object, we don't allow sorting properties
+    return []
   }
 }
 
@@ -466,10 +396,10 @@ function sortWithComparator (items, comparator) {
  * @return {Array | Object | string}
  */
 export function createEntry (type) {
-  if (type === 'Array') {
+  if (type === 'array') {
     return []
   }
-  else if (type === 'Object') {
+  else if (type === 'object') {
     return {}
   }
   else {
@@ -503,7 +433,7 @@ export function convertType (value, type) {
     }
   }
 
-  if (type === 'Object') {
+  if (type === 'object') {
     let object = {}
 
     if (Array.isArray(value)) {
@@ -513,7 +443,7 @@ export function convertType (value, type) {
     return object
   }
 
-  if (type === 'Array') {
+  if (type === 'array') {
     let array = []
 
     if (isObject(value)) {

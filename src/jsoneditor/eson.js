@@ -1,16 +1,21 @@
-/**
- * This file contains functions to act on a ESON object.
- * All functions are pure and don't mutate the ESON.
- */
-
-import { setIn, getIn, updateIn, deleteIn, cloneWithSymbols } from './utils/immutabilityHelpers'
-import { isObject } from  './utils/typeUtils'
-import isEqual from 'lodash/isEqual'
-import isEmpty from 'lodash/isEmpty'
+import { deleteIn, getIn, setIn, shallowCloneWithSymbols, transform, updateIn } from './utils/immutabilityHelpers'
 import range from 'lodash/range'
-import times from 'lodash/times'
-import initial from 'lodash/initial'
+import { compileJSONPointer, parseJSONPointer } from './jsonPointer'
 import last from 'lodash/last'
+import initial from 'lodash/initial'
+import isEmpty from 'lodash/isEmpty'
+import isEqual from 'lodash/isEqual'
+import naturalSort from 'javascript-natural-sort'
+import times from 'lodash/times'
+
+export const ID = typeof Symbol === 'function' ? Symbol('id') : '@jsoneditor-id'
+export const TYPE = typeof Symbol === 'function' ? Symbol('type') : '@jsoneditor-type' // 'object', 'array', 'value', or 'undefined'
+export const VALUE = typeof Symbol === 'function' ? Symbol('value') : '@jsoneditor-value'
+export const EXPANDED = typeof Symbol === 'function' ? Symbol('expanded') : '@jsoneditor-expanded'
+export const ERROR = typeof Symbol === 'function' ? Symbol('error') : '@jsoneditor-error'
+export const SEARCH_PROPERTY = typeof Symbol === 'function' ? Symbol('searchProperty') : '@jsoneditor-search-property'
+export const SEARCH_VALUE = typeof Symbol === 'function' ? Symbol('searchValue') : '@jsoneditor-search-value'
+export const SELECTION = typeof Symbol === 'function' ? Symbol('selection') : '@jsoneditor-selection'
 
 export const SELECTED = 1
 export const SELECTED_START = 2
@@ -22,122 +27,88 @@ export const SELECTED_AFTER = 64
 export const SELECTED_EMPTY = 128
 export const SELECTED_EMPTY_BEFORE = 256
 
-export const META = Symbol('meta')
+// TODO: comment
+export function syncEson(json, eson) {
+  const jsonType = getType(json)
+  const esonType = eson ? eson[TYPE] : 'undefined'
+  const sameType = jsonType === esonType
 
-/**
- * Expand function which will expand all nodes
- * @param {Path} path
- * @return {boolean}
- */
-export function expandAll (path) {
-  return true
-}
+  if (jsonType === 'array') {
+    // TODO: instead of creating updatedEson beforehand, only created as soon as we have a changed item
+    let changed = (esonType !== jsonType) || (eson.length !== esonType.length)
+    let updatedEson = []
 
-/**
- *
- * @param {JSON} json
- * @param {Path} path
- * @return {ESON}
- */
-export function jsonToEson (json, path = []) {
-  const id = createId()
+    for (let i = 0; i < json.length; i++) {
+      const esonI = eson ? eson[i] : undefined
 
-  if (isObject(json)) {
-    let eson = {}
-    const props = Object.keys(json)
-    props.forEach((prop) => eson[prop] = jsonToEson(json[prop], path.concat(prop)))
-    eson[META] = { id, path, type: 'Object', props }
-    return eson
-  }
-  else if (Array.isArray(json)) {
-    let eson = json.map((value, index) => jsonToEson(value, path.concat(String(index))))
-    eson[META] = { id, path, type: 'Array' }
-    return eson
-  }
-  else { // json is a number, string, boolean, or null
-    let eson = {}
-    eson[META] = { id, path, type: 'value', value: json }
-    return eson
-  }
-}
+      updatedEson[i] = syncEson(json[i], esonI)
 
-/**
- * Convert an ESON object to a JSON object
- * @param {ESON} eson
- * @return {Object | Array | string | number | boolean | null} json
- */
-export function esonToJson (eson) {
-  switch (eson[META].type) {
-    case 'Array':
-      return eson.map(item => esonToJson(item))
-
-    case 'Object':
-      const object = {}
-
-      eson[META].props.forEach(prop => {
-        object[prop] = esonToJson(eson[prop])
-      })
-
-      return object
-
-    default: // type 'string' or 'value'
-      return eson[META].value
-  }
-}
-
-/**
- * Transform an eson object, traverse over the whole object (excluding the _meta)
- * objects, and allow replacing Objects/Arrays/values
- * @param {ESON} eson
- * @param {function (ESON, Path) : ESON} callback
- * @param {Path} [path]
- * @return {ESON}
- */
-export function transform (eson, callback, path = []) {
-  const updated = callback(eson, path)
-
-  if (updated[META].type === 'Object') {
-    let changed = false
-    let updatedChilds = {}
-    for (let key in updated) {
-      if (updated.hasOwnProperty(key)) {
-        updatedChilds[key] = transform(updated[key], callback, path.concat(key))
-        changed = changed || (updatedChilds[key] !== updated[key])
+      if (updatedEson[i] !== esonI) {
+        changed = true
       }
     }
-    updatedChilds[META] = updated[META]
-    return changed ? updatedChilds : updated
-  }
-  else if (updated[META].type === 'Array') {
-    let changed = false
-    let updatedChilds = []
-    for (let i = 0; i < updated.length; i++) {
-      updatedChilds[i] = transform(updated[i], callback, path.concat(String(i)))
-        changed = changed || (updatedChilds[i] !== updated[i])
-    }
-    updatedChilds[META] = updated[META]
-    return changed ? updatedChilds : updated
-  }
-  else {  // eson[META].type === 'value'
-    return updated
-  }
-}
 
-/**
- * Recursively update all paths in an eson object, array or value
- * @param {ESON} eson
- * @param {Path} [path]
- * @return {ESON}
- */
-export function updatePaths(eson, path = []) {
-  return transform(eson, function (value, path) {
-    if (!isEqual(value[META].path, path)) {
-      return setIn(value, [META, 'path'], path)
+    if (changed) {
+      updatedEson[ID] = sameType ? eson[ID] : createId()
+      updatedEson[TYPE] = jsonType
+      updatedEson[VALUE] = json
+      updatedEson[EXPANDED] = sameType ? eson[EXPANDED] : false
+
+      return updatedEson
     }
     else {
-      return value
+      return eson
     }
-  }, path)
+  }
+  else if (jsonType === 'object') {
+    const jsonKeys = Object.keys(json)
+    const esonKeys = esonType === 'object' ? Object.keys(eson) : []
+
+    // TODO: instead of creating updatedEson beforehand, only created as soon as we have a changed item
+    let changed = (esonType !== jsonType) || (jsonKeys.length !== esonKeys.length)
+    let updatedEson = {}
+
+    for (let i = 0; i < jsonKeys.length; i++) {
+      const key = jsonKeys[i]
+      const esonValue = eson ? eson[key] : undefined
+
+      updatedEson[key] = syncEson(json[key], esonValue)
+
+      if (updatedEson[key] !== esonValue) {
+        changed = true
+      }
+    }
+
+    if (changed) {
+      updatedEson[ID] = sameType ? eson[ID] : createId()
+      updatedEson[TYPE] = jsonType
+      updatedEson[VALUE] = json
+      updatedEson[EXPANDED] = sameType ? eson[EXPANDED] : false
+
+      return updatedEson
+    }
+    else {
+      return eson
+    }
+  }
+  else if (jsonType === 'value') { // json is a value
+    if (sameType) {
+      return eson
+    }
+    else {
+      const updatedEson = {}
+
+      updatedEson[ID] = sameType ? eson[ID] : createId()
+      updatedEson[TYPE] = jsonType
+      updatedEson[VALUE] = json
+      updatedEson[EXPANDED] = false
+
+      return updatedEson
+    }
+  }
+  else { // jsonType === 'undefined'
+    return undefined
+  }
 }
 
 /**
@@ -151,7 +122,7 @@ export function updatePaths(eson, path = []) {
  */
 export function expand (eson, callback) {
   return transform(eson, function (value, path) {
-    if (value[META].type === 'Array' || value[META].type === 'Object') {
+    if (value[TYPE] === 'array' || value[TYPE] === 'object') {
       const expanded = callback(path)
       return (typeof expanded === 'boolean')
           ? expandOne(value, [], expanded) // adjust expanded state
@@ -171,7 +142,7 @@ export function expand (eson, callback) {
  * @return {ESON}
  */
 export function expandOne (eson, path, expanded = true) {
-  return setIn(eson, path.concat([META, 'expanded']), expanded)
+  return setIn(eson, path.concat(EXPANDED), expanded)
 }
 
 /**
@@ -206,7 +177,7 @@ export function applyErrors (eson, errors = []) {
   const esonWithErrors = errors.reduce((eson, error) => {
     const path = parseJSONPointer(error.dataPath)
     // TODO: do we want to be able to store multiple errors per item?
-    return setIn(eson, path.concat([META, 'error']), error)
+    return setIn(eson, path.concat(ERROR), error)
   }, eson)
 
   // cleanup any old error messages
@@ -216,11 +187,12 @@ export function applyErrors (eson, errors = []) {
 /**
  * Cleanup meta data from an eson object
  * @param {ESON} eson                 Object to be cleaned up
- * @param {String} field              Field name, for example 'error' or 'selected'
- * @param {Path[]} [ignorePaths=[]]   An optional array with paths to be ignored
+ * @param {String | Symbol} symbol    A meta data field name, for example ERROR or SELECTED
+ * @param {Array.<string | Path>} [ignorePaths=[]]   An optional array with paths to be ignored
  * @return {ESON}
  */
-export function cleanupMetaData(eson, field, ignorePaths = []) {
+export function cleanupMetaData(eson, symbol, ignorePaths = []) {
+  // TODO: change ignorePaths to an object with path as key and true as value
   const pathsMap = {}
   ignorePaths.forEach(path => {
     const pathString = (typeof path === 'string') ? path : compileJSONPointer(path)
@@ -228,8 +200,8 @@ export function cleanupMetaData(eson, field, ignorePaths = []) {
   })
 
   return transform(eson, function (value, path) {
-    return (value[META][field] && !pathsMap[compileJSONPointer(path)])
-        ? deleteIn(value, [META, field])
+    return (value[symbol] && !pathsMap[compileJSONPointer(path)])
+        ? deleteIn(value, [symbol])
         : value
   })
 }
@@ -253,23 +225,23 @@ export function search (eson, text) {
     // check property name
     const prop = last(path)
     if (text !== '' && containsCaseInsensitive(prop, text) &&
-        getIn(eson, initial(path))[META].type === 'Object') { // parent must be an Object
+        getIn(eson, initial(path))[TYPE] === 'object') { // parent must be an Object
       const searchState = isEmpty(matches) ? 'active' : 'normal'
       matches.push({path, area: 'property'})
-      updatedValue = setIn(updatedValue, [META, 'searchProperty'], searchState)
+      updatedValue = setIn(updatedValue, [SEARCH_PROPERTY], searchState)
     }
     else {
-      updatedValue = deleteIn(updatedValue, [META, 'searchProperty'])
+      updatedValue = deleteIn(updatedValue, [SEARCH_PROPERTY])
     }
 
     // check value
-    if (value[META].type === 'value' && text !== '' && containsCaseInsensitive(value[META].value, text)) {
+    if (value[TYPE] === 'value' && text !== '' && containsCaseInsensitive(value[VALUE], text)) {
       const searchState = isEmpty(matches) ? 'active' : 'normal'
       matches.push({path, area: 'value'})
-      updatedValue = setIn(updatedValue, [META, 'searchValue'], searchState)
+      updatedValue = setIn(updatedValue, [SEARCH_VALUE], searchState)
     }
     else {
-      updatedValue = deleteIn(updatedValue, [META, 'searchValue'])
+      updatedValue = deleteIn(updatedValue, [SEARCH_VALUE])
     }
 
     return updatedValue
@@ -346,9 +318,9 @@ export function nextSearchResult (eson, searchResult) {
  * @return {Object|Array}
  */
 function setSearchStatus (eson, esonPointer, searchStatus) {
-  const metaProp = esonPointer.area === 'property' ? 'searchProperty': 'searchValue'
+  const searchSymbol = esonPointer.area === 'property' ? SEARCH_PROPERTY : SEARCH_VALUE
 
-  return setIn(eson, esonPointer.path.concat([META, metaProp]), searchStatus)
+  return setIn(eson, esonPointer.path.concat([searchSymbol]), searchStatus)
 }
 
 /**
@@ -362,23 +334,19 @@ export function applySelection (eson, selection) {
     return cleanupMetaData(eson, 'selected')
   }
   else if (selection.inside) {
-    const updatedEson = setIn(eson, selection.inside.concat([META, 'selected']),
-        SELECTED_INSIDE)
+    const updatedEson = setIn(eson, selection.inside.concat([SELECTION]), SELECTED_INSIDE)
     return cleanupMetaData(updatedEson, 'selected', [selection.inside])
   }
   else if (selection.after) {
-    const updatedEson = setIn(eson, selection.after.concat([META, 'selected']),
-         SELECTED_AFTER)
+    const updatedEson = setIn(eson, selection.after.concat([SELECTION]), SELECTED_AFTER)
     return cleanupMetaData(updatedEson, 'selected', [selection.after])
   }
   else if (selection.empty) {
-    const updatedEson = setIn(eson, selection.empty.concat([META, 'selected']),
-        SELECTED_EMPTY)
+    const updatedEson = setIn(eson, selection.empty.concat([SELECTION]), SELECTED_EMPTY)
     return cleanupMetaData(updatedEson, 'selected', [selection.empty])
   }
   else if (selection.emptyBefore) {
-    const updatedEson = setIn(eson, selection.emptyBefore.concat([META, 'selected']),
-        SELECTED_EMPTY_BEFORE)
+    const updatedEson = setIn(eson, selection.emptyBefore.concat([SELECTION]), SELECTED_EMPTY_BEFORE)
     return cleanupMetaData(updatedEson, 'selected', [selection.emptyBefore])
   }
   else { // selection.start and selection.end
@@ -392,30 +360,31 @@ export function applySelection (eson, selection) {
 
       // TODO: simplify the update function. Use pathsFromSelection ?
 
-      if (root[META].type === 'Object') {
-        const startIndex = root[META].props.indexOf(start)
-        const endIndex   = root[META].props.indexOf(end)
+      if (root[TYPE] === 'object') {
+        const props = Object.keys(root).sort(naturalSort) // TODO: create a util function getSortedProps
+        const startIndex = props.indexOf(start)
+        const endIndex   = props.indexOf(end)
 
         const firstIndex = Math.min(startIndex, endIndex)
         const lastIndex = Math.max(startIndex, endIndex)
-        const firstProp = root[META].props[firstIndex]
-        const lastProp = root[META].props[lastIndex]
+        const firstProp = props[firstIndex]
+        const lastProp = props[lastIndex]
 
-        const selectedProps = root[META].props.slice(firstIndex, lastIndex + 1)// include max index itself
+        const selectedProps = props.slice(firstIndex, lastIndex + 1)// include max index itself
         selectedPaths = selectedProps.map(prop => rootPath.concat(prop))
-        let updatedObj = cloneWithSymbols(root)
+        let updatedObj = shallowCloneWithSymbols(root)
         selectedProps.forEach(prop => {
           const selected = SELECTED +
               (prop === start ? SELECTED_START : 0) +
               (prop === end ? SELECTED_END : 0) +
               (prop === firstProp ? SELECTED_FIRST : 0) +
               (prop === lastProp ? SELECTED_LAST : 0)
-          updatedObj[prop] = setIn(updatedObj[prop], [META, 'selected'], selected)
+          updatedObj[prop] = setIn(updatedObj[prop], [SELECTION], selected)
         })
 
         return updatedObj
       }
-      else { // root[META].type === 'Array'
+      else { // root[TYPE] === 'array'
         const startIndex = parseInt(start, 10)
         const endIndex   = parseInt(end, 10)
 
@@ -426,14 +395,14 @@ export function applySelection (eson, selection) {
         selectedPaths = selectedIndices.map(index => rootPath.concat(String(index)))
 
         let updatedArr = root.slice()
-        updatedArr = cloneWithSymbols(root)
+        updatedArr = shallowCloneWithSymbols(root)
         selectedIndices.forEach(index => {
           const selected = SELECTED +
               (index === startIndex ? SELECTED_START : 0) +
               (index === endIndex ? SELECTED_END : 0) +
               (index === firstIndex ? SELECTED_FIRST : 0) +
               (index === lastIndex ? SELECTED_LAST : 0)
-          updatedArr[index] = setIn(updatedArr[index], [META, 'selected'], selected)
+          updatedArr[index] = setIn(updatedArr[index], [SELECTION], selected)
         })
 
         return updatedArr
@@ -459,8 +428,9 @@ export function findSelectionIndices (root, rootPath, selection) {
   const end = (selection.after || selection.inside || selection.end)[rootPath.length]
 
   // if no object we assume it's an Array
-  const startIndex = root[META].type === 'Object' ? root[META].props.indexOf(start) : parseInt(start, 10)
-  const endIndex   = root[META].type === 'Object' ? root[META].props.indexOf(end) : parseInt(end, 10)
+  const props = Object.keys(root).sort(naturalSort) // TODO: create a util function getSortedProps
+  const startIndex = root[TYPE] === 'object' ? props.indexOf(start) : parseInt(start, 10)
+  const endIndex   = root[TYPE] === 'object' ? props.indexOf(end) : parseInt(end, 10)
 
   const minIndex = Math.min(startIndex, endIndex)
   const maxIndex = Math.max(startIndex, endIndex) +
@@ -470,89 +440,20 @@ export function findSelectionIndices (root, rootPath, selection) {
 }
 
 /**
- * Get the JSON paths from a selection, sorted from first to last
- * @param {ESON} eson
- * @param {Selection} selection
- * @return {Path[]}
- */
-export function pathsFromSelection (eson, selection) {
-  // find the parent node shared by both start and end of the selection
-  const rootPath = findRootPath(selection)
-  const root = getIn(eson, rootPath)
-
-  const { minIndex, maxIndex } = findSelectionIndices(root, rootPath, selection)
-
-  if (root[META].type === 'Object') {
-    return times(maxIndex - minIndex, i => rootPath.concat(root[META].props[i + minIndex]))
-  }
-  else { // root[META].type === 'Array'
-    return times(maxIndex - minIndex, i => rootPath.concat(String(i + minIndex)))
-  }
-}
-
-/**
  * Get the contents of a list with paths
- * @param {ESON} data
+ * @param {ESON} eson
  * @param {Path[]} paths
  * @return {Array.<{name: string, value: JSON, state: Object}>}
  */
-export function contentsFromPaths (data, paths) {
+export function contentsFromPaths (eson, paths) {
   return paths.map(path => {
-    const esonValue = getIn(data, path)
+    const value = getIn(eson, path.concat(VALUE))
     return {
       name: last(path),
-      value: esonToJson(esonValue),
-      state: getEsonState(esonValue)
+      value,
+      state: {} // FIXME: state
     }
   })
-}
-
-/**
- * Get an object with paths and state (expanded, type) of an eson object
- * @param {ESON} eson
- * @return {Object.<key, Object>} An object with compiled JSON paths as key,
- *                                And a META object as state
- */
-export function getEsonState (eson) {
-  let state = {}
-
-  transform(eson, function (eson, path) {
-    let meta = {}
-    if (eson[META].expanded === true) {
-      meta.expanded = true
-    }
-    if (eson[META].type === 'string') {
-      meta.type = 'string'
-    }
-    if (!isEmpty(meta)) {
-      state[compileJSONPointer(path)] = meta
-    }
-
-    return eson
-  })
-
-  return state
-}
-
-/**
- * Merge ESON meta data to an ESON object: expanded state, type
- * @param {ESON} data
- * @param {Object.<String, Object>} state
- * @return {ESON}
- */
-export function applyEsonState(data, state) {
-  let updatedData = data
-
-  for (let path in state) {
-    if (state.hasOwnProperty(path)) {
-      const metaPath = parseJSONPointer(path).concat(META)
-      updatedData = updateIn(updatedData, metaPath, function (meta) {
-        return Object.assign({}, meta, state[path])
-      })
-    }
-  }
-
-  return updatedData
 }
 
 /**
@@ -605,92 +506,55 @@ function findSharedPath (path1, path2) {
 }
 
 /**
- * Test whether a path exists in the eson object
+ * Get the JSON paths from a selection, sorted from first to last
  * @param {ESON} eson
- * @param {Path} path
- * @return {boolean} Returns true if the path exists, else returns false
- * @private
+ * @param {Selection} selection
+ * @return {Path[]}
  */
-export function pathExists (eson, path) {
-  if (eson === undefined) {
-    return false
-  }
+// TODO: move pathsFromSelection to a separate file clipboard.js or selection.js?
+export function pathsFromSelection (eson, selection) {
+  // find the parent node shared by both start and end of the selection
+  const rootPath = findRootPath(selection)
+  const root = getIn(eson, rootPath)
 
-  if (path.length === 0) {
-    return true
-  }
+  const { minIndex, maxIndex } = findSelectionIndices(root, rootPath, selection)
 
-  if (Array.isArray(eson)) {
-    // index of an array
-    return pathExists(eson[parseInt(path[0], 10)], path.slice(1))
+  if (root[TYPE] === 'object') {
+    const props = Object.keys(root).sort(naturalSort) // TODO: create a util function getSortedProps
+    return times(maxIndex - minIndex, i => rootPath.concat(props[i + minIndex]))
   }
-  else { // Object
-    // object property. find the index of this property
-    return pathExists(eson[path[0]], path.slice(1))
+  else { // root[TYPE] === 'array'
+    return times(maxIndex - minIndex, i => rootPath.concat(String(i + minIndex)))
   }
 }
 
 /**
- * Resolve the index for `arr/-`, replace it with an index value equal to the
- * length of the array
- * @param {ESON} eson
- * @param {Path} path
- * @return {Path}
+ * Convert the value of a JSON Patch action into a ESON object
+ * @param {JSONPatchAction} action
+ * @returns {ESONPatchAction}
  */
-export function resolvePathIndex (eson, path) {
-  if (path[path.length - 1] === '-') {
-    const parentPath = initial(path)
-    const parent = getIn(eson, parentPath)
+export function toEsonPatchAction (action) {
+  return ('value' in action)
+      ? setIn(action, ['value'], syncEson(action.value))
+      : action
+}
 
-    if (Array.isArray(parent)) {
-      const index = parent.length
-      return parentPath.concat(String(index))
-    }
+// TODO: comment
+export function getType (any) {
+  if (any === undefined) {
+    return 'undefined'
   }
 
-  return path
+  if (Array.isArray(any)) {
+    return 'array'
+  }
+
+  if (any && typeof any === 'object') {
+    return 'object'
+  }
+
+  return 'value'
 }
-
-/**
- * Find the property after provided property
- * @param {ESON} parent
- * @param {string} prop
- * @return {string | null} Returns the name of the next property,
- *                         or null if there is none
- */
-export function findNextProp (parent, prop) {
-  const index = parent[META].props.indexOf(prop)
-  return parent[META].props[index + 1] || null
-}
-
-// TODO: move parseJSONPointer and compileJSONPointer to a separate file
-
-/**
- * Parse a JSON Pointer
- * WARNING: this is not a complete implementation
- * @param {string} pointer
- * @return {Path}
- */
-export function parseJSONPointer (pointer) {
-  const path = pointer.split('/')
-  path.shift() // remove the first empty entry
-
-  return path.map(p => p.replace(/~1/g, '/').replace(/~0/g, '~'))
-}
-
-/**
- * Compile a JSON Pointer
- * WARNING: this is not a complete implementation
- * @param {Path} path
- * @return {string}
- */
-export function compileJSONPointer (path) {
-  return path
-      .map(p => '/' + String(p).replace(/~/g, '~0').replace(/\//g, '~1'))
-      .join('')
-}
-
-// TODO: move createId to a separate file
 
 /**
  * Do a case insensitive search for a search text in a text
@@ -706,8 +570,8 @@ export function containsCaseInsensitive (text, search) {
  * Get a new "unique" id. Id's are created from an incremental counter.
  * @return {number}
  */
-export function createId () {
+function createId () {
   _id++
-  return _id
+  return 'node-' + _id
 }
 let _id = 0

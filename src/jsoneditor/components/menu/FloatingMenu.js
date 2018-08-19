@@ -101,14 +101,14 @@ const CREATE_TYPE = {
   insertObjectAfter: (path, emit) => h('button', {
     key: 'insertObjectAfter',
     className: MENU_ITEM_CLASS_NAME,
-    onClick: () => emit('insertAfter', {path, type: 'Object'}),
+    onClick: () => emit('insertAfter', {path, type: 'object'}),
     title: 'Insert Object'
   }, 'Insert Object'),
 
   insertArrayAfter: (path, emit) => h('button', {
     key: 'insertArrayAfter',
     className: MENU_ITEM_CLASS_NAME,
-    onClick: () => emit('insertAfter', {path, type: 'Array'}),
+    onClick: () => emit('insertAfter', {path, type: 'array'}),
     title: 'Insert Array'
   }, 'Insert Array'),
 
@@ -129,14 +129,14 @@ const CREATE_TYPE = {
   insertObjectInside: (path, emit) => h('button', {
     key: 'insertObjectInside',
     className: MENU_ITEM_CLASS_NAME,
-    onClick: () => emit('insertInside', {path, type: 'Object'}),
+    onClick: () => emit('insertInside', {path, type: 'object'}),
     title: 'Insert Object'
   }, 'Insert Object'),
 
   insertArrayInside: (path, emit) => h('button', {
     key: 'insertArrayInside',
     className: MENU_ITEM_CLASS_NAME,
-    onClick: () => emit('insertInside', {path, type: 'Array'}),
+    onClick: () => emit('insertInside', {path, type: 'array'}),
     title: 'Insert Array'
   }, 'Insert Array'),
 
@@ -164,7 +164,9 @@ export default class FloatingMenu extends PureComponent {
           })
         ]).isRequired
     ).isRequired,
-    path: PropTypes.arrayOf(PropTypes.string).isRequired,
+    path: PropTypes.arrayOf(PropTypes.oneOfType([
+        PropTypes.string, PropTypes.number
+    ])).isRequired,
     emit: PropTypes.func.isRequired,
     position: PropTypes.string  // 'top' or 'bottom'
   }

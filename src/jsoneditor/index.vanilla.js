@@ -4,7 +4,7 @@ import JSONEditor from './components/JSONEditor'
 import CodeMode from './components/CodeMode'
 import TextMode from './components/TextMode'
 import TreeMode from './components/TreeMode'
-import { compileJSONPointer, parseJSONPointer } from './eson'
+import { compileJSONPointer, parseJSONPointer } from './jsonPointer'
 
 const modes = {
   code: CodeMode,

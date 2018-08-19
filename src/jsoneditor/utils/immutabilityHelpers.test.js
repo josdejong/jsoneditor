@@ -1,4 +1,4 @@
-import { getIn, setIn, updateIn, deleteIn, insertAt } from './immutabilityHelpers'
+import { deleteIn, existsIn, getIn, insertAt, setIn, transform, updateIn } from './immutabilityHelpers'
 
 test('getIn', () => {
   const obj = {
@@ -273,4 +273,48 @@ test('insertAt', () => {
 
   const updated = insertAt(obj, ['a', '2'], 8)
   expect(updated).toEqual({a: [1,2,8,3]})
+})
+
+test('transform (no change)', () => {
+  const eson = {a: [1,2,3], b: {c: 4}}
+  const updated = transform(eson, (value, path) => value)
+  expect(updated).toBe(eson)
+})
+
+test('transform (change based on value)', () => {
+  const eson = {a: [1,2,3], b: {c: 4}}
+
+  const updated = transform(eson,
+      (value, path) => value === 2 ? 20 : value)
+  const expected = {a: [1,20,3], b: {c: 4}}
+
+  expect(updated).toEqual(expected)
+  expect(updated.b).toBe(eson.b) // should not have replaced b
+})
+
+test('transform (change based on path)', () => {
+  const eson = {a: [1,2,3], b: {c: 4}}
+
+  const updated = transform(eson,
+      (value, path) => path.join('.') === 'a.1' ? 20 : value)
+  const expected = {a: [1,20,3], b: {c: 4}}
+
+  expect(updated).toEqual(expected)
+  expect(updated.b).toBe(eson.b) // should not have replaced b
+})
+
+test('existsIn', () => {
+  const json = {
+    "obj": {
+      "arr": [1,2, {"first":3,"last":4}]
+    },
+    "str": "hello world",
+    "nill": null,
+    "bool": false
+  }
+
+  expect(existsIn(json, ['obj', 'arr', 2, 'first'])).toEqual(true)
+  expect(existsIn(json, ['obj', 'foo'])).toEqual(false)
+  expect(existsIn(json, ['obj', 'foo', 'bar'])).toEqual(false)
+  expect(existsIn(json, [])).toEqual(true)
 })

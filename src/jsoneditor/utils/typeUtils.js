@@ -62,10 +62,10 @@ export function valueType(value) {
     return 'regexp'
   }
   if (Array.isArray(value)) {
-    return 'Array'
+    return 'array'
   }
 
-  return 'Object'
+  return 'object'
 }
 
 /**

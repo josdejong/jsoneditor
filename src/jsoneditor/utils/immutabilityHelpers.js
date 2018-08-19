@@ -17,7 +17,7 @@ import { isObjectOrArray } from  './typeUtils'
  * @param {*} value
  * @return {*}
  */
-export function cloneWithSymbols (value) {
+export function shallowCloneWithSymbols (value) {
   if (Array.isArray(value)) {
     // copy array items
     let arr = value.slice()
@@ -97,7 +97,7 @@ export function setIn (object, path, value) {
     return object
   }
   else {
-    const updatedObject = cloneWithSymbols(object)
+    const updatedObject = shallowCloneWithSymbols(object)
     updatedObject[key] = updatedValue
     return updatedObject
   }
@@ -129,7 +129,7 @@ export function updateIn (object, path, callback) {
     return object
   }
   else {
-    const updatedObject = cloneWithSymbols(object)
+    const updatedObject = shallowCloneWithSymbols(object)
     updatedObject[key] = updatedValue
     return updatedObject
   }
@@ -159,7 +159,7 @@ export function deleteIn (object, path) {
       return object
     }
     else {
-      const updatedObject = cloneWithSymbols(object)
+      const updatedObject = shallowCloneWithSymbols(object)
 
       if (Array.isArray(updatedObject)) {
         updatedObject.splice(key, 1)
@@ -179,7 +179,7 @@ export function deleteIn (object, path) {
     return object
   }
   else {
-    const updatedObject = cloneWithSymbols(object)
+    const updatedObject = shallowCloneWithSymbols(object)
     updatedObject[key] = updatedValue
     return updatedObject
   }
@@ -205,9 +205,89 @@ export function insertAt (object, path, value) {
       throw new TypeError('Array expected at path ' + JSON.stringify(parentPath))
     }
 
-    const updatedItems = cloneWithSymbols(items)
+    const updatedItems = shallowCloneWithSymbols(items)
     updatedItems.splice(index, 0, value)
 
     return updatedItems
   })
+}
+
+/**
+ * Transform a JSON object, traverse over the whole object,
+ * and allow replacing Objects/Arrays/values.
+ * Does not iterate over symbols.
+ * @param {JSON} json
+ * @param {function (json: JSON, path: Path) : JSON} callback
+ * @param {Path} [path]
+ * @return {JSON}
+ */
+export function transform (json, callback, path = []) {
+  const updated1 = callback(json, path)
+
+  if (Array.isArray(json)) { // array
+    let updated2 = undefined
+
+    for (let i = 0; i < updated1.length; i++) {
+      const before = updated1[i]
+      // we stringify the index here, so the Path only contains strings and can be safely
+      // stringified/parsed to JSONPointer without loosing information.
+      // We do not want to rely on path keys being numeric/string.
+      const after = transform(before, callback, path.concat(i + ''))
+      if (after !== before) {
+        if (!updated2) {
+          updated2 = shallowCloneWithSymbols(updated1)
+        }
+        updated2[i] = after
+      }
+    }
+
+    return updated2 ? updated2 : updated1
+  }
+  else if (json && typeof json === 'object') { // object
+    let updated2 = undefined
+
+    for (let key in updated1) {
+      if (updated1.hasOwnProperty(key)) {
+        const before = updated1[key]
+        const after = transform(before, callback, path.concat(key))
+        if (after !== before) {
+          if (!updated2) {
+            updated2 = shallowCloneWithSymbols(updated1)
+          }
+          updated2[key] = after
+        }
+      }
+    }
+
+    return updated2 ? updated2 : updated1
+  }
+  else { // number, string, boolean, null
+    return updated1
+  }
+}
+
+/**
+ * Test whether a path exists in a JSON object
+ * @param {ESON} json
+ * @param {Path} path
+ * @return {boolean} Returns true if the path exists, else returns false
+ * @private
+ */
+export function existsIn (json, path) {
+  if (json === undefined) {
+    return false
+  }
+
+  if (path.length === 0) {
+    return true
+  }
+
+  if (Array.isArray(json)) {
+    // index of an array
+    return existsIn(json[parseInt(path[0], 10)], path.slice(1))
+  }
+  else { // Object
+    // object property. find the index of this property
+    return existsIn(json[path[0]], path.slice(1))
+  }
 }

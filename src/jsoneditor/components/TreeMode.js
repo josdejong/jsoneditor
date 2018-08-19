@@ -8,21 +8,24 @@ import Hammer from 'react-hammerjs'
 import jump from '../assets/jump.js/src/jump'
 import Ajv from 'ajv'
 
-import { getIn, updateIn } from '../utils/immutabilityHelpers'
+import { existsIn, setIn, updateIn } from '../utils/immutabilityHelpers'
 import { parseJSON } from '../utils/jsonUtils'
 import { enrichSchemaError } from '../utils/schemaUtils'
+import { compileJSONPointer, parseJSONPointer } from '../jsonPointer'
 import {
-    META,
-    jsonToEson, esonToJson, pathExists,
-    expand, expandOne, expandPath, applyErrors,
-    search, nextSearchResult, previousSearchResult,
-    applySelection, pathsFromSelection, contentsFromPaths,
-    compileJSONPointer, parseJSONPointer
-} from '../eson'
-import { patchEson } from '../patchEson'
-import {
-    duplicate, insertBefore, insertAfter, insertInside, append, remove, removeAll, replace,
-    createEntry, changeType, changeValue, changeProperty, sort
+  append,
+  changeProperty,
+  changeType,
+  changeValue,
+  createEntry,
+  duplicate,
+  insertAfter,
+  insertBefore,
+  insertInside,
+  remove,
+  removeAll,
+  replace,
+  sort
 } from '../actions'
 import JSONNode from './JSONNode'
 import JSONNodeView from './JSONNodeView'
@@ -30,11 +33,32 @@ import JSONNodeForm from './JSONNodeForm'
 import ModeButton from './menu/ModeButton'
 import Search from './menu/Search'
 import {
-  moveUp, moveDown, moveLeft, moveRight, moveDownSibling, moveHome, moveEnd,
-  findNode, findBaseNode, selectFind, searchHasFocus, setSelection
+  findBaseNode,
+  findNode,
+  moveDown,
+  moveDownSibling,
+  moveEnd,
+  moveHome,
+  moveLeft,
+  moveRight,
+  moveUp,
+  searchHasFocus,
+  selectFind,
+  setSelection
 } from './utils/domSelector'
 import { createFindKeyBinding } from '../utils/keyBindings'
 import { KEY_BINDINGS } from '../constants'
+import { immutableJsonPatch } from '../immutableJsonPatch'
+import {
+  applyErrors, applySelection, contentsFromPaths,
+  expand,
+  EXPANDED,
+  expandPath,
+  nextSearchResult, pathsFromSelection, previousSearchResult,
+  search,
+  syncEson,
+  toEsonPatchAction
+} from '../eson'
 
 const AJV_OPTIONS = {
   allErrors: true,
@@ -56,12 +80,9 @@ export default class TreeMode extends PureComponent {
   constructor (props) {
     super(props)
 
-    // const json = this.props.json || {}
-    // const expandCallback = this.props.expand || TreeMode.expandRoot
-    // const eson = expand(jsonToEson(json), expandCallback)
-
     const json = {}
-    const eson = jsonToEson(json)
+    const expandCallback = this.props.expand || TreeMode.expandRoot
+    const eson = expand(syncEson(json, {}), expandCallback)
 
     this.keyDownActions = {
       'up': this.moveUp,
@@ -155,14 +176,11 @@ export default class TreeMode extends PureComponent {
 
     // Apply json
     if (nextProps.json !== this.state.json) {
-      // FIXME: merge meta data from existing eson
-      const callback = this.props.expand || TreeMode.expandRoot
       const json = nextProps.json
-      const eson = expand(jsonToEson(json), callback)
 
       this.setState({
         json,
-        eson
+        eson: syncEson(json, this.state.eson)
       })
       // FIXME: use patch again -> patch should keep existing meta data when for the unchanged parts of the json
       // this.patch([{
@@ -231,9 +249,10 @@ export default class TreeMode extends PureComponent {
               onMouseDown: this.handleTouchStart,
               onTouchStart: this.handleTouchStart,
               className: 'jsoneditor-list jsoneditor-root' +
-                  (eson[META].selected ? ' jsoneditor-selected' : '')},
+                  (/*eson[META].selected*/ false ? ' jsoneditor-selected' : '')}, // FIXME
             h(Node, {
-              value: eson,
+              path: [],
+              eson,
               emit: this.emitter.emit,
               findKeyBinding: this.findKeyBinding,
               options: this.state.options
@@ -603,7 +622,7 @@ export default class TreeMode extends PureComponent {
     }
     else {
       this.setState({
-        eson: expandOne(this.state.eson, path, expanded)
+        eson: setIn(this.state.eson, path.concat(EXPANDED), expanded)
       })
     }
   }
@@ -626,6 +645,7 @@ export default class TreeMode extends PureComponent {
   }
 
   handleSearch = (text) => {
+    // FIXME
     // FIXME: also apply search when eson is changed
     const { eson, searchResult } = search(this.state.eson, text)
     if (searchResult.matches.length > 0) {
@@ -639,7 +659,7 @@ export default class TreeMode extends PureComponent {
     }
     else {
       this.setState({
-        eson,
+        eson: eson,
         searchResult
       })
     }
@@ -657,7 +677,7 @@ export default class TreeMode extends PureComponent {
       const { eson, searchResult } = nextSearchResult(this.state.eson, this.state.searchResult)
 
       this.setState({
-        eson,
+        eson: expandPath(eson, initial(searchResult.active.path)),
         searchResult
       })
 
@@ -682,7 +702,7 @@ export default class TreeMode extends PureComponent {
       const { eson, searchResult } = previousSearchResult(this.state.eson, this.state.searchResult)
 
       this.setState({
-        eson,
+        eson: expandPath(eson, initial(searchResult.active.path)),
         searchResult
       })
 
@@ -700,15 +720,15 @@ export default class TreeMode extends PureComponent {
   }
 
   /**
-   * Apply a ESONPatch to the current JSON document and emit a change event
-   * @param {ESONPatch} actions
+   * Apply a JSONPatch to the current JSON document and emit a change event
+   * @param {JSONPatch} actions
    * @private
    */
   handlePatch = (actions) => {
     // apply changes
     const result = this.patch(actions)
 
-    this.emitOnChange (actions, result.revert, result.eson, result.json)
+    this.emitOnChange (actions, result.revert, result.json)
   }
 
   handleTouchStart = (event) => {
@@ -717,15 +737,15 @@ export default class TreeMode extends PureComponent {
       return
     }
 
-    const pointer = this.findESONPointerFromElement(event.target)
+    const pointer = this.findJSONPointerFromElement(event.target)
     const clickedOnEmptySpace = (event.target.nodeName === 'DIV') &&
         (event.target.contentEditable !== 'true')
 
     // TODO: cleanup
-    // console.log('handleTouchStart', clickedOnEmptySpace && pointer, pointer && this.selectionFromESONPointer(pointer))
+    // console.log('handleTouchStart', clickedOnEmptySpace && pointer, pointer && this.selectionFromJSONPointer(pointer))
 
     if (clickedOnEmptySpace && pointer) {
-      this.setState({ selection: this.selectionFromESONPointer(pointer)})
+      this.setState({ selection: this.selectionFromJSONPointer(pointer)})
     }
     else {
       this.setState({ selection: null })
@@ -780,11 +800,11 @@ export default class TreeMode extends PureComponent {
   }
 
   /**
-   * Find ESON pointer from an HTML element
+   * Find JSON pointer from an HTML element
    * @param {Element} element
    * @return {ESONPointer | null}
    */
-  findESONPointerFromElement (element) {
+  findJSONPointerFromElement (element) {
     const path = this.findDataPathFromElement(element)
     const area = (element && element.getAttribute && element.getAttribute('data-area')) || null
 
@@ -792,11 +812,11 @@ export default class TreeMode extends PureComponent {
   }
 
   /**
-   * Get selection from an ESON pointer
+   * Get selection from an JSONPointer
    * @param {ESONPointer} pointer
    * @return {Selection}
    */
-  selectionFromESONPointer (pointer) {
+  selectionFromJSONPointer (pointer) {
     // FIXME: does pointer have .area === 'after' ? if so adjust type defs
     if (pointer.area === 'after') {
       return {after: pointer.path}
@@ -836,10 +856,9 @@ export default class TreeMode extends PureComponent {
    * @private
    * @param {ESONPatch} patch
    * @param {ESONPatch} revert
-   * @param {ESON} eson
    * @param {JSON} json
    */
-  emitOnChange (patch, revert, eson, json) {
+  emitOnChange (patch, revert, json) {
     const onPatch = this.props.onPatch
     if (onPatch) {
       setTimeout(() => onPatch(patch, revert))
@@ -885,16 +904,18 @@ export default class TreeMode extends PureComponent {
       const historyIndex = this.state.historyIndex
       const historyItem = history[historyIndex]
 
-      const result = patchEson(this.state.eson, historyItem.undo)
+      const jsonResult = immutableJsonPatch(this.state.json, historyItem.undo)
+      const esonResult = immutableJsonPatch(this.state.eson, historyItem.undo.map(toEsonPatchAction))
 
       // FIXME: apply search
       this.setState({
-        eson: result.data,
+        json: jsonResult.json,
+        eson: esonResult.json,
         history,
         historyIndex: historyIndex + 1
       })
 
-      this.emitOnChange(historyItem.undo, historyItem.redo, result.data, esonToJson(result.data))
+      this.emitOnChange(historyItem.undo, historyItem.redo, jsonResult.json)
     }
   }
 
@@ -904,45 +925,43 @@ export default class TreeMode extends PureComponent {
       const historyIndex = this.state.historyIndex - 1
       const historyItem = history[historyIndex]
 
-      const result = patchEson(this.state.eson, historyItem.redo)
+      const jsonResult = immutableJsonPatch(this.state.json, historyItem.redo)
+      const esonResult = immutableJsonPatch(this.state.eson, historyItem.undo.map(toEsonPatchAction))
 
       // FIXME: apply search
       this.setState({
-        eson: result.data,
+        json: jsonResult.json,
+        eson: esonResult.json,
         history,
         historyIndex
       })
 
-      this.emitOnChange(historyItem.redo, historyItem.undo, result.data, esonToJson(result.data))
+      this.emitOnChange(historyItem.redo, historyItem.undo, jsonResult.json)
     }
   }
 
   /**
-   * Apply a ESONPatch to the current JSON document
-   * @param {ESONPatch} actions       ESONPatch actions
-   * @param {ESONPatchOptions} [options]  If no expand function is provided, the
-   *                                  expanded state will be kept as is for
-   *                                  existing paths. New paths will be fully
-   *                                  expanded.
-   * @return {ESONPatchAction} Returns a ESONPatch result containing the
-   *                           patch, a patch to revert the action, and
-   *                           an error object which is null when successful
+   * Apply a JSONPatch to the current JSON document
+   * @param {JSONPatch} actions       ESONPatch actions
+   * @return {Object} Returns a object result containing the
+   *                  patch, a patch to revert the action, and
+   *                  an error object which is null when successful
    */
-  patch (actions, options = {}) {
+  patch (actions) {
     if (!Array.isArray(actions)) {
       throw new TypeError('Array with patch actions expected')
     }
 
-    const expand = options.expand || (path => this.expandKeepOrExpandAll(path))
-    const result = patchEson(this.state.eson, actions, expand)
-    const eson = result.data
-    const json = esonToJson(eson) // FIXME: apply the patch to the json too, instead of completely replacing it
+    console.log('patch', actions)
+
+    const jsonResult = immutableJsonPatch(this.state.json, actions)
+    const esonResult = immutableJsonPatch(this.state.eson, actions.map(toEsonPatchAction))
 
     if (this.props.history !== false) {
       // update data and store history
       const historyItem = {
         redo: actions,
-        undo: result.revert
+        undo: jsonResult.revert
       }
 
       const history = [historyItem]
@@ -951,8 +970,8 @@ export default class TreeMode extends PureComponent {
 
       // FIXME: apply search
       this.setState({
-        eson,
-        json,
+        json: jsonResult.json,
+        eson: esonResult.json,
         history,
         historyIndex: 0
       })
@@ -961,18 +980,16 @@ export default class TreeMode extends PureComponent {
       // update data and don't store history
       // FIXME: apply search
       this.setState({
-        eson,
-        json
+        json: jsonResult.json,
+        eson: esonResult.json
       })
     }
 
     return {
       patch: actions,
-      revert: result.revert,
-      error: result.error,
-      data: eson,   // FIXME: shouldn't pass data here?
-      eson,         // FIXME: shouldn't pass eson here
-      json          // FIXME: shouldn't pass json here
+      revert: jsonResult.revert,
+      error: jsonResult.error,
+      json: jsonResult.json          // FIXME: shouldn't pass json here?
     }
   }
 
@@ -982,13 +999,11 @@ export default class TreeMode extends PureComponent {
    */
   set (json) {
     // FIXME: when both json and expand are being changed via React, this.props must be updated before set(json) is called
-    // TODO: document option expand
-    const expandCallback = this.props.expand || TreeMode.expandRoot
 
     // FIXME: apply search
     this.setState({
-      json: json,
-      eson: expand(jsonToEson(json), expandCallback),
+      json,
+      eson: syncEson(json, this.state.eson), // FIXME: reset eson in set, keep in update?
 
       // TODO: do we want to keep history when .set(json) is called? (currently we remove history)
       history: [],
@@ -1090,29 +1105,7 @@ export default class TreeMode extends PureComponent {
    * @param {Path} path
    */
   exists (path) {
-    return pathExists(this.state.eson, path)
-  }
-
-  /**
-   * Test whether an Array or Object at a certain path is expanded.
-   * When the node does not exist, the function throws an error
-   * @param {Path} path
-   * @return {boolean} Returns true when expanded, false otherwise
-   */
-  isExpanded (path) {
-    return getIn(this.state.eson, path)[META].expanded
-  }
-
-  /**
-   * Expand function which keeps the expanded state the same as the current data.
-   * When the path doesn't yet exist, it will be expanded.
-   * @param {Path} path
-   * @return {boolean}
-   */
-  expandKeepOrExpandAll (path) {
-    return this.exists(path)
-        ? this.isExpanded(path)
-        : TreeMode.expandAll(path)
+    return existsIn(this.state.json, path)
   }
 
   /**
