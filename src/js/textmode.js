@@ -275,9 +275,6 @@ textmode.create = function (container, options) {
   additinalErrorsIndication.innerHTML = "Scroll for more &#9663;";
   this.dom.additinalErrorsIndication = additinalErrorsIndication;
   validationErrorsContainer.appendChild(additinalErrorsIndication);
-  validationErrorsContainer.onscroll = function () {    
-    additinalErrorsIndication.style.display = me.dom.validationErrorsContainer.scrollTop === 0 ? 'block' : 'none';
-  }
 
   if (options.statusBar) {
     util.addClassName(this.content, 'has-status-bar');
@@ -918,6 +915,11 @@ textmode._renderErrors = function(errors) {
 
       if (this.dom.validationErrorsContainer.clientHeight < this.dom.validationErrorsContainer.scrollHeight) {
         this.dom.additinalErrorsIndication.style.display = 'block';
+        this.dom.validationErrorsContainer.onscroll = function () {
+          me.dom.additinalErrorsIndication.style.display = me.dom.validationErrorsContainer.scrollTop === 0 ? 'block' : 'none';
+        }
+      } else {
+        this.dom.validationErrorsContainer.onscroll = undefined;
       }
 
       var height = this.dom.validationErrorsContainer.clientHeight + (this.dom.statusBar ? this.dom.statusBar.clientHeight : 0);
