@@ -346,8 +346,7 @@ textmode.create = function (container, options) {
     statusBar.appendChild(validationErrorIcon);
 
     this.parseErrorIndication = document.createElement('span');
-    this.parseErrorIndication.className = 'jsoneditor-parse-error-icon';
-    this.parseErrorIndication.title = 'parse error - check that the json is valid';
+    this.parseErrorIndication.className = 'jsoneditor-parse-error-icon';    
     this.parseErrorIndication.style.display = 'none';
     statusBar.appendChild(this.parseErrorIndication);
   }
@@ -730,6 +729,7 @@ textmode.validate = function () {
       if (match) {
         line = +match[1];
       }
+      this.parseErrorIndication.title = !isNaN(line) ? ('parse error on line ' + line) : 'parse error - check that the json is valid';
       parseErrors.push({
         type: 'error',
         message: err.message,
