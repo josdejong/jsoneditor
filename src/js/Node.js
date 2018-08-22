@@ -12,6 +12,8 @@ var translate = require('./i18n').translate;
 
 var DEFAULT_MODAL_ANCHOR = document.body; // TODO: this constant is defined twice
 
+var YEAR_2000 = 946684800000;
+
 /**
  * @constructor Node
  * Create a new Node
@@ -1762,6 +1764,29 @@ Node.prototype._updateDomValue = function () {
     else {
       // cleanup color picker when displayed
       this._deleteDomColor();
+    }
+
+    // show date tag when value is a timestamp in milliseconds
+    if (this.editor.options.timestampTag &&
+        typeof value === 'number' &&
+        value > YEAR_2000 &&
+        !isNaN(new Date(value).valueOf())) {
+
+      if (!this.dom.date) {
+        this.dom.date = document.createElement('div');
+        this.dom.date.className = 'jsoneditor-date'
+        this.dom.value.parentNode.appendChild(this.dom.date);
+      }
+
+      this.dom.date.innerHTML = new Date(value).toISOString();
+      this.dom.date.title = new Date(value).toString();
+    }
+    else {
+      // cleanup date tag
+      if (this.dom.date) {
+        this.dom.date.parentNode.removeChild(this.dom.date);
+        delete this.dom.date;
+      }
     }
 
     // strip formatting from the contents of the editable div

@@ -167,6 +167,7 @@ treemode._setOptions = function (options) {
             'Either use the full bundle or implement your own color picker using `onColorPicker`.')
       }
     },
+    timestampTag: true,
     onEvent: null
   };
 

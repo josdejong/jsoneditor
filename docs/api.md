@@ -330,8 +330,11 @@ Constructs a new JSONEditor.
   }
   ```
 
+- `{boolean} timestampTag`
 
-
+  If true (default), a tag with the date/time of a timestamp is displayed
+  right from timestamps. A value is considered a timestamp when it
+  has a value larger than Jan 1th 2000, `946684800000`.
 
 - `{string} language`
 

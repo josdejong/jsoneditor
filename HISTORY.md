@@ -7,6 +7,8 @@ https://github.com/josdejong/jsoneditor
 
 - Implemented a color picker, and allow hooking in a custom color
   picker. new options are `colorPicker` and `onColorPicker`.
+- Implemented a timestamp tag displayed right from timestamps,
+  with corresponding option `timestampTag`.
 
 
 ## 2018-08-17, version 5.23.1

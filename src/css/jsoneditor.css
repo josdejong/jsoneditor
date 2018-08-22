@@ -214,6 +214,15 @@ div.jsoneditor-tree div.jsoneditor-color .picker_wrapper.popup.popup_bottom {
   left: -10px;
 }
 
+div.jsoneditor-tree div.jsoneditor-date {
+  background: #a1a1a1;
+  color: white;
+  font-family: arial, sans-serif;
+  border-radius: 3px;
+  display: inline-block;
+  padding: 3px;
+}
+
 div.jsoneditor {
   color: #1A1A1A;
   border: 1px solid #3883fa;
