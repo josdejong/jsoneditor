@@ -1751,6 +1751,9 @@ Node.prototype._updateDomValue = function () {
         this.dom.tdColor.appendChild(this.dom.color);
 
         this.dom.tdValue.parentNode.insertBefore(this.dom.tdColor, this.dom.tdValue);
+
+        // this is a bit hacky, overriding the text color like this. find a nicer solution
+        this.dom.value.style.color = '#1A1A1A';
       }
 
       // update the color background
@@ -1771,6 +1774,8 @@ Node.prototype._deleteDomColor = function () {
     this.dom.tdColor.parentNode.removeChild(this.dom.tdColor);
     delete this.dom.tdColor;
     delete this.dom.color;
+
+    this.dom.value.style.color = '';
   }
 }
 
