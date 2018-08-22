@@ -3,7 +3,7 @@
 https://github.com/josdejong/jsoneditor
 
 
-## not yet released, version 5.24.0
+## 2018-08-22, version 5.24.0
 
 - Implemented a color picker, and allow hooking in a custom color
   picker. new options are `colorPicker` and `onColorPicker`.

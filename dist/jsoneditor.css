@@ -145,7 +145,7 @@ div.jsoneditor-value.jsoneditor-invalid {
   color: #000000;
 }
 
-div.jsoneditor-tree button {
+div.jsoneditor-tree button.jsoneditor-button {
   width: 24px;
   height: 24px;
   padding: 0;
@@ -183,7 +183,7 @@ div.jsoneditor-tree *:focus {
   outline: none;
 }
 
-div.jsoneditor-tree button:focus {
+div.jsoneditor-tree button.jsoneditor-button:focus {
   /* TODO: nice outline for buttons with focus
   outline: #97B0F8 solid 2px;
   box-shadow: 0 0 8px #97B0F8;
@@ -216,6 +216,30 @@ div.jsoneditor-tree div.jsoneditor-show-more a {
 div.jsoneditor-tree div.jsoneditor-show-more a:hover,
 div.jsoneditor-tree div.jsoneditor-show-more a:focus {
   color: #ee422e;
+}
+
+div.jsoneditor-tree div.jsoneditor-color {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  margin: 4px;
+  border: 1px solid #808080;
+  cursor: pointer;
+}
+
+div.jsoneditor-tree div.jsoneditor-color .picker_wrapper.popup.popup_bottom {
+  top: 28px;
+  left: -10px;
+}
+
+div.jsoneditor-tree div.jsoneditor-date {
+  background: #a1a1a1;
+  color: white;
+  font-family: arial, sans-serif;
+  border-radius: 3px;
+  display: inline-block;
+  padding: 3px;
+  margin: 0 3px;
 }
 
 div.jsoneditor {
@@ -352,7 +376,7 @@ div.jsoneditor textarea,
   width: 24px;
 }
 
-div.jsoneditor-tree .jsoneditor-schema-error {
+div.jsoneditor-tree .jsoneditor-button.jsoneditor-schema-error {
   width: 24px;
   height: 24px;
   padding: 0;

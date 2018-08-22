@@ -221,6 +221,7 @@ div.jsoneditor-tree div.jsoneditor-date {
   border-radius: 3px;
   display: inline-block;
   padding: 3px;
+  margin: 0 3px;
 }
 
 div.jsoneditor {
