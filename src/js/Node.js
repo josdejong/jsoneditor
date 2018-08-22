@@ -276,7 +276,7 @@ Node.prototype.updateError = function() {
 
     var button = document.createElement('button');
     button.type = 'button';
-    button.className = 'jsoneditor-schema-error';
+    button.className = 'jsoneditor-button jsoneditor-schema-error';
     button.appendChild(popover);
 
     // update the direction of the popover

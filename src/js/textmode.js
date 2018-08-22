@@ -845,7 +845,7 @@ textmode._renderValidationErrors = function(errors) {
                   '<td>' + error.message + '</td>';
             }
 
-            return '<tr><td><button class="jsoneditor-schema-error"></button></td>' + message + '</tr>'
+            return '<tr><td><button class="jsoneditor-button jsoneditor-schema-error"></button></td>' + message + '</tr>'
           }).join('') +
           '</tbody>' +
           '</table>';
