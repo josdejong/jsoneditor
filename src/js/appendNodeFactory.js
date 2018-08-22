@@ -55,7 +55,7 @@ function appendNodeFactory(Node) {
       dom.tdMenu = tdMenu;
       var menu = document.createElement('button');
       menu.type = 'button';
-      menu.className = 'jsoneditor-contextmenu';
+      menu.className = 'jsoneditor-button jsoneditor-contextmenu';
       menu.title = 'Click to open the actions menu (Ctrl+M)';
       dom.menu = menu;
       tdMenu.appendChild(dom.menu);

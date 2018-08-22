@@ -300,6 +300,39 @@ Constructs a new JSONEditor.
   ```
   Only applicable when `mode` is 'form', 'tree' or 'view'.  
 
+- `{boolean} colorPicker`
+
+  If true (default), values containing a color name or color code will have a color picker rendered on their left side.
+
+- `{function} onColorPicker(parent, color, onChange)`
+
+  Callback function triggered when the user clicks a color.
+  Can be used to implement a custom color picker.
+  The callback is invoked with three arguments:
+  `parent` is an HTML element where the color picker can be attached,
+  `color` is the current color,
+  `onChange(newColor)` is a callback which has to be invoked with the new color selected in the color picker.
+  JSONEditor comes with a built-in color picker, powered by [vanilla-picker](https://github.com/Sphinxxxx/vanilla-picker).
+
+  A simple example of `onColorPicker` using `vanilla-picker`:
+
+  ```js
+  var options = {
+    onColorPicker: function (parent, color, onChange) {
+      new VanillaPicker({
+        parent: parent,
+        color: color,
+        onDone: function (color) {
+          onChange(color.hex)
+        }
+      }).show();
+    }
+  }
+  ```
+
+
+
+
 - `{string} language`
 
   The default language comes from the browser navigator, but you can force a specific language. So use here string as 'en' or 'pt-BR'. Built-in languages: `en`, `pt-BR`. Other translations can be specified via the option `languages`.
@@ -543,11 +576,28 @@ valid JSON and the editor is in mode `tree`, `view`, or `form`.
 
   Contents of the editor as string.
 
-### Constants
+### Static properties
 
 - `{string[]} JSONEditor.VALID_OPTIONS`
 
   An array with the names of all known options.
+
+- `{object} ace`
+
+  Access to the bundled Ace editor, via the [`brace` library](https://github.com/thlorenz/brace).
+  Ace is used in code mode.
+  Same as `var ace = require('brace');`.
+
+- `{function} Ajv`
+
+  Access to the bundled [`ajv` library](https://github.com/epoberezkin/ajv), used for JSON schema validation.
+  Same as `var Ajv = require('ajv');`.
+
+- `{function} VanillaPicker`
+
+  Access to the bundled [`vanilla-picker` library](https://github.com/Sphinxxxx/vanilla-picker), used as color picker.
+  Same as `var VanillaPicker = require('vanilla-picker');`.
+
 
 ### Examples
 

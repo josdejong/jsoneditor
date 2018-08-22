@@ -24,10 +24,11 @@ Cross browser testing for JSONEditor is generously provided by <a href="https://
 ## Features
 
 ### Tree editor
-- Edit, add, move, remove, and duplicate fields and values.
-- Change type of values.
+- Change, add, move, remove, and duplicate fields and values.
 - Sort arrays and objects.
+- Transform JSON using [JMESPath](http://jmespath.org/) queries.
 - Colorized code.
+- Color picker.
 - Search & highlight text in the tree view.
 - Undo and redo all actions.
 - JSON schema validation (powered by [ajv](https://github.com/epoberezkin/ajv)).
@@ -36,10 +37,12 @@ Cross browser testing for JSONEditor is generously provided by <a href="https://
 - Colorized code (powered by [Ace](https://ace.c9.io)).
 - Inspect JSON (powered by [Ace](https://ace.c9.io)).
 - Format and compact JSON.
+- Repair JSON.
 - JSON schema validation (powered by [ajv](https://github.com/epoberezkin/ajv)).
 
 ### Text editor
 - Format and compact JSON.
+- Repair JSON.
 - JSON schema validation (powered by [ajv](https://github.com/epoberezkin/ajv)).
 
 
@@ -63,18 +66,6 @@ with npm (recommended):
 with bower:
 
     bower install jsoneditor
-
-
-#### More
-
-
-There is a directive available for using JSONEditor in AngularJS:
-
-[https://github.com/isonet/angular-jsoneditor](https://github.com/isonet/angular-jsoneditor)
-
-Directive for Angular 5.x as well:
-
-[https://github.com/mariohmol/ang-jsoneditor](https://github.com/mariohmol/ang-jsoneditor)
 
 
 ## Use
@@ -158,7 +149,7 @@ To create a custom bundle of the source code using browserify:
 
     browserify ./index.js -o ./jsoneditor.custom.js -s JSONEditor
 
-The Ace editor, used in mode `code`, accounts for about 75% of the total
+The Ace editor, used in mode `code`, accounts for about one third of the total
 size of the library. To exclude the Ace editor from the bundle:
 
     browserify ./index.js -o ./jsoneditor.custom.js -s JSONEditor -x brace -x brace/mode/json -x brace/ext/searchbox

@@ -758,7 +758,7 @@ Node.prototype.expand = function(recurse) {
   // set this node expanded
   this.expanded = true;
   if (this.dom.expand) {
-    this.dom.expand.className = 'jsoneditor-expanded';
+    this.dom.expand.className = 'jsoneditor-button jsoneditor-expanded';
   }
 
   this.showChilds();
@@ -792,7 +792,7 @@ Node.prototype.collapse = function(recurse) {
 
   // make this node collapsed
   if (this.dom.expand) {
-    this.dom.expand.className = 'jsoneditor-collapsed';
+    this.dom.expand.className = 'jsoneditor-button jsoneditor-collapsed';
   }
   this.expanded = false;
 };
@@ -1737,7 +1737,11 @@ Node.prototype._updateDomValue = function () {
     }
 
     // show color picker when value is a color
-    if (this.editable.value && typeof value === 'string' && util.isValidColor(value)) {
+    if (this.editable.value &&
+        this.editor.options.colorPicker &&
+        typeof value === 'string' &&
+        util.isValidColor(value)) {
+
       if (!this.dom.color) {
         this.dom.color = document.createElement('div');
         this.dom.color.className = 'jsoneditor-color';
@@ -1754,17 +1758,21 @@ Node.prototype._updateDomValue = function () {
     }
     else {
       // cleanup color picker when displayed
-      if (this.dom.color) {
-        this.dom.tdColor.parentNode.removeChild(this.dom.tdColor);
-        delete this.dom.tdColor;
-        delete this.dom.color;
-      }
+      this._deleteDomColor();
     }
 
     // strip formatting from the contents of the editable div
     util.stripFormatting(domValue);
   }
 };
+
+Node.prototype._deleteDomColor = function () {
+  if (this.dom.color) {
+    this.dom.tdColor.parentNode.removeChild(this.dom.tdColor);
+    delete this.dom.tdColor;
+    delete this.dom.color;
+  }
+}
 
 /**
  * Update dom field:
@@ -1918,7 +1926,7 @@ Node.prototype.getDom = function() {
         var domDrag = document.createElement('button');
         domDrag.type = 'button';
         dom.drag = domDrag;
-        domDrag.className = 'jsoneditor-dragarea';
+        domDrag.className = 'jsoneditor-button jsoneditor-dragarea';
         domDrag.title = translate('drag');
         tdDrag.appendChild(domDrag);
       }
@@ -1930,7 +1938,7 @@ Node.prototype.getDom = function() {
     var menu = document.createElement('button');
     menu.type = 'button';
     dom.menu = menu;
-    menu.className = 'jsoneditor-contextmenu';
+    menu.className = 'jsoneditor-button jsoneditor-contextmenu';
     menu.title = translate('actionsMenu');
     tdMenu.appendChild(dom.menu);
     dom.tr.appendChild(tdMenu);
@@ -2638,11 +2646,13 @@ Node.prototype._createDomExpandButton = function () {
   var expand = document.createElement('button');
   expand.type = 'button';
   if (this._hasChilds()) {
-    expand.className = this.expanded ? 'jsoneditor-expanded' : 'jsoneditor-collapsed';
+    expand.className = this.expanded
+        ? 'jsoneditor-button jsoneditor-expanded'
+        : 'jsoneditor-button jsoneditor-collapsed';
     expand.title = translate('expandTitle');
   }
   else {
-    expand.className = 'jsoneditor-invisible';
+    expand.className = 'jsoneditor-button jsoneditor-invisible';
     expand.title = '';
   }
 
@@ -2751,6 +2761,10 @@ Node.prototype.onEvent = function (event) {
         this._onExpand(recurse);
       }
     }
+  }
+
+  if (type === 'click' && (event.target === node.dom.tdColor || event.target === node.dom.color)) {
+    this._showColorPicker();
   }
 
   // swap the value of a boolean when the checkbox displayed left is clicked
@@ -3301,6 +3315,31 @@ Node.prototype._onExpand = function (recurse) {
 };
 
 /**
+ * Open a color picker to select a new color
+ * @private
+ */
+Node.prototype._showColorPicker = function () {
+  if (typeof this.editor.options.onColorPicker === 'function' && this.dom.color) {
+    var node = this;
+
+    // force deleting current color picker (if any)
+    node._deleteDomColor();
+    node.updateDom();
+
+    this.editor.options.onColorPicker(this.dom.color, this.value, function onChange(value) {
+      if (typeof value === 'string' && value !== node.value) {
+        // force recreating the color block, to cleanup any attached color picker
+        node._deleteDomColor();
+
+        node.value = value;
+        node.updateDom();
+        node._onChangeValue();
+      }
+    });
+  }
+}
+
+/**
  * Remove nodes
  * @param {Node[] | Node} nodes
  */
@@ -3762,7 +3801,7 @@ Node.prototype.getShowMoreDom = function () {
 
 /**
  * Find the node from an event target
- * @param {Node} target
+ * @param {HTMLElement} target
  * @return {Node | undefined} node  or undefined when not found
  * @static
  */
@@ -3776,6 +3815,27 @@ Node.getNodeFromTarget = function (target) {
 
   return undefined;
 };
+
+/**
+ * Test whether target is a child of the color DOM of a node
+ * @param {HTMLElement} target
+ * @returns {boolean}
+ */
+Node.targetIsColorPicker = function (target) {
+  var node = Node.getNodeFromTarget(target);
+
+  if (node) {
+    var parent = target && target.parentNode;
+    while (parent) {
+      if (parent === node.dom.color) {
+        return true;
+      }
+      parent = parent.parentNode;
+    }
+  }
+
+  return false;
+}
 
 /**
  * Remove the focus of given nodes, and move the focus to the (a) node before,

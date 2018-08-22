@@ -8,6 +8,9 @@ catch (err) {
   // no problem... when we need Ajv we will throw a neat exception
 }
 
+var ace = require('./ace'); // may be undefined in case of minimalist bundle
+var VanillaPicker = require('./vanilla-picker'); // may be undefined in case of minimalist bundle
+
 var treemode = require('./treemode');
 var textmode = require('./textmode');
 var util = require('./util');
@@ -441,5 +444,10 @@ JSONEditor.registerMode = function (mode) {
 // register tree and text modes
 JSONEditor.registerMode(treemode);
 JSONEditor.registerMode(textmode);
+
+// expose some of the libraries that can be used customized
+JSONEditor.ace = ace;
+JSONEditor.Ajv = Ajv;
+JSONEditor.VanillaPicker = VanillaPicker;
 
 module.exports = JSONEditor;

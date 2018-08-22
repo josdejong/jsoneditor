@@ -29,7 +29,8 @@
     "jmespath": "0.15.0",
     "json-source-map": "^0.4.0",
     "mobius1-selectr": "2.4.1",
-    "picomodal": "3.0.0"
+    "picomodal": "3.0.0",
+    "vanilla-picker": "2.3.0"
   },
   "devDependencies": {
     "gulp": "3.9.1",

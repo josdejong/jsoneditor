@@ -21,9 +21,10 @@ The minimalist version has excluded the following libraries:
 
 - `ace` (via `brace`), used for the code editor.
 - `ajv`, used for JSON schema validation.
+- `vanilla-picker`, used as color picker.
 
-This reduces the the size of the minified and gzipped JavaScript file from
-about 160 kB to about 40 kB.
+This reduces the the size of the minified and gzipped JavaScript file
+from about 210 kB to about 70 kB (one third).
 
 When to use the minimalist version?
 
@@ -31,6 +32,8 @@ When to use the minimalist version?
 - Or if you want to provide `ace` and/or `ajv` yourself via the configuration
   options, for example when you already use Ace in other parts of your
   web application too and don't want to bundle the library twice.
+- You don't need the color picker, or want to provide your own
+  color picker using `onColorPicker`.
 
 Which files are needed when using the minimalist version?
 

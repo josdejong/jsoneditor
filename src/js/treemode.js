@@ -1,6 +1,6 @@
 'use strict';
 
-
+var VanillaPicker = require('./vanilla-picker');
 var Highlighter = require('./Highlighter');
 var History = require('./History');
 var SearchBox = require('./SearchBox');
@@ -139,6 +139,27 @@ treemode._setOptions = function (options) {
     autocomplete: null,
     navigationBar : true,
     onSelectionChange: null,
+    colorPicker: true,
+    onColorPicker: function (parent, color, onChange) {
+      if (VanillaPicker) {
+        new VanillaPicker({
+          parent: parent,
+          color: color,
+          popup: 'bottom',
+          onDone: function (color) {
+            var alpha = color.rgba[3]
+            var hex = (alpha === 1)
+                ? color.hex.substr(0, 7)  // return #RRGGBB
+                : color.hex               // return #RRGGBBAA
+            onChange(hex)
+          }
+        }).show();
+      }
+      else {
+        console.warn('Cannot open color picker: the `vanilla-picker` library is not included in the bundle. ' +
+            'Either use the full bundle or implement your own color picker using `onColorPicker`.')
+      }
+    },
     onEvent: null
   };
 
@@ -1073,6 +1094,11 @@ treemode._onRedo = function () {
  * @private
  */
 treemode._onEvent = function (event) {
+  // don't process events when coming from the color picker
+  if (Node.targetIsColorPicker(event.target)) {
+    return;
+  }
+
   if (event.type === 'keydown') {
     this._onKeyDown(event);
   }

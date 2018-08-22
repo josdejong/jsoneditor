@@ -3,6 +3,12 @@
 https://github.com/josdejong/jsoneditor
 
 
+## not yet released, version 5.24.0
+
+- Implemented a color picker, and allow hooking in a custom color
+  picker. new options are `colorPicker` and `onColorPicker`.
+
+
 ## 2018-08-17, version 5.23.1
 
 - Fixed #566: transform function broken, regression since `v5.20.0`.
