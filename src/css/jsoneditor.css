@@ -199,6 +199,15 @@ div.jsoneditor-tree div.jsoneditor-show-more a:focus {
   color: #ee422e;
 }
 
+div.jsoneditor-tree div.jsoneditor-color {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  margin: 4px;
+
+  border: 1px solid #808080;
+}
+
 div.jsoneditor {
   color: #1A1A1A;
   border: 1px solid #3883fa;

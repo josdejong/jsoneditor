@@ -976,6 +976,28 @@ exports.getPositionForPath = function(text, paths) {
   
 }
 
+/**
+ * Get the applied color given a color name or code
+ * Source: https://stackoverflow.com/questions/6386090/validating-css-color-names/33184805
+ * @param {string} color
+ * @returns {string | null} returns the color if the input is a valid
+ *                   color, and returns null otherwise. Example output:
+ *                   'rgba(255,0,0,0.7)' or 'rgb(255,0,0)'
+ */
+exports.getColorCSS = function (color) {
+  var ele = document.createElement('div');
+  ele.style.color = color;
+  return ele.style.color.split(/\s+/).join('').toLowerCase() || null;
+}
+
+/**
+ * Test if a string contains a valid color name or code.
+ * @param {string} color
+ * @returns {boolean} returns true if a valid color, false otherwise
+ */
+exports.isValidColor = function (color) {
+  return !!exports.getColorCSS(color);
+}
 
 if (typeof Element !== 'undefined') {
   // Polyfill for array remove

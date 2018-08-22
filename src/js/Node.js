@@ -1619,7 +1619,6 @@ Node.prototype._updateDomValue = function () {
   if (domValue) {
     var classNames = ['jsoneditor-value'];
 
-
     // set text color depending on value type
     var value = this.value;
     var type = (this.type == 'auto') ? util.type(value) : this.type;
@@ -1680,8 +1679,8 @@ Node.prototype._updateDomValue = function () {
       }
     }
 
+    // create select box when this node has an enum object
     if (this.enum && this.editable.value) {
-      // create select box when this node has an enum object
       if (!this.dom.select) {
         this.dom.select = document.createElement('select');
         this.id = this.field + "_" + new Date().getUTCMilliseconds();
@@ -1734,6 +1733,31 @@ Node.prototype._updateDomValue = function () {
         this.dom.tdValue.innerHTML = this.valueFieldHTML;
         this.dom.tdValue.style.visibility = '';
         delete this.valueFieldHTML;
+      }
+    }
+
+    // show color picker when value is a color
+    if (this.editable.value && typeof value === 'string' && util.isValidColor(value)) {
+      if (!this.dom.color) {
+        this.dom.color = document.createElement('div');
+        this.dom.color.className = 'jsoneditor-color';
+
+        this.dom.tdColor = document.createElement('td');
+        this.dom.tdColor.className = 'jsoneditor-tree';
+        this.dom.tdColor.appendChild(this.dom.color);
+
+        this.dom.tdValue.parentNode.insertBefore(this.dom.tdColor, this.dom.tdValue);
+      }
+
+      // update the color background
+      this.dom.color.style.backgroundColor = value;
+    }
+    else {
+      // cleanup color picker when displayed
+      if (this.dom.color) {
+        this.dom.tdColor.parentNode.removeChild(this.dom.tdColor);
+        delete this.dom.tdColor;
+        delete this.dom.color;
       }
     }
 
