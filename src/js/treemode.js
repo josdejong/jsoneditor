@@ -1043,8 +1043,6 @@ treemode._createFrame = function () {
   if (this.options && this.options.modes && this.options.modes.length) {
     var me = this;
     this.modeSwitcher = new ModeSwitcher(this.menu, this.options.modes, this.options.mode, function onSwitch(mode) {
-      me.modeSwitcher.destroy();
-
       // switch mode and restore focus
       me.setMode(mode);
       me.modeSwitcher.focus();
