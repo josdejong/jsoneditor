@@ -25,7 +25,7 @@
  *
  * @author  Jos de Jong, <wjosdejong@gmail.com>
  * @version 5.24.0
- * @date    2018-08-22
+ * @date    2018-08-25
  */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
@@ -97,8 +97,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	var VanillaPicker = __webpack_require__(57); // may be undefined in case of minimalist bundle
 
 	var treemode = __webpack_require__(59);
-	var textmode = __webpack_require__(80);
-	var util = __webpack_require__(64);
+	var textmode = __webpack_require__(81);
+	var util = __webpack_require__(65);
 
 	/**
 	 * @constructor JSONEditor
@@ -30293,16 +30293,16 @@ return /******/ (function(modules) { // webpackBootstrap
 	var History = __webpack_require__(61);
 	var SearchBox = __webpack_require__(62);
 	var ContextMenu = __webpack_require__(63);
-	var TreePath = __webpack_require__(68);
-	var Node = __webpack_require__(69);
-	var ModeSwitcher = __webpack_require__(78);
-	var util = __webpack_require__(64);
-	var autocomplete = __webpack_require__(79);
-	var showSortModal = __webpack_require__(74);
-	var showTransformModal = __webpack_require__(76);
-	var translate = __webpack_require__(67).translate;
-	var setLanguages = __webpack_require__(67).setLanguages;
-	var setLanguage = __webpack_require__(67).setLanguage;
+	var TreePath = __webpack_require__(69);
+	var Node = __webpack_require__(70);
+	var ModeSwitcher = __webpack_require__(79);
+	var util = __webpack_require__(65);
+	var autocomplete = __webpack_require__(80);
+	var showSortModal = __webpack_require__(75);
+	var showTransformModal = __webpack_require__(77);
+	var translate = __webpack_require__(68).translate;
+	var setLanguages = __webpack_require__(68).setLanguages;
+	var setLanguage = __webpack_require__(68).setLanguage;
 
 	var DEFAULT_MODAL_ANCHOR = document.body; // TODO: this constant is defined twice
 
@@ -30432,15 +30432,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	    colorPicker: true,
 	    onColorPicker: function (parent, color, onChange) {
 	      if (VanillaPicker) {
-	        var contentRect = editor.content.getBoundingClientRect();
-	        var parentRect = parent.getBoundingClientRect();
-	        var pickerWidth = 250;
-	        var pickerRight = parentRect.right + pickerWidth;
-
 	        new VanillaPicker({
 	          parent: parent,
 	          color: color,
-	          popup: (pickerRight < contentRect.right) ? 'bottom' : 'left',
+	          popup: 'bottom',
 	          onDone: function (color) {
 	            var alpha = color.rgba[3]
 	            var hex = (alpha === 1)
@@ -31331,8 +31326,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	  if (this.options && this.options.modes && this.options.modes.length) {
 	    var me = this;
 	    this.modeSwitcher = new ModeSwitcher(this.menu, this.options.modes, this.options.mode, function onSwitch(mode) {
-	      me.modeSwitcher.destroy();
-
 	      // switch mode and restore focus
 	      me.setMode(mode);
 	      me.modeSwitcher.focus();
@@ -31943,7 +31936,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  });
 
 	  var menu = new ContextMenu(items, {close: onClose});
-	  menu.show(anchor, this.content);
+	  menu.show(anchor, editor.frame);
 	};
 
 	/**
@@ -32880,17 +32873,9 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	'use strict';
 
-	var util = __webpack_require__(64);
-	var translate = __webpack_require__(67).translate;
-
-	/**
-	 * Node.getRootNode shim
-	 * @param  {Node} node node to check
-	 * @return {Node}      node's rootNode or `window` if there is ShadowDOM is not supported.
-	 */
-	function getRootNode(node){
-	    return node.getRootNode && node.getRootNode() || window;
-	}
+	var createAbsoluteAnchor = __webpack_require__(64).createAbsoluteAnchor;
+	var util = __webpack_require__(65);
+	var translate = __webpack_require__(68).translate;
 
 	/**
 	 * A context menu
@@ -33083,33 +33068,33 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	/**
 	 * Attach the menu to an anchor
-	 * @param {HTMLElement} anchor          Anchor where the menu will be attached
-	 *                                      as sibling.
-	 * @param {HTMLElement} [contentWindow] The DIV with with the (scrollable) contents
+	 * @param {HTMLElement} anchor  Anchor where the menu will be attached as sibling.
+	 * @param {HTMLElement} frame   The root of the JSONEditor window
 	 */
-	ContextMenu.prototype.show = function (anchor, contentWindow) {
+	ContextMenu.prototype.show = function (anchor, frame) {
 	  this.hide();
 
 	  // determine whether to display the menu below or above the anchor
 	  var showBelow = true;
 	  var parent = anchor.parentNode;
 	  var anchorRect = anchor.getBoundingClientRect();
-	  var parentRect = parent.getBoundingClientRect()
+	  var parentRect = parent.getBoundingClientRect();
+	  var frameRect = frame.getBoundingClientRect();
 
-	  if (contentWindow) {
-	    
-	    var contentRect = contentWindow.getBoundingClientRect();
+	  var me = this;
+	  this.dom.absoluteAnchor = createAbsoluteAnchor(anchor, frame, function () {
+	    me.hide()
+	  });
 
-	    if (anchorRect.bottom + this.maxHeight < contentRect.bottom) {
-	      // fits below -> show below
-	    }
-	    else if (anchorRect.top - this.maxHeight > contentRect.top) {
-	      // fits above -> show above
-	      showBelow = false;
-	    }
-	    else {
-	      // doesn't fit above nor below -> show below
-	    }
+	  if (anchorRect.bottom + this.maxHeight < frameRect.bottom) {
+	    // fits below -> show below
+	  }
+	  else if (anchorRect.top - this.maxHeight > frameRect.top) {
+	    // fits above -> show above
+	    showBelow = false;
+	  }
+	  else {
+	    // doesn't fit above nor below -> show below
 	  }
 
 	  var leftGap = anchorRect.left - parentRect.left;
@@ -33126,31 +33111,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	  else {
 	    // display the menu above the anchor
 	    this.dom.menu.style.left = leftGap + 'px';
-	    this.dom.menu.style.top = topGap + 'px';
+	    this.dom.menu.style.top = '';
 	    this.dom.menu.style.bottom = '0px';
 	  }
 
-	  // find the root node of the page (window, or a shadow dom root element)
-	  this.rootNode = getRootNode(anchor);
-
-	  // attach the menu to the parent of the anchor
-	  parent.insertBefore(this.dom.root, parent.firstChild);
-
-	  // create and attach event listeners
-	  var me = this;
-	  var list = this.dom.list;
-	  this.eventListeners.mousedown = util.addEventListener(this.rootNode, 'mousedown', function (event) {
-	    // hide menu on click outside of the menu
-	    var target = event.target;
-	    if ((target != list) && !me._isChildOf(target, list)) {
-	      me.hide();
-	      event.stopPropagation();
-	      event.preventDefault();
-	    }
-	  });
-	  this.eventListeners.keydown = util.addEventListener(this.rootNode, 'keydown', function (event) {
-	    me._onKeyDown(event);
-	  });
+	  // attach the menu to the temporary, absolute anchor
+	  // parent.insertBefore(this.dom.root, anchor);
+	  this.dom.absoluteAnchor.appendChild(this.dom.root);
 
 	  // move focus to the first button in the context menu
 	  this.selection = util.getSelection();
@@ -33169,23 +33136,17 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * Hide the context menu if visible
 	 */
 	ContextMenu.prototype.hide = function () {
+	  // remove temporary absolutely positioned anchor
+	  if (this.dom.absoluteAnchor) {
+	    this.dom.absoluteAnchor.destroy();
+	    delete this.dom.absoluteAnchor;
+	  }
+
 	  // remove the menu from the DOM
 	  if (this.dom.root.parentNode) {
 	    this.dom.root.parentNode.removeChild(this.dom.root);
 	    if (this.onClose) {
 	      this.onClose();
-	    }
-	  }
-
-	  // remove all event listeners
-	  // all event listeners are supposed to be attached to document.
-	  for (var name in this.eventListeners) {
-	    if (this.eventListeners.hasOwnProperty(name)) {
-	      var fn = this.eventListeners[name];
-	      if (fn) {
-	        util.removeEventListener(this.rootNode, name, fn);
-	      }
-	      delete this.eventListeners[name];
 	    }
 	  }
 
@@ -33347,24 +33308,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	  }
 	};
 
-	/**
-	 * Test if an element is a child of a parent element.
-	 * @param {Element} child
-	 * @param {Element} parent
-	 * @return {boolean} isChild
-	 */
-	ContextMenu.prototype._isChildOf = function (child, parent) {
-	  var e = child.parentNode;
-	  while (e) {
-	    if (e == parent) {
-	      return true;
-	    }
-	    e = e.parentNode;
-	  }
-
-	  return false;
-	};
-
 	module.exports = ContextMenu;
 
 
@@ -33372,10 +33315,95 @@ return /******/ (function(modules) { // webpackBootstrap
 /* 64 */
 /***/ function(module, exports, __webpack_require__) {
 
+	var util = __webpack_require__(65);
+
+	/**
+	 * Create an anchor element absolutely positioned in the `parent`
+	 * element.
+	 * @param {HTMLElement} anchor
+	 * @param {HTMLElement} parent
+	 * @param [onDestroy(function(anchor)]  Callback when the anchor is destroyed
+	 * @returns {HTMLElement}
+	 */
+	exports.createAbsoluteAnchor = function (anchor, parent, onDestroy) {
+	  var root = getRootNode(anchor);
+	  var eventListeners = {};
+
+	  var anchorRect = anchor.getBoundingClientRect();
+	  var frameRect = parent.getBoundingClientRect();
+
+	  var absoluteAnchor = document.createElement('div');
+	  absoluteAnchor.className = 'jsoneditor-anchor';
+	  absoluteAnchor.style.position = 'absolute';
+	  absoluteAnchor.style.left = (anchorRect.left - frameRect.left) + 'px';
+	  absoluteAnchor.style.top = (anchorRect.top - frameRect.top) + 'px';
+	  absoluteAnchor.style.width = (anchorRect.width - 2) + 'px';
+	  absoluteAnchor.style.height = (anchorRect.height - 2) + 'px';
+	  absoluteAnchor.style.boxSizing = 'border-box';
+	  parent.appendChild(absoluteAnchor);
+
+	  function destroy () {
+	    // remove temporary absolutely positioned anchor
+	    if (absoluteAnchor && absoluteAnchor.parentNode) {
+	      absoluteAnchor.parentNode.removeChild(absoluteAnchor);
+
+	      // remove all event listeners
+	      // all event listeners are supposed to be attached to document.
+	      for (var name in eventListeners) {
+	        if (eventListeners.hasOwnProperty(name)) {
+	          var fn = eventListeners[name];
+	          if (fn) {
+	            util.removeEventListener(root, name, fn);
+	          }
+	          delete eventListeners[name];
+	        }
+	      }
+
+	      if (typeof onDestroy === 'function') {
+	        onDestroy(anchor);
+	      }
+	    }
+	  }
+
+	  // create and attach event listeners
+	  var destroyIfOutside = function (event) {
+	    var target = event.target;
+	    if ((target !== absoluteAnchor) && !util.isChildOf(target, absoluteAnchor)) {
+	      destroy();
+	      event.stopPropagation();
+	      event.preventDefault();
+	    }
+	  }
+
+	  eventListeners.mousedown = util.addEventListener(root, 'mousedown', destroyIfOutside);
+	  eventListeners.mousewheel = util.addEventListener(root, 'mousewheel', destroyIfOutside);
+	  // eventListeners.scroll = util.addEventListener(this.rootNode, 'scroll', destroyIfOutside);
+
+	  absoluteAnchor.destroy = destroy;
+
+	  return absoluteAnchor
+	}
+
+	/**
+	 * Node.getRootNode shim
+	 * @param  {HTMLElement} node node to check
+	 * @return {HTMLElement}      node's rootNode or `window` if there is ShadowDOM is not supported.
+	 */
+	function getRootNode(node){
+	  return (typeof node.getRootNode === 'function')
+	      ? node.getRootNode()
+	      : window;
+	}
+
+
+/***/ },
+/* 65 */
+/***/ function(module, exports, __webpack_require__) {
+
 	'use strict';
 
-	var jsonlint = __webpack_require__(65);
-	var jsonMap = __webpack_require__(66);
+	var jsonlint = __webpack_require__(66);
+	var jsonMap = __webpack_require__(67);
 
 	/**
 	 * Parse JSON using the parser built-in in the browser.
@@ -34046,6 +34074,24 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 
 	/**
+	 * Test if an element is a child of a parent element.
+	 * @param {Element} elem
+	 * @param {Element} parent
+	 * @return {boolean} returns true if elem is a child of the parent
+	 */
+	exports.isChildOf = function (elem, parent) {
+	  var e = elem.parentNode;
+	  while (e) {
+	    if (e === parent) {
+	      return true;
+	    }
+	    e = e.parentNode;
+	  }
+
+	  return false;
+	};
+
+	/**
 	 * Parse a JSON path like '.items[3].name' into an array
 	 * @param {string} jsonPath
 	 * @return {Array}
@@ -34419,7 +34465,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	}
 
 /***/ },
-/* 65 */
+/* 66 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* Jison generated parser */
@@ -34842,7 +34888,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	}
 
 /***/ },
-/* 66 */
+/* 67 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -35258,7 +35304,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 67 */
+/* 68 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -35492,13 +35538,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 
 /***/ },
-/* 68 */
+/* 69 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
 	var ContextMenu = __webpack_require__(63);
-	var translate = __webpack_require__(67).translate;
+	var translate = __webpack_require__(68).translate;
 
 	/**
 	 * Creates a component that visualize path selection in tree based editors
@@ -35607,20 +35653,21 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = TreePath;
 
 /***/ },
-/* 69 */
+/* 70 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var jmespath = __webpack_require__(70);
-	var naturalSort = __webpack_require__(71);
+	var jmespath = __webpack_require__(71);
+	var naturalSort = __webpack_require__(72);
+	var createAbsoluteAnchor = __webpack_require__(64).createAbsoluteAnchor;
 	var ContextMenu = __webpack_require__(63);
-	var appendNodeFactory = __webpack_require__(72);
-	var showMoreNodeFactory = __webpack_require__(73);
-	var showSortModal = __webpack_require__(74);
-	var showTransformModal = __webpack_require__(76);
-	var util = __webpack_require__(64);
-	var translate = __webpack_require__(67).translate;
+	var appendNodeFactory = __webpack_require__(73);
+	var showMoreNodeFactory = __webpack_require__(74);
+	var showSortModal = __webpack_require__(75);
+	var showTransformModal = __webpack_require__(77);
+	var util = __webpack_require__(65);
+	var translate = __webpack_require__(68).translate;
 
 	var DEFAULT_MODAL_ANCHOR = document.body; // TODO: this constant is defined twice
 
@@ -38968,7 +39015,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	    node._deleteDomColor();
 	    node.updateDom();
 
-	    this.editor.options.onColorPicker(this.dom.color, this.value, function onChange(value) {
+	    var colorAnchor = createAbsoluteAnchor(this.dom.color, this.editor.frame);
+
+	    this.editor.options.onColorPicker(colorAnchor, this.value, function onChange(value) {
+	      colorAnchor.destroy();
+
 	      if (typeof value === 'string' && value !== node.value) {
 	        // force recreating the color block, to cleanup any attached color picker
 	        node._deleteDomColor();
@@ -39927,7 +39978,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  }
 
 	  var menu = new ContextMenu(items, {close: onClose});
-	  menu.show(anchor, this.editor.content);
+	  menu.show(anchor, this.editor.frame);
 	};
 
 	/**
@@ -40086,7 +40137,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 70 */
+/* 71 */
 /***/ function(module, exports, __webpack_require__) {
 
 	(function(exports) {
@@ -41759,7 +41810,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 71 */
+/* 72 */
 /***/ function(module, exports) {
 
 	/*
@@ -41810,14 +41861,14 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 72 */
+/* 73 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var util = __webpack_require__(64);
+	var util = __webpack_require__(65);
 	var ContextMenu = __webpack_require__(63);
-	var translate = __webpack_require__(67).translate;
+	var translate = __webpack_require__(68).translate;
 
 	/**
 	 * A factory function to create an AppendNode, which depends on a Node
@@ -42065,12 +42116,12 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 73 */
+/* 74 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var translate = __webpack_require__(67).translate;
+	var translate = __webpack_require__(68).translate;
 
 	/**
 	 * A factory function to create an ShowMoreNode, which depends on a Node
@@ -42226,11 +42277,11 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 74 */
+/* 75 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var picoModal = __webpack_require__(75);
-	var translate = __webpack_require__(67).translate;
+	var picoModal = __webpack_require__(76);
+	var translate = __webpack_require__(68).translate;
 
 	/**
 	 * Show advanced sorting modal
@@ -42346,7 +42397,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 75 */
+/* 76 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/**
@@ -42955,14 +43006,14 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 76 */
+/* 77 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var jmespath = __webpack_require__(70);
-	var picoModal = __webpack_require__(75);
-	var Selectr = __webpack_require__(77);
-	var translate = __webpack_require__(67).translate;
-	var debounce = __webpack_require__(64).debounce;
+	var jmespath = __webpack_require__(71);
+	var picoModal = __webpack_require__(76);
+	var Selectr = __webpack_require__(78);
+	var translate = __webpack_require__(68).translate;
+	var debounce = __webpack_require__(65).debounce;
 
 	var MAX_PREVIEW_LINES = 100;
 
@@ -43262,7 +43313,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 77 */
+/* 78 */
 /***/ function(module, exports) {
 
 	/*!
@@ -45441,7 +45492,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 78 */
+/* 79 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -45562,7 +45613,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 79 */
+/* 80 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -45949,14 +46000,14 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = completely;
 
 /***/ },
-/* 80 */
+/* 81 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
 	var ace = __webpack_require__(51);
-	var ModeSwitcher = __webpack_require__(78);
-	var util = __webpack_require__(64);
+	var ModeSwitcher = __webpack_require__(79);
+	var util = __webpack_require__(65);
 
 	// create a mixin with the functions for text mode
 	var textmode = {};
@@ -46027,7 +46078,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  this.theme = options.theme || DEFAULT_THEME;
 	  if (this.theme === DEFAULT_THEME && _ace) {
 	    try {
-	      __webpack_require__(81);
+	      __webpack_require__(82);
 	    }
 	    catch (err) {
 	      console.error(err);
@@ -46974,7 +47025,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 81 */
+/* 82 */
 /***/ function(module, exports) {
 
 	/* ***** BEGIN LICENSE BLOCK *****
