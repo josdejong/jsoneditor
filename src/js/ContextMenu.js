@@ -203,33 +203,38 @@ ContextMenu.visibleMenu = undefined;
 
 /**
  * Attach the menu to an anchor
- * @param {HTMLElement} anchor          Anchor where the menu will be attached
- *                                      as sibling.
- * @param {HTMLElement} [contentWindow] The DIV with with the (scrollable) contents
+ * @param {HTMLElement} anchor  Anchor where the menu will be attached as sibling.
+ * @param {HTMLElement} frame   The root of the JSONEditor window
  */
-ContextMenu.prototype.show = function (anchor, contentWindow) {
+ContextMenu.prototype.show = function (anchor, frame) {
   this.hide();
 
   // determine whether to display the menu below or above the anchor
   var showBelow = true;
   var parent = anchor.parentNode;
   var anchorRect = anchor.getBoundingClientRect();
-  var parentRect = parent.getBoundingClientRect()
+  var parentRect = parent.getBoundingClientRect();
+  var frameRect = frame.getBoundingClientRect();
 
-  if (contentWindow) {
-    
-    var contentRect = contentWindow.getBoundingClientRect();
+  this.dom.absoluteAnchor = document.createElement('div');
+  this.dom.absoluteAnchor.className = 'context-menu-anchor';
+  this.dom.absoluteAnchor.style.position = 'absolute';
+  this.dom.absoluteAnchor.style.left = (anchorRect.left - frameRect.left) + 'px';
+  this.dom.absoluteAnchor.style.top = (anchorRect.top - frameRect.top) + 'px';
+  this.dom.absoluteAnchor.style.width = (anchorRect.width - 2) + 'px';
+  this.dom.absoluteAnchor.style.height = (anchorRect.height - 2) + 'px';
+  this.dom.absoluteAnchor.style.boxSizing = 'border-box';
+  frame.appendChild(this.dom.absoluteAnchor);
 
-    if (anchorRect.bottom + this.maxHeight < contentRect.bottom) {
-      // fits below -> show below
-    }
-    else if (anchorRect.top - this.maxHeight > contentRect.top) {
-      // fits above -> show above
-      showBelow = false;
-    }
-    else {
-      // doesn't fit above nor below -> show below
-    }
+  if (anchorRect.bottom + this.maxHeight < frameRect.bottom) {
+    // fits below -> show below
+  }
+  else if (anchorRect.top - this.maxHeight > frameRect.top) {
+    // fits above -> show above
+    showBelow = false;
+  }
+  else {
+    // doesn't fit above nor below -> show below
   }
 
   var leftGap = anchorRect.left - parentRect.left;
@@ -246,28 +251,32 @@ ContextMenu.prototype.show = function (anchor, contentWindow) {
   else {
     // display the menu above the anchor
     this.dom.menu.style.left = leftGap + 'px';
-    this.dom.menu.style.top = topGap + 'px';
+    this.dom.menu.style.top = '';
     this.dom.menu.style.bottom = '0px';
   }
 
   // find the root node of the page (window, or a shadow dom root element)
   this.rootNode = getRootNode(anchor);
 
-  // attach the menu to the parent of the anchor
-  parent.insertBefore(this.dom.root, parent.firstChild);
+  // attach the menu to the temporary, absolute anchor
+  // parent.insertBefore(this.dom.root, anchor);
+  this.dom.absoluteAnchor.appendChild(this.dom.root);
 
   // create and attach event listeners
   var me = this;
   var list = this.dom.list;
-  this.eventListeners.mousedown = util.addEventListener(this.rootNode, 'mousedown', function (event) {
+  var hideIfOutside = function (event) {
     // hide menu on click outside of the menu
     var target = event.target;
-    if ((target != list) && !me._isChildOf(target, list)) {
+    if ((target !== list) && !me._isChildOf(target, list)) {
       me.hide();
       event.stopPropagation();
       event.preventDefault();
     }
-  });
+  }
+  this.eventListeners.mousedown = util.addEventListener(this.rootNode, 'mousedown', hideIfOutside);
+  this.eventListeners.mousewheel = util.addEventListener(this.rootNode, 'mousewheel', hideIfOutside);
+  // this.eventListeners.scroll = util.addEventListener(this.rootNode, 'scroll', hideIfOutside);
   this.eventListeners.keydown = util.addEventListener(this.rootNode, 'keydown', function (event) {
     me._onKeyDown(event);
   });
@@ -289,6 +298,11 @@ ContextMenu.prototype.show = function (anchor, contentWindow) {
  * Hide the context menu if visible
  */
 ContextMenu.prototype.hide = function () {
+  // remove temporary absolutely positioned anchor
+  if (this.dom.absoluteAnchor && this.dom.absoluteAnchor.parentNode) {
+    this.dom.absoluteAnchor.parentNode.removeChild(this.dom.absoluteAnchor);
+  }
+
   // remove the menu from the DOM
   if (this.dom.root.parentNode) {
     this.dom.root.parentNode.removeChild(this.dom.root);

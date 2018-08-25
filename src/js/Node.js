@@ -4315,7 +4315,7 @@ Node.prototype.showContextMenu = function (anchor, onClose) {
   }
 
   var menu = new ContextMenu(items, {close: onClose});
-  menu.show(anchor, this.editor.content);
+  menu.show(anchor, this.editor.frame);
 };
 
 /**

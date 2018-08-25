@@ -1653,7 +1653,7 @@ treemode.showContextMenu = function (anchor, onClose) {
   });
 
   var menu = new ContextMenu(items, {close: onClose});
-  menu.show(anchor, this.content);
+  menu.show(anchor, editor.frame);
 };
 
 /**
