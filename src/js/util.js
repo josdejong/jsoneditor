@@ -672,6 +672,24 @@ exports.removeEventListener = function removeEventListener(element, action, list
 };
 
 /**
+ * Test if an element is a child of a parent element.
+ * @param {Element} elem
+ * @param {Element} parent
+ * @return {boolean} returns true if elem is a child of the parent
+ */
+exports.isChildOf = function (elem, parent) {
+  var e = elem.parentNode;
+  while (e) {
+    if (e === parent) {
+      return true;
+    }
+    e = e.parentNode;
+  }
+
+  return false;
+};
+
+/**
  * Parse a JSON path like '.items[3].name' into an array
  * @param {string} jsonPath
  * @return {Array}

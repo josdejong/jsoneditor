@@ -209,7 +209,7 @@ div.jsoneditor-tree div.jsoneditor-color {
   cursor: pointer;
 }
 
-div.jsoneditor-tree div.jsoneditor-color .picker_wrapper.popup.popup_bottom {
+div.jsoneditor div.jsoneditor-anchor .picker_wrapper.popup.popup_bottom {
   top: 28px;
   left: -10px;
 }

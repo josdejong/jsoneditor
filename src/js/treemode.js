@@ -144,15 +144,10 @@ treemode._setOptions = function (options) {
     colorPicker: true,
     onColorPicker: function (parent, color, onChange) {
       if (VanillaPicker) {
-        var contentRect = editor.content.getBoundingClientRect();
-        var parentRect = parent.getBoundingClientRect();
-        var pickerWidth = 250;
-        var pickerRight = parentRect.right + pickerWidth;
-
         new VanillaPicker({
           parent: parent,
           color: color,
-          popup: (pickerRight < contentRect.right) ? 'bottom' : 'left',
+          popup: 'bottom',
           onDone: function (color) {
             var alpha = color.rgba[3]
             var hex = (alpha === 1)

@@ -1,16 +1,8 @@
 'use strict';
 
+var createAbsoluteAnchor = require('./createAbsoluteAnchor').createAbsoluteAnchor;
 var util = require('./util');
 var translate = require('./i18n').translate;
-
-/**
- * Node.getRootNode shim
- * @param  {Node} node node to check
- * @return {Node}      node's rootNode or `window` if there is ShadowDOM is not supported.
- */
-function getRootNode(node){
-    return node.getRootNode && node.getRootNode() || window;
-}
 
 /**
  * A context menu
@@ -216,15 +208,10 @@ ContextMenu.prototype.show = function (anchor, frame) {
   var parentRect = parent.getBoundingClientRect();
   var frameRect = frame.getBoundingClientRect();
 
-  this.dom.absoluteAnchor = document.createElement('div');
-  this.dom.absoluteAnchor.className = 'context-menu-anchor';
-  this.dom.absoluteAnchor.style.position = 'absolute';
-  this.dom.absoluteAnchor.style.left = (anchorRect.left - frameRect.left) + 'px';
-  this.dom.absoluteAnchor.style.top = (anchorRect.top - frameRect.top) + 'px';
-  this.dom.absoluteAnchor.style.width = (anchorRect.width - 2) + 'px';
-  this.dom.absoluteAnchor.style.height = (anchorRect.height - 2) + 'px';
-  this.dom.absoluteAnchor.style.boxSizing = 'border-box';
-  frame.appendChild(this.dom.absoluteAnchor);
+  var me = this;
+  this.dom.absoluteAnchor = createAbsoluteAnchor(anchor, frame, function () {
+    me.hide()
+  });
 
   if (anchorRect.bottom + this.maxHeight < frameRect.bottom) {
     // fits below -> show below
@@ -255,31 +242,9 @@ ContextMenu.prototype.show = function (anchor, frame) {
     this.dom.menu.style.bottom = '0px';
   }
 
-  // find the root node of the page (window, or a shadow dom root element)
-  this.rootNode = getRootNode(anchor);
-
   // attach the menu to the temporary, absolute anchor
   // parent.insertBefore(this.dom.root, anchor);
   this.dom.absoluteAnchor.appendChild(this.dom.root);
-
-  // create and attach event listeners
-  var me = this;
-  var list = this.dom.list;
-  var hideIfOutside = function (event) {
-    // hide menu on click outside of the menu
-    var target = event.target;
-    if ((target !== list) && !me._isChildOf(target, list)) {
-      me.hide();
-      event.stopPropagation();
-      event.preventDefault();
-    }
-  }
-  this.eventListeners.mousedown = util.addEventListener(this.rootNode, 'mousedown', hideIfOutside);
-  this.eventListeners.mousewheel = util.addEventListener(this.rootNode, 'mousewheel', hideIfOutside);
-  // this.eventListeners.scroll = util.addEventListener(this.rootNode, 'scroll', hideIfOutside);
-  this.eventListeners.keydown = util.addEventListener(this.rootNode, 'keydown', function (event) {
-    me._onKeyDown(event);
-  });
 
   // move focus to the first button in the context menu
   this.selection = util.getSelection();
@@ -299,8 +264,9 @@ ContextMenu.prototype.show = function (anchor, frame) {
  */
 ContextMenu.prototype.hide = function () {
   // remove temporary absolutely positioned anchor
-  if (this.dom.absoluteAnchor && this.dom.absoluteAnchor.parentNode) {
-    this.dom.absoluteAnchor.parentNode.removeChild(this.dom.absoluteAnchor);
+  if (this.dom.absoluteAnchor) {
+    this.dom.absoluteAnchor.destroy();
+    delete this.dom.absoluteAnchor;
   }
 
   // remove the menu from the DOM
@@ -308,18 +274,6 @@ ContextMenu.prototype.hide = function () {
     this.dom.root.parentNode.removeChild(this.dom.root);
     if (this.onClose) {
       this.onClose();
-    }
-  }
-
-  // remove all event listeners
-  // all event listeners are supposed to be attached to document.
-  for (var name in this.eventListeners) {
-    if (this.eventListeners.hasOwnProperty(name)) {
-      var fn = this.eventListeners[name];
-      if (fn) {
-        util.removeEventListener(this.rootNode, name, fn);
-      }
-      delete this.eventListeners[name];
     }
   }
 
@@ -479,24 +433,6 @@ ContextMenu.prototype._onKeyDown = function (event) {
     event.stopPropagation();
     event.preventDefault();
   }
-};
-
-/**
- * Test if an element is a child of a parent element.
- * @param {Element} child
- * @param {Element} parent
- * @return {boolean} isChild
- */
-ContextMenu.prototype._isChildOf = function (child, parent) {
-  var e = child.parentNode;
-  while (e) {
-    if (e == parent) {
-      return true;
-    }
-    e = e.parentNode;
-  }
-
-  return false;
 };
 
 module.exports = ContextMenu;

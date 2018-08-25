@@ -2,6 +2,7 @@
 
 var jmespath = require('jmespath');
 var naturalSort = require('javascript-natural-sort');
+var createAbsoluteAnchor = require('./createAbsoluteAnchor').createAbsoluteAnchor;
 var ContextMenu = require('./ContextMenu');
 var appendNodeFactory = require('./appendNodeFactory');
 var showMoreNodeFactory = require('./showMoreNodeFactory');
@@ -3356,7 +3357,9 @@ Node.prototype._showColorPicker = function () {
     node._deleteDomColor();
     node.updateDom();
 
-    this.editor.options.onColorPicker(this.dom.color, this.value, function onChange(value) {
+    var colorAnchor = createAbsoluteAnchor(this.dom.color, this.editor.frame);
+
+    this.editor.options.onColorPicker(colorAnchor, this.value, function onChange(value) {
       if (typeof value === 'string' && value !== node.value) {
         // force recreating the color block, to cleanup any attached color picker
         node._deleteDomColor();
