@@ -60,7 +60,7 @@ exports.createAbsoluteAnchor = function (anchor, parent, onDestroy) {
 
   eventListeners.mousedown = util.addEventListener(root, 'mousedown', destroyIfOutside);
   eventListeners.mousewheel = util.addEventListener(root, 'mousewheel', destroyIfOutside);
-  // eventListeners.scroll = util.addEventListener(this.rootNode, 'scroll', destroyIfOutside);
+  // eventListeners.scroll = util.addEventListener(root, 'scroll', destroyIfOutside);
 
   absoluteAnchor.destroy = destroy;
 

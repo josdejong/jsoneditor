@@ -24,8 +24,8 @@
  * Copyright (c) 2011-2017 Jos de Jong, http://jsoneditoronline.org
  *
  * @author  Jos de Jong, <wjosdejong@gmail.com>
- * @version 5.24.0
- * @date    2018-08-25
+ * @version 5.24.1
+ * @date    2018-08-26
  */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
@@ -33097,20 +33097,19 @@ return /******/ (function(modules) { // webpackBootstrap
 	    // doesn't fit above nor below -> show below
 	  }
 
-	  var leftGap = anchorRect.left - parentRect.left;
 	  var topGap = anchorRect.top - parentRect.top;
 
 	  // position the menu
 	  if (showBelow) {
 	    // display the menu below the anchor
 	    var anchorHeight = anchor.offsetHeight;
-	    this.dom.menu.style.left = leftGap + 'px';
+	    this.dom.menu.style.left = '0';
 	    this.dom.menu.style.top = topGap + anchorHeight + 'px';
 	    this.dom.menu.style.bottom = '';
 	  }
 	  else {
 	    // display the menu above the anchor
-	    this.dom.menu.style.left = leftGap + 'px';
+	    this.dom.menu.style.left = '0';
 	    this.dom.menu.style.top = '';
 	    this.dom.menu.style.bottom = '0px';
 	  }
@@ -33377,7 +33376,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	  eventListeners.mousedown = util.addEventListener(root, 'mousedown', destroyIfOutside);
 	  eventListeners.mousewheel = util.addEventListener(root, 'mousewheel', destroyIfOutside);
-	  // eventListeners.scroll = util.addEventListener(this.rootNode, 'scroll', destroyIfOutside);
+	  eventListeners.scroll = util.addEventListener(root, 'scroll', destroyIfOutside);
 
 	  absoluteAnchor.destroy = destroy;
 
@@ -36274,17 +36273,16 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * Remove the DOM of this node and it's childs and recreate it again
 	 */
 	Node.prototype.recreateDom = function() {
-	  // only recreate dom if there is a dom already
-	  if (!this.dom || ! this.dom.tr || !this.dom.tr.parentNode) {
-	    return;
+	  if (this.dom && this.dom.tr && this.dom.tr.parentNode) {
+	    var domAnchor = this._detachFromDom();
+
+	    this.clearDom();
+
+	    this._attachToDom(domAnchor);
 	  }
-
-	  var domAnchor = this._detachFromDom();
-
-	  // delete the DOM
-	  this.clearDom();
-
-	  this._attachToDom(domAnchor);
+	  else {
+	    this.clearDom();
+	  }
 	};
 
 	/**
@@ -45575,7 +45573,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  box.title = 'Switch editor mode';
 	  box.onclick = function () {
 	    var menu = new ContextMenu(items);
-	    menu.show(box);
+	    menu.show(box, container);
 	  };
 
 	  var frame = document.createElement('div');

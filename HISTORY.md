@@ -3,7 +3,7 @@
 https://github.com/josdejong/jsoneditor
 
 
-## not yet released, version 5.24.1
+## 2018-08-26, version 5.24.1
 
 - Context menu and color picker are now absolutely positioned, and
   can overflow the borders of the editor.

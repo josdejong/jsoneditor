@@ -224,20 +224,19 @@ ContextMenu.prototype.show = function (anchor, frame) {
     // doesn't fit above nor below -> show below
   }
 
-  var leftGap = anchorRect.left - parentRect.left;
   var topGap = anchorRect.top - parentRect.top;
 
   // position the menu
   if (showBelow) {
     // display the menu below the anchor
     var anchorHeight = anchor.offsetHeight;
-    this.dom.menu.style.left = leftGap + 'px';
+    this.dom.menu.style.left = '0';
     this.dom.menu.style.top = topGap + anchorHeight + 'px';
     this.dom.menu.style.bottom = '';
   }
   else {
     // display the menu above the anchor
-    this.dom.menu.style.left = leftGap + 'px';
+    this.dom.menu.style.left = '0';
     this.dom.menu.style.top = '';
     this.dom.menu.style.bottom = '0px';
   }
