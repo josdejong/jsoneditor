@@ -729,7 +729,7 @@ textmode.validate = function () {
       this.parseErrorIndication.title = !isNaN(line) ? ('parse error on line ' + line) : 'parse error - check that the json is valid';
       parseErrors.push({
         type: 'error',
-        message: err.message,
+        message: err.message.replace(/\n/g, '<br>'),
         line: line
       });
     }
@@ -916,14 +916,14 @@ textmode._renderErrors = function(errors) {
       if (this.dom.validationErrorsContainer.clientHeight < this.dom.validationErrorsContainer.scrollHeight) {
         this.dom.additinalErrorsIndication.style.display = 'block';
         this.dom.validationErrorsContainer.onscroll = function () {
-          me.dom.additinalErrorsIndication.style.display = me.dom.validationErrorsContainer.scrollTop === 0 ? 'block' : 'none';
+          me.dom.additinalErrorsIndication.style.display = 
+            (me.dom.validationErrorsContainer.clientHeight > 0 && me.dom.validationErrorsContainer.scrollTop === 0) ? 'block' : 'none';
         }
       } else {
         this.dom.validationErrorsContainer.onscroll = undefined;
       }
 
       var height = this.dom.validationErrorsContainer.clientHeight + (this.dom.statusBar ? this.dom.statusBar.clientHeight : 0);
-      // var height = validationErrors.clientHeight + (this.dom.statusBar ? this.dom.statusBar.clientHeight : 0);
       this.content.style.marginBottom = (-height) + 'px';
       this.content.style.paddingBottom = height + 'px';
     }
@@ -1032,7 +1032,7 @@ textmode.setTextSelection = function (startPos, endPos) {
     var startIndex = util.getIndexForPosition(this.textarea, startPos.row, startPos.column);
     var endIndex = util.getIndexForPosition(this.textarea, endPos.row, endPos.column);
     if (startIndex > -1 && endIndex  > -1) {
-      if (this.textarea.setSelectionRange) { 
+      if (this.textarea.setSelectionRange) {
         this.textarea.focus();
         this.textarea.setSelectionRange(startIndex, endIndex);
       } else if (this.textarea.createTextRange) { // IE < 9
@@ -1042,6 +1042,10 @@ textmode.setTextSelection = function (startPos, endPos) {
         range.moveStart('character', startIndex);
         range.select();
       }
+      var rows = (this.textarea.value.match(/\n/g) || []).length + 1;
+      var lineHeight =  this.textarea.scrollHeight / rows;
+      var selectionScrollPos = (startPos.row * lineHeight);
+      this.textarea.scrollTop = selectionScrollPos > this.textarea.clientHeight ? (selectionScrollPos - (this.textarea.clientHeight / 2)) : 0;
     }
   } else if (this.aceEditor) {
     var range = {
