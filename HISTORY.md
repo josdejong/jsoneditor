@@ -9,6 +9,8 @@ https://github.com/josdejong/jsoneditor
   can overflow the borders of the editor.
 - Fixed #568: mode switcher disappearing when selecting the current
   mode again.
+- Fixed `transform` not creating/removing expand button when the type
+  of a node changed.
 
 
 ## 2018-08-22, version 5.24.0

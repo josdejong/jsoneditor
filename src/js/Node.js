@@ -616,17 +616,16 @@ Node.prototype.setInternalValue = function(internalValue) {
  * Remove the DOM of this node and it's childs and recreate it again
  */
 Node.prototype.recreateDom = function() {
-  // only recreate dom if there is a dom already
-  if (!this.dom || ! this.dom.tr || !this.dom.tr.parentNode) {
-    return;
+  if (this.dom && this.dom.tr && this.dom.tr.parentNode) {
+    var domAnchor = this._detachFromDom();
+
+    this.clearDom();
+
+    this._attachToDom(domAnchor);
   }
-
-  var domAnchor = this._detachFromDom();
-
-  // delete the DOM
-  this.clearDom();
-
-  this._attachToDom(domAnchor);
+  else {
+    this.clearDom();
+  }
 };
 
 /**
