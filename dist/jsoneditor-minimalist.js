@@ -4529,7 +4529,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	  eventListeners.mousedown = util.addEventListener(root, 'mousedown', destroyIfOutside);
 	  eventListeners.mousewheel = util.addEventListener(root, 'mousewheel', destroyIfOutside);
-	  eventListeners.scroll = util.addEventListener(root, 'scroll', destroyIfOutside);
+	  // eventListeners.scroll = util.addEventListener(root, 'scroll', destroyIfOutside);
 
 	  absoluteAnchor.destroy = destroy;
 
