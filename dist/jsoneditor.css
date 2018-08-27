@@ -384,6 +384,11 @@ div.jsoneditor-tree .jsoneditor-button.jsoneditor-schema-error {
   background: url("img/jsoneditor-icons.svg")  -168px -48px;
 }
 
+.jsoneditor-text-errors tr.jump-to-line:hover {
+  text-decoration: underline;
+  cursor: pointer;
+}
+
 .jsoneditor-schema-error .jsoneditor-popover {
   background-color: #4c4c4c;
   border-radius: 3px;
@@ -556,7 +561,6 @@ div.jsoneditor-tree .jsoneditor-button.jsoneditor-schema-error {
 .jsoneditor .jsoneditor-text-errors {
   width: 100%;
   border-collapse: collapse;
-  background-color: #ffef8b;
   border-top: 1px solid #ffd700;
 }
 
@@ -565,13 +569,29 @@ div.jsoneditor-tree .jsoneditor-button.jsoneditor-schema-error {
   vertical-align: middle;
 }
 
+.jsoneditor .jsoneditor-text-errors tr {
+  background-color: #ffef8b;
+}
+
+.jsoneditor .jsoneditor-text-errors tr.parse-error {
+  background-color: #ee2e2e70;
+}
+
 .jsoneditor-text-errors .jsoneditor-schema-error {
   border: none;
   width: 24px;
   height: 24px;
   padding: 0;
   margin: 0 4px 0 0;
+  cursor: pointer;
+}
+
+.jsoneditor-text-errors tr .jsoneditor-schema-error {
   background: url("img/jsoneditor-icons.svg")  -168px -48px;
+}
+
+.jsoneditor-text-errors tr.parse-error .jsoneditor-schema-error {
+  background: url("img/jsoneditor-icons.svg")   -25px 0px;
 }
 
 .fadein {
@@ -1404,6 +1424,15 @@ div.jsoneditor-statusbar > .jsoneditor-validation-error-icon {
 div.jsoneditor-statusbar > .jsoneditor-validation-error-count {
   float: right;
   margin: 0 4px 0 0;
+}
+
+div.jsoneditor-statusbar > .jsoneditor-parse-error-icon {
+  float: right;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  margin: 1px;
+  background: url("img/jsoneditor-icons.svg") -25px 0px;
 }
 div.jsoneditor-navigation-bar {
   width: 100%;

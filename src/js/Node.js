@@ -2269,6 +2269,8 @@ Node.onDragEnd = function (nodes, event) {
   document.body.style.cursor = editor.drag.oldCursor;
   editor.highlighter.unlock();
   nodes.forEach(function (node) {
+    node.updateDom();
+
     if (event.target !== node.dom.drag && event.target !== node.dom.menu) {
       editor.highlighter.unhighlight();
     }
@@ -2431,6 +2433,7 @@ Node.prototype.updateDom = function (options) {
     }
     else {
       // parent is an array this is the root node
+      domField.contentEditable = false;
       domField.className = 'jsoneditor-readonly';
     }
 

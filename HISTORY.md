@@ -3,6 +3,16 @@
 https://github.com/josdejong/jsoneditor
 
 
+## 2018-08-27, version 5.24.2
+
+- Improved error and validation messaging in `text` mode.
+  Thanks @meirotstein.
+  - Clicking a message now selects the line where the error occurs.
+  - Icon bottom right showing when there are warnings or errors.
+- Fixed field still editable after moving a node from an object
+  to an array, changing the field from a property into an index.
+
+
 ## 2018-08-26, version 5.24.1
 
 - Context menu and color picker are now absolutely positioned, and

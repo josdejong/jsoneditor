@@ -24,8 +24,8 @@
  * Copyright (c) 2011-2017 Jos de Jong, http://jsoneditoronline.org
  *
  * @author  Jos de Jong, <wjosdejong@gmail.com>
- * @version 5.24.1
- * @date    2018-08-26
+ * @version 5.24.2
+ * @date    2018-08-27
  */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
@@ -9079,6 +9079,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	  document.body.style.cursor = editor.drag.oldCursor;
 	  editor.highlighter.unlock();
 	  nodes.forEach(function (node) {
+	    node.updateDom();
+
 	    if (event.target !== node.dom.drag && event.target !== node.dom.menu) {
 	      editor.highlighter.unhighlight();
 	    }
@@ -9241,6 +9243,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }
 	    else {
 	      // parent is an array this is the root node
+	      domField.contentEditable = false;
 	      domField.className = 'jsoneditor-readonly';
 	    }
 
@@ -17431,9 +17434,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	  additinalErrorsIndication.innerHTML = "Scroll for more &#9663;";
 	  this.dom.additinalErrorsIndication = additinalErrorsIndication;
 	  validationErrorsContainer.appendChild(additinalErrorsIndication);
-	  validationErrorsContainer.onscroll = function () {
-	    additinalErrorsIndication.style.display = me.dom.validationErrorsContainer.scrollTop === 0 ? 'block' : 'none';
-	  }
 
 	  if (options.statusBar) {
 	    util.addClassName(this.content, 'has-status-bar');
@@ -17500,6 +17500,11 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	    statusBar.appendChild(validationErrorCount);
 	    statusBar.appendChild(validationErrorIcon);
+
+	    this.parseErrorIndication = document.createElement('span');
+	    this.parseErrorIndication.className = 'jsoneditor-parse-error-icon';    
+	    this.parseErrorIndication.style.display = 'none';
+	    statusBar.appendChild(this.parseErrorIndication);
 	  }
 
 	  this.setSchema(this.options.schema, this.options.schemaRefs);  
@@ -17596,8 +17601,16 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * @private
 	 */
 	textmode._onBlur = function (event) {
-	  this._updateCursorInfo();
-	  this._emitSelectionChange();
+	  var me = this;
+	  // this allows to avoid blur when clicking inner elements (like the errors panel)
+	  // just make sure to set the isFocused to true on the inner element onclick callback
+	  setTimeout(function(){
+	    if (!me.isFocused) {
+	      me._updateCursorInfo();
+	      me._emitSelectionChange();
+	    }
+	    me.isFocused = false;
+	  });
 	};
 
 	/**
@@ -17856,13 +17869,29 @@ return /******/ (function(modules) { // webpackBootstrap
 	textmode.validate = function () {
 	  var doValidate = false;
 	  var schemaErrors = [];
+	  var parseErrors = [];
 	  var json;
 	  try {
 	    json = this.get(); // this can fail when there is no valid json
+	    this.parseErrorIndication.style.display = 'none';
 	    doValidate = true;
 	  }
 	  catch (err) {
-	    // no valid JSON, don't validate
+	    if (this.getText()) {
+	      this.parseErrorIndication.style.display = 'block';
+	      // try to extract the line number from the jsonlint error message
+	      var match = /\w*line\s*(\d+)\w*/g.exec(err.message);
+	      var line;
+	      if (match) {
+	        line = +match[1];
+	      }
+	      this.parseErrorIndication.title = !isNaN(line) ? ('parse error on line ' + line) : 'parse error - check that the json is valid';
+	      parseErrors.push({
+	        type: 'error',
+	        message: err.message.replace(/\n/g, '<br>'),
+	        line: line
+	      });
+	    }
 	  }
 
 	  // only validate the JSON when parsing the JSON succeeded
@@ -17872,6 +17901,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	      var valid = this.validateSchema(json);
 	      if (!valid) {
 	        schemaErrors = this.validateSchema.errors.map(function (error) {
+	          error.type = "validation";
 	          return util.improveSchemaError(error);
 	        });
 	      }
@@ -17885,8 +17915,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	        .then(function (customValidationErrors) {
 	          // only apply when there was no other validation started whilst resolving async results
 	          if (seq === me.validationSequence) {
-	            var errors = schemaErrors.concat(customValidationErrors || []);
-	            me._renderValidationErrors(errors);
+	            var errors = schemaErrors.concat(parseErrors || []).concat(customValidationErrors || []);
+	            me._renderErrors(errors);
 	          }
 	        })
 	        .catch(function (err) {
@@ -17894,7 +17924,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        });
 	  }
 	  else {
-	    this._renderValidationErrors([]);
+	    this._renderErrors(parseErrors || []);
 	  }
 	};
 
@@ -17947,8 +17977,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	  return Promise.resolve(null);
 	};
 
-	textmode._renderValidationErrors = function(errors) {
+	textmode._renderErrors = function(errors) {
 	  // clear all current errors
+	  var me = this;
+	  var validationErrorsCount = 0;
+
 	  if (this.dom.validationErrors) {
 	    this.dom.validationErrors.parentNode.removeChild(this.dom.validationErrors);
 	    this.dom.validationErrors = null;
@@ -17958,18 +17991,19 @@ return /******/ (function(modules) { // webpackBootstrap
 	    this.content.style.paddingBottom = '';
 	  }
 
+	  var jsonText = this.getText();
+	  var errorPaths = [];
+	  errors.reduce(function(acc, curr) {
+	    if(acc.indexOf(curr.dataPath) === -1) {
+	      acc.push(curr.dataPath);
+	    }
+	    return acc;
+	  }, errorPaths);
+	  var errorLocations = util.getPositionForPath(jsonText, errorPaths);
+
 	  // render the new errors
 	  if (errors.length > 0) {
 	    if (this.aceEditor) {
-	      var jsonText = this.getText();
-	      var errorPaths = [];
-	      errors.reduce(function(acc, curr) {
-	        if(acc.indexOf(curr.dataPath) === -1) {
-	          acc.push(curr.dataPath);
-	        }
-	        return acc;
-	      }, errorPaths);
-	      var errorLocations = util.getPositionForPath(jsonText, errorPaths);
 	      this.annotations = errorLocations.map(function (errLoc) {
 	        var validationErrors = errors.filter(function(err){ return err.dataPath === errLoc.path; });
 	        var message = validationErrors.map(function(err) { return err.message }).join('\n');
@@ -17989,22 +18023,50 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	    } else {
 	      var validationErrors = document.createElement('div');
-	      validationErrors.innerHTML = '<table class="jsoneditor-text-errors">' +
-	          '<tbody>' +
-	          errors.map(function (error) {
-	            var message;
-	            if (typeof error === 'string') {
-	              message = '<td colspan="2"><pre>' + error + '</pre></td>';
-	            }
-	            else {
-	              message = '<td>' + error.dataPath + '</td>' +
-	                  '<td>' + error.message + '</td>';
-	            }
+	      validationErrors.innerHTML = '<table class="jsoneditor-text-errors"><tbody></tbody></table>';
+	      var tbody = validationErrors.getElementsByTagName('tbody')[0];
 
-	            return '<tr><td><button class="jsoneditor-schema-error"></button></td>' + message + '</tr>'
-	          }).join('') +
-	          '</tbody>' +
-	          '</table>';
+	      errors.forEach(function (error) {
+	        var message;
+	        if (typeof error === 'string') {
+	          message = '<td colspan="2"><pre>' + error + '</pre></td>';
+	        }
+	        else {
+	          message = 
+	              '<td>' + (error.dataPath || '') + '</td>' +
+	              '<td>' + error.message + '</td>';
+	        }
+
+	        var line;
+
+	        if (!isNaN(error.line)) {
+	          line = error.line;
+	        } else if (error.dataPath) {
+	          var errLoc = errorLocations.find(function(loc) { return loc.path === error.dataPath; });
+	          if (errLoc) {
+	            line = errLoc.line + 1;
+	          }
+	        }
+
+	        var trEl = document.createElement('tr');
+	        trEl.className = !isNaN(line) ? 'jump-to-line' : '';
+	        if (error.type === 'error') {
+	          trEl.className += ' parse-error';
+	        } else {
+	          trEl.className += ' validation-error';
+	          ++validationErrorsCount;
+	        }
+	        
+	        trEl.innerHTML =  ('<td><button class="jsoneditor-schema-error"></button></td><td style="white-space:nowrap;">'+ (!isNaN(line) ? ('Ln ' + line) : '') +'</td>' + message);
+	        trEl.onclick = function() {
+	          me.isFocused = true;
+	          if (!isNaN(line)) {
+	            me.setTextSelection({row: line, column: 1}, {row: line, column: 1000});
+	          }
+	        };
+
+	        tbody.appendChild(trEl);
+	      });
 
 	      this.dom.validationErrors = validationErrors;
 	      this.dom.validationErrorsContainer.appendChild(validationErrors);
@@ -18012,10 +18074,15 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	      if (this.dom.validationErrorsContainer.clientHeight < this.dom.validationErrorsContainer.scrollHeight) {
 	        this.dom.additinalErrorsIndication.style.display = 'block';
+	        this.dom.validationErrorsContainer.onscroll = function () {
+	          me.dom.additinalErrorsIndication.style.display = 
+	            (me.dom.validationErrorsContainer.clientHeight > 0 && me.dom.validationErrorsContainer.scrollTop === 0) ? 'block' : 'none';
+	        }
+	      } else {
+	        this.dom.validationErrorsContainer.onscroll = undefined;
 	      }
 
 	      var height = this.dom.validationErrorsContainer.clientHeight + (this.dom.statusBar ? this.dom.statusBar.clientHeight : 0);
-	      // var height = validationErrors.clientHeight + (this.dom.statusBar ? this.dom.statusBar.clientHeight : 0);
 	      this.content.style.marginBottom = (-height) + 'px';
 	      this.content.style.paddingBottom = height + 'px';
 	    }
@@ -18027,12 +18094,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	  }
 
 	  if (this.options.statusBar) {
-	    var showIndication = !!errors.length;
+	    validationErrorsCount = validationErrorsCount || this.annotations.length;
+	    var showIndication = !!validationErrorsCount;
 	    this.validationErrorIndication.validationErrorIcon.style.display = showIndication ? 'inline' : 'none';
 	    this.validationErrorIndication.validationErrorCount.style.display = showIndication ? 'inline' : 'none';
 	    if (showIndication) {
-	      this.validationErrorIndication.validationErrorCount.innerText = errors.length;
-	      this.validationErrorIndication.validationErrorIcon.title = errors.length + ' schema validation error(s) found';
+	      this.validationErrorIndication.validationErrorCount.innerText = validationErrorsCount;
+	      this.validationErrorIndication.validationErrorIcon.title = validationErrorsCount + ' schema validation error(s) found';
 	    }
 	  }
 
@@ -18123,7 +18191,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    var startIndex = util.getIndexForPosition(this.textarea, startPos.row, startPos.column);
 	    var endIndex = util.getIndexForPosition(this.textarea, endPos.row, endPos.column);
 	    if (startIndex > -1 && endIndex  > -1) {
-	      if (this.textarea.setSelectionRange) { 
+	      if (this.textarea.setSelectionRange) {
 	        this.textarea.focus();
 	        this.textarea.setSelectionRange(startIndex, endIndex);
 	      } else if (this.textarea.createTextRange) { // IE < 9
@@ -18133,6 +18201,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	        range.moveStart('character', startIndex);
 	        range.select();
 	      }
+	      var rows = (this.textarea.value.match(/\n/g) || []).length + 1;
+	      var lineHeight =  this.textarea.scrollHeight / rows;
+	      var selectionScrollPos = (startPos.row * lineHeight);
+	      this.textarea.scrollTop = selectionScrollPos > this.textarea.clientHeight ? (selectionScrollPos - (this.textarea.clientHeight / 2)) : 0;
 	    }
 	  } else if (this.aceEditor) {
 	    var range = {
