@@ -2,20 +2,9 @@
 
 ### Install
 
-with npm:
+install via npm:
 
     npm install jsoneditor
-
-with bower:
-
-    bower install jsoneditor
-
-download:
-
-[http://jsoneditoronline.org/downloads/](http://jsoneditoronline.org/downloads/)
-
-The library consists of three files: one javascript file, one css file and an
-image. Both full and minified version are available.
 
 ## Load
 
