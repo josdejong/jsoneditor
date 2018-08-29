@@ -3,6 +3,12 @@
 https://github.com/josdejong/jsoneditor
 
 
+## not yet released, version 5.24.4
+
+- Fixed `onClose` of color picker not being fired when clicking outside
+  the picker to close it.
+
+
 ## 2018-08-29, version 5.24.3
 
 - Fixed color picker not working in ES6 projects.

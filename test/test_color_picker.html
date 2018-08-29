@@ -50,11 +50,18 @@
         color: color,
         popup: 'bottom',
         onChange: function (color) {
+          console.log('onChange', color)
           var alpha = color.rgba[3]
           var hex = (alpha === 1)
               ? color.hex.substr(0, 7)  // return #RRGGBB
               : color.hex               // return #RRGGBBAA
           onChange(hex)
+        },
+        onDone: function (color) {
+          console.log('onDone', color)
+        },
+        onClose: function (color) {
+          console.log('onClose', color)
         }
       }).show();
     }

@@ -53,8 +53,6 @@ exports.createAbsoluteAnchor = function (anchor, parent, onDestroy) {
     var target = event.target;
     if ((target !== absoluteAnchor) && !util.isChildOf(target, absoluteAnchor)) {
       destroy();
-      event.stopPropagation();
-      event.preventDefault();
     }
   }
 
