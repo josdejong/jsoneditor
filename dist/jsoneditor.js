@@ -24,8 +24,8 @@
  * Copyright (c) 2011-2017 Jos de Jong, http://jsoneditoronline.org
  *
  * @author  Jos de Jong, <wjosdejong@gmail.com>
- * @version 5.24.2
- * @date    2018-08-27
+ * @version 5.24.3
+ * @date    2018-08-29
  */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
@@ -29258,15 +29258,18 @@ return /******/ (function(modules) { // webpackBootstrap
 /* 57 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var VanillaPicker
+	var VanillaPicker;
 
 	if (window.Picker) {
 	  // use the already loaded instance of VanillaPicker
-	  VanillaPicker = window.Picker
+	  VanillaPicker = window.Picker;
 	}
 	else {
 	  try {
-	    // load brace
+	    // load color picker
+	    // Note that we load the ES5 distribution bundle
+	    // instead of the "default" as the default currently
+	    // points to `src/picker.js` which is ES6 code (v2.3.0).
 	    VanillaPicker = __webpack_require__(58);
 	  }
 	  catch (err) {
@@ -39019,15 +39022,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	    var colorAnchor = createAbsoluteAnchor(this.dom.color, this.editor.frame);
 
 	    this.editor.options.onColorPicker(colorAnchor, this.value, function onChange(value) {
-	      colorAnchor.destroy();
-
 	      if (typeof value === 'string' && value !== node.value) {
 	        // force recreating the color block, to cleanup any attached color picker
 	        node._deleteDomColor();
 
 	        node.value = value;
 	        node.updateDom();
-	        node._onChangeValue();
+	        node._debouncedOnChangeValue();
 	      }
 	    });
 	  }
