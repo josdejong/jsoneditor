@@ -62,7 +62,7 @@ var compilerMinimalist = webpack({
     bannerPlugin,
     new webpack.IgnorePlugin(new RegExp('^brace$')),
     new webpack.IgnorePlugin(new RegExp('^ajv')),
-    new webpack.IgnorePlugin(new RegExp('^vanilla-picker$'))
+    new webpack.IgnorePlugin(new RegExp('^vanilla-picker'))
   ],
   cache: true
 });
