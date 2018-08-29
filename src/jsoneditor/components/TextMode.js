@@ -7,7 +7,7 @@ import { createFindKeyBinding } from '../utils/keyBindings'
 import { KEY_BINDINGS } from '../constants'
 
 import ModeButton from './menu/ModeButton'
-import { immutableJsonPatch } from '../immutableJsonPatch'
+import { immutableJSONPatch } from '../immutableJSONPatch'
 
 const AJV_OPTIONS = {
   allErrors: true,
@@ -330,7 +330,7 @@ export default class TextMode extends Component {
   patch (operations) {
     const json = this.get()
 
-    const result = immutableJsonPatch(json, operations)
+    const result = immutableJSONPatch(json, operations)
 
     this.set(result.data)
 

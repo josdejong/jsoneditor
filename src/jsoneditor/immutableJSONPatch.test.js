@@ -1,6 +1,6 @@
 'use strict'
 
-import { immutableJsonPatch } from './immutableJsonPatch'
+import { immutableJSONPatch } from './immutableJSONPatch'
 
 test('test toBe', () => {
   const a = { x: 2 }
@@ -22,7 +22,7 @@ test('jsonpatch add', () => {
     {op: 'add', path: '/obj/b', value: {foo: 'bar'}}
   ]
 
-  const result = immutableJsonPatch(json, patch)
+  const result = immutableJSONPatch(json, patch)
 
   expect(result.json).toEqual({
     arr: [1,2,3],
@@ -44,7 +44,7 @@ test('jsonpatch add: insert in matrix', () => {
     {op: 'add', path: '/arr/1', value: 4}
   ]
 
-  const result = immutableJsonPatch(json, patch)
+  const result = immutableJSONPatch(json, patch)
 
   expect(result.json).toEqual({
     arr: [1,4,2,3],
@@ -66,7 +66,7 @@ test('jsonpatch add: append to matrix', () => {
     {op: 'add', path: '/arr/-', value: 4}
   ]
 
-  const result = immutableJsonPatch(json, patch)
+  const result = immutableJSONPatch(json, patch)
 
   expect(result.json).toEqual({
     arr: [1,2,3,4],
@@ -90,7 +90,7 @@ test('jsonpatch remove', () => {
     {op: 'remove', path: '/arr/1'},
   ]
 
-  const result = immutableJsonPatch(json, patch)
+  const result = immutableJSONPatch(json, patch)
 
   expect(result.json).toEqual({
     arr: [1,3],
@@ -103,7 +103,7 @@ test('jsonpatch remove', () => {
   ])
 
   // test revert
-  const result2 = immutableJsonPatch(result.json, result.revert)
+  const result2 = immutableJSONPatch(result.json, result.revert)
 
   expect(result2.json).toEqual(json)
   expect(result2.revert).toEqual(patch)
@@ -122,7 +122,7 @@ test('jsonpatch replace', () => {
     {op: 'replace', path: '/arr/1', value: 200},
   ]
 
-  const result = immutableJsonPatch(json, patch)
+  const result = immutableJSONPatch(json, patch)
 
   expect(result.json).toEqual({
     arr: [1,200,3],
@@ -135,7 +135,7 @@ test('jsonpatch replace', () => {
   ])
 
   // test revert
-  const result2 = immutableJsonPatch(result.json, result.revert)
+  const result2 = immutableJSONPatch(result.json, result.revert)
 
   expect(result2.json).toEqual(json)
   expect(result2.revert).toEqual([
@@ -155,7 +155,7 @@ test('jsonpatch copy', () => {
     {op: 'copy', from: '/obj', path: '/arr/2'},
   ]
 
-  const result = immutableJsonPatch(json, patch)
+  const result = immutableJSONPatch(json, patch)
 
   expect(result.json).toEqual({
     arr: [1, 2, {a:4}, 3],
@@ -166,7 +166,7 @@ test('jsonpatch copy', () => {
   ])
 
   // test revert
-  const result2 = immutableJsonPatch(result.json, result.revert)
+  const result2 = immutableJSONPatch(result.json, result.revert)
 
   expect(result2.json).toEqual(json)
   expect(result2.revert).toEqual([
@@ -187,7 +187,7 @@ test('jsonpatch move', () => {
     {op: 'move', from: '/obj', path: '/arr/2'},
   ]
 
-  const result = immutableJsonPatch(json, patch)
+  const result = immutableJSONPatch(json, patch)
 
   expect(result.error).toEqual(null)
   expect(result.json).toEqual({
@@ -199,7 +199,7 @@ test('jsonpatch move', () => {
   ])
 
   // test revert
-  const result2 = immutableJsonPatch(result.json, result.revert)
+  const result2 = immutableJSONPatch(result.json, result.revert)
 
   expect(result2.json).toEqual(json)
   expect(result2.revert).toEqual(patch)
@@ -214,7 +214,7 @@ test('jsonpatch move and replace', () => {
     {op: 'move', from: '/a', path: '/b'},
   ]
 
-  const result = immutableJsonPatch(json, patch)
+  const result = immutableJSONPatch(json, patch)
 
   expect(result.json).toEqual({ b : 2 })
   expect(result.revert).toEqual([
@@ -223,7 +223,7 @@ test('jsonpatch move and replace', () => {
   ])
 
   // test revert
-  const result2 = immutableJsonPatch(result.json, result.revert)
+  const result2 = immutableJSONPatch(result.json, result.revert)
 
   expect(result2.json).toEqual(json)
   expect(result2.revert).toEqual([
@@ -243,7 +243,7 @@ test('jsonpatch move and replace (nested)', () => {
     {op: 'move', from: '/obj', path: '/arr'},
   ]
 
-  const result = immutableJsonPatch(json, patch)
+  const result = immutableJSONPatch(json, patch)
 
   expect(result.json).toEqual({
     arr: {a:4},
@@ -255,7 +255,7 @@ test('jsonpatch move and replace (nested)', () => {
   ])
 
   // test revert
-  const result2 = immutableJsonPatch(result.json, result.revert)
+  const result2 = immutableJSONPatch(result.json, result.revert)
 
   expect(result2.json).toEqual(json)
   expect(result2.revert).toEqual([
@@ -277,7 +277,7 @@ test('jsonpatch test (ok)', () => {
     {op: 'add', path: '/added', value: 'ok'}
   ]
 
-  const result = immutableJsonPatch(json, patch)
+  const result = immutableJSONPatch(json, patch)
 
   expect(result.json).toEqual({
     arr: [1,2,3],
@@ -300,7 +300,7 @@ test('jsonpatch test (fail: path not found)', () => {
     {op: 'add', path: '/added', value: 'ok'}
   ]
 
-  const result = immutableJsonPatch(json, patch)
+  const result = immutableJSONPatch(json, patch)
 
   // patch shouldn't be applied
   expect(result.json).toEqual({
@@ -322,7 +322,7 @@ test('jsonpatch test (fail: value not equal)', () => {
     {op: 'add', path: '/added', value: 'ok'}
   ]
 
-  const result = immutableJsonPatch(json, patch)
+  const result = immutableJSONPatch(json, patch)
 
   // patch shouldn't be applied
   expect(result.json).toEqual({
@@ -332,3 +332,41 @@ test('jsonpatch test (fail: value not equal)', () => {
   expect(result.revert).toEqual([])
   expect(result.error.toString()).toEqual('Error: Test failed, value differs')
 })
+
+test('jsonpatch options', () => {
+  const json = {
+    arr: [1,2,3],
+    obj: {a : 2}
+  }
+
+  const patch = [
+    {op: 'add', path: '/obj/a', value: 4 }
+  ]
+  const result = immutableJSONPatch(json, patch, {
+    fromJSON: function (value, previousObject) {
+      return { value, previousObject }
+    },
+    toJSON: value => value
+  })
+  expect(result.json).toEqual({
+    arr: [1,2,3],
+    obj: {a : { value: 4, previousObject: 2 }}
+  })
+
+
+  const patch2 = [
+    {op: 'add', path: '/obj/b', value: 4 }
+  ]
+  const result2 = immutableJSONPatch(json, patch2, {
+    fromJSON: function (value, previousObject) {
+      return { value, previousObject }
+    },
+    toJSON: value => value
+  })
+  expect(result2.json).toEqual({
+    arr: [1,2,3],
+    obj: {a : 2, b: { value: 4, previousObject: undefined }}
+  })
+})
+
+// TODO: test all operations with JSONPatchOptions (not just add)

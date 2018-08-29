@@ -48,16 +48,15 @@ import {
 } from './utils/domSelector'
 import { createFindKeyBinding } from '../utils/keyBindings'
 import { KEY_BINDINGS } from '../constants'
-import { immutableJsonPatch } from '../immutableJsonPatch'
+import { immutableJSONPatch } from '../immutableJSONPatch'
 import {
   applyErrors, applySelection, contentsFromPaths,
   expand,
   EXPANDED,
-  expandPath,
+  expandPath, immutableESONPatch,
   nextSearchResult, pathsFromSelection, previousSearchResult,
   search,
-  syncEson,
-  toEsonPatchOperation
+  syncEson
 } from '../eson'
 
 const AJV_OPTIONS = {
@@ -904,8 +903,8 @@ export default class TreeMode extends PureComponent {
       const historyIndex = this.state.historyIndex
       const historyItem = history[historyIndex]
 
-      const jsonResult = immutableJsonPatch(this.state.json, historyItem.undo)
-      const esonResult = immutableJsonPatch(this.state.eson, historyItem.undo.map(toEsonPatchOperation))
+      const jsonResult = immutableJSONPatch(this.state.json, historyItem.undo)
+      const esonResult = immutableESONPatch(this.state.eson, historyItem.undo)
 
       // FIXME: apply search
       this.setState({
@@ -925,8 +924,8 @@ export default class TreeMode extends PureComponent {
       const historyIndex = this.state.historyIndex - 1
       const historyItem = history[historyIndex]
 
-      const jsonResult = immutableJsonPatch(this.state.json, historyItem.redo)
-      const esonResult = immutableJsonPatch(this.state.eson, historyItem.undo.map(toEsonPatchOperation))
+      const jsonResult = immutableJSONPatch(this.state.json, historyItem.redo)
+      const esonResult = immutableESONPatch(this.state.eson, historyItem.redo)
 
       // FIXME: apply search
       this.setState({
@@ -954,8 +953,8 @@ export default class TreeMode extends PureComponent {
 
     console.log('patch', operations) // TODO: cleanup
 
-    const jsonResult = immutableJsonPatch(this.state.json, operations)
-    const esonResult = immutableJsonPatch(this.state.eson, operations.map(toEsonPatchOperation))
+    const jsonResult = immutableJSONPatch(this.state.json, operations)
+    const esonResult = immutableESONPatch(this.state.eson, operations)
 
     if (this.props.history !== false) {
       // update data and store history

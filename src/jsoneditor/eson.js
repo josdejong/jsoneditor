@@ -7,6 +7,7 @@ import isEmpty from 'lodash/isEmpty'
 import isEqual from 'lodash/isEqual'
 import naturalSort from 'javascript-natural-sort'
 import times from 'lodash/times'
+import { immutableJSONPatch } from './immutableJSONPatch'
 
 export const ID = typeof Symbol === 'function' ? Symbol('id') : '@jsoneditor-id'
 export const TYPE = typeof Symbol === 'function' ? Symbol('type') : '@jsoneditor-type' // 'object', 'array', 'value', or 'undefined'
@@ -529,14 +530,19 @@ export function pathsFromSelection (eson, selection) {
 }
 
 /**
- * Convert the value of a JSON Patch action into a ESON object
- * @param {JSONPatchOperation} operation
- * @returns {ESONPatchOperation}
+ * Apply a JSON patch document to an ESON object.
+ * - Applies meta information to added values
+ * - Reckons with creating unique id's when duplicating data
+ * @param eson
+ * @param operations
+ * @returns {{json: JSON, revert: JSONPatchDocument, error: (Error|null)}}
  */
-export function toEsonPatchOperation (operation) {
-  return ('value' in operation)
-      ? setIn(operation, ['value'], syncEson(operation.value))
-      : operation
+export function immutableESONPatch (eson, operations) {
+  return immutableJSONPatch(eson, operations, {
+    fromJSON: (value, previousEson) => syncEson(value, previousEson),
+    toJSON: (eson) => eson[VALUE],
+    clone: (value) => setIn(value, [ID], createId())
+  })
 }
 
 // TODO: comment

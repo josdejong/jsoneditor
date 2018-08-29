@@ -75,6 +75,14 @@
 
 /**
  * @typedef {{
+ *   fromJSON: function(json: JSON, previousObject: * | undefined),
+ *   toJSON: function(object: *),
+ *   clone: function(object: *)
+ * }} JSONPatchOptions
+ */
+
+/**
+ * @typedef {{
  *   op: 'add' | 'remove' | 'replace' | 'copy' | 'move' | 'test',
  *   path: string,
  *   from?: string,
