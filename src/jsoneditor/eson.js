@@ -530,13 +530,13 @@ export function pathsFromSelection (eson, selection) {
 
 /**
  * Convert the value of a JSON Patch action into a ESON object
- * @param {JSONPatchAction} action
- * @returns {ESONPatchAction}
+ * @param {JSONPatchOperation} operation
+ * @returns {ESONPatchOperation}
  */
-export function toEsonPatchAction (action) {
-  return ('value' in action)
-      ? setIn(action, ['value'], syncEson(action.value))
-      : action
+export function toEsonPatchOperation (operation) {
+  return ('value' in operation)
+      ? setIn(operation, ['value'], syncEson(operation.value))
+      : operation
 }
 
 // TODO: comment

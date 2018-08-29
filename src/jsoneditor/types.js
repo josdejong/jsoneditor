@@ -11,7 +11,7 @@
  *   modes: string[]?,
  *   history: boolean?,
  *   indentation: number | string?,
- *   onChange: function (patch: ESONPatch, revert: ESONPatch)?,
+ *   onChange: function (patch: ESONPatchDocument, revert: ESONPatchDocument)?,
  *   onChangeText: function ()?,
  *   onChangeMode: function (mode: string, prevMode: string)?,
  *   onError:  function (err: Error)?,
@@ -66,11 +66,11 @@
  *   path: string,
  *   from?: string,
  *   value?: *
- * }} JSONPatchAction
+ * }} JSONPatchOperation
  */
 
 /**
- * @typedef {JSONPatchAction[]} JSONPatch
+ * @typedef {JSONPatchOperation[]} JSONPatchDocument
  */
 
 /**
@@ -80,11 +80,19 @@
  *   from?: string,
  *   value?: *,
  *   meta?: ESONPatchOptions
- * }} ESONPatchAction
+ * }} ESONPatchOperation
  */
 
 /**
- * @typedef {ESONPatchAction[]} ESONPatch
+ * @typedef {ESONPatchOperation[]} ESONPatchDocument
+ */
+
+/**
+ * @typedef {{
+ *   patch: JSONPatchDocument,
+ *   revert: JSONPatchDocument,
+ *   error: Error | null
+ * }} JSONPatchResult
  */
 
 /**

@@ -9,21 +9,21 @@ import { parseJSONPointer, compileJSONPointer } from './jsonPointer'
  * The original JSON object will not be changed,
  * instead, the patch is applied in an immutable way
  * @param {JSON} json
- * @param {JSONPatch} patch    Array with JSON patch actions
- * @return {{json: JSON, revert: JSONPatch, error: Error | null}}
+ * @param {JSONPatchDocument} operations    Array with JSON patch actions
+ * @return {{json: JSON, revert: JSONPatchDocument, error: Error | null}}
  */
-export function immutableJsonPatch (json, patch) {
+export function immutableJsonPatch (json, operations) {
   let updatedJson = json
   let revert = []
 
-  for (let i = 0; i < patch.length; i++) {
-    const action = patch[i]
-    const path = action.path ? parseJSONPointer(action.path) : null
-    const from = action.from ? parseJSONPointer(action.from) : null
+  for (let i = 0; i < operations.length; i++) {
+    const operation = operations[i]
+    const path = operation.path ? parseJSONPointer(operation.path) : null
+    const from = operation.from ? parseJSONPointer(operation.from) : null
 
-    switch (action.op) {
+    switch (operation.op) {
       case 'add': {
-        const result = add(updatedJson, path, action.value)
+        const result = add(updatedJson, path, operation.value)
         updatedJson = result.json
         revert = result.revert.concat(revert)
         break
@@ -38,7 +38,7 @@ export function immutableJsonPatch (json, patch) {
       }
 
       case 'replace': {
-        const result = replace(updatedJson, path, action.value)
+        const result = replace(updatedJson, path, operation.value)
         updatedJson = result.json
         revert = result.revert.concat(revert)
 
@@ -46,11 +46,11 @@ export function immutableJsonPatch (json, patch) {
       }
 
       case 'copy': {
-        if (!action.from) {
+        if (!operation.from) {
           return {
             json: updatedJson,
             revert: [],
-            error: new Error('Property "from" expected in copy action ' + JSON.stringify(action))
+            error: new Error('Property "from" expected in copy action ' + JSON.stringify(operation))
           }
         }
 
@@ -62,11 +62,11 @@ export function immutableJsonPatch (json, patch) {
       }
 
       case 'move': {
-        if (!action.from) {
+        if (!operation.from) {
           return {
             json: updatedJson,
             revert: [],
-            error: new Error('Property "from" expected in move action ' + JSON.stringify(action))
+            error: new Error('Property "from" expected in move action ' + JSON.stringify(operation))
           }
         }
 
@@ -79,7 +79,7 @@ export function immutableJsonPatch (json, patch) {
 
       case 'test': {
         // when a test fails, cancel the whole patch and return the error
-        const error = test(updatedJson, path, action.value)
+        const error = test(updatedJson, path, operation.value)
         if (error) {
           return { json, revert: [], error}
         }
@@ -92,7 +92,7 @@ export function immutableJsonPatch (json, patch) {
         return {
           json,
           revert: [],
-          error: new Error('Unknown JSONPatch op ' + JSON.stringify(action.op))
+          error: new Error('Unknown JSONPatch op ' + JSON.stringify(operation.op))
         }
       }
     }
@@ -110,7 +110,7 @@ export function immutableJsonPatch (json, patch) {
  * @param {JSON} json
  * @param {Path} path
  * @param {JSON} value
- * @return {{json: JSON, revert: JSONPatch}}
+ * @return {{json: JSON, revert: JSONPatchDocument}}
  */
 export function replace (json, path, value) {
   const oldValue = getIn(json, path)
@@ -129,7 +129,7 @@ export function replace (json, path, value) {
  * Remove an item or property
  * @param {JSON} json
  * @param {Path} path
- * @return {{json: JSON, revert: JSONPatch}}
+ * @return {{json: JSON, revert: JSONPatchDocument}}
  */
 export function remove (json, path) {
   const oldValue = getIn(json, path)
@@ -148,7 +148,7 @@ export function remove (json, path) {
  * @param {JSON} json
  * @param {Path} path
  * @param {JSON} value
- * @return {{json: JSON, revert: JSONPatch}}
+ * @return {{json: JSON, revert: JSONPatchDocument}}
  * @private
  */
 export function add (json, path, value) {
@@ -188,7 +188,7 @@ export function add (json, path, value) {
  * @param {JSON} json
  * @param {Path} path
  * @param {Path} from
- * @return {{json: JSON, revert: ESONPatch}}
+ * @return {{json: JSON, revert: ESONPatchDocument}}
  * @private
  */
 export function copy (json, path, from) {
@@ -202,7 +202,7 @@ export function copy (json, path, from) {
  * @param {JSON} json
  * @param {Path} path
  * @param {Path} from
- * @return {{json: JSON, revert: ESONPatch}}
+ * @return {{json: JSON, revert: ESONPatchDocument}}
  * @private
  */
 export function move (json, path, from) {

@@ -287,7 +287,7 @@ export function append (json, parentPath, type) {
 /**
  * Create a JSONPatch for a remove action
  * @param {Path} path
- * @return {ESONPatch}
+ * @return {ESONPatchDocument}
  */
 export function remove (path) {
   return [{
@@ -299,7 +299,7 @@ export function remove (path) {
 /**
  * Create a JSONPatch for a multiple remove action
  * @param {Path[]} paths
- * @return {ESONPatch}
+ * @return {ESONPatchDocument}
  */
 export function removeAll (paths) {
   return paths

@@ -57,7 +57,7 @@ import {
   nextSearchResult, pathsFromSelection, previousSearchResult,
   search,
   syncEson,
-  toEsonPatchAction
+  toEsonPatchOperation
 } from '../eson'
 
 const AJV_OPTIONS = {
@@ -721,14 +721,14 @@ export default class TreeMode extends PureComponent {
 
   /**
    * Apply a JSONPatch to the current JSON document and emit a change event
-   * @param {JSONPatch} actions
+   * @param {JSONPatchDocument} operations
    * @private
    */
-  handlePatch = (actions) => {
+  handlePatch = (operations) => {
     // apply changes
-    const result = this.patch(actions)
+    const result = this.patch(operations)
 
-    this.emitOnChange (actions, result.revert, result.json)
+    this.emitOnChange (operations, result.revert, result.json)
   }
 
   handleTouchStart = (event) => {
@@ -854,8 +854,8 @@ export default class TreeMode extends PureComponent {
    * Emit an onChange event when there is a listener for it.
    * events will be fired on the next tick (after any changed state is applied)
    * @private
-   * @param {ESONPatch} patch
-   * @param {ESONPatch} revert
+   * @param {ESONPatchDocument} patch
+   * @param {ESONPatchDocument} revert
    * @param {JSON} json
    */
   emitOnChange (patch, revert, json) {
@@ -905,7 +905,7 @@ export default class TreeMode extends PureComponent {
       const historyItem = history[historyIndex]
 
       const jsonResult = immutableJsonPatch(this.state.json, historyItem.undo)
-      const esonResult = immutableJsonPatch(this.state.eson, historyItem.undo.map(toEsonPatchAction))
+      const esonResult = immutableJsonPatch(this.state.eson, historyItem.undo.map(toEsonPatchOperation))
 
       // FIXME: apply search
       this.setState({
@@ -926,7 +926,7 @@ export default class TreeMode extends PureComponent {
       const historyItem = history[historyIndex]
 
       const jsonResult = immutableJsonPatch(this.state.json, historyItem.redo)
-      const esonResult = immutableJsonPatch(this.state.eson, historyItem.undo.map(toEsonPatchAction))
+      const esonResult = immutableJsonPatch(this.state.eson, historyItem.undo.map(toEsonPatchOperation))
 
       // FIXME: apply search
       this.setState({
@@ -942,25 +942,25 @@ export default class TreeMode extends PureComponent {
 
   /**
    * Apply a JSONPatch to the current JSON document
-   * @param {JSONPatch} actions       ESONPatch actions
-   * @return {Object} Returns a object result containing the
+   * @param {JSONPatchDocument} operations       JSON Patch operations
+   * @return {JSONPatchResult} Returns a object result containing the
    *                  patch, a patch to revert the action, and
    *                  an error object which is null when successful
    */
-  patch (actions) {
-    if (!Array.isArray(actions)) {
+  patch (operations) {
+    if (!Array.isArray(operations)) {
       throw new TypeError('Array with patch actions expected')
     }
 
-    console.log('patch', actions)
+    console.log('patch', operations) // TODO: cleanup
 
-    const jsonResult = immutableJsonPatch(this.state.json, actions)
-    const esonResult = immutableJsonPatch(this.state.eson, actions.map(toEsonPatchAction))
+    const jsonResult = immutableJsonPatch(this.state.json, operations)
+    const esonResult = immutableJsonPatch(this.state.eson, operations.map(toEsonPatchOperation))
 
     if (this.props.history !== false) {
       // update data and store history
       const historyItem = {
-        redo: actions,
+        redo: operations,
         undo: jsonResult.revert
       }
 
@@ -986,7 +986,7 @@ export default class TreeMode extends PureComponent {
     }
 
     return {
-      patch: actions,
+      patch: operations,
       revert: jsonResult.revert,
       error: jsonResult.error,
       json: jsonResult.json          // FIXME: shouldn't pass json here?

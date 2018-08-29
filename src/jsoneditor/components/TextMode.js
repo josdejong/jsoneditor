@@ -322,20 +322,20 @@ export default class TextMode extends Component {
 
   /**
    * Apply a JSONPatch to the current JSON document
-   * @param {JSONPatch} actions   JSONPatch actions
-   * @return {ESONPatchAction} Returns a JSONPatch result containing the
+   * @param {JSONPatchDocument} operations   JSONPatch operations
+   * @return {JSONPatchResult} Returns a patch result containing the
    *                           patch, a patch to revert the action, and
    *                           an error object which is null when successful
    */
-  patch (actions) {
+  patch (operations) {
     const json = this.get()
 
-    const result = immutableJsonPatch(json, actions)
+    const result = immutableJsonPatch(json, operations)
 
     this.set(result.data)
 
     return {
-      patch: actions,
+      patch: operations,
       revert: result.revert,
       error: result.error
     }
