@@ -6,6 +6,8 @@ https://github.com/josdejong/jsoneditor
 ## 2018-08-29, version 5.24.3
 
 - Fixed color picker not working in ES6 projects.
+- Fixed color picker closing immediately after the first `onChange`
+  event, and `onChange` events are now debounced like all text inputs.
 
 
 ## 2018-08-27, version 5.24.2

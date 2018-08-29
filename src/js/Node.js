@@ -3362,15 +3362,13 @@ Node.prototype._showColorPicker = function () {
     var colorAnchor = createAbsoluteAnchor(this.dom.color, this.editor.frame);
 
     this.editor.options.onColorPicker(colorAnchor, this.value, function onChange(value) {
-      colorAnchor.destroy();
-
       if (typeof value === 'string' && value !== node.value) {
         // force recreating the color block, to cleanup any attached color picker
         node._deleteDomColor();
 
         node.value = value;
         node.updateDom();
-        node._onChangeValue();
+        node._debouncedOnChangeValue();
       }
     });
   }
