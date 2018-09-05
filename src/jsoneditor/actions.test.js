@@ -23,9 +23,6 @@ it('sort root Array (json)', () => {
   const sorted2 = immutableJSONPatch(json, sort(json, [], 'asc')).json
   const sorted3 = immutableJSONPatch(json, sort(json, [], 'desc')).json
 
-  console.log(json)
-  console.log(sorted1)
-
   assertEqualEson(json, [1,3, 2]) // should be untouched
   assertEqualEson(sorted1, [1,2,3])
   assertEqualEson(sorted2, [1,2,3])

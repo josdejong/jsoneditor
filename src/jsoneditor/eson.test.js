@@ -447,12 +447,12 @@ test('selection (node)', () => {
 
 test('pathsFromSelection (object)', () => {
   const json = {
+    "bool": false,
+    "nill": null,
     "obj": {
       "arr": [1,2, {"first":3,"last":4}]
     },
     "str": "hello world",
-    "nill": null,
-    "bool": false
   }
   const selection = {
     start: ['obj', 'arr', '2', 'last'],
@@ -460,9 +460,8 @@ test('pathsFromSelection (object)', () => {
   }
 
   expect(pathsFromSelection(json, selection)).toEqual([
-    ['obj'],
-    ['str'],
-    ['nill']
+    ['nill'],
+    ['obj']
   ])
 })
 

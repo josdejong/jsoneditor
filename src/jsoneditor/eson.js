@@ -428,13 +428,14 @@ export function findSelectionIndices (root, rootPath, selection) {
   const end = (selection.after || selection.inside || selection.end)[rootPath.length]
 
   // if no object we assume it's an Array
-  const props = Object.keys(root).sort(naturalSort) // TODO: create a util function getSortedProps
-  const startIndex = root[TYPE] === 'object' ? props.indexOf(start) : parseInt(start, 10)
-  const endIndex   = root[TYPE] === 'object' ? props.indexOf(end) : parseInt(end, 10)
+  // TODO: create a util function getSortedProps, cache results?
+  const rootIsObject = getType(root) === 'object'
+  const props = rootIsObject ? Object.keys(root).sort(naturalSort) : undefined
+  const startIndex = rootIsObject ? props.indexOf(start) : parseInt(start, 10)
+  const endIndex   = rootIsObject ? props.indexOf(end) : parseInt(end, 10)
 
   const minIndex = Math.min(startIndex, endIndex)
-  const maxIndex = Math.max(startIndex, endIndex) +
-      ((selection.after || selection.inside) ? 0 : 1) // include max index itself
+  const maxIndex = Math.max(startIndex, endIndex) + ((selection.after || selection.inside) ? 0 : 1) // include max index itself
 
   return { minIndex, maxIndex }
 }
@@ -519,8 +520,9 @@ export function pathsFromSelection (eson, selection) {
 
   const { minIndex, maxIndex } = findSelectionIndices(root, rootPath, selection)
 
-  if (root[TYPE] === 'object') {
+  if (getType(root) === 'object') {
     const props = Object.keys(root).sort(naturalSort) // TODO: create a util function getSortedProps
+
     return times(maxIndex - minIndex, i => rootPath.concat(props[i + minIndex]))
   }
   else { // root[TYPE] === 'array'
@@ -548,6 +550,10 @@ export function immutableESONPatch (eson, operations) {
 export function getType (any) {
   if (any === undefined) {
     return 'undefined'
+  }
+
+  if (any && any[TYPE]) {
+    return any[TYPE]
   }
 
   if (Array.isArray(any)) {
