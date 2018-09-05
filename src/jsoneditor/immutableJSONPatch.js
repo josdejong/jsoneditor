@@ -166,7 +166,9 @@ export function add (json, path, value, options) {
   const resolvedPath = resolvePathIndex(json, path)
   const parent = getIn(json, initial(path))
   const parentIsArray = Array.isArray(parent)
-  const oldValue = getIn(json, resolvedPath)
+  const oldValue = parentIsArray
+      ? undefined
+      : getIn(json, resolvedPath)
   const newValue = options.fromJSON(value, oldValue)
 
   const updatedJson = parentIsArray
