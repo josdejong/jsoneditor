@@ -161,7 +161,7 @@ export function deleteIn (object, path) {
     else {
       const updatedObject = shallowCloneWithSymbols(object)
 
-      if (Array.isArray(updatedObject)) {
+      if (Array.isArray(updatedObject) && typeof key !== 'symbol') {
         updatedObject.splice(key, 1)
       }
       else {

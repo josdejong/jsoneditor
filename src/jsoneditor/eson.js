@@ -52,7 +52,6 @@ export function syncEson(json, eson) {
     if (changed) {
       updatedEson[ID] = sameType ? eson[ID] : createId()
       updatedEson[TYPE] = jsonType
-      updatedEson[VALUE] = json
       updatedEson[EXPANDED] = sameType ? eson[EXPANDED] : false
 
       return updatedEson
@@ -83,7 +82,6 @@ export function syncEson(json, eson) {
     if (changed) {
       updatedEson[ID] = sameType ? eson[ID] : createId()
       updatedEson[TYPE] = jsonType
-      updatedEson[VALUE] = json
       updatedEson[EXPANDED] = sameType ? eson[EXPANDED] : false
 
       return updatedEson
@@ -93,7 +91,7 @@ export function syncEson(json, eson) {
     }
   }
   else if (jsonType === 'value') { // json is a value
-    if (sameType && eson[VALUE] === json) {
+    if (sameType && eson && eson[VALUE] === json) {
       return eson
     }
     else {
@@ -103,6 +101,7 @@ export function syncEson(json, eson) {
       updatedEson[TYPE] = jsonType
       updatedEson[VALUE] = json
       updatedEson[EXPANDED] = false
+      updatedEson.valueOf = () => json
 
       return updatedEson
     }
@@ -182,7 +181,7 @@ export function applyErrors (eson, errors = []) {
   }, eson)
 
   // cleanup any old error messages
-  return cleanupMetaData(esonWithErrors, 'error', errorPaths)
+  return cleanupMetaData(esonWithErrors, ERROR, errorPaths)
 }
 
 /**

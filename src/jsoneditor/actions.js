@@ -313,7 +313,7 @@ export function removeAll (paths) {
 
 /**
  * Create a JSONPatch to order the items of an array or the properties of an object in ascending
- * or descending order
+ * or descending order. In case of ESON, this will maintain state of expanded items
  * @param {JSON} json
  * @param {Path} path
  * @param {'asc' | 'desc' | null} [order=null]  If not provided, will toggle current ordering
@@ -374,15 +374,13 @@ function sortWithComparator (items, comparator) {
 
     if (i !== firstIndex) {
       const item = orderedItems[firstIndex]
-      const beforeItem = orderedItems[i]
       orderedItems.splice(firstIndex, 1)
       orderedItems.unshift(item)
 
       moveActions.push({
         item,
         fromIndex: firstIndex,
-        toIndex: i,
-        beforeItem
+        toIndex: i
       })
     }
   }

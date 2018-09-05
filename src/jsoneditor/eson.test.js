@@ -32,25 +32,40 @@ test('syncEson', () => {
 
   const nodeState1 = syncEson(json1, undefined)
 
-  expect(nodeState1).toEqual({
-    arr: [{}, {}, {}],
-    obj: {a: {}}
-  })
+  expect(nodeState1[ID]).toBeDefined()
+  expect(nodeState1[TYPE]).toEqual('object')
+  expect(nodeState1[EXPANDED]).toEqual(false)
+  expect(nodeState1[VALUE]).toBeUndefined()
+  expect(nodeState1.arr[ID]).toBeDefined()
+  expect(nodeState1.arr[TYPE]).toEqual('array')
+  expect(nodeState1.arr[VALUE]).toBeUndefined()
+  expect(nodeState1.arr[EXPANDED]).toEqual(false)
   expect(nodeState1.arr[0][ID]).toBeDefined()
   expect(nodeState1.arr[0][TYPE]).toEqual('value')
-  expect(nodeState1.arr[TYPE]).toEqual('array')
-  expect(nodeState1[TYPE]).toEqual('object')
+  expect(nodeState1.arr[0][VALUE]).toEqual(1)
+  expect(nodeState1.arr[0][EXPANDED]).toEqual(false)
+  expect(nodeState1.arr[1][ID]).toBeDefined()
+  expect(nodeState1.arr[1][TYPE]).toEqual('value')
+  expect(nodeState1.arr[1][VALUE]).toEqual(2)
+  expect(nodeState1.arr[1][EXPANDED]).toEqual(false)
+  expect(nodeState1.arr[2][ID]).toBeDefined()
+  expect(nodeState1.arr[2][TYPE]).toEqual('value')
+  expect(nodeState1.arr[2][VALUE]).toEqual(3)
+  expect(nodeState1.arr[2][EXPANDED]).toEqual(false)
+  expect(nodeState1.obj[ID]).toBeDefined()
+  expect(nodeState1.obj[TYPE]).toEqual('object')
+  expect(nodeState1.obj[VALUE]).toBeUndefined()
+  expect(nodeState1.obj[EXPANDED]).toEqual(false)
+  expect(nodeState1.obj.a[ID]).toBeDefined()
+  expect(nodeState1.obj.a[TYPE]).toEqual('value')
+  expect(nodeState1.obj.a[VALUE]).toEqual(2)
+  expect(nodeState1.obj.a[EXPANDED]).toEqual(false)
 
   const json2 = {
     arr: [1, 2],
     obj: {a : 2, b : 4}
   }
   const nodeState2 = syncEson(json2, nodeState1)
-
-  expect(nodeState2).toEqual({
-    arr: [{}, {}],
-    obj: {a: {}, b: {}}
-  })
 
   // ID's should be the same for unchanged contents
   expect(nodeState2[ID]).toEqual(nodeState1[ID])
@@ -145,7 +160,6 @@ test('expand a callback', () => {
   })
 
   function callback (path) {
-    console.log('callback')
     return (path.length >= 1)
         ? true     // expand
         : undefined // leave untouched
@@ -187,9 +201,6 @@ test('add and remove errors', () => {
   let expected = eson
   expected = setIn(expected, ['obj', 'arr', '2', 'last', ERROR], jsonSchemaErrors[0])
   expected = setIn(expected, ['nill', ERROR], jsonSchemaErrors[1])
-
-  console.log(actual1)
-  console.log(expected)
 
   assertEqualEson(actual1, expected)
 

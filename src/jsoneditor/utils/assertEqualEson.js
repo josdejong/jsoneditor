@@ -1,6 +1,5 @@
-import { ID, TYPE, VALUE } from '../eson'
-import uniq from 'lodash/uniq'
-import each from 'lodash/each'
+import { ID } from '../eson'
+import { deleteIn, transform } from './immutabilityHelpers'
 
 export function createAssertEqualEson(expect) {
 
@@ -9,31 +8,23 @@ export function createAssertEqualEson(expect) {
       throw new Error('Argument "expected" is undefined')
     }
 
-    // regular deep equal
-    expect(actual).toEqual(expected)
+    if (ignoreIds) {
+      const actualWithoutIds = stripValueOf(stripIdSymbols(actual))
+      const expectedWithoutIds = stripValueOf(stripIdSymbols(expected))
 
-    assertEqualEsonKeys(actual, expected, ignoreIds)
+      expect(actualWithoutIds).toEqual(expectedWithoutIds)
+    }
+    else {
+      expect(actual).toEqual(expected)
+    }
   }
 
-  function assertEqualEsonKeys (actual, expected, ignoreIds = true) {
-    // collect all symbols
-    const symbols = uniq(Object.getOwnPropertySymbols(actual)
-        .concat(Object.getOwnPropertySymbols(expected)))
+  function stripIdSymbols (eson) {
+    return transform(eson, (value) => deleteIn(value, [ID]))
+  }
 
-    // test whether all meta data is the same
-    symbols
-        .filter(symbol => symbol !== ID || ignoreIds)
-        .forEach(symbol => expect(actual[symbol]).toEqual(expected[symbol]))
-
-    if (actual[TYPE] === 'array') {
-      each(expected, (item, index) => assertEqualEsonKeys(actual[index], expected[index], ignoreIds))
-    }
-    else if (actual[TYPE] === 'object') {
-      each(actual, (value, key) => assertEqualEsonKeys(actual[key], expected[key]), ignoreIds)
-    }
-    else { // actual[TYPE] === 'value'
-      expect(actual[VALUE]).toEqual(expected[VALUE])
-    }
+  function stripValueOf (eson) {
+    return transform(eson, (value) => deleteIn(value, ['valueOf']))
   }
 
   return assertEqualEson
