@@ -179,7 +179,7 @@ export default class TreeMode extends PureComponent {
     }
 
     // Apply json
-    if (nextProps.json !== this.state.json) {
+    if (nextProps.json !== this.state.json && nextProps.json !== undefined) {
       const json = nextProps.json
 
       this.setState({
