@@ -956,8 +956,6 @@ export default class TreeMode extends PureComponent {
       throw new TypeError('Array with patch actions expected')
     }
 
-    console.log('patch', operations) // TODO: cleanup
-
     const jsonResult = immutableJSONPatch(this.state.json, operations)
     const esonResult = immutableESONPatch(this.state.eson, operations)
 

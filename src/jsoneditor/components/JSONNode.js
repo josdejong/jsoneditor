@@ -1,6 +1,7 @@
 import { createElement as h, PureComponent } from 'react'
 import PropTypes from 'prop-types'
 import initial from 'lodash/initial'
+import isEqual from 'lodash/isEqual'
 import naturalSort from 'javascript-natural-sort'
 
 import FloatingMenu from './menu/FloatingMenu'
@@ -41,10 +42,20 @@ export default class JSONNode extends PureComponent {
       menu: null,       // can contain object {anchor, root}
       appendMenu: null, // can contain object {anchor, root}
       hover: null,
-      path: this.props.parentPath
-          ? this.props.parentPath.concat('index' in this.props ? this.props.index : this.props.prop)
-          : []
+      path: null // initialized via getDerivedStateFromProps
     }
+  }
+
+  static getDerivedStateFromProps(props, state) {
+    const path = props.parentPath
+        ? props.parentPath.concat('index' in props ? props.index : props.prop)
+        : []
+
+    // only update the path in the state if there is actually something changed,
+    // else we get unnecessary re-rendering of all nodes
+    return isEqual(path, state.path)
+        ? null
+        : { path }
   }
 
   componentWillUnmount () {
