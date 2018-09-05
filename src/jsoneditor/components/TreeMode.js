@@ -50,11 +50,16 @@ import { createFindKeyBinding } from '../utils/keyBindings'
 import { KEY_BINDINGS } from '../constants'
 import { immutableJSONPatch } from '../immutableJSONPatch'
 import {
-  applyErrors, applySelection, contentsFromPaths,
+  applyErrors,
+  applySelection,
+  contentsFromPaths,
   expand,
   EXPANDED,
-  expandPath, immutableESONPatch,
-  nextSearchResult, pathsFromSelection, previousSearchResult,
+  expandPath,
+  immutableESONPatch,
+  nextSearchResult,
+  pathsFromSelection,
+  previousSearchResult,
   search,
   syncEson
 } from '../eson'

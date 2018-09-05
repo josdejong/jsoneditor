@@ -16,7 +16,8 @@ import {
   SELECTED_LAST,
   SELECTED_START, SELECTION,
   syncEson,
-  TYPE
+  TYPE,
+  VALUE
 } from './eson'
 import { getIn, setIn } from './utils/immutabilityHelpers'
 import { createAssertEqualEson } from './utils/assertEqualEson'
@@ -58,6 +59,36 @@ test('syncEson', () => {
   expect(nodeState2.arr[1][ID]).toEqual(nodeState1.arr[1][ID])
   expect(nodeState2.obj[ID]).toEqual(nodeState1.obj[ID])
   expect(nodeState2.obj.a[ID]).toEqual(nodeState1.obj.a[ID])
+})
+
+test('syncEson (replace a value)', () => {
+  const json1 = {
+    value: 1
+  }
+  const eson1 = syncEson(json1, undefined)
+
+  expect(eson1.value[ID]).toBeDefined()
+  expect(eson1.value[TYPE]).toEqual('value')
+  expect(eson1.value[VALUE]).toEqual(1)
+
+  const json2 = {
+    value: 2
+  }
+  const eson2 = syncEson(json2, eson1)
+
+  expect(eson2.value[ID]).toBeDefined()
+  expect(eson2.value[TYPE]).toEqual('value')
+  expect(eson2.value[VALUE]).toEqual(2)
+
+  // eson1 should be untouched
+  expect(eson1.value[VALUE]).toEqual(1)
+
+  const json3 = {
+    value: 2 // samve as json2
+  }
+  const eson3 = syncEson(json3, eson2)
+  expect(eson3.value).toBe(eson2.value)
+  expect(eson3).toBe(eson2)
 })
 
 test('expand a single path', () => {

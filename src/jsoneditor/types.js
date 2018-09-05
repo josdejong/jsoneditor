@@ -11,7 +11,7 @@
  *   modes: string[]?,
  *   history: boolean?,
  *   indentation: number | string?,
- *   onChange: function (patch: ESONPatchDocument, revert: ESONPatchDocument)?,
+ *   onChange: function (patch: JSONPatchDocument, revert: JSONPatchDocument)?,
  *   onChangeText: function ()?,
  *   onChangeMode: function (mode: string, prevMode: string)?,
  *   onError:  function (err: Error)?,
@@ -83,40 +83,10 @@
 
 /**
  * @typedef {{
- *   op: 'add' | 'remove' | 'replace' | 'copy' | 'move' | 'test',
- *   path: string,
- *   from?: string,
- *   value?: *,
- *   meta?: ESONPatchOptions
- * }} ESONPatchOperation
- */
-
-/**
- * @typedef {ESONPatchOperation[]} ESONPatchDocument
- */
-
-/**
- * @typedef {{
  *   patch: JSONPatchDocument,
  *   revert: JSONPatchDocument,
  *   error: Error | null
  * }} JSONPatchResult
- */
-
-/**
- * @typedef {{
- *   id: string,
- *   path: Path,
- *   type: ESONType,
- *   before?: string
- *   props?: string[],
- *   expanded?: boolean,
- *   selected?: boolean,
- *   searchProperty?: SearchResultStatus,
- *   searchValue?: SearchResultStatus
- * }} ESONPatchOptions
- *
- * // TODO: describe search results and selection
  */
 
 /**

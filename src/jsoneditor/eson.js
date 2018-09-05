@@ -93,7 +93,7 @@ export function syncEson(json, eson) {
     }
   }
   else if (jsonType === 'value') { // json is a value
-    if (sameType) {
+    if (sameType && eson[VALUE] === json) {
       return eson
     }
     else {
