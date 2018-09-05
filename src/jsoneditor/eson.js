@@ -414,33 +414,6 @@ export function applySelection (eson, selection) {
 }
 
 /**
- * Find the min and max index of a start and end child.
- * Start and end can be a property name in case of an Object,
- * or a matrix index (string with a number) in case of an Array.
- *
- * @param {ESON} root
- * @param {Path} rootPath
- * @param {Selection} selection
- * @return {{minIndex: number, maxIndex: number}}
- */
-export function findSelectionIndices (root, rootPath, selection) {
-  const start = (selection.after || selection.inside || selection.start)[rootPath.length]
-  const end = (selection.after || selection.inside || selection.end)[rootPath.length]
-
-  // if no object we assume it's an Array
-  // TODO: create a util function getSortedProps, cache results?
-  const rootIsObject = getType(root) === 'object'
-  const props = rootIsObject ? Object.keys(root).sort(naturalSort) : undefined
-  const startIndex = rootIsObject ? props.indexOf(start) : parseInt(start, 10)
-  const endIndex   = rootIsObject ? props.indexOf(end) : parseInt(end, 10)
-
-  const minIndex = Math.min(startIndex, endIndex)
-  const maxIndex = Math.max(startIndex, endIndex) + ((selection.after || selection.inside) ? 0 : 1) // include max index itself
-
-  return { minIndex, maxIndex }
-}
-
-/**
  * Get the contents of a list with paths
  * @param {ESON} eson
  * @param {Path[]} paths
@@ -518,14 +491,27 @@ export function pathsFromSelection (eson, selection) {
   const rootPath = findRootPath(selection)
   const root = getIn(eson, rootPath)
 
-  const { minIndex, maxIndex } = findSelectionIndices(root, rootPath, selection)
+  const start = (selection.after || selection.inside || selection.start)[rootPath.length]
+  const end = (selection.after || selection.inside || selection.end)[rootPath.length]
 
   if (getType(root) === 'object') {
-    const props = Object.keys(root).sort(naturalSort) // TODO: create a util function getSortedProps
+    // TODO: create a util function getSortedProps, cache results?
+    const props = Object.keys(root).sort(naturalSort)
+    const startIndex = props.indexOf(start)
+    const endIndex   = props.indexOf(end)
+
+    const minIndex = Math.min(startIndex, endIndex)
+    const maxIndex = Math.max(startIndex, endIndex) + ((selection.after || selection.inside) ? 0 : 1) // include max index itself
 
     return times(maxIndex - minIndex, i => rootPath.concat(props[i + minIndex]))
   }
   else { // root[TYPE] === 'array'
+    const startIndex = parseInt(start, 10)
+    const endIndex   = parseInt(end, 10)
+
+    const minIndex = Math.min(startIndex, endIndex)
+    const maxIndex = Math.max(startIndex, endIndex) + ((selection.after || selection.inside) ? 0 : 1) // include max index itself
+
     return times(maxIndex - minIndex, i => rootPath.concat(String(i + minIndex)))
   }
 }
@@ -541,7 +527,7 @@ export function pathsFromSelection (eson, selection) {
 export function immutableESONPatch (eson, operations) {
   return immutableJSONPatch(eson, operations, {
     fromJSON: (value, previousEson) => syncEson(value, previousEson),
-    toJSON: (eson) => eson[VALUE],
+    toJSON: (eson) => eson.valueOf(),
     clone: (value) => setIn(value, [ID], createId())
   })
 }

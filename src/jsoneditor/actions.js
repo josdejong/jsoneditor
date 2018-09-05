@@ -1,7 +1,8 @@
 import last from 'lodash/last'
 import initial from 'lodash/initial'
 import isEmpty from 'lodash/isEmpty'
-import { findRootPath, findSelectionIndices, pathsFromSelection } from './eson'
+import first from 'lodash/first'
+import { findRootPath, pathsFromSelection } from './eson'
 import { getIn } from './utils/immutabilityHelpers'
 import { findUniqueName } from './utils/stringUtils'
 import { isObject, stringConvert } from './utils/typeUtils'
@@ -86,14 +87,16 @@ export function duplicate (json, selection) {
 
   const rootPath = findRootPath(selection)
   const root = getIn(json, rootPath)
-  const { maxIndex } = findSelectionIndices(root, rootPath, selection)
   const paths = pathsFromSelection(json, selection)
 
   if (Array.isArray(root)) {
-    return paths.map((path, offset) => ({
+    const lastPath = last(paths)
+    const offset = lastPath ? (parseInt(last(lastPath), 10) + 1) : 0
+
+    return paths.map((path, index) => ({
       op: 'copy',
       from: compileJSONPointer(path),
-      path: compileJSONPointer(rootPath.concat(maxIndex + offset))
+      path: compileJSONPointer(rootPath.concat(index + offset))
     }))
   }
   else { // 'object'
@@ -221,13 +224,16 @@ export function insertInside (json, parentPath, values) {
 export function replace (json, selection, values) {  // TODO: find a better name and define datastructure for values
   const rootPath = findRootPath(selection)
   const root = getIn(json, rootPath)
-  const { minIndex, maxIndex } = findSelectionIndices(root, rootPath, selection)
 
   if (Array.isArray(root)) {
-    const removeActions = removeAll(pathsFromSelection(json, selection))
-    const insertActions = values.map((entry, offset) => ({
+    const paths = pathsFromSelection(json, selection)
+    const firstPath = first(paths)
+    const offset = firstPath ? parseInt(last(firstPath), 10) : 0
+
+    const removeActions = removeAll(paths)
+    const insertActions = values.map((entry, index) => ({
       op: 'add',
-      path: compileJSONPointer(rootPath.concat(minIndex + offset)),
+      path: compileJSONPointer(rootPath.concat(index + offset)),
       value: entry.value
     }))
 
