@@ -5,6 +5,8 @@ https://github.com/josdejong/jsoneditor
 
 ## not yet released, version 5.24.4
 
+- Fixed #576: Visualization in mode `view` when an array
+  with more than 100 items is rendered.
 - Fixed JSONEditor not working on IE11: continue and throw console
   errors when `Promise` is undefined.
 - Fixed `onClose` of color picker not being fired when clicking outside

@@ -79,8 +79,10 @@ function showMoreNodeFactory(Node) {
       tdContents.appendChild(moreContents);
 
       var moreTr = document.createElement('tr');
-      moreTr.appendChild(document.createElement('td'));
-      moreTr.appendChild(document.createElement('td'));
+      if (this.editor.options.mode === 'tree') {
+        moreTr.appendChild(document.createElement('td'));
+        moreTr.appendChild(document.createElement('td'));
+      }
       moreTr.appendChild(tdContents);
       moreTr.className = 'jsoneditor-show-more';
       this.dom.tr = moreTr;
