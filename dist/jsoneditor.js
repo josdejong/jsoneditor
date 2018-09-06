@@ -24,7 +24,7 @@
  * Copyright (c) 2011-2017 Jos de Jong, http://jsoneditoronline.org
  *
  * @author  Jos de Jong, <wjosdejong@gmail.com>
- * @version 5.24.4
+ * @version 5.24.5
  * @date    2018-09-06
  */
 (function webpackUniversalModuleDefinition(root, factory) {
@@ -46576,7 +46576,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            console.error(err);
 	          });
 	    }
-	    catch(er) {
+	    catch(err) {
 	      console.error(err);
 	    }
 	  }

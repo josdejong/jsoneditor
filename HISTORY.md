@@ -3,6 +3,12 @@
 https://github.com/josdejong/jsoneditor
 
 
+## 2018-09-06, version 5.24.5
+
+- Fixed a bug in textmode on IE 11, not loading the editor when
+  `Promise` is undefined.
+
+
 ## 2018-09-06, version 5.24.4
 
 - Fixed #576: Visualization in mode `view` when an array

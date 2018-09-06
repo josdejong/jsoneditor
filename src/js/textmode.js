@@ -765,7 +765,7 @@ textmode.validate = function () {
             console.error(err);
           });
     }
-    catch(er) {
+    catch(err) {
       console.error(err);
     }
   }
