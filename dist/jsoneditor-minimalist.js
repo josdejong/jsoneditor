@@ -24,8 +24,8 @@
  * Copyright (c) 2011-2017 Jos de Jong, http://jsoneditoronline.org
  *
  * @author  Jos de Jong, <wjosdejong@gmail.com>
- * @version 5.24.3
- * @date    2018-08-29
+ * @version 5.24.4
+ * @date    2018-09-06
  */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
@@ -99,6 +99,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	var treemode = __webpack_require__(6);
 	var textmode = __webpack_require__(28);
 	var util = __webpack_require__(12);
+
+	if (typeof Promise === 'undefined') {
+	  console.error('Promise undefined. Please load a Promise polyfill in the browser in order to use JSONEditor');
+	}
 
 	/**
 	 * @constructor JSONEditor
@@ -2014,20 +2018,25 @@ return /******/ (function(modules) { // webpackBootstrap
 	  }
 
 	  // execute custom validation and after than merge and render all errors
-	  this.validationSequence++;
-	  var me = this;
-	  var seq = this.validationSequence;
-	  this._validateCustom(json)
-	      .then(function (customValidationErrors) {
-	        // only apply when there was no other validation started whilst resolving async results
-	        if (seq === me.validationSequence) {
-	          var errorNodes = [].concat(duplicateErrors, schemaErrors, customValidationErrors || []);
-	          me._renderValidationErrors(errorNodes);
-	        }
-	      })
-	      .catch(function (err) {
-	        console.error(err);
-	      });
+	  try {
+	    this.validationSequence++;
+	    var me = this;
+	    var seq = this.validationSequence;
+	    this._validateCustom(json)
+	        .then(function (customValidationErrors) {
+	          // only apply when there was no other validation started whilst resolving async results
+	          if (seq === me.validationSequence) {
+	            var errorNodes = [].concat(duplicateErrors, schemaErrors, customValidationErrors || []);
+	            me._renderValidationErrors(errorNodes);
+	          }
+	        })
+	        .catch(function (err) {
+	          console.error(err);
+	        });
+	  }
+	  catch (err) {
+	    console.error(err);
+	  }
 	};
 
 	treemode._renderValidationErrors = function (errorNodes) {
@@ -4525,8 +4534,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	    var target = event.target;
 	    if ((target !== absoluteAnchor) && !util.isChildOf(target, absoluteAnchor)) {
 	      destroy();
-	      event.stopPropagation();
-	      event.preventDefault();
 	    }
 	  }
 
@@ -13355,8 +13362,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	      tdContents.appendChild(moreContents);
 
 	      var moreTr = document.createElement('tr');
-	      moreTr.appendChild(document.createElement('td'));
-	      moreTr.appendChild(document.createElement('td'));
+	      if (this.editor.options.mode === 'tree') {
+	        moreTr.appendChild(document.createElement('td'));
+	        moreTr.appendChild(document.createElement('td'));
+	      }
 	      moreTr.appendChild(tdContents);
 	      moreTr.className = 'jsoneditor-show-more';
 	      this.dom.tr = moreTr;
@@ -17909,20 +17918,25 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }
 
 	    // execute custom validation and after than merge and render all errors
-	    this.validationSequence++;
-	    var me = this;
-	    var seq = this.validationSequence;
-	    this._validateCustom(json)
-	        .then(function (customValidationErrors) {
-	          // only apply when there was no other validation started whilst resolving async results
-	          if (seq === me.validationSequence) {
-	            var errors = schemaErrors.concat(parseErrors || []).concat(customValidationErrors || []);
-	            me._renderErrors(errors);
-	          }
-	        })
-	        .catch(function (err) {
-	          console.error(err);
-	        });
+	    try {
+	      this.validationSequence++;
+	      var me = this;
+	      var seq = this.validationSequence;
+	      this._validateCustom(json)
+	          .then(function (customValidationErrors) {
+	            // only apply when there was no other validation started whilst resolving async results
+	            if (seq === me.validationSequence) {
+	              var errors = schemaErrors.concat(parseErrors || []).concat(customValidationErrors || []);
+	              me._renderErrors(errors);
+	            }
+	          })
+	          .catch(function (err) {
+	            console.error(err);
+	          });
+	    }
+	    catch(er) {
+	      console.error(err);
+	    }
 	  }
 	  else {
 	    this._renderErrors(parseErrors || []);

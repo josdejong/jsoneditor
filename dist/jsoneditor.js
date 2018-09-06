@@ -24,8 +24,8 @@
  * Copyright (c) 2011-2017 Jos de Jong, http://jsoneditoronline.org
  *
  * @author  Jos de Jong, <wjosdejong@gmail.com>
- * @version 5.24.3
- * @date    2018-08-29
+ * @version 5.24.4
+ * @date    2018-09-06
  */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
@@ -99,6 +99,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	var treemode = __webpack_require__(59);
 	var textmode = __webpack_require__(81);
 	var util = __webpack_require__(65);
+
+	if (typeof Promise === 'undefined') {
+	  console.error('Promise undefined. Please load a Promise polyfill in the browser in order to use JSONEditor');
+	}
 
 	/**
 	 * @constructor JSONEditor
@@ -7854,249 +7858,13 @@ return /******/ (function(modules) { // webpackBootstrap
 /* 49 */
 /***/ function(module, exports) {
 
-	module.exports = {
-		"$schema": "http://json-schema.org/draft-06/schema#",
-		"$id": "https://raw.githubusercontent.com/epoberezkin/ajv/master/lib/refs/$data.json#",
-		"description": "Meta-schema for $data reference (JSON-schema extension proposal)",
-		"type": "object",
-		"required": [
-			"$data"
-		],
-		"properties": {
-			"$data": {
-				"type": "string",
-				"anyOf": [
-					{
-						"format": "relative-json-pointer"
-					},
-					{
-						"format": "json-pointer"
-					}
-				]
-			}
-		},
-		"additionalProperties": false
-	};
+	module.exports = {"$schema":"http://json-schema.org/draft-06/schema#","$id":"https://raw.githubusercontent.com/epoberezkin/ajv/master/lib/refs/$data.json#","description":"Meta-schema for $data reference (JSON-schema extension proposal)","type":"object","required":["$data"],"properties":{"$data":{"type":"string","anyOf":[{"format":"relative-json-pointer"},{"format":"json-pointer"}]}},"additionalProperties":false}
 
 /***/ },
 /* 50 */
 /***/ function(module, exports) {
 
-	module.exports = {
-		"$schema": "http://json-schema.org/draft-06/schema#",
-		"$id": "http://json-schema.org/draft-06/schema#",
-		"title": "Core schema meta-schema",
-		"definitions": {
-			"schemaArray": {
-				"type": "array",
-				"minItems": 1,
-				"items": {
-					"$ref": "#"
-				}
-			},
-			"nonNegativeInteger": {
-				"type": "integer",
-				"minimum": 0
-			},
-			"nonNegativeIntegerDefault0": {
-				"allOf": [
-					{
-						"$ref": "#/definitions/nonNegativeInteger"
-					},
-					{
-						"default": 0
-					}
-				]
-			},
-			"simpleTypes": {
-				"enum": [
-					"array",
-					"boolean",
-					"integer",
-					"null",
-					"number",
-					"object",
-					"string"
-				]
-			},
-			"stringArray": {
-				"type": "array",
-				"items": {
-					"type": "string"
-				},
-				"uniqueItems": true,
-				"default": []
-			}
-		},
-		"type": [
-			"object",
-			"boolean"
-		],
-		"properties": {
-			"$id": {
-				"type": "string",
-				"format": "uri-reference"
-			},
-			"$schema": {
-				"type": "string",
-				"format": "uri"
-			},
-			"$ref": {
-				"type": "string",
-				"format": "uri-reference"
-			},
-			"title": {
-				"type": "string"
-			},
-			"description": {
-				"type": "string"
-			},
-			"default": {},
-			"examples": {
-				"type": "array",
-				"items": {}
-			},
-			"multipleOf": {
-				"type": "number",
-				"exclusiveMinimum": 0
-			},
-			"maximum": {
-				"type": "number"
-			},
-			"exclusiveMaximum": {
-				"type": "number"
-			},
-			"minimum": {
-				"type": "number"
-			},
-			"exclusiveMinimum": {
-				"type": "number"
-			},
-			"maxLength": {
-				"$ref": "#/definitions/nonNegativeInteger"
-			},
-			"minLength": {
-				"$ref": "#/definitions/nonNegativeIntegerDefault0"
-			},
-			"pattern": {
-				"type": "string",
-				"format": "regex"
-			},
-			"additionalItems": {
-				"$ref": "#"
-			},
-			"items": {
-				"anyOf": [
-					{
-						"$ref": "#"
-					},
-					{
-						"$ref": "#/definitions/schemaArray"
-					}
-				],
-				"default": {}
-			},
-			"maxItems": {
-				"$ref": "#/definitions/nonNegativeInteger"
-			},
-			"minItems": {
-				"$ref": "#/definitions/nonNegativeIntegerDefault0"
-			},
-			"uniqueItems": {
-				"type": "boolean",
-				"default": false
-			},
-			"contains": {
-				"$ref": "#"
-			},
-			"maxProperties": {
-				"$ref": "#/definitions/nonNegativeInteger"
-			},
-			"minProperties": {
-				"$ref": "#/definitions/nonNegativeIntegerDefault0"
-			},
-			"required": {
-				"$ref": "#/definitions/stringArray"
-			},
-			"additionalProperties": {
-				"$ref": "#"
-			},
-			"definitions": {
-				"type": "object",
-				"additionalProperties": {
-					"$ref": "#"
-				},
-				"default": {}
-			},
-			"properties": {
-				"type": "object",
-				"additionalProperties": {
-					"$ref": "#"
-				},
-				"default": {}
-			},
-			"patternProperties": {
-				"type": "object",
-				"additionalProperties": {
-					"$ref": "#"
-				},
-				"default": {}
-			},
-			"dependencies": {
-				"type": "object",
-				"additionalProperties": {
-					"anyOf": [
-						{
-							"$ref": "#"
-						},
-						{
-							"$ref": "#/definitions/stringArray"
-						}
-					]
-				}
-			},
-			"propertyNames": {
-				"$ref": "#"
-			},
-			"const": {},
-			"enum": {
-				"type": "array",
-				"minItems": 1,
-				"uniqueItems": true
-			},
-			"type": {
-				"anyOf": [
-					{
-						"$ref": "#/definitions/simpleTypes"
-					},
-					{
-						"type": "array",
-						"items": {
-							"$ref": "#/definitions/simpleTypes"
-						},
-						"minItems": 1,
-						"uniqueItems": true
-					}
-				]
-			},
-			"format": {
-				"type": "string"
-			},
-			"allOf": {
-				"$ref": "#/definitions/schemaArray"
-			},
-			"anyOf": {
-				"$ref": "#/definitions/schemaArray"
-			},
-			"oneOf": {
-				"$ref": "#/definitions/schemaArray"
-			},
-			"not": {
-				"$ref": "#"
-			}
-		},
-		"default": {}
-	};
+	module.exports = {"$schema":"http://json-schema.org/draft-06/schema#","$id":"http://json-schema.org/draft-06/schema#","title":"Core schema meta-schema","definitions":{"schemaArray":{"type":"array","minItems":1,"items":{"$ref":"#"}},"nonNegativeInteger":{"type":"integer","minimum":0},"nonNegativeIntegerDefault0":{"allOf":[{"$ref":"#/definitions/nonNegativeInteger"},{"default":0}]},"simpleTypes":{"enum":["array","boolean","integer","null","number","object","string"]},"stringArray":{"type":"array","items":{"type":"string"},"uniqueItems":true,"default":[]}},"type":["object","boolean"],"properties":{"$id":{"type":"string","format":"uri-reference"},"$schema":{"type":"string","format":"uri"},"$ref":{"type":"string","format":"uri-reference"},"title":{"type":"string"},"description":{"type":"string"},"default":{},"examples":{"type":"array","items":{}},"multipleOf":{"type":"number","exclusiveMinimum":0},"maximum":{"type":"number"},"exclusiveMaximum":{"type":"number"},"minimum":{"type":"number"},"exclusiveMinimum":{"type":"number"},"maxLength":{"$ref":"#/definitions/nonNegativeInteger"},"minLength":{"$ref":"#/definitions/nonNegativeIntegerDefault0"},"pattern":{"type":"string","format":"regex"},"additionalItems":{"$ref":"#"},"items":{"anyOf":[{"$ref":"#"},{"$ref":"#/definitions/schemaArray"}],"default":{}},"maxItems":{"$ref":"#/definitions/nonNegativeInteger"},"minItems":{"$ref":"#/definitions/nonNegativeIntegerDefault0"},"uniqueItems":{"type":"boolean","default":false},"contains":{"$ref":"#"},"maxProperties":{"$ref":"#/definitions/nonNegativeInteger"},"minProperties":{"$ref":"#/definitions/nonNegativeIntegerDefault0"},"required":{"$ref":"#/definitions/stringArray"},"additionalProperties":{"$ref":"#"},"definitions":{"type":"object","additionalProperties":{"$ref":"#"},"default":{}},"properties":{"type":"object","additionalProperties":{"$ref":"#"},"default":{}},"patternProperties":{"type":"object","additionalProperties":{"$ref":"#"},"default":{}},"dependencies":{"type":"object","additionalProperties":{"anyOf":[{"$ref":"#"},{"$ref":"#/definitions/stringArray"}]}},"propertyNames":{"$ref":"#"},"const":{},"enum":{"type":"array","minItems":1,"uniqueItems":true},"type":{"anyOf":[{"$ref":"#/definitions/simpleTypes"},{"type":"array","items":{"$ref":"#/definitions/simpleTypes"},"minItems":1,"uniqueItems":true}]},"format":{"type":"string"},"allOf":{"$ref":"#/definitions/schemaArray"},"anyOf":{"$ref":"#/definitions/schemaArray"},"oneOf":{"$ref":"#/definitions/schemaArray"},"not":{"$ref":"#"}},"default":{}}
 
 /***/ },
 /* 51 */
@@ -29285,8 +29053,8 @@ return /******/ (function(modules) { // webpackBootstrap
 /***/ function(module, exports, __webpack_require__) {
 
 	/*!
-	 * vanilla-picker v2.3.0
-	 * https://github.com/Sphinxxxx/vanilla-picker
+	 * vanilla-picker v2.4.2
+	 * https://vanilla-picker.js.org
 	 *
 	 * Copyright 2017-2018 Andreas Borgen (https://github.com/Sphinxxxx), Adam Brooks (https://github.com/dissimulate)
 	 * Released under the ISC license.
@@ -29876,7 +29644,10 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	  var Picker = function () {
 
+
 	      function Picker(options) {
+	          var _this = this;
+
 	          classCallCheck(this, Picker);
 
 
@@ -29887,6 +29658,15 @@ return /******/ (function(modules) { // webpackBootstrap
 	              editor: true
 	          };
 
+	          this._openProxy = function (e) {
+	              return _this.openHandler(e);
+	          };
+
+	          this.onChange = null;
+	          this.onDone = null;
+	          this.onOpen = null;
+	          this.onClose = null;
+
 	          this.setOptions(options);
 	      }
 
@@ -29895,8 +29675,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	      createClass(Picker, [{
 	          key: 'setOptions',
 	          value: function setOptions(options) {
-	              var _this = this;
-
 	              if (!options) {
 	                  return;
 	              }
@@ -29915,6 +29693,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	              if (options instanceof HTMLElement) {
 	                  settings.parent = options;
 	              } else {
+
+	                  if (settings.parent && options.parent && settings.parent !== options.parent) {
+	                      settings.parent.removeEventListener('click', this._openProxy, false);
+	                      this._popupInited = false;
+	                  }
 
 	                  transfer(options, settings );
 	              }
@@ -29939,9 +29722,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	              if (settings.parent && settings.popup && !this._popupInited) {
 
-	                  addEvent(settings.parent, 'click', function (e) {
-	                      return _this.openHandler(e);
-	                  });
+	                  addEvent(settings.parent, 'click', this._openProxy);
 
 
 	                  this._popupInited = true;
@@ -29969,17 +29750,20 @@ return /******/ (function(modules) { // webpackBootstrap
 	          value: function closeHandler(e) {
 	              var doHide = false;
 
-	              if (e.type === 'mousedown') {
-	                  if (!this.domElement.contains(e.target)) {
-	                      doHide = true;
-	                  }
+	              if (!e) {
+	                  doHide = true;
 	              }
-	              else {
-	                      e.preventDefault();
-	                      e.stopPropagation();
-
-	                      doHide = true;
+	              else if (e.type === 'mousedown') {
+	                      if (!this.domElement.contains(e.target)) {
+	                          doHide = true;
+	                      }
 	                  }
+	                  else {
+	                          e.preventDefault();
+	                          e.stopPropagation();
+
+	                          doHide = true;
+	                      }
 
 	              if (doHide && this.hide()) {
 	                  this.settings.parent.style.pointerEvents = '';
@@ -29992,13 +29776,25 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 	      }, {
+	          key: 'movePopup',
+	          value: function movePopup(options, open) {
+	              this.closeHandler();
+
+	              this.setOptions(options);
+	              if (open) {
+	                  this.openHandler();
+	              }
+	          }
+
+
+	      }, {
 	          key: 'setColor',
-	          value: function setColor(color) {
-	              this._setColor(color);
+	          value: function setColor(color, silent) {
+	              this._setColor(color, { silent: silent });
 	          }
 	      }, {
 	          key: '_setColor',
-	          value: function _setColor(color, fromEditor) {
+	          value: function _setColor(color, flags) {
 	              var c = new Color(color);
 	              if (!this.settings.alpha) {
 	                  var hsla = c.hsla;
@@ -30006,13 +29802,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	                  c.hsla = hsla;
 	              }
 	              this.colour = this.color = c;
-	              this._setHSLA(null, null, null, null, fromEditor);
+	              this._setHSLA(null, null, null, null, flags);
 	          }
 
 	      }, {
 	          key: 'setColour',
-	          value: function setColour(colour) {
-	              this.setColor(colour);
+	          value: function setColour(colour, silent) {
+	              this.setColor(colour, silent);
 	          }
 
 
@@ -30122,7 +29918,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                      try {
 	                          new Color(this.value);
 
-	                          that._setColor(color, true);
+	                          that._setColor(color, { fromEditor: true });
 	                      } catch (ex) {}
 	                  });
 	              }
@@ -30179,10 +29975,12 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	      }, {
 	          key: '_setHSLA',
-	          value: function _setHSLA(h, s, l, a, fromEditor) {
-	              var col = this.colour;
+	          value: function _setHSLA(h, s, l, a, flags) {
+	              flags = flags || {};
 
-	              var hsla = col.hsla;
+	              var col = this.colour,
+	                  hsla = col.hsla;
+
 	              [h, s, l, a].forEach(function (x, i) {
 	                  if (x || x === 0) {
 	                      hsla[i] = x;
@@ -30190,18 +29988,19 @@ return /******/ (function(modules) { // webpackBootstrap
 	              });
 	              col.hsla = hsla;
 
-	              this._updateUI(fromEditor);
+	              this._updateUI(flags);
 
-	              if (this.onChange) {
+	              if (this.onChange && !flags.silent) {
 	                  this.onChange(col);
 	              }
 	          }
 	      }, {
 	          key: '_updateUI',
-	          value: function _updateUI(fromEditor) {
+	          value: function _updateUI(flags) {
 	              if (!this.domElement) {
 	                  return;
 	              }
+	              flags = flags || {};
 
 	              var col = this.colour,
 	                  hsl = col.hsla,
@@ -30241,7 +30040,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	              this._domA.style.backgroundImage = bg + ', ' + BG_TRANSP;
 
 
-	              if (!fromEditor) {
+	              if (!flags.fromEditor) {
 	                  var hex = col.hex;
 	                  this._domEdit.value = this.settings.alpha ? hex : hex.substr(0, 7);
 	              }
@@ -30861,20 +30660,25 @@ return /******/ (function(modules) { // webpackBootstrap
 	  }
 
 	  // execute custom validation and after than merge and render all errors
-	  this.validationSequence++;
-	  var me = this;
-	  var seq = this.validationSequence;
-	  this._validateCustom(json)
-	      .then(function (customValidationErrors) {
-	        // only apply when there was no other validation started whilst resolving async results
-	        if (seq === me.validationSequence) {
-	          var errorNodes = [].concat(duplicateErrors, schemaErrors, customValidationErrors || []);
-	          me._renderValidationErrors(errorNodes);
-	        }
-	      })
-	      .catch(function (err) {
-	        console.error(err);
-	      });
+	  try {
+	    this.validationSequence++;
+	    var me = this;
+	    var seq = this.validationSequence;
+	    this._validateCustom(json)
+	        .then(function (customValidationErrors) {
+	          // only apply when there was no other validation started whilst resolving async results
+	          if (seq === me.validationSequence) {
+	            var errorNodes = [].concat(duplicateErrors, schemaErrors, customValidationErrors || []);
+	            me._renderValidationErrors(errorNodes);
+	          }
+	        })
+	        .catch(function (err) {
+	          console.error(err);
+	        });
+	  }
+	  catch (err) {
+	    console.error(err);
+	  }
 	};
 
 	treemode._renderValidationErrors = function (errorNodes) {
@@ -33372,8 +33176,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	    var target = event.target;
 	    if ((target !== absoluteAnchor) && !util.isChildOf(target, absoluteAnchor)) {
 	      destroy();
-	      event.stopPropagation();
-	      event.preventDefault();
 	    }
 	  }
 
@@ -42202,8 +42004,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	      tdContents.appendChild(moreContents);
 
 	      var moreTr = document.createElement('tr');
-	      moreTr.appendChild(document.createElement('td'));
-	      moreTr.appendChild(document.createElement('td'));
+	      if (this.editor.options.mode === 'tree') {
+	        moreTr.appendChild(document.createElement('td'));
+	        moreTr.appendChild(document.createElement('td'));
+	      }
 	      moreTr.appendChild(tdContents);
 	      moreTr.className = 'jsoneditor-show-more';
 	      this.dom.tr = moreTr;
@@ -46756,20 +46560,25 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }
 
 	    // execute custom validation and after than merge and render all errors
-	    this.validationSequence++;
-	    var me = this;
-	    var seq = this.validationSequence;
-	    this._validateCustom(json)
-	        .then(function (customValidationErrors) {
-	          // only apply when there was no other validation started whilst resolving async results
-	          if (seq === me.validationSequence) {
-	            var errors = schemaErrors.concat(parseErrors || []).concat(customValidationErrors || []);
-	            me._renderErrors(errors);
-	          }
-	        })
-	        .catch(function (err) {
-	          console.error(err);
-	        });
+	    try {
+	      this.validationSequence++;
+	      var me = this;
+	      var seq = this.validationSequence;
+	      this._validateCustom(json)
+	          .then(function (customValidationErrors) {
+	            // only apply when there was no other validation started whilst resolving async results
+	            if (seq === me.validationSequence) {
+	              var errors = schemaErrors.concat(parseErrors || []).concat(customValidationErrors || []);
+	              me._renderErrors(errors);
+	            }
+	          })
+	          .catch(function (err) {
+	            console.error(err);
+	          });
+	    }
+	    catch(er) {
+	      console.error(err);
+	    }
 	  }
 	  else {
 	    this._renderErrors(parseErrors || []);
