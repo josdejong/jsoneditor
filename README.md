@@ -67,6 +67,9 @@ with bower:
 
     bower install jsoneditor
 
+> Note that to use JSONEditor in Internet Explorer 11, it is necessary
+> to load a polyfill for `Promise` in your application.
+
 
 ## Use
 

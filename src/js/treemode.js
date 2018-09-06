@@ -570,20 +570,25 @@ treemode.validate = function () {
   }
 
   // execute custom validation and after than merge and render all errors
-  this.validationSequence++;
-  var me = this;
-  var seq = this.validationSequence;
-  this._validateCustom(json)
-      .then(function (customValidationErrors) {
-        // only apply when there was no other validation started whilst resolving async results
-        if (seq === me.validationSequence) {
-          var errorNodes = [].concat(duplicateErrors, schemaErrors, customValidationErrors || []);
-          me._renderValidationErrors(errorNodes);
-        }
-      })
-      .catch(function (err) {
-        console.error(err);
-      });
+  try {
+    this.validationSequence++;
+    var me = this;
+    var seq = this.validationSequence;
+    this._validateCustom(json)
+        .then(function (customValidationErrors) {
+          // only apply when there was no other validation started whilst resolving async results
+          if (seq === me.validationSequence) {
+            var errorNodes = [].concat(duplicateErrors, schemaErrors, customValidationErrors || []);
+            me._renderValidationErrors(errorNodes);
+          }
+        })
+        .catch(function (err) {
+          console.error(err);
+        });
+  }
+  catch (err) {
+    console.error(err);
+  }
 };
 
 treemode._renderValidationErrors = function (errorNodes) {

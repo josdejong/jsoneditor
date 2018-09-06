@@ -15,6 +15,10 @@ var treemode = require('./treemode');
 var textmode = require('./textmode');
 var util = require('./util');
 
+if (typeof Promise === 'undefined') {
+  console.error('Promise undefined. Please load a Promise polyfill in the browser in order to use JSONEditor');
+}
+
 /**
  * @constructor JSONEditor
  * @param {Element} container    Container element
