@@ -15,6 +15,13 @@ import {
 import { compileJSONPointer } from '../jsonPointer'
 import { ERROR, EXPANDED, ID, SEARCH_PROPERTY, SEARCH_VALUE, SELECTION, TYPE, VALUE } from '../eson'
 
+import fontawesome from '@fortawesome/fontawesome'
+import faExclamationTriangle from '@fortawesome/fontawesome-free-solid/faExclamationTriangle'
+import faCaretRight from '@fortawesome/fontawesome-free-solid/faCaretRight'
+import faCaretDown from '@fortawesome/fontawesome-free-solid/faCaretDown'
+
+fontawesome.library.add(faExclamationTriangle, faCaretRight, faCaretDown)
+
 export default class JSONNode extends PureComponent {
   static URL_TITLE = 'Ctrl+Click or Ctrl+Enter to open url'
 
@@ -96,12 +103,9 @@ export default class JSONNode extends PureComponent {
           ? [
             this.renderTag(`${jsonPropsCount} ${jsonPropsCount === 1 ? 'prop' : 'props'}`,
                 `Object containing ${jsonPropsCount} ${jsonPropsCount === 1 ? 'property' : 'properties'}`),
-            this.renderDelimiter('}', 'jsoneditor-delimiter-end jsoneditor-delimiter-collapsed'),
-            this.renderInsertAfter()
+            this.renderDelimiter('}', 'jsoneditor-delimiter-end jsoneditor-delimiter-collapsed')
           ]
-          : [
-            this.renderInsertBefore()
-          ],
+          : null,
       this.renderError(this.props.eson[ERROR])
     ])
 
@@ -131,8 +135,7 @@ export default class JSONNode extends PureComponent {
     const floatingMenu = this.renderFloatingMenu('object', this.props.eson[SELECTION])
     const nodeEnd = this.props.eson[EXPANDED]
         ? h('div', {key: 'node-end', className: 'jsoneditor-node-end', 'data-area': 'empty'}, [
-          this.renderDelimiter('}', 'jsoneditor-delimiter-end'),
-          this.renderInsertAfter()
+          this.renderDelimiter('}', 'jsoneditor-delimiter-end')
         ])
         : null
 
@@ -162,11 +165,8 @@ export default class JSONNode extends PureComponent {
             this.renderTag(`${count} ${count === 1 ? 'item' : 'items'}`,
                 `Array containing ${count} ${count === 1 ? 'item' : 'items'}`),
             this.renderDelimiter(']', 'jsoneditor-delimiter-end jsoneditor-delimiter-collapsed'),
-            this.renderInsertAfter(),
           ]
-          : [
-            this.renderInsertBefore()
-          ],
+          : null,
       this.renderError(this.props.eson[ERROR])
     ])
 
@@ -195,8 +195,7 @@ export default class JSONNode extends PureComponent {
     const floatingMenu = this.renderFloatingMenu('array', this.props.eson[SELECTION])
     const nodeEnd = this.props.eson[EXPANDED]
         ? h('div', {key: 'node-end', className: 'jsoneditor-node-end', 'data-area': 'empty'}, [
-            this.renderDelimiter(']', 'jsoneditor-delimiter-end'),
-            this.renderInsertAfter()
+            this.renderDelimiter(']', 'jsoneditor-delimiter-end')
         ])
         : null
 
@@ -219,7 +218,6 @@ export default class JSONNode extends PureComponent {
       this.renderProperty(),
       this.renderSeparator(),
       this.renderValue(this.props.eson[VALUE], this.props.eson[SEARCH_VALUE], this.props.options), // FIXME
-      this.renderInsertAfter(),
       this.renderError(this.props.eson[ERROR])
     ])
 
@@ -234,24 +232,6 @@ export default class JSONNode extends PureComponent {
       // onMouseOver: this.handleMouseOver,
       // onMouseLeave: this.handleMouseLeave
     }, [node, floatingMenu])
-  }
-
-  renderInsertBefore () {
-    return h('div', {
-      key: 'insert',
-      className: 'jsoneditor-insert jsoneditor-insert-before',
-      title: 'Insert a new item or paste clipboard',
-      'data-area': 'inside'
-    })
-  }
-
-  renderInsertAfter () {
-    return h('div', {
-      key: 'insert',
-      className: 'jsoneditor-insert jsoneditor-insert-after',
-      title: 'Insert a new item or paste clipboard after this line',
-      'data-area': 'after'
-    })
   }
 
   /**
@@ -398,7 +378,10 @@ export default class JSONNode extends PureComponent {
           onFocus: this.updatePopoverDirection,
           onMouseOver: this.updatePopoverDirection
         },
-        h('div', {className: 'jsoneditor-popover jsoneditor-right'}, error.message)
+        [
+            h('i', {className: 'fa fa-exclamation-triangle'}),
+            h('div', {className: 'jsoneditor-popover jsoneditor-right'}, error.message)
+        ]
       )
     }
     else {
@@ -445,7 +428,7 @@ export default class JSONNode extends PureComponent {
    */
   updatePopoverDirection = (event) => {
     if (event.target.nodeName === 'BUTTON') {
-      const popover = event.target.firstChild
+      const popover = event.target.lastChild
 
       const directions = ['right', 'above', 'below', 'left']
       for (let i = 0; i < directions.length; i++) {
@@ -537,16 +520,19 @@ export default class JSONNode extends PureComponent {
   }
 
   renderExpandButton () {
-    const className = `jsoneditor-button jsoneditor-${this.props.eson[EXPANDED] ? 'expanded' : 'collapsed'}`
+    const expanded = this.props.eson[EXPANDED]
+    const className = `jsoneditor-button jsoneditor-${expanded ? 'expanded' : 'collapsed'}`
 
-    return h('div', {key: 'expand', className: 'jsoneditor-button-container'},
+    // unique key depending on expanded state is to force the fontawesome icon to update
+    return h('div', {key: expanded, className: 'jsoneditor-button-container'},
         h('button', {
           className: className,
           onClick: this.handleExpand,
           title:
             'Click to expand/collapse this field. \n' +
             'Ctrl+Click to expand/collapse including all childs.'
-        })
+        }, h('i', {
+          className: expanded ? 'fa fa-caret-down' : 'fa fa-caret-right'}))
     )
   }
 

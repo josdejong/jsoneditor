@@ -1,0 +1,36 @@
+
+.jsoneditor-menu {
+
+  .jsoneditor-menu-group:not(:first-child) {
+    border-left: 1px solid rgba(255,255,255, 0.1);
+    margin-left: 5px;
+    padding-left: 5px;
+  }
+
+  button {
+    width: 26px;
+    height: 26px;
+    margin: 2px;
+    padding: 0;
+    border-radius: 2px;
+    border: 1px solid transparent;
+    background: transparent;
+    color: white;
+    opacity: 0.8;
+
+    font-family: arial, sans-serif;
+    font-size: 16px;
+  }
+
+  button:hover {
+    background-color: rgba(255,255,255,0.2);
+    border: 1px solid rgba(255,255,255,0.4);
+  }
+  button:focus,
+  button:active {
+    background-color: rgba(255,255,255,0.3);
+  }
+  button:disabled {
+    opacity: 0.5;
+  }
+}

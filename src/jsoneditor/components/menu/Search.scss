@@ -1,13 +1,12 @@
+@import '../style.scss';
+
 $theme-color: #3883fa;
 
 div.jsoneditor-search {
-  font-family: arial, sans-serif;
-  font-size: 10pt;
-
-  div.jsoneditor-results {
-    display: inline-block;
-    margin-right: 5px;
-  }
+  position: relative;
+  background: $theme-color;
+  font-family: $fontFamilyMenu;
+  font-size: $fontSize;
 
   form.jsoneditor-search-box {
     display: inline-flex;
@@ -15,18 +14,22 @@ div.jsoneditor-search {
     max-width: 100%;
 
     background-color: white;
-    border: 2px solid $theme-color;
+    border: 1px solid $theme-color;
+    border-left-width: 0;
     box-sizing: border-box;
 
-    $search-icon-width: 22px;
+    $search-icon-width: 28px;
+    $search-icon-padding: 4px;
 
-    &::before {
+    div.jsoneditor-search-icon {
       position: absolute;
-      display: inline-block;
       width: $search-icon-width;
-      height: 100%;
-      background: transparent url('../img/jsoneditor-icons.svg') -97px -71px;
-      content: '';
+      height: $search-icon-width;
+      color: $light-gray;
+      font-size: 16px;
+      padding: $search-icon-padding;
+      line-height: $search-icon-width - 2 * $search-icon-padding;
+      box-sizing: border-box;
     }
 
     input.jsoneditor-search-text {
@@ -43,42 +46,28 @@ div.jsoneditor-search {
       background: transparent;
     }
 
-    input[type=button] {
+    button {
       display: inline-block;
       position: relative;
+      cursor: pointer;
 
       width: 16px;
       height: 100%;
-      line-height: 22px;
-      margin: 2px 0;
-      padding: 0;
+      line-height: 28px;
+      background: transparent;
       border: none;
-      background: transparent url('../img/jsoneditor-icons.svg');
-      opacity: 0.8;
+      outline: none;
+      color: $light-gray;
 
       font-family: arial, sans-serif;
-      font-size: 10pt;
+      font-size: 16px;
+      padding: 0;
     }
+  }
 
-    input[type=button]:hover {
-      background-color: transparent;
-    }
-
-    input.jsoneditor-search-next {
-      cursor: pointer;
-      background-position: -124px -73px;
-    }
-    input.jsoneditor-search-next:hover {
-      background-position: -124px -49px;
-    }
-
-    input.jsoneditor-search-previous {
-      cursor: pointer;
-      background-position: -148px -73px;
-      margin-right: 2px;
-    }
-    input.jsoneditor-search-previous:hover {
-      background-position: -148px -49px;
-    }
+  div.jsoneditor-search-results {
+    display: inline-block;
+    margin-left: 5px;
+    color: white;
   }
 }

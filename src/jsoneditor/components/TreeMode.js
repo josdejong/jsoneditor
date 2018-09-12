@@ -30,8 +30,6 @@ import {
 import JSONNode from './JSONNode'
 import JSONNodeView from './JSONNodeView'
 import JSONNodeForm from './JSONNodeForm'
-import ModeButton from './menu/ModeButton'
-import Search from './menu/Search'
 import {
   findBaseNode,
   findNode,
@@ -64,6 +62,7 @@ import {
   syncEson
 } from '../eson'
 import TreeModeMenu from './menu/TreeModeMenu'
+import Search from './menu/Search'
 
 const AJV_OPTIONS = {
   allErrors: true,
@@ -73,6 +72,7 @@ const AJV_OPTIONS = {
 
 const MAX_HISTORY_ITEMS = 1000   // maximum number of undo/redo items to be kept in memory
 const SCROLL_DURATION = 400      // milliseconds
+const SEARCH_DEBOUNCE = 300      // milliseconds
 
 export default class TreeMode extends PureComponent {
   id = Math.round(Math.random() * 1e5) // TODO: create a uuid here?
@@ -136,6 +136,7 @@ export default class TreeMode extends PureComponent {
 
       options: {},
 
+      showSearch: false,
       searchResult: {
         text: '',
         matches: null,
@@ -238,6 +239,8 @@ export default class TreeMode extends PureComponent {
     }, [
       this.renderMenu(),
 
+      this.renderSearch(),
+
       h('div', {
         key: 'contents',
         ref: 'contents',
@@ -273,22 +276,30 @@ export default class TreeMode extends PureComponent {
       modes: this.props.modes,
       onChangeMode: this.props.onChangeMode,
 
-      onExpandAll: this.handleExpandAll,
-      onCollapseAll: this.handleCollapseAll,
-
       enableHistory: this.props.history,
       canUndo: this.canUndo(),
       canRedo: this.canRedo(),
       onUndo: this.undo,
       onRedo: this.redo,
 
-      enableSearch: this.props.search,
-      searchResult: this.state.searchResult,
-      onSearch: this.handleSearch,
-      onSearchNext: this.handleNext,
-      onSearchPrevious: this.handlePrevious,
+      onToggleSearch: this.toggleSearch
+    })
+  }
 
-      findKeyBinding: this.findKeyBinding,
+  renderSearch () {
+    if (!this.state.showSearch) {
+      return null
+    }
+
+    return h(Search, {
+      text: this.state.searchResult.text,
+      resultCount: this.state.searchResult.matches
+          ? this.state.searchResult.matches.length : 0,
+      onChange: this.handleSearch,
+      onNext: this.handleNext,
+      onPrevious: this.handlePrevious,
+      findKeyBinding: this.props.findKeyBinding,
+      delay: SEARCH_DEBOUNCE
     })
   }
 
@@ -599,6 +610,12 @@ export default class TreeMode extends PureComponent {
   handleCollapseAll = () => {
     this.setState({
       eson: expand(this.state.eson, TreeMode.collapseAll)
+    })
+  }
+
+  toggleSearch = () => {
+    this.setState({
+      showSearch: !this.state.showSearch
     })
   }
 

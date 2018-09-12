@@ -1,13 +1,17 @@
-import { createElement as h, Component } from 'react'
+import { Component, createElement as h } from 'react'
 import Ajv from 'ajv'
 import { parseJSON } from '../utils/jsonUtils'
 import { escapeUnicodeChars } from '../utils/stringUtils'
 import { enrichSchemaError, limitErrors } from '../utils/schemaUtils'
 import { createFindKeyBinding } from '../utils/keyBindings'
 import { KEY_BINDINGS } from '../constants'
-
-import ModeButton from './menu/ModeButton'
 import { immutableJSONPatch } from '../immutableJSONPatch'
+import TextModeMenu from './menu/TextModeMenu'
+
+import fontawesome from '@fortawesome/fontawesome'
+import faExclamationTriangle from '@fortawesome/fontawesome-free-solid/faExclamationTriangle'
+
+fontawesome.library.add(faExclamationTriangle)
 
 const AJV_OPTIONS = {
   allErrors: true,
@@ -112,37 +116,15 @@ export default class TextMode extends Component {
 
   /** @protected */
   renderMenu () {
-    // TODO: move Menu into a separate Component
-    return h('div', {key: 'menu', className: 'jsoneditor-menu'}, [
-      h('button', {
-        key: 'format',
-        className: 'jsoneditor-format',
-        title: 'Format the JSON document',
-        onClick: this.handleFormat
-      }),
-      h('button', {
-        key: 'compact',
-        className: 'jsoneditor-compact',
-        title: 'Compact the JSON document',
-        onClick: this.handleCompact
-      }),
+    return h(TextModeMenu, {
+      mode: this.props.mode,
+      modes: this.props.modes,
+      onChangeMode: this.props.onChangeMode,
 
-      // TODO: implement a button "Repair"
-
-      h('div', {
-        key: 'separator',
-        className: 'jsoneditor-vertical-menu-separator'
-      }),
-
-      this.props.modes && h(ModeButton, {
-        key: 'mode',
-        // TODO: simply pass all options?
-        modes: this.props.modes,
-        mode: this.props.mode,
-        onChangeMode: this.props.onChangeMode,
-        onError: this.props.onError
-      })
-    ])
+      onFormat: this.handleFormat,
+      onCompact: this.handleCompact,
+      onRepair: this.handleRepair
+    })
   }
 
   /** @protected */
@@ -188,7 +170,8 @@ export default class TextMode extends Component {
    * @return {JSX.Element}
    */
   static renderSchemaError (error, index) {
-    const icon = h('input', {type: 'button', className: 'jsoneditor-schema-error'})
+    const icon = h('button', {className: 'jsoneditor-schema-error'},
+        h('i', {className: 'fa fa-exclamation-triangle'}))
 
     if (error && error.schema && error.schemaPath) {
       // this is an ajv error message
@@ -299,6 +282,13 @@ export default class TextMode extends Component {
     catch (err) {
       this.props.onError(err)
     }
+  }
+
+  /** @protected */
+  handleRepair = () => {
+    // FIXME: implement repair button
+    console.log('handleRepair not yet implemented')
+    alert('sorry, not yet implemented...')
   }
 
   /**

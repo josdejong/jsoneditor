@@ -158,7 +158,7 @@ export function findParentWithClassName (element, className) {
  * @return {boolean}
  */
 export function hasClassName (element, className) {
-  return element && element.className
+  return element && element.className && element.className.split
       ? element.className.split(' ').indexOf(className) !== -1
       : false
 }

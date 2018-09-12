@@ -3,7 +3,16 @@ import PropTypes from 'prop-types'
 import { keyComboFromEvent } from '../../utils/keyBindings'
 import { findEditorContainer, setSelection } from '../utils/domSelector'
 
+import fontawesome from '@fortawesome/fontawesome'
+import faSearch from '@fortawesome/fontawesome-free-solid/faSearch'
+import faCaretUp from '@fortawesome/fontawesome-free-solid/faCaretUp'
+import faCaretDown from '@fortawesome/fontawesome-free-solid/faCaretDown'
+
+import './Menu.css'
+
 import './Search.css'
+
+fontawesome.library.add(faSearch, faCaretUp, faCaretDown)
 
 export default class Search extends Component {
   constructor (props) {
@@ -16,12 +25,14 @@ export default class Search extends Component {
 
   render () {
     return h('div', {className: 'jsoneditor-search'}, [
-      this.renderResultsCount(this.props.resultCount),
       h('form', {
         key: 'box',
         className: 'jsoneditor-search-box',
         onSubmit: this.handleSubmit
       }, [
+          h('div', { className: 'jsoneditor-search-icon' }, [
+            h('i', {className: 'fa fa-search'})
+          ]),
           h('input', {
             key: 'input',
             type: 'text',
@@ -30,21 +41,22 @@ export default class Search extends Component {
             onInput: this.handleChange,
             onKeyDown: this.handleKeyDown
           }),
-          h('input', {
+          h('button', {
             key: 'next',
             type: 'button',
             className: 'jsoneditor-search-next',
             title: 'Next result',
             onClick: this.props.onNext
-          }),
-          h('input', {
+          }, h('i', {className: 'fa fa-caret-down'})),
+          h('button', {
             key: 'previous',
             type: 'button',
             className: 'jsoneditor-search-previous',
             title: 'Previous result',
             onClick: this.props.onPrevious
-          })
-      ])
+          }, h('i', {className: 'fa fa-caret-up'}))
+      ]),
+      this.renderResultsCount(this.props.resultCount)
     ])
   }
 
@@ -54,13 +66,13 @@ export default class Search extends Component {
     }
 
     if (resultCount === 0) {
-      return h('div', {key: 'count', className: 'jsoneditor-results'}, '(no results)')
+      return h('div', {key: 'count', className: 'jsoneditor-search-results'}, '(no results)')
     }
 
     if (resultCount > 0) {
       const suffix = resultCount === 1 ? ' result' : ' results'
 
-      return h('div', {key: 'count', className: 'jsoneditor-results'}, resultCount + suffix)
+      return h('div', {key: 'count', className: 'jsoneditor-search-results'}, resultCount + suffix)
     }
 
     return null

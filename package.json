@@ -19,6 +19,8 @@
   "bugs": "https://github.com/josdejong/jsoneditor/issues",
   "private": false,
   "dependencies": {
+    "@fortawesome/fontawesome": "1.1.8",
+    "@fortawesome/fontawesome-free-solid": "5.0.13",
     "ajv": "6.5.3",
     "brace": "0.11.1",
     "javascript-natural-sort": "0.7.1",

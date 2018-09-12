@@ -1,0 +1,16 @@
+@import '../style.scss';
+@import './MenuButton.scss';
+
+.jsoneditor-menu {
+  // TODO: there is also css for this menu in jsoneditor.scss, move this here
+  width: 100%;
+  box-sizing: border-box;
+
+  color: white;
+  background-color: $theme-color;
+  flex: 0 0 auto;
+
+  .jsoneditor-menu-group {
+    display: inline-block;
+  }
+}
