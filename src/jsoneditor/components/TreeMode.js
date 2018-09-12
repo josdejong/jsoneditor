@@ -103,8 +103,8 @@ export default class TreeMode extends PureComponent {
       'undo': this.handleUndo,
       'redo': this.handleRedo,
       'find': this.handleFocusFind,
-      'findNext': this.handleNext,
-      'findPrevious': this.handlePrevious
+      'findNext': this.handleSearchNext,
+      'findPrevious': this.handleSearchPrevious
     }
 
     this.emitter = mitt()
@@ -296,8 +296,9 @@ export default class TreeMode extends PureComponent {
       resultCount: this.state.searchResult.matches
           ? this.state.searchResult.matches.length : 0,
       onChange: this.handleSearch,
-      onNext: this.handleNext,
-      onPrevious: this.handlePrevious,
+      onNext: this.handleSearchNext,
+      onPrevious: this.handleSearchPrevious,
+      onClose: this.handleCloseSearch,
       findKeyBinding: this.props.findKeyBinding,
       delay: SEARCH_DEBOUNCE
     })
@@ -645,7 +646,7 @@ export default class TreeMode extends PureComponent {
     selectFind(event.target)
   }
 
-  handleNext = (event) => {
+  handleSearchNext = (event) => {
     event.preventDefault()
 
     if (this.state.searchResult) {
@@ -657,7 +658,7 @@ export default class TreeMode extends PureComponent {
       })
 
       // scroll to the active result (on next tick, after this path has been expanded)
-      // TODO: this code is duplicate with handlePrevious, move into a separate function
+      // TODO: this code is duplicate with handleSearchPrevious, move into a separate function
       setTimeout(() => {
         if (searchResult.active && searchResult.active.path) {
           this.scrollTo(searchResult.active.path)
@@ -670,7 +671,7 @@ export default class TreeMode extends PureComponent {
     }
   }
 
-  handlePrevious = (event) => {
+  handleSearchPrevious = (event) => {
     event.preventDefault()
 
     if (this.state.searchResult) {
@@ -692,6 +693,18 @@ export default class TreeMode extends PureComponent {
         }
       })
     }
+  }
+
+  handleCloseSearch = (event) => {
+    event.preventDefault()
+
+    const { eson, searchResult } = search(this.state.eson, '')
+
+    this.setState({
+      showSearch: false,
+      eson,
+      searchResult
+    })
   }
 
   /**

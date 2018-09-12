@@ -7,12 +7,13 @@ import fontawesome from '@fortawesome/fontawesome'
 import faSearch from '@fortawesome/fontawesome-free-solid/faSearch'
 import faCaretUp from '@fortawesome/fontawesome-free-solid/faCaretUp'
 import faCaretDown from '@fortawesome/fontawesome-free-solid/faCaretDown'
+import faTimes from '@fortawesome/fontawesome-free-solid/faTimes'
 
 import './Menu.css'
 
 import './Search.css'
 
-fontawesome.library.add(faSearch, faCaretUp, faCaretDown)
+fontawesome.library.add(faSearch, faCaretUp, faCaretDown, faTimes)
 
 export default class Search extends Component {
   constructor (props) {
@@ -54,9 +55,16 @@ export default class Search extends Component {
             className: 'jsoneditor-search-previous',
             title: 'Previous result',
             onClick: this.props.onPrevious
-          }, h('i', {className: 'fa fa-caret-up'}))
+          }, h('i', {className: 'fa fa-caret-up'})),
+          h('button', {
+            key: 'close',
+            type: 'button',
+            className: 'jsoneditor-search-close',
+            title: 'Close search',
+            onClick: this.props.onClose
+          }, h('i', {className: 'fa fa-times'})),
       ]),
-      this.renderResultsCount(this.props.resultCount)
+      // this.renderResultsCount(this.props.resultCount) // FIXME: show result count
     ])
   }
 
