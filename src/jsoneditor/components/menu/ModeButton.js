@@ -1,5 +1,5 @@
 import { createElement as h, Component } from 'react'
-import ModeMenu from './ModeMenu'
+import ModeSelector from './ModeSelector'
 import { toCapital } from '../../utils/stringUtils'
 
 export default class ModeButton extends Component {
@@ -24,7 +24,7 @@ export default class ModeButton extends Component {
         onClick: this.handleOpen
       }, `${toCapital(props.mode)} \u25BC`),
 
-      h(ModeMenu, {
+      h(ModeSelector, {
         key: 'menu',
         ...props,
         open: state.open,

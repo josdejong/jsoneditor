@@ -63,6 +63,7 @@ import {
   search,
   syncEson
 } from '../eson'
+import TreeModeMenu from './menu/TreeModeMenu'
 
 const AJV_OPTIONS = {
   allErrors: true,
@@ -71,7 +72,6 @@ const AJV_OPTIONS = {
 }
 
 const MAX_HISTORY_ITEMS = 1000   // maximum number of undo/redo items to be kept in memory
-const SEARCH_DEBOUNCE = 300      // milliseconds
 const SCROLL_DURATION = 400      // milliseconds
 
 export default class TreeMode extends PureComponent {
@@ -268,74 +268,28 @@ export default class TreeMode extends PureComponent {
   }
 
   renderMenu () {
-    let items = [
-      h('button', {
-        key: 'expand-all',
-        className: 'jsoneditor-expand-all',
-        title: 'Expand all objects and arrays',
-        onClick: this.handleExpandAll
-      }),
-      h('button', {
-        key: 'collapse-all',
-        className: 'jsoneditor-collapse-all',
-        title: 'Collapse all objects and arrays',
-        onClick: this.handleCollapseAll
-      })
-    ]
+    return h(TreeModeMenu, {
+      mode: this.props.mode,
+      modes: this.props.modes,
+      onChangeMode: this.props.onChangeMode,
 
-    if (this.props.mode !== 'view' && this.props.history !== false) {
-      items = items.concat([
-        h('div', {key: 'history-separator', className: 'jsoneditor-vertical-menu-separator'}),
+      onExpandAll: this.handleExpandAll,
+      onCollapseAll: this.handleCollapseAll,
 
-        h('button', {
-          key: 'undo',
-          className: 'jsoneditor-undo',
-          title: 'Undo last action',
-          disabled: !this.canUndo(),
-          onClick: this.undo
-        }),
-        h('button', {
-          key: 'redo',
-          className: 'jsoneditor-redo',
-          title: 'Redo',
-          disabled: !this.canRedo(),
-          onClick: this.redo
-        })
-      ])
-    }
+      enableHistory: this.props.history,
+      canUndo: this.canUndo(),
+      canRedo: this.canRedo(),
+      onUndo: this.undo,
+      onRedo: this.redo,
 
-    if (this.props.modes ) {
-      items = items.concat([
-        h('div', {key: 'mode-separator', className: 'jsoneditor-vertical-menu-separator'}),
+      enableSearch: this.props.search,
+      searchResult: this.state.searchResult,
+      onSearch: this.handleSearch,
+      onSearchNext: this.handleNext,
+      onSearchPrevious: this.handlePrevious,
 
-        h(ModeButton, {
-          key: 'mode',
-          modes: this.props.modes,
-          mode: this.props.mode,
-          onChangeMode: this.props.onChangeMode,
-          onError: this.props.onError
-        })
-      ])
-    }
-
-    if (this.props.searchResult !== false) {
-      // option search is true or undefined
-      items = items.concat([
-        h('div', {key: 'search', className: 'jsoneditor-menu-panel-right'},
-          h(Search, {
-            text: this.state.searchResult.text,
-            resultCount: this.state.searchResult.matches ? this.state.searchResult.matches.length : 0,
-            onChange: this.handleSearch,
-            onNext: this.handleNext,
-            onPrevious: this.handlePrevious,
-            findKeyBinding: this.findKeyBinding,
-            delay: SEARCH_DEBOUNCE
-          })
-        )
-      ])
-    }
-
-    return h('div', {key: 'menu', className: 'jsoneditor-menu'}, items)
+      findKeyBinding: this.findKeyBinding,
+    })
   }
 
   /**

@@ -5,7 +5,7 @@ import { keyComboFromEvent } from '../../utils/keyBindings'
 const MENU_CLASS_NAME = 'jsoneditor-actionmenu'
 const MODE_MENU_CLASS_NAME = MENU_CLASS_NAME + ' jsoneditor-modemenu'
 
-export default class ModeMenu extends Component {
+export default class ModeSelector extends Component {
   /**
    * {{open, modes, mode, onChangeMode, onRequestClose, onError}} props
    */
