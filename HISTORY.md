@@ -3,6 +3,12 @@
 https://github.com/josdejong/jsoneditor
 
 
+## 2018-09-12, version 5.24.6
+
+- Fix #548: `import JSONEditor from 'jsoneditor'` not working in
+  TypeScript projects (gave a constructor is undefined error).
+
+
 ## 2018-09-06, version 5.24.5
 
 - Fixed a bug in textmode on IE 11, not loading the editor when

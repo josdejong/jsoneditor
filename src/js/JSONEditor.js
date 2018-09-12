@@ -456,4 +456,7 @@ JSONEditor.ace = ace;
 JSONEditor.Ajv = Ajv;
 JSONEditor.VanillaPicker = VanillaPicker;
 
+// default export for TypeScript ES6 projects
+JSONEditor.default = JSONEditor;
+
 module.exports = JSONEditor;
