@@ -1,6 +1,6 @@
 import React, {Component} from 'react';
 
-import * as JSONEditor from 'jsoneditor';
+import JSONEditor from 'jsoneditor';
 import 'jsoneditor/dist/jsoneditor.css';
 
 import './JSONEditorDemo.css';

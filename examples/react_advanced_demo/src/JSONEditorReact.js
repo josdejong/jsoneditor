@@ -2,7 +2,7 @@ import React, {Component} from 'react';
 import isEqual from 'lodash/isEqual';
 import cloneDeep from 'lodash/cloneDeep';
 
-import * as JSONEditor from 'jsoneditor';
+import JSONEditor from 'jsoneditor';
 import 'jsoneditor/dist/jsoneditor.css';
 
 import './JSONEditorReact.css';

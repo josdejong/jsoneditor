@@ -24,8 +24,8 @@
  * Copyright (c) 2011-2017 Jos de Jong, http://jsoneditoronline.org
  *
  * @author  Jos de Jong, <wjosdejong@gmail.com>
- * @version 5.24.5
- * @date    2018-09-06
+ * @version 5.24.6
+ * @date    2018-09-12
  */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
@@ -540,6 +540,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	JSONEditor.ace = ace;
 	JSONEditor.Ajv = Ajv;
 	JSONEditor.VanillaPicker = VanillaPicker;
+
+	// default export for TypeScript ES6 projects
+	JSONEditor.default = JSONEditor;
 
 	module.exports = JSONEditor;
 
