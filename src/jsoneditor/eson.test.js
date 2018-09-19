@@ -229,14 +229,14 @@ test('search', () => {
   const active = result.searchResult.active
 
   expect(matches).toEqual([
-    {path: ['obj', 'arr', '2', 'last'], area: 'property'},
-    {path: ['str'], area: 'value'},
+    {path: ['bool'], area: 'property'},
+    {path: ['bool'], area: 'value'},
     {path: ['nill'], area: 'property'},
     {path: ['nill'], area: 'value'},
-    {path: ['bool'], area: 'property'},
-    {path: ['bool'], area: 'value'}
+    {path: ['obj', 'arr', '2', 'last'], area: 'property'},
+    {path: ['str'], area: 'value'},
   ])
-  expect(active).toEqual({path: ['obj', 'arr', '2', 'last'], area: 'property'})
+  expect(active).toEqual({path: ['bool'], area: 'property'})
 
   let expected = esonWithSearch
   expected = setIn(expected, ['obj', 'arr', '2', 'last', SEARCH_PROPERTY], 'active')
@@ -276,33 +276,33 @@ test('nextSearchResult', () => {
   const first = search(eson, 'A')
 
   expect(first.searchResult.matches).toEqual([
+    {path: ['bool'], area: 'value'},
     {path: ['obj', 'arr'], area: 'property'},
     {path: ['obj', 'arr', '2', 'last'], area: 'property'},
-    {path: ['bool'], area: 'value'}
   ])
 
-  expect(first.searchResult.active).toEqual({path: ['obj', 'arr'], area: 'property'})
-  expect(getIn(first.eson, ['obj', 'arr', SEARCH_PROPERTY])).toEqual('active')
+  expect(first.searchResult.active).toEqual({path: ['bool'], area: 'value'})
+  expect(getIn(first.eson, ['bool', SEARCH_VALUE])).toEqual('active')
+  expect(getIn(first.eson, ['obj', 'arr', SEARCH_PROPERTY])).toEqual('normal')
   expect(getIn(first.eson, ['obj', 'arr', '2', 'last', SEARCH_PROPERTY])).toEqual('normal')
-  expect(getIn(first.eson, ['bool', SEARCH_VALUE])).toEqual('normal')
 
   const second = nextSearchResult(first.eson, first.searchResult)
-  expect(second.searchResult.active).toEqual({path: ['obj', 'arr', '2', 'last'], area: 'property'})
-  expect(getIn(second.eson, ['obj', 'arr', SEARCH_PROPERTY])).toEqual('normal')
-  expect(getIn(second.eson, ['obj', 'arr', '2', 'last', SEARCH_PROPERTY])).toEqual('active')
+  expect(second.searchResult.active).toEqual({path: ['obj', 'arr'], area: 'property'})
   expect(getIn(second.eson, ['bool', SEARCH_VALUE])).toEqual('normal')
+  expect(getIn(second.eson, ['obj', 'arr', SEARCH_PROPERTY])).toEqual('active')
+  expect(getIn(second.eson, ['obj', 'arr', '2', 'last', SEARCH_PROPERTY])).toEqual('normal')
 
   const third = nextSearchResult(second.eson, second.searchResult)
-  expect(third.searchResult.active).toEqual({path: ['bool'], area: 'value'})
+  expect(third.searchResult.active).toEqual({path: ['obj', 'arr', '2', 'last'], area: 'property'})
+  expect(getIn(third.eson, ['bool', SEARCH_VALUE])).toEqual('normal')
   expect(getIn(third.eson, ['obj', 'arr', SEARCH_PROPERTY])).toEqual('normal')
-  expect(getIn(third.eson, ['obj', 'arr', '2', 'last', SEARCH_PROPERTY])).toEqual('normal')
-  expect(getIn(third.eson, ['bool', SEARCH_VALUE])).toEqual('active')
+  expect(getIn(third.eson, ['obj', 'arr', '2', 'last', SEARCH_PROPERTY])).toEqual('active')
 
   const wrappedAround = nextSearchResult(third.eson, third.searchResult)
-  expect(wrappedAround.searchResult.active).toEqual({path: ['obj', 'arr'], area: 'property'})
-  expect(getIn(wrappedAround.eson, ['obj', 'arr', SEARCH_PROPERTY])).toEqual('active')
+  expect(wrappedAround.searchResult.active).toEqual({path: ['bool'], area: 'value'})
+  expect(getIn(wrappedAround.eson, ['bool', SEARCH_VALUE])).toEqual('active')
+  expect(getIn(wrappedAround.eson, ['obj', 'arr', SEARCH_PROPERTY])).toEqual('normal')
   expect(getIn(wrappedAround.eson, ['obj', 'arr', '2', 'last', SEARCH_PROPERTY])).toEqual('normal')
-  expect(getIn(wrappedAround.eson, ['bool', SEARCH_VALUE])).toEqual('normal')
 })
 
 test('previousSearchResult', () => {
@@ -317,33 +317,33 @@ test('previousSearchResult', () => {
   const init = search(eson, 'A')
 
   expect(init.searchResult.matches).toEqual([
+    {path: ['bool'], area: 'value'},
     {path: ['obj', 'arr'], area: 'property'},
     {path: ['obj', 'arr', '2', 'last'], area: 'property'},
-    {path: ['bool'], area: 'value'}
   ])
 
-  expect(init.searchResult.active).toEqual({path: ['obj', 'arr'], area: 'property'})
-  expect(getIn(init.eson, ['obj', 'arr', SEARCH_PROPERTY])).toEqual('active')
+  expect(init.searchResult.active).toEqual({path: ['bool'], area: 'value'})
+  expect(getIn(init.eson, ['bool', SEARCH_VALUE])).toEqual('active')
+  expect(getIn(init.eson, ['obj', 'arr', SEARCH_PROPERTY])).toEqual('normal')
   expect(getIn(init.eson, ['obj', 'arr', '2', 'last', SEARCH_PROPERTY])).toEqual('normal')
-  expect(getIn(init.eson, ['bool', SEARCH_VALUE])).toEqual('normal')
 
   const third = previousSearchResult(init.eson, init.searchResult)
-  expect(third.searchResult.active).toEqual({path: ['bool'], area: 'value'})
+  expect(third.searchResult.active).toEqual({path: ['obj', 'arr', '2', 'last'], area: 'property'})
+  expect(getIn(third.eson, ['bool', SEARCH_VALUE])).toEqual('normal')
   expect(getIn(third.eson, ['obj', 'arr', SEARCH_PROPERTY])).toEqual('normal')
-  expect(getIn(third.eson, ['obj', 'arr', '2', 'last', SEARCH_PROPERTY])).toEqual('normal')
-  expect(getIn(third.eson, ['bool', SEARCH_VALUE])).toEqual('active')
+  expect(getIn(third.eson, ['obj', 'arr', '2', 'last', SEARCH_PROPERTY])).toEqual('active')
 
   const second = previousSearchResult(third.eson, third.searchResult)
-  expect(second.searchResult.active).toEqual({path: ['obj', 'arr', '2', 'last'], area: 'property'})
-  expect(getIn(second.eson, ['obj', 'arr', SEARCH_PROPERTY])).toEqual('normal')
-  expect(getIn(second.eson, ['obj', 'arr', '2', 'last', SEARCH_PROPERTY])).toEqual('active')
+  expect(second.searchResult.active).toEqual({path: ['obj', 'arr'], area: 'property'})
   expect(getIn(second.eson, ['bool', SEARCH_VALUE])).toEqual('normal')
+  expect(getIn(second.eson, ['obj', 'arr', SEARCH_PROPERTY])).toEqual('active')
+  expect(getIn(second.eson, ['obj', 'arr', '2', 'last', SEARCH_PROPERTY])).toEqual('normal')
 
   const first = previousSearchResult(second.eson, second.searchResult)
-  expect(first.searchResult.active).toEqual({path: ['obj', 'arr'], area: 'property'})
-  expect(getIn(first.eson, ['obj', 'arr', SEARCH_PROPERTY])).toEqual('active')
+  expect(first.searchResult.active).toEqual({path: ['bool'], area: 'value'})
+  expect(getIn(first.eson, ['bool', SEARCH_VALUE])).toEqual('active')
+  expect(getIn(first.eson, ['obj', 'arr', SEARCH_PROPERTY])).toEqual('normal')
   expect(getIn(first.eson, ['obj', 'arr', '2', 'last', SEARCH_PROPERTY])).toEqual('normal')
-  expect(getIn(first.eson, ['bool', SEARCH_VALUE])).toEqual('normal')
 })
 
 test('selection (object)', () => {

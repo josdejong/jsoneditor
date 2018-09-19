@@ -221,16 +221,16 @@ export function search (eson, text) {
 
   // TODO: keep active result from previous search if any?
 
-  const updatedEson = transform (eson, function (value, path) {
+  // find search results and add search tags in the ESON object
+  let updatedEson = transform (eson, function (value, path) {
     let updatedValue = value
 
     // check property name
     const prop = last(path)
     if (text !== '' && containsCaseInsensitive(prop, text) &&
         getIn(eson, initial(path))[TYPE] === 'object') { // parent must be an Object
-      const searchState = isEmpty(matches) ? 'active' : 'normal'
       matches.push({path, area: 'property'})
-      updatedValue = setIn(updatedValue, [SEARCH_PROPERTY], searchState)
+      updatedValue = setIn(updatedValue, [SEARCH_PROPERTY], 'normal')
     }
     else {
       updatedValue = deleteIn(updatedValue, [SEARCH_PROPERTY])
@@ -238,9 +238,8 @@ export function search (eson, text) {
 
     // check value
     if (value[TYPE] === 'value' && text !== '' && containsCaseInsensitive(value[VALUE], text)) {
-      const searchState = isEmpty(matches) ? 'active' : 'normal'
       matches.push({path, area: 'value'})
-      updatedValue = setIn(updatedValue, [SEARCH_VALUE], searchState)
+      updatedValue = setIn(updatedValue, [SEARCH_VALUE], 'normal')
     }
     else {
       updatedValue = deleteIn(updatedValue, [SEARCH_VALUE])
@@ -249,6 +248,7 @@ export function search (eson, text) {
     return updatedValue
   })
 
+  // sort the results by path and property/value
   matches.sort((a, b) => {
     const arrayOrder = compareArrays(a.path, b.path)
     if (arrayOrder !== 0) {
@@ -261,12 +261,23 @@ export function search (eson, text) {
     return compareStrings(a.area, b.area)
   })
 
+  // make the first search result active
+  const active = matches[0] || null
+  if (active) {
+    if (active.area === 'property') {
+      updatedEson = setIn(updatedEson, active.path.concat(SEARCH_PROPERTY), 'active')
+    }
+    if (active.area === 'value') {
+      updatedEson = setIn(updatedEson, active.path.concat(SEARCH_VALUE), 'active')
+    }
+  }
+
   return {
     eson: updatedEson,
     searchResult: {
       text,
       matches,
-      active: matches[0] || null
+      active
     }
   }
 }
