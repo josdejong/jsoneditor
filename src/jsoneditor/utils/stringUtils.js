@@ -119,5 +119,7 @@ export function findUniqueName (name, existingProps) {
  * @return {string}
  */
 export function toCapital(text) {
-  return text[0].toUpperCase() + text.substr(1).toLowerCase()
+  return text && text.length > 0
+      ? text[0].toUpperCase() + text.substr(1).toLowerCase()
+      : text
 }

@@ -570,9 +570,9 @@ export default class TreeMode extends PureComponent {
     }
   }
 
-  handleInsertBefore = () => {
+  handleInsertBefore = (insertType) => {
     // FIXME: implement handleInsertBefore
-    console.error('Insert not yet implemented...')
+    console.error('Insert not yet implemented...', insertType)
   }
 
   /**

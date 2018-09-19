@@ -1,4 +1,4 @@
-import { escapeHTML, unescapeHTML, findUniqueName } from './stringUtils'
+import { escapeHTML, unescapeHTML, findUniqueName, toCapital } from './stringUtils'
 
 test('escapeHTML', () => {
   expect(escapeHTML('   hello  ')).toEqual('\u00A0\u00A0 hello \u00A0')
@@ -22,4 +22,12 @@ test('findUniqueName', () => {
   expect(findUniqueName('b', {'a': true, 'b': true, 'c': true})).toEqual('b (copy)')
   expect(findUniqueName('b', {'a': true, 'b': true, 'c': true, 'b (copy)': true})).toEqual('b (copy 2)')
   expect(findUniqueName('b', {'a': true, 'b': true, 'c': true, 'b (copy)': true, 'b (copy 2)': true})).toEqual('b (copy 3)')
+})
+
+test('toCapital', () => {
+  expect(toCapital('hello')).toEqual('Hello')
+  expect(toCapital('HEllo')).toEqual('Hello')
+  expect(toCapital('HEllo')).toEqual('Hello')
+  expect(toCapital('')).toEqual('')
+  expect(toCapital(undefined)).toEqual(undefined)
 })

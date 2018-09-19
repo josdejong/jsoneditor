@@ -14,6 +14,8 @@ export default class DropDown extends Component {
 
   static propTypes = {
     value: PropTypes.string,
+    text: PropTypes.string,
+    title: PropTypes.string,
     options: PropTypes.arrayOf(PropTypes.shape({
       value: PropTypes.string.isRequired,
       text: PropTypes.string,
@@ -45,17 +47,20 @@ export default class DropDown extends Component {
 
     const selectedText = selected
         ? (selected.text || selected.value)
-        : ''
+        : this.props.text
 
     return h('div', {className: 'jsoneditor-dropdown'}, [
       h('button', {
         key: 'button',
         className: 'jsoneditor-dropdown-main-button',
-        title: 'Switch mode',
+        title: this.props.title,
         onClick: this.handleOpen
       }, [
-          toCapital(selectedText) + '  ',
-          h('i', { key: 'icon', className: 'fa fa-chevron-down' })
+        typeof selectedText === 'string'
+            ? toCapital(selectedText)
+            : selectedText,
+        '\u00A0\u00A0',
+        h('i', { key: 'icon', className: 'fa fa-chevron-down' })
       ]),
 
       this.renderDropDown()
@@ -80,12 +85,12 @@ export default class DropDown extends Component {
    * {{open, modes, mode, onChangeMode, onRequestClose, onError}} props
    */
   renderDropDown () {
-    if (this.state.open) {
+    if (this.state.open && this.props.options) {
       const items = this.props.options.map(option => {
         return h('button', {
           key: option.value,
           ref: 'button',
-          title: option.title || option.text || option.value,
+          title: (option.title || option.text || option.value),
           className: 'jsoneditor-menu-item' +
               ((option.value === this.props.value) ? ' jsoneditor-menu-item-selected' : ''),
           onClick: () => {
@@ -98,7 +103,7 @@ export default class DropDown extends Component {
               this.props.onError(err)
             }
           }
-        }, toCapital(option.text || option.value))
+        }, toCapital(option.text || option.value || ''))
       })
 
       return h('div', {

@@ -71,7 +71,12 @@ export default class TreeModeMenu extends PureComponent {
         h('div', {className: 'jsoneditor-menu-group', key: 'mode'}, [
           h(DropDown, {
             key: 'mode',
-            options: this.props.modes.map(mode => ({ value: mode })),
+            title: 'Switch mode',
+            options: this.props.modes.map(mode => ({
+              value: mode,
+              text: mode,
+              title: `Switch to ${mode} mode`
+            })),
             value: this.props.mode,
             onChange: this.props.onChangeMode,
             onError: this.props.onError
@@ -110,12 +115,13 @@ export default class TreeModeMenu extends PureComponent {
     // TODO: [insert structure / insert value / insert array / insert object] / duplicate / remove
     items = items.concat([
       h('div', {className: 'jsoneditor-menu-group', key: 'insert-duplicate-remove'}, [
-        h('button', {
+        h(DropDown, {
           key: 'insert',
-          className: 'jsoneditor-insert',
-          title: 'Insert new contents',
-          onClick: this.props.onInsert
-        }, h('i', {className: 'fa fa-plus'})),
+          text: h('i', {className: 'fa fa-plus'}),
+          options: INSERT_OPTIONS,
+          onChange: this.props.onInsert,
+          onError: this.props.onError
+        }),
         h('button', {
           key: 'duplicate',
           className: 'jsoneditor-duplicate',
@@ -184,3 +190,10 @@ export default class TreeModeMenu extends PureComponent {
     return h('div', {key: 'menu', className: 'jsoneditor-menu'}, items)
   }
 }
+
+const INSERT_OPTIONS = [
+  { value: 'structure', text: 'Insert structure' },
+  { value: 'value', text: 'Insert value' },
+  { value: 'object', text: 'Insert object' },
+  { value: 'array', text: 'Insert array' }
+]

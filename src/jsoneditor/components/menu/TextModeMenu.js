@@ -32,7 +32,12 @@ export default class TreeModeMenu extends PureComponent {
         h('div', {className: 'jsoneditor-menu-group', key: 'mode'}, [
           h(DropDown, {
             key: 'mode',
-            options: this.props.modes.map(mode => ({ value: mode })),
+            title: 'Switch mode',
+            options: this.props.modes.map(mode => ({
+              value: mode,
+              text: mode,
+              title: `Switch to ${mode} mode`
+            })),
             value: this.props.mode,
             onChange: this.props.onChangeMode,
             onError: this.props.onError
