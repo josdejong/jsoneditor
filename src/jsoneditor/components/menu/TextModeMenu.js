@@ -29,7 +29,7 @@ export default class TreeModeMenu extends PureComponent {
     // mode
     if (this.props.modes ) {
       items = items.concat([
-        h('div', {className: 'jsoneditor-menu-group'}, [
+        h('div', {className: 'jsoneditor-menu-group', key: 'mode'}, [
           h(ModeButton, {
             key: 'mode',
             modes: this.props.modes,
@@ -43,24 +43,26 @@ export default class TreeModeMenu extends PureComponent {
 
     // format / compact / repair
     items = items.concat([
-      h('button', {
-        key: 'format',
-        className: 'jsoneditor-format',
-        title: 'Format the JSON document',
-        onClick: this.props.onFormat
-      }, h('i', {className: 'fa fa-align-left'})),
-      h('button', {
-        key: 'compact',
-        className: 'jsoneditor-compact',
-        title: 'Compact the JSON document',
-        onClick: this.props.onCompact
-      }, h('i', {className: 'fa fa-align-justify'})),
-      h('button', {
-        key: 'repair',
-        className: 'jsoneditor-repair',
-        title: 'Repair the JSON document',
-        onClick: this.props.onRepair
-      }, h('i', {className: 'fa fa-screwdriver'})),
+      h('div', {className: 'jsoneditor-menu-group', key: 'format-compact-repair'}, [
+        h('button', {
+          key: 'format',
+          className: 'jsoneditor-format',
+          title: 'Format the JSON document',
+          onClick: this.props.onFormat
+        }, h('i', {className: 'fa fa-align-left'})),
+        h('button', {
+          key: 'compact',
+          className: 'jsoneditor-compact',
+          title: 'Compact the JSON document',
+          onClick: this.props.onCompact
+        }, h('i', {className: 'fa fa-align-justify'})),
+        h('button', {
+          key: 'repair',
+          className: 'jsoneditor-repair',
+          title: 'Repair the JSON document',
+          onClick: this.props.onRepair
+        }, h('i', {className: 'fa fa-screwdriver'})),
+      ])
     ])
 
     return h('div', {key: 'menu', className: 'jsoneditor-menu'}, items)

@@ -18,13 +18,17 @@ export default class ModeSelector extends Component {
           className: 'jsoneditor-menu-button jsoneditor-type-modes' +
               ((mode === this.props.mode) ? ' jsoneditor-selected' : ''),
           onClick: () => {
-            try {
-              this.props.onRequestClose()
-              this.props.onChangeMode(mode)
-            }
+            this.props.onRequestClose()
+
+            // send the onChangeMode on the next tick, after onRequestClose is executed and applied
+            setTimeout(() => {
+              try {
+                this.props.onChangeMode(mode)
+              }
             catch (err) {
-              this.props.onError(err)
-            }
+                this.props.onError(err)
+              }
+            })
           }
         }, toCapital(mode))
       })

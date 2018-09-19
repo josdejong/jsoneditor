@@ -117,6 +117,8 @@ export default class TextMode extends Component {
   /** @protected */
   renderMenu () {
     return h(TextModeMenu, {
+      key: 'menu',
+
       mode: this.props.mode,
       modes: this.props.modes,
       onChangeMode: this.props.onChangeMode,
