@@ -765,7 +765,8 @@ export default class TreeMode extends PureComponent {
 
     const pointer = this.findJSONPointerFromElement(event.target)
     const clickedOnEmptySpace = (event.target.nodeName === 'DIV') &&
-        (event.target.contentEditable !== 'true')
+        (event.target.contentEditable !== 'true') &&
+        (event.target.className !== 'jsoneditor-tag') // FIXME: this is an ugly hack to prevent an object/array from being selected when expanding it by clicking the tag
 
     // TODO: cleanup
     // console.log('handleTouchStart', clickedOnEmptySpace && pointer, pointer && this.selectionFromJSONPointer(pointer))

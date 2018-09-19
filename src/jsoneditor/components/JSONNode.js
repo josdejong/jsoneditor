@@ -4,7 +4,6 @@ import initial from 'lodash/initial'
 import isEqual from 'lodash/isEqual'
 import naturalSort from 'javascript-natural-sort'
 
-import FloatingMenu from './menu/FloatingMenu'
 import { escapeHTML, unescapeHTML } from '../utils/stringUtils'
 import { getInnerText, insideRect } from '../utils/domUtils'
 import { stringConvert, valueType, isUrl } from  '../utils/typeUtils'
@@ -131,8 +130,6 @@ export default class JSONNode extends PureComponent {
       }
     }
 
-    // FIXME
-    const floatingMenu = this.renderFloatingMenu('object', this.props.eson[SELECTION])
     const nodeEnd = this.props.eson[EXPANDED]
         ? h('div', {key: 'node-end', className: 'jsoneditor-node-end', 'data-area': 'empty'}, [
           this.renderDelimiter('}', 'jsoneditor-delimiter-end')
@@ -145,7 +142,7 @@ export default class JSONNode extends PureComponent {
       className: this.getContainerClassName(this.props.eson[SELECTION], this.state.hover),
       // onMouseOver: this.handleMouseOver,
       // onMouseLeave: this.handleMouseLeave
-    }, [floatingMenu, nodeStart, childs, nodeEnd])
+    }, [nodeStart, childs, nodeEnd])
   }
 
   renderJSONArray () {
@@ -192,7 +189,6 @@ export default class JSONNode extends PureComponent {
       }
     }
 
-    const floatingMenu = this.renderFloatingMenu('array', this.props.eson[SELECTION])
     const nodeEnd = this.props.eson[EXPANDED]
         ? h('div', {key: 'node-end', className: 'jsoneditor-node-end', 'data-area': 'empty'}, [
             this.renderDelimiter(']', 'jsoneditor-delimiter-end')
@@ -205,7 +201,7 @@ export default class JSONNode extends PureComponent {
       className: this.getContainerClassName(this.props.eson[SELECTION], this.state.hover),
       // onMouseOver: this.handleMouseOver,
       // onMouseLeave: this.handleMouseLeave
-    }, [floatingMenu, nodeStart, childs, nodeEnd])
+    }, [nodeStart, childs, nodeEnd])
   }
 
   renderJSONValue () {
@@ -221,8 +217,6 @@ export default class JSONNode extends PureComponent {
       this.renderError(this.props.eson[ERROR])
     ])
 
-    const floatingMenu = this.renderFloatingMenu('value', this.props.eson[SELECTION])
-
     // const insertArea = this.renderInsertBeforeArea()
 
     return h('div', {
@@ -231,7 +225,7 @@ export default class JSONNode extends PureComponent {
       className: this.getContainerClassName(this.props.eson[SELECTION], this.state.hover),
       // onMouseOver: this.handleMouseOver,
       // onMouseLeave: this.handleMouseLeave
-    }, [node, floatingMenu])
+    }, [node])
   }
 
   /**
@@ -537,84 +531,6 @@ export default class JSONNode extends PureComponent {
           className: expanded ? 'fa fa-caret-down' : 'fa fa-caret-right'
         })))
     )
-  }
-
-  renderFloatingMenu (type, selected) {
-    if (((selected & SELECTED_END) === 0) &&
-        ((selected & SELECTED_INSIDE) === 0) &&
-        ((selected & SELECTED_AFTER) === 0)) {
-      return null
-    }
-
-    const isLastOfMultiple = ((selected & SELECTED_LAST) !== 0) &&
-        ((selected & SELECTED_FIRST) === 0)
-    const isAfter = ((selected & SELECTED_AFTER) !== 0)
-    // const isInside = ((selected & SELECTED_INSIDE) !== 0) // TODO: nicely position menu when selected inside
-
-    return h(FloatingMenu, {
-      key: 'floating-menu',
-      path: this.state.path,
-      emit: this.props.emit,
-      items: this.getFloatingMenuItems(type, selected),
-      position: isLastOfMultiple || isAfter ? 'bottom' : 'top'
-    })
-  }
-
-  getFloatingMenuItems (type, selected) {
-    if ((selected & SELECTED_AFTER) !== 0) {
-      return [
-        {type: 'insertStructureAfter'},
-        {type: 'insertValueAfter'},
-        {type: 'insertObjectAfter'},
-        {type: 'insertArrayAfter'},
-        {type: 'paste'},
-      ]
-    }
-
-    if ((selected & SELECTED_INSIDE) !== 0) {
-      return [
-        {type: 'insertStructureInside'},
-        {type: 'insertValueInside'},
-        {type: 'insertObjectInside'},
-        {type: 'insertArrayInside'},
-        {type: 'paste'},
-      ]
-    }
-
-    if (type === 'object') {
-      return [
-        {type: 'sort'},
-        {type: 'duplicate'},
-        {type: 'cut'},
-        {type: 'copy'},
-        {type: 'paste'},
-        {type: 'remove'}
-      ]
-    }
-
-    if (type === 'array') {
-      return [
-        {type: 'sort'},
-        {type: 'duplicate'},
-        {type: 'cut'},
-        {type: 'copy'},
-        {type: 'paste'},
-        {type: 'remove'}
-      ]
-    }
-
-    if (type === 'value') {
-      return [
-        // {text: 'String', onClick: this.props.emit('changeType', {type: 'checkbox', checked: false}}),
-        {type: 'duplicate'},
-        {type: 'cut'},
-        {type: 'copy'},
-        {type: 'paste'},
-        {type: 'remove'}
-      ]
-    }
-
-    throw new Error(`Cannot create FloatingMenu items for type: ${type}, selected: ${selected})`)
   }
 
   handleMouseOver = (event) => {
