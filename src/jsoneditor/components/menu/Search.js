@@ -5,15 +5,15 @@ import { findEditorContainer, setSelection } from '../utils/domSelector'
 
 import fontawesome from '@fortawesome/fontawesome'
 import faSearch from '@fortawesome/fontawesome-free-solid/faSearch'
-import faCaretUp from '@fortawesome/fontawesome-free-solid/faCaretUp'
-import faCaretDown from '@fortawesome/fontawesome-free-solid/faCaretDown'
+import faChevronUp from '@fortawesome/fontawesome-free-solid/faChevronUp'
+import faChevronDown from '@fortawesome/fontawesome-free-solid/faChevronDown'
 import faTimes from '@fortawesome/fontawesome-free-solid/faTimes'
 
 import './Menu.css'
 
 import './Search.css'
 
-fontawesome.library.add(faSearch, faCaretUp, faCaretDown, faTimes)
+fontawesome.library.add(faSearch, faChevronUp, faChevronDown, faTimes)
 
 export default class Search extends Component {
   constructor (props) {
@@ -48,14 +48,14 @@ export default class Search extends Component {
             className: 'jsoneditor-search-next',
             title: 'Next result',
             onClick: this.props.onNext
-          }, h('i', {className: 'fa fa-caret-down'})),
+          }, h('i', {className: 'fa fa-chevron-down'})),
           h('button', {
             key: 'previous',
             type: 'button',
             className: 'jsoneditor-search-previous',
             title: 'Previous result',
             onClick: this.props.onPrevious
-          }, h('i', {className: 'fa fa-caret-up'})),
+          }, h('i', {className: 'fa fa-chevron-up'})),
           h('button', {
             key: 'close',
             type: 'button',
