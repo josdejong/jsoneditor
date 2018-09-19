@@ -41,13 +41,25 @@ export default class TreeModeMenu extends PureComponent {
     onCopy: PropTypes.func.isRequired,
     onPaste: PropTypes.func.isRequired,
 
+    canInsert: PropTypes.bool.isRequired,
+    canDuplicate: PropTypes.bool.isRequired,
+    canRemove: PropTypes.bool.isRequired,
+    onInsert: PropTypes.func.isRequired,
+    onDuplicate: PropTypes.func.isRequired,
+    onRemove: PropTypes.func.isRequired,
+
+    canSort: PropTypes.bool.isRequired,
+    canTransform: PropTypes.bool.isRequired,
+    canSearch: PropTypes.bool.isRequired,
+    onSort: PropTypes.func.isRequired,
+    onTransform: PropTypes.func.isRequired,
+    onToggleSearch: PropTypes.func,
+
     enableHistory: PropTypes.bool,
     canUndo: PropTypes.bool,
     canRedo: PropTypes.bool,
     onUndo: PropTypes.func,
-    onRedo: PropTypes.func,
-
-    onToggleSearch: PropTypes.func
+    onRedo: PropTypes.func
   }
 
   render () {
@@ -82,14 +94,14 @@ export default class TreeModeMenu extends PureComponent {
           key: 'copy',
           className: 'jsoneditor-copy',
           title: 'Copy current selection',
-          // disabled: !this.props.canPaste,
-          onClick: this.props.onPaste
+          disabled: !this.props.canCopy,
+          onClick: this.props.onCopy
         }, h('i', {className: 'fa fa-copy'})),
         h('button', {
           key: 'paste',
           className: 'jsoneditor-paste',
           title: 'Paste copied selection',
-          // disabled: !this.props.canPaste,
+          disabled: !this.props.canPaste,
           onClick: this.props.onPaste
         }, h('i', {className: 'fa fa-paste'}))
       ])
@@ -128,13 +140,14 @@ export default class TreeModeMenu extends PureComponent {
           key: 'sort',
           className: 'jsoneditor-sort',
           title: 'Sort contents',
-          onClick: this.props.onSort // TODO: implement onSort
+          // disabled: !this.props.canSort, // TODO: can sort
+          onClick: this.props.onSort
         }, h('i', {className: 'fa fa-sort-amount-down'})),
         h('button', {
           key: 'transform',
           className: 'jsoneditor-transform',
           title: 'Transform contents',
-          // disabled: !this.props.canPaste,
+          // disabled: !this.props.canTransform, // TODO canTransform
           onClick: this.props.onTransform
         }, h('i', {className: 'fa fa-filter'})),
         h('button', {

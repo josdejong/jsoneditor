@@ -20,6 +20,10 @@
 
     font-family: arial, sans-serif;
     font-size: 16px;
+
+    &.current-mode {
+      font-weight: bold;
+    }
   }
 
   button:hover {

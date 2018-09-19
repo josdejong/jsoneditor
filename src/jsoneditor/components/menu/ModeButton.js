@@ -29,11 +29,12 @@ export default class ModeButton extends Component {
     return h('div', {className: 'jsoneditor-modes'}, [
       h('button', {
         key: 'button',
+        className: 'current-mode',
         title: 'Switch mode',
         onClick: this.handleOpen
       }, [
           toCapital(props.mode) + '  ',
-          h('i', { className: 'fa fa-chevron-down' })
+          h('i', { key: 'icon', className: 'fa fa-chevron-down' })
       ]),
 
       h(ModeSelector, {

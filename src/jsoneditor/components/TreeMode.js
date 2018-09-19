@@ -24,8 +24,7 @@ import {
   insertInside,
   remove,
   removeAll,
-  replace,
-  sort
+  replace
 } from '../actions'
 import JSONNode from './JSONNode'
 import JSONNodeView from './JSONNodeView'
@@ -271,6 +270,12 @@ export default class TreeMode extends PureComponent {
   }
 
   renderMenu () {
+    const hasCursor = true // FIXME: implement hasCursor
+    const hasSelection = !!this.state.selection
+    const hasClipboard = this.state.clipboard
+        ? this.state.clipboard.length > 0
+        : false
+
     return h(TreeModeMenu, {
       key: 'menu',
 
@@ -278,13 +283,32 @@ export default class TreeMode extends PureComponent {
       modes: this.props.modes,
       onChangeMode: this.props.onChangeMode,
 
+      canCut: hasSelection,
+      canCopy: hasSelection,
+      canPaste: hasClipboard && hasCursor,
+      onCut: this.handleCut,
+      onCopy: this.handleCopy,
+      onPaste: this.handlePaste,
+
+      canInsert: hasCursor,
+      canDuplicate: hasSelection,
+      canRemove: hasSelection,
+      onInsert: this.handleInsertBefore,
+      onDuplicate: this.handleDuplicate,
+      onRemove: this.handleRemove,
+
+      canSort: hasSelection || hasCursor,
+      canTransform: hasSelection || hasCursor,
+      canSearch: this.props.search,
+      onSort: this.handleSort,
+      onTransform: this.handleTransform,
+      onToggleSearch: this.toggleSearch,
+
       enableHistory: this.props.history,
       canUndo: this.canUndo(),
       canRedo: this.canRedo(),
       onUndo: this.undo,
       onRedo: this.redo,
-
-      onToggleSearch: this.toggleSearch
     })
   }
 
@@ -541,6 +565,14 @@ export default class TreeMode extends PureComponent {
 
       // TODO: select the pasted contents
     }
+    else {
+      // TODO: paste before current line => selection must contain current line
+    }
+  }
+
+  handleInsertBefore = () => {
+    // FIXME: implement handleInsertBefore
+    console.error('Insert not yet implemented...')
   }
 
   /**
@@ -569,13 +601,15 @@ export default class TreeMode extends PureComponent {
     })
   }
 
-  /**
-   * Handle sorting a path
-   * @param {Path} path
-   * @param {string | null} [order]
-   */
-  handleSort = (path, order = null) => {
-    this.handlePatch(sort(this.state.eson, path, order))
+  handleSort = () => {
+    // FIXME: implement handle sort from selection or caret
+    console.error('sort not yet implemented...')
+    // this.handlePatch(sort(this.state.eson, path, order))
+  }
+
+  handleTransform = () => {
+    // FIXME: implement handleTransform
+    console.error('transform not yet implemented...')
   }
 
   /**
