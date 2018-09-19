@@ -1,18 +1,28 @@
-import { createElement as h, Component } from 'react'
+import { Component, createElement as h } from 'react'
 import { toCapital } from '../../utils/stringUtils'
 
 import fontawesome from '@fortawesome/fontawesome'
 import faChevronDown from '@fortawesome/fontawesome-free-solid/faChevronDown'
 import { keyComboFromEvent } from '../../utils/keyBindings'
+import PropTypes from 'prop-types'
 
-import './Menu.css'
+import './DropDown.css'
 
 fontawesome.library.add(faChevronDown)
 
-const MENU_CLASS_NAME = 'jsoneditor-actionmenu'
-const MODE_MENU_CLASS_NAME = MENU_CLASS_NAME + ' jsoneditor-modemenu'
+export default class DropDown extends Component {
 
-export default class ModeDropDown extends Component {
+  static propTypes = {
+    value: PropTypes.string,
+    options: PropTypes.arrayOf(PropTypes.shape({
+      value: PropTypes.string.isRequired,
+      text: PropTypes.string,
+      title: PropTypes.string,
+    })).isRequired,
+    onChange: PropTypes.func.isRequired,
+    onError: PropTypes.func
+  }
+
   constructor (props) {
     super (props)
 
@@ -29,14 +39,22 @@ export default class ModeDropDown extends Component {
    * props {{modes: string[], mode: string, onChangeMode: function, onError: function}}
    */
   render () {
-    return h('div', {className: 'jsoneditor-modes'}, [
+    const selected = this.props.options
+        ? this.props.options.find(option => option.value === this.props.value)
+        : null
+
+    const selectedText = selected
+        ? (selected.text || selected.value)
+        : ''
+
+    return h('div', {className: 'jsoneditor-dropdown'}, [
       h('button', {
         key: 'button',
-        className: 'current-mode',
+        className: 'jsoneditor-dropdown-main-button',
         title: 'Switch mode',
         onClick: this.handleOpen
       }, [
-          toCapital(this.props.mode) + '  ',
+          toCapital(selectedText) + '  ',
           h('i', { key: 'icon', className: 'fa fa-chevron-down' })
       ]),
 
@@ -63,28 +81,29 @@ export default class ModeDropDown extends Component {
    */
   renderDropDown () {
     if (this.state.open) {
-      const items = this.props.modes.map(mode => {
+      const items = this.props.options.map(option => {
         return h('button', {
-          key: mode,
-          title: `Switch to ${mode} mode`,
-          className: 'jsoneditor-menu-button jsoneditor-type-modes' +
-              ((mode === this.props.mode) ? ' jsoneditor-selected' : ''),
+          key: option.value,
+          ref: 'button',
+          title: option.title || option.text || option.value,
+          className: 'jsoneditor-menu-item' +
+              ((option.value === this.props.value) ? ' jsoneditor-menu-item-selected' : ''),
           onClick: () => {
             try {
               this.handleRequestClose()
 
-              this.props.onChangeMode(mode)
+              this.props.onChange(option.value)
             }
             catch (err) {
               this.props.onError(err)
             }
           }
-        }, toCapital(mode))
+        }, toCapital(option.text || option.value))
       })
 
       return h('div', {
         key: 'dropdown',
-        className: MODE_MENU_CLASS_NAME,
+        className: 'jsoneditor-dropdown-list',
         ref: 'menu',
         onKeyDown: this.handleKeyDown
       }, items)
@@ -112,6 +131,11 @@ export default class ModeDropDown extends Component {
         event.target.nextSibling.focus()
       }
     }
+
+    if (combo ==='Escape') {
+      this.handleRequestClose()
+      setTimeout(() => this.focusToDropDownButton()) // FIXME: doesn't work
+    }
   }
 
   addRequestCloseListener () {
@@ -138,6 +162,12 @@ export default class ModeDropDown extends Component {
       if (firstButton) {
         firstButton.focus()
       }
+    }
+  }
+
+  focusToDropDownButton() {
+    if (this.refs.button) {
+      this.refs.button.focus()
     }
   }
 

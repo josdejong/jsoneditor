@@ -290,71 +290,6 @@ div.jsoneditor-menu-panel-right {
   max-width: 100%;
 }
 
-/******************************* Action Menu **********************************/
-
-div.jsoneditor-actionmenu {
-  position: absolute;
-  box-sizing: border-box;
-  z-index: 99999;
-  top: 20px;
-  left: 18px;  /* 20px - 2px  where 2px half the difference between 24x24 icons of the menu and the 20x20 icons of the editor */
-  background: white;
-
-  border: 1px solid #d3d3d3;
-  box-shadow: 2px 2px 12px rgba(128, 128, 128, 0.3);
-}
-
-div.jsoneditor-actionmenu.jsoneditor-actionmenu-top {
-  top: auto;
-  bottom: 20px;
-}
-
-div.jsoneditor-modemenu.jsoneditor-modemenu {
-  top: 26px;
-  left: 0;
-}
-
-div.jsoneditor-menu-item {
-  line-height: 0;
-  font-size: 0;
-}
-
-button.jsoneditor-menu-button {
-  width: 136px;
-  height: 24px;
-  padding: 0;
-  margin: 0;
-  line-height: 24px;
-
-  background: transparent;
-  border: transparent;
-  display: inline-block;
-  box-sizing: border-box;
-
-  cursor: pointer;
-  color: #4d4d4d;
-
-  font-size: 10pt;
-  font-family: arial, sans-serif;
-  text-align: left;
-}
-
-button.jsoneditor-menu-button:hover,
-button.jsoneditor-menu-button:focus {
-  color: $black;
-  background-color: #f5f5f5;
-  outline: none;
-}
-
-button.jsoneditor-menu-button.jsoneditor-selected {
-  color: white;
-  background-color: #ee422e;
-}
-
-button.jsoneditor-menu-default {
-  width: 104px;  /* 136px - 32px */
-}
-
 /******************************* Floating Menu **********************************/
 
 div.jsoneditor-node-container {
@@ -503,30 +438,6 @@ div.jsoneditor-node-container {
 }
 
 /*******************************  **********************************/
-
-div.jsoneditor-modes {
-  position: relative;
-  display: inline-block;
-
-  button {
-    background: none;
-    width: auto;
-    padding: 2px 6px;
-    font-size: $fontSize;
-  }
-
-  button.jsoneditor-type-modes {
-    width: 120px;
-    height: auto;
-    padding: 2px 6px;
-    border-radius: 0;
-    opacity: 1;
-
-    &:hover {
-      border: none;
-    }
-  }
-}
 
 textarea.jsoneditor-text {
   width: 100%;

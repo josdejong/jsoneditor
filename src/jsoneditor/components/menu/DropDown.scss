@@ -1,0 +1,60 @@
+@import '../style.scss';
+
+.jsoneditor-dropdown {
+  position: relative;
+  display: inline-block;
+
+  button.jsoneditor-dropdown-main-button {
+    background: none;
+    width: auto;
+    padding: 2px 6px;
+    font-size: $fontSize;
+    font-weight: bold;
+  }
+
+  div.jsoneditor-dropdown-list {
+    position: absolute;
+    box-sizing: border-box;
+    z-index: 99999;
+    top: 26px;
+    left: 0;
+    background: white;
+
+    border: 1px solid #d3d3d3;
+    box-shadow: 2px 2px 12px rgba(128, 128, 128, 0.3);
+
+    button.jsoneditor-menu-item {
+      display: inline-block;
+      box-sizing: border-box;
+      width: 120px;
+      height: auto;
+      padding: 2px 6px;
+      margin: 0;
+      line-height: 24px;
+
+      border-radius: 0;
+      opacity: 1;
+      background: transparent;
+      border: transparent;
+      color: #4d4d4d;
+      font-size: 10pt;
+      font-family: arial, sans-serif;
+      text-align: left;
+
+      cursor: pointer;
+    }
+
+    button.jsoneditor-menu-item:hover,
+    button.jsoneditor-menu-item:focus {
+      color: $black;
+      background-color: #f5f5f5;
+      outline: none;
+    }
+
+    button.jsoneditor-menu-item.jsoneditor-menu-item-selected {
+      color: white;
+      background-color: #ee422e;
+    }
+  }
+
+}

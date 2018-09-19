@@ -1,5 +1,5 @@
 import { createElement as h, PureComponent } from 'react'
-import ModeDropDown from './ModeDropDown'
+import DropDown from './DropDown'
 import PropTypes from 'prop-types'
 
 import fontawesome from '@fortawesome/fontawesome'
@@ -69,11 +69,11 @@ export default class TreeModeMenu extends PureComponent {
     if (this.props.modes ) {
       items = items.concat([
         h('div', {className: 'jsoneditor-menu-group', key: 'mode'}, [
-          h(ModeDropDown, {
+          h(DropDown, {
             key: 'mode',
-            modes: this.props.modes,
-            mode: this.props.mode,
-            onChangeMode: this.props.onChangeMode,
+            options: this.props.modes.map(mode => ({ value: mode })),
+            value: this.props.mode,
+            onChange: this.props.onChangeMode,
             onError: this.props.onError
           })
         ])
