@@ -14,7 +14,7 @@ export default class DropDown extends Component {
 
   static propTypes = {
     value: PropTypes.string,
-    text: PropTypes.string,
+    text: PropTypes.oneOfType([PropTypes.string, PropTypes.element]),
     title: PropTypes.string,
     options: PropTypes.arrayOf(PropTypes.shape({
       value: PropTypes.string.isRequired,
@@ -56,10 +56,10 @@ export default class DropDown extends Component {
         title: this.props.title,
         onClick: this.handleOpen
       }, [
-        typeof selectedText === 'string'
+        h('span', {key: 'text'}, typeof selectedText === 'string'
             ? toCapital(selectedText)
             : selectedText,
-        '\u00A0\u00A0',
+            '\u00A0\u00A0'),
         h('i', { key: 'icon', className: 'fa fa-chevron-down' })
       ]),
 

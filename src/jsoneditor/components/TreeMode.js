@@ -40,7 +40,6 @@ import {
   moveRight,
   moveUp,
   searchHasFocus,
-  selectFind,
   setSelection
 } from './utils/domSelector'
 import { createFindKeyBinding } from '../utils/keyBindings'
@@ -319,6 +318,7 @@ export default class TreeMode extends PureComponent {
 
     return h(Search, {
       key: 'search',
+      ref: 'search',
 
       text: this.state.searchResult.text,
       resultCount: this.state.searchResult.matches
@@ -327,6 +327,7 @@ export default class TreeMode extends PureComponent {
       onNext: this.handleSearchNext,
       onPrevious: this.handleSearchPrevious,
       onClose: this.handleCloseSearch,
+      onFocusActive: this.handleSearchFocusActive,
       findKeyBinding: this.props.findKeyBinding,
       delay: SEARCH_DEBOUNCE
     })
@@ -681,7 +682,14 @@ export default class TreeMode extends PureComponent {
 
   handleFocusFind = (event) => {
     event.preventDefault()
-    selectFind(event.target)
+
+    if (this.refs.search) {
+      this.refs.search.select()
+    }
+    else {
+      // search will select automatically when created
+      this.setState({ showSearch: true })
+    }
   }
 
   handleSearchNext = (event) => {
@@ -733,9 +741,7 @@ export default class TreeMode extends PureComponent {
     }
   }
 
-  handleCloseSearch = (event) => {
-    event.preventDefault()
-
+  handleCloseSearch = () => {
     const { eson, searchResult } = search(this.state.eson, '')
 
     this.setState({
@@ -743,6 +749,13 @@ export default class TreeMode extends PureComponent {
       eson,
       searchResult
     })
+  }
+
+  handleSearchFocusActive = () => {
+    const active = this.state.searchResult.active
+    if (active && active.area) {
+      setSelection(this.refs.contents, active.path, active.area)
+    }
   }
 
   /**

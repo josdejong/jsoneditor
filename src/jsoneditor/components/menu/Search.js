@@ -1,7 +1,6 @@
-import { createElement as h, Component } from 'react'
+import { Component, createElement as h } from 'react'
 import PropTypes from 'prop-types'
 import { keyComboFromEvent } from '../../utils/keyBindings'
-import { findEditorContainer, setSelection } from '../utils/domSelector'
 
 import fontawesome from '@fortawesome/fontawesome'
 import faSearch from '@fortawesome/fontawesome-free-solid/faSearch'
@@ -16,11 +15,33 @@ import './Search.css'
 fontawesome.library.add(faSearch, faChevronUp, faChevronDown, faTimes)
 
 export default class Search extends Component {
+
+  static propTypes = {
+    text: PropTypes.string,
+    onChange: PropTypes.func,
+    onNext: PropTypes.func.isRequired,
+    onPrevious: PropTypes.func.isRequired,
+    onClose: PropTypes.func.isRequired,
+    onFocusActive: PropTypes.func.isRequired,
+    delay: PropTypes.number,
+  }
+
   constructor (props) {
     super (props)
 
     this.state = {
       text: props.text || ''
+    }
+  }
+
+  componentDidMount () {
+    this.select()
+  }
+
+  componentWillReceiveProps (nextProps) {
+    if (nextProps.text !== this.props.text) {
+      // clear a pending onChange callback (if any)
+      clearTimeout(this.timeout)
     }
   }
 
@@ -37,6 +58,7 @@ export default class Search extends Component {
           h('input', {
             key: 'input',
             type: 'text',
+            ref: this.setSearchInputRef,
             className: 'jsoneditor-search-text',
             value: this.state.text,
             onInput: this.handleChange,
@@ -61,7 +83,7 @@ export default class Search extends Component {
             type: 'button',
             className: 'jsoneditor-search-close',
             title: 'Close search',
-            onClick: this.props.onClose
+            onClick: this.handleClose
           }, h('i', {className: 'fa fa-times'})),
         ]),
         // this.renderResultsCount(this.props.resultCount) // FIXME: show result count
@@ -86,10 +108,15 @@ export default class Search extends Component {
     return null
   }
 
-  componentWillReceiveProps (nextProps) {
-    if (nextProps.text !== this.props.text) {
-      // clear a pending onChange callback (if any)
-      clearTimeout(this.timeout)
+  searchInput = null
+
+  setSearchInputRef = (element) => {
+    this.searchInput = element
+  }
+
+  select () {
+    if (this.searchInput) {
+      this.searchInput.select()
     }
   }
 
@@ -113,16 +140,22 @@ export default class Search extends Component {
     this.timeout = setTimeout(this.debouncedOnChange, delay)
   }
 
+  handleClose = () => {
+    this.props.onClose()
+  }
+
   handleKeyDown = (event) => {
     // TODO: make submit (Enter) and focus to search result (Ctrl+Enter) customizable
     const combo = keyComboFromEvent(event)
     if (combo === 'Ctrl+Enter' || combo === 'Command+Enter') {
       event.preventDefault()
-      const active = this.props.searchResults[0]
-      if (active) {
-        const container = findEditorContainer(event.target)
-        setSelection(container, active.path, active.type)
-      }
+      this.props.onFocusActive()
+    }
+
+    if (combo === 'Escape') {
+      event.preventDefault()
+
+      this.handleClose()
     }
   }
 

@@ -8,7 +8,6 @@ import { compileJSONPointer, parseJSONPointer } from '../../jsonPointer'
 let lastInputName = null
 
 // TODO: create a constants file with the CSS names that are used in domSelector
-const SEARCH_TEXT_CLASS_NAME = 'jsoneditor-search-text'
 const SEARCH_COMPONENT_CLASS_NAME = 'jsoneditor-search'
 const NODE_CONTAINER_CLASS_NAME = 'jsoneditor-node-container'
 const CONTENTS_CONTAINER_CLASS_NAME = 'jsoneditor-tree-contents'
@@ -142,15 +141,6 @@ export function moveRight (fromElement) {
   setSelection(container, path, lastInputName)
 }
 
-export function selectFind (eventTarget) {
-  const container = findEditorContainer(eventTarget)
-  const searchText = container.querySelector('input.' + SEARCH_TEXT_CLASS_NAME)
-
-  if (searchText) {
-    searchText.select()
-  }
-}
-
 /**
  * Set selection to a specific node and input field
  * @param {Element} container
@@ -215,6 +205,10 @@ function findPreviousNode (element) {
   const container = findContentsContainer(element)
   const node = findBaseNode(element)
 
+  if (!container || !node) {
+    return
+  }
+
   // TODO: is the following querySelectorAll a performance bottleneck?
   const all = Array.from(container.querySelectorAll('div.' + NODE_CONTAINER_CLASS_NAME))
   const index = all.indexOf(node)
@@ -226,6 +220,10 @@ function findNextNode (element) {
   const container = findContentsContainer(element)
   const node = findBaseNode(element)
 
+  if (!container || !node) {
+    return
+  }
+
   // TODO: is the following querySelectorAll a performance bottleneck?
   const all = Array.from(container.querySelectorAll('div.' + NODE_CONTAINER_CLASS_NAME))
   const index = all.indexOf(node)
@@ -236,6 +234,10 @@ function findNextNode (element) {
 function findFirstNode (element) {
   const container = findContentsContainer(element)
 
+  if (!container) {
+    return
+  }
+
   // TODO: is the following querySelectorAll a performance bottleneck?
   const all = Array.from(container.querySelectorAll('div.' + NODE_CONTAINER_CLASS_NAME))
 
@@ -244,6 +246,10 @@ function findFirstNode (element) {
 
 function findLastNode (element) {
   const container = findContentsContainer(element)
+
+  if (!container) {
+    return
+  }
 
   // TODO: is the following querySelectorAll a performance bottleneck?
   const all = Array.from(container.querySelectorAll('div.' + NODE_CONTAINER_CLASS_NAME))
@@ -254,6 +260,10 @@ function findLastNode (element) {
 function findNextSibling (element) {
   const container = findContentsContainer(element)
   const node = findBaseNode(element)
+
+  if (!container || !node) {
+    return
+  }
 
   // TODO: is the following querySelectorAll a performance bottleneck?
   const all = Array.from(container.querySelectorAll('div.' + NODE_CONTAINER_CLASS_NAME))
