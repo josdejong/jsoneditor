@@ -272,6 +272,8 @@ export default class TreeMode extends PureComponent {
 
   renderMenu () {
     return h(TreeModeMenu, {
+      key: 'menu',
+
       mode: this.props.mode,
       modes: this.props.modes,
       onChangeMode: this.props.onChangeMode,
@@ -292,6 +294,8 @@ export default class TreeMode extends PureComponent {
     }
 
     return h(Search, {
+      key: 'search',
+
       text: this.state.searchResult.text,
       resultCount: this.state.searchResult.matches
           ? this.state.searchResult.matches.length : 0,

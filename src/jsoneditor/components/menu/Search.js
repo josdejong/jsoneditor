@@ -25,15 +25,15 @@ export default class Search extends Component {
   }
 
   render () {
-    return h('div', {className: 'jsoneditor-search'}, [
-      h('form', {
-        key: 'box',
-        className: 'jsoneditor-search-box',
-        onSubmit: this.handleSubmit
-      }, [
-          h('div', { className: 'jsoneditor-search-icon' }, [
-            h('i', {className: 'fa fa-search'})
-          ]),
+    return h('div', {className: 'jsoneditor-search'},
+        h('form', {
+          key: 'box',
+          className: 'jsoneditor-search-box',
+          onSubmit: this.handleSubmit
+        }, [
+          h('div', { className: 'jsoneditor-search-icon', key: 'icon' },
+              h('i', {className: 'fa fa-search'})
+          ),
           h('input', {
             key: 'input',
             type: 'text',
@@ -63,9 +63,9 @@ export default class Search extends Component {
             title: 'Close search',
             onClick: this.props.onClose
           }, h('i', {className: 'fa fa-times'})),
-      ]),
-      // this.renderResultsCount(this.props.resultCount) // FIXME: show result count
-    ])
+        ]),
+        // this.renderResultsCount(this.props.resultCount) // FIXME: show result count
+    )
   }
 
   renderResultsCount (resultCount) {

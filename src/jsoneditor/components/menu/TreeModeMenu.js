@@ -56,7 +56,7 @@ export default class TreeModeMenu extends PureComponent {
     // mode
     if (this.props.modes ) {
       items = items.concat([
-        h('div', {className: 'jsoneditor-menu-group'}, [
+        h('div', {className: 'jsoneditor-menu-group', key: 'mode'}, [
           h(ModeButton, {
             key: 'mode',
             modes: this.props.modes,
@@ -70,7 +70,7 @@ export default class TreeModeMenu extends PureComponent {
 
     // cut / copy / paste
     items = items.concat([
-      h('div', {className: 'jsoneditor-menu-group'}, [
+      h('div', {className: 'jsoneditor-menu-group', key: 'cut-copy-paste'}, [
         h('button', {
           key: 'cut',
           className: 'jsoneditor-cut',
@@ -97,7 +97,7 @@ export default class TreeModeMenu extends PureComponent {
 
     // TODO: [insert structure / insert value / insert array / insert object] / duplicate / remove
     items = items.concat([
-      h('div', {className: 'jsoneditor-menu-group'}, [
+      h('div', {className: 'jsoneditor-menu-group', key: 'insert-duplicate-remove'}, [
         h('button', {
           key: 'insert',
           className: 'jsoneditor-insert',
@@ -123,7 +123,7 @@ export default class TreeModeMenu extends PureComponent {
 
     // sort / transform
     items = items.concat([
-      h('div', {className: 'jsoneditor-menu-group'}, [
+      h('div', {className: 'jsoneditor-menu-group', key: 'sort-transform'}, [
         h('button', {
           key: 'sort',
           className: 'jsoneditor-sort',
@@ -149,7 +149,7 @@ export default class TreeModeMenu extends PureComponent {
     // undo / redo
     if (this.props.mode !== 'view' && this.props.enableHistory !== false) {
       items = items.concat([
-        h('div', {className: 'jsoneditor-menu-group'}, [
+        h('div', {className: 'jsoneditor-menu-group', key: 'undo-redo'}, [
           h('button', {
             key: 'undo',
             className: 'jsoneditor-undo',

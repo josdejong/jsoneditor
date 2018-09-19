@@ -523,16 +523,19 @@ export default class JSONNode extends PureComponent {
     const expanded = this.props.eson[EXPANDED]
     const className = `jsoneditor-button jsoneditor-${expanded ? 'expanded' : 'collapsed'}`
 
-    // unique key depending on expanded state is to force the fontawesome icon to update
-    return h('div', {key: expanded, className: 'jsoneditor-button-container'},
+
+    return h('div', {key: 'expand', className: 'jsoneditor-button-container'},
         h('button', {
           className: className,
           onClick: this.handleExpand,
           title:
             'Click to expand/collapse this field. \n' +
             'Ctrl+Click to expand/collapse including all childs.'
+        }, h('span', {
+          key: expanded, // to force the fontawesome icon to update
         }, h('i', {
-          className: expanded ? 'fa fa-caret-down' : 'fa fa-caret-right'}))
+          className: expanded ? 'fa fa-caret-down' : 'fa fa-caret-right'
+        })))
     )
   }
 
