@@ -14,8 +14,9 @@ div.jsoneditor-search {
     right: 0;
     margin: 10px 20px 10px 10px;
     z-index: 1;
-    max-width: 100%;
+    max-width: 80%;
     box-shadow: 0 2px 6px 0 rgba(0,0,0,.24);
+    overflow: auto;
 
     background-color: white;
     border: 2px solid $theme-color;
@@ -48,6 +49,12 @@ div.jsoneditor-search {
       background: transparent;
     }
 
+    div.jsoneditor-search-count {
+      display: inline-block;
+      padding: 0 4px;
+      color: $light-gray;
+    }
+
     button {
       display: inline-block;
       position: relative;
@@ -73,11 +80,5 @@ div.jsoneditor-search {
         margin-right: 4px;
       }
     }
-  }
-
-  div.jsoneditor-search-results {
-    display: inline-block;
-    margin-left: 5px;
-    color: white;
   }
 }

@@ -18,12 +18,15 @@ export default class Search extends Component {
 
   static propTypes = {
     text: PropTypes.string,
+    resultCount: PropTypes.number,
+    resultActive: PropTypes.number,
+    delay: PropTypes.number,
+
     onChange: PropTypes.func,
     onNext: PropTypes.func.isRequired,
     onPrevious: PropTypes.func.isRequired,
     onClose: PropTypes.func.isRequired,
     onFocusActive: PropTypes.func.isRequired,
-    delay: PropTypes.number,
   }
 
   constructor (props) {
@@ -64,6 +67,10 @@ export default class Search extends Component {
             onInput: this.handleChange,
             onKeyDown: this.handleKeyDown
           }),
+          h('div', {
+            key: 'count',
+            className: 'jsoneditor-search-count'
+          }, `${this.props.resultActive || 0}/${this.props.resultCount || 0}`),
           h('button', {
             key: 'next',
             type: 'button',
@@ -86,26 +93,7 @@ export default class Search extends Component {
             onClick: this.handleClose
           }, h('i', {className: 'fa fa-times'})),
         ]),
-        // this.renderResultsCount(this.props.resultCount) // FIXME: show result count
     )
-  }
-
-  renderResultsCount (resultCount) {
-    if (resultCount === 0) {
-      return null
-    }
-
-    if (resultCount === 0) {
-      return h('div', {key: 'count', className: 'jsoneditor-search-results'}, '(no results)')
-    }
-
-    if (resultCount > 0) {
-      const suffix = resultCount === 1 ? ' result' : ' results'
-
-      return h('div', {key: 'count', className: 'jsoneditor-search-results'}, resultCount + suffix)
-    }
-
-    return null
   }
 
   searchInput = null

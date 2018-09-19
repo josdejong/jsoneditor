@@ -321,15 +321,20 @@ export default class TreeMode extends PureComponent {
       ref: 'search',
 
       text: this.state.searchResult.text,
+
       resultCount: this.state.searchResult.matches
-          ? this.state.searchResult.matches.length : 0,
+          ? this.state.searchResult.matches.length
+          : 0,
+      resultActive: this.state.searchResult.active
+          ? (this.state.searchResult.matches.indexOf(this.state.searchResult.active) + 1)
+          : 0,
+      delay: SEARCH_DEBOUNCE,
+
       onChange: this.handleSearch,
       onNext: this.handleSearchNext,
       onPrevious: this.handleSearchPrevious,
       onClose: this.handleCloseSearch,
       onFocusActive: this.handleSearchFocusActive,
-      findKeyBinding: this.props.findKeyBinding,
-      delay: SEARCH_DEBOUNCE
     })
   }
 
