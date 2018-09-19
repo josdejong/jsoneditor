@@ -1,4 +1,4 @@
-import { escapeHTML, unescapeHTML, findUniqueName, toCapital } from './stringUtils'
+import { escapeHTML, unescapeHTML, findUniqueName, toCapital, compareStrings } from './stringUtils'
 
 test('escapeHTML', () => {
   expect(escapeHTML('   hello  ')).toEqual('\u00A0\u00A0 hello \u00A0')
@@ -30,4 +30,13 @@ test('toCapital', () => {
   expect(toCapital('HEllo')).toEqual('Hello')
   expect(toCapital('')).toEqual('')
   expect(toCapital(undefined)).toEqual(undefined)
+})
+
+test('compareStrings', () => {
+  expect(compareStrings('a', 'b')).toEqual(-1)
+  expect(compareStrings('b', 'a')).toEqual(1)
+  expect(compareStrings('a', 'a')).toEqual(0)
+
+  const array = ['b', 'c', 'a']
+  expect(array.sort(compareStrings)).toEqual(['a', 'b', 'c'])
 })

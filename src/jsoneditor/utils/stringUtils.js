@@ -123,3 +123,7 @@ export function toCapital(text) {
       ? text[0].toUpperCase() + text.substr(1).toLowerCase()
       : text
 }
+
+export function compareStrings (a, b) {
+  return (a < b) ? -1 : (a > b) ? 1 : 0
+}

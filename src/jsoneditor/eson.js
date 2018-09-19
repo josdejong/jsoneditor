@@ -8,6 +8,8 @@ import isEqual from 'lodash/isEqual'
 import naturalSort from 'javascript-natural-sort'
 import times from 'lodash/times'
 import { immutableJSONPatch } from './immutableJSONPatch'
+import { compareArrays } from './utils/arrayUtils'
+import { compareStrings } from './utils/stringUtils'
 
 export const ID = typeof Symbol === 'function' ? Symbol('id') : '@jsoneditor-id'
 export const TYPE = typeof Symbol === 'function' ? Symbol('type') : '@jsoneditor-type' // 'object', 'array', 'value', or 'undefined'
@@ -245,6 +247,18 @@ export function search (eson, text) {
     }
 
     return updatedValue
+  })
+
+  matches.sort((a, b) => {
+    const arrayOrder = compareArrays(a.path, b.path)
+    if (arrayOrder !== 0) {
+      return arrayOrder
+    }
+
+    // order property first, value second.
+    // we can use regular string ordering here because the word
+    // "property" comes before "value"
+    return compareStrings(a.area, b.area)
   })
 
   return {
