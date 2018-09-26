@@ -38,6 +38,13 @@
  */
 
 /**
+ * @typedef {{
+ *   area: 'left' | 'contents' | 'after',
+ *   path: Path
+ * }} SelectionPointer
+ */
+
+/**
  * @typedef {{matches: ESONPointer[], active: ESONPointer, text: String}} SearchResult
  */
 

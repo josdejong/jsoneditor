@@ -2,6 +2,9 @@ body, input, select {
   font-family: sans-serif;
   font-size: 11pt; }
 
+body {
+  height: 2000px; }
+
 .demo .menu {
   margin: 20px 0; }
   .demo .menu button, .demo .menu label {

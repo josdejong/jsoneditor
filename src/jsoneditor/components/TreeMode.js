@@ -57,10 +57,12 @@ import {
   pathsFromSelection,
   previousSearchResult,
   search,
+  SELECTION,
   syncEson
 } from '../eson'
 import TreeModeMenu from './menu/TreeModeMenu'
 import Search from './menu/Search'
+import { findParentWithAttribute } from '../utils/domUtils'
 
 const AJV_OPTIONS = {
   allErrors: true,
@@ -254,9 +256,9 @@ export default class TreeMode extends PureComponent {
               onMouseDown: this.handleTouchStart,
               onTouchStart: this.handleTouchStart,
               className: 'jsoneditor-list jsoneditor-root' +
-                  (/*eson[META].selected*/ false ? ' jsoneditor-selected' : '')}, // FIXME
+                  (eson[SELECTION] !== false ? ' jsoneditor-selected' : '')},
             h(Node, {
-              path: [],
+              parentPath: null,
               eson,
               emit: this.emitter.emit,
               findKeyBinding: this.findKeyBinding,
@@ -781,6 +783,10 @@ export default class TreeMode extends PureComponent {
       return
     }
 
+    const selectionPointer = this.findSelectionPointerFromEvent(event)
+
+    console.log('touchStart selectionPointer=', selectionPointer)
+
     const pointer = this.findJSONPointerFromElement(event.target)
     const clickedOnEmptySpace = (event.target.nodeName === 'DIV') &&
         (event.target.contentEditable !== 'true') &&
@@ -854,6 +860,25 @@ export default class TreeMode extends PureComponent {
     const area = (element && element.getAttribute && element.getAttribute('data-area')) || null
 
     return path ? { path, area } : null
+  }
+
+  /**
+   * Find JSON pointer from an HTML element
+   * @param {Event} event
+   * @return {SelectionPointer | null}
+   */
+  findSelectionPointerFromEvent (event) {
+    const areaParent = findParentWithAttribute(event.target, 'data-selection-area')
+    const area = areaParent ? areaParent.getAttribute('data-selection-area') : undefined
+
+    const base = (area === 'left')
+        ? document.elementFromPoint(event.target.getBoundingClientRect().right - 1, event.clientY)
+        : event.target
+
+    const pathParent = findParentWithAttribute(base, 'data-path')
+    const path = pathParent ? pathParent.getAttribute('data-path') : undefined
+
+    return (area !== undefined && path !== undefined) ? { area, path } : null
   }
 
   /**
