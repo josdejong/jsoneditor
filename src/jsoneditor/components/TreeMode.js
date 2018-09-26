@@ -876,7 +876,7 @@ export default class TreeMode extends PureComponent {
     const areaParent = findParentWithAttribute(element, 'data-selection-area')
     const area = areaParent ? areaParent.getAttribute('data-selection-area') : undefined
 
-    const base = (area === 'left')
+    const base = (area === 'before')
         ? document.elementFromPoint(element.getBoundingClientRect().right - 1, y)
         : element
 
@@ -901,11 +901,11 @@ export default class TreeMode extends PureComponent {
 
       if (isEqual(startChildPath, sharedPath) || isEqual(endChildPath, sharedPath)) {
         // one element
-        if (start.area === 'right' && end.area === 'right' && start.path === end.path) {
+        if (start.area === 'after' && end.area === 'after' && start.path === end.path) {
           return { type: 'after', after: compileJSONPointer(sharedPath) }
         }
 
-        if (start.path !== end.path || start.area !== end.area || start.area === 'contents' || end.area === 'contents') {
+        if (start.path !== end.path || start.area !== end.area || start.area === 'on' || end.area === 'on') {
           return { type: 'multi', multi: [ compileJSONPointer(sharedPath) ] }
         }
       }
@@ -921,8 +921,8 @@ export default class TreeMode extends PureComponent {
 
         const first = startIndex < endIndex ? start : end
         const last = startIndex < endIndex ? end : start
-        const includeFirst = first.area !== 'right' || parseJSONPointer(first.path).length > sharedPath.length + 1
-        const includeLast = last.area !== 'left' || parseJSONPointer(last.path).length > sharedPath.length + 1
+        const includeFirst = first.area !== 'after' || parseJSONPointer(first.path).length > sharedPath.length + 1
+        const includeLast = last.area !== 'before' || parseJSONPointer(last.path).length > sharedPath.length + 1
 
         const firstIndex = Math.min(startIndex, endIndex) + (includeFirst ? 0 : 1)
         const lastIndex = Math.max(startIndex, endIndex) + (includeLast ? 1 : 0)
