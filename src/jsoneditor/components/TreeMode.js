@@ -786,6 +786,8 @@ export default class TreeMode extends PureComponent {
 
     this.selectionStartPointer = this.findSelectionPointerFromEvent(event.target, event.clientY)
 
+    console.log('selectionPointer', this.selectionStartPointer)
+
     const pointer = this.findJSONPointerFromElement(event.target)
     const clickedOnEmptySpace = (event.target.nodeName === 'DIV') &&
         (event.target.contentEditable !== 'true') &&
@@ -899,13 +901,15 @@ export default class TreeMode extends PureComponent {
       const startChildPath = startPath.slice(0, sharedPath.length + 1)
       const endChildPath = endPath.slice(0, sharedPath.length + 1)
 
+      // FIXME: handle area === 'before-childs' and area === 'after-childs'
+
       if (isEqual(startChildPath, sharedPath) || isEqual(endChildPath, sharedPath)) {
         // one element
         if (start.area === 'after' && end.area === 'after' && start.path === end.path) {
           return { type: 'after', after: compileJSONPointer(sharedPath) }
         }
 
-        if (start.path !== end.path || start.area !== end.area || start.area === 'on' || end.area === 'on') {
+        if (start.path !== end.path || start.area !== end.area || start.area === 'inside' || end.area === 'inside') {
           return { type: 'multi', multi: [ compileJSONPointer(sharedPath) ] }
         }
       }
