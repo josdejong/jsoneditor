@@ -40,7 +40,7 @@
 /**
  * @typedef {{
  *   area: 'left' | 'contents' | 'after',
- *   path: Path
+ *   path: string
  * }} SelectionPointer
  */
 

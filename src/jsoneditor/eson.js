@@ -495,7 +495,7 @@ export function findRootPath(selection) {
  * @param {Path} path2
  * @return {Path}
  */
-function findSharedPath (path1, path2) {
+export function findSharedPath (path1, path2) {
   let i = 0;
   while (i < path1.length && path1[i] === path2[i]) {
     i++;

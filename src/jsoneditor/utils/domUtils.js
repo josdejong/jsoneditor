@@ -176,6 +176,10 @@ export function insideRect (parent, child, margin = 0) {
       && child.bottom + margin <= parent.bottom
 }
 
+export function toArray(nodes) {
+  return Array.prototype.slice.call(nodes)
+}
+
 /**
  * Returns the version of Internet Explorer or a -1
  * (indicating the use of another browser).

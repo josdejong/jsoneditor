@@ -52,6 +52,7 @@ import {
   expand,
   EXPANDED,
   expandPath,
+  findSharedPath,
   immutableESONPatch,
   nextSearchResult,
   pathsFromSelection,
@@ -62,7 +63,7 @@ import {
 } from '../eson'
 import TreeModeMenu from './menu/TreeModeMenu'
 import Search from './menu/Search'
-import { findParentWithAttribute } from '../utils/domUtils'
+import { findParentWithAttribute, toArray } from '../utils/domUtils'
 
 const AJV_OPTIONS = {
   allErrors: true,
@@ -248,7 +249,7 @@ export default class TreeMode extends PureComponent {
       },
         h(Hammer, {
               id: this.id,
-              direction:  'DIRECTION_VERTICAL',
+              direction: 'DIRECTION_ALL',
               onPan: this.handlePan,
               onPanEnd: this.handlePanEnd
         },
@@ -783,9 +784,7 @@ export default class TreeMode extends PureComponent {
       return
     }
 
-    const selectionPointer = this.findSelectionPointerFromEvent(event)
-
-    console.log('touchStart selectionPointer=', selectionPointer)
+    this.selectionStartPointer = this.findSelectionPointerFromEvent(event.target, event.clientY)
 
     const pointer = this.findJSONPointerFromElement(event.target)
     const clickedOnEmptySpace = (event.target.nodeName === 'DIV') &&
@@ -804,6 +803,11 @@ export default class TreeMode extends PureComponent {
   }
 
   handlePan = (event) => {
+    this.selectionEndPointer = this.findSelectionPointerFromEvent(event.target, event.center.y)
+
+    const selection2 = this.findSelectionFromPointers(this.selectionStartPointer, this.selectionEndPointer)
+    console.log('selection',  JSON.stringify(selection2))
+
     const selection = this.state.selection
     const path = this.findDataPathFromElement(event.target.firstChild)
     if (path && selection && !isEqual(path, selection.end)) {
@@ -864,21 +868,86 @@ export default class TreeMode extends PureComponent {
 
   /**
    * Find JSON pointer from an HTML element
-   * @param {Event} event
+   * @param {Element} element
+   * @param {number} y
    * @return {SelectionPointer | null}
    */
-  findSelectionPointerFromEvent (event) {
-    const areaParent = findParentWithAttribute(event.target, 'data-selection-area')
+  findSelectionPointerFromEvent (element, y) {
+    const areaParent = findParentWithAttribute(element, 'data-selection-area')
     const area = areaParent ? areaParent.getAttribute('data-selection-area') : undefined
 
     const base = (area === 'left')
-        ? document.elementFromPoint(event.target.getBoundingClientRect().right - 1, event.clientY)
-        : event.target
+        ? document.elementFromPoint(element.getBoundingClientRect().right - 1, y)
+        : element
 
     const pathParent = findParentWithAttribute(base, 'data-path')
     const path = pathParent ? pathParent.getAttribute('data-path') : undefined
 
     return (area !== undefined && path !== undefined) ? { area, path } : null
+  }
+
+  /**
+   * @param {SelectionPointer} start
+   * @param {SelectionPointer} end
+   */
+  findSelectionFromPointers (start, end) {
+    if (start && end) {
+      const startPath = parseJSONPointer(start.path)
+      const endPath = parseJSONPointer(end.path)
+
+      const sharedPath = findSharedPath(startPath, endPath)
+      const startChildPath = startPath.slice(0, sharedPath.length + 1)
+      const endChildPath = endPath.slice(0, sharedPath.length + 1)
+
+      if (isEqual(startChildPath, sharedPath) || isEqual(endChildPath, sharedPath)) {
+        // one element
+        if (start.area === 'right' && end.area === 'right' && start.path === end.path) {
+          return { type: 'after', after: compileJSONPointer(sharedPath) }
+        }
+
+        if (start.path !== end.path || start.area !== end.area || start.area === 'contents' || end.area === 'contents') {
+          return { type: 'multi', multi: [ compileJSONPointer(sharedPath) ] }
+        }
+      }
+      else {
+        // multiple elements
+        // find all nodes in between using the DOM
+        const startElement = this.refs.contents.querySelector(`div[data-path="${compileJSONPointer(startChildPath)}"]`)
+        const endElement = this.refs.contents.querySelector(`div[data-path="${compileJSONPointer(endChildPath)}"]`)
+
+        const childs = toArray(startElement.parentNode.childNodes)
+        const startIndex = childs.indexOf(startElement)
+        const endIndex = childs.indexOf(endElement)
+
+        const first = startIndex < endIndex ? start : end
+        const last = startIndex < endIndex ? end : start
+        const includeFirst = first.area !== 'right' || parseJSONPointer(first.path).length > sharedPath.length + 1
+        const includeLast = last.area !== 'left' || parseJSONPointer(last.path).length > sharedPath.length + 1
+
+        const firstIndex = Math.min(startIndex, endIndex) + (includeFirst ? 0 : 1)
+        const lastIndex = Math.max(startIndex, endIndex) + (includeLast ? 1 : 0)
+
+        if (firstIndex < lastIndex) {
+          return {
+            type: 'multi',
+            multi: childs
+                .slice(firstIndex, lastIndex)
+                .map(element => element.getAttribute('data-path'))
+          }
+        }
+        else {
+          // selection starts after first node and ends before last node
+          return {
+            type: 'after',
+            path: first.path
+          }
+        }
+      }
+    }
+
+    return {
+      type: 'none'
+    }
   }
 
   /**
