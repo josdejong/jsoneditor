@@ -2,13 +2,13 @@ import { Component, createElement as h } from 'react'
 import { toCapital } from '../../utils/stringUtils'
 
 import fontawesome from '@fortawesome/fontawesome'
-import faChevronDown from '@fortawesome/fontawesome-free-solid/faChevronDown'
+import faCaretDown from '@fortawesome/fontawesome-free-solid/faCaretDown'
 import { keyComboFromEvent } from '../../utils/keyBindings'
 import PropTypes from 'prop-types'
 
 import './DropDown.css'
 
-fontawesome.library.add(faChevronDown)
+fontawesome.library.add(faCaretDown)
 
 export default class DropDown extends Component {
 
@@ -60,7 +60,7 @@ export default class DropDown extends Component {
             ? toCapital(selectedText)
             : selectedText,
             '\u00A0\u00A0'),
-        h('i', { key: 'icon', className: 'fa fa-chevron-down' })
+        h('i', { key: 'icon', className: 'fa fa-caret-down' })
       ]),
 
       this.renderDropDown()
