@@ -531,7 +531,10 @@ textmode._emitSelectionChange = function () {
 }
 
 textmode._refreshAnnotations = function () {
-  this.aceEditor && this.aceEditor.getSession().setAnnotations();  
+  var session = this.aceEditor && this.aceEditor.getSession()
+  if (session) {
+    session.setAnnotations(session.getAnnotations())
+  }
 }
 
 /**
