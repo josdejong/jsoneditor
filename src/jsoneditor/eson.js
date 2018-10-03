@@ -1,12 +1,10 @@
-import { deleteIn, getIn, setIn, shallowCloneWithSymbols, transform, updateIn } from './utils/immutabilityHelpers'
-import range from 'lodash/range'
+import { deleteIn, getIn, setIn, transform } from './utils/immutabilityHelpers'
 import { compileJSONPointer, parseJSONPointer } from './jsonPointer'
+import first from 'lodash/first'
 import last from 'lodash/last'
 import initial from 'lodash/initial'
 import isEmpty from 'lodash/isEmpty'
 import isEqual from 'lodash/isEqual'
-import naturalSort from 'javascript-natural-sort'
-import times from 'lodash/times'
 import { immutableJSONPatch } from './immutableJSONPatch'
 import { compareArrays } from './utils/arrayUtils'
 import { compareStrings } from './utils/stringUtils'
@@ -27,8 +25,7 @@ export const SELECTED_FIRST = 8
 export const SELECTED_LAST = 16
 export const SELECTED_INSIDE = 32
 export const SELECTED_AFTER = 64
-export const SELECTED_EMPTY = 128
-export const SELECTED_EMPTY_BEFORE = 256
+export const SELECTED_BEFORE_CHILDS = 128
 
 // TODO: comment
 export function syncEson(json, eson) {
@@ -355,87 +352,34 @@ function setSearchStatus (eson, esonPointer, searchStatus) {
  * @return {ESON} Returns updated eson object
  */
 export function applySelection (eson, selection) {
-  if (!selection) {
-    return cleanupMetaData(eson, 'selected')
+  if (selection && selection.type === 'after') {
+    const updatedEson = setIn(eson, parseJSONPointer(selection.after).concat([SELECTION]), SELECTED_AFTER)
+    return cleanupMetaData(updatedEson, SELECTION, [selection.after])
   }
-  else if (selection.inside) {
-    const updatedEson = setIn(eson, selection.inside.concat([SELECTION]), SELECTED_INSIDE)
-    return cleanupMetaData(updatedEson, 'selected', [selection.inside])
+
+  if (selection && selection.type === 'before-childs') {
+    const updatedEson = setIn(eson, parseJSONPointer(selection.beforeChildsOf).concat([SELECTION]), SELECTED_BEFORE_CHILDS)
+    return cleanupMetaData(updatedEson, SELECTION, [selection.beforeChildsOf])
   }
-  else if (selection.after) {
-    const updatedEson = setIn(eson, selection.after.concat([SELECTION]), SELECTED_AFTER)
-    return cleanupMetaData(updatedEson, 'selected', [selection.after])
+
+  if (selection && selection.type === 'multi') {
+    let updatedEson = eson
+
+    if (selection.after) {
+      updatedEson = setIn(updatedEson, parseJSONPointer(selection.after).concat([SELECTION]), SELECTED_AFTER)
+    }
+
+    for (const path of selection.multi) {
+      updatedEson = setIn(updatedEson, parseJSONPointer(path).concat([SELECTION]), SELECTED_INSIDE)
+    }
+
+    const ignorePaths = selection.after
+        ? selection.multi.concat([selection.after])
+        : selection.multi
+    return cleanupMetaData(updatedEson, SELECTION, ignorePaths)
   }
-  else if (selection.empty) {
-    const updatedEson = setIn(eson, selection.empty.concat([SELECTION]), SELECTED_EMPTY)
-    return cleanupMetaData(updatedEson, 'selected', [selection.empty])
-  }
-  else if (selection.emptyBefore) {
-    const updatedEson = setIn(eson, selection.emptyBefore.concat([SELECTION]), SELECTED_EMPTY_BEFORE)
-    return cleanupMetaData(updatedEson, 'selected', [selection.emptyBefore])
-  }
-  else { // selection.start and selection.end
-    // find the parent node shared by both start and end of the selection
-    const rootPath = findRootPath(selection)
-    let selectedPaths = null
 
-    const updatedEson = updateIn(eson, rootPath, (root) => {
-      const start = selection.start[rootPath.length]
-      const end   = selection.end[rootPath.length]
-
-      // TODO: simplify the update function. Use pathsFromSelection ?
-
-      if (root[TYPE] === 'object') {
-        const props = Object.keys(root).sort(naturalSort) // TODO: create a util function getSortedProps
-        const startIndex = props.indexOf(start)
-        const endIndex   = props.indexOf(end)
-
-        const firstIndex = Math.min(startIndex, endIndex)
-        const lastIndex = Math.max(startIndex, endIndex)
-        const firstProp = props[firstIndex]
-        const lastProp = props[lastIndex]
-
-        const selectedProps = props.slice(firstIndex, lastIndex + 1)// include max index itself
-        selectedPaths = selectedProps.map(prop => rootPath.concat(prop))
-        let updatedObj = shallowCloneWithSymbols(root)
-        selectedProps.forEach(prop => {
-          const selected = SELECTED +
-              (prop === start ? SELECTED_START : 0) +
-              (prop === end ? SELECTED_END : 0) +
-              (prop === firstProp ? SELECTED_FIRST : 0) +
-              (prop === lastProp ? SELECTED_LAST : 0)
-          updatedObj[prop] = setIn(updatedObj[prop], [SELECTION], selected)
-        })
-
-        return updatedObj
-      }
-      else { // root[TYPE] === 'array'
-        const startIndex = parseInt(start, 10)
-        const endIndex   = parseInt(end, 10)
-
-        const firstIndex = Math.min(startIndex, endIndex)
-        const lastIndex = Math.max(startIndex, endIndex)
-
-        const selectedIndices = range(firstIndex, lastIndex + 1)// include max index itself
-        selectedPaths = selectedIndices.map(index => rootPath.concat(String(index)))
-
-        let updatedArr = root.slice()
-        updatedArr = shallowCloneWithSymbols(root)
-        selectedIndices.forEach(index => {
-          const selected = SELECTED +
-              (index === startIndex ? SELECTED_START : 0) +
-              (index === endIndex ? SELECTED_END : 0) +
-              (index === firstIndex ? SELECTED_FIRST : 0) +
-              (index === lastIndex ? SELECTED_LAST : 0)
-          updatedArr[index] = setIn(updatedArr[index], [SELECTION], selected)
-        })
-
-        return updatedArr
-      }
-    })
-
-    return cleanupMetaData(updatedEson, 'selected', selectedPaths)
-  }
+  return cleanupMetaData(eson, SELECTION)
 }
 
 /**
@@ -462,30 +406,44 @@ export function contentsFromPaths (eson, paths) {
  * @return {Path}
  */
 export function findRootPath(selection) {
-  if (selection.inside) {
-    return initial(selection.inside)
-  }
-  else if (selection.after) {
-    return initial(selection.after)
-  }
-  else if (selection.empty) {
-    return initial(selection.empty)
-  }
-  else if (selection.emptyBefore) {
-    return initial(selection.emptyBefore)
-  }
-  else { // selection.start and selection.end
-    const sharedPath = findSharedPath(selection.start, selection.end)
+  if (selection.multi) {
+    const firstPath = parseJSONPointer(first(selection.multi))
 
-    if (sharedPath.length === selection.start.length ||
-        sharedPath.length === selection.end.length) {
-      // there is just one node selected, return it's parent
-      return initial(sharedPath)
-    }
-    else {
-      return sharedPath
-    }
+    return initial(firstPath)
   }
+
+  if (selection.after) {
+    return initial(parseJSONPointer(selection.after))
+  }
+
+  // TODO: handle area === 'before-childs' and area === 'after-childs'
+
+
+  // TODO: cleanup
+  // if (selection.inside) {
+  //   return initial(selection.inside)
+  // }
+  // else if (selection.after) {
+  //   return initial(selection.after)
+  // }
+  // else if (selection.empty) {
+  //   return initial(selection.empty)
+  // }
+  // else if (selection.emptyBefore) {
+  //   return initial(selection.emptyBefore)
+  // }
+  // else { // selection.start and selection.end
+  //   const sharedPath = findSharedPath(selection.start, selection.end)
+  //
+  //   if (sharedPath.length === selection.start.length ||
+  //       sharedPath.length === selection.end.length) {
+  //     // there is just one node selected, return it's parent
+  //     return initial(sharedPath)
+  //   }
+  //   else {
+  //     return sharedPath
+  //   }
+  // }
 }
 
 /**
@@ -505,43 +463,6 @@ export function findSharedPath (path1, path2) {
 }
 
 /**
- * Get the JSON paths from a selection, sorted from first to last
- * @param {ESON} eson
- * @param {Selection} selection
- * @return {Path[]}
- */
-// TODO: move pathsFromSelection to a separate file clipboard.js or selection.js?
-export function pathsFromSelection (eson, selection) {
-  // find the parent node shared by both start and end of the selection
-  const rootPath = findRootPath(selection)
-  const root = getIn(eson, rootPath)
-
-  const start = (selection.after || selection.inside || selection.start)[rootPath.length]
-  const end = (selection.after || selection.inside || selection.end)[rootPath.length]
-
-  if (getType(root) === 'object') {
-    // TODO: create a util function getSortedProps, cache results?
-    const props = Object.keys(root).sort(naturalSort)
-    const startIndex = props.indexOf(start)
-    const endIndex   = props.indexOf(end)
-
-    const minIndex = Math.min(startIndex, endIndex)
-    const maxIndex = Math.max(startIndex, endIndex) + ((selection.after || selection.inside) ? 0 : 1) // include max index itself
-
-    return times(maxIndex - minIndex, i => rootPath.concat(props[i + minIndex]))
-  }
-  else { // root[TYPE] === 'array'
-    const startIndex = parseInt(start, 10)
-    const endIndex   = parseInt(end, 10)
-
-    const minIndex = Math.min(startIndex, endIndex)
-    const maxIndex = Math.max(startIndex, endIndex) + ((selection.after || selection.inside) ? 0 : 1) // include max index itself
-
-    return times(maxIndex - minIndex, i => rootPath.concat(String(i + minIndex)))
-  }
-}
-
-/**
  * Apply a JSON patch document to an ESON object.
  * - Applies meta information to added values
  * - Reckons with creating unique id's when duplicating data
@@ -557,7 +478,11 @@ export function immutableESONPatch (eson, operations) {
   })
 }
 
-// TODO: comment
+/**
+ * Get the JSON type of any input
+ * @param {*} any
+ * @returns {string} Returns 'array', 'object', 'value', or 'undefined'
+ */
 export function getType (any) {
   if (any === undefined) {
     return 'undefined'

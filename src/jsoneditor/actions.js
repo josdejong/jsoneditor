@@ -2,12 +2,12 @@ import last from 'lodash/last'
 import initial from 'lodash/initial'
 import isEmpty from 'lodash/isEmpty'
 import first from 'lodash/first'
-import { findRootPath, pathsFromSelection } from './eson'
+import { findRootPath } from './eson'
 import { getIn } from './utils/immutabilityHelpers'
 import { findUniqueName } from './utils/stringUtils'
 import { isObject, stringConvert } from './utils/typeUtils'
 import { compareAsc, compareDesc } from './utils/arrayUtils'
-import { compileJSONPointer } from './jsonPointer'
+import { compileJSONPointer, parseJSONPointer } from './jsonPointer'
 
 /**
  * Create a JSONPatch to change the value of a property or item
@@ -81,13 +81,13 @@ export function changeType (json, path, type) {
  */
 export function duplicate (json, selection) {
   // console.log('duplicate', path)
-  if (!selection.start || !selection.end) {
+  if (isEmpty(selection.multi)) {
     return []
   }
 
   const rootPath = findRootPath(selection)
   const root = getIn(json, rootPath)
-  const paths = pathsFromSelection(json, selection)
+  const paths = selection.multi.map(parseJSONPointer)
 
   if (Array.isArray(root)) {
     const lastPath = last(paths)
@@ -224,9 +224,11 @@ export function insertInside (json, parentPath, values) {
 export function replace (json, selection, values) {  // TODO: find a better name and define datastructure for values
   const rootPath = findRootPath(selection)
   const root = getIn(json, rootPath)
+  const paths = selection.multi
+      ? selection.multi.map(parseJSONPointer)
+      : []
 
   if (Array.isArray(root)) {
-    const paths = pathsFromSelection(json, selection)
     const firstPath = first(paths)
     const offset = firstPath ? parseInt(last(firstPath), 10) : 0
 
@@ -240,7 +242,7 @@ export function replace (json, selection, values) {  // TODO: find a better name
     return removeActions.concat(insertActions)
   }
   else { // root is Object
-    const removeActions = removeAll(pathsFromSelection(json, selection))
+    const removeActions = removeAll(paths)
     const insertActions = values.map(entry => {
       const newProp = findUniqueName(entry.name, root)
       return {
@@ -293,7 +295,7 @@ export function append (json, parentPath, type) {
 /**
  * Create a JSONPatch for a remove action
  * @param {Path} path
- * @return {ESONPatchDocument}
+ * @return {JSONPatchDocument}
  */
 export function remove (path) {
   return [{
@@ -305,7 +307,7 @@ export function remove (path) {
 /**
  * Create a JSONPatch for a multiple remove action
  * @param {Path[]} paths
- * @return {ESONPatchDocument}
+ * @return {JSONPatchDocument}
  */
 export function removeAll (paths) {
   return paths

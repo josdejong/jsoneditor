@@ -294,52 +294,7 @@ div.jsoneditor-menu-panel-right {
 
 div.jsoneditor-node-container {
   position: relative;
-  transition: background-color 100ms ease-in;
-
-  // TODO: cleanup insert-area css?
-  div.jsoneditor-insert-area {
-    //background: gray;
-    position: absolute;
-    width: 100%;
-    height: $insert-area-height;
-    left: 0;
-    top: -$insert-area-height/2;
-    box-sizing: border-box;
-    z-index: 1; // must be on top of next node, it overlaps a bit
-
-    $top: -$line-height / 2 + 3px;
-
-    // FIXME: nice border color
-    //&:before {
-    //  content: '';
-    //  position: absolute;
-    //  right: 60px;
-    //  top: $top;
-    //  width: 0;
-    //  height: 0;
-    //  border-top: $line-height / 2 solid transparent;
-    //  border-right: $line-height / 2 solid red;
-    //  border-bottom: $line-height / 2 solid transparent;
-    //}
-
-    &:after {
-      content: '';
-      position: absolute;
-      top: $top;
-      right: 0;
-      width: 60px;
-      height: $line-height;
-      background: inherit;
-    }
-  }
-
-  //&.jsoneditor-hover {
-  //  > .jsoneditor-node > .jsoneditor-delimiter-start,
-  //  > .jsoneditor-delimiter-end {
-  //    color: $theme-color;
-  //    font-weight: bold;
-  //  }
-  //}
+  //transition: background-color 100ms ease-in;
 
   &.jsoneditor-selected {
     .jsoneditor-node {
@@ -353,6 +308,35 @@ div.jsoneditor-node-container {
 
     .jsoneditor-list {
       border-left-color: $selectedColor;
+    }
+  }
+
+  &.jsoneditor-selected-after {
+
+    &.jsoneditor-node-expanded {
+      .jsoneditor-node-end {
+        background-color: $selectedColor;
+
+        > .jsoneditor-delimiter-end {
+          background-color: white;
+        }
+      }
+    }
+
+    &.jsoneditor-node-collapsed {
+      background-color: $selectedColor;
+
+      > .jsoneditor-node {
+        background-color: white;
+      }
+    }
+  }
+
+  &.jsoneditor-selected-before-childs {
+
+    > .jsoneditor-node > .jsoneditor-before-childs {
+      background-color: $selectedColor;
+      width: 40px; // FIXME: should use full remaining width
     }
   }
 

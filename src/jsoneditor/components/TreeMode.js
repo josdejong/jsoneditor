@@ -1,6 +1,9 @@
 import { createElement as h, PureComponent } from 'react'
 import mitt from 'mitt'
+import cloneDeepWith from 'lodash/cloneDeepWith'
+import isEmpty from 'lodash/isEmpty'
 import isEqual from 'lodash/isEqual'
+import first from 'lodash/first'
 import reverse from 'lodash/reverse'
 import initial from 'lodash/initial'
 import pick from 'lodash/pick'
@@ -8,7 +11,7 @@ import Hammer from 'react-hammerjs'
 import jump from '../assets/jump.js/src/jump'
 import Ajv from 'ajv'
 
-import { existsIn, setIn, updateIn } from '../utils/immutabilityHelpers'
+import { existsIn, getIn, setIn, updateIn } from '../utils/immutabilityHelpers'
 import { parseJSON } from '../utils/jsonUtils'
 import { enrichSchemaError } from '../utils/schemaUtils'
 import { compileJSONPointer, parseJSONPointer } from '../jsonPointer'
@@ -52,10 +55,10 @@ import {
   expand,
   EXPANDED,
   expandPath,
+  findRootPath,
   findSharedPath,
   immutableESONPatch,
   nextSearchResult,
-  pathsFromSelection,
   previousSearchResult,
   search,
   SELECTION,
@@ -273,7 +276,7 @@ export default class TreeMode extends PureComponent {
 
   renderMenu () {
     const hasCursor = true // FIXME: implement hasCursor
-    const hasSelection = !!this.state.selection
+    const hasSelection = this.state.selection ? this.state.selection.type !== 'none' : false
     const hasClipboard = this.state.clipboard
         ? this.state.clipboard.length > 0
         : false
@@ -295,7 +298,7 @@ export default class TreeMode extends PureComponent {
       canInsert: hasCursor,
       canDuplicate: hasSelection,
       canRemove: hasSelection,
-      onInsert: this.handleInsertBefore,
+      onInsert: this.handleInsert,
       onDuplicate: this.handleDuplicate,
       onRemove: this.handleRemove,
 
@@ -428,10 +431,11 @@ export default class TreeMode extends PureComponent {
   }
 
   handleRemove = () => {
-    if (this.state.selection) {
+    if (this.state.selection && this.state.selection.multi) {
       // remove selection
       // TODO: select next property? (same as when removing a path?)
-      const paths = pathsFromSelection(this.state.eson, this.state.selection)
+      // TODO: inefficient: first parsing the paths, and removeAll stringifies them again
+      const paths = this.state.selection.multi.map(parseJSONPointer)
       this.setState({ selection: null })
       this.handlePatch(removeAll(paths))
     }
@@ -495,7 +499,7 @@ export default class TreeMode extends PureComponent {
   handleKeyDownDuplicate = (event) => {
     const path = this.findDataPathFromElement(event.target)
     if (path) {
-      const selection = { start: path, end: path }
+      const selection = { type: 'multi', multi: [path] }
       this.handlePatch(duplicate(this.state.eson, selection))
 
       // apply focus to the duplicated node
@@ -520,9 +524,9 @@ export default class TreeMode extends PureComponent {
 
   handleCut = () => {
     const selection = this.state.selection
-    if (selection && selection.start && selection.end) {
+    if (selection && selection.multi) {
       const eson = this.state.eson
-      const paths = pathsFromSelection(eson, selection)
+      const paths = selection.multi.map(parseJSONPointer)
       const clipboard = contentsFromPaths(eson, paths)
 
       this.setState({ clipboard, selection: null })
@@ -540,9 +544,9 @@ export default class TreeMode extends PureComponent {
 
   handleCopy = () => {
     const selection = this.state.selection
-    if (selection && selection.start && selection.end) {
+    if (selection && selection.multi) {
       const eson = this.state.eson
-      const paths = pathsFromSelection(eson, selection)
+      const paths = selection.multi.map(parseJSONPointer)
       const clipboard = contentsFromPaths(eson, paths)
 
       this.setState({ clipboard })
@@ -559,14 +563,14 @@ export default class TreeMode extends PureComponent {
     if (selection && clipboard && clipboard.length > 0) {
       this.setState({ selection: null })
 
-      if (selection.start && selection.end) {
+      if (selection.multi) {
         this.handlePatch(replace(eson, selection, clipboard))
       }
       else if (selection.after) {
-        this.handlePatch(insertAfter(eson, selection.after, clipboard))
+        this.handlePatch(insertAfter(eson, parseJSONPointer(selection.after), clipboard))
       }
-      else if (selection.inside) {
-        this.handlePatch(insertInside(eson, selection.inside, clipboard))
+      else if (selection.type === 'before-childs') {
+        this.handlePatch(insertInside(eson, parseJSONPointer(selection.beforeChildsOf), clipboard))
       }
       else {
         throw new Error(`Cannot paste at current selection ${JSON.stringify(selection)}`)
@@ -579,9 +583,71 @@ export default class TreeMode extends PureComponent {
     }
   }
 
-  handleInsertBefore = (insertType) => {
-    // FIXME: implement handleInsertBefore
-    console.error('Insert not yet implemented...', insertType)
+  handleInsert = (insertType) => {
+    const { eson, selection } = this.state
+
+    if (selection) {
+      this.setState({ selection: null })
+
+      const clipboard = [{
+        name: '',
+        value: this.createValue(insertType, selection)
+      }]
+
+      if (selection.multi) {
+        this.handlePatch(replace(eson, selection, clipboard))
+      }
+      else if (selection.after) {
+        this.handlePatch(insertAfter(eson, parseJSONPointer(selection.after), clipboard))
+
+      }
+      else if (selection.beforeChildsOf) {
+        this.handlePatch(insertInside(eson, parseJSONPointer(selection.beforeChildsOf), clipboard))
+      }
+      else {
+        throw new Error(`Cannot insert at current selection ${JSON.stringify(selection)}`)
+      }
+
+      // TODO: expand the inserted contents when array/object/structure
+      // TODO: select the inserted contents
+    }
+  }
+
+  /**
+   * Create an eson value
+   * @param insertType
+   * @param selection
+   * @returns {*}
+   */
+  createValue = (insertType, selection) => {
+    if (insertType === 'array') {
+      return []
+    }
+
+    if (insertType === 'object') {
+      return {}
+    }
+
+    if (insertType === 'structure') {
+      const rootPath = findRootPath(selection)
+      const parent = getIn(this.state.json, rootPath)
+
+      if (Array.isArray(parent) && !isEmpty(parent)) {
+        const jsonExample = first(parent)
+        const structure = cloneDeepWith(jsonExample, (value) => {
+          return (Array.isArray(value) || typeof value === 'object')
+              ? undefined // leave as is
+              : ''
+        })
+
+        console.log('structure', jsonExample, structure)
+
+        return structure
+      }
+    }
+
+    // value or unknown type
+    return ''
   }
 
   /**
@@ -662,13 +728,15 @@ export default class TreeMode extends PureComponent {
   }
 
   toggleSearch = () => {
-    this.setState({
-      showSearch: !this.state.showSearch
-    })
+    if (this.state.showSearch) {
+      this.handleCloseSearch()
+    }
+    else {
+      this.setState({ showSearch: true })
+    }
   }
 
   handleSearch = (text) => {
-    // FIXME
     // FIXME: also apply search when eson is changed
     const { eson, searchResult } = search(this.state.eson, text)
     if (searchResult.matches.length > 0) {
@@ -786,47 +854,16 @@ export default class TreeMode extends PureComponent {
 
     this.selectionStartPointer = this.findSelectionPointerFromEvent(event.target, event.clientY)
 
-    console.log('selectionPointer', this.selectionStartPointer)
-
-    const pointer = this.findJSONPointerFromElement(event.target)
-    const clickedOnEmptySpace = (event.target.nodeName === 'DIV') &&
-        (event.target.contentEditable !== 'true') &&
-        (event.target.className !== 'jsoneditor-tag') // FIXME: this is an ugly hack to prevent an object/array from being selected when expanding it by clicking the tag
-
-    // TODO: cleanup
-    // console.log('handleTouchStart', clickedOnEmptySpace && pointer, pointer && this.selectionFromJSONPointer(pointer))
-
-    if (clickedOnEmptySpace && pointer) {
-      this.setState({ selection: this.selectionFromJSONPointer(pointer)})
-    }
-    else {
-      this.setState({ selection: null })
-    }
+    this.setState({ selection: null })
   }
 
   handlePan = (event) => {
     this.selectionEndPointer = this.findSelectionPointerFromEvent(event.target, event.center.y)
 
-    const selection2 = this.findSelectionFromPointers(this.selectionStartPointer, this.selectionEndPointer)
-    console.log('selection',  JSON.stringify(selection2))
-
-    const selection = this.state.selection
-    const path = this.findDataPathFromElement(event.target.firstChild)
-    if (path && selection && !isEqual(path, selection.end)) {
-
-      // TODO: cleanup
-      // console.log('handlePan', {
-      //   start: selection.start || selection.inside || selection.after || selection.empty || selection.emptyBefore,
-      //   end: path
-      // })
-
-      // FIXME: when selection.empty, start should be set to the next node
-      this.setState({
-        selection: {
-          start: selection.start || selection.inside || selection.after || selection.empty || selection.emptyBefore,
-          end: path
-        }
-      })
+    const selection = this.findSelectionFromPointers(this.selectionStartPointer, this.selectionEndPointer)
+    if (!isEqual(selection, this.state.selection)) {
+      this.setState({ selection })
+      console.log('selection',  JSON.stringify(selection)) // TODO: cleanup logging
     }
   }
 
@@ -891,6 +928,7 @@ export default class TreeMode extends PureComponent {
   /**
    * @param {SelectionPointer} start
    * @param {SelectionPointer} end
+   * @return {Selection}
    */
   findSelectionFromPointers (start, end) {
     if (start && end) {
@@ -907,6 +945,10 @@ export default class TreeMode extends PureComponent {
         // one element
         if (start.area === 'after' && end.area === 'after' && start.path === end.path) {
           return { type: 'after', after: compileJSONPointer(sharedPath) }
+        }
+
+        if (start.area === 'before-childs' && end.area === 'before-childs' && start.path === end.path) {
+          return { type: 'before-childs', beforeChildsOf: compileJSONPointer(sharedPath) }
         }
 
         if (start.path !== end.path || start.area !== end.area || start.area === 'inside' || end.area === 'inside') {
@@ -934,6 +976,7 @@ export default class TreeMode extends PureComponent {
         if (firstIndex < lastIndex) {
           return {
             type: 'multi',
+            after: includeFirst ? undefined : first.path,
             multi: childs
                 .slice(firstIndex, lastIndex)
                 .map(element => element.getAttribute('data-path'))
@@ -943,7 +986,7 @@ export default class TreeMode extends PureComponent {
           // selection starts after first node and ends before last node
           return {
             type: 'after',
-            path: first.path
+            after: first.path
           }
         }
       }

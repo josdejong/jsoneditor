@@ -1,4 +1,4 @@
-import { ID } from '../eson'
+import { EXPANDED, ID, SELECTION, TYPE } from '../eson'
 import { deleteIn, transform } from './immutabilityHelpers'
 
 export function createAssertEqualEson(expect) {
@@ -17,6 +17,10 @@ export function createAssertEqualEson(expect) {
     else {
       expect(actual).toEqual(expected)
     }
+
+    expect(actual[TYPE]).toEqual(expected[TYPE])
+    expect(actual[SELECTION]).toEqual(expected[SELECTION])
+    expect(actual[EXPANDED]).toEqual(expected[EXPANDED])
   }
 
   function stripIdSymbols (eson) {

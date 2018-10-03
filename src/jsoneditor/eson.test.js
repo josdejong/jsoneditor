@@ -346,6 +346,7 @@ test('previousSearchResult', () => {
   expect(getIn(first.eson, ['obj', 'arr', '2', 'last', SEARCH_PROPERTY])).toEqual('normal')
 })
 
+// FIXME: test selection
 test('selection (object)', () => {
   const eson = syncEson({
     "obj": {
@@ -380,6 +381,7 @@ test('selection (object)', () => {
   assertEqualEson(actual2, expected2)
 })
 
+// FIXME: test selection
 test('selection (array)', () => {
   const eson = syncEson({
     "obj": {
@@ -405,6 +407,7 @@ test('selection (array)', () => {
   assertEqualEson(actual, expected)
 })
 
+// FIXME: test selection
 test('selection (value)', () => {
   const eson = syncEson({
     "obj": {
@@ -425,6 +428,7 @@ test('selection (value)', () => {
   assertEqualEson(actual, expected)
 })
 
+// FIXME: test selection
 test('selection (node)', () => {
   const eson = syncEson({
     "obj": {
@@ -443,79 +447,4 @@ test('selection (node)', () => {
   const expected = setIn(eson, ['obj', 'arr', SELECTION],
       SELECTED + SELECTED_START + SELECTED_END + SELECTED_FIRST + SELECTED_LAST)
   assertEqualEson(actual, expected)
-})
-
-test('pathsFromSelection (object)', () => {
-  const json = {
-    "bool": false,
-    "nill": null,
-    "obj": {
-      "arr": [1,2, {"first":3,"last":4}]
-    },
-    "str": "hello world",
-  }
-  const selection = {
-    start: ['obj', 'arr', '2', 'last'],
-    end: ['nill']
-  }
-
-  expect(pathsFromSelection(json, selection)).toEqual([
-    ['nill'],
-    ['obj']
-  ])
-})
-
-test('pathsFromSelection (array)', () => {
-  const json = {
-    "obj": {
-      "arr": [1,2, {"first":3,"last":4}]
-    },
-    "str": "hello world",
-    "nill": null,
-    "bool": false
-  }
-  const selection = {
-    start: ['obj', 'arr', '1'],
-    end: ['obj', 'arr', '0'] // note the "backward" order of start and end
-  }
-
-  expect(pathsFromSelection(json, selection)).toEqual([
-    ['obj', 'arr', '0'],
-    ['obj', 'arr', '1']
-  ])
-})
-
-test('pathsFromSelection (value)', () => {
-  const json = {
-    "obj": {
-      "arr": [1,2, {"first":3,"last":4}]
-    },
-    "str": "hello world",
-    "nill": null,
-    "bool": false
-  }
-  const selection = {
-    start: ['obj', 'arr', '2', 'first'],
-    end: ['obj', 'arr', '2', 'first']
-  }
-
-  expect(pathsFromSelection(json, selection)).toEqual([
-    ['obj', 'arr', '2', 'first'],
-  ])
-})
-
-test('pathsFromSelection (after)', () => {
-  const json = {
-    "obj": {
-      "arr": [1,2, {"first":3,"last":4}]
-    },
-    "str": "hello world",
-    "nill": null,
-    "bool": false
-  }
-  const selection = {
-    after: ['obj', 'arr', '2', 'first']
-  }
-
-  expect(pathsFromSelection(json, selection)).toEqual([])
 })

@@ -6,13 +6,20 @@ import naturalSort from 'javascript-natural-sort'
 
 import { escapeHTML, unescapeHTML } from '../utils/stringUtils'
 import { getInnerText, insideRect } from '../utils/domUtils'
-import { stringConvert, valueType, isUrl } from  '../utils/typeUtils'
+import { isUrl, stringConvert, valueType } from '../utils/typeUtils'
 import {
-  SELECTED, SELECTED_START, SELECTED_END, SELECTED_AFTER, SELECTED_INSIDE,
-  SELECTED_FIRST, SELECTED_LAST
+  ERROR,
+  EXPANDED,
+  ID,
+  SEARCH_PROPERTY,
+  SEARCH_VALUE,
+  SELECTED_AFTER, SELECTED_BEFORE_CHILDS,
+  SELECTED_INSIDE,
+  SELECTION,
+  TYPE,
+  VALUE
 } from '../eson'
 import { compileJSONPointer } from '../jsonPointer'
-import { ERROR, EXPANDED, ID, SEARCH_PROPERTY, SEARCH_VALUE, SELECTION, TYPE, VALUE } from '../eson'
 
 import fontawesome from '@fortawesome/fontawesome'
 import faExclamationTriangle from '@fortawesome/fontawesome-free-solid/faExclamationTriangle'
@@ -45,9 +52,6 @@ export default class JSONNode extends PureComponent {
     super(props)
 
     this.state = {
-      menu: null,       // can contain object {anchor, root}
-      appendMenu: null, // can contain object {anchor, root}
-      hover: null,
       path: null // initialized via getDerivedStateFromProps
     }
   }
@@ -106,7 +110,8 @@ export default class JSONNode extends PureComponent {
             this.renderDelimiter('}', 'jsoneditor-delimiter-end jsoneditor-delimiter-collapsed')
           ]
           : null,
-      this.renderError(this.props.eson[ERROR])
+      this.renderError(this.props.eson[ERROR]),
+      this.renderBeforeChilds()
     ])
 
     let childs
@@ -155,7 +160,7 @@ export default class JSONNode extends PureComponent {
       'data-path': compileJSONPointer(this.state.path),
       'data-area': 'empty', // TODO: remove
       'data-selection-area': this.props.eson[EXPANDED] ? 'before-childs' : 'after',
-      className: this.getContainerClassName(this.props.eson[SELECTION], this.state.hover),
+      className: this.getContainerClassName(this.props.eson[SELECTION]),
       // onMouseOver: this.handleMouseOver,
       // onMouseLeave: this.handleMouseLeave
     }, [nodeStart, childs, nodeEnd])
@@ -165,11 +170,11 @@ export default class JSONNode extends PureComponent {
     // TODO: refactor renderJSONArray (too large/complex)
     const count = this.props.eson.length
     const nodeStart = h('div', {
-        key: 'node',
-        onKeyDown: this.handleKeyDown,
-        'data-selection-area': 'inside',
-        className: 'jsoneditor-node jsoneditor-array'
-      }, [
+      key: 'node',
+      onKeyDown: this.handleKeyDown,
+      'data-selection-area': 'inside',
+      className: 'jsoneditor-node jsoneditor-array'
+    }, [
       this.renderExpandButton(),
       this.renderProperty(),
       this.renderSeparator(),
@@ -181,7 +186,8 @@ export default class JSONNode extends PureComponent {
             this.renderDelimiter(']', 'jsoneditor-delimiter-end jsoneditor-delimiter-collapsed'),
           ]
           : null,
-      this.renderError(this.props.eson[ERROR])
+      this.renderError(this.props.eson[ERROR]),
+      this.renderBeforeChilds()
     ])
 
     let childs
@@ -230,7 +236,7 @@ export default class JSONNode extends PureComponent {
       'data-path': compileJSONPointer(this.state.path),
       'data-area': 'empty', // TODO: remove data-area
       'data-selection-area': this.props.eson[EXPANDED] ? 'before-childs' : 'after',
-      className: this.getContainerClassName(this.props.eson[SELECTION], this.state.hover),
+      className: this.getContainerClassName(this.props.eson[SELECTION]),
       // onMouseOver: this.handleMouseOver,
       // onMouseLeave: this.handleMouseLeave
     }, [nodeStart, childs, nodeEnd])
@@ -256,7 +262,7 @@ export default class JSONNode extends PureComponent {
       'data-path': compileJSONPointer(this.state.path),
       'data-area': 'empty', // TODO: remove
       'data-selection-area': 'after',
-      className: this.getContainerClassName(this.props.eson[SELECTION], this.state.hover),
+      className: this.getContainerClassName(this.props.eson[SELECTION]),
       // onMouseOver: this.handleMouseOver,
       // onMouseLeave: this.handleMouseLeave
     }, [node])
@@ -350,6 +356,14 @@ export default class JSONNode extends PureComponent {
     }
   }
 
+  renderBeforeChilds () {
+    return h('div', {
+      key: 'before-childs',
+      className: 'jsoneditor-before-childs',
+      'data-selection-area': 'before-childs'
+    })
+  }
+
   renderSeparator() {
     const isProp = typeof this.props.prop === 'string'
     if (!isProp) {
@@ -423,33 +437,23 @@ export default class JSONNode extends PureComponent {
     }
   }
 
-  getContainerClassName (selected, hover) {
-    let classNames = ['jsoneditor-node-container']
+  getContainerClassName (selected) {
+    let classNames = [
+      'jsoneditor-node-container',
+      // `jsoneditor-node-${this.props.eson[TYPE]}`
+      this.props.eson[EXPANDED] ? 'jsoneditor-node-expanded' : 'jsoneditor-node-collapsed'
+    ]
 
-    if ((selected & SELECTED_INSIDE) !== 0) {
-      classNames.push('jsoneditor-selected-insert-before')
-    }
-    else if ((selected & SELECTED_AFTER) !== 0) {
-      classNames.push('jsoneditor-selected-insert-after')
-    }
-    else {
-      if ((selected & SELECTED) !== 0)        { classNames.push('jsoneditor-selected') }
-      if ((selected & SELECTED_START) !== 0)  { classNames.push('jsoneditor-selected-start') }
-      if ((selected & SELECTED_END) !== 0)    { classNames.push('jsoneditor-selected-end') }
-      if ((selected & SELECTED_FIRST) !== 0)  { classNames.push('jsoneditor-selected-first') }
-      if ((selected & SELECTED_LAST) !== 0)   { classNames.push('jsoneditor-selected-last') }
+    if (selected === SELECTED_INSIDE) {
+      classNames.push('jsoneditor-selected')
     }
 
-    if ((hover & SELECTED_INSIDE) !== 0) {
-      classNames.push('jsoneditor-hover-insert-before')
+    if (selected === SELECTED_AFTER) {
+      classNames.push('jsoneditor-selected-after')
     }
-    else if ((hover & SELECTED_AFTER) !== 0) {
-      classNames.push('jsoneditor-hover-insert-after')
-    }
-    else {
-      if ((hover & SELECTED) !== 0)         { classNames.push('jsoneditor-hover') }
-      if ((hover & SELECTED_START) !== 0)   { classNames.push('jsoneditor-hover-start') }
-      if ((hover & SELECTED_END) !== 0)     { classNames.push('jsoneditor-hover-end') }
+
+    if (selected === SELECTED_BEFORE_CHILDS) {
+      classNames.push('jsoneditor-selected-before-childs')
     }
 
     return classNames.join(' ')
@@ -572,34 +576,6 @@ export default class JSONNode extends PureComponent {
           className: expanded ? 'fa fa-caret-down' : 'fa fa-caret-right'
         })))
     )
-  }
-
-  handleMouseOver = (event) => {
-    if (event.buttons === 0) { // no mouse button down, no dragging
-      event.stopPropagation()
-
-      const hover = (event.target.className.indexOf('jsoneditor-insert-area') !== -1)
-          ? (SELECTED + SELECTED_AFTER)
-          : SELECTED
-
-      if (hoveredNode && hoveredNode !== this) {
-        // FIXME: this gives issues when the hovered node doesn't exist anymore. check whether mounted?
-        hoveredNode.setState({hover: null})
-      }
-
-      if (hover !== this.state.hover) {
-        this.setState({hover})
-        hoveredNode = this
-      }
-    }
-  }
-
-  handleMouseLeave = (event) => {
-    event.stopPropagation()
-    // FIXME: this gives issues when the hovered node doesn't exist anymore. check whether mounted?
-      hoveredNode.setState({hover: null})
-
-      this.setState({hover: null})
   }
 
   /** @private */

@@ -30,10 +30,10 @@
 
 /**
  * @typedef {{
- *   start?: Path,
- *   end?: Path,
- *   before?: Path,
- *   after?: Path,
+ *   type: 'multi' | 'after' | 'before-childs', 'none'
+ *   after? string
+ *   multi?: string[]
+ *   beforeChildsOf?: string
  * }} Selection
  */
 
