@@ -9,7 +9,7 @@ import {
   nextSearchResult,
   pathsFromSelection,
   previousSearchResult,
-  search, SEARCH_PROPERTY, SEARCH_VALUE,
+  applySearch, SEARCH_PROPERTY, SEARCH_VALUE,
   SELECTED,
   SELECTED_END,
   SELECTED_FIRST,
@@ -223,7 +223,7 @@ test('search', () => {
     "nill": null,
     "bool": false
   })
-  const result = search(eson, 'L')
+  const result = applySearch(eson, 'L')
   const esonWithSearch = result.eson
   const matches = result.searchResult.matches
   const active = result.searchResult.active
@@ -254,7 +254,7 @@ test('search number', () => {
     "2": "two",
     "arr": ["a", "b", "c", "2"]
   })
-  const result = search(eson, '2')
+  const result = applySearch(eson, '2')
   const matches = result.searchResult.matches
 
   // should not match an array index, only props and values
@@ -273,7 +273,7 @@ test('nextSearchResult', () => {
     "nill": null,
     "bool": false
   })
-  const first = search(eson, 'A')
+  const first = applySearch(eson, 'A')
 
   expect(first.searchResult.matches).toEqual([
     {path: ['bool'], area: 'value'},
@@ -314,7 +314,7 @@ test('previousSearchResult', () => {
     "nill": null,
     "bool": false
   })
-  const init = search(eson, 'A')
+  const init = applySearch(eson, 'A')
 
   expect(init.searchResult.matches).toEqual([
     {path: ['bool'], area: 'value'},

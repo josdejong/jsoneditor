@@ -45,7 +45,7 @@
  */
 
 /**
- * @typedef {{matches: ESONPointer[], active: ESONPointer, text: String}} SearchResult
+ * @typedef {{matches: ESONPointer[], active: ESONPointer}} SearchResult
  */
 
 /**

@@ -61,7 +61,7 @@ import {
   immutableESONPatch,
   nextSearchResult,
   previousSearchResult,
-  search,
+  applySearch,
   SELECTION,
   syncEson
 } from '../eson'
@@ -142,8 +142,8 @@ export default class TreeMode extends PureComponent {
       options: {},
 
       showSearch: false,
+      searchText: '',
       searchResult: {
-        text: '',
         matches: null,
         active: null // active search result
       },
@@ -327,7 +327,7 @@ export default class TreeMode extends PureComponent {
       key: 'search',
       ref: 'search',
 
-      text: this.state.searchResult.text,
+      text: this.state.searchText,
 
       resultCount: this.state.searchResult.matches
           ? this.state.searchResult.matches.length
@@ -736,12 +736,12 @@ export default class TreeMode extends PureComponent {
     }
   }
 
-  handleSearch = (text) => {
-    // FIXME: also apply search when eson is changed
-    const { eson, searchResult } = search(this.state.eson, text)
+  handleSearch = (searchText) => {
+    const { eson, searchResult } = applySearch(this.state.eson, searchText)
     if (searchResult.matches.length > 0) {
       this.setState({
         eson: expandPath(eson, initial(searchResult.active.path)),
+        searchText,
         searchResult
       })
 
@@ -751,6 +751,7 @@ export default class TreeMode extends PureComponent {
     else {
       this.setState({
         eson: eson,
+        searchText,
         searchResult
       })
     }
@@ -818,11 +819,13 @@ export default class TreeMode extends PureComponent {
   }
 
   handleCloseSearch = () => {
-    const { eson, searchResult } = search(this.state.eson, '')
+    const searchText = ''
+    const { eson, searchResult } = applySearch(this.state.eson, searchText)
 
     this.setState({
       showSearch: false,
       eson,
+      searchText,
       searchResult
     })
   }
@@ -998,30 +1001,6 @@ export default class TreeMode extends PureComponent {
   }
 
   /**
-   * Get selection from an JSONPointer
-   * @param {ESONPointer} pointer
-   * @return {Selection}
-   */
-  selectionFromJSONPointer (pointer) {
-    // FIXME: does pointer have .area === 'after' ? if so adjust type defs
-    if (pointer.area === 'after') {
-      return {after: pointer.path}
-    }
-    else if (pointer.area === 'inside') {
-      return {inside: pointer.path}
-    }
-    else if (pointer.area === 'empty') {
-      return {empty: pointer.path}
-    }
-    else if (pointer.area === 'emptyBefore') {
-      return {emptyBefore: pointer.path}
-    }
-    else {
-      return {start: pointer.path, end: pointer.path}
-    }
-  }
-
-  /**
    * Scroll the window vertically to the node with given path
    * @param {Path} path
    * @private
@@ -1090,19 +1069,23 @@ export default class TreeMode extends PureComponent {
       const historyIndex = this.state.historyIndex
       const historyItem = history[historyIndex]
 
-      const jsonResult = immutableJSONPatch(this.state.json, historyItem.undo)
+      const { json } = immutableJSONPatch(this.state.json, historyItem.undo)
       const esonResult = immutableESONPatch(this.state.eson, historyItem.undo)
 
-      // FIXME: apply search
+      const { eson, searchResult } = (this.state.searchText)
+          ? applySearch(esonResult.json, this.state.searchText)
+          : { eson: esonResult.json, searchResult: null }
+
       this.setState({
-        json: jsonResult.json,
-        eson: esonResult.json,
+        json,
+        eson,
+        searchResult,
         selection: historyItem.selectionBefore,
         history,
         historyIndex: historyIndex + 1
       })
 
-      this.emitOnChange(historyItem.undo, historyItem.redo, jsonResult.json)
+      this.emitOnChange(historyItem.undo, historyItem.redo, json)
     }
   }
 
@@ -1112,19 +1095,23 @@ export default class TreeMode extends PureComponent {
       const historyIndex = this.state.historyIndex - 1
       const historyItem = history[historyIndex]
 
-      const jsonResult = immutableJSONPatch(this.state.json, historyItem.redo)
+      const { json } = immutableJSONPatch(this.state.json, historyItem.redo)
       const esonResult = immutableESONPatch(this.state.eson, historyItem.redo)
 
-      // FIXME: apply search
+      const { eson, searchResult } = (this.state.searchText)
+          ? applySearch(esonResult.json, this.state.searchText)
+          : { eson: esonResult.json, searchResult: null }
+
       this.setState({
-        json: jsonResult.json,
-        eson: esonResult.json,
+        json,
+        eson,
+        searchResult,
         selection: historyItem.selectionAfter,
         history,
         historyIndex
       })
 
-      this.emitOnChange(historyItem.redo, historyItem.undo, jsonResult.json)
+      this.emitOnChange(historyItem.redo, historyItem.undo, json)
     }
   }
 
@@ -1149,6 +1136,10 @@ export default class TreeMode extends PureComponent {
     const jsonResult = immutableJSONPatch(this.state.json, operations)
     const esonResult = immutableESONPatch(this.state.eson, operations)
 
+    const { eson, searchResult } = (this.state.searchText)
+        ? applySearch(esonResult.json, this.state.searchText)
+        : { eson: esonResult.json, searchResult: null }
+
     if (this.props.history !== false) {
       // update data and store history
       const historyItem = {
@@ -1162,10 +1153,10 @@ export default class TreeMode extends PureComponent {
           .concat(this.state.history.slice(this.state.historyIndex))
           .slice(0, MAX_HISTORY_ITEMS)
 
-      // FIXME: apply search
       this.setState({
         json: jsonResult.json,
-        eson: esonResult.json,
+        eson,
+        searchResult,
         selection: selectionAfter,
         history,
         historyIndex: 0
@@ -1173,10 +1164,10 @@ export default class TreeMode extends PureComponent {
     }
     else {
       // update data and don't store history
-      // FIXME: apply search
       this.setState({
         json: jsonResult.json,
-        eson: esonResult.json,
+        eson,
+        searchResult,
         selection: selectionAfter
       })
     }

@@ -208,12 +208,12 @@ export function cleanupMetaData(eson, symbol, ignorePaths = []) {
 /**
  * Search some text in all properties and values
  * @param {ESON} eson
- * @param {String} text Search text
- * @return {SearchResult} Returns search result:
+ * @param {string} searchText
+ * @return {{eson: ESON, searchText: string, searchResult: SearchResult}} Returns search result:
  *              An updated eson object containing the search results,
  *              and an array with the paths of all matches
  */
-export function search (eson, text) {
+export function applySearch (eson, searchText) {
   let matches = []
 
   // TODO: keep active result from previous search if any?
@@ -224,7 +224,7 @@ export function search (eson, text) {
 
     // check property name
     const prop = last(path)
-    if (text !== '' && containsCaseInsensitive(prop, text) &&
+    if (searchText !== '' && containsCaseInsensitive(prop, searchText) &&
         getIn(eson, initial(path))[TYPE] === 'object') { // parent must be an Object
       matches.push({path, area: 'property'})
       updatedValue = setIn(updatedValue, [SEARCH_PROPERTY], 'normal')
@@ -234,7 +234,7 @@ export function search (eson, text) {
     }
 
     // check value
-    if (value[TYPE] === 'value' && text !== '' && containsCaseInsensitive(value[VALUE], text)) {
+    if (value[TYPE] === 'value' && searchText !== '' && containsCaseInsensitive(value[VALUE], searchText)) {
       matches.push({path, area: 'value'})
       updatedValue = setIn(updatedValue, [SEARCH_VALUE], 'normal')
     }
@@ -271,8 +271,8 @@ export function search (eson, text) {
 
   return {
     eson: updatedEson,
+    searchText,
     searchResult: {
-      text,
       matches,
       active
     }

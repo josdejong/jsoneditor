@@ -340,22 +340,6 @@ div.jsoneditor-node-container {
     }
   }
 
-  &.jsoneditor-hover {
-    > .jsoneditor-node > .jsoneditor-button-container,
-    > .jsoneditor-node > .jsoneditor-button-placeholder {
-      background-color: $hoverColor;
-    }
-
-    > .jsoneditor-list {
-      border-left-color: $hoverColor;
-    }
-
-    > .jsoneditor-delimiter-end {
-      //padding-left: $line-height + $input-padding + 2px;
-      border-left-color: $hoverColor;
-    }
-  }
-
   div.jsoneditor-floating-menu {
     position: absolute;
     bottom: 100%;
