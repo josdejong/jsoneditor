@@ -1,10 +1,12 @@
-import { deleteIn, getIn, setIn, transform } from './utils/immutabilityHelpers'
-import { compileJSONPointer, parseJSONPointer } from './jsonPointer'
+import mapValues from 'lodash/mapValues'
 import first from 'lodash/first'
 import last from 'lodash/last'
 import initial from 'lodash/initial'
 import isEmpty from 'lodash/isEmpty'
 import isEqual from 'lodash/isEqual'
+
+import { deleteIn, getIn, setIn, transform } from './utils/immutabilityHelpers'
+import { compileJSONPointer, parseJSONPointer } from './jsonPointer'
 import { immutableJSONPatch } from './immutableJSONPatch'
 import { compareArrays } from './utils/arrayUtils'
 import { compareStrings } from './utils/stringUtils'
@@ -82,7 +84,6 @@ export function syncEson(json, eson) {
       updatedEson[ID] = sameType ? eson[ID] : createId()
       updatedEson[TYPE] = jsonType
       updatedEson[EXPANDED] = sameType ? eson[EXPANDED] : false
-
       return updatedEson
     }
     else {
@@ -100,13 +101,27 @@ export function syncEson(json, eson) {
       updatedEson[TYPE] = jsonType
       updatedEson[VALUE] = json
       updatedEson[EXPANDED] = false
-      updatedEson.valueOf = () => json
 
       return updatedEson
     }
   }
   else { // jsonType === 'undefined'
     return undefined
+  }
+}
+
+/**
+ * Convert an ESON object into JSON, strip all symbols and change
+ * regular values back.
+ * @param {ESON} eson
+ * @returns {JSON}
+ */
+export function toJSON(eson) {
+  if (eson[TYPE] === 'array' || eson[TYPE] === 'object') {
+    return mapValues(eson, toJSON)
+  }
+  else {
+    return eson[VALUE]
   }
 }
 
@@ -389,8 +404,10 @@ export function applySelection (eson, selection) {
  * @return {Array.<{name: string, value: JSON, state: Object}>}
  */
 export function contentsFromPaths (eson, paths) {
+  console.log('contents')
+
   return paths.map(path => {
-    const value = getIn(eson, path.concat(VALUE))
+    const value = toJSON(getIn(eson, path))
     return {
       name: last(path),
       value,
