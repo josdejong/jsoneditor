@@ -22,6 +22,7 @@ import {
   changeValue,
   createEntry,
   duplicate,
+  getSelectionFromPatch,
   insertAfter,
   insertBefore,
   insertInside,
@@ -425,8 +426,7 @@ export default class TreeMode extends PureComponent {
 
   handleDuplicate = () => {
     if (this.state.selection) {
-      this.handlePatch(duplicate(this.state.eson, this.state.selection))
-      // TODO: focus to duplicated selection
+      this.handlePatch(duplicate(this.state.eson, this.state.selection), true)
     }
   }
 
@@ -437,7 +437,7 @@ export default class TreeMode extends PureComponent {
       // TODO: inefficient: first parsing the paths, and removeAll stringifies them again
       const paths = this.state.selection.multi.map(parseJSONPointer)
       this.setState({ selection: null })
-      this.handlePatch(removeAll(paths))
+      this.handlePatch(removeAll(paths), true)
     }
   }
 
@@ -564,13 +564,13 @@ export default class TreeMode extends PureComponent {
       this.setState({ selection: null })
 
       if (selection.multi) {
-        this.handlePatch(replace(eson, selection, clipboard))
+        this.handlePatch(replace(eson, selection, clipboard), true)
       }
       else if (selection.after) {
-        this.handlePatch(insertAfter(eson, parseJSONPointer(selection.after), clipboard))
+        this.handlePatch(insertAfter(eson, parseJSONPointer(selection.after), clipboard), true)
       }
       else if (selection.type === 'before-childs') {
-        this.handlePatch(insertInside(eson, parseJSONPointer(selection.beforeChildsOf), clipboard))
+        this.handlePatch(insertInside(eson, parseJSONPointer(selection.beforeChildsOf), clipboard), true)
       }
       else {
         throw new Error(`Cannot paste at current selection ${JSON.stringify(selection)}`)
@@ -595,14 +595,14 @@ export default class TreeMode extends PureComponent {
       }]
 
       if (selection.multi) {
-        this.handlePatch(replace(eson, selection, clipboard))
+        this.handlePatch(replace(eson, selection, clipboard), true)
       }
       else if (selection.after) {
-        this.handlePatch(insertAfter(eson, parseJSONPointer(selection.after), clipboard))
+        this.handlePatch(insertAfter(eson, parseJSONPointer(selection.after), clipboard), true)
 
       }
       else if (selection.beforeChildsOf) {
-        this.handlePatch(insertInside(eson, parseJSONPointer(selection.beforeChildsOf), clipboard))
+        this.handlePatch(insertInside(eson, parseJSONPointer(selection.beforeChildsOf), clipboard), true)
       }
       else {
         throw new Error(`Cannot insert at current selection ${JSON.stringify(selection)}`)
@@ -837,11 +837,11 @@ export default class TreeMode extends PureComponent {
   /**
    * Apply a JSONPatch to the current JSON document and emit a change event
    * @param {JSONPatchDocument} operations
+   * @param {boolean} [selectChangedContents=false]
    * @private
    */
-  handlePatch = (operations) => {
-    // apply changes
-    const result = this.patch(operations)
+  handlePatch = (operations, selectChangedContents = false) => {
+    const result = this.patch(operations, selectChangedContents)
 
     this.emitOnChange (operations, result.revert, result.json)
   }
@@ -1040,8 +1040,8 @@ export default class TreeMode extends PureComponent {
    * Emit an onChange event when there is a listener for it.
    * events will be fired on the next tick (after any changed state is applied)
    * @private
-   * @param {ESONPatchDocument} patch
-   * @param {ESONPatchDocument} revert
+   * @param {JSONPatchDocument} patch
+   * @param {JSONPatchDocument} revert
    * @param {JSON} json
    */
   emitOnChange (patch, revert, json) {
@@ -1097,6 +1097,7 @@ export default class TreeMode extends PureComponent {
       this.setState({
         json: jsonResult.json,
         eson: esonResult.json,
+        selection: historyItem.selectionBefore,
         history,
         historyIndex: historyIndex + 1
       })
@@ -1118,6 +1119,7 @@ export default class TreeMode extends PureComponent {
       this.setState({
         json: jsonResult.json,
         eson: esonResult.json,
+        selection: historyItem.selectionAfter,
         history,
         historyIndex
       })
@@ -1129,14 +1131,20 @@ export default class TreeMode extends PureComponent {
   /**
    * Apply a JSONPatch to the current JSON document
    * @param {JSONPatchDocument} operations       JSON Patch operations
+   * @param {boolean} [selectChangedContents=false]
    * @return {JSONPatchResult} Returns a object result containing the
    *                  patch, a patch to revert the action, and
    *                  an error object which is null when successful
    */
-  patch (operations) {
+  patch (operations, selectChangedContents = false) {
     if (!Array.isArray(operations)) {
       throw new TypeError('Array with patch actions expected')
     }
+
+    const selectionBefore = this.state.selection
+    const selectionAfter = selectChangedContents
+        ? getSelectionFromPatch(operations)
+        : { type: 'none' }
 
     const jsonResult = immutableJSONPatch(this.state.json, operations)
     const esonResult = immutableESONPatch(this.state.eson, operations)
@@ -1144,6 +1152,8 @@ export default class TreeMode extends PureComponent {
     if (this.props.history !== false) {
       // update data and store history
       const historyItem = {
+        selectionBefore,
+        selectionAfter,
         redo: operations,
         undo: jsonResult.revert
       }
@@ -1156,6 +1166,7 @@ export default class TreeMode extends PureComponent {
       this.setState({
         json: jsonResult.json,
         eson: esonResult.json,
+        selection: selectionAfter,
         history,
         historyIndex: 0
       })
@@ -1165,7 +1176,8 @@ export default class TreeMode extends PureComponent {
       // FIXME: apply search
       this.setState({
         json: jsonResult.json,
-        eson: esonResult.json
+        eson: esonResult.json,
+        selection: selectionAfter
       })
     }
 

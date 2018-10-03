@@ -463,3 +463,25 @@ export function convertType (value, type) {
 
   throw new Error(`Unknown type '${type}'`)
 }
+
+/**
+ * Extract the patched nodes and create a selection
+ * @param {JSONPatchDocument} operations
+ * @return {Selection}
+ */
+export function getSelectionFromPatch (operations) {
+  const paths = operations
+      .filter(operation => operation.op !== 'remove' && operation.op !== 'test')
+      .map(operation => operation.path)
+
+  if (!isEmpty(paths)) {
+    console.log('selectPatchedPaths', paths)
+
+    return {
+      type: 'multi', multi: paths }
+  }
+
+  // TODO: after a remove, select after?
+
+  return { type: 'none' }
+}
