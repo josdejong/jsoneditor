@@ -95,7 +95,7 @@ export default class JSONNode extends PureComponent {
     const nodeStart = h('div', {
       key: 'node',
       onKeyDown: this.handleKeyDown,
-      'data-selection-area': 'inside',
+      'data-area': 'inside',
       className: 'jsoneditor-node jsoneditor-object'
     }, [
       this.renderExpandButton(),
@@ -129,7 +129,7 @@ export default class JSONNode extends PureComponent {
 
         childs = h('div', {
           key: 'childs',
-          'data-selection-area': 'before',
+          'data-area': 'before',
           className: 'jsoneditor-list'
         }, propsChilds)
       }
@@ -137,8 +137,7 @@ export default class JSONNode extends PureComponent {
         childs = h('div', {
               key: 'childs',
               className: 'jsoneditor-list',
-              'data-area': 'emptyBefore', // TODO: remove
-              'data-selection-area': 'before'
+              'data-area': 'before'
             },
             this.renderEmpty('(empty object)')
         )
@@ -149,8 +148,7 @@ export default class JSONNode extends PureComponent {
         ? h('div', {
           key: 'node-end',
           className: 'jsoneditor-node-end',
-          'data-selection-area': 'after',
-          'data-area': 'empty', // TODO: remove
+          'data-area': 'after',
         }, [
           this.renderDelimiter('}', 'jsoneditor-delimiter-end', 'after-childs')
         ])
@@ -158,8 +156,7 @@ export default class JSONNode extends PureComponent {
 
     return h('div', {
       'data-path': compileJSONPointer(this.state.path),
-      'data-area': 'empty', // TODO: remove
-      'data-selection-area': this.props.eson[EXPANDED] ? 'before-childs' : 'after',
+      'data-area': this.props.eson[EXPANDED] ? 'before-childs' : 'after',
       className: this.getContainerClassName(this.props.eson[SELECTION]),
       // onMouseOver: this.handleMouseOver,
       // onMouseLeave: this.handleMouseLeave
@@ -172,7 +169,7 @@ export default class JSONNode extends PureComponent {
     const nodeStart = h('div', {
       key: 'node',
       onKeyDown: this.handleKeyDown,
-      'data-selection-area': 'inside',
+      'data-area': 'inside',
       className: 'jsoneditor-node jsoneditor-array'
     }, [
       this.renderExpandButton(),
@@ -205,7 +202,7 @@ export default class JSONNode extends PureComponent {
 
         childs = h('div', {
           key: 'childs',
-          'data-selection-area': 'before',
+          'data-area': 'before',
           className: 'jsoneditor-list'
         }, items)
       }
@@ -213,8 +210,7 @@ export default class JSONNode extends PureComponent {
         childs = h('div', {
               key: 'childs',
               className: 'jsoneditor-list',
-              'data-selection-area': 'before',
-              'data-area': 'emptyBefore' // TODO: remove data-area
+              'data-area': 'before',
             },
             this.renderEmpty('(empty array)')
         )
@@ -225,8 +221,7 @@ export default class JSONNode extends PureComponent {
         ? h('div', {
           key: 'node-end',
           className: 'jsoneditor-node-end',
-          'data-selection-area': 'after',
-          'data-area': 'empty'// TODO: remove data-area
+          'data-area': 'after'
         }, [
           this.renderDelimiter(']', 'jsoneditor-delimiter-end', 'after-childs')
         ])
@@ -234,8 +229,7 @@ export default class JSONNode extends PureComponent {
 
     return h('div', {
       'data-path': compileJSONPointer(this.state.path),
-      'data-area': 'empty', // TODO: remove data-area
-      'data-selection-area': this.props.eson[EXPANDED] ? 'before-childs' : 'after',
+      'data-area': this.props.eson[EXPANDED] ? 'before-childs' : 'after',
       className: this.getContainerClassName(this.props.eson[SELECTION]),
       // onMouseOver: this.handleMouseOver,
       // onMouseLeave: this.handleMouseLeave
@@ -246,7 +240,7 @@ export default class JSONNode extends PureComponent {
     const node = h('div', {
         key: 'node',
         onKeyDown: this.handleKeyDown,
-        'data-selection-area': 'inside',
+        'data-area': 'inside',
         className: 'jsoneditor-node'
       }, [
       this.renderPlaceholder(),
@@ -260,8 +254,7 @@ export default class JSONNode extends PureComponent {
 
     return h('div', {
       'data-path': compileJSONPointer(this.state.path),
-      'data-area': 'empty', // TODO: remove
-      'data-selection-area': 'after',
+      'data-area': 'after',
       className: this.getContainerClassName(this.props.eson[SELECTION]),
       // onMouseOver: this.handleMouseOver,
       // onMouseLeave: this.handleMouseLeave
@@ -276,12 +269,11 @@ export default class JSONNode extends PureComponent {
   renderEmpty (text) {
     return h('div', {
       'data-path': compileJSONPointer(this.state.path) + '/-',
-      'data-area': 'empty', // TODO: remove
-      'data-selection-area': 'after',
+      'data-area': 'after',
       className: 'jsoneditor-node-container'
     }, h('div', {
       className: 'jsoneditor-node',
-      'data-selection-area': 'inside',
+      'data-area': 'inside',
       onKeyDown: this.handleKeyDownAppend
     }, [
       this.renderPlaceholder(),
@@ -292,16 +284,14 @@ export default class JSONNode extends PureComponent {
   renderPlaceholder () {
     return h('div', {
       key: 'placeholder',
-      // 'data-area': dataArea, // TODO: remove
-      'data-selection-area': 'before',
+      'data-area': 'before',
       className: 'jsoneditor-button-placeholder'
     })
   }
 
-  renderReadonly (text, title = null, dataArea = 'inside') {
+  renderReadonly (text, title = null) {
     return h('div', {
       key: 'readonly',
-      'data-area': dataArea, // TODO: remove
       className: 'jsoneditor-readonly',
       title
     }, text)
@@ -360,7 +350,7 @@ export default class JSONNode extends PureComponent {
     return h('div', {
       key: 'before-childs',
       className: 'jsoneditor-before-childs',
-      'data-selection-area': 'before-childs'
+      'data-area': 'before-childs'
     })
   }
 
@@ -373,15 +363,13 @@ export default class JSONNode extends PureComponent {
     return h('div', {
       key: 'separator',
       className: 'jsoneditor-delimiter',
-      'data-area': 'value' // TODO: remove
     }, ':')
   }
 
   renderDelimiter (text, className = '', dataArea) {
     return h('div', {
       key: text,
-      'data-area': 'value', // TODO: remove
-      'data-selection-area': dataArea,
+      'data-area': dataArea,
       className: 'jsoneditor-delimiter ' + className
     }, text)
   }
@@ -564,7 +552,7 @@ export default class JSONNode extends PureComponent {
 
     return h('div', {key: 'expand', className: 'jsoneditor-button-container'},
         h('button', {
-          'data-selection-area': 'before',
+          'data-area': 'before',
           className: className,
           onClick: this.handleExpand,
           title:

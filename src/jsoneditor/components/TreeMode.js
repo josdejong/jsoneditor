@@ -282,6 +282,7 @@ export default class TreeMode extends PureComponent {
       selection: this.state.selection,
       clipboard: this.state.clipboard,
       history: this.state.history,
+      historyIndex: this.state.historyIndex,
 
       mode: this.props.mode,
       modes: this.props.modes,
@@ -887,24 +888,12 @@ export default class TreeMode extends PureComponent {
   /**
    * Find JSON pointer from an HTML element
    * @param {Element} element
-   * @return {ESONPointer | null}
-   */
-  findJSONPointerFromElement (element) {
-    const path = this.findDataPathFromElement(element)
-    const area = (element && element.getAttribute && element.getAttribute('data-area')) || null
-
-    return path ? { path, area } : null
-  }
-
-  /**
-   * Find JSON pointer from an HTML element
-   * @param {Element} element
    * @param {number} y
    * @return {SelectionPointer | null}
    */
   findSelectionPointerFromEvent (element, y) {
-    const areaParent = findParentWithAttribute(element, 'data-selection-area')
-    const area = areaParent ? areaParent.getAttribute('data-selection-area') : undefined
+    const areaParent = findParentWithAttribute(element, 'data-area')
+    const area = areaParent ? areaParent.getAttribute('data-area') : undefined
 
     const base = (area === 'before')
         ? document.elementFromPoint(element.getBoundingClientRect().right - 1, y)

@@ -416,34 +416,8 @@ export function findRootPath(selection) {
     return initial(parseJSONPointer(selection.after))
   }
 
-  // TODO: handle area === 'before-childs' and area === 'after-childs'
+  // FIXME: handle area === 'before-childs' and area === 'after-childs'
 
-
-  // TODO: cleanup
-  // if (selection.inside) {
-  //   return initial(selection.inside)
-  // }
-  // else if (selection.after) {
-  //   return initial(selection.after)
-  // }
-  // else if (selection.empty) {
-  //   return initial(selection.empty)
-  // }
-  // else if (selection.emptyBefore) {
-  //   return initial(selection.emptyBefore)
-  // }
-  // else { // selection.start and selection.end
-  //   const sharedPath = findSharedPath(selection.start, selection.end)
-  //
-  //   if (sharedPath.length === selection.start.length ||
-  //       sharedPath.length === selection.end.length) {
-  //     // there is just one node selected, return it's parent
-  //     return initial(sharedPath)
-  //   }
-  //   else {
-  //     return sharedPath
-  //   }
-  // }
 }
 
 /**

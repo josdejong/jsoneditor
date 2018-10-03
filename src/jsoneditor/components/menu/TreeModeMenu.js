@@ -34,6 +34,7 @@ export default class TreeModeMenu extends PureComponent {
     selection: PropTypes.object,
     clipboard: PropTypes.array,
     history: PropTypes.array,
+    historyIndex: PropTypes.number,
 
     mode: PropTypes.string.isRequired,
     modes: PropTypes.arrayOf(PropTypes.string),
