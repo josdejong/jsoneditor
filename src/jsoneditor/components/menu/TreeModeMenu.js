@@ -1,3 +1,4 @@
+import isEmpty from 'lodash/isEmpty'
 import { createElement as h, PureComponent } from 'react'
 import DropDown from './DropDown'
 import PropTypes from 'prop-types'
@@ -30,40 +31,38 @@ fontawesome.library.add(
 export default class TreeModeMenu extends PureComponent {
 
   static propTypes = {
+    selection: PropTypes.object,
+    clipboard: PropTypes.array,
+    history: PropTypes.array,
+
     mode: PropTypes.string.isRequired,
     modes: PropTypes.arrayOf(PropTypes.string),
     onChangeMode: PropTypes.func.isRequired,
 
-    canCut: PropTypes.bool.isRequired,
-    canCopy: PropTypes.bool.isRequired,
-    canPaste: PropTypes.bool.isRequired,
     onCut: PropTypes.func.isRequired,
     onCopy: PropTypes.func.isRequired,
     onPaste: PropTypes.func.isRequired,
 
-    canInsert: PropTypes.bool.isRequired,
-    canDuplicate: PropTypes.bool.isRequired,
-    canRemove: PropTypes.bool.isRequired,
     onInsert: PropTypes.func.isRequired,
     onDuplicate: PropTypes.func.isRequired,
     onRemove: PropTypes.func.isRequired,
 
-    canSort: PropTypes.bool.isRequired,
-    canTransform: PropTypes.bool.isRequired,
-    canSearch: PropTypes.bool.isRequired,
     onSort: PropTypes.func.isRequired,
     onTransform: PropTypes.func.isRequired,
     onToggleSearch: PropTypes.func,
 
     enableHistory: PropTypes.bool,
-    canUndo: PropTypes.bool,
-    canRedo: PropTypes.bool,
     onUndo: PropTypes.func,
     onRedo: PropTypes.func
   }
 
   render () {
     let items = []
+
+    const { selection, clipboard } = this.props
+    const hasCursor = selection && selection.type !== 'none'
+    const hasSelectedContent = selection ? !isEmpty(selection.multi) : false
+    const hasClipboard = clipboard ? (clipboard.length > 0) : false
 
     // mode
     if (this.props.modes ) {
@@ -92,27 +91,28 @@ export default class TreeModeMenu extends PureComponent {
           key: 'cut',
           className: 'jsoneditor-cut',
           title: 'Cut current selection',
-          disabled: !this.props.canCut,
+          disabled: !hasSelectedContent,
           onClick: this.props.onCut
         }, h('i', {className: 'fa fa-cut'})),
         h('button', {
           key: 'copy',
           className: 'jsoneditor-copy',
           title: 'Copy current selection',
-          disabled: !this.props.canCopy,
+          disabled: !hasSelectedContent,
           onClick: this.props.onCopy
         }, h('i', {className: 'fa fa-copy'})),
         h('button', {
           key: 'paste',
           className: 'jsoneditor-paste',
           title: 'Paste copied selection',
-          disabled: !this.props.canPaste,
+          disabled: !(hasClipboard && hasCursor),
           onClick: this.props.onPaste
         }, h('i', {className: 'fa fa-paste'}))
       ])
     ])
 
-    // TODO: [insert structure / insert value / insert array / insert object] / duplicate / remove
+    // [insert structure / insert value / insert array / insert object] / duplicate / remove
+    // TODO: disable options of insert
     items = items.concat([
       h('div', {className: 'jsoneditor-menu-group', key: 'insert-duplicate-remove'}, [
         h(DropDown, {
@@ -126,14 +126,14 @@ export default class TreeModeMenu extends PureComponent {
           key: 'duplicate',
           className: 'jsoneditor-duplicate',
           title: 'Duplicate current selection',
-          disabled: !this.props.canDuplicate,
+          disabled: !hasSelectedContent,
           onClick: this.props.onDuplicate
         }, h('i', {className: 'fa fa-clone'})),
         h('button', {
           key: 'remove',
           className: 'jsoneditor-remove',
           title: 'Remove selection',
-          disabled: !this.props.canRemove,
+          disabled: !hasSelectedContent,
           onClick: this.props.onRemove
         }, h('i', {className: 'fa fa-times'}))
       ])
@@ -167,20 +167,23 @@ export default class TreeModeMenu extends PureComponent {
 
     // undo / redo
     if (this.props.mode !== 'view' && this.props.enableHistory !== false) {
+      const canUndo = this.props.historyIndex < this.props.history.length
+      const canRedo = this.props.historyIndex > 0
+
       items = items.concat([
         h('div', {className: 'jsoneditor-menu-group', key: 'undo-redo'}, [
           h('button', {
             key: 'undo',
             className: 'jsoneditor-undo',
             title: 'Undo last action',
-            disabled: !this.props.canUndo,
+            disabled: !canUndo,
             onClick: this.props.onUndo
           }, h('i', {className: 'fa fa-undo'})),
           h('button', {
             key: 'redo',
             className: 'jsoneditor-redo',
             title: 'Redo',
-            disabled: !this.props.canRedo,
+            disabled: !canRedo,
             onClick: this.props.onRedo
           }, h('i', {className: 'fa fa-redo'}))
         ])

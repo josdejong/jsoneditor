@@ -427,8 +427,8 @@ export default class JSONNode extends PureComponent {
           onMouseOver: this.updatePopoverDirection
         },
         [
-            h('i', {className: 'fa fa-exclamation-triangle'}),
-            h('div', {className: 'jsoneditor-popover jsoneditor-right'}, error.message)
+            h('i', {className: 'fa fa-exclamation-triangle', key: 'icon'}),
+            h('div', {className: 'jsoneditor-popover jsoneditor-right', 'key': 'message'}, error.message)
         ]
       )
     }

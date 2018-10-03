@@ -238,19 +238,19 @@ div.jsoneditor-value.jsoneditor-empty::after {
 }
 
 .jsoneditor-highlight {
-  background-color: yellow;
+  background-color: $highlight-color;
 }
 
 .jsoneditor-highlight:hover {
-  background-color: #f0f000;
+  background-color: $highlight-hover-color;
 }
 
 .jsoneditor-highlight-active {
-  background-color: #ffd700;
+  background-color: $highlight-active-color;
 }
 
 .jsoneditor-highlight-active:hover {
-  background-color: #f3cd00;
+  background-color: $highlight-active-hover-color;
 }
 
 .jsoneditor-button-placeholder {
@@ -298,16 +298,16 @@ div.jsoneditor-node-container {
 
   &.jsoneditor-selected {
     .jsoneditor-node {
-      background-color: $selectedColor;
+      background-color: $selected-color;
     }
 
     .jsoneditor-delimiter-end {
-      background-color: $selectedColor;
-      border-left-color: $selectedColor;
+      background-color: $selected-color;
+      border-left-color: $selected-color;
     }
 
     .jsoneditor-list {
-      border-left-color: $selectedColor;
+      border-left-color: $selected-color;
     }
   }
 
@@ -315,7 +315,7 @@ div.jsoneditor-node-container {
 
     &.jsoneditor-node-expanded {
       .jsoneditor-node-end {
-        background-color: $selectedColor;
+        background-color: $selected-color;
 
         > .jsoneditor-delimiter-end {
           background-color: white;
@@ -324,7 +324,7 @@ div.jsoneditor-node-container {
     }
 
     &.jsoneditor-node-collapsed {
-      background-color: $selectedColor;
+      background-color: $selected-color;
 
       > .jsoneditor-node {
         background-color: white;
@@ -335,7 +335,7 @@ div.jsoneditor-node-container {
   &.jsoneditor-selected-before-childs {
 
     > .jsoneditor-node > .jsoneditor-before-childs {
-      background-color: $selectedColor;
+      background-color: $selected-color;
       width: 40px; // FIXME: should use full remaining width
     }
   }
@@ -434,8 +434,8 @@ div.jsoneditor-code {
 
 .jsoneditor-errors {
   width: 100%;
-  background-color: #ffef8b;
-  border-top: 1px solid #ffd700;
+  background-color: $error-background-color;
+  border-top: 1px solid $error-border-color;
 
   table {
     border-collapse: collapse;

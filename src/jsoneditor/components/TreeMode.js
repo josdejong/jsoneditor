@@ -276,43 +276,31 @@ export default class TreeMode extends PureComponent {
   }
 
   renderMenu () {
-    const hasCursor = true // FIXME: implement hasCursor
-    const hasSelection = this.state.selection ? this.state.selection.type !== 'none' : false
-    const hasClipboard = this.state.clipboard
-        ? this.state.clipboard.length > 0
-        : false
-
     return h(TreeModeMenu, {
       key: 'menu',
+
+      selection: this.state.selection,
+      clipboard: this.state.clipboard,
+      history: this.state.history,
 
       mode: this.props.mode,
       modes: this.props.modes,
       onChangeMode: this.props.onChangeMode,
 
-      canCut: hasSelection,
-      canCopy: hasSelection,
-      canPaste: hasClipboard && hasCursor,
       onCut: this.handleCut,
       onCopy: this.handleCopy,
       onPaste: this.handlePaste,
 
-      canInsert: hasCursor,
-      canDuplicate: hasSelection,
-      canRemove: hasSelection,
       onInsert: this.handleInsert,
       onDuplicate: this.handleDuplicate,
       onRemove: this.handleRemove,
 
-      canSort: hasSelection || hasCursor,
-      canTransform: hasSelection || hasCursor,
       canSearch: this.props.search,
       onSort: this.handleSort,
       onTransform: this.handleTransform,
       onToggleSearch: this.toggleSearch,
 
       enableHistory: this.props.history,
-      canUndo: this.canUndo(),
-      canRedo: this.canRedo(),
       onUndo: this.undo,
       onRedo: this.redo,
     })
@@ -1055,16 +1043,8 @@ export default class TreeMode extends PureComponent {
     this.redo()
   }
 
-  canUndo = () => {
-    return this.state.historyIndex < this.state.history.length
-  }
-
-  canRedo = () => {
-    return this.state.historyIndex > 0
-  }
-
   undo = () => {
-    if (this.canUndo()) {
+    if (this.state.historyIndex < this.state.history.length) {
       const history = this.state.history
       const historyIndex = this.state.historyIndex
       const historyItem = history[historyIndex]
@@ -1074,7 +1054,10 @@ export default class TreeMode extends PureComponent {
 
       const { eson, searchResult } = (this.state.searchText)
           ? applySearch(esonResult.json, this.state.searchText)
-          : { eson: esonResult.json, searchResult: null }
+          : {
+            eson: esonResult.json,
+            searchResult: { matches: null, active: null }
+          }
 
       this.setState({
         json,
@@ -1090,7 +1073,7 @@ export default class TreeMode extends PureComponent {
   }
 
   redo = () => {
-    if (this.canRedo()) {
+    if (this.state.historyIndex > 0) {
       const history = this.state.history
       const historyIndex = this.state.historyIndex - 1
       const historyItem = history[historyIndex]
@@ -1100,7 +1083,10 @@ export default class TreeMode extends PureComponent {
 
       const { eson, searchResult } = (this.state.searchText)
           ? applySearch(esonResult.json, this.state.searchText)
-          : { eson: esonResult.json, searchResult: null }
+          : {
+            eson: esonResult.json,
+            searchResult: { matches: null, active: null }
+          }
 
       this.setState({
         json,
@@ -1138,7 +1124,10 @@ export default class TreeMode extends PureComponent {
 
     const { eson, searchResult } = (this.state.searchText)
         ? applySearch(esonResult.json, this.state.searchText)
-        : { eson: esonResult.json, searchResult: null }
+        : {
+          eson: esonResult.json,
+          searchResult: { matches: null, active: null }
+        }
 
     if (this.props.history !== false) {
       // update data and store history
