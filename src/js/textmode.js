@@ -530,10 +530,18 @@ textmode._emitSelectionChange = function () {
   }
 }
 
-textmode._refreshAnnotations = function () {
-  var session = this.aceEditor && this.aceEditor.getSession()
+/**
+ * refresh ERROR annotations state
+ * error annotations are handled by the ace json mode (ace/mode/json)
+ * validation annotations are handled by this mode
+ * therefore in order to refresh we send only the annotations of error type in order to maintain its state 
+ * @private
+ */
+textmode._refreshAnnotations = function () {  
+  var session = this.aceEditor && this.aceEditor.getSession();
   if (session) {
-    session.setAnnotations(session.getAnnotations())
+    var errEnnotations = session.getAnnotations().filter(function(annotation) {return annotation.type === 'error' });
+    session.setAnnotations(errEnnotations);
   }
 }
 
