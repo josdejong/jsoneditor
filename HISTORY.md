@@ -2,6 +2,11 @@
 
 https://github.com/josdejong/jsoneditor
 
+## not yet released, version 5.24.7
+
+- Fix #582: parse error annotations not always up to date in
+  code editor.
+
 
 ## 2018-09-12, version 5.24.6
 
