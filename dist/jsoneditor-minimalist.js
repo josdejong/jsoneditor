@@ -24,8 +24,8 @@
  * Copyright (c) 2011-2017 Jos de Jong, http://jsoneditoronline.org
  *
  * @author  Jos de Jong, <wjosdejong@gmail.com>
- * @version 5.24.6
- * @date    2018-09-12
+ * @version 5.24.7
+ * @date    2018-10-08
  */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
@@ -17702,8 +17702,19 @@ return /******/ (function(modules) { // webpackBootstrap
 	  }
 	}
 
-	textmode._refreshAnnotations = function () {
-	  this.aceEditor && this.aceEditor.getSession().setAnnotations();  
+	/**
+	 * refresh ERROR annotations state
+	 * error annotations are handled by the ace json mode (ace/mode/json)
+	 * validation annotations are handled by this mode
+	 * therefore in order to refresh we send only the annotations of error type in order to maintain its state 
+	 * @private
+	 */
+	textmode._refreshAnnotations = function () {  
+	  var session = this.aceEditor && this.aceEditor.getSession();
+	  if (session) {
+	    var errEnnotations = session.getAnnotations().filter(function(annotation) {return annotation.type === 'error' });
+	    session.setAnnotations(errEnnotations);
+	  }
 	}
 
 	/**
