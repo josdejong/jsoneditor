@@ -986,26 +986,30 @@ treemode._createFrame = function () {
   this.menu.appendChild(collapseAll);
 
   // create sort button
-  var sort = document.createElement('button');
-  sort.type = 'button';
-  sort.className = 'jsoneditor-sort';
-  sort.title = translate('sortTitleShort');
-  sort.onclick = function () {
-    var anchor = editor.options.modalAnchor || DEFAULT_MODAL_ANCHOR;
-    showSortModal(editor.node, anchor)
-  };
-  this.menu.appendChild(sort);
+  if (!this.options.hideSort) {
+    var sort = document.createElement('button');
+    sort.type = 'button';
+    sort.className = 'jsoneditor-sort';
+    sort.title = translate('sortTitleShort');
+    sort.onclick = function () {
+      var anchor = editor.options.modalAnchor || DEFAULT_MODAL_ANCHOR;
+      showSortModal(editor.node, anchor)
+    };
+    this.menu.appendChild(sort);
+  }
 
   // create transform button
-  var transform = document.createElement('button');
-  transform.type = 'button';
-  transform.title = translate('transformTitleShort');
-  transform.className = 'jsoneditor-transform';
-  transform.onclick = function () {
-    var anchor = editor.options.modalAnchor || DEFAULT_MODAL_ANCHOR;
-    showTransformModal(editor.node, anchor)
-  };
-  this.menu.appendChild(transform);
+  if (!this.options.hideTransform) {
+    var transform = document.createElement('button');
+    transform.type = 'button';
+    transform.title = translate('transformTitleShort');
+    transform.className = 'jsoneditor-transform';
+    transform.onclick = function () {
+      var anchor = editor.options.modalAnchor || DEFAULT_MODAL_ANCHOR;
+      showTransformModal(editor.node, anchor)
+    };
+    this.menu.appendChild(transform);
+  }
 
   // create undo/redo buttons
   if (this.history) {
