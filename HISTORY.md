@@ -9,6 +9,8 @@ https://github.com/josdejong/jsoneditor
   bar is disabled.
 - Fixed #589: the path in the navigation bar is not updated
   when deleting a node.
+- Fixed duplicate and remove of the action menu of multiple selected
+  nodes not working.
 
 
 ## 2018-10-08, version 5.24.7

@@ -502,7 +502,7 @@ treemode._onChange = function () {
   this._debouncedValidate();
 
   if (this.treePath) {
-    const selectedNode = this.selection
+    var selectedNode = this.selection
         ?  this.node.findNodeByInternalPath(this.selection.path)
         : this.multiselection
             ? this.multiselection.nodes[0]
@@ -1645,7 +1645,7 @@ treemode._createTable = function () {
  */
 treemode.showContextMenu = function (anchor, onClose) {
   var items = [];
-  var editor = this;
+  var selectedNodes = this.multiselection.nodes.slice();
 
   // create duplicate button
   items.push({
@@ -1653,7 +1653,7 @@ treemode.showContextMenu = function (anchor, onClose) {
     title: translate('duplicateTitle'),
     className: 'jsoneditor-duplicate',
     click: function () {
-      Node.onDuplicate(editor.multiselection.nodes);
+      Node.onDuplicate(selectedNodes );
     }
   });
 
@@ -1663,12 +1663,12 @@ treemode.showContextMenu = function (anchor, onClose) {
     title: translate('removeTitle'),
     className: 'jsoneditor-remove',
     click: function () {
-      Node.onRemove(editor.multiselection.nodes);
+      Node.onRemove(selectedNodes);
     }
   });
 
   var menu = new ContextMenu(items, {close: onClose});
-  menu.show(anchor, editor.frame);
+  menu.show(anchor, this.frame);
 };
 
 /**
