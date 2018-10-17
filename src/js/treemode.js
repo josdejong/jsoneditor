@@ -1316,6 +1316,7 @@ treemode._onMultiSelectStart = function (event) {
     });
   }
 
+  event.preventDefault();
 };
 
 /**
