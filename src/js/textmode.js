@@ -725,19 +725,25 @@ textmode.validate = function () {
   var json;
   try {
     json = this.get(); // this can fail when there is no valid json
-    this.parseErrorIndication.style.display = 'none';
+    if (this.parseErrorIndication) {
+      this.parseErrorIndication.style.display = 'none';
+    }
     doValidate = true;
   }
   catch (err) {
     if (this.getText()) {
-      this.parseErrorIndication.style.display = 'block';
+      if (this.parseErrorIndication) {
+        this.parseErrorIndication.style.display = 'block';
+      }
       // try to extract the line number from the jsonlint error message
       var match = /\w*line\s*(\d+)\w*/g.exec(err.message);
       var line;
       if (match) {
         line = +match[1];
       }
-      this.parseErrorIndication.title = !isNaN(line) ? ('parse error on line ' + line) : 'parse error - check that the json is valid';
+      if (this.parseErrorIndication) {
+        this.parseErrorIndication.title = !isNaN(line) ? ('parse error on line ' + line) : 'parse error - check that the json is valid';
+      }
       parseErrors.push({
         type: 'error',
         message: err.message.replace(/\n/g, '<br>'),
