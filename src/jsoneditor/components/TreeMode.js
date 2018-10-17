@@ -516,9 +516,7 @@ export default class TreeMode extends PureComponent {
   }
 
   handleKeyDownPaste = (event) => {
-    const { clipboard, eson } = this.state
-
-    if (clipboard && clipboard.length > 0) {
+    if (this.state.clipboard && this.state.clipboard.length > 0) {
       event.preventDefault()
 
       this.handlePaste()
