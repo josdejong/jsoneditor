@@ -61,8 +61,9 @@ export default class TreeModeMenu extends PureComponent {
     let items = []
 
     const { selection, clipboard } = this.props
-    const hasCursor = selection && selection.type !== 'none'
+    const hasCursor = !!selection
     const hasSelectedContent = selection ? !isEmpty(selection.multi) : false
+    const hasCaret = selection && selection.type === 'caret'
     const hasClipboard = clipboard ? (clipboard.length > 0) : false
 
     // mode
@@ -127,7 +128,7 @@ export default class TreeModeMenu extends PureComponent {
           key: 'duplicate',
           className: 'jsoneditor-duplicate',
           title: 'Duplicate current selection',
-          disabled: !hasSelectedContent,
+          disabled: !(hasSelectedContent || hasCaret),
           onClick: this.props.onDuplicate
         }, h('i', {className: 'fa fa-clone'})),
         h('button', {

@@ -51,6 +51,7 @@ import { KEY_BINDINGS } from '../constants'
 import { immutableJSONPatch } from '../immutableJSONPatch'
 import {
   applyErrors,
+  applySearch,
   applySelection,
   contentsFromPaths,
   expand,
@@ -61,13 +62,12 @@ import {
   immutableESONPatch,
   nextSearchResult,
   previousSearchResult,
-  applySearch,
   SELECTION,
   syncEson
 } from '../eson'
 import TreeModeMenu from './menu/TreeModeMenu'
 import Search from './menu/Search'
-import { findParentWithAttribute, toArray } from '../utils/domUtils'
+import { findParentWithAttribute, hasAttribute, hasParent, toArray } from '../utils/domUtils'
 
 const AJV_OPTIONS = {
   allErrors: true,
@@ -103,7 +103,7 @@ export default class TreeMode extends PureComponent {
       'cut': this.handleKeyDownCut,
       'copy': this.handleKeyDownCopy,
       'paste': this.handleKeyDownPaste,
-      'duplicate': this.handleKeyDownDuplicate,
+      'duplicate': this.handleDuplicate,
       'remove': this.handleKeyDownRemove,
       'undo': this.handleUndo,
       'redo': this.handleRedo,
@@ -164,14 +164,19 @@ export default class TreeMode extends PureComponent {
     this.applyProps(nextProps, this.props)
   }
 
-  // TODO: use or cleanup
-  // componentDidMount () {
-  //   document.addEventListener('keydown', this.handleKeyDown)
-  // }
-  //
-  // componentWillUnmount () {
-  //   document.removeEventListener('keydown', this.handleKeyDown)
-  // }
+  componentDidMount () {
+    // TODO: use or cleanup
+    // document.addEventListener('keydown', this.handleKeyDown)
+
+    document.addEventListener('selectionchange', this.handleSelectionChange)
+  }
+
+  componentWillUnmount () {
+    // TODO: use or cleanup
+    // document.removeEventListener('keydown', this.handleKeyDown)
+
+    document.removeEventListener('selectionchange', this.handleSelectionChange)
+  }
 
   // TODO: create some sort of watcher structure for these props? Is there a React pattern for that?
   applyProps (nextProps, currentProps) {
@@ -362,6 +367,42 @@ export default class TreeMode extends PureComponent {
     }
   }
 
+  handleSelectionChange = () => {
+    // FIXME: selection change isn't supported by Safari. Create a fallback
+
+    const selection = this.getCaretSelection()
+
+    if (!isEqual(selection, this.state.selection)) {
+      this.setState({selection})
+      console.log('selection',  JSON.stringify(selection)) // TODO: cleanup logging
+    }
+  }
+
+  getCaretSelection = () => {
+    const documentSelection = window.getSelection()
+
+    if (documentSelection.anchorNode &&
+        documentSelection.anchorNode === documentSelection.focusNode &&
+        hasAttribute(documentSelection.anchorNode.parentNode, 'data-input')) {
+
+      const path = this.findDataPathFromElement(documentSelection.anchorNode)
+
+      if (hasParent(documentSelection.anchorNode, this.refs.contents) && path) {
+        return {
+          type: 'caret',
+          path: compileJSONPointer(path),
+          input: documentSelection.anchorNode.parentNode.getAttribute
+              ? documentSelection.anchorNode.parentNode.getAttribute('data-input')
+              : null,
+          anchorOffset: documentSelection.anchorOffset,
+          focusOffset: documentSelection.focusOffset,
+        }
+      }
+    }
+
+    return null
+  }
+
   handleChangeValue = ({path, value}) => {
     this.handlePatch(changeValue(this.state.eson, path, value))
   }
@@ -480,19 +521,7 @@ export default class TreeMode extends PureComponent {
     if (clipboard && clipboard.length > 0) {
       event.preventDefault()
 
-      const path = this.findDataPathFromElement(event.target)
-      this.handlePatch(insertBefore(eson, path, clipboard))
-    }
-  }
-
-  handleKeyDownDuplicate = (event) => {
-    const path = this.findDataPathFromElement(event.target)
-    if (path) {
-      const selection = { type: 'multi', multi: [path] }
-      this.handlePatch(duplicate(this.state.eson, selection))
-
-      // apply focus to the duplicated node
-      this.focusToNext(path)
+      this.handlePaste()
     }
   }
 
@@ -561,6 +590,9 @@ export default class TreeMode extends PureComponent {
       else if (selection.type === 'before-childs') {
         this.handlePatch(insertInside(eson, parseJSONPointer(selection.beforeChildsOf), clipboard), true)
       }
+      else if (selection.type === 'caret') {
+        this.handlePatch(insertBefore(eson, parseJSONPointer(selection.path), clipboard), true)
+      }
       else {
         throw new Error(`Cannot paste at current selection ${JSON.stringify(selection)}`)
       }
@@ -588,10 +620,12 @@ export default class TreeMode extends PureComponent {
       }
       else if (selection.after) {
         this.handlePatch(insertAfter(eson, parseJSONPointer(selection.after), clipboard), true)
-
       }
       else if (selection.beforeChildsOf) {
         this.handlePatch(insertInside(eson, parseJSONPointer(selection.beforeChildsOf), clipboard), true)
+      }
+      else if (selection.type === 'caret') {
+        this.handlePatch(insertBefore(eson, parseJSONPointer(selection.path), clipboard), true)
       }
       else {
         throw new Error(`Cannot insert at current selection ${JSON.stringify(selection)}`)
@@ -844,19 +878,32 @@ export default class TreeMode extends PureComponent {
       return
     }
 
-    this.selectionStartPointer = this.findSelectionPointerFromEvent(event.target, event.clientY)
+    // don't start selecting nodes when selecting text inside the editable div of a property or value
+    if (!hasAttribute(event.target, 'data-input')) {
+      this.selectionStartPointer = this.findSelectionPointerFromEvent(event.target, event.clientY)
 
-    this.setState({ selection: null })
+      this.setState({ selection: null })
+      console.log('selection',  JSON.stringify(null)) // TODO: cleanup logging
+    }
+    else {
+      this.selectionStartPointer = null
+    }
   }
 
   handlePan = (event) => {
+    if (!this.selectionStartPointer) {
+      return
+    }
+
     this.selectionEndPointer = this.findSelectionPointerFromEvent(event.target, event.center.y)
 
     const selection = this.findSelectionFromPointers(this.selectionStartPointer, this.selectionEndPointer)
-    if (!isEqual(selection, this.state.selection)) {
-      this.setState({ selection })
-      console.log('selection',  JSON.stringify(selection)) // TODO: cleanup logging
+    if (isEqual(selection, this.state.selection)) {
+      return
     }
+
+    this.setState({ selection })
+    console.log('selection',  JSON.stringify(selection)) // TODO: cleanup logging
   }
 
   handlePanEnd = (event) => {
@@ -908,7 +955,7 @@ export default class TreeMode extends PureComponent {
   /**
    * @param {SelectionPointer} start
    * @param {SelectionPointer} end
-   * @return {Selection}
+   * @return {Selection | null}
    */
   findSelectionFromPointers (start, end) {
     if (start && end) {
@@ -970,10 +1017,6 @@ export default class TreeMode extends PureComponent {
           }
         }
       }
-    }
-
-    return {
-      type: 'none'
     }
   }
 
@@ -1106,7 +1149,7 @@ export default class TreeMode extends PureComponent {
     const selectionBefore = this.state.selection
     const selectionAfter = selectChangedContents
         ? getSelectionFromPatch(operations)
-        : { type: 'none' }
+        : null
 
     const jsonResult = immutableJSONPatch(this.state.json, operations)
     const esonResult = immutableESONPatch(this.state.eson, operations)

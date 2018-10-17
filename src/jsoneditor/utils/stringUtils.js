@@ -127,3 +127,20 @@ export function toCapital(text) {
 export function compareStrings (a, b) {
   return (a < b) ? -1 : (a > b) ? 1 : 0
 }
+
+
+/**
+ * Duplicate a piece of text
+ * @param {string} text
+ * @param {number} anchorOffset
+ * @param {number} focusOffset
+ * @return {string}
+ */
+export function duplicateInText(text, anchorOffset, focusOffset) {
+  const startOffset = Math.min(anchorOffset, focusOffset)
+  const endOffset = Math.max(anchorOffset, focusOffset)
+
+  return text.slice(0, endOffset) +
+      text.slice(startOffset, endOffset) + // the duplicated piece of the text
+      text.slice(endOffset)
+}

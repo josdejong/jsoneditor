@@ -2,9 +2,9 @@ import last from 'lodash/last'
 import initial from 'lodash/initial'
 import isEmpty from 'lodash/isEmpty'
 import first from 'lodash/first'
-import { findRootPath } from './eson'
+import { findRootPath, toJSON } from './eson'
 import { getIn } from './utils/immutabilityHelpers'
-import { findUniqueName } from './utils/stringUtils'
+import { duplicateInText, findUniqueName } from './utils/stringUtils'
 import { isObject, stringConvert } from './utils/typeUtils'
 import { compareAsc, compareDesc } from './utils/arrayUtils'
 import { compileJSONPointer, parseJSONPointer } from './jsonPointer'
@@ -80,37 +80,63 @@ export function changeType (json, path, type) {
  * @return {Array}
  */
 export function duplicate (json, selection) {
-  // console.log('duplicate', path)
-  if (isEmpty(selection.multi)) {
-    return []
-  }
+  if (!isEmpty(selection.multi)) {
+    const rootPath = findRootPath(selection)
+    const root = getIn(json, rootPath)
+    const paths = selection.multi.map(parseJSONPointer)
 
-  const rootPath = findRootPath(selection)
-  const root = getIn(json, rootPath)
-  const paths = selection.multi.map(parseJSONPointer)
+    if (Array.isArray(root)) {
+      const lastPath = last(paths)
+      const offset = lastPath ? (parseInt(last(lastPath), 10) + 1) : 0
 
-  if (Array.isArray(root)) {
-    const lastPath = last(paths)
-    const offset = lastPath ? (parseInt(last(lastPath), 10) + 1) : 0
-
-    return paths.map((path, index) => ({
-      op: 'copy',
-      from: compileJSONPointer(path),
-      path: compileJSONPointer(rootPath.concat(index + offset))
-    }))
-  }
-  else { // 'object'
-    return paths.map(path => {
-      const prop = last(path)
-      const newProp = findUniqueName(prop, root)
-
-      return {
+      return paths.map((path, index) => ({
         op: 'copy',
         from: compileJSONPointer(path),
-        path: compileJSONPointer(rootPath.concat(newProp))
-      }
-    })
+        path: compileJSONPointer(rootPath.concat(index + offset))
+      }))
+    }
+    else { // 'object'
+      return paths.map(path => {
+        const prop = last(path)
+        const newProp = findUniqueName(prop, root)
+
+        return {
+          op: 'copy',
+          from: compileJSONPointer(path),
+          path: compileJSONPointer(rootPath.concat(newProp))
+        }
+      })
+    }
   }
+
+  if (selection.type === 'caret') {
+    if (selection.anchorOffset === selection.focusOffset) {
+      // no text selected -> duplicate the current node
+      return duplicate(json, {
+        type: 'multi',
+        multi: [selection.path]
+      })
+    }
+    else {
+      // no text selected -> duplicate selected text
+      if (selection.input === 'property') {
+        const path = parseJSONPointer(selection.path)
+        const parentPath = initial(path)
+        const oldProperty = last(path)
+        const newProperty = duplicateInText(oldProperty, selection.anchorOffset, selection.focusOffset)
+
+        return changeProperty(json, parentPath, oldProperty, newProperty)
+      }
+      else { // selection.input === 'value'
+        const oldValue = String(toJSON(getIn(json, parseJSONPointer(selection.path))))
+        const newValue = duplicateInText(oldValue, selection.anchorOffset, selection.focusOffset)
+
+        return changeValue(json, parseJSONPointer(selection.path), newValue)
+      }
+    }
+  }
+
+  return []
 }
 
 /**
@@ -467,7 +493,7 @@ export function convertType (value, type) {
 /**
  * Extract the patched nodes and create a selection
  * @param {JSONPatchDocument} operations
- * @return {Selection}
+ * @return {Selection | null}
  */
 export function getSelectionFromPatch (operations) {
   const paths = operations
@@ -483,5 +509,5 @@ export function getSelectionFromPatch (operations) {
 
   // TODO: after a remove, select after?
 
-  return { type: 'none' }
+  return null
 }

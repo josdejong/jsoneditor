@@ -330,6 +330,7 @@ export default class JSONNode extends PureComponent {
         h('div', {
             key: 'property',
             className: 'jsoneditor-property' + emptyClassName + searchClassName,
+            'data-input': 'property',
             contentEditable: 'true',
             suppressContentEditableWarning: true,
             spellCheck: 'false',
@@ -386,6 +387,7 @@ export default class JSONNode extends PureComponent {
         key: 'value',
         className: JSONNode.getValueClass(type, itsAnUrl, isEmpty) +
             JSONNode.getSearchResultClass(searchResult),
+        'data-input': 'value',
         contentEditable: 'true',
         suppressContentEditableWarning: true,
         spellCheck: 'false',

@@ -70,22 +70,6 @@ export function getInnerText (element, buffer) {
 }
 
 /**
- * Get text selection
- * http://stackoverflow.com/questions/4687808/contenteditable-selected-text-save-and-restore
- * @return {Range | TextRange | null} range
- */
-export function getSelection() {
-  if (window.getSelection) {
-    const sel = window.getSelection()
-    if (sel.getRangeAt && sel.rangeCount) {
-      return sel.getRangeAt(0)
-    }
-  }
-
-  return null
-}
-
-/**
  * Select all text of a content editable div.
  * http://stackoverflow.com/a/3806004/1262753
  * @param {Element} contentEditableElement   A content editable div
@@ -152,14 +136,46 @@ export function findParentWithClassName (element, className) {
 }
 
 /**
+ * Check whether a given element has given parent as parent somewhere in the tree up
+ * @param {Element} element
+ * @param {Element} parent
+ * @return {boolean}
+ */
+export function hasParent(element, parent) {
+  let e = element
+
+  while (e) {
+    if (e === parent) {
+      return true
+    }
+
+    e = e.parentNode
+  }
+
+  return false
+}
+
+/**
  * Test whether a HTML element contains a specific className
  * @param {Element} element
- * @param {boolean} className
+ * @param {string} className
  * @return {boolean}
  */
 export function hasClassName (element, className) {
   return element && element.className && element.className.split
       ? element.className.split(' ').indexOf(className) !== -1
+      : false
+}
+
+/**
+ * Test whether an element has a certain attribute
+ * @param {Element} element
+ * @param {string} attribute
+ * @returns {boolean}
+ */
+export function hasAttribute (element, attribute) {
+  return element && element.hasAttribute
+      ? element.hasAttribute(attribute)
       : false
 }
 

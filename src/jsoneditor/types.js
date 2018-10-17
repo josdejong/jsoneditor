@@ -29,12 +29,27 @@
  */
 
 /**
- * @typedef {{
- *   type: 'multi' | 'after' | 'before-childs', 'none'
- *   after? string
- *   multi?: string[]
- *   beforeChildsOf?: string
- * }} Selection
+ * @typedef {
+ * {
+ *   type: 'multi',
+ *   multi: string[]
+ * } |
+ * {
+ *   type: 'after',
+ *   after: string
+ * } |
+ * {
+ *   type: 'before-childs',
+ *   beforeChildsOf: string
+ * } |
+ * {
+ *   type: 'caret',
+ *   path: string,
+ *   input: 'property' | 'value',
+ *   anchorOffset: number,
+ *   focusOffset: number
+ * }
+ * } Selection
  */
 
 /**
