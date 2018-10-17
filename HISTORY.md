@@ -3,6 +3,12 @@
 https://github.com/josdejong/jsoneditor
 
 
+## not yet released, version 5.24.8
+
+- Fixed #589: when deleting or moving a node, the navigation bar
+  is not updated with the correct path.
+
+
 ## 2018-10-08, version 5.24.7
 
 - Fix #582: parse error annotations not always up to date in

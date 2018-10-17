@@ -501,6 +501,21 @@ treemode._onChange = function () {
   // validate JSON schema (if configured)
   this._debouncedValidate();
 
+  if (this.treePath) {
+    const selectedNode = this.selection
+        ?  this.node.findNodeByInternalPath(this.selection.path)
+        : this.multiselection
+            ? this.multiselection.nodes[0]
+            : undefined;
+
+    if (selectedNode) {
+      this._updateTreePath(selectedNode.getNodePath())
+    }
+    else {
+      this.treePath.reset()
+    }
+  }
+
   // trigger the onChange callback
   if (this.options.onChange) {
     try {
