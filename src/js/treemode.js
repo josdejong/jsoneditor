@@ -163,7 +163,9 @@ treemode._setOptions = function (options) {
       }
     },
     timestampTag: true,
-    onEvent: null
+    onEvent: null,
+    enableSort: true,
+    enableTransform: true
   };
 
   // copy all options
@@ -986,7 +988,7 @@ treemode._createFrame = function () {
   this.menu.appendChild(collapseAll);
 
   // create sort button
-  if (!this.options.hideSort) {
+  if (this.options.enableSort) {
     var sort = document.createElement('button');
     sort.type = 'button';
     sort.className = 'jsoneditor-sort';
@@ -999,7 +1001,7 @@ treemode._createFrame = function () {
   }
 
   // create transform button
-  if (!this.options.hideTransform) {
+  if (this.options.enableTransform) {
     var transform = document.createElement('button');
     transform.type = 'button';
     transform.title = translate('transformTitleShort');

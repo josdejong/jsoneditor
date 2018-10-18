@@ -167,7 +167,7 @@ JSONEditor.VALID_OPTIONS = [
   'colorPicker', 'onColorPicker',
   'timestampTag',
   'escapeUnicode', 'history', 'search', 'mode', 'modes', 'name', 'indentation',
-  'sortObjectKeys', 'navigationBar', 'statusBar', 'languages', 'language', 'hideSort', 'hideTransform'
+  'sortObjectKeys', 'navigationBar', 'statusBar', 'languages', 'language', 'enableSort', 'enableTransform'
 ];
 
 /**

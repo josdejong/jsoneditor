@@ -362,13 +362,13 @@ Constructs a new JSONEditor.
   The container element where modals (like for sorting and filtering) are attached: an overlay will be created on top
   of this container, and the modal will be created in the center of this container.
 
-- `{boolean} hideSort`
+- `{boolean} enableSort`
 
-  Ability to hide the Sort option. Only applicable for mode 'tree'. False by default.
+  Ability to display the Sort option. Only applicable for mode 'tree'. True by default.
 
-- `{boolean} hideTransform`
+- `{boolean} enableTransform`
 
-  Ability to hide the Transform option. Only applicable for mode 'tree'. False by default.
+  Ability to display the Transform option. Only applicable for mode 'tree'. True by default.
 
 ### Methods
 
