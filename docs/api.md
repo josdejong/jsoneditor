@@ -364,11 +364,11 @@ Constructs a new JSONEditor.
 
 - `{boolean} enableSort`
 
-  Ability to display the Sort option. Only applicable for mode 'tree'. True by default.
+  Enable sorting of arrays and object properties. Only applicable for mode 'tree'. True by default.
 
 - `{boolean} enableTransform`
 
-  Ability to display the Transform option. Only applicable for mode 'tree'. True by default.
+  Enable filtering, sorting, and transforming JSON using a [JMESPath](http://jmespath.org/) query. Only applicable for mode 'tree'. True by default.
 
 ### Methods
 
