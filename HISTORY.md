@@ -3,8 +3,10 @@
 https://github.com/josdejong/jsoneditor
 
 
-## not yet released, version 5.24.8
+## not yet released, version 5.25.0
 
+- Implemented options `enableSort` and `enableTransform` so you can turn off
+  these features. Thanks @tanmayrajani.
 - Fixed #590: validation failing in code and text mode when status
   bar is disabled.
 - Fixed #589: the path in the navigation bar is not updated
