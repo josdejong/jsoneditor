@@ -340,7 +340,6 @@ Constructs a new JSONEditor.
 
   The default language comes from the browser navigator, but you can force a specific language. So use here string as 'en' or 'pt-BR'. Built-in languages: `en`, `pt-BR`. Other translations can be specified via the option `languages`.
 
-
 - `{Object} languages`
 
   You can override existing translations or provide a new translation for a specific language. To do it provide an object at languages with language and the keys/values to be inserted. For example:
@@ -363,6 +362,13 @@ Constructs a new JSONEditor.
   The container element where modals (like for sorting and filtering) are attached: an overlay will be created on top
   of this container, and the modal will be created in the center of this container.
 
+- `{boolean} enableSort`
+
+  Enable sorting of arrays and object properties. Only applicable for mode 'tree'. True by default.
+
+- `{boolean} enableTransform`
+
+  Enable filtering, sorting, and transforming JSON using a [JMESPath](http://jmespath.org/) query. Only applicable for mode 'tree'. True by default.
 
 ### Methods
 

@@ -4168,25 +4168,29 @@ Node.prototype.showContextMenu = function (anchor, onClose) {
   }
 
   if (this._hasChilds()) {
-    items.push({
-      text: translate('sort'),
-      title: translate('sortTitle', {type: this.type}),
-      className: 'jsoneditor-sort-asc',
-      click: function () {
-        var anchor = node.editor.options.modalAnchor || DEFAULT_MODAL_ANCHOR;
-        showSortModal(node, anchor)
-      }
-    });
+    if (this.editor.options.enableSort) {
+      items.push({
+        text: translate('sort'),
+        title: translate('sortTitle', {type: this.type}),
+        className: 'jsoneditor-sort-asc',
+        click: function () {
+          var anchor = node.editor.options.modalAnchor || DEFAULT_MODAL_ANCHOR;
+          showSortModal(node, anchor)
+        }
+      });
+    }
 
-    items.push({
-      text: translate('transform'),
-      title: translate('transformTitle', {type: this.type}),
-      className: 'jsoneditor-transform',
-      click: function () {
-        var anchor = node.editor.options.modalAnchor || DEFAULT_MODAL_ANCHOR;
-        showTransformModal(node, anchor)
-      }
-    });
+    if (this.editor.options.enableTransform) {
+      items.push({
+        text: translate('transform'),
+        title: translate('transformTitle', {type: this.type}),
+        className: 'jsoneditor-transform',
+        click: function () {
+          var anchor = node.editor.options.modalAnchor || DEFAULT_MODAL_ANCHOR;
+          showTransformModal(node, anchor)
+        }
+      });
+    }
   }
 
   if (this.parent && this.parent._hasChilds()) {
