@@ -14,6 +14,7 @@ https://github.com/josdejong/jsoneditor
 - Fixed duplicate and remove of the action menu of multiple selected
   nodes not working.
 - Fixed not preventing default selection of text when selecting nodes.
+- Fixed #595: navigation bar path link not working.
 
 
 ## 2018-10-08, version 5.24.7

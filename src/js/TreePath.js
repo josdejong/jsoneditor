@@ -6,10 +6,12 @@ var translate = require('./i18n').translate;
 /**
  * Creates a component that visualize path selection in tree based editors
  * @param {HTMLElement} container 
+ * @param {HTMLElement} root
  * @constructor
  */
-function TreePath(container) {
+function TreePath(container, root) {
   if (container) {
+    this.root = root;
     this.path = document.createElement('div');
     this.path.className = 'jsoneditor-treepath';
     container.appendChild(this.path);
@@ -59,10 +61,10 @@ TreePath.prototype.setPath = function (pathObjs) {
             });
           });
           var menu = new ContextMenu(items);
-          menu.show(sepEl);
+          menu.show(sepEl, me.root);
         };
 
-        me.path.appendChild(sepEl, me.container);
+        me.path.appendChild(sepEl);
       }
 
       if(idx === pathObjs.length - 1) {
