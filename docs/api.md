@@ -234,6 +234,10 @@ Constructs a new JSONEditor.
      - Can return an object `{startFrom: number, options: string[]}`. Here `startFrom` determines the start character from where the existing text will be replaced. `startFrom` is `0` by default, replacing the whole text.
      - Can return a `Promise` resolving one of the return types above to support asynchronously retrieving a list with options.
 
+- `{boolean} mainMenuBar`
+
+  Adds main menu bar - Contains format, sort, transform, search etc. functionality. True by default. Applicable in all types of `mode`.
+
 - `{boolean} navigationBar`
 
   Adds navigation bar to the menu - the navigation bar visualize the current position on the tree structure as well as allows breadcrumbs navigation. True by default. Only applicable when `mode` is 'tree', 'form' or 'view'.

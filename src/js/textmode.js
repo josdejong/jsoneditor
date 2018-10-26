@@ -108,67 +108,69 @@ textmode.create = function (container, options) {
   this.frame.onkeydown = function (event) {
     me._onKeyDown(event);
   };
-  
-  // create menu
-  this.menu = document.createElement('div');
-  this.menu.className = 'jsoneditor-menu';
-  this.frame.appendChild(this.menu);
 
-  // create format button
-  var buttonFormat = document.createElement('button');
-  buttonFormat.type = 'button';
-  buttonFormat.className = 'jsoneditor-format';
-  buttonFormat.title = 'Format JSON data, with proper indentation and line feeds (Ctrl+\\)';
-  this.menu.appendChild(buttonFormat);
-  buttonFormat.onclick = function () {
-    try {
-      me.format();
-      me._onChange();
-    }
-    catch (err) {
-      me._onError(err);
-    }
-  };
+  if (this.options.mainMenuBar) {
+    // create menu
+    this.menu = document.createElement('div');
+    this.menu.className = 'jsoneditor-menu';
+    this.frame.appendChild(this.menu);
 
-  // create compact button
-  var buttonCompact = document.createElement('button');
-  buttonCompact.type = 'button';
-  buttonCompact.className = 'jsoneditor-compact';
-  buttonCompact.title = 'Compact JSON data, remove all whitespaces (Ctrl+Shift+\\)';
-  this.menu.appendChild(buttonCompact);
-  buttonCompact.onclick = function () {
-    try {
-      me.compact();
-      me._onChange();
-    }
-    catch (err) {
-      me._onError(err);
-    }
-  };
+    // create format button
+    var buttonFormat = document.createElement('button');
+    buttonFormat.type = 'button';
+    buttonFormat.className = 'jsoneditor-format';
+    buttonFormat.title = 'Format JSON data, with proper indentation and line feeds (Ctrl+\\)';
+    this.menu.appendChild(buttonFormat);
+    buttonFormat.onclick = function () {
+      try {
+        me.format();
+        me._onChange();
+      }
+      catch (err) {
+        me._onError(err);
+      }
+    };
 
-  // create repair button
-  var buttonRepair = document.createElement('button');
-  buttonRepair.type = 'button';
-  buttonRepair.className = 'jsoneditor-repair';
-  buttonRepair.title = 'Repair JSON: fix quotes and escape characters, remove comments and JSONP notation, turn JavaScript objects into JSON.';
-  this.menu.appendChild(buttonRepair);
-  buttonRepair.onclick = function () {
-    try {
-      me.repair();
-      me._onChange();
-    }
-    catch (err) {
-      me._onError(err);
-    }
-  };
+    // create compact button
+    var buttonCompact = document.createElement('button');
+    buttonCompact.type = 'button';
+    buttonCompact.className = 'jsoneditor-compact';
+    buttonCompact.title = 'Compact JSON data, remove all whitespaces (Ctrl+Shift+\\)';
+    this.menu.appendChild(buttonCompact);
+    buttonCompact.onclick = function () {
+      try {
+        me.compact();
+        me._onChange();
+      }
+      catch (err) {
+        me._onError(err);
+      }
+    };
 
-  // create mode box
-  if (this.options && this.options.modes && this.options.modes.length) {
-    this.modeSwitcher = new ModeSwitcher(this.menu, this.options.modes, this.options.mode, function onSwitch(mode) {
-      // switch mode and restore focus
-      me.setMode(mode);
-      me.modeSwitcher.focus();
-    });
+    // create repair button
+    var buttonRepair = document.createElement('button');
+    buttonRepair.type = 'button';
+    buttonRepair.className = 'jsoneditor-repair';
+    buttonRepair.title = 'Repair JSON: fix quotes and escape characters, remove comments and JSONP notation, turn JavaScript objects into JSON.';
+    this.menu.appendChild(buttonRepair);
+    buttonRepair.onclick = function () {
+      try {
+        me.repair();
+        me._onChange();
+      }
+      catch (err) {
+        me._onError(err);
+      }
+    };
+
+    // create mode box
+    if (this.options && this.options.modes && this.options.modes.length) {
+      this.modeSwitcher = new ModeSwitcher(this.menu, this.options.modes, this.options.mode, function onSwitch(mode) {
+        // switch mode and restore focus
+        me.setMode(mode);
+        me.modeSwitcher.focus();
+      });
+    }
   }
 
   var emptyNode = {};
@@ -224,18 +226,20 @@ textmode.create = function (container, options) {
       });
     }
 
-    var poweredBy = document.createElement('a');
-    poweredBy.appendChild(document.createTextNode('powered by ace'));
-    poweredBy.href = 'http://ace.ajax.org';
-    poweredBy.target = '_blank';
-    poweredBy.className = 'jsoneditor-poweredBy';
-    poweredBy.onclick = function () {
-      // TODO: this anchor falls below the margin of the content,
-      // therefore the normal a.href does not work. We use a click event
-      // for now, but this should be fixed.
-      window.open(poweredBy.href, poweredBy.target);
-    };
-    this.menu.appendChild(poweredBy);
+    if (this.options.mainMenuBar) {
+      var poweredBy = document.createElement('a');
+      poweredBy.appendChild(document.createTextNode('powered by ace'));
+      poweredBy.href = 'http://ace.ajax.org';
+      poweredBy.target = '_blank';
+      poweredBy.className = 'jsoneditor-poweredBy';
+      poweredBy.onclick = function () {
+        // TODO: this anchor falls below the margin of the content,
+        // therefore the normal a.href does not work. We use a click event
+        // for now, but this should be fixed.
+        window.open(poweredBy.href, poweredBy.target);
+      };
+      this.menu.appendChild(poweredBy);
+    }
 
     // register onchange event
     aceEditor.on('change', this._onChange.bind(this));
@@ -269,12 +273,12 @@ textmode.create = function (container, options) {
   this.dom.validationErrorsContainer = validationErrorsContainer;
   this.frame.appendChild(validationErrorsContainer);
 
-  var additinalErrorsIndication = document.createElement('div');
-  additinalErrorsIndication.style.display = 'none';
-  additinalErrorsIndication.className = "jsoneditor-additional-errors fadein";
-  additinalErrorsIndication.innerHTML = "Scroll for more &#9663;";
-  this.dom.additinalErrorsIndication = additinalErrorsIndication;
-  validationErrorsContainer.appendChild(additinalErrorsIndication);
+  var additionalErrorsIndication = document.createElement('div');
+  additionalErrorsIndication.style.display = 'none';
+  additionalErrorsIndication.className = "jsoneditor-additional-errors fadein";
+  additionalErrorsIndication.innerHTML = "Scroll for more &#9663;";
+  this.dom.additionalErrorsIndication = additionalErrorsIndication;
+  validationErrorsContainer.appendChild(additionalErrorsIndication);
 
   if (options.statusBar) {
     util.addClassName(this.content, 'has-status-bar');
@@ -428,20 +432,18 @@ textmode._onKeyDown = function (event) {
 
 /**
  * Event handler for mousedown.
- * @param {Event} event
  * @private
  */
-textmode._onMouseDown = function (event) {
+textmode._onMouseDown = function () {
   this._updateCursorInfo();
   this._emitSelectionChange();
 };
 
 /**
  * Event handler for blur.
- * @param {Event} event
  * @private
  */
-textmode._onBlur = function (event) {
+textmode._onBlur = function () {
   var me = this;
   // this allows to avoid blur when clicking inner elements (like the errors panel)
   // just make sure to set the isFocused to true on the inner element onclick callback
@@ -481,7 +483,7 @@ textmode._updateCursorInfo = function () {
         line: line,
         column: col,
         count: count
-      }
+      };
 
       if(me.options.statusBar) {
         updateDisplay();
@@ -500,7 +502,7 @@ textmode._updateCursorInfo = function () {
       line: line,
       column: col,
       count: count
-    }
+    };
 
     if(this.options.statusBar) {
       updateDisplay();
@@ -528,7 +530,7 @@ textmode._emitSelectionChange = function () {
     var currentSelection = this.getTextSelection();
     this._selectionChangedHandler(currentSelection.start, currentSelection.end, currentSelection.text);
   }
-}
+};
 
 /**
  * refresh ERROR annotations state
@@ -543,7 +545,7 @@ textmode._refreshAnnotations = function () {
     var errEnnotations = session.getAnnotations().filter(function(annotation) {return annotation.type === 'error' });
     session.setAnnotations(errEnnotations);
   }
-}
+};
 
 /**
  * Destroy the editor. Clean up DOM, event listeners, and web workers.
@@ -848,7 +850,7 @@ textmode._renderErrors = function(errors) {
   if (this.dom.validationErrors) {
     this.dom.validationErrors.parentNode.removeChild(this.dom.validationErrors);
     this.dom.validationErrors = null;
-    this.dom.additinalErrorsIndication.style.display = 'none';
+    this.dom.additionalErrorsIndication.style.display = 'none';
 
     this.content.style.marginBottom = '';
     this.content.style.paddingBottom = '';
@@ -933,12 +935,12 @@ textmode._renderErrors = function(errors) {
 
       this.dom.validationErrors = validationErrors;
       this.dom.validationErrorsContainer.appendChild(validationErrors);
-      this.dom.additinalErrorsIndication.title = errors.length + " errors total";
+      this.dom.additionalErrorsIndication.title = errors.length + " errors total";
 
       if (this.dom.validationErrorsContainer.clientHeight < this.dom.validationErrorsContainer.scrollHeight) {
-        this.dom.additinalErrorsIndication.style.display = 'block';
+        this.dom.additionalErrorsIndication.style.display = 'block';
         this.dom.validationErrorsContainer.onscroll = function () {
-          me.dom.additinalErrorsIndication.style.display = 
+          me.dom.additionalErrorsIndication.style.display =
             (me.dom.validationErrorsContainer.clientHeight > 0 && me.dom.validationErrorsContainer.scrollTop === 0) ? 'block' : 'none';
         }
       } else {
@@ -1027,13 +1029,10 @@ textmode.getTextSelection = function () {
 };
 
 /**
- * Callback registraion for selection change
+ * Callback registration for selection change
  * @param {selectionCallback} callback
  * 
  * @callback selectionCallback
- * @param {{row:Number, column:Number}} startPos selection start position
- * @param {{row:Number, column:Number}} endPos selected end position
- * @param {String} text selected text
  */
 textmode.onTextSelectionChange = function (callback) {
   if (typeof callback === 'function') {

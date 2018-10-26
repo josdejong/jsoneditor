@@ -1396,7 +1396,7 @@ Node.prototype.changeType = function (newType) {
         this.childs = [];
       }
 
-      this.childs.forEach(function (child, index) {
+      this.childs.forEach(function (child) {
         child.clearDom();
         delete child.index;
         child.fieldEditable = true;
@@ -3372,7 +3372,7 @@ Node.prototype._showColorPicker = function () {
       }
     });
   }
-}
+};
 
 /**
  * Remove nodes
@@ -3870,7 +3870,7 @@ Node.targetIsColorPicker = function (target) {
   }
 
   return false;
-}
+};
 
 /**
  * Remove the focus of given nodes, and move the focus to the (a) node before,
