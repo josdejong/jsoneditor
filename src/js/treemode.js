@@ -500,6 +500,9 @@ treemode._onChange = function () {
     return;
   }
 
+  // selection can be changed after undo/redo
+  this.selection = this.getDomSelection();
+
   // validate JSON schema (if configured)
   this._debouncedValidate();
 

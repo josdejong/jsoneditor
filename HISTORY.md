@@ -10,7 +10,7 @@ https://github.com/josdejong/jsoneditor
 - Fixed #590: validation failing in code and text mode when status
   bar is disabled.
 - Fixed #589: the path in the navigation bar is not updated
-  when deleting a node.
+  when duplicating or removing a node, and neither after an undo/redo action.
 - Fixed duplicate and remove of the action menu of multiple selected
   nodes not working.
 - Fixed not preventing default selection of text when selecting nodes.
