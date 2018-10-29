@@ -3,7 +3,7 @@
 https://github.com/josdejong/jsoneditor
 
 
-## not yet released, version 5.25.0
+## 2018-10-29, version 5.25.0
 
 - Implemented options `enableSort` and `enableTransform` so you can turn off
   these features. Thanks @tanmayrajani.

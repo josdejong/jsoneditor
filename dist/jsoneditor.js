@@ -24,8 +24,8 @@
  * Copyright (c) 2011-2017 Jos de Jong, http://jsoneditoronline.org
  *
  * @author  Jos de Jong, <wjosdejong@gmail.com>
- * @version 5.24.7
- * @date    2018-10-08
+ * @version 5.25.0
+ * @date    2018-10-29
  */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
@@ -252,7 +252,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  'colorPicker', 'onColorPicker',
 	  'timestampTag',
 	  'escapeUnicode', 'history', 'search', 'mode', 'modes', 'name', 'indentation',
-	  'sortObjectKeys', 'navigationBar', 'statusBar', 'languages', 'language'
+	  'sortObjectKeys', 'navigationBar', 'statusBar', 'languages', 'language', 'enableSort', 'enableTransform'
 	];
 
 	/**
@@ -30256,7 +30256,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	      }
 	    },
 	    timestampTag: true,
-	    onEvent: null
+	    onEvent: null,
+	    enableSort: true,
+	    enableTransform: true
 	  };
 
 	  // copy all options
@@ -30591,8 +30593,26 @@ return /******/ (function(modules) { // webpackBootstrap
 	    return;
 	  }
 
+	  // selection can be changed after undo/redo
+	  this.selection = this.getDomSelection();
+
 	  // validate JSON schema (if configured)
 	  this._debouncedValidate();
+
+	  if (this.treePath) {
+	    var selectedNode = this.selection
+	        ?  this.node.findNodeByInternalPath(this.selection.path)
+	        : this.multiselection
+	            ? this.multiselection.nodes[0]
+	            : undefined;
+
+	    if (selectedNode) {
+	      this._updateTreePath(selectedNode.getNodePath())
+	    }
+	    else {
+	      this.treePath.reset()
+	    }
+	  }
 
 	  // trigger the onChange callback
 	  if (this.options.onChange) {
@@ -31079,26 +31099,30 @@ return /******/ (function(modules) { // webpackBootstrap
 	  this.menu.appendChild(collapseAll);
 
 	  // create sort button
-	  var sort = document.createElement('button');
-	  sort.type = 'button';
-	  sort.className = 'jsoneditor-sort';
-	  sort.title = translate('sortTitleShort');
-	  sort.onclick = function () {
-	    var anchor = editor.options.modalAnchor || DEFAULT_MODAL_ANCHOR;
-	    showSortModal(editor.node, anchor)
-	  };
-	  this.menu.appendChild(sort);
+	  if (this.options.enableSort) {
+	    var sort = document.createElement('button');
+	    sort.type = 'button';
+	    sort.className = 'jsoneditor-sort';
+	    sort.title = translate('sortTitleShort');
+	    sort.onclick = function () {
+	      var anchor = editor.options.modalAnchor || DEFAULT_MODAL_ANCHOR;
+	      showSortModal(editor.node, anchor)
+	    };
+	    this.menu.appendChild(sort);
+	  }
 
 	  // create transform button
-	  var transform = document.createElement('button');
-	  transform.type = 'button';
-	  transform.title = translate('transformTitleShort');
-	  transform.className = 'jsoneditor-transform';
-	  transform.onclick = function () {
-	    var anchor = editor.options.modalAnchor || DEFAULT_MODAL_ANCHOR;
-	    showTransformModal(editor.node, anchor)
-	  };
-	  this.menu.appendChild(transform);
+	  if (this.options.enableTransform) {
+	    var transform = document.createElement('button');
+	    transform.type = 'button';
+	    transform.title = translate('transformTitleShort');
+	    transform.className = 'jsoneditor-transform';
+	    transform.onclick = function () {
+	      var anchor = editor.options.modalAnchor || DEFAULT_MODAL_ANCHOR;
+	      showTransformModal(editor.node, anchor)
+	    };
+	    this.menu.appendChild(transform);
+	  }
 
 	  // create undo/redo buttons
 	  if (this.history) {
@@ -31153,7 +31177,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    this.navBar.className = 'jsoneditor-navigation-bar nav-bar-empty';
 	    this.frame.appendChild(this.navBar);
 
-	    this.treePath = new TreePath(this.navBar);
+	    this.treePath = new TreePath(this.navBar, this.frame);
 	    this.treePath.onSectionSelected(this._onTreePathSectionSelected.bind(this));
 	    this.treePath.onContextMenuItemSelected(this._onTreePathMenuItemSelected.bind(this));
 	  }
@@ -31394,6 +31418,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    });
 	  }
 
+	  event.preventDefault();
 	};
 
 	/**
@@ -31723,7 +31748,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	 */
 	treemode.showContextMenu = function (anchor, onClose) {
 	  var items = [];
-	  var editor = this;
+	  var selectedNodes = this.multiselection.nodes.slice();
 
 	  // create duplicate button
 	  items.push({
@@ -31731,7 +31756,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    title: translate('duplicateTitle'),
 	    className: 'jsoneditor-duplicate',
 	    click: function () {
-	      Node.onDuplicate(editor.multiselection.nodes);
+	      Node.onDuplicate(selectedNodes );
 	    }
 	  });
 
@@ -31741,12 +31766,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	    title: translate('removeTitle'),
 	    className: 'jsoneditor-remove',
 	    click: function () {
-	      Node.onRemove(editor.multiselection.nodes);
+	      Node.onRemove(selectedNodes);
 	    }
 	  });
 
 	  var menu = new ContextMenu(items, {close: onClose});
-	  menu.show(anchor, editor.frame);
+	  menu.show(anchor, this.frame);
 	};
 
 	/**
@@ -35356,10 +35381,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	/**
 	 * Creates a component that visualize path selection in tree based editors
 	 * @param {HTMLElement} container 
+	 * @param {HTMLElement} root
 	 * @constructor
 	 */
-	function TreePath(container) {
+	function TreePath(container, root) {
 	  if (container) {
+	    this.root = root;
 	    this.path = document.createElement('div');
 	    this.path.className = 'jsoneditor-treepath';
 	    container.appendChild(this.path);
@@ -35409,10 +35436,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	            });
 	          });
 	          var menu = new ContextMenu(items);
-	          menu.show(sepEl);
+	          menu.show(sepEl, me.root);
 	        };
 
-	        me.path.appendChild(sepEl, me.container);
+	        me.path.appendChild(sepEl);
 	      }
 
 	      if(idx === pathObjs.length - 1) {
@@ -39633,25 +39660,29 @@ return /******/ (function(modules) { // webpackBootstrap
 	  }
 
 	  if (this._hasChilds()) {
-	    items.push({
-	      text: translate('sort'),
-	      title: translate('sortTitle', {type: this.type}),
-	      className: 'jsoneditor-sort-asc',
-	      click: function () {
-	        var anchor = node.editor.options.modalAnchor || DEFAULT_MODAL_ANCHOR;
-	        showSortModal(node, anchor)
-	      }
-	    });
+	    if (this.editor.options.enableSort) {
+	      items.push({
+	        text: translate('sort'),
+	        title: translate('sortTitle', {type: this.type}),
+	        className: 'jsoneditor-sort-asc',
+	        click: function () {
+	          var anchor = node.editor.options.modalAnchor || DEFAULT_MODAL_ANCHOR;
+	          showSortModal(node, anchor)
+	        }
+	      });
+	    }
 
-	    items.push({
-	      text: translate('transform'),
-	      title: translate('transformTitle', {type: this.type}),
-	      className: 'jsoneditor-transform',
-	      click: function () {
-	        var anchor = node.editor.options.modalAnchor || DEFAULT_MODAL_ANCHOR;
-	        showTransformModal(node, anchor)
-	      }
-	    });
+	    if (this.editor.options.enableTransform) {
+	      items.push({
+	        text: translate('transform'),
+	        title: translate('transformTitle', {type: this.type}),
+	        className: 'jsoneditor-transform',
+	        click: function () {
+	          var anchor = node.editor.options.modalAnchor || DEFAULT_MODAL_ANCHOR;
+	          showTransformModal(node, anchor)
+	        }
+	      });
+	    }
 	  }
 
 	  if (this.parent && this.parent._hasChilds()) {
@@ -46539,19 +46570,25 @@ return /******/ (function(modules) { // webpackBootstrap
 	  var json;
 	  try {
 	    json = this.get(); // this can fail when there is no valid json
-	    this.parseErrorIndication.style.display = 'none';
+	    if (this.parseErrorIndication) {
+	      this.parseErrorIndication.style.display = 'none';
+	    }
 	    doValidate = true;
 	  }
 	  catch (err) {
 	    if (this.getText()) {
-	      this.parseErrorIndication.style.display = 'block';
+	      if (this.parseErrorIndication) {
+	        this.parseErrorIndication.style.display = 'block';
+	      }
 	      // try to extract the line number from the jsonlint error message
 	      var match = /\w*line\s*(\d+)\w*/g.exec(err.message);
 	      var line;
 	      if (match) {
 	        line = +match[1];
 	      }
-	      this.parseErrorIndication.title = !isNaN(line) ? ('parse error on line ' + line) : 'parse error - check that the json is valid';
+	      if (this.parseErrorIndication) {
+	        this.parseErrorIndication.title = !isNaN(line) ? ('parse error on line ' + line) : 'parse error - check that the json is valid';
+	      }
 	      parseErrors.push({
 	        type: 'error',
 	        message: err.message.replace(/\n/g, '<br>'),
