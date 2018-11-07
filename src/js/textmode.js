@@ -41,9 +41,12 @@ textmode.create = function (container, options) {
   // read options
   options = options || {};
   
-  if(typeof options.statusBar === 'undefined') {
+  if (typeof options.statusBar === 'undefined') {
     options.statusBar = true;
   }
+
+  // setting default for textmode
+  options.mainMenuBar = options.mainMenuBar !== false;
 
   this.options = options;
 
@@ -109,7 +112,12 @@ textmode.create = function (container, options) {
     me._onKeyDown(event);
   };
 
+  this.content = document.createElement('div');
+  this.content.className = 'jsoneditor-outer';
+
   if (this.options.mainMenuBar) {
+    util.addClassName(this.content, 'has-main-menu-bar');
+
     // create menu
     this.menu = document.createElement('div');
     this.menu.className = 'jsoneditor-menu';
@@ -171,6 +179,21 @@ textmode.create = function (container, options) {
         me.modeSwitcher.focus();
       });
     }
+
+    if (this.mode == 'code') {
+      var poweredBy = document.createElement('a');
+      poweredBy.appendChild(document.createTextNode('powered by ace'));
+      poweredBy.href = 'http://ace.ajax.org';
+      poweredBy.target = '_blank';
+      poweredBy.className = 'jsoneditor-poweredBy';
+      poweredBy.onclick = function () {
+        // TODO: this anchor falls below the margin of the content,
+        // therefore the normal a.href does not work. We use a click event
+        // for now, but this should be fixed.
+        window.open(poweredBy.href, poweredBy.target);
+      };
+      this.menu.appendChild(poweredBy);
+    }
   }
 
   var emptyNode = {};
@@ -178,10 +201,7 @@ textmode.create = function (container, options) {
   && typeof(this.options.onEditable === 'function')
   && !this.options.onEditable(emptyNode));
 
-  this.content = document.createElement('div');
-  this.content.className = 'jsoneditor-outer';
   this.frame.appendChild(this.content);
-
   this.container.appendChild(this.frame);
 
   if (this.mode == 'code') {
@@ -224,21 +244,6 @@ textmode.create = function (container, options) {
           me.aceEditor = aceEditor;
         }
       });
-    }
-
-    if (this.options.mainMenuBar) {
-      var poweredBy = document.createElement('a');
-      poweredBy.appendChild(document.createTextNode('powered by ace'));
-      poweredBy.href = 'http://ace.ajax.org';
-      poweredBy.target = '_blank';
-      poweredBy.className = 'jsoneditor-poweredBy';
-      poweredBy.onclick = function () {
-        // TODO: this anchor falls below the margin of the content,
-        // therefore the normal a.href does not work. We use a click event
-        // for now, but this should be fixed.
-        window.open(poweredBy.href, poweredBy.target);
-      };
-      this.menu.appendChild(poweredBy);
     }
 
     // register onchange event

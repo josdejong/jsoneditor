@@ -938,6 +938,9 @@ treemode._createFrame = function () {
   this.frame.className = 'jsoneditor jsoneditor-mode-' + this.options.mode;
   this.container.appendChild(this.frame);
 
+  this.contentOuter = document.createElement('div');
+  this.contentOuter.className = 'jsoneditor-outer';
+
   // create one global event listener to handle all events from all nodes
   var editor = this;
   function onEvent(event) {
@@ -977,6 +980,8 @@ treemode._createFrame = function () {
   this.frame.onfocusout = onEvent; // for IE
 
   if (this.options.mainMenuBar) {
+    util.addClassName(this.contentOuter, 'has-main-menu-bar');
+
     // create menu
     this.menu = document.createElement('div');
     this.menu.className = 'jsoneditor-menu';
@@ -1597,16 +1602,13 @@ treemode._onKeyDown = function (event) {
  * @private
  */
 treemode._createTable = function () {
-  var contentOuter = document.createElement('div');
-  contentOuter.className = 'jsoneditor-outer';
-  if(this.options.navigationBar) {
-    util.addClassName(contentOuter, 'has-nav-bar');
+  if (this.options.navigationBar) {
+    util.addClassName(this.contentOuter, 'has-nav-bar');
   }
-  this.contentOuter = contentOuter;
 
   this.scrollableContent = document.createElement('div');
   this.scrollableContent.className = 'jsoneditor-tree';
-  contentOuter.appendChild(this.scrollableContent);
+  this.contentOuter.appendChild(this.scrollableContent);
 
   // the jsoneditor-tree-inner div with bottom padding is here to
   // keep space for the action menu dropdown. It's created as a
@@ -1640,7 +1642,7 @@ treemode._createTable = function () {
   this.tbody = document.createElement('tbody');
   this.table.appendChild(this.tbody);
 
-  this.frame.appendChild(contentOuter);
+  this.frame.appendChild(this.contentOuter);
 };
 
 /**

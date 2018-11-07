@@ -253,8 +253,8 @@ div.jsoneditor-outer {
   position: static;
   width: 100%;
   height: 100%;
-  margin: -35px 0 0 0;
-  padding: 35px 0 0 0;
+  margin: 0;
+  padding: 0;
 
   -moz-box-sizing: border-box;
   -webkit-box-sizing: border-box;
@@ -262,13 +262,23 @@ div.jsoneditor-outer {
 }
 
 div.jsoneditor-outer.has-nav-bar {
-  margin: -61px 0 0 0;
-  padding: 61px 0 0 0;
+  margin-top: -26px;
+  padding-top: 26px;
 }
 
 div.jsoneditor-outer.has-status-bar {
-  margin: -35px 0 -26px 0;
-  padding: 35px 0 26px 0;
+  margin-bottom: -26px;
+  padding-bottom: 26px;
+}
+
+div.jsoneditor-outer.has-main-menu-bar {
+  margin-top: -35px;
+  padding-top: 35px;
+}
+
+div.jsoneditor-outer.has-nav-bar.has-main-menu-bar {
+  margin-top: -61px;
+  padding-top: 61px;
 }
 
 textarea.jsoneditor-text,
