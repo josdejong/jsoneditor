@@ -129,8 +129,6 @@ treemode.destroy = function () {
  * @private
  */
 treemode._setOptions = function (options) {
-  var editor = this;
-
   this.options = {
     search: true,
     history: true,
@@ -140,6 +138,7 @@ treemode._setOptions = function (options) {
     schemaRefs: null,
     autocomplete: null,
     navigationBar : true,
+    mainMenuBar: true,
     onSelectionChange: null,
     colorPicker: true,
     onColorPicker: function (parent, color, onChange) {
@@ -149,11 +148,11 @@ treemode._setOptions = function (options) {
           color: color,
           popup: 'bottom',
           onDone: function (color) {
-            var alpha = color.rgba[3]
+            var alpha = color.rgba[3];
             var hex = (alpha === 1)
                 ? color.hex.substr(0, 7)  // return #RRGGBB
-                : color.hex               // return #RRGGBBAA
-            onChange(hex)
+                : color.hex;               // return #RRGGBBAA
+            onChange(hex);
           }
         }).show();
       }
@@ -942,6 +941,9 @@ treemode._createFrame = function () {
   this.frame.className = 'jsoneditor jsoneditor-mode-' + this.options.mode;
   this.container.appendChild(this.frame);
 
+  this.contentOuter = document.createElement('div');
+  this.contentOuter.className = 'jsoneditor-outer';
+
   // create one global event listener to handle all events from all nodes
   var editor = this;
   function onEvent(event) {
@@ -980,105 +982,109 @@ treemode._createFrame = function () {
   this.frame.onfocusin = onEvent;  // for IE
   this.frame.onfocusout = onEvent; // for IE
 
-  // create menu
-  this.menu = document.createElement('div');
-  this.menu.className = 'jsoneditor-menu';
-  this.frame.appendChild(this.menu);
+  if (this.options.mainMenuBar) {
+    util.addClassName(this.contentOuter, 'has-main-menu-bar');
 
-  // create expand all button
-  var expandAll = document.createElement('button');
-  expandAll.type = 'button';
-  expandAll.className = 'jsoneditor-expand-all';
-  expandAll.title = translate('expandAll');
-  expandAll.onclick = function () {
-    editor.expandAll();
-  };
-  this.menu.appendChild(expandAll);
+    // create menu
+    this.menu = document.createElement('div');
+    this.menu.className = 'jsoneditor-menu';
+    this.frame.appendChild(this.menu);
 
-  // create collapse all button
-  var collapseAll = document.createElement('button');
-  collapseAll.type = 'button';
-  collapseAll.title = translate('collapseAll');
-  collapseAll.className = 'jsoneditor-collapse-all';
-  collapseAll.onclick = function () {
-    editor.collapseAll();
-  };
-  this.menu.appendChild(collapseAll);
-
-  // create sort button
-  if (this.options.enableSort) {
-    var sort = document.createElement('button');
-    sort.type = 'button';
-    sort.className = 'jsoneditor-sort';
-    sort.title = translate('sortTitleShort');
-    sort.onclick = function () {
-      var anchor = editor.options.modalAnchor || DEFAULT_MODAL_ANCHOR;
-      showSortModal(editor.node, anchor)
+    // create expand all button
+    var expandAll = document.createElement('button');
+    expandAll.type = 'button';
+    expandAll.className = 'jsoneditor-expand-all';
+    expandAll.title = translate('expandAll');
+    expandAll.onclick = function () {
+      editor.expandAll();
     };
-    this.menu.appendChild(sort);
+    this.menu.appendChild(expandAll);
+
+    // create collapse all button
+    var collapseAll = document.createElement('button');
+    collapseAll.type = 'button';
+    collapseAll.title = translate('collapseAll');
+    collapseAll.className = 'jsoneditor-collapse-all';
+    collapseAll.onclick = function () {
+      editor.collapseAll();
+    };
+    this.menu.appendChild(collapseAll);
+
+    // create sort button
+    if (this.options.enableSort) {
+      var sort = document.createElement('button');
+      sort.type = 'button';
+      sort.className = 'jsoneditor-sort';
+      sort.title = translate('sortTitleShort');
+      sort.onclick = function () {
+        var anchor = editor.options.modalAnchor || DEFAULT_MODAL_ANCHOR;
+        showSortModal(editor.node, anchor)
+      };
+      this.menu.appendChild(sort);
+    }
+
+    // create transform button
+    if (this.options.enableTransform) {
+      var transform = document.createElement('button');
+      transform.type = 'button';
+      transform.title = translate('transformTitleShort');
+      transform.className = 'jsoneditor-transform';
+      transform.onclick = function () {
+        var anchor = editor.options.modalAnchor || DEFAULT_MODAL_ANCHOR;
+        showTransformModal(editor.node, anchor)
+      };
+      this.menu.appendChild(transform);
+    }
+
+    // create undo/redo buttons
+    if (this.history) {
+      // create undo button
+      var undo = document.createElement('button');
+      undo.type = 'button';
+      undo.className = 'jsoneditor-undo jsoneditor-separator';
+      undo.title = translate('undo');
+      undo.onclick = function () {
+        editor._onUndo();
+      };
+      this.menu.appendChild(undo);
+      this.dom.undo = undo;
+
+      // create redo button
+      var redo = document.createElement('button');
+      redo.type = 'button';
+      redo.className = 'jsoneditor-redo';
+      redo.title = translate('redo');
+      redo.onclick = function () {
+        editor._onRedo();
+      };
+      this.menu.appendChild(redo);
+      this.dom.redo = redo;
+
+      // register handler for onchange of history
+      this.history.onChange = function () {
+        undo.disabled = !editor.history.canUndo();
+        redo.disabled = !editor.history.canRedo();
+      };
+      this.history.onChange();
+    }
+
+    // create mode box
+    if (this.options && this.options.modes && this.options.modes.length) {
+      var me = this;
+      this.modeSwitcher = new ModeSwitcher(this.menu, this.options.modes, this.options.mode, function onSwitch(mode) {
+        // switch mode and restore focus
+        me.setMode(mode);
+        me.modeSwitcher.focus();
+      });
+    }
+
+    // create search box
+    if (this.options.search) {
+      this.searchBox = new SearchBox(this, this.menu);
+    }
   }
 
-  // create transform button
-  if (this.options.enableTransform) {
-    var transform = document.createElement('button');
-    transform.type = 'button';
-    transform.title = translate('transformTitleShort');
-    transform.className = 'jsoneditor-transform';
-    transform.onclick = function () {
-      var anchor = editor.options.modalAnchor || DEFAULT_MODAL_ANCHOR;
-      showTransformModal(editor.node, anchor)
-    };
-    this.menu.appendChild(transform);
-  }
-
-  // create undo/redo buttons
-  if (this.history) {
-    // create undo button
-    var undo = document.createElement('button');
-    undo.type = 'button';
-    undo.className = 'jsoneditor-undo jsoneditor-separator';
-    undo.title = translate('undo');
-    undo.onclick = function () {
-      editor._onUndo();
-    };
-    this.menu.appendChild(undo);
-    this.dom.undo = undo;
-
-    // create redo button
-    var redo = document.createElement('button');
-    redo.type = 'button';
-    redo.className = 'jsoneditor-redo';
-    redo.title = translate('redo');
-    redo.onclick = function () {
-      editor._onRedo();
-    };
-    this.menu.appendChild(redo);
-    this.dom.redo = redo;
-
-    // register handler for onchange of history
-    this.history.onChange = function () {
-      undo.disabled = !editor.history.canUndo();
-      redo.disabled = !editor.history.canRedo();
-    };
-    this.history.onChange();
-  }
-
-  // create mode box
-  if (this.options && this.options.modes && this.options.modes.length) {
-    var me = this;
-    this.modeSwitcher = new ModeSwitcher(this.menu, this.options.modes, this.options.mode, function onSwitch(mode) {
-      // switch mode and restore focus
-      me.setMode(mode);
-      me.modeSwitcher.focus();
-    });
-  }
-
-  // create search box
-  if (this.options.search) {
-    this.searchBox = new SearchBox(this, this.menu);
-  }
-
-  if(this.options.navigationBar) {
+  if (this.options.navigationBar) {
     // create second menu row for treepath
     this.navBar = document.createElement('div');
     this.navBar.className = 'jsoneditor-navigation-bar nav-bar-empty';
@@ -1209,7 +1215,7 @@ treemode._updateTreePath = function (pathNodes) {
         name: getName(node),
         node: node,
         children: []
-      }
+      };
       if (node.childs && node.childs.length) {
         node.childs.forEach(function (childNode) {
           pathObj.children.push({
@@ -1373,10 +1379,9 @@ treemode._onMultiSelect = function (event) {
 
 /**
  * End of multiselect nodes by dragging
- * @param event
  * @private
  */
-treemode._onMultiSelectEnd = function (event) {
+treemode._onMultiSelectEnd = function () {
   // set focus to the context menu button of the first node
   if (this.multiselection.nodes[0]) {
     this.multiselection.nodes[0].dom.menu.focus();
@@ -1600,16 +1605,13 @@ treemode._onKeyDown = function (event) {
  * @private
  */
 treemode._createTable = function () {
-  var contentOuter = document.createElement('div');
-  contentOuter.className = 'jsoneditor-outer';
-  if(this.options.navigationBar) {
-    util.addClassName(contentOuter, 'has-nav-bar');
+  if (this.options.navigationBar) {
+    util.addClassName(this.contentOuter, 'has-nav-bar');
   }
-  this.contentOuter = contentOuter;
 
   this.scrollableContent = document.createElement('div');
   this.scrollableContent.className = 'jsoneditor-tree';
-  contentOuter.appendChild(this.scrollableContent);
+  this.contentOuter.appendChild(this.scrollableContent);
 
   // the jsoneditor-tree-inner div with bottom padding is here to
   // keep space for the action menu dropdown. It's created as a
@@ -1643,7 +1645,7 @@ treemode._createTable = function () {
   this.tbody = document.createElement('tbody');
   this.table.appendChild(this.tbody);
 
-  this.frame.appendChild(contentOuter);
+  this.frame.appendChild(this.contentOuter);
 };
 
 /**
@@ -1707,12 +1709,10 @@ treemode.getSelection = function () {
 };
 
 /**
- * Callback registraion for selection change
+ * Callback registration for selection change
  * @param {selectionCallback} callback 
  * 
  * @callback selectionCallback
- * @param {SerializableNode=} start
- * @param {SerializableNode=} end
  */
 treemode.onSelectionChange = function (callback) {
   if (typeof callback === 'function') {
@@ -1731,7 +1731,7 @@ treemode.onSelectionChange = function (callback) {
 treemode.setSelection = function (start, end) {
   // check for old usage
   if (start && start.dom && start.range) {
-    console.warn('setSelection/getSelection usage for text selection is depracated and should not be used, see documantaion for supported selection options');
+    console.warn('setSelection/getSelection usage for text selection is deprecated and should not be used, see documentation for supported selection options');
     this.setDomSelection(start);
   }
 
@@ -1747,7 +1747,7 @@ treemode.setSelection = function (start, end) {
  * Returns a set of Nodes according to a range of selection
  * @param {{path: Array.<String>}} start object contains the path for range start 
  * @param {{path: Array.<String>}=} end object contains the path for range end
- * @return {Array.<Node>} Node intances on the given range
+ * @return {Array.<Node>} Node instances on the given range
  * @private
  */
 treemode._getNodeInstancesByRange = function (start, end) {
