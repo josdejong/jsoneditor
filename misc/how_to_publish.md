@@ -55,9 +55,6 @@ Publish to npm:
 
     npm publish
 
-Publish at cdnjs: test after 30 to 60 minutes whether the new version is
-published at cdnjs (should auto update).
-
 
 ## Test published library
 

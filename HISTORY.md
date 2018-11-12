@@ -3,6 +3,12 @@
 https://github.com/josdejong/jsoneditor
 
 
+## 2018-11-12, version 5.26.0
+
+- Implemented option `mainMenuBar` to enable/disable the main menu bar.
+  Thanks @tanmayrajani.
+
+
 ## 2018-10-29, version 5.25.0
 
 - Implemented options `enableSort` and `enableTransform` so you can turn off
