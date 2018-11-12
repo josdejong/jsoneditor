@@ -144,7 +144,7 @@ Node.prototype.getName = function () {
 
 /**
  * Find child node by serializable path
- * @param {Array<String>} path 
+ * @param {Array<String>} path
  */
 Node.prototype.findNodeByPath = function (path) {
   if (!path) {
@@ -186,7 +186,7 @@ Node.prototype.findNodeByInternalPath = function (internalPath) {
 
 /**
  * @typedef {{value: String|Object|Number|Boolean, path: Array.<String|Number>}} SerializableNode
- * 
+ *
  * Returns serializable representation for the node
  * @return {SerializableNode}
  */
@@ -1469,7 +1469,7 @@ Node.prototype.deepEqual = function (json) {
     }
   }
   else if (this.type === 'object') {
-    if (typeof json !== 'object') {
+    if (typeof json !== 'object' || !json) {
       return false;
     }
 
@@ -2516,7 +2516,7 @@ Node.prototype._updateSchema = function () {
   //Locating the schema of the node and checking for any enum type
   if(this.editor && this.editor.options) {
     // find the part of the json schema matching this nodes path
-    this.schema = this.editor.options.schema 
+    this.schema = this.editor.options.schema
         ? Node._findSchema(this.editor.options.schema, this.getPath())
         : null;
     if (this.schema) {
@@ -2957,7 +2957,7 @@ Node.prototype._onEvent = function (event) {
     };
     // For leaf values, include value
     if (!this._hasChilds() &&element === this.dom.value) {
-      info.value = this.getValue();  
+      info.value = this.getValue();
     }
     this.editor.options.onEvent(info, event);
   }
