@@ -24,7 +24,7 @@
  * Copyright (c) 2011-2017 Jos de Jong, http://jsoneditoronline.org
  *
  * @author  Jos de Jong, <wjosdejong@gmail.com>
- * @version 5.26.1
+ * @version 5.26.2
  * @date    2018-11-13
  */
 (function webpackUniversalModuleDefinition(root, factory) {
@@ -31275,7 +31275,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  }
 	  else {
 	    // filter mouse events in the contents part of the editor (not the main menu)
-	    if (event.type === 'mousedown' && util.hasParentNode(event.target, editor.content)) {
+	    if (event.type === 'mousedown' && util.hasParentNode(event.target, this.content)) {
 	      this.deselect();
 
 	      if (node && event.target === node.dom.drag) {
