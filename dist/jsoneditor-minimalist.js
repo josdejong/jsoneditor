@@ -24,8 +24,8 @@
  * Copyright (c) 2011-2017 Jos de Jong, http://jsoneditoronline.org
  *
  * @author  Jos de Jong, <wjosdejong@gmail.com>
- * @version 5.26.0
- * @date    2018-11-12
+ * @version 5.26.1
+ * @date    2018-11-13
  */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
@@ -2632,7 +2632,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }
 	  }
 	  else {
-	    if (event.type === 'mousedown') {
+	    // filter mouse events in the contents part of the editor (not the main menu)
+	    if (event.type === 'mousedown' && util.hasParentNode(event.target, editor.content)) {
 	      this.deselect();
 
 	      if (node && event.target === node.dom.drag) {
@@ -5173,6 +5174,25 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 
 	/**
+	 * Test whether an element has the provided parent node somewhere up the node tree.
+	 * @param {Element} elem
+	 * @param {Element} parent
+	 * @return {boolean}
+	 */
+	exports.hasParentNode = function (elem, parent) {
+	  var e = elem ? elem.parentNode : undefined;
+
+	  while (e) {
+	    if (e === parent) {
+	      return true;
+	    }
+	    e = e.parentNode;
+	  }
+
+	  return false;
+	}
+
+	/**
 	 * Returns the version of Internet Explorer or a -1
 	 * (indicating the use of another browser).
 	 * Source: http://msdn.microsoft.com/en-us/library/ms537509(v=vs.85).aspx
@@ -6994,7 +7014,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	/**
 	 * Find child node by serializable path
-	 * @param {Array<String>} path 
+	 * @param {Array<String>} path
 	 */
 	Node.prototype.findNodeByPath = function (path) {
 	  if (!path) {
@@ -7036,7 +7056,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	/**
 	 * @typedef {{value: String|Object|Number|Boolean, path: Array.<String|Number>}} SerializableNode
-	 * 
+	 *
 	 * Returns serializable representation for the node
 	 * @return {SerializableNode}
 	 */
@@ -8319,7 +8339,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }
 	  }
 	  else if (this.type === 'object') {
-	    if (typeof json !== 'object') {
+	    if (typeof json !== 'object' || !json) {
 	      return false;
 	    }
 
@@ -9366,7 +9386,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  //Locating the schema of the node and checking for any enum type
 	  if(this.editor && this.editor.options) {
 	    // find the part of the json schema matching this nodes path
-	    this.schema = this.editor.options.schema 
+	    this.schema = this.editor.options.schema
 	        ? Node._findSchema(this.editor.options.schema, this.getPath())
 	        : null;
 	    if (this.schema) {
@@ -9807,7 +9827,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    };
 	    // For leaf values, include value
 	    if (!this._hasChilds() &&element === this.dom.value) {
-	      info.value = this.getValue();  
+	      info.value = this.getValue();
 	    }
 	    this.editor.options.onEvent(info, event);
 	  }

@@ -3,7 +3,7 @@
 https://github.com/josdejong/jsoneditor
 
 
-## not yet released, version 5.26.1
+## 2018-11-13, version 5.26.1
 
 - Fixed `.update()` throwing an exception when replacing a JSON object
   with `null`. Thanks @DullReferenceException.
