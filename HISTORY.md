@@ -3,6 +3,13 @@
 https://github.com/josdejong/jsoneditor
 
 
+## not yet released, version 5.26.1
+
+- Fixed `.update()` throwing an exception when replacing a JSON object
+  with `null`. Thanks @DullReferenceException.
+- Fixed #598: Search field can't be focused in object view.
+
+
 ## 2018-11-12, version 5.26.0
 
 - Implemented option `mainMenuBar` to enable/disable the main menu bar.

@@ -1181,7 +1181,8 @@ treemode._onEvent = function (event) {
     }
   }
   else {
-    if (event.type === 'mousedown') {
+    // filter mouse events in the contents part of the editor (not the main menu)
+    if (event.type === 'mousedown' && util.hasParentNode(event.target, editor.content)) {
       this.deselect();
 
       if (node && event.target === node.dom.drag) {

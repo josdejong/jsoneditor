@@ -581,6 +581,25 @@ exports.getInnerText = function getInnerText(element, buffer) {
 };
 
 /**
+ * Test whether an element has the provided parent node somewhere up the node tree.
+ * @param {Element} elem
+ * @param {Element} parent
+ * @return {boolean}
+ */
+exports.hasParentNode = function (elem, parent) {
+  var e = elem ? elem.parentNode : undefined;
+
+  while (e) {
+    if (e === parent) {
+      return true;
+    }
+    e = e.parentNode;
+  }
+
+  return false;
+}
+
+/**
  * Returns the version of Internet Explorer or a -1
  * (indicating the use of another browser).
  * Source: http://msdn.microsoft.com/en-us/library/ms537509(v=vs.85).aspx
