@@ -33,7 +33,7 @@
     "vanilla-picker": "2.4.2"
   },
   "devDependencies": {
-    "gulp": "3.9.1",
+    "gulp": "^4.0.0",
     "gulp-clean-css": "3.4.2",
     "gulp-concat-css": "2.3.0",
     "gulp-shell": "0.6.3",
