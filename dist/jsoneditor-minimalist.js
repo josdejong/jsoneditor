@@ -25,7 +25,7 @@
  *
  * @author  Jos de Jong, <wjosdejong@gmail.com>
  * @version 5.26.2
- * @date    2018-11-13
+ * @date    2018-11-29
  */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
@@ -6901,6 +6901,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	  this.editor = editor;
 	  this.dom = {};
 	  this.expanded = false;
+	  this.fieldCssClass = null;
+	  this.valueCssClass = null;
 
 	  if(params && (params instanceof Object)) {
 	    this.setField(params.field, params.fieldEditable);
@@ -7222,6 +7224,38 @@ return /******/ (function(modules) { // webpackBootstrap
 	 */
 	Node.prototype.setParent = function(parent) {
 	  this.parent = parent;
+	};
+
+	/**
+	 * Set custom css class name for a field
+	 * @param cssClass css class name
+	 */
+	Node.prototype.setFieldCssClass = function(cssClass) {
+	  this.fieldCssClass = cssClass;
+	  this.updateDom();
+	};
+
+	/**
+	 * Get field css class name
+	 */
+	Node.prototype.getFieldCssClass = function() {
+	  return this.fieldCssClass;
+	};
+
+	/**
+	 * Set custom css class name for a value
+	 * @param cssClass css class name
+	 */
+	Node.prototype.setValueCssClass = function(cssClass) {
+	  this.valueCssClass = cssClass;
+	  this.updateDom();
+	};
+
+	/**
+	 * Get value css class name
+	 */
+	Node.prototype.getValueCssClass = function() {
+	  return this.valueCssClass;
 	};
 
 	/**
@@ -8514,6 +8548,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	      classNames.push('jsoneditor-highlight');
 	    }
 
+	    if(this.valueCssClass){
+	      classNames.push(this.valueCssClass);
+	    }
+
 	    domValue.className = classNames.join(' ');
 
 	    // update title
@@ -8684,6 +8722,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	Node.prototype._updateDomField = function () {
 	  var domField = this.dom.field;
 	  if (domField) {
+	    if(this.fieldCssClass){
+	      domField.className = domField.className + ' ' + this.fieldCssClass;
+	    }
 	    // make backgound color lightgray when empty
 	    var isEmpty = (String(this.field) == '' && this.parent.type != 'array');
 	    if (isEmpty) {
