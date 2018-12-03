@@ -890,8 +890,12 @@ textmode._renderErrors = function(errors) {
         return {};
       });
       this._refreshAnnotations();
+    }
 
-    } else {
+    if (!this.aceEditor || errors.length !== errorLocations.length) {
+      if (this.aceEditor) {
+        errors = errors.filter(function(err) { return !errorLocations.some(function (errLoc) { return errLoc.path === err.dataPath })});
+      }
       var validationErrors = document.createElement('div');
       validationErrors.innerHTML = '<table class="jsoneditor-text-errors"><tbody></tbody></table>';
       var tbody = validationErrors.getElementsByTagName('tbody')[0];
