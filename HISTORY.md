@@ -3,6 +3,11 @@
 https://github.com/josdejong/jsoneditor
 
 
+## not yet released, version 5.26.3
+
+- Upgraded devDependency `gulp` to v4. Thanks @maestr0.
+
+
 ## 2018-11-13, version 5.26.2
 
 - Fixed dragging and selecting multiple nodes not working
