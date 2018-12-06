@@ -5,6 +5,7 @@ https://github.com/josdejong/jsoneditor
 
 ## not yet released, version 5.26.3
 
+- Fixed #610: JSON Repair now removes trailing commas.
 - Upgraded devDependency `gulp` to v4. Thanks @maestr0.
 
 
