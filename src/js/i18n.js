@@ -73,6 +73,16 @@ var _defs = {
     stringType: 'Field type "string". ' +
       'Field type is not determined from the value, ' +
       'but always returned as string.',
+    modeCodeText: 'Code',
+    modeCodeTitle: 'Switch to code highlighter',
+    modeFormText: 'Form',
+    modeFormTitle: 'Switch to form editor',
+    modeTextText: 'Text',
+    modeTextTitle: 'Switch to plain text editor',
+    modeTreeText: 'Tree',
+    modeTreeTitle: 'Switch to tree editor',
+    modeViewText: 'View',
+    modeViewTitle: 'Switch to tree view',
   },
   'pt-BR': {
     array: 'Lista',
