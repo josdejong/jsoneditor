@@ -141,6 +141,8 @@ treemode._setOptions = function (options) {
     mainMenuBar: true,
     onSelectionChange: null,
     colorPicker: true,
+    dragButton: true,
+    menuButton: true,
     onColorPicker: function (parent, color, onChange) {
       if (VanillaPicker) {
         new VanillaPicker({

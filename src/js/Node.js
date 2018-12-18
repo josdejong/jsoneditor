@@ -1949,29 +1949,33 @@ Node.prototype.getDom = function() {
   dom.tr.node = this;
 
   if (this.editor.options.mode === 'tree') { // note: we take here the global setting
-    var tdDrag = document.createElement('td');
-    if (this.editable.field) {
-      // create draggable area
-      if (this.parent) {
-        var domDrag = document.createElement('button');
-        domDrag.type = 'button';
-        dom.drag = domDrag;
-        domDrag.className = 'jsoneditor-button jsoneditor-dragarea';
-        domDrag.title = translate('drag');
-        tdDrag.appendChild(domDrag);
+    if (this.editor.options.dragButton) {
+      var tdDrag = document.createElement('td');
+      if (this.editable.field) {
+        // create draggable area
+        if (this.parent) {
+          var domDrag = document.createElement('button');
+          domDrag.type = 'button';
+          dom.drag = domDrag;
+          domDrag.className = 'jsoneditor-button jsoneditor-dragarea';
+          domDrag.title = translate('drag');
+          tdDrag.appendChild(domDrag);
+        }
       }
+      dom.tr.appendChild(tdDrag);
     }
-    dom.tr.appendChild(tdDrag);
 
     // create context menu
-    var tdMenu = document.createElement('td');
-    var menu = document.createElement('button');
-    menu.type = 'button';
-    dom.menu = menu;
-    menu.className = 'jsoneditor-button jsoneditor-contextmenu';
-    menu.title = translate('actionsMenu');
-    tdMenu.appendChild(dom.menu);
-    dom.tr.appendChild(tdMenu);
+    if (this.editor.options.menuButton) {
+      var tdMenu = document.createElement('td');
+      var menu = document.createElement('button');
+      menu.type = 'button';
+      dom.menu = menu;
+      menu.className = 'jsoneditor-button jsoneditor-contextmenu';
+      menu.title = translate('actionsMenu');
+      tdMenu.appendChild(dom.menu);
+      dom.tr.appendChild(tdMenu);
+    }
   }
 
   // create tree and field
