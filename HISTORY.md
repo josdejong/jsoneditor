@@ -3,6 +3,11 @@
 https://github.com/josdejong/jsoneditor
 
 
+## not yet published, version 5.26.4
+
+- Fixed text of the mode switcher not being translated. Thanks @antfu.
+
+
 ## 2018-12-06, version 5.26.3
 
 - Fixed #610: JSON Repair now removes trailing commas.
