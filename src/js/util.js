@@ -1,6 +1,7 @@
 'use strict';
 
 var jsonlint = require('./assets/jsonlint/jsonlint');
+var jsonMap = require('json-source-map');
 
 /**
  * Parse JSON using the parser built-in in the browser.
@@ -42,10 +43,31 @@ exports.sanitize = function (jsString) {
     jsString = match[3];
   }
 
+  var controlChars = {
+    '\b': '\\b',
+    '\f': '\\f',
+    '\n': '\\n',
+    '\r': '\\r',
+    '\t': '\\t'
+  };
+
+  var quote = '\'';
+  var quoteDbl = '"';
+  var quoteLeft = '\u2018';
+  var quoteRight = '\u2019';
+  var quoteDblLeft = '\u201C';
+  var quoteDblRight = '\u201D';
+  var graveAccent = '\u0060';
+  var acuteAccent = '\u00B4';
+
   // helper functions to get the current/prev/next character
   function curr () { return jsString.charAt(i);     }
   function next()  { return jsString.charAt(i + 1); }
   function prev()  { return jsString.charAt(i - 1); }
+
+  function isWhiteSpace(c) {
+    return c === ' ' || c === '\n' || c === '\r' || c === '\t';
+  }
 
   // get the last parsed non-whitespace character
   function lastNonWhitespace () {
@@ -53,13 +75,23 @@ exports.sanitize = function (jsString) {
 
     while (p >= 0) {
       var pp = chars[p];
-      if (pp !== ' ' && pp !== '\n' && pp !== '\r' && pp !== '\t') { // non whitespace
+      if (!isWhiteSpace(pp)) {
         return pp;
       }
       p--;
     }
 
     return '';
+  }
+
+  // get at the first next non-white space character
+  function nextNonWhiteSpace() {
+    var iNext = i + 1;
+    while (iNext < jsString.length && isWhiteSpace(jsString[iNext])) {
+      iNext++;
+    }
+
+    return jsString[iNext];
   }
 
   // skip a block comment '/* ... */'
@@ -80,32 +112,37 @@ exports.sanitize = function (jsString) {
   }
 
   // parse single or double quoted string
-  function parseString(quote) {
+  function parseString(endQuote) {
     chars.push('"');
     i++;
     var c = curr();
-    while (i < jsString.length && c !== quote) {
+    while (i < jsString.length && c !== endQuote) {
       if (c === '"' && prev() !== '\\') {
         // unescaped double quote, escape it
-        chars.push('\\');
+        chars.push('\\"');
       }
-
-      // handle escape character
-      if (c === '\\') {
+      else if (controlChars.hasOwnProperty(c)) {
+        // replace unescaped control characters with escaped ones
+        chars.push(controlChars[c])
+      }
+      else if (c === '\\') {
+        // remove the escape character when followed by a single quote ', not needed
         i++;
         c = curr();
-
-        // remove the escape character when followed by a single quote ', not needed
         if (c !== '\'') {
           chars.push('\\');
         }
+        chars.push(c);
       }
-      chars.push(c);
+      else {
+        // regular character
+        chars.push(c);
+      }
 
       i++;
       c = curr();
     }
-    if (c === quote) {
+    if (c === endQuote) {
       chars.push('"');
       i++;
     }
@@ -141,8 +178,29 @@ exports.sanitize = function (jsString) {
     else if (c === '/' && next() === '/') {
       skipComment();
     }
-    else if (c === '\'' || c === '"') {
-      parseString(c);
+    else if (c === '\u00A0' || (c >= '\u2000' && c <= '\u200A') || c === '\u202F' || c === '\u205F' || c === '\u3000') {
+      // special white spaces (like non breaking space)
+      chars.push(' ');
+      i++
+    }
+    else if (c === quote) {
+      parseString(quote);
+    }
+    else if (c === quoteDbl) {
+      parseString(quoteDbl);
+    }
+    else if (c === graveAccent) {
+      parseString(acuteAccent);
+    }
+    else if (c === quoteLeft) {
+      parseString(quoteRight);
+    }
+    else if (c === quoteDblLeft) {
+      parseString(quoteDblRight);
+    }
+    else if (c === ',' && [']', '}'].indexOf(nextNonWhiteSpace()) !== -1) {
+      // skip trailing commas
+      i++;
     }
     else if (/[a-zA-Z_$]/.test(c) && ['{', ','].indexOf(lastNonWhitespace()) !== -1) {
       // an unquoted object key (like a in '{a:2}')
@@ -541,6 +599,25 @@ exports.getInnerText = function getInnerText(element, buffer) {
 };
 
 /**
+ * Test whether an element has the provided parent node somewhere up the node tree.
+ * @param {Element} elem
+ * @param {Element} parent
+ * @return {boolean}
+ */
+exports.hasParentNode = function (elem, parent) {
+  var e = elem ? elem.parentNode : undefined;
+
+  while (e) {
+    if (e === parent) {
+      return true;
+    }
+    e = e.parentNode;
+  }
+
+  return false;
+}
+
+/**
  * Returns the version of Internet Explorer or a -1
  * (indicating the use of another browser).
  * Source: http://msdn.microsoft.com/en-us/library/ms537509(v=vs.85).aspx
@@ -549,8 +626,7 @@ exports.getInnerText = function getInnerText(element, buffer) {
 exports.getInternetExplorerVersion = function getInternetExplorerVersion() {
   if (_ieVersion == -1) {
     var rv = -1; // Return value assumes failure.
-    if (navigator.appName == 'Microsoft Internet Explorer')
-    {
+    if (typeof navigator !== 'undefined' && navigator.appName == 'Microsoft Internet Explorer') {
       var ua = navigator.userAgent;
       var re  = new RegExp("MSIE ([0-9]{1,}[\.0-9]{0,})");
       if (re.exec(ua) != null) {
@@ -569,7 +645,7 @@ exports.getInternetExplorerVersion = function getInternetExplorerVersion() {
  * @returns {boolean} isFirefox
  */
 exports.isFirefox = function isFirefox () {
-  return (navigator.userAgent.indexOf("Firefox") != -1);
+  return (typeof navigator !== 'undefined' && navigator.userAgent.indexOf("Firefox") !== -1);
 };
 
 /**
@@ -633,6 +709,24 @@ exports.removeEventListener = function removeEventListener(element, action, list
 };
 
 /**
+ * Test if an element is a child of a parent element.
+ * @param {Element} elem
+ * @param {Element} parent
+ * @return {boolean} returns true if elem is a child of the parent
+ */
+exports.isChildOf = function (elem, parent) {
+  var e = elem.parentNode;
+  while (e) {
+    if (e === parent) {
+      return true;
+    }
+    e = e.parentNode;
+  }
+
+  return false;
+};
+
+/**
  * Parse a JSON path like '.items[3].name' into an array
  * @param {string} jsonPath
  * @return {Array}
@@ -645,7 +739,7 @@ exports.parsePath = function parsePath(jsonPath) {
   }
 
   // find a match like '.prop'
-  var match = jsonPath.match(/^\.(\w+)/);
+  var match = jsonPath.match(/^\.([\w$]+)/);
   if (match) {
     prop = match[1];
     remainder = jsonPath.substr(prop.length + 1);
@@ -678,6 +772,19 @@ exports.parsePath = function parsePath(jsonPath) {
 };
 
 /**
+ * Stringify an array with a path in a JSON path like '.items[3].name'
+ * @param {Array.<string | number>} path
+ * @returns {string}
+ */
+exports.stringifyPath = function stringifyPath(path) {
+  return path
+      .map(function (p) {
+        return typeof p === 'number' ? ('[' + p + ']') : ('.' + p);
+      })
+      .join('');
+};
+
+/**
  * Improve the error message of a JSON schema error
  * @param {Object} error
  * @return {Object} The error
@@ -704,6 +811,26 @@ exports.improveSchemaError = function (error) {
   }
 
   return error;
+};
+
+/**
+ * Test whether something is a Promise
+ * @param {*} object
+ * @returns {boolean} Returns true when object is a promise, false otherwise
+ */
+exports.isPromise = function (object) {
+  return object && typeof object.then === 'function' && typeof object.catch === 'function';
+};
+
+/**
+ * Test whether a custom validation error has the correct structure
+ * @param {*} validationError The error to be checked.
+ * @returns {boolean} Returns true if the structure is ok, false otherwise
+ */
+exports.isValidValidationError = function (validationError) {
+  return typeof validationError === 'object' &&
+      Array.isArray(validationError.path) &&
+      typeof validationError.message === 'string';
 };
 
 /**
@@ -776,3 +903,198 @@ exports.textDiff = function textDiff(oldText, newText) {
 
   return {start: start, end: newEnd};
 };
+
+
+/**
+ * Return an object with the selection range or cursor position (if both have the same value)
+ * Support also old browsers (IE8-)
+ * Source: http://ourcodeworld.com/articles/read/282/how-to-get-the-current-cursor-position-and-selection-within-a-text-input-or-textarea-in-javascript
+ * @param {DOMElement} el A dom element of a textarea or input text.
+ * @return {Object} reference Object with 2 properties (start and end) with the identifier of the location of the cursor and selected text.
+ **/
+exports.getInputSelection = function(el) {
+  var startIndex = 0, endIndex = 0, normalizedValue, range, textInputRange, len, endRange;
+
+  if (typeof el.selectionStart == "number" && typeof el.selectionEnd == "number") {
+      startIndex = el.selectionStart;
+      endIndex = el.selectionEnd;
+  } else {
+      range = document.selection.createRange();
+
+      if (range && range.parentElement() == el) {
+          len = el.value.length;
+          normalizedValue = el.value.replace(/\r\n/g, "\n");
+
+          // Create a working TextRange that lives only in the input
+          textInputRange = el.createTextRange();
+          textInputRange.moveToBookmark(range.getBookmark());
+
+          // Check if the startIndex and endIndex of the selection are at the very end
+          // of the input, since moveStart/moveEnd doesn't return what we want
+          // in those cases
+          endRange = el.createTextRange();
+          endRange.collapse(false);
+
+          if (textInputRange.compareEndPoints("StartToEnd", endRange) > -1) {
+              startIndex = endIndex = len;
+          } else {
+              startIndex = -textInputRange.moveStart("character", -len);
+              startIndex += normalizedValue.slice(0, startIndex).split("\n").length - 1;
+
+              if (textInputRange.compareEndPoints("EndToEnd", endRange) > -1) {
+                  endIndex = len;
+              } else {
+                  endIndex = -textInputRange.moveEnd("character", -len);
+                  endIndex += normalizedValue.slice(0, endIndex).split("\n").length - 1;
+              }
+          }
+      }
+  }
+
+  return {
+      startIndex: startIndex,
+      endIndex: endIndex,
+      start: _positionForIndex(startIndex),
+      end: _positionForIndex(endIndex)
+  };
+
+  /**
+   * Returns textarea row and column position for certain index
+   * @param {Number} index text index
+   * @returns {{row: Number, col: Number}}
+   */
+  function _positionForIndex(index) {
+    var textTillIndex = el.value.substring(0,index);
+    var row = (textTillIndex.match(/\n/g) || []).length + 1;
+    var col = textTillIndex.length - textTillIndex.lastIndexOf("\n");
+
+    return {
+      row: row,
+      column: col
+    }
+  }
+}
+
+/**
+ * Returns the index for certaion position in text element
+ * @param {DOMElement} el A dom element of a textarea or input text.
+ * @param {Number} row row value, > 0, if exceeds rows number - last row will be returned
+ * @param {Number} column column value, > 0, if exceeds column length - end of column will be returned
+ * @returns {Number} index of position in text, -1 if not found
+ */
+exports.getIndexForPosition = function(el, row, column) {
+  var text = el.value || '';
+  if (row > 0 && column > 0) {
+    var rows = text.split('\n', row);
+    row = Math.min(rows.length, row);
+    column = Math.min(rows[row - 1].length, column - 1);
+    var columnCount = (row == 1 ? column : column + 1); // count new line on multiple rows
+    return rows.slice(0, row - 1).join('\n').length + columnCount;
+  }
+  return -1;
+}
+
+/**
+ * Returns location of json paths in certain json string
+ * @param {String} text json string
+ * @param {Array<String>} paths array of json paths
+ * @returns {Array<{path: String, line: Number, row: Number}>}
+ */
+exports.getPositionForPath = function(text, paths) {
+  var me = this;
+  var result = [];
+  var jsmap;
+  if (!paths || !paths.length) {
+    return result;
+  }
+  
+  try {
+    jsmap = jsonMap.parse(text);    
+  } catch (err) {
+    return result;
+  }
+
+  paths.forEach(function (path) {
+    var pathArr = me.parsePath(path);
+    var pointerName = pathArr.length ? "/" + pathArr.join("/") : "";
+    var pointer = jsmap.pointers[pointerName];
+    if (pointer) {
+      result.push({
+        path: path,
+        line: pointer.key ? pointer.key.line : (pointer.value ? pointer.value.line : 0),
+        column: pointer.key ? pointer.key.column : (pointer.value ? pointer.value.column : 0)
+      });
+    }
+  });
+
+  return result;
+  
+}
+
+/**
+ * Get the applied color given a color name or code
+ * Source: https://stackoverflow.com/questions/6386090/validating-css-color-names/33184805
+ * @param {string} color
+ * @returns {string | null} returns the color if the input is a valid
+ *                   color, and returns null otherwise. Example output:
+ *                   'rgba(255,0,0,0.7)' or 'rgb(255,0,0)'
+ */
+exports.getColorCSS = function (color) {
+  var ele = document.createElement('div');
+  ele.style.color = color;
+  return ele.style.color.split(/\s+/).join('').toLowerCase() || null;
+}
+
+/**
+ * Test if a string contains a valid color name or code.
+ * @param {string} color
+ * @returns {boolean} returns true if a valid color, false otherwise
+ */
+exports.isValidColor = function (color) {
+  return !!exports.getColorCSS(color);
+}
+
+if (typeof Element !== 'undefined') {
+  // Polyfill for array remove
+  (function () {
+    function polyfill (item) {
+      if (item.hasOwnProperty('remove')) {
+        return;
+      }
+      Object.defineProperty(item, 'remove', {
+        configurable: true,
+        enumerable: true,
+        writable: true,
+        value: function remove() {
+          if (this.parentNode != null)
+            this.parentNode.removeChild(this);
+        }
+      });
+    }
+
+    if (typeof Element !== 'undefined')       { polyfill(Element.prototype); }
+    if (typeof CharacterData !== 'undefined') { polyfill(CharacterData.prototype); }
+    if (typeof DocumentType !== 'undefined')  { polyfill(DocumentType.prototype); }
+  })();
+}
+
+
+// Polyfill for startsWith
+if (!String.prototype.startsWith) {
+    String.prototype.startsWith = function (searchString, position) {
+        position = position || 0;
+        return this.substr(position, searchString.length) === searchString;
+    };
+}
+
+// Polyfill for Array.find
+if (!Array.prototype.find) {
+  Array.prototype.find = function(callback) {    
+    for (var i = 0; i < this.length; i++) {
+      var element = this[i];
+      if ( callback.call(this, element, i, this) ) {
+        return element;
+      }
+    }
+  }
+}

@@ -1,0 +1,90 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <title>JSONEditor | Custom validation (asynchronous)</title>
+
+  <link href="../dist/jsoneditor.css" rel="stylesheet" type="text/css">
+  <script src="../dist/jsoneditor.js"></script>
+
+  <style type="text/css">
+    body {
+      width: 600px;
+      font: 11pt sans-serif;
+    }
+    #jsoneditor {
+      width: 100%;
+      height: 500px;
+    }
+
+  </style>
+</head>
+<body>
+<h1>Asynchronous custom validation</h1>
+<p>
+  This example demonstrates how to run asynchronous custom validation on a JSON object.
+  The names are checked asynchronously and the results "come in" half a second later.
+  Known names in this example are 'Joe', 'Harry', 'Megan'. For other names, a validation error will be displayed.
+</p>
+
+<div id="jsoneditor"></div>
+
+<script>
+  var json = {
+    customers: [
+      {name: 'Joe'},
+      {name: 'Sarah'},
+      {name: 'Harry'},
+    ]
+  };
+
+  var options = {
+    mode: 'tree',
+    modes: ['code', 'text', 'tree'],
+    onValidate: function (json) {
+      // in this validation function we fake sending a request to a server
+      // to validate the existence of customers
+      if (json && Array.isArray(json.customers)) {
+        return Promise
+            .all(json.customers.map(function (customer, index) {
+              return isExistingCustomer(customer && customer.name).then(function (exists) {
+                if (!exists) {
+                  return {
+                    path: ['customers', index],
+                    message: 'Customer ' + customer.name + ' doesn\'t exist in our database'
+                  }
+                }
+                else {
+                  return null;
+                }
+              });
+            }))
+            .then(function (errors) {
+              return errors.filter(function (error) {
+                return error != null;
+              })
+            });
+      }
+      else {
+        return null;
+      }
+    }
+  };
+
+  // create the editor
+  var container = document.getElementById('jsoneditor');
+  var editor = new JSONEditor(container, options, json);
+  editor.expandAll();
+
+  // this function fakes a request (asynchronous) to a server to validate the existence of a customer
+  function isExistingCustomer (customerName) {
+    return new Promise(function (resolve, reject) {
+      setTimeout(function () {
+        var customers = ['Joe', 'Harry', 'Megan'];
+        var exists = customers.indexOf(customerName) !== -1;
+        resolve(exists);
+      }, 500);
+    })
+  }
+</script>
+</body>
+</html>

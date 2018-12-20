@@ -1,13 +1,22 @@
 'use strict';
 
-
+var VanillaPicker = require('./vanilla-picker');
 var Highlighter = require('./Highlighter');
 var History = require('./History');
 var SearchBox = require('./SearchBox');
 var ContextMenu = require('./ContextMenu');
+var TreePath = require('./TreePath');
 var Node = require('./Node');
 var ModeSwitcher = require('./ModeSwitcher');
 var util = require('./util');
+var autocomplete = require('./autocomplete');
+var showSortModal = require('./showSortModal');
+var showTransformModal = require('./showTransformModal');
+var translate = require('./i18n').translate;
+var setLanguages = require('./i18n').setLanguages;
+var setLanguage = require('./i18n').setLanguage;
+
+var DEFAULT_MODAL_ANCHOR = document.body; // TODO: this constant is defined twice
 
 // create a mixin with the functions for tree mode
 var treemode = {};
@@ -24,12 +33,26 @@ var treemode = {};
  *                               {Boolean} history        Enable history (undo/redo).
  *                                                        True by default
  *                               {function} onChange      Callback method, triggered
- *                                                        on change of contents
+ *                                                        on change of contents.
+ *                                                        Does not pass the changed contents.
+ *                               {function} onChangeJSON  Callback method, triggered
+ *                                                        in modes on change of contents,
+ *                                                        passing the changed contents
+ *                                                        as JSON.
+ *                                                        Only applicable for modes
+ *                                                        'tree', 'view', and 'form'.
+ *                               {function} onChangeText  Callback method, triggered
+ *                                                        in modes on change of contents,
+ *                                                        passing the changed contents
+ *                                                        as stringified JSON.
  *                               {String} name            Field name for the root node.
  *                               {boolean} escapeUnicode  If true, unicode
  *                                                        characters are escaped.
  *                                                        false by default.
  *                               {Object} schema          A JSON Schema for validation
+ *                               {function} onEvent       Function triggered
+ *                                                        when an event occurs
+ *                                                        in a field or value.
  * @private
  */
 treemode.create = function (container, options) {
@@ -44,12 +67,16 @@ treemode.create = function (container, options) {
     nodes: []
   };
   this.validateSchema = null; // will be set in .setSchema(schema)
+  this.validationSequence = 0;
   this.errorNodes = [];
 
   this.node = null;
   this.focusTarget = null;
 
   this._setOptions(options);
+
+  if (options.autocomplete)
+      this.autocomplete = new autocomplete(options.autocomplete);
 
   if (this.options.history && this.options.mode !== 'view') {
     this.history = new History(this);
@@ -107,7 +134,37 @@ treemode._setOptions = function (options) {
     history: true,
     mode: 'tree',
     name: undefined,   // field name of root node
-    schema: null
+    schema: null,
+    schemaRefs: null,
+    autocomplete: null,
+    navigationBar : true,
+    mainMenuBar: true,
+    onSelectionChange: null,
+    colorPicker: true,
+    onColorPicker: function (parent, color, onChange) {
+      if (VanillaPicker) {
+        new VanillaPicker({
+          parent: parent,
+          color: color,
+          popup: 'bottom',
+          onDone: function (color) {
+            var alpha = color.rgba[3];
+            var hex = (alpha === 1)
+                ? color.hex.substr(0, 7)  // return #RRGGBB
+                : color.hex;               // return #RRGGBBAA
+            onChange(hex);
+          }
+        }).show();
+      }
+      else {
+        console.warn('Cannot open color picker: the `vanilla-picker` library is not included in the bundle. ' +
+            'Either use the full bundle or implement your own color picker using `onColorPicker`.')
+      }
+    },
+    timestampTag: true,
+    onEvent: null,
+    enableSort: true,
+    enableTransform: true
   };
 
   // copy all options
@@ -120,26 +177,26 @@ treemode._setOptions = function (options) {
   }
 
   // compile a JSON schema validator if a JSON schema is provided
-  this.setSchema(this.options.schema);
+  this.setSchema(this.options.schema, this.options.schemaRefs);
 
   // create a debounced validate function
   this._debouncedValidate = util.debounce(this.validate.bind(this), this.DEBOUNCE_INTERVAL);
+
+  if (options.onSelectionChange) {
+    this.onSelectionChange(options.onSelectionChange);
+  }
+
+  setLanguages(this.options.languages);
+  setLanguage(this.options.language)
 };
 
 /**
- * Set JSON object in editor
- * @param {Object | undefined} json      JSON data
- * @param {String}             [name]    Optional field name for the root node.
- *                                       Can also be set using setName(name).
+ * Set new JSON object in editor.
+ * Resets the state of the editor (expanded nodes, search, selection).
+ *
+ * @param {*} json
  */
-treemode.set = function (json, name) {
-  // adjust field name for root node
-  if (name) {
-    // TODO: deprecated since version 2.2.0. Cleanup some day.
-    console.warn('Second parameter "name" is deprecated. Use setName(name) instead.');
-    this.options.name = name;
-  }
-
+treemode.set = function (json) {
   // verify if json is valid JSON, ignore when a function
   if (json instanceof Function || (json === undefined)) {
     this.clear();
@@ -177,6 +234,51 @@ treemode.set = function (json, name) {
 };
 
 /**
+ * Update JSON object in editor.
+ * Maintains the state of the editor (expanded nodes, search, selection).
+ *
+ * @param {*} json
+ */
+treemode.update = function (json) {
+  // don't update if there are no changes
+  if (this.node.deepEqual(json)) {
+    return;
+  }
+
+  var selection = this.getSelection();
+
+  // apply the changed json
+  this.onChangeDisabled = true; // don't fire an onChange event
+  this.node.update(json);
+  this.onChangeDisabled = false;
+
+  // validate JSON schema
+  this.validate();
+
+  // update search result if any
+  if (this.searchBox && !this.searchBox.isEmpty()) {
+    this.searchBox.forceSearch();
+  }
+
+  // update selection if any
+  if (selection && selection.start && selection.end) {
+    // only keep/update the selection if both start and end node still exists,
+    // else we clear the selection
+    var startNode = this.node.findNodeByPath(selection.start.path);
+    var endNode = this.node.findNodeByPath(selection.end.path);
+    if (startNode && endNode) {
+      this.setSelection(selection.start, selection.end);
+    }
+    else {
+      this.setSelection({}, {}); // clear selection
+    }
+  }
+  else {
+    this.setSelection({}, {}); // clear selection
+  }
+};
+
+/**
  * Get JSON object from editor
  * @return {Object | undefined} json
  */
@@ -206,11 +308,39 @@ treemode.getText = function() {
 };
 
 /**
- * Set the text contents of the editor
+ * Set the text contents of the editor.
+ * Resets the state of the editor (expanded nodes, search, selection).
  * @param {String} jsonText
  */
 treemode.setText = function(jsonText) {
-  this.set(util.parse(jsonText));
+  try {
+    this.set(util.parse(jsonText)); // this can throw an error
+  }
+  catch (err) {
+    // try to sanitize json, replace JavaScript notation with JSON notation
+    var sanitizedJsonText = util.sanitize(jsonText);
+
+    // try to parse again
+    this.set(util.parse(sanitizedJsonText)); // this can throw an error
+  }
+};
+
+/**
+ * Update the text contents of the editor.
+ * Maintains the state of the editor (expanded nodes, search, selection).
+ * @param {String} jsonText
+ */
+treemode.updateText = function(jsonText) {
+  try {
+    this.update(util.parse(jsonText)); // this can throw an error
+  }
+  catch (err) {
+    // try to sanitize json, replace JavaScript notation with JSON notation
+    var sanitizedJsonText = util.sanitize(jsonText);
+
+    // try to parse again
+    this.update(util.parse(sanitizedJsonText)); // this can throw an error
+  }
 };
 
 /**
@@ -240,7 +370,7 @@ treemode.getName = function () {
  * - to the first button in the top menu
  */
 treemode.focus = function () {
-  var input = this.content.querySelector('[contenteditable=true]');
+  var input = this.scrollableContent.querySelector('[contenteditable=true]');
   if (input) {
     input.focus();
   }
@@ -264,9 +394,12 @@ treemode.focus = function () {
  */
 treemode.clear = function () {
   if (this.node) {
-    this.node.collapse();
-    this.tbody.removeChild(this.node.getDom());
+    this.node.hide();
     delete this.node;
+  }
+
+  if (this.treePath) {
+    this.treePath.reset();
   }
 };
 
@@ -362,8 +495,30 @@ treemode._onAction = function (action, params) {
  * @private
  */
 treemode._onChange = function () {
+  if (this.onChangeDisabled) {
+    return;
+  }
+
+  // selection can be changed after undo/redo
+  this.selection = this.getDomSelection();
+
   // validate JSON schema (if configured)
   this._debouncedValidate();
+
+  if (this.treePath) {
+    var selectedNode = this.selection
+        ?  this.node.findNodeByInternalPath(this.selection.path)
+        : this.multiselection
+            ? this.multiselection.nodes[0]
+            : undefined;
+
+    if (selectedNode) {
+      this._updateTreePath(selectedNode.getNodePath())
+    }
+    else {
+      this.treePath.reset()
+    }
+  }
 
   // trigger the onChange callback
   if (this.options.onChange) {
@@ -374,6 +529,26 @@ treemode._onChange = function () {
       console.error('Error in onChange callback: ', err);
     }
   }
+
+  // trigger the onChangeJSON callback
+  if (this.options.onChangeJSON) {
+    try {
+      this.options.onChangeJSON(this.get());
+    }
+    catch (err) {
+      console.error('Error in onChangeJSON callback: ', err);
+    }
+  }
+
+  // trigger the onChangeText callback
+  if (this.options.onChangeText) {
+    try {
+      this.options.onChangeText(this.getText());
+    }
+    catch (err) {
+      console.error('Error in onChangeText callback: ', err);
+    }
+  }
 };
 
 /**
@@ -381,25 +556,20 @@ treemode._onChange = function () {
  * Throws an exception when no JSON schema is configured
  */
 treemode.validate = function () {
-  // clear all current errors
-  if (this.errorNodes) {
-    this.errorNodes.forEach(function (node) {
-      node.setError(null);
-    });
-  }
-
   var root = this.node;
   if (!root) { // TODO: this should be redundant but is needed on mode switch
     return;
   }
 
+  var json = root.getValue();
+
   // check for duplicate keys
   var duplicateErrors = root.validate();
 
-  // validate the JSON
+  // execute JSON schema validation
   var schemaErrors = [];
   if (this.validateSchema) {
-    var valid = this.validateSchema(root.getValue());
+    var valid = this.validateSchema(json);
     if (!valid) {
       // apply all new errors
       schemaErrors = this.validateSchema.errors
@@ -418,32 +588,132 @@ treemode.validate = function () {
     }
   }
 
-  // display the error in the nodes with a problem
-  this.errorNodes = duplicateErrors
-      .concat(schemaErrors)
-      .reduce(function expandParents (all, entry) {
-        // expand parents, then merge such that parents come first and
-        // original entries last
+  // execute custom validation and after than merge and render all errors
+  try {
+    this.validationSequence++;
+    var me = this;
+    var seq = this.validationSequence;
+    this._validateCustom(json)
+        .then(function (customValidationErrors) {
+          // only apply when there was no other validation started whilst resolving async results
+          if (seq === me.validationSequence) {
+            var errorNodes = [].concat(duplicateErrors, schemaErrors, customValidationErrors || []);
+            me._renderValidationErrors(errorNodes);
+          }
+        })
+        .catch(function (err) {
+          console.error(err);
+        });
+  }
+  catch (err) {
+    console.error(err);
+  }
+};
+
+treemode._renderValidationErrors = function (errorNodes) {
+  // clear all current errors
+  if (this.errorNodes) {
+    this.errorNodes.forEach(function (node) {
+      node.setError(null);
+    });
+  }
+
+  // render the new errors
+  var parentPairs = errorNodes
+      .reduce(function (all, entry) {
         return entry.node
             .findParents()
-            .map(function (parent) {
-              return {
-                node: parent,
-                child: entry.node,
-                error: {
-                  message: parent.type === 'object'
-                      ? 'Contains invalid properties' // object
-                      : 'Contains invalid items'      // array
-                }
-              };
+            .filter(function (parent) {
+              return !all.some(function (pair) {
+                return pair[0] === parent;
+              });
             })
-            .concat(all, [entry]);
-      }, [])
-      // TODO: dedupe the parent nodes
+            .map(function (parent) {
+              return [parent, entry.node];
+            })
+            .concat(all);
+      }, []);
+
+  this.errorNodes = parentPairs
+      .map(function (pair) {
+        return {
+          node: pair[0],
+          child: pair[1],
+          error: {
+            message: pair[0].type === 'object'
+                ? 'Contains invalid properties' // object
+                : 'Contains invalid items'      // array
+          }
+        };
+      })
+      .concat(errorNodes)
       .map(function setError (entry) {
         entry.node.setError(entry.error, entry.child);
         return entry.node;
       });
+};
+
+/**
+ * Execute custom validation if configured.
+ *
+ * Returns a promise resolving with the custom errors (or nothing).
+ */
+treemode._validateCustom = function (json) {
+  try {
+    if (this.options.onValidate) {
+      var root = this.node;
+      var customValidateResults = this.options.onValidate(json);
+
+      var resultPromise = util.isPromise(customValidateResults)
+          ? customValidateResults
+          : Promise.resolve(customValidateResults);
+
+      return resultPromise.then(function (customValidationPathErrors) {
+        if (Array.isArray(customValidationPathErrors)) {
+          return customValidationPathErrors
+              .filter(function (error) {
+                var valid = util.isValidValidationError(error);
+
+                if (!valid) {
+                  console.warn('Ignoring a custom validation error with invalid structure. ' +
+                      'Expected structure: {path: [...], message: "..."}. ' +
+                      'Actual error:', error);
+                }
+
+                return valid;
+              })
+              .map(function (error) {
+                var node;
+                try {
+                  node = (error && error.path) ? root.findNodeByPath(error.path) : null
+                }
+                catch (err) {
+                  // stay silent here, we throw a generic warning if no node is found
+                }
+                if (!node) {
+                  console.warn('Ignoring validation error: node not found. Path:', error.path, 'Error:', error);
+                }
+
+                return {
+                  node: node,
+                  error: error
+                }
+              })
+              .filter(function (entry) {
+                return entry && entry.node && entry.error && entry.error.message
+              });
+        }
+        else {
+          return null;
+        }
+      });
+    }
+  }
+  catch (err) {
+    return Promise.reject(err);
+  }
+
+  return Promise.resolve(null);
 };
 
 /**
@@ -462,7 +732,7 @@ treemode.refresh = function () {
  */
 treemode.startAutoScroll = function (mouseY) {
   var me = this;
-  var content = this.content;
+  var content = this.scrollableContent;
   var top = util.getAbsoluteTop(content);
   var height = content.clientHeight;
   var bottom = top + height;
@@ -521,24 +791,39 @@ treemode.stopAutoScroll = function () {
  *                            {Node[]} nodes                Nodes in case of multi selection
  *                            {Number} scrollTop            Scroll position
  */
-treemode.setSelection = function (selection) {
+treemode.setDomSelection = function (selection) {
   if (!selection) {
     return;
   }
 
-  if ('scrollTop' in selection && this.content) {
+  if ('scrollTop' in selection && this.scrollableContent) {
     // TODO: animated scroll
-    this.content.scrollTop = selection.scrollTop;
+    this.scrollableContent.scrollTop = selection.scrollTop;
   }
-  if (selection.nodes) {
+  if (selection.paths) {
     // multi-select
-    this.select(selection.nodes);
+    var me = this;
+    var nodes = selection.paths.map(function (path) {
+      return me.node.findNodeByInternalPath(path);
+    });
+
+    this.select(nodes);
   }
-  if (selection.range) {
-    util.setSelectionOffset(selection.range);
-  }
-  if (selection.dom) {
-    selection.dom.focus();
+  else {
+    // find the actual DOM element where to apply the focus
+    var node = selection.path
+        ? this.node.findNodeByInternalPath(selection.path)
+        : null;
+    var container = (node && selection.domName)
+        ? node.dom[selection.domName]
+        : null;
+    if (selection.range && container) {
+      var range = Object.assign({}, selection.range, { container: container });
+      util.setSelectionOffset(range);
+    }
+    else if (node) { // just a fallback
+      node.focus();
+    }
   }
 };
 
@@ -551,17 +836,42 @@ treemode.setSelection = function (selection) {
  *                            {Node[]} nodes                Nodes in case of multi selection
  *                            {Number} scrollTop            Scroll position
  */
-treemode.getSelection = function () {
+treemode.getDomSelection = function () {
+  // find the node and field name of the current target,
+  // so we can store the current selection in a serializable
+  // way (internal node path and domName)
+  var node = Node.getNodeFromTarget(this.focusTarget);
+  var focusTarget = this.focusTarget;
+  var domName = node
+      ? Object.keys(node.dom).find(function (domName) {
+        return node.dom[domName] === focusTarget;
+      })
+      : null;
+
   var range = util.getSelectionOffset();
   if (range && range.container.nodeName !== 'DIV') { // filter on (editable) divs)
     range = null;
   }
+  if (range && range.container !== focusTarget) {
+    range = null;
+  }
+  if (range) {
+    // we cannot rely on the current instance of the container,
+    // we need to store the internal node path and field and
+    // find the actual DOM field when applying the selection
+    delete range.container;
+  }
 
   return {
-    dom: this.focusTarget,
+    path: node ? node.getInternalPath() : null,
+    domName: domName,
     range: range,
-    nodes: this.multiselection.nodes.slice(0),
-    scrollTop: this.content ? this.content.scrollTop : 0
+    paths: this.multiselection.length > 0
+        ? this.multiselection.nodes.map(function (node) {
+            return node.getInternalPath();
+          })
+        : null,
+    scrollTop: this.scrollableContent ? this.scrollableContent.scrollTop : 0
   };
 };
 
@@ -575,7 +885,7 @@ treemode.getSelection = function () {
  *                                         when not.
  */
 treemode.scrollTo = function (top, callback) {
-  var content = this.content;
+  var content = this.scrollableContent;
   if (content) {
     var editor = this;
     // cancel any running animation
@@ -631,6 +941,9 @@ treemode._createFrame = function () {
   this.frame.className = 'jsoneditor jsoneditor-mode-' + this.options.mode;
   this.container.appendChild(this.frame);
 
+  this.contentOuter = document.createElement('div');
+  this.contentOuter.className = 'jsoneditor-outer';
+
   // create one global event listener to handle all events from all nodes
   var editor = this;
   function onEvent(event) {
@@ -669,78 +982,117 @@ treemode._createFrame = function () {
   this.frame.onfocusin = onEvent;  // for IE
   this.frame.onfocusout = onEvent; // for IE
 
-  // create menu
-  this.menu = document.createElement('div');
-  this.menu.className = 'jsoneditor-menu';
-  this.frame.appendChild(this.menu);
+  if (this.options.mainMenuBar) {
+    util.addClassName(this.contentOuter, 'has-main-menu-bar');
 
-  // create expand all button
-  var expandAll = document.createElement('button');
-  expandAll.type = 'button';
-  expandAll.className = 'jsoneditor-expand-all';
-  expandAll.title = 'Expand all fields';
-  expandAll.onclick = function () {
-    editor.expandAll();
-  };
-  this.menu.appendChild(expandAll);
+    // create menu
+    this.menu = document.createElement('div');
+    this.menu.className = 'jsoneditor-menu';
+    this.frame.appendChild(this.menu);
 
-  // create expand all button
-  var collapseAll = document.createElement('button');
-  collapseAll.type = 'button';
-  collapseAll.title = 'Collapse all fields';
-  collapseAll.className = 'jsoneditor-collapse-all';
-  collapseAll.onclick = function () {
-    editor.collapseAll();
-  };
-  this.menu.appendChild(collapseAll);
-
-  // create undo/redo buttons
-  if (this.history) {
-    // create undo button
-    var undo = document.createElement('button');
-    undo.type = 'button';
-    undo.className = 'jsoneditor-undo jsoneditor-separator';
-    undo.title = 'Undo last action (Ctrl+Z)';
-    undo.onclick = function () {
-      editor._onUndo();
+    // create expand all button
+    var expandAll = document.createElement('button');
+    expandAll.type = 'button';
+    expandAll.className = 'jsoneditor-expand-all';
+    expandAll.title = translate('expandAll');
+    expandAll.onclick = function () {
+      editor.expandAll();
     };
-    this.menu.appendChild(undo);
-    this.dom.undo = undo;
+    this.menu.appendChild(expandAll);
 
-    // create redo button
-    var redo = document.createElement('button');
-    redo.type = 'button';
-    redo.className = 'jsoneditor-redo';
-    redo.title = 'Redo (Ctrl+Shift+Z)';
-    redo.onclick = function () {
-      editor._onRedo();
+    // create collapse all button
+    var collapseAll = document.createElement('button');
+    collapseAll.type = 'button';
+    collapseAll.title = translate('collapseAll');
+    collapseAll.className = 'jsoneditor-collapse-all';
+    collapseAll.onclick = function () {
+      editor.collapseAll();
     };
-    this.menu.appendChild(redo);
-    this.dom.redo = redo;
+    this.menu.appendChild(collapseAll);
 
-    // register handler for onchange of history
-    this.history.onChange = function () {
-      undo.disabled = !editor.history.canUndo();
-      redo.disabled = !editor.history.canRedo();
-    };
-    this.history.onChange();
+    // create sort button
+    if (this.options.enableSort) {
+      var sort = document.createElement('button');
+      sort.type = 'button';
+      sort.className = 'jsoneditor-sort';
+      sort.title = translate('sortTitleShort');
+      sort.onclick = function () {
+        var anchor = editor.options.modalAnchor || DEFAULT_MODAL_ANCHOR;
+        showSortModal(editor.node, anchor)
+      };
+      this.menu.appendChild(sort);
+    }
+
+    // create transform button
+    if (this.options.enableTransform) {
+      var transform = document.createElement('button');
+      transform.type = 'button';
+      transform.title = translate('transformTitleShort');
+      transform.className = 'jsoneditor-transform';
+      transform.onclick = function () {
+        var anchor = editor.options.modalAnchor || DEFAULT_MODAL_ANCHOR;
+        showTransformModal(editor.node, anchor)
+      };
+      this.menu.appendChild(transform);
+    }
+
+    // create undo/redo buttons
+    if (this.history) {
+      // create undo button
+      var undo = document.createElement('button');
+      undo.type = 'button';
+      undo.className = 'jsoneditor-undo jsoneditor-separator';
+      undo.title = translate('undo');
+      undo.onclick = function () {
+        editor._onUndo();
+      };
+      this.menu.appendChild(undo);
+      this.dom.undo = undo;
+
+      // create redo button
+      var redo = document.createElement('button');
+      redo.type = 'button';
+      redo.className = 'jsoneditor-redo';
+      redo.title = translate('redo');
+      redo.onclick = function () {
+        editor._onRedo();
+      };
+      this.menu.appendChild(redo);
+      this.dom.redo = redo;
+
+      // register handler for onchange of history
+      this.history.onChange = function () {
+        undo.disabled = !editor.history.canUndo();
+        redo.disabled = !editor.history.canRedo();
+      };
+      this.history.onChange();
+    }
+
+    // create mode box
+    if (this.options && this.options.modes && this.options.modes.length) {
+      var me = this;
+      this.modeSwitcher = new ModeSwitcher(this.menu, this.options.modes, this.options.mode, function onSwitch(mode) {
+        // switch mode and restore focus
+        me.setMode(mode);
+        me.modeSwitcher.focus();
+      });
+    }
+
+    // create search box
+    if (this.options.search) {
+      this.searchBox = new SearchBox(this, this.menu);
+    }
   }
 
-  // create mode box
-  if (this.options && this.options.modes && this.options.modes.length) {
-    var me = this;
-    this.modeSwitcher = new ModeSwitcher(this.menu, this.options.modes, this.options.mode, function onSwitch(mode) {
-      me.modeSwitcher.destroy();
+  if (this.options.navigationBar) {
+    // create second menu row for treepath
+    this.navBar = document.createElement('div');
+    this.navBar.className = 'jsoneditor-navigation-bar nav-bar-empty';
+    this.frame.appendChild(this.navBar);
 
-      // switch mode and restore focus
-      me.setMode(mode);
-      me.modeSwitcher.focus();
-    });
-  }
-
-  // create search box
-  if (this.options.search) {
-    this.searchBox = new SearchBox(this, this.menu);
+    this.treePath = new TreePath(this.navBar, this.frame);
+    this.treePath.onSectionSelected(this._onTreePathSectionSelected.bind(this));
+    this.treePath.onContextMenuItemSelected(this._onTreePathMenuItemSelected.bind(this));
   }
 };
 
@@ -778,26 +1130,39 @@ treemode._onRedo = function () {
  * @private
  */
 treemode._onEvent = function (event) {
-  if (event.type == 'keydown') {
+  // don't process events when coming from the color picker
+  if (Node.targetIsColorPicker(event.target)) {
+    return;
+  }
+
+  if (event.type === 'keydown') {
     this._onKeyDown(event);
   }
 
-  if (event.type == 'focus') {
+  if (event.type === 'focus') {
     this.focusTarget = event.target;
   }
 
-  if (event.type == 'mousedown') {
+  if (event.type === 'mousedown') {
     this._startDragDistance(event);
   }
-  if (event.type == 'mousemove' || event.type == 'mouseup' || event.type == 'click') {
+  if (event.type === 'mousemove' || event.type === 'mouseup' || event.type === 'click') {
     this._updateDragDistance(event);
   }
 
   var node = Node.getNodeFromTarget(event.target);
 
+  if (node && this.options && this.options.navigationBar && node && (event.type === 'keydown' || event.type === 'mousedown')) {
+    // apply on next tick, right after the new key press is applied
+    var me = this;
+    setTimeout(function () {
+      me._updateTreePath(node.getNodePath());
+    })
+  }
+
   if (node && node.selected) {
-    if (event.type == 'click') {
-      if (event.target == node.dom.menu) {
+    if (event.type === 'click') {
+      if (event.target === node.dom.menu) {
         this.showContextMenu(event.target);
 
         // stop propagation (else we will open the context menu of a single node)
@@ -810,20 +1175,21 @@ treemode._onEvent = function (event) {
       }
     }
 
-    if (event.type == 'mousedown') {
+    if (event.type === 'mousedown') {
       // drag multiple nodes
       Node.onDragStart(this.multiselection.nodes, event);
     }
   }
   else {
-    if (event.type == 'mousedown') {
+    // filter mouse events in the contents part of the editor (not the main menu)
+    if (event.type === 'mousedown' && util.hasParentNode(event.target, this.content)) {
       this.deselect();
 
-      if (node && event.target == node.dom.drag) {
+      if (node && event.target === node.dom.drag) {
         // drag a singe node
         Node.onDragStart(node, event);
       }
-      else if (!node || (event.target != node.dom.field && event.target != node.dom.value && event.target != node.dom.select)) {
+      else if (!node || (event.target !== node.dom.field && event.target !== node.dom.value && event.target !== node.dom.select)) {
         // select multiple nodes
         this._onMultiSelectStart(event);
       }
@@ -832,6 +1198,75 @@ treemode._onEvent = function (event) {
 
   if (node) {
     node.onEvent(event);
+  }
+};
+
+/**
+ * Update TreePath components
+ * @param {Array<Node>} pathNodes list of nodes in path from root to selection
+ * @private
+ */
+treemode._updateTreePath = function (pathNodes) {
+  if (pathNodes && pathNodes.length) {
+    util.removeClassName(this.navBar, 'nav-bar-empty');
+
+    var pathObjs = [];
+    pathNodes.forEach(function (node) {
+      var pathObj = {
+        name: getName(node),
+        node: node,
+        children: []
+      };
+      if (node.childs && node.childs.length) {
+        node.childs.forEach(function (childNode) {
+          pathObj.children.push({
+            name: getName(childNode),
+            node: childNode
+          });
+        });
+      }
+      pathObjs.push(pathObj);
+    });
+    this.treePath.setPath(pathObjs);
+  } else {
+    util.addClassName(this.navBar, 'nav-bar-empty');
+  }
+
+  function getName(node) {
+    return node.parent
+        ? ((node.parent.type === 'array') ? node.index : node.field)
+        : node.type;
+  }
+};
+
+/**
+ * Callback for tree path section selection - focus the selected node in the tree
+ * @param {Object} pathObj path object that was represents the selected section node
+ * @private
+ */
+treemode._onTreePathSectionSelected = function (pathObj) {
+  if(pathObj && pathObj.node) {
+    pathObj.node.expandTo();
+    pathObj.node.focus();
+  }
+};
+
+/**
+ * Callback for tree path menu item selection - rebuild the path accrding to the new selection and focus the selected node in the tree
+ * @param {Object} pathObj path object that was represents the parent section node
+ * @param {String} selection selected section child
+ * @private
+ */
+treemode._onTreePathMenuItemSelected = function (pathObj, selection) {
+  if(pathObj && pathObj.children.length) {
+    var selectionObj = pathObj.children.find(function (obj) {
+      return obj.name === selection;
+    });
+    if(selectionObj && selectionObj.node) {
+      this._updateTreePath(selectionObj.node.getNodePath());
+      selectionObj.node.expandTo();
+      selectionObj.node.focus();
+    }
   }
 };
 
@@ -897,6 +1332,7 @@ treemode._onMultiSelectStart = function (event) {
     });
   }
 
+  event.preventDefault();
 };
 
 /**
@@ -930,16 +1366,23 @@ treemode._onMultiSelect = function (event) {
   if (start && end) {
     // find the top level childs, all having the same parent
     this.multiselection.nodes = this._findTopLevelNodes(start, end);
+    if (this.multiselection.nodes && this.multiselection.nodes.length) {
+      var firstNode = this.multiselection.nodes[0];
+      if (this.multiselection.start === firstNode || this.multiselection.start.isDescendantOf(firstNode)) {
+        this.multiselection.direction = 'down';
+      } else {
+        this.multiselection.direction = 'up';
+      }
+    }
     this.select(this.multiselection.nodes);
   }
 };
 
 /**
  * End of multiselect nodes by dragging
- * @param event
  * @private
  */
-treemode._onMultiSelectEnd = function (event) {
+treemode._onMultiSelectEnd = function () {
   // set focus to the context menu button of the first node
   if (this.multiselection.nodes[0]) {
     this.multiselection.nodes[0].dom.menu.focus();
@@ -965,6 +1408,7 @@ treemode._onMultiSelectEnd = function (event) {
  *                                            state is cleared too.
  */
 treemode.deselect = function (clearStartAndEnd) {
+  var selectionChanged = !!this.multiselection.nodes.length;
   this.multiselection.nodes.forEach(function (node) {
     node.setSelected(false);
   });
@@ -973,6 +1417,12 @@ treemode.deselect = function (clearStartAndEnd) {
   if (clearStartAndEnd) {
     this.multiselection.start = null;
     this.multiselection.end = null;
+  }
+
+  if (selectionChanged) {
+    if (this._selectionChangedHandler) {
+      this._selectionChangedHandler();
+    }
   }
 };
 
@@ -992,8 +1442,14 @@ treemode.select = function (nodes) {
 
     var first = nodes[0];
     nodes.forEach(function (node) {
+      node.expandPathToNode();
       node.setSelected(true, node === first);
     });
+
+    if (this._selectionChangedHandler) {
+      var selection = this.getSelection();
+      this._selectionChangedHandler(selection.start, selection.end);
+    }
   }
 };
 
@@ -1051,7 +1507,9 @@ treemode._findTopLevelNodes = function (start, end) {
  */
 treemode._onKeyDown = function (event) {
   var keynum = event.which || event.keyCode;
+  var altKey = event.altKey;
   var ctrlKey = event.ctrlKey;
+  var metaKey = event.metaKey;
   var shiftKey = event.shiftKey;
   var handled = false;
 
@@ -1097,6 +1555,46 @@ treemode._onKeyDown = function (event) {
     }
   }
 
+  if ((this.options.autocomplete) && (!handled)) {
+      if (!ctrlKey && !altKey && !metaKey && (event.key.length == 1 || keynum == 8 || keynum == 46)) {
+          handled = false;
+          var jsonElementType = "";
+          if (event.target.className.indexOf("jsoneditor-value") >= 0) jsonElementType = "value";
+          if (event.target.className.indexOf("jsoneditor-field") >= 0) jsonElementType = "field";
+
+          var node = Node.getNodeFromTarget(event.target);
+          // Activate autocomplete
+          setTimeout(function (hnode, element) {
+              if (element.innerText.length > 0) {
+                  var result = this.options.autocomplete.getOptions(element.innerText, hnode.getPath(), jsonElementType, hnode.editor);
+                  if (result === null) {
+                      this.autocomplete.hideDropDown();
+                  } else if (typeof result.then === 'function') {
+                      // probably a promise
+                      if (result.then(function (obj) {
+                          if (obj === null) {
+                              this.autocomplete.hideDropDown();
+                          } else if (obj.options) {
+                              this.autocomplete.show(element, obj.startFrom, obj.options);
+                          } else {
+                              this.autocomplete.show(element, 0, obj);
+                          }
+                      }.bind(this)));
+                  } else {
+                      // definitely not a promise
+                      if (result.options)
+                          this.autocomplete.show(element, result.startFrom, result.options);
+                      else
+                          this.autocomplete.show(element, 0, result);
+                  }
+              }
+              else
+                  this.autocomplete.hideDropDown();
+
+          }.bind(this, node, event.target), 50);
+      }
+  }
+
   if (handled) {
     event.preventDefault();
     event.stopPropagation();
@@ -1108,13 +1606,22 @@ treemode._onKeyDown = function (event) {
  * @private
  */
 treemode._createTable = function () {
-  var contentOuter = document.createElement('div');
-  contentOuter.className = 'jsoneditor-outer';
-  this.contentOuter = contentOuter;
+  if (this.options.navigationBar) {
+    util.addClassName(this.contentOuter, 'has-nav-bar');
+  }
 
+  this.scrollableContent = document.createElement('div');
+  this.scrollableContent.className = 'jsoneditor-tree';
+  this.contentOuter.appendChild(this.scrollableContent);
+
+  // the jsoneditor-tree-inner div with bottom padding is here to
+  // keep space for the action menu dropdown. It's created as a
+  // separate div instead of using scrollableContent to work around
+  // and issue in the Chrome browser showing scrollable contents outside of the div
+  // see https://github.com/josdejong/jsoneditor/issues/557
   this.content = document.createElement('div');
-  this.content.className = 'jsoneditor-tree';
-  contentOuter.appendChild(this.content);
+  this.content.className = 'jsoneditor-tree-inner';
+  this.scrollableContent.appendChild(this.content);
 
   this.table = document.createElement('table');
   this.table.className = 'jsoneditor-tree';
@@ -1139,44 +1646,161 @@ treemode._createTable = function () {
   this.tbody = document.createElement('tbody');
   this.table.appendChild(this.tbody);
 
-  this.frame.appendChild(contentOuter);
+  this.frame.appendChild(this.contentOuter);
 };
 
 /**
  * Show a contextmenu for this node.
  * Used for multiselection
- * @param {HTMLElement} anchor   Anchor element to attache the context menu to.
+ * @param {HTMLElement} anchor   Anchor element to attach the context menu to.
  * @param {function} [onClose]   Callback method called when the context menu
  *                               is being closed.
  */
 treemode.showContextMenu = function (anchor, onClose) {
   var items = [];
-  var editor = this;
+  var selectedNodes = this.multiselection.nodes.slice();
 
   // create duplicate button
   items.push({
-    text: 'Duplicate',
-    title: 'Duplicate selected fields (Ctrl+D)',
+    text: translate('duplicateText'),
+    title: translate('duplicateTitle'),
     className: 'jsoneditor-duplicate',
     click: function () {
-      Node.onDuplicate(editor.multiselection.nodes);
+      Node.onDuplicate(selectedNodes );
     }
   });
 
   // create remove button
   items.push({
-    text: 'Remove',
-    title: 'Remove selected fields (Ctrl+Del)',
+    text: translate('remove'),
+    title: translate('removeTitle'),
     className: 'jsoneditor-remove',
     click: function () {
-      Node.onRemove(editor.multiselection.nodes);
+      Node.onRemove(selectedNodes);
     }
   });
 
   var menu = new ContextMenu(items, {close: onClose});
-  menu.show(anchor, this.content);
+  menu.show(anchor, this.frame);
 };
 
+/**
+ * Get current selected nodes
+ * @return {{start:SerializableNode, end: SerializableNode}}
+ */
+treemode.getSelection = function () {
+  var selection = {
+    start: null,
+    end: null
+  };
+  if (this.multiselection.nodes && this.multiselection.nodes.length) {
+    if (this.multiselection.nodes.length) {
+      var selection1 = this.multiselection.nodes[0];
+      var selection2 = this.multiselection.nodes[this.multiselection.nodes.length - 1];
+      if (this.multiselection.direction === 'down') {
+        selection.start = selection1.serialize();
+        selection.end = selection2.serialize();
+      } else {
+        selection.start = selection2.serialize();
+        selection.end = selection1.serialize();
+      }
+    }
+  }
+  return selection;
+};
+
+/**
+ * Callback registration for selection change
+ * @param {selectionCallback} callback 
+ * 
+ * @callback selectionCallback
+ */
+treemode.onSelectionChange = function (callback) {
+  if (typeof callback === 'function') {
+    this._selectionChangedHandler = util.debounce(callback, this.DEBOUNCE_INTERVAL);
+  }
+};
+
+/**
+ * Select range of nodes.
+ * For selecting single node send only the start parameter
+ * For clear the selection do not send any parameter
+ * If the nodes are not from the same level the first common parent will be selected
+ * @param {{path: Array.<String>}} start object contains the path for selection start 
+ * @param {{path: Array.<String>}} end object contains the path for selection end
+ */
+treemode.setSelection = function (start, end) {
+  // check for old usage
+  if (start && start.dom && start.range) {
+    console.warn('setSelection/getSelection usage for text selection is deprecated and should not be used, see documentation for supported selection options');
+    this.setDomSelection(start);
+  }
+
+  var nodes = this._getNodeInstancesByRange(start, end);
+  
+  nodes.forEach(function(node) {
+    node.expandTo();
+  });
+  this.select(nodes);
+};
+
+/**
+ * Returns a set of Nodes according to a range of selection
+ * @param {{path: Array.<String>}} start object contains the path for range start 
+ * @param {{path: Array.<String>}=} end object contains the path for range end
+ * @return {Array.<Node>} Node instances on the given range
+ * @private
+ */
+treemode._getNodeInstancesByRange = function (start, end) {
+  var startNode, endNode;
+
+  if (start && start.path) {
+    startNode = this.node.findNodeByPath(start.path);
+    if (end && end.path) {
+      endNode = this.node.findNodeByPath(end.path);
+    }
+  }
+
+  var nodes = [];
+  if (startNode instanceof Node) {
+    if (endNode instanceof Node && endNode !== startNode) {
+      if (startNode.parent === endNode.parent) {
+        var start, end;
+        if (startNode.getIndex() < endNode.getIndex()) {
+          start = startNode;
+          end = endNode;
+        } else {
+          start = endNode;
+          end = startNode;
+        }
+        var current = start;
+        nodes.push(current);
+        do {
+          current = current.nextSibling();
+          nodes.push(current);
+        } while (current && current !== end);
+      } else {
+        nodes = this._findTopLevelNodes(startNode, endNode);
+      }
+    } else {
+      nodes.push(startNode);
+    }
+  }
+
+  return nodes;
+
+};
+
+treemode.getNodesByRange = function (start, end) {
+  var nodes = this._getNodeInstancesByRange(start, end);
+  var serializableNodes = [];
+
+  nodes.forEach(function (node){
+    serializableNodes.push(node.serialize());
+  });
+
+  return serializableNodes;
+};
 
 // define modes
 module.exports = [

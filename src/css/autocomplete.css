@@ -1,0 +1,32 @@
+
+div.jsoneditor div.autocomplete.dropdown {
+    position: absolute;
+    background: white;
+    box-shadow: 2px 2px 12px rgba(128, 128, 128, 0.3);
+    border: 1px solid #d3d3d3;
+    z-index: 100;
+    overflow-x: hidden;
+    overflow-y: auto;
+    cursor: default;
+    margin: 0;
+    padding-left: 2pt;
+    padding-right: 5pt;
+    text-align: left;
+    outline: 0;
+    font-family: "dejavu sans mono", "droid sans mono", consolas, monaco, "lucida console", "courier new", courier, monospace, sans-serif;
+    font-size: 10pt;
+}
+
+div.jsoneditor div.autocomplete.dropdown .item {
+    color: #333;
+}
+
+div.jsoneditor div.autocomplete.dropdown .item.hover {
+    background-color: #ddd;
+}
+
+div.jsoneditor div.autocomplete.hint {
+    color: #aaa;
+    top:4px;
+    left:4px;
+}

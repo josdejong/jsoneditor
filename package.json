@@ -1,6 +1,6 @@
 {
   "name": "jsoneditor",
-  "version": "5.5.10",
+  "version": "5.26.3",
   "main": "./index",
   "description": "A web-based tool to view, edit, format, and validate JSON",
   "tags": [
@@ -19,24 +19,29 @@
   "bugs": "https://github.com/josdejong/jsoneditor/issues",
   "scripts": {
     "build": "gulp",
-    "watch": "gulp watch",
+    "start": "gulp watch",
     "test": "mocha test"
   },
   "dependencies": {
-    "ajv": "3.8.8",
-    "brace": "0.8.0",
-    "javascript-natural-sort": "0.7.1"
+    "ajv": "5.5.2",
+    "brace": "0.11.1",
+    "javascript-natural-sort": "0.7.1",
+    "jmespath": "0.15.0",
+    "json-source-map": "0.4.0",
+    "mobius1-selectr": "2.4.2",
+    "picomodal": "3.0.0",
+    "vanilla-picker": "2.4.2"
   },
   "devDependencies": {
-    "gulp": "3.9.1",
-    "gulp-clean-css": "2.0.5",
-    "gulp-concat-css": "2.2.0",
-    "gulp-shell": "0.5.2",
-    "gulp-util": "3.0.7",
-    "json-loader": "0.5.4",
+    "gulp": "4.0.0",
+    "gulp-clean-css": "3.4.2",
+    "gulp-concat-css": "2.3.0",
+    "gulp-shell": "0.6.3",
+    "gulp-util": "3.0.8",
+    "json-loader": "0.5.7",
     "mkdirp": "0.5.1",
-    "mocha": "2.4.5",
-    "uglify-js": "2.6.2",
-    "webpack": "1.12.14"
+    "mocha": "5.2.0",
+    "uglify-js": "2.8.22",
+    "webpack": "1.13.1"
   }
 }

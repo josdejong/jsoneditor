@@ -1,0 +1,12 @@
+.app .contents {
+  width: 500px;
+  height: 400px;
+}
+
+.app .contents .menu {
+  padding: 10px 0;
+}
+
+.app .contents .code {
+  background: #f5f5f5;
+}

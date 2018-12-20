@@ -8,9 +8,16 @@ catch (err) {
   // no problem... when we need Ajv we will throw a neat exception
 }
 
+var ace = require('./ace'); // may be undefined in case of minimalist bundle
+var VanillaPicker = require('./vanilla-picker'); // may be undefined in case of minimalist bundle
+
 var treemode = require('./treemode');
 var textmode = require('./textmode');
 var util = require('./util');
+
+if (typeof Promise === 'undefined') {
+  console.error('Promise undefined. Please load a Promise polyfill in the browser in order to use JSONEditor');
+}
 
 /**
  * @constructor JSONEditor
@@ -20,7 +27,20 @@ var util = require('./util');
  *                                                    'tree' (default), 'view',
  *                                                    'form', 'text', and 'code'.
  *                               {function} onChange  Callback method, triggered
- *                                                    on change of contents
+ *                                                    on change of contents.
+ *                                                    Does not pass the contents itself.
+ *                                                    See also `onChangeJSON` and
+ *                                                    `onChangeText`.
+ *                               {function} onChangeJSON  Callback method, triggered
+ *                                                        in modes on change of contents,
+ *                                                        passing the changed contents
+ *                                                        as JSON.
+ *                                                        Only applicable for modes
+ *                                                        'tree', 'view', and 'form'.
+ *                               {function} onChangeText  Callback method, triggered
+ *                                                        in modes on change of contents,
+ *                                                        passing the changed contents
+ *                                                        as stringified JSON.
  *                               {function} onError   Callback method, triggered
  *                                                    when an error occurs
  *                               {Boolean} search     Enable search box.
@@ -44,6 +64,24 @@ var util = require('./util');
  *                               {boolean} sortObjectKeys If true, object keys are
  *                                                        sorted before display.
  *                                                        false by default.
+ *                               {function} onSelectionChange Callback method, 
+ *                                                            triggered on node selection change
+ *                                                            Only applicable for modes
+ *                                                            'tree', 'view', and 'form'
+ *                               {function} onTextSelectionChange Callback method, 
+ *                                                                triggered on text selection change
+ *                                                                Only applicable for modes
+ *                               {HTMLElement} modalAnchor        The anchor element to apply an
+ *                                                                overlay and display the modals in a
+ *                                                                centered location.
+ *                                                                Defaults to document.body
+ *                                                                'text' and 'code'
+ *                               {function} onEvent Callback method, triggered
+ *                                                  when an event occurs in
+ *                                                  a JSON field or value.
+ *                                                  Only applicable for
+ *                                                  modes 'form', 'tree' and
+ *                                                  'view'
  * @param {Object | undefined} json JSON object
  */
 function JSONEditor (container, options, json) {
@@ -76,17 +114,19 @@ function JSONEditor (container, options, json) {
       delete options.editable;
     }
 
+    // warn if onChangeJSON is used when mode can be `text` or `code`
+    if (options.onChangeJSON) {
+      if (options.mode === 'text' || options.mode === 'code' ||
+          (options.modes && (options.modes.indexOf('text') !== -1 || options.modes.indexOf('code') !== -1))) {
+        console.warn('Option "onChangeJSON" is not applicable to modes "text" and "code". ' +
+            'Use "onChangeText" or "onChange" instead.');
+      }
+    }
+
     // validate options
     if (options) {
-      var VALID_OPTIONS = [
-        'ace', 'theme',
-        'ajv', 'schema',
-        'onChange', 'onEditable', 'onError', 'onModeChange',
-        'escapeUnicode', 'history', 'search', 'mode', 'modes', 'name', 'indentation', 'sortObjectKeys'
-      ];
-
       Object.keys(options).forEach(function (option) {
-        if (VALID_OPTIONS.indexOf(option) === -1) {
+        if (JSONEditor.VALID_OPTIONS.indexOf(option) === -1) {
           console.warn('Unknown option "' + option + '". This option will be ignored');
         }
       });
@@ -118,6 +158,18 @@ JSONEditor.modes = {};
 // debounce interval for JSON schema vaidation in milliseconds
 JSONEditor.prototype.DEBOUNCE_INTERVAL = 150;
 
+JSONEditor.VALID_OPTIONS = [
+  'ajv', 'schema', 'schemaRefs','templates',
+  'ace', 'theme', 'autocomplete',
+  'onChange', 'onChangeJSON', 'onChangeText',
+  'onEditable', 'onError', 'onEvent', 'onModeChange', 'onValidate',
+  'onSelectionChange', 'onTextSelectionChange',
+  'colorPicker', 'onColorPicker',
+  'timestampTag',
+  'escapeUnicode', 'history', 'search', 'mode', 'modes', 'name', 'indentation',
+  'sortObjectKeys', 'navigationBar', 'statusBar', 'mainMenuBar', 'languages', 'language', 'enableSort', 'enableTransform'
+];
+
 /**
  * Create the JSONEditor
  * @param {Element} container    Container element
@@ -130,7 +182,7 @@ JSONEditor.prototype._create = function (container, options, json) {
   this.options = options || {};
   this.json = json || {};
 
-  var mode = this.options.mode || 'tree';
+  var mode = this.options.mode || (this.options.modes && this.options.modes[0]) || 'tree';
   this.setMode(mode);
 };
 
@@ -197,6 +249,11 @@ JSONEditor.prototype.getName = function () {
  *                          'text', and 'code'.
  */
 JSONEditor.prototype.setMode = function (mode) {
+  // if the mode is the same as current mode (and it's not the first time), do nothing.
+  if (mode === this.options.mode && this.create) {
+    return;
+  }
+
   var container = this.container;
   var options = util.extend({}, this.options);
   var oldMode = options.mode;
@@ -273,8 +330,10 @@ JSONEditor.prototype._onError = function(err) {
  * Set a JSON schema for validation of the JSON object.
  * To remove the schema, call JSONEditor.setSchema(null)
  * @param {Object | null} schema
+ * @param {Object.<string, Object>=} schemaRefs Schemas that are referenced using the `$ref` property from the JSON schema that are set in the `schema` option,
+ +  the object structure in the form of `{reference_key: schemaObject}`
  */
-JSONEditor.prototype.setSchema = function (schema) {
+JSONEditor.prototype.setSchema = function (schema, schemaRefs) {
   // compile a JSON schema validator if a JSON schema is provided
   if (schema) {
     var ajv;
@@ -288,6 +347,15 @@ JSONEditor.prototype.setSchema = function (schema) {
     }
 
     if (ajv) {
+      if(schemaRefs) {
+        for (var ref in schemaRefs) {
+          ajv.removeSchema(ref);  // When updating a schema - old refs has to be removed first
+          if(schemaRefs[ref]) {
+            ajv.addSchema(schemaRefs[ref], ref);
+          }
+        }
+        this.options.schemaRefs = schemaRefs;
+      }
       this.validateSchema = ajv.compile(schema);
 
       // add schema to the options, so that when switching to an other mode,
@@ -304,6 +372,7 @@ JSONEditor.prototype.setSchema = function (schema) {
     // remove current schema
     this.validateSchema = null;
     this.options.schema = null;
+    this.options.schemaRefs = null;
     this.validate(); // to clear current error messages
     this.refresh();  // update DOM
   }
@@ -381,5 +450,13 @@ JSONEditor.registerMode = function (mode) {
 // register tree and text modes
 JSONEditor.registerMode(treemode);
 JSONEditor.registerMode(textmode);
+
+// expose some of the libraries that can be used customized
+JSONEditor.ace = ace;
+JSONEditor.Ajv = Ajv;
+JSONEditor.VanillaPicker = VanillaPicker;
+
+// default export for TypeScript ES6 projects
+JSONEditor.default = JSONEditor;
 
 module.exports = JSONEditor;

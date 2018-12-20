@@ -1,11 +1,11 @@
 /* reset styling (prevent conflicts with bootstrap, materialize.css, etc.) */
 
-div.jsoneditor input {
+div.jsoneditor .jsoneditor-search input {
   height: auto;
   border: inherit;
 }
 
-div.jsoneditor input:focus {
+div.jsoneditor .jsoneditor-search input:focus {
   border: none !important;
   box-shadow: none !important;
 }

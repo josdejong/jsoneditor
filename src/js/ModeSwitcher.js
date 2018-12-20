@@ -78,7 +78,7 @@ function ModeSwitcher(container, modes, current, onSwitch) {
   box.title = 'Switch editor mode';
   box.onclick = function () {
     var menu = new ContextMenu(items);
-    menu.show(box);
+    menu.show(box, container);
   };
 
   var frame = document.createElement('div');
