@@ -549,6 +549,47 @@ treemode._onChange = function () {
       console.error('Error in onChangeText callback: ', err);
     }
   }
+
+  // trigger the onObjectName callback
+  if (this.options.onObjectName && this.node.childs) {
+    try {
+      var i;
+      var expandedNodes = [];
+      for (i in this.node.childs) {
+        if (this.node.childs[i].expanded) {
+          var expandedNodes = getExpandedNodes(this.node.childs[i]);
+        }
+          var j;
+          for (j in expandedNodes) {
+            var objName;
+            objName = this.options.onObjectName({
+              path: expandedNodes[j].getPath(),
+              children: expandedNodes[j].childs
+            });
+            var count = this.childs ? this.childs.length : 0;
+            expandedNodes[j].dom.value.innerHTML = '{' + (objName || count) + '}';
+          }
+      }
+    }
+    catch (err) {
+      console.error('Error in onObjectName callback: ', err);
+    }
+  }
+
+  function getExpandedNodes(node) {
+    if (typeof node.childs !== 'undefined') {
+      var a = node.childs
+        .filter(function(n) {
+        return n.expanded !== 'undefined' && n.expanded;
+        })
+        .flatMap(function(n) {
+          return getExpandedNodes(n);
+        });
+      return a.length ? a : [node];
+    } else {
+      return [node];
+    }
+  }
 };
 
 /**
@@ -1711,8 +1752,8 @@ treemode.getSelection = function () {
 
 /**
  * Callback registration for selection change
- * @param {selectionCallback} callback 
- * 
+ * @param {selectionCallback} callback
+ *
  * @callback selectionCallback
  */
 treemode.onSelectionChange = function (callback) {
@@ -1726,7 +1767,7 @@ treemode.onSelectionChange = function (callback) {
  * For selecting single node send only the start parameter
  * For clear the selection do not send any parameter
  * If the nodes are not from the same level the first common parent will be selected
- * @param {{path: Array.<String>}} start object contains the path for selection start 
+ * @param {{path: Array.<String>}} start object contains the path for selection start
  * @param {{path: Array.<String>}} end object contains the path for selection end
  */
 treemode.setSelection = function (start, end) {
@@ -1737,7 +1778,7 @@ treemode.setSelection = function (start, end) {
   }
 
   var nodes = this._getNodeInstancesByRange(start, end);
-  
+
   nodes.forEach(function(node) {
     node.expandTo();
   });
@@ -1746,7 +1787,7 @@ treemode.setSelection = function (start, end) {
 
 /**
  * Returns a set of Nodes according to a range of selection
- * @param {{path: Array.<String>}} start object contains the path for range start 
+ * @param {{path: Array.<String>}} start object contains the path for range start
  * @param {{path: Array.<String>}=} end object contains the path for range end
  * @return {Array.<Node>} Node instances on the given range
  * @private
