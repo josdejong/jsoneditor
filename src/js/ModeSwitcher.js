@@ -1,6 +1,7 @@
 'use strict';
 
 var ContextMenu = require('./ContextMenu');
+var translate = require('./i18n').translate;
 
 /**
  * Create a select box to be used in the editor menu's, which allows to switch mode
@@ -14,36 +15,36 @@ function ModeSwitcher(container, modes, current, onSwitch) {
   // available modes
   var availableModes = {
     code: {
-      'text': 'Code',
-      'title': 'Switch to code highlighter',
+      'text': translate('modeCodeText'),
+      'title': translate('modeCodeTitle'),
       'click': function () {
         onSwitch('code')
       }
     },
     form: {
-      'text': 'Form',
-      'title': 'Switch to form editor',
+      'text': translate('modeFormText'),
+      'title': translate('modeFormTitle'),
       'click': function () {
         onSwitch('form');
       }
     },
     text: {
-      'text': 'Text',
-      'title': 'Switch to plain text editor',
+      'text': translate('modeTextText'),
+      'title': translate('modeTextTitle'),
       'click': function () {
         onSwitch('text');
       }
     },
     tree: {
-      'text': 'Tree',
-      'title': 'Switch to tree editor',
+      'text': translate('modeTreeText'),
+      'title': translate('modeTreeTitle'),
       'click': function () {
         onSwitch('tree');
       }
     },
     view: {
-      'text': 'View',
-      'title': 'Switch to tree view',
+      'text': translate('modeViewText'),
+      'title': translate('modeViewTitle'),
       'click': function () {
         onSwitch('view');
       }
