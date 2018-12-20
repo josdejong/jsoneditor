@@ -1,0 +1,66 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <title>JSONEditor | Dynamic Auto Complete</title>
+
+  <link href="../dist/jsoneditor.css" rel="stylesheet" type="text/css">
+  <script src="../dist/jsoneditor.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.4/lodash.min.js"></script>
+
+
+  <style type="text/css">
+    #jsoneditor {
+      width: 500px;
+      height: 500px;
+    }
+
+    p {
+      width: 500px;
+      font-family: "DejaVu Sans", sans-serif;
+    }
+  </style>
+
+</head>
+<body>
+<p>
+  This example demonstrates how to autocomplete works, options available are dynamics and consist in all the strings found in the json
+</p>
+
+<div id="jsoneditor"></div>
+
+<script>
+  // create the editor
+  var container = document.getElementById('jsoneditor');
+  var options = {
+    autocomplete: {
+      applyTo:['value'],
+      getOptions: function (text, path, input, editor) {
+        return new Promise(function (resolve, reject) {
+          var options = extractUniqueWords(editor.get());
+          if (options.length > 0) resolve(options); else reject();
+        });
+      }
+    }
+  };
+
+  // helper function to extract all unique words in the keys and values of a JSON object
+  function extractUniqueWords (json) {
+    return _.uniq(_.flatMapDeep(json, function (value, key) {
+      return _.isObject(value)
+          ? [key]
+          : [key, String(value)]
+    }))
+  }
+
+  var json = {
+    'array': [{'field1':'v1', 'field2':'v2'}, 2, 3],
+    'boolean': true,
+    'null': null,
+    'number': 123,
+    'object': {'a': 'b', 'c': 'd'},
+    'string': 'Hello World'
+  };
+  var editor = new JSONEditor(container, options, json);
+</script>
+</body>
+</html>

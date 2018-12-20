@@ -1,0 +1,64 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <title>JSONEditor | Synchronize two editors</title>
+
+  <link href="../dist/jsoneditor.css" rel="stylesheet" type="text/css">
+  <script src="../dist/jsoneditor.js"></script>
+
+  <style type="text/css">
+    body {
+      font-family: sans-serif;
+    }
+
+    #jsoneditor1,
+    #jsoneditor2 {
+      width: 500px;
+      height: 500px;
+      margin-right: 10px;
+      display: inline-block;
+    }
+  </style>
+</head>
+<body>
+
+<p>
+  Keep two editors synchronized using <code>onChangeText</code> and <code>updateText</code>.
+</p>
+<p>
+  This can be done too with <code>onChangeJSON</code> and <code>update</code>, which can only be used in
+  modes <code>tree</code>, <code>form</code> (and <code>view</code>).
+</p>
+
+<div id="jsoneditor1"></div>
+<div id="jsoneditor2"></div>
+
+<script>
+  // create editor 1
+  var editor1 = new JSONEditor(document.getElementById('jsoneditor1'), {
+    onChangeText: function (jsonString) {
+      editor2.updateText(jsonString);
+    }
+  });
+
+  // create editor 2
+  var editor2 = new JSONEditor(document.getElementById('jsoneditor2'), {
+    onChangeText: function (jsonString) {
+      editor1.updateText(jsonString);
+    }
+  });
+
+  // set initial data in both editors
+  var json = {
+    'array': [1, 2, 3],
+    'boolean': true,
+    'null': null,
+    'number': 123,
+    'object': {'a': 'b', 'c': 'd'},
+    'string': 'Hello World'
+  };
+  editor1.set(json);
+  editor2.set(json);
+</script>
+</body>
+</html>

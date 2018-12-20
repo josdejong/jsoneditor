@@ -1,0 +1,98 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <title>JSONEditor | Update JSON</title>
+
+    <!-- when using the mode "code", it's important to specify charset utf-8 -->
+    <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+
+    <link href="../dist/jsoneditor.css" rel="stylesheet" type="text/css">
+    <script src="../dist/jsoneditor.js"></script>
+
+    <style type="text/css">
+        body, html {
+            font: 10.5pt arial;
+            color: #4d4d4d;
+            line-height: 150%;
+            width: 100%;
+            height: 100%;
+            padding: 0;
+            margin: 0;
+        }
+
+        .main {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            height: 100%;
+        }
+
+        .main > div {
+            margin: 10px;
+        }
+
+        #jsoneditor {
+            flex: 1;
+            width: 100%;
+            max-width: 500px;
+            height: 200px;
+        }
+    </style>
+</head>
+<body>
+    <div class="main">
+        <div>
+            <button id="update">update JSON</button>
+            <button id="updateText">update JSON Text</button>
+        </div>
+        <div id="jsoneditor"></div>
+    </div>
+
+    <script>
+      var container = document.getElementById('jsoneditor');
+      var updateButton = document.getElementById('update');
+      var updateTextButton = document.getElementById('updateText');
+
+      var options = {
+        mode: 'tree',
+        modes: ['code', 'form', 'text', 'tree', 'view'] // allowed modes
+      };
+
+      var json = {
+        "arrayToObject": [1, 2, 3],
+        "arrayGrow": [1, 2, 3],
+        "arrayShrink": [1, 2, 3],
+        "autoToArray": 123,
+        "arrayToAuto": [1, 2, 3],
+        "objectGrow": {"a": "b", "c": "d"},
+        "objectShrink": {"a": "b", "c": "d"},
+        "objectToArray": {"a": "b", "c": "d"},
+        "removeField": "old"
+      };
+
+      var updatedJson = {
+        "arrayToObject": {"a": "b", "c": "d"},
+        "arrayGrow": [1, 2, 3, 4, 5],
+        "arrayShrink": [1, 3],
+        "autoToArray": [1, 2, 3],
+        "arrayToAuto": 123,
+        "objectGrow": {"a": "b", "c": "ddd", "e": "f"},
+        "objectShrink": {"c": "d"},
+        "objectToArray": [1, 2, 3],
+        "newField": "new"
+      };
+
+      var editor = new JSONEditor(container, options, json);
+
+      editor.expandAll();
+
+      updateButton.onclick = function () {
+        editor.update(updatedJson);
+      };
+
+      updateTextButton.onclick = function () {
+        editor.updateText(JSON.stringify(updatedJson, null, 2));
+      };
+    </script>
+</body>
+</html>

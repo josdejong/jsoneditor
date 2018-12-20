@@ -51,6 +51,12 @@
     onChange: function () {
       console.log('change');
     },
+    onChangeJSON: function (json) {
+      console.log('onChangeJSON', json);
+    },
+    onChangeText: function (text) {
+      console.log('onChangeText', text);
+    },
     indentation: 4,
     escapeUnicode: true
   };
@@ -58,6 +64,7 @@
   json = {
     "array": [1, 2, [3,4,5]],
     "boolean": true,
+    "color": "#82b92c",
     "htmlcode": '&quot;',
     "escaped_unicode": '\\u20b9',
     "unicode": '\u20b9,\uD83D\uDCA9',
@@ -66,10 +73,11 @@
     "number": 123,
     "object": {"a": "b", "c": "d"},
     "string": "Hello World",
+    "timestamp": 1534952749890,
     "url": "http://jsoneditoronline.org"
   };
 
-  editor = new JSONEditor(container, options, json);
+  editorTest = new JSONEditor(container, options, json);
 
   console.log('json', json);
   console.log('string', JSON.stringify(json));

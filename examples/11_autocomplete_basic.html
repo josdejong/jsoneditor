@@ -1,0 +1,51 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <title>JSONEditor | Auto Complete</title>
+    
+  <link href="../dist/jsoneditor.css" rel="stylesheet" type="text/css">
+  <script src="../dist/jsoneditor.js"></script>
+
+
+  <style type="text/css">
+    #jsoneditor {
+      width: 500px;
+      height: 500px;
+    }
+
+    p {
+      width: 500px;
+      font-family: "DejaVu Sans", sans-serif;
+    }
+  </style>
+
+</head>
+<body>
+<p>
+    This example demonstrates how to autocomplete works, options available are: 'apple','cranberry','raspberry','pie', 'mango', 'mandarine', 'melon', 'appleton'.
+</p>
+
+<div id="jsoneditor"></div>
+
+<script>
+  // create the editor
+  var container = document.getElementById('jsoneditor');
+  var options = {
+    autocomplete: {
+      getOptions: function () {
+        return ['apple', 'cranberry', 'raspberry', 'pie', 'mango', 'mandarine', 'melon', 'appleton'];
+      }
+    }
+  };
+  var json = {
+    'array': [{'field1':'v1', 'field2':'v2'}, 2, 3],
+    'boolean': true,
+    'null': null,
+    'number': 123,
+    'object': {'a': 'b', 'c': 'd'},
+    'string': 'Hello World'
+  };
+  var editor = new JSONEditor(container, options, json);
+</script>
+</body>
+</html>

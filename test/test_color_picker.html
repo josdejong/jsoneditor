@@ -1,0 +1,92 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+
+  <link href="../dist/jsoneditor.css" rel="stylesheet" type="text/css">
+  <script src="../dist/jsoneditor.js"></script>
+
+  <style type="text/css">
+    body {
+      font: 10.5pt arial;
+      color: #4d4d4d;
+      line-height: 150%;
+      width: 500px;
+      padding-left: 40px;
+    }
+
+    code {
+      background-color: #f5f5f5;
+    }
+
+    #jsoneditor {
+      width: 500px;
+      height: 500px;
+    }
+  </style>
+</head>
+<body>
+
+<p>
+  Test color picker firing onChange on every change instead of onDone.
+</p>
+
+<form>
+  <div id="jsoneditor"></div>
+</form>
+
+<script>
+  var container, options, json, editor;
+
+  container = document.getElementById('jsoneditor');
+
+  options = {
+    onChangeJSON: function (json) {
+      console.log('onChangeJSON', json);
+    },
+    onColorPicker: function (parent, color, onChange) {
+      new JSONEditor.VanillaPicker({
+        parent: parent,
+        color: color,
+        popup: 'bottom',
+        onChange: function (color) {
+          console.log('onChange', color)
+          var alpha = color.rgba[3]
+          var hex = (alpha === 1)
+              ? color.hex.substr(0, 7)  // return #RRGGBB
+              : color.hex               // return #RRGGBBAA
+          onChange(hex)
+        },
+        onDone: function (color) {
+          console.log('onDone', color)
+        },
+        onClose: function (color) {
+          console.log('onClose', color)
+        }
+      }).show();
+    }
+  };
+
+  json = {
+    "array": [1, 2, [3,4,5]],
+    "boolean": true,
+    "color": "#82b92c",
+    "htmlcode": '&quot;',
+    "escaped_unicode": '\\u20b9',
+    "unicode": '\u20b9,\uD83D\uDCA9',
+    "return": '\n',
+    "null": null,
+    "number": 123,
+    "object": {"a": "b", "c": "d"},
+    "string": "Hello World",
+    "timestamp": 1534952749890,
+    "url": "http://jsoneditoronline.org"
+  };
+
+  editor = new JSONEditor(container, options, json);
+
+  console.log('json', json);
+  console.log('string', JSON.stringify(json));
+</script>
+</body>
+</html>

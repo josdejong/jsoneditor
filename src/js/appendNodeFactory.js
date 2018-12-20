@@ -2,6 +2,7 @@
 
 var util = require('./util');
 var ContextMenu = require('./ContextMenu');
+var translate = require('./i18n').translate;
 
 /**
  * A factory function to create an AppendNode, which depends on a Node
@@ -39,6 +40,7 @@ function appendNodeFactory(Node) {
 
     // a row for the append button
     var trAppend = document.createElement('tr');
+    trAppend.className = 'jsoneditor-append';
     trAppend.node = this;
     dom.tr = trAppend;
 
@@ -53,7 +55,7 @@ function appendNodeFactory(Node) {
       dom.tdMenu = tdMenu;
       var menu = document.createElement('button');
       menu.type = 'button';
-      menu.className = 'jsoneditor-contextmenu';
+      menu.className = 'jsoneditor-button jsoneditor-contextmenu';
       menu.title = 'Click to open the actions menu (Ctrl+M)';
       dom.menu = menu;
       tdMenu.appendChild(dom.menu);
@@ -62,7 +64,7 @@ function appendNodeFactory(Node) {
     // a cell for the contents (showing text 'empty')
     var tdAppend = document.createElement('td');
     var domText = document.createElement('div');
-    domText.innerHTML = '(empty)';
+    domText.innerHTML = '(' + translate('empty') + ')';
     domText.className = 'jsoneditor-readonly';
     tdAppend.appendChild(domText);
     dom.td = tdAppend;
@@ -74,9 +76,25 @@ function appendNodeFactory(Node) {
   };
 
   /**
+   * Append node doesn't have a path
+   * @returns {null}
+   */
+  AppendNode.prototype.getPath = function() {
+    return null;
+  };
+
+  /**
+   * Append node doesn't have an index
+   * @returns {null}
+   */
+  AppendNode.prototype.getIndex = function() {
+    return null;
+  };
+
+  /**
    * Update the HTML dom of the Node
    */
-  AppendNode.prototype.updateDom = function () {
+  AppendNode.prototype.updateDom = function(options) {
     var dom = this.dom;
     var tdAppend = dom.td;
     if (tdAppend) {
@@ -86,7 +104,7 @@ function appendNodeFactory(Node) {
 
     var domText = dom.text;
     if (domText) {
-      domText.innerHTML = '(empty ' + this.parent.type + ')';
+      domText.innerHTML = '(' + translate('empty') + ' ' + this.parent.type + ')';
     }
 
     // attach or detach the contents of the append node:
@@ -134,50 +152,52 @@ function appendNodeFactory(Node) {
   AppendNode.prototype.showContextMenu = function (anchor, onClose) {
     var node = this;
     var titles = Node.TYPE_TITLES;
+    var appendSubmenu = [
+        {
+            text: translate('auto'),
+            className: 'jsoneditor-type-auto',
+            title: titles.auto,
+            click: function () {
+                node._onAppend('', '', 'auto');
+            }
+        },
+        {
+            text: translate('array'),
+            className: 'jsoneditor-type-array',
+            title: titles.array,
+            click: function () {
+                node._onAppend('', []);
+            }
+        },
+        {
+            text: translate('object'),
+            className: 'jsoneditor-type-object',
+            title: titles.object,
+            click: function () {
+                node._onAppend('', {});
+            }
+        },
+        {
+            text: translate('string'),
+            className: 'jsoneditor-type-string',
+            title: titles.string,
+            click: function () {
+                node._onAppend('', '', 'string');
+            }
+        }
+    ];
+    node.addTemplates(appendSubmenu, true);
     var items = [
       // create append button
       {
-        'text': 'Append',
-        'title': 'Append a new field with type \'auto\' (Ctrl+Shift+Ins)',
-        'submenuTitle': 'Select the type of the field to be appended',
+        'text': translate('appendText'),
+        'title': translate('appendTitleAuto'),
+        'submenuTitle': translate('appendSubmenuTitle'),
         'className': 'jsoneditor-insert',
         'click': function () {
           node._onAppend('', '', 'auto');
         },
-        'submenu': [
-          {
-            'text': 'Auto',
-            'className': 'jsoneditor-type-auto',
-            'title': titles.auto,
-            'click': function () {
-              node._onAppend('', '', 'auto');
-            }
-          },
-          {
-            'text': 'Array',
-            'className': 'jsoneditor-type-array',
-            'title': titles.array,
-            'click': function () {
-              node._onAppend('', []);
-            }
-          },
-          {
-            'text': 'Object',
-            'className': 'jsoneditor-type-object',
-            'title': titles.object,
-            'click': function () {
-              node._onAppend('', {});
-            }
-          },
-          {
-            'text': 'String',
-            'className': 'jsoneditor-type-string',
-            'title': titles.string,
-            'click': function () {
-              node._onAppend('', '', 'string');
-            }
-          }
-        ]
+        'submenu': appendSubmenu
       }
     ];
 
@@ -186,7 +206,7 @@ function appendNodeFactory(Node) {
   };
 
   /**
-   * Handle an event. The event is catched centrally by the editor
+   * Handle an event. The event is caught centrally by the editor
    * @param {Event} event
    */
   AppendNode.prototype.onEvent = function (event) {

@@ -3,6 +3,394 @@
 https://github.com/josdejong/jsoneditor
 
 
+## 2018-12-06, version 5.26.3
+
+- Fixed #610: JSON Repair now removes trailing commas.
+- Upgraded devDependency `gulp` to v4. Thanks @maestr0.
+
+
+## 2018-11-13, version 5.26.2
+
+- Fixed dragging and selecting multiple nodes not working
+  (regression introduced in `v5.26.1`).
+
+
+## 2018-11-13, version 5.26.1
+
+- Fixed `.update()` throwing an exception when replacing a JSON object
+  with `null`. Thanks @DullReferenceException.
+- Fixed #598: Search field can't be focused in object view.
+
+
+## 2018-11-12, version 5.26.0
+
+- Implemented option `mainMenuBar` to enable/disable the main menu bar.
+  Thanks @tanmayrajani.
+
+
+## 2018-10-29, version 5.25.0
+
+- Implemented options `enableSort` and `enableTransform` so you can turn off
+  these features. Thanks @tanmayrajani.
+- Fixed #590: validation failing in code and text mode when status
+  bar is disabled.
+- Fixed #589: the path in the navigation bar is not updated
+  when duplicating or removing a node, and neither after an undo/redo action.
+- Fixed duplicate and remove of the action menu of multiple selected
+  nodes not working.
+- Fixed not preventing default selection of text when selecting nodes.
+- Fixed #595: navigation bar path link not working.
+
+
+## 2018-10-08, version 5.24.7
+
+- Fix #582: parse error annotations not always up to date in
+  code editor. Thanks @meirotstein.
+
+
+## 2018-09-12, version 5.24.6
+
+- Fix #548: `import JSONEditor from 'jsoneditor'` not working in
+  TypeScript projects (gave a constructor is undefined error).
+
+
+## 2018-09-06, version 5.24.5
+
+- Fixed a bug in textmode on IE 11, not loading the editor when
+  `Promise` is undefined.
+
+
+## 2018-09-06, version 5.24.4
+
+- Fixed #576: Visualization in mode `view` when an array
+  with more than 100 items is rendered.
+- Fixed JSONEditor not working on IE11: continue and throw console
+  errors when `Promise` is undefined. Regression since `v5.23.0`.
+- Fixed `onClose` of color picker not being fired when clicking outside
+  the picker to close it.
+- Upgraded dependencies `brace`, `mobius1-selectr`, `vanilla-picker`.
+- Upgraded devDependency `mocha`.
+
+
+## 2018-08-29, version 5.24.3
+
+- Fixed color picker not working in ES6 projects.
+- Fixed color picker closing immediately after the first `onChange`
+  event, and `onChange` events are now debounced like all text inputs.
+
+
+## 2018-08-27, version 5.24.2
+
+- Improved error and validation messaging in `text` mode.
+  Thanks @meirotstein.
+  - Clicking a message now selects the line where the error occurs.
+  - Icon bottom right showing when there are warnings or errors.
+- Fixed field still editable after moving a node from an object
+  to an array, changing the field from a property into an index.
+
+
+## 2018-08-26, version 5.24.1
+
+- Context menu and color picker are now absolutely positioned, and
+  can overflow the borders of the editor.
+- Fixed #568: mode switcher disappearing when selecting the current
+  mode again.
+- Fixed `transform` not creating/removing expand button when the type
+  of a node changed.
+
+
+## 2018-08-22, version 5.24.0
+
+- Implemented a color picker, and allow hooking in a custom color
+  picker. new options are `colorPicker` and `onColorPicker`.
+- Implemented a timestamp tag displayed right from timestamps,
+  with corresponding option `timestampTag`.
+
+
+## 2018-08-17, version 5.23.1
+
+- Fixed #566: transform function broken, regression since `v5.20.0`.
+
+
+## 2018-08-15, version 5.23.0
+
+- Implemented support for custom validation using a new `onValidate` callback.
+- In tree mode, nodes containing a validation error now have a className
+  `jsoneditor-validation-error` which can be used for custom styling.
+
+
+## 2018-08-13, version 5.22.0
+
+- Implemented `onEvent` callback triggered when an event occurs in a JSON
+  field or value. Thanks @cristinabarrantes.
+
+
+## 2018-08-12, version 5.21.0
+
+- Show validation errors inline instead of at the bottom when in code
+  mode. Thanks @meirotstein.
+- Fix #562: allow `$` character in property names of of a JSON schema.
+
+
+## 2018-08-10, version 5.20.0
+
+_Good news: JSONEditor is finally framework friendly and can now be easily
+integrated in React, Vue, and Angular!_
+
+- Implemented new methods `update` and `updateText`, which maintain the state
+  of the editor (expanded nodes, search, selection). This makes it easy to
+  integrate in frameworks like React.
+- Implemented options `onChangeJSON(json)` and `onChangeText(jsonString)`.
+- Added two React examples to the `examples` folder.
+- Fixed menu buttons "Sort" and "Transform" being available in modes `view`
+  and `form`.
+
+
+## 2018-08-02, version 5.19.2
+
+- Fixed #558: scrolling to search results and automatically scrolling up/down
+  when dragging an item broken (regression since v5.19.1).
+
+
+## 2018-07-28, version 5.19.1
+
+- Fixed #557: inner contents of the scrollable area being displayed outside of
+  the editor (on Chrome only).
+
+
+## 2018-07-11, version 5.19.0
+
+- No more grayed out icons of the context menu, see #532.
+- Added Sort and Transform buttons to the main menu.
+- Fixes and improvements in the Transform dialog.
+
+
+## 2018-06-27, version 5.18.0
+
+- Implemented JMESPath support for advanced filtering, sorting, and
+  transforming of JSON documents.
+- Implemented a new option `modalAnchor` to control at which part of the
+  screen the modals are displayed.
+- Fixed #544: JSON Schema errors sometimes not being displayed in the
+  editor.
+
+
+## 2018-06-03, version 5.17.1
+
+- Fixed a bug in a translation text.
+
+
+## 2018-06-03, version 5.17.0
+
+- Implemented advanced sorting for arrays.
+
+
+## 2018-05-23, version 5.16.0
+
+- Better handling of JSON documents containing large arrays:
+  - Only displays the first 100 items of large arrays,
+    with buttons "show more" and "show all" to render more items.
+  - Search results are now limited to max 1000 matches,
+    and search does no longer expand the paths to all matches
+    but only expands the path of the current search result.
+- Fixed index numbers of Array items not being updated after sorting.
+
+
+## 2018-05-02, version 5.15.0
+
+- Implemented selection API: `onSelectionChanged`, `onTextSelectionChanged`,
+  `getSelection`, `getTextSelection`, `setSelection`, `setTextSelection`,
+  and `getNodesByRange`. Thanks @meirotstein.
+
+
+## 2018-03-21, version 5.14.1
+
+- Fixed absolute path of css image `jsoneditor-icons.svg`, which could.
+  give issues with webpack plugin "file-loader". Thanks @landru29.
+
+
+## 2018-02-25, version 5.14.0
+
+- Implemented support for translations. Thanks @mariohmol.
+- Fixed a bug sometimes occurring when dragging items from array to
+  object, see #509. Thanks @43081j.
+- Fixed autocomplete not accepting returned `null` values, see #512.
+  Thanks @43081j.
+- Fixed memory inefficiency when working with large JSON Schema's
+  generating many errors. Thanks @43081j.
+
+
+## 2018-02-07, version 5.13.3
+
+- Fixed a positioning issue with JSON Schema errors in text/code mode.
+
+
+## 2018-01-18, version 5.13.2
+
+- Fixed view mode opening links in a new tab instead of current tab
+  when Ctrl key is not down. Thanks @LEW21.
+- Fixed #502: code editor not showing a monospaced font some cases.
+
+
+## 2017-12-28, version 5.13.1
+
+- Fixed another occurrence of #494: properties not escaped in the
+  navigation bar.
+
+
+## 2017-12-28, version 5.13.0
+
+- Implemented cursor position in text mode. Thanks @meirotstein.
+- Fixed #494: properties not escaped in the navigation bar.
+  Thanks @meirotstein.
+
+
+## 2017-12-18, version 5.12.0
+
+- Implemented #482: Include `caseSensitive` option for autocomplete.
+  Thanks @israelito3000.
+- Upgraded dependencies
+  - `ajv@5.5.2`
+
+
+## 2017-11-22, version 5.11.0
+
+- Upgraded dependencies
+  - `ajv@5.4.0`
+  - `brace@0.11.0`
+- Fixed dropdown for JSON Schema enums when defined inside pattern
+  properties. Thanks @alquist.
+- Fixed code containing a non UTF-8 character. Thanks @alshakero.
+
+
+## 2017-11-15, version 5.10.1
+
+- Some styling tweaks in the navigation bar and status bar.
+- Don't display status bar in `text` mode (which doesn't yet support
+  row and col counts).
+
+
+## 2017-11-15, version 5.10.0
+
+- Implemented a navigation bar showing the path. Thanks @meirotstein.
+- Implemented a status bar showing cursor location.
+  Thanks @meirotstein.
+- Implemented repairing JSON objects containing left and right single
+  and double quotes (which you get when typing a JSON object in Word)
+  in `text` and `code` mode.
+- Implemented repairing JSON objects containing special white space
+  characters like non-breaking space.
+- Upgraded dependency `ajv` to version `5.3.0`.
+- Fixed #481: A polyfill required `DocumentType` which is not defined
+  in all environments.
+
+
+## 2017-09-16, version 5.9.6
+
+- Fixed displaying a dropdown for enums inside composite schemas.
+  Thanks @hachichaud.
+- Fixed #461: Urls opening twice on Firefox and Safari.
+
+
+## 2017-08-26, version 5.9.5
+
+- Fixed a regression introduced in `v5.9.4`: after using the context
+  menu once, it was not possible to set focus to an other input field
+  anymore.
+
+
+## 2017-08-20, version 5.9.4
+
+- Fixed #447: context menus not working in Shadow DOM. Thanks @tomalec.
+
+
+## 2017-07-24, version 5.9.3
+
+- Fixed broken multi-selection (regression).
+
+
+## 2017-07-13, version 5.9.2
+
+- Fixed a bug in the JSON sanitizer.
+
+
+## 2017-07-13, version 5.9.1
+
+- `setText` method of tree mode now automatically sanitizes JSON input
+  when needed.
+- Fixed #430: automatically fix unescaped control characters in
+  JSON input.
+
+
+## 2017-07-10, version 5.9.0
+
+- Implemented support for JSON schema references `$ref`, see #302.
+  Thanks @meirotstein.
+- Fixed #429: JSONEditor no longer accepting an empty array for option
+  `modes`. Thanks @trystan2k.
+- Fixed JSONEditor picking the first entry of `modes` as initial mode
+  instead of option `mode`.
+
+
+## 2017-07-08, version 5.8.2
+
+- Select first option from `modes` instead of `tree` when `mode` is not
+  configured. Thanks @bag-man.
+- Some fixes and improvements in the API of autocompletion.
+  Thanks @israelito3000.
+
+
+## 2017-07-03, version 5.8.1
+
+- Fixed broken minified bundles in folder `dist` (again...).
+
+
+## 2017-07-02, version 5.8.0
+
+- Implemented support for autocompletion. Thanks @israelito3000.
+
+
+## 2017-06-27, version 5.7.2
+
+- Fixed broken minified bundles in folder `dist`
+  (reverted to `uglify-js@2.8.22` for now).
+
+
+## 2017-06-25, version 5.7.1
+
+- Upgraded dependency `ajv` to version `5.2.0`. Resolves warnings in
+  Webpack build processes.
+
+
+## 2017-05-26, version 5.7.0
+
+- Implemented support for template items. Thanks @israelito3000.
+- Upgraded dependencies to the latest versions. Thanks @andreykaipov.
+
+
+## 2017-04-15, version 5.6.0
+
+- Implemented readonly option for modes `text` and `code.`
+  Thanks @walkerrandolphsmith.
+- Upgraded dependencies (`brance` and `ajv`) to the latest versions.
+- Fixed not being able to move focus to enum select box when clicking
+  a JSON Schema warning.
+- Fixed #309: already loaded version of Ace being overwritten by the
+  embedded version of JSONEditor.
+- Fixed #368: Mode selection drop down not fully visible on small screen.
+- Fixed #253: Optimize the input experience of Chinese IME.
+  Thanks @chinesedfan.
+
+
+## 2017-01-06, version 5.5.11
+
+- Fixed embedded version of jsoneditor ace theme not being loaded in
+  minimalist version (see #55).
+- Fixed a styling issue in the SearchBox of Ace editor (mode `code`).
+- Fixed #347: CSS more robust against global settings of div position.
+- Added docs and example on how to use a custom version of Ace editor.
+
+
 ## 2016-11-02, version 5.5.10
 
 - Fixed #85: pressing enter in an input in a form containing a JSONEditor too
@@ -473,7 +861,7 @@ https://github.com/josdejong/jsoneditor
 
 ## 2012-08-12, version 1.2.0
 
-- New: Added search functionality. Search results are expanded and highlighed.
+- New: Added search functionality. Search results are expanded and highlighted.
   Quickkeys in the search box: Enter (next), Shift+Enter (previous), Ctrl+Enter
   (search again).
 - New: The position of the vertical separator between left and right panel is
@@ -520,7 +908,7 @@ https://github.com/josdejong/jsoneditor
 ## 2012-03-01, version 0.9.10
 
 - Nicer looking select box for the field types, with icons.
-- Improved drag and drop: better visualized, and now working in all browers.
+- Improved drag and drop: better visualized, and now working in all browsers.
 - Previous values will be restored after changing the type of a field. When
   changing the type back, the previous value or childs will be restored.
 - When hovering buttons (fieldtype, duplicate, delete, add) or when dragging
@@ -553,7 +941,7 @@ https://github.com/josdejong/jsoneditor
 
 ## 2012-01-09, version 0.9.7
 
-- Added functionallity to expand/collapse a node and all its childs. Click
+- Added functionality to expand/collapse a node and all its childs. Click
   the expand button of a node while holding Ctrl down.
 - Small interface improvements
 

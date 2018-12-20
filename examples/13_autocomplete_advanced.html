@@ -1,0 +1,104 @@
+﻿<!DOCTYPE HTML>
+<html>
+<head>
+  <title>JSONEditor | Advanced Auto Complete</title>
+
+  <meta charset="UTF-8">
+  <link href="../dist/jsoneditor.css" rel="stylesheet" type="text/css">
+  <script src="../dist/jsoneditor.js"></script>
+  <script src="https://unpkg.com/jsonpath@0.2.11/jsonpath.min.js"></script>
+
+  <style type="text/css">
+    #jsoneditor {
+      width: 500px;
+      height: 500px;
+    }
+
+    p {
+      width: 500px;
+      font-family: "DejaVu Sans", sans-serif;
+    }
+  </style>
+
+</head>
+<body>
+<p>
+  This example demonstrates how to autocomplete works with an ActivationChar option, press "*" in any value and continue with autocompletion.
+  The autocomplete returns the posible jsonpaths of the existing json document, for example <code>*object.a</code>.
+</p>
+
+<div id="jsoneditor"></div>
+
+<script>
+  // create the editor
+  var container = document.getElementById('jsoneditor');
+  var activationChar = '*';
+  var options = {
+    autocomplete: {
+      confirmKeys: [39, 35, 9, 190], // Confirm Autocomplete Keys: [right, end, tab, '.']  // By default are only [right, end, tab]
+      caseSensitive: false,
+
+      getOptions: function (text, path, input, editor) {
+        if (!text.startsWith(activationChar) || input !== 'value') return [];
+        var data = {};
+        var startFrom = 0;
+        var lastPoint = text.lastIndexOf('.');
+        var jsonObj = editor.get();
+        if ((lastPoint > 0) && (text.length > 1)) {
+            data = jsonpath.query(jsonObj, '$.' + text.substring(activationChar.length, lastPoint));
+            if (data.length > 0) data = data[0]; else data = {};
+            // Indicate that autocompletion should start after the . (ignoring the first part)
+            startFrom = text.lastIndexOf('.') + 1;
+        }
+        else
+            data = jsonObj;
+
+        var optionsStr = YaskON.stringify(data, null, activationChar);
+        var options = optionsStr.split('\n');
+        return { startFrom: startFrom, options: options };
+      }
+    }
+  };
+
+  // helper function to auto complete paths of a JSON object
+  var YaskON = {
+    // Return first level json paths by the node 'o'
+    stringify: function (o, prefix, activationChar) {
+      prefix = prefix || '';
+      switch (typeof o) {
+        case 'object':
+          var output = '';
+          if (Array.isArray(o)) {
+            o.forEach(function (e, index) {
+              output += activationChar + prefix + '[' + index + ']' + '\n';
+            }.bind(this));
+            return output;
+          }
+          output = '';
+          for (var k in o) {
+            if (o.hasOwnProperty(k)) {
+              if (prefix === '') output += this.stringify(o[k], k, activationChar);
+            }
+          }
+          if (prefix !== '') output += activationChar + prefix + '\n'
+          return output;
+        case 'function':
+          return '';
+        default:
+          return prefix + '\n';
+      }
+    }
+  };
+
+  var json = {
+    'array': [{ 'field1': 'v1', 'field2': 'v2' }, 2, 3],
+    'boolean': true,
+    'null': null,
+    'number': 123,
+    'object': { 'a': 'b', 'c': 'd' },
+    'string': 'Hello World'
+  };
+  var editor = new JSONEditor(container, options, json);
+</script>
+</body>
+</html>

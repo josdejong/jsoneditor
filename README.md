@@ -1,5 +1,11 @@
 # JSON Editor
 
+[![Version](https://img.shields.io/npm/v/jsoneditor.svg)](https://www.npmjs.com/package/jsoneditor)
+[![Downloads](https://img.shields.io/npm/dm/jsoneditor.svg)](https://www.npmjs.com/package/jsoneditor)
+![Maintenance](https://img.shields.io/maintenance/yes/2018.svg)
+[![License](https://img.shields.io/github/license/josdejong/jsoneditor.svg)](https://github.com/josdejong/jsoneditor/blob/master/LICENSE)
+[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fjosdejong%2Fjsoneditor.svg?type=shield)](https://app.fossa.io/projects/git%2Bgithub.com%2Fjosdejong%2Fjsoneditor?ref=badge_shield)
+
 JSON Editor is a web-based tool to view, edit, format, and validate JSON.
 It has various modes such as a tree editor, a code editor, and a plain text
 editor.
@@ -7,18 +13,22 @@ editor.
 The editor can be used as a component in your own web application. The library
 can be loaded as CommonJS module, AMD module, or as a regular javascript file.
 
-Supported browsers: Chrome, Firefox, Safari, Opera, Internet Explorer 9+.
+Supported browsers: Chrome, Firefox, Safari, Opera, Edge, Internet Explorer 11.
 
 <img alt="json editor" src="https://raw.github.com/josdejong/jsoneditor/master/misc/jsoneditor.png"> &nbsp; <img alt="code editor" src="https://raw.github.com/josdejong/jsoneditor/master/misc/codeeditor.png">
 
+Cross browser testing for JSONEditor is generously provided by <a href="https://www.browserstack.com" target="_blank">BrowserStack</a>
+
+<a href="https://www.browserstack.com" target="_blank"><img alt="BrowserStack" src="https://raw.github.com/josdejong/jsoneditor/master/misc/browserstack.png"></a>
 
 ## Features
 
 ### Tree editor
-- Edit, add, move, remove, and duplicate fields and values.
-- Change type of values.
+- Change, add, move, remove, and duplicate fields and values.
 - Sort arrays and objects.
+- Transform JSON using [JMESPath](http://jmespath.org/) queries.
 - Colorized code.
+- Color picker.
 - Search & highlight text in the tree view.
 - Undo and redo all actions.
 - JSON schema validation (powered by [ajv](https://github.com/epoberezkin/ajv)).
@@ -27,10 +37,12 @@ Supported browsers: Chrome, Firefox, Safari, Opera, Internet Explorer 9+.
 - Colorized code (powered by [Ace](https://ace.c9.io)).
 - Inspect JSON (powered by [Ace](https://ace.c9.io)).
 - Format and compact JSON.
+- Repair JSON.
 - JSON schema validation (powered by [ajv](https://github.com/epoberezkin/ajv)).
 
 ### Text editor
 - Format and compact JSON.
+- Repair JSON.
 - JSON schema validation (powered by [ajv](https://github.com/epoberezkin/ajv)).
 
 
@@ -55,12 +67,8 @@ with bower:
 
     bower install jsoneditor
 
-
-#### More
-
-There is a directive available for using JSONEditor in Angular.js:
-
-[https://github.com/angular-tools/ng-jsoneditor](https://github.com/angular-tools/ng-jsoneditor)
+> Note that to use JSONEditor in Internet Explorer 11, it is necessary
+> to load a polyfill for `Promise` in your application.
 
 
 ## Use
@@ -144,7 +152,7 @@ To create a custom bundle of the source code using browserify:
 
     browserify ./index.js -o ./jsoneditor.custom.js -s JSONEditor
 
-The Ace editor, used in mode `code`, accounts for about 75% of the total
+The Ace editor, used in mode `code`, accounts for about one third of the total
 size of the library. To exclude the Ace editor from the bundle:
 
     browserify ./index.js -o ./jsoneditor.custom.js -s JSONEditor -x brace -x brace/mode/json -x brace/ext/searchbox

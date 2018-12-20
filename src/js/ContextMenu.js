@@ -1,6 +1,8 @@
 'use strict';
 
+var createAbsoluteAnchor = require('./createAbsoluteAnchor').createAbsoluteAnchor;
 var util = require('./util');
+var translate = require('./i18n').translate;
 
 /**
  * A context menu
@@ -90,7 +92,11 @@ function ContextMenu (items, options) {
           var divIcon = document.createElement('div');
           divIcon.className = 'jsoneditor-icon';
           button.appendChild(divIcon);
-          button.appendChild(document.createTextNode(item.text));
+          var divText = document.createElement('div');
+          divText.className = 'jsoneditor-text' +
+              (item.click ? '' : ' jsoneditor-right-margin');
+          divText.appendChild(document.createTextNode(item.text));
+          button.appendChild(divText);
 
           var buttonSubmenu;
           if (item.click) {
@@ -137,7 +143,8 @@ function ContextMenu (items, options) {
         }
         else {
           // no submenu, just a button with clickhandler
-          button.innerHTML = '<div class="jsoneditor-icon"></div>' + item.text;
+          button.innerHTML = '<div class="jsoneditor-icon"></div>' +
+              '<div class="jsoneditor-text">' + translate(item.text) + '</div>';
         }
 
         domItems.push(domItem);
@@ -188,65 +195,55 @@ ContextMenu.visibleMenu = undefined;
 
 /**
  * Attach the menu to an anchor
- * @param {HTMLElement} anchor          Anchor where the menu will be attached
- *                                      as sibling.
- * @param {HTMLElement} [contentWindow] The DIV with with the (scrollable) contents
+ * @param {HTMLElement} anchor  Anchor where the menu will be attached as sibling.
+ * @param {HTMLElement} frame   The root of the JSONEditor window
  */
-ContextMenu.prototype.show = function (anchor, contentWindow) {
+ContextMenu.prototype.show = function (anchor, frame) {
   this.hide();
 
   // determine whether to display the menu below or above the anchor
   var showBelow = true;
-  if (contentWindow) {
-    var anchorRect = anchor.getBoundingClientRect();
-    var contentRect = contentWindow.getBoundingClientRect();
+  var parent = anchor.parentNode;
+  var anchorRect = anchor.getBoundingClientRect();
+  var parentRect = parent.getBoundingClientRect();
+  var frameRect = frame.getBoundingClientRect();
 
-    if (anchorRect.bottom + this.maxHeight < contentRect.bottom) {
-      // fits below -> show below
-    }
-    else if (anchorRect.top - this.maxHeight > contentRect.top) {
-      // fits above -> show above
-      showBelow = false;
-    }
-    else {
-      // doesn't fit above nor below -> show below
-    }
+  var me = this;
+  this.dom.absoluteAnchor = createAbsoluteAnchor(anchor, frame, function () {
+    me.hide()
+  });
+
+  if (anchorRect.bottom + this.maxHeight < frameRect.bottom) {
+    // fits below -> show below
   }
+  else if (anchorRect.top - this.maxHeight > frameRect.top) {
+    // fits above -> show above
+    showBelow = false;
+  }
+  else {
+    // doesn't fit above nor below -> show below
+  }
+
+  var topGap = anchorRect.top - parentRect.top;
 
   // position the menu
   if (showBelow) {
     // display the menu below the anchor
     var anchorHeight = anchor.offsetHeight;
-    this.dom.menu.style.left = '0px';
-    this.dom.menu.style.top = anchorHeight + 'px';
+    this.dom.menu.style.left = '0';
+    this.dom.menu.style.top = topGap + anchorHeight + 'px';
     this.dom.menu.style.bottom = '';
   }
   else {
     // display the menu above the anchor
-    this.dom.menu.style.left = '0px';
+    this.dom.menu.style.left = '0';
     this.dom.menu.style.top = '';
     this.dom.menu.style.bottom = '0px';
   }
 
-  // attach the menu to the parent of the anchor
-  var parent = anchor.parentNode;
-  parent.insertBefore(this.dom.root, parent.firstChild);
-
-  // create and attach event listeners
-  var me = this;
-  var list = this.dom.list;
-  this.eventListeners.mousedown = util.addEventListener(window, 'mousedown', function (event) {
-    // hide menu on click outside of the menu
-    var target = event.target;
-    if ((target != list) && !me._isChildOf(target, list)) {
-      me.hide();
-      event.stopPropagation();
-      event.preventDefault();
-    }
-  });
-  this.eventListeners.keydown = util.addEventListener(window, 'keydown', function (event) {
-    me._onKeyDown(event);
-  });
+  // attach the menu to the temporary, absolute anchor
+  // parent.insertBefore(this.dom.root, anchor);
+  this.dom.absoluteAnchor.appendChild(this.dom.root);
 
   // move focus to the first button in the context menu
   this.selection = util.getSelection();
@@ -265,23 +262,17 @@ ContextMenu.prototype.show = function (anchor, contentWindow) {
  * Hide the context menu if visible
  */
 ContextMenu.prototype.hide = function () {
+  // remove temporary absolutely positioned anchor
+  if (this.dom.absoluteAnchor) {
+    this.dom.absoluteAnchor.destroy();
+    delete this.dom.absoluteAnchor;
+  }
+
   // remove the menu from the DOM
   if (this.dom.root.parentNode) {
     this.dom.root.parentNode.removeChild(this.dom.root);
     if (this.onClose) {
       this.onClose();
-    }
-  }
-
-  // remove all event listeners
-  // all event listeners are supposed to be attached to document.
-  for (var name in this.eventListeners) {
-    if (this.eventListeners.hasOwnProperty(name)) {
-      var fn = this.eventListeners[name];
-      if (fn) {
-        util.removeEventListener(window, name, fn);
-      }
-      delete this.eventListeners[name];
     }
   }
 
@@ -321,7 +312,11 @@ ContextMenu.prototype._onExpandItem = function (domItem) {
     var height = ul.clientHeight; // force a reflow in Firefox
     setTimeout(function () {
       if (me.expandedItem == domItem) {
-        ul.style.height = (ul.childNodes.length * 24) + 'px';
+        var childsHeight = 0;
+        for (var i = 0; i < ul.childNodes.length; i++) {
+          childsHeight += ul.childNodes[i].clientHeight;
+        }
+        ul.style.height = childsHeight + 'px';
         ul.style.padding = '5px 10px';
       }
     }, 0);
@@ -437,24 +432,6 @@ ContextMenu.prototype._onKeyDown = function (event) {
     event.stopPropagation();
     event.preventDefault();
   }
-};
-
-/**
- * Test if an element is a child of a parent element.
- * @param {Element} child
- * @param {Element} parent
- * @return {boolean} isChild
- */
-ContextMenu.prototype._isChildOf = function (child, parent) {
-  var e = child.parentNode;
-  while (e) {
-    if (e == parent) {
-      return true;
-    }
-    e = e.parentNode;
-  }
-
-  return false;
 };
 
 module.exports = ContextMenu;

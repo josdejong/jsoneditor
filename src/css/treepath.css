@@ -1,0 +1,27 @@
+
+div.jsoneditor-treepath {
+  padding: 0 5px;
+  overflow: hidden;
+}
+
+div.jsoneditor-treepath div.jsoneditor-contextmenu-root {
+  position: absolute;
+  left: 0;
+}
+
+div.jsoneditor-treepath span.jsoneditor-treepath-element{
+  margin: 1px;
+  font-family: arial, sans-serif;
+  font-size: 10pt;
+}
+
+div.jsoneditor-treepath span.jsoneditor-treepath-seperator {
+  margin: 2px;
+  font-size: 9pt;
+  font-family: arial, sans-serif;
+}
+
+div.jsoneditor-treepath span.jsoneditor-treepath-element:hover, div.jsoneditor-treepath span.jsoneditor-treepath-seperator:hover {
+  cursor:pointer;
+  text-decoration:underline;
+}

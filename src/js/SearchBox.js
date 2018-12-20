@@ -226,19 +226,41 @@ SearchBox.prototype._onSearch = function (forceSearch) {
 
   var value = this.dom.search.value;
   var text = (value.length > 0) ? value : undefined;
-  if (text != this.lastText || forceSearch) {
+  if (text !== this.lastText || forceSearch) {
     // only search again when changed
     this.lastText = text;
     this.results = this.editor.search(text);
-    this._setActiveResult(undefined);
+    var MAX_SEARCH_RESULTS = this.results[0]
+        ? this.results[0].node.MAX_SEARCH_RESULTS
+        : Infinity;
+
+    // try to maintain the current active result if this is still part of the new search results
+    var activeResultIndex = 0;
+    if (this.activeResult) {
+      for (var i = 0; i < this.results.length; i++) {
+        if (this.results[i].node === this.activeResult.node) {
+          activeResultIndex = i;
+          break;
+        }
+      }
+    }
+
+    this._setActiveResult(activeResultIndex, false);
 
     // display search results
-    if (text != undefined) {
+    if (text !== undefined) {
       var resultCount = this.results.length;
-      switch (resultCount) {
-        case 0: this.dom.results.innerHTML = 'no&nbsp;results'; break;
-        case 1: this.dom.results.innerHTML = '1&nbsp;result'; break;
-        default: this.dom.results.innerHTML = resultCount + '&nbsp;results'; break;
+      if (resultCount === 0) {
+        this.dom.results.innerHTML = 'no&nbsp;results';
+      }
+      else if (resultCount === 1) {
+        this.dom.results.innerHTML = '1&nbsp;result';
+      }
+      else if (resultCount > MAX_SEARCH_RESULTS) {
+        this.dom.results.innerHTML = MAX_SEARCH_RESULTS + '+&nbsp;results';
+      }
+      else {
+        this.dom.results.innerHTML = resultCount + '&nbsp;results';
       }
     }
     else {
@@ -296,6 +318,21 @@ SearchBox.prototype._onKeyUp = function (event) {
 SearchBox.prototype.clear = function () {
   this.dom.search.value = '';
   this._onSearch();
+};
+
+/**
+ * Refresh searchResults if there is a search value
+ */
+SearchBox.prototype.forceSearch = function () {
+  this._onSearch(true);
+};
+
+/**
+ * Test whether the search box value is empty
+ * @returns {boolean} Returns true when empty.
+ */
+SearchBox.prototype.isEmpty = function () {
+  return this.dom.search.value === '';
 };
 
 /**
