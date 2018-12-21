@@ -553,34 +553,9 @@ treemode._onChange = function () {
   // trigger the onObjectName callback
   if (this.options.onObjectName && this.node.childs) {
     try {
-      var i;
-      var expandedNodes = [];
-      for (i in this.node.childs) {
-        if (this.node.childs[i].expanded) {
-          var expandedNodes = getExpandedNodes(this.node.childs[i]);
-        }
-        var j;
-        for (j in expandedNodes) {
-          expandedNodes[j].updateObjectName();
-        }
-      }
+      this.node.recursivelyUpdateObjectName();
     } catch (err) {
       console.error("Error in onObjectName callback: ", err);
-    }
-  }
-
-  function getExpandedNodes(node) {
-    if (typeof node.childs !== 'undefined') {
-      var a = node.childs
-        .filter(function(n) {
-          return n.expanded !== 'undefined' && n.expanded;
-        })
-        .flatMap(function(n) {
-          return getExpandedNodes(n);
-        });
-      return a.length ? a : [node];
-    } else {
-      return [node];
     }
   }
 };

@@ -4470,18 +4470,36 @@ Node.prototype._escapeJSON = function (text) {
  */
 Node.prototype.updateObjectName = function () {
   try {
-    var count = this.childs ? this.childs.length : 0;
-    var objName;
-    if (typeof this.editor.options.onObjectName === 'function') {
-      objName = this.editor.options.onObjectName({
-        path: this.getPath(),
-        children: this.childs
-      });
+    if (this.type === 'object') {
+      var count = this.childs ? this.childs.length : 0;
+      var objName;
+      if (typeof this.editor.options.onObjectName === 'function') {
+        objName = this.editor.options.onObjectName({
+          path: this.getPath(),
+          children: this.childs
+        });
+      }
+      this.dom.value.innerHTML = '{' + (objName || count) + '}';
     }
-    this.dom.value.innerHTML = '{' + (objName || count) + '}';
   }
   catch (err) {
     console.error('Error in onObjectName callback: ', err);
+  }
+}
+
+/**
+ * update recursively the object's and its children's name.
+ * @private
+ */
+Node.prototype.recursivelyUpdateObjectName = function () {
+  if (this.expanded) {
+    this.updateObjectName();
+    if (this.childs !== 'undefined') {
+      var i;
+      for (i in this.childs) {
+        this.childs[i].recursivelyUpdateObjectName();
+      }
+    }
   }
 }
 
