@@ -559,20 +559,13 @@ treemode._onChange = function () {
         if (this.node.childs[i].expanded) {
           var expandedNodes = getExpandedNodes(this.node.childs[i]);
         }
-          var j;
-          for (j in expandedNodes) {
-            var objName;
-            objName = this.options.onObjectName({
-              path: expandedNodes[j].getPath(),
-              children: expandedNodes[j].childs
-            });
-            var count = this.childs ? this.childs.length : 0;
-            expandedNodes[j].dom.value.innerHTML = '{' + (objName || count) + '}';
-          }
+        var j;
+        for (j in expandedNodes) {
+          expandedNodes[j].updateObjectName();
+        }
       }
-    }
-    catch (err) {
-      console.error('Error in onObjectName callback: ', err);
+    } catch (err) {
+      console.error("Error in onObjectName callback: ", err);
     }
   }
 
@@ -580,7 +573,7 @@ treemode._onChange = function () {
     if (typeof node.childs !== 'undefined') {
       var a = node.childs
         .filter(function(n) {
-        return n.expanded !== 'undefined' && n.expanded;
+          return n.expanded !== 'undefined' && n.expanded;
         })
         .flatMap(function(n) {
           return getExpandedNodes(n);

@@ -2464,14 +2464,7 @@ Node.prototype.updateDom = function (options) {
       util.addClassName(this.dom.tr, 'jsoneditor-expandable');
     }
     else if (this.type == 'object') {
-      var objName;
-      if (typeof this.editor.options.onObjectName === 'function') {
-        objName = this.editor.options.onObjectName({
-          path: this.getPath(),
-          children: this.childs
-        });
-      }
-      domValue.innerHTML = '{' + (objName || count) + '}';
+      this.updateObjectName();
       util.addClassName(this.dom.tr, 'jsoneditor-expandable');
     }
     else {
@@ -4470,6 +4463,27 @@ Node.prototype._escapeJSON = function (text) {
 
   return escaped;
 };
+
+/**
+ * update the object name according to the callback onObjectName
+ * @private
+ */
+Node.prototype.updateObjectName = function () {
+  try {
+    var count = this.childs ? this.childs.length : 0;
+    var objName;
+    if (typeof this.editor.options.onObjectName === 'function') {
+      objName = this.editor.options.onObjectName({
+        path: this.getPath(),
+        children: this.childs
+      });
+    }
+    this.dom.value.innerHTML = '{' + (objName || count) + '}';
+  }
+  catch (err) {
+    console.error('Error in onObjectName callback: ', err);
+  }
+}
 
 // helper function to get the internal path of a node
 function getInternalPath (node) {
