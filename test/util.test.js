@@ -50,7 +50,7 @@ describe('util', function () {
       assert.equal(util.sanitize('\u2018foo\u2019'), '"foo"')
       assert.equal(util.sanitize('\u201Cfoo\u201D'), '"foo"')
       assert.equal(util.sanitize('\u0060foo\u00B4'), '"foo"')
-    })
+    });
 
     it('remove comments', function () {
       assert.equal(util.sanitize('/* foo */ {}'), ' {}');
@@ -82,6 +82,18 @@ describe('util', function () {
       assert.equal(util.sanitize('callback abc({});'), 'callback abc({});');
       assert.equal(util.sanitize('callback {}'), 'callback {}');
       assert.equal(util.sanitize('callback({}'), 'callback({}');
+    });
+
+    it('should strip trailing zeros', function () {
+      // matching
+      assert.equal(util.sanitize('[1,2,3,]'), '[1,2,3]');
+      assert.equal(util.sanitize('[1,2,3,\n]'), '[1,2,3\n]');
+      assert.equal(util.sanitize('[1,2,3,  \n  ]'), '[1,2,3  \n  ]');
+      assert.equal(util.sanitize('{"a":2,}'), '{"a":2}');
+
+      // not matching
+      assert.equal(util.sanitize('"[1,2,3,]"'), '"[1,2,3,]"');
+      assert.equal(util.sanitize('"{a:2,}"'), '"{a:2,}"');
     });
 
   });

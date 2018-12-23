@@ -2518,6 +2518,11 @@ Node.prototype.updateDom = function (options) {
   this._updateDomField();
   this._updateDomValue();
 
+  // set custom css classes
+  if(options && typeof options.onClassName ==='function'){
+    options.onClassName(this.dom);
+  }
+
   // update childs indexes
   if (options && options.updateIndexes === true) {
     // updateIndexes is true or undefined

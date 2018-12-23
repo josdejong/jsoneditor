@@ -3,6 +3,17 @@
 https://github.com/josdejong/jsoneditor
 
 
+## not yet published, version 5.26.4
+
+- Fixed text of the mode switcher not being translated. Thanks @antfu.
+
+
+## 2018-12-06, version 5.26.3
+
+- Fixed #610: JSON Repair now removes trailing commas.
+- Upgraded devDependency `gulp` to v4. Thanks @maestr0.
+
+
 ## 2018-11-13, version 5.26.2
 
 - Fixed dragging and selecting multiple nodes not working

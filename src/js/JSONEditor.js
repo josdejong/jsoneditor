@@ -82,6 +82,12 @@ if (typeof Promise === 'undefined') {
  *                                                  Only applicable for
  *                                                  modes 'form', 'tree' and
  *                                                  'view'
+ *                               {function} onClassName Callback method, triggered
+ *                                                  when a Node DOM is rendered. Function returns
+ *                                                  a css class name to be set on a node.
+ *                                                  Only applicable for
+ *                                                  modes 'form', 'tree' and
+ *                                                  'view'
  * @param {Object | undefined} json JSON object
  */
 function JSONEditor (container, options, json) {
@@ -163,7 +169,7 @@ JSONEditor.VALID_OPTIONS = [
   'ace', 'theme', 'autocomplete',
   'onChange', 'onChangeJSON', 'onChangeText',
   'onEditable', 'onError', 'onEvent', 'onModeChange', 'onValidate',
-  'onSelectionChange', 'onTextSelectionChange',
+  'onSelectionChange', 'onTextSelectionChange', 'onClassName',
   'colorPicker', 'onColorPicker',
   'timestampTag',
   'escapeUnicode', 'history', 'search', 'mode', 'modes', 'name', 'indentation',

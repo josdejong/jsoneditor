@@ -21,11 +21,11 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  *
- * Copyright (c) 2011-2017 Jos de Jong, http://jsoneditoronline.org
+ * Copyright (c) 2011-2018 Jos de Jong, http://jsoneditoronline.org
  *
  * @author  Jos de Jong, <wjosdejong@gmail.com>
- * @version 5.26.2
- * @date    2018-11-29
+ * @version 5.26.3
+ * @date    2018-12-06
  */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
@@ -33300,19 +33300,33 @@ return /******/ (function(modules) { // webpackBootstrap
 	  function next()  { return jsString.charAt(i + 1); }
 	  function prev()  { return jsString.charAt(i - 1); }
 
+	  function isWhiteSpace(c) {
+	    return c === ' ' || c === '\n' || c === '\r' || c === '\t';
+	  }
+
 	  // get the last parsed non-whitespace character
 	  function lastNonWhitespace () {
 	    var p = chars.length - 1;
 
 	    while (p >= 0) {
 	      var pp = chars[p];
-	      if (pp !== ' ' && pp !== '\n' && pp !== '\r' && pp !== '\t') { // non whitespace
+	      if (!isWhiteSpace(pp)) {
 	        return pp;
 	      }
 	      p--;
 	    }
 
 	    return '';
+	  }
+
+	  // get at the first next non-white space character
+	  function nextNonWhiteSpace() {
+	    var iNext = i + 1;
+	    while (iNext < jsString.length && isWhiteSpace(jsString[iNext])) {
+	      iNext++;
+	    }
+
+	    return jsString[iNext];
 	  }
 
 	  // skip a block comment '/* ... */'
@@ -33401,7 +33415,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }
 	    else if (c === '\u00A0' || (c >= '\u2000' && c <= '\u200A') || c === '\u202F' || c === '\u205F' || c === '\u3000') {
 	      // special white spaces (like non breaking space)
-	      chars.push(' ')
+	      chars.push(' ');
 	      i++
 	    }
 	    else if (c === quote) {
@@ -33418,6 +33432,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }
 	    else if (c === quoteDblLeft) {
 	      parseString(quoteDblRight);
+	    }
+	    else if (c === ',' && [']', '}'].indexOf(nextNonWhiteSpace()) !== -1) {
+	      // skip trailing commas
+	      i++;
 	    }
 	    else if (/[a-zA-Z_$]/.test(c) && ['{', ','].indexOf(lastNonWhitespace()) !== -1) {
 	      // an unquoted object key (like a in '{a:2}')

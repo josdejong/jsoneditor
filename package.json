@@ -1,6 +1,6 @@
 {
   "name": "jsoneditor",
-  "version": "5.26.2",
+  "version": "5.26.3",
   "main": "./index",
   "description": "A web-based tool to view, edit, format, and validate JSON",
   "tags": [
@@ -33,7 +33,7 @@
     "vanilla-picker": "2.4.2"
   },
   "devDependencies": {
-    "gulp": "^4.0.0",
+    "gulp": "4.0.0",
     "gulp-clean-css": "3.4.2",
     "gulp-concat-css": "2.3.0",
     "gulp-shell": "0.6.3",
