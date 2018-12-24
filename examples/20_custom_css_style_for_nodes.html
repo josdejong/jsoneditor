@@ -103,7 +103,7 @@
       alert(err.toString());
     },
     onClassName: function(path, field, value) {
-      var nodeRight = findNodeInJson(json, path.slice(0));
+      var nodeRight = findNodeInJson(json, path.slice(0));  // .slice(0) clones an array
       var nodeLeft = findNodeInJson(json2, path.slice(0));
       
       var isValueEqual = nodeLeft.value == nodeRight.value;
@@ -123,7 +123,7 @@
   };
 
   json = {
-    "pawel": [1, 2, 666, [3,4,5]],
+    "arrayOfArrays": [1, 2, 999, [3,4,5]],
     "someField": true,
     "boolean": true,
     "htmlcode": '&quot;',
@@ -140,7 +140,7 @@
   };
 
   json2 = {
-    "pawel": [1, 2, [3,4,5]],
+    "arrayOfArrays": [1, 2, [3,4,5]],
     "boolean": true,
     "htmlcode": '&quot;',
     "escaped_unicode": '\\u20b9',
