@@ -2517,10 +2517,13 @@ Node.prototype.updateDom = function (options) {
   // update field and value
   this._updateDomField();
   this._updateDomValue();
-
+   
   // set custom css classes
-  if(options && typeof options.onClassName ==='function'){
-    options.onClassName(this.dom);
+  if(domField && this.editor && this.editor.options && typeof this.editor.options.onClassName ==='function'){
+    console.log('setting custom css')
+    if(this.dom.tree){      
+      util.addClassName(this.dom.tree, this.editor.options.onClassName(this.getPath(), this.field, this.value, this.type));
+    }    
   }
 
   // update childs indexes

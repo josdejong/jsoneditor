@@ -1,0 +1,152 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+
+  <link href="../dist/jsoneditor.css" rel="stylesheet" type="text/css">
+  <script src="../dist/jsoneditor.js"></script>
+
+  <style type="text/css">
+    body {
+      font: 10.5pt arial;
+      color: #4d4d4d;
+      line-height: 150%;
+      width: 500px;
+      padding-left: 40px;
+    }
+
+    code {
+      background-color: #f5f5f5;
+    }
+
+    #jsoneditor {
+      width: 500px;
+      height: 500px;      
+      float: left;
+    }
+    #jsoneditor2 {
+      width: 500px;
+      height: 500px;
+      float: right;
+    }
+    #wrapper {
+      width: 1000px;
+    }
+    .markOnGreen {
+      background-color: greenyellow  !important;
+    }
+    .markOnViolet {
+      background-color: violet  !important;
+    }
+    </style>
+</head>
+<body>
+
+<p>
+  JSON Diff
+</p>
+<div id="wrapper">
+  <div id="jsoneditor"></div>
+  <div id="jsoneditor2"></div>
+</div>
+
+<script>
+  var container, container2, options, json;
+
+  container = document.getElementById('jsoneditor');
+  container2 = document.getElementById('jsoneditor2');
+
+  function findNodeInJson(json, path){
+    if(!json || path.length ===0) {
+      return {field: undefined, value: undefined}
+    }
+    
+    var first = path.shift();
+
+    if(path.length === 0) {
+      return {field: (typeof first === 'number' ? undefined : (typeof json[first] !== 'undefined' ? first : undefined)), 
+            value: (typeof json[first] === undefined ? undefined : typeof json[first] === 'array'? "" : json[first])};
+    } else {
+      return findNodeInJson(json[first], path)
+    }
+      
+  }
+
+  options = {
+    mode: 'tree',
+    modes: ['code', 'form', 'text', 'tree', 'view'], // allowed modes
+    // name: "jsonContent",
+    onError: function (err) {
+      alert(err.toString());
+    },
+    onClassName: function(path, field, value, type) {
+      debugger
+      var node = findNodeInJson(json2, path);
+      if (node.field === field && (node.value === value || type ==='object' || type ==='array')) {
+        return undefined;
+      } else {
+        return 'markOnViolet'
+      }      
+    }    
+  };
+  
+  options2 = {
+    mode: 'tree',
+    modes: ['code', 'form', 'text', 'tree', 'view'], // allowed modes
+    // name: "jsonContent",
+    onError: function (err) {
+      alert(err.toString());
+    },
+    onClassName: function(path, field, value, type) {
+      debugger
+      var node = findNodeInJson(json, path);
+      if (node.field === field && (node.value === value || type ==='object' || type ==='array')) {
+        return undefined;
+      } else {
+        return 'markOnGreen'
+        
+      }      
+    }    
+  };
+
+  json = {
+    "pawel": [1, 2, 666, [3,4,5]],
+    "testField": true,
+    "boolean": true,
+    "htmlcode": '&quot;',
+    "escaped_unicode": '\\u20b9',
+    "unicode": '\u20b9,\uD83D\uDCA9',
+    "return": '\n',
+    "null": null,
+    "newObject" : {key: "value"},
+    "number": 123,
+    "object": {"a": "b","new":4, "c": "d", "e": [1, 2, 3]},
+    "string": "Hello World",
+    "url": "http://jsoneditoronline.org",
+    "[0]": "zero"
+  };
+
+  json2 = {
+    "pawel": [1, 2, [3,4,5]],
+    "boolean": true,
+    "htmlcode": '&quot;',
+    "escaped_unicode": '\\u20b9',
+    "newFieldOnRight": 'PAWEL',
+    "unicode": '\u20b9,\uD83D\uDCA9',
+    "return": '\n',
+    "null": null,
+    "number": 123,
+    "object": {"a": "b",  "c": "d", "e": [1, 2, 3]},
+    "string": "Hello World",
+    "url": "http://jsoneditoronline.org",
+    "[0]": "zero"
+  };
+  
+  window.editor = new JSONEditor(container, options, json);
+  window.editor = new JSONEditor(container2, options2, json2);
+
+  console.log('json', json);
+  console.log('string', JSON.stringify(json));
+</script>
+</body>
+</html>
