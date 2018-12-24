@@ -38065,8 +38065,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  this._updateDomValue();
 	   
 	  // set custom css classes
-	  if(domField && this.editor && this.editor.options && typeof this.editor.options.onClassName ==='function'){
-	    console.log('setting custom css')
+	  if(domField && this.editor && this.editor.options && typeof this.editor.options.onClassName ==='function'){    
 	    if(this.dom.tree){      
 	      util.addClassName(this.dom.tree, this.editor.options.onClassName(this.getPath(), this.field, this.value, this.type));
 	    }    
