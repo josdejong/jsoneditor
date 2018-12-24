@@ -74,8 +74,7 @@
 
   options = {
     mode: 'tree',
-    modes: ['code', 'form', 'text', 'tree', 'view'], // allowed modes
-    // name: "jsonContent",
+    modes: ['code', 'form', 'text', 'tree', 'view'], // allowed modes 
     onError: function (err) {
       alert(err.toString());
     },
@@ -111,14 +110,14 @@
 
   json = {
     "pawel": [1, 2, 666, [3,4,5]],
-    "testField": true,
+    "someField": true,
     "boolean": true,
     "htmlcode": '&quot;',
     "escaped_unicode": '\\u20b9',
     "unicode": '\u20b9,\uD83D\uDCA9',
     "return": '\n',
     "null": null,
-    "newObject" : {key: "value"},
+    "thisObjectDoesntExistOnTheRight" : {key: "value"},
     "number": 123,
     "object": {"a": "b","new":4, "c": "d", "e": [1, 2, 3]},
     "string": "Hello World",
@@ -131,7 +130,7 @@
     "boolean": true,
     "htmlcode": '&quot;',
     "escaped_unicode": '\\u20b9',
-    "newFieldOnRight": 'PAWEL',
+    "thisFieldDoesntExistOnTheLeft": 'foobar',
     "unicode": '\u20b9,\uD83D\uDCA9',
     "return": '\n',
     "null": null,
