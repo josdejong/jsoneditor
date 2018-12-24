@@ -32,10 +32,10 @@
     #wrapper {
       width: 1000px;
     }
-    .markOnGreen {
+    #jsoneditor2 .diff {
       background-color: greenyellow  !important;
     }
-    .markOnViolet {
+    #jsoneditor .diff {
       background-color: violet  !important;
     }
     </style>
@@ -59,13 +59,10 @@
   function findNodeInJson(json, path){
     if(!json || path.length ===0) {
       return {field: undefined, value: undefined}
-    }
-    
+    }    
     var first = path.shift();
-
     if(path.length === 0) {
-      return {field: (typeof first === 'number' ? undefined : (typeof json[first] !== 'undefined' ? first : undefined)), 
-            value: (typeof json[first] === undefined ? undefined : typeof json[first] === 'array'? "" : json[first])};
+      return {field: (typeof json[first] !== undefined ? first : undefined), value: json[first]};
     } else {
       return findNodeInJson(json[first], path)
     }
@@ -78,13 +75,14 @@
     onError: function (err) {
       alert(err.toString());
     },
-    onClassName: function(path, field, value, type) {
+    onClassName: function(path, field, value) {      
       debugger
-      var node = findNodeInJson(json2, path);
-      if (node.field === field && (node.value === value || type ==='object' || type ==='array')) {
+      var nodeLeft = findNodeInJson(json, path.slice(0));       // .slice(0) clones an array
+      var nodeRight = findNodeInJson(json2, path.slice(0));
+      if (nodeLeft.field === nodeRight.field && nodeLeft.value === nodeRight.value) {
         return undefined;
       } else {
-        return 'markOnViolet'
+        return 'diff'
       }      
     }    
   };
@@ -96,14 +94,13 @@
     onError: function (err) {
       alert(err.toString());
     },
-    onClassName: function(path, field, value, type) {
-      debugger
-      var node = findNodeInJson(json, path);
-      if (node.field === field && (node.value === value || type ==='object' || type ==='array')) {
+    onClassName: function(path, field, value) {
+      var nodeRight = findNodeInJson(json, path.slice(0));
+      var nodeLeft = findNodeInJson(json2, path.slice(0));
+      if (nodeLeft.field == nodeRight.field && nodeLeft.value == nodeRight.value) {
         return undefined;
       } else {
-        return 'markOnGreen'
-        
+        return 'diff'
       }      
     }    
   };
