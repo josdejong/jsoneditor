@@ -79,7 +79,15 @@
       debugger
       var nodeLeft = findNodeInJson(json, path.slice(0));       // .slice(0) clones an array
       var nodeRight = findNodeInJson(json2, path.slice(0));
-      if (nodeLeft.field === nodeRight.field && nodeLeft.value === nodeRight.value) {
+      var isValueEqual = nodeLeft.value == nodeRight.value;
+
+      if(Array.isArray(nodeLeft.value) && Array.isArray(nodeRight.value)) {
+        isValueEqual = nodeLeft.value.every(function (e) {
+          return nodeRight.value.includes(e);
+        })
+      }
+      
+      if (nodeLeft.field === nodeRight.field && isValueEqual) {
         return undefined;
       } else {
         return 'diff'
@@ -97,7 +105,16 @@
     onClassName: function(path, field, value) {
       var nodeRight = findNodeInJson(json, path.slice(0));
       var nodeLeft = findNodeInJson(json2, path.slice(0));
-      if (nodeLeft.field == nodeRight.field && nodeLeft.value == nodeRight.value) {
+      
+      var isValueEqual = nodeLeft.value == nodeRight.value;
+
+      if(Array.isArray(nodeLeft.value) && Array.isArray(nodeRight.value)) {
+        isValueEqual = nodeLeft.value.every(function (e) {
+          return nodeRight.value.includes(e);
+        })
+      }
+
+      if (nodeLeft.field == nodeRight.field && isValueEqual) {
         return undefined;
       } else {
         return 'diff'
