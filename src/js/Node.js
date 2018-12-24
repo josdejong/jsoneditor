@@ -31,9 +31,7 @@ function Node (editor, params) {
   this.editor = editor;
   this.dom = {};
   this.expanded = false;
-  this.fieldCssClass = null;
-  this.valueCssClass = null;
-
+  
   if(params && (params instanceof Object)) {
     this.setField(params.field, params.fieldEditable);
     if ('value' in params) {
@@ -354,38 +352,6 @@ Node.prototype.getIndex = function () {
  */
 Node.prototype.setParent = function(parent) {
   this.parent = parent;
-};
-
-/**
- * Set custom css class name for a field
- * @param cssClass css class name
- */
-Node.prototype.setFieldCssClass = function(cssClass) {
-  this.fieldCssClass = cssClass;
-  this.updateDom();
-};
-
-/**
- * Get field css class name
- */
-Node.prototype.getFieldCssClass = function() {
-  return this.fieldCssClass;
-};
-
-/**
- * Set custom css class name for a value
- * @param cssClass css class name
- */
-Node.prototype.setValueCssClass = function(cssClass) {
-  this.valueCssClass = cssClass;
-  this.updateDom();
-};
-
-/**
- * Get value css class name
- */
-Node.prototype.getValueCssClass = function() {
-  return this.valueCssClass;
 };
 
 /**
@@ -1676,11 +1642,7 @@ Node.prototype._updateDomValue = function () {
     }
     if (this.searchValue) {
       classNames.push('jsoneditor-highlight');
-    }
-
-    if(this.valueCssClass){
-      classNames.push(this.valueCssClass);
-    }
+    }    
 
     domValue.className = classNames.join(' ');
 
@@ -1851,10 +1813,7 @@ Node.prototype._deleteDomColor = function () {
  */
 Node.prototype._updateDomField = function () {
   var domField = this.dom.field;
-  if (domField) {
-    if(this.fieldCssClass){
-      domField.className = domField.className + ' ' + this.fieldCssClass;
-    }
+  if (domField) {    
     // make backgound color lightgray when empty
     var isEmpty = (String(this.field) == '' && this.parent.type != 'array');
     if (isEmpty) {
