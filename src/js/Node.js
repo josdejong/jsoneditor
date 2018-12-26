@@ -4476,7 +4476,7 @@ Node.prototype.updateObjectName = function () {
       if (typeof this.editor.options.onObjectName === 'function') {
         objName = this.editor.options.onObjectName({
           path: this.getPath(),
-          children: this.childs
+          size: count
         });
       }
       this.dom.value.innerHTML = '{' + (objName || count) + '}';
