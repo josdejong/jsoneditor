@@ -1102,7 +1102,7 @@ textmode.setTextSelection = function (startPos, endPos) {
       }
     };
     this.aceEditor.selection.setRange(range);
-    // this.aceEditor.scrollToLine(startPos.row - 1);
+    this.aceEditor.scrollToLine(startPos.row - 1, true);
   }
 };
 
