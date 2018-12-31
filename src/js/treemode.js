@@ -549,6 +549,10 @@ treemode._onChange = function () {
       console.error('Error in onChangeText callback: ', err);
     }
   }
+
+  if(this.options.onClassName) {
+    this.node.recursivelyUpdateCssClassesOnNodes();
+  }
 };
 
 /**

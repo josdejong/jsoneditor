@@ -78,8 +78,8 @@
       alert(err.toString());
     },
     onClassName: function({ path, field, value }) {            
-      var nodeLeft = findNodeInJson(json, path);
-      var nodeRight = findNodeInJson(json2, path);
+      var nodeLeft = findNodeInJson(leftJson, path);
+      var nodeRight = findNodeInJson(rightJson, path);
       var isValueEqual = nodeLeft.value == nodeRight.value;
 
       if(Array.isArray(nodeLeft.value) && Array.isArray(nodeRight.value)) {
@@ -93,6 +93,9 @@
       } else {
         return 'diff'
       }      
+    },
+    onChangeJSON: function (j) {
+      rightJson = j;
     }    
   };
   
@@ -104,8 +107,8 @@
       alert(err.toString());
     },
     onClassName: function({path, field, value}) {
-      var nodeRight = findNodeInJson(json, path); 
-      var nodeLeft = findNodeInJson(json2, path);
+      var nodeRight = findNodeInJson(leftJson, path); 
+      var nodeLeft = findNodeInJson(rightJson, path);
       
       var isValueEqual = nodeLeft.value == nodeRight.value;
 
@@ -120,10 +123,13 @@
       } else {
         return 'diff'
       }      
+    },
+    onChangeJSON: function (j) {
+      leftJson = j;
     }    
   };
 
-  json = {
+  leftJson = {
     "arrayOfArrays": [1, 2, 999, [3,4,5]],
     "someField": true,
     "boolean": true,
@@ -140,7 +146,7 @@
     "[0]": "zero"
   };
 
-  json2 = {
+  rightJson = {
     "arrayOfArrays": [1, 2, [3,4,5]],
     "boolean": true,
     "htmlcode": '&quot;',
@@ -156,8 +162,8 @@
     "[0]": "zero"
   };
   
-  window.editor = new JSONEditor(container, options, json);
-  window.editor = new JSONEditor(container2, options2, json2);
+  window.editor = new JSONEditor(container, options, rightJson);
+  window.editor = new JSONEditor(container2, options2, leftJson);
 
   console.log('json', json);
   console.log('string', JSON.stringify(json));

@@ -907,6 +907,25 @@ Node.prototype.hideChilds = function(options) {
   }
 };
 
+Node.prototype._updateCssClassName = function () { 
+  // set custom css classes
+  if(this.dom.field
+    && this.editor 
+    && this.editor.options 
+    && typeof this.editor.options.onClassName ==='function'
+    && this.dom.tree){              
+      util.addClassName(this.dom.tree, this.editor.options.onClassName({ path: this.getPath(), field: this.field, value: this.value }));        
+  }
+}
+Node.prototype.recursivelyUpdateCssClassesOnNodes = function () {  
+  this._updateCssClassName();
+  if (this.childs !== 'undefined') {
+    var i;
+    for (i in this.childs) {
+      this.childs[i].recursivelyUpdateCssClassesOnNodes();
+    }
+  }  
+}
 
 /**
  * Goes through the path from the node to the root and ensures that it is expanded
@@ -2477,14 +2496,7 @@ Node.prototype.updateDom = function (options) {
   this._updateDomField();
   this._updateDomValue();
    
-  // set custom css classes
-  if(domField 
-    && this.editor 
-    && this.editor.options 
-    && typeof this.editor.options.onClassName ==='function'
-    && this.dom.tree){              
-      util.addClassName(this.dom.tree, this.editor.options.onClassName({ path: this.getPath(), field: this.field, value: this.value }));        
-  }
+  this._updateCssClassName();
 
   // update childs indexes
   if (options && options.updateIndexes === true) {
