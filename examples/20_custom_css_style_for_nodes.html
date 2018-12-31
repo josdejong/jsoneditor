@@ -60,11 +60,13 @@
     if(!json || path.length ===0) {
       return {field: undefined, value: undefined}
     }    
-    var first = path.shift();
-    if(path.length === 0) {
+    var first = path[0];
+    var remainingPath = path.slice(1);
+
+    if(remainingPath.length === 0) {
       return {field: (typeof json[first] !== undefined ? first : undefined), value: json[first]};
     } else {
-      return findNodeInJson(json[first], path)
+      return findNodeInJson(json[first], remainingPath)
     }
       
   }
@@ -75,10 +77,9 @@
     onError: function (err) {
       alert(err.toString());
     },
-    onClassName: function(path, field, value) {      
-      debugger
-      var nodeLeft = findNodeInJson(json, path.slice(0));       // .slice(0) clones an array
-      var nodeRight = findNodeInJson(json2, path.slice(0));
+    onClassName: function({ path, field, value }) {            
+      var nodeLeft = findNodeInJson(json, path);
+      var nodeRight = findNodeInJson(json2, path);
       var isValueEqual = nodeLeft.value == nodeRight.value;
 
       if(Array.isArray(nodeLeft.value) && Array.isArray(nodeRight.value)) {
@@ -102,9 +103,9 @@
     onError: function (err) {
       alert(err.toString());
     },
-    onClassName: function(path, field, value) {
-      var nodeRight = findNodeInJson(json, path.slice(0));  // .slice(0) clones an array
-      var nodeLeft = findNodeInJson(json2, path.slice(0));
+    onClassName: function({path, field, value}) {
+      var nodeRight = findNodeInJson(json, path); 
+      var nodeLeft = findNodeInJson(json2, path);
       
       var isValueEqual = nodeLeft.value == nodeRight.value;
 

@@ -2483,7 +2483,7 @@ Node.prototype.updateDom = function (options) {
     && this.editor.options 
     && typeof this.editor.options.onClassName ==='function'
     && this.dom.tree){              
-      util.addClassName(this.dom.tree, this.editor.options.onClassName(this.getPath(), this.field, this.value));        
+      util.addClassName(this.dom.tree, this.editor.options.onClassName({ path: this.getPath(), field: this.field, value: this.value }));        
   }
 
   // update childs indexes
