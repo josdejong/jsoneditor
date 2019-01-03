@@ -966,7 +966,7 @@ textmode._renderErrors = function(errors, noValidation) {
       this.content.style.marginBottom = (-height) + 'px';
       this.content.style.paddingBottom = height + 'px';
     } else {
-      validationErrorsCount = errors.reduce((acc, curr)=>{return (curr.type === 'validation' ? ++acc: acc)}, 0);
+      validationErrorsCount = errors.reduce(function (acc, curr) {return (curr.type === 'validation' ? ++acc: acc)}, 0);
     }
     
   } else {
