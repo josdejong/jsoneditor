@@ -2458,9 +2458,8 @@ Node.prototype.updateDom = function (options) {
   // apply value to DOM
   var domValue = this.dom.value;
   if (domValue) {
-    var count = this.childs ? this.childs.length : 0;
     if (this.type == 'array') {
-      domValue.innerHTML = '[' + count + ']';
+      this.updateObjectName();
       util.addClassName(this.dom.tr, 'jsoneditor-expandable');
     }
     else if (this.type == 'object') {
@@ -4470,16 +4469,27 @@ Node.prototype._escapeJSON = function (text) {
  */
 Node.prototype.updateObjectName = function () {
   try {
+    var count = this.childs ? this.childs.length : 0;
     if (this.type === 'object') {
-      var count = this.childs ? this.childs.length : 0;
       var objName;
       if (typeof this.editor.options.onObjectName === 'function') {
         objName = this.editor.options.onObjectName({
           path: this.getPath(),
-          size: count
+          size: count,
+          type: 'object'
         });
       }
       this.dom.value.innerHTML = '{' + (objName || count) + '}';
+    } else if (this.type === 'array') {
+      var arrName;
+      if (typeof this.editor.options.onObjectName === 'function') {
+        arrName = this.editor.options.onObjectName({
+          path: this.getPath(),
+          size: count,
+          type: 'array'
+        });
+      }
+      this.dom.value.innerHTML = '[' + (arrName || count) + ']';
     }
   }
   catch (err) {
