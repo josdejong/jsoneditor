@@ -2430,6 +2430,8 @@ Node.prototype.updateDom = function (options) {
       domField.contentEditable = this.editable.field;
       domField.spellcheck = false;
       domField.className = 'jsoneditor-field';
+      // add title from schema description to show the tips for user input
+      domField.title = Node._findSchema(this, this.editor.options.schema, this.getPath())['description']||'';
     }
     else {
       // parent is an array this is the root node
@@ -2517,7 +2519,8 @@ Node.prototype._updateSchema = function () {
   if(this.editor && this.editor.options) {
     // find the part of the json schema matching this nodes path
     this.schema = this.editor.options.schema
-        ? Node._findSchema(this.editor.options.schema, this.getPath())
+        // fix childSchema with $ref, and not display the select element on the child schema because of not found enum
+	      ? Node._findSchema(this, this.editor.options.schema, this.getPath())
         : null;
     if (this.schema) {
       this.enum = Node._findEnum(this.schema);
@@ -2558,7 +2561,7 @@ Node._findEnum = function (schema) {
  * @return {Object | null}
  * @private
  */
-Node._findSchema = function (schema, path) {
+Node._findSchema = function (node, schema, path) {
   var childSchema = schema;
   var foundSchema = childSchema;
 
@@ -2573,27 +2576,34 @@ Node._findSchema = function (schema, path) {
     for (var i = 0; i < path.length && childSchema; i++) {
       var key = path[i];
 
-      if (typeof key === 'string' && childSchema.patternProperties && i == path.length - 1) {
+      // fix childSchema with $ref, and not display the select element on the child schema because of not found enum
+      if (typeof key === 'string' && childSchema['$ref']) {
+        childSchema = node.editor.options.schemaRefs[childSchema['$ref']];
+        if (childSchema) {
+          foundSchema = Node._findSchema(node, childSchema, path.slice(i, path.length));
+        }
+      }
+      else if (typeof key === 'string' && childSchema.patternProperties && i == path.length - 1) {
         for (var prop in childSchema.patternProperties) {
-          foundSchema = Node._findSchema(childSchema.patternProperties[prop], path.slice(i, path.length));
+          foundSchema = Node._findSchema(node, childSchema.patternProperties[prop], path.slice(i, path.length));
         }
       }
       else if (childSchema.items && childSchema.items.properties) {
         childSchema = childSchema.items.properties[key];
         if (childSchema) {
-          foundSchema = Node._findSchema(childSchema, path.slice(i, path.length));
+          foundSchema = Node._findSchema(node, childSchema, path.slice(i, path.length));
         }
       }
       else if (typeof key === 'string' && childSchema.properties) {
         childSchema = childSchema.properties[key] || null;
         if (childSchema) {
-          foundSchema = Node._findSchema(childSchema, path.slice(i, path.length));
+          foundSchema = Node._findSchema(node, childSchema, path.slice(i, path.length));
         }
       }
       else if (typeof key === 'number' && childSchema.items) {
         childSchema = childSchema.items;
         if (childSchema) {
-          foundSchema = Node._findSchema(childSchema, path.slice(i, path.length));
+          foundSchema = Node._findSchema(node, childSchema, path.slice(i, path.length));
         }
       }
     }
