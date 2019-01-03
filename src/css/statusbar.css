@@ -34,6 +34,7 @@ div.jsoneditor-statusbar > .jsoneditor-validation-error-icon {
 div.jsoneditor-statusbar > .jsoneditor-validation-error-count {
   float: right;
   margin: 0 4px 0 0;
+  cursor: pointer;
 }
 div.jsoneditor-statusbar > .jsoneditor-parse-error-icon {
   float: right;

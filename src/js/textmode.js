@@ -799,7 +799,7 @@ textmode.validate = function () {
     }
   }
   else {
-    this._renderErrors(parseErrors || []);
+    this._renderErrors(parseErrors || [], true);
   }
 };
 
@@ -852,10 +852,11 @@ textmode._validateCustom = function (json) {
   return Promise.resolve(null);
 };
 
-textmode._renderErrors = function(errors) {
+textmode._renderErrors = function(errors, noValidation) {
   // clear all current errors
   var me = this;
   var validationErrorsCount = 0;
+
   this.errorTableVisible = (typeof this.errorTableVisible === 'undefined') ? !this.aceEditor : this.errorTableVisible;
 
   if (this.dom.validationErrors) {
@@ -899,7 +900,8 @@ textmode._renderErrors = function(errors) {
 
     }
 
-    if (this.errorTableVisible) {
+    // keep default behavior for parse errors
+    if (noValidation ? !this.aceEditor : this.errorTableVisible) {
        var validationErrors = document.createElement('div');
       validationErrors.innerHTML = '<table class="jsoneditor-text-errors"><tbody></tbody></table>';
       var tbody = validationErrors.getElementsByTagName('tbody')[0];
@@ -982,7 +984,7 @@ textmode._renderErrors = function(errors) {
     if (showIndication) {
       this.validationErrorIndication.validationErrorCount.innerText = validationErrorsCount;
       this.validationErrorIndication.validationErrorIcon.title = validationErrorsCount + ' schema validation error(s) found';
-      this.validationErrorIndication.validationErrorIcon.onclick = this._toggleErrorTableVisibility.bind(this);
+      this.validationErrorIndication.validationErrorCount.onclick = this.validationErrorIndication.validationErrorIcon.onclick = this._toggleErrorTableVisibility.bind(this);
     }
   }
 
