@@ -4472,11 +4472,14 @@ Node.prototype.updateNodeName = function () {
     var count = this.childs ? this.childs.length : 0;
     var nodeName;
     if (this.type === 'object' || this.type === 'array') {
-      nodeName = this.editor.options.onNodeName({
-        path: this.getPath(),
-        size: count,
-        type: this.type
-      });
+      if (this.editor.options.onNodeName) {
+        nodeName = this.editor.options.onNodeName({
+          path: this.getPath(),
+          size: count,
+          type: this.type
+        });
+      }
+
       this.dom.value.innerHTML = (this.type === 'object')
         ? '{' + (nodeName || count) + '}'
         : '[' + (nodeName || count) + ']';
