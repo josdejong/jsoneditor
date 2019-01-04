@@ -95,6 +95,11 @@ textmode.create = function (container, options) {
   this.validateSchema = null;
   this.validationSequence = 0;
   this.annotations = [];
+  /**
+   * Visibility of validation error table
+   * @type {Boolean|undefined} undefined means default behavior for mode
+   */
+  this.errorTableVisible = undefined;
 
   // create a debounced validate function
   this._debouncedValidate = util.debounce(this.validate.bind(this), this.DEBOUNCE_INTERVAL);
@@ -794,7 +799,7 @@ textmode.validate = function () {
     }
   }
   else {
-    this._renderErrors(parseErrors || []);
+    this._renderErrors(parseErrors || [], true);
   }
 };
 
@@ -847,10 +852,12 @@ textmode._validateCustom = function (json) {
   return Promise.resolve(null);
 };
 
-textmode._renderErrors = function(errors) {
+textmode._renderErrors = function(errors, noValidation) {
   // clear all current errors
   var me = this;
   var validationErrorsCount = 0;
+
+  this.errorTableVisible = (typeof this.errorTableVisible === 'undefined') ? !this.aceEditor : this.errorTableVisible;
 
   if (this.dom.validationErrors) {
     this.dom.validationErrors.parentNode.removeChild(this.dom.validationErrors);
@@ -891,8 +898,11 @@ textmode._renderErrors = function(errors) {
       });
       this._refreshAnnotations();
 
-    } else {
-      var validationErrors = document.createElement('div');
+    }
+
+    // keep default behavior for parse errors
+    if (noValidation ? !this.aceEditor : this.errorTableVisible) {
+       var validationErrors = document.createElement('div');
       validationErrors.innerHTML = '<table class="jsoneditor-text-errors"><tbody></tbody></table>';
       var tbody = validationErrors.getElementsByTagName('tbody')[0];
 
@@ -955,7 +965,10 @@ textmode._renderErrors = function(errors) {
       var height = this.dom.validationErrorsContainer.clientHeight + (this.dom.statusBar ? this.dom.statusBar.clientHeight : 0);
       this.content.style.marginBottom = (-height) + 'px';
       this.content.style.paddingBottom = height + 'px';
+    } else {
+      validationErrorsCount = errors.reduce(function (acc, curr) {return (curr.type === 'validation' ? ++acc: acc)}, 0);
     }
+    
   } else {
     if (this.aceEditor) {
       this.annotations = [];
@@ -971,6 +984,7 @@ textmode._renderErrors = function(errors) {
     if (showIndication) {
       this.validationErrorIndication.validationErrorCount.innerText = validationErrorsCount;
       this.validationErrorIndication.validationErrorIcon.title = validationErrorsCount + ' schema validation error(s) found';
+      this.validationErrorIndication.validationErrorCount.onclick = this.validationErrorIndication.validationErrorIcon.onclick = this._toggleErrorTableVisibility.bind(this);
     }
   }
 
@@ -979,6 +993,11 @@ textmode._renderErrors = function(errors) {
     var force = false;
     this.aceEditor.resize(force);
   }
+};
+
+textmode._toggleErrorTableVisibility = function () {
+  this.errorTableVisible = !this.errorTableVisible;
+  this.validate();
 };
 
 /**
@@ -1085,6 +1104,7 @@ textmode.setTextSelection = function (startPos, endPos) {
       }
     };
     this.aceEditor.selection.setRange(range);
+    this.aceEditor.scrollToLine(startPos.row - 1, true);
   }
 };
 
