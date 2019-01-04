@@ -550,12 +550,12 @@ treemode._onChange = function () {
     }
   }
 
-  // trigger the onObjectName callback
-  if (this.options.onObjectName && this.node.childs) {
+  // trigger the onNodeName callback
+  if (this.options.onNodeName && this.node.childs) {
     try {
-      this.node.recursivelyUpdateObjectName();
+      this.node.recursivelyUpdateNodeName();
     } catch (err) {
-      console.error("Error in onObjectName callback: ", err);
+      console.error("Error in onNodeName callback: ", err);
     }
   }
 };

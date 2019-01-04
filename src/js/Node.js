@@ -2459,11 +2459,11 @@ Node.prototype.updateDom = function (options) {
   var domValue = this.dom.value;
   if (domValue) {
     if (this.type == 'array') {
-      this.updateObjectName();
+      this.updateNodeName();
       util.addClassName(this.dom.tr, 'jsoneditor-expandable');
     }
     else if (this.type == 'object') {
-      this.updateObjectName();
+      this.updateNodeName();
       util.addClassName(this.dom.tr, 'jsoneditor-expandable');
     }
     else {
@@ -4464,36 +4464,26 @@ Node.prototype._escapeJSON = function (text) {
 };
 
 /**
- * update the object name according to the callback onObjectName
+ * update the object name according to the callback onNodeName
  * @private
  */
-Node.prototype.updateObjectName = function () {
+Node.prototype.updateNodeName = function () {
   try {
     var count = this.childs ? this.childs.length : 0;
-    if (this.type === 'object') {
-      var objName;
-      if (typeof this.editor.options.onObjectName === 'function') {
-        objName = this.editor.options.onObjectName({
-          path: this.getPath(),
-          size: count,
-          type: 'object'
-        });
-      }
-      this.dom.value.innerHTML = '{' + (objName || count) + '}';
-    } else if (this.type === 'array') {
-      var arrName;
-      if (typeof this.editor.options.onObjectName === 'function') {
-        arrName = this.editor.options.onObjectName({
-          path: this.getPath(),
-          size: count,
-          type: 'array'
-        });
-      }
-      this.dom.value.innerHTML = '[' + (arrName || count) + ']';
+    var nodeName;
+    if (this.type === 'object' || this.type === 'array') {
+      nodeName = this.editor.options.onNodeName({
+        path: this.getPath(),
+        size: count,
+        type: this.type
+      });
+      this.dom.value.innerHTML = (this.type === 'object')
+        ? '{' + (nodeName || count) + '}'
+        : '[' + (nodeName || count) + ']';
     }
   }
   catch (err) {
-    console.error('Error in onObjectName callback: ', err);
+    console.error('Error in onNodeName callback: ', err);
   }
 }
 
@@ -4501,13 +4491,13 @@ Node.prototype.updateObjectName = function () {
  * update recursively the object's and its children's name.
  * @private
  */
-Node.prototype.recursivelyUpdateObjectName = function () {
+Node.prototype.recursivelyUpdateNodeName = function () {
   if (this.expanded) {
-    this.updateObjectName();
+    this.updateNodeName();
     if (this.childs !== 'undefined') {
       var i;
       for (i in this.childs) {
-        this.childs[i].recursivelyUpdateObjectName();
+        this.childs[i].recursivelyUpdateNodeName();
       }
     }
   }

@@ -162,7 +162,7 @@ JSONEditor.VALID_OPTIONS = [
   'ajv', 'schema', 'schemaRefs','templates',
   'ace', 'theme', 'autocomplete',
   'onChange', 'onChangeJSON', 'onChangeText',
-  'onEditable', 'onError', 'onEvent', 'onModeChange', 'onObjectName', 'onValidate',
+  'onEditable', 'onError', 'onEvent', 'onModeChange', 'onNodeName', 'onValidate',
   'onSelectionChange', 'onTextSelectionChange',
   'colorPicker', 'onColorPicker',
   'timestampTag',
