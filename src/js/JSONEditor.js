@@ -64,11 +64,11 @@ if (typeof Promise === 'undefined') {
  *                               {boolean} sortObjectKeys If true, object keys are
  *                                                        sorted before display.
  *                                                        false by default.
- *                               {function} onSelectionChange Callback method, 
+ *                               {function} onSelectionChange Callback method,
  *                                                            triggered on node selection change
  *                                                            Only applicable for modes
  *                                                            'tree', 'view', and 'form'
- *                               {function} onTextSelectionChange Callback method, 
+ *                               {function} onTextSelectionChange Callback method,
  *                                                                triggered on text selection change
  *                                                                Only applicable for modes
  *                               {HTMLElement} modalAnchor        The anchor element to apply an
@@ -162,7 +162,7 @@ JSONEditor.VALID_OPTIONS = [
   'ajv', 'schema', 'schemaRefs','templates',
   'ace', 'theme', 'autocomplete',
   'onChange', 'onChangeJSON', 'onChangeText',
-  'onEditable', 'onError', 'onEvent', 'onModeChange', 'onValidate',
+  'onEditable', 'onError', 'onEvent', 'onModeChange', 'onNodeName', 'onValidate',
   'onSelectionChange', 'onTextSelectionChange',
   'colorPicker', 'onColorPicker',
   'timestampTag',
