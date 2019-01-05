@@ -4468,25 +4468,25 @@ Node.prototype._escapeJSON = function (text) {
  * @private
  */
 Node.prototype.updateNodeName = function () {
-  try {
-    var count = this.childs ? this.childs.length : 0;
-    var nodeName;
-    if (this.type === 'object' || this.type === 'array') {
-      if (this.editor.options.onNodeName) {
+  var count = this.childs ? this.childs.length : 0;
+  var nodeName;
+  if (this.type === 'object' || this.type === 'array') {
+    if (this.editor.options.onNodeName) {
+      try {
         nodeName = this.editor.options.onNodeName({
           path: this.getPath(),
           size: count,
           type: this.type
         });
       }
-
-      this.dom.value.innerHTML = (this.type === 'object')
-        ? '{' + (nodeName || count) + '}'
-        : '[' + (nodeName || count) + ']';
+      catch (err) {
+        console.error('Error in onNodeName callback: ', err);
+      }
     }
-  }
-  catch (err) {
-    console.error('Error in onNodeName callback: ', err);
+
+    this.dom.value.innerHTML = (this.type === 'object')
+      ? ('{' + (nodeName || count) + '}')
+      : ('[' + (nodeName || count) + ']');
   }
 }
 
