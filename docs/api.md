@@ -71,11 +71,21 @@ Constructs a new JSONEditor.
   The callback will only be triggered on changes made by the user, not in case of programmatic changes via the functions `set`, `setText`, `update`, or `updateText`.
   See also callback function `onChangeJSON(json)`.
 
-- `{function} onEditable(node)`
+- `{function} onEditable({ field, value, path })`
 
   Set a callback function  to determine whether individual nodes are editable or read-only. Only applicable when option `mode` is `tree`, `text`, or `code`.
 
-  In case of mode `tree`, the callback is invoked as `editable(node)`, where `node` is an object `{field: string, value: string, path: string[]}`. The function must either return a boolean value to set both the nodes field and value editable or read-only, or return an object `{field: boolean, value: boolean}` to set set the read-only attribute for field and value individually.
+  In case of mode `tree`, the callback is invoked as `editable(node)`, where the first parameter is an object:
+
+  ```
+  {
+    field: string,
+    value: string,
+    path: string[]
+  }
+  ```
+
+  The function must either return a boolean value to set both the nodes field and value editable or read-only, or return an object `{field: boolean, value: boolean}` to set set the read-only attribute for field and value individually.
 
   In modes `text` and `code`, the callback is invoked as `editable(node)` where `node` is an empty object (no field, value, or path). In that case the function can return false to make the text or code editor completely read-only.
 
@@ -88,6 +98,24 @@ Constructs a new JSONEditor.
 
   Set a callback function triggered right after the mode is changed by the user. Only applicable when
   the mode can be changed by the user (i.e. when option `modes` is set).
+
+- `{function} onNodeName({ path, type, size })`
+
+  Customize the name of object and array nodes. By default the names are brackets with the number of childs inside,
+  like `{5}` and `[32]`. The number inside can be customized. using `onNodeName`.
+
+  The first parameter is an object containing the following properties:
+
+  ```
+  {
+    path: string[],
+    type: 'object' | 'array',
+    size: number
+  }
+  ```
+
+  The `onNodeName` function should return a string containing the name for the node. If nothing is returned,
+  the size (number of childs) will be displayed.
 
 - `{function} onValidate(json)`
 
@@ -246,24 +274,24 @@ Constructs a new JSONEditor.
 
   Adds status bar to the bottom of the editor - the status bar shows the cursor position and a count of the selected characters. True by default. Only applicable when `mode` is 'code' or 'text'.
 
-- `{function} onTextSelectionChange`
+- `{function} onTextSelectionChange(start, end, text)`
 
   Set a callback function triggered when a text is selected in the JSONEditor.
 
   callback signature should be:
   ```js
   /**
-  * @param {{row:Number, column:Number}} startPos selection start position
-  * @param {{row:Number, column:Number}} endPos selected end position
+  * @param {{row:Number, column:Number}} start Selection start position
+  * @param {{row:Number, column:Number}} end   Selected end position
   * @param {String} text selected text
   */
-  function onTextSelectionChange(startPos, endPos, text) {
+  function onTextSelectionChange(start, end, text) {
     ...
   }
   ```
   Only applicable when `mode` is 'code' or 'text'.
 
-- `{function} onSelectionChange`
+- `{function} onSelectionChange(start, end)`
 
   Set a callback function triggered when Nodes are selected in the JSONEditor.
 
@@ -281,15 +309,29 @@ Constructs a new JSONEditor.
   ```
   Only applicable when `mode` is 'tree'.
   
-- `{function} onEvent`
+- `{function} onEvent({ field, path, value? }, event)`
 
   Set a callback function that will be triggered when an event will occur in 
   a JSON field or value.
   
   In case of field event, node information will be 
-  `{field: string, path: {string|number}[]}`.
+
+  ```
+  {
+    field: string,
+    path: {string|number}[]
+  }
+  ```
+
   In case of value event, node information will be
-  `{field: string, path: {string|number}[], value: string}`
+
+  ```
+  {
+    field: string,
+    path: {string|number}[],
+    value: string
+  }
+  ```
 
   signature should be:
   ```js
