@@ -6945,7 +6945,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	Node.prototype.MAX_SEARCH_RESULTS = 999;
 
 	// number of visible childs rendered initially in large arrays/objects (with a "show more" button to show more)
-	Node.prototype.MAX_VISIBLE_CHILDS = 100;
+	Node.prototype.MAX_VISIBLE_CHILDS = 10000;
 
 	// default value for the max visible childs of large arrays
 	Node.prototype.visibleChilds = Node.prototype.MAX_VISIBLE_CHILDS;
