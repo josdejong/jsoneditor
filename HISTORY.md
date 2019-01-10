@@ -3,8 +3,12 @@
 https://github.com/josdejong/jsoneditor
 
 
-## not yet published, version 5.26.4
+## 2019-01-05, version 5.27.0
 
+- Implemented customizing object and array names via a new option
+  `onNodeName`. Thanks @bnanchen.
+- Visibility of schema validation errors at the bottom of mode code and text
+  are now toggleable. Thanks @meirotstein.
 - Fixed text of the mode switcher not being translated. Thanks @antfu.
 
 

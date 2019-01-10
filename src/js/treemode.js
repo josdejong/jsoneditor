@@ -549,6 +549,15 @@ treemode._onChange = function () {
       console.error('Error in onChangeText callback: ', err);
     }
   }
+
+  // trigger the onNodeName callback
+  if (this.options.onNodeName && this.node.childs) {
+    try {
+      this.node.recursivelyUpdateNodeName();
+    } catch (err) {
+      console.error("Error in onNodeName callback: ", err);
+    }
+  }
 };
 
 /**
@@ -1711,8 +1720,8 @@ treemode.getSelection = function () {
 
 /**
  * Callback registration for selection change
- * @param {selectionCallback} callback 
- * 
+ * @param {selectionCallback} callback
+ *
  * @callback selectionCallback
  */
 treemode.onSelectionChange = function (callback) {
@@ -1726,7 +1735,7 @@ treemode.onSelectionChange = function (callback) {
  * For selecting single node send only the start parameter
  * For clear the selection do not send any parameter
  * If the nodes are not from the same level the first common parent will be selected
- * @param {{path: Array.<String>}} start object contains the path for selection start 
+ * @param {{path: Array.<String>}} start object contains the path for selection start
  * @param {{path: Array.<String>}} end object contains the path for selection end
  */
 treemode.setSelection = function (start, end) {
@@ -1737,7 +1746,7 @@ treemode.setSelection = function (start, end) {
   }
 
   var nodes = this._getNodeInstancesByRange(start, end);
-  
+
   nodes.forEach(function(node) {
     node.expandTo();
   });
@@ -1746,7 +1755,7 @@ treemode.setSelection = function (start, end) {
 
 /**
  * Returns a set of Nodes according to a range of selection
- * @param {{path: Array.<String>}} start object contains the path for range start 
+ * @param {{path: Array.<String>}} start object contains the path for range start
  * @param {{path: Array.<String>}=} end object contains the path for range end
  * @return {Array.<Node>} Node instances on the given range
  * @private

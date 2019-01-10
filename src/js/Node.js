@@ -2458,13 +2458,12 @@ Node.prototype.updateDom = function (options) {
   // apply value to DOM
   var domValue = this.dom.value;
   if (domValue) {
-    var count = this.childs ? this.childs.length : 0;
     if (this.type == 'array') {
-      domValue.innerHTML = '[' + count + ']';
+      this.updateNodeName();
       util.addClassName(this.dom.tr, 'jsoneditor-expandable');
     }
     else if (this.type == 'object') {
-      domValue.innerHTML = '{' + count + '}';
+      this.updateNodeName();
       util.addClassName(this.dom.tr, 'jsoneditor-expandable');
     }
     else {
@@ -4463,6 +4462,49 @@ Node.prototype._escapeJSON = function (text) {
 
   return escaped;
 };
+
+/**
+ * update the object name according to the callback onNodeName
+ * @private
+ */
+Node.prototype.updateNodeName = function () {
+  var count = this.childs ? this.childs.length : 0;
+  var nodeName;
+  if (this.type === 'object' || this.type === 'array') {
+    if (this.editor.options.onNodeName) {
+      try {
+        nodeName = this.editor.options.onNodeName({
+          path: this.getPath(),
+          size: count,
+          type: this.type
+        });
+      }
+      catch (err) {
+        console.error('Error in onNodeName callback: ', err);
+      }
+    }
+
+    this.dom.value.innerHTML = (this.type === 'object')
+      ? ('{' + (nodeName || count) + '}')
+      : ('[' + (nodeName || count) + ']');
+  }
+}
+
+/**
+ * update recursively the object's and its children's name.
+ * @private
+ */
+Node.prototype.recursivelyUpdateNodeName = function () {
+  if (this.expanded) {
+    this.updateNodeName();
+    if (this.childs !== 'undefined') {
+      var i;
+      for (i in this.childs) {
+        this.childs[i].recursivelyUpdateNodeName();
+      }
+    }
+  }
+}
 
 // helper function to get the internal path of a node
 function getInternalPath (node) {

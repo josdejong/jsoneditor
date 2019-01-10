@@ -21,11 +21,11 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  *
- * Copyright (c) 2011-2018 Jos de Jong, http://jsoneditoronline.org
+ * Copyright (c) 2011-2019 Jos de Jong, http://jsoneditoronline.org
  *
  * @author  Jos de Jong, <wjosdejong@gmail.com>
- * @version 5.26.3
- * @date    2018-12-06
+ * @version 5.27.0
+ * @date    2019-01-05
  */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
@@ -149,11 +149,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	 *                               {boolean} sortObjectKeys If true, object keys are
 	 *                                                        sorted before display.
 	 *                                                        false by default.
-	 *                               {function} onSelectionChange Callback method, 
+	 *                               {function} onSelectionChange Callback method,
 	 *                                                            triggered on node selection change
 	 *                                                            Only applicable for modes
 	 *                                                            'tree', 'view', and 'form'
-	 *                               {function} onTextSelectionChange Callback method, 
+	 *                               {function} onTextSelectionChange Callback method,
 	 *                                                                triggered on text selection change
 	 *                                                                Only applicable for modes
 	 *                               {HTMLElement} modalAnchor        The anchor element to apply an
@@ -247,7 +247,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  'ajv', 'schema', 'schemaRefs','templates',
 	  'ace', 'theme', 'autocomplete',
 	  'onChange', 'onChangeJSON', 'onChangeText',
-	  'onEditable', 'onError', 'onEvent', 'onModeChange', 'onValidate',
+	  'onEditable', 'onError', 'onEvent', 'onModeChange', 'onNodeName', 'onValidate',
 	  'onSelectionChange', 'onTextSelectionChange',
 	  'colorPicker', 'onColorPicker',
 	  'timestampTag',
@@ -30642,6 +30642,15 @@ return /******/ (function(modules) { // webpackBootstrap
 	      console.error('Error in onChangeText callback: ', err);
 	    }
 	  }
+
+	  // trigger the onNodeName callback
+	  if (this.options.onNodeName && this.node.childs) {
+	    try {
+	      this.node.recursivelyUpdateNodeName();
+	    } catch (err) {
+	      console.error("Error in onNodeName callback: ", err);
+	    }
+	  }
 	};
 
 	/**
@@ -31804,8 +31813,8 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	/**
 	 * Callback registration for selection change
-	 * @param {selectionCallback} callback 
-	 * 
+	 * @param {selectionCallback} callback
+	 *
 	 * @callback selectionCallback
 	 */
 	treemode.onSelectionChange = function (callback) {
@@ -31819,7 +31828,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * For selecting single node send only the start parameter
 	 * For clear the selection do not send any parameter
 	 * If the nodes are not from the same level the first common parent will be selected
-	 * @param {{path: Array.<String>}} start object contains the path for selection start 
+	 * @param {{path: Array.<String>}} start object contains the path for selection start
 	 * @param {{path: Array.<String>}} end object contains the path for selection end
 	 */
 	treemode.setSelection = function (start, end) {
@@ -31830,7 +31839,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  }
 
 	  var nodes = this._getNodeInstancesByRange(start, end);
-	  
+
 	  nodes.forEach(function(node) {
 	    node.expandTo();
 	  });
@@ -31839,7 +31848,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	/**
 	 * Returns a set of Nodes according to a range of selection
-	 * @param {{path: Array.<String>}} start object contains the path for range start 
+	 * @param {{path: Array.<String>}} start object contains the path for range start
 	 * @param {{path: Array.<String>}=} end object contains the path for range end
 	 * @return {Array.<Node>} Node instances on the given range
 	 * @private
@@ -35182,178 +35191,188 @@ return /******/ (function(modules) { // webpackBootstrap
 	var _locales = ['en', 'pt-BR'];
 	var _defs = {
 	  en: {
-	    'array': 'Array',
-	    'auto': 'Auto',
-	    'appendText': 'Append',
-	    'appendTitle': 'Append a new field with type \'auto\' after this field (Ctrl+Shift+Ins)',
-	    'appendSubmenuTitle': 'Select the type of the field to be appended',
-	    'appendTitleAuto': 'Append a new field with type \'auto\' (Ctrl+Shift+Ins)',
-	    'ascending': 'Ascending',
-	    'ascendingTitle': 'Sort the childs of this ${type} in ascending order',
-	    'actionsMenu': 'Click to open the actions menu (Ctrl+M)',
-	    'collapseAll': 'Collapse all fields',
-	    'descending': 'Descending',
-	    'descendingTitle': 'Sort the childs of this ${type} in descending order',
-	    'drag': 'Drag to move this field (Alt+Shift+Arrows)',
-	    'duplicateKey': 'duplicate key',
-	    'duplicateText': 'Duplicate',
-	    'duplicateTitle': 'Duplicate selected fields (Ctrl+D)',
-	    'duplicateField': 'Duplicate this field (Ctrl+D)',
-	    'empty': 'empty',
-	    'expandAll': 'Expand all fields',
-	    'expandTitle': 'Click to expand/collapse this field (Ctrl+E). \n' +
-	    'Ctrl+Click to expand/collapse including all childs.',
-	    'insert': 'Insert',
-	    'insertTitle': 'Insert a new field with type \'auto\' before this field (Ctrl+Ins)',
-	    'insertSub': 'Select the type of the field to be inserted',
-	    'object': 'Object',
-	    'ok': 'Ok',
-	    'redo': 'Redo (Ctrl+Shift+Z)',
-	    'removeText': 'Remove',
-	    'removeTitle': 'Remove selected fields (Ctrl+Del)',
-	    'removeField': 'Remove this field (Ctrl+Del)',
-	    'selectNode': 'Select a node...',
-	    'showAll': 'show all',
-	    'showMore': 'show more',
-	    'showMoreStatus': 'displaying ${visibleChilds} of ${totalChilds} items.',
-	    'sort': 'Sort',
-	    'sortTitle': 'Sort the childs of this ${type}',
-	    'sortTitleShort': 'Sort contents',
-	    'sortFieldLabel': 'Field:',
-	    'sortDirectionLabel': 'Direction:',
-	    'sortFieldTitle': 'Select the nested field by which to sort the array or object',
-	    'sortAscending': 'Ascending',
-	    'sortAscendingTitle': 'Sort the selected field in ascending order',
-	    'sortDescending': 'Descending',
-	    'sortDescendingTitle': 'Sort the selected field in descending order',
-	    'string': 'String',
-	    'transform': 'Transform',
-	    'transformTitle': 'Filter, sort, or transform the childs of this ${type}',
-	    'transformTitleShort': 'Filter, sort, or transform contents',
-	    'transformQueryTitle': 'Enter a JMESPath query',
-	    'transformWizardLabel': 'Wizard',
-	    'transformWizardFilter': 'Filter',
-	    'transformWizardSortBy': 'Sort by',
-	    'transformWizardSelectFields': 'Select fields',
-	    'transformQueryLabel': 'Query',
-	    'transformPreviewLabel': 'Preview',
-	    'type': 'Type',
-	    'typeTitle': 'Change the type of this field',
-	    'openUrl': 'Ctrl+Click or Ctrl+Enter to open url in new window',
-	    'undo': 'Undo last action (Ctrl+Z)',
-	    'validationCannotMove': 'Cannot move a field into a child of itself',
-	    'autoType': 'Field type "auto". ' +
-	    'The field type is automatically determined from the value ' +
-	    'and can be a string, number, boolean, or null.',
-	    'objectType': 'Field type "object". ' +
-	    'An object contains an unordered set of key/value pairs.',
-	    'arrayType': 'Field type "array". ' +
-	    'An array contains an ordered collection of values.',
-	    'stringType': 'Field type "string". ' +
-	    'Field type is not determined from the value, ' +
-	    'but always returned as string.'
+	    array: 'Array',
+	    auto: 'Auto',
+	    appendText: 'Append',
+	    appendTitle: 'Append a new field with type \'auto\' after this field (Ctrl+Shift+Ins)',
+	    appendSubmenuTitle: 'Select the type of the field to be appended',
+	    appendTitleAuto: 'Append a new field with type \'auto\' (Ctrl+Shift+Ins)',
+	    ascending: 'Ascending',
+	    ascendingTitle: 'Sort the childs of this ${type} in ascending order',
+	    actionsMenu: 'Click to open the actions menu (Ctrl+M)',
+	    collapseAll: 'Collapse all fields',
+	    descending: 'Descending',
+	    descendingTitle: 'Sort the childs of this ${type} in descending order',
+	    drag: 'Drag to move this field (Alt+Shift+Arrows)',
+	    duplicateKey: 'duplicate key',
+	    duplicateText: 'Duplicate',
+	    duplicateTitle: 'Duplicate selected fields (Ctrl+D)',
+	    duplicateField: 'Duplicate this field (Ctrl+D)',
+	    empty: 'empty',
+	    expandAll: 'Expand all fields',
+	    expandTitle: 'Click to expand/collapse this field (Ctrl+E). \n' +
+	      'Ctrl+Click to expand/collapse including all childs.',
+	    insert: 'Insert',
+	    insertTitle: 'Insert a new field with type \'auto\' before this field (Ctrl+Ins)',
+	    insertSub: 'Select the type of the field to be inserted',
+	    object: 'Object',
+	    ok: 'Ok',
+	    redo: 'Redo (Ctrl+Shift+Z)',
+	    removeText: 'Remove',
+	    removeTitle: 'Remove selected fields (Ctrl+Del)',
+	    removeField: 'Remove this field (Ctrl+Del)',
+	    selectNode: 'Select a node...',
+	    showAll: 'show all',
+	    showMore: 'show more',
+	    showMoreStatus: 'displaying ${visibleChilds} of ${totalChilds} items.',
+	    sort: 'Sort',
+	    sortTitle: 'Sort the childs of this ${type}',
+	    sortTitleShort: 'Sort contents',
+	    sortFieldLabel: 'Field:',
+	    sortDirectionLabel: 'Direction:',
+	    sortFieldTitle: 'Select the nested field by which to sort the array or object',
+	    sortAscending: 'Ascending',
+	    sortAscendingTitle: 'Sort the selected field in ascending order',
+	    sortDescending: 'Descending',
+	    sortDescendingTitle: 'Sort the selected field in descending order',
+	    string: 'String',
+	    transform: 'Transform',
+	    transformTitle: 'Filter, sort, or transform the childs of this ${type}',
+	    transformTitleShort: 'Filter, sort, or transform contents',
+	    transformQueryTitle: 'Enter a JMESPath query',
+	    transformWizardLabel: 'Wizard',
+	    transformWizardFilter: 'Filter',
+	    transformWizardSortBy: 'Sort by',
+	    transformWizardSelectFields: 'Select fields',
+	    transformQueryLabel: 'Query',
+	    transformPreviewLabel: 'Preview',
+	    type: 'Type',
+	    typeTitle: 'Change the type of this field',
+	    openUrl: 'Ctrl+Click or Ctrl+Enter to open url in new window',
+	    undo: 'Undo last action (Ctrl+Z)',
+	    validationCannotMove: 'Cannot move a field into a child of itself',
+	    autoType: 'Field type "auto". ' +
+	      'The field type is automatically determined from the value ' +
+	      'and can be a string, number, boolean, or null.',
+	    objectType: 'Field type "object". ' +
+	      'An object contains an unordered set of key/value pairs.',
+	    arrayType: 'Field type "array". ' +
+	      'An array contains an ordered collection of values.',
+	    stringType: 'Field type "string". ' +
+	      'Field type is not determined from the value, ' +
+	      'but always returned as string.',
+	    modeCodeText: 'Code',
+	    modeCodeTitle: 'Switch to code highlighter',
+	    modeFormText: 'Form',
+	    modeFormTitle: 'Switch to form editor',
+	    modeTextText: 'Text',
+	    modeTextTitle: 'Switch to plain text editor',
+	    modeTreeText: 'Tree',
+	    modeTreeTitle: 'Switch to tree editor',
+	    modeViewText: 'View',
+	    modeViewTitle: 'Switch to tree view',
 	  },
 	  'pt-BR': {
-	    'array': 'Lista',
-	    'auto': 'Automatico',
-	    'appendText': 'Adicionar',
-	    'appendTitle': 'Adicionar novo campo com tipo \'auto\' depois deste campo (Ctrl+Shift+Ins)',
-	    'appendSubmenuTitle': 'Selecione o tipo do campo a ser adicionado',
-	    'appendTitleAuto': 'Adicionar novo campo com tipo \'auto\' (Ctrl+Shift+Ins)',
-	    'ascending': 'Ascendente',
-	    'ascendingTitle': 'Organizar filhor do tipo ${type} em crescente',
-	    'actionsMenu': 'Clique para abrir o menu de ações (Ctrl+M)',
-	    'collapseAll': 'Fechar todos campos',
-	    'descending': 'Descendente',
-	    'descendingTitle': 'Organizar o filhos do tipo ${type} em decrescente',
-	    'duplicateKey': 'chave duplicada',
-	    'drag': 'Arraste para mover este campo (Alt+Shift+Arrows)',
-	    'duplicateText': 'Duplicar',
-	    'duplicateTitle': 'Duplicar campos selecionados (Ctrl+D)',
-	    'duplicateField': 'Duplicar este campo (Ctrl+D)',
-	    'empty': 'vazio',
-	    'expandAll': 'Expandir todos campos',
-	    'expandTitle': 'Clique para expandir/encolher este campo (Ctrl+E). \n' +
-	    'Ctrl+Click para expandir/encolher incluindo todos os filhos.',
-	    'insert': 'Inserir',
-	    'insertTitle': 'Inserir um novo campo do tipo \'auto\' antes deste campo (Ctrl+Ins)',
-	    'insertSub': 'Selecionar o tipo de campo a ser inserido',
-	    'object': 'Objeto',
-	    'ok': 'Ok',
-	    'redo': 'Refazer (Ctrl+Shift+Z)',
-	    'removeText': 'Remover',
-	    'removeTitle': 'Remover campos selecionados (Ctrl+Del)',
-	    'removeField': 'Remover este campo (Ctrl+Del)',
+	    array: 'Lista',
+	    auto: 'Automatico',
+	    appendText: 'Adicionar',
+	    appendTitle: 'Adicionar novo campo com tipo \'auto\' depois deste campo (Ctrl+Shift+Ins)',
+	    appendSubmenuTitle: 'Selecione o tipo do campo a ser adicionado',
+	    appendTitleAuto: 'Adicionar novo campo com tipo \'auto\' (Ctrl+Shift+Ins)',
+	    ascending: 'Ascendente',
+	    ascendingTitle: 'Organizar filhor do tipo ${type} em crescente',
+	    actionsMenu: 'Clique para abrir o menu de ações (Ctrl+M)',
+	    collapseAll: 'Fechar todos campos',
+	    descending: 'Descendente',
+	    descendingTitle: 'Organizar o filhos do tipo ${type} em decrescente',
+	    duplicateKey: 'chave duplicada',
+	    drag: 'Arraste para mover este campo (Alt+Shift+Arrows)',
+	    duplicateText: 'Duplicar',
+	    duplicateTitle: 'Duplicar campos selecionados (Ctrl+D)',
+	    duplicateField: 'Duplicar este campo (Ctrl+D)',
+	    empty: 'vazio',
+	    expandAll: 'Expandir todos campos',
+	    expandTitle: 'Clique para expandir/encolher este campo (Ctrl+E). \n' +
+	      'Ctrl+Click para expandir/encolher incluindo todos os filhos.',
+	    insert: 'Inserir',
+	    insertTitle: 'Inserir um novo campo do tipo \'auto\' antes deste campo (Ctrl+Ins)',
+	    insertSub: 'Selecionar o tipo de campo a ser inserido',
+	    object: 'Objeto',
+	    ok: 'Ok',
+	    redo: 'Refazer (Ctrl+Shift+Z)',
+	    removeText: 'Remover',
+	    removeTitle: 'Remover campos selecionados (Ctrl+Del)',
+	    removeField: 'Remover este campo (Ctrl+Del)',
 	    // TODO: correctly translate
-	    'selectNode': 'Select a node...',
+	    selectNode: 'Select a node...',
 	    // TODO: correctly translate
-	    'showAll': 'mostre tudo',
+	    showAll: 'mostre tudo',
 	    // TODO: correctly translate
-	    'showMore': 'mostre mais',
+	    showMore: 'mostre mais',
 	    // TODO: correctly translate
-	    'showMoreStatus': 'exibindo ${visibleChilds} de ${totalChilds} itens.',
-	    'sort': 'Organizar',
-	    'sortTitle': 'Organizar os filhos deste ${type}',
+	    showMoreStatus: 'exibindo ${visibleChilds} de ${totalChilds} itens.',
+	    sort: 'Organizar',
+	    sortTitle: 'Organizar os filhos deste ${type}',
 	    // TODO: correctly translate
-	    'sortTitleShort': 'Organizar os filhos',
+	    sortTitleShort: 'Organizar os filhos',
 	    // TODO: correctly translate
-	    'sortFieldLabel': 'Field:',
+	    sortFieldLabel: 'Field:',
 	    // TODO: correctly translate
-	    'sortDirectionLabel': 'Direction:',
+	    sortDirectionLabel: 'Direction:',
 	    // TODO: correctly translate
-	    'sortFieldTitle': 'Select the nested field by which to sort the array or object',
+	    sortFieldTitle: 'Select the nested field by which to sort the array or object',
 	    // TODO: correctly translate
-	    'sortAscending': 'Ascending',
+	    sortAscending: 'Ascending',
 	    // TODO: correctly translate
-	    'sortAscendingTitle': 'Sort the selected field in ascending order',
+	    sortAscendingTitle: 'Sort the selected field in ascending order',
 	    // TODO: correctly translate
-	    'sortDescending': 'Descending',
+	    sortDescending: 'Descending',
 	    // TODO: correctly translate
-	    'sortDescendingTitle': 'Sort the selected field in descending order',
-	    'string': 'Texto',
+	    sortDescendingTitle: 'Sort the selected field in descending order',
+	    string: 'Texto',
 	    // TODO: correctly translate
-	    'transform': 'Transform',
+	    transform: 'Transform',
 	    // TODO: correctly translate
-	    'transformTitle': 'Filter, sort, or transform the childs of this ${type}',
+	    transformTitle: 'Filter, sort, or transform the childs of this ${type}',
 	    // TODO: correctly translate
-	    'transformTitleShort': 'Filter, sort, or transform contents',
+	    transformTitleShort: 'Filter, sort, or transform contents',
 	    // TODO: correctly translate
-	    'transformQueryTitle': 'Enter a JMESPath query',
+	    transformQueryTitle: 'Enter a JMESPath query',
 	    // TODO: correctly translate
-	    'transformWizardLabel': 'Wizard',
+	    transformWizardLabel: 'Wizard',
 	    // TODO: correctly translate
-	    'transformWizardFilter': 'Filter',
+	    transformWizardFilter: 'Filter',
 	    // TODO: correctly translate
-	    'transformWizardSortBy': 'Sort by',
+	    transformWizardSortBy: 'Sort by',
 	    // TODO: correctly translate
-	    'transformWizardSelectFields': 'Select fields',
+	    transformWizardSelectFields: 'Select fields',
 	    // TODO: correctly translate
-	    'transformQueryLabel': 'Query',
+	    transformQueryLabel: 'Query',
 	    // TODO: correctly translate
-	    'transformPreviewLabel': 'Preview',
-	    'type': 'Tipo',
-	    'typeTitle': 'Mudar o tipo deste campo',
-	    'openUrl': 'Ctrl+Click ou Ctrl+Enter para abrir link em nova janela',
-	    'undo': 'Desfazer último ação (Ctrl+Z)',
-	    'validationCannotMove': 'Não pode mover um campo como filho dele mesmo',
-	    'autoType': 'Campo do tipo "auto". ' +
-	    'O tipo do campo é determinao automaticamente a partir do seu valor ' +
-	    'e pode ser texto, número, verdade/falso ou nulo.',
-	    'objectType': 'Campo do tipo "objeto". ' +
-	    'Um objeto contém uma lista de pares com chave e valor.',
-	    'arrayType': 'Campo do tipo "lista". ' +
-	    'Uma lista contem uma coleção de valores ordenados.',
-	    'stringType': 'Campo do tipo "string". ' +
-	    'Campo do tipo nao é determinado através do seu valor, ' +
-	    'mas sempre retornara um texto.'
+	    transformPreviewLabel: 'Preview',
+	    type: 'Tipo',
+	    typeTitle: 'Mudar o tipo deste campo',
+	    openUrl: 'Ctrl+Click ou Ctrl+Enter para abrir link em nova janela',
+	    undo: 'Desfazer último ação (Ctrl+Z)',
+	    validationCannotMove: 'Não pode mover um campo como filho dele mesmo',
+	    autoType: 'Campo do tipo "auto". ' +
+	      'O tipo do campo é determinao automaticamente a partir do seu valor ' +
+	      'e pode ser texto, número, verdade/falso ou nulo.',
+	    objectType: 'Campo do tipo "objeto". ' +
+	      'Um objeto contém uma lista de pares com chave e valor.',
+	    arrayType: 'Campo do tipo "lista". ' +
+	      'Uma lista contem uma coleção de valores ordenados.',
+	    stringType: 'Campo do tipo "string". ' +
+	      'Campo do tipo nao é determinado através do seu valor, ' +
+	      'mas sempre retornara um texto.'
 	  }
 	};
 
 	var _defaultLang = 'en';
 	var _lang;
-	var userLang = typeof navigator !== 'undefined'
-	    ? navigator.language || navigator.userLanguage
-	    : undefined;
+	var userLang = typeof navigator !== 'undefined' ?
+	  navigator.language || navigator.userLanguage :
+	  undefined;
 	_lang = _locales.find(function (l) {
 	  return l === userLang;
 	});
@@ -37988,13 +38007,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	  // apply value to DOM
 	  var domValue = this.dom.value;
 	  if (domValue) {
-	    var count = this.childs ? this.childs.length : 0;
 	    if (this.type == 'array') {
-	      domValue.innerHTML = '[' + count + ']';
+	      this.updateNodeName();
 	      util.addClassName(this.dom.tr, 'jsoneditor-expandable');
 	    }
 	    else if (this.type == 'object') {
-	      domValue.innerHTML = '{' + count + '}';
+	      this.updateNodeName();
 	      util.addClassName(this.dom.tr, 'jsoneditor-expandable');
 	    }
 	    else {
@@ -39993,6 +40011,49 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	  return escaped;
 	};
+
+	/**
+	 * update the object name according to the callback onNodeName
+	 * @private
+	 */
+	Node.prototype.updateNodeName = function () {
+	  var count = this.childs ? this.childs.length : 0;
+	  var nodeName;
+	  if (this.type === 'object' || this.type === 'array') {
+	    if (this.editor.options.onNodeName) {
+	      try {
+	        nodeName = this.editor.options.onNodeName({
+	          path: this.getPath(),
+	          size: count,
+	          type: this.type
+	        });
+	      }
+	      catch (err) {
+	        console.error('Error in onNodeName callback: ', err);
+	      }
+	    }
+
+	    this.dom.value.innerHTML = (this.type === 'object')
+	      ? ('{' + (nodeName || count) + '}')
+	      : ('[' + (nodeName || count) + ']');
+	  }
+	}
+
+	/**
+	 * update recursively the object's and its children's name.
+	 * @private
+	 */
+	Node.prototype.recursivelyUpdateNodeName = function () {
+	  if (this.expanded) {
+	    this.updateNodeName();
+	    if (this.childs !== 'undefined') {
+	      var i;
+	      for (i in this.childs) {
+	        this.childs[i].recursivelyUpdateNodeName();
+	      }
+	    }
+	  }
+	}
 
 	// helper function to get the internal path of a node
 	function getInternalPath (node) {
@@ -45376,6 +45437,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	'use strict';
 
 	var ContextMenu = __webpack_require__(63);
+	var translate = __webpack_require__(68).translate;
 
 	/**
 	 * Create a select box to be used in the editor menu's, which allows to switch mode
@@ -45389,36 +45451,36 @@ return /******/ (function(modules) { // webpackBootstrap
 	  // available modes
 	  var availableModes = {
 	    code: {
-	      'text': 'Code',
-	      'title': 'Switch to code highlighter',
+	      'text': translate('modeCodeText'),
+	      'title': translate('modeCodeTitle'),
 	      'click': function () {
 	        onSwitch('code')
 	      }
 	    },
 	    form: {
-	      'text': 'Form',
-	      'title': 'Switch to form editor',
+	      'text': translate('modeFormText'),
+	      'title': translate('modeFormTitle'),
 	      'click': function () {
 	        onSwitch('form');
 	      }
 	    },
 	    text: {
-	      'text': 'Text',
-	      'title': 'Switch to plain text editor',
+	      'text': translate('modeTextText'),
+	      'title': translate('modeTextTitle'),
 	      'click': function () {
 	        onSwitch('text');
 	      }
 	    },
 	    tree: {
-	      'text': 'Tree',
-	      'title': 'Switch to tree editor',
+	      'text': translate('modeTreeText'),
+	      'title': translate('modeTreeTitle'),
 	      'click': function () {
 	        onSwitch('tree');
 	      }
 	    },
 	    view: {
-	      'text': 'View',
-	      'title': 'Switch to tree view',
+	      'text': translate('modeViewText'),
+	      'title': translate('modeViewTitle'),
 	      'click': function () {
 	        onSwitch('view');
 	      }
@@ -45488,7 +45550,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 
 	module.exports = ModeSwitcher;
-
 
 /***/ },
 /* 80 */
@@ -45978,6 +46039,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	  this.validateSchema = null;
 	  this.validationSequence = 0;
 	  this.annotations = [];
+	  /**
+	   * Visibility of validation error table
+	   * @type {Boolean|undefined} undefined means default behavior for mode
+	   */
+	  this.errorTableVisible = undefined;
 
 	  // create a debounced validate function
 	  this._debouncedValidate = util.debounce(this.validate.bind(this), this.DEBOUNCE_INTERVAL);
@@ -46677,7 +46743,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }
 	  }
 	  else {
-	    this._renderErrors(parseErrors || []);
+	    this._renderErrors(parseErrors || [], true);
 	  }
 	};
 
@@ -46730,10 +46796,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	  return Promise.resolve(null);
 	};
 
-	textmode._renderErrors = function(errors) {
+	textmode._renderErrors = function(errors, noValidation) {
 	  // clear all current errors
 	  var me = this;
 	  var validationErrorsCount = 0;
+
+	  this.errorTableVisible = (typeof this.errorTableVisible === 'undefined') ? !this.aceEditor : this.errorTableVisible;
 
 	  if (this.dom.validationErrors) {
 	    this.dom.validationErrors.parentNode.removeChild(this.dom.validationErrors);
@@ -46774,8 +46842,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	      });
 	      this._refreshAnnotations();
 
-	    } else {
-	      var validationErrors = document.createElement('div');
+	    }
+
+	    // keep default behavior for parse errors
+	    if (noValidation ? !this.aceEditor : this.errorTableVisible) {
+	       var validationErrors = document.createElement('div');
 	      validationErrors.innerHTML = '<table class="jsoneditor-text-errors"><tbody></tbody></table>';
 	      var tbody = validationErrors.getElementsByTagName('tbody')[0];
 
@@ -46838,7 +46909,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	      var height = this.dom.validationErrorsContainer.clientHeight + (this.dom.statusBar ? this.dom.statusBar.clientHeight : 0);
 	      this.content.style.marginBottom = (-height) + 'px';
 	      this.content.style.paddingBottom = height + 'px';
+	    } else {
+	      validationErrorsCount = errors.reduce(function (acc, curr) {return (curr.type === 'validation' ? ++acc: acc)}, 0);
 	    }
+	    
 	  } else {
 	    if (this.aceEditor) {
 	      this.annotations = [];
@@ -46854,6 +46928,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    if (showIndication) {
 	      this.validationErrorIndication.validationErrorCount.innerText = validationErrorsCount;
 	      this.validationErrorIndication.validationErrorIcon.title = validationErrorsCount + ' schema validation error(s) found';
+	      this.validationErrorIndication.validationErrorCount.onclick = this.validationErrorIndication.validationErrorIcon.onclick = this._toggleErrorTableVisibility.bind(this);
 	    }
 	  }
 
@@ -46862,6 +46937,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	    var force = false;
 	    this.aceEditor.resize(force);
 	  }
+	};
+
+	textmode._toggleErrorTableVisibility = function () {
+	  this.errorTableVisible = !this.errorTableVisible;
+	  this.validate();
 	};
 
 	/**
@@ -46968,6 +47048,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	      }
 	    };
 	    this.aceEditor.selection.setRange(range);
+	    this.aceEditor.scrollToLine(startPos.row - 1, true);
 	  }
 	};
 
