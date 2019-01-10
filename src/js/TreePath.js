@@ -90,11 +90,10 @@ TreePath.prototype.setPath = function (pathObjs) {
   }
 
   function _onShowAllClick(pathObjs) {
-    var me = this;
-    this.contentMenuClicked = false;
-    util.addClassName(this.path, 'show-all');
-    this.path.style.width = this.path.parentNode.getBoundingClientRect().width - 10 + 'px';
-    this.path.onblur = function() {
+    me.contentMenuClicked = false;
+    util.addClassName(me.path, 'show-all');
+    me.path.style.width = me.path.parentNode.getBoundingClientRect().width - 10 + 'px';
+    me.path.onblur = function() {
       if (me.contentMenuClicked) {
         me.contentMenuClicked = false;
         me.path.focus();
