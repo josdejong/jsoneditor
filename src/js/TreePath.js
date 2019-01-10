@@ -72,7 +72,7 @@ TreePath.prototype.setPath = function (pathObjs) {
       }
 
       if(idx === pathObjs.length - 1) {
-        var leftRectPos = (sepEl || pathEl).getBoundingClientRect().left;
+        var leftRectPos = (sepEl || pathEl).getBoundingClientRect().right;
         if(me.path.offsetWidth < leftRectPos) {
           me.path.scrollLeft = leftRectPos;
         }

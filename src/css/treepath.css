@@ -2,11 +2,13 @@
 div.jsoneditor-treepath {
   padding: 0 5px;
   overflow: hidden;
+  white-space: nowrap;
   outline: none;
 }
 
 div.jsoneditor-treepath.show-all {
   word-wrap: break-word;
+  white-space: normal;
   position: absolute;
   background-color: #ebebeb;
   z-index: 999;
