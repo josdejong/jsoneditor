@@ -3,6 +3,12 @@
 https://github.com/josdejong/jsoneditor
 
 
+## not yet published, version 5.27.1
+
+- Improved navigating deeply nested paths via the navigation bar, see #619.
+  Thanks @meirotstein.
+
+
 ## 2019-01-05, version 5.27.0
 
 - Implemented customizing object and array names via a new option
