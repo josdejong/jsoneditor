@@ -195,10 +195,11 @@ ContextMenu.visibleMenu = undefined;
 
 /**
  * Attach the menu to an anchor
- * @param {HTMLElement} anchor  Anchor where the menu will be attached as sibling.
- * @param {HTMLElement} frame   The root of the JSONEditor window
+ * @param {HTMLElement} anchor    Anchor where the menu will be attached as sibling.
+ * @param {HTMLElement} frame     The root of the JSONEditor window
+ * @param {Boolean=} ignoreParent ignore anchor parent in regard to the calculation of the position, needed when the parent position is absolute
  */
-ContextMenu.prototype.show = function (anchor, frame) {
+ContextMenu.prototype.show = function (anchor, frame, ignoreParent) {
   this.hide();
 
   // determine whether to display the menu below or above the anchor
@@ -224,7 +225,7 @@ ContextMenu.prototype.show = function (anchor, frame) {
     // doesn't fit above nor below -> show below
   }
 
-  var topGap = anchorRect.top - parentRect.top;
+  var topGap = ignoreParent ? 0 : (anchorRect.top - parentRect.top);
 
   // position the menu
   if (showBelow) {
