@@ -2520,7 +2520,7 @@ Node.prototype._updateSchema = function () {
     // find the part of the json schema matching this nodes path
     this.schema = this.editor.options.schema
         // fix childSchema with $ref, and not display the select element on the child schema because of not found enum
-	? Node._findSchema(this.editor.options.schema, this.editor.options.schemaRefs || {}, this.getPath())
+        ? Node._findSchema(this.editor.options.schema, this.editor.options.schemaRefs || {}, this.getPath())
         : null;
     if (this.schema) {
       this.enum = Node._findEnum(this.schema);
@@ -2557,6 +2557,7 @@ Node._findEnum = function (schema) {
 /**
  * Return the part of a JSON schema matching given path.
  * @param {Object} schema
+ * @param {Object} schemaRefs
  * @param {Array.<string | number>} path
  * @return {Object | null}
  * @private
@@ -2564,6 +2565,7 @@ Node._findEnum = function (schema) {
 Node._findSchema = function (schema, schemaRefs, path) {
   var childSchema = schema;
   var foundSchema = childSchema;
+
   var allSchemas = schema.oneOf || schema.anyOf || schema.allOf;
   if (!allSchemas) {
     allSchemas = [schema];
@@ -2575,35 +2577,35 @@ Node._findSchema = function (schema, schemaRefs, path) {
     for (var i = 0; i < path.length && childSchema; i++) {
       var key = path[i];
 
-  // fix childSchema with $ref, and not display the select element on the child schema because of not found enum
+      // fix childSchema with $ref, and not display the select element on the child schema because of not found enum
       if (typeof key === 'string' && childSchema['$ref']) {
-	childSchema = schemaRefs[childSchema['$ref']];
-    if (childSchema) {
-      foundSchema = Node._findSchema(childSchema, schemaRefs, path.slice(i, path.length));
-    }
-  }
-  else if (typeof key === 'string' && childSchema.patternProperties && i == path.length - 1) {
-	for (var prop in childSchema.patternProperties) {
-	  foundSchema = Node._findSchema(childSchema.patternProperties[prop], schemaRefs, path.slice(i, path.length));
-	}
+        childSchema = node.editor.options.schemaRefs[childSchema['$ref']];
+        if (childSchema) {
+          foundSchema = Node._findSchema(childSchema, schemaRefs, path.slice(i, path.length));
+        }
+      }
+      else if (typeof key === 'string' && childSchema.patternProperties && i == path.length - 1) {
+        for (var prop in childSchema.patternProperties) {
+          foundSchema = Node._findSchema(childSchema.patternProperties[prop], schemaRefs, path.slice(i, path.length));
+        }
       }
       else if (childSchema.items && childSchema.items.properties) {
-	childSchema = childSchema.items.properties[key];
-	if (childSchema) {
-	  foundSchema = Node._findSchema(childSchema, schemaRefs, path.slice(i, path.length));
-	}
+        childSchema = childSchema.items.properties[key];
+        if (childSchema) {
+          foundSchema = Node._findSchema(childSchema, schemaRefs, path.slice(i, path.length));
+        }
       }
       else if (typeof key === 'string' && childSchema.properties) {
-	childSchema = childSchema.properties[key] || null;
-	if (childSchema) {
-	  foundSchema = Node._findSchema(childSchema, schemaRefs, path.slice(i, path.length));
-	}
+        childSchema = childSchema.properties[key] || null;
+        if (childSchema) {
+          foundSchema = Node._findSchema(childSchema, schemaRefs, path.slice(i, path.length));
+        }
       }
       else if (typeof key === 'number' && childSchema.items) {
-	childSchema = childSchema.items;
-	if (childSchema) {
-	  foundSchema = Node._findSchema(childSchema, schemaRefs, path.slice(i, path.length));
-	}
+        childSchema = childSchema.items;
+        if (childSchema) {
+          foundSchema = Node._findSchema(childSchema, schemaRefs, path.slice(i, path.length));
+        }
       }
     }
 
