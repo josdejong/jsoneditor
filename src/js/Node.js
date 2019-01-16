@@ -48,6 +48,8 @@ function Node (editor, params) {
 
   this._debouncedOnChangeValue = util.debounce(this._onChangeValue.bind(this), Node.prototype.DEBOUNCE_INTERVAL);
   this._debouncedOnChangeField = util.debounce(this._onChangeField.bind(this), Node.prototype.DEBOUNCE_INTERVAL);
+  // starting value for visible children
+  this.visibleChilds = this.getMaxVisibleChilds();
 }
 
 // debounce interval for keyboard input in milliseconds
@@ -97,9 +99,6 @@ Node.prototype._updateEditability = function () {
       }
     }
   }
-
-  // default value for the max visible children of large arrays
-  Node.prototype.visibleChilds = this.getMaxVisibleChilds();
 };
 
 /**
