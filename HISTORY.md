@@ -3,6 +3,12 @@
 https://github.com/josdejong/jsoneditor
 
 
+## not yet released, version 5.28.0
+
+- Implemented new option `maxVisibleChilds` to customize the maximum number
+  childs that is rendered by default. Thanks @20goto10.
+
+
 ## 2019-01-16, version 5.27.1
 
 - Improved navigating deeply nested paths via the navigation bar, see #619.
