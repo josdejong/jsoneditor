@@ -7,6 +7,10 @@ https://github.com/josdejong/jsoneditor
 
 - Improved navigating deeply nested paths via the navigation bar, see #619.
   Thanks @meirotstein.
+- Sdd title from schema description to show the tips for user input.
+  Thanks @tylerchen.
+- Fix JSON Schema not resolving refs `$ref`, and not creating enum dropdowns.
+  Thanks @tylerchen.
 
 
 ## 2019-01-05, version 5.27.0
