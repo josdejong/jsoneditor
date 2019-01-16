@@ -906,17 +906,22 @@ Node.prototype.hideChilds = function(options) {
     delete this.visibleChilds;
   }
 };
-
+/**
+ * set custom css classes on a node
+ */
 Node.prototype._updateCssClassName = function () { 
-  // set custom css classes
+  
   if(this.dom.field
     && this.editor 
     && this.editor.options 
     && typeof this.editor.options.onClassName ==='function'
     && this.dom.tree){              
-      util.addClassName(this.dom.tree, this.editor.options.onClassName({ path: this.getPath(), field: this.field, value: this.value }));        
+      util.removeAllClassNames(this.dom.tree);              
+      const addClasses = this.editor.options.onClassName({ path: this.getPath(), field: this.field, value: this.value }) || "";      
+      util.addClassName(this.dom.tree, "jsoneditor-values " + addClasses);              
   }
 }
+
 Node.prototype.recursivelyUpdateCssClassesOnNodes = function () {  
   this._updateCssClassName();
   if (this.childs !== 'undefined') {

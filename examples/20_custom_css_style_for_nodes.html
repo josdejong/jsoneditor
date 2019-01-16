@@ -32,10 +32,10 @@
     #wrapper {
       width: 1000px;
     }
-    #jsoneditor2 .diff {
+    #jsoneditor2 .different_element {
       background-color: greenyellow  !important;
     }
-    #jsoneditor .diff {
+    #jsoneditor .different_element {
       background-color: violet  !important;
     }
     </style>
@@ -89,9 +89,9 @@
       }
       
       if (nodeLeft.field === nodeRight.field && isValueEqual) {
-        return undefined;
+        return 'the_same_element'; 
       } else {
-        return 'diff'
+        return 'different_element'
       }      
     },
     onChangeJSON: function (j) {
@@ -119,9 +119,9 @@
       }
 
       if (nodeLeft.field == nodeRight.field && isValueEqual) {
-        return undefined;
+        return 'the_same_element'; 
       } else {
-        return 'diff'
+        return 'different_element'
       }      
     },
     onChangeJSON: function (j) {
@@ -164,9 +164,6 @@
   
   window.editor = new JSONEditor(container, options, rightJson);
   window.editor = new JSONEditor(container2, options2, leftJson);
-
-  console.log('json', json);
-  console.log('string', JSON.stringify(json));
 </script>
 </body>
 </html>

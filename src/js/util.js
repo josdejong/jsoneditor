@@ -362,6 +362,14 @@ exports.addClassName = function addClassName(elem, className) {
 };
 
 /**
+ * remove all classes from the given elements style
+ * @param {Element} elem 
+ */
+exports.removeAllClassNames = function removeAllClassNames(elem) {
+    elem.className = "";
+};
+
+/**
  * add a className to the given elements style
  * @param {Element} elem
  * @param {String} className
