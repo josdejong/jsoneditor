@@ -3,7 +3,7 @@
 https://github.com/josdejong/jsoneditor
 
 
-## not yet published, version 5.27.1
+## 2019-01-16, version 5.27.1
 
 - Improved navigating deeply nested paths via the navigation bar, see #619.
   Thanks @meirotstein.

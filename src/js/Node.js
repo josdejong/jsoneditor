@@ -322,7 +322,9 @@ Node.prototype.updateError = function() {
     tdError.appendChild(button);
   }
   else {
-    util.removeClassName(this.dom.tr, 'jsoneditor-validation-error');
+    if (this.dom.tr) {
+      util.removeClassName(this.dom.tr, 'jsoneditor-validation-error');
+    }
 
     if (tdError) {
       this.dom.tdError.parentNode.removeChild(this.dom.tdError);
@@ -2578,7 +2580,7 @@ Node._findSchema = function (schema, schemaRefs, path) {
 
       // fix childSchema with $ref, and not display the select element on the child schema because of not found enum
       if (typeof key === 'string' && childSchema['$ref']) {
-        childSchema = node.editor.options.schemaRefs[childSchema['$ref']];
+        childSchema = schemaRefs[childSchema['$ref']];
         if (childSchema) {
           foundSchema = Node._findSchema(childSchema, schemaRefs, path.slice(i, path.length));
         }

@@ -7,6 +7,10 @@ This document describes the steps required to publish a new version of jsonedito
 
 Update the version number in package.json.
 
+Update package-lock.json:
+
+    npm install
+
 
 ## Update history
 

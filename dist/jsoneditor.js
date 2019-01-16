@@ -24,8 +24,8 @@
  * Copyright (c) 2011-2019 Jos de Jong, http://jsoneditoronline.org
  *
  * @author  Jos de Jong, <wjosdejong@gmail.com>
- * @version 5.27.0
- * @date    2019-01-05
+ * @version 5.27.1
+ * @date    2019-01-16
  */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
@@ -32913,10 +32913,11 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	/**
 	 * Attach the menu to an anchor
-	 * @param {HTMLElement} anchor  Anchor where the menu will be attached as sibling.
-	 * @param {HTMLElement} frame   The root of the JSONEditor window
+	 * @param {HTMLElement} anchor    Anchor where the menu will be attached as sibling.
+	 * @param {HTMLElement} frame     The root of the JSONEditor window
+	 * @param {Boolean=} ignoreParent ignore anchor parent in regard to the calculation of the position, needed when the parent position is absolute
 	 */
-	ContextMenu.prototype.show = function (anchor, frame) {
+	ContextMenu.prototype.show = function (anchor, frame, ignoreParent) {
 	  this.hide();
 
 	  // determine whether to display the menu below or above the anchor
@@ -32942,7 +32943,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    // doesn't fit above nor below -> show below
 	  }
 
-	  var topGap = anchorRect.top - parentRect.top;
+	  var topGap = ignoreParent ? 0 : (anchorRect.top - parentRect.top);
 
 	  // position the menu
 	  if (showBelow) {
@@ -35434,6 +35435,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var ContextMenu = __webpack_require__(63);
 	var translate = __webpack_require__(68).translate;
+	var util = __webpack_require__(65);
 
 	/**
 	 * Creates a component that visualize path selection in tree based editors
@@ -35446,6 +35448,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	    this.root = root;
 	    this.path = document.createElement('div');
 	    this.path.className = 'jsoneditor-treepath';
+	    this.path.setAttribute('tabindex',0);
+	    this.contentMenuClicked;
 	    container.appendChild(this.path);
 	    this.reset();
 	  }
@@ -35484,6 +35488,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        sepEl.innerHTML = '&#9658;';
 
 	        sepEl.onclick = function () {
+	          me.contentMenuClicked = true;
 	          var items = [];
 	          pathObj.children.forEach(function (child) {
 	            items.push({
@@ -35493,19 +35498,45 @@ return /******/ (function(modules) { // webpackBootstrap
 	            });
 	          });
 	          var menu = new ContextMenu(items);
-	          menu.show(sepEl, me.root);
+	          menu.show(sepEl, me.root, true);
 	        };
 
 	        me.path.appendChild(sepEl);
 	      }
 
 	      if(idx === pathObjs.length - 1) {
-	        var leftRectPos = (sepEl || pathEl).getBoundingClientRect().left;
+	        var leftRectPos = (sepEl || pathEl).getBoundingClientRect().right;
 	        if(me.path.offsetWidth < leftRectPos) {
 	          me.path.scrollLeft = leftRectPos;
 	        }
+
+	        if (me.path.scrollLeft) {
+	          var showAllBtn = document.createElement('span');
+	          showAllBtn.className = 'jsoneditor-treepath-show-all-btn';
+	          showAllBtn.title = 'show all path';
+	          showAllBtn.innerHTML = '...';
+	          showAllBtn.onclick = _onShowAllClick.bind(me, pathObjs);
+	          me.path.insertBefore(showAllBtn, me.path.firstChild);
+	        }
 	      }
 	    });
+	  }
+
+	  function _onShowAllClick(pathObjs) {
+	    me.contentMenuClicked = false;
+	    util.addClassName(me.path, 'show-all');
+	    me.path.style.width = me.path.parentNode.getBoundingClientRect().width - 10 + 'px';
+	    me.path.onblur = function() {
+	      if (me.contentMenuClicked) {
+	        me.contentMenuClicked = false;
+	        me.path.focus();
+	        return;
+	      }
+	      util.removeClassName(me.path, 'show-all');
+	      me.path.onblur = undefined;
+	      me.path.style.width = '';
+	      me.setPath(pathObjs);
+	    };
 	  }
 
 	  function _onSegmentClick(pathObj) {
@@ -35871,7 +35902,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	    tdError.appendChild(button);
 	  }
 	  else {
-	    util.removeClassName(this.dom.tr, 'jsoneditor-validation-error');
+	    if (this.dom.tr) {
+	      util.removeClassName(this.dom.tr, 'jsoneditor-validation-error');
+	    }
 
 	    if (tdError) {
 	      this.dom.tdError.parentNode.removeChild(this.dom.tdError);
@@ -37979,6 +38012,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	      domField.contentEditable = this.editable.field;
 	      domField.spellcheck = false;
 	      domField.className = 'jsoneditor-field';
+	      // add title from schema description to show the tips for user input
+	      domField.title = Node._findSchema(this.editor.options.schema || {}, this.editor.options.schemaRefs || {}, this.getPath())['description'] || '';
 	    }
 	    else {
 	      // parent is an array this is the root node
@@ -38065,7 +38100,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	  if(this.editor && this.editor.options) {
 	    // find the part of the json schema matching this nodes path
 	    this.schema = this.editor.options.schema
-	        ? Node._findSchema(this.editor.options.schema, this.getPath())
+	        // fix childSchema with $ref, and not display the select element on the child schema because of not found enum
+	        ? Node._findSchema(this.editor.options.schema, this.editor.options.schemaRefs || {}, this.getPath())
 	        : null;
 	    if (this.schema) {
 	      this.enum = Node._findEnum(this.schema);
@@ -38102,11 +38138,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	/**
 	 * Return the part of a JSON schema matching given path.
 	 * @param {Object} schema
+	 * @param {Object} schemaRefs
 	 * @param {Array.<string | number>} path
 	 * @return {Object | null}
 	 * @private
 	 */
-	Node._findSchema = function (schema, path) {
+	Node._findSchema = function (schema, schemaRefs, path) {
 	  var childSchema = schema;
 	  var foundSchema = childSchema;
 
@@ -38121,27 +38158,34 @@ return /******/ (function(modules) { // webpackBootstrap
 	    for (var i = 0; i < path.length && childSchema; i++) {
 	      var key = path[i];
 
-	      if (typeof key === 'string' && childSchema.patternProperties && i == path.length - 1) {
+	      // fix childSchema with $ref, and not display the select element on the child schema because of not found enum
+	      if (typeof key === 'string' && childSchema['$ref']) {
+	        childSchema = schemaRefs[childSchema['$ref']];
+	        if (childSchema) {
+	          foundSchema = Node._findSchema(childSchema, schemaRefs, path.slice(i, path.length));
+	        }
+	      }
+	      else if (typeof key === 'string' && childSchema.patternProperties && i == path.length - 1) {
 	        for (var prop in childSchema.patternProperties) {
-	          foundSchema = Node._findSchema(childSchema.patternProperties[prop], path.slice(i, path.length));
+	          foundSchema = Node._findSchema(childSchema.patternProperties[prop], schemaRefs, path.slice(i, path.length));
 	        }
 	      }
 	      else if (childSchema.items && childSchema.items.properties) {
 	        childSchema = childSchema.items.properties[key];
 	        if (childSchema) {
-	          foundSchema = Node._findSchema(childSchema, path.slice(i, path.length));
+	          foundSchema = Node._findSchema(childSchema, schemaRefs, path.slice(i, path.length));
 	        }
 	      }
 	      else if (typeof key === 'string' && childSchema.properties) {
 	        childSchema = childSchema.properties[key] || null;
 	        if (childSchema) {
-	          foundSchema = Node._findSchema(childSchema, path.slice(i, path.length));
+	          foundSchema = Node._findSchema(childSchema, schemaRefs, path.slice(i, path.length));
 	        }
 	      }
 	      else if (typeof key === 'number' && childSchema.items) {
 	        childSchema = childSchema.items;
 	        if (childSchema) {
-	          foundSchema = Node._findSchema(childSchema, path.slice(i, path.length));
+	          foundSchema = Node._findSchema(childSchema, schemaRefs, path.slice(i, path.length));
 	        }
 	      }
 	    }
