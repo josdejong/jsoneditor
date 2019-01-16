@@ -48,6 +48,8 @@ function Node (editor, params) {
 
   this._debouncedOnChangeValue = util.debounce(this._onChangeValue.bind(this), Node.prototype.DEBOUNCE_INTERVAL);
   this._debouncedOnChangeField = util.debounce(this._onChangeField.bind(this), Node.prototype.DEBOUNCE_INTERVAL);
+  // starting value for visible children
+  this.visibleChilds = this.getMaxVisibleChilds();
 }
 
 // debounce interval for keyboard input in milliseconds
@@ -56,11 +58,14 @@ Node.prototype.DEBOUNCE_INTERVAL = 150;
 // search will stop iterating as soon as the max is reached
 Node.prototype.MAX_SEARCH_RESULTS = 999;
 
-// number of visible childs rendered initially in large arrays/objects (with a "show more" button to show more)
-Node.prototype.MAX_VISIBLE_CHILDS = 100;
+// default number of child nodes to display 
+var DEFAULT_MAX_VISIBLE_CHILDS = 100;
 
-// default value for the max visible childs of large arrays
-Node.prototype.visibleChilds = Node.prototype.MAX_VISIBLE_CHILDS;
+Node.prototype.getMaxVisibleChilds = function() {
+  return (this.editor && this.editor.options && this.editor.options.maxVisibleChilds)
+      ? this.editor.options.maxVisibleChilds
+      : DEFAULT_MAX_VISIBLE_CHILDS;
+}
 
 /**
  * Determine whether the field and/or value of this node are editable
@@ -427,7 +432,7 @@ Node.prototype.setValue = function(value, type) {
           child = new Node(this.editor, {
             value: childValue
           });
-          visible = i < this.MAX_VISIBLE_CHILDS;
+          visible = i < this.getMaxVisibleChilds();
           this.appendChild(child, visible, notUpdateDom);
         }
       }
@@ -471,7 +476,7 @@ Node.prototype.setValue = function(value, type) {
               field: childField,
               value: childValue
             });
-            visible = i < this.MAX_VISIBLE_CHILDS;
+            visible = i < this.getMaxVisibleChilds();
             this.appendChild(child, visible, notUpdateDom);
           }
         }
@@ -544,7 +549,7 @@ Node.prototype.setInternalValue = function(internalValue) {
           child = new Node(this.editor, {
             internalValue: childValue
           });
-          visible = i < this.MAX_VISIBLE_CHILDS;
+          visible = i < this.getMaxVisibleChilds();
           this.appendChild(child, visible, notUpdateDom);
         }
       }
@@ -579,7 +584,7 @@ Node.prototype.setInternalValue = function(internalValue) {
             field: childValue.field,
             internalValue: childValue.value
           });
-          visible = i < this.MAX_VISIBLE_CHILDS;
+          visible = i < this.getMaxVisibleChilds();
           this.appendChild(child, visible, notUpdateDom);
         }
       }
@@ -1175,7 +1180,7 @@ Node.prototype.expandPathToNode = function () {
         ? node.index
         : node.parent.childs.indexOf(node);
     while (node.parent.visibleChilds < index + 1) {
-      node.parent.visibleChilds += Node.prototype.MAX_VISIBLE_CHILDS;
+      node.parent.visibleChilds += this.getMaxVisibleChilds();
     }
 
     // expand the parent itself

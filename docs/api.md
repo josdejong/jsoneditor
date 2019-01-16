@@ -416,6 +416,10 @@ Constructs a new JSONEditor.
 
   Enable filtering, sorting, and transforming JSON using a [JMESPath](http://jmespath.org/) query. Only applicable for mode 'tree'. True by default.
 
+- `{Number} maxVisibleChilds`
+
+  Number of children allowed for a given node before the "show more / show all" message appears (in 'tree', 'view', or 'form' modes). 100 by default.
+
 ### Methods
 
 #### `JSONEditor.collapseAll()`

@@ -82,6 +82,11 @@ if (typeof Promise === 'undefined') {
  *                                                  Only applicable for
  *                                                  modes 'form', 'tree' and
  *                                                  'view'
+ *                               {Number} maxVisibleChilds Number of children allowed for a node 
+ *                                                         in 'tree', 'view', or 'form' mode before 
+ *                                                         the "show more/show all" buttons appear.  
+ *                                                         100 by default.
+ *
  * @param {Object | undefined} json JSON object
  */
 function JSONEditor (container, options, json) {
@@ -167,7 +172,8 @@ JSONEditor.VALID_OPTIONS = [
   'colorPicker', 'onColorPicker',
   'timestampTag',
   'escapeUnicode', 'history', 'search', 'mode', 'modes', 'name', 'indentation',
-  'sortObjectKeys', 'navigationBar', 'statusBar', 'mainMenuBar', 'languages', 'language', 'enableSort', 'enableTransform'
+  'sortObjectKeys', 'navigationBar', 'statusBar', 'mainMenuBar', 'languages', 'language', 'enableSort', 'enableTransform',
+  'maxVisibleChilds'
 ];
 
 /**
