@@ -80,6 +80,8 @@
     onClassName: function({ path, field, value }) {            
       var nodeLeft = findNodeInJson(leftJson, path);
       var nodeRight = findNodeInJson(rightJson, path);
+
+      // this is not a proper way of comparing objects/values but's it's good enough for this example
       var isValueEqual = nodeLeft.value == nodeRight.value;
 
       if(Array.isArray(nodeLeft.value) && Array.isArray(nodeRight.value)) {
@@ -110,6 +112,7 @@
       var nodeRight = findNodeInJson(leftJson, path); 
       var nodeLeft = findNodeInJson(rightJson, path);
       
+      // this is not a proper way of comparing objects/values but's it's good enough for this example.
       var isValueEqual = nodeLeft.value == nodeRight.value;
 
       if(Array.isArray(nodeLeft.value) && Array.isArray(nodeRight.value)) {
@@ -162,8 +165,8 @@
     "[0]": "zero"
   };
   
-  window.editor = new JSONEditor(container, options, rightJson);
-  window.editor = new JSONEditor(container2, options2, leftJson);
+  window.editor = new JSONEditor(container, options, leftJson);
+  window.editor = new JSONEditor(container2, options2, rightJson);
 </script>
 </body>
 </html>
