@@ -48,6 +48,8 @@ function Node (editor, params) {
 
   this._debouncedOnChangeValue = util.debounce(this._onChangeValue.bind(this), Node.prototype.DEBOUNCE_INTERVAL);
   this._debouncedOnChangeField = util.debounce(this._onChangeField.bind(this), Node.prototype.DEBOUNCE_INTERVAL);
+  // starting value for visible children
+  this.visibleChilds = this.getMaxVisibleChilds();
 }
 
 // debounce interval for keyboard input in milliseconds
@@ -56,11 +58,14 @@ Node.prototype.DEBOUNCE_INTERVAL = 150;
 // search will stop iterating as soon as the max is reached
 Node.prototype.MAX_SEARCH_RESULTS = 999;
 
-// number of visible childs rendered initially in large arrays/objects (with a "show more" button to show more)
-Node.prototype.MAX_VISIBLE_CHILDS = 100;
+// default number of child nodes to display 
+var DEFAULT_MAX_VISIBLE_CHILDS = 100;
 
-// default value for the max visible childs of large arrays
-Node.prototype.visibleChilds = Node.prototype.MAX_VISIBLE_CHILDS;
+Node.prototype.getMaxVisibleChilds = function() {
+  return (this.editor && this.editor.options && this.editor.options.maxVisibleChilds)
+      ? this.editor.options.maxVisibleChilds
+      : DEFAULT_MAX_VISIBLE_CHILDS;
+}
 
 /**
  * Determine whether the field and/or value of this node are editable
@@ -322,7 +327,9 @@ Node.prototype.updateError = function() {
     tdError.appendChild(button);
   }
   else {
-    util.removeClassName(this.dom.tr, 'jsoneditor-validation-error');
+    if (this.dom.tr) {
+      util.removeClassName(this.dom.tr, 'jsoneditor-validation-error');
+    }
 
     if (tdError) {
       this.dom.tdError.parentNode.removeChild(this.dom.tdError);
@@ -425,7 +432,7 @@ Node.prototype.setValue = function(value, type) {
           child = new Node(this.editor, {
             value: childValue
           });
-          visible = i < this.MAX_VISIBLE_CHILDS;
+          visible = i < this.getMaxVisibleChilds();
           this.appendChild(child, visible, notUpdateDom);
         }
       }
@@ -469,7 +476,7 @@ Node.prototype.setValue = function(value, type) {
               field: childField,
               value: childValue
             });
-            visible = i < this.MAX_VISIBLE_CHILDS;
+            visible = i < this.getMaxVisibleChilds();
             this.appendChild(child, visible, notUpdateDom);
           }
         }
@@ -542,7 +549,7 @@ Node.prototype.setInternalValue = function(internalValue) {
           child = new Node(this.editor, {
             internalValue: childValue
           });
-          visible = i < this.MAX_VISIBLE_CHILDS;
+          visible = i < this.getMaxVisibleChilds();
           this.appendChild(child, visible, notUpdateDom);
         }
       }
@@ -577,7 +584,7 @@ Node.prototype.setInternalValue = function(internalValue) {
             field: childValue.field,
             internalValue: childValue.value
           });
-          visible = i < this.MAX_VISIBLE_CHILDS;
+          visible = i < this.getMaxVisibleChilds();
           this.appendChild(child, visible, notUpdateDom);
         }
       }
@@ -1197,7 +1204,7 @@ Node.prototype.expandPathToNode = function () {
         ? node.index
         : node.parent.childs.indexOf(node);
     while (node.parent.visibleChilds < index + 1) {
-      node.parent.visibleChilds += Node.prototype.MAX_VISIBLE_CHILDS;
+      node.parent.visibleChilds += this.getMaxVisibleChilds();
     }
 
     // expand the parent itself
@@ -2454,6 +2461,8 @@ Node.prototype.updateDom = function (options) {
       domField.contentEditable = this.editable.field;
       domField.spellcheck = false;
       domField.className = 'jsoneditor-field';
+      // add title from schema description to show the tips for user input
+      domField.title = Node._findSchema(this.editor.options.schema || {}, this.editor.options.schemaRefs || {}, this.getPath())['description'] || '';
     }
     else {
       // parent is an array this is the root node
@@ -2482,13 +2491,12 @@ Node.prototype.updateDom = function (options) {
   // apply value to DOM
   var domValue = this.dom.value;
   if (domValue) {
-    var count = this.childs ? this.childs.length : 0;
     if (this.type == 'array') {
-      domValue.innerHTML = '[' + count + ']';
+      this.updateNodeName();
       util.addClassName(this.dom.tr, 'jsoneditor-expandable');
     }
     else if (this.type == 'object') {
-      domValue.innerHTML = '{' + count + '}';
+      this.updateNodeName();
       util.addClassName(this.dom.tr, 'jsoneditor-expandable');
     }
     else {
@@ -2543,7 +2551,8 @@ Node.prototype._updateSchema = function () {
   if(this.editor && this.editor.options) {
     // find the part of the json schema matching this nodes path
     this.schema = this.editor.options.schema
-        ? Node._findSchema(this.editor.options.schema, this.getPath())
+        // fix childSchema with $ref, and not display the select element on the child schema because of not found enum
+        ? Node._findSchema(this.editor.options.schema, this.editor.options.schemaRefs || {}, this.getPath())
         : null;
     if (this.schema) {
       this.enum = Node._findEnum(this.schema);
@@ -2580,11 +2589,12 @@ Node._findEnum = function (schema) {
 /**
  * Return the part of a JSON schema matching given path.
  * @param {Object} schema
+ * @param {Object} schemaRefs
  * @param {Array.<string | number>} path
  * @return {Object | null}
  * @private
  */
-Node._findSchema = function (schema, path) {
+Node._findSchema = function (schema, schemaRefs, path) {
   var childSchema = schema;
   var foundSchema = childSchema;
 
@@ -2599,27 +2609,34 @@ Node._findSchema = function (schema, path) {
     for (var i = 0; i < path.length && childSchema; i++) {
       var key = path[i];
 
-      if (typeof key === 'string' && childSchema.patternProperties && i == path.length - 1) {
+      // fix childSchema with $ref, and not display the select element on the child schema because of not found enum
+      if (typeof key === 'string' && childSchema['$ref']) {
+        childSchema = schemaRefs[childSchema['$ref']];
+        if (childSchema) {
+          foundSchema = Node._findSchema(childSchema, schemaRefs, path.slice(i, path.length));
+        }
+      }
+      else if (typeof key === 'string' && childSchema.patternProperties && i == path.length - 1) {
         for (var prop in childSchema.patternProperties) {
-          foundSchema = Node._findSchema(childSchema.patternProperties[prop], path.slice(i, path.length));
+          foundSchema = Node._findSchema(childSchema.patternProperties[prop], schemaRefs, path.slice(i, path.length));
         }
       }
       else if (childSchema.items && childSchema.items.properties) {
         childSchema = childSchema.items.properties[key];
         if (childSchema) {
-          foundSchema = Node._findSchema(childSchema, path.slice(i, path.length));
+          foundSchema = Node._findSchema(childSchema, schemaRefs, path.slice(i, path.length));
         }
       }
       else if (typeof key === 'string' && childSchema.properties) {
         childSchema = childSchema.properties[key] || null;
         if (childSchema) {
-          foundSchema = Node._findSchema(childSchema, path.slice(i, path.length));
+          foundSchema = Node._findSchema(childSchema, schemaRefs, path.slice(i, path.length));
         }
       }
       else if (typeof key === 'number' && childSchema.items) {
         childSchema = childSchema.items;
         if (childSchema) {
-          foundSchema = Node._findSchema(childSchema, path.slice(i, path.length));
+          foundSchema = Node._findSchema(childSchema, schemaRefs, path.slice(i, path.length));
         }
       }
     }
@@ -4489,6 +4506,49 @@ Node.prototype._escapeJSON = function (text) {
 
   return escaped;
 };
+
+/**
+ * update the object name according to the callback onNodeName
+ * @private
+ */
+Node.prototype.updateNodeName = function () {
+  var count = this.childs ? this.childs.length : 0;
+  var nodeName;
+  if (this.type === 'object' || this.type === 'array') {
+    if (this.editor.options.onNodeName) {
+      try {
+        nodeName = this.editor.options.onNodeName({
+          path: this.getPath(),
+          size: count,
+          type: this.type
+        });
+      }
+      catch (err) {
+        console.error('Error in onNodeName callback: ', err);
+      }
+    }
+
+    this.dom.value.innerHTML = (this.type === 'object')
+      ? ('{' + (nodeName || count) + '}')
+      : ('[' + (nodeName || count) + ']');
+  }
+}
+
+/**
+ * update recursively the object's and its children's name.
+ * @private
+ */
+Node.prototype.recursivelyUpdateNodeName = function () {
+  if (this.expanded) {
+    this.updateNodeName();
+    if (this.childs !== 'undefined') {
+      var i;
+      for (i in this.childs) {
+        this.childs[i].recursivelyUpdateNodeName();
+      }
+    }
+  }
+}
 
 // helper function to get the internal path of a node
 function getInternalPath (node) {

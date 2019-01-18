@@ -3,8 +3,28 @@
 https://github.com/josdejong/jsoneditor
 
 
-## not yet published, version 5.26.4
+## not yet released, version 5.28.0
 
+- Implemented new option `maxVisibleChilds` to customize the maximum number
+  childs that is rendered by default. Thanks @20goto10.
+
+
+## 2019-01-16, version 5.27.1
+
+- Improved navigating deeply nested paths via the navigation bar, see #619.
+  Thanks @meirotstein.
+- Sdd title from schema description to show the tips for user input.
+  Thanks @tylerchen.
+- Fix JSON Schema not resolving refs `$ref`, and not creating enum dropdowns.
+  Thanks @tylerchen.
+
+
+## 2019-01-05, version 5.27.0
+
+- Implemented customizing object and array names via a new option
+  `onNodeName`. Thanks @bnanchen.
+- Visibility of schema validation errors at the bottom of mode code and text
+  are now toggleable. Thanks @meirotstein.
 - Fixed text of the mode switcher not being translated. Thanks @antfu.
 
 

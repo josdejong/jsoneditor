@@ -29,10 +29,12 @@ div.jsoneditor-statusbar > .jsoneditor-validation-error-icon {
   padding: 0;
   margin-top: 1px;
   background: url("img/jsoneditor-icons.svg") -168px -48px;
+  cursor: pointer;
 }
 div.jsoneditor-statusbar > .jsoneditor-validation-error-count {
   float: right;
   margin: 0 4px 0 0;
+  cursor: pointer;
 }
 div.jsoneditor-statusbar > .jsoneditor-parse-error-icon {
   float: right;

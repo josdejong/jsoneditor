@@ -2,6 +2,7 @@
 
 var ContextMenu = require('./ContextMenu');
 var translate = require('./i18n').translate;
+var util = require('./util');
 
 /**
  * Creates a component that visualize path selection in tree based editors
@@ -14,6 +15,8 @@ function TreePath(container, root) {
     this.root = root;
     this.path = document.createElement('div');
     this.path.className = 'jsoneditor-treepath';
+    this.path.setAttribute('tabindex',0);
+    this.contentMenuClicked;
     container.appendChild(this.path);
     this.reset();
   }
@@ -52,6 +55,7 @@ TreePath.prototype.setPath = function (pathObjs) {
         sepEl.innerHTML = '&#9658;';
 
         sepEl.onclick = function () {
+          me.contentMenuClicked = true;
           var items = [];
           pathObj.children.forEach(function (child) {
             items.push({
@@ -61,19 +65,45 @@ TreePath.prototype.setPath = function (pathObjs) {
             });
           });
           var menu = new ContextMenu(items);
-          menu.show(sepEl, me.root);
+          menu.show(sepEl, me.root, true);
         };
 
         me.path.appendChild(sepEl);
       }
 
       if(idx === pathObjs.length - 1) {
-        var leftRectPos = (sepEl || pathEl).getBoundingClientRect().left;
+        var leftRectPos = (sepEl || pathEl).getBoundingClientRect().right;
         if(me.path.offsetWidth < leftRectPos) {
           me.path.scrollLeft = leftRectPos;
         }
+
+        if (me.path.scrollLeft) {
+          var showAllBtn = document.createElement('span');
+          showAllBtn.className = 'jsoneditor-treepath-show-all-btn';
+          showAllBtn.title = 'show all path';
+          showAllBtn.innerHTML = '...';
+          showAllBtn.onclick = _onShowAllClick.bind(me, pathObjs);
+          me.path.insertBefore(showAllBtn, me.path.firstChild);
+        }
       }
     });
+  }
+
+  function _onShowAllClick(pathObjs) {
+    me.contentMenuClicked = false;
+    util.addClassName(me.path, 'show-all');
+    me.path.style.width = me.path.parentNode.getBoundingClientRect().width - 10 + 'px';
+    me.path.onblur = function() {
+      if (me.contentMenuClicked) {
+        me.contentMenuClicked = false;
+        me.path.focus();
+        return;
+      }
+      util.removeClassName(me.path, 'show-all');
+      me.path.onblur = undefined;
+      me.path.style.width = '';
+      me.setPath(pathObjs);
+    };
   }
 
   function _onSegmentClick(pathObj) {

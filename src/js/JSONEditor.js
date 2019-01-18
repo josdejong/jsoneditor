@@ -64,11 +64,11 @@ if (typeof Promise === 'undefined') {
  *                               {boolean} sortObjectKeys If true, object keys are
  *                                                        sorted before display.
  *                                                        false by default.
- *                               {function} onSelectionChange Callback method, 
+ *                               {function} onSelectionChange Callback method,
  *                                                            triggered on node selection change
  *                                                            Only applicable for modes
  *                                                            'tree', 'view', and 'form'
- *                               {function} onTextSelectionChange Callback method, 
+ *                               {function} onTextSelectionChange Callback method,
  *                                                                triggered on text selection change
  *                                                                Only applicable for modes
  *                               {HTMLElement} modalAnchor        The anchor element to apply an
@@ -88,6 +88,11 @@ if (typeof Promise === 'undefined') {
  *                                                  Only applicable for
  *                                                  modes 'form', 'tree' and
  *                                                  'view'
+ *                               {Number} maxVisibleChilds Number of children allowed for a node 
+ *                                                         in 'tree', 'view', or 'form' mode before 
+ *                                                         the "show more/show all" buttons appear.  
+ *                                                         100 by default.
+ *
  * @param {Object | undefined} json JSON object
  */
 function JSONEditor (container, options, json) {
@@ -168,12 +173,13 @@ JSONEditor.VALID_OPTIONS = [
   'ajv', 'schema', 'schemaRefs','templates',
   'ace', 'theme', 'autocomplete',
   'onChange', 'onChangeJSON', 'onChangeText',
-  'onEditable', 'onError', 'onEvent', 'onModeChange', 'onValidate',
+  'onEditable', 'onError', 'onEvent', 'onModeChange', 'onNodeName', 'onValidate',
   'onSelectionChange', 'onTextSelectionChange', 'onClassName',
   'colorPicker', 'onColorPicker',
   'timestampTag',
   'escapeUnicode', 'history', 'search', 'mode', 'modes', 'name', 'indentation',
-  'sortObjectKeys', 'navigationBar', 'statusBar', 'mainMenuBar', 'languages', 'language', 'enableSort', 'enableTransform'
+  'sortObjectKeys', 'navigationBar', 'statusBar', 'mainMenuBar', 'languages', 'language', 'enableSort', 'enableTransform',
+  'maxVisibleChilds'
 ];
 
 /**

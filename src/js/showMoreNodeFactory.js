@@ -44,8 +44,8 @@ function showMoreNodeFactory(Node) {
       showMoreButton.href = '#';
       showMoreButton.onclick = function (event) {
         // TODO: use callback instead of accessing a method of the parent
-        parent.visibleChilds = Math.floor(parent.visibleChilds / parent.MAX_VISIBLE_CHILDS + 1) *
-            parent.MAX_VISIBLE_CHILDS;
+        parent.visibleChilds = Math.floor(parent.visibleChilds / parent.getMaxVisibleChilds() + 1) *
+            parent.getMaxVisibleChilds();
         me.updateDom();
         parent.showChilds();
 

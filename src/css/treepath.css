@@ -2,11 +2,35 @@
 div.jsoneditor-treepath {
   padding: 0 5px;
   overflow: hidden;
+  white-space: nowrap;
+  outline: none;
+}
+
+div.jsoneditor-treepath.show-all {
+  word-wrap: break-word;
+  white-space: normal;
+  position: absolute;
+  background-color: #ebebeb;
+  z-index: 999;
+  box-shadow: 2px 2px 12px rgba(128, 128, 128, 0.3);
 }
 
 div.jsoneditor-treepath div.jsoneditor-contextmenu-root {
   position: absolute;
   left: 0;
+}
+
+div.jsoneditor-treepath span.jsoneditor-treepath-show-all-btn {
+  position: absolute;
+  background-color: #ebebeb;
+  left: 0;
+  height: 20px;
+  padding: 0 3px;
+  cursor: pointer;
+}
+
+div.jsoneditor-treepath.show-all span.jsoneditor-treepath-show-all-btn {
+  display: none;
 }
 
 div.jsoneditor-treepath span.jsoneditor-treepath-element{
