@@ -11,8 +11,8 @@
       font: 10.5pt arial;
       color: #4d4d4d;
       line-height: 150%;
-      width: 500px;
-      padding-left: 40px;
+      width: 100%;
+      padding-left: 10px;
     }
 
     code {
@@ -20,17 +20,16 @@
     }
 
     #containerLeft {
-      width: 500px;
-      height: 500px;      
-      float: left;
-    }
-    #containerRight {
+      display: inline-block;
       width: 500px;
       height: 500px;
-      float: right;
+      margin-right: 10px;
     }
-    #wrapper {
-      width: 1000px;
+
+    #containerRight {
+      display: inline-block;
+      width: 500px;
+      height: 500px;
     }
     #containerRight .different_element {
       background-color: greenyellow  !important;
@@ -42,8 +41,10 @@
 </head>
 <body>
 
+<h3>JSON Diff</h3>
 <p>
-  JSON Diff
+  This example highlights the differences between two JSON objects using the option <code>onClassName</code>.
+  Make a change in the left or right editor to see the changes update accordingly.
 </p>
 <div id="wrapper">
   <div id="containerLeft"></div>
@@ -51,10 +52,8 @@
 </div>
 
 <script>
-  var containerLeft, containerRight, options, json;
-
-  containerLeft = document.getElementById('containerLeft');
-  containerRight = document.getElementById('containerRight');
+  var containerLeft = document.getElementById('containerLeft');
+  var containerRight = document.getElementById('containerRight');
 
   function findNodeInJson(json, path){
     if(!json || path.length ===0) {
@@ -71,9 +70,8 @@
       
   }
 
-  optionsLeft = {
+  var optionsLeft = {
     mode: 'tree',
-    modes: ['code', 'form', 'text', 'tree', 'view'], // allowed modes 
     onError: function (err) {
       alert(err.toString());
     },
@@ -102,10 +100,8 @@
     }    
   };
   
-  optionsRight = {
+  var optionsRight = {
     mode: 'tree',
-    modes: ['code', 'form', 'text', 'tree', 'view'], // allowed modes
-    // name: "jsonContent",
     onError: function (err) {
       alert(err.toString());
     },
@@ -135,7 +131,7 @@
     }    
   };
 
-  jsonLeft = {
+  var jsonLeft = {
     "arrayOfArrays": [1, 2, 999, [3,4,5]],
     "someField": true,
     "boolean": true,
@@ -152,7 +148,7 @@
     "[0]": "zero"
   };
 
-  jsonRight = {
+  var jsonRight = {
     "arrayOfArrays": [1, 2, [3,4,5]],
     "boolean": true,
     "htmlcode": '&quot;',

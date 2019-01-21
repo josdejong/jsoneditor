@@ -7,6 +7,9 @@ https://github.com/josdejong/jsoneditor
 
 - Implemented new option `maxVisibleChilds` to customize the maximum number
   childs that is rendered by default. Thanks @20goto10.
+- Implemented new option `onClassName`, allowing customized and dynamic
+  styling of nodes. See 20_custom_css_style_for_nodes.html for a demo.
+  Thanks @maestr0.
 
 
 ## 2019-01-16, version 5.27.1
