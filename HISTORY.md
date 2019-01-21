@@ -3,7 +3,7 @@
 https://github.com/josdejong/jsoneditor
 
 
-## not yet released, version 5.28.0
+## 2019-01-21, version 5.28.0
 
 - Implemented new option `maxVisibleChilds` to customize the maximum number
   childs that is rendered by default. Thanks @20goto10.

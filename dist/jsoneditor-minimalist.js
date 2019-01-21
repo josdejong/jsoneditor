@@ -24,8 +24,8 @@
  * Copyright (c) 2011-2019 Jos de Jong, http://jsoneditoronline.org
  *
  * @author  Jos de Jong, <wjosdejong@gmail.com>
- * @version 5.27.1
- * @date    2019-01-16
+ * @version 5.28.0
+ * @date    2019-01-21
  */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
@@ -167,6 +167,17 @@ return /******/ (function(modules) { // webpackBootstrap
 	 *                                                  Only applicable for
 	 *                                                  modes 'form', 'tree' and
 	 *                                                  'view'
+	 *                               {function} onClassName Callback method, triggered
+	 *                                                  when a Node DOM is rendered. Function returns
+	 *                                                  a css class name to be set on a node.
+	 *                                                  Only applicable for
+	 *                                                  modes 'form', 'tree' and
+	 *                                                  'view'
+	 *                               {Number} maxVisibleChilds Number of children allowed for a node 
+	 *                                                         in 'tree', 'view', or 'form' mode before 
+	 *                                                         the "show more/show all" buttons appear.  
+	 *                                                         100 by default.
+	 *
 	 * @param {Object | undefined} json JSON object
 	 */
 	function JSONEditor (container, options, json) {
@@ -248,11 +259,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	  'ace', 'theme', 'autocomplete',
 	  'onChange', 'onChangeJSON', 'onChangeText',
 	  'onEditable', 'onError', 'onEvent', 'onModeChange', 'onNodeName', 'onValidate',
-	  'onSelectionChange', 'onTextSelectionChange',
+	  'onSelectionChange', 'onTextSelectionChange', 'onClassName',
 	  'colorPicker', 'onColorPicker',
 	  'timestampTag',
 	  'escapeUnicode', 'history', 'search', 'mode', 'modes', 'name', 'indentation',
-	  'sortObjectKeys', 'navigationBar', 'statusBar', 'mainMenuBar', 'languages', 'language', 'enableSort', 'enableTransform'
+	  'sortObjectKeys', 'navigationBar', 'statusBar', 'mainMenuBar', 'languages', 'language', 'enableSort', 'enableTransform',
+	  'maxVisibleChilds'
 	];
 
 	/**
@@ -2001,13 +2013,18 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }
 	  }
 
+	  // trigger the onClassName callback
+	  if(this.options.onClassName) {
+	    this.node.recursivelyUpdateCssClassesOnNodes();
+	  }
+
 	  // trigger the onNodeName callback
 	  if (this.options.onNodeName && this.node.childs) {
 	    try {
 	      this.node.recursivelyUpdateNodeName();
 	    } catch (err) {
 	      console.error("Error in onNodeName callback: ", err);
-	    }
+	    }  
 	  }
 	};
 
@@ -4965,6 +4982,14 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 
 	/**
+	 * remove all classes from the given elements style
+	 * @param {Element} elem 
+	 */
+	exports.removeAllClassNames = function removeAllClassNames(elem) {
+	    elem.className = "";
+	};
+
+	/**
 	 * add a className to the given elements style
 	 * @param {Element} elem
 	 * @param {String} className
@@ -6969,7 +6994,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  this.editor = editor;
 	  this.dom = {};
 	  this.expanded = false;
-
+	  
 	  if(params && (params instanceof Object)) {
 	    this.setField(params.field, params.fieldEditable);
 	    if ('value' in params) {
@@ -6986,6 +7011,8 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	  this._debouncedOnChangeValue = util.debounce(this._onChangeValue.bind(this), Node.prototype.DEBOUNCE_INTERVAL);
 	  this._debouncedOnChangeField = util.debounce(this._onChangeField.bind(this), Node.prototype.DEBOUNCE_INTERVAL);
+	  // starting value for visible children
+	  this.visibleChilds = this.getMaxVisibleChilds();
 	}
 
 	// debounce interval for keyboard input in milliseconds
@@ -6994,11 +7021,14 @@ return /******/ (function(modules) { // webpackBootstrap
 	// search will stop iterating as soon as the max is reached
 	Node.prototype.MAX_SEARCH_RESULTS = 999;
 
-	// number of visible childs rendered initially in large arrays/objects (with a "show more" button to show more)
-	Node.prototype.MAX_VISIBLE_CHILDS = 100;
+	// default number of child nodes to display 
+	var DEFAULT_MAX_VISIBLE_CHILDS = 100;
 
-	// default value for the max visible childs of large arrays
-	Node.prototype.visibleChilds = Node.prototype.MAX_VISIBLE_CHILDS;
+	Node.prototype.getMaxVisibleChilds = function() {
+	  return (this.editor && this.editor.options && this.editor.options.maxVisibleChilds)
+	      ? this.editor.options.maxVisibleChilds
+	      : DEFAULT_MAX_VISIBLE_CHILDS;
+	}
 
 	/**
 	 * Determine whether the field and/or value of this node are editable
@@ -7365,7 +7395,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	          child = new Node(this.editor, {
 	            value: childValue
 	          });
-	          visible = i < this.MAX_VISIBLE_CHILDS;
+	          visible = i < this.getMaxVisibleChilds();
 	          this.appendChild(child, visible, notUpdateDom);
 	        }
 	      }
@@ -7409,7 +7439,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	              field: childField,
 	              value: childValue
 	            });
-	            visible = i < this.MAX_VISIBLE_CHILDS;
+	            visible = i < this.getMaxVisibleChilds();
 	            this.appendChild(child, visible, notUpdateDom);
 	          }
 	        }
@@ -7482,7 +7512,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	          child = new Node(this.editor, {
 	            internalValue: childValue
 	          });
-	          visible = i < this.MAX_VISIBLE_CHILDS;
+	          visible = i < this.getMaxVisibleChilds();
 	          this.appendChild(child, visible, notUpdateDom);
 	        }
 	      }
@@ -7517,7 +7547,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            field: childValue.field,
 	            internalValue: childValue.value
 	          });
-	          visible = i < this.MAX_VISIBLE_CHILDS;
+	          visible = i < this.getMaxVisibleChilds();
 	          this.appendChild(child, visible, notUpdateDom);
 	        }
 	      }
@@ -7846,7 +7876,31 @@ return /******/ (function(modules) { // webpackBootstrap
 	    delete this.visibleChilds;
 	  }
 	};
+	/**
+	 * set custom css classes on a node
+	 */
+	Node.prototype._updateCssClassName = function () { 
+	  
+	  if(this.dom.field
+	    && this.editor 
+	    && this.editor.options 
+	    && typeof this.editor.options.onClassName ==='function'
+	    && this.dom.tree){              
+	      util.removeAllClassNames(this.dom.tree);              
+	      const addClasses = this.editor.options.onClassName({ path: this.getPath(), field: this.field, value: this.value }) || "";      
+	      util.addClassName(this.dom.tree, "jsoneditor-values " + addClasses);              
+	  }
+	}
 
+	Node.prototype.recursivelyUpdateCssClassesOnNodes = function () {  
+	  this._updateCssClassName();
+	  if (this.childs !== 'undefined') {
+	    var i;
+	    for (i in this.childs) {
+	      this.childs[i].recursivelyUpdateCssClassesOnNodes();
+	    }
+	  }  
+	}
 
 	/**
 	 * Goes through the path from the node to the root and ensures that it is expanded
@@ -8113,7 +8167,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        ? node.index
 	        : node.parent.childs.indexOf(node);
 	    while (node.parent.visibleChilds < index + 1) {
-	      node.parent.visibleChilds += Node.prototype.MAX_VISIBLE_CHILDS;
+	      node.parent.visibleChilds += this.getMaxVisibleChilds();
 	    }
 
 	    // expand the parent itself
@@ -8582,7 +8636,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }
 	    if (this.searchValue) {
 	      classNames.push('jsoneditor-highlight');
-	    }
+	    }    
 
 	    domValue.className = classNames.join(' ');
 
@@ -8753,7 +8807,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	 */
 	Node.prototype._updateDomField = function () {
 	  var domField = this.dom.field;
-	  if (domField) {
+	  if (domField) {    
 	    // make backgound color lightgray when empty
 	    var isEmpty = (String(this.field) == '' && this.parent.type != 'array');
 	    if (isEmpty) {
@@ -9417,6 +9471,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	  // update field and value
 	  this._updateDomField();
 	  this._updateDomValue();
+	   
+	  this._updateCssClassName();
 
 	  // update childs indexes
 	  if (options && options.updateIndexes === true) {
@@ -13504,8 +13560,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	      showMoreButton.href = '#';
 	      showMoreButton.onclick = function (event) {
 	        // TODO: use callback instead of accessing a method of the parent
-	        parent.visibleChilds = Math.floor(parent.visibleChilds / parent.MAX_VISIBLE_CHILDS + 1) *
-	            parent.MAX_VISIBLE_CHILDS;
+	        parent.visibleChilds = Math.floor(parent.visibleChilds / parent.getMaxVisibleChilds() + 1) *
+	            parent.getMaxVisibleChilds();
 	        me.updateDom();
 	        parent.showChilds();
 
