@@ -516,6 +516,12 @@ Get the current selected text with the selection range, Only applicable for mode
 
 - `{start:{row:Number, column:Number},end:{row:Number, column:Number},text:String} selection`
 
+
+#### `JSONEditor.refresh()`
+
+Force the editor to refresh the user interface and update all rendered HTML. This can be useful for example when using `onClassName` and the returned class name depends on external factors.
+
+
 #### `JSONEditor.set(json)`
 
 Set JSON data.

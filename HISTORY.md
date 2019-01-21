@@ -10,6 +10,7 @@ https://github.com/josdejong/jsoneditor
 - Implemented new option `onClassName`, allowing customized and dynamic
   styling of nodes. See 20_custom_css_style_for_nodes.html for a demo.
   Thanks @maestr0.
+- Make the method `refresh()` public.
 
 
 ## 2019-01-16, version 5.27.1
