@@ -550,13 +550,18 @@ treemode._onChange = function () {
     }
   }
 
+  // trigger the onClassName callback
+  if(this.options.onClassName) {
+    this.node.recursivelyUpdateCssClassesOnNodes();
+  }
+
   // trigger the onNodeName callback
   if (this.options.onNodeName && this.node.childs) {
     try {
       this.node.recursivelyUpdateNodeName();
     } catch (err) {
       console.error("Error in onNodeName callback: ", err);
-    }
+    }  
   }
 };
 

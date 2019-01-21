@@ -1,0 +1,175 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+
+  <link href="../dist/jsoneditor.css" rel="stylesheet" type="text/css">
+  <script src="../dist/jsoneditor.js"></script>
+
+  <style type="text/css">
+    body {
+      font: 10.5pt arial;
+      color: #4d4d4d;
+      line-height: 150%;
+      width: 500px;
+      padding-left: 40px;
+    }
+
+    code {
+      background-color: #f5f5f5;
+    }
+
+    #containerLeft {
+      width: 500px;
+      height: 500px;      
+      float: left;
+    }
+    #containerRight {
+      width: 500px;
+      height: 500px;
+      float: right;
+    }
+    #wrapper {
+      width: 1000px;
+    }
+    #containerRight .different_element {
+      background-color: greenyellow  !important;
+    }
+    #containerLeft .different_element {
+      background-color: violet  !important;
+    }
+    </style>
+</head>
+<body>
+
+<p>
+  JSON Diff
+</p>
+<div id="wrapper">
+  <div id="containerLeft"></div>
+  <div id="containerRight"></div>
+</div>
+
+<script>
+  var containerLeft, containerRight, options, json;
+
+  containerLeft = document.getElementById('containerLeft');
+  containerRight = document.getElementById('containerRight');
+
+  function findNodeInJson(json, path){
+    if(!json || path.length ===0) {
+      return {field: undefined, value: undefined}
+    }    
+    var first = path[0];
+    var remainingPath = path.slice(1);
+
+    if(remainingPath.length === 0) {
+      return {field: (typeof json[first] !== undefined ? first : undefined), value: json[first]};
+    } else {
+      return findNodeInJson(json[first], remainingPath)
+    }
+      
+  }
+
+  optionsLeft = {
+    mode: 'tree',
+    modes: ['code', 'form', 'text', 'tree', 'view'], // allowed modes 
+    onError: function (err) {
+      alert(err.toString());
+    },
+    onClassName: function({ path, field, value }) {            
+      var thisNode = findNodeInJson(jsonLeft, path);
+      var oppositeNode = findNodeInJson(jsonRight, path);
+
+      // this is not a proper way of comparing objects/values but's it's good enough for this example
+      var isValueEqual = thisNode.value == oppositeNode.value;
+
+      if(Array.isArray(thisNode.value) && Array.isArray(oppositeNode.value)) {
+        isValueEqual = thisNode.value.every(function (e) {
+          return oppositeNode.value.includes(e);
+        })
+      }
+      
+      if (thisNode.field === oppositeNode.field && isValueEqual) {
+        return 'the_same_element'; 
+      } else {
+        return 'different_element'
+      }      
+    },
+    onChangeJSON: function (j) {
+      jsonLeft = j;      
+      window.editorRight.refresh()
+    }    
+  };
+  
+  optionsRight = {
+    mode: 'tree',
+    modes: ['code', 'form', 'text', 'tree', 'view'], // allowed modes
+    // name: "jsonContent",
+    onError: function (err) {
+      alert(err.toString());
+    },
+    onClassName: function({ path, field, value }) {            
+            
+      var thisNode = findNodeInJson(jsonRight, path);
+      var oppositeNode = findNodeInJson(jsonLeft, path);
+
+      // this is not a proper way of comparing objects/values but's it's good enough for this example
+      var isValueEqual = thisNode.value == oppositeNode.value;
+
+      if(Array.isArray(thisNode.value) && Array.isArray(oppositeNode.value)) {
+        isValueEqual = thisNode.value.every(function (e) {
+          return oppositeNode.value.includes(e);
+        })
+      }
+      
+      if (thisNode.field === oppositeNode.field && isValueEqual) {
+        return 'the_same_element'; 
+      } else {
+        return 'different_element'
+      }      
+    },
+    onChangeJSON: function (j) {
+      jsonRight = j;
+      window.editorLeft.refresh();
+    }    
+  };
+
+  jsonLeft = {
+    "arrayOfArrays": [1, 2, 999, [3,4,5]],
+    "someField": true,
+    "boolean": true,
+    "htmlcode": '&quot;',
+    "escaped_unicode": '\\u20b9',
+    "unicode": '\u20b9,\uD83D\uDCA9',
+    "return": '\n',
+    "null": null,
+    "thisObjectDoesntExistOnTheRight" : {key: "value"},
+    "number": 123,
+    "object": {"a": "b","new":4, "c": "d", "e": [1, 2, 3]},
+    "string": "Hello World",
+    "url": "http://jsoneditoronline.org",
+    "[0]": "zero"
+  };
+
+  jsonRight = {
+    "arrayOfArrays": [1, 2, [3,4,5]],
+    "boolean": true,
+    "htmlcode": '&quot;',
+    "escaped_unicode": '\\u20b9',
+    "thisFieldDoesntExistOnTheLeft": 'foobar',
+    "unicode": '\u20b9,\uD83D\uDCA9',
+    "return": '\n',
+    "null": null,
+    "number": 123,
+    "object": {"a": "b",  "c": "d", "e": [1, 2, 3]},
+    "string": "Hello World",
+    "url": "http://jsoneditoronline.org",
+    "[0]": "zero"
+  };
+  
+  window.editorLeft = new JSONEditor(containerLeft, optionsLeft, jsonLeft);
+  window.editorRight = new JSONEditor(containerRight, optionsRight, jsonRight);
+</script>
+</body>
+</html>

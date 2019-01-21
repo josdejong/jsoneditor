@@ -31,7 +31,7 @@ function Node (editor, params) {
   this.editor = editor;
   this.dom = {};
   this.expanded = false;
-
+  
   if(params && (params instanceof Object)) {
     this.setField(params.field, params.fieldEditable);
     if ('value' in params) {
@@ -913,7 +913,31 @@ Node.prototype.hideChilds = function(options) {
     delete this.visibleChilds;
   }
 };
+/**
+ * set custom css classes on a node
+ */
+Node.prototype._updateCssClassName = function () { 
+  
+  if(this.dom.field
+    && this.editor 
+    && this.editor.options 
+    && typeof this.editor.options.onClassName ==='function'
+    && this.dom.tree){              
+      util.removeAllClassNames(this.dom.tree);              
+      const addClasses = this.editor.options.onClassName({ path: this.getPath(), field: this.field, value: this.value }) || "";      
+      util.addClassName(this.dom.tree, "jsoneditor-values " + addClasses);              
+  }
+}
 
+Node.prototype.recursivelyUpdateCssClassesOnNodes = function () {  
+  this._updateCssClassName();
+  if (this.childs !== 'undefined') {
+    var i;
+    for (i in this.childs) {
+      this.childs[i].recursivelyUpdateCssClassesOnNodes();
+    }
+  }  
+}
 
 /**
  * Goes through the path from the node to the root and ensures that it is expanded
@@ -1649,7 +1673,7 @@ Node.prototype._updateDomValue = function () {
     }
     if (this.searchValue) {
       classNames.push('jsoneditor-highlight');
-    }
+    }    
 
     domValue.className = classNames.join(' ');
 
@@ -1820,7 +1844,7 @@ Node.prototype._deleteDomColor = function () {
  */
 Node.prototype._updateDomField = function () {
   var domField = this.dom.field;
-  if (domField) {
+  if (domField) {    
     // make backgound color lightgray when empty
     var isEmpty = (String(this.field) == '' && this.parent.type != 'array');
     if (isEmpty) {
@@ -2484,6 +2508,8 @@ Node.prototype.updateDom = function (options) {
   // update field and value
   this._updateDomField();
   this._updateDomValue();
+   
+  this._updateCssClassName();
 
   // update childs indexes
   if (options && options.updateIndexes === true) {
