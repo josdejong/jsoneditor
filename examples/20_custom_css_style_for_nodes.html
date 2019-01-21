@@ -78,9 +78,7 @@
     onClassName: function({ path, field, value }) {            
       var thisNode = findNodeInJson(jsonLeft, path);
       var oppositeNode = findNodeInJson(jsonRight, path);
-
-      // this is not a proper way of comparing objects/values but's it's good enough for this example
-      var isValueEqual = thisNode.value == oppositeNode.value;
+      var isValueEqual = JSON.stringify(thisNode.value) === JSON.stringify(oppositeNode.value);
 
       if(Array.isArray(thisNode.value) && Array.isArray(oppositeNode.value)) {
         isValueEqual = thisNode.value.every(function (e) {
@@ -109,9 +107,7 @@
             
       var thisNode = findNodeInJson(jsonRight, path);
       var oppositeNode = findNodeInJson(jsonLeft, path);
-
-      // this is not a proper way of comparing objects/values but's it's good enough for this example
-      var isValueEqual = thisNode.value == oppositeNode.value;
+      var isValueEqual = JSON.stringify(thisNode.value) === JSON.stringify(oppositeNode.value);
 
       if(Array.isArray(thisNode.value) && Array.isArray(oppositeNode.value)) {
         isValueEqual = thisNode.value.every(function (e) {
