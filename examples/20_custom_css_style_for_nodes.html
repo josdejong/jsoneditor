@@ -97,7 +97,8 @@
       }      
     },
     onChangeJSON: function (j) {
-      leftJson = j;
+      leftJson = j;      
+      window.editorRight.refresh()
     }    
   };
   
@@ -129,6 +130,7 @@
     },
     onChangeJSON: function (j) {
       rightJson = j;
+      window.editorLeft.refresh();
     }    
   };
 
@@ -165,8 +167,8 @@
     "[0]": "zero"
   };
   
-  window.editor = new JSONEditor(container, options, leftJson);
-  window.editor = new JSONEditor(container2, options2, rightJson);
+  window.editorLeft = new JSONEditor(container, options, leftJson);
+  window.editorRight = new JSONEditor(container2, options2, rightJson);
 </script>
 </body>
 </html>
