@@ -19,12 +19,12 @@
       background-color: #f5f5f5;
     }
 
-    #jsoneditor {
+    #containerLeft {
       width: 500px;
       height: 500px;      
       float: left;
     }
-    #jsoneditor2 {
+    #containerRight {
       width: 500px;
       height: 500px;
       float: right;
@@ -32,10 +32,10 @@
     #wrapper {
       width: 1000px;
     }
-    #jsoneditor2 .different_element {
+    #containerRight .different_element {
       background-color: greenyellow  !important;
     }
-    #jsoneditor .different_element {
+    #containerLeft .different_element {
       background-color: violet  !important;
     }
     </style>
@@ -46,15 +46,15 @@
   JSON Diff
 </p>
 <div id="wrapper">
-  <div id="jsoneditor"></div>
-  <div id="jsoneditor2"></div>
+  <div id="containerLeft"></div>
+  <div id="containerRight"></div>
 </div>
 
 <script>
-  var container, container2, options, json;
+  var containerLeft, containerRight, options, json;
 
-  container = document.getElementById('jsoneditor');
-  container2 = document.getElementById('jsoneditor2');
+  containerLeft = document.getElementById('containerLeft');
+  containerRight = document.getElementById('containerRight');
 
   function findNodeInJson(json, path){
     if(!json || path.length ===0) {
@@ -71,70 +71,71 @@
       
   }
 
-  options = {
+  optionsLeft = {
     mode: 'tree',
     modes: ['code', 'form', 'text', 'tree', 'view'], // allowed modes 
     onError: function (err) {
       alert(err.toString());
     },
     onClassName: function({ path, field, value }) {            
-      var nodeLeft = findNodeInJson(leftJson, path);
-      var nodeRight = findNodeInJson(rightJson, path);
+      var thisNode = findNodeInJson(jsonLeft, path);
+      var oppositeNode = findNodeInJson(jsonRight, path);
 
       // this is not a proper way of comparing objects/values but's it's good enough for this example
-      var isValueEqual = nodeLeft.value == nodeRight.value;
+      var isValueEqual = thisNode.value == oppositeNode.value;
 
-      if(Array.isArray(nodeLeft.value) && Array.isArray(nodeRight.value)) {
-        isValueEqual = nodeLeft.value.every(function (e) {
-          return nodeRight.value.includes(e);
+      if(Array.isArray(thisNode.value) && Array.isArray(oppositeNode.value)) {
+        isValueEqual = thisNode.value.every(function (e) {
+          return oppositeNode.value.includes(e);
         })
       }
       
-      if (nodeLeft.field === nodeRight.field && isValueEqual) {
+      if (thisNode.field === oppositeNode.field && isValueEqual) {
         return 'the_same_element'; 
       } else {
         return 'different_element'
       }      
     },
     onChangeJSON: function (j) {
-      leftJson = j;      
+      jsonLeft = j;      
       window.editorRight.refresh()
     }    
   };
   
-  options2 = {
+  optionsRight = {
     mode: 'tree',
     modes: ['code', 'form', 'text', 'tree', 'view'], // allowed modes
     // name: "jsonContent",
     onError: function (err) {
       alert(err.toString());
     },
-    onClassName: function({path, field, value}) {
-      var nodeRight = findNodeInJson(leftJson, path); 
-      var nodeLeft = findNodeInJson(rightJson, path);
-      
-      // this is not a proper way of comparing objects/values but's it's good enough for this example.
-      var isValueEqual = nodeLeft.value == nodeRight.value;
+    onClassName: function({ path, field, value }) {            
+            
+      var thisNode = findNodeInJson(jsonRight, path);
+      var oppositeNode = findNodeInJson(jsonLeft, path);
 
-      if(Array.isArray(nodeLeft.value) && Array.isArray(nodeRight.value)) {
-        isValueEqual = nodeLeft.value.every(function (e) {
-          return nodeRight.value.includes(e);
+      // this is not a proper way of comparing objects/values but's it's good enough for this example
+      var isValueEqual = thisNode.value == oppositeNode.value;
+
+      if(Array.isArray(thisNode.value) && Array.isArray(oppositeNode.value)) {
+        isValueEqual = thisNode.value.every(function (e) {
+          return oppositeNode.value.includes(e);
         })
       }
-
-      if (nodeLeft.field == nodeRight.field && isValueEqual) {
+      
+      if (thisNode.field === oppositeNode.field && isValueEqual) {
         return 'the_same_element'; 
       } else {
         return 'different_element'
       }      
     },
     onChangeJSON: function (j) {
-      rightJson = j;
+      jsonRight = j;
       window.editorLeft.refresh();
     }    
   };
 
-  leftJson = {
+  jsonLeft = {
     "arrayOfArrays": [1, 2, 999, [3,4,5]],
     "someField": true,
     "boolean": true,
@@ -151,7 +152,7 @@
     "[0]": "zero"
   };
 
-  rightJson = {
+  jsonRight = {
     "arrayOfArrays": [1, 2, [3,4,5]],
     "boolean": true,
     "htmlcode": '&quot;',
@@ -167,8 +168,8 @@
     "[0]": "zero"
   };
   
-  window.editorLeft = new JSONEditor(container, options, leftJson);
-  window.editorRight = new JSONEditor(container2, options2, rightJson);
+  window.editorLeft = new JSONEditor(containerLeft, optionsLeft, jsonLeft);
+  window.editorRight = new JSONEditor(containerRight, optionsRight, jsonRight);
 </script>
 </body>
 </html>
