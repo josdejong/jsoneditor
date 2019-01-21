@@ -63,11 +63,28 @@
     var remainingPath = path.slice(1);
 
     if(remainingPath.length === 0) {
-      return {field: (typeof json[first] !== undefined ? first : undefined), value: json[first]};
+      return {field: (typeof json[first] !== 'undefined' ? first : undefined), value: json[first]};
     } else {
       return findNodeInJson(json[first], remainingPath)
     }
-      
+  }
+
+  function onClassName({ path, field, value }) {
+    var thisNode = findNodeInJson(jsonRight, path);
+    var oppositeNode = findNodeInJson(jsonLeft, path);
+    var isValueEqual = JSON.stringify(thisNode.value) === JSON.stringify(oppositeNode.value);
+
+    if(Array.isArray(thisNode.value) && Array.isArray(oppositeNode.value)) {
+      isValueEqual = thisNode.value.every(function (e) {
+        return oppositeNode.value.includes(e);
+      })
+    }
+
+    if (thisNode.field === oppositeNode.field && isValueEqual) {
+      return 'the_same_element';
+    } else {
+      return 'different_element'
+    }
   }
 
   var optionsLeft = {
@@ -75,23 +92,7 @@
     onError: function (err) {
       alert(err.toString());
     },
-    onClassName: function({ path, field, value }) {            
-      var thisNode = findNodeInJson(jsonLeft, path);
-      var oppositeNode = findNodeInJson(jsonRight, path);
-      var isValueEqual = JSON.stringify(thisNode.value) === JSON.stringify(oppositeNode.value);
-
-      if(Array.isArray(thisNode.value) && Array.isArray(oppositeNode.value)) {
-        isValueEqual = thisNode.value.every(function (e) {
-          return oppositeNode.value.includes(e);
-        })
-      }
-      
-      if (thisNode.field === oppositeNode.field && isValueEqual) {
-        return 'the_same_element'; 
-      } else {
-        return 'different_element'
-      }      
-    },
+    onClassName: onClassName,
     onChangeJSON: function (j) {
       jsonLeft = j;      
       window.editorRight.refresh()
@@ -103,24 +104,7 @@
     onError: function (err) {
       alert(err.toString());
     },
-    onClassName: function({ path, field, value }) {            
-            
-      var thisNode = findNodeInJson(jsonRight, path);
-      var oppositeNode = findNodeInJson(jsonLeft, path);
-      var isValueEqual = JSON.stringify(thisNode.value) === JSON.stringify(oppositeNode.value);
-
-      if(Array.isArray(thisNode.value) && Array.isArray(oppositeNode.value)) {
-        isValueEqual = thisNode.value.every(function (e) {
-          return oppositeNode.value.includes(e);
-        })
-      }
-      
-      if (thisNode.field === oppositeNode.field && isValueEqual) {
-        return 'the_same_element'; 
-      } else {
-        return 'different_element'
-      }      
-    },
+    onClassName: onClassName,
     onChangeJSON: function (j) {
       jsonRight = j;
       window.editorLeft.refresh();
