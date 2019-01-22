@@ -3,6 +3,11 @@
 https://github.com/josdejong/jsoneditor
 
 
+## not yet released, version 5.28.1
+
+- Fix #638: cannot expand after collapse. Regression introduced in v5.28.0.
+
+
 ## 2019-01-21, version 5.28.0
 
 - Implemented new option `maxVisibleChilds` to customize the maximum number

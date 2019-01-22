@@ -910,7 +910,7 @@ Node.prototype.hideChilds = function(options) {
 
   // reset max visible childs
   if (!options || options.resetVisibleChilds) {
-    delete this.visibleChilds;
+    this.visibleChilds = this.getMaxVisibleChilds();
   }
 };
 /**
