@@ -31,7 +31,7 @@ function Node (editor, params) {
   this.editor = editor;
   this.dom = {};
   this.expanded = false;
-  
+
   if(params && (params instanceof Object)) {
     this.setField(params.field, params.fieldEditable);
     if ('value' in params) {
@@ -48,6 +48,7 @@ function Node (editor, params) {
 
   this._debouncedOnChangeValue = util.debounce(this._onChangeValue.bind(this), Node.prototype.DEBOUNCE_INTERVAL);
   this._debouncedOnChangeField = util.debounce(this._onChangeField.bind(this), Node.prototype.DEBOUNCE_INTERVAL);
+
   // starting value for visible children
   this.visibleChilds = this.getMaxVisibleChilds();
 }
@@ -913,11 +914,11 @@ Node.prototype.hideChilds = function(options) {
     this.visibleChilds = this.getMaxVisibleChilds();
   }
 };
+
 /**
  * set custom css classes on a node
  */
-Node.prototype._updateCssClassName = function () { 
-  
+Node.prototype._updateCssClassName = function () {
   if(this.dom.field
     && this.editor 
     && this.editor.options 
@@ -925,15 +926,14 @@ Node.prototype._updateCssClassName = function () {
     && this.dom.tree){              
       util.removeAllClassNames(this.dom.tree);              
       const addClasses = this.editor.options.onClassName({ path: this.getPath(), field: this.field, value: this.value }) || "";      
-      util.addClassName(this.dom.tree, "jsoneditor-values " + addClasses);              
+      util.addClassName(this.dom.tree, "jsoneditor-values " + addClasses);
   }
-}
+};
 
 Node.prototype.recursivelyUpdateCssClassesOnNodes = function () {  
   this._updateCssClassName();
   if (this.childs !== 'undefined') {
-    var i;
-    for (i in this.childs) {
+    for (var i = 0; i < this.childs.length; i++) {
       this.childs[i].recursivelyUpdateCssClassesOnNodes();
     }
   }  
@@ -1673,7 +1673,7 @@ Node.prototype._updateDomValue = function () {
     }
     if (this.searchValue) {
       classNames.push('jsoneditor-highlight');
-    }    
+    }
 
     domValue.className = classNames.join(' ');
 
@@ -1844,7 +1844,7 @@ Node.prototype._deleteDomColor = function () {
  */
 Node.prototype._updateDomField = function () {
   var domField = this.dom.field;
-  if (domField) {    
+  if (domField) {
     // make backgound color lightgray when empty
     var isEmpty = (String(this.field) == '' && this.parent.type != 'array');
     if (isEmpty) {
