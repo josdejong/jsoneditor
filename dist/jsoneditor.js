@@ -24,8 +24,8 @@
  * Copyright (c) 2011-2019 Jos de Jong, http://jsoneditoronline.org
  *
  * @author  Jos de Jong, <wjosdejong@gmail.com>
- * @version 5.28.0
- * @date    2019-01-21
+ * @version 5.28.1
+ * @date    2019-01-22
  */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
@@ -35636,7 +35636,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  this.editor = editor;
 	  this.dom = {};
 	  this.expanded = false;
-	  
+
 	  if(params && (params instanceof Object)) {
 	    this.setField(params.field, params.fieldEditable);
 	    if ('value' in params) {
@@ -35653,6 +35653,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	  this._debouncedOnChangeValue = util.debounce(this._onChangeValue.bind(this), Node.prototype.DEBOUNCE_INTERVAL);
 	  this._debouncedOnChangeField = util.debounce(this._onChangeField.bind(this), Node.prototype.DEBOUNCE_INTERVAL);
+
 	  // starting value for visible children
 	  this.visibleChilds = this.getMaxVisibleChilds();
 	}
@@ -36515,14 +36516,14 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	  // reset max visible childs
 	  if (!options || options.resetVisibleChilds) {
-	    delete this.visibleChilds;
+	    this.visibleChilds = this.getMaxVisibleChilds();
 	  }
 	};
+
 	/**
 	 * set custom css classes on a node
 	 */
-	Node.prototype._updateCssClassName = function () { 
-	  
+	Node.prototype._updateCssClassName = function () {
 	  if(this.dom.field
 	    && this.editor 
 	    && this.editor.options 
@@ -36530,15 +36531,14 @@ return /******/ (function(modules) { // webpackBootstrap
 	    && this.dom.tree){              
 	      util.removeAllClassNames(this.dom.tree);              
 	      const addClasses = this.editor.options.onClassName({ path: this.getPath(), field: this.field, value: this.value }) || "";      
-	      util.addClassName(this.dom.tree, "jsoneditor-values " + addClasses);              
+	      util.addClassName(this.dom.tree, "jsoneditor-values " + addClasses);
 	  }
-	}
+	};
 
 	Node.prototype.recursivelyUpdateCssClassesOnNodes = function () {  
 	  this._updateCssClassName();
 	  if (this.childs !== 'undefined') {
-	    var i;
-	    for (i in this.childs) {
+	    for (var i = 0; i < this.childs.length; i++) {
 	      this.childs[i].recursivelyUpdateCssClassesOnNodes();
 	    }
 	  }  
@@ -37278,7 +37278,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }
 	    if (this.searchValue) {
 	      classNames.push('jsoneditor-highlight');
-	    }    
+	    }
 
 	    domValue.className = classNames.join(' ');
 
@@ -37449,7 +37449,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	 */
 	Node.prototype._updateDomField = function () {
 	  var domField = this.dom.field;
-	  if (domField) {    
+	  if (domField) {
 	    // make backgound color lightgray when empty
 	    var isEmpty = (String(this.field) == '' && this.parent.type != 'array');
 	    if (isEmpty) {

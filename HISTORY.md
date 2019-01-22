@@ -3,7 +3,7 @@
 https://github.com/josdejong/jsoneditor
 
 
-## not yet released, version 5.28.1
+## 2019-01-22, version 5.28.1
 
 - Fix #637: vertical white border left/right from the main menu in some
   specific circumstances.

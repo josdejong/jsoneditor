@@ -244,7 +244,8 @@ div.jsoneditor-tree div.jsoneditor-date {
 
 div.jsoneditor {
   color: #1A1A1A;
-  border: 1px solid #3883fa;
+  border: thin solid #3883fa;
+  /* we use thin and not 1px to work around an issue in Chrome/IE, see #637 */
   -moz-box-sizing: border-box;
   -webkit-box-sizing: border-box;
   box-sizing: border-box;
