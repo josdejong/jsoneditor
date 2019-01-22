@@ -5,6 +5,8 @@ https://github.com/josdejong/jsoneditor
 
 ## not yet released, version 5.28.1
 
+- Fix #637: vertical white border left/right from the main menu in some
+  specific circumstances.
 - Fix #638: cannot expand after collapse. Regression introduced in v5.28.0.
 
 
