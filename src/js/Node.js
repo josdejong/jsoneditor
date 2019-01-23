@@ -925,7 +925,7 @@ Node.prototype._updateCssClassName = function () {
     && typeof this.editor.options.onClassName ==='function'
     && this.dom.tree){              
       util.removeAllClassNames(this.dom.tree);              
-      const addClasses = this.editor.options.onClassName({ path: this.getPath(), field: this.field, value: this.value }) || "";      
+      var addClasses = this.editor.options.onClassName({ path: this.getPath(), field: this.field, value: this.value }) || "";
       util.addClassName(this.dom.tree, "jsoneditor-values " + addClasses);
   }
 };

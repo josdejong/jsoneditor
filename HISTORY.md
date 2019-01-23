@@ -3,11 +3,17 @@
 https://github.com/josdejong/jsoneditor
 
 
+## not yet published, version 5.28.2
+
+- Fix #639: Occurrence of non-ES5 `const` declaration in published code.
+  Regression introduced in `v5.28.0`.
+
+
 ## 2019-01-22, version 5.28.1
 
-- Fix #637: vertical white border left/right from the main menu in some
+- Fix #637: Vertical white border left/right from the main menu in some
   specific circumstances.
-- Fix #638: cannot expand after collapse. Regression introduced in v5.28.0.
+- Fix #638: Cannot expand after collapse. Regression introduced in v5.28.0.
 
 
 ## 2019-01-21, version 5.28.0
