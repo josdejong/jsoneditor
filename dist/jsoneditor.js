@@ -24,8 +24,8 @@
  * Copyright (c) 2011-2019 Jos de Jong, http://jsoneditoronline.org
  *
  * @author  Jos de Jong, <wjosdejong@gmail.com>
- * @version 5.28.1
- * @date    2019-01-22
+ * @version 5.28.2
+ * @date    2019-01-23
  */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
@@ -36530,7 +36530,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    && typeof this.editor.options.onClassName ==='function'
 	    && this.dom.tree){              
 	      util.removeAllClassNames(this.dom.tree);              
-	      const addClasses = this.editor.options.onClassName({ path: this.getPath(), field: this.field, value: this.value }) || "";      
+	      var addClasses = this.editor.options.onClassName({ path: this.getPath(), field: this.field, value: this.value }) || "";
 	      util.addClassName(this.dom.tree, "jsoneditor-values " + addClasses);
 	  }
 	};

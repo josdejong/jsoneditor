@@ -3,7 +3,7 @@
 https://github.com/josdejong/jsoneditor
 
 
-## not yet published, version 5.28.2
+## 2019-01-23, version 5.28.2
 
 - Fix #639: Occurrence of non-ES5 `const` declaration in published code.
   Regression introduced in `v5.28.0`.
