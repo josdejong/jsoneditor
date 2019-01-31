@@ -1,6 +1,6 @@
 'use strict';
 
-var _locales = ['en', 'pt-BR'];
+var _locales = ['en', 'pt-BR', 'zh_CN'];
 var _defs = {
     en: {
         array: 'Array',
