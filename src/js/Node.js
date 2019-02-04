@@ -49,7 +49,7 @@ function Node (editor, params) {
 		this.setValue(null);
 	}
 
-  // starting value for debounce interval
+    // starting value for debounce interval
 	this.debounceInterval = this.getDebounceInterval();
 
 	this._debouncedOnChangeValue = util.debounce(this._onChangeValue.bind(this), this.debounceInterval);
