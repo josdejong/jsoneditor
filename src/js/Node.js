@@ -40,14 +40,17 @@ function Node (editor, params) {
     if ('internalValue' in params) {
       this.setInternalValue(params.internalValue);
     }
+    if ('debounceInterval' in params) {
+        this.debounceInterval = params.debounceInterval;
+    }
   }
   else {
     this.setField('');
     this.setValue(null);
   }
 
-  this._debouncedOnChangeValue = util.debounce(this._onChangeValue.bind(this), Node.prototype.DEBOUNCE_INTERVAL);
-  this._debouncedOnChangeField = util.debounce(this._onChangeField.bind(this), Node.prototype.DEBOUNCE_INTERVAL);
+  this._debouncedOnChangeValue = util.debounce(this._onChangeValue.bind(this), this.debounceInterval);
+  this._debouncedOnChangeField = util.debounce(this._onChangeField.bind(this), this.debounceInterval);
 
   // starting value for visible children
   this.visibleChilds = this.getMaxVisibleChilds();
@@ -736,6 +739,7 @@ Node.prototype.clone = function() {
   clone.previousValue = this.previousValue;
   clone.expanded = this.expanded;
   clone.visibleChilds = this.visibleChilds;
+  close.debounceInterval = this.debounceInterval;
 
   if (this.childs) {
     // an object or array

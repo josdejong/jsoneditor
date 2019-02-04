@@ -92,6 +92,8 @@ if (typeof Promise === 'undefined') {
  *                                                         in 'tree', 'view', or 'form' mode before 
  *                                                         the "show more/show all" buttons appear.  
  *                                                         100 by default.
+ *                               {Number} debounceInterval Debounce interval for keyboard input in milliseconds
+ *                                                         for onChange, onChangeJSON and onChangeText events.
  *
  * @param {Object | undefined} json JSON object
  */
@@ -179,7 +181,7 @@ JSONEditor.VALID_OPTIONS = [
   'timestampTag',
   'escapeUnicode', 'history', 'search', 'mode', 'modes', 'name', 'indentation',
   'sortObjectKeys', 'navigationBar', 'statusBar', 'mainMenuBar', 'languages', 'language', 'enableSort', 'enableTransform',
-  'maxVisibleChilds'
+  'maxVisibleChilds', 'debounceInterval'
 ];
 
 /**
