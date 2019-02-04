@@ -27,37 +27,46 @@ var YEAR_2000 = 946684800000;
  *                                          'object', or 'string'.
  */
 function Node (editor, params) {
-  /** @type {./treemode} */
-  this.editor = editor;
-  this.dom = {};
-  this.expanded = false;
+	/** @type {./treemode} */
+	this.editor = editor;
+	this.dom = {};
+	this.expanded = false;
 
-  if(params && (params instanceof Object)) {
-    this.setField(params.field, params.fieldEditable);
-    if ('value' in params) {
-      this.setValue(params.value, params.type);
-    }
-    if ('internalValue' in params) {
-      this.setInternalValue(params.internalValue);
-    }
-    if ('debounceInterval' in params) {
-        this.debounceInterval = params.debounceInterval;
-    }
-  }
-  else {
-    this.setField('');
-    this.setValue(null);
-  }
+	if(params && (params instanceof Object)) {
+		this.setField(params.field, params.fieldEditable);
+		if ('value' in params) {
+			this.setValue(params.value, params.type);
+		}
+		if ('internalValue' in params) {
+			this.setInternalValue(params.internalValue);
+		}
+		if ('debounceInterval' in params) {
+			this.debounceInterval = params.debounceInterval;
+		}
+	}
+	else {
+		this.setField('');
+		this.setValue(null);
+	}
 
-  this._debouncedOnChangeValue = util.debounce(this._onChangeValue.bind(this), this.debounceInterval);
-  this._debouncedOnChangeField = util.debounce(this._onChangeField.bind(this), this.debounceInterval);
+  // starting value for debounce interval
+	this.debounceInterval = this.getDebounceInterval();
 
-  // starting value for visible children
-  this.visibleChilds = this.getMaxVisibleChilds();
+	this._debouncedOnChangeValue = util.debounce(this._onChangeValue.bind(this), this.debounceInterval);
+	this._debouncedOnChangeField = util.debounce(this._onChangeField.bind(this), this.debounceInterval);
+
+	// starting value for visible children
+	this.visibleChilds = this.getMaxVisibleChilds();
 }
 
 // debounce interval for keyboard input in milliseconds
 Node.prototype.DEBOUNCE_INTERVAL = 150;
+
+Node.prototype.getDebounceInterval = function() {
+	return (this.editor && this.editor.options && this.editor.options.debounceInterval)
+		? this.editor.options.debounceInterval
+		: Node.prototype.DEBOUNCE_INTERVAL;
+}
 
 // search will stop iterating as soon as the max is reached
 Node.prototype.MAX_SEARCH_RESULTS = 999;
