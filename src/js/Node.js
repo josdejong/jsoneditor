@@ -748,7 +748,7 @@ Node.prototype.clone = function() {
   clone.previousValue = this.previousValue;
   clone.expanded = this.expanded;
   clone.visibleChilds = this.visibleChilds;
-  close.debounceInterval = this.debounceInterval;
+  clone.debounceInterval = this.debounceInterval;
 
   if (this.childs) {
     // an object or array
