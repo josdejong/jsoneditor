@@ -3,6 +3,11 @@
 https://github.com/josdejong/jsoneditor
 
 
+## not yet published, version 5.29.0
+
+- Added Simplified Chinese Localization. Thanks @long2ice.
+
+
 ## 2019-01-23, version 5.28.2
 
 - Fix #639: Occurrence of non-ES5 `const` declaration in published code.
