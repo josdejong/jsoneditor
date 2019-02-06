@@ -1714,6 +1714,9 @@ Node.prototype._updateDomValue = function () {
 
     // create select box when this node has an enum object
     if (this.enum && this.editable.value) {
+      // The default blank value in enum list can be changed with 'enumDefaultValue' option.
+      var enumDefaultValue = 'enumDefaultValue' in this.editor.options ? this.editor.options.enumDefaultValue : '';
+
       if (!this.dom.select) {
         this.dom.select = document.createElement('select');
         this.id = this.field + "_" + new Date().getUTCMilliseconds();
@@ -1722,12 +1725,19 @@ Node.prototype._updateDomValue = function () {
 
         //Create the default empty option
         this.dom.select.option = document.createElement('option');
-        this.dom.select.option.value = '';
+        this.dom.select.option.value = enumDefaultValue;
         this.dom.select.option.innerHTML = '--';
         this.dom.select.appendChild(this.dom.select.option);
 
         //Iterate all enum values and add them as options
         for(var i = 0; i < this.enum.length; i++) {
+
+          // If enum list in schema contains the default blank value as allowed return value,
+          // it should not be rendered twice.
+          if (this.enum[i] === enumDefaultValue) {
+            continue;
+          }
+
           this.dom.select.option = document.createElement('option');
           this.dom.select.option.value = this.enum[i];
           this.dom.select.option.innerHTML = this.enum[i];

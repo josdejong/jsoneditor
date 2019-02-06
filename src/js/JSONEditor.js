@@ -170,7 +170,7 @@ JSONEditor.modes = {};
 JSONEditor.prototype.DEBOUNCE_INTERVAL = 150;
 
 JSONEditor.VALID_OPTIONS = [
-  'ajv', 'schema', 'schemaRefs','templates',
+  'ajv', 'schema', 'schemaRefs','templates', 'enumDefaultValue',
   'ace', 'theme', 'autocomplete',
   'onChange', 'onChangeJSON', 'onChangeText',
   'onEditable', 'onError', 'onEvent', 'onModeChange', 'onNodeName', 'onValidate',
