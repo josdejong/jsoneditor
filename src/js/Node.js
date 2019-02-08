@@ -1845,6 +1845,11 @@ Node.prototype._deleteDomColor = function () {
 Node.prototype._updateDomField = function () {
   var domField = this.dom.field;
   if (domField) {
+    var tooltip = util.makeFieldTooltip(this.schema);
+    if (tooltip) {
+      domField.title = tooltip;
+    }
+
     // make backgound color lightgray when empty
     var isEmpty = (String(this.field) == '' && this.parent.type != 'array');
     if (isEmpty) {
