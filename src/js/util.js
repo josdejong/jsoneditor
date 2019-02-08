@@ -1106,3 +1106,28 @@ if (!Array.prototype.find) {
     }
   }
 }
+
+/**
+ * Make a tooltip for a field based on the field's schema.
+ * @param {Object} schema JSON schema
+ * @returns {string} Field tooltip, may be empty string if all relevant schema properties are missing
+ */
+exports.makeFieldTooltip = function (schema) {
+  if (!schema) {
+    return '';
+  }
+  
+  var tooltip = '';
+  if (schema.title) {
+    tooltip += schema.title;
+  }
+  
+  if (schema.description) {
+    if (tooltip.length > 0) {
+      tooltip += '\n';
+    }
+    tooltip += schema.description;
+  }
+
+  return tooltip;
+}

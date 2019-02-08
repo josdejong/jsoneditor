@@ -148,5 +148,33 @@ describe('util', function () {
     });
 
   })
+  describe('makeFieldTooltip', function () {
+    it('should return empty string when the schema is missing all relevant fields', function () {
+      assert.strictEqual(util.makeFieldTooltip({}), '')
+      assert.strictEqual(util.makeFieldTooltip({additionalProperties: false}), '')
+      assert.strictEqual(util.makeFieldTooltip(), '')
+    });
+  
+    it('should make tooltips with only title', function () {
+      assert.strictEqual(util.makeFieldTooltip({title: 'foo'}), 'foo');
+    });
+
+    it('should make tooltips with only description', function () {
+      assert.strictEqual(util.makeFieldTooltip({description: 'foo'}), 'foo');
+    });
+
+    it('should make tooltips with title and description', function () {
+      assert.strictEqual(util.makeFieldTooltip({title: 'foo', description: 'bar'}), 'foo\nbar');
+
+      var longTitle = 'Lorem Ipsum Dolor';
+      var longDescription = 'Duis id elit non ante gravida vestibulum non nec est. ' +
+        'Proin vitae ligula at elit dapibus tempor. ' +
+        'Etiam lacinia augue vel condimentum interdum. ';
+      assert.strictEqual(
+        util.makeFieldTooltip({title: longTitle, description: longDescription}),
+        longTitle + '\n' + longDescription
+      );
+    });
+  });
   // TODO: thoroughly test all util methods
 });
