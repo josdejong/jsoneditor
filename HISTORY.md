@@ -5,7 +5,8 @@ https://github.com/josdejong/jsoneditor
 
 ## not yet published, version 5.29.0
 
-- Added Simplified Chinese Localization. Thanks @long2ice.
+- Added Simplified Chinese localization. Thanks @long2ice.
+- Added Turkish localization. Thanks @beratpostalci.
 
 
 ## 2019-01-23, version 5.28.2
