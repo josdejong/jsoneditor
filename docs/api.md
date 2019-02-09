@@ -384,7 +384,7 @@ Constructs a new JSONEditor.
 
 - `{string} language`
 
-  The default language comes from the browser navigator, but you can force a specific language. So use here string as 'en' or 'pt-BR'. Built-in languages: `en`, `pt-BR`. Other translations can be specified via the option `languages`.
+  The default language comes from the browser navigator, but you can force a specific language. So use here string as 'en' or 'pt-BR'. Built-in languages: `en`, `pt-BR`, `zh-CN`, `tr`. Other translations can be specified via the option `languages`.
 
 - `{Object} languages`
 
