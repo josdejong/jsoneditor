@@ -1,6 +1,6 @@
 'use strict';
 
-var _locales = ['en', 'pt-BR', 'zh-CN'];
+var _locales = ['en', 'pt-BR', 'zh-CN', 'tr'];
 var _defs = {
   en: {
     array: 'Array',
@@ -259,6 +259,93 @@ var _defs = {
     stringType: 'Campo do tipo "string". ' +
       'Campo do tipo nao é determinado através do seu valor, ' +
       'mas sempre retornara um texto.'
+  },
+  tr: {
+    array: 'Dizin',
+    auto: 'Otomatik',
+    appendText: 'Ekle',
+    appendTitle: 'Bu alanın altına \'otomatik\' tipinde yeni bir alan ekle (Ctrl+Shift+Ins)',
+    appendSubmenuTitle: 'Eklenecek alanın tipini seç',
+    appendTitleAuto: '\'Otomatik\' tipinde yeni bir alan ekle (Ctrl+Shift+Ins)',
+    ascending: 'Artan',
+    ascendingTitle: '${type}\'ın alt tiplerini artan düzende sırala',
+    actionsMenu: 'Aksiyon menüsünü açmak için tıklayın (Ctrl+M)',
+    collapseAll: 'Tüm alanları kapat',
+    descending: 'Azalan',
+    descendingTitle: '${type}\'ın alt tiplerini azalan düzende sırala',
+    drag: 'Drag to move this field (Alt+Shift+Arrows)',
+    drag: 'Bu alanı taşımak için sürükleyin (Alt+Shift+Arrows)',
+    duplicateKey: 'Var olan anahtar',
+    duplicateText: 'Aşağıya kopyala',
+    duplicateTitle: 'Seçili alanlardan bir daha oluştur (Ctrl+D)',
+    duplicateField: 'Bu alandan bir daha oluştur (Ctrl+D)',
+    empty: 'boş',
+    expandAll: 'Tüm alanları aç',
+    expandTitle: 'Bu alanı açmak/kapatmak için tıkla (Ctrl+E). \n' +
+      'Alt alanlarda dahil tüm alanları açmak için Ctrl+Click ',
+    insert: 'Ekle',
+    insertTitle: 'Bu alanın üstüne \'otomatik\' tipinde yeni bir alan ekle (Ctrl+Ins)',
+    insertSub: 'Araya eklenecek alanın tipini seç',
+    object: 'Nesne',
+    ok: 'Tamam',
+    redo: 'Yeniden yap (Ctrl+Shift+Z)',
+    removeText: 'Kaldır',
+    removeTitle: 'Seçilen alanları kaldır (Ctrl+Del)',
+    removeField: 'Bu alanı kaldır (Ctrl+Del)',
+    selectNode: 'Bir nesne seç...',
+    showAll: 'tümünü göster',
+    showMore: 'daha fazla göster',
+    showMoreStatus: 'displaying ${visibleChilds} of ${totalChilds} items.',
+    showMoreStatus: '${totalChilds} alanın ${visibleChilds} alt alanları gösteriliyor',
+    sort: 'Sırala',
+    sortTitle: 'Sort the childs of this ${type}',
+    sortTitle: '${type}\'ın alt alanlarını sırala',
+    sortTitleShort: 'İçerikleri sırala',
+    sortFieldLabel: 'Alan:',
+    sortDirectionLabel: 'Yön:',
+    sortFieldTitle: 'Diziyi veya nesneyi sıralamak için iç içe geçmiş alanı seçin',
+    sortAscending: 'Artan',
+    sortAscendingTitle: 'Seçili alanı artan düzende sırala',
+    sortDescending: 'Azalan',
+    sortDescendingTitle: 'Seçili alanı azalan düzende sırala',
+    string: 'Karakter Dizisi',
+    transform: 'Dönüştür',
+    transformTitle: 'Filter, sort, or transform the childs of this ${type}',
+    transformTitle: '${type}\'ın alt alanlarını filtrele, sırala veya dönüştür',
+    transformTitleShort: 'İçerikleri filterele, sırala veya dönüştür',
+    transformQueryTitle: 'JMESPath sorgusu gir',
+    transformWizardLabel: 'Sihirbaz',
+    transformWizardFilter: 'Filtre',
+    transformWizardSortBy: 'Sırala',
+    transformWizardSelectFields: 'Alanları seç',
+    transformQueryLabel: 'Sorgu',
+    transformPreviewLabel: 'Önizleme',
+    type: 'Tip',
+    typeTitle: 'Bu alanın tipini değiştir',
+    openUrl: 'URL\'i yeni bir pencerede açmak için Ctrl+Click veya Ctrl+Enter',
+    undo: 'Son değişikliği geri al (Ctrl+Z)',
+    validationCannotMove: 'Cannot move a field into a child of itself',
+    validationCannotMove: 'Alt alan olarak taşınamıyor',
+    autoType: 'Alan tipi "otomatik". ' +
+      'Alan türü otomatik olarak değerden belirlenir' +
+      've bir dize, sayı, boolean veya null olabilir.',
+    objectType: 'Alan tipi "nesne". ' +
+      'Bir nesne, sıralanmamış bir anahtar / değer çifti kümesi içerir.',
+    arrayType: 'Alan tipi "dizi". ' +
+      'Bir dizi, düzenli değerler koleksiyonu içerir.',
+    stringType: 'Alan tipi "karakter dizisi". ' +
+      'Alan türü değerden belirlenmez,' +
+      'ancak her zaman karakter dizisi olarak döndürülür.',
+    modeCodeText: 'Kod',
+    modeCodeTitle: 'Kod vurgulayıcıya geç',
+    modeFormText: 'Form',
+    modeFormTitle: 'Form düzenleyiciye geç',
+    modeTextText: 'Metin',
+    modeTextTitle: 'Düz metin düzenleyiciye geç',
+    modeTreeText: 'Ağaç',
+    modeTreeTitle: 'Ağaç düzenleyiciye geç',
+    modeViewText: 'Görünüm',
+    modeViewTitle: 'Ağaç görünümüne geç'
   }
 };
 
