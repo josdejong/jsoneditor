@@ -149,6 +149,50 @@ describe('Node', function () {
                     'second pattern property'
                 );
             });
+
+            it('should find schema for multi-level pattern properties', function () {
+                var schema = {
+                    type: 'object',
+                    patternProperties: {
+                        '^foo[0-9]': {
+                            title: 'foo[0-9] pattern property',
+                            type: 'object',
+                            properties: {
+                                fooChild: {
+                                    type: 'object',
+                                    properties: {
+                                        fooChild2: {
+                                            type: 'string'
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        '^bar[0-9]': {
+                            title: 'bar[0-9] pattern property',
+                            type: 'object',
+                            properties: {
+                                barChild: {
+                                    type: 'string'
+                                }
+
+                            }
+                        }
+                    }
+                };
+                var path = ['foo1', 'fooChild', 'fooChild2'];
+                assert.strictEqual(
+                    Node._findSchema(schema, {}, path),
+                    schema.patternProperties['^foo[0-9]'].properties.fooChild.properties.fooChild2,
+                    'first pattern property child of child'
+                );
+                path = ['bar5', 'barChild'];
+                assert.strictEqual(
+                    Node._findSchema(schema, {}, path),
+                    schema.patternProperties['^bar[0-9]'].properties.barChild,
+                    'second pattern property child'
+                );
+            });
         });
     });
 });
