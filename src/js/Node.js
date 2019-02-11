@@ -2610,38 +2610,39 @@ Node._findSchema = function (schema, schemaRefs, path) {
     childSchema = allSchemas[j];
 
     for (var i = 0; i < path.length && childSchema; i++) {
+      var nextPath = path.slice(i + 1, path.length);
       var key = path[i];
 
       // fix childSchema with $ref, and not display the select element on the child schema because of not found enum
       if (typeof key === 'string' && childSchema['$ref']) {
         childSchema = schemaRefs[childSchema['$ref']];
         if (childSchema) {
-          foundSchema = Node._findSchema(childSchema, schemaRefs, path.slice(i, path.length));
+          foundSchema = Node._findSchema(childSchema, schemaRefs, nextPath);
         }
       }
-      else if (typeof key === 'string' && childSchema.patternProperties && i == path.length - 1) {
+      else if (typeof key === 'string' && childSchema.patternProperties) {
         for (var prop in childSchema.patternProperties) {
           if (key.match(prop)) {
-            foundSchema = Node._findSchema(childSchema.patternProperties[prop], schemaRefs, path.slice(i, path.length));
+            foundSchema = Node._findSchema(childSchema.patternProperties[prop], schemaRefs, nextPath);
           }
         }
       }
       else if (childSchema.items && childSchema.items.properties) {
         childSchema = childSchema.items.properties[key];
         if (childSchema) {
-          foundSchema = Node._findSchema(childSchema, schemaRefs, path.slice(i, path.length));
+          foundSchema = Node._findSchema(childSchema, schemaRefs, nextPath);
         }
       }
       else if (typeof key === 'string' && childSchema.properties) {
         childSchema = childSchema.properties[key] || null;
         if (childSchema) {
-          foundSchema = Node._findSchema(childSchema, schemaRefs, path.slice(i, path.length));
+          foundSchema = Node._findSchema(childSchema, schemaRefs, nextPath);
         }
       }
       else if (typeof key === 'number' && childSchema.items) {
         childSchema = childSchema.items;
         if (childSchema) {
-          foundSchema = Node._findSchema(childSchema, schemaRefs, path.slice(i, path.length));
+          foundSchema = Node._findSchema(childSchema, schemaRefs, nextPath);
         }
       }
     }
