@@ -82,7 +82,7 @@ describe('Node', function () {
                 assert.strictEqual(Node._findSchema(schema, {}, path), schema.properties.str, 'normal property');
             });
     
-            it.only('should find schema within multi-level object properties', function () {
+            it('should find schema within multi-level object properties', function () {
                 var schema = {
                     type: 'object',
                     properties: {
