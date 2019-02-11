@@ -2621,7 +2621,9 @@ Node._findSchema = function (schema, schemaRefs, path) {
       }
       else if (typeof key === 'string' && childSchema.patternProperties && i == path.length - 1) {
         for (var prop in childSchema.patternProperties) {
-          foundSchema = Node._findSchema(childSchema.patternProperties[prop], schemaRefs, path.slice(i, path.length));
+          if (key.match(prop)) {
+            foundSchema = Node._findSchema(childSchema.patternProperties[prop], schemaRefs, path.slice(i, path.length));
+          }
         }
       }
       else if (childSchema.items && childSchema.items.properties) {
