@@ -2466,8 +2466,6 @@ Node.prototype.updateDom = function (options) {
       domField.contentEditable = this.editable.field;
       domField.spellcheck = false;
       domField.className = 'jsoneditor-field';
-      // add title from schema description to show the tips for user input
-      domField.title = Node._findSchema(this.editor.options.schema || {}, this.editor.options.schemaRefs || {}, this.getPath())['description'] || '';
     }
     else {
       // parent is an array this is the root node
