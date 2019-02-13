@@ -2620,7 +2620,7 @@ Node._findSchema = function (schema, schemaRefs, path) {
           foundSchema = Node._findSchema(childSchema, schemaRefs, nextPath);
         }
       }
-      else if (typeof key === 'string' && childSchema.patternProperties) {
+      else if (typeof key === 'string' && childSchema.patternProperties && !(childSchema.properties && key in childSchema.properties)) {
         for (var prop in childSchema.patternProperties) {
           if (key.match(prop)) {
             foundSchema = Node._findSchema(childSchema.patternProperties[prop], schemaRefs, nextPath);
