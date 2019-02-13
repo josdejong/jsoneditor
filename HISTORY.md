@@ -5,6 +5,7 @@ https://github.com/josdejong/jsoneditor
 
 ## not yet published, version 5.29.0
 
+- Improved JSON schema titles on fields. Fixes #321. Thanks @AdamVig.
 - Added Simplified Chinese localization. Thanks @long2ice.
 - Added Turkish localization. Thanks @beratpostalci.
 
