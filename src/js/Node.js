@@ -932,7 +932,7 @@ Node.prototype._updateCssClassName = function () {
 
 Node.prototype.recursivelyUpdateCssClassesOnNodes = function () {  
   this._updateCssClassName();
-  if (this.childs !== 'undefined') {
+  if (Array.isArray(this.childs)) {
     for (var i = 0; i < this.childs.length; i++) {
       this.childs[i].recursivelyUpdateCssClassesOnNodes();
     }
