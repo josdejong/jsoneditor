@@ -3,11 +3,12 @@
 https://github.com/josdejong/jsoneditor
 
 
-## not yet published, version 5.29.0
+## 2019-02-16, version 5.29.0
 
-- Improved JSON schema titles on fields. Fixes #321. Thanks @AdamVig.
 - Added Simplified Chinese localization. Thanks @long2ice.
 - Added Turkish localization. Thanks @beratpostalci.
+- Improved JSON schema titles on fields. Fixes #321. Thanks @AdamVig.
+- Fixes in resolving JSON schemas, see #651. Thanks @AdamVig.
 - Fix #657: `onClassName` throwing an error when a node is removed.
 
 

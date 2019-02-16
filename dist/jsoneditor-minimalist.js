@@ -24,8 +24,8 @@
  * Copyright (c) 2011-2019 Jos de Jong, http://jsoneditoronline.org
  *
  * @author  Jos de Jong, <wjosdejong@gmail.com>
- * @version 5.28.2
- * @date    2019-01-23
+ * @version 5.29.0
+ * @date    2019-02-16
  */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
@@ -5727,6 +5727,32 @@ return /******/ (function(modules) { // webpackBootstrap
 	  }
 	}
 
+	/**
+	 * Make a tooltip for a field based on the field's schema.
+	 * @param {Object} schema JSON schema
+	 * @returns {string} Field tooltip, may be empty string if all relevant schema properties are missing
+	 */
+	exports.makeFieldTooltip = function (schema) {
+	  if (!schema) {
+	    return '';
+	  }
+	  
+	  var tooltip = '';
+	  if (schema.title) {
+	    tooltip += schema.title;
+	  }
+	  
+	  if (schema.description) {
+	    if (tooltip.length > 0) {
+	      tooltip += '\n';
+	    }
+	    tooltip += schema.description;
+	  }
+
+	  return tooltip;
+	}
+
+
 /***/ },
 /* 13 */
 /***/ function(module, exports, __webpack_require__) {
@@ -6572,7 +6598,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	'use strict';
 
-	var _locales = ['en', 'pt-BR'];
+	var _locales = ['en', 'pt-BR', 'zh-CN', 'tr'];
 	var _defs = {
 	  en: {
 	    array: 'Array',
@@ -6655,6 +6681,88 @@ return /******/ (function(modules) { // webpackBootstrap
 	    modeTreeTitle: 'Switch to tree editor',
 	    modeViewText: 'View',
 	    modeViewTitle: 'Switch to tree view',
+	  },
+	  'zh-CN': {
+	    array: '数组',
+	    auto: '自动',
+	    appendText: '追加',
+	    appendTitle: '在此字段后追加一个类型为“auto”的新字段 (Ctrl+Shift+Ins)',
+	    appendSubmenuTitle: '选择要追加的字段类型',
+	    appendTitleAuto: '追加类型为“auto”的新字段 (Ctrl+Shift+Ins)',
+	    ascending: '升序',
+	    ascendingTitle: '升序排列${type}的子节点',
+	    actionsMenu: '点击打开动作菜单(Ctrl+M)',
+	    collapseAll: '缩进所有字段',
+	    descending: '姜旭',
+	    descendingTitle: '降序序排列${type}的子节点',
+	    drag: '拖拽移动该节点(Alt+Shift+Arrows)',
+	    duplicateKey: '复制键',
+	    duplicateText: '复制',
+	    duplicateTitle: '复制选中字段(Ctrl+D)',
+	    duplicateField: '复制该字段(Ctrl+D)',
+	    empty: '清空',
+	    expandAll: '展开所有字段',
+	    expandTitle: '点击 展开/收缩 该字段(Ctrl+E). \n' +
+	      'Ctrl+Click 展开/收缩 包含所有子节点.',
+	    insert: '插入',
+	    insertTitle: '在此字段前插入类型为“auto”的新字段 (Ctrl+Ins)',
+	    insertSub: '选择要插入的字段类型',
+	    object: '对象',
+	    ok: 'Ok',
+	    redo: '重做 (Ctrl+Shift+Z)',
+	    removeText: '移除',
+	    removeTitle: '移除选中字段 (Ctrl+Del)',
+	    removeField: '移除该字段 (Ctrl+Del)',
+	    selectNode: '选择一个节点...',
+	    showAll: '展示全部',
+	    showMore: '展示更多',
+	    showMoreStatus: '显示${totalChilds}的${visibleChilds}项目.',
+	    sort: '排序',
+	    sortTitle: '排序${type}的子节点',
+	    sortTitleShort: '内容排序',
+	    sortFieldLabel: '字段：',
+	    sortDirectionLabel: '方向：',
+	    sortFieldTitle: '选择用于对数组或对象排序的嵌套字段',
+	    sortAscending: '升序排序',
+	    sortAscendingTitle: '按照该字段升序排序',
+	    sortDescending: '降序排序',
+	    sortDescendingTitle: '按照该字段降序排序',
+	    string: '字符串',
+	    transform: '变换',
+	    transformTitle: '筛选，排序，或者转换${type}的子节点',
+	    transformTitleShort: '筛选，排序，或者转换内容',
+	    transformQueryTitle: '输入JMESPath查询',
+	    transformWizardLabel: '向导',
+	    transformWizardFilter: '筛选',
+	    transformWizardSortBy: '排序',
+	    transformWizardSelectFields: '选择字段',
+	    transformQueryLabel: '查询',
+	    transformPreviewLabel: '预览',
+	    type: '类型',
+	    typeTitle: '更改字段类型',
+	    openUrl: 'Ctrl+Click 或者 Ctrl+Enter 在新窗口打开链接',
+	    undo: '撤销上次动作 (Ctrl+Z)',
+	    validationCannotMove: '无法将字段移入其子节点',
+	    autoType: '字段类型 "auto". ' +
+	      '字段类型由值自动确定 ' +
+	      '可以为 string，number，boolean，或者 null.',
+	    objectType: '字段类型 "object". ' +
+	      '对象包含一组无序的键/值对.',
+	    arrayType: '字段类型 "array". ' +
+	      '数组包含值的有序集合.',
+	    stringType: '字段类型 "string". ' +
+	      '字段类型由值自动确定，' +
+	      '但始终作为字符串返回.',
+	    modeCodeText: '代码',
+	    modeCodeTitle: '切换至代码高亮',
+	    modeFormText: '表单',
+	    modeFormTitle: '切换至表单编辑',
+	    modeTextText: '文本',
+	    modeTextTitle: '切换至文本编辑',
+	    modeTreeText: '树',
+	    modeTreeTitle: '切换至树编辑',
+	    modeViewText: '视图',
+	    modeViewTitle: '切换至树视图',
 	  },
 	  'pt-BR': {
 	    array: 'Lista',
@@ -6749,6 +6857,93 @@ return /******/ (function(modules) { // webpackBootstrap
 	    stringType: 'Campo do tipo "string". ' +
 	      'Campo do tipo nao é determinado através do seu valor, ' +
 	      'mas sempre retornara um texto.'
+	  },
+	  tr: {
+	    array: 'Dizin',
+	    auto: 'Otomatik',
+	    appendText: 'Ekle',
+	    appendTitle: 'Bu alanın altına \'otomatik\' tipinde yeni bir alan ekle (Ctrl+Shift+Ins)',
+	    appendSubmenuTitle: 'Eklenecek alanın tipini seç',
+	    appendTitleAuto: '\'Otomatik\' tipinde yeni bir alan ekle (Ctrl+Shift+Ins)',
+	    ascending: 'Artan',
+	    ascendingTitle: '${type}\'ın alt tiplerini artan düzende sırala',
+	    actionsMenu: 'Aksiyon menüsünü açmak için tıklayın (Ctrl+M)',
+	    collapseAll: 'Tüm alanları kapat',
+	    descending: 'Azalan',
+	    descendingTitle: '${type}\'ın alt tiplerini azalan düzende sırala',
+	    drag: 'Drag to move this field (Alt+Shift+Arrows)',
+	    drag: 'Bu alanı taşımak için sürükleyin (Alt+Shift+Arrows)',
+	    duplicateKey: 'Var olan anahtar',
+	    duplicateText: 'Aşağıya kopyala',
+	    duplicateTitle: 'Seçili alanlardan bir daha oluştur (Ctrl+D)',
+	    duplicateField: 'Bu alandan bir daha oluştur (Ctrl+D)',
+	    empty: 'boş',
+	    expandAll: 'Tüm alanları aç',
+	    expandTitle: 'Bu alanı açmak/kapatmak için tıkla (Ctrl+E). \n' +
+	      'Alt alanlarda dahil tüm alanları açmak için Ctrl+Click ',
+	    insert: 'Ekle',
+	    insertTitle: 'Bu alanın üstüne \'otomatik\' tipinde yeni bir alan ekle (Ctrl+Ins)',
+	    insertSub: 'Araya eklenecek alanın tipini seç',
+	    object: 'Nesne',
+	    ok: 'Tamam',
+	    redo: 'Yeniden yap (Ctrl+Shift+Z)',
+	    removeText: 'Kaldır',
+	    removeTitle: 'Seçilen alanları kaldır (Ctrl+Del)',
+	    removeField: 'Bu alanı kaldır (Ctrl+Del)',
+	    selectNode: 'Bir nesne seç...',
+	    showAll: 'tümünü göster',
+	    showMore: 'daha fazla göster',
+	    showMoreStatus: 'displaying ${visibleChilds} of ${totalChilds} items.',
+	    showMoreStatus: '${totalChilds} alanın ${visibleChilds} alt alanları gösteriliyor',
+	    sort: 'Sırala',
+	    sortTitle: 'Sort the childs of this ${type}',
+	    sortTitle: '${type}\'ın alt alanlarını sırala',
+	    sortTitleShort: 'İçerikleri sırala',
+	    sortFieldLabel: 'Alan:',
+	    sortDirectionLabel: 'Yön:',
+	    sortFieldTitle: 'Diziyi veya nesneyi sıralamak için iç içe geçmiş alanı seçin',
+	    sortAscending: 'Artan',
+	    sortAscendingTitle: 'Seçili alanı artan düzende sırala',
+	    sortDescending: 'Azalan',
+	    sortDescendingTitle: 'Seçili alanı azalan düzende sırala',
+	    string: 'Karakter Dizisi',
+	    transform: 'Dönüştür',
+	    transformTitle: 'Filter, sort, or transform the childs of this ${type}',
+	    transformTitle: '${type}\'ın alt alanlarını filtrele, sırala veya dönüştür',
+	    transformTitleShort: 'İçerikleri filterele, sırala veya dönüştür',
+	    transformQueryTitle: 'JMESPath sorgusu gir',
+	    transformWizardLabel: 'Sihirbaz',
+	    transformWizardFilter: 'Filtre',
+	    transformWizardSortBy: 'Sırala',
+	    transformWizardSelectFields: 'Alanları seç',
+	    transformQueryLabel: 'Sorgu',
+	    transformPreviewLabel: 'Önizleme',
+	    type: 'Tip',
+	    typeTitle: 'Bu alanın tipini değiştir',
+	    openUrl: 'URL\'i yeni bir pencerede açmak için Ctrl+Click veya Ctrl+Enter',
+	    undo: 'Son değişikliği geri al (Ctrl+Z)',
+	    validationCannotMove: 'Cannot move a field into a child of itself',
+	    validationCannotMove: 'Alt alan olarak taşınamıyor',
+	    autoType: 'Alan tipi "otomatik". ' +
+	      'Alan türü otomatik olarak değerden belirlenir' +
+	      've bir dize, sayı, boolean veya null olabilir.',
+	    objectType: 'Alan tipi "nesne". ' +
+	      'Bir nesne, sıralanmamış bir anahtar / değer çifti kümesi içerir.',
+	    arrayType: 'Alan tipi "dizi". ' +
+	      'Bir dizi, düzenli değerler koleksiyonu içerir.',
+	    stringType: 'Alan tipi "karakter dizisi". ' +
+	      'Alan türü değerden belirlenmez,' +
+	      'ancak her zaman karakter dizisi olarak döndürülür.',
+	    modeCodeText: 'Kod',
+	    modeCodeTitle: 'Kod vurgulayıcıya geç',
+	    modeFormText: 'Form',
+	    modeFormTitle: 'Form düzenleyiciye geç',
+	    modeTextText: 'Metin',
+	    modeTextTitle: 'Düz metin düzenleyiciye geç',
+	    modeTreeText: 'Ağaç',
+	    modeTreeTitle: 'Ağaç düzenleyiciye geç',
+	    modeViewText: 'Görünüm',
+	    modeViewTitle: 'Ağaç görünümüne geç'
 	  }
 	};
 
@@ -7895,7 +8090,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	Node.prototype.recursivelyUpdateCssClassesOnNodes = function () {  
 	  this._updateCssClassName();
-	  if (this.childs !== 'undefined') {
+	  if (Array.isArray(this.childs)) {
 	    for (var i = 0; i < this.childs.length; i++) {
 	      this.childs[i].recursivelyUpdateCssClassesOnNodes();
 	    }
@@ -8808,6 +9003,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	Node.prototype._updateDomField = function () {
 	  var domField = this.dom.field;
 	  if (domField) {
+	    var tooltip = util.makeFieldTooltip(this.schema);
+	    if (tooltip) {
+	      domField.title = tooltip;
+	    }
+
 	    // make backgound color lightgray when empty
 	    var isEmpty = (String(this.field) == '' && this.parent.type != 'array');
 	    if (isEmpty) {
@@ -9424,8 +9624,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	      domField.contentEditable = this.editable.field;
 	      domField.spellcheck = false;
 	      domField.className = 'jsoneditor-field';
-	      // add title from schema description to show the tips for user input
-	      domField.title = Node._findSchema(this.editor.options.schema || {}, this.editor.options.schemaRefs || {}, this.getPath())['description'] || '';
 	    }
 	    else {
 	      // parent is an array this is the root node
@@ -9570,36 +9768,39 @@ return /******/ (function(modules) { // webpackBootstrap
 	    childSchema = allSchemas[j];
 
 	    for (var i = 0; i < path.length && childSchema; i++) {
+	      var nextPath = path.slice(i + 1, path.length);
 	      var key = path[i];
 
 	      // fix childSchema with $ref, and not display the select element on the child schema because of not found enum
 	      if (typeof key === 'string' && childSchema['$ref']) {
 	        childSchema = schemaRefs[childSchema['$ref']];
 	        if (childSchema) {
-	          foundSchema = Node._findSchema(childSchema, schemaRefs, path.slice(i, path.length));
+	          foundSchema = Node._findSchema(childSchema, schemaRefs, nextPath);
 	        }
 	      }
-	      else if (typeof key === 'string' && childSchema.patternProperties && i == path.length - 1) {
+	      else if (typeof key === 'string' && childSchema.patternProperties && !(childSchema.properties && key in childSchema.properties)) {
 	        for (var prop in childSchema.patternProperties) {
-	          foundSchema = Node._findSchema(childSchema.patternProperties[prop], schemaRefs, path.slice(i, path.length));
+	          if (key.match(prop)) {
+	            foundSchema = Node._findSchema(childSchema.patternProperties[prop], schemaRefs, nextPath);
+	          }
 	        }
 	      }
 	      else if (childSchema.items && childSchema.items.properties) {
 	        childSchema = childSchema.items.properties[key];
 	        if (childSchema) {
-	          foundSchema = Node._findSchema(childSchema, schemaRefs, path.slice(i, path.length));
+	          foundSchema = Node._findSchema(childSchema, schemaRefs, nextPath);
 	        }
 	      }
 	      else if (typeof key === 'string' && childSchema.properties) {
 	        childSchema = childSchema.properties[key] || null;
 	        if (childSchema) {
-	          foundSchema = Node._findSchema(childSchema, schemaRefs, path.slice(i, path.length));
+	          foundSchema = Node._findSchema(childSchema, schemaRefs, nextPath);
 	        }
 	      }
 	      else if (typeof key === 'number' && childSchema.items) {
 	        childSchema = childSchema.items;
 	        if (childSchema) {
-	          foundSchema = Node._findSchema(childSchema, schemaRefs, path.slice(i, path.length));
+	          foundSchema = Node._findSchema(childSchema, schemaRefs, nextPath);
 	        }
 	      }
 	    }
