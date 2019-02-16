@@ -38,6 +38,7 @@
     "gulp-concat-css": "2.3.0",
     "gulp-shell": "0.6.3",
     "gulp-util": "3.0.8",
+    "jsdom": "^13.2.0",
     "json-loader": "0.5.7",
     "mkdirp": "0.5.1",
     "mocha": "5.2.0",
