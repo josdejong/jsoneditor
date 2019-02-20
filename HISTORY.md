@@ -3,6 +3,12 @@
 https://github.com/josdejong/jsoneditor
 
 
+## 2019-02-20, version 5.29.1
+
+- Fixed #661: JSONEditor broken on IE11 caused by duplicate JSON entries
+  in a translation.
+
+
 ## 2019-02-16, version 5.29.0
 
 - Added Simplified Chinese localization. Thanks @long2ice.
