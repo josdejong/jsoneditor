@@ -24,8 +24,8 @@
  * Copyright (c) 2011-2019 Jos de Jong, http://jsoneditoronline.org
  *
  * @author  Jos de Jong, <wjosdejong@gmail.com>
- * @version 5.29.0
- * @date    2019-02-16
+ * @version 5.29.1
+ * @date    2019-02-20
  */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
@@ -35513,7 +35513,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	    collapseAll: 'Tüm alanları kapat',
 	    descending: 'Azalan',
 	    descendingTitle: '${type}\'ın alt tiplerini azalan düzende sırala',
-	    drag: 'Drag to move this field (Alt+Shift+Arrows)',
 	    drag: 'Bu alanı taşımak için sürükleyin (Alt+Shift+Arrows)',
 	    duplicateKey: 'Var olan anahtar',
 	    duplicateText: 'Aşağıya kopyala',
@@ -35535,10 +35534,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	    selectNode: 'Bir nesne seç...',
 	    showAll: 'tümünü göster',
 	    showMore: 'daha fazla göster',
-	    showMoreStatus: 'displaying ${visibleChilds} of ${totalChilds} items.',
 	    showMoreStatus: '${totalChilds} alanın ${visibleChilds} alt alanları gösteriliyor',
 	    sort: 'Sırala',
-	    sortTitle: 'Sort the childs of this ${type}',
 	    sortTitle: '${type}\'ın alt alanlarını sırala',
 	    sortTitleShort: 'İçerikleri sırala',
 	    sortFieldLabel: 'Alan:',
@@ -35550,7 +35547,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	    sortDescendingTitle: 'Seçili alanı azalan düzende sırala',
 	    string: 'Karakter Dizisi',
 	    transform: 'Dönüştür',
-	    transformTitle: 'Filter, sort, or transform the childs of this ${type}',
 	    transformTitle: '${type}\'ın alt alanlarını filtrele, sırala veya dönüştür',
 	    transformTitleShort: 'İçerikleri filterele, sırala veya dönüştür',
 	    transformQueryTitle: 'JMESPath sorgusu gir',
@@ -35564,7 +35560,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	    typeTitle: 'Bu alanın tipini değiştir',
 	    openUrl: 'URL\'i yeni bir pencerede açmak için Ctrl+Click veya Ctrl+Enter',
 	    undo: 'Son değişikliği geri al (Ctrl+Z)',
-	    validationCannotMove: 'Cannot move a field into a child of itself',
 	    validationCannotMove: 'Alt alan olarak taşınamıyor',
 	    autoType: 'Alan tipi "otomatik". ' +
 	      'Alan türü otomatik olarak değerden belirlenir' +
