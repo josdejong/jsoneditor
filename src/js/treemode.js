@@ -1693,6 +1693,10 @@ treemode.showContextMenu = function (anchor, onClose) {
       Node.onRemove(selectedNodes);
     }
   });
+  
+  if (this.editor.options.onCreateMenu) {
+		items = this.editor.options.onCreateMenu(items, node.getPath());
+	}
 
   var menu = new ContextMenu(items, {close: onClose});
   menu.show(anchor, this.frame);
