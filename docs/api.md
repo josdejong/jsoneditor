@@ -146,11 +146,11 @@ Constructs a new JSONEditor.
   
   See also option `schema` for JSON schema validation.
   
-- `{function} onCreateMenu(items,path)`
+- `{function} onCreateMenu(items,{path})`
   
   Customize context menus in tree mode.
   
-  Sets a callback function to customize the context menu in tree mode. Each time the user clicks on the context menu button, an array of menu items is created. If this callback is set, the array is passed to this function along with the current path (if any). This function can customize any aspect of these menu items, including deleting them and/or adding new items. Each menu item is represented by an object, which may also contain a submenu array of items. See the source code of example 21 in the examples folder for more info on the format of the items and submenu objects.
+  Sets a callback function to customize the context menu in tree mode. Each time the user clicks on the context menu button, an array of menu items is created. If this callback is set, the array is passed to this function along with an object containing the current path (if any). This function can customize any aspect of these menu items, including deleting them and/or adding new items. Each menu item is represented by an object, which may also contain a submenu array of items. See the source code of example 21 in the examples folder for more info on the format of the items and submenu objects.
   
   The function should return the final array of menu items to be displayed to the user. 
 
