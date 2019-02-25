@@ -202,7 +202,7 @@ function appendNodeFactory(Node) {
     ];
     
   if (this.editor.options.onCreateMenu) {
-		items = this.editor.options.onCreateMenu(items, node.getPath());
+		items = this.editor.options.onCreateMenu(items, { path : node.getPath() });
 	}
 
     var menu = new ContextMenu(items, {close: onClose});
