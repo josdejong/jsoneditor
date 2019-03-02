@@ -24,8 +24,8 @@
  * Copyright (c) 2011-2019 Jos de Jong, http://jsoneditoronline.org
  *
  * @author  Jos de Jong, <wjosdejong@gmail.com>
- * @version 5.29.1
- * @date    2019-02-20
+ * @version 5.30.0
+ * @date    2019-03-02
  */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
@@ -258,7 +258,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  'ajv', 'schema', 'schemaRefs','templates',
 	  'ace', 'theme', 'autocomplete',
 	  'onChange', 'onChangeJSON', 'onChangeText',
-	  'onEditable', 'onError', 'onEvent', 'onModeChange', 'onNodeName', 'onValidate',
+	  'onEditable', 'onError', 'onEvent', 'onModeChange', 'onNodeName', 'onValidate', 'onCreateMenu',
 	  'onSelectionChange', 'onTextSelectionChange', 'onClassName',
 	  'colorPicker', 'onColorPicker',
 	  'timestampTag',
@@ -3156,6 +3156,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	      Node.onRemove(selectedNodes);
 	    }
 	  });
+	  
+	  if (this.editor.options.onCreateMenu) {
+			items = this.editor.options.onCreateMenu(items, { path : node.getPath() });
+		}
 
 	  var menu = new ContextMenu(items, {close: onClose});
 	  menu.show(anchor, this.frame);
@@ -11525,6 +11529,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }
 	  }
 
+	  if (this.editor.options.onCreateMenu) {
+			items = this.editor.options.onCreateMenu(items, { path : node.getPath() });
+		}
+	  
 	  var menu = new ContextMenu(items, {close: onClose});
 	  menu.show(anchor, this.editor.frame);
 	};
@@ -13657,6 +13665,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	        'submenu': appendSubmenu
 	      }
 	    ];
+	    
+	  if (this.editor.options.onCreateMenu) {
+			items = this.editor.options.onCreateMenu(items, { path : node.getPath() });
+		}
 
 	    var menu = new ContextMenu(items, {close: onClose});
 	    menu.show(anchor, this.editor.content);

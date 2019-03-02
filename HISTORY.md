@@ -3,9 +3,9 @@
 https://github.com/josdejong/jsoneditor
 
 
-## not yet released, version 5.30.0
+## 2019-03-02, version 5.30.0
 
-- Implemented new feature `onCreateMenu` to customize the action menu.
+- Implemented a new option `onCreateMenu` to customize the action menu.
   Thanks @RobAley.
 
 
