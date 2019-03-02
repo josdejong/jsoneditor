@@ -40,9 +40,6 @@
     adding new menu items. See the source code for this example for more
     information.
   </p>
-  <p>
-    <button id="setJSON">Set JSON</button>
-  </p>
   <div id="jsoneditor"></div>
 
   <script>
@@ -61,7 +58,8 @@
     // Every time the user clicks on a context menu button, the menu
     // is created from scratch and this callback is called.
 
-    onCreateMenu : (items, {path}) => {
+    onCreateMenu : function (items, node) {
+      var path = node
 
       console.log(items); // log the current items for inspection
 
@@ -78,11 +76,11 @@
 
           if ( typeof segment == 'number') {  // format the selector for array indexs ...
 
-            pathString += `[${segment}]`;
+            pathString += '[' + segment + ']';
 
           } else {  // ... or object keys
 
-            pathString += `."${segment}"`;
+            pathString += '."' + segment + '"';
 
           }
 
@@ -118,7 +116,7 @@
       // you can alter any property (e.g. the click callback, text property etc.)
       // for any item, or even delete the whole menu item.
 
-      items.forEach( (item, index, items) => {
+      items.forEach(function (item, index, items) {
 
         if ( "submenu" in item ) {
 
@@ -145,7 +143,9 @@
       // top level menu). A menu separator is an item with a type : 'separator'
       // property
 
-      items = items.filter( (item) => { return ! (item.type == 'separator') })
+      items = items.filter(function (item) {
+        return item.type !== 'separator';
+      });
 
       // finally we need to return the items array. If we don't, the menu
       // will be empty.
@@ -155,22 +155,17 @@
     }
   };
 
-  var editor = new JSONEditor(container, options);
-
-  // set json
-  document.getElementById('setJSON').onclick = function () {
-    var json = {
-      'array': [1, 2, 3],
-      'boolean': true,
-      'color': '#82b92c',
-      'null': null,
-      'number': 123,
-      'object': {'a': 'b', 'c': 'd'},
-      'string': 'Hello World'
-    };
-    editor.set(json);
+  var json = {
+    'array': [1, 2, 3],
+    'boolean': true,
+    'color': '#82b92c',
+    'null': null,
+    'number': 123,
+    'object': {'a': 'b', 'c': 'd'},
+    'string': 'Hello World'
   };
 
+  var editor = new JSONEditor(container, options, json);
 
 </script>
 </body>
