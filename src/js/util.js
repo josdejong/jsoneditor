@@ -2,6 +2,7 @@
 
 var jsonlint = require('./assets/jsonlint/jsonlint');
 var jsonMap = require('json-source-map');
+var translate = require('./i18n').translate;
 
 /**
  * Parse JSON using the parser built-in in the browser.
@@ -1109,10 +1110,11 @@ if (!Array.prototype.find) {
 
 /**
  * Make a tooltip for a field based on the field's schema.
- * @param {Object} schema JSON schema
+ * @param {object} schema JSON schema
+ * @param {string} [locale] Locale code (for example, zh-CN)
  * @returns {string} Field tooltip, may be empty string if all relevant schema properties are missing
  */
-exports.makeFieldTooltip = function (schema) {
+exports.makeFieldTooltip = function (schema, locale) {
   if (!schema) {
     return '';
   }
@@ -1127,6 +1129,16 @@ exports.makeFieldTooltip = function (schema) {
       tooltip += '\n';
     }
     tooltip += schema.description;
+  }
+
+  if (Array.isArray(schema.examples) && schema.examples.length > 0) {
+    if (tooltip.length > 0) {
+      tooltip += '\n\n';
+    }
+    tooltip += translate('examples', undefined, locale) + '\n';
+    schema.examples.forEach(function (example) {
+      tooltip += JSON.stringify(example, null, 2) + '\n';
+    });
   }
 
   return tooltip;

@@ -1,9 +1,6 @@
 var assert = require('assert');
 var util = require('../src/js/util');
 
-// console.log('TEST', util.parsePath('.items[3].name'));
-// console.log('TEST', util.parsePath('.items[*].name'));
-
 describe('util', function () {
 
   describe('sanitize', function () {
@@ -163,6 +160,10 @@ describe('util', function () {
       assert.strictEqual(util.makeFieldTooltip({description: 'foo'}), 'foo');
     });
 
+    it('should make tooltips with only examples', function () {
+      assert.strictEqual(util.makeFieldTooltip({examples: ['foo', 'bar']}), 'Examples\n"foo"\n"bar"\n');
+    });
+
     it('should make tooltips with title and description', function () {
       assert.strictEqual(util.makeFieldTooltip({title: 'foo', description: 'bar'}), 'foo\nbar');
 
@@ -174,6 +175,24 @@ describe('util', function () {
         util.makeFieldTooltip({title: longTitle, description: longDescription}),
         longTitle + '\n' + longDescription
       );
+    });
+
+    it('should make tooltips with title, description, and examples', function () {
+      assert.strictEqual(
+        util.makeFieldTooltip({title: 'foo', description: 'bar', examples: ['baz']}),
+        'foo\nbar\n\nExamples\n"baz"\n',
+      );
+    });
+
+    it('should handle empty fields', function () {
+      assert.strictEqual(util.makeFieldTooltip({title: '', description: 'bar'}), 'bar');
+      assert.strictEqual(util.makeFieldTooltip({title: 'foo', description: ''}), 'foo');
+      assert.strictEqual(util.makeFieldTooltip({description: 'bar', examples: []}), 'bar');
+      assert.strictEqual(util.makeFieldTooltip({description: 'bar', examples: ['']}), 'bar\n\nExamples\n""\n');
+    });
+
+    it('should internationalize "Examples" correctly', function () {
+      assert.strictEqual(util.makeFieldTooltip({examples: ['foo']}, 'pt-BR'), 'Exemplos\n"foo"\n');
     });
   });
   // TODO: thoroughly test all util methods
