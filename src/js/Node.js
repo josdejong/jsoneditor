@@ -4372,6 +4372,10 @@ Node.prototype.showContextMenu = function (anchor, onClose) {
     }
   }
 
+  if (this.editor.options.onCreateMenu) {
+		items = this.editor.options.onCreateMenu(items, { path : node.getPath() });
+	}
+  
   var menu = new ContextMenu(items, {close: onClose});
   menu.show(anchor, this.editor.frame);
 };

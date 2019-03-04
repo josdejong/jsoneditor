@@ -1,0 +1,172 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <title>JSONEditor | Basic usage</title>
+
+  <link href="../dist/jsoneditor.css" rel="stylesheet" type="text/css">
+  <script src="../dist/jsoneditor.js"></script>
+
+  <style type="text/css">
+  #jsoneditor {
+    width: 500px;
+    height: 500px;
+  }
+
+  .submenu-highlight { background-color: yellow !important; }
+
+  .rainbow {
+
+    background: linear-gradient(to right, cyan, yellow, violet, green, orange, blue) !important;
+  }
+
+  .example-class > .jsoneditor-icon {
+
+    background-position: -168px -48px; /* warning triangle */
+
+  }
+
+  .dotty {
+    border-top : 1px dotted #e5e5e5 !important;
+  }
+
+  </style>
+</head>
+<body>
+  <h1>Context Menu Customization</h1>
+  <p>
+    This example demonstrates the use of the onCreateMenu callback option, which
+    allows you to customise context menus after they are created but before they
+    are shown to the user. You can alter/delete existing items as well as
+    adding new menu items. See the source code for this example for more
+    information.
+  </p>
+  <div id="jsoneditor"></div>
+
+  <script>
+  // create the editor
+  var container = document.getElementById('jsoneditor');
+
+  var options = {
+
+    // onCreateMenu allows us to register a call back function to customise
+    // the context menu. The callback accpets two parameters, items and path.
+    // Items is an array containing the current menu items, and path
+    // (if present) contains the path of the current node (as an array).
+    // The callback should return the modified (or unmodified) list of menu
+    // items.
+
+    // Every time the user clicks on a context menu button, the menu
+    // is created from scratch and this callback is called.
+
+    onCreateMenu : function (items, node) {
+      var path = node.path
+
+      console.log(items); // log the current items for inspection
+
+      // We are going to add a menu item which returns the current node path
+      // as a jq path selector ( https://stedolan.github.io/jq/ ). First we
+      // will create a function, and then We will connect this function to
+      // the menu item click property in a moment.
+
+      function pathTojq() {
+
+        var pathString = '';
+
+        path.forEach(function (segment, index) { // path is an array, loop through it
+
+          if ( typeof segment == 'number') {  // format the selector for array indexs ...
+
+            pathString += '[' + segment + ']';
+
+          } else {  // ... or object keys
+
+            pathString += '."' + segment + '"';
+
+          }
+
+        })
+
+        alert(pathString); // show it to the user.
+
+      };
+
+      // Create a new menu item. For our example, we only want to do this
+      // if there is a path (in the case of appendnodes (for new objects)
+      // path is null until a node is created)
+
+      if (path) {
+
+        // Each item in the items array represents a menu item,
+        // and requires the following details :
+
+        items.push( {
+
+          text : 'jq Path', // the text for the menu item
+          title : 'Show the jq path for this node', // the HTML title attribute
+          className : 'example-class', // the css class name(s) for the menu item
+          click : pathTojq // the function to call when the menu item is clicked
+
+        } );
+
+      };
+
+      // Now we will iterate through the menu items, which includes the items
+      // created by jsoneditor, and the new item we added above. In this
+      // example we will just alter the className property for the items, but
+      // you can alter any property (e.g. the click callback, text property etc.)
+      // for any item, or even delete the whole menu item.
+
+      items.forEach(function (item, index, items) {
+
+        if ( "submenu" in item ) {
+
+          // if the item has a submenu property, it is a submenu heading
+          // and contains another array of menu items. Let's colour
+          // that yellow...
+
+          items[index].className += ' submenu-highlight';
+
+        } else {
+
+          // if it's not a submenu heading, let's make it colorful
+
+          items[index].className += ' rainbow';
+
+        }
+      })
+
+      // note that the above loop isn't recursive, so it only alters the classes
+      // on the top-level menu items. To also process menu items in submenus
+      // you should iterate through any "submenu" arrays of items if the item has one.
+
+      // next, just for fun, let's remove any menu separators (again just at the
+      // top level menu). A menu separator is an item with a type : 'separator'
+      // property
+
+      items = items.filter(function (item) {
+        return item.type !== 'separator';
+      });
+
+      // finally we need to return the items array. If we don't, the menu
+      // will be empty.
+
+      return items;
+
+    }
+  };
+
+  var json = {
+    'array': [1, 2, 3],
+    'boolean': true,
+    'color': '#82b92c',
+    'null': null,
+    'number': 123,
+    'object': {'a': 'b', 'c': 'd'},
+    'string': 'Hello World'
+  };
+
+  var editor = new JSONEditor(container, options, json);
+
+</script>
+</body>
+</html>

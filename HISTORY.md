@@ -3,6 +3,12 @@
 https://github.com/josdejong/jsoneditor
 
 
+## 2019-03-02, version 5.30.0
+
+- Implemented a new option `onCreateMenu` to customize the action menu.
+  Thanks @RobAley.
+
+
 ## 2019-02-20, version 5.29.1
 
 - Fixed #661: JSONEditor broken on IE11 caused by duplicate JSON entries
