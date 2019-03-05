@@ -787,7 +787,7 @@ exports.parsePath = function parsePath(jsonPath) {
 exports.stringifyPath = function stringifyPath(path) {
   return path
       .map(function (p) {
-        return typeof p === 'number' ? ('[' + p + ']') : ('.' + p);
+        return typeof p === 'number' ? ('[' + p + ']') : p[0] === '[' ? p : ('.' + p);
       })
       .join('');
 };
