@@ -5,7 +5,8 @@ div.jsoneditor {
 
 div.jsoneditor-field,
 div.jsoneditor-value,
-div.jsoneditor-readonly {
+div.jsoneditor-readonly,
+div.jsoneditor-default {
   border: 1px solid transparent;
   min-height: 16px;
   min-width: 32px;
@@ -103,7 +104,6 @@ div.jsoneditor-value.jsoneditor-string {
 div.jsoneditor-value.jsoneditor-object,
 div.jsoneditor-value.jsoneditor-array {
   min-width: 16px;
-  color: #808080;
 }
 
 div.jsoneditor-value.jsoneditor-number {
@@ -122,7 +122,10 @@ div.jsoneditor-value.jsoneditor-invalid {
   color: #000000;
 }
 
-
+div.jsoneditor-default {
+  color: #808080;
+  padding-left: 10px;
+}
 
 div.jsoneditor-tree button.jsoneditor-button {
   width: 24px;
