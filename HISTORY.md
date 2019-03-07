@@ -3,6 +3,11 @@
 https://github.com/josdejong/jsoneditor
 
 
+## not yet published, version 5.31.0
+
+- Display JSON schema examples in tooltip (#664). Thanks @AdamVig.
+
+
 ## 2019-03-02, version 5.30.0
 
 - Implemented a new option `onCreateMenu` to customize the action menu.
