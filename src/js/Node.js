@@ -1845,7 +1845,7 @@ Node.prototype._deleteDomColor = function () {
 Node.prototype._updateDomField = function () {
   var domField = this.dom.field;
   if (domField) {
-    var tooltip = util.makeFieldTooltip(this.schema);
+    var tooltip = util.makeFieldTooltip(this.schema, this.editor.options.language);
     if (tooltip) {
       domField.title = tooltip;
     }

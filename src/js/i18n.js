@@ -83,6 +83,7 @@ var _defs = {
     modeTreeTitle: 'Switch to tree editor',
     modeViewText: 'View',
     modeViewTitle: 'Switch to tree view',
+    examples: 'Examples',
   },
   'zh-CN': {
     array: '数组',
@@ -165,6 +166,7 @@ var _defs = {
     modeTreeTitle: '切换至树编辑',
     modeViewText: '视图',
     modeViewTitle: '切换至树视图',
+    examples: '例子',
   },
   'pt-BR': {
     array: 'Lista',
@@ -258,7 +260,8 @@ var _defs = {
       'Uma lista contem uma coleção de valores ordenados.',
     stringType: 'Campo do tipo "string". ' +
       'Campo do tipo nao é determinado através do seu valor, ' +
-      'mas sempre retornara um texto.'
+      'mas sempre retornara um texto.',
+    examples: 'Exemplos',
   },
   tr: {
     array: 'Dizin',
@@ -340,7 +343,8 @@ var _defs = {
     modeTreeText: 'Ağaç',
     modeTreeTitle: 'Ağaç düzenleyiciye geç',
     modeViewText: 'Görünüm',
-    modeViewTitle: 'Ağaç görünümüne geç'
+    modeViewTitle: 'Ağaç görünümüne geç',
+    examples: 'Örnekler',
   }
 };
 
