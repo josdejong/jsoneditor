@@ -787,7 +787,20 @@ exports.parsePath = function parsePath(jsonPath) {
 exports.stringifyPath = function stringifyPath(path) {
   return path
       .map(function (p) {
-        return typeof p === 'number' ? ('[' + p + ']') : p[0] === '[' ? p : ('.' + p);
+        if (typeof p === 'number'){
+          return ('[' + p + ']');
+        } else if(p[0] === '[') {
+          var end = p.indexOf(']');
+          if(end === -1) {
+            throw new SyntaxError('Character ] expected in path');
+          }
+          if (end === 1) {
+            throw new SyntaxError('String expected after [');
+          }
+          return p;
+        } else {
+          return '.' + p;
+        }
       })
       .join('');
 };

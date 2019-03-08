@@ -100,6 +100,20 @@ describe('util', function () {
 
   describe('jsonPath', function () {
 
+    it('should stringify an array of paths', function() {
+      assert.deepEqual(util.stringifyPath([]), '');
+      assert.deepEqual(util.stringifyPath(['foo']), '.foo');
+      assert.deepEqual(util.stringifyPath(['foo', 'bar']), '.foo.bar');
+      assert.deepEqual(util.stringifyPath(['foo', 2]), '.foo[2]');
+      assert.deepEqual(util.stringifyPath(['foo', 2, 'bar']), '.foo[2].bar');
+      assert.deepEqual(util.stringifyPath(['foo', '[\"prop-with-hyphens\"]']), '.foo["prop-with-hyphens"]');
+    })
+
+    it('should throw exceptions in case of invalid path components', function () {
+      assert.throws(function () {util.stringifyPath(['['])}, /Error/);
+      assert.throws(function () {util.stringifyPath(['[]'])}, /Error/);
+    })
+
     it ('should parse a json path', function () {
       assert.deepEqual(util.parsePath(''), []);
       assert.deepEqual(util.parsePath('.foo'), ['foo']);
