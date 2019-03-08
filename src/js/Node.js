@@ -1822,6 +1822,8 @@ Node.prototype._updateDomValue = function () {
 
     // strip formatting from the contents of the editable div
     util.stripFormatting(domValue);
+
+    this._updateDomDefault();
   }
 };
 
@@ -1914,8 +1916,23 @@ Node.prototype._getDomField = function(silent) {
  * @returns {undefined}
  */
 Node.prototype._updateDomDefault = function () {
-  if (this.schema && this.schema.default && this.schema.type && this.schema.type !== 'object' &&
-  this.schema.type !== 'array') {
+  // Short-circuit if schema is missing, has no default, or if Node has children
+  if (!this.schema || !this.schema.default || this._hasChilds()) {
+    return;
+  }
+
+  if (this.value === this.schema.default) {
+    if (this.dom.select) {
+      this.dom.default.textContent = translate('default');
+      this.dom.value.title = null;
+    } else {
+      this.dom.value.title = translate('default');
+      this.dom.value.classList.add('jsoneditor-is-default')
+      this.dom.default.textContent = null;
+    }
+  } else {
+    this.dom.value.removeAttribute('title');
+    this.dom.value.classList.remove('jsoneditor-is-default')
     this.dom.default.textContent = JSON.stringify(this.schema.default);
   }
 };
@@ -2523,7 +2540,6 @@ Node.prototype.updateDom = function (options) {
   // update field and value
   this._updateDomField();
   this._updateDomValue();
-  this._updateDomDefault();
    
   this._updateCssClassName();
 
@@ -2739,6 +2755,7 @@ Node.prototype._createDomValue = function () {
 Node.prototype._createDomDefault = function () {
   var el = document.createElement('div');
   el.className = 'jsoneditor-default';
+  el.title = translate('default');
   return el;
 };
 

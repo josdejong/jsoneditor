@@ -84,6 +84,7 @@ var _defs = {
     modeViewText: 'View',
     modeViewTitle: 'Switch to tree view',
     examples: 'Examples',
+    default: 'Default',
   },
   'zh-CN': {
     array: '数组',
@@ -167,6 +168,7 @@ var _defs = {
     modeViewText: '视图',
     modeViewTitle: '切换至树视图',
     examples: '例子',
+    default: '缺省',
   },
   'pt-BR': {
     array: 'Lista',
@@ -262,6 +264,7 @@ var _defs = {
       'Campo do tipo nao é determinado através do seu valor, ' +
       'mas sempre retornara um texto.',
     examples: 'Exemplos',
+    default: 'Revelia',
   },
   tr: {
     array: 'Dizin',
@@ -345,6 +348,7 @@ var _defs = {
     modeViewText: 'Görünüm',
     modeViewTitle: 'Ağaç görünümüne geç',
     examples: 'Örnekler',
+    default: 'Varsayılan',
   }
 };
 
