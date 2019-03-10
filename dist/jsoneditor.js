@@ -24,8 +24,8 @@
  * Copyright (c) 2011-2019 Jos de Jong, http://jsoneditoronline.org
  *
  * @author  Jos de Jong, <wjosdejong@gmail.com>
- * @version 5.30.0
- * @date    2019-03-02
+ * @version 5.31.0
+ * @date    2019-03-10
  */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
@@ -33268,6 +33268,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var jsonlint = __webpack_require__(66);
 	var jsonMap = __webpack_require__(67);
+	var translate = __webpack_require__(68).translate;
 
 	/**
 	 * Parse JSON using the parser built-in in the browser.
@@ -34375,10 +34376,11 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	/**
 	 * Make a tooltip for a field based on the field's schema.
-	 * @param {Object} schema JSON schema
+	 * @param {object} schema JSON schema
+	 * @param {string} [locale] Locale code (for example, zh-CN)
 	 * @returns {string} Field tooltip, may be empty string if all relevant schema properties are missing
 	 */
-	exports.makeFieldTooltip = function (schema) {
+	exports.makeFieldTooltip = function (schema, locale) {
 	  if (!schema) {
 	    return '';
 	  }
@@ -34393,6 +34395,16 @@ return /******/ (function(modules) { // webpackBootstrap
 	      tooltip += '\n';
 	    }
 	    tooltip += schema.description;
+	  }
+
+	  if (Array.isArray(schema.examples) && schema.examples.length > 0) {
+	    if (tooltip.length > 0) {
+	      tooltip += '\n\n';
+	    }
+	    tooltip += translate('examples', undefined, locale) + '\n';
+	    schema.examples.forEach(function (example) {
+	      tooltip += JSON.stringify(example, null, 2) + '\n';
+	    });
 	  }
 
 	  return tooltip;
@@ -35327,6 +35339,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    modeTreeTitle: 'Switch to tree editor',
 	    modeViewText: 'View',
 	    modeViewTitle: 'Switch to tree view',
+	    examples: 'Examples',
 	  },
 	  'zh-CN': {
 	    array: '数组',
@@ -35409,6 +35422,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    modeTreeTitle: '切换至树编辑',
 	    modeViewText: '视图',
 	    modeViewTitle: '切换至树视图',
+	    examples: '例子',
 	  },
 	  'pt-BR': {
 	    array: 'Lista',
@@ -35502,7 +35516,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	      'Uma lista contem uma coleção de valores ordenados.',
 	    stringType: 'Campo do tipo "string". ' +
 	      'Campo do tipo nao é determinado através do seu valor, ' +
-	      'mas sempre retornara um texto.'
+	      'mas sempre retornara um texto.',
+	    examples: 'Exemplos',
 	  },
 	  tr: {
 	    array: 'Dizin',
@@ -35584,7 +35599,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	    modeTreeText: 'Ağaç',
 	    modeTreeTitle: 'Ağaç düzenleyiciye geç',
 	    modeViewText: 'Görünüm',
-	    modeViewTitle: 'Ağaç görünümüne geç'
+	    modeViewTitle: 'Ağaç görünümüne geç',
+	    examples: 'Örnekler',
 	  }
 	};
 
@@ -37644,7 +37660,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	Node.prototype._updateDomField = function () {
 	  var domField = this.dom.field;
 	  if (domField) {
-	    var tooltip = util.makeFieldTooltip(this.schema);
+	    var tooltip = util.makeFieldTooltip(this.schema, this.editor.options.language);
 	    if (tooltip) {
 	      domField.title = tooltip;
 	    }
