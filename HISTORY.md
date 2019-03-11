@@ -3,6 +3,11 @@
 https://github.com/josdejong/jsoneditor
 
 
+## not yet publised, version 5.31.1
+
+- Some fixes in the Simplified Chinese translation. Thanks @@adf0001.
+
+
 ## 2019-03-10, version 5.31.0
 
 - Display JSON schema examples in tooltip (#664). Thanks @AdamVig.
