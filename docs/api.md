@@ -71,9 +71,26 @@ Constructs a new JSONEditor.
   The callback will only be triggered on changes made by the user, not in case of programmatic changes via the functions `set`, `setText`, `update`, or `updateText`.
   See also callback function `onChangeJSON(json)`.
 
-- `{function} onEditable({ field, value, path })`
+- `{function} onClassName({ path, field, value })`
 
-  Set a callback function  to determine whether individual nodes are editable or read-only. Only applicable when option `mode` is `tree`, `text`, or `code`.
+  Set a callback function to add custom CSS classes to the rendered nodes. Only applicable when option `mode` is `tree`, `form`, or `view`.
+
+  The callback is invoked with an object containing `path`, `field` and `value`:
+
+  ```
+  {
+    path: string[],
+    field: string,
+    value: string
+  }
+  ```
+  The function must either return a string containing CSS class names, or return `undefined` in order to do nothing for a specific node.
+
+  In order to update css classes when they depend on external state, you can call `editor.refresh()`.
+
+- `{function} onEditable({ path, field, value })`
+
+  Set a callback function to determine whether individual nodes are editable or read-only. Only applicable when option `mode` is `tree`, `text`, or `code`.
 
   In case of mode `tree`, the callback is invoked as `editable(node)`, where the first parameter is an object:
 
