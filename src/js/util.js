@@ -789,15 +789,8 @@ exports.stringifyPath = function stringifyPath(path) {
       .map(function (p) {
         if (typeof p === 'number'){
           return ('[' + p + ']');
-        } else if(p[0] === '[') {
-          var end = p.indexOf(']');
-          if(end === -1) {
-            throw new SyntaxError('Character ] expected in path');
-          }
-          if (end === 1) {
-            throw new SyntaxError('String expected after [');
-          }
-          return p;
+        } else if(typeof p === 'string' && p.indexOf('-') >= 0) {
+          return '["' + p + '"]';
         } else {
           return '.' + p;
         }
