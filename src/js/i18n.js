@@ -99,7 +99,7 @@ var _defs = {
     descending: '姜旭',
     descendingTitle: '降序序排列${type}的子节点',
     drag: '拖拽移动该节点(Alt+Shift+Arrows)',
-    duplicateKey: '复制键',
+    duplicateKey: '重复键',
     duplicateText: '复制',
     duplicateTitle: '复制选中字段(Ctrl+D)',
     duplicateField: '复制该字段(Ctrl+D)',
