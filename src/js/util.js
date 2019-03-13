@@ -1136,8 +1136,11 @@ exports.makeFieldTooltip = function (schema, locale) {
       tooltip += '\n\n';
     }
     tooltip += translate('examples', undefined, locale) + '\n';
-    schema.examples.forEach(function (example) {
-      tooltip += JSON.stringify(example, null, 2) + '\n';
+    schema.examples.forEach(function (example, index) {
+      tooltip += JSON.stringify(example, null, 2);
+      if (index !== schema.examples.length - 1) {
+        tooltip += '\n';
+      }
     });
   }
 

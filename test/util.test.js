@@ -161,7 +161,7 @@ describe('util', function () {
     });
 
     it('should make tooltips with only examples', function () {
-      assert.strictEqual(util.makeFieldTooltip({examples: ['foo', 'bar']}), 'Examples\n"foo"\n"bar"\n');
+      assert.strictEqual(util.makeFieldTooltip({examples: ['foo', 'bar']}), 'Examples\n"foo"\n"bar"');
     });
 
     it('should make tooltips with title and description', function () {
@@ -180,7 +180,7 @@ describe('util', function () {
     it('should make tooltips with title, description, and examples', function () {
       assert.strictEqual(
         util.makeFieldTooltip({title: 'foo', description: 'bar', examples: ['baz']}),
-        'foo\nbar\n\nExamples\n"baz"\n',
+        'foo\nbar\n\nExamples\n"baz"',
       );
     });
 
@@ -188,11 +188,11 @@ describe('util', function () {
       assert.strictEqual(util.makeFieldTooltip({title: '', description: 'bar'}), 'bar');
       assert.strictEqual(util.makeFieldTooltip({title: 'foo', description: ''}), 'foo');
       assert.strictEqual(util.makeFieldTooltip({description: 'bar', examples: []}), 'bar');
-      assert.strictEqual(util.makeFieldTooltip({description: 'bar', examples: ['']}), 'bar\n\nExamples\n""\n');
+      assert.strictEqual(util.makeFieldTooltip({description: 'bar', examples: ['']}), 'bar\n\nExamples\n""');
     });
 
     it('should internationalize "Examples" correctly', function () {
-      assert.strictEqual(util.makeFieldTooltip({examples: ['foo']}, 'pt-BR'), 'Exemplos\n"foo"\n');
+      assert.strictEqual(util.makeFieldTooltip({examples: ['foo']}, 'pt-BR'), 'Exemplos\n"foo"');
     });
   });
   // TODO: thoroughly test all util methods
