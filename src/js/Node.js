@@ -1923,17 +1923,19 @@ Node.prototype._updateDomDefault = function () {
 
   if (this.value === this.schema.default) {
     if (this.dom.select) {
+      this.dom.value.removeAttribute('title');
       this.dom.default.textContent = translate('default');
-      this.dom.value.title = null;
     } else {
       this.dom.value.title = translate('default');
-      this.dom.value.classList.add('jsoneditor-is-default')
       this.dom.default.textContent = null;
+      this.dom.value.classList.add('jsoneditor-is-default');
+      this.dom.value.classList.remove('jsoneditor-is-not-default');
     }
   } else {
     this.dom.value.removeAttribute('title');
-    this.dom.value.classList.remove('jsoneditor-is-default')
     this.dom.default.textContent = JSON.stringify(this.schema.default);
+    this.dom.value.classList.remove('jsoneditor-is-default');
+    this.dom.value.classList.add('jsoneditor-is-not-default');
   }
 };
 
