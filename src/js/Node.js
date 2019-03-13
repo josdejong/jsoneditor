@@ -1924,16 +1924,13 @@ Node.prototype._updateDomDefault = function () {
   if (this.value === this.schema.default) {
     if (this.dom.select) {
       this.dom.value.removeAttribute('title');
-      this.dom.default.textContent = translate('default');
     } else {
       this.dom.value.title = translate('default');
-      this.dom.default.textContent = null;
       this.dom.value.classList.add('jsoneditor-is-default');
       this.dom.value.classList.remove('jsoneditor-is-not-default');
     }
   } else {
     this.dom.value.removeAttribute('title');
-    this.dom.default.textContent = JSON.stringify(this.schema.default);
     this.dom.value.classList.remove('jsoneditor-is-default');
     this.dom.value.classList.add('jsoneditor-is-not-default');
   }
@@ -2750,18 +2747,6 @@ Node.prototype._createDomValue = function () {
 };
 
 /**
- * Create an element to display the default value from the schema if it is a primitive type (not object or array).
- * @private
- * @returns {Element}
- */
-Node.prototype._createDomDefault = function () {
-  var el = document.createElement('div');
-  el.className = 'jsoneditor-default';
-  el.title = translate('default');
-  return el;
-};
-
-/**
  * Create an expand/collapse button
  * @return {Element} expand
  * @private
@@ -2833,14 +2818,6 @@ Node.prototype._createDomTree = function () {
   dom.value = this._createDomValue();
   tdValue.appendChild(dom.value);
   dom.tdValue = tdValue;
-
-  // create the default value element
-  var tdDefault = document.createElement('td');
-  tdDefault.className = 'jsoneditor-tree';
-  tr.appendChild(tdDefault);
-  dom.default = this._createDomDefault();
-  tdDefault.appendChild(dom.default);
-  dom.tdDefault = tdDefault;
 
   return domTree;
 };

@@ -160,6 +160,10 @@ describe('util', function () {
       assert.strictEqual(util.makeFieldTooltip({description: 'foo'}), 'foo');
     });
 
+    it('should make tooltips with only default', function () {
+      assert.strictEqual(util.makeFieldTooltip({default: 'foo'}), 'Default\n"foo"');
+    });
+
     it('should make tooltips with only examples', function () {
       assert.strictEqual(util.makeFieldTooltip({examples: ['foo', 'bar']}), 'Examples\n"foo"\n"bar"');
     });
@@ -184,11 +188,22 @@ describe('util', function () {
       );
     });
 
+    it('should make tooltips with title, description, default, and examples', function () {
+      assert.strictEqual(
+        util.makeFieldTooltip({title: 'foo', description: 'bar', default: 'bat', examples: ['baz']}),
+        'foo\nbar\n\nDefault\n"bat"\n\nExamples\n"baz"',
+      );
+    });
+
     it('should handle empty fields', function () {
       assert.strictEqual(util.makeFieldTooltip({title: '', description: 'bar'}), 'bar');
       assert.strictEqual(util.makeFieldTooltip({title: 'foo', description: ''}), 'foo');
       assert.strictEqual(util.makeFieldTooltip({description: 'bar', examples: []}), 'bar');
       assert.strictEqual(util.makeFieldTooltip({description: 'bar', examples: ['']}), 'bar\n\nExamples\n""');
+    });
+
+    it('should internationalize "Defaults" correctly', function () {
+      assert.strictEqual(util.makeFieldTooltip({default: 'foo'}, 'pt-BR'), 'Revelia\n"foo"');
     });
 
     it('should internationalize "Examples" correctly', function () {

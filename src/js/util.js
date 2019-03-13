@@ -1131,6 +1131,14 @@ exports.makeFieldTooltip = function (schema, locale) {
     tooltip += schema.description;
   }
 
+  if (schema.default) {
+    if (tooltip.length > 0) {
+      tooltip += '\n\n';
+    }
+    tooltip += translate('default', undefined, locale) + '\n';
+    tooltip += JSON.stringify(schema.default, null, 2);
+  }
+
   if (Array.isArray(schema.examples) && schema.examples.length > 0) {
     if (tooltip.length > 0) {
       tooltip += '\n\n';
