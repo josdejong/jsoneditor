@@ -122,11 +122,6 @@ div.jsoneditor-value.jsoneditor-invalid {
   color: #000000;
 }
 
-div.jsoneditor-value.jsoneditor-is-default {
-  color: #008000;
-  font-weight: bold;
-}
-
 div.jsoneditor-default {
   color: #808080;
   padding-left: 10px;
