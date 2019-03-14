@@ -1,5 +1,7 @@
 'use strict';
 
+require('./polyfills');
+
 var _locales = ['en', 'pt-BR', 'zh-CN', 'tr'];
 var _defs = {
   en: {
