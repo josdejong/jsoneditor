@@ -57,7 +57,26 @@ describe('Node', function () {
                 Node._findSchema(schema, {}, path),
                 schema.properties.levelTwo.properties.levelThree.properties.bool
             );
-        })
+        });
+
+        describe('with $ref', function () {
+            it('should find a referenced schema', function () {
+                var schema = {
+                    type: 'object',
+                    properties: {
+                        foo: {
+                            $ref: 'foo'
+                        }
+                    }
+                };
+                var fooSchema = {
+                    type: 'number',
+                    title: 'Foo'
+                };
+                var path = ['foo'];
+                assert.strictEqual(Node._findSchema(schema, {foo: fooSchema}, path), fooSchema);
+            });
+        });
 
         describe('with pattern properties', function () {
             it('should find schema', function () {
