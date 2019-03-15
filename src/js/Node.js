@@ -2634,9 +2634,13 @@ Node._findSchema = function (schema, schemaRefs, path) {
         }
       }
       else if (typeof key === 'string' && childSchema.properties) {
-        childSchema = childSchema.properties[key] || null;
-        if (childSchema) {
-          foundSchema = Node._findSchema(childSchema, schemaRefs, nextPath);
+        if (!(key in childSchema.properties)) {
+          foundSchema = null;
+        } else {
+          childSchema = childSchema.properties[key];
+          if (childSchema) {
+            foundSchema = Node._findSchema(childSchema, schemaRefs, nextPath);
+          }
         }
       }
       else if (typeof key === 'number' && childSchema.items) {
@@ -2648,6 +2652,12 @@ Node._findSchema = function (schema, schemaRefs, path) {
     }
 
   }
+
+  // If the found schema is the input schema, the schema does not have the given path
+  if (foundSchema === schema && path.length > 0) {
+    return null;
+  }
+
   return foundSchema
 };
 
