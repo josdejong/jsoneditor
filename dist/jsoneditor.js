@@ -24,8 +24,8 @@
  * Copyright (c) 2011-2019 Jos de Jong, http://jsoneditoronline.org
  *
  * @author  Jos de Jong, <wjosdejong@gmail.com>
- * @version 5.30.0
- * @date    2019-03-02
+ * @version 5.31.1
+ * @date    2019-03-14
  */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
@@ -97,7 +97,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	var VanillaPicker = __webpack_require__(57); // may be undefined in case of minimalist bundle
 
 	var treemode = __webpack_require__(59);
-	var textmode = __webpack_require__(81);
+	var textmode = __webpack_require__(82);
 	var util = __webpack_require__(65);
 
 	if (typeof Promise === 'undefined') {
@@ -30110,16 +30110,16 @@ return /******/ (function(modules) { // webpackBootstrap
 	var History = __webpack_require__(61);
 	var SearchBox = __webpack_require__(62);
 	var ContextMenu = __webpack_require__(63);
-	var TreePath = __webpack_require__(69);
-	var Node = __webpack_require__(70);
-	var ModeSwitcher = __webpack_require__(79);
+	var TreePath = __webpack_require__(70);
+	var Node = __webpack_require__(71);
+	var ModeSwitcher = __webpack_require__(80);
 	var util = __webpack_require__(65);
-	var autocomplete = __webpack_require__(80);
-	var showSortModal = __webpack_require__(75);
-	var showTransformModal = __webpack_require__(77);
-	var translate = __webpack_require__(68).translate;
-	var setLanguages = __webpack_require__(68).setLanguages;
-	var setLanguage = __webpack_require__(68).setLanguage;
+	var autocomplete = __webpack_require__(81);
+	var showSortModal = __webpack_require__(76);
+	var showTransformModal = __webpack_require__(78);
+	var translate = __webpack_require__(69).translate;
+	var setLanguages = __webpack_require__(69).setLanguages;
+	var setLanguage = __webpack_require__(69).setLanguage;
 
 	var DEFAULT_MODAL_ANCHOR = document.body; // TODO: this constant is defined twice
 
@@ -32741,7 +32741,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var createAbsoluteAnchor = __webpack_require__(64).createAbsoluteAnchor;
 	var util = __webpack_require__(65);
-	var translate = __webpack_require__(68).translate;
+	var translate = __webpack_require__(69).translate;
 
 	/**
 	 * A context menu
@@ -33266,8 +33266,10 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	'use strict';
 
-	var jsonlint = __webpack_require__(66);
-	var jsonMap = __webpack_require__(67);
+	__webpack_require__(66);
+	var jsonlint = __webpack_require__(67);
+	var jsonMap = __webpack_require__(68);
+	var translate = __webpack_require__(69).translate;
 
 	/**
 	 * Parse JSON using the parser built-in in the browser.
@@ -34328,6 +34330,48 @@ return /******/ (function(modules) { // webpackBootstrap
 	  return !!exports.getColorCSS(color);
 	}
 
+	/**
+	 * Make a tooltip for a field based on the field's schema.
+	 * @param {object} schema JSON schema
+	 * @param {string} [locale] Locale code (for example, zh-CN)
+	 * @returns {string} Field tooltip, may be empty string if all relevant schema properties are missing
+	 */
+	exports.makeFieldTooltip = function (schema, locale) {
+	  if (!schema) {
+	    return '';
+	  }
+	  
+	  var tooltip = '';
+	  if (schema.title) {
+	    tooltip += schema.title;
+	  }
+	  
+	  if (schema.description) {
+	    if (tooltip.length > 0) {
+	      tooltip += '\n';
+	    }
+	    tooltip += schema.description;
+	  }
+
+	  if (Array.isArray(schema.examples) && schema.examples.length > 0) {
+	    if (tooltip.length > 0) {
+	      tooltip += '\n\n';
+	    }
+	    tooltip += translate('examples', undefined, locale) + '\n';
+	    schema.examples.forEach(function (example) {
+	      tooltip += JSON.stringify(example, null, 2) + '\n';
+	    });
+	  }
+
+	  return tooltip;
+	}
+
+
+/***/ },
+/* 66 */
+/***/ function(module, exports) {
+
+	
 	if (typeof Element !== 'undefined') {
 	  // Polyfill for array remove
 	  (function () {
@@ -34355,15 +34399,15 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	// Polyfill for startsWith
 	if (!String.prototype.startsWith) {
-	    String.prototype.startsWith = function (searchString, position) {
-	        position = position || 0;
-	        return this.substr(position, searchString.length) === searchString;
-	    };
+	  String.prototype.startsWith = function (searchString, position) {
+	    position = position || 0;
+	    return this.substr(position, searchString.length) === searchString;
+	  };
 	}
 
 	// Polyfill for Array.find
 	if (!Array.prototype.find) {
-	  Array.prototype.find = function(callback) {    
+	  Array.prototype.find = function(callback) {
 	    for (var i = 0; i < this.length; i++) {
 	      var element = this[i];
 	      if ( callback.call(this, element, i, this) ) {
@@ -34373,34 +34417,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	  }
 	}
 
-	/**
-	 * Make a tooltip for a field based on the field's schema.
-	 * @param {Object} schema JSON schema
-	 * @returns {string} Field tooltip, may be empty string if all relevant schema properties are missing
-	 */
-	exports.makeFieldTooltip = function (schema) {
-	  if (!schema) {
-	    return '';
-	  }
-	  
-	  var tooltip = '';
-	  if (schema.title) {
-	    tooltip += schema.title;
-	  }
-	  
-	  if (schema.description) {
-	    if (tooltip.length > 0) {
-	      tooltip += '\n';
-	    }
-	    tooltip += schema.description;
-	  }
-
-	  return tooltip;
-	}
-
 
 /***/ },
-/* 66 */
+/* 67 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* Jison generated parser */
@@ -34823,7 +34842,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	}
 
 /***/ },
-/* 67 */
+/* 68 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -35239,10 +35258,12 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 68 */
-/***/ function(module, exports) {
+/* 69 */
+/***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
+
+	__webpack_require__(66);
 
 	var _locales = ['en', 'pt-BR', 'zh-CN', 'tr'];
 	var _defs = {
@@ -35327,6 +35348,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    modeTreeTitle: 'Switch to tree editor',
 	    modeViewText: 'View',
 	    modeViewTitle: 'Switch to tree view',
+	    examples: 'Examples',
 	  },
 	  'zh-CN': {
 	    array: '数组',
@@ -35339,10 +35361,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	    ascendingTitle: '升序排列${type}的子节点',
 	    actionsMenu: '点击打开动作菜单(Ctrl+M)',
 	    collapseAll: '缩进所有字段',
-	    descending: '姜旭',
-	    descendingTitle: '降序序排列${type}的子节点',
+	    descending: '降序',
+	    descendingTitle: '降序排列${type}的子节点',
 	    drag: '拖拽移动该节点(Alt+Shift+Arrows)',
-	    duplicateKey: '复制键',
+	    duplicateKey: '重复键',
 	    duplicateText: '复制',
 	    duplicateTitle: '复制选中字段(Ctrl+D)',
 	    duplicateField: '复制该字段(Ctrl+D)',
@@ -35409,6 +35431,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    modeTreeTitle: '切换至树编辑',
 	    modeViewText: '视图',
 	    modeViewTitle: '切换至树视图',
+	    examples: '例子',
 	  },
 	  'pt-BR': {
 	    array: 'Lista',
@@ -35502,7 +35525,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	      'Uma lista contem uma coleção de valores ordenados.',
 	    stringType: 'Campo do tipo "string". ' +
 	      'Campo do tipo nao é determinado através do seu valor, ' +
-	      'mas sempre retornara um texto.'
+	      'mas sempre retornara um texto.',
+	    examples: 'Exemplos',
 	  },
 	  tr: {
 	    array: 'Dizin',
@@ -35584,7 +35608,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	    modeTreeText: 'Ağaç',
 	    modeTreeTitle: 'Ağaç düzenleyiciye geç',
 	    modeViewText: 'Görünüm',
-	    modeViewTitle: 'Ağaç görünümüne geç'
+	    modeViewTitle: 'Ağaç görünümüne geç',
+	    examples: 'Örnekler',
 	  }
 	};
 
@@ -35647,13 +35672,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 
 /***/ },
-/* 69 */
+/* 70 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
 	var ContextMenu = __webpack_require__(63);
-	var translate = __webpack_require__(68).translate;
+	var translate = __webpack_require__(69).translate;
 	var util = __webpack_require__(65);
 
 	/**
@@ -35794,21 +35819,21 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = TreePath;
 
 /***/ },
-/* 70 */
+/* 71 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var jmespath = __webpack_require__(71);
-	var naturalSort = __webpack_require__(72);
+	var jmespath = __webpack_require__(72);
+	var naturalSort = __webpack_require__(73);
 	var createAbsoluteAnchor = __webpack_require__(64).createAbsoluteAnchor;
 	var ContextMenu = __webpack_require__(63);
-	var appendNodeFactory = __webpack_require__(73);
-	var showMoreNodeFactory = __webpack_require__(74);
-	var showSortModal = __webpack_require__(75);
-	var showTransformModal = __webpack_require__(77);
+	var appendNodeFactory = __webpack_require__(74);
+	var showMoreNodeFactory = __webpack_require__(75);
+	var showSortModal = __webpack_require__(76);
+	var showTransformModal = __webpack_require__(78);
 	var util = __webpack_require__(65);
-	var translate = __webpack_require__(68).translate;
+	var translate = __webpack_require__(69).translate;
 
 	var DEFAULT_MODAL_ANCHOR = document.body; // TODO: this constant is defined twice
 
@@ -37644,7 +37669,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	Node.prototype._updateDomField = function () {
 	  var domField = this.dom.field;
 	  if (domField) {
-	    var tooltip = util.makeFieldTooltip(this.schema);
+	    var tooltip = util.makeFieldTooltip(this.schema, this.editor.options.language);
 	    if (tooltip) {
 	      domField.title = tooltip;
 	    }
@@ -40378,7 +40403,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 71 */
+/* 72 */
 /***/ function(module, exports, __webpack_require__) {
 
 	(function(exports) {
@@ -42051,7 +42076,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 72 */
+/* 73 */
 /***/ function(module, exports) {
 
 	/*
@@ -42102,14 +42127,14 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 73 */
+/* 74 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
 	var util = __webpack_require__(65);
 	var ContextMenu = __webpack_require__(63);
-	var translate = __webpack_require__(68).translate;
+	var translate = __webpack_require__(69).translate;
 
 	/**
 	 * A factory function to create an AppendNode, which depends on a Node
@@ -42361,12 +42386,12 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 74 */
+/* 75 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var translate = __webpack_require__(68).translate;
+	var translate = __webpack_require__(69).translate;
 
 	/**
 	 * A factory function to create an ShowMoreNode, which depends on a Node
@@ -42524,11 +42549,11 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 75 */
+/* 76 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var picoModal = __webpack_require__(76);
-	var translate = __webpack_require__(68).translate;
+	var picoModal = __webpack_require__(77);
+	var translate = __webpack_require__(69).translate;
 
 	/**
 	 * Show advanced sorting modal
@@ -42644,7 +42669,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 76 */
+/* 77 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/**
@@ -43253,13 +43278,13 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 77 */
+/* 78 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var jmespath = __webpack_require__(71);
-	var picoModal = __webpack_require__(76);
-	var Selectr = __webpack_require__(78);
-	var translate = __webpack_require__(68).translate;
+	var jmespath = __webpack_require__(72);
+	var picoModal = __webpack_require__(77);
+	var Selectr = __webpack_require__(79);
+	var translate = __webpack_require__(69).translate;
 	var debounce = __webpack_require__(65).debounce;
 
 	var MAX_PREVIEW_LINES = 100;
@@ -43560,7 +43585,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 78 */
+/* 79 */
 /***/ function(module, exports) {
 
 	/*!
@@ -45739,13 +45764,13 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 79 */
+/* 80 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
 	var ContextMenu = __webpack_require__(63);
-	var translate = __webpack_require__(68).translate;
+	var translate = __webpack_require__(69).translate;
 
 	/**
 	 * Create a select box to be used in the editor menu's, which allows to switch mode
@@ -45860,7 +45885,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = ModeSwitcher;
 
 /***/ },
-/* 80 */
+/* 81 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -46247,13 +46272,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = completely;
 
 /***/ },
-/* 81 */
+/* 82 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
 	var ace = __webpack_require__(51);
-	var ModeSwitcher = __webpack_require__(79);
+	var ModeSwitcher = __webpack_require__(80);
 	var util = __webpack_require__(65);
 
 	// create a mixin with the functions for text mode
@@ -46328,7 +46353,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  this.theme = options.theme || DEFAULT_THEME;
 	  if (this.theme === DEFAULT_THEME && _ace) {
 	    try {
-	      __webpack_require__(82);
+	      __webpack_require__(83);
 	    }
 	    catch (err) {
 	      console.error(err);
@@ -47387,7 +47412,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 82 */
+/* 83 */
 /***/ function(module, exports) {
 
 	/* ***** BEGIN LICENSE BLOCK *****

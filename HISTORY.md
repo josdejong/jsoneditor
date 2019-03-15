@@ -3,7 +3,14 @@
 https://github.com/josdejong/jsoneditor
 
 
-## not yet published, version 5.31.0
+## 2019-03-14, version 5.31.1
+
+- Fix IE11 issue.
+- Some fixes in the Simplified Chinese translation.
+  Thanks @@adf0001 and @yuxizhe.
+
+
+## 2019-03-10, version 5.31.0
 
 - Display JSON schema examples in tooltip (#664). Thanks @AdamVig.
 
