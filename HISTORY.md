@@ -3,6 +3,12 @@
 https://github.com/josdejong/jsoneditor
 
 
+## not yet published, version 5.31.2
+
+- Fixed #667: resolving JSON Schema examples and descriptions did not always
+  work for referenced schemas. Thanks @AdamVig.
+
+
 ## 2019-03-14, version 5.31.1
 
 - Fix IE11 issue.
