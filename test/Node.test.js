@@ -57,7 +57,46 @@ describe('Node', function () {
                 Node._findSchema(schema, {}, path),
                 schema.properties.levelTwo.properties.levelThree.properties.bool
             );
-        })
+        });
+
+        it('should return null for path that has no schema', function () {
+            var schema = {
+                type: 'object',
+                properties: {
+                    foo: {
+                        type: 'object',
+                        properties: {
+                            baz: {
+                                type: 'number'
+                            }
+                        }
+                    }
+                }
+            };
+            var path = ['bar'];
+            assert.strictEqual(Node._findSchema(schema, {}, path), null);
+            path = ['foo', 'bar'];
+            assert.strictEqual(Node._findSchema(schema, {}, path), null);
+        });
+
+        describe('with $ref', function () {
+            it('should find a referenced schema', function () {
+                var schema = {
+                    type: 'object',
+                    properties: {
+                        foo: {
+                            $ref: 'foo'
+                        }
+                    }
+                };
+                var fooSchema = {
+                    type: 'number',
+                    title: 'Foo'
+                };
+                var path = ['foo'];
+                assert.strictEqual(Node._findSchema(schema, {foo: fooSchema}, path), fooSchema);
+            });
+        });
 
         describe('with pattern properties', function () {
             it('should find schema', function () {
@@ -192,6 +231,36 @@ describe('Node', function () {
                     schema.patternProperties['^bar[0-9]'].properties.barChild,
                     'second pattern property child'
                 );
+            });
+
+            it('should return null for path that has no schema', function () {
+                var schema = {
+                    type: 'object',
+                    properties: {
+                        levelTwo: {
+                            type: 'object',
+                            properties: {
+                                levelThree: {
+                                    type: 'number'
+                                }
+                            }
+                        }
+                    },
+                    patternProperties: {
+                        '^foo[0-9]': {
+                            title: 'foo[0-9] pattern property',
+                            type: 'string'
+                        },
+                        '^bar[0-9]': {
+                            title: 'bar[0-9] pattern property',
+                            type: 'string'
+                        }
+                    }
+                };
+                var path = ['not-in-schema'];
+                assert.strictEqual(Node._findSchema(schema, {}, path), null);
+                path = ['levelOne', 'not-in-schema'];
+                assert.strictEqual(Node._findSchema(schema, {}, path), null);
             });
         });
     });
