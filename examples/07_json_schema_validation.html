@@ -35,16 +35,28 @@
     "type": "object",
     "properties": {
       "firstName": {
+        "title": "First Name",
+        "description": "The given name.",
+        "examples": [
+          "John"
+        ],
         "type": "string"
       },
       "lastName": {
+        "title": "Last Name",
+        "description": "The family name.",
+        "examples": [
+          "Smith"
+        ],
         "type": "string"
       },
       "gender": {
+        "title": "Gender",
         "enum": ["male", "female"]
       },
       "availableToHire": {
-        "type": "boolean"
+        "type": "boolean",
+        "default": false
       },
       "age": {
         "description": "Age in years",
@@ -65,10 +77,19 @@
     "required": ["address"],
     "properties": {
       "company": {
-        "type": "string"
+        "type": "string",
+        "examples": [
+          "ACME",
+          "Dexter Industries"
+        ]
       },
       "role": {
-        "type": "string"
+        "description": "Job title.",
+        "type": "string",
+        "examples": [
+          "Human Resources Coordinator",
+          "Software Developer"
+        ]
       },
       "address": {
         "type": "string"

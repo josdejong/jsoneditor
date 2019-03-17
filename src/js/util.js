@@ -1087,13 +1087,24 @@ exports.makeFieldTooltip = function (schema, locale) {
     tooltip += schema.description;
   }
 
+  if (schema.default) {
+    if (tooltip.length > 0) {
+      tooltip += '\n\n';
+    }
+    tooltip += translate('default', undefined, locale) + '\n';
+    tooltip += JSON.stringify(schema.default, null, 2);
+  }
+
   if (Array.isArray(schema.examples) && schema.examples.length > 0) {
     if (tooltip.length > 0) {
       tooltip += '\n\n';
     }
     tooltip += translate('examples', undefined, locale) + '\n';
-    schema.examples.forEach(function (example) {
-      tooltip += JSON.stringify(example, null, 2) + '\n';
+    schema.examples.forEach(function (example, index) {
+      tooltip += JSON.stringify(example, null, 2);
+      if (index !== schema.examples.length - 1) {
+        tooltip += '\n';
+      }
     });
   }
 

@@ -1822,6 +1822,8 @@ Node.prototype._updateDomValue = function () {
 
     // strip formatting from the contents of the editable div
     util.stripFormatting(domValue);
+
+    this._updateDomDefault();
   }
 };
 
@@ -1905,6 +1907,32 @@ Node.prototype._getDomField = function(silent) {
         throw err;
       }
     }
+  }
+};
+
+/**
+ * Update the value of the schema default element in the DOM.
+ * @private
+ * @returns {undefined}
+ */
+Node.prototype._updateDomDefault = function () {
+  // Short-circuit if schema is missing, has no default, or if Node has children
+  if (!this.schema || !this.schema.default || this._hasChilds()) {
+    return;
+  }
+
+  if (this.value === this.schema.default) {
+    if (this.dom.select) {
+      this.dom.value.removeAttribute('title');
+    } else {
+      this.dom.value.title = translate('default');
+      this.dom.value.classList.add('jsoneditor-is-default');
+      this.dom.value.classList.remove('jsoneditor-is-not-default');
+    }
+  } else {
+    this.dom.value.removeAttribute('title');
+    this.dom.value.classList.remove('jsoneditor-is-default');
+    this.dom.value.classList.add('jsoneditor-is-not-default');
   }
 };
 
