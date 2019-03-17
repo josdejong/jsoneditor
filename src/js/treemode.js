@@ -291,6 +291,14 @@ treemode.get = function () {
     }
   }
 
+  // discard when duplicate keys
+  if (this.node) {
+    var duplicateErrors = this.node.validate();
+    if (duplicateErrors && duplicateErrors.length > 0) {
+      throw duplicateErrors[0];
+    }
+  }
+
   if (this.node) {
     return this.node.getValue();
   }
