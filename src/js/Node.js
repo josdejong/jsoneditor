@@ -1917,7 +1917,7 @@ Node.prototype._getDomField = function(silent) {
  */
 Node.prototype._updateDomDefault = function () {
   // Short-circuit if schema is missing, has no default, or if Node has children
-  if (!this.schema || !this.schema.default || this._hasChilds()) {
+  if (!this.schema || this.schema.default === undefined || this._hasChilds()) {
     return;
   }
 
@@ -2891,6 +2891,7 @@ Node.prototype.onEvent = function (event) {
   if (type == 'change' && target == dom.checkbox) {
     this.dom.value.innerHTML = !this.value;
     this._getDomValue();
+    this._updateDomDefault();
   }
 
   // update the value of the node based on the selected option

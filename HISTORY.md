@@ -3,8 +3,10 @@
 https://github.com/josdejong/jsoneditor
 
 
-## not yet published, version 5.31.2
+## not yet published, version 5.32.0
 
+- Implemented support for reckoning with JSON schema default values: custom
+  styling can be applied for default and non-default values. Thanks @AdamVig.
 - Fixed #667: resolving JSON Schema examples and descriptions did not always
   work for referenced schemas. Thanks @AdamVig.
 

@@ -16,12 +16,16 @@
       height: 500px;
     }
 
+    /* custom bold styling for non-default JSON schema values */
+    .jsoneditor-is-not-default {
+      font-weight: bold;
+    }
   </style>
 </head>
 <body>
 <h1>JSON schema validation</h1>
 <p>
-  This example demonstrates JSON schema validation. The JSON object in this example must contain properties <code>firstName</code> and <code>lastName</code>, can can optionally have a property <code>age</code> which must be a positive integer.
+  This example demonstrates JSON schema validation. The JSON object in this example must contain properties like <code>firstName</code> and <code>lastName</code>, can can optionally have a property <code>age</code> which must be a positive integer.
 </p>
 <p>
   See <a href="http://json-schema.org/" target="_blank">http://json-schema.org/</a> for more information.
@@ -89,7 +93,8 @@
         "examples": [
           "Human Resources Coordinator",
           "Software Developer"
-        ]
+        ],
+        "default": "Software Developer"
       },
       "address": {
         "type": "string"
@@ -107,7 +112,7 @@
     lastName: 'Doe',
     gender: null,
     age: "28",
-    availableToHire: 1,
+    availableToHire: true,
     job: {
       company: 'freelance',
       role: 'developer',
