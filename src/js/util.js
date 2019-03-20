@@ -742,43 +742,75 @@ exports.isChildOf = function (elem, parent) {
  * @return {Array}
  */
 exports.parsePath = function parsePath(jsonPath) {
-  var prop, remainder;
+  var path = [];
+  var i = 0;
 
-  if (jsonPath.length === 0) {
-    return [];
-  }
-
-  // find a match like '.prop'
-  var match = jsonPath.match(/^\.([\w$]+)/);
-  if (match) {
-    prop = match[1];
-    remainder = jsonPath.substr(prop.length + 1);
-  }
-  else if (jsonPath[0] === '[') {
-    // find a match like
-    var end = jsonPath.indexOf(']');
-    if (end === -1) {
-      throw new SyntaxError('Character ] expected in path');
-    }
-    if (end === 1) {
-      throw new SyntaxError('Index expected after [');
+  function parseProperty () {
+    var prop = ''
+    while (jsonPath[i] !== undefined && /[\w$]/.test(jsonPath[i])) {
+      prop += jsonPath[i];
+      i++;
     }
 
-    var value = jsonPath.substring(1, end);
-    if (value[0] === '\'') {
-      // ajv produces string prop names with single quotes, so we need
-      // to reformat them into valid double-quoted JSON strings
-      value = '\"' + value.substring(1, value.length - 1) + '\"';
+    if (prop === '') {
+      throw new Error('Invalid JSON path: property name expected at index ' + i);
     }
 
-    prop = value === '*' ? value : JSON.parse(value); // parse string and number
-    remainder = jsonPath.substr(end + 1);
-  }
-  else {
-    throw new SyntaxError('Failed to parse path');
+    return prop;
   }
 
-  return [prop].concat(parsePath(remainder))
+  function parseIndex (end) {
+    var name = ''
+    while (jsonPath[i] !== undefined && jsonPath[i] !== end) {
+      name += jsonPath[i];
+      i++;
+    }
+
+    if (jsonPath[i] !== end) {
+      throw new Error('Invalid JSON path: unexpected end, character ' + end + ' expected')
+    }
+
+    return name;
+  }
+
+  while (jsonPath[i] !== undefined) {
+    if (jsonPath[i] === '.') {
+      i++;
+      path.push(parseProperty());
+    }
+    else if (i > 0 && jsonPath[i] === '[') {
+      i++;
+
+      if (jsonPath[i] === '\'' || jsonPath[i] === '"') {
+        var end = jsonPath[i]
+        i++;
+
+        path.push(parseIndex(end));
+
+        if (jsonPath[i] !== end) {
+          throw new Error('Invalid JSON path: closing quote \' expected at index ' + i)
+        }
+        i++;
+      }
+      else {
+        var index = parseIndex(']').trim()
+        if (index.length === 0) {
+          throw new Error('Invalid JSON path: array value expected at index ' + i)
+        }
+        path.push(index);
+      }
+
+      if (jsonPath[i] !== ']') {
+        throw new Error('Invalid JSON path: closing bracket ] expected at index ' + i)
+      }
+      i++;
+    }
+    else {
+      throw new Error('Invalid JSON path: unexpected character "' + jsonPath[i] + '" at index ' + i);
+    }
+  }
+
+  return path;
 };
 
 /**

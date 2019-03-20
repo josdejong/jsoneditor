@@ -9,6 +9,8 @@ https://github.com/josdejong/jsoneditor
   styling can be applied for default and non-default values. Thanks @AdamVig.
 - Fixed #667: resolving JSON Schema examples and descriptions did not always
   work for referenced schemas. Thanks @AdamVig.
+- Fixed #676: JSON Paths containing array properties with a `]` not parsed
+  correctly.
 
 
 ## 2019-03-14, version 5.31.1
