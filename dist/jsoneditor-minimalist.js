@@ -24,8 +24,8 @@
  * Copyright (c) 2011-2019 Jos de Jong, http://jsoneditoronline.org
  *
  * @author  Jos de Jong, <wjosdejong@gmail.com>
- * @version 5.31.1
- * @date    2019-03-14
+ * @version 5.32.0
+ * @date    2019-03-20
  */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
@@ -5366,43 +5366,75 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * @return {Array}
 	 */
 	exports.parsePath = function parsePath(jsonPath) {
-	  var prop, remainder;
+	  var path = [];
+	  var i = 0;
 
-	  if (jsonPath.length === 0) {
-	    return [];
-	  }
-
-	  // find a match like '.prop'
-	  var match = jsonPath.match(/^\.([\w$]+)/);
-	  if (match) {
-	    prop = match[1];
-	    remainder = jsonPath.substr(prop.length + 1);
-	  }
-	  else if (jsonPath[0] === '[') {
-	    // find a match like
-	    var end = jsonPath.indexOf(']');
-	    if (end === -1) {
-	      throw new SyntaxError('Character ] expected in path');
-	    }
-	    if (end === 1) {
-	      throw new SyntaxError('Index expected after [');
+	  function parseProperty () {
+	    var prop = ''
+	    while (jsonPath[i] !== undefined && /[\w$]/.test(jsonPath[i])) {
+	      prop += jsonPath[i];
+	      i++;
 	    }
 
-	    var value = jsonPath.substring(1, end);
-	    if (value[0] === '\'') {
-	      // ajv produces string prop names with single quotes, so we need
-	      // to reformat them into valid double-quoted JSON strings
-	      value = '\"' + value.substring(1, value.length - 1) + '\"';
+	    if (prop === '') {
+	      throw new Error('Invalid JSON path: property name expected at index ' + i);
 	    }
 
-	    prop = value === '*' ? value : JSON.parse(value); // parse string and number
-	    remainder = jsonPath.substr(end + 1);
-	  }
-	  else {
-	    throw new SyntaxError('Failed to parse path');
+	    return prop;
 	  }
 
-	  return [prop].concat(parsePath(remainder))
+	  function parseIndex (end) {
+	    var name = ''
+	    while (jsonPath[i] !== undefined && jsonPath[i] !== end) {
+	      name += jsonPath[i];
+	      i++;
+	    }
+
+	    if (jsonPath[i] !== end) {
+	      throw new Error('Invalid JSON path: unexpected end, character ' + end + ' expected')
+	    }
+
+	    return name;
+	  }
+
+	  while (jsonPath[i] !== undefined) {
+	    if (jsonPath[i] === '.') {
+	      i++;
+	      path.push(parseProperty());
+	    }
+	    else if (i > 0 && jsonPath[i] === '[') {
+	      i++;
+
+	      if (jsonPath[i] === '\'' || jsonPath[i] === '"') {
+	        var end = jsonPath[i]
+	        i++;
+
+	        path.push(parseIndex(end));
+
+	        if (jsonPath[i] !== end) {
+	          throw new Error('Invalid JSON path: closing quote \' expected at index ' + i)
+	        }
+	        i++;
+	      }
+	      else {
+	        var index = parseIndex(']').trim()
+	        if (index.length === 0) {
+	          throw new Error('Invalid JSON path: array value expected at index ' + i)
+	        }
+	        path.push(index);
+	      }
+
+	      if (jsonPath[i] !== ']') {
+	        throw new Error('Invalid JSON path: closing bracket ] expected at index ' + i)
+	      }
+	      i++;
+	    }
+	    else {
+	      throw new Error('Invalid JSON path: unexpected character "' + jsonPath[i] + '" at index ' + i);
+	    }
+	  }
+
+	  return path;
 	};
 
 	/**
@@ -5711,13 +5743,24 @@ return /******/ (function(modules) { // webpackBootstrap
 	    tooltip += schema.description;
 	  }
 
+	  if (schema.default) {
+	    if (tooltip.length > 0) {
+	      tooltip += '\n\n';
+	    }
+	    tooltip += translate('default', undefined, locale) + '\n';
+	    tooltip += JSON.stringify(schema.default, null, 2);
+	  }
+
 	  if (Array.isArray(schema.examples) && schema.examples.length > 0) {
 	    if (tooltip.length > 0) {
 	      tooltip += '\n\n';
 	    }
 	    tooltip += translate('examples', undefined, locale) + '\n';
-	    schema.examples.forEach(function (example) {
-	      tooltip += JSON.stringify(example, null, 2) + '\n';
+	    schema.examples.forEach(function (example, index) {
+	      tooltip += JSON.stringify(example, null, 2);
+	      if (index !== schema.examples.length - 1) {
+	        tooltip += '\n';
+	      }
 	    });
 	  }
 
@@ -5773,6 +5816,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	      }
 	    }
 	  }
+	}
+
+	// Polyfill for String.trim
+	if (!String.prototype.trim) {
+	  String.prototype.trim = function () {
+	    return this.replace(/^[\s\uFEFF\xA0]+|[\s\uFEFF\xA0]+$/g, '');
+	  };
 	}
 
 
@@ -6707,6 +6757,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    modeViewText: 'View',
 	    modeViewTitle: 'Switch to tree view',
 	    examples: 'Examples',
+	    default: 'Default',
 	  },
 	  'zh-CN': {
 	    array: '数组',
@@ -6790,6 +6841,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    modeViewText: '视图',
 	    modeViewTitle: '切换至树视图',
 	    examples: '例子',
+	    default: '缺省',
 	  },
 	  'pt-BR': {
 	    array: 'Lista',
@@ -6885,6 +6937,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	      'Campo do tipo nao é determinado através do seu valor, ' +
 	      'mas sempre retornara um texto.',
 	    examples: 'Exemplos',
+	    default: 'Revelia',
 	  },
 	  tr: {
 	    array: 'Dizin',
@@ -6968,6 +7021,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    modeViewText: 'Görünüm',
 	    modeViewTitle: 'Ağaç görünümüne geç',
 	    examples: 'Örnekler',
+	    default: 'Varsayılan',
 	  }
 	};
 
@@ -9004,6 +9058,8 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	    // strip formatting from the contents of the editable div
 	    util.stripFormatting(domValue);
+
+	    this._updateDomDefault();
 	  }
 	};
 
@@ -9087,6 +9143,32 @@ return /******/ (function(modules) { // webpackBootstrap
 	        throw err;
 	      }
 	    }
+	  }
+	};
+
+	/**
+	 * Update the value of the schema default element in the DOM.
+	 * @private
+	 * @returns {undefined}
+	 */
+	Node.prototype._updateDomDefault = function () {
+	  // Short-circuit if schema is missing, has no default, or if Node has children
+	  if (!this.schema || this.schema.default === undefined || this._hasChilds()) {
+	    return;
+	  }
+
+	  if (this.value === this.schema.default) {
+	    if (this.dom.select) {
+	      this.dom.value.removeAttribute('title');
+	    } else {
+	      this.dom.value.title = translate('default');
+	      this.dom.value.classList.add('jsoneditor-is-default');
+	      this.dom.value.classList.remove('jsoneditor-is-not-default');
+	    }
+	  } else {
+	    this.dom.value.removeAttribute('title');
+	    this.dom.value.classList.remove('jsoneditor-is-default');
+	    this.dom.value.classList.add('jsoneditor-is-not-default');
 	  }
 	};
 
@@ -9791,18 +9873,18 @@ return /******/ (function(modules) { // webpackBootstrap
 	  for (var j = 0; j < allSchemas.length; j++) {
 	    childSchema = allSchemas[j];
 
+	    if ('$ref' in childSchema && typeof childSchema['$ref'] === 'string') {
+	      childSchema = schemaRefs[childSchema['$ref']];
+	      if (childSchema) {
+	        foundSchema = Node._findSchema(childSchema, schemaRefs, path);
+	      }
+	    }
+	  
 	    for (var i = 0; i < path.length && childSchema; i++) {
 	      var nextPath = path.slice(i + 1, path.length);
 	      var key = path[i];
 
-	      // fix childSchema with $ref, and not display the select element on the child schema because of not found enum
-	      if (typeof key === 'string' && childSchema['$ref']) {
-	        childSchema = schemaRefs[childSchema['$ref']];
-	        if (childSchema) {
-	          foundSchema = Node._findSchema(childSchema, schemaRefs, nextPath);
-	        }
-	      }
-	      else if (typeof key === 'string' && childSchema.patternProperties && !(childSchema.properties && key in childSchema.properties)) {
+	      if (typeof key === 'string' && childSchema.patternProperties && !(childSchema.properties && key in childSchema.properties)) {
 	        for (var prop in childSchema.patternProperties) {
 	          if (key.match(prop)) {
 	            foundSchema = Node._findSchema(childSchema.patternProperties[prop], schemaRefs, nextPath);
@@ -9816,9 +9898,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	        }
 	      }
 	      else if (typeof key === 'string' && childSchema.properties) {
-	        childSchema = childSchema.properties[key] || null;
-	        if (childSchema) {
-	          foundSchema = Node._findSchema(childSchema, schemaRefs, nextPath);
+	        if (!(key in childSchema.properties)) {
+	          foundSchema = null;
+	        } else {
+	          childSchema = childSchema.properties[key];
+	          if (childSchema) {
+	            foundSchema = Node._findSchema(childSchema, schemaRefs, nextPath);
+	          }
 	        }
 	      }
 	      else if (typeof key === 'number' && childSchema.items) {
@@ -9830,6 +9916,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }
 
 	  }
+
+	  // If the found schema is the input schema, the schema does not have the given path
+	  if (foundSchema === schema && path.length > 0) {
+	    return null;
+	  }
+
 	  return foundSchema
 	};
 
@@ -10035,6 +10127,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  if (type == 'change' && target == dom.checkbox) {
 	    this.dom.value.innerHTML = !this.value;
 	    this._getDomValue();
+	    this._updateDomDefault();
 	  }
 
 	  // update the value of the node based on the selected option

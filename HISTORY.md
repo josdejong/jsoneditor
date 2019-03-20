@@ -3,7 +3,7 @@
 https://github.com/josdejong/jsoneditor
 
 
-## not yet published, version 5.32.0
+## 2019-03-20, version 5.32.0
 
 - Implemented support for reckoning with JSON schema default values: custom
   styling can be applied for default and non-default values. Thanks @AdamVig.
