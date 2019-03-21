@@ -789,10 +789,10 @@ exports.stringifyPath = function stringifyPath(path) {
       .map(function (p) {
         if (typeof p === 'number'){
           return ('[' + p + ']');
-        } else if(typeof p === 'string' && p.indexOf('-') >= 0) {
-          return '["' + p + '"]';
-        } else {
+        } else if(typeof p === 'string' && p.match(/^[A-Za-z0-9_$]+$/)) {
           return '.' + p;
+        } else {
+          return '["' + p + '"]';
         }
       })
       .join('');

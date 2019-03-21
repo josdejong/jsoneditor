@@ -106,7 +106,9 @@ describe('util', function () {
       assert.deepEqual(util.stringifyPath(['foo', 'bar']), '.foo.bar');
       assert.deepEqual(util.stringifyPath(['foo', 2]), '.foo[2]');
       assert.deepEqual(util.stringifyPath(['foo', 2, 'bar']), '.foo[2].bar');
+      assert.deepEqual(util.stringifyPath(['foo', 2, 'bar_baz']), '.foo[2].bar_baz');
       assert.deepEqual(util.stringifyPath(['foo', 'prop-with-hyphens']), '.foo["prop-with-hyphens"]');
+      assert.deepEqual(util.stringifyPath(['foo', 'prop with spaces']), '.foo["prop with spaces"]');
     })
 
     it ('should parse a json path', function () {
