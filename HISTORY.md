@@ -3,6 +3,12 @@
 https://github.com/josdejong/jsoneditor
 
 
+## not yet published, version 5.32.1
+
+- Fixed using hyphens in the path of custom validation errors (see #665).
+  Thanks @tobiasfriden.
+
+
 ## 2019-03-20, version 5.32.0
 
 - Implemented support for reckoning with JSON schema default values: custom
