@@ -821,7 +821,13 @@ exports.parsePath = function parsePath(jsonPath) {
 exports.stringifyPath = function stringifyPath(path) {
   return path
       .map(function (p) {
-        return typeof p === 'number' ? ('[' + p + ']') : ('.' + p);
+        if (typeof p === 'number'){
+          return ('[' + p + ']');
+        } else if(typeof p === 'string' && p.match(/^[A-Za-z0-9_$]+$/)) {
+          return '.' + p;
+        } else {
+          return '["' + p + '"]';
+        }
       })
       .join('');
 };
