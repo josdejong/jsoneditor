@@ -797,6 +797,8 @@ exports.parsePath = function parsePath(jsonPath) {
         if (index.length === 0) {
           throw new Error('Invalid JSON path: array value expected at index ' + i)
         }
+        // Coerce numeric indices to numbers, but ignore star
+        index = index === '*' ? index : JSON.parse(index);
         path.push(index);
       }
 
