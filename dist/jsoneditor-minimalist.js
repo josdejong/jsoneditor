@@ -24,8 +24,8 @@
  * Copyright (c) 2011-2019 Jos de Jong, http://jsoneditoronline.org
  *
  * @author  Jos de Jong, <wjosdejong@gmail.com>
- * @version 5.32.0
- * @date    2019-03-20
+ * @version 5.32.1
+ * @date    2019-03-28
  */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
@@ -5421,6 +5421,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	        if (index.length === 0) {
 	          throw new Error('Invalid JSON path: array value expected at index ' + i)
 	        }
+	        // Coerce numeric indices to numbers, but ignore star
+	        index = index === '*' ? index : JSON.parse(index);
 	        path.push(index);
 	      }
 
@@ -5445,7 +5447,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	exports.stringifyPath = function stringifyPath(path) {
 	  return path
 	      .map(function (p) {
-	        return typeof p === 'number' ? ('[' + p + ']') : ('.' + p);
+	        if (typeof p === 'number'){
+	          return ('[' + p + ']');
+	        } else if(typeof p === 'string' && p.match(/^[A-Za-z0-9_$]+$/)) {
+	          return '.' + p;
+	        } else {
+	          return '["' + p + '"]';
+	        }
 	      })
 	      .join('');
 	};

@@ -3,7 +3,7 @@
 https://github.com/josdejong/jsoneditor
 
 
-## not yet published, version 5.32.1
+## 2018-03-28, version 5.32.1
 
 - Fixed a regression in parsing JSON paths: numbers where parsed as strings
   instead of a numeric value. See #679. Thanks @AdamVig.
