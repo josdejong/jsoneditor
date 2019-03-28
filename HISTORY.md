@@ -5,6 +5,8 @@ https://github.com/josdejong/jsoneditor
 
 ## not yet published, version 5.32.1
 
+- Fixed a regression in parsing JSON paths: numbers where parsed as strings
+  instead of a numeric value. See #679. Thanks @AdamVig.
 - Fixed using hyphens in the path of custom validation errors (see #665).
   Thanks @tobiasfriden.
 
