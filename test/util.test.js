@@ -98,27 +98,27 @@ describe('util', function () {
   describe('jsonPath', function () {
 
     it('should stringify an array of paths', function() {
-      assert.deepEqual(util.stringifyPath([]), '');
-      assert.deepEqual(util.stringifyPath(['foo']), '.foo');
-      assert.deepEqual(util.stringifyPath(['foo', 'bar']), '.foo.bar');
-      assert.deepEqual(util.stringifyPath(['foo', 2]), '.foo[2]');
-      assert.deepEqual(util.stringifyPath(['foo', 2, 'bar']), '.foo[2].bar');
-      assert.deepEqual(util.stringifyPath(['foo', 2, 'bar_baz']), '.foo[2].bar_baz');
-      assert.deepEqual(util.stringifyPath(['foo', 'prop-with-hyphens']), '.foo["prop-with-hyphens"]');
-      assert.deepEqual(util.stringifyPath(['foo', 'prop with spaces']), '.foo["prop with spaces"]');
+      assert.deepStrictEqual(util.stringifyPath([]), '');
+      assert.deepStrictEqual(util.stringifyPath(['foo']), '.foo');
+      assert.deepStrictEqual(util.stringifyPath(['foo', 'bar']), '.foo.bar');
+      assert.deepStrictEqual(util.stringifyPath(['foo', 2]), '.foo[2]');
+      assert.deepStrictEqual(util.stringifyPath(['foo', 2, 'bar']), '.foo[2].bar');
+      assert.deepStrictEqual(util.stringifyPath(['foo', 2, 'bar_baz']), '.foo[2].bar_baz');
+      assert.deepStrictEqual(util.stringifyPath(['foo', 'prop-with-hyphens']), '.foo["prop-with-hyphens"]');
+      assert.deepStrictEqual(util.stringifyPath(['foo', 'prop with spaces']), '.foo["prop with spaces"]');
     })
 
     it ('should parse a json path', function () {
-      assert.deepEqual(util.parsePath(''), []);
-      assert.deepEqual(util.parsePath('.foo'), ['foo']);
-      assert.deepEqual(util.parsePath('.foo.bar'), ['foo', 'bar']);
-      assert.deepEqual(util.parsePath('.foo[2]'), ['foo', 2]);
-      assert.deepEqual(util.parsePath('.foo[2].bar'), ['foo', 2, 'bar']);
-      assert.deepEqual(util.parsePath('.foo["prop with spaces"]'), ['foo', 'prop with spaces']);
-      assert.deepEqual(util.parsePath('.foo[\'prop with single quotes as outputted by ajv library\']'), ['foo', 'prop with single quotes as outputted by ajv library']);
-      assert.deepEqual(util.parsePath('.foo["prop with . dot"]'), ['foo', 'prop with . dot']);
-      assert.deepEqual(util.parsePath('.foo["prop with ] character"]'), ['foo', 'prop with ] character']);
-      assert.deepEqual(util.parsePath('.foo[*].bar'), ['foo', '*', 'bar']);
+      assert.deepStrictEqual(util.parsePath(''), []);
+      assert.deepStrictEqual(util.parsePath('.foo'), ['foo']);
+      assert.deepStrictEqual(util.parsePath('.foo.bar'), ['foo', 'bar']);
+      assert.deepStrictEqual(util.parsePath('.foo[2]'), ['foo', 2]);
+      assert.deepStrictEqual(util.parsePath('.foo[2].bar'), ['foo', 2, 'bar']);
+      assert.deepStrictEqual(util.parsePath('.foo["prop with spaces"]'), ['foo', 'prop with spaces']);
+      assert.deepStrictEqual(util.parsePath('.foo[\'prop with single quotes as outputted by ajv library\']'), ['foo', 'prop with single quotes as outputted by ajv library']);
+      assert.deepStrictEqual(util.parsePath('.foo["prop with . dot"]'), ['foo', 'prop with . dot']);
+      assert.deepStrictEqual(util.parsePath('.foo["prop with ] character"]'), ['foo', 'prop with ] character']);
+      assert.deepStrictEqual(util.parsePath('.foo[*].bar'), ['foo', '*', 'bar']);
     });
 
     it ('should throw an exception in case of an invalid path', function () {
