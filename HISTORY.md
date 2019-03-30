@@ -3,6 +3,11 @@
 https://github.com/josdejong/jsoneditor
 
 
+## not yet released, version 5.32.2
+
+- Fixed #416: Clipped action menu for append nodes.
+
+
 ## 2018-03-28, version 5.32.1
 
 - Fixed a regression in parsing JSON paths: numbers where parsed as strings
