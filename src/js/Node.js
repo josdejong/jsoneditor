@@ -268,7 +268,7 @@ Node.prototype.setError = function (error, child) {
  * Render the error
  */
 Node.prototype.updateError = function() {
-  var error = this.error;
+  var error = this.fieldError || this.valueError || this.error;
   var tdError = this.dom.tdError;
   if (error && this.dom && this.dom.tr) {
     util.addClassName(this.dom.tr, 'jsoneditor-validation-error');
@@ -379,7 +379,7 @@ Node.prototype.setField = function(field, fieldEditable) {
  */
 Node.prototype.getField = function() {
   if (this.field === undefined) {
-    this._getDomField(false);
+    this._getDomField(true);
   }
 
   return this.field;
@@ -920,23 +920,23 @@ Node.prototype.hideChilds = function(options) {
  */
 Node.prototype._updateCssClassName = function () {
   if(this.dom.field
-    && this.editor 
-    && this.editor.options 
+    && this.editor
+    && this.editor.options
     && typeof this.editor.options.onClassName ==='function'
-    && this.dom.tree){              
-      util.removeAllClassNames(this.dom.tree);              
+    && this.dom.tree){
+      util.removeAllClassNames(this.dom.tree);
       var addClasses = this.editor.options.onClassName({ path: this.getPath(), field: this.field, value: this.value }) || "";
       util.addClassName(this.dom.tree, "jsoneditor-values " + addClasses);
   }
 };
 
-Node.prototype.recursivelyUpdateCssClassesOnNodes = function () {  
+Node.prototype.recursivelyUpdateCssClassesOnNodes = function () {
   this._updateCssClassName();
   if (Array.isArray(this.childs)) {
     for (var i = 0; i < this.childs.length; i++) {
       this.childs[i].recursivelyUpdateCssClassesOnNodes();
     }
-  }  
+  }
 }
 
 /**
@@ -1317,8 +1317,8 @@ Node.select = function(editableDiv) {
  */
 Node.prototype.blur = function() {
   // retrieve the actual field and value from the DOM.
-  this._getDomValue(false);
-  this._getDomField(false);
+  this._getDomValue();
+  this._getDomField(true);
 };
 
 /**
@@ -1541,11 +1541,11 @@ Node.prototype.deepEqual = function (json) {
 
 /**
  * Retrieve value from DOM
- * @param {boolean} [silent]  If true (default), no errors will be thrown in
- *                            case of invalid data
  * @private
  */
-Node.prototype._getDomValue = function(silent) {
+Node.prototype._getDomValue = function() {
+  this._clearValueError();
+
   if (this.dom.value && this.type != 'array' && this.type != 'object') {
     this.valueInnerText = util.getInnerText(this.dom.value);
   }
@@ -1567,10 +1567,49 @@ Node.prototype._getDomValue = function(silent) {
       }
     }
     catch (err) {
-      // keep the previous (valid) value
+      // keep the previous value
+      this._setValueError(translate('cannotParseValueError'));
     }
   }
 };
+
+/**
+ * Show a local error in case of invalid value
+ * @param {string} message
+ * @private
+ */
+Node.prototype._setValueError = function (message) {
+  this.valueError = {
+    message: message
+  };
+  this.updateError();
+}
+
+Node.prototype._clearValueError = function () {
+  if (this.valueError) {
+    this.valueError = null;
+    this.updateError();
+  }
+}
+
+/**
+ * Show a local error in case of invalid or duplicate field
+ * @param {string} message
+ * @private
+ */
+Node.prototype._setFieldError = function (message) {
+  this.fieldError = {
+    message: message
+  };
+  this.updateError();
+}
+
+Node.prototype._clearFieldError = function () {
+  if (this.fieldError) {
+    this.fieldError = null;
+    this.updateError();
+  }
+}
 
 /**
  * Handle a changed value
@@ -1878,11 +1917,13 @@ Node.prototype._updateDomField = function () {
 
 /**
  * Retrieve field from DOM
- * @param {boolean} [silent]  If true (default), no errors will be thrown in
- *                            case of invalid data
+ * @param {boolean} [forceUnique]  If true, the field name will be changed
+ *                                 into a unique name in case it is a duplicate.
  * @private
  */
-Node.prototype._getDomField = function(silent) {
+Node.prototype._getDomField = function(forceUnique) {
+  this._clearFieldError();
+
   if (this.dom.field && this.fieldEditable) {
     this.fieldInnerText = util.getInnerText(this.dom.field);
   }
@@ -1900,16 +1941,25 @@ Node.prototype._getDomField = function(silent) {
           this._debouncedOnChangeField();
         }
         else {
-          if (!silent) {
+          if (forceUnique) {
             // fix duplicate field: change it into a unique name
-            this.field = util.findUniqueName(field, existingFieldNames);
-            this._debouncedOnChangeField();
+            field = util.findUniqueName(field, existingFieldNames);
+            if (field !== this.field) {
+              this.field = field;
+              // this._debouncedOnChangeField = util.debounce(this._onChangeField.bind(this), Node.prototype.DEBOUNCE_INTERVAL);
+              // this._onChangeField();
+              this._debouncedOnChangeField(); //FIXME: don't debounce but resolve right away, and cancel current debounce
+            }
+          }
+          else {
+            this._setFieldError(translate('duplicateFieldError'));
           }
         }
       }
     }
     catch (err) {
-      // keep the previous (valid) field value
+      // keep the previous field value
+      this._setFieldError(translate('cannotParseFieldError'));
     }
   }
 };
@@ -2412,6 +2462,7 @@ Node.prototype.setSelected = function (selected, isFirst) {
 Node.prototype.updateValue = function (value) {
   this.value = value;
   this.previousValue = value;
+  this.valueError = undefined;
   this.updateDom();
 };
 
@@ -2422,6 +2473,7 @@ Node.prototype.updateValue = function (value) {
 Node.prototype.updateField = function (field) {
   this.field = field;
   this.previousField = field;
+  this.fieldError = undefined;
   this.updateDom();
 };
 
@@ -2495,7 +2547,7 @@ Node.prototype.updateDom = function (options) {
   // update field and value
   this._updateDomField();
   this._updateDomValue();
-   
+
   this._updateCssClassName();
 
   // update childs indexes
@@ -2599,7 +2651,7 @@ Node._findSchema = function (schema, schemaRefs, path) {
         foundSchema = Node._findSchema(childSchema, schemaRefs, path);
       }
     }
-  
+
     for (var i = 0; i < path.length && childSchema; i++) {
       var nextPath = path.slice(i + 1, path.length);
       var key = path[i];
@@ -2864,7 +2916,8 @@ Node.prototype.onEvent = function (event) {
     switch (type) {
       case 'blur':
       case 'change':
-        this._getDomValue(true);
+        this._getDomValue();
+        this._clearValueError();
         this._updateDomValue();
         if (this.value) {
           domValue.innerHTML = this._escapeHTML(this.value);
@@ -2873,7 +2926,7 @@ Node.prototype.onEvent = function (event) {
 
       case 'input':
         //this._debouncedGetDomValue(true); // TODO
-        this._getDomValue(true);
+        this._getDomValue();
         this._updateDomValue();
         break;
 
@@ -2895,14 +2948,14 @@ Node.prototype.onEvent = function (event) {
 
       case 'keyup':
         //this._debouncedGetDomValue(true); // TODO
-        this._getDomValue(true);
+        this._getDomValue();
         this._updateDomValue();
         break;
 
       case 'cut':
       case 'paste':
         setTimeout(function () {
-          node._getDomValue(true);
+          node._getDomValue();
           node._updateDomValue();
         }, 1);
         break;
@@ -2914,14 +2967,6 @@ Node.prototype.onEvent = function (event) {
   if (target == domField) {
     switch (type) {
       case 'blur':
-        this._getDomField(false);
-        this._updateDomField();
-        if (this.field) {
-          domField.innerHTML = this._escapeHTML(this.field);
-        }
-        break;
-
-      case 'change':
         this._getDomField(true);
         this._updateDomField();
         if (this.field) {
@@ -2930,7 +2975,7 @@ Node.prototype.onEvent = function (event) {
         break;
 
       case 'input':
-        this._getDomField(true);
+        this._getDomField();
         this._updateSchema();
         this._updateDomField();
         this._updateDomValue();
@@ -2942,14 +2987,14 @@ Node.prototype.onEvent = function (event) {
         break;
 
       case 'keyup':
-        this._getDomField(true);
+        this._getDomField();
         this._updateDomField();
         break;
 
       case 'cut':
       case 'paste':
         setTimeout(function () {
-          node._getDomField(true);
+          node._getDomField();
           node._updateDomField();
         }, 1);
         break;
