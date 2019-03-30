@@ -1567,11 +1567,7 @@ Node.prototype._getDomValue = function(silent) {
       }
     }
     catch (err) {
-      this.value = undefined;
-      // TODO: sent an action with the new, invalid value?
-      if (silent !== true) {
-        throw err;
-      }
+      // keep the previous (valid) value
     }
   }
 };
@@ -1913,11 +1909,7 @@ Node.prototype._getDomField = function(silent) {
       }
     }
     catch (err) {
-      this.field = undefined;
-      // TODO: sent an action here, with the new, invalid value?
-      if (silent !== true) {
-        throw err;
-      }
+      // keep the previous (valid) field value
     }
   }
 };
