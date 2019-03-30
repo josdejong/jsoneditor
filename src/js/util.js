@@ -1150,3 +1150,23 @@ exports.makeFieldTooltip = function (schema, locale) {
 
   return tooltip;
 }
+
+/**
+ * Find a unique name. Suffix the name with ' (copy)', '(copy 2)', etc
+ * until a unique name is found
+ * @param {string} name
+ * @param {Array} existingPropNames    Array with existing prop names
+ */
+exports.findUniqueName = function(name, existingPropNames) {
+  var strippedName = name.replace(/ \(copy( \d+)?\)$/, '')
+  var validName = strippedName
+  var i = 1
+
+  while (existingPropNames.indexOf(validName) !== -1) {
+    var copy = 'copy' + (i > 1 ? (' ' + i) : '')
+    validName = `${strippedName} (${copy})`
+    i++
+  }
+
+  return validName
+}

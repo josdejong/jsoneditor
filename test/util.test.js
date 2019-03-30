@@ -224,5 +224,51 @@ describe('util', function () {
       assert.strictEqual(util.makeFieldTooltip({examples: ['foo']}, 'pt-BR'), 'Exemplos\n"foo"');
     });
   });
+
+  it('should find a unique name', function () {
+    assert.strictEqual(util.findUniqueName('other', [
+      'a',
+      'b',
+      'c'
+    ]), 'other')
+
+    assert.strictEqual(util.findUniqueName('b', [
+      'a',
+      'b',
+      'c'
+    ]), 'b (copy)')
+
+    assert.strictEqual(util.findUniqueName('b', [
+      'a',
+      'b',
+      'c',
+      'b (copy)'
+    ]), 'b (copy 2)')
+
+    assert.strictEqual(util.findUniqueName('b', [
+      'a',
+      'b',
+      'c',
+      'b (copy)',
+      'b (copy 2)'
+    ]), 'b (copy 3)')
+
+    assert.strictEqual(util.findUniqueName('b (copy)', [
+      'a',
+      'b',
+      'b (copy)',
+      'b (copy 2)',
+      'c'
+    ]), 'b (copy 3)')
+
+    assert.strictEqual(util.findUniqueName('b (copy 2)', [
+      'a',
+      'b',
+      'b (copy)',
+      'b (copy 2)',
+      'c'
+    ]), 'b (copy 3)')
+  })
+
   // TODO: thoroughly test all util methods
 });

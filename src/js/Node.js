@@ -379,7 +379,7 @@ Node.prototype.setField = function(field, fieldEditable) {
  */
 Node.prototype.getField = function() {
   if (this.field === undefined) {
-    this._getDomField();
+    this._getDomField(false);
   }
 
   return this.field;
@@ -1891,13 +1891,25 @@ Node.prototype._getDomField = function(silent) {
     this.fieldInnerText = util.getInnerText(this.dom.field);
   }
 
-  if (this.fieldInnerText != undefined) {
+  if (this.fieldInnerText !== undefined) {
     try {
       var field = this._unescapeHTML(this.fieldInnerText);
 
       if (field !== this.field) {
-        this.field = field;
-        this._debouncedOnChangeField();
+        var existingFieldNames = this.parent.getFieldNames(this);
+        var isDuplicate = existingFieldNames.indexOf(field) !== -1;
+
+        if (!isDuplicate) {
+          this.field = field;
+          this._debouncedOnChangeField();
+        }
+        else {
+          if (!silent) {
+            // fix duplicate field: change it into a unique name
+            this.field = util.findUniqueName(field, existingFieldNames);
+            this._debouncedOnChangeField();
+          }
+        }
       }
     }
     catch (err) {
@@ -1934,54 +1946,6 @@ Node.prototype._updateDomDefault = function () {
     this.dom.value.classList.remove('jsoneditor-is-default');
     this.dom.value.classList.add('jsoneditor-is-not-default');
   }
-};
-
-/**
- * Validate this node and all it's childs
- * @return {Array.<{node: Node, error: {message: string}}>} Returns a list with duplicates
- */
-Node.prototype.validate = function () {
-  var errors = [];
-
-  // find duplicate keys
-  if (this.type === 'object') {
-    var keys = {};
-    var duplicateKeys = [];
-    for (var i = 0; i < this.childs.length; i++) {
-      var child = this.childs[i];
-      if (keys.hasOwnProperty(child.field)) {
-        duplicateKeys.push(child.field);
-      }
-      keys[child.field] = true;
-    }
-
-    if (duplicateKeys.length > 0) {
-      errors = this.childs
-          .filter(function (node) {
-            return duplicateKeys.indexOf(node.field) !== -1;
-          })
-          .map(function (node) {
-            return {
-              node: node,
-              error: {
-                message: translate('duplicateKey') + ' "' + node.field + '"'
-              }
-            }
-          });
-    }
-  }
-
-  // recurse over the childs
-  if (this.childs) {
-    for (var i = 0; i < this.childs.length; i++) {
-      var e = this.childs[i].validate();
-      if (e.length > 0) {
-        errors = errors.concat(e);
-      }
-    }
-  }
-
-  return errors;
 };
 
 /**
@@ -2958,6 +2922,13 @@ Node.prototype.onEvent = function (event) {
   if (target == domField) {
     switch (type) {
       case 'blur':
+        this._getDomField(false);
+        this._updateDomField();
+        if (this.field) {
+          domField.innerHTML = this._escapeHTML(this.field);
+        }
+        break;
+
       case 'change':
         this._getDomField(true);
         this._updateDomField();
@@ -3463,6 +3434,25 @@ Node.prototype._showColorPicker = function () {
 };
 
 /**
+ * Get all field names of an object
+ * @param {Node} [excludeNode] Optional node to be excluded from the returned field names
+ * @return {string[]}
+ */
+Node.prototype.getFieldNames = function (excludeNode) {
+  if (this.type === 'object') {
+    return this.childs
+        .filter(function (child) {
+          return child !== excludeNode;
+        })
+        .map(function (child) {
+          return child.field;
+        });
+  }
+
+  return [];
+}
+
+/**
  * Remove nodes
  * @param {Node[] | Node} nodes
  */
@@ -3526,6 +3516,8 @@ Node.onDuplicate = function(nodes) {
     var afterNode = lastNode;
     var clones = nodes.map(function (node) {
       var clone = node.clone();
+      var existingFieldNames = node.parent.getFieldNames();
+      clone.field = util.findUniqueName(node.field, existingFieldNames);
       parent.insertAfter(clone, afterNode);
       afterNode = clone;
       return clone;

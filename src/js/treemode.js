@@ -577,9 +577,6 @@ treemode.validate = function () {
 
   var json = root.getValue();
 
-  // check for duplicate keys
-  var duplicateErrors = root.validate();
-
   // execute JSON schema validation
   var schemaErrors = [];
   if (this.validateSchema) {
@@ -611,7 +608,7 @@ treemode.validate = function () {
         .then(function (customValidationErrors) {
           // only apply when there was no other validation started whilst resolving async results
           if (seq === me.validationSequence) {
-            var errorNodes = [].concat(duplicateErrors, schemaErrors, customValidationErrors || []);
+            var errorNodes = [].concat(schemaErrors, customValidationErrors || []);
             me._renderValidationErrors(errorNodes);
           }
         })
