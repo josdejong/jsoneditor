@@ -123,8 +123,10 @@ function History (editor) {
         var nodes = params.paths.map(findNode);
         nodes.forEach(function (node) {
           var clone = node.clone();
-          var existingFieldNames = parentNode.getFieldNames();
-          clone.field = util.findUniqueName(node.field, existingFieldNames);
+          if (parentNode.type === 'object') {
+            var existingFieldNames = parentNode.getFieldNames();
+            clone.field = util.findUniqueName(node.field, existingFieldNames);
+          }
           parentNode.insertAfter(clone, afterNode);
           afterNode = clone;
         });

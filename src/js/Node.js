@@ -3508,8 +3508,10 @@ Node.onDuplicate = function(nodes) {
     var afterNode = lastNode;
     var clones = nodes.map(function (node) {
       var clone = node.clone();
-      var existingFieldNames = node.parent.getFieldNames();
-      clone.field = util.findUniqueName(node.field, existingFieldNames);
+      if (node.parent.type === 'object') {
+        var existingFieldNames = node.parent.getFieldNames();
+        clone.field = util.findUniqueName(node.field, existingFieldNames);
+      }
       parent.insertAfter(clone, afterNode);
       afterNode = clone;
       return clone;
