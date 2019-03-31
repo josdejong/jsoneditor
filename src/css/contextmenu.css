@@ -271,7 +271,7 @@ div.jsoneditor-contextmenu button.jsoneditor-type-modes > div.jsoneditor-icon {
 }
 
 .jsoneditor-modal table td {
-  padding: 5px 0;
+  padding: 3px 0;
 }
 
 .jsoneditor-modal p:first-child {
@@ -451,7 +451,7 @@ div.jsoneditor-contextmenu button.jsoneditor-type-modes > div.jsoneditor-icon {
 .jsoneditor-modal .jsoneditor-jmespath-label {
   font-weight: bold;
   color: dodgerblue;
-  margin-top: 10px;
+  margin-top: 20px;
   margin-bottom: 5px;
 }
 
@@ -468,6 +468,8 @@ div.jsoneditor-contextmenu button.jsoneditor-type-modes > div.jsoneditor-icon {
   position: relative;
   display: inline-block;
   width: 100%;
+  padding-top: 2px;
+  padding-bottom: 2px;
 }
 
 .jsoneditor-modal .jsoneditor-inline:not(:last-child) {
@@ -480,13 +482,13 @@ div.jsoneditor-contextmenu button.jsoneditor-type-modes > div.jsoneditor-icon {
 }
 
 .jsoneditor-modal .jsoneditor-jmespath-filter-field {
-  width: 170px;
+  width: 180px;
 }
 .jsoneditor-modal .jsoneditor-jmespath-filter-relation {
   width: 100px;
 }
 .jsoneditor-modal .jsoneditor-jmespath-filter-value {
-  min-width: 100px;
+  min-width: 180px;
   flex: 1;
 }
 

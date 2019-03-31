@@ -158,7 +158,30 @@ describe('util', function () {
       assert.equal(util.getIndexForPosition(el, -2, -2), -1);
     });
 
-  })
+  });
+
+  describe('get', function () {
+    it('should get a nested property from an object', function () {
+      var obj = {
+        a: {
+          b: 2
+        },
+        c: 3,
+        d: null,
+        e: undefined
+      }
+
+      assert.strictEqual(util.get(obj, ['a', 'b']), 2);
+      assert.strictEqual(util.get(obj, ['c']), 3);
+      assert.deepStrictEqual(util.get(obj, ['a']), { b: 2});
+      assert.strictEqual(util.get(obj, ['a', 'foo']), undefined);
+      assert.strictEqual(util.get(obj, ['a', 'foo', 'bar']), undefined);
+      assert.strictEqual(util.get(obj, ['d']), null);
+      assert.strictEqual(util.get(obj, ['d', 'foo', 'bar']), null);
+      assert.strictEqual(util.get(obj, ['e']), undefined);
+    })
+  });
+
   describe('makeFieldTooltip', function () {
     it('should return empty string when the schema is missing all relevant fields', function () {
       assert.strictEqual(util.makeFieldTooltip({}), '')

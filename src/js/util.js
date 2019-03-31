@@ -1150,3 +1150,20 @@ exports.makeFieldTooltip = function (schema, locale) {
 
   return tooltip;
 }
+
+/**
+ * Get a nested property from an object.
+ * Returns undefined when the property does not exist.
+ * @param {Object} object
+ * @param {string[]} path
+ * @return {*}
+ */
+exports.get = function (object, path) {
+  var value = object
+
+  for (var i = 0; i < path.length && value !== undefined && value !== null; i++) {
+    value = value[path[i]]
+  }
+
+  return value;
+}

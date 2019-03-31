@@ -2,7 +2,8 @@ var jmespath = require('jmespath');
 var picoModal = require('picomodal');
 var Selectr = require('./assets/selectr/selectr');
 var translate = require('./i18n').translate;
-var debounce = require('./util').debounce;
+var util = require('./util');
+var debounce = util.debounce;
 
 var MAX_PREVIEW_LINES = 100;
 
@@ -183,12 +184,17 @@ function showTransformModal (node, container) {
         function generateQueryFromWizard () {
           if (filterField.value && filterRelation.value && filterValue.value) {
             var field1 = filterField.value;
+            var examplePath = ['0'].concat(util.parsePath('.' + field1))
+            var exampleValue = util.get(value, examplePath)
             // TODO: move _stringCast into a static util function
-            var value1 = JSON.stringify(node._stringCast(filterValue.value));
+            var value1 = typeof exampleValue === 'string'
+                ? filterValue.value
+                : node._stringCast(filterValue.value);
+
             query.value = '[? ' +
                 field1 + ' ' +
                 filterRelation.value + ' ' +
-                '`' + value1 + '`' +
+                '`' + JSON.stringify(value1) + '`' +
                 ']';
           }
           else {
@@ -209,8 +215,8 @@ function showTransformModal (node, container) {
             var values = [];
             for (var i=0; i < selectFields.options.length; i++) {
               if (selectFields.options[i].selected) {
-                var value = selectFields.options[i].value;
-                values.push(value);
+                var selectedValue = selectFields.options[i].value;
+                values.push(selectedValue);
               }
             }
 
@@ -219,14 +225,14 @@ function showTransformModal (node, container) {
             }
 
             if (values.length === 1) {
-              query.value += '.' + value;
+              query.value += '.' + selectedValue;
             }
             else if (values.length > 1) {
               query.value += '.{' +
                   values.map(function (value) {
                     var parts = value.split('.');
                     var last = parts[parts.length - 1];
-                    return last + ': ' + value;
+                    return last + ': ' + selectedValue;
                   }).join(', ') +
                   '}';
             }
