@@ -63,7 +63,7 @@ function showTransformModal (node, container) {
       '          </div>' +
       '        </td>' +
       '      </tr>' +
-      '      <tr>' +
+      '      <tr id="selectFieldsPart">' +
       '        <th>' + translate('transformWizardSelectFields') + '</th>' +
       '        <td class="jsoneditor-jmespath-filter">' +
       '          <select class="jsoneditor-jmespath-select-fields" id="selectFields" multiple></select>' +
@@ -184,7 +184,9 @@ function showTransformModal (node, container) {
         function generateQueryFromWizard () {
           if (filterField.value && filterRelation.value && filterValue.value) {
             var field1 = filterField.value;
-            var examplePath = ['0'].concat(util.parsePath('.' + field1))
+            var examplePath = field1 !== '@'
+                ? ['0'].concat(util.parsePath('.' + field1))
+                : ['0']
             var exampleValue = util.get(value, examplePath)
             // TODO: move _stringCast into a static util function
             var value1 = typeof exampleValue === 'string'
