@@ -21,84 +21,75 @@ function showTransformModal (node, container) {
       'Enter a <a href="http://jmespath.org" target="_blank">JMESPath</a> query to filter, sort, or transform the JSON data.<br/>' +
       'To learn JMESPath, go to <a href="http://jmespath.org/tutorial.html" target="_blank">the interactive tutorial</a>.' +
       '</p>' +
-      '<table>' +
-      '<tbody>' +
-      '<tr>' +
-      '  <th>' + translate('transformWizardLabel') + ' </th>' +
-      '  <td>' +
-      '  <div id="wizard" class="jsoneditor-jmespath-wizard">' +
-      '  <div>' +
-      '    <div class="jsoneditor-jmespath-wizard-label">' + translate('transformWizardFilter') + '</div>' +
-      '    <div class="jsoneditor-jmespath-filter">' +
-      '      <div class="jsoneditor-inline jsoneditor-jmespath-filter-field" >' +
-      '        <select id="filterField">' +
-      '        </select>' +
-      '      </div>' +
-      '      <div class="jsoneditor-inline jsoneditor-jmespath-filter-relation" >' +
-      '        <select id="filterRelation">' +
-      '          <option value="==">==</option>' +
-      '          <option value="!=">!=</option>' +
-      '          <option value="<">&lt;</option>' +
-      '          <option value="<=">&lt;=</option>' +
-      '          <option value=">">&gt;</option>' +
-      '          <option value=">=">&gt;=</option>' +
-      '        </select>' +
-      '      </div>' +
-      '      <div class="jsoneditor-inline jsoneditor-jmespath-filter-value" >' +
-      '        <input placeholder="value..." id="filterValue" />' +
-      '      </div>' +
-      '    </div>' +
-      '  </div>' +
-      '  <div>' +
-      '    <div class="jsoneditor-jmespath-wizard-label">' + translate('transformWizardSortBy') + '</div>' +
-      '    <div class="jsoneditor-jmespath-filter">' +
-      '      <div class="jsoneditor-inline jsoneditor-jmespath-sort-field">' +
-      '        <select id="sortField">' +
-      '        </select>' +
-      '      </div>' +
-      '      <div class="jsoneditor-inline jsoneditor-jmespath-sort-order" >' +
-      '        <select id="sortOrder">' +
-      '          <option value="asc">Ascending</option>' +
-      '          <option value="desc">Descending</option>' +
-      '        </select>' +
-      '      </div>' +
-      '    </div>' +
-      '  </div>' +
-      '  <div id="selectFieldsPart">' +
-      '    <div class="jsoneditor-jmespath-wizard-label">' + translate('transformWizardSelectFields') + '</div>' +
-      '    <select class="jsoneditor-jmespath-select-fields" id="selectFields" multiple>' +
-      '    </select>' +
-      '  </div>' +
-      '  </div>' +
-      '  </td>' +
-      '</tr>' +
-      '<tr>' +
-      '  <th>' + translate('transformQueryLabel') + ' </th>' +
-      '  <td class="jsoneditor-modal-input">' +
-      '    <textarea id="query" ' +
-      '              rows="4" ' +
-      '              autocomplete="off" ' +
-      '              autocorrect="off" ' +
-      '              autocapitalize="off" ' +
-      '              spellcheck="false"' +
-      '              title="' + translate('transformQueryTitle') + '">[*]</textarea>' +
-      '  </td>' +
-      '</tr>' +
-      '<tr>' +
-      '  <th>' + translate('transformPreviewLabel') + ' </th>' +
-      '  <td class="jsoneditor-modal-input">' +
-      '    <textarea id="preview" ' +
-      '        class="jsoneditor-transform-preview"' +
-      '        readonly> </textarea>' +
-      '  </td>' +
-      '</tr>' +
-      '<tr>' +
-      '<td colspan="2" class="jsoneditor-modal-input jsoneditor-modal-actions">' +
+      '<div class="jsoneditor-jmespath-label">' + translate('transformWizardLabel') + ' </div>' +
+      '<div id="wizard" class="jsoneditor-jmespath-block jsoneditor-jmespath-wizard">' +
+      '  <table class="jsoneditor-jmespath-wizard-table">' +
+      '    <tbody>' +
+      '      <tr>' +
+      '        <th>' + translate('transformWizardFilter') + '</th>' +
+      '        <td class="jsoneditor-jmespath-filter">' +
+      '          <div class="jsoneditor-inline jsoneditor-jmespath-filter-field" >' +
+      '            <select id="filterField">' +
+      '            </select>' +
+      '          </div>' +
+      '          <div class="jsoneditor-inline jsoneditor-jmespath-filter-relation" >' +
+      '            <select id="filterRelation">' +
+      '              <option value="==">==</option>' +
+      '              <option value="!=">!=</option>' +
+      '              <option value="<">&lt;</option>' +
+      '              <option value="<=">&lt;=</option>' +
+      '              <option value=">">&gt;</option>' +
+      '              <option value=">=">&gt;=</option>' +
+      '            </select>' +
+      '          </div>' +
+      '          <div class="jsoneditor-inline jsoneditor-jmespath-filter-value" >' +
+      '            <input placeholder="value..." id="filterValue" />' +
+      '          </div>' +
+      '        </td>' +
+      '      </tr>' +
+      '      <tr>' +
+      '        <th>' + translate('transformWizardSortBy') + '</th>' +
+      '        <td class="jsoneditor-jmespath-filter">' +
+      '          <div class="jsoneditor-inline jsoneditor-jmespath-sort-field">' +
+      '            <select id="sortField">' +
+      '            </select>' +
+      '          </div>' +
+      '          <div class="jsoneditor-inline jsoneditor-jmespath-sort-order" >' +
+      '            <select id="sortOrder">' +
+      '              <option value="asc">Ascending</option>' +
+      '              <option value="desc">Descending</option>' +
+      '            </select>' +
+      '          </div>' +
+      '        </td>' +
+      '      </tr>' +
+      '      <tr>' +
+      '        <th>' + translate('transformWizardSelectFields') + '</th>' +
+      '        <td class="jsoneditor-jmespath-filter">' +
+      '          <select class="jsoneditor-jmespath-select-fields" id="selectFields" multiple></select>' +
+      '        </td>' +
+      '      </tr>' +
+      '    </tbody>' +
+      '  </table>' +
+      '</div>' +
+      '<div class="jsoneditor-jmespath-label">' + translate('transformQueryLabel') + ' </div>' +
+      '<div class="jsoneditor-jmespath-block">' +
+      '  <textarea id="query" ' +
+      '            rows="4" ' +
+      '            autocomplete="off" ' +
+      '            autocorrect="off" ' +
+      '            autocapitalize="off" ' +
+      '            spellcheck="false"' +
+      '            title="' + translate('transformQueryTitle') + '">[*]</textarea>' +
+      '</div>' +
+      '<div class="jsoneditor-jmespath-label">' + translate('transformPreviewLabel') + ' </div>' +
+      '<div class="jsoneditor-jmespath-block">' +
+      '  <textarea id="preview" ' +
+      '      class="jsoneditor-transform-preview"' +
+      '      readonly> </textarea>' +
+      '</div>' +
+      '<div class="jsoneditor-jmespath-block jsoneditor-modal-actions">' +
       '  <input type="submit" id="ok" value="' + translate('ok') + '" autofocus />' +
-      '</td>' +
-      '</tr>' +
-      '</tbody>' +
-      '</table>' +
+      '</div>' +
       '</div>';
 
   picoModal({
@@ -123,11 +114,8 @@ function showTransformModal (node, container) {
         var preview = elem.querySelector('#preview');
 
         if (!Array.isArray(value)) {
-          wizard.style.display = 'none';
-          wizard.parentNode.style.fontStyle = 'italic';
-          wizard.parentNode.appendChild(
-              document.createTextNode('(wizard not available for objects, only for arrays)')
-          );
+          wizard.style.fontStyle = 'italic';
+          wizard.innerHTML = '(wizard not available for objects, only for arrays)'
         }
 
         var paths = node.getChildPaths();
@@ -165,7 +153,7 @@ function showTransformModal (node, container) {
         var selectrFilterRelation = new Selectr(filterRelation, { defaultSelected: false, clearable: true, allowDeselect: true, placeholder: 'compare...' });
         var selectrSortField = new Selectr(sortField, { defaultSelected: false, clearable: true, allowDeselect: true, placeholder: 'field...' });
         var selectrSortOrder = new Selectr(sortOrder, { defaultSelected: false, clearable: true, allowDeselect: true, placeholder: 'order...' });
-        var selectrSelectFields = new Selectr(selectFields, {multiple: true, clearable: true, defaultSelected: false});
+        var selectrSelectFields = new Selectr(selectFields, {multiple: true, clearable: true, defaultSelected: false, placeholder: 'select fields...'});
 
         selectrFilterField.on('selectr.change', generateQueryFromWizard);
         selectrFilterRelation.on('selectr.change', generateQueryFromWizard);

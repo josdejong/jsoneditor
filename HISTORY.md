@@ -6,6 +6,7 @@ https://github.com/josdejong/jsoneditor
 ## not yet released, version 5.32.2
 
 - Fixed #416: Clipped action menu for append nodes.
+- Styling improvements in the transform modal.
 
 
 ## 2018-03-28, version 5.32.1
