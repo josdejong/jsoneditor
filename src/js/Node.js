@@ -379,7 +379,7 @@ Node.prototype.setField = function(field, fieldEditable) {
  */
 Node.prototype.getField = function() {
   if (this.field === undefined) {
-    this._getDomField(true);
+    this._getDomField();
   }
 
   return this.field;
@@ -1313,15 +1313,6 @@ Node.select = function(editableDiv) {
 };
 
 /**
- * Update the values from the DOM field and value of this node
- */
-Node.prototype.blur = function() {
-  // retrieve the actual field and value from the DOM.
-  this._getDomValue();
-  this._getDomField(true);
-};
-
-/**
  * Check if given node is a child. The method will check recursively to find
  * this node.
  * @param {Node} node
@@ -1932,28 +1923,28 @@ Node.prototype._getDomField = function(forceUnique) {
     try {
       var field = this._unescapeHTML(this.fieldInnerText);
 
-      if (field !== this.field) {
-        var existingFieldNames = this.parent.getFieldNames(this);
-        var isDuplicate = existingFieldNames.indexOf(field) !== -1;
+      var existingFieldNames = this.parent.getFieldNames(this);
+      var isDuplicate = existingFieldNames.indexOf(field) !== -1;
 
-        if (!isDuplicate) {
+      if (!isDuplicate) {
+        if (field !== this.field) {
           this.field = field;
           this._debouncedOnChangeField();
         }
+      }
+      else {
+        if (forceUnique) {
+          // fix duplicate field: change it into a unique name
+          field = util.findUniqueName(field, existingFieldNames);
+          if (field !== this.field) {
+            this.field = field;
+
+            // TODO: don't debounce but resolve right away, and cancel current debounce
+            this._debouncedOnChangeField();
+          }
+        }
         else {
-          if (forceUnique) {
-            // fix duplicate field: change it into a unique name
-            field = util.findUniqueName(field, existingFieldNames);
-            if (field !== this.field) {
-              this.field = field;
-              // this._debouncedOnChangeField = util.debounce(this._onChangeField.bind(this), Node.prototype.DEBOUNCE_INTERVAL);
-              // this._onChangeField();
-              this._debouncedOnChangeField(); //FIXME: don't debounce but resolve right away, and cancel current debounce
-            }
-          }
-          else {
-            this._setFieldError(translate('duplicateFieldError'));
-          }
+          this._setFieldError(translate('duplicateFieldError'));
         }
       }
     }

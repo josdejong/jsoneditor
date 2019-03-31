@@ -283,13 +283,7 @@ treemode.update = function (json) {
  * @return {Object | undefined} json
  */
 treemode.get = function () {
-  // remove focus from currently edited node
-  if (this.focusTarget) {
-    var node = Node.getNodeFromTarget(this.focusTarget);
-    if (node) {
-      node.blur();
-    }
-  }
+  // TODO: resolve pending debounced input changes if any, but do not resolve invalid inputs
 
   if (this.node) {
     return this.node.getValue();
