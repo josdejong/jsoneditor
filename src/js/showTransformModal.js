@@ -167,8 +167,11 @@ function showTransformModal (node, container) {
         selectrSelectFields.on('selectr.change', generateQueryFromWizard);
 
         elem.querySelector('.pico-modal-contents').onclick = function (event) {
-          // prevent the first clear button from getting focus when clicking anywhere in the modal
-          event.preventDefault();
+          // prevent the first clear button (in any select box) from getting
+          // focus when clicking anywhere in the modal. Only allow clicking links.
+          if (event.target.nodeName !== 'A') {
+            event.preventDefault();
+          }
         };
 
         query.value = Array.isArray(value) ? '[*]' : '@';
