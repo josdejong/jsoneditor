@@ -1164,7 +1164,7 @@ exports.findUniqueName = function(name, existingPropNames) {
 
   while (existingPropNames.indexOf(validName) !== -1) {
     var copy = 'copy' + (i > 1 ? (' ' + i) : '')
-    validName = `${strippedName} (${copy})`
+    validName = strippedName + ' (' + copy + ')'
     i++
   }
 
