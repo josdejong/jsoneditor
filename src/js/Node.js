@@ -1921,18 +1921,23 @@ Node.prototype._updateDomDefault = function () {
     return;
   }
 
+  // select either enum dropdown (select) or input value
+  const inputElement = this.dom.select
+      ? this.dom.select
+      : this.dom.value;
+
+  if (!inputElement) {
+    return;
+  }
+
   if (this.value === this.schema.default) {
-    if (this.dom.select) {
-      this.dom.value.removeAttribute('title');
-    } else {
-      this.dom.value.title = translate('default');
-      this.dom.value.classList.add('jsoneditor-is-default');
-      this.dom.value.classList.remove('jsoneditor-is-not-default');
-    }
+    inputElement.title = translate('default');
+    util.addClassName(inputElement, 'jsoneditor-is-default');
+    util.removeClassName(inputElement, 'jsoneditor-is-not-default');
   } else {
-    this.dom.value.removeAttribute('title');
-    this.dom.value.classList.remove('jsoneditor-is-default');
-    this.dom.value.classList.add('jsoneditor-is-not-default');
+    inputElement.removeAttribute('title');
+    util.removeClassName(inputElement, 'jsoneditor-is-default');
+    util.addClassName(inputElement, 'jsoneditor-is-not-default');
   }
 };
 

@@ -8,6 +8,8 @@ https://github.com/josdejong/jsoneditor
 - Fixed #416: Clipped action menu for append nodes.
 - Improve detection of value type in transform modal.
 - Styling improvements in the transform modal.
+- Fix CSS class for default/non-default schema values not applied to enums,
+  see (#666).
 
 
 ## 2018-03-28, version 5.32.1
