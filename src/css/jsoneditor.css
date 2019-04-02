@@ -248,10 +248,6 @@ div.jsoneditor-tree table.jsoneditor-tree {
   width: 100%;
 }
 
-div.jsoneditor-tree div.jsoneditor-tree-inner {
-  padding-bottom: 300px;
-}
-
 div.jsoneditor-outer {
   position: static;
   width: 100%;
