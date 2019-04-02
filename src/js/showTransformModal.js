@@ -147,7 +147,10 @@ function showTransformModal (node, container) {
           });
         }
         else {
-          elem.querySelector('#selectFieldsPart').style.display = 'none';
+          var selectFieldsPart = elem.querySelector('#selectFieldsPart');
+          if (selectFieldsPart) {
+            selectFieldsPart.style.display = 'none';
+          }
         }
 
         var selectrFilterField = new Selectr(filterField, { defaultSelected: false, clearable: true, allowDeselect: true, placeholder: 'field...' });
