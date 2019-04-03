@@ -268,7 +268,7 @@ Node.prototype.setError = function (error, child) {
  * Render the error
  */
 Node.prototype.updateError = function() {
-  var error = this.error;
+  var error = this.fieldError || this.valueError || this.error;
   var tdError = this.dom.tdError;
   if (error && this.dom && this.dom.tr) {
     util.addClassName(this.dom.tr, 'jsoneditor-validation-error');
@@ -920,23 +920,23 @@ Node.prototype.hideChilds = function(options) {
  */
 Node.prototype._updateCssClassName = function () {
   if(this.dom.field
-    && this.editor 
-    && this.editor.options 
+    && this.editor
+    && this.editor.options
     && typeof this.editor.options.onClassName ==='function'
-    && this.dom.tree){              
-      util.removeAllClassNames(this.dom.tree);              
+    && this.dom.tree){
+      util.removeAllClassNames(this.dom.tree);
       var addClasses = this.editor.options.onClassName({ path: this.getPath(), field: this.field, value: this.value }) || "";
       util.addClassName(this.dom.tree, "jsoneditor-values " + addClasses);
   }
 };
 
-Node.prototype.recursivelyUpdateCssClassesOnNodes = function () {  
+Node.prototype.recursivelyUpdateCssClassesOnNodes = function () {
   this._updateCssClassName();
   if (Array.isArray(this.childs)) {
     for (var i = 0; i < this.childs.length; i++) {
       this.childs[i].recursivelyUpdateCssClassesOnNodes();
     }
-  }  
+  }
 }
 
 /**
@@ -1313,15 +1313,6 @@ Node.select = function(editableDiv) {
 };
 
 /**
- * Update the values from the DOM field and value of this node
- */
-Node.prototype.blur = function() {
-  // retrieve the actual field and value from the DOM.
-  this._getDomValue(false);
-  this._getDomField(false);
-};
-
-/**
  * Check if given node is a child. The method will check recursively to find
  * this node.
  * @param {Node} node
@@ -1541,11 +1532,11 @@ Node.prototype.deepEqual = function (json) {
 
 /**
  * Retrieve value from DOM
- * @param {boolean} [silent]  If true (default), no errors will be thrown in
- *                            case of invalid data
  * @private
  */
-Node.prototype._getDomValue = function(silent) {
+Node.prototype._getDomValue = function() {
+  this._clearValueError();
+
   if (this.dom.value && this.type != 'array' && this.type != 'object') {
     this.valueInnerText = util.getInnerText(this.dom.value);
   }
@@ -1567,14 +1558,49 @@ Node.prototype._getDomValue = function(silent) {
       }
     }
     catch (err) {
-      this.value = undefined;
-      // TODO: sent an action with the new, invalid value?
-      if (silent !== true) {
-        throw err;
-      }
+      // keep the previous value
+      this._setValueError(translate('cannotParseValueError'));
     }
   }
 };
+
+/**
+ * Show a local error in case of invalid value
+ * @param {string} message
+ * @private
+ */
+Node.prototype._setValueError = function (message) {
+  this.valueError = {
+    message: message
+  };
+  this.updateError();
+}
+
+Node.prototype._clearValueError = function () {
+  if (this.valueError) {
+    this.valueError = null;
+    this.updateError();
+  }
+}
+
+/**
+ * Show a local error in case of invalid or duplicate field
+ * @param {string} message
+ * @private
+ */
+Node.prototype._setFieldError = function (message) {
+  this.fieldError = {
+    message: message
+  };
+  this.updateError();
+}
+
+Node.prototype._clearFieldError = function () {
+  if (this.fieldError) {
+    this.fieldError = null;
+    this.updateError();
+  }
+}
 
 /**
  * Handle a changed value
@@ -1882,30 +1908,49 @@ Node.prototype._updateDomField = function () {
 
 /**
  * Retrieve field from DOM
- * @param {boolean} [silent]  If true (default), no errors will be thrown in
- *                            case of invalid data
+ * @param {boolean} [forceUnique]  If true, the field name will be changed
+ *                                 into a unique name in case it is a duplicate.
  * @private
  */
-Node.prototype._getDomField = function(silent) {
+Node.prototype._getDomField = function(forceUnique) {
+  this._clearFieldError();
+
   if (this.dom.field && this.fieldEditable) {
     this.fieldInnerText = util.getInnerText(this.dom.field);
   }
 
-  if (this.fieldInnerText != undefined) {
+  if (this.fieldInnerText !== undefined) {
     try {
       var field = this._unescapeHTML(this.fieldInnerText);
 
-      if (field !== this.field) {
-        this.field = field;
-        this._debouncedOnChangeField();
+      var existingFieldNames = this.parent.getFieldNames(this);
+      var isDuplicate = existingFieldNames.indexOf(field) !== -1;
+
+      if (!isDuplicate) {
+        if (field !== this.field) {
+          this.field = field;
+          this._debouncedOnChangeField();
+        }
+      }
+      else {
+        if (forceUnique) {
+          // fix duplicate field: change it into a unique name
+          field = util.findUniqueName(field, existingFieldNames);
+          if (field !== this.field) {
+            this.field = field;
+
+            // TODO: don't debounce but resolve right away, and cancel current debounce
+            this._debouncedOnChangeField();
+          }
+        }
+        else {
+          this._setFieldError(translate('duplicateFieldError'));
+        }
       }
     }
     catch (err) {
-      this.field = undefined;
-      // TODO: sent an action here, with the new, invalid value?
-      if (silent !== true) {
-        throw err;
-      }
+      // keep the previous field value
+      this._setFieldError(translate('cannotParseFieldError'));
     }
   }
 };
@@ -1939,54 +1984,6 @@ Node.prototype._updateDomDefault = function () {
     util.removeClassName(inputElement, 'jsoneditor-is-default');
     util.addClassName(inputElement, 'jsoneditor-is-not-default');
   }
-};
-
-/**
- * Validate this node and all it's childs
- * @return {Array.<{node: Node, error: {message: string}}>} Returns a list with duplicates
- */
-Node.prototype.validate = function () {
-  var errors = [];
-
-  // find duplicate keys
-  if (this.type === 'object') {
-    var keys = {};
-    var duplicateKeys = [];
-    for (var i = 0; i < this.childs.length; i++) {
-      var child = this.childs[i];
-      if (keys.hasOwnProperty(child.field)) {
-        duplicateKeys.push(child.field);
-      }
-      keys[child.field] = true;
-    }
-
-    if (duplicateKeys.length > 0) {
-      errors = this.childs
-          .filter(function (node) {
-            return duplicateKeys.indexOf(node.field) !== -1;
-          })
-          .map(function (node) {
-            return {
-              node: node,
-              error: {
-                message: translate('duplicateKey') + ' "' + node.field + '"'
-              }
-            }
-          });
-    }
-  }
-
-  // recurse over the childs
-  if (this.childs) {
-    for (var i = 0; i < this.childs.length; i++) {
-      var e = this.childs[i].validate();
-      if (e.length > 0) {
-        errors = errors.concat(e);
-      }
-    }
-  }
-
-  return errors;
 };
 
 /**
@@ -2461,6 +2458,7 @@ Node.prototype.setSelected = function (selected, isFirst) {
 Node.prototype.updateValue = function (value) {
   this.value = value;
   this.previousValue = value;
+  this.valueError = undefined;
   this.updateDom();
 };
 
@@ -2471,6 +2469,7 @@ Node.prototype.updateValue = function (value) {
 Node.prototype.updateField = function (field) {
   this.field = field;
   this.previousField = field;
+  this.fieldError = undefined;
   this.updateDom();
 };
 
@@ -2544,7 +2543,7 @@ Node.prototype.updateDom = function (options) {
   // update field and value
   this._updateDomField();
   this._updateDomValue();
-   
+
   this._updateCssClassName();
 
   // update childs indexes
@@ -2648,7 +2647,7 @@ Node._findSchema = function (schema, schemaRefs, path) {
         foundSchema = Node._findSchema(childSchema, schemaRefs, path);
       }
     }
-  
+
     for (var i = 0; i < path.length && childSchema; i++) {
       var nextPath = path.slice(i + 1, path.length);
       var key = path[i];
@@ -2913,7 +2912,8 @@ Node.prototype.onEvent = function (event) {
     switch (type) {
       case 'blur':
       case 'change':
-        this._getDomValue(true);
+        this._getDomValue();
+        this._clearValueError();
         this._updateDomValue();
         if (this.value) {
           domValue.innerHTML = this._escapeHTML(this.value);
@@ -2922,7 +2922,7 @@ Node.prototype.onEvent = function (event) {
 
       case 'input':
         //this._debouncedGetDomValue(true); // TODO
-        this._getDomValue(true);
+        this._getDomValue();
         this._updateDomValue();
         break;
 
@@ -2944,14 +2944,14 @@ Node.prototype.onEvent = function (event) {
 
       case 'keyup':
         //this._debouncedGetDomValue(true); // TODO
-        this._getDomValue(true);
+        this._getDomValue();
         this._updateDomValue();
         break;
 
       case 'cut':
       case 'paste':
         setTimeout(function () {
-          node._getDomValue(true);
+          node._getDomValue();
           node._updateDomValue();
         }, 1);
         break;
@@ -2963,7 +2963,6 @@ Node.prototype.onEvent = function (event) {
   if (target == domField) {
     switch (type) {
       case 'blur':
-      case 'change':
         this._getDomField(true);
         this._updateDomField();
         if (this.field) {
@@ -2972,7 +2971,7 @@ Node.prototype.onEvent = function (event) {
         break;
 
       case 'input':
-        this._getDomField(true);
+        this._getDomField();
         this._updateSchema();
         this._updateDomField();
         this._updateDomValue();
@@ -2984,14 +2983,14 @@ Node.prototype.onEvent = function (event) {
         break;
 
       case 'keyup':
-        this._getDomField(true);
+        this._getDomField();
         this._updateDomField();
         break;
 
       case 'cut':
       case 'paste':
         setTimeout(function () {
-          node._getDomField(true);
+          node._getDomField();
           node._updateDomField();
         }, 1);
         break;
@@ -3468,6 +3467,25 @@ Node.prototype._showColorPicker = function () {
 };
 
 /**
+ * Get all field names of an object
+ * @param {Node} [excludeNode] Optional node to be excluded from the returned field names
+ * @return {string[]}
+ */
+Node.prototype.getFieldNames = function (excludeNode) {
+  if (this.type === 'object') {
+    return this.childs
+        .filter(function (child) {
+          return child !== excludeNode;
+        })
+        .map(function (child) {
+          return child.field;
+        });
+  }
+
+  return [];
+}
+
+/**
  * Remove nodes
  * @param {Node[] | Node} nodes
  */
@@ -3531,6 +3549,10 @@ Node.onDuplicate = function(nodes) {
     var afterNode = lastNode;
     var clones = nodes.map(function (node) {
       var clone = node.clone();
+      if (node.parent.type === 'object') {
+        var existingFieldNames = node.parent.getFieldNames();
+        clone.field = util.findUniqueName(node.field, existingFieldNames);
+      }
       parent.insertAfter(clone, afterNode);
       afterNode = clone;
       return clone;

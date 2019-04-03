@@ -22,6 +22,9 @@ var _defs = {
     duplicateText: 'Duplicate',
     duplicateTitle: 'Duplicate selected fields (Ctrl+D)',
     duplicateField: 'Duplicate this field (Ctrl+D)',
+    duplicateFieldError: 'Duplicate field name',
+    cannotParseFieldError: 'Cannot parse field into JSON',
+    cannotParseValueError: 'Cannot parse value into JSON',
     empty: 'empty',
     expandAll: 'Expand all fields',
     expandTitle: 'Click to expand/collapse this field (Ctrl+E). \n' +
@@ -106,6 +109,9 @@ var _defs = {
     duplicateText: '复制',
     duplicateTitle: '复制选中字段(Ctrl+D)',
     duplicateField: '复制该字段(Ctrl+D)',
+    duplicateFieldError: '重复的字段名称',
+    cannotParseFieldError: '无法将字段解析为JSON',
+    cannotParseValueError: '无法将值解析为JSON',
     empty: '清空',
     expandAll: '展开所有字段',
     expandTitle: '点击 展开/收缩 该字段(Ctrl+E). \n' +
@@ -190,6 +196,9 @@ var _defs = {
     duplicateText: 'Duplicar',
     duplicateTitle: 'Duplicar campos selecionados (Ctrl+D)',
     duplicateField: 'Duplicar este campo (Ctrl+D)',
+    duplicateFieldError: 'Nome do campo duplicado',
+    cannotParseFieldError: 'Não é possível analisar o campo no JSON',
+    cannotParseValueError: 'Não é possível analisar o valor em JSON',
     empty: 'vazio',
     expandAll: 'Expandir todos campos',
     expandTitle: 'Clique para expandir/encolher este campo (Ctrl+E). \n' +
@@ -286,6 +295,9 @@ var _defs = {
     duplicateText: 'Aşağıya kopyala',
     duplicateTitle: 'Seçili alanlardan bir daha oluştur (Ctrl+D)',
     duplicateField: 'Bu alandan bir daha oluştur (Ctrl+D)',
+    duplicateFieldError: 'Duplicate field name',
+    cannotParseFieldError: 'Alan JSON\'a ayrıştırılamıyor',
+    cannotParseValueError: 'JSON\'a değer ayrıştırılamıyor',
     empty: 'boş',
     expandAll: 'Tüm alanları aç',
     expandTitle: 'Bu alanı açmak/kapatmak için tıkla (Ctrl+E). \n' +

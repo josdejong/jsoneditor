@@ -1,5 +1,7 @@
 'use strict';
 
+var util = require('./util');
+
 /**
  * @constructor History
  * Store action history, enables undo and redo
@@ -121,6 +123,10 @@ function History (editor) {
         var nodes = params.paths.map(findNode);
         nodes.forEach(function (node) {
           var clone = node.clone();
+          if (parentNode.type === 'object') {
+            var existingFieldNames = parentNode.getFieldNames();
+            clone.field = util.findUniqueName(node.field, existingFieldNames);
+          }
           parentNode.insertAfter(clone, afterNode);
           afterNode = clone;
         });

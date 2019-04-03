@@ -283,13 +283,7 @@ treemode.update = function (json) {
  * @return {Object | undefined} json
  */
 treemode.get = function () {
-  // remove focus from currently edited node
-  if (this.focusTarget) {
-    var node = Node.getNodeFromTarget(this.focusTarget);
-    if (node) {
-      node.blur();
-    }
-  }
+  // TODO: resolve pending debounced input changes if any, but do not resolve invalid inputs
 
   if (this.node) {
     return this.node.getValue();
@@ -577,9 +571,6 @@ treemode.validate = function () {
 
   var json = root.getValue();
 
-  // check for duplicate keys
-  var duplicateErrors = root.validate();
-
   // execute JSON schema validation
   var schemaErrors = [];
   if (this.validateSchema) {
@@ -611,7 +602,7 @@ treemode.validate = function () {
         .then(function (customValidationErrors) {
           // only apply when there was no other validation started whilst resolving async results
           if (seq === me.validationSequence) {
-            var errorNodes = [].concat(duplicateErrors, schemaErrors, customValidationErrors || []);
+            var errorNodes = [].concat(schemaErrors, customValidationErrors || []);
             me._renderValidationErrors(errorNodes);
           }
         })
