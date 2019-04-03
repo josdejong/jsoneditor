@@ -3,15 +3,15 @@
 https://github.com/josdejong/jsoneditor
 
 
-## not yet released, version 5.32.2
+## 2018-04-03, version 5.32.2
 
 - Fixed #416: Clipped action menu for append nodes.
 - Improve detection of value type in transform modal.
 - Styling improvements in the transform modal.
 - Fix CSS class for default/non-default schema values not applied to enums,
   see (#666).
-- Fixed #671: duplicate property names could cause values to be cleared
-  when updating in for example React.
+- Fixed #671: Improved handling of duplicate property names, which could cause
+  values to be cleared when used as a controlled component in for example React.
 
 
 ## 2018-03-28, version 5.32.1
