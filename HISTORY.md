@@ -10,6 +10,8 @@ https://github.com/josdejong/jsoneditor
 - Styling improvements in the transform modal.
 - Fix CSS class for default/non-default schema values not applied to enums,
   see (#666).
+- Fixed #671: duplicate property names could cause values to be cleared
+  when updating in for example React.
 
 
 ## 2018-03-28, version 5.32.1
