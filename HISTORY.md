@@ -3,6 +3,11 @@
 https://github.com/josdejong/jsoneditor
 
 
+## not yet released, version 5.32.3
+
+- Fix #684: `const` used in bundled library.
+
+
 ## 2018-04-03, version 5.32.2
 
 - Fixed #416: Clipped action menu for append nodes.

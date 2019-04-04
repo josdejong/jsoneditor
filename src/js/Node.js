@@ -1967,7 +1967,7 @@ Node.prototype._updateDomDefault = function () {
   }
 
   // select either enum dropdown (select) or input value
-  const inputElement = this.dom.select
+  var inputElement = this.dom.select
       ? this.dom.select
       : this.dom.value;
 
