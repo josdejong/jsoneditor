@@ -24,8 +24,8 @@
  * Copyright (c) 2011-2019 Jos de Jong, http://jsoneditoronline.org
  *
  * @author  Jos de Jong, <wjosdejong@gmail.com>
- * @version 5.32.2
- * @date    2019-04-03
+ * @version 5.32.3
+ * @date    2019-04-04
  */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
@@ -37899,7 +37899,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  }
 
 	  // select either enum dropdown (select) or input value
-	  const inputElement = this.dom.select
+	  var inputElement = this.dom.select
 	      ? this.dom.select
 	      : this.dom.value;
 

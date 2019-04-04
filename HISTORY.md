@@ -3,7 +3,7 @@
 https://github.com/josdejong/jsoneditor
 
 
-## not yet released, version 5.32.3
+## 2018-04-04, version 5.32.3
 
 - Fix #684: `const` used in bundled library.
 
