@@ -34,6 +34,7 @@
   var options = {
     autocomplete: {
       applyTo:['value'],
+      filter: 'contain',
       getOptions: function (text, path, input, editor) {
         return new Promise(function (resolve, reject) {
           var options = extractUniqueWords(editor.get());
