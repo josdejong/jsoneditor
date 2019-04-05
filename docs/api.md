@@ -271,6 +271,13 @@ Constructs a new JSONEditor.
      - `contain`       : Contain your input or not, e.g. `pl` match `apple` too.
      - Custom Function : Define custom filter rule, return `true` will match you input.
 
+  - `{string} trigger`
+
+     Indicate the way to trigger autocomplete menu. Default to `keydown`
+
+     - `keydown` : When you type something in the field or value, it will trigger autocomplete.
+     - `focus`   : When you focus in the field or value, it will trigger the autocomplete.
+
   - `{number[]} confirmKeys`
 
      Indicate the KeyCodes for trigger confirm completion, by default those keys are:  [39, 35, 9] which are the code for [right, end, tab]
