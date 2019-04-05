@@ -274,6 +274,15 @@ Constructs a new JSONEditor.
 
   *autocomplete* will enable this feature in your editor in tree mode, the object have the following **subelements**:
 
+  - `{string} filter`
+  - `{Function} filter`
+
+     Indicate the filter method of the autocomplete. Default to `start`.
+
+     - `start`         : Match your input from the start, e.g. `ap` match `apple` but `pl` does not.
+     - `contain`       : Contain your input or not, e.g. `pl` match `apple` too.
+     - Custom Function : Define custom filter rule, return `true` will match you input.
+
   - `{number[]} confirmKeys`
 
      Indicate the KeyCodes for trigger confirm completion, by default those keys are:  [39, 35, 9] which are the code for [right, end, tab]
