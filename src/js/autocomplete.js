@@ -12,6 +12,7 @@ const defaultFilterFunction = {
 function completely(config) {
     config = config || {};
     config.filter = config.filter || 'start';
+    config.trigger = config.trigger || 'keydown';
     config.confirmKeys = config.confirmKeys || [39, 35, 9] // right, end, tab
     config.caseSensitive = config.caseSensitive || false    // autocomplete case sensitive
 
