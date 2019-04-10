@@ -24,8 +24,8 @@
  * Copyright (c) 2011-2019 Jos de Jong, http://jsoneditoronline.org
  *
  * @author  Jos de Jong, <wjosdejong@gmail.com>
- * @version 5.32.3
- * @date    2019-04-04
+ * @version 5.32.4
+ * @date    2019-04-10
  */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
@@ -4513,7 +4513,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	      i++;
 	      path.push(parseProperty());
 	    }
-	    else if (i > 0 && jsonPath[i] === '[') {
+	    else if (jsonPath[i] === '[') {
 	      i++;
 
 	      if (jsonPath[i] === '\'' || jsonPath[i] === '"') {
