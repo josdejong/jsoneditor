@@ -3,18 +3,18 @@
 https://github.com/josdejong/jsoneditor
 
 
-## not yet published, version 5.32.4
+## 2019-04-10, version 5.32.4
 
-- Fixed #663 and #682: JSONEditor not being able to handle JSON schema
+- Fixed #682 and #687: JSONEditor not being able to handle JSON schema
   validation errors when the root of the document is an Array. Thanks @DusuWen.
 
 
-## 2018-04-04, version 5.32.3
+## 2019-04-04, version 5.32.3
 
-- Fix #684: `const` used in bundled library.
+- Fixed #684: `const` used in bundled library.
 
 
-## 2018-04-03, version 5.32.2
+## 2019-04-03, version 5.32.2
 
 - Fixed #416: Clipped action menu for append nodes.
 - Improve detection of value type in transform modal.
@@ -25,7 +25,7 @@ https://github.com/josdejong/jsoneditor
   values to be cleared when used as a controlled component in for example React.
 
 
-## 2018-03-28, version 5.32.1
+## 2019-03-28, version 5.32.1
 
 - Fixed a regression in parsing JSON paths: numbers where parsed as strings
   instead of a numeric value. See #679. Thanks @AdamVig.
