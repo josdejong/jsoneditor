@@ -104,6 +104,7 @@ describe('util', function () {
       assert.deepStrictEqual(util.stringifyPath(['foo', 2]), '.foo[2]');
       assert.deepStrictEqual(util.stringifyPath(['foo', 2, 'bar']), '.foo[2].bar');
       assert.deepStrictEqual(util.stringifyPath(['foo', 2, 'bar_baz']), '.foo[2].bar_baz');
+      assert.deepStrictEqual(util.stringifyPath([2]), '[2]');
       assert.deepStrictEqual(util.stringifyPath(['foo', 'prop-with-hyphens']), '.foo["prop-with-hyphens"]');
       assert.deepStrictEqual(util.stringifyPath(['foo', 'prop with spaces']), '.foo["prop with spaces"]');
     })
@@ -119,15 +120,16 @@ describe('util', function () {
       assert.deepStrictEqual(util.parsePath('.foo["prop with . dot"]'), ['foo', 'prop with . dot']);
       assert.deepStrictEqual(util.parsePath('.foo["prop with ] character"]'), ['foo', 'prop with ] character']);
       assert.deepStrictEqual(util.parsePath('.foo[*].bar'), ['foo', '*', 'bar']);
+      assert.deepStrictEqual(util.parsePath('[2]'), [2]);
     });
 
     it ('should throw an exception in case of an invalid path', function () {
       assert.throws(function () {util.parsePath('.')}, /Invalid JSON path: property name expected at index 1/);
-      assert.throws(function () {util.parsePath('[')}, /Invalid JSON path: unexpected character "\[" at index 0/);
-      assert.throws(function () {util.parsePath('[]')}, /Invalid JSON path: unexpected character "\[" at index 0/);
+      assert.throws(function () {util.parsePath('[')}, /Invalid JSON path: unexpected end, character ] expected/);
+      assert.throws(function () {util.parsePath('[]')}, /Invalid JSON path: array value expected at index 1/);
       assert.throws(function () {util.parsePath('.foo[  ]')}, /Invalid JSON path: array value expected at index 7/);
       assert.throws(function () {util.parsePath('.[]')}, /Invalid JSON path: property name expected at index 1/);
-      assert.throws(function () {util.parsePath('["23]')}, /Invalid JSON path: unexpected character "\[" at index 0/);
+      assert.throws(function () {util.parsePath('["23]')}, /Invalid JSON path: unexpected end, character " expected/);
       assert.throws(function () {util.parsePath('.foo bar')}, /Invalid JSON path: unexpected character " " at index 4/);
     });
 
