@@ -3,6 +3,12 @@
 https://github.com/josdejong/jsoneditor
 
 
+## not yet published, version 5.32.4
+
+- Fixed #663 and #682: JSONEditor not being able to handle JSON schema
+  validation errors when the root of the document is an Array. Thanks @DusuWen.
+
+
 ## 2018-04-04, version 5.32.3
 
 - Fix #684: `const` used in bundled library.

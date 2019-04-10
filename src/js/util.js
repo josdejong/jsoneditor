@@ -778,7 +778,7 @@ exports.parsePath = function parsePath(jsonPath) {
       i++;
       path.push(parseProperty());
     }
-    else if (i > 0 && jsonPath[i] === '[') {
+    else if (jsonPath[i] === '[') {
       i++;
 
       if (jsonPath[i] === '\'' || jsonPath[i] === '"') {
