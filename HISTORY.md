@@ -3,6 +3,12 @@
 https://github.com/josdejong/jsoneditor
 
 
+## not yet released, version 5.32.5
+
+- Fixed a bug in the JMESPath query wizard which didn't correctly handle
+  selecting multiple fields.
+
+
 ## 2019-04-10, version 5.32.4
 
 - Fixed #682 and #687: JSONEditor not being able to handle JSON schema

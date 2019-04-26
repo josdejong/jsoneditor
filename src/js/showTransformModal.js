@@ -233,14 +233,14 @@ function showTransformModal (node, container) {
             }
 
             if (values.length === 1) {
-              query.value += '.' + selectedValue;
+              query.value += '.' + values[0];
             }
             else if (values.length > 1) {
               query.value += '.{' +
                   values.map(function (value) {
                     var parts = value.split('.');
                     var last = parts[parts.length - 1];
-                    return last + ': ' + selectedValue;
+                    return last + ': ' + value;
                   }).join(', ') +
                   '}';
             }
