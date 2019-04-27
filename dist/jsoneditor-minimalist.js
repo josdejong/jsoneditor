@@ -24,8 +24,8 @@
  * Copyright (c) 2011-2019 Jos de Jong, http://jsoneditoronline.org
  *
  * @author  Jos de Jong, <wjosdejong@gmail.com>
- * @version 5.32.4
- * @date    2019-04-10
+ * @version 5.32.5
+ * @date    2019-04-27
  */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
@@ -3148,8 +3148,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }
 	  });
 	  
-	  if (this.editor.options.onCreateMenu) {
-			items = this.editor.options.onCreateMenu(items, { path : node.getPath() });
+	  if (this.options.onCreateMenu) {
+			items = this.options.onCreateMenu(items, { path : node.getPath() });
 		}
 
 	  var menu = new ContextMenu(items, {close: onClose});
@@ -15048,14 +15048,14 @@ return /******/ (function(modules) { // webpackBootstrap
 	            }
 
 	            if (values.length === 1) {
-	              query.value += '.' + selectedValue;
+	              query.value += '.' + values[0];
 	            }
 	            else if (values.length > 1) {
 	              query.value += '.{' +
 	                  values.map(function (value) {
 	                    var parts = value.split('.');
 	                    var last = parts[parts.length - 1];
-	                    return last + ': ' + selectedValue;
+	                    return last + ': ' + value;
 	                  }).join(', ') +
 	                  '}';
 	            }

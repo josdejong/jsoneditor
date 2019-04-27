@@ -3,10 +3,11 @@
 https://github.com/josdejong/jsoneditor
 
 
-## not yet released, version 5.32.5
+## 2019-04-27, version 5.32.5
 
 - Fixed a bug in the JMESPath query wizard which didn't correctly handle
   selecting multiple fields.
+- Fixed context menu not working when multiple nodes are selected.
 
 
 ## 2019-04-10, version 5.32.4
