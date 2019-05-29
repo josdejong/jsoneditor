@@ -173,9 +173,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	 *                                                  Only applicable for
 	 *                                                  modes 'form', 'tree' and
 	 *                                                  'view'
-	 *                               {Number} maxVisibleChilds Number of children allowed for a node 
-	 *                                                         in 'tree', 'view', or 'form' mode before 
-	 *                                                         the "show more/show all" buttons appear.  
+	 *                               {Number} maxVisibleChilds Number of children allowed for a node
+	 *                                                         in 'tree', 'view', or 'form' mode before
+	 *                                                         the "show more/show all" buttons appear.
 	 *                                                         100 by default.
 	 *
 	 * @param {Object | undefined} json JSON object
@@ -4195,7 +4195,7 @@ return /******/ (function(modules) { // webpackBootstrap
 /* 18 */
 /***/ function(module, exports) {
 
-	
+
 	/**
 	 * slice() reference.
 	 */
@@ -8226,7 +8226,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            return a;
 	        }
 	        var array = [], lengthBefore;
-	        
+
 	        array.splice.apply(array, makeArray(20));
 	        array.splice.apply(array, makeArray(26));
 
@@ -8267,7 +8267,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	            var removed = this.slice(pos, pos+removeCount);
 	            var insert = slice.call(arguments, 2);
-	            var add = insert.length;            
+	            var add = insert.length;
 	            if (pos === length) {
 	                if (add) {
 	                    this.push.apply(this, insert);
@@ -8946,12 +8946,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	    doc = doc || document;
 	    if (id && exports.hasCssString(id, doc))
 	        return null;
-	    
+
 	    var style;
-	    
+
 	    if (id)
 	        cssText += "\n/*# sourceURL=ace/css/" + id + " */";
-	    
+
 	    if (doc.createStyleSheet) {
 	        style = doc.createStyleSheet();
 	        style.cssText = cssText;
@@ -8982,7 +8982,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	exports.getInnerWidth = function(element) {
 	    return (
 	        parseInt(exports.computedStyle(element, "paddingLeft"), 10) +
-	        parseInt(exports.computedStyle(element, "paddingRight"), 10) + 
+	        parseInt(exports.computedStyle(element, "paddingRight"), 10) +
 	        element.clientWidth
 	    );
 	};
@@ -9217,10 +9217,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	    ret.escape = ret.esc;
 	    ret.del = ret["delete"];
 	    ret[173] = '-';
-	    
+
 	    (function() {
 	        var mods = ["cmd", "ctrl", "alt", "shift"];
-	        for (var i = Math.pow(2, mods.length); i--;) {            
+	        for (var i = Math.pow(2, mods.length); i--;) {
 	            ret.KEY_MODS[i] = mods.filter(function(x) {
 	                return i & ret.KEY_MODS[x];
 	            }).join("-") + "-";
@@ -9267,11 +9267,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	exports.isWin = (os == "win");
 	exports.isMac = (os == "mac");
 	exports.isLinux = (os == "linux");
-	exports.isIE = 
+	exports.isIE =
 	    (navigator.appName == "Microsoft Internet Explorer" || navigator.appName.indexOf("MSAppHost") >= 0)
 	    ? parseFloat((ua.match(/(?:MSIE |Trident\/[0-9]+[\.0-9]+;.*rv:)([0-9]+[\.0-9]+)/)||[])[1])
 	    : parseFloat((ua.match(/(?:Trident\/[0-9]+[\.0-9]+;.*rv:)([0-9]+[\.0-9]+)/)||[])[1]); // for ie
-	    
+
 	exports.isOldIE = exports.isIE && exports.isIE < 9;
 	exports.isGecko = exports.isMozilla = (window.Controllers || window.controllers) && window.navigator.product === "Gecko";
 	exports.isOldGecko = exports.isGecko && parseInt((ua.match(/rv:(\d+)/)||[])[1], 10) < 4;
@@ -9367,7 +9367,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    exports.addListener(document, "mousemove", eventHandler, true);
 	    exports.addListener(document, "mouseup", onMouseUp, true);
 	    exports.addListener(document, "dragstart", onMouseUp, true);
-	    
+
 	    return onMouseUp;
 	};
 
@@ -9422,7 +9422,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                    e.wheelY = (e.deltaY || 0) * 5;
 	                    break;
 	            }
-	            
+
 	            callback(e);
 	        });
 	    } else {
@@ -9441,7 +9441,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	exports.addMultiMouseDownListener = function(elements, timeouts, eventHandler, callbackName) {
 	    var clicks = 0;
-	    var startX, startY, timer; 
+	    var startX, startY, timer;
 	    var eventNames = {
 	        2: "dblclick",
 	        3: "tripleclick",
@@ -9471,7 +9471,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                startY = e.clientY;
 	            }
 	        }
-	        
+
 	        e._clicks = clicks;
 
 	        eventHandler[callbackName]("mousedown", e);
@@ -9534,14 +9534,14 @@ return /******/ (function(modules) { // webpackBootstrap
 	            }
 	        }
 	    }
-	    
+
 	    if (keyCode in keys.MODIFIER_KEYS) {
 	        keyCode = -1;
 	    }
 	    if (hashId & 8 && (keyCode >= 91 && keyCode <= 93)) {
 	        keyCode = -1;
 	    }
-	    
+
 	    if (!hashId && keyCode === 13) {
 	        var location = "location" in e ? e.location : e.keyLocation;
 	        if (location === 3) {
@@ -9550,7 +9550,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                return;
 	        }
 	    }
-	    
+
 	    if (useragent.isChromeOS && hashId & 8) {
 	        callback(e, hashId, keyCode);
 	        if (e.defaultPrevented)
@@ -9561,7 +9561,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    if (!hashId && !(keyCode in keys.FUNCTION_KEYS) && !(keyCode in keys.PRINTABLE_KEYS)) {
 	        return false;
 	    }
-	    
+
 	    return callback(e, hashId, keyCode);
 	}
 
@@ -9685,7 +9685,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    for (var i=0, l=array.length; i<l; i++) {
 	        if (array[i] && typeof array[i] == "object")
 	            copy[i] = this.copyObject(array[i]);
-	        else 
+	        else
 	            copy[i] = array[i];
 	    }
 	    return copy;
@@ -9704,7 +9704,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }
 	    if (Object.prototype.toString.call(obj) !== "[object Object]")
 	        return obj;
-	    
+
 	    copy = {};
 	    for (var key in obj)
 	        copy[key] = deepCopy(obj[key]);
@@ -9781,7 +9781,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        timer = null;
 	        return deferred;
 	    };
-	    
+
 	    deferred.isPending = function() {
 	        return timer;
 	    };
@@ -10333,7 +10333,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    var tempStyle = '';
 	    var isSelectionEmpty = true;
 	    try { var isFocused = document.activeElement === text; } catch(e) {}
-	    
+
 	    event.addListener(text, "blur", function(e) {
 	        host.onBlur(e);
 	        isFocused = false;
@@ -10375,7 +10375,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        if (inComposition)
 	            return;
 	        inComposition = true;
-	        
+
 	        if (inputHandler) {
 	            var selectionStart = 0;
 	            var selectionEnd = isEmpty ? 0 : text.value.length - 1;
@@ -10386,7 +10386,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        try {
 	            text.setSelectionRange(selectionStart, selectionEnd);
 	        } catch(e){}
-	        
+
 	        inComposition = false;
 	    }
 
@@ -10429,7 +10429,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    this.setInputHandler = function(cb) {inputHandler = cb;};
 	    this.getInputHandler = function() {return inputHandler;};
 	    var afterContextMenu = false;
-	    
+
 	    var sendText = function(data) {
 	        if (inputHandler) {
 	            data = inputHandler(data);
@@ -10454,7 +10454,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                data = data.slice(0, -1);
 	            if (data.charAt(data.length - 1) == PLACEHOLDER.charAt(0))
 	                data = data.slice(0, -1);
-	            
+
 	            if (data)
 	                host.onTextInput(data);
 	        }
@@ -10468,7 +10468,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        sendText(data);
 	        resetValue();
 	    };
-	    
+
 	    var handleClipboardData = function(e, data, forceIEMime) {
 	        var clipboardData = e.clipboardData || window.clipboardData;
 	        if (!clipboardData || BROKEN_SETDATA)
@@ -10506,15 +10506,15 @@ return /******/ (function(modules) { // webpackBootstrap
 	            });
 	        }
 	    };
-	    
+
 	    var onCut = function(e) {
 	        doCopy(e, true);
 	    };
-	    
+
 	    var onCopy = function(e) {
 	        doCopy(e, false);
 	    };
-	    
+
 	    var onPaste = function(e) {
 	        var data = handleClipboardData(e);
 	        if (typeof data == "string") {
@@ -10558,7 +10558,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        });
 	    }
 	    var onCompositionStart = function(e) {
-	        if (inComposition || !host.onCompositionStart || host.$readOnly) 
+	        if (inComposition || !host.onCompositionStart || host.$readOnly)
 	            return;
 	        inComposition = {};
 	        inComposition.canUndo = host.session.$undoManager;
@@ -10578,7 +10578,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            return;
 	        var val = text.value.replace(/\u2028/g, "");
 	        if (inComposition.lastValue === val) return;
-	        
+
 	        host.onCompositionUpdate(val);
 	        if (inComposition.lastValue)
 	            host.undo();
@@ -10633,8 +10633,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	          onInput();
 	        }
 	    };
-	    
-	    
+
+
 
 	    var syncComposition = lang.delayedCall(onCompositionUpdate, 50);
 
@@ -10661,7 +10661,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        host._emit("nativecontextmenu", {target: host, domEvent: e});
 	        this.moveToMouse(e, true);
 	    };
-	    
+
 	    this.moveToMouse = function(e, bringToFront) {
 	        if (!tempStyle)
 	            tempStyle = text.style.cssText;
@@ -10677,7 +10677,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        var move = function(e) {
 	            text.style.left = e.clientX - left - 2 + "px";
 	            text.style.top = Math.min(e.clientY - top - 2, maxTop) + "px";
-	        }; 
+	        };
 	        move(e);
 
 	        if (e.type != "mousedown")
@@ -10936,7 +10936,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            ev.wheelX = ev.wheelY;
 	            ev.wheelY = 0;
 	        }
-	        
+
 	        var editor = this.editor;
 
 	        if (!this.$lastScroll)
@@ -11202,7 +11202,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            hideTooltip();
 	        }, 50);
 	    });
-	    
+
 	    editor.on("changeSession", hideTooltip);
 	}
 
@@ -11245,29 +11245,29 @@ return /******/ (function(modules) { // webpackBootstrap
 	var MouseEvent = exports.MouseEvent = function(domEvent, editor) {
 	    this.domEvent = domEvent;
 	    this.editor = editor;
-	    
+
 	    this.x = this.clientX = domEvent.clientX;
 	    this.y = this.clientY = domEvent.clientY;
 
 	    this.$pos = null;
 	    this.$inSelection = null;
-	    
+
 	    this.propagationStopped = false;
 	    this.defaultPrevented = false;
 	};
 
-	(function() {  
-	    
+	(function() {
+
 	    this.stopPropagation = function() {
 	        event.stopPropagation(this.domEvent);
 	        this.propagationStopped = true;
 	    };
-	    
+
 	    this.preventDefault = function() {
 	        event.preventDefault(this.domEvent);
 	        this.defaultPrevented = true;
 	    };
-	    
+
 	    this.stop = function() {
 	        this.stopPropagation();
 	        this.preventDefault();
@@ -11275,16 +11275,16 @@ return /******/ (function(modules) { // webpackBootstrap
 	    this.getDocumentPosition = function() {
 	        if (this.$pos)
 	            return this.$pos;
-	        
+
 	        this.$pos = this.editor.renderer.screenToTextCoordinates(this.clientX, this.clientY);
 	        return this.$pos;
 	    };
 	    this.inSelection = function() {
 	        if (this.$inSelection !== null)
 	            return this.$inSelection;
-	            
+
 	        var editor = this.editor;
-	        
+
 
 	        var selectionRange = editor.getSelectionRange();
 	        if (selectionRange.isEmpty())
@@ -11302,11 +11302,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	    this.getShiftKey = function() {
 	        return this.domEvent.shiftKey;
 	    };
-	    
+
 	    this.getAccelKey = useragent.isMac
 	        ? function() { return this.domEvent.metaKey; }
 	        : function() { return this.domEvent.ctrlKey; };
-	    
+
 	}).call(MouseEvent.prototype);
 
 	});
@@ -11764,7 +11764,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        if (e.propagationStopped)
 	            break;
 	    }
-	    
+
 	    if (defaultHandler && !e.defaultPrevented)
 	        return defaultHandler(e, this);
 	};
@@ -11792,7 +11792,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    var handlers = this._defaultHandlers;
 	    if (!handlers)
 	        handlers = this._defaultHandlers = {_disabled_: {}};
-	    
+
 	    if (handlers[eventName]) {
 	        var old = handlers[eventName];
 	        var disabled = handlers._disabled_[eventName];
@@ -11800,7 +11800,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            handlers._disabled_[eventName] = disabled = [];
 	        disabled.push(old);
 	        var i = disabled.indexOf(callback);
-	        if (i != -1) 
+	        if (i != -1)
 	            disabled.splice(i, 1);
 	    }
 	    handlers[eventName] = callback;
@@ -11810,7 +11810,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    if (!handlers)
 	        return;
 	    var disabled = handlers._disabled_[eventName];
-	    
+
 	    if (handlers[eventName] == callback) {
 	        var old = handlers[eventName];
 	        if (disabled)
@@ -11969,10 +11969,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	            this.setDefaultValue(path, key, optionHash[key]);
 	        }, this);
 	    };
-	    
+
 	    this.warn = warn;
 	    this.reportError = reportError;
-	    
+
 	}).call(AppConfig.prototype);
 
 	exports.AppConfig = AppConfig;
@@ -12091,14 +12091,14 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	    if (!global || !global.document)
 	        return;
-	    
+
 	    options.packaged = packaged || acequire.packaged || module.packaged || (global.define && __webpack_require__(53).packaged);
 
 	    var scriptOptions = {};
 	    var scriptUrl = "";
 	    var currentScript = (document.currentScript || document._currentScript ); // native or polyfill
 	    var currentDocument = currentScript && currentScript.ownerDocument || document;
-	    
+
 	    var scripts = currentDocument.getElementsByTagName("script");
 	    for (var i=0; i<scripts.length; i++) {
 	        var script = scripts[i];
@@ -12233,7 +12233,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	        this.editor._emit(name, mouseEvent);
 	    };
-	    
+
 	    this.onTouchMove = function (name, e) {
 	        var mouseEvent = new MouseEvent(e, this.editor);
 	        mouseEvent.speed = 1;//this.$scrollSpeed * 2;
@@ -12444,7 +12444,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    this.getKeyboardHandler = function() {
 	        return this.$handlers[this.$handlers.length - 1];
 	    };
-	    
+
 	    this.getStatusText = function() {
 	        var data = this.$data;
 	        var editor = data.editor;
@@ -12469,7 +12469,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            } else {
 	                success = commands.exec(toExecute.command, this.$editor, toExecute.args, e);
 	            }
-	            if (success && e && hashId != -1 && 
+	            if (success && e && hashId != -1 &&
 	                toExecute.passEvent != true && toExecute.command.passEvent != true
 	            ) {
 	                event.stopEvent(e);
@@ -12477,15 +12477,15 @@ return /******/ (function(modules) { // webpackBootstrap
 	            if (success)
 	                break;
 	        }
-	        
+
 	        if (!success && hashId == -1) {
 	            toExecute = {command: "insertstring"};
 	            success = commands.exec("insertstring", this.$editor, keyString);
 	        }
-	        
+
 	        if (success && this.$editor._signal)
 	            this.$editor._signal("keyboardActivity", toExecute);
-	        
+
 	        return success;
 	    };
 
@@ -13828,7 +13828,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        }
 
 	        var docPos = this.session.screenToDocumentPosition(screenPos.row + rows, screenPos.column, offsetX);
-	        
+
 	        if (rows !== 0 && chars === 0 && docPos.row === this.lead.row && docPos.column === this.lead.column) {
 	            if (this.session.lineWidgets && this.session.lineWidgets[docPos.row]) {
 	                if (docPos.row > 0 || rows > 0)
@@ -13990,7 +13990,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                if (rule.token.length == 1 || matchcount == 1) {
 	                    rule.token = rule.token[0];
 	                } else if (matchcount - 1 != rule.token.length) {
-	                    this.reportError("number of classes and regexp groups doesn't match", { 
+	                    this.reportError("number of classes and regexp groups doesn't match", {
 	                        rule: rule,
 	                        groupCount: matchcount - 1
 	                    });
@@ -14027,12 +14027,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	            if (!rule.onMatch)
 	                rule.onMatch = null;
 	        }
-	        
+
 	        if (!ruleRegExps.length) {
 	            mapping[0] = 0;
 	            ruleRegExps.push("$");
 	        }
-	        
+
 	        splitterRurles.forEach(function(rule) {
 	            rule.splitRegex = this.createSplitterRegexp(rule.regex, flag);
 	        }, this);
@@ -14045,7 +14045,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    this.$setMaxTokenCount = function(m) {
 	        MAX_TOKEN_COUNT = m | 0;
 	    };
-	    
+
 	    this.$applyToken = function(str) {
 	        var values = this.splitRegex.exec(str).slice(1);
 	        var types = this.token.apply(this, values);
@@ -14122,7 +14122,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        }
 	        if (src.charAt(0) != "^") src = "^" + src;
 	        if (src.charAt(src.length - 1) != "$") src += "$";
-	        
+
 	        return new RegExp(src, (flag||"").replace("g", ""));
 	    };
 	    this.getLineTokens = function(line, startState) {
@@ -14186,7 +14186,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                    } else {
 	                        currentState = rule.next(currentState, stack);
 	                    }
-	                    
+
 	                    state = this.states[currentState];
 	                    if (!state) {
 	                        this.reportError("state doesn't exist", currentState);
@@ -14249,7 +14249,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	        if (token.type)
 	            tokens.push(token);
-	        
+
 	        if (stack.length > 1) {
 	            if (stack[0] !== currentState)
 	                stack.unshift("#tmp", currentState);
@@ -14259,9 +14259,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	            state : stack.length ? stack : currentState
 	        };
 	    };
-	    
+
 	    this.reportError = config.reportError;
-	    
+
 	}).call(Tokenizer.prototype);
 
 	exports.Tokenizer = Tokenizer;
@@ -14428,7 +14428,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                    state.splice.apply(state, args);
 	                    i--;
 	                }
-	                
+
 	                if (rule.keywordMap) {
 	                    rule.token = this.createKeywordMapper(
 	                        rule.keywordMap, rule.defaultToken || "text", rule.caseInsensitive
@@ -14487,7 +14487,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        }
 	        this.$behaviours[name][action] = callback;
 	    };
-	    
+
 	    this.addBehaviours = function (behaviours) {
 	        for (var key in behaviours) {
 	            for (var action in behaviours[key]) {
@@ -14495,13 +14495,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	            }
 	        }
 	    };
-	    
+
 	    this.remove = function (name) {
 	        if (this.$behaviours && this.$behaviours[name]) {
 	            delete this.$behaviours[name];
 	        }
 	    };
-	    
+
 	    this.inherit = function (mode, filter) {
 	        if (typeof mode === "function") {
 	            var behaviours = new mode().getBehaviours(filter);
@@ -14510,7 +14510,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        }
 	        this.addBehaviours(behaviours);
 	    };
-	    
+
 	    this.getBehaviours = function (filter) {
 	        if (!filter) {
 	            return this.$behaviours;
@@ -14543,23 +14543,23 @@ return /******/ (function(modules) { // webpackBootstrap
 	    this.$tokenIndex = token ? token.index : -1;
 	};
 
-	(function() { 
+	(function() {
 	    this.stepBackward = function() {
 	        this.$tokenIndex -= 1;
-	        
+
 	        while (this.$tokenIndex < 0) {
 	            this.$row -= 1;
 	            if (this.$row < 0) {
 	                this.$row = 0;
 	                return null;
 	            }
-	                
+
 	            this.$rowTokens = this.$session.getTokens(this.$row);
 	            this.$tokenIndex = this.$rowTokens.length - 1;
 	        }
-	            
+
 	        return this.$rowTokens[this.$tokenIndex];
-	    };   
+	    };
 	    this.stepForward = function() {
 	        this.$tokenIndex += 1;
 	        var rowCount;
@@ -14575,29 +14575,29 @@ return /******/ (function(modules) { // webpackBootstrap
 	            this.$rowTokens = this.$session.getTokens(this.$row);
 	            this.$tokenIndex = 0;
 	        }
-	            
+
 	        return this.$rowTokens[this.$tokenIndex];
-	    };      
+	    };
 	    this.getCurrentToken = function () {
 	        return this.$rowTokens[this.$tokenIndex];
-	    };      
+	    };
 	    this.getCurrentTokenRow = function () {
 	        return this.$row;
-	    };     
+	    };
 	    this.getCurrentTokenColumn = function() {
 	        var rowTokens = this.$rowTokens;
 	        var tokenIndex = this.$tokenIndex;
 	        var column = rowTokens[tokenIndex].start;
 	        if (column !== undefined)
 	            return column;
-	            
+
 	        column = 0;
 	        while (tokenIndex > 0) {
 	            tokenIndex -= 1;
 	            column += rowTokens[tokenIndex].value.length;
 	        }
-	        
-	        return column;  
+
+	        return column;
 	    };
 	    this.getCurrentTokenPosition = function() {
 	        return {row: this.$row, column: this.getCurrentTokenColumn()};
@@ -15124,7 +15124,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                var lineCommentStart = this.lineCommentStart;
 	            }
 	            regexpStart = new RegExp("^(\\s*)(?:" + regexpStart + ") ?");
-	            
+
 	            insertAtTabStop = session.getUseSoftTabs();
 
 	            var uncomment = function(line, i) {
@@ -15147,7 +15147,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            var testRemove = function(line, i) {
 	                return regexpStart.test(line);
 	            };
-	            
+
 	            var shouldInsertSpace = function(line, before, after) {
 	                var spaces = 0;
 	                while (before-- && line.charAt(before) == " ")
@@ -15284,7 +15284,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            }
 	        }
 
-	        var delegations = ["toggleBlockComment", "toggleCommentLines", "getNextLineIndent", 
+	        var delegations = ["toggleBlockComment", "toggleCommentLines", "getNextLineIndent",
 	            "checkOutdent", "autoOutdent", "transformAction", "getCompletions"];
 
 	        for (var i = 0; i < delegations.length; i++) {
@@ -15329,7 +15329,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            }
 	        }
 	    };
-	    
+
 	    this.getKeywords = function(append) {
 	        if (!this.completionKeywords) {
 	            var rules = this.$tokenizer.rules;
@@ -15342,7 +15342,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                            completionKeywords.push(ruleItr[r].regex);
 	                    }
 	                    else if (typeof ruleItr[r].token === "object") {
-	                        for (var a = 0, aLength = ruleItr[r].token.length; a < aLength; a++) {    
+	                        for (var a = 0, aLength = ruleItr[r].token.length; a < aLength; a++) {
 	                            if (/keyword|support|storage/.test(ruleItr[r].token[a])) {
 	                                var rule = ruleItr[r].regex.match(/\(.+?\)/g)[a];
 	                                completionKeywords.push(rule.substr(1, rule.length - 2));
@@ -15357,7 +15357,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            return this.$keywordList;
 	        return completionKeywords.concat(this.$keywordList || []);
 	    };
-	    
+
 	    this.$createKeywordList = function() {
 	        if (!this.$highlightRules)
 	            this.getTokenizer();
@@ -15415,7 +15415,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	}
 
 	exports.applyDelta = function(docLines, delta, doNotValidate) {
-	    
+
 	    var row = delta.start.row;
 	    var startColumn = delta.start.column;
 	    var line = docLines[row] || "";
@@ -15456,7 +15456,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	var Anchor = exports.Anchor = function(doc, row, column) {
 	    this.$onChange = this.onChange.bind(this);
 	    this.attach(doc);
-	    
+
 	    if (typeof column == "undefined")
 	        this.setPosition(row.row, row.column);
 	    else
@@ -15479,16 +15479,16 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	        if (delta.start.row > this.row)
 	            return;
-	            
+
 	        var point = $getTransformedPoint(delta, {row: this.row, column: this.column}, this.$insertRight);
 	        this.setPosition(point.row, point.column, true);
 	    };
-	    
+
 	    function $pointsInOrder(point1, point2, equalPointsInOrder) {
 	        var bColIsAfter = equalPointsInOrder ? point1.column <= point2.column : point1.column < point2.column;
 	        return (point1.row < point2.row) || (point1.row == point2.row && bColIsAfter);
 	    }
-	            
+
 	    function $getTransformedPoint(delta, point, moveIfEqual) {
 	        var deltaIsInsert = delta.action == "insert";
 	        var deltaRowShift = (deltaIsInsert ? 1 : -1) * (delta.end.row    - delta.start.row);
@@ -15507,7 +15507,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                column: point.column + (point.row == deltaEnd.row ? deltaColShift : 0)
 	            };
 	        }
-	        
+
 	        return {
 	            row: deltaStart.row,
 	            column: deltaStart.column
@@ -15691,23 +15691,23 @@ return /******/ (function(modules) { // webpackBootstrap
 	    this.insert = function(position, text) {
 	        if (this.getLength() <= 1)
 	            this.$detectNewLine(text);
-	        
+
 	        return this.insertMergedLines(position, this.$split(text));
 	    };
 	    this.insertInLine = function(position, text) {
 	        var start = this.clippedPos(position.row, position.column);
 	        var end = this.pos(position.row, position.column + text.length);
-	        
+
 	        this.applyDelta({
 	            start: start,
 	            end: end,
 	            action: "insert",
 	            lines: [text]
 	        }, true);
-	        
+
 	        return this.clonePos(end);
 	    };
-	    
+
 	    this.clippedPos = function(row, column) {
 	        var length = this.getLength();
 	        if (row === undefined) {
@@ -15724,15 +15724,15 @@ return /******/ (function(modules) { // webpackBootstrap
 	        column = Math.min(Math.max(column, 0), line.length);
 	        return {row: row, column: column};
 	    };
-	    
+
 	    this.clonePos = function(pos) {
 	        return {row: pos.row, column: pos.column};
 	    };
-	    
+
 	    this.pos = function(row, column) {
 	        return {row: row, column: column};
 	    };
-	    
+
 	    this.$clipPosition = function(position) {
 	        var length = this.getLength();
 	        if (position.row >= length) {
@@ -15756,21 +15756,21 @@ return /******/ (function(modules) { // webpackBootstrap
 	            column = this.$lines[row].length;
 	        }
 	        this.insertMergedLines({row: row, column: column}, lines);
-	    };    
+	    };
 	    this.insertMergedLines = function(position, lines) {
 	        var start = this.clippedPos(position.row, position.column);
 	        var end = {
 	            row: start.row + lines.length - 1,
 	            column: (lines.length == 1 ? start.column : 0) + lines[lines.length - 1].length
 	        };
-	        
+
 	        this.applyDelta({
 	            start: start,
 	            end: end,
 	            action: "insert",
 	            lines: lines
 	        });
-	        
+
 	        return this.clonePos(end);
 	    };
 	    this.remove = function(range) {
@@ -15787,14 +15787,14 @@ return /******/ (function(modules) { // webpackBootstrap
 	    this.removeInLine = function(row, startColumn, endColumn) {
 	        var start = this.clippedPos(row, startColumn);
 	        var end = this.clippedPos(row, endColumn);
-	        
+
 	        this.applyDelta({
 	            start: start,
 	            end: end,
 	            action: "remove",
 	            lines: this.getLinesForRange({start: start, end: end})
 	        }, true);
-	        
+
 	        return this.clonePos(start);
 	    };
 	    this.removeFullLines = function(firstRow, lastRow) {
@@ -15805,10 +15805,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	        var startRow = ( deleteFirstNewLine ? firstRow - 1                  : firstRow                    );
 	        var startCol = ( deleteFirstNewLine ? this.getLine(startRow).length : 0                           );
 	        var endRow   = ( deleteLastNewLine  ? lastRow + 1                   : lastRow                     );
-	        var endCol   = ( deleteLastNewLine  ? 0                             : this.getLine(endRow).length ); 
+	        var endCol   = ( deleteLastNewLine  ? 0                             : this.getLine(endRow).length );
 	        var range = new Range(startRow, startCol, endRow, endCol);
 	        var deletedLines = this.$lines.slice(firstRow, lastRow + 1);
-	        
+
 	        this.applyDelta({
 	            start: range.start,
 	            end: range.end,
@@ -15843,7 +15843,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        else {
 	            end = range.start;
 	        }
-	        
+
 	        return end;
 	    };
 	    this.applyDeltas = function(deltas) {
@@ -15862,17 +15862,17 @@ return /******/ (function(modules) { // webpackBootstrap
 	            : !Range.comparePoints(delta.start, delta.end)) {
 	            return;
 	        }
-	        
+
 	        if (isInsert && delta.lines.length > 20000)
 	            this.$splitAndapplyLargeDelta(delta, 20000);
 	        applyDelta(this.$lines, delta, doNotValidate);
 	        this._signal("change", delta);
 	    };
-	    
+
 	    this.$splitAndapplyLargeDelta = function(delta, MAX) {
 	        var lines = delta.lines;
 	        var l = lines.length;
-	        var row = delta.start.row; 
+	        var row = delta.start.row;
 	        var column = delta.start.column;
 	        var from = 0, to = 0;
 	        do {
@@ -15954,7 +15954,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        var startLine = currentLine;
 	        while (self.lines[currentLine])
 	            currentLine++;
-	        
+
 	        var len = doc.getLength();
 	        var processedLines = 0;
 	        self.running = false;
@@ -15965,13 +15965,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	                currentLine++;
 	            } while (self.lines[currentLine]);
 	            processedLines ++;
-	            if ((processedLines % 5 === 0) && (new Date() - workerStart) > 20) {                
+	            if ((processedLines % 5 === 0) && (new Date() - workerStart) > 20) {
 	                self.running = setTimeout(self.$worker, 20);
 	                break;
 	            }
 	        }
 	        self.currentLine = currentLine;
-	        
+
 	        if (endLine == -1)
 	            endLine = currentLine;
 
@@ -16012,7 +16012,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        this.stop();
 	        this.running = setTimeout(this.$worker, 700);
 	    };
-	    
+
 	    this.scheduleStart = function() {
 	        if (!this.running)
 	            this.running = setTimeout(this.$worker, 700);
@@ -16090,7 +16090,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	(function() {
 	    this.MAX_RANGES = 500;
-	    
+
 	    this.setRegexp = function(regExp) {
 	        if (this.regExp+"" == regExp+"")
 	            return;
@@ -16276,14 +16276,14 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	    this.split = function(row, column) {
 	        var pos = this.getNextFoldTo(row, column);
-	        
+
 	        if (!pos || pos.kind == "inside")
 	            return null;
-	            
+
 	        var fold = pos.fold;
 	        var folds = this.folds;
 	        var foldData = this.foldData;
-	        
+
 	        var i = folds.indexOf(fold);
 	        var foldBefore = folds[i - 1];
 	        this.end.row = foldBefore.end.row;
@@ -16409,11 +16409,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	    this.merge = function() {
 	        var removed = [];
 	        var list = this.ranges;
-	        
+
 	        list = list.sort(function(a, b) {
 	            return comparePoints(a.start, b.start);
 	        });
-	        
+
 	        var next = list[0], range;
 	        for (var i = 1; i < list.length; i++) {
 	            range = next;
@@ -16435,7 +16435,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            next = range;
 	            i--;
 	        }
-	        
+
 	        this.ranges = list;
 
 	        return removed;
@@ -16529,7 +16529,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                if (r.end.column == start.column && this.$insertRight) {
 	                    continue;
 	                }
-	                if (r.end.column == start.column && colDiff > 0 && i < n - 1) {                
+	                if (r.end.column == start.column && colDiff > 0 && i < n - 1) {
 	                    if (r.end.column > r.start.column && r.end.column == ranges[i+1].start.column)
 	                        r.end.column -= colDiff;
 	                }
@@ -16628,7 +16628,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	        return fold;
 	    };
-	    
+
 	    this.restoreRange = function(range) {
 	        return restoreRange(range, this.start);
 	    };
@@ -16736,7 +16736,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    this.getAllFolds = function() {
 	        var folds = [];
 	        var foldLines = this.$foldData;
-	        
+
 	        for (var i = 0; i < foldLines.length; i++)
 	            for (var j = 0; j < foldLines[i].folds.length; j++)
 	                folds.push(foldLines[i].folds[j]);
@@ -16845,7 +16845,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        var foldData = this.$foldData;
 	        var added = false;
 	        var fold;
-	        
+
 	        if (placeholder instanceof Fold)
 	            fold = placeholder;
 	        else {
@@ -16858,7 +16858,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        var startColumn = fold.start.column;
 	        var endRow = fold.end.row;
 	        var endColumn = fold.end.column;
-	        if (!(startRow < endRow || 
+	        if (!(startRow < endRow ||
 	            startRow == endRow && startColumn <= endColumn - 2))
 	            throw new Error("The range has to be at least 2 characters width");
 
@@ -16869,7 +16869,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	        if (startFold && !startFold.range.isStart(startRow, startColumn))
 	            this.removeFold(startFold);
-	        
+
 	        if (endFold && !endFold.range.isEnd(endRow, endColumn))
 	            this.removeFold(endFold);
 	        var folds = this.getFoldsInRange(fold.range);
@@ -17003,7 +17003,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            range = Range.fromPoints(location, location);
 	        else
 	            range = location;
-	        
+
 	        folds = this.getFoldsInRangeList(range);
 	        if (expandInner) {
 	            this.removeFolds(folds);
@@ -17162,12 +17162,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	                } while (token && re.test(token.type));
 	                iterator.stepForward();
 	            }
-	            
+
 	            range.start.row = iterator.getCurrentTokenRow();
 	            range.start.column = iterator.getCurrentTokenColumn() + 2;
 
 	            iterator = new TokenIterator(this, row, column);
-	            
+
 	            if (dir != -1) {
 	                var lastRow = -1;
 	                do {
@@ -17227,12 +17227,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	    this.setFoldStyle = function(style) {
 	        if (!this.$foldStyles[style])
 	            throw new Error("invalid fold style: " + style + "[" + Object.keys(this.$foldStyles).join(", ") + "]");
-	        
+
 	        if (this.$foldStyle == style)
 	            return;
 
 	        this.$foldStyle = style;
-	        
+
 	        if (style == "manual")
 	            this.unfold();
 	        var mode = this.$foldMode;
@@ -17243,22 +17243,22 @@ return /******/ (function(modules) { // webpackBootstrap
 	    this.$setFolding = function(foldMode) {
 	        if (this.$foldMode == foldMode)
 	            return;
-	            
+
 	        this.$foldMode = foldMode;
-	        
+
 	        this.off('change', this.$updateFoldWidgets);
 	        this.off('tokenizerUpdate', this.$tokenizerUpdateFoldWidgets);
 	        this._signal("changeAnnotation");
-	        
+
 	        if (!foldMode || this.$foldStyle == "manual") {
 	            this.foldWidgets = null;
 	            return;
 	        }
-	        
+
 	        this.foldWidgets = [];
 	        this.getFoldWidget = foldMode.getFoldWidget.bind(foldMode, this, this.$foldStyle);
 	        this.getFoldWidgetRange = foldMode.getFoldWidgetRange.bind(foldMode, this, this.$foldStyle);
-	        
+
 	        this.$updateFoldWidgets = this.updateFoldWidgets.bind(this);
 	        this.$tokenizerUpdateFoldWidgets = this.tokenizerUpdateFoldWidgets.bind(this);
 	        this.on('change', this.$updateFoldWidgets);
@@ -17299,7 +17299,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            all: e.ctrlKey || e.metaKey,
 	            siblings: e.altKey
 	        };
-	        
+
 	        var range = this.$toggleFoldWidget(row, options);
 	        if (!range) {
 	            var el = (e.target || e.srcElement);
@@ -17307,7 +17307,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                el.className += " ace_invalid";
 	        }
 	    };
-	    
+
 	    this.$toggleFoldWidget = function(row, options) {
 	        if (!this.getFoldWidget)
 	            return;
@@ -17333,7 +17333,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                return fold;
 	            }
 	        }
-	        
+
 	        if (options.siblings) {
 	            var data = this.getParentFoldRangeData(row);
 	            if (data.range) {
@@ -17345,26 +17345,26 @@ return /******/ (function(modules) { // webpackBootstrap
 	            endRow = range ? range.end.row : this.getLength();
 	            this.foldAll(row + 1, endRow, options.all ? 10000 : 0);
 	        } else if (range) {
-	            if (options.all) 
+	            if (options.all)
 	                range.collapseChildren = 10000;
 	            this.addFold("...", range);
 	        }
-	        
+
 	        return range;
 	    };
-	    
-	    
-	    
+
+
+
 	    this.toggleFoldWidget = function(toggleParent) {
 	        var row = this.selection.getCursor().row;
 	        row = this.getRowFoldStart(row);
 	        var range = this.$toggleFoldWidget(row, {});
-	        
+
 	        if (range)
 	            return;
 	        var data = this.getParentFoldRangeData(row, true);
 	        range = data.range || data.firstRange;
-	        
+
 	        if (range) {
 	            row = range.start.row;
 	            var fold = this.getFoldAt(row, this.getLine(row).length, 1);
@@ -17428,7 +17428,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        else
 	            return this.$findOpeningBracket(match[2], position);
 	    };
-	    
+
 	    this.getBracketRange = function(pos) {
 	        var line = this.getLine(pos.row);
 	        var before = true, range;
@@ -17465,7 +17465,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            }
 	            range.cursor = range.start;
 	        }
-	        
+
 	        return range;
 	    };
 
@@ -17488,7 +17488,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            token = iterator.stepForward();
 	        if (!token)
 	            return;
-	        
+
 	         if (!typeRe){
 	            typeRe = new RegExp(
 	                "(\\.?" +
@@ -17499,9 +17499,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	        }
 	        var valueIndex = position.column - iterator.getCurrentTokenColumn() - 2;
 	        var value = token.value;
-	        
+
 	        while (true) {
-	        
+
 	            while (valueIndex >= 0) {
 	                var chr = value.charAt(valueIndex);
 	                if (chr == openBracket) {
@@ -17522,11 +17522,11 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	            if (token == null)
 	                break;
-	                
+
 	            value = token.value;
 	            valueIndex = value.length - 1;
 	        }
-	        
+
 	        return null;
 	    };
 
@@ -17578,7 +17578,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	            valueIndex = 0;
 	        }
-	        
+
 	        return null;
 	    };
 	}
@@ -17810,7 +17810,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        if (this.$syncInformUndoManager)
 	            this.$syncInformUndoManager();
 	    };
-	    
+
 	    this.$defaultUndoManager = {
 	        undo: function() {},
 	        redo: function() {},
@@ -18085,7 +18085,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    this.$onChangeMode = function(mode, $isPlaceholder) {
 	        if (!$isPlaceholder)
 	            this.$modeId = mode.$id;
-	        if (this.$mode === mode) 
+	        if (this.$mode === mode)
 	            return;
 
 	        this.$mode = mode;
@@ -18117,7 +18117,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        this.tokenRe = mode.tokenRe;
 	        this.nonTokenRe = mode.nonTokenRe;
 
-	        
+
 	        if (!$isPlaceholder) {
 	            if (mode.attachToSession)
 	                mode.attachToSession(this);
@@ -18172,11 +18172,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	    };
 	    this.getScreenWidth = function() {
 	        this.$computeWidth();
-	        if (this.lineWidgets) 
+	        if (this.lineWidgets)
 	            return Math.max(this.getLineWidgetMaxWidth(), this.screenWidth);
 	        return this.screenWidth;
 	    };
-	    
+
 	    this.getLineWidgetMaxWidth = function() {
 	        if (this.lineWidgetsWidth != null) return this.lineWidgetsWidth;
 	        var width = 0;
@@ -18440,7 +18440,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            x.end.row += diff;
 	            return x;
 	        });
-	        
+
 	        var lines = dir == 0
 	            ? this.doc.getLines(firstRow, lastRow)
 	            : this.doc.removeFullLines(firstRow, lastRow);
@@ -18596,7 +18596,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        var lastRow = end.row;
 	        var len = lastRow - firstRow;
 	        var removedFolds = null;
-	        
+
 	        this.$updating = true;
 	        if (len != 0) {
 	            if (action === "remove") {
@@ -18912,7 +18912,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    this.getRowLength = function(row) {
 	        if (this.lineWidgets)
 	            var h = this.lineWidgets[row] && this.lineWidgets[row].rowCount || 0;
-	        else 
+	        else
 	            h = 0;
 	        if (!this.$useWrapMode || !this.$wrapData[row]) {
 	            return 1 + h;
@@ -19182,7 +19182,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            if (!maxScreenColumn)
 	                maxScreenColumn = Infinity;
 	            screenColumn = screenColumn || 0;
-	            
+
 	            var c, column;
 	            for (column = 0; column < str.length; column++) {
 	                c = str.charAt(column);
@@ -19195,11 +19195,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	                    break;
 	                }
 	            }
-	            
+
 	            return [screenColumn, column];
 	        };
 	    };
-	    
+
 	    this.destroy = function() {
 	        if (this.bgTokenizer) {
 	            this.bgTokenizer.setDocument(null);
@@ -19286,7 +19286,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            return "off";
 	        },
 	        handlesSet: true
-	    },    
+	    },
 	    wrapMethod: {
 	        set: function(val) {
 	            val = val == "auto"
@@ -19414,12 +19414,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	                for (var j = 0; j < len; j++)
 	                    if (lines[row + j].search(re[j]) == -1)
 	                        continue outer;
-	                
+
 	                var startLine = lines[row];
 	                var line = lines[row + len - 1];
 	                var startIndex = startLine.length - startLine.match(re[0])[0].length;
 	                var endIndex = line.match(re[len - 1])[0].length;
-	                
+
 	                if (prevRange && prevRange.end.row === row &&
 	                    prevRange.end.column > startIndex
 	                ) {
@@ -19450,7 +19450,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	            while (i < j && ranges[j].end.column > endColumn && ranges[j].end.row == range.end.row)
 	                j--;
-	            
+
 	            ranges = ranges.slice(i, j + 1);
 	            for (i = 0, j = ranges.length; i < j; i++) {
 	                ranges[i].start.row += range.start.row;
@@ -19473,7 +19473,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        var match = re.exec(input);
 	        if (!match || match[0].length != input.length)
 	            return null;
-	        
+
 	        replacement = input.replace(re, replacement);
 	        if (options.preserveCase) {
 	            replacement = replacement.split("");
@@ -19486,7 +19486,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            }
 	            replacement = replacement.join("");
 	        }
-	        
+
 	        return replacement;
 	    };
 
@@ -19541,7 +19541,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        var start = options.start;
 	        if (!start)
 	            start = range ? range[backwards ? "end" : "start"] : session.selection.getRange();
-	         
+
 	        if (start.start)
 	            start = start[skipCurrent != backwards ? "end" : "start"];
 
@@ -19578,7 +19578,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                        return;
 	            };
 	        }
-	        
+
 	        if (options.$isMultiLine) {
 	            var len = re.length;
 	            var forEachInLine = function(row, offset, callback) {
@@ -19681,7 +19681,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	MultiHashHandler.prototype = HashHandler.prototype;
 
 	(function() {
-	    
+
 
 	    this.addCommand = function(command) {
 	        if (this.commands[command.name])
@@ -19724,7 +19724,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            return;
 	        if (typeof command == "function")
 	            return this.addCommand({exec: command, bindKey: key, name: command.name || key});
-	        
+
 	        key.split("|").forEach(function(keyPart) {
 	            var chain = "";
 	            if (keyPart.indexOf(" ") != -1) {
@@ -19743,7 +19743,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            this._addCommandToBinding(chain + id, command, position);
 	        }, this);
 	    };
-	    
+
 	    function getPosition(command) {
 	        return typeof command == "object" && command.bindKey
 	            && command.bindKey.position
@@ -19782,7 +19782,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            var command = commands[name];
 	            if (!command)
 	                return;
-	            
+
 	            if (typeof command === "string")
 	                return this.bindKey(command, name);
 
@@ -19852,14 +19852,14 @@ return /******/ (function(modules) { // webpackBootstrap
 	            data.$keyChain += " " + key;
 	            command = this.commandKeyBinding[data.$keyChain] || command;
 	        }
-	        
+
 	        if (command) {
 	            if (command == "chainKeys" || command[command.length - 1] == "chainKeys") {
 	                data.$keyChain = data.$keyChain || key;
 	                return {command: "null"};
 	            }
 	        }
-	        
+
 	        if (data.$keyChain) {
 	            if ((!hashId || hashId == 4) && keyString.length == 1)
 	                data.$keyChain = data.$keyChain.slice(0, -key.length - 1); // wait for input
@@ -19868,7 +19868,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        }
 	        return {command: command};
 	    };
-	    
+
 	    this.getStatusText = function(editor, data) {
 	        return data.$keyChain || "";
 	    };
@@ -20086,7 +20086,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	}, {
 	    name: "foldOther",
 	    bindKey: bindKey("Alt-0", "Command-Option-0"),
-	    exec: function(editor) { 
+	    exec: function(editor) {
 	        editor.session.foldAll();
 	        editor.session.unfold(editor.selection.getAllRanges());
 	    },
@@ -20119,13 +20119,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	        if (editor.selection.isEmpty())
 	            editor.selection.selectWord();
 	        else
-	            editor.findNext(); 
+	            editor.findNext();
 	    },
 	    readOnly: true
 	}, {
 	    name: "selectOrFindPrevious",
 	    bindKey: bindKey("Alt-Shift-K", "Ctrl-Shift-G"),
-	    exec: function(editor) { 
+	    exec: function(editor) {
 	        if (editor.selection.isEmpty())
 	            editor.selection.selectWord();
 	        else
@@ -20498,7 +20498,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	}, {
 	    name: "cut_or_delete",
 	    bindKey: bindKey("Shift-Delete", null),
-	    exec: function(editor) { 
+	    exec: function(editor) {
 	        if (editor.selection.isEmpty()) {
 	            editor.remove("left");
 	        } else {
@@ -20748,13 +20748,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	    this.commands.on("exec", this.$historyTracker);
 
 	    this.$initOperationListeners();
-	    
+
 	    this._$emitInputEvent = lang.delayedCall(function() {
 	        this._signal("input", {});
 	        if (this.session && this.session.bgTokenizer)
 	            this.session.bgTokenizer.scheduleStart();
 	    }.bind(this));
-	    
+
 	    this.on("change", function(_, _self) {
 	        _self._$emitInputEvent.schedule(31);
 	    });
@@ -20846,7 +20846,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                if (scrollIntoView == "animate")
 	                    this.renderer.animateScrolling(this.curOp.scrollTop);
 	            }
-	            
+
 	            this.prevOp = this.curOp;
 	            this.curOp = null;
 	        }
@@ -20937,58 +20937,58 @@ return /******/ (function(modules) { // webpackBootstrap
 	            this.$onDocumentChange = this.onDocumentChange.bind(this);
 	            session.on("change", this.$onDocumentChange);
 	            this.renderer.setSession(session);
-	    
+
 	            this.$onChangeMode = this.onChangeMode.bind(this);
 	            session.on("changeMode", this.$onChangeMode);
-	    
+
 	            this.$onTokenizerUpdate = this.onTokenizerUpdate.bind(this);
 	            session.on("tokenizerUpdate", this.$onTokenizerUpdate);
-	    
+
 	            this.$onChangeTabSize = this.renderer.onChangeTabSize.bind(this.renderer);
 	            session.on("changeTabSize", this.$onChangeTabSize);
-	    
+
 	            this.$onChangeWrapLimit = this.onChangeWrapLimit.bind(this);
 	            session.on("changeWrapLimit", this.$onChangeWrapLimit);
-	    
+
 	            this.$onChangeWrapMode = this.onChangeWrapMode.bind(this);
 	            session.on("changeWrapMode", this.$onChangeWrapMode);
-	    
+
 	            this.$onChangeFold = this.onChangeFold.bind(this);
 	            session.on("changeFold", this.$onChangeFold);
-	    
+
 	            this.$onChangeFrontMarker = this.onChangeFrontMarker.bind(this);
 	            this.session.on("changeFrontMarker", this.$onChangeFrontMarker);
-	    
+
 	            this.$onChangeBackMarker = this.onChangeBackMarker.bind(this);
 	            this.session.on("changeBackMarker", this.$onChangeBackMarker);
-	    
+
 	            this.$onChangeBreakpoint = this.onChangeBreakpoint.bind(this);
 	            this.session.on("changeBreakpoint", this.$onChangeBreakpoint);
-	    
+
 	            this.$onChangeAnnotation = this.onChangeAnnotation.bind(this);
 	            this.session.on("changeAnnotation", this.$onChangeAnnotation);
-	    
+
 	            this.$onCursorChange = this.onCursorChange.bind(this);
 	            this.session.on("changeOverwrite", this.$onCursorChange);
-	    
+
 	            this.$onScrollTopChange = this.onScrollTopChange.bind(this);
 	            this.session.on("changeScrollTop", this.$onScrollTopChange);
-	    
+
 	            this.$onScrollLeftChange = this.onScrollLeftChange.bind(this);
 	            this.session.on("changeScrollLeft", this.$onScrollLeftChange);
-	    
+
 	            this.selection = session.getSelection();
 	            this.selection.on("changeCursor", this.$onCursorChange);
-	    
+
 	            this.$onSelectionChange = this.onSelectionChange.bind(this);
 	            this.selection.on("changeSelection", this.$onSelectionChange);
-	    
+
 	            this.onChangeMode();
-	    
+
 	            this.$blockScrolling += 1;
 	            this.onCursorChange();
 	            this.$blockScrolling -= 1;
-	    
+
 	            this.onScrollTopChange();
 	            this.onScrollLeftChange();
 	            this.onSelectionChange();
@@ -21007,9 +21007,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	            session: session,
 	            oldSession: oldSession
 	        });
-	        
+
 	        this.curOp = null;
-	        
+
 	        oldSession && oldSession._signal("changeEditor", {oldEditor: this});
 	        session && session._signal("changeEditor", {editor: this});
 
@@ -21092,35 +21092,35 @@ return /******/ (function(modules) { // webpackBootstrap
 	        this.$highlightTagPending = true;
 	        setTimeout(function() {
 	            self.$highlightTagPending = false;
-	            
+
 	            var session = self.session;
 	            if (!session || !session.bgTokenizer) return;
-	            
+
 	            var pos = self.getCursorPosition();
 	            var iterator = new TokenIterator(self.session, pos.row, pos.column);
 	            var token = iterator.getCurrentToken();
-	            
+
 	            if (!token || !/\b(?:tag-open|tag-name)/.test(token.type)) {
 	                session.removeMarker(session.$tagHighlight);
 	                session.$tagHighlight = null;
 	                return;
 	            }
-	            
+
 	            if (token.type.indexOf("tag-open") != -1) {
 	                token = iterator.stepForward();
 	                if (!token)
 	                    return;
 	            }
-	            
+
 	            var tag = token.value;
 	            var depth = 0;
 	            var prevToken = iterator.stepBackward();
-	            
+
 	            if (prevToken.value == '<'){
 	                do {
 	                    prevToken = token;
 	                    token = iterator.stepForward();
-	                    
+
 	                    if (token && token.value === tag && token.type.indexOf('tag-name') !== -1) {
 	                        if (prevToken.value === '<'){
 	                            depth++;
@@ -21128,13 +21128,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	                            depth--;
 	                        }
 	                    }
-	                    
+
 	                } while (token && depth >= 0);
 	            } else {
 	                do {
 	                    token = prevToken;
 	                    prevToken = iterator.stepBackward();
-	                    
+
 	                    if (token && token.value === tag && token.type.indexOf('tag-name') !== -1) {
 	                        if (prevToken.value === '<') {
 	                            depth++;
@@ -21145,13 +21145,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	                } while (prevToken && depth <= 0);
 	                iterator.stepForward();
 	            }
-	            
+
 	            if (!token) {
 	                session.removeMarker(session.$tagHighlight);
 	                session.$tagHighlight = null;
 	                return;
 	            }
-	            
+
 	            var row = iterator.getCurrentTokenRow();
 	            var column = iterator.getCurrentTokenColumn();
 	            var range = new Range(row, column, row, column+token.value.length);
@@ -21160,7 +21160,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                session.removeMarker(session.$tagHighlight);
 	                session.$tagHighlight = null;
 	            }
-	            
+
 	            if (range && !session.$tagHighlight)
 	                session.$tagHighlight = session.addMarker(range, "ace_bracket", "text");
 	        }, 50);
@@ -21372,9 +21372,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	        var e = {text: text, event: event};
 	        this.commands.exec("paste", this, e);
 	    };
-	    
+
 	    this.$handlePaste = function(e) {
-	        if (typeof e == "string") 
+	        if (typeof e == "string")
 	            e = {text: e};
 	        this._signal("paste", e);
 	        var text = e.text;
@@ -21383,15 +21383,15 @@ return /******/ (function(modules) { // webpackBootstrap
 	        } else {
 	            var lines = text.split(/\r\n|\r|\n/);
 	            var ranges = this.selection.rangeList.ranges;
-	    
+
 	            if (lines.length > ranges.length || lines.length < 2 || !lines[1])
 	                return this.commands.exec("insertstring", this, text);
-	    
+
 	            for (var i = ranges.length; i--;) {
 	                var range = ranges[i];
 	                if (!range.isEmpty())
 	                    this.session.remove(range);
-	    
+
 	                this.session.insert(range.start, lines[i]);
 	            }
 	        }
@@ -21416,7 +21416,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	            }
 	        }
-	        
+
 	        if (text == "\t")
 	            text = this.session.getTabString();
 	        if (!this.selection.isEmpty()) {
@@ -21723,7 +21723,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                return;
 	            }
 	        }
-	        
+
 	        var line = session.getLine(range.start.row);
 	        var position = range.start;
 	        var size = session.getTabSize();
@@ -21888,7 +21888,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            var ranges = selection.rangeList.ranges;
 	            selection.rangeList.detach(this.session);
 	            this.inVirtualSelectionMode = true;
-	            
+
 	            var diff = 0;
 	            var totalDiff = 0;
 	            var l = ranges.length;
@@ -21917,7 +21917,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                if (!copy) diff = 0;
 	                totalDiff += diff;
 	            }
-	            
+
 	            selection.fromOrientedRange(selection.ranges[0]);
 	            selection.rangeList.attach(this.session);
 	            this.inVirtualSelectionMode = false;
@@ -22058,7 +22058,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            "{": "{",
 	            "}": "{"
 	        };
-	        
+
 	        do {
 	            if (token.value.match(/[{}()\[\]]/g)) {
 	                for (; i < token.value.length && !found; i++) {
@@ -22095,14 +22095,14 @@ return /******/ (function(modules) { // webpackBootstrap
 	                if (isNaN(depth[token.value])) {
 	                    depth[token.value] = 0;
 	                }
-	                
+
 	                if (prevToken.value === '<') {
 	                    depth[token.value]++;
 	                }
 	                else if (prevToken.value === '</') {
 	                    depth[token.value]--;
 	                }
-	                
+
 	                if (depth[token.value] === -1) {
 	                    matchType = 'tag';
 	                    found = true;
@@ -22134,7 +22134,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            }
 	        }
 	        else if (matchType === 'tag') {
-	            if (token && token.type.indexOf('tag-name') !== -1) 
+	            if (token && token.type.indexOf('tag-name') !== -1)
 	                var tag = token.value;
 	            else
 	                return;
@@ -22150,7 +22150,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                do {
 	                    token = prevToken;
 	                    prevToken = iterator.stepBackward();
-	                    
+
 	                    if (prevToken) {
 	                        if (prevToken.type.indexOf('tag-close') !== -1) {
 	                            range.setEnd(iterator.getCurrentTokenRow(), iterator.getCurrentTokenColumn() + 1);
@@ -22163,7 +22163,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                            else if (prevToken.value === '</') {
 	                                depth[tag]--;
 	                            }
-	                            
+
 	                            if (depth[tag] === 0)
 	                                found = true;
 	                        }
@@ -22492,7 +22492,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    },
 	    readOnly: {
 	        set: function(readOnly) {
-	            this.$resetCursorStyle(); 
+	            this.$resetCursorStyle();
 	        },
 	        initialValue: false
 	    },
@@ -22624,7 +22624,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    this.$deserializeDeltas = function(deltaSets) {
 	        return cloneDeltaSetsObj(deltaSets, $deserializeDelta);
 	    };
-	    
+
 	    function $serializeDelta(delta){
 	        return {
 	            action: delta.action,
@@ -22634,7 +22634,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            text: delta.lines.length == 1 ? delta.lines[0] : null
 	        };
 	    }
-	        
+
 	    function $deserializeDelta(delta) {
 	        return {
 	            action: delta.action,
@@ -22643,23 +22643,23 @@ return /******/ (function(modules) { // webpackBootstrap
 	            lines: delta.lines || [delta.text]
 	        };
 	    }
-	    
+
 	    function cloneDeltaSetsObj(deltaSets_old, fnGetModifiedDelta) {
 	        var deltaSets_new = new Array(deltaSets_old.length);
 	        for (var i = 0; i < deltaSets_old.length; i++) {
 	            var deltaSet_old = deltaSets_old[i];
 	            var deltaSet_new = { group: deltaSet_old.group, deltas: new Array(deltaSet_old.length)};
-	            
+
 	            for (var j = 0; j < deltaSet_old.deltas.length; j++) {
 	                var delta_old = deltaSet_old.deltas[j];
 	                deltaSet_new.deltas[j] = fnGetModifiedDelta(delta_old);
 	            }
-	            
+
 	            deltaSets_new[i] = deltaSet_new;
 	        }
 	        return deltaSets_new;
 	    }
-	    
+
 	}).call(UndoManager.prototype);
 
 	exports.UndoManager = UndoManager;
@@ -22678,7 +22678,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    this.element.className = "ace_layer ace_gutter-layer";
 	    parentEl.appendChild(this.element);
 	    this.setShowFoldWidgets(this.$showFoldWidgets);
-	    
+
 	    this.gutterWidth = 0;
 
 	    this.$annotations = [];
@@ -22719,7 +22719,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            var rowInfo = this.$annotations[row];
 	            if (!rowInfo)
 	                rowInfo = this.$annotations[row] = {text: []};
-	           
+
 	            var annoText = annotation.text;
 	            annoText = annoText ? lang.escapeHTML(annoText) : annotation.html || "";
 
@@ -22763,7 +22763,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        var decorations = session.$decorations;
 	        var firstLineNumber = session.$firstLineNumber;
 	        var lastLineNumber = 0;
-	        
+
 	        var gutterRenderer = session.gutterRenderer || this.$renderer;
 
 	        var cell = null;
@@ -22835,7 +22835,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                    cell.foldWidget = null;
 	                }
 	            }
-	            
+
 	            var text = lastLineNumber = gutterRenderer
 	                ? gutterRenderer.getText(session, row)
 	                : row + firstLineNumber;
@@ -22850,10 +22850,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	        if (this.$fixedWidth || session.$useWrapMode)
 	            lastLineNumber = session.getLength() + firstLineNumber;
 
-	        var gutterWidth = gutterRenderer 
+	        var gutterWidth = gutterRenderer
 	            ? gutterRenderer.getWidth(session, lastLineNumber, config)
 	            : lastLineNumber.toString().length * config.characterWidth;
-	        
+
 	        var padding = this.$padding || this.$computePadding();
 	        gutterWidth += padding.left + padding.right;
 	        if (gutterWidth !== this.gutterWidth && !isNaN(gutterWidth)) {
@@ -22864,7 +22864,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    };
 
 	    this.$fixedWidth = false;
-	    
+
 	    this.$showLineNumbers = true;
 	    this.$renderer = "";
 	    this.setShowLineNumbers = function(show) {
@@ -22873,11 +22873,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	            getText: function() {return "";}
 	        };
 	    };
-	    
+
 	    this.getShowLineNumbers = function() {
 	        return this.$showLineNumbers;
 	    };
-	    
+
 	    this.$showFoldWidgets = true;
 	    this.setShowFoldWidgets = function(show) {
 	        if (show)
@@ -22888,7 +22888,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        this.$showFoldWidgets = show;
 	        this.$padding = null;
 	    };
-	    
+
 	    this.getShowFoldWidgets = function() {
 	        return this.$showFoldWidgets;
 	    };
@@ -22940,7 +22940,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    this.setSession = function(session) {
 	        this.session = session;
 	    };
-	    
+
 	    this.setMarkers = function(markers) {
 	        this.markers = markers;
 	    };
@@ -23002,7 +23002,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        var start = range.start.row;
 	        var end = range.end.row;
 	        var row = start;
-	        var prev = 0; 
+	        var prev = 0;
 	        var curr = 0;
 	        var next = session.getScreenLastRowColumn(row);
 	        var clazzModified = null;
@@ -23068,7 +23068,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        if (height <= 0)
 	            return;
 	        top = this.$getTop(range.start.row + 1, config);
-	        
+
 	        var radiusClass = (range.start.column ? 1 : 0) | (range.end.column ? 0 : 8);
 
 	        stringBuilder.push(
@@ -23122,7 +23122,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            "left:0;right:0;", extraStyle || "", "'></div>"
 	        );
 	    };
-	    
+
 	    this.drawScreenLineMarker = function(stringBuilder, range, clazz, config, extraStyle) {
 	        var top = this.$getTop(range.start.row, config);
 	        var height = config.lineHeight;
@@ -23191,7 +23191,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    this.getCharacterWidth = function() {
 	        return this.$fontMetrics.$characterSize.width || 0;
 	    };
-	    
+
 	    this.$setFontMetrics = function(measure) {
 	        this.$fontMetrics = measure;
 	        this.$fontMetrics.on("changeCharacterSize", function(e) {
@@ -23569,7 +23569,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	        if (!onlyContents) {
 	            stringBuilder.push(
-	                "<div class='ace_line' style='height:", 
+	                "<div class='ace_line' style='height:",
 	                    this.config.lineHeight * (
 	                        this.$useLineGroups() ? 1 :this.session.getRowLength(row)
 	                    ), "px'>"
@@ -23685,7 +23685,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    this.element = dom.createElement("div");
 	    this.element.className = "ace_layer ace_cursor-layer";
 	    parentEl.appendChild(this.element);
-	    
+
 	    if (isIE8 === undefined)
 	        isIE8 = !("opacity" in this.element.style);
 
@@ -23703,7 +23703,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 
 	(function() {
-	    
+
 	    this.$updateVisibility = function(val) {
 	        var cursors = this.cursors;
 	        for (var i = cursors.length; i--; )
@@ -23714,7 +23714,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        for (var i = cursors.length; i--; )
 	            cursors[i].style.opacity = val ? "" : "0";
 	    };
-	    
+
 
 	    this.$padding = 0;
 	    this.setPadding = function(padding) {
@@ -23784,7 +23784,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        if (this.smoothBlinking) {
 	            dom.removeCssClass(this.element, "ace_smooth-blinking");
 	        }
-	        
+
 	        update(true);
 
 	        if (!this.isBlinking || !this.blinkInterval || !this.isVisible)
@@ -23795,7 +23795,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                dom.addCssClass(this.element, "ace_smooth-blinking");
 	            }.bind(this));
 	        }
-	        
+
 	        var blink = function(){
 	            this.timeoutId = setTimeout(function() {
 	                update(false);
@@ -23845,7 +23845,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            }
 
 	            var style = (this.cursors[cursorIndex++] || this.addCursor()).style;
-	            
+
 	            if (!this.drawCursor) {
 	                style.left = pixelPos.left + "px";
 	                style.top = pixelPos.top + "px";
@@ -23863,7 +23863,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        this.$pixelPos = pixelPos;
 	        this.restartTimer();
 	    };
-	    
+
 	    this.drawCursor = null;
 
 	    this.$setOverwrite = function(overwrite) {
@@ -23925,7 +23925,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    ScrollBar.call(this, parent);
 	    this.scrollTop = 0;
 	    this.scrollHeight = 0;
-	    renderer.$scrollbarWidth = 
+	    renderer.$scrollbarWidth =
 	    this.width = dom.scrollbarWidth(parent.ownerDocument);
 	    this.inner.style.width =
 	    this.element.style.width = (this.width || 15) + 5 + "px";
@@ -24074,22 +24074,22 @@ return /******/ (function(modules) { // webpackBootstrap
 	var FontMetrics = exports.FontMetrics = function(parentEl) {
 	    this.el = dom.createElement("div");
 	    this.$setMeasureNodeStyles(this.el.style, true);
-	    
+
 	    this.$main = dom.createElement("div");
 	    this.$setMeasureNodeStyles(this.$main.style);
-	    
+
 	    this.$measureNode = dom.createElement("div");
 	    this.$setMeasureNodeStyles(this.$measureNode.style);
-	    
-	    
+
+
 	    this.el.appendChild(this.$main);
 	    this.el.appendChild(this.$measureNode);
 	    parentEl.appendChild(this.el);
-	    
+
 	    if (!CHAR_COUNT)
 	        this.$testFractionalRect();
 	    this.$measureNode.innerHTML = lang.stringRepeat("X", CHAR_COUNT);
-	    
+
 	    this.$characterSize = {width: 0, height: 0};
 	    this.checkForSizeChanges();
 	};
@@ -24097,9 +24097,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	(function() {
 
 	    oop.implement(this, EventEmitter);
-	        
+
 	    this.$characterSize = {width: 0, height: 0};
-	    
+
 	    this.$testFractionalRect = function() {
 	        var el = dom.createElement("div");
 	        this.$setMeasureNodeStyles(el.style);
@@ -24112,7 +24112,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            CHAR_COUNT = 100;
 	        el.parentNode.removeChild(el);
 	    };
-	    
+
 	    this.$setMeasureNodeStyles = function(style, isRoot) {
 	        style.width = style.height = "auto";
 	        style.left = style.top = "0px";
@@ -24149,7 +24149,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            self.checkForSizeChanges();
 	        }, 500);
 	    };
-	    
+
 	    this.setPolling = function(val) {
 	        if (val) {
 	            this.$pollSizeChanges();
@@ -24162,7 +24162,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    this.$measureSizes = function() {
 	        if (CHAR_COUNT === 50) {
 	            var rect = null;
-	            try { 
+	            try {
 	               rect = this.$measureNode.getBoundingClientRect();
 	            } catch(e) {
 	               rect = {width: 0, height:0 };
@@ -24187,7 +24187,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        var rect = this.$main.getBoundingClientRect();
 	        return rect.width / CHAR_COUNT;
 	    };
-	    
+
 	    this.getCharacterWidth = function(ch) {
 	        var w = this.charSizes[ch];
 	        if (w === undefined) {
@@ -24642,7 +24642,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    this.$horizScroll = false;
 	    this.$vScroll = false;
 
-	    this.scrollBar = 
+	    this.scrollBar =
 	    this.scrollBarV = new VScrollBar(this.container, this);
 	    this.scrollBarH = new HScrollBar(this.container, this);
 	    this.scrollBarV.addEventListener("scroll", function(e) {
@@ -24692,7 +24692,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        height : 1,
 	        gutterOffset: 1
 	    };
-	    
+
 	    this.scrollMargin = {
 	        left: 0,
 	        right: 0,
@@ -24745,7 +24745,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    this.setSession = function(session) {
 	        if (this.session)
 	            this.session.doc.off("changeNewLineMode", this.onChangeNewLineMode);
-	            
+
 	        this.session = session;
 	        if (session && this.scrollMargin.top && session.getScrollTop() <= 0)
 	            session.setScrollTop(-this.scrollMargin.top);
@@ -24757,11 +24757,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	        this.$textLayer.setSession(session);
 	        if (!session)
 	            return;
-	        
+
 	        this.$loop.schedule(this.CHANGE_FULL);
 	        this.session.$setFontMetrics(this.$fontMetrics);
 	        this.scrollBarH.scrollLeft = this.scrollBarV.scrollTop = null;
-	        
+
 	        this.onChangeNewLineMode = this.onChangeNewLineMode.bind(this);
 	        this.onChangeNewLineMode();
 	        this.session.doc.on("changeNewLineMode", this.onChangeNewLineMode);
@@ -24799,7 +24799,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        this.$textLayer.$updateEolChar();
 	        this.session.$bidiHandler.setEolChar(this.$textLayer.EOL_CHAR);
 	    };
-	    
+
 	    this.onChangeTabSize = function() {
 	        this.$loop.schedule(this.CHANGE_TEXT | this.CHANGE_MARKER);
 	        this.$textLayer.onChangeTabSize();
@@ -24838,7 +24838,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            width = el.clientWidth || el.scrollWidth;
 	        var changes = this.$updateCachedSize(force, gutterWidth, width, height);
 
-	        
+
 	        if (!this.$size.scrollerHeight || (!width && !height))
 	            return this.resizing = 0;
 
@@ -24854,7 +24854,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            this.resizing = 0;
 	        this.scrollBarV.scrollLeft = this.scrollBarV.scrollTop = null;
 	    };
-	    
+
 	    this.$updateCachedSize = function(force, gutterWidth, width, height) {
 	        height -= (this.$extraHeight || 0);
 	        var changes = 0;
@@ -24880,24 +24880,24 @@ return /******/ (function(modules) { // webpackBootstrap
 	        if (width && (force || size.width != width)) {
 	            changes |= this.CHANGE_SIZE;
 	            size.width = width;
-	            
+
 	            if (gutterWidth == null)
 	                gutterWidth = this.$showGutter ? this.$gutter.offsetWidth : 0;
-	            
+
 	            this.gutterWidth = gutterWidth;
-	            
-	            this.scrollBarH.element.style.left = 
+
+	            this.scrollBarH.element.style.left =
 	            this.scroller.style.left = gutterWidth + "px";
-	            size.scrollerWidth = Math.max(0, width - gutterWidth - this.scrollBarV.getWidth());           
-	            
-	            this.scrollBarH.element.style.right = 
+	            size.scrollerWidth = Math.max(0, width - gutterWidth - this.scrollBarV.getWidth());
+
+	            this.scrollBarH.element.style.right =
 	            this.scroller.style.right = this.scrollBarV.getWidth() + "px";
 	            this.scroller.style.bottom = this.scrollBarH.getHeight() + "px";
 
 	            if (this.session && this.session.getUseWrapMode() && this.adjustWrapLimit() || force)
 	                changes |= this.CHANGE_FULL;
 	        }
-	        
+
 	        size.$dirty = !width || !height;
 
 	        if (changes)
@@ -25009,7 +25009,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        var style = this.$printMarginEl.style;
 	        style.left = ((this.characterWidth * this.$printMarginColumn) + this.$padding) + "px";
 	        style.visibility = this.$showPrintMargin ? "visible" : "hidden";
-	        
+
 	        if (this.session && this.session.$wrap == -1)
 	            this.adjustWrapLimit();
 	    };
@@ -25081,7 +25081,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        this.$loop.schedule(this.CHANGE_FULL);
 	        this.$updatePrintMargin();
 	    };
-	    
+
 	    this.setScrollMargin = function(top, bottom, left, right) {
 	        var sm = this.scrollMargin;
 	        sm.top = top|0;
@@ -25124,12 +25124,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	        this.scrollBarH.setScrollWidth(this.layerConfig.width + 2 * this.$padding + this.scrollMargin.h);
 	        this.scrollBarH.setScrollLeft(this.scrollLeft + this.scrollMargin.left);
 	    };
-	    
+
 	    this.$frozen = false;
 	    this.freeze = function() {
 	        this.$frozen = true;
 	    };
-	    
+
 	    this.unfreeze = function() {
 	        this.$frozen = false;
 	    };
@@ -25141,8 +25141,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	        }
 	        if ((!this.session || !this.container.offsetWidth || this.$frozen) || (!changes && !force)) {
 	            this.$changes |= changes;
-	            return; 
-	        } 
+	            return;
+	        }
 	        if (this.$size.$dirty) {
 	            this.$changes |= changes;
 	            return this.onResize(true);
@@ -25150,7 +25150,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        if (!this.lineHeight) {
 	            this.$textLayer.checkForSizeChanges();
 	        }
-	        
+
 	        this._signal("beforeRender");
 
 	        if (this.session && this.session.$bidiHandler)
@@ -25246,7 +25246,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        this._signal("afterRender");
 	    };
 
-	    
+
 	    this.$autosize = function() {
 	        var height = this.session.getScreenLength() * this.lineHeight;
 	        var maxHeight = this.$maxLines * this.lineHeight;
@@ -25258,33 +25258,33 @@ return /******/ (function(modules) { // webpackBootstrap
 	        if (this.$maxPixelHeight && desiredHeight > this.$maxPixelHeight)
 	            desiredHeight = this.$maxPixelHeight;
 	        var vScroll = height > maxHeight;
-	        
+
 	        if (desiredHeight != this.desiredHeight ||
 	            this.$size.height != this.desiredHeight || vScroll != this.$vScroll) {
 	            if (vScroll != this.$vScroll) {
 	                this.$vScroll = vScroll;
 	                this.scrollBarV.setVisible(vScroll);
 	            }
-	            
+
 	            var w = this.container.clientWidth;
 	            this.container.style.height = desiredHeight + "px";
 	            this.$updateCachedSize(true, this.$gutterWidth, w, desiredHeight);
 	            this.desiredHeight = desiredHeight;
-	            
+
 	            this._signal("autosize");
 	        }
 	    };
-	    
+
 	    this.$computeLayerConfig = function() {
 	        var session = this.session;
 	        var size = this.$size;
-	        
+
 	        var hideScrollbars = size.height <= 2 * this.lineHeight;
 	        var screenLines = this.session.getScreenLength();
 	        var maxHeight = screenLines * this.lineHeight;
 
 	        var longestLine = this.$getLongestLine();
-	        
+
 	        var horizScroll = !hideScrollbars && (this.$hScrollBarAlwaysVisible ||
 	            size.scrollerWidth - longestLine - 2 * this.$padding < 0);
 
@@ -25299,19 +25299,19 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	        var offset = this.scrollTop % this.lineHeight;
 	        var minHeight = size.scrollerHeight + this.lineHeight;
-	        
+
 	        var scrollPastEnd = !this.$maxLines && this.$scrollPastEnd
 	            ? (size.scrollerHeight - this.lineHeight) * this.$scrollPastEnd
 	            : 0;
 	        maxHeight += scrollPastEnd;
-	        
+
 	        var sm = this.scrollMargin;
 	        this.session.setScrollTop(Math.max(-sm.top,
 	            Math.min(this.scrollTop, maxHeight - size.scrollerHeight + sm.bottom)));
 
-	        this.session.setScrollLeft(Math.max(-sm.left, Math.min(this.scrollLeft, 
+	        this.session.setScrollLeft(Math.max(-sm.left, Math.min(this.scrollLeft,
 	            longestLine + 2 * this.$padding - size.scrollerWidth + sm.right)));
-	        
+
 	        var vScroll = !hideScrollbars && (this.$vScrollBarAlwaysVisible ||
 	            size.scrollerHeight - maxHeight + scrollPastEnd < 0 || this.scrollTop > sm.top);
 	        var vScrollChanged = vScrollBefore !== vScroll;
@@ -25341,7 +25341,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        offset = this.scrollTop - firstRowScreen * lineHeight;
 
 	        var changes = 0;
-	        if (this.layerConfig.width != longestLine) 
+	        if (this.layerConfig.width != longestLine)
 	            changes = this.CHANGE_H_SCROLL;
 	        if (hScrollChanged || vScrollChanged) {
 	            changes = this.$updateCachedSize(true, this.gutterWidth, size.width, size.height);
@@ -25349,7 +25349,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            if (vScrollChanged)
 	                longestLine = this.$getLongestLine();
 	        }
-	        
+
 	        this.layerConfig = {
 	            width : longestLine,
 	            padding : this.$padding,
@@ -25438,12 +25438,12 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	        var left = pos.left;
 	        var top = pos.top;
-	        
+
 	        var topMargin = $viewMargin && $viewMargin.top || 0;
 	        var bottomMargin = $viewMargin && $viewMargin.bottom || 0;
-	        
+
 	        var scrollTop = this.$scrollAnimation ? this.session.getScrollTop() : this.scrollTop;
-	        
+
 	        if (scrollTop + topMargin > top) {
 	            if (offset && scrollTop + topMargin > top + this.lineHeight)
 	                top -= offset * this.$size.scrollerHeight;
@@ -25528,10 +25528,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	        if (!this.$animatedScroll)
 	            return;
 	        var _self = this;
-	        
+
 	        if (fromValue == toValue)
 	            return;
-	        
+
 	        if (this.$scrollAnimation) {
 	            var oldSteps = this.$scrollAnimation.steps;
 	            if (oldSteps.length) {
@@ -25540,7 +25540,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                    return;
 	            }
 	        }
-	        
+
 	        var steps = _self.$calcSteps(fromValue, toValue);
 	        this.$scrollAnimation = {from: fromValue, to: toValue, steps: steps};
 
@@ -25687,7 +25687,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            if (_self.theme)
 	                dom.removeCssClass(_self.container, _self.theme.cssClass);
 
-	            var padding = "padding" in module ? module.padding 
+	            var padding = "padding" in module ? module.padding
 	                : "padding" in (_self.theme || {}) ? 4 : _self.$padding;
 	            if (_self.$padding && padding != _self.$padding)
 	                _self.setPadding(padding);
@@ -25714,7 +25714,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    this.unsetStyle = function(style) {
 	        dom.removeCssClass(this.container, style);
 	    };
-	    
+
 	    this.setCursorStyle = function(style) {
 	        if (this.scroller.style.cursor != style)
 	            this.scroller.style.cursor = style;
@@ -25755,7 +25755,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            this.$updatePrintMargin();
 	        },
 	        get: function() {
-	            return this.$showPrintMargin && this.$printMarginColumn; 
+	            return this.$showPrintMargin && this.$printMarginColumn;
 	        }
 	    },
 	    showGutter: {
@@ -25912,7 +25912,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    this.onMessage = this.onMessage.bind(this);
 	    if (acequire.nameToUrl && !acequire.toUrl)
 	        acequire.toUrl = acequire.nameToUrl;
-	    
+
 	    if (config.get("packaged") || !acequire.toUrl) {
 	        workerUrl = workerUrl || config.moduleUrl(mod.id, "worker");
 	    } else {
@@ -25967,7 +25967,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                break;
 	        }
 	    };
-	    
+
 	    this.reportError = function(err) {
 	        window.console && console.error && console.error(err);
 	    };
@@ -26117,13 +26117,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	    this.$onUpdate = this.onUpdate.bind(this);
 	    this.doc.on("change", this.$onUpdate);
 	    this.$others = others;
-	    
+
 	    this.$onCursorChange = function() {
 	        setTimeout(function() {
 	            _self.onCursorChange();
 	        });
 	    };
-	    
+
 	    this.$pos = pos;
 	    var undoStack = session.getUndoManager().$undoStack || session.getUndoManager().$undostack || {length: -1};
 	    this.$undoStackDepth = undoStack.length;
@@ -26139,7 +26139,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        var _self = this;
 	        var doc = this.doc;
 	        var session = this.session;
-	        
+
 	        this.selectionBefore = session.selection.toJSON();
 	        if (session.selection.inMultiSelectMode)
 	            session.selection.toSingleRange();
@@ -26177,7 +26177,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    this.onUpdate = function(delta) {
 	        if (this.$updating)
 	            return this.updateAnchors(delta);
-	            
+
 	        var range = delta;
 	        if (range.start.row !== range.end.row) return;
 	        if (range.start.row !== this.pos.row) return;
@@ -26185,9 +26185,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	        var lengthDiff = delta.action === "insert" ? range.end.column - range.start.column : range.start.column - range.end.column;
 	        var inMainRange = range.start.column >= this.pos.column && range.start.column <= this.pos.column + this.length + 1;
 	        var distanceFromStart = range.start.column - this.pos.column;
-	        
+
 	        this.updateAnchors(delta);
-	        
+
 	        if (inMainRange)
 	            this.length += lengthDiff;
 
@@ -26206,18 +26206,18 @@ return /******/ (function(modules) { // webpackBootstrap
 	                }
 	            }
 	        }
-	        
+
 	        this.$updating = false;
 	        this.updateMarkers();
 	    };
-	    
+
 	    this.updateAnchors = function(delta) {
 	        this.pos.onChange(delta);
 	        for (var i = this.others.length; i--;)
 	            this.others[i].onChange(delta);
 	        this.updateMarkers();
 	    };
-	    
+
 	    this.updateMarkers = function() {
 	        if (this.$updating)
 	            return;
@@ -26242,7 +26242,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            this.hideOtherMarkers();
 	            this._emit("cursorLeave", event);
 	        }
-	    };    
+	    };
 	    this.detach = function() {
 	        this.session.removeMarker(this.pos && this.pos.markerId);
 	        this.hideOtherMarkers();
@@ -26283,7 +26283,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    var ctrl = ev.ctrlKey;
 	    var accel = e.getAccelKey();
 	    var button = e.getButton();
-	    
+
 	    if (ctrl && useragent.isMac)
 	        button = ev.button;
 
@@ -26291,13 +26291,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	        e.editor.textInput.onContextMenu(e.domEvent);
 	        return;
 	    }
-	    
+
 	    if (!ctrl && !alt && !accel) {
 	        if (button === 0 && e.editor.inMultiSelectMode)
 	            e.editor.exitMultiSelectMode();
 	        return;
 	    }
-	    
+
 	    if (button !== 0)
 	        return;
 
@@ -26313,11 +26313,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	        mouseX = e.clientX;
 	        mouseY = e.clientY;
 	    };
-	    
+
 	    var session = editor.session;
 	    var screenAnchor = editor.renderer.pixelToScreenCoordinates(mouseX, mouseY);
 	    var screenCursor = screenAnchor;
-	    
+
 	    var selectionMode;
 	    if (editor.$mouseHandler.$enableJumpToDef) {
 	        if (ctrl && alt || accel && alt)
@@ -26333,7 +26333,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            selectionMode = "block";
 	        }
 	    }
-	    
+
 	    if (selectionMode && useragent.isMac && ev.ctrlKey) {
 	        editor.$mouseHandler.cancelContextMenu();
 	    }
@@ -26348,11 +26348,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	        }
 
 	        var oldRange = selection.rangeList.rangeAtPoint(pos);
-	        
-	        
+
+
 	        editor.$blockScrolling++;
 	        editor.inVirtualSelectionMode = true;
-	        
+
 	        if (shift) {
 	            oldRange = null;
 	            range = selection.ranges[0] || range;
@@ -26378,7 +26378,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	    } else if (selectionMode == "block") {
 	        e.stop();
-	        editor.inVirtualSelectionMode = true;        
+	        editor.inVirtualSelectionMode = true;
 	        var initialRange;
 	        var rectSel = [];
 	        var blockSelect = function() {
@@ -26388,7 +26388,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            if (isSamePoint(screenCursor, newCursor) && isSamePoint(cursor, selection.lead))
 	                return;
 	            screenCursor = newCursor;
-	            
+
 	            editor.$blockScrolling++;
 	            editor.selection.moveToPosition(cursor);
 	            editor.renderer.scrollCursorIntoView();
@@ -26408,13 +26408,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	            initialRange = selection.toOrientedRange();
 	            editor.addSelectionMarker(initialRange);
 	        }
-	        
+
 	        if (shift)
-	            screenAnchor = session.documentToScreenPosition(selection.lead);            
+	            screenAnchor = session.documentToScreenPosition(selection.lead);
 	        else
 	            selection.moveToPosition(pos);
 	        editor.$blockScrolling--;
-	        
+
 	        screenCursor = {row: -1, column: -1};
 
 	        var onMouseSelectionEnd = function(e) {
@@ -26678,7 +26678,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                    var start = range.end, end = range.start;
 	                else
 	                    var start = range.start, end = range.end;
-	                
+
 	                this.addRange(Range.fromPoints(end, end));
 	                this.addRange(Range.fromPoints(start, start));
 	                return;
@@ -26883,7 +26883,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            result = command.multiSelectAction(editor, e.args || {});
 	        }
 	        return result;
-	    }; 
+	    };
 	    this.forEachSelection = function(cmd, args, options) {
 	        if (this.inVirtualSelectionMode)
 	            return;
@@ -26894,10 +26894,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	        var rangeList = selection.rangeList;
 	        var ranges = (keepOrder ? selection : rangeList).ranges;
 	        var result;
-	        
+
 	        if (!ranges.length)
 	            return cmd.exec ? cmd.exec(this, args || {}) : cmd(this, args || {});
-	        
+
 	        var reg = selection._eventRegistry;
 	        selection._eventRegistry = {};
 
@@ -26922,13 +26922,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	        this.inVirtualSelectionMode = false;
 	        selection._eventRegistry = reg;
 	        selection.mergeOverlappingRanges();
-	        
+
 	        var anim = this.renderer.$scrollAnimation;
 	        this.onCursorChange();
 	        this.onSelectionChange();
 	        if (anim && anim.from == anim.to)
 	            this.renderer.animateScrolling(anim.from);
-	        
+
 	        return result;
 	    };
 	    this.exitMultiSelectMode = function() {
@@ -26954,7 +26954,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        }
 	        return text;
 	    };
-	    
+
 	    this.$checkMultiselectChange = function(e, anchor) {
 	        if (this.inMultiSelectMode && !this.inVirtualSelectionMode) {
 	            var range = this.multiSelect.ranges[0];
@@ -26963,7 +26963,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            var pos = anchor == this.multiSelect.anchor
 	                ? range.cursor == range.start ? range.end : range.start
 	                : range.cursor;
-	            if (pos.row != anchor.row 
+	            if (pos.row != anchor.row
 	                || this.session.$clipPositionToDocument(pos.row, pos.column).column != anchor.column)
 	                this.multiSelect.toSingleRange(this.multiSelect.toOrientedRange());
 	        }
@@ -26976,9 +26976,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	                ? this.selection.getWordRange()
 	                : this.selection.getRange();
 	            options.needle = this.session.getTextRange(range);
-	        }    
+	        }
 	        this.$search.set(options);
-	        
+
 	        var ranges = this.$search.findAll(this.session);
 	        if (!ranges.length)
 	            return 0;
@@ -26993,7 +26993,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            selection.addRange(ranges[i], true);
 	        if (range && selection.rangeList.rangeAtPoint(range.start))
 	            selection.addRange(range, true);
-	        
+
 	        this.$blockScrolling -= 1;
 
 	        return ranges.length;
@@ -27107,7 +27107,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                return true;
 	            row = r.cursor.row;
 	        });
-	        
+
 	        if (!ranges.length || sameRowRanges.length == ranges.length - 1) {
 	            var range = this.selection.getRange();
 	            var fr = range.start.row, lr = range.end.row;
@@ -27121,7 +27121,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                do {
 	                    line = this.session.getLine(fr);
 	                } while (/[=:]/.test(line) && --fr > 0);
-	                
+
 	                if (fr < 0) fr = 0;
 	                if (lr >= max) lr = max - 1;
 	            }
@@ -27575,7 +27575,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    this.measureWidgets = this.measureWidgets.bind(this);
 	    this.session._changedWidgets = [];
 	    this.$onChangeEditor = this.$onChangeEditor.bind(this);
-	    
+
 	    this.session.on("change", this.updateOnChange);
 	    this.session.on("changeFold", this.updateOnFold);
 	    this.session.on("changeEditor", this.$onChangeEditor);
@@ -27586,7 +27586,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        var h;
 	        if (this.lineWidgets)
 	            h = this.lineWidgets[row] && this.lineWidgets[row].rowCount || 0;
-	        else 
+	        else
 	            h = 0;
 	        if (!this.$useWrapMode || !this.$wrapData[row]) {
 	            return 1 + h;
@@ -27602,12 +27602,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	                screenRows += w.rowCount;
 	        });
 	        return screenRows;
-	    };    
-	    
+	    };
+
 	    this.$onChangeEditor = function(e) {
 	        this.attach(e.editor);
 	    };
-	    
+
 	    this.attach = function(editor) {
 	        if (editor  && editor.widgetManager && editor.widgetManager != this)
 	            editor.widgetManager.detach();
@@ -27617,7 +27617,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	        this.detach();
 	        this.editor = editor;
-	        
+
 	        if (editor) {
 	            editor.widgetManager = this;
 	            editor.renderer.on("beforeRender", this.measureWidgets);
@@ -27628,10 +27628,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	        var editor = this.editor;
 	        if (!editor)
 	            return;
-	        
+
 	        this.editor = null;
 	        editor.widgetManager = null;
-	        
+
 	        editor.renderer.off("beforeRender", this.measureWidgets);
 	        editor.renderer.off("afterRender", this.renderWidgets);
 	        var lineWidgets = this.session.lineWidgets;
@@ -27668,11 +27668,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	            }
 	        }
 	    };
-	    
+
 	    this.updateOnChange = function(delta) {
 	        var lineWidgets = this.session.lineWidgets;
 	        if (!lineWidgets) return;
-	        
+
 	        var startRow = delta.start.row;
 	        var len = delta.end.row - startRow;
 
@@ -27690,7 +27690,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            this.$updateRows();
 	        }
 	    };
-	    
+
 	    this.$updateRows = function() {
 	        var lineWidgets = this.session.lineWidgets;
 	        if (!lineWidgets) return;
@@ -27712,7 +27712,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    this.addLineWidget = function(w) {
 	        if (!this.session.lineWidgets)
 	            this.session.lineWidgets = new Array(this.session.getLength());
-	        
+
 	        var old = this.session.lineWidgets[w.row];
 	        if (old) {
 	            w.$oldWidget = old;
@@ -27721,11 +27721,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	                old._inDocument = false;
 	            }
 	        }
-	            
+
 	        this.session.lineWidgets[w.row] = w;
-	        
+
 	        w.session = this.session;
-	        
+
 	        var renderer = this.editor.renderer;
 	        if (w.html && !w.el) {
 	            w.el = dom.createElement("div");
@@ -27738,7 +27738,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            renderer.container.appendChild(w.el);
 	            w._inDocument = true;
 	        }
-	        
+
 	        if (!w.coverGutter) {
 	            w.el.style.zIndex = 3;
 	        }
@@ -27748,7 +27748,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        if (w.rowCount == null) {
 	            w.rowCount = w.pixelHeight / renderer.layerConfig.lineHeight;
 	        }
-	        
+
 	        var fold = this.session.getFoldAt(w.row, 0);
 	        w.$fold = fold;
 	        if (fold) {
@@ -27758,15 +27758,15 @@ return /******/ (function(modules) { // webpackBootstrap
 	            else
 	                w.hidden = true;
 	        }
-	            
+
 	        this.session._emit("changeFold", {data:{start:{row: w.row}}});
-	        
+
 	        this.$updateRows();
 	        this.renderWidgets(null, renderer);
 	        this.onWidgetChanged(w);
 	        return w;
 	    };
-	    
+
 	    this.removeLineWidget = function(w) {
 	        w._inDocument = false;
 	        w.session = null;
@@ -27794,7 +27794,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        this.session._emit("changeFold", {data:{start:{row: w.row}}});
 	        this.$updateRows();
 	    };
-	    
+
 	    this.getWidgetsAtRow = function(row) {
 	        var lineWidgets = this.session.lineWidgets;
 	        var w = lineWidgets && lineWidgets[row];
@@ -27805,16 +27805,16 @@ return /******/ (function(modules) { // webpackBootstrap
 	        }
 	        return list;
 	    };
-	    
+
 	    this.onWidgetChanged = function(w) {
 	        this.session._changedWidgets.push(w);
 	        this.editor && this.editor.renderer.updateFull();
 	    };
-	    
+
 	    this.measureWidgets = function(e, renderer) {
 	        var changedWidgets = this.session._changedWidgets;
 	        var config = renderer.layerConfig;
-	        
+
 	        if (!changedWidgets || !changedWidgets.length) return;
 	        var min = Infinity;
 	        for (var i = 0; i < changedWidgets.length; i++) {
@@ -27827,14 +27827,14 @@ return /******/ (function(modules) { // webpackBootstrap
 	                w._inDocument = true;
 	                renderer.container.appendChild(w.el);
 	            }
-	            
+
 	            w.h = w.el.offsetHeight;
-	            
+
 	            if (!w.fixedWidth) {
 	                w.w = w.el.offsetWidth;
 	                w.screenWidth = Math.ceil(w.w / config.characterWidth);
 	            }
-	            
+
 	            var rowCount = w.h / config.lineHeight;
 	            if (w.coverLine) {
 	                rowCount -= this.session.getRowLineCount(w.row);
@@ -27853,7 +27853,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        }
 	        this.session._changedWidgets = [];
 	    };
-	    
+
 	    this.renderWidgets = function(e, renderer) {
 	        var config = renderer.layerConfig;
 	        var lineWidgets = this.session.lineWidgets;
@@ -27861,10 +27861,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	            return;
 	        var first = Math.min(this.firstRow, config.firstRow);
 	        var last = Math.max(this.lastRow, config.lastRow, lineWidgets.length);
-	        
+
 	        while (first > 0 && !lineWidgets[first])
 	            first--;
-	        
+
 	        this.firstRow = config.firstRow;
 	        this.lastRow = config.lastRow;
 
@@ -27884,16 +27884,16 @@ return /******/ (function(modules) { // webpackBootstrap
 	            if (!w.coverLine)
 	                top += config.lineHeight * this.session.getRowLineCount(w.row);
 	            w.el.style.top = top - config.offset + "px";
-	            
+
 	            var left = w.coverGutter ? 0 : renderer.gutterWidth;
 	            if (!w.fixedWidth)
 	                left -= renderer.scrollLeft;
 	            w.el.style.left = left + "px";
-	            
+
 	            if (w.fullWidth && w.screenWidth) {
 	                w.el.style.minWidth = config.width + 2 * config.padding + "px";
 	            }
-	            
+
 	            if (w.fixedWidth) {
 	                w.el.style.right = renderer.scrollBar.getWidth() + "px";
 	            } else {
@@ -27901,7 +27901,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            }
 	        }
 	    };
-	    
+
 	}).call(LineWidgets.prototype);
 
 
@@ -27936,16 +27936,16 @@ return /******/ (function(modules) { // webpackBootstrap
 	    var annotations = session.getAnnotations().sort(Range.comparePoints);
 	    if (!annotations.length)
 	        return;
-	    
+
 	    var i = binarySearch(annotations, {row: row, column: -1}, Range.comparePoints);
 	    if (i < 0)
 	        i = -i - 1;
-	    
+
 	    if (i >= annotations.length)
 	        i = dir > 0 ? 0 : annotations.length - 1;
 	    else if (i === 0 && dir < 0)
 	        i = annotations.length - 1;
-	    
+
 	    var annotation = annotations[i];
 	    if (!annotation || !dir)
 	        return;
@@ -27957,8 +27957,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	        if (!annotation)
 	            return annotations.slice();
 	    }
-	    
-	    
+
+
 	    var matched = [];
 	    row = annotation.row;
 	    do {
@@ -27974,7 +27974,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        session.widgetManager = new LineWidgets(session);
 	        session.widgetManager.attach(editor);
 	    }
-	    
+
 	    var pos = editor.getCursorPosition();
 	    var row = pos.row;
 	    var oldWidget = session.widgetManager.getWidgetsAtRow(row).filter(function(w) {
@@ -28004,9 +28004,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }
 	    editor.session.unfold(pos.row);
 	    editor.selection.moveToPosition(pos);
-	    
+
 	    var w = {
-	        row: pos.row, 
+	        row: pos.row,
 	        fixedWidth: true,
 	        coverGutter: true,
 	        el: dom.createElement("div"),
@@ -28015,24 +28015,24 @@ return /******/ (function(modules) { // webpackBootstrap
 	    var el = w.el.appendChild(dom.createElement("div"));
 	    var arrow = w.el.appendChild(dom.createElement("div"));
 	    arrow.className = "error_widget_arrow " + gutterAnno.className;
-	    
+
 	    var left = editor.renderer.$cursorLayer
 	        .getPixelPosition(pos).left;
 	    arrow.style.left = left + editor.renderer.gutterWidth - 5 + "px";
-	    
+
 	    w.el.className = "error_widget_wrapper";
 	    el.className = "error_widget " + gutterAnno.className;
 	    el.innerHTML = gutterAnno.text.join("<br>");
-	    
+
 	    el.appendChild(dom.createElement("div"));
-	    
+
 	    var kb = function(_, hashId, keyString) {
 	        if (hashId === 0 && (keyString === "esc" || keyString === "return")) {
 	            w.destroy();
 	            return {command: "null"};
 	        }
 	    };
-	    
+
 	    w.destroy = function() {
 	        if (editor.$mouseHandler.isMousePressed)
 	            return;
@@ -28043,17 +28043,17 @@ return /******/ (function(modules) { // webpackBootstrap
 	        editor.off("mouseup", w.destroy);
 	        editor.off("change", w.destroy);
 	    };
-	    
+
 	    editor.keyBinding.addKeyboardHandler(kb);
 	    editor.on("changeSelection", w.destroy);
 	    editor.on("changeSession", w.destroy);
 	    editor.on("mouseup", w.destroy);
 	    editor.on("change", w.destroy);
-	    
+
 	    editor.session.widgetManager.addLineWidget(w);
-	    
+
 	    w.el.onmousedown = editor.focus.bind(editor);
-	    
+
 	    editor.renderer.scrollCursorIntoView(null, 0.5, {bottom: w.el.offsetHeight});
 	};
 
@@ -28182,7 +28182,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                        window.ace[key] = a[key];
 	                });
 	            })();
-	        
+
 	module.exports = window.ace.acequire("ace/ace");
 
 /***/ },
@@ -28264,7 +28264,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            }
 	        ]
 	    };
-	    
+
 	};
 
 	oop.inherits(JsonHighlightRules, TextHighlightRules);
@@ -28332,7 +28332,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	oop.inherits(FoldMode, BaseFoldMode);
 
 	(function() {
-	    
+
 	    this.foldingStartMarker = /([\{\[\(])[^\}\]\)]*$|^\s*(\/\*)/;
 	    this.foldingStopMarker = /^[^\[\{\(]*([\}\]\)])|^[\s\*]*(\*\/)/;
 	    this.singleLineBlockCommentRe= /^\s*(\/\*).*\*\/\s*$/;
@@ -28341,42 +28341,42 @@ return /******/ (function(modules) { // webpackBootstrap
 	    this._getFoldWidgetBase = this.getFoldWidget;
 	    this.getFoldWidget = function(session, foldStyle, row) {
 	        var line = session.getLine(row);
-	    
+
 	        if (this.singleLineBlockCommentRe.test(line)) {
 	            if (!this.startRegionRe.test(line) && !this.tripleStarBlockCommentRe.test(line))
 	                return "";
 	        }
-	    
+
 	        var fw = this._getFoldWidgetBase(session, foldStyle, row);
-	    
+
 	        if (!fw && this.startRegionRe.test(line))
 	            return "start"; // lineCommentRegionStart
-	    
+
 	        return fw;
 	    };
 
 	    this.getFoldWidgetRange = function(session, foldStyle, row, forceMultiline) {
 	        var line = session.getLine(row);
-	        
+
 	        if (this.startRegionRe.test(line))
 	            return this.getCommentRegionBlock(session, line, row);
-	        
+
 	        var match = line.match(this.foldingStartMarker);
 	        if (match) {
 	            var i = match.index;
 
 	            if (match[1])
 	                return this.openingBracketBlock(session, match[1], row, i);
-	                
+
 	            var range = session.getCommentFoldRange(row, i + match[0].length, 1);
-	            
+
 	            if (range && !range.isMultiLine()) {
 	                if (forceMultiline) {
 	                    range = this.getSectionRange(session, row);
 	                } else if (foldStyle != "all")
 	                    range = null;
 	            }
-	            
+
 	            return range;
 	        }
 
@@ -28393,7 +28393,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            return session.getCommentFoldRange(row, i, -1);
 	        }
 	    };
-	    
+
 	    this.getSectionRange = function(session, row) {
 	        var line = session.getLine(row);
 	        var startIndent = line.search(/\S/);
@@ -28410,7 +28410,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            if  (startIndent > indent)
 	                break;
 	            var subRange = this.getFoldWidgetRange(session, "all", row);
-	            
+
 	            if (subRange) {
 	                if (subRange.start.row <= startRow) {
 	                    break;
@@ -28422,14 +28422,14 @@ return /******/ (function(modules) { // webpackBootstrap
 	            }
 	            endRow = row;
 	        }
-	        
+
 	        return new Range(startRow, startColumn, endRow, session.getLine(endRow).length);
 	    };
 	    this.getCommentRegionBlock = function(session, line, row) {
 	        var startColumn = line.search(/\s*$/);
 	        var maxRow = session.getLength();
 	        var startRow = row;
-	        
+
 	        var re = /^\s*(?:\/\*|\/\/|--)#?(end)?region\b/;
 	        var depth = 1;
 	        while (++row < maxRow) {
@@ -28751,12 +28751,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	        this.replaceInput = this.replaceBox.querySelector(".ace_search_field");
 	        this.searchCounter = sb.querySelector(".ace_search_counter");
 	    };
-	    
+
 	    this.$init = function() {
 	        var sb = this.element;
-	        
+
 	        this.$initElements(sb);
-	        
+
 	        var _this = this;
 	        event.addListener(sb, "mousedown", function(e) {
 	            setTimeout(function(){
@@ -28966,7 +28966,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        this.find(true, true);
 	    };
 	    this.findAll = function(){
-	        var range = this.editor.findAll(this.searchInput.value, {            
+	        var range = this.editor.findAll(this.searchInput.value, {
 	            regExp: this.regExpOption.checked,
 	            caseSensitive: this.caseSensitiveOption.checked,
 	            wholeWord: this.wholeWordOption.checked
@@ -28980,7 +28980,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    this.replace = function() {
 	        if (!this.editor.getReadOnly())
 	            this.editor.replace(this.replaceInput.value);
-	    };    
+	    };
 	    this.replaceAndFindNext = function() {
 	        if (!this.editor.getReadOnly()) {
 	            this.editor.replace(this.replaceInput.value);
@@ -29009,7 +29009,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	        if (value)
 	            this.searchInput.value = value;
-	        
+
 	        this.searchInput.focus();
 	        this.searchInput.select();
 
@@ -29035,7 +29035,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                (function() {
 	                    ace.acequire(["ace/ext/searchbox"], function() {});
 	                })();
-	            
+
 
 /***/ },
 /* 57 */
@@ -29343,18 +29343,18 @@ return /******/ (function(modules) { // webpackBootstrap
 	  	}], [{
 	  		key: 'hexToRgb',
 	  		value: function hexToRgb(input) {
-	  			var hex = (input.startsWith('#') ? input.slice(1) : input).replace(/^(\w{3})$/, '$1F') 
-	  			.replace(/^(\w)(\w)(\w)(\w)$/, '$1$1$2$2$3$3$4$4') 
-	  			.replace(/^(\w{6})$/, '$1FF'); 
+	  			var hex = (input.startsWith('#') ? input.slice(1) : input).replace(/^(\w{3})$/, '$1F')
+	  			.replace(/^(\w)(\w)(\w)(\w)$/, '$1$1$2$2$3$3$4$4')
+	  			.replace(/^(\w{6})$/, '$1FF');
 
 	  			if (!hex.match(/^([0-9a-fA-F]{8})$/)) {
 	  				throw new Error('Unknown hex color; ' + input);
 	  			}
 
-	  			var rgba = hex.match(/^(\w\w)(\w\w)(\w\w)(\w\w)$/).slice(1) 
+	  			var rgba = hex.match(/^(\w\w)(\w\w)(\w\w)(\w\w)$/).slice(1)
 	  			.map(function (x) {
 	  				return parseInt(x, 16);
-	  			}); 
+	  			});
 
 	  			rgba[3] = rgba[3] / 255;
 	  			return rgba;
@@ -29391,7 +29391,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  			    l = (max + min) / 2;
 
 	  			if (max === min) {
-	  				h = s = 0; 
+	  				h = s = 0;
 	  			} else {
 	  				var d = max - min;
 	  				s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
@@ -29425,7 +29425,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  			    b = void 0;
 
 	  			if (s === 0) {
-	  				r = g = b = l; 
+	  				r = g = b = l;
 	  			} else {
 	  				var hue2rgb = function hue2rgb(p, q, t) {
 	  					if (t < 0) t += 1;
@@ -29701,7 +29701,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	  var _style = document.createElement('style');
 	  _style.textContent = '.picker_wrapper.no_alpha .picker_alpha{display:none}.picker_wrapper.no_editor .picker_editor{position:absolute;z-index:-1;opacity:0}.layout_default.picker_wrapper{display:-webkit-box;display:-ms-flexbox;display:flex;-webkit-box-orient:horizontal;-webkit-box-direction:normal;-ms-flex-flow:row wrap;flex-flow:row wrap;-webkit-box-pack:justify;-ms-flex-pack:justify;justify-content:space-between;-webkit-box-align:stretch;-ms-flex-align:stretch;align-items:stretch;font-size:10px;width:25em;padding:.5em}.layout_default.picker_wrapper input,.layout_default.picker_wrapper button{font-size:1rem}.layout_default.picker_wrapper>*{margin:.5em}.layout_default.picker_wrapper::before{content:\'\';display:block;width:100%;height:0;-webkit-box-ordinal-group:2;-ms-flex-order:1;order:1}.layout_default .picker_slider,.layout_default .picker_selector{padding:1em}.layout_default .picker_hue{width:100%}.layout_default .picker_sl{-webkit-box-flex:1;-ms-flex:1 1 auto;flex:1 1 auto}.layout_default .picker_sl::before{content:\'\';display:block;padding-bottom:100%}.layout_default .picker_editor{-webkit-box-ordinal-group:2;-ms-flex-order:1;order:1;width:6rem}.layout_default .picker_editor input{width:calc(100% + 2px);height:calc(100% + 2px)}.layout_default .picker_sample{-webkit-box-ordinal-group:2;-ms-flex-order:1;order:1;-webkit-box-flex:1;-ms-flex:1 1 auto;flex:1 1 auto}.layout_default .picker_done{-webkit-box-ordinal-group:2;-ms-flex-order:1;order:1}.picker_wrapper{-webkit-box-sizing:border-box;box-sizing:border-box;background:#f2f2f2;-webkit-box-shadow:0 0 0 1px silver;box-shadow:0 0 0 1px silver;cursor:default;font-family:sans-serif;color:#444;pointer-events:auto}.picker_wrapper:focus{outline:none}.picker_wrapper button,.picker_wrapper input{margin:-1px}.picker_selector{position:absolute;z-index:1;display:block;-webkit-transform:translate(-50%, -50%);transform:translate(-50%, -50%);border:2px solid white;border-radius:100%;-webkit-box-shadow:0 0 3px 1px #67b9ff;box-shadow:0 0 3px 1px #67b9ff;background:currentColor;cursor:pointer}.picker_slider .picker_selector{border-radius:2px}.picker_hue{position:relative;background-image:-webkit-gradient(linear, left top, right top, from(red), color-stop(yellow), color-stop(lime), color-stop(cyan), color-stop(blue), color-stop(magenta), to(red));background-image:linear-gradient(90deg, red, yellow, lime, cyan, blue, magenta, red);-webkit-box-shadow:0 0 0 1px silver;box-shadow:0 0 0 1px silver}.picker_sl{position:relative;-webkit-box-shadow:0 0 0 1px silver;box-shadow:0 0 0 1px silver;background-image:-webkit-gradient(linear, left top, left bottom, from(white), color-stop(50%, rgba(255,255,255,0))),-webkit-gradient(linear, left bottom, left top, from(black), color-stop(50%, rgba(0,0,0,0))),-webkit-gradient(linear, left top, right top, from(gray), to(rgba(128,128,128,0)));background-image:linear-gradient(180deg, white, rgba(255,255,255,0) 50%),linear-gradient(0deg, black, rgba(0,0,0,0) 50%),linear-gradient(90deg, gray, rgba(128,128,128,0))}.picker_alpha,.picker_sample{position:relative;background:url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'2\' height=\'2\'%3E%3Cpath d=\'M1,0H0V1H2V2H1\' fill=\'lightgrey\'/%3E%3C/svg%3E") left top/contain white;-webkit-box-shadow:0 0 0 1px silver;box-shadow:0 0 0 1px silver}.picker_alpha .picker_selector,.picker_sample .picker_selector{background:none}.picker_editor input{-webkit-box-sizing:border-box;box-sizing:border-box;font-family:monospace;padding:.1em .2em}.picker_sample::before{content:\'\';position:absolute;display:block;width:100%;height:100%;background:currentColor}.picker_done button{-webkit-box-sizing:border-box;box-sizing:border-box;padding:.2em .5em;cursor:pointer}.picker_arrow{position:absolute;z-index:-1}.picker_wrapper.popup{position:absolute;z-index:2;margin:1.5em}.picker_wrapper.popup,.picker_wrapper.popup .picker_arrow::before,.picker_wrapper.popup .picker_arrow::after{background:#f2f2f2;-webkit-box-shadow:0 0 10px 1px rgba(0,0,0,0.4);box-shadow:0 0 10px 1px rgba(0,0,0,0.4)}.picker_wrapper.popup .picker_arrow{width:3em;height:3em;margin:0}.picker_wrapper.popup .picker_arrow::before,.picker_wrapper.popup .picker_arrow::after{content:"";display:block;position:absolute;top:0;left:0;z-index:-99}.picker_wrapper.popup .picker_arrow::before{width:100%;height:100%;-webkit-transform:skew(45deg);transform:skew(45deg);-webkit-transform-origin:0 100%;transform-origin:0 100%}.picker_wrapper.popup .picker_arrow::after{width:150%;height:150%;-webkit-box-shadow:none;box-shadow:none}.popup.popup_top{bottom:100%;left:0}.popup.popup_top .picker_arrow{bottom:0;left:0;-webkit-transform:rotate(-90deg);transform:rotate(-90deg)}.popup.popup_bottom{top:100%;left:0}.popup.popup_bottom .picker_arrow{top:0;left:0;-webkit-transform:rotate(90deg) scale(1, -1);transform:rotate(90deg) scale(1, -1)}.popup.popup_left{top:0;right:100%}.popup.popup_left .picker_arrow{top:0;right:0;-webkit-transform:scale(-1, 1);transform:scale(-1, 1)}.popup.popup_right{top:0;left:100%}.popup.popup_right .picker_arrow{top:0;left:0}';
-	  document.documentElement.firstElementChild 
+	  document.documentElement.firstElementChild
 	  .appendChild(_style);
 
 	  var Picker = function () {
@@ -30127,10 +30127,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	                  thumbA = $('.picker_selector', uiA);
 
 	              function posX(parent, child, relX) {
-	                  child.style.left = relX * 100 + '%'; 
+	                  child.style.left = relX * 100 + '%';
 	              }
 	              function posY(parent, child, relY) {
-	                  child.style.top = relY * 100 + '%'; 
+	                  child.style.top = relY * 100 + '%';
 	              }
 
 
@@ -30776,7 +30776,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	      this.node.recursivelyUpdateNodeName();
 	    } catch (err) {
 	      console.error("Error in onNodeName callback: ", err);
-	    }  
+	    }
 	  }
 	};
 
@@ -31905,7 +31905,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	      Node.onRemove(selectedNodes);
 	    }
 	  });
-	  
+
 	  if (this.options.onCreateMenu) {
 	    var paths = selectedNodes.map(function (node) {
 	      return node.getPath();
@@ -32866,7 +32866,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	/**
 	 * remove all classes from the given elements style
-	 * @param {Element} elem 
+	 * @param {Element} elem
 	 */
 	exports.removeAllClassNames = function removeAllClassNames(elem) {
 	    elem.className = "";
@@ -33558,9 +33558,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	  if (!paths || !paths.length) {
 	    return result;
 	  }
-	  
+
 	  try {
-	    jsmap = jsonMap.parse(text);    
+	    jsmap = jsonMap.parse(text);
 	  } catch (err) {
 	    return result;
 	  }
@@ -33579,7 +33579,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  });
 
 	  return result;
-	  
+
 	}
 
 	/**
@@ -33615,12 +33615,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	  if (!schema) {
 	    return '';
 	  }
-	  
+
 	  var tooltip = '';
 	  if (schema.title) {
 	    tooltip += schema.title;
 	  }
-	  
+
 	  if (schema.description) {
 	    if (tooltip.length > 0) {
 	      tooltip += '\n';
@@ -33694,7 +33694,7 @@ return /******/ (function(modules) { // webpackBootstrap
 /* 63 */
 /***/ function(module, exports) {
 
-	
+
 	if (typeof Element !== 'undefined') {
 	  // Polyfill for array remove
 	  (function () {
@@ -33771,7 +33771,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                     .replace(/\\v/g,'\v')
 	                     .replace(/\\f/g,'\f')
 	                     .replace(/\\b/g,'\b');
-	        
+
 	break;
 	case 2:this.$ = Number(yytext);
 	break;
@@ -34095,7 +34095,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        if (this._input === "") {
 	            return this.EOF;
 	        } else {
-	            this.parseError('Lexical error on line '+(this.yylineno+1)+'. Unrecognized text.\n'+this.showPosition(), 
+	            this.parseError('Lexical error on line '+(this.yylineno+1)+'. Unrecognized text.\n'+this.showPosition(),
 	                    {text: "", token: null, line: this.yylineno});
 	        }
 	    },
@@ -35915,7 +35915,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	/**
 	 * Creates a component that visualize path selection in tree based editors
-	 * @param {HTMLElement} container 
+	 * @param {HTMLElement} container
 	 * @param {HTMLElement} root
 	 * @constructor
 	 */
@@ -35941,7 +35941,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	/**
 	 * Renders the component UI according to a given path objects
 	 * @param {Array<{name: String, childs: Array}>} pathObjs a list of path objects
-	 * 
+	 *
 	 */
 	TreePath.prototype.setPath = function (pathObjs) {
 	  var me = this;
@@ -35955,7 +35955,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	      pathEl.className = 'jsoneditor-treepath-element';
 	      pathEl.innerText = pathObj.name;
 	      pathEl.onclick = _onSegmentClick.bind(me, pathObj);
-	  
+
 	      me.path.appendChild(pathEl);
 
 	      if (pathObj.children.length) {
@@ -36034,7 +36034,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	 */
 	TreePath.prototype.onSectionSelected = function (callback) {
 	  if (typeof callback === 'function') {
-	    this.selectionCallback = callback;      
+	    this.selectionCallback = callback;
 	  }
 	};
 
@@ -36115,7 +36115,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	// search will stop iterating as soon as the max is reached
 	Node.prototype.MAX_SEARCH_RESULTS = 999;
 
-	// default number of child nodes to display 
+	// default number of child nodes to display
 	var DEFAULT_MAX_VISIBLE_CHILDS = 100;
 
 	Node.prototype.getMaxVisibleChilds = function() {
@@ -40497,7 +40497,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	      paths: [path]
 			});
 		}
-	  
+
 	  var menu = new ContextMenu(items, {close: onClose});
 	  menu.show(anchor, this.editor.frame);
 	};
@@ -42630,7 +42630,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        'submenu': appendSubmenu
 	      }
 	    ];
-	    
+
 	    if (this.editor.options.onCreateMenu) {
 	      var path = node.parent.getPath();
 
@@ -46198,11 +46198,11 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	function completely(config) {
 	    config = config || {};
-	    config.confirmKeys = config.confirmKeys || [39, 35, 9] // right, end, tab 
+	    config.confirmKeys = config.confirmKeys || [39, 35, 9] // right, end, tab
 	    config.caseSensitive = config.caseSensitive || false    // autocomplete case sensitive
 
 	    var fontSize = '';
-	    var fontFamily = '';    
+	    var fontFamily = '';
 
 	    var wrapper = document.createElement('div');
 	    wrapper.style.position = 'relative';
@@ -46239,7 +46239,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                elem.innerHTML = '';
 	                var vph = (window.innerHeight || document.documentElement.clientHeight);
 	                var rect = elem.parentNode.getBoundingClientRect();
-	                var distanceToTop = rect.top - 6;                        // heuristic give 6px 
+	                var distanceToTop = rect.top - 6;                        // heuristic give 6px
 	                var distanceToBottom = vph - rect.bottom - 6;  // distance from the browser border.
 
 	                rows = [];
@@ -46262,7 +46262,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                if (rows.length === 0) {
 	                    return; // nothing to show.
 	                }
-	                if (rows.length === 1 && (   (token.toLowerCase() === rows[0].__hint.toLowerCase() && !config.caseSensitive) 
+	                if (rows.length === 1 && (   (token.toLowerCase() === rows[0].__hint.toLowerCase() && !config.caseSensitive)
 	                                           ||(token === rows[0].__hint && config.caseSensitive))){
 	                    return; // do not show the dropDown if it has only one element which matches what we have just displayed.
 	                }
@@ -46285,17 +46285,17 @@ return /******/ (function(modules) { // webpackBootstrap
 	                if (oldIndex != -1 && rows[oldIndex]) {
 	                    rows[oldIndex].className = "item";
 	                }
-	                rows[index].className = "item hover"; 
+	                rows[index].className = "item hover";
 	                oldIndex = index;
 	            },
 	            move: function (step) { // moves the selection either up or down (unless it's not possible) step is either +1 or -1.
 	                if (elem.style.visibility === 'hidden') return ''; // nothing to move if there is no dropDown. (this happens if the user hits escape and then down or up)
-	                if (ix + step === -1 || ix + step === rows.length) return rows[ix].__hint; // NO CIRCULAR SCROLLING. 
+	                if (ix + step === -1 || ix + step === rows.length) return rows[ix].__hint; // NO CIRCULAR SCROLLING.
 	                ix += step;
 	                p.highlight(ix);
 	                return rows[ix].__hint;//txtShadow.value = uRows[uIndex].__hint ;
 	            },
-	            onmouseselection: function () { } // it will be overwritten. 
+	            onmouseselection: function () { } // it will be overwritten.
 	        };
 	        return p;
 	    }
@@ -46365,14 +46365,14 @@ return /******/ (function(modules) { // webpackBootstrap
 	                this.elementHint.remove();
 	                this.elementHint = null;
 	            }
-	            
+
 	            if (fontSize == '') {
 	                fontSize = window.getComputedStyle(element).getPropertyValue('font-size');
 	            }
 	            if (fontFamily == '') {
 	                fontFamily = window.getComputedStyle(element).getPropertyValue('font-family');
 	            }
-	            
+
 	            var w = element.getBoundingClientRect().right - element.getBoundingClientRect().left;
 	            dropDown.style.marginLeft = '0';
 	            dropDown.style.marginTop = element.getBoundingClientRect().height + 'px';
@@ -46405,8 +46405,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	                this.element.removeEventListener("keydown", keyDownHandler);
 	                this.element.addEventListener("keydown", keyDownHandler, false);
 	                this.element.removeEventListener("blur", onBlurHandler);
-	                this.element.addEventListener("blur", onBlurHandler, false);                
-	            } 
+	                this.element.addEventListener("blur", onBlurHandler, false);
+	            }
 
 	            wrapper.appendChild(this.elementHint);
 	            wrapper.appendChild(dropDown);
@@ -46432,7 +46432,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                this.element.style.backgroundColor = this.elementStyle.backgroundColor;
 	                this.element.style.borderColor = this.elementStyle.borderColor;
 	            }
-	            
+
 	        },
 	        repaint: function (element) {
 	            var text = element.innerText;
@@ -46443,10 +46443,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	            var optionsLength = this.options.length;
 
 	            // breaking text in leftSide and token.
-	            
+
 	            var token = text.substring(this.startFrom);
 	            leftSide = text.substring(0, this.startFrom);
-	            
+
 	            for (var i = 0; i < optionsLength; i++) {
 	                var opt = this.options[i];
 	                if (   (!config.caseSensitive && opt.toLowerCase().indexOf(token.toLowerCase()) === 0)
@@ -46491,22 +46491,22 @@ return /******/ (function(modules) { // webpackBootstrap
 	        var startFrom = this.startFrom;
 
 	        if (config.confirmKeys.indexOf(keyCode) >= 0) { //  (autocomplete triggered)
-	            if (keyCode == 9) {                 
+	            if (keyCode == 9) {
 	                if (this.elementHint.innerText.length == 0) {
-	                    rs.onTab(); 
+	                    rs.onTab();
 	                }
 	            }
-	            if (this.elementHint.innerText.length > 0) { // if there is a hint               
+	            if (this.elementHint.innerText.length > 0) { // if there is a hint
 	                if (this.element.innerText != this.elementHint.realInnerText) {
 	                    this.element.innerText = this.elementHint.realInnerText;
 	                    rs.hideDropDown();
 	                    setEndOfContenteditable(this.element);
-	                    if (keyCode == 9) {                
+	                    if (keyCode == 9) {
 	                        rs.element.focus();
 	                        e.preventDefault();
 	                        e.stopPropagation();
 	                    }
-	                }                
+	                }
 	            }
 	            return;
 	        }
@@ -46564,12 +46564,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }.bind(rs);
 
 	    dropDownController.onmouseselection = function (text, rs) {
-	        rs.element.innerText = rs.elementHint.innerText = leftSide + text;        
-	        rs.hideDropDown();   
+	        rs.element.innerText = rs.elementHint.innerText = leftSide + text;
+	        rs.hideDropDown();
 	        window.setTimeout(function () {
 	            rs.element.focus();
-	            setEndOfContenteditable(rs.element);  
-	        }, 1);              
+	            setEndOfContenteditable(rs.element);
+	        }, 1);
 	    };
 
 	    return rs;
@@ -46616,14 +46616,14 @@ return /******/ (function(modules) { // webpackBootstrap
 	 *                             {boolean} escapeUnicode   If true, unicode
 	 *                                                       characters are escaped.
 	 *                                                       false by default.
-	 *                             {function} onTextSelectionChange Callback method, 
+	 *                             {function} onTextSelectionChange Callback method,
 	 *                                                              triggered on text selection change
 	 * @private
 	 */
 	textmode.create = function (container, options) {
 	  // read options
 	  options = options || {};
-	  
+
 	  if (typeof options.statusBar === 'undefined') {
 	    options.statusBar = true;
 	  }
@@ -46809,13 +46809,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	    aceSession.setTabSize(this.indentation);
 	    aceSession.setUseSoftTabs(true);
 	    aceSession.setUseWrapMode(true);
-	    
+
 	    // replace ace setAnnotations with custom function that also covers jsoneditor annotations
 	    var originalSetAnnotations = aceSession.setAnnotations;
 	    aceSession.setAnnotations = function (annotations) {
 	      originalSetAnnotations.call(this, annotations && annotations.length ? annotations : me.annotations);
 	    };
-	    
+
 	    aceEditor.commands.bindKey('Ctrl-L', null);    // disable Ctrl+L (is used by the browser to select the address bar)
 	    aceEditor.commands.bindKey('Command-L', null); // disable Ctrl+L (is used by the browser to select the address bar)
 	    this.aceEditor = aceEditor;
@@ -46928,7 +46928,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    validationErrorIcon.style.display = 'none';
 
 	    var validationErrorCount = document.createElement('span');
-	    validationErrorCount.className = 'jsoneditor-validation-error-count';    
+	    validationErrorCount.className = 'jsoneditor-validation-error-count';
 	    validationErrorCount.style.display = 'none';
 
 	    this.validationErrorIndication = {
@@ -46940,12 +46940,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	    statusBar.appendChild(validationErrorIcon);
 
 	    this.parseErrorIndication = document.createElement('span');
-	    this.parseErrorIndication.className = 'jsoneditor-parse-error-icon';    
+	    this.parseErrorIndication.className = 'jsoneditor-parse-error-icon';
 	    this.parseErrorIndication.style.display = 'none';
 	    statusBar.appendChild(this.parseErrorIndication);
 	  }
 
-	  this.setSchema(this.options.schema, this.options.schemaRefs);  
+	  this.setSchema(this.options.schema, this.options.schemaRefs);
 	};
 
 	/**
@@ -47059,11 +47059,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	  if (this.textarea) {
 	    setTimeout(function() { //this to verify we get the most updated textarea cursor selection
 	      var selectionRange = util.getInputSelection(me.textarea);
-	      
+
 	      if (selectionRange.startIndex !== selectionRange.endIndex) {
 	        count = selectionRange.endIndex - selectionRange.startIndex;
 	      }
-	      
+
 	      if (count && me.cursorInfo && me.cursorInfo.line === selectionRange.end.row && me.cursorInfo.column === selectionRange.end.column) {
 	        line = selectionRange.start.row;
 	        col = selectionRange.start.column;
@@ -47071,7 +47071,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        line = selectionRange.end.row;
 	        col = selectionRange.end.column;
 	      }
-	      
+
 	      me.cursorInfo = {
 	        line: line,
 	        column: col,
@@ -47082,7 +47082,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        updateDisplay();
 	      }
 	    },0);
-	    
+
 	  } else if (this.aceEditor && this.curserInfoElements) {
 	    var curserPos = this.aceEditor.getCursorPosition();
 	    var selectedText = this.aceEditor.getSelectedText();
@@ -47129,10 +47129,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * refresh ERROR annotations state
 	 * error annotations are handled by the ace json mode (ace/mode/json)
 	 * validation annotations are handled by this mode
-	 * therefore in order to refresh we send only the annotations of error type in order to maintain its state 
+	 * therefore in order to refresh we send only the annotations of error type in order to maintain its state
 	 * @private
 	 */
-	textmode._refreshAnnotations = function () {  
+	textmode._refreshAnnotations = function () {
 	  var session = this.aceEditor && this.aceEditor.getSession();
 	  if (session) {
 	    var errEnnotations = session.getAnnotations().filter(function(annotation) {return annotation.type === 'error' });
@@ -47160,7 +47160,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  }
 
 	  this.textarea = null;
-	  
+
 	  this._debouncedValidate = null;
 	};
 
@@ -47495,7 +47495,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	          message = '<td colspan="2"><pre>' + error + '</pre></td>';
 	        }
 	        else {
-	          message = 
+	          message =
 	              '<td>' + (error.dataPath || '') + '</td>' +
 	              '<td>' + error.message + '</td>';
 	        }
@@ -47519,7 +47519,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	          trEl.className += ' validation-error';
 	          ++validationErrorsCount;
 	        }
-	        
+
 	        trEl.innerHTML =  ('<td><button class="jsoneditor-schema-error"></button></td><td style="white-space:nowrap;">'+ (!isNaN(line) ? ('Ln ' + line) : '') +'</td>' + message);
 	        trEl.onclick = function() {
 	          me.isFocused = true;
@@ -47551,7 +47551,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    } else {
 	      validationErrorsCount = errors.reduce(function (acc, curr) {return (curr.type === 'validation' ? ++acc: acc)}, 0);
 	    }
-	    
+
 	  } else {
 	    if (this.aceEditor) {
 	      this.annotations = [];
@@ -47620,7 +47620,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	      selection.start = range.end;
 	      selection.end = range.start;
 	    }
-	    
+
 	    return {
 	      start: {
 	        row: selection.start.row + 1,
@@ -47638,7 +47638,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	/**
 	 * Callback registration for selection change
 	 * @param {selectionCallback} callback
-	 * 
+	 *
 	 * @callback selectionCallback
 	 */
 	textmode.onTextSelectionChange = function (callback) {
@@ -47726,7 +47726,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	 *
 	 * Copyright (c) 2010, Ajax.org B.V.
 	 * All rights reserved.
-	 * 
+	 *
 	 * Redistribution and use in source and binary forms, with or without
 	 * modification, are permitted provided that the following conditions are met:
 	 *     * Redistributions of source code must retain the above copyright
@@ -47737,7 +47737,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	 *     * Neither the name of Ajax.org B.V. nor the
 	 *       names of its contributors may be used to endorse or promote products
 	 *       derived from this software without specific prior written permission.
-	 * 
+	 *
 	 * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
 	 * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
 	 * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
