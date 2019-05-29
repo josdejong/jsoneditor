@@ -2659,12 +2659,6 @@ Node._findSchema = function (schema, schemaRefs, path) {
           }
         }
       }
-      else if (childSchema.items && childSchema.items.properties) {
-        childSchema = childSchema.items.properties[key];
-        if (childSchema) {
-          foundSchema = Node._findSchema(childSchema, schemaRefs, nextPath);
-        }
-      }
       else if (typeof key === 'string' && childSchema.properties) {
         if (!(key in childSchema.properties)) {
           foundSchema = null;
