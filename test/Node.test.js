@@ -27,6 +27,33 @@ describe('Node', function () {
             assert.strictEqual(Node._findSchema(schema, {}, path), schema.properties.child);
         });
 
+        it('should find schema inside an array item', function () {
+            var schema = {
+                properties: {
+                    job: {
+                        type: 'array',
+                        items: {
+                            properties: {
+                                company: {
+                                    enum: ['test1', 'test2']
+                                }
+                            }
+                        }
+                    }
+                }
+            };
+
+            assert.strictEqual(Node._findSchema(schema, {}, []), schema);
+
+            assert.strictEqual(Node._findSchema(schema, {}, ['job']), schema.properties.job);
+
+            assert.strictEqual(Node._findSchema(schema, {}, ['job', 0]),
+                schema.properties.job.items);
+
+            assert.strictEqual(Node._findSchema(schema, {}, ['job', 0, 'company']),
+                schema.properties.job.items.properties.company);
+        });
+
         it('should find schema within multi-level object properties', function () {
             var schema = {
                 type: 'object',
