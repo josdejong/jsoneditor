@@ -6,6 +6,8 @@ https://github.com/josdejong/jsoneditor
 ## not yet published, version 5.32.6
 
 - Fixed #697: JSON Schema enum dropdown not working inside an array.
+- Fixed #698: When using `onCreateMenu`, `node.path` is null when clicking
+  on an append node or when multiple nodes are selected.
 
 
 ## 2019-04-27, version 5.32.5
