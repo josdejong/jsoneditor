@@ -24,8 +24,8 @@
  * Copyright (c) 2011-2019 Jos de Jong, http://jsoneditoronline.org
  *
  * @author  Jos de Jong, <wjosdejong@gmail.com>
- * @version 5.32.5
- * @date    2019-04-27
+ * @version 5.33.0
+ * @date    2019-05-29
  */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
@@ -3149,7 +3149,15 @@ return /******/ (function(modules) { // webpackBootstrap
 	  });
 	  
 	  if (this.options.onCreateMenu) {
-			items = this.options.onCreateMenu(items, { path : node.getPath() });
+	    var paths = selectedNodes.map(function (node) {
+	      return node.getPath();
+	    });
+
+			items = this.options.onCreateMenu(items, {
+			  type: 'multiple',
+			  path: paths[0],
+	      paths: paths
+			});
 		}
 
 	  var menu = new ContextMenu(items, {close: onClose});
@@ -9949,12 +9957,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	          }
 	        }
 	      }
-	      else if (childSchema.items && childSchema.items.properties) {
-	        childSchema = childSchema.items.properties[key];
-	        if (childSchema) {
-	          foundSchema = Node._findSchema(childSchema, schemaRefs, nextPath);
-	        }
-	      }
 	      else if (typeof key === 'string' && childSchema.properties) {
 	        if (!(key in childSchema.properties)) {
 	          foundSchema = null;
@@ -11729,7 +11731,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	  }
 
 	  if (this.editor.options.onCreateMenu) {
-			items = this.editor.options.onCreateMenu(items, { path : node.getPath() });
+	    var path = node.getPath();
+
+			items = this.editor.options.onCreateMenu(items, {
+	      type: 'single',
+	      path: path,
+	      paths: [path]
+			});
 		}
 	  
 	  var menu = new ContextMenu(items, {close: onClose});
@@ -13866,7 +13874,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	    ];
 	    
 	    if (this.editor.options.onCreateMenu) {
-	      items = this.editor.options.onCreateMenu(items, { path : node.getPath() });
+	      var path = node.parent.getPath();
+
+	      items = this.editor.options.onCreateMenu(items, {
+	        type: 'append',
+	        path: path,
+	        paths: [path]
+	      });
 	    }
 
 	    var menu = new ContextMenu(items, {close: onClose});
