@@ -2659,12 +2659,6 @@ Node._findSchema = function (schema, schemaRefs, path) {
           }
         }
       }
-      else if (childSchema.items && childSchema.items.properties) {
-        childSchema = childSchema.items.properties[key];
-        if (childSchema) {
-          foundSchema = Node._findSchema(childSchema, schemaRefs, nextPath);
-        }
-      }
       else if (typeof key === 'string' && childSchema.properties) {
         if (!(key in childSchema.properties)) {
           foundSchema = null;
@@ -4439,7 +4433,13 @@ Node.prototype.showContextMenu = function (anchor, onClose) {
   }
 
   if (this.editor.options.onCreateMenu) {
-		items = this.editor.options.onCreateMenu(items, { path : node.getPath() });
+    var path = node.getPath();
+
+		items = this.editor.options.onCreateMenu(items, {
+      type: 'single',
+      path: path,
+      paths: [path]
+		});
 	}
   
   var menu = new ContextMenu(items, {close: onClose});

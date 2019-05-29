@@ -3,6 +3,21 @@
 https://github.com/josdejong/jsoneditor
 
 
+## not yet published, version 5.33.0
+
+- Fixed #697: JSON Schema enum dropdown not working inside an array.
+- Fixed #698: When using `onCreateMenu`, `node.path` is null when clicking
+  on an append node or when multiple nodes are selected.
+- Upgraded dependencies to `mobius1-selectr@2.4.10`, `vanilla-picker@2.8.0`.
+
+
+## 2019-04-27, version 5.32.5
+
+- Fixed a bug in the JMESPath query wizard which didn't correctly handle
+  selecting multiple fields.
+- Fixed context menu not working when multiple nodes are selected.
+
+
 ## 2019-04-10, version 5.32.4
 
 - Fixed #682 and #687: JSONEditor not being able to handle JSON schema

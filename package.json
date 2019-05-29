@@ -1,6 +1,6 @@
 {
   "name": "jsoneditor",
-  "version": "5.32.4",
+  "version": "5.33.0",
   "main": "./index",
   "description": "A web-based tool to view, edit, format, and validate JSON",
   "tags": [
@@ -28,9 +28,9 @@
     "javascript-natural-sort": "0.7.1",
     "jmespath": "0.15.0",
     "json-source-map": "0.4.0",
-    "mobius1-selectr": "2.4.2",
+    "mobius1-selectr": "2.4.10",
     "picomodal": "3.0.0",
-    "vanilla-picker": "2.4.2"
+    "vanilla-picker": "2.8.0"
   },
   "devDependencies": {
     "gulp": "4.0.0",
@@ -38,7 +38,7 @@
     "gulp-concat-css": "2.3.0",
     "gulp-shell": "0.6.3",
     "gulp-util": "3.0.8",
-    "jsdom": "^13.2.0",
+    "jsdom": "13.2.0",
     "json-loader": "0.5.7",
     "mkdirp": "0.5.1",
     "mocha": "5.2.0",
