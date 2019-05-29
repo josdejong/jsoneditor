@@ -1705,7 +1705,15 @@ treemode.showContextMenu = function (anchor, onClose) {
   });
   
   if (this.options.onCreateMenu) {
-		items = this.options.onCreateMenu(items, { path : node.getPath() });
+    var paths = selectedNodes.map(function (node) {
+      return node.getPath();
+    });
+
+		items = this.options.onCreateMenu(items, {
+		  type: 'multiple',
+		  path: paths[0],
+      paths: paths
+		});
 	}
 
   var menu = new ContextMenu(items, {close: onClose});

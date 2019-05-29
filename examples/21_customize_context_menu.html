@@ -61,7 +61,8 @@
     onCreateMenu : function (items, node) {
       var path = node.path
 
-      console.log(items); // log the current items for inspection
+      // log the current items and node for inspection
+      console.log('items:', items, 'node:', node);
 
       // We are going to add a menu item which returns the current node path
       // as a jq path selector ( https://stedolan.github.io/jq/ ). First we
