@@ -33,6 +33,7 @@ describe('Node', function () {
                     job: {
                         type: 'array',
                         items: {
+                            type: 'object',
                             properties: {
                                 company: {
                                     enum: ['test1', 'test2']
