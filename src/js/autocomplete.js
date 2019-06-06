@@ -1,10 +1,10 @@
 'use strict';
 
-const defaultFilterFunction = {
-  start (token, match, config) {
+var defaultFilterFunction = {
+  start: function (token, match, config) {
     return match.indexOf(token) === 0;
   },
-  contain (token, match, config) {
+  contain: function (token, match, config) {
     return match.indexOf(token) > -1;
   }
 };
@@ -58,9 +58,9 @@ function completely(config) {
                 var distanceToBottom = vph - rect.bottom - 6;  // distance from the browser border.
 
                 rows = [];
-                let filterFn = typeof config.filter === 'function' ? config.filter : defaultFilterFunction[config.filter];
+                var filterFn = typeof config.filter === 'function' ? config.filter : defaultFilterFunction[config.filter];
 
-                let filtered = !filterFn ? [] : array.filter(function (match) {
+                var filtered = !filterFn ? [] : array.filter(function (match) {
                   return filterFn(config.caseSensitive ? token : token.toLowerCase(), config.caseSensitive ? match : match.toLowerCase(), config);
                 });
 
