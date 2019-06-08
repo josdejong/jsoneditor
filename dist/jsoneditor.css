@@ -1198,6 +1198,8 @@ div.jsoneditor-menu > div.jsoneditor-modes > button:active {
 div.jsoneditor-menu > button:disabled,
 div.jsoneditor-menu > div.jsoneditor-modes > button:disabled {
   opacity: 0.5;
+  background-color: transparent;
+  border: none;
 }
 
 div.jsoneditor-menu > button.jsoneditor-collapse-all {

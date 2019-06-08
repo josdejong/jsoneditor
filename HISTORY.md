@@ -3,7 +3,15 @@
 https://github.com/josdejong/jsoneditor
 
 
-## not yet published, version 5.33.0
+## 2019-06-08, version 5.34.0
+
+- Extended the autocomplete feature with new options `filter` and `trigger`.
+  Thanks @Gcaufy.
+- Removed :hover style on disabled buttons. Thanks @Gcaufy.
+- Upgraded dependency `mobius1-selectr@2.4.12`.
+
+
+## 2019-05-29, version 5.33.0
 
 - Fixed #697: JSON Schema enum dropdown not working inside an array.
 - Fixed #698: When using `onCreateMenu`, `node.path` is null when clicking

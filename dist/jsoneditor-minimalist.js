@@ -24,8 +24,8 @@
  * Copyright (c) 2011-2019 Jos de Jong, http://jsoneditoronline.org
  *
  * @author  Jos de Jong, <wjosdejong@gmail.com>
- * @version 5.33.0
- * @date    2019-05-29
+ * @version 5.34.0
+ * @date    2019-06-08
  */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
@@ -2603,12 +2603,17 @@ return /******/ (function(modules) { // webpackBootstrap
 	    return;
 	  }
 
+	  var node = Node.getNodeFromTarget(event.target);
+
 	  if (event.type === 'keydown') {
 	    this._onKeyDown(event);
 	  }
 
 	  if (event.type === 'focus') {
 	    this.focusTarget = event.target;
+	    if (this.options.autocomplete && this.options.autocomplete.trigger === 'focus') {
+	      this._showAutoComplete(event.target);
+	    }
 	  }
 
 	  if (event.type === 'mousedown') {
@@ -2618,7 +2623,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	    this._updateDragDistance(event);
 	  }
 
-	  var node = Node.getNodeFromTarget(event.target);
 
 	  if (node && this.options && this.options.navigationBar && node && (event.type === 'keydown' || event.type === 'mousedown')) {
 	    // apply on next tick, right after the new key press is applied
@@ -2969,6 +2973,51 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 
 	/**
+	 * Show autocomplete menu
+	 * @param {Node} node
+	 * @param {HTMLElement} element
+	 * @private
+	 */
+	treemode._showAutoComplete = function (element) {
+	  var node = Node.getNodeFromTarget(element);
+
+	  var jsonElementType = "";
+	    if (event.target.className.indexOf("jsoneditor-value") >= 0) jsonElementType = "value";
+	    if (event.target.className.indexOf("jsoneditor-field") >= 0) jsonElementType = "field";
+
+	  var self = this;
+
+	  setTimeout(function () {
+	      if (self.options.autocomplete.trigger === 'focus' || element.innerText.length > 0) {
+	          var result = self.options.autocomplete.getOptions(element.innerText, node.getPath(), jsonElementType, node.editor);
+	          if (result === null) {
+	              self.autocomplete.hideDropDown();
+	          } else if (typeof result.then === 'function') {
+	              // probably a promise
+	              if (result.then(function (obj) {
+	                  if (obj === null) {
+	                      self.autocomplete.hideDropDown();
+	                  } else if (obj.options) {
+	                      self.autocomplete.show(element, obj.startFrom, obj.options);
+	                  } else {
+	                      self.autocomplete.show(element, 0, obj);
+	                  }
+	              }.bind(self)));
+	          } else {
+	              // definitely not a promise
+	              if (result.options)
+	                  self.autocomplete.show(element, result.startFrom, result.options);
+	              else
+	                  self.autocomplete.show(element, 0, result);
+	          }
+	      }
+	      else
+	          self.autocomplete.hideDropDown();
+
+	  }, 50);
+	}
+
+	/**
 	 * Event handler for keydown. Handles shortcut keys
 	 * @param {Event} event
 	 * @private
@@ -3025,41 +3074,11 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	  if ((this.options.autocomplete) && (!handled)) {
 	      if (!ctrlKey && !altKey && !metaKey && (event.key.length == 1 || keynum == 8 || keynum == 46)) {
-	          handled = false;
-	          var jsonElementType = "";
-	          if (event.target.className.indexOf("jsoneditor-value") >= 0) jsonElementType = "value";
-	          if (event.target.className.indexOf("jsoneditor-field") >= 0) jsonElementType = "field";
+	        handled = false;
+	        var node = Node.getNodeFromTarget(event.target);
 
-	          var node = Node.getNodeFromTarget(event.target);
-	          // Activate autocomplete
-	          setTimeout(function (hnode, element) {
-	              if (element.innerText.length > 0) {
-	                  var result = this.options.autocomplete.getOptions(element.innerText, hnode.getPath(), jsonElementType, hnode.editor);
-	                  if (result === null) {
-	                      this.autocomplete.hideDropDown();
-	                  } else if (typeof result.then === 'function') {
-	                      // probably a promise
-	                      if (result.then(function (obj) {
-	                          if (obj === null) {
-	                              this.autocomplete.hideDropDown();
-	                          } else if (obj.options) {
-	                              this.autocomplete.show(element, obj.startFrom, obj.options);
-	                          } else {
-	                              this.autocomplete.show(element, 0, obj);
-	                          }
-	                      }.bind(this)));
-	                  } else {
-	                      // definitely not a promise
-	                      if (result.options)
-	                          this.autocomplete.show(element, result.startFrom, result.options);
-	                      else
-	                          this.autocomplete.show(element, 0, result);
-	                  }
-	              }
-	              else
-	                  this.autocomplete.hideDropDown();
-
-	          }.bind(this, node, event.target), 50);
+	        // Activate autocomplete
+	        this._showAutoComplete(event.target);
 	      }
 	  }
 
@@ -17438,9 +17457,20 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	'use strict';
 
+	var defaultFilterFunction = {
+	  start: function (token, match, config) {
+	    return match.indexOf(token) === 0;
+	  },
+	  contain: function (token, match, config) {
+	    return match.indexOf(token) > -1;
+	  }
+	};
+
 	function completely(config) {
 	    config = config || {};
-	    config.confirmKeys = config.confirmKeys || [39, 35, 9] // right, end, tab 
+	    config.filter = config.filter || 'start';
+	    config.trigger = config.trigger || 'keydown';
+	    config.confirmKeys = config.confirmKeys || [39, 35, 9] // right, end, tab
 	    config.caseSensitive = config.caseSensitive || false    // autocomplete case sensitive
 
 	    var fontSize = '';
@@ -17485,22 +17515,25 @@ return /******/ (function(modules) { // webpackBootstrap
 	                var distanceToBottom = vph - rect.bottom - 6;  // distance from the browser border.
 
 	                rows = [];
-	                for (var i = 0; i < array.length; i++) {
+	                var filterFn = typeof config.filter === 'function' ? config.filter : defaultFilterFunction[config.filter];
 
-	                    if (  (config.caseSensitive && array[i].indexOf(token) !== 0)
-	                        ||(!config.caseSensitive && array[i].toLowerCase().indexOf(token.toLowerCase()) !== 0)) { continue; }
+	                var filtered = !filterFn ? [] : array.filter(function (match) {
+	                  return filterFn(config.caseSensitive ? token : token.toLowerCase(), config.caseSensitive ? match : match.toLowerCase(), config);
+	                });
 
-	                    var divRow = document.createElement('div');
-	                    divRow.className = 'item';
-	                    //divRow.style.color = config.color;
-	                    divRow.onmouseover = onMouseOver;
-	                    divRow.onmouseout = onMouseOut;
-	                    divRow.onmousedown = onMouseDown;
-	                    divRow.__hint = array[i];
-	                    divRow.innerHTML = array[i].substring(0, token.length) + '<b>' + array[i].substring(token.length) + '</b>';
-	                    rows.push(divRow);
-	                    elem.appendChild(divRow);
-	                }
+	                rows = filtered.map(function (row) {
+	                  var divRow = document.createElement('div');
+	                  divRow.className = 'item';
+	                  //divRow.style.color = config.color;
+	                  divRow.onmouseover = onMouseOver;
+	                  divRow.onmouseout = onMouseOut;
+	                  divRow.onmousedown = onMouseDown;
+	                  divRow.__hint = row;
+	                  divRow.innerHTML = row.substring(0, token.length) + '<b>' + row.substring(token.length) + '</b>';
+	                  elem.appendChild(divRow);
+	                  return divRow;
+	                });
+
 	                if (rows.length === 0) {
 	                    return; // nothing to show.
 	                }
