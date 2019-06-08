@@ -1,8 +1,19 @@
 'use strict';
 
+var defaultFilterFunction = {
+  start: function (token, match, config) {
+    return match.indexOf(token) === 0;
+  },
+  contain: function (token, match, config) {
+    return match.indexOf(token) > -1;
+  }
+};
+
 function completely(config) {
     config = config || {};
-    config.confirmKeys = config.confirmKeys || [39, 35, 9] // right, end, tab 
+    config.filter = config.filter || 'start';
+    config.trigger = config.trigger || 'keydown';
+    config.confirmKeys = config.confirmKeys || [39, 35, 9] // right, end, tab
     config.caseSensitive = config.caseSensitive || false    // autocomplete case sensitive
 
     var fontSize = '';
@@ -47,22 +58,25 @@ function completely(config) {
                 var distanceToBottom = vph - rect.bottom - 6;  // distance from the browser border.
 
                 rows = [];
-                for (var i = 0; i < array.length; i++) {
+                var filterFn = typeof config.filter === 'function' ? config.filter : defaultFilterFunction[config.filter];
 
-                    if (  (config.caseSensitive && array[i].indexOf(token) !== 0)
-                        ||(!config.caseSensitive && array[i].toLowerCase().indexOf(token.toLowerCase()) !== 0)) { continue; }
+                var filtered = !filterFn ? [] : array.filter(function (match) {
+                  return filterFn(config.caseSensitive ? token : token.toLowerCase(), config.caseSensitive ? match : match.toLowerCase(), config);
+                });
 
-                    var divRow = document.createElement('div');
-                    divRow.className = 'item';
-                    //divRow.style.color = config.color;
-                    divRow.onmouseover = onMouseOver;
-                    divRow.onmouseout = onMouseOut;
-                    divRow.onmousedown = onMouseDown;
-                    divRow.__hint = array[i];
-                    divRow.innerHTML = array[i].substring(0, token.length) + '<b>' + array[i].substring(token.length) + '</b>';
-                    rows.push(divRow);
-                    elem.appendChild(divRow);
-                }
+                rows = filtered.map(function (row) {
+                  var divRow = document.createElement('div');
+                  divRow.className = 'item';
+                  //divRow.style.color = config.color;
+                  divRow.onmouseover = onMouseOver;
+                  divRow.onmouseout = onMouseOut;
+                  divRow.onmousedown = onMouseDown;
+                  divRow.__hint = row;
+                  divRow.innerHTML = row.substring(0, token.length) + '<b>' + row.substring(token.length) + '</b>';
+                  elem.appendChild(divRow);
+                  return divRow;
+                });
+
                 if (rows.length === 0) {
                     return; // nothing to show.
                 }

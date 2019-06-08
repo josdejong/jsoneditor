@@ -1140,12 +1140,17 @@ treemode._onEvent = function (event) {
     return;
   }
 
+  var node = Node.getNodeFromTarget(event.target);
+
   if (event.type === 'keydown') {
     this._onKeyDown(event);
   }
 
   if (event.type === 'focus') {
     this.focusTarget = event.target;
+    if (this.options.autocomplete && this.options.autocomplete.trigger === 'focus') {
+      this._showAutoComplete(event.target);
+    }
   }
 
   if (event.type === 'mousedown') {
@@ -1155,7 +1160,6 @@ treemode._onEvent = function (event) {
     this._updateDragDistance(event);
   }
 
-  var node = Node.getNodeFromTarget(event.target);
 
   if (node && this.options && this.options.navigationBar && node && (event.type === 'keydown' || event.type === 'mousedown')) {
     // apply on next tick, right after the new key press is applied
@@ -1506,6 +1510,51 @@ treemode._findTopLevelNodes = function (start, end) {
 };
 
 /**
+ * Show autocomplete menu
+ * @param {Node} node
+ * @param {HTMLElement} element
+ * @private
+ */
+treemode._showAutoComplete = function (element) {
+  var node = Node.getNodeFromTarget(element);
+
+  var jsonElementType = "";
+    if (event.target.className.indexOf("jsoneditor-value") >= 0) jsonElementType = "value";
+    if (event.target.className.indexOf("jsoneditor-field") >= 0) jsonElementType = "field";
+
+  var self = this;
+
+  setTimeout(function () {
+      if (self.options.autocomplete.trigger === 'focus' || element.innerText.length > 0) {
+          var result = self.options.autocomplete.getOptions(element.innerText, node.getPath(), jsonElementType, node.editor);
+          if (result === null) {
+              self.autocomplete.hideDropDown();
+          } else if (typeof result.then === 'function') {
+              // probably a promise
+              if (result.then(function (obj) {
+                  if (obj === null) {
+                      self.autocomplete.hideDropDown();
+                  } else if (obj.options) {
+                      self.autocomplete.show(element, obj.startFrom, obj.options);
+                  } else {
+                      self.autocomplete.show(element, 0, obj);
+                  }
+              }.bind(self)));
+          } else {
+              // definitely not a promise
+              if (result.options)
+                  self.autocomplete.show(element, result.startFrom, result.options);
+              else
+                  self.autocomplete.show(element, 0, result);
+          }
+      }
+      else
+          self.autocomplete.hideDropDown();
+
+  }, 50);
+}
+
+/**
  * Event handler for keydown. Handles shortcut keys
  * @param {Event} event
  * @private
@@ -1562,41 +1611,11 @@ treemode._onKeyDown = function (event) {
 
   if ((this.options.autocomplete) && (!handled)) {
       if (!ctrlKey && !altKey && !metaKey && (event.key.length == 1 || keynum == 8 || keynum == 46)) {
-          handled = false;
-          var jsonElementType = "";
-          if (event.target.className.indexOf("jsoneditor-value") >= 0) jsonElementType = "value";
-          if (event.target.className.indexOf("jsoneditor-field") >= 0) jsonElementType = "field";
+        handled = false;
+        var node = Node.getNodeFromTarget(event.target);
 
-          var node = Node.getNodeFromTarget(event.target);
-          // Activate autocomplete
-          setTimeout(function (hnode, element) {
-              if (element.innerText.length > 0) {
-                  var result = this.options.autocomplete.getOptions(element.innerText, hnode.getPath(), jsonElementType, hnode.editor);
-                  if (result === null) {
-                      this.autocomplete.hideDropDown();
-                  } else if (typeof result.then === 'function') {
-                      // probably a promise
-                      if (result.then(function (obj) {
-                          if (obj === null) {
-                              this.autocomplete.hideDropDown();
-                          } else if (obj.options) {
-                              this.autocomplete.show(element, obj.startFrom, obj.options);
-                          } else {
-                              this.autocomplete.show(element, 0, obj);
-                          }
-                      }.bind(this)));
-                  } else {
-                      // definitely not a promise
-                      if (result.options)
-                          this.autocomplete.show(element, result.startFrom, result.options);
-                      else
-                          this.autocomplete.show(element, 0, result);
-                  }
-              }
-              else
-                  this.autocomplete.hideDropDown();
-
-          }.bind(this, node, event.target), 50);
+        // Activate autocomplete
+        this._showAutoComplete(event.target);
       }
   }
 
