@@ -9,6 +9,7 @@ https://github.com/josdejong/jsoneditor
 - Fixed #698: When using `onCreateMenu`, `node.path` is null when clicking
   on an append node or when multiple nodes are selected.
 - Upgraded dependencies to `mobius1-selectr@2.4.10`, `vanilla-picker@2.8.0`.
+- Remove :hover style on disabled buttons. Thanks @Gcaufy.
 
 
 ## 2019-04-27, version 5.32.5
