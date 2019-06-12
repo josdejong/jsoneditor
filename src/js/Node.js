@@ -2513,7 +2513,9 @@ Node.prototype.updateDom = function(options) {
       fieldText = this.field;
     }
     else {
-      var schema = Node._findSchema(this.editor.options.schema,this.editor.options.schemaRefs || {}, this.getPath());
+      var schema = this.editor.options.schema
+        ? Node._findSchema(this.editor.options.schema,this.editor.options.schemaRefs || {}, this.getPath())
+        : undefined;
 
       if (schema && schema.title) {
         fieldText = schema.title;
