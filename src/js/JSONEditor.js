@@ -358,7 +358,8 @@ JSONEditor.prototype.setSchema = function (schema, schemaRefs) {
         ajv = Ajv({
           allErrors: true,
           verbose: true,
-          schemaId: 'auto'
+          schemaId: 'auto',
+          $data: true
         });
 
         // support both draft-04 and draft-06 alongside the latest draft-07
