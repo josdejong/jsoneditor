@@ -66,8 +66,11 @@ var compilerMinimalist = webpack({
 });
 
 function minify(name) {
-  var result = uglify.minify([DIST + '/' + name + '.js'], {
-    outSourceMap: name + '.map',
+  var code = String(fs.readFileSync(DIST + '/' + name + '.js'));
+  var result = uglify.minify(code, {
+    sourceMap: {
+      url: name + '.map'
+    },
     output: {
       comments: /@license/,
       max_line_len: 64000 // extra large because we have embedded code for workers

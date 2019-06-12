@@ -42,7 +42,7 @@
     "json-loader": "0.5.7",
     "mkdirp": "0.5.1",
     "mocha": "6.1.4",
-    "uglify-js": "2.8.22",
+    "uglify-js": "3.6.0",
     "webpack": "1.13.1"
   }
 }
