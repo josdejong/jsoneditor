@@ -1,4 +1,5 @@
 var fs = require('fs');
+var path = require('path');
 var gulp = require('gulp');
 var log = require('fancy-log');
 var format = require('date-format');
@@ -14,7 +15,7 @@ var ENTRY = './src/js/JSONEditor.js';
 var HEADER = './src/js/header.js';
 var IMAGE = './src/css/img/jsoneditor-icons.svg';
 var DOCS = './src/docs/*';
-var DIST = './dist';
+var DIST = path.join(__dirname, 'dist');
 
 // generate banner with today's date and correct version
 function createBanner() {
@@ -26,7 +27,8 @@ function createBanner() {
     .replace('@@version', version);
 }
 
-var bannerPlugin = new webpack.BannerPlugin(createBanner(), {
+var bannerPlugin = new webpack.BannerPlugin({
+  banner: createBanner(),
   entryOnly: true,
   raw: true
 });
@@ -41,8 +43,14 @@ var compiler = webpack({
     filename: NAME + '.js'
   },
   plugins: [bannerPlugin],
-  module: {
-    loaders: [{ test: /\.json$/, loader: 'json' }]
+  optimization: {
+    // We no not want to minimize our code.
+    minimize: false
+  },
+
+  resolve: {
+    extensions: ['.js'],
+    mainFields: [ 'main' ], // pick ES5 version of vanilla-picker
   },
   cache: true
 });
@@ -62,6 +70,10 @@ var compilerMinimalist = webpack({
     new webpack.IgnorePlugin(new RegExp('^ajv')),
     new webpack.IgnorePlugin(new RegExp('^vanilla-picker'))
   ],
+  optimization: {
+    // We no not want to minimize our code.
+    minimize: false
+  },
   cache: true
 });
 
@@ -95,134 +107,112 @@ function minify(name) {
 gulp.task('mkdir', function(done) {
   mkdirp.sync(DIST);
   mkdirp.sync(DIST + '/img');
+
   done();
 });
 
 // bundle javascript
-gulp.task(
-  'bundle',
-  gulp.series(gulp.parallel('mkdir'), function(done) {
-    // update the banner contents (has a date in it which should stay up to date)
-    bannerPlugin.banner = createBanner();
+gulp.task('bundle', function(done) {
+  // update the banner contents (has a date in it which should stay up to date)
+  bannerPlugin.banner = createBanner();
 
-    compiler.run(function(err, stats) {
-      if (err) {
-        log(err);
-      }
+  compiler.run(function(err, stats) {
+    if (err) {
+      log(err);
+    }
 
-      log('bundled ' + NAME + '.js');
+    log('bundled ' + NAME + '.js');
 
-      done();
-    });
-  })
-);
+    done();
+  });
+});
 
 // bundle minimalist version of javascript
-gulp.task(
-  'bundle-minimalist',
-  gulp.series(gulp.parallel('mkdir'), function(done) {
-    // update the banner contents (has a date in it which should stay up to date)
-    bannerPlugin.banner = createBanner();
+gulp.task('bundle-minimalist', function(done) {
+  // update the banner contents (has a date in it which should stay up to date)
+  bannerPlugin.banner = createBanner();
 
-    compilerMinimalist.run(function(err, stats) {
-      if (err) {
-        log(err);
-      }
+  compilerMinimalist.run(function(err, stats) {
+    if (err) {
+      log(err);
+    }
 
-      log('bundled ' + NAME_MINIMALIST + '.js');
+    log('bundled ' + NAME_MINIMALIST + '.js');
 
-      done();
-    });
-  })
-);
+    done();
+  });
+});
 
 // bundle css
-gulp.task(
-  'bundle-css',
-  gulp.series(gulp.parallel('mkdir'), function(done) {
-    gulp
-      .src([
-        'src/css/reset.css',
-        'src/css/jsoneditor.css',
-        'src/css/contextmenu.css',
-        'src/css/menu.css',
-        'src/css/searchbox.css',
-        'src/css/autocomplete.css',
-        'src/css/treepath.css',
-        'src/css/statusbar.css',
-        'src/css/navigationbar.css',
-        'src/js/assets/selectr/selectr.css'
-      ])
-      .pipe(concatCss(NAME + '.css'))
-      .pipe(gulp.dest(DIST))
-      .pipe(concatCss(NAME + '.min.css'))
-      .pipe(minifyCSS())
-      .pipe(gulp.dest(DIST));
+gulp.task('bundle-css', function(done) {
+  gulp
+    .src([
+      'src/css/reset.css',
+      'src/css/jsoneditor.css',
+      'src/css/contextmenu.css',
+      'src/css/menu.css',
+      'src/css/searchbox.css',
+      'src/css/autocomplete.css',
+      'src/css/treepath.css',
+      'src/css/statusbar.css',
+      'src/css/navigationbar.css',
+      'src/js/assets/selectr/selectr.css'
+    ])
+    .pipe(concatCss(NAME + '.css'))
+    .pipe(gulp.dest(DIST))
+    .pipe(concatCss(NAME + '.min.css'))
+    .pipe(minifyCSS())
+    .pipe(gulp.dest(DIST));
 
-    log('bundled ' + DIST + '/' + NAME + '.css');
-    log('bundled ' + DIST + '/' + NAME + '.min.css');
-    done();
-  })
-);
+  log('bundled ' + DIST + '/' + NAME + '.css');
+  log('bundled ' + DIST + '/' + NAME + '.min.css');
+
+  done();
+});
 
 // create a folder img and copy the icons
-gulp.task(
-  'copy-img',
-  gulp.series(gulp.parallel('mkdir'), function(done) {
-    gulp.src(IMAGE).pipe(gulp.dest(DIST + '/img'));
-    log('Copied images');
-    done();
-  })
-);
+gulp.task('copy-img', function(done) {
+  gulp.src(IMAGE).pipe(gulp.dest(DIST + '/img'));
+  log('Copied images');
+
+  done();
+});
 
 // create a folder img and copy the icons
-gulp.task(
-  'copy-docs',
-  gulp.series(gulp.parallel('mkdir'), function(done) {
-    gulp.src(DOCS).pipe(gulp.dest(DIST));
-    log('Copied doc');
-    done();
-  })
-);
+gulp.task('copy-docs', function(done) {
+  gulp.src(DOCS).pipe(gulp.dest(DIST));
+  log('Copied doc');
 
-gulp.task(
-  'minify',
-  gulp.series(gulp.parallel('bundle'), function(done) {
-    minify(NAME);
-    done();
-  })
-);
+  done();
+});
 
-gulp.task(
-  'minify-minimalist',
-  gulp.series(gulp.parallel('bundle-minimalist'), function(done) {
-    minify(NAME_MINIMALIST);
-    done();
-  })
-);
+gulp.task('minify', function(done) {
+  minify(NAME);
+
+  done();
+});
+
+gulp.task('minify-minimalist', function(done) {
+  minify(NAME_MINIMALIST);
+
+  done();
+});
 
 // The watch task (to automatically rebuild when the source code changes)
 // Does only generate jsoneditor.js and jsoneditor.css, and copy the image
 // Does NOT minify the code and does NOT generate the minimalist version
-gulp.task(
-  'watch',
-  gulp.series(gulp.parallel('bundle', 'bundle-css', 'copy-img'), function() {
-    gulp.watch(['src/**/*'], gulp.series('bundle', 'bundle-css', 'copy-img'));
-  })
-);
+gulp.task('watch', gulp.series('bundle', 'bundle-css', 'copy-img', function() {
+  gulp.watch(['src/**/*'], gulp.series('bundle', 'bundle-css', 'copy-img'));
+}));
 
 // The default task (called when you run `gulp`)
-gulp.task(
-  'default',
-  gulp.series(
+gulp.task('default', gulp.series(
+    'mkdir',
     gulp.parallel(
-      'bundle',
-      'bundle-minimalist',
-      'bundle-css',
-      'copy-img',
-      'copy-docs',
-      'minify',
-      'minify-minimalist'
+        'copy-img',
+        'copy-docs',
+        'bundle-css',
+        gulp.series('bundle', 'minify'),
+        gulp.series('bundle-minimalist', 'minify-minimalist')
     )
-  )
-);
+));
