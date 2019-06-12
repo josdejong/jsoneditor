@@ -3,7 +3,7 @@
 https://github.com/josdejong/jsoneditor
 
 
-## not yet published, version 6.0.0
+## 2019-06-12, version 6.0.0
 
 - Breaking change: upgraded dependency `ajv@6.10.0`, supporting JSON schema
   draft-07 alongside draft-06 and draft-04.
