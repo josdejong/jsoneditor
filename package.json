@@ -38,10 +38,10 @@
     "gulp": "4.0.2",
     "gulp-clean-css": "4.2.0",
     "gulp-concat-css": "3.1.0",
-    "jsdom": "13.2.0",
+    "jsdom": "15.1.1",
     "json-loader": "0.5.7",
     "mkdirp": "0.5.1",
-    "mocha": "5.2.0",
+    "mocha": "6.1.4",
     "uglify-js": "2.8.22",
     "webpack": "1.13.1"
   }
