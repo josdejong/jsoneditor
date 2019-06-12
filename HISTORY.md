@@ -3,6 +3,13 @@
 https://github.com/josdejong/jsoneditor
 
 
+## not yet published, version 6.0.0
+
+- Breaking change: upgraded dependency `ajv@6.10.0`, supporting JSON schema
+  draft-07 alongside draft-06 and draft-04.
+- Upgraded dependency `vanilla-picker@2.8.1`.
+
+
 ## 2019-06-08, version 5.34.0
 
 - Extended the autocomplete feature with new options `filter` and `trigger`.
