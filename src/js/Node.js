@@ -2483,7 +2483,7 @@ Node.prototype.updateField = function (field) {
  *                          indexes of the node will be updated too. False by
  *                          default.
  */
-Node.prototype.updateDom = function (options) {
+Node.prototype.updateDom = function(options) {
   // update level indentation
   var domTree = this.dom.tree;
   if (domTree) {
@@ -2512,11 +2512,18 @@ Node.prototype.updateDom = function (options) {
     else if (this.field != undefined) {
       fieldText = this.field;
     }
-    else if (this._hasChilds()) {
-      fieldText = this.type;
-    }
     else {
-      fieldText = '';
+      var schema = Node._findSchema(this.editor.options.schema,this.editor.options.schemaRefs || {}, this.getPath());
+
+      if (schema && schema.title) {
+        fieldText = schema.title;
+      }
+      else if (this._hasChilds()) {
+        fieldText = this.type;
+      }
+      else {
+        fieldText = '';
+      }
     }
     domField.innerHTML = this._escapeHTML(fieldText);
 

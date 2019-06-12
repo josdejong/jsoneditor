@@ -8,6 +8,7 @@ https://github.com/josdejong/jsoneditor
 - Breaking change: upgraded dependency `ajv@6.10.0`, supporting JSON schema
   draft-07 alongside draft-06 and draft-04.
 - Upgraded dependency `vanilla-picker@2.8.1`.
+- Use JSON schema title as name for the root object if defined (see #635).
 
 
 ## 2019-06-08, version 5.34.0
