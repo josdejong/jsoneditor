@@ -1,9 +1,9 @@
 var fs = require('fs');
 var gulp = require('gulp');
-var gutil = require('gulp-util');
+var log = require('fancy-log');
+var format = require('date-format');
 var concatCss = require('gulp-concat-css');
 var minifyCSS = require('gulp-clean-css');
-var shell = require('gulp-shell');
 var mkdirp = require('mkdirp');
 var webpack = require('webpack');
 var uglify = require('uglify-js');
@@ -18,7 +18,7 @@ var DIST = './dist';
 
 // generate banner with today's date and correct version
 function createBanner() {
-  var today = gutil.date(new Date(), 'yyyy-mm-dd'); // today, formatted as yyyy-mm-dd
+  var today = format.asString('yyyy-MM-dd', new Date()); // today, formatted as yyyy-MM-dd
   var version = require('./package.json').version; // math.js version
 
   return String(fs.readFileSync(HEADER))
@@ -84,8 +84,8 @@ function minify(name) {
   fs.writeFileSync(fileMin, result.code);
   fs.writeFileSync(fileMap, result.map);
 
-  gutil.log('Minified ' + fileMin);
-  gutil.log('Mapped ' + fileMap);
+  log('Minified ' + fileMin);
+  log('Mapped ' + fileMap);
 }
 
 // make dist folder structure
@@ -104,10 +104,10 @@ gulp.task(
 
     compiler.run(function(err, stats) {
       if (err) {
-        gutil.log(err);
+        log(err);
       }
 
-      gutil.log('bundled ' + NAME + '.js');
+      log('bundled ' + NAME + '.js');
 
       done();
     });
@@ -123,10 +123,10 @@ gulp.task(
 
     compilerMinimalist.run(function(err, stats) {
       if (err) {
-        gutil.log(err);
+        log(err);
       }
 
-      gutil.log('bundled ' + NAME_MINIMALIST + '.js');
+      log('bundled ' + NAME_MINIMALIST + '.js');
 
       done();
     });
@@ -156,8 +156,8 @@ gulp.task(
       .pipe(minifyCSS())
       .pipe(gulp.dest(DIST));
 
-    gutil.log('bundled ' + DIST + '/' + NAME + '.css');
-    gutil.log('bundled ' + DIST + '/' + NAME + '.min.css');
+    log('bundled ' + DIST + '/' + NAME + '.css');
+    log('bundled ' + DIST + '/' + NAME + '.min.css');
     done();
   })
 );
@@ -167,7 +167,7 @@ gulp.task(
   'copy-img',
   gulp.series(gulp.parallel('mkdir'), function(done) {
     gulp.src(IMAGE).pipe(gulp.dest(DIST + '/img'));
-    gutil.log('Copied images');
+    log('Copied images');
     done();
   })
 );
@@ -177,7 +177,7 @@ gulp.task(
   'copy-docs',
   gulp.series(gulp.parallel('mkdir'), function(done) {
     gulp.src(DOCS).pipe(gulp.dest(DIST));
-    gutil.log('Copied doc');
+    log('Copied doc');
     done();
   })
 );
@@ -196,18 +196,6 @@ gulp.task(
     minify(NAME_MINIMALIST);
     done();
   })
-);
-
-// TODO: zip file using archiver
-var pkg = 'jsoneditor-' + require('./package.json').version + '.zip';
-gulp.task(
-  'zip',
-  shell.task([
-    'zip ' +
-      pkg +
-      ' ' +
-      'README.md NOTICE LICENSE HISTORY.md index.html src dist docs examples -r '
-  ])
 );
 
 // The watch task (to automatically rebuild when the source code changes)
