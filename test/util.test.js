@@ -353,6 +353,15 @@ describe('util', function () {
     });
   });
 
+  it('should parse a string', function () {
+    assert.strictEqual(util.parseString('foo'), 'foo');
+    assert.strictEqual(util.parseString('234foo'), '234foo');
+    assert.strictEqual(util.parseString('2.3'), 2.3);
+    assert.strictEqual(util.parseString('null'), null);
+    assert.strictEqual(util.parseString('true'), true);
+    assert.strictEqual(util.parseString('false'), false);
+  })
+
   it('should find a unique name', function () {
     assert.strictEqual(util.findUniqueName('other', [
       'a',

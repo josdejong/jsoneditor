@@ -1,6 +1,7 @@
 'use strict';
 
 var ace = require('./ace');
+var jmespath = require('jmespath');
 var translate = require('./i18n').translate;
 var ModeSwitcher = require('./ModeSwitcher');
 var showSortModal = require('./showSortModal');
@@ -173,24 +174,23 @@ textmode.create = function (container, options) {
       sort.className = 'jsoneditor-sort';
       sort.title = translate('sortTitleShort');
       sort.onclick = function () {
-        me._showSortModal()
+        me._showSortModal();
       };
       this.menu.appendChild(sort);
     }
 
     // TODO
-    // // create transform button
-    // if (this.options.enableTransform) {
-    //   var transform = document.createElement('button');
-    //   transform.type = 'button';
-    //   transform.title = translate('transformTitleShort');
-    //   transform.className = 'jsoneditor-transform';
-    //   transform.onclick = function () {
-    //     var anchor = me.options.modalAnchor || DEFAULT_MODAL_ANCHOR;
-    //     showTransformModal(me.node, anchor)
-    //   };
-    //   this.menu.appendChild(transform);
-    // }
+    // create transform button
+    if (this.options.enableTransform) {
+      var transform = document.createElement('button');
+      transform.type = 'button';
+      transform.title = translate('transformTitleShort');
+      transform.className = 'jsoneditor-transform';
+      transform.onclick = function () {
+        me._showTransformModal();
+      };
+      this.menu.appendChild(transform);
+    }
 
     // create repair button
     var buttonRepair = document.createElement('button');
@@ -465,6 +465,20 @@ textmode._showSortModal = function () {
         me.set(sortedJson);
       }
     }
+  })
+}
+
+/**
+ * Open a transform modal
+ * @private
+ */
+textmode._showTransformModal = function () {
+  var me = this;
+  var anchor = this.options.modalAnchor || DEFAULT_MODAL_ANCHOR;
+  var json = this.get();
+  showTransformModal(anchor, json, function (query) {
+    var updatedJson = jmespath.search(json, query);
+    me.set(updatedJson);
   })
 }
 

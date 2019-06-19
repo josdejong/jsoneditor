@@ -1459,7 +1459,7 @@ Node.prototype.changeType = function (newType) {
       this.value = String(this.value);
     }
     else {
-      this.value = this._stringCast(String(this.value));
+      this.value = util.parseString(String(this.value));
     }
 
     this.focus();
@@ -1550,7 +1550,7 @@ Node.prototype._getDomValue = function() {
       }
       else {
         var str = this._unescapeHTML(this.valueInnerText);
-        value = this._stringCast(str);
+        value = util.parseString(str);
       }
       if (value !== this.value) {
         this.value = value;
@@ -4303,8 +4303,7 @@ Node.prototype.showContextMenu = function (anchor, onClose) {
         title: translate('transformTitle', {type: this.type}),
         className: 'jsoneditor-transform',
         click: function () {
-          var anchor = node.editor.options.modalAnchor || DEFAULT_MODAL_ANCHOR;
-          showTransformModal(node, anchor)
+          node.showTransformModal();
         }
       });
     }
@@ -4456,7 +4455,7 @@ Node.prototype.showContextMenu = function (anchor, onClose) {
 
 
 /**
- * Show advanced sorting modal
+ * Show sorting modal
  */
 Node.prototype.showSortModal = function () {
   var node = this;
@@ -4480,6 +4479,19 @@ Node.prototype.showSortModal = function () {
 }
 
 /**
+ * Show transform modal
+ */
+Node.prototype.showTransformModal = function () {
+  var node = this;
+
+  var anchor = this.editor.options.modalAnchor || DEFAULT_MODAL_ANCHOR;
+  var json = node.getValue();
+  showTransformModal(anchor, json, function (query) {
+    node.transform(query);
+  });
+}
+
+/**
  * get the type of a value
  * @param {*} value
  * @return {String} type   Can be 'object', 'array', 'string', 'auto'
@@ -4492,43 +4504,11 @@ Node.prototype._getType = function(value) {
   if (value instanceof Object) {
     return 'object';
   }
-  if (typeof(value) == 'string' && typeof(this._stringCast(value)) != 'string') {
+  if (typeof(value) == 'string' && typeof(util.parseString(value)) != 'string') {
     return 'string';
   }
 
   return 'auto';
-};
-
-/**
- * cast contents of a string to the correct type. This can be a string,
- * a number, a boolean, etc
- * @param {String} str
- * @return {*} castedStr
- * @private
- */
-Node.prototype._stringCast = function(str) {
-  var lower = str.toLowerCase(),
-      num = Number(str),          // will nicely fail with '123ab'
-      numFloat = parseFloat(str); // will nicely fail with '  '
-
-  if (str == '') {
-    return '';
-  }
-  else if (lower == 'null') {
-    return null;
-  }
-  else if (lower == 'true') {
-    return true;
-  }
-  else if (lower == 'false') {
-    return false;
-  }
-  else if (!isNaN(num) && !isNaN(numFloat)) {
-    return num;
-  }
-  else {
-    return str;
-  }
 };
 
 /**

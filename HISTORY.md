@@ -3,6 +3,11 @@
 https://github.com/josdejong/jsoneditor
 
 
+## not yet published, version 6.1.0
+
+- Implemented menu options `sort` and `transform` for modes `code` and `text`.
+
+
 ## 2019-06-12, version 6.0.0
 
 - Breaking change: upgraded dependency `ajv@6.10.0`, supporting JSON schema

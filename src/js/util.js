@@ -1265,6 +1265,38 @@ exports.sortObjectKeys = function (object, direction) {
 }
 
 /**
+ * Cast contents of a string to the correct type.
+ * This can be a string, a number, a boolean, etc
+ * @param {String} str
+ * @return {*} castedStr
+ * @private
+ */
+exports.parseString = function(str) {
+  var lower = str.toLowerCase();
+  var num = Number(str);          // will nicely fail with '123ab'
+  var numFloat = parseFloat(str); // will nicely fail with '  '
+
+  if (str === '') {
+    return '';
+  }
+  else if (lower === 'null') {
+    return null;
+  }
+  else if (lower === 'true') {
+    return true;
+  }
+  else if (lower === 'false') {
+    return false;
+  }
+  else if (!isNaN(num) && !isNaN(numFloat)) {
+    return num;
+  }
+  else {
+    return str;
+  }
+};
+
+/**
  * Test whether a value is an Object
  * @param {*} value
  * @return {boolean}

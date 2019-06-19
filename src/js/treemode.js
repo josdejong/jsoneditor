@@ -10,12 +10,9 @@ var Node = require('./Node');
 var ModeSwitcher = require('./ModeSwitcher');
 var util = require('./util');
 var autocomplete = require('./autocomplete');
-var showTransformModal = require('./showTransformModal');
 var translate = require('./i18n').translate;
 var setLanguages = require('./i18n').setLanguages;
 var setLanguage = require('./i18n').setLanguage;
-
-var DEFAULT_MODAL_ANCHOR = document.body; // TODO: this constant is defined twice
 
 // create a mixin with the functions for tree mode
 var treemode = {};
@@ -1033,8 +1030,7 @@ treemode._createFrame = function () {
       transform.title = translate('transformTitleShort');
       transform.className = 'jsoneditor-transform';
       transform.onclick = function () {
-        var anchor = editor.options.modalAnchor || DEFAULT_MODAL_ANCHOR;
-        showTransformModal(editor.node, anchor)
+        editor.node.showTransformModal();
       };
       this.menu.appendChild(transform);
     }

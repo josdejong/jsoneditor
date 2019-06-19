@@ -9,12 +9,14 @@ var MAX_PREVIEW_LINES = 100;
 
 /**
  * Show advanced filter and transform modal using JMESPath
- * @param {Node} node the node to be transformed
  * @param {HTMLElement} container   The container where to center
  *                                  the modal and create an overlay
+ * @param {JSON} json               The json data to be transformed
+ * @param {function} onTransform    Callback invoked with the created
+ *                                  query as callback
  */
-function showTransformModal (node, container) {
-  var value = node.getValue();
+function showTransformModal (container, json, onTransform) {
+  var value = json;
 
   var content = '<label class="pico-modal-contents">' +
       '<div class="pico-modal-header">' + translate('transform') + '</div>' +
@@ -119,8 +121,9 @@ function showTransformModal (node, container) {
           wizard.innerHTML = '(wizard not available for objects, only for arrays)'
         }
 
-        var paths = node.getChildPaths();
-        paths.forEach(function (path) {
+        var sortablePaths = util.getChildPaths(json);
+
+        sortablePaths.forEach(function (path) {
           var formattedPath = preprocessPath(path);
           var filterOption = document.createElement('option');
           filterOption.text = formattedPath;
@@ -133,12 +136,11 @@ function showTransformModal (node, container) {
           sortField.appendChild(sortOption);
         });
 
-        var allPaths = node.getChildPaths(true).filter(function(path) {
+        var selectablePaths = util.getChildPaths(json, true).filter(function(path) {
           return path !== '.';
         });
-
-        if (allPaths.length > 0) {
-          allPaths.forEach(function (path) {
+        if (selectablePaths.length > 0) {
+          selectablePaths.forEach(function (path) {
             var formattedPath = preprocessPath(path);
             var option = document.createElement('option');
             option.text = formattedPath;
@@ -194,10 +196,9 @@ function showTransformModal (node, container) {
                 ? ['0'].concat(util.parsePath('.' + field1))
                 : ['0']
             var exampleValue = util.get(value, examplePath)
-            // TODO: move _stringCast into a static util function
             var value1 = typeof exampleValue === 'string'
                 ? filterValue.value
-                : node._stringCast(filterValue.value);
+                : parseString(filterValue.value);
 
             query.value = '[? ' +
                 field1 + ' ' +
@@ -284,7 +285,7 @@ function showTransformModal (node, container) {
 
           modal.close();
 
-          node.transform(query.value)
+          onTransform(query.value)
         };
 
         setTimeout(function () {
