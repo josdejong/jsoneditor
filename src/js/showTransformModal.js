@@ -137,7 +137,7 @@ function showTransformModal (container, json, onTransform) {
         });
 
         var selectablePaths = util.getChildPaths(json, true).filter(function(path) {
-          return path !== '.';
+          return path !== '';
         });
         if (selectablePaths.length > 0) {
           selectablePaths.forEach(function (path) {
@@ -179,14 +179,11 @@ function showTransformModal (container, json, onTransform) {
         query.value = Array.isArray(value) ? '[*]' : '@';
 
         function preprocessPath(path) {
-          if (path[0] === '.') {
-            return (path === '.')
-                ? '@'
-                : path.slice(1);
-          }
-          else {
-            return path;
-          }
+          return (path === '')
+              ? '@'
+              : (path[0] === '.')
+                  ? path.slice(1)
+                  : path;
         }
 
         function generateQueryFromWizard () {
@@ -198,7 +195,7 @@ function showTransformModal (container, json, onTransform) {
             var exampleValue = util.get(value, examplePath)
             var value1 = typeof exampleValue === 'string'
                 ? filterValue.value
-                : parseString(filterValue.value);
+                : util.parseString(filterValue.value);
 
             query.value = '[? ' +
                 field1 + ' ' +

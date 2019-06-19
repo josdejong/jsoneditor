@@ -18,7 +18,7 @@ var util = require('./util');
 function showSortModal (container, json, onSort, options) {
   var paths = Array.isArray(json)
       ? util.getChildPaths(json)
-      : ['.'];
+      : [''];
   var selectedPath = options && options.path && util.contains(paths, options.path)
       ? options.path
       : paths[0]
@@ -79,7 +79,7 @@ function showSortModal (container, json, onSort, options) {
 
         paths.forEach(function (path) {
           var option = document.createElement('option');
-          option.text = path;
+          option.text = path || '.';
           option.value = path;
           field.appendChild(option);
         });

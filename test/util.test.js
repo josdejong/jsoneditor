@@ -274,7 +274,7 @@ describe('util', function () {
       ];
 
       assert.deepStrictEqual(util.getChildPaths(json, true), [
-        '.',
+        '',
         '.location',
         '.location.latitude',
         '.location.longitude',
@@ -287,14 +287,14 @@ describe('util', function () {
       var json = [ 1, 2, 3 ];
 
       assert.deepStrictEqual(util.getChildPaths(json), [
-        '.'
+        ''
       ])
     });
 
     it('should extract all child paths of a non-array', function () {
-      assert.deepStrictEqual(util.getChildPaths({a: 2, b: {c: 3}}), ['.'])
-      assert.deepStrictEqual(util.getChildPaths('foo'), ['.'])
-      assert.deepStrictEqual(util.getChildPaths(123), ['.'])
+      assert.deepStrictEqual(util.getChildPaths({a: 2, b: {c: 3}}), [''])
+      assert.deepStrictEqual(util.getChildPaths('foo'), [''])
+      assert.deepStrictEqual(util.getChildPaths(123), [''])
     });
   })
 

@@ -1202,7 +1202,7 @@ exports.getChildPaths = function (json, includeObjects) {
     var isValue = !Array.isArray(json) && !exports.isObject(json)
 
     if (isValue || includeObjects) {
-      pathsMap[rootPath || '.'] = true;
+      pathsMap[rootPath || ''] = true;
     }
 
     if (exports.isObject(json)) {
@@ -1218,7 +1218,7 @@ exports.getChildPaths = function (json, includeObjects) {
     });
   }
   else {
-    pathsMap['.'] = true;
+    pathsMap[''] = true;
   }
 
   return Object.keys(pathsMap).sort();

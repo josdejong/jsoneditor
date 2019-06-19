@@ -3701,11 +3701,15 @@ Node.prototype._onChangeType = function (newType) {
 /**
  * Sort the child's of the node. Only applicable when the node has type 'object'
  * or 'array'.
- * @param {String[]} path      Path of the child value to be compared
- * @param {String} direction   Sorting direction. Available values: "asc", "desc"
+ * @param {String[] | string} path  Path of the child value to be compared
+ * @param {String} direction        Sorting direction. Available values: "asc", "desc"
  * @private
  */
 Node.prototype.sort = function (path, direction) {
+  if (typeof path === 'string') {
+    path = util.parsePath(path);
+  }
+
   if (!this._hasChilds()) {
     return;
   }
@@ -4427,7 +4431,7 @@ Node.prototype.showSortModal = function () {
 
   function onSort (sortedBy) {
     var path = sortedBy.path;
-    var pathArray = (path === '.') ? [] : path.split('.').slice(1);
+    var pathArray = util.parsePath(path);
 
     node.sortedBy = sortedBy
     node.sort(pathArray, sortedBy.direction)
