@@ -439,33 +439,25 @@ textmode._onChange = function () {
 textmode._showSortModal = function () {
   var me = this;
   var container = this.options.modalAnchor || DEFAULT_MODAL_ANCHOR;
-  var json = this.get()
-  var paths = Array.isArray(json)
-      ? util.getChildPaths(json)
-      : ['.'];
+  var json = this.get();
 
-  showSortModal(container, {
-    paths: paths,
-    path: (me.sortedBy && util.contains(paths, me.sortedBy.path))
-      ? me.sortedBy.path
-      : paths[0],
-    direction: me.sortedBy ? me.sortedBy.direction : 'asc',
-    onSort: function (sortedBy) {
-      if (Array.isArray(json)) {
-        var sortedJson = util.sort(json, sortedBy.path, sortedBy.direction);
+  function onSort (sortedBy) {
+    if (Array.isArray(json)) {
+      var sortedJson = util.sort(json, sortedBy.path, sortedBy.direction);
 
-        me.sortedBy = sortedBy
-        me.set(sortedJson);
-      }
-
-      if (util.isObject(json)) {
-        var sortedJson = util.sortObjectKeys(json, sortedBy.direction);
-
-        me.sortedBy = sortedBy;
-        me.set(sortedJson);
-      }
+      me.sortedBy = sortedBy
+      me.set(sortedJson);
     }
-  })
+
+    if (util.isObject(json)) {
+      var sortedJson = util.sortObjectKeys(json, sortedBy.direction);
+
+      me.sortedBy = sortedBy;
+      me.set(sortedJson);
+    }
+  }
+
+  showSortModal(container, json, onSort, me.sortedBy)
 }
 
 /**

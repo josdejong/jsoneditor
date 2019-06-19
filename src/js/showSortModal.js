@@ -1,25 +1,28 @@
 var picoModal = require('picomodal');
 var translate = require('./i18n').translate;
+var util = require('./util');
 
 /**
  * Show advanced sorting modal
  * @param {HTMLElement} container   The container where to center
  *                                  the modal and create an overlay
+ * @param {JSON} json               The JSON data to be sorted.
+ * @param {function} onSort         Callback function, invoked with
+ *                                  an object containing the selected
+ *                                  path and direction
  * @param {Object} options
  *            Available options:
- *                - {Array} paths              The available paths
  *                - {string} path              The selected path
  *                - {'asc' | 'desc'} direction The selected direction
- *                - {function} onSort          Callback function,
- *                                             invoked with an object
- *                                             containing the selected
- *                                             path and direction
  */
-function showSortModal (container, options) {
-  var paths = options && options.paths || ['.']
-  var selectedPath = options && options.path || paths[0]
+function showSortModal (container, json, onSort, options) {
+  var paths = Array.isArray(json)
+      ? util.getChildPaths(json)
+      : ['.'];
+  var selectedPath = options && options.path && util.contains(paths, options.path)
+      ? options.path
+      : paths[0]
   var selectedDirection = options && options.direction || 'asc'
-  var onSort = options && options.onSort || function () {}
 
   var content = '<div class="pico-modal-contents">' +
       '<div class="pico-modal-header">' + translate('sort') + '</div>' +

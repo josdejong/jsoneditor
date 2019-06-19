@@ -3893,43 +3893,6 @@ Node.prototype.findChildByProperty = function(prop) {
 };
 
 /**
- * Get the child paths of this node
- * @param {boolean} [includeObjects=false] If true, object and array paths are returned as well
- * @return {string[]}
- */
-Node.prototype.getChildPaths = function (includeObjects) {
-  var pathsMap = {};
-
-  this._getChildPaths(pathsMap, '', includeObjects);
-
-  if (this.type === 'array') {
-    this.childs.forEach(function (child) {
-      child._getChildPaths(pathsMap, '', includeObjects);
-    });
-  }
-
-  return Object.keys(pathsMap).sort();
-};
-
-/**
- * Get the child paths of this node
- * @param {Object<String, boolean>} pathsMap
- * @param {boolean} [includeObjects=false]  If true, object and array paths are returned as well
- * @param {string} rootPath
- */
-Node.prototype._getChildPaths = function (pathsMap, rootPath, includeObjects) {
-  if (this.type === 'auto' || this.type === 'string' || includeObjects) {
-    pathsMap[rootPath || '.'] = true;
-  }
-
-  if (this.type === 'object') {
-    this.childs.forEach(function (child) {
-      child._getChildPaths(pathsMap, rootPath + '.' + child.field, includeObjects);
-    });
-  }
-};
-
-/**
  * Create a table row with an append button.
  * @return {HTMLElement | undefined} tr with the AppendNode contents
  */
@@ -4460,22 +4423,17 @@ Node.prototype.showContextMenu = function (anchor, onClose) {
 Node.prototype.showSortModal = function () {
   var node = this;
   var container = this.editor.options.modalAnchor || DEFAULT_MODAL_ANCHOR;
-  var paths = node.type === 'array'
-      ? node.getChildPaths()
-      : ['.'];
+  var json = this.getValue();
 
-  showSortModal(container, {
-    paths: paths,
-    path: node.sortedBy ? node.sortedBy.path : paths[0],
-    direction: node.sortedBy ? node.sortedBy.direction : 'asc',
-    onSort: function (sortedBy) {
-      var path = sortedBy.path;
-      var pathArray = (path === '.') ? [] : path.split('.').slice(1);
+  function onSort (sortedBy) {
+    var path = sortedBy.path;
+    var pathArray = (path === '.') ? [] : path.split('.').slice(1);
 
-      node.sortedBy = sortedBy
-      node.sort(pathArray, sortedBy.direction)
-    }
-  })
+    node.sortedBy = sortedBy
+    node.sort(pathArray, sortedBy.direction)
+  }
+
+  showSortModal(container, json, onSort, node.sortedBy)
 }
 
 /**
