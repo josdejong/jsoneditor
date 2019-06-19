@@ -3840,9 +3840,9 @@ Node.prototype.transform = function (query) {
   this.hideChilds(); // sorting is faster when the childs are not attached to the dom
 
   try {
-    // apply the JMESPath query
     var oldInternalValue = this.getInternalValue();
 
+    // apply the JMESPath query
     var oldValue = this.getValue();
     var newValue = jmespath.search(oldValue, query);
     this.setValue(newValue);
@@ -3863,6 +3863,33 @@ Node.prototype.transform = function (query) {
     this.editor._onError(err);
   }
 };
+
+/**
+ * Make this object the root object of the ditor
+ */
+Node.prototype.extract = function () {
+  this.editor.node.hideChilds();
+  this.hideChilds();
+
+  try {
+    var oldInternalValue = this.editor.node.getInternalValue();
+    this.editor._setRoot(this);
+    var newInternalValue = this.editor.node.getInternalValue();
+
+    this.editor._onAction('transform', {
+      path: this.editor.node.getInternalPath(),
+      oldValue: oldInternalValue,
+      newValue: newInternalValue
+    });
+  }
+  catch (err) {
+    this.editor._onError(err);
+  }
+  finally {
+    this.updateDom({ recurse: true });
+    this.showChilds();
+  }
+}
 
 /**
  * Get a nested child given a path with properties
@@ -4274,6 +4301,17 @@ Node.prototype.showContextMenu = function (anchor, onClose) {
         }
       });
     }
+
+    if (this.parent) {
+      items.push({
+        text: translate('extract'),
+        title: translate('extractTitle', {type: this.type}),
+        className: 'jsoneditor-extract',
+        click: function () {
+          node.extract();
+        }
+      });
+    }
   }
 
   if (this.parent && this.parent._hasChilds()) {
@@ -4286,7 +4324,7 @@ Node.prototype.showContextMenu = function (anchor, onClose) {
 
     // create append button (for last child node only)
     var childs = node.parent.childs;
-    if (node == childs[childs.length - 1]) {
+    if (node === childs[childs.length - 1]) {
         var appendSubmenu = [
             {
                 text: translate('auto'),
@@ -4333,8 +4371,6 @@ Node.prototype.showContextMenu = function (anchor, onClose) {
             submenu: appendSubmenu
         });
     }
-
-
 
     // create insert button
     var insertSubmenu = [

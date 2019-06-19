@@ -402,6 +402,9 @@ treemode._setRoot = function (node) {
   this.clear();
 
   this.node = node;
+  node.setParent(null);
+  node.setField(undefined, false);
+  delete node.index;
 
   // append to the dom
   this.tbody.appendChild(node.getDom());

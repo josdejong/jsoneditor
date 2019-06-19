@@ -56,6 +56,8 @@ var _defs = {
     transform: 'Transform',
     transformTitle: 'Filter, sort, or transform the childs of this ${type}',
     transformTitleShort: 'Filter, sort, or transform contents',
+    extract: 'Extract',
+    extractTitle: 'Extract this ${type}',
     transformQueryTitle: 'Enter a JMESPath query',
     transformWizardLabel: 'Wizard',
     transformWizardFilter: 'Filter',

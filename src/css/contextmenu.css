@@ -148,6 +148,10 @@ div.jsoneditor-contextmenu button.jsoneditor-transform > div.jsoneditor-icon {
   background-position: -216px 0;
 }
 
+div.jsoneditor-contextmenu button.jsoneditor-extract > div.jsoneditor-icon {
+  background-position: 0 -24px;
+}
+
 /* ContextMenu - sub menu */
 
 div.jsoneditor-contextmenu ul li button.jsoneditor-selected,
