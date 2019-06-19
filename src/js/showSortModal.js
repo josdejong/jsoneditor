@@ -3,11 +3,24 @@ var translate = require('./i18n').translate;
 
 /**
  * Show advanced sorting modal
- * @param {Node} node the node to be sorted
  * @param {HTMLElement} container   The container where to center
  *                                  the modal and create an overlay
+ * @param {Object} options
+ *            Available options:
+ *                - {Array} paths              The available paths
+ *                - {string} path              The selected path
+ *                - {'asc' | 'desc'} direction The selected direction
+ *                - {function} onSort          Callback function,
+ *                                             invoked with an object
+ *                                             containing the selected
+ *                                             path and direction
  */
-function showSortModal (node, container) {
+function showSortModal (container, options) {
+  var paths = options && options.paths || ['.']
+  var selectedPath = options && options.path || paths[0]
+  var selectedDirection = options && options.direction || 'asc'
+  var onSort = options && options.onSort || function () {}
+
   var content = '<div class="pico-modal-contents">' +
       '<div class="pico-modal-header">' + translate('sort') + '</div>' +
       '<form>' +
@@ -61,10 +74,6 @@ function showSortModal (node, container) {
         var field = modal.modalElem().querySelector('#field');
         var direction = modal.modalElem().querySelector('#direction');
 
-        var paths = node.type === 'array'
-            ? node.getChildPaths()
-            : ['.'];
-
         paths.forEach(function (path) {
           var option = document.createElement('option');
           option.text = path;
@@ -77,8 +86,8 @@ function showSortModal (node, container) {
           direction.className = 'jsoneditor-button-group jsoneditor-button-group-value-' + direction.value;
         }
 
-        field.value = node.sortedBy ? node.sortedBy.path : paths[0];
-        setDirection(node.sortedBy ? node.sortedBy.direction : 'asc');
+        field.value = selectedPath || paths[0];
+        setDirection(selectedDirection || 'asc');
 
         direction.onclick = function (event) {
           setDirection(event.target.getAttribute('data-value'));
@@ -90,15 +99,10 @@ function showSortModal (node, container) {
 
           modal.close();
 
-          var path = field.value;
-          var pathArray = (path === '.') ? [] : path.split('.').slice(1);
-
-          node.sortedBy = {
-            path: path,
+          onSort({
+            path: field.value,
             direction: direction.value
-          };
-
-          node.sort(pathArray, direction.value)
+          })
         };
 
         if (form) { // form is not available when JSONEditor is created inside a form

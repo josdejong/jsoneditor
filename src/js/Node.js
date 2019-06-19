@@ -4292,8 +4292,7 @@ Node.prototype.showContextMenu = function (anchor, onClose) {
         title: translate('sortTitle', {type: this.type}),
         className: 'jsoneditor-sort-asc',
         click: function () {
-          var anchor = node.editor.options.modalAnchor || DEFAULT_MODAL_ANCHOR;
-          showSortModal(node, anchor)
+          node.showSortModal()
         }
       });
     }
@@ -4454,6 +4453,31 @@ Node.prototype.showContextMenu = function (anchor, onClose) {
   var menu = new ContextMenu(items, {close: onClose});
   menu.show(anchor, this.editor.frame);
 };
+
+
+/**
+ * Show advanced sorting modal
+ */
+Node.prototype.showSortModal = function () {
+  var node = this;
+  var container = this.editor.options.modalAnchor || DEFAULT_MODAL_ANCHOR;
+  var paths = node.type === 'array'
+      ? node.getChildPaths()
+      : ['.'];
+
+  showSortModal(container, {
+    paths: paths,
+    path: node.sortedBy ? node.sortedBy.path : paths[0],
+    direction: node.sortedBy ? node.sortedBy.direction : 'asc',
+    onSort: function (sortedBy) {
+      var path = sortedBy.path;
+      var pathArray = (path === '.') ? [] : path.split('.').slice(1);
+
+      node.sortedBy = sortedBy
+      node.sort(pathArray, sortedBy.direction)
+    }
+  })
+}
 
 /**
  * get the type of a value

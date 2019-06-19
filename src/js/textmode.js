@@ -1,13 +1,17 @@
 'use strict';
 
 var ace = require('./ace');
+var translate = require('./i18n').translate;
 var ModeSwitcher = require('./ModeSwitcher');
+var showSortModal = require('./showSortModal');
+var showTransformModal = require('./showTransformModal');
 var util = require('./util');
 
 // create a mixin with the functions for text mode
 var textmode = {};
 
 var DEFAULT_THEME = 'ace/theme/jsoneditor';
+var DEFAULT_MODAL_ANCHOR = document.body; // TODO: this constant is defined multiple times
 
 /**
  * Create a text editor
@@ -47,6 +51,8 @@ textmode.create = function (container, options) {
 
   // setting default for textmode
   options.mainMenuBar = options.mainMenuBar !== false;
+  options.enableSort = options.enableSort !== false;
+  options.enableTransform = options.enableTransform !== false;
 
   this.options = options;
 
@@ -159,6 +165,32 @@ textmode.create = function (container, options) {
         me._onError(err);
       }
     };
+
+    // create sort button
+    if (this.options.enableSort) {
+      var sort = document.createElement('button');
+      sort.type = 'button';
+      sort.className = 'jsoneditor-sort';
+      sort.title = translate('sortTitleShort');
+      sort.onclick = function () {
+        me._showSortModal()
+      };
+      this.menu.appendChild(sort);
+    }
+
+    // TODO
+    // // create transform button
+    // if (this.options.enableTransform) {
+    //   var transform = document.createElement('button');
+    //   transform.type = 'button';
+    //   transform.title = translate('transformTitleShort');
+    //   transform.className = 'jsoneditor-transform';
+    //   transform.onclick = function () {
+    //     var anchor = me.options.modalAnchor || DEFAULT_MODAL_ANCHOR;
+    //     showTransformModal(me.node, anchor)
+    //   };
+    //   this.menu.appendChild(transform);
+    // }
 
     // create repair button
     var buttonRepair = document.createElement('button');
@@ -399,6 +431,42 @@ textmode._onChange = function () {
     }
   }
 };
+
+/**
+ * Open a sort modal
+ * @private
+ */
+textmode._showSortModal = function () {
+  var me = this;
+  var container = this.options.modalAnchor || DEFAULT_MODAL_ANCHOR;
+  var json = this.get()
+  var paths = Array.isArray(json)
+      ? util.getChildPaths(json)
+      : ['.'];
+
+  showSortModal(container, {
+    paths: paths,
+    path: (me.sortedBy && util.contains(paths, me.sortedBy.path))
+      ? me.sortedBy.path
+      : paths[0],
+    direction: me.sortedBy ? me.sortedBy.direction : 'asc',
+    onSort: function (sortedBy) {
+      if (Array.isArray(json)) {
+        var sortedJson = util.sort(json, sortedBy.path, sortedBy.direction);
+
+        me.sortedBy = sortedBy
+        me.set(sortedJson);
+      }
+
+      if (util.isObject(json)) {
+        var sortedJson = util.sortObjectKeys(json, sortedBy.direction);
+
+        me.sortedBy = sortedBy;
+        me.set(sortedJson);
+      }
+    }
+  })
+}
 
 /**
  * Handle text selection

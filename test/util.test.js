@@ -250,6 +250,109 @@ describe('util', function () {
     });
   });
 
+  describe('getChildPaths', function () {
+    it('should extract all child paths of an array containing objects', function () {
+      var json = [
+        { name: 'A', location: {latitude: 1, longitude: 2} },
+        { name: 'B', location: {latitude: 1, longitude: 2} },
+        { name: 'C', timestamp: 0 },
+      ];
+
+      assert.deepStrictEqual(util.getChildPaths(json), [
+        '.location.latitude',
+        '.location.longitude',
+        '.name',
+        '.timestamp',
+      ])
+    });
+
+    it('should extract all child paths of an array containing objects, including objects', function () {
+      var json = [
+        { name: 'A', location: {latitude: 1, longitude: 2} },
+        { name: 'B', location: {latitude: 1, longitude: 2} },
+        { name: 'C', timestamp: 0 },
+      ];
+
+      assert.deepStrictEqual(util.getChildPaths(json, true), [
+        '.',
+        '.location',
+        '.location.latitude',
+        '.location.longitude',
+        '.name',
+        '.timestamp',
+      ])
+    });
+
+    it('should extract all child paths of an array containing values', function () {
+      var json = [ 1, 2, 3 ];
+
+      assert.deepStrictEqual(util.getChildPaths(json), [
+        '.'
+      ])
+    });
+
+    it('should extract all child paths of a non-array', function () {
+      assert.deepStrictEqual(util.getChildPaths({a: 2, b: {c: 3}}), ['.'])
+      assert.deepStrictEqual(util.getChildPaths('foo'), ['.'])
+      assert.deepStrictEqual(util.getChildPaths(123), ['.'])
+    });
+  })
+
+  it('should test whether something is an object', function () {
+    assert.strictEqual(util.isObject({}), true);
+    assert.strictEqual(util.isObject(new Date()), true);
+    assert.strictEqual(util.isObject([]), false);
+    assert.strictEqual(util.isObject(2), false);
+    assert.strictEqual(util.isObject(null), false);
+    assert.strictEqual(util.isObject(undefined), false);
+    assert.strictEqual(util.isObject(), false);
+  });
+
+  describe('sort', function () {
+    it('should sort an array', function () {
+      var array = [4, 1, 10, 2];
+      assert.deepStrictEqual(util.sort(array), [1, 2, 4, 10]);
+      assert.deepStrictEqual(util.sort(array, '.', 'desc'), [10, 4, 2, 1]);
+    });
+
+    it('should sort an array containing objects', function () {
+      var array = [
+        { value: 4 },
+        { value: 1 },
+        { value: 10 },
+        { value: 2 }
+      ];
+
+      assert.deepStrictEqual(util.sort(array, '.value'), [
+        { value: 1 },
+        { value: 2 },
+        { value: 4 },
+        { value: 10 }
+      ]);
+
+      assert.deepStrictEqual(util.sort(array, '.value', 'desc'), [
+        { value: 10 },
+        { value: 4 },
+        { value: 2 },
+        { value: 1 }
+      ]);
+    });
+  });
+
+  describe('sortObjectKeys', function () {
+    it('should sort the keys of an object', function () {
+      var object = {
+        c: 'c',
+        a: 'a',
+        b: 'b'
+      }
+      assert.strictEqual(JSON.stringify(object), '{"c":"c","a":"a","b":"b"}')
+      assert.strictEqual(JSON.stringify(util.sortObjectKeys(object)), '{"a":"a","b":"b","c":"c"}')
+      assert.strictEqual(JSON.stringify(util.sortObjectKeys(object, 'asc')), '{"a":"a","b":"b","c":"c"}')
+      assert.strictEqual(JSON.stringify(util.sortObjectKeys(object, 'desc')), '{"c":"c","b":"b","a":"a"}')
+    });
+  });
+
   it('should find a unique name', function () {
     assert.strictEqual(util.findUniqueName('other', [
       'a',

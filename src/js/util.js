@@ -1,6 +1,7 @@
 'use strict';
 
 require('./polyfills');
+var naturalSort = require('javascript-natural-sort');
 var jsonlint = require('./assets/jsonlint/jsonlint');
 var jsonMap = require('json-source-map');
 var translate = require('./i18n').translate;
@@ -1186,4 +1187,98 @@ exports.findUniqueName = function(name, existingPropNames) {
   }
 
   return validName
+}
+
+/**
+ * Get the child paths of an array
+ * @param {JSON} json
+ * @param {boolean} [includeObjects=false] If true, object and array paths are returned as well
+ * @return {string[]}
+ */
+exports.getChildPaths = function (json, includeObjects) {
+  var pathsMap = {};
+
+  function getObjectChildPaths (json, pathsMap, rootPath, includeObjects) {
+    var isValue = !Array.isArray(json) && !exports.isObject(json)
+
+    if (isValue || includeObjects) {
+      pathsMap[rootPath || '.'] = true;
+    }
+
+    if (exports.isObject(json)) {
+      Object.keys(json).forEach(function (field) {
+        getObjectChildPaths(json[field], pathsMap, rootPath + '.' + field, includeObjects);
+      });
+    }
+  }
+
+  if (Array.isArray(json)) {
+    json.forEach(function (item) {
+      getObjectChildPaths(item, pathsMap, '', includeObjects);
+    });
+  }
+  else {
+    pathsMap['.'] = true;
+  }
+
+  return Object.keys(pathsMap).sort();
+}
+
+/**
+ * Sort object keys using natural sort
+ * @param {Array} array
+ * @param {String} [path] JSON pointer
+ * @param {'asc' | 'desc'} [direction]
+ */
+exports.sort = function (array, path, direction) {
+  var parsedPath = path && path !== '.' ? exports.parsePath(path) : []
+  var sign = direction === 'desc' ? -1: 1
+
+  var sortedArray = array.slice()
+  sortedArray.sort(function (a, b) {
+    const aValue = exports.get(a, parsedPath);
+    const bValue = exports.get(b, parsedPath);
+
+    return sign * (aValue > bValue ? 1 : aValue < bValue ? -1 : 0);
+  })
+
+  return sortedArray;
+}
+
+/**
+ * Sort object keys using natural sort
+ * @param {Object} object
+ * @param {'asc' | 'desc'} [direction]
+ */
+exports.sortObjectKeys = function (object, direction) {
+  var sign = (direction === 'desc') ? -1 : 1;
+  var sortedFields = Object.keys(object).sort(function (a, b) {
+    return sign * naturalSort(a, b);
+  });
+
+  var sortedObject = {};
+  sortedFields.forEach(function (field) {
+    sortedObject[field] = object[field];
+  });
+
+  return sortedObject;
+}
+
+/**
+ * Test whether a value is an Object
+ * @param {*} value
+ * @return {boolean}
+ */
+exports.isObject = function (value) {
+  return typeof value === 'object' && value !== null && !Array.isArray(value)
+}
+
+/**
+ * Helper function to test whether an array contains an item
+ * @param {Array} array
+ * @param {*} item
+ * @return {boolean} Returns true if `item` is in `array`, returns false otherwise.
+ */
+exports.contains = function (array, item) {
+  return array.indexOf(item) !== -1;
 }

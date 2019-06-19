@@ -1,0 +1,89 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+
+  <link href="../dist/jsoneditor.css" rel="stylesheet" type="text/css">
+  <script src="../dist/jsoneditor.js"></script>
+
+  <style type="text/css">
+    body {
+      font: 10.5pt arial;
+      color: #4d4d4d;
+      line-height: 150%;
+      width: 500px;
+      padding-left: 40px;
+    }
+
+    code {
+      background-color: #f5f5f5;
+    }
+
+    #jsoneditor {
+      width: 500px;
+      height: 500px;
+    }
+  </style>
+</head>
+<body>
+
+<p>
+  Switch editor mode using the mode box.
+  Note that the mode can be changed programmatically as well using the method
+  <code>editor.setMode(mode)</code>, try it in the console of your browser.
+</p>
+
+<form>
+  <div id="jsoneditor"></div>
+</form>
+
+<script>
+  var container, options, json, editor;
+
+  container = document.getElementById('jsoneditor');
+
+  options = {
+    mode: 'code',
+    modes: ['code', 'form', 'text', 'tree', 'view'], // allowed modes
+    onError: function (err) {
+      alert(err.toString());
+    },
+    onChange: function () {
+      console.log('change');
+    },
+    onChangeJSON: function (json) {
+      console.log('onChangeJSON', json);
+    },
+    onChangeText: function (text) {
+      console.log('onChangeText', text);
+    },
+    indentation: 4,
+    escapeUnicode: true
+  };
+
+  var json = [];
+  for (var i = 0; i < 10000; i++) {
+    var longitude = 4 + i / 10000;
+    var latitude = 51 + i / 10000;
+
+    json.push({
+      name: 'Item ' + i,
+      id: String(i),
+      index: i,
+      time: new Date().toISOString(),
+      location: {
+        latitude: longitude,
+        longitude: latitude,
+        coordinates: [longitude, latitude]
+      },
+      random: Math.random()
+    });
+  }
+
+  editorTest = new JSONEditor(container, options, json);
+
+  // console.log('json', json);
+  console.log('stringified size: ', Math.round(JSON.stringify(json).length / 1024 / 1024), 'MB');
+</script>
+</body>
+</html>

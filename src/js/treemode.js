@@ -10,7 +10,6 @@ var Node = require('./Node');
 var ModeSwitcher = require('./ModeSwitcher');
 var util = require('./util');
 var autocomplete = require('./autocomplete');
-var showSortModal = require('./showSortModal');
 var showTransformModal = require('./showTransformModal');
 var translate = require('./i18n').translate;
 var setLanguages = require('./i18n').setLanguages;
@@ -1022,8 +1021,7 @@ treemode._createFrame = function () {
       sort.className = 'jsoneditor-sort';
       sort.title = translate('sortTitleShort');
       sort.onclick = function () {
-        var anchor = editor.options.modalAnchor || DEFAULT_MODAL_ANCHOR;
-        showSortModal(editor.node, anchor)
+        editor.node.showSortModal()
       };
       this.menu.appendChild(sort);
     }
