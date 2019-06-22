@@ -1,0 +1,11 @@
+{
+  "groups": {
+    "default": {
+      "packages": [
+        "examples/react_advanced_demo/package.json",
+        "examples/react_demo/package.json",
+        "package.json"
+      ]
+    }
+  }
+}
