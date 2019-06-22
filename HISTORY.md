@@ -3,10 +3,11 @@
 https://github.com/josdejong/jsoneditor
 
 
-## not yet published, version 6.1.0
+## 2019-06-22, version 6.1.0
 
 - Implemented menu options `sort` and `transform` for modes `code` and `text`.
 - Implemented new context menu item `extract`.
+- Minor tweaks in the way paths are displayed in the sort and transform modals.
 
 
 ## 2019-06-12, version 6.0.0

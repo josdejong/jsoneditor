@@ -1236,8 +1236,8 @@ exports.sort = function (array, path, direction) {
 
   var sortedArray = array.slice()
   sortedArray.sort(function (a, b) {
-    const aValue = exports.get(a, parsedPath);
-    const bValue = exports.get(b, parsedPath);
+    var aValue = exports.get(a, parsedPath);
+    var bValue = exports.get(b, parsedPath);
 
     return sign * (aValue > bValue ? 1 : aValue < bValue ? -1 : 0);
   })
