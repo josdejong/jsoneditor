@@ -77,9 +77,17 @@ function showSortModal (container, json, onSort, options) {
         var field = modal.modalElem().querySelector('#field');
         var direction = modal.modalElem().querySelector('#direction');
 
+        function preprocessPath(path) {
+          return (path === '')
+              ? '@'
+              : (path[0] === '.')
+                  ? path.slice(1)
+                  : path;
+        }
+
         paths.forEach(function (path) {
           var option = document.createElement('option');
-          option.text = path || '.';
+          option.text = preprocessPath(path);
           option.value = path;
           field.appendChild(option);
         });
