@@ -11,7 +11,8 @@ div.jsoneditor-statusbar {
   font-size: 10pt;
 }
 
-div.jsoneditor-statusbar > .jsoneditor-curserinfo-label {
+div.jsoneditor-statusbar > .jsoneditor-curserinfo-label,
+div.jsoneditor-statusbar > .jsoneditor-size-info {
   margin: 0 2px 0 4px;
 }
 

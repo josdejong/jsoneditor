@@ -90,6 +90,8 @@ var _defs = {
     modeTreeTitle: 'Switch to tree editor',
     modeViewText: 'View',
     modeViewTitle: 'Switch to tree view',
+    modePreviewText: 'Preview',
+    modePreviewTitle: 'Switch to preview mode',
     examples: 'Examples',
     default: 'Default',
   },

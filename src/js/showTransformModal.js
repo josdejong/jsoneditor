@@ -252,13 +252,21 @@ function showTransformModal (container, json, onTransform) {
 
         function updatePreview() {
           try {
+            console.time('transform') // TODO: cleanup
             var transformed = jmespath.search(value, query.value);
-            var lines =  JSON.stringify(transformed, null, 2).split('\n');
+            console.timeEnd('transform') // TODO: cleanup
+
+            console.time('stringify') // TODO: cleanup
+            var lines = JSON.stringify(transformed, null, 2)
+            console.timeEnd('stringify') // TODO: cleanup
+
+            console.time('split') // TODO: cleanup
+            lines = lines.split('\n'); // FIXME: remove split, it's slow
+            console.timeEnd('split') // TODO: cleanup
 
             if (lines.length > MAX_PREVIEW_LINES) {
               lines = lines.slice(0, MAX_PREVIEW_LINES).concat(['...'])
             }
-
 
             preview.className = 'jsoneditor-transform-preview';
             preview.value = lines.join('\n');

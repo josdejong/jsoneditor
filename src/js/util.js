@@ -6,6 +6,8 @@ var jsonlint = require('./assets/jsonlint/jsonlint');
 var jsonMap = require('json-source-map');
 var translate = require('./i18n').translate;
 
+var MAX_ITEMS_FIELDS_COLLECTION = 10000;
+
 /**
  * Parse JSON using the parser built-in in the browser.
  * On exception, the jsonString is validated and a detailed error is thrown.
@@ -1213,9 +1215,11 @@ exports.getChildPaths = function (json, includeObjects) {
   }
 
   if (Array.isArray(json)) {
-    json.forEach(function (item) {
+    var max = Math.min(json.length, MAX_ITEMS_FIELDS_COLLECTION);
+    for (var i = 0; i < max; i++) {
+      var item = json[i];
       getObjectChildPaths(item, pathsMap, '', includeObjects);
-    });
+    }
   }
   else {
     pathsMap[''] = true;
@@ -1295,6 +1299,36 @@ exports.parseString = function(str) {
     return str;
   }
 };
+
+/**
+ * Return a human readable document size
+ * For example formatSize(7570718) outputs '7.2 MiB'
+ * @param {number} size
+ * @return {string} Returns a human readable size
+ */
+exports.formatSize = function (size) {
+  if (size < 900) {
+    return size.toFixed() + ' B';
+  }
+
+  var KiB = size / 1024;
+  if (KiB < 900) {
+    return KiB.toFixed(1) + ' KiB';
+  }
+
+  var MiB = KiB / 1024;
+  if (MiB < 900) {
+    return MiB.toFixed(1) + ' MiB';
+  }
+
+  var GiB = MiB / 1024;
+  if (GiB < 900) {
+    return GiB.toFixed(1) + ' GiB';
+  }
+
+  var TiB = GiB / 1024;
+  return TiB.toFixed(1) + ' TiB';
+}
 
 /**
  * Test whether a value is an Object

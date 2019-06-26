@@ -48,6 +48,13 @@ function ModeSwitcher(container, modes, current, onSwitch) {
       'click': function () {
         onSwitch('view');
       }
+    },
+    preview: {
+      'text': translate('modePreviewText'),
+      'title': translate('modePreviewTitle'),
+      'click': function () {
+        onSwitch('preview');
+      }
     }
   };
 

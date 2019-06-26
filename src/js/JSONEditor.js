@@ -13,6 +13,7 @@ var VanillaPicker = require('./vanilla-picker'); // may be undefined in case of 
 
 var treemode = require('./treemode');
 var textmode = require('./textmode');
+var previewmode = require('./previewmode');
 var util = require('./util');
 
 if (typeof Promise === 'undefined') {
@@ -472,9 +473,10 @@ JSONEditor.registerMode = function (mode) {
   }
 };
 
-// register tree and text modes
+// register tree, text, and preview modes
 JSONEditor.registerMode(treemode);
 JSONEditor.registerMode(textmode);
+JSONEditor.registerMode(previewmode);
 
 // expose some of the libraries that can be used customized
 JSONEditor.ace = ace;

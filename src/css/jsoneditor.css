@@ -280,6 +280,23 @@ div.jsoneditor-outer.has-nav-bar.has-main-menu-bar {
   padding-top: 61px;
 }
 
+div.jsoneditor pre.jsoneditor-preview {
+
+}
+
+div.jsoneditor code.jsoneditor-preview {
+  background: none;
+}
+
+div.jsoneditor.jsoneditor-mode-preview pre.jsoneditor-preview {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  margin: 2px;
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+
 textarea.jsoneditor-text,
 .ace-jsoneditor {
   min-height: 150px;
@@ -353,15 +370,12 @@ div.jsoneditor-value,
 div.jsoneditor td,
 div.jsoneditor th,
 div.jsoneditor textarea,
-.jsoneditor-schema-error {
+div.jsoneditor pre.jsoneditor-preview,
+div.jsoneditor .jsoneditor-schema-error {
   font-family: "dejavu sans mono", "droid sans mono", consolas, monaco, "lucida console", "courier new", courier, monospace, sans-serif;
   font-size: 10pt;
   color: #1A1A1A;
 }
-
-
-
-
 
 /* popover */
 .jsoneditor-schema-error {

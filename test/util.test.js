@@ -407,5 +407,16 @@ describe('util', function () {
     ]), 'b (copy 3)')
   })
 
+  it('should format a document size in a human readable way', function () {
+    assert.strictEqual(util.formatSize(500), '500 B');
+    assert.strictEqual(util.formatSize(900), '0.9 KiB');
+    assert.strictEqual(util.formatSize(77.89 * 1024), '77.9 KiB');
+    assert.strictEqual(util.formatSize(950 * 1024), '0.9 MiB');
+    assert.strictEqual(util.formatSize(7.22 * 1024 * 1024), '7.2 MiB');
+    assert.strictEqual(util.formatSize(955.4 * 1024 * 1024), '0.9 GiB');
+    assert.strictEqual(util.formatSize(22.37 * 1024 * 1024 * 1024), '22.4 GiB');
+    assert.strictEqual(util.formatSize(1024  * 1024 * 1024 * 1024), '1.0 TiB');
+  });
+
   // TODO: thoroughly test all util methods
 });

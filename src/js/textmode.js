@@ -179,7 +179,6 @@ textmode.create = function (container, options) {
       this.menu.appendChild(sort);
     }
 
-    // TODO
     // create transform button
     if (this.options.enableTransform) {
       var transform = document.createElement('button');
