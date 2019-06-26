@@ -210,7 +210,9 @@ previewmode.renderPreview = function () {
     ? (text.slice(0, MAX_PREVIEW_CHARACTERS) + '...')
     : text;
 
-  this.dom.sizeInfo.innerText = 'Size: ' + util.formatSize(text.length)
+  if (this.dom.sizeInfo) {
+    this.dom.sizeInfo.innerText = 'Size: ' + util.formatSize(text.length);
+  }
 };
 
 /**
