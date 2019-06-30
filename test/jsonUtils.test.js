@@ -1,7 +1,7 @@
 var assert = require('assert');
-var stringifyPartial = require('../src/js/stringifyPartial').stringifyPartial;
+var stringifyPartial = require('../src/js/jsonUtils').stringifyPartial;
 
-describe('stringifyPartial', function () {
+describe('jsonUtils', function () {
 
   it('should stringify a small object', function () {
     var json = {

@@ -12,6 +12,7 @@ var previewmode = {};
 
 var DEFAULT_MODAL_ANCHOR = document.body; // TODO: this constant is defined multiple times
 var MAX_PREVIEW_CHARACTERS = 100000; // should be enough to fill the editor window
+var SIZE_LARGE = 10 * 1024 * 1024; // 10 MB
 
 /**
  * Create a JSON document preview, suitable for processing of large documents
@@ -84,6 +85,13 @@ previewmode.create = function (container, options) {
   this.content = document.createElement('div');
   this.content.className = 'jsoneditor-outer';
 
+  this.dom.busy = document.createElement('div')
+  this.dom.busy.className = 'jsoneditor-busy';
+  this.dom.busyContent = document.createElement('span');
+  this.dom.busyContent.innerHTML = 'busy...';
+  this.dom.busy.appendChild(this.dom.busyContent);
+  this.content.appendChild(this.dom.busy);
+
   this.dom.previewContent = document.createElement('pre');
   this.dom.previewContent.className = 'jsoneditor-preview';
   this.dom.previewText = document.createTextNode('');
@@ -104,14 +112,16 @@ previewmode.create = function (container, options) {
     buttonFormat.className = 'jsoneditor-format';
     buttonFormat.title = 'Format JSON data, with proper indentation and line feeds (Ctrl+\\)';
     this.menu.appendChild(buttonFormat);
-    buttonFormat.onclick = function () {
-      try {
-        me.format();
-        me._onChange();
-      }
-      catch (err) {
-        me._onError(err);
-      }
+    buttonFormat.onclick = function handleFormat() {
+      me.executeWithBusyMessage(function () {
+        try {
+          me.format();
+          me._onChange();
+        }
+        catch (err) {
+          me._onError(err);
+        }
+      }, 'formatting...');
     };
 
     // create compact button
@@ -120,14 +130,17 @@ previewmode.create = function (container, options) {
     buttonCompact.className = 'jsoneditor-compact';
     buttonCompact.title = 'Compact JSON data, remove all whitespaces (Ctrl+Shift+\\)';
     this.menu.appendChild(buttonCompact);
-    buttonCompact.onclick = function () {
-      try {
-        me.compact();
-        me._onChange();
-      }
-      catch (err) {
-        me._onError(err);
-      }
+    buttonCompact.onclick = function handleCompact() {
+      me.executeWithBusyMessage(function () {
+        try {
+
+          me.compact();
+          me._onChange();
+        }
+        catch (err) {
+          me._onError(err);
+        }
+      }, 'compacting...');
     };
 
     // create sort button
@@ -161,13 +174,15 @@ previewmode.create = function (container, options) {
     buttonRepair.title = 'Repair JSON: fix quotes and escape characters, remove comments and JSONP notation, turn JavaScript objects into JSON.';
     this.menu.appendChild(buttonRepair);
     buttonRepair.onclick = function () {
-      try {
-        me.repair();
-        me._onChange();
-      }
-      catch (err) {
-        me._onError(err);
-      }
+      me.executeWithBusyMessage(function () {
+        try {
+          me.repair();
+          me._onChange();
+        }
+        catch (err) {
+          me._onError(err);
+        }
+      }, 'repairing...');
     };
 
     // create mode box
@@ -256,10 +271,8 @@ previewmode._onChange = function () {
  */
 previewmode._showSortModal = function () {
   var me = this;
-  var container = this.options.modalAnchor || DEFAULT_MODAL_ANCHOR;
-  var json = this.get();
 
-  function onSort (sortedBy) {
+  function onSort (json, sortedBy) {
     if (Array.isArray(json)) {
       var sortedJson = util.sort(json, sortedBy.path, sortedBy.direction);
 
@@ -275,7 +288,16 @@ previewmode._showSortModal = function () {
     }
   }
 
-  showSortModal(container, json, onSort, me.sortedBy)
+  this.executeWithBusyMessage(function () {
+    var container = me.options.modalAnchor || DEFAULT_MODAL_ANCHOR;
+    var json = me.get();
+
+    showSortModal(container, json, function (sortedBy) {
+      me.executeWithBusyMessage(function () {
+        onSort(json, sortedBy);
+      }, 'stringifying...');
+    }, me.sortedBy)
+  }, 'parsing...');
 }
 
 /**
@@ -284,12 +306,18 @@ previewmode._showSortModal = function () {
  */
 previewmode._showTransformModal = function () {
   var me = this;
-  var anchor = this.options.modalAnchor || DEFAULT_MODAL_ANCHOR;
-  var json = this.get();
-  showTransformModal(anchor, json, function (query) {
-    var updatedJson = jmespath.search(json, query);
-    me.set(updatedJson);
-  })
+
+  this.executeWithBusyMessage(function () {
+    var anchor = me.options.modalAnchor || DEFAULT_MODAL_ANCHOR;
+    var json = me.get();
+
+    showTransformModal(anchor, json, function (query) {
+      me.executeWithBusyMessage(function () {
+        var updatedJson = jmespath.search(json, query);
+        me.set(updatedJson);
+      }, 'transforming...')
+    })
+  }, 'parsing...')
 }
 
 /**
@@ -446,6 +474,31 @@ previewmode.updateText = function(jsonText) {
   this.onChangeDisabled = true; // don't fire an onChange event
   this.setText(jsonText);
   this.onChangeDisabled = false;
+};
+
+/**
+ * Execute a heavy, blocking action.
+ * Before starting the action, show a message on screen like "parsing..."
+ * @param {function} fn
+ * @param {string} message
+ */
+previewmode.executeWithBusyMessage = function (fn, message) {
+  var size = this.getText().length;
+
+  if (size > SIZE_LARGE) {
+    var me = this;
+    util.addClassName(me.frame, 'busy');
+    me.dom.busyContent.innerText = message;
+
+    setTimeout(function () {
+      fn();
+      util.removeClassName(me.frame, 'busy');
+      me.dom.busyContent.innerText = '';
+    }, 100);
+  }
+  else {
+    fn();
+  }
 };
 
 /**

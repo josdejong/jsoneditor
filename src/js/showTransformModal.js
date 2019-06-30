@@ -2,7 +2,7 @@ var jmespath = require('jmespath');
 var picoModal = require('picomodal');
 var Selectr = require('./assets/selectr/selectr');
 var translate = require('./i18n').translate;
-var stringifyPartial = require('./stringifyPartial').stringifyPartial;
+var stringifyPartial = require('./jsonUtils').stringifyPartial;
 var util = require('./util');
 var debounce = util.debounce;
 
