@@ -478,7 +478,7 @@ treemode._onAction = function (action, params) {
     this.history.add(action, params);
   }
 
-  this._onChange();
+  this._onChange(action, params);
 };
 
 /**
@@ -487,7 +487,7 @@ treemode._onAction = function (action, params) {
  * - Send a callback to the onChange listener if provided
  * @private
  */
-treemode._onChange = function () {
+treemode._onChange = function (action, params) {
   if (this.onChangeDisabled) {
     return;
   }
@@ -516,7 +516,7 @@ treemode._onChange = function () {
   // trigger the onChange callback
   if (this.options.onChange) {
     try {
-      this.options.onChange();
+      this.options.onChange(action, params);
     }
     catch (err) {
       console.error('Error in onChange callback: ', err);
