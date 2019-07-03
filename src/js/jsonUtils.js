@@ -186,4 +186,15 @@ function slice(text, limit) {
       : text;
 }
 
+/**
+ * Test whether some text contains a JSON array, i.e. the first
+ * non-white space character is a [
+ * @param {string} jsonText
+ * @return {boolean}
+ */
+function containsArray (jsonText) {
+  return /^\s*\[/.test(jsonText)
+}
+
 exports.stringifyPartial = stringifyPartial;
+exports.containsArray = containsArray;

@@ -9,6 +9,7 @@ var MAX_PREVIEW_CHARACTERS = require('./constants').MAX_PREVIEW_CHARACTERS;
 var DEFAULT_MODAL_ANCHOR = require('./constants').DEFAULT_MODAL_ANCHOR;
 var SIZE_LARGE = require('./constants').SIZE_LARGE;
 var util = require('./util');
+var jsonUtils = require('./jsonUtils');
 
 // create a mixin with the functions for text mode
 var previewmode = {};
@@ -205,11 +206,15 @@ previewmode.create = function (container, options) {
     statusBar.className = 'jsoneditor-statusbar';
     this.frame.appendChild(statusBar);
 
-    this.dom.sizeInfo = document.createElement('span');
-    this.dom.sizeInfo.className = 'jsoneditor-size-info';
-    this.dom.sizeInfo.innerText = '';
+    this.dom.fileSizeInfo = document.createElement('span');
+    this.dom.fileSizeInfo.className = 'jsoneditor-size-info';
+    this.dom.fileSizeInfo.innerText = '';
+    statusBar.appendChild(this.dom.fileSizeInfo);
 
-    statusBar.appendChild(this.dom.sizeInfo);
+    this.dom.arrayInfo = document.createElement('span');
+    this.dom.arrayInfo.className = 'jsoneditor-size-info';
+    this.dom.arrayInfo.innerText = '';
+    statusBar.appendChild(this.dom.arrayInfo);
   }
 
   this.renderPreview();
@@ -222,8 +227,42 @@ previewmode.renderPreview = function () {
 
   this.dom.previewText.nodeValue = util.limitCharacters(text, MAX_PREVIEW_CHARACTERS);
 
-  if (this.dom.sizeInfo) {
-    this.dom.sizeInfo.innerText = 'Size: ' + util.formatSize(text.length);
+  if (this.dom.fileSizeInfo) {
+    this.dom.fileSizeInfo.innerText = 'Size: ' + util.formatSize(text.length);
+  }
+
+  if (this.dom.arrayInfo) {
+    if (Array.isArray(this.json)) {
+      this.dom.arrayInfo.innerText = ('Array: ' + this.json.length + ' items');
+    }
+    else if (jsonUtils.containsArray(this.text)) {
+      var info = document.createElement('span');
+      info.className = 'jsoneditor-array-info';
+      var calculate = document.createElement('a');
+      var me = this;
+      calculate.appendChild(document.createTextNode('calculate number of items'));
+      calculate.href = '#';
+      calculate.onclick = function () {
+        me.executeWithBusyMessage(function () {
+          try {
+            me.get();
+            me.renderPreview();
+          }
+          catch (err) {
+            me._onError(err);
+          }
+        }, 'parsing...');
+      }
+      info.appendChild(document.createTextNode('Array: '));
+      info.appendChild(calculate);
+
+      this.dom.arrayInfo.innerHTML = '';
+      this.dom.arrayInfo.appendChild(info);
+    }
+    else {
+      this.dom.arrayInfo.innerText = '';
+    }
+
   }
 };
 
@@ -288,6 +327,7 @@ previewmode._showSortModal = function () {
   this.executeWithBusyMessage(function () {
     var container = me.options.modalAnchor || DEFAULT_MODAL_ANCHOR;
     var json = me.get();
+    me.renderPreview(); // update array count
 
     showSortModal(container, json, function (sortedBy) {
       me.executeWithBusyMessage(function () {
@@ -307,6 +347,7 @@ previewmode._showTransformModal = function () {
   this.executeWithBusyMessage(function () {
     var anchor = me.options.modalAnchor || DEFAULT_MODAL_ANCHOR;
     var json = me.get();
+    me.renderPreview(); // update array count
 
     showTransformModal(anchor, json, function (query) {
       me.executeWithBusyMessage(function () {
@@ -343,6 +384,8 @@ previewmode.compact = function () {
 
   // we know that in this case the json is still the same
   this.json = json;
+
+  this.renderPreview();
 };
 
 /**
@@ -355,6 +398,8 @@ previewmode.format = function () {
 
   // we know that in this case the json is still the same
   this.json = json;
+
+  this.renderPreview();
 };
 
 /**

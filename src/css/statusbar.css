@@ -13,7 +13,7 @@ div.jsoneditor-statusbar {
 
 div.jsoneditor-statusbar > .jsoneditor-curserinfo-label,
 div.jsoneditor-statusbar > .jsoneditor-size-info {
-  margin: 0 2px 0 4px;
+  margin: 0 4px;
 }
 
 div.jsoneditor-statusbar > .jsoneditor-curserinfo-val {
@@ -44,4 +44,8 @@ div.jsoneditor-statusbar > .jsoneditor-parse-error-icon {
   padding: 0;
   margin: 1px;
   background: url("img/jsoneditor-icons.svg") -25px 0px;
+}
+
+div.jsoneditor-statusbar .jsoneditor-array-info a {
+  color: inherit;
 }

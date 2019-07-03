@@ -1,5 +1,6 @@
 var assert = require('assert');
 var stringifyPartial = require('../src/js/jsonUtils').stringifyPartial;
+var containsArray = require('../src/js/jsonUtils').containsArray;
 
 describe('jsonUtils', function () {
 
@@ -80,6 +81,18 @@ describe('jsonUtils', function () {
         '[1,2,3,4,5...');
 
     assert.strictEqual(stringifyPartial(12345678, undefined, 4),'1234...');
+  });
+
+  it('should count array items', function () {
+    // assert.strictEqual(countArrayItems('[1,2,3]'), 3)
+    assert.strictEqual(containsArray('[]'), true)
+    assert.strictEqual(containsArray(' []'), true)
+    assert.strictEqual(containsArray(' \t  []'), true)
+    assert.strictEqual(containsArray(' \t\n  []'), true)
+    assert.strictEqual(containsArray('"["'), false)
+    assert.strictEqual(containsArray('2'), false)
+    assert.strictEqual(containsArray('null'), false)
+    assert.strictEqual(containsArray('{}'), false)
   });
 
 });
