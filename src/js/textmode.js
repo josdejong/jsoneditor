@@ -17,29 +17,7 @@ var DEFAULT_THEME = 'ace/theme/jsoneditor';
 /**
  * Create a text editor
  * @param {Element} container
- * @param {Object} [options]   Object with options. available options:
- *                             {String} mode             Available values:
- *                                                       "text" (default)
- *                                                       or "code".
- *                             {Number} indentation      Number of indentation
- *                                                       spaces. 2 by default.
- *                             {function} onChange       Callback method triggered on change.
- *                                                       Does not pass the changed contents.
- *                             {function} onChangeText   Callback method, triggered
- *                                                       in modes on change of contents,
- *                                                       passing the changed contents
- *                                                       as stringified JSON.
- *                             {function} onModeChange   Callback method
- *                                                       triggered after setMode
- *                             {function} onEditable     Determine if textarea is readOnly
- *                                                       readOnly defaults true
- *                             {Object} ace              A custom instance of
- *                                                       Ace editor.
- *                             {boolean} escapeUnicode   If true, unicode
- *                                                       characters are escaped.
- *                                                       false by default.
- *                             {function} onTextSelectionChange Callback method, 
- *                                                              triggered on text selection change
+ * @param {Object} [options]   Object with options. See docs for details.
  * @private
  */
 textmode.create = function (container, options) {

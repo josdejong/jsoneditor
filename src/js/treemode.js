@@ -20,35 +20,7 @@ var treemode = {};
 /**
  * Create a tree editor
  * @param {Element} container    Container element
- * @param {Object}  [options]    Object with options. available options:
- *                               {String} mode            Editor mode. Available values:
- *                                                        'tree' (default), 'view',
- *                                                        and 'form'.
- *                               {Boolean} search         Enable search box.
- *                                                        True by default
- *                               {Boolean} history        Enable history (undo/redo).
- *                                                        True by default
- *                               {function} onChange      Callback method, triggered
- *                                                        on change of contents.
- *                                                        Does not pass the changed contents.
- *                               {function} onChangeJSON  Callback method, triggered
- *                                                        in modes on change of contents,
- *                                                        passing the changed contents
- *                                                        as JSON.
- *                                                        Only applicable for modes
- *                                                        'tree', 'view', and 'form'.
- *                               {function} onChangeText  Callback method, triggered
- *                                                        in modes on change of contents,
- *                                                        passing the changed contents
- *                                                        as stringified JSON.
- *                               {String} name            Field name for the root node.
- *                               {boolean} escapeUnicode  If true, unicode
- *                                                        characters are escaped.
- *                                                        false by default.
- *                               {Object} schema          A JSON Schema for validation
- *                               {function} onEvent       Function triggered
- *                                                        when an event occurs
- *                                                        in a field or value.
+ * @param {Object} [options]   Object with options. See docs for details.
  * @private
  */
 treemode.create = function (container, options) {

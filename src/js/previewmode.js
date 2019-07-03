@@ -17,21 +17,7 @@ var previewmode = {};
 /**
  * Create a JSON document preview, suitable for processing of large documents
  * @param {Element} container
- * @param {Object} [options]   Object with options. available options:
- *                             {String} mode             Available values: "preview".
- *                             {Number} indentation      Number of indentation
- *                                                       spaces. 2 by default.
- *                             {function} onChange       Callback method triggered on change.
- *                                                       Does not pass the changed contents.
- *                             {function} onChangeText   Callback method, triggered
- *                                                       in modes on change of contents,
- *                                                       passing the changed contents
- *                                                       as stringified JSON.
- *                             {function} onModeChange   Callback method
- *                                                       triggered after setMode
- *                             {boolean} escapeUnicode   If true, unicode
- *                                                       characters are escaped.
- *                                                       false by default.
+ * @param {Object} [options]   Object with options. See docs for details.
  * @private
  */
 previewmode.create = function (container, options) {
@@ -290,6 +276,16 @@ previewmode._onChange = function () {
     }
   }
 
+  // trigger the onChangeJSON callback
+  if (this.options.onChangeJSON) {
+    try {
+      this.options.onChangeJSON(this.get());
+    }
+    catch (err) {
+      console.error('Error in onChangeJSON callback: ', err);
+    }
+  }
+
   // trigger the onChangeText callback
   if (this.options.onChangeText) {
     try {
@@ -322,6 +318,8 @@ previewmode._showSortModal = function () {
       me.sortedBy = sortedBy;
       me.set(sortedJson);
     }
+
+    me._onChange();
   }
 
   this.executeWithBusyMessage(function () {
@@ -353,6 +351,8 @@ previewmode._showTransformModal = function () {
       me.executeWithBusyMessage(function () {
         var updatedJson = jmespath.search(json, query);
         me.set(updatedJson);
+
+        me._onChange();
       }, 'transforming...')
     })
   }, 'parsing...')
