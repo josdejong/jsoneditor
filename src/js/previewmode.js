@@ -5,14 +5,13 @@ var translate = require('./i18n').translate;
 var ModeSwitcher = require('./ModeSwitcher');
 var showSortModal = require('./showSortModal');
 var showTransformModal = require('./showTransformModal');
+var MAX_PREVIEW_CHARACTERS = require('./constants').MAX_PREVIEW_CHARACTERS;
+var DEFAULT_MODAL_ANCHOR = require('./constants').DEFAULT_MODAL_ANCHOR;
+var SIZE_LARGE = require('./constants').SIZE_LARGE;
 var util = require('./util');
 
 // create a mixin with the functions for text mode
 var previewmode = {};
-
-var DEFAULT_MODAL_ANCHOR = document.body; // TODO: this constant is defined multiple times
-var MAX_PREVIEW_CHARACTERS = 100000; // should be enough to fill the editor window
-var SIZE_LARGE = 10 * 1024 * 1024; // 10 MB
 
 /**
  * Create a JSON document preview, suitable for processing of large documents
@@ -221,9 +220,7 @@ previewmode.create = function (container, options) {
 previewmode.renderPreview = function () {
   var text = this.getText();
 
-  this.dom.previewText.nodeValue = (text.length > MAX_PREVIEW_CHARACTERS)
-    ? (text.slice(0, MAX_PREVIEW_CHARACTERS) + '...')
-    : text;
+  this.dom.previewText.nodeValue = util.limitCharacters(text, MAX_PREVIEW_CHARACTERS);
 
   if (this.dom.sizeInfo) {
     this.dom.sizeInfo.innerText = 'Size: ' + util.formatSize(text.length);

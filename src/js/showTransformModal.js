@@ -4,9 +4,8 @@ var Selectr = require('./assets/selectr/selectr');
 var translate = require('./i18n').translate;
 var stringifyPartial = require('./jsonUtils').stringifyPartial;
 var util = require('./util');
+var MAX_PREVIEW_CHARACTERS = require('./constants').MAX_PREVIEW_CHARACTERS
 var debounce = util.debounce;
-
-var MAX_PREVIEW_LINES = 100;
 
 /**
  * Show advanced filter and transform modal using JMESPath
@@ -258,17 +257,10 @@ function showTransformModal (container, json, onTransform) {
             console.timeEnd('transform') // TODO: cleanup
 
             console.time('stringify') // TODO: cleanup
-            var lines = stringifyPartial(transformed, 2, 10000);
+            preview.className = 'jsoneditor-transform-preview';
+            preview.value = stringifyPartial(transformed, 2, MAX_PREVIEW_CHARACTERS);
             console.timeEnd('stringify') // TODO: cleanup
 
-            // TODO: create a more efficient way to limit to a max number of lines, move this in a util function
-            lines = lines.split('\n');
-            if (lines.length > MAX_PREVIEW_LINES) {
-              lines = lines.slice(0, MAX_PREVIEW_LINES).concat(['...'])
-            }
-
-            preview.className = 'jsoneditor-transform-preview';
-            preview.value = lines.join('\n');
             ok.disabled = false;
           }
           catch (err) {

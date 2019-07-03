@@ -7,12 +7,12 @@ var ModeSwitcher = require('./ModeSwitcher');
 var showSortModal = require('./showSortModal');
 var showTransformModal = require('./showTransformModal');
 var util = require('./util');
+var DEFAULT_MODAL_ANCHOR = require('./constants').DEFAULT_MODAL_ANCHOR;
 
 // create a mixin with the functions for text mode
 var textmode = {};
 
 var DEFAULT_THEME = 'ace/theme/jsoneditor';
-var DEFAULT_MODAL_ANCHOR = document.body; // TODO: this constant is defined multiple times
 
 /**
  * Create a text editor

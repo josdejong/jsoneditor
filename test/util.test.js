@@ -418,5 +418,11 @@ describe('util', function () {
     assert.strictEqual(util.formatSize(1024  * 1024 * 1024 * 1024), '1.0 TiB');
   });
 
+  it ('should limit characters', function () {
+    assert.strictEqual(util.limitCharacters('hello world', 11), 'hello world');
+    assert.strictEqual(util.limitCharacters('hello world', 5), 'hello...');
+    assert.strictEqual(util.limitCharacters('hello world', 100), 'hello world');
+  })
+
   // TODO: thoroughly test all util methods
 });

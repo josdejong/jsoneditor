@@ -38,7 +38,9 @@ function stringifyPartial(value, space, limit) {
 
   var output = stringifyValue(value, _space, '', limit);
 
-  return slice(output, limit);
+  return output.length > limit
+      ? (slice(output, limit) + '...')
+      : output;
 }
 
 /**
@@ -104,7 +106,7 @@ function stringifyArray(array, space, indent, limit) {
 
     // stop as soon as we're exceeding the limit
     if (str.length > limit) {
-      return str;
+      return str + '...';
     }
   }
 
@@ -148,7 +150,7 @@ function stringifyObject(object, space, indent, limit) {
 
       // stop as soon as we're exceeding the limit
       if (str.length > limit) {
-        return str;
+        return str + '...';
       }
     }
   }

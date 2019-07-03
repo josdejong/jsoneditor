@@ -1331,6 +1331,21 @@ exports.formatSize = function (size) {
 }
 
 /**
+ * Limit text to a maximum number of characters
+ * @param {string} text
+ * @param {number} maxCharacterCount
+ * @return {string} Returns the limited text,
+ *                  ending with '...' if the max was exceeded
+ */
+exports.limitCharacters = function (text, maxCharacterCount) {
+  if (text.length <= maxCharacterCount) {
+    return text;
+  }
+
+  return text.slice(0, maxCharacterCount) + '...';
+}
+
+/**
  * Test whether a value is an Object
  * @param {*} value
  * @return {boolean}

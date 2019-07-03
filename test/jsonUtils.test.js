@@ -72,10 +72,14 @@ describe('jsonUtils', function () {
     var limit = 20;
 
     assert.strictEqual(stringifyPartial(json, undefined, limit),
-        all.slice(0, limit));
+        all.slice(0, limit) + '...');
+
+    assert.strictEqual(stringifyPartial(json, undefined, all.length), all);
 
     assert.strictEqual(stringifyPartial([1,2,3,4,5,6,7,8,9,10], undefined, 10),
-        '[1,2,3,4,5');
+        '[1,2,3,4,5...');
+
+    assert.strictEqual(stringifyPartial(12345678, undefined, 4),'1234...');
   });
 
 });

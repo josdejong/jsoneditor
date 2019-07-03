@@ -10,8 +10,7 @@ var showSortModal = require('./showSortModal');
 var showTransformModal = require('./showTransformModal');
 var util = require('./util');
 var translate = require('./i18n').translate;
-
-var DEFAULT_MODAL_ANCHOR = document.body; // TODO: this constant is defined twice
+var DEFAULT_MODAL_ANCHOR = require('./constants').DEFAULT_MODAL_ANCHOR;
 
 var YEAR_2000 = 946684800000;
 
