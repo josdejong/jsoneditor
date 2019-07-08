@@ -427,6 +427,9 @@ previewmode.set = function(json) {
   this.json = json;
 
   this.renderPreview();
+
+  // validate JSON schema
+  this._debouncedValidate();
 };
 
 /**

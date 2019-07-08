@@ -6,8 +6,8 @@ var translate = require('./i18n').translate;
 /**
  * Create a select box to be used in the editor menu's, which allows to switch mode
  * @param {HTMLElement} container
- * @param {String[]} modes  Available modes: 'code', 'form', 'text', 'tree', 'view'
- * @param {String} current  Available modes: 'code', 'form', 'text', 'tree', 'view'
+ * @param {String[]} modes  Available modes: 'code', 'form', 'text', 'tree', 'view', 'preview'
+ * @param {String} current  Available modes: 'code', 'form', 'text', 'tree', 'view', 'preview'
  * @param {function(mode: string)} onSwitch  Callback invoked on switch
  * @constructor
  */
