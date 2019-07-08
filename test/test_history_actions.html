@@ -1,0 +1,78 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+
+  <link href="../dist/jsoneditor.css" rel="stylesheet" type="text/css">
+  <script src="../dist/jsoneditor.js"></script>
+
+  <style type="text/css">
+    body {
+      font: 10.5pt arial;
+      color: #4d4d4d;
+      line-height: 150%;
+      width: 500px;
+      padding-left: 40px;
+    }
+
+    code {
+      background-color: #f5f5f5;
+    }
+
+    #jsoneditor {
+      width: 500px;
+      height: 500px;
+    }
+  </style>
+</head>
+<body>
+
+<p>
+  Switch editor mode using the mode box.
+  Note that the mode can be changed programmatically as well using the method
+  <code>editor.setMode(mode)</code>, try it in the console of your browser.
+</p>
+
+<div id="jsoneditor"></div>
+
+<script>
+  var container = document.getElementById('jsoneditor');
+
+  var historyAction = {
+    'undo':function(params) { alert('undo params = ' + JSON.stringify(params)); },
+    'redo':function(params) { alert('redo params = ' + JSON.stringify(params)); }
+  }
+
+  var options = {
+    mode: 'tree',
+    modes: ['code', 'form', 'text', 'tree', 'view'], // allowed modes
+    onError: function (err) {
+      console.error(err);
+    }
+  };
+
+  var json = {
+    "firstName": "Jos",
+    "lastName": "de Jong",
+    gender: null,
+    "age": 34.2,
+    "hobbies": [
+        "programming",
+        "movies",
+        "bicycling"
+    ]
+  };
+
+  var editor = new JSONEditor(container, options, json);
+
+  // submit the custom action
+  editor._onAction(historyAction, {oldNode:'oldNode',newNode:'newNode'});
+
+  // call undo and redo
+  editor._onUndo();
+  editor._onRedo();
+
+  console.log('json', json);
+</script>
+</body>
+</html>
