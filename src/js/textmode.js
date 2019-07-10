@@ -734,10 +734,12 @@ textmode.getText = function() {
 };
 
 /**
- * Set the text contents of the editor
+ * Set the text contents of the editor and optionally clear the history
  * @param {String} jsonText
+ * @param {boolean} clearHistory   Only applicable for mode 'code'
+ * @private
  */
-textmode.setText = function(jsonText) {
+textmode._setText = function(jsonText, clearHistory) {
   var text;
 
   if (this.options.escapeUnicode === true) {
@@ -756,10 +758,26 @@ textmode.setText = function(jsonText) {
 
     this.aceEditor.setValue(text, -1);
 
+    if (clearHistory) {
+      // prevent initial undo action clearing the initial contents
+      var me = this;
+      setTimeout(function () {
+        me.aceEditor.session.getUndoManager().reset();
+      }, 0);
+    }
+
     this.onChangeDisabled = false;
   }
   // validate JSON schema
   this._debouncedValidate();
+};
+
+/**
+ * Set the text contents of the editor
+ * @param {String} jsonText
+ */
+textmode.setText = function(jsonText) {
+  this._setText(jsonText, true)
 };
 
 /**
@@ -772,9 +790,7 @@ textmode.updateText = function(jsonText) {
     return;
   }
 
-  this.onChangeDisabled = true; // don't fire an onChange event
-  this.setText(jsonText);
-  this.onChangeDisabled = false;
+  this._setText(jsonText, false);
 };
 
 /**

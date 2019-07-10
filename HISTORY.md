@@ -3,6 +3,12 @@
 https://github.com/josdejong/jsoneditor
 
 
+## not yet published, version 6.1.1
+
+- Fixed #730: in `code` mode, there was an initial undo action which clears
+  the content.
+
+
 ## 2019-06-22, version 6.1.0
 
 - Implemented menu options `sort` and `transform` for modes `code` and `text`.
