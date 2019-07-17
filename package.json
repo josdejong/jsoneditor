@@ -33,7 +33,7 @@
     "vanilla-picker": "2.9.0"
   },
   "devDependencies": {
-    "date-format": "2.0.0",
+    "date-format": "2.1.0",
     "fancy-log": "1.3.3",
     "gulp": "4.0.2",
     "gulp-clean-css": "4.2.0",
