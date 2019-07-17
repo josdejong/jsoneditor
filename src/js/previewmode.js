@@ -149,6 +149,7 @@ previewmode.create = function (container, options) {
       transform.onclick = function () {
         me._showTransformModal();
       };
+      this.dom.transform = transform;
       this.menu.appendChild(transform);
     }
 
@@ -448,7 +449,9 @@ previewmode.repair = function () {
  * Set focus to the editor
  */
 previewmode.focus = function () {
-  // TODO: implement method focus
+  // we don't really have a place to focus,
+  // let's focus on the transform button
+  this.dom.transform.focus();
 };
 
 /**
