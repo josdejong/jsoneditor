@@ -2,7 +2,7 @@
 
 var VanillaPicker = require('./vanilla-picker');
 var Highlighter = require('./Highlighter');
-var History = require('./History');
+var NodeHistory = require('./NodeHistory');
 var SearchBox = require('./SearchBox');
 var ContextMenu = require('./ContextMenu');
 var TreePath = require('./TreePath');
@@ -47,7 +47,7 @@ treemode.create = function (container, options) {
       this.autocomplete = new autocomplete(options.autocomplete);
 
   if (this.options.history && this.options.mode !== 'view') {
-    this.history = new History(this);
+    this.history = new NodeHistory(this);
   }
 
   this._createFrame();

@@ -8,7 +8,9 @@ var showTransformModal = require('./showTransformModal');
 var MAX_PREVIEW_CHARACTERS = require('./constants').MAX_PREVIEW_CHARACTERS;
 var DEFAULT_MODAL_ANCHOR = require('./constants').DEFAULT_MODAL_ANCHOR;
 var SIZE_LARGE = require('./constants').SIZE_LARGE;
+var PREVIEW_HISTORY_LIMIT = require('./constants').PREVIEW_HISTORY_LIMIT;
 var util = require('./util');
+var History = require('./History');
 var jsonUtils = require('./jsonUtils');
 
 // create a mixin with the functions for text mode
@@ -102,7 +104,6 @@ previewmode.create = function (container, options) {
       me.executeWithBusyMessage(function () {
         try {
           me.format();
-          me._onChange();
         }
         catch (err) {
           me._onError(err);
@@ -119,9 +120,7 @@ previewmode.create = function (container, options) {
     buttonCompact.onclick = function handleCompact() {
       me.executeWithBusyMessage(function () {
         try {
-
           me.compact();
-          me._onChange();
         }
         catch (err) {
           me._onError(err);
@@ -163,13 +162,57 @@ previewmode.create = function (container, options) {
       me.executeWithBusyMessage(function () {
         try {
           me.repair();
-          me._onChange();
         }
         catch (err) {
           me._onError(err);
         }
       }, 'repairing...');
     };
+
+    // create history and undo/redo buttons
+    if (this.options.history !== false) { // default option value is true
+      var onHistoryChange = function () {
+        me.dom.undo.disabled = !me.history.canUndo();
+        me.dom.redo.disabled = !me.history.canRedo();
+      };
+
+      var calculateItemSize = function (item) {
+        return item.text.length * 2; // times two to account for the json object
+      }
+
+      this.history = new History(onHistoryChange, calculateItemSize, PREVIEW_HISTORY_LIMIT);
+
+      // create undo button
+      var undo = document.createElement('button');
+      undo.type = 'button';
+      undo.className = 'jsoneditor-undo jsoneditor-separator';
+      undo.title = translate('undo');
+      undo.onclick = function () {
+        var action = me.history.undo();
+        if (action) {
+          me._applyHistory(action);
+        }
+      };
+      this.menu.appendChild(undo);
+      this.dom.undo = undo;
+
+      // create redo button
+      var redo = document.createElement('button');
+      redo.type = 'button';
+      redo.className = 'jsoneditor-redo';
+      redo.title = translate('redo');
+      redo.onclick = function () {
+        var action = me.history.redo();
+        if (action) {
+          me._applyHistory(action);
+        }
+      };
+      this.menu.appendChild(redo);
+      this.dom.redo = redo;
+
+      // force enabling/disabling the undo/redo button
+      this.history.onChange();
+    }
 
     // create mode box
     if (this.options && this.options.modes && this.options.modes.length) {
@@ -203,12 +246,12 @@ previewmode.create = function (container, options) {
     statusBar.appendChild(this.dom.arrayInfo);
   }
 
-  this.renderPreview();
+  this._renderPreview();
 
   this.setSchema(this.options.schema, this.options.schemaRefs);  
 };
 
-previewmode.renderPreview = function () {
+previewmode._renderPreview = function () {
   var text = this.getText();
 
   this.dom.previewText.nodeValue = util.limitCharacters(text, MAX_PREVIEW_CHARACTERS);
@@ -232,7 +275,7 @@ previewmode.renderPreview = function () {
         me.executeWithBusyMessage(function () {
           try {
             me.get();
-            me.renderPreview();
+            me._renderPreview();
           }
           catch (err) {
             me._onError(err);
@@ -259,10 +302,6 @@ previewmode.renderPreview = function () {
  * @private
  */
 previewmode._onChange = function () {
-  if (this.onChangeDisabled) {
-    return;
-  }
-
   // validate JSON schema (if configured)
   this._debouncedValidate();
 
@@ -306,31 +345,29 @@ previewmode._showSortModal = function () {
 
   function onSort (json, sortedBy) {
     if (Array.isArray(json)) {
-      var sortedJson = util.sort(json, sortedBy.path, sortedBy.direction);
+      var sortedArray = util.sort(json, sortedBy.path, sortedBy.direction);
 
       me.sortedBy = sortedBy
-      me.set(sortedJson);
+      me._setAndFireOnChange(sortedArray);
     }
 
     if (util.isObject(json)) {
-      var sortedJson = util.sortObjectKeys(json, sortedBy.direction);
+      var sortedObject = util.sortObjectKeys(json, sortedBy.direction);
 
       me.sortedBy = sortedBy;
-      me.set(sortedJson);
+      me._setAndFireOnChange(sortedObject);
     }
-
-    me._onChange();
   }
 
   this.executeWithBusyMessage(function () {
     var container = me.options.modalAnchor || DEFAULT_MODAL_ANCHOR;
     var json = me.get();
-    me.renderPreview(); // update array count
+    me._renderPreview(); // update array count
 
     showSortModal(container, json, function (sortedBy) {
       me.executeWithBusyMessage(function () {
         onSort(json, sortedBy);
-      }, 'stringifying...');
+      }, 'sorting...');
     }, me.sortedBy)
   }, 'parsing...');
 }
@@ -345,14 +382,12 @@ previewmode._showTransformModal = function () {
   this.executeWithBusyMessage(function () {
     var anchor = me.options.modalAnchor || DEFAULT_MODAL_ANCHOR;
     var json = me.get();
-    me.renderPreview(); // update array count
+    me._renderPreview(); // update array count
 
     showTransformModal(anchor, json, function (query) {
       me.executeWithBusyMessage(function () {
         var updatedJson = jmespath.search(json, query);
-        me.set(updatedJson);
-
-        me._onChange();
+        me._setAndFireOnChange(updatedJson);
       }, 'transforming...')
     })
   }, 'parsing...')
@@ -362,7 +397,7 @@ previewmode._showTransformModal = function () {
  * Destroy the editor. Clean up DOM, event listeners, and web workers.
  */
 previewmode.destroy = function () {
-  if (this.frame && this.container && this.frame.parentNode == this.container) {
+  if (this.frame && this.container && this.frame.parentNode === this.container) {
     this.container.removeChild(this.frame);
   }
 
@@ -372,6 +407,9 @@ previewmode.destroy = function () {
   }
 
   this._debouncedValidate = null;
+
+  this.history.clear();
+  this.history = null;
 };
 
 /**
@@ -380,12 +418,9 @@ previewmode.destroy = function () {
 previewmode.compact = function () {
   var json = this.get();
   var text = JSON.stringify(json);
-  this.setText(text);
 
-  // we know that in this case the json is still the same
-  this.json = json;
-
-  this.renderPreview();
+  // we know that in this case the json is still the same, so we pass json too
+  this._setTextAndFireOnChange(text, json);
 };
 
 /**
@@ -394,12 +429,9 @@ previewmode.compact = function () {
 previewmode.format = function () {
   var json = this.get();
   var text = JSON.stringify(json, null, this.indentation);
-  this.setText(text);
 
-  // we know that in this case the json is still the same
-  this.json = json;
-
-  this.renderPreview();
+  // we know that in this case the json is still the same, so we pass json too
+  this._setTextAndFireOnChange(text, json);
 };
 
 /**
@@ -408,28 +440,27 @@ previewmode.format = function () {
 previewmode.repair = function () {
   var text = this.getText();
   var sanitizedText = util.sanitize(text);
-  this.setText(sanitizedText);
+
+  this._setTextAndFireOnChange(sanitizedText);
 };
 
 /**
- * Set focus to the formatter
+ * Set focus to the editor
  */
 previewmode.focus = function () {
   // TODO: implement method focus
 };
 
 /**
- * Set json data in the formatter
+ * Set json data in the editor
  * @param {*} json
  */
 previewmode.set = function(json) {
-  this.text = undefined;
-  this.json = json;
+  if (this.history) {
+    this.history.clear();
+  }
 
-  this.renderPreview();
-
-  // validate JSON schema
-  this._debouncedValidate();
+  this._set(json);
 };
 
 /**
@@ -437,11 +468,32 @@ previewmode.set = function(json) {
  * @param {*} json
  */
 previewmode.update = function(json) {
-  this.set(json);
+  this._set(json);
 };
 
 /**
- * Get json data from the formatter
+ * Set json data
+ * @param {*} json
+ */
+previewmode._set = function(json) {
+  this.text = undefined;
+  this.json = json;
+
+  this._renderPreview();
+
+  this._pushHistory();
+
+  // validate JSON schema
+  this._debouncedValidate();
+};
+
+previewmode._setAndFireOnChange = function (json) {
+  this._set(json);
+  this._onChange();
+}
+
+/**
+ * Get json data
  * @return {*} json
  */
 previewmode.get = function() {
@@ -490,20 +542,11 @@ previewmode.getText = function() {
  * @param {String} jsonText
  */
 previewmode.setText = function(jsonText) {
-  if (this.options.escapeUnicode === true) {
-    console.time('escape') // TODO: cleanup
-    this.text = util.escapeUnicodeChars(jsonText);
-    console.timeEnd('escape') // TODO: cleanup
+  if (this.history) {
+    this.history.clear();
   }
-  else {
-    this.text = jsonText;
-  }
-  this.json = undefined;
 
-  this.renderPreview();
-
-  // validate JSON schema
-  this._debouncedValidate();
+  this._setText(jsonText);
 };
 
 /**
@@ -516,10 +559,74 @@ previewmode.updateText = function(jsonText) {
     return;
   }
 
-  this.onChangeDisabled = true; // don't fire an onChange event
-  this.setText(jsonText);
-  this.onChangeDisabled = false;
+  this._setText(jsonText);
 };
+
+/**
+ * Set the text contents of the editor
+ * @param {string} jsonText
+ * @param {*} [json] Optional JSON instance of the text
+ * @private
+ */
+previewmode._setText = function(jsonText, json) {
+  if (this.options.escapeUnicode === true) {
+    console.time('escape') // TODO: cleanup
+    this.text = util.escapeUnicodeChars(jsonText);
+    console.timeEnd('escape') // TODO: cleanup
+  }
+  else {
+    this.text = jsonText;
+  }
+  this.json = json;
+
+  this._renderPreview();
+
+  this._pushHistory();
+
+  this._debouncedValidate();
+};
+
+/**
+ * Set text and fire onChange callback
+ * @param {string} jsonText
+ * @param {*} [json] Optional JSON instance of the text
+ * @private
+ */
+previewmode._setTextAndFireOnChange = function (jsonText, json) {
+  this._setText(jsonText, json);
+  this._onChange();
+}
+
+/**
+ * Apply history to the current state
+ * @param {{json?: JSON, text?: string}} action
+ * @private
+ */
+previewmode._applyHistory = function (action) {
+  this.json = action.json;
+  this.text = action.text;
+
+  this._renderPreview();
+
+  this._debouncedValidate();
+};
+
+/**
+ * Push the current state to history
+ * @private
+ */
+previewmode._pushHistory = function () {
+  if (!this.history) {
+    return;
+  }
+
+  var action = {
+    text: this.text,
+    json: this.json
+  };
+
+  this.history.add(action);
+}
 
 /**
  * Execute a heavy, blocking action.
