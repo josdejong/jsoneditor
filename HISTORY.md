@@ -3,10 +3,11 @@
 https://github.com/josdejong/jsoneditor
 
 
-## not yet published, version 6.1.1
+## not yet published, version 6.2.0
 
 - Fixed #730: in `code` mode, there was an initial undo action which clears
   the content.
+- Upgraded dependencies `vanilla-picker@2.9.0`, `mobius1-selectr@2.4.13`.
 
 
 ## 2019-06-22, version 6.1.0
