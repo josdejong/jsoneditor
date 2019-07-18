@@ -41,7 +41,7 @@
     "jsdom": "15.1.1",
     "json-loader": "0.5.7",
     "mkdirp": "0.5.1",
-    "mocha": "6.1.4",
+    "mocha": "6.2.0",
     "uglify-js": "3.6.0",
     "webpack": "4.35.3"
   }
