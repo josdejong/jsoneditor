@@ -5,8 +5,8 @@ https://github.com/josdejong/jsoneditor
 
 ## not yet published, version 6.2.0
 
-- Upgraded dependency to `vanilla-picker@2.9.0`.
-- Upgrade dependency `mobius1-selectr@2.4.13`.
+- Upgraded dependencies `vanilla-picker@2.9.1`, `mobius1-selectr@2.4.13`,
+  `ajv@6.10.2`.
 
 
 ## 2019-06-22, version 6.1.0
