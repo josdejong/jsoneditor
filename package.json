@@ -30,7 +30,7 @@
     "json-source-map": "0.4.0",
     "mobius1-selectr": "2.4.13",
     "picomodal": "3.0.0",
-    "vanilla-picker": "2.9.1"
+    "vanilla-picker": "2.9.2"
   },
   "devDependencies": {
     "date-format": "2.1.0",
