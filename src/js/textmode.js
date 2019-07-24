@@ -355,12 +355,8 @@ textmode.create = function (container, options) {
     statusBar.appendChild(countLabel);
 
     statusBar.appendChild(this.errorTable.getErrorCounter());
+    statusBar.appendChild(this.errorTable.getWarningIcon());
     statusBar.appendChild(this.errorTable.getErrorIcon());
-
-    this.parseErrorIndication = document.createElement('span');
-    this.parseErrorIndication.className = 'jsoneditor-parse-error-icon';    
-    this.parseErrorIndication.style.display = 'none';
-    statusBar.appendChild(this.parseErrorIndication);
   }
 
   this.setSchema(this.options.schema, this.options.schemaRefs);  
@@ -796,24 +792,15 @@ textmode.validate = function () {
   var json;
   try {
     json = this.get(); // this can fail when there is no valid json
-    if (this.parseErrorIndication) {
-      this.parseErrorIndication.style.display = 'none';
-    }
     doValidate = true;
   }
   catch (err) {
     if (this.getText()) {
-      if (this.parseErrorIndication) {
-        this.parseErrorIndication.style.display = 'block';
-      }
       // try to extract the line number from the jsonlint error message
       var match = /\w*line\s*(\d+)\w*/g.exec(err.message);
       var line;
       if (match) {
         line = +match[1];
-      }
-      if (this.parseErrorIndication) {
-        this.parseErrorIndication.title = !isNaN(line) ? ('parse error on line ' + line) : 'parse error - check that the json is valid';
       }
       parseErrors.push({
         type: 'error',
@@ -845,7 +832,7 @@ textmode.validate = function () {
           .then(function (customValidationErrors) {
             // only apply when there was no other validation started whilst resolving async results
             if (seq === me.validationSequence) {
-              var errors = schemaErrors.concat(parseErrors || []).concat(customValidationErrors || []);
+              var errors = schemaErrors.concat(parseErrors).concat(customValidationErrors || []);
               me._renderErrors(errors);
             }
           })
@@ -858,7 +845,7 @@ textmode.validate = function () {
     }
   }
   else {
-    this._renderErrors(parseErrors || []);
+    this._renderErrors(parseErrors);
   }
 };
 

@@ -35,6 +35,10 @@ function ErrorTable (config) {
   validationErrorCount.className = 'jsoneditor-validation-error-count';
   validationErrorCount.style.display = 'none';
   this.dom.validationErrorCount = validationErrorCount;
+
+  this.dom.parseErrorIndication = document.createElement('span');
+  this.dom.parseErrorIndication.className = 'jsoneditor-parse-error-icon';
+  this.dom.parseErrorIndication.style.display = 'none';
 }
 
 ErrorTable.prototype.getErrorTable = function () {
@@ -45,8 +49,12 @@ ErrorTable.prototype.getErrorCounter = function () {
   return this.dom.validationErrorCount;
 };
 
-ErrorTable.prototype.getErrorIcon = function () {
+ErrorTable.prototype.getWarningIcon = function () {
   return this.dom.validationErrorIcon;
+};
+
+ErrorTable.prototype.getErrorIcon = function () {
+  return this.dom.parseErrorIndication;
 };
 
 ErrorTable.prototype.toggleTableVisibility = function () {
@@ -147,6 +155,21 @@ ErrorTable.prototype.setErrors = function (errors, errorLocations) {
   else {
     this.dom.validationErrorCount.style.display = 'none';
     this.dom.validationErrorIcon.style.display = 'none';
+  }
+
+  // update the parse error icon
+  var hasParseErrors = errors.some(function (error) {
+    return error.type === 'error'
+  });
+  if (hasParseErrors) {
+    var line = errors[0].line
+    this.dom.parseErrorIndication.style.display = 'block';
+    this.dom.parseErrorIndication.title = !isNaN(line)
+        ? ('parse error on line ' + line)
+        : 'parse error - check that the json is valid';
+  }
+  else {
+    this.dom.parseErrorIndication.style.display = 'none';
   }
 };
 
