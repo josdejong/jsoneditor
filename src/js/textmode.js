@@ -5,6 +5,7 @@ var jmespath = require('jmespath');
 var translate = require('./i18n').translate;
 var ModeSwitcher = require('./ModeSwitcher');
 var ErrorTable = require('./ErrorTable');
+var validateCustom = require('./validationUtils').validateCustom;
 var showSortModal = require('./showSortModal');
 var showTransformModal = require('./showTransformModal');
 var util = require('./util');
@@ -824,84 +825,28 @@ textmode.validate = function () {
     }
 
     // execute custom validation and after than merge and render all errors
-    try {
-      this.validationSequence++;
-      var me = this;
-      var seq = this.validationSequence;
-      this._validateCustom(json)
-          .then(function (customValidationErrors) {
-            // only apply when there was no other validation started whilst resolving async results
-            if (seq === me.validationSequence) {
-              var errors = schemaErrors.concat(parseErrors).concat(customValidationErrors || []);
-              me._renderErrors(errors);
-            }
-          })
-          .catch(function (err) {
-            console.error(err);
-          });
-    }
-    catch(err) {
-      console.error(err);
-    }
+    // TODO: implement a better mechanism for only using the last validation action
+    this.validationSequence++;
+    var me = this;
+    var seq = this.validationSequence;
+    validateCustom(json, this.options.onValidate)
+        .then(function (customValidationErrors) {
+          // only apply when there was no other validation started whilst resolving async results
+          if (seq === me.validationSequence) {
+            var errors = schemaErrors.concat(parseErrors).concat(customValidationErrors);
+            me._renderErrors(errors);
+          }
+        })
+        .catch(function (err) {
+          console.error('Custom validation function did throw an error', err);
+        });
   }
   else {
-    this._renderErrors(parseErrors);
+    this._renderErrors([]);
   }
-};
-
-/**
- * Execute custom validation if configured.
- *
- * Returns a promise resolving with the custom errors (or nothing).
- */
-textmode._validateCustom = function (json) {
-  if (this.options.onValidate) {
-    try {
-      var customValidateResults = this.options.onValidate(json);
-
-      var resultPromise = util.isPromise(customValidateResults)
-          ? customValidateResults
-          : Promise.resolve(customValidateResults);
-
-      return resultPromise.then(function (customValidationPathErrors) {
-        if (Array.isArray(customValidationPathErrors)) {
-          return customValidationPathErrors
-              .filter(function (error) {
-                var valid = util.isValidValidationError(error);
-
-                if (!valid) {
-                  console.warn('Ignoring a custom validation error with invalid structure. ' +
-                      'Expected structure: {path: [...], message: "..."}. ' +
-                      'Actual error:', error);
-                }
-
-                return valid;
-              })
-              .map(function (error) {
-                // change data structure into the structure matching the JSON schema errors
-                return {
-                  dataPath: util.stringifyPath(error.path),
-                  message: error.message
-                }
-              });
-        }
-        else {
-          return null;
-        }
-      });
-    }
-    catch (err) {
-      return Promise.reject(err);
-    }
-  }
-
-  return Promise.resolve(null);
 };
 
 textmode._renderErrors = function(errors) {
-  this.content.style.marginBottom = '';
-  this.content.style.paddingBottom = '';
-
   var jsonText = this.getText();
   var errorPaths = [];
   errors.reduce(function(acc, curr) {
