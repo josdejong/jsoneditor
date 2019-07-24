@@ -13,7 +13,6 @@ var SIZE_LARGE = require('./constants').SIZE_LARGE;
 var PREVIEW_HISTORY_LIMIT = require('./constants').PREVIEW_HISTORY_LIMIT;
 var util = require('./util');
 var History = require('./History');
-var jsonUtils = require('./jsonUtils');
 
 // create a mixin with the functions for text mode
 var previewmode = {};
