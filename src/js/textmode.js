@@ -690,20 +690,8 @@ textmode.update = function(json) {
  */
 textmode.get = function() {
   var text = this.getText();
-  var json;
 
-  try {
-    json = util.parse(text); // this can throw an error
-  }
-  catch (err) {
-    // try to sanitize json, replace JavaScript notation with JSON notation
-    text = util.sanitize(text);
-
-    // try to parse again
-    json = util.parse(text); // this can throw an error
-  }
-
-  return json;
+  return util.parse(text); // this can throw an error
 };
 
 /**

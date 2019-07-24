@@ -524,16 +524,7 @@ previewmode.get = function() {
   if (this.json === undefined) {
     var text = this.getText();
 
-    try {
-      this.json = util.parse(text); // this can throw an error
-    }
-    catch (err) {
-      // try to sanitize json, replace JavaScript notation with JSON notation
-      text = util.sanitize(text);
-
-      // try to parse again
-      this.json = util.parse(text); // this can throw an error
-    }
+    this.json = util.parse(text); // this can throw an error
   }
 
   return this.json;
@@ -600,10 +591,15 @@ previewmode._setText = function(jsonText, json) {
   if (this.json === undefined) {
     var me = this;
     this.executeWithBusyMessage(function () {
-      // force parsing the json now, else it will be done in validate without feedback
-      me.json = me.get();
-      me._renderPreview();
-      me._pushHistory();
+      try {
+        // force parsing the json now, else it will be done in validate without feedback
+        me.json = me.get();
+        me._renderPreview();
+        me._pushHistory();
+      }
+      catch (err) {
+        // no need to throw an error, validation will show an error
+      }
     }, 'parsing...');
   }
   else {
