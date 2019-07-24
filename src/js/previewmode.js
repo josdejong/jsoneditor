@@ -525,9 +525,7 @@ previewmode.get = function() {
     var text = this.getText();
 
     try {
-      console.time('parse') // TODO: cleanup
       this.json = util.parse(text); // this can throw an error
-      console.timeEnd('parse') // TODO: cleanup
     }
     catch (err) {
       // try to sanitize json, replace JavaScript notation with JSON notation
@@ -547,14 +545,10 @@ previewmode.get = function() {
  */
 previewmode.getText = function() {
   if (this.text === undefined) {
-    console.time('stringify') // TODO: cleanup
     this.text = JSON.stringify(this.json, null, this.indentation);
-    console.timeEnd('stringify') // TODO: cleanup
 
     if (this.options.escapeUnicode === true) {
-      console.time('escape') // TODO: cleanup
       this.text = util.escapeUnicodeChars(this.text);
-      console.timeEnd('escape') // TODO: cleanup
     }
   }
 
@@ -594,9 +588,7 @@ previewmode.updateText = function(jsonText) {
  */
 previewmode._setText = function(jsonText, json) {
   if (this.options.escapeUnicode === true) {
-    console.time('escape') // TODO: cleanup
     this.text = util.escapeUnicodeChars(jsonText);
-    console.timeEnd('escape') // TODO: cleanup
   }
   else {
     this.text = jsonText;
@@ -605,7 +597,18 @@ previewmode._setText = function(jsonText, json) {
 
   this._renderPreview();
 
-  this._pushHistory();
+  if (this.json === undefined) {
+    var me = this;
+    this.executeWithBusyMessage(function () {
+      // force parsing the json now, else it will be done in validate without feedback
+      me.json = me.get();
+      me._renderPreview();
+      me._pushHistory();
+    }, 'parsing...');
+  }
+  else {
+    this._pushHistory();
+  }
 
   this._debouncedValidate();
 };

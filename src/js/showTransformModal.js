@@ -252,14 +252,10 @@ function showTransformModal (container, json, onTransform) {
 
         function updatePreview() {
           try {
-            console.time('transform') // TODO: cleanup
             var transformed = jmespath.search(value, query.value);
-            console.timeEnd('transform') // TODO: cleanup
 
-            console.time('stringify') // TODO: cleanup
             preview.className = 'jsoneditor-transform-preview';
             preview.value = stringifyPartial(transformed, 2, MAX_PREVIEW_CHARACTERS);
-            console.timeEnd('stringify') // TODO: cleanup
 
             ok.disabled = false;
           }
