@@ -5,8 +5,8 @@ https://github.com/josdejong/jsoneditor
 
 ## not yet published, version 6.2.0
 
-- Implemented new mode `preview`, capable of working with JSON files up to
-  about 500 MB.
+- Implemented new mode `preview`, capable of working with JSON documents
+  up to 500 MiB.
 - Fixed #730: in `code` mode, there was an initial undo action which clears
   the content.
 - Upgraded dependencies `vanilla-picker@2.9.1`, `mobius1-selectr@2.4.13`,

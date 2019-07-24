@@ -23,7 +23,10 @@ Cross browser testing for JSONEditor is generously provided by <a href="https://
 
 ## Features
 
-### Tree editor
+JSONEditor has various modes, with the following features.
+
+### Tree mode
+
 - Change, add, move, remove, and duplicate fields and values.
 - Sort arrays and objects.
 - Transform JSON using [JMESPath](http://jmespath.org/) queries.
@@ -33,18 +36,27 @@ Cross browser testing for JSONEditor is generously provided by <a href="https://
 - Undo and redo all actions.
 - JSON schema validation (powered by [ajv](https://github.com/epoberezkin/ajv)).
 
-### Code editor
+### Code mode
+
 - Colorized code (powered by [Ace](https://ace.c9.io)).
 - Inspect JSON (powered by [Ace](https://ace.c9.io)).
 - Format and compact JSON.
 - Repair JSON.
 - JSON schema validation (powered by [ajv](https://github.com/epoberezkin/ajv)).
 
-### Text editor
+### Text mode
+
 - Format and compact JSON.
 - Repair JSON.
 - JSON schema validation (powered by [ajv](https://github.com/epoberezkin/ajv)).
 
+### Preview mode
+
+- Handle large JSON documents up to 500 MiB.
+- Transform JSON using [JMESPath](http://jmespath.org/) queries.
+- Format and compact JSON.
+- Repair JSON.
+- JSON schema validation (powered by [ajv](https://github.com/epoberezkin/ajv)).
 
 ## Documentation
 
@@ -62,10 +74,6 @@ Cross browser testing for JSONEditor is generously provided by <a href="https://
 with npm (recommended):
 
     npm install jsoneditor
-
-with bower:
-
-    bower install jsoneditor
 
 > Note that to use JSONEditor in Internet Explorer 11, it is necessary
 > to load a polyfill for `Promise` in your application.

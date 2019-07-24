@@ -52,7 +52,7 @@ Constructs a new JSONEditor.
 
   Set a callback function triggered when the contents of the JSONEditor change.
   This callback does not pass the changed contents, use `get()` or `getText()` for that.
-  Note that `get()` can throw an exception in mode `text` or `code`, when the editor contains invalid JSON.
+  Note that `get()` can throw an exception in mode `text`, `code`, or `preview`, when the editor contains invalid JSON.
   Will only be triggered on changes made by the user, not in case of programmatic changes via the functions `set`, `setText`, `update`, or `updateText`.
   See also callback functions `onChangeJSON(json)` and `onChangeText(jsonString)`.
 
@@ -198,7 +198,9 @@ Constructs a new JSONEditor.
 
 - `{String} mode`
 
-  Set the editor mode. Available values: 'tree' (default), 'view', 'form', 'code', 'text'. In 'view' mode, the data and datastructure is read-only. In 'form' mode, only the value can be changed, the datastructure is read-only. Mode 'code' requires the Ace editor to be loaded on the page. Mode 'text' shows the data as plain text.
+  Set the editor mode. Available values: 'tree' (default), 'view', 'form', 'code', 'text', 'preview'. In 'view' mode, the data and datastructure is read-only. In 'form' mode, only the value can be changed, the data structure is read-only. Mode 'code' requires the Ace editor to be loaded on the page. Mode 'text' shows the data as plain text.
+  The 'preview' mode can handle large JSON documents up to 500 MiB. It shows a preview of the data, and allows to
+  transform, sort, filter, format, or compact the data.
 
 - `{String[]} modes`
 
@@ -229,7 +231,7 @@ Constructs a new JSONEditor.
 
 - `{Number} indentation`
 
-  Number of indentation spaces. 2 by default. Only applicable when `mode` is 'code' or 'text'.
+  Number of indentation spaces. 2 by default. Only applicable when `mode` is 'code', 'text', or 'preview'.
 
 - `{String} theme`
 
@@ -326,7 +328,7 @@ Constructs a new JSONEditor.
 
 - `{boolean} statusBar`
 
-  Adds status bar to the bottom of the editor - the status bar shows the cursor position and a count of the selected characters. True by default. Only applicable when `mode` is 'code' or 'text'.
+  Adds status bar to the bottom of the editor - the status bar shows the cursor position and a count of the selected characters. True by default. Only applicable when `mode` is 'code', 'text', or 'preview'.
 
 - `{function} onTextSelectionChange(start, end, text)`
 
@@ -497,7 +499,7 @@ Set focus to the JSONEditor.
 Get JSON data.
 
 This method throws an exception when the editor does not contain valid JSON,
-which can be the case when the editor is in mode `code` or `text`.
+which can be the case when the editor is in mode `code`, `text`, or `preview`.
 
 *Returns:*
 
@@ -513,7 +515,7 @@ Retrieve the current mode of the editor.
 
 - `{String} mode`
 
-  Current mode of the editor for example `tree` or `code`.
+  Current mode of the editor, for example `tree` or `code`.
 
 #### `JSONEditor.getName()`
 
@@ -557,7 +559,7 @@ Get JSON data as string.
 
 - `{String} jsonString`
 
-  Contents of the editor as string. When the editor is in code `text` or `code`,
+  Contents of the editor as string. When the editor is in code `text`, `code` or `preview`,
   the returned text is returned as-is. For the other modes, the returned text
   is a compacted string. In order to get the JSON formatted with a certain
   number of spaces, use `JSON.stringify(JSONEditor.get(), null, 2)`.
@@ -596,7 +598,7 @@ Switch mode. Mode `code` requires the [Ace editor](http://ace.ajax.org/).
 
 - `{String} mode`
 
-  Available values: `tree`, `view`, `form`, `code`, `text`.
+  Available values: `tree`, `view`, `form`, `code`, `text`, `preview`.
 
 #### `JSONEditor.setName(name)`
 
