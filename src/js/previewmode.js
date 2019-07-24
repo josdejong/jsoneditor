@@ -286,34 +286,9 @@ previewmode._renderPreview = function () {
     if (Array.isArray(this.json)) {
       this.dom.arrayInfo.innerText = ('Array: ' + this.json.length + ' items');
     }
-    else if (jsonUtils.containsArray(this.text)) {
-      var info = document.createElement('span');
-      info.className = 'jsoneditor-array-info';
-      var calculate = document.createElement('a');
-      var me = this;
-      calculate.appendChild(document.createTextNode('calculate number of items'));
-      calculate.href = '#';
-      calculate.onclick = function () {
-        me.executeWithBusyMessage(function () {
-          try {
-            me.get();
-            me._renderPreview();
-          }
-          catch (err) {
-            me._onError(err);
-          }
-        }, 'parsing...');
-      }
-      info.appendChild(document.createTextNode('Array: '));
-      info.appendChild(calculate);
-
-      this.dom.arrayInfo.innerHTML = '';
-      this.dom.arrayInfo.appendChild(info);
-    }
     else {
       this.dom.arrayInfo.innerText = '';
     }
-
   }
 };
 
