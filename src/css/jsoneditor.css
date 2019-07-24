@@ -583,6 +583,10 @@ div.jsoneditor-tree .jsoneditor-button.jsoneditor-schema-error {
   vertical-align: middle;  
 }
 
+.jsoneditor .jsoneditor-text-errors td pre {
+  margin: 0;
+}
+
 .jsoneditor .jsoneditor-text-errors tr {
   background-color: #ffef8b;
 }

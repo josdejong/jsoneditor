@@ -4,6 +4,7 @@ var ace = require('./ace');
 var jmespath = require('jmespath');
 var translate = require('./i18n').translate;
 var ModeSwitcher = require('./ModeSwitcher');
+var ErrorTable = require('./ErrorTable');
 var showSortModal = require('./showSortModal');
 var showTransformModal = require('./showTransformModal');
 var util = require('./util');
@@ -80,11 +81,6 @@ textmode.create = function (container, options) {
   this.validateSchema = null;
   this.validationSequence = 0;
   this.annotations = [];
-  /**
-   * Visibility of validation error table
-   * @type {Boolean|undefined} undefined means default behavior for mode
-   */
-  this.errorTableVisible = undefined;
 
   // create a debounced validate function
   this._debouncedValidate = util.debounce(this.validate.bind(this), this.DEBOUNCE_INTERVAL);
@@ -194,7 +190,7 @@ textmode.create = function (container, options) {
       });
     }
 
-    if (this.mode == 'code') {
+    if (this.mode === 'code') {
       var poweredBy = document.createElement('a');
       poweredBy.appendChild(document.createTextNode('powered by ace'));
       poweredBy.href = 'http://ace.ajax.org';
@@ -218,7 +214,7 @@ textmode.create = function (container, options) {
   this.frame.appendChild(this.content);
   this.container.appendChild(this.frame);
 
-  if (this.mode == 'code') {
+  if (this.mode === 'code') {
     this.editorDom = document.createElement('div');
     this.editorDom.style.height = '100%'; // TODO: move to css
     this.editorDom.style.width = '100%'; // TODO: move to css
@@ -287,17 +283,26 @@ textmode.create = function (container, options) {
     textarea.onblur = this._onBlur.bind(this);
   }
 
-  var validationErrorsContainer = document.createElement('div');
-  validationErrorsContainer.className = 'jsoneditor-validation-errors-container';
-  this.dom.validationErrorsContainer = validationErrorsContainer;
-  this.frame.appendChild(validationErrorsContainer);
-
-  var additionalErrorsIndication = document.createElement('div');
-  additionalErrorsIndication.style.display = 'none';
-  additionalErrorsIndication.className = "jsoneditor-additional-errors fadein";
-  additionalErrorsIndication.innerHTML = "Scroll for more &#9663;";
-  this.dom.additionalErrorsIndication = additionalErrorsIndication;
-  validationErrorsContainer.appendChild(additionalErrorsIndication);
+  this.errorTable = new ErrorTable({
+    errorTableVisible: this.mode === 'text',
+    onToggleVisibility: function () {
+      console.log('toggle')
+      me.validate();
+    },
+    onFocusLine: function  (line) {
+      me.isFocused = true;
+      if (!isNaN(line)) {
+        me.setTextSelection({row: line, column: 1}, {row: line, column: 1000});
+      }
+    },
+    onChangeHeight: function (height) {
+      // TODO: change CSS to using flex box, remove setting height using JavaScript
+      var totalHeight = height + me.dom.statusBar.clientHeight + 1;
+      me.content.style.marginBottom = (-totalHeight) + 'px';
+      me.content.style.paddingBottom = totalHeight + 'px';
+    }
+  });
+  this.frame.appendChild(this.errorTable.getErrorTable());
 
   if (options.statusBar) {
     util.addClassName(this.content, 'has-status-bar');
@@ -349,21 +354,8 @@ textmode.create = function (container, options) {
     statusBar.appendChild(countVal);
     statusBar.appendChild(countLabel);
 
-    var validationErrorIcon = document.createElement('span');
-    validationErrorIcon.className = 'jsoneditor-validation-error-icon';
-    validationErrorIcon.style.display = 'none';
-
-    var validationErrorCount = document.createElement('span');
-    validationErrorCount.className = 'jsoneditor-validation-error-count';    
-    validationErrorCount.style.display = 'none';
-
-    this.validationErrorIndication = {
-      validationErrorIcon: validationErrorIcon,
-      validationErrorCount: validationErrorCount
-    };
-
-    statusBar.appendChild(validationErrorCount);
-    statusBar.appendChild(validationErrorIcon);
+    statusBar.appendChild(this.errorTable.getErrorCounter());
+    statusBar.appendChild(this.errorTable.getErrorIcon());
 
     this.parseErrorIndication = document.createElement('span');
     this.parseErrorIndication.className = 'jsoneditor-parse-error-icon';    
@@ -618,7 +610,7 @@ textmode.destroy = function () {
     this.aceEditor = null;
   }
 
-  if (this.frame && this.container && this.frame.parentNode == this.container) {
+  if (this.frame && this.container && this.frame.parentNode === this.container) {
     this.container.removeChild(this.frame);
   }
 
@@ -866,7 +858,7 @@ textmode.validate = function () {
     }
   }
   else {
-    this._renderErrors(parseErrors || [], true);
+    this._renderErrors(parseErrors || []);
   }
 };
 
@@ -919,21 +911,9 @@ textmode._validateCustom = function (json) {
   return Promise.resolve(null);
 };
 
-textmode._renderErrors = function(errors, noValidation) {
-  // clear all current errors
-  var me = this;
-  var validationErrorsCount = 0;
-
-  this.errorTableVisible = (typeof this.errorTableVisible === 'undefined') ? !this.aceEditor : this.errorTableVisible;
-
-  if (this.dom.validationErrors) {
-    this.dom.validationErrors.parentNode.removeChild(this.dom.validationErrors);
-    this.dom.validationErrors = null;
-    this.dom.additionalErrorsIndication.style.display = 'none';
-
-    this.content.style.marginBottom = '';
-    this.content.style.paddingBottom = '';
-  }
+textmode._renderErrors = function(errors) {
+  this.content.style.marginBottom = '';
+  this.content.style.paddingBottom = '';
 
   var jsonText = this.getText();
   var errorPaths = [];
@@ -945,126 +925,34 @@ textmode._renderErrors = function(errors, noValidation) {
   }, errorPaths);
   var errorLocations = util.getPositionForPath(jsonText, errorPaths);
 
-  // render the new errors
-  if (errors.length > 0) {
-    if (this.aceEditor) {
-      this.annotations = errorLocations.map(function (errLoc) {
-        var validationErrors = errors.filter(function(err){ return err.dataPath === errLoc.path; });
-        var message = validationErrors.map(function(err) { return err.message }).join('\n');
-        if (message) {
-          return {
-            row: errLoc.line,
-            column: errLoc.column,
-            text: 'Schema validation error' + (validationErrors.length !== 1 ? 's' : '') + ': \n' + message,
-            type: 'warning',
-            source: 'jsoneditor',
-          }
+  // render annotations in Ace Editor (if any)
+  if (this.aceEditor) {
+    this.annotations = errorLocations.map(function (errLoc) {
+      var validationErrors = errors.filter(function(err){ return err.dataPath === errLoc.path; });
+      var message = validationErrors.map(function(err) { return err.message }).join('\n');
+      if (message) {
+        return {
+          row: errLoc.line,
+          column: errLoc.column,
+          text: 'Schema validation error' + (validationErrors.length !== 1 ? 's' : '') + ': \n' + message,
+          type: 'warning',
+          source: 'jsoneditor',
         }
-
-        return {};
-      });
-      this._refreshAnnotations();
-
-    }
-
-    // keep default behavior for parse errors
-    if (noValidation ? !this.aceEditor : this.errorTableVisible) {
-       var validationErrors = document.createElement('div');
-      validationErrors.innerHTML = '<table class="jsoneditor-text-errors"><tbody></tbody></table>';
-      var tbody = validationErrors.getElementsByTagName('tbody')[0];
-
-      errors.forEach(function (error) {
-        var message;
-        if (typeof error === 'string') {
-          message = '<td colspan="2"><pre>' + error + '</pre></td>';
-        }
-        else {
-          message = 
-              '<td>' + (error.dataPath || '') + '</td>' +
-              '<td>' + error.message + '</td>';
-        }
-
-        var line;
-
-        if (!isNaN(error.line)) {
-          line = error.line;
-        } else if (error.dataPath) {
-          var errLoc = errorLocations.find(function(loc) { return loc.path === error.dataPath; });
-          if (errLoc) {
-            line = errLoc.line + 1;
-          }
-        }
-
-        var trEl = document.createElement('tr');
-        trEl.className = !isNaN(line) ? 'jump-to-line' : '';
-        if (error.type === 'error') {
-          trEl.className += ' parse-error';
-        } else {
-          trEl.className += ' validation-error';
-          ++validationErrorsCount;
-        }
-        
-        trEl.innerHTML =  ('<td><button class="jsoneditor-schema-error"></button></td><td style="white-space:nowrap;">'+ (!isNaN(line) ? ('Ln ' + line) : '') +'</td>' + message);
-        trEl.onclick = function() {
-          me.isFocused = true;
-          if (!isNaN(line)) {
-            me.setTextSelection({row: line, column: 1}, {row: line, column: 1000});
-          }
-        };
-
-        tbody.appendChild(trEl);
-      });
-
-      this.dom.validationErrors = validationErrors;
-      this.dom.validationErrorsContainer.appendChild(validationErrors);
-      this.dom.additionalErrorsIndication.title = errors.length + " errors total";
-
-      if (this.dom.validationErrorsContainer.clientHeight < this.dom.validationErrorsContainer.scrollHeight) {
-        this.dom.additionalErrorsIndication.style.display = 'block';
-        this.dom.validationErrorsContainer.onscroll = function () {
-          me.dom.additionalErrorsIndication.style.display =
-            (me.dom.validationErrorsContainer.clientHeight > 0 && me.dom.validationErrorsContainer.scrollTop === 0) ? 'block' : 'none';
-        }
-      } else {
-        this.dom.validationErrorsContainer.onscroll = undefined;
       }
 
-      var height = this.dom.validationErrorsContainer.clientHeight + (this.dom.statusBar ? this.dom.statusBar.clientHeight : 0);
-      this.content.style.marginBottom = (-height) + 'px';
-      this.content.style.paddingBottom = height + 'px';
-    } else {
-      validationErrorsCount = errors.reduce(function (acc, curr) {return (curr.type === 'validation' ? ++acc: acc)}, 0);
-    }
-    
-  } else {
-    if (this.aceEditor) {
-      this.annotations = [];
-      this._refreshAnnotations();
-    }
+      return {};
+    });
+    this._refreshAnnotations();
   }
 
-  if (this.options.statusBar) {
-    validationErrorsCount = validationErrorsCount || this.annotations.length;
-    var showIndication = !!validationErrorsCount;
-    this.validationErrorIndication.validationErrorIcon.style.display = showIndication ? 'inline' : 'none';
-    this.validationErrorIndication.validationErrorCount.style.display = showIndication ? 'inline' : 'none';
-    if (showIndication) {
-      this.validationErrorIndication.validationErrorCount.innerText = validationErrorsCount;
-      this.validationErrorIndication.validationErrorIcon.title = validationErrorsCount + ' schema validation error(s) found';
-      this.validationErrorIndication.validationErrorCount.onclick = this.validationErrorIndication.validationErrorIcon.onclick = this._toggleErrorTableVisibility.bind(this);
-    }
-  }
+  // render errors in the errors table (if any)
+  this.errorTable.setErrors(errors, errorLocations);
 
   // update the height of the ace editor
   if (this.aceEditor) {
     var force = false;
     this.aceEditor.resize(force);
   }
-};
-
-textmode._toggleErrorTableVisibility = function () {
-  this.errorTableVisible = !this.errorTableVisible;
-  this.validate();
 };
 
 /**
