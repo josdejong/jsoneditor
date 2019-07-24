@@ -3,14 +3,14 @@
  * @param {Object} config
  * @property {boolean} errorTableVisible
  * @property {function (boolean) : void} onToggleVisibility
- * @property {function (number) } onFocusLine
- * @property {function (number) } onChangeHeight
+ * @property {function (number)} [onFocusLine]
+ * @property {function (number)} onChangeHeight
  * @constructor
  */
 function ErrorTable (config) {
   this.errorTableVisible = config.errorTableVisible;
   this.onToggleVisibility = config.onToggleVisibility;
-  this.onFocusLine = config.onFocusLine;
+  this.onFocusLine = config.onFocusLine || function () {};
   this.onChangeHeight = config.onChangeHeight;
 
   this.dom = {};
@@ -76,6 +76,7 @@ ErrorTable.prototype.setErrors = function (errors, errorLocations) {
   // keep default behavior for parse errors
   if (this.errorTableVisible && errors.length > 0) {
     var validationErrors = document.createElement('div');
+    validationErrors.className = 'jsoneditor-validation-errors';
     validationErrors.innerHTML = '<table class="jsoneditor-text-errors"><tbody></tbody></table>';
     var tbody = validationErrors.getElementsByTagName('tbody')[0];
 
@@ -140,9 +141,9 @@ ErrorTable.prototype.setErrors = function (errors, errorLocations) {
   }
 
   // update the status bar
-  var validationErrorsCount = errors.reduce(function (acc, curr) {
-    return (curr.type === 'validation' ? ++acc: acc)
-  }, 0);
+  var validationErrorsCount = errors.filter(function (error) {
+    return error.type !== 'error'
+  }).length;
   if (validationErrorsCount > 0) {
     this.dom.validationErrorCount.style.display = 'inline';
     this.dom.validationErrorCount.innerText = validationErrorsCount;

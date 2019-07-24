@@ -80,7 +80,6 @@ textmode.create = function (container, options) {
   this.aceEditor = undefined;  // ace code editor
   this.textarea = undefined;  // plain text editor (fallback when Ace is not available)
   this.validateSchema = null;
-  this.validationSequence = 0;
   this.annotations = [];
 
   // create a debounced validate function
@@ -287,7 +286,6 @@ textmode.create = function (container, options) {
   this.errorTable = new ErrorTable({
     errorTableVisible: this.mode === 'text',
     onToggleVisibility: function () {
-      console.log('toggle')
       me.validate();
     },
     onFocusLine: function  (line) {
@@ -787,32 +785,12 @@ textmode.updateText = function(jsonText) {
  * Throws an exception when no JSON schema is configured
  */
 textmode.validate = function () {
-  var doValidate = false;
   var schemaErrors = [];
   var parseErrors = [];
   var json;
   try {
     json = this.get(); // this can fail when there is no valid json
-    doValidate = true;
-  }
-  catch (err) {
-    if (this.getText()) {
-      // try to extract the line number from the jsonlint error message
-      var match = /\w*line\s*(\d+)\w*/g.exec(err.message);
-      var line;
-      if (match) {
-        line = +match[1];
-      }
-      parseErrors.push({
-        type: 'error',
-        message: err.message.replace(/\n/g, '<br>'),
-        line: line
-      });
-    }
-  }
 
-  // only validate the JSON when parsing the JSON succeeded
-  if (doValidate) {
     // execute JSON schema validation (ajv)
     if (this.validateSchema) {
       var valid = this.validateSchema(json);
@@ -826,7 +804,7 @@ textmode.validate = function () {
 
     // execute custom validation and after than merge and render all errors
     // TODO: implement a better mechanism for only using the last validation action
-    this.validationSequence++;
+    this.validationSequence = (this.validationSequence || 0) + 1;
     var me = this;
     var seq = this.validationSequence;
     validateCustom(json, this.options.onValidate)
@@ -841,8 +819,22 @@ textmode.validate = function () {
           console.error('Custom validation function did throw an error', err);
         });
   }
-  else {
-    this._renderErrors([]);
+  catch (err) {
+    if (this.getText()) {
+      // try to extract the line number from the jsonlint error message
+      var match = /\w*line\s*(\d+)\w*/g.exec(err.message);
+      var line;
+      if (match) {
+        line = +match[1];
+      }
+      parseErrors = [{
+        type: 'error',
+        message: err.message.replace(/\n/g, '<br>'),
+        line: line
+      }];
+    }
+
+    this._renderErrors(parseErrors);
   }
 };
 

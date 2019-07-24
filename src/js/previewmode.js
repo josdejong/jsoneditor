@@ -3,6 +3,8 @@
 var jmespath = require('jmespath');
 var translate = require('./i18n').translate;
 var ModeSwitcher = require('./ModeSwitcher');
+var ErrorTable = require('./ErrorTable');
+var textmode = require('./textmode')[0].mixin;
 var showSortModal = require('./showSortModal');
 var showTransformModal = require('./showTransformModal');
 var MAX_PREVIEW_CHARACTERS = require('./constants').MAX_PREVIEW_CHARACTERS;
@@ -225,7 +227,22 @@ previewmode.create = function (container, options) {
     }
   }
 
+  this.errorTable = new ErrorTable({
+    errorTableVisible: true,
+    onToggleVisibility: function () {
+      me.validate();
+    },
+    onFocusLine: null,
+    onChangeHeight: function (height) {
+      // TODO: change CSS to using flex box, remove setting height using JavaScript
+      var totalHeight = height + me.dom.statusBar.clientHeight + 1;
+      me.content.style.marginBottom = (-totalHeight) + 'px';
+      me.content.style.paddingBottom = totalHeight + 'px';
+    }
+  });
+
   this.frame.appendChild(this.content);
+  this.frame.appendChild(this.errorTable.getErrorTable());
   this.container.appendChild(this.frame);
 
   if (options.statusBar) {
@@ -245,6 +262,10 @@ previewmode.create = function (container, options) {
     this.dom.arrayInfo.className = 'jsoneditor-size-info';
     this.dom.arrayInfo.innerText = '';
     statusBar.appendChild(this.dom.arrayInfo);
+
+    statusBar.appendChild(this.errorTable.getErrorCounter());
+    statusBar.appendChild(this.errorTable.getWarningIcon());
+    statusBar.appendChild(this.errorTable.getErrorIcon());
   }
 
   this._renderPreview();
@@ -656,13 +677,9 @@ previewmode.executeWithBusyMessage = function (fn, message) {
   }
 };
 
-/**
- * Validate current JSON object against the configured JSON schema
- * Throws an exception when no JSON schema is configured
- */
-previewmode.validate = function () {
-  // FIXME: implement validate (also support custom validation)
-};
+// TODO: refactor into composable functions instead of this shaky mixin-like structure
+previewmode.validate = textmode.validate
+previewmode._renderErrors = textmode._renderErrors
 
 // define modes
 module.exports = [

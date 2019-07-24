@@ -549,6 +549,11 @@ div.jsoneditor-tree .jsoneditor-button.jsoneditor-schema-error {
   overflow-y: auto;
 }
 
+.jsoneditor .jsoneditor-validation-errors {
+  width: 100%;
+  overflow: hidden;
+}
+
 .jsoneditor .jsoneditor-additional-errors {
   position: absolute;
   margin: auto;
@@ -585,6 +590,7 @@ div.jsoneditor-tree .jsoneditor-button.jsoneditor-schema-error {
 
 .jsoneditor .jsoneditor-text-errors td pre {
   margin: 0;
+  white-space: normal;
 }
 
 .jsoneditor .jsoneditor-text-errors tr {
