@@ -162,14 +162,16 @@ previewmode.create = function (container, options) {
     buttonRepair.title = 'Repair JSON: fix quotes and escape characters, remove comments and JSONP notation, turn JavaScript objects into JSON.';
     this.menu.appendChild(buttonRepair);
     buttonRepair.onclick = function () {
-      me.executeWithBusyMessage(function () {
-        try {
-          me.repair();
-        }
-        catch (err) {
-          me._onError(err);
-        }
-      }, 'repairing...');
+      if (me.json === undefined) { // only repair if we don't have valid JSON
+        me.executeWithBusyMessage(function () {
+          try {
+            me.repair();
+          }
+          catch (err) {
+            me._onError(err);
+          }
+        }, 'repairing...');
+      }
     };
 
     // create history and undo/redo buttons
