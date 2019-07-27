@@ -625,7 +625,7 @@ textmode.destroy = function () {
 textmode.compact = function () {
   var json = this.get();
   var text = JSON.stringify(json);
-  this.setText(text);
+  this._setText(text, false);
 };
 
 /**
@@ -634,7 +634,7 @@ textmode.compact = function () {
 textmode.format = function () {
   var json = this.get();
   var text = JSON.stringify(json, null, this.indentation);
-  this.setText(text);
+  this._setText(text, false);
 };
 
 /**
@@ -643,7 +643,7 @@ textmode.format = function () {
 textmode.repair = function () {
   var text = this.getText();
   var repairedText = util.repair(text);
-  this.setText(repairedText);
+  this._setText(repairedText, false);
 };
 
 /**
