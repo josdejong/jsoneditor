@@ -36,6 +36,8 @@ exports.parse = function parse(jsonString) {
  * @returns {string} json
  */
 exports.repair = function (jsString) {
+  // TODO: refactor this function, it's too large and complicated now
+
   // escape all single and double quotes inside strings
   var chars = [];
   var i = 0;
@@ -116,41 +118,49 @@ exports.repair = function (jsString) {
     }
   }
 
-  // parse single or double quoted string
+  /**
+   * parse single or double quoted string. Returns the parsed string
+   * @param {string} endQuote
+   * @return {string}
+   */
   function parseString(endQuote) {
-    chars.push('"');
+    var string = '';
+
+    string += '"';
     i++;
     var c = curr();
     while (i < jsString.length && c !== endQuote) {
       if (c === '"' && prev() !== '\\') {
         // unescaped double quote, escape it
-        chars.push('\\"');
+        string += '\\"';
       }
       else if (controlChars.hasOwnProperty(c)) {
         // replace unescaped control characters with escaped ones
-        chars.push(controlChars[c])
+        string += controlChars[c]
       }
       else if (c === '\\') {
         // remove the escape character when followed by a single quote ', not needed
         i++;
         c = curr();
         if (c !== '\'') {
-          chars.push('\\');
+          string += '\\';
         }
-        chars.push(c);
+        string += c;
       }
       else {
         // regular character
-        chars.push(c);
+        string += c;
       }
 
       i++;
       c = curr();
     }
     if (c === endQuote) {
-      chars.push('"');
+      string += '"';
       i++;
     }
+
+    return string;
   }
 
   // parse an unquoted key
@@ -167,11 +177,67 @@ exports.repair = function (jsString) {
     }
 
     if (specialValues.indexOf(key) === -1) {
-      chars.push('"' + key + '"');
+      return '"' + key + '"';
     }
     else {
-      chars.push(key);
+      return key;
     }
+  }
+
+  function parseMongoDataType () {
+    var c = curr();
+    var value;
+    var dataType = '';
+    while (/[a-zA-Z_$]/.test(c)) {
+      dataType += c
+      i++;
+      c = curr();
+    }
+
+    if (dataType.length > 0 && c === '(') {
+      // This is an MongoDB data type like {"_id": ObjectId("123")}
+      i++;
+      c = curr();
+      if (c === '"') {
+        // a data type containing a string, like ISODate("2012-12-19T06:01:17.171Z")
+        value = parseString(c);
+        c = curr();
+      }
+      else {
+        // a data type containing a value, like 'NumberLong(2)'
+        value = '';
+        while(c !== ')' && c !== '') {
+          value += c;
+          i++;
+          c = curr();
+        }
+      }
+
+      if (c === ')') {
+        // skip the closing bracket at the end
+        i++;
+
+        // return the value (strip the data type object)
+        return value;
+      }
+      else {
+        // huh? that's unexpected. don't touch it
+        return dataType + '(' + value + c;
+      }
+    }
+    else {
+      // hm, no Mongo data type after all
+      return dataType;
+    }
+  }
+
+  function isSpecialWhiteSpace (c) {
+    return (
+        c === '\u00A0' ||
+        (c >= '\u2000' && c <= '\u200A') ||
+        c === '\u202F' ||
+        c === '\u205F' ||
+        c === '\u3000')
   }
 
   while(i < jsString.length) {
@@ -183,25 +249,25 @@ exports.repair = function (jsString) {
     else if (c === '/' && next() === '/') {
       skipComment();
     }
-    else if (c === '\u00A0' || (c >= '\u2000' && c <= '\u200A') || c === '\u202F' || c === '\u205F' || c === '\u3000') {
+    else if (isSpecialWhiteSpace(c)) {
       // special white spaces (like non breaking space)
       chars.push(' ');
       i++
     }
     else if (c === quote) {
-      parseString(quote);
+      chars.push(parseString(c));
     }
     else if (c === quoteDbl) {
-      parseString(quoteDbl);
+      chars.push(parseString(quoteDbl));
     }
     else if (c === graveAccent) {
-      parseString(acuteAccent);
+      chars.push(parseString(acuteAccent));
     }
     else if (c === quoteLeft) {
-      parseString(quoteRight);
+      chars.push(parseString(quoteRight));
     }
     else if (c === quoteDblLeft) {
-      parseString(quoteDblRight);
+      chars.push(parseString(quoteDblRight));
     }
     else if (c === ',' && [']', '}'].indexOf(nextNonWhiteSpace()) !== -1) {
       // skip trailing commas
@@ -209,11 +275,16 @@ exports.repair = function (jsString) {
     }
     else if (/[a-zA-Z_$]/.test(c) && ['{', ','].indexOf(lastNonWhitespace()) !== -1) {
       // an unquoted object key (like a in '{a:2}')
-      parseKey();
+      chars.push(parseKey());
     }
     else {
-      chars.push(c);
-      i++;
+      if (/[a-zA-Z_$]/.test(c)) {
+        chars.push(parseMongoDataType());
+      }
+      else {
+        chars.push(c);
+        i++;
+      }
     }
   }
 
