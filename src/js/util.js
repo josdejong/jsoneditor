@@ -28,14 +28,14 @@ exports.parse = function parse(jsonString) {
 };
 
 /**
- * Sanitize a JSON-like string containing. For example changes JavaScript
+ * Repair a JSON-like string containing. For example changes JavaScript
  * notation into JSON notation.
  * This function for example changes a string like "{a: 2, 'b': {c: 'd'}"
  * into '{"a": 2, "b": {"c": "d"}'
  * @param {string} jsString
  * @returns {string} json
  */
-exports.sanitize = function (jsString) {
+exports.repair = function (jsString) {
   // escape all single and double quotes inside strings
   var chars = [];
   var i = 0;

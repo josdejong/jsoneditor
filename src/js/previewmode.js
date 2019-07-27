@@ -437,9 +437,9 @@ previewmode.format = function () {
  */
 previewmode.repair = function () {
   var text = this.getText();
-  var sanitizedText = util.sanitize(text);
+  var repairedText = util.repair(text);
 
-  this._setTextAndFireOnChange(sanitizedText);
+  this._setTextAndFireOnChange(repairedText);
 };
 
 /**

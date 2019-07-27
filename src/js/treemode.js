@@ -279,11 +279,11 @@ treemode.setText = function(jsonText) {
     this.set(util.parse(jsonText)); // this can throw an error
   }
   catch (err) {
-    // try to sanitize json, replace JavaScript notation with JSON notation
-    var sanitizedJsonText = util.sanitize(jsonText);
+    // try to repair json, replace JavaScript notation with JSON notation
+    var repairedJsonText = util.repair(jsonText);
 
     // try to parse again
-    this.set(util.parse(sanitizedJsonText)); // this can throw an error
+    this.set(util.parse(repairedJsonText)); // this can throw an error
   }
 };
 
@@ -297,11 +297,11 @@ treemode.updateText = function(jsonText) {
     this.update(util.parse(jsonText)); // this can throw an error
   }
   catch (err) {
-    // try to sanitize json, replace JavaScript notation with JSON notation
-    var sanitizedJsonText = util.sanitize(jsonText);
+    // try to repair json, replace JavaScript notation with JSON notation
+    var repairJsonText = util.repair(jsonText);
 
     // try to parse again
-    this.update(util.parse(sanitizedJsonText)); // this can throw an error
+    this.update(util.parse(repairJsonText)); // this can throw an error
   }
 };
 

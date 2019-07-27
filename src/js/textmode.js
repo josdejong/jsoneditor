@@ -642,8 +642,8 @@ textmode.format = function () {
  */
 textmode.repair = function () {
   var text = this.getText();
-  var sanitizedText = util.sanitize(text);
-  this.setText(sanitizedText);
+  var repairedText = util.repair(text);
+  this.setText(repairedText);
 };
 
 /**

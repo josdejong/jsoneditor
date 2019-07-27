@@ -3,94 +3,94 @@ var util = require('../src/js/util');
 
 describe('util', function () {
 
-  describe('sanitize', function () {
+  describe('repair', function () {
 
     it('should leave valid JSON as is', function () {
-      assert.strictEqual(util.sanitize('{"a":2}'), '{"a":2}');
+      assert.strictEqual(util.repair('{"a":2}'), '{"a":2}');
     });
 
     it('should replace JavaScript with JSON', function () {
-      assert.strictEqual(util.sanitize('{a:2}'), '{"a":2}');
-      assert.strictEqual(util.sanitize('{a: 2}'), '{"a": 2}');
-      assert.strictEqual(util.sanitize('{\n  a: 2\n}'), '{\n  "a": 2\n}');
-      assert.strictEqual(util.sanitize('{\'a\':2}'), '{"a":2}');
-      assert.strictEqual(util.sanitize('{a:\'foo\'}'), '{"a":"foo"}');
-      assert.strictEqual(util.sanitize('{a:\'foo\',b:\'bar\'}'), '{"a":"foo","b":"bar"}');
+      assert.strictEqual(util.repair('{a:2}'), '{"a":2}');
+      assert.strictEqual(util.repair('{a: 2}'), '{"a": 2}');
+      assert.strictEqual(util.repair('{\n  a: 2\n}'), '{\n  "a": 2\n}');
+      assert.strictEqual(util.repair('{\'a\':2}'), '{"a":2}');
+      assert.strictEqual(util.repair('{a:\'foo\'}'), '{"a":"foo"}');
+      assert.strictEqual(util.repair('{a:\'foo\',b:\'bar\'}'), '{"a":"foo","b":"bar"}');
 
       // should leave string content untouched
-      assert.strictEqual(util.sanitize('"{a:b}"'), '"{a:b}"');
+      assert.strictEqual(util.repair('"{a:b}"'), '"{a:b}"');
     });
 
     it('should add/remove escape characters', function () {
-      assert.strictEqual(util.sanitize('"foo\'bar"'), '"foo\'bar"');
-      assert.strictEqual(util.sanitize('"foo\\"bar"'), '"foo\\"bar"');
-      assert.strictEqual(util.sanitize('\'foo"bar\''), '"foo\\"bar"');
-      assert.strictEqual(util.sanitize('\'foo\\\'bar\''), '"foo\'bar"');
-      assert.strictEqual(util.sanitize('"foo\\\'bar"'), '"foo\'bar"');
+      assert.strictEqual(util.repair('"foo\'bar"'), '"foo\'bar"');
+      assert.strictEqual(util.repair('"foo\\"bar"'), '"foo\\"bar"');
+      assert.strictEqual(util.repair('\'foo"bar\''), '"foo\\"bar"');
+      assert.strictEqual(util.repair('\'foo\\\'bar\''), '"foo\'bar"');
+      assert.strictEqual(util.repair('"foo\\\'bar"'), '"foo\'bar"');
     });
 
     it('should replace special white characters', function () {
-      assert.strictEqual(util.sanitize('{"a":\u00a0"foo\u00a0bar"}'), '{"a": "foo\u00a0bar"}');
-      assert.strictEqual(util.sanitize('{"a":\u2009"foo"}'), '{"a": "foo"}');
+      assert.strictEqual(util.repair('{"a":\u00a0"foo\u00a0bar"}'), '{"a": "foo\u00a0bar"}');
+      assert.strictEqual(util.repair('{"a":\u2009"foo"}'), '{"a": "foo"}');
     });
 
     it('should escape unescaped control characters', function () {
-      assert.strictEqual(util.sanitize('"hello\bworld"'), '"hello\\bworld"')
-      assert.strictEqual(util.sanitize('"hello\fworld"'), '"hello\\fworld"')
-      assert.strictEqual(util.sanitize('"hello\nworld"'), '"hello\\nworld"')
-      assert.strictEqual(util.sanitize('"hello\rworld"'), '"hello\\rworld"')
-      assert.strictEqual(util.sanitize('"hello\tworld"'), '"hello\\tworld"')
-      assert.strictEqual(util.sanitize('{"value\n": "dc=hcm,dc=com"}'), '{"value\\n": "dc=hcm,dc=com"}')
+      assert.strictEqual(util.repair('"hello\bworld"'), '"hello\\bworld"')
+      assert.strictEqual(util.repair('"hello\fworld"'), '"hello\\fworld"')
+      assert.strictEqual(util.repair('"hello\nworld"'), '"hello\\nworld"')
+      assert.strictEqual(util.repair('"hello\rworld"'), '"hello\\rworld"')
+      assert.strictEqual(util.repair('"hello\tworld"'), '"hello\\tworld"')
+      assert.strictEqual(util.repair('{"value\n": "dc=hcm,dc=com"}'), '{"value\\n": "dc=hcm,dc=com"}')
     })
 
     it('should replace left/right quotes', function () {
-      assert.strictEqual(util.sanitize('\u2018foo\u2019'), '"foo"')
-      assert.strictEqual(util.sanitize('\u201Cfoo\u201D'), '"foo"')
-      assert.strictEqual(util.sanitize('\u0060foo\u00B4'), '"foo"')
+      assert.strictEqual(util.repair('\u2018foo\u2019'), '"foo"')
+      assert.strictEqual(util.repair('\u201Cfoo\u201D'), '"foo"')
+      assert.strictEqual(util.repair('\u0060foo\u00B4'), '"foo"')
     });
 
     it('remove comments', function () {
-      assert.strictEqual(util.sanitize('/* foo */ {}'), ' {}');
-      assert.strictEqual(util.sanitize('/* foo */ {}'), ' {}');
-      assert.strictEqual(util.sanitize('{a:\'foo\',/*hello*/b:\'bar\'}'), '{"a":"foo","b":"bar"}');
-      assert.strictEqual(util.sanitize('{\na:\'foo\',//hello\nb:\'bar\'\n}'), '{\n"a":"foo",\n"b":"bar"\n}');
+      assert.strictEqual(util.repair('/* foo */ {}'), ' {}');
+      assert.strictEqual(util.repair('/* foo */ {}'), ' {}');
+      assert.strictEqual(util.repair('{a:\'foo\',/*hello*/b:\'bar\'}'), '{"a":"foo","b":"bar"}');
+      assert.strictEqual(util.repair('{\na:\'foo\',//hello\nb:\'bar\'\n}'), '{\n"a":"foo",\n"b":"bar"\n}');
 
       // should not remove comments in string
-      assert.strictEqual(util.sanitize('{"str":"/* foo */"}'), '{"str":"/* foo */"}');
+      assert.strictEqual(util.repair('{"str":"/* foo */"}'), '{"str":"/* foo */"}');
     });
 
     it('should strip JSONP notation', function () {
       // matching
-      assert.strictEqual(util.sanitize('callback_123({});'), '{}');
-      assert.strictEqual(util.sanitize('callback_123([]);'), '[]');
-      assert.strictEqual(util.sanitize('callback_123(2);'), '2');
-      assert.strictEqual(util.sanitize('callback_123("foo");'), '"foo"');
-      assert.strictEqual(util.sanitize('callback_123(null);'), 'null');
-      assert.strictEqual(util.sanitize('callback_123(true);'), 'true');
-      assert.strictEqual(util.sanitize('callback_123(false);'), 'false');
-      assert.strictEqual(util.sanitize('/* foo bar */ callback_123 ({})'), '{}');
-      assert.strictEqual(util.sanitize('/* foo bar */ callback_123 ({})'), '{}');
-      assert.strictEqual(util.sanitize('/* foo bar */\ncallback_123({})'), '{}');
-      assert.strictEqual(util.sanitize('/* foo bar */ callback_123 (  {}  )'), '  {}  ');
-      assert.strictEqual(util.sanitize('  /* foo bar */   callback_123 ({});  '), '{}');
-      assert.strictEqual(util.sanitize('\n/* foo\nbar */\ncallback_123 ({});\n\n'), '{}');
+      assert.strictEqual(util.repair('callback_123({});'), '{}');
+      assert.strictEqual(util.repair('callback_123([]);'), '[]');
+      assert.strictEqual(util.repair('callback_123(2);'), '2');
+      assert.strictEqual(util.repair('callback_123("foo");'), '"foo"');
+      assert.strictEqual(util.repair('callback_123(null);'), 'null');
+      assert.strictEqual(util.repair('callback_123(true);'), 'true');
+      assert.strictEqual(util.repair('callback_123(false);'), 'false');
+      assert.strictEqual(util.repair('/* foo bar */ callback_123 ({})'), '{}');
+      assert.strictEqual(util.repair('/* foo bar */ callback_123 ({})'), '{}');
+      assert.strictEqual(util.repair('/* foo bar */\ncallback_123({})'), '{}');
+      assert.strictEqual(util.repair('/* foo bar */ callback_123 (  {}  )'), '  {}  ');
+      assert.strictEqual(util.repair('  /* foo bar */   callback_123 ({});  '), '{}');
+      assert.strictEqual(util.repair('\n/* foo\nbar */\ncallback_123 ({});\n\n'), '{}');
 
       // non-matching
-      assert.strictEqual(util.sanitize('callback abc({});'), 'callback abc({});');
-      assert.strictEqual(util.sanitize('callback {}'), 'callback {}');
-      assert.strictEqual(util.sanitize('callback({}'), 'callback({}');
+      assert.strictEqual(util.repair('callback abc({});'), 'callback abc({});');
+      assert.strictEqual(util.repair('callback {}'), 'callback {}');
+      assert.strictEqual(util.repair('callback({}'), 'callback({}');
     });
 
     it('should strip trailing zeros', function () {
       // matching
-      assert.strictEqual(util.sanitize('[1,2,3,]'), '[1,2,3]');
-      assert.strictEqual(util.sanitize('[1,2,3,\n]'), '[1,2,3\n]');
-      assert.strictEqual(util.sanitize('[1,2,3,  \n  ]'), '[1,2,3  \n  ]');
-      assert.strictEqual(util.sanitize('{"a":2,}'), '{"a":2}');
+      assert.strictEqual(util.repair('[1,2,3,]'), '[1,2,3]');
+      assert.strictEqual(util.repair('[1,2,3,\n]'), '[1,2,3\n]');
+      assert.strictEqual(util.repair('[1,2,3,  \n  ]'), '[1,2,3  \n  ]');
+      assert.strictEqual(util.repair('{"a":2,}'), '{"a":2}');
 
       // not matching
-      assert.strictEqual(util.sanitize('"[1,2,3,]"'), '"[1,2,3,]"');
-      assert.strictEqual(util.sanitize('"{a:2,}"'), '"{a:2,}"');
+      assert.strictEqual(util.repair('"[1,2,3,]"'), '"[1,2,3,]"');
+      assert.strictEqual(util.repair('"{a:2,}"'), '"{a:2,}"');
     });
 
   });
