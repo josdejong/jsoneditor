@@ -9,7 +9,7 @@ https://github.com/josdejong/jsoneditor
 - Repair button is now capable of turning MongoDB documents into valid JSON.
 - Fixed #730: in `code` mode, there was an initial undo action which clears
   the content.
-- Upgraded dependencies `vanilla-picker@2.9.1`, `mobius1-selectr@2.4.13`,
+- Upgraded dependencies `vanilla-picker@2.9.2`, `mobius1-selectr@2.4.13`,
   `ajv@6.10.2`.
 
 
