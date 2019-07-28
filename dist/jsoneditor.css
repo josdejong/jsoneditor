@@ -298,6 +298,50 @@ div.jsoneditor-outer.has-nav-bar.has-main-menu-bar {
   padding-top: 61px;
 }
 
+
+
+div.jsoneditor.busy pre.jsoneditor-preview {
+  background: #f5f5f5;
+  color: #808080;
+}
+
+div.jsoneditor code.jsoneditor-preview {
+  background: none;
+}
+
+div.jsoneditor.jsoneditor-mode-preview pre.jsoneditor-preview {
+  width: 100%;
+  height: 100%;
+  box-sizing: border-box;
+  overflow: auto;
+  padding: 2px;
+  margin: 0;
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+
+div.jsoneditor-busy {
+  position: absolute;
+  top: 15%;
+  left: 0;
+  box-sizing: border-box;
+  width: 100%;
+  text-align: center;
+  display: none;
+}
+
+div.jsoneditor-busy span {
+  background-color: #FFFFAB;
+  border: 1px solid yellow;
+  border-radius: 3px;
+  padding: 5px 15px;
+  box-shadow: 0 0 5px rgba(0,0,0,0.4);
+}
+
+div.jsoneditor.busy div.jsoneditor-busy {
+  display: inherit;
+}
+
 textarea.jsoneditor-text,
 .ace-jsoneditor {
   min-height: 150px;
@@ -369,7 +413,8 @@ div.jsoneditor-value,
 div.jsoneditor td,
 div.jsoneditor th,
 div.jsoneditor textarea,
-.jsoneditor-schema-error {
+div.jsoneditor pre.jsoneditor-preview,
+div.jsoneditor .jsoneditor-schema-error {
   font-family: "dejavu sans mono", "droid sans mono", consolas, monaco, "lucida console", "courier new", courier, monospace, sans-serif;
   font-size: 10pt;
   color: #1A1A1A;
@@ -547,6 +592,11 @@ div.jsoneditor-tree .jsoneditor-button.jsoneditor-schema-error {
   overflow-y: auto;
 }
 
+.jsoneditor .jsoneditor-validation-errors {
+  width: 100%;
+  overflow: hidden;
+}
+
 .jsoneditor .jsoneditor-additional-errors {
   position: absolute;
   margin: auto;
@@ -579,6 +629,11 @@ div.jsoneditor-tree .jsoneditor-button.jsoneditor-schema-error {
 .jsoneditor .jsoneditor-text-errors td {
   padding: 3px 6px;
   vertical-align: middle;
+}
+
+.jsoneditor .jsoneditor-text-errors td pre {
+  margin: 0;
+  white-space: normal;
 }
 
 .jsoneditor .jsoneditor-text-errors tr {
@@ -1458,7 +1513,6 @@ div.jsoneditor-treepath span.jsoneditor-treepath-seperator:hover {
 div.jsoneditor-statusbar {
   line-height: 26px;
   height: 26px;
-  margin-top: -1px;
   color: #808080;
   background-color: #ebebeb;
   border-top: 1px solid #d3d3d3;
@@ -1468,8 +1522,9 @@ div.jsoneditor-statusbar {
   font-size: 10pt;
 }
 
-div.jsoneditor-statusbar > .jsoneditor-curserinfo-label {
-  margin: 0 2px 0 4px;
+div.jsoneditor-statusbar > .jsoneditor-curserinfo-label,
+div.jsoneditor-statusbar > .jsoneditor-size-info {
+  margin: 0 4px;
 }
 
 div.jsoneditor-statusbar > .jsoneditor-curserinfo-val {
@@ -1503,6 +1558,10 @@ div.jsoneditor-statusbar > .jsoneditor-parse-error-icon {
   padding: 0;
   margin: 1px;
   background: url("img/jsoneditor-icons.svg") -25px 0px;
+}
+
+div.jsoneditor-statusbar .jsoneditor-array-info a {
+  color: inherit;
 }
 div.jsoneditor-navigation-bar {
   width: 100%;

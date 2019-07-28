@@ -24,8 +24,8 @@
  * Copyright (c) 2011-2019 Jos de Jong, http://jsoneditoronline.org
  *
  * @author  Jos de Jong, <wjosdejong@gmail.com>
- * @version 6.1.0
- * @date    2019-06-22
+ * @version 6.2.0
+ * @date    2019-07-28
  */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
@@ -120,7 +120,7 @@ return /******/ (function(modules) { // webpackBootstrap
 /******/
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 13);
+/******/ 	return __webpack_require__(__webpack_require__.s = 16);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -130,444 +130,13 @@ return /******/ (function(modules) { // webpackBootstrap
 "use strict";
 
 
-__webpack_require__(6);
+__webpack_require__(10);
+var naturalSort = __webpack_require__(11);
+var jsonlint = __webpack_require__(23);
+var jsonMap = __webpack_require__(24);
+var translate = __webpack_require__(1).translate;
 
-var _locales = ['en', 'pt-BR', 'zh-CN', 'tr'];
-var _defs = {
-  en: {
-    array: 'Array',
-    auto: 'Auto',
-    appendText: 'Append',
-    appendTitle: 'Append a new field with type \'auto\' after this field (Ctrl+Shift+Ins)',
-    appendSubmenuTitle: 'Select the type of the field to be appended',
-    appendTitleAuto: 'Append a new field with type \'auto\' (Ctrl+Shift+Ins)',
-    ascending: 'Ascending',
-    ascendingTitle: 'Sort the childs of this ${type} in ascending order',
-    actionsMenu: 'Click to open the actions menu (Ctrl+M)',
-    collapseAll: 'Collapse all fields',
-    descending: 'Descending',
-    descendingTitle: 'Sort the childs of this ${type} in descending order',
-    drag: 'Drag to move this field (Alt+Shift+Arrows)',
-    duplicateKey: 'duplicate key',
-    duplicateText: 'Duplicate',
-    duplicateTitle: 'Duplicate selected fields (Ctrl+D)',
-    duplicateField: 'Duplicate this field (Ctrl+D)',
-    duplicateFieldError: 'Duplicate field name',
-    cannotParseFieldError: 'Cannot parse field into JSON',
-    cannotParseValueError: 'Cannot parse value into JSON',
-    empty: 'empty',
-    expandAll: 'Expand all fields',
-    expandTitle: 'Click to expand/collapse this field (Ctrl+E). \n' +
-      'Ctrl+Click to expand/collapse including all childs.',
-    insert: 'Insert',
-    insertTitle: 'Insert a new field with type \'auto\' before this field (Ctrl+Ins)',
-    insertSub: 'Select the type of the field to be inserted',
-    object: 'Object',
-    ok: 'Ok',
-    redo: 'Redo (Ctrl+Shift+Z)',
-    removeText: 'Remove',
-    removeTitle: 'Remove selected fields (Ctrl+Del)',
-    removeField: 'Remove this field (Ctrl+Del)',
-    selectNode: 'Select a node...',
-    showAll: 'show all',
-    showMore: 'show more',
-    showMoreStatus: 'displaying ${visibleChilds} of ${totalChilds} items.',
-    sort: 'Sort',
-    sortTitle: 'Sort the childs of this ${type}',
-    sortTitleShort: 'Sort contents',
-    sortFieldLabel: 'Field:',
-    sortDirectionLabel: 'Direction:',
-    sortFieldTitle: 'Select the nested field by which to sort the array or object',
-    sortAscending: 'Ascending',
-    sortAscendingTitle: 'Sort the selected field in ascending order',
-    sortDescending: 'Descending',
-    sortDescendingTitle: 'Sort the selected field in descending order',
-    string: 'String',
-    transform: 'Transform',
-    transformTitle: 'Filter, sort, or transform the childs of this ${type}',
-    transformTitleShort: 'Filter, sort, or transform contents',
-    extract: 'Extract',
-    extractTitle: 'Extract this ${type}',
-    transformQueryTitle: 'Enter a JMESPath query',
-    transformWizardLabel: 'Wizard',
-    transformWizardFilter: 'Filter',
-    transformWizardSortBy: 'Sort by',
-    transformWizardSelectFields: 'Select fields',
-    transformQueryLabel: 'Query',
-    transformPreviewLabel: 'Preview',
-    type: 'Type',
-    typeTitle: 'Change the type of this field',
-    openUrl: 'Ctrl+Click or Ctrl+Enter to open url in new window',
-    undo: 'Undo last action (Ctrl+Z)',
-    validationCannotMove: 'Cannot move a field into a child of itself',
-    autoType: 'Field type "auto". ' +
-      'The field type is automatically determined from the value ' +
-      'and can be a string, number, boolean, or null.',
-    objectType: 'Field type "object". ' +
-      'An object contains an unordered set of key/value pairs.',
-    arrayType: 'Field type "array". ' +
-      'An array contains an ordered collection of values.',
-    stringType: 'Field type "string". ' +
-      'Field type is not determined from the value, ' +
-      'but always returned as string.',
-    modeCodeText: 'Code',
-    modeCodeTitle: 'Switch to code highlighter',
-    modeFormText: 'Form',
-    modeFormTitle: 'Switch to form editor',
-    modeTextText: 'Text',
-    modeTextTitle: 'Switch to plain text editor',
-    modeTreeText: 'Tree',
-    modeTreeTitle: 'Switch to tree editor',
-    modeViewText: 'View',
-    modeViewTitle: 'Switch to tree view',
-    examples: 'Examples',
-    default: 'Default',
-  },
-  'zh-CN': {
-    array: '数组',
-    auto: '自动',
-    appendText: '追加',
-    appendTitle: '在此字段后追加一个类型为“auto”的新字段 (Ctrl+Shift+Ins)',
-    appendSubmenuTitle: '选择要追加的字段类型',
-    appendTitleAuto: '追加类型为“auto”的新字段 (Ctrl+Shift+Ins)',
-    ascending: '升序',
-    ascendingTitle: '升序排列${type}的子节点',
-    actionsMenu: '点击打开动作菜单(Ctrl+M)',
-    collapseAll: '缩进所有字段',
-    descending: '降序',
-    descendingTitle: '降序排列${type}的子节点',
-    drag: '拖拽移动该节点(Alt+Shift+Arrows)',
-    duplicateKey: '重复键',
-    duplicateText: '复制',
-    duplicateTitle: '复制选中字段(Ctrl+D)',
-    duplicateField: '复制该字段(Ctrl+D)',
-    duplicateFieldError: '重复的字段名称',
-    cannotParseFieldError: '无法将字段解析为JSON',
-    cannotParseValueError: '无法将值解析为JSON',
-    empty: '清空',
-    expandAll: '展开所有字段',
-    expandTitle: '点击 展开/收缩 该字段(Ctrl+E). \n' +
-      'Ctrl+Click 展开/收缩 包含所有子节点.',
-    insert: '插入',
-    insertTitle: '在此字段前插入类型为“auto”的新字段 (Ctrl+Ins)',
-    insertSub: '选择要插入的字段类型',
-    object: '对象',
-    ok: 'Ok',
-    redo: '重做 (Ctrl+Shift+Z)',
-    removeText: '移除',
-    removeTitle: '移除选中字段 (Ctrl+Del)',
-    removeField: '移除该字段 (Ctrl+Del)',
-    selectNode: '选择一个节点...',
-    showAll: '展示全部',
-    showMore: '展示更多',
-    showMoreStatus: '显示${totalChilds}的${visibleChilds}项目.',
-    sort: '排序',
-    sortTitle: '排序${type}的子节点',
-    sortTitleShort: '内容排序',
-    sortFieldLabel: '字段：',
-    sortDirectionLabel: '方向：',
-    sortFieldTitle: '选择用于对数组或对象排序的嵌套字段',
-    sortAscending: '升序排序',
-    sortAscendingTitle: '按照该字段升序排序',
-    sortDescending: '降序排序',
-    sortDescendingTitle: '按照该字段降序排序',
-    string: '字符串',
-    transform: '变换',
-    transformTitle: '筛选，排序，或者转换${type}的子节点',
-    transformTitleShort: '筛选，排序，或者转换内容',
-    transformQueryTitle: '输入JMESPath查询',
-    transformWizardLabel: '向导',
-    transformWizardFilter: '筛选',
-    transformWizardSortBy: '排序',
-    transformWizardSelectFields: '选择字段',
-    transformQueryLabel: '查询',
-    transformPreviewLabel: '预览',
-    type: '类型',
-    typeTitle: '更改字段类型',
-    openUrl: 'Ctrl+Click 或者 Ctrl+Enter 在新窗口打开链接',
-    undo: '撤销上次动作 (Ctrl+Z)',
-    validationCannotMove: '无法将字段移入其子节点',
-    autoType: '字段类型 "auto". ' +
-      '字段类型由值自动确定 ' +
-      '可以为 string，number，boolean，或者 null.',
-    objectType: '字段类型 "object". ' +
-      '对象包含一组无序的键/值对.',
-    arrayType: '字段类型 "array". ' +
-      '数组包含值的有序集合.',
-    stringType: '字段类型 "string". ' +
-      '字段类型由值自动确定，' +
-      '但始终作为字符串返回.',
-    modeCodeText: '代码',
-    modeCodeTitle: '切换至代码高亮',
-    modeFormText: '表单',
-    modeFormTitle: '切换至表单编辑',
-    modeTextText: '文本',
-    modeTextTitle: '切换至文本编辑',
-    modeTreeText: '树',
-    modeTreeTitle: '切换至树编辑',
-    modeViewText: '视图',
-    modeViewTitle: '切换至树视图',
-    examples: '例子',
-    default: '缺省',
-  },
-  'pt-BR': {
-    array: 'Lista',
-    auto: 'Automatico',
-    appendText: 'Adicionar',
-    appendTitle: 'Adicionar novo campo com tipo \'auto\' depois deste campo (Ctrl+Shift+Ins)',
-    appendSubmenuTitle: 'Selecione o tipo do campo a ser adicionado',
-    appendTitleAuto: 'Adicionar novo campo com tipo \'auto\' (Ctrl+Shift+Ins)',
-    ascending: 'Ascendente',
-    ascendingTitle: 'Organizar filhor do tipo ${type} em crescente',
-    actionsMenu: 'Clique para abrir o menu de ações (Ctrl+M)',
-    collapseAll: 'Fechar todos campos',
-    descending: 'Descendente',
-    descendingTitle: 'Organizar o filhos do tipo ${type} em decrescente',
-    duplicateKey: 'chave duplicada',
-    drag: 'Arraste para mover este campo (Alt+Shift+Arrows)',
-    duplicateText: 'Duplicar',
-    duplicateTitle: 'Duplicar campos selecionados (Ctrl+D)',
-    duplicateField: 'Duplicar este campo (Ctrl+D)',
-    duplicateFieldError: 'Nome do campo duplicado',
-    cannotParseFieldError: 'Não é possível analisar o campo no JSON',
-    cannotParseValueError: 'Não é possível analisar o valor em JSON',
-    empty: 'vazio',
-    expandAll: 'Expandir todos campos',
-    expandTitle: 'Clique para expandir/encolher este campo (Ctrl+E). \n' +
-      'Ctrl+Click para expandir/encolher incluindo todos os filhos.',
-    insert: 'Inserir',
-    insertTitle: 'Inserir um novo campo do tipo \'auto\' antes deste campo (Ctrl+Ins)',
-    insertSub: 'Selecionar o tipo de campo a ser inserido',
-    object: 'Objeto',
-    ok: 'Ok',
-    redo: 'Refazer (Ctrl+Shift+Z)',
-    removeText: 'Remover',
-    removeTitle: 'Remover campos selecionados (Ctrl+Del)',
-    removeField: 'Remover este campo (Ctrl+Del)',
-    // TODO: correctly translate
-    selectNode: 'Select a node...',
-    // TODO: correctly translate
-    showAll: 'mostre tudo',
-    // TODO: correctly translate
-    showMore: 'mostre mais',
-    // TODO: correctly translate
-    showMoreStatus: 'exibindo ${visibleChilds} de ${totalChilds} itens.',
-    sort: 'Organizar',
-    sortTitle: 'Organizar os filhos deste ${type}',
-    // TODO: correctly translate
-    sortTitleShort: 'Organizar os filhos',
-    // TODO: correctly translate
-    sortFieldLabel: 'Field:',
-    // TODO: correctly translate
-    sortDirectionLabel: 'Direction:',
-    // TODO: correctly translate
-    sortFieldTitle: 'Select the nested field by which to sort the array or object',
-    // TODO: correctly translate
-    sortAscending: 'Ascending',
-    // TODO: correctly translate
-    sortAscendingTitle: 'Sort the selected field in ascending order',
-    // TODO: correctly translate
-    sortDescending: 'Descending',
-    // TODO: correctly translate
-    sortDescendingTitle: 'Sort the selected field in descending order',
-    string: 'Texto',
-    // TODO: correctly translate
-    transform: 'Transform',
-    // TODO: correctly translate
-    transformTitle: 'Filter, sort, or transform the childs of this ${type}',
-    // TODO: correctly translate
-    transformTitleShort: 'Filter, sort, or transform contents',
-    // TODO: correctly translate
-    transformQueryTitle: 'Enter a JMESPath query',
-    // TODO: correctly translate
-    transformWizardLabel: 'Wizard',
-    // TODO: correctly translate
-    transformWizardFilter: 'Filter',
-    // TODO: correctly translate
-    transformWizardSortBy: 'Sort by',
-    // TODO: correctly translate
-    transformWizardSelectFields: 'Select fields',
-    // TODO: correctly translate
-    transformQueryLabel: 'Query',
-    // TODO: correctly translate
-    transformPreviewLabel: 'Preview',
-    type: 'Tipo',
-    typeTitle: 'Mudar o tipo deste campo',
-    openUrl: 'Ctrl+Click ou Ctrl+Enter para abrir link em nova janela',
-    undo: 'Desfazer último ação (Ctrl+Z)',
-    validationCannotMove: 'Não pode mover um campo como filho dele mesmo',
-    autoType: 'Campo do tipo "auto". ' +
-      'O tipo do campo é determinao automaticamente a partir do seu valor ' +
-      'e pode ser texto, número, verdade/falso ou nulo.',
-    objectType: 'Campo do tipo "objeto". ' +
-      'Um objeto contém uma lista de pares com chave e valor.',
-    arrayType: 'Campo do tipo "lista". ' +
-      'Uma lista contem uma coleção de valores ordenados.',
-    stringType: 'Campo do tipo "string". ' +
-      'Campo do tipo nao é determinado através do seu valor, ' +
-      'mas sempre retornara um texto.',
-    examples: 'Exemplos',
-    default: 'Revelia',
-  },
-  tr: {
-    array: 'Dizin',
-    auto: 'Otomatik',
-    appendText: 'Ekle',
-    appendTitle: 'Bu alanın altına \'otomatik\' tipinde yeni bir alan ekle (Ctrl+Shift+Ins)',
-    appendSubmenuTitle: 'Eklenecek alanın tipini seç',
-    appendTitleAuto: '\'Otomatik\' tipinde yeni bir alan ekle (Ctrl+Shift+Ins)',
-    ascending: 'Artan',
-    ascendingTitle: '${type}\'ın alt tiplerini artan düzende sırala',
-    actionsMenu: 'Aksiyon menüsünü açmak için tıklayın (Ctrl+M)',
-    collapseAll: 'Tüm alanları kapat',
-    descending: 'Azalan',
-    descendingTitle: '${type}\'ın alt tiplerini azalan düzende sırala',
-    drag: 'Bu alanı taşımak için sürükleyin (Alt+Shift+Arrows)',
-    duplicateKey: 'Var olan anahtar',
-    duplicateText: 'Aşağıya kopyala',
-    duplicateTitle: 'Seçili alanlardan bir daha oluştur (Ctrl+D)',
-    duplicateField: 'Bu alandan bir daha oluştur (Ctrl+D)',
-    duplicateFieldError: 'Duplicate field name',
-    cannotParseFieldError: 'Alan JSON\'a ayrıştırılamıyor',
-    cannotParseValueError: 'JSON\'a değer ayrıştırılamıyor',
-    empty: 'boş',
-    expandAll: 'Tüm alanları aç',
-    expandTitle: 'Bu alanı açmak/kapatmak için tıkla (Ctrl+E). \n' +
-      'Alt alanlarda dahil tüm alanları açmak için Ctrl+Click ',
-    insert: 'Ekle',
-    insertTitle: 'Bu alanın üstüne \'otomatik\' tipinde yeni bir alan ekle (Ctrl+Ins)',
-    insertSub: 'Araya eklenecek alanın tipini seç',
-    object: 'Nesne',
-    ok: 'Tamam',
-    redo: 'Yeniden yap (Ctrl+Shift+Z)',
-    removeText: 'Kaldır',
-    removeTitle: 'Seçilen alanları kaldır (Ctrl+Del)',
-    removeField: 'Bu alanı kaldır (Ctrl+Del)',
-    selectNode: 'Bir nesne seç...',
-    showAll: 'tümünü göster',
-    showMore: 'daha fazla göster',
-    showMoreStatus: '${totalChilds} alanın ${visibleChilds} alt alanları gösteriliyor',
-    sort: 'Sırala',
-    sortTitle: '${type}\'ın alt alanlarını sırala',
-    sortTitleShort: 'İçerikleri sırala',
-    sortFieldLabel: 'Alan:',
-    sortDirectionLabel: 'Yön:',
-    sortFieldTitle: 'Diziyi veya nesneyi sıralamak için iç içe geçmiş alanı seçin',
-    sortAscending: 'Artan',
-    sortAscendingTitle: 'Seçili alanı artan düzende sırala',
-    sortDescending: 'Azalan',
-    sortDescendingTitle: 'Seçili alanı azalan düzende sırala',
-    string: 'Karakter Dizisi',
-    transform: 'Dönüştür',
-    transformTitle: '${type}\'ın alt alanlarını filtrele, sırala veya dönüştür',
-    transformTitleShort: 'İçerikleri filterele, sırala veya dönüştür',
-    transformQueryTitle: 'JMESPath sorgusu gir',
-    transformWizardLabel: 'Sihirbaz',
-    transformWizardFilter: 'Filtre',
-    transformWizardSortBy: 'Sırala',
-    transformWizardSelectFields: 'Alanları seç',
-    transformQueryLabel: 'Sorgu',
-    transformPreviewLabel: 'Önizleme',
-    type: 'Tip',
-    typeTitle: 'Bu alanın tipini değiştir',
-    openUrl: 'URL\'i yeni bir pencerede açmak için Ctrl+Click veya Ctrl+Enter',
-    undo: 'Son değişikliği geri al (Ctrl+Z)',
-    validationCannotMove: 'Alt alan olarak taşınamıyor',
-    autoType: 'Alan tipi "otomatik". ' +
-      'Alan türü otomatik olarak değerden belirlenir' +
-      've bir dize, sayı, boolean veya null olabilir.',
-    objectType: 'Alan tipi "nesne". ' +
-      'Bir nesne, sıralanmamış bir anahtar / değer çifti kümesi içerir.',
-    arrayType: 'Alan tipi "dizi". ' +
-      'Bir dizi, düzenli değerler koleksiyonu içerir.',
-    stringType: 'Alan tipi "karakter dizisi". ' +
-      'Alan türü değerden belirlenmez,' +
-      'ancak her zaman karakter dizisi olarak döndürülür.',
-    modeCodeText: 'Kod',
-    modeCodeTitle: 'Kod vurgulayıcıya geç',
-    modeFormText: 'Form',
-    modeFormTitle: 'Form düzenleyiciye geç',
-    modeTextText: 'Metin',
-    modeTextTitle: 'Düz metin düzenleyiciye geç',
-    modeTreeText: 'Ağaç',
-    modeTreeTitle: 'Ağaç düzenleyiciye geç',
-    modeViewText: 'Görünüm',
-    modeViewTitle: 'Ağaç görünümüne geç',
-    examples: 'Örnekler',
-    default: 'Varsayılan',
-  }
-};
-
-var _defaultLang = 'en';
-var _lang;
-var userLang = typeof navigator !== 'undefined' ?
-  navigator.language || navigator.userLanguage :
-  undefined;
-_lang = _locales.find(function (l) {
-  return l === userLang;
-});
-if (!_lang) {
-  _lang = _defaultLang;
-}
-
-module.exports = {
-  // supported locales
-  _locales: _locales,
-  _defs: _defs,
-  _lang: _lang,
-  setLanguage: function (lang) {
-    if (!lang) {
-      return;
-    }
-    var langFound = _locales.find(function (l) {
-      return l === lang;
-    });
-    if (langFound) {
-      _lang = langFound;
-    } else {
-      console.error('Language not found');
-    }
-  },
-  setLanguages: function (languages) {
-    if (!languages) {
-      return;
-    }
-    for (var key in languages) {
-      var langFound = _locales.find(function (l) {
-        return l === key;
-      });
-      if (!langFound) {
-        _locales.push(key);
-      }
-      _defs[key] = Object.assign({}, _defs[_defaultLang], _defs[key], languages[key]);
-    }
-  },
-  translate: function (key, data, lang) {
-    if (!lang) {
-      lang = _lang;
-    }
-    var text = _defs[lang][key];
-    if (data) {
-      for (key in data) {
-        text = text.replace('${' + key + '}', data[key]);
-      }
-    }
-    return text || key;
-  }
-};
-
-/***/ }),
-/* 1 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-__webpack_require__(6);
-var naturalSort = __webpack_require__(7);
-var jsonlint = __webpack_require__(20);
-var jsonMap = __webpack_require__(21);
-var translate = __webpack_require__(0).translate;
+var MAX_ITEMS_FIELDS_COLLECTION = 10000;
 
 /**
  * Parse JSON using the parser built-in in the browser.
@@ -589,14 +158,16 @@ exports.parse = function parse(jsonString) {
 };
 
 /**
- * Sanitize a JSON-like string containing. For example changes JavaScript
+ * Repair a JSON-like string containing. For example changes JavaScript
  * notation into JSON notation.
  * This function for example changes a string like "{a: 2, 'b': {c: 'd'}"
  * into '{"a": 2, "b": {"c": "d"}'
  * @param {string} jsString
  * @returns {string} json
  */
-exports.sanitize = function (jsString) {
+exports.repair = function (jsString) {
+  // TODO: refactor this function, it's too large and complicated now
+
   // escape all single and double quotes inside strings
   var chars = [];
   var i = 0;
@@ -677,41 +248,49 @@ exports.sanitize = function (jsString) {
     }
   }
 
-  // parse single or double quoted string
+  /**
+   * parse single or double quoted string. Returns the parsed string
+   * @param {string} endQuote
+   * @return {string}
+   */
   function parseString(endQuote) {
-    chars.push('"');
+    var string = '';
+
+    string += '"';
     i++;
     var c = curr();
     while (i < jsString.length && c !== endQuote) {
       if (c === '"' && prev() !== '\\') {
         // unescaped double quote, escape it
-        chars.push('\\"');
+        string += '\\"';
       }
       else if (controlChars.hasOwnProperty(c)) {
         // replace unescaped control characters with escaped ones
-        chars.push(controlChars[c])
+        string += controlChars[c]
       }
       else if (c === '\\') {
         // remove the escape character when followed by a single quote ', not needed
         i++;
         c = curr();
         if (c !== '\'') {
-          chars.push('\\');
+          string += '\\';
         }
-        chars.push(c);
+        string += c;
       }
       else {
         // regular character
-        chars.push(c);
+        string += c;
       }
 
       i++;
       c = curr();
     }
     if (c === endQuote) {
-      chars.push('"');
+      string += '"';
       i++;
     }
+
+    return string;
   }
 
   // parse an unquoted key
@@ -728,11 +307,67 @@ exports.sanitize = function (jsString) {
     }
 
     if (specialValues.indexOf(key) === -1) {
-      chars.push('"' + key + '"');
+      return '"' + key + '"';
     }
     else {
-      chars.push(key);
+      return key;
     }
+  }
+
+  function parseMongoDataType () {
+    var c = curr();
+    var value;
+    var dataType = '';
+    while (/[a-zA-Z_$]/.test(c)) {
+      dataType += c
+      i++;
+      c = curr();
+    }
+
+    if (dataType.length > 0 && c === '(') {
+      // This is an MongoDB data type like {"_id": ObjectId("123")}
+      i++;
+      c = curr();
+      if (c === '"') {
+        // a data type containing a string, like ISODate("2012-12-19T06:01:17.171Z")
+        value = parseString(c);
+        c = curr();
+      }
+      else {
+        // a data type containing a value, like 'NumberLong(2)'
+        value = '';
+        while(c !== ')' && c !== '') {
+          value += c;
+          i++;
+          c = curr();
+        }
+      }
+
+      if (c === ')') {
+        // skip the closing bracket at the end
+        i++;
+
+        // return the value (strip the data type object)
+        return value;
+      }
+      else {
+        // huh? that's unexpected. don't touch it
+        return dataType + '(' + value + c;
+      }
+    }
+    else {
+      // hm, no Mongo data type after all
+      return dataType;
+    }
+  }
+
+  function isSpecialWhiteSpace (c) {
+    return (
+        c === '\u00A0' ||
+        (c >= '\u2000' && c <= '\u200A') ||
+        c === '\u202F' ||
+        c === '\u205F' ||
+        c === '\u3000')
   }
 
   while(i < jsString.length) {
@@ -744,25 +379,25 @@ exports.sanitize = function (jsString) {
     else if (c === '/' && next() === '/') {
       skipComment();
     }
-    else if (c === '\u00A0' || (c >= '\u2000' && c <= '\u200A') || c === '\u202F' || c === '\u205F' || c === '\u3000') {
+    else if (isSpecialWhiteSpace(c)) {
       // special white spaces (like non breaking space)
       chars.push(' ');
       i++
     }
     else if (c === quote) {
-      parseString(quote);
+      chars.push(parseString(c));
     }
     else if (c === quoteDbl) {
-      parseString(quoteDbl);
+      chars.push(parseString(quoteDbl));
     }
     else if (c === graveAccent) {
-      parseString(acuteAccent);
+      chars.push(parseString(acuteAccent));
     }
     else if (c === quoteLeft) {
-      parseString(quoteRight);
+      chars.push(parseString(quoteRight));
     }
     else if (c === quoteDblLeft) {
-      parseString(quoteDblRight);
+      chars.push(parseString(quoteDblRight));
     }
     else if (c === ',' && [']', '}'].indexOf(nextNonWhiteSpace()) !== -1) {
       // skip trailing commas
@@ -770,11 +405,16 @@ exports.sanitize = function (jsString) {
     }
     else if (/[a-zA-Z_$]/.test(c) && ['{', ','].indexOf(lastNonWhitespace()) !== -1) {
       // an unquoted object key (like a in '{a:2}')
-      parseKey();
+      chars.push(parseKey());
     }
     else {
-      chars.push(c);
-      i++;
+      if (/[a-zA-Z_$]/.test(c)) {
+        chars.push(parseMongoDataType());
+      }
+      else {
+        chars.push(c);
+        i++;
+      }
     }
   }
 
@@ -1776,9 +1416,11 @@ exports.getChildPaths = function (json, includeObjects) {
   }
 
   if (Array.isArray(json)) {
-    json.forEach(function (item) {
+    var max = Math.min(json.length, MAX_ITEMS_FIELDS_COLLECTION);
+    for (var i = 0; i < max; i++) {
+      var item = json[i];
       getObjectChildPaths(item, pathsMap, '', includeObjects);
-    });
+    }
   }
   else {
     pathsMap[''] = true;
@@ -1860,6 +1502,51 @@ exports.parseString = function(str) {
 };
 
 /**
+ * Return a human readable document size
+ * For example formatSize(7570718) outputs '7.2 MiB'
+ * @param {number} size
+ * @return {string} Returns a human readable size
+ */
+exports.formatSize = function (size) {
+  if (size < 900) {
+    return size.toFixed() + ' B';
+  }
+
+  var KiB = size / 1024;
+  if (KiB < 900) {
+    return KiB.toFixed(1) + ' KiB';
+  }
+
+  var MiB = KiB / 1024;
+  if (MiB < 900) {
+    return MiB.toFixed(1) + ' MiB';
+  }
+
+  var GiB = MiB / 1024;
+  if (GiB < 900) {
+    return GiB.toFixed(1) + ' GiB';
+  }
+
+  var TiB = GiB / 1024;
+  return TiB.toFixed(1) + ' TiB';
+}
+
+/**
+ * Limit text to a maximum number of characters
+ * @param {string} text
+ * @param {number} maxCharacterCount
+ * @return {string} Returns the limited text,
+ *                  ending with '...' if the max was exceeded
+ */
+exports.limitCharacters = function (text, maxCharacterCount) {
+  if (text.length <= maxCharacterCount) {
+    return text;
+  }
+
+  return text.slice(0, maxCharacterCount) + '...';
+}
+
+/**
  * Test whether a value is an Object
  * @param {*} value
  * @return {boolean}
@@ -1880,15 +1567,463 @@ exports.contains = function (array, item) {
 
 
 /***/ }),
-/* 2 */
+/* 1 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-var createAbsoluteAnchor = __webpack_require__(8).createAbsoluteAnchor;
-var util = __webpack_require__(1);
-var translate = __webpack_require__(0).translate;
+__webpack_require__(10);
+
+var _locales = ['en', 'pt-BR', 'zh-CN', 'tr'];
+var _defs = {
+  en: {
+    array: 'Array',
+    auto: 'Auto',
+    appendText: 'Append',
+    appendTitle: 'Append a new field with type \'auto\' after this field (Ctrl+Shift+Ins)',
+    appendSubmenuTitle: 'Select the type of the field to be appended',
+    appendTitleAuto: 'Append a new field with type \'auto\' (Ctrl+Shift+Ins)',
+    ascending: 'Ascending',
+    ascendingTitle: 'Sort the childs of this ${type} in ascending order',
+    actionsMenu: 'Click to open the actions menu (Ctrl+M)',
+    collapseAll: 'Collapse all fields',
+    descending: 'Descending',
+    descendingTitle: 'Sort the childs of this ${type} in descending order',
+    drag: 'Drag to move this field (Alt+Shift+Arrows)',
+    duplicateKey: 'duplicate key',
+    duplicateText: 'Duplicate',
+    duplicateTitle: 'Duplicate selected fields (Ctrl+D)',
+    duplicateField: 'Duplicate this field (Ctrl+D)',
+    duplicateFieldError: 'Duplicate field name',
+    cannotParseFieldError: 'Cannot parse field into JSON',
+    cannotParseValueError: 'Cannot parse value into JSON',
+    empty: 'empty',
+    expandAll: 'Expand all fields',
+    expandTitle: 'Click to expand/collapse this field (Ctrl+E). \n' +
+      'Ctrl+Click to expand/collapse including all childs.',
+    insert: 'Insert',
+    insertTitle: 'Insert a new field with type \'auto\' before this field (Ctrl+Ins)',
+    insertSub: 'Select the type of the field to be inserted',
+    object: 'Object',
+    ok: 'Ok',
+    redo: 'Redo (Ctrl+Shift+Z)',
+    removeText: 'Remove',
+    removeTitle: 'Remove selected fields (Ctrl+Del)',
+    removeField: 'Remove this field (Ctrl+Del)',
+    selectNode: 'Select a node...',
+    showAll: 'show all',
+    showMore: 'show more',
+    showMoreStatus: 'displaying ${visibleChilds} of ${totalChilds} items.',
+    sort: 'Sort',
+    sortTitle: 'Sort the childs of this ${type}',
+    sortTitleShort: 'Sort contents',
+    sortFieldLabel: 'Field:',
+    sortDirectionLabel: 'Direction:',
+    sortFieldTitle: 'Select the nested field by which to sort the array or object',
+    sortAscending: 'Ascending',
+    sortAscendingTitle: 'Sort the selected field in ascending order',
+    sortDescending: 'Descending',
+    sortDescendingTitle: 'Sort the selected field in descending order',
+    string: 'String',
+    transform: 'Transform',
+    transformTitle: 'Filter, sort, or transform the childs of this ${type}',
+    transformTitleShort: 'Filter, sort, or transform contents',
+    extract: 'Extract',
+    extractTitle: 'Extract this ${type}',
+    transformQueryTitle: 'Enter a JMESPath query',
+    transformWizardLabel: 'Wizard',
+    transformWizardFilter: 'Filter',
+    transformWizardSortBy: 'Sort by',
+    transformWizardSelectFields: 'Select fields',
+    transformQueryLabel: 'Query',
+    transformPreviewLabel: 'Preview',
+    type: 'Type',
+    typeTitle: 'Change the type of this field',
+    openUrl: 'Ctrl+Click or Ctrl+Enter to open url in new window',
+    undo: 'Undo last action (Ctrl+Z)',
+    validationCannotMove: 'Cannot move a field into a child of itself',
+    autoType: 'Field type "auto". ' +
+      'The field type is automatically determined from the value ' +
+      'and can be a string, number, boolean, or null.',
+    objectType: 'Field type "object". ' +
+      'An object contains an unordered set of key/value pairs.',
+    arrayType: 'Field type "array". ' +
+      'An array contains an ordered collection of values.',
+    stringType: 'Field type "string". ' +
+      'Field type is not determined from the value, ' +
+      'but always returned as string.',
+    modeCodeText: 'Code',
+    modeCodeTitle: 'Switch to code highlighter',
+    modeFormText: 'Form',
+    modeFormTitle: 'Switch to form editor',
+    modeTextText: 'Text',
+    modeTextTitle: 'Switch to plain text editor',
+    modeTreeText: 'Tree',
+    modeTreeTitle: 'Switch to tree editor',
+    modeViewText: 'View',
+    modeViewTitle: 'Switch to tree view',
+    modePreviewText: 'Preview',
+    modePreviewTitle: 'Switch to preview mode',
+    examples: 'Examples',
+    default: 'Default',
+  },
+  'zh-CN': {
+    array: '数组',
+    auto: '自动',
+    appendText: '追加',
+    appendTitle: '在此字段后追加一个类型为“auto”的新字段 (Ctrl+Shift+Ins)',
+    appendSubmenuTitle: '选择要追加的字段类型',
+    appendTitleAuto: '追加类型为“auto”的新字段 (Ctrl+Shift+Ins)',
+    ascending: '升序',
+    ascendingTitle: '升序排列${type}的子节点',
+    actionsMenu: '点击打开动作菜单(Ctrl+M)',
+    collapseAll: '缩进所有字段',
+    descending: '降序',
+    descendingTitle: '降序排列${type}的子节点',
+    drag: '拖拽移动该节点(Alt+Shift+Arrows)',
+    duplicateKey: '重复键',
+    duplicateText: '复制',
+    duplicateTitle: '复制选中字段(Ctrl+D)',
+    duplicateField: '复制该字段(Ctrl+D)',
+    duplicateFieldError: '重复的字段名称',
+    cannotParseFieldError: '无法将字段解析为JSON',
+    cannotParseValueError: '无法将值解析为JSON',
+    empty: '清空',
+    expandAll: '展开所有字段',
+    expandTitle: '点击 展开/收缩 该字段(Ctrl+E). \n' +
+      'Ctrl+Click 展开/收缩 包含所有子节点.',
+    insert: '插入',
+    insertTitle: '在此字段前插入类型为“auto”的新字段 (Ctrl+Ins)',
+    insertSub: '选择要插入的字段类型',
+    object: '对象',
+    ok: 'Ok',
+    redo: '重做 (Ctrl+Shift+Z)',
+    removeText: '移除',
+    removeTitle: '移除选中字段 (Ctrl+Del)',
+    removeField: '移除该字段 (Ctrl+Del)',
+    selectNode: '选择一个节点...',
+    showAll: '展示全部',
+    showMore: '展示更多',
+    showMoreStatus: '显示${totalChilds}的${visibleChilds}项目.',
+    sort: '排序',
+    sortTitle: '排序${type}的子节点',
+    sortTitleShort: '内容排序',
+    sortFieldLabel: '字段：',
+    sortDirectionLabel: '方向：',
+    sortFieldTitle: '选择用于对数组或对象排序的嵌套字段',
+    sortAscending: '升序排序',
+    sortAscendingTitle: '按照该字段升序排序',
+    sortDescending: '降序排序',
+    sortDescendingTitle: '按照该字段降序排序',
+    string: '字符串',
+    transform: '变换',
+    transformTitle: '筛选，排序，或者转换${type}的子节点',
+    transformTitleShort: '筛选，排序，或者转换内容',
+    transformQueryTitle: '输入JMESPath查询',
+    transformWizardLabel: '向导',
+    transformWizardFilter: '筛选',
+    transformWizardSortBy: '排序',
+    transformWizardSelectFields: '选择字段',
+    transformQueryLabel: '查询',
+    transformPreviewLabel: '预览',
+    type: '类型',
+    typeTitle: '更改字段类型',
+    openUrl: 'Ctrl+Click 或者 Ctrl+Enter 在新窗口打开链接',
+    undo: '撤销上次动作 (Ctrl+Z)',
+    validationCannotMove: '无法将字段移入其子节点',
+    autoType: '字段类型 "auto". ' +
+      '字段类型由值自动确定 ' +
+      '可以为 string，number，boolean，或者 null.',
+    objectType: '字段类型 "object". ' +
+      '对象包含一组无序的键/值对.',
+    arrayType: '字段类型 "array". ' +
+      '数组包含值的有序集合.',
+    stringType: '字段类型 "string". ' +
+      '字段类型由值自动确定，' +
+      '但始终作为字符串返回.',
+    modeCodeText: '代码',
+    modeCodeTitle: '切换至代码高亮',
+    modeFormText: '表单',
+    modeFormTitle: '切换至表单编辑',
+    modeTextText: '文本',
+    modeTextTitle: '切换至文本编辑',
+    modeTreeText: '树',
+    modeTreeTitle: '切换至树编辑',
+    modeViewText: '视图',
+    modeViewTitle: '切换至树视图',
+    examples: '例子',
+    default: '缺省',
+  },
+  'pt-BR': {
+    array: 'Lista',
+    auto: 'Automatico',
+    appendText: 'Adicionar',
+    appendTitle: 'Adicionar novo campo com tipo \'auto\' depois deste campo (Ctrl+Shift+Ins)',
+    appendSubmenuTitle: 'Selecione o tipo do campo a ser adicionado',
+    appendTitleAuto: 'Adicionar novo campo com tipo \'auto\' (Ctrl+Shift+Ins)',
+    ascending: 'Ascendente',
+    ascendingTitle: 'Organizar filhor do tipo ${type} em crescente',
+    actionsMenu: 'Clique para abrir o menu de ações (Ctrl+M)',
+    collapseAll: 'Fechar todos campos',
+    descending: 'Descendente',
+    descendingTitle: 'Organizar o filhos do tipo ${type} em decrescente',
+    duplicateKey: 'chave duplicada',
+    drag: 'Arraste para mover este campo (Alt+Shift+Arrows)',
+    duplicateText: 'Duplicar',
+    duplicateTitle: 'Duplicar campos selecionados (Ctrl+D)',
+    duplicateField: 'Duplicar este campo (Ctrl+D)',
+    duplicateFieldError: 'Nome do campo duplicado',
+    cannotParseFieldError: 'Não é possível analisar o campo no JSON',
+    cannotParseValueError: 'Não é possível analisar o valor em JSON',
+    empty: 'vazio',
+    expandAll: 'Expandir todos campos',
+    expandTitle: 'Clique para expandir/encolher este campo (Ctrl+E). \n' +
+      'Ctrl+Click para expandir/encolher incluindo todos os filhos.',
+    insert: 'Inserir',
+    insertTitle: 'Inserir um novo campo do tipo \'auto\' antes deste campo (Ctrl+Ins)',
+    insertSub: 'Selecionar o tipo de campo a ser inserido',
+    object: 'Objeto',
+    ok: 'Ok',
+    redo: 'Refazer (Ctrl+Shift+Z)',
+    removeText: 'Remover',
+    removeTitle: 'Remover campos selecionados (Ctrl+Del)',
+    removeField: 'Remover este campo (Ctrl+Del)',
+    // TODO: correctly translate
+    selectNode: 'Select a node...',
+    // TODO: correctly translate
+    showAll: 'mostre tudo',
+    // TODO: correctly translate
+    showMore: 'mostre mais',
+    // TODO: correctly translate
+    showMoreStatus: 'exibindo ${visibleChilds} de ${totalChilds} itens.',
+    sort: 'Organizar',
+    sortTitle: 'Organizar os filhos deste ${type}',
+    // TODO: correctly translate
+    sortTitleShort: 'Organizar os filhos',
+    // TODO: correctly translate
+    sortFieldLabel: 'Field:',
+    // TODO: correctly translate
+    sortDirectionLabel: 'Direction:',
+    // TODO: correctly translate
+    sortFieldTitle: 'Select the nested field by which to sort the array or object',
+    // TODO: correctly translate
+    sortAscending: 'Ascending',
+    // TODO: correctly translate
+    sortAscendingTitle: 'Sort the selected field in ascending order',
+    // TODO: correctly translate
+    sortDescending: 'Descending',
+    // TODO: correctly translate
+    sortDescendingTitle: 'Sort the selected field in descending order',
+    string: 'Texto',
+    // TODO: correctly translate
+    transform: 'Transform',
+    // TODO: correctly translate
+    transformTitle: 'Filter, sort, or transform the childs of this ${type}',
+    // TODO: correctly translate
+    transformTitleShort: 'Filter, sort, or transform contents',
+    // TODO: correctly translate
+    transformQueryTitle: 'Enter a JMESPath query',
+    // TODO: correctly translate
+    transformWizardLabel: 'Wizard',
+    // TODO: correctly translate
+    transformWizardFilter: 'Filter',
+    // TODO: correctly translate
+    transformWizardSortBy: 'Sort by',
+    // TODO: correctly translate
+    transformWizardSelectFields: 'Select fields',
+    // TODO: correctly translate
+    transformQueryLabel: 'Query',
+    // TODO: correctly translate
+    transformPreviewLabel: 'Preview',
+    type: 'Tipo',
+    typeTitle: 'Mudar o tipo deste campo',
+    openUrl: 'Ctrl+Click ou Ctrl+Enter para abrir link em nova janela',
+    undo: 'Desfazer último ação (Ctrl+Z)',
+    validationCannotMove: 'Não pode mover um campo como filho dele mesmo',
+    autoType: 'Campo do tipo "auto". ' +
+      'O tipo do campo é determinao automaticamente a partir do seu valor ' +
+      'e pode ser texto, número, verdade/falso ou nulo.',
+    objectType: 'Campo do tipo "objeto". ' +
+      'Um objeto contém uma lista de pares com chave e valor.',
+    arrayType: 'Campo do tipo "lista". ' +
+      'Uma lista contem uma coleção de valores ordenados.',
+    stringType: 'Campo do tipo "string". ' +
+      'Campo do tipo nao é determinado através do seu valor, ' +
+      'mas sempre retornara um texto.',
+    examples: 'Exemplos',
+    default: 'Revelia',
+  },
+  tr: {
+    array: 'Dizin',
+    auto: 'Otomatik',
+    appendText: 'Ekle',
+    appendTitle: 'Bu alanın altına \'otomatik\' tipinde yeni bir alan ekle (Ctrl+Shift+Ins)',
+    appendSubmenuTitle: 'Eklenecek alanın tipini seç',
+    appendTitleAuto: '\'Otomatik\' tipinde yeni bir alan ekle (Ctrl+Shift+Ins)',
+    ascending: 'Artan',
+    ascendingTitle: '${type}\'ın alt tiplerini artan düzende sırala',
+    actionsMenu: 'Aksiyon menüsünü açmak için tıklayın (Ctrl+M)',
+    collapseAll: 'Tüm alanları kapat',
+    descending: 'Azalan',
+    descendingTitle: '${type}\'ın alt tiplerini azalan düzende sırala',
+    drag: 'Bu alanı taşımak için sürükleyin (Alt+Shift+Arrows)',
+    duplicateKey: 'Var olan anahtar',
+    duplicateText: 'Aşağıya kopyala',
+    duplicateTitle: 'Seçili alanlardan bir daha oluştur (Ctrl+D)',
+    duplicateField: 'Bu alandan bir daha oluştur (Ctrl+D)',
+    duplicateFieldError: 'Duplicate field name',
+    cannotParseFieldError: 'Alan JSON\'a ayrıştırılamıyor',
+    cannotParseValueError: 'JSON\'a değer ayrıştırılamıyor',
+    empty: 'boş',
+    expandAll: 'Tüm alanları aç',
+    expandTitle: 'Bu alanı açmak/kapatmak için tıkla (Ctrl+E). \n' +
+      'Alt alanlarda dahil tüm alanları açmak için Ctrl+Click ',
+    insert: 'Ekle',
+    insertTitle: 'Bu alanın üstüne \'otomatik\' tipinde yeni bir alan ekle (Ctrl+Ins)',
+    insertSub: 'Araya eklenecek alanın tipini seç',
+    object: 'Nesne',
+    ok: 'Tamam',
+    redo: 'Yeniden yap (Ctrl+Shift+Z)',
+    removeText: 'Kaldır',
+    removeTitle: 'Seçilen alanları kaldır (Ctrl+Del)',
+    removeField: 'Bu alanı kaldır (Ctrl+Del)',
+    selectNode: 'Bir nesne seç...',
+    showAll: 'tümünü göster',
+    showMore: 'daha fazla göster',
+    showMoreStatus: '${totalChilds} alanın ${visibleChilds} alt alanları gösteriliyor',
+    sort: 'Sırala',
+    sortTitle: '${type}\'ın alt alanlarını sırala',
+    sortTitleShort: 'İçerikleri sırala',
+    sortFieldLabel: 'Alan:',
+    sortDirectionLabel: 'Yön:',
+    sortFieldTitle: 'Diziyi veya nesneyi sıralamak için iç içe geçmiş alanı seçin',
+    sortAscending: 'Artan',
+    sortAscendingTitle: 'Seçili alanı artan düzende sırala',
+    sortDescending: 'Azalan',
+    sortDescendingTitle: 'Seçili alanı azalan düzende sırala',
+    string: 'Karakter Dizisi',
+    transform: 'Dönüştür',
+    transformTitle: '${type}\'ın alt alanlarını filtrele, sırala veya dönüştür',
+    transformTitleShort: 'İçerikleri filterele, sırala veya dönüştür',
+    transformQueryTitle: 'JMESPath sorgusu gir',
+    transformWizardLabel: 'Sihirbaz',
+    transformWizardFilter: 'Filtre',
+    transformWizardSortBy: 'Sırala',
+    transformWizardSelectFields: 'Alanları seç',
+    transformQueryLabel: 'Sorgu',
+    transformPreviewLabel: 'Önizleme',
+    type: 'Tip',
+    typeTitle: 'Bu alanın tipini değiştir',
+    openUrl: 'URL\'i yeni bir pencerede açmak için Ctrl+Click veya Ctrl+Enter',
+    undo: 'Son değişikliği geri al (Ctrl+Z)',
+    validationCannotMove: 'Alt alan olarak taşınamıyor',
+    autoType: 'Alan tipi "otomatik". ' +
+      'Alan türü otomatik olarak değerden belirlenir' +
+      've bir dize, sayı, boolean veya null olabilir.',
+    objectType: 'Alan tipi "nesne". ' +
+      'Bir nesne, sıralanmamış bir anahtar / değer çifti kümesi içerir.',
+    arrayType: 'Alan tipi "dizi". ' +
+      'Bir dizi, düzenli değerler koleksiyonu içerir.',
+    stringType: 'Alan tipi "karakter dizisi". ' +
+      'Alan türü değerden belirlenmez,' +
+      'ancak her zaman karakter dizisi olarak döndürülür.',
+    modeCodeText: 'Kod',
+    modeCodeTitle: 'Kod vurgulayıcıya geç',
+    modeFormText: 'Form',
+    modeFormTitle: 'Form düzenleyiciye geç',
+    modeTextText: 'Metin',
+    modeTextTitle: 'Düz metin düzenleyiciye geç',
+    modeTreeText: 'Ağaç',
+    modeTreeTitle: 'Ağaç düzenleyiciye geç',
+    modeViewText: 'Görünüm',
+    modeViewTitle: 'Ağaç görünümüne geç',
+    examples: 'Örnekler',
+    default: 'Varsayılan',
+  }
+};
+
+var _defaultLang = 'en';
+var _lang;
+var userLang = typeof navigator !== 'undefined' ?
+  navigator.language || navigator.userLanguage :
+  undefined;
+_lang = _locales.find(function (l) {
+  return l === userLang;
+});
+if (!_lang) {
+  _lang = _defaultLang;
+}
+
+module.exports = {
+  // supported locales
+  _locales: _locales,
+  _defs: _defs,
+  _lang: _lang,
+  setLanguage: function (lang) {
+    if (!lang) {
+      return;
+    }
+    var langFound = _locales.find(function (l) {
+      return l === lang;
+    });
+    if (langFound) {
+      _lang = langFound;
+    } else {
+      console.error('Language not found');
+    }
+  },
+  setLanguages: function (languages) {
+    if (!languages) {
+      return;
+    }
+    for (var key in languages) {
+      var langFound = _locales.find(function (l) {
+        return l === key;
+      });
+      if (!langFound) {
+        _locales.push(key);
+      }
+      _defs[key] = Object.assign({}, _defs[_defaultLang], _defs[key], languages[key]);
+    }
+  },
+  translate: function (key, data, lang) {
+    if (!lang) {
+      lang = _lang;
+    }
+    var text = _defs[lang][key];
+    if (data) {
+      for (key in data) {
+        text = text.replace('${' + key + '}', data[key]);
+      }
+    }
+    return text || key;
+  }
+};
+
+/***/ }),
+/* 2 */
+/***/ (function(module, exports) {
+
+
+exports.DEFAULT_MODAL_ANCHOR = document.body;
+exports.SIZE_LARGE = 10 * 1024 * 1024; // 10 MB
+
+exports.MAX_PREVIEW_CHARACTERS = 20000;
+
+exports.PREVIEW_HISTORY_LIMIT = 2 * 1024 * 1024 * 1024; // 2 GB
+
+
+/***/ }),
+/* 3 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+var createAbsoluteAnchor = __webpack_require__(12).createAbsoluteAnchor;
+var util = __webpack_require__(0);
+var translate = __webpack_require__(1).translate;
 
 /**
  * A context menu
@@ -2325,7 +2460,7 @@ module.exports = ContextMenu;
 
 
 /***/ }),
-/* 3 */
+/* 4 */
 /***/ (function(module, exports, __webpack_require__) {
 
 (function(exports) {
@@ -3998,254 +4133,12 @@ module.exports = ContextMenu;
 
 
 /***/ }),
-/* 4 */
-/***/ (function(module, exports, __webpack_require__) {
-
-var ace
-if (window.ace) {
-  // use the already loaded instance of Ace
-  ace = window.ace
-}
-else {
-  try {
-    // load brace
-    ace = __webpack_require__(!(function webpackMissingModule() { var e = new Error("Cannot find module 'brace'"); e.code = 'MODULE_NOT_FOUND'; throw e; }()));
-
-    // load required Ace plugins
-    __webpack_require__(14);
-    __webpack_require__(16);
-  }
-  catch (err) {
-    // failed to load brace (can be minimalist bundle).
-    // No worries, the editor will fall back to plain text if needed.
-  }
-}
-
-module.exports = ace;
-
-
-/***/ }),
 /* 5 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var VanillaPicker;
-
-if (window.Picker) {
-  // use the already loaded instance of VanillaPicker
-  VanillaPicker = window.Picker;
-}
-else {
-  try {
-    // load color picker
-    VanillaPicker = __webpack_require__(!(function webpackMissingModule() { var e = new Error("Cannot find module 'vanilla-picker'"); e.code = 'MODULE_NOT_FOUND'; throw e; }()));
-  }
-  catch (err) {
-    // probably running the minimalist bundle
-  }
-}
-
-module.exports = VanillaPicker;
-
-
-/***/ }),
-/* 6 */
-/***/ (function(module, exports) {
-
-
-if (typeof Element !== 'undefined') {
-  // Polyfill for array remove
-  (function () {
-    function polyfill (item) {
-      if (item.hasOwnProperty('remove')) {
-        return;
-      }
-      Object.defineProperty(item, 'remove', {
-        configurable: true,
-        enumerable: true,
-        writable: true,
-        value: function remove() {
-          if (this.parentNode != null)
-            this.parentNode.removeChild(this);
-        }
-      });
-    }
-
-    if (typeof Element !== 'undefined')       { polyfill(Element.prototype); }
-    if (typeof CharacterData !== 'undefined') { polyfill(CharacterData.prototype); }
-    if (typeof DocumentType !== 'undefined')  { polyfill(DocumentType.prototype); }
-  })();
-}
-
-
-// Polyfill for startsWith
-if (!String.prototype.startsWith) {
-  String.prototype.startsWith = function (searchString, position) {
-    position = position || 0;
-    return this.substr(position, searchString.length) === searchString;
-  };
-}
-
-// Polyfill for Array.find
-if (!Array.prototype.find) {
-  Array.prototype.find = function(callback) {
-    for (var i = 0; i < this.length; i++) {
-      var element = this[i];
-      if ( callback.call(this, element, i, this) ) {
-        return element;
-      }
-    }
-  }
-}
-
-// Polyfill for String.trim
-if (!String.prototype.trim) {
-  String.prototype.trim = function () {
-    return this.replace(/^[\s\uFEFF\xA0]+|[\s\uFEFF\xA0]+$/g, '');
-  };
-}
-
-
-/***/ }),
-/* 7 */
-/***/ (function(module, exports) {
-
-/*
- * Natural Sort algorithm for Javascript - Version 0.7 - Released under MIT license
- * Author: Jim Palmer (based on chunking idea from Dave Koelle)
- */
-/*jshint unused:false */
-module.exports = function naturalSort (a, b) {
-	"use strict";
-	var re = /(^([+\-]?(?:0|[1-9]\d*)(?:\.\d*)?(?:[eE][+\-]?\d+)?)?$|^0x[0-9a-f]+$|\d+)/gi,
-		sre = /(^[ ]*|[ ]*$)/g,
-		dre = /(^([\w ]+,?[\w ]+)?[\w ]+,?[\w ]+\d+:\d+(:\d+)?[\w ]?|^\d{1,4}[\/\-]\d{1,4}[\/\-]\d{1,4}|^\w+, \w+ \d+, \d{4})/,
-		hre = /^0x[0-9a-f]+$/i,
-		ore = /^0/,
-		i = function(s) { return naturalSort.insensitive && ('' + s).toLowerCase() || '' + s; },
-		// convert all to strings strip whitespace
-		x = i(a).replace(sre, '') || '',
-		y = i(b).replace(sre, '') || '',
-		// chunk/tokenize
-		xN = x.replace(re, '\0$1\0').replace(/\0$/,'').replace(/^\0/,'').split('\0'),
-		yN = y.replace(re, '\0$1\0').replace(/\0$/,'').replace(/^\0/,'').split('\0'),
-		// numeric, hex or date detection
-		xD = parseInt(x.match(hre), 16) || (xN.length !== 1 && x.match(dre) && Date.parse(x)),
-		yD = parseInt(y.match(hre), 16) || xD && y.match(dre) && Date.parse(y) || null,
-		oFxNcL, oFyNcL;
-	// first try and sort Hex codes or Dates
-	if (yD) {
-		if ( xD < yD ) { return -1; }
-		else if ( xD > yD ) { return 1; }
-	}
-	// natural sorting through split numeric strings and default strings
-	for(var cLoc=0, numS=Math.max(xN.length, yN.length); cLoc < numS; cLoc++) {
-		// find floats not starting with '0', string or 0 if not defined (Clint Priest)
-		oFxNcL = !(xN[cLoc] || '').match(ore) && parseFloat(xN[cLoc]) || xN[cLoc] || 0;
-		oFyNcL = !(yN[cLoc] || '').match(ore) && parseFloat(yN[cLoc]) || yN[cLoc] || 0;
-		// handle numeric vs string comparison - number < string - (Kyle Adams)
-		if (isNaN(oFxNcL) !== isNaN(oFyNcL)) { return (isNaN(oFxNcL)) ? 1 : -1; }
-		// rely on string comparison if different types - i.e. '02' < 2 != '02' < '2'
-		else if (typeof oFxNcL !== typeof oFyNcL) {
-			oFxNcL += '';
-			oFyNcL += '';
-		}
-		if (oFxNcL < oFyNcL) { return -1; }
-		if (oFxNcL > oFyNcL) { return 1; }
-	}
-	return 0;
-};
-
-
-/***/ }),
-/* 8 */
-/***/ (function(module, exports, __webpack_require__) {
-
-var util = __webpack_require__(1);
-
-/**
- * Create an anchor element absolutely positioned in the `parent`
- * element.
- * @param {HTMLElement} anchor
- * @param {HTMLElement} parent
- * @param [onDestroy(function(anchor)]  Callback when the anchor is destroyed
- * @returns {HTMLElement}
- */
-exports.createAbsoluteAnchor = function (anchor, parent, onDestroy) {
-  var root = getRootNode(anchor);
-  var eventListeners = {};
-
-  var anchorRect = anchor.getBoundingClientRect();
-  var frameRect = parent.getBoundingClientRect();
-
-  var absoluteAnchor = document.createElement('div');
-  absoluteAnchor.className = 'jsoneditor-anchor';
-  absoluteAnchor.style.position = 'absolute';
-  absoluteAnchor.style.left = (anchorRect.left - frameRect.left) + 'px';
-  absoluteAnchor.style.top = (anchorRect.top - frameRect.top) + 'px';
-  absoluteAnchor.style.width = (anchorRect.width - 2) + 'px';
-  absoluteAnchor.style.height = (anchorRect.height - 2) + 'px';
-  absoluteAnchor.style.boxSizing = 'border-box';
-  parent.appendChild(absoluteAnchor);
-
-  function destroy () {
-    // remove temporary absolutely positioned anchor
-    if (absoluteAnchor && absoluteAnchor.parentNode) {
-      absoluteAnchor.parentNode.removeChild(absoluteAnchor);
-
-      // remove all event listeners
-      // all event listeners are supposed to be attached to document.
-      for (var name in eventListeners) {
-        if (eventListeners.hasOwnProperty(name)) {
-          var fn = eventListeners[name];
-          if (fn) {
-            util.removeEventListener(root, name, fn);
-          }
-          delete eventListeners[name];
-        }
-      }
-
-      if (typeof onDestroy === 'function') {
-        onDestroy(anchor);
-      }
-    }
-  }
-
-  // create and attach event listeners
-  var destroyIfOutside = function (event) {
-    var target = event.target;
-    if ((target !== absoluteAnchor) && !util.isChildOf(target, absoluteAnchor)) {
-      destroy();
-    }
-  }
-
-  eventListeners.mousedown = util.addEventListener(root, 'mousedown', destroyIfOutside);
-  eventListeners.mousewheel = util.addEventListener(root, 'mousewheel', destroyIfOutside);
-  // eventListeners.scroll = util.addEventListener(root, 'scroll', destroyIfOutside);
-
-  absoluteAnchor.destroy = destroy;
-
-  return absoluteAnchor
-}
-
-/**
- * Node.getRootNode shim
- * @param  {HTMLElement} node node to check
- * @return {HTMLElement}      node's rootNode or `window` if there is ShadowDOM is not supported.
- */
-function getRootNode(node){
-  return (typeof node.getRootNode === 'function')
-      ? node.getRootNode()
-      : window;
-}
-
-
-/***/ }),
-/* 9 */
-/***/ (function(module, exports, __webpack_require__) {
-
-var picoModal = __webpack_require__(10);
-var translate = __webpack_require__(0).translate;
-var util = __webpack_require__(1);
+var picoModal = __webpack_require__(13);
+var translate = __webpack_require__(1).translate;
+var util = __webpack_require__(0);
 
 /**
  * Show advanced sorting modal
@@ -4375,7 +4268,680 @@ module.exports = showSortModal;
 
 
 /***/ }),
+/* 6 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var jmespath = __webpack_require__(4);
+var picoModal = __webpack_require__(13);
+var Selectr = __webpack_require__(30);
+var translate = __webpack_require__(1).translate;
+var stringifyPartial = __webpack_require__(31).stringifyPartial;
+var util = __webpack_require__(0);
+var MAX_PREVIEW_CHARACTERS = __webpack_require__(2).MAX_PREVIEW_CHARACTERS
+var debounce = util.debounce;
+
+/**
+ * Show advanced filter and transform modal using JMESPath
+ * @param {HTMLElement} container   The container where to center
+ *                                  the modal and create an overlay
+ * @param {JSON} json               The json data to be transformed
+ * @param {function} onTransform    Callback invoked with the created
+ *                                  query as callback
+ */
+function showTransformModal (container, json, onTransform) {
+  var value = json;
+
+  var content = '<label class="pico-modal-contents">' +
+      '<div class="pico-modal-header">' + translate('transform') + '</div>' +
+      '<p>' +
+      'Enter a <a href="http://jmespath.org" target="_blank">JMESPath</a> query to filter, sort, or transform the JSON data.<br/>' +
+      'To learn JMESPath, go to <a href="http://jmespath.org/tutorial.html" target="_blank">the interactive tutorial</a>.' +
+      '</p>' +
+      '<div class="jsoneditor-jmespath-label">' + translate('transformWizardLabel') + ' </div>' +
+      '<div id="wizard" class="jsoneditor-jmespath-block jsoneditor-jmespath-wizard">' +
+      '  <table class="jsoneditor-jmespath-wizard-table">' +
+      '    <tbody>' +
+      '      <tr>' +
+      '        <th>' + translate('transformWizardFilter') + '</th>' +
+      '        <td class="jsoneditor-jmespath-filter">' +
+      '          <div class="jsoneditor-inline jsoneditor-jmespath-filter-field" >' +
+      '            <select id="filterField">' +
+      '            </select>' +
+      '          </div>' +
+      '          <div class="jsoneditor-inline jsoneditor-jmespath-filter-relation" >' +
+      '            <select id="filterRelation">' +
+      '              <option value="==">==</option>' +
+      '              <option value="!=">!=</option>' +
+      '              <option value="<">&lt;</option>' +
+      '              <option value="<=">&lt;=</option>' +
+      '              <option value=">">&gt;</option>' +
+      '              <option value=">=">&gt;=</option>' +
+      '            </select>' +
+      '          </div>' +
+      '          <div class="jsoneditor-inline jsoneditor-jmespath-filter-value" >' +
+      '            <input placeholder="value..." id="filterValue" />' +
+      '          </div>' +
+      '        </td>' +
+      '      </tr>' +
+      '      <tr>' +
+      '        <th>' + translate('transformWizardSortBy') + '</th>' +
+      '        <td class="jsoneditor-jmespath-filter">' +
+      '          <div class="jsoneditor-inline jsoneditor-jmespath-sort-field">' +
+      '            <select id="sortField">' +
+      '            </select>' +
+      '          </div>' +
+      '          <div class="jsoneditor-inline jsoneditor-jmespath-sort-order" >' +
+      '            <select id="sortOrder">' +
+      '              <option value="asc">Ascending</option>' +
+      '              <option value="desc">Descending</option>' +
+      '            </select>' +
+      '          </div>' +
+      '        </td>' +
+      '      </tr>' +
+      '      <tr id="selectFieldsPart">' +
+      '        <th>' + translate('transformWizardSelectFields') + '</th>' +
+      '        <td class="jsoneditor-jmespath-filter">' +
+      '          <select class="jsoneditor-jmespath-select-fields" id="selectFields" multiple></select>' +
+      '        </td>' +
+      '      </tr>' +
+      '    </tbody>' +
+      '  </table>' +
+      '</div>' +
+      '<div class="jsoneditor-jmespath-label">' + translate('transformQueryLabel') + ' </div>' +
+      '<div class="jsoneditor-jmespath-block">' +
+      '  <textarea id="query" ' +
+      '            rows="4" ' +
+      '            autocomplete="off" ' +
+      '            autocorrect="off" ' +
+      '            autocapitalize="off" ' +
+      '            spellcheck="false"' +
+      '            title="' + translate('transformQueryTitle') + '">[*]</textarea>' +
+      '</div>' +
+      '<div class="jsoneditor-jmespath-label">' + translate('transformPreviewLabel') + ' </div>' +
+      '<div class="jsoneditor-jmespath-block">' +
+      '  <textarea id="preview" ' +
+      '      class="jsoneditor-transform-preview"' +
+      '      readonly> </textarea>' +
+      '</div>' +
+      '<div class="jsoneditor-jmespath-block jsoneditor-modal-actions">' +
+      '  <input type="submit" id="ok" value="' + translate('ok') + '" autofocus />' +
+      '</div>' +
+      '</div>';
+
+  picoModal({
+    parent: container,
+    content: content,
+    overlayClass: 'jsoneditor-modal-overlay',
+    modalClass: 'jsoneditor-modal jsoneditor-modal-transform',
+    focus: false
+  })
+      .afterCreate(function (modal) {
+        var elem = modal.modalElem();
+
+        var wizard = elem.querySelector('#wizard');
+        var ok = elem.querySelector('#ok');
+        var filterField = elem.querySelector('#filterField');
+        var filterRelation = elem.querySelector('#filterRelation');
+        var filterValue = elem.querySelector('#filterValue');
+        var sortField = elem.querySelector('#sortField');
+        var sortOrder = elem.querySelector('#sortOrder');
+        var selectFields = elem.querySelector('#selectFields');
+        var query = elem.querySelector('#query');
+        var preview = elem.querySelector('#preview');
+
+        if (!Array.isArray(value)) {
+          wizard.style.fontStyle = 'italic';
+          wizard.innerHTML = '(wizard not available for objects, only for arrays)'
+        }
+
+        var sortablePaths = util.getChildPaths(json);
+
+        sortablePaths.forEach(function (path) {
+          var formattedPath = preprocessPath(path);
+          var filterOption = document.createElement('option');
+          filterOption.text = formattedPath;
+          filterOption.value = formattedPath;
+          filterField.appendChild(filterOption);
+
+          var sortOption = document.createElement('option');
+          sortOption.text = formattedPath;
+          sortOption.value = formattedPath;
+          sortField.appendChild(sortOption);
+        });
+
+        var selectablePaths = util.getChildPaths(json, true).filter(function(path) {
+          return path !== '';
+        });
+        if (selectablePaths.length > 0) {
+          selectablePaths.forEach(function (path) {
+            var formattedPath = preprocessPath(path);
+            var option = document.createElement('option');
+            option.text = formattedPath;
+            option.value = formattedPath;
+            selectFields.appendChild(option);
+          });
+        }
+        else {
+          var selectFieldsPart = elem.querySelector('#selectFieldsPart');
+          if (selectFieldsPart) {
+            selectFieldsPart.style.display = 'none';
+          }
+        }
+
+        var selectrFilterField = new Selectr(filterField, { defaultSelected: false, clearable: true, allowDeselect: true, placeholder: 'field...' });
+        var selectrFilterRelation = new Selectr(filterRelation, { defaultSelected: false, clearable: true, allowDeselect: true, placeholder: 'compare...' });
+        var selectrSortField = new Selectr(sortField, { defaultSelected: false, clearable: true, allowDeselect: true, placeholder: 'field...' });
+        var selectrSortOrder = new Selectr(sortOrder, { defaultSelected: false, clearable: true, allowDeselect: true, placeholder: 'order...' });
+        var selectrSelectFields = new Selectr(selectFields, {multiple: true, clearable: true, defaultSelected: false, placeholder: 'select fields...'});
+
+        selectrFilterField.on('selectr.change', generateQueryFromWizard);
+        selectrFilterRelation.on('selectr.change', generateQueryFromWizard);
+        filterValue.oninput = generateQueryFromWizard;
+        selectrSortField.on('selectr.change', generateQueryFromWizard);
+        selectrSortOrder.on('selectr.change', generateQueryFromWizard);
+        selectrSelectFields.on('selectr.change', generateQueryFromWizard);
+
+        elem.querySelector('.pico-modal-contents').onclick = function (event) {
+          // prevent the first clear button (in any select box) from getting
+          // focus when clicking anywhere in the modal. Only allow clicking links.
+          if (event.target.nodeName !== 'A') {
+            event.preventDefault();
+          }
+        };
+
+        query.value = Array.isArray(value) ? '[*]' : '@';
+
+        function preprocessPath(path) {
+          return (path === '')
+              ? '@'
+              : (path[0] === '.')
+                  ? path.slice(1)
+                  : path;
+        }
+
+        function generateQueryFromWizard () {
+          if (filterField.value && filterRelation.value && filterValue.value) {
+            var field1 = filterField.value;
+            var examplePath = field1 !== '@'
+                ? ['0'].concat(util.parsePath('.' + field1))
+                : ['0']
+            var exampleValue = util.get(value, examplePath)
+            var value1 = typeof exampleValue === 'string'
+                ? filterValue.value
+                : util.parseString(filterValue.value);
+
+            query.value = '[? ' +
+                field1 + ' ' +
+                filterRelation.value + ' ' +
+                '`' + JSON.stringify(value1) + '`' +
+                ']';
+          }
+          else {
+            query.value = '[*]';
+          }
+
+          if (sortField.value && sortOrder.value) {
+            var field2 = sortField.value;
+            if (sortOrder.value === 'desc') {
+              query.value += ' | reverse(sort_by(@, &' + field2 + '))';
+            }
+            else {
+              query.value += ' | sort_by(@, &' + field2 + ')';
+            }
+          }
+
+          if (selectFields.value) {
+            var values = [];
+            for (var i=0; i < selectFields.options.length; i++) {
+              if (selectFields.options[i].selected) {
+                var selectedValue = selectFields.options[i].value;
+                values.push(selectedValue);
+              }
+            }
+
+            if (query.value[query.value.length - 1] !== ']') {
+              query.value += ' | [*]';
+            }
+
+            if (values.length === 1) {
+              query.value += '.' + values[0];
+            }
+            else if (values.length > 1) {
+              query.value += '.{' +
+                  values.map(function (value) {
+                    var parts = value.split('.');
+                    var last = parts[parts.length - 1];
+                    return last + ': ' + value;
+                  }).join(', ') +
+                  '}';
+            }
+            else { // values.length === 0
+              // ignore
+            }
+          }
+
+          debouncedUpdatePreview();
+        }
+
+        function updatePreview() {
+          try {
+            var transformed = jmespath.search(value, query.value);
+
+            preview.className = 'jsoneditor-transform-preview';
+            preview.value = stringifyPartial(transformed, 2, MAX_PREVIEW_CHARACTERS);
+
+            ok.disabled = false;
+          }
+          catch (err) {
+            preview.className = 'jsoneditor-transform-preview jsoneditor-error';
+            preview.value = err.toString();
+            ok.disabled = true;
+          }
+        }
+
+        var debouncedUpdatePreview = debounce(updatePreview, 300);
+
+        query.oninput = debouncedUpdatePreview;
+        debouncedUpdatePreview();
+
+        ok.onclick = function (event) {
+          event.preventDefault();
+          event.stopPropagation();
+
+          modal.close();
+
+          onTransform(query.value)
+        };
+
+        setTimeout(function () {
+          query.select();
+          query.focus();
+          query.selectionStart = 3;
+          query.selectionEnd = 3;
+        });
+      })
+      .afterClose(function (modal) {
+        modal.destroy();
+      })
+      .show();
+}
+
+module.exports = showTransformModal;
+
+
+/***/ }),
+/* 7 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+var ContextMenu = __webpack_require__(3);
+var translate = __webpack_require__(1).translate;
+
+/**
+ * Create a select box to be used in the editor menu's, which allows to switch mode
+ * @param {HTMLElement} container
+ * @param {String[]} modes  Available modes: 'code', 'form', 'text', 'tree', 'view', 'preview'
+ * @param {String} current  Available modes: 'code', 'form', 'text', 'tree', 'view', 'preview'
+ * @param {function(mode: string)} onSwitch  Callback invoked on switch
+ * @constructor
+ */
+function ModeSwitcher(container, modes, current, onSwitch) {
+  // available modes
+  var availableModes = {
+    code: {
+      'text': translate('modeCodeText'),
+      'title': translate('modeCodeTitle'),
+      'click': function () {
+        onSwitch('code')
+      }
+    },
+    form: {
+      'text': translate('modeFormText'),
+      'title': translate('modeFormTitle'),
+      'click': function () {
+        onSwitch('form');
+      }
+    },
+    text: {
+      'text': translate('modeTextText'),
+      'title': translate('modeTextTitle'),
+      'click': function () {
+        onSwitch('text');
+      }
+    },
+    tree: {
+      'text': translate('modeTreeText'),
+      'title': translate('modeTreeTitle'),
+      'click': function () {
+        onSwitch('tree');
+      }
+    },
+    view: {
+      'text': translate('modeViewText'),
+      'title': translate('modeViewTitle'),
+      'click': function () {
+        onSwitch('view');
+      }
+    },
+    preview: {
+      'text': translate('modePreviewText'),
+      'title': translate('modePreviewTitle'),
+      'click': function () {
+        onSwitch('preview');
+      }
+    }
+  };
+
+  // list the selected modes
+  var items = [];
+  for (var i = 0; i < modes.length; i++) {
+    var mode = modes[i];
+    var item = availableModes[mode];
+    if (!item) {
+      throw new Error('Unknown mode "' + mode + '"');
+    }
+
+    item.className = 'jsoneditor-type-modes' + ((current == mode) ? ' jsoneditor-selected' : '');
+    items.push(item);
+  }
+
+  // retrieve the title of current mode
+  var currentMode = availableModes[current];
+  if (!currentMode) {
+    throw new Error('Unknown mode "' + current + '"');
+  }
+  var currentTitle = currentMode.text;
+
+  // create the html element
+  var box = document.createElement('button');
+  box.type = 'button';
+  box.className = 'jsoneditor-modes jsoneditor-separator';
+  box.innerHTML = currentTitle + ' &#x25BE;';
+  box.title = 'Switch editor mode';
+  box.onclick = function () {
+    var menu = new ContextMenu(items);
+    menu.show(box, container);
+  };
+
+  var frame = document.createElement('div');
+  frame.className = 'jsoneditor-modes';
+  frame.style.position = 'relative';
+  frame.appendChild(box);
+
+  container.appendChild(frame);
+
+  this.dom = {
+    container: container,
+    box: box,
+    frame: frame
+  };
+}
+
+/**
+ * Set focus to switcher
+ */
+ModeSwitcher.prototype.focus = function () {
+  this.dom.box.focus();
+};
+
+/**
+ * Destroy the ModeSwitcher, remove from DOM
+ */
+ModeSwitcher.prototype.destroy = function () {
+  if (this.dom && this.dom.frame && this.dom.frame.parentNode) {
+    this.dom.frame.parentNode.removeChild(this.dom.frame);
+  }
+  this.dom = null;
+};
+
+module.exports = ModeSwitcher;
+
+/***/ }),
+/* 8 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var ace
+if (window.ace) {
+  // use the already loaded instance of Ace
+  ace = window.ace
+}
+else {
+  try {
+    // load brace
+    ace = __webpack_require__(!(function webpackMissingModule() { var e = new Error("Cannot find module 'brace'"); e.code = 'MODULE_NOT_FOUND'; throw e; }()));
+
+    // load required Ace plugins
+    __webpack_require__(17);
+    __webpack_require__(19);
+  }
+  catch (err) {
+    // failed to load brace (can be minimalist bundle).
+    // No worries, the editor will fall back to plain text if needed.
+  }
+}
+
+module.exports = ace;
+
+
+/***/ }),
+/* 9 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var VanillaPicker;
+
+if (window.Picker) {
+  // use the already loaded instance of VanillaPicker
+  VanillaPicker = window.Picker;
+}
+else {
+  try {
+    // load color picker
+    VanillaPicker = __webpack_require__(!(function webpackMissingModule() { var e = new Error("Cannot find module 'vanilla-picker'"); e.code = 'MODULE_NOT_FOUND'; throw e; }()));
+  }
+  catch (err) {
+    // probably running the minimalist bundle
+  }
+}
+
+module.exports = VanillaPicker;
+
+
+/***/ }),
 /* 10 */
+/***/ (function(module, exports) {
+
+
+if (typeof Element !== 'undefined') {
+  // Polyfill for array remove
+  (function () {
+    function polyfill (item) {
+      if (item.hasOwnProperty('remove')) {
+        return;
+      }
+      Object.defineProperty(item, 'remove', {
+        configurable: true,
+        enumerable: true,
+        writable: true,
+        value: function remove() {
+          if (this.parentNode != null)
+            this.parentNode.removeChild(this);
+        }
+      });
+    }
+
+    if (typeof Element !== 'undefined')       { polyfill(Element.prototype); }
+    if (typeof CharacterData !== 'undefined') { polyfill(CharacterData.prototype); }
+    if (typeof DocumentType !== 'undefined')  { polyfill(DocumentType.prototype); }
+  })();
+}
+
+
+// Polyfill for startsWith
+if (!String.prototype.startsWith) {
+  String.prototype.startsWith = function (searchString, position) {
+    position = position || 0;
+    return this.substr(position, searchString.length) === searchString;
+  };
+}
+
+// Polyfill for Array.find
+if (!Array.prototype.find) {
+  Array.prototype.find = function(callback) {
+    for (var i = 0; i < this.length; i++) {
+      var element = this[i];
+      if ( callback.call(this, element, i, this) ) {
+        return element;
+      }
+    }
+  }
+}
+
+// Polyfill for String.trim
+if (!String.prototype.trim) {
+  String.prototype.trim = function () {
+    return this.replace(/^[\s\uFEFF\xA0]+|[\s\uFEFF\xA0]+$/g, '');
+  };
+}
+
+
+/***/ }),
+/* 11 */
+/***/ (function(module, exports) {
+
+/*
+ * Natural Sort algorithm for Javascript - Version 0.7 - Released under MIT license
+ * Author: Jim Palmer (based on chunking idea from Dave Koelle)
+ */
+/*jshint unused:false */
+module.exports = function naturalSort (a, b) {
+	"use strict";
+	var re = /(^([+\-]?(?:0|[1-9]\d*)(?:\.\d*)?(?:[eE][+\-]?\d+)?)?$|^0x[0-9a-f]+$|\d+)/gi,
+		sre = /(^[ ]*|[ ]*$)/g,
+		dre = /(^([\w ]+,?[\w ]+)?[\w ]+,?[\w ]+\d+:\d+(:\d+)?[\w ]?|^\d{1,4}[\/\-]\d{1,4}[\/\-]\d{1,4}|^\w+, \w+ \d+, \d{4})/,
+		hre = /^0x[0-9a-f]+$/i,
+		ore = /^0/,
+		i = function(s) { return naturalSort.insensitive && ('' + s).toLowerCase() || '' + s; },
+		// convert all to strings strip whitespace
+		x = i(a).replace(sre, '') || '',
+		y = i(b).replace(sre, '') || '',
+		// chunk/tokenize
+		xN = x.replace(re, '\0$1\0').replace(/\0$/,'').replace(/^\0/,'').split('\0'),
+		yN = y.replace(re, '\0$1\0').replace(/\0$/,'').replace(/^\0/,'').split('\0'),
+		// numeric, hex or date detection
+		xD = parseInt(x.match(hre), 16) || (xN.length !== 1 && x.match(dre) && Date.parse(x)),
+		yD = parseInt(y.match(hre), 16) || xD && y.match(dre) && Date.parse(y) || null,
+		oFxNcL, oFyNcL;
+	// first try and sort Hex codes or Dates
+	if (yD) {
+		if ( xD < yD ) { return -1; }
+		else if ( xD > yD ) { return 1; }
+	}
+	// natural sorting through split numeric strings and default strings
+	for(var cLoc=0, numS=Math.max(xN.length, yN.length); cLoc < numS; cLoc++) {
+		// find floats not starting with '0', string or 0 if not defined (Clint Priest)
+		oFxNcL = !(xN[cLoc] || '').match(ore) && parseFloat(xN[cLoc]) || xN[cLoc] || 0;
+		oFyNcL = !(yN[cLoc] || '').match(ore) && parseFloat(yN[cLoc]) || yN[cLoc] || 0;
+		// handle numeric vs string comparison - number < string - (Kyle Adams)
+		if (isNaN(oFxNcL) !== isNaN(oFyNcL)) { return (isNaN(oFxNcL)) ? 1 : -1; }
+		// rely on string comparison if different types - i.e. '02' < 2 != '02' < '2'
+		else if (typeof oFxNcL !== typeof oFyNcL) {
+			oFxNcL += '';
+			oFyNcL += '';
+		}
+		if (oFxNcL < oFyNcL) { return -1; }
+		if (oFxNcL > oFyNcL) { return 1; }
+	}
+	return 0;
+};
+
+
+/***/ }),
+/* 12 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var util = __webpack_require__(0);
+
+/**
+ * Create an anchor element absolutely positioned in the `parent`
+ * element.
+ * @param {HTMLElement} anchor
+ * @param {HTMLElement} parent
+ * @param [onDestroy(function(anchor)]  Callback when the anchor is destroyed
+ * @returns {HTMLElement}
+ */
+exports.createAbsoluteAnchor = function (anchor, parent, onDestroy) {
+  var root = getRootNode(anchor);
+  var eventListeners = {};
+
+  var anchorRect = anchor.getBoundingClientRect();
+  var frameRect = parent.getBoundingClientRect();
+
+  var absoluteAnchor = document.createElement('div');
+  absoluteAnchor.className = 'jsoneditor-anchor';
+  absoluteAnchor.style.position = 'absolute';
+  absoluteAnchor.style.left = (anchorRect.left - frameRect.left) + 'px';
+  absoluteAnchor.style.top = (anchorRect.top - frameRect.top) + 'px';
+  absoluteAnchor.style.width = (anchorRect.width - 2) + 'px';
+  absoluteAnchor.style.height = (anchorRect.height - 2) + 'px';
+  absoluteAnchor.style.boxSizing = 'border-box';
+  parent.appendChild(absoluteAnchor);
+
+  function destroy () {
+    // remove temporary absolutely positioned anchor
+    if (absoluteAnchor && absoluteAnchor.parentNode) {
+      absoluteAnchor.parentNode.removeChild(absoluteAnchor);
+
+      // remove all event listeners
+      // all event listeners are supposed to be attached to document.
+      for (var name in eventListeners) {
+        if (eventListeners.hasOwnProperty(name)) {
+          var fn = eventListeners[name];
+          if (fn) {
+            util.removeEventListener(root, name, fn);
+          }
+          delete eventListeners[name];
+        }
+      }
+
+      if (typeof onDestroy === 'function') {
+        onDestroy(anchor);
+      }
+    }
+  }
+
+  // create and attach event listeners
+  var destroyIfOutside = function (event) {
+    var target = event.target;
+    if ((target !== absoluteAnchor) && !util.isChildOf(target, absoluteAnchor)) {
+      destroy();
+    }
+  }
+
+  eventListeners.mousedown = util.addEventListener(root, 'mousedown', destroyIfOutside);
+  eventListeners.mousewheel = util.addEventListener(root, 'mousewheel', destroyIfOutside);
+  // eventListeners.scroll = util.addEventListener(root, 'scroll', destroyIfOutside);
+
+  absoluteAnchor.destroy = destroy;
+
+  return absoluteAnchor
+}
+
+/**
+ * Node.getRootNode shim
+ * @param  {HTMLElement} node node to check
+ * @return {HTMLElement}      node's rootNode or `window` if there is ShadowDOM is not supported.
+ */
+function getRootNode(node){
+  return (typeof node.getRootNode === 'function')
+      ? node.getRootNode()
+      : window;
+}
+
+
+/***/ }),
+/* 13 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/**
@@ -4982,436 +5548,1198 @@ var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_
 
 
 /***/ }),
-/* 11 */
-/***/ (function(module, exports, __webpack_require__) {
-
-var jmespath = __webpack_require__(3);
-var picoModal = __webpack_require__(10);
-var Selectr = __webpack_require__(27);
-var translate = __webpack_require__(0).translate;
-var util = __webpack_require__(1);
-var debounce = util.debounce;
-
-var MAX_PREVIEW_LINES = 100;
-
-/**
- * Show advanced filter and transform modal using JMESPath
- * @param {HTMLElement} container   The container where to center
- *                                  the modal and create an overlay
- * @param {JSON} json               The json data to be transformed
- * @param {function} onTransform    Callback invoked with the created
- *                                  query as callback
- */
-function showTransformModal (container, json, onTransform) {
-  var value = json;
-
-  var content = '<label class="pico-modal-contents">' +
-      '<div class="pico-modal-header">' + translate('transform') + '</div>' +
-      '<p>' +
-      'Enter a <a href="http://jmespath.org" target="_blank">JMESPath</a> query to filter, sort, or transform the JSON data.<br/>' +
-      'To learn JMESPath, go to <a href="http://jmespath.org/tutorial.html" target="_blank">the interactive tutorial</a>.' +
-      '</p>' +
-      '<div class="jsoneditor-jmespath-label">' + translate('transformWizardLabel') + ' </div>' +
-      '<div id="wizard" class="jsoneditor-jmespath-block jsoneditor-jmespath-wizard">' +
-      '  <table class="jsoneditor-jmespath-wizard-table">' +
-      '    <tbody>' +
-      '      <tr>' +
-      '        <th>' + translate('transformWizardFilter') + '</th>' +
-      '        <td class="jsoneditor-jmespath-filter">' +
-      '          <div class="jsoneditor-inline jsoneditor-jmespath-filter-field" >' +
-      '            <select id="filterField">' +
-      '            </select>' +
-      '          </div>' +
-      '          <div class="jsoneditor-inline jsoneditor-jmespath-filter-relation" >' +
-      '            <select id="filterRelation">' +
-      '              <option value="==">==</option>' +
-      '              <option value="!=">!=</option>' +
-      '              <option value="<">&lt;</option>' +
-      '              <option value="<=">&lt;=</option>' +
-      '              <option value=">">&gt;</option>' +
-      '              <option value=">=">&gt;=</option>' +
-      '            </select>' +
-      '          </div>' +
-      '          <div class="jsoneditor-inline jsoneditor-jmespath-filter-value" >' +
-      '            <input placeholder="value..." id="filterValue" />' +
-      '          </div>' +
-      '        </td>' +
-      '      </tr>' +
-      '      <tr>' +
-      '        <th>' + translate('transformWizardSortBy') + '</th>' +
-      '        <td class="jsoneditor-jmespath-filter">' +
-      '          <div class="jsoneditor-inline jsoneditor-jmespath-sort-field">' +
-      '            <select id="sortField">' +
-      '            </select>' +
-      '          </div>' +
-      '          <div class="jsoneditor-inline jsoneditor-jmespath-sort-order" >' +
-      '            <select id="sortOrder">' +
-      '              <option value="asc">Ascending</option>' +
-      '              <option value="desc">Descending</option>' +
-      '            </select>' +
-      '          </div>' +
-      '        </td>' +
-      '      </tr>' +
-      '      <tr id="selectFieldsPart">' +
-      '        <th>' + translate('transformWizardSelectFields') + '</th>' +
-      '        <td class="jsoneditor-jmespath-filter">' +
-      '          <select class="jsoneditor-jmespath-select-fields" id="selectFields" multiple></select>' +
-      '        </td>' +
-      '      </tr>' +
-      '    </tbody>' +
-      '  </table>' +
-      '</div>' +
-      '<div class="jsoneditor-jmespath-label">' + translate('transformQueryLabel') + ' </div>' +
-      '<div class="jsoneditor-jmespath-block">' +
-      '  <textarea id="query" ' +
-      '            rows="4" ' +
-      '            autocomplete="off" ' +
-      '            autocorrect="off" ' +
-      '            autocapitalize="off" ' +
-      '            spellcheck="false"' +
-      '            title="' + translate('transformQueryTitle') + '">[*]</textarea>' +
-      '</div>' +
-      '<div class="jsoneditor-jmespath-label">' + translate('transformPreviewLabel') + ' </div>' +
-      '<div class="jsoneditor-jmespath-block">' +
-      '  <textarea id="preview" ' +
-      '      class="jsoneditor-transform-preview"' +
-      '      readonly> </textarea>' +
-      '</div>' +
-      '<div class="jsoneditor-jmespath-block jsoneditor-modal-actions">' +
-      '  <input type="submit" id="ok" value="' + translate('ok') + '" autofocus />' +
-      '</div>' +
-      '</div>';
-
-  picoModal({
-    parent: container,
-    content: content,
-    overlayClass: 'jsoneditor-modal-overlay',
-    modalClass: 'jsoneditor-modal jsoneditor-modal-transform',
-    focus: false
-  })
-      .afterCreate(function (modal) {
-        var elem = modal.modalElem();
-
-        var wizard = elem.querySelector('#wizard');
-        var ok = elem.querySelector('#ok');
-        var filterField = elem.querySelector('#filterField');
-        var filterRelation = elem.querySelector('#filterRelation');
-        var filterValue = elem.querySelector('#filterValue');
-        var sortField = elem.querySelector('#sortField');
-        var sortOrder = elem.querySelector('#sortOrder');
-        var selectFields = elem.querySelector('#selectFields');
-        var query = elem.querySelector('#query');
-        var preview = elem.querySelector('#preview');
-
-        if (!Array.isArray(value)) {
-          wizard.style.fontStyle = 'italic';
-          wizard.innerHTML = '(wizard not available for objects, only for arrays)'
-        }
-
-        var sortablePaths = util.getChildPaths(json);
-
-        sortablePaths.forEach(function (path) {
-          var formattedPath = preprocessPath(path);
-          var filterOption = document.createElement('option');
-          filterOption.text = formattedPath;
-          filterOption.value = formattedPath;
-          filterField.appendChild(filterOption);
-
-          var sortOption = document.createElement('option');
-          sortOption.text = formattedPath;
-          sortOption.value = formattedPath;
-          sortField.appendChild(sortOption);
-        });
-
-        var selectablePaths = util.getChildPaths(json, true).filter(function(path) {
-          return path !== '';
-        });
-        if (selectablePaths.length > 0) {
-          selectablePaths.forEach(function (path) {
-            var formattedPath = preprocessPath(path);
-            var option = document.createElement('option');
-            option.text = formattedPath;
-            option.value = formattedPath;
-            selectFields.appendChild(option);
-          });
-        }
-        else {
-          var selectFieldsPart = elem.querySelector('#selectFieldsPart');
-          if (selectFieldsPart) {
-            selectFieldsPart.style.display = 'none';
-          }
-        }
-
-        var selectrFilterField = new Selectr(filterField, { defaultSelected: false, clearable: true, allowDeselect: true, placeholder: 'field...' });
-        var selectrFilterRelation = new Selectr(filterRelation, { defaultSelected: false, clearable: true, allowDeselect: true, placeholder: 'compare...' });
-        var selectrSortField = new Selectr(sortField, { defaultSelected: false, clearable: true, allowDeselect: true, placeholder: 'field...' });
-        var selectrSortOrder = new Selectr(sortOrder, { defaultSelected: false, clearable: true, allowDeselect: true, placeholder: 'order...' });
-        var selectrSelectFields = new Selectr(selectFields, {multiple: true, clearable: true, defaultSelected: false, placeholder: 'select fields...'});
-
-        selectrFilterField.on('selectr.change', generateQueryFromWizard);
-        selectrFilterRelation.on('selectr.change', generateQueryFromWizard);
-        filterValue.oninput = generateQueryFromWizard;
-        selectrSortField.on('selectr.change', generateQueryFromWizard);
-        selectrSortOrder.on('selectr.change', generateQueryFromWizard);
-        selectrSelectFields.on('selectr.change', generateQueryFromWizard);
-
-        elem.querySelector('.pico-modal-contents').onclick = function (event) {
-          // prevent the first clear button (in any select box) from getting
-          // focus when clicking anywhere in the modal. Only allow clicking links.
-          if (event.target.nodeName !== 'A') {
-            event.preventDefault();
-          }
-        };
-
-        query.value = Array.isArray(value) ? '[*]' : '@';
-
-        function preprocessPath(path) {
-          return (path === '')
-              ? '@'
-              : (path[0] === '.')
-                  ? path.slice(1)
-                  : path;
-        }
-
-        function generateQueryFromWizard () {
-          if (filterField.value && filterRelation.value && filterValue.value) {
-            var field1 = filterField.value;
-            var examplePath = field1 !== '@'
-                ? ['0'].concat(util.parsePath('.' + field1))
-                : ['0']
-            var exampleValue = util.get(value, examplePath)
-            var value1 = typeof exampleValue === 'string'
-                ? filterValue.value
-                : util.parseString(filterValue.value);
-
-            query.value = '[? ' +
-                field1 + ' ' +
-                filterRelation.value + ' ' +
-                '`' + JSON.stringify(value1) + '`' +
-                ']';
-          }
-          else {
-            query.value = '[*]';
-          }
-
-          if (sortField.value && sortOrder.value) {
-            var field2 = sortField.value;
-            if (sortOrder.value === 'desc') {
-              query.value += ' | reverse(sort_by(@, &' + field2 + '))';
-            }
-            else {
-              query.value += ' | sort_by(@, &' + field2 + ')';
-            }
-          }
-
-          if (selectFields.value) {
-            var values = [];
-            for (var i=0; i < selectFields.options.length; i++) {
-              if (selectFields.options[i].selected) {
-                var selectedValue = selectFields.options[i].value;
-                values.push(selectedValue);
-              }
-            }
-
-            if (query.value[query.value.length - 1] !== ']') {
-              query.value += ' | [*]';
-            }
-
-            if (values.length === 1) {
-              query.value += '.' + values[0];
-            }
-            else if (values.length > 1) {
-              query.value += '.{' +
-                  values.map(function (value) {
-                    var parts = value.split('.');
-                    var last = parts[parts.length - 1];
-                    return last + ': ' + value;
-                  }).join(', ') +
-                  '}';
-            }
-            else { // values.length === 0
-              // ignore
-            }
-          }
-
-          debouncedUpdatePreview();
-        }
-
-        function updatePreview() {
-          try {
-            var transformed = jmespath.search(value, query.value);
-            var lines =  JSON.stringify(transformed, null, 2).split('\n');
-
-            if (lines.length > MAX_PREVIEW_LINES) {
-              lines = lines.slice(0, MAX_PREVIEW_LINES).concat(['...'])
-            }
-
-
-            preview.className = 'jsoneditor-transform-preview';
-            preview.value = lines.join('\n');
-            ok.disabled = false;
-          }
-          catch (err) {
-            preview.className = 'jsoneditor-transform-preview jsoneditor-error';
-            preview.value = err.toString();
-            ok.disabled = true;
-          }
-        }
-
-        var debouncedUpdatePreview = debounce(updatePreview, 300);
-
-        query.oninput = debouncedUpdatePreview;
-        debouncedUpdatePreview();
-
-        ok.onclick = function (event) {
-          event.preventDefault();
-          event.stopPropagation();
-
-          modal.close();
-
-          onTransform(query.value)
-        };
-
-        setTimeout(function () {
-          query.select();
-          query.focus();
-          query.selectionStart = 3;
-          query.selectionEnd = 3;
-        });
-      })
-      .afterClose(function (modal) {
-        modal.destroy();
-      })
-      .show();
-}
-
-module.exports = showTransformModal;
-
-
-/***/ }),
-/* 12 */
+/* 14 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-var ContextMenu = __webpack_require__(2);
-var translate = __webpack_require__(0).translate;
+var ace = __webpack_require__(8);
+var jmespath = __webpack_require__(4);
+var translate = __webpack_require__(1).translate;
+var ModeSwitcher = __webpack_require__(7);
+var ErrorTable = __webpack_require__(15);
+var validateCustom = __webpack_require__(33).validateCustom;
+var showSortModal = __webpack_require__(5);
+var showTransformModal = __webpack_require__(6);
+var util = __webpack_require__(0);
+var DEFAULT_MODAL_ANCHOR = __webpack_require__(2).DEFAULT_MODAL_ANCHOR;
+
+// create a mixin with the functions for text mode
+var textmode = {};
+
+var DEFAULT_THEME = 'ace/theme/jsoneditor';
 
 /**
- * Create a select box to be used in the editor menu's, which allows to switch mode
- * @param {HTMLElement} container
- * @param {String[]} modes  Available modes: 'code', 'form', 'text', 'tree', 'view'
- * @param {String} current  Available modes: 'code', 'form', 'text', 'tree', 'view'
- * @param {function(mode: string)} onSwitch  Callback invoked on switch
- * @constructor
+ * Create a text editor
+ * @param {Element} container
+ * @param {Object} [options]   Object with options. See docs for details.
+ * @private
  */
-function ModeSwitcher(container, modes, current, onSwitch) {
-  // available modes
-  var availableModes = {
-    code: {
-      'text': translate('modeCodeText'),
-      'title': translate('modeCodeTitle'),
-      'click': function () {
-        onSwitch('code')
-      }
-    },
-    form: {
-      'text': translate('modeFormText'),
-      'title': translate('modeFormTitle'),
-      'click': function () {
-        onSwitch('form');
-      }
-    },
-    text: {
-      'text': translate('modeTextText'),
-      'title': translate('modeTextTitle'),
-      'click': function () {
-        onSwitch('text');
-      }
-    },
-    tree: {
-      'text': translate('modeTreeText'),
-      'title': translate('modeTreeTitle'),
-      'click': function () {
-        onSwitch('tree');
-      }
-    },
-    view: {
-      'text': translate('modeViewText'),
-      'title': translate('modeViewTitle'),
-      'click': function () {
-        onSwitch('view');
-      }
-    }
-  };
-
-  // list the selected modes
-  var items = [];
-  for (var i = 0; i < modes.length; i++) {
-    var mode = modes[i];
-    var item = availableModes[mode];
-    if (!item) {
-      throw new Error('Unknown mode "' + mode + '"');
-    }
-
-    item.className = 'jsoneditor-type-modes' + ((current == mode) ? ' jsoneditor-selected' : '');
-    items.push(item);
+textmode.create = function (container, options) {
+  // read options
+  options = options || {};
+  
+  if (typeof options.statusBar === 'undefined') {
+    options.statusBar = true;
   }
 
-  // retrieve the title of current mode
-  var currentMode = availableModes[current];
-  if (!currentMode) {
-    throw new Error('Unknown mode "' + current + '"');
+  // setting default for textmode
+  options.mainMenuBar = options.mainMenuBar !== false;
+  options.enableSort = options.enableSort !== false;
+  options.enableTransform = options.enableTransform !== false;
+
+  this.options = options;
+
+  // indentation
+  if (options.indentation) {
+    this.indentation = Number(options.indentation);
   }
-  var currentTitle = currentMode.text;
+  else {
+    this.indentation = 2; // number of spaces
+  }
 
-  // create the html element
-  var box = document.createElement('button');
-  box.type = 'button';
-  box.className = 'jsoneditor-modes jsoneditor-separator';
-  box.innerHTML = currentTitle + ' &#x25BE;';
-  box.title = 'Switch editor mode';
-  box.onclick = function () {
-    var menu = new ContextMenu(items);
-    menu.show(box, container);
+  // grab ace from options if provided
+  var _ace = options.ace ? options.ace : ace;
+  // TODO: make the option options.ace deprecated, it's not needed anymore (see #309)
+
+  // determine mode
+  this.mode = (options.mode == 'code') ? 'code' : 'text';
+  if (this.mode == 'code') {
+    // verify whether Ace editor is available and supported
+    if (typeof _ace === 'undefined') {
+      this.mode = 'text';
+      console.warn('Failed to load Ace editor, falling back to plain text mode. Please use a JSONEditor bundle including Ace, or pass Ace as via the configuration option `ace`.');
+    }
+  }
+
+  // determine theme
+  this.theme = options.theme || DEFAULT_THEME;
+  if (this.theme === DEFAULT_THEME && _ace) {
+    try {
+      __webpack_require__(34);
+    }
+    catch (err) {
+      console.error(err);
+    }
+  }
+
+  if (options.onTextSelectionChange) {
+    this.onTextSelectionChange(options.onTextSelectionChange);
+  }
+
+  var me = this;
+  this.container = container;
+  this.dom = {};
+  this.aceEditor = undefined;  // ace code editor
+  this.textarea = undefined;  // plain text editor (fallback when Ace is not available)
+  this.validateSchema = null;
+  this.annotations = [];
+
+  // create a debounced validate function
+  this._debouncedValidate = util.debounce(this.validate.bind(this), this.DEBOUNCE_INTERVAL);
+
+  this.width = container.clientWidth;
+  this.height = container.clientHeight;
+
+  this.frame = document.createElement('div');
+  this.frame.className = 'jsoneditor jsoneditor-mode-' + this.options.mode;
+  this.frame.onclick = function (event) {
+    // prevent default submit action when the editor is located inside a form
+    event.preventDefault();
+  };
+  this.frame.onkeydown = function (event) {
+    me._onKeyDown(event);
   };
 
-  var frame = document.createElement('div');
-  frame.className = 'jsoneditor-modes';
-  frame.style.position = 'relative';
-  frame.appendChild(box);
+  this.content = document.createElement('div');
+  this.content.className = 'jsoneditor-outer';
 
-  container.appendChild(frame);
+  if (this.options.mainMenuBar) {
+    util.addClassName(this.content, 'has-main-menu-bar');
 
-  this.dom = {
-    container: container,
-    box: box,
-    frame: frame
-  };
+    // create menu
+    this.menu = document.createElement('div');
+    this.menu.className = 'jsoneditor-menu';
+    this.frame.appendChild(this.menu);
+
+    // create format button
+    var buttonFormat = document.createElement('button');
+    buttonFormat.type = 'button';
+    buttonFormat.className = 'jsoneditor-format';
+    buttonFormat.title = 'Format JSON data, with proper indentation and line feeds (Ctrl+\\)';
+    this.menu.appendChild(buttonFormat);
+    buttonFormat.onclick = function () {
+      try {
+        me.format();
+        me._onChange();
+      }
+      catch (err) {
+        me._onError(err);
+      }
+    };
+
+    // create compact button
+    var buttonCompact = document.createElement('button');
+    buttonCompact.type = 'button';
+    buttonCompact.className = 'jsoneditor-compact';
+    buttonCompact.title = 'Compact JSON data, remove all whitespaces (Ctrl+Shift+\\)';
+    this.menu.appendChild(buttonCompact);
+    buttonCompact.onclick = function () {
+      try {
+        me.compact();
+        me._onChange();
+      }
+      catch (err) {
+        me._onError(err);
+      }
+    };
+
+    // create sort button
+    if (this.options.enableSort) {
+      var sort = document.createElement('button');
+      sort.type = 'button';
+      sort.className = 'jsoneditor-sort';
+      sort.title = translate('sortTitleShort');
+      sort.onclick = function () {
+        me._showSortModal();
+      };
+      this.menu.appendChild(sort);
+    }
+
+    // create transform button
+    if (this.options.enableTransform) {
+      var transform = document.createElement('button');
+      transform.type = 'button';
+      transform.title = translate('transformTitleShort');
+      transform.className = 'jsoneditor-transform';
+      transform.onclick = function () {
+        me._showTransformModal();
+      };
+      this.menu.appendChild(transform);
+    }
+
+    // create repair button
+    var buttonRepair = document.createElement('button');
+    buttonRepair.type = 'button';
+    buttonRepair.className = 'jsoneditor-repair';
+    buttonRepair.title = 'Repair JSON: fix quotes and escape characters, remove comments and JSONP notation, turn JavaScript objects into JSON.';
+    this.menu.appendChild(buttonRepair);
+    buttonRepair.onclick = function () {
+      try {
+        me.repair();
+        me._onChange();
+      }
+      catch (err) {
+        me._onError(err);
+      }
+    };
+
+    // create mode box
+    if (this.options && this.options.modes && this.options.modes.length) {
+      this.modeSwitcher = new ModeSwitcher(this.menu, this.options.modes, this.options.mode, function onSwitch(mode) {
+        // switch mode and restore focus
+        me.setMode(mode);
+        me.modeSwitcher.focus();
+      });
+    }
+
+    if (this.mode === 'code') {
+      var poweredBy = document.createElement('a');
+      poweredBy.appendChild(document.createTextNode('powered by ace'));
+      poweredBy.href = 'http://ace.ajax.org';
+      poweredBy.target = '_blank';
+      poweredBy.className = 'jsoneditor-poweredBy';
+      poweredBy.onclick = function () {
+        // TODO: this anchor falls below the margin of the content,
+        // therefore the normal a.href does not work. We use a click event
+        // for now, but this should be fixed.
+        window.open(poweredBy.href, poweredBy.target);
+      };
+      this.menu.appendChild(poweredBy);
+    }
+  }
+
+  var emptyNode = {};
+  var isReadOnly = (this.options.onEditable
+  && typeof(this.options.onEditable === 'function')
+  && !this.options.onEditable(emptyNode));
+
+  this.frame.appendChild(this.content);
+  this.container.appendChild(this.frame);
+
+  if (this.mode === 'code') {
+    this.editorDom = document.createElement('div');
+    this.editorDom.style.height = '100%'; // TODO: move to css
+    this.editorDom.style.width = '100%'; // TODO: move to css
+    this.content.appendChild(this.editorDom);
+
+    var aceEditor = _ace.edit(this.editorDom);
+    var aceSession = aceEditor.getSession();
+    aceEditor.$blockScrolling = Infinity;
+    aceEditor.setTheme(this.theme);
+    aceEditor.setOptions({ readOnly: isReadOnly });
+    aceEditor.setShowPrintMargin(false);
+    aceEditor.setFontSize(13);
+    aceSession.setMode('ace/mode/json');
+    aceSession.setTabSize(this.indentation);
+    aceSession.setUseSoftTabs(true);
+    aceSession.setUseWrapMode(true);
+    
+    // replace ace setAnnotations with custom function that also covers jsoneditor annotations
+    var originalSetAnnotations = aceSession.setAnnotations;
+    aceSession.setAnnotations = function (annotations) {
+      originalSetAnnotations.call(this, annotations && annotations.length ? annotations : me.annotations);
+    };
+    
+    aceEditor.commands.bindKey('Ctrl-L', null);    // disable Ctrl+L (is used by the browser to select the address bar)
+    aceEditor.commands.bindKey('Command-L', null); // disable Ctrl+L (is used by the browser to select the address bar)
+    this.aceEditor = aceEditor;
+
+    // TODO: deprecated since v5.0.0. Cleanup backward compatibility some day
+    if (!this.hasOwnProperty('editor')) {
+      Object.defineProperty(this, 'editor', {
+        get: function () {
+          console.warn('Property "editor" has been renamed to "aceEditor".');
+          return me.aceEditor;
+        },
+        set: function (aceEditor) {
+          console.warn('Property "editor" has been renamed to "aceEditor".');
+          me.aceEditor = aceEditor;
+        }
+      });
+    }
+
+    // register onchange event
+    aceEditor.on('change', this._onChange.bind(this));
+    aceEditor.on('changeSelection', this._onSelect.bind(this));
+  }
+  else {
+    // load a plain text textarea
+    var textarea = document.createElement('textarea');
+    textarea.className = 'jsoneditor-text';
+    textarea.spellcheck = false;
+    this.content.appendChild(textarea);
+    this.textarea = textarea;
+    this.textarea.readOnly = isReadOnly;
+
+    // register onchange event
+    if (this.textarea.oninput === null) {
+      this.textarea.oninput = this._onChange.bind(this);
+    }
+    else {
+      // oninput is undefined. For IE8-
+      this.textarea.onchange = this._onChange.bind(this);
+    }
+
+    textarea.onselect = this._onSelect.bind(this);
+    textarea.onmousedown = this._onMouseDown.bind(this);
+    textarea.onblur = this._onBlur.bind(this);
+  }
+
+  this.errorTable = new ErrorTable({
+    errorTableVisible: this.mode === 'text',
+    onToggleVisibility: function () {
+      me.validate();
+    },
+    onFocusLine: function  (line) {
+      me.isFocused = true;
+      if (!isNaN(line)) {
+        me.setTextSelection({row: line, column: 1}, {row: line, column: 1000});
+      }
+    },
+    onChangeHeight: function (height) {
+      // TODO: change CSS to using flex box, remove setting height using JavaScript
+      var totalHeight = height + me.dom.statusBar.clientHeight + 1;
+      me.content.style.marginBottom = (-totalHeight) + 'px';
+      me.content.style.paddingBottom = totalHeight + 'px';
+    }
+  });
+  this.frame.appendChild(this.errorTable.getErrorTable());
+
+  if (options.statusBar) {
+    util.addClassName(this.content, 'has-status-bar');
+
+    this.curserInfoElements = {};
+    var statusBar = document.createElement('div');
+    this.dom.statusBar = statusBar;
+    statusBar.className = 'jsoneditor-statusbar';
+    this.frame.appendChild(statusBar);
+
+    var lnLabel = document.createElement('span');
+    lnLabel.className = 'jsoneditor-curserinfo-label';
+    lnLabel.innerText = 'Ln:';
+
+    var lnVal = document.createElement('span');
+    lnVal.className = 'jsoneditor-curserinfo-val';
+    lnVal.innerText = '1';
+
+    statusBar.appendChild(lnLabel);
+    statusBar.appendChild(lnVal);
+
+    var colLabel = document.createElement('span');
+    colLabel.className = 'jsoneditor-curserinfo-label';
+    colLabel.innerText = 'Col:';
+
+    var colVal = document.createElement('span');
+    colVal.className = 'jsoneditor-curserinfo-val';
+    colVal.innerText = '1';
+
+    statusBar.appendChild(colLabel);
+    statusBar.appendChild(colVal);
+
+    this.curserInfoElements.colVal = colVal;
+    this.curserInfoElements.lnVal = lnVal;
+
+    var countLabel = document.createElement('span');
+    countLabel.className = 'jsoneditor-curserinfo-label';
+    countLabel.innerText = 'characters selected';
+    countLabel.style.display = 'none';
+
+    var countVal = document.createElement('span');
+    countVal.className = 'jsoneditor-curserinfo-count';
+    countVal.innerText = '0';
+    countVal.style.display = 'none';
+
+    this.curserInfoElements.countLabel = countLabel;
+    this.curserInfoElements.countVal = countVal;
+
+    statusBar.appendChild(countVal);
+    statusBar.appendChild(countLabel);
+
+    statusBar.appendChild(this.errorTable.getErrorCounter());
+    statusBar.appendChild(this.errorTable.getWarningIcon());
+    statusBar.appendChild(this.errorTable.getErrorIcon());
+  }
+
+  this.setSchema(this.options.schema, this.options.schemaRefs);  
+};
+
+/**
+ * Handle a change:
+ * - Validate JSON schema
+ * - Send a callback to the onChange listener if provided
+ * @private
+ */
+textmode._onChange = function () {
+  if (this.onChangeDisabled) {
+    return;
+  }
+
+  // validate JSON schema (if configured)
+  this._debouncedValidate();
+
+  // trigger the onChange callback
+  if (this.options.onChange) {
+    try {
+      this.options.onChange();
+    }
+    catch (err) {
+      console.error('Error in onChange callback: ', err);
+    }
+  }
+
+  // trigger the onChangeText callback
+  if (this.options.onChangeText) {
+    try {
+      this.options.onChangeText(this.getText());
+    }
+    catch (err) {
+      console.error('Error in onChangeText callback: ', err);
+    }
+  }
+};
+
+/**
+ * Open a sort modal
+ * @private
+ */
+textmode._showSortModal = function () {
+  var me = this;
+  var container = this.options.modalAnchor || DEFAULT_MODAL_ANCHOR;
+  var json = this.get();
+
+  function onSort (sortedBy) {
+    if (Array.isArray(json)) {
+      var sortedJson = util.sort(json, sortedBy.path, sortedBy.direction);
+
+      me.sortedBy = sortedBy
+      me.set(sortedJson);
+    }
+
+    if (util.isObject(json)) {
+      var sortedJson = util.sortObjectKeys(json, sortedBy.direction);
+
+      me.sortedBy = sortedBy;
+      me.set(sortedJson);
+    }
+  }
+
+  showSortModal(container, json, onSort, me.sortedBy)
 }
 
 /**
- * Set focus to switcher
+ * Open a transform modal
+ * @private
  */
-ModeSwitcher.prototype.focus = function () {
-  this.dom.box.focus();
+textmode._showTransformModal = function () {
+  var me = this;
+  var anchor = this.options.modalAnchor || DEFAULT_MODAL_ANCHOR;
+  var json = this.get();
+  showTransformModal(anchor, json, function (query) {
+    var updatedJson = jmespath.search(json, query);
+    me.set(updatedJson);
+  })
+}
+
+/**
+ * Handle text selection
+ * Calculates the cursor position and selection range and updates menu
+ * @private
+ */
+textmode._onSelect = function () {
+  this._updateCursorInfo();
+  this._emitSelectionChange();
 };
 
 /**
- * Destroy the ModeSwitcher, remove from DOM
+ * Event handler for keydown. Handles shortcut keys
+ * @param {Event} event
+ * @private
  */
-ModeSwitcher.prototype.destroy = function () {
-  if (this.dom && this.dom.frame && this.dom.frame.parentNode) {
-    this.dom.frame.parentNode.removeChild(this.dom.frame);
+textmode._onKeyDown = function (event) {
+  var keynum = event.which || event.keyCode;
+  var handled = false;
+
+  if (keynum == 220 && event.ctrlKey) {
+    if (event.shiftKey) { // Ctrl+Shift+\
+      this.compact();
+      this._onChange();
+    }
+    else { // Ctrl+\
+      this.format();
+      this._onChange();
+    }
+    handled = true;
   }
-  this.dom = null;
+
+  if (handled) {
+    event.preventDefault();
+    event.stopPropagation();
+  }
+
+  this._updateCursorInfo();
+  this._emitSelectionChange();
 };
 
-module.exports = ModeSwitcher;
+/**
+ * Event handler for mousedown.
+ * @private
+ */
+textmode._onMouseDown = function () {
+  this._updateCursorInfo();
+  this._emitSelectionChange();
+};
+
+/**
+ * Event handler for blur.
+ * @private
+ */
+textmode._onBlur = function () {
+  var me = this;
+  // this allows to avoid blur when clicking inner elements (like the errors panel)
+  // just make sure to set the isFocused to true on the inner element onclick callback
+  setTimeout(function(){
+    if (!me.isFocused) {
+      me._updateCursorInfo();
+      me._emitSelectionChange();
+    }
+    me.isFocused = false;
+  });
+};
+
+/**
+ * Update the cursor info and the status bar, if presented
+ */
+textmode._updateCursorInfo = function () {
+  var me = this;
+  var line, col, count;
+
+  if (this.textarea) {
+    setTimeout(function() { //this to verify we get the most updated textarea cursor selection
+      var selectionRange = util.getInputSelection(me.textarea);
+      
+      if (selectionRange.startIndex !== selectionRange.endIndex) {
+        count = selectionRange.endIndex - selectionRange.startIndex;
+      }
+      
+      if (count && me.cursorInfo && me.cursorInfo.line === selectionRange.end.row && me.cursorInfo.column === selectionRange.end.column) {
+        line = selectionRange.start.row;
+        col = selectionRange.start.column;
+      } else {
+        line = selectionRange.end.row;
+        col = selectionRange.end.column;
+      }
+      
+      me.cursorInfo = {
+        line: line,
+        column: col,
+        count: count
+      };
+
+      if(me.options.statusBar) {
+        updateDisplay();
+      }
+    },0);
+    
+  } else if (this.aceEditor && this.curserInfoElements) {
+    var curserPos = this.aceEditor.getCursorPosition();
+    var selectedText = this.aceEditor.getSelectedText();
+
+    line = curserPos.row + 1;
+    col = curserPos.column + 1;
+    count = selectedText.length;
+
+    me.cursorInfo = {
+      line: line,
+      column: col,
+      count: count
+    };
+
+    if(this.options.statusBar) {
+      updateDisplay();
+    }
+  }
+
+  function updateDisplay() {
+
+    if (me.curserInfoElements.countVal.innerText !== count) {
+      me.curserInfoElements.countVal.innerText = count;
+      me.curserInfoElements.countVal.style.display = count ? 'inline' : 'none';
+      me.curserInfoElements.countLabel.style.display = count ? 'inline' : 'none';
+    }
+    me.curserInfoElements.lnVal.innerText = line;
+    me.curserInfoElements.colVal.innerText = col;
+  }
+};
+
+/**
+ * emits selection change callback, if given
+ * @private
+ */
+textmode._emitSelectionChange = function () {
+  if(this._selectionChangedHandler) {
+    var currentSelection = this.getTextSelection();
+    this._selectionChangedHandler(currentSelection.start, currentSelection.end, currentSelection.text);
+  }
+};
+
+/**
+ * refresh ERROR annotations state
+ * error annotations are handled by the ace json mode (ace/mode/json)
+ * validation annotations are handled by this mode
+ * therefore in order to refresh we send only the annotations of error type in order to maintain its state 
+ * @private
+ */
+textmode._refreshAnnotations = function () {  
+  var session = this.aceEditor && this.aceEditor.getSession();
+  if (session) {
+    var errEnnotations = session.getAnnotations().filter(function(annotation) {return annotation.type === 'error' });
+    session.setAnnotations(errEnnotations);
+  }
+};
+
+/**
+ * Destroy the editor. Clean up DOM, event listeners, and web workers.
+ */
+textmode.destroy = function () {
+  // remove old ace editor
+  if (this.aceEditor) {
+    this.aceEditor.destroy();
+    this.aceEditor = null;
+  }
+
+  if (this.frame && this.container && this.frame.parentNode === this.container) {
+    this.container.removeChild(this.frame);
+  }
+
+  if (this.modeSwitcher) {
+    this.modeSwitcher.destroy();
+    this.modeSwitcher = null;
+  }
+
+  this.textarea = null;
+  
+  this._debouncedValidate = null;
+};
+
+/**
+ * Compact the code in the text editor
+ */
+textmode.compact = function () {
+  var json = this.get();
+  var text = JSON.stringify(json);
+  this._setText(text, false);
+};
+
+/**
+ * Format the code in the text editor
+ */
+textmode.format = function () {
+  var json = this.get();
+  var text = JSON.stringify(json, null, this.indentation);
+  this._setText(text, false);
+};
+
+/**
+ * Repair the code in the text editor
+ */
+textmode.repair = function () {
+  var text = this.getText();
+  var repairedText = util.repair(text);
+  this._setText(repairedText, false);
+};
+
+/**
+ * Set focus to the formatter
+ */
+textmode.focus = function () {
+  if (this.textarea) {
+    this.textarea.focus();
+  }
+  if (this.aceEditor) {
+    this.aceEditor.focus();
+  }
+};
+
+/**
+ * Resize the formatter
+ */
+textmode.resize = function () {
+  if (this.aceEditor) {
+    var force = false;
+    this.aceEditor.resize(force);
+  }
+};
+
+/**
+ * Set json data in the formatter
+ * @param {*} json
+ */
+textmode.set = function(json) {
+  this.setText(JSON.stringify(json, null, this.indentation));
+};
+
+/**
+ * Update data. Same as calling `set` in text/code mode.
+ * @param {*} json
+ */
+textmode.update = function(json) {
+  this.updateText(JSON.stringify(json, null, this.indentation));
+};
+
+/**
+ * Get json data from the formatter
+ * @return {*} json
+ */
+textmode.get = function() {
+  var text = this.getText();
+
+  return util.parse(text); // this can throw an error
+};
+
+/**
+ * Get the text contents of the editor
+ * @return {String} jsonText
+ */
+textmode.getText = function() {
+  if (this.textarea) {
+    return this.textarea.value;
+  }
+  if (this.aceEditor) {
+    return this.aceEditor.getValue();
+  }
+  return '';
+};
+
+/**
+ * Set the text contents of the editor and optionally clear the history
+ * @param {String} jsonText
+ * @param {boolean} clearHistory   Only applicable for mode 'code'
+ * @private
+ */
+textmode._setText = function(jsonText, clearHistory) {
+  var text;
+
+  if (this.options.escapeUnicode === true) {
+    text = util.escapeUnicodeChars(jsonText);
+  }
+  else {
+    text = jsonText;
+  }
+
+  if (this.textarea) {
+    this.textarea.value = text;
+  }
+  if (this.aceEditor) {
+    // prevent emitting onChange events while setting new text
+    this.onChangeDisabled = true;
+
+    this.aceEditor.setValue(text, -1);
+
+    if (clearHistory) {
+      // prevent initial undo action clearing the initial contents
+      var me = this;
+      setTimeout(function () {
+        me.aceEditor.session.getUndoManager().reset();
+      }, 0);
+    }
+
+    this.onChangeDisabled = false;
+  }
+  // validate JSON schema
+  this._debouncedValidate();
+};
+
+/**
+ * Set the text contents of the editor
+ * @param {String} jsonText
+ */
+textmode.setText = function(jsonText) {
+  this._setText(jsonText, true)
+};
+
+/**
+ * Update the text contents
+ * @param {string} jsonText
+ */
+textmode.updateText = function(jsonText) {
+  // don't update if there are no changes
+  if (this.getText() === jsonText) {
+    return;
+  }
+
+  this._setText(jsonText, false);
+};
+
+/**
+ * Validate current JSON object against the configured JSON schema
+ * Throws an exception when no JSON schema is configured
+ */
+textmode.validate = function () {
+  var schemaErrors = [];
+  var parseErrors = [];
+  var json;
+  try {
+    json = this.get(); // this can fail when there is no valid json
+
+    // execute JSON schema validation (ajv)
+    if (this.validateSchema) {
+      var valid = this.validateSchema(json);
+      if (!valid) {
+        schemaErrors = this.validateSchema.errors.map(function (error) {
+          error.type = "validation";
+          return util.improveSchemaError(error);
+        });
+      }
+    }
+
+    // execute custom validation and after than merge and render all errors
+    // TODO: implement a better mechanism for only using the last validation action
+    this.validationSequence = (this.validationSequence || 0) + 1;
+    var me = this;
+    var seq = this.validationSequence;
+    validateCustom(json, this.options.onValidate)
+        .then(function (customValidationErrors) {
+          // only apply when there was no other validation started whilst resolving async results
+          if (seq === me.validationSequence) {
+            var errors = schemaErrors.concat(parseErrors).concat(customValidationErrors);
+            me._renderErrors(errors);
+          }
+        })
+        .catch(function (err) {
+          console.error('Custom validation function did throw an error', err);
+        });
+  }
+  catch (err) {
+    if (this.getText()) {
+      // try to extract the line number from the jsonlint error message
+      var match = /\w*line\s*(\d+)\w*/g.exec(err.message);
+      var line;
+      if (match) {
+        line = +match[1];
+      }
+      parseErrors = [{
+        type: 'error',
+        message: err.message.replace(/\n/g, '<br>'),
+        line: line
+      }];
+    }
+
+    this._renderErrors(parseErrors);
+  }
+};
+
+textmode._renderErrors = function(errors) {
+  var jsonText = this.getText();
+  var errorPaths = [];
+  errors.reduce(function(acc, curr) {
+    if(acc.indexOf(curr.dataPath) === -1) {
+      acc.push(curr.dataPath);
+    }
+    return acc;
+  }, errorPaths);
+  var errorLocations = util.getPositionForPath(jsonText, errorPaths);
+
+  // render annotations in Ace Editor (if any)
+  if (this.aceEditor) {
+    this.annotations = errorLocations.map(function (errLoc) {
+      var validationErrors = errors.filter(function(err){ return err.dataPath === errLoc.path; });
+      var message = validationErrors.map(function(err) { return err.message }).join('\n');
+      if (message) {
+        return {
+          row: errLoc.line,
+          column: errLoc.column,
+          text: 'Schema validation error' + (validationErrors.length !== 1 ? 's' : '') + ': \n' + message,
+          type: 'warning',
+          source: 'jsoneditor',
+        }
+      }
+
+      return {};
+    });
+    this._refreshAnnotations();
+  }
+
+  // render errors in the errors table (if any)
+  this.errorTable.setErrors(errors, errorLocations);
+
+  // update the height of the ace editor
+  if (this.aceEditor) {
+    var force = false;
+    this.aceEditor.resize(force);
+  }
+};
+
+/**
+ * Get the selection details
+ * @returns {{start:{row:Number, column:Number},end:{row:Number, column:Number},text:String}}
+ */
+textmode.getTextSelection = function () {
+  var selection = {};
+  if (this.textarea) {
+    var selectionRange = util.getInputSelection(this.textarea);
+
+    if (this.cursorInfo && this.cursorInfo.line === selectionRange.end.row && this.cursorInfo.column === selectionRange.end.column) {
+      //selection direction is bottom => up
+      selection.start = selectionRange.end;
+      selection.end = selectionRange.start;
+    } else {
+      selection = selectionRange;
+    }
+
+    return {
+      start: selection.start,
+      end: selection.end,
+      text: this.textarea.value.substring(selectionRange.startIndex, selectionRange.endIndex)
+    }
+  }
+
+  if (this.aceEditor) {
+    var aceSelection = this.aceEditor.getSelection();
+    var selectedText = this.aceEditor.getSelectedText();
+    var range = aceSelection.getRange();
+    var lead = aceSelection.getSelectionLead();
+
+    if (lead.row === range.end.row && lead.column === range.end.column) {
+      selection = range;
+    } else {
+      //selection direction is bottom => up
+      selection.start = range.end;
+      selection.end = range.start;
+    }
+    
+    return {
+      start: {
+        row: selection.start.row + 1,
+        column: selection.start.column + 1
+      },
+      end: {
+        row: selection.end.row + 1,
+        column: selection.end.column + 1
+      },
+      text: selectedText
+    };
+  }
+};
+
+/**
+ * Callback registration for selection change
+ * @param {selectionCallback} callback
+ * 
+ * @callback selectionCallback
+ */
+textmode.onTextSelectionChange = function (callback) {
+  if (typeof callback === 'function') {
+    this._selectionChangedHandler = util.debounce(callback, this.DEBOUNCE_INTERVAL);
+  }
+};
+
+/**
+ * Set selection on editor's text
+ * @param {{row:Number, column:Number}} startPos selection start position
+ * @param {{row:Number, column:Number}} endPos selected end position
+ */
+textmode.setTextSelection = function (startPos, endPos) {
+
+  if (!startPos || !endPos) return;
+
+  if (this.textarea) {
+    var startIndex = util.getIndexForPosition(this.textarea, startPos.row, startPos.column);
+    var endIndex = util.getIndexForPosition(this.textarea, endPos.row, endPos.column);
+    if (startIndex > -1 && endIndex  > -1) {
+      if (this.textarea.setSelectionRange) {
+        this.textarea.focus();
+        this.textarea.setSelectionRange(startIndex, endIndex);
+      } else if (this.textarea.createTextRange) { // IE < 9
+        var range = this.textarea.createTextRange();
+        range.collapse(true);
+        range.moveEnd('character', endIndex);
+        range.moveStart('character', startIndex);
+        range.select();
+      }
+      var rows = (this.textarea.value.match(/\n/g) || []).length + 1;
+      var lineHeight =  this.textarea.scrollHeight / rows;
+      var selectionScrollPos = (startPos.row * lineHeight);
+      this.textarea.scrollTop = selectionScrollPos > this.textarea.clientHeight ? (selectionScrollPos - (this.textarea.clientHeight / 2)) : 0;
+    }
+  } else if (this.aceEditor) {
+    var range = {
+      start:{
+        row: startPos.row - 1,
+        column: startPos.column - 1
+      },
+      end:{
+        row: endPos.row - 1,
+        column: endPos.column - 1
+      }
+    };
+    this.aceEditor.selection.setRange(range);
+    this.aceEditor.scrollToLine(startPos.row - 1, true);
+  }
+};
+
+function load () {
+  try {
+    this.format()
+  }
+  catch (err) {
+    // in case of an error, just move on, failing formatting is not a big deal
+  }
+}
+
+// define modes
+module.exports = [
+  {
+    mode: 'text',
+    mixin: textmode,
+    data: 'text',
+    load: load
+  },
+  {
+    mode: 'code',
+    mixin: textmode,
+    data: 'text',
+    load: load
+  }
+];
+
 
 /***/ }),
-/* 13 */
+/* 15 */
+/***/ (function(module, exports) {
+
+/**
+ * Show errors and schema warnings in a clickable table view
+ * @param {Object} config
+ * @property {boolean} errorTableVisible
+ * @property {function (boolean) : void} onToggleVisibility
+ * @property {function (number)} [onFocusLine]
+ * @property {function (number)} onChangeHeight
+ * @constructor
+ */
+function ErrorTable (config) {
+  this.errorTableVisible = config.errorTableVisible;
+  this.onToggleVisibility = config.onToggleVisibility;
+  this.onFocusLine = config.onFocusLine || function () {};
+  this.onChangeHeight = config.onChangeHeight;
+
+  this.dom = {};
+
+  var validationErrorsContainer = document.createElement('div');
+  validationErrorsContainer.className = 'jsoneditor-validation-errors-container';
+  this.dom.validationErrorsContainer = validationErrorsContainer;
+
+  var additionalErrorsIndication = document.createElement('div');
+  additionalErrorsIndication.style.display = 'none';
+  additionalErrorsIndication.className = "jsoneditor-additional-errors fadein";
+  additionalErrorsIndication.innerHTML = "Scroll for more &#9663;";
+  this.dom.additionalErrorsIndication = additionalErrorsIndication;
+  validationErrorsContainer.appendChild(additionalErrorsIndication);
+
+  var validationErrorIcon = document.createElement('span');
+  validationErrorIcon.className = 'jsoneditor-validation-error-icon';
+  validationErrorIcon.style.display = 'none';
+  this.dom.validationErrorIcon = validationErrorIcon;
+
+  var validationErrorCount = document.createElement('span');
+  validationErrorCount.className = 'jsoneditor-validation-error-count';
+  validationErrorCount.style.display = 'none';
+  this.dom.validationErrorCount = validationErrorCount;
+
+  this.dom.parseErrorIndication = document.createElement('span');
+  this.dom.parseErrorIndication.className = 'jsoneditor-parse-error-icon';
+  this.dom.parseErrorIndication.style.display = 'none';
+}
+
+ErrorTable.prototype.getErrorTable = function () {
+  return this.dom.validationErrorsContainer;
+};
+
+ErrorTable.prototype.getErrorCounter = function () {
+  return this.dom.validationErrorCount;
+};
+
+ErrorTable.prototype.getWarningIcon = function () {
+  return this.dom.validationErrorIcon;
+};
+
+ErrorTable.prototype.getErrorIcon = function () {
+  return this.dom.parseErrorIndication;
+};
+
+ErrorTable.prototype.toggleTableVisibility = function () {
+  this.errorTableVisible = !this.errorTableVisible;
+  this.onToggleVisibility(this.errorTableVisible);
+}
+
+ErrorTable.prototype.setErrors = function (errors, errorLocations) {
+  var me = this;
+
+  // clear any previous errors
+  if (this.dom.validationErrors) {
+    this.dom.validationErrors.parentNode.removeChild(this.dom.validationErrors);
+    this.dom.validationErrors = null;
+    this.dom.additionalErrorsIndication.style.display = 'none';
+  }
+
+  // create the table with errors
+  // keep default behavior for parse errors
+  if (this.errorTableVisible && errors.length > 0) {
+    var validationErrors = document.createElement('div');
+    validationErrors.className = 'jsoneditor-validation-errors';
+    validationErrors.innerHTML = '<table class="jsoneditor-text-errors"><tbody></tbody></table>';
+    var tbody = validationErrors.getElementsByTagName('tbody')[0];
+
+    errors.forEach(function (error) {
+      var message;
+      if (typeof error === 'string') {
+        message = '<td colspan="2"><pre>' + error + '</pre></td>';
+      }
+      else {
+        message =
+            '<td>' + (error.dataPath || '') + '</td>' +
+            '<td><pre>' + error.message + '</pre></td>';
+      }
+
+      var line;
+
+      if (!isNaN(error.line)) {
+        line = error.line;
+      } else if (error.dataPath) {
+        var errLoc = errorLocations.find(function(loc) { return loc.path === error.dataPath; });
+        if (errLoc) {
+          line = errLoc.line + 1;
+        }
+      }
+
+      var trEl = document.createElement('tr');
+      trEl.className = !isNaN(line) ? 'jump-to-line' : '';
+      if (error.type === 'error') {
+        trEl.className += ' parse-error';
+      } else {
+        trEl.className += ' validation-error';
+      }
+
+      trEl.innerHTML =  ('<td><button class="jsoneditor-schema-error"></button></td><td style="white-space:nowrap;">'+ (!isNaN(line) ? ('Ln ' + line) : '') +'</td>' + message);
+      trEl.onclick = function() {
+        me.onFocusLine(line);
+      };
+
+      tbody.appendChild(trEl);
+    });
+
+    this.dom.validationErrors = validationErrors;
+    this.dom.validationErrorsContainer.appendChild(validationErrors);
+    this.dom.additionalErrorsIndication.title = errors.length + " errors total";
+
+    if (this.dom.validationErrorsContainer.clientHeight < this.dom.validationErrorsContainer.scrollHeight) {
+      this.dom.additionalErrorsIndication.style.display = 'block';
+      this.dom.validationErrorsContainer.onscroll = function () {
+        me.dom.additionalErrorsIndication.style.display =
+            (me.dom.validationErrorsContainer.clientHeight > 0 && me.dom.validationErrorsContainer.scrollTop === 0) ? 'block' : 'none';
+      }
+    } else {
+      this.dom.validationErrorsContainer.onscroll = undefined;
+    }
+
+    var height = this.dom.validationErrorsContainer.clientHeight + (this.dom.statusBar ? this.dom.statusBar.clientHeight : 0);
+    // this.content.style.marginBottom = (-height) + 'px';
+    // this.content.style.paddingBottom = height + 'px';
+    this.onChangeHeight(height);
+  } else {
+    this.onChangeHeight(0);
+  }
+
+  // update the status bar
+  var validationErrorsCount = errors.filter(function (error) {
+    return error.type !== 'error'
+  }).length;
+  if (validationErrorsCount > 0) {
+    this.dom.validationErrorCount.style.display = 'inline';
+    this.dom.validationErrorCount.innerText = validationErrorsCount;
+    this.dom.validationErrorCount.onclick = this.toggleTableVisibility.bind(this);
+
+    this.dom.validationErrorIcon.style.display = 'inline';
+    this.dom.validationErrorIcon.title = validationErrorsCount + ' schema validation error(s) found';
+    this.dom.validationErrorIcon.onclick = this.toggleTableVisibility.bind(this);
+  }
+  else {
+    this.dom.validationErrorCount.style.display = 'none';
+    this.dom.validationErrorIcon.style.display = 'none';
+  }
+
+  // update the parse error icon
+  var hasParseErrors = errors.some(function (error) {
+    return error.type === 'error'
+  });
+  if (hasParseErrors) {
+    var line = errors[0].line
+    this.dom.parseErrorIndication.style.display = 'block';
+    this.dom.parseErrorIndication.title = !isNaN(line)
+        ? ('parse error on line ' + line)
+        : 'parse error - check that the json is valid';
+  }
+  else {
+    this.dom.parseErrorIndication.style.display = 'none';
+  }
+};
+
+module.exports = ErrorTable;
+
+
+/***/ }),
+/* 16 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -5425,12 +6753,13 @@ catch (err) {
   // no problem... when we need Ajv we will throw a neat exception
 }
 
-var ace = __webpack_require__(4); // may be undefined in case of minimalist bundle
-var VanillaPicker = __webpack_require__(5); // may be undefined in case of minimalist bundle
+var ace = __webpack_require__(8); // may be undefined in case of minimalist bundle
+var VanillaPicker = __webpack_require__(9); // may be undefined in case of minimalist bundle
 
-var treemode = __webpack_require__(17);
-var textmode = __webpack_require__(29);
-var util = __webpack_require__(1);
+var treemode = __webpack_require__(20);
+var textmode = __webpack_require__(14);
+var previewmode = __webpack_require__(35);
+var util = __webpack_require__(0);
 
 if (typeof Promise === 'undefined') {
   console.error('Promise undefined. Please load a Promise polyfill in the browser in order to use JSONEditor');
@@ -5889,9 +7218,10 @@ JSONEditor.registerMode = function (mode) {
   }
 };
 
-// register tree and text modes
+// register tree, text, and preview modes
 JSONEditor.registerMode(treemode);
 JSONEditor.registerMode(textmode);
+JSONEditor.registerMode(previewmode);
 
 // expose some of the libraries that can be used customized
 JSONEditor.ace = ace;
@@ -5905,7 +7235,7 @@ module.exports = JSONEditor;
 
 
 /***/ }),
-/* 14 */
+/* 17 */
 /***/ (function(module, exports, __webpack_require__) {
 
 ace.define("ace/mode/json_highlight_rules",["require","exports","module","ace/lib/oop","ace/mode/text_highlight_rules"], function(acequire, exports, module) {
@@ -6207,7 +7537,7 @@ oop.inherits(Mode, TextMode);
     };
 
     this.createWorker = function(session) {
-        var worker = new WorkerClient(["ace"], __webpack_require__(15), "JsonWorker");
+        var worker = new WorkerClient(["ace"], __webpack_require__(18), "JsonWorker");
         worker.attachToDocument(session.getDocument());
 
         worker.on("annotate", function(e) {
@@ -6230,14 +7560,14 @@ exports.Mode = Mode;
 
 
 /***/ }),
-/* 15 */
+/* 18 */
 /***/ (function(module, exports) {
 
 module.exports.id = 'ace/mode/json_worker';
 module.exports.src = "\"no use strict\";!function(window){function resolveModuleId(id,paths){for(var testPath=id,tail=\"\";testPath;){var alias=paths[testPath];if(\"string\"==typeof alias)return alias+tail;if(alias)return alias.location.replace(/\\/*$/,\"/\")+(tail||alias.main||alias.name);if(alias===!1)return\"\";var i=testPath.lastIndexOf(\"/\");if(-1===i)break;tail=testPath.substr(i)+tail,testPath=testPath.slice(0,i)}return id}if(!(void 0!==window.window&&window.document||window.acequire&&window.define)){window.console||(window.console=function(){var msgs=Array.prototype.slice.call(arguments,0);postMessage({type:\"log\",data:msgs})},window.console.error=window.console.warn=window.console.log=window.console.trace=window.console),window.window=window,window.ace=window,window.onerror=function(message,file,line,col,err){postMessage({type:\"error\",data:{message:message,data:err.data,file:file,line:line,col:col,stack:err.stack}})},window.normalizeModule=function(parentId,moduleName){if(-1!==moduleName.indexOf(\"!\")){var chunks=moduleName.split(\"!\");return window.normalizeModule(parentId,chunks[0])+\"!\"+window.normalizeModule(parentId,chunks[1])}if(\".\"==moduleName.charAt(0)){var base=parentId.split(\"/\").slice(0,-1).join(\"/\");for(moduleName=(base?base+\"/\":\"\")+moduleName;-1!==moduleName.indexOf(\".\")&&previous!=moduleName;){var previous=moduleName;moduleName=moduleName.replace(/^\\.\\//,\"\").replace(/\\/\\.\\//,\"/\").replace(/[^\\/]+\\/\\.\\.\\//,\"\")}}return moduleName},window.acequire=function acequire(parentId,id){if(id||(id=parentId,parentId=null),!id.charAt)throw Error(\"worker.js acequire() accepts only (parentId, id) as arguments\");id=window.normalizeModule(parentId,id);var module=window.acequire.modules[id];if(module)return module.initialized||(module.initialized=!0,module.exports=module.factory().exports),module.exports;if(!window.acequire.tlns)return console.log(\"unable to load \"+id);var path=resolveModuleId(id,window.acequire.tlns);return\".js\"!=path.slice(-3)&&(path+=\".js\"),window.acequire.id=id,window.acequire.modules[id]={},importScripts(path),window.acequire(parentId,id)},window.acequire.modules={},window.acequire.tlns={},window.define=function(id,deps,factory){if(2==arguments.length?(factory=deps,\"string\"!=typeof id&&(deps=id,id=window.acequire.id)):1==arguments.length&&(factory=id,deps=[],id=window.acequire.id),\"function\"!=typeof factory)return window.acequire.modules[id]={exports:factory,initialized:!0},void 0;deps.length||(deps=[\"require\",\"exports\",\"module\"]);var req=function(childId){return window.acequire(id,childId)};window.acequire.modules[id]={exports:{},factory:function(){var module=this,returnExports=factory.apply(this,deps.map(function(dep){switch(dep){case\"require\":return req;case\"exports\":return module.exports;case\"module\":return module;default:return req(dep)}}));return returnExports&&(module.exports=returnExports),module}}},window.define.amd={},acequire.tlns={},window.initBaseUrls=function(topLevelNamespaces){for(var i in topLevelNamespaces)acequire.tlns[i]=topLevelNamespaces[i]},window.initSender=function(){var EventEmitter=window.acequire(\"ace/lib/event_emitter\").EventEmitter,oop=window.acequire(\"ace/lib/oop\"),Sender=function(){};return function(){oop.implement(this,EventEmitter),this.callback=function(data,callbackId){postMessage({type:\"call\",id:callbackId,data:data})},this.emit=function(name,data){postMessage({type:\"event\",name:name,data:data})}}.call(Sender.prototype),new Sender};var main=window.main=null,sender=window.sender=null;window.onmessage=function(e){var msg=e.data;if(msg.event&&sender)sender._signal(msg.event,msg.data);else if(msg.command)if(main[msg.command])main[msg.command].apply(main,msg.args);else{if(!window[msg.command])throw Error(\"Unknown command:\"+msg.command);window[msg.command].apply(window,msg.args)}else if(msg.init){window.initBaseUrls(msg.tlns),acequire(\"ace/lib/es5-shim\"),sender=window.sender=window.initSender();var clazz=acequire(msg.module)[msg.classname];main=window.main=new clazz(sender)}}}}(this),ace.define(\"ace/lib/oop\",[\"require\",\"exports\",\"module\"],function(acequire,exports){\"use strict\";exports.inherits=function(ctor,superCtor){ctor.super_=superCtor,ctor.prototype=Object.create(superCtor.prototype,{constructor:{value:ctor,enumerable:!1,writable:!0,configurable:!0}})},exports.mixin=function(obj,mixin){for(var key in mixin)obj[key]=mixin[key];return obj},exports.implement=function(proto,mixin){exports.mixin(proto,mixin)}}),ace.define(\"ace/range\",[\"require\",\"exports\",\"module\"],function(acequire,exports){\"use strict\";var comparePoints=function(p1,p2){return p1.row-p2.row||p1.column-p2.column},Range=function(startRow,startColumn,endRow,endColumn){this.start={row:startRow,column:startColumn},this.end={row:endRow,column:endColumn}};(function(){this.isEqual=function(range){return this.start.row===range.start.row&&this.end.row===range.end.row&&this.start.column===range.start.column&&this.end.column===range.end.column},this.toString=function(){return\"Range: [\"+this.start.row+\"/\"+this.start.column+\"] -> [\"+this.end.row+\"/\"+this.end.column+\"]\"},this.contains=function(row,column){return 0==this.compare(row,column)},this.compareRange=function(range){var cmp,end=range.end,start=range.start;return cmp=this.compare(end.row,end.column),1==cmp?(cmp=this.compare(start.row,start.column),1==cmp?2:0==cmp?1:0):-1==cmp?-2:(cmp=this.compare(start.row,start.column),-1==cmp?-1:1==cmp?42:0)},this.comparePoint=function(p){return this.compare(p.row,p.column)},this.containsRange=function(range){return 0==this.comparePoint(range.start)&&0==this.comparePoint(range.end)},this.intersects=function(range){var cmp=this.compareRange(range);return-1==cmp||0==cmp||1==cmp},this.isEnd=function(row,column){return this.end.row==row&&this.end.column==column},this.isStart=function(row,column){return this.start.row==row&&this.start.column==column},this.setStart=function(row,column){\"object\"==typeof row?(this.start.column=row.column,this.start.row=row.row):(this.start.row=row,this.start.column=column)},this.setEnd=function(row,column){\"object\"==typeof row?(this.end.column=row.column,this.end.row=row.row):(this.end.row=row,this.end.column=column)},this.inside=function(row,column){return 0==this.compare(row,column)?this.isEnd(row,column)||this.isStart(row,column)?!1:!0:!1},this.insideStart=function(row,column){return 0==this.compare(row,column)?this.isEnd(row,column)?!1:!0:!1},this.insideEnd=function(row,column){return 0==this.compare(row,column)?this.isStart(row,column)?!1:!0:!1},this.compare=function(row,column){return this.isMultiLine()||row!==this.start.row?this.start.row>row?-1:row>this.end.row?1:this.start.row===row?column>=this.start.column?0:-1:this.end.row===row?this.end.column>=column?0:1:0:this.start.column>column?-1:column>this.end.column?1:0},this.compareStart=function(row,column){return this.start.row==row&&this.start.column==column?-1:this.compare(row,column)},this.compareEnd=function(row,column){return this.end.row==row&&this.end.column==column?1:this.compare(row,column)},this.compareInside=function(row,column){return this.end.row==row&&this.end.column==column?1:this.start.row==row&&this.start.column==column?-1:this.compare(row,column)},this.clipRows=function(firstRow,lastRow){if(this.end.row>lastRow)var end={row:lastRow+1,column:0};else if(firstRow>this.end.row)var end={row:firstRow,column:0};if(this.start.row>lastRow)var start={row:lastRow+1,column:0};else if(firstRow>this.start.row)var start={row:firstRow,column:0};return Range.fromPoints(start||this.start,end||this.end)},this.extend=function(row,column){var cmp=this.compare(row,column);if(0==cmp)return this;if(-1==cmp)var start={row:row,column:column};else var end={row:row,column:column};return Range.fromPoints(start||this.start,end||this.end)},this.isEmpty=function(){return this.start.row===this.end.row&&this.start.column===this.end.column},this.isMultiLine=function(){return this.start.row!==this.end.row},this.clone=function(){return Range.fromPoints(this.start,this.end)},this.collapseRows=function(){return 0==this.end.column?new Range(this.start.row,0,Math.max(this.start.row,this.end.row-1),0):new Range(this.start.row,0,this.end.row,0)},this.toScreenRange=function(session){var screenPosStart=session.documentToScreenPosition(this.start),screenPosEnd=session.documentToScreenPosition(this.end);return new Range(screenPosStart.row,screenPosStart.column,screenPosEnd.row,screenPosEnd.column)},this.moveBy=function(row,column){this.start.row+=row,this.start.column+=column,this.end.row+=row,this.end.column+=column}}).call(Range.prototype),Range.fromPoints=function(start,end){return new Range(start.row,start.column,end.row,end.column)},Range.comparePoints=comparePoints,Range.comparePoints=function(p1,p2){return p1.row-p2.row||p1.column-p2.column},exports.Range=Range}),ace.define(\"ace/apply_delta\",[\"require\",\"exports\",\"module\"],function(acequire,exports){\"use strict\";exports.applyDelta=function(docLines,delta){var row=delta.start.row,startColumn=delta.start.column,line=docLines[row]||\"\";switch(delta.action){case\"insert\":var lines=delta.lines;if(1===lines.length)docLines[row]=line.substring(0,startColumn)+delta.lines[0]+line.substring(startColumn);else{var args=[row,1].concat(delta.lines);docLines.splice.apply(docLines,args),docLines[row]=line.substring(0,startColumn)+docLines[row],docLines[row+delta.lines.length-1]+=line.substring(startColumn)}break;case\"remove\":var endColumn=delta.end.column,endRow=delta.end.row;row===endRow?docLines[row]=line.substring(0,startColumn)+line.substring(endColumn):docLines.splice(row,endRow-row+1,line.substring(0,startColumn)+docLines[endRow].substring(endColumn))}}}),ace.define(\"ace/lib/event_emitter\",[\"require\",\"exports\",\"module\"],function(acequire,exports){\"use strict\";var EventEmitter={},stopPropagation=function(){this.propagationStopped=!0},preventDefault=function(){this.defaultPrevented=!0};EventEmitter._emit=EventEmitter._dispatchEvent=function(eventName,e){this._eventRegistry||(this._eventRegistry={}),this._defaultHandlers||(this._defaultHandlers={});var listeners=this._eventRegistry[eventName]||[],defaultHandler=this._defaultHandlers[eventName];if(listeners.length||defaultHandler){\"object\"==typeof e&&e||(e={}),e.type||(e.type=eventName),e.stopPropagation||(e.stopPropagation=stopPropagation),e.preventDefault||(e.preventDefault=preventDefault),listeners=listeners.slice();for(var i=0;listeners.length>i&&(listeners[i](e,this),!e.propagationStopped);i++);return defaultHandler&&!e.defaultPrevented?defaultHandler(e,this):void 0}},EventEmitter._signal=function(eventName,e){var listeners=(this._eventRegistry||{})[eventName];if(listeners){listeners=listeners.slice();for(var i=0;listeners.length>i;i++)listeners[i](e,this)}},EventEmitter.once=function(eventName,callback){var _self=this;callback&&this.addEventListener(eventName,function newCallback(){_self.removeEventListener(eventName,newCallback),callback.apply(null,arguments)})},EventEmitter.setDefaultHandler=function(eventName,callback){var handlers=this._defaultHandlers;if(handlers||(handlers=this._defaultHandlers={_disabled_:{}}),handlers[eventName]){var old=handlers[eventName],disabled=handlers._disabled_[eventName];disabled||(handlers._disabled_[eventName]=disabled=[]),disabled.push(old);var i=disabled.indexOf(callback);-1!=i&&disabled.splice(i,1)}handlers[eventName]=callback},EventEmitter.removeDefaultHandler=function(eventName,callback){var handlers=this._defaultHandlers;if(handlers){var disabled=handlers._disabled_[eventName];if(handlers[eventName]==callback)handlers[eventName],disabled&&this.setDefaultHandler(eventName,disabled.pop());else if(disabled){var i=disabled.indexOf(callback);-1!=i&&disabled.splice(i,1)}}},EventEmitter.on=EventEmitter.addEventListener=function(eventName,callback,capturing){this._eventRegistry=this._eventRegistry||{};var listeners=this._eventRegistry[eventName];return listeners||(listeners=this._eventRegistry[eventName]=[]),-1==listeners.indexOf(callback)&&listeners[capturing?\"unshift\":\"push\"](callback),callback},EventEmitter.off=EventEmitter.removeListener=EventEmitter.removeEventListener=function(eventName,callback){this._eventRegistry=this._eventRegistry||{};var listeners=this._eventRegistry[eventName];if(listeners){var index=listeners.indexOf(callback);-1!==index&&listeners.splice(index,1)}},EventEmitter.removeAllListeners=function(eventName){this._eventRegistry&&(this._eventRegistry[eventName]=[])},exports.EventEmitter=EventEmitter}),ace.define(\"ace/anchor\",[\"require\",\"exports\",\"module\",\"ace/lib/oop\",\"ace/lib/event_emitter\"],function(acequire,exports){\"use strict\";var oop=acequire(\"./lib/oop\"),EventEmitter=acequire(\"./lib/event_emitter\").EventEmitter,Anchor=exports.Anchor=function(doc,row,column){this.$onChange=this.onChange.bind(this),this.attach(doc),column===void 0?this.setPosition(row.row,row.column):this.setPosition(row,column)};(function(){function $pointsInOrder(point1,point2,equalPointsInOrder){var bColIsAfter=equalPointsInOrder?point1.column<=point2.column:point1.column<point2.column;return point1.row<point2.row||point1.row==point2.row&&bColIsAfter}function $getTransformedPoint(delta,point,moveIfEqual){var deltaIsInsert=\"insert\"==delta.action,deltaRowShift=(deltaIsInsert?1:-1)*(delta.end.row-delta.start.row),deltaColShift=(deltaIsInsert?1:-1)*(delta.end.column-delta.start.column),deltaStart=delta.start,deltaEnd=deltaIsInsert?deltaStart:delta.end;return $pointsInOrder(point,deltaStart,moveIfEqual)?{row:point.row,column:point.column}:$pointsInOrder(deltaEnd,point,!moveIfEqual)?{row:point.row+deltaRowShift,column:point.column+(point.row==deltaEnd.row?deltaColShift:0)}:{row:deltaStart.row,column:deltaStart.column}}oop.implement(this,EventEmitter),this.getPosition=function(){return this.$clipPositionToDocument(this.row,this.column)},this.getDocument=function(){return this.document},this.$insertRight=!1,this.onChange=function(delta){if(!(delta.start.row==delta.end.row&&delta.start.row!=this.row||delta.start.row>this.row)){var point=$getTransformedPoint(delta,{row:this.row,column:this.column},this.$insertRight);this.setPosition(point.row,point.column,!0)}},this.setPosition=function(row,column,noClip){var pos;if(pos=noClip?{row:row,column:column}:this.$clipPositionToDocument(row,column),this.row!=pos.row||this.column!=pos.column){var old={row:this.row,column:this.column};this.row=pos.row,this.column=pos.column,this._signal(\"change\",{old:old,value:pos})}},this.detach=function(){this.document.removeEventListener(\"change\",this.$onChange)},this.attach=function(doc){this.document=doc||this.document,this.document.on(\"change\",this.$onChange)},this.$clipPositionToDocument=function(row,column){var pos={};return row>=this.document.getLength()?(pos.row=Math.max(0,this.document.getLength()-1),pos.column=this.document.getLine(pos.row).length):0>row?(pos.row=0,pos.column=0):(pos.row=row,pos.column=Math.min(this.document.getLine(pos.row).length,Math.max(0,column))),0>column&&(pos.column=0),pos}}).call(Anchor.prototype)}),ace.define(\"ace/document\",[\"require\",\"exports\",\"module\",\"ace/lib/oop\",\"ace/apply_delta\",\"ace/lib/event_emitter\",\"ace/range\",\"ace/anchor\"],function(acequire,exports){\"use strict\";var oop=acequire(\"./lib/oop\"),applyDelta=acequire(\"./apply_delta\").applyDelta,EventEmitter=acequire(\"./lib/event_emitter\").EventEmitter,Range=acequire(\"./range\").Range,Anchor=acequire(\"./anchor\").Anchor,Document=function(textOrLines){this.$lines=[\"\"],0===textOrLines.length?this.$lines=[\"\"]:Array.isArray(textOrLines)?this.insertMergedLines({row:0,column:0},textOrLines):this.insert({row:0,column:0},textOrLines)};(function(){oop.implement(this,EventEmitter),this.setValue=function(text){var len=this.getLength()-1;this.remove(new Range(0,0,len,this.getLine(len).length)),this.insert({row:0,column:0},text)},this.getValue=function(){return this.getAllLines().join(this.getNewLineCharacter())},this.createAnchor=function(row,column){return new Anchor(this,row,column)},this.$split=0===\"aaa\".split(/a/).length?function(text){return text.replace(/\\r\\n|\\r/g,\"\\n\").split(\"\\n\")}:function(text){return text.split(/\\r\\n|\\r|\\n/)},this.$detectNewLine=function(text){var match=text.match(/^.*?(\\r\\n|\\r|\\n)/m);this.$autoNewLine=match?match[1]:\"\\n\",this._signal(\"changeNewLineMode\")},this.getNewLineCharacter=function(){switch(this.$newLineMode){case\"windows\":return\"\\r\\n\";case\"unix\":return\"\\n\";default:return this.$autoNewLine||\"\\n\"}},this.$autoNewLine=\"\",this.$newLineMode=\"auto\",this.setNewLineMode=function(newLineMode){this.$newLineMode!==newLineMode&&(this.$newLineMode=newLineMode,this._signal(\"changeNewLineMode\"))},this.getNewLineMode=function(){return this.$newLineMode},this.isNewLine=function(text){return\"\\r\\n\"==text||\"\\r\"==text||\"\\n\"==text},this.getLine=function(row){return this.$lines[row]||\"\"},this.getLines=function(firstRow,lastRow){return this.$lines.slice(firstRow,lastRow+1)},this.getAllLines=function(){return this.getLines(0,this.getLength())},this.getLength=function(){return this.$lines.length},this.getTextRange=function(range){return this.getLinesForRange(range).join(this.getNewLineCharacter())},this.getLinesForRange=function(range){var lines;if(range.start.row===range.end.row)lines=[this.getLine(range.start.row).substring(range.start.column,range.end.column)];else{lines=this.getLines(range.start.row,range.end.row),lines[0]=(lines[0]||\"\").substring(range.start.column);var l=lines.length-1;range.end.row-range.start.row==l&&(lines[l]=lines[l].substring(0,range.end.column))}return lines},this.insertLines=function(row,lines){return console.warn(\"Use of document.insertLines is deprecated. Use the insertFullLines method instead.\"),this.insertFullLines(row,lines)},this.removeLines=function(firstRow,lastRow){return console.warn(\"Use of document.removeLines is deprecated. Use the removeFullLines method instead.\"),this.removeFullLines(firstRow,lastRow)},this.insertNewLine=function(position){return console.warn(\"Use of document.insertNewLine is deprecated. Use insertMergedLines(position, ['', '']) instead.\"),this.insertMergedLines(position,[\"\",\"\"])},this.insert=function(position,text){return 1>=this.getLength()&&this.$detectNewLine(text),this.insertMergedLines(position,this.$split(text))},this.insertInLine=function(position,text){var start=this.clippedPos(position.row,position.column),end=this.pos(position.row,position.column+text.length);return this.applyDelta({start:start,end:end,action:\"insert\",lines:[text]},!0),this.clonePos(end)},this.clippedPos=function(row,column){var length=this.getLength();void 0===row?row=length:0>row?row=0:row>=length&&(row=length-1,column=void 0);var line=this.getLine(row);return void 0==column&&(column=line.length),column=Math.min(Math.max(column,0),line.length),{row:row,column:column}},this.clonePos=function(pos){return{row:pos.row,column:pos.column}},this.pos=function(row,column){return{row:row,column:column}},this.$clipPosition=function(position){var length=this.getLength();return position.row>=length?(position.row=Math.max(0,length-1),position.column=this.getLine(length-1).length):(position.row=Math.max(0,position.row),position.column=Math.min(Math.max(position.column,0),this.getLine(position.row).length)),position},this.insertFullLines=function(row,lines){row=Math.min(Math.max(row,0),this.getLength());var column=0;this.getLength()>row?(lines=lines.concat([\"\"]),column=0):(lines=[\"\"].concat(lines),row--,column=this.$lines[row].length),this.insertMergedLines({row:row,column:column},lines)},this.insertMergedLines=function(position,lines){var start=this.clippedPos(position.row,position.column),end={row:start.row+lines.length-1,column:(1==lines.length?start.column:0)+lines[lines.length-1].length};return this.applyDelta({start:start,end:end,action:\"insert\",lines:lines}),this.clonePos(end)},this.remove=function(range){var start=this.clippedPos(range.start.row,range.start.column),end=this.clippedPos(range.end.row,range.end.column);return this.applyDelta({start:start,end:end,action:\"remove\",lines:this.getLinesForRange({start:start,end:end})}),this.clonePos(start)},this.removeInLine=function(row,startColumn,endColumn){var start=this.clippedPos(row,startColumn),end=this.clippedPos(row,endColumn);return this.applyDelta({start:start,end:end,action:\"remove\",lines:this.getLinesForRange({start:start,end:end})},!0),this.clonePos(start)},this.removeFullLines=function(firstRow,lastRow){firstRow=Math.min(Math.max(0,firstRow),this.getLength()-1),lastRow=Math.min(Math.max(0,lastRow),this.getLength()-1);var deleteFirstNewLine=lastRow==this.getLength()-1&&firstRow>0,deleteLastNewLine=this.getLength()-1>lastRow,startRow=deleteFirstNewLine?firstRow-1:firstRow,startCol=deleteFirstNewLine?this.getLine(startRow).length:0,endRow=deleteLastNewLine?lastRow+1:lastRow,endCol=deleteLastNewLine?0:this.getLine(endRow).length,range=new Range(startRow,startCol,endRow,endCol),deletedLines=this.$lines.slice(firstRow,lastRow+1);return this.applyDelta({start:range.start,end:range.end,action:\"remove\",lines:this.getLinesForRange(range)}),deletedLines},this.removeNewLine=function(row){this.getLength()-1>row&&row>=0&&this.applyDelta({start:this.pos(row,this.getLine(row).length),end:this.pos(row+1,0),action:\"remove\",lines:[\"\",\"\"]})},this.replace=function(range,text){if(range instanceof Range||(range=Range.fromPoints(range.start,range.end)),0===text.length&&range.isEmpty())return range.start;if(text==this.getTextRange(range))return range.end;this.remove(range);var end;return end=text?this.insert(range.start,text):range.start},this.applyDeltas=function(deltas){for(var i=0;deltas.length>i;i++)this.applyDelta(deltas[i])},this.revertDeltas=function(deltas){for(var i=deltas.length-1;i>=0;i--)this.revertDelta(deltas[i])},this.applyDelta=function(delta,doNotValidate){var isInsert=\"insert\"==delta.action;(isInsert?1>=delta.lines.length&&!delta.lines[0]:!Range.comparePoints(delta.start,delta.end))||(isInsert&&delta.lines.length>2e4&&this.$splitAndapplyLargeDelta(delta,2e4),applyDelta(this.$lines,delta,doNotValidate),this._signal(\"change\",delta))},this.$splitAndapplyLargeDelta=function(delta,MAX){for(var lines=delta.lines,l=lines.length,row=delta.start.row,column=delta.start.column,from=0,to=0;;){from=to,to+=MAX-1;var chunk=lines.slice(from,to);if(to>l){delta.lines=chunk,delta.start.row=row+from,delta.start.column=column;break}chunk.push(\"\"),this.applyDelta({start:this.pos(row+from,column),end:this.pos(row+to,column=0),action:delta.action,lines:chunk},!0)}},this.revertDelta=function(delta){this.applyDelta({start:this.clonePos(delta.start),end:this.clonePos(delta.end),action:\"insert\"==delta.action?\"remove\":\"insert\",lines:delta.lines.slice()})},this.indexToPosition=function(index,startRow){for(var lines=this.$lines||this.getAllLines(),newlineLength=this.getNewLineCharacter().length,i=startRow||0,l=lines.length;l>i;i++)if(index-=lines[i].length+newlineLength,0>index)return{row:i,column:index+lines[i].length+newlineLength};return{row:l-1,column:lines[l-1].length}},this.positionToIndex=function(pos,startRow){for(var lines=this.$lines||this.getAllLines(),newlineLength=this.getNewLineCharacter().length,index=0,row=Math.min(pos.row,lines.length),i=startRow||0;row>i;++i)index+=lines[i].length+newlineLength;return index+pos.column}}).call(Document.prototype),exports.Document=Document}),ace.define(\"ace/lib/lang\",[\"require\",\"exports\",\"module\"],function(acequire,exports){\"use strict\";exports.last=function(a){return a[a.length-1]},exports.stringReverse=function(string){return string.split(\"\").reverse().join(\"\")},exports.stringRepeat=function(string,count){for(var result=\"\";count>0;)1&count&&(result+=string),(count>>=1)&&(string+=string);return result};var trimBeginRegexp=/^\\s\\s*/,trimEndRegexp=/\\s\\s*$/;exports.stringTrimLeft=function(string){return string.replace(trimBeginRegexp,\"\")},exports.stringTrimRight=function(string){return string.replace(trimEndRegexp,\"\")},exports.copyObject=function(obj){var copy={};for(var key in obj)copy[key]=obj[key];return copy},exports.copyArray=function(array){for(var copy=[],i=0,l=array.length;l>i;i++)copy[i]=array[i]&&\"object\"==typeof array[i]?this.copyObject(array[i]):array[i];return copy},exports.deepCopy=function deepCopy(obj){if(\"object\"!=typeof obj||!obj)return obj;var copy;if(Array.isArray(obj)){copy=[];for(var key=0;obj.length>key;key++)copy[key]=deepCopy(obj[key]);return copy}if(\"[object Object]\"!==Object.prototype.toString.call(obj))return obj;copy={};for(var key in obj)copy[key]=deepCopy(obj[key]);return copy},exports.arrayToMap=function(arr){for(var map={},i=0;arr.length>i;i++)map[arr[i]]=1;return map},exports.createMap=function(props){var map=Object.create(null);for(var i in props)map[i]=props[i];return map},exports.arrayRemove=function(array,value){for(var i=0;array.length>=i;i++)value===array[i]&&array.splice(i,1)},exports.escapeRegExp=function(str){return str.replace(/([.*+?^${}()|[\\]\\/\\\\])/g,\"\\\\$1\")},exports.escapeHTML=function(str){return str.replace(/&/g,\"&#38;\").replace(/\"/g,\"&#34;\").replace(/'/g,\"&#39;\").replace(/</g,\"&#60;\")},exports.getMatchOffsets=function(string,regExp){var matches=[];return string.replace(regExp,function(str){matches.push({offset:arguments[arguments.length-2],length:str.length})}),matches},exports.deferredCall=function(fcn){var timer=null,callback=function(){timer=null,fcn()},deferred=function(timeout){return deferred.cancel(),timer=setTimeout(callback,timeout||0),deferred};return deferred.schedule=deferred,deferred.call=function(){return this.cancel(),fcn(),deferred},deferred.cancel=function(){return clearTimeout(timer),timer=null,deferred},deferred.isPending=function(){return timer},deferred},exports.delayedCall=function(fcn,defaultTimeout){var timer=null,callback=function(){timer=null,fcn()},_self=function(timeout){null==timer&&(timer=setTimeout(callback,timeout||defaultTimeout))};return _self.delay=function(timeout){timer&&clearTimeout(timer),timer=setTimeout(callback,timeout||defaultTimeout)},_self.schedule=_self,_self.call=function(){this.cancel(),fcn()},_self.cancel=function(){timer&&clearTimeout(timer),timer=null},_self.isPending=function(){return timer},_self}}),ace.define(\"ace/worker/mirror\",[\"require\",\"exports\",\"module\",\"ace/range\",\"ace/document\",\"ace/lib/lang\"],function(acequire,exports){\"use strict\";acequire(\"../range\").Range;var Document=acequire(\"../document\").Document,lang=acequire(\"../lib/lang\"),Mirror=exports.Mirror=function(sender){this.sender=sender;var doc=this.doc=new Document(\"\"),deferredUpdate=this.deferredUpdate=lang.delayedCall(this.onUpdate.bind(this)),_self=this;sender.on(\"change\",function(e){var data=e.data;if(data[0].start)doc.applyDeltas(data);else for(var i=0;data.length>i;i+=2){if(Array.isArray(data[i+1]))var d={action:\"insert\",start:data[i],lines:data[i+1]};else var d={action:\"remove\",start:data[i],end:data[i+1]};doc.applyDelta(d,!0)}return _self.$timeout?deferredUpdate.schedule(_self.$timeout):(_self.onUpdate(),void 0)})};(function(){this.$timeout=500,this.setTimeout=function(timeout){this.$timeout=timeout},this.setValue=function(value){this.doc.setValue(value),this.deferredUpdate.schedule(this.$timeout)},this.getValue=function(callbackId){this.sender.callback(this.doc.getValue(),callbackId)},this.onUpdate=function(){},this.isPending=function(){return this.deferredUpdate.isPending()}}).call(Mirror.prototype)}),ace.define(\"ace/mode/json/json_parse\",[\"require\",\"exports\",\"module\"],function(){\"use strict\";var at,ch,text,value,escapee={'\"':'\"',\"\\\\\":\"\\\\\",\"/\":\"/\",b:\"\\b\",f:\"\\f\",n:\"\\n\",r:\"\\r\",t:\"\t\"},error=function(m){throw{name:\"SyntaxError\",message:m,at:at,text:text}},next=function(c){return c&&c!==ch&&error(\"Expected '\"+c+\"' instead of '\"+ch+\"'\"),ch=text.charAt(at),at+=1,ch},number=function(){var number,string=\"\";for(\"-\"===ch&&(string=\"-\",next(\"-\"));ch>=\"0\"&&\"9\">=ch;)string+=ch,next();if(\".\"===ch)for(string+=\".\";next()&&ch>=\"0\"&&\"9\">=ch;)string+=ch;if(\"e\"===ch||\"E\"===ch)for(string+=ch,next(),(\"-\"===ch||\"+\"===ch)&&(string+=ch,next());ch>=\"0\"&&\"9\">=ch;)string+=ch,next();return number=+string,isNaN(number)?(error(\"Bad number\"),void 0):number},string=function(){var hex,i,uffff,string=\"\";if('\"'===ch)for(;next();){if('\"'===ch)return next(),string;if(\"\\\\\"===ch)if(next(),\"u\"===ch){for(uffff=0,i=0;4>i&&(hex=parseInt(next(),16),isFinite(hex));i+=1)uffff=16*uffff+hex;string+=String.fromCharCode(uffff)}else{if(\"string\"!=typeof escapee[ch])break;string+=escapee[ch]}else string+=ch}error(\"Bad string\")},white=function(){for(;ch&&\" \">=ch;)next()},word=function(){switch(ch){case\"t\":return next(\"t\"),next(\"r\"),next(\"u\"),next(\"e\"),!0;case\"f\":return next(\"f\"),next(\"a\"),next(\"l\"),next(\"s\"),next(\"e\"),!1;case\"n\":return next(\"n\"),next(\"u\"),next(\"l\"),next(\"l\"),null}error(\"Unexpected '\"+ch+\"'\")},array=function(){var array=[];if(\"[\"===ch){if(next(\"[\"),white(),\"]\"===ch)return next(\"]\"),array;for(;ch;){if(array.push(value()),white(),\"]\"===ch)return next(\"]\"),array;next(\",\"),white()}}error(\"Bad array\")},object=function(){var key,object={};if(\"{\"===ch){if(next(\"{\"),white(),\"}\"===ch)return next(\"}\"),object;for(;ch;){if(key=string(),white(),next(\":\"),Object.hasOwnProperty.call(object,key)&&error('Duplicate key \"'+key+'\"'),object[key]=value(),white(),\"}\"===ch)return next(\"}\"),object;next(\",\"),white()}}error(\"Bad object\")};return value=function(){switch(white(),ch){case\"{\":return object();case\"[\":return array();case'\"':return string();case\"-\":return number();default:return ch>=\"0\"&&\"9\">=ch?number():word()}},function(source,reviver){var result;return text=source,at=0,ch=\" \",result=value(),white(),ch&&error(\"Syntax error\"),\"function\"==typeof reviver?function walk(holder,key){var k,v,value=holder[key];if(value&&\"object\"==typeof value)for(k in value)Object.hasOwnProperty.call(value,k)&&(v=walk(value,k),void 0!==v?value[k]=v:delete value[k]);return reviver.call(holder,key,value)}({\"\":result},\"\"):result}}),ace.define(\"ace/mode/json_worker\",[\"require\",\"exports\",\"module\",\"ace/lib/oop\",\"ace/worker/mirror\",\"ace/mode/json/json_parse\"],function(acequire,exports){\"use strict\";var oop=acequire(\"../lib/oop\"),Mirror=acequire(\"../worker/mirror\").Mirror,parse=acequire(\"./json/json_parse\"),JsonWorker=exports.JsonWorker=function(sender){Mirror.call(this,sender),this.setTimeout(200)};oop.inherits(JsonWorker,Mirror),function(){this.onUpdate=function(){var value=this.doc.getValue(),errors=[];try{value&&parse(value)}catch(e){var pos=this.doc.indexToPosition(e.at-1);errors.push({row:pos.row,column:pos.column,text:e.message,type:\"error\"})}this.sender.emit(\"annotate\",errors)}}.call(JsonWorker.prototype)}),ace.define(\"ace/lib/es5-shim\",[\"require\",\"exports\",\"module\"],function(){function Empty(){}function doesDefinePropertyWork(object){try{return Object.defineProperty(object,\"sentinel\",{}),\"sentinel\"in object}catch(exception){}}function toInteger(n){return n=+n,n!==n?n=0:0!==n&&n!==1/0&&n!==-(1/0)&&(n=(n>0||-1)*Math.floor(Math.abs(n))),n}Function.prototype.bind||(Function.prototype.bind=function(that){var target=this;if(\"function\"!=typeof target)throw new TypeError(\"Function.prototype.bind called on incompatible \"+target);var args=slice.call(arguments,1),bound=function(){if(this instanceof bound){var result=target.apply(this,args.concat(slice.call(arguments)));return Object(result)===result?result:this}return target.apply(that,args.concat(slice.call(arguments)))};return target.prototype&&(Empty.prototype=target.prototype,bound.prototype=new Empty,Empty.prototype=null),bound});var defineGetter,defineSetter,lookupGetter,lookupSetter,supportsAccessors,call=Function.prototype.call,prototypeOfArray=Array.prototype,prototypeOfObject=Object.prototype,slice=prototypeOfArray.slice,_toString=call.bind(prototypeOfObject.toString),owns=call.bind(prototypeOfObject.hasOwnProperty);if((supportsAccessors=owns(prototypeOfObject,\"__defineGetter__\"))&&(defineGetter=call.bind(prototypeOfObject.__defineGetter__),defineSetter=call.bind(prototypeOfObject.__defineSetter__),lookupGetter=call.bind(prototypeOfObject.__lookupGetter__),lookupSetter=call.bind(prototypeOfObject.__lookupSetter__)),2!=[1,2].splice(0).length)if(function(){function makeArray(l){var a=Array(l+2);return a[0]=a[1]=0,a}var lengthBefore,array=[];return array.splice.apply(array,makeArray(20)),array.splice.apply(array,makeArray(26)),lengthBefore=array.length,array.splice(5,0,\"XXX\"),lengthBefore+1==array.length,lengthBefore+1==array.length?!0:void 0\n}()){var array_splice=Array.prototype.splice;Array.prototype.splice=function(start,deleteCount){return arguments.length?array_splice.apply(this,[void 0===start?0:start,void 0===deleteCount?this.length-start:deleteCount].concat(slice.call(arguments,2))):[]}}else Array.prototype.splice=function(pos,removeCount){var length=this.length;pos>0?pos>length&&(pos=length):void 0==pos?pos=0:0>pos&&(pos=Math.max(length+pos,0)),length>pos+removeCount||(removeCount=length-pos);var removed=this.slice(pos,pos+removeCount),insert=slice.call(arguments,2),add=insert.length;if(pos===length)add&&this.push.apply(this,insert);else{var remove=Math.min(removeCount,length-pos),tailOldPos=pos+remove,tailNewPos=tailOldPos+add-remove,tailCount=length-tailOldPos,lengthAfterRemove=length-remove;if(tailOldPos>tailNewPos)for(var i=0;tailCount>i;++i)this[tailNewPos+i]=this[tailOldPos+i];else if(tailNewPos>tailOldPos)for(i=tailCount;i--;)this[tailNewPos+i]=this[tailOldPos+i];if(add&&pos===lengthAfterRemove)this.length=lengthAfterRemove,this.push.apply(this,insert);else for(this.length=lengthAfterRemove+add,i=0;add>i;++i)this[pos+i]=insert[i]}return removed};Array.isArray||(Array.isArray=function(obj){return\"[object Array]\"==_toString(obj)});var boxedString=Object(\"a\"),splitString=\"a\"!=boxedString[0]||!(0 in boxedString);if(Array.prototype.forEach||(Array.prototype.forEach=function(fun){var object=toObject(this),self=splitString&&\"[object String]\"==_toString(this)?this.split(\"\"):object,thisp=arguments[1],i=-1,length=self.length>>>0;if(\"[object Function]\"!=_toString(fun))throw new TypeError;for(;length>++i;)i in self&&fun.call(thisp,self[i],i,object)}),Array.prototype.map||(Array.prototype.map=function(fun){var object=toObject(this),self=splitString&&\"[object String]\"==_toString(this)?this.split(\"\"):object,length=self.length>>>0,result=Array(length),thisp=arguments[1];if(\"[object Function]\"!=_toString(fun))throw new TypeError(fun+\" is not a function\");for(var i=0;length>i;i++)i in self&&(result[i]=fun.call(thisp,self[i],i,object));return result}),Array.prototype.filter||(Array.prototype.filter=function(fun){var value,object=toObject(this),self=splitString&&\"[object String]\"==_toString(this)?this.split(\"\"):object,length=self.length>>>0,result=[],thisp=arguments[1];if(\"[object Function]\"!=_toString(fun))throw new TypeError(fun+\" is not a function\");for(var i=0;length>i;i++)i in self&&(value=self[i],fun.call(thisp,value,i,object)&&result.push(value));return result}),Array.prototype.every||(Array.prototype.every=function(fun){var object=toObject(this),self=splitString&&\"[object String]\"==_toString(this)?this.split(\"\"):object,length=self.length>>>0,thisp=arguments[1];if(\"[object Function]\"!=_toString(fun))throw new TypeError(fun+\" is not a function\");for(var i=0;length>i;i++)if(i in self&&!fun.call(thisp,self[i],i,object))return!1;return!0}),Array.prototype.some||(Array.prototype.some=function(fun){var object=toObject(this),self=splitString&&\"[object String]\"==_toString(this)?this.split(\"\"):object,length=self.length>>>0,thisp=arguments[1];if(\"[object Function]\"!=_toString(fun))throw new TypeError(fun+\" is not a function\");for(var i=0;length>i;i++)if(i in self&&fun.call(thisp,self[i],i,object))return!0;return!1}),Array.prototype.reduce||(Array.prototype.reduce=function(fun){var object=toObject(this),self=splitString&&\"[object String]\"==_toString(this)?this.split(\"\"):object,length=self.length>>>0;if(\"[object Function]\"!=_toString(fun))throw new TypeError(fun+\" is not a function\");if(!length&&1==arguments.length)throw new TypeError(\"reduce of empty array with no initial value\");var result,i=0;if(arguments.length>=2)result=arguments[1];else for(;;){if(i in self){result=self[i++];break}if(++i>=length)throw new TypeError(\"reduce of empty array with no initial value\")}for(;length>i;i++)i in self&&(result=fun.call(void 0,result,self[i],i,object));return result}),Array.prototype.reduceRight||(Array.prototype.reduceRight=function(fun){var object=toObject(this),self=splitString&&\"[object String]\"==_toString(this)?this.split(\"\"):object,length=self.length>>>0;if(\"[object Function]\"!=_toString(fun))throw new TypeError(fun+\" is not a function\");if(!length&&1==arguments.length)throw new TypeError(\"reduceRight of empty array with no initial value\");var result,i=length-1;if(arguments.length>=2)result=arguments[1];else for(;;){if(i in self){result=self[i--];break}if(0>--i)throw new TypeError(\"reduceRight of empty array with no initial value\")}do i in this&&(result=fun.call(void 0,result,self[i],i,object));while(i--);return result}),Array.prototype.indexOf&&-1==[0,1].indexOf(1,2)||(Array.prototype.indexOf=function(sought){var self=splitString&&\"[object String]\"==_toString(this)?this.split(\"\"):toObject(this),length=self.length>>>0;if(!length)return-1;var i=0;for(arguments.length>1&&(i=toInteger(arguments[1])),i=i>=0?i:Math.max(0,length+i);length>i;i++)if(i in self&&self[i]===sought)return i;return-1}),Array.prototype.lastIndexOf&&-1==[0,1].lastIndexOf(0,-3)||(Array.prototype.lastIndexOf=function(sought){var self=splitString&&\"[object String]\"==_toString(this)?this.split(\"\"):toObject(this),length=self.length>>>0;if(!length)return-1;var i=length-1;for(arguments.length>1&&(i=Math.min(i,toInteger(arguments[1]))),i=i>=0?i:length-Math.abs(i);i>=0;i--)if(i in self&&sought===self[i])return i;return-1}),Object.getPrototypeOf||(Object.getPrototypeOf=function(object){return object.__proto__||(object.constructor?object.constructor.prototype:prototypeOfObject)}),!Object.getOwnPropertyDescriptor){var ERR_NON_OBJECT=\"Object.getOwnPropertyDescriptor called on a non-object: \";Object.getOwnPropertyDescriptor=function(object,property){if(\"object\"!=typeof object&&\"function\"!=typeof object||null===object)throw new TypeError(ERR_NON_OBJECT+object);if(owns(object,property)){var descriptor,getter,setter;if(descriptor={enumerable:!0,configurable:!0},supportsAccessors){var prototype=object.__proto__;object.__proto__=prototypeOfObject;var getter=lookupGetter(object,property),setter=lookupSetter(object,property);if(object.__proto__=prototype,getter||setter)return getter&&(descriptor.get=getter),setter&&(descriptor.set=setter),descriptor}return descriptor.value=object[property],descriptor}}}if(Object.getOwnPropertyNames||(Object.getOwnPropertyNames=function(object){return Object.keys(object)}),!Object.create){var createEmpty;createEmpty=null===Object.prototype.__proto__?function(){return{__proto__:null}}:function(){var empty={};for(var i in empty)empty[i]=null;return empty.constructor=empty.hasOwnProperty=empty.propertyIsEnumerable=empty.isPrototypeOf=empty.toLocaleString=empty.toString=empty.valueOf=empty.__proto__=null,empty},Object.create=function(prototype,properties){var object;if(null===prototype)object=createEmpty();else{if(\"object\"!=typeof prototype)throw new TypeError(\"typeof prototype[\"+typeof prototype+\"] != 'object'\");var Type=function(){};Type.prototype=prototype,object=new Type,object.__proto__=prototype}return void 0!==properties&&Object.defineProperties(object,properties),object}}if(Object.defineProperty){var definePropertyWorksOnObject=doesDefinePropertyWork({}),definePropertyWorksOnDom=\"undefined\"==typeof document||doesDefinePropertyWork(document.createElement(\"div\"));if(!definePropertyWorksOnObject||!definePropertyWorksOnDom)var definePropertyFallback=Object.defineProperty}if(!Object.defineProperty||definePropertyFallback){var ERR_NON_OBJECT_DESCRIPTOR=\"Property description must be an object: \",ERR_NON_OBJECT_TARGET=\"Object.defineProperty called on non-object: \",ERR_ACCESSORS_NOT_SUPPORTED=\"getters & setters can not be defined on this javascript engine\";Object.defineProperty=function(object,property,descriptor){if(\"object\"!=typeof object&&\"function\"!=typeof object||null===object)throw new TypeError(ERR_NON_OBJECT_TARGET+object);if(\"object\"!=typeof descriptor&&\"function\"!=typeof descriptor||null===descriptor)throw new TypeError(ERR_NON_OBJECT_DESCRIPTOR+descriptor);if(definePropertyFallback)try{return definePropertyFallback.call(Object,object,property,descriptor)}catch(exception){}if(owns(descriptor,\"value\"))if(supportsAccessors&&(lookupGetter(object,property)||lookupSetter(object,property))){var prototype=object.__proto__;object.__proto__=prototypeOfObject,delete object[property],object[property]=descriptor.value,object.__proto__=prototype}else object[property]=descriptor.value;else{if(!supportsAccessors)throw new TypeError(ERR_ACCESSORS_NOT_SUPPORTED);owns(descriptor,\"get\")&&defineGetter(object,property,descriptor.get),owns(descriptor,\"set\")&&defineSetter(object,property,descriptor.set)}return object}}Object.defineProperties||(Object.defineProperties=function(object,properties){for(var property in properties)owns(properties,property)&&Object.defineProperty(object,property,properties[property]);return object}),Object.seal||(Object.seal=function(object){return object}),Object.freeze||(Object.freeze=function(object){return object});try{Object.freeze(function(){})}catch(exception){Object.freeze=function(freezeObject){return function(object){return\"function\"==typeof object?object:freezeObject(object)}}(Object.freeze)}if(Object.preventExtensions||(Object.preventExtensions=function(object){return object}),Object.isSealed||(Object.isSealed=function(){return!1}),Object.isFrozen||(Object.isFrozen=function(){return!1}),Object.isExtensible||(Object.isExtensible=function(object){if(Object(object)===object)throw new TypeError;for(var name=\"\";owns(object,name);)name+=\"?\";object[name]=!0;var returnValue=owns(object,name);return delete object[name],returnValue}),!Object.keys){var hasDontEnumBug=!0,dontEnums=[\"toString\",\"toLocaleString\",\"valueOf\",\"hasOwnProperty\",\"isPrototypeOf\",\"propertyIsEnumerable\",\"constructor\"],dontEnumsLength=dontEnums.length;for(var key in{toString:null})hasDontEnumBug=!1;Object.keys=function(object){if(\"object\"!=typeof object&&\"function\"!=typeof object||null===object)throw new TypeError(\"Object.keys called on a non-object\");var keys=[];for(var name in object)owns(object,name)&&keys.push(name);if(hasDontEnumBug)for(var i=0,ii=dontEnumsLength;ii>i;i++){var dontEnum=dontEnums[i];owns(object,dontEnum)&&keys.push(dontEnum)}return keys}}Date.now||(Date.now=function(){return(new Date).getTime()});var ws=\"\t\\n\u000b\\f\\r   ᠎             　\\u2028\\u2029﻿\";if(!String.prototype.trim||ws.trim()){ws=\"[\"+ws+\"]\";var trimBeginRegexp=RegExp(\"^\"+ws+ws+\"*\"),trimEndRegexp=RegExp(ws+ws+\"*$\");String.prototype.trim=function(){return(this+\"\").replace(trimBeginRegexp,\"\").replace(trimEndRegexp,\"\")}}var toObject=function(o){if(null==o)throw new TypeError(\"can't convert \"+o+\" to object\");return Object(o)}});";
 
 /***/ }),
-/* 16 */
+/* 19 */
 /***/ (function(module, exports) {
 
 ace.define("ace/ext/searchbox",["require","exports","module","ace/lib/dom","ace/lib/lang","ace/lib/event","ace/keyboard/hash_handler","ace/lib/keys"], function(acequire, exports, module) {
@@ -6750,25 +8080,25 @@ exports.Search = function(editor, isReplace) {
             
 
 /***/ }),
-/* 17 */
+/* 20 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-var VanillaPicker = __webpack_require__(5);
-var Highlighter = __webpack_require__(18);
-var History = __webpack_require__(19);
-var SearchBox = __webpack_require__(22);
-var ContextMenu = __webpack_require__(2);
-var TreePath = __webpack_require__(23);
-var Node = __webpack_require__(24);
-var ModeSwitcher = __webpack_require__(12);
-var util = __webpack_require__(1);
-var autocomplete = __webpack_require__(28);
-var translate = __webpack_require__(0).translate;
-var setLanguages = __webpack_require__(0).setLanguages;
-var setLanguage = __webpack_require__(0).setLanguage;
+var VanillaPicker = __webpack_require__(9);
+var Highlighter = __webpack_require__(21);
+var NodeHistory = __webpack_require__(22);
+var SearchBox = __webpack_require__(25);
+var ContextMenu = __webpack_require__(3);
+var TreePath = __webpack_require__(26);
+var Node = __webpack_require__(27);
+var ModeSwitcher = __webpack_require__(7);
+var util = __webpack_require__(0);
+var autocomplete = __webpack_require__(32);
+var translate = __webpack_require__(1).translate;
+var setLanguages = __webpack_require__(1).setLanguages;
+var setLanguage = __webpack_require__(1).setLanguage;
 
 // create a mixin with the functions for tree mode
 var treemode = {};
@@ -6776,35 +8106,7 @@ var treemode = {};
 /**
  * Create a tree editor
  * @param {Element} container    Container element
- * @param {Object}  [options]    Object with options. available options:
- *                               {String} mode            Editor mode. Available values:
- *                                                        'tree' (default), 'view',
- *                                                        and 'form'.
- *                               {Boolean} search         Enable search box.
- *                                                        True by default
- *                               {Boolean} history        Enable history (undo/redo).
- *                                                        True by default
- *                               {function} onChange      Callback method, triggered
- *                                                        on change of contents.
- *                                                        Does not pass the changed contents.
- *                               {function} onChangeJSON  Callback method, triggered
- *                                                        in modes on change of contents,
- *                                                        passing the changed contents
- *                                                        as JSON.
- *                                                        Only applicable for modes
- *                                                        'tree', 'view', and 'form'.
- *                               {function} onChangeText  Callback method, triggered
- *                                                        in modes on change of contents,
- *                                                        passing the changed contents
- *                                                        as stringified JSON.
- *                               {String} name            Field name for the root node.
- *                               {boolean} escapeUnicode  If true, unicode
- *                                                        characters are escaped.
- *                                                        false by default.
- *                               {Object} schema          A JSON Schema for validation
- *                               {function} onEvent       Function triggered
- *                                                        when an event occurs
- *                                                        in a field or value.
+ * @param {Object} [options]   Object with options. See docs for details.
  * @private
  */
 treemode.create = function (container, options) {
@@ -6831,7 +8133,7 @@ treemode.create = function (container, options) {
       this.autocomplete = new autocomplete(options.autocomplete);
 
   if (this.options.history && this.options.mode !== 'view') {
-    this.history = new History(this);
+    this.history = new NodeHistory(this);
   }
 
   this._createFrame();
@@ -7063,11 +8365,11 @@ treemode.setText = function(jsonText) {
     this.set(util.parse(jsonText)); // this can throw an error
   }
   catch (err) {
-    // try to sanitize json, replace JavaScript notation with JSON notation
-    var sanitizedJsonText = util.sanitize(jsonText);
+    // try to repair json, replace JavaScript notation with JSON notation
+    var repairedJsonText = util.repair(jsonText);
 
     // try to parse again
-    this.set(util.parse(sanitizedJsonText)); // this can throw an error
+    this.set(util.parse(repairedJsonText)); // this can throw an error
   }
 };
 
@@ -7081,11 +8383,11 @@ treemode.updateText = function(jsonText) {
     this.update(util.parse(jsonText)); // this can throw an error
   }
   catch (err) {
-    // try to sanitize json, replace JavaScript notation with JSON notation
-    var sanitizedJsonText = util.sanitize(jsonText);
+    // try to repair json, replace JavaScript notation with JSON notation
+    var repairJsonText = util.repair(jsonText);
 
     // try to parse again
-    this.update(util.parse(sanitizedJsonText)); // this can throw an error
+    this.update(util.parse(repairJsonText)); // this can throw an error
   }
 };
 
@@ -8612,7 +9914,7 @@ module.exports = [
 
 
 /***/ }),
-/* 18 */
+/* 21 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -8705,20 +10007,20 @@ module.exports = Highlighter;
 
 
 /***/ }),
-/* 19 */
+/* 22 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-var util = __webpack_require__(1);
+var util = __webpack_require__(0);
 
 /**
  * @constructor History
  * Store action history, enables undo and redo
  * @param {JSONEditor} editor
  */
-function History (editor) {
+function NodeHistory (editor) {
   this.editor = editor;
   this.history = [];
   this.index = -1;
@@ -8917,7 +10219,7 @@ function History (editor) {
  * The method onChange is executed when the History is changed, and can
  * be overloaded.
  */
-History.prototype.onChange = function () {};
+NodeHistory.prototype.onChange = function () {};
 
 /**
  * Add a new action to the history
@@ -8930,7 +10232,7 @@ History.prototype.onChange = function () {};
  *                         value are provided). params contains all information
  *                         needed to undo or redo the action.
  */
-History.prototype.add = function (action, params) {
+NodeHistory.prototype.add = function (action, params) {
   this.index++;
   this.history[this.index] = {
     'action': action,
@@ -8950,7 +10252,7 @@ History.prototype.add = function (action, params) {
 /**
  * Clear history
  */
-History.prototype.clear = function () {
+NodeHistory.prototype.clear = function () {
   this.history = [];
   this.index = -1;
 
@@ -8962,7 +10264,7 @@ History.prototype.clear = function () {
  * Check if there is an action available for undo
  * @return {Boolean} canUndo
  */
-History.prototype.canUndo = function () {
+NodeHistory.prototype.canUndo = function () {
   return (this.index >= 0);
 };
 
@@ -8970,14 +10272,14 @@ History.prototype.canUndo = function () {
  * Check if there is an action available for redo
  * @return {Boolean} canRedo
  */
-History.prototype.canRedo = function () {
+NodeHistory.prototype.canRedo = function () {
   return (this.index < this.history.length - 1);
 };
 
 /**
  * Undo the last action
  */
-History.prototype.undo = function () {
+NodeHistory.prototype.undo = function () {
   if (this.canUndo()) {
     var obj = this.history[this.index];
     if (obj) {
@@ -9007,7 +10309,7 @@ History.prototype.undo = function () {
 /**
  * Redo the last action
  */
-History.prototype.redo = function () {
+NodeHistory.prototype.redo = function () {
   if (this.canRedo()) {
     this.index++;
 
@@ -9038,18 +10340,18 @@ History.prototype.redo = function () {
 /**
  * Destroy history
  */
-History.prototype.destroy = function () {
+NodeHistory.prototype.destroy = function () {
   this.editor = null;
 
   this.history = [];
   this.index = -1;
 };
 
-module.exports = History;
+module.exports = NodeHistory;
 
 
 /***/ }),
-/* 20 */
+/* 23 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /* Jison generated parser */
@@ -9472,7 +10774,7 @@ if (true) {
 }
 
 /***/ }),
-/* 21 */
+/* 24 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -9889,7 +11191,7 @@ function escapeJsonPointer(str) {
 
 
 /***/ }),
-/* 22 */
+/* 25 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -10249,15 +11551,15 @@ module.exports = SearchBox;
 
 
 /***/ }),
-/* 23 */
+/* 26 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-var ContextMenu = __webpack_require__(2);
-var translate = __webpack_require__(0).translate;
-var util = __webpack_require__(1);
+var ContextMenu = __webpack_require__(3);
+var translate = __webpack_require__(1).translate;
+var util = __webpack_require__(0);
 
 /**
  * Creates a component that visualize path selection in tree based editors
@@ -10397,24 +11699,23 @@ TreePath.prototype.onContextMenuItemSelected = function (callback) {
 module.exports = TreePath;
 
 /***/ }),
-/* 24 */
+/* 27 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-var jmespath = __webpack_require__(3);
-var naturalSort = __webpack_require__(7);
-var createAbsoluteAnchor = __webpack_require__(8).createAbsoluteAnchor;
-var ContextMenu = __webpack_require__(2);
-var appendNodeFactory = __webpack_require__(25);
-var showMoreNodeFactory = __webpack_require__(26);
-var showSortModal = __webpack_require__(9);
-var showTransformModal = __webpack_require__(11);
-var util = __webpack_require__(1);
-var translate = __webpack_require__(0).translate;
-
-var DEFAULT_MODAL_ANCHOR = document.body; // TODO: this constant is defined twice
+var jmespath = __webpack_require__(4);
+var naturalSort = __webpack_require__(11);
+var createAbsoluteAnchor = __webpack_require__(12).createAbsoluteAnchor;
+var ContextMenu = __webpack_require__(3);
+var appendNodeFactory = __webpack_require__(28);
+var showMoreNodeFactory = __webpack_require__(29);
+var showSortModal = __webpack_require__(5);
+var showTransformModal = __webpack_require__(6);
+var util = __webpack_require__(0);
+var translate = __webpack_require__(1).translate;
+var DEFAULT_MODAL_ANCHOR = __webpack_require__(2).DEFAULT_MODAL_ANCHOR;
 
 var YEAR_2000 = 946684800000;
 
@@ -15059,15 +16360,15 @@ module.exports = Node;
 
 
 /***/ }),
-/* 25 */
+/* 28 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-var util = __webpack_require__(1);
-var ContextMenu = __webpack_require__(2);
-var translate = __webpack_require__(0).translate;
+var util = __webpack_require__(0);
+var ContextMenu = __webpack_require__(3);
+var translate = __webpack_require__(1).translate;
 
 /**
  * A factory function to create an AppendNode, which depends on a Node
@@ -15325,13 +16626,13 @@ module.exports = appendNodeFactory;
 
 
 /***/ }),
-/* 26 */
+/* 29 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-var translate = __webpack_require__(0).translate;
+var translate = __webpack_require__(1).translate;
 
 /**
  * A factory function to create an ShowMoreNode, which depends on a Node
@@ -15489,7 +16790,7 @@ module.exports = showMoreNodeFactory;
 
 
 /***/ }),
-/* 27 */
+/* 30 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -17669,7 +18970,214 @@ module.exports = Selectr;
 
 
 /***/ }),
-/* 28 */
+/* 31 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+/**
+ * Convert part of a JSON object to a JSON string.
+ * Use case is to stringify a small part of a large JSON object so you can see
+ * a preview.
+ *
+ * @param {*} value
+ * The value to convert to a JSON string.
+ *
+ * @param {number | string | null} [space]
+ * A String or Number object that's used to insert white space into the output
+ * JSON string for readability purposes. If this is a Number, it indicates the
+ * number of space characters to use as white space; this number is capped at 10
+ * if it's larger than that. Values less than 1 indicate that no space should be
+ * used. If this is a String, the string (or the first 10 characters of the string,
+ * if it's longer than that) is used as white space. If this parameter is not
+ * provided (or is null), no white space is used.
+ *
+ * @param {number} [limit] Maximum size of the string output.
+ *
+ * @returns {string | undefined} Returns the string representation of the JSON object.
+ */
+function stringifyPartial(value, space, limit) {
+  var _space; // undefined by default
+  if (typeof space === 'number') {
+    if (space > 10) {
+      _space = repeat(' ', 10);
+    }
+    else if (space >= 1) {
+      _space = repeat(' ', space);
+    }
+    // else ignore
+  }
+  else if (typeof space === 'string' && space !== '') {
+    _space = space;
+  }
+
+  var output = stringifyValue(value, _space, '', limit);
+
+  return output.length > limit
+      ? (slice(output, limit) + '...')
+      : output;
+}
+
+/**
+ * Stringify a value
+ * @param {*} value
+ * @param {string} space
+ * @param {string} indent
+ * @param {number} limit
+ * @return {string | undefined}
+ */
+function stringifyValue(value, space, indent, limit) {
+  // boolean, null, number, string, or date
+  if (typeof value === 'boolean' || value instanceof Boolean ||
+      value === null ||
+      typeof value === 'number' || value instanceof Number ||
+      typeof value === 'string' || value instanceof String ||
+      value instanceof Date) {
+    return JSON.stringify(value);
+  }
+
+  // array
+  if (Array.isArray(value)) {
+    return stringifyArray(value, space, indent, limit);
+  }
+
+  // object (test lastly!)
+  if (value && typeof value === 'object') {
+    return stringifyObject(value, space, indent, limit);
+  }
+
+  return undefined;
+}
+
+/**
+ * Stringify an array
+ * @param {Array} array
+ * @param {string} space
+ * @param {string} indent
+ * @param {number} limit
+ * @return {string}
+ */
+function stringifyArray(array, space, indent, limit) {
+  var childIndent = space ? (indent + space) : undefined;
+  var str = space ? '[\n' : '[';
+
+  for (var i = 0; i < array.length; i++) {
+    var item = array[i];
+
+    if (space) {
+      str += childIndent;
+    }
+
+    if (typeof item !== 'undefined' && typeof item !== 'function') {
+      str += stringifyValue(item, space, childIndent, limit);
+    }
+    else {
+      str += 'null'
+    }
+
+    if (i < array.length - 1) {
+      str += space ? ',\n' : ',';
+    }
+
+    // stop as soon as we're exceeding the limit
+    if (str.length > limit) {
+      return str + '...';
+    }
+  }
+
+  str += space ? ('\n' + indent + ']') : ']';
+  return str;
+}
+
+/**
+ * Stringify an object
+ * @param {Object} object
+ * @param {string} space
+ * @param {string} indent
+ * @param {number} limit
+ * @return {string}
+ */
+function stringifyObject(object, space, indent, limit) {
+  var childIndent = space ? (indent + space) : undefined;
+  var first = true;
+  var str = space ? '{\n' : '{';
+
+  if (typeof object.toJSON === 'function') {
+    return stringifyValue(object.toJSON(), space, indent, limit);
+  }
+
+  for (var key in object) {
+    if (object.hasOwnProperty(key)) {
+      var value = object[key];
+
+      if (first) {
+        first = false;
+      }
+      else {
+        str += space ? ',\n' : ',';
+      }
+
+      str += space
+          ? (childIndent + '"' + key + '": ')
+          : ('"' + key + '":');
+
+      str += stringifyValue(value, space, childIndent, limit);
+
+      // stop as soon as we're exceeding the limit
+      if (str.length > limit) {
+        return str + '...';
+      }
+    }
+  }
+
+  str += space ? ('\n' + indent + '}') : '}';
+  return str;
+}
+
+/**
+ * Repeat a string a number of times.
+ * Simple linear solution, we only need up to 10 iterations in practice
+ * @param {string} text
+ * @param {number} times
+ * @return {string}
+ */
+function repeat (text, times) {
+  var res = '';
+  while (times-- > 0) {
+    res += text;
+  }
+  return res;
+}
+
+/**
+ * Limit the length of text
+ * @param {string} text
+ * @param {number} [limit]
+ * @return {string}
+ */
+function slice(text, limit) {
+  return typeof limit === 'number'
+      ? text.slice(0, limit)
+      : text;
+}
+
+/**
+ * Test whether some text contains a JSON array, i.e. the first
+ * non-white space character is a [
+ * @param {string} jsonText
+ * @return {boolean}
+ */
+function containsArray (jsonText) {
+  return /^\s*\[/.test(jsonText)
+}
+
+exports.stringifyPartial = stringifyPartial;
+exports.containsArray = containsArray;
+
+
+/***/ }),
+/* 32 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -18071,1222 +19579,67 @@ function completely(config) {
 module.exports = completely;
 
 /***/ }),
-/* 29 */
+/* 33 */
 /***/ (function(module, exports, __webpack_require__) {
 
-"use strict";
-
-
-var ace = __webpack_require__(4);
-var jmespath = __webpack_require__(3);
-var translate = __webpack_require__(0).translate;
-var ModeSwitcher = __webpack_require__(12);
-var showSortModal = __webpack_require__(9);
-var showTransformModal = __webpack_require__(11);
-var util = __webpack_require__(1);
-
-// create a mixin with the functions for text mode
-var textmode = {};
-
-var DEFAULT_THEME = 'ace/theme/jsoneditor';
-var DEFAULT_MODAL_ANCHOR = document.body; // TODO: this constant is defined multiple times
-
-/**
- * Create a text editor
- * @param {Element} container
- * @param {Object} [options]   Object with options. available options:
- *                             {String} mode             Available values:
- *                                                       "text" (default)
- *                                                       or "code".
- *                             {Number} indentation      Number of indentation
- *                                                       spaces. 2 by default.
- *                             {function} onChange       Callback method triggered on change.
- *                                                       Does not pass the changed contents.
- *                             {function} onChangeText   Callback method, triggered
- *                                                       in modes on change of contents,
- *                                                       passing the changed contents
- *                                                       as stringified JSON.
- *                             {function} onModeChange   Callback method
- *                                                       triggered after setMode
- *                             {function} onEditable     Determine if textarea is readOnly
- *                                                       readOnly defaults true
- *                             {Object} ace              A custom instance of
- *                                                       Ace editor.
- *                             {boolean} escapeUnicode   If true, unicode
- *                                                       characters are escaped.
- *                                                       false by default.
- *                             {function} onTextSelectionChange Callback method, 
- *                                                              triggered on text selection change
- * @private
- */
-textmode.create = function (container, options) {
-  // read options
-  options = options || {};
-  
-  if (typeof options.statusBar === 'undefined') {
-    options.statusBar = true;
-  }
-
-  // setting default for textmode
-  options.mainMenuBar = options.mainMenuBar !== false;
-  options.enableSort = options.enableSort !== false;
-  options.enableTransform = options.enableTransform !== false;
-
-  this.options = options;
-
-  // indentation
-  if (options.indentation) {
-    this.indentation = Number(options.indentation);
-  }
-  else {
-    this.indentation = 2; // number of spaces
-  }
-
-  // grab ace from options if provided
-  var _ace = options.ace ? options.ace : ace;
-  // TODO: make the option options.ace deprecated, it's not needed anymore (see #309)
-
-  // determine mode
-  this.mode = (options.mode == 'code') ? 'code' : 'text';
-  if (this.mode == 'code') {
-    // verify whether Ace editor is available and supported
-    if (typeof _ace === 'undefined') {
-      this.mode = 'text';
-      console.warn('Failed to load Ace editor, falling back to plain text mode. Please use a JSONEditor bundle including Ace, or pass Ace as via the configuration option `ace`.');
-    }
-  }
-
-  // determine theme
-  this.theme = options.theme || DEFAULT_THEME;
-  if (this.theme === DEFAULT_THEME && _ace) {
-    try {
-      __webpack_require__(30);
-    }
-    catch (err) {
-      console.error(err);
-    }
-  }
-
-  if (options.onTextSelectionChange) {
-    this.onTextSelectionChange(options.onTextSelectionChange);
-  }
-
-  var me = this;
-  this.container = container;
-  this.dom = {};
-  this.aceEditor = undefined;  // ace code editor
-  this.textarea = undefined;  // plain text editor (fallback when Ace is not available)
-  this.validateSchema = null;
-  this.validationSequence = 0;
-  this.annotations = [];
-  /**
-   * Visibility of validation error table
-   * @type {Boolean|undefined} undefined means default behavior for mode
-   */
-  this.errorTableVisible = undefined;
-
-  // create a debounced validate function
-  this._debouncedValidate = util.debounce(this.validate.bind(this), this.DEBOUNCE_INTERVAL);
-
-  this.width = container.clientWidth;
-  this.height = container.clientHeight;
-
-  this.frame = document.createElement('div');
-  this.frame.className = 'jsoneditor jsoneditor-mode-' + this.options.mode;
-  this.frame.onclick = function (event) {
-    // prevent default submit action when the editor is located inside a form
-    event.preventDefault();
-  };
-  this.frame.onkeydown = function (event) {
-    me._onKeyDown(event);
-  };
-
-  this.content = document.createElement('div');
-  this.content.className = 'jsoneditor-outer';
-
-  if (this.options.mainMenuBar) {
-    util.addClassName(this.content, 'has-main-menu-bar');
-
-    // create menu
-    this.menu = document.createElement('div');
-    this.menu.className = 'jsoneditor-menu';
-    this.frame.appendChild(this.menu);
-
-    // create format button
-    var buttonFormat = document.createElement('button');
-    buttonFormat.type = 'button';
-    buttonFormat.className = 'jsoneditor-format';
-    buttonFormat.title = 'Format JSON data, with proper indentation and line feeds (Ctrl+\\)';
-    this.menu.appendChild(buttonFormat);
-    buttonFormat.onclick = function () {
-      try {
-        me.format();
-        me._onChange();
-      }
-      catch (err) {
-        me._onError(err);
-      }
-    };
-
-    // create compact button
-    var buttonCompact = document.createElement('button');
-    buttonCompact.type = 'button';
-    buttonCompact.className = 'jsoneditor-compact';
-    buttonCompact.title = 'Compact JSON data, remove all whitespaces (Ctrl+Shift+\\)';
-    this.menu.appendChild(buttonCompact);
-    buttonCompact.onclick = function () {
-      try {
-        me.compact();
-        me._onChange();
-      }
-      catch (err) {
-        me._onError(err);
-      }
-    };
-
-    // create sort button
-    if (this.options.enableSort) {
-      var sort = document.createElement('button');
-      sort.type = 'button';
-      sort.className = 'jsoneditor-sort';
-      sort.title = translate('sortTitleShort');
-      sort.onclick = function () {
-        me._showSortModal();
-      };
-      this.menu.appendChild(sort);
-    }
-
-    // TODO
-    // create transform button
-    if (this.options.enableTransform) {
-      var transform = document.createElement('button');
-      transform.type = 'button';
-      transform.title = translate('transformTitleShort');
-      transform.className = 'jsoneditor-transform';
-      transform.onclick = function () {
-        me._showTransformModal();
-      };
-      this.menu.appendChild(transform);
-    }
-
-    // create repair button
-    var buttonRepair = document.createElement('button');
-    buttonRepair.type = 'button';
-    buttonRepair.className = 'jsoneditor-repair';
-    buttonRepair.title = 'Repair JSON: fix quotes and escape characters, remove comments and JSONP notation, turn JavaScript objects into JSON.';
-    this.menu.appendChild(buttonRepair);
-    buttonRepair.onclick = function () {
-      try {
-        me.repair();
-        me._onChange();
-      }
-      catch (err) {
-        me._onError(err);
-      }
-    };
-
-    // create mode box
-    if (this.options && this.options.modes && this.options.modes.length) {
-      this.modeSwitcher = new ModeSwitcher(this.menu, this.options.modes, this.options.mode, function onSwitch(mode) {
-        // switch mode and restore focus
-        me.setMode(mode);
-        me.modeSwitcher.focus();
-      });
-    }
-
-    if (this.mode == 'code') {
-      var poweredBy = document.createElement('a');
-      poweredBy.appendChild(document.createTextNode('powered by ace'));
-      poweredBy.href = 'http://ace.ajax.org';
-      poweredBy.target = '_blank';
-      poweredBy.className = 'jsoneditor-poweredBy';
-      poweredBy.onclick = function () {
-        // TODO: this anchor falls below the margin of the content,
-        // therefore the normal a.href does not work. We use a click event
-        // for now, but this should be fixed.
-        window.open(poweredBy.href, poweredBy.target);
-      };
-      this.menu.appendChild(poweredBy);
-    }
-  }
-
-  var emptyNode = {};
-  var isReadOnly = (this.options.onEditable
-  && typeof(this.options.onEditable === 'function')
-  && !this.options.onEditable(emptyNode));
-
-  this.frame.appendChild(this.content);
-  this.container.appendChild(this.frame);
-
-  if (this.mode == 'code') {
-    this.editorDom = document.createElement('div');
-    this.editorDom.style.height = '100%'; // TODO: move to css
-    this.editorDom.style.width = '100%'; // TODO: move to css
-    this.content.appendChild(this.editorDom);
-
-    var aceEditor = _ace.edit(this.editorDom);
-    var aceSession = aceEditor.getSession();
-    aceEditor.$blockScrolling = Infinity;
-    aceEditor.setTheme(this.theme);
-    aceEditor.setOptions({ readOnly: isReadOnly });
-    aceEditor.setShowPrintMargin(false);
-    aceEditor.setFontSize(13);
-    aceSession.setMode('ace/mode/json');
-    aceSession.setTabSize(this.indentation);
-    aceSession.setUseSoftTabs(true);
-    aceSession.setUseWrapMode(true);
-    
-    // replace ace setAnnotations with custom function that also covers jsoneditor annotations
-    var originalSetAnnotations = aceSession.setAnnotations;
-    aceSession.setAnnotations = function (annotations) {
-      originalSetAnnotations.call(this, annotations && annotations.length ? annotations : me.annotations);
-    };
-    
-    aceEditor.commands.bindKey('Ctrl-L', null);    // disable Ctrl+L (is used by the browser to select the address bar)
-    aceEditor.commands.bindKey('Command-L', null); // disable Ctrl+L (is used by the browser to select the address bar)
-    this.aceEditor = aceEditor;
-
-    // TODO: deprecated since v5.0.0. Cleanup backward compatibility some day
-    if (!this.hasOwnProperty('editor')) {
-      Object.defineProperty(this, 'editor', {
-        get: function () {
-          console.warn('Property "editor" has been renamed to "aceEditor".');
-          return me.aceEditor;
-        },
-        set: function (aceEditor) {
-          console.warn('Property "editor" has been renamed to "aceEditor".');
-          me.aceEditor = aceEditor;
-        }
-      });
-    }
-
-    // register onchange event
-    aceEditor.on('change', this._onChange.bind(this));
-    aceEditor.on('changeSelection', this._onSelect.bind(this));
-  }
-  else {
-    // load a plain text textarea
-    var textarea = document.createElement('textarea');
-    textarea.className = 'jsoneditor-text';
-    textarea.spellcheck = false;
-    this.content.appendChild(textarea);
-    this.textarea = textarea;
-    this.textarea.readOnly = isReadOnly;
-
-    // register onchange event
-    if (this.textarea.oninput === null) {
-      this.textarea.oninput = this._onChange.bind(this);
-    }
-    else {
-      // oninput is undefined. For IE8-
-      this.textarea.onchange = this._onChange.bind(this);
-    }
-
-    textarea.onselect = this._onSelect.bind(this);
-    textarea.onmousedown = this._onMouseDown.bind(this);
-    textarea.onblur = this._onBlur.bind(this);
-  }
-
-  var validationErrorsContainer = document.createElement('div');
-  validationErrorsContainer.className = 'jsoneditor-validation-errors-container';
-  this.dom.validationErrorsContainer = validationErrorsContainer;
-  this.frame.appendChild(validationErrorsContainer);
-
-  var additionalErrorsIndication = document.createElement('div');
-  additionalErrorsIndication.style.display = 'none';
-  additionalErrorsIndication.className = "jsoneditor-additional-errors fadein";
-  additionalErrorsIndication.innerHTML = "Scroll for more &#9663;";
-  this.dom.additionalErrorsIndication = additionalErrorsIndication;
-  validationErrorsContainer.appendChild(additionalErrorsIndication);
-
-  if (options.statusBar) {
-    util.addClassName(this.content, 'has-status-bar');
-
-    this.curserInfoElements = {};
-    var statusBar = document.createElement('div');
-    this.dom.statusBar = statusBar;
-    statusBar.className = 'jsoneditor-statusbar';
-    this.frame.appendChild(statusBar);
-
-    var lnLabel = document.createElement('span');
-    lnLabel.className = 'jsoneditor-curserinfo-label';
-    lnLabel.innerText = 'Ln:';
-
-    var lnVal = document.createElement('span');
-    lnVal.className = 'jsoneditor-curserinfo-val';
-    lnVal.innerText = '1';
-
-    statusBar.appendChild(lnLabel);
-    statusBar.appendChild(lnVal);
-
-    var colLabel = document.createElement('span');
-    colLabel.className = 'jsoneditor-curserinfo-label';
-    colLabel.innerText = 'Col:';
-
-    var colVal = document.createElement('span');
-    colVal.className = 'jsoneditor-curserinfo-val';
-    colVal.innerText = '1';
-
-    statusBar.appendChild(colLabel);
-    statusBar.appendChild(colVal);
-
-    this.curserInfoElements.colVal = colVal;
-    this.curserInfoElements.lnVal = lnVal;
-
-    var countLabel = document.createElement('span');
-    countLabel.className = 'jsoneditor-curserinfo-label';
-    countLabel.innerText = 'characters selected';
-    countLabel.style.display = 'none';
-
-    var countVal = document.createElement('span');
-    countVal.className = 'jsoneditor-curserinfo-count';
-    countVal.innerText = '0';
-    countVal.style.display = 'none';
-
-    this.curserInfoElements.countLabel = countLabel;
-    this.curserInfoElements.countVal = countVal;
-
-    statusBar.appendChild(countVal);
-    statusBar.appendChild(countLabel);
-
-    var validationErrorIcon = document.createElement('span');
-    validationErrorIcon.className = 'jsoneditor-validation-error-icon';
-    validationErrorIcon.style.display = 'none';
-
-    var validationErrorCount = document.createElement('span');
-    validationErrorCount.className = 'jsoneditor-validation-error-count';    
-    validationErrorCount.style.display = 'none';
-
-    this.validationErrorIndication = {
-      validationErrorIcon: validationErrorIcon,
-      validationErrorCount: validationErrorCount
-    };
-
-    statusBar.appendChild(validationErrorCount);
-    statusBar.appendChild(validationErrorIcon);
-
-    this.parseErrorIndication = document.createElement('span');
-    this.parseErrorIndication.className = 'jsoneditor-parse-error-icon';    
-    this.parseErrorIndication.style.display = 'none';
-    statusBar.appendChild(this.parseErrorIndication);
-  }
-
-  this.setSchema(this.options.schema, this.options.schemaRefs);  
-};
-
-/**
- * Handle a change:
- * - Validate JSON schema
- * - Send a callback to the onChange listener if provided
- * @private
- */
-textmode._onChange = function () {
-  if (this.onChangeDisabled) {
-    return;
-  }
-
-  // validate JSON schema (if configured)
-  this._debouncedValidate();
-
-  // trigger the onChange callback
-  if (this.options.onChange) {
-    try {
-      this.options.onChange();
-    }
-    catch (err) {
-      console.error('Error in onChange callback: ', err);
-    }
-  }
-
-  // trigger the onChangeText callback
-  if (this.options.onChangeText) {
-    try {
-      this.options.onChangeText(this.getText());
-    }
-    catch (err) {
-      console.error('Error in onChangeText callback: ', err);
-    }
-  }
-};
-
-/**
- * Open a sort modal
- * @private
- */
-textmode._showSortModal = function () {
-  var me = this;
-  var container = this.options.modalAnchor || DEFAULT_MODAL_ANCHOR;
-  var json = this.get();
-
-  function onSort (sortedBy) {
-    if (Array.isArray(json)) {
-      var sortedJson = util.sort(json, sortedBy.path, sortedBy.direction);
-
-      me.sortedBy = sortedBy
-      me.set(sortedJson);
-    }
-
-    if (util.isObject(json)) {
-      var sortedJson = util.sortObjectKeys(json, sortedBy.direction);
-
-      me.sortedBy = sortedBy;
-      me.set(sortedJson);
-    }
-  }
-
-  showSortModal(container, json, onSort, me.sortedBy)
-}
-
-/**
- * Open a transform modal
- * @private
- */
-textmode._showTransformModal = function () {
-  var me = this;
-  var anchor = this.options.modalAnchor || DEFAULT_MODAL_ANCHOR;
-  var json = this.get();
-  showTransformModal(anchor, json, function (query) {
-    var updatedJson = jmespath.search(json, query);
-    me.set(updatedJson);
-  })
-}
-
-/**
- * Handle text selection
- * Calculates the cursor position and selection range and updates menu
- * @private
- */
-textmode._onSelect = function () {
-  this._updateCursorInfo();
-  this._emitSelectionChange();
-};
-
-/**
- * Event handler for keydown. Handles shortcut keys
- * @param {Event} event
- * @private
- */
-textmode._onKeyDown = function (event) {
-  var keynum = event.which || event.keyCode;
-  var handled = false;
-
-  if (keynum == 220 && event.ctrlKey) {
-    if (event.shiftKey) { // Ctrl+Shift+\
-      this.compact();
-      this._onChange();
-    }
-    else { // Ctrl+\
-      this.format();
-      this._onChange();
-    }
-    handled = true;
-  }
-
-  if (handled) {
-    event.preventDefault();
-    event.stopPropagation();
-  }
-
-  this._updateCursorInfo();
-  this._emitSelectionChange();
-};
-
-/**
- * Event handler for mousedown.
- * @private
- */
-textmode._onMouseDown = function () {
-  this._updateCursorInfo();
-  this._emitSelectionChange();
-};
-
-/**
- * Event handler for blur.
- * @private
- */
-textmode._onBlur = function () {
-  var me = this;
-  // this allows to avoid blur when clicking inner elements (like the errors panel)
-  // just make sure to set the isFocused to true on the inner element onclick callback
-  setTimeout(function(){
-    if (!me.isFocused) {
-      me._updateCursorInfo();
-      me._emitSelectionChange();
-    }
-    me.isFocused = false;
-  });
-};
-
-/**
- * Update the cursor info and the status bar, if presented
- */
-textmode._updateCursorInfo = function () {
-  var me = this;
-  var line, col, count;
-
-  if (this.textarea) {
-    setTimeout(function() { //this to verify we get the most updated textarea cursor selection
-      var selectionRange = util.getInputSelection(me.textarea);
-      
-      if (selectionRange.startIndex !== selectionRange.endIndex) {
-        count = selectionRange.endIndex - selectionRange.startIndex;
-      }
-      
-      if (count && me.cursorInfo && me.cursorInfo.line === selectionRange.end.row && me.cursorInfo.column === selectionRange.end.column) {
-        line = selectionRange.start.row;
-        col = selectionRange.start.column;
-      } else {
-        line = selectionRange.end.row;
-        col = selectionRange.end.column;
-      }
-      
-      me.cursorInfo = {
-        line: line,
-        column: col,
-        count: count
-      };
-
-      if(me.options.statusBar) {
-        updateDisplay();
-      }
-    },0);
-    
-  } else if (this.aceEditor && this.curserInfoElements) {
-    var curserPos = this.aceEditor.getCursorPosition();
-    var selectedText = this.aceEditor.getSelectedText();
-
-    line = curserPos.row + 1;
-    col = curserPos.column + 1;
-    count = selectedText.length;
-
-    me.cursorInfo = {
-      line: line,
-      column: col,
-      count: count
-    };
-
-    if(this.options.statusBar) {
-      updateDisplay();
-    }
-  }
-
-  function updateDisplay() {
-
-    if (me.curserInfoElements.countVal.innerText !== count) {
-      me.curserInfoElements.countVal.innerText = count;
-      me.curserInfoElements.countVal.style.display = count ? 'inline' : 'none';
-      me.curserInfoElements.countLabel.style.display = count ? 'inline' : 'none';
-    }
-    me.curserInfoElements.lnVal.innerText = line;
-    me.curserInfoElements.colVal.innerText = col;
-  }
-};
-
-/**
- * emits selection change callback, if given
- * @private
- */
-textmode._emitSelectionChange = function () {
-  if(this._selectionChangedHandler) {
-    var currentSelection = this.getTextSelection();
-    this._selectionChangedHandler(currentSelection.start, currentSelection.end, currentSelection.text);
-  }
-};
-
-/**
- * refresh ERROR annotations state
- * error annotations are handled by the ace json mode (ace/mode/json)
- * validation annotations are handled by this mode
- * therefore in order to refresh we send only the annotations of error type in order to maintain its state 
- * @private
- */
-textmode._refreshAnnotations = function () {  
-  var session = this.aceEditor && this.aceEditor.getSession();
-  if (session) {
-    var errEnnotations = session.getAnnotations().filter(function(annotation) {return annotation.type === 'error' });
-    session.setAnnotations(errEnnotations);
-  }
-};
-
-/**
- * Destroy the editor. Clean up DOM, event listeners, and web workers.
- */
-textmode.destroy = function () {
-  // remove old ace editor
-  if (this.aceEditor) {
-    this.aceEditor.destroy();
-    this.aceEditor = null;
-  }
-
-  if (this.frame && this.container && this.frame.parentNode == this.container) {
-    this.container.removeChild(this.frame);
-  }
-
-  if (this.modeSwitcher) {
-    this.modeSwitcher.destroy();
-    this.modeSwitcher = null;
-  }
-
-  this.textarea = null;
-  
-  this._debouncedValidate = null;
-};
-
-/**
- * Compact the code in the text editor
- */
-textmode.compact = function () {
-  var json = this.get();
-  var text = JSON.stringify(json);
-  this.setText(text);
-};
-
-/**
- * Format the code in the text editor
- */
-textmode.format = function () {
-  var json = this.get();
-  var text = JSON.stringify(json, null, this.indentation);
-  this.setText(text);
-};
-
-/**
- * Repair the code in the text editor
- */
-textmode.repair = function () {
-  var text = this.getText();
-  var sanitizedText = util.sanitize(text);
-  this.setText(sanitizedText);
-};
-
-/**
- * Set focus to the formatter
- */
-textmode.focus = function () {
-  if (this.textarea) {
-    this.textarea.focus();
-  }
-  if (this.aceEditor) {
-    this.aceEditor.focus();
-  }
-};
-
-/**
- * Resize the formatter
- */
-textmode.resize = function () {
-  if (this.aceEditor) {
-    var force = false;
-    this.aceEditor.resize(force);
-  }
-};
-
-/**
- * Set json data in the formatter
- * @param {*} json
- */
-textmode.set = function(json) {
-  this.setText(JSON.stringify(json, null, this.indentation));
-};
-
-/**
- * Update data. Same as calling `set` in text/code mode.
- * @param {*} json
- */
-textmode.update = function(json) {
-  this.updateText(JSON.stringify(json, null, this.indentation));
-};
-
-/**
- * Get json data from the formatter
- * @return {*} json
- */
-textmode.get = function() {
-  var text = this.getText();
-  var json;
-
-  try {
-    json = util.parse(text); // this can throw an error
-  }
-  catch (err) {
-    // try to sanitize json, replace JavaScript notation with JSON notation
-    text = util.sanitize(text);
-
-    // try to parse again
-    json = util.parse(text); // this can throw an error
-  }
-
-  return json;
-};
-
-/**
- * Get the text contents of the editor
- * @return {String} jsonText
- */
-textmode.getText = function() {
-  if (this.textarea) {
-    return this.textarea.value;
-  }
-  if (this.aceEditor) {
-    return this.aceEditor.getValue();
-  }
-  return '';
-};
-
-/**
- * Set the text contents of the editor
- * @param {String} jsonText
- */
-textmode.setText = function(jsonText) {
-  var text;
-
-  if (this.options.escapeUnicode === true) {
-    text = util.escapeUnicodeChars(jsonText);
-  }
-  else {
-    text = jsonText;
-  }
-
-  if (this.textarea) {
-    this.textarea.value = text;
-  }
-  if (this.aceEditor) {
-    // prevent emitting onChange events while setting new text
-    this.onChangeDisabled = true;
-
-    this.aceEditor.setValue(text, -1);
-
-    this.onChangeDisabled = false;
-  }
-  // validate JSON schema
-  this._debouncedValidate();
-};
-
-/**
- * Update the text contents
- * @param {string} jsonText
- */
-textmode.updateText = function(jsonText) {
-  // don't update if there are no changes
-  if (this.getText() === jsonText) {
-    return;
-  }
-
-  this.onChangeDisabled = true; // don't fire an onChange event
-  this.setText(jsonText);
-  this.onChangeDisabled = false;
-};
-
-/**
- * Validate current JSON object against the configured JSON schema
- * Throws an exception when no JSON schema is configured
- */
-textmode.validate = function () {
-  var doValidate = false;
-  var schemaErrors = [];
-  var parseErrors = [];
-  var json;
-  try {
-    json = this.get(); // this can fail when there is no valid json
-    if (this.parseErrorIndication) {
-      this.parseErrorIndication.style.display = 'none';
-    }
-    doValidate = true;
-  }
-  catch (err) {
-    if (this.getText()) {
-      if (this.parseErrorIndication) {
-        this.parseErrorIndication.style.display = 'block';
-      }
-      // try to extract the line number from the jsonlint error message
-      var match = /\w*line\s*(\d+)\w*/g.exec(err.message);
-      var line;
-      if (match) {
-        line = +match[1];
-      }
-      if (this.parseErrorIndication) {
-        this.parseErrorIndication.title = !isNaN(line) ? ('parse error on line ' + line) : 'parse error - check that the json is valid';
-      }
-      parseErrors.push({
-        type: 'error',
-        message: err.message.replace(/\n/g, '<br>'),
-        line: line
-      });
-    }
-  }
-
-  // only validate the JSON when parsing the JSON succeeded
-  if (doValidate) {
-    // execute JSON schema validation (ajv)
-    if (this.validateSchema) {
-      var valid = this.validateSchema(json);
-      if (!valid) {
-        schemaErrors = this.validateSchema.errors.map(function (error) {
-          error.type = "validation";
-          return util.improveSchemaError(error);
-        });
-      }
-    }
-
-    // execute custom validation and after than merge and render all errors
-    try {
-      this.validationSequence++;
-      var me = this;
-      var seq = this.validationSequence;
-      this._validateCustom(json)
-          .then(function (customValidationErrors) {
-            // only apply when there was no other validation started whilst resolving async results
-            if (seq === me.validationSequence) {
-              var errors = schemaErrors.concat(parseErrors || []).concat(customValidationErrors || []);
-              me._renderErrors(errors);
-            }
-          })
-          .catch(function (err) {
-            console.error(err);
-          });
-    }
-    catch(err) {
-      console.error(err);
-    }
-  }
-  else {
-    this._renderErrors(parseErrors || [], true);
-  }
-};
+var isPromise = __webpack_require__(0).isPromise;
+var isValidValidationError = __webpack_require__(0).isValidValidationError;
+var stringifyPath = __webpack_require__(0).stringifyPath;
 
 /**
  * Execute custom validation if configured.
  *
- * Returns a promise resolving with the custom errors (or nothing).
+ * Returns a promise resolving with the custom errors (or an empty array).
  */
-textmode._validateCustom = function (json) {
-  if (this.options.onValidate) {
-    try {
-      var customValidateResults = this.options.onValidate(json);
-
-      var resultPromise = util.isPromise(customValidateResults)
-          ? customValidateResults
-          : Promise.resolve(customValidateResults);
-
-      return resultPromise.then(function (customValidationPathErrors) {
-        if (Array.isArray(customValidationPathErrors)) {
-          return customValidationPathErrors
-              .filter(function (error) {
-                var valid = util.isValidValidationError(error);
-
-                if (!valid) {
-                  console.warn('Ignoring a custom validation error with invalid structure. ' +
-                      'Expected structure: {path: [...], message: "..."}. ' +
-                      'Actual error:', error);
-                }
-
-                return valid;
-              })
-              .map(function (error) {
-                // change data structure into the structure matching the JSON schema errors
-                return {
-                  dataPath: util.stringifyPath(error.path),
-                  message: error.message
-                }
-              });
-        }
-        else {
-          return null;
-        }
-      });
-    }
-    catch (err) {
-      return Promise.reject(err);
-    }
+function validateCustom (json, onValidate) {
+  if (!onValidate) {
+    return Promise.resolve([]);
   }
 
-  return Promise.resolve(null);
-};
-
-textmode._renderErrors = function(errors, noValidation) {
-  // clear all current errors
-  var me = this;
-  var validationErrorsCount = 0;
-
-  this.errorTableVisible = (typeof this.errorTableVisible === 'undefined') ? !this.aceEditor : this.errorTableVisible;
-
-  if (this.dom.validationErrors) {
-    this.dom.validationErrors.parentNode.removeChild(this.dom.validationErrors);
-    this.dom.validationErrors = null;
-    this.dom.additionalErrorsIndication.style.display = 'none';
-
-    this.content.style.marginBottom = '';
-    this.content.style.paddingBottom = '';
-  }
-
-  var jsonText = this.getText();
-  var errorPaths = [];
-  errors.reduce(function(acc, curr) {
-    if(acc.indexOf(curr.dataPath) === -1) {
-      acc.push(curr.dataPath);
-    }
-    return acc;
-  }, errorPaths);
-  var errorLocations = util.getPositionForPath(jsonText, errorPaths);
-
-  // render the new errors
-  if (errors.length > 0) {
-    if (this.aceEditor) {
-      this.annotations = errorLocations.map(function (errLoc) {
-        var validationErrors = errors.filter(function(err){ return err.dataPath === errLoc.path; });
-        var message = validationErrors.map(function(err) { return err.message }).join('\n');
-        if (message) {
-          return {
-            row: errLoc.line,
-            column: errLoc.column,
-            text: 'Schema validation error' + (validationErrors.length !== 1 ? 's' : '') + ': \n' + message,
-            type: 'warning',
-            source: 'jsoneditor',
-          }
-        }
-
-        return {};
-      });
-      this._refreshAnnotations();
-
-    }
-
-    // keep default behavior for parse errors
-    if (noValidation ? !this.aceEditor : this.errorTableVisible) {
-       var validationErrors = document.createElement('div');
-      validationErrors.innerHTML = '<table class="jsoneditor-text-errors"><tbody></tbody></table>';
-      var tbody = validationErrors.getElementsByTagName('tbody')[0];
-
-      errors.forEach(function (error) {
-        var message;
-        if (typeof error === 'string') {
-          message = '<td colspan="2"><pre>' + error + '</pre></td>';
-        }
-        else {
-          message = 
-              '<td>' + (error.dataPath || '') + '</td>' +
-              '<td>' + error.message + '</td>';
-        }
-
-        var line;
-
-        if (!isNaN(error.line)) {
-          line = error.line;
-        } else if (error.dataPath) {
-          var errLoc = errorLocations.find(function(loc) { return loc.path === error.dataPath; });
-          if (errLoc) {
-            line = errLoc.line + 1;
-          }
-        }
-
-        var trEl = document.createElement('tr');
-        trEl.className = !isNaN(line) ? 'jump-to-line' : '';
-        if (error.type === 'error') {
-          trEl.className += ' parse-error';
-        } else {
-          trEl.className += ' validation-error';
-          ++validationErrorsCount;
-        }
-        
-        trEl.innerHTML =  ('<td><button class="jsoneditor-schema-error"></button></td><td style="white-space:nowrap;">'+ (!isNaN(line) ? ('Ln ' + line) : '') +'</td>' + message);
-        trEl.onclick = function() {
-          me.isFocused = true;
-          if (!isNaN(line)) {
-            me.setTextSelection({row: line, column: 1}, {row: line, column: 1000});
-          }
-        };
-
-        tbody.appendChild(trEl);
-      });
-
-      this.dom.validationErrors = validationErrors;
-      this.dom.validationErrorsContainer.appendChild(validationErrors);
-      this.dom.additionalErrorsIndication.title = errors.length + " errors total";
-
-      if (this.dom.validationErrorsContainer.clientHeight < this.dom.validationErrorsContainer.scrollHeight) {
-        this.dom.additionalErrorsIndication.style.display = 'block';
-        this.dom.validationErrorsContainer.onscroll = function () {
-          me.dom.additionalErrorsIndication.style.display =
-            (me.dom.validationErrorsContainer.clientHeight > 0 && me.dom.validationErrorsContainer.scrollTop === 0) ? 'block' : 'none';
-        }
-      } else {
-        this.dom.validationErrorsContainer.onscroll = undefined;
-      }
-
-      var height = this.dom.validationErrorsContainer.clientHeight + (this.dom.statusBar ? this.dom.statusBar.clientHeight : 0);
-      this.content.style.marginBottom = (-height) + 'px';
-      this.content.style.paddingBottom = height + 'px';
-    } else {
-      validationErrorsCount = errors.reduce(function (acc, curr) {return (curr.type === 'validation' ? ++acc: acc)}, 0);
-    }
-    
-  } else {
-    if (this.aceEditor) {
-      this.annotations = [];
-      this._refreshAnnotations();
-    }
-  }
-
-  if (this.options.statusBar) {
-    validationErrorsCount = validationErrorsCount || this.annotations.length;
-    var showIndication = !!validationErrorsCount;
-    this.validationErrorIndication.validationErrorIcon.style.display = showIndication ? 'inline' : 'none';
-    this.validationErrorIndication.validationErrorCount.style.display = showIndication ? 'inline' : 'none';
-    if (showIndication) {
-      this.validationErrorIndication.validationErrorCount.innerText = validationErrorsCount;
-      this.validationErrorIndication.validationErrorIcon.title = validationErrorsCount + ' schema validation error(s) found';
-      this.validationErrorIndication.validationErrorCount.onclick = this.validationErrorIndication.validationErrorIcon.onclick = this._toggleErrorTableVisibility.bind(this);
-    }
-  }
-
-  // update the height of the ace editor
-  if (this.aceEditor) {
-    var force = false;
-    this.aceEditor.resize(force);
-  }
-};
-
-textmode._toggleErrorTableVisibility = function () {
-  this.errorTableVisible = !this.errorTableVisible;
-  this.validate();
-};
-
-/**
- * Get the selection details
- * @returns {{start:{row:Number, column:Number},end:{row:Number, column:Number},text:String}}
- */
-textmode.getTextSelection = function () {
-  var selection = {};
-  if (this.textarea) {
-    var selectionRange = util.getInputSelection(this.textarea);
-
-    if (this.cursorInfo && this.cursorInfo.line === selectionRange.end.row && this.cursorInfo.column === selectionRange.end.column) {
-      //selection direction is bottom => up
-      selection.start = selectionRange.end;
-      selection.end = selectionRange.start;
-    } else {
-      selection = selectionRange;
-    }
-
-    return {
-      start: selection.start,
-      end: selection.end,
-      text: this.textarea.value.substring(selectionRange.startIndex, selectionRange.endIndex)
-    }
-  }
-
-  if (this.aceEditor) {
-    var aceSelection = this.aceEditor.getSelection();
-    var selectedText = this.aceEditor.getSelectedText();
-    var range = aceSelection.getRange();
-    var lead = aceSelection.getSelectionLead();
-
-    if (lead.row === range.end.row && lead.column === range.end.column) {
-      selection = range;
-    } else {
-      //selection direction is bottom => up
-      selection.start = range.end;
-      selection.end = range.start;
-    }
-    
-    return {
-      start: {
-        row: selection.start.row + 1,
-        column: selection.start.column + 1
-      },
-      end: {
-        row: selection.end.row + 1,
-        column: selection.end.column + 1
-      },
-      text: selectedText
-    };
-  }
-};
-
-/**
- * Callback registration for selection change
- * @param {selectionCallback} callback
- * 
- * @callback selectionCallback
- */
-textmode.onTextSelectionChange = function (callback) {
-  if (typeof callback === 'function') {
-    this._selectionChangedHandler = util.debounce(callback, this.DEBOUNCE_INTERVAL);
-  }
-};
-
-/**
- * Set selection on editor's text
- * @param {{row:Number, column:Number}} startPos selection start position
- * @param {{row:Number, column:Number}} endPos selected end position
- */
-textmode.setTextSelection = function (startPos, endPos) {
-
-  if (!startPos || !endPos) return;
-
-  if (this.textarea) {
-    var startIndex = util.getIndexForPosition(this.textarea, startPos.row, startPos.column);
-    var endIndex = util.getIndexForPosition(this.textarea, endPos.row, endPos.column);
-    if (startIndex > -1 && endIndex  > -1) {
-      if (this.textarea.setSelectionRange) {
-        this.textarea.focus();
-        this.textarea.setSelectionRange(startIndex, endIndex);
-      } else if (this.textarea.createTextRange) { // IE < 9
-        var range = this.textarea.createTextRange();
-        range.collapse(true);
-        range.moveEnd('character', endIndex);
-        range.moveStart('character', startIndex);
-        range.select();
-      }
-      var rows = (this.textarea.value.match(/\n/g) || []).length + 1;
-      var lineHeight =  this.textarea.scrollHeight / rows;
-      var selectionScrollPos = (startPos.row * lineHeight);
-      this.textarea.scrollTop = selectionScrollPos > this.textarea.clientHeight ? (selectionScrollPos - (this.textarea.clientHeight / 2)) : 0;
-    }
-  } else if (this.aceEditor) {
-    var range = {
-      start:{
-        row: startPos.row - 1,
-        column: startPos.column - 1
-      },
-      end:{
-        row: endPos.row - 1,
-        column: endPos.column - 1
-      }
-    };
-    this.aceEditor.selection.setRange(range);
-    this.aceEditor.scrollToLine(startPos.row - 1, true);
-  }
-};
-
-function load () {
   try {
-    this.format()
+    var customValidateResults = onValidate(json);
+
+    var resultPromise = isPromise(customValidateResults)
+        ? customValidateResults
+        : Promise.resolve(customValidateResults);
+
+    return resultPromise.then(function (customValidationPathErrors) {
+      if (Array.isArray(customValidationPathErrors)) {
+        return customValidationPathErrors
+            .filter(function (error) {
+              var valid = isValidValidationError(error);
+
+              if (!valid) {
+                console.warn('Ignoring a custom validation error with invalid structure. ' +
+                    'Expected structure: {path: [...], message: "..."}. ' +
+                    'Actual error:', error);
+              }
+
+              return valid;
+            })
+            .map(function (error) {
+              // change data structure into the structure matching the JSON schema errors
+              return {
+                dataPath: stringifyPath(error.path),
+                message: error.message
+              }
+            });
+      }
+      else {
+        return [];
+      }
+    });
   }
   catch (err) {
-    // in case of an error, just move on, failing formatting is not a big deal
+    return Promise.reject(err);
   }
 }
 
-// define modes
-module.exports = [
-  {
-    mode: 'text',
-    mixin: textmode,
-    data: 'text',
-    load: load
-  },
-  {
-    mode: 'code',
-    mixin: textmode,
-    data: 'text',
-    load: load
-  }
-];
+exports.validateCustom = validateCustom;
 
 
 /***/ }),
-/* 30 */
+/* 34 */
 /***/ (function(module, exports) {
 
 /* ***** BEGIN LICENSE BLOCK *****
@@ -19434,6 +19787,773 @@ background: url(\"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAACCAYAAACZ
 var dom = acequire("../lib/dom");
 dom.importCssString(exports.cssText, exports.cssClass);
 });
+
+
+/***/ }),
+/* 35 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+var jmespath = __webpack_require__(4);
+var translate = __webpack_require__(1).translate;
+var ModeSwitcher = __webpack_require__(7);
+var ErrorTable = __webpack_require__(15);
+var textmode = __webpack_require__(14)[0].mixin;
+var showSortModal = __webpack_require__(5);
+var showTransformModal = __webpack_require__(6);
+var MAX_PREVIEW_CHARACTERS = __webpack_require__(2).MAX_PREVIEW_CHARACTERS;
+var DEFAULT_MODAL_ANCHOR = __webpack_require__(2).DEFAULT_MODAL_ANCHOR;
+var SIZE_LARGE = __webpack_require__(2).SIZE_LARGE;
+var PREVIEW_HISTORY_LIMIT = __webpack_require__(2).PREVIEW_HISTORY_LIMIT;
+var util = __webpack_require__(0);
+var History = __webpack_require__(36);
+
+// create a mixin with the functions for text mode
+var previewmode = {};
+
+/**
+ * Create a JSON document preview, suitable for processing of large documents
+ * @param {Element} container
+ * @param {Object} [options]   Object with options. See docs for details.
+ * @private
+ */
+previewmode.create = function (container, options) {
+  // read options
+  options = options || {};
+  
+  if (typeof options.statusBar === 'undefined') {
+    options.statusBar = true;
+  }
+
+  // setting default for previewmode
+  options.mainMenuBar = options.mainMenuBar !== false;
+  options.enableSort = options.enableSort !== false;
+  options.enableTransform = options.enableTransform !== false;
+
+  this.options = options;
+
+  // indentation
+  if (options.indentation) {
+    this.indentation = Number(options.indentation);
+  }
+  else {
+    this.indentation = 2; // number of spaces
+  }
+
+  // determine mode
+  this.mode = 'preview';
+
+  var me = this;
+  this.container = container;
+  this.dom = {};
+
+  this.json = undefined;
+  this.text = '';
+
+  // TODO: JSON Schema support
+
+  // create a debounced validate function
+  this._debouncedValidate = util.debounce(this.validate.bind(this), this.DEBOUNCE_INTERVAL);
+
+  this.width = container.clientWidth;
+  this.height = container.clientHeight;
+
+  this.frame = document.createElement('div');
+  this.frame.className = 'jsoneditor jsoneditor-mode-preview';
+  this.frame.onclick = function (event) {
+    // prevent default submit action when the editor is located inside a form
+    event.preventDefault();
+  };
+
+  this.content = document.createElement('div');
+  this.content.className = 'jsoneditor-outer';
+
+  this.dom.busy = document.createElement('div')
+  this.dom.busy.className = 'jsoneditor-busy';
+  this.dom.busyContent = document.createElement('span');
+  this.dom.busyContent.innerHTML = 'busy...';
+  this.dom.busy.appendChild(this.dom.busyContent);
+  this.content.appendChild(this.dom.busy);
+
+  this.dom.previewContent = document.createElement('pre');
+  this.dom.previewContent.className = 'jsoneditor-preview';
+  this.dom.previewText = document.createTextNode('');
+  this.dom.previewContent.appendChild(this.dom.previewText);
+  this.content.appendChild(this.dom.previewContent);
+
+  if (this.options.mainMenuBar) {
+    util.addClassName(this.content, 'has-main-menu-bar');
+
+    // create menu
+    this.menu = document.createElement('div');
+    this.menu.className = 'jsoneditor-menu';
+    this.frame.appendChild(this.menu);
+
+    // create format button
+    var buttonFormat = document.createElement('button');
+    buttonFormat.type = 'button';
+    buttonFormat.className = 'jsoneditor-format';
+    buttonFormat.title = 'Format JSON data, with proper indentation and line feeds (Ctrl+\\)';
+    this.menu.appendChild(buttonFormat);
+    buttonFormat.onclick = function handleFormat() {
+      me.executeWithBusyMessage(function () {
+        try {
+          me.format();
+        }
+        catch (err) {
+          me._onError(err);
+        }
+      }, 'formatting...');
+    };
+
+    // create compact button
+    var buttonCompact = document.createElement('button');
+    buttonCompact.type = 'button';
+    buttonCompact.className = 'jsoneditor-compact';
+    buttonCompact.title = 'Compact JSON data, remove all whitespaces (Ctrl+Shift+\\)';
+    this.menu.appendChild(buttonCompact);
+    buttonCompact.onclick = function handleCompact() {
+      me.executeWithBusyMessage(function () {
+        try {
+          me.compact();
+        }
+        catch (err) {
+          me._onError(err);
+        }
+      }, 'compacting...');
+    };
+
+    // create sort button
+    if (this.options.enableSort) {
+      var sort = document.createElement('button');
+      sort.type = 'button';
+      sort.className = 'jsoneditor-sort';
+      sort.title = translate('sortTitleShort');
+      sort.onclick = function () {
+        me._showSortModal();
+      };
+      this.menu.appendChild(sort);
+    }
+
+    // create transform button
+    if (this.options.enableTransform) {
+      var transform = document.createElement('button');
+      transform.type = 'button';
+      transform.title = translate('transformTitleShort');
+      transform.className = 'jsoneditor-transform';
+      transform.onclick = function () {
+        me._showTransformModal();
+      };
+      this.dom.transform = transform;
+      this.menu.appendChild(transform);
+    }
+
+    // create repair button
+    var buttonRepair = document.createElement('button');
+    buttonRepair.type = 'button';
+    buttonRepair.className = 'jsoneditor-repair';
+    buttonRepair.title = 'Repair JSON: fix quotes and escape characters, remove comments and JSONP notation, turn JavaScript objects into JSON.';
+    this.menu.appendChild(buttonRepair);
+    buttonRepair.onclick = function () {
+      if (me.json === undefined) { // only repair if we don't have valid JSON
+        me.executeWithBusyMessage(function () {
+          try {
+            me.repair();
+          }
+          catch (err) {
+            me._onError(err);
+          }
+        }, 'repairing...');
+      }
+    };
+
+    // create history and undo/redo buttons
+    if (this.options.history !== false) { // default option value is true
+      var onHistoryChange = function () {
+        me.dom.undo.disabled = !me.history.canUndo();
+        me.dom.redo.disabled = !me.history.canRedo();
+      };
+
+      var calculateItemSize = function (item) {
+        return item.text.length * 2; // times two to account for the json object
+      }
+
+      this.history = new History(onHistoryChange, calculateItemSize, PREVIEW_HISTORY_LIMIT);
+
+      // create undo button
+      var undo = document.createElement('button');
+      undo.type = 'button';
+      undo.className = 'jsoneditor-undo jsoneditor-separator';
+      undo.title = translate('undo');
+      undo.onclick = function () {
+        var action = me.history.undo();
+        if (action) {
+          me._applyHistory(action);
+        }
+      };
+      this.menu.appendChild(undo);
+      this.dom.undo = undo;
+
+      // create redo button
+      var redo = document.createElement('button');
+      redo.type = 'button';
+      redo.className = 'jsoneditor-redo';
+      redo.title = translate('redo');
+      redo.onclick = function () {
+        var action = me.history.redo();
+        if (action) {
+          me._applyHistory(action);
+        }
+      };
+      this.menu.appendChild(redo);
+      this.dom.redo = redo;
+
+      // force enabling/disabling the undo/redo button
+      this.history.onChange();
+    }
+
+    // create mode box
+    if (this.options && this.options.modes && this.options.modes.length) {
+      this.modeSwitcher = new ModeSwitcher(this.menu, this.options.modes, this.options.mode, function onSwitch(mode) {
+        // switch mode and restore focus
+        me.setMode(mode);
+        me.modeSwitcher.focus();
+      });
+    }
+  }
+
+  this.errorTable = new ErrorTable({
+    errorTableVisible: true,
+    onToggleVisibility: function () {
+      me.validate();
+    },
+    onFocusLine: null,
+    onChangeHeight: function (height) {
+      // TODO: change CSS to using flex box, remove setting height using JavaScript
+      var totalHeight = height + me.dom.statusBar.clientHeight + 1;
+      me.content.style.marginBottom = (-totalHeight) + 'px';
+      me.content.style.paddingBottom = totalHeight + 'px';
+    }
+  });
+
+  this.frame.appendChild(this.content);
+  this.frame.appendChild(this.errorTable.getErrorTable());
+  this.container.appendChild(this.frame);
+
+  if (options.statusBar) {
+    util.addClassName(this.content, 'has-status-bar');
+
+    var statusBar = document.createElement('div');
+    this.dom.statusBar = statusBar;
+    statusBar.className = 'jsoneditor-statusbar';
+    this.frame.appendChild(statusBar);
+
+    this.dom.fileSizeInfo = document.createElement('span');
+    this.dom.fileSizeInfo.className = 'jsoneditor-size-info';
+    this.dom.fileSizeInfo.innerText = '';
+    statusBar.appendChild(this.dom.fileSizeInfo);
+
+    this.dom.arrayInfo = document.createElement('span');
+    this.dom.arrayInfo.className = 'jsoneditor-size-info';
+    this.dom.arrayInfo.innerText = '';
+    statusBar.appendChild(this.dom.arrayInfo);
+
+    statusBar.appendChild(this.errorTable.getErrorCounter());
+    statusBar.appendChild(this.errorTable.getWarningIcon());
+    statusBar.appendChild(this.errorTable.getErrorIcon());
+  }
+
+  this._renderPreview();
+
+  this.setSchema(this.options.schema, this.options.schemaRefs);  
+};
+
+previewmode._renderPreview = function () {
+  var text = this.getText();
+
+  this.dom.previewText.nodeValue = util.limitCharacters(text, MAX_PREVIEW_CHARACTERS);
+
+  if (this.dom.fileSizeInfo) {
+    this.dom.fileSizeInfo.innerText = 'Size: ' + util.formatSize(text.length);
+  }
+
+  if (this.dom.arrayInfo) {
+    if (Array.isArray(this.json)) {
+      this.dom.arrayInfo.innerText = ('Array: ' + this.json.length + ' items');
+    }
+    else {
+      this.dom.arrayInfo.innerText = '';
+    }
+  }
+};
+
+/**
+ * Handle a change:
+ * - Validate JSON schema
+ * - Send a callback to the onChange listener if provided
+ * @private
+ */
+previewmode._onChange = function () {
+  // validate JSON schema (if configured)
+  this._debouncedValidate();
+
+  // trigger the onChange callback
+  if (this.options.onChange) {
+    try {
+      this.options.onChange();
+    }
+    catch (err) {
+      console.error('Error in onChange callback: ', err);
+    }
+  }
+
+  // trigger the onChangeJSON callback
+  if (this.options.onChangeJSON) {
+    try {
+      this.options.onChangeJSON(this.get());
+    }
+    catch (err) {
+      console.error('Error in onChangeJSON callback: ', err);
+    }
+  }
+
+  // trigger the onChangeText callback
+  if (this.options.onChangeText) {
+    try {
+      this.options.onChangeText(this.getText());
+    }
+    catch (err) {
+      console.error('Error in onChangeText callback: ', err);
+    }
+  }
+};
+
+/**
+ * Open a sort modal
+ * @private
+ */
+previewmode._showSortModal = function () {
+  var me = this;
+
+  function onSort (json, sortedBy) {
+    if (Array.isArray(json)) {
+      var sortedArray = util.sort(json, sortedBy.path, sortedBy.direction);
+
+      me.sortedBy = sortedBy
+      me._setAndFireOnChange(sortedArray);
+    }
+
+    if (util.isObject(json)) {
+      var sortedObject = util.sortObjectKeys(json, sortedBy.direction);
+
+      me.sortedBy = sortedBy;
+      me._setAndFireOnChange(sortedObject);
+    }
+  }
+
+  this.executeWithBusyMessage(function () {
+    var container = me.options.modalAnchor || DEFAULT_MODAL_ANCHOR;
+    var json = me.get();
+    me._renderPreview(); // update array count
+
+    showSortModal(container, json, function (sortedBy) {
+      me.executeWithBusyMessage(function () {
+        onSort(json, sortedBy);
+      }, 'sorting...');
+    }, me.sortedBy)
+  }, 'parsing...');
+}
+
+/**
+ * Open a transform modal
+ * @private
+ */
+previewmode._showTransformModal = function () {
+  var me = this;
+
+  this.executeWithBusyMessage(function () {
+    var anchor = me.options.modalAnchor || DEFAULT_MODAL_ANCHOR;
+    var json = me.get();
+    me._renderPreview(); // update array count
+
+    showTransformModal(anchor, json, function (query) {
+      me.executeWithBusyMessage(function () {
+        var updatedJson = jmespath.search(json, query);
+        me._setAndFireOnChange(updatedJson);
+      }, 'transforming...')
+    })
+  }, 'parsing...')
+}
+
+/**
+ * Destroy the editor. Clean up DOM, event listeners, and web workers.
+ */
+previewmode.destroy = function () {
+  if (this.frame && this.container && this.frame.parentNode === this.container) {
+    this.container.removeChild(this.frame);
+  }
+
+  if (this.modeSwitcher) {
+    this.modeSwitcher.destroy();
+    this.modeSwitcher = null;
+  }
+
+  this._debouncedValidate = null;
+
+  this.history.clear();
+  this.history = null;
+};
+
+/**
+ * Compact the code in the text editor
+ */
+previewmode.compact = function () {
+  var json = this.get();
+  var text = JSON.stringify(json);
+
+  // we know that in this case the json is still the same, so we pass json too
+  this._setTextAndFireOnChange(text, json);
+};
+
+/**
+ * Format the code in the text editor
+ */
+previewmode.format = function () {
+  var json = this.get();
+  var text = JSON.stringify(json, null, this.indentation);
+
+  // we know that in this case the json is still the same, so we pass json too
+  this._setTextAndFireOnChange(text, json);
+};
+
+/**
+ * Repair the code in the text editor
+ */
+previewmode.repair = function () {
+  var text = this.getText();
+  var repairedText = util.repair(text);
+
+  this._setTextAndFireOnChange(repairedText);
+};
+
+/**
+ * Set focus to the editor
+ */
+previewmode.focus = function () {
+  // we don't really have a place to focus,
+  // let's focus on the transform button
+  this.dom.transform.focus();
+};
+
+/**
+ * Set json data in the editor
+ * @param {*} json
+ */
+previewmode.set = function(json) {
+  if (this.history) {
+    this.history.clear();
+  }
+
+  this._set(json);
+};
+
+/**
+ * Update data. Same as calling `set` in text/code mode.
+ * @param {*} json
+ */
+previewmode.update = function(json) {
+  this._set(json);
+};
+
+/**
+ * Set json data
+ * @param {*} json
+ */
+previewmode._set = function(json) {
+  this.text = undefined;
+  this.json = json;
+
+  this._renderPreview();
+
+  this._pushHistory();
+
+  // validate JSON schema
+  this._debouncedValidate();
+};
+
+previewmode._setAndFireOnChange = function (json) {
+  this._set(json);
+  this._onChange();
+}
+
+/**
+ * Get json data
+ * @return {*} json
+ */
+previewmode.get = function() {
+  if (this.json === undefined) {
+    var text = this.getText();
+
+    this.json = util.parse(text); // this can throw an error
+  }
+
+  return this.json;
+};
+
+/**
+ * Get the text contents of the editor
+ * @return {String} jsonText
+ */
+previewmode.getText = function() {
+  if (this.text === undefined) {
+    this.text = JSON.stringify(this.json, null, this.indentation);
+
+    if (this.options.escapeUnicode === true) {
+      this.text = util.escapeUnicodeChars(this.text);
+    }
+  }
+
+  return this.text;
+};
+
+/**
+ * Set the text contents of the editor
+ * @param {String} jsonText
+ */
+previewmode.setText = function(jsonText) {
+  if (this.history) {
+    this.history.clear();
+  }
+
+  this._setText(jsonText);
+};
+
+/**
+ * Update the text contents
+ * @param {string} jsonText
+ */
+previewmode.updateText = function(jsonText) {
+  // don't update if there are no changes
+  if (this.getText() === jsonText) {
+    return;
+  }
+
+  this._setText(jsonText);
+};
+
+/**
+ * Set the text contents of the editor
+ * @param {string} jsonText
+ * @param {*} [json] Optional JSON instance of the text
+ * @private
+ */
+previewmode._setText = function(jsonText, json) {
+  if (this.options.escapeUnicode === true) {
+    this.text = util.escapeUnicodeChars(jsonText);
+  }
+  else {
+    this.text = jsonText;
+  }
+  this.json = json;
+
+  this._renderPreview();
+
+  if (this.json === undefined) {
+    var me = this;
+    this.executeWithBusyMessage(function () {
+      try {
+        // force parsing the json now, else it will be done in validate without feedback
+        me.json = me.get();
+        me._renderPreview();
+        me._pushHistory();
+      }
+      catch (err) {
+        // no need to throw an error, validation will show an error
+      }
+    }, 'parsing...');
+  }
+  else {
+    this._pushHistory();
+  }
+
+  this._debouncedValidate();
+};
+
+/**
+ * Set text and fire onChange callback
+ * @param {string} jsonText
+ * @param {*} [json] Optional JSON instance of the text
+ * @private
+ */
+previewmode._setTextAndFireOnChange = function (jsonText, json) {
+  this._setText(jsonText, json);
+  this._onChange();
+}
+
+/**
+ * Apply history to the current state
+ * @param {{json?: JSON, text?: string}} action
+ * @private
+ */
+previewmode._applyHistory = function (action) {
+  this.json = action.json;
+  this.text = action.text;
+
+  this._renderPreview();
+
+  this._debouncedValidate();
+};
+
+/**
+ * Push the current state to history
+ * @private
+ */
+previewmode._pushHistory = function () {
+  if (!this.history) {
+    return;
+  }
+
+  var action = {
+    text: this.text,
+    json: this.json
+  };
+
+  this.history.add(action);
+}
+
+/**
+ * Execute a heavy, blocking action.
+ * Before starting the action, show a message on screen like "parsing..."
+ * @param {function} fn
+ * @param {string} message
+ */
+previewmode.executeWithBusyMessage = function (fn, message) {
+  var size = this.getText().length;
+
+  if (size > SIZE_LARGE) {
+    var me = this;
+    util.addClassName(me.frame, 'busy');
+    me.dom.busyContent.innerText = message;
+
+    setTimeout(function () {
+      fn();
+      util.removeClassName(me.frame, 'busy');
+      me.dom.busyContent.innerText = '';
+    }, 100);
+  }
+  else {
+    fn();
+  }
+};
+
+// TODO: refactor into composable functions instead of this shaky mixin-like structure
+previewmode.validate = textmode.validate
+previewmode._renderErrors = textmode._renderErrors
+
+// define modes
+module.exports = [
+  {
+    mode: 'preview',
+    mixin: previewmode,
+    data: 'json'
+  }
+];
+
+
+/***/ }),
+/* 36 */
+/***/ (function(module, exports) {
+
+
+/**
+ * Keep track on any history, be able
+ * @param {function} onChange
+ * @param {function} calculateItemSize
+ * @param {number} limit    Maximum size of all items in history
+ * @constructor
+ */
+function History (onChange, calculateItemSize, limit) {
+  this.onChange = onChange;
+  this.calculateItemSize = calculateItemSize || function () {
+    return 1;
+  };
+  this.limit = limit;
+
+  this.items = [];
+  this.index = -1;
+}
+
+History.prototype.add = function (item) {
+  // limit number of items in history so that the total size doesn't
+  // always keep at least one item in memory
+  while (this._calculateHistorySize() > this.limit && this.items.length > 1) {
+    this.items.shift();
+    this.index--;
+  }
+
+  // cleanup any redo action that are not valid anymore
+  this.items = this.items.slice(0, this.index + 1);
+
+  this.items.push(item);
+  this.index++;
+
+  this.onChange();
+};
+
+History.prototype._calculateHistorySize = function () {
+  var calculateItemSize = this.calculateItemSize;
+  var totalSize = 0;
+
+  this.items.forEach(function (item) {
+    totalSize += calculateItemSize(item);
+  });
+
+  return totalSize;
+}
+
+History.prototype.undo = function () {
+  if (!this.canUndo()) {
+    return;
+  }
+
+  this.index--;
+
+  this.onChange();
+
+  return this.items[this.index];
+};
+
+History.prototype.redo = function () {
+  if (!this.canRedo()) {
+    return;
+  }
+
+  this.index++;
+
+  this.onChange();
+
+  return this.items[this.index];
+};
+
+History.prototype.canUndo = function () {
+  return this.index > 0;
+};
+
+History.prototype.canRedo = function () {
+  return this.index < this.items.length - 1;
+};
+
+History.prototype.clear = function () {
+  this.items = [];
+  this.index = -1;
+
+  this.onChange();
+};
+
+
+module.exports = History;
 
 
 /***/ })
