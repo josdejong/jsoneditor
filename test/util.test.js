@@ -93,7 +93,7 @@ describe('util', function () {
     });
 
     it('should strip MongoDB data types', function () {
-      const mongoDocument = '{\n' +
+      var mongoDocument = '{\n' +
           '   "_id" : ObjectId("123"),\n' +
           '   "isoDate" : ISODate("2012-12-19T06:01:17.171Z"),\n' +
           '   "regularNumber" : 67,\n' +
@@ -105,7 +105,7 @@ describe('util', function () {
           '   "decimal2" : NumberDecimal(4)\n' +
           '}';
 
-      const expectedJson = '{\n' +
+      var expectedJson = '{\n' +
           '   "_id" : "123",\n' +
           '   "isoDate" : "2012-12-19T06:01:17.171Z",\n' +
           '   "regularNumber" : 67,\n' +

@@ -38,7 +38,7 @@ History.prototype._calculateHistorySize = function () {
   var calculateItemSize = this.calculateItemSize;
   var totalSize = 0;
 
-  this.items.forEach(item => {
+  this.items.forEach(function (item) {
     totalSize += calculateItemSize(item);
   });
 
