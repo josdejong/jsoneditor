@@ -2,6 +2,11 @@
 
 https://github.com/josdejong/jsoneditor
 
+## not yet published, version 6.2.1
+
+- Updated Chinese translation. Thanks @SargerasWang.
+
+
 ## 2019-07-28, version 6.2.0
 
 - Implemented new mode `preview`, capable of working with large JSON documents
