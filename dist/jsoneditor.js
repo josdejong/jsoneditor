@@ -24,8 +24,8 @@
  * Copyright (c) 2011-2019 Jos de Jong, http://jsoneditoronline.org
  *
  * @author  Jos de Jong, <wjosdejong@gmail.com>
- * @version 6.2.0
- * @date    2019-07-28
+ * @version 6.2.1
+ * @date    2019-08-01
  */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
@@ -1720,6 +1720,8 @@ var _defs = {
     transform: '变换',
     transformTitle: '筛选，排序，或者转换${type}的子节点',
     transformTitleShort: '筛选，排序，或者转换内容',
+    extract: '提取',
+    extractTitle: '提取这个 ${type}',
     transformQueryTitle: '输入JMESPath查询',
     transformWizardLabel: '向导',
     transformWizardFilter: '筛选',
@@ -1752,6 +1754,8 @@ var _defs = {
     modeTreeTitle: '切换至树编辑',
     modeViewText: '视图',
     modeViewTitle: '切换至树视图',
+    modePreviewText: '预览',
+    modePreviewTitle: '切换至预览模式',
     examples: '例子',
     default: '缺省',
   },

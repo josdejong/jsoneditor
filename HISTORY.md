@@ -2,7 +2,7 @@
 
 https://github.com/josdejong/jsoneditor
 
-## not yet published, version 6.2.1
+## 2019-08-01, version 6.2.1
 
 - Updated Chinese translation. Thanks @SargerasWang.
 
