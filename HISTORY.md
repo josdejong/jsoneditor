@@ -2,6 +2,12 @@
 
 https://github.com/josdejong/jsoneditor
 
+## not yet publised, version 6.2.2
+
+- Fixed #755: JSONEditor throwing an exception in mode `code`, `text`, and
+  `preview` when `statusBar: false`.
+
+
 ## 2019-08-01, version 6.2.1
 
 - Updated Chinese translation. Thanks @SargerasWang.

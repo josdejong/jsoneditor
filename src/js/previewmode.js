@@ -236,7 +236,8 @@ previewmode.create = function (container, options) {
     onFocusLine: null,
     onChangeHeight: function (height) {
       // TODO: change CSS to using flex box, remove setting height using JavaScript
-      var totalHeight = height + me.dom.statusBar.clientHeight + 1;
+      var statusBarHeight = me.dom.statusBar ? me.dom.statusBar.clientHeight : 0;
+      var totalHeight = height + statusBarHeight + 1;
       me.content.style.marginBottom = (-totalHeight) + 'px';
       me.content.style.paddingBottom = totalHeight + 'px';
     }
