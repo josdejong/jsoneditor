@@ -8,9 +8,9 @@
   -webkit-box-sizing: border-box;
   box-sizing: border-box;
 
-  color: white;
-  background-color: #3883fa;
-  border-bottom: 1px solid #3883fa;
+  color: $jse-white;
+  background-color: $jse-blue;
+  border-bottom: 1px solid $jse-blue;
 }
 
 .jsoneditor-menu > button,
@@ -22,10 +22,10 @@
   border-radius: 2px;
   border: 1px solid transparent;
   background: transparent url('./img/jsoneditor-icons.svg');
-  color: white;
+  color: $jse-white;
   opacity: 0.8;
 
-  font-family: arial, sans-serif;
+  font-family: $jse-font;
   font-size: 10pt;
 
   float: left;
@@ -107,9 +107,9 @@
 }
 
 .jsoneditor-menu a {
-  font-family: arial, sans-serif;
+  font-family: $jse-font;
   font-size: 10pt;
-  color: white;
+  color: $jse-white;
   opacity: 0.8;
   vertical-align: middle;
 }
