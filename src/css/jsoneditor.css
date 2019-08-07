@@ -1,7 +1,17 @@
+.jsoneditor {
+  color: #1A1A1A;
+  border: thin solid #3883fa; /* we use thin and not 1px to work around an issue in Chrome/IE, see #637 */
+  -moz-box-sizing: border-box;
+  -webkit-box-sizing: border-box;
+  box-sizing: border-box;
 
-div.jsoneditor {
-
+  width: 100%;
+  height: 100%;
+  position: relative;
+  padding: 0;
+  line-height: 100%;
 }
+
 
 div.jsoneditor-field,
 div.jsoneditor-value,
@@ -227,19 +237,6 @@ div.jsoneditor-tree div.jsoneditor-date {
   margin: 0 3px;
 }
 
-div.jsoneditor {
-  color: #1A1A1A;
-  border: thin solid #3883fa; /* we use thin and not 1px to work around an issue in Chrome/IE, see #637 */
-  -moz-box-sizing: border-box;
-  -webkit-box-sizing: border-box;
-  box-sizing: border-box;
-
-  width: 100%;
-  height: 100%;
-  position: relative;
-  padding: 0;
-  line-height: 100%;
-}
 
 
 div.jsoneditor-tree table.jsoneditor-tree {

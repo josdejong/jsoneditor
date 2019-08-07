@@ -18,49 +18,38 @@ function SearchBox (editor, container) {
   this.dom = {};
   this.dom.container = container;
 
-  var table = document.createElement('table');
-  this.dom.table = table;
-  table.className = 'jsoneditor-search';
-  container.appendChild(table);
-  var tbody = document.createElement('tbody');
-  this.dom.tbody = tbody;
-  table.appendChild(tbody);
-  var tr = document.createElement('tr');
-  tbody.appendChild(tr);
+  var searchDiv = document.createElement('div');
+  this.dom.searchDiv = searchDiv;
+  searchDiv.className = 'jsoneditor-search';
+  container.appendChild(searchDiv);
 
-  var td = document.createElement('td');
-  tr.appendChild(td);
+
   var results = document.createElement('div');
   this.dom.results = results;
   results.className = 'jsoneditor-results';
-  td.appendChild(results);
+  searchDiv.appendChild(results);
 
-  td = document.createElement('td');
-  tr.appendChild(td);
+
   var divInput = document.createElement('div');
   this.dom.input = divInput;
   divInput.className = 'jsoneditor-frame';
   divInput.title = 'Search fields and values';
-  td.appendChild(divInput);
+  searchDiv.appendChild(divInput);
 
   // table to contain the text input and search button
-  var tableInput = document.createElement('table');
-  divInput.appendChild(tableInput);
-  var tbodySearch = document.createElement('tbody');
-  tableInput.appendChild(tbodySearch);
-  tr = document.createElement('tr');
-  tbodySearch.appendChild(tr);
+
 
   var refreshSearch = document.createElement('button');
   refreshSearch.type = 'button';
   refreshSearch.className = 'jsoneditor-refresh';
-  td = document.createElement('td');
-  td.appendChild(refreshSearch);
-  tr.appendChild(td);
+  divInput.appendChild(refreshSearch);
+
 
   var search = document.createElement('input');
   // search.type = 'button';
   this.dom.search = search;
+  search.className = 'search-input';
+
   search.oninput = function (event) {
     searchBox._onDelayedSearch(event);
   };
@@ -78,9 +67,8 @@ function SearchBox (editor, container) {
   };
 
   // TODO: ESC in FF restores the last input, is a FF bug, https://bugzilla.mozilla.org/show_bug.cgi?id=598819
-  td = document.createElement('td');
-  td.appendChild(search);
-  tr.appendChild(td);
+
+  divInput.appendChild(search);
 
   var searchNext = document.createElement('button');
   searchNext.type = 'button';
@@ -89,9 +77,9 @@ function SearchBox (editor, container) {
   searchNext.onclick = function () {
     searchBox.next();
   };
-  td = document.createElement('td');
-  td.appendChild(searchNext);
-  tr.appendChild(td);
+
+  divInput.appendChild(searchNext);
+
 
   var searchPrevious = document.createElement('button');
   searchPrevious.type = 'button';
@@ -100,9 +88,9 @@ function SearchBox (editor, container) {
   searchPrevious.onclick = function () {
     searchBox.previous();
   };
-  td = document.createElement('td');
-  td.appendChild(searchPrevious);
-  tr.appendChild(td);
+
+  divInput.appendChild(searchPrevious);
+
 }
 
 /**
