@@ -1493,32 +1493,34 @@ treemode._showAutoComplete = function (element) {
 
   var self = this;
 
-  setTimeout(function () {
-      if (self.options.autocomplete.trigger === 'focus' || element.innerText.length > 0) {
-          var result = self.options.autocomplete.getOptions(element.innerText, node.getPath(), jsonElementType, node.editor);
-          if (result === null) {
-              self.autocomplete.hideDropDown();
-          } else if (typeof result.then === 'function') {
-              // probably a promise
-              if (result.then(function (obj) {
-                  if (obj === null) {
-                      self.autocomplete.hideDropDown();
-                  } else if (obj.options) {
-                      self.autocomplete.show(element, obj.startFrom, obj.options);
-                  } else {
-                      self.autocomplete.show(element, 0, obj);
-                  }
-              }.bind(self)));
-          } else {
-              // definitely not a promise
-              if (result.options)
-                  self.autocomplete.show(element, result.startFrom, result.options);
-              else
-                  self.autocomplete.show(element, 0, result);
-          }
-      }
-      else
-          self.autocomplete.hideDropDown();
+	setTimeout(function () {
+		if(!node || !(self.options.autocomplete.trigger === 'focus' || element.innerText.length > 0))
+		{
+			self.autocomplete.hideDropDown();
+			return;
+		}
+
+		var result = self.options.autocomplete.getOptions(element.innerText, node.getPath(), jsonElementType, node.editor);
+		if (result === null) {
+			self.autocomplete.hideDropDown();
+		} else if (typeof result.then === 'function') {
+			// probably a promise
+			if (result.then(function (obj) {
+				if (obj === null) {
+						self.autocomplete.hideDropDown();
+				} else if (obj.options) {
+						self.autocomplete.show(element, obj.startFrom, obj.options);
+				} else {
+						self.autocomplete.show(element, 0, obj);
+				}
+			}.bind(self)));
+		} else {
+			// definitely not a promise
+			if (result.options)
+				self.autocomplete.show(element, result.startFrom, result.options);
+			else
+				self.autocomplete.show(element, 0, result);
+		}
 
   }, 50);
 }
