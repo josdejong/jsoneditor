@@ -69,6 +69,10 @@ function showSortModal (container, json, onSort, options) {
     parent: container,
     content: content,
     overlayClass: 'jsoneditor-modal-overlay',
+    overlayStyles: {
+        backgroundColor: "rgb(1,1,1)",
+        opacity: 0.3
+    },
     modalClass: 'jsoneditor-modal jsoneditor-modal-sort'
   })
       .afterCreate(function (modal) {
