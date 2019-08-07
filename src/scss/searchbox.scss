@@ -4,8 +4,7 @@
   top: 4px;
   border-collapse: collapse;
   border-spacing: 0;
-  display: flex;
-  align-items: center;
+
   .jsoneditor-results {
     color: $jse-white;
     padding-right: 5px;
@@ -59,7 +58,7 @@
 .jsoneditor-search input,
 .jsoneditor-search .jsoneditor-results {
   font-family: $jse-font;
-  font-size: 10pt;
+  font-size:  $jse-font-size;
   color: $jse-content-color;
   background: transparent;
 }

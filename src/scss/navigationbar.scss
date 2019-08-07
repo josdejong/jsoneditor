@@ -9,9 +9,9 @@
   -webkit-box-sizing: border-box;
   box-sizing: border-box;
   color: $jse-readonly;
-  background-color: #ebebeb;
+  background-color: $jse-light-bg;
   overflow: hidden;
 
   font-family: $jse-font;
-  font-size: 10pt;
+  font-size:  $jse-font-size;
 }

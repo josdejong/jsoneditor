@@ -176,7 +176,7 @@ div {
         border-radius: 3px;
         color: $jse-readonly;
         font-family: $jse-font;
-        font-size: 10pt;
+        font-size:  $jse-font-size;
         a {
           display: inline-block;
           color: $jse-readonly;
@@ -256,7 +256,7 @@ div {
       border: 1px solid $jse-busy-border-color;
       border-radius: 3px;
       padding: 5px 15px;
-      box-shadow: 0 0 5px rgba(0, 0, 0, 0.4);
+      box-shadow: $jse-box-shadow-sm;
     }
   }
 }
@@ -371,7 +371,7 @@ div.jsoneditor textarea,
 div.jsoneditor pre.jsoneditor-preview,
 div.jsoneditor .jsoneditor-schema-error {
   font-family: $jse-font-mono;
-  font-size: 10pt;
+  font-size:  $jse-font-size;
   color: $jse-content-color;
 }
 .jsoneditor-schema-error {
@@ -385,8 +385,8 @@ div.jsoneditor .jsoneditor-schema-error {
   .jsoneditor-popover {
     background-color: $jse-popover-bg;
     border-radius: 3px;
-    box-shadow: 0 0 5px rgba(0, 0, 0, 0.4);
-    color: #fff;
+    box-shadow: $jse-box-shadow-sm;
+    color: $jse-white;
     display: none;
     padding: 7px 10px;
     position: absolute;
@@ -463,12 +463,10 @@ div.jsoneditor .jsoneditor-schema-error {
 .jsoneditor-schema-error:hover .jsoneditor-popover,
 .jsoneditor-schema-error:focus .jsoneditor-popover {
   display: block;
-  -webkit-animation: fade-in 0.3s linear 1, move-up 0.3s linear 1;
-  -moz-animation: fade-in 0.3s linear 1, move-up 0.3s linear 1;
-  -ms-animation: fade-in 0.3s linear 1, move-up 0.3s linear 1;
+  animation: fade-in 0.3s linear 1, move-up 0.3s linear 1;
 }
 
-@-webkit-keyframes fade-in {
+@keyframes fade-in {
   from {
     opacity: 0;
   }
@@ -476,34 +474,6 @@ div.jsoneditor .jsoneditor-schema-error {
     opacity: 1;
   }
 }
-@-moz-keyframes fade-in {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-@-ms-keyframes fade-in {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-/*@-webkit-keyframes move-up {*/
-/*from   { bottom: 24px; }*/
-/*to { bottom: 32px; }*/
-/*}*/
-/*@-moz-keyframes move-up {*/
-/*from   { bottom: 24px; }*/
-/*to { bottom: 32px; }*/
-/*}*/
-/*@-ms-keyframes move-up {*/
-/*from   { bottom: 24px; }*/
-/*to { bottom: 32px; }*/
-/*}*/
 
 /* JSON schema errors displayed at the bottom of the editor in mode text and code */
 
@@ -522,7 +492,7 @@ div.jsoneditor .jsoneditor-schema-error {
 		bottom: 31px;
 		left: calc(50% - 92px);
 		color: $jse-readonly;
-		background-color: #ebebeb;
+		background-color: $jse-light-bg;
 		padding: 7px 15px;
 		border-radius: 8px;
 		&.visible {
@@ -584,34 +554,7 @@ div.jsoneditor .jsoneditor-schema-error {
   -o-animation: fadein 0.3s;
 }
 
-@-webkit-keyframes fadein {
-  0% {
-    opacity: 0;
-  }
-  100% {
-    opacity: 1;
-  }
-}
-
-@-moz-keyframes fadein {
-  0% {
-    opacity: 0;
-  }
-  100% {
-    opacity: 1;
-  }
-}
-
 @keyframes fadein {
-  0% {
-    opacity: 0;
-  }
-  100% {
-    opacity: 1;
-  }
-}
-
-@-o-keyframes fadein {
   0% {
     opacity: 0;
   }

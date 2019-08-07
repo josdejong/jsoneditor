@@ -1,4 +1,6 @@
 $jse-white: #ffffff;
+$jse-grey:#999999;
+$jse-light-bg: #ebebeb;
 $jse-blue: #3883fa;
 $jse-content-color: #1a1a1a;
 
@@ -19,15 +21,22 @@ $jse-highlight-bg: #ffee00;
 $jse-highlight-border-color: #ffc700;
 
 $jse-popover-bg: #4c4c4c;
-$jse-bar-bg: #ebebeb;
+$jse-bar-bg: $jse-light-bg;
 $jse-bar-border: $jse-empty;
 
+$jse-menu-color: $jse-empty;
+
 $jse-contextmenu-color: #4d4d4d;
+
+$jse-box-shadow: 2px 2px 12px rgba(128, 128, 128, 0.3);
+$jse-box-shadow-sm: 0 0 5px rgba(0, 0, 0, 0.4);
+$jse-box-shadow-inner: inset 0 0 10px rgba(128, 128, 128, 0.5);
 
 $jse-date: #a1a1a1;
 
 $jse-font: arial, sans-serif;
 $jse-font-mono: "dejavu sans mono", "droid sans mono", consolas, monaco, "lucida console", "courier new", courier, monospace, sans-serif;
+$jse-font-size: 10pt;
 
 @import "reset";
 @import "jsoneditor";

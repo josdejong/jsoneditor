@@ -3,7 +3,7 @@
     &.dropdown {
       position: absolute;
       background: $jse-white;
-      box-shadow: 2px 2px 12px rgba(128, 128, 128, 0.3);
+      box-shadow: $jse-box-shadow;
       border: 1px solid $jse-bar-border;
       z-index: 100;
       overflow-x: hidden;
@@ -15,7 +15,7 @@
       text-align: left;
       outline: 0;
       font-family: $jse-font-mono;
-      font-size: 10pt;
+      font-size:  $jse-font-size;
       .item {
         color: #333;
         &.hover {

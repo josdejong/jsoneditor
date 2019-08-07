@@ -26,7 +26,7 @@
   opacity: 0.8;
 
   font-family: $jse-font;
-  font-size: 10pt;
+  font-size:  $jse-font-size;
 
   float: left;
 }
@@ -108,7 +108,7 @@
 
 .jsoneditor-menu a {
   font-family: $jse-font;
-  font-size: 10pt;
+  font-size:  $jse-font-size;
   color: $jse-white;
   opacity: 0.8;
   vertical-align: middle;

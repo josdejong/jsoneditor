@@ -8,9 +8,9 @@ div {
       word-wrap: break-word;
       white-space: normal;
       position: absolute;
-      background-color: #ebebeb;
+      background-color: $jse-light-bg;
       z-index: 999;
-      box-shadow: 2px 2px 12px rgba(128, 128, 128, 0.3);
+      box-shadow: $jse-box-shadow;
       span {
         &.jsoneditor-treepath-show-all-btn {
           display: none;
@@ -26,7 +26,7 @@ div {
     span {
       &.jsoneditor-treepath-show-all-btn {
         position: absolute;
-        background-color: #ebebeb;
+        background-color: $jse-light-bg;
         left: 0;
         height: 20px;
         padding: 0 3px;
@@ -35,7 +35,7 @@ div {
       &.jsoneditor-treepath-element {
         margin: 1px;
         font-family: $jse-font;
-        font-size: 10pt;
+        font-size:  $jse-font-size;
       }
       &.jsoneditor-treepath-seperator {
         margin: 2px;
