@@ -2,10 +2,12 @@
 
 https://github.com/josdejong/jsoneditor
 
-## not yet publised, version 6.2.2
+## not yet published, version 6.2.2
 
 - Fixed #755: JSONEditor throwing an exception in mode `code`, `text`, and
   `preview` when `statusBar: false`.
+- When duplicating an object property, move focus to the field and do not
+  immediately add the ` (copy)` suffix. See #766.
 
 
 ## 2019-08-01, version 6.2.1
