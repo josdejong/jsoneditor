@@ -1499,15 +1499,19 @@ treemode._showAutoComplete = function (element) {
         self.autocomplete.hideDropDown();
       } else if (typeof result.then === 'function') {
         // probably a promise
-        if (result.then(function (obj) {
-          if (obj === null) {
-            self.autocomplete.hideDropDown();
-          } else if (obj.options) {
-            self.autocomplete.show(element, obj.startFrom, obj.options);
-          } else {
-            self.autocomplete.show(element, 0, obj);
-          }
-        }.bind(self)));
+        result
+            .then(function (obj) {
+              if (obj === null) {
+                self.autocomplete.hideDropDown();
+              } else if (obj.options) {
+                self.autocomplete.show(element, obj.startFrom, obj.options);
+              } else {
+                self.autocomplete.show(element, 0, obj);
+              }
+            })
+            .catch(function (err) {
+              console.error(err);
+            });
       } else {
         // definitely not a promise
         if (result.options)
