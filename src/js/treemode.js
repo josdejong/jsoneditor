@@ -1493,7 +1493,7 @@ treemode._showAutoComplete = function (element) {
   var self = this;
 
   setTimeout(function () {
-    if (self.options.autocomplete.trigger === 'focus' || element.innerText.length > 0) {
+    if (node && (self.options.autocomplete.trigger === 'focus' || element.innerText.length > 0)) {
       var result = self.options.autocomplete.getOptions(element.innerText, node.getPath(), jsonElementType, node.editor);
       if (result === null) {
         self.autocomplete.hideDropDown();

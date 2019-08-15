@@ -9,6 +9,8 @@ https://github.com/josdejong/jsoneditor
 - When duplicating an object property, move focus to the field and do not
   immediately add the ` (copy)` suffix. See #766.
 - Fixed #769: option `name` not working anymore. Regression since `v6.1.0`.
+- Fixed #763: `autocomplete.trigger: 'focus'` throws an error when opening the
+  context menu. Thanks @Thaina.
 
 
 ## 2019-08-01, version 6.2.1
