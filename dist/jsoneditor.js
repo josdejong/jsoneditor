@@ -24,8 +24,8 @@
  * Copyright (c) 2011-2019 Jos de Jong, http://jsoneditoronline.org
  *
  * @author  Jos de Jong, <wjosdejong@gmail.com>
- * @version 6.2.1
- * @date    2019-08-01
+ * @version 6.3.0
+ * @date    2019-08-15
  */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
@@ -7534,7 +7534,8 @@ textmode.create = function (container, options) {
     },
     onChangeHeight: function (height) {
       // TODO: change CSS to using flex box, remove setting height using JavaScript
-      var totalHeight = height + me.dom.statusBar.clientHeight + 1;
+      var statusBarHeight = me.dom.statusBar ? me.dom.statusBar.clientHeight : 0;
+      var totalHeight = height + statusBarHeight + 1;
       me.content.style.marginBottom = (-totalHeight) + 'px';
       me.content.style.paddingBottom = totalHeight + 'px';
     }
@@ -36913,7 +36914,7 @@ treemode._setRoot = function (node) {
 
   this.node = node;
   node.setParent(null);
-  node.setField(undefined, false);
+  node.setField(this.getName(), false);
   delete node.index;
 
   // append to the dom
@@ -37653,7 +37654,7 @@ treemode._onEvent = function (event) {
     this._onKeyDown(event);
   }
 
-  if (event.type === 'focus') {
+  if (node && event.type === 'focus') {
     this.focusTarget = event.target;
     if (this.options.autocomplete && this.options.autocomplete.trigger === 'focus') {
       this._showAutoComplete(event.target);
@@ -38018,45 +38019,48 @@ treemode._findTopLevelNodes = function (start, end) {
 
 /**
  * Show autocomplete menu
- * @param {Node} node
  * @param {HTMLElement} element
  * @private
  */
 treemode._showAutoComplete = function (element) {
   var node = Node.getNodeFromTarget(element);
 
-  var jsonElementType = "";
-    if (event.target.className.indexOf("jsoneditor-value") >= 0) jsonElementType = "value";
-    if (event.target.className.indexOf("jsoneditor-field") >= 0) jsonElementType = "field";
+  var jsonElementType = '';
+  if (element.className.indexOf('jsoneditor-value') >= 0) jsonElementType = 'value';
+  if (element.className.indexOf('jsoneditor-field') >= 0) jsonElementType = 'field';
 
   var self = this;
 
   setTimeout(function () {
-      if (self.options.autocomplete.trigger === 'focus' || element.innerText.length > 0) {
-          var result = self.options.autocomplete.getOptions(element.innerText, node.getPath(), jsonElementType, node.editor);
-          if (result === null) {
-              self.autocomplete.hideDropDown();
-          } else if (typeof result.then === 'function') {
-              // probably a promise
-              if (result.then(function (obj) {
-                  if (obj === null) {
-                      self.autocomplete.hideDropDown();
-                  } else if (obj.options) {
-                      self.autocomplete.show(element, obj.startFrom, obj.options);
-                  } else {
-                      self.autocomplete.show(element, 0, obj);
-                  }
-              }.bind(self)));
-          } else {
-              // definitely not a promise
-              if (result.options)
-                  self.autocomplete.show(element, result.startFrom, result.options);
-              else
-                  self.autocomplete.show(element, 0, result);
-          }
+    if (node && (self.options.autocomplete.trigger === 'focus' || element.innerText.length > 0)) {
+      var result = self.options.autocomplete.getOptions(element.innerText, node.getPath(), jsonElementType, node.editor);
+      if (result === null) {
+        self.autocomplete.hideDropDown();
+      } else if (typeof result.then === 'function') {
+        // probably a promise
+        result
+            .then(function (obj) {
+              if (obj === null) {
+                self.autocomplete.hideDropDown();
+              } else if (obj.options) {
+                self.autocomplete.show(element, obj.startFrom, obj.options);
+              } else {
+                self.autocomplete.show(element, 0, obj);
+              }
+            })
+            .catch(function (err) {
+              console.error(err);
+            });
+      } else {
+        // definitely not a promise
+        if (result.options)
+          self.autocomplete.show(element, result.startFrom, result.options);
+        else
+          self.autocomplete.show(element, 0, result);
       }
-      else
-          self.autocomplete.hideDropDown();
+    }
+    else
+      self.autocomplete.hideDropDown();
 
   }, 50);
 }
@@ -39246,11 +39250,12 @@ var escapedChars = {
 var A_CODE = 'a'.charCodeAt();
 
 
-exports.parse = function (source) {
+exports.parse = function (source, _, options) {
   var pointers = {};
   var line = 0;
   var column = 0;
   var pos = 0;
+  var bigint = options && options.bigint && typeof BigInt != 'undefined';
   return {
     data: _parse('', true),
     pointers: pointers
@@ -39319,22 +39324,29 @@ exports.parse = function (source) {
 
   function parseNumber() {
     var numStr = '';
+    var integer = true;
     if (source[pos] == '-') numStr += getChar();
 
     numStr += source[pos] == '0'
               ? getChar()
               : getDigits();
 
-    if (source[pos] == '.')
+    if (source[pos] == '.') {
       numStr += getChar() + getDigits();
+      integer = false;
+    }
 
     if (source[pos] == 'e' || source[pos] == 'E') {
       numStr += getChar();
       if (source[pos] == '+' || source[pos] == '-') numStr += getChar();
       numStr += getDigits();
+      integer = false;
     }
 
-    return +numStr;
+    var result = +numStr;
+    return bigint && integer && (result > Number.MAX_SAFE_INTEGER || result < Number.MIN_SAFE_INTEGER)
+            ? BigInt(numStr)
+            : result;
   }
 
   function parseArray(ptr) {
@@ -39460,10 +39472,13 @@ exports.parse = function (source) {
 };
 
 
-exports.stringify = function (data, _, whitespace) {
+exports.stringify = function (data, _, options) {
   if (!validType(data)) return;
   var wsLine = 0;
   var wsPos, wsColumn;
+  var whitespace = typeof options == 'object'
+                    ? options.space
+                    : options;
   switch (typeof whitespace) {
     case 'number':
       var len = whitespace > 10
@@ -39500,6 +39515,7 @@ exports.stringify = function (data, _, whitespace) {
   var line = 0;
   var column = 0;
   var pos = 0;
+  var es6 = options && options.es6 && typeof Map == 'function';
   _stringify(data, 0, '');
   return {
     json: json,
@@ -39510,19 +39526,30 @@ exports.stringify = function (data, _, whitespace) {
     map(ptr, 'value');
     switch (typeof _data) {
       case 'number':
+      case 'bigint':
       case 'boolean':
         out('' + _data); break;
       case 'string':
         out(quoted(_data)); break;
       case 'object':
-        if (_data === null)
+        if (_data === null) {
           out('null');
-        else if (typeof _data.toJSON == 'function')
+        } else if (typeof _data.toJSON == 'function') {
           out(quoted(_data.toJSON()));
-        else if (Array.isArray(_data))
+        } else if (Array.isArray(_data)) {
           stringifyArray();
-        else
+        } else if (es6) {
+          if (_data.constructor.BYTES_PER_ELEMENT)
+            stringifyArray();
+          else if (_data instanceof Map)
+            stringifyMapSet();
+          else if (_data instanceof Set)
+            stringifyMapSet(true);
+          else
+            stringifyObject();
+        } else {
           stringifyObject();
+        }
     }
     map(ptr, 'valueEnd');
 
@@ -39563,6 +39590,38 @@ exports.stringify = function (data, _, whitespace) {
             if (whitespace) out(' ');
             _stringify(value, propLvl, propPtr);
           }
+        }
+        indent(lvl);
+        out('}');
+      } else {
+        out('{}');
+      }
+    }
+
+    function stringifyMapSet(isSet) {
+      if (_data.size) {
+        out('{');
+        var propLvl = lvl + 1;
+        var first = true;
+        var entries = _data.entries();
+        var entry = entries.next();
+        while (!entry.done) {
+          var item = entry.value;
+          var key = item[0];
+          var value = isSet ? true : item[1];
+          if (validType(value)) {
+            if (!first) out(',');
+            first = false;
+            var propPtr = ptr + '/' + escapeJsonPointer(key);
+            indent(propLvl);
+            map(propPtr, 'key');
+            out(quoted(key));
+            map(propPtr, 'keyEnd');
+            out(':');
+            if (whitespace) out(' ');
+            _stringify(value, propLvl, propPtr);
+          }
+          entry = entries.next();
         }
         indent(lvl);
         out('}');
@@ -39611,7 +39670,7 @@ exports.stringify = function (data, _, whitespace) {
 };
 
 
-var VALID_TYPES = ['number', 'boolean', 'string', 'object'];
+var VALID_TYPES = ['number', 'bigint', 'boolean', 'string', 'object'];
 function validType(data) {
   return VALID_TYPES.indexOf(typeof data) >= 0;
 }
@@ -43719,7 +43778,15 @@ Node.onDuplicate = function(nodes) {
 
     // set selection to the duplicated nodes
     if (nodes.length === 1) {
-      clones[0].focus();
+      if (clones[0].parent.type === 'object') {
+        // when duplicating a single object property,
+        // set focus to the field and keep the original field name
+        clones[0].dom.field.innerHTML = nodes[0].field;
+        clones[0].focus('field');
+      }
+      else {
+        clones[0].focus();
+      }
     }
     else {
       editor.select(clones);
@@ -48484,7 +48551,8 @@ previewmode.create = function (container, options) {
     onFocusLine: null,
     onChangeHeight: function (height) {
       // TODO: change CSS to using flex box, remove setting height using JavaScript
-      var totalHeight = height + me.dom.statusBar.clientHeight + 1;
+      var statusBarHeight = me.dom.statusBar ? me.dom.statusBar.clientHeight : 0;
+      var totalHeight = height + statusBarHeight + 1;
       me.content.style.marginBottom = (-totalHeight) + 'px';
       me.content.style.paddingBottom = totalHeight + 'px';
     }

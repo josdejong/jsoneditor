@@ -2,7 +2,7 @@
 
 https://github.com/josdejong/jsoneditor
 
-## not yet published, version 6.2.2
+## 2019-08-15, version 6.3.0
 
 - Fixed #755: JSONEditor throwing an exception in mode `code`, `text`, and
   `preview` when `statusBar: false`.
@@ -11,6 +11,7 @@ https://github.com/josdejong/jsoneditor
 - Fixed #769: option `name` not working anymore. Regression since `v6.1.0`.
 - Fixed #763: `autocomplete.trigger: 'focus'` throws an error when opening the
   context menu. Thanks @Thaina.
+- Updated dependencies `json-source-map@0.6.1`
 
 
 ## 2019-08-01, version 6.2.1
