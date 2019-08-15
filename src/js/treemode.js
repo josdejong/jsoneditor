@@ -1480,45 +1480,44 @@ treemode._findTopLevelNodes = function (start, end) {
 
 /**
  * Show autocomplete menu
- * @param {Node} node
  * @param {HTMLElement} element
  * @private
  */
 treemode._showAutoComplete = function (element) {
   var node = Node.getNodeFromTarget(element);
 
-  var jsonElementType = "";
-    if (event.target.className.indexOf("jsoneditor-value") >= 0) jsonElementType = "value";
-    if (event.target.className.indexOf("jsoneditor-field") >= 0) jsonElementType = "field";
+  var jsonElementType = '';
+  if (element.className.indexOf('jsoneditor-value') >= 0) jsonElementType = 'value';
+  if (element.className.indexOf('jsoneditor-field') >= 0) jsonElementType = 'field';
 
   var self = this;
 
   setTimeout(function () {
-      if (self.options.autocomplete.trigger === 'focus' || element.innerText.length > 0) {
-          var result = self.options.autocomplete.getOptions(element.innerText, node.getPath(), jsonElementType, node.editor);
-          if (result === null) {
-              self.autocomplete.hideDropDown();
-          } else if (typeof result.then === 'function') {
-              // probably a promise
-              if (result.then(function (obj) {
-                  if (obj === null) {
-                      self.autocomplete.hideDropDown();
-                  } else if (obj.options) {
-                      self.autocomplete.show(element, obj.startFrom, obj.options);
-                  } else {
-                      self.autocomplete.show(element, 0, obj);
-                  }
-              }.bind(self)));
+    if (self.options.autocomplete.trigger === 'focus' || element.innerText.length > 0) {
+      var result = self.options.autocomplete.getOptions(element.innerText, node.getPath(), jsonElementType, node.editor);
+      if (result === null) {
+        self.autocomplete.hideDropDown();
+      } else if (typeof result.then === 'function') {
+        // probably a promise
+        if (result.then(function (obj) {
+          if (obj === null) {
+            self.autocomplete.hideDropDown();
+          } else if (obj.options) {
+            self.autocomplete.show(element, obj.startFrom, obj.options);
           } else {
-              // definitely not a promise
-              if (result.options)
-                  self.autocomplete.show(element, result.startFrom, result.options);
-              else
-                  self.autocomplete.show(element, 0, result);
+            self.autocomplete.show(element, 0, obj);
           }
+        }.bind(self)));
+      } else {
+        // definitely not a promise
+        if (result.options)
+          self.autocomplete.show(element, result.startFrom, result.options);
+        else
+          self.autocomplete.show(element, 0, result);
       }
-      else
-          self.autocomplete.hideDropDown();
+    }
+    else
+      self.autocomplete.hideDropDown();
 
   }, 50);
 }
