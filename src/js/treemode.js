@@ -1115,7 +1115,7 @@ treemode._onEvent = function (event) {
     this._onKeyDown(event);
   }
 
-  if (event.type === 'focus') {
+  if (node && event.type === 'focus') {
     this.focusTarget = event.target;
     if (this.options.autocomplete && this.options.autocomplete.trigger === 'focus') {
       this._showAutoComplete(event.target);
