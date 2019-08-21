@@ -225,6 +225,12 @@ Constructs a new JSONEditor.
   Schemas that are referenced using the `$ref` property from the JSON schema that are set in the `schema` option,
   the object structure in the form of `{reference_key: schemaObject}`
 
+- `{String | null} enumDefaultValue`
+
+  Set default blank option value for `enum` lists in schema. `""` by default.
+  
+  If `enum` list contains the blank value, it will still be rendered as the frst option with title '--', but will be valid according to schema.
+
 - `{boolean} search`
 
   Enables a search box in the upper right corner of the JSONEditor. True by default. Only applicable when `mode` is 'tree', 'view', or 'form'.

@@ -51,6 +51,9 @@
       "gender": {
         "enum": ["male", "female"]
       },
+      "academicDegree": {
+        "enum": [null, "B.S.", "M.S.", "Ph.D."] // enum with default blank value in list
+      },
       "age": {
         "description": "Age in years",
         "examples": [18, 65],
@@ -78,13 +81,15 @@
       console.error(err);
     },
     schema: schema,
-    schemaRefs: {"hobbies.json": hobbiesSchema}
+    schemaRefs: {"hobbies.json": hobbiesSchema},
+    enumDefaultValue: null
   };
 
   var json = {
     "firstName": "Jos",
     "lastName": "de Jong",
-    gender: null,
+    "gender": null,
+    "academicDegree": null,
     "age": 34.2,
     "hobbies": [
         "programming",
