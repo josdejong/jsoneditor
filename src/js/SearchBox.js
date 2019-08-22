@@ -18,48 +18,30 @@ function SearchBox (editor, container) {
   this.dom = {};
   this.dom.container = container;
 
-  var table = document.createElement('table');
-  this.dom.table = table;
-  table.className = 'jsoneditor-search';
-  container.appendChild(table);
-  var tbody = document.createElement('tbody');
-  this.dom.tbody = tbody;
-  table.appendChild(tbody);
-  var tr = document.createElement('tr');
-  tbody.appendChild(tr);
+  var wrapper = document.createElement('div');
+  this.dom.wrapper = wrapper;
+  wrapper.className = 'jsoneditor-search';
+  container.appendChild(wrapper);
 
-  var td = document.createElement('td');
-  tr.appendChild(td);
   var results = document.createElement('div');
   this.dom.results = results;
   results.className = 'jsoneditor-results';
-  td.appendChild(results);
+  wrapper.appendChild(results);
 
-  td = document.createElement('td');
-  tr.appendChild(td);
   var divInput = document.createElement('div');
   this.dom.input = divInput;
   divInput.className = 'jsoneditor-frame';
   divInput.title = 'Search fields and values';
-  td.appendChild(divInput);
-
-  // table to contain the text input and search button
-  var tableInput = document.createElement('table');
-  divInput.appendChild(tableInput);
-  var tbodySearch = document.createElement('tbody');
-  tableInput.appendChild(tbodySearch);
-  tr = document.createElement('tr');
-  tbodySearch.appendChild(tr);
+  wrapper.appendChild(divInput);
 
   var refreshSearch = document.createElement('button');
   refreshSearch.type = 'button';
   refreshSearch.className = 'jsoneditor-refresh';
-  td = document.createElement('td');
-  td.appendChild(refreshSearch);
-  tr.appendChild(td);
+  divInput.appendChild(refreshSearch);
+  
 
   var search = document.createElement('input');
-  // search.type = 'button';
+  search.type = 'text';
   this.dom.search = search;
   search.oninput = function (event) {
     searchBox._onDelayedSearch(event);
@@ -78,9 +60,9 @@ function SearchBox (editor, container) {
   };
 
   // TODO: ESC in FF restores the last input, is a FF bug, https://bugzilla.mozilla.org/show_bug.cgi?id=598819
-  td = document.createElement('td');
-  td.appendChild(search);
-  tr.appendChild(td);
+  //td = document.createElement('td');
+  divInput.appendChild(search);
+  //tr.appendChild(td);
 
   var searchNext = document.createElement('button');
   searchNext.type = 'button';
@@ -89,9 +71,9 @@ function SearchBox (editor, container) {
   searchNext.onclick = function () {
     searchBox.next();
   };
-  td = document.createElement('td');
-  td.appendChild(searchNext);
-  tr.appendChild(td);
+  //td = document.createElement('td');
+  divInput.appendChild(searchNext);
+  //tr.appendChild(td);
 
   var searchPrevious = document.createElement('button');
   searchPrevious.type = 'button';
@@ -100,9 +82,9 @@ function SearchBox (editor, container) {
   searchPrevious.onclick = function () {
     searchBox.previous();
   };
-  td = document.createElement('td');
-  td.appendChild(searchPrevious);
-  tr.appendChild(td);
+ // td = document.createElement('td');
+  divInput.appendChild(searchPrevious);
+  //tr.appendChild(td);
 }
 
 /**
@@ -340,7 +322,7 @@ SearchBox.prototype.isEmpty = function () {
  */
 SearchBox.prototype.destroy = function () {
   this.editor = null;
-  this.dom.container.removeChild(this.dom.table);
+  this.dom.container.removeChild(this.dom.wrapper);
   this.dom = null;
 
   this.results = null;
