@@ -25,7 +25,7 @@
  *
  * @author  Jos de Jong, <wjosdejong@gmail.com>
  * @version 6.2.1
- * @date    2019-08-01
+ * @date    2019-08-22
  */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
@@ -4872,6 +4872,10 @@ function showSortModal (container, json, onSort, options) {
     parent: container,
     content: content,
     overlayClass: 'jsoneditor-modal-overlay',
+    overlayStyles: {
+        backgroundColor: "rgb(1,1,1)",
+        opacity: 0.3
+    },
     modalClass: 'jsoneditor-modal jsoneditor-modal-sort'
   })
       .afterCreate(function (modal) {
@@ -5037,6 +5041,10 @@ function showTransformModal (container, json, onTransform) {
     parent: container,
     content: content,
     overlayClass: 'jsoneditor-modal-overlay',
+    overlayStyles: {
+        backgroundColor: "rgb(1,1,1)",
+        opacity: 0.3
+    },
     modalClass: 'jsoneditor-modal jsoneditor-modal-transform',
     focus: false
   })
@@ -7534,7 +7542,8 @@ textmode.create = function (container, options) {
     },
     onChangeHeight: function (height) {
       // TODO: change CSS to using flex box, remove setting height using JavaScript
-      var totalHeight = height + me.dom.statusBar.clientHeight + 1;
+      var statusBarHeight = me.dom.statusBar ? me.dom.statusBar.clientHeight : 0;
+      var totalHeight = height + statusBarHeight + 1;
       me.content.style.marginBottom = (-totalHeight) + 'px';
       me.content.style.paddingBottom = totalHeight + 'px';
     }
@@ -48484,7 +48493,8 @@ previewmode.create = function (container, options) {
     onFocusLine: null,
     onChangeHeight: function (height) {
       // TODO: change CSS to using flex box, remove setting height using JavaScript
-      var totalHeight = height + me.dom.statusBar.clientHeight + 1;
+      var statusBarHeight = me.dom.statusBar ? me.dom.statusBar.clientHeight : 0;
+      var totalHeight = height + statusBarHeight + 1;
       me.content.style.marginBottom = (-totalHeight) + 'px';
       me.content.style.paddingBottom = totalHeight + 'px';
     }

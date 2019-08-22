@@ -148,7 +148,16 @@ gulp.task('bundle-minimalist', function(done) {
 gulp.task('bundle-css', function(done) {
   gulp
   .src([
-    'src/scss/styles.scss',
+    'src/scss/reset.scss',
+    'src/scss/jsoneditor.scss',
+    'src/scss/contextmenu.scss',
+    'src/scss/menu.scss',
+    'src/scss/searchbox.scss',
+    'src/scss/autocomplete.scss',
+    'src/scss/treepath.scss',
+    'src/scss/statusbar.scss',
+    'src/scss/navigationbar.scss',
+    'src/js/assets/selectr/selectr.scss',
   ])
     .pipe(
       sass({

@@ -1,3 +1,5 @@
+@import "styles";
+
 .jsoneditor-search {
   position: absolute;
   right: 4px;
@@ -8,7 +10,7 @@
   .jsoneditor-results {
     color: $jse-white;
     padding-right: 5px;
-    line-height: 24px;
+    line-height: 26px;
   }
   .jsoneditor-frame {
     border: 1px solid transparent;
@@ -58,7 +60,4 @@
 .jsoneditor-search input,
 .jsoneditor-search .jsoneditor-results {
   font-family: $jse-font;
-  font-size:  $jse-font-size;
-  color: $jse-content-color;
-  background: transparent;
 }
