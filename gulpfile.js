@@ -5,6 +5,7 @@ var log = require('fancy-log');
 var format = require('date-format');
 var concatCss = require('gulp-concat-css');
 var minifyCSS = require('gulp-clean-css');
+var sass = require('gulp-sass')
 var mkdirp = require('mkdirp');
 var webpack = require('webpack');
 var uglify = require('uglify-js');
@@ -13,7 +14,7 @@ var NAME = 'jsoneditor';
 var NAME_MINIMALIST = 'jsoneditor-minimalist';
 var ENTRY = './src/js/JSONEditor.js';
 var HEADER = './src/js/header.js';
-var IMAGE = './src/css/img/jsoneditor-icons.svg';
+var IMAGE = './src/scss/img/jsoneditor-icons.svg';
 var DOCS = './src/docs/*';
 var DIST = path.join(__dirname, 'dist');
 
@@ -146,29 +147,30 @@ gulp.task('bundle-minimalist', function(done) {
 // bundle css
 gulp.task('bundle-css', function(done) {
   gulp
-    .src([
-      'src/css/reset.css',
-      'src/css/jsoneditor.css',
-      'src/css/contextmenu.css',
-      'src/css/menu.css',
-      'src/css/searchbox.css',
-      'src/css/autocomplete.css',
-      'src/css/treepath.css',
-      'src/css/statusbar.css',
-      'src/css/navigationbar.css',
-      'src/js/assets/selectr/selectr.css'
-    ])
+  .src([
+    'src/scss/reset.scss',
+    'src/scss/jsoneditor.scss',
+    'src/scss/contextmenu.scss',
+    'src/scss/menu.scss',
+    'src/scss/searchbox.scss',
+    'src/scss/autocomplete.scss',
+    'src/scss/treepath.scss',
+    'src/scss/statusbar.scss',
+    'src/scss/navigationbar.scss',
+    'src/js/assets/selectr/selectr.scss',
+  ])
+    .pipe(
+      sass({
+       // importer: tildeImporter
+      })
+    )
     .pipe(concatCss(NAME + '.css'))
     .pipe(gulp.dest(DIST))
     .pipe(concatCss(NAME + '.min.css'))
     .pipe(minifyCSS())
-    .pipe(gulp.dest(DIST));
-
-  log('bundled ' + DIST + '/' + NAME + '.css');
-  log('bundled ' + DIST + '/' + NAME + '.min.css');
-
-  done();
-});
+    .pipe(gulp.dest(DIST))
+  done()
+})
 
 // create a folder img and copy the icons
 gulp.task('copy-img', function(done) {

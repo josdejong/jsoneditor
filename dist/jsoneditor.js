@@ -4872,6 +4872,10 @@ function showSortModal (container, json, onSort, options) {
     parent: container,
     content: content,
     overlayClass: 'jsoneditor-modal-overlay',
+    overlayStyles: {
+        backgroundColor: "rgb(1,1,1)",
+        opacity: 0.3
+    },
     modalClass: 'jsoneditor-modal jsoneditor-modal-sort'
   })
       .afterCreate(function (modal) {
@@ -5037,6 +5041,10 @@ function showTransformModal (container, json, onTransform) {
     parent: container,
     content: content,
     overlayClass: 'jsoneditor-modal-overlay',
+    overlayStyles: {
+        backgroundColor: "rgb(1,1,1)",
+        opacity: 0.3
+    },
     modalClass: 'jsoneditor-modal jsoneditor-modal-transform',
     focus: false
   })
@@ -9998,13 +10006,23 @@ var slicedToArray = function () {
     return _arr;
   }
 
-  return function (arr, i) {
-    if (Array.isArray(arr)) {
-      return arr;
-    } else if (Symbol.iterator in Object(arr)) {
-      return sliceIterator(arr, i);
-    } else {
-      throw new TypeError("Invalid attempt to destructure non-iterable instance");
+  this.errorTable = new ErrorTable({
+    errorTableVisible: this.mode === 'text',
+    onToggleVisibility: function () {
+      me.validate();
+    },
+    onFocusLine: function  (line) {
+      me.isFocused = true;
+      if (!isNaN(line)) {
+        me.setTextSelection({row: line, column: 1}, {row: line, column: 1000});
+      }
+    },
+    onChangeHeight: function (height) {
+      // TODO: change CSS to using flex box, remove setting height using JavaScript
+      var statusBarHeight = me.dom.statusBar ? me.dom.statusBar.clientHeight : 0;
+      var totalHeight = height + statusBarHeight + 1;
+      me.content.style.marginBottom = (-totalHeight) + 'px';
+      me.content.style.paddingBottom = totalHeight + 'px';
     }
   };
 }();
@@ -26478,9 +26496,10 @@ oop.inherits(CommandManager, MultiHashHandler);
         return e.returnValue === false ? false : true;
     };
 
-    this.toggleRecording = function(editor) {
-        if (this.$inReplay)
-            return;
+  this.node = node;
+  node.setParent(null);
+  node.setField(this.getName(), false);
+  delete node.index;
 
         editor && editor._emit("changeStatus");
         if (this.recording) {
@@ -27240,8 +27259,25 @@ exports.commands = [{
             }
         }
 
-        editor.exitMultiSelectMode();
-        editor.clearSelection();
+  var node = Node.getNodeFromTarget(event.target);
+
+  if (event.type === 'keydown') {
+    this._onKeyDown(event);
+  }
+
+  if (node && event.type === 'focus') {
+    this.focusTarget = event.target;
+    if (this.options.autocomplete && this.options.autocomplete.trigger === 'focus') {
+      this._showAutoComplete(event.target);
+    }
+  }
+
+  if (event.type === 'mousedown') {
+    this._startDragDistance(event);
+  }
+  if (event.type === 'mousemove' || event.type === 'mouseup' || event.type === 'click') {
+    this._updateDragDistance(event);
+  }
 
         for(var i = 0; i < newRanges.length; i++) {
             editor.selection.addRange(newRanges[i], false);
@@ -27783,14 +27819,17 @@ Editor.$uid = 0;
             this.renderer.scrollCursorIntoView();
         }
 
-        this.$highlightBrackets();
-        this.$highlightTags();
-        this.$updateHighlightActiveLine();
-        this._signal("changeSelection");
-    };
+/**
+ * Show autocomplete menu
+ * @param {HTMLElement} element
+ * @private
+ */
+treemode._showAutoComplete = function (element) {
+  var node = Node.getNodeFromTarget(element);
 
-    this.$updateHighlightActiveLine = function() {
-        var session = this.getSession();
+  var jsonElementType = '';
+  if (element.className.indexOf('jsoneditor-value') >= 0) jsonElementType = 'value';
+  if (element.className.indexOf('jsoneditor-field') >= 0) jsonElementType = 'field';
 
         var highlight;
         if (this.$highlightActiveLine) {
@@ -27800,20 +27839,36 @@ Editor.$uid = 0;
                 highlight = false;
         }
 
-        if (session.$highlightLineMarker && !highlight) {
-            session.removeMarker(session.$highlightLineMarker.id);
-            session.$highlightLineMarker = null;
-        } else if (!session.$highlightLineMarker && highlight) {
-            var range = new Range(highlight.row, highlight.column, highlight.row, Infinity);
-            range.id = session.addMarker(range, "ace_active-line", "screenLine");
-            session.$highlightLineMarker = range;
-        } else if (highlight) {
-            session.$highlightLineMarker.start.row = highlight.row;
-            session.$highlightLineMarker.end.row = highlight.row;
-            session.$highlightLineMarker.start.column = highlight.column;
-            session._signal("changeBackMarker");
-        }
-    };
+  setTimeout(function () {
+    if (node && (self.options.autocomplete.trigger === 'focus' || element.innerText.length > 0)) {
+      var result = self.options.autocomplete.getOptions(element.innerText, node.getPath(), jsonElementType, node.editor);
+      if (result === null) {
+        self.autocomplete.hideDropDown();
+      } else if (typeof result.then === 'function') {
+        // probably a promise
+        result
+            .then(function (obj) {
+              if (obj === null) {
+                self.autocomplete.hideDropDown();
+              } else if (obj.options) {
+                self.autocomplete.show(element, obj.startFrom, obj.options);
+              } else {
+                self.autocomplete.show(element, 0, obj);
+              }
+            })
+            .catch(function (err) {
+              console.error(err);
+            });
+      } else {
+        // definitely not a promise
+        if (result.options)
+          self.autocomplete.show(element, result.startFrom, result.options);
+        else
+          self.autocomplete.show(element, 0, result);
+      }
+    }
+    else
+      self.autocomplete.hideDropDown();
 
     this.onSelectionChange = function(e) {
         var session = this.session;
@@ -28853,7 +28908,16 @@ Editor.$uid = 0;
         if (!ranges.length)
             return replaced;
 
-        this.$blockScrolling += 1;
+exports.parse = function (source, _, options) {
+  var pointers = {};
+  var line = 0;
+  var column = 0;
+  var pos = 0;
+  var bigint = options && options.bigint && typeof BigInt != 'undefined';
+  return {
+    data: _parse('', true),
+    pointers: pointers
+  };
 
         var selection = this.getSelectionRange();
         this.selection.moveTo(0, 0);
@@ -28863,34 +28927,57 @@ Editor.$uid = 0;
                 replaced++;
             }
         }
+        pos++;
+      }
+  }
+
+  function parseString() {
+    var str = '';
+    var char;
+    while (true) {
+      char = getChar();
+      if (char == '"') {
+        break;
+      } else if (char == '\\') {
+        char = getChar();
+        if (char in escapedChars)
+          str += escapedChars[char];
+        else if (char == 'u')
+          str += getCharCode();
+        else
+          wasUnexpectedToken();
+      } else {
+        str += char;
+      }
+    }
+    return str;
+  }
+
+  function parseNumber() {
+    var numStr = '';
+    var integer = true;
+    if (source[pos] == '-') numStr += getChar();
 
         this.selection.setSelectionRange(selection);
         this.$blockScrolling -= 1;
 
-        return replaced;
-    };
+    if (source[pos] == '.') {
+      numStr += getChar() + getDigits();
+      integer = false;
+    }
 
-    this.$tryReplace = function(range, replacement) {
-        var input = this.session.getTextRange(range);
-        replacement = this.$search.replace(input, replacement);
-        if (replacement !== null) {
-            range.end = this.session.replace(range, replacement);
-            return range;
-        } else {
-            return null;
-        }
-    };
-    this.getLastSearchOptions = function() {
-        return this.$search.getOptions();
-    };
-    this.find = function(needle, options, animate) {
-        if (!options)
-            options = {};
+    if (source[pos] == 'e' || source[pos] == 'E') {
+      numStr += getChar();
+      if (source[pos] == '+' || source[pos] == '-') numStr += getChar();
+      numStr += getDigits();
+      integer = false;
+    }
 
-        if (typeof needle == "string" || needle instanceof RegExp)
-            options.needle = needle;
-        else if (typeof needle == "object")
-            oop.mixin(options, needle);
+    var result = +numStr;
+    return bigint && integer && (result > Number.MAX_SAFE_INTEGER || result < Number.MIN_SAFE_INTEGER)
+            ? BigInt(numStr)
+            : result;
+  }
 
         var range = this.selection.getRange();
         if (options.needle == null) {
@@ -29115,28 +29202,98 @@ var UndoManager = function() {
     this.reset();
 };
 
-(function() {
-    this.execute = function(options) {
-        var deltaSets = options.args[0];
-        this.$doc  = options.args[1];
-        if (options.merge && this.hasUndo()){
-            this.dirtyCounter--;
-            deltaSets = this.$undoStack.pop().concat(deltaSets);
+
+exports.stringify = function (data, _, options) {
+  if (!validType(data)) return;
+  var wsLine = 0;
+  var wsPos, wsColumn;
+  var whitespace = typeof options == 'object'
+                    ? options.space
+                    : options;
+  switch (typeof whitespace) {
+    case 'number':
+      var len = whitespace > 10
+                  ? 10
+                  : whitespace < 0
+                    ? 0
+                    : Math.floor(whitespace);
+      whitespace = len && repeat(len, ' ');
+      wsPos = len;
+      wsColumn = len;
+      break;
+    case 'string':
+      whitespace = whitespace.slice(0, 10);
+      wsPos = 0;
+      wsColumn = 0;
+      for (var j=0; j<whitespace.length; j++) {
+        var char = whitespace[j];
+        switch (char) {
+          case ' ': wsColumn++; break;
+          case '\t': wsColumn += 4; break;
+          case '\r': wsColumn = 0; break;
+          case '\n': wsColumn = 0; wsLine++; break;
+          default: throw new Error('whitespace characters not allowed in JSON');
         }
-        this.$undoStack.push(deltaSets);
-        this.$redoStack = [];
-        if (this.dirtyCounter < 0) {
-            this.dirtyCounter = NaN;
+        wsPos++;
+      }
+      break;
+    default:
+      whitespace = undefined;
+  }
+
+  var json = '';
+  var pointers = {};
+  var line = 0;
+  var column = 0;
+  var pos = 0;
+  var es6 = options && options.es6 && typeof Map == 'function';
+  _stringify(data, 0, '');
+  return {
+    json: json,
+    pointers: pointers
+  };
+
+  function _stringify(_data, lvl, ptr) {
+    map(ptr, 'value');
+    switch (typeof _data) {
+      case 'number':
+      case 'bigint':
+      case 'boolean':
+        out('' + _data); break;
+      case 'string':
+        out(quoted(_data)); break;
+      case 'object':
+        if (_data === null) {
+          out('null');
+        } else if (typeof _data.toJSON == 'function') {
+          out(quoted(_data.toJSON()));
+        } else if (Array.isArray(_data)) {
+          stringifyArray();
+        } else if (es6) {
+          if (_data.constructor.BYTES_PER_ELEMENT)
+            stringifyArray();
+          else if (_data instanceof Map)
+            stringifyMapSet();
+          else if (_data instanceof Set)
+            stringifyMapSet(true);
+          else
+            stringifyObject();
+        } else {
+          stringifyObject();
         }
-        this.dirtyCounter++;
-    };
-    this.undo = function(dontSelect) {
-        var deltaSets = this.$undoStack.pop();
-        var undoSelectionRange = null;
-        if (deltaSets) {
-            undoSelectionRange = this.$doc.undoChanges(deltaSets, dontSelect);
-            this.$redoStack.push(deltaSets);
-            this.dirtyCounter--;
+    }
+    map(ptr, 'valueEnd');
+
+    function stringifyArray() {
+      if (_data.length) {
+        out('[');
+        var itemLvl = lvl + 1;
+        for (var i=0; i<_data.length; i++) {
+          if (i) out(',');
+          indent(itemLvl);
+          var item = validType(_data[i]) ? _data[i] : null;
+          var itemPtr = ptr + '/' + i;
+          _stringify(item, itemLvl, itemPtr);
         }
 
         return undoSelectionRange;
@@ -29185,33 +29342,98 @@ var UndoManager = function() {
             text: delta.lines.length == 1 ? delta.lines[0] : null
         };
     }
-        
-    function $deserializeDelta(delta) {
-        return {
-            action: delta.action,
-            start: delta.start,
-            end: delta.end,
-            lines: delta.lines || [delta.text]
-        };
+
+    function stringifyMapSet(isSet) {
+      if (_data.size) {
+        out('{');
+        var propLvl = lvl + 1;
+        var first = true;
+        var entries = _data.entries();
+        var entry = entries.next();
+        while (!entry.done) {
+          var item = entry.value;
+          var key = item[0];
+          var value = isSet ? true : item[1];
+          if (validType(value)) {
+            if (!first) out(',');
+            first = false;
+            var propPtr = ptr + '/' + escapeJsonPointer(key);
+            indent(propLvl);
+            map(propPtr, 'key');
+            out(quoted(key));
+            map(propPtr, 'keyEnd');
+            out(':');
+            if (whitespace) out(' ');
+            _stringify(value, propLvl, propPtr);
+          }
+          entry = entries.next();
+        }
+        indent(lvl);
+        out('}');
+      } else {
+        out('{}');
+      }
     }
-    
-    function cloneDeltaSetsObj(deltaSets_old, fnGetModifiedDelta) {
-        var deltaSets_new = new Array(deltaSets_old.length);
-        for (var i = 0; i < deltaSets_old.length; i++) {
-            var deltaSet_old = deltaSets_old[i];
-            var deltaSet_new = { group: deltaSet_old.group, deltas: new Array(deltaSet_old.length)};
-            
-            for (var j = 0; j < deltaSet_old.deltas.length; j++) {
-                var delta_old = deltaSet_old.deltas[j];
-                deltaSet_new.deltas[j] = fnGetModifiedDelta(delta_old);
-            }
-            
-            deltaSets_new[i] = deltaSet_new;
+  }
+
+  function out(str) {
+    column += str.length;
+    pos += str.length;
+    json += str;
+  }
+
+  function indent(lvl) {
+    if (whitespace) {
+      json += '\n' + repeat(lvl, whitespace);
+      line++;
+      column = 0;
+      while (lvl--) {
+        if (wsLine) {
+          line += wsLine;
+          column = wsColumn;
+        } else {
+          column += wsColumn;
         }
         return deltaSets_new;
     }
-    
-}).call(UndoManager.prototype);
+  }
+
+  function map(ptr, prop) {
+    pointers[ptr] = pointers[ptr] || {};
+    pointers[ptr][prop] = {
+      line: line,
+      column: column,
+      pos: pos
+    };
+  }
+
+  function repeat(n, str) {
+    return Array(n + 1).join(str);
+  }
+};
+
+
+var VALID_TYPES = ['number', 'bigint', 'boolean', 'string', 'object'];
+function validType(data) {
+  return VALID_TYPES.indexOf(typeof data) >= 0;
+}
+
+
+var ESC_QUOTE = /"|\\/g;
+var ESC_B = /[\b]/g;
+var ESC_F = /\f/g;
+var ESC_N = /\n/g;
+var ESC_R = /\r/g;
+var ESC_T = /\t/g;
+function quoted(str) {
+  str = str.replace(ESC_QUOTE, '\\$&')
+           .replace(ESC_F, '\\f')
+           .replace(ESC_B, '\\b')
+           .replace(ESC_N, '\\n')
+           .replace(ESC_R, '\\r')
+           .replace(ESC_T, '\\t');
+  return '"' + str + '"';
+}
 
 exports.UndoManager = UndoManager;
 });
@@ -32495,7 +32717,53 @@ var WorkerClient = function(topLevelNamespaces, mod, classname, workerUrl, impor
 
 (function(){
 
-    oop.implement(this, EventEmitter);
+/**
+ * Duplicate nodes
+ * duplicated nodes will be added right after the original nodes
+ * @param {Node[] | Node} nodes
+ */
+Node.onDuplicate = function(nodes) {
+  if (!Array.isArray(nodes)) {
+    return Node.onDuplicate([nodes]);
+  }
+
+  if (nodes && nodes.length > 0) {
+    var lastNode = nodes[nodes.length - 1];
+    var parent = lastNode.parent;
+    var editor = lastNode.editor;
+
+    editor.deselect(editor.multiselection.nodes);
+
+    // duplicate the nodes
+    var oldSelection = editor.getDomSelection();
+    var afterNode = lastNode;
+    var clones = nodes.map(function (node) {
+      var clone = node.clone();
+      if (node.parent.type === 'object') {
+        var existingFieldNames = node.parent.getFieldNames();
+        clone.field = util.findUniqueName(node.field, existingFieldNames);
+      }
+      parent.insertAfter(clone, afterNode);
+      afterNode = clone;
+      return clone;
+    });
+
+    // set selection to the duplicated nodes
+    if (nodes.length === 1) {
+      if (clones[0].parent.type === 'object') {
+        // when duplicating a single object property,
+        // set focus to the field and keep the original field name
+        clones[0].dom.field.innerHTML = nodes[0].field;
+        clones[0].focus('field');
+      }
+      else {
+        clones[0].focus();
+      }
+    }
+    else {
+      editor.select(clones);
+    }
+    var newSelection = editor.getDomSelection();
 
     this.onMessage = function(e) {
         var msg = e.data;
@@ -36914,7 +37182,7 @@ treemode._setRoot = function (node) {
 
   this.node = node;
   node.setParent(null);
-  node.setField(this.getName(), false);
+  node.setField(undefined, false);
   delete node.index;
 
   // append to the dom
@@ -37654,7 +37922,7 @@ treemode._onEvent = function (event) {
     this._onKeyDown(event);
   }
 
-  if (node && event.type === 'focus') {
+  if (event.type === 'focus') {
     this.focusTarget = event.target;
     if (this.options.autocomplete && this.options.autocomplete.trigger === 'focus') {
       this._showAutoComplete(event.target);
@@ -38019,48 +38287,45 @@ treemode._findTopLevelNodes = function (start, end) {
 
 /**
  * Show autocomplete menu
+ * @param {Node} node
  * @param {HTMLElement} element
  * @private
  */
 treemode._showAutoComplete = function (element) {
   var node = Node.getNodeFromTarget(element);
 
-  var jsonElementType = '';
-  if (element.className.indexOf('jsoneditor-value') >= 0) jsonElementType = 'value';
-  if (element.className.indexOf('jsoneditor-field') >= 0) jsonElementType = 'field';
+  var jsonElementType = "";
+    if (event.target.className.indexOf("jsoneditor-value") >= 0) jsonElementType = "value";
+    if (event.target.className.indexOf("jsoneditor-field") >= 0) jsonElementType = "field";
 
   var self = this;
 
   setTimeout(function () {
-    if (node && (self.options.autocomplete.trigger === 'focus' || element.innerText.length > 0)) {
-      var result = self.options.autocomplete.getOptions(element.innerText, node.getPath(), jsonElementType, node.editor);
-      if (result === null) {
-        self.autocomplete.hideDropDown();
-      } else if (typeof result.then === 'function') {
-        // probably a promise
-        result
-            .then(function (obj) {
-              if (obj === null) {
-                self.autocomplete.hideDropDown();
-              } else if (obj.options) {
-                self.autocomplete.show(element, obj.startFrom, obj.options);
-              } else {
-                self.autocomplete.show(element, 0, obj);
-              }
-            })
-            .catch(function (err) {
-              console.error(err);
-            });
-      } else {
-        // definitely not a promise
-        if (result.options)
-          self.autocomplete.show(element, result.startFrom, result.options);
-        else
-          self.autocomplete.show(element, 0, result);
+      if (self.options.autocomplete.trigger === 'focus' || element.innerText.length > 0) {
+          var result = self.options.autocomplete.getOptions(element.innerText, node.getPath(), jsonElementType, node.editor);
+          if (result === null) {
+              self.autocomplete.hideDropDown();
+          } else if (typeof result.then === 'function') {
+              // probably a promise
+              if (result.then(function (obj) {
+                  if (obj === null) {
+                      self.autocomplete.hideDropDown();
+                  } else if (obj.options) {
+                      self.autocomplete.show(element, obj.startFrom, obj.options);
+                  } else {
+                      self.autocomplete.show(element, 0, obj);
+                  }
+              }.bind(self)));
+          } else {
+              // definitely not a promise
+              if (result.options)
+                  self.autocomplete.show(element, result.startFrom, result.options);
+              else
+                  self.autocomplete.show(element, 0, result);
+          }
       }
-    }
-    else
-      self.autocomplete.hideDropDown();
+      else
+          self.autocomplete.hideDropDown();
 
   }, 50);
 }
@@ -39250,12 +39515,11 @@ var escapedChars = {
 var A_CODE = 'a'.charCodeAt();
 
 
-exports.parse = function (source, _, options) {
+exports.parse = function (source) {
   var pointers = {};
   var line = 0;
   var column = 0;
   var pos = 0;
-  var bigint = options && options.bigint && typeof BigInt != 'undefined';
   return {
     data: _parse('', true),
     pointers: pointers
@@ -39322,31 +39586,42 @@ exports.parse = function (source, _, options) {
     return str;
   }
 
-  function parseNumber() {
-    var numStr = '';
-    var integer = true;
-    if (source[pos] == '-') numStr += getChar();
+  this.errorTable = new ErrorTable({
+    errorTableVisible: true,
+    onToggleVisibility: function () {
+      me.validate();
+    },
+    onFocusLine: null,
+    onChangeHeight: function (height) {
+      // TODO: change CSS to using flex box, remove setting height using JavaScript
+      var statusBarHeight = me.dom.statusBar ? me.dom.statusBar.clientHeight : 0;
+      var totalHeight = height + statusBarHeight + 1;
+      me.content.style.marginBottom = (-totalHeight) + 'px';
+      me.content.style.paddingBottom = totalHeight + 'px';
+    }
+  });
+
+  this.frame.appendChild(this.content);
+  this.frame.appendChild(this.errorTable.getErrorTable());
+  this.container.appendChild(this.frame);
+
+  if (options.statusBar) {
+    util.addClassName(this.content, 'has-status-bar');
 
     numStr += source[pos] == '0'
               ? getChar()
               : getDigits();
 
-    if (source[pos] == '.') {
+    if (source[pos] == '.')
       numStr += getChar() + getDigits();
-      integer = false;
-    }
 
     if (source[pos] == 'e' || source[pos] == 'E') {
       numStr += getChar();
       if (source[pos] == '+' || source[pos] == '-') numStr += getChar();
       numStr += getDigits();
-      integer = false;
     }
 
-    var result = +numStr;
-    return bigint && integer && (result > Number.MAX_SAFE_INTEGER || result < Number.MIN_SAFE_INTEGER)
-            ? BigInt(numStr)
-            : result;
+    return +numStr;
   }
 
   function parseArray(ptr) {
@@ -39472,13 +39747,10 @@ exports.parse = function (source, _, options) {
 };
 
 
-exports.stringify = function (data, _, options) {
+exports.stringify = function (data, _, whitespace) {
   if (!validType(data)) return;
   var wsLine = 0;
   var wsPos, wsColumn;
-  var whitespace = typeof options == 'object'
-                    ? options.space
-                    : options;
   switch (typeof whitespace) {
     case 'number':
       var len = whitespace > 10
@@ -39515,7 +39787,6 @@ exports.stringify = function (data, _, options) {
   var line = 0;
   var column = 0;
   var pos = 0;
-  var es6 = options && options.es6 && typeof Map == 'function';
   _stringify(data, 0, '');
   return {
     json: json,
@@ -39526,30 +39797,19 @@ exports.stringify = function (data, _, options) {
     map(ptr, 'value');
     switch (typeof _data) {
       case 'number':
-      case 'bigint':
       case 'boolean':
         out('' + _data); break;
       case 'string':
         out(quoted(_data)); break;
       case 'object':
-        if (_data === null) {
+        if (_data === null)
           out('null');
-        } else if (typeof _data.toJSON == 'function') {
+        else if (typeof _data.toJSON == 'function')
           out(quoted(_data.toJSON()));
-        } else if (Array.isArray(_data)) {
+        else if (Array.isArray(_data))
           stringifyArray();
-        } else if (es6) {
-          if (_data.constructor.BYTES_PER_ELEMENT)
-            stringifyArray();
-          else if (_data instanceof Map)
-            stringifyMapSet();
-          else if (_data instanceof Set)
-            stringifyMapSet(true);
-          else
-            stringifyObject();
-        } else {
+        else
           stringifyObject();
-        }
     }
     map(ptr, 'valueEnd');
 
@@ -39590,38 +39850,6 @@ exports.stringify = function (data, _, options) {
             if (whitespace) out(' ');
             _stringify(value, propLvl, propPtr);
           }
-        }
-        indent(lvl);
-        out('}');
-      } else {
-        out('{}');
-      }
-    }
-
-    function stringifyMapSet(isSet) {
-      if (_data.size) {
-        out('{');
-        var propLvl = lvl + 1;
-        var first = true;
-        var entries = _data.entries();
-        var entry = entries.next();
-        while (!entry.done) {
-          var item = entry.value;
-          var key = item[0];
-          var value = isSet ? true : item[1];
-          if (validType(value)) {
-            if (!first) out(',');
-            first = false;
-            var propPtr = ptr + '/' + escapeJsonPointer(key);
-            indent(propLvl);
-            map(propPtr, 'key');
-            out(quoted(key));
-            map(propPtr, 'keyEnd');
-            out(':');
-            if (whitespace) out(' ');
-            _stringify(value, propLvl, propPtr);
-          }
-          entry = entries.next();
         }
         indent(lvl);
         out('}');
@@ -39670,7 +39898,7 @@ exports.stringify = function (data, _, options) {
 };
 
 
-var VALID_TYPES = ['number', 'bigint', 'boolean', 'string', 'object'];
+var VALID_TYPES = ['number', 'boolean', 'string', 'object'];
 function validType(data) {
   return VALID_TYPES.indexOf(typeof data) >= 0;
 }
@@ -43778,15 +44006,7 @@ Node.onDuplicate = function(nodes) {
 
     // set selection to the duplicated nodes
     if (nodes.length === 1) {
-      if (clones[0].parent.type === 'object') {
-        // when duplicating a single object property,
-        // set focus to the field and keep the original field name
-        clones[0].dom.field.innerHTML = nodes[0].field;
-        clones[0].focus('field');
-      }
-      else {
-        clones[0].focus();
-      }
+      clones[0].focus();
     }
     else {
       editor.select(clones);
