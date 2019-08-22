@@ -2,6 +2,11 @@
 
 https://github.com/josdejong/jsoneditor
 
+## not yet published, version 6.4.0
+
+- Replaces CSS with SASS internally, improvements in styling. Thanks @ppetkow.
+
+
 ## 2019-08-15, version 6.3.0
 
 - Fixed #755: JSONEditor throwing an exception in mode `code`, `text`, and
