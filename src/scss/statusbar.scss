@@ -10,13 +10,13 @@
 	-webkit-box-sizing: border-box;
 	box-sizing: border-box;
 	font-size:  $jse-font-size;
-	& > .jsoneditor-curserinfo-val {
+	.jsoneditor-curserinfo-val {
 		margin-right: 12px;
 	}
-	& > .jsoneditor-curserinfo-count {
+	.jsoneditor-curserinfo-count {
 		margin-left: 4px;
 	}
-	& > .jsoneditor-validation-error-icon {
+	.jsoneditor-validation-error-icon {
 		float: right;
 		width: 24px;
 		height: 24px;
@@ -25,12 +25,12 @@
 		background: url("img/jsoneditor-icons.svg") -168px -48px;
 		cursor: pointer;
 	}
-	& > .jsoneditor-validation-error-count {
+	.jsoneditor-validation-error-count {
 		float: right;
 		margin: 0 4px 0 0;
 		cursor: pointer;
 	}
-	& > .jsoneditor-parse-error-icon {
+	.jsoneditor-parse-error-icon {
 		float: right;
 		width: 24px;
 		height: 24px;
@@ -43,8 +43,9 @@
 			color: inherit;
 		}
 	}
+	.jsoneditor-curserinfo-label,
+	.jsoneditor-size-info {
+		margin: 0 4px;
+	}
 }
-div.jsoneditor-statusbar > .jsoneditor-curserinfo-label,
-div.jsoneditor-statusbar > .jsoneditor-size-info {
-	margin: 0 4px;
-}
+

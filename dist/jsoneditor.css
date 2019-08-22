@@ -1393,15 +1393,15 @@ div.jsoneditor .jsoneditor-schema-error {
   font-size: 10pt;
 }
 
-.jsoneditor-statusbar > .jsoneditor-curserinfo-val {
+.jsoneditor-statusbar .jsoneditor-curserinfo-val {
   margin-right: 12px;
 }
 
-.jsoneditor-statusbar > .jsoneditor-curserinfo-count {
+.jsoneditor-statusbar .jsoneditor-curserinfo-count {
   margin-left: 4px;
 }
 
-.jsoneditor-statusbar > .jsoneditor-validation-error-icon {
+.jsoneditor-statusbar .jsoneditor-validation-error-icon {
   float: right;
   width: 24px;
   height: 24px;
@@ -1411,13 +1411,13 @@ div.jsoneditor .jsoneditor-schema-error {
   cursor: pointer;
 }
 
-.jsoneditor-statusbar > .jsoneditor-validation-error-count {
+.jsoneditor-statusbar .jsoneditor-validation-error-count {
   float: right;
   margin: 0 4px 0 0;
   cursor: pointer;
 }
 
-.jsoneditor-statusbar > .jsoneditor-parse-error-icon {
+.jsoneditor-statusbar .jsoneditor-parse-error-icon {
   float: right;
   width: 24px;
   height: 24px;
@@ -1430,8 +1430,8 @@ div.jsoneditor .jsoneditor-schema-error {
   color: inherit;
 }
 
-div.jsoneditor-statusbar > .jsoneditor-curserinfo-label,
-div.jsoneditor-statusbar > .jsoneditor-size-info {
+.jsoneditor-statusbar .jsoneditor-curserinfo-label,
+.jsoneditor-statusbar .jsoneditor-size-info {
   margin: 0 4px;
 }
 .jsoneditor-navigation-bar {
