@@ -11245,6 +11245,7 @@ module.exports = function ucs2length(str) {
   return length;
 };
 
+"use strict";
 
 /***/ }),
 /* 34 */
@@ -11259,6 +11260,8 @@ var traverse = module.exports = function (schema, opts, cb) {
     cb = opts;
     opts = {};
   }
+  return length;
+};
 
   cb = opts.cb || cb;
   var pre = (typeof cb == 'function') ? cb : cb.pre || function() {};
@@ -11336,6 +11339,12 @@ function _traverse(opts, pre, post, schema, jsonPtr, rootSchema, parentJsonPtr, 
   }
 }
 
+traverse.propsKeywords = {
+  definitions: true,
+  properties: true,
+  patternProperties: true,
+  dependencies: true
+};
 
 function escapeJsonPtr(str) {
   return str.replace(/~/g, '~0').replace(/\//g, '~1');
@@ -11354,6 +11363,7 @@ var Cache = module.exports = function Cache() {
   this._cache = {};
 };
 
+"use strict";
 
 Cache.prototype.put = function Cache_put(key, value) {
   this._cache[key] = value;
@@ -13925,6 +13935,16 @@ module.exports = function (metaSchema, keywordsJsonPointers) {
           ]
         };
       }
+    } else {
+      out += ' var err = ' + (__err) + ';  if (vErrors === null) vErrors = [err]; else vErrors.push(err); errors++; ';
+    }
+    out += ' } ';
+    if ($breakOnError) {
+      out += ' else { ';
+    }
+  } else {
+    if ($breakOnError) {
+      out += ' if (true) { ';
     }
   }
 
@@ -15198,6 +15218,17 @@ if (Object.defineProperty) {
         var definePropertyFallback = Object.defineProperty;
     }
 }
+if (!Array.prototype.every) {
+    Array.prototype.every = function every(fun /*, thisp */) {
+        var object = toObject(this),
+            self = splitString && _toString(this) == "[object String]" ?
+                this.split("") :
+                object,
+            length = self.length >>> 0,
+            thisp = arguments[1];
+        if (_toString(fun) != "[object Function]") {
+            throw new TypeError(fun + " is not a function");
+        }
 
 if (!Object.defineProperty || definePropertyFallback) {
     var ERR_NON_OBJECT_DESCRIPTOR = "Property description must be an object: ";
@@ -15595,6 +15626,12 @@ if (typeof document == "undefined") {
     exports.importCssString = function() {};
     return;
 }
+if (!Array.prototype.indexOf || ([0, 1].indexOf(1, 2) != -1)) {
+    Array.prototype.indexOf = function indexOf(sought /*, fromIndex */ ) {
+        var self = splitString && _toString(this) == "[object String]" ?
+                this.split("") :
+                toObject(this),
+            length = self.length >>> 0;
 
 if (window.pageYOffset !== undefined) {
     exports.getPageScrollTop = function() {
@@ -15652,6 +15689,12 @@ else {
         return el.innerText;
     };
 }
+var toObject = function (o) {
+    if (o == null) { // this matches both null and undefined
+        throw new TypeError("can't convert "+o+" to object");
+    }
+    return Object(o);
+};
 
 exports.getParentWindow = function(document) {
     return document.defaultView || document.parentWindow;
@@ -16124,6 +16167,7 @@ function normalizeCommandKeys(callback, e, keyCode) {
     return callback(e, hashId, keyCode);
 }
 
+exports.isChrome = parseFloat(ua.split(" Chrome/")[1]) || undefined;
 
 exports.addCommandKeyListener = function(el, callback) {
     var addListener = exports.addListener;
@@ -17573,6 +17617,10 @@ function calcRangeOrientation(range, cursor) {
 
 ace.define("ace/tooltip",["require","exports","module","ace/lib/oop","ace/lib/dom"], function(acequire, exports, module) {
 "use strict";
+var dom = acequire("../lib/dom");
+var oop = acequire("../lib/oop");
+var event = acequire("../lib/event");
+var Tooltip = acequire("../tooltip").Tooltip;
 
 var oop = acequire("./lib/oop");
 var dom = acequire("./lib/dom");
@@ -17750,6 +17798,9 @@ function GutterHandler(mouseHandler) {
                 hideTooltip();
         }, 50);
     });
+    
+    editor.on("changeSession", hideTooltip);
+}
 
     event.addListener(editor.renderer.$gutter, "mouseout", function(e) {
         mouseEvent = null;
@@ -17985,6 +18036,8 @@ function DragdropHandler(mouseHandler) {
             dragOperation = null;
             return event.preventDefault(e);
         }
+        this.editor.unsetStyle("ace_dragging");
+        this.editor.renderer.setCursorStyle("");
     };
 
     this.onDrop = function(e) {
@@ -18243,6 +18296,12 @@ function DragdropHandler(mouseHandler) {
 
 }).call(DragdropHandler.prototype);
 
+        var copyModifierState = useragent.isMac ? e.altKey : e.ctrlKey;
+        var effectAllowed = "uninitialized";
+        try {
+            effectAllowed = e.dataTransfer.effectAllowed.toLowerCase();
+        } catch (e) {}
+        var dropEffect = "none";
 
 function calcDistance(ax, ay, bx, by) {
     return Math.sqrt(Math.pow(bx - ax, 2) + Math.pow(by - ay, 2));
@@ -19467,6 +19526,14 @@ var BidiHandler = function(session) {
 
         return splitIndex;
     };
+    this.markAsDirty = function() {
+        this.currentRow = null;
+    };
+    this.updateCharacterWidths = function(fontMetrics) {
+        if (!this.seenBidi)
+            return;
+        if (this.characterWidth === fontMetrics.$characterSize.width)
+            return;
 
     this.updateRowLine = function(docRow, splitIndex) {
         if (docRow === undefined)
@@ -19930,6 +19997,7 @@ var Selection = function(session) {
             this.$isEmpty = false;
             this._emit("changeSelection");
         }
+        return this.session.getWordRange(row, column);
     };
     this.getSelectionAnchor = function() {
         if (this.$isEmpty)
@@ -20639,6 +20707,10 @@ var Tokenizer = function(rules) {
         }
         return tokens;
     };
+    
+    this.reportError = config.reportError;
+    
+}).call(Tokenizer.prototype);
 
     this.removeCapturingGroups = function(src) {
         var r = src.replace(
@@ -21529,6 +21601,11 @@ CstyleBehaviour.clearMaybeInsertedClosing = function() {
     }
 };
 
+function addUnicodePackage (pack) {
+    var codePoint = /\w{4}/g;
+    for (var name in pack)
+        exports.packages[name] = pack[name].replace(codePoint, "\\u$&");
+}
 
 
 oop.inherits(CstyleBehaviour, Behaviour);
@@ -22481,6 +22558,13 @@ var Document = function(textOrLines) {
 
         return index + pos.column;
     };
+    this.positionToIndex = function(pos, startRow) {
+        var lines = this.$lines || this.getAllLines();
+        var newlineLength = this.getNewLineCharacter().length;
+        var index = 0;
+        var row = Math.min(pos.row, lines.length);
+        for (var i = startRow || 0; i < row; ++i)
+            index += lines[i].length + newlineLength;
 
 }).call(Document.prototype);
 
@@ -23130,7 +23214,11 @@ var Fold = exports.Fold = function(range, placeholder) {
 
 oop.inherits(Fold, RangeList);
 
-(function() {
+function Folding() {
+    this.getFoldAt = function(row, column, side) {
+        var foldLine = this.getFoldLine(row);
+        if (!foldLine)
+            return null;
 
     this.toString = function() {
         return '"' + this.placeholder + '" ' + this.range.toString();
@@ -25657,6 +25745,11 @@ EditSession.$uid = 0;
             else {
                 rowEnd = row + 1;
             }
+        } else {
+            var lastRow = this.$wrapData.length;
+            var row = 0, i = 0;
+            var fold = this.$foldData[i++];
+            var foldStart = fold ? fold.start.row :Infinity;
 
             screenRow += this.getRowLength(row);
             row = rowEnd;
@@ -25727,6 +25820,15 @@ EditSession.$uid = 0;
                     foldStart = fold ?fold.start.row :Infinity;
                 }
             }
+            
+            return [screenColumn, column];
+        };
+    };
+    
+    this.destroy = function() {
+        if (this.bgTokenizer) {
+            this.bgTokenizer.setDocument(null);
+            this.bgTokenizer = null;
         }
         if (this.lineWidgets)
             screenRows += this.$getWidgetScreenLength();
