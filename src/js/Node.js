@@ -3562,7 +3562,15 @@ Node.onDuplicate = function(nodes) {
 
     // set selection to the duplicated nodes
     if (nodes.length === 1) {
-      clones[0].focus();
+      if (clones[0].parent.type === 'object') {
+        // when duplicating a single object property,
+        // set focus to the field and keep the original field name
+        clones[0].dom.field.innerHTML = nodes[0].field;
+        clones[0].focus('field');
+      }
+      else {
+        clones[0].focus();
+      }
     }
     else {
       editor.select(clones);

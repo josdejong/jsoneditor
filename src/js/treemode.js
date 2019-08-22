@@ -375,7 +375,7 @@ treemode._setRoot = function (node) {
 
   this.node = node;
   node.setParent(null);
-  node.setField(undefined, false);
+  node.setField(this.getName(), false);
   delete node.index;
 
   // append to the dom
@@ -1115,7 +1115,7 @@ treemode._onEvent = function (event) {
     this._onKeyDown(event);
   }
 
-  if (event.type === 'focus') {
+  if (node && event.type === 'focus') {
     this.focusTarget = event.target;
     if (this.options.autocomplete && this.options.autocomplete.trigger === 'focus') {
       this._showAutoComplete(event.target);
@@ -1480,45 +1480,48 @@ treemode._findTopLevelNodes = function (start, end) {
 
 /**
  * Show autocomplete menu
- * @param {Node} node
  * @param {HTMLElement} element
  * @private
  */
 treemode._showAutoComplete = function (element) {
   var node = Node.getNodeFromTarget(element);
 
-  var jsonElementType = "";
-    if (event.target.className.indexOf("jsoneditor-value") >= 0) jsonElementType = "value";
-    if (event.target.className.indexOf("jsoneditor-field") >= 0) jsonElementType = "field";
+  var jsonElementType = '';
+  if (element.className.indexOf('jsoneditor-value') >= 0) jsonElementType = 'value';
+  if (element.className.indexOf('jsoneditor-field') >= 0) jsonElementType = 'field';
 
   var self = this;
 
   setTimeout(function () {
-      if (self.options.autocomplete.trigger === 'focus' || element.innerText.length > 0) {
-          var result = self.options.autocomplete.getOptions(element.innerText, node.getPath(), jsonElementType, node.editor);
-          if (result === null) {
-              self.autocomplete.hideDropDown();
-          } else if (typeof result.then === 'function') {
-              // probably a promise
-              if (result.then(function (obj) {
-                  if (obj === null) {
-                      self.autocomplete.hideDropDown();
-                  } else if (obj.options) {
-                      self.autocomplete.show(element, obj.startFrom, obj.options);
-                  } else {
-                      self.autocomplete.show(element, 0, obj);
-                  }
-              }.bind(self)));
-          } else {
-              // definitely not a promise
-              if (result.options)
-                  self.autocomplete.show(element, result.startFrom, result.options);
-              else
-                  self.autocomplete.show(element, 0, result);
-          }
+    if (node && (self.options.autocomplete.trigger === 'focus' || element.innerText.length > 0)) {
+      var result = self.options.autocomplete.getOptions(element.innerText, node.getPath(), jsonElementType, node.editor);
+      if (result === null) {
+        self.autocomplete.hideDropDown();
+      } else if (typeof result.then === 'function') {
+        // probably a promise
+        result
+            .then(function (obj) {
+              if (obj === null) {
+                self.autocomplete.hideDropDown();
+              } else if (obj.options) {
+                self.autocomplete.show(element, obj.startFrom, obj.options);
+              } else {
+                self.autocomplete.show(element, 0, obj);
+              }
+            })
+            .catch(function (err) {
+              console.error(err);
+            });
+      } else {
+        // definitely not a promise
+        if (result.options)
+          self.autocomplete.show(element, result.startFrom, result.options);
+        else
+          self.autocomplete.show(element, 0, result);
       }
-      else
-          self.autocomplete.hideDropDown();
+    }
+    else
+      self.autocomplete.hideDropDown();
 
   }, 50);
 }
