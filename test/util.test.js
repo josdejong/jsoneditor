@@ -450,5 +450,12 @@ describe('util', function () {
     assert.strictEqual(util.limitCharacters('hello world', 100), 'hello world');
   })
 
+  it('should compile a JSON pointer', function () {
+    assert.strictEqual(util.compileJSONPointer(['foo', 'bar']), '/foo/bar')
+    assert.strictEqual(util.compileJSONPointer(['foo', '/~ ~/']), '/foo/~1~0 ~0~1')
+    assert.strictEqual(util.compileJSONPointer(['']), '/')
+    assert.strictEqual(util.compileJSONPointer([]), '')
+  });
+
   // TODO: thoroughly test all util methods
 });

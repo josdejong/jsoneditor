@@ -1140,7 +1140,7 @@ exports.getPositionForPath = function(text, paths) {
 
   paths.forEach(function (path) {
     var pathArr = me.parsePath(path);
-    var pointerName = pathArr.length ? "/" + pathArr.join("/") : "";
+    var pointerName = exports.compileJSONPointer(pathArr);
     var pointer = jsmap.pointers[pointerName];
     if (pointer) {
       result.push({
@@ -1154,6 +1154,21 @@ exports.getPositionForPath = function(text, paths) {
   return result;
   
 }
+
+/**
+ * Compile a JSON Pointer
+ * WARNING: this is an incomplete implementation
+ * @param {Array.<string | number>} path
+ * @return {string}
+ */
+exports.compileJSONPointer = function (path) {
+  return path
+      .map(p => ('/' + String(p)
+          .replace(/~/g, '~0')
+          .replace(/\//g, '~1')
+      ))
+      .join('');
+};
 
 /**
  * Get the applied color given a color name or code
