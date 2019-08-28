@@ -2,6 +2,11 @@
 
 https://github.com/josdejong/jsoneditor
 
+## 2019-08-28, version 6.4.1
+
+- Fix styling of autocompletion dropdown broken. Regression since `v6.4.0`.
+
+
 ## 2019-08-28, version 6.4.0
 
 - Replaces CSS with SASS internally, improvements in styling. Thanks @ppetkow.

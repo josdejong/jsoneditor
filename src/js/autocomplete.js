@@ -38,8 +38,9 @@ function completely(config) {
         var ix = 0;
         var oldIndex = -1;
 
-        var onMouseOver = function () { this.style.outline = '1px solid #ddd'; }
-        var onMouseOut = function () { this.style.outline = '0'; }
+        // TODO: move this styling in JS to SCSS
+        var onMouseOver = function () { this.style.backgroundColor = '#ddd'; }
+        var onMouseOut = function () { this.style.backgroundColor = ''; }
         var onMouseDown = function () { p.hide(); p.onmouseselection(this.__hint, p.rs); }
 
         var p = {
@@ -103,7 +104,7 @@ function completely(config) {
                 if (oldIndex != -1 && rows[oldIndex]) {
                     rows[oldIndex].className = "item";
                 }
-                rows[index].className = "item hover"; 
+                rows[index].className = "item hover";
                 oldIndex = index;
             },
             move: function (step) { // moves the selection either up or down (unless it's not possible) step is either +1 or -1.
