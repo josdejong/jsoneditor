@@ -34,6 +34,21 @@ var bannerPlugin = new webpack.BannerPlugin({
   raw: true
 });
 
+var webpackConfigModule = {
+  rules: [
+    {
+      test: /\.m?js$/,
+      exclude: /node_modules/,
+      use: {
+        loader: 'babel-loader',
+        options: {
+          presets: ['@babel/preset-env']
+        }
+      }
+    }
+  ]
+};
+
 // create a single instance of the compiler to allow caching
 var compiler = webpack({
   entry: ENTRY,
@@ -48,7 +63,7 @@ var compiler = webpack({
     // We no not want to minimize our code.
     minimize: false
   },
-
+  module: webpackConfigModule,
   resolve: {
     extensions: ['.js'],
     mainFields: [ 'main' ], // pick ES5 version of vanilla-picker
@@ -65,6 +80,7 @@ var compilerMinimalist = webpack({
     path: DIST,
     filename: NAME_MINIMALIST + '.js'
   },
+  module: webpackConfigModule,
   plugins: [
     bannerPlugin,
     new webpack.IgnorePlugin(new RegExp('^brace$')),

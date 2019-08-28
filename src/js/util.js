@@ -1125,9 +1125,9 @@ exports.getIndexForPosition = function(el, row, column) {
  * @returns {Array<{path: String, line: Number, row: Number}>}
  */
 exports.getPositionForPath = function(text, paths) {
-  var me = this;
-  var result = [];
-  var jsmap;
+  const me = this;
+  const result = [];
+  let jsmap;
   if (!paths || !paths.length) {
     return result;
   }
@@ -1139,9 +1139,9 @@ exports.getPositionForPath = function(text, paths) {
   }
 
   paths.forEach(function (path) {
-    var pathArr = me.parsePath(path);
-    var pointerName = exports.compileJSONPointer(pathArr);
-    var pointer = jsmap.pointers[pointerName];
+    const pathArr = me.parsePath(path);
+    const pointerName = exports.compileJSONPointer(pathArr);
+    const pointer = jsmap.pointers[pointerName];
     if (pointer) {
       result.push({
         path: path,
@@ -1152,7 +1152,6 @@ exports.getPositionForPath = function(text, paths) {
   });
 
   return result;
-  
 }
 
 /**
@@ -1163,12 +1162,10 @@ exports.getPositionForPath = function(text, paths) {
  */
 exports.compileJSONPointer = function (path) {
   return path
-      .map(function (p) {
-        return ('/' + String(p)
-                .replace(/~/g, '~0')
-                .replace(/\//g, '~1')
-        );
-      })
+      .map(p => ('/' + String(p)
+          .replace(/~/g, '~0')
+          .replace(/\//g, '~1')
+      ))
       .join('');
 };
 
