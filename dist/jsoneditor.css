@@ -1,4 +1,4 @@
-.jsoneditor .jsoneditor-search input {
+.jsoneditor .search input {
   height: auto;
   border: inherit;
   border: none;
@@ -1229,24 +1229,13 @@ div.jsoneditor .jsoneditor-schema-error {
   padding: 10px;
 }
 .jsoneditor-search {
+  font-family: arial, sans-serif;
   position: absolute;
   right: 4px;
   top: 4px;
   border-collapse: collapse;
   border-spacing: 0;
-}
-
-.jsoneditor-search .jsoneditor-results {
-  color: #ffffff;
-  padding-right: 5px;
-  line-height: 26px;
-}
-
-.jsoneditor-search .jsoneditor-frame {
-  border: 1px solid transparent;
-  background-color: #ffffff;
-  padding: 0 2px;
-  margin: 0;
+  display: flex;
 }
 
 .jsoneditor-search input {
@@ -1295,9 +1284,18 @@ div.jsoneditor .jsoneditor-schema-error {
   background-position: -148px -49px;
 }
 
-.jsoneditor-search input,
-.jsoneditor-search .jsoneditor-results {
+.jsoneditor-results {
   font-family: arial, sans-serif;
+  color: #ffffff;
+  padding-right: 5px;
+  line-height: 26px;
+}
+
+.jsoneditor-frame {
+  border: 1px solid transparent;
+  background-color: #ffffff;
+  padding: 0 2px;
+  margin: 0;
 }
 .jsoneditor.autocomplete.dropdown {
   position: absolute;
@@ -1393,15 +1391,15 @@ div.jsoneditor .jsoneditor-schema-error {
   font-size: 10pt;
 }
 
-.jsoneditor-statusbar .jsoneditor-curserinfo-val {
+.jsoneditor-statusbar > .jsoneditor-curserinfo-val {
   margin-right: 12px;
 }
 
-.jsoneditor-statusbar .jsoneditor-curserinfo-count {
+.jsoneditor-statusbar > .jsoneditor-curserinfo-count {
   margin-left: 4px;
 }
 
-.jsoneditor-statusbar .jsoneditor-validation-error-icon {
+.jsoneditor-statusbar > .jsoneditor-validation-error-icon {
   float: right;
   width: 24px;
   height: 24px;
@@ -1411,13 +1409,13 @@ div.jsoneditor .jsoneditor-schema-error {
   cursor: pointer;
 }
 
-.jsoneditor-statusbar .jsoneditor-validation-error-count {
+.jsoneditor-statusbar > .jsoneditor-validation-error-count {
   float: right;
   margin: 0 4px 0 0;
   cursor: pointer;
 }
 
-.jsoneditor-statusbar .jsoneditor-parse-error-icon {
+.jsoneditor-statusbar > .jsoneditor-parse-error-icon {
   float: right;
   width: 24px;
   height: 24px;
@@ -1430,8 +1428,8 @@ div.jsoneditor .jsoneditor-schema-error {
   color: inherit;
 }
 
-.jsoneditor-statusbar .jsoneditor-curserinfo-label,
-.jsoneditor-statusbar .jsoneditor-size-info {
+div.jsoneditor-statusbar > .jsoneditor-curserinfo-label,
+div.jsoneditor-statusbar > .jsoneditor-size-info {
   margin: 0 4px;
 }
 .jsoneditor-navigation-bar {
