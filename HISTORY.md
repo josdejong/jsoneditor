@@ -8,6 +8,7 @@ https://github.com/josdejong/jsoneditor
 - Fixed #761: JSON schema errors not rendered in the gutter for mode `code`
   when the path contained a property with a forward slash, and errors not
   clickable in the error table.
+- Fixed #777: option `sortObjectKeys` broken.
 
 
 ## 2019-08-15, version 6.3.0

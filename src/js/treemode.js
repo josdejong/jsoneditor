@@ -471,8 +471,8 @@ treemode._onChange = function () {
   this._debouncedValidate();
 
   if (this.treePath) {
-    var selectedNode = this.selection
-        ?  this.node.findNodeByInternalPath(this.selection.path)
+    var selectedNode = (this.node && this.selection)
+        ? this.node.findNodeByInternalPath(this.selection.path)
         : this.multiselection
             ? this.multiselection.nodes[0]
             : undefined;
