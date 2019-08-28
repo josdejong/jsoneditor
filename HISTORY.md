@@ -5,6 +5,7 @@ https://github.com/josdejong/jsoneditor
 ## not yet published, version 7.0.0
 
 - Dropped support for bower, removed the `dist` folder from the git repository.
+- Converted the code into ES6, put Babel transpiler in place.
 
 
 ## 2019-08-28, version 6.4.0
