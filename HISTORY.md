@@ -2,6 +2,11 @@
 
 https://github.com/josdejong/jsoneditor
 
+## not yet published, version 7.0.0
+
+- Dropped support for bower, removed the `dist` folder from the git repository.
+
+
 ## 2019-08-28, version 6.4.0
 
 - Replaces CSS with SASS internally, improvements in styling. Thanks @ppetkow.
