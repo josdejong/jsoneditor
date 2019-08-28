@@ -1,8 +1,10 @@
-'use strict';
+'use strict'
 
-require('./polyfills');
+/* eslint-disable no-template-curly-in-string */
 
-var _locales = ['en', 'pt-BR', 'zh-CN', 'tr'];
+require('./polyfills')
+
+var _locales = ['en', 'pt-BR', 'zh-CN', 'tr']
 var _defs = {
   en: {
     array: 'Array',
@@ -93,7 +95,7 @@ var _defs = {
     modePreviewText: 'Preview',
     modePreviewTitle: 'Switch to preview mode',
     examples: 'Examples',
-    default: 'Default',
+    default: 'Default'
   },
   'zh-CN': {
     array: '数组',
@@ -184,7 +186,7 @@ var _defs = {
     modePreviewText: '预览',
     modePreviewTitle: '切换至预览模式',
     examples: '例子',
-    default: '缺省',
+    default: '缺省'
   },
   'pt-BR': {
     array: 'Lista',
@@ -283,7 +285,7 @@ var _defs = {
       'Campo do tipo nao é determinado através do seu valor, ' +
       'mas sempre retornara um texto.',
     examples: 'Exemplos',
-    default: 'Revelia',
+    default: 'Revelia'
   },
   tr: {
     array: 'Dizin',
@@ -370,20 +372,20 @@ var _defs = {
     modeViewText: 'Görünüm',
     modeViewTitle: 'Ağaç görünümüne geç',
     examples: 'Örnekler',
-    default: 'Varsayılan',
+    default: 'Varsayılan'
   }
-};
+}
 
-var _defaultLang = 'en';
-var _lang;
-var userLang = typeof navigator !== 'undefined' ?
-  navigator.language || navigator.userLanguage :
-  undefined;
+var _defaultLang = 'en'
+var _lang
+var userLang = typeof navigator !== 'undefined'
+  ? navigator.language || navigator.userLanguage
+  : undefined
 _lang = _locales.find(function (l) {
-  return l === userLang;
-});
+  return l === userLang
+})
 if (!_lang) {
-  _lang = _defaultLang;
+  _lang = _defaultLang
 }
 
 module.exports = {
@@ -393,41 +395,41 @@ module.exports = {
   _lang: _lang,
   setLanguage: function (lang) {
     if (!lang) {
-      return;
+      return
     }
     var langFound = _locales.find(function (l) {
-      return l === lang;
-    });
+      return l === lang
+    })
     if (langFound) {
-      _lang = langFound;
+      _lang = langFound
     } else {
-      console.error('Language not found');
+      console.error('Language not found')
     }
   },
   setLanguages: function (languages) {
     if (!languages) {
-      return;
+      return
     }
     for (var key in languages) {
       var langFound = _locales.find(function (l) {
-        return l === key;
-      });
+        return l === key
+      })
       if (!langFound) {
-        _locales.push(key);
+        _locales.push(key)
       }
-      _defs[key] = Object.assign({}, _defs[_defaultLang], _defs[key], languages[key]);
+      _defs[key] = Object.assign({}, _defs[_defaultLang], _defs[key], languages[key])
     }
   },
   translate: function (key, data, lang) {
     if (!lang) {
-      lang = _lang;
+      lang = _lang
     }
-    var text = _defs[lang][key];
+    var text = _defs[lang][key]
     if (data) {
       for (key in data) {
-        text = text.replace('${' + key + '}', data[key]);
+        text = text.replace('${' + key + '}', data[key])
       }
     }
-    return text || key;
+    return text || key
   }
-};
+}

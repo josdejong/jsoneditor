@@ -1,20 +1,20 @@
-var JSDOM = require('jsdom').JSDOM;
+var JSDOM = require('jsdom').JSDOM
 
 /**
  * Set up the test environment by simulating browser globals.
  * @param {string} [locale=en] A locale to set in navigator.language
  * @return {void}
  */
-module.exports = function setUpTestEnvironment(locale) {
-    if (!locale) {
-        locale = 'en'
-    }
+module.exports = function setUpTestEnvironment (locale) {
+  if (!locale) {
+    locale = 'en'
+  }
 
-    var dom = new JSDOM('...');
-    global.window = dom.window;
-    global.document = dom.window.document;
-    global.navigator = dom.window.navigator;
+  var dom = new JSDOM('...')
+  global.window = dom.window
+  global.document = dom.window.document
+  global.navigator = dom.window.navigator
 
-    // JSDom has no setter defined for navigator.language, so defineProperty is necessary in order to override it
-    Object.defineProperty(navigator, 'language', {value: locale})
-};
+  // JSDom has no setter defined for navigator.language, so defineProperty is necessary in order to override it
+  Object.defineProperty(navigator, 'language', { value: locale })
+}

@@ -1,4 +1,4 @@
-var util = require('./util');
+var util = require('./util')
 
 /**
  * Create an anchor element absolutely positioned in the `parent`
@@ -9,58 +9,58 @@ var util = require('./util');
  * @returns {HTMLElement}
  */
 exports.createAbsoluteAnchor = function (anchor, parent, onDestroy) {
-  var root = getRootNode(anchor);
-  var eventListeners = {};
+  var root = getRootNode(anchor)
+  var eventListeners = {}
 
-  var anchorRect = anchor.getBoundingClientRect();
-  var frameRect = parent.getBoundingClientRect();
+  var anchorRect = anchor.getBoundingClientRect()
+  var frameRect = parent.getBoundingClientRect()
 
-  var absoluteAnchor = document.createElement('div');
-  absoluteAnchor.className = 'jsoneditor-anchor';
-  absoluteAnchor.style.position = 'absolute';
-  absoluteAnchor.style.left = (anchorRect.left - frameRect.left) + 'px';
-  absoluteAnchor.style.top = (anchorRect.top - frameRect.top) + 'px';
-  absoluteAnchor.style.width = (anchorRect.width - 2) + 'px';
-  absoluteAnchor.style.height = (anchorRect.height - 2) + 'px';
-  absoluteAnchor.style.boxSizing = 'border-box';
-  parent.appendChild(absoluteAnchor);
+  var absoluteAnchor = document.createElement('div')
+  absoluteAnchor.className = 'jsoneditor-anchor'
+  absoluteAnchor.style.position = 'absolute'
+  absoluteAnchor.style.left = (anchorRect.left - frameRect.left) + 'px'
+  absoluteAnchor.style.top = (anchorRect.top - frameRect.top) + 'px'
+  absoluteAnchor.style.width = (anchorRect.width - 2) + 'px'
+  absoluteAnchor.style.height = (anchorRect.height - 2) + 'px'
+  absoluteAnchor.style.boxSizing = 'border-box'
+  parent.appendChild(absoluteAnchor)
 
   function destroy () {
     // remove temporary absolutely positioned anchor
     if (absoluteAnchor && absoluteAnchor.parentNode) {
-      absoluteAnchor.parentNode.removeChild(absoluteAnchor);
+      absoluteAnchor.parentNode.removeChild(absoluteAnchor)
 
       // remove all event listeners
       // all event listeners are supposed to be attached to document.
       for (var name in eventListeners) {
-        if (eventListeners.hasOwnProperty(name)) {
-          var fn = eventListeners[name];
+        if (hasOwnProperty(eventListeners, name)) {
+          var fn = eventListeners[name]
           if (fn) {
-            util.removeEventListener(root, name, fn);
+            util.removeEventListener(root, name, fn)
           }
-          delete eventListeners[name];
+          delete eventListeners[name]
         }
       }
 
       if (typeof onDestroy === 'function') {
-        onDestroy(anchor);
+        onDestroy(anchor)
       }
     }
   }
 
   // create and attach event listeners
   var destroyIfOutside = function (event) {
-    var target = event.target;
+    var target = event.target
     if ((target !== absoluteAnchor) && !util.isChildOf(target, absoluteAnchor)) {
-      destroy();
+      destroy()
     }
   }
 
-  eventListeners.mousedown = util.addEventListener(root, 'mousedown', destroyIfOutside);
-  eventListeners.mousewheel = util.addEventListener(root, 'mousewheel', destroyIfOutside);
+  eventListeners.mousedown = util.addEventListener(root, 'mousedown', destroyIfOutside)
+  eventListeners.mousewheel = util.addEventListener(root, 'mousewheel', destroyIfOutside)
   // eventListeners.scroll = util.addEventListener(root, 'scroll', destroyIfOutside);
 
-  absoluteAnchor.destroy = destroy;
+  absoluteAnchor.destroy = destroy
 
   return absoluteAnchor
 }
@@ -70,8 +70,12 @@ exports.createAbsoluteAnchor = function (anchor, parent, onDestroy) {
  * @param  {HTMLElement} node node to check
  * @return {HTMLElement}      node's rootNode or `window` if there is ShadowDOM is not supported.
  */
-function getRootNode(node){
+function getRootNode (node) {
   return (typeof node.getRootNode === 'function')
-      ? node.getRootNode()
-      : window;
+    ? node.getRootNode()
+    : window
+}
+
+function hasOwnProperty (object, key) {
+  return Object.prototype.hasOwnProperty.call(object, key)
 }

@@ -21,7 +21,8 @@
     "build": "gulp",
     "minify": "gulp minify",
     "start": "gulp watch",
-    "test": "mocha test"
+    "test": "mocha test",
+    "lint": "standard --env=mocha"
   },
   "dependencies": {
     "ajv": "6.10.2",
@@ -47,7 +48,14 @@
     "json-loader": "0.5.7",
     "mkdirp": "0.5.1",
     "mocha": "6.2.0",
+    "standard": "14.0.2",
     "uglify-js": "3.6.0",
     "webpack": "4.39.3"
+  },
+  "standard": {
+    "ignore": [
+      "src/js/assets",
+      "examples/react*"
+    ]
   }
 }

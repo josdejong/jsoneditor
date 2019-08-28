@@ -1,11 +1,11 @@
-var jmespath = require('jmespath');
-var picoModal = require('picomodal');
-var Selectr = require('./assets/selectr/selectr');
-var translate = require('./i18n').translate;
-var stringifyPartial = require('./jsonUtils').stringifyPartial;
-var util = require('./util');
+var jmespath = require('jmespath')
+var picoModal = require('picomodal')
+var Selectr = require('./assets/selectr/selectr')
+var translate = require('./i18n').translate
+var stringifyPartial = require('./jsonUtils').stringifyPartial
+var util = require('./util')
 var MAX_PREVIEW_CHARACTERS = require('./constants').MAX_PREVIEW_CHARACTERS
-var debounce = util.debounce;
+var debounce = util.debounce
 
 /**
  * Show advanced filter and transform modal using JMESPath
@@ -16,7 +16,7 @@ var debounce = util.debounce;
  *                                  query as callback
  */
 function showTransformModal (container, json, onTransform) {
-  var value = json;
+  var value = json
 
   var content = '<label class="pico-modal-contents">' +
       '<div class="pico-modal-header">' + translate('transform') + '</div>' +
@@ -93,208 +93,202 @@ function showTransformModal (container, json, onTransform) {
       '<div class="jsoneditor-jmespath-block jsoneditor-modal-actions">' +
       '  <input type="submit" id="ok" value="' + translate('ok') + '" autofocus />' +
       '</div>' +
-      '</div>';
+      '</div>'
 
   picoModal({
     parent: container,
     content: content,
     overlayClass: 'jsoneditor-modal-overlay',
     overlayStyles: {
-        backgroundColor: "rgb(1,1,1)",
-        opacity: 0.3
+      backgroundColor: 'rgb(1,1,1)',
+      opacity: 0.3
     },
     modalClass: 'jsoneditor-modal jsoneditor-modal-transform',
     focus: false
   })
-      .afterCreate(function (modal) {
-        var elem = modal.modalElem();
+    .afterCreate(function (modal) {
+      var elem = modal.modalElem()
 
-        var wizard = elem.querySelector('#wizard');
-        var ok = elem.querySelector('#ok');
-        var filterField = elem.querySelector('#filterField');
-        var filterRelation = elem.querySelector('#filterRelation');
-        var filterValue = elem.querySelector('#filterValue');
-        var sortField = elem.querySelector('#sortField');
-        var sortOrder = elem.querySelector('#sortOrder');
-        var selectFields = elem.querySelector('#selectFields');
-        var query = elem.querySelector('#query');
-        var preview = elem.querySelector('#preview');
+      var wizard = elem.querySelector('#wizard')
+      var ok = elem.querySelector('#ok')
+      var filterField = elem.querySelector('#filterField')
+      var filterRelation = elem.querySelector('#filterRelation')
+      var filterValue = elem.querySelector('#filterValue')
+      var sortField = elem.querySelector('#sortField')
+      var sortOrder = elem.querySelector('#sortOrder')
+      var selectFields = elem.querySelector('#selectFields')
+      var query = elem.querySelector('#query')
+      var preview = elem.querySelector('#preview')
 
-        if (!Array.isArray(value)) {
-          wizard.style.fontStyle = 'italic';
-          wizard.innerHTML = '(wizard not available for objects, only for arrays)'
+      if (!Array.isArray(value)) {
+        wizard.style.fontStyle = 'italic'
+        wizard.innerHTML = '(wizard not available for objects, only for arrays)'
+      }
+
+      var sortablePaths = util.getChildPaths(json)
+
+      sortablePaths.forEach(function (path) {
+        var formattedPath = preprocessPath(path)
+        var filterOption = document.createElement('option')
+        filterOption.text = formattedPath
+        filterOption.value = formattedPath
+        filterField.appendChild(filterOption)
+
+        var sortOption = document.createElement('option')
+        sortOption.text = formattedPath
+        sortOption.value = formattedPath
+        sortField.appendChild(sortOption)
+      })
+
+      var selectablePaths = util.getChildPaths(json, true).filter(function (path) {
+        return path !== ''
+      })
+      if (selectablePaths.length > 0) {
+        selectablePaths.forEach(function (path) {
+          var formattedPath = preprocessPath(path)
+          var option = document.createElement('option')
+          option.text = formattedPath
+          option.value = formattedPath
+          selectFields.appendChild(option)
+        })
+      } else {
+        var selectFieldsPart = elem.querySelector('#selectFieldsPart')
+        if (selectFieldsPart) {
+          selectFieldsPart.style.display = 'none'
         }
+      }
 
-        var sortablePaths = util.getChildPaths(json);
+      var selectrFilterField = new Selectr(filterField, { defaultSelected: false, clearable: true, allowDeselect: true, placeholder: 'field...' })
+      var selectrFilterRelation = new Selectr(filterRelation, { defaultSelected: false, clearable: true, allowDeselect: true, placeholder: 'compare...' })
+      var selectrSortField = new Selectr(sortField, { defaultSelected: false, clearable: true, allowDeselect: true, placeholder: 'field...' })
+      var selectrSortOrder = new Selectr(sortOrder, { defaultSelected: false, clearable: true, allowDeselect: true, placeholder: 'order...' })
+      var selectrSelectFields = new Selectr(selectFields, { multiple: true, clearable: true, defaultSelected: false, placeholder: 'select fields...' })
 
-        sortablePaths.forEach(function (path) {
-          var formattedPath = preprocessPath(path);
-          var filterOption = document.createElement('option');
-          filterOption.text = formattedPath;
-          filterOption.value = formattedPath;
-          filterField.appendChild(filterOption);
+      selectrFilterField.on('selectr.change', generateQueryFromWizard)
+      selectrFilterRelation.on('selectr.change', generateQueryFromWizard)
+      filterValue.oninput = generateQueryFromWizard
+      selectrSortField.on('selectr.change', generateQueryFromWizard)
+      selectrSortOrder.on('selectr.change', generateQueryFromWizard)
+      selectrSelectFields.on('selectr.change', generateQueryFromWizard)
 
-          var sortOption = document.createElement('option');
-          sortOption.text = formattedPath;
-          sortOption.value = formattedPath;
-          sortField.appendChild(sortOption);
-        });
-
-        var selectablePaths = util.getChildPaths(json, true).filter(function(path) {
-          return path !== '';
-        });
-        if (selectablePaths.length > 0) {
-          selectablePaths.forEach(function (path) {
-            var formattedPath = preprocessPath(path);
-            var option = document.createElement('option');
-            option.text = formattedPath;
-            option.value = formattedPath;
-            selectFields.appendChild(option);
-          });
+      elem.querySelector('.pico-modal-contents').onclick = function (event) {
+        // prevent the first clear button (in any select box) from getting
+        // focus when clicking anywhere in the modal. Only allow clicking links.
+        if (event.target.nodeName !== 'A') {
+          event.preventDefault()
         }
-        else {
-          var selectFieldsPart = elem.querySelector('#selectFieldsPart');
-          if (selectFieldsPart) {
-            selectFieldsPart.style.display = 'none';
-          }
-        }
+      }
 
-        var selectrFilterField = new Selectr(filterField, { defaultSelected: false, clearable: true, allowDeselect: true, placeholder: 'field...' });
-        var selectrFilterRelation = new Selectr(filterRelation, { defaultSelected: false, clearable: true, allowDeselect: true, placeholder: 'compare...' });
-        var selectrSortField = new Selectr(sortField, { defaultSelected: false, clearable: true, allowDeselect: true, placeholder: 'field...' });
-        var selectrSortOrder = new Selectr(sortOrder, { defaultSelected: false, clearable: true, allowDeselect: true, placeholder: 'order...' });
-        var selectrSelectFields = new Selectr(selectFields, {multiple: true, clearable: true, defaultSelected: false, placeholder: 'select fields...'});
+      query.value = Array.isArray(value) ? '[*]' : '@'
 
-        selectrFilterField.on('selectr.change', generateQueryFromWizard);
-        selectrFilterRelation.on('selectr.change', generateQueryFromWizard);
-        filterValue.oninput = generateQueryFromWizard;
-        selectrSortField.on('selectr.change', generateQueryFromWizard);
-        selectrSortOrder.on('selectr.change', generateQueryFromWizard);
-        selectrSelectFields.on('selectr.change', generateQueryFromWizard);
+      function preprocessPath (path) {
+        return (path === '')
+          ? '@'
+          : (path[0] === '.')
+            ? path.slice(1)
+            : path
+      }
 
-        elem.querySelector('.pico-modal-contents').onclick = function (event) {
-          // prevent the first clear button (in any select box) from getting
-          // focus when clicking anywhere in the modal. Only allow clicking links.
-          if (event.target.nodeName !== 'A') {
-            event.preventDefault();
-          }
-        };
+      function generateQueryFromWizard () {
+        if (filterField.value && filterRelation.value && filterValue.value) {
+          var field1 = filterField.value
+          var examplePath = field1 !== '@'
+            ? ['0'].concat(util.parsePath('.' + field1))
+            : ['0']
+          var exampleValue = util.get(value, examplePath)
+          var value1 = typeof exampleValue === 'string'
+            ? filterValue.value
+            : util.parseString(filterValue.value)
 
-        query.value = Array.isArray(value) ? '[*]' : '@';
-
-        function preprocessPath(path) {
-          return (path === '')
-              ? '@'
-              : (path[0] === '.')
-                  ? path.slice(1)
-                  : path;
-        }
-
-        function generateQueryFromWizard () {
-          if (filterField.value && filterRelation.value && filterValue.value) {
-            var field1 = filterField.value;
-            var examplePath = field1 !== '@'
-                ? ['0'].concat(util.parsePath('.' + field1))
-                : ['0']
-            var exampleValue = util.get(value, examplePath)
-            var value1 = typeof exampleValue === 'string'
-                ? filterValue.value
-                : util.parseString(filterValue.value);
-
-            query.value = '[? ' +
+          query.value = '[? ' +
                 field1 + ' ' +
                 filterRelation.value + ' ' +
                 '`' + JSON.stringify(value1) + '`' +
-                ']';
+                ']'
+        } else {
+          query.value = '[*]'
+        }
+
+        if (sortField.value && sortOrder.value) {
+          var field2 = sortField.value
+          if (sortOrder.value === 'desc') {
+            query.value += ' | reverse(sort_by(@, &' + field2 + '))'
+          } else {
+            query.value += ' | sort_by(@, &' + field2 + ')'
           }
-          else {
-            query.value = '[*]';
-          }
+        }
 
-          if (sortField.value && sortOrder.value) {
-            var field2 = sortField.value;
-            if (sortOrder.value === 'desc') {
-              query.value += ' | reverse(sort_by(@, &' + field2 + '))';
-            }
-            else {
-              query.value += ' | sort_by(@, &' + field2 + ')';
+        if (selectFields.value) {
+          var values = []
+          for (var i = 0; i < selectFields.options.length; i++) {
+            if (selectFields.options[i].selected) {
+              var selectedValue = selectFields.options[i].value
+              values.push(selectedValue)
             }
           }
 
-          if (selectFields.value) {
-            var values = [];
-            for (var i=0; i < selectFields.options.length; i++) {
-              if (selectFields.options[i].selected) {
-                var selectedValue = selectFields.options[i].value;
-                values.push(selectedValue);
-              }
-            }
+          if (query.value[query.value.length - 1] !== ']') {
+            query.value += ' | [*]'
+          }
 
-            if (query.value[query.value.length - 1] !== ']') {
-              query.value += ' | [*]';
-            }
-
-            if (values.length === 1) {
-              query.value += '.' + values[0];
-            }
-            else if (values.length > 1) {
-              query.value += '.{' +
+          if (values.length === 1) {
+            query.value += '.' + values[0]
+          } else if (values.length > 1) {
+            query.value += '.{' +
                   values.map(function (value) {
-                    var parts = value.split('.');
-                    var last = parts[parts.length - 1];
-                    return last + ': ' + value;
+                    var parts = value.split('.')
+                    var last = parts[parts.length - 1]
+                    return last + ': ' + value
                   }).join(', ') +
-                  '}';
-            }
-            else { // values.length === 0
-              // ignore
-            }
-          }
-
-          debouncedUpdatePreview();
-        }
-
-        function updatePreview() {
-          try {
-            var transformed = jmespath.search(value, query.value);
-
-            preview.className = 'jsoneditor-transform-preview';
-            preview.value = stringifyPartial(transformed, 2, MAX_PREVIEW_CHARACTERS);
-
-            ok.disabled = false;
-          }
-          catch (err) {
-            preview.className = 'jsoneditor-transform-preview jsoneditor-error';
-            preview.value = err.toString();
-            ok.disabled = true;
+                  '}'
+          } else { // values.length === 0
+            // ignore
           }
         }
 
-        var debouncedUpdatePreview = debounce(updatePreview, 300);
+        debouncedUpdatePreview()
+      }
 
-        query.oninput = debouncedUpdatePreview;
-        debouncedUpdatePreview();
+      function updatePreview () {
+        try {
+          var transformed = jmespath.search(value, query.value)
 
-        ok.onclick = function (event) {
-          event.preventDefault();
-          event.stopPropagation();
+          preview.className = 'jsoneditor-transform-preview'
+          preview.value = stringifyPartial(transformed, 2, MAX_PREVIEW_CHARACTERS)
 
-          modal.close();
+          ok.disabled = false
+        } catch (err) {
+          preview.className = 'jsoneditor-transform-preview jsoneditor-error'
+          preview.value = err.toString()
+          ok.disabled = true
+        }
+      }
 
-          onTransform(query.value)
-        };
+      var debouncedUpdatePreview = debounce(updatePreview, 300)
 
-        setTimeout(function () {
-          query.select();
-          query.focus();
-          query.selectionStart = 3;
-          query.selectionEnd = 3;
-        });
+      query.oninput = debouncedUpdatePreview
+      debouncedUpdatePreview()
+
+      ok.onclick = function (event) {
+        event.preventDefault()
+        event.stopPropagation()
+
+        modal.close()
+
+        onTransform(query.value)
+      }
+
+      setTimeout(function () {
+        query.select()
+        query.focus()
+        query.selectionStart = 3
+        query.selectionEnd = 3
       })
-      .afterClose(function (modal) {
-        modal.destroy();
-      })
-      .show();
+    })
+    .afterClose(function (modal) {
+      modal.destroy()
+    })
+    .show()
 }
 
-module.exports = showTransformModal;
+module.exports = showTransformModal

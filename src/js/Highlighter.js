@@ -1,4 +1,4 @@
-'use strict';
+'use strict'
 
 /**
  * The highlighter can highlight/unhighlight a node, and
@@ -6,7 +6,7 @@
  * @constructor Highlighter
  */
 function Highlighter () {
-  this.locked = false;
+  this.locked = false
 }
 
 /**
@@ -15,23 +15,23 @@ function Highlighter () {
  */
 Highlighter.prototype.highlight = function (node) {
   if (this.locked) {
-    return;
+    return
   }
 
-  if (this.node != node) {
+  if (this.node !== node) {
     // unhighlight current node
     if (this.node) {
-      this.node.setHighlight(false);
+      this.node.setHighlight(false)
     }
 
     // highlight new node
-    this.node = node;
-    this.node.setHighlight(true);
+    this.node = node
+    this.node.setHighlight(true)
   }
 
   // cancel any current timeout
-  this._cancelUnhighlight();
-};
+  this._cancelUnhighlight()
+}
 
 /**
  * Unhighlight currently highlighted node.
@@ -39,23 +39,23 @@ Highlighter.prototype.highlight = function (node) {
  */
 Highlighter.prototype.unhighlight = function () {
   if (this.locked) {
-    return;
+    return
   }
 
-  var me = this;
+  var me = this
   if (this.node) {
-    this._cancelUnhighlight();
+    this._cancelUnhighlight()
 
     // do the unhighlighting after a small delay, to prevent re-highlighting
     // the same node when moving from the drag-icon to the contextmenu-icon
     // or vice versa.
     this.unhighlightTimer = setTimeout(function () {
-      me.node.setHighlight(false);
-      me.node = undefined;
-      me.unhighlightTimer = undefined;
-    }, 0);
+      me.node.setHighlight(false)
+      me.node = undefined
+      me.unhighlightTimer = undefined
+    }, 0)
   }
-};
+}
 
 /**
  * Cancel an unhighlight action (if before the timeout of the unhighlight action)
@@ -63,24 +63,24 @@ Highlighter.prototype.unhighlight = function () {
  */
 Highlighter.prototype._cancelUnhighlight = function () {
   if (this.unhighlightTimer) {
-    clearTimeout(this.unhighlightTimer);
-    this.unhighlightTimer = undefined;
+    clearTimeout(this.unhighlightTimer)
+    this.unhighlightTimer = undefined
   }
-};
+}
 
 /**
  * Lock highlighting or unhighlighting nodes.
  * methods highlight and unhighlight do not work while locked.
  */
 Highlighter.prototype.lock = function () {
-  this.locked = true;
-};
+  this.locked = true
+}
 
 /**
  * Unlock highlighting or unhighlighting nodes
  */
 Highlighter.prototype.unlock = function () {
-  this.locked = false;
-};
+  this.locked = false
+}
 
-module.exports = Highlighter;
+module.exports = Highlighter

@@ -1,3 +1,10 @@
 language: node_js
 node_js:
   - "lts/*"
+
+jobs:
+  include:
+    - name: Lint
+      stage: other
+      script: npm run lint
+      node_js: lts/*

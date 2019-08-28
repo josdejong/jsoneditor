@@ -96,9 +96,9 @@ with npm (recommended):
 
     <script>
         // create the editor
-        var container = document.getElementById("jsoneditor");
-        var options = {};
-        var editor = new JSONEditor(container, options);
+        var container = document.getElementById("jsoneditor")
+        var options = {}
+        var editor = new JSONEditor(container, options)
 
         // set json
         var json = {
@@ -108,11 +108,11 @@ with npm (recommended):
             "Number": 123,
             "Object": {"a": "b", "c": "d"},
             "String": "Hello World"
-        };
-        editor.set(json);
+        }
+        editor.set(json)
 
         // get json
-        var json = editor.get();
+        var json = editor.get()
     </script>
 </body>
 </html>

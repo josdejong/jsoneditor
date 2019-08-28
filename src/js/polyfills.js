@@ -3,42 +3,33 @@ if (typeof Element !== 'undefined') {
   // Polyfill for array remove
   (function () {
     function polyfill (item) {
-      if (item.hasOwnProperty('remove')) {
-        return;
+      if ('remove' in item) {
+        return
       }
       Object.defineProperty(item, 'remove', {
         configurable: true,
         enumerable: true,
         writable: true,
-        value: function remove() {
-          if (this.parentNode != null)
-            this.parentNode.removeChild(this);
+        value: function remove () {
+          if (this.parentNode !== undefined) { this.parentNode.removeChild(this) }
         }
-      });
+      })
     }
 
-    if (typeof Element !== 'undefined')       { polyfill(Element.prototype); }
-    if (typeof CharacterData !== 'undefined') { polyfill(CharacterData.prototype); }
-    if (typeof DocumentType !== 'undefined')  { polyfill(DocumentType.prototype); }
-  })();
-}
-
-
-// Polyfill for startsWith
-if (!String.prototype.startsWith) {
-  String.prototype.startsWith = function (searchString, position) {
-    position = position || 0;
-    return this.substr(position, searchString.length) === searchString;
-  };
+    if (typeof window.Element !== 'undefined') { polyfill(window.Element.prototype) }
+    if (typeof window.CharacterData !== 'undefined') { polyfill(window.CharacterData.prototype) }
+    if (typeof window.DocumentType !== 'undefined') { polyfill(window.DocumentType.prototype) }
+  })()
 }
 
 // Polyfill for Array.find
 if (!Array.prototype.find) {
-  Array.prototype.find = function(callback) {
+  // eslint-disable-next-line no-extend-native
+  Array.prototype.find = function (callback) {
     for (var i = 0; i < this.length; i++) {
-      var element = this[i];
-      if ( callback.call(this, element, i, this) ) {
-        return element;
+      var element = this[i]
+      if (callback.call(this, element, i, this)) {
+        return element
       }
     }
   }
@@ -46,7 +37,8 @@ if (!Array.prototype.find) {
 
 // Polyfill for String.trim
 if (!String.prototype.trim) {
+  // eslint-disable-next-line no-extend-native
   String.prototype.trim = function () {
-    return this.replace(/^[\s\uFEFF\xA0]+|[\s\uFEFF\xA0]+$/g, '');
-  };
+    return this.replace(/^[\s\uFEFF\xA0]+|[\s\uFEFF\xA0]+$/g, '')
+  }
 }
