@@ -142,12 +142,27 @@ jsoneditor:
 - To automatically build when a source file has changed:
 
   ```
-  npm run watch
+  npm start
   ```
 
   This will update `./jsoneditor.js` and `./jsoneditor.css` in the dist folder
   on every change, but it will **NOT** update the minified versions as that's
   an expensive operation.
+
+
+## Test
+
+Run unit tests:
+
+```
+npm test
+```
+
+Run code linting ([JavaScript Standard Style](https://standardjs.com/)):
+
+```
+npm run lint
+```
 
 
 ## Custom builds
