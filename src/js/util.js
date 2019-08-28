@@ -1163,10 +1163,12 @@ exports.getPositionForPath = function(text, paths) {
  */
 exports.compileJSONPointer = function (path) {
   return path
-      .map(p => ('/' + String(p)
-          .replace(/~/g, '~0')
-          .replace(/\//g, '~1')
-      ))
+      .map(function (p) {
+        return ('/' + String(p)
+                .replace(/~/g, '~0')
+                .replace(/\//g, '~1')
+        );
+      })
       .join('');
 };
 
