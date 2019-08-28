@@ -1,10 +1,10 @@
-var assert = require('assert')
-var stringifyPartial = require('../src/js/jsonUtils').stringifyPartial
-var containsArray = require('../src/js/jsonUtils').containsArray
+const assert = require('assert')
+const stringifyPartial = require('../src/js/jsonUtils').stringifyPartial
+const containsArray = require('../src/js/jsonUtils').containsArray
 
-describe('jsonUtils', function () {
-  it('should stringify a small object', function () {
-    var json = {
+describe('jsonUtils', () => {
+  it('should stringify a small object', () => {
+    const json = {
       a: 2,
       b: 'foo',
       c: null,
@@ -16,8 +16,8 @@ describe('jsonUtils', function () {
     assert.strictEqual(stringifyPartial(json), '{"a":2,"b":"foo","c":null,"d":false,"e":[1,2,3],"f":{"g":"h"}}')
   })
 
-  it('should stringify a small object with formatting', function () {
-    var json = {
+  it('should stringify a small object with formatting', () => {
+    const json = {
       a: 2,
       b: 'foo',
       c: null,
@@ -58,8 +58,8 @@ describe('jsonUtils', function () {
         '}')
   })
 
-  it('should limit stringified output', function () {
-    var json = {
+  it('should limit stringified output', () => {
+    const json = {
       a: 2,
       b: 'foo',
       c: null,
@@ -68,8 +68,8 @@ describe('jsonUtils', function () {
       f: { g: 'h' }
     }
 
-    var all = '{"a":2,"b":"foo","c":null,"d":false,"e":[1,2,3],"f":{"g":"h"}}'
-    var limit = 20
+    const all = '{"a":2,"b":"foo","c":null,"d":false,"e":[1,2,3],"f":{"g":"h"}}'
+    const limit = 20
 
     assert.strictEqual(stringifyPartial(json, undefined, limit),
       all.slice(0, limit) + '...')
@@ -82,7 +82,7 @@ describe('jsonUtils', function () {
     assert.strictEqual(stringifyPartial(12345678, undefined, 4), '1234...')
   })
 
-  it('should count array items', function () {
+  it('should count array items', () => {
     // assert.strictEqual(countArrayItems('[1,2,3]'), 3)
     assert.strictEqual(containsArray('[]'), true)
     assert.strictEqual(containsArray(' []'), true)

@@ -1,13 +1,13 @@
-var assert = require('assert')
-var setUpTestEnvironment = require('./setup')
+const assert = require('assert')
+const setUpTestEnvironment = require('./setup')
 setUpTestEnvironment()
 
-var Node = require('../src/js/Node')
+const Node = require('../src/js/Node')
 
-describe('Node', function () {
-  describe('_findSchema', function () {
-    it('should find schema', function () {
-      var schema = {
+describe('Node', () => {
+  describe('_findSchema', () => {
+    it('should find schema', () => {
+      const schema = {
         type: 'object',
         properties: {
           child: {
@@ -15,12 +15,12 @@ describe('Node', function () {
           }
         }
       }
-      var path = ['child']
+      const path = ['child']
       assert.strictEqual(Node._findSchema(schema, {}, path), schema.properties.child)
     })
 
-    it('should find schema inside an array item', function () {
-      var schema = {
+    it('should find schema inside an array item', () => {
+      const schema = {
         properties: {
           job: {
             type: 'array',
@@ -47,8 +47,8 @@ describe('Node', function () {
         schema.properties.job.items.properties.company)
     })
 
-    it('should find schema within multi-level object properties', function () {
-      var schema = {
+    it('should find schema within multi-level object properties', () => {
+      const schema = {
         type: 'object',
         properties: {
           levelTwo: {
@@ -66,7 +66,7 @@ describe('Node', function () {
           }
         }
       }
-      var path = []
+      let path = []
       assert.strictEqual(Node._findSchema(schema, {}, path), schema)
       path = ['levelTwo']
       assert.strictEqual(Node._findSchema(schema, {}, path), schema.properties.levelTwo)
@@ -79,8 +79,8 @@ describe('Node', function () {
       )
     })
 
-    it('should return null for path that has no schema', function () {
-      var schema = {
+    it('should return null for path that has no schema', () => {
+      const schema = {
         type: 'object',
         properties: {
           foo: {
@@ -93,15 +93,15 @@ describe('Node', function () {
           }
         }
       }
-      var path = ['bar']
+      let path = ['bar']
       assert.strictEqual(Node._findSchema(schema, {}, path), null)
       path = ['foo', 'bar']
       assert.strictEqual(Node._findSchema(schema, {}, path), null)
     })
 
-    describe('with $ref', function () {
-      it('should find a referenced schema', function () {
-        var schema = {
+    describe('with $ref', () => {
+      it('should find a referenced schema', () => {
+        const schema = {
           type: 'object',
           properties: {
             foo: {
@@ -109,18 +109,18 @@ describe('Node', function () {
             }
           }
         }
-        var fooSchema = {
+        const fooSchema = {
           type: 'number',
           title: 'Foo'
         }
-        var path = ['foo']
+        const path = ['foo']
         assert.strictEqual(Node._findSchema(schema, { foo: fooSchema }, path), fooSchema)
       })
     })
 
-    describe('with pattern properties', function () {
-      it('should find schema', function () {
-        var schema = {
+    describe('with pattern properties', () => {
+      it('should find schema', () => {
+        const schema = {
           type: 'object',
           properties: {
             str: {
@@ -135,14 +135,14 @@ describe('Node', function () {
             }
           }
         }
-        var path = []
+        let path = []
         assert.strictEqual(Node._findSchema(schema, {}, path), schema, 'top level')
         path = ['str']
         assert.strictEqual(Node._findSchema(schema, {}, path), schema.properties.str, 'normal property')
       })
 
-      it('should find schema within multi-level object properties', function () {
-        var schema = {
+      it('should find schema within multi-level object properties', () => {
+        const schema = {
           type: 'object',
           properties: {
             levelTwo: {
@@ -167,7 +167,7 @@ describe('Node', function () {
             }
           }
         }
-        var path = []
+        let path = []
         assert.strictEqual(Node._findSchema(schema, {}, path), schema, 'top level')
         path = ['levelTwo']
         assert.strictEqual(Node._findSchema(schema, {}, path), schema.properties.levelTwo, 'level two')
@@ -181,8 +181,8 @@ describe('Node', function () {
         )
       })
 
-      it('should find schema for pattern properties', function () {
-        var schema = {
+      it('should find schema for pattern properties', () => {
+        const schema = {
           type: 'object',
           patternProperties: {
             '^foo[0-9]': {
@@ -195,7 +195,7 @@ describe('Node', function () {
             }
           }
         }
-        var path = ['foo1']
+        let path = ['foo1']
         assert.strictEqual(
           Node._findSchema(schema, {}, path),
           schema.patternProperties['^foo[0-9]'],
@@ -209,8 +209,8 @@ describe('Node', function () {
         )
       })
 
-      it('should find schema for multi-level pattern properties', function () {
-        var schema = {
+      it('should find schema for multi-level pattern properties', () => {
+        const schema = {
           type: 'object',
           patternProperties: {
             '^foo[0-9]': {
@@ -239,7 +239,7 @@ describe('Node', function () {
             }
           }
         }
-        var path = ['foo1', 'fooChild', 'fooChild2']
+        let path = ['foo1', 'fooChild', 'fooChild2']
         assert.strictEqual(
           Node._findSchema(schema, {}, path),
           schema.patternProperties['^foo[0-9]'].properties.fooChild.properties.fooChild2,
@@ -253,8 +253,8 @@ describe('Node', function () {
         )
       })
 
-      it('should return null for path that has no schema', function () {
-        var schema = {
+      it('should return null for path that has no schema', () => {
+        const schema = {
           type: 'object',
           properties: {
             levelTwo: {
@@ -277,7 +277,7 @@ describe('Node', function () {
             }
           }
         }
-        var path = ['not-in-schema']
+        let path = ['not-in-schema']
         assert.strictEqual(Node._findSchema(schema, {}, path), null)
         path = ['levelOne', 'not-in-schema']
         assert.strictEqual(Node._findSchema(schema, {}, path), null)

@@ -1,4 +1,4 @@
-var JSDOM = require('jsdom').JSDOM
+const JSDOM = require('jsdom').JSDOM
 
 /**
  * Set up the test environment by simulating browser globals.
@@ -10,7 +10,7 @@ module.exports = function setUpTestEnvironment (locale) {
     locale = 'en'
   }
 
-  var dom = new JSDOM('...')
+  const dom = new JSDOM('...')
   global.window = dom.window
   global.document = dom.window.document
   global.navigator = dom.window.navigator
