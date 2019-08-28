@@ -2,7 +2,7 @@
 
 https://github.com/josdejong/jsoneditor
 
-## not yet published, version 6.4.0
+## 2019-08-28, version 6.4.0
 
 - Replaces CSS with SASS internally, improvements in styling. Thanks @ppetkow.
 - Fixed #761: JSON schema errors not rendered in the gutter for mode `code`

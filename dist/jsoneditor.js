@@ -24,8 +24,8 @@
  * Copyright (c) 2011-2019 Jos de Jong, http://jsoneditoronline.org
  *
  * @author  Jos de Jong, <wjosdejong@gmail.com>
- * @version 6.3.0
- * @date    2019-08-22
+ * @version 6.4.0
+ * @date    2019-08-28
  */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
@@ -1270,7 +1270,7 @@ exports.getPositionForPath = function(text, paths) {
 
   paths.forEach(function (path) {
     var pathArr = me.parsePath(path);
-    var pointerName = pathArr.length ? "/" + pathArr.join("/") : "";
+    var pointerName = exports.compileJSONPointer(pathArr);
     var pointer = jsmap.pointers[pointerName];
     if (pointer) {
       result.push({
@@ -1284,6 +1284,23 @@ exports.getPositionForPath = function(text, paths) {
   return result;
   
 }
+
+/**
+ * Compile a JSON Pointer
+ * WARNING: this is an incomplete implementation
+ * @param {Array.<string | number>} path
+ * @return {string}
+ */
+exports.compileJSONPointer = function (path) {
+  return path
+      .map(function (p) {
+        return ('/' + String(p)
+                .replace(/~/g, '~0')
+                .replace(/\//g, '~1')
+        );
+      })
+      .join('');
+};
 
 /**
  * Get the applied color given a color name or code
@@ -11245,7 +11262,6 @@ module.exports = function ucs2length(str) {
   return length;
 };
 
-"use strict";
 
 /***/ }),
 /* 34 */
@@ -11260,8 +11276,6 @@ var traverse = module.exports = function (schema, opts, cb) {
     cb = opts;
     opts = {};
   }
-  return length;
-};
 
   cb = opts.cb || cb;
   var pre = (typeof cb == 'function') ? cb : cb.pre || function() {};
@@ -11339,12 +11353,6 @@ function _traverse(opts, pre, post, schema, jsonPtr, rootSchema, parentJsonPtr, 
   }
 }
 
-traverse.propsKeywords = {
-  definitions: true,
-  properties: true,
-  patternProperties: true,
-  dependencies: true
-};
 
 function escapeJsonPtr(str) {
   return str.replace(/~/g, '~0').replace(/\//g, '~1');
@@ -11363,7 +11371,6 @@ var Cache = module.exports = function Cache() {
   this._cache = {};
 };
 
-"use strict";
 
 Cache.prototype.put = function Cache_put(key, value) {
   this._cache[key] = value;
@@ -13935,16 +13942,6 @@ module.exports = function (metaSchema, keywordsJsonPointers) {
           ]
         };
       }
-    } else {
-      out += ' var err = ' + (__err) + ';  if (vErrors === null) vErrors = [err]; else vErrors.push(err); errors++; ';
-    }
-    out += ' } ';
-    if ($breakOnError) {
-      out += ' else { ';
-    }
-  } else {
-    if ($breakOnError) {
-      out += ' if (true) { ';
     }
   }
 
@@ -15218,17 +15215,6 @@ if (Object.defineProperty) {
         var definePropertyFallback = Object.defineProperty;
     }
 }
-if (!Array.prototype.every) {
-    Array.prototype.every = function every(fun /*, thisp */) {
-        var object = toObject(this),
-            self = splitString && _toString(this) == "[object String]" ?
-                this.split("") :
-                object,
-            length = self.length >>> 0,
-            thisp = arguments[1];
-        if (_toString(fun) != "[object Function]") {
-            throw new TypeError(fun + " is not a function");
-        }
 
 if (!Object.defineProperty || definePropertyFallback) {
     var ERR_NON_OBJECT_DESCRIPTOR = "Property description must be an object: ";
@@ -15626,12 +15612,6 @@ if (typeof document == "undefined") {
     exports.importCssString = function() {};
     return;
 }
-if (!Array.prototype.indexOf || ([0, 1].indexOf(1, 2) != -1)) {
-    Array.prototype.indexOf = function indexOf(sought /*, fromIndex */ ) {
-        var self = splitString && _toString(this) == "[object String]" ?
-                this.split("") :
-                toObject(this),
-            length = self.length >>> 0;
 
 if (window.pageYOffset !== undefined) {
     exports.getPageScrollTop = function() {
@@ -15689,12 +15669,6 @@ else {
         return el.innerText;
     };
 }
-var toObject = function (o) {
-    if (o == null) { // this matches both null and undefined
-        throw new TypeError("can't convert "+o+" to object");
-    }
-    return Object(o);
-};
 
 exports.getParentWindow = function(document) {
     return document.defaultView || document.parentWindow;
@@ -16167,7 +16141,6 @@ function normalizeCommandKeys(callback, e, keyCode) {
     return callback(e, hashId, keyCode);
 }
 
-exports.isChrome = parseFloat(ua.split(" Chrome/")[1]) || undefined;
 
 exports.addCommandKeyListener = function(el, callback) {
     var addListener = exports.addListener;
@@ -17617,10 +17590,6 @@ function calcRangeOrientation(range, cursor) {
 
 ace.define("ace/tooltip",["require","exports","module","ace/lib/oop","ace/lib/dom"], function(acequire, exports, module) {
 "use strict";
-var dom = acequire("../lib/dom");
-var oop = acequire("../lib/oop");
-var event = acequire("../lib/event");
-var Tooltip = acequire("../tooltip").Tooltip;
 
 var oop = acequire("./lib/oop");
 var dom = acequire("./lib/dom");
@@ -17798,9 +17767,6 @@ function GutterHandler(mouseHandler) {
                 hideTooltip();
         }, 50);
     });
-    
-    editor.on("changeSession", hideTooltip);
-}
 
     event.addListener(editor.renderer.$gutter, "mouseout", function(e) {
         mouseEvent = null;
@@ -18036,8 +18002,6 @@ function DragdropHandler(mouseHandler) {
             dragOperation = null;
             return event.preventDefault(e);
         }
-        this.editor.unsetStyle("ace_dragging");
-        this.editor.renderer.setCursorStyle("");
     };
 
     this.onDrop = function(e) {
@@ -18296,12 +18260,6 @@ function DragdropHandler(mouseHandler) {
 
 }).call(DragdropHandler.prototype);
 
-        var copyModifierState = useragent.isMac ? e.altKey : e.ctrlKey;
-        var effectAllowed = "uninitialized";
-        try {
-            effectAllowed = e.dataTransfer.effectAllowed.toLowerCase();
-        } catch (e) {}
-        var dropEffect = "none";
 
 function calcDistance(ax, ay, bx, by) {
     return Math.sqrt(Math.pow(bx - ax, 2) + Math.pow(by - ay, 2));
@@ -19526,14 +19484,6 @@ var BidiHandler = function(session) {
 
         return splitIndex;
     };
-    this.markAsDirty = function() {
-        this.currentRow = null;
-    };
-    this.updateCharacterWidths = function(fontMetrics) {
-        if (!this.seenBidi)
-            return;
-        if (this.characterWidth === fontMetrics.$characterSize.width)
-            return;
 
     this.updateRowLine = function(docRow, splitIndex) {
         if (docRow === undefined)
@@ -19997,7 +19947,6 @@ var Selection = function(session) {
             this.$isEmpty = false;
             this._emit("changeSelection");
         }
-        return this.session.getWordRange(row, column);
     };
     this.getSelectionAnchor = function() {
         if (this.$isEmpty)
@@ -20707,10 +20656,6 @@ var Tokenizer = function(rules) {
         }
         return tokens;
     };
-    
-    this.reportError = config.reportError;
-    
-}).call(Tokenizer.prototype);
 
     this.removeCapturingGroups = function(src) {
         var r = src.replace(
@@ -21601,11 +21546,6 @@ CstyleBehaviour.clearMaybeInsertedClosing = function() {
     }
 };
 
-function addUnicodePackage (pack) {
-    var codePoint = /\w{4}/g;
-    for (var name in pack)
-        exports.packages[name] = pack[name].replace(codePoint, "\\u$&");
-}
 
 
 oop.inherits(CstyleBehaviour, Behaviour);
@@ -22558,13 +22498,6 @@ var Document = function(textOrLines) {
 
         return index + pos.column;
     };
-    this.positionToIndex = function(pos, startRow) {
-        var lines = this.$lines || this.getAllLines();
-        var newlineLength = this.getNewLineCharacter().length;
-        var index = 0;
-        var row = Math.min(pos.row, lines.length);
-        for (var i = startRow || 0; i < row; ++i)
-            index += lines[i].length + newlineLength;
 
 }).call(Document.prototype);
 
@@ -23214,11 +23147,7 @@ var Fold = exports.Fold = function(range, placeholder) {
 
 oop.inherits(Fold, RangeList);
 
-function Folding() {
-    this.getFoldAt = function(row, column, side) {
-        var foldLine = this.getFoldLine(row);
-        if (!foldLine)
-            return null;
+(function() {
 
     this.toString = function() {
         return '"' + this.placeholder + '" ' + this.range.toString();
@@ -25745,11 +25674,6 @@ EditSession.$uid = 0;
             else {
                 rowEnd = row + 1;
             }
-        } else {
-            var lastRow = this.$wrapData.length;
-            var row = 0, i = 0;
-            var fold = this.$foldData[i++];
-            var foldStart = fold ? fold.start.row :Infinity;
 
             screenRow += this.getRowLength(row);
             row = rowEnd;
@@ -25820,15 +25744,6 @@ EditSession.$uid = 0;
                     foldStart = fold ?fold.start.row :Infinity;
                 }
             }
-            
-            return [screenColumn, column];
-        };
-    };
-    
-    this.destroy = function() {
-        if (this.bgTokenizer) {
-            this.bgTokenizer.setDocument(null);
-            this.bgTokenizer = null;
         }
         if (this.lineWidgets)
             screenRows += this.$getWidgetScreenLength();
@@ -37120,8 +37035,8 @@ treemode._onChange = function () {
   this._debouncedValidate();
 
   if (this.treePath) {
-    var selectedNode = this.selection
-        ?  this.node.findNodeByInternalPath(this.selection.path)
+    var selectedNode = (this.node && this.selection)
+        ? this.node.findNodeByInternalPath(this.selection.path)
         : this.multiselection
             ? this.multiselection.nodes[0]
             : undefined;
@@ -39360,11 +39275,12 @@ var escapedChars = {
 var A_CODE = 'a'.charCodeAt();
 
 
-exports.parse = function (source) {
+exports.parse = function (source, _, options) {
   var pointers = {};
   var line = 0;
   var column = 0;
   var pos = 0;
+  var bigint = options && options.bigint && typeof BigInt != 'undefined';
   return {
     data: _parse('', true),
     pointers: pointers
@@ -39433,22 +39349,29 @@ exports.parse = function (source) {
 
   function parseNumber() {
     var numStr = '';
+    var integer = true;
     if (source[pos] == '-') numStr += getChar();
 
     numStr += source[pos] == '0'
               ? getChar()
               : getDigits();
 
-    if (source[pos] == '.')
+    if (source[pos] == '.') {
       numStr += getChar() + getDigits();
+      integer = false;
+    }
 
     if (source[pos] == 'e' || source[pos] == 'E') {
       numStr += getChar();
       if (source[pos] == '+' || source[pos] == '-') numStr += getChar();
       numStr += getDigits();
+      integer = false;
     }
 
-    return +numStr;
+    var result = +numStr;
+    return bigint && integer && (result > Number.MAX_SAFE_INTEGER || result < Number.MIN_SAFE_INTEGER)
+            ? BigInt(numStr)
+            : result;
   }
 
   function parseArray(ptr) {
@@ -39574,10 +39497,13 @@ exports.parse = function (source) {
 };
 
 
-exports.stringify = function (data, _, whitespace) {
+exports.stringify = function (data, _, options) {
   if (!validType(data)) return;
   var wsLine = 0;
   var wsPos, wsColumn;
+  var whitespace = typeof options == 'object'
+                    ? options.space
+                    : options;
   switch (typeof whitespace) {
     case 'number':
       var len = whitespace > 10
@@ -39614,6 +39540,7 @@ exports.stringify = function (data, _, whitespace) {
   var line = 0;
   var column = 0;
   var pos = 0;
+  var es6 = options && options.es6 && typeof Map == 'function';
   _stringify(data, 0, '');
   return {
     json: json,
@@ -39624,19 +39551,30 @@ exports.stringify = function (data, _, whitespace) {
     map(ptr, 'value');
     switch (typeof _data) {
       case 'number':
+      case 'bigint':
       case 'boolean':
         out('' + _data); break;
       case 'string':
         out(quoted(_data)); break;
       case 'object':
-        if (_data === null)
+        if (_data === null) {
           out('null');
-        else if (typeof _data.toJSON == 'function')
+        } else if (typeof _data.toJSON == 'function') {
           out(quoted(_data.toJSON()));
-        else if (Array.isArray(_data))
+        } else if (Array.isArray(_data)) {
           stringifyArray();
-        else
+        } else if (es6) {
+          if (_data.constructor.BYTES_PER_ELEMENT)
+            stringifyArray();
+          else if (_data instanceof Map)
+            stringifyMapSet();
+          else if (_data instanceof Set)
+            stringifyMapSet(true);
+          else
+            stringifyObject();
+        } else {
           stringifyObject();
+        }
     }
     map(ptr, 'valueEnd');
 
@@ -39677,6 +39615,38 @@ exports.stringify = function (data, _, whitespace) {
             if (whitespace) out(' ');
             _stringify(value, propLvl, propPtr);
           }
+        }
+        indent(lvl);
+        out('}');
+      } else {
+        out('{}');
+      }
+    }
+
+    function stringifyMapSet(isSet) {
+      if (_data.size) {
+        out('{');
+        var propLvl = lvl + 1;
+        var first = true;
+        var entries = _data.entries();
+        var entry = entries.next();
+        while (!entry.done) {
+          var item = entry.value;
+          var key = item[0];
+          var value = isSet ? true : item[1];
+          if (validType(value)) {
+            if (!first) out(',');
+            first = false;
+            var propPtr = ptr + '/' + escapeJsonPointer(key);
+            indent(propLvl);
+            map(propPtr, 'key');
+            out(quoted(key));
+            map(propPtr, 'keyEnd');
+            out(':');
+            if (whitespace) out(' ');
+            _stringify(value, propLvl, propPtr);
+          }
+          entry = entries.next();
         }
         indent(lvl);
         out('}');
@@ -39725,7 +39695,7 @@ exports.stringify = function (data, _, whitespace) {
 };
 
 
-var VALID_TYPES = ['number', 'boolean', 'string', 'object'];
+var VALID_TYPES = ['number', 'bigint', 'boolean', 'string', 'object'];
 function validType(data) {
   return VALID_TYPES.indexOf(typeof data) >= 0;
 }
@@ -39770,7 +39740,7 @@ function escapeJsonPointer(str) {
  * @param {Element} container               HTML container element of where to
  *                                          create the search box
  */
-function SearchBox (editor, container) {
+function SearchBox(editor, container) {
   var searchBox = this;
 
   this.editor = editor;
@@ -39781,73 +39751,69 @@ function SearchBox (editor, container) {
   this.dom = {};
   this.dom.container = container;
 
-  var wrapper = document.createElement('div');
+  var wrapper = document.createElement("div");
   this.dom.wrapper = wrapper;
-  wrapper.className = 'jsoneditor-search';
+  wrapper.className = "jsoneditor-search";
   container.appendChild(wrapper);
 
-  var results = document.createElement('div');
+  var results = document.createElement("div");
   this.dom.results = results;
-  results.className = 'jsoneditor-results';
+  results.className = "jsoneditor-results";
   wrapper.appendChild(results);
 
-  var divInput = document.createElement('div');
+  var divInput = document.createElement("div");
   this.dom.input = divInput;
-  divInput.className = 'jsoneditor-frame';
-  divInput.title = 'Search fields and values';
+  divInput.className = "jsoneditor-frame";
+  divInput.title = "Search fields and values";
   wrapper.appendChild(divInput);
 
-  var refreshSearch = document.createElement('button');
-  refreshSearch.type = 'button';
-  refreshSearch.className = 'jsoneditor-refresh';
+  var refreshSearch = document.createElement("button");
+  refreshSearch.type = "button";
+  refreshSearch.className = "jsoneditor-refresh";
   divInput.appendChild(refreshSearch);
-  
 
-  var search = document.createElement('input');
-  search.type = 'text';
+  var search = document.createElement("input");
+  search.type = "text";
   this.dom.search = search;
-  search.oninput = function (event) {
+  search.oninput = function(event) {
     searchBox._onDelayedSearch(event);
   };
-  search.onchange = function (event) { // For IE 9
+  search.onchange = function(event) {
+    // For IE 9
     searchBox._onSearch();
   };
-  search.onkeydown = function (event) {
+  search.onkeydown = function(event) {
     searchBox._onKeyDown(event);
   };
-  search.onkeyup = function (event) {
+  search.onkeyup = function(event) {
     searchBox._onKeyUp(event);
   };
-  refreshSearch.onclick = function (event) {
+  refreshSearch.onclick = function(event) {
     search.select();
   };
 
   // TODO: ESC in FF restores the last input, is a FF bug, https://bugzilla.mozilla.org/show_bug.cgi?id=598819
-  //td = document.createElement('td');
   divInput.appendChild(search);
-  //tr.appendChild(td);
 
-  var searchNext = document.createElement('button');
-  searchNext.type = 'button';
-  searchNext.title = 'Next result (Enter)';
-  searchNext.className = 'jsoneditor-next';
-  searchNext.onclick = function () {
+  var searchNext = document.createElement("button");
+  searchNext.type = "button";
+  searchNext.title = "Next result (Enter)";
+  searchNext.className = "jsoneditor-next";
+  searchNext.onclick = function() {
     searchBox.next();
   };
-  //td = document.createElement('td');
-  divInput.appendChild(searchNext);
-  //tr.appendChild(td);
 
-  var searchPrevious = document.createElement('button');
-  searchPrevious.type = 'button';
-  searchPrevious.title = 'Previous result (Shift+Enter)';
-  searchPrevious.className = 'jsoneditor-previous';
-  searchPrevious.onclick = function () {
+  divInput.appendChild(searchNext);
+
+  var searchPrevious = document.createElement("button");
+  searchPrevious.type = "button";
+  searchPrevious.title = "Previous result (Shift+Enter)";
+  searchPrevious.className = "jsoneditor-previous";
+  searchPrevious.onclick = function() {
     searchBox.previous();
   };
- // td = document.createElement('td');
+
   divInput.appendChild(searchPrevious);
-  //tr.appendChild(td);
 }
 
 /**
@@ -39857,7 +39823,7 @@ function SearchBox (editor, container) {
  */
 SearchBox.prototype.next = function(focus) {
   if (this.results != undefined) {
-    var index = (this.resultIndex != undefined) ? this.resultIndex + 1 : 0;
+    var index = this.resultIndex != undefined ? this.resultIndex + 1 : 0;
     if (index > this.results.length - 1) {
       index = 0;
     }
@@ -39873,7 +39839,7 @@ SearchBox.prototype.next = function(focus) {
 SearchBox.prototype.previous = function(focus) {
   if (this.results != undefined) {
     var max = this.results.length - 1;
-    var index = (this.resultIndex != undefined) ? this.resultIndex - 1 : max;
+    var index = this.resultIndex != undefined ? this.resultIndex - 1 : max;
     if (index < 0) {
       index = max;
     }
@@ -39893,10 +39859,9 @@ SearchBox.prototype._setActiveResult = function(index, focus) {
   if (this.activeResult) {
     var prevNode = this.activeResult.node;
     var prevElem = this.activeResult.elem;
-    if (prevElem == 'field') {
+    if (prevElem == "field") {
       delete prevNode.searchFieldActive;
-    }
-    else {
+    } else {
       delete prevNode.searchValueActive;
     }
     prevNode.updateDom();
@@ -39914,17 +39879,16 @@ SearchBox.prototype._setActiveResult = function(index, focus) {
   // set new node active
   var node = this.results[this.resultIndex].node;
   var elem = this.results[this.resultIndex].elem;
-  if (elem == 'field') {
+  if (elem == "field") {
     node.searchFieldActive = true;
-  }
-  else {
+  } else {
     node.searchValueActive = true;
   }
   this.activeResult = this.results[this.resultIndex];
   node.updateDom();
 
   // TODO: not so nice that the focus is only set after the animation is finished
-  node.scrollTo(function () {
+  node.scrollTo(function() {
     if (focus) {
       node.focus(elem);
     }
@@ -39948,15 +39912,14 @@ SearchBox.prototype._clearDelay = function() {
  * @param {Event} event
  * @private
  */
-SearchBox.prototype._onDelayedSearch = function (event) {
+SearchBox.prototype._onDelayedSearch = function(event) {
   // execute the search after a short delay (reduces the number of
   // search actions while typing in the search text box)
   this._clearDelay();
   var searchBox = this;
-  this.timeout = setTimeout(function (event) {
+  this.timeout = setTimeout(function(event) {
     searchBox._onSearch();
-  },
-  this.delay);
+  }, this.delay);
 };
 
 /**
@@ -39966,18 +39929,18 @@ SearchBox.prototype._onDelayedSearch = function (event) {
  *                                 Default is false.
  * @private
  */
-SearchBox.prototype._onSearch = function (forceSearch) {
+SearchBox.prototype._onSearch = function(forceSearch) {
   this._clearDelay();
 
   var value = this.dom.search.value;
-  var text = (value.length > 0) ? value : undefined;
+  var text = value.length > 0 ? value : undefined;
   if (text !== this.lastText || forceSearch) {
     // only search again when changed
     this.lastText = text;
     this.results = this.editor.search(text);
     var MAX_SEARCH_RESULTS = this.results[0]
-        ? this.results[0].node.MAX_SEARCH_RESULTS
-        : Infinity;
+      ? this.results[0].node.MAX_SEARCH_RESULTS
+      : Infinity;
 
     // try to maintain the current active result if this is still part of the new search results
     var activeResultIndex = 0;
@@ -39996,20 +39959,16 @@ SearchBox.prototype._onSearch = function (forceSearch) {
     if (text !== undefined) {
       var resultCount = this.results.length;
       if (resultCount === 0) {
-        this.dom.results.innerHTML = 'no&nbsp;results';
+        this.dom.results.innerHTML = "no&nbsp;results";
+      } else if (resultCount === 1) {
+        this.dom.results.innerHTML = "1&nbsp;result";
+      } else if (resultCount > MAX_SEARCH_RESULTS) {
+        this.dom.results.innerHTML = MAX_SEARCH_RESULTS + "+&nbsp;results";
+      } else {
+        this.dom.results.innerHTML = resultCount + "&nbsp;results";
       }
-      else if (resultCount === 1) {
-        this.dom.results.innerHTML = '1&nbsp;result';
-      }
-      else if (resultCount > MAX_SEARCH_RESULTS) {
-        this.dom.results.innerHTML = MAX_SEARCH_RESULTS + '+&nbsp;results';
-      }
-      else {
-        this.dom.results.innerHTML = resultCount + '&nbsp;results';
-      }
-    }
-    else {
-      this.dom.results.innerHTML = '';
+    } else {
+      this.dom.results.innerHTML = "";
     }
   }
 };
@@ -40019,24 +39978,23 @@ SearchBox.prototype._onSearch = function (forceSearch) {
  * @param {Event} event
  * @private
  */
-SearchBox.prototype._onKeyDown = function (event) {
+SearchBox.prototype._onKeyDown = function(event) {
   var keynum = event.which;
-  if (keynum == 27) { // ESC
-    this.dom.search.value = '';  // clear search
+  if (keynum == 27) {
+    // ESC
+    this.dom.search.value = ""; // clear search
     this._onSearch();
     event.preventDefault();
     event.stopPropagation();
-  }
-  else if (keynum == 13) { // Enter
+  } else if (keynum == 13) {
+    // Enter
     if (event.ctrlKey) {
       // force to search again
       this._onSearch(true);
-    }
-    else if (event.shiftKey) {
+    } else if (event.shiftKey) {
       // move to the previous search result
       this.previous();
-    }
-    else {
+    } else {
       // move to the next search result
       this.next();
     }
@@ -40050,25 +40008,26 @@ SearchBox.prototype._onKeyDown = function (event) {
  * @param {Event} event
  * @private
  */
-SearchBox.prototype._onKeyUp = function (event) {
+SearchBox.prototype._onKeyUp = function(event) {
   var keynum = event.keyCode;
-  if (keynum != 27 && keynum != 13) { // !show and !Enter
-    this._onDelayedSearch(event);   // For IE 9
+  if (keynum != 27 && keynum != 13) {
+    // !show and !Enter
+    this._onDelayedSearch(event); // For IE 9
   }
 };
 
 /**
  * Clear the search results
  */
-SearchBox.prototype.clear = function () {
-  this.dom.search.value = '';
+SearchBox.prototype.clear = function() {
+  this.dom.search.value = "";
   this._onSearch();
 };
 
 /**
  * Refresh searchResults if there is a search value
  */
-SearchBox.prototype.forceSearch = function () {
+SearchBox.prototype.forceSearch = function() {
   this._onSearch(true);
 };
 
@@ -40076,14 +40035,14 @@ SearchBox.prototype.forceSearch = function () {
  * Test whether the search box value is empty
  * @returns {boolean} Returns true when empty.
  */
-SearchBox.prototype.isEmpty = function () {
-  return this.dom.search.value === '';
+SearchBox.prototype.isEmpty = function() {
+  return this.dom.search.value === "";
 };
 
 /**
  * Destroy the search box
  */
-SearchBox.prototype.destroy = function () {
+SearchBox.prototype.destroy = function() {
   this.editor = null;
   this.dom.container.removeChild(this.dom.wrapper);
   this.dom = null;
@@ -40092,7 +40051,6 @@ SearchBox.prototype.destroy = function () {
   this.activeResult = null;
 
   this._clearDelay();
-
 };
 
 module.exports = SearchBox;
