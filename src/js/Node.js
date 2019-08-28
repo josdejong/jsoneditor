@@ -1,18 +1,18 @@
 'use strict'
 
-var jmespath = require('jmespath')
-var naturalSort = require('javascript-natural-sort')
-var createAbsoluteAnchor = require('./createAbsoluteAnchor').createAbsoluteAnchor
-var ContextMenu = require('./ContextMenu')
-var appendNodeFactory = require('./appendNodeFactory')
-var showMoreNodeFactory = require('./showMoreNodeFactory')
-var showSortModal = require('./showSortModal')
-var showTransformModal = require('./showTransformModal')
-var util = require('./util')
-var translate = require('./i18n').translate
-var DEFAULT_MODAL_ANCHOR = require('./constants').DEFAULT_MODAL_ANCHOR
+const jmespath = require('jmespath')
+const naturalSort = require('javascript-natural-sort')
+const createAbsoluteAnchor = require('./createAbsoluteAnchor').createAbsoluteAnchor
+const ContextMenu = require('./ContextMenu')
+const appendNodeFactory = require('./appendNodeFactory')
+const showMoreNodeFactory = require('./showMoreNodeFactory')
+const showSortModal = require('./showSortModal')
+const showTransformModal = require('./showTransformModal')
+const util = require('./util')
+const translate = require('./i18n').translate
+const DEFAULT_MODAL_ANCHOR = require('./constants').DEFAULT_MODAL_ANCHOR
 
-var YEAR_2000 = 946684800000
+const YEAR_2000 = 946684800000
 
 /**
  * @constructor Node
@@ -58,7 +58,7 @@ Node.prototype.DEBOUNCE_INTERVAL = 150
 Node.prototype.MAX_SEARCH_RESULTS = 999
 
 // default number of child nodes to display
-var DEFAULT_MAX_VISIBLE_CHILDS = 100
+const DEFAULT_MAX_VISIBLE_CHILDS = 100
 
 Node.prototype.getMaxVisibleChilds = function () {
   return (this.editor && this.editor.options && this.editor.options.maxVisibleChilds)
@@ -82,7 +82,7 @@ Node.prototype._updateEditability = function () {
 
     if ((this.editor.options.mode === 'tree' || this.editor.options.mode === 'form') &&
         (typeof this.editor.options.onEditable === 'function')) {
-      var editable = this.editor.options.onEditable({
+      const editable = this.editor.options.onEditable({
         field: this.field,
         value: this.value,
         path: this.getPath()
@@ -105,10 +105,10 @@ Node.prototype._updateEditability = function () {
  * Element is a number if is the index of an array, a string otherwise.
  */
 Node.prototype.getPath = function () {
-  var node = this
-  var path = []
+  let node = this
+  const path = []
   while (node) {
-    var field = node.getName()
+    const field = node.getName()
     if (field !== undefined) {
       path.unshift(field)
     }
@@ -122,8 +122,8 @@ Node.prototype.getPath = function () {
  * @return {String[]} Array containing the internal path to this node
  */
 Node.prototype.getInternalPath = function () {
-  var node = this
-  var internalPath = []
+  let node = this
+  const internalPath = []
   while (node) {
     if (node.parent) {
       internalPath.unshift(node.getIndex())
@@ -159,7 +159,7 @@ Node.prototype.findNodeByPath = function (path) {
   }
 
   if (path.length && this.childs && this.childs.length) {
-    for (var i = 0; i < this.childs.length; ++i) {
+    for (let i = 0; i < this.childs.length; ++i) {
       if (('' + path[0]) === ('' + this.childs[i].getName())) {
         return this.childs[i].findNodeByPath(path.slice(1))
       }
@@ -178,9 +178,9 @@ Node.prototype.findNodeByInternalPath = function (internalPath) {
     return undefined
   }
 
-  var node = this
-  for (var i = 0; i < internalPath.length && node; i++) {
-    var childIndex = internalPath[i]
+  let node = this
+  for (let i = 0; i < internalPath.length && node; i++) {
+    const childIndex = internalPath[i]
     node = node.childs[childIndex]
   }
 
@@ -206,10 +206,10 @@ Node.prototype.serialize = function () {
  * @return {Node | null} Returns the Node when found, returns null if not found
  */
 Node.prototype.findNode = function (jsonPath) {
-  var path = util.parsePath(jsonPath)
-  var node = this
+  const path = util.parsePath(jsonPath)
+  let node = this
   while (node && path.length > 0) {
-    var prop = path.shift()
+    const prop = path.shift()
     if (typeof prop === 'number') {
       if (node.type !== 'array') {
         throw new Error('Cannot get child node at index ' + prop + ': node is no array')
@@ -219,9 +219,7 @@ Node.prototype.findNode = function (jsonPath) {
       if (node.type !== 'object') {
         throw new Error('Cannot get child node ' + prop + ': node is no object')
       }
-      node = node.childs.filter(function (child) {
-        return child.field === prop
-      })[0]
+      node = node.childs.filter(child => child.field === prop)[0]
     }
   }
 
@@ -234,8 +232,8 @@ Node.prototype.findNode = function (jsonPath) {
  * @return {Array.<Node>}
  */
 Node.prototype.findParents = function () {
-  var parents = []
-  var parent = this.parent
+  const parents = []
+  let parent = this.parent
   while (parent) {
     parents.unshift(parent)
     parent = parent.parent
@@ -264,8 +262,8 @@ Node.prototype.setError = function (error, child) {
  * Render the error
  */
 Node.prototype.updateError = function () {
-  var error = this.fieldError || this.valueError || this.error
-  var tdError = this.dom.tdError
+  const error = this.fieldError || this.valueError || this.error
+  let tdError = this.dom.tdError
   if (error && this.dom && this.dom.tr) {
     util.addClassName(this.dom.tr, 'jsoneditor-validation-error')
 
@@ -275,26 +273,26 @@ Node.prototype.updateError = function () {
       this.dom.tdValue.parentNode.appendChild(tdError)
     }
 
-    var popover = document.createElement('div')
+    const popover = document.createElement('div')
     popover.className = 'jsoneditor-popover jsoneditor-right'
     popover.appendChild(document.createTextNode(error.message))
 
-    var button = document.createElement('button')
+    const button = document.createElement('button')
     button.type = 'button'
     button.className = 'jsoneditor-button jsoneditor-schema-error'
     button.appendChild(popover)
 
     // update the direction of the popover
     button.onmouseover = button.onfocus = function updateDirection () {
-      var directions = ['right', 'above', 'below', 'left']
-      for (var i = 0; i < directions.length; i++) {
-        var direction = directions[i]
+      const directions = ['right', 'above', 'below', 'left']
+      for (let i = 0; i < directions.length; i++) {
+        const direction = directions[i]
         popover.className = 'jsoneditor-popover jsoneditor-' + direction
 
-        var contentRect = this.editor.content.getBoundingClientRect()
-        var popoverRect = popover.getBoundingClientRect()
-        var margin = 20 // account for a scroll bar
-        var fit = util.insideRect(contentRect, popoverRect, margin)
+        const contentRect = this.editor.content.getBoundingClientRect()
+        const popoverRect = popover.getBoundingClientRect()
+        const margin = 20 // account for a scroll bar
+        const fit = util.insideRect(contentRect, popoverRect, margin)
 
         if (fit) {
           break
@@ -304,14 +302,14 @@ Node.prototype.updateError = function () {
 
     // when clicking the error icon, expand all nodes towards the invalid
     // child node, and set focus to the child node
-    var child = this.errorChild
+    const child = this.errorChild
     if (child) {
       button.onclick = function showInvalidNode () {
-        child.findParents().forEach(function (parent) {
+        child.findParents().forEach(parent => {
           parent.expand(false)
         })
 
-        child.scrollTo(function () {
+        child.scrollTo(() => {
           child.focus()
         })
       }
@@ -341,7 +339,7 @@ Node.prototype.updateError = function () {
  */
 Node.prototype.getIndex = function () {
   if (this.parent) {
-    var index = this.parent.childs.indexOf(this)
+    const index = this.parent.childs.indexOf(this)
     return index !== -1 ? index : null
   } else {
     return -1
@@ -386,10 +384,10 @@ Node.prototype.getField = function () {
  *                         'array', 'object', or 'string'
  */
 Node.prototype.setValue = function (value, type) {
-  var childValue, child, visible
-  var i, j
-  var notUpdateDom = false
-  var previousChilds = this.childs
+  let childValue, child, visible
+  let i, j
+  const notUpdateDom = false
+  const previousChilds = this.childs
 
   this.type = this._getType(value)
 
@@ -451,7 +449,7 @@ Node.prototype.setValue = function (value, type) {
     }
 
     i = 0
-    for (var childField in value) {
+    for (const childField in value) {
       if (hasOwnProperty(value, childField)) {
         childValue = value[childField]
         if (childValue !== undefined && !(childValue instanceof Function)) {
@@ -509,10 +507,10 @@ Node.prototype.setValue = function (value, type) {
  *                           order and duplicates in objects
  */
 Node.prototype.setInternalValue = function (internalValue) {
-  var childValue, child, visible
-  var i, j
-  var notUpdateDom = false
-  var previousChilds = this.childs
+  let childValue, child, visible
+  let i, j
+  const notUpdateDom = false
+  const previousChilds = this.childs
 
   this.type = internalValue.type
 
@@ -609,7 +607,7 @@ Node.prototype.setInternalValue = function (internalValue) {
  */
 Node.prototype.recreateDom = function () {
   if (this.dom && this.dom.tr && this.dom.tr.parentNode) {
-    var domAnchor = this._detachFromDom()
+    const domAnchor = this._detachFromDom()
 
     this.clearDom()
 
@@ -625,14 +623,14 @@ Node.prototype.recreateDom = function () {
  */
 Node.prototype.getValue = function () {
   if (this.type === 'array') {
-    var arr = []
-    this.childs.forEach(function (child) {
+    const arr = []
+    this.childs.forEach(child => {
       arr.push(child.getValue())
     })
     return arr
   } else if (this.type === 'object') {
-    var obj = {}
-    this.childs.forEach(function (child) {
+    const obj = {}
+    this.childs.forEach(child => {
       obj[child.getField()] = child.getValue()
     })
     return obj
@@ -653,19 +651,15 @@ Node.prototype.getInternalValue = function () {
   if (this.type === 'array') {
     return {
       type: this.type,
-      childs: this.childs.map(function (child) {
-        return child.getInternalValue()
-      })
+      childs: this.childs.map(child => child.getInternalValue())
     }
   } else if (this.type === 'object') {
     return {
       type: this.type,
-      childs: this.childs.map(function (child) {
-        return {
-          field: child.getField(),
-          value: child.getInternalValue()
-        }
-      })
+      childs: this.childs.map(child => ({
+        field: child.getField(),
+        value: child.getInternalValue()
+      }))
     }
   } else {
     if (this.value === undefined) {
@@ -692,7 +686,7 @@ Node.prototype.getLevel = function () {
  * @return {Node[]} Returns an array with nodes
  */
 Node.prototype.getNodePath = function () {
-  var path = this.parent ? this.parent.getNodePath() : []
+  const path = this.parent ? this.parent.getNodePath() : []
   path.push(this)
   return path
 }
@@ -704,7 +698,7 @@ Node.prototype.getNodePath = function () {
  * @return {Node} clone
  */
 Node.prototype.clone = function () {
-  var clone = new Node(this.editor)
+  const clone = new Node(this.editor)
   clone.type = this.type
   clone.field = this.field
   clone.fieldInnerText = this.fieldInnerText
@@ -718,9 +712,9 @@ Node.prototype.clone = function () {
 
   if (this.childs) {
     // an object or array
-    var cloneChilds = []
-    this.childs.forEach(function (child) {
-      var childClone = child.clone()
+    const cloneChilds = []
+    this.childs.forEach(child => {
+      const childClone = child.clone()
       childClone.setParent(clone)
       cloneChilds.push(childClone)
     })
@@ -752,7 +746,7 @@ Node.prototype.expand = function (recurse) {
   this.showChilds()
 
   if (recurse !== false) {
-    this.childs.forEach(function (child) {
+    this.childs.forEach(child => {
       child.expand(recurse)
     })
   }
@@ -772,7 +766,7 @@ Node.prototype.collapse = function (recurse) {
 
   // collapse childs in case of recurse
   if (recurse !== false) {
-    this.childs.forEach(function (child) {
+    this.childs.forEach(child => {
       child.collapse(recurse)
     })
   }
@@ -788,7 +782,7 @@ Node.prototype.collapse = function (recurse) {
  * Recursively show all childs when they are expanded
  */
 Node.prototype.showChilds = function () {
-  var childs = this.childs
+  const childs = this.childs
   if (!childs) {
     return
   }
@@ -796,12 +790,12 @@ Node.prototype.showChilds = function () {
     return
   }
 
-  var tr = this.dom.tr
-  var nextTr
-  var table = tr ? tr.parentNode : undefined
+  const tr = this.dom.tr
+  let nextTr
+  const table = tr ? tr.parentNode : undefined
   if (table) {
     // show row with append button
-    var append = this.getAppendDom()
+    const append = this.getAppendDom()
     if (!append.parentNode) {
       nextTr = tr.nextSibling
       if (nextTr) {
@@ -812,10 +806,10 @@ Node.prototype.showChilds = function () {
     }
 
     // show childs
-    var iMax = Math.min(this.childs.length, this.visibleChilds)
+    const iMax = Math.min(this.childs.length, this.visibleChilds)
     nextTr = this._getNextTr()
-    for (var i = 0; i < iMax; i++) {
-      var child = this.childs[i]
+    for (let i = 0; i < iMax; i++) {
+      const child = this.childs[i]
       if (!child.getDom().parentNode) {
         table.insertBefore(child.getDom(), nextTr)
       }
@@ -823,7 +817,7 @@ Node.prototype.showChilds = function () {
     }
 
     // show "show more childs" if limited
-    var showMore = this.getShowMoreDom()
+    const showMore = this.getShowMoreDom()
     nextTr = this._getNextTr()
     if (!showMore.parentNode) {
       table.insertBefore(showMore, nextTr)
@@ -847,8 +841,8 @@ Node.prototype._getNextTr = function () {
  * @param {{resetVisibleChilds: boolean}} [options]
  */
 Node.prototype.hide = function (options) {
-  var tr = this.dom.tr
-  var table = tr ? tr.parentNode : undefined
+  const tr = this.dom.tr
+  const table = tr ? tr.parentNode : undefined
   if (table) {
     table.removeChild(tr)
   }
@@ -860,7 +854,7 @@ Node.prototype.hide = function (options) {
  * @param {{resetVisibleChilds: boolean}} [options]
  */
 Node.prototype.hideChilds = function (options) {
-  var childs = this.childs
+  const childs = this.childs
   if (!childs) {
     return
   }
@@ -869,18 +863,18 @@ Node.prototype.hideChilds = function (options) {
   }
 
   // hide append row
-  var append = this.getAppendDom()
+  const append = this.getAppendDom()
   if (append.parentNode) {
     append.parentNode.removeChild(append)
   }
 
   // hide childs
-  this.childs.forEach(function (child) {
+  this.childs.forEach(child => {
     child.hide()
   })
 
   // hide "show more" row
-  var showMore = this.getShowMoreDom()
+  const showMore = this.getShowMoreDom()
   if (showMore.parentNode) {
     showMore.parentNode.removeChild(showMore)
   }
@@ -901,7 +895,7 @@ Node.prototype._updateCssClassName = function () {
     typeof this.editor.options.onClassName === 'function' &&
     this.dom.tree) {
     util.removeAllClassNames(this.dom.tree)
-    var addClasses = this.editor.options.onClassName({ path: this.getPath(), field: this.field, value: this.value }) || ''
+    const addClasses = this.editor.options.onClassName({ path: this.getPath(), field: this.field, value: this.value }) || ''
     util.addClassName(this.dom.tree, 'jsoneditor-values ' + addClasses)
   }
 }
@@ -909,7 +903,7 @@ Node.prototype._updateCssClassName = function () {
 Node.prototype.recursivelyUpdateCssClassesOnNodes = function () {
   this._updateCssClassName()
   if (Array.isArray(this.childs)) {
-    for (var i = 0; i < this.childs.length; i++) {
+    for (let i = 0; i < this.childs.length; i++) {
       this.childs[i].recursivelyUpdateCssClassesOnNodes()
     }
   }
@@ -919,7 +913,7 @@ Node.prototype.recursivelyUpdateCssClassesOnNodes = function () {
  * Goes through the path from the node to the root and ensures that it is expanded
  */
 Node.prototype.expandTo = function () {
-  var currentNode = this.parent
+  let currentNode = this.parent
   while (currentNode) {
     if (!currentNode.expanded) {
       currentNode.expand()
@@ -953,9 +947,9 @@ Node.prototype.appendChild = function (node, visible, updateDom) {
 
     if (this.expanded && visible !== false) {
       // insert into the DOM, before the appendRow
-      var newTr = node.getDom()
-      var nextTr = this._getNextTr()
-      var table = nextTr ? nextTr.parentNode : undefined
+      const newTr = node.getDom()
+      const nextTr = this._getNextTr()
+      const table = nextTr ? nextTr.parentNode : undefined
       if (nextTr && table) {
         table.insertBefore(newTr, nextTr)
       }
@@ -982,7 +976,7 @@ Node.prototype.moveBefore = function (node, beforeNode) {
   if (this._hasChilds()) {
     // create a temporary row, to prevent the scroll position from jumping
     // when removing the node
-    var tbody = (this.dom.tr) ? this.dom.tr.parentNode : undefined
+    const tbody = (this.dom.tr) ? this.dom.tr.parentNode : undefined
     if (tbody) {
       var trTemp = document.createElement('tr')
       trTemp.style.height = tbody.clientHeight + 'px'
@@ -996,7 +990,7 @@ Node.prototype.moveBefore = function (node, beforeNode) {
     if (beforeNode instanceof AppendNode || !beforeNode) {
       // the this.childs.length + 1 is to reckon with the node that we're about to add
       if (this.childs.length + 1 > this.visibleChilds) {
-        var lastVisibleNode = this.childs[this.visibleChilds - 1]
+        const lastVisibleNode = this.childs[this.visibleChilds - 1]
         this.insertBefore(node, lastVisibleNode)
       } else {
         this.appendChild(node)
@@ -1035,7 +1029,7 @@ Node.prototype.insertBefore = function (node, beforeNode) {
       this.childs.push(node)
     } else {
       // insert before a child node
-      var index = this.childs.indexOf(beforeNode)
+      const index = this.childs.indexOf(beforeNode)
       if (index === -1) {
         throw new Error('Node not found')
       }
@@ -1048,9 +1042,9 @@ Node.prototype.insertBefore = function (node, beforeNode) {
 
     if (this.expanded) {
       // insert into the DOM
-      var newTr = node.getDom()
-      var nextTr = beforeNode.getDom()
-      var table = nextTr ? nextTr.parentNode : undefined
+      const newTr = node.getDom()
+      const nextTr = beforeNode.getDom()
+      const table = nextTr ? nextTr.parentNode : undefined
       if (nextTr && table) {
         table.insertBefore(newTr, nextTr)
       }
@@ -1072,8 +1066,8 @@ Node.prototype.insertBefore = function (node, beforeNode) {
  */
 Node.prototype.insertAfter = function (node, afterNode) {
   if (this._hasChilds()) {
-    var index = this.childs.indexOf(afterNode)
-    var beforeNode = this.childs[index + 1]
+    const index = this.childs.indexOf(afterNode)
+    const beforeNode = this.childs[index + 1]
     if (beforeNode) {
       this.insertBefore(node, beforeNode)
     } else {
@@ -1094,8 +1088,8 @@ Node.prototype.search = function (text, results) {
   if (!Array.isArray(results)) {
     results = []
   }
-  var index
-  var search = text ? text.toLowerCase() : undefined
+  let index
+  const search = text ? text.toLowerCase() : undefined
 
   // delete old search data
   delete this.searchField
@@ -1103,7 +1097,7 @@ Node.prototype.search = function (text, results) {
 
   // search in field
   if (this.field !== undefined && results.length <= this.MAX_SEARCH_RESULTS) {
-    var field = String(this.field).toLowerCase()
+    const field = String(this.field).toLowerCase()
     index = field.indexOf(search)
     if (index !== -1) {
       this.searchField = true
@@ -1123,14 +1117,14 @@ Node.prototype.search = function (text, results) {
 
     // search the nodes childs
     if (this.childs) {
-      this.childs.forEach(function (child) {
+      this.childs.forEach(child => {
         child.search(text, results)
       })
     }
   } else {
     // string, auto
     if (this.value !== undefined && results.length <= this.MAX_SEARCH_RESULTS) {
-      var value = String(this.value).toLowerCase()
+      const value = String(this.value).toLowerCase()
       index = value.indexOf(search)
       if (index !== -1) {
         this.searchValue = true
@@ -1165,11 +1159,11 @@ Node.prototype.scrollTo = function (callback) {
  * if the node is not visible, expand its parents
  */
 Node.prototype.expandPathToNode = function () {
-  var node = this
-  var recurse = false
+  let node = this
+  const recurse = false
   while (node && node.parent) {
     // expand visible childs of the parent if needed
-    var index = node.parent.type === 'array'
+    const index = node.parent.type === 'array'
       ? node.index
       : node.parent.childs.indexOf(node)
     while (node.parent.visibleChilds < index + 1) {
@@ -1195,7 +1189,7 @@ Node.prototype.focus = function (elementName) {
   Node.focusElement = elementName
 
   if (this.dom.tr && this.dom.tr.parentNode) {
-    var dom = this.dom
+    const dom = this.dom
 
     switch (elementName) {
       case 'drag':
@@ -1263,8 +1257,8 @@ Node.prototype.focus = function (elementName) {
  * Select all text in an editable div after a delay of 0 ms
  * @param {Element} editableDiv
  */
-Node.select = function (editableDiv) {
-  setTimeout(function () {
+Node.select = editableDiv => {
+  setTimeout(() => {
     util.selectContentEditable(editableDiv)
   }, 0)
 }
@@ -1280,10 +1274,10 @@ Node.prototype.containsNode = function (node) {
     return true
   }
 
-  var childs = this.childs
+  const childs = this.childs
   if (childs) {
     // TODO: use the js5 Array.some() here?
-    for (var i = 0, iMax = childs.length; i < iMax; i++) {
+    for (let i = 0, iMax = childs.length; i < iMax; i++) {
       if (childs[i].containsNode(node)) {
         return true
       }
@@ -1304,7 +1298,7 @@ Node.prototype.containsNode = function (node) {
  */
 Node.prototype.removeChild = function (node, updateDom) {
   if (this.childs) {
-    var index = this.childs.indexOf(node)
+    const index = this.childs.indexOf(node)
 
     if (index !== -1) {
       if (index < this.visibleChilds && this.expanded) {
@@ -1317,7 +1311,7 @@ Node.prototype.removeChild = function (node, updateDom) {
       delete node.searchField
       delete node.searchValue
 
-      var removedNode = this.childs.splice(index, 1)[0]
+      const removedNode = this.childs.splice(index, 1)[0]
       removedNode.parent = null
 
       if (updateDom !== false) {
@@ -1347,7 +1341,7 @@ Node.prototype._remove = function (node) {
  * @param {String} newType
  */
 Node.prototype.changeType = function (newType) {
-  var oldType = this.type
+  const oldType = this.type
 
   if (oldType === newType) {
     // type is not changed
@@ -1360,7 +1354,7 @@ Node.prototype.changeType = function (newType) {
     this.type = newType
   } else {
     // change from array to object, or from string/auto to object/array
-    var domAnchor = this._detachFromDom()
+    const domAnchor = this._detachFromDom()
 
     // delete the old DOM
     this.clearDom()
@@ -1374,7 +1368,7 @@ Node.prototype.changeType = function (newType) {
         this.childs = []
       }
 
-      this.childs.forEach(function (child) {
+      this.childs.forEach(child => {
         child.clearDom()
         delete child.index
         child.fieldEditable = true
@@ -1391,7 +1385,7 @@ Node.prototype.changeType = function (newType) {
         this.childs = []
       }
 
-      this.childs.forEach(function (child, index) {
+      this.childs.forEach((child, index) => {
         child.clearDom()
         child.fieldEditable = false
         child.index = index
@@ -1426,7 +1420,7 @@ Node.prototype.changeType = function (newType) {
  * @param {*} json
  */
 Node.prototype.deepEqual = function (json) {
-  var i
+  let i
 
   if (this.type === 'array') {
     if (!Array.isArray(json)) {
@@ -1449,10 +1443,10 @@ Node.prototype.deepEqual = function (json) {
 
     // TODO: for better efficiency, we could create a property `isDuplicate` on all of the childs
     // and keep that up to date. This should make deepEqual about 20% faster.
-    var props = {}
-    var propCount = 0
+    const props = {}
+    let propCount = 0
     for (i = 0; i < this.childs.length; i++) {
-      var child = this.childs[i]
+      const child = this.childs[i]
       if (!props[child.field]) {
         // We can have childs with duplicate field names.
         // We take the first, and ignore the others.
@@ -1495,11 +1489,11 @@ Node.prototype._getDomValue = function () {
   if (this.valueInnerText !== undefined) {
     try {
       // retrieve the value
-      var value
+      let value
       if (this.type === 'string') {
         value = this._unescapeHTML(this.valueInnerText)
       } else {
-        var str = this._unescapeHTML(this.valueInnerText)
+        const str = this._unescapeHTML(this.valueInnerText)
         value = util.parseString(str)
       }
       if (value !== this.value) {
@@ -1558,15 +1552,15 @@ Node.prototype._clearFieldError = function () {
 Node.prototype._onChangeValue = function () {
   // get current selection, then override the range such that we can select
   // the added/removed text on undo/redo
-  var oldSelection = this.editor.getDomSelection()
+  const oldSelection = this.editor.getDomSelection()
   if (oldSelection.range) {
-    var undoDiff = util.textDiff(String(this.value), String(this.previousValue))
+    const undoDiff = util.textDiff(String(this.value), String(this.previousValue))
     oldSelection.range.startOffset = undoDiff.start
     oldSelection.range.endOffset = undoDiff.end
   }
-  var newSelection = this.editor.getDomSelection()
+  const newSelection = this.editor.getDomSelection()
   if (newSelection.range) {
-    var redoDiff = util.textDiff(String(this.previousValue), String(this.value))
+    const redoDiff = util.textDiff(String(this.previousValue), String(this.value))
     newSelection.range.startOffset = redoDiff.start
     newSelection.range.endOffset = redoDiff.end
   }
@@ -1589,16 +1583,16 @@ Node.prototype._onChangeValue = function () {
 Node.prototype._onChangeField = function () {
   // get current selection, then override the range such that we can select
   // the added/removed text on undo/redo
-  var oldSelection = this.editor.getDomSelection()
-  var previous = this.previousField || ''
+  const oldSelection = this.editor.getDomSelection()
+  const previous = this.previousField || ''
   if (oldSelection.range) {
-    var undoDiff = util.textDiff(this.field, previous)
+    const undoDiff = util.textDiff(this.field, previous)
     oldSelection.range.startOffset = undoDiff.start
     oldSelection.range.endOffset = undoDiff.end
   }
-  var newSelection = this.editor.getDomSelection()
+  const newSelection = this.editor.getDomSelection()
   if (newSelection.range) {
-    var redoDiff = util.textDiff(previous, this.field)
+    const redoDiff = util.textDiff(previous, this.field)
     newSelection.range.startOffset = redoDiff.start
     newSelection.range.endOffset = redoDiff.end
   }
@@ -1623,21 +1617,21 @@ Node.prototype._onChangeField = function () {
  * @private
  */
 Node.prototype._updateDomValue = function () {
-  var domValue = this.dom.value
+  const domValue = this.dom.value
   if (domValue) {
-    var classNames = ['jsoneditor-value']
+    const classNames = ['jsoneditor-value']
 
     // set text color depending on value type
-    var value = this.value
-    var type = (this.type === 'auto') ? util.type(value) : this.type
-    var isUrl = type === 'string' && util.isUrl(value)
+    const value = this.value
+    const type = (this.type === 'auto') ? util.type(value) : this.type
+    const isUrl = type === 'string' && util.isUrl(value)
     classNames.push('jsoneditor-' + type)
     if (isUrl) {
       classNames.push('jsoneditor-url')
     }
 
     // visual styling when empty
-    var isEmpty = (String(this.value) === '' && this.type !== 'array' && this.type !== 'object')
+    const isEmpty = (String(this.value) === '' && this.type !== 'array' && this.type !== 'object')
     if (isEmpty) {
       classNames.push('jsoneditor-empty')
     }
@@ -1654,7 +1648,7 @@ Node.prototype._updateDomValue = function () {
 
     // update title
     if (type === 'array' || type === 'object') {
-      var count = this.childs ? this.childs.length : 0
+      const count = this.childs ? this.childs.length : 0
       domValue.title = this.type + ' containing ' + count + ' items'
     } else if (isUrl && this.editable.value) {
       domValue.title = translate('openUrl')
@@ -1699,7 +1693,7 @@ Node.prototype._updateDomValue = function () {
         this.dom.select.appendChild(this.dom.select.option)
 
         // Iterate all enum values and add them as options
-        for (var i = 0; i < this.enum.length; i++) {
+        for (let i = 0; i < this.enum.length; i++) {
           this.dom.select.option = document.createElement('option')
           this.dom.select.option.value = this.enum[i]
           this.dom.select.option.innerHTML = this.enum[i]
@@ -1812,15 +1806,15 @@ Node.prototype._deleteDomColor = function () {
  * @private
  */
 Node.prototype._updateDomField = function () {
-  var domField = this.dom.field
+  const domField = this.dom.field
   if (domField) {
-    var tooltip = util.makeFieldTooltip(this.schema, this.editor.options.language)
+    const tooltip = util.makeFieldTooltip(this.schema, this.editor.options.language)
     if (tooltip) {
       domField.title = tooltip
     }
 
     // make backgound color lightgray when empty
-    var isEmpty = (String(this.field) === '' && this.parent.type !== 'array')
+    const isEmpty = (String(this.field) === '' && this.parent.type !== 'array')
     if (isEmpty) {
       util.addClassName(domField, 'jsoneditor-empty')
     } else {
@@ -1859,10 +1853,10 @@ Node.prototype._getDomField = function (forceUnique) {
 
   if (this.fieldInnerText !== undefined) {
     try {
-      var field = this._unescapeHTML(this.fieldInnerText)
+      let field = this._unescapeHTML(this.fieldInnerText)
 
-      var existingFieldNames = this.parent.getFieldNames(this)
-      var isDuplicate = existingFieldNames.indexOf(field) !== -1
+      const existingFieldNames = this.parent.getFieldNames(this)
+      const isDuplicate = existingFieldNames.indexOf(field) !== -1
 
       if (!isDuplicate) {
         if (field !== this.field) {
@@ -1902,7 +1896,7 @@ Node.prototype._updateDomDefault = function () {
   }
 
   // select either enum dropdown (select) or input value
-  var inputElement = this.dom.select
+  const inputElement = this.dom.select
     ? this.dom.select
     : this.dom.value
 
@@ -1938,7 +1932,7 @@ Node.prototype.clearDom = function () {
  * @return {Element} tr    HTML DOM TR Element
  */
 Node.prototype.getDom = function () {
-  var dom = this.dom
+  const dom = this.dom
   if (dom.tr) {
     return dom.tr
   }
@@ -1950,11 +1944,11 @@ Node.prototype.getDom = function () {
   dom.tr.node = this
 
   if (this.editor.options.mode === 'tree') { // note: we take here the global setting
-    var tdDrag = document.createElement('td')
+    const tdDrag = document.createElement('td')
     if (this.editable.field) {
       // create draggable area
       if (this.parent) {
-        var domDrag = document.createElement('button')
+        const domDrag = document.createElement('button')
         domDrag.type = 'button'
         dom.drag = domDrag
         domDrag.className = 'jsoneditor-button jsoneditor-dragarea'
@@ -1965,8 +1959,8 @@ Node.prototype.getDom = function () {
     dom.tr.appendChild(tdDrag)
 
     // create context menu
-    var tdMenu = document.createElement('td')
-    var menu = document.createElement('button')
+    const tdMenu = document.createElement('td')
+    const menu = document.createElement('button')
     menu.type = 'button'
     dom.menu = menu
     menu.className = 'jsoneditor-button jsoneditor-contextmenu'
@@ -1976,7 +1970,7 @@ Node.prototype.getDom = function () {
   }
 
   // create tree and field
-  var tdField = document.createElement('td')
+  const tdField = document.createElement('td')
   dom.tr.appendChild(tdField)
   dom.tree = this._createDomTree()
   tdField.appendChild(dom.tree)
@@ -1999,7 +1993,7 @@ Node.prototype.isVisible = function () {
  * @param {Node[] | Node} nodes
  * @param {Event} event
  */
-Node.onDragStart = function (nodes, event) {
+Node.onDragStart = (nodes, event) => {
   if (!Array.isArray(nodes)) {
     return Node.onDragStart([nodes], event)
   }
@@ -2007,24 +2001,24 @@ Node.onDragStart = function (nodes, event) {
     return
   }
 
-  var firstNode = nodes[0]
-  var lastNode = nodes[nodes.length - 1]
-  var parent = firstNode.parent
-  var draggedNode = Node.getNodeFromTarget(event.target)
-  var editor = firstNode.editor
+  const firstNode = nodes[0]
+  const lastNode = nodes[nodes.length - 1]
+  const parent = firstNode.parent
+  const draggedNode = Node.getNodeFromTarget(event.target)
+  const editor = firstNode.editor
 
   // in case of multiple selected nodes, offsetY prevents the selection from
   // jumping when you start dragging one of the lower down nodes in the selection
-  var offsetY = util.getAbsoluteTop(draggedNode.dom.tr) - util.getAbsoluteTop(firstNode.dom.tr)
+  const offsetY = util.getAbsoluteTop(draggedNode.dom.tr) - util.getAbsoluteTop(firstNode.dom.tr)
 
   if (!editor.mousemove) {
-    editor.mousemove = util.addEventListener(window, 'mousemove', function (event) {
+    editor.mousemove = util.addEventListener(window, 'mousemove', event => {
       Node.onDrag(nodes, event)
     })
   }
 
   if (!editor.mouseup) {
-    editor.mouseup = util.addEventListener(window, 'mouseup', function (event) {
+    editor.mouseup = util.addEventListener(window, 'mouseup', event => {
       Node.onDragEnd(nodes, event)
     })
   }
@@ -2052,7 +2046,7 @@ Node.onDragStart = function (nodes, event) {
  * @param {Node[] | Node} nodes
  * @param {Event} event
  */
-Node.onDrag = function (nodes, event) {
+Node.onDrag = (nodes, event) => {
   if (!Array.isArray(nodes)) {
     return Node.onDrag([nodes], event)
   }
@@ -2061,21 +2055,21 @@ Node.onDrag = function (nodes, event) {
   }
 
   // TODO: this method has grown too large. Split it in a number of methods
-  var editor = nodes[0].editor
-  var mouseY = event.pageY - editor.drag.offsetY
-  var mouseX = event.pageX
-  var trThis, trPrev, trNext, trFirst, trLast, trRoot
-  var nodePrev, nodeNext
-  var topThis, topPrev, topFirst, heightThis, bottomNext, heightNext
-  var moved = false
+  const editor = nodes[0].editor
+  const mouseY = event.pageY - editor.drag.offsetY
+  const mouseX = event.pageX
+  let trPrev, trNext, trFirst, trLast, trRoot
+  let nodePrev, nodeNext
+  let topPrev, topFirst, bottomNext, heightNext
+  let moved = false
 
   // TODO: add an ESC option, which resets to the original position
 
   // move up/down
-  var firstNode = nodes[0]
-  trThis = firstNode.dom.tr
-  topThis = util.getAbsoluteTop(trThis)
-  heightThis = trThis.offsetHeight
+  const firstNode = nodes[0]
+  const trThis = firstNode.dom.tr
+  let topThis = util.getAbsoluteTop(trThis)
+  const heightThis = trThis.offsetHeight
   if (mouseY < topThis) {
     // move up
     trPrev = trThis
@@ -2110,14 +2104,14 @@ Node.onDrag = function (nodes, event) {
     }
 
     if (nodePrev) {
-      nodes.forEach(function (node) {
+      nodes.forEach(node => {
         nodePrev.parent.moveBefore(node, nodePrev)
       })
       moved = true
     }
   } else {
     // move down
-    var lastNode = nodes[nodes.length - 1]
+    const lastNode = nodes[nodes.length - 1]
     trLast = (lastNode.expanded && lastNode.append) ? lastNode.append.getDom() : lastNode.dom.tr
     trFirst = trLast ? trLast.nextSibling : undefined
     if (trFirst) {
@@ -2146,24 +2140,22 @@ Node.onDrag = function (nodes, event) {
 
       if (nodeNext && nodeNext.parent) {
         // calculate the desired level
-        var diffX = (mouseX - editor.drag.mouseX)
-        var diffLevel = Math.round(diffX / 24 / 2)
-        var level = editor.drag.level + diffLevel // desired level
-        var levelNext = nodeNext.getLevel() // level to be
+        const diffX = (mouseX - editor.drag.mouseX)
+        const diffLevel = Math.round(diffX / 24 / 2)
+        const level = editor.drag.level + diffLevel // desired level
+        let levelNext = nodeNext.getLevel() // level to be
 
         // find the best fitting level (move upwards over the append nodes)
         trPrev = nodeNext.dom.tr && nodeNext.dom.tr.previousSibling
         while (levelNext < level && trPrev) {
           nodePrev = Node.getNodeFromTarget(trPrev)
 
-          var isDraggedNode = nodes.some(function (node) {
-            return node === nodePrev || nodePrev.isDescendantOf(node)
-          })
+          const isDraggedNode = nodes.some(node => node === nodePrev || nodePrev.isDescendantOf(node))
 
           if (isDraggedNode) {
             // neglect the dragged nodes themselves and their childs
           } else if (nodePrev instanceof AppendNode) {
-            var childs = nodePrev.parent.childs
+            const childs = nodePrev.parent.childs
             if (childs.length !== nodes.length || childs[nodes.length - 1] !== lastNode) {
               // non-visible append node of a list of childs
               // consisting of not only this node (else the
@@ -2188,7 +2180,7 @@ Node.onDrag = function (nodes, event) {
 
         // move the node when its position is changed
         if (nodeNext && nodeNext.dom.tr && trLast.nextSibling !== nodeNext.dom.tr) {
-          nodes.forEach(function (node) {
+          nodes.forEach(node => {
             nodeNext.parent.moveBefore(node, nodeNext)
           })
           moved = true
@@ -2214,7 +2206,7 @@ Node.onDrag = function (nodes, event) {
  * @param {Node[] | Node} nodes
  * @param {Event} event
  */
-Node.onDragEnd = function (nodes, event) {
+Node.onDragEnd = (nodes, event) => {
   if (!Array.isArray(nodes)) {
     return Node.onDrag([nodes], event)
   }
@@ -2222,23 +2214,23 @@ Node.onDragEnd = function (nodes, event) {
     return
   }
 
-  var firstNode = nodes[0]
-  var editor = firstNode.editor
+  const firstNode = nodes[0]
+  const editor = firstNode.editor
 
   // set focus to the context menu button of the first node
   if (nodes[0]) {
     nodes[0].dom.menu.focus()
   }
 
-  var oldParentPath = editor.drag.oldParent.getInternalPath()
-  var newParentPath = firstNode.parent.getInternalPath()
-  var sameParent = editor.drag.oldParent === firstNode.parent
-  var oldIndex = editor.drag.oldNextNode.getIndex()
-  var newIndex = firstNode.getIndex()
-  var oldParentPathRedo = editor.drag.oldParentPathRedo
+  const oldParentPath = editor.drag.oldParent.getInternalPath()
+  const newParentPath = firstNode.parent.getInternalPath()
+  const sameParent = editor.drag.oldParent === firstNode.parent
+  const oldIndex = editor.drag.oldNextNode.getIndex()
+  const newIndex = firstNode.getIndex()
+  const oldParentPathRedo = editor.drag.oldParentPathRedo
 
-  var oldIndexRedo = editor.drag.oldIndexRedo
-  var newIndexRedo = (sameParent && oldIndexRedo < newIndex)
+  const oldIndexRedo = editor.drag.oldIndexRedo
+  const newIndexRedo = (sameParent && oldIndexRedo < newIndex)
     ? (newIndex + nodes.length)
     : newIndex
 
@@ -2265,7 +2257,7 @@ Node.onDragEnd = function (nodes, event) {
 
   document.body.style.cursor = editor.drag.oldCursor
   editor.highlighter.unlock()
-  nodes.forEach(function (node) {
+  nodes.forEach(node => {
     node.updateDom()
 
     if (event.target !== node.dom.drag && event.target !== node.dom.menu) {
@@ -2296,7 +2288,7 @@ Node.onDragEnd = function (nodes, event) {
  * @private
  */
 Node.prototype.isDescendantOf = function (node) {
-  var n = this.parent
+  let n = this.parent
   while (n) {
     if (n === node) {
       return true
@@ -2312,9 +2304,7 @@ Node.prototype.isDescendantOf = function (node) {
  * @return {Element} domField
  * @private
  */
-Node.prototype._createDomField = function () {
-  return document.createElement('div')
-}
+Node.prototype._createDomField = () => document.createElement('div')
 
 /**
  * Set highlighting for this node and all its childs.
@@ -2334,7 +2324,7 @@ Node.prototype.setHighlight = function (highlight) {
     }
 
     if (this.childs) {
-      this.childs.forEach(function (child) {
+      this.childs.forEach(child => {
         child.setHighlight(highlight)
       })
     }
@@ -2371,7 +2361,7 @@ Node.prototype.setSelected = function (selected, isFirst) {
     }
 
     if (this.childs) {
-      this.childs.forEach(function (child) {
+      this.childs.forEach(child => {
         child.setSelected(selected)
       })
     }
@@ -2413,13 +2403,13 @@ Node.prototype.updateField = function (field) {
  */
 Node.prototype.updateDom = function (options) {
   // update level indentation
-  var domTree = this.dom.tree
+  const domTree = this.dom.tree
   if (domTree) {
     domTree.style.marginLeft = this.getLevel() * 24 + 'px'
   }
 
   // apply field to DOM
-  var domField = this.dom.field
+  const domField = this.dom.field
   if (domField) {
     if (this.fieldEditable) {
       // parent is an object
@@ -2432,13 +2422,13 @@ Node.prototype.updateDom = function (options) {
       domField.className = 'jsoneditor-readonly'
     }
 
-    var fieldText
+    let fieldText
     if (this.index !== undefined) {
       fieldText = this.index
     } else if (this.field !== undefined) {
       fieldText = this.field
     } else {
-      var schema = this.editor.options.schema
+      const schema = this.editor.options.schema
         ? Node._findSchema(this.editor.options.schema, this.editor.options.schemaRefs || {}, this.getPath())
         : undefined
 
@@ -2456,7 +2446,7 @@ Node.prototype.updateDom = function (options) {
   }
 
   // apply value to DOM
-  var domValue = this.dom.value
+  const domValue = this.dom.value
   if (domValue) {
     if (this.type === 'array') {
       this.updateNodeName()
@@ -2485,7 +2475,7 @@ Node.prototype.updateDom = function (options) {
   // update childs recursively
   if (options && options.recurse === true) {
     if (this.childs) {
-      this.childs.forEach(function (child) {
+      this.childs.forEach(child => {
         child.updateDom(options)
       })
     }
@@ -2534,14 +2524,14 @@ Node.prototype._updateSchema = function () {
  * @return {Array | null} Returns the enum when found, null otherwise.
  * @private
  */
-Node._findEnum = function (schema) {
+Node._findEnum = schema => {
   if (schema.enum) {
     return schema.enum
   }
 
-  var composite = schema.oneOf || schema.anyOf || schema.allOf
+  const composite = schema.oneOf || schema.anyOf || schema.allOf
   if (composite) {
-    var match = composite.filter(function (entry) { return entry.enum })
+    const match = composite.filter(entry => entry.enum)
     if (match.length > 0) {
       return match[0].enum
     }
@@ -2558,16 +2548,16 @@ Node._findEnum = function (schema) {
  * @return {Object | null}
  * @private
  */
-Node._findSchema = function (schema, schemaRefs, path) {
-  var childSchema = schema
-  var foundSchema = childSchema
+Node._findSchema = (schema, schemaRefs, path) => {
+  let childSchema = schema
+  let foundSchema = childSchema
 
-  var allSchemas = schema.oneOf || schema.anyOf || schema.allOf
+  let allSchemas = schema.oneOf || schema.anyOf || schema.allOf
   if (!allSchemas) {
     allSchemas = [schema]
   }
 
-  for (var j = 0; j < allSchemas.length; j++) {
+  for (let j = 0; j < allSchemas.length; j++) {
     childSchema = allSchemas[j]
 
     if ('$ref' in childSchema && typeof childSchema.$ref === 'string') {
@@ -2577,12 +2567,12 @@ Node._findSchema = function (schema, schemaRefs, path) {
       }
     }
 
-    for (var i = 0; i < path.length && childSchema; i++) {
-      var nextPath = path.slice(i + 1, path.length)
-      var key = path[i]
+    for (let i = 0; i < path.length && childSchema; i++) {
+      const nextPath = path.slice(i + 1, path.length)
+      const key = path[i]
 
       if (typeof key === 'string' && childSchema.patternProperties && !(childSchema.properties && key in childSchema.properties)) {
-        for (var prop in childSchema.patternProperties) {
+        for (const prop in childSchema.patternProperties) {
           if (key.match(prop)) {
             foundSchema = Node._findSchema(childSchema.patternProperties[prop], schemaRefs, nextPath)
           }
@@ -2620,19 +2610,19 @@ Node._findSchema = function (schema, schemaRefs, path) {
  * @private
  */
 Node.prototype._updateDomIndexes = function () {
-  var domValue = this.dom.value
-  var childs = this.childs
+  const domValue = this.dom.value
+  const childs = this.childs
   if (domValue && childs) {
     if (this.type === 'array') {
-      childs.forEach(function (child, index) {
+      childs.forEach((child, index) => {
         child.index = index
-        var childField = child.dom.field
+        const childField = child.dom.field
         if (childField) {
           childField.innerHTML = index
         }
       })
     } else if (this.type === 'object') {
-      childs.forEach(function (child) {
+      childs.forEach(child => {
         if (child.index !== undefined) {
           delete child.index
 
@@ -2650,7 +2640,7 @@ Node.prototype._updateDomIndexes = function () {
  * @private
  */
 Node.prototype._createDomValue = function () {
-  var domValue
+  let domValue
 
   if (this.type === 'array') {
     domValue = document.createElement('div')
@@ -2683,7 +2673,7 @@ Node.prototype._createDomValue = function () {
  */
 Node.prototype._createDomExpandButton = function () {
   // create expand button
-  var expand = document.createElement('button')
+  const expand = document.createElement('button')
   expand.type = 'button'
   if (this._hasChilds()) {
     expand.className = this.expanded
@@ -2704,17 +2694,17 @@ Node.prototype._createDomExpandButton = function () {
  * @private
  */
 Node.prototype._createDomTree = function () {
-  var dom = this.dom
-  var domTree = document.createElement('table')
-  var tbody = document.createElement('tbody')
+  const dom = this.dom
+  const domTree = document.createElement('table')
+  const tbody = document.createElement('tbody')
   domTree.style.borderCollapse = 'collapse' // TODO: put in css
   domTree.className = 'jsoneditor-values'
   domTree.appendChild(tbody)
-  var tr = document.createElement('tr')
+  const tr = document.createElement('tr')
   tbody.appendChild(tr)
 
   // create expand button
-  var tdExpand = document.createElement('td')
+  const tdExpand = document.createElement('td')
   tdExpand.className = 'jsoneditor-tree'
   tr.appendChild(tdExpand)
   dom.expand = this._createDomExpandButton()
@@ -2722,7 +2712,7 @@ Node.prototype._createDomTree = function () {
   dom.tdExpand = tdExpand
 
   // create the field
-  var tdField = document.createElement('td')
+  const tdField = document.createElement('td')
   tdField.className = 'jsoneditor-tree'
   tr.appendChild(tdField)
   dom.field = this._createDomField()
@@ -2730,7 +2720,7 @@ Node.prototype._createDomTree = function () {
   dom.tdField = tdField
 
   // create a separator
-  var tdSeparator = document.createElement('td')
+  const tdSeparator = document.createElement('td')
   tdSeparator.className = 'jsoneditor-tree'
   tr.appendChild(tdSeparator)
   if (this.type !== 'object' && this.type !== 'array') {
@@ -2740,7 +2730,7 @@ Node.prototype._createDomTree = function () {
   dom.tdSeparator = tdSeparator
 
   // create the value
-  var tdValue = document.createElement('td')
+  const tdValue = document.createElement('td')
   tdValue.className = 'jsoneditor-tree'
   tr.appendChild(tdValue)
   dom.value = this._createDomValue()
@@ -2755,11 +2745,11 @@ Node.prototype._createDomTree = function () {
  * @param {Event} event
  */
 Node.prototype.onEvent = function (event) {
-  var type = event.type
-  var target = event.target || event.srcElement
-  var dom = this.dom
-  var node = this
-  var expandable = this._hasChilds()
+  const type = event.type
+  const target = event.target || event.srcElement
+  const dom = this.dom
+  const node = this
+  const expandable = this._hasChilds()
 
   if (typeof this.editor.options.onEvent === 'function') {
     this._onEvent(event)
@@ -2777,11 +2767,11 @@ Node.prototype.onEvent = function (event) {
 
   // context menu events
   if (type === 'click' && target === dom.menu) {
-    var highlighter = node.editor.highlighter
+    const highlighter = node.editor.highlighter
     highlighter.highlight(node)
     highlighter.lock()
     util.addClassName(dom.menu, 'jsoneditor-selected')
-    this.showContextMenu(dom.menu, function () {
+    this.showContextMenu(dom.menu, () => {
       util.removeClassName(dom.menu, 'jsoneditor-selected')
       highlighter.unlock()
       highlighter.unhighlight()
@@ -2793,7 +2783,7 @@ Node.prototype.onEvent = function (event) {
     if (target === dom.expand ||
         ((node.editor.options.mode === 'view' || node.editor.options.mode === 'form') && target.nodeName === 'DIV')) {
       if (expandable) {
-        var recurse = event.ctrlKey // with ctrl-key, expand/collapse all
+        const recurse = event.ctrlKey // with ctrl-key, expand/collapse all
         this._onExpand(recurse)
       }
     }
@@ -2818,7 +2808,7 @@ Node.prototype.onEvent = function (event) {
   }
 
   // value events
-  var domValue = dom.value
+  const domValue = dom.value
   if (target === domValue) {
     // noinspection FallthroughInSwitchStatementJS
     switch (type) {
@@ -2862,7 +2852,7 @@ Node.prototype.onEvent = function (event) {
 
       case 'cut':
       case 'paste':
-        setTimeout(function () {
+        setTimeout(() => {
           node._getDomValue()
           node._updateDomValue()
         }, 1)
@@ -2871,7 +2861,7 @@ Node.prototype.onEvent = function (event) {
   }
 
   // field events
-  var domField = dom.field
+  const domField = dom.field
   if (target === domField) {
     switch (type) {
       case 'blur':
@@ -2901,7 +2891,7 @@ Node.prototype.onEvent = function (event) {
 
       case 'cut':
       case 'paste':
-        setTimeout(function () {
+        setTimeout(() => {
           node._getDomField()
           node._updateDomField()
         }, 1)
@@ -2911,9 +2901,9 @@ Node.prototype.onEvent = function (event) {
 
   // focus
   // when clicked in whitespace left or right from the field or value, set focus
-  var domTree = dom.tree
+  const domTree = dom.tree
   if (domTree && target === domTree.parentNode && type === 'click' && !event.hasMoved) {
-    var left = (event.offsetX !== undefined)
+    const left = (event.offsetX !== undefined)
       ? (event.offsetX < (this.getLevel() + 1) * 24)
       : (event.pageX < util.getAbsoluteLeft(dom.tdSeparator))// for FF
     if (left || expandable) {
@@ -2952,9 +2942,9 @@ Node.prototype.onEvent = function (event) {
  * @private
  */
 Node.prototype._onEvent = function (event) {
-  var element = event.target
+  const element = event.target
   if (element === this.dom.field || element === this.dom.value) {
-    var info = {
+    const info = {
       field: this.getField(),
       path: this.getPath()
     }
@@ -2971,28 +2961,28 @@ Node.prototype._onEvent = function (event) {
  * @param {Event} event
  */
 Node.prototype.onKeyDown = function (event) {
-  var keynum = event.which || event.keyCode
-  var target = event.target || event.srcElement
-  var ctrlKey = event.ctrlKey
-  var shiftKey = event.shiftKey
-  var altKey = event.altKey
-  var handled = false
-  var prevNode, nextNode, nextDom, nextDom2
-  var editable = this.editor.options.mode === 'tree'
-  var oldSelection
-  var oldNextNode
-  var oldParent
-  var oldIndexRedo
-  var newIndexRedo
-  var oldParentPathRedo
-  var newParentPathRedo
-  var nodes
-  var multiselection
-  var selectedNodes = this.editor.multiselection.nodes.length > 0
+  const keynum = event.which || event.keyCode
+  const target = event.target || event.srcElement
+  const ctrlKey = event.ctrlKey
+  const shiftKey = event.shiftKey
+  const altKey = event.altKey
+  let handled = false
+  let prevNode, nextNode, nextDom, nextDom2
+  const editable = this.editor.options.mode === 'tree'
+  let oldSelection
+  let oldNextNode
+  let oldParent
+  let oldIndexRedo
+  let newIndexRedo
+  let oldParentPathRedo
+  let newParentPathRedo
+  let nodes
+  let multiselection
+  const selectedNodes = this.editor.multiselection.nodes.length > 0
     ? this.editor.multiselection.nodes
     : [this]
-  var firstNode = selectedNodes[0]
-  var lastNode = selectedNodes[selectedNodes.length - 1]
+  const firstNode = selectedNodes[0]
+  const lastNode = selectedNodes[selectedNodes.length - 1]
 
   // console.log(ctrlKey, keynum, event.charCode); // TODO: cleanup
   if (keynum === 13) { // Enter
@@ -3004,9 +2994,9 @@ Node.prototype.onKeyDown = function (event) {
         }
       }
     } else if (target === this.dom.expand) {
-      var expandable = this._hasChilds()
+      const expandable = this._hasChilds()
       if (expandable) {
-        var recurse = event.ctrlKey // with ctrl-key, expand/collapse all
+        const recurse = event.ctrlKey // with ctrl-key, expand/collapse all
         this._onExpand(recurse)
         target.focus()
         handled = true
@@ -3044,7 +3034,7 @@ Node.prototype.onKeyDown = function (event) {
   } else if (keynum === 35) { // End
     if (altKey) { // Alt+End
       // find the last node
-      var endNode = this._lastNode()
+      const endNode = this._lastNode()
       if (endNode) {
         endNode.focus(Node.focusElement || this._getElementName(target))
       }
@@ -3053,7 +3043,7 @@ Node.prototype.onKeyDown = function (event) {
   } else if (keynum === 36) { // Home
     if (altKey) { // Alt+Home
       // find the first node
-      var homeNode = this._firstNode()
+      const homeNode = this._firstNode()
       if (homeNode) {
         homeNode.focus(Node.focusElement || this._getElementName(target))
       }
@@ -3062,14 +3052,14 @@ Node.prototype.onKeyDown = function (event) {
   } else if (keynum === 37) { // Arrow Left
     if (altKey && !shiftKey) { // Alt + Arrow Left
       // move to left element
-      var prevElement = this._previousElement(target)
+      const prevElement = this._previousElement(target)
       if (prevElement) {
         this.focus(this._getElementName(prevElement))
       }
       handled = true
     } else if (altKey && shiftKey && editable) { // Alt + Shift + Arrow left
       if (lastNode.expanded) {
-        var appendDom = lastNode.getAppendDom()
+        const appendDom = lastNode.getAppendDom()
         nextDom = appendDom ? appendDom.nextSibling : undefined
       } else {
         var dom = lastNode.getDom()
@@ -3090,7 +3080,7 @@ Node.prototype.onKeyDown = function (event) {
           oldParentPathRedo = oldParent.getInternalPath()
           newParentPathRedo = nextNode2.parent.getInternalPath()
 
-          selectedNodes.forEach(function (node) {
+          selectedNodes.forEach(node => {
             nextNode2.parent.moveBefore(node, nextNode2)
           })
           this.focus(Node.focusElement || this._getElementName(target))
@@ -3149,7 +3139,7 @@ Node.prototype.onKeyDown = function (event) {
         oldParentPathRedo = oldParent.getInternalPath()
         newParentPathRedo = prevNode.parent.getInternalPath()
 
-        selectedNodes.forEach(function (node) {
+        selectedNodes.forEach(node => {
           prevNode.parent.moveBefore(node, prevNode)
         })
         this.focus(Node.focusElement || this._getElementName(target))
@@ -3177,14 +3167,14 @@ Node.prototype.onKeyDown = function (event) {
   } else if (keynum === 39) { // Arrow Right
     if (altKey && !shiftKey) { // Alt + Arrow Right
       // move to right element
-      var nextElement = this._nextElement(target)
+      const nextElement = this._nextElement(target)
       if (nextElement) {
         this.focus(this._getElementName(nextElement))
       }
       handled = true
     } else if (altKey && shiftKey && editable) { // Alt + Shift + Arrow Right
       dom = firstNode.getDom()
-      var prevDom = dom.previousSibling
+      const prevDom = dom.previousSibling
       if (prevDom) {
         prevNode = Node.getNodeFromTarget(prevDom)
         if (prevNode && prevNode.parent && !prevNode.isVisible()) {
@@ -3196,7 +3186,7 @@ Node.prototype.onKeyDown = function (event) {
           oldParentPathRedo = oldParent.getInternalPath()
           newParentPathRedo = prevNode.parent.getInternalPath()
 
-          selectedNodes.forEach(function (node) {
+          selectedNodes.forEach(node => {
             prevNode.parent.moveBefore(node, prevNode)
           })
           this.focus(Node.focusElement || this._getElementName(target))
@@ -3270,7 +3260,7 @@ Node.prototype.onKeyDown = function (event) {
         oldParentPathRedo = oldParent.getInternalPath()
         newParentPathRedo = nextNode2.parent.getInternalPath()
 
-        selectedNodes.forEach(function (node) {
+        selectedNodes.forEach(node => {
           nextNode2.parent.moveBefore(node, nextNode2)
         })
         this.focus(Node.focusElement || this._getElementName(target))
@@ -3333,13 +3323,13 @@ Node.prototype._onExpand = function (recurse) {
  */
 Node.prototype._showColorPicker = function () {
   if (typeof this.editor.options.onColorPicker === 'function' && this.dom.color) {
-    var node = this
+    const node = this
 
     // force deleting current color picker (if any)
     node._deleteDomColor()
     node.updateDom()
 
-    var colorAnchor = createAbsoluteAnchor(this.dom.color, this.editor.frame)
+    const colorAnchor = createAbsoluteAnchor(this.dom.color, this.editor.frame)
 
     this.editor.options.onColorPicker(colorAnchor, this.value, function onChange (value) {
       if (typeof value === 'string' && value !== node.value) {
@@ -3362,12 +3352,8 @@ Node.prototype._showColorPicker = function () {
 Node.prototype.getFieldNames = function (excludeNode) {
   if (this.type === 'object') {
     return this.childs
-      .filter(function (child) {
-        return child !== excludeNode
-      })
-      .map(function (child) {
-        return child.field
-      })
+      .filter(child => child !== excludeNode)
+      .map(child => child.field)
   }
 
   return []
@@ -3377,28 +3363,28 @@ Node.prototype.getFieldNames = function (excludeNode) {
  * Remove nodes
  * @param {Node[] | Node} nodes
  */
-Node.onRemove = function (nodes) {
+Node.onRemove = nodes => {
   if (!Array.isArray(nodes)) {
     return Node.onRemove([nodes])
   }
 
   if (nodes && nodes.length > 0) {
-    var firstNode = nodes[0]
-    var parent = firstNode.parent
-    var editor = firstNode.editor
-    var firstIndex = firstNode.getIndex()
+    const firstNode = nodes[0]
+    const parent = firstNode.parent
+    const editor = firstNode.editor
+    const firstIndex = firstNode.getIndex()
     editor.highlighter.unhighlight()
 
     // adjust the focus
-    var oldSelection = editor.getDomSelection()
+    const oldSelection = editor.getDomSelection()
     Node.blurNodes(nodes)
-    var newSelection = editor.getDomSelection()
+    const newSelection = editor.getDomSelection()
 
     // store the paths before removing them (needed for history)
-    var paths = nodes.map(getInternalPath)
+    const paths = nodes.map(getInternalPath)
 
     // remove the nodes
-    nodes.forEach(function (node) {
+    nodes.forEach(node => {
       node.parent._remove(node)
     })
 
@@ -3419,25 +3405,25 @@ Node.onRemove = function (nodes) {
  * duplicated nodes will be added right after the original nodes
  * @param {Node[] | Node} nodes
  */
-Node.onDuplicate = function (nodes) {
+Node.onDuplicate = nodes => {
   if (!Array.isArray(nodes)) {
     return Node.onDuplicate([nodes])
   }
 
   if (nodes && nodes.length > 0) {
-    var lastNode = nodes[nodes.length - 1]
-    var parent = lastNode.parent
-    var editor = lastNode.editor
+    const lastNode = nodes[nodes.length - 1]
+    const parent = lastNode.parent
+    const editor = lastNode.editor
 
     editor.deselect(editor.multiselection.nodes)
 
     // duplicate the nodes
-    var oldSelection = editor.getDomSelection()
-    var afterNode = lastNode
-    var clones = nodes.map(function (node) {
-      var clone = node.clone()
+    const oldSelection = editor.getDomSelection()
+    let afterNode = lastNode
+    const clones = nodes.map(node => {
+      const clone = node.clone()
       if (node.parent.type === 'object') {
-        var existingFieldNames = node.parent.getFieldNames()
+        const existingFieldNames = node.parent.getFieldNames()
         clone.field = util.findUniqueName(node.field, existingFieldNames)
       }
       parent.insertAfter(clone, afterNode)
@@ -3458,7 +3444,7 @@ Node.onDuplicate = function (nodes) {
     } else {
       editor.select(clones)
     }
-    var newSelection = editor.getDomSelection()
+    const newSelection = editor.getDomSelection()
 
     editor._onAction('duplicateNodes', {
       paths: nodes.map(getInternalPath),
@@ -3479,21 +3465,21 @@ Node.onDuplicate = function (nodes) {
  * @private
  */
 Node.prototype._onInsertBefore = function (field, value, type) {
-  var oldSelection = this.editor.getDomSelection()
+  const oldSelection = this.editor.getDomSelection()
 
-  var newNode = new Node(this.editor, {
+  const newNode = new Node(this.editor, {
     field: (field !== undefined) ? field : '',
     value: (value !== undefined) ? value : '',
     type: type
   })
   newNode.expand(true)
 
-  var beforePath = this.getInternalPath()
+  const beforePath = this.getInternalPath()
 
   this.parent.insertBefore(newNode, this)
   this.editor.highlighter.unhighlight()
   newNode.focus('field')
-  var newSelection = this.editor.getDomSelection()
+  const newSelection = this.editor.getDomSelection()
 
   this.editor._onAction('insertBeforeNodes', {
     nodes: [newNode],
@@ -3513,9 +3499,9 @@ Node.prototype._onInsertBefore = function (field, value, type) {
  * @private
  */
 Node.prototype._onInsertAfter = function (field, value, type) {
-  var oldSelection = this.editor.getDomSelection()
+  const oldSelection = this.editor.getDomSelection()
 
-  var newNode = new Node(this.editor, {
+  const newNode = new Node(this.editor, {
     field: (field !== undefined) ? field : '',
     value: (value !== undefined) ? value : '',
     type: type
@@ -3524,7 +3510,7 @@ Node.prototype._onInsertAfter = function (field, value, type) {
   this.parent.insertAfter(newNode, this)
   this.editor.highlighter.unhighlight()
   newNode.focus('field')
-  var newSelection = this.editor.getDomSelection()
+  const newSelection = this.editor.getDomSelection()
 
   this.editor._onAction('insertAfterNodes', {
     nodes: [newNode],
@@ -3544,9 +3530,9 @@ Node.prototype._onInsertAfter = function (field, value, type) {
  * @private
  */
 Node.prototype._onAppend = function (field, value, type) {
-  var oldSelection = this.editor.getDomSelection()
+  const oldSelection = this.editor.getDomSelection()
 
-  var newNode = new Node(this.editor, {
+  const newNode = new Node(this.editor, {
     field: (field !== undefined) ? field : '',
     value: (value !== undefined) ? value : '',
     type: type
@@ -3555,7 +3541,7 @@ Node.prototype._onAppend = function (field, value, type) {
   this.parent.appendChild(newNode)
   this.editor.highlighter.unhighlight()
   newNode.focus('field')
-  var newSelection = this.editor.getDomSelection()
+  const newSelection = this.editor.getDomSelection()
 
   this.editor._onAction('appendNodes', {
     nodes: [newNode],
@@ -3572,11 +3558,11 @@ Node.prototype._onAppend = function (field, value, type) {
  * @private
  */
 Node.prototype._onChangeType = function (newType) {
-  var oldType = this.type
+  const oldType = this.type
   if (newType !== oldType) {
-    var oldSelection = this.editor.getDomSelection()
+    const oldSelection = this.editor.getDomSelection()
     this.changeType(newType)
-    var newSelection = this.editor.getDomSelection()
+    const newSelection = this.editor.getDomSelection()
 
     this.editor._onAction('changeType', {
       path: this.getInternalPath(),
@@ -3607,20 +3593,18 @@ Node.prototype.sort = function (path, direction) {
   this.hideChilds() // sorting is faster when the childs are not attached to the dom
 
   // copy the childs array (the old one will be kept for an undo action
-  var oldChilds = this.childs
+  const oldChilds = this.childs
   this.childs = this.childs.concat()
 
   // sort the childs array
-  var order = (direction === 'desc') ? -1 : 1
+  const order = (direction === 'desc') ? -1 : 1
 
   if (this.type === 'object') {
-    this.childs.sort(function (a, b) {
-      return order * naturalSort(a.field, b.field)
-    })
+    this.childs.sort((a, b) => order * naturalSort(a.field, b.field))
   } else { // this.type === 'array'
-    this.childs.sort(function (a, b) {
-      var nodeA = a.getNestedChild(path)
-      var nodeB = b.getNestedChild(path)
+    this.childs.sort((a, b) => {
+      const nodeA = a.getNestedChild(path)
+      const nodeB = b.getNestedChild(path)
 
       if (!nodeA) {
         return order
@@ -3629,8 +3613,8 @@ Node.prototype.sort = function (path, direction) {
         return -order
       }
 
-      var valueA = nodeA.value
-      var valueB = nodeB.value
+      const valueA = nodeA.value
+      const valueB = nodeB.value
 
       if (typeof valueA !== 'string' && typeof valueB !== 'string') {
         // both values are a number, boolean, or null -> use simple, fast sorting
@@ -3658,7 +3642,7 @@ Node.prototype.sort = function (path, direction) {
  * @param {*} newValue
  */
 Node.prototype.update = function (newValue) {
-  var oldValue = this.getInternalValue()
+  const oldValue = this.getInternalValue()
 
   this.setValue(newValue)
 
@@ -3677,14 +3661,14 @@ Node.prototype.update = function (newValue) {
  * @private
  */
 Node.prototype._detachFromDom = function () {
-  var table = this.dom.tr ? this.dom.tr.parentNode : undefined
-  var lastTr
+  const table = this.dom.tr ? this.dom.tr.parentNode : undefined
+  let lastTr
   if (this.expanded) {
     lastTr = this.getAppendDom()
   } else {
     lastTr = this.getDom()
   }
-  var nextTr = (lastTr && lastTr.parentNode) ? lastTr.nextSibling : undefined
+  const nextTr = (lastTr && lastTr.parentNode) ? lastTr.nextSibling : undefined
 
   this.hide({ resetVisibleChilds: false })
 
@@ -3727,14 +3711,14 @@ Node.prototype.transform = function (query) {
   this.hideChilds() // sorting is faster when the childs are not attached to the dom
 
   try {
-    var oldInternalValue = this.getInternalValue()
+    const oldInternalValue = this.getInternalValue()
 
     // apply the JMESPath query
-    var oldValue = this.getValue()
-    var newValue = jmespath.search(oldValue, query)
+    const oldValue = this.getValue()
+    const newValue = jmespath.search(oldValue, query)
     this.setValue(newValue)
 
-    var newInternalValue = this.getInternalValue()
+    const newInternalValue = this.getInternalValue()
 
     this.editor._onAction('transform', {
       path: this.getInternalPath(),
@@ -3758,9 +3742,9 @@ Node.prototype.extract = function () {
   this.hideChilds()
 
   try {
-    var oldInternalValue = this.editor.node.getInternalValue()
+    const oldInternalValue = this.editor.node.getInternalValue()
     this.editor._setRoot(this)
-    var newInternalValue = this.editor.node.getInternalValue()
+    const newInternalValue = this.editor.node.getInternalValue()
 
     this.editor._onAction('transform', {
       path: this.editor.node.getInternalPath(),
@@ -3781,8 +3765,8 @@ Node.prototype.extract = function () {
  * @returns {Node}
  */
 Node.prototype.getNestedChild = function (path) {
-  var i = 0
-  var child = this
+  let i = 0
+  let child = this
 
   while (child && i < path.length) {
     child = child.findChildByProperty(path[i])
@@ -3802,9 +3786,7 @@ Node.prototype.findChildByProperty = function (prop) {
     return undefined
   }
 
-  return this.childs.find(function (child) {
-    return child.field === prop
-  })
+  return this.childs.find(child => child.field === prop)
 }
 
 /**
@@ -3836,7 +3818,7 @@ Node.prototype.getShowMoreDom = function () {
  * @return {Node | undefined} node  or undefined when not found
  * @static
  */
-Node.getNodeFromTarget = function (target) {
+Node.getNodeFromTarget = target => {
   while (target) {
     if (target.node) {
       return target.node
@@ -3852,11 +3834,11 @@ Node.getNodeFromTarget = function (target) {
  * @param {HTMLElement} target
  * @returns {boolean}
  */
-Node.targetIsColorPicker = function (target) {
-  var node = Node.getNodeFromTarget(target)
+Node.targetIsColorPicker = target => {
+  const node = Node.getNodeFromTarget(target)
 
   if (node) {
-    var parent = target && target.parentNode
+    let parent = target && target.parentNode
     while (parent) {
       if (parent === node.dom.color) {
         return true
@@ -3873,15 +3855,15 @@ Node.targetIsColorPicker = function (target) {
  * (b) the node after, or (c) the parent node.
  * @param {Array.<Node> | Node} nodes
  */
-Node.blurNodes = function (nodes) {
+Node.blurNodes = nodes => {
   if (!Array.isArray(nodes)) {
     Node.blurNodes([nodes])
     return
   }
 
-  var firstNode = nodes[0]
-  var parent = firstNode.parent
-  var firstIndex = firstNode.getIndex()
+  const firstNode = nodes[0]
+  const parent = firstNode.parent
+  const firstIndex = firstNode.getIndex()
 
   if (parent.childs[firstIndex + nodes.length]) {
     parent.childs[firstIndex + nodes.length].focus()
@@ -3897,7 +3879,7 @@ Node.blurNodes = function (nodes) {
  * @return {Node} nextSibling
  */
 Node.prototype.nextSibling = function () {
-  var index = this.parent.childs.indexOf(this)
+  const index = this.parent.childs.indexOf(this)
   return this.parent.childs[index + 1] || this.parent.append
 }
 
@@ -3906,11 +3888,11 @@ Node.prototype.nextSibling = function () {
  * @return {Node | null} previousNode
  */
 Node.prototype._previousNode = function () {
-  var prevNode = null
-  var dom = this.getDom()
+  let prevNode = null
+  const dom = this.getDom()
   if (dom && dom.parentNode) {
     // find the previous field
-    var prevDom = dom
+    let prevDom = dom
     do {
       prevDom = prevDom.previousSibling
       prevNode = Node.getNodeFromTarget(prevDom)
@@ -3926,11 +3908,11 @@ Node.prototype._previousNode = function () {
  * @private
  */
 Node.prototype._nextNode = function () {
-  var nextNode = null
-  var dom = this.getDom()
+  let nextNode = null
+  const dom = this.getDom()
   if (dom && dom.parentNode) {
     // find the previous field
-    var nextDom = dom
+    let nextDom = dom
     do {
       nextDom = nextDom.nextSibling
       nextNode = Node.getNodeFromTarget(nextDom)
@@ -3947,10 +3929,10 @@ Node.prototype._nextNode = function () {
  * @private
  */
 Node.prototype._firstNode = function () {
-  var firstNode = null
-  var dom = this.getDom()
+  let firstNode = null
+  const dom = this.getDom()
   if (dom && dom.parentNode) {
-    var firstDom = dom.parentNode.firstChild
+    const firstDom = dom.parentNode.firstChild
     firstNode = Node.getNodeFromTarget(firstDom)
   }
 
@@ -3963,10 +3945,10 @@ Node.prototype._firstNode = function () {
  * @private
  */
 Node.prototype._lastNode = function () {
-  var lastNode = null
-  var dom = this.getDom()
+  let lastNode = null
+  const dom = this.getDom()
   if (dom && dom.parentNode) {
-    var lastDom = dom.parentNode.lastChild
+    let lastDom = dom.parentNode.lastChild
     lastNode = Node.getNodeFromTarget(lastDom)
     while (lastDom && lastNode && !lastNode.isVisible()) {
       lastDom = lastDom.previousSibling
@@ -3983,7 +3965,7 @@ Node.prototype._lastNode = function () {
  * @private
  */
 Node.prototype._previousElement = function (elem) {
-  var dom = this.dom
+  const dom = this.dom
   // noinspection FallthroughInSwitchStatementJS
   switch (elem) {
     case dom.value:
@@ -4015,7 +3997,7 @@ Node.prototype._previousElement = function (elem) {
  * @private
  */
 Node.prototype._nextElement = function (elem) {
-  var dom = this.dom
+  const dom = this.dom
   // noinspection FallthroughInSwitchStatementJS
   switch (elem) {
     case dom.drag:
@@ -4072,8 +4054,8 @@ Node.TYPE_TITLES = {
 }
 
 Node.prototype.addTemplates = function (menu, append) {
-  var node = this
-  var templates = node.editor.options.templates
+  const node = this
+  const templates = node.editor.options.templates
   if (templates == null) return
   if (templates.length) {
     // create a separator
@@ -4081,10 +4063,10 @@ Node.prototype.addTemplates = function (menu, append) {
       type: 'separator'
     })
   }
-  var appendData = function (name, data) {
+  const appendData = (name, data) => {
     node._onAppend(name, data)
   }
-  var insertData = function (name, data) {
+  const insertData = (name, data) => {
     node._onInsertBefore(name, data)
   }
   templates.forEach(function (template) {
@@ -4105,9 +4087,9 @@ Node.prototype.addTemplates = function (menu, append) {
  *                               is being closed.
  */
 Node.prototype.showContextMenu = function (anchor, onClose) {
-  var node = this
-  var titles = Node.TYPE_TITLES
-  var items = []
+  const node = this
+  const titles = Node.TYPE_TITLES
+  let items = []
 
   if (this.editable.value) {
     items.push({
@@ -4199,9 +4181,9 @@ Node.prototype.showContextMenu = function (anchor, onClose) {
     }
 
     // create append button (for last child node only)
-    var childs = node.parent.childs
+    const childs = node.parent.childs
     if (node === childs[childs.length - 1]) {
-      var appendSubmenu = [
+      const appendSubmenu = [
         {
           text: translate('auto'),
           className: 'jsoneditor-type-auto',
@@ -4249,7 +4231,7 @@ Node.prototype.showContextMenu = function (anchor, onClose) {
     }
 
     // create insert button
-    var insertSubmenu = [
+    const insertSubmenu = [
       {
         text: translate('auto'),
         className: 'jsoneditor-type-auto',
@@ -4319,7 +4301,7 @@ Node.prototype.showContextMenu = function (anchor, onClose) {
   }
 
   if (this.editor.options.onCreateMenu) {
-    var path = node.getPath()
+    const path = node.getPath()
 
     items = this.editor.options.onCreateMenu(items, {
       type: 'single',
@@ -4328,7 +4310,7 @@ Node.prototype.showContextMenu = function (anchor, onClose) {
     })
   }
 
-  var menu = new ContextMenu(items, { close: onClose })
+  const menu = new ContextMenu(items, { close: onClose })
   menu.show(anchor, this.editor.frame)
 }
 
@@ -4336,13 +4318,13 @@ Node.prototype.showContextMenu = function (anchor, onClose) {
  * Show sorting modal
  */
 Node.prototype.showSortModal = function () {
-  var node = this
-  var container = this.editor.options.modalAnchor || DEFAULT_MODAL_ANCHOR
-  var json = this.getValue()
+  const node = this
+  const container = this.editor.options.modalAnchor || DEFAULT_MODAL_ANCHOR
+  const json = this.getValue()
 
   function onSort (sortedBy) {
-    var path = sortedBy.path
-    var pathArray = util.parsePath(path)
+    const path = sortedBy.path
+    const pathArray = util.parsePath(path)
 
     node.sortedBy = sortedBy
     node.sort(pathArray, sortedBy.direction)
@@ -4355,11 +4337,11 @@ Node.prototype.showSortModal = function () {
  * Show transform modal
  */
 Node.prototype.showTransformModal = function () {
-  var node = this
+  const node = this
 
-  var anchor = this.editor.options.modalAnchor || DEFAULT_MODAL_ANCHOR
-  var json = node.getValue()
-  showTransformModal(anchor, json, function (query) {
+  const anchor = this.editor.options.modalAnchor || DEFAULT_MODAL_ANCHOR
+  const json = node.getValue()
+  showTransformModal(anchor, json, query => {
     node.transform(query)
   })
 }
@@ -4370,7 +4352,7 @@ Node.prototype.showTransformModal = function () {
  * @return {String} type   Can be 'object', 'array', 'string', 'auto'
  * @private
  */
-Node.prototype._getType = function (value) {
+Node.prototype._getType = value => {
   if (value instanceof Array) {
     return 'array'
   }
@@ -4394,7 +4376,7 @@ Node.prototype._escapeHTML = function (text) {
   if (typeof text !== 'string') {
     return String(text)
   } else {
-    var htmlEscaped = String(text)
+    const htmlEscaped = String(text)
       .replace(/&/g, '&amp;') // must be replaced first!
       .replace(/</g, '&lt;')
       .replace(/>/g, '&gt;')
@@ -4402,8 +4384,8 @@ Node.prototype._escapeHTML = function (text) {
       .replace(/^ /, '&nbsp;') // space at start
       .replace(/ $/, '&nbsp;') // space at end
 
-    var json = JSON.stringify(htmlEscaped)
-    var html = json.substring(1, json.length - 1)
+    const json = JSON.stringify(htmlEscaped)
+    let html = json.substring(1, json.length - 1)
     if (this.editor.options.escapeUnicode === true) {
       html = util.escapeUnicodeChars(html)
     }
@@ -4418,8 +4400,8 @@ Node.prototype._escapeHTML = function (text) {
  * @private
  */
 Node.prototype._unescapeHTML = function (escapedText) {
-  var json = '"' + this._escapeJSON(escapedText) + '"'
-  var htmlEscaped = util.parse(json)
+  const json = '"' + this._escapeJSON(escapedText) + '"'
+  const htmlEscaped = util.parse(json)
 
   return htmlEscaped
     .replace(/&lt;/g, '<')
@@ -4437,12 +4419,12 @@ Node.prototype._unescapeHTML = function (escapedText) {
  * @return {String} escapedText
  * @private
  */
-Node.prototype._escapeJSON = function (text) {
+Node.prototype._escapeJSON = text => {
   // TODO: replace with some smart regex (only when a new solution is faster!)
-  var escaped = ''
-  var i = 0
+  let escaped = ''
+  let i = 0
   while (i < text.length) {
-    var c = text.charAt(i)
+    let c = text.charAt(i)
     if (c === '\n') {
       escaped += '\\n'
     } else if (c === '\\') {
@@ -4470,8 +4452,8 @@ Node.prototype._escapeJSON = function (text) {
  * @private
  */
 Node.prototype.updateNodeName = function () {
-  var count = this.childs ? this.childs.length : 0
-  var nodeName
+  const count = this.childs ? this.childs.length : 0
+  let nodeName
   if (this.type === 'object' || this.type === 'array') {
     if (this.editor.options.onNodeName) {
       try {
@@ -4499,7 +4481,7 @@ Node.prototype.recursivelyUpdateNodeName = function () {
   if (this.expanded) {
     this.updateNodeName()
     if (this.childs !== 'undefined') {
-      var i
+      let i
       for (i in this.childs) {
         this.childs[i].recursivelyUpdateNodeName()
       }

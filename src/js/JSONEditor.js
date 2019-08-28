@@ -1,19 +1,19 @@
 'use strict'
 
-var Ajv
+let Ajv
 try {
   Ajv = require('ajv')
 } catch (err) {
   // no problem... when we need Ajv we will throw a neat exception
 }
 
-var ace = require('./ace') // may be undefined in case of minimalist bundle
-var VanillaPicker = require('./vanilla-picker') // may be undefined in case of minimalist bundle
+const ace = require('./ace') // may be undefined in case of minimalist bundle
+const VanillaPicker = require('./vanilla-picker') // may be undefined in case of minimalist bundle
 
-var treemode = require('./treemode')
-var textmode = require('./textmode')
-var previewmode = require('./previewmode')
-var util = require('./util')
+const treemode = require('./treemode')
+const textmode = require('./textmode')
+const previewmode = require('./previewmode')
+const util = require('./util')
 
 if (typeof Promise === 'undefined') {
   console.error('Promise undefined. Please load a Promise polyfill in the browser in order to use JSONEditor')
@@ -101,7 +101,7 @@ function JSONEditor (container, options, json) {
   }
 
   // check for unsupported browser (IE8 and older)
-  var ieVersion = util.getInternetExplorerVersion()
+  const ieVersion = util.getInternetExplorerVersion()
   if (ieVersion !== -1 && ieVersion < 9) {
     throw new Error('Unsupported browser, IE9 or newer required. ' +
         'Please install the newest version of your browser.')
@@ -136,7 +136,7 @@ function JSONEditor (container, options, json) {
 
     // validate options
     if (options) {
-      Object.keys(options).forEach(function (option) {
+      Object.keys(options).forEach(option => {
         if (JSONEditor.VALID_OPTIONS.indexOf(option) === -1) {
           console.warn('Unknown option "' + option + '". This option will be ignored')
         }
@@ -194,14 +194,14 @@ JSONEditor.prototype._create = function (container, options, json) {
   this.options = options || {}
   this.json = json || {}
 
-  var mode = this.options.mode || (this.options.modes && this.options.modes[0]) || 'tree'
+  const mode = this.options.mode || (this.options.modes && this.options.modes[0]) || 'tree'
   this.setMode(mode)
 }
 
 /**
  * Destroy the editor. Clean up DOM, event listeners, and web workers.
  */
-JSONEditor.prototype.destroy = function () {}
+JSONEditor.prototype.destroy = () => {}
 
 /**
  * Set JSON object in editor
@@ -266,17 +266,17 @@ JSONEditor.prototype.setMode = function (mode) {
     return
   }
 
-  var container = this.container
-  var options = util.extend({}, this.options)
-  var oldMode = options.mode
-  var data
-  var name
+  const container = this.container
+  const options = util.extend({}, this.options)
+  const oldMode = options.mode
+  let data
+  let name
 
   options.mode = mode
-  var config = JSONEditor.modes[mode]
+  const config = JSONEditor.modes[mode]
   if (config) {
     try {
-      var asText = (config.data === 'text')
+      const asText = (config.data === 'text')
       name = this.getName()
       data = this[asText ? 'getText' : 'get']() // get text or json
 
@@ -343,7 +343,7 @@ JSONEditor.prototype._onError = function (err) {
 JSONEditor.prototype.setSchema = function (schema, schemaRefs) {
   // compile a JSON schema validator if a JSON schema is provided
   if (schema) {
-    var ajv
+    let ajv
     try {
       // grab ajv from options if provided, else create a new instance
       if (this.options.ajv) {
@@ -366,7 +366,7 @@ JSONEditor.prototype.setSchema = function (schema, schemaRefs) {
 
     if (ajv) {
       if (schemaRefs) {
-        for (var ref in schemaRefs) {
+        for (const ref in schemaRefs) {
           ajv.removeSchema(ref) // When updating a schema - old refs has to be removed first
           if (schemaRefs[ref]) {
             ajv.addSchema(schemaRefs[ref], ref)
@@ -399,14 +399,14 @@ JSONEditor.prototype.setSchema = function (schema, schemaRefs) {
  * Validate current JSON object against the configured JSON schema
  * Throws an exception when no JSON schema is configured
  */
-JSONEditor.prototype.validate = function () {
+JSONEditor.prototype.validate = () => {
   // must be implemented by treemode and textmode
 }
 
 /**
  * Refresh the rendered contents
  */
-JSONEditor.prototype.refresh = function () {
+JSONEditor.prototype.refresh = () => {
   // can be implemented by treemode and textmode
 }
 
@@ -429,8 +429,8 @@ JSONEditor.prototype.refresh = function () {
  *
  * @param {Object | Array} mode  A mode object or an array with multiple mode objects.
  */
-JSONEditor.registerMode = function (mode) {
-  var i, prop
+JSONEditor.registerMode = mode => {
+  let i, prop
 
   if (util.isArray(mode)) {
     // multiple modes
@@ -442,7 +442,7 @@ JSONEditor.registerMode = function (mode) {
     if (!('mode' in mode)) throw new Error('Property "mode" missing')
     if (!('mixin' in mode)) throw new Error('Property "mixin" missing')
     if (!('data' in mode)) throw new Error('Property "data" missing')
-    var name = mode.mode
+    const name = mode.mode
     if (name in JSONEditor.modes) {
       throw new Error('Mode "' + name + '" already registered')
     }
@@ -451,7 +451,7 @@ JSONEditor.registerMode = function (mode) {
     if (typeof mode.mixin.create !== 'function') {
       throw new Error('Required function "create" missing on mixin')
     }
-    var reserved = ['setMode', 'registerMode', 'modes']
+    const reserved = ['setMode', 'registerMode', 'modes']
     for (i = 0; i < reserved.length; i++) {
       prop = reserved[i]
       if (prop in mode.mixin) {

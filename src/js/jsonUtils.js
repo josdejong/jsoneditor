@@ -22,7 +22,7 @@
  * @returns {string | undefined} Returns the string representation of the JSON object.
  */
 function stringifyPartial (value, space, limit) {
-  var _space // undefined by default
+  let _space // undefined by default
   if (typeof space === 'number') {
     if (space > 10) {
       _space = repeat(' ', 10)
@@ -34,7 +34,7 @@ function stringifyPartial (value, space, limit) {
     _space = space
   }
 
-  var output = stringifyValue(value, _space, '', limit)
+  const output = stringifyValue(value, _space, '', limit)
 
   return output.length > limit
     ? (slice(output, limit) + '...')
@@ -81,11 +81,11 @@ function stringifyValue (value, space, indent, limit) {
  * @return {string}
  */
 function stringifyArray (array, space, indent, limit) {
-  var childIndent = space ? (indent + space) : undefined
-  var str = space ? '[\n' : '['
+  const childIndent = space ? (indent + space) : undefined
+  let str = space ? '[\n' : '['
 
-  for (var i = 0; i < array.length; i++) {
-    var item = array[i]
+  for (let i = 0; i < array.length; i++) {
+    const item = array[i]
 
     if (space) {
       str += childIndent
@@ -120,17 +120,17 @@ function stringifyArray (array, space, indent, limit) {
  * @return {string}
  */
 function stringifyObject (object, space, indent, limit) {
-  var childIndent = space ? (indent + space) : undefined
-  var first = true
-  var str = space ? '{\n' : '{'
+  const childIndent = space ? (indent + space) : undefined
+  let first = true
+  let str = space ? '{\n' : '{'
 
   if (typeof object.toJSON === 'function') {
     return stringifyValue(object.toJSON(), space, indent, limit)
   }
 
-  for (var key in object) {
+  for (const key in object) {
     if (hasOwnProperty(object, key)) {
-      var value = object[key]
+      const value = object[key]
 
       if (first) {
         first = false
@@ -163,7 +163,7 @@ function stringifyObject (object, space, indent, limit) {
  * @return {string}
  */
 function repeat (text, times) {
-  var res = ''
+  let res = ''
   while (times-- > 0) {
     res += text
   }

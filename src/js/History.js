@@ -8,9 +8,7 @@
  */
 function History (onChange, calculateItemSize, limit) {
   this.onChange = onChange
-  this.calculateItemSize = calculateItemSize || function () {
-    return 1
-  }
+  this.calculateItemSize = calculateItemSize || (() => 1)
   this.limit = limit
 
   this.items = []
@@ -35,10 +33,10 @@ History.prototype.add = function (item) {
 }
 
 History.prototype._calculateHistorySize = function () {
-  var calculateItemSize = this.calculateItemSize
-  var totalSize = 0
+  const calculateItemSize = this.calculateItemSize
+  let totalSize = 0
 
-  this.items.forEach(function (item) {
+  this.items.forEach(item => {
     totalSize += calculateItemSize(item)
   })
 

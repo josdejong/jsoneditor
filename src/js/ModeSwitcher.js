@@ -1,7 +1,7 @@
 'use strict'
 
-var ContextMenu = require('./ContextMenu')
-var translate = require('./i18n').translate
+const ContextMenu = require('./ContextMenu')
+const translate = require('./i18n').translate
 
 /**
  * Create a select box to be used in the editor menu's, which allows to switch mode
@@ -13,7 +13,7 @@ var translate = require('./i18n').translate
  */
 function ModeSwitcher (container, modes, current, onSwitch) {
   // available modes
-  var availableModes = {
+  const availableModes = {
     code: {
       text: translate('modeCodeText'),
       title: translate('modeCodeTitle'),
@@ -59,10 +59,10 @@ function ModeSwitcher (container, modes, current, onSwitch) {
   }
 
   // list the selected modes
-  var items = []
-  for (var i = 0; i < modes.length; i++) {
-    var mode = modes[i]
-    var item = availableModes[mode]
+  const items = []
+  for (let i = 0; i < modes.length; i++) {
+    const mode = modes[i]
+    const item = availableModes[mode]
     if (!item) {
       throw new Error('Unknown mode "' + mode + '"')
     }
@@ -72,24 +72,24 @@ function ModeSwitcher (container, modes, current, onSwitch) {
   }
 
   // retrieve the title of current mode
-  var currentMode = availableModes[current]
+  const currentMode = availableModes[current]
   if (!currentMode) {
     throw new Error('Unknown mode "' + current + '"')
   }
-  var currentTitle = currentMode.text
+  const currentTitle = currentMode.text
 
   // create the html element
-  var box = document.createElement('button')
+  const box = document.createElement('button')
   box.type = 'button'
   box.className = 'jsoneditor-modes jsoneditor-separator'
   box.innerHTML = currentTitle + ' &#x25BE;'
   box.title = 'Switch editor mode'
-  box.onclick = function () {
-    var menu = new ContextMenu(items)
+  box.onclick = () => {
+    const menu = new ContextMenu(items)
     menu.show(box, container)
   }
 
-  var frame = document.createElement('div')
+  const frame = document.createElement('div')
   frame.className = 'jsoneditor-modes'
   frame.style.position = 'relative'
   frame.appendChild(box)

@@ -1,4 +1,4 @@
-var util = require('./util')
+const util = require('./util')
 
 /**
  * Create an anchor element absolutely positioned in the `parent`
@@ -8,14 +8,14 @@ var util = require('./util')
  * @param [onDestroy(function(anchor)]  Callback when the anchor is destroyed
  * @returns {HTMLElement}
  */
-exports.createAbsoluteAnchor = function (anchor, parent, onDestroy) {
-  var root = getRootNode(anchor)
-  var eventListeners = {}
+exports.createAbsoluteAnchor = (anchor, parent, onDestroy) => {
+  const root = getRootNode(anchor)
+  const eventListeners = {}
 
-  var anchorRect = anchor.getBoundingClientRect()
-  var frameRect = parent.getBoundingClientRect()
+  const anchorRect = anchor.getBoundingClientRect()
+  const frameRect = parent.getBoundingClientRect()
 
-  var absoluteAnchor = document.createElement('div')
+  const absoluteAnchor = document.createElement('div')
   absoluteAnchor.className = 'jsoneditor-anchor'
   absoluteAnchor.style.position = 'absolute'
   absoluteAnchor.style.left = (anchorRect.left - frameRect.left) + 'px'
@@ -32,9 +32,9 @@ exports.createAbsoluteAnchor = function (anchor, parent, onDestroy) {
 
       // remove all event listeners
       // all event listeners are supposed to be attached to document.
-      for (var name in eventListeners) {
+      for (const name in eventListeners) {
         if (hasOwnProperty(eventListeners, name)) {
-          var fn = eventListeners[name]
+          const fn = eventListeners[name]
           if (fn) {
             util.removeEventListener(root, name, fn)
           }
@@ -49,8 +49,8 @@ exports.createAbsoluteAnchor = function (anchor, parent, onDestroy) {
   }
 
   // create and attach event listeners
-  var destroyIfOutside = function (event) {
-    var target = event.target
+  const destroyIfOutside = event => {
+    const target = event.target
     if ((target !== absoluteAnchor) && !util.isChildOf(target, absoluteAnchor)) {
       destroy()
     }

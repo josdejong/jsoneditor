@@ -42,14 +42,14 @@ Highlighter.prototype.unhighlight = function () {
     return
   }
 
-  var me = this
+  const me = this
   if (this.node) {
     this._cancelUnhighlight()
 
     // do the unhighlighting after a small delay, to prevent re-highlighting
     // the same node when moving from the drag-icon to the contextmenu-icon
     // or vice versa.
-    this.unhighlightTimer = setTimeout(function () {
+    this.unhighlightTimer = setTimeout(() => {
       me.node.setHighlight(false)
       me.node = undefined
       me.unhighlightTimer = undefined

@@ -1,6 +1,6 @@
 'use strict'
 
-var translate = require('./i18n').translate
+const translate = require('./i18n').translate
 
 /**
  * A factory function to create an ShowMoreNode, which depends on a Node
@@ -37,12 +37,12 @@ function showMoreNodeFactory (Node) {
 
     // display "show more"
     if (!this.dom.tr) {
-      var me = this
-      var parent = this.parent
-      var showMoreButton = document.createElement('a')
+      const me = this
+      const parent = this.parent
+      const showMoreButton = document.createElement('a')
       showMoreButton.appendChild(document.createTextNode(translate('showMore')))
       showMoreButton.href = '#'
-      showMoreButton.onclick = function (event) {
+      showMoreButton.onclick = event => {
         // TODO: use callback instead of accessing a method of the parent
         parent.visibleChilds = Math.floor(parent.visibleChilds / parent.getMaxVisibleChilds() + 1) *
             parent.getMaxVisibleChilds()
@@ -53,10 +53,10 @@ function showMoreNodeFactory (Node) {
         return false
       }
 
-      var showAllButton = document.createElement('a')
+      const showAllButton = document.createElement('a')
       showAllButton.appendChild(document.createTextNode(translate('showAll')))
       showAllButton.href = '#'
-      showAllButton.onclick = function (event) {
+      showAllButton.onclick = event => {
         // TODO: use callback instead of accessing a method of the parent
         parent.visibleChilds = Infinity
         me.updateDom()
@@ -66,8 +66,8 @@ function showMoreNodeFactory (Node) {
         return false
       }
 
-      var moreContents = document.createElement('div')
-      var moreText = document.createTextNode(this._getShowMoreText())
+      const moreContents = document.createElement('div')
+      const moreText = document.createTextNode(this._getShowMoreText())
       moreContents.className = 'jsoneditor-show-more'
       moreContents.appendChild(moreText)
       moreContents.appendChild(showMoreButton)
@@ -75,10 +75,10 @@ function showMoreNodeFactory (Node) {
       moreContents.appendChild(showAllButton)
       moreContents.appendChild(document.createTextNode('. '))
 
-      var tdContents = document.createElement('td')
+      const tdContents = document.createElement('td')
       tdContents.appendChild(moreContents)
 
-      var moreTr = document.createElement('tr')
+      const moreTr = document.createElement('tr')
       if (this.editor.options.mode === 'tree') {
         moreTr.appendChild(document.createElement('td'))
         moreTr.appendChild(document.createElement('td'))
@@ -104,7 +104,7 @@ function showMoreNodeFactory (Node) {
       this.dom.tr.node = this.parent.childs[this.parent.visibleChilds]
 
       if (!this.dom.tr.parentNode) {
-        var nextTr = this.parent._getNextTr()
+        const nextTr = this.parent._getNextTr()
         if (nextTr) {
           nextTr.parentNode.insertBefore(this.dom.tr, nextTr)
         }
@@ -144,7 +144,7 @@ function showMoreNodeFactory (Node) {
    * @param {Event} event
    */
   ShowMoreNode.prototype.onEvent = function (event) {
-    var type = event.type
+    const type = event.type
     if (type === 'keydown') {
       this.onKeyDown(event)
     }

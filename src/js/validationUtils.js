@@ -1,6 +1,6 @@
-var isPromise = require('./util').isPromise
-var isValidValidationError = require('./util').isValidValidationError
-var stringifyPath = require('./util').stringifyPath
+const isPromise = require('./util').isPromise
+const isValidValidationError = require('./util').isValidValidationError
+const stringifyPath = require('./util').stringifyPath
 
 /**
  * Execute custom validation if configured.
@@ -13,17 +13,17 @@ function validateCustom (json, onValidate) {
   }
 
   try {
-    var customValidateResults = onValidate(json)
+    const customValidateResults = onValidate(json)
 
-    var resultPromise = isPromise(customValidateResults)
+    const resultPromise = isPromise(customValidateResults)
       ? customValidateResults
       : Promise.resolve(customValidateResults)
 
-    return resultPromise.then(function (customValidationPathErrors) {
+    return resultPromise.then(customValidationPathErrors => {
       if (Array.isArray(customValidationPathErrors)) {
         return customValidationPathErrors
-          .filter(function (error) {
-            var valid = isValidValidationError(error)
+          .filter(error => {
+            const valid = isValidValidationError(error)
 
             if (!valid) {
               console.warn('Ignoring a custom validation error with invalid structure. ' +
@@ -33,13 +33,11 @@ function validateCustom (json, onValidate) {
 
             return valid
           })
-          .map(function (error) {
-            // change data structure into the structure matching the JSON schema errors
-            return {
+          .map(error => // change data structure into the structure matching the JSON schema errors
+            ({
               dataPath: stringifyPath(error.path),
               message: error.message
-            }
-          })
+            }))
       } else {
         return []
       }

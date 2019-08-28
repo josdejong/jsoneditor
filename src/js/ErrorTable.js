@@ -10,28 +10,28 @@
 function ErrorTable (config) {
   this.errorTableVisible = config.errorTableVisible
   this.onToggleVisibility = config.onToggleVisibility
-  this.onFocusLine = config.onFocusLine || function () {}
+  this.onFocusLine = config.onFocusLine || (() => {})
   this.onChangeHeight = config.onChangeHeight
 
   this.dom = {}
 
-  var validationErrorsContainer = document.createElement('div')
+  const validationErrorsContainer = document.createElement('div')
   validationErrorsContainer.className = 'jsoneditor-validation-errors-container'
   this.dom.validationErrorsContainer = validationErrorsContainer
 
-  var additionalErrorsIndication = document.createElement('div')
+  const additionalErrorsIndication = document.createElement('div')
   additionalErrorsIndication.style.display = 'none'
   additionalErrorsIndication.className = 'jsoneditor-additional-errors fadein'
   additionalErrorsIndication.innerHTML = 'Scroll for more &#9663;'
   this.dom.additionalErrorsIndication = additionalErrorsIndication
   validationErrorsContainer.appendChild(additionalErrorsIndication)
 
-  var validationErrorIcon = document.createElement('span')
+  const validationErrorIcon = document.createElement('span')
   validationErrorIcon.className = 'jsoneditor-validation-error-icon'
   validationErrorIcon.style.display = 'none'
   this.dom.validationErrorIcon = validationErrorIcon
 
-  var validationErrorCount = document.createElement('span')
+  const validationErrorCount = document.createElement('span')
   validationErrorCount.className = 'jsoneditor-validation-error-count'
   validationErrorCount.style.display = 'none'
   this.dom.validationErrorCount = validationErrorCount
@@ -63,7 +63,7 @@ ErrorTable.prototype.toggleTableVisibility = function () {
 }
 
 ErrorTable.prototype.setErrors = function (errors, errorLocations) {
-  var me = this
+  const me = this
 
   // clear any previous errors
   if (this.dom.validationErrors) {
@@ -75,13 +75,13 @@ ErrorTable.prototype.setErrors = function (errors, errorLocations) {
   // create the table with errors
   // keep default behavior for parse errors
   if (this.errorTableVisible && errors.length > 0) {
-    var validationErrors = document.createElement('div')
+    const validationErrors = document.createElement('div')
     validationErrors.className = 'jsoneditor-validation-errors'
     validationErrors.innerHTML = '<table class="jsoneditor-text-errors"><tbody></tbody></table>'
-    var tbody = validationErrors.getElementsByTagName('tbody')[0]
+    const tbody = validationErrors.getElementsByTagName('tbody')[0]
 
-    errors.forEach(function (error) {
-      var message
+    errors.forEach(error => {
+      let message
       if (typeof error === 'string') {
         message = '<td colspan="2"><pre>' + error + '</pre></td>'
       } else {
@@ -90,18 +90,18 @@ ErrorTable.prototype.setErrors = function (errors, errorLocations) {
             '<td><pre>' + error.message + '</pre></td>'
       }
 
-      var line
+      let line
 
       if (!isNaN(error.line)) {
         line = error.line
       } else if (error.dataPath) {
-        var errLoc = errorLocations.find(function (loc) { return loc.path === error.dataPath })
+        const errLoc = errorLocations.find(loc => loc.path === error.dataPath)
         if (errLoc) {
           line = errLoc.line + 1
         }
       }
 
-      var trEl = document.createElement('tr')
+      const trEl = document.createElement('tr')
       trEl.className = !isNaN(line) ? 'jump-to-line' : ''
       if (error.type === 'error') {
         trEl.className += ' parse-error'
@@ -110,7 +110,7 @@ ErrorTable.prototype.setErrors = function (errors, errorLocations) {
       }
 
       trEl.innerHTML = ('<td><button class="jsoneditor-schema-error"></button></td><td style="white-space:nowrap;">' + (!isNaN(line) ? ('Ln ' + line) : '') + '</td>' + message)
-      trEl.onclick = function () {
+      trEl.onclick = () => {
         me.onFocusLine(line)
       }
 
@@ -123,7 +123,7 @@ ErrorTable.prototype.setErrors = function (errors, errorLocations) {
 
     if (this.dom.validationErrorsContainer.clientHeight < this.dom.validationErrorsContainer.scrollHeight) {
       this.dom.additionalErrorsIndication.style.display = 'block'
-      this.dom.validationErrorsContainer.onscroll = function () {
+      this.dom.validationErrorsContainer.onscroll = () => {
         me.dom.additionalErrorsIndication.style.display =
             (me.dom.validationErrorsContainer.clientHeight > 0 && me.dom.validationErrorsContainer.scrollTop === 0) ? 'block' : 'none'
       }
@@ -131,7 +131,7 @@ ErrorTable.prototype.setErrors = function (errors, errorLocations) {
       this.dom.validationErrorsContainer.onscroll = undefined
     }
 
-    var height = this.dom.validationErrorsContainer.clientHeight + (this.dom.statusBar ? this.dom.statusBar.clientHeight : 0)
+    const height = this.dom.validationErrorsContainer.clientHeight + (this.dom.statusBar ? this.dom.statusBar.clientHeight : 0)
     // this.content.style.marginBottom = (-height) + 'px';
     // this.content.style.paddingBottom = height + 'px';
     this.onChangeHeight(height)
@@ -140,9 +140,7 @@ ErrorTable.prototype.setErrors = function (errors, errorLocations) {
   }
 
   // update the status bar
-  var validationErrorsCount = errors.filter(function (error) {
-    return error.type !== 'error'
-  }).length
+  const validationErrorsCount = errors.filter(error => error.type !== 'error').length
   if (validationErrorsCount > 0) {
     this.dom.validationErrorCount.style.display = 'inline'
     this.dom.validationErrorCount.innerText = validationErrorsCount
@@ -157,11 +155,9 @@ ErrorTable.prototype.setErrors = function (errors, errorLocations) {
   }
 
   // update the parse error icon
-  var hasParseErrors = errors.some(function (error) {
-    return error.type === 'error'
-  })
+  const hasParseErrors = errors.some(error => error.type === 'error')
   if (hasParseErrors) {
-    var line = errors[0].line
+    const line = errors[0].line
     this.dom.parseErrorIndication.style.display = 'block'
     this.dom.parseErrorIndication.title = !isNaN(line)
       ? ('parse error on line ' + line)

@@ -1,7 +1,7 @@
 
 if (typeof Element !== 'undefined') {
   // Polyfill for array remove
-  (function () {
+  (() => {
     function polyfill (item) {
       if ('remove' in item) {
         return
@@ -26,8 +26,8 @@ if (typeof Element !== 'undefined') {
 if (!Array.prototype.find) {
   // eslint-disable-next-line no-extend-native
   Array.prototype.find = function (callback) {
-    for (var i = 0; i < this.length; i++) {
-      var element = this[i]
+    for (let i = 0; i < this.length; i++) {
+      const element = this[i]
       if (callback.call(this, element, i, this)) {
         return element
       }

@@ -1,12 +1,12 @@
 'use strict'
 
 require('./polyfills')
-var naturalSort = require('javascript-natural-sort')
-var jsonlint = require('./assets/jsonlint/jsonlint')
-var jsonMap = require('json-source-map')
-var translate = require('./i18n').translate
+const naturalSort = require('javascript-natural-sort')
+const jsonlint = require('./assets/jsonlint/jsonlint')
+const jsonMap = require('json-source-map')
+const translate = require('./i18n').translate
 
-var MAX_ITEMS_FIELDS_COLLECTION = 10000
+const MAX_ITEMS_FIELDS_COLLECTION = 10000
 
 /**
  * Parse JSON using the parser built-in in the browser.
@@ -34,22 +34,22 @@ exports.parse = function parse (jsonString) {
  * @param {string} jsString
  * @returns {string} json
  */
-exports.repair = function (jsString) {
+exports.repair = jsString => {
   // TODO: refactor this function, it's too large and complicated now
 
   // escape all single and double quotes inside strings
-  var chars = []
-  var i = 0
+  const chars = []
+  let i = 0
 
   // If JSON starts with a function (characters/digits/"_-"), remove this function.
   // This is useful for "stripping" JSONP objects to become JSON
   // For example: /* some comment */ function_12321321 ( [{"a":"b"}] ); => [{"a":"b"}]
-  var match = jsString.match(/^\s*(\/\*(.|[\r\n])*?\*\/)?\s*[\da-zA-Z_$]+\s*\(([\s\S]*)\)\s*;?\s*$/)
+  const match = jsString.match(/^\s*(\/\*(.|[\r\n])*?\*\/)?\s*[\da-zA-Z_$]+\s*\(([\s\S]*)\)\s*;?\s*$/)
   if (match) {
     jsString = match[3]
   }
 
-  var controlChars = {
+  const controlChars = {
     '\b': '\\b',
     '\f': '\\f',
     '\n': '\\n',
@@ -57,14 +57,14 @@ exports.repair = function (jsString) {
     '\t': '\\t'
   }
 
-  var quote = '\''
-  var quoteDbl = '"'
-  var quoteLeft = '\u2018'
-  var quoteRight = '\u2019'
-  var quoteDblLeft = '\u201C'
-  var quoteDblRight = '\u201D'
-  var graveAccent = '\u0060'
-  var acuteAccent = '\u00B4'
+  const quote = '\''
+  const quoteDbl = '"'
+  const quoteLeft = '\u2018'
+  const quoteRight = '\u2019'
+  const quoteDblLeft = '\u201C'
+  const quoteDblRight = '\u201D'
+  const graveAccent = '\u0060'
+  const acuteAccent = '\u00B4'
 
   // helper functions to get the current/prev/next character
   function curr () { return jsString.charAt(i) }
@@ -77,10 +77,10 @@ exports.repair = function (jsString) {
 
   // get the last parsed non-whitespace character
   function lastNonWhitespace () {
-    var p = chars.length - 1
+    let p = chars.length - 1
 
     while (p >= 0) {
-      var pp = chars[p]
+      const pp = chars[p]
       if (!isWhiteSpace(pp)) {
         return pp
       }
@@ -92,7 +92,7 @@ exports.repair = function (jsString) {
 
   // get at the first next non-white space character
   function nextNonWhiteSpace () {
-    var iNext = i + 1
+    let iNext = i + 1
     while (iNext < jsString.length && isWhiteSpace(jsString[iNext])) {
       iNext++
     }
@@ -123,11 +123,11 @@ exports.repair = function (jsString) {
    * @return {string}
    */
   function parseString (endQuote) {
-    var string = ''
+    let string = ''
 
     string += '"'
     i++
-    var c = curr()
+    let c = curr()
     while (i < jsString.length && c !== endQuote) {
       if (c === '"' && prev() !== '\\') {
         // unescaped double quote, escape it
@@ -161,11 +161,11 @@ exports.repair = function (jsString) {
 
   // parse an unquoted key
   function parseKey () {
-    var specialValues = ['null', 'true', 'false']
-    var key = ''
-    var c = curr()
+    const specialValues = ['null', 'true', 'false']
+    let key = ''
+    let c = curr()
 
-    var regexp = /[a-zA-Z_$\d]/ // letter, number, underscore, dollar character
+    const regexp = /[a-zA-Z_$\d]/ // letter, number, underscore, dollar character
     while (regexp.test(c)) {
       key += c
       i++
@@ -180,9 +180,9 @@ exports.repair = function (jsString) {
   }
 
   function parseMongoDataType () {
-    var c = curr()
-    var value
-    var dataType = ''
+    let c = curr()
+    let value
+    let dataType = ''
     while (/[a-zA-Z_$]/.test(c)) {
       dataType += c
       i++
@@ -233,7 +233,7 @@ exports.repair = function (jsString) {
   }
 
   while (i < jsString.length) {
-    var c = curr()
+    const c = curr()
 
     if (c === '/' && next() === '*') {
       skipBlockComment()
@@ -278,14 +278,13 @@ exports.repair = function (jsString) {
  * @param {string} text
  * @return {string}
  */
-exports.escapeUnicodeChars = function (text) {
-  // see https://www.wikiwand.com/en/UTF-16
-  // note: we leave surrogate pairs as two individual chars,
-  // as JSON doesn't interpret them as a single unicode char.
-  return text.replace(/[\u007F-\uFFFF]/g, function (c) {
-    return '\\u' + ('0000' + c.charCodeAt(0).toString(16)).slice(-4)
-  })
-}
+exports.escapeUnicodeChars = text => // see https://www.wikiwand.com/en/UTF-16
+// note: we leave surrogate pairs as two individual chars,
+// as JSON doesn't interpret them as a single unicode char.
+  text.replace(
+    /[\u007F-\uFFFF]/g,
+    c => '\\u' + ('0000' + c.charCodeAt(0).toString(16)).slice(-4)
+  )
 
 /**
  * Validate a string containing a JSON object
@@ -309,7 +308,7 @@ exports.validate = function validate (jsonString) {
  * @return {Object} a
  */
 exports.extend = function extend (a, b) {
-  for (var prop in b) {
+  for (const prop in b) {
     if (hasOwnProperty(b, prop)) {
       a[prop] = b[prop]
     }
@@ -323,7 +322,7 @@ exports.extend = function extend (a, b) {
  * @return {Object} a
  */
 exports.clear = function clear (a) {
-  for (var prop in a) {
+  for (const prop in a) {
     if (hasOwnProperty(a, prop)) {
       delete a[prop]
     }
@@ -367,7 +366,7 @@ exports.type = function type (object) {
  * with 'http://*' or 'https://*' and has no whitespace characters)
  * @param {String} text
  */
-var isUrlRegex = /^https?:\/\/\S+$/
+const isUrlRegex = /^https?:\/\/\S+$/
 exports.isUrl = function isUrl (text) {
   return (typeof text === 'string' || text instanceof String) &&
       isUrlRegex.test(text)
@@ -378,9 +377,7 @@ exports.isUrl = function isUrl (text) {
  * @param {*} obj
  * @returns {boolean} returns true when obj is an array
  */
-exports.isArray = function (obj) {
-  return Object.prototype.toString.call(obj) === '[object Array]'
-}
+exports.isArray = obj => Object.prototype.toString.call(obj) === '[object Array]'
 
 /**
  * Retrieve the absolute left value of a DOM element
@@ -389,7 +386,7 @@ exports.isArray = function (obj) {
  *                          in the browser page.
  */
 exports.getAbsoluteLeft = function getAbsoluteLeft (elem) {
-  var rect = elem.getBoundingClientRect()
+  const rect = elem.getBoundingClientRect()
   return rect.left + window.pageXOffset || document.scrollLeft || 0
 }
 
@@ -400,7 +397,7 @@ exports.getAbsoluteLeft = function getAbsoluteLeft (elem) {
  *                          in the browser page.
  */
 exports.getAbsoluteTop = function getAbsoluteTop (elem) {
-  var rect = elem.getBoundingClientRect()
+  const rect = elem.getBoundingClientRect()
   return rect.top + window.pageYOffset || document.scrollTop || 0
 }
 
@@ -410,7 +407,7 @@ exports.getAbsoluteTop = function getAbsoluteTop (elem) {
  * @param {String} className
  */
 exports.addClassName = function addClassName (elem, className) {
-  var classes = elem.className.split(' ')
+  const classes = elem.className.split(' ')
   if (classes.indexOf(className) === -1) {
     classes.push(className) // add the class to the array
     elem.className = classes.join(' ')
@@ -431,8 +428,8 @@ exports.removeAllClassNames = function removeAllClassNames (elem) {
  * @param {String} className
  */
 exports.removeClassName = function removeClassName (elem, className) {
-  var classes = elem.className.split(' ')
-  var index = classes.indexOf(className)
+  const classes = elem.className.split(' ')
+  const index = classes.indexOf(className)
   if (index !== -1) {
     classes.splice(index, 1) // remove the class from the array
     elem.className = classes.join(' ')
@@ -445,9 +442,9 @@ exports.removeClassName = function removeClassName (elem, className) {
  * @param {Element} divElement
  */
 exports.stripFormatting = function stripFormatting (divElement) {
-  var childs = divElement.childNodes
-  for (var i = 0, iMax = childs.length; i < iMax; i++) {
-    var child = childs[i]
+  const childs = divElement.childNodes
+  for (let i = 0, iMax = childs.length; i < iMax; i++) {
+    const child = childs[i]
 
     // remove the style
     if (child.style) {
@@ -456,10 +453,10 @@ exports.stripFormatting = function stripFormatting (divElement) {
     }
 
     // remove all attributes
-    var attributes = child.attributes
+    const attributes = child.attributes
     if (attributes) {
-      for (var j = attributes.length - 1; j >= 0; j--) {
-        var attribute = attributes[j]
+      for (let j = attributes.length - 1; j >= 0; j--) {
+        const attribute = attributes[j]
         if (attribute.specified === true) {
           child.removeAttribute(attribute.name)
         }
@@ -479,7 +476,7 @@ exports.stripFormatting = function stripFormatting (divElement) {
  * @param {Element} contentEditableElement   A content editable div
  */
 exports.setEndOfContentEditable = function setEndOfContentEditable (contentEditableElement) {
-  var range, selection
+  let range, selection
   if (document.createRange) {
     range = document.createRange()// Create a range (a range is a like the selection but invisible)
     range.selectNodeContents(contentEditableElement)// Select the entire contents of the element with the range
@@ -500,7 +497,7 @@ exports.selectContentEditable = function selectContentEditable (contentEditableE
     return
   }
 
-  var sel, range
+  let sel, range
   if (window.getSelection && document.createRange) {
     range = document.createRange()
     range.selectNodeContents(contentEditableElement)
@@ -517,7 +514,7 @@ exports.selectContentEditable = function selectContentEditable (contentEditableE
  */
 exports.getSelection = function getSelection () {
   if (window.getSelection) {
-    var sel = window.getSelection()
+    const sel = window.getSelection()
     if (sel.getRangeAt && sel.rangeCount) {
       return sel.getRangeAt(0)
     }
@@ -533,7 +530,7 @@ exports.getSelection = function getSelection () {
 exports.setSelection = function setSelection (range) {
   if (range) {
     if (window.getSelection) {
-      var sel = window.getSelection()
+      const sel = window.getSelection()
       sel.removeAllRanges()
       sel.addRange(range)
     }
@@ -550,7 +547,7 @@ exports.setSelection = function setSelection (range) {
  *                          Returns null if no text selection is found
  */
 exports.getSelectionOffset = function getSelectionOffset () {
-  var range = exports.getSelection()
+  const range = exports.getSelection()
 
   if (range && 'startOffset' in range && 'endOffset' in range &&
       range.startContainer && (range.startContainer === range.endContainer)) {
@@ -573,9 +570,9 @@ exports.getSelectionOffset = function getSelectionOffset () {
  */
 exports.setSelectionOffset = function setSelectionOffset (params) {
   if (document.createRange && window.getSelection) {
-    var selection = window.getSelection()
+    const selection = window.getSelection()
     if (selection) {
-      var range = document.createRange()
+      const range = document.createRange()
 
       if (!params.container.firstChild) {
         params.container.appendChild(document.createTextNode(''))
@@ -598,12 +595,12 @@ exports.setSelectionOffset = function setSelectionOffset (params) {
  * @return {String} innerText
  */
 exports.getInnerText = function getInnerText (element, buffer) {
-  var first = (buffer === undefined)
+  const first = (buffer === undefined)
   if (first) {
     buffer = {
       text: '',
       flush: function () {
-        var text = this.text
+        const text = this.text
         this.text = ''
         return text
       },
@@ -620,15 +617,15 @@ exports.getInnerText = function getInnerText (element, buffer) {
 
   // divs or other HTML elements
   if (element.hasChildNodes()) {
-    var childNodes = element.childNodes
-    var innerText = ''
+    const childNodes = element.childNodes
+    let innerText = ''
 
-    for (var i = 0, iMax = childNodes.length; i < iMax; i++) {
-      var child = childNodes[i]
+    for (let i = 0, iMax = childNodes.length; i < iMax; i++) {
+      const child = childNodes[i]
 
       if (child.nodeName === 'DIV' || child.nodeName === 'P') {
-        var prevChild = childNodes[i - 1]
-        var prevName = prevChild ? prevChild.nodeName : undefined
+        const prevChild = childNodes[i - 1]
+        const prevName = prevChild ? prevChild.nodeName : undefined
         if (prevName && prevName !== 'DIV' && prevName !== 'P' && prevName !== 'BR') {
           innerText += '\n'
           buffer.flush()
@@ -665,8 +662,8 @@ exports.getInnerText = function getInnerText (element, buffer) {
  * @param {Element} parent
  * @return {boolean}
  */
-exports.hasParentNode = function (elem, parent) {
-  var e = elem ? elem.parentNode : undefined
+exports.hasParentNode = (elem, parent) => {
+  let e = elem ? elem.parentNode : undefined
 
   while (e) {
     if (e === parent) {
@@ -686,10 +683,10 @@ exports.hasParentNode = function (elem, parent) {
  */
 exports.getInternetExplorerVersion = function getInternetExplorerVersion () {
   if (_ieVersion === -1) {
-    var rv = -1 // Return value assumes failure.
+    let rv = -1 // Return value assumes failure.
     if (typeof navigator !== 'undefined' && navigator.appName === 'Microsoft Internet Explorer') {
-      var ua = navigator.userAgent
-      var re = new RegExp('MSIE ([0-9]+[.0-9]+)')
+      const ua = navigator.userAgent
+      const re = new RegExp('MSIE ([0-9]+[.0-9]+)')
       if (re.exec(ua) != null) {
         rv = parseFloat(RegExp.$1)
       }
@@ -737,9 +734,7 @@ exports.addEventListener = function addEventListener (element, action, listener,
     return listener
   } else if (element.attachEvent) {
     // Old IE browsers
-    var f = function () {
-      return listener.call(element, window.event)
-    }
+    const f = () => listener.call(element, window.event)
     element.attachEvent('on' + action, f)
     return f
   }
@@ -773,8 +768,8 @@ exports.removeEventListener = function removeEventListener (element, action, lis
  * @param {Element} parent
  * @return {boolean} returns true if elem is a child of the parent
  */
-exports.isChildOf = function (elem, parent) {
-  var e = elem.parentNode
+exports.isChildOf = (elem, parent) => {
+  let e = elem.parentNode
   while (e) {
     if (e === parent) {
       return true
@@ -791,11 +786,11 @@ exports.isChildOf = function (elem, parent) {
  * @return {Array}
  */
 exports.parsePath = function parsePath (jsonPath) {
-  var path = []
-  var i = 0
+  const path = []
+  let i = 0
 
   function parseProperty () {
-    var prop = ''
+    let prop = ''
     while (jsonPath[i] !== undefined && /[\w$]/.test(jsonPath[i])) {
       prop += jsonPath[i]
       i++
@@ -809,7 +804,7 @@ exports.parsePath = function parsePath (jsonPath) {
   }
 
   function parseIndex (end) {
-    var name = ''
+    let name = ''
     while (jsonPath[i] !== undefined && jsonPath[i] !== end) {
       name += jsonPath[i]
       i++
@@ -830,7 +825,7 @@ exports.parsePath = function parsePath (jsonPath) {
       i++
 
       if (jsonPath[i] === '\'' || jsonPath[i] === '"') {
-        var end = jsonPath[i]
+        const end = jsonPath[i]
         i++
 
         path.push(parseIndex(end))
@@ -840,7 +835,7 @@ exports.parsePath = function parsePath (jsonPath) {
         }
         i++
       } else {
-        var index = parseIndex(']').trim()
+        let index = parseIndex(']').trim()
         if (index.length === 0) {
           throw new Error('Invalid JSON path: array value expected at index ' + i)
         }
@@ -868,7 +863,7 @@ exports.parsePath = function parsePath (jsonPath) {
  */
 exports.stringifyPath = function stringifyPath (path) {
   return path
-    .map(function (p) {
+    .map(p => {
       if (typeof p === 'number') {
         return ('[' + p + ']')
       } else if (typeof p === 'string' && p.match(/^[A-Za-z0-9_$]+$/)) {
@@ -885,16 +880,14 @@ exports.stringifyPath = function stringifyPath (path) {
  * @param {Object} error
  * @return {Object} The error
  */
-exports.improveSchemaError = function (error) {
+exports.improveSchemaError = error => {
   if (error.keyword === 'enum' && Array.isArray(error.schema)) {
-    var enums = error.schema
+    let enums = error.schema
     if (enums) {
-      enums = enums.map(function (value) {
-        return JSON.stringify(value)
-      })
+      enums = enums.map(value => JSON.stringify(value))
 
       if (enums.length > 5) {
-        var more = ['(' + (enums.length - 5) + ' more...)']
+        const more = ['(' + (enums.length - 5) + ' more...)']
         enums = enums.slice(0, 5)
         enums.push(more)
       }
@@ -914,20 +907,16 @@ exports.improveSchemaError = function (error) {
  * @param {*} object
  * @returns {boolean} Returns true when object is a promise, false otherwise
  */
-exports.isPromise = function (object) {
-  return object && typeof object.then === 'function' && typeof object.catch === 'function'
-}
+exports.isPromise = object => object && typeof object.then === 'function' && typeof object.catch === 'function'
 
 /**
  * Test whether a custom validation error has the correct structure
  * @param {*} validationError The error to be checked.
  * @returns {boolean} Returns true if the structure is ok, false otherwise
  */
-exports.isValidValidationError = function (validationError) {
-  return typeof validationError === 'object' &&
-      Array.isArray(validationError.path) &&
-      typeof validationError.message === 'string'
-}
+exports.isValidValidationError = validationError => typeof validationError === 'object' &&
+    Array.isArray(validationError.path) &&
+    typeof validationError.message === 'string'
 
 /**
  * Test whether the child rect fits completely inside the parent rect.
@@ -935,8 +924,8 @@ exports.isValidValidationError = function (validationError) {
  * @param {ClientRect} child
  * @param {number} margin
  */
-exports.insideRect = function (parent, child, margin) {
-  var _margin = margin !== undefined ? margin : 0
+exports.insideRect = (parent, child, margin) => {
+  const _margin = margin !== undefined ? margin : 0
   return child.left - _margin >= parent.left &&
       child.right + _margin <= parent.right &&
       child.top - _margin >= parent.top &&
@@ -958,14 +947,14 @@ exports.insideRect = function (parent, child, margin) {
  * @return {function} Return the debounced function
  */
 exports.debounce = function debounce (func, wait, immediate) {
-  var timeout
+  let timeout
   return function () {
-    var context = this; var args = arguments
-    var later = function () {
+    const context = this; const args = arguments
+    const later = () => {
       timeout = null
       if (!immediate) func.apply(context, args)
     }
-    var callNow = immediate && !timeout
+    const callNow = immediate && !timeout
     clearTimeout(timeout)
     timeout = setTimeout(later, wait)
     if (callNow) func.apply(context, args)
@@ -981,10 +970,10 @@ exports.debounce = function debounce (func, wait, immediate) {
  *                                        of the changed part in newText.
  */
 exports.textDiff = function textDiff (oldText, newText) {
-  var len = newText.length
-  var start = 0
-  var oldEnd = oldText.length
-  var newEnd = newText.length
+  const len = newText.length
+  let start = 0
+  let oldEnd = oldText.length
+  let newEnd = newText.length
 
   while (newText.charAt(start) === oldText.charAt(start) &&
   start < len) {
@@ -1007,8 +996,8 @@ exports.textDiff = function textDiff (oldText, newText) {
  * @param {DOMElement} el A dom element of a textarea or input text.
  * @return {Object} reference Object with 2 properties (start and end) with the identifier of the location of the cursor and selected text.
  **/
-exports.getInputSelection = function (el) {
-  var startIndex = 0; var endIndex = 0; var normalizedValue; var range; var textInputRange; var len; var endRange
+exports.getInputSelection = el => {
+  let startIndex = 0; let endIndex = 0; let normalizedValue; let range; let textInputRange; let len; let endRange
 
   if (typeof el.selectionStart === 'number' && typeof el.selectionEnd === 'number') {
     startIndex = el.selectionStart
@@ -1059,9 +1048,9 @@ exports.getInputSelection = function (el) {
    * @returns {{row: Number, column: Number}}
    */
   function _positionForIndex (index) {
-    var textTillIndex = el.value.substring(0, index)
-    var row = (textTillIndex.match(/\n/g) || []).length + 1
-    var col = textTillIndex.length - textTillIndex.lastIndexOf('\n')
+    const textTillIndex = el.value.substring(0, index)
+    const row = (textTillIndex.match(/\n/g) || []).length + 1
+    const col = textTillIndex.length - textTillIndex.lastIndexOf('\n')
 
     return {
       row: row,
@@ -1077,13 +1066,13 @@ exports.getInputSelection = function (el) {
  * @param {Number} column column value, > 0, if exceeds column length - end of column will be returned
  * @returns {Number} index of position in text, -1 if not found
  */
-exports.getIndexForPosition = function (el, row, column) {
-  var text = el.value || ''
+exports.getIndexForPosition = (el, row, column) => {
+  const text = el.value || ''
   if (row > 0 && column > 0) {
-    var rows = text.split('\n', row)
+    const rows = text.split('\n', row)
     row = Math.min(rows.length, row)
     column = Math.min(rows[row - 1].length, column - 1)
-    var columnCount = (row === 1 ? column : column + 1) // count new line on multiple rows
+    const columnCount = (row === 1 ? column : column + 1) // count new line on multiple rows
     return rows.slice(0, row - 1).join('\n').length + columnCount
   }
   return -1
@@ -1109,7 +1098,7 @@ exports.getPositionForPath = function (text, paths) {
     return result
   }
 
-  paths.forEach(function (path) {
+  paths.forEach(path => {
     const pathArr = me.parsePath(path)
     const pointerName = exports.compileJSONPointer(pathArr)
     const pointer = jsmap.pointers[pointerName]
@@ -1131,14 +1120,12 @@ exports.getPositionForPath = function (text, paths) {
  * @param {Array.<string | number>} path
  * @return {string}
  */
-exports.compileJSONPointer = function (path) {
-  return path
-    .map(p => ('/' + String(p)
-      .replace(/~/g, '~0')
-      .replace(/\//g, '~1')
-    ))
-    .join('')
-}
+exports.compileJSONPointer = path => path
+  .map(p => ('/' + String(p)
+    .replace(/~/g, '~0')
+    .replace(/\//g, '~1')
+  ))
+  .join('')
 
 /**
  * Get the applied color given a color name or code
@@ -1148,8 +1135,8 @@ exports.compileJSONPointer = function (path) {
  *                   color, and returns null otherwise. Example output:
  *                   'rgba(255,0,0,0.7)' or 'rgb(255,0,0)'
  */
-exports.getColorCSS = function (color) {
-  var ele = document.createElement('div')
+exports.getColorCSS = color => {
+  const ele = document.createElement('div')
   ele.style.color = color
   return ele.style.color.split(/\s+/).join('').toLowerCase() || null
 }
@@ -1159,9 +1146,7 @@ exports.getColorCSS = function (color) {
  * @param {string} color
  * @returns {boolean} returns true if a valid color, false otherwise
  */
-exports.isValidColor = function (color) {
-  return !!exports.getColorCSS(color)
-}
+exports.isValidColor = color => !!exports.getColorCSS(color)
 
 /**
  * Make a tooltip for a field based on the field's schema.
@@ -1169,12 +1154,12 @@ exports.isValidColor = function (color) {
  * @param {string} [locale] Locale code (for example, zh-CN)
  * @returns {string} Field tooltip, may be empty string if all relevant schema properties are missing
  */
-exports.makeFieldTooltip = function (schema, locale) {
+exports.makeFieldTooltip = (schema, locale) => {
   if (!schema) {
     return ''
   }
 
-  var tooltip = ''
+  let tooltip = ''
   if (schema.title) {
     tooltip += schema.title
   }
@@ -1199,7 +1184,7 @@ exports.makeFieldTooltip = function (schema, locale) {
       tooltip += '\n\n'
     }
     tooltip += translate('examples', undefined, locale) + '\n'
-    schema.examples.forEach(function (example, index) {
+    schema.examples.forEach((example, index) => {
       tooltip += JSON.stringify(example, null, 2)
       if (index !== schema.examples.length - 1) {
         tooltip += '\n'
@@ -1217,10 +1202,10 @@ exports.makeFieldTooltip = function (schema, locale) {
  * @param {string[]} path
  * @return {*}
  */
-exports.get = function (object, path) {
-  var value = object
+exports.get = (object, path) => {
+  let value = object
 
-  for (var i = 0; i < path.length && value !== undefined && value !== null; i++) {
+  for (let i = 0; i < path.length && value !== undefined && value !== null; i++) {
     value = value[path[i]]
   }
 
@@ -1233,13 +1218,13 @@ exports.get = function (object, path) {
  * @param {string} name
  * @param {Array} existingPropNames    Array with existing prop names
  */
-exports.findUniqueName = function (name, existingPropNames) {
-  var strippedName = name.replace(/ \(copy( \d+)?\)$/, '')
-  var validName = strippedName
-  var i = 1
+exports.findUniqueName = (name, existingPropNames) => {
+  const strippedName = name.replace(/ \(copy( \d+)?\)$/, '')
+  let validName = strippedName
+  let i = 1
 
   while (existingPropNames.indexOf(validName) !== -1) {
-    var copy = 'copy' + (i > 1 ? (' ' + i) : '')
+    const copy = 'copy' + (i > 1 ? (' ' + i) : '')
     validName = strippedName + ' (' + copy + ')'
     i++
   }
@@ -1253,27 +1238,27 @@ exports.findUniqueName = function (name, existingPropNames) {
  * @param {boolean} [includeObjects=false] If true, object and array paths are returned as well
  * @return {string[]}
  */
-exports.getChildPaths = function (json, includeObjects) {
-  var pathsMap = {}
+exports.getChildPaths = (json, includeObjects) => {
+  const pathsMap = {}
 
   function getObjectChildPaths (json, pathsMap, rootPath, includeObjects) {
-    var isValue = !Array.isArray(json) && !exports.isObject(json)
+    const isValue = !Array.isArray(json) && !exports.isObject(json)
 
     if (isValue || includeObjects) {
       pathsMap[rootPath || ''] = true
     }
 
     if (exports.isObject(json)) {
-      Object.keys(json).forEach(function (field) {
+      Object.keys(json).forEach(field => {
         getObjectChildPaths(json[field], pathsMap, rootPath + '.' + field, includeObjects)
       })
     }
   }
 
   if (Array.isArray(json)) {
-    var max = Math.min(json.length, MAX_ITEMS_FIELDS_COLLECTION)
-    for (var i = 0; i < max; i++) {
-      var item = json[i]
+    const max = Math.min(json.length, MAX_ITEMS_FIELDS_COLLECTION)
+    for (let i = 0; i < max; i++) {
+      const item = json[i]
       getObjectChildPaths(item, pathsMap, '', includeObjects)
     }
   } else {
@@ -1289,14 +1274,14 @@ exports.getChildPaths = function (json, includeObjects) {
  * @param {String} [path] JSON pointer
  * @param {'asc' | 'desc'} [direction]
  */
-exports.sort = function (array, path, direction) {
-  var parsedPath = path && path !== '.' ? exports.parsePath(path) : []
-  var sign = direction === 'desc' ? -1 : 1
+exports.sort = (array, path, direction) => {
+  const parsedPath = path && path !== '.' ? exports.parsePath(path) : []
+  const sign = direction === 'desc' ? -1 : 1
 
-  var sortedArray = array.slice()
-  sortedArray.sort(function (a, b) {
-    var aValue = exports.get(a, parsedPath)
-    var bValue = exports.get(b, parsedPath)
+  const sortedArray = array.slice()
+  sortedArray.sort((a, b) => {
+    const aValue = exports.get(a, parsedPath)
+    const bValue = exports.get(b, parsedPath)
 
     return sign * (aValue > bValue ? 1 : aValue < bValue ? -1 : 0)
   })
@@ -1309,14 +1294,12 @@ exports.sort = function (array, path, direction) {
  * @param {Object} object
  * @param {'asc' | 'desc'} [direction]
  */
-exports.sortObjectKeys = function (object, direction) {
-  var sign = (direction === 'desc') ? -1 : 1
-  var sortedFields = Object.keys(object).sort(function (a, b) {
-    return sign * naturalSort(a, b)
-  })
+exports.sortObjectKeys = (object, direction) => {
+  const sign = (direction === 'desc') ? -1 : 1
+  const sortedFields = Object.keys(object).sort((a, b) => sign * naturalSort(a, b))
 
-  var sortedObject = {}
-  sortedFields.forEach(function (field) {
+  const sortedObject = {}
+  sortedFields.forEach(field => {
     sortedObject[field] = object[field]
   })
 
@@ -1330,10 +1313,10 @@ exports.sortObjectKeys = function (object, direction) {
  * @return {*} castedStr
  * @private
  */
-exports.parseString = function (str) {
-  var lower = str.toLowerCase()
-  var num = Number(str) // will nicely fail with '123ab'
-  var numFloat = parseFloat(str) // will nicely fail with '  '
+exports.parseString = str => {
+  const lower = str.toLowerCase()
+  const num = Number(str) // will nicely fail with '123ab'
+  const numFloat = parseFloat(str) // will nicely fail with '  '
 
   if (str === '') {
     return ''
@@ -1356,27 +1339,27 @@ exports.parseString = function (str) {
  * @param {number} size
  * @return {string} Returns a human readable size
  */
-exports.formatSize = function (size) {
+exports.formatSize = size => {
   if (size < 900) {
     return size.toFixed() + ' B'
   }
 
-  var KiB = size / 1024
+  const KiB = size / 1024
   if (KiB < 900) {
     return KiB.toFixed(1) + ' KiB'
   }
 
-  var MiB = KiB / 1024
+  const MiB = KiB / 1024
   if (MiB < 900) {
     return MiB.toFixed(1) + ' MiB'
   }
 
-  var GiB = MiB / 1024
+  const GiB = MiB / 1024
   if (GiB < 900) {
     return GiB.toFixed(1) + ' GiB'
   }
 
-  var TiB = GiB / 1024
+  const TiB = GiB / 1024
   return TiB.toFixed(1) + ' TiB'
 }
 
@@ -1387,7 +1370,7 @@ exports.formatSize = function (size) {
  * @return {string} Returns the limited text,
  *                  ending with '...' if the max was exceeded
  */
-exports.limitCharacters = function (text, maxCharacterCount) {
+exports.limitCharacters = (text, maxCharacterCount) => {
   if (text.length <= maxCharacterCount) {
     return text
   }
@@ -1400,9 +1383,7 @@ exports.limitCharacters = function (text, maxCharacterCount) {
  * @param {*} value
  * @return {boolean}
  */
-exports.isObject = function (value) {
-  return typeof value === 'object' && value !== null && !Array.isArray(value)
-}
+exports.isObject = value => typeof value === 'object' && value !== null && !Array.isArray(value)
 
 /**
  * Helper function to test whether an array contains an item
@@ -1410,9 +1391,7 @@ exports.isObject = function (value) {
  * @param {*} item
  * @return {boolean} Returns true if `item` is in `array`, returns false otherwise.
  */
-exports.contains = function (array, item) {
-  return array.indexOf(item) !== -1
-}
+exports.contains = (array, item) => array.indexOf(item) !== -1
 
 function hasOwnProperty (object, key) {
   return Object.prototype.hasOwnProperty.call(object, key)

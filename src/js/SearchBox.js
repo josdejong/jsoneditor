@@ -8,7 +8,7 @@
  *                                          create the search box
  */
 function SearchBox (editor, container) {
-  var searchBox = this
+  const searchBox = this
 
   this.editor = editor
   this.timeout = undefined
@@ -18,65 +18,65 @@ function SearchBox (editor, container) {
   this.dom = {}
   this.dom.container = container
 
-  var wrapper = document.createElement('div')
+  const wrapper = document.createElement('div')
   this.dom.wrapper = wrapper
   wrapper.className = 'jsoneditor-search'
   container.appendChild(wrapper)
 
-  var results = document.createElement('div')
+  const results = document.createElement('div')
   this.dom.results = results
   results.className = 'jsoneditor-results'
   wrapper.appendChild(results)
 
-  var divInput = document.createElement('div')
+  const divInput = document.createElement('div')
   this.dom.input = divInput
   divInput.className = 'jsoneditor-frame'
   divInput.title = 'Search fields and values'
   wrapper.appendChild(divInput)
 
-  var refreshSearch = document.createElement('button')
+  const refreshSearch = document.createElement('button')
   refreshSearch.type = 'button'
   refreshSearch.className = 'jsoneditor-refresh'
   divInput.appendChild(refreshSearch)
 
-  var search = document.createElement('input')
+  const search = document.createElement('input')
   search.type = 'text'
   this.dom.search = search
-  search.oninput = function (event) {
+  search.oninput = event => {
     searchBox._onDelayedSearch(event)
   }
-  search.onchange = function (event) {
+  search.onchange = event => {
     // For IE 9
     searchBox._onSearch()
   }
-  search.onkeydown = function (event) {
+  search.onkeydown = event => {
     searchBox._onKeyDown(event)
   }
-  search.onkeyup = function (event) {
+  search.onkeyup = event => {
     searchBox._onKeyUp(event)
   }
-  refreshSearch.onclick = function (event) {
+  refreshSearch.onclick = event => {
     search.select()
   }
 
   // TODO: ESC in FF restores the last input, is a FF bug, https://bugzilla.mozilla.org/show_bug.cgi?id=598819
   divInput.appendChild(search)
 
-  var searchNext = document.createElement('button')
+  const searchNext = document.createElement('button')
   searchNext.type = 'button'
   searchNext.title = 'Next result (Enter)'
   searchNext.className = 'jsoneditor-next'
-  searchNext.onclick = function () {
+  searchNext.onclick = () => {
     searchBox.next()
   }
 
   divInput.appendChild(searchNext)
 
-  var searchPrevious = document.createElement('button')
+  const searchPrevious = document.createElement('button')
   searchPrevious.type = 'button'
   searchPrevious.title = 'Previous result (Shift+Enter)'
   searchPrevious.className = 'jsoneditor-previous'
-  searchPrevious.onclick = function () {
+  searchPrevious.onclick = () => {
     searchBox.previous()
   }
 
@@ -90,7 +90,7 @@ function SearchBox (editor, container) {
  */
 SearchBox.prototype.next = function (focus) {
   if (this.results !== null) {
-    var index = this.resultIndex !== null ? this.resultIndex + 1 : 0
+    let index = this.resultIndex !== null ? this.resultIndex + 1 : 0
     if (index > this.results.length - 1) {
       index = 0
     }
@@ -105,8 +105,8 @@ SearchBox.prototype.next = function (focus) {
  */
 SearchBox.prototype.previous = function (focus) {
   if (this.results !== null) {
-    var max = this.results.length - 1
-    var index = this.resultIndex !== null ? this.resultIndex - 1 : max
+    const max = this.results.length - 1
+    let index = this.resultIndex !== null ? this.resultIndex - 1 : max
     if (index < 0) {
       index = max
     }
@@ -124,8 +124,8 @@ SearchBox.prototype.previous = function (focus) {
 SearchBox.prototype._setActiveResult = function (index, focus) {
   // de-activate current active result
   if (this.activeResult) {
-    var prevNode = this.activeResult.node
-    var prevElem = this.activeResult.elem
+    const prevNode = this.activeResult.node
+    const prevElem = this.activeResult.elem
     if (prevElem === 'field') {
       delete prevNode.searchFieldActive
     } else {
@@ -144,8 +144,8 @@ SearchBox.prototype._setActiveResult = function (index, focus) {
   this.resultIndex = index
 
   // set new node active
-  var node = this.results[this.resultIndex].node
-  var elem = this.results[this.resultIndex].elem
+  const node = this.results[this.resultIndex].node
+  const elem = this.results[this.resultIndex].elem
   if (elem === 'field') {
     node.searchFieldActive = true
   } else {
@@ -155,7 +155,7 @@ SearchBox.prototype._setActiveResult = function (index, focus) {
   node.updateDom()
 
   // TODO: not so nice that the focus is only set after the animation is finished
-  node.scrollTo(function () {
+  node.scrollTo(() => {
     if (focus) {
       node.focus(elem)
     }
@@ -183,8 +183,8 @@ SearchBox.prototype._onDelayedSearch = function (event) {
   // execute the search after a short delay (reduces the number of
   // search actions while typing in the search text box)
   this._clearDelay()
-  var searchBox = this
-  this.timeout = setTimeout(function (event) {
+  const searchBox = this
+  this.timeout = setTimeout(event => {
     searchBox._onSearch()
   }, this.delay)
 }
@@ -199,20 +199,20 @@ SearchBox.prototype._onDelayedSearch = function (event) {
 SearchBox.prototype._onSearch = function (forceSearch) {
   this._clearDelay()
 
-  var value = this.dom.search.value
-  var text = value.length > 0 ? value : undefined
+  const value = this.dom.search.value
+  const text = value.length > 0 ? value : undefined
   if (text !== this.lastText || forceSearch) {
     // only search again when changed
     this.lastText = text
     this.results = this.editor.search(text)
-    var MAX_SEARCH_RESULTS = this.results[0]
+    const MAX_SEARCH_RESULTS = this.results[0]
       ? this.results[0].node.MAX_SEARCH_RESULTS
       : Infinity
 
     // try to maintain the current active result if this is still part of the new search results
-    var activeResultIndex = 0
+    let activeResultIndex = 0
     if (this.activeResult) {
-      for (var i = 0; i < this.results.length; i++) {
+      for (let i = 0; i < this.results.length; i++) {
         if (this.results[i].node === this.activeResult.node) {
           activeResultIndex = i
           break
@@ -224,7 +224,7 @@ SearchBox.prototype._onSearch = function (forceSearch) {
 
     // display search results
     if (text !== undefined) {
-      var resultCount = this.results.length
+      const resultCount = this.results.length
       if (resultCount === 0) {
         this.dom.results.innerHTML = 'no&nbsp;results'
       } else if (resultCount === 1) {
@@ -246,7 +246,7 @@ SearchBox.prototype._onSearch = function (forceSearch) {
  * @private
  */
 SearchBox.prototype._onKeyDown = function (event) {
-  var keynum = event.which
+  const keynum = event.which
   if (keynum === 27) {
     // ESC
     this.dom.search.value = '' // clear search
@@ -276,7 +276,7 @@ SearchBox.prototype._onKeyDown = function (event) {
  * @private
  */
 SearchBox.prototype._onKeyUp = function (event) {
-  var keynum = event.keyCode
+  const keynum = event.keyCode
   if (keynum !== 27 && keynum !== 13) {
     // !show and !Enter
     this._onDelayedSearch(event) // For IE 9

@@ -1,4 +1,4 @@
-var VanillaPicker
+let VanillaPicker
 
 if (window.Picker) {
   // use the already loaded instance of VanillaPicker

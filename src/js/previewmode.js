@@ -1,21 +1,21 @@
 'use strict'
 
-var jmespath = require('jmespath')
-var translate = require('./i18n').translate
-var ModeSwitcher = require('./ModeSwitcher')
-var ErrorTable = require('./ErrorTable')
-var textmode = require('./textmode')[0].mixin
-var showSortModal = require('./showSortModal')
-var showTransformModal = require('./showTransformModal')
-var MAX_PREVIEW_CHARACTERS = require('./constants').MAX_PREVIEW_CHARACTERS
-var DEFAULT_MODAL_ANCHOR = require('./constants').DEFAULT_MODAL_ANCHOR
-var SIZE_LARGE = require('./constants').SIZE_LARGE
-var PREVIEW_HISTORY_LIMIT = require('./constants').PREVIEW_HISTORY_LIMIT
-var util = require('./util')
-var History = require('./History')
+const jmespath = require('jmespath')
+const translate = require('./i18n').translate
+const ModeSwitcher = require('./ModeSwitcher')
+const ErrorTable = require('./ErrorTable')
+const textmode = require('./textmode')[0].mixin
+const showSortModal = require('./showSortModal')
+const showTransformModal = require('./showTransformModal')
+const MAX_PREVIEW_CHARACTERS = require('./constants').MAX_PREVIEW_CHARACTERS
+const DEFAULT_MODAL_ANCHOR = require('./constants').DEFAULT_MODAL_ANCHOR
+const SIZE_LARGE = require('./constants').SIZE_LARGE
+const PREVIEW_HISTORY_LIMIT = require('./constants').PREVIEW_HISTORY_LIMIT
+const util = require('./util')
+const History = require('./History')
 
 // create a mixin with the functions for text mode
-var previewmode = {}
+const previewmode = {}
 
 /**
  * Create a JSON document preview, suitable for processing of large documents
@@ -48,7 +48,7 @@ previewmode.create = function (container, options) {
   // determine mode
   this.mode = 'preview'
 
-  var me = this
+  const me = this
   this.container = container
   this.dom = {}
 
@@ -65,7 +65,7 @@ previewmode.create = function (container, options) {
 
   this.frame = document.createElement('div')
   this.frame.className = 'jsoneditor jsoneditor-mode-preview'
-  this.frame.onclick = function (event) {
+  this.frame.onclick = event => {
     // prevent default submit action when the editor is located inside a form
     event.preventDefault()
   }
@@ -95,13 +95,13 @@ previewmode.create = function (container, options) {
     this.frame.appendChild(this.menu)
 
     // create format button
-    var buttonFormat = document.createElement('button')
+    const buttonFormat = document.createElement('button')
     buttonFormat.type = 'button'
     buttonFormat.className = 'jsoneditor-format'
     buttonFormat.title = 'Format JSON data, with proper indentation and line feeds (Ctrl+\\)'
     this.menu.appendChild(buttonFormat)
     buttonFormat.onclick = function handleFormat () {
-      me.executeWithBusyMessage(function () {
+      me.executeWithBusyMessage(() => {
         try {
           me.format()
         } catch (err) {
@@ -111,13 +111,13 @@ previewmode.create = function (container, options) {
     }
 
     // create compact button
-    var buttonCompact = document.createElement('button')
+    const buttonCompact = document.createElement('button')
     buttonCompact.type = 'button'
     buttonCompact.className = 'jsoneditor-compact'
     buttonCompact.title = 'Compact JSON data, remove all whitespaces (Ctrl+Shift+\\)'
     this.menu.appendChild(buttonCompact)
     buttonCompact.onclick = function handleCompact () {
-      me.executeWithBusyMessage(function () {
+      me.executeWithBusyMessage(() => {
         try {
           me.compact()
         } catch (err) {
@@ -128,11 +128,11 @@ previewmode.create = function (container, options) {
 
     // create sort button
     if (this.options.enableSort) {
-      var sort = document.createElement('button')
+      const sort = document.createElement('button')
       sort.type = 'button'
       sort.className = 'jsoneditor-sort'
       sort.title = translate('sortTitleShort')
-      sort.onclick = function () {
+      sort.onclick = () => {
         me._showSortModal()
       }
       this.menu.appendChild(sort)
@@ -140,11 +140,11 @@ previewmode.create = function (container, options) {
 
     // create transform button
     if (this.options.enableTransform) {
-      var transform = document.createElement('button')
+      const transform = document.createElement('button')
       transform.type = 'button'
       transform.title = translate('transformTitleShort')
       transform.className = 'jsoneditor-transform'
-      transform.onclick = function () {
+      transform.onclick = () => {
         me._showTransformModal()
       }
       this.dom.transform = transform
@@ -152,14 +152,14 @@ previewmode.create = function (container, options) {
     }
 
     // create repair button
-    var buttonRepair = document.createElement('button')
+    const buttonRepair = document.createElement('button')
     buttonRepair.type = 'button'
     buttonRepair.className = 'jsoneditor-repair'
     buttonRepair.title = 'Repair JSON: fix quotes and escape characters, remove comments and JSONP notation, turn JavaScript objects into JSON.'
     this.menu.appendChild(buttonRepair)
-    buttonRepair.onclick = function () {
+    buttonRepair.onclick = () => {
       if (me.json === undefined) { // only repair if we don't have valid JSON
-        me.executeWithBusyMessage(function () {
+        me.executeWithBusyMessage(() => {
           try {
             me.repair()
           } catch (err) {
@@ -171,24 +171,23 @@ previewmode.create = function (container, options) {
 
     // create history and undo/redo buttons
     if (this.options.history !== false) { // default option value is true
-      var onHistoryChange = function () {
+      const onHistoryChange = () => {
         me.dom.undo.disabled = !me.history.canUndo()
         me.dom.redo.disabled = !me.history.canRedo()
       }
 
-      var calculateItemSize = function (item) {
-        return item.text.length * 2 // times two to account for the json object
-      }
+      const calculateItemSize = item => // times two to account for the json object
+        item.text.length * 2
 
       this.history = new History(onHistoryChange, calculateItemSize, PREVIEW_HISTORY_LIMIT)
 
       // create undo button
-      var undo = document.createElement('button')
+      const undo = document.createElement('button')
       undo.type = 'button'
       undo.className = 'jsoneditor-undo jsoneditor-separator'
       undo.title = translate('undo')
-      undo.onclick = function () {
-        var action = me.history.undo()
+      undo.onclick = () => {
+        const action = me.history.undo()
         if (action) {
           me._applyHistory(action)
         }
@@ -197,12 +196,12 @@ previewmode.create = function (container, options) {
       this.dom.undo = undo
 
       // create redo button
-      var redo = document.createElement('button')
+      const redo = document.createElement('button')
       redo.type = 'button'
       redo.className = 'jsoneditor-redo'
       redo.title = translate('redo')
-      redo.onclick = function () {
-        var action = me.history.redo()
+      redo.onclick = () => {
+        const action = me.history.redo()
         if (action) {
           me._applyHistory(action)
         }
@@ -232,8 +231,8 @@ previewmode.create = function (container, options) {
     onFocusLine: null,
     onChangeHeight: function (height) {
       // TODO: change CSS to using flex box, remove setting height using JavaScript
-      var statusBarHeight = me.dom.statusBar ? me.dom.statusBar.clientHeight : 0
-      var totalHeight = height + statusBarHeight + 1
+      const statusBarHeight = me.dom.statusBar ? me.dom.statusBar.clientHeight : 0
+      const totalHeight = height + statusBarHeight + 1
       me.content.style.marginBottom = (-totalHeight) + 'px'
       me.content.style.paddingBottom = totalHeight + 'px'
     }
@@ -246,7 +245,7 @@ previewmode.create = function (container, options) {
   if (options.statusBar) {
     util.addClassName(this.content, 'has-status-bar')
 
-    var statusBar = document.createElement('div')
+    const statusBar = document.createElement('div')
     this.dom.statusBar = statusBar
     statusBar.className = 'jsoneditor-statusbar'
     this.frame.appendChild(statusBar)
@@ -272,7 +271,7 @@ previewmode.create = function (container, options) {
 }
 
 previewmode._renderPreview = function () {
-  var text = this.getText()
+  const text = this.getText()
 
   this.dom.previewText.nodeValue = util.limitCharacters(text, MAX_PREVIEW_CHARACTERS)
 
@@ -332,31 +331,31 @@ previewmode._onChange = function () {
  * @private
  */
 previewmode._showSortModal = function () {
-  var me = this
+  const me = this
 
   function onSort (json, sortedBy) {
     if (Array.isArray(json)) {
-      var sortedArray = util.sort(json, sortedBy.path, sortedBy.direction)
+      const sortedArray = util.sort(json, sortedBy.path, sortedBy.direction)
 
       me.sortedBy = sortedBy
       me._setAndFireOnChange(sortedArray)
     }
 
     if (util.isObject(json)) {
-      var sortedObject = util.sortObjectKeys(json, sortedBy.direction)
+      const sortedObject = util.sortObjectKeys(json, sortedBy.direction)
 
       me.sortedBy = sortedBy
       me._setAndFireOnChange(sortedObject)
     }
   }
 
-  this.executeWithBusyMessage(function () {
-    var container = me.options.modalAnchor || DEFAULT_MODAL_ANCHOR
-    var json = me.get()
+  this.executeWithBusyMessage(() => {
+    const container = me.options.modalAnchor || DEFAULT_MODAL_ANCHOR
+    const json = me.get()
     me._renderPreview() // update array count
 
-    showSortModal(container, json, function (sortedBy) {
-      me.executeWithBusyMessage(function () {
+    showSortModal(container, json, sortedBy => {
+      me.executeWithBusyMessage(() => {
         onSort(json, sortedBy)
       }, 'sorting...')
     }, me.sortedBy)
@@ -368,16 +367,16 @@ previewmode._showSortModal = function () {
  * @private
  */
 previewmode._showTransformModal = function () {
-  var me = this
+  const me = this
 
-  this.executeWithBusyMessage(function () {
-    var anchor = me.options.modalAnchor || DEFAULT_MODAL_ANCHOR
-    var json = me.get()
+  this.executeWithBusyMessage(() => {
+    const anchor = me.options.modalAnchor || DEFAULT_MODAL_ANCHOR
+    const json = me.get()
     me._renderPreview() // update array count
 
-    showTransformModal(anchor, json, function (query) {
-      me.executeWithBusyMessage(function () {
-        var updatedJson = jmespath.search(json, query)
+    showTransformModal(anchor, json, query => {
+      me.executeWithBusyMessage(() => {
+        const updatedJson = jmespath.search(json, query)
         me._setAndFireOnChange(updatedJson)
       }, 'transforming...')
     })
@@ -407,8 +406,8 @@ previewmode.destroy = function () {
  * Compact the code in the text editor
  */
 previewmode.compact = function () {
-  var json = this.get()
-  var text = JSON.stringify(json)
+  const json = this.get()
+  const text = JSON.stringify(json)
 
   // we know that in this case the json is still the same, so we pass json too
   this._setTextAndFireOnChange(text, json)
@@ -418,8 +417,8 @@ previewmode.compact = function () {
  * Format the code in the text editor
  */
 previewmode.format = function () {
-  var json = this.get()
-  var text = JSON.stringify(json, null, this.indentation)
+  const json = this.get()
+  const text = JSON.stringify(json, null, this.indentation)
 
   // we know that in this case the json is still the same, so we pass json too
   this._setTextAndFireOnChange(text, json)
@@ -429,8 +428,8 @@ previewmode.format = function () {
  * Repair the code in the text editor
  */
 previewmode.repair = function () {
-  var text = this.getText()
-  var repairedText = util.repair(text)
+  const text = this.getText()
+  const repairedText = util.repair(text)
 
   this._setTextAndFireOnChange(repairedText)
 }
@@ -491,7 +490,7 @@ previewmode._setAndFireOnChange = function (json) {
  */
 previewmode.get = function () {
   if (this.json === undefined) {
-    var text = this.getText()
+    const text = this.getText()
 
     this.json = util.parse(text) // this can throw an error
   }
@@ -557,8 +556,8 @@ previewmode._setText = function (jsonText, json) {
   this._renderPreview()
 
   if (this.json === undefined) {
-    var me = this
-    this.executeWithBusyMessage(function () {
+    const me = this
+    this.executeWithBusyMessage(() => {
       try {
         // force parsing the json now, else it will be done in validate without feedback
         me.json = me.get()
@@ -609,7 +608,7 @@ previewmode._pushHistory = function () {
     return
   }
 
-  var action = {
+  const action = {
     text: this.text,
     json: this.json
   }
@@ -624,14 +623,14 @@ previewmode._pushHistory = function () {
  * @param {string} message
  */
 previewmode.executeWithBusyMessage = function (fn, message) {
-  var size = this.getText().length
+  const size = this.getText().length
 
   if (size > SIZE_LARGE) {
-    var me = this
+    const me = this
     util.addClassName(me.frame, 'busy')
     me.dom.busyContent.innerText = message
 
-    setTimeout(function () {
+    setTimeout(() => {
       fn()
       util.removeClassName(me.frame, 'busy')
       me.dom.busyContent.innerText = ''

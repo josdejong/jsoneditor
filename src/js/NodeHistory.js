@@ -1,6 +1,6 @@
 'use strict'
 
-var util = require('./util')
+const util = require('./util')
 
 /**
  * @constructor History
@@ -23,13 +23,13 @@ function NodeHistory (editor) {
   this.actions = {
     editField: {
       undo: function (params) {
-        var parentNode = findNode(params.parentPath)
-        var node = parentNode.childs[params.index]
+        const parentNode = findNode(params.parentPath)
+        const node = parentNode.childs[params.index]
         node.updateField(params.oldValue)
       },
       redo: function (params) {
-        var parentNode = findNode(params.parentPath)
-        var node = parentNode.childs[params.index]
+        const parentNode = findNode(params.parentPath)
+        const node = parentNode.childs[params.index]
         node.updateField(params.newValue)
       }
     },
@@ -52,44 +52,44 @@ function NodeHistory (editor) {
 
     appendNodes: {
       undo: function (params) {
-        var parentNode = findNode(params.parentPath)
-        params.paths.map(findNode).forEach(function (node) {
+        const parentNode = findNode(params.parentPath)
+        params.paths.map(findNode).forEach(node => {
           parentNode.removeChild(node)
         })
       },
       redo: function (params) {
-        var parentNode = findNode(params.parentPath)
-        params.nodes.forEach(function (node) {
+        const parentNode = findNode(params.parentPath)
+        params.nodes.forEach(node => {
           parentNode.appendChild(node)
         })
       }
     },
     insertBeforeNodes: {
       undo: function (params) {
-        var parentNode = findNode(params.parentPath)
-        params.paths.map(findNode).forEach(function (node) {
+        const parentNode = findNode(params.parentPath)
+        params.paths.map(findNode).forEach(node => {
           parentNode.removeChild(node)
         })
       },
       redo: function (params) {
-        var parentNode = findNode(params.parentPath)
-        var beforeNode = findNode(params.beforePath)
-        params.nodes.forEach(function (node) {
+        const parentNode = findNode(params.parentPath)
+        const beforeNode = findNode(params.beforePath)
+        params.nodes.forEach(node => {
           parentNode.insertBefore(node, beforeNode)
         })
       }
     },
     insertAfterNodes: {
       undo: function (params) {
-        var parentNode = findNode(params.parentPath)
-        params.paths.map(findNode).forEach(function (node) {
+        const parentNode = findNode(params.parentPath)
+        params.paths.map(findNode).forEach(node => {
           parentNode.removeChild(node)
         })
       },
       redo: function (params) {
-        var parentNode = findNode(params.parentPath)
-        var afterNode = findNode(params.afterPath)
-        params.nodes.forEach(function (node) {
+        const parentNode = findNode(params.parentPath)
+        let afterNode = findNode(params.afterPath)
+        params.nodes.forEach(node => {
           parentNode.insertAfter(node, afterNode)
           afterNode = node
         })
@@ -97,34 +97,34 @@ function NodeHistory (editor) {
     },
     removeNodes: {
       undo: function (params) {
-        var parentNode = findNode(params.parentPath)
-        var beforeNode = parentNode.childs[params.index] || parentNode.append
-        params.nodes.forEach(function (node) {
+        const parentNode = findNode(params.parentPath)
+        const beforeNode = parentNode.childs[params.index] || parentNode.append
+        params.nodes.forEach(node => {
           parentNode.insertBefore(node, beforeNode)
         })
       },
       redo: function (params) {
-        var parentNode = findNode(params.parentPath)
-        params.paths.map(findNode).forEach(function (node) {
+        const parentNode = findNode(params.parentPath)
+        params.paths.map(findNode).forEach(node => {
           parentNode.removeChild(node)
         })
       }
     },
     duplicateNodes: {
       undo: function (params) {
-        var parentNode = findNode(params.parentPath)
-        params.clonePaths.map(findNode).forEach(function (node) {
+        const parentNode = findNode(params.parentPath)
+        params.clonePaths.map(findNode).forEach(node => {
           parentNode.removeChild(node)
         })
       },
       redo: function (params) {
-        var parentNode = findNode(params.parentPath)
-        var afterNode = findNode(params.afterPath)
-        var nodes = params.paths.map(findNode)
-        nodes.forEach(function (node) {
-          var clone = node.clone()
+        const parentNode = findNode(params.parentPath)
+        let afterNode = findNode(params.afterPath)
+        const nodes = params.paths.map(findNode)
+        nodes.forEach(node => {
+          const clone = node.clone()
           if (parentNode.type === 'object') {
-            var existingFieldNames = parentNode.getFieldNames()
+            const existingFieldNames = parentNode.getFieldNames()
             clone.field = util.findUniqueName(node.field, existingFieldNames)
           }
           parentNode.insertAfter(clone, afterNode)
@@ -134,14 +134,14 @@ function NodeHistory (editor) {
     },
     moveNodes: {
       undo: function (params) {
-        var oldParentNode = findNode(params.oldParentPath)
-        var newParentNode = findNode(params.newParentPath)
-        var oldBeforeNode = oldParentNode.childs[params.oldIndex] || oldParentNode.append
+        const oldParentNode = findNode(params.oldParentPath)
+        const newParentNode = findNode(params.newParentPath)
+        const oldBeforeNode = oldParentNode.childs[params.oldIndex] || oldParentNode.append
 
         // first copy the nodes, then move them
-        var nodes = newParentNode.childs.slice(params.newIndex, params.newIndex + params.count)
+        const nodes = newParentNode.childs.slice(params.newIndex, params.newIndex + params.count)
 
-        nodes.forEach(function (node, index) {
+        nodes.forEach((node, index) => {
           node.field = params.fieldNames[index]
           oldParentNode.moveBefore(node, oldBeforeNode)
         })
@@ -153,14 +153,14 @@ function NodeHistory (editor) {
         }
       },
       redo: function (params) {
-        var oldParentNode = findNode(params.oldParentPathRedo)
-        var newParentNode = findNode(params.newParentPathRedo)
-        var newBeforeNode = newParentNode.childs[params.newIndexRedo] || newParentNode.append
+        const oldParentNode = findNode(params.oldParentPathRedo)
+        const newParentNode = findNode(params.newParentPathRedo)
+        const newBeforeNode = newParentNode.childs[params.newIndexRedo] || newParentNode.append
 
         // first copy the nodes, then move them
-        var nodes = oldParentNode.childs.slice(params.oldIndexRedo, params.oldIndexRedo + params.count)
+        const nodes = oldParentNode.childs.slice(params.oldIndexRedo, params.oldIndexRedo + params.count)
 
-        nodes.forEach(function (node, index) {
+        nodes.forEach((node, index) => {
           node.field = params.fieldNames[index]
           newParentNode.moveBefore(node, newBeforeNode)
         })
@@ -169,14 +169,14 @@ function NodeHistory (editor) {
 
     sort: {
       undo: function (params) {
-        var node = findNode(params.path)
+        const node = findNode(params.path)
         node.hideChilds()
         node.childs = params.oldChilds
         node.updateDom({ updateIndexes: true })
         node.showChilds()
       },
       redo: function (params) {
-        var node = findNode(params.path)
+        const node = findNode(params.path)
         node.hideChilds()
         node.childs = params.newChilds
         node.updateDom({ updateIndexes: true })
@@ -206,7 +206,7 @@ function NodeHistory (editor) {
  * The method onChange is executed when the History is changed, and can
  * be overloaded.
  */
-NodeHistory.prototype.onChange = function () {}
+NodeHistory.prototype.onChange = () => {}
 
 /**
  * Add a new action to the history
@@ -268,9 +268,9 @@ NodeHistory.prototype.canRedo = function () {
  */
 NodeHistory.prototype.undo = function () {
   if (this.canUndo()) {
-    var obj = this.history[this.index]
+    const obj = this.history[this.index]
     if (obj) {
-      var action = this.actions[obj.action]
+      const action = this.actions[obj.action]
       if (action && action.undo) {
         action.undo(obj.params)
         if (obj.params.oldSelection) {
@@ -298,9 +298,9 @@ NodeHistory.prototype.redo = function () {
   if (this.canRedo()) {
     this.index++
 
-    var obj = this.history[this.index]
+    const obj = this.history[this.index]
     if (obj) {
-      var action = this.actions[obj.action]
+      const action = this.actions[obj.action]
       if (action && action.redo) {
         action.redo(obj.params)
         if (obj.params.newSelection) {

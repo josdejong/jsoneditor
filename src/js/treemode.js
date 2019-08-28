@@ -1,21 +1,21 @@
 'use strict'
 
-var VanillaPicker = require('./vanilla-picker')
-var Highlighter = require('./Highlighter')
-var NodeHistory = require('./NodeHistory')
-var SearchBox = require('./SearchBox')
-var ContextMenu = require('./ContextMenu')
-var TreePath = require('./TreePath')
-var Node = require('./Node')
-var ModeSwitcher = require('./ModeSwitcher')
-var util = require('./util')
-var autocomplete = require('./autocomplete')
-var translate = require('./i18n').translate
-var setLanguages = require('./i18n').setLanguages
-var setLanguage = require('./i18n').setLanguage
+const VanillaPicker = require('./vanilla-picker')
+const Highlighter = require('./Highlighter')
+const NodeHistory = require('./NodeHistory')
+const SearchBox = require('./SearchBox')
+const ContextMenu = require('./ContextMenu')
+const TreePath = require('./TreePath')
+const Node = require('./Node')
+const ModeSwitcher = require('./ModeSwitcher')
+const util = require('./util')
+const autocomplete = require('./autocomplete')
+const translate = require('./i18n').translate
+const setLanguages = require('./i18n').setLanguages
+const setLanguage = require('./i18n').setLanguage
 
 // create a mixin with the functions for tree mode
-var treemode = {}
+const treemode = {}
 
 /**
  * Create a tree editor
@@ -115,8 +115,8 @@ treemode._setOptions = function (options) {
           color: color,
           popup: 'bottom',
           onDone: function (color) {
-            var alpha = color.rgba[3]
-            var hex = (alpha === 1)
+            const alpha = color.rgba[3]
+            const hex = (alpha === 1)
               ? color.hex.substr(0, 7) // return #RRGGBB
               : color.hex // return #RRGGBBAA
             onChange(hex)
@@ -168,18 +168,18 @@ treemode.set = function (json) {
     this.content.removeChild(this.table) // Take the table offline
 
     // replace the root node
-    var params = {
+    const params = {
       field: this.options.name,
       value: json
     }
-    var node = new Node(this, params)
+    const node = new Node(this, params)
     this._setRoot(node)
 
     // validate JSON schema (if configured)
     this.validate()
 
     // expand
-    var recurse = false
+    const recurse = false
     this.node.expand(recurse)
 
     this.content.appendChild(this.table) // Put the table online again
@@ -208,7 +208,7 @@ treemode.update = function (json) {
     return
   }
 
-  var selection = this.getSelection()
+  const selection = this.getSelection()
 
   // apply the changed json
   this.onChangeDisabled = true // don't fire an onChange event
@@ -227,8 +227,8 @@ treemode.update = function (json) {
   if (selection && selection.start && selection.end) {
     // only keep/update the selection if both start and end node still exists,
     // else we clear the selection
-    var startNode = this.node.findNodeByPath(selection.start.path)
-    var endNode = this.node.findNodeByPath(selection.end.path)
+    const startNode = this.node.findNodeByPath(selection.start.path)
+    const endNode = this.node.findNodeByPath(selection.end.path)
     if (startNode && endNode) {
       this.setSelection(selection.start, selection.end)
     } else {
@@ -271,7 +271,7 @@ treemode.setText = function (jsonText) {
     this.set(util.parse(jsonText)) // this can throw an error
   } catch (err) {
     // try to repair json, replace JavaScript notation with JSON notation
-    var repairedJsonText = util.repair(jsonText)
+    const repairedJsonText = util.repair(jsonText)
 
     // try to parse again
     this.set(util.parse(repairedJsonText)) // this can throw an error
@@ -288,7 +288,7 @@ treemode.updateText = function (jsonText) {
     this.update(util.parse(jsonText)) // this can throw an error
   } catch (err) {
     // try to repair json, replace JavaScript notation with JSON notation
-    var repairJsonText = util.repair(jsonText)
+    const repairJsonText = util.repair(jsonText)
 
     // try to parse again
     this.update(util.parse(repairJsonText)) // this can throw an error
@@ -322,7 +322,7 @@ treemode.getName = function () {
  * - to the first button in the top menu
  */
 treemode.focus = function () {
-  var input = this.scrollableContent.querySelector('[contenteditable=true]')
+  let input = this.scrollableContent.querySelector('[contenteditable=true]')
   if (input) {
     input.focus()
   } else if (this.node.dom.expand) {
@@ -382,7 +382,7 @@ treemode._setRoot = function (node) {
  *                                              'value')
  */
 treemode.search = function (text) {
-  var results
+  let results
   if (this.node) {
     this.content.removeChild(this.table) // Take the table offline
     results = this.node.search(text)
@@ -457,7 +457,7 @@ treemode._onChange = function () {
   this._debouncedValidate()
 
   if (this.treePath) {
-    var selectedNode = (this.node && this.selection)
+    const selectedNode = (this.node && this.selection)
       ? this.node.findNodeByInternalPath(this.selection.path)
       : this.multiselection
         ? this.multiselection.nodes[0]
@@ -517,23 +517,21 @@ treemode._onChange = function () {
  * Throws an exception when no JSON schema is configured
  */
 treemode.validate = function () {
-  var root = this.node
+  const root = this.node
   if (!root) { // TODO: this should be redundant but is needed on mode switch
     return
   }
 
-  var json = root.getValue()
+  const json = root.getValue()
 
   // execute JSON schema validation
-  var schemaErrors = []
+  let schemaErrors = []
   if (this.validateSchema) {
-    var valid = this.validateSchema(json)
+    const valid = this.validateSchema(json)
     if (!valid) {
       // apply all new errors
       schemaErrors = this.validateSchema.errors
-        .map(function (error) {
-          return util.improveSchemaError(error)
-        })
+        .map(error => util.improveSchemaError(error))
         .map(function findNode (error) {
           return {
             node: root.findNode(error.dataPath),
@@ -549,17 +547,17 @@ treemode.validate = function () {
   // execute custom validation and after than merge and render all errors
   try {
     this.validationSequence++
-    var me = this
-    var seq = this.validationSequence
+    const me = this
+    const seq = this.validationSequence
     this._validateCustom(json)
-      .then(function (customValidationErrors) {
+      .then(customValidationErrors => {
         // only apply when there was no other validation started whilst resolving async results
         if (seq === me.validationSequence) {
-          var errorNodes = [].concat(schemaErrors, customValidationErrors || [])
+          const errorNodes = [].concat(schemaErrors, customValidationErrors || [])
           me._renderValidationErrors(errorNodes)
         }
       })
-      .catch(function (err) {
+      .catch(err => {
         console.error(err)
       })
   } catch (err) {
@@ -570,39 +568,30 @@ treemode.validate = function () {
 treemode._renderValidationErrors = function (errorNodes) {
   // clear all current errors
   if (this.errorNodes) {
-    this.errorNodes.forEach(function (node) {
+    this.errorNodes.forEach(node => {
       node.setError(null)
     })
   }
 
   // render the new errors
-  var parentPairs = errorNodes
-    .reduce(function (all, entry) {
-      return entry.node
-        .findParents()
-        .filter(function (parent) {
-          return !all.some(function (pair) {
-            return pair[0] === parent
-          })
-        })
-        .map(function (parent) {
-          return [parent, entry.node]
-        })
-        .concat(all)
-    }, [])
+  const parentPairs = errorNodes
+    .reduce((all, entry) => entry.node
+      .findParents()
+      .filter(parent => !all.some(pair => pair[0] === parent))
+      .map(parent => [parent, entry.node])
+      .concat(all), [])
 
   this.errorNodes = parentPairs
-    .map(function (pair) {
-      return {
-        node: pair[0],
-        child: pair[1],
-        error: {
-          message: pair[0].type === 'object'
-            ? 'Contains invalid properties' // object
-            : 'Contains invalid items' // array
-        }
+    .map(pair => ({
+      node: pair[0],
+      child: pair[1],
+
+      error: {
+        message: pair[0].type === 'object'
+          ? 'Contains invalid properties' // object
+          : 'Contains invalid items' // array
       }
-    })
+    }))
     .concat(errorNodes)
     .map(function setError (entry) {
       entry.node.setError(entry.error, entry.child)
@@ -618,18 +607,18 @@ treemode._renderValidationErrors = function (errorNodes) {
 treemode._validateCustom = function (json) {
   try {
     if (this.options.onValidate) {
-      var root = this.node
-      var customValidateResults = this.options.onValidate(json)
+      const root = this.node
+      const customValidateResults = this.options.onValidate(json)
 
-      var resultPromise = util.isPromise(customValidateResults)
+      const resultPromise = util.isPromise(customValidateResults)
         ? customValidateResults
         : Promise.resolve(customValidateResults)
 
-      return resultPromise.then(function (customValidationPathErrors) {
+      return resultPromise.then(customValidationPathErrors => {
         if (Array.isArray(customValidationPathErrors)) {
           return customValidationPathErrors
-            .filter(function (error) {
-              var valid = util.isValidValidationError(error)
+            .filter(error => {
+              const valid = util.isValidValidationError(error)
 
               if (!valid) {
                 console.warn('Ignoring a custom validation error with invalid structure. ' +
@@ -639,8 +628,8 @@ treemode._validateCustom = function (json) {
 
               return valid
             })
-            .map(function (error) {
-              var node
+            .map(error => {
+              let node
               try {
                 node = (error && error.path) ? root.findNodeByPath(error.path) : null
               } catch (err) {
@@ -655,9 +644,7 @@ treemode._validateCustom = function (json) {
                 error: error
               }
             })
-            .filter(function (entry) {
-              return entry && entry.node && entry.error && entry.error.message
-            })
+            .filter(entry => entry && entry.node && entry.error && entry.error.message)
         } else {
           return null
         }
@@ -685,13 +672,13 @@ treemode.refresh = function () {
  * @param {Number} mouseY  Absolute mouse position in pixels
  */
 treemode.startAutoScroll = function (mouseY) {
-  var me = this
-  var content = this.scrollableContent
-  var top = util.getAbsoluteTop(content)
-  var height = content.clientHeight
-  var bottom = top + height
-  var margin = 24
-  var interval = 50 // ms
+  const me = this
+  const content = this.scrollableContent
+  const top = util.getAbsoluteTop(content)
+  const height = content.clientHeight
+  const bottom = top + height
+  const margin = 24
+  const interval = 50 // ms
 
   if ((mouseY < top + margin) && content.scrollTop > 0) {
     this.autoScrollStep = ((top + margin) - mouseY) / 3
@@ -704,7 +691,7 @@ treemode.startAutoScroll = function (mouseY) {
 
   if (this.autoScrollStep) {
     if (!this.autoScrollTimer) {
-      this.autoScrollTimer = setInterval(function () {
+      this.autoScrollTimer = setInterval(() => {
         if (me.autoScrollStep) {
           content.scrollTop -= me.autoScrollStep
         } else {
@@ -751,22 +738,20 @@ treemode.setDomSelection = function (selection) {
   }
   if (selection.paths) {
     // multi-select
-    var me = this
-    var nodes = selection.paths.map(function (path) {
-      return me.node.findNodeByInternalPath(path)
-    })
+    const me = this
+    const nodes = selection.paths.map(path => me.node.findNodeByInternalPath(path))
 
     this.select(nodes)
   } else {
     // find the actual DOM element where to apply the focus
-    var node = selection.path
+    const node = selection.path
       ? this.node.findNodeByInternalPath(selection.path)
       : null
-    var container = (node && selection.domName)
+    const container = (node && selection.domName)
       ? node.dom[selection.domName]
       : null
     if (selection.range && container) {
-      var range = Object.assign({}, selection.range, { container: container })
+      const range = Object.assign({}, selection.range, { container: container })
       util.setSelectionOffset(range)
     } else if (node) { // just a fallback
       node.focus()
@@ -787,15 +772,13 @@ treemode.getDomSelection = function () {
   // find the node and field name of the current target,
   // so we can store the current selection in a serializable
   // way (internal node path and domName)
-  var node = Node.getNodeFromTarget(this.focusTarget)
-  var focusTarget = this.focusTarget
-  var domName = node
-    ? Object.keys(node.dom).find(function (domName) {
-      return node.dom[domName] === focusTarget
-    })
+  const node = Node.getNodeFromTarget(this.focusTarget)
+  const focusTarget = this.focusTarget
+  const domName = node
+    ? Object.keys(node.dom).find(domName => node.dom[domName] === focusTarget)
     : null
 
-  var range = util.getSelectionOffset()
+  let range = util.getSelectionOffset()
   if (range && range.container.nodeName !== 'DIV') { // filter on (editable) divs)
     range = null
   }
@@ -814,9 +797,7 @@ treemode.getDomSelection = function () {
     domName: domName,
     range: range,
     paths: this.multiselection.length > 0
-      ? this.multiselection.nodes.map(function (node) {
-        return node.getInternalPath()
-      })
+      ? this.multiselection.nodes.map(node => node.getInternalPath())
       : null,
     scrollTop: this.scrollableContent ? this.scrollableContent.scrollTop : 0
   }
@@ -832,9 +813,9 @@ treemode.getDomSelection = function () {
  *                                              when not.
  */
 treemode.scrollTo = function (top, animateCallback) {
-  var content = this.scrollableContent
+  const content = this.scrollableContent
   if (content) {
-    var editor = this
+    const editor = this
     // cancel any running animation
     if (editor.animateTimeout) {
       clearTimeout(editor.animateTimeout)
@@ -846,14 +827,14 @@ treemode.scrollTo = function (top, animateCallback) {
     }
 
     // calculate final scroll position
-    var height = content.clientHeight
-    var bottom = content.scrollHeight - height
-    var finalScrollTop = Math.min(Math.max(top - height / 4, 0), bottom)
+    const height = content.clientHeight
+    const bottom = content.scrollHeight - height
+    const finalScrollTop = Math.min(Math.max(top - height / 4, 0), bottom)
 
     // animate towards the new scroll position
-    var animate = function () {
-      var scrollTop = content.scrollTop
-      var diff = (finalScrollTop - scrollTop)
+    const animate = () => {
+      const scrollTop = content.scrollTop
+      const diff = (finalScrollTop - scrollTop)
       if (Math.abs(diff) > 3) {
         content.scrollTop += diff / 3
         editor.animateCallback = animateCallback
@@ -890,7 +871,7 @@ treemode._createFrame = function () {
   this.contentOuter.className = 'jsoneditor-outer'
 
   // create one global event listener to handle all events from all nodes
-  var editor = this
+  const editor = this
   function onEvent (event) {
     // when switching to mode "code" or "text" via the menu, some events
     // are still fired whilst the _onEvent methods is already removed.
@@ -898,8 +879,8 @@ treemode._createFrame = function () {
       editor._onEvent(event)
     }
   }
-  this.frame.onclick = function (event) {
-    var target = event.target// || event.srcElement;
+  this.frame.onclick = event => {
+    const target = event.target// || event.srcElement;
 
     onEvent(event)
 
@@ -936,32 +917,32 @@ treemode._createFrame = function () {
     this.frame.appendChild(this.menu)
 
     // create expand all button
-    var expandAll = document.createElement('button')
+    const expandAll = document.createElement('button')
     expandAll.type = 'button'
     expandAll.className = 'jsoneditor-expand-all'
     expandAll.title = translate('expandAll')
-    expandAll.onclick = function () {
+    expandAll.onclick = () => {
       editor.expandAll()
     }
     this.menu.appendChild(expandAll)
 
     // create collapse all button
-    var collapseAll = document.createElement('button')
+    const collapseAll = document.createElement('button')
     collapseAll.type = 'button'
     collapseAll.title = translate('collapseAll')
     collapseAll.className = 'jsoneditor-collapse-all'
-    collapseAll.onclick = function () {
+    collapseAll.onclick = () => {
       editor.collapseAll()
     }
     this.menu.appendChild(collapseAll)
 
     // create sort button
     if (this.options.enableSort) {
-      var sort = document.createElement('button')
+      const sort = document.createElement('button')
       sort.type = 'button'
       sort.className = 'jsoneditor-sort'
       sort.title = translate('sortTitleShort')
-      sort.onclick = function () {
+      sort.onclick = () => {
         editor.node.showSortModal()
       }
       this.menu.appendChild(sort)
@@ -969,11 +950,11 @@ treemode._createFrame = function () {
 
     // create transform button
     if (this.options.enableTransform) {
-      var transform = document.createElement('button')
+      const transform = document.createElement('button')
       transform.type = 'button'
       transform.title = translate('transformTitleShort')
       transform.className = 'jsoneditor-transform'
-      transform.onclick = function () {
+      transform.onclick = () => {
         editor.node.showTransformModal()
       }
       this.menu.appendChild(transform)
@@ -982,29 +963,29 @@ treemode._createFrame = function () {
     // create undo/redo buttons
     if (this.history) {
       // create undo button
-      var undo = document.createElement('button')
+      const undo = document.createElement('button')
       undo.type = 'button'
       undo.className = 'jsoneditor-undo jsoneditor-separator'
       undo.title = translate('undo')
-      undo.onclick = function () {
+      undo.onclick = () => {
         editor._onUndo()
       }
       this.menu.appendChild(undo)
       this.dom.undo = undo
 
       // create redo button
-      var redo = document.createElement('button')
+      const redo = document.createElement('button')
       redo.type = 'button'
       redo.className = 'jsoneditor-redo'
       redo.title = translate('redo')
-      redo.onclick = function () {
+      redo.onclick = () => {
         editor._onRedo()
       }
       this.menu.appendChild(redo)
       this.dom.redo = redo
 
       // register handler for onchange of history
-      this.history.onChange = function () {
+      this.history.onChange = () => {
         undo.disabled = !editor.history.canUndo()
         redo.disabled = !editor.history.canRedo()
       }
@@ -1013,7 +994,7 @@ treemode._createFrame = function () {
 
     // create mode box
     if (this.options && this.options.modes && this.options.modes.length) {
-      var me = this
+      const me = this
       this.modeSwitcher = new ModeSwitcher(this.menu, this.options.modes, this.options.mode, function onSwitch (mode) {
         // switch mode and restore focus
         me.setMode(mode)
@@ -1078,7 +1059,7 @@ treemode._onEvent = function (event) {
     return
   }
 
-  var node = Node.getNodeFromTarget(event.target)
+  const node = Node.getNodeFromTarget(event.target)
 
   if (event.type === 'keydown') {
     this._onKeyDown(event)
@@ -1100,8 +1081,8 @@ treemode._onEvent = function (event) {
 
   if (node && this.options && this.options.navigationBar && node && (event.type === 'keydown' || event.type === 'mousedown')) {
     // apply on next tick, right after the new key press is applied
-    var me = this
-    setTimeout(function () {
+    const me = this
+    setTimeout(() => {
       me._updateTreePath(node.getNodePath())
     })
   }
@@ -1154,15 +1135,15 @@ treemode._updateTreePath = function (pathNodes) {
   if (pathNodes && pathNodes.length) {
     util.removeClassName(this.navBar, 'nav-bar-empty')
 
-    var pathObjs = []
-    pathNodes.forEach(function (node) {
-      var pathObj = {
+    const pathObjs = []
+    pathNodes.forEach(node => {
+      const pathObj = {
         name: getName(node),
         node: node,
         children: []
       }
       if (node.childs && node.childs.length) {
-        node.childs.forEach(function (childNode) {
+        node.childs.forEach(childNode => {
           pathObj.children.push({
             name: getName(childNode),
             node: childNode
@@ -1188,7 +1169,7 @@ treemode._updateTreePath = function (pathNodes) {
  * @param {Object} pathObj path object that was represents the selected section node
  * @private
  */
-treemode._onTreePathSectionSelected = function (pathObj) {
+treemode._onTreePathSectionSelected = pathObj => {
   if (pathObj && pathObj.node) {
     pathObj.node.expandTo()
     pathObj.node.focus()
@@ -1203,9 +1184,7 @@ treemode._onTreePathSectionSelected = function (pathObj) {
  */
 treemode._onTreePathMenuItemSelected = function (pathObj, selection) {
   if (pathObj && pathObj.children.length) {
-    var selectionObj = pathObj.children.find(function (obj) {
-      return obj.name === selection
-    })
+    const selectionObj = pathObj.children.find(obj => obj.name === selection)
     if (selectionObj && selectionObj.node) {
       this._updateTreePath(selectionObj.node.getNodePath())
       selectionObj.node.expandTo()
@@ -1229,8 +1208,8 @@ treemode._updateDragDistance = function (event) {
     this._startDragDistance(event)
   }
 
-  var diffX = event.pageX - this.dragDistanceEvent.initialPageX
-  var diffY = event.pageY - this.dragDistanceEvent.initialPageY
+  const diffX = event.pageX - this.dragDistanceEvent.initialPageX
+  const diffY = event.pageY - this.dragDistanceEvent.initialPageY
 
   this.dragDistanceEvent.dragDistance = Math.sqrt(diffX * diffX + diffY * diffY)
   this.dragDistanceEvent.hasMoved =
@@ -1248,7 +1227,7 @@ treemode._updateDragDistance = function (event) {
  * @private
  */
 treemode._onMultiSelectStart = function (event) {
-  var node = Node.getNodeFromTarget(event.target)
+  const node = Node.getNodeFromTarget(event.target)
 
   if (this.options.mode !== 'tree' || this.options.onEditable !== undefined) {
     // dragging not allowed in modes 'view' and 'form'
@@ -1264,14 +1243,14 @@ treemode._onMultiSelectStart = function (event) {
 
   this._startDragDistance(event)
 
-  var editor = this
+  const editor = this
   if (!this.mousemove) {
-    this.mousemove = util.addEventListener(window, 'mousemove', function (event) {
+    this.mousemove = util.addEventListener(window, 'mousemove', event => {
       editor._onMultiSelect(event)
     })
   }
   if (!this.mouseup) {
-    this.mouseup = util.addEventListener(window, 'mouseup', function (event) {
+    this.mouseup = util.addEventListener(window, 'mouseup', event => {
       editor._onMultiSelectEnd(event)
     })
   }
@@ -1292,7 +1271,7 @@ treemode._onMultiSelect = function (event) {
     return
   }
 
-  var node = Node.getNodeFromTarget(event.target)
+  const node = Node.getNodeFromTarget(event.target)
 
   if (node) {
     if (this.multiselection.start == null) {
@@ -1305,13 +1284,13 @@ treemode._onMultiSelect = function (event) {
   this.deselect()
 
   // find the selected nodes in the range from first to last
-  var start = this.multiselection.start
-  var end = this.multiselection.end || this.multiselection.start
+  const start = this.multiselection.start
+  const end = this.multiselection.end || this.multiselection.start
   if (start && end) {
     // find the top level childs, all having the same parent
     this.multiselection.nodes = this._findTopLevelNodes(start, end)
     if (this.multiselection.nodes && this.multiselection.nodes.length) {
-      var firstNode = this.multiselection.nodes[0]
+      const firstNode = this.multiselection.nodes[0]
       if (this.multiselection.start === firstNode || this.multiselection.start.isDescendantOf(firstNode)) {
         this.multiselection.direction = 'down'
       } else {
@@ -1352,8 +1331,8 @@ treemode._onMultiSelectEnd = function () {
  *                                            state is cleared too.
  */
 treemode.deselect = function (clearStartAndEnd) {
-  var selectionChanged = !!this.multiselection.nodes.length
-  this.multiselection.nodes.forEach(function (node) {
+  const selectionChanged = !!this.multiselection.nodes.length
+  this.multiselection.nodes.forEach(node => {
     node.setSelected(false)
   })
   this.multiselection.nodes = []
@@ -1384,14 +1363,14 @@ treemode.select = function (nodes) {
 
     this.multiselection.nodes = nodes.slice(0)
 
-    var first = nodes[0]
-    nodes.forEach(function (node) {
+    const first = nodes[0]
+    nodes.forEach(node => {
       node.expandPathToNode()
       node.setSelected(true, node === first)
     })
 
     if (this._selectionChangedHandler) {
-      var selection = this.getSelection()
+      const selection = this.getSelection()
       this._selectionChangedHandler(selection.start, selection.end)
     }
   }
@@ -1406,16 +1385,16 @@ treemode.select = function (nodes) {
  * @return {Array.<Node>} Returns an ordered list with child nodes
  * @private
  */
-treemode._findTopLevelNodes = function (start, end) {
-  var startPath = start.getNodePath()
-  var endPath = end.getNodePath()
-  var i = 0
+treemode._findTopLevelNodes = (start, end) => {
+  const startPath = start.getNodePath()
+  const endPath = end.getNodePath()
+  let i = 0
   while (i < startPath.length && startPath[i] === endPath[i]) {
     i++
   }
-  var root = startPath[i - 1]
-  var startChild = startPath[i]
-  var endChild = endPath[i]
+  let root = startPath[i - 1]
+  let startChild = startPath[i]
+  let endChild = endPath[i]
 
   if (!startChild || !endChild) {
     if (root.parent) {
@@ -1431,10 +1410,10 @@ treemode._findTopLevelNodes = function (start, end) {
   }
 
   if (root && startChild && endChild) {
-    var startIndex = root.childs.indexOf(startChild)
-    var endIndex = root.childs.indexOf(endChild)
-    var firstIndex = Math.min(startIndex, endIndex)
-    var lastIndex = Math.max(startIndex, endIndex)
+    const startIndex = root.childs.indexOf(startChild)
+    const endIndex = root.childs.indexOf(endChild)
+    const firstIndex = Math.min(startIndex, endIndex)
+    const lastIndex = Math.max(startIndex, endIndex)
 
     return root.childs.slice(firstIndex, lastIndex + 1)
   } else {
@@ -1448,23 +1427,23 @@ treemode._findTopLevelNodes = function (start, end) {
  * @private
  */
 treemode._showAutoComplete = function (element) {
-  var node = Node.getNodeFromTarget(element)
+  const node = Node.getNodeFromTarget(element)
 
-  var jsonElementType = ''
+  let jsonElementType = ''
   if (element.className.indexOf('jsoneditor-value') >= 0) jsonElementType = 'value'
   if (element.className.indexOf('jsoneditor-field') >= 0) jsonElementType = 'field'
 
-  var self = this
+  const self = this
 
-  setTimeout(function () {
+  setTimeout(() => {
     if (node && (self.options.autocomplete.trigger === 'focus' || element.innerText.length > 0)) {
-      var result = self.options.autocomplete.getOptions(element.innerText, node.getPath(), jsonElementType, node.editor)
+      const result = self.options.autocomplete.getOptions(element.innerText, node.getPath(), jsonElementType, node.editor)
       if (result === null) {
         self.autocomplete.hideDropDown()
       } else if (typeof result.then === 'function') {
         // probably a promise
         result
-          .then(function (obj) {
+          .then(obj => {
             if (obj === null) {
               self.autocomplete.hideDropDown()
             } else if (obj.options) {
@@ -1473,7 +1452,7 @@ treemode._showAutoComplete = function (element) {
               self.autocomplete.show(element, 0, obj)
             }
           })
-          .catch(function (err) {
+          .catch(err => {
             console.error(err)
           })
       } else {
@@ -1490,16 +1469,16 @@ treemode._showAutoComplete = function (element) {
  * @private
  */
 treemode._onKeyDown = function (event) {
-  var keynum = event.which || event.keyCode
-  var altKey = event.altKey
-  var ctrlKey = event.ctrlKey
-  var metaKey = event.metaKey
-  var shiftKey = event.shiftKey
-  var handled = false
+  const keynum = event.which || event.keyCode
+  const altKey = event.altKey
+  const ctrlKey = event.ctrlKey
+  const metaKey = event.metaKey
+  const shiftKey = event.shiftKey
+  let handled = false
 
   if (keynum === 9) { // Tab or Shift+Tab
-    var me = this
-    setTimeout(function () {
+    const me = this
+    setTimeout(() => {
       // select all text when moving focus to an editable div
       util.selectContentEditable(me.focusTarget)
     }, 0)
@@ -1511,7 +1490,7 @@ treemode._onKeyDown = function (event) {
       this.searchBox.dom.search.select()
       handled = true
     } else if (keynum === 114 || (ctrlKey && keynum === 71)) { // F3 or Ctrl+G
-      var focus = true
+      const focus = true
       if (!shiftKey) {
         // select next search result (F3 or Ctrl+G)
         this.searchBox.next(focus)
@@ -1578,7 +1557,7 @@ treemode._createTable = function () {
 
   // create colgroup where the first two columns don't have a fixed
   // width, and the edit columns do have a fixed width
-  var col
+  let col
   this.colgroupContent = document.createElement('colgroup')
   if (this.options.mode === 'tree') {
     col = document.createElement('col')
@@ -1606,8 +1585,8 @@ treemode._createTable = function () {
  *                               is being closed.
  */
 treemode.showContextMenu = function (anchor, onClose) {
-  var items = []
-  var selectedNodes = this.multiselection.nodes.slice()
+  let items = []
+  const selectedNodes = this.multiselection.nodes.slice()
 
   // create duplicate button
   items.push({
@@ -1630,9 +1609,7 @@ treemode.showContextMenu = function (anchor, onClose) {
   })
 
   if (this.options.onCreateMenu) {
-    var paths = selectedNodes.map(function (node) {
-      return node.getPath()
-    })
+    const paths = selectedNodes.map(node => node.getPath())
 
     items = this.options.onCreateMenu(items, {
       type: 'multiple',
@@ -1641,7 +1618,7 @@ treemode.showContextMenu = function (anchor, onClose) {
     })
   }
 
-  var menu = new ContextMenu(items, { close: onClose })
+  const menu = new ContextMenu(items, { close: onClose })
   menu.show(anchor, this.frame)
 }
 
@@ -1650,14 +1627,14 @@ treemode.showContextMenu = function (anchor, onClose) {
  * @return {{start:SerializableNode, end: SerializableNode}}
  */
 treemode.getSelection = function () {
-  var selection = {
+  const selection = {
     start: null,
     end: null
   }
   if (this.multiselection.nodes && this.multiselection.nodes.length) {
     if (this.multiselection.nodes.length) {
-      var selection1 = this.multiselection.nodes[0]
-      var selection2 = this.multiselection.nodes[this.multiselection.nodes.length - 1]
+      const selection1 = this.multiselection.nodes[0]
+      const selection2 = this.multiselection.nodes[this.multiselection.nodes.length - 1]
       if (this.multiselection.direction === 'down') {
         selection.start = selection1.serialize()
         selection.end = selection2.serialize()
@@ -1697,9 +1674,9 @@ treemode.setSelection = function (start, end) {
     this.setDomSelection(start)
   }
 
-  var nodes = this._getNodeInstancesByRange(start, end)
+  const nodes = this._getNodeInstancesByRange(start, end)
 
-  nodes.forEach(function (node) {
+  nodes.forEach(node => {
     node.expandTo()
   })
   this.select(nodes)
@@ -1713,7 +1690,7 @@ treemode.setSelection = function (start, end) {
  * @private
  */
 treemode._getNodeInstancesByRange = function (start, end) {
-  var startNode, endNode
+  let startNode, endNode
 
   if (start && start.path) {
     startNode = this.node.findNodeByPath(start.path)
@@ -1722,7 +1699,7 @@ treemode._getNodeInstancesByRange = function (start, end) {
     }
   }
 
-  var nodes = []
+  let nodes = []
   if (startNode instanceof Node) {
     if (endNode instanceof Node && endNode !== startNode) {
       if (startNode.parent === endNode.parent) {
@@ -1733,7 +1710,7 @@ treemode._getNodeInstancesByRange = function (start, end) {
           start = endNode
           end = startNode
         }
-        var current = start
+        let current = start
         nodes.push(current)
         do {
           current = current.nextSibling()
@@ -1751,10 +1728,10 @@ treemode._getNodeInstancesByRange = function (start, end) {
 }
 
 treemode.getNodesByRange = function (start, end) {
-  var nodes = this._getNodeInstancesByRange(start, end)
-  var serializableNodes = []
+  const nodes = this._getNodeInstancesByRange(start, end)
+  const serializableNodes = []
 
-  nodes.forEach(function (node) {
+  nodes.forEach(node => {
     serializableNodes.push(node.serialize())
   })
 

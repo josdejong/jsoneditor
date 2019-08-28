@@ -1,6 +1,6 @@
 'use strict'
 
-var defaultFilterFunction = {
+const defaultFilterFunction = {
   start: function (token, match, config) {
     return match.indexOf(token) === 0
   },
@@ -16,31 +16,31 @@ function completely (config) {
   config.confirmKeys = config.confirmKeys || [39, 35, 9] // right, end, tab
   config.caseSensitive = config.caseSensitive || false // autocomplete case sensitive
 
-  var fontSize = ''
-  var fontFamily = ''
+  let fontSize = ''
+  let fontFamily = ''
 
-  var wrapper = document.createElement('div')
+  const wrapper = document.createElement('div')
   wrapper.style.position = 'relative'
   wrapper.style.outline = '0'
   wrapper.style.border = '0'
   wrapper.style.margin = '0'
   wrapper.style.padding = '0'
 
-  var dropDown = document.createElement('div')
+  const dropDown = document.createElement('div')
   dropDown.className = 'autocomplete dropdown'
   dropDown.style.position = 'absolute'
   dropDown.style.visibility = 'hidden'
 
-  var spacer
-  var leftSide // <-- it will contain the leftSide part of the textfield (the bit that was already autocompleted)
-  var createDropDownController = function (elem, rs) {
-    var rows = []
-    var ix = 0
-    var oldIndex = -1
+  let spacer
+  let leftSide // <-- it will contain the leftSide part of the textfield (the bit that was already autocompleted)
+  const createDropDownController = (elem, rs) => {
+    let rows = []
+    let ix = 0
+    let oldIndex = -1
 
-    var onMouseOver = function () { this.style.outline = '1px solid #ddd' }
-    var onMouseOut = function () { this.style.outline = '0' }
-    var onMouseDown = function () { p.hide(); p.onmouseselection(this.__hint, p.rs) }
+    const onMouseOver = function () { this.style.outline = '1px solid #ddd' }
+    const onMouseOut = function () { this.style.outline = '0' }
+    const onMouseDown = function () { p.hide(); p.onmouseselection(this.__hint, p.rs) }
 
     var p = {
       rs: rs,
@@ -52,20 +52,18 @@ function completely (config) {
         elem.style.visibility = 'hidden'
         ix = 0
         elem.innerHTML = ''
-        var vph = (window.innerHeight || document.documentElement.clientHeight)
-        var rect = elem.parentNode.getBoundingClientRect()
-        var distanceToTop = rect.top - 6 // heuristic give 6px
-        var distanceToBottom = vph - rect.bottom - 6 // distance from the browser border.
+        const vph = (window.innerHeight || document.documentElement.clientHeight)
+        const rect = elem.parentNode.getBoundingClientRect()
+        const distanceToTop = rect.top - 6 // heuristic give 6px
+        const distanceToBottom = vph - rect.bottom - 6 // distance from the browser border.
 
         rows = []
-        var filterFn = typeof config.filter === 'function' ? config.filter : defaultFilterFunction[config.filter]
+        const filterFn = typeof config.filter === 'function' ? config.filter : defaultFilterFunction[config.filter]
 
-        var filtered = !filterFn ? [] : array.filter(function (match) {
-          return filterFn(config.caseSensitive ? token : token.toLowerCase(), config.caseSensitive ? match : match.toLowerCase(), config)
-        })
+        const filtered = !filterFn ? [] : array.filter(match => filterFn(config.caseSensitive ? token : token.toLowerCase(), config.caseSensitive ? match : match.toLowerCase(), config))
 
-        rows = filtered.map(function (row) {
-          var divRow = document.createElement('div')
+        rows = filtered.map(row => {
+          const divRow = document.createElement('div')
           divRow.className = 'item'
           // divRow.style.color = config.color;
           divRow.onmouseover = onMouseOver
@@ -119,7 +117,7 @@ function completely (config) {
   }
 
   function setEndOfContenteditable (contentEditableElement) {
-    var range, selection
+    let range, selection
     if (document.createRange) {
       // Firefox, Chrome, Opera, Safari, IE 9+
       range = document.createRange()// Create a range (a range is a like the selection but invisible)
@@ -164,7 +162,7 @@ function completely (config) {
     return spacer.getBoundingClientRect().right
   }
 
-  var rs = {
+  const rs = {
     onArrowDown: function () { }, // defaults to no action.
     onArrowUp: function () { }, // defaults to no action.
     onEnter: function () { }, // defaults to no action.
@@ -213,7 +211,7 @@ function completely (config) {
       this.elementHint.className = 'autocomplete hint'
       this.elementHint.style.zIndex = 2
       this.elementHint.style.position = 'absolute'
-      this.elementHint.onfocus = function () { this.element.focus() }.bind(this)
+      this.elementHint.onfocus = () => { this.element.focus() }
 
       if (this.element.addEventListener) {
         this.element.removeEventListener('keydown', keyDownHandler)
@@ -247,18 +245,18 @@ function completely (config) {
       }
     },
     repaint: function (element) {
-      var text = element.innerText
+      let text = element.innerText
       text = text.replace('\n', '')
 
-      var optionsLength = this.options.length
+      const optionsLength = this.options.length
 
       // breaking text in leftSide and token.
 
-      var token = text.substring(this.startFrom)
+      const token = text.substring(this.startFrom)
       leftSide = text.substring(0, this.startFrom)
 
-      for (var i = 0; i < optionsLength; i++) {
-        var opt = this.options[i]
+      for (let i = 0; i < optionsLength; i++) {
+        const opt = this.options[i]
         if ((!config.caseSensitive && opt.toLowerCase().indexOf(token.toLowerCase()) === 0) ||
                     (config.caseSensitive && opt.indexOf(token) === 0)) { // <-- how about upperCase vs. lowercase
           this.elementHint.innerText = leftSide + token + opt.substring(token.length)
@@ -270,7 +268,7 @@ function completely (config) {
       dropDown.style.left = calculateWidthForText(leftSide) + 'px'
       dropDownController.refresh(token, this.options)
       this.elementHint.style.width = calculateWidthForText(this.elementHint.innerText) + 10 + 'px'
-      var wasDropDownHidden = (dropDown.style.visibility === 'hidden')
+      const wasDropDownHidden = (dropDown.style.visibility === 'hidden')
       if (!wasDropDownHidden) { this.elementHint.style.width = calculateWidthForText(this.elementHint.innerText) + dropDown.clientWidth + 'px' }
     }
   }
@@ -280,7 +278,7 @@ function completely (config) {
   var keyDownHandler = function (e) {
     // console.log("Keydown:" + e.keyCode);
     e = e || window.event
-    var keyCode = e.keyCode
+    const keyCode = e.keyCode
 
     if (this.elementHint == null) return
 
@@ -295,7 +293,7 @@ function completely (config) {
       return
     }
 
-    var text = this.element.innerText
+    let text = this.element.innerText
     text = text.replace('\n', '')
 
     if (config.confirmKeys.indexOf(keyCode) >= 0) { //  (autocomplete triggered)
@@ -323,7 +321,7 @@ function completely (config) {
       if (this.elementHint.innerText.length === 0) { // if there is a hint
         rs.onEnter()
       } else {
-        var wasDropDownHidden = (dropDown.style.visibility === 'hidden')
+        const wasDropDownHidden = (dropDown.style.visibility === 'hidden')
         dropDownController.hide()
 
         if (wasDropDownHidden) {
@@ -364,15 +362,15 @@ function completely (config) {
     }
   }.bind(rs)
 
-  var onBlurHandler = function (e) {
+  var onBlurHandler = e => {
     rs.hideDropDown()
     // console.log("Lost focus.");
   }
 
-  dropDownController.onmouseselection = function (text, rs) {
+  dropDownController.onmouseselection = (text, rs) => {
     rs.element.innerText = rs.elementHint.innerText = leftSide + text
     rs.hideDropDown()
-    window.setTimeout(function () {
+    window.setTimeout(() => {
       rs.element.focus()
       setEndOfContenteditable(rs.element)
     }, 1)

@@ -1,4 +1,4 @@
-var ace
+let ace
 if (window.ace) {
   // use the already loaded instance of Ace
   ace = window.ace

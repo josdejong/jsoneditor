@@ -1,8 +1,8 @@
 'use strict'
 
-var createAbsoluteAnchor = require('./createAbsoluteAnchor').createAbsoluteAnchor
-var util = require('./util')
-var translate = require('./i18n').translate
+const createAbsoluteAnchor = require('./createAbsoluteAnchor').createAbsoluteAnchor
+const util = require('./util')
+const translate = require('./i18n').translate
 
 /**
  * A context menu
@@ -16,8 +16,8 @@ var translate = require('./i18n').translate
 function ContextMenu (items, options) {
   this.dom = {}
 
-  var me = this
-  var dom = this.dom
+  const me = this
+  const dom = this.dom
   this.anchor = undefined
   this.items = items
   this.eventListeners = {}
@@ -25,51 +25,51 @@ function ContextMenu (items, options) {
   this.onClose = options ? options.close : undefined
 
   // create root element
-  var root = document.createElement('div')
+  const root = document.createElement('div')
   root.className = 'jsoneditor-contextmenu-root'
   dom.root = root
 
   // create a container element
-  var menu = document.createElement('div')
+  const menu = document.createElement('div')
   menu.className = 'jsoneditor-contextmenu'
   dom.menu = menu
   root.appendChild(menu)
 
   // create a list to hold the menu items
-  var list = document.createElement('ul')
+  const list = document.createElement('ul')
   list.className = 'jsoneditor-menu'
   menu.appendChild(list)
   dom.list = list
   dom.items = [] // list with all buttons
 
   // create a (non-visible) button to set the focus to the menu
-  var focusButton = document.createElement('button')
+  const focusButton = document.createElement('button')
   focusButton.type = 'button'
   dom.focusButton = focusButton
-  var li = document.createElement('li')
+  const li = document.createElement('li')
   li.style.overflow = 'hidden'
   li.style.height = '0'
   li.appendChild(focusButton)
   list.appendChild(li)
 
   function createMenuItems (list, domItems, items) {
-    items.forEach(function (item) {
+    items.forEach(item => {
       if (item.type === 'separator') {
         // create a separator
-        var separator = document.createElement('div')
+        const separator = document.createElement('div')
         separator.className = 'jsoneditor-separator'
         const li = document.createElement('li')
         li.appendChild(separator)
         list.appendChild(li)
       } else {
-        var domItem = {}
+        const domItem = {}
 
         // create a menu item
         const li = document.createElement('li')
         list.appendChild(li)
 
         // create a button in the menu item
-        var button = document.createElement('button')
+        const button = document.createElement('button')
         button.type = 'button'
         button.className = item.className
         domItem.button = button
@@ -77,7 +77,7 @@ function ContextMenu (items, options) {
           button.title = item.title
         }
         if (item.click) {
-          button.onclick = function (event) {
+          button.onclick = event => {
             event.preventDefault()
             me.hide()
             item.click()
@@ -88,21 +88,21 @@ function ContextMenu (items, options) {
         // create the contents of the button
         if (item.submenu) {
           // add the icon to the button
-          var divIcon = document.createElement('div')
+          const divIcon = document.createElement('div')
           divIcon.className = 'jsoneditor-icon'
           button.appendChild(divIcon)
-          var divText = document.createElement('div')
+          const divText = document.createElement('div')
           divText.className = 'jsoneditor-text' +
               (item.click ? '' : ' jsoneditor-right-margin')
           divText.appendChild(document.createTextNode(item.text))
           button.appendChild(divText)
 
-          var buttonSubmenu
+          let buttonSubmenu
           if (item.click) {
             // submenu and a button with a click handler
             button.className += ' jsoneditor-default'
 
-            var buttonExpand = document.createElement('button')
+            const buttonExpand = document.createElement('button')
             buttonExpand.type = 'button'
             domItem.buttonExpand = buttonExpand
             buttonExpand.className = 'jsoneditor-expand'
@@ -115,7 +115,7 @@ function ContextMenu (items, options) {
             buttonSubmenu = buttonExpand
           } else {
             // submenu and a button without a click handler
-            var divExpand = document.createElement('div')
+            const divExpand = document.createElement('div')
             divExpand.className = 'jsoneditor-expand'
             button.appendChild(divExpand)
 
@@ -123,16 +123,16 @@ function ContextMenu (items, options) {
           }
 
           // attach a handler to expand/collapse the submenu
-          buttonSubmenu.onclick = function (event) {
+          buttonSubmenu.onclick = event => {
             event.preventDefault()
             me._onExpandItem(domItem)
             buttonSubmenu.focus()
           }
 
           // create the submenu
-          var domSubItems = []
+          const domSubItems = []
           domItem.subItems = domSubItems
-          var ul = document.createElement('ul')
+          const ul = document.createElement('ul')
           domItem.ul = ul
           ul.className = 'jsoneditor-menu'
           ul.style.height = '0'
@@ -154,8 +154,8 @@ function ContextMenu (items, options) {
 
   // calculate the max height of the menu with one submenu expanded
   this.maxHeight = 0 // height in pixels
-  items.forEach(function (item) {
-    var height = (items.length + (item.submenu ? item.submenu.length : 0)) * 24
+  items.forEach(item => {
+    const height = (items.length + (item.submenu ? item.submenu.length : 0)) * 24
     me.maxHeight = Math.max(me.maxHeight, height)
   })
 }
@@ -166,15 +166,15 @@ function ContextMenu (items, options) {
  * @private
  */
 ContextMenu.prototype._getVisibleButtons = function () {
-  var buttons = []
-  var me = this
-  this.dom.items.forEach(function (item) {
+  const buttons = []
+  const me = this
+  this.dom.items.forEach(item => {
     buttons.push(item.button)
     if (item.buttonExpand) {
       buttons.push(item.buttonExpand)
     }
     if (item.subItems && item === me.expandedItem) {
-      item.subItems.forEach(function (subItem) {
+      item.subItems.forEach(subItem => {
         buttons.push(subItem.button)
         if (subItem.buttonExpand) {
           buttons.push(subItem.buttonExpand)
@@ -200,14 +200,14 @@ ContextMenu.prototype.show = function (anchor, frame, ignoreParent) {
   this.hide()
 
   // determine whether to display the menu below or above the anchor
-  var showBelow = true
-  var parent = anchor.parentNode
-  var anchorRect = anchor.getBoundingClientRect()
-  var parentRect = parent.getBoundingClientRect()
-  var frameRect = frame.getBoundingClientRect()
+  let showBelow = true
+  const parent = anchor.parentNode
+  const anchorRect = anchor.getBoundingClientRect()
+  const parentRect = parent.getBoundingClientRect()
+  const frameRect = frame.getBoundingClientRect()
 
-  var me = this
-  this.dom.absoluteAnchor = createAbsoluteAnchor(anchor, frame, function () {
+  const me = this
+  this.dom.absoluteAnchor = createAbsoluteAnchor(anchor, frame, () => {
     me.hide()
   })
 
@@ -220,12 +220,12 @@ ContextMenu.prototype.show = function (anchor, frame, ignoreParent) {
     // doesn't fit above nor below -> show below
   }
 
-  var topGap = ignoreParent ? 0 : (anchorRect.top - parentRect.top)
+  const topGap = ignoreParent ? 0 : (anchorRect.top - parentRect.top)
 
   // position the menu
   if (showBelow) {
     // display the menu below the anchor
-    var anchorHeight = anchor.offsetHeight
+    const anchorHeight = anchor.offsetHeight
     this.dom.menu.style.left = '0'
     this.dom.menu.style.top = topGap + anchorHeight + 'px'
     this.dom.menu.style.bottom = ''
@@ -243,7 +243,7 @@ ContextMenu.prototype.show = function (anchor, frame, ignoreParent) {
   // move focus to the first button in the context menu
   this.selection = util.getSelection()
   this.anchor = anchor
-  setTimeout(function () {
+  setTimeout(() => {
     me.dom.focusButton.focus()
   }, 0)
 
@@ -283,16 +283,16 @@ ContextMenu.prototype.hide = function () {
  * @private
  */
 ContextMenu.prototype._onExpandItem = function (domItem) {
-  var me = this
-  var alreadyVisible = (domItem === this.expandedItem)
+  const me = this
+  const alreadyVisible = (domItem === this.expandedItem)
 
   // hide the currently visible submenu
-  var expandedItem = this.expandedItem
+  const expandedItem = this.expandedItem
   if (expandedItem) {
     // var ul = expandedItem.ul;
     expandedItem.ul.style.height = '0'
     expandedItem.ul.style.padding = ''
-    setTimeout(function () {
+    setTimeout(() => {
       if (me.expandedItem !== expandedItem) {
         expandedItem.ul.style.display = ''
         util.removeClassName(expandedItem.ul.parentNode, 'jsoneditor-selected')
@@ -302,14 +302,14 @@ ContextMenu.prototype._onExpandItem = function (domItem) {
   }
 
   if (!alreadyVisible) {
-    var ul = domItem.ul
+    const ul = domItem.ul
     ul.style.display = 'block'
     // eslint-disable-next-line no-unused-expressions
     ul.clientHeight // force a reflow in Firefox
-    setTimeout(function () {
+    setTimeout(() => {
       if (me.expandedItem === domItem) {
-        var childsHeight = 0
-        for (var i = 0; i < ul.childNodes.length; i++) {
+        let childsHeight = 0
+        for (let i = 0; i < ul.childNodes.length; i++) {
           childsHeight += ul.childNodes[i].clientHeight
         }
         ul.style.height = childsHeight + 'px'
@@ -327,10 +327,10 @@ ContextMenu.prototype._onExpandItem = function (domItem) {
  * @private
  */
 ContextMenu.prototype._onKeyDown = function (event) {
-  var target = event.target
-  var keynum = event.which
-  var handled = false
-  var buttons, targetIndex, prevButton, nextButton
+  const target = event.target
+  const keynum = event.which
+  let handled = false
+  let buttons, targetIndex, prevButton, nextButton
 
   if (keynum === 27) { // ESC
     // hide the menu on ESC key

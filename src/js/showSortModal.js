@@ -1,6 +1,6 @@
-var picoModal = require('picomodal')
-var translate = require('./i18n').translate
-var util = require('./util')
+const picoModal = require('picomodal')
+const translate = require('./i18n').translate
+const util = require('./util')
 
 /**
  * Show advanced sorting modal
@@ -16,15 +16,15 @@ var util = require('./util')
  *                - {'asc' | 'desc'} direction The selected direction
  */
 function showSortModal (container, json, onSort, options) {
-  var paths = Array.isArray(json)
+  const paths = Array.isArray(json)
     ? util.getChildPaths(json)
     : ['']
-  var selectedPath = options && options.path && util.contains(paths, options.path)
+  const selectedPath = options && options.path && util.contains(paths, options.path)
     ? options.path
     : paths[0]
-  var selectedDirection = (options && options.direction) || 'asc'
+  const selectedDirection = (options && options.direction) || 'asc'
 
-  var content = '<div class="pico-modal-contents">' +
+  const content = '<div class="pico-modal-contents">' +
       '<div class="pico-modal-header">' + translate('sort') + '</div>' +
       '<form>' +
       '<table>' +
@@ -75,11 +75,11 @@ function showSortModal (container, json, onSort, options) {
     },
     modalClass: 'jsoneditor-modal jsoneditor-modal-sort'
   })
-    .afterCreate(function (modal) {
-      var form = modal.modalElem().querySelector('form')
-      var ok = modal.modalElem().querySelector('#ok')
-      var field = modal.modalElem().querySelector('#field')
-      var direction = modal.modalElem().querySelector('#direction')
+    .afterCreate(modal => {
+      const form = modal.modalElem().querySelector('form')
+      const ok = modal.modalElem().querySelector('#ok')
+      const field = modal.modalElem().querySelector('#field')
+      const direction = modal.modalElem().querySelector('#direction')
 
       function preprocessPath (path) {
         return (path === '')
@@ -89,8 +89,8 @@ function showSortModal (container, json, onSort, options) {
             : path
       }
 
-      paths.forEach(function (path) {
-        var option = document.createElement('option')
+      paths.forEach(path => {
+        const option = document.createElement('option')
         option.text = preprocessPath(path)
         option.value = path
         field.appendChild(option)
@@ -104,11 +104,11 @@ function showSortModal (container, json, onSort, options) {
       field.value = selectedPath || paths[0]
       setDirection(selectedDirection || 'asc')
 
-      direction.onclick = function (event) {
+      direction.onclick = event => {
         setDirection(event.target.getAttribute('data-value'))
       }
 
-      ok.onclick = function (event) {
+      ok.onclick = event => {
         event.preventDefault()
         event.stopPropagation()
 
@@ -124,7 +124,7 @@ function showSortModal (container, json, onSort, options) {
         form.onsubmit = ok.onclick
       }
     })
-    .afterClose(function (modal) {
+    .afterClose(modal => {
       modal.destroy()
     })
     .show()

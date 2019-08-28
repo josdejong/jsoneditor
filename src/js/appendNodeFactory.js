@@ -1,8 +1,8 @@
 'use strict'
 
-var util = require('./util')
-var ContextMenu = require('./ContextMenu')
-var translate = require('./i18n').translate
+const util = require('./util')
+const ContextMenu = require('./ContextMenu')
+const translate = require('./i18n').translate
 
 /**
  * A factory function to create an AppendNode, which depends on a Node
@@ -30,7 +30,7 @@ function appendNodeFactory (Node) {
    */
   AppendNode.prototype.getDom = function () {
     // TODO: implement a new solution for the append node
-    var dom = this.dom
+    const dom = this.dom
 
     if (dom.tr) {
       return dom.tr
@@ -39,7 +39,7 @@ function appendNodeFactory (Node) {
     this._updateEditability()
 
     // a row for the append button
-    var trAppend = document.createElement('tr')
+    const trAppend = document.createElement('tr')
     trAppend.className = 'jsoneditor-append'
     trAppend.node = this
     dom.tr = trAppend
@@ -51,9 +51,9 @@ function appendNodeFactory (Node) {
       dom.tdDrag = document.createElement('td')
 
       // create context menu
-      var tdMenu = document.createElement('td')
+      const tdMenu = document.createElement('td')
       dom.tdMenu = tdMenu
-      var menu = document.createElement('button')
+      const menu = document.createElement('button')
       menu.type = 'button'
       menu.className = 'jsoneditor-button jsoneditor-contextmenu'
       menu.title = 'Click to open the actions menu (Ctrl+M)'
@@ -62,8 +62,8 @@ function appendNodeFactory (Node) {
     }
 
     // a cell for the contents (showing text 'empty')
-    var tdAppend = document.createElement('td')
-    var domText = document.createElement('div')
+    const tdAppend = document.createElement('td')
+    const domText = document.createElement('div')
     domText.innerHTML = '(' + translate('empty') + ')'
     domText.className = 'jsoneditor-readonly'
     tdAppend.appendChild(domText)
@@ -79,37 +79,33 @@ function appendNodeFactory (Node) {
    * Append node doesn't have a path
    * @returns {null}
    */
-  AppendNode.prototype.getPath = function () {
-    return null
-  }
+  AppendNode.prototype.getPath = () => null
 
   /**
    * Append node doesn't have an index
    * @returns {null}
    */
-  AppendNode.prototype.getIndex = function () {
-    return null
-  }
+  AppendNode.prototype.getIndex = () => null
 
   /**
    * Update the HTML dom of the Node
    */
   AppendNode.prototype.updateDom = function (options) {
-    var dom = this.dom
-    var tdAppend = dom.td
+    const dom = this.dom
+    const tdAppend = dom.td
     if (tdAppend) {
       tdAppend.style.paddingLeft = (this.getLevel() * 24 + 26) + 'px'
       // TODO: not so nice hard coded offset
     }
 
-    var domText = dom.text
+    const domText = dom.text
     if (domText) {
       domText.innerHTML = '(' + translate('empty') + ' ' + this.parent.type + ')'
     }
 
     // attach or detach the contents of the append node:
     // hide when the parent has childs, show when the parent has no childs
-    var trAppend = dom.tr
+    const trAppend = dom.tr
     if (!this.isVisible()) {
       if (dom.tr.firstChild) {
         if (dom.tdDrag) {
@@ -149,9 +145,9 @@ function appendNodeFactory (Node) {
    *                               is being closed.
    */
   AppendNode.prototype.showContextMenu = function (anchor, onClose) {
-    var node = this
-    var titles = Node.TYPE_TITLES
-    var appendSubmenu = [
+    const node = this
+    const titles = Node.TYPE_TITLES
+    const appendSubmenu = [
       {
         text: translate('auto'),
         className: 'jsoneditor-type-auto',
@@ -186,7 +182,7 @@ function appendNodeFactory (Node) {
       }
     ]
     node.addTemplates(appendSubmenu, true)
-    var items = [
+    let items = [
       // create append button
       {
         text: translate('appendText'),
@@ -201,7 +197,7 @@ function appendNodeFactory (Node) {
     ]
 
     if (this.editor.options.onCreateMenu) {
-      var path = node.parent.getPath()
+      const path = node.parent.getPath()
 
       items = this.editor.options.onCreateMenu(items, {
         type: 'append',
@@ -210,7 +206,7 @@ function appendNodeFactory (Node) {
       })
     }
 
-    var menu = new ContextMenu(items, { close: onClose })
+    const menu = new ContextMenu(items, { close: onClose })
     menu.show(anchor, this.editor.frame)
   }
 
@@ -219,12 +215,12 @@ function appendNodeFactory (Node) {
    * @param {Event} event
    */
   AppendNode.prototype.onEvent = function (event) {
-    var type = event.type
-    var target = event.target || event.srcElement
-    var dom = this.dom
+    const type = event.type
+    const target = event.target || event.srcElement
+    const dom = this.dom
 
     // highlight the append nodes parent
-    var menu = dom.menu
+    const menu = dom.menu
     if (target === menu) {
       if (type === 'mouseover') {
         this.editor.highlighter.highlight(this.parent)
@@ -235,11 +231,11 @@ function appendNodeFactory (Node) {
 
     // context menu events
     if (type === 'click' && target === dom.menu) {
-      var highlighter = this.editor.highlighter
+      const highlighter = this.editor.highlighter
       highlighter.highlight(this.parent)
       highlighter.lock()
       util.addClassName(dom.menu, 'jsoneditor-selected')
-      this.showContextMenu(dom.menu, function () {
+      this.showContextMenu(dom.menu, () => {
         util.removeClassName(dom.menu, 'jsoneditor-selected')
         highlighter.unlock()
         highlighter.unhighlight()

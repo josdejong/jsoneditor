@@ -28,7 +28,7 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-window.ace.define('ace/theme/jsoneditor', ['require', 'exports', 'module', 'ace/lib/dom'], function (acequire, exports, module) {
+window.ace.define('ace/theme/jsoneditor', ['require', 'exports', 'module', 'ace/lib/dom'], (acequire, exports, module) => {
   exports.isDark = false
   exports.cssClass = 'ace-jsoneditor'
   exports.cssText = `.ace-jsoneditor .ace_gutter {
@@ -139,6 +139,6 @@ text-decoration: underline
 background: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAACCAYAAACZgbYnAAAAE0lEQVQImWP4////f4bLly//BwAmVgd1/w11/gAAAABJRU5ErkJggg==") right repeat-y
 }`
 
-  var dom = acequire('../lib/dom')
+  const dom = acequire('../lib/dom')
   dom.importCssString(exports.cssText, exports.cssClass)
 })

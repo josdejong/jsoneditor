@@ -1,20 +1,20 @@
 'use strict'
 
-var ace = require('./ace')
-var jmespath = require('jmespath')
-var translate = require('./i18n').translate
-var ModeSwitcher = require('./ModeSwitcher')
-var ErrorTable = require('./ErrorTable')
-var validateCustom = require('./validationUtils').validateCustom
-var showSortModal = require('./showSortModal')
-var showTransformModal = require('./showTransformModal')
-var util = require('./util')
-var DEFAULT_MODAL_ANCHOR = require('./constants').DEFAULT_MODAL_ANCHOR
+const ace = require('./ace')
+const jmespath = require('jmespath')
+const translate = require('./i18n').translate
+const ModeSwitcher = require('./ModeSwitcher')
+const ErrorTable = require('./ErrorTable')
+const validateCustom = require('./validationUtils').validateCustom
+const showSortModal = require('./showSortModal')
+const showTransformModal = require('./showTransformModal')
+const util = require('./util')
+const DEFAULT_MODAL_ANCHOR = require('./constants').DEFAULT_MODAL_ANCHOR
 
 // create a mixin with the functions for text mode
-var textmode = {}
+const textmode = {}
 
-var DEFAULT_THEME = 'ace/theme/jsoneditor'
+const DEFAULT_THEME = 'ace/theme/jsoneditor'
 
 /**
  * Create a text editor
@@ -45,7 +45,7 @@ textmode.create = function (container, options) {
   }
 
   // grab ace from options if provided
-  var _ace = options.ace ? options.ace : ace
+  const _ace = options.ace ? options.ace : ace
   // TODO: make the option options.ace deprecated, it's not needed anymore (see #309)
 
   // determine mode
@@ -72,7 +72,7 @@ textmode.create = function (container, options) {
     this.onTextSelectionChange(options.onTextSelectionChange)
   }
 
-  var me = this
+  const me = this
   this.container = container
   this.dom = {}
   this.aceEditor = undefined // ace code editor
@@ -88,11 +88,11 @@ textmode.create = function (container, options) {
 
   this.frame = document.createElement('div')
   this.frame.className = 'jsoneditor jsoneditor-mode-' + this.options.mode
-  this.frame.onclick = function (event) {
+  this.frame.onclick = event => {
     // prevent default submit action when the editor is located inside a form
     event.preventDefault()
   }
-  this.frame.onkeydown = function (event) {
+  this.frame.onkeydown = event => {
     me._onKeyDown(event)
   }
 
@@ -108,12 +108,12 @@ textmode.create = function (container, options) {
     this.frame.appendChild(this.menu)
 
     // create format button
-    var buttonFormat = document.createElement('button')
+    const buttonFormat = document.createElement('button')
     buttonFormat.type = 'button'
     buttonFormat.className = 'jsoneditor-format'
     buttonFormat.title = 'Format JSON data, with proper indentation and line feeds (Ctrl+\\)'
     this.menu.appendChild(buttonFormat)
-    buttonFormat.onclick = function () {
+    buttonFormat.onclick = () => {
       try {
         me.format()
         me._onChange()
@@ -123,12 +123,12 @@ textmode.create = function (container, options) {
     }
 
     // create compact button
-    var buttonCompact = document.createElement('button')
+    const buttonCompact = document.createElement('button')
     buttonCompact.type = 'button'
     buttonCompact.className = 'jsoneditor-compact'
     buttonCompact.title = 'Compact JSON data, remove all whitespaces (Ctrl+Shift+\\)'
     this.menu.appendChild(buttonCompact)
-    buttonCompact.onclick = function () {
+    buttonCompact.onclick = () => {
       try {
         me.compact()
         me._onChange()
@@ -139,11 +139,11 @@ textmode.create = function (container, options) {
 
     // create sort button
     if (this.options.enableSort) {
-      var sort = document.createElement('button')
+      const sort = document.createElement('button')
       sort.type = 'button'
       sort.className = 'jsoneditor-sort'
       sort.title = translate('sortTitleShort')
-      sort.onclick = function () {
+      sort.onclick = () => {
         me._showSortModal()
       }
       this.menu.appendChild(sort)
@@ -151,23 +151,23 @@ textmode.create = function (container, options) {
 
     // create transform button
     if (this.options.enableTransform) {
-      var transform = document.createElement('button')
+      const transform = document.createElement('button')
       transform.type = 'button'
       transform.title = translate('transformTitleShort')
       transform.className = 'jsoneditor-transform'
-      transform.onclick = function () {
+      transform.onclick = () => {
         me._showTransformModal()
       }
       this.menu.appendChild(transform)
     }
 
     // create repair button
-    var buttonRepair = document.createElement('button')
+    const buttonRepair = document.createElement('button')
     buttonRepair.type = 'button'
     buttonRepair.className = 'jsoneditor-repair'
     buttonRepair.title = 'Repair JSON: fix quotes and escape characters, remove comments and JSONP notation, turn JavaScript objects into JSON.'
     this.menu.appendChild(buttonRepair)
-    buttonRepair.onclick = function () {
+    buttonRepair.onclick = () => {
       try {
         me.repair()
         me._onChange()
@@ -186,12 +186,12 @@ textmode.create = function (container, options) {
     }
 
     if (this.mode === 'code') {
-      var poweredBy = document.createElement('a')
+      const poweredBy = document.createElement('a')
       poweredBy.appendChild(document.createTextNode('powered by ace'))
       poweredBy.href = 'http://ace.ajax.org'
       poweredBy.target = '_blank'
       poweredBy.className = 'jsoneditor-poweredBy'
-      poweredBy.onclick = function () {
+      poweredBy.onclick = () => {
         // TODO: this anchor falls below the margin of the content,
         // therefore the normal a.href does not work. We use a click event
         // for now, but this should be fixed.
@@ -201,8 +201,8 @@ textmode.create = function (container, options) {
     }
   }
 
-  var emptyNode = {}
-  var isReadOnly = (this.options.onEditable &&
+  const emptyNode = {}
+  const isReadOnly = (this.options.onEditable &&
   typeof (this.options.onEditable === 'function') &&
   !this.options.onEditable(emptyNode))
 
@@ -215,8 +215,8 @@ textmode.create = function (container, options) {
     this.editorDom.style.width = '100%' // TODO: move to css
     this.content.appendChild(this.editorDom)
 
-    var aceEditor = _ace.edit(this.editorDom)
-    var aceSession = aceEditor.getSession()
+    const aceEditor = _ace.edit(this.editorDom)
+    const aceSession = aceEditor.getSession()
     aceEditor.$blockScrolling = Infinity
     aceEditor.setTheme(this.theme)
     aceEditor.setOptions({ readOnly: isReadOnly })
@@ -228,7 +228,7 @@ textmode.create = function (container, options) {
     aceSession.setUseWrapMode(true)
 
     // replace ace setAnnotations with custom function that also covers jsoneditor annotations
-    var originalSetAnnotations = aceSession.setAnnotations
+    const originalSetAnnotations = aceSession.setAnnotations
     aceSession.setAnnotations = function (annotations) {
       originalSetAnnotations.call(this, annotations && annotations.length ? annotations : me.annotations)
     }
@@ -242,7 +242,7 @@ textmode.create = function (container, options) {
     aceEditor.on('changeSelection', this._onSelect.bind(this))
   } else {
     // load a plain text textarea
-    var textarea = document.createElement('textarea')
+    const textarea = document.createElement('textarea')
     textarea.className = 'jsoneditor-text'
     textarea.spellcheck = false
     this.content.appendChild(textarea)
@@ -275,8 +275,8 @@ textmode.create = function (container, options) {
     },
     onChangeHeight: function (height) {
       // TODO: change CSS to using flex box, remove setting height using JavaScript
-      var statusBarHeight = me.dom.statusBar ? me.dom.statusBar.clientHeight : 0
-      var totalHeight = height + statusBarHeight + 1
+      const statusBarHeight = me.dom.statusBar ? me.dom.statusBar.clientHeight : 0
+      const totalHeight = height + statusBarHeight + 1
       me.content.style.marginBottom = (-totalHeight) + 'px'
       me.content.style.paddingBottom = totalHeight + 'px'
     }
@@ -287,27 +287,27 @@ textmode.create = function (container, options) {
     util.addClassName(this.content, 'has-status-bar')
 
     this.curserInfoElements = {}
-    var statusBar = document.createElement('div')
+    const statusBar = document.createElement('div')
     this.dom.statusBar = statusBar
     statusBar.className = 'jsoneditor-statusbar'
     this.frame.appendChild(statusBar)
 
-    var lnLabel = document.createElement('span')
+    const lnLabel = document.createElement('span')
     lnLabel.className = 'jsoneditor-curserinfo-label'
     lnLabel.innerText = 'Ln:'
 
-    var lnVal = document.createElement('span')
+    const lnVal = document.createElement('span')
     lnVal.className = 'jsoneditor-curserinfo-val'
     lnVal.innerText = '1'
 
     statusBar.appendChild(lnLabel)
     statusBar.appendChild(lnVal)
 
-    var colLabel = document.createElement('span')
+    const colLabel = document.createElement('span')
     colLabel.className = 'jsoneditor-curserinfo-label'
     colLabel.innerText = 'Col:'
 
-    var colVal = document.createElement('span')
+    const colVal = document.createElement('span')
     colVal.className = 'jsoneditor-curserinfo-val'
     colVal.innerText = '1'
 
@@ -317,12 +317,12 @@ textmode.create = function (container, options) {
     this.curserInfoElements.colVal = colVal
     this.curserInfoElements.lnVal = lnVal
 
-    var countLabel = document.createElement('span')
+    const countLabel = document.createElement('span')
     countLabel.className = 'jsoneditor-curserinfo-label'
     countLabel.innerText = 'characters selected'
     countLabel.style.display = 'none'
 
-    var countVal = document.createElement('span')
+    const countVal = document.createElement('span')
     countVal.className = 'jsoneditor-curserinfo-count'
     countVal.innerText = '0'
     countVal.style.display = 'none'
@@ -407,11 +407,11 @@ textmode._showSortModal = function () {
  * @private
  */
 textmode._showTransformModal = function () {
-  var me = this
-  var anchor = this.options.modalAnchor || DEFAULT_MODAL_ANCHOR
-  var json = this.get()
-  showTransformModal(anchor, json, function (query) {
-    var updatedJson = jmespath.search(json, query)
+  const me = this
+  const anchor = this.options.modalAnchor || DEFAULT_MODAL_ANCHOR
+  const json = this.get()
+  showTransformModal(anchor, json, query => {
+    const updatedJson = jmespath.search(json, query)
     me.set(updatedJson)
   })
 }
@@ -432,8 +432,8 @@ textmode._onSelect = function () {
  * @private
  */
 textmode._onKeyDown = function (event) {
-  var keynum = event.which || event.keyCode
-  var handled = false
+  const keynum = event.which || event.keyCode
+  let handled = false
 
   if (keynum === 220 && event.ctrlKey) {
     if (event.shiftKey) { // Ctrl+Shift+\
@@ -469,10 +469,10 @@ textmode._onMouseDown = function () {
  * @private
  */
 textmode._onBlur = function () {
-  var me = this
+  const me = this
   // this allows to avoid blur when clicking inner elements (like the errors panel)
   // just make sure to set the isFocused to true on the inner element onclick callback
-  setTimeout(function () {
+  setTimeout(() => {
     if (!me.isFocused) {
       me._updateCursorInfo()
       me._emitSelectionChange()
@@ -485,12 +485,12 @@ textmode._onBlur = function () {
  * Update the cursor info and the status bar, if presented
  */
 textmode._updateCursorInfo = function () {
-  var me = this
-  var line, col, count
+  const me = this
+  let line, col, count
 
   if (this.textarea) {
-    setTimeout(function () { // this to verify we get the most updated textarea cursor selection
-      var selectionRange = util.getInputSelection(me.textarea)
+    setTimeout(() => { // this to verify we get the most updated textarea cursor selection
+      const selectionRange = util.getInputSelection(me.textarea)
 
       if (selectionRange.startIndex !== selectionRange.endIndex) {
         count = selectionRange.endIndex - selectionRange.startIndex
@@ -515,8 +515,8 @@ textmode._updateCursorInfo = function () {
       }
     }, 0)
   } else if (this.aceEditor && this.curserInfoElements) {
-    var curserPos = this.aceEditor.getCursorPosition()
-    var selectedText = this.aceEditor.getSelectedText()
+    const curserPos = this.aceEditor.getCursorPosition()
+    const selectedText = this.aceEditor.getSelectedText()
 
     line = curserPos.row + 1
     col = curserPos.column + 1
@@ -550,7 +550,7 @@ textmode._updateCursorInfo = function () {
  */
 textmode._emitSelectionChange = function () {
   if (this._selectionChangedHandler) {
-    var currentSelection = this.getTextSelection()
+    const currentSelection = this.getTextSelection()
     this._selectionChangedHandler(currentSelection.start, currentSelection.end, currentSelection.text)
   }
 }
@@ -563,9 +563,9 @@ textmode._emitSelectionChange = function () {
  * @private
  */
 textmode._refreshAnnotations = function () {
-  var session = this.aceEditor && this.aceEditor.getSession()
+  const session = this.aceEditor && this.aceEditor.getSession()
   if (session) {
-    var errEnnotations = session.getAnnotations().filter(function (annotation) { return annotation.type === 'error' })
+    const errEnnotations = session.getAnnotations().filter(annotation => annotation.type === 'error')
     session.setAnnotations(errEnnotations)
   }
 }
@@ -598,8 +598,8 @@ textmode.destroy = function () {
  * Compact the code in the text editor
  */
 textmode.compact = function () {
-  var json = this.get()
-  var text = JSON.stringify(json)
+  const json = this.get()
+  const text = JSON.stringify(json)
   this._setText(text, false)
 }
 
@@ -607,8 +607,8 @@ textmode.compact = function () {
  * Format the code in the text editor
  */
 textmode.format = function () {
-  var json = this.get()
-  var text = JSON.stringify(json, null, this.indentation)
+  const json = this.get()
+  const text = JSON.stringify(json, null, this.indentation)
   this._setText(text, false)
 }
 
@@ -616,8 +616,8 @@ textmode.format = function () {
  * Repair the code in the text editor
  */
 textmode.repair = function () {
-  var text = this.getText()
-  var repairedText = util.repair(text)
+  const text = this.getText()
+  const repairedText = util.repair(text)
   this._setText(repairedText, false)
 }
 
@@ -638,7 +638,7 @@ textmode.focus = function () {
  */
 textmode.resize = function () {
   if (this.aceEditor) {
-    var force = false
+    const force = false
     this.aceEditor.resize(force)
   }
 }
@@ -664,7 +664,7 @@ textmode.update = function (json) {
  * @return {*} json
  */
 textmode.get = function () {
-  var text = this.getText()
+  const text = this.getText()
 
   return util.parse(text) // this can throw an error
 }
@@ -690,7 +690,7 @@ textmode.getText = function () {
  * @private
  */
 textmode._setText = function (jsonText, clearHistory) {
-  var text
+  let text
 
   if (this.options.escapeUnicode === true) {
     text = util.escapeUnicodeChars(jsonText)
@@ -709,8 +709,8 @@ textmode._setText = function (jsonText, clearHistory) {
 
     if (clearHistory) {
       // prevent initial undo action clearing the initial contents
-      var me = this
-      setTimeout(function () {
+      const me = this
+      setTimeout(() => {
         me.aceEditor.session.getUndoManager().reset()
       }, 0)
     }
@@ -747,17 +747,17 @@ textmode.updateText = function (jsonText) {
  * Throws an exception when no JSON schema is configured
  */
 textmode.validate = function () {
-  var schemaErrors = []
-  var parseErrors = []
-  var json
+  let schemaErrors = []
+  let parseErrors = []
+  let json
   try {
     json = this.get() // this can fail when there is no valid json
 
     // execute JSON schema validation (ajv)
     if (this.validateSchema) {
-      var valid = this.validateSchema(json)
+      const valid = this.validateSchema(json)
       if (!valid) {
-        schemaErrors = this.validateSchema.errors.map(function (error) {
+        schemaErrors = this.validateSchema.errors.map(error => {
           error.type = 'validation'
           return util.improveSchemaError(error)
         })
@@ -767,24 +767,24 @@ textmode.validate = function () {
     // execute custom validation and after than merge and render all errors
     // TODO: implement a better mechanism for only using the last validation action
     this.validationSequence = (this.validationSequence || 0) + 1
-    var me = this
-    var seq = this.validationSequence
+    const me = this
+    const seq = this.validationSequence
     validateCustom(json, this.options.onValidate)
-      .then(function (customValidationErrors) {
+      .then(customValidationErrors => {
         // only apply when there was no other validation started whilst resolving async results
         if (seq === me.validationSequence) {
-          var errors = schemaErrors.concat(parseErrors).concat(customValidationErrors)
+          const errors = schemaErrors.concat(parseErrors).concat(customValidationErrors)
           me._renderErrors(errors)
         }
       })
-      .catch(function (err) {
+      .catch(err => {
         console.error('Custom validation function did throw an error', err)
       })
   } catch (err) {
     if (this.getText()) {
       // try to extract the line number from the jsonlint error message
-      var match = /\w*line\s*(\d+)\w*/g.exec(err.message)
-      var line
+      const match = /\w*line\s*(\d+)\w*/g.exec(err.message)
+      let line
       if (match) {
         line = +match[1]
       }
@@ -800,21 +800,21 @@ textmode.validate = function () {
 }
 
 textmode._renderErrors = function (errors) {
-  var jsonText = this.getText()
-  var errorPaths = []
-  errors.reduce(function (acc, curr) {
+  const jsonText = this.getText()
+  const errorPaths = []
+  errors.reduce((acc, curr) => {
     if (acc.indexOf(curr.dataPath) === -1) {
       acc.push(curr.dataPath)
     }
     return acc
   }, errorPaths)
-  var errorLocations = util.getPositionForPath(jsonText, errorPaths)
+  const errorLocations = util.getPositionForPath(jsonText, errorPaths)
 
   // render annotations in Ace Editor (if any)
   if (this.aceEditor) {
-    this.annotations = errorLocations.map(function (errLoc) {
-      var validationErrors = errors.filter(function (err) { return err.dataPath === errLoc.path })
-      var message = validationErrors.map(function (err) { return err.message }).join('\n')
+    this.annotations = errorLocations.map(errLoc => {
+      const validationErrors = errors.filter(err => err.dataPath === errLoc.path)
+      const message = validationErrors.map(err => err.message).join('\n')
       if (message) {
         return {
           row: errLoc.line,
@@ -835,7 +835,7 @@ textmode._renderErrors = function (errors) {
 
   // update the height of the ace editor
   if (this.aceEditor) {
-    var force = false
+    const force = false
     this.aceEditor.resize(force)
   }
 }
@@ -845,9 +845,9 @@ textmode._renderErrors = function (errors) {
  * @returns {{start:{row:Number, column:Number},end:{row:Number, column:Number},text:String}}
  */
 textmode.getTextSelection = function () {
-  var selection = {}
+  let selection = {}
   if (this.textarea) {
-    var selectionRange = util.getInputSelection(this.textarea)
+    const selectionRange = util.getInputSelection(this.textarea)
 
     if (this.cursorInfo && this.cursorInfo.line === selectionRange.end.row && this.cursorInfo.column === selectionRange.end.column) {
       // selection direction is bottom => up
@@ -865,10 +865,10 @@ textmode.getTextSelection = function () {
   }
 
   if (this.aceEditor) {
-    var aceSelection = this.aceEditor.getSelection()
-    var selectedText = this.aceEditor.getSelectedText()
-    var range = aceSelection.getRange()
-    var lead = aceSelection.getSelectionLead()
+    const aceSelection = this.aceEditor.getSelection()
+    const selectedText = this.aceEditor.getSelectedText()
+    const range = aceSelection.getRange()
+    const lead = aceSelection.getSelectionLead()
 
     if (lead.row === range.end.row && lead.column === range.end.column) {
       selection = range
@@ -913,8 +913,8 @@ textmode.setTextSelection = function (startPos, endPos) {
   if (!startPos || !endPos) return
 
   if (this.textarea) {
-    var startIndex = util.getIndexForPosition(this.textarea, startPos.row, startPos.column)
-    var endIndex = util.getIndexForPosition(this.textarea, endPos.row, endPos.column)
+    const startIndex = util.getIndexForPosition(this.textarea, startPos.row, startPos.column)
+    const endIndex = util.getIndexForPosition(this.textarea, endPos.row, endPos.column)
     if (startIndex > -1 && endIndex > -1) {
       if (this.textarea.setSelectionRange) {
         this.textarea.focus()
@@ -926,9 +926,9 @@ textmode.setTextSelection = function (startPos, endPos) {
         range.moveStart('character', startIndex)
         range.select()
       }
-      var rows = (this.textarea.value.match(/\n/g) || []).length + 1
-      var lineHeight = this.textarea.scrollHeight / rows
-      var selectionScrollPos = (startPos.row * lineHeight)
+      const rows = (this.textarea.value.match(/\n/g) || []).length + 1
+      const lineHeight = this.textarea.scrollHeight / rows
+      const selectionScrollPos = (startPos.row * lineHeight)
       this.textarea.scrollTop = selectionScrollPos > this.textarea.clientHeight ? (selectionScrollPos - (this.textarea.clientHeight / 2)) : 0
     }
   } else if (this.aceEditor) {

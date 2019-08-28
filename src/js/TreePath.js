@@ -1,8 +1,8 @@
 'use strict'
 
-var ContextMenu = require('./ContextMenu')
-var translate = require('./i18n').translate
-var util = require('./util')
+const ContextMenu = require('./ContextMenu')
+const translate = require('./i18n').translate
+const util = require('./util')
 
 /**
  * Creates a component that visualize path selection in tree based editors
@@ -35,14 +35,14 @@ TreePath.prototype.reset = function () {
  *
  */
 TreePath.prototype.setPath = function (pathObjs) {
-  var me = this
+  const me = this
 
   this.path.innerHTML = ''
 
   if (pathObjs && pathObjs.length) {
-    pathObjs.forEach(function (pathObj, idx) {
-      var pathEl = document.createElement('span')
-      var sepEl
+    pathObjs.forEach((pathObj, idx) => {
+      const pathEl = document.createElement('span')
+      let sepEl
       pathEl.className = 'jsoneditor-treepath-element'
       pathEl.innerText = pathObj.name
       pathEl.onclick = _onSegmentClick.bind(me, pathObj)
@@ -54,17 +54,17 @@ TreePath.prototype.setPath = function (pathObjs) {
         sepEl.className = 'jsoneditor-treepath-seperator'
         sepEl.innerHTML = '&#9658;'
 
-        sepEl.onclick = function () {
+        sepEl.onclick = () => {
           me.contentMenuClicked = true
-          var items = []
-          pathObj.children.forEach(function (child) {
+          const items = []
+          pathObj.children.forEach(child => {
             items.push({
               text: child.name,
               className: 'jsoneditor-type-modes' + (pathObjs[idx + 1] + 1 && pathObjs[idx + 1].name === child.name ? ' jsoneditor-selected' : ''),
               click: _onContextMenuItemClick.bind(me, pathObj, child.name)
             })
           })
-          var menu = new ContextMenu(items)
+          const menu = new ContextMenu(items)
           menu.show(sepEl, me.root, true)
         }
 
@@ -72,13 +72,13 @@ TreePath.prototype.setPath = function (pathObjs) {
       }
 
       if (idx === pathObjs.length - 1) {
-        var leftRectPos = (sepEl || pathEl).getBoundingClientRect().right
+        const leftRectPos = (sepEl || pathEl).getBoundingClientRect().right
         if (me.path.offsetWidth < leftRectPos) {
           me.path.scrollLeft = leftRectPos
         }
 
         if (me.path.scrollLeft) {
-          var showAllBtn = document.createElement('span')
+          const showAllBtn = document.createElement('span')
           showAllBtn.className = 'jsoneditor-treepath-show-all-btn'
           showAllBtn.title = 'show all path'
           showAllBtn.innerHTML = '...'
@@ -93,7 +93,7 @@ TreePath.prototype.setPath = function (pathObjs) {
     me.contentMenuClicked = false
     util.addClassName(me.path, 'show-all')
     me.path.style.width = me.path.parentNode.getBoundingClientRect().width - 10 + 'px'
-    me.path.onblur = function () {
+    me.path.onblur = () => {
       if (me.contentMenuClicked) {
         me.contentMenuClicked = false
         me.path.focus()

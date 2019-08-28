@@ -4,8 +4,8 @@
 
 require('./polyfills')
 
-var _locales = ['en', 'pt-BR', 'zh-CN', 'tr']
-var _defs = {
+const _locales = ['en', 'pt-BR', 'zh-CN', 'tr']
+const _defs = {
   en: {
     array: 'Array',
     auto: 'Auto',
@@ -376,14 +376,12 @@ var _defs = {
   }
 }
 
-var _defaultLang = 'en'
-var _lang
-var userLang = typeof navigator !== 'undefined'
+const _defaultLang = 'en'
+let _lang
+const userLang = typeof navigator !== 'undefined'
   ? navigator.language || navigator.userLanguage
   : undefined
-_lang = _locales.find(function (l) {
-  return l === userLang
-})
+_lang = _locales.find(l => l === userLang)
 if (!_lang) {
   _lang = _defaultLang
 }
@@ -397,9 +395,7 @@ module.exports = {
     if (!lang) {
       return
     }
-    var langFound = _locales.find(function (l) {
-      return l === lang
-    })
+    const langFound = _locales.find(l => l === lang)
     if (langFound) {
       _lang = langFound
     } else {
@@ -410,10 +406,8 @@ module.exports = {
     if (!languages) {
       return
     }
-    for (var key in languages) {
-      var langFound = _locales.find(function (l) {
-        return l === key
-      })
+    for (const key in languages) {
+      const langFound = _locales.find(l => l === key)
       if (!langFound) {
         _locales.push(key)
       }
@@ -424,7 +418,7 @@ module.exports = {
     if (!lang) {
       lang = _lang
     }
-    var text = _defs[lang][key]
+    let text = _defs[lang][key]
     if (data) {
       for (key in data) {
         text = text.replace('${' + key + '}', data[key])

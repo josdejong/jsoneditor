@@ -1,11 +1,11 @@
-var jmespath = require('jmespath')
-var picoModal = require('picomodal')
-var Selectr = require('./assets/selectr/selectr')
-var translate = require('./i18n').translate
-var stringifyPartial = require('./jsonUtils').stringifyPartial
-var util = require('./util')
-var MAX_PREVIEW_CHARACTERS = require('./constants').MAX_PREVIEW_CHARACTERS
-var debounce = util.debounce
+const jmespath = require('jmespath')
+const picoModal = require('picomodal')
+const Selectr = require('./assets/selectr/selectr')
+const translate = require('./i18n').translate
+const stringifyPartial = require('./jsonUtils').stringifyPartial
+const util = require('./util')
+const MAX_PREVIEW_CHARACTERS = require('./constants').MAX_PREVIEW_CHARACTERS
+const debounce = util.debounce
 
 /**
  * Show advanced filter and transform modal using JMESPath
@@ -16,9 +16,9 @@ var debounce = util.debounce
  *                                  query as callback
  */
 function showTransformModal (container, json, onTransform) {
-  var value = json
+  const value = json
 
-  var content = '<label class="pico-modal-contents">' +
+  const content = '<label class="pico-modal-contents">' +
       '<div class="pico-modal-header">' + translate('transform') + '</div>' +
       '<p>' +
       'Enter a <a href="http://jmespath.org" target="_blank">JMESPath</a> query to filter, sort, or transform the JSON data.<br/>' +
@@ -106,63 +106,61 @@ function showTransformModal (container, json, onTransform) {
     modalClass: 'jsoneditor-modal jsoneditor-modal-transform',
     focus: false
   })
-    .afterCreate(function (modal) {
-      var elem = modal.modalElem()
+    .afterCreate(modal => {
+      const elem = modal.modalElem()
 
-      var wizard = elem.querySelector('#wizard')
-      var ok = elem.querySelector('#ok')
-      var filterField = elem.querySelector('#filterField')
-      var filterRelation = elem.querySelector('#filterRelation')
-      var filterValue = elem.querySelector('#filterValue')
-      var sortField = elem.querySelector('#sortField')
-      var sortOrder = elem.querySelector('#sortOrder')
-      var selectFields = elem.querySelector('#selectFields')
-      var query = elem.querySelector('#query')
-      var preview = elem.querySelector('#preview')
+      const wizard = elem.querySelector('#wizard')
+      const ok = elem.querySelector('#ok')
+      const filterField = elem.querySelector('#filterField')
+      const filterRelation = elem.querySelector('#filterRelation')
+      const filterValue = elem.querySelector('#filterValue')
+      const sortField = elem.querySelector('#sortField')
+      const sortOrder = elem.querySelector('#sortOrder')
+      const selectFields = elem.querySelector('#selectFields')
+      const query = elem.querySelector('#query')
+      const preview = elem.querySelector('#preview')
 
       if (!Array.isArray(value)) {
         wizard.style.fontStyle = 'italic'
         wizard.innerHTML = '(wizard not available for objects, only for arrays)'
       }
 
-      var sortablePaths = util.getChildPaths(json)
+      const sortablePaths = util.getChildPaths(json)
 
-      sortablePaths.forEach(function (path) {
-        var formattedPath = preprocessPath(path)
-        var filterOption = document.createElement('option')
+      sortablePaths.forEach(path => {
+        const formattedPath = preprocessPath(path)
+        const filterOption = document.createElement('option')
         filterOption.text = formattedPath
         filterOption.value = formattedPath
         filterField.appendChild(filterOption)
 
-        var sortOption = document.createElement('option')
+        const sortOption = document.createElement('option')
         sortOption.text = formattedPath
         sortOption.value = formattedPath
         sortField.appendChild(sortOption)
       })
 
-      var selectablePaths = util.getChildPaths(json, true).filter(function (path) {
-        return path !== ''
-      })
+      const selectablePaths = util.getChildPaths(json, true).filter(path => path !== '')
       if (selectablePaths.length > 0) {
-        selectablePaths.forEach(function (path) {
-          var formattedPath = preprocessPath(path)
-          var option = document.createElement('option')
+        selectablePaths.forEach(path => {
+          const formattedPath = preprocessPath(path)
+          const option = document.createElement('option')
           option.text = formattedPath
           option.value = formattedPath
           selectFields.appendChild(option)
         })
       } else {
-        var selectFieldsPart = elem.querySelector('#selectFieldsPart')
+        const selectFieldsPart = elem.querySelector('#selectFieldsPart')
         if (selectFieldsPart) {
           selectFieldsPart.style.display = 'none'
         }
       }
 
-      var selectrFilterField = new Selectr(filterField, { defaultSelected: false, clearable: true, allowDeselect: true, placeholder: 'field...' })
-      var selectrFilterRelation = new Selectr(filterRelation, { defaultSelected: false, clearable: true, allowDeselect: true, placeholder: 'compare...' })
-      var selectrSortField = new Selectr(sortField, { defaultSelected: false, clearable: true, allowDeselect: true, placeholder: 'field...' })
-      var selectrSortOrder = new Selectr(sortOrder, { defaultSelected: false, clearable: true, allowDeselect: true, placeholder: 'order...' })
-      var selectrSelectFields = new Selectr(selectFields, { multiple: true, clearable: true, defaultSelected: false, placeholder: 'select fields...' })
+      const selectrFilterField = new Selectr(filterField, { defaultSelected: false, clearable: true, allowDeselect: true, placeholder: 'field...' })
+      const selectrFilterRelation = new Selectr(filterRelation, { defaultSelected: false, clearable: true, allowDeselect: true, placeholder: 'compare...' })
+      const selectrSortField = new Selectr(sortField, { defaultSelected: false, clearable: true, allowDeselect: true, placeholder: 'field...' })
+      const selectrSortOrder = new Selectr(sortOrder, { defaultSelected: false, clearable: true, allowDeselect: true, placeholder: 'order...' })
+      const selectrSelectFields = new Selectr(selectFields, { multiple: true, clearable: true, defaultSelected: false, placeholder: 'select fields...' })
 
       selectrFilterField.on('selectr.change', generateQueryFromWizard)
       selectrFilterRelation.on('selectr.change', generateQueryFromWizard)
@@ -171,7 +169,7 @@ function showTransformModal (container, json, onTransform) {
       selectrSortOrder.on('selectr.change', generateQueryFromWizard)
       selectrSelectFields.on('selectr.change', generateQueryFromWizard)
 
-      elem.querySelector('.pico-modal-contents').onclick = function (event) {
+      elem.querySelector('.pico-modal-contents').onclick = event => {
         // prevent the first clear button (in any select box) from getting
         // focus when clicking anywhere in the modal. Only allow clicking links.
         if (event.target.nodeName !== 'A') {
@@ -191,12 +189,12 @@ function showTransformModal (container, json, onTransform) {
 
       function generateQueryFromWizard () {
         if (filterField.value && filterRelation.value && filterValue.value) {
-          var field1 = filterField.value
-          var examplePath = field1 !== '@'
+          const field1 = filterField.value
+          const examplePath = field1 !== '@'
             ? ['0'].concat(util.parsePath('.' + field1))
             : ['0']
-          var exampleValue = util.get(value, examplePath)
-          var value1 = typeof exampleValue === 'string'
+          const exampleValue = util.get(value, examplePath)
+          const value1 = typeof exampleValue === 'string'
             ? filterValue.value
             : util.parseString(filterValue.value)
 
@@ -210,7 +208,7 @@ function showTransformModal (container, json, onTransform) {
         }
 
         if (sortField.value && sortOrder.value) {
-          var field2 = sortField.value
+          const field2 = sortField.value
           if (sortOrder.value === 'desc') {
             query.value += ' | reverse(sort_by(@, &' + field2 + '))'
           } else {
@@ -219,10 +217,10 @@ function showTransformModal (container, json, onTransform) {
         }
 
         if (selectFields.value) {
-          var values = []
-          for (var i = 0; i < selectFields.options.length; i++) {
+          const values = []
+          for (let i = 0; i < selectFields.options.length; i++) {
             if (selectFields.options[i].selected) {
-              var selectedValue = selectFields.options[i].value
+              const selectedValue = selectFields.options[i].value
               values.push(selectedValue)
             }
           }
@@ -235,9 +233,9 @@ function showTransformModal (container, json, onTransform) {
             query.value += '.' + values[0]
           } else if (values.length > 1) {
             query.value += '.{' +
-                  values.map(function (value) {
-                    var parts = value.split('.')
-                    var last = parts[parts.length - 1]
+                  values.map(value => {
+                    const parts = value.split('.')
+                    const last = parts[parts.length - 1]
                     return last + ': ' + value
                   }).join(', ') +
                   '}'
@@ -251,7 +249,7 @@ function showTransformModal (container, json, onTransform) {
 
       function updatePreview () {
         try {
-          var transformed = jmespath.search(value, query.value)
+          const transformed = jmespath.search(value, query.value)
 
           preview.className = 'jsoneditor-transform-preview'
           preview.value = stringifyPartial(transformed, 2, MAX_PREVIEW_CHARACTERS)
@@ -269,7 +267,7 @@ function showTransformModal (container, json, onTransform) {
       query.oninput = debouncedUpdatePreview
       debouncedUpdatePreview()
 
-      ok.onclick = function (event) {
+      ok.onclick = event => {
         event.preventDefault()
         event.stopPropagation()
 
@@ -278,14 +276,14 @@ function showTransformModal (container, json, onTransform) {
         onTransform(query.value)
       }
 
-      setTimeout(function () {
+      setTimeout(() => {
         query.select()
         query.focus()
         query.selectionStart = 3
         query.selectionEnd = 3
       })
     })
-    .afterClose(function (modal) {
+    .afterClose(modal => {
       modal.destroy()
     })
     .show()
