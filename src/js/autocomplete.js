@@ -38,8 +38,9 @@ function completely (config) {
     let ix = 0
     let oldIndex = -1
 
-    const onMouseOver = function () { this.style.outline = '1px solid #ddd' }
-    const onMouseOut = function () { this.style.outline = '0' }
+    // TODO: move this styling in JS to SCSS
+    const onMouseOver = function () { this.style.backgroundColor = '#ddd' }
+    const onMouseOut = function () { this.style.backgroundColor = '' }
     const onMouseDown = function () { p.hide(); p.onmouseselection(this.__hint, p.rs) }
 
     var p = {
