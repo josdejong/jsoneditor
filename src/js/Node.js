@@ -2817,8 +2817,10 @@ Node.prototype.onEvent = function (event) {
         this._getDomValue()
         this._clearValueError()
         this._updateDomValue()
-        if (this.value) {
-          domValue.innerHTML = this._escapeHTML(this.value)
+        const escapedValue = this._escapeHTML(this.value)
+        if (domValue.innerHTML !== escapedValue) {
+          // only update if changed, else you lose the caret position when changing tabs for example
+          domValue.innerHTML = escapedValue
         }
         break
 
@@ -2867,8 +2869,10 @@ Node.prototype.onEvent = function (event) {
       case 'blur':
         this._getDomField(true)
         this._updateDomField()
-        if (this.field) {
-          domField.innerHTML = this._escapeHTML(this.field)
+        const escapedField = this._escapeHTML(this.field)
+        if (domField.innerHTML !== escapedField) {
+          // only update if changed, else you lose the caret position when changing tabs for example
+          domField.innerHTML = escapedField
         }
         break
 

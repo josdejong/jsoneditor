@@ -6,6 +6,7 @@ https://github.com/josdejong/jsoneditor
 
 - Dropped support for bower, removed the `dist` folder from the git repository.
 - Converted the code into ES6, put Babel transpiler in place.
+- Fixed #586: caret position lost when switching browser tabs.
 
 
 ## 2019-08-28, version 6.4.1
