@@ -1,6 +1,4 @@
-import {isPromise} from './util';
-import {isValidValidationError} from './util';
-import {stringifyPath} from './util';
+import { isPromise, isValidValidationError, stringifyPath } from './util'
 
 /**
  * Execute custom validation if configured.

@@ -1,10 +1,10 @@
-import jmespath from 'jmespath';
-import picoModal from 'picomodal';
-import Selectr from './assets/selectr/selectr';
-import {translate} from './i18n';
-import {stringifyPartial} from './jsonUtils';
+import jmespath from 'jmespath'
+import picoModal from 'picomodal'
+import Selectr from './assets/selectr/selectr'
+import { translate } from './i18n'
+import { stringifyPartial } from './jsonUtils'
 import { getChildPaths, get, parsePath, parseString, debounce } from './util'
-import {MAX_PREVIEW_CHARACTERS} from './constants';
+import { MAX_PREVIEW_CHARACTERS } from './constants'
 
 /**
  * Show advanced filter and transform modal using JMESPath

@@ -1,10 +1,10 @@
 'use strict'
 
 import './polyfills'
-import naturalSort from 'javascript-natural-sort';
-import jsonlint from './assets/jsonlint/jsonlint';
-import jsonMap from 'json-source-map';
-import {translate} from './i18n';
+import naturalSort from 'javascript-natural-sort'
+import jsonlint from './assets/jsonlint/jsonlint'
+import jsonMap from 'json-source-map'
+import { translate } from './i18n'
 
 const MAX_ITEMS_FIELDS_COLLECTION = 10000
 
@@ -14,7 +14,7 @@ const MAX_ITEMS_FIELDS_COLLECTION = 10000
  * @param {String} jsonString
  * @return {JSON} json
  */
-export function parse(jsonString) {
+export function parse (jsonString) {
   try {
     return JSON.parse(jsonString)
   } catch (err) {
@@ -34,7 +34,7 @@ export function parse(jsonString) {
  * @param {string} jsString
  * @returns {string} json
  */
-export function repair(jsString) {
+export function repair (jsString) {
   // TODO: refactor this function, it's too large and complicated now
 
   // escape all single and double quotes inside strings
@@ -278,7 +278,7 @@ export function repair(jsString) {
  * @param {string} text
  * @return {string}
  */
-export function escapeUnicodeChars(
+export function escapeUnicodeChars (
   // see https://www.wikiwand.com/en/UTF-16
   text
 ) {
@@ -289,7 +289,7 @@ export function escapeUnicodeChars(
       /[\u007F-\uFFFF]/g,
       c => '\\u' + ('0000' + c.charCodeAt(0).toString(16)).slice(-4)
     )
-  );
+  )
 }
 
 /**
@@ -299,7 +299,7 @@ export function escapeUnicodeChars(
  * @param {String} jsonString   String with an (invalid) JSON object
  * @throws Error
  */
-export function validate(jsonString) {
+export function validate (jsonString) {
   if (typeof (jsonlint) !== 'undefined') {
     jsonlint.parse(jsonString)
   } else {
@@ -313,7 +313,7 @@ export function validate(jsonString) {
  * @param {Object} b
  * @return {Object} a
  */
-export function extend(a, b) {
+export function extend (a, b) {
   for (const prop in b) {
     if (hasOwnProperty(b, prop)) {
       a[prop] = b[prop]
@@ -327,7 +327,7 @@ export function extend(a, b) {
  * @param {Object} a
  * @return {Object} a
  */
-export function clear(a) {
+export function clear (a) {
   for (const prop in a) {
     if (hasOwnProperty(a, prop)) {
       delete a[prop]
@@ -341,7 +341,7 @@ export function clear(a) {
  * @param {*} object
  * @return {String} type
  */
-export function type(object) {
+export function type (object) {
   if (object === null) {
     return 'null'
   }
@@ -374,7 +374,7 @@ export function type(object) {
  */
 const isUrlRegex = /^https?:\/\/\S+$/
 
-export function isUrl(text) {
+export function isUrl (text) {
   return (typeof text === 'string' || text instanceof String) &&
       isUrlRegex.test(text)
 }
@@ -384,8 +384,8 @@ export function isUrl(text) {
  * @param {*} obj
  * @returns {boolean} returns true when obj is an array
  */
-export function isArray(obj) {
-  return Object.prototype.toString.call(obj) === '[object Array]';
+export function isArray (obj) {
+  return Object.prototype.toString.call(obj) === '[object Array]'
 }
 
 /**
@@ -394,7 +394,7 @@ export function isArray(obj) {
  * @return {Number} left    The absolute left position of this element
  *                          in the browser page.
  */
-export function getAbsoluteLeft(elem) {
+export function getAbsoluteLeft (elem) {
   const rect = elem.getBoundingClientRect()
   return rect.left + window.pageXOffset || document.scrollLeft || 0
 }
@@ -405,7 +405,7 @@ export function getAbsoluteLeft(elem) {
  * @return {Number} top     The absolute top position of this element
  *                          in the browser page.
  */
-export function getAbsoluteTop(elem) {
+export function getAbsoluteTop (elem) {
   const rect = elem.getBoundingClientRect()
   return rect.top + window.pageYOffset || document.scrollTop || 0
 }
@@ -415,7 +415,7 @@ export function getAbsoluteTop(elem) {
  * @param {Element} elem
  * @param {String} className
  */
-export function addClassName(elem, className) {
+export function addClassName (elem, className) {
   const classes = elem.className.split(' ')
   if (classes.indexOf(className) === -1) {
     classes.push(className) // add the class to the array
@@ -427,7 +427,7 @@ export function addClassName(elem, className) {
  * remove all classes from the given elements style
  * @param {Element} elem
  */
-export function removeAllClassNames(elem) {
+export function removeAllClassNames (elem) {
   elem.className = ''
 }
 
@@ -436,7 +436,7 @@ export function removeAllClassNames(elem) {
  * @param {Element} elem
  * @param {String} className
  */
-export function removeClassName(elem, className) {
+export function removeClassName (elem, className) {
   const classes = elem.className.split(' ')
   const index = classes.indexOf(className)
   if (index !== -1) {
@@ -450,7 +450,7 @@ export function removeClassName(elem, className) {
  * the formatting from the div itself is not stripped, only from its childs.
  * @param {Element} divElement
  */
-export function stripFormatting(divElement) {
+export function stripFormatting (divElement) {
   const childs = divElement.childNodes
   for (let i = 0, iMax = childs.length; i < iMax; i++) {
     const child = childs[i]
@@ -484,7 +484,7 @@ export function stripFormatting(divElement) {
  * http://stackoverflow.com/questions/1125292/how-to-move-cursor-to-end-of-contenteditable-entity
  * @param {Element} contentEditableElement   A content editable div
  */
-export function setEndOfContentEditable(contentEditableElement) {
+export function setEndOfContentEditable (contentEditableElement) {
   let range, selection
   if (document.createRange) {
     range = document.createRange()// Create a range (a range is a like the selection but invisible)
@@ -501,7 +501,7 @@ export function setEndOfContentEditable(contentEditableElement) {
  * http://stackoverflow.com/a/3806004/1262753
  * @param {Element} contentEditableElement   A content editable div
  */
-export function selectContentEditable(contentEditableElement) {
+export function selectContentEditable (contentEditableElement) {
   if (!contentEditableElement || contentEditableElement.nodeName !== 'DIV') {
     return
   }
@@ -521,7 +521,7 @@ export function selectContentEditable(contentEditableElement) {
  * http://stackoverflow.com/questions/4687808/contenteditable-selected-text-save-and-restore
  * @return {Range | TextRange | null} range
  */
-export function getSelection() {
+export function getSelection () {
   if (window.getSelection) {
     const sel = window.getSelection()
     if (sel.getRangeAt && sel.rangeCount) {
@@ -536,7 +536,7 @@ export function getSelection() {
  * http://stackoverflow.com/questions/4687808/contenteditable-selected-text-save-and-restore
  * @param {Range | TextRange | null} range
  */
-export function setSelection(range) {
+export function setSelection (range) {
   if (range) {
     if (window.getSelection) {
       const sel = window.getSelection()
@@ -555,7 +555,7 @@ export function setSelection(range) {
  *                                                   selected text element
  *                          Returns null if no text selection is found
  */
-export function getSelectionOffset() {
+export function getSelectionOffset () {
   const range = getSelection()
 
   if (range && 'startOffset' in range && 'endOffset' in range &&
@@ -577,7 +577,7 @@ export function getSelectionOffset() {
  *                              {Number} startOffset
  *                              {Number} endOffset
  */
-export function setSelectionOffset(params) {
+export function setSelectionOffset (params) {
   if (document.createRange && window.getSelection) {
     const selection = window.getSelection()
     if (selection) {
@@ -603,7 +603,7 @@ export function setSelectionOffset(params) {
  * @param {Object} [buffer]
  * @return {String} innerText
  */
-export function getInnerText(element, buffer) {
+export function getInnerText (element, buffer) {
   const first = (buffer === undefined)
   if (first) {
     buffer = {
@@ -671,7 +671,7 @@ export function getInnerText(element, buffer) {
  * @param {Element} parent
  * @return {boolean}
  */
-export function hasParentNode(elem, parent) {
+export function hasParentNode (elem, parent) {
   let e = elem ? elem.parentNode : undefined
 
   while (e) {
@@ -690,7 +690,7 @@ export function hasParentNode(elem, parent) {
  * Source: http://msdn.microsoft.com/en-us/library/ms537509(v=vs.85).aspx
  * @return {Number} Internet Explorer version, or -1 in case of an other browser
  */
-export function getInternetExplorerVersion() {
+export function getInternetExplorerVersion () {
   if (_ieVersion === -1) {
     let rv = -1 // Return value assumes failure.
     if (typeof navigator !== 'undefined' && navigator.appName === 'Microsoft Internet Explorer') {
@@ -711,7 +711,7 @@ export function getInternetExplorerVersion() {
  * Test whether the current browser is Firefox
  * @returns {boolean} isFirefox
  */
-export function isFirefox() {
+export function isFirefox () {
   return (typeof navigator !== 'undefined' && navigator.userAgent.indexOf('Firefox') !== -1)
 }
 
@@ -731,7 +731,7 @@ var _ieVersion = -1
  * @param {boolean}     [useCapture] false by default
  * @return {function}   the created event listener
  */
-export function addEventListener(element, action, listener, useCapture) {
+export function addEventListener (element, action, listener, useCapture) {
   if (element.addEventListener) {
     if (useCapture === undefined) { useCapture = false }
 
@@ -756,7 +756,7 @@ export function addEventListener(element, action, listener, useCapture) {
  * @param {function} listener  The listener function
  * @param {boolean}  [useCapture]   false by default
  */
-export function removeEventListener(element, action, listener, useCapture) {
+export function removeEventListener (element, action, listener, useCapture) {
   if (element.removeEventListener) {
     if (useCapture === undefined) { useCapture = false }
 
@@ -777,7 +777,7 @@ export function removeEventListener(element, action, listener, useCapture) {
  * @param {Element} parent
  * @return {boolean} returns true if elem is a child of the parent
  */
-export function isChildOf(elem, parent) {
+export function isChildOf (elem, parent) {
   let e = elem.parentNode
   while (e) {
     if (e === parent) {
@@ -794,7 +794,7 @@ export function isChildOf(elem, parent) {
  * @param {string} jsonPath
  * @return {Array}
  */
-export function parsePath(jsonPath) {
+export function parsePath (jsonPath) {
   const path = []
   let i = 0
 
@@ -870,7 +870,7 @@ export function parsePath(jsonPath) {
  * @param {Array.<string | number>} path
  * @returns {string}
  */
-export function stringifyPath(path) {
+export function stringifyPath (path) {
   return path
     .map(p => {
       if (typeof p === 'number') {
@@ -889,7 +889,7 @@ export function stringifyPath(path) {
  * @param {Object} error
  * @return {Object} The error
  */
-export function improveSchemaError(error) {
+export function improveSchemaError (error) {
   if (error.keyword === 'enum' && Array.isArray(error.schema)) {
     let enums = error.schema
     if (enums) {
@@ -916,8 +916,8 @@ export function improveSchemaError(error) {
  * @param {*} object
  * @returns {boolean} Returns true when object is a promise, false otherwise
  */
-export function isPromise(object) {
-  return object && typeof object.then === 'function' && typeof object.catch === 'function';
+export function isPromise (object) {
+  return object && typeof object.then === 'function' && typeof object.catch === 'function'
 }
 
 /**
@@ -925,10 +925,10 @@ export function isPromise(object) {
  * @param {*} validationError The error to be checked.
  * @returns {boolean} Returns true if the structure is ok, false otherwise
  */
-export function isValidValidationError(validationError) {
+export function isValidValidationError (validationError) {
   return typeof validationError === 'object' &&
       Array.isArray(validationError.path) &&
-      typeof validationError.message === 'string';
+      typeof validationError.message === 'string'
 }
 
 /**
@@ -937,7 +937,7 @@ export function isValidValidationError(validationError) {
  * @param {ClientRect} child
  * @param {number} margin
  */
-export function insideRect(parent, child, margin) {
+export function insideRect (parent, child, margin) {
   const _margin = margin !== undefined ? margin : 0
   return child.left - _margin >= parent.left &&
       child.right + _margin <= parent.right &&
@@ -959,7 +959,7 @@ export function insideRect(parent, child, margin) {
  *                                      of the trailing.
  * @return {function} Return the debounced function
  */
-export function debounce(func, wait, immediate) {
+export function debounce (func, wait, immediate) {
   let timeout
   return function () {
     const context = this; const args = arguments
@@ -982,7 +982,7 @@ export function debounce(func, wait, immediate) {
  * @return {{start: number, end: number}} Returns the start and end
  *                                        of the changed part in newText.
  */
-export function textDiff(oldText, newText) {
+export function textDiff (oldText, newText) {
   const len = newText.length
   let start = 0
   let oldEnd = oldText.length
@@ -1009,7 +1009,7 @@ export function textDiff(oldText, newText) {
  * @param {DOMElement} el A dom element of a textarea or input text.
  * @return {Object} reference Object with 2 properties (start and end) with the identifier of the location of the cursor and selected text.
  **/
-export function getInputSelection(el) {
+export function getInputSelection (el) {
   let startIndex = 0; let endIndex = 0; let normalizedValue; let range; let textInputRange; let len; let endRange
 
   if (typeof el.selectionStart === 'number' && typeof el.selectionEnd === 'number') {
@@ -1079,7 +1079,7 @@ export function getInputSelection(el) {
  * @param {Number} column column value, > 0, if exceeds column length - end of column will be returned
  * @returns {Number} index of position in text, -1 if not found
  */
-export function getIndexForPosition(el, row, column) {
+export function getIndexForPosition (el, row, column) {
   const text = el.value || ''
   if (row > 0 && column > 0) {
     const rows = text.split('\n', row)
@@ -1097,7 +1097,7 @@ export function getIndexForPosition(el, row, column) {
  * @param {Array<String>} paths array of json paths
  * @returns {Array<{path: String, line: Number, row: Number}>}
  */
-export function getPositionForPath(text, paths) {
+export function getPositionForPath (text, paths) {
   const me = this
   const result = []
   let jsmap
@@ -1133,13 +1133,13 @@ export function getPositionForPath(text, paths) {
  * @param {Array.<string | number>} path
  * @return {string}
  */
-export function compileJSONPointer(path) {
+export function compileJSONPointer (path) {
   return path
     .map(p => ('/' + String(p)
       .replace(/~/g, '~0')
       .replace(/\//g, '~1')
     ))
-    .join('');
+    .join('')
 }
 
 /**
@@ -1150,7 +1150,7 @@ export function compileJSONPointer(path) {
  *                   color, and returns null otherwise. Example output:
  *                   'rgba(255,0,0,0.7)' or 'rgb(255,0,0)'
  */
-export function getColorCSS(color) {
+export function getColorCSS (color) {
   const ele = document.createElement('div')
   ele.style.color = color
   return ele.style.color.split(/\s+/).join('').toLowerCase() || null
@@ -1161,8 +1161,8 @@ export function getColorCSS(color) {
  * @param {string} color
  * @returns {boolean} returns true if a valid color, false otherwise
  */
-export function isValidColor(color) {
-  return !!getColorCSS(color);
+export function isValidColor (color) {
+  return !!getColorCSS(color)
 }
 
 /**
@@ -1171,7 +1171,7 @@ export function isValidColor(color) {
  * @param {string} [locale] Locale code (for example, zh-CN)
  * @returns {string} Field tooltip, may be empty string if all relevant schema properties are missing
  */
-export function makeFieldTooltip(schema, locale) {
+export function makeFieldTooltip (schema, locale) {
   if (!schema) {
     return ''
   }
@@ -1219,7 +1219,7 @@ export function makeFieldTooltip(schema, locale) {
  * @param {string[]} path
  * @return {*}
  */
-export function get(object, path) {
+export function get (object, path) {
   let value = object
 
   for (let i = 0; i < path.length && value !== undefined && value !== null; i++) {
@@ -1235,7 +1235,7 @@ export function get(object, path) {
  * @param {string} name
  * @param {Array} existingPropNames    Array with existing prop names
  */
-export function findUniqueName(name, existingPropNames) {
+export function findUniqueName (name, existingPropNames) {
   const strippedName = name.replace(/ \(copy( \d+)?\)$/, '')
   let validName = strippedName
   let i = 1
@@ -1255,7 +1255,7 @@ export function findUniqueName(name, existingPropNames) {
  * @param {boolean} [includeObjects=false] If true, object and array paths are returned as well
  * @return {string[]}
  */
-export function getChildPaths(json, includeObjects) {
+export function getChildPaths (json, includeObjects) {
   const pathsMap = {}
 
   function getObjectChildPaths (json, pathsMap, rootPath, includeObjects) {
@@ -1291,7 +1291,7 @@ export function getChildPaths(json, includeObjects) {
  * @param {String} [path] JSON pointer
  * @param {'asc' | 'desc'} [direction]
  */
-export function sort(array, path, direction) {
+export function sort (array, path, direction) {
   const parsedPath = path && path !== '.' ? parsePath(path) : []
   const sign = direction === 'desc' ? -1 : 1
 
@@ -1311,7 +1311,7 @@ export function sort(array, path, direction) {
  * @param {Object} object
  * @param {'asc' | 'desc'} [direction]
  */
-export function sortObjectKeys(object, direction) {
+export function sortObjectKeys (object, direction) {
   const sign = (direction === 'desc') ? -1 : 1
   const sortedFields = Object.keys(object).sort((a, b) => sign * naturalSort(a, b))
 
@@ -1330,7 +1330,7 @@ export function sortObjectKeys(object, direction) {
  * @return {*} castedStr
  * @private
  */
-export function parseString(str) {
+export function parseString (str) {
   const lower = str.toLowerCase()
   const num = Number(str) // will nicely fail with '123ab'
   const numFloat = parseFloat(str) // will nicely fail with '  '
@@ -1356,7 +1356,7 @@ export function parseString(str) {
  * @param {number} size
  * @return {string} Returns a human readable size
  */
-export function formatSize(size) {
+export function formatSize (size) {
   if (size < 900) {
     return size.toFixed() + ' B'
   }
@@ -1387,7 +1387,7 @@ export function formatSize(size) {
  * @return {string} Returns the limited text,
  *                  ending with '...' if the max was exceeded
  */
-export function limitCharacters(text, maxCharacterCount) {
+export function limitCharacters (text, maxCharacterCount) {
   if (text.length <= maxCharacterCount) {
     return text
   }
@@ -1400,8 +1400,8 @@ export function limitCharacters(text, maxCharacterCount) {
  * @param {*} value
  * @return {boolean}
  */
-export function isObject(value) {
-  return typeof value === 'object' && value !== null && !Array.isArray(value);
+export function isObject (value) {
+  return typeof value === 'object' && value !== null && !Array.isArray(value)
 }
 
 /**
@@ -1410,8 +1410,8 @@ export function isObject(value) {
  * @param {*} item
  * @return {boolean} Returns true if `item` is in `array`, returns false otherwise.
  */
-export function contains(array, item) {
-  return array.indexOf(item) !== -1;
+export function contains (array, item) {
+  return array.indexOf(item) !== -1
 }
 
 function hasOwnProperty (object, key) {

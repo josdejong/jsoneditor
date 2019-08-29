@@ -424,4 +424,4 @@ ContextMenu.prototype._onKeyDown = function (event) {
   }
 }
 
-export default ContextMenu;
+export default ContextMenu

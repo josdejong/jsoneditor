@@ -1,5 +1,5 @@
-import picoModal from 'picomodal';
-import {translate} from './i18n';
+import picoModal from 'picomodal'
+import { translate } from './i18n'
 import { contains, getChildPaths } from './util'
 
 /**

@@ -1,6 +1,6 @@
 'use strict'
 
-import {translate} from './i18n';
+import { translate } from './i18n'
 
 /**
  * A factory function to create an ShowMoreNode, which depends on a Node

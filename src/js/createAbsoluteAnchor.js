@@ -8,7 +8,7 @@ import { isChildOf, removeEventListener, addEventListener } from './util'
  * @param [onDestroy(function(anchor)]  Callback when the anchor is destroyed
  * @returns {HTMLElement}
  */
-export function createAbsoluteAnchor(anchor, parent, onDestroy) {
+export function createAbsoluteAnchor (anchor, parent, onDestroy) {
   const root = getRootNode(anchor)
   const eventListeners = {}
 
