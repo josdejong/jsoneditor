@@ -1,19 +1,15 @@
 'use strict'
 
-let Ajv
-try {
-  Ajv = require('ajv')
-} catch (err) {
-  // no problem... when we need Ajv we will throw a neat exception
-}
-
 const ace = require('./ace') // may be undefined in case of minimalist bundle
 const VanillaPicker = require('./vanilla-picker') // may be undefined in case of minimalist bundle
 
-const treemode = require('./treemode')
-const textmode = require('./textmode')
-const previewmode = require('./previewmode')
+const treeModeMixins = require('./treemode').treeModeMixins
+const textModeMixins = require('./textmode').textModeMixins
+const previewModeMixins = require('./previewmode').previewModeMixins
 const util = require('./util')
+const { tryRequireAjv } = require('./tryRequireAjv')
+
+const Ajv = tryRequireAjv()
 
 if (typeof Promise === 'undefined') {
   console.error('Promise undefined. Please load a Promise polyfill in the browser in order to use JSONEditor')
@@ -464,9 +460,9 @@ JSONEditor.registerMode = mode => {
 }
 
 // register tree, text, and preview modes
-JSONEditor.registerMode(treemode)
-JSONEditor.registerMode(textmode)
-JSONEditor.registerMode(previewmode)
+JSONEditor.registerMode(treeModeMixins)
+JSONEditor.registerMode(textModeMixins)
+JSONEditor.registerMode(previewModeMixins)
 
 // expose some of the libraries that can be used customized
 JSONEditor.ace = ace

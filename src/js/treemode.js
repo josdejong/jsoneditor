@@ -1,18 +1,32 @@
 'use strict'
 
-const VanillaPicker = require('./vanilla-picker')
-const Highlighter = require('./Highlighter').Highlighter
-const NodeHistory = require('./NodeHistory').NodeHistory
-const SearchBox = require('./SearchBox').SearchBox
-const ContextMenu = require('./ContextMenu').ContextMenu
-const TreePath = require('./TreePath').TreePath
-const Node = require('./Node')
-const ModeSwitcher = require('./ModeSwitcher')
-const util = require('./util')
-const autocomplete = require('./autocomplete').autocomplete
-const translate = require('./i18n').translate
-const setLanguages = require('./i18n').setLanguages
-const setLanguage = require('./i18n').setLanguage
+import VanillaPicker from './vanilla-picker'
+import { Highlighter } from './Highlighter'
+import { NodeHistory } from './NodeHistory'
+import { SearchBox } from './SearchBox'
+import { ContextMenu } from './ContextMenu'
+import { TreePath } from './TreePath'
+import Node from './Node'
+import ModeSwitcher from './ModeSwitcher'
+import {
+  addClassName,
+  addEventListener,
+  debounce,
+  getAbsoluteTop,
+  getSelectionOffset,
+  hasParentNode,
+  improveSchemaError,
+  isPromise,
+  isValidValidationError,
+  parse,
+  removeClassName,
+  removeEventListener,
+  repair,
+  selectContentEditable,
+  setSelectionOffset
+} from './util'
+import { autocomplete } from './autocomplete'
+import { setLanguage, setLanguages, translate } from './i18n'
 
 // create a mixin with the functions for tree mode
 const treemode = {}
@@ -144,7 +158,7 @@ treemode._setOptions = function (options) {
   this.setSchema(this.options.schema, this.options.schemaRefs)
 
   // create a debounced validate function
-  this._debouncedValidate = util.debounce(this.validate.bind(this), this.DEBOUNCE_INTERVAL)
+  this._debouncedValidate = debounce(this.validate.bind(this), this.DEBOUNCE_INTERVAL)
 
   if (options.onSelectionChange) {
     this.onSelectionChange(options.onSelectionChange)
@@ -268,13 +282,13 @@ treemode.getText = function () {
  */
 treemode.setText = function (jsonText) {
   try {
-    this.set(util.parse(jsonText)) // this can throw an error
+    this.set(parse(jsonText)) // this can throw an error
   } catch (err) {
     // try to repair json, replace JavaScript notation with JSON notation
-    const repairedJsonText = util.repair(jsonText)
+    const repairedJsonText = repair(jsonText)
 
     // try to parse again
-    this.set(util.parse(repairedJsonText)) // this can throw an error
+    this.set(parse(repairedJsonText)) // this can throw an error
   }
 }
 
@@ -285,13 +299,13 @@ treemode.setText = function (jsonText) {
  */
 treemode.updateText = function (jsonText) {
   try {
-    this.update(util.parse(jsonText)) // this can throw an error
+    this.update(parse(jsonText)) // this can throw an error
   } catch (err) {
     // try to repair json, replace JavaScript notation with JSON notation
-    const repairJsonText = util.repair(jsonText)
+    const repairJsonText = repair(jsonText)
 
     // try to parse again
-    this.update(util.parse(repairJsonText)) // this can throw an error
+    this.update(parse(repairJsonText)) // this can throw an error
   }
 }
 
@@ -531,7 +545,7 @@ treemode.validate = function () {
     if (!valid) {
       // apply all new errors
       schemaErrors = this.validateSchema.errors
-        .map(error => util.improveSchemaError(error))
+        .map(error => improveSchemaError(error))
         .map(function findNode (error) {
           return {
             node: root.findNode(error.dataPath),
@@ -610,7 +624,7 @@ treemode._validateCustom = function (json) {
       const root = this.node
       const customValidateResults = this.options.onValidate(json)
 
-      const resultPromise = util.isPromise(customValidateResults)
+      const resultPromise = isPromise(customValidateResults)
         ? customValidateResults
         : Promise.resolve(customValidateResults)
 
@@ -618,7 +632,7 @@ treemode._validateCustom = function (json) {
         if (Array.isArray(customValidationPathErrors)) {
           return customValidationPathErrors
             .filter(error => {
-              const valid = util.isValidValidationError(error)
+              const valid = isValidValidationError(error)
 
               if (!valid) {
                 console.warn('Ignoring a custom validation error with invalid structure. ' +
@@ -674,7 +688,7 @@ treemode.refresh = function () {
 treemode.startAutoScroll = function (mouseY) {
   const me = this
   const content = this.scrollableContent
-  const top = util.getAbsoluteTop(content)
+  const top = getAbsoluteTop(content)
   const height = content.clientHeight
   const bottom = top + height
   const margin = 24
@@ -752,7 +766,7 @@ treemode.setDomSelection = function (selection) {
       : null
     if (selection.range && container) {
       const range = Object.assign({}, selection.range, { container: container })
-      util.setSelectionOffset(range)
+      setSelectionOffset(range)
     } else if (node) { // just a fallback
       node.focus()
     }
@@ -778,7 +792,7 @@ treemode.getDomSelection = function () {
     ? Object.keys(node.dom).find(domName => node.dom[domName] === focusTarget)
     : null
 
-  let range = util.getSelectionOffset()
+  let range = getSelectionOffset()
   if (range && range.container.nodeName !== 'DIV') { // filter on (editable) divs)
     range = null
   }
@@ -903,13 +917,13 @@ treemode._createFrame = function () {
   // Note: focus and blur events do not propagate, therefore they defined
   // using an eventListener with useCapture=true
   // see http://www.quirksmode.org/blog/archives/2008/04/delegating_the.html
-  util.addEventListener(this.frame, 'focus', onEvent, true)
-  util.addEventListener(this.frame, 'blur', onEvent, true)
+  addEventListener(this.frame, 'focus', onEvent, true)
+  addEventListener(this.frame, 'blur', onEvent, true)
   this.frame.onfocusin = onEvent // for IE
   this.frame.onfocusout = onEvent // for IE
 
   if (this.options.mainMenuBar) {
-    util.addClassName(this.contentOuter, 'has-main-menu-bar')
+    addClassName(this.contentOuter, 'has-main-menu-bar')
 
     // create menu
     this.menu = document.createElement('div')
@@ -1108,7 +1122,7 @@ treemode._onEvent = function (event) {
     }
   } else {
     // filter mouse events in the contents part of the editor (not the main menu)
-    if (event.type === 'mousedown' && util.hasParentNode(event.target, this.content)) {
+    if (event.type === 'mousedown' && hasParentNode(event.target, this.content)) {
       this.deselect()
 
       if (node && event.target === node.dom.drag) {
@@ -1133,7 +1147,7 @@ treemode._onEvent = function (event) {
  */
 treemode._updateTreePath = function (pathNodes) {
   if (pathNodes && pathNodes.length) {
-    util.removeClassName(this.navBar, 'nav-bar-empty')
+    removeClassName(this.navBar, 'nav-bar-empty')
 
     const pathObjs = []
     pathNodes.forEach(node => {
@@ -1154,7 +1168,7 @@ treemode._updateTreePath = function (pathNodes) {
     })
     this.treePath.setPath(pathObjs)
   } else {
-    util.addClassName(this.navBar, 'nav-bar-empty')
+    addClassName(this.navBar, 'nav-bar-empty')
   }
 
   function getName (node) {
@@ -1245,12 +1259,12 @@ treemode._onMultiSelectStart = function (event) {
 
   const editor = this
   if (!this.mousemove) {
-    this.mousemove = util.addEventListener(window, 'mousemove', event => {
+    this.mousemove = addEventListener(window, 'mousemove', event => {
       editor._onMultiSelect(event)
     })
   }
   if (!this.mouseup) {
-    this.mouseup = util.addEventListener(window, 'mouseup', event => {
+    this.mouseup = addEventListener(window, 'mouseup', event => {
       editor._onMultiSelectEnd(event)
     })
   }
@@ -1316,11 +1330,11 @@ treemode._onMultiSelectEnd = function () {
 
   // cleanup global event listeners
   if (this.mousemove) {
-    util.removeEventListener(window, 'mousemove', this.mousemove)
+    removeEventListener(window, 'mousemove', this.mousemove)
     delete this.mousemove
   }
   if (this.mouseup) {
-    util.removeEventListener(window, 'mouseup', this.mouseup)
+    removeEventListener(window, 'mouseup', this.mouseup)
     delete this.mouseup
   }
 }
@@ -1480,7 +1494,7 @@ treemode._onKeyDown = function (event) {
     const me = this
     setTimeout(() => {
       // select all text when moving focus to an editable div
-      util.selectContentEditable(me.focusTarget)
+      selectContentEditable(me.focusTarget)
     }, 0)
   }
 
@@ -1535,7 +1549,7 @@ treemode._onKeyDown = function (event) {
  */
 treemode._createTable = function () {
   if (this.options.navigationBar) {
-    util.addClassName(this.contentOuter, 'has-nav-bar')
+    addClassName(this.contentOuter, 'has-nav-bar')
   }
 
   this.scrollableContent = document.createElement('div')
@@ -1655,7 +1669,7 @@ treemode.getSelection = function () {
  */
 treemode.onSelectionChange = function (callback) {
   if (typeof callback === 'function') {
-    this._selectionChangedHandler = util.debounce(callback, this.DEBOUNCE_INTERVAL)
+    this._selectionChangedHandler = debounce(callback, this.DEBOUNCE_INTERVAL)
   }
 }
 
@@ -1739,7 +1753,7 @@ treemode.getNodesByRange = function (start, end) {
 }
 
 // define modes
-module.exports = [
+export const treeModeMixins = [
   {
     mode: 'tree',
     mixin: treemode,

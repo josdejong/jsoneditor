@@ -1,18 +1,29 @@
 'use strict'
 
-const jmespath = require('jmespath')
-const translate = require('./i18n').translate
-const ModeSwitcher = require('./ModeSwitcher')
-const ErrorTable = require('./ErrorTable')
-const textmode = require('./textmode')[0].mixin
-const showSortModal = require('./showSortModal').showSortModal
-const showTransformModal = require('./showTransformModal').showTransformModal
-const MAX_PREVIEW_CHARACTERS = require('./constants').MAX_PREVIEW_CHARACTERS
-const DEFAULT_MODAL_ANCHOR = require('./constants').DEFAULT_MODAL_ANCHOR
-const SIZE_LARGE = require('./constants').SIZE_LARGE
-const PREVIEW_HISTORY_LIMIT = require('./constants').PREVIEW_HISTORY_LIMIT
-const util = require('./util')
-const History = require('./History').History
+import jmespath from 'jmespath'
+import { translate } from './i18n'
+import ModeSwitcher from './ModeSwitcher'
+import { ErrorTable } from './ErrorTable'
+import { showSortModal } from './showSortModal'
+import { showTransformModal } from './showTransformModal'
+import { textModeMixins } from './textmode'
+import { DEFAULT_MODAL_ANCHOR, MAX_PREVIEW_CHARACTERS, PREVIEW_HISTORY_LIMIT, SIZE_LARGE } from './constants'
+import {
+  addClassName,
+  debounce,
+  escapeUnicodeChars,
+  formatSize,
+  isObject,
+  limitCharacters,
+  parse,
+  removeClassName,
+  repair,
+  sort,
+  sortObjectKeys
+} from './util'
+import { History } from './History'
+
+const textmode = textModeMixins[0].mixin
 
 // create a mixin with the functions for text mode
 const previewmode = {}
@@ -55,7 +66,7 @@ previewmode.create = function (container, options = {}) {
   // TODO: JSON Schema support
 
   // create a debounced validate function
-  this._debouncedValidate = util.debounce(this.validate.bind(this), this.DEBOUNCE_INTERVAL)
+  this._debouncedValidate = debounce(this.validate.bind(this), this.DEBOUNCE_INTERVAL)
 
   this.width = container.clientWidth
   this.height = container.clientHeight
@@ -84,7 +95,7 @@ previewmode.create = function (container, options = {}) {
   this.content.appendChild(this.dom.previewContent)
 
   if (this.options.mainMenuBar) {
-    util.addClassName(this.content, 'has-main-menu-bar')
+    addClassName(this.content, 'has-main-menu-bar')
 
     // create menu
     this.menu = document.createElement('div')
@@ -240,7 +251,7 @@ previewmode.create = function (container, options = {}) {
   this.container.appendChild(this.frame)
 
   if (options.statusBar) {
-    util.addClassName(this.content, 'has-status-bar')
+    addClassName(this.content, 'has-status-bar')
 
     const statusBar = document.createElement('div')
     this.dom.statusBar = statusBar
@@ -270,10 +281,10 @@ previewmode.create = function (container, options = {}) {
 previewmode._renderPreview = function () {
   const text = this.getText()
 
-  this.dom.previewText.nodeValue = util.limitCharacters(text, MAX_PREVIEW_CHARACTERS)
+  this.dom.previewText.nodeValue = limitCharacters(text, MAX_PREVIEW_CHARACTERS)
 
   if (this.dom.fileSizeInfo) {
-    this.dom.fileSizeInfo.innerText = 'Size: ' + util.formatSize(text.length)
+    this.dom.fileSizeInfo.innerText = 'Size: ' + formatSize(text.length)
   }
 
   if (this.dom.arrayInfo) {
@@ -332,14 +343,14 @@ previewmode._showSortModal = function () {
 
   function onSort (json, sortedBy) {
     if (Array.isArray(json)) {
-      const sortedArray = util.sort(json, sortedBy.path, sortedBy.direction)
+      const sortedArray = sort(json, sortedBy.path, sortedBy.direction)
 
       me.sortedBy = sortedBy
       me._setAndFireOnChange(sortedArray)
     }
 
-    if (util.isObject(json)) {
-      const sortedObject = util.sortObjectKeys(json, sortedBy.direction)
+    if (isObject(json)) {
+      const sortedObject = sortObjectKeys(json, sortedBy.direction)
 
       me.sortedBy = sortedBy
       me._setAndFireOnChange(sortedObject)
@@ -426,7 +437,7 @@ previewmode.format = function () {
  */
 previewmode.repair = function () {
   const text = this.getText()
-  const repairedText = util.repair(text)
+  const repairedText = repair(text)
 
   this._setTextAndFireOnChange(repairedText)
 }
@@ -489,7 +500,7 @@ previewmode.get = function () {
   if (this.json === undefined) {
     const text = this.getText()
 
-    this.json = util.parse(text) // this can throw an error
+    this.json = parse(text) // this can throw an error
   }
 
   return this.json
@@ -504,7 +515,7 @@ previewmode.getText = function () {
     this.text = JSON.stringify(this.json, null, this.indentation)
 
     if (this.options.escapeUnicode === true) {
-      this.text = util.escapeUnicodeChars(this.text)
+      this.text = escapeUnicodeChars(this.text)
     }
   }
 
@@ -544,7 +555,7 @@ previewmode.updateText = function (jsonText) {
  */
 previewmode._setText = function (jsonText, json) {
   if (this.options.escapeUnicode === true) {
-    this.text = util.escapeUnicodeChars(jsonText)
+    this.text = escapeUnicodeChars(jsonText)
   } else {
     this.text = jsonText
   }
@@ -624,12 +635,12 @@ previewmode.executeWithBusyMessage = function (fn, message) {
 
   if (size > SIZE_LARGE) {
     const me = this
-    util.addClassName(me.frame, 'busy')
+    addClassName(me.frame, 'busy')
     me.dom.busyContent.innerText = message
 
     setTimeout(() => {
       fn()
-      util.removeClassName(me.frame, 'busy')
+      removeClassName(me.frame, 'busy')
       me.dom.busyContent.innerText = ''
     }, 100)
   } else {
@@ -642,7 +653,7 @@ previewmode.validate = textmode.validate
 previewmode._renderErrors = textmode._renderErrors
 
 // define modes
-module.exports = [
+export const previewModeMixins = [
   {
     mode: 'preview',
     mixin: previewmode,

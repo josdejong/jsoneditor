@@ -1,15 +1,29 @@
 'use strict'
 
-const ace = require('./ace')
-const jmespath = require('jmespath')
-const translate = require('./i18n').translate
-const ModeSwitcher = require('./ModeSwitcher')
-const ErrorTable = require('./ErrorTable').ErrorTable
-const validateCustom = require('./validationUtils').validateCustom
-const showSortModal = require('./showSortModal').showSortModal
-const showTransformModal = require('./showTransformModal').showTransformModal
-const util = require('./util')
-const DEFAULT_MODAL_ANCHOR = require('./constants').DEFAULT_MODAL_ANCHOR
+import ace from './ace'
+import jmespath from 'jmespath'
+import { translate } from './i18n'
+import ModeSwitcher from './ModeSwitcher'
+import { ErrorTable } from './ErrorTable'
+import { validateCustom } from './validationUtils'
+import { showSortModal } from './showSortModal'
+import { showTransformModal } from './showTransformModal'
+import {
+  addClassName,
+  debounce,
+  escapeUnicodeChars,
+  getIndexForPosition,
+  getInputSelection,
+  getPositionForPath,
+  improveSchemaError,
+  isObject,
+  parse,
+  repair,
+  sort,
+  sortObjectKeys
+} from './util'
+import { DEFAULT_MODAL_ANCHOR } from './constants'
+import { tryRequireThemeJsonEditor } from './tryRequireThemeJsonEditor'
 
 // create a mixin with the functions for text mode
 const textmode = {}
@@ -22,10 +36,7 @@ const DEFAULT_THEME = 'ace/theme/jsoneditor'
  * @param {Object} [options]   Object with options. See docs for details.
  * @private
  */
-textmode.create = function (container, options) {
-  // read options
-  options = options || {}
-
+textmode.create = function (container, options = {}) {
   if (typeof options.statusBar === 'undefined') {
     options.statusBar = true
   }
@@ -61,11 +72,7 @@ textmode.create = function (container, options) {
   // determine theme
   this.theme = options.theme || DEFAULT_THEME
   if (this.theme === DEFAULT_THEME && _ace) {
-    try {
-      require('./ace/theme-jsoneditor')
-    } catch (err) {
-      console.error(err)
-    }
+    tryRequireThemeJsonEditor()
   }
 
   if (options.onTextSelectionChange) {
@@ -81,7 +88,7 @@ textmode.create = function (container, options) {
   this.annotations = []
 
   // create a debounced validate function
-  this._debouncedValidate = util.debounce(this.validate.bind(this), this.DEBOUNCE_INTERVAL)
+  this._debouncedValidate = debounce(this.validate.bind(this), this.DEBOUNCE_INTERVAL)
 
   this.width = container.clientWidth
   this.height = container.clientHeight
@@ -100,7 +107,7 @@ textmode.create = function (container, options) {
   this.content.className = 'jsoneditor-outer'
 
   if (this.options.mainMenuBar) {
-    util.addClassName(this.content, 'has-main-menu-bar')
+    addClassName(this.content, 'has-main-menu-bar')
 
     // create menu
     this.menu = document.createElement('div')
@@ -284,7 +291,7 @@ textmode.create = function (container, options) {
   this.frame.appendChild(this.errorTable.getErrorTable())
 
   if (options.statusBar) {
-    util.addClassName(this.content, 'has-status-bar')
+    addClassName(this.content, 'has-status-bar')
 
     this.curserInfoElements = {}
     const statusBar = document.createElement('div')
@@ -385,14 +392,14 @@ textmode._showSortModal = function () {
 
   function onSort (sortedBy) {
     if (Array.isArray(json)) {
-      const sortedJson = util.sort(json, sortedBy.path, sortedBy.direction)
+      const sortedJson = sort(json, sortedBy.path, sortedBy.direction)
 
       me.sortedBy = sortedBy
       me.set(sortedJson)
     }
 
-    if (util.isObject(json)) {
-      const sortedJson = util.sortObjectKeys(json, sortedBy.direction)
+    if (isObject(json)) {
+      const sortedJson = sortObjectKeys(json, sortedBy.direction)
 
       me.sortedBy = sortedBy
       me.set(sortedJson)
@@ -490,7 +497,7 @@ textmode._updateCursorInfo = function () {
 
   if (this.textarea) {
     setTimeout(() => { // this to verify we get the most updated textarea cursor selection
-      const selectionRange = util.getInputSelection(me.textarea)
+      const selectionRange = getInputSelection(me.textarea)
 
       if (selectionRange.startIndex !== selectionRange.endIndex) {
         count = selectionRange.endIndex - selectionRange.startIndex
@@ -617,7 +624,7 @@ textmode.format = function () {
  */
 textmode.repair = function () {
   const text = this.getText()
-  const repairedText = util.repair(text)
+  const repairedText = repair(text)
   this._setText(repairedText, false)
 }
 
@@ -666,7 +673,7 @@ textmode.update = function (json) {
 textmode.get = function () {
   const text = this.getText()
 
-  return util.parse(text) // this can throw an error
+  return parse(text) // this can throw an error
 }
 
 /**
@@ -693,7 +700,7 @@ textmode._setText = function (jsonText, clearHistory) {
   let text
 
   if (this.options.escapeUnicode === true) {
-    text = util.escapeUnicodeChars(jsonText)
+    text = escapeUnicodeChars(jsonText)
   } else {
     text = jsonText
   }
@@ -759,7 +766,7 @@ textmode.validate = function () {
       if (!valid) {
         schemaErrors = this.validateSchema.errors.map(error => {
           error.type = 'validation'
-          return util.improveSchemaError(error)
+          return improveSchemaError(error)
         })
       }
     }
@@ -808,7 +815,7 @@ textmode._renderErrors = function (errors) {
     }
     return acc
   }, errorPaths)
-  const errorLocations = util.getPositionForPath(jsonText, errorPaths)
+  const errorLocations = getPositionForPath(jsonText, errorPaths)
 
   // render annotations in Ace Editor (if any)
   if (this.aceEditor) {
@@ -847,7 +854,7 @@ textmode._renderErrors = function (errors) {
 textmode.getTextSelection = function () {
   let selection = {}
   if (this.textarea) {
-    const selectionRange = util.getInputSelection(this.textarea)
+    const selectionRange = getInputSelection(this.textarea)
 
     if (this.cursorInfo && this.cursorInfo.line === selectionRange.end.row && this.cursorInfo.column === selectionRange.end.column) {
       // selection direction is bottom => up
@@ -900,7 +907,7 @@ textmode.getTextSelection = function () {
  */
 textmode.onTextSelectionChange = function (callback) {
   if (typeof callback === 'function') {
-    this._selectionChangedHandler = util.debounce(callback, this.DEBOUNCE_INTERVAL)
+    this._selectionChangedHandler = debounce(callback, this.DEBOUNCE_INTERVAL)
   }
 }
 
@@ -913,8 +920,8 @@ textmode.setTextSelection = function (startPos, endPos) {
   if (!startPos || !endPos) return
 
   if (this.textarea) {
-    const startIndex = util.getIndexForPosition(this.textarea, startPos.row, startPos.column)
-    const endIndex = util.getIndexForPosition(this.textarea, endPos.row, endPos.column)
+    const startIndex = getIndexForPosition(this.textarea, startPos.row, startPos.column)
+    const endIndex = getIndexForPosition(this.textarea, endPos.row, endPos.column)
     if (startIndex > -1 && endIndex > -1) {
       if (this.textarea.setSelectionRange) {
         this.textarea.focus()
@@ -956,7 +963,7 @@ function load () {
 }
 
 // define modes
-module.exports = [
+export const textModeMixins = [
   {
     mode: 'text',
     mixin: textmode,
