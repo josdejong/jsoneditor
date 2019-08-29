@@ -7,7 +7,6 @@
   <script src="../dist/jsoneditor.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.4/lodash.min.js"></script>
 
-
   <style type="text/css">
     #jsoneditor {
       width: 500px;
@@ -30,39 +29,39 @@
 
 <script>
   // create the editor
-  var container = document.getElementById('jsoneditor');
-  var options = {
+  const container = document.getElementById('jsoneditor')
+  const options = {
     autocomplete: {
       applyTo:['value'],
       filter: 'contain',
       trigger: 'focus',
       getOptions: function (text, path, input, editor) {
         return new Promise(function (resolve, reject) {
-          var options = extractUniqueWords(editor.get());
-          if (options.length > 0) resolve(options); else reject();
-        });
+          const options = extractUniqueWords(editor.get())
+          if (options.length > 0) resolve(options) else reject()
+        })
       }
     }
-  };
+  }
 
   // helper function to extract all unique words in the keys and values of a JSON object
   function extractUniqueWords (json) {
     return _.uniq(_.flatMapDeep(json, function (value, key) {
       return _.isObject(value)
-          ? [key]
-          : [key, String(value)]
+              ? [key]
+              : [key, String(value)]
     }))
   }
 
-  var json = {
+  const json = {
     'array': [{'field1':'v1', 'field2':'v2'}, 2, 3],
     'boolean': true,
     'null': null,
     'number': 123,
     'object': {'a': 'b', 'c': 'd'},
     'string': 'Hello World'
-  };
-  var editor = new JSONEditor(container, options, json);
+  }
+  const editor = new JSONEditor(container, options, json)
 </script>
 </body>
 </html>

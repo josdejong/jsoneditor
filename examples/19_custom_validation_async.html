@@ -29,15 +29,15 @@
 <div id="jsoneditor"></div>
 
 <script>
-  var json = {
+  const json = {
     customers: [
       {name: 'Joe'},
       {name: 'Sarah'},
       {name: 'Harry'},
     ]
-  };
+  }
 
-  var options = {
+  const options = {
     mode: 'tree',
     modes: ['code', 'text', 'tree', 'preview'],
     onValidate: function (json) {
@@ -54,35 +54,35 @@
                   }
                 }
                 else {
-                  return null;
+                  return null
                 }
-              });
+              })
             }))
             .then(function (errors) {
               return errors.filter(function (error) {
-                return error != null;
+                return error != null
               })
-            });
+            })
       }
       else {
-        return null;
+        return null
       }
     }
-  };
+  }
 
   // create the editor
-  var container = document.getElementById('jsoneditor');
-  var editor = new JSONEditor(container, options, json);
-  editor.expandAll();
+  const container = document.getElementById('jsoneditor')
+  const editor = new JSONEditor(container, options, json)
+  editor.expandAll()
 
   // this function fakes a request (asynchronous) to a server to validate the existence of a customer
   function isExistingCustomer (customerName) {
     return new Promise(function (resolve, reject) {
       setTimeout(function () {
-        var customers = ['Joe', 'Harry', 'Megan'];
-        var exists = customers.indexOf(customerName) !== -1;
-        resolve(exists);
-      }, 500);
+        const customers = ['Joe', 'Harry', 'Megan']
+        const exists = customers.indexOf(customerName) !== -1
+        resolve(exists)
+      }, 500)
     })
   }
 </script>

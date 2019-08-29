@@ -23,22 +23,22 @@
 <div id="jsoneditor"></div>
 
 <script>
-  var container = document.getElementById('jsoneditor');
+  const container = document.getElementById('jsoneditor')
 
-  var options = {
+  const options = {
     mode: 'view'
-  };
+  }
 
-  var json = {
+  const json = {
     'array': [1, 2, 3],
     'boolean': true,
     'null': null,
     'number': 123,
     'object': {'a': 'b', 'c': 'd'},
     'string': 'Hello World'
-  };
+  }
 
-  var editor = new JSONEditor(container, options, json);
+  const editor = new JSONEditor(container, options, json)
 </script>
 </body>
 </html>

@@ -96,12 +96,12 @@ with npm (recommended):
 
     <script>
         // create the editor
-        var container = document.getElementById("jsoneditor")
-        var options = {}
-        var editor = new JSONEditor(container, options)
+        const container = document.getElementById("jsoneditor")
+        const options = {}
+        const editor = new JSONEditor(container, options)
 
         // set json
-        var json = {
+        const initialJson = {
             "Array": [1, 2, 3],
             "Boolean": true,
             "Null": null,
@@ -109,10 +109,10 @@ with npm (recommended):
             "Object": {"a": "b", "c": "d"},
             "String": "Hello World"
         }
-        editor.set(json)
+        editor.set(initialJson)
 
         // get json
-        var json = editor.get()
+        const updatedJson = editor.get()
     </script>
 </body>
 </html>
