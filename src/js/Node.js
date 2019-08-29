@@ -2813,7 +2813,7 @@ Node.prototype.onEvent = function (event) {
     // noinspection FallthroughInSwitchStatementJS
     switch (type) {
       case 'blur':
-      case 'change':
+      case 'change': {
         this._getDomValue()
         this._clearValueError()
         this._updateDomValue()
@@ -2823,6 +2823,7 @@ Node.prototype.onEvent = function (event) {
           domValue.innerHTML = escapedValue
         }
         break
+      }
 
       case 'input':
         // this._debouncedGetDomValue(true); // TODO
@@ -2866,7 +2867,7 @@ Node.prototype.onEvent = function (event) {
   const domField = dom.field
   if (target === domField) {
     switch (type) {
-      case 'blur':
+      case 'blur': {
         this._getDomField(true)
         this._updateDomField()
         const escapedField = this._escapeHTML(this.field)
@@ -2875,6 +2876,7 @@ Node.prototype.onEvent = function (event) {
           domField.innerHTML = escapedField
         }
         break
+      }
 
       case 'input':
         this._getDomField()
