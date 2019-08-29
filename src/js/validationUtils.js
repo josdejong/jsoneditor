@@ -1,13 +1,13 @@
-const isPromise = require('./util').isPromise
-const isValidValidationError = require('./util').isValidValidationError
-const stringifyPath = require('./util').stringifyPath
+import {isPromise} from './util';
+import {isValidValidationError} from './util';
+import {stringifyPath} from './util';
 
 /**
  * Execute custom validation if configured.
  *
  * Returns a promise resolving with the custom errors (or an empty array).
  */
-function validateCustom (json, onValidate) {
+export function validateCustom (json, onValidate) {
   if (!onValidate) {
     return Promise.resolve([])
   }
@@ -46,5 +46,3 @@ function validateCustom (json, onValidate) {
     return Promise.reject(err)
   }
 }
-
-exports.validateCustom = validateCustom

@@ -9,7 +9,7 @@ const defaultFilterFunction = {
   }
 }
 
-function completely (config) {
+export function autocomplete (config) {
   config = config || {}
   config.filter = config.filter || 'start'
   config.trigger = config.trigger || 'keydown'
@@ -379,5 +379,3 @@ function completely (config) {
 
   return rs
 }
-
-module.exports = completely

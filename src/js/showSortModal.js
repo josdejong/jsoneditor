@@ -1,6 +1,6 @@
-const picoModal = require('picomodal')
-const translate = require('./i18n').translate
-const util = require('./util')
+import picoModal from 'picomodal';
+import {translate} from './i18n';
+import { contains, getChildPaths } from './util'
 
 /**
  * Show advanced sorting modal
@@ -15,11 +15,11 @@ const util = require('./util')
  *                - {string} path              The selected path
  *                - {'asc' | 'desc'} direction The selected direction
  */
-function showSortModal (container, json, onSort, options) {
+export function showSortModal (container, json, onSort, options) {
   const paths = Array.isArray(json)
-    ? util.getChildPaths(json)
+    ? getChildPaths(json)
     : ['']
-  const selectedPath = options && options.path && util.contains(paths, options.path)
+  const selectedPath = options && options.path && contains(paths, options.path)
     ? options.path
     : paths[0]
   const selectedDirection = (options && options.direction) || 'asc'
@@ -129,5 +129,3 @@ function showSortModal (container, json, onSort, options) {
     })
     .show()
 }
-
-module.exports = showSortModal

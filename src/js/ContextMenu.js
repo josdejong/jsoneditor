@@ -1,8 +1,8 @@
 'use strict'
 
-const createAbsoluteAnchor = require('./createAbsoluteAnchor').createAbsoluteAnchor
-const util = require('./util')
-const translate = require('./i18n').translate
+import { createAbsoluteAnchor } from './createAbsoluteAnchor'
+import { addClassName, getSelection, removeClassName, setSelection } from './util'
+import { translate } from './i18n'
 
 /**
  * A context menu
@@ -13,7 +13,7 @@ const translate = require('./i18n').translate
  *                                                context menu is being closed.
  * @constructor
  */
-function ContextMenu (items, options) {
+export function ContextMenu (items, options) {
   this.dom = {}
 
   const me = this
@@ -241,7 +241,7 @@ ContextMenu.prototype.show = function (anchor, frame, ignoreParent) {
   this.dom.absoluteAnchor.appendChild(this.dom.root)
 
   // move focus to the first button in the context menu
-  this.selection = util.getSelection()
+  this.selection = getSelection()
   this.anchor = anchor
   setTimeout(() => {
     me.dom.focusButton.focus()
@@ -295,7 +295,7 @@ ContextMenu.prototype._onExpandItem = function (domItem) {
     setTimeout(() => {
       if (me.expandedItem !== expandedItem) {
         expandedItem.ul.style.display = ''
-        util.removeClassName(expandedItem.ul.parentNode, 'jsoneditor-selected')
+        removeClassName(expandedItem.ul.parentNode, 'jsoneditor-selected')
       }
     }, 300) // timeout duration must match the css transition duration
     this.expandedItem = undefined
@@ -316,7 +316,7 @@ ContextMenu.prototype._onExpandItem = function (domItem) {
         ul.style.padding = '5px 10px'
       }
     }, 0)
-    util.addClassName(ul.parentNode, 'jsoneditor-selected')
+    addClassName(ul.parentNode, 'jsoneditor-selected')
     this.expandedItem = domItem
   }
 }
@@ -337,7 +337,7 @@ ContextMenu.prototype._onKeyDown = function (event) {
 
     // restore previous selection and focus
     if (this.selection) {
-      util.setSelection(this.selection)
+      setSelection(this.selection)
     }
     if (this.anchor) {
       this.anchor.focus()
@@ -424,4 +424,4 @@ ContextMenu.prototype._onKeyDown = function (event) {
   }
 }
 
-module.exports = ContextMenu
+export default ContextMenu;

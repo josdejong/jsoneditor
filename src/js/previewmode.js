@@ -5,14 +5,14 @@ const translate = require('./i18n').translate
 const ModeSwitcher = require('./ModeSwitcher')
 const ErrorTable = require('./ErrorTable')
 const textmode = require('./textmode')[0].mixin
-const showSortModal = require('./showSortModal')
-const showTransformModal = require('./showTransformModal')
+const showSortModal = require('./showSortModal').showSortModal
+const showTransformModal = require('./showTransformModal').showTransformModal
 const MAX_PREVIEW_CHARACTERS = require('./constants').MAX_PREVIEW_CHARACTERS
 const DEFAULT_MODAL_ANCHOR = require('./constants').DEFAULT_MODAL_ANCHOR
 const SIZE_LARGE = require('./constants').SIZE_LARGE
 const PREVIEW_HISTORY_LIMIT = require('./constants').PREVIEW_HISTORY_LIMIT
 const util = require('./util')
-const History = require('./History')
+const History = require('./History').History
 
 // create a mixin with the functions for text mode
 const previewmode = {}
@@ -23,10 +23,7 @@ const previewmode = {}
  * @param {Object} [options]   Object with options. See docs for details.
  * @private
  */
-previewmode.create = function (container, options) {
-  // read options
-  options = options || {}
-
+previewmode.create = function (container, options = {}) {
   if (typeof options.statusBar === 'undefined') {
     options.statusBar = true
   }

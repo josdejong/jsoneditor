@@ -1,15 +1,15 @@
 'use strict'
 
 const VanillaPicker = require('./vanilla-picker')
-const Highlighter = require('./Highlighter')
-const NodeHistory = require('./NodeHistory')
-const SearchBox = require('./SearchBox')
-const ContextMenu = require('./ContextMenu')
-const TreePath = require('./TreePath')
+const Highlighter = require('./Highlighter').Highlighter
+const NodeHistory = require('./NodeHistory').NodeHistory
+const SearchBox = require('./SearchBox').SearchBox
+const ContextMenu = require('./ContextMenu').ContextMenu
+const TreePath = require('./TreePath').TreePath
 const Node = require('./Node')
 const ModeSwitcher = require('./ModeSwitcher')
 const util = require('./util')
-const autocomplete = require('./autocomplete')
+const autocomplete = require('./autocomplete').autocomplete
 const translate = require('./i18n').translate
 const setLanguages = require('./i18n').setLanguages
 const setLanguage = require('./i18n').setLanguage

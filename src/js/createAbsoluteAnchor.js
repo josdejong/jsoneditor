@@ -1,4 +1,4 @@
-const util = require('./util')
+import { isChildOf, removeEventListener, addEventListener } from './util'
 
 /**
  * Create an anchor element absolutely positioned in the `parent`
@@ -8,7 +8,7 @@ const util = require('./util')
  * @param [onDestroy(function(anchor)]  Callback when the anchor is destroyed
  * @returns {HTMLElement}
  */
-exports.createAbsoluteAnchor = (anchor, parent, onDestroy) => {
+export function createAbsoluteAnchor(anchor, parent, onDestroy) {
   const root = getRootNode(anchor)
   const eventListeners = {}
 
@@ -36,7 +36,7 @@ exports.createAbsoluteAnchor = (anchor, parent, onDestroy) => {
         if (hasOwnProperty(eventListeners, name)) {
           const fn = eventListeners[name]
           if (fn) {
-            util.removeEventListener(root, name, fn)
+            removeEventListener(root, name, fn)
           }
           delete eventListeners[name]
         }
@@ -51,14 +51,14 @@ exports.createAbsoluteAnchor = (anchor, parent, onDestroy) => {
   // create and attach event listeners
   const destroyIfOutside = event => {
     const target = event.target
-    if ((target !== absoluteAnchor) && !util.isChildOf(target, absoluteAnchor)) {
+    if ((target !== absoluteAnchor) && !isChildOf(target, absoluteAnchor)) {
       destroy()
     }
   }
 
-  eventListeners.mousedown = util.addEventListener(root, 'mousedown', destroyIfOutside)
-  eventListeners.mousewheel = util.addEventListener(root, 'mousewheel', destroyIfOutside)
-  // eventListeners.scroll = util.addEventListener(root, 'scroll', destroyIfOutside);
+  eventListeners.mousedown = addEventListener(root, 'mousedown', destroyIfOutside)
+  eventListeners.mousewheel = addEventListener(root, 'mousewheel', destroyIfOutside)
+  // eventListeners.scroll = addEventListener(root, 'scroll', destroyIfOutside);
 
   absoluteAnchor.destroy = destroy
 

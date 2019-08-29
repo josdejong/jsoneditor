@@ -7,7 +7,7 @@
  * @property {function (number)} onChangeHeight
  * @constructor
  */
-function ErrorTable (config) {
+export function ErrorTable (config) {
   this.errorTableVisible = config.errorTableVisible
   this.onToggleVisibility = config.onToggleVisibility
   this.onFocusLine = config.onFocusLine || (() => {})
@@ -166,5 +166,3 @@ ErrorTable.prototype.setErrors = function (errors, errorLocations) {
     this.dom.parseErrorIndication.style.display = 'none'
   }
 }
-
-module.exports = ErrorTable

@@ -1,13 +1,13 @@
 'use strict'
 
-const util = require('./util')
+import { findUniqueName } from './util'
 
 /**
  * @constructor History
  * Store action history, enables undo and redo
  * @param {JSONEditor} editor
  */
-function NodeHistory (editor) {
+export function NodeHistory (editor) {
   this.editor = editor
   this.history = []
   this.index = -1
@@ -125,7 +125,7 @@ function NodeHistory (editor) {
           const clone = node.clone()
           if (parentNode.type === 'object') {
             const existingFieldNames = parentNode.getFieldNames()
-            clone.field = util.findUniqueName(node.field, existingFieldNames)
+            clone.field = findUniqueName(node.field, existingFieldNames)
           }
           parentNode.insertAfter(clone, afterNode)
           afterNode = clone
@@ -329,5 +329,3 @@ NodeHistory.prototype.destroy = function () {
   this.history = []
   this.index = -1
 }
-
-module.exports = NodeHistory

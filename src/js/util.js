@@ -1,10 +1,10 @@
 'use strict'
 
-require('./polyfills')
-const naturalSort = require('javascript-natural-sort')
-const jsonlint = require('./assets/jsonlint/jsonlint')
-const jsonMap = require('json-source-map')
-const translate = require('./i18n').translate
+import './polyfills'
+import naturalSort from 'javascript-natural-sort';
+import jsonlint from './assets/jsonlint/jsonlint';
+import jsonMap from 'json-source-map';
+import {translate} from './i18n';
 
 const MAX_ITEMS_FIELDS_COLLECTION = 10000
 
@@ -14,12 +14,12 @@ const MAX_ITEMS_FIELDS_COLLECTION = 10000
  * @param {String} jsonString
  * @return {JSON} json
  */
-exports.parse = function parse (jsonString) {
+export function parse(jsonString) {
   try {
     return JSON.parse(jsonString)
   } catch (err) {
     // try to throw a more detailed error message using validate
-    exports.validate(jsonString)
+    validate(jsonString)
 
     // rethrow the original error
     throw err
@@ -34,7 +34,7 @@ exports.parse = function parse (jsonString) {
  * @param {string} jsString
  * @returns {string} json
  */
-exports.repair = jsString => {
+export function repair(jsString) {
   // TODO: refactor this function, it's too large and complicated now
 
   // escape all single and double quotes inside strings
@@ -278,13 +278,19 @@ exports.repair = jsString => {
  * @param {string} text
  * @return {string}
  */
-exports.escapeUnicodeChars = text => // see https://www.wikiwand.com/en/UTF-16
-// note: we leave surrogate pairs as two individual chars,
-// as JSON doesn't interpret them as a single unicode char.
-  text.replace(
-    /[\u007F-\uFFFF]/g,
-    c => '\\u' + ('0000' + c.charCodeAt(0).toString(16)).slice(-4)
-  )
+export function escapeUnicodeChars(
+  // see https://www.wikiwand.com/en/UTF-16
+  text
+) {
+  return (
+    // note: we leave surrogate pairs as two individual chars,
+    // as JSON doesn't interpret them as a single unicode char.
+    text.replace(
+      /[\u007F-\uFFFF]/g,
+      c => '\\u' + ('0000' + c.charCodeAt(0).toString(16)).slice(-4)
+    )
+  );
+}
 
 /**
  * Validate a string containing a JSON object
@@ -293,7 +299,7 @@ exports.escapeUnicodeChars = text => // see https://www.wikiwand.com/en/UTF-16
  * @param {String} jsonString   String with an (invalid) JSON object
  * @throws Error
  */
-exports.validate = function validate (jsonString) {
+export function validate(jsonString) {
   if (typeof (jsonlint) !== 'undefined') {
     jsonlint.parse(jsonString)
   } else {
@@ -307,7 +313,7 @@ exports.validate = function validate (jsonString) {
  * @param {Object} b
  * @return {Object} a
  */
-exports.extend = function extend (a, b) {
+export function extend(a, b) {
   for (const prop in b) {
     if (hasOwnProperty(b, prop)) {
       a[prop] = b[prop]
@@ -321,7 +327,7 @@ exports.extend = function extend (a, b) {
  * @param {Object} a
  * @return {Object} a
  */
-exports.clear = function clear (a) {
+export function clear(a) {
   for (const prop in a) {
     if (hasOwnProperty(a, prop)) {
       delete a[prop]
@@ -335,7 +341,7 @@ exports.clear = function clear (a) {
  * @param {*} object
  * @return {String} type
  */
-exports.type = function type (object) {
+export function type(object) {
   if (object === null) {
     return 'null'
   }
@@ -354,7 +360,7 @@ exports.type = function type (object) {
   if (object instanceof RegExp) {
     return 'regexp'
   }
-  if (exports.isArray(object)) {
+  if (isArray(object)) {
     return 'array'
   }
 
@@ -367,7 +373,8 @@ exports.type = function type (object) {
  * @param {String} text
  */
 const isUrlRegex = /^https?:\/\/\S+$/
-exports.isUrl = function isUrl (text) {
+
+export function isUrl(text) {
   return (typeof text === 'string' || text instanceof String) &&
       isUrlRegex.test(text)
 }
@@ -377,7 +384,9 @@ exports.isUrl = function isUrl (text) {
  * @param {*} obj
  * @returns {boolean} returns true when obj is an array
  */
-exports.isArray = obj => Object.prototype.toString.call(obj) === '[object Array]'
+export function isArray(obj) {
+  return Object.prototype.toString.call(obj) === '[object Array]';
+}
 
 /**
  * Retrieve the absolute left value of a DOM element
@@ -385,7 +394,7 @@ exports.isArray = obj => Object.prototype.toString.call(obj) === '[object Array]
  * @return {Number} left    The absolute left position of this element
  *                          in the browser page.
  */
-exports.getAbsoluteLeft = function getAbsoluteLeft (elem) {
+export function getAbsoluteLeft(elem) {
   const rect = elem.getBoundingClientRect()
   return rect.left + window.pageXOffset || document.scrollLeft || 0
 }
@@ -396,7 +405,7 @@ exports.getAbsoluteLeft = function getAbsoluteLeft (elem) {
  * @return {Number} top     The absolute top position of this element
  *                          in the browser page.
  */
-exports.getAbsoluteTop = function getAbsoluteTop (elem) {
+export function getAbsoluteTop(elem) {
   const rect = elem.getBoundingClientRect()
   return rect.top + window.pageYOffset || document.scrollTop || 0
 }
@@ -406,7 +415,7 @@ exports.getAbsoluteTop = function getAbsoluteTop (elem) {
  * @param {Element} elem
  * @param {String} className
  */
-exports.addClassName = function addClassName (elem, className) {
+export function addClassName(elem, className) {
   const classes = elem.className.split(' ')
   if (classes.indexOf(className) === -1) {
     classes.push(className) // add the class to the array
@@ -418,7 +427,7 @@ exports.addClassName = function addClassName (elem, className) {
  * remove all classes from the given elements style
  * @param {Element} elem
  */
-exports.removeAllClassNames = function removeAllClassNames (elem) {
+export function removeAllClassNames(elem) {
   elem.className = ''
 }
 
@@ -427,7 +436,7 @@ exports.removeAllClassNames = function removeAllClassNames (elem) {
  * @param {Element} elem
  * @param {String} className
  */
-exports.removeClassName = function removeClassName (elem, className) {
+export function removeClassName(elem, className) {
   const classes = elem.className.split(' ')
   const index = classes.indexOf(className)
   if (index !== -1) {
@@ -441,7 +450,7 @@ exports.removeClassName = function removeClassName (elem, className) {
  * the formatting from the div itself is not stripped, only from its childs.
  * @param {Element} divElement
  */
-exports.stripFormatting = function stripFormatting (divElement) {
+export function stripFormatting(divElement) {
   const childs = divElement.childNodes
   for (let i = 0, iMax = childs.length; i < iMax; i++) {
     const child = childs[i]
@@ -464,7 +473,7 @@ exports.stripFormatting = function stripFormatting (divElement) {
     }
 
     // recursively strip childs
-    exports.stripFormatting(child)
+    stripFormatting(child)
   }
 }
 
@@ -475,7 +484,7 @@ exports.stripFormatting = function stripFormatting (divElement) {
  * http://stackoverflow.com/questions/1125292/how-to-move-cursor-to-end-of-contenteditable-entity
  * @param {Element} contentEditableElement   A content editable div
  */
-exports.setEndOfContentEditable = function setEndOfContentEditable (contentEditableElement) {
+export function setEndOfContentEditable(contentEditableElement) {
   let range, selection
   if (document.createRange) {
     range = document.createRange()// Create a range (a range is a like the selection but invisible)
@@ -492,7 +501,7 @@ exports.setEndOfContentEditable = function setEndOfContentEditable (contentEdita
  * http://stackoverflow.com/a/3806004/1262753
  * @param {Element} contentEditableElement   A content editable div
  */
-exports.selectContentEditable = function selectContentEditable (contentEditableElement) {
+export function selectContentEditable(contentEditableElement) {
   if (!contentEditableElement || contentEditableElement.nodeName !== 'DIV') {
     return
   }
@@ -512,7 +521,7 @@ exports.selectContentEditable = function selectContentEditable (contentEditableE
  * http://stackoverflow.com/questions/4687808/contenteditable-selected-text-save-and-restore
  * @return {Range | TextRange | null} range
  */
-exports.getSelection = function getSelection () {
+export function getSelection() {
   if (window.getSelection) {
     const sel = window.getSelection()
     if (sel.getRangeAt && sel.rangeCount) {
@@ -527,7 +536,7 @@ exports.getSelection = function getSelection () {
  * http://stackoverflow.com/questions/4687808/contenteditable-selected-text-save-and-restore
  * @param {Range | TextRange | null} range
  */
-exports.setSelection = function setSelection (range) {
+export function setSelection(range) {
   if (range) {
     if (window.getSelection) {
       const sel = window.getSelection()
@@ -546,8 +555,8 @@ exports.setSelection = function setSelection (range) {
  *                                                   selected text element
  *                          Returns null if no text selection is found
  */
-exports.getSelectionOffset = function getSelectionOffset () {
-  const range = exports.getSelection()
+export function getSelectionOffset() {
+  const range = getSelection()
 
   if (range && 'startOffset' in range && 'endOffset' in range &&
       range.startContainer && (range.startContainer === range.endContainer)) {
@@ -568,7 +577,7 @@ exports.getSelectionOffset = function getSelectionOffset () {
  *                              {Number} startOffset
  *                              {Number} endOffset
  */
-exports.setSelectionOffset = function setSelectionOffset (params) {
+export function setSelectionOffset(params) {
   if (document.createRange && window.getSelection) {
     const selection = window.getSelection()
     if (selection) {
@@ -583,7 +592,7 @@ exports.setSelectionOffset = function setSelectionOffset (params) {
       range.setStart(params.container.firstChild, params.startOffset)
       range.setEnd(params.container.firstChild, params.endOffset)
 
-      exports.setSelection(range)
+      setSelection(range)
     }
   }
 }
@@ -594,7 +603,7 @@ exports.setSelectionOffset = function setSelectionOffset (params) {
  * @param {Object} [buffer]
  * @return {String} innerText
  */
-exports.getInnerText = function getInnerText (element, buffer) {
+export function getInnerText(element, buffer) {
   const first = (buffer === undefined)
   if (first) {
     buffer = {
@@ -630,19 +639,19 @@ exports.getInnerText = function getInnerText (element, buffer) {
           innerText += '\n'
           buffer.flush()
         }
-        innerText += exports.getInnerText(child, buffer)
+        innerText += getInnerText(child, buffer)
         buffer.set('\n')
       } else if (child.nodeName === 'BR') {
         innerText += buffer.flush()
         buffer.set('\n')
       } else {
-        innerText += exports.getInnerText(child, buffer)
+        innerText += getInnerText(child, buffer)
       }
     }
 
     return innerText
   } else {
-    if (element.nodeName === 'P' && exports.getInternetExplorerVersion() !== -1) {
+    if (element.nodeName === 'P' && getInternetExplorerVersion() !== -1) {
       // On Internet Explorer, a <p> with hasChildNodes()==false is
       // rendered with a new line. Note that a <p> with
       // hasChildNodes()==true is rendered without a new line
@@ -662,7 +671,7 @@ exports.getInnerText = function getInnerText (element, buffer) {
  * @param {Element} parent
  * @return {boolean}
  */
-exports.hasParentNode = (elem, parent) => {
+export function hasParentNode(elem, parent) {
   let e = elem ? elem.parentNode : undefined
 
   while (e) {
@@ -681,7 +690,7 @@ exports.hasParentNode = (elem, parent) => {
  * Source: http://msdn.microsoft.com/en-us/library/ms537509(v=vs.85).aspx
  * @return {Number} Internet Explorer version, or -1 in case of an other browser
  */
-exports.getInternetExplorerVersion = function getInternetExplorerVersion () {
+export function getInternetExplorerVersion() {
   if (_ieVersion === -1) {
     let rv = -1 // Return value assumes failure.
     if (typeof navigator !== 'undefined' && navigator.appName === 'Microsoft Internet Explorer') {
@@ -702,7 +711,7 @@ exports.getInternetExplorerVersion = function getInternetExplorerVersion () {
  * Test whether the current browser is Firefox
  * @returns {boolean} isFirefox
  */
-exports.isFirefox = function isFirefox () {
+export function isFirefox() {
   return (typeof navigator !== 'undefined' && navigator.userAgent.indexOf('Firefox') !== -1)
 }
 
@@ -722,11 +731,11 @@ var _ieVersion = -1
  * @param {boolean}     [useCapture] false by default
  * @return {function}   the created event listener
  */
-exports.addEventListener = function addEventListener (element, action, listener, useCapture) {
+export function addEventListener(element, action, listener, useCapture) {
   if (element.addEventListener) {
     if (useCapture === undefined) { useCapture = false }
 
-    if (action === 'mousewheel' && exports.isFirefox()) {
+    if (action === 'mousewheel' && isFirefox()) {
       action = 'DOMMouseScroll' // For Firefox
     }
 
@@ -747,11 +756,11 @@ exports.addEventListener = function addEventListener (element, action, listener,
  * @param {function} listener  The listener function
  * @param {boolean}  [useCapture]   false by default
  */
-exports.removeEventListener = function removeEventListener (element, action, listener, useCapture) {
+export function removeEventListener(element, action, listener, useCapture) {
   if (element.removeEventListener) {
     if (useCapture === undefined) { useCapture = false }
 
-    if (action === 'mousewheel' && exports.isFirefox()) {
+    if (action === 'mousewheel' && isFirefox()) {
       action = 'DOMMouseScroll' // For Firefox
     }
 
@@ -768,7 +777,7 @@ exports.removeEventListener = function removeEventListener (element, action, lis
  * @param {Element} parent
  * @return {boolean} returns true if elem is a child of the parent
  */
-exports.isChildOf = (elem, parent) => {
+export function isChildOf(elem, parent) {
   let e = elem.parentNode
   while (e) {
     if (e === parent) {
@@ -785,7 +794,7 @@ exports.isChildOf = (elem, parent) => {
  * @param {string} jsonPath
  * @return {Array}
  */
-exports.parsePath = function parsePath (jsonPath) {
+export function parsePath(jsonPath) {
   const path = []
   let i = 0
 
@@ -861,7 +870,7 @@ exports.parsePath = function parsePath (jsonPath) {
  * @param {Array.<string | number>} path
  * @returns {string}
  */
-exports.stringifyPath = function stringifyPath (path) {
+export function stringifyPath(path) {
   return path
     .map(p => {
       if (typeof p === 'number') {
@@ -880,7 +889,7 @@ exports.stringifyPath = function stringifyPath (path) {
  * @param {Object} error
  * @return {Object} The error
  */
-exports.improveSchemaError = error => {
+export function improveSchemaError(error) {
   if (error.keyword === 'enum' && Array.isArray(error.schema)) {
     let enums = error.schema
     if (enums) {
@@ -907,16 +916,20 @@ exports.improveSchemaError = error => {
  * @param {*} object
  * @returns {boolean} Returns true when object is a promise, false otherwise
  */
-exports.isPromise = object => object && typeof object.then === 'function' && typeof object.catch === 'function'
+export function isPromise(object) {
+  return object && typeof object.then === 'function' && typeof object.catch === 'function';
+}
 
 /**
  * Test whether a custom validation error has the correct structure
  * @param {*} validationError The error to be checked.
  * @returns {boolean} Returns true if the structure is ok, false otherwise
  */
-exports.isValidValidationError = validationError => typeof validationError === 'object' &&
-    Array.isArray(validationError.path) &&
-    typeof validationError.message === 'string'
+export function isValidValidationError(validationError) {
+  return typeof validationError === 'object' &&
+      Array.isArray(validationError.path) &&
+      typeof validationError.message === 'string';
+}
 
 /**
  * Test whether the child rect fits completely inside the parent rect.
@@ -924,7 +937,7 @@ exports.isValidValidationError = validationError => typeof validationError === '
  * @param {ClientRect} child
  * @param {number} margin
  */
-exports.insideRect = (parent, child, margin) => {
+export function insideRect(parent, child, margin) {
   const _margin = margin !== undefined ? margin : 0
   return child.left - _margin >= parent.left &&
       child.right + _margin <= parent.right &&
@@ -946,7 +959,7 @@ exports.insideRect = (parent, child, margin) => {
  *                                      of the trailing.
  * @return {function} Return the debounced function
  */
-exports.debounce = function debounce (func, wait, immediate) {
+export function debounce(func, wait, immediate) {
   let timeout
   return function () {
     const context = this; const args = arguments
@@ -969,7 +982,7 @@ exports.debounce = function debounce (func, wait, immediate) {
  * @return {{start: number, end: number}} Returns the start and end
  *                                        of the changed part in newText.
  */
-exports.textDiff = function textDiff (oldText, newText) {
+export function textDiff(oldText, newText) {
   const len = newText.length
   let start = 0
   let oldEnd = oldText.length
@@ -996,7 +1009,7 @@ exports.textDiff = function textDiff (oldText, newText) {
  * @param {DOMElement} el A dom element of a textarea or input text.
  * @return {Object} reference Object with 2 properties (start and end) with the identifier of the location of the cursor and selected text.
  **/
-exports.getInputSelection = el => {
+export function getInputSelection(el) {
   let startIndex = 0; let endIndex = 0; let normalizedValue; let range; let textInputRange; let len; let endRange
 
   if (typeof el.selectionStart === 'number' && typeof el.selectionEnd === 'number') {
@@ -1066,7 +1079,7 @@ exports.getInputSelection = el => {
  * @param {Number} column column value, > 0, if exceeds column length - end of column will be returned
  * @returns {Number} index of position in text, -1 if not found
  */
-exports.getIndexForPosition = (el, row, column) => {
+export function getIndexForPosition(el, row, column) {
   const text = el.value || ''
   if (row > 0 && column > 0) {
     const rows = text.split('\n', row)
@@ -1084,7 +1097,7 @@ exports.getIndexForPosition = (el, row, column) => {
  * @param {Array<String>} paths array of json paths
  * @returns {Array<{path: String, line: Number, row: Number}>}
  */
-exports.getPositionForPath = function (text, paths) {
+export function getPositionForPath(text, paths) {
   const me = this
   const result = []
   let jsmap
@@ -1100,7 +1113,7 @@ exports.getPositionForPath = function (text, paths) {
 
   paths.forEach(path => {
     const pathArr = me.parsePath(path)
-    const pointerName = exports.compileJSONPointer(pathArr)
+    const pointerName = compileJSONPointer(pathArr)
     const pointer = jsmap.pointers[pointerName]
     if (pointer) {
       result.push({
@@ -1120,12 +1133,14 @@ exports.getPositionForPath = function (text, paths) {
  * @param {Array.<string | number>} path
  * @return {string}
  */
-exports.compileJSONPointer = path => path
-  .map(p => ('/' + String(p)
-    .replace(/~/g, '~0')
-    .replace(/\//g, '~1')
-  ))
-  .join('')
+export function compileJSONPointer(path) {
+  return path
+    .map(p => ('/' + String(p)
+      .replace(/~/g, '~0')
+      .replace(/\//g, '~1')
+    ))
+    .join('');
+}
 
 /**
  * Get the applied color given a color name or code
@@ -1135,7 +1150,7 @@ exports.compileJSONPointer = path => path
  *                   color, and returns null otherwise. Example output:
  *                   'rgba(255,0,0,0.7)' or 'rgb(255,0,0)'
  */
-exports.getColorCSS = color => {
+export function getColorCSS(color) {
   const ele = document.createElement('div')
   ele.style.color = color
   return ele.style.color.split(/\s+/).join('').toLowerCase() || null
@@ -1146,7 +1161,9 @@ exports.getColorCSS = color => {
  * @param {string} color
  * @returns {boolean} returns true if a valid color, false otherwise
  */
-exports.isValidColor = color => !!exports.getColorCSS(color)
+export function isValidColor(color) {
+  return !!getColorCSS(color);
+}
 
 /**
  * Make a tooltip for a field based on the field's schema.
@@ -1154,7 +1171,7 @@ exports.isValidColor = color => !!exports.getColorCSS(color)
  * @param {string} [locale] Locale code (for example, zh-CN)
  * @returns {string} Field tooltip, may be empty string if all relevant schema properties are missing
  */
-exports.makeFieldTooltip = (schema, locale) => {
+export function makeFieldTooltip(schema, locale) {
   if (!schema) {
     return ''
   }
@@ -1202,7 +1219,7 @@ exports.makeFieldTooltip = (schema, locale) => {
  * @param {string[]} path
  * @return {*}
  */
-exports.get = (object, path) => {
+export function get(object, path) {
   let value = object
 
   for (let i = 0; i < path.length && value !== undefined && value !== null; i++) {
@@ -1218,7 +1235,7 @@ exports.get = (object, path) => {
  * @param {string} name
  * @param {Array} existingPropNames    Array with existing prop names
  */
-exports.findUniqueName = (name, existingPropNames) => {
+export function findUniqueName(name, existingPropNames) {
   const strippedName = name.replace(/ \(copy( \d+)?\)$/, '')
   let validName = strippedName
   let i = 1
@@ -1238,17 +1255,17 @@ exports.findUniqueName = (name, existingPropNames) => {
  * @param {boolean} [includeObjects=false] If true, object and array paths are returned as well
  * @return {string[]}
  */
-exports.getChildPaths = (json, includeObjects) => {
+export function getChildPaths(json, includeObjects) {
   const pathsMap = {}
 
   function getObjectChildPaths (json, pathsMap, rootPath, includeObjects) {
-    const isValue = !Array.isArray(json) && !exports.isObject(json)
+    const isValue = !Array.isArray(json) && !isObject(json)
 
     if (isValue || includeObjects) {
       pathsMap[rootPath || ''] = true
     }
 
-    if (exports.isObject(json)) {
+    if (isObject(json)) {
       Object.keys(json).forEach(field => {
         getObjectChildPaths(json[field], pathsMap, rootPath + '.' + field, includeObjects)
       })
@@ -1274,14 +1291,14 @@ exports.getChildPaths = (json, includeObjects) => {
  * @param {String} [path] JSON pointer
  * @param {'asc' | 'desc'} [direction]
  */
-exports.sort = (array, path, direction) => {
-  const parsedPath = path && path !== '.' ? exports.parsePath(path) : []
+export function sort(array, path, direction) {
+  const parsedPath = path && path !== '.' ? parsePath(path) : []
   const sign = direction === 'desc' ? -1 : 1
 
   const sortedArray = array.slice()
   sortedArray.sort((a, b) => {
-    const aValue = exports.get(a, parsedPath)
-    const bValue = exports.get(b, parsedPath)
+    const aValue = get(a, parsedPath)
+    const bValue = get(b, parsedPath)
 
     return sign * (aValue > bValue ? 1 : aValue < bValue ? -1 : 0)
   })
@@ -1294,7 +1311,7 @@ exports.sort = (array, path, direction) => {
  * @param {Object} object
  * @param {'asc' | 'desc'} [direction]
  */
-exports.sortObjectKeys = (object, direction) => {
+export function sortObjectKeys(object, direction) {
   const sign = (direction === 'desc') ? -1 : 1
   const sortedFields = Object.keys(object).sort((a, b) => sign * naturalSort(a, b))
 
@@ -1313,7 +1330,7 @@ exports.sortObjectKeys = (object, direction) => {
  * @return {*} castedStr
  * @private
  */
-exports.parseString = str => {
+export function parseString(str) {
   const lower = str.toLowerCase()
   const num = Number(str) // will nicely fail with '123ab'
   const numFloat = parseFloat(str) // will nicely fail with '  '
@@ -1339,7 +1356,7 @@ exports.parseString = str => {
  * @param {number} size
  * @return {string} Returns a human readable size
  */
-exports.formatSize = size => {
+export function formatSize(size) {
   if (size < 900) {
     return size.toFixed() + ' B'
   }
@@ -1370,7 +1387,7 @@ exports.formatSize = size => {
  * @return {string} Returns the limited text,
  *                  ending with '...' if the max was exceeded
  */
-exports.limitCharacters = (text, maxCharacterCount) => {
+export function limitCharacters(text, maxCharacterCount) {
   if (text.length <= maxCharacterCount) {
     return text
   }
@@ -1383,7 +1400,9 @@ exports.limitCharacters = (text, maxCharacterCount) => {
  * @param {*} value
  * @return {boolean}
  */
-exports.isObject = value => typeof value === 'object' && value !== null && !Array.isArray(value)
+export function isObject(value) {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
 
 /**
  * Helper function to test whether an array contains an item
@@ -1391,7 +1410,9 @@ exports.isObject = value => typeof value === 'object' && value !== null && !Arra
  * @param {*} item
  * @return {boolean} Returns true if `item` is in `array`, returns false otherwise.
  */
-exports.contains = (array, item) => array.indexOf(item) !== -1
+export function contains(array, item) {
+  return array.indexOf(item) !== -1;
+}
 
 function hasOwnProperty (object, key) {
   return Object.prototype.hasOwnProperty.call(object, key)

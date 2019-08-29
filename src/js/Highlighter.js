@@ -5,7 +5,7 @@
  * animate the visibility of a context menu.
  * @constructor Highlighter
  */
-function Highlighter () {
+export function Highlighter () {
   this.locked = false
 }
 
@@ -82,5 +82,3 @@ Highlighter.prototype.lock = function () {
 Highlighter.prototype.unlock = function () {
   this.locked = false
 }
-
-module.exports = Highlighter

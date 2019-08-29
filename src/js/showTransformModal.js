@@ -1,11 +1,10 @@
-const jmespath = require('jmespath')
-const picoModal = require('picomodal')
-const Selectr = require('./assets/selectr/selectr')
-const translate = require('./i18n').translate
-const stringifyPartial = require('./jsonUtils').stringifyPartial
-const util = require('./util')
-const MAX_PREVIEW_CHARACTERS = require('./constants').MAX_PREVIEW_CHARACTERS
-const debounce = util.debounce
+import jmespath from 'jmespath';
+import picoModal from 'picomodal';
+import Selectr from './assets/selectr/selectr';
+import {translate} from './i18n';
+import {stringifyPartial} from './jsonUtils';
+import { getChildPaths, get, parsePath, parseString, debounce } from './util'
+import {MAX_PREVIEW_CHARACTERS} from './constants';
 
 /**
  * Show advanced filter and transform modal using JMESPath
@@ -15,7 +14,7 @@ const debounce = util.debounce
  * @param {function} onTransform    Callback invoked with the created
  *                                  query as callback
  */
-function showTransformModal (container, json, onTransform) {
+export function showTransformModal (container, json, onTransform) {
   const value = json
 
   const content = '<label class="pico-modal-contents">' +
@@ -125,7 +124,7 @@ function showTransformModal (container, json, onTransform) {
         wizard.innerHTML = '(wizard not available for objects, only for arrays)'
       }
 
-      const sortablePaths = util.getChildPaths(json)
+      const sortablePaths = getChildPaths(json)
 
       sortablePaths.forEach(path => {
         const formattedPath = preprocessPath(path)
@@ -140,7 +139,7 @@ function showTransformModal (container, json, onTransform) {
         sortField.appendChild(sortOption)
       })
 
-      const selectablePaths = util.getChildPaths(json, true).filter(path => path !== '')
+      const selectablePaths = getChildPaths(json, true).filter(path => path !== '')
       if (selectablePaths.length > 0) {
         selectablePaths.forEach(path => {
           const formattedPath = preprocessPath(path)
@@ -191,12 +190,12 @@ function showTransformModal (container, json, onTransform) {
         if (filterField.value && filterRelation.value && filterValue.value) {
           const field1 = filterField.value
           const examplePath = field1 !== '@'
-            ? ['0'].concat(util.parsePath('.' + field1))
+            ? ['0'].concat(parsePath('.' + field1))
             : ['0']
-          const exampleValue = util.get(value, examplePath)
+          const exampleValue = get(value, examplePath)
           const value1 = typeof exampleValue === 'string'
             ? filterValue.value
-            : util.parseString(filterValue.value)
+            : parseString(filterValue.value)
 
           query.value = '[? ' +
                 field1 + ' ' +
@@ -288,5 +287,3 @@ function showTransformModal (container, json, onTransform) {
     })
     .show()
 }
-
-module.exports = showTransformModal

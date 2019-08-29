@@ -21,7 +21,7 @@
     "build": "gulp",
     "minify": "gulp minify",
     "start": "gulp watch",
-    "test": "mocha test",
+    "test": "mocha test --require @babel/register",
     "lint": "standard --env=mocha"
   },
   "dependencies": {
@@ -37,6 +37,7 @@
   "devDependencies": {
     "@babel/core": "7.5.5",
     "@babel/preset-env": "7.5.5",
+    "@babel/register": "7.5.5",
     "babel-loader": "8.0.6",
     "date-format": "2.1.0",
     "fancy-log": "1.3.3",

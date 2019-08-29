@@ -6,7 +6,7 @@
  * @param {number} limit    Maximum size of all items in history
  * @constructor
  */
-function History (onChange, calculateItemSize, limit) {
+export function History (onChange, calculateItemSize, limit) {
   this.onChange = onChange
   this.calculateItemSize = calculateItemSize || (() => 1)
   this.limit = limit
@@ -81,5 +81,3 @@ History.prototype.clear = function () {
 
   this.onChange()
 }
-
-module.exports = History

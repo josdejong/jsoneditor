@@ -2,7 +2,7 @@
 
 /* eslint-disable no-template-curly-in-string */
 
-require('./polyfills')
+import './polyfills'
 
 const _locales = ['en', 'pt-BR', 'zh-CN', 'tr']
 const _defs = {
@@ -377,53 +377,45 @@ const _defs = {
 }
 
 const _defaultLang = 'en'
-let _lang
 const userLang = typeof navigator !== 'undefined'
   ? navigator.language || navigator.userLanguage
   : undefined
-_lang = _locales.find(l => l === userLang)
-if (!_lang) {
-  _lang = _defaultLang
+let _lang = _locales.find(l => l === userLang) || _defaultLang
+
+export function setLanguage (lang) {
+  if (!lang) {
+    return
+  }
+  const langFound = _locales.find(l => l === lang)
+  if (langFound) {
+    _lang = langFound
+  } else {
+    console.error('Language not found')
+  }
 }
 
-module.exports = {
-  // supported locales
-  _locales: _locales,
-  _defs: _defs,
-  _lang: _lang,
-  setLanguage: function (lang) {
-    if (!lang) {
-      return
-    }
-    const langFound = _locales.find(l => l === lang)
-    if (langFound) {
-      _lang = langFound
-    } else {
-      console.error('Language not found')
-    }
-  },
-  setLanguages: function (languages) {
-    if (!languages) {
-      return
-    }
-    for (const key in languages) {
-      const langFound = _locales.find(l => l === key)
-      if (!langFound) {
-        _locales.push(key)
-      }
-      _defs[key] = Object.assign({}, _defs[_defaultLang], _defs[key], languages[key])
-    }
-  },
-  translate: function (key, data, lang) {
-    if (!lang) {
-      lang = _lang
-    }
-    let text = _defs[lang][key]
-    if (data) {
-      for (key in data) {
-        text = text.replace('${' + key + '}', data[key])
-      }
-    }
-    return text || key
+export function setLanguages (languages) {
+  if (!languages) {
+    return
   }
+  for (const key in languages) {
+    const langFound = _locales.find(l => l === key)
+    if (!langFound) {
+      _locales.push(key)
+    }
+    _defs[key] = Object.assign({}, _defs[_defaultLang], _defs[key], languages[key])
+  }
+}
+
+export function translate (key, data, lang) {
+  if (!lang) {
+    lang = _lang
+  }
+  let text = _defs[lang][key]
+  if (data) {
+    for (key in data) {
+      text = text.replace('${' + key + '}', data[key])
+    }
+  }
+  return text || key
 }

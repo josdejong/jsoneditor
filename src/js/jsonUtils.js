@@ -21,7 +21,7 @@
  *
  * @returns {string | undefined} Returns the string representation of the JSON object.
  */
-function stringifyPartial (value, space, limit) {
+export function stringifyPartial (value, space, limit) {
   let _space // undefined by default
   if (typeof space === 'number') {
     if (space > 10) {
@@ -188,13 +188,10 @@ function slice (text, limit) {
  * @param {string} jsonText
  * @return {boolean}
  */
-function containsArray (jsonText) {
+export function containsArray (jsonText) {
   return /^\s*\[/.test(jsonText)
 }
 
 function hasOwnProperty (object, key) {
   return Object.prototype.hasOwnProperty.call(object, key)
 }
-
-exports.stringifyPartial = stringifyPartial
-exports.containsArray = containsArray

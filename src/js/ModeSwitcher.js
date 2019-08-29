@@ -1,6 +1,6 @@
 'use strict'
 
-const ContextMenu = require('./ContextMenu')
+const ContextMenu = require('./ContextMenu').ContextMenu
 const translate = require('./i18n').translate
 
 /**

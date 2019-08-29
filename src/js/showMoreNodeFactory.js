@@ -1,12 +1,12 @@
 'use strict'
 
-const translate = require('./i18n').translate
+import {translate} from './i18n';
 
 /**
  * A factory function to create an ShowMoreNode, which depends on a Node
  * @param {function} Node
  */
-function showMoreNodeFactory (Node) {
+export function showMoreNodeFactory (Node) {
   /**
    * @constructor ShowMoreNode
    * @extends Node
@@ -152,5 +152,3 @@ function showMoreNodeFactory (Node) {
 
   return ShowMoreNode
 }
-
-module.exports = showMoreNodeFactory

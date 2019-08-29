@@ -7,7 +7,7 @@
  * @param {Element} container               HTML container element of where to
  *                                          create the search box
  */
-function SearchBox (editor, container) {
+export function SearchBox (editor, container) {
   const searchBox = this
 
   this.editor = editor
@@ -319,5 +319,3 @@ SearchBox.prototype.destroy = function () {
 
   this._clearDelay()
 }
-
-module.exports = SearchBox

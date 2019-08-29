@@ -4,10 +4,10 @@ const ace = require('./ace')
 const jmespath = require('jmespath')
 const translate = require('./i18n').translate
 const ModeSwitcher = require('./ModeSwitcher')
-const ErrorTable = require('./ErrorTable')
+const ErrorTable = require('./ErrorTable').ErrorTable
 const validateCustom = require('./validationUtils').validateCustom
-const showSortModal = require('./showSortModal')
-const showTransformModal = require('./showTransformModal')
+const showSortModal = require('./showSortModal').showSortModal
+const showTransformModal = require('./showTransformModal').showTransformModal
 const util = require('./util')
 const DEFAULT_MODAL_ANCHOR = require('./constants').DEFAULT_MODAL_ANCHOR
 

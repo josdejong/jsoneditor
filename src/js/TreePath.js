@@ -1,8 +1,8 @@
 'use strict'
 
-const ContextMenu = require('./ContextMenu')
-const translate = require('./i18n').translate
-const util = require('./util')
+import { ContextMenu } from './ContextMenu'
+import { translate } from './i18n'
+import { addClassName, removeClassName } from './util'
 
 /**
  * Creates a component that visualize path selection in tree based editors
@@ -10,7 +10,7 @@ const util = require('./util')
  * @param {HTMLElement} root
  * @constructor
  */
-function TreePath (container, root) {
+export function TreePath (container, root) {
   if (container) {
     this.root = root
     this.path = document.createElement('div')
@@ -91,7 +91,7 @@ TreePath.prototype.setPath = function (pathObjs) {
 
   function _onShowAllClick (pathObjs) {
     me.contentMenuClicked = false
-    util.addClassName(me.path, 'show-all')
+    addClassName(me.path, 'show-all')
     me.path.style.width = me.path.parentNode.getBoundingClientRect().width - 10 + 'px'
     me.path.onblur = () => {
       if (me.contentMenuClicked) {
@@ -99,7 +99,7 @@ TreePath.prototype.setPath = function (pathObjs) {
         me.path.focus()
         return
       }
-      util.removeClassName(me.path, 'show-all')
+      removeClassName(me.path, 'show-all')
       me.path.onblur = undefined
       me.path.style.width = ''
       me.setPath(pathObjs)
@@ -138,5 +138,3 @@ TreePath.prototype.onContextMenuItemSelected = function (callback) {
     this.contextMenuCallback = callback
   }
 }
-
-module.exports = TreePath
