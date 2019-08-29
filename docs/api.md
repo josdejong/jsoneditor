@@ -59,7 +59,7 @@ Constructs a new JSONEditor.
 - `{function} onChangeJSON(json)`
 
   Set a callback function triggered when the contents of the JSONEditor change.
-  Passes the changed contents as a JSON object.
+  Passes the changed JSON document.
   Only applicable when option `mode` is `tree`, `form`, or `view`.
   The callback will only be triggered on changes made by the user, not in case of programmatic changes via the functions `set`, `setText`, `update`, or `updateText`.
   See also callback function `onChangeText(jsonString)`.
@@ -67,7 +67,7 @@ Constructs a new JSONEditor.
 - `{function} onChangeText(jsonString)`
 
   Set a callback function triggered when the contents of the JSONEditor change.
-  Passes the changed contents as a stringified JSON object.
+  Passes the changed JSON document inside a string (stringified).
   The callback will only be triggered on changes made by the user, not in case of programmatic changes via the functions `set`, `setText`, `update`, or `updateText`.
   See also callback function `onChangeJSON(json)`.
 
