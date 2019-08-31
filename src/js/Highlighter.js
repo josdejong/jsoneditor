@@ -6,7 +6,7 @@
  * @constructor Highlighter
  */
 export class Highlighter {
-  constructor() {
+  constructor () {
     this.locked = false
   }
 
@@ -14,7 +14,7 @@ export class Highlighter {
    * Hightlight given node and its childs
    * @param {Node} node
    */
-  highlight(node) {
+  highlight (node) {
     if (this.locked) {
       return
     }
@@ -38,7 +38,7 @@ export class Highlighter {
    * Unhighlight currently highlighted node.
    * Will be done after a delay
    */
-  unhighlight() {
+  unhighlight () {
     if (this.locked) {
       return
     }
@@ -62,7 +62,7 @@ export class Highlighter {
    * Cancel an unhighlight action (if before the timeout of the unhighlight action)
    * @private
    */
-  _cancelUnhighlight() {
+  _cancelUnhighlight () {
     if (this.unhighlightTimer) {
       clearTimeout(this.unhighlightTimer)
       this.unhighlightTimer = undefined
@@ -73,14 +73,14 @@ export class Highlighter {
    * Lock highlighting or unhighlighting nodes.
    * methods highlight and unhighlight do not work while locked.
    */
-  lock() {
+  lock () {
     this.locked = true
   }
 
   /**
    * Unlock highlighting or unhighlighting nodes
    */
-  unlock() {
+  unlock () {
     this.locked = false
   }
 }

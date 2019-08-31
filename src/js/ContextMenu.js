@@ -14,7 +14,7 @@ import { translate } from './i18n'
  * @constructor
  */
 export class ContextMenu {
-  constructor(items, options) {
+  constructor (items, options) {
     this.dom = {}
 
     const me = this
@@ -166,7 +166,7 @@ export class ContextMenu {
    * @return {Array.<HTMLElement>} buttons
    * @private
    */
-  _getVisibleButtons() {
+  _getVisibleButtons () {
     const buttons = []
     const me = this
     this.dom.items.forEach(item => {
@@ -194,7 +194,7 @@ export class ContextMenu {
    * @param {HTMLElement} frame     The root of the JSONEditor window
    * @param {Boolean=} ignoreParent ignore anchor parent in regard to the calculation of the position, needed when the parent position is absolute
    */
-  show(anchor, frame, ignoreParent) {
+  show (anchor, frame, ignoreParent) {
     this.hide()
 
     // determine whether to display the menu below or above the anchor
@@ -254,7 +254,7 @@ export class ContextMenu {
   /**
    * Hide the context menu if visible
    */
-  hide() {
+  hide () {
     // remove temporary absolutely positioned anchor
     if (this.dom.absoluteAnchor) {
       this.dom.absoluteAnchor.destroy()
@@ -280,7 +280,7 @@ export class ContextMenu {
    * @param {Object} domItem
    * @private
    */
-  _onExpandItem(domItem) {
+  _onExpandItem (domItem) {
     const me = this
     const alreadyVisible = (domItem === this.expandedItem)
 
@@ -324,7 +324,7 @@ export class ContextMenu {
    * @param {Event} event
    * @private
    */
-  _onKeyDown(event) {
+  _onKeyDown (event) {
     const target = event.target
     const keynum = event.which
     let handled = false

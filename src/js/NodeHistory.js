@@ -8,7 +8,7 @@ import { findUniqueName } from './util'
  * @param {JSONEditor} editor
  */
 export class NodeHistory {
-  constructor(editor) {
+  constructor (editor) {
     this.editor = editor
     this.history = []
     this.index = -1
@@ -207,7 +207,7 @@ export class NodeHistory {
    * The method onChange is executed when the History is changed, and can
    * be overloaded.
    */
-  onChange() {}
+  onChange () {}
 
   /**
    * Add a new action to the history
@@ -220,7 +220,7 @@ export class NodeHistory {
    *                         value are provided). params contains all information
    *                         needed to undo or redo the action.
    */
-  add(action, params) {
+  add (action, params) {
     this.index++
     this.history[this.index] = {
       action: action,
@@ -240,7 +240,7 @@ export class NodeHistory {
   /**
    * Clear history
    */
-  clear() {
+  clear () {
     this.history = []
     this.index = -1
 
@@ -252,7 +252,7 @@ export class NodeHistory {
    * Check if there is an action available for undo
    * @return {Boolean} canUndo
    */
-  canUndo() {
+  canUndo () {
     return (this.index >= 0)
   }
 
@@ -260,14 +260,14 @@ export class NodeHistory {
    * Check if there is an action available for redo
    * @return {Boolean} canRedo
    */
-  canRedo() {
+  canRedo () {
     return (this.index < this.history.length - 1)
   }
 
   /**
    * Undo the last action
    */
-  undo() {
+  undo () {
     if (this.canUndo()) {
       const obj = this.history[this.index]
       if (obj) {
@@ -295,7 +295,7 @@ export class NodeHistory {
   /**
    * Redo the last action
    */
-  redo() {
+  redo () {
     if (this.canRedo()) {
       this.index++
 
@@ -324,7 +324,7 @@ export class NodeHistory {
   /**
    * Destroy history
    */
-  destroy() {
+  destroy () {
     this.editor = null
 
     this.history = []

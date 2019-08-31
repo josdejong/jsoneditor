@@ -7,7 +7,7 @@
  * @constructor
  */
 export class History {
-  constructor(onChange, calculateItemSize, limit) {
+  constructor (onChange, calculateItemSize, limit) {
     this.onChange = onChange
     this.calculateItemSize = calculateItemSize || (() => 1)
     this.limit = limit
@@ -16,7 +16,7 @@ export class History {
     this.index = -1
   }
 
-  add(item) {
+  add (item) {
     // limit number of items in history so that the total size doesn't
     // always keep at least one item in memory
     while (this._calculateHistorySize() > this.limit && this.items.length > 1) {
@@ -33,7 +33,7 @@ export class History {
     this.onChange()
   }
 
-  _calculateHistorySize() {
+  _calculateHistorySize () {
     const calculateItemSize = this.calculateItemSize
     let totalSize = 0
 
@@ -44,7 +44,7 @@ export class History {
     return totalSize
   }
 
-  undo() {
+  undo () {
     if (!this.canUndo()) {
       return
     }
@@ -56,7 +56,7 @@ export class History {
     return this.items[this.index]
   }
 
-  redo() {
+  redo () {
     if (!this.canRedo()) {
       return
     }
@@ -68,15 +68,15 @@ export class History {
     return this.items[this.index]
   }
 
-  canUndo() {
+  canUndo () {
     return this.index > 0
   }
 
-  canRedo() {
+  canRedo () {
     return this.index < this.items.length - 1
   }
 
-  clear() {
+  clear () {
     this.items = []
     this.index = -1
 

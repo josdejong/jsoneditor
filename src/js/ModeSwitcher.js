@@ -12,7 +12,7 @@ import { translate } from './i18n'
  * @constructor
  */
 export class ModeSwitcher {
-  constructor(container, modes, current, onSwitch) {
+  constructor (container, modes, current, onSwitch) {
     // available modes
     const availableModes = {
       code: {
@@ -107,14 +107,14 @@ export class ModeSwitcher {
   /**
    * Set focus to switcher
    */
-  focus() {
+  focus () {
     this.dom.box.focus()
   }
 
   /**
    * Destroy the ModeSwitcher, remove from DOM
    */
-  destroy() {
+  destroy () {
     if (this.dom && this.dom.frame && this.dom.frame.parentNode) {
       this.dom.frame.parentNode.removeChild(this.dom.frame)
     }
