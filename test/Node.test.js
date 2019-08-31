@@ -1,6 +1,6 @@
 import assert from 'assert'
 import './setup'
-import Node from '../src/js/Node'
+import { Node } from '../src/js/Node'
 
 describe('Node', () => {
   describe('_findSchema', () => {
