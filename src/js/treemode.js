@@ -6,7 +6,7 @@ import { NodeHistory } from './NodeHistory'
 import { SearchBox } from './SearchBox'
 import { ContextMenu } from './ContextMenu'
 import { TreePath } from './TreePath'
-import Node from './Node'
+import { Node } from './Node'
 import { ModeSwitcher } from './ModeSwitcher'
 import {
   addClassName,

@@ -5,80 +5,82 @@
  * animate the visibility of a context menu.
  * @constructor Highlighter
  */
-export function Highlighter () {
-  this.locked = false
-}
-
-/**
- * Hightlight given node and its childs
- * @param {Node} node
- */
-Highlighter.prototype.highlight = function (node) {
-  if (this.locked) {
-    return
+export class Highlighter {
+  constructor() {
+    this.locked = false
   }
 
-  if (this.node !== node) {
-    // unhighlight current node
-    if (this.node) {
-      this.node.setHighlight(false)
+  /**
+   * Hightlight given node and its childs
+   * @param {Node} node
+   */
+  highlight(node) {
+    if (this.locked) {
+      return
     }
 
-    // highlight new node
-    this.node = node
-    this.node.setHighlight(true)
-  }
+    if (this.node !== node) {
+      // unhighlight current node
+      if (this.node) {
+        this.node.setHighlight(false)
+      }
 
-  // cancel any current timeout
-  this._cancelUnhighlight()
-}
+      // highlight new node
+      this.node = node
+      this.node.setHighlight(true)
+    }
 
-/**
- * Unhighlight currently highlighted node.
- * Will be done after a delay
- */
-Highlighter.prototype.unhighlight = function () {
-  if (this.locked) {
-    return
-  }
-
-  const me = this
-  if (this.node) {
+    // cancel any current timeout
     this._cancelUnhighlight()
-
-    // do the unhighlighting after a small delay, to prevent re-highlighting
-    // the same node when moving from the drag-icon to the contextmenu-icon
-    // or vice versa.
-    this.unhighlightTimer = setTimeout(() => {
-      me.node.setHighlight(false)
-      me.node = undefined
-      me.unhighlightTimer = undefined
-    }, 0)
   }
-}
 
-/**
- * Cancel an unhighlight action (if before the timeout of the unhighlight action)
- * @private
- */
-Highlighter.prototype._cancelUnhighlight = function () {
-  if (this.unhighlightTimer) {
-    clearTimeout(this.unhighlightTimer)
-    this.unhighlightTimer = undefined
+  /**
+   * Unhighlight currently highlighted node.
+   * Will be done after a delay
+   */
+  unhighlight() {
+    if (this.locked) {
+      return
+    }
+
+    const me = this
+    if (this.node) {
+      this._cancelUnhighlight()
+
+      // do the unhighlighting after a small delay, to prevent re-highlighting
+      // the same node when moving from the drag-icon to the contextmenu-icon
+      // or vice versa.
+      this.unhighlightTimer = setTimeout(() => {
+        me.node.setHighlight(false)
+        me.node = undefined
+        me.unhighlightTimer = undefined
+      }, 0)
+    }
   }
-}
 
-/**
- * Lock highlighting or unhighlighting nodes.
- * methods highlight and unhighlight do not work while locked.
- */
-Highlighter.prototype.lock = function () {
-  this.locked = true
-}
+  /**
+   * Cancel an unhighlight action (if before the timeout of the unhighlight action)
+   * @private
+   */
+  _cancelUnhighlight() {
+    if (this.unhighlightTimer) {
+      clearTimeout(this.unhighlightTimer)
+      this.unhighlightTimer = undefined
+    }
+  }
 
-/**
- * Unlock highlighting or unhighlighting nodes
- */
-Highlighter.prototype.unlock = function () {
-  this.locked = false
+  /**
+   * Lock highlighting or unhighlighting nodes.
+   * methods highlight and unhighlight do not work while locked.
+   */
+  lock() {
+    this.locked = true
+  }
+
+  /**
+   * Unlock highlighting or unhighlighting nodes
+   */
+  unlock() {
+    this.locked = false
+  }
 }

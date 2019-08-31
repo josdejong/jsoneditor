@@ -1098,7 +1098,6 @@ export function getIndexForPosition (el, row, column) {
  * @returns {Array<{path: String, line: Number, row: Number}>}
  */
 export function getPositionForPath (text, paths) {
-  const me = this
   const result = []
   let jsmap
   if (!paths || !paths.length) {
@@ -1112,7 +1111,7 @@ export function getPositionForPath (text, paths) {
   }
 
   paths.forEach(path => {
-    const pathArr = me.parsePath(path)
+    const pathArr = parsePath(path)
     const pointerName = compileJSONPointer(pathArr)
     const pointer = jsmap.pointers[pointerName]
     if (pointer) {
