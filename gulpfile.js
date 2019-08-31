@@ -1,40 +1,40 @@
-var fs = require('fs')
-var path = require('path')
-var gulp = require('gulp')
-var log = require('fancy-log')
-var format = require('date-format')
-var concatCss = require('gulp-concat-css')
-var minifyCSS = require('gulp-clean-css')
-var sass = require('gulp-sass')
-var mkdirp = require('mkdirp')
-var webpack = require('webpack')
-var uglify = require('uglify-js')
+const fs = require('fs')
+const path = require('path')
+const gulp = require('gulp')
+const log = require('fancy-log')
+const format = require('date-format')
+const concatCss = require('gulp-concat-css')
+const minifyCSS = require('gulp-clean-css')
+const sass = require('gulp-sass')
+const mkdirp = require('mkdirp')
+const webpack = require('webpack')
+const uglify = require('uglify-js')
 
-var NAME = 'jsoneditor'
-var NAME_MINIMALIST = 'jsoneditor-minimalist'
-var ENTRY = './src/js/JSONEditor.js'
-var HEADER = './src/js/header.js'
-var IMAGE = './src/scss/img/jsoneditor-icons.svg'
-var DOCS = './src/docs/*'
-var DIST = path.join(__dirname, 'dist')
+const NAME = 'jsoneditor'
+const NAME_MINIMALIST = 'jsoneditor-minimalist'
+const ENTRY = './src/js/JSONEditor.js'
+const HEADER = './src/js/header.js'
+const IMAGE = './src/scss/img/jsoneditor-icons.svg'
+const DOCS = './src/docs/*'
+const DIST = path.join(__dirname, 'dist')
 
 // generate banner with today's date and correct version
 function createBanner () {
-  var today = format.asString('yyyy-MM-dd', new Date()) // today, formatted as yyyy-MM-dd
-  var version = require('./package.json').version // math.js version
+  const today = format.asString('yyyy-MM-dd', new Date()) // today, formatted as yyyy-MM-dd
+  const version = require('./package.json').version // math.js version
 
   return String(fs.readFileSync(HEADER))
     .replace('@@date', today)
     .replace('@@version', version)
 }
 
-var bannerPlugin = new webpack.BannerPlugin({
+const bannerPlugin = new webpack.BannerPlugin({
   banner: createBanner(),
   entryOnly: true,
   raw: true
 })
 
-var webpackConfigModule = {
+const webpackConfigModule = {
   rules: [
     {
       test: /\.m?js$/,
@@ -47,7 +47,7 @@ var webpackConfigModule = {
 }
 
 // create a single instance of the compiler to allow caching
-var compiler = webpack({
+const compiler = webpack({
   entry: ENTRY,
   output: {
     library: 'JSONEditor',
@@ -69,7 +69,7 @@ var compiler = webpack({
 })
 
 // create a single instance of the compiler to allow caching
-var compilerMinimalist = webpack({
+const compilerMinimalist = webpack({
   entry: ENTRY,
   output: {
     library: 'JSONEditor',
@@ -92,8 +92,8 @@ var compilerMinimalist = webpack({
 })
 
 function minify (name) {
-  var code = String(fs.readFileSync(DIST + '/' + name + '.js'))
-  var result = uglify.minify(code, {
+  const code = String(fs.readFileSync(DIST + '/' + name + '.js'))
+  const result = uglify.minify(code, {
     sourceMap: {
       url: name + '.map'
     },
@@ -107,8 +107,8 @@ function minify (name) {
     throw result.error
   }
 
-  var fileMin = DIST + '/' + name + '.min.js'
-  var fileMap = DIST + '/' + name + '.map'
+  const fileMin = DIST + '/' + name + '.min.js'
+  const fileMap = DIST + '/' + name + '.map'
 
   fs.writeFileSync(fileMin, result.code)
   fs.writeFileSync(fileMap, result.map)

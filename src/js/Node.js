@@ -1,16 +1,39 @@
 'use strict'
 
-const jmespath = require('jmespath')
-const naturalSort = require('javascript-natural-sort')
-const createAbsoluteAnchor = require('./createAbsoluteAnchor').createAbsoluteAnchor
-const ContextMenu = require('./ContextMenu').ContextMenu
-const appendNodeFactory = require('./appendNodeFactory')
-const showMoreNodeFactory = require('./showMoreNodeFactory').showMoreNodeFactory
-const showSortModal = require('./showSortModal').showSortModal
-const showTransformModal = require('./showTransformModal').showTransformModal
-const util = require('./util')
-const translate = require('./i18n').translate
-const DEFAULT_MODAL_ANCHOR = require('./constants').DEFAULT_MODAL_ANCHOR
+import jmespath from 'jmespath'
+import naturalSort from 'javascript-natural-sort'
+import { createAbsoluteAnchor } from './createAbsoluteAnchor'
+import { ContextMenu } from './ContextMenu'
+import { appendNodeFactory } from './appendNodeFactory'
+import { showMoreNodeFactory } from './showMoreNodeFactory'
+import { showSortModal } from './showSortModal'
+import { showTransformModal } from './showTransformModal'
+import {
+  addClassName,
+  addEventListener,
+  debounce,
+  escapeUnicodeChars,
+  findUniqueName,
+  getAbsoluteLeft,
+  getAbsoluteTop,
+  getInnerText,
+  getType,
+  insideRect,
+  isUrl,
+  isValidColor,
+  makeFieldTooltip,
+  parse,
+  parsePath,
+  parseString, removeAllClassNames,
+  removeClassName,
+  removeEventListener,
+  selectContentEditable,
+  setEndOfContentEditable,
+  stripFormatting,
+  textDiff
+} from './util'
+import { translate } from './i18n'
+import { DEFAULT_MODAL_ANCHOR } from './constants'
 
 const YEAR_2000 = 946684800000
 
@@ -44,8 +67,8 @@ function Node (editor, params) {
     this.setValue(null)
   }
 
-  this._debouncedOnChangeValue = util.debounce(this._onChangeValue.bind(this), Node.prototype.DEBOUNCE_INTERVAL)
-  this._debouncedOnChangeField = util.debounce(this._onChangeField.bind(this), Node.prototype.DEBOUNCE_INTERVAL)
+  this._debouncedOnChangeValue = debounce(this._onChangeValue.bind(this), Node.prototype.DEBOUNCE_INTERVAL)
+  this._debouncedOnChangeField = debounce(this._onChangeField.bind(this), Node.prototype.DEBOUNCE_INTERVAL)
 
   // starting value for visible children
   this.visibleChilds = this.getMaxVisibleChilds()
@@ -206,7 +229,7 @@ Node.prototype.serialize = function () {
  * @return {Node | null} Returns the Node when found, returns null if not found
  */
 Node.prototype.findNode = function (jsonPath) {
-  const path = util.parsePath(jsonPath)
+  const path = parsePath(jsonPath)
   let node = this
   while (node && path.length > 0) {
     const prop = path.shift()
@@ -265,7 +288,7 @@ Node.prototype.updateError = function () {
   const error = this.fieldError || this.valueError || this.error
   let tdError = this.dom.tdError
   if (error && this.dom && this.dom.tr) {
-    util.addClassName(this.dom.tr, 'jsoneditor-validation-error')
+    addClassName(this.dom.tr, 'jsoneditor-validation-error')
 
     if (!tdError) {
       tdError = document.createElement('td')
@@ -292,7 +315,7 @@ Node.prototype.updateError = function () {
         const contentRect = this.editor.content.getBoundingClientRect()
         const popoverRect = popover.getBoundingClientRect()
         const margin = 20 // account for a scroll bar
-        const fit = util.insideRect(contentRect, popoverRect, margin)
+        const fit = insideRect(contentRect, popoverRect, margin)
 
         if (fit) {
           break
@@ -322,7 +345,7 @@ Node.prototype.updateError = function () {
     tdError.appendChild(button)
   } else {
     if (this.dom.tr) {
-      util.removeClassName(this.dom.tr, 'jsoneditor-validation-error')
+      removeClassName(this.dom.tr, 'jsoneditor-validation-error')
     }
 
     if (tdError) {
@@ -894,9 +917,9 @@ Node.prototype._updateCssClassName = function () {
     this.editor.options &&
     typeof this.editor.options.onClassName === 'function' &&
     this.dom.tree) {
-    util.removeAllClassNames(this.dom.tree)
+    removeAllClassNames(this.dom.tree)
     const addClasses = this.editor.options.onClassName({ path: this.getPath(), field: this.field, value: this.value }) || ''
-    util.addClassName(this.dom.tree, 'jsoneditor-values ' + addClasses)
+    addClassName(this.dom.tree, 'jsoneditor-values ' + addClasses)
   }
 }
 
@@ -1209,10 +1232,10 @@ Node.prototype.focus = function (elementName) {
           dom.expand.focus()
         } else if (dom.field && this.fieldEditable) {
           dom.field.focus()
-          util.selectContentEditable(dom.field)
+          selectContentEditable(dom.field)
         } else if (dom.value && !this._hasChilds()) {
           dom.value.focus()
-          util.selectContentEditable(dom.value)
+          selectContentEditable(dom.value)
         } else {
           dom.menu.focus()
         }
@@ -1221,10 +1244,10 @@ Node.prototype.focus = function (elementName) {
       case 'field':
         if (dom.field && this.fieldEditable) {
           dom.field.focus()
-          util.selectContentEditable(dom.field)
+          selectContentEditable(dom.field)
         } else if (dom.value && !this._hasChilds()) {
           dom.value.focus()
-          util.selectContentEditable(dom.value)
+          selectContentEditable(dom.value)
         } else if (this._hasChilds()) {
           dom.expand.focus()
         } else {
@@ -1239,10 +1262,10 @@ Node.prototype.focus = function (elementName) {
           dom.select.focus()
         } else if (dom.value && !this._hasChilds()) {
           dom.value.focus()
-          util.selectContentEditable(dom.value)
+          selectContentEditable(dom.value)
         } else if (dom.field && this.fieldEditable) {
           dom.field.focus()
-          util.selectContentEditable(dom.field)
+          selectContentEditable(dom.field)
         } else if (this._hasChilds()) {
           dom.expand.focus()
         } else {
@@ -1259,7 +1282,7 @@ Node.prototype.focus = function (elementName) {
  */
 Node.select = editableDiv => {
   setTimeout(() => {
-    util.selectContentEditable(editableDiv)
+    selectContentEditable(editableDiv)
   }, 0)
 }
 
@@ -1406,7 +1429,7 @@ Node.prototype.changeType = function (newType) {
     if (newType === 'string') {
       this.value = String(this.value)
     } else {
-      this.value = util.parseString(String(this.value))
+      this.value = parseString(String(this.value))
     }
 
     this.focus()
@@ -1483,7 +1506,7 @@ Node.prototype._getDomValue = function () {
   this._clearValueError()
 
   if (this.dom.value && this.type !== 'array' && this.type !== 'object') {
-    this.valueInnerText = util.getInnerText(this.dom.value)
+    this.valueInnerText = getInnerText(this.dom.value)
   }
 
   if (this.valueInnerText !== undefined) {
@@ -1494,7 +1517,7 @@ Node.prototype._getDomValue = function () {
         value = this._unescapeHTML(this.valueInnerText)
       } else {
         const str = this._unescapeHTML(this.valueInnerText)
-        value = util.parseString(str)
+        value = parseString(str)
       }
       if (value !== this.value) {
         this.value = value
@@ -1554,13 +1577,13 @@ Node.prototype._onChangeValue = function () {
   // the added/removed text on undo/redo
   const oldSelection = this.editor.getDomSelection()
   if (oldSelection.range) {
-    const undoDiff = util.textDiff(String(this.value), String(this.previousValue))
+    const undoDiff = textDiff(String(this.value), String(this.previousValue))
     oldSelection.range.startOffset = undoDiff.start
     oldSelection.range.endOffset = undoDiff.end
   }
   const newSelection = this.editor.getDomSelection()
   if (newSelection.range) {
-    const redoDiff = util.textDiff(String(this.previousValue), String(this.value))
+    const redoDiff = textDiff(String(this.previousValue), String(this.value))
     newSelection.range.startOffset = redoDiff.start
     newSelection.range.endOffset = redoDiff.end
   }
@@ -1586,13 +1609,13 @@ Node.prototype._onChangeField = function () {
   const oldSelection = this.editor.getDomSelection()
   const previous = this.previousField || ''
   if (oldSelection.range) {
-    const undoDiff = util.textDiff(this.field, previous)
+    const undoDiff = textDiff(this.field, previous)
     oldSelection.range.startOffset = undoDiff.start
     oldSelection.range.endOffset = undoDiff.end
   }
   const newSelection = this.editor.getDomSelection()
   if (newSelection.range) {
-    const redoDiff = util.textDiff(previous, this.field)
+    const redoDiff = textDiff(previous, this.field)
     newSelection.range.startOffset = redoDiff.start
     newSelection.range.endOffset = redoDiff.end
   }
@@ -1623,10 +1646,10 @@ Node.prototype._updateDomValue = function () {
 
     // set text color depending on value type
     const value = this.value
-    const type = (this.type === 'auto') ? util.type(value) : this.type
-    const isUrl = type === 'string' && util.isUrl(value)
-    classNames.push('jsoneditor-' + type)
-    if (isUrl) {
+    const valueType = (this.type === 'auto') ? getType(value) : this.type
+    const valueIsUrl = valueType === 'string' && isUrl(value)
+    classNames.push('jsoneditor-' + valueType)
+    if (valueIsUrl) {
       classNames.push('jsoneditor-url')
     }
 
@@ -1647,17 +1670,17 @@ Node.prototype._updateDomValue = function () {
     domValue.className = classNames.join(' ')
 
     // update title
-    if (type === 'array' || type === 'object') {
+    if (valueType === 'array' || valueType === 'object') {
       const count = this.childs ? this.childs.length : 0
       domValue.title = this.type + ' containing ' + count + ' items'
-    } else if (isUrl && this.editable.value) {
+    } else if (valueIsUrl && this.editable.value) {
       domValue.title = translate('openUrl')
     } else {
       domValue.title = ''
     }
 
     // show checkbox when the value is a boolean
-    if (type === 'boolean' && this.editable.value) {
+    if (valueType === 'boolean' && this.editable.value) {
       if (!this.dom.checkbox) {
         this.dom.checkbox = document.createElement('input')
         this.dom.checkbox.type = 'checkbox'
@@ -1738,7 +1761,7 @@ Node.prototype._updateDomValue = function () {
     if (this.editable.value &&
         this.editor.options.colorPicker &&
         typeof value === 'string' &&
-        util.isValidColor(value)) {
+        isValidColor(value)) {
       if (!this.dom.color) {
         this.dom.color = document.createElement('div')
         this.dom.color.className = 'jsoneditor-color'
@@ -1782,7 +1805,7 @@ Node.prototype._updateDomValue = function () {
     }
 
     // strip formatting from the contents of the editable div
-    util.stripFormatting(domValue)
+    stripFormatting(domValue)
 
     this._updateDomDefault()
   }
@@ -1808,7 +1831,7 @@ Node.prototype._deleteDomColor = function () {
 Node.prototype._updateDomField = function () {
   const domField = this.dom.field
   if (domField) {
-    const tooltip = util.makeFieldTooltip(this.schema, this.editor.options.language)
+    const tooltip = makeFieldTooltip(this.schema, this.editor.options.language)
     if (tooltip) {
       domField.title = tooltip
     }
@@ -1816,25 +1839,25 @@ Node.prototype._updateDomField = function () {
     // make backgound color lightgray when empty
     const isEmpty = (String(this.field) === '' && this.parent.type !== 'array')
     if (isEmpty) {
-      util.addClassName(domField, 'jsoneditor-empty')
+      addClassName(domField, 'jsoneditor-empty')
     } else {
-      util.removeClassName(domField, 'jsoneditor-empty')
+      removeClassName(domField, 'jsoneditor-empty')
     }
 
     // highlight when there is a search result
     if (this.searchFieldActive) {
-      util.addClassName(domField, 'jsoneditor-highlight-active')
+      addClassName(domField, 'jsoneditor-highlight-active')
     } else {
-      util.removeClassName(domField, 'jsoneditor-highlight-active')
+      removeClassName(domField, 'jsoneditor-highlight-active')
     }
     if (this.searchField) {
-      util.addClassName(domField, 'jsoneditor-highlight')
+      addClassName(domField, 'jsoneditor-highlight')
     } else {
-      util.removeClassName(domField, 'jsoneditor-highlight')
+      removeClassName(domField, 'jsoneditor-highlight')
     }
 
     // strip formatting from the contents of the editable div
-    util.stripFormatting(domField)
+    stripFormatting(domField)
   }
 }
 
@@ -1848,7 +1871,7 @@ Node.prototype._getDomField = function (forceUnique) {
   this._clearFieldError()
 
   if (this.dom.field && this.fieldEditable) {
-    this.fieldInnerText = util.getInnerText(this.dom.field)
+    this.fieldInnerText = getInnerText(this.dom.field)
   }
 
   if (this.fieldInnerText !== undefined) {
@@ -1866,7 +1889,7 @@ Node.prototype._getDomField = function (forceUnique) {
       } else {
         if (forceUnique) {
           // fix duplicate field: change it into a unique name
-          field = util.findUniqueName(field, existingFieldNames)
+          field = findUniqueName(field, existingFieldNames)
           if (field !== this.field) {
             this.field = field
 
@@ -1906,12 +1929,12 @@ Node.prototype._updateDomDefault = function () {
 
   if (this.value === this.schema.default) {
     inputElement.title = translate('default')
-    util.addClassName(inputElement, 'jsoneditor-is-default')
-    util.removeClassName(inputElement, 'jsoneditor-is-not-default')
+    addClassName(inputElement, 'jsoneditor-is-default')
+    removeClassName(inputElement, 'jsoneditor-is-not-default')
   } else {
     inputElement.removeAttribute('title')
-    util.removeClassName(inputElement, 'jsoneditor-is-default')
-    util.addClassName(inputElement, 'jsoneditor-is-not-default')
+    removeClassName(inputElement, 'jsoneditor-is-default')
+    addClassName(inputElement, 'jsoneditor-is-not-default')
   }
 }
 
@@ -2009,16 +2032,16 @@ Node.onDragStart = (nodes, event) => {
 
   // in case of multiple selected nodes, offsetY prevents the selection from
   // jumping when you start dragging one of the lower down nodes in the selection
-  const offsetY = util.getAbsoluteTop(draggedNode.dom.tr) - util.getAbsoluteTop(firstNode.dom.tr)
+  const offsetY = getAbsoluteTop(draggedNode.dom.tr) - getAbsoluteTop(firstNode.dom.tr)
 
   if (!editor.mousemove) {
-    editor.mousemove = util.addEventListener(window, 'mousemove', event => {
+    editor.mousemove = addEventListener(window, 'mousemove', event => {
       Node.onDrag(nodes, event)
     })
   }
 
   if (!editor.mouseup) {
-    editor.mouseup = util.addEventListener(window, 'mouseup', event => {
+    editor.mouseup = addEventListener(window, 'mouseup', event => {
       Node.onDragEnd(nodes, event)
     })
   }
@@ -2068,7 +2091,7 @@ Node.onDrag = (nodes, event) => {
   // move up/down
   const firstNode = nodes[0]
   const trThis = firstNode.dom.tr
-  let topThis = util.getAbsoluteTop(trThis)
+  let topThis = getAbsoluteTop(trThis)
   const heightThis = trThis.offsetHeight
   if (mouseY < topThis) {
     // move up
@@ -2076,7 +2099,7 @@ Node.onDrag = (nodes, event) => {
     do {
       trPrev = trPrev.previousSibling
       nodePrev = Node.getNodeFromTarget(trPrev)
-      topPrev = trPrev ? util.getAbsoluteTop(trPrev) : 0
+      topPrev = trPrev ? getAbsoluteTop(trPrev) : 0
     }
     while (trPrev && mouseY < topPrev)
 
@@ -2097,7 +2120,7 @@ Node.onDrag = (nodes, event) => {
     if (nodePrev && nodePrev.isVisible()) {
       // check if mouseY is really inside the found node
       trPrev = nodePrev.dom.tr
-      topPrev = trPrev ? util.getAbsoluteTop(trPrev) : 0
+      topPrev = trPrev ? getAbsoluteTop(trPrev) : 0
       if (mouseY > topPrev + heightThis) {
         nodePrev = undefined
       }
@@ -2115,13 +2138,13 @@ Node.onDrag = (nodes, event) => {
     trLast = (lastNode.expanded && lastNode.append) ? lastNode.append.getDom() : lastNode.dom.tr
     trFirst = trLast ? trLast.nextSibling : undefined
     if (trFirst) {
-      topFirst = util.getAbsoluteTop(trFirst)
+      topFirst = getAbsoluteTop(trFirst)
       trNext = trFirst
       do {
         nodeNext = Node.getNodeFromTarget(trNext)
         if (trNext) {
           bottomNext = trNext.nextSibling
-            ? util.getAbsoluteTop(trNext.nextSibling) : 0
+            ? getAbsoluteTop(trNext.nextSibling) : 0
           heightNext = trNext ? (bottomNext - topFirst) : 0
 
           if (nodeNext &&
@@ -2267,11 +2290,11 @@ Node.onDragEnd = (nodes, event) => {
   delete editor.drag
 
   if (editor.mousemove) {
-    util.removeEventListener(window, 'mousemove', editor.mousemove)
+    removeEventListener(window, 'mousemove', editor.mousemove)
     delete editor.mousemove
   }
   if (editor.mouseup) {
-    util.removeEventListener(window, 'mouseup', editor.mouseup)
+    removeEventListener(window, 'mouseup', editor.mouseup)
     delete editor.mouseup
   }
 
@@ -2314,9 +2337,9 @@ Node.prototype._createDomField = () => document.createElement('div')
 Node.prototype.setHighlight = function (highlight) {
   if (this.dom.tr) {
     if (highlight) {
-      util.addClassName(this.dom.tr, 'jsoneditor-highlight')
+      addClassName(this.dom.tr, 'jsoneditor-highlight')
     } else {
-      util.removeClassName(this.dom.tr, 'jsoneditor-highlight')
+      removeClassName(this.dom.tr, 'jsoneditor-highlight')
     }
 
     if (this.append) {
@@ -2341,15 +2364,15 @@ Node.prototype.setSelected = function (selected, isFirst) {
 
   if (this.dom.tr) {
     if (selected) {
-      util.addClassName(this.dom.tr, 'jsoneditor-selected')
+      addClassName(this.dom.tr, 'jsoneditor-selected')
     } else {
-      util.removeClassName(this.dom.tr, 'jsoneditor-selected')
+      removeClassName(this.dom.tr, 'jsoneditor-selected')
     }
 
     if (isFirst) {
-      util.addClassName(this.dom.tr, 'jsoneditor-first')
+      addClassName(this.dom.tr, 'jsoneditor-first')
     } else {
-      util.removeClassName(this.dom.tr, 'jsoneditor-first')
+      removeClassName(this.dom.tr, 'jsoneditor-first')
     }
 
     if (this.append) {
@@ -2450,13 +2473,13 @@ Node.prototype.updateDom = function (options) {
   if (domValue) {
     if (this.type === 'array') {
       this.updateNodeName()
-      util.addClassName(this.dom.tr, 'jsoneditor-expandable')
+      addClassName(this.dom.tr, 'jsoneditor-expandable')
     } else if (this.type === 'object') {
       this.updateNodeName()
-      util.addClassName(this.dom.tr, 'jsoneditor-expandable')
+      addClassName(this.dom.tr, 'jsoneditor-expandable')
     } else {
       domValue.innerHTML = this._escapeHTML(this.value)
-      util.removeClassName(this.dom.tr, 'jsoneditor-expandable')
+      removeClassName(this.dom.tr, 'jsoneditor-expandable')
     }
   }
 
@@ -2649,7 +2672,7 @@ Node.prototype._createDomValue = function () {
     domValue = document.createElement('div')
     domValue.innerHTML = '{...}'
   } else {
-    if (!this.editable.value && util.isUrl(this.value)) {
+    if (!this.editable.value && isUrl(this.value)) {
       // create a link in case of read-only editor and value containing an url
       domValue = document.createElement('a')
       domValue.href = this.value
@@ -2770,9 +2793,9 @@ Node.prototype.onEvent = function (event) {
     const highlighter = node.editor.highlighter
     highlighter.highlight(node)
     highlighter.lock()
-    util.addClassName(dom.menu, 'jsoneditor-selected')
+    addClassName(dom.menu, 'jsoneditor-selected')
     this.showContextMenu(dom.menu, () => {
-      util.removeClassName(dom.menu, 'jsoneditor-selected')
+      removeClassName(dom.menu, 'jsoneditor-selected')
       highlighter.unlock()
       highlighter.unhighlight()
     })
@@ -2840,7 +2863,7 @@ Node.prototype.onEvent = function (event) {
       case 'click':
         if (event.ctrlKey && this.editable.value) {
           // if read-only, we use the regular click behavior of an anchor
-          if (util.isUrl(this.value)) {
+          if (isUrl(this.value)) {
             event.preventDefault()
             window.open(this.value, '_blank')
           }
@@ -2911,16 +2934,16 @@ Node.prototype.onEvent = function (event) {
   if (domTree && target === domTree.parentNode && type === 'click' && !event.hasMoved) {
     const left = (event.offsetX !== undefined)
       ? (event.offsetX < (this.getLevel() + 1) * 24)
-      : (event.pageX < util.getAbsoluteLeft(dom.tdSeparator))// for FF
+      : (event.pageX < getAbsoluteLeft(dom.tdSeparator))// for FF
     if (left || expandable) {
       // node is expandable when it is an object or array
       if (domField) {
-        util.setEndOfContentEditable(domField)
+        setEndOfContentEditable(domField)
         domField.focus()
       }
     } else {
       if (domValue && !this.enum) {
-        util.setEndOfContentEditable(domValue)
+        setEndOfContentEditable(domValue)
         domValue.focus()
       }
     }
@@ -2928,7 +2951,7 @@ Node.prototype.onEvent = function (event) {
   if (((target === dom.tdExpand && !expandable) || target === dom.tdField || target === dom.tdSeparator) &&
       (type === 'click' && !event.hasMoved)) {
     if (domField) {
-      util.setEndOfContentEditable(domField)
+      setEndOfContentEditable(domField)
       domField.focus()
     }
   }
@@ -2994,7 +3017,7 @@ Node.prototype.onKeyDown = function (event) {
   if (keynum === 13) { // Enter
     if (target === this.dom.value) {
       if (!this.editable.value || event.ctrlKey) {
-        if (util.isUrl(this.value)) {
+        if (isUrl(this.value)) {
           window.open(this.value, '_blank')
           handled = true
         }
@@ -3430,7 +3453,7 @@ Node.onDuplicate = nodes => {
       const clone = node.clone()
       if (node.parent.type === 'object') {
         const existingFieldNames = node.parent.getFieldNames()
-        clone.field = util.findUniqueName(node.field, existingFieldNames)
+        clone.field = findUniqueName(node.field, existingFieldNames)
       }
       parent.insertAfter(clone, afterNode)
       afterNode = clone
@@ -3589,7 +3612,7 @@ Node.prototype._onChangeType = function (newType) {
  */
 Node.prototype.sort = function (path, direction) {
   if (typeof path === 'string') {
-    path = util.parsePath(path)
+    path = parsePath(path)
   }
 
   if (!this._hasChilds()) {
@@ -4330,7 +4353,7 @@ Node.prototype.showSortModal = function () {
 
   function onSort (sortedBy) {
     const path = sortedBy.path
-    const pathArray = util.parsePath(path)
+    const pathArray = parsePath(path)
 
     node.sortedBy = sortedBy
     node.sort(pathArray, sortedBy.direction)
@@ -4365,7 +4388,7 @@ Node.prototype._getType = value => {
   if (value instanceof Object) {
     return 'object'
   }
-  if (typeof (value) === 'string' && typeof (util.parseString(value)) !== 'string') {
+  if (typeof (value) === 'string' && typeof (parseString(value)) !== 'string') {
     return 'string'
   }
 
@@ -4393,7 +4416,7 @@ Node.prototype._escapeHTML = function (text) {
     const json = JSON.stringify(htmlEscaped)
     let html = json.substring(1, json.length - 1)
     if (this.editor.options.escapeUnicode === true) {
-      html = util.escapeUnicodeChars(html)
+      html = escapeUnicodeChars(html)
     }
     return html
   }
@@ -4407,7 +4430,7 @@ Node.prototype._escapeHTML = function (text) {
  */
 Node.prototype._unescapeHTML = function (escapedText) {
   const json = '"' + this._escapeJSON(escapedText) + '"'
-  const htmlEscaped = util.parse(json)
+  const htmlEscaped = parse(json)
 
   return htmlEscaped
     .replace(/&lt;/g, '<')
@@ -4514,4 +4537,4 @@ function hasOwnProperty (object, key) {
 var AppendNode = appendNodeFactory(Node)
 var ShowMoreNode = showMoreNodeFactory(Node)
 
-module.exports = Node
+export default Node

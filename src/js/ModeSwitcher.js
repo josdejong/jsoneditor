@@ -1,7 +1,7 @@
 'use strict'
 
-const ContextMenu = require('./ContextMenu').ContextMenu
-const translate = require('./i18n').translate
+import { ContextMenu } from './ContextMenu'
+import { translate } from './i18n'
 
 /**
  * Create a select box to be used in the editor menu's, which allows to switch mode
@@ -11,7 +11,7 @@ const translate = require('./i18n').translate
  * @param {function(mode: string)} onSwitch  Callback invoked on switch
  * @constructor
  */
-function ModeSwitcher (container, modes, current, onSwitch) {
+export function ModeSwitcher (container, modes, current, onSwitch) {
   // available modes
   const availableModes = {
     code: {
@@ -119,5 +119,3 @@ ModeSwitcher.prototype.destroy = function () {
   }
   this.dom = null
 }
-
-module.exports = ModeSwitcher

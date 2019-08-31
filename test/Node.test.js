@@ -1,8 +1,6 @@
-const assert = require('assert')
-const setUpTestEnvironment = require('./setup')
-setUpTestEnvironment()
-
-const Node = require('../src/js/Node')
+import assert from 'assert'
+import './setup'
+import Node from '../src/js/Node'
 
 describe('Node', () => {
   describe('_findSchema', () => {

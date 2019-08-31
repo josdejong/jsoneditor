@@ -2,7 +2,7 @@
 
 import jmespath from 'jmespath'
 import { translate } from './i18n'
-import ModeSwitcher from './ModeSwitcher'
+import { ModeSwitcher } from './ModeSwitcher'
 import { ErrorTable } from './ErrorTable'
 import { showSortModal } from './showSortModal'
 import { showTransformModal } from './showTransformModal'

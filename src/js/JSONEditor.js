@@ -2,11 +2,10 @@
 
 const ace = require('./ace') // may be undefined in case of minimalist bundle
 const VanillaPicker = require('./vanilla-picker') // may be undefined in case of minimalist bundle
-
-const treeModeMixins = require('./treemode').treeModeMixins
-const textModeMixins = require('./textmode').textModeMixins
-const previewModeMixins = require('./previewmode').previewModeMixins
-const util = require('./util')
+const { treeModeMixins } = require('./treemode')
+const { textModeMixins } = require('./textmode')
+const { previewModeMixins } = require('./previewmode')
+const { clear, extend, getInternetExplorerVersion, parse } = require('./util')
 const { tryRequireAjv } = require('./tryRequireAjv')
 
 const Ajv = tryRequireAjv()
@@ -97,7 +96,7 @@ function JSONEditor (container, options, json) {
   }
 
   // check for unsupported browser (IE8 and older)
-  const ieVersion = util.getInternetExplorerVersion()
+  const ieVersion = getInternetExplorerVersion()
   if (ieVersion !== -1 && ieVersion < 9) {
     throw new Error('Unsupported browser, IE9 or newer required. ' +
         'Please install the newest version of your browser.')
@@ -220,7 +219,7 @@ JSONEditor.prototype.get = function () {
  * @param {String | undefined} jsonText
  */
 JSONEditor.prototype.setText = function (jsonText) {
-  this.json = util.parse(jsonText)
+  this.json = parse(jsonText)
 }
 
 /**
@@ -263,7 +262,7 @@ JSONEditor.prototype.setMode = function (mode) {
   }
 
   const container = this.container
-  const options = util.extend({}, this.options)
+  const options = extend({}, this.options)
   const oldMode = options.mode
   let data
   let name
@@ -277,8 +276,8 @@ JSONEditor.prototype.setMode = function (mode) {
       data = this[asText ? 'getText' : 'get']() // get text or json
 
       this.destroy()
-      util.clear(this)
-      util.extend(this, config.mixin)
+      clear(this)
+      extend(this, config.mixin)
       this.create(container, options)
 
       this.setName(name)
@@ -428,7 +427,7 @@ JSONEditor.prototype.refresh = () => {
 JSONEditor.registerMode = mode => {
   let i, prop
 
-  if (util.isArray(mode)) {
+  if (Array.isArray(mode)) {
     // multiple modes
     for (i = 0; i < mode.length; i++) {
       JSONEditor.registerMode(mode[i])

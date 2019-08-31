@@ -1,11 +1,11 @@
-const JSDOM = require('jsdom').JSDOM
+import { JSDOM } from 'jsdom'
 
 /**
  * Set up the test environment by simulating browser globals.
  * @param {string} [locale=en] A locale to set in navigator.language
  * @return {void}
  */
-module.exports = function setUpTestEnvironment (locale) {
+function setUpTestEnvironment (locale) {
   if (!locale) {
     locale = 'en'
   }
@@ -17,4 +17,6 @@ module.exports = function setUpTestEnvironment (locale) {
 
   // JSDom has no setter defined for navigator.language, so defineProperty is necessary in order to override it
   Object.defineProperty(navigator, 'language', { value: locale })
-}
+};
+
+setUpTestEnvironment()

@@ -1,1 +1,1 @@
-module.exports = require('./src/js/JSONEditor').default
+module.exports = require('./src/js/JSONEditor')

@@ -1,6 +1,5 @@
-const assert = require('assert')
-const stringifyPartial = require('../src/js/jsonUtils').stringifyPartial
-const containsArray = require('../src/js/jsonUtils').containsArray
+import assert from 'assert'
+import { stringifyPartial, containsArray } from '../src/js/jsonUtils'
 
 describe('jsonUtils', () => {
   it('should stringify a small object', () => {

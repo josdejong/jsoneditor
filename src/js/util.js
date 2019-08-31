@@ -341,7 +341,7 @@ export function clear (a) {
  * @param {*} object
  * @return {String} type
  */
-export function type (object) {
+export function getType (object) {
   if (object === null) {
     return 'null'
   }

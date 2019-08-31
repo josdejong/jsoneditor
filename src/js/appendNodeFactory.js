@@ -1,14 +1,14 @@
 'use strict'
 
-const util = require('./util')
-const ContextMenu = require('./ContextMenu').ContextMenu
-const translate = require('./i18n').translate
+import { ContextMenu } from './ContextMenu'
+import { translate } from './i18n'
+import { addClassName, removeClassName } from './util'
 
 /**
  * A factory function to create an AppendNode, which depends on a Node
  * @param {Node} Node
  */
-function appendNodeFactory (Node) {
+export function appendNodeFactory (Node) {
   /**
    * @constructor AppendNode
    * @extends Node
@@ -234,9 +234,9 @@ function appendNodeFactory (Node) {
       const highlighter = this.editor.highlighter
       highlighter.highlight(this.parent)
       highlighter.lock()
-      util.addClassName(dom.menu, 'jsoneditor-selected')
+      addClassName(dom.menu, 'jsoneditor-selected')
       this.showContextMenu(dom.menu, () => {
-        util.removeClassName(dom.menu, 'jsoneditor-selected')
+        removeClassName(dom.menu, 'jsoneditor-selected')
         highlighter.unlock()
         highlighter.unhighlight()
       })
@@ -249,5 +249,3 @@ function appendNodeFactory (Node) {
 
   return AppendNode
 }
-
-module.exports = appendNodeFactory

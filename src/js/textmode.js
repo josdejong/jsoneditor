@@ -3,7 +3,7 @@
 import ace from './ace'
 import jmespath from 'jmespath'
 import { translate } from './i18n'
-import ModeSwitcher from './ModeSwitcher'
+import { ModeSwitcher } from './ModeSwitcher'
 import { ErrorTable } from './ErrorTable'
 import { validateCustom } from './validationUtils'
 import { showSortModal } from './showSortModal'
