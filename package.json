@@ -22,7 +22,8 @@
     "minify": "gulp minify",
     "start": "gulp watch",
     "test": "mocha test --require @babel/register",
-    "lint": "standard --env=mocha"
+    "lint": "standard --env=mocha",
+    "prepublishOnly": "npm test && npm run build"
   },
   "dependencies": {
     "ajv": "6.10.2",
