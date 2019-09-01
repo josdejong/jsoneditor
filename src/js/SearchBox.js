@@ -15,6 +15,7 @@ export class SearchBox {
     this.timeout = undefined
     this.delay = 200 // ms
     this.lastText = undefined
+    this.results = null
 
     this.dom = {}
     this.dom.container = container
@@ -90,7 +91,7 @@ export class SearchBox {
    *                            focus is false by default.
    */
   next (focus) {
-    if (this.results !== null) {
+    if (this.results) {
       let index = this.resultIndex !== null ? this.resultIndex + 1 : 0
       if (index > this.results.length - 1) {
         index = 0
@@ -105,7 +106,7 @@ export class SearchBox {
    *                            focus is false by default.
    */
   previous (focus) {
-    if (this.results !== null) {
+    if (this.results) {
       const max = this.results.length - 1
       let index = this.resultIndex !== null ? this.resultIndex - 1 : max
       if (index < 0) {
