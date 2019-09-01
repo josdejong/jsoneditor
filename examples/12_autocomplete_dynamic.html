@@ -38,7 +38,11 @@
       getOptions: function (text, path, input, editor) {
         return new Promise(function (resolve, reject) {
           const options = extractUniqueWords(editor.get())
-          if (options.length > 0) resolve(options) else reject()
+          if (options.length > 0) {
+            resolve(options)
+          } else {
+            reject()
+          }
         })
       }
     }

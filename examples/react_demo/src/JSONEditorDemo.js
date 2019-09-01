@@ -22,8 +22,8 @@ export default class JSONEditorDemo extends Component {
     }
   }
 
-  componentWillUpdate(nextProps, nextState) {
-    this.jsoneditor.update(nextProps.json);
+  componentDidUpdate() {
+    this.jsoneditor.update(this.props.json);
   }
 
   render() {
