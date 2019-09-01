@@ -54,6 +54,17 @@
     "uglify-js": "3.6.0",
     "webpack": "4.39.3"
   },
+  "files": [
+    "dist",
+    "docs",
+    "examples",
+    "src",
+    "HISTORY.md",
+    "index.js",
+    "LICENSE",
+    "NOTICE",
+    "README.md"
+  ],
   "standard": {
     "ignore": [
       "src/js/assets",
