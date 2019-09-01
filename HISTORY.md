@@ -3,6 +3,11 @@
 https://github.com/josdejong/jsoneditor
 
 
+## 2019-09-01, version 7.0.1
+
+- Fix npm package missing `dist` folder.
+
+
 ## 2019-09-01, version 7.0.0
 
 - Converted the code largely to ES6, put Babel transpiler in place.
