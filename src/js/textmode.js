@@ -711,18 +711,18 @@ textmode._setText = function (jsonText, clearHistory) {
   if (this.aceEditor) {
     // prevent emitting onChange events while setting new text
     this.onChangeDisabled = true
-
     this.aceEditor.setValue(text, -1)
+    this.onChangeDisabled = false
 
     if (clearHistory) {
       // prevent initial undo action clearing the initial contents
       const me = this
       setTimeout(() => {
-        me.aceEditor.session.getUndoManager().reset()
+        if (me.aceEditor) {
+          me.aceEditor.session.getUndoManager().reset()
+        }
       }, 0)
     }
-
-    this.onChangeDisabled = false
   }
   // validate JSON schema
   this._debouncedValidate()

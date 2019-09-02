@@ -3,6 +3,11 @@
 https://github.com/josdejong/jsoneditor
 
 
+## not yet published, version 7.0.2
+
+- Fix #781: race condition when destroying the editor right after setting data.
+
+
 ## 2019-09-01, version 7.0.1
 
 - Fix npm package missing `dist` folder.
