@@ -697,13 +697,9 @@ textmode.getText = function () {
  * @private
  */
 textmode._setText = function (jsonText, clearHistory) {
-  let text
-
-  if (this.options.escapeUnicode === true) {
-    text = escapeUnicodeChars(jsonText)
-  } else {
-    text = jsonText
-  }
+  const text = (this.options.escapeUnicode === true)
+    ? escapeUnicodeChars(jsonText)
+    : jsonText
 
   if (this.textarea) {
     this.textarea.value = text
