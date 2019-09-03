@@ -33,7 +33,7 @@
     "json-source-map": "0.6.1",
     "mobius1-selectr": "2.4.13",
     "picomodal": "3.0.0",
-    "vanilla-picker": "2.9.2"
+    "vanilla-picker": "2.10.0"
   },
   "devDependencies": {
     "@babel/core": "7.5.5",
