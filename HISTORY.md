@@ -3,6 +3,11 @@
 https://github.com/josdejong/jsoneditor
 
 
+## not yet published, version 7.0.3
+
+- Fixed absolute url of images in SASS. Thanks @moonbreezee.
+
+
 ## 2019-09-02, version 7.0.2
 
 - Fix #781: race condition when destroying the editor right after setting data.
