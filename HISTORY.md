@@ -5,6 +5,7 @@ https://github.com/josdejong/jsoneditor
 
 ## not yet published, version 7.0.3
 
+- Fixed `index.js` pointing to non-transpiled code. See #783.
 - Fixed absolute url of images in SASS. Thanks @moonbreezee.
 
 
