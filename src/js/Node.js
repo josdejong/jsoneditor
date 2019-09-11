@@ -288,32 +288,49 @@ export class Node {
         this.dom.tdValue.parentNode.appendChild(tdError)
       }
 
-      const popover = document.createElement('div')
-      popover.className = 'jsoneditor-popover jsoneditor-right'
-      popover.appendChild(document.createTextNode(error.message))
-
       const button = document.createElement('button')
       button.type = 'button'
       button.className = 'jsoneditor-button jsoneditor-schema-error'
-      button.appendChild(popover)
 
-      // update the direction of the popover
-      button.onmouseover = button.onfocus = function updateDirection () {
-        const directions = ['right', 'above', 'below', 'left']
-        for (let i = 0; i < directions.length; i++) {
-          const direction = directions[i]
-          popover.className = 'jsoneditor-popover jsoneditor-' + direction
-
-          const contentRect = this.editor.content.getBoundingClientRect()
-          const popoverRect = popover.getBoundingClientRect()
-          const margin = 20 // account for a scroll bar
-          const fit = insideRect(contentRect, popoverRect, margin)
-
-          if (fit) {
-            break
-          }
+      const destroy = () => {
+        if (this.dom.popupAnchor) {
+          this.dom.popupAnchor.destroy() // this will trigger the onDestroy callback
         }
-      }.bind(this)
+      }
+
+      const onDestroy = () => {
+        delete this.dom.popupAnchor
+      }
+
+      const createPopup = (destroyOnMouseOut) => {
+        const frame = this.editor.frame
+        this.dom.popupAnchor = createAbsoluteAnchor(button, frame, onDestroy, destroyOnMouseOut)
+
+        const popupWidth = 200; // must correspond to what's configured in the CSS
+        const buttonRect = button.getBoundingClientRect()
+        const frameRect = frame.getBoundingClientRect()
+        const position = (frameRect.width - buttonRect.x > (popupWidth / 2 + 20))
+          ? 'jsoneditor-above'
+          : 'jsoneditor-left'
+
+        const popover = document.createElement('div')
+        popover.className = 'jsoneditor-popover ' + position
+        popover.appendChild(document.createTextNode(error.message))
+        this.dom.popupAnchor.appendChild(popover)
+      }
+
+      button.onmouseover = () => {
+        if (!this.dom.popupAnchor) {
+          createPopup(true)
+        }
+      }
+      button.onfocus = () => {
+        destroy()
+        createPopup(false)
+      }
+      button.onblur = () => {
+        destroy()
+      }
 
       // when clicking the error icon, expand all nodes towards the invalid
       // child node, and set focus to the child node
@@ -861,6 +878,11 @@ export class Node {
     if (table) {
       table.removeChild(tr)
     }
+
+    if (this.dom.popupAnchor) {
+      this.dom.popupAnchor.destroy()
+    }
+
     this.hideChilds(options)
   }
 

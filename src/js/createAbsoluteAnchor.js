@@ -5,10 +5,11 @@ import { isChildOf, removeEventListener, addEventListener } from './util'
  * element.
  * @param {HTMLElement} anchor
  * @param {HTMLElement} parent
- * @param [onDestroy(function(anchor)]  Callback when the anchor is destroyed
+ * @param {function(HTMLElement)} [onDestroy]  Callback when the anchor is destroyed
+ * @param {boolean} [destroyOnMouseOut=false] If true, anchor will be removed on mouse out
  * @returns {HTMLElement}
  */
-export function createAbsoluteAnchor (anchor, parent, onDestroy) {
+export function createAbsoluteAnchor (anchor, parent, onDestroy, destroyOnMouseOut = false) {
   const root = getRootNode(anchor)
   const eventListeners = {}
 
@@ -48,17 +49,34 @@ export function createAbsoluteAnchor (anchor, parent, onDestroy) {
     }
   }
 
+  function isOutside (target) {
+    return (target !== absoluteAnchor) && !isChildOf(target, absoluteAnchor)
+  }
+
   // create and attach event listeners
-  const destroyIfOutside = event => {
-    const target = event.target
-    if ((target !== absoluteAnchor) && !isChildOf(target, absoluteAnchor)) {
+  function destroyIfOutside (event) {
+    if (isOutside(event.target)) {
       destroy()
     }
   }
 
   eventListeners.mousedown = addEventListener(root, 'mousedown', destroyIfOutside)
   eventListeners.mousewheel = addEventListener(root, 'mousewheel', destroyIfOutside)
-  // eventListeners.scroll = addEventListener(root, 'scroll', destroyIfOutside);
+
+  if (destroyOnMouseOut) {
+    let destroyTimer = null
+
+    absoluteAnchor.onmouseover = () => {
+      clearTimeout(destroyTimer)
+      destroyTimer = null
+    }
+
+    absoluteAnchor.onmouseout = () => {
+      if (!destroyTimer) {
+        destroyTimer = setTimeout(destroy, 200)
+      }
+    }
+  }
 
   absoluteAnchor.destroy = destroy
 
