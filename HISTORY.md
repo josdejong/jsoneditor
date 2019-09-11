@@ -3,7 +3,7 @@
 https://github.com/josdejong/jsoneditor
 
 
-## not yet published, version 7.0.4
+## 2019-09-11, version 7.0.4
 
 - Fixed #723: schema error popup and color picker not always fully visible.
 - Fixed wrong text color in search box when using JSONEditor in combination
