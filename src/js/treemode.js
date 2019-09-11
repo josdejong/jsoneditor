@@ -126,7 +126,7 @@ treemode._setOptions = function (options) {
       if (VanillaPicker) {
         // we'll render the color picker on top
         // when there is not enough space below, and there is enough space above
-        const pickerHeight = 300; // estimated height of the color picker
+        const pickerHeight = 300 // estimated height of the color picker
         const top = parent.getBoundingClientRect().top
         const windowHeight = window.innerHeight
 

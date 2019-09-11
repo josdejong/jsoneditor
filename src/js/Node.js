@@ -18,7 +18,6 @@ import {
   getAbsoluteTop,
   getInnerText,
   getType,
-  insideRect,
   isUrl,
   isValidColor,
   makeFieldTooltip,
@@ -306,7 +305,7 @@ export class Node {
         const frame = this.editor.frame
         this.dom.popupAnchor = createAbsoluteAnchor(button, frame, onDestroy, destroyOnMouseOut)
 
-        const popupWidth = 200; // must correspond to what's configured in the CSS
+        const popupWidth = 200 // must correspond to what's configured in the CSS
         const buttonRect = button.getBoundingClientRect()
         const frameRect = frame.getBoundingClientRect()
         const position = (frameRect.width - buttonRect.x > (popupWidth / 2 + 20))
