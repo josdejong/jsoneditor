@@ -7,6 +7,8 @@ https://github.com/josdejong/jsoneditor
 
 - Fixed wrong text color in search box when using JSONEditor in combination
   with bootstrap. See #791. Thanks @dmitry-kulikov.
+- Fixed react examples not working out of the box when cloning or downloading
+  the git repository of JSONEditor. See #787, #788. Thanks @vishwasnavadak.
 
 
 ## 2019-09-04, version 7.0.3
