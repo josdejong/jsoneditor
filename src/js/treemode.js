@@ -124,10 +124,18 @@ treemode._setOptions = function (options) {
     colorPicker: true,
     onColorPicker: function (parent, color, onChange) {
       if (VanillaPicker) {
+        // we'll render the color picker on top
+        // when there is not enough space below, and there is enough space above
+        const pickerHeight = 300; // estimated height of the color picker
+        const top = parent.getBoundingClientRect().top
+        const windowHeight = window.innerHeight
+
         new VanillaPicker({
           parent: parent,
           color: color,
-          popup: 'bottom',
+          popup: ((windowHeight - top) < pickerHeight && top > pickerHeight)
+            ? 'top'
+            : 'bottom',
           onDone: function (color) {
             const alpha = color.rgba[3]
             const hex = (alpha === 1)

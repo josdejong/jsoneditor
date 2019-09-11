@@ -5,7 +5,7 @@ https://github.com/josdejong/jsoneditor
 
 ## not yet published, version 7.0.4
 
-- Fixed #723: schema error popup not always fully visible.
+- Fixed #723: schema error popup and color picker not always fully visible.
 - Fixed wrong text color in search box when using JSONEditor in combination
   with bootstrap. See #791. Thanks @dmitry-kulikov.
 - Fixed react examples not working out of the box when cloning or downloading
