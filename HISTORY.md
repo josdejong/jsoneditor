@@ -3,6 +3,12 @@
 https://github.com/josdejong/jsoneditor
 
 
+## not yet published, version 7.0.4
+
+- Fixed wrong text color in search box when using JSONEditor in combination
+  with bootstrap. See #791. Thanks @dmitry-kulikov.
+
+
 ## 2019-09-04, version 7.0.3
 
 - Fixed `index.js` pointing to non-transpiled code. See #783.
