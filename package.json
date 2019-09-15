@@ -50,9 +50,9 @@
     "json-loader": "0.5.7",
     "mkdirp": "0.5.1",
     "mocha": "6.2.0",
-    "standard": "14.1.0",
+    "standard": "14.3.0",
     "uglify-js": "3.6.0",
-    "webpack": "4.39.3"
+    "webpack": "4.40.0"
   },
   "files": [
     "dist",
