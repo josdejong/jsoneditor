@@ -1351,8 +1351,7 @@ export function parseString (str) {
     if (typeof num === 'number' && !isNaN(num)) {
       return num
     }
-  }
-  catch (err) {
+  } catch (err) {
     // no need to handle this error, it was just to try parsing into a number
   }
 
