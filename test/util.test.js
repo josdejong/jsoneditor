@@ -393,10 +393,18 @@ describe('util', () => {
   it('should parse a string', () => {
     assert.strictEqual(parseString('foo'), 'foo')
     assert.strictEqual(parseString('234foo'), '234foo')
+    assert.strictEqual(parseString('  234'), 234)
+    assert.strictEqual(parseString('234  '), 234)
     assert.strictEqual(parseString('2.3'), 2.3)
     assert.strictEqual(parseString('null'), null)
     assert.strictEqual(parseString('true'), true)
     assert.strictEqual(parseString('false'), false)
+    assert.strictEqual(parseString('+1'), '+1')
+    assert.strictEqual(parseString(' '), ' ')
+    assert.strictEqual(parseString(''), '')
+    assert.strictEqual(parseString('"foo"'), '"foo"')
+    assert.strictEqual(parseString('"2"'), '"2"')
+    assert.strictEqual(parseString('\'foo\''), '\'foo\'')
   })
 
   it('should find a unique name', () => {

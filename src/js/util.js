@@ -1330,23 +1330,33 @@ export function sortObjectKeys (object, direction) {
  * @private
  */
 export function parseString (str) {
-  const lower = str.toLowerCase()
-  const num = Number(str) // will nicely fail with '123ab'
-  const numFloat = parseFloat(str) // will nicely fail with '  '
-
   if (str === '') {
     return ''
-  } else if (lower === 'null') {
-    return null
-  } else if (lower === 'true') {
-    return true
-  } else if (lower === 'false') {
-    return false
-  } else if (!isNaN(num) && !isNaN(numFloat)) {
-    return num
-  } else {
-    return str
   }
+
+  const lower = str.toLowerCase()
+  if (lower === 'null') {
+    return null
+  }
+  if (lower === 'true') {
+    return true
+  }
+  if (lower === 'false') {
+    return false
+  }
+
+  try {
+    // will nicely fail for strings like '123ab', '  ', and '+1'
+    const num = JSON.parse(str)
+    if (typeof num === 'number' && !isNaN(num)) {
+      return num
+    }
+  }
+  catch (err) {
+    // no need to handle this error, it was just to try parsing into a number
+  }
+
+  return str
 }
 
 /**
