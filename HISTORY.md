@@ -3,12 +3,6 @@
 https://github.com/josdejong/jsoneditor
 
 
-## not yet published, version 7.0.5
-
-- Fix #794: fix discrepancy between valid JSON numbers and valid JavaScript
-  numbers (i.e. `+2` is a valid in JavaScript but not in JSON).
-
-
 ## 2019-09-11, version 7.0.4
 
 - Fixed #723: schema error popup and color picker not always fully visible.

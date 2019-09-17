@@ -1345,14 +1345,10 @@ export function parseString (str) {
     return false
   }
 
-  try {
-    // will nicely fail for strings like '123ab', '  ', and '+1'
-    const num = JSON.parse(str)
-    if (typeof num === 'number' && !isNaN(num)) {
-      return num
-    }
-  } catch (err) {
-    // no need to handle this error, it was just to try parsing into a number
+  const num = Number(str) // will nicely fail with '123ab'
+  const numFloat = parseFloat(str) // will nicely fail with '  '
+  if (!isNaN(num) && !isNaN(numFloat)) {
+    return num
   }
 
   return str
