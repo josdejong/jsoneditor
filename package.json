@@ -37,7 +37,7 @@
   },
   "devDependencies": {
     "@babel/core": "7.6.2",
-    "@babel/preset-env": "7.6.0",
+    "@babel/preset-env": "7.6.2",
     "@babel/register": "7.6.0",
     "babel-loader": "8.0.6",
     "date-format": "2.1.0",
