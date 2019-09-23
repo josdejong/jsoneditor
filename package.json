@@ -36,7 +36,7 @@
     "vanilla-picker": "2.9.2"
   },
   "devDependencies": {
-    "@babel/core": "7.6.0",
+    "@babel/core": "7.6.2",
     "@babel/preset-env": "7.6.0",
     "@babel/register": "7.6.0",
     "babel-loader": "8.0.6",
