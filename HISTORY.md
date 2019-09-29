@@ -3,6 +3,12 @@
 https://github.com/josdejong/jsoneditor
 
 
+## not yet published, version 7.0.5
+
+- Upgraded dependencies: `vanilla-picker@2.10.0`.
+- Minor styling fixes.
+
+
 ## 2019-09-11, version 7.0.4
 
 - Fixed #723: schema error popup and color picker not always fully visible.
