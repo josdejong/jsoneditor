@@ -5,7 +5,7 @@
   "dependencies": {
     "jsoneditor": "^7.0.3",
     "react": "16.10.2",
-    "react-dom": "16.10.0",
+    "react-dom": "16.10.2",
     "react-scripts": "3.1.2"
   },
   "scripts": {
