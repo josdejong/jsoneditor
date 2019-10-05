@@ -6,6 +6,7 @@ https://github.com/josdejong/jsoneditor
 ## not yet published, version 7.0.5
 
 - Upgraded dependencies: `vanilla-picker@2.10.0`.
+- Minor documentation improvements. Thanks @slash-arun.
 - Minor styling fixes.
 
 
