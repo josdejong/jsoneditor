@@ -62,14 +62,14 @@ Constructs a new JSONEditor.
   Passes the changed JSON document.
   Only applicable when option `mode` is `tree`, `form`, or `view`.
   The callback will only be triggered on changes made by the user, not in case of programmatic changes via the functions `set`, `setText`, `update`, or `updateText`.
-  See also callback function `onChangeText(jsonString)`.
+  Also see the callback function `onChangeText(jsonString)`.
 
 - `{function} onChangeText(jsonString)`
 
   Set a callback function triggered when the contents of the JSONEditor change.
   Passes the changed JSON document inside a string (stringified).
   The callback will only be triggered on changes made by the user, not in case of programmatic changes via the functions `set`, `setText`, `update`, or `updateText`.
-  See also callback function `onChangeJSON(json)`.
+  Also see the callback function `onChangeJSON(json)`.
 
 - `{function} onClassName({ path, field, value })`
 
@@ -161,7 +161,7 @@ Constructs a new JSONEditor.
   }
   ```
   
-  See also option `schema` for JSON schema validation.
+  Also see the option `schema` for JSON schema validation.
   
 - `{function} onCreateMenu(items, node)`
   
@@ -186,15 +186,15 @@ Constructs a new JSONEditor.
 
 - `{boolean} escapeUnicode`
 
-  If true, unicode characters are escaped and displayed as their hexadecimal code (like `\u260E`) instead of of the character itself (like `☎`). False by default.
+  If true, unicode characters are escaped and displayed as their hexadecimal code (like `\u260E`) instead of of the character itself (like `☎`). `false` by default.
 
 - `{boolean} sortObjectKeys`
 
-  If true, object keys in 'tree', 'view' or 'form' mode list be listed alphabetically instead by their insertion order. Sorting is performed using a natural sort algorithm, which makes it easier to see objects that have string numbers as keys. False by default.
+  If true, object keys in 'tree', 'view' or 'form' mode list be listed alphabetically instead by their insertion order. Sorting is performed using a natural sort algorithm, which makes it easier to see objects that have string numbers as keys. `false` by default.
 
 - `{boolean} history`
 
-  Enables history, adds a button Undo and Redo to the menu of the JSONEditor. True by default. Only applicable when `mode` is 'tree' or 'form'.
+  Enables history, adds a button Undo and Redo to the menu of the JSONEditor. `true` by default. Only applicable when `mode` is 'tree' or 'form'.
 
 - `{String} mode`
 
@@ -208,7 +208,7 @@ Constructs a new JSONEditor.
 
 - `{String} name`
 
-  Initial field name for the root node, is undefined by default. Can also be set using `JSONEditor.setName(name)`. Only applicable when `mode` is 'tree', 'view', or 'form'.
+  Initial field name for the root node, is `undefined` by default. Can also be set using `JSONEditor.setName(name)`. Only applicable when `mode` is 'tree', 'view', or 'form'.
 
 - `{Object} schema`
 
@@ -218,7 +218,7 @@ Constructs a new JSONEditor.
 
   See [http://json-schema.org/](http://json-schema.org/) for more information.
 
-  See also option `onValidate` for custom validation.
+  Also see the option `onValidate` for custom validation.
 
 - `{Object} schemaRefs`
 
@@ -227,15 +227,15 @@ Constructs a new JSONEditor.
 
 - `{boolean} search`
 
-  Enables a search box in the upper right corner of the JSONEditor. True by default. Only applicable when `mode` is 'tree', 'view', or 'form'.
+  Enables a search box in the upper right corner of the JSONEditor. `true` by default. Only applicable when `mode` is 'tree', 'view', or 'form'.
 
 - `{Number} indentation`
 
-  Number of indentation spaces. 2 by default. Only applicable when `mode` is 'code', 'text', or 'preview'.
+  Number of indentation spaces. `2` by default. Only applicable when `mode` is 'code', 'text', or 'preview'.
 
 - `{String} theme`
 
-  Set the Ace editor theme, uses included 'ace/theme/jsoneditor' by default. Please note that only the default theme is included with jsoneditor, so if you specify another one you need to make sure it is loaded.
+  Set the Ace editor theme, uses included 'ace/theme/jsoneditor' by default. Please note that only the default theme is included with JSONEditor, so if you specify another one you need to make sure it is loaded.
 
 - `{Object} templates`
 
@@ -294,7 +294,7 @@ Constructs a new JSONEditor.
 
   - `{number[]} confirmKeys`
 
-     Indicate the KeyCodes for trigger confirm completion, by default those keys are:  [39, 35, 9] which are the code for [right, end, tab]
+     Indicate the KeyCodes for trigger confirm completion, by default those keys are:  `[39, 35, 9]` which are the code for [right, end, tab]
 
   - `{boolean} caseSensitive`
 
@@ -320,15 +320,15 @@ Constructs a new JSONEditor.
 
 - `{boolean} mainMenuBar`
 
-  Adds main menu bar - Contains format, sort, transform, search etc. functionality. True by default. Applicable in all types of `mode`.
+  Adds main menu bar - Contains format, sort, transform, search etc. functionality. `true` by default. Applicable in all types of `mode`.
 
 - `{boolean} navigationBar`
 
-  Adds navigation bar to the menu - the navigation bar visualize the current position on the tree structure as well as allows breadcrumbs navigation. True by default. Only applicable when `mode` is 'tree', 'form' or 'view'.
+  Adds navigation bar to the menu - the navigation bar visualize the current position on the tree structure as well as allows breadcrumbs navigation. `true by default. Only applicable when `mode` is 'tree', 'form' or 'view'.
 
 - `{boolean} statusBar`
 
-  Adds status bar to the bottom of the editor - the status bar shows the cursor position and a count of the selected characters. True by default. Only applicable when `mode` is 'code', 'text', or 'preview'.
+  Adds status bar to the bottom of the editor - the status bar shows the cursor position and a count of the selected characters. `true` by default. Only applicable when `mode` is 'code', 'text', or 'preview'.
 
 - `{function} onTextSelectionChange(start, end, text)`
 
@@ -404,7 +404,7 @@ Constructs a new JSONEditor.
 
 - `{boolean} colorPicker`
 
-  If true (default), values containing a color name or color code will have a color picker rendered on their left side.
+  If `true` (default), values containing a color name or color code will have a color picker rendered on their left side.
 
 - `{function} onColorPicker(parent, color, onChange)`
 
@@ -434,7 +434,7 @@ Constructs a new JSONEditor.
 
 - `{boolean} timestampTag`
 
-  If true (default), a tag with the date/time of a timestamp is displayed
+  If `true` (default), a tag with the date/time of a timestamp is displayed
   right from timestamps. A value is considered a timestamp when it
   has a value larger than Jan 1th 2000, `946684800000`.
 
@@ -466,15 +466,15 @@ Constructs a new JSONEditor.
 
 - `{boolean} enableSort`
 
-  Enable sorting of arrays and object properties. Only applicable for mode 'tree'. True by default.
+  Enable sorting of arrays and object properties. Only applicable for mode 'tree'. `true` by default.
 
 - `{boolean} enableTransform`
 
-  Enable filtering, sorting, and transforming JSON using a [JMESPath](http://jmespath.org/) query. Only applicable for mode 'tree'. True by default.
+  Enable filtering, sorting, and transforming JSON using a [JMESPath](http://jmespath.org/) query. Only applicable for mode 'tree'. `true` by default.
 
 - `{Number} maxVisibleChilds`
 
-  Number of children allowed for a given node before the "show more / show all" message appears (in 'tree', 'view', or 'form' modes). 100 by default.
+  Number of children allowed for a given node before the "show more / show all" message appears (in 'tree', 'view', or 'form' modes). `100` by default.
 
 ### Methods
 
@@ -686,7 +686,7 @@ See also `JSONEditor.set(json)`.
 
 Replace text data when the new data contains changes.
 In modes `tree`, `form`, and `view`, the state of the editor will be maintained (expanded nodes, search, selection).
-See also `JSONEditor.setText(jsonString)`.
+Also see `JSONEditor.setText(jsonString)`.
 
 This method throws an exception when the provided jsonString does not contain
 valid JSON and the editor is in mode `tree`, `view`, or `form`.
@@ -767,7 +767,7 @@ var json = editor.get();
 
 ## JSON parsing and stringification
 
-In general to parse or stringify JSON data, the browsers built in JSON parser can be used. To create a formatted string from a JSON object, use:
+In general, to parse or stringify JSON data, the browsers built in JSON parser can be used. To create a formatted string from a JSON object, use:
 
 ```js
 var formattedString = JSON.stringify(json, null, 2);
