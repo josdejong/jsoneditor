@@ -62,14 +62,14 @@ Constructs a new JSONEditor.
   Passes the changed JSON document.
   Only applicable when option `mode` is `tree`, `form`, or `view`.
   The callback will only be triggered on changes made by the user, not in case of programmatic changes via the functions `set`, `setText`, `update`, or `updateText`.
-  See also callback function `onChangeText(jsonString)`.
+  Also see the callback function `onChangeText(jsonString)`.
 
 - `{function} onChangeText(jsonString)`
 
   Set a callback function triggered when the contents of the JSONEditor change.
   Passes the changed JSON document inside a string (stringified).
   The callback will only be triggered on changes made by the user, not in case of programmatic changes via the functions `set`, `setText`, `update`, or `updateText`.
-  See also callback function `onChangeJSON(json)`.
+  Also see the callback function `onChangeJSON(json)`.
 
 - `{function} onClassName({ path, field, value })`
 
@@ -161,7 +161,7 @@ Constructs a new JSONEditor.
   }
   ```
   
-  See also option `schema` for JSON schema validation.
+  Also see the option `schema` for JSON schema validation.
   
 - `{function} onCreateMenu(items, node)`
   
@@ -186,15 +186,15 @@ Constructs a new JSONEditor.
 
 - `{boolean} escapeUnicode`
 
-  If true, unicode characters are escaped and displayed as their hexadecimal code (like `\u260E`) instead of of the character itself (like `☎`). False by default.
+  If true, unicode characters are escaped and displayed as their hexadecimal code (like `\u260E`) instead of of the character itself (like `☎`). `false` by default.
 
 - `{boolean} sortObjectKeys`
 
-  If true, object keys in 'tree', 'view' or 'form' mode list be listed alphabetically instead by their insertion order. Sorting is performed using a natural sort algorithm, which makes it easier to see objects that have string numbers as keys. False by default.
+  If true, object keys in 'tree', 'view' or 'form' mode list be listed alphabetically instead by their insertion order. Sorting is performed using a natural sort algorithm, which makes it easier to see objects that have string numbers as keys. `false` by default.
 
 - `{boolean} history`
 
-  Enables history, adds a button Undo and Redo to the menu of the JSONEditor. True by default. Only applicable when `mode` is 'tree' or 'form'.
+  Enables history, adds a button Undo and Redo to the menu of the JSONEditor. `true` by default. Only applicable when `mode` is 'tree' or 'form'.
 
 - `{String} mode`
 
@@ -218,7 +218,7 @@ Constructs a new JSONEditor.
 
   See [http://json-schema.org/](http://json-schema.org/) for more information.
 
-  See also option `onValidate` for custom validation.
+  Also see the option `onValidate` for custom validation.
 
 - `{Object} schemaRefs`
 
@@ -231,11 +231,11 @@ Constructs a new JSONEditor.
 
 - `{Number} indentation`
 
-  Number of indentation spaces. 2 by default. Only applicable when `mode` is 'code', 'text', or 'preview'.
+  Number of indentation spaces. `2` by default. Only applicable when `mode` is 'code', 'text', or 'preview'.
 
 - `{String} theme`
 
-  Set the Ace editor theme, uses included 'ace/theme/jsoneditor' by default. Please note that only the default theme is included with jsoneditor, so if you specify another one you need to make sure it is loaded.
+  Set the Ace editor theme, uses included 'ace/theme/jsoneditor' by default. Please note that only the default theme is included with JSONEditor, so if you specify another one you need to make sure it is loaded.
 
 - `{Object} templates`
 
