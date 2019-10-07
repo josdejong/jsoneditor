@@ -1092,6 +1092,18 @@ treemode._onEvent = function (event) {
     if (this.options.autocomplete && this.options.autocomplete.trigger === 'focus') {
       this._showAutoComplete(event.target)
     }
+
+    // trigger the onFocus callback
+    if(this.options.onFocus) {
+      this.options.onFocus(event);
+    }
+  }
+
+  // trigger the onBlur callback
+  if (node && event.type === 'blur') {
+    if(this.options.onBlur) {
+      this.options.onBlur(event);
+    }
   }
 
   if (event.type === 'mousedown') {

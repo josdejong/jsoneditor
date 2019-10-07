@@ -170,6 +170,7 @@ JSONEditor.VALID_OPTIONS = [
   'onChange', 'onChangeJSON', 'onChangeText',
   'onEditable', 'onError', 'onEvent', 'onModeChange', 'onNodeName', 'onValidate', 'onCreateMenu',
   'onSelectionChange', 'onTextSelectionChange', 'onClassName',
+  'onFocus', 'onBlur',
   'colorPicker', 'onColorPicker',
   'timestampTag',
   'escapeUnicode', 'history', 'search', 'mode', 'modes', 'name', 'indentation',
