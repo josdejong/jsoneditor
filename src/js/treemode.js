@@ -1094,15 +1094,15 @@ treemode._onEvent = function (event) {
     }
 
     // trigger the onFocus callback
-    if(this.options.onFocus) {
-      this.options.onFocus(event);
+    if (this.options.onFocus) {
+      this.options.onFocus(event)
     }
   }
 
   // trigger the onBlur callback
   if (node && event.type === 'blur') {
-    if(this.options.onBlur) {
-      this.options.onBlur(event);
+    if (this.options.onBlur) {
+      this.options.onBlur(event)
     }
   }
 
