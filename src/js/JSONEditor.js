@@ -77,6 +77,14 @@ if (typeof Promise === 'undefined') {
  *                                                  Only applicable for
  *                                                  modes 'form', 'tree' and
  *                                                  'view'
+ *                               {function} onFocus  Callback method, triggered
+ *                                                   when elements (Editor/Value/Button) come into focus,
+ *                                                   passing the focus event object,
+ *                                                   Only available for modes 'tree' and 'form'
+ *                               {function} onBlur   Callback method, triggered
+ *                                                   when elements (Editor/Value/Button) go out of focus,
+ *                                                   passing the focus event object,
+ *                                                   Only available for modes 'tree' and 'form'
  *                               {function} onClassName Callback method, triggered
  *                                                  when a Node DOM is rendered. Function returns
  *                                                  a css class name to be set on a node.
