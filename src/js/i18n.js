@@ -223,52 +223,36 @@ const _defs = {
     removeTitle: 'Remover campos selecionados (Ctrl+Del)',
     removeField: 'Remover este campo (Ctrl+Del)',
     // TODO: correctly translate
-    selectNode: 'Select a node...',
-    // TODO: correctly translate
-    showAll: 'mostre tudo',
-    // TODO: correctly translate
-    showMore: 'mostre mais',
+    selectNode: 'Selecione um nódulo...',
+    showAll: 'mostrar todos',
+    showMore: 'mostrar mais',
     // TODO: correctly translate
     showMoreStatus: 'exibindo ${visibleChilds} de ${totalChilds} itens.',
     sort: 'Organizar',
     sortTitle: 'Organizar os filhos deste ${type}',
     // TODO: correctly translate
     sortTitleShort: 'Organizar os filhos',
-    // TODO: correctly translate
-    sortFieldLabel: 'Field:',
-    // TODO: correctly translate
-    sortDirectionLabel: 'Direction:',
-    // TODO: correctly translate
-    sortFieldTitle: 'Select the nested field by which to sort the array or object',
-    // TODO: correctly translate
-    sortAscending: 'Ascending',
-    // TODO: correctly translate
-    sortAscendingTitle: 'Sort the selected field in ascending order',
-    // TODO: correctly translate
-    sortDescending: 'Descending',
-    // TODO: correctly translate
-    sortDescendingTitle: 'Sort the selected field in descending order',
+    sortFieldLabel: 'Campo:',
+    sortDirectionLabel: 'Direção:',
+    sortFieldTitle: 'Selecione um campo filho pelo qual ordenar o array ou objeto',
+    sortAscending: 'Ascendente',
+    sortAscendingTitle: 'Ordenar o campo selecionado por ordem ascendente',
+    sortDescending: 'Descendente',
+    sortDescendingTitle: 'Ordenar o campo selecionado por ordem descendente',
     string: 'Texto',
     // TODO: correctly translate
-    transform: 'Transform',
+    transform: 'Transformar',
+    transformTitle: 'Filtrar, ordenar ou transformar os filhos deste ${type}',
+    transformTitleShort: 'Filtrar, ordenar ou transformar conteúdos',
     // TODO: correctly translate
-    transformTitle: 'Filter, sort, or transform the childs of this ${type}',
+    transformQueryTitle: 'Insira uma expressão JMESPath',
     // TODO: correctly translate
-    transformTitleShort: 'Filter, sort, or transform contents',
-    // TODO: correctly translate
-    transformQueryTitle: 'Enter a JMESPath query',
-    // TODO: correctly translate
-    transformWizardLabel: 'Wizard',
-    // TODO: correctly translate
-    transformWizardFilter: 'Filter',
-    // TODO: correctly translate
-    transformWizardSortBy: 'Sort by',
-    // TODO: correctly translate
-    transformWizardSelectFields: 'Select fields',
-    // TODO: correctly translate
-    transformQueryLabel: 'Query',
-    // TODO: correctly translate
-    transformPreviewLabel: 'Preview',
+    transformWizardLabel: 'Assistente',
+    transformWizardFilter: 'Filtro',
+    transformWizardSortBy: 'Ordenar por',
+    transformWizardSelectFields: 'Selecionar campos',
+    transformQueryLabel: 'Expressão',
+    transformPreviewLabel: 'Visualizar',
     type: 'Tipo',
     typeTitle: 'Mudar o tipo deste campo',
     openUrl: 'Ctrl+Click ou Ctrl+Enter para abrir link em nova janela',
