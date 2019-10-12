@@ -3,6 +3,11 @@
 https://github.com/josdejong/jsoneditor
 
 
+## not yet published, version 7.0.6
+
+- Improved Portuguese translation. Thanks @victorananias.
+
+
 ## 2019-10-06, version 7.0.5
 
 - Upgraded dependencies: `vanilla-picker@2.10.0`.
