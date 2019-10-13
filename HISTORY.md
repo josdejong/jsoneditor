@@ -3,7 +3,7 @@
 https://github.com/josdejong/jsoneditor
 
 
-## not yet published, version 7.1.0
+## 2019-10-13, version 7.1.0
 
 - Upgraded to the latest version of Ace editor 1.4.6. Changed implementation
   to use `ace-builds` directly instead of `brace` (still using Ace 1.2.9).
