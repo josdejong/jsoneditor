@@ -1,0 +1,97 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+
+  <link href="../dist/jsoneditor.css" rel="stylesheet" type="text/css">
+  <script src="../dist/jsoneditor.js"></script>
+
+  <style type="text/css">
+    body {
+      font: 10.5pt arial;
+      color: #4d4d4d;
+      line-height: 150%;
+      width: 500px;
+      padding-left: 40px;
+    }
+
+    code {
+      background-color: #f5f5f5;
+    }
+
+    #jsoneditor {
+      width: 500px;
+      height: 500px;
+    }
+  </style>
+</head>
+<body>
+
+<p>
+  Test color picker firing onChange on every change instead of onDone.
+</p>
+
+<form>
+  <div id="jsoneditor"></div>
+</form>
+
+<script>
+  var container, options, json, editor;
+
+  container = document.getElementById('jsoneditor');
+
+  options = {
+    mode: 'tree',
+    modes: ['code', 'form', 'text', 'tree', 'view', 'preview'], // allowed modes
+    onRenderValue: function(obj){
+      console.log(obj);
+      switch(obj.field)
+      {
+        case "input":
+          var text = document.createElement("input");
+          text.setAttribute("type","text");
+          text.setAttribute ("value", obj.value);
+          text.addEventListener("change",function(e){
+            obj.onChange(e.target.value);
+          })
+          return {
+            html: text
+          }
+        
+        case "video":
+          var iframe = document.createElement( "iframe" );
+
+          iframe.setAttribute( "allowfullscreen", "" );
+          iframe.setAttribute( "frameborder", "0" );
+          iframe.setAttribute( "src", obj.value);
+          return {
+            html: iframe
+          }
+      }
+      return null;
+    }
+  };
+
+  json = {
+    "array": [1, 2, [3,4,5]],
+    "input": "Howdy",
+    "video": "https://www.youtube.com/embed/mN0zPOpADL4?rel=0&showinfo=0&autoplay=1",
+    "htmlcode": '&quot;',
+    "escaped_unicode": '\\u20b9',
+    "unicode": '\u20b9,\uD83D\uDCA9',
+    "return": '\n',
+    "null": null,
+    "number": 123,
+    "object": {"a": "b", "c": "d"},
+    "string": "Hello World",
+    "timestamp": 1534952749890,
+    "url": "http://jsoneditoronline.org"
+  };
+
+  editor = new JSONEditor(container, options, json);
+
+  console.log('json', json);
+  console.log('string', JSON.stringify(json));
+</script>
+</body>
+</html>
