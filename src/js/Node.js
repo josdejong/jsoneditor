@@ -1504,11 +1504,9 @@ export class Node {
    */
   _getDomValue () {
     this._clearValueError()
-    if(this.customValueRenderFlag)
-    {
-      this.valueInnerText = this.value;
-    }
-    else if (this.dom.value && this.type !== 'array' && this.type !== 'object') {
+    if (this.customValueRenderFlag) {
+      this.valueInnerText = this.value
+    } else if (this.dom.value && this.type !== 'array' && this.type !== 'object') {
       this.valueInnerText = getInnerText(this.dom.value)
     }
 
@@ -2298,33 +2296,29 @@ export class Node {
       domValue.innerHTML = '{...}'
     } else {
       let renderData
-      this.customValueRenderFlag = false;
-      if(this.editor.options.onRenderValue)
-      {
-          var _this = this;
-          let conf = {
-            value: this.value,
-            field: this.field,
-            path: this.getPath(),
-            onChange: function(value){
-              _this.setValue(value)
-            }
+      this.customValueRenderFlag = false
+      if (this.editor.options.onRenderValue) {
+        var _this = this
+        const conf = {
+          value: this.value,
+          field: this.field,
+          path: this.getPath(),
+          onChange: function (value) {
+            _this.setValue(value)
           }
-          renderData = this.editor.options.onRenderValue(conf);
+        }
+        renderData = this.editor.options.onRenderValue(conf)
       }
-      if(renderData && renderData.html)
-      {
-          console.log(renderData);
+      if (renderData && renderData.html) {
+        console.log(renderData)
         // domValue = document.createElement('div')
         // domValue.contentEditable = this.editable.value
         // domValue.spellcheck = false
         // domValue.appendChild(renderData.html);
 
-        domValue = renderData.html;
-        this.customValueRenderFlag = true;
-      }
-      else
-      {
+        domValue = renderData.html
+        this.customValueRenderFlag = true
+      } else {
         if (!this.editable.value && isUrl(this.value)) {
           // create a link in case of read-only editor and value containing an url
           domValue = document.createElement('a')
@@ -2337,7 +2331,6 @@ export class Node {
           domValue.spellcheck = false
           domValue.innerHTML = this._escapeHTML(this.value)
         }
-
       }
     }
 
