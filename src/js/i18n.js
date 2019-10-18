@@ -4,7 +4,7 @@
 
 import './polyfills'
 
-const _locales = ['en', 'pt-BR', 'zh-CN', 'tr']
+const _locales = ['en', 'pt-BR', 'zh-CN', 'tr', 'ja']
 const _defs = {
   en: {
     array: 'Array',
@@ -223,52 +223,36 @@ const _defs = {
     removeTitle: 'Remover campos selecionados (Ctrl+Del)',
     removeField: 'Remover este campo (Ctrl+Del)',
     // TODO: correctly translate
-    selectNode: 'Select a node...',
-    // TODO: correctly translate
-    showAll: 'mostre tudo',
-    // TODO: correctly translate
-    showMore: 'mostre mais',
+    selectNode: 'Selecione um nódulo...',
+    showAll: 'mostrar todos',
+    showMore: 'mostrar mais',
     // TODO: correctly translate
     showMoreStatus: 'exibindo ${visibleChilds} de ${totalChilds} itens.',
     sort: 'Organizar',
     sortTitle: 'Organizar os filhos deste ${type}',
     // TODO: correctly translate
     sortTitleShort: 'Organizar os filhos',
-    // TODO: correctly translate
-    sortFieldLabel: 'Field:',
-    // TODO: correctly translate
-    sortDirectionLabel: 'Direction:',
-    // TODO: correctly translate
-    sortFieldTitle: 'Select the nested field by which to sort the array or object',
-    // TODO: correctly translate
-    sortAscending: 'Ascending',
-    // TODO: correctly translate
-    sortAscendingTitle: 'Sort the selected field in ascending order',
-    // TODO: correctly translate
-    sortDescending: 'Descending',
-    // TODO: correctly translate
-    sortDescendingTitle: 'Sort the selected field in descending order',
+    sortFieldLabel: 'Campo:',
+    sortDirectionLabel: 'Direção:',
+    sortFieldTitle: 'Selecione um campo filho pelo qual ordenar o array ou objeto',
+    sortAscending: 'Ascendente',
+    sortAscendingTitle: 'Ordenar o campo selecionado por ordem ascendente',
+    sortDescending: 'Descendente',
+    sortDescendingTitle: 'Ordenar o campo selecionado por ordem descendente',
     string: 'Texto',
     // TODO: correctly translate
-    transform: 'Transform',
+    transform: 'Transformar',
+    transformTitle: 'Filtrar, ordenar ou transformar os filhos deste ${type}',
+    transformTitleShort: 'Filtrar, ordenar ou transformar conteúdos',
     // TODO: correctly translate
-    transformTitle: 'Filter, sort, or transform the childs of this ${type}',
+    transformQueryTitle: 'Insira uma expressão JMESPath',
     // TODO: correctly translate
-    transformTitleShort: 'Filter, sort, or transform contents',
-    // TODO: correctly translate
-    transformQueryTitle: 'Enter a JMESPath query',
-    // TODO: correctly translate
-    transformWizardLabel: 'Wizard',
-    // TODO: correctly translate
-    transformWizardFilter: 'Filter',
-    // TODO: correctly translate
-    transformWizardSortBy: 'Sort by',
-    // TODO: correctly translate
-    transformWizardSelectFields: 'Select fields',
-    // TODO: correctly translate
-    transformQueryLabel: 'Query',
-    // TODO: correctly translate
-    transformPreviewLabel: 'Preview',
+    transformWizardLabel: 'Assistente',
+    transformWizardFilter: 'Filtro',
+    transformWizardSortBy: 'Ordenar por',
+    transformWizardSelectFields: 'Selecionar campos',
+    transformQueryLabel: 'Expressão',
+    transformPreviewLabel: 'Visualizar',
     type: 'Tipo',
     typeTitle: 'Mudar o tipo deste campo',
     openUrl: 'Ctrl+Click ou Ctrl+Enter para abrir link em nova janela',
@@ -373,6 +357,97 @@ const _defs = {
     modeViewTitle: 'Ağaç görünümüne geç',
     examples: 'Örnekler',
     default: 'Varsayılan'
+  },
+  ja: {
+    array: '配列',
+    auto: 'オート',
+    appendText: '追加',
+    appendTitle: '次のフィールドに"オート"のフィールドを追加 (Ctrl+Shift+Ins)',
+    appendSubmenuTitle: '追加するフィールドの型を選択してください',
+    appendTitleAuto: '"オート"のフィールドを追加 (Ctrl+Shift+Ins)',
+    ascending: '昇順',
+    ascendingTitle: '${type}の子要素を昇順に並べ替え',
+    actionsMenu: 'クリックしてアクションメニューを開く (Ctrl+M)',
+    collapseAll: 'すべてを折りたたむ',
+    descending: '降順',
+    descendingTitle: '${type}の子要素を降順に並べ替え',
+    drag: 'ドラッグして選択中のフィールドを移動 (Alt+Shift+Arrows)',
+    duplicateKey: '複製キー',
+    duplicateText: '複製',
+    duplicateTitle: '選択中のフィールドを複製 (Ctrl+D)',
+    duplicateField: '選択中のフィールドを複製 (Ctrl+D)',
+    duplicateFieldError: 'フィールド名が重複しています',
+    cannotParseFieldError: 'JSONのフィールドを解析できません',
+    cannotParseValueError: 'JSONの値を解析できません',
+    empty: '空',
+    expandAll: 'すべてを展開',
+    expandTitle: 'クリックしてフィールドを展開/折りたたむ (Ctrl+E). \n' +
+      'Ctrl+Click ですべての子要素を展開/折りたたむ',
+    insert: '挿入',
+    insertTitle: '選択中のフィールドの前に新しいフィールドを挿入 (Ctrl+Ins)',
+    insertSub: '挿入するフィールドの型を選択',
+    object: 'オブジェクト',
+    ok: '実行',
+    redo: 'やり直す (Ctrl+Shift+Z)',
+    removeText: '削除',
+    removeTitle: '選択中のフィールドを削除 (Ctrl+Del)',
+    removeField: '選択中のフィールドを削除 (Ctrl+Del)',
+    selectNode: 'ノードを選択...',
+    showAll: 'すべてを表示',
+    showMore: 'もっと見る',
+    showMoreStatus: '${totalChilds}個のアイテムのうち ${visibleChilds}個を表示しています。',
+    sort: '並べ替え',
+    sortTitle: '${type}の子要素を並べ替え',
+    sortTitleShort: '並べ替え',
+    sortFieldLabel: 'フィールド:',
+    sortDirectionLabel: '順序:',
+    sortFieldTitle: '配列またはオブジェクトを並び替えるためのフィールドを選択',
+    sortAscending: '昇順',
+    sortAscendingTitle: '選択中のフィールドを昇順に並び替え',
+    sortDescending: '降順',
+    sortDescendingTitle: '選択中のフィールドを降順に並び替え',
+    string: '文字列',
+    transform: '変換',
+    transformTitle: '${type}の子要素をフィルター・並び替え・変換する',
+    transformTitleShort: '内容をフィルター・並び替え・変換する',
+    extract: '抽出',
+    extractTitle: '${type}を抽出',
+    transformQueryTitle: 'JMESPathクエリを入力',
+    transformWizardLabel: 'ウィザード',
+    transformWizardFilter: 'フィルター',
+    transformWizardSortBy: '並び替え',
+    transformWizardSelectFields: 'フィールドを選択',
+    transformQueryLabel: 'クエリ',
+    transformPreviewLabel: 'プレビュー',
+    type: '型',
+    typeTitle: '選択中のフィールドの型を変更',
+    openUrl: 'Ctrl+Click または Ctrl+Enter で 新規ウィンドウでURLを開く',
+    undo: '元に戻す (Ctrl+Z)',
+    validationCannotMove: '子要素に移動できません ',
+    autoType: 'オート： ' +
+      'フィールドの型は値から自動的に決定されます。 ' +
+      '(文字列・数値・ブール・null)',
+    objectType: 'オブジェクト： ' +
+      'オブジェクトは順序が決まっていないキーと値のペア組み合わせです。',
+    arrayType: '配列： ' +
+      '配列は順序が決まっている値の集合体です。',
+    stringType: '文字列： ' +
+      'フィールド型は値から決定されませんが、' +
+      '常に文字列として返されます。',
+    modeCodeText: 'コードモード',
+    modeCodeTitle: 'ハイライトモードに切り替え',
+    modeFormText: 'フォームモード',
+    modeFormTitle: 'フォームモードに切り替え',
+    modeTextText: 'テキストモード',
+    modeTextTitle: 'テキストモードに切り替え',
+    modeTreeText: 'ツリーモード',
+    modeTreeTitle: 'ツリーモードに切り替え',
+    modeViewText: 'ビューモード',
+    modeViewTitle: 'ビューモードに切り替え',
+    modePreviewText: 'プレビュー',
+    modePreviewTitle: 'プレビューに切り替え',
+    examples: '例',
+    default: 'デフォルト'
   }
 }
 

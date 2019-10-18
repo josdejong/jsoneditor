@@ -3,6 +3,18 @@
 https://github.com/josdejong/jsoneditor
 
 
+## not yet published, version 7.2.0
+
+- Implemented Japanese translation (`ja`). Thanks @yutakiyama.
+
+
+## 2019-10-13, version 7.1.0
+
+- Upgraded to the latest version of Ace editor 1.4.6. Changed implementation
+  to use `ace-builds` directly instead of `brace` (still using Ace 1.2.9).
+- Improved Portuguese translation. Thanks @victorananias.
+
+
 ## 2019-10-06, version 7.0.5
 
 - Upgraded dependencies: `vanilla-picker@2.10.0`.
