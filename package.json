@@ -26,7 +26,7 @@
     "prepublishOnly": "npm test && npm run build"
   },
   "dependencies": {
-    "ace-builds": "1.4.6",
+    "ace-builds": "1.4.7",
     "ajv": "6.10.2",
     "javascript-natural-sort": "0.7.1",
     "jmespath": "0.15.0",
