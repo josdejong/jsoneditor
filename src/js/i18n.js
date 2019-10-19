@@ -4,7 +4,7 @@
 
 import './polyfills'
 
-const _locales = ['en', 'pt-BR', 'zh-CN', 'tr', 'ja']
+const _locales = ['en', 'pt-BR', 'zh-CN', 'tr', 'ja', 'fr-FR']
 const _defs = {
   en: {
     array: 'Array',
@@ -40,6 +40,9 @@ const _defs = {
     removeText: 'Remove',
     removeTitle: 'Remove selected fields (Ctrl+Del)',
     removeField: 'Remove this field (Ctrl+Del)',
+    searchTitle: 'Search fields and values',
+    searchNextResultTitle : 'Next result (Enter)',
+    searchPreviousResultTitle : 'Previous result (Shift + Enter)',
     selectNode: 'Select a node...',
     showAll: 'show all',
     showMore: 'show more',
@@ -82,6 +85,7 @@ const _defs = {
     stringType: 'Field type "string". ' +
       'Field type is not determined from the value, ' +
       'but always returned as string.',
+    modeEditorTitle : 'Switch Editor Mode',
     modeCodeText: 'Code',
     modeCodeTitle: 'Switch to code highlighter',
     modeFormText: 'Form',
@@ -448,6 +452,101 @@ const _defs = {
     modePreviewTitle: 'プレビューに切り替え',
     examples: '例',
     default: 'デフォルト'
+  },
+  'fr-FR': {
+    array: 'Liste',
+    auto: 'Auto',
+    appendText: 'Ajouter',
+    appendTitle: 'Ajouter un champ de type \'auto\' après ce champ (Ctrl+Shift+Ins)',
+    appendSubmenuTitle: 'Sélectionner le type du champ à ajouter',
+    appendTitleAuto: 'Ajouter un champ de type \'auto\' (Ctrl+Shift+Ins)',
+    ascending: 'Ascendant',
+    ascendingTitle: 'Trier les enfants de ce ${type} par ordre ascendant',
+    actionsMenu: 'Ouvrir le menu des actions (Ctrl+M)',
+    collapseAll: 'Regrouper',
+    descending: 'Descendant',
+    descendingTitle: 'Trier les enfants de ce ${type} par ordre descendant',
+    drag: 'Déplacer (Alt+Shift+Arrows)',
+    duplicateKey: 'Dupliquer la clé',
+    duplicateText: 'Dupliquer',
+    duplicateTitle: 'Dupliquer les champs sélectionnés (Ctrl+D)',
+    duplicateField: 'Dupliquer ce champ (Ctrl+D)',
+    duplicateFieldError: 'Dupliquer le nom de champ',
+    cannotParseFieldError: 'Champ impossible à parser en JSON',
+    cannotParseValueError: 'Valeur impossible à parser en JSON',
+    empty: 'vide',
+    expandAll: 'Étendre',
+    expandTitle: 'Étendre/regrouper ce champ (Ctrl+E). \n' +
+      'Ctrl+Click pour étendre/regrouper avec tous les champs.',
+    insert: 'Insérer',
+    insertTitle: 'Insérer un champ de type \'auto\' avant ce champ (Ctrl+Ins)',
+    insertSub: 'Sélectionner le type de champ à insérer',
+    object: 'Objet',
+    ok: 'Ok',
+    redo: 'Rejouer (Ctrl+Shift+Z)',
+    removeText: 'Supprimer',
+    removeTitle: 'Supprimer les champs sélectionnés (Ctrl+Del)',
+    removeField: 'Supprimer ce champ (Ctrl+Del)',
+    searchTitle: 'Rechercher champs et valeurs',
+    searchNextResultTitle : 'Résultat suivant (Enter)',
+    searchPreviousResultTitle : 'Résultat précédent (Shift + Enter)',
+    selectNode: 'Sélectionner un nœud...',
+    showAll: 'voir tout',
+    showMore: 'voir plus',
+    showMoreStatus: '${visibleChilds} éléments affichés de ${totalChilds}.',
+    sort: 'Trier',
+    sortTitle: 'Trier les champs de ce ${type}',
+    sortTitleShort: 'Trier',
+    sortFieldLabel: 'Champ:',
+    sortDirectionLabel: 'Direction:',
+    sortFieldTitle: 'Sélectionner les champs permettant de trier les listes et objet',
+    sortAscending: 'Ascendant',
+    sortAscendingTitle: 'Trier les champs sélectionnés par ordre ascendant',
+    sortDescending: 'Descendant',
+    sortDescendingTitle: 'Trier les champs sélectionnés par ordre descendant',
+    string: 'Chaîne',
+    transform: 'Transformer',
+    transformTitle: 'Filtrer, trier, or transformer les enfants de ce ${type}',
+    transformTitleShort: 'Filtrer, trier ou transformer le contenu',
+    extract: 'Extraire',
+    extractTitle: 'Extraire ce ${type}',
+    transformQueryTitle: 'Saisir une requête JMESPath',
+    transformWizardLabel: 'Assistant',
+    transformWizardFilter: 'Filtrer',
+    transformWizardSortBy: 'Trier par',
+    transformWizardSelectFields: 'Sélectionner les champs',
+    transformQueryLabel: 'Requête',
+    transformPreviewLabel: 'Prévisualisation',
+    type: 'Type',
+    typeTitle: 'Changer le type de ce champ',
+    openUrl: 'Ctrl+Click ou Ctrl+Enter pour ouvrir l\'url dans une autre fenêtre',
+    undo: 'Annuler la dernière action (Ctrl+Z)',
+    validationCannotMove: 'Cannot move a field into a child of itself',
+    autoType: 'Champe de type "auto". ' +
+      'Ce type de champ est automatiquement déterminé en fonction de la valeur ' +
+      'et peut être de type "chaîne", "nombre", "booléen" ou null.',
+    objectType: 'Champ de type "objet". ' +
+      'Un objet contient un ensemble non ordonné de paires clé/valeur.',
+    arrayType: 'Champ de type "liste". ' +
+      'Une liste contient une collection ordonnée de valeurs.',
+    stringType: 'Champ de type "chaîne". ' +
+      'Ce type de champ n\'est pas déterminé en fonction de la valeur, ' +
+      'mais retourne systématiquement une chaîne de caractères.',
+    modeEditorTitle : 'Changer mode d\'édition',
+    modeCodeText: 'Code',
+    modeCodeTitle: 'Activer surlignage code',
+    modeFormText: 'Formulaire',
+    modeFormTitle: 'Activer formulaire',
+    modeTextText: 'Texte',
+    modeTextTitle: 'Activer éditeur texte',
+    modeTreeText: 'Arbre',
+    modeTreeTitle: 'Activer éditeur arbre',
+    modeViewText: 'Lecture seule',
+    modeViewTitle: 'Activer vue arbre',
+    modePreviewText: 'Prévisualisation',
+    modePreviewTitle: 'Activer mode prévisualiser',
+    examples: 'Exemples',
+    default: 'Défaut'
   }
 }
 
