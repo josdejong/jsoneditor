@@ -41,8 +41,8 @@ const _defs = {
     removeTitle: 'Remove selected fields (Ctrl+Del)',
     removeField: 'Remove this field (Ctrl+Del)',
     searchTitle: 'Search fields and values',
-    searchNextResultTitle : 'Next result (Enter)',
-    searchPreviousResultTitle : 'Previous result (Shift + Enter)',
+    searchNextResultTitle: 'Next result (Enter)',
+    searchPreviousResultTitle: 'Previous result (Shift + Enter)',
     selectNode: 'Select a node...',
     showAll: 'show all',
     showMore: 'show more',
@@ -85,7 +85,7 @@ const _defs = {
     stringType: 'Field type "string". ' +
       'Field type is not determined from the value, ' +
       'but always returned as string.',
-    modeEditorTitle : 'Switch Editor Mode',
+    modeEditorTitle: 'Switch Editor Mode',
     modeCodeText: 'Code',
     modeCodeTitle: 'Switch to code highlighter',
     modeFormText: 'Form',
@@ -488,8 +488,8 @@ const _defs = {
     removeTitle: 'Supprimer les champs sélectionnés (Ctrl+Del)',
     removeField: 'Supprimer ce champ (Ctrl+Del)',
     searchTitle: 'Rechercher champs et valeurs',
-    searchNextResultTitle : 'Résultat suivant (Enter)',
-    searchPreviousResultTitle : 'Résultat précédent (Shift + Enter)',
+    searchNextResultTitle: 'Résultat suivant (Enter)',
+    searchPreviousResultTitle: 'Résultat précédent (Shift + Enter)',
     selectNode: 'Sélectionner un nœud...',
     showAll: 'voir tout',
     showMore: 'voir plus',
@@ -532,7 +532,7 @@ const _defs = {
     stringType: 'Champ de type "chaîne". ' +
       'Ce type de champ n\'est pas déterminé en fonction de la valeur, ' +
       'mais retourne systématiquement une chaîne de caractères.',
-    modeEditorTitle : 'Changer mode d\'édition',
+    modeEditorTitle: 'Changer mode d\'édition',
     modeCodeText: 'Code',
     modeCodeTitle: 'Activer surlignage code',
     modeFormText: 'Formulaire',
