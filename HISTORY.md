@@ -6,6 +6,8 @@ https://github.com/josdejong/jsoneditor
 ## not yet published, version 7.2.0
 
 - Implemented Japanese translation (`ja`). Thanks @yutakiyama.
+- Implemented French translation (`fr-FR`), and some improvements in the
+  translation. Thanks @yannickyvin.
 
 
 ## 2019-10-13, version 7.1.0
