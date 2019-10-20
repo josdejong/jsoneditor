@@ -234,7 +234,7 @@ textmode.create = function (container, options = {}) {
     aceEditor.setTheme(this.theme)
     aceEditor.setOptions({ readOnly: isReadOnly })
     aceEditor.setShowPrintMargin(false)
-    aceEditor.setFontSize(13)
+    aceEditor.setFontSize('13px')
     aceSession.setMode('ace/mode/json')
     aceSession.setTabSize(this.indentation)
     aceSession.setUseSoftTabs(true)

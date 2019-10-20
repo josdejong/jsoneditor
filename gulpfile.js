@@ -9,6 +9,7 @@ const sass = require('gulp-sass')
 const mkdirp = require('mkdirp')
 const webpack = require('webpack')
 const uglify = require('uglify-js')
+const btoa = require('btoa')
 
 const NAME = 'jsoneditor'
 const NAME_MINIMALIST = 'jsoneditor-minimalist'
@@ -80,7 +81,8 @@ const compilerMinimalist = webpack({
   module: webpackConfigModule,
   plugins: [
     bannerPlugin,
-    new webpack.IgnorePlugin(new RegExp('^brace$')),
+    new webpack.IgnorePlugin(new RegExp('^ace-builds')),
+    new webpack.IgnorePlugin(new RegExp('worker-json-data-url')),
     new webpack.IgnorePlugin(new RegExp('^ajv')),
     new webpack.IgnorePlugin(new RegExp('^vanilla-picker'))
   ],
@@ -121,6 +123,19 @@ function minify (name) {
 gulp.task('mkdir', function (done) {
   mkdirp.sync(DIST)
   mkdirp.sync(DIST + '/img')
+
+  done()
+})
+
+// Create an embedded version of the json worker code: a data url
+gulp.task('embed-json-worker', function (done) {
+  const workerBundleFile = './node_modules/ace-builds/src-noconflict/worker-json.js'
+  const workerEmbeddedFile = './src/js/generated/worker-json-data-url.js'
+  const workerScript = String(fs.readFileSync(workerBundleFile))
+
+  const workerDataUrl = 'data:application/javascript;base64,' + btoa(workerScript)
+
+  fs.writeFileSync(workerEmbeddedFile, 'module.exports = \'' + workerDataUrl + '\';\n')
 
   done()
 })
@@ -223,6 +238,7 @@ gulp.task('watch', gulp.series('bundle', 'bundle-css', 'copy-img', function () {
 // The default task (called when you run `gulp`)
 gulp.task('default', gulp.series(
   'mkdir',
+  'embed-json-worker',
   gulp.parallel(
     'copy-img',
     'copy-docs',
