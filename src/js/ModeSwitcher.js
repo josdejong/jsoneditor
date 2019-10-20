@@ -84,7 +84,7 @@ export class ModeSwitcher {
     box.type = 'button'
     box.className = 'jsoneditor-modes jsoneditor-separator'
     box.innerHTML = currentTitle + ' &#x25BE;'
-    box.title = 'Switch editor mode'
+    box.title = translate('modeEditorTitle')
     box.onclick = () => {
       const menu = new ContextMenu(items)
       menu.show(box, container)
