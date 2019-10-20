@@ -57,6 +57,12 @@
     onChangeText: function (text) {
       console.log('onChangeText', text);
     },
+    onFocus: function(event) {
+      console.log("Focus : ",event);
+    },
+    onBlur: function(event) {
+      console.log("Blur : ",event);
+    },
     indentation: 4,
     escapeUnicode: true
   };

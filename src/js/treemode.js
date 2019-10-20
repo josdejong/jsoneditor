@@ -102,6 +102,12 @@ treemode.destroy = function () {
     this.modeSwitcher.destroy()
     this.modeSwitcher = null
   }
+
+  // unsetting the focus tracker set to track the editor's focus event
+  if (typeof this.frameFocusFlag === 'boolean') {
+    this.frameFocusFlag = null
+    removeEventListener(document, 'click', this._frameFocusEventTracker)
+  }
 }
 
 /**
@@ -880,6 +886,34 @@ treemode.scrollTo = function (top, animateCallback) {
 }
 
 /**
+ * Tracks the focus of the editor's frame and calls the onFocus and onBlur
+ * event callbacks if available.
+ * @param {Object} [event]  The 'click' event object,
+ *                          from the onCLick event set on document
+ * @private
+ */
+
+function focusEventTracker (event) {
+  const target = event.target
+  let focusFlag
+  if (target === this.frame) {
+    focusFlag = true
+  } else if (this.frame.contains(target)) {
+    focusFlag = true
+  } else {
+    focusFlag = false
+  }
+
+  if (this._onEvent) {
+    if (focusFlag) {
+      this._onEvent({ type: 'focus', target: this.frame })
+    } else {
+      this._onEvent({ type: 'blur', target: this.frame })
+    }
+  }
+}
+
+/**
  * Create main frame
  * @private
  */
@@ -887,6 +921,8 @@ treemode._createFrame = function () {
   // create the frame
   this.frame = document.createElement('div')
   this.frame.className = 'jsoneditor jsoneditor-mode-' + this.options.mode
+  // this.frame.setAttribute("tabindex","0");
+
   this.container.appendChild(this.frame)
 
   this.contentOuter = document.createElement('div')
@@ -901,6 +937,12 @@ treemode._createFrame = function () {
       editor._onEvent(event)
     }
   }
+
+  // setting the focus tracker to track the editor's focus event
+  this.frameFocusFlag = false
+  this._frameFocusEventTracker = focusEventTracker.bind(this)
+  document.addEventListener('click', this._frameFocusEventTracker)
+
   this.frame.onclick = event => {
     const target = event.target// || event.srcElement;
 
@@ -1081,6 +1123,29 @@ treemode._onEvent = function (event) {
     return
   }
 
+  if (event.target === this.frame) {
+    switch (event.type) {
+      case 'focus':
+        // trigger the onFocus callback
+        if (!this.frameFocusFlag) {
+          if (this.options.onFocus) {
+            this.options.onFocus(event)
+          }
+          this.frameFocusFlag = true
+        }
+        return
+      case 'blur':
+        // trigger the onBlur callback
+        if (this.frameFocusFlag) {
+          if (this.options.onBlur) {
+            this.options.onBlur(event)
+          }
+          this.frameFocusFlag = false
+        }
+        return
+    }
+  }
+
   const node = Node.getNodeFromTarget(event.target)
 
   if (event.type === 'keydown') {
@@ -1091,18 +1156,6 @@ treemode._onEvent = function (event) {
     this.focusTarget = event.target
     if (this.options.autocomplete && this.options.autocomplete.trigger === 'focus') {
       this._showAutoComplete(event.target)
-    }
-
-    // trigger the onFocus callback
-    if (this.options.onFocus) {
-      this.options.onFocus(event)
-    }
-  }
-
-  // trigger the onBlur callback
-  if (node && event.type === 'blur') {
-    if (this.options.onBlur) {
-      this.options.onBlur(event)
     }
   }
 
