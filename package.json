@@ -26,7 +26,7 @@
     "prepublishOnly": "npm test && npm run build"
   },
   "dependencies": {
-    "ace-builds": "1.4.6",
+    "ace-builds": "1.4.7",
     "ajv": "6.10.2",
     "javascript-natural-sort": "0.7.1",
     "jmespath": "0.15.0",
@@ -50,9 +50,9 @@
     "jsdom": "15.2.0",
     "json-loader": "0.5.7",
     "mkdirp": "0.5.1",
-    "mocha": "6.2.1",
+    "mocha": "6.2.2",
     "standard": "14.3.1",
-    "uglify-js": "3.6.2",
+    "uglify-js": "3.6.3",
     "webpack": "4.41.2"
   },
   "files": [
