@@ -161,6 +161,7 @@ export class ErrorTable {
       this.dom.parseErrorIndication.title = !isNaN(line)
         ? ('parse error on line ' + line)
         : 'parse error - check that the json is valid'
+      this.dom.parseErrorIndication.onclick = this.toggleTableVisibility.bind(this)
     } else {
       this.dom.parseErrorIndication.style.display = 'none'
     }

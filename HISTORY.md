@@ -8,6 +8,8 @@ https://github.com/josdejong/jsoneditor
 - Implemented Japanese translation (`ja`). Thanks @yutakiyama.
 - Implemented French translation (`fr-FR`), and some improvements in the
   translation. Thanks @yannickyvin.
+- Fixed #824: Parse errors not displayed with bottom right error icon in modes
+  `code` and `text`.
 
 
 ## 2019-10-13, version 7.1.0

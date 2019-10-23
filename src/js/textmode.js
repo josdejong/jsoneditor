@@ -806,7 +806,7 @@ textmode._renderErrors = function (errors) {
   const jsonText = this.getText()
   const errorPaths = []
   errors.reduce((acc, curr) => {
-    if (acc.indexOf(curr.dataPath) === -1) {
+    if (typeof curr.dataPath === 'string' && acc.indexOf(curr.dataPath) === -1) {
       acc.push(curr.dataPath)
     }
     return acc
