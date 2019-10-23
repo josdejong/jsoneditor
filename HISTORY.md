@@ -8,6 +8,7 @@ https://github.com/josdejong/jsoneditor
 - Implemented Japanese translation (`ja`). Thanks @yutakiyama.
 - Implemented French translation (`fr-FR`), and some improvements in the
   translation. Thanks @yannickyvin.
+- Upgraded to the latest version of Ace editor, 1.4.7.
 - Fixed #824: Parse errors not displayed with bottom right error icon in modes
   `code` and `text`.
 
