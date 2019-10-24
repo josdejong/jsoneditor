@@ -144,6 +144,7 @@ div {
         margin: 0;
         border: none;
         cursor: pointer;
+        z-index: auto;
         background: transparent url("./img/jsoneditor-icons.svg");
         &:focus {
           background-color: $jse-preview;
