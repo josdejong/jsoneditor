@@ -1986,7 +1986,7 @@ export class Node {
       const menu = document.createElement('button')
       menu.type = 'button'
       dom.menu = menu
-      menu.className = 'jsoneditor-button jsoneditor-contextmenu'
+      menu.className = 'jsoneditor-button jsoneditor-contextmenu-button'
       menu.title = translate('actionsMenu')
       tdMenu.appendChild(dom.menu)
       dom.tr.appendChild(tdMenu)
