@@ -7,6 +7,7 @@ https://github.com/josdejong/jsoneditor
 
 - Fixed #828: do not expand/collapse when clicking the text of a node in modes
   `view` or `form`.
+- Fixed #826: editor not allowing indentation `0`.
 
 
 ## 2019-10-23, version 7.2.0

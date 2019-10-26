@@ -49,7 +49,7 @@ textmode.create = function (container, options = {}) {
   this.options = options
 
   // indentation
-  if (options.indentation) {
+  if (typeof options.indentation === 'number') {
     this.indentation = Number(options.indentation)
   } else {
     this.indentation = 2 // number of spaces
