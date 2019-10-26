@@ -3,6 +3,12 @@
 https://github.com/josdejong/jsoneditor
 
 
+## not yet published, version 7.2.1
+
+- Fixed #828: do not expand/collapse when clicking the text of a node in modes
+  `view` or `form`.
+
+
 ## 2019-10-23, version 7.2.0
 
 - Implemented Japanese translation (`ja`). Thanks @yutakiyama.

@@ -2426,8 +2426,7 @@ export class Node {
 
     // expand events
     if (type === 'click') {
-      if (target === dom.expand ||
-          ((node.editor.options.mode === 'view' || node.editor.options.mode === 'form') && target.nodeName === 'DIV')) {
+      if (target === dom.expand) {
         if (expandable) {
           const recurse = event.ctrlKey // with ctrl-key, expand/collapse all
           this._onExpand(recurse)

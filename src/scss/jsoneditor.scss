@@ -312,10 +312,6 @@ div.jsoneditor-value.jsoneditor-object,
 div.jsoneditor-value.jsoneditor-array {
   min-width: 16px;
 }
-div.jsoneditor-mode-view tr.jsoneditor-expandable td.jsoneditor-tree,
-div.jsoneditor-mode-form tr.jsoneditor-expandable td.jsoneditor-tree {
-  cursor: pointer;
-}
 div.jsoneditor-tree button.jsoneditor-contextmenu:hover,
 div.jsoneditor-tree button.jsoneditor-contextmenu:focus,
 div.jsoneditor-tree button.jsoneditor-contextmenu.jsoneditor-selected,
