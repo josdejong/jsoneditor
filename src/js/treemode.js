@@ -1514,12 +1514,21 @@ treemode._onKeyDown = function (event) {
   const metaKey = event.metaKey
   const shiftKey = event.shiftKey
   let handled = false
+  const currentTarget = this.focusTarget
 
   if (keynum === 9) { // Tab or Shift+Tab
     const me = this
     setTimeout(() => {
-      // select all text when moving focus to an editable div
-      selectContentEditable(me.focusTarget)
+      /*
+          - Checking for change in focusTarget
+          - Without the check,
+            pressing tab after reaching the final DOM element in the editor will
+            set the focus back to it than passing focus outside the editor
+      */
+      if (me.focusTarget !== currentTarget) {
+        // select all text when moving focus to an editable div
+        selectContentEditable(me.focusTarget)
+      }
     }, 0)
   }
 
