@@ -50,7 +50,7 @@ textmode.create = function (container, options = {}) {
   this.options = options
 
   // indentation
-  if (options.indentation) {
+  if (typeof options.indentation === 'number') {
     this.indentation = Number(options.indentation)
   } else {
     this.indentation = 2 // number of spaces
@@ -820,7 +820,7 @@ textmode._renderErrors = function (errors) {
   const jsonText = this.getText()
   const errorPaths = []
   errors.reduce((acc, curr) => {
-    if (acc.indexOf(curr.dataPath) === -1) {
+    if (typeof curr.dataPath === 'string' && acc.indexOf(curr.dataPath) === -1) {
       acc.push(curr.dataPath)
     }
     return acc

@@ -156,7 +156,7 @@ div {
       &.jsoneditor-expanded {
         background-position: 0 -72px;
       }
-      &.jsoneditor-contextmenu {
+      &.jsoneditor-contextmenu-button {
         background-position: -48px -72px;
       }
       &.jsoneditor-invisible {
@@ -312,14 +312,10 @@ div.jsoneditor-value.jsoneditor-object,
 div.jsoneditor-value.jsoneditor-array {
   min-width: 16px;
 }
-div.jsoneditor-mode-view tr.jsoneditor-expandable td.jsoneditor-tree,
-div.jsoneditor-mode-form tr.jsoneditor-expandable td.jsoneditor-tree {
-  cursor: pointer;
-}
-div.jsoneditor-tree button.jsoneditor-contextmenu:hover,
-div.jsoneditor-tree button.jsoneditor-contextmenu:focus,
-div.jsoneditor-tree button.jsoneditor-contextmenu.jsoneditor-selected,
-tr.jsoneditor-selected.jsoneditor-first button.jsoneditor-contextmenu {
+div.jsoneditor-tree button.jsoneditor-contextmenu-button:hover,
+div.jsoneditor-tree button.jsoneditor-contextmenu-button:focus,
+div.jsoneditor-tree button.jsoneditor-contextmenu-button.jsoneditor-selected,
+tr.jsoneditor-selected.jsoneditor-first button.jsoneditor-contextmenu-button {
   background-position: -48px -48px;
 }
 div.jsoneditor-tree div.jsoneditor-show-more a:hover,
@@ -349,11 +345,11 @@ tr.jsoneditor-selected {
   background-color: $jse-empty;
 }
 tr.jsoneditor-selected button.jsoneditor-dragarea,
-tr.jsoneditor-selected button.jsoneditor-contextmenu {
+tr.jsoneditor-selected button.jsoneditor-contextmenu-button {
   visibility: hidden;
 }
 tr.jsoneditor-selected.jsoneditor-first button.jsoneditor-dragarea,
-tr.jsoneditor-selected.jsoneditor-first button.jsoneditor-contextmenu {
+tr.jsoneditor-selected.jsoneditor-first button.jsoneditor-contextmenu-button {
   visibility: visible;
 }
 div.jsoneditor-tree button.jsoneditor-dragarea:hover,
@@ -399,7 +395,6 @@ pre.jsoneditor-preview,
   position: absolute;
   cursor: auto;
   width: 200px;
-  z-index: 999;
   &.jsoneditor-above {
     bottom: 32px;
     left: -98px;

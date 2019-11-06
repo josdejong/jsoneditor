@@ -1986,7 +1986,7 @@ export class Node {
       const menu = document.createElement('button')
       menu.type = 'button'
       dom.menu = menu
-      menu.className = 'jsoneditor-button jsoneditor-contextmenu'
+      menu.className = 'jsoneditor-button jsoneditor-contextmenu-button'
       menu.title = translate('actionsMenu')
       tdMenu.appendChild(dom.menu)
       dom.tr.appendChild(tdMenu)
@@ -2426,8 +2426,7 @@ export class Node {
 
     // expand events
     if (type === 'click') {
-      if (target === dom.expand ||
-          ((node.editor.options.mode === 'view' || node.editor.options.mode === 'form') && target.nodeName === 'DIV')) {
+      if (target === dom.expand) {
         if (expandable) {
           const recurse = event.ctrlKey // with ctrl-key, expand/collapse all
           this._onExpand(recurse)

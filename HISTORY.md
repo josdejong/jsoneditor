@@ -3,9 +3,22 @@
 https://github.com/josdejong/jsoneditor
 
 
-## not yet published, version 7.2.0
+## not yet published, version 7.2.1
+
+- Fixed #826: editor not allowing indentation `0`.
+- Fixed #828: do not expand/collapse when clicking the text of a node
+  in modes `view` or `form`.
+- Fixed #829: z-index issue of context-menu button and conflicting css names.
+
+
+## 2019-10-23, version 7.2.0
 
 - Implemented Japanese translation (`ja`). Thanks @yutakiyama.
+- Implemented French translation (`fr-FR`), and some improvements in the
+  translation. Thanks @yannickyvin.
+- Upgraded to the latest version of Ace editor, 1.4.7.
+- Fixed #824: Parse errors not displayed with bottom right error icon in modes
+  `code` and `text`.
 
 
 ## 2019-10-13, version 7.1.0

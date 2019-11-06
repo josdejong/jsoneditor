@@ -10,7 +10,7 @@
     white-space: normal;
     position: absolute;
     background-color: $jse-light-bg;
-    z-index: 999;
+    z-index: 1;
     box-shadow: $jse-box-shadow;
     span {
       &.jsoneditor-treepath-show-all-btn {

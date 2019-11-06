@@ -1,4 +1,5 @@
 'use strict'
+import { translate } from './i18n'
 
 /**
  * @constructor SearchBox
@@ -33,7 +34,7 @@ export class SearchBox {
     const divInput = document.createElement('div')
     this.dom.input = divInput
     divInput.className = 'jsoneditor-frame'
-    divInput.title = 'Search fields and values'
+    divInput.title = translate('searchTitle')
     wrapper.appendChild(divInput)
 
     const refreshSearch = document.createElement('button')
@@ -66,7 +67,7 @@ export class SearchBox {
 
     const searchNext = document.createElement('button')
     searchNext.type = 'button'
-    searchNext.title = 'Next result (Enter)'
+    searchNext.title = translate('searchNextResultTitle')
     searchNext.className = 'jsoneditor-next'
     searchNext.onclick = () => {
       searchBox.next()
@@ -76,7 +77,7 @@ export class SearchBox {
 
     const searchPrevious = document.createElement('button')
     searchPrevious.type = 'button'
-    searchPrevious.title = 'Previous result (Shift+Enter)'
+    searchPrevious.title = translate('searchPreviousResultTitle')
     searchPrevious.className = 'jsoneditor-previous'
     searchPrevious.onclick = () => {
       searchBox.previous()
