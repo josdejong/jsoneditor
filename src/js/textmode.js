@@ -8,6 +8,7 @@ import { ErrorTable } from './ErrorTable'
 import { validateCustom } from './validationUtils'
 import { showSortModal } from './showSortModal'
 import { showTransformModal } from './showTransformModal'
+import { FocusTracker } from './FocusTracker'
 import {
   addClassName,
   debounce,
@@ -20,8 +21,7 @@ import {
   parse,
   repair,
   sort,
-  sortObjectKeys,
-  removeEventListener
+  sortObjectKeys
 } from './util'
 import { DEFAULT_MODAL_ANCHOR } from './constants'
 import { tryRequireThemeJsonEditor } from './tryRequireThemeJsonEditor'
@@ -145,10 +145,15 @@ textmode.create = function (container, options = {}) {
       }
     }
 
-    // setting the focus tracker to track the editor's focus event
-    this.frameFocusFlag = false
-    this._frameFocusEventTracker = focusEventTacker.bind(this)
-    document.addEventListener('click', this._frameFocusEventTracker)
+    // setting the FocusTracker on 'this.frame' to track the editor's focus event
+    const focusTrackerConfig = {
+      target: this.frame,
+      onFocus: this.options.onFocus || null,
+      onBlur: this.options.onBlur || null
+    }
+
+    this.frameFocusTracker = new FocusTracker(focusTrackerConfig)
+    this.frameFocusTracker.add()
 
     // create sort button
     if (this.options.enableSort) {
@@ -352,44 +357,6 @@ textmode.create = function (container, options = {}) {
   }
 
   this.setSchema(this.options.schema, this.options.schemaRefs)
-}
-
-/**
- * Tracks the focus of the editor's frame and calls the onFocus and onBlur
- * event callbacks if available.
- * @param {Object} [event]  The 'click' event object,
- *                          from the onCLick event set on document
- * @private
- */
-
-function focusEventTacker (event) {
-  const target = event.target
-  let focusFlag
-  if (target === this.frame) {
-    focusFlag = true
-  } else if (this.frame.contains(target)) {
-    focusFlag = true
-  } else {
-    focusFlag = false
-  }
-
-  if (focusFlag) {
-    if (!this.frameFocusFlag) {
-      // trigger the onFocus callback
-      if (this.options.onFocus) {
-        this.options.onFocus({ type: 'focus', target: this.frame })
-      }
-      this.frameFocusFlag = true
-    }
-  } else {
-    if (this.frameFocusFlag) {
-      // trigger the onBlur callback
-      if (this.options.onBlur) {
-        this.options.onBlur({ type: 'blur', target: this.frame })
-      }
-      this.frameFocusFlag = false
-    }
-  }
 }
 
 /**
@@ -644,11 +611,8 @@ textmode.destroy = function () {
 
   this._debouncedValidate = null
 
-  // unsetting the focus tracker set to track the editor's focus event
-  if (typeof this.frameFocusFlag === 'boolean') {
-    this.frameFocusFlag = null
-    removeEventListener(document, 'click', this._frameFocusEventTracker)
-  }
+  // Removing the FocusTracker set to track the editor's focus event
+  this.frameFocusTracker.remove()
 }
 
 /**

@@ -8,6 +8,7 @@ import { showSortModal } from './showSortModal'
 import { showTransformModal } from './showTransformModal'
 import { textModeMixins } from './textmode'
 import { DEFAULT_MODAL_ANCHOR, MAX_PREVIEW_CHARACTERS, PREVIEW_HISTORY_LIMIT, SIZE_LARGE } from './constants'
+import { FocusTracker } from './FocusTracker'
 import {
   addClassName,
   debounce,
@@ -19,8 +20,7 @@ import {
   removeClassName,
   repair,
   sort,
-  sortObjectKeys,
-  removeEventListener
+  sortObjectKeys
 } from './util'
 import { History } from './History'
 
@@ -79,10 +79,15 @@ previewmode.create = function (container, options = {}) {
     event.preventDefault()
   }
 
-  // setting the focus tracker to track the editor's focus event
-  this.frameFocusFlag = false
-  this._frameFocusEventTracker = focusEventTracker.bind(this)
-  document.addEventListener('click', this._frameFocusEventTracker)
+  // setting the FocusTracker on 'this.frame' to track the editor's focus event
+  const focusTrackerConfig = {
+    target: this.frame,
+    onFocus: this.options.onFocus || null,
+    onBlur: this.options.onBlur || null
+  }
+
+  this.frameFocusTracker = new FocusTracker(focusTrackerConfig)
+  this.frameFocusTracker.add()
 
   this.content = document.createElement('div')
   this.content.className = 'jsoneditor-outer'
@@ -284,44 +289,6 @@ previewmode.create = function (container, options = {}) {
   this.setSchema(this.options.schema, this.options.schemaRefs)
 }
 
-/**
- * Tracks the focus of the editor's frame and calls the onFocus and onBlur
- * event callbacks if available.
- * @param {Object} [event]  The 'click' event object,
- *                          from the onCLick event set on document
- * @private
- */
-
-function focusEventTracker (event) {
-  const target = event.target
-  let focusFlag
-  if (target === this.frame) {
-    focusFlag = true
-  } else if (this.frame.contains(target)) {
-    focusFlag = true
-  } else {
-    focusFlag = false
-  }
-
-  if (focusFlag) {
-    if (!this.frameFocusFlag) {
-      // trigger the onFocus callback
-      if (this.options.onFocus) {
-        this.options.onFocus({ type: 'focus', target: this.frame })
-      }
-      this.frameFocusFlag = true
-    }
-  } else {
-    if (this.frameFocusFlag) {
-      // trigger the onBlur callback
-      if (this.options.onBlur) {
-        this.options.onBlur({ type: 'blur', target: this.frame })
-      }
-      this.frameFocusFlag = false
-    }
-  }
-}
-
 previewmode._renderPreview = function () {
   const text = this.getText()
 
@@ -453,11 +420,8 @@ previewmode.destroy = function () {
   this.history.clear()
   this.history = null
 
-  // unsetting the focus tracker set to track the editor's focus event
-  if (typeof this.frameFocusFlag === 'boolean') {
-    this.frameFocusFlag = null
-    removeEventListener(document, 'click', this._frameFocusEventTracker)
-  }
+  // Removing the FocusTracker set to track the editor's focus event
+  this.frameFocusTracker.remove()
 }
 
 /**

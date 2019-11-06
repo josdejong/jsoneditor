@@ -8,6 +8,7 @@ import { ContextMenu } from './ContextMenu'
 import { TreePath } from './TreePath'
 import { Node } from './Node'
 import { ModeSwitcher } from './ModeSwitcher'
+import { FocusTracker } from './FocusTracker'
 import {
   addClassName,
   addEventListener,
@@ -103,11 +104,8 @@ treemode.destroy = function () {
     this.modeSwitcher = null
   }
 
-  // unsetting the focus tracker set to track the editor's focus event
-  if (typeof this.frameFocusFlag === 'boolean') {
-    this.frameFocusFlag = null
-    removeEventListener(document, 'click', this._frameFocusEventTracker)
-  }
+  // Removing the FocusTracker set to track the editor's focus event
+  this.frameFocusTracker.remove()
 }
 
 /**
@@ -886,34 +884,6 @@ treemode.scrollTo = function (top, animateCallback) {
 }
 
 /**
- * Tracks the focus of the editor's frame and calls the onFocus and onBlur
- * event callbacks if available.
- * @param {Object} [event]  The 'click' event object,
- *                          from the onCLick event set on document
- * @private
- */
-
-function focusEventTracker (event) {
-  const target = event.target
-  let focusFlag
-  if (target === this.frame) {
-    focusFlag = true
-  } else if (this.frame.contains(target)) {
-    focusFlag = true
-  } else {
-    focusFlag = false
-  }
-
-  if (this._onEvent) {
-    if (focusFlag) {
-      this._onEvent({ type: 'focus', target: this.frame })
-    } else {
-      this._onEvent({ type: 'blur', target: this.frame })
-    }
-  }
-}
-
-/**
  * Create main frame
  * @private
  */
@@ -938,10 +908,15 @@ treemode._createFrame = function () {
     }
   }
 
-  // setting the focus tracker to track the editor's focus event
-  this.frameFocusFlag = false
-  this._frameFocusEventTracker = focusEventTracker.bind(this)
-  document.addEventListener('click', this._frameFocusEventTracker)
+  // setting the FocusTracker on 'this.frame' to track the editor's focus event
+  const focusTrackerConfig = {
+    target: this.frame,
+    onFocus: this.options.onFocus || null,
+    onBlur: this.options.onBlur || null
+  }
+
+  this.frameFocusTracker = new FocusTracker(focusTrackerConfig)
+  this.frameFocusTracker.add()
 
   this.frame.onclick = event => {
     const target = event.target// || event.srcElement;
@@ -1121,29 +1096,6 @@ treemode._onEvent = function (event) {
   // don't process events when coming from the color picker
   if (Node.targetIsColorPicker(event.target)) {
     return
-  }
-
-  if (event.target === this.frame) {
-    switch (event.type) {
-      case 'focus':
-        // trigger the onFocus callback
-        if (!this.frameFocusFlag) {
-          if (this.options.onFocus) {
-            this.options.onFocus(event)
-          }
-          this.frameFocusFlag = true
-        }
-        return
-      case 'blur':
-        // trigger the onBlur callback
-        if (this.frameFocusFlag) {
-          if (this.options.onBlur) {
-            this.options.onBlur(event)
-          }
-          this.frameFocusFlag = false
-        }
-        return
-    }
   }
 
   const node = Node.getNodeFromTarget(event.target)
