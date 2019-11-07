@@ -87,7 +87,6 @@ previewmode.create = function (container, options = {}) {
   }
 
   this.frameFocusTracker = new FocusTracker(focusTrackerConfig)
-  this.frameFocusTracker.add()
 
   this.content = document.createElement('div')
   this.content.className = 'jsoneditor-outer'
@@ -421,7 +420,7 @@ previewmode.destroy = function () {
   this.history = null
 
   // Removing the FocusTracker set to track the editor's focus event
-  this.frameFocusTracker.remove()
+  this.frameFocusTracker.destroy()
 }
 
 /**

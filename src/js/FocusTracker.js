@@ -26,13 +26,11 @@ export class FocusTracker {
     this.focusFlag = false
     this.trackerSetFlag = false
     this.firstEventFlag = true
-  }
 
-  /**
-     * Adds required event listeners to the 'document' object
-     * to track the focus of the given 'target'
+    /*
+      Adds required (click and keyup) event listeners to the 'document' object
+      to track the focus of the given 'target'
      */
-  add () {
     if (!this.trackerSetFlag) {
       if (this.target) {
         if (this.onFocus || this.onBlur) {
@@ -48,7 +46,7 @@ export class FocusTracker {
      * Removes the event listeners on the 'document' object
      * that were added to track the focus of the given 'target'
      */
-  remove () {
+  destroy () {
     if (this.trackerSetFlag) {
       document.removeEventListener('click', this._onClick)
       document.removeEventListener('keyup', this._onKeyUp)

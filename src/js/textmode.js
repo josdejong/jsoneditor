@@ -153,7 +153,6 @@ textmode.create = function (container, options = {}) {
     }
 
     this.frameFocusTracker = new FocusTracker(focusTrackerConfig)
-    this.frameFocusTracker.add()
 
     // create sort button
     if (this.options.enableSort) {
@@ -612,7 +611,7 @@ textmode.destroy = function () {
   this._debouncedValidate = null
 
   // Removing the FocusTracker set to track the editor's focus event
-  this.frameFocusTracker.remove()
+  this.frameFocusTracker.destroy()
 }
 
 /**

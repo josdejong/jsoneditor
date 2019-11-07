@@ -105,7 +105,7 @@ treemode.destroy = function () {
   }
 
   // Removing the FocusTracker set to track the editor's focus event
-  this.frameFocusTracker.remove()
+  this.frameFocusTracker.destroy()
 }
 
 /**
@@ -916,7 +916,6 @@ treemode._createFrame = function () {
   }
 
   this.frameFocusTracker = new FocusTracker(focusTrackerConfig)
-  this.frameFocusTracker.add()
 
   this.frame.onclick = event => {
     const target = event.target// || event.srcElement;
