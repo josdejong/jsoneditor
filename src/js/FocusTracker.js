@@ -4,18 +4,22 @@
  * @constructor FocusTracker
  * A custom focus tracker for a DOM element with complex internal DOM structure
  * @param  {[Object]} config    A set of configurations for the FocusTracker
- *                {DOM Object} target    The DOM object to track
- *                {Function} onFocus    onFocus callback
- *                {Function} onBlur    onBlur callback
+ *                {DOM Object} target *    The DOM object to track (required)
+ *                {Function}   onFocus     onFocus callback
+ *                {Function}   onBlur      onBlur callback
  *
  * @return
  */
 
 export class FocusTracker {
   constructor (config) {
+    this.target = config.target || null
+    if (!this.target) {
+      throw new Error('FocusTracker constructor called without a "target" to track.')
+    }
+
     this.onFocus = (typeof config.onFocus === 'function') ? config.onFocus : null
     this.onBlur = (typeof config.onBlur === 'function') ? config.onBlur : null
-    this.target = config.target || null
     this._onClick = this._onEvent.bind(this)
     this._onKeyUp = function (event) {
       if (event.which === 9 || event.keyCode === 9) {
@@ -24,21 +28,15 @@ export class FocusTracker {
     }.bind(this)
 
     this.focusFlag = false
-    this.trackerSetFlag = false
     this.firstEventFlag = true
 
     /*
       Adds required (click and keyup) event listeners to the 'document' object
       to track the focus of the given 'target'
      */
-    if (!this.trackerSetFlag) {
-      if (this.target) {
-        if (this.onFocus || this.onBlur) {
-          document.addEventListener('click', this._onClick)
-          document.addEventListener('keyup', this._onKeyUp)
-          this.trackerSetFlag = true
-        }
-      }
+    if (this.onFocus || this.onBlur) {
+      document.addEventListener('click', this._onClick)
+      document.addEventListener('keyup', this._onKeyUp)
     }
   }
 
@@ -47,11 +45,8 @@ export class FocusTracker {
      * that were added to track the focus of the given 'target'
      */
   destroy () {
-    if (this.trackerSetFlag) {
-      document.removeEventListener('click', this._onClick)
-      document.removeEventListener('keyup', this._onKeyUp)
-      this.trackerSetFlag = false
-    }
+    document.removeEventListener('click', this._onClick)
+    document.removeEventListener('keyup', this._onKeyUp)
   }
 
   /**
@@ -90,6 +85,11 @@ export class FocusTracker {
         }
         this.focusFlag = false
 
+        /*
+          When switching from one mode to another in the editor, the FocusTracker gets recreated.
+          At that time, this.focusFlag will be init to 'false' and will fail the above if condition, when blur occurs
+          this.firstEventFlag is added to overcome that issue
+         */
         if (this.firstEventFlag) {
           this.firstEventFlag = false
         }
