@@ -63,7 +63,7 @@ export class FocusTracker {
     let focusFlag
     if (target === this.target) {
       focusFlag = true
-    } else if (this.target.contains(target)) {
+    } else if (this.target.contains(target) || this.target.contains(document.activeElement)) {
       focusFlag = true
     } else {
       focusFlag = false
