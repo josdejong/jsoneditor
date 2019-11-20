@@ -3,6 +3,12 @@
 https://github.com/josdejong/jsoneditor
 
 
+## not yet published, version 7.3.0
+
+- Fixed #847: allow customizing the in rules determining whether a value
+  is a timestamp or not.
+
+
 ## 2019-10-27, version 7.2.1
 
 - Fixed #826: editor not allowing indentation `0`.

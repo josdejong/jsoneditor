@@ -17,6 +17,7 @@ import {
   hasParentNode,
   improveSchemaError,
   isPromise,
+  isTimestamp,
   isValidValidationError,
   parse,
   removeClassName,
@@ -1758,6 +1759,23 @@ treemode.getNodesByRange = function (start, end) {
   })
 
   return serializableNodes
+}
+
+/**
+ * Test whether to show a timestamp tag or not
+ * @param {*} value Any type of value
+ * @return {boolean} Returns true when the value is a timestamp
+ */
+treemode.showTimestampTag = function (value) {
+  if (typeof this.options.timestampTag === 'function') {
+    return this.options.timestampTag(value)
+  }
+
+  if (this.options.timestampTag === true) {
+    return isTimestamp(value)
+  }
+
+  return false
 }
 
 // define modes

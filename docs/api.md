@@ -432,11 +432,16 @@ Constructs a new JSONEditor.
   }
   ```
 
-- `{boolean} timestampTag`
+- `{boolean | function(value: any) -> boolean} timestampTag`
 
   If `true` (default), a tag with the date/time of a timestamp is displayed
-  right from timestamps. A value is considered a timestamp when it
-  has a value larger than Jan 1th 2000, `946684800000`.
+  right from values containing a timestamp. A value is considered a timestamp 
+  when it is a number with value larger than Jan 1th 2000, `946684800000`. 
+  
+  When `timestampTag` a is a function, a timestamp tag will be displayed for 
+  values for which `timestampTag(value)` returns `true`. This way it is 
+  possible to alter the default rules for determining whether a value 
+  is a timestamp or not. 
 
 - `{string} language`
 
