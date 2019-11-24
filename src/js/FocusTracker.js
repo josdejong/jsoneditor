@@ -47,6 +47,8 @@ export class FocusTracker {
   destroy () {
     document.removeEventListener('click', this._onClick)
     document.removeEventListener('keyup', this._onKeyUp)
+    this._onEvent({target: document.body}) // calling _onEvent with body element in the hope that the FocusTracker is added to an element inside the body tag
+
   }
 
   /**
