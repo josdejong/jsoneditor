@@ -34,8 +34,6 @@ import {
 import { translate } from './i18n'
 import { DEFAULT_MODAL_ANCHOR } from './constants'
 
-const YEAR_2000 = 946684800000
-
 /**
  * @constructor Node
  * Create a new Node
@@ -1784,10 +1782,7 @@ export class Node {
       }
 
       // show date tag when value is a timestamp in milliseconds
-      if (this.editor.options.timestampTag &&
-          typeof value === 'number' &&
-          value > YEAR_2000 &&
-          !isNaN(new Date(value).valueOf())) {
+      if (this.editor.showTimestampTag(value)) {
         if (!this.dom.date) {
           this.dom.date = document.createElement('div')
           this.dom.date.className = 'jsoneditor-date'

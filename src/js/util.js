@@ -7,6 +7,7 @@ import jsonMap from 'json-source-map'
 import { translate } from './i18n'
 
 const MAX_ITEMS_FIELDS_COLLECTION = 10000
+const YEAR_2000 = 946684800000
 
 /**
  * Parse JSON using the parser built-in in the browser.
@@ -1352,6 +1353,17 @@ export function parseString (str) {
   }
 
   return str
+}
+
+/**
+ * Test whether some value contains a timestamp.
+ * @param {*} value Any type of value
+ * @return {boolean} Returns true when the value is a timestamp
+ */
+export function isTimestamp (value) {
+  return typeof value === 'number' &&
+    value > YEAR_2000 &&
+    !isNaN(new Date(value).valueOf())
 }
 
 /**
