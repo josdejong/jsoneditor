@@ -8,6 +8,7 @@ import { showSortModal } from './showSortModal'
 import { showTransformModal } from './showTransformModal'
 import { textModeMixins } from './textmode'
 import { DEFAULT_MODAL_ANCHOR, MAX_PREVIEW_CHARACTERS, PREVIEW_HISTORY_LIMIT, SIZE_LARGE } from './constants'
+import { FocusTracker } from './FocusTracker'
 import {
   addClassName,
   debounce,
@@ -77,6 +78,15 @@ previewmode.create = function (container, options = {}) {
     // prevent default submit action when the editor is located inside a form
     event.preventDefault()
   }
+
+  // setting the FocusTracker on 'this.frame' to track the editor's focus event
+  const focusTrackerConfig = {
+    target: this.frame,
+    onFocus: this.options.onFocus || null,
+    onBlur: this.options.onBlur || null
+  }
+
+  this.frameFocusTracker = new FocusTracker(focusTrackerConfig)
 
   this.content = document.createElement('div')
   this.content.className = 'jsoneditor-outer'
@@ -408,6 +418,9 @@ previewmode.destroy = function () {
 
   this.history.clear()
   this.history = null
+
+  // Removing the FocusTracker set to track the editor's focus event
+  this.frameFocusTracker.destroy()
 }
 
 /**

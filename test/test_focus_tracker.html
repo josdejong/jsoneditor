@@ -23,6 +23,18 @@
       width: 500px;
       height: 500px;
     }
+
+    .input {
+    	display: block;
+    	margin: 5px;
+    }
+
+    .input:focus {
+    	border: 5px solid red;
+    }
+    .input:blur {
+    	border: unset;
+    }
   </style>
 </head>
 <body>
@@ -32,10 +44,13 @@
   Note that the mode can be changed programmatically as well using the method
   <code>editor.setMode(mode)</code>, try it in the console of your browser.
 </p>
-
+<input type="text" class="input">
+<input type="text" class="input">
 <form>
   <div id="jsoneditor"></div>
 </form>
+<input type="text" class="input">
+<input type="text" class="input">
 
 <script>
   var container, options, json, editor;
@@ -48,19 +63,12 @@
     onError: function (err) {
       alert(err.toString());
     },
-    onChange: function () {
-      console.log('change');
-    },
-    onChangeJSON: function (json) {
-      console.log('onChangeJSON', json);
-    },
-    onChangeText: function (text) {
-      console.log('onChangeText', text);
-    },
     onFocus: function(event) {
+      container.style.border = '5px solid red';
       console.log("Focus : ",event);
     },
     onBlur: function(event) {
+      container.style.border = 'unset';
       console.log("Blur : ",event);
     },
     indentation: 4,

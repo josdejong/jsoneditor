@@ -8,6 +8,7 @@ import { ContextMenu } from './ContextMenu'
 import { TreePath } from './TreePath'
 import { Node } from './Node'
 import { ModeSwitcher } from './ModeSwitcher'
+import { FocusTracker } from './FocusTracker'
 import {
   addClassName,
   addEventListener,
@@ -103,6 +104,9 @@ treemode.destroy = function () {
     this.modeSwitcher.destroy()
     this.modeSwitcher = null
   }
+
+  // Removing the FocusTracker set to track the editor's focus event
+  this.frameFocusTracker.destroy()
 }
 
 /**
@@ -888,6 +892,8 @@ treemode._createFrame = function () {
   // create the frame
   this.frame = document.createElement('div')
   this.frame.className = 'jsoneditor jsoneditor-mode-' + this.options.mode
+  // this.frame.setAttribute("tabindex","0");
+
   this.container.appendChild(this.frame)
 
   this.contentOuter = document.createElement('div')
@@ -902,6 +908,16 @@ treemode._createFrame = function () {
       editor._onEvent(event)
     }
   }
+
+  // setting the FocusTracker on 'this.frame' to track the editor's focus event
+  const focusTrackerConfig = {
+    target: this.frame,
+    onFocus: this.options.onFocus || null,
+    onBlur: this.options.onBlur || null
+  }
+
+  this.frameFocusTracker = new FocusTracker(focusTrackerConfig)
+
   this.frame.onclick = event => {
     const target = event.target// || event.srcElement;
 
@@ -1498,12 +1514,21 @@ treemode._onKeyDown = function (event) {
   const metaKey = event.metaKey
   const shiftKey = event.shiftKey
   let handled = false
+  const currentTarget = this.focusTarget
 
   if (keynum === 9) { // Tab or Shift+Tab
     const me = this
     setTimeout(() => {
-      // select all text when moving focus to an editable div
-      selectContentEditable(me.focusTarget)
+      /*
+          - Checking for change in focusTarget
+          - Without the check,
+            pressing tab after reaching the final DOM element in the editor will
+            set the focus back to it than passing focus outside the editor
+      */
+      if (me.focusTarget !== currentTarget) {
+        // select all text when moving focus to an editable div
+        selectContentEditable(me.focusTarget)
+      }
     }, 0)
   }
 

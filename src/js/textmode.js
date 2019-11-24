@@ -8,6 +8,7 @@ import { ErrorTable } from './ErrorTable'
 import { validateCustom } from './validationUtils'
 import { showSortModal } from './showSortModal'
 import { showTransformModal } from './showTransformModal'
+import { FocusTracker } from './FocusTracker'
 import {
   addClassName,
   debounce,
@@ -143,6 +144,15 @@ textmode.create = function (container, options = {}) {
         me._onError(err)
       }
     }
+
+    // setting the FocusTracker on 'this.frame' to track the editor's focus event
+    const focusTrackerConfig = {
+      target: this.frame,
+      onFocus: this.options.onFocus || null,
+      onBlur: this.options.onBlur || null
+    }
+
+    this.frameFocusTracker = new FocusTracker(focusTrackerConfig)
 
     // create sort button
     if (this.options.enableSort) {
@@ -599,6 +609,9 @@ textmode.destroy = function () {
   this.textarea = null
 
   this._debouncedValidate = null
+
+  // Removing the FocusTracker set to track the editor's focus event
+  this.frameFocusTracker.destroy()
 }
 
 /**
