@@ -1502,8 +1502,9 @@ export class Node {
    */
   _getDomValue () {
     this._clearValueError()
-
-    if (this.dom.value && this.type !== 'array' && this.type !== 'object') {
+    if (this.customValueRenderFlag) {
+      this.valueInnerText = this.value
+    } else if (this.dom.value && this.type !== 'array' && this.type !== 'object') {
       this.valueInnerText = getInnerText(this.dom.value)
     }
 
@@ -1639,9 +1640,8 @@ export class Node {
    */
   _updateDomValue () {
     const domValue = this.dom.value
-    if (domValue) {
+    if (domValue && !this.customValueRenderFlag) {
       const classNames = ['jsoneditor-value']
-
       // set text color depending on value type
       const value = this.value
       const valueType = (this.type === 'auto') ? getType(value) : this.type
@@ -2174,7 +2174,7 @@ export class Node {
 
     // apply value to DOM
     const domValue = this.dom.value
-    if (domValue) {
+    if (domValue && !this.customValueRenderFlag) {
       if (this.type === 'array') {
         this.updateNodeName()
         addClassName(this.dom.tr, 'jsoneditor-expandable')
@@ -2290,17 +2290,42 @@ export class Node {
       domValue = document.createElement('div')
       domValue.innerHTML = '{...}'
     } else {
-      if (!this.editable.value && isUrl(this.value)) {
-        // create a link in case of read-only editor and value containing an url
-        domValue = document.createElement('a')
-        domValue.href = this.value
-        domValue.innerHTML = this._escapeHTML(this.value)
+      let renderData
+      this.customValueRenderFlag = false
+      if (this.editor.options.onRenderValue) {
+        var _this = this
+        const conf = {
+          value: this.value,
+          field: this.field,
+          path: this.getPath(),
+          onChange: function (value) {
+            _this.setValue(value)
+          }
+        }
+        renderData = this.editor.options.onRenderValue(conf)
+      }
+      if (renderData && renderData.html) {
+        console.log(renderData)
+        // domValue = document.createElement('div')
+        // domValue.contentEditable = this.editable.value
+        // domValue.spellcheck = false
+        // domValue.appendChild(renderData.html);
+
+        domValue = renderData.html
+        this.customValueRenderFlag = true
       } else {
-        // create an editable or read-only div
-        domValue = document.createElement('div')
-        domValue.contentEditable = this.editable.value
-        domValue.spellcheck = false
-        domValue.innerHTML = this._escapeHTML(this.value)
+        if (!this.editable.value && isUrl(this.value)) {
+          // create a link in case of read-only editor and value containing an url
+          domValue = document.createElement('a')
+          domValue.href = this.value
+          domValue.innerHTML = this._escapeHTML(this.value)
+        } else {
+          // create an editable or read-only div
+          domValue = document.createElement('div')
+          domValue.contentEditable = this.editable.value
+          domValue.spellcheck = false
+          domValue.innerHTML = this._escapeHTML(this.value)
+        }
       }
     }
 
