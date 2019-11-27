@@ -7,7 +7,6 @@ import jsonMap from 'json-source-map'
 import { translate } from './i18n'
 
 const MAX_ITEMS_FIELDS_COLLECTION = 10000
-const YEAR_2000 = 946684800000
 
 /**
  * Parse JSON using the parser built-in in the browser.
