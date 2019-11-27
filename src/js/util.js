@@ -1355,15 +1355,23 @@ export function parseString (str) {
   return str
 }
 
+const TIMESTAMP_FIELDS = [
+  'DATE',
+  'TIME',
+  'CREATED',
+  'UPDATED',
+  'DELETED'
+]
+
 /**
- * Test whether some value contains a timestamp.
- * @param {*} value Any type of value
- * @return {boolean} Returns true when the value is a timestamp
+ * Test whether some field has a naming like "date" or "time"
+ * @param {string} field
+ * @return {boolean}
  */
-export function isTimestamp (value) {
-  return typeof value === 'number' &&
-    value > YEAR_2000 &&
-    !isNaN(new Date(value).valueOf())
+export function isTimestampFieldName (field) {
+  const fieldUpper = field.toUpperCase()
+
+  return TIMESTAMP_FIELDS.some(search => fieldUpper.indexOf(search) !== -1)
 }
 
 /**

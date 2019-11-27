@@ -432,16 +432,44 @@ Constructs a new JSONEditor.
   }
   ```
 
-- `{boolean | function(value: any) -> boolean} timestampTag`
+- `{boolean | function({field, value, path}) -> boolean} timestampTag`
 
   If `true` (default), a tag with the date/time of a timestamp is displayed
-  right from values containing a timestamp. A value is considered a timestamp 
-  when it is a number with value larger than Jan 1th 2000, `946684800000`. 
+  right from values containing a timestamp. By default, a value is 
+  considered a timestamp when it is a number and it's field name contains any
+  of the following strings (case insensitive): `'date'`, `'time'`, `'created'`,
+  `'updated'`, `'deleted'`.
   
-  When `timestampTag` a is a function, a timestamp tag will be displayed for 
-  values for which `timestampTag(value)` returns `true`. This way it is 
-  possible to alter the default rules for determining whether a value 
-  is a timestamp or not. 
+  When `timestampTag` a is a function, a timestamp tag will be displayed when 
+  this function returns `true`. The function is invoked with an object as first 
+  parameter:
+  
+  ```
+  {
+    field: string,
+    value: string,
+    path: string[]
+  }
+  ```
+
+  Whether a value is a timestamp can be determined implicitly based on 
+  the `value`, or explicitly based on `field` or `path`.
+
+  Example:
+  
+  ```js
+  var options = {
+    timestampTag: function ({ field, value, path }) {
+      if (field === 'dateCreated') {
+        return true
+      }
+
+      return false
+    }
+  }
+  ```
+  
+  Only applicable for modes `tree`, `form`, and `view`.
 
 - `{string} language`
 

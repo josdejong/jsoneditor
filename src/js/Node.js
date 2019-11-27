@@ -18,12 +18,14 @@ import {
   getAbsoluteTop,
   getInnerText,
   getType,
+  isTimestampFieldName,
   isUrl,
   isValidColor,
   makeFieldTooltip,
   parse,
   parsePath,
-  parseString, removeAllClassNames,
+  parseString,
+  removeAllClassNames,
   removeClassName,
   removeEventListener,
   selectContentEditable,
@@ -1782,7 +1784,7 @@ export class Node {
       }
 
       // show date tag when value is a timestamp in milliseconds
-      if (this.editor.showTimestampTag(value)) {
+      if (this._showTimestampTag()) {
         if (!this.dom.date) {
           this.dom.date = document.createElement('div')
           this.dom.date.className = 'jsoneditor-date'
@@ -1931,6 +1933,31 @@ export class Node {
       removeClassName(inputElement, 'jsoneditor-is-default')
       addClassName(inputElement, 'jsoneditor-is-not-default')
     }
+  }
+
+  /**
+   * Test whether to show a timestamp tag or not
+   * @return {boolean} Returns true when the value is a timestamp
+   */
+  _showTimestampTag () {
+    if (typeof this.value !== 'number') {
+      return false
+    }
+
+    const timestampTag = this.editor.options.timestampTag
+    if (typeof timestampTag === 'function') {
+      return timestampTag({
+        field: this.field,
+        value: this.value,
+        path: this.getPath()
+      })
+    }
+
+    if (timestampTag === true) {
+      return isTimestampFieldName(this.field)
+    }
+
+    return false
   }
 
   /**

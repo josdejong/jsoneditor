@@ -6,7 +6,7 @@ import {
   get,
   getChildPaths,
   getIndexForPosition,
-  isObject,
+  isObject, isTimestampFieldName,
   limitCharacters,
   makeFieldTooltip,
   parsePath,
@@ -474,6 +474,17 @@ describe('util', () => {
     assert.strictEqual(compileJSONPointer(['foo', '/~ ~/']), '/foo/~1~0 ~0~1')
     assert.strictEqual(compileJSONPointer(['']), '/')
     assert.strictEqual(compileJSONPointer([]), '')
+  })
+
+  it('should test whether a field is a timestamp', () => {
+    assert.strictEqual(isTimestampFieldName('dateCreated'), true)
+    assert.strictEqual(isTimestampFieldName('updatedAt'), true)
+    assert.strictEqual(isTimestampFieldName('deletedAt'), true)
+    assert.strictEqual(isTimestampFieldName('DATE'), true)
+    assert.strictEqual(isTimestampFieldName('TIMESTAMP'), true)
+    assert.strictEqual(isTimestampFieldName('timestamp'), true)
+    assert.strictEqual(isTimestampFieldName('hello'), false)
+    assert.strictEqual(isTimestampFieldName('TIM'), false)
   })
 
   // TODO: thoroughly test all util methods

@@ -8,7 +8,7 @@ https://github.com/josdejong/jsoneditor
 - Implemented callbacks `onFocus` and `onBlur` (PR #809, issue #727). 
   Thanks @123survesh.
 - Fixed #847: allow customizing the in rules determining whether a value
-  is a timestamp or not.
+  is a timestamp or not by passing a callback function to `timestampTag`.
 
 
 ## 2019-10-27, version 7.2.1
