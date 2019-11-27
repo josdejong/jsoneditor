@@ -6,7 +6,8 @@ import {
   get,
   getChildPaths,
   getIndexForPosition,
-  isObject, isTimestampFieldName,
+  isObject,
+  isTimestamp,
   limitCharacters,
   makeFieldTooltip,
   parsePath,
@@ -477,14 +478,16 @@ describe('util', () => {
   })
 
   it('should test whether a field is a timestamp', () => {
-    assert.strictEqual(isTimestampFieldName('dateCreated'), true)
-    assert.strictEqual(isTimestampFieldName('updatedAt'), true)
-    assert.strictEqual(isTimestampFieldName('deletedAt'), true)
-    assert.strictEqual(isTimestampFieldName('DATE'), true)
-    assert.strictEqual(isTimestampFieldName('TIMESTAMP'), true)
-    assert.strictEqual(isTimestampFieldName('timestamp'), true)
-    assert.strictEqual(isTimestampFieldName('hello'), false)
-    assert.strictEqual(isTimestampFieldName('TIM'), false)
+    assert.strictEqual(isTimestamp('foo', 1574809200000), true)
+    assert.strictEqual(isTimestamp('foo', 1574809200000.2), false)
+    assert.strictEqual(isTimestamp('dateCreated', 0), true)
+    assert.strictEqual(isTimestamp('updatedAt', 0), true)
+    assert.strictEqual(isTimestamp('deletedAt', 0), true)
+    assert.strictEqual(isTimestamp('DATE', 0), true)
+    assert.strictEqual(isTimestamp('TIMESTAMP', 0), true)
+    assert.strictEqual(isTimestamp('timestamp', 0), true)
+    assert.strictEqual(isTimestamp('hello', 0), false)
+    assert.strictEqual(isTimestamp('TIM', 0), false)
   })
 
   // TODO: thoroughly test all util methods

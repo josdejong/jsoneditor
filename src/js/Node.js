@@ -18,7 +18,7 @@ import {
   getAbsoluteTop,
   getInnerText,
   getType,
-  isTimestampFieldName,
+  isTimestamp,
   isUrl,
   isValidColor,
   makeFieldTooltip,
@@ -1954,7 +1954,7 @@ export class Node {
     }
 
     if (timestampTag === true) {
-      return isTimestampFieldName(this.field)
+      return isTimestamp(this.field, this.value)
     }
 
     return false

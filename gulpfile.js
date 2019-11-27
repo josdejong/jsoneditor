@@ -135,7 +135,7 @@ gulp.task('embed-json-worker', function (done) {
 
   const workerDataUrl = 'data:application/javascript;base64,' + btoa(workerScript)
 
-  fs.writeFileSync(workerEmbeddedFile, 'module.exports = \'' + workerDataUrl + '\';\n')
+  fs.writeFileSync(workerEmbeddedFile, 'module.exports = \'' + workerDataUrl + '\'\n')
 
   done()
 })

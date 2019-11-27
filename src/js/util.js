@@ -7,6 +7,7 @@ import jsonMap from 'json-source-map'
 import { translate } from './i18n'
 
 const MAX_ITEMS_FIELDS_COLLECTION = 10000
+const YEAR_2000 = 946684800000
 
 /**
  * Parse JSON using the parser built-in in the browser.
@@ -1363,14 +1364,29 @@ const TIMESTAMP_FIELDS = [
 ]
 
 /**
- * Test whether some field has a naming like "date" or "time"
+ * Test whether some field contains a timestamp. This is based
+ * on the number being large has a naming like "date" or "time"
  * @param {string} field
+ * @param {number} value
  * @return {boolean}
  */
-export function isTimestampFieldName (field) {
-  const fieldUpper = field.toUpperCase()
+export function isTimestamp (field, value) {
+  if (typeof value === 'number' &&
+    value > YEAR_2000 &&
+    isFinite(value) &&
+    Math.floor(value) === value &&
+    !isNaN(new Date(value).valueOf())
+  ) {
+    return true
+  }
 
-  return TIMESTAMP_FIELDS.some(search => fieldUpper.indexOf(search) !== -1)
+  if (typeof field === 'string') {
+    const fieldUpper = field.toUpperCase()
+
+    return TIMESTAMP_FIELDS.some(search => fieldUpper.indexOf(search) !== -1)
+  }
+
+  return false
 }
 
 /**

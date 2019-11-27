@@ -436,8 +436,9 @@ Constructs a new JSONEditor.
 
   If `true` (default), a tag with the date/time of a timestamp is displayed
   right from values containing a timestamp. By default, a value is 
-  considered a timestamp when it is a number and it's field name contains any
-  of the following strings (case insensitive): `'date'`, `'time'`, `'created'`,
+  considered a timestamp when it is (a) an integer number with a value larger 
+  than Jan 1th 2000, `946684800000`, or (b) it's field name contains any of the
+  following strings (case insensitive): `'date'`, `'time'`, `'created'`,
   `'updated'`, `'deleted'`.
   
   When `timestampTag` a is a function, a timestamp tag will be displayed when 
