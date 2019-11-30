@@ -793,7 +793,7 @@ textmode.validate = function () {
         if (seq === me.validationSequence) {
           const errors = schemaErrors.concat(parseErrors).concat(customValidationErrors)
           me._renderErrors(errors)
-          if (errors.length && typeof this.options.onValidationError === 'function') {
+          if (typeof this.options.onValidationError === 'function') {
             if (isValidationErrorChanged(errors, this.lastSchemaErrors)) {
               this.options.onValidationError.call(this, errors)
             }
