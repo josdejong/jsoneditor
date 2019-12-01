@@ -3,10 +3,11 @@
 https://github.com/josdejong/jsoneditor
 
 
-## not yet published, version 7.3.1
+## 2019-12-01, version 7.3.1
 
-- Fixed #855: `onFocus` and `onBlur` not working in text mode 
-  without main menu bar, and `.destroy()` throwing an exception.
+- Fixed #855: `onFocus` and `onBlur` not working in modes `text` and `code` 
+  when editor was created without main menu bar, and `editor.destroy()` 
+  throwing an exception.
 
 
 ## 2019-11-27, version 7.3.0
