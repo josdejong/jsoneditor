@@ -3,6 +3,12 @@
 https://github.com/josdejong/jsoneditor
 
 
+## not yet published, version 7.3.1
+
+- Fixed #855: focus tracker (for `onFocus` and `onBlur) not created when
+  creating an editor without main menu bar.
+
+
 ## 2019-11-27, version 7.3.0
 
 - Implemented callbacks `onFocus` and `onBlur` (PR #809, issue #727). 
