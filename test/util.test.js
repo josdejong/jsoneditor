@@ -15,7 +15,8 @@ import {
   repair,
   sort,
   sortObjectKeys,
-  stringifyPath
+  stringifyPath,
+  isValidationErrorChanged
 } from '../src/js/util'
 
 describe('util', () => {
@@ -197,6 +198,34 @@ describe('util', () => {
       assert.strictEqual(getIndexForPosition(el, undefined, 1), -1)
       assert.strictEqual(getIndexForPosition(el, 1, undefined), -1)
       assert.strictEqual(getIndexForPosition(el, -2, -2), -1)
+    })
+  })
+
+  describe('isValidationErrorChanged', () => {
+    const err1 = { keyword: 'enum', dataPath: '.gender', schemaPath: '#/properties/gender/enum', params: { allowedValues: ['male', 'female'] }, message: 'should be equal to one of: "male", "female"', schema: ['male', 'female'], parentSchema: { title: 'Gender', enum: ['male', 'female'] }, data: null, type: 'validation' }
+    const err2 = { keyword: 'type', dataPath: '.age', schemaPath: '#/properties/age/type', params: { type: 'integer' }, message: 'should be integer', schema: 'integer', parentSchema: { description: 'Age in years', type: 'integer', minimum: 0, examples: [28, 32] }, data: '28', type: 'validation' }
+    const err3 = { dataPath: '.gender', message: 'Member must be an object with properties "name" and "age"' }
+
+    it('empty value for both current and previoues error should return false', () => {
+      assert.strictEqual(isValidationErrorChanged(), false)
+    })
+
+    it('empty value for one of current and previoues error should return true', () => {
+      assert.strictEqual(isValidationErrorChanged([err1]), true)
+      assert.strictEqual(isValidationErrorChanged(undefined, [err1]), true)
+    })
+
+    it('different length of current and previoues errors should return true', () => {
+      assert.strictEqual(isValidationErrorChanged([err1], []), true)
+      assert.strictEqual(isValidationErrorChanged([err1], [err1, err2]), true)
+    })
+
+    it('same values for current and previoues errors should return false', () => {
+      assert.strictEqual(isValidationErrorChanged([err1, err2, err3], [err2, err3, err1]), false)
+    })
+
+    it('different values for current and previoues errors should return true', () => {
+      assert.strictEqual(isValidationErrorChanged([err1, err2], [err3, err1]), true)
     })
   })
 

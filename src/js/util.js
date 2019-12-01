@@ -1453,6 +1453,26 @@ export function contains (array, item) {
   return array.indexOf(item) !== -1
 }
 
+/**
+ * Checkes if validation has changed from the previous execution
+ * @param {Array} currErr current validation errors
+ * @param {Array} prevErr previous validation errors
+ */
+export function isValidationErrorChanged (currErr, prevErr) {
+  if (!prevErr && !currErr) { return false }
+  if ((prevErr && !currErr) || (!prevErr && currErr)) { return true }
+  if (prevErr.length !== currErr.length) { return true }
+
+  for (let i = 0; i < currErr.length; ++i) {
+    const pErr = prevErr.find(p => p.dataPath === currErr[i].dataPath && p.schemaPath === currErr[i].schemaPath)
+    if (!pErr) {
+      return true
+    }
+  }
+
+  return false
+}
+
 function hasOwnProperty (object, key) {
   return Object.prototype.hasOwnProperty.call(object, key)
 }

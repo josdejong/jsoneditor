@@ -162,6 +162,27 @@ Constructs a new JSONEditor.
   ```
   
   Also see the option `schema` for JSON schema validation.
+
+- `{function} onValidationError(errors)`
+
+  Set a callback function for validation errors. Available in all modes.
+
+  On validation of the json, if errors were found this callback is invoked with the validation errors data.
+  Between validations, the callback will be invoked only if the validation errors were changed.
+
+  Example:
+
+  ```js
+  var options = {
+    /**
+    * @param {Array} errors validation errors
+    */
+    onValidationError: function (errors) {
+      ...
+    }
+  }
+  ```
+  
   
 - `{function} onCreateMenu(items, node)`
   

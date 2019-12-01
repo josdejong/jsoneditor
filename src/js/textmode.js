@@ -21,7 +21,8 @@ import {
   parse,
   repair,
   sort,
-  sortObjectKeys
+  sortObjectKeys,
+  isValidationErrorChanged
 } from './util'
 import { DEFAULT_MODAL_ANCHOR } from './constants'
 import { tryRequireThemeJsonEditor } from './tryRequireThemeJsonEditor'
@@ -87,6 +88,7 @@ textmode.create = function (container, options = {}) {
   this.textarea = undefined // plain text editor (fallback when Ace is not available)
   this.validateSchema = null
   this.annotations = []
+  this.lastSchemaErrors = undefined
 
   // create a debounced validate function
   this._debouncedValidate = debounce(this.validate.bind(this), this.DEBOUNCE_INTERVAL)
@@ -790,12 +792,19 @@ textmode.validate = function () {
         if (seq === me.validationSequence) {
           const errors = schemaErrors.concat(parseErrors).concat(customValidationErrors)
           me._renderErrors(errors)
+          if (typeof this.options.onValidationError === 'function') {
+            if (isValidationErrorChanged(errors, this.lastSchemaErrors)) {
+              this.options.onValidationError.call(this, errors)
+            }
+            this.lastSchemaErrors = errors
+          }
         }
       })
       .catch(err => {
         console.error('Custom validation function did throw an error', err)
       })
   } catch (err) {
+    this.lastSchemaErrors = undefined
     if (this.getText()) {
       // try to extract the line number from the jsonlint error message
       const match = /\w*line\s*(\d+)\w*/g.exec(err.message)

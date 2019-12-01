@@ -24,7 +24,8 @@ import {
   removeEventListener,
   repair,
   selectContentEditable,
-  setSelectionOffset
+  setSelectionOffset,
+  isValidationErrorChanged
 } from './util'
 import { autocomplete } from './autocomplete'
 import { setLanguage, setLanguages, translate } from './i18n'
@@ -52,6 +53,7 @@ treemode.create = function (container, options) {
   this.validateSchema = null // will be set in .setSchema(schema)
   this.validationSequence = 0
   this.errorNodes = []
+  this.lastSchemaErrors = undefined
 
   this.node = null
   this.focusTarget = null
@@ -581,6 +583,12 @@ treemode.validate = function () {
         if (seq === me.validationSequence) {
           const errorNodes = [].concat(schemaErrors, customValidationErrors || [])
           me._renderValidationErrors(errorNodes)
+          if (typeof this.options.onValidationError === 'function') {
+            if (isValidationErrorChanged(errorNodes, this.lastSchemaErrors)) {
+              this.options.onValidationError.call(this, errorNodes)
+            }
+            this.lastSchemaErrors = errorNodes
+          }
         }
       })
       .catch(err => {
