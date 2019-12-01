@@ -136,7 +136,9 @@
     },
     onValidate: function (json) {
       var errors = [];
-      errors.push({ path: ['gender'], message: 'Member must be an object with properties "name" and "age"' });
+      if(!isNaN(json.age) && json.age < 30) {
+        errors.push({ path: ['age'], message: 'Member age must be 30 or higher' });
+      }
       return errors;
     }
   };
