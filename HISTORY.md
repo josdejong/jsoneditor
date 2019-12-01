@@ -3,8 +3,10 @@
 https://github.com/josdejong/jsoneditor
 
 
-## not yet published, version 7.3.2
+## 2019-12-01, version 7.4.0
 
+- Implemented callback function `onValidationError`, see #612, #854. 
+  Thanks @meirotstein.
 - Fixed #850: make autocomplete options robust against non-string inputs
   like `null`, `123`, `true`, `false`. 
 
