@@ -1495,7 +1495,11 @@ treemode._showAutoComplete = function (element) {
           })
       } else {
         // definitely not a promise
-        if (result.options) { self.autocomplete.show(element, result.startFrom, result.options) } else { self.autocomplete.show(element, 0, result) }
+        if (result.options) {
+          self.autocomplete.show(element, result.startFrom, result.options)
+        } else {
+          self.autocomplete.show(element, 0, result)
+        }
       }
     } else { self.autocomplete.hideDropDown() }
   }, 50)
