@@ -3,6 +3,12 @@
 https://github.com/josdejong/jsoneditor
 
 
+## not yet published, version 7.3.2
+
+- Fixed #850: make autocomplete options robust against non-string inputs
+  like `null`, `123`, `true`, `false`. 
+
+
 ## 2019-12-01, version 7.3.1
 
 - Fixed #855: `onFocus` and `onBlur` not working in modes `text` and `code` 

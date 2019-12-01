@@ -191,7 +191,7 @@ export function autocomplete (config) {
 
       dropDown.style.marginLeft = '0'
       dropDown.style.marginTop = element.getBoundingClientRect().height + 'px'
-      this.options = options
+      this.options = options.map(String)
 
       if (this.element !== element) {
         this.element = element
