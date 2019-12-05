@@ -803,7 +803,7 @@ textmode.validate = function () {
       .catch(err => {
         console.error('Custom validation function did throw an error', err)
       })
-  } catch (err) {    
+  } catch (err) {
     if (this.getText()) {
       // try to extract the line number from the jsonlint error message
       const match = /\w*line\s*(\d+)\w*/g.exec(err.message)
