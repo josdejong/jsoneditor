@@ -34,7 +34,8 @@ export function validateCustom (json, onValidate) {
           .map(error => // change data structure into the structure matching the JSON schema errors
             ({
               dataPath: stringifyPath(error.path),
-              message: error.message
+              message: error.message,
+              type: 'customValidation'
             }))
       } else {
         return []

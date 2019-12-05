@@ -165,10 +165,11 @@ Constructs a new JSONEditor.
 
 - `{function} onValidationError(errors)`
 
-  Set a callback function for validation errors. Available in all modes.
+  Set a callback function for validation and parse errors. Available in all modes.
 
-  On validation of the json, if errors were found this callback is invoked with the validation errors data.
-  Between validations, the callback will be invoked only if the validation errors were changed.
+  On validation of the json, if errors of any kind were found this callback is invoked with the errors data.
+
+  On change, the callback will be invoked only if errors were changed.
 
   Example:
 
@@ -178,6 +179,20 @@ Constructs a new JSONEditor.
     * @param {Array} errors validation errors
     */
     onValidationError: function (errors) {
+      errors.forEach((error) => {
+        switch (error.type) {
+          case 'validation': // schema validation error
+            ...
+            break;
+          case 'customValidation': // custom validation error
+            ...
+            break;
+          case 'error':  // json parse error
+            ...
+            break;
+          ...
+        }
+      });
       ...
     }
   }

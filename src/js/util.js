@@ -1464,7 +1464,12 @@ export function isValidationErrorChanged (currErr, prevErr) {
   if (prevErr.length !== currErr.length) { return true }
 
   for (let i = 0; i < currErr.length; ++i) {
-    const pErr = prevErr.find(p => p.dataPath === currErr[i].dataPath && p.schemaPath === currErr[i].schemaPath)
+    let pErr = undefined;
+    if (currErr[i].type === 'error') {
+      pErr = prevErr.find(p => p.line === currErr[i].line)
+    } else {
+      pErr = prevErr.find(p => p.dataPath === currErr[i].dataPath && p.schemaPath === currErr[i].schemaPath)
+    }    
     if (!pErr) {
       return true
     }
