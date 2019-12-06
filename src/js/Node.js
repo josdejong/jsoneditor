@@ -1791,8 +1791,20 @@ export class Node {
           this.dom.value.parentNode.appendChild(this.dom.date)
         }
 
-        this.dom.date.innerHTML = new Date(value).toISOString()
-        this.dom.date.title = new Date(value).toString()
+        let title = false
+        if (typeof this.editor.options.timestampFormat === 'function') {
+          title = this.editor.options.timestampFormat({
+            field: this.field,
+            value: this.value,
+            path: this.getPath()
+          })
+        }
+        if (!title) {
+          this.dom.date.innerHTML = new Date(value).toISOString()
+          this.dom.date.title = new Date(value).toString()
+        } else {
+          this.dom.date.innerHTML = title
+        }
       } else {
         // cleanup date tag
         if (this.dom.date) {

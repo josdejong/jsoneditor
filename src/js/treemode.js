@@ -156,6 +156,7 @@ treemode._setOptions = function (options) {
       }
     },
     timestampTag: true,
+    timestampFormat: null,
     onEvent: null,
     enableSort: true,
     enableTransform: true

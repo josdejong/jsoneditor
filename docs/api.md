@@ -493,6 +493,36 @@ Constructs a new JSONEditor.
   
   Only applicable for modes `tree`, `form`, and `view`.
 
+- `{ function({field, value, path}) -> string|null } timestampFormat`
+
+  Customizing the way formating the timestamp. Called when a value is timestamp after `timestampTag`. If it returns null, the timestamp would be formatted with default setting (`new Date(value).toISOString()`).
+  
+  parameter:
+  
+  ```
+  {
+    field: string,
+    value: string,
+    path: string[]
+  }
+  ```
+
+  Example:
+  
+  ```js
+  var options = {
+    timestampFormat: function ({ field, value, path }) {
+      if (field === 'customTime') {
+        return new Date(value*1000).toString()
+      }
+
+      return null
+    }
+  }
+  ```
+  
+  Only applicable for modes `tree`, `form`, and `view`.
+
 - `{string} language`
 
   The default language comes from the browser navigator, but you can force a specific language. So use here string as 'en' or 'pt-BR'. Built-in languages: `en`, `pt-BR`, `zh-CN`, `tr`, `ja`, `fr-FR`. Other translations can be specified via the option `languages`.
