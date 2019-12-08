@@ -3,6 +3,13 @@
 https://github.com/josdejong/jsoneditor
 
 
+## not yet published, version 7.5.0
+
+- Extended the callback `onValidationError` to also report parse errors,
+  and distinguish between JSON schema validation errors and custom errors.
+  See #861 and #612. Thanks @meirotstein.
+
+
 ## 2019-12-01, version 7.4.0
 
 - Implemented callback function `onValidationError`, see #612, #854. 
