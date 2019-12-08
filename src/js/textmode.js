@@ -804,7 +804,6 @@ textmode.validate = function () {
         console.error('Custom validation function did throw an error', err)
       })
   } catch (err) {
-    this.lastSchemaErrors = undefined
     if (this.getText()) {
       // try to extract the line number from the jsonlint error message
       const match = /\w*line\s*(\d+)\w*/g.exec(err.message)
@@ -820,6 +819,13 @@ textmode.validate = function () {
     }
 
     this._renderErrors(parseErrors)
+
+    if (typeof this.options.onValidationError === 'function') {
+      if (isValidationErrorChanged(parseErrors, this.lastSchemaErrors)) {
+        this.options.onValidationError.call(this, parseErrors)
+      }
+      this.lastSchemaErrors = parseErrors
+    }
   }
 }
 

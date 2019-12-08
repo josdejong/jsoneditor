@@ -131,7 +131,7 @@
     onValidationError: function(errors) {
       console.error('onValidationError', errors);
       const outputEL = document.getElementById('onValidationOutput')
-      outputEL.innerHTML = '<code>onValidationError</code> was called with ' + errors.length + ' errors <br> ' +
+      outputEL.innerHTML = '<code>onValidationError</code> was called with ' + errors.length + ' error' + (errors.length > 1 ? 's' : '') +  ' <br> ' +
         'open the browser console to see the error objects';
     },
     onValidate: function (json) {

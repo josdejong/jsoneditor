@@ -563,7 +563,8 @@ treemode.validate = function () {
         .map(function findNode (error) {
           return {
             node: root.findNode(error.dataPath),
-            error: error
+            error: error,
+            type: 'validation'
           }
         })
         .filter(function hasNode (entry) {
@@ -675,7 +676,8 @@ treemode._validateCustom = function (json) {
 
               return {
                 node: node,
-                error: error
+                error: error,
+                type: 'customValidation'
               }
             })
             .filter(entry => entry && entry.node && entry.error && entry.error.message)
