@@ -1791,7 +1791,7 @@ export class Node {
           this.dom.value.parentNode.appendChild(this.dom.date)
         }
 
-        let title = false
+        let title = null
         if (typeof this.editor.options.timestampFormat === 'function') {
           title = this.editor.options.timestampFormat({
             field: this.field,
@@ -1801,9 +1801,11 @@ export class Node {
         }
         if (!title) {
           this.dom.date.innerHTML = new Date(value).toISOString()
-          this.dom.date.title = new Date(value).toString()
         } else {
-          this.dom.date.innerHTML = title
+          while (this.dom.date.firstChild) {
+            this.dom.date.removeChild(this.dom.date.firstChild)
+          }
+          this.dom.date.appendChild(document.createTextNode(title))
         }
       } else {
         // cleanup date tag
