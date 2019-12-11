@@ -1366,7 +1366,7 @@ export function isTimestamp (field, value) {
     value > YEAR_2000 &&
     isFinite(value) &&
     Math.floor(value) === value &&
-    !isNaN(new Date(value).valueOf());
+    !isNaN(new Date(value).valueOf())
 }
 
 /**
