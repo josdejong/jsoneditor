@@ -1791,8 +1791,22 @@ export class Node {
           this.dom.value.parentNode.appendChild(this.dom.date)
         }
 
-        this.dom.date.innerHTML = new Date(value).toISOString()
-        this.dom.date.title = new Date(value).toString()
+        let title = null
+        if (typeof this.editor.options.timestampFormat === 'function') {
+          title = this.editor.options.timestampFormat({
+            field: this.field,
+            value: this.value,
+            path: this.getPath()
+          })
+        }
+        if (!title) {
+          this.dom.date.innerHTML = new Date(value).toISOString()
+        } else {
+          while (this.dom.date.firstChild) {
+            this.dom.date.removeChild(this.dom.date.firstChild)
+          }
+          this.dom.date.appendChild(document.createTextNode(title))
+        }
       } else {
         // cleanup date tag
         if (this.dom.date) {
