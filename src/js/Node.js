@@ -1807,6 +1807,7 @@ export class Node {
           }
           this.dom.date.appendChild(document.createTextNode(title))
         }
+        this.dom.date.title = new Date(value).toString()
       } else {
         // cleanup date tag
         if (this.dom.date) {
