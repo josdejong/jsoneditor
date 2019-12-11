@@ -1355,38 +1355,18 @@ export function parseString (str) {
   return str
 }
 
-const TIMESTAMP_FIELDS = [
-  'DATE',
-  'TIME',
-  'CREATED',
-  'UPDATED',
-  'DELETED'
-]
-
 /**
- * Test whether some field contains a timestamp. This is based
- * on the number being large has a naming like "date" or "time"
+ * Test whether some field contains a timestamp in milliseconds after the year 2000.
  * @param {string} field
  * @param {number} value
  * @return {boolean}
  */
 export function isTimestamp (field, value) {
-  if (typeof value === 'number' &&
+  return typeof value === 'number' &&
     value > YEAR_2000 &&
     isFinite(value) &&
     Math.floor(value) === value &&
-    !isNaN(new Date(value).valueOf())
-  ) {
-    return true
-  }
-
-  if (typeof field === 'string') {
-    const fieldUpper = field.toUpperCase()
-
-    return TIMESTAMP_FIELDS.some(search => fieldUpper.indexOf(search) !== -1)
-  }
-
-  return false
+    !isNaN(new Date(value).valueOf());
 }
 
 /**

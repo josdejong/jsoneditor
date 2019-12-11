@@ -509,14 +509,6 @@ describe('util', () => {
   it('should test whether a field is a timestamp', () => {
     assert.strictEqual(isTimestamp('foo', 1574809200000), true)
     assert.strictEqual(isTimestamp('foo', 1574809200000.2), false)
-    assert.strictEqual(isTimestamp('dateCreated', 0), true)
-    assert.strictEqual(isTimestamp('updatedAt', 0), true)
-    assert.strictEqual(isTimestamp('deletedAt', 0), true)
-    assert.strictEqual(isTimestamp('DATE', 0), true)
-    assert.strictEqual(isTimestamp('TIMESTAMP', 0), true)
-    assert.strictEqual(isTimestamp('timestamp', 0), true)
-    assert.strictEqual(isTimestamp('hello', 0), false)
-    assert.strictEqual(isTimestamp('TIM', 0), false)
   })
 
   // TODO: thoroughly test all util methods
