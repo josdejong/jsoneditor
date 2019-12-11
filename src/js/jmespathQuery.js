@@ -13,7 +13,7 @@ export function createQuery (json, queryOptions) {
   const { sort, filter, projection } = queryOptions
   let query = ''
 
-  if (!!filter) {
+  if (filter) {
     const examplePath = filter.field !== '@'
       ? ['0'].concat(parsePath('.' + filter.field))
       : ['0']
@@ -33,7 +33,7 @@ export function createQuery (json, queryOptions) {
       : '@'
   }
 
-  if (!!sort) {
+  if (sort) {
     if (sort.direction === 'desc') {
       query += ' | reverse(sort_by(@, &' + sort.field + '))'
     } else {
@@ -41,7 +41,7 @@ export function createQuery (json, queryOptions) {
     }
   }
 
-  if (!!projection) {
+  if (projection) {
     if (query[query.length - 1] !== ']') {
       query += ' | [*]'
     }
