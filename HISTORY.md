@@ -3,6 +3,12 @@
 https://github.com/josdejong/jsoneditor
 
 
+## not yet published, version 7.6.0
+
+- Implemented option `timestampFormat` which allows customizing the formatting
+  of timestamp tags. See also option `timestampTag`. Thanks @smallp.
+
+
 ## 2019-12-08, version 7.5.0
 
 - Extended the callback `onValidationError` to also report parse errors,
