@@ -14,7 +14,7 @@ https://github.com/josdejong/jsoneditor
   timestamps in case of values in seconds instead of the assumed milliseconds 
   (see #847, #856). 
 
-~~~~
+
 ## 2019-12-08, version 7.5.0
 
 - Extended the callback `onValidationError` to also report parse errors,
