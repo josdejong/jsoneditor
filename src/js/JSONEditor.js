@@ -183,7 +183,7 @@ JSONEditor.VALID_OPTIONS = [
   'timestampTag', 'timestampFormat',
   'escapeUnicode', 'history', 'search', 'mode', 'modes', 'name', 'indentation',
   'sortObjectKeys', 'navigationBar', 'statusBar', 'mainMenuBar', 'languages', 'language', 'enableSort', 'enableTransform',
-  'maxVisibleChilds', 'onValidationError'
+  'maxVisibleChilds', 'onValidationError', 'createQuery', 'executeQuery'
 ]
 
 /**

@@ -1,9 +1,8 @@
-import jmespath from 'jmespath'
 import picoModal from 'picomodal'
 import Selectr from './assets/selectr/selectr'
 import { translate } from './i18n'
 import { stringifyPartial } from './jsonUtils'
-import { getChildPaths, get, parsePath, parseString, debounce } from './util'
+import { getChildPaths, debounce } from './util'
 import { MAX_PREVIEW_CHARACTERS } from './constants'
 
 /**
@@ -11,10 +10,13 @@ import { MAX_PREVIEW_CHARACTERS } from './constants'
  * @param {HTMLElement} container   The container where to center
  *                                  the modal and create an overlay
  * @param {JSON} json               The json data to be transformed
+ * @param {function} createQuery    Function called to create a query
+ *                                  from the wizard form
+ * @param {function} executeQuery   Execute a query for the preview pane
  * @param {function} onTransform    Callback invoked with the created
  *                                  query as callback
  */
-export function showTransformModal (container, json, onTransform) {
+export function showTransformModal (container, json, createQuery, executeQuery, onTransform) {
   const value = json
 
   const content = '<label class="pico-modal-contents">' +
@@ -176,7 +178,8 @@ export function showTransformModal (container, json, onTransform) {
         }
       }
 
-      query.value = Array.isArray(value) ? '[*]' : '@'
+      // initialize with empty query
+      query.value = createQuery(json, {})
 
       function preprocessPath (path) {
         return (path === '')
@@ -187,68 +190,45 @@ export function showTransformModal (container, json, onTransform) {
       }
 
       function generateQueryFromWizard () {
-        if (filterField.value && filterRelation.value && filterValue.value) {
-          const field1 = filterField.value
-          const examplePath = field1 !== '@'
-            ? ['0'].concat(parsePath('.' + field1))
-            : ['0']
-          const exampleValue = get(value, examplePath)
-          const value1 = typeof exampleValue === 'string'
-            ? filterValue.value
-            : parseString(filterValue.value)
+        const queryOptions = {}
 
-          query.value = '[? ' +
-                field1 + ' ' +
-                filterRelation.value + ' ' +
-                '`' + JSON.stringify(value1) + '`' +
-                ']'
-        } else {
-          query.value = '[*]'
+        if (filterField.value && filterRelation.value && filterValue.value) {
+          queryOptions.filter = {
+            field: filterField.value,
+            relation: filterRelation.value,
+            value: filterValue.value
+          }
         }
 
         if (sortField.value && sortOrder.value) {
-          const field2 = sortField.value
-          if (sortOrder.value === 'desc') {
-            query.value += ' | reverse(sort_by(@, &' + field2 + '))'
-          } else {
-            query.value += ' | sort_by(@, &' + field2 + ')'
+          queryOptions.sort = {
+            field: sortField.value,
+            direction: sortOrder.value
           }
         }
 
         if (selectFields.value) {
-          const values = []
+          const fields = []
           for (let i = 0; i < selectFields.options.length; i++) {
             if (selectFields.options[i].selected) {
-              const selectedValue = selectFields.options[i].value
-              values.push(selectedValue)
+              const selectedField = selectFields.options[i].value
+              fields.push(selectedField)
             }
           }
 
-          if (query.value[query.value.length - 1] !== ']') {
-            query.value += ' | [*]'
-          }
-
-          if (values.length === 1) {
-            query.value += '.' + values[0]
-          } else if (values.length > 1) {
-            query.value += '.{' +
-                  values.map(value => {
-                    const parts = value.split('.')
-                    const last = parts[parts.length - 1]
-                    return last + ': ' + value
-                  }).join(', ') +
-                  '}'
-          } else { // values.length === 0
-            // ignore
+          queryOptions.projection = {
+            fields
           }
         }
+
+        query.value = createQuery(json, queryOptions)
 
         debouncedUpdatePreview()
       }
 
       function updatePreview () {
         try {
-          const transformed = jmespath.search(value, query.value)
+          const transformed = executeQuery(value, query.value)
 
           preview.className = 'jsoneditor-transform-preview'
           preview.value = stringifyPartial(transformed, 2, MAX_PREVIEW_CHARACTERS)

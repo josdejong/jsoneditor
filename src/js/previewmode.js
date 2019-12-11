@@ -1,6 +1,5 @@
 'use strict'
 
-import jmespath from 'jmespath'
 import { translate } from './i18n'
 import { ModeSwitcher } from './ModeSwitcher'
 import { ErrorTable } from './ErrorTable'
@@ -23,6 +22,7 @@ import {
   sortObjectKeys
 } from './util'
 import { History } from './History'
+import { createQuery, executeQuery } from './jmespathQuery'
 
 const textmode = textModeMixins[0].mixin
 
@@ -44,6 +44,8 @@ previewmode.create = function (container, options = {}) {
   options.mainMenuBar = options.mainMenuBar !== false
   options.enableSort = options.enableSort !== false
   options.enableTransform = options.enableTransform !== false
+  options.createQuery = options.createQuery || createQuery
+  options.executeQuery = options.executeQuery || executeQuery
 
   this.options = options
 
@@ -390,11 +392,13 @@ previewmode._showTransformModal = function () {
   this.executeWithBusyMessage(() => {
     const anchor = me.options.modalAnchor || DEFAULT_MODAL_ANCHOR
     const json = me.get()
+    const { createQuery, executeQuery } = this.editor.options
+
     me._renderPreview() // update array count
 
-    showTransformModal(anchor, json, query => {
+    showTransformModal(anchor, json, createQuery, executeQuery, query => {
       me.executeWithBusyMessage(() => {
-        const updatedJson = jmespath.search(json, query)
+        const updatedJson = this.options.executeQuery(json, query)
         me._setAndFireOnChange(updatedJson)
       }, 'transforming...')
     })

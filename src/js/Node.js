@@ -1,6 +1,5 @@
 'use strict'
 
-import jmespath from 'jmespath'
 import naturalSort from 'javascript-natural-sort'
 import { createAbsoluteAnchor } from './createAbsoluteAnchor'
 import { ContextMenu } from './ContextMenu'
@@ -3309,7 +3308,7 @@ export class Node {
 
       // apply the JMESPath query
       const oldValue = this.getValue()
-      const newValue = jmespath.search(oldValue, query)
+      const newValue = this.editor.options.executeQuery(oldValue, query)
       this.setValue(newValue)
 
       const newInternalValue = this.getInternalValue()
@@ -3865,7 +3864,8 @@ export class Node {
 
     const anchor = this.editor.options.modalAnchor || DEFAULT_MODAL_ANCHOR
     const json = node.getValue()
-    showTransformModal(anchor, json, query => {
+    const { createQuery, executeQuery } = this.editor.options
+    showTransformModal(anchor, json, createQuery, executeQuery, query => {
       node.transform(query)
     })
   }
