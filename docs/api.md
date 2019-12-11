@@ -476,8 +476,12 @@ Constructs a new JSONEditor.
   than Jan 1th 2000, `946684800000`.
   
   When `timestampTag` a is a function, a timestamp tag will be displayed when 
-  this function returns `true`. The function is invoked with an object as first 
-  parameter:
+  this function returns `true`, and no timestamp is displayed when the function
+  returns `false`. When the function returns a non-boolean value like `null`
+  or `undefined`, JSONEditor will fallback on the built-in rules to determine
+  whether or not to show a timestamp.   
+  
+  The function is invoked with an object as first parameter:
   
   ```
   {

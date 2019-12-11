@@ -3,10 +3,12 @@
 https://github.com/josdejong/jsoneditor
 
 
-## 2019-12-11, version 7.6.0
+## 2019-12-11, version 8.0.0
 
 - Implemented option `timestampFormat` which allows customizing the formatting
   of timestamp tags. See also option `timestampTag`. Thanks @smallp.
+- Changed the behavior of `timestampTag` to fallback on the built-in rules when
+  the function does not return a boolean. See #856.  
 - Reverted the heuristics introduced in `v7.3.0` to check whether some field
   contains a timestamp based on the field name, because they can give wrong 
   timestamps in case of values in seconds instead of the assumed milliseconds 

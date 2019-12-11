@@ -1961,18 +1961,22 @@ export class Node {
 
     const timestampTag = this.editor.options.timestampTag
     if (typeof timestampTag === 'function') {
-      return timestampTag({
+      const result = timestampTag({
         field: this.field,
         value: this.value,
         path: this.getPath()
       })
-    }
 
-    if (timestampTag === true) {
+      if (typeof result === 'boolean') {
+        return result
+      } else {
+        return isTimestamp(this.field, this.value)
+      }
+    } else if (timestampTag === true) {
       return isTimestamp(this.field, this.value)
+    } else {
+      return false
     }
-
-    return false
   }
 
   /**
