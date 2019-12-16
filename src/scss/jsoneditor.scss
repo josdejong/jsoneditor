@@ -325,6 +325,10 @@ div.jsoneditor-tree div.jsoneditor-show-more a:focus {
 textarea.jsoneditor-text,
 .ace-jsoneditor {
   min-height: 150px;
+
+  * {
+    font-family: $jse-font-mono;
+  }
 }
 textarea {
   &.jsoneditor-text {

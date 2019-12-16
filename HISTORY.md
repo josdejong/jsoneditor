@@ -3,6 +3,12 @@
 https://github.com/josdejong/jsoneditor
 
 
+## not yet published, version 8.0.1
+
+- Fixed #502: CSS rule `* { font-family: ... }` resulting in Ace editor (`code` 
+  mode) not having a mono-space font anymore.
+
+
 ## 2019-12-11, version 8.0.0
 
 - Implemented option `timestampFormat` which allows customizing the formatting
