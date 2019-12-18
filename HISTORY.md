@@ -3,7 +3,7 @@
 https://github.com/josdejong/jsoneditor
 
 
-## not yet published, version 8.1.0
+## 2019-12-18, version 8.1.0
 
 - Implemented `popupAnchor` allowing to select a custom anchor element. 
   See #869 and #870.  
