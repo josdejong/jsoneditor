@@ -135,13 +135,12 @@ treemode._setOptions = function (options) {
         const pickerHeight = 300 // estimated height of the color picker
         const top = parent.getBoundingClientRect().top
         const windowHeight = window.innerHeight
+        const showOnTop = ((windowHeight - top) < pickerHeight && top > pickerHeight)
 
         new VanillaPicker({
           parent: parent,
           color: color,
-          popup: ((windowHeight - top) < pickerHeight && top > pickerHeight)
-            ? 'top'
-            : 'bottom',
+          popup: showOnTop ? 'top' : 'bottom',
           onDone: function (color) {
             const alpha = color.rgba[3]
             const hex = (alpha === 1)
@@ -1063,7 +1062,7 @@ treemode._createFrame = function () {
     this.navBar.className = 'jsoneditor-navigation-bar nav-bar-empty'
     this.frame.appendChild(this.navBar)
 
-    this.treePath = new TreePath(this.navBar, this.frame)
+    this.treePath = new TreePath(this.navBar, this.getPopupAnchor())
     this.treePath.onSectionSelected(this._onTreePathSectionSelected.bind(this))
     this.treePath.onContextMenuItemSelected(this._onTreePathMenuItemSelected.bind(this))
   }
@@ -1681,7 +1680,11 @@ treemode.showContextMenu = function (anchor, onClose) {
   }
 
   const menu = new ContextMenu(items, { close: onClose })
-  menu.show(anchor, this.frame)
+  menu.show(anchor, this.getPopupAnchor())
+}
+
+treemode.getPopupAnchor = function () {
+  return this.options.popupAnchor || this.frame
 }
 
 /**

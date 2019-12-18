@@ -303,7 +303,7 @@ export class Node {
 
       const createPopup = (destroyOnMouseOut) => {
         const frame = this.editor.frame
-        this.dom.popupAnchor = createAbsoluteAnchor(button, frame, onDestroy, destroyOnMouseOut)
+        this.dom.popupAnchor = createAbsoluteAnchor(button, this.editor.getPopupAnchor(), onDestroy, destroyOnMouseOut)
 
         const popupWidth = 200 // must correspond to what's configured in the CSS
         const buttonRect = button.getBoundingClientRect()
@@ -3021,7 +3021,7 @@ export class Node {
       node._deleteDomColor()
       node.updateDom()
 
-      const colorAnchor = createAbsoluteAnchor(this.dom.color, this.editor.frame)
+      const colorAnchor = createAbsoluteAnchor(this.dom.color, this.editor.getPopupAnchor())
 
       this.editor.options.onColorPicker(colorAnchor, this.value, function onChange (value) {
         if (typeof value === 'string' && value !== node.value) {
@@ -3835,7 +3835,7 @@ export class Node {
     }
 
     const menu = new ContextMenu(items, { close: onClose })
-    menu.show(anchor, this.editor.frame)
+    menu.show(anchor, this.editor.getPopupAnchor())
   }
 
   /**

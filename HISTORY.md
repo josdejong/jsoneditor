@@ -3,8 +3,10 @@
 https://github.com/josdejong/jsoneditor
 
 
-## not yet published, version 8.0.1
+## not yet published, version 8.1.0
 
+- Implemented `popupAnchor` allowing to select a custom anchor element. 
+  See #869 and #870.  
 - Fixed #502: CSS rule `* { font-family: ... }` resulting in Ace editor (`code` 
   mode) not having a mono-space font anymore.
 
