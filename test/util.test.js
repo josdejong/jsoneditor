@@ -490,7 +490,8 @@ describe('util', () => {
     assert.strictEqual(formatSize(7.22 * 1000 * 1000), '7.2 MB')
     assert.strictEqual(formatSize(945.4 * 1000 * 1000), '0.9 GB')
     assert.strictEqual(formatSize(22.37 * 1000 * 1000 * 1000), '22.4 GB')
-    assert.strictEqual(formatSize(1000 * 1000 * 1000 * 1000), '1.0 TB')  })
+    assert.strictEqual(formatSize(1000 * 1000 * 1000 * 1000), '1.0 TB')
+  })
 
   it('should limit characters', () => {
     assert.strictEqual(limitCharacters('hello world', 11), 'hello world')
