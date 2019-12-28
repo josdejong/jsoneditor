@@ -3,10 +3,10 @@
 https://github.com/josdejong/jsoneditor
 
 
-## not yet published, version 8.1.1
+## 2019-12-28, version 8.1.1
 
-- Changed the file size reported in `preview` mode to `KB` and `MB` instead of 
-  `KiB` and `MiB` in order to match the size reported by filesystems.
+- Fixed the file size reported in `preview` mode show `KB` and `MB` instead
+  of `KiB` and `MiB` in order to match the size reported by filesystems.
 
 
 ## 2019-12-18, version 8.1.0
