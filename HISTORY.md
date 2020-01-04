@@ -3,6 +3,20 @@
 https://github.com/josdejong/jsoneditor
 
 
+## 2019-12-28, version 8.1.1
+
+- Fixed the file size reported in `preview` mode show `KB` and `MB` instead
+  of `KiB` and `MiB` in order to match the size reported by filesystems.
+
+
+## 2019-12-18, version 8.1.0
+
+- Implemented `popupAnchor` allowing to select a custom anchor element. 
+  See #869 and #870.  
+- Fixed #502: CSS rule `* { font-family: ... }` resulting in Ace editor (`code` 
+  mode) not having a mono-space font anymore.
+
+
 ## 2019-12-11, version 8.0.0
 
 - Implemented option `timestampFormat` which allows customizing the formatting

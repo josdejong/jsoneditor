@@ -1,6 +1,6 @@
 {
   "name": "jsoneditor",
-  "version": "8.0.0",
+  "version": "8.1.1",
   "main": "./index",
   "description": "A web-based tool to view, edit, format, and validate JSON",
   "tags": [
@@ -36,9 +36,9 @@
     "vanilla-picker": "^2.10.0"
   },
   "devDependencies": {
-    "@babel/core": "^7.7.5",
-    "@babel/preset-env": "^7.7.6",
-    "@babel/register": "^7.7.4",
+    "@babel/core": "^7.7.7",
+    "@babel/preset-env": "^7.7.7",
+    "@babel/register": "^7.7.7",
     "babel-loader": "^8.0.6",
     "btoa": "^1.2.1",
     "date-format": "^3.0.0",
@@ -52,8 +52,8 @@
     "mkdirp": "^0.5.1",
     "mocha": "^6.2.2",
     "standard": "^14.3.1",
-    "uglify-js": "^3.7.2",
-    "webpack": "^4.41.2"
+    "uglify-js": "^3.7.3",
+    "webpack": "^4.41.5"
   },
   "files": [
     "dist",

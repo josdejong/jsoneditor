@@ -80,20 +80,6 @@ div {
         vertical-align: top;
       }
     }
-    div {
-      &.jsoneditor-anchor {
-        cursor: pointer;
-
-        .picker_wrapper {
-          &.popup {
-            &.popup_bottom {
-              top: 28px;
-              left: -10px;
-            }
-          }
-        }
-      }
-    }
     &.busy {
       pre {
         &.jsoneditor-preview {
@@ -325,6 +311,10 @@ div.jsoneditor-tree div.jsoneditor-show-more a:focus {
 textarea.jsoneditor-text,
 .ace-jsoneditor {
   min-height: 150px;
+
+  * {
+    font-family: $jse-font-mono;
+  }
 }
 textarea {
   &.jsoneditor-text {
@@ -548,6 +538,19 @@ pre.jsoneditor-preview,
 			}
 		}
 	}
+}
+
+.jsoneditor-anchor {
+  cursor: pointer;
+
+  .picker_wrapper {
+    &.popup {
+      &.popup_bottom {
+        top: 28px;
+        left: -10px;
+      }
+    }
+  }
 }
 
 .fadein {

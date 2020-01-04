@@ -1371,7 +1371,7 @@ export function isTimestamp (field, value) {
 
 /**
  * Return a human readable document size
- * For example formatSize(7570718) outputs '7.2 MiB'
+ * For example formatSize(7570718) outputs '7.6 MB'
  * @param {number} size
  * @return {string} Returns a human readable size
  */
@@ -1380,23 +1380,23 @@ export function formatSize (size) {
     return size.toFixed() + ' B'
   }
 
-  const KiB = size / 1024
-  if (KiB < 900) {
-    return KiB.toFixed(1) + ' KiB'
+  const KB = size / 1000
+  if (KB < 900) {
+    return KB.toFixed(1) + ' KB'
   }
 
-  const MiB = KiB / 1024
-  if (MiB < 900) {
-    return MiB.toFixed(1) + ' MiB'
+  const MB = KB / 1000
+  if (MB < 900) {
+    return MB.toFixed(1) + ' MB'
   }
 
-  const GiB = MiB / 1024
-  if (GiB < 900) {
-    return GiB.toFixed(1) + ' GiB'
+  const GB = MB / 1000
+  if (GB < 900) {
+    return GB.toFixed(1) + ' GB'
   }
 
-  const TiB = GiB / 1024
-  return TiB.toFixed(1) + ' TiB'
+  const TB = GB / 1000
+  return TB.toFixed(1) + ' TB'
 }
 
 /**

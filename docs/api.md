@@ -567,6 +567,17 @@ Constructs a new JSONEditor.
   The container element where modals (like for sorting and filtering) are attached: an overlay will be created on top
   of this container, and the modal will be created in the center of this container.
 
+- `{HTMLElement} popupAnchor`
+
+  The container element where popups (for example drop down menus, for JSON Schema error
+  tooltips, and color pickers) will be absolutely positioned. 
+  By default, this is the root DIV element of the editor itself. 
+  
+  When the JSONEditor is inside a DIV element which hides overflowing contents 
+  (CSS `overflow: auto` or `overflow: hidden`), tooltips will be visible only partly. 
+  In this case, a `popupAnchor` outside of the element without hidden overflow will allow 
+  the tooltips to be visible when overflowing the DIV element of the JSONEditor.
+
 - `{boolean} enableSort`
 
   Enable sorting of arrays and object properties. Only applicable for mode 'tree'. `true` by default.

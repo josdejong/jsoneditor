@@ -14,13 +14,13 @@ export function createAbsoluteAnchor (anchor, parent, onDestroy, destroyOnMouseO
   const eventListeners = {}
 
   const anchorRect = anchor.getBoundingClientRect()
-  const frameRect = parent.getBoundingClientRect()
+  const parentRect = parent.getBoundingClientRect()
 
   const absoluteAnchor = document.createElement('div')
   absoluteAnchor.className = 'jsoneditor-anchor'
   absoluteAnchor.style.position = 'absolute'
-  absoluteAnchor.style.left = (anchorRect.left - frameRect.left) + 'px'
-  absoluteAnchor.style.top = (anchorRect.top - frameRect.top) + 'px'
+  absoluteAnchor.style.left = (anchorRect.left - parentRect.left) + 'px'
+  absoluteAnchor.style.top = (anchorRect.top - parentRect.top) + 'px'
   absoluteAnchor.style.width = (anchorRect.width - 2) + 'px'
   absoluteAnchor.style.height = (anchorRect.height - 2) + 'px'
   absoluteAnchor.style.boxSizing = 'border-box'
