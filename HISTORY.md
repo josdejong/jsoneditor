@@ -3,6 +3,14 @@
 https://github.com/josdejong/jsoneditor
 
 
+## not yet published, version 8.2.0
+
+- Implemented support for customizing the query language used in the 
+  Transform modal. New options `createQuery`, `executeQuery`, and 
+  `queryDescription` are available for this now. An example is available
+  in `examples/23_custom_query_language.html`. See #857, #871.
+
+
 ## 2019-12-28, version 8.1.1
 
 - Fixed the file size reported in `preview` mode show `KB` and `MB` instead
