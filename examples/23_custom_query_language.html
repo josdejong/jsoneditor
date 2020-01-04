@@ -74,12 +74,16 @@
       if (projection) {
         // It is possible to make a util function "pickFlat"
         // and use that when building the query to make it more readable.
-        const fields = projection.fields.map(field => {
-          const name = _.last(field.split('.'))
-          return `  '${name}': _.get(item, '${field}')`
-        })
-
-        query = `_.map(${query}, item => ({\n${fields.join(',\n')}})\n)`
+        if (projection.fields.length > 1) {
+          const fields = projection.fields.map(field => {
+            const name = _.last(field.split('.'))
+            return `  '${name}': _.get(item, '${field}')`
+          })
+          query = `_.map(${query}, item => ({\n${fields.join(',\n')}})\n)`
+        } else {
+          const field = projection.fields[0]
+          query = `_.map(${query}, item => _.get(item, '${field}'))`
+        }
       }
 
       return query
