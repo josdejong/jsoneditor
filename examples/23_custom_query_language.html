@@ -54,7 +54,8 @@
       let query = 'data'
 
       if (filter) {
-        // FIXME: parse filter.value either as string or number
+        // note that the comparisons embrace type coercion,
+        // so a filter value like '5' (text) will match numbers like 5 too.
         query = `_.filter(${query}, item => _.get(item, '${filter.field}') ${filter.relation} '${filter.value}')`
       }
 
