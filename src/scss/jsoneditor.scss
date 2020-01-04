@@ -568,3 +568,18 @@ pre.jsoneditor-preview,
     opacity: 1;
   }
 }
+
+// override some styles which where cleared in reset.scss
+.jsoneditor-modal {
+  input[type="search"].selectr-input {
+    border: 1px solid #d3d3d3;
+    width: calc(100% - 4px);
+    margin: 2px;
+    padding: 4px;
+    box-sizing: border-box;
+  }
+
+  button.selectr-input-clear {
+    right: 8px;
+  }
+}

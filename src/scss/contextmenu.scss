@@ -400,6 +400,8 @@
 .jsoneditor-modal select,
 .jsoneditor-modal textarea,
 .jsoneditor-modal input,
+.jsoneditor-modal input[type="text"],
+.jsoneditor-modal input[type="text"]:focus,
 .jsoneditor-modal #query {
   background: #ffffff;
   border: 1px solid $jse-bar-border;
@@ -414,6 +416,7 @@
 .jsoneditor-modal option,
 .jsoneditor-modal textarea,
 .jsoneditor-modal input,
+.jsoneditor-modal input[type="text"],
 .jsoneditor-modal #query {
   font-size: 10.5pt;
   font-family: $jse-font;

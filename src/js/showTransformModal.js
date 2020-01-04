@@ -45,7 +45,7 @@ export function showTransformModal (container, json, onTransform) {
       '            </select>' +
       '          </div>' +
       '          <div class="jsoneditor-inline jsoneditor-jmespath-filter-value" >' +
-      '            <input placeholder="value..." id="filterValue" />' +
+      '            <input type="text" class="value" placeholder="value..." id="filterValue" />' +
       '          </div>' +
       '        </td>' +
       '      </tr>' +

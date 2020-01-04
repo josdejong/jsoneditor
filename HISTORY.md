@@ -7,6 +7,7 @@ https://github.com/josdejong/jsoneditor
 
 - Fix #873: buttons Format, Compact, and Repair not supporting 
   internationalization.
+- Fix #877: Some CSS styling issues when used in combination with Materialize.
 
 
 ## 2019-12-28, version 8.1.1
