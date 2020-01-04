@@ -191,15 +191,46 @@ export function showTransformModal (
         }
       }
 
-      // initialize with empty query
-      query.value = createQuery(json, {})
-
       function preprocessPath (path) {
         return (path === '')
           ? '@'
           : (path[0] === '.')
             ? path.slice(1)
             : path
+      }
+
+      function updatePreview () {
+        try {
+          const transformed = executeQuery(value, query.value)
+
+          preview.className = 'jsoneditor-transform-preview'
+          preview.value = stringifyPartial(transformed, 2, MAX_PREVIEW_CHARACTERS)
+
+          ok.disabled = false
+        } catch (err) {
+          preview.className = 'jsoneditor-transform-preview jsoneditor-error'
+          preview.value = err.toString()
+          ok.disabled = true
+        }
+      }
+
+      const debouncedUpdatePreview = debounce(updatePreview, 300)
+
+      function tryCreateQuery (json, queryOptions) {
+        try {
+          query.value = createQuery(json, queryOptions)
+          ok.disabled = false
+
+          debouncedUpdatePreview()
+        } catch (err) {
+          const message = 'Error: an error happened when executing "createQuery": ' + (err.message || err.toString())
+
+          query.value = ''
+          ok.disabled = true
+
+          preview.className = 'jsoneditor-transform-preview jsoneditor-error'
+          preview.value = message
+        }
       }
 
       function generateQueryFromWizard () {
@@ -234,30 +265,10 @@ export function showTransformModal (
           }
         }
 
-        query.value = createQuery(json, queryOptions)
-
-        debouncedUpdatePreview()
+        tryCreateQuery(json, queryOptions)
       }
-
-      function updatePreview () {
-        try {
-          const transformed = executeQuery(value, query.value)
-
-          preview.className = 'jsoneditor-transform-preview'
-          preview.value = stringifyPartial(transformed, 2, MAX_PREVIEW_CHARACTERS)
-
-          ok.disabled = false
-        } catch (err) {
-          preview.className = 'jsoneditor-transform-preview jsoneditor-error'
-          preview.value = err.toString()
-          ok.disabled = true
-        }
-      }
-
-      var debouncedUpdatePreview = debounce(updatePreview, 300)
 
       query.oninput = debouncedUpdatePreview
-      debouncedUpdatePreview()
 
       ok.onclick = event => {
         event.preventDefault()
@@ -267,6 +278,9 @@ export function showTransformModal (
 
         onTransform(query.value)
       }
+
+      // initialize with empty query
+      tryCreateQuery(json, {})
 
       setTimeout(() => {
         query.select()
