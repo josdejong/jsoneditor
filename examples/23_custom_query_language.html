@@ -54,13 +54,21 @@
       let query = 'data'
 
       if (filter) {
-        // note that the comparisons embrace type coercion,
+        // Note that the comparisons embrace type coercion,
         // so a filter value like '5' (text) will match numbers like 5 too.
-        query = `_.filter(${query}, item => _.get(item, '${filter.field}') ${filter.relation} '${filter.value}')`
+        const getActualValue = filter.field !== '@'
+          ? `item => _.get(item, '${filter.field}')`
+          : `item => item`
+        query = `_.filter(${query}, ${getActualValue} ${filter.relation} '${filter.value}')`
       }
 
       if (sort) {
-        query = `_.orderBy(${query}, '${sort.field}', '${sort.direction}')`
+        // The '@' field name is a special case,
+        // which means that the field itself is selected.
+        // For example when we have an array containing numbers.
+        query = sort.field !== '@'
+          ? `_.orderBy(${query}, '${sort.field}', '${sort.direction}')`
+          : `_.sortBy(${query}, '${sort.direction}')`
       }
 
       if (projection) {
