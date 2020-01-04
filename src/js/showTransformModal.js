@@ -7,16 +7,17 @@ import { MAX_PREVIEW_CHARACTERS } from './constants'
 
 /**
  * Show advanced filter and transform modal using JMESPath
- * @param {HTMLElement} container   The container where to center
- *                                  the modal and create an overlay
- * @param {JSON} json               The json data to be transformed
- * @param {function} createQuery    Function called to create a query
- *                                  from the wizard form
- * @param {function} executeQuery   Execute a query for the preview pane
- * @param {function} onTransform    Callback invoked with the created
- *                                  query as callback
+ * @param {Object} params
+ * @property {HTMLElement} container   The container where to center
+ *                                     the modal and create an overlay
+ * @property {JSON} json               The json data to be transformed
+ * @property {function} createQuery    Function called to create a query
+ *                                     from the wizard form
+ * @property {function} executeQuery   Execute a query for the preview pane
+ * @property {function} onTransform    Callback invoked with the created
+ *                                     query as callback
  */
-export function showTransformModal (container, json, createQuery, executeQuery, onTransform) {
+export function showTransformModal ({ container, json, createQuery, executeQuery, onTransform }) {
   const value = json
 
   const content = '<label class="pico-modal-contents">' +

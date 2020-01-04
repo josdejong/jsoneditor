@@ -3865,8 +3865,12 @@ export class Node {
     const anchor = this.editor.options.modalAnchor || DEFAULT_MODAL_ANCHOR
     const json = node.getValue()
     const { createQuery, executeQuery } = this.editor.options
-    showTransformModal(anchor, json, createQuery, executeQuery, query => {
-      node.transform(query)
+    showTransformModal({
+      anchor,
+      json,
+      createQuery,
+      executeQuery,
+      onTransform: query => { node.transform(query) }
     })
   }
 
