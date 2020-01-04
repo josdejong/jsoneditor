@@ -116,7 +116,7 @@ previewmode.create = function (container, options = {}) {
     const buttonFormat = document.createElement('button')
     buttonFormat.type = 'button'
     buttonFormat.className = 'jsoneditor-format'
-    buttonFormat.title = 'Format JSON data, with proper indentation and line feeds (Ctrl+\\)'
+    buttonFormat.title = translate('formatTitle')
     this.menu.appendChild(buttonFormat)
     buttonFormat.onclick = function handleFormat () {
       me.executeWithBusyMessage(() => {
@@ -132,7 +132,7 @@ previewmode.create = function (container, options = {}) {
     const buttonCompact = document.createElement('button')
     buttonCompact.type = 'button'
     buttonCompact.className = 'jsoneditor-compact'
-    buttonCompact.title = 'Compact JSON data, remove all whitespaces (Ctrl+Shift+\\)'
+    buttonCompact.title = translate('compactTitle')
     this.menu.appendChild(buttonCompact)
     buttonCompact.onclick = function handleCompact () {
       me.executeWithBusyMessage(() => {
@@ -173,7 +173,7 @@ previewmode.create = function (container, options = {}) {
     const buttonRepair = document.createElement('button')
     buttonRepair.type = 'button'
     buttonRepair.className = 'jsoneditor-repair'
-    buttonRepair.title = 'Repair JSON: fix quotes and escape characters, remove comments and JSONP notation, turn JavaScript objects into JSON.'
+    buttonRepair.title = translate('repairTitle')
     this.menu.appendChild(buttonRepair)
     buttonRepair.onclick = () => {
       if (me.json === undefined) { // only repair if we don't have valid JSON

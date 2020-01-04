@@ -3,6 +3,12 @@
 https://github.com/josdejong/jsoneditor
 
 
+## not yet published, version 8.1.2
+
+- Fix #873: buttons Format, Compact, and Repair not supporting 
+  internationalization.
+
+
 ## 2019-12-28, version 8.1.1
 
 - Fixed the file size reported in `preview` mode show `KB` and `MB` instead
