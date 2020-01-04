@@ -427,17 +427,17 @@ textmode._showSortModal = function () {
  * @private
  */
 textmode._showTransformModal = function () {
-  const anchor = this.options.modalAnchor || DEFAULT_MODAL_ANCHOR
+  const { modalAnchor, createQuery, executeQuery, queryDescription } = this.options
   const json = this.get()
-  const { createQuery, executeQuery } = this.options
 
   showTransformModal({
-    anchor,
+    anchor: modalAnchor || DEFAULT_MODAL_ANCHOR,
     json,
+    queryDescription, // can be undefined
     createQuery,
     executeQuery,
     onTransform: query => {
-      const updatedJson = this.options.executeQuery(json, query)
+      const updatedJson = executeQuery(json, query)
       this.set(updatedJson)
     }
   })

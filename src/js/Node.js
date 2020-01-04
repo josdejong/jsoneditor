@@ -3860,17 +3860,16 @@ export class Node {
    * Show transform modal
    */
   showTransformModal () {
-    const node = this
+    const { modalAnchor, createQuery, executeQuery, queryDescription } = this.editor.options
+    const json = this.getValue()
 
-    const anchor = this.editor.options.modalAnchor || DEFAULT_MODAL_ANCHOR
-    const json = node.getValue()
-    const { createQuery, executeQuery } = this.editor.options
     showTransformModal({
-      anchor,
+      anchor: modalAnchor || DEFAULT_MODAL_ANCHOR,
       json,
+      queryDescription, // can be undefined
       createQuery,
       executeQuery,
-      onTransform: query => { node.transform(query) }
+      onTransform: query => { this.transform(query) }
     })
   }
 

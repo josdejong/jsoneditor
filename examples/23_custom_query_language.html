@@ -75,7 +75,9 @@
       const execute = new Function('data', 'return ' + query)
 
       return execute(json)
-    }
+    },
+    queryDescription: 'Enter a JavaScript query to filter, sort, or transform the JSON data.<br/>' +
+      'The <a href="https://lodash.com/" target="_blank">Lodash</a> library is available via <code>_</code> to facilitate this.'
   }
   const json = []
   for (let i = 0; i < 100; i++) {

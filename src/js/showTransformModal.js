@@ -5,27 +5,39 @@ import { stringifyPartial } from './jsonUtils'
 import { getChildPaths, debounce } from './util'
 import { MAX_PREVIEW_CHARACTERS } from './constants'
 
+const DEFAULT_DESCRIPTION =
+  'Enter a <a href="http://jmespath.org" target="_blank">JMESPath</a> query to filter, sort, or transform the JSON data.<br/>' +
+  'To learn JMESPath, go to <a href="http://jmespath.org/tutorial.html" target="_blank">the interactive tutorial</a>.'
+
 /**
  * Show advanced filter and transform modal using JMESPath
  * @param {Object} params
  * @property {HTMLElement} container   The container where to center
  *                                     the modal and create an overlay
  * @property {JSON} json               The json data to be transformed
+ * @property {string} [queryDescription] Optional custom description explaining
+ *                                       the transform functionality
  * @property {function} createQuery    Function called to create a query
  *                                     from the wizard form
  * @property {function} executeQuery   Execute a query for the preview pane
  * @property {function} onTransform    Callback invoked with the created
  *                                     query as callback
  */
-export function showTransformModal ({ container, json, createQuery, executeQuery, onTransform }) {
+export function showTransformModal (
+  {
+    container,
+    json,
+    queryDescription = DEFAULT_DESCRIPTION,
+    createQuery,
+    executeQuery,
+    onTransform
+  }
+) {
   const value = json
 
   const content = '<label class="pico-modal-contents">' +
       '<div class="pico-modal-header">' + translate('transform') + '</div>' +
-      '<p>' +
-      'Enter a <a href="http://jmespath.org" target="_blank">JMESPath</a> query to filter, sort, or transform the JSON data.<br/>' +
-      'To learn JMESPath, go to <a href="http://jmespath.org/tutorial.html" target="_blank">the interactive tutorial</a>.' +
-      '</p>' +
+      '<p>' + queryDescription + '</p>' +
       '<div class="jsoneditor-jmespath-label">' + translate('transformWizardLabel') + ' </div>' +
       '<div id="wizard" class="jsoneditor-jmespath-block jsoneditor-jmespath-wizard">' +
       '  <table class="jsoneditor-jmespath-wizard-table">' +

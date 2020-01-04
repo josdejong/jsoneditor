@@ -388,20 +388,20 @@ previewmode._showSortModal = function () {
  */
 previewmode._showTransformModal = function () {
   this.executeWithBusyMessage(() => {
-    const anchor = this.options.modalAnchor || DEFAULT_MODAL_ANCHOR
+    const { createQuery, executeQuery, modalAnchor, queryDescription } = this.options
     const json = this.get()
-    const { createQuery, executeQuery } = this.options
 
     this._renderPreview() // update array count
 
     showTransformModal({
-      anchor,
+      anchor: modalAnchor || DEFAULT_MODAL_ANCHOR,
       json,
+      queryDescription, // can be undefined
       createQuery,
       executeQuery,
       onTransform: query => {
         this.executeWithBusyMessage(() => {
-          const updatedJson = this.options.executeQuery(json, query)
+          const updatedJson = executeQuery(json, query)
           this._setAndFireOnChange(updatedJson)
         }, 'transforming...')
       }
