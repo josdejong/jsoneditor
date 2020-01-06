@@ -3,11 +3,12 @@
 https://github.com/josdejong/jsoneditor
 
 
-## not yet published, version 8.1.2
+## 2020-01-06, version 8.1.2
 
 - Fix #873: buttons Format, Compact, and Repair not supporting 
   internationalization.
 - Fix #877: Some CSS styling issues when used in combination with Materialize.
+- Updated dependency `vanilla-picker` to `v2.10.1`.
 
 
 ## 2019-12-28, version 8.1.1
