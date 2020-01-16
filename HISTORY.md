@@ -3,6 +3,13 @@
 https://github.com/josdejong/jsoneditor
 
 
+## 2020-01-16, version 8.2.0
+
+- Make it easy to create custom styling by overriding default SASS variable 
+  values, see #881. Thanks @petermanders89.
+- Update `ace` to `v1.4.8`.
+
+
 ## 2020-01-06, version 8.1.2
 
 - Fix #873: buttons Format, Compact, and Repair not supporting 
