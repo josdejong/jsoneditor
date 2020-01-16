@@ -28,12 +28,14 @@ $jse-menu-color: $jse-empty !default;
 
 $jse-contextmenu-color: #4d4d4d !default;
 
-$jse-box-shadow: 2px 2px 12px rgba(128, 128, 128, 0.3);
-$jse-box-shadow-sm: 0 0 5px rgba(0, 0, 0, 0.4);
-$jse-box-shadow-inner: inset 0 0 10px rgba(128, 128, 128, 0.5);
+$jse-box-shadow: 2px 2px 12px rgba(128, 128, 128, 0.3) !default;
+$jse-box-shadow-sm: 0 0 5px rgba(0, 0, 0, 0.4) !default;
+$jse-box-shadow-inner: inset 0 0 10px rgba(128, 128, 128, 0.5) !default;
 
 $jse-date: #a1a1a1 !default;
 
-$jse-font: arial, sans-serif;
-$jse-font-mono: "dejavu sans mono", "droid sans mono", consolas, monaco, "lucida console", "courier new", courier, monospace, sans-serif;
-$jse-font-size: 10pt;
+$jse-font: arial, sans-serif !default;
+$jse-font-mono: "dejavu sans mono", "droid sans mono", consolas, monaco, "lucida console", "courier new", courier, monospace, sans-serif !default;
+$jse-font-size: 10pt !default;;
+
+$jse-icons: './img/jsoneditor-icons.svg';
