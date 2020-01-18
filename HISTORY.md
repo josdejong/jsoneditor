@@ -3,9 +3,11 @@
 https://github.com/josdejong/jsoneditor
 
 
-## not yet published, version 8.2.1
+## 2020-01-18 version 8.3.0
 
-- Fix #790: editor breaking when missing some translations.
+- Update dependency `ajv` to `v6.11.0`. 
+- Fix #790: editor breaking when missing a translation containing a 
+  placeholder.
 
 
 ## 2020-01-16, version 8.2.0
