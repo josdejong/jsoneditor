@@ -575,12 +575,12 @@ export function setLanguages (languages) {
   if (!languages) {
     return
   }
-  for (const key in languages) {
-    const langFound = _locales.find(l => l === key)
+  for (const language in languages) {
+    const langFound = _locales.find(l => l === language)
     if (!langFound) {
-      _locales.push(key)
+      _locales.push(language)
     }
-    _defs[key] = Object.assign({}, _defs[_defaultLang], _defs[key], languages[key])
+    _defs[language] = Object.assign({}, _defs[_defaultLang], _defs[language], languages[language])
   }
 }
 
@@ -588,11 +588,11 @@ export function translate (key, data, lang) {
   if (!lang) {
     lang = _lang
   }
-  let text = _defs[lang][key]
+  let text = _defs[lang][key] || _defs[_defaultLang][key] || key
   if (data) {
-    for (key in data) {
-      text = text.replace('${' + key + '}', data[key])
+    for (const dataKey in data) {
+      text = text.replace('${' + dataKey + '}', data[dataKey])
     }
   }
-  return text || key
+  return text
 }

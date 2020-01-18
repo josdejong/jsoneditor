@@ -3,6 +3,11 @@
 https://github.com/josdejong/jsoneditor
 
 
+## not yet published, version 8.2.1
+
+- Fix #790: editor breaking when missing some translations.
+
+
 ## 2020-01-16, version 8.2.0
 
 - Make it easy to create custom styling by overriding default SASS variable 
