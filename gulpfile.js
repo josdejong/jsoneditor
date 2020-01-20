@@ -175,10 +175,7 @@ gulp.task('bundle-minimalist', function (done) {
 // bundle css
 gulp.task('bundle-css', function (done) {
   gulp
-    .src([
-      'src/scss/jsoneditor.scss',
-      'src/js/assets/selectr/selectr.scss'
-    ])
+    .src(['src/scss/jsoneditor.scss'])
     .pipe(
       sass({
         // importer: tildeImporter
