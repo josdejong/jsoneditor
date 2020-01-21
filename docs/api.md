@@ -360,7 +360,7 @@ Constructs a new JSONEditor.
 
 - `{boolean} navigationBar`
 
-  Adds navigation bar to the menu - the navigation bar visualize the current position on the tree structure as well as allows breadcrumbs navigation. `true by default. Only applicable when `mode` is 'tree', 'form' or 'view'.
+  Adds navigation bar to the menu - the navigation bar visualize the current position on the tree structure as well as allows breadcrumbs navigation. `true` by default. Only applicable when `mode` is 'tree', 'form' or 'view'.
 
 - `{boolean} statusBar`
 
