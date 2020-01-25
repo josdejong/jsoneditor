@@ -2238,8 +2238,6 @@ export class Node {
     const tr = this.dom.tr
     if (tr) {
       if (this.type === 'array' || this.type === 'object') {
-        console.log(this.getPath(), this.type, this.expanded, tr)
-
         addClassName(tr, 'jsoneditor-expandable')
 
         if (this.expanded) {

@@ -3,6 +3,11 @@
 https://github.com/josdejong/jsoneditor
 
 
+## 2020-01-25, version 8.4.1
+
+- Fix `console.log` in production code. Oopsie.
+
+
 ## 2020-01-25, version 8.4.0
 
 - Added CSS classes `jsoneditor-expanded` and `jsoneditor-collapsed` on array 
