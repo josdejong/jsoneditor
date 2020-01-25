@@ -1,6 +1,6 @@
 {
   "name": "jsoneditor",
-  "version": "8.3.0",
+  "version": "8.4.0",
   "main": "./index",
   "description": "A web-based tool to view, edit, format, and validate JSON",
   "tags": [
@@ -47,12 +47,12 @@
     "gulp-clean-css": "^4.2.0",
     "gulp-concat-css": "^3.1.0",
     "gulp-sass": "^4.0.2",
-    "jsdom": "^16.0.0",
+    "jsdom": "^16.0.1",
     "json-loader": "^0.5.7",
-    "mkdirp": "^0.5.1",
+    "mkdirp": "^1.0.3",
     "mocha": "^7.0.0",
     "standard": "^14.3.1",
-    "uglify-js": "^3.7.5",
+    "uglify-js": "^3.7.6",
     "webpack": "^4.41.5"
   },
   "files": [

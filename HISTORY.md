@@ -3,13 +3,13 @@
 https://github.com/josdejong/jsoneditor
 
 
-## not yet published version 8.4.0
+## 2020-01-25, version 8.4.0
 
 - Added CSS classes `jsoneditor-expanded` and `jsoneditor-collapsed` on array 
   and object nodes reflecting there state.
 
 
-## 2020-01-18 version 8.3.0
+## 2020-01-18, version 8.3.0
 
 - Update dependency `ajv` to `v6.11.0`. 
 - Fix #790: editor breaking when missing a translation containing a 
