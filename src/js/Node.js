@@ -781,6 +781,9 @@ export class Node {
         child.expand(recurse)
       })
     }
+
+    // update the css classes of table row, and fire onClassName etc
+    this.updateDom({ recurse: false })
   }
 
   /**
@@ -807,6 +810,9 @@ export class Node {
       this.dom.expand.className = 'jsoneditor-button jsoneditor-collapsed'
     }
     this.expanded = false
+
+    // update the css classes of table row, and fire onClassName etc
+    this.updateDom({ recurse: false })
   }
 
   /**
@@ -2221,23 +2227,38 @@ export class Node {
     // apply value to DOM
     const domValue = this.dom.value
     if (domValue) {
-      if (this.type === 'array') {
+      if (this.type === 'array' || this.type === 'object') {
         this.updateNodeName()
-        addClassName(this.dom.tr, 'jsoneditor-expandable')
-      } else if (this.type === 'object') {
-        this.updateNodeName()
-        addClassName(this.dom.tr, 'jsoneditor-expandable')
       } else {
         domValue.innerHTML = this._escapeHTML(this.value)
-        removeClassName(this.dom.tr, 'jsoneditor-expandable')
+      }
+    }
+
+    // apply styling to the table row
+    const tr = this.dom.tr
+    if (tr) {
+      if (this.type === 'array' || this.type === 'object') {
+        console.log(this.getPath(), this.type, this.expanded, tr)
+
+        addClassName(tr, 'jsoneditor-expandable')
+
+        if (this.expanded) {
+          addClassName(tr, 'jsoneditor-expanded')
+          removeClassName(tr, 'jsoneditor-collapsed')
+        } else {
+          addClassName(tr, 'jsoneditor-collapsed')
+          removeClassName(tr, 'jsoneditor-expanded')
+        }
+      } else {
+        removeClassName(tr, 'jsoneditor-expandable')
+        removeClassName(tr, 'jsoneditor-expanded')
+        removeClassName(tr, 'jsoneditor-collapsed')
       }
     }
 
     // update field and value
     this._updateDomField()
     this._updateDomValue()
-
-    this._updateCssClassName()
 
     // update childs indexes
     if (options && options.updateIndexes === true) {
@@ -2268,6 +2289,9 @@ export class Node {
     if (this.showMore) {
       this.showMore.updateDom()
     }
+
+    // fire onClassName
+    this._updateCssClassName()
   }
 
   /**
