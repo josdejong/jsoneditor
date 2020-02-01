@@ -36,8 +36,8 @@
     "vanilla-picker": "^2.10.1"
   },
   "devDependencies": {
-    "@babel/core": "^7.8.3",
-    "@babel/preset-env": "^7.8.3",
+    "@babel/core": "^7.8.4",
+    "@babel/preset-env": "^7.8.4",
     "@babel/register": "^7.8.3",
     "babel-loader": "^8.0.6",
     "btoa": "^1.2.1",
@@ -50,7 +50,7 @@
     "jsdom": "^16.0.1",
     "json-loader": "^0.5.7",
     "mkdirp": "^1.0.3",
-    "mocha": "^7.0.0",
+    "mocha": "^7.0.1",
     "standard": "^14.3.1",
     "uglify-js": "^3.7.6",
     "webpack": "^4.41.5"
