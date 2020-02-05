@@ -1,6 +1,5 @@
 'use strict'
 
-import jmespath from 'jmespath'
 import { translate } from './i18n'
 import { ModeSwitcher } from './ModeSwitcher'
 import { ErrorTable } from './ErrorTable'
@@ -23,6 +22,7 @@ import {
   sortObjectKeys
 } from './util'
 import { History } from './History'
+import { createQuery, executeQuery } from './jmespathQuery'
 
 const textmode = textModeMixins[0].mixin
 
@@ -44,6 +44,8 @@ previewmode.create = function (container, options = {}) {
   options.mainMenuBar = options.mainMenuBar !== false
   options.enableSort = options.enableSort !== false
   options.enableTransform = options.enableTransform !== false
+  options.createQuery = options.createQuery || createQuery
+  options.executeQuery = options.executeQuery || executeQuery
 
   this.options = options
 
@@ -385,18 +387,24 @@ previewmode._showSortModal = function () {
  * @private
  */
 previewmode._showTransformModal = function () {
-  const me = this
-
   this.executeWithBusyMessage(() => {
-    const anchor = me.options.modalAnchor || DEFAULT_MODAL_ANCHOR
-    const json = me.get()
-    me._renderPreview() // update array count
+    const { createQuery, executeQuery, modalAnchor, queryDescription } = this.options
+    const json = this.get()
 
-    showTransformModal(anchor, json, query => {
-      me.executeWithBusyMessage(() => {
-        const updatedJson = jmespath.search(json, query)
-        me._setAndFireOnChange(updatedJson)
-      }, 'transforming...')
+    this._renderPreview() // update array count
+
+    showTransformModal({
+      anchor: modalAnchor || DEFAULT_MODAL_ANCHOR,
+      json,
+      queryDescription, // can be undefined
+      createQuery,
+      executeQuery,
+      onTransform: query => {
+        this.executeWithBusyMessage(() => {
+          const updatedJson = executeQuery(json, query)
+          this._setAndFireOnChange(updatedJson)
+        }, 'transforming...')
+      }
     })
   }, 'parsing...')
 }

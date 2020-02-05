@@ -1,7 +1,6 @@
 'use strict'
 
 import ace from './ace'
-import jmespath from 'jmespath'
 import { translate } from './i18n'
 import { ModeSwitcher } from './ModeSwitcher'
 import { ErrorTable } from './ErrorTable'
@@ -26,6 +25,7 @@ import {
 } from './util'
 import { DEFAULT_MODAL_ANCHOR } from './constants'
 import { tryRequireThemeJsonEditor } from './tryRequireThemeJsonEditor'
+import { createQuery, executeQuery } from './jmespathQuery'
 
 // create a mixin with the functions for text mode
 const textmode = {}
@@ -47,6 +47,8 @@ textmode.create = function (container, options = {}) {
   options.mainMenuBar = options.mainMenuBar !== false
   options.enableSort = options.enableSort !== false
   options.enableTransform = options.enableTransform !== false
+  options.createQuery = options.createQuery || createQuery
+  options.executeQuery = options.executeQuery || executeQuery
 
   this.options = options
 
@@ -425,12 +427,19 @@ textmode._showSortModal = function () {
  * @private
  */
 textmode._showTransformModal = function () {
-  const me = this
-  const anchor = this.options.modalAnchor || DEFAULT_MODAL_ANCHOR
+  const { modalAnchor, createQuery, executeQuery, queryDescription } = this.options
   const json = this.get()
-  showTransformModal(anchor, json, query => {
-    const updatedJson = jmespath.search(json, query)
-    me.set(updatedJson)
+
+  showTransformModal({
+    anchor: modalAnchor || DEFAULT_MODAL_ANCHOR,
+    json,
+    queryDescription, // can be undefined
+    createQuery,
+    executeQuery,
+    onTransform: query => {
+      const updatedJson = executeQuery(json, query)
+      this.set(updatedJson)
+    }
   })
 }
 

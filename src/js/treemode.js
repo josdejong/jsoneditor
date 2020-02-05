@@ -29,6 +29,7 @@ import {
 } from './util'
 import { autocomplete } from './autocomplete'
 import { setLanguage, setLanguages, translate } from './i18n'
+import { createQuery, executeQuery } from './jmespathQuery'
 
 // create a mixin with the functions for tree mode
 const treemode = {}
@@ -156,6 +157,8 @@ treemode._setOptions = function (options) {
     },
     timestampTag: true,
     timestampFormat: null,
+    createQuery,
+    executeQuery,
     onEvent: null,
     enableSort: true,
     enableTransform: true

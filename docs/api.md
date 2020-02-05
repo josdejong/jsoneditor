@@ -589,6 +589,55 @@ Constructs a new JSONEditor.
 - `{Number} maxVisibleChilds`
 
   Number of children allowed for a given node before the "show more / show all" message appears (in 'tree', 'view', or 'form' modes). `100` by default.
+  
+- `{ function(json: JSON, queryOptions: QueryOptions) -> string } createQuery`
+
+  Create a query string based on query options filled in the Transform Wizard in the Transform modal. 
+  Normally used in combination with `executeQuery`.
+  The input for the function are the entered query options and the current JSON, and the output
+  must be a string containing the query. This query will be executed using `executeQuery`.
+  
+  The query options have the following structure:
+  
+  ```
+  interface QueryOptions {
+    filter?: {
+      field: string | '@'
+      relation: '==' | '!=' | '<' | '<=' | '>' | '>='
+      value: string
+    }
+    sort?: {
+      field: string | '@'
+      direction: 'asc' | 'desc'
+    }
+    projection?: {
+      fields: string[]
+    }
+  }
+  ```
+  
+  Note that there is a special case `'@'` for `filter.field` and `sort.field`.
+  It means that the field itself is selected, for example when having an array containing numbers.
+  
+  A usage example can be found in `examples/23_custom_query_language.html`.
+  
+
+- `{ function(json: JSON, query: string) -> JSON } executeQuery`
+
+  Replace the build-in query language used in the Transform modal with a custom language.
+  Normally used in combination with `createQuery`.
+  The input for the function is the current JSON and a query string, and output must be the transformed JSON.
+
+  A usage example can be found in `examples/23_custom_query_language.html`.
+
+- `{string} queryDescription` 
+
+  A text description displayed on top of the Transform modal. 
+  Can be used to explain a custom query language implemented via `createQuery` and `executeQuery`.
+  The text can contain HTML code like a link to a web page.
+  
+  A usage example can be found in `examples/23_custom_query_language.html`.
+
 
 ### Methods
 

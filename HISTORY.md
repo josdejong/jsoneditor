@@ -3,6 +3,14 @@
 https://github.com/josdejong/jsoneditor
 
 
+## not yet published, version 8.5.0
+
+- Implemented support for customizing the query language used in the 
+  Transform modal. New options `createQuery`, `executeQuery`, and 
+  `queryDescription` are available for this now. An example is available
+  in `examples/23_custom_query_language.html`. See #857, #871.
+
+
 ## 2020-01-25, version 8.4.1
 
 - Fix `console.log` in production code. Oopsie.

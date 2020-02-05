@@ -1,28 +1,43 @@
-import jmespath from 'jmespath'
 import picoModal from 'picomodal'
 import Selectr from './assets/selectr/selectr'
 import { translate } from './i18n'
 import { stringifyPartial } from './jsonUtils'
-import { getChildPaths, get, parsePath, parseString, debounce } from './util'
+import { getChildPaths, debounce } from './util'
 import { MAX_PREVIEW_CHARACTERS } from './constants'
+
+const DEFAULT_DESCRIPTION =
+  'Enter a <a href="http://jmespath.org" target="_blank">JMESPath</a> query to filter, sort, or transform the JSON data.<br/>' +
+  'To learn JMESPath, go to <a href="http://jmespath.org/tutorial.html" target="_blank">the interactive tutorial</a>.'
 
 /**
  * Show advanced filter and transform modal using JMESPath
- * @param {HTMLElement} container   The container where to center
- *                                  the modal and create an overlay
- * @param {JSON} json               The json data to be transformed
- * @param {function} onTransform    Callback invoked with the created
- *                                  query as callback
+ * @param {Object} params
+ * @property {HTMLElement} container   The container where to center
+ *                                     the modal and create an overlay
+ * @property {JSON} json               The json data to be transformed
+ * @property {string} [queryDescription] Optional custom description explaining
+ *                                       the transform functionality
+ * @property {function} createQuery    Function called to create a query
+ *                                     from the wizard form
+ * @property {function} executeQuery   Execute a query for the preview pane
+ * @property {function} onTransform    Callback invoked with the created
+ *                                     query as callback
  */
-export function showTransformModal (container, json, onTransform) {
+export function showTransformModal (
+  {
+    container,
+    json,
+    queryDescription = DEFAULT_DESCRIPTION,
+    createQuery,
+    executeQuery,
+    onTransform
+  }
+) {
   const value = json
 
   const content = '<label class="pico-modal-contents">' +
       '<div class="pico-modal-header">' + translate('transform') + '</div>' +
-      '<p>' +
-      'Enter a <a href="http://jmespath.org" target="_blank">JMESPath</a> query to filter, sort, or transform the JSON data.<br/>' +
-      'To learn JMESPath, go to <a href="http://jmespath.org/tutorial.html" target="_blank">the interactive tutorial</a>.' +
-      '</p>' +
+      '<p>' + queryDescription + '</p>' +
       '<div class="jsoneditor-jmespath-label">' + translate('transformWizardLabel') + ' </div>' +
       '<div id="wizard" class="jsoneditor-jmespath-block jsoneditor-jmespath-wizard">' +
       '  <table class="jsoneditor-jmespath-wizard-table">' +
@@ -176,8 +191,6 @@ export function showTransformModal (container, json, onTransform) {
         }
       }
 
-      query.value = Array.isArray(value) ? '[*]' : '@'
-
       function preprocessPath (path) {
         return (path === '')
           ? '@'
@@ -186,69 +199,9 @@ export function showTransformModal (container, json, onTransform) {
             : path
       }
 
-      function generateQueryFromWizard () {
-        if (filterField.value && filterRelation.value && filterValue.value) {
-          const field1 = filterField.value
-          const examplePath = field1 !== '@'
-            ? ['0'].concat(parsePath('.' + field1))
-            : ['0']
-          const exampleValue = get(value, examplePath)
-          const value1 = typeof exampleValue === 'string'
-            ? filterValue.value
-            : parseString(filterValue.value)
-
-          query.value = '[? ' +
-                field1 + ' ' +
-                filterRelation.value + ' ' +
-                '`' + JSON.stringify(value1) + '`' +
-                ']'
-        } else {
-          query.value = '[*]'
-        }
-
-        if (sortField.value && sortOrder.value) {
-          const field2 = sortField.value
-          if (sortOrder.value === 'desc') {
-            query.value += ' | reverse(sort_by(@, &' + field2 + '))'
-          } else {
-            query.value += ' | sort_by(@, &' + field2 + ')'
-          }
-        }
-
-        if (selectFields.value) {
-          const values = []
-          for (let i = 0; i < selectFields.options.length; i++) {
-            if (selectFields.options[i].selected) {
-              const selectedValue = selectFields.options[i].value
-              values.push(selectedValue)
-            }
-          }
-
-          if (query.value[query.value.length - 1] !== ']') {
-            query.value += ' | [*]'
-          }
-
-          if (values.length === 1) {
-            query.value += '.' + values[0]
-          } else if (values.length > 1) {
-            query.value += '.{' +
-                  values.map(value => {
-                    const parts = value.split('.')
-                    const last = parts[parts.length - 1]
-                    return last + ': ' + value
-                  }).join(', ') +
-                  '}'
-          } else { // values.length === 0
-            // ignore
-          }
-        }
-
-        debouncedUpdatePreview()
-      }
-
       function updatePreview () {
         try {
-          const transformed = jmespath.search(value, query.value)
+          const transformed = executeQuery(value, query.value)
 
           preview.className = 'jsoneditor-transform-preview'
           preview.value = stringifyPartial(transformed, 2, MAX_PREVIEW_CHARACTERS)
@@ -261,10 +214,61 @@ export function showTransformModal (container, json, onTransform) {
         }
       }
 
-      var debouncedUpdatePreview = debounce(updatePreview, 300)
+      const debouncedUpdatePreview = debounce(updatePreview, 300)
+
+      function tryCreateQuery (json, queryOptions) {
+        try {
+          query.value = createQuery(json, queryOptions)
+          ok.disabled = false
+
+          debouncedUpdatePreview()
+        } catch (err) {
+          const message = 'Error: an error happened when executing "createQuery": ' + (err.message || err.toString())
+
+          query.value = ''
+          ok.disabled = true
+
+          preview.className = 'jsoneditor-transform-preview jsoneditor-error'
+          preview.value = message
+        }
+      }
+
+      function generateQueryFromWizard () {
+        const queryOptions = {}
+
+        if (filterField.value && filterRelation.value && filterValue.value) {
+          queryOptions.filter = {
+            field: filterField.value,
+            relation: filterRelation.value,
+            value: filterValue.value
+          }
+        }
+
+        if (sortField.value && sortOrder.value) {
+          queryOptions.sort = {
+            field: sortField.value,
+            direction: sortOrder.value
+          }
+        }
+
+        if (selectFields.value) {
+          const fields = []
+          for (let i = 0; i < selectFields.options.length; i++) {
+            if (selectFields.options[i].selected) {
+              const selectedField = selectFields.options[i].value
+              fields.push(selectedField)
+            }
+          }
+
+          queryOptions.projection = {
+            fields
+          }
+        }
+
+        tryCreateQuery(json, queryOptions)
+      }
 
       query.oninput = debouncedUpdatePreview
-      debouncedUpdatePreview()
 
       ok.onclick = event => {
         event.preventDefault()
@@ -274,6 +278,9 @@ export function showTransformModal (container, json, onTransform) {
 
         onTransform(query.value)
       }
+
+      // initialize with empty query
+      tryCreateQuery(json, {})
 
       setTimeout(() => {
         query.select()
