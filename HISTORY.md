@@ -3,6 +3,11 @@
 https://github.com/josdejong/jsoneditor
 
 
+## 2020-02-05, version 8.5.1
+
+- Fix broken build.
+
+
 ## 2020-02-05, version 8.5.0
 
 - Implemented support for customizing the query language used in the 

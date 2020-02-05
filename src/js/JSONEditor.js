@@ -1,8 +1,5 @@
 'use strict'
 
-import { showTransformModal } from './showTransformModal'
-import { showSortModal } from './showSortModal'
-
 const ace = require('./ace') // may be undefined in case of minimalist bundle
 const VanillaPicker = require('./vanilla-picker') // may be undefined in case of minimalist bundle
 const { treeModeMixins } = require('./treemode')
@@ -10,6 +7,8 @@ const { textModeMixins } = require('./textmode')
 const { previewModeMixins } = require('./previewmode')
 const { clear, extend, getInternetExplorerVersion, parse } = require('./util')
 const { tryRequireAjv } = require('./tryRequireAjv')
+const { showTransformModal } = require('./showTransformModal')
+const { showSortModal } = require('./showSortModal')
 
 const Ajv = tryRequireAjv()
 
