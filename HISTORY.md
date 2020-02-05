@@ -3,7 +3,7 @@
 https://github.com/josdejong/jsoneditor
 
 
-## not yet published, version 8.5.0
+## 2020-02-05, version 8.5.0
 
 - Implemented support for customizing the query language used in the 
   Transform modal. New options `createQuery`, `executeQuery`, and 
