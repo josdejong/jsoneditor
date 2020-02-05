@@ -9,6 +9,7 @@ https://github.com/josdejong/jsoneditor
   Transform modal. New options `createQuery`, `executeQuery`, and 
   `queryDescription` are available for this now. An example is available
   in `examples/23_custom_query_language.html`. See #857, #871.
+- Implement undo/redo buttons in `code` mode.
 - Fix history (undo/redo) being cleared in mode `code` and `text` after 
   transforming or sorting.
 

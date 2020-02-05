@@ -196,6 +196,31 @@ textmode.create = function (container, options = {}) {
       }
     }
 
+    // create undo/redo buttons
+    if (this.mode === 'code') {
+      // create undo button
+      const undo = document.createElement('button')
+      undo.type = 'button'
+      undo.className = 'jsoneditor-undo jsoneditor-separator'
+      undo.title = translate('undo')
+      undo.onclick = () => {
+        this.aceEditor.getSession().getUndoManager().undo()
+      }
+      this.menu.appendChild(undo)
+      this.dom.undo = undo
+
+      // create redo button
+      const redo = document.createElement('button')
+      redo.type = 'button'
+      redo.className = 'jsoneditor-redo'
+      redo.title = translate('redo')
+      redo.onclick = () => {
+        this.aceEditor.getSession().getUndoManager().redo()
+      }
+      this.menu.appendChild(redo)
+      this.dom.redo = redo
+    }
+
     // create mode box
     if (this.options && this.options.modes && this.options.modes.length) {
       this.modeSwitcher = new ModeSwitcher(this.menu, this.options.modes, this.options.mode, function onSwitch (mode) {
@@ -281,6 +306,8 @@ textmode.create = function (container, options = {}) {
     textarea.onmousedown = this._onMouseDown.bind(this)
     textarea.onblur = this._onBlur.bind(this)
   }
+
+  this._updateHistoryButtons()
 
   this.errorTable = new ErrorTable({
     errorTableVisible: this.mode === 'text',
@@ -372,6 +399,9 @@ textmode._onChange = function () {
     return
   }
 
+  // enable/disable undo/redo buttons
+  setTimeout(() => this._updateHistoryButtons())
+
   // validate JSON schema (if configured)
   this._debouncedValidate()
 
@@ -391,6 +421,15 @@ textmode._onChange = function () {
     } catch (err) {
       console.error('Error in onChangeText callback: ', err)
     }
+  }
+}
+
+textmode._updateHistoryButtons = function () {
+  if (this.aceEditor && this.dom.undo && this.dom.redo) {
+    const undoManager = this.aceEditor.getSession().getUndoManager()
+
+    this.dom.undo.disabled = !undoManager.canUndo()
+    this.dom.redo.disabled = !undoManager.canRedo()
   }
 }
 
