@@ -1,5 +1,8 @@
 'use strict'
 
+import { showTransformModal } from './showTransformModal'
+import { showSortModal } from './showSortModal'
+
 const ace = require('./ace') // may be undefined in case of minimalist bundle
 const VanillaPicker = require('./vanilla-picker') // may be undefined in case of minimalist bundle
 const { treeModeMixins } = require('./treemode')
@@ -478,6 +481,10 @@ JSONEditor.registerMode(previewModeMixins)
 JSONEditor.ace = ace
 JSONEditor.Ajv = Ajv
 JSONEditor.VanillaPicker = VanillaPicker
+
+// expose some utils (this is undocumented, unofficial)
+JSONEditor.showTransformModal = showTransformModal
+JSONEditor.showSortModal = showSortModal
 
 // default export for TypeScript ES6 projects
 JSONEditor.default = JSONEditor
