@@ -408,14 +408,14 @@ textmode._showSortModal = function () {
       const sortedJson = sort(json, sortedBy.path, sortedBy.direction)
 
       me.sortedBy = sortedBy
-      me.set(sortedJson)
+      me.update(sortedJson)
     }
 
     if (isObject(json)) {
       const sortedJson = sortObjectKeys(json, sortedBy.direction)
 
       me.sortedBy = sortedBy
-      me.set(sortedJson)
+      me.update(sortedJson)
     }
   }
 
@@ -438,7 +438,7 @@ textmode._showTransformModal = function () {
     executeQuery,
     onTransform: query => {
       const updatedJson = executeQuery(json, query)
-      this.set(updatedJson)
+      this.update(updatedJson)
     }
   })
 }
