@@ -3,6 +3,11 @@
 https://github.com/josdejong/jsoneditor
 
 
+## 2020-02-05, version 8.5.2
+
+- Fix undo/redo buttons in mode `code` not always updating.
+
+
 ## 2020-02-05, version 8.5.1
 
 - Fix broken build.

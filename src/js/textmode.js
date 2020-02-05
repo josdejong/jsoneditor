@@ -669,7 +669,7 @@ textmode.destroy = function () {
 textmode.compact = function () {
   const json = this.get()
   const text = JSON.stringify(json)
-  this._setText(text, false)
+  this.updateText(text)
 }
 
 /**
@@ -678,7 +678,7 @@ textmode.compact = function () {
 textmode.format = function () {
   const json = this.get()
   const text = JSON.stringify(json, null, this.indentation)
-  this._setText(text, false)
+  this.updateText(text)
 }
 
 /**
@@ -687,7 +687,7 @@ textmode.format = function () {
 textmode.repair = function () {
   const text = this.getText()
   const repairedText = repair(text)
-  this._setText(repairedText, false)
+  this.updateText(repairedText)
 }
 
 /**
@@ -779,9 +779,12 @@ textmode._setText = function (jsonText, clearHistory) {
         if (me.aceEditor) {
           me.aceEditor.session.getUndoManager().reset()
         }
-      }, 0)
+      })
     }
+
+    setTimeout(() => this._updateHistoryButtons())
   }
+
   // validate JSON schema
   this._debouncedValidate()
 }
