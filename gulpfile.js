@@ -175,18 +175,7 @@ gulp.task('bundle-minimalist', function (done) {
 // bundle css
 gulp.task('bundle-css', function (done) {
   gulp
-    .src([
-      'src/scss/reset.scss',
-      'src/scss/jsoneditor.scss',
-      'src/scss/contextmenu.scss',
-      'src/scss/menu.scss',
-      'src/scss/searchbox.scss',
-      'src/scss/autocomplete.scss',
-      'src/scss/treepath.scss',
-      'src/scss/statusbar.scss',
-      'src/scss/navigationbar.scss',
-      'src/js/assets/selectr/selectr.scss'
-    ])
+    .src(['src/scss/jsoneditor.scss'])
     .pipe(
       sass({
         // importer: tildeImporter
