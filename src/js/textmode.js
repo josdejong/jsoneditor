@@ -428,8 +428,10 @@ textmode._updateHistoryButtons = function () {
   if (this.aceEditor && this.dom.undo && this.dom.redo) {
     const undoManager = this.aceEditor.getSession().getUndoManager()
 
-    this.dom.undo.disabled = !undoManager.canUndo()
-    this.dom.redo.disabled = !undoManager.canRedo()
+    if (undoManager && undoManager.hasUndo && undoManager.hasRedo) {
+      this.dom.undo.disabled = !undoManager.hasUndo()
+      this.dom.redo.disabled = !undoManager.hasRedo()
+    }
   }
 }
 

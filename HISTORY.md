@@ -3,6 +3,12 @@
 https://github.com/josdejong/jsoneditor
 
 
+## 2020-02-06, version 8.5.3
+
+- Fix #892: the undo/redo buttons in mode `code` being broken when custom 
+  loading an old version of Ace Editor.
+
+
 ## 2020-02-05, version 8.5.2
 
 - Fix undo/redo buttons in mode `code` not always updating.
