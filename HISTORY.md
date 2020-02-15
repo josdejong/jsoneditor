@@ -3,6 +3,12 @@
 https://github.com/josdejong/jsoneditor
 
 
+## not yet published, version 8.6.0
+
+- Fixed #906: Implemented turning Python objects containing `True`, `False` 
+  and `None` into valid JSON using repair.
+
+
 ## 2020-02-06, version 8.5.3
 
 - Fix #892: the undo/redo buttons in mode `code` being broken when custom 

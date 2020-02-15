@@ -67,6 +67,12 @@ export function repair (jsString) {
   const graveAccent = '\u0060'
   const acuteAccent = '\u00B4'
 
+  const pythonConstants = {
+    None: 'null',
+    True: 'true',
+    False: 'false'
+  }
+
   // helper functions to get the current/prev/next character
   function curr () { return jsString.charAt(i) }
   function next () { return jsString.charAt(i + 1) }
@@ -180,29 +186,29 @@ export function repair (jsString) {
     }
   }
 
-  function parseMongoDataType () {
+  function parseValue () {
     let c = curr()
-    let value
-    let dataType = ''
-    while (/[a-zA-Z_$]/.test(c)) {
-      dataType += c
+    let value = ''
+    while (/\w/.test(c)) {
+      value += c
       i++
       c = curr()
     }
 
-    if (dataType.length > 0 && c === '(') {
-      // This is an MongoDB data type like {"_id": ObjectId("123")}
+    if (value.length > 0 && c === '(') {
+      // This is an MongoDB data type like in {"_id": ObjectId("123")}
+      let innerValue
       i++
       c = curr()
       if (c === '"') {
         // a data type containing a string, like ISODate("2012-12-19T06:01:17.171Z")
-        value = parseString(c)
+        innerValue = parseString(c)
         c = curr()
       } else {
         // a data type containing a value, like 'NumberLong(2)'
-        value = ''
+        innerValue = ''
         while (c !== ')' && c !== '') {
-          value += c
+          innerValue += c
           i++
           c = curr()
         }
@@ -213,14 +219,17 @@ export function repair (jsString) {
         i++
 
         // return the value (strip the data type object)
-        return value
+        return innerValue
       } else {
         // huh? that's unexpected. don't touch it
-        return dataType + '(' + value + c
+        return value + '(' + innerValue + c
       }
+    } else if (typeof pythonConstants[value] === 'string') {
+      // it's a python constant like None
+      return pythonConstants[value]
     } else {
-      // hm, no Mongo data type after all
-      return dataType
+      // just leave as is
+      return value
     }
   }
 
@@ -260,13 +269,11 @@ export function repair (jsString) {
     } else if (/[a-zA-Z_$]/.test(c) && ['{', ','].indexOf(lastNonWhitespace()) !== -1) {
       // an unquoted object key (like a in '{a:2}')
       chars.push(parseKey())
+    } else if (/\w/.test(c)) {
+      chars.push(parseValue())
     } else {
-      if (/[a-zA-Z_$]/.test(c)) {
-        chars.push(parseMongoDataType())
-      } else {
-        chars.push(c)
-        i++
-      }
+      chars.push(c)
+      i++
     }
   }
 

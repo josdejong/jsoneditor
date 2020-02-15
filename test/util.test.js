@@ -135,6 +135,22 @@ describe('util', () => {
 
       assert.strictEqual(repair(mongoDocument), expectedJson)
     })
+
+    it('should replace Python constants None, True, False', () => {
+      const pythonDocument = '{\n' +
+        '  "null": None,\n' +
+        '  "true": True,\n' +
+        '  "false": False\n' +
+        '}'
+
+      const expectedJson = '{\n' +
+        '  "null": null,\n' +
+        '  "true": true,\n' +
+        '  "false": false\n' +
+        '}'
+
+      assert.strictEqual(repair(pythonDocument), expectedJson)
+    })
   })
 
   describe('jsonPath', () => {
