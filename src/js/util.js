@@ -179,7 +179,9 @@ export function repair (jsString) {
       c = curr()
     }
 
-    if (specialValues.indexOf(key) === -1) {
+    if (key in pythonConstants) {
+      return pythonConstants[key]
+    } else if (specialValues.indexOf(key) === -1) {
       return '"' + key + '"'
     } else {
       return key
@@ -268,6 +270,7 @@ export function repair (jsString) {
       i++
     } else if (/[a-zA-Z_$]/.test(c) && ['{', ','].indexOf(lastNonWhitespace()) !== -1) {
       // an unquoted object key (like a in '{a:2}')
+      // FIXME: array values are also parsed via parseKey, work this out properly
       chars.push(parseKey())
     } else if (/\w/.test(c)) {
       chars.push(parseValue())

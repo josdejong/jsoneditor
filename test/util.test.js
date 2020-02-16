@@ -141,12 +141,14 @@ describe('util', () => {
         '  "null": None,\n' +
         '  "true": True,\n' +
         '  "false": False\n' +
+        '  "array": [1, foo, None, True, False]\n' +
         '}'
 
       const expectedJson = '{\n' +
         '  "null": null,\n' +
         '  "true": true,\n' +
         '  "false": false\n' +
+        '  "array": [1, "foo", null, true, false]\n' +
         '}'
 
       assert.strictEqual(repair(pythonDocument), expectedJson)
