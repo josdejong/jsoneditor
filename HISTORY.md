@@ -3,7 +3,7 @@
 https://github.com/josdejong/jsoneditor
 
 
-## not yet published, version 8.6.0
+## 2020-02-16, version 8.6.0
 
 - Fixed #906: Implemented turning Python objects containing `True`, `False` 
   and `None` into valid JSON using repair.
