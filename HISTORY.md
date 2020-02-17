@@ -3,7 +3,7 @@
 https://github.com/josdejong/jsoneditor
 
 
-## not yet published, version 8.6.1
+## 2020-02-17, version 8.6.1
 
 - Fix #908: editor throwing an exception when switching from `'preview'`
   to `'code'` mode.
