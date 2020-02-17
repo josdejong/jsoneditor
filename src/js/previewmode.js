@@ -424,8 +424,10 @@ previewmode.destroy = function () {
 
   this._debouncedValidate = null
 
-  this.history.clear()
-  this.history = null
+  if (this.history) {
+    this.history.clear()
+    this.history = null
+  }
 
   // Removing the FocusTracker set to track the editor's focus event
   this.frameFocusTracker.destroy()

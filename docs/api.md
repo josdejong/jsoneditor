@@ -230,7 +230,7 @@ Constructs a new JSONEditor.
 
 - `{boolean} history`
 
-  Enables history, adds a button Undo and Redo to the menu of the JSONEditor. `true` by default. Only applicable when `mode` is 'tree' or 'form'.
+  Enables history, adds a button Undo and Redo to the menu of the JSONEditor. `true` by default. Only applicable when `mode` is `'tree'`, `'form'`, or `'preview'`.
 
 - `{String} mode`
 
