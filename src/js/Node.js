@@ -3915,6 +3915,31 @@ export class Node {
     return 'auto'
   }
 
+  
+  /**
+   * 判断是否包含相应自定义节点信息
+   * 20200219
+   * by kxr
+   * @param {*} text 
+   */
+  _isNodeDom(text){
+    return (
+      text.search(/node:\/\/.*?\/\/:node/g)!=-1 ||
+    text.search(/anode:\/\/.*?\/\/:anode/g)!=-1 ||
+    text.search(/eval:\/\/.*?\/\/:eval/g)!=-1 )
+  }
+
+  /**
+   * 自定义节点信息处理 
+   * 20200219
+   * by kxr
+   * @param {*} text 
+   */
+  _nodeDomTrans(text){
+      if(!this._isNodeDom(text))
+        return text;
+  }
+
   /**
    * escape a text, such that it can be displayed safely in an HTML element
    * @param {String} text

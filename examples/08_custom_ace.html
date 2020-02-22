@@ -2,7 +2,7 @@
 <html>
 <head>
   <title>JSONEditor | Custom Ace</title>
-
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8"/>
   <!-- load a custom version of Ace editor -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.2.6/ace.js"></script>
 
@@ -58,14 +58,24 @@
     mode: 'code',
     ace: ace
   }
+  // const json = {
+  //   'array': [1, 2, 3],
+  //   'boolean': true,
+  //   'null': null,
+  //   'number': 123,
+  //   'object': {'a': 'b', 'c': 'd'},
+  //   'string': 'Hello World'
+  // }
   const json = {
     'array': [1, 2, 3],
     'boolean': true,
     'null': null,
-    'number': 123,
-    'object': {'a': 'b', 'c': 'd'},
+    'number': "1anode://a.b.c//:anode23",
+    'object': {'a':  "bnode://a.b.c//:node", 'c': 'd'},
     'string': 'Hello World'
   }
+
+ 
   const editor = new JSONEditor(container, options, json)
 </script>
 </body>
