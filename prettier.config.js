@@ -3,13 +3,13 @@ module.exports = {
   semi: false,
   singleQuote: true,
   tabWidth: 4,
-  trailingComma: "es5",
+  trailingComma: 'es5',
   overrides: [
     {
-      files: "*.scss",
+      files: '*.scss',
       options: {
         singleQuote: false
       }
     }
   ]
-};
+}
