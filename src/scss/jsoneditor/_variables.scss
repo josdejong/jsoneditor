@@ -1,5 +1,7 @@
 $jse-white: #ffffff !default;
-$jse-grey:#999999 !default;
+$jse-light-bg: #ddd !default;
+$jse-light-grey: #aaa !default;
+$jse-grey: #999999 !default;
 $jse-light-bg: #ebebeb !default;
 $jse-blue: #3883fa !default;
 $jse-content-color: #1a1a1a !default;
@@ -14,6 +16,7 @@ $jse-empty: #d3d3d3 !default;
 $jse-preview: #f5f5f5 !default;
 $jse-busy: #ffffab !default;
 $jse-busy-border-color: #ffee00 !default;
+$jse-jmespath-label-color: dodgerblue !default;
 
 $jse-error: #ee2e2e70 !default;
 $jse-separator: #e5e5e5 !default;
@@ -28,6 +31,21 @@ $jse-menu-color: $jse-empty !default;
 
 $jse-contextmenu-color: #4d4d4d !default;
 
+$jse-dropdown-color: #333 !default;
+$jse-dropdown-hint-color: $jse-light-grey !default;
+
+$jse-button-outline: #e5e5e5 !default;
+
+$jse-input-border: #d3d3d3 !default;
+
+$jse-selectr-color: #6c7a86 !default;
+$jse-selectr-border-color: $jse-selectr-color !default;
+$jse-selectr-placeholder-color: $jse-selectr-color !default;
+$jse-selectr-tag-bg: #acb7bf !default;
+$jse-selectr-option-bg: #5897fb !default;
+
+$jse-select-border-color: #666 !default;
+
 $jse-box-shadow: 2px 2px 12px rgba(128, 128, 128, 0.3) !default;
 $jse-box-shadow-sm: 0 0 5px rgba(0, 0, 0, 0.4) !default;
 $jse-box-shadow-inner: inset 0 0 10px rgba(128, 128, 128, 0.5) !default;
@@ -35,7 +53,8 @@ $jse-box-shadow-inner: inset 0 0 10px rgba(128, 128, 128, 0.5) !default;
 $jse-date: #a1a1a1 !default;
 
 $jse-font: arial, sans-serif !default;
-$jse-font-mono: "dejavu sans mono", "droid sans mono", consolas, monaco, "lucida console", "courier new", courier, monospace, sans-serif !default;
-$jse-font-size: 10pt !default;;
+$jse-font-mono: "dejavu sans mono", "droid sans mono", consolas, monaco, "lucida console", "courier new", courier,
+    monospace, sans-serif !default;
+$jse-font-size: 10pt !default;
 
 $jse-icons: "./img/jsoneditor-icons.svg" !default;
