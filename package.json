@@ -19,6 +19,8 @@
   "bugs": "https://github.com/josdejong/jsoneditor/issues",
   "scripts": {
     "build": "gulp",
+    "format:check": "prettier --check ./{.,src/**,src/{.,scss/**}}/*.{css,scss}",
+    "format:fix": "npm run format:check -- --write",
     "minify": "gulp minify",
     "start": "gulp watch",
     "test": "mocha test --require @babel/register",
@@ -33,6 +35,7 @@
     "json-source-map": "^0.6.1",
     "mobius1-selectr": "^2.4.13",
     "picomodal": "^3.0.0",
+    "prettier": "^1.19.1",
     "vanilla-picker": "^2.10.1"
   },
   "devDependencies": {
