@@ -21,8 +21,8 @@
     "build": "gulp",
     "minify": "gulp minify",
     "start": "gulp watch",
-    "test": "mocha test --require @babel/register",
-    "lint": "standard --env=mocha",
+    "test":  "mocha test --require @babel/register",
+    "lint": "prettier --check --write ./{.,src/**}/*.{css,scss,js}",
     "prepublishOnly": "npm test && npm run build"
   },
   "dependencies": {
@@ -33,6 +33,7 @@
     "json-source-map": "^0.6.1",
     "mobius1-selectr": "^2.4.13",
     "picomodal": "^3.0.0",
+    "prettier": "^1.19.1",
     "vanilla-picker": "^2.10.1"
   },
   "devDependencies": {
@@ -51,7 +52,6 @@
     "json-loader": "^0.5.7",
     "mkdirp": "^1.0.3",
     "mocha": "^7.0.1",
-    "standard": "^14.3.1",
     "uglify-js": "^3.7.6",
     "webpack": "^4.41.5"
   },
@@ -65,11 +65,5 @@
     "LICENSE",
     "NOTICE",
     "README.md"
-  ],
-  "standard": {
-    "ignore": [
-      "src/js/assets",
-      "examples/react*"
-    ]
-  }
+  ]  
 }

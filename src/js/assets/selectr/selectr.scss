@@ -75,14 +75,14 @@
     transform: rotate(0deg) translate3d(0px, -50%, 0px);
     border-width: 4px 4px 0 4px;
     border-style: solid;
-    border-color: #6c7a86 transparent transparent;
+    border-color: $jse-selectr-border-color transparent transparent;
 }
 
 .selectr-container.open .selectr-selected::before,
 .selectr-container.native-open .selectr-selected::before {
     border-width: 0 4px 4px 4px;
     border-style: solid;
-    border-color: transparent transparent #6c7a86;
+    border-color: transparent transparent $jse-selectr-border-color;
 }
 
 .selectr-label {
@@ -94,7 +94,7 @@
 }
 
 .selectr-placeholder {
-    color: #6c7a86;
+    color: $jse-selectr-placeholder-color;
 }
 
 .selectr-tags {
@@ -117,7 +117,7 @@
     color: $jse-white;
     border: medium none;
     border-radius: 10px;
-    background: #acb7bf none repeat scroll 0 0;
+    background: $jse-selectr-tag-bg none repeat scroll 0 0;
 }
 
 .selectr-container.multiple.has-selected .selectr-selected {
@@ -194,7 +194,7 @@
     width: 2px;
     height: 10px;
     content: ' ';
-    background-color: #6c7a86;
+    background-color: $jse-selectr-border-color;
 }
 
 .selectr-tag-remove::before,
@@ -305,12 +305,12 @@
 }
 
 .selectr-option.selected {
-    background-color: #ddd;
+    background-color: $jse-light-bg;
 }
 
 .selectr-option.active {
     color: $jse-white;
-    background-color: #5897fb;
+    background-color: $jse-selectr-option-bg;
 }
 
 .selectr-option.disabled {
@@ -410,7 +410,7 @@
     animation: 500ms linear 0s normal forwards infinite running spin;
     border-width: 3px;
     border-style: solid;
-    border-color: #aaa #ddd #ddd;
+    border-color: $jse-light-grey $jse-light-bg $jse-light-bg;
     border-radius: 50%;
 }
 
@@ -452,21 +452,21 @@
 }
 
 .selectr-container ::-webkit-input-placeholder {
-    color: #6c7a86;
+    color: $jse-selectr-color;
     opacity: 1;
 }
 
 .selectr-container ::-moz-placeholder {
-    color: #6c7a86;
+    color: $jse-selectr-color;
     opacity: 1;
 }
 
 .selectr-container :-ms-input-placeholder {
-    color: #6c7a86;
+    color: $jse-selectr-color;
     opacity: 1;
 }
 
 .selectr-container ::placeholder {
-    color: #6c7a86;
+    color: $jse-selectr-color;
     opacity: 1;
 }

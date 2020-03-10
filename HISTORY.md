@@ -2,6 +2,13 @@
 
 https://github.com/josdejong/jsoneditor
 
+## 2020-03-10
+Add prettier for formating js and scss
+- to run ``` npm run lint ```
+
+## 2020-03-02
+Update variables.
+Add prettier for formating.
 
 ## 2020-02-17, version 8.6.1
 

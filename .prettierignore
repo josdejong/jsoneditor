@@ -1,0 +1,9 @@
+*.json
+e2e
+node_modules
+misc
+docs
+test
+.github
+src/docs
+src/js
