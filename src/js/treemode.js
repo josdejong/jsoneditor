@@ -1211,7 +1211,7 @@ treemode._updateTreePath = function (pathNodes) {
   function getName (node) {
     return node.parent
       ? ((node.parent.type === 'array') ? node.index : node.field)
-      : node.type
+      : (node.field || node.type)
   }
 }
 

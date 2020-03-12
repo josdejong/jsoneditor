@@ -3,9 +3,14 @@
 https://github.com/josdejong/jsoneditor
 
 
+## not yet published, version 8.6.2
+
+# Fixed #928: Custom root name not reflected in path of navigation bar.
+
+
 ## 2020-02-17, version 8.6.1
 
-- Fix #908: editor throwing an exception when switching from `'preview'`
+- Fixed #908: editor throwing an exception when switching from `'preview'`
   to `'code'` mode.
 
 
