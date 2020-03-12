@@ -5,7 +5,8 @@ https://github.com/josdejong/jsoneditor
 
 ## not yet published, version 8.6.2
 
-# Fixed #928: Custom root name not reflected in path of navigation bar.
+- Fixed #928: Custom root name not reflected in path of navigation bar.
+- Upgraded to `ajv@6.12.0`
 
 
 ## 2020-02-17, version 8.6.1
