@@ -102,7 +102,7 @@ color: #96DC5F
 color: darkorange
 }
 .ace-jsoneditor .ace_constant.ace_numeric {
-color: rgb(0, 0, 205)
+color: #6897BB
 }
 .ace-jsoneditor .ace_constant.ace_character.ace_entity {
 color: #BF78CC
