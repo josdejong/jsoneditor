@@ -1496,7 +1496,8 @@ export class Node {
         return false
       }
       for (i = 0; i < props.length; i++) {
-        if (this.childs[i].field !== props[i]) {
+        const child = this.childs[i]
+        if (child.field !== props[i] || !child.deepEqual(json[child.field])) {
           return false
         }
       }
