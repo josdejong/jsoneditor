@@ -37,6 +37,10 @@
   <div id="jsoneditor"></div>
 </form>
 
+<p>
+  <button id="update">Update</button>
+</p>
+
 <script>
   var container, options, json, editor;
 
@@ -87,6 +91,29 @@
 
   console.log('json', json);
   console.log('string', JSON.stringify(json));
+
+
+  const update = document.getElementById('update')
+  update.onclick = function () {
+    const json2 = {
+      "array": [1, 2, [3,4,5]],
+      "array2": [1, 2, [3,4,5]],
+      "url": "http://jsoneditoronline.org",
+      "boolean": true,
+      "color": "#82b92c",
+      "htmlcode": '&quot;',
+      "escaped_unicode": '\\u20b9',
+      "unicode": '\u20b9,\uD83D\uDCA9',
+      "return": '\n',
+      "null": null,
+      "number": 123,
+      "object": {"a": "b", "c": "d"},
+      "string": "Hello World",
+      "timestamp": 1534952749890
+    };
+
+    editorTest.update(json2)
+  }
 </script>
 </body>
 </html>
