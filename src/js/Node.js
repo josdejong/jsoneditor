@@ -414,7 +414,7 @@ export class Node {
    *                         'array', 'object', or 'string'
    */
   setValue (value, type) {
-    let childValue, child, visible
+    let childValue, child
     let i, j
     const updateDom = false
     const previousChilds = this.childs
@@ -453,7 +453,7 @@ export class Node {
             child = new Node(this.editor, {
               value: childValue
             })
-            visible = i < this.getMaxVisibleChilds()
+            const visible = i < this.getMaxVisibleChilds()
             this.appendChild(child, visible, updateDom)
           }
         }
@@ -493,7 +493,7 @@ export class Node {
 
               // change the index of the property such that it matches the index of the updated JSON
               if (childIndex !== i) {
-                this.moveBefore(child, this.childs[i])
+                this.moveBefore(child, this.childs[i], updateDom)
               }
             } else {
               // create a new child
@@ -501,7 +501,14 @@ export class Node {
                 field: childField,
                 value: childValue
               })
-              this.insertBefore(child, this.childs[i], updateDom)
+
+              const beforeNode = this.childs[i]
+              if (beforeNode) {
+                this.insertBefore(child, this.childs[i], updateDom)
+              } else {
+                const visible = i < this.getMaxVisibleChilds()
+                this.appendChild(child, visible, updateDom)
+              }
             }
           }
           i++
