@@ -1490,30 +1490,15 @@ export class Node {
         return false
       }
 
-      // TODO: for better efficiency, we could create a property `isDuplicate` on all of the childs
-      // and keep that up to date. This should make deepEqual about 20% faster.
-      const props = {}
-      let propCount = 0
-      for (i = 0; i < this.childs.length; i++) {
-        const child = this.childs[i]
-        if (!props[child.field]) {
-          // We can have childs with duplicate field names.
-          // We take the first, and ignore the others.
-          props[child.field] = true
-          propCount++
-
-          if (!(child.field in json)) {
-            return false
-          }
-
-          if (!child.deepEqual(json[child.field])) {
-            return false
-          }
-        }
-      }
-
-      if (propCount !== Object.keys(json).length) {
+      // we reckon with the order of the properties too.
+      const props = Object.keys(json)
+      if (this.childs.length !== props.length) {
         return false
+      }
+      for (i = 0; i < props.length; i++) {
+        if (this.childs[i].field !== props[i]) {
+          return false
+        }
       }
     } else {
       if (this.value !== json) {
