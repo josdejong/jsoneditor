@@ -2,9 +2,9 @@
 
 https://github.com/josdejong/jsoneditor
 
-
 ## not yet published, version 8.6.2
 
+- Fixed #926: Keep order of properties when updating an object.  
 - Fixed #928: Custom root name not reflected in path of navigation bar.
 - Upgraded to `ajv@6.12.0`
 

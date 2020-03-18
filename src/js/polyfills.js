@@ -22,16 +22,26 @@ if (typeof Element !== 'undefined') {
   })()
 }
 
+// simple polyfill for Array.findIndex
+if (!Array.prototype.findIndex) {
+  // eslint-disable-next-line no-extend-native
+  Array.prototype.findIndex = function (predicate) {
+    for (let i = 0; i < this.length; i++) {
+      const element = this[i]
+      if (predicate.call(this, element, i, this)) {
+        return i
+      }
+    }
+    return -1
+  }
+}
+
 // Polyfill for Array.find
 if (!Array.prototype.find) {
   // eslint-disable-next-line no-extend-native
-  Array.prototype.find = function (callback) {
-    for (let i = 0; i < this.length; i++) {
-      const element = this[i]
-      if (callback.call(this, element, i, this)) {
-        return element
-      }
-    }
+  Array.prototype.find = function (predicate) {
+    const i = this.findIndex(predicate)
+    return this[i]
   }
 }
 

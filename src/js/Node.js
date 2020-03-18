@@ -416,7 +416,7 @@ export class Node {
   setValue (value, type) {
     let childValue, child, visible
     let i, j
-    const notUpdateDom = false
+    const updateDom = false
     const previousChilds = this.childs
 
     this.type = this._getType(value)
@@ -454,7 +454,7 @@ export class Node {
               value: childValue
             })
             visible = i < this.getMaxVisibleChilds()
-            this.appendChild(child, visible, notUpdateDom)
+            this.appendChild(child, visible, updateDom)
           }
         }
       }
@@ -462,7 +462,7 @@ export class Node {
       // cleanup redundant childs
       // we loop backward to prevent issues with shifting index numbers
       for (j = this.childs.length; j >= value.length; j--) {
-        this.removeChild(this.childs[j], notUpdateDom)
+        this.removeChild(this.childs[j], updateDom)
       }
     } else if (this.type === 'object') {
       // object
@@ -474,7 +474,7 @@ export class Node {
       // we loop backward to prevent issues with shifting index numbers
       for (j = this.childs.length - 1; j >= 0; j--) {
         if (!hasOwnProperty(value, this.childs[j].field)) {
-          this.removeChild(this.childs[j], notUpdateDom)
+          this.removeChild(this.childs[j], updateDom)
         }
       }
 
@@ -483,20 +483,25 @@ export class Node {
         if (hasOwnProperty(value, childField)) {
           childValue = value[childField]
           if (childValue !== undefined && !(childValue instanceof Function)) {
-            child = this.findChildByProperty(childField)
+            const childIndex = this.childs.findIndex(child => child.field === childField)
+            child = this.childs[childIndex]
 
             if (child) {
               // reuse existing child, keep its state
               child.setField(childField, true)
               child.setValue(childValue)
+
+              // change the index of the property such that it matches the index of the updated JSON
+              if (childIndex !== i) {
+                this.moveBefore(child, this.childs[i])
+              }
             } else {
               // create a new child
               child = new Node(this.editor, {
                 field: childField,
                 value: childValue
               })
-              visible = i < this.getMaxVisibleChilds()
-              this.appendChild(child, visible, notUpdateDom)
+              this.insertBefore(child, this.childs[i], updateDom)
             }
           }
           i++
@@ -1012,8 +1017,11 @@ export class Node {
    * Only applicable when Node value is of type array or object
    * @param {Node} node
    * @param {Node} beforeNode
+   * @param {boolean} [updateDom]  If true (default), the DOM of both parent
+   *                               node and appended node will be updated
+   *                               (child count, indexes)
    */
-  moveBefore (node, beforeNode) {
+  moveBefore (node, beforeNode, updateDom) {
     if (this._hasChilds()) {
       // create a temporary row, to prevent the scroll position from jumping
       // when removing the node
@@ -1032,12 +1040,13 @@ export class Node {
         // the this.childs.length + 1 is to reckon with the node that we're about to add
         if (this.childs.length + 1 > this.visibleChilds) {
           const lastVisibleNode = this.childs[this.visibleChilds - 1]
-          this.insertBefore(node, lastVisibleNode)
+          this.insertBefore(node, lastVisibleNode, updateDom)
         } else {
-          this.appendChild(node)
+          const visible = true
+          this.appendChild(node, visible, updateDom)
         }
       } else {
-        this.insertBefore(node, beforeNode)
+        this.insertBefore(node, beforeNode, updateDom)
       }
 
       if (tbody) {
@@ -1051,8 +1060,11 @@ export class Node {
    * Only applicable when Node value is of type array or object
    * @param {Node} node
    * @param {Node} beforeNode
+   * @param {boolean} [updateDom]  If true (default), the DOM of both parent
+   *                               node and appended node will be updated
+   *                               (child count, indexes)
    */
-  insertBefore (node, beforeNode) {
+  insertBefore (node, beforeNode, updateDom) {
     if (this._hasChilds()) {
       this.visibleChilds++
 
@@ -1094,8 +1106,10 @@ export class Node {
         this.showChilds()
       }
 
-      this.updateDom({ updateIndexes: true })
-      node.updateDom({ recurse: true })
+      if (updateDom !== false) {
+        this.updateDom({ updateIndexes: true })
+        node.updateDom({ recurse: true })
+      }
     }
   }
 
