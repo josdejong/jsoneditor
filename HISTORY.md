@@ -2,7 +2,7 @@
 
 https://github.com/josdejong/jsoneditor
 
-## not yet published, version 8.6.3
+## 2020-03-18, version 8.6.3
 
 - Fix #932: `JSONEditor.update` broken, did not always recognize when the 
   input changed. Regression introduced in `v8.6.2`. 
