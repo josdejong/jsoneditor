@@ -6,7 +6,7 @@
     "jsoneditor": "^8.5.3",
     "react": "16.13.1",
     "react-dom": "16.13.1",
-    "react-scripts": "3.4.0"
+    "react-scripts": "3.4.1"
   },
   "scripts": {
     "start": "react-scripts start",
