@@ -109,6 +109,16 @@ export function repair (jsString) {
     return jsString[iNext]
   }
 
+  // get at the first non-white space character starting at the current character
+  function currNonWhiteSpace () {
+    let iNext = i
+    while (iNext < jsString.length && isWhiteSpace(jsString[iNext])) {
+      iNext++
+    }
+
+    return jsString[iNext]
+  }
+
   // skip a block comment '/* ... */'
   function skipBlockComment () {
     if (curr() === '/' && next() === '*') {
@@ -299,7 +309,7 @@ export function repair (jsString) {
       const whitespaces = parseWhiteSpace()
       skipBlockComment()
 
-      if (curr() === '{' || nextNonWhiteSpace() === '{') {
+      if (currNonWhiteSpace() === '{') {
         chars.push(',')
         if (indent === 0) {
           isLineSeparatedJson = true

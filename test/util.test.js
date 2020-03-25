@@ -96,7 +96,7 @@ describe('util', () => {
       assert.strictEqual(repair('callback({}'), 'callback({}')
     })
 
-    it('should strip trailing zeros', () => {
+    it('should strip trailing commas', () => {
       // matching
       assert.strictEqual(repair('[1,2,3,]'), '[1,2,3]')
       assert.strictEqual(repair('[1,2,3,\n]'), '[1,2,3\n]')
@@ -159,6 +159,12 @@ describe('util', () => {
       const expected = '{"aray": [{},{}]}'
 
       assert.strictEqual(repair(text), expected)
+    })
+
+    it('should not repair normal array with comma separated objects', () => {
+      const text = '[\n{},\n{}\n]'
+
+      assert.strictEqual(repair(text), text)
     })
 
     it('should repair line separated json (for example from robo3t', () => {
