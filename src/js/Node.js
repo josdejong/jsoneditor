@@ -3253,7 +3253,7 @@ export class Node {
 
     // update the index numbering
     this._updateDomIndexes()
-    
+
     this.showChilds()
 
     if (triggerAction === true) {
