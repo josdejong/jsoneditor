@@ -516,9 +516,10 @@ export class Node {
       }
       this.value = ''
 
-      // sort object keys
+      // sort object keys during initialization. Must not trigger an onChange action
       if (this.editor.options.sortObjectKeys === true) {
-        this.sort([], 'asc')
+        const triggerAction = false
+        this.sort([], 'asc', triggerAction)
       }
     } else {
       // value
@@ -3201,9 +3202,12 @@ export class Node {
    * or 'array'.
    * @param {String[] | string} path  Path of the child value to be compared
    * @param {String} direction        Sorting direction. Available values: "asc", "desc"
+   * @param {boolean} [triggerAction=true]  If true (default), a user action will be
+   *                                        triggered, creating an entry in history
+   *                                        and invoking onChange.
    * @private
    */
-  sort (path, direction) {
+  sort (path, direction, triggerAction = true) {
     if (typeof path === 'string') {
       path = parsePath(path)
     }
@@ -3249,14 +3253,16 @@ export class Node {
 
     // update the index numbering
     this._updateDomIndexes()
-
-    this.editor._onAction('sort', {
-      path: this.getInternalPath(),
-      oldChilds: oldChilds,
-      newChilds: this.childs
-    })
-
+    
     this.showChilds()
+
+    if (triggerAction === true) {
+      this.editor._onAction('sort', {
+        path: this.getInternalPath(),
+        oldChilds: oldChilds,
+        newChilds: this.childs
+      })
+    }
   }
 
   /**
