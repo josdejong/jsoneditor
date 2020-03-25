@@ -41,6 +41,8 @@ export function repair (jsString) {
   // escape all single and double quotes inside strings
   const chars = []
   let i = 0
+  let indent = 0
+  let isLineSeparatedJson = false
 
   // If JSON starts with a function (characters/digits/"_-"), remove this function.
   // This is useful for "stripping" JSONP objects to become JSON
@@ -109,19 +111,37 @@ export function repair (jsString) {
 
   // skip a block comment '/* ... */'
   function skipBlockComment () {
-    i += 2
-    while (i < jsString.length && (curr() !== '*' || next() !== '/')) {
-      i++
+    if (curr() === '/' && next() === '*') {
+      i += 2
+      while (i < jsString.length && (curr() !== '*' || next() !== '/')) {
+        i++
+      }
+      i += 2
+
+      if (curr() === '\n') {
+        i++
+      }
     }
-    i += 2
   }
 
   // skip a comment '// ...'
   function skipComment () {
-    i += 2
-    while (i < jsString.length && (curr() !== '\n')) {
+    if (curr() === '/' && next() === '/') {
+      i += 2
+      while (i < jsString.length && (curr() !== '\n')) {
+        i++
+      }
+    }
+  }
+
+  function parseWhiteSpace () {
+    let whitespace = ''
+    while (i < jsString.length && isWhiteSpace(curr())) {
+      whitespace += curr()
       i++
     }
+
+    return whitespace
   }
 
   /**
@@ -245,13 +265,19 @@ export function repair (jsString) {
   }
 
   while (i < jsString.length) {
+    skipBlockComment()
+    skipComment()
+
     const c = curr()
 
-    if (c === '/' && next() === '*') {
-      skipBlockComment()
-    } else if (c === '/' && next() === '/') {
-      skipComment()
-    } else if (isSpecialWhiteSpace(c)) {
+    if (c === '{') {
+      indent++
+    }
+    if (c === '}') {
+      indent--
+    }
+
+    if (isSpecialWhiteSpace(c)) {
       // special white spaces (like non breaking space)
       chars.push(' ')
       i++
@@ -265,6 +291,21 @@ export function repair (jsString) {
       chars.push(parseString(quoteRight))
     } else if (c === quoteDblLeft) {
       chars.push(parseString(quoteDblRight))
+    } else if (c === '}') {
+      // check for missing comma between objects
+      chars.push(c)
+      i++
+
+      const whitespaces = parseWhiteSpace()
+      skipBlockComment()
+
+      if (curr() === '{' || nextNonWhiteSpace() === '{') {
+        chars.push(',')
+        if (indent === 0) {
+          isLineSeparatedJson = true
+        }
+      }
+      chars.push(whitespaces)
     } else if (c === ',' && [']', '}'].indexOf(nextNonWhiteSpace()) !== -1) {
       // skip trailing commas
       i++
@@ -278,6 +319,11 @@ export function repair (jsString) {
       chars.push(c)
       i++
     }
+  }
+
+  if (isLineSeparatedJson) {
+    chars.unshift('[\n')
+    chars.push('\n]')
   }
 
   return chars.join('')

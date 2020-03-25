@@ -5,6 +5,7 @@ https://github.com/josdejong/jsoneditor
 ## not yet published, version 8.6.4
 
 - Fix #921: `sortObjectKeys` emits `onChange` events.
+- Implement support for repairing line separate JSON. 
 
 
 ## 2020-03-18, version 8.6.3

@@ -153,6 +153,28 @@ describe('util', () => {
 
       assert.strictEqual(repair(pythonDocument), expectedJson)
     })
+
+    it('should repair missing comma between objects', () => {
+      const text = '{"aray": [{}{}]}'
+      const expected = '{"aray": [{},{}]}'
+
+      assert.strictEqual(repair(text), expected)
+    })
+
+    it('should repair line separated json (for example from robo3t', () => {
+      const text = '' +
+        '/* 1 */\n' +
+        '{}\n' +
+        '\n' +
+        '/* 2 */\n' +
+        '{}\n' +
+        '\n' +
+        '/* 3 */\n' +
+        '{}\n'
+      const expected = '[\n{},\n\n{},\n\n{}\n\n]'
+
+      assert.strictEqual(repair(text), expected)
+    })
   })
 
   describe('jsonPath', () => {
