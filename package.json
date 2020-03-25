@@ -21,7 +21,7 @@
     "build": "gulp",
     "minify": "gulp minify",
     "start": "gulp watch",
-    "test":  "mocha test --require @babel/register",
+    "test": "mocha test --require @babel/register",
     "lint": "prettier --check --write ./{.,src/**}/*.{css,scss,js}",
     "prepublishOnly": "npm test && npm run build"
   },
@@ -65,5 +65,5 @@
     "LICENSE",
     "NOTICE",
     "README.md"
-  ]  
+  ]
 }
