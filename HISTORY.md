@@ -2,7 +2,7 @@
 
 https://github.com/josdejong/jsoneditor
 
-## not yet published, version 8.6.4
+## 2020-03-29, version 8.6.4
 
 - Fix #921: `sortObjectKeys` emits `onChange` events.
 - Fix #946: `language` not working in modes `text`, `code`, and `preview`.
