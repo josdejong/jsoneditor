@@ -1,7 +1,7 @@
 'use strict'
 
 import ace from './ace'
-import { translate } from './i18n'
+import { setLanguage, setLanguages, translate } from './i18n'
 import { ModeSwitcher } from './ModeSwitcher'
 import { ErrorTable } from './ErrorTable'
 import { validateCustom } from './validationUtils'
@@ -58,6 +58,10 @@ textmode.create = function (container, options = {}) {
   } else {
     this.indentation = 2 // number of spaces
   }
+
+  // language
+  setLanguages(this.options.languages)
+  setLanguage(this.options.language)
 
   // grab ace from options if provided
   const _ace = options.ace ? options.ace : ace

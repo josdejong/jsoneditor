@@ -1,6 +1,6 @@
 'use strict'
 
-import { translate } from './i18n'
+import { setLanguage, setLanguages, translate } from './i18n'
 import { ModeSwitcher } from './ModeSwitcher'
 import { ErrorTable } from './ErrorTable'
 import { showSortModal } from './showSortModal'
@@ -55,6 +55,10 @@ previewmode.create = function (container, options = {}) {
   } else {
     this.indentation = 2 // number of spaces
   }
+
+  // language
+  setLanguages(this.options.languages)
+  setLanguage(this.options.language)
 
   // determine mode
   this.mode = 'preview'
