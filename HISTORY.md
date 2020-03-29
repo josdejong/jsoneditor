@@ -6,6 +6,8 @@ https://github.com/josdejong/jsoneditor
 
 - Fix #921: `sortObjectKeys` emits `onChange` events.
 - Fix #946: `language` not working in modes `text`, `code`, and `preview`.
+- Revert reckoning with the order of object properties when updating an
+  object (introduced in `v8.6.2`). See #917. 
 - Implement support for repairing line separate JSON. 
 
 

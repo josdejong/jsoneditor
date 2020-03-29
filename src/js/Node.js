@@ -483,32 +483,19 @@ export class Node {
         if (hasOwnProperty(value, childField)) {
           childValue = value[childField]
           if (childValue !== undefined && !(childValue instanceof Function)) {
-            const childIndex = this.childs.findIndex(child => child.field === childField)
-            child = this.childs[childIndex]
-
+            const child = this.findChildByProperty(childField)
             if (child) {
               // reuse existing child, keep its state
               child.setField(childField, true)
               child.setValue(childValue)
-
-              // change the index of the property such that it matches the index of the updated JSON
-              if (childIndex !== i) {
-                this.moveBefore(child, this.childs[i], updateDom)
-              }
             } else {
-              // create a new child
-              child = new Node(this.editor, {
+              // create a new child, append to the end
+              const newChild = new Node(this.editor, {
                 field: childField,
                 value: childValue
               })
-
-              const beforeNode = this.childs[i]
-              if (beforeNode) {
-                this.insertBefore(child, this.childs[i], updateDom)
-              } else {
-                const visible = i < this.getMaxVisibleChilds()
-                this.appendChild(child, visible, updateDom)
-              }
+              const visible = i < this.getMaxVisibleChilds()
+              this.appendChild(newChild, visible, updateDom)
             }
           }
           i++
