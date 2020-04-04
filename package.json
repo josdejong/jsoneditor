@@ -26,7 +26,7 @@
     "prepublishOnly": "npm test && npm run build"
   },
   "dependencies": {
-    "ace-builds": "^1.4.8",
+    "ace-builds": "^1.4.9",
     "ajv": "^6.12.0",
     "javascript-natural-sort": "^0.7.1",
     "jmespath": "^0.15.0",
@@ -47,9 +47,9 @@
     "gulp-clean-css": "^4.3.0",
     "gulp-concat-css": "^3.1.0",
     "gulp-sass": "^4.0.2",
-    "jsdom": "^16.2.1",
+    "jsdom": "^16.2.2",
     "json-loader": "^0.5.7",
-    "mkdirp": "^1.0.3",
+    "mkdirp": "^1.0.4",
     "mocha": "^7.1.1",
     "standard": "^14.3.3",
     "uglify-js": "^3.8.1",

@@ -2,6 +2,12 @@
 
 https://github.com/josdejong/jsoneditor
 
+
+## not yet published, version 8.6.5
+
+- Update ace editor to `v1.4.9`.
+
+
 ## 2020-03-29, version 8.6.4
 
 - Fix #921: `sortObjectKeys` emits `onChange` events.
