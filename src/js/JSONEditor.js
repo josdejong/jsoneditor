@@ -171,7 +171,7 @@ function JSONEditor (container, options, json) {
  */
 JSONEditor.modes = {}
 
-// debounce interval for JSON schema vaidation in milliseconds
+// debounce interval for JSON schema validation in milliseconds
 JSONEditor.prototype.DEBOUNCE_INTERVAL = 150
 
 JSONEditor.VALID_OPTIONS = [
