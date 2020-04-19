@@ -3,10 +3,10 @@
 https://github.com/josdejong/jsoneditor
 
 
-## not yet published, version 8.6.5
+## 2020-04-19, version 8.6.5
 
 - Fix #964: translation of titles of some context menu items not working.
-- Update ace editor to `v1.4.9`.
+- Update dependencies to `ace-builds@1.4.11`, `ajv@6.12.1`.
 
 
 ## 2020-03-29, version 8.6.4
