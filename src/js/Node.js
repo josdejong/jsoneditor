@@ -3633,7 +3633,15 @@ export class Node {
    */
   showContextMenu (anchor, onClose) {
     const node = this
-    const titles = Node.TYPE_TITLES
+
+    // titles with explanation for the different types
+    const titles = {
+      auto: translate('autoType'),
+      object: translate('objectType'),
+      array: translate('arrayType'),
+      string: translate('stringType')
+    }
+
     let items = []
 
     if (this.editable.value) {
@@ -4598,14 +4606,6 @@ Node.blurNodes = nodes => {
   } else {
     parent.focus()
   }
-}
-
-// titles with explanation for the different types
-Node.TYPE_TITLES = {
-  auto: translate('autoType'),
-  object: translate('objectType'),
-  array: translate('arrayType'),
-  string: translate('stringType')
 }
 
 // helper function to get the internal path of a node
