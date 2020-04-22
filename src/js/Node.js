@@ -3633,15 +3633,6 @@ export class Node {
    */
   showContextMenu (anchor, onClose) {
     const node = this
-
-    // titles with explanation for the different types
-    const titles = {
-      auto: translate('autoType'),
-      object: translate('objectType'),
-      array: translate('arrayType'),
-      string: translate('stringType')
-    }
-
     let items = []
 
     if (this.editable.value) {
@@ -3654,7 +3645,7 @@ export class Node {
             text: translate('auto'),
             className: 'jsoneditor-type-auto' +
                 (this.type === 'auto' ? ' jsoneditor-selected' : ''),
-            title: titles.auto,
+            title: translate('autoType'),
             click: function () {
               node._onChangeType('auto')
             }
@@ -3663,7 +3654,7 @@ export class Node {
             text: translate('array'),
             className: 'jsoneditor-type-array' +
                 (this.type === 'array' ? ' jsoneditor-selected' : ''),
-            title: titles.array,
+            title: translate('arrayType'),
             click: function () {
               node._onChangeType('array')
             }
@@ -3672,7 +3663,7 @@ export class Node {
             text: translate('object'),
             className: 'jsoneditor-type-object' +
                 (this.type === 'object' ? ' jsoneditor-selected' : ''),
-            title: titles.object,
+            title: translate('objectType'),
             click: function () {
               node._onChangeType('object')
             }
@@ -3681,7 +3672,7 @@ export class Node {
             text: translate('string'),
             className: 'jsoneditor-type-string' +
                 (this.type === 'string' ? ' jsoneditor-selected' : ''),
-            title: titles.string,
+            title: translate('stringType'),
             click: function () {
               node._onChangeType('string')
             }

@@ -3,6 +3,12 @@
 https://github.com/josdejong/jsoneditor
 
 
+## not yet published, version 8.6.6
+
+- Fix #969: adding a new property to an empty object or array is broken.
+  Regression introduced in `v8.6.5`.
+
+
 ## 2020-04-19, version 8.6.5
 
 - Fix #964: translation of titles of some context menu items not working.
