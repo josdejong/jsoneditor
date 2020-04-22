@@ -3,7 +3,7 @@
 https://github.com/josdejong/jsoneditor
 
 
-## not yet published, version 8.6.6
+## 2020-04-21, version 8.6.6
 
 - Fix #969: adding a new property to an empty object or array is broken.
   Regression introduced in `v8.6.5`.
