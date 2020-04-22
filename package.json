@@ -53,7 +53,7 @@
     "mocha": "7.1.1",
     "standard": "14.3.3",
     "uglify-js": "3.9.1",
-    "webpack": "4.42.1"
+    "webpack": "4.43.0"
   },
   "files": [
     "dist",
