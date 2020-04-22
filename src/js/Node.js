@@ -3731,7 +3731,7 @@ export class Node {
           {
             text: translate('auto'),
             className: 'jsoneditor-type-auto',
-            title: titles.auto,
+            title: translate('autoType'),
             click: function () {
               node._onAppend('', '', 'auto')
             }
@@ -3739,7 +3739,7 @@ export class Node {
           {
             text: translate('array'),
             className: 'jsoneditor-type-array',
-            title: titles.array,
+            title: translate('arrayType'),
             click: function () {
               node._onAppend('', [])
             }
@@ -3747,7 +3747,7 @@ export class Node {
           {
             text: translate('object'),
             className: 'jsoneditor-type-object',
-            title: titles.object,
+            title: translate('objectType'),
             click: function () {
               node._onAppend('', {})
             }
@@ -3755,7 +3755,7 @@ export class Node {
           {
             text: translate('string'),
             className: 'jsoneditor-type-string',
-            title: titles.string,
+            title: translate('stringType'),
             click: function () {
               node._onAppend('', '', 'string')
             }
@@ -3779,7 +3779,7 @@ export class Node {
         {
           text: translate('auto'),
           className: 'jsoneditor-type-auto',
-          title: titles.auto,
+          title: translate('autoType'),
           click: function () {
             node._onInsertBefore('', '', 'auto')
           }
@@ -3787,7 +3787,7 @@ export class Node {
         {
           text: translate('array'),
           className: 'jsoneditor-type-array',
-          title: titles.array,
+          title: translate('arrayType'),
           click: function () {
             node._onInsertBefore('', [])
           }
@@ -3795,7 +3795,7 @@ export class Node {
         {
           text: translate('object'),
           className: 'jsoneditor-type-object',
-          title: titles.object,
+          title: translate('objectType'),
           click: function () {
             node._onInsertBefore('', {})
           }
@@ -3803,7 +3803,7 @@ export class Node {
         {
           text: translate('string'),
           className: 'jsoneditor-type-string',
-          title: titles.string,
+          title: translate('stringType'),
           click: function () {
             node._onInsertBefore('', '', 'string')
           }
