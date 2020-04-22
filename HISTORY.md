@@ -3,6 +3,11 @@
 https://github.com/josdejong/jsoneditor
 
 
+## not yet published, version 8.6.7
+
+- Update dependencies to `ajv@6.12.2`.
+
+
 ## 2020-04-21, version 8.6.6
 
 - Fix #969: adding a new property to an empty object or array is broken.

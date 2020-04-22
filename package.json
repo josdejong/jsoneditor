@@ -27,7 +27,7 @@
   },
   "dependencies": {
     "ace-builds": "^1.4.11",
-    "ajv": "^6.12.1",
+    "ajv": "^6.12.2",
     "javascript-natural-sort": "^0.7.1",
     "jmespath": "^0.15.0",
     "json-source-map": "^0.6.1",
@@ -53,7 +53,7 @@
     "mocha": "7.1.1",
     "standard": "14.3.3",
     "uglify-js": "3.9.1",
-    "webpack": "4.42.1"
+    "webpack": "4.43.0"
   },
   "files": [
     "dist",
