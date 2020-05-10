@@ -7,6 +7,8 @@ https://github.com/josdejong/jsoneditor
 
 - Fix #858: the `dist/jsoneditor.js` bundle containing a link to a 
   non-existing source map.
+- Fix #978: in some special cases the caret was jumping to the beginning of the 
+  line whilst typing.
 
 
 ## not yet published, version 8.6.7

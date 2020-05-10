@@ -57,6 +57,9 @@
     },
     onChangeJSON: function (json) {
       console.log('onChangeJSON', json);
+
+      // test feedback loop which is typical in React -> should not change anything
+      editorTest.update(json)
     },
     onChangeText: function (text) {
       console.log('onChangeText', text);

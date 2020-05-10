@@ -1507,6 +1507,12 @@ export class Node {
 
     if (this.dom.value && this.type !== 'array' && this.type !== 'object') {
       this.valueInnerText = getInnerText(this.dom.value)
+
+      if (this.valueInnerText === '' && this.dom.value.innerHTML !== '') {
+        // When clearing the contents, often a <br/> remains, messing up the
+        // styling of the empty text box. Therefore we remove the <br/>
+        this.dom.value.innerHTML = ''
+      }
     }
 
     if (this.valueInnerText !== undefined) {
@@ -1884,6 +1890,12 @@ export class Node {
 
     if (this.dom.field && this.fieldEditable) {
       this.fieldInnerText = getInnerText(this.dom.field)
+
+      if (this.fieldInnerText === '' && this.dom.field.innerHTML !== '') {
+        // When clearing the contents, often a <br/> remains, messing up the
+        // styling of the empty text box. Therefore we remove the <br/>
+        this.dom.field.innerHTML = ''
+      }
     }
 
     if (this.fieldInnerText !== undefined) {
@@ -2213,8 +2225,17 @@ export class Node {
           fieldText = ''
         }
       }
-      domField.innerHTML = this._escapeHTML(fieldText)
 
+      const escapedField = this._escapeHTML(fieldText)
+      if (
+        document.activeElement !== domField ||
+        escapedField !== this._unescapeHTML(getInnerText(domField))
+      ) {
+        // only update if it not has the focus or when there is an actual change,
+        // else you would needlessly loose the caret position when changing tabs
+        // or whilst typing
+        domField.innerHTML = escapedField
+      }
       this._updateSchema()
     }
 
@@ -2224,7 +2245,16 @@ export class Node {
       if (this.type === 'array' || this.type === 'object') {
         this.updateNodeName()
       } else {
-        domValue.innerHTML = this._escapeHTML(this.value)
+        const escapedValue = this._escapeHTML(this.value)
+        if (
+          document.activeElement !== domValue ||
+          escapedValue !== this._unescapeHTML(getInnerText(domValue))
+        ) {
+          // only update if it not has the focus or when there is an actual change,
+          // else you would needlessly loose the caret position when changing tabs
+          // or whilst typing
+          domValue.innerHTML = escapedValue
+        }
       }
     }
 
@@ -2519,9 +2549,11 @@ export class Node {
           this._getDomValue()
           this._clearValueError()
           this._updateDomValue()
+
           const escapedValue = this._escapeHTML(this.value)
-          if (domValue.innerHTML !== escapedValue) {
-            // only update if changed, else you lose the caret position when changing tabs for example
+          if (escapedValue !== this._unescapeHTML(getInnerText(domValue))) {
+            // only update when there is an actual change, else you loose the
+            // caret position when changing tabs or whilst typing
             domValue.innerHTML = escapedValue
           }
           break
@@ -2572,9 +2604,11 @@ export class Node {
         case 'blur': {
           this._getDomField(true)
           this._updateDomField()
+
           const escapedField = this._escapeHTML(this.field)
-          if (domField.innerHTML !== escapedField) {
-            // only update if changed, else you lose the caret position when changing tabs for example
+          if (escapedField !== this._unescapeHTML(getInnerText(domField))) {
+            // only update when there is an actual change, else you loose the
+            // caret position when changing tabs or whilst typing
             domField.innerHTML = escapedField
           }
           break
