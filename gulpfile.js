@@ -43,6 +43,11 @@ const webpackConfigModule = {
       use: {
         loader: 'babel-loader'
       }
+    },
+    {
+      test: /\.js$/,
+      use: ['source-map-loader'],
+      enforce: 'pre'
     }
   ]
 }

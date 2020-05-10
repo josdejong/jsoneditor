@@ -3,6 +3,12 @@
 https://github.com/josdejong/jsoneditor
 
 
+## not yet published, version 8.6.8
+
+- Fix #858: the `dist/jsoneditor.js` bundle containing a link to a 
+  non-existing source map.
+
+
 ## not yet published, version 8.6.7
 
 - Update dependencies to `ajv@6.12.2`.

@@ -51,6 +51,7 @@
     "json-loader": "0.5.7",
     "mkdirp": "1.0.4",
     "mocha": "7.1.2",
+    "source-map-loader": "0.2.4",
     "standard": "14.3.3",
     "uglify-js": "3.9.1",
     "webpack": "4.43.0"
