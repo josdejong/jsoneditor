@@ -3,7 +3,7 @@
 https://github.com/josdejong/jsoneditor
 
 
-## not yet published, version 8.6.8
+## 2020-05-13, version 8.6.8
 
 - Fix #936: too many return characters inserted when pasting formatted text
   from OpenOffice.
