@@ -3,6 +3,12 @@
 https://github.com/josdejong/jsoneditor
 
 
+## not yet published, version 8.6.8
+
+- Fix #936: too many return characters inserted when pasting formatted text
+  from OpenOffice.
+
+
 ## 2020-05-10, version 8.6.7
 
 - Fix #858: the `dist/jsoneditor.js` bundle containing a link to a 

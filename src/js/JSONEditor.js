@@ -5,7 +5,7 @@ const VanillaPicker = require('./vanilla-picker') // may be undefined in case of
 const { treeModeMixins } = require('./treemode')
 const { textModeMixins } = require('./textmode')
 const { previewModeMixins } = require('./previewmode')
-const { clear, extend, getInternetExplorerVersion, parse } = require('./util')
+const { clear, extend, getInnerText, getInternetExplorerVersion, parse } = require('./util')
 const { tryRequireAjv } = require('./tryRequireAjv')
 const { showTransformModal } = require('./showTransformModal')
 const { showSortModal } = require('./showSortModal')
@@ -484,6 +484,7 @@ JSONEditor.VanillaPicker = VanillaPicker
 // expose some utils (this is undocumented, unofficial)
 JSONEditor.showTransformModal = showTransformModal
 JSONEditor.showSortModal = showSortModal
+JSONEditor.getInnerText = getInnerText
 
 // default export for TypeScript ES6 projects
 JSONEditor.default = JSONEditor

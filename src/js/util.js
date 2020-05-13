@@ -663,7 +663,6 @@ export function setSelectionOffset (params) {
     }
   }
 }
-
 /**
  * Get the inner text of an HTML element (for example a div element)
  * @param {Element} element
@@ -674,21 +673,28 @@ export function getInnerText (element, buffer) {
   const first = (buffer === undefined)
   if (first) {
     buffer = {
-      text: '',
+      _text: '',
       flush: function () {
-        const text = this.text
-        this.text = ''
+        const text = this._text
+        this._text = ''
         return text
       },
       set: function (text) {
-        this.text = text
+        this._text = text
       }
     }
   }
 
   // text node
   if (element.nodeValue) {
-    return buffer.flush() + element.nodeValue
+    // remove return characters and the whitespace surrounding return characters
+    const trimmedValue = element.nodeValue.replace(/\s*\n\s*/g, '')
+    if (trimmedValue !== '') {
+      return buffer.flush() + trimmedValue
+    } else {
+      // ignore empty text
+      return ''
+    }
   }
 
   // divs or other HTML elements
@@ -703,7 +709,9 @@ export function getInnerText (element, buffer) {
         const prevChild = childNodes[i - 1]
         const prevName = prevChild ? prevChild.nodeName : undefined
         if (prevName && prevName !== 'DIV' && prevName !== 'P' && prevName !== 'BR') {
-          innerText += '\n'
+          if (innerText !== '') {
+            innerText += '\n'
+          }
           buffer.flush()
         }
         innerText += getInnerText(child, buffer)
@@ -717,15 +725,6 @@ export function getInnerText (element, buffer) {
     }
 
     return innerText
-  } else {
-    if (element.nodeName === 'P' && getInternetExplorerVersion() !== -1) {
-      // On Internet Explorer, a <p> with hasChildNodes()==false is
-      // rendered with a new line. Note that a <p> with
-      // hasChildNodes()==true is rendered without a new line
-      // Other browsers always ensure there is a <br> inside the <p>,
-      // and if not, the <p> does not render a new line
-      return buffer.flush()
-    }
   }
 
   // br or unknown
