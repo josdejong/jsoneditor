@@ -3,10 +3,11 @@
 https://github.com/josdejong/jsoneditor
 
 
-## not yet published, version 9.0.0
+## 2020-05-24, version 9.0.0
 
 - Implemented option `limitDragging`, see #962. This is a breaking change when 
-  using a JSON schema: dragging is restricted in that case.
+  using a JSON schema: dragging is more restrictive by default in that case.
+  Set `limitDragging: false` to keep the old, non-restricted behavior.
 
 
 ## 2020-05-13, version 8.6.8

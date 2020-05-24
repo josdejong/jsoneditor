@@ -1,6 +1,6 @@
 {
   "name": "jsoneditor",
-  "version": "8.6.8",
+  "version": "9.0.0",
   "main": "./index",
   "description": "A web-based tool to view, edit, format, and validate JSON",
   "tags": [
@@ -50,10 +50,10 @@
     "jsdom": "16.2.2",
     "json-loader": "0.5.7",
     "mkdirp": "1.0.4",
-    "mocha": "7.1.2",
+    "mocha": "7.2.0",
     "source-map-loader": "0.2.4",
     "standard": "14.3.4",
-    "uglify-js": "3.9.2",
+    "uglify-js": "3.9.3",
     "webpack": "4.43.0"
   },
   "files": [
