@@ -3,6 +3,12 @@
 https://github.com/josdejong/jsoneditor
 
 
+## not yet published, version 9.0.0
+
+- Implemented option `limitDragging`, see #962. This is a breaking change when 
+  using a JSON schema: dragging is restricted in that case.
+
+
 ## 2020-05-13, version 8.6.8
 
 - Fix #936: too many return characters inserted when pasting formatted text

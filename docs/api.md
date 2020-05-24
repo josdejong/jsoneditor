@@ -222,11 +222,15 @@ Constructs a new JSONEditor.
 
 - `{boolean} escapeUnicode`
 
-  If true, unicode characters are escaped and displayed as their hexadecimal code (like `\u260E`) instead of of the character itself (like `☎`). `false` by default.
+  If `true`, unicode characters are escaped and displayed as their hexadecimal code (like `\u260E`) instead of of the character itself (like `☎`). `false` by default.
 
 - `{boolean} sortObjectKeys`
 
-  If true, object keys in 'tree', 'view' or 'form' mode list be listed alphabetically instead by their insertion order. Sorting is performed using a natural sort algorithm, which makes it easier to see objects that have string numbers as keys. `false` by default.
+  If `true`, object keys in 'tree', 'view' or 'form' mode list be listed alphabetically instead by their insertion order. Sorting is performed using a natural sort algorithm, which makes it easier to see objects that have string numbers as keys. `false` by default.
+
+- `{boolean} limitDragging`
+
+  If `false`, nodes can be dragged from any parent node to any other parent node. If `true`, nodes can only be dragged inside the same parent node, which effectively only allows reordering of nodes. By default, `limitDragging` is `true` when no JSON `schema` is defined, and `false` otherwise.
 
 - `{boolean} history`
 

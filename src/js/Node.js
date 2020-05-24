@@ -4209,7 +4209,10 @@ Node.onDrag = (nodes, event) => {
       }
     }
 
-    if (nodePrev) {
+    if (
+      nodePrev &&
+      (editor.options.limitDragging === false || nodePrev.parent === nodes[0].parent)
+    ) {
       nodes.forEach(node => {
         nodePrev.parent.moveBefore(node, nodePrev)
       })
@@ -4285,7 +4288,11 @@ Node.onDrag = (nodes, event) => {
         }
 
         // move the node when its position is changed
-        if (nodeNext && nodeNext.dom.tr && trLast.nextSibling !== nodeNext.dom.tr) {
+        if (
+          nodeNext &&
+          (editor.options.limitDragging === false || nodeNext.parent === nodes[0].parent) &&
+          nodeNext.dom.tr && nodeNext.dom.tr !== trLast.nextSibling
+        ) {
           nodes.forEach(node => {
             nodeNext.parent.moveBefore(node, nodeNext)
           })

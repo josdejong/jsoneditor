@@ -184,7 +184,7 @@ JSONEditor.VALID_OPTIONS = [
   'colorPicker', 'onColorPicker',
   'timestampTag', 'timestampFormat',
   'escapeUnicode', 'history', 'search', 'mode', 'modes', 'name', 'indentation',
-  'sortObjectKeys', 'navigationBar', 'statusBar', 'mainMenuBar', 'languages', 'language', 'enableSort', 'enableTransform',
+  'sortObjectKeys', 'navigationBar', 'statusBar', 'mainMenuBar', 'languages', 'language', 'enableSort', 'enableTransform', 'limitDragging',
   'maxVisibleChilds', 'onValidationError',
   'modalAnchor', 'popupAnchor',
   'createQuery', 'executeQuery', 'queryDescription'
