@@ -442,6 +442,14 @@ Constructs a new JSONEditor.
   ```
   Only applicable when `mode` is 'form', 'tree' or 'view'.  
 
+- `{function} onFocus({ type: 'focus', target })`
+  Callback method, triggered when the editor comes into focus, 
+  passing an object `{type, target}`, Applicable for all modes.
+
+- `{function} onBlur({ type: 'blur', target })`
+  Callback method, triggered when the editor goes out of focus, 
+  passing an object `{type, target}`, Applicable for all modes.
+
 - `{boolean} colorPicker`
 
   If `true` (default), values containing a color name or color code will have a color picker rendered on their left side.
