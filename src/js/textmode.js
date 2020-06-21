@@ -237,7 +237,7 @@ textmode.create = function (container, options = {}) {
     if (this.mode === 'code') {
       const poweredBy = document.createElement('a')
       poweredBy.appendChild(document.createTextNode('powered by ace'))
-      poweredBy.href = 'http://ace.ajax.org'
+      poweredBy.href = 'https://ace.c9.io/'
       poweredBy.target = '_blank'
       poweredBy.className = 'jsoneditor-poweredBy'
       poweredBy.onclick = () => {
