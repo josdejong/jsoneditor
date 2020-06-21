@@ -767,7 +767,7 @@ See also `JSONEditor.update(json)`.
 
 #### `JSONEditor.setMode(mode)`
 
-Switch mode. Mode `code` requires the [Ace editor](http://ace.ajax.org/).
+Switch mode. Mode `code` requires the [Ace editor](https://ace.c9.io/).
 
 *Parameters:*
 
