@@ -25,24 +25,32 @@ if (typeof Element !== 'undefined') {
 // simple polyfill for Array.findIndex
 if (!Array.prototype.findIndex) {
   // eslint-disable-next-line no-extend-native
-  Array.prototype.findIndex = function (predicate) {
-    for (let i = 0; i < this.length; i++) {
-      const element = this[i]
-      if (predicate.call(this, element, i, this)) {
-        return i
+  Object.defineProperty(Array.prototype, 'findIndex', {
+    value: function (predicate) {
+      for (let i = 0; i < this.length; i++) {
+        const element = this[i]
+        if (predicate.call(this, element, i, this)) {
+          return i
+        }
       }
-    }
-    return -1
-  }
+      return -1
+    },
+    configurable: true,
+    writable: true
+  })
 }
 
 // Polyfill for Array.find
 if (!Array.prototype.find) {
   // eslint-disable-next-line no-extend-native
-  Array.prototype.find = function (predicate) {
-    const i = this.findIndex(predicate)
-    return this[i]
-  }
+  Object.defineProperty(Array.prototype, 'find', {
+    value: function (predicate) {
+      const i = this.findIndex(predicate)
+      return this[i]
+    },
+    configurable: true,
+    writable: true
+  })
 }
 
 // Polyfill for String.trim

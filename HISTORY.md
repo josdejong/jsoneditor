@@ -7,6 +7,8 @@ https://github.com/josdejong/jsoneditor
 
 - Fixed broken link to the Ace editor website (https://ace.c9.io/).
   Thanks @p3x-robot.
+- Fix #1027: create IE11 Array polyfills `find` and `findIndex` in such a way 
+  that they are not iterable.
 
 
 ## 2020-05-24, version 9.0.0
