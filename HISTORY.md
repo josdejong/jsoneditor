@@ -3,7 +3,7 @@
 https://github.com/josdejong/jsoneditor
 
 
-## not yet published, version 9.0.1
+## 2020-06-24, version 9.0.1
 
 - Fixed broken link to the Ace editor website (https://ace.c9.io/).
   Thanks @p3x-robot.
