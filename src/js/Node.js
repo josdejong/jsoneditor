@@ -1833,8 +1833,6 @@ export class Node {
       this.dom.tdColor.parentNode.removeChild(this.dom.tdColor)
       delete this.dom.tdColor
       delete this.dom.color
-
-      this.dom.value.style.color = ''
     }
   }
 
