@@ -22,6 +22,9 @@ div.jsoneditor-default {
   word-wrap: break-word;
   float: left;
 }
+div.jsoneditor-color-value {
+  color: $jse-color-hex !important;
+}
 div.jsoneditor-field p,
 div.jsoneditor-value p {
   margin: 0;
