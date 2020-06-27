@@ -1778,9 +1778,7 @@ export class Node {
 
           this.dom.tdValue.parentNode.insertBefore(this.dom.tdColor, this.dom.tdValue)
 
-          // this is a bit hacky, overriding the text color like this. find a nicer solution
-          // #1A1A1A
-          this.dom.value.classList.add('jsoneditor-color-value')
+          addClassName(this.dom.value, 'jsoneditor-color-value')
         }
 
         // update the color background
