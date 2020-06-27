@@ -46,6 +46,9 @@ div {
     &.jsoneditor-null {
       color: $jse-null;
     }
+    &.jsoneditor-color-value {
+      color: $jse-color-value;
+    }
     &.jsoneditor-invalid {
       color: $jse-invalid;
     }

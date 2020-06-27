@@ -1777,12 +1777,10 @@ export class Node {
           this.dom.tdColor.appendChild(this.dom.color)
 
           this.dom.tdValue.parentNode.insertBefore(this.dom.tdColor, this.dom.tdValue)
-
-          // this is a bit hacky, overriding the text color like this. find a nicer solution
-          this.dom.value.style.color = '#1A1A1A'
         }
 
-        // update the color background
+        // update styling of value and color background
+        addClassName(this.dom.value, 'jsoneditor-color-value')
         this.dom.color.style.backgroundColor = value
       } else {
         // cleanup color picker when displayed
@@ -1835,7 +1833,7 @@ export class Node {
       delete this.dom.tdColor
       delete this.dom.color
 
-      this.dom.value.style.color = ''
+      removeClassName(this.dom.value, 'jsoneditor-color-value')
     }
   }
 

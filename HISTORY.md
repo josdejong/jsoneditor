@@ -3,6 +3,12 @@
 https://github.com/josdejong/jsoneditor
 
 
+## not yet published, version 9.0.2
+
+- Fix #1017: unable to style the color of a value containing a color.
+  Thanks @p3x-robot. 
+
+
 ## 2020-06-24, version 9.0.1
 
 - Fixed broken link to the Ace editor website (https://ace.c9.io/).
