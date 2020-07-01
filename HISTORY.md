@@ -3,9 +3,9 @@
 https://github.com/josdejong/jsoneditor
 
 
-## not yet published, version 9.0.2
+## 2020-07-01, version 9.0.2
 
-- Fix #1029: XSS vulnerabilities.
+- Fix #1029: XSS vulnerabilities. Thanks @onemoreflag for reporting.
 - Fix #1017: unable to style the color of a value containing a color.
   Thanks @p3x-robot. 
 
