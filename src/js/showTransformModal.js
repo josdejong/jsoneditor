@@ -136,7 +136,7 @@ export function showTransformModal (
 
       if (!Array.isArray(value)) {
         wizard.style.fontStyle = 'italic'
-        wizard.innerHTML = '(wizard not available for objects, only for arrays)'
+        wizard.textContent = '(wizard not available for objects, only for arrays)'
       }
 
       const sortablePaths = getChildPaths(json)

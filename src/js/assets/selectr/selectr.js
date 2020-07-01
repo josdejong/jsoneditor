@@ -187,7 +187,7 @@ var util = {
       var i;
       for (i in a)
         if (i in el) el[i] = a[i];
-        else if ("html" === i) el.innerHTML = a[i];
+        else if ("html" === i) el.textContent = a[i];
         else if ("text" === i) {
           var t = d.createTextNode(a[i]);
           el.appendChild(t);
@@ -286,9 +286,6 @@ function appendItem(item, parent, custom) {
   }
 
   util.removeClass(item, "excluded");
-  if (!custom) {
-    item.innerHTML = item.textContent;
-  }
 }
 
 /**
@@ -829,7 +826,7 @@ var addTag = function(item) {
       docFrag.appendChild(tg);
     });
 
-    this.label.innerHTML = "";
+    this.label.textContent = "";
 
   } else {
     docFrag.appendChild(tag);
@@ -915,10 +912,6 @@ var clearSearch = function() {
       // Items that didn't match need the class
       // removing to make them visible again
       util.removeClass(item, "excluded");
-      // Remove the span element for underlining matched items
-      if (!this.customOption) {
-        item.innerHTML = item.textContent;
-      }
     }, this);
   }
 };
@@ -1383,7 +1376,7 @@ Selectr.prototype.destroy = function() {
   }
 
   if (this.config.data) {
-    this.el.innerHTML = "";
+    this.el.textContent = "";
   }
 
   // Remove the className from select element
@@ -1457,7 +1450,7 @@ Selectr.prototype.select = function(index) {
     addTag.call(this, item);
   } else {
     var data = this.data ? this.data[index] : option;
-    this.label.innerHTML = this.customSelected ? this.config.renderSelection(data) : option.textContent;
+    this.label.textContent = this.customSelected ? this.config.renderSelection(data) : option.textContent;
 
     this.selectedValue = option.value;
     this.selectedIndex = index;
@@ -1519,7 +1512,7 @@ Selectr.prototype.deselect = function(index, force) {
       return false;
     }
 
-    this.label.innerHTML = "";
+    this.label.textContent = "";
     this.selectedValue = null;
 
     this.el.selectedIndex = this.selectedIndex = -1;
@@ -1805,7 +1798,7 @@ Selectr.prototype.search = function(string) {
 
         // Underline the matching results
         if (!this.customOption) {
-          item.innerHTML = match(string, option);
+          item.textContent = match(string, option);
         }
       } else {
         util.addClass(item, "excluded");
@@ -2081,7 +2074,7 @@ Selectr.prototype.setPlaceholder = function(placeholder) {
     placeholder = "No options available";
   }
 
-  this.placeEl.innerHTML = placeholder;
+  this.placeEl.textContent = placeholder;
 };
 
 /**
@@ -2119,7 +2112,7 @@ Selectr.prototype.setMessage = function(message, close) {
  */
 Selectr.prototype.removeMessage = function() {
   util.removeClass(this.container, "notice");
-  this.notice.innerHTML = "";
+  this.notice.textContent = "";
 };
 
 /**

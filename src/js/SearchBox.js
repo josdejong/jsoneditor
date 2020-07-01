@@ -229,16 +229,16 @@ export class SearchBox {
       if (text !== undefined) {
         const resultCount = this.results.length
         if (resultCount === 0) {
-          this.dom.results.innerHTML = 'no&nbsp;results'
+          this.dom.results.textContent = 'no\u00A0results'
         } else if (resultCount === 1) {
-          this.dom.results.innerHTML = '1&nbsp;result'
+          this.dom.results.textContent = '1\u00A0result'
         } else if (resultCount > MAX_SEARCH_RESULTS) {
-          this.dom.results.innerHTML = MAX_SEARCH_RESULTS + '+&nbsp;results'
+          this.dom.results.textContent = MAX_SEARCH_RESULTS + '+\u00A0results'
         } else {
-          this.dom.results.innerHTML = resultCount + '&nbsp;results'
+          this.dom.results.textContent = resultCount + '\u00A0results'
         }
       } else {
-        this.dom.results.innerHTML = ''
+        this.dom.results.textContent = ''
       }
     }
   }

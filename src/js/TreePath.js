@@ -27,7 +27,7 @@ export class TreePath {
    * Reset component to initial status
    */
   reset () {
-    this.path.innerHTML = translate('selectNode')
+    this.path.textContent = translate('selectNode')
   }
 
   /**
@@ -38,7 +38,7 @@ export class TreePath {
   setPath (pathObjs) {
     const me = this
 
-    this.path.innerHTML = ''
+    this.path.textContent = ''
 
     if (pathObjs && pathObjs.length) {
       pathObjs.forEach((pathObj, idx) => {
@@ -53,7 +53,7 @@ export class TreePath {
         if (pathObj.children.length) {
           sepEl = document.createElement('span')
           sepEl.className = 'jsoneditor-treepath-seperator'
-          sepEl.innerHTML = '&#9658;'
+          sepEl.textContent = '\u25BA'
 
           sepEl.onclick = () => {
             me.contentMenuClicked = true
@@ -82,7 +82,7 @@ export class TreePath {
             const showAllBtn = document.createElement('span')
             showAllBtn.className = 'jsoneditor-treepath-show-all-btn'
             showAllBtn.title = 'show all path'
-            showAllBtn.innerHTML = '...'
+            showAllBtn.textContent = '...'
             showAllBtn.onclick = _onShowAllClick.bind(me, pathObjs)
             me.path.insertBefore(showAllBtn, me.path.firstChild)
           }

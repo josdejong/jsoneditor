@@ -23,7 +23,7 @@ export class ErrorTable {
     const additionalErrorsIndication = document.createElement('div')
     additionalErrorsIndication.style.display = 'none'
     additionalErrorsIndication.className = 'jsoneditor-additional-errors fadein'
-    additionalErrorsIndication.innerHTML = 'Scroll for more &#9663;'
+    additionalErrorsIndication.textContent = 'Scroll for more \u25BF'
     this.dom.additionalErrorsIndication = additionalErrorsIndication
     validationErrorsContainer.appendChild(additionalErrorsIndication)
 
@@ -76,19 +76,15 @@ export class ErrorTable {
     if (this.errorTableVisible && errors.length > 0) {
       const validationErrors = document.createElement('div')
       validationErrors.className = 'jsoneditor-validation-errors'
-      validationErrors.innerHTML = '<table class="jsoneditor-text-errors"><tbody></tbody></table>'
-      const tbody = validationErrors.getElementsByTagName('tbody')[0]
+
+      const table = document.createElement('table')
+      table.className = 'jsoneditor-text-errors'
+      validationErrors.appendChild(table)
+
+      const tbody = document.createElement('tbody')
+      table.appendChild(tbody)
 
       errors.forEach(error => {
-        let message
-        if (typeof error === 'string') {
-          message = '<td colspan="2"><pre>' + error + '</pre></td>'
-        } else {
-          message =
-              '<td>' + (error.dataPath || '') + '</td>' +
-              '<td><pre>' + error.message + '</pre></td>'
-        }
-
         let line
 
         if (!isNaN(error.line)) {
@@ -108,7 +104,36 @@ export class ErrorTable {
           trEl.className += ' validation-error'
         }
 
-        trEl.innerHTML = ('<td><button class="jsoneditor-schema-error"></button></td><td style="white-space:nowrap;">' + (!isNaN(line) ? ('Ln ' + line) : '') + '</td>' + message)
+        const td1 = document.createElement('td')
+        const button = document.createElement('button')
+        button.className = 'jsoneditor-schema-error'
+        td1.appendChild(button)
+        trEl.appendChild(td1)
+
+        const td2 = document.createElement('td')
+        td2.style = 'white-space: nowrap;'
+        td2.textContent = (!isNaN(line) ? ('Ln ' + line) : '')
+        trEl.appendChild(td2)
+
+        if (typeof error === 'string') {
+          const td34 = document.createElement('td')
+          td34.colSpan = 2
+          const pre = document.createElement('pre')
+          pre.appendChild(document.createTextNode(error))
+          td34.appendChild(pre)
+          trEl.appendChild(td34)
+        } else {
+          const td3 = document.createElement('td')
+          td3.appendChild(document.createTextNode(error.dataPath || ''))
+          trEl.appendChild(td3)
+
+          const td4 = document.createElement('td')
+          const pre = document.createElement('pre')
+          pre.appendChild(document.createTextNode(error.message))
+          td4.appendChild(pre)
+          trEl.appendChild(td4)
+        }
+
         trEl.onclick = () => {
           this.onFocusLine(line)
         }

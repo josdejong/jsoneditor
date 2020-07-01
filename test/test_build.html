@@ -50,6 +50,7 @@
     mode: 'tree',
     modes: ['code', 'form', 'text', 'tree', 'view', 'preview'], // allowed modes
     onError: function (err) {
+      console.error(err);
       alert(err.toString());
     },
     onChange: function () {
@@ -88,7 +89,13 @@
     "object": {"a": "b", "c": "d"},
     "string": "Hello World",
     "timestamp": 1534952749890,
-    "url": "http://jsoneditoronline.org"
+    "url": "http://jsoneditoronline.org",
+    "<button onclick=alert('oopsie!!!')>test xss</button>": "xss?",
+    "xss array": [
+      {
+        "<button onclick=alert('oopsie!!!')>test xss</button>": "xss?"
+      }
+    ]
   };
 
   editorTest = new JSONEditor(container, options, json);

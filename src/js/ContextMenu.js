@@ -107,7 +107,9 @@ export class ContextMenu {
               buttonExpand.type = 'button'
               domItem.buttonExpand = buttonExpand
               buttonExpand.className = 'jsoneditor-expand'
-              buttonExpand.innerHTML = '<div class="jsoneditor-expand"></div>'
+              const buttonExpandInner = document.createElement('div')
+              buttonExpandInner.className = 'jsoneditor-expand'
+              buttonExpand.appendChild(buttonExpandInner)
               li.appendChild(buttonExpand)
               if (item.submenuTitle) {
                 buttonExpand.title = item.submenuTitle
@@ -141,8 +143,14 @@ export class ContextMenu {
             createMenuItems(ul, domSubItems, item.submenu)
           } else {
             // no submenu, just a button with clickhandler
-            button.innerHTML = '<div class="jsoneditor-icon"></div>' +
-                '<div class="jsoneditor-text">' + translate(item.text) + '</div>'
+            const icon = document.createElement('div')
+            icon.className = 'jsoneditor-icon'
+            button.appendChild(icon)
+
+            const text = document.createElement('div')
+            text.className = 'jsoneditor-text'
+            text.appendChild(document.createTextNode(translate(item.text)))
+            button.appendChild(text)
           }
 
           domItems.push(domItem)
@@ -425,5 +433,3 @@ export class ContextMenu {
 
 // currently displayed context menu, a singleton. We may only have one visible context menu
 ContextMenu.visibleMenu = undefined
-
-export default ContextMenu

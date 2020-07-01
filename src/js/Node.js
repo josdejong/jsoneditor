@@ -1511,7 +1511,7 @@ export class Node {
       if (this.valueInnerText === '' && this.dom.value.innerHTML !== '') {
         // When clearing the contents, often a <br/> remains, messing up the
         // styling of the empty text box. Therefore we remove the <br/>
-        this.dom.value.innerHTML = ''
+        this.dom.value.textContent = ''
       }
     }
 
@@ -1718,14 +1718,14 @@ export class Node {
           // Create the default empty option
           this.dom.select.option = document.createElement('option')
           this.dom.select.option.value = ''
-          this.dom.select.option.innerHTML = '--'
+          this.dom.select.option.textContent = '--'
           this.dom.select.appendChild(this.dom.select.option)
 
           // Iterate all enum values and add them as options
           for (let i = 0; i < this.enum.length; i++) {
             this.dom.select.option = document.createElement('option')
             this.dom.select.option.value = this.enum[i]
-            this.dom.select.option.innerHTML = this.enum[i]
+            this.dom.select.option.textContent = this.enum[i]
             if (this.dom.select.option.value === this.value) {
               this.dom.select.option.selected = true
             }
@@ -1747,7 +1747,7 @@ export class Node {
         ) {
           this.valueFieldHTML = this.dom.tdValue.innerHTML
           this.dom.tdValue.style.visibility = 'hidden'
-          this.dom.tdValue.innerHTML = ''
+          this.dom.tdValue.textContent = ''
         } else {
           delete this.valueFieldHTML
         }
@@ -1804,7 +1804,7 @@ export class Node {
           })
         }
         if (!title) {
-          this.dom.date.innerHTML = new Date(value).toISOString()
+          this.dom.date.textContent = new Date(value).toISOString()
         } else {
           while (this.dom.date.firstChild) {
             this.dom.date.removeChild(this.dom.date.firstChild)
@@ -1892,7 +1892,7 @@ export class Node {
       if (this.fieldInnerText === '' && this.dom.field.innerHTML !== '') {
         // When clearing the contents, often a <br/> remains, messing up the
         // styling of the empty text box. Therefore we remove the <br/>
-        this.dom.field.innerHTML = ''
+        this.dom.field.textContent = ''
       }
     }
 
@@ -2349,7 +2349,7 @@ export class Node {
           child.index = index
           const childField = child.dom.field
           if (childField) {
-            childField.innerHTML = index
+            childField.textContent = index
           }
         })
       } else if (this.type === 'object') {
@@ -2375,10 +2375,10 @@ export class Node {
 
     if (this.type === 'array') {
       domValue = document.createElement('div')
-      domValue.innerHTML = '[...]'
+      domValue.textContent = '[...]'
     } else if (this.type === 'object') {
       domValue = document.createElement('div')
-      domValue.innerHTML = '{...}'
+      domValue.textContent = '{...}'
     } else {
       if (!this.editable.value && isUrl(this.value)) {
         // create a link in case of read-only editor and value containing an url
@@ -2525,14 +2525,14 @@ export class Node {
 
     // swap the value of a boolean when the checkbox displayed left is clicked
     if (type === 'change' && target === dom.checkbox) {
-      this.dom.value.innerHTML = !this.value
+      this.dom.value.textContent = String(!this.value)
       this._getDomValue()
       this._updateDomDefault()
     }
 
     // update the value of the node based on the selected option
     if (type === 'change' && target === dom.select) {
-      this.dom.value.innerHTML = dom.select.value
+      this.dom.value.innerHTML = this._escapeHTML(dom.select.value)
       this._getDomValue()
       this._updateDomValue()
     }
@@ -4047,7 +4047,7 @@ export class Node {
         }
       }
 
-      this.dom.value.innerHTML = (this.type === 'object')
+      this.dom.value.textContent = (this.type === 'object')
         ? ('{' + (nodeName || count) + '}')
         : ('[' + (nodeName || count) + ']')
     }
@@ -4555,7 +4555,7 @@ Node.onDuplicate = nodes => {
       if (clones[0].parent.type === 'object') {
         // when duplicating a single object property,
         // set focus to the field and keep the original field name
-        clones[0].dom.field.innerHTML = nodes[0].field
+        clones[0].dom.field.innerHTML = this._escapeHTML(nodes[0].field)
         clones[0].focus('field')
       } else {
         clones[0].focus()

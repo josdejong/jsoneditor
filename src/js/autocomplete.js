@@ -52,7 +52,7 @@ export function autocomplete (config) {
       refresh: function (token, array) {
         elem.style.visibility = 'hidden'
         ix = 0
-        elem.innerHTML = ''
+        elem.textContent = ''
         const vph = (window.innerHeight || document.documentElement.clientHeight)
         const rect = elem.parentNode.getBoundingClientRect()
         const distanceToTop = rect.top - 6 // heuristic give 6px
@@ -71,7 +71,11 @@ export function autocomplete (config) {
           divRow.onmouseout = onMouseOut
           divRow.onmousedown = onMouseDown
           divRow.__hint = row
-          divRow.innerHTML = row.substring(0, token.length) + '<b>' + row.substring(token.length) + '</b>'
+          divRow.textContent = ''
+          divRow.appendChild(document.createTextNode(row.substring(0, token.length)))
+          const b = document.createElement('b')
+          b.appendChild(document.createTextNode(row.substring(token.length)))
+          divRow.appendChild(b)
           elem.appendChild(divRow)
           return divRow
         })
@@ -153,13 +157,7 @@ export function autocomplete (config) {
       document.body.appendChild(spacer)
     }
 
-    // Used to encode an HTML string into a plain text.
-    // taken from http://stackoverflow.com/questions/1219860/javascript-jquery-html-encoding
-    spacer.innerHTML = String(text).replace(/&/g, '&amp;')
-      .replace(/"/g, '&quot;')
-      .replace(/'/g, '&#39;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
+    spacer.textContent = text
     return spacer.getBoundingClientRect().right
   }
 

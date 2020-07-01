@@ -64,7 +64,7 @@ export function appendNodeFactory (Node) {
     // a cell for the contents (showing text 'empty')
     const tdAppend = document.createElement('td')
     const domText = document.createElement('div')
-    domText.innerHTML = '(' + translate('empty') + ')'
+    domText.appendChild(document.createTextNode('(' + translate('empty') + ')'))
     domText.className = 'jsoneditor-readonly'
     tdAppend.appendChild(domText)
     dom.td = tdAppend
@@ -100,7 +100,7 @@ export function appendNodeFactory (Node) {
 
     const domText = dom.text
     if (domText) {
-      domText.innerHTML = '(' + translate('empty') + ' ' + this.parent.type + ')'
+      domText.firstChild.nodeValue = '(' + translate('empty') + ' ' + this.parent.type + ')'
     }
 
     // attach or detach the contents of the append node:
