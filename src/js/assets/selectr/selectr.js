@@ -286,6 +286,9 @@ function appendItem(item, parent, custom) {
   }
 
   util.removeClass(item, "excluded");
+  if (!custom) {
+    item.textContent = item.textContent + ''; // clear highlighting
+  }
 }
 
 /**
@@ -912,6 +915,10 @@ var clearSearch = function() {
       // Items that didn't match need the class
       // removing to make them visible again
       util.removeClass(item, "excluded");
+      // Remove the span element for underlining matched items
+      if (!this.customOption) {
+        item.textContent = item.textContent + ''; // clear highlighting
+      }
     }, this);
   }
 };
@@ -919,15 +926,21 @@ var clearSearch = function() {
 /**
  * Query matching for searches
  * @param  {string} query
- * @param  {HTMLOptionElement} option
- * @return {bool}
+ * @param  {string} text
  */
-var match = function(query, option) {
-  var result = new RegExp(query, "i").exec(option.textContent);
+var match = function(query, text) {
+  var result = new RegExp(query, "i").exec(text);
   if (result) {
-    return option.textContent.replace(result[0], "<span class='selectr-match'>" + result[0] + "</span>");
+    var start = result.index;
+    var end = result.index + result[0].length;
+
+    return {
+      before: text.substring(0, start),
+      match: text.substring(start, end),
+      after: text.substring(end)
+    };
   }
-  return false;
+  return null;
 };
 
 // Main Lib
@@ -1798,7 +1811,17 @@ Selectr.prototype.search = function(string) {
 
         // Underline the matching results
         if (!this.customOption) {
-          item.textContent = match(string, option);
+          item.textContent = ''
+
+          var result = match(string, option.textContent);
+          if (result) {
+            item.appendChild(document.createTextNode(result.before));
+            var highlight = document.createElement('span');
+            highlight.className = 'selectr-match';
+            highlight.appendChild(document.createTextNode(result.match));
+            item.appendChild(highlight);
+            item.appendChild(document.createTextNode(result.after));
+          }
         }
       } else {
         util.addClass(item, "excluded");

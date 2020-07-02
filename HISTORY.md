@@ -3,6 +3,12 @@
 https://github.com/josdejong/jsoneditor
 
 
+## 2020-07-02, version 9.0.3
+
+- Fix regression introduced in `v9.0.2` in the select boxes in the 
+  Transform model not lighlighting the matches correctly.
+
+
 ## 2020-07-01, version 9.0.2
 
 - Fix #1029: XSS vulnerabilities. Thanks @onemoreflag for reporting.
