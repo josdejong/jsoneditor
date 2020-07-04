@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
-    "jsoneditor": "^8.6.6",
+    "jsoneditor": "latest",
     "react": "16.13.1",
     "react-dom": "16.13.1",
     "react-scripts": "3.4.1"
