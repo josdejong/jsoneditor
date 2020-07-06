@@ -38,7 +38,7 @@
   "devDependencies": {
     "@babel/core": "7.10.3",
     "@babel/preset-env": "7.10.3",
-    "@babel/register": "7.10.3",
+    "@babel/register": "7.10.4",
     "babel-loader": "8.1.0",
     "btoa": "1.2.1",
     "date-format": "3.0.0",
