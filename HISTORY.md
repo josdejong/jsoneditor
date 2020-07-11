@@ -3,6 +3,11 @@
 https://github.com/josdejong/jsoneditor
 
 
+## not yet published, version 9.0.4
+
+- Updated dependencies to `ace-builds@1.4.12`, `ajv@6.12.3`.
+
+
 ## 2020-07-02, version 9.0.3
 
 - Fix regression introduced in `v9.0.2` in the select boxes in the 
