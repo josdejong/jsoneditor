@@ -27,7 +27,7 @@
   },
   "dependencies": {
     "ace-builds": "^1.4.11",
-    "ajv": "^6.12.2",
+    "ajv": "^6.12.3",
     "javascript-natural-sort": "^0.7.1",
     "jmespath": "^0.15.0",
     "json-source-map": "^0.6.1",
