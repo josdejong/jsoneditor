@@ -36,9 +36,9 @@
     "vanilla-picker": "^2.10.1"
   },
   "devDependencies": {
-    "@babel/core": "7.10.4",
+    "@babel/core": "7.10.5",
     "@babel/preset-env": "7.10.4",
-    "@babel/register": "7.10.4",
+    "@babel/register": "7.10.5",
     "babel-loader": "8.1.0",
     "btoa": "1.2.1",
     "date-format": "3.0.0",
@@ -54,7 +54,7 @@
     "source-map-loader": "1.0.1",
     "standard": "14.3.4",
     "uglify-js": "3.10.0",
-    "webpack": "4.43.0"
+    "webpack": "4.44.0"
   },
   "files": [
     "dist",
