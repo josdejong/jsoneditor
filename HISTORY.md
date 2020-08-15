@@ -3,7 +3,7 @@
 https://github.com/josdejong/jsoneditor
 
 
-## not yet published, version 9.0.4
+## 2020-08-15, version 9.0.4
 
 - Updated dependencies to `ace-builds@1.4.12`, `ajv@6.12.3`.
 - Fix #1077: change the `main` field in `package.json` to point to the actual
