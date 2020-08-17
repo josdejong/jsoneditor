@@ -4,7 +4,7 @@
   "private": true,
   "dependencies": {
     "jsoneditor": "latest",
-    "lodash": "4.17.15",
+    "lodash": "4.17.20",
     "react": "16.13.1",
     "react-dom": "16.13.1",
     "react-scripts": "3.4.1"
