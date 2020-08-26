@@ -1852,8 +1852,8 @@ export class Node {
         domField.title = tooltip
       }
 
-      // make backgound color lightgray when empty
-      const isEmpty = (String(this.field) === '' && this.parent.type !== 'array')
+      // make background color lightgray when empty
+      const isEmpty = (String(this.field) === '' && this.parent && this.parent.type !== 'array')
       if (isEmpty) {
         addClassName(domField, 'jsoneditor-empty')
       } else {
