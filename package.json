@@ -27,7 +27,7 @@
   },
   "dependencies": {
     "ace-builds": "^1.4.12",
-    "ajv": "^6.12.3",
+    "ajv": "^6.12.4",
     "javascript-natural-sort": "^0.7.1",
     "jmespath": "^0.15.0",
     "json-source-map": "^0.6.1",
@@ -36,7 +36,7 @@
     "vanilla-picker": "^2.10.1"
   },
   "devDependencies": {
-    "@babel/core": "7.11.1",
+    "@babel/core": "7.11.4",
     "@babel/preset-env": "7.11.0",
     "@babel/register": "7.10.5",
     "babel-loader": "8.1.0",
@@ -50,10 +50,10 @@
     "jsdom": "16.4.0",
     "json-loader": "0.5.7",
     "mkdirp": "1.0.4",
-    "mocha": "8.1.1",
-    "source-map-loader": "1.0.1",
+    "mocha": "8.1.2",
+    "source-map-loader": "1.0.2",
     "standard": "14.3.4",
-    "uglify-js": "3.10.1",
+    "uglify-js": "3.10.2",
     "webpack": "4.44.1"
   },
   "files": [

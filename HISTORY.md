@@ -6,6 +6,7 @@ https://github.com/josdejong/jsoneditor
 ## not yet published, version 9.0.5
 
 - Fix #1096: editor crashing when passing an empty string as `name`.
+- Updated dependencies to `ajv@6.12.4`.
 
 
 ## 2020-08-15, version 9.0.4
