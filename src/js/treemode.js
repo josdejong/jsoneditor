@@ -1280,7 +1280,7 @@ treemode._updateDragDistance = function (event) {
 
 /**
  * Start multi selection of nodes by dragging the mouse
- * @param event
+ * @param {MouseEvent} event
  * @private
  */
 treemode._onMultiSelectStart = function (event) {
@@ -1302,12 +1302,12 @@ treemode._onMultiSelectStart = function (event) {
 
   const editor = this
   if (!this.mousemove) {
-    this.mousemove = addEventListener(window, 'mousemove', event => {
+    this.mousemove = addEventListener(event.view, 'mousemove', event => {
       editor._onMultiSelect(event)
     })
   }
   if (!this.mouseup) {
-    this.mouseup = addEventListener(window, 'mouseup', event => {
+    this.mouseup = addEventListener(event.view, 'mouseup', event => {
       editor._onMultiSelectEnd(event)
     })
   }
@@ -1317,7 +1317,7 @@ treemode._onMultiSelectStart = function (event) {
 
 /**
  * Multiselect nodes by dragging
- * @param event
+ * @param {MouseEvent} event
  * @private
  */
 treemode._onMultiSelect = function (event) {
@@ -1360,9 +1360,10 @@ treemode._onMultiSelect = function (event) {
 
 /**
  * End of multiselect nodes by dragging
+ * @param {MouseEvent} event
  * @private
  */
-treemode._onMultiSelectEnd = function () {
+treemode._onMultiSelectEnd = function (event) {
   // set focus to the context menu button of the first node
   if (this.multiselection.nodes[0]) {
     this.multiselection.nodes[0].dom.menu.focus()
@@ -1373,11 +1374,11 @@ treemode._onMultiSelectEnd = function () {
 
   // cleanup global event listeners
   if (this.mousemove) {
-    removeEventListener(window, 'mousemove', this.mousemove)
+    removeEventListener(event.view, 'mousemove', this.mousemove)
     delete this.mousemove
   }
   if (this.mouseup) {
-    removeEventListener(window, 'mouseup', this.mouseup)
+    removeEventListener(event.view, 'mouseup', this.mouseup)
     delete this.mouseup
   }
 }
