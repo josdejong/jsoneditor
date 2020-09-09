@@ -564,7 +564,7 @@ const _defs = {
     cannotParseFieldError: 'Feld kann nicht in JSON geparst werden',
     cannotParseValueError: 'Wert kann nicht in JSON geparst werden',
     collapseAll: 'Alle Felder zuklappen',
-    compactTitle: 'JSON-Daten verdichten, alle Leerzeichen entfernen (Strg+Umschalt+\\\)',
+    compactTitle: 'JSON-Daten verdichten, alle Leerzeichen entfernen (Strg+Umschalt+\\)',
     descending: 'Absteigend',
     descendingTitle: 'Sortieren Sie die Elemente dieses ${Typs} in absteigender Reihenfolge',
     drag: 'Ziehen, um dieses Feld zu verschieben (Alt+Umschalt+Pfeile)',
@@ -576,7 +576,7 @@ const _defs = {
     empty: 'leer',
     expandAll: 'Alle Felder anzeigen',
     expandTitle: 'Klicken Sie, um dieses Feld zu erweitern/zu kollabieren (Strg+E). \nStrg+Klicken Sie, um dieses Feld einschließlich aller Elemente zu erweitern/zu kollabieren.',
-    formatTitle: 'JSON-Daten mit korrekter Einrückung und Zeilenvorschüben formatieren (Strg+\\\)',
+    formatTitle: 'JSON-Daten mit korrekter Einrückung und Zeilenvorschüben formatieren (Strg+\\)',
     insert: 'einfügen',
     insertTitle: 'Fügen Sie vor diesem Feld ein neues Feld mit dem Typ \'auto\' ein (Strg+Einfg)',
     insertSub: 'Wählen Sie den Typ des neuen Feldes',
@@ -650,7 +650,7 @@ const userLang = typeof navigator !== 'undefined'
   : undefined
 let _lang = _locales.find(l => l === userLang) || _defaultLang
 
-export function setLanguage(lang) {
+export function setLanguage (lang) {
   if (!lang) {
     return
   }
@@ -662,7 +662,7 @@ export function setLanguage(lang) {
   }
 }
 
-export function setLanguages(languages) {
+export function setLanguages (languages) {
   if (!languages) {
     return
   }
@@ -675,7 +675,7 @@ export function setLanguages(languages) {
   }
 }
 
-export function translate(key, data, lang) {
+export function translate (key, data, lang) {
   if (!lang) {
     lang = _lang
   }
