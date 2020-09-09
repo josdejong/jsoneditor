@@ -550,6 +550,97 @@ const _defs = {
     modePreviewTitle: 'Activer mode prévisualiser',
     examples: 'Exemples',
     default: 'Défaut'
+  },
+  de: {
+    array: 'Auflistung',
+    auto: 'Auto',
+    appendText: 'anhängen',
+    appendTitle: 'Fügen Sie nach diesem Feld ein neues Feld mit dem Typ \'auto\' ein (Strg+Umschalt+Ein)',
+    appendSubmenuTitle: 'Wählen Sie den Typ des neuen Feldes',
+    appendTitleAuto: 'Ein neues Feld vom Typ \'auto\' hinzufügen (Strg+Umschalt+Ein)',
+    ascending: 'Aufsteigend',
+    ascendingTitle: 'Sortieren Sie die Elemente dieses ${Typs} in aufsteigender Reihenfolge',
+    actionsMenu: 'Klicken Sie zum Öffnen des Aktionsmenüs (Strg+M)',
+    cannotParseFieldError: 'Feld kann nicht in JSON geparst werden',
+    cannotParseValueError: 'Wert kann nicht in JSON geparst werden',
+    collapseAll: 'Alle Felder zuklappen',
+    compactTitle: 'JSON-Daten verdichten, alle Leerzeichen entfernen (Strg+Umschalt+\\\)',
+    descending: 'Absteigend',
+    descendingTitle: 'Sortieren Sie die Elemente dieses ${Typs} in absteigender Reihenfolge',
+    drag: 'Ziehen, um dieses Feld zu verschieben (Alt+Umschalt+Pfeile)',
+    duplicateKey: 'Doppelter Schlüssel',
+    duplicateText: 'Duplikat',
+    duplicateTitle: 'Ausgewählte Felder duplizieren (Strg+D)',
+    duplicateField: 'Dieses Feld duplizieren (Strg+D)',
+    duplicateFieldError: 'Doppelter Feldname',
+    empty: 'leer',
+    expandAll: 'Alle Felder anzeigen',
+    expandTitle: 'Klicken Sie, um dieses Feld zu erweitern/zu kollabieren (Strg+E). \nStrg+Klicken Sie, um dieses Feld einschließlich aller Elemente zu erweitern/zu kollabieren.',
+    formatTitle: 'JSON-Daten mit korrekter Einrückung und Zeilenvorschüben formatieren (Strg+\\\)',
+    insert: 'einfügen',
+    insertTitle: 'Fügen Sie vor diesem Feld ein neues Feld mit dem Typ \'auto\' ein (Strg+Einfg)',
+    insertSub: 'Wählen Sie den Typ des neuen Feldes',
+    object: 'Objekt',
+    ok: 'Ok',
+    redo: 'Wiederholen (Strg+Umschalt+Z)',
+    removeText: 'entfernen',
+    removeTitle: 'Ausgewählte Felder entfernen (Strg+Entf)',
+    removeField: 'Dieses Feld entfernen (Strg+Entf)',
+    repairTitle: 'JSON reparieren: Anführungszeichen und Escape-Zeichen korrigieren, Kommentare und JSONP-Notation entfernen, JavaScript-Objekte in JSON umwandeln.',
+    searchTitle: 'Suchfelder und Werte',
+    searchNextResultTitle: 'Nächstes Ergebnis (Enter)',
+    searchPreviousResultTitle: 'Vorheriges Ergebnis (Umschalt + Eingabe)',
+    selectNode: 'Wählen Sie einen Knoten aus...',
+    showAll: 'alle anzeigen',
+    showMore: 'mehr anzeigen',
+    showMoreStatus: 'Anzeige von ${visibleChilds} von ${totalChilds}-Elementen.',
+    sort: 'Sortieren',
+    sortTitle: 'Sortieren Sie die Elemente dieses ${Typs}',
+    sortTitleShort: 'Inhalt sortieren',
+    sortFieldLabel: 'Feld:',
+    sortDirectionLabel: 'Richtung:',
+    sortFieldTitle: 'Wählen Sie das verschachtelte Feld, nach dem das Array oder Objekt sortiert werden soll.',
+    sortAscending: 'Aufsteigend',
+    sortAscendingTitle: 'Sortieren Sie das ausgewählte Feld in aufsteigender Reihenfolge',
+    sortDescending: 'Absteigend',
+    sortDescendingTitle: 'Sortieren Sie das ausgewählte Feld in absteigender Reihenfolge',
+    string: 'Zeichenfolge',
+    transform: 'Verwandeln',
+    transformTitle: 'Die Elemente dieses ${Typs} filtern, sortieren oder transformieren',
+    transformTitleShort: 'Inhalte filtern, sortieren oder transformieren',
+    extract: 'Auszug',
+    extractTitle: 'Extrahieren Sie diesen ${Typ}',
+    transformQueryTitle: 'Eine JMESPath-Abfrage eingeben',
+    transformWizardLabel: 'Zauberer',
+    transformWizardFilter: 'Filter',
+    transformWizardSortBy: 'Sortieren nach',
+    transformWizardSelectFields: 'Felder auswählen',
+    transformQueryLabel: 'Anfrage',
+    transformPreviewLabel: 'Vorschau',
+    type: 'Geben Sie  ein.',
+    typeTitle: 'Ändern Sie den Typ dieses Feldes',
+    openUrl: 'Strg+Klicken oder Strg+Eingabe, um die URL in einem neuen Fenster zu öffnen',
+    undo: 'Letzte Aktion rückgängig machen (Strg+Z)',
+    validationCannotMove: 'Kann ein Feld nicht in ein Kind seiner selbst verschieben',
+    autoType: 'Feldtyp "auto". Der Feldtyp wird automatisch aus dem Wert bestimmt und kann ein String, eine Zahl, boolesch oder null sein.',
+    objectType: 'Feldtyp "Objekt". Ein Objekt enthält eine ungeordnete Menge von Schlüssel/Wert-Paaren.',
+    arrayType: 'Feldtyp "Array". Ein Array enthält eine geordnete Sammlung von Werten.',
+    stringType: 'Feldtyp "Zeichenfolge". Der Feldtyp wird nicht aus dem Wert bestimmt, sondern immer als Zeichenfolge zurückgegeben.',
+    modeEditorTitle: 'Editor-Modus umschalten',
+    modeCodeText: 'Code',
+    modeCodeTitle: 'Umschalten auf Code-Highlighter',
+    modeFormText: 'Formular',
+    modeFormTitle: 'Zum Formular-Editor wechseln',
+    modeTextText: 'Text',
+    modeTextTitle: 'Zum Editor für einfachen Text wechseln',
+    modeTreeText: 'Baum',
+    modeTreeTitle: 'Zum Baum-Editor wechseln',
+    modeViewText: 'Siehe',
+    modeViewTitle: 'Zur Baumansicht wechseln',
+    modePreviewText: 'Vorschau',
+    modePreviewTitle: 'In den Vorschau-Modus wechseln',
+    examples: 'Beispiele',
+    default: 'Standardmäßig'
   }
 }
 
@@ -559,7 +650,7 @@ const userLang = typeof navigator !== 'undefined'
   : undefined
 let _lang = _locales.find(l => l === userLang) || _defaultLang
 
-export function setLanguage (lang) {
+export function setLanguage(lang) {
   if (!lang) {
     return
   }
@@ -571,7 +662,7 @@ export function setLanguage (lang) {
   }
 }
 
-export function setLanguages (languages) {
+export function setLanguages(languages) {
   if (!languages) {
     return
   }
@@ -584,7 +675,7 @@ export function setLanguages (languages) {
   }
 }
 
-export function translate (key, data, lang) {
+export function translate(key, data, lang) {
   if (!lang) {
     lang = _lang
   }
