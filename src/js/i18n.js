@@ -4,7 +4,7 @@
 
 import './polyfills'
 
-const _locales = ['en', 'pt-BR', 'zh-CN', 'tr', 'ja', 'fr-FR']
+const _locales = ['en', 'pt-BR', 'zh-CN', 'tr', 'ja', 'fr-FR', 'de']
 const _defs = {
   en: {
     array: 'Array',
