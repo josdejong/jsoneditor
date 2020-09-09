@@ -1490,6 +1490,11 @@ treemode._showAutoComplete = function (element) {
   if (element.className.indexOf('jsoneditor-value') >= 0) jsonElementType = 'value'
   if (element.className.indexOf('jsoneditor-field') >= 0) jsonElementType = 'field'
 
+  if (jsonElementType === '') {
+    // Unknown element field. Could be a button or something else
+    return
+  }
+
   const self = this
 
   setTimeout(() => {

@@ -5,6 +5,7 @@ https://github.com/josdejong/jsoneditor
 
 ## not yet published, version 9.0.5
 
+- Fix #1090: autocomplete firing on dragging or clicking a node.
 - Fix #1096: editor crashing when passing an empty string as `name`.
 - Updated dependencies to `ajv@6.12.4`.
 
