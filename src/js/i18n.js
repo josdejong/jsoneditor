@@ -652,7 +652,9 @@ const _defs = {
     modePreviewText: 'Vorschau',
     modePreviewTitle: 'In den Vorschau-Modus wechseln',
     examples: 'Beispiele',
-    default: 'Standardmäßig'
+    default: 'Standardmäßig',
+    containsInvalidProperties: 'Enthält ungültige Eigenschaften',
+    containsInvalidItems: 'Enthält ungültige Elemente'
   }
 }
 
