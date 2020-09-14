@@ -3,6 +3,11 @@
 https://github.com/josdejong/jsoneditor
 
 
+## not yet published, version 9.1.0
+
+- Implemented German translation (`de`). Thanks @s-a.
+
+
 ## 2020-09-09, version 9.0.5
 
 - Fix #1090: autocomplete firing on dragging or clicking a node.
