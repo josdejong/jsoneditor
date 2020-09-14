@@ -632,8 +632,8 @@ treemode._renderValidationErrors = function (errorNodes) {
 
       error: {
         message: pair[0].type === 'object'
-          ? 'Contains invalid properties' // object
-          : 'Contains invalid items' // array
+          ? translate('containsInvalidProperties') // object
+          : translate('containsInvalidItems') // array
       }
     }))
     .concat(errorNodes)

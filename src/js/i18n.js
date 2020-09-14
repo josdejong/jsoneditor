@@ -102,7 +102,9 @@ const _defs = {
     modePreviewText: 'Preview',
     modePreviewTitle: 'Switch to preview mode',
     examples: 'Examples',
-    default: 'Default'
+    default: 'Default',
+    containsInvalidProperties: 'Contains invalid properties',
+    containsInvalidItems: 'Contains invalid items'
   },
   'zh-CN': {
     array: '数组',
@@ -196,7 +198,9 @@ const _defs = {
     modePreviewText: '预览',
     modePreviewTitle: '切换至预览模式',
     examples: '例子',
-    default: '缺省'
+    default: '缺省',
+    containsInvalidProperties: '包含无效的属性',
+    containsInvalidItems: '包含无效项目'
   },
   'pt-BR': {
     array: 'Lista',
@@ -276,7 +280,9 @@ const _defs = {
       'Campo do tipo nao é determinado através do seu valor, ' +
       'mas sempre retornara um texto.',
     examples: 'Exemplos',
-    default: 'Revelia'
+    default: 'Revelia',
+    containsInvalidProperties: 'Contém propriedades inválidas',
+    containsInvalidItems: 'Contém itens inválidos'
   },
   tr: {
     array: 'Dizin',
@@ -363,7 +369,9 @@ const _defs = {
     modeViewText: 'Görünüm',
     modeViewTitle: 'Ağaç görünümüne geç',
     examples: 'Örnekler',
-    default: 'Varsayılan'
+    default: 'Varsayılan',
+    containsInvalidProperties: 'Geçersiz özellikler içeriyor',
+    containsInvalidItems: 'Geçersiz öğeler içeriyor'
   },
   ja: {
     array: '配列',
@@ -454,7 +462,9 @@ const _defs = {
     modePreviewText: 'プレビュー',
     modePreviewTitle: 'プレビューに切り替え',
     examples: '例',
-    default: 'デフォルト'
+    default: 'デフォルト',
+    containsInvalidProperties: '無効なプロパティが含まれています',
+    containsInvalidItems: '無効なアイテムが含まれています'
   },
   'fr-FR': {
     array: 'Liste',
@@ -549,7 +559,9 @@ const _defs = {
     modePreviewText: 'Prévisualisation',
     modePreviewTitle: 'Activer mode prévisualiser',
     examples: 'Exemples',
-    default: 'Défaut'
+    default: 'Défaut',
+    containsInvalidProperties: 'Contient des propriétés non valides',
+    containsInvalidItems: 'Contient des éléments invalides'
   },
   de: {
     array: 'Auflistung',
