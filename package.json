@@ -1,6 +1,6 @@
 {
   "name": "jsoneditor",
-  "version": "9.0.5",
+  "version": "9.1.0",
   "main": "./dist/jsoneditor.min.js",
   "description": "A web-based tool to view, edit, format, and validate JSON",
   "tags": [
@@ -27,7 +27,7 @@
   },
   "dependencies": {
     "ace-builds": "^1.4.12",
-    "ajv": "^6.12.4",
+    "ajv": "^6.12.5",
     "javascript-natural-sort": "^0.7.1",
     "jmespath": "^0.15.0",
     "json-source-map": "^0.6.1",

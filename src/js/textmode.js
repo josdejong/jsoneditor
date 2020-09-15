@@ -515,8 +515,6 @@ textmode._onKeyDown = function (event) {
   const keynum = event.which || event.keyCode
   let handled = false
 
-  console.log('onKeyDown', keynum)
-
   if (keynum === 220 && event.ctrlKey) {
     if (event.shiftKey) { // Ctrl+Shift+\
       this.compact()
