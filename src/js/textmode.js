@@ -282,8 +282,16 @@ textmode.create = function (container, options = {}) {
       originalSetAnnotations.call(this, annotations && annotations.length ? annotations : me.annotations)
     }
 
-    aceEditor.commands.bindKey('Ctrl-L', null) // disable Ctrl+L (is used by the browser to select the address bar)
-    aceEditor.commands.bindKey('Command-L', null) // disable Ctrl+L (is used by the browser to select the address bar)
+    // disable Ctrl+L quickkey of Ace (is used by the browser to select the address bar)
+    aceEditor.commands.bindKey('Ctrl-L', null)
+    aceEditor.commands.bindKey('Command-L', null)
+
+    // disable the quickkeys we want to use for Format and Compact
+    aceEditor.commands.bindKey('Ctrl-\\', null)
+    aceEditor.commands.bindKey('Command-\\', null)
+    aceEditor.commands.bindKey('Ctrl-Shift-\\', null)
+    aceEditor.commands.bindKey('Command-Shift-\\', null)
+
     this.aceEditor = aceEditor
 
     // register onchange event
@@ -506,6 +514,8 @@ textmode._onSelect = function () {
 textmode._onKeyDown = function (event) {
   const keynum = event.which || event.keyCode
   let handled = false
+
+  console.log('onKeyDown', keynum)
 
   if (keynum === 220 && event.ctrlKey) {
     if (event.shiftKey) { // Ctrl+Shift+\

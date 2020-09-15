@@ -6,6 +6,8 @@ https://github.com/josdejong/jsoneditor
 ## not yet published, version 9.1.0
 
 - Implemented German translation (`de`). Thanks @s-a.
+- Fix quick-keys `Ctrl-\` (format) and `Ctrl-Shift-\` (compact) not working
+  in `code` mode.
 
 
 ## 2020-09-09, version 9.0.5
