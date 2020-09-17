@@ -456,6 +456,16 @@ export function isArray (obj) {
 }
 
 /**
+ * Gets a DOM element's Window.  This is normally just the global `window`
+ * variable, but if we opened a child window, it may be different.
+ * @param {HTMLElement} element
+ * @return {Window}
+ */
+export function getWindow (element) {
+  return element.ownerDocument.defaultView;
+}
+
+/**
  * Retrieve the absolute left value of a DOM element
  * @param {Element} elem    A dom element, for example a div
  * @return {Number} left    The absolute left position of this element

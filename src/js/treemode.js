@@ -25,7 +25,8 @@ import {
   repair,
   selectContentEditable,
   setSelectionOffset,
-  isValidationErrorChanged
+  isValidationErrorChanged,
+  getWindow
 } from './util'
 import { autocomplete } from './autocomplete'
 import { setLanguage, setLanguages, translate } from './i18n'
@@ -136,7 +137,7 @@ treemode._setOptions = function (options) {
         // when there is not enough space below, and there is enough space above
         const pickerHeight = 300 // estimated height of the color picker
         const top = parent.getBoundingClientRect().top
-        const windowHeight = window.innerHeight
+        const windowHeight = getWindow(parent).innerHeight
         const showOnTop = ((windowHeight - top) < pickerHeight && top > pickerHeight)
 
         new VanillaPicker({

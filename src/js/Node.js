@@ -4116,13 +4116,13 @@ Node.onDragStart = (nodes, event) => {
   const offsetY = getAbsoluteTop(draggedNode.dom.tr) - getAbsoluteTop(firstNode.dom.tr)
 
   if (!editor.mousemove) {
-    editor.mousemove = addEventListener(window, 'mousemove', event => {
+    editor.mousemove = addEventListener(event.view, 'mousemove', event => {
       Node.onDrag(nodes, event)
     })
   }
 
   if (!editor.mouseup) {
-    editor.mouseup = addEventListener(window, 'mouseup', event => {
+    editor.mouseup = addEventListener(event.view, 'mouseup', event => {
       Node.onDragEnd(nodes, event)
     })
   }
@@ -4378,11 +4378,11 @@ Node.onDragEnd = (nodes, event) => {
   delete editor.drag
 
   if (editor.mousemove) {
-    removeEventListener(window, 'mousemove', editor.mousemove)
+    removeEventListener(event.view, 'mousemove', editor.mousemove)
     delete editor.mousemove
   }
   if (editor.mouseup) {
-    removeEventListener(window, 'mouseup', editor.mouseup)
+    removeEventListener(event.view, 'mouseup', editor.mouseup)
     delete editor.mouseup
   }
 

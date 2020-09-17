@@ -30,12 +30,16 @@
       editor = undefined
     }
 
+    // make the necessary styles available within the child window
+    // for JSONEditor
     const baseUrl = window.location.href.slice(0, window.location.href.lastIndexOf('/'))
-
     const link = child.document.createElement("link")
     link.setAttribute("href", baseUrl + "/../dist/jsoneditor.css")
     link.setAttribute("rel", "stylesheet")
     child.document.head.append(link)
+    // for vanilla-picker
+    const colorPickerStyles = JSONEditor.VanillaPicker.StyleElement.cloneNode(true)
+    child.document.head.append(colorPickerStyles)
 
     const container = child.document.createElement("div")
     child.document.body.append(container)
