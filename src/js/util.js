@@ -789,7 +789,7 @@ export function isFirefox () {
 var _ieVersion = -1
 
 /**
- * Add and event listener. Works for all browsers
+ * Add an event listener. Works for all browsers
  * @param {Element}     element    An html element
  * @param {string}      action     The action, for example "click",
  *                                 without the prefix "on"
@@ -1139,7 +1139,7 @@ export function getInputSelection (el) {
 }
 
 /**
- * Returns the index for certaion position in text element
+ * Returns the index for certain position in text element
  * @param {DOMElement} el A dom element of a textarea or input text.
  * @param {Number} row row value, > 0, if exceeds rows number - last row will be returned
  * @param {Number} column column value, > 0, if exceeds column length - end of column will be returned
@@ -1499,7 +1499,7 @@ export function contains (array, item) {
 }
 
 /**
- * Checkes if validation has changed from the previous execution
+ * Checks if validation has changed from the previous execution
  * @param {Array} currErr current validation errors
  * @param {Array} prevErr previous validation errors
  */
