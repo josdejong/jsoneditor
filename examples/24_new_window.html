@@ -33,10 +33,10 @@
     // make the necessary styles available within the child window
     // for JSONEditor
     const baseUrl = window.location.href.slice(0, window.location.href.lastIndexOf('/'))
-    const link = child.document.createElement("link")
-    link.setAttribute("href", baseUrl + "/../dist/jsoneditor.css")
-    link.setAttribute("rel", "stylesheet")
-    child.document.head.append(link)
+    const jsonEditorStyles = child.document.createElement("link")
+    jsonEditorStyles.setAttribute("href", baseUrl + "/../dist/jsoneditor.css")
+    jsonEditorStyles.setAttribute("rel", "stylesheet")
+    child.document.head.append(jsonEditorStyles)
     // for vanilla-picker
     const colorPickerStyles = JSONEditor.VanillaPicker.StyleElement.cloneNode(true)
     child.document.head.append(colorPickerStyles)
@@ -45,7 +45,10 @@
     child.document.body.append(container)
 
     // create the editor
-    const options = {}
+    const options = {
+      // Show sort and transform modals in the child window, not the parent.
+      modalAnchor: child.document.body
+    }
     editor = new JSONEditor(container, options)
   }
 

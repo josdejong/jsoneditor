@@ -3917,7 +3917,7 @@ export class Node {
     const json = this.getValue()
 
     showTransformModal({
-      anchor: modalAnchor || DEFAULT_MODAL_ANCHOR,
+      container: modalAnchor || DEFAULT_MODAL_ANCHOR,
       json,
       queryDescription, // can be undefined
       createQuery,
