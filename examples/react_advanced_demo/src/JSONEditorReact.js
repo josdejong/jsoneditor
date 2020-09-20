@@ -20,7 +20,8 @@ export default class JSONEditorReact extends Component {
     if ('json' in this.props) {
       this.jsoneditor.set(this.props.json);
     }
-    if ('text' in this.props) {
+  
+    if ((this.jsoneditor.getText() == "{}") && ('text' in this.props)) {
       this.jsoneditor.setText(this.props.text);
     }
     this.schema = cloneDeep(this.props.schema);
