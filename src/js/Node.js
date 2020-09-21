@@ -4448,7 +4448,7 @@ Node._findSchema = (schema, schemaRefs, path) => {
 
       if (typeof key === 'string' && childSchema.patternProperties && !(childSchema.properties && key in childSchema.properties)) {
         for (const prop in childSchema.patternProperties) {
-          if (key.match(prop)) {
+          if (key.match(prop) && (foundSchema.properties || foundSchema.patternProperties)) {
             foundSchema = Node._findSchema(childSchema.patternProperties[prop], schemaRefs, nextPath)
           }
         }
