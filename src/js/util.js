@@ -462,7 +462,7 @@ export function isArray (obj) {
  * @return {Window}
  */
 export function getWindow (element) {
-  return element.ownerDocument.defaultView;
+  return element.ownerDocument.defaultView
 }
 
 /**
