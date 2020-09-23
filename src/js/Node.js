@@ -2574,7 +2574,7 @@ export class Node {
             // if read-only, we use the regular click behavior of an anchor
             if (isUrl(this.value)) {
               event.preventDefault()
-              window.open(this.value, '_blank')
+              window.open(this.value, '_blank', 'noopener')
             }
           }
           break
@@ -2729,7 +2729,7 @@ export class Node {
       if (target === this.dom.value) {
         if (!this.editable.value || event.ctrlKey) {
           if (isUrl(this.value)) {
-            window.open(this.value, '_blank')
+            window.open(this.value, '_blank', 'noopener')
             handled = true
           }
         }
@@ -3917,7 +3917,7 @@ export class Node {
     const json = this.getValue()
 
     showTransformModal({
-      anchor: modalAnchor || DEFAULT_MODAL_ANCHOR,
+      container: modalAnchor || DEFAULT_MODAL_ANCHOR,
       json,
       queryDescription, // can be undefined
       createQuery,
@@ -4116,13 +4116,13 @@ Node.onDragStart = (nodes, event) => {
   const offsetY = getAbsoluteTop(draggedNode.dom.tr) - getAbsoluteTop(firstNode.dom.tr)
 
   if (!editor.mousemove) {
-    editor.mousemove = addEventListener(window, 'mousemove', event => {
+    editor.mousemove = addEventListener(event.view, 'mousemove', event => {
       Node.onDrag(nodes, event)
     })
   }
 
   if (!editor.mouseup) {
-    editor.mouseup = addEventListener(window, 'mouseup', event => {
+    editor.mouseup = addEventListener(event.view, 'mouseup', event => {
       Node.onDragEnd(nodes, event)
     })
   }
@@ -4378,11 +4378,11 @@ Node.onDragEnd = (nodes, event) => {
   delete editor.drag
 
   if (editor.mousemove) {
-    removeEventListener(window, 'mousemove', editor.mousemove)
+    removeEventListener(event.view, 'mousemove', editor.mousemove)
     delete editor.mousemove
   }
   if (editor.mouseup) {
-    removeEventListener(window, 'mouseup', editor.mouseup)
+    removeEventListener(event.view, 'mouseup', editor.mouseup)
     delete editor.mouseup
   }
 

@@ -244,7 +244,7 @@ textmode.create = function (container, options = {}) {
         // TODO: this anchor falls below the margin of the content,
         // therefore the normal a.href does not work. We use a click event
         // for now, but this should be fixed.
-        window.open(poweredBy.href, poweredBy.target)
+        window.open(poweredBy.href, poweredBy.target, 'noopener')
       }
       this.menu.appendChild(poweredBy)
     }
@@ -484,7 +484,7 @@ textmode._showTransformModal = function () {
   const json = this.get()
 
   showTransformModal({
-    anchor: modalAnchor || DEFAULT_MODAL_ANCHOR,
+    container: modalAnchor || DEFAULT_MODAL_ANCHOR,
     json,
     queryDescription, // can be undefined
     createQuery,
