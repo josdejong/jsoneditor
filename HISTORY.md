@@ -7,6 +7,9 @@ https://github.com/josdejong/jsoneditor
 
 - Fix #1111: Enum dropdown not showing when using patternProperties for schema.
   Thanks @ziga-miklic.
+- Fixed JSONEditor not working when opened in a new window, see #1098.
+  Thanks @joshkel.
+- Define "charset: utf-8" in all HTML examples.
 
 
 ## 2020-09-15, version 9.1.0
