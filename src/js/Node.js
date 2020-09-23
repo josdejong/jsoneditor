@@ -104,9 +104,16 @@ export class Node {
         if (typeof editable === 'boolean') {
           this.editable.field = editable
           this.editable.value = editable
-        } else {
+        } else if (typeof editable === 'object' && editable !== null) {
           if (typeof editable.field === 'boolean') this.editable.field = editable.field
           if (typeof editable.value === 'boolean') this.editable.value = editable.value
+        } else {
+          console.error( 'Invalid return value for function onEditable. ' +
+            'Actual value:', editable, '.',
+            'Either a boolean or object { field: boolean, value: boolean } expected.')
+
+          this.editable.field = false
+          this.editable.value = false
         }
       }
     }

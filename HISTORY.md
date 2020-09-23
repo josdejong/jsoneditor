@@ -3,6 +3,12 @@
 https://github.com/josdejong/jsoneditor
 
 
+## not yet published, version 9.1.2
+
+- Log a clear error in the console when the returned value of `onEditable` is 
+  invalid. See #1112.
+
+
 ## 2020-09-23, version 9.1.1
 
 - Fix #1111: Enum dropdown not showing when using patternProperties for schema.
