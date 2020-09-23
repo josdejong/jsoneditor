@@ -9,6 +9,7 @@ https://github.com/josdejong/jsoneditor
   Thanks @ziga-miklic.
 - Fixed JSONEditor not working when opened in a new window, see #1098.
   Thanks @joshkel.
+- Fix quick-key `Ctrl+D` (duplicate) not working.
 - Define "charset: utf-8" in all HTML examples.
 
 

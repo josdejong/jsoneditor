@@ -4555,7 +4555,7 @@ Node.onDuplicate = nodes => {
       if (clones[0].parent.type === 'object') {
         // when duplicating a single object property,
         // set focus to the field and keep the original field name
-        clones[0].dom.field.innerHTML = this._escapeHTML(nodes[0].field)
+        clones[0].dom.field.innerHTML = nodes[0]._escapeHTML(nodes[0].field)
         clones[0].focus('field')
       } else {
         clones[0].focus()
