@@ -3,7 +3,13 @@
 https://github.com/josdejong/jsoneditor
 
 
-## not yet published, version 9.1.0
+## not yet published, version 9.1.1
+
+- Fix #1111: Enum dropdown not showing when using patternProperties for schema.
+  Thanks @ziga-miklic.
+
+
+## 2020-09-15, version 9.1.0
 
 - Implemented German translation (`de`). Thanks @s-a.
 - Fix quick-keys `Ctrl-\` (format) and `Ctrl-Shift-\` (compact) not working
