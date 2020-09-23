@@ -108,7 +108,8 @@ export class Node {
           if (typeof editable.field === 'boolean') this.editable.field = editable.field
           if (typeof editable.value === 'boolean') this.editable.value = editable.value
         } else {
-          console.error( 'Invalid return value for function onEditable. ' +
+          console.error(
+            'Invalid return value for function onEditable.',
             'Actual value:', editable, '.',
             'Either a boolean or object { field: boolean, value: boolean } expected.')
 
