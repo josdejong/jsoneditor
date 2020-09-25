@@ -21,7 +21,7 @@ export default class JSONEditorReact extends Component {
       this.jsoneditor.set(this.props.json);
     }
   
-    if ((this.jsoneditor.getText() == "{}") && ('text' in this.props)) {
+    if ('text' in this.props) {
       this.jsoneditor.setText(this.props.text);
     }
     this.schema = cloneDeep(this.props.schema);
@@ -33,7 +33,7 @@ export default class JSONEditorReact extends Component {
       this.jsoneditor.update(this.props.json);
     }
 
-    if ('text' in this.props) {
+    if ((this.jsoneditor.getText() == "{}") && ('text' in this.props)) {
       this.jsoneditor.updateText(this.props.text);
     }
 
