@@ -242,7 +242,7 @@ export class ContextMenu {
       this.dom.menu.style.bottom = '0px'
     }
 
-    const maxPossibleMenuHeight = frameRect.height - parentRect.top - parentRect.height;
+    const maxPossibleMenuHeight = frameRect.height - parentRect.top - parentRect.height
     this.dom.list.style.maxHeight = maxPossibleMenuHeight + 'px'
     this.dom.list.style.overflowY = 'auto'
 
