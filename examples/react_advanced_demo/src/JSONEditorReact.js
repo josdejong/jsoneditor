@@ -27,27 +27,27 @@ export default class JSONEditorReact extends Component {
     this.schemaRefs = cloneDeep(this.props.schemaRefs);
   }
 
-  componentWillUpdate(nextProps, nextState) {
-    if ('json' in nextProps) {
-      this.jsoneditor.update(nextProps.json);
+  componentDidUpdate() {
+    if ('json' in this.props) {
+      this.jsoneditor.update(this.props.json);
     }
 
-    if ('text' in nextProps) {
-      this.jsoneditor.updateText(nextProps.text);
+    if ('text' in this.props) {
+      this.jsoneditor.updateText(this.props.text);
     }
 
-    if ('mode' in nextProps) {
-      this.jsoneditor.setMode(nextProps.mode);
+    if ('mode' in this.props) {
+      this.jsoneditor.setMode(this.props.mode);
     }
 
     // store a clone of the schema to keep track on when it actually changes.
     // (When using a PureComponent all of this would be redundant)
-    const schemaChanged = !isEqual(nextProps.schema, this.schema);
-    const schemaRefsChanged = !isEqual(nextProps.schemaRefs, this.schemaRefs);
+    const schemaChanged = !isEqual(this.props.schema, this.schema);
+    const schemaRefsChanged = !isEqual(this.props.schemaRefs, this.schemaRefs);
     if (schemaChanged || schemaRefsChanged) {
-      this.schema = cloneDeep(nextProps.schema);
-      this.schemaRefs = cloneDeep(nextProps.schemaRefs);
-      this.jsoneditor.setSchema(nextProps.schema, nextProps.schemaRefs);
+      this.schema = cloneDeep(this.props.schema);
+      this.schemaRefs = cloneDeep(this.props.schemaRefs);
+      this.jsoneditor.setSchema(this.props.schema, this.props.schemaRefs);
     }
   }
 

@@ -1,0 +1,42 @@
+$jse-white: #ffffff !default;
+$jse-grey:#999999 !default;
+$jse-light-bg: #ebebeb !default;
+$jse-blue: #3883fa !default;
+$jse-content-color: #1a1a1a !default;
+
+$jse-string: #006000 !default;
+$jse-number: #ee422e !default;
+$jse-boolean: #ff8c00 !default;
+$jse-null: #004ed0 !default;
+$jse-color-value: $jse-content-color !default;
+$jse-invalid: $jse-content-color !default;
+$jse-readonly: #808080 !default;
+$jse-empty: #d3d3d3 !default;
+$jse-preview: #f5f5f5 !default;
+$jse-busy: #ffffab !default;
+$jse-busy-border-color: #ffee00 !default;
+
+$jse-error: #ee2e2e70 !default;
+$jse-separator: #e5e5e5 !default;
+$jse-highlight-bg: #ffee00 !default;
+$jse-highlight-border-color: #ffc700 !default;
+
+$jse-popover-bg: #4c4c4c !default;
+$jse-bar-bg: $jse-light-bg !default;
+$jse-bar-border: $jse-empty !default;
+
+$jse-menu-color: $jse-empty !default;
+
+$jse-contextmenu-color: #4d4d4d !default;
+
+$jse-box-shadow: 2px 2px 12px rgba(128, 128, 128, 0.3) !default;
+$jse-box-shadow-sm: 0 0 5px rgba(0, 0, 0, 0.4) !default;
+$jse-box-shadow-inner: inset 0 0 10px rgba(128, 128, 128, 0.5) !default;
+
+$jse-date: #a1a1a1 !default;
+
+$jse-font: arial, sans-serif !default;
+$jse-font-mono: "dejavu sans mono", "droid sans mono", consolas, monaco, "lucida console", "courier new", courier, monospace, sans-serif !default;
+$jse-font-size: 10pt !default;;
+
+$jse-icons: "./img/jsoneditor-icons.svg" !default;

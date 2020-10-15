@@ -1,0 +1,148 @@
+<!DOCTYPE HTML>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+
+  <title>JSONEditor | JSON schema validation</title>
+
+  <link href="../dist/jsoneditor.css" rel="stylesheet" type="text/css">
+  <script src="../dist/jsoneditor.js"></script>
+
+  <style type="text/css">
+    body {
+      width: 600px;
+      font: 11pt sans-serif;
+    }
+
+    #anchor {
+      position: relative;
+    }
+
+    #jsoneditor {
+      width: 320px;
+      height: 300px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* custom bold styling for non-default JSON schema values */
+    .jsoneditor-is-not-default {
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+<h1>Test custom tooltip anchor</h1>
+<p>
+  The JSON Schema error tooltips and the color picker should have correct placing and overflow the editor, also in combination with scrolling.
+</p>
+
+<div id="anchor">
+  <div id="jsoneditor"></div>
+</div>
+<div style="height: 2000px"></div>
+
+<script>
+  const schema = {
+    "title": "Employee",
+    "description": "Object containing employee details",
+    "type": "object",
+    "properties": {
+      "firstName": {
+        "title": "First Name",
+        "description": "The given name.",
+        "examples": [
+          "John"
+        ],
+        "type": "string"
+      },
+      "lastName": {
+        "title": "Last Name",
+        "description": "The family name.",
+        "examples": [
+          "Smith"
+        ],
+        "type": "string"
+      },
+      "gender": {
+        "title": "Gender",
+        "enum": ["male", "female"]
+      },
+      "availableToHire": {
+        "type": "boolean",
+        "default": false
+      },
+      "age": {
+        "description": "Age in years",
+        "type": "integer",
+        "minimum": 0,
+        "examples": [28, 32]
+      },
+      "job": {
+        "$ref": "job"
+      }
+    },
+    "required": ["firstName", "lastName"]
+  }
+
+  const job = {
+    "title": "Job description",
+    "type": "object",
+    "required": ["address"],
+    "properties": {
+      "company": {
+        "type": "string",
+        "examples": [
+          "ACME",
+          "Dexter Industries"
+        ]
+      },
+      "role": {
+        "description": "Job title.",
+        "type": "string",
+        "examples": [
+          "Human Resources Coordinator",
+          "Software Developer"
+        ],
+        "default": "Software Developer"
+      },
+      "address": {
+        "type": "string"
+      },
+      "salary": {
+        "type": "number",
+        "minimum": 120,
+        "examples": [100, 110, 120]
+      }
+    }
+  }
+
+  const json = {
+    firstName: 'John',
+    lastName: 'Doe',
+    gender: null,
+    age: "28",
+    availableToHire: true,
+    favoriteColor: 'red',
+    job: {
+      company: 'freelance',
+      role: 'developer',
+      salary: 100
+    }
+  }
+
+  const options = {
+    schema: schema,
+    schemaRefs: {"job": job},
+    mode: 'tree',
+    modes: ['code', 'text', 'tree', 'preview'],
+    popupAnchor: document.getElementById('anchor')
+  }
+
+  // create the editor
+  const container = document.getElementById('jsoneditor')
+  const editor = new JSONEditor(container, options, json)
+  editor.expandAll()
+</script>
+</body>
+</html>

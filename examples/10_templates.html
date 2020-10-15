@@ -1,6 +1,8 @@
 <!DOCTYPE HTML>
-<html>
+<html lang="en">
 <head>
+  <meta charset="utf-8">
+
   <title>JSONEditor | Item templates</title>
 
   <link href="../dist/jsoneditor.css" rel="stylesheet" type="text/css">
@@ -27,46 +29,45 @@
 <div id="jsoneditor"></div>
 
 <script>
-
-  var json = [
+  const json = [
     {
       firstName: 'John',
       lastName: 'Doe',
       age: 28
     }
-  ];
+  ]
 
-  var options = {
-      templates: [
-          {
-              text: 'Person',
-              title: 'Insert a Person Node',
-              className: 'jsoneditor-type-object',
-              field: 'PersonTemplate',
-              value: {
-                  'firstName': 'John',
-                  'lastName': 'Do',
-                  'age': 28
-              }
-          },
-          {
-              text: 'Address',
-              title: 'Insert a Address Node',
-              field: 'AddressTemplate',
-              value: {
-                  'street': '',
-                  'city': '',
-                  'state': '',
-                  'ZIP code': ''
-              }
-          }
-      ]
-  };
+  const options = {
+    templates: [
+      {
+        text: 'Person',
+        title: 'Insert a Person Node',
+        className: 'jsoneditor-type-object',
+        field: 'PersonTemplate',
+        value: {
+          'firstName': 'John',
+          'lastName': 'Do',
+          'age': 28
+        }
+      },
+      {
+        text: 'Address',
+        title: 'Insert a Address Node',
+        field: 'AddressTemplate',
+        value: {
+          'street': '',
+          'city': '',
+          'state': '',
+          'ZIP code': ''
+        }
+      }
+    ]
+  }
 
   // create the editor
-  var container = document.getElementById('jsoneditor');
-  var editor = new JSONEditor(container, options, json);
-  editor.expandAll();
+  const container = document.getElementById('jsoneditor')
+  const editor = new JSONEditor(container, options, json)
+  editor.expandAll()
 </script>
 </body>
 </html>

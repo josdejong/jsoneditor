@@ -59,17 +59,17 @@ Constructs a new JSONEditor.
 - `{function} onChangeJSON(json)`
 
   Set a callback function triggered when the contents of the JSONEditor change.
-  Passes the changed contents as a JSON object.
+  Passes the changed JSON document.
   Only applicable when option `mode` is `tree`, `form`, or `view`.
   The callback will only be triggered on changes made by the user, not in case of programmatic changes via the functions `set`, `setText`, `update`, or `updateText`.
-  See also callback function `onChangeText(jsonString)`.
+  Also see the callback function `onChangeText(jsonString)`.
 
 - `{function} onChangeText(jsonString)`
 
   Set a callback function triggered when the contents of the JSONEditor change.
-  Passes the changed contents as a stringified JSON object.
+  Passes the changed JSON document inside a string (stringified).
   The callback will only be triggered on changes made by the user, not in case of programmatic changes via the functions `set`, `setText`, `update`, or `updateText`.
-  See also callback function `onChangeJSON(json)`.
+  Also see the callback function `onChangeJSON(json)`.
 
 - `{function} onClassName({ path, field, value })`
 
@@ -161,7 +161,43 @@ Constructs a new JSONEditor.
   }
   ```
   
-  See also option `schema` for JSON schema validation.
+  Also see the option `schema` for JSON schema validation.
+
+- `{function} onValidationError(errors)`
+
+  Set a callback function for validation and parse errors. Available in all modes.
+
+  On validation of the json, if errors of any kind were found this callback is invoked with the errors data.
+
+  On change, the callback will be invoked only if errors were changed.
+
+  Example:
+
+  ```js
+  var options = {
+    /**
+    * @param {Array} errors validation errors
+    */
+    onValidationError: function (errors) {
+      errors.forEach((error) => {
+        switch (error.type) {
+          case 'validation': // schema validation error
+            ...
+            break;
+          case 'customValidation': // custom validation error
+            ...
+            break;
+          case 'error':  // json parse error
+            ...
+            break;
+          ...
+        }
+      });
+      ...
+    }
+  }
+  ```
+  
   
 - `{function} onCreateMenu(items, node)`
   
@@ -186,15 +222,19 @@ Constructs a new JSONEditor.
 
 - `{boolean} escapeUnicode`
 
-  If true, unicode characters are escaped and displayed as their hexadecimal code (like `\u260E`) instead of of the character itself (like `☎`). False by default.
+  If `true`, unicode characters are escaped and displayed as their hexadecimal code (like `\u260E`) instead of of the character itself (like `☎`). `false` by default.
 
 - `{boolean} sortObjectKeys`
 
-  If true, object keys in 'tree', 'view' or 'form' mode list be listed alphabetically instead by their insertion order. Sorting is performed using a natural sort algorithm, which makes it easier to see objects that have string numbers as keys. False by default.
+  If `true`, object keys in 'tree', 'view' or 'form' mode list be listed alphabetically instead by their insertion order. Sorting is performed using a natural sort algorithm, which makes it easier to see objects that have string numbers as keys. `false` by default.
+
+- `{boolean} limitDragging`
+
+  If `false`, nodes can be dragged from any parent node to any other parent node. If `true`, nodes can only be dragged inside the same parent node, which effectively only allows reordering of nodes. By default, `limitDragging` is `true` when no JSON `schema` is defined, and `false` otherwise.
 
 - `{boolean} history`
 
-  Enables history, adds a button Undo and Redo to the menu of the JSONEditor. True by default. Only applicable when `mode` is 'tree' or 'form'.
+  Enables history, adds a button Undo and Redo to the menu of the JSONEditor. `true` by default. Only applicable when `mode` is `'tree'`, `'form'`, or `'preview'`.
 
 - `{String} mode`
 
@@ -208,7 +248,7 @@ Constructs a new JSONEditor.
 
 - `{String} name`
 
-  Initial field name for the root node, is undefined by default. Can also be set using `JSONEditor.setName(name)`. Only applicable when `mode` is 'tree', 'view', or 'form'.
+  Initial field name for the root node, is `undefined` by default. Can also be set using `JSONEditor.setName(name)`. Only applicable when `mode` is 'tree', 'view', or 'form'.
 
 - `{Object} schema`
 
@@ -218,7 +258,7 @@ Constructs a new JSONEditor.
 
   See [http://json-schema.org/](http://json-schema.org/) for more information.
 
-  See also option `onValidate` for custom validation.
+  Also see the option `onValidate` for custom validation.
 
 - `{Object} schemaRefs`
 
@@ -227,15 +267,15 @@ Constructs a new JSONEditor.
 
 - `{boolean} search`
 
-  Enables a search box in the upper right corner of the JSONEditor. True by default. Only applicable when `mode` is 'tree', 'view', or 'form'.
+  Enables a search box in the upper right corner of the JSONEditor. `true` by default. Only applicable when `mode` is 'tree', 'view', or 'form'.
 
 - `{Number} indentation`
 
-  Number of indentation spaces. 2 by default. Only applicable when `mode` is 'code', 'text', or 'preview'.
+  Number of indentation spaces. `2` by default. Only applicable when `mode` is 'code', 'text', or 'preview'.
 
 - `{String} theme`
 
-  Set the Ace editor theme, uses included 'ace/theme/jsoneditor' by default. Please note that only the default theme is included with jsoneditor, so if you specify another one you need to make sure it is loaded.
+  Set the Ace editor theme, uses included 'ace/theme/jsoneditor' by default. Please note that only the default theme is included with JSONEditor, so if you specify another one you need to make sure it is loaded.
 
 - `{Object} templates`
 
@@ -294,7 +334,7 @@ Constructs a new JSONEditor.
 
   - `{number[]} confirmKeys`
 
-     Indicate the KeyCodes for trigger confirm completion, by default those keys are:  [39, 35, 9] which are the code for [right, end, tab]
+     Indicate the KeyCodes for trigger confirm completion, by default those keys are:  `[39, 35, 9]` which are the code for [right, end, tab]
 
   - `{boolean} caseSensitive`
 
@@ -320,15 +360,15 @@ Constructs a new JSONEditor.
 
 - `{boolean} mainMenuBar`
 
-  Adds main menu bar - Contains format, sort, transform, search etc. functionality. True by default. Applicable in all types of `mode`.
+  Adds main menu bar - Contains format, sort, transform, search etc. functionality. `true` by default. Applicable in all types of `mode`.
 
 - `{boolean} navigationBar`
 
-  Adds navigation bar to the menu - the navigation bar visualize the current position on the tree structure as well as allows breadcrumbs navigation. True by default. Only applicable when `mode` is 'tree', 'form' or 'view'.
+  Adds navigation bar to the menu - the navigation bar visualize the current position on the tree structure as well as allows breadcrumbs navigation. `true` by default. Only applicable when `mode` is 'tree', 'form' or 'view'.
 
 - `{boolean} statusBar`
 
-  Adds status bar to the bottom of the editor - the status bar shows the cursor position and a count of the selected characters. True by default. Only applicable when `mode` is 'code', 'text', or 'preview'.
+  Adds status bar to the bottom of the editor - the status bar shows the cursor position and a count of the selected characters. `true` by default. Only applicable when `mode` is 'code', 'text', or 'preview'.
 
 - `{function} onTextSelectionChange(start, end, text)`
 
@@ -402,9 +442,17 @@ Constructs a new JSONEditor.
   ```
   Only applicable when `mode` is 'form', 'tree' or 'view'.  
 
+- `{function} onFocus({ type: 'focus', target })`
+  Callback method, triggered when the editor comes into focus, 
+  passing an object `{type, target}`, Applicable for all modes.
+
+- `{function} onBlur({ type: 'blur', target })`
+  Callback method, triggered when the editor goes out of focus, 
+  passing an object `{type, target}`, Applicable for all modes.
+
 - `{boolean} colorPicker`
 
-  If true (default), values containing a color name or color code will have a color picker rendered on their left side.
+  If `true` (default), values containing a color name or color code will have a color picker rendered on their left side.
 
 - `{function} onColorPicker(parent, color, onChange)`
 
@@ -432,15 +480,82 @@ Constructs a new JSONEditor.
   }
   ```
 
-- `{boolean} timestampTag`
+- `{boolean | function({field, value, path}) -> boolean} timestampTag`
 
-  If true (default), a tag with the date/time of a timestamp is displayed
-  right from timestamps. A value is considered a timestamp when it
-  has a value larger than Jan 1th 2000, `946684800000`.
+  If `true` (default), a tag with the date/time of a timestamp is displayed
+  right from values containing a timestamp. By default, a value is 
+  considered a timestamp when it is an integer number with a value larger 
+  than Jan 1th 2000, `946684800000`.
+  
+  When `timestampTag` a is a function, a timestamp tag will be displayed when 
+  this function returns `true`, and no timestamp is displayed when the function
+  returns `false`. When the function returns a non-boolean value like `null`
+  or `undefined`, JSONEditor will fallback on the built-in rules to determine
+  whether or not to show a timestamp.   
+  
+  The function is invoked with an object as first parameter:
+  
+  ```
+  {
+    field: string,
+    value: string,
+    path: string[]
+  }
+  ```
+
+  Whether a value is a timestamp can be determined implicitly based on 
+  the `value`, or explicitly based on `field` or `path`. You can for example
+  test whether a field name contains a string like: `'date'` or `'time'`.
+
+  Example:
+  
+  ```js
+  var options = {
+    timestampTag: function ({ field, value, path }) {
+      if (field === 'dateCreated') {
+        return true
+      }
+
+      return false
+    }
+  }
+  ```
+  
+  Only applicable for modes `tree`, `form`, and `view`.
+
+- `{ function({field, value, path}) -> string|null } timestampFormat`
+
+  Customizing the way formating the timestamp. Called when a value is timestamp after `timestampTag`. If it returns null, the timestamp would be formatted with default setting (`new Date(value).toISOString()`).
+  
+  parameter:
+  
+  ```
+  {
+    field: string,
+    value: string,
+    path: string[]
+  }
+  ```
+
+  Example:
+  
+  ```js
+  var options = {
+    timestampFormat: function ({ field, value, path }) {
+      if (field === 'customTime') {
+        return new Date(value*1000).toString()
+      }
+
+      return null
+    }
+  }
+  ```
+  
+  Only applicable for modes `tree`, `form`, and `view`.
 
 - `{string} language`
 
-  The default language comes from the browser navigator, but you can force a specific language. So use here string as 'en' or 'pt-BR'. Built-in languages: `en`, `pt-BR`, `zh-CN`, `tr`. Other translations can be specified via the option `languages`.
+  The default language comes from the browser navigator, but you can force a specific language. So use here string as 'en' or 'pt-BR'. Built-in languages: `en`, `zh-CN`, `pt-BR`, `tr`, `ja`, `fr-FR`, `de`. Other translations can be specified via the option `languages`.
 
 - `{Object} languages`
 
@@ -464,17 +579,77 @@ Constructs a new JSONEditor.
   The container element where modals (like for sorting and filtering) are attached: an overlay will be created on top
   of this container, and the modal will be created in the center of this container.
 
+- `{HTMLElement} popupAnchor`
+
+  The container element where popups (for example drop down menus, for JSON Schema error
+  tooltips, and color pickers) will be absolutely positioned. 
+  By default, this is the root DIV element of the editor itself. 
+  
+  When the JSONEditor is inside a DIV element which hides overflowing contents 
+  (CSS `overflow: auto` or `overflow: hidden`), tooltips will be visible only partly. 
+  In this case, a `popupAnchor` outside of the element without hidden overflow will allow 
+  the tooltips to be visible when overflowing the DIV element of the JSONEditor.
+
 - `{boolean} enableSort`
 
-  Enable sorting of arrays and object properties. Only applicable for mode 'tree'. True by default.
+  Enable sorting of arrays and object properties. Only applicable for mode 'tree'. `true` by default.
 
 - `{boolean} enableTransform`
 
-  Enable filtering, sorting, and transforming JSON using a [JMESPath](http://jmespath.org/) query. Only applicable for mode 'tree'. True by default.
+  Enable filtering, sorting, and transforming JSON using a [JMESPath](http://jmespath.org/) query. Only applicable for mode 'tree'. `true` by default.
 
 - `{Number} maxVisibleChilds`
 
-  Number of children allowed for a given node before the "show more / show all" message appears (in 'tree', 'view', or 'form' modes). 100 by default.
+  Number of children allowed for a given node before the "show more / show all" message appears (in 'tree', 'view', or 'form' modes). `100` by default.
+  
+- `{ function(json: JSON, queryOptions: QueryOptions) -> string } createQuery`
+
+  Create a query string based on query options filled in the Transform Wizard in the Transform modal. 
+  Normally used in combination with `executeQuery`.
+  The input for the function are the entered query options and the current JSON, and the output
+  must be a string containing the query. This query will be executed using `executeQuery`.
+  
+  The query options have the following structure:
+  
+  ```
+  interface QueryOptions {
+    filter?: {
+      field: string | '@'
+      relation: '==' | '!=' | '<' | '<=' | '>' | '>='
+      value: string
+    }
+    sort?: {
+      field: string | '@'
+      direction: 'asc' | 'desc'
+    }
+    projection?: {
+      fields: string[]
+    }
+  }
+  ```
+  
+  Note that there is a special case `'@'` for `filter.field` and `sort.field`.
+  It means that the field itself is selected, for example when having an array containing numbers.
+  
+  A usage example can be found in `examples/23_custom_query_language.html`.
+  
+
+- `{ function(json: JSON, query: string) -> JSON } executeQuery`
+
+  Replace the build-in query language used in the Transform modal with a custom language.
+  Normally used in combination with `createQuery`.
+  The input for the function is the current JSON and a query string, and output must be the transformed JSON.
+
+  A usage example can be found in `examples/23_custom_query_language.html`.
+
+- `{string} queryDescription` 
+
+  A text description displayed on top of the Transform modal. 
+  Can be used to explain a custom query language implemented via `createQuery` and `executeQuery`.
+  The text can contain HTML code like a link to a web page.
+  
+  A usage example can be found in `examples/23_custom_query_language.html`.
+
 
 ### Methods
 
@@ -592,7 +767,7 @@ See also `JSONEditor.update(json)`.
 
 #### `JSONEditor.setMode(mode)`
 
-Switch mode. Mode `code` requires the [Ace editor](http://ace.ajax.org/).
+Switch mode. Mode `code` requires the [Ace editor](https://ace.c9.io/).
 
 *Parameters:*
 
@@ -686,7 +861,7 @@ See also `JSONEditor.set(json)`.
 
 Replace text data when the new data contains changes.
 In modes `tree`, `form`, and `view`, the state of the editor will be maintained (expanded nodes, search, selection).
-See also `JSONEditor.setText(jsonString)`.
+Also see `JSONEditor.setText(jsonString)`.
 
 This method throws an exception when the provided jsonString does not contain
 valid JSON and the editor is in mode `tree`, `view`, or `form`.
@@ -767,7 +942,7 @@ var json = editor.get();
 
 ## JSON parsing and stringification
 
-In general to parse or stringify JSON data, the browsers built in JSON parser can be used. To create a formatted string from a JSON object, use:
+In general, to parse or stringify JSON data, the browsers built in JSON parser can be used. To create a formatted string from a JSON object, use:
 
 ```js
 var formattedString = JSON.stringify(json, null, 2);

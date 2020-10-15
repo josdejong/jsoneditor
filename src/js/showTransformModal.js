@@ -1,29 +1,43 @@
-var jmespath = require('jmespath');
-var picoModal = require('picomodal');
-var Selectr = require('./assets/selectr/selectr');
-var translate = require('./i18n').translate;
-var stringifyPartial = require('./jsonUtils').stringifyPartial;
-var util = require('./util');
-var MAX_PREVIEW_CHARACTERS = require('./constants').MAX_PREVIEW_CHARACTERS
-var debounce = util.debounce;
+import picoModal from 'picomodal'
+import Selectr from './assets/selectr/selectr'
+import { translate } from './i18n'
+import { stringifyPartial } from './jsonUtils'
+import { getChildPaths, debounce } from './util'
+import { MAX_PREVIEW_CHARACTERS } from './constants'
+
+const DEFAULT_DESCRIPTION =
+  'Enter a <a href="http://jmespath.org" target="_blank">JMESPath</a> query to filter, sort, or transform the JSON data.<br/>' +
+  'To learn JMESPath, go to <a href="http://jmespath.org/tutorial.html" target="_blank">the interactive tutorial</a>.'
 
 /**
  * Show advanced filter and transform modal using JMESPath
- * @param {HTMLElement} container   The container where to center
- *                                  the modal and create an overlay
- * @param {JSON} json               The json data to be transformed
- * @param {function} onTransform    Callback invoked with the created
- *                                  query as callback
+ * @param {Object} params
+ * @property {HTMLElement} container   The container where to center
+ *                                     the modal and create an overlay
+ * @property {JSON} json               The json data to be transformed
+ * @property {string} [queryDescription] Optional custom description explaining
+ *                                       the transform functionality
+ * @property {function} createQuery    Function called to create a query
+ *                                     from the wizard form
+ * @property {function} executeQuery   Execute a query for the preview pane
+ * @property {function} onTransform    Callback invoked with the created
+ *                                     query as callback
  */
-function showTransformModal (container, json, onTransform) {
-  var value = json;
+export function showTransformModal (
+  {
+    container,
+    json,
+    queryDescription = DEFAULT_DESCRIPTION,
+    createQuery,
+    executeQuery,
+    onTransform
+  }
+) {
+  const value = json
 
-  var content = '<label class="pico-modal-contents">' +
+  const content = '<label class="pico-modal-contents">' +
       '<div class="pico-modal-header">' + translate('transform') + '</div>' +
-      '<p>' +
-      'Enter a <a href="http://jmespath.org" target="_blank">JMESPath</a> query to filter, sort, or transform the JSON data.<br/>' +
-      'To learn JMESPath, go to <a href="http://jmespath.org/tutorial.html" target="_blank">the interactive tutorial</a>.' +
-      '</p>' +
+      '<p>' + queryDescription + '</p>' +
       '<div class="jsoneditor-jmespath-label">' + translate('transformWizardLabel') + ' </div>' +
       '<div id="wizard" class="jsoneditor-jmespath-block jsoneditor-jmespath-wizard">' +
       '  <table class="jsoneditor-jmespath-wizard-table">' +
@@ -46,7 +60,7 @@ function showTransformModal (container, json, onTransform) {
       '            </select>' +
       '          </div>' +
       '          <div class="jsoneditor-inline jsoneditor-jmespath-filter-value" >' +
-      '            <input placeholder="value..." id="filterValue" />' +
+      '            <input type="text" class="value" placeholder="value..." id="filterValue" />' +
       '          </div>' +
       '        </td>' +
       '      </tr>' +
@@ -93,208 +107,190 @@ function showTransformModal (container, json, onTransform) {
       '<div class="jsoneditor-jmespath-block jsoneditor-modal-actions">' +
       '  <input type="submit" id="ok" value="' + translate('ok') + '" autofocus />' +
       '</div>' +
-      '</div>';
+      '</div>'
 
   picoModal({
     parent: container,
     content: content,
     overlayClass: 'jsoneditor-modal-overlay',
     overlayStyles: {
-        backgroundColor: "rgb(1,1,1)",
-        opacity: 0.3
+      backgroundColor: 'rgb(1,1,1)',
+      opacity: 0.3
     },
     modalClass: 'jsoneditor-modal jsoneditor-modal-transform',
     focus: false
   })
-      .afterCreate(function (modal) {
-        var elem = modal.modalElem();
+    .afterCreate(modal => {
+      const elem = modal.modalElem()
 
-        var wizard = elem.querySelector('#wizard');
-        var ok = elem.querySelector('#ok');
-        var filterField = elem.querySelector('#filterField');
-        var filterRelation = elem.querySelector('#filterRelation');
-        var filterValue = elem.querySelector('#filterValue');
-        var sortField = elem.querySelector('#sortField');
-        var sortOrder = elem.querySelector('#sortOrder');
-        var selectFields = elem.querySelector('#selectFields');
-        var query = elem.querySelector('#query');
-        var preview = elem.querySelector('#preview');
+      const wizard = elem.querySelector('#wizard')
+      const ok = elem.querySelector('#ok')
+      const filterField = elem.querySelector('#filterField')
+      const filterRelation = elem.querySelector('#filterRelation')
+      const filterValue = elem.querySelector('#filterValue')
+      const sortField = elem.querySelector('#sortField')
+      const sortOrder = elem.querySelector('#sortOrder')
+      const selectFields = elem.querySelector('#selectFields')
+      const query = elem.querySelector('#query')
+      const preview = elem.querySelector('#preview')
 
-        if (!Array.isArray(value)) {
-          wizard.style.fontStyle = 'italic';
-          wizard.innerHTML = '(wizard not available for objects, only for arrays)'
-        }
+      if (!Array.isArray(value)) {
+        wizard.style.fontStyle = 'italic'
+        wizard.textContent = '(wizard not available for objects, only for arrays)'
+      }
 
-        var sortablePaths = util.getChildPaths(json);
+      const sortablePaths = getChildPaths(json)
 
-        sortablePaths.forEach(function (path) {
-          var formattedPath = preprocessPath(path);
-          var filterOption = document.createElement('option');
-          filterOption.text = formattedPath;
-          filterOption.value = formattedPath;
-          filterField.appendChild(filterOption);
+      sortablePaths.forEach(path => {
+        const formattedPath = preprocessPath(path)
+        const filterOption = document.createElement('option')
+        filterOption.text = formattedPath
+        filterOption.value = formattedPath
+        filterField.appendChild(filterOption)
 
-          var sortOption = document.createElement('option');
-          sortOption.text = formattedPath;
-          sortOption.value = formattedPath;
-          sortField.appendChild(sortOption);
-        });
-
-        var selectablePaths = util.getChildPaths(json, true).filter(function(path) {
-          return path !== '';
-        });
-        if (selectablePaths.length > 0) {
-          selectablePaths.forEach(function (path) {
-            var formattedPath = preprocessPath(path);
-            var option = document.createElement('option');
-            option.text = formattedPath;
-            option.value = formattedPath;
-            selectFields.appendChild(option);
-          });
-        }
-        else {
-          var selectFieldsPart = elem.querySelector('#selectFieldsPart');
-          if (selectFieldsPart) {
-            selectFieldsPart.style.display = 'none';
-          }
-        }
-
-        var selectrFilterField = new Selectr(filterField, { defaultSelected: false, clearable: true, allowDeselect: true, placeholder: 'field...' });
-        var selectrFilterRelation = new Selectr(filterRelation, { defaultSelected: false, clearable: true, allowDeselect: true, placeholder: 'compare...' });
-        var selectrSortField = new Selectr(sortField, { defaultSelected: false, clearable: true, allowDeselect: true, placeholder: 'field...' });
-        var selectrSortOrder = new Selectr(sortOrder, { defaultSelected: false, clearable: true, allowDeselect: true, placeholder: 'order...' });
-        var selectrSelectFields = new Selectr(selectFields, {multiple: true, clearable: true, defaultSelected: false, placeholder: 'select fields...'});
-
-        selectrFilterField.on('selectr.change', generateQueryFromWizard);
-        selectrFilterRelation.on('selectr.change', generateQueryFromWizard);
-        filterValue.oninput = generateQueryFromWizard;
-        selectrSortField.on('selectr.change', generateQueryFromWizard);
-        selectrSortOrder.on('selectr.change', generateQueryFromWizard);
-        selectrSelectFields.on('selectr.change', generateQueryFromWizard);
-
-        elem.querySelector('.pico-modal-contents').onclick = function (event) {
-          // prevent the first clear button (in any select box) from getting
-          // focus when clicking anywhere in the modal. Only allow clicking links.
-          if (event.target.nodeName !== 'A') {
-            event.preventDefault();
-          }
-        };
-
-        query.value = Array.isArray(value) ? '[*]' : '@';
-
-        function preprocessPath(path) {
-          return (path === '')
-              ? '@'
-              : (path[0] === '.')
-                  ? path.slice(1)
-                  : path;
-        }
-
-        function generateQueryFromWizard () {
-          if (filterField.value && filterRelation.value && filterValue.value) {
-            var field1 = filterField.value;
-            var examplePath = field1 !== '@'
-                ? ['0'].concat(util.parsePath('.' + field1))
-                : ['0']
-            var exampleValue = util.get(value, examplePath)
-            var value1 = typeof exampleValue === 'string'
-                ? filterValue.value
-                : util.parseString(filterValue.value);
-
-            query.value = '[? ' +
-                field1 + ' ' +
-                filterRelation.value + ' ' +
-                '`' + JSON.stringify(value1) + '`' +
-                ']';
-          }
-          else {
-            query.value = '[*]';
-          }
-
-          if (sortField.value && sortOrder.value) {
-            var field2 = sortField.value;
-            if (sortOrder.value === 'desc') {
-              query.value += ' | reverse(sort_by(@, &' + field2 + '))';
-            }
-            else {
-              query.value += ' | sort_by(@, &' + field2 + ')';
-            }
-          }
-
-          if (selectFields.value) {
-            var values = [];
-            for (var i=0; i < selectFields.options.length; i++) {
-              if (selectFields.options[i].selected) {
-                var selectedValue = selectFields.options[i].value;
-                values.push(selectedValue);
-              }
-            }
-
-            if (query.value[query.value.length - 1] !== ']') {
-              query.value += ' | [*]';
-            }
-
-            if (values.length === 1) {
-              query.value += '.' + values[0];
-            }
-            else if (values.length > 1) {
-              query.value += '.{' +
-                  values.map(function (value) {
-                    var parts = value.split('.');
-                    var last = parts[parts.length - 1];
-                    return last + ': ' + value;
-                  }).join(', ') +
-                  '}';
-            }
-            else { // values.length === 0
-              // ignore
-            }
-          }
-
-          debouncedUpdatePreview();
-        }
-
-        function updatePreview() {
-          try {
-            var transformed = jmespath.search(value, query.value);
-
-            preview.className = 'jsoneditor-transform-preview';
-            preview.value = stringifyPartial(transformed, 2, MAX_PREVIEW_CHARACTERS);
-
-            ok.disabled = false;
-          }
-          catch (err) {
-            preview.className = 'jsoneditor-transform-preview jsoneditor-error';
-            preview.value = err.toString();
-            ok.disabled = true;
-          }
-        }
-
-        var debouncedUpdatePreview = debounce(updatePreview, 300);
-
-        query.oninput = debouncedUpdatePreview;
-        debouncedUpdatePreview();
-
-        ok.onclick = function (event) {
-          event.preventDefault();
-          event.stopPropagation();
-
-          modal.close();
-
-          onTransform(query.value)
-        };
-
-        setTimeout(function () {
-          query.select();
-          query.focus();
-          query.selectionStart = 3;
-          query.selectionEnd = 3;
-        });
+        const sortOption = document.createElement('option')
+        sortOption.text = formattedPath
+        sortOption.value = formattedPath
+        sortField.appendChild(sortOption)
       })
-      .afterClose(function (modal) {
-        modal.destroy();
+
+      const selectablePaths = getChildPaths(json, true).filter(path => path !== '')
+      if (selectablePaths.length > 0) {
+        selectablePaths.forEach(path => {
+          const formattedPath = preprocessPath(path)
+          const option = document.createElement('option')
+          option.text = formattedPath
+          option.value = formattedPath
+          selectFields.appendChild(option)
+        })
+      } else {
+        const selectFieldsPart = elem.querySelector('#selectFieldsPart')
+        if (selectFieldsPart) {
+          selectFieldsPart.style.display = 'none'
+        }
+      }
+
+      const selectrFilterField = new Selectr(filterField, { defaultSelected: false, clearable: true, allowDeselect: true, placeholder: 'field...' })
+      const selectrFilterRelation = new Selectr(filterRelation, { defaultSelected: false, clearable: true, allowDeselect: true, placeholder: 'compare...' })
+      const selectrSortField = new Selectr(sortField, { defaultSelected: false, clearable: true, allowDeselect: true, placeholder: 'field...' })
+      const selectrSortOrder = new Selectr(sortOrder, { defaultSelected: false, clearable: true, allowDeselect: true, placeholder: 'order...' })
+      const selectrSelectFields = new Selectr(selectFields, { multiple: true, clearable: true, defaultSelected: false, placeholder: 'select fields...' })
+
+      selectrFilterField.on('selectr.change', generateQueryFromWizard)
+      selectrFilterRelation.on('selectr.change', generateQueryFromWizard)
+      filterValue.oninput = generateQueryFromWizard
+      selectrSortField.on('selectr.change', generateQueryFromWizard)
+      selectrSortOrder.on('selectr.change', generateQueryFromWizard)
+      selectrSelectFields.on('selectr.change', generateQueryFromWizard)
+
+      elem.querySelector('.pico-modal-contents').onclick = event => {
+        // prevent the first clear button (in any select box) from getting
+        // focus when clicking anywhere in the modal. Only allow clicking links.
+        if (event.target.nodeName !== 'A') {
+          event.preventDefault()
+        }
+      }
+
+      function preprocessPath (path) {
+        return (path === '')
+          ? '@'
+          : (path[0] === '.')
+            ? path.slice(1)
+            : path
+      }
+
+      function updatePreview () {
+        try {
+          const transformed = executeQuery(value, query.value)
+
+          preview.className = 'jsoneditor-transform-preview'
+          preview.value = stringifyPartial(transformed, 2, MAX_PREVIEW_CHARACTERS)
+
+          ok.disabled = false
+        } catch (err) {
+          preview.className = 'jsoneditor-transform-preview jsoneditor-error'
+          preview.value = err.toString()
+          ok.disabled = true
+        }
+      }
+
+      const debouncedUpdatePreview = debounce(updatePreview, 300)
+
+      function tryCreateQuery (json, queryOptions) {
+        try {
+          query.value = createQuery(json, queryOptions)
+          ok.disabled = false
+
+          debouncedUpdatePreview()
+        } catch (err) {
+          const message = 'Error: an error happened when executing "createQuery": ' + (err.message || err.toString())
+
+          query.value = ''
+          ok.disabled = true
+
+          preview.className = 'jsoneditor-transform-preview jsoneditor-error'
+          preview.value = message
+        }
+      }
+
+      function generateQueryFromWizard () {
+        const queryOptions = {}
+
+        if (filterField.value && filterRelation.value && filterValue.value) {
+          queryOptions.filter = {
+            field: filterField.value,
+            relation: filterRelation.value,
+            value: filterValue.value
+          }
+        }
+
+        if (sortField.value && sortOrder.value) {
+          queryOptions.sort = {
+            field: sortField.value,
+            direction: sortOrder.value
+          }
+        }
+
+        if (selectFields.value) {
+          const fields = []
+          for (let i = 0; i < selectFields.options.length; i++) {
+            if (selectFields.options[i].selected) {
+              const selectedField = selectFields.options[i].value
+              fields.push(selectedField)
+            }
+          }
+
+          queryOptions.projection = {
+            fields
+          }
+        }
+
+        tryCreateQuery(json, queryOptions)
+      }
+
+      query.oninput = debouncedUpdatePreview
+
+      ok.onclick = event => {
+        event.preventDefault()
+        event.stopPropagation()
+
+        modal.close()
+
+        onTransform(query.value)
+      }
+
+      // initialize with empty query
+      tryCreateQuery(json, {})
+
+      setTimeout(() => {
+        query.select()
+        query.focus()
+        query.selectionStart = 3
+        query.selectionEnd = 3
       })
-      .show();
+    })
+    .afterClose(modal => {
+      modal.destroy()
+    })
+    .show()
 }
-
-module.exports = showTransformModal;

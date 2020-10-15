@@ -1,0 +1,51 @@
+.jsoneditor,
+.jsoneditor-modal {
+  input,
+  input:not([type]),
+  input[type="text"],
+  input[type="search"], {
+    height: auto;
+    border: inherit;
+    box-shadow: none;
+    font-size: inherit;
+    box-sizing: inherit;
+    padding: inherit;
+    font-family: inherit;
+    transition: none;
+    line-height: inherit;
+
+    &:focus {
+      border: inherit;
+      box-shadow: inherit;
+    }
+  }
+
+  textarea {
+    height: inherit;
+  }
+
+  select {
+    display: inherit;
+    height: inherit;
+  }
+
+  label {
+    font-size: inherit;
+    font-weight: inherit;
+    color: inherit;
+  }
+
+  table {
+    border-collapse: collapse;
+    width: auto;
+  }
+
+  td,
+  th {
+    padding: 0;
+    display: table-cell;
+    text-align: left;
+    vertical-align: inherit;
+    border-radius: inherit;
+  }
+}

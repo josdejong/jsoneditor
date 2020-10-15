@@ -1,6 +1,8 @@
 <!DOCTYPE HTML>
-<html>
+<html lang="en">
 <head>
+  <meta charset="utf-8">
+
   <title>JSONEditor | JSON schema validation</title>
 
   <link href="../dist/jsoneditor.css" rel="stylesheet" type="text/css">
@@ -34,7 +36,7 @@
 <div id="jsoneditor"></div>
 
 <script>
-  var schema = {
+  const schema = {
     "title": "Employee",
     "description": "Object containing employee details",
     "type": "object",
@@ -74,9 +76,9 @@
       }
     },
     "required": ["firstName", "lastName"]
-  };
+  }
 
-  var job = {
+  const job = {
     "title": "Job description",
     "type": "object",
     "required": ["address"],
@@ -106,9 +108,9 @@
         "examples": [100, 110, 120]
       }
     }
-  };
+  }
 
-  var json = {
+  const json = {
     firstName: 'John',
     lastName: 'Doe',
     gender: null,
@@ -119,18 +121,18 @@
       role: 'developer',
       salary: 100
     }
-  };
+  }
 
-  var options = {
+  const options = {
     schema: schema,
     schemaRefs: {"job": job},
     mode: 'tree',
     modes: ['code', 'text', 'tree', 'preview']
-  };
+  }
 
   // create the editor
-  var container = document.getElementById('jsoneditor');
-  var editor = new JSONEditor(container, options, json);
+  const container = document.getElementById('jsoneditor')
+  const editor = new JSONEditor(container, options, json)
 </script>
 </body>
 </html>

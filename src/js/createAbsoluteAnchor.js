@@ -1,66 +1,84 @@
-var util = require('./util');
+import { isChildOf, removeEventListener, addEventListener } from './util'
 
 /**
  * Create an anchor element absolutely positioned in the `parent`
  * element.
  * @param {HTMLElement} anchor
  * @param {HTMLElement} parent
- * @param [onDestroy(function(anchor)]  Callback when the anchor is destroyed
+ * @param {function(HTMLElement)} [onDestroy]  Callback when the anchor is destroyed
+ * @param {boolean} [destroyOnMouseOut=false] If true, anchor will be removed on mouse out
  * @returns {HTMLElement}
  */
-exports.createAbsoluteAnchor = function (anchor, parent, onDestroy) {
-  var root = getRootNode(anchor);
-  var eventListeners = {};
+export function createAbsoluteAnchor (anchor, parent, onDestroy, destroyOnMouseOut = false) {
+  const root = getRootNode(anchor)
+  const eventListeners = {}
 
-  var anchorRect = anchor.getBoundingClientRect();
-  var frameRect = parent.getBoundingClientRect();
+  const anchorRect = anchor.getBoundingClientRect()
+  const parentRect = parent.getBoundingClientRect()
 
-  var absoluteAnchor = document.createElement('div');
-  absoluteAnchor.className = 'jsoneditor-anchor';
-  absoluteAnchor.style.position = 'absolute';
-  absoluteAnchor.style.left = (anchorRect.left - frameRect.left) + 'px';
-  absoluteAnchor.style.top = (anchorRect.top - frameRect.top) + 'px';
-  absoluteAnchor.style.width = (anchorRect.width - 2) + 'px';
-  absoluteAnchor.style.height = (anchorRect.height - 2) + 'px';
-  absoluteAnchor.style.boxSizing = 'border-box';
-  parent.appendChild(absoluteAnchor);
+  const absoluteAnchor = document.createElement('div')
+  absoluteAnchor.className = 'jsoneditor-anchor'
+  absoluteAnchor.style.position = 'absolute'
+  absoluteAnchor.style.left = (anchorRect.left - parentRect.left) + 'px'
+  absoluteAnchor.style.top = (anchorRect.top - parentRect.top) + 'px'
+  absoluteAnchor.style.width = (anchorRect.width - 2) + 'px'
+  absoluteAnchor.style.height = (anchorRect.height - 2) + 'px'
+  absoluteAnchor.style.boxSizing = 'border-box'
+  parent.appendChild(absoluteAnchor)
 
   function destroy () {
     // remove temporary absolutely positioned anchor
     if (absoluteAnchor && absoluteAnchor.parentNode) {
-      absoluteAnchor.parentNode.removeChild(absoluteAnchor);
+      absoluteAnchor.parentNode.removeChild(absoluteAnchor)
 
       // remove all event listeners
       // all event listeners are supposed to be attached to document.
-      for (var name in eventListeners) {
-        if (eventListeners.hasOwnProperty(name)) {
-          var fn = eventListeners[name];
+      for (const name in eventListeners) {
+        if (hasOwnProperty(eventListeners, name)) {
+          const fn = eventListeners[name]
           if (fn) {
-            util.removeEventListener(root, name, fn);
+            removeEventListener(root, name, fn)
           }
-          delete eventListeners[name];
+          delete eventListeners[name]
         }
       }
 
       if (typeof onDestroy === 'function') {
-        onDestroy(anchor);
+        onDestroy(anchor)
       }
     }
   }
 
+  function isOutside (target) {
+    return (target !== absoluteAnchor) && !isChildOf(target, absoluteAnchor)
+  }
+
   // create and attach event listeners
-  var destroyIfOutside = function (event) {
-    var target = event.target;
-    if ((target !== absoluteAnchor) && !util.isChildOf(target, absoluteAnchor)) {
-      destroy();
+  function destroyIfOutside (event) {
+    if (isOutside(event.target)) {
+      destroy()
     }
   }
 
-  eventListeners.mousedown = util.addEventListener(root, 'mousedown', destroyIfOutside);
-  eventListeners.mousewheel = util.addEventListener(root, 'mousewheel', destroyIfOutside);
-  // eventListeners.scroll = util.addEventListener(root, 'scroll', destroyIfOutside);
+  eventListeners.mousedown = addEventListener(root, 'mousedown', destroyIfOutside)
+  eventListeners.mousewheel = addEventListener(root, 'mousewheel', destroyIfOutside)
 
-  absoluteAnchor.destroy = destroy;
+  if (destroyOnMouseOut) {
+    let destroyTimer = null
+
+    absoluteAnchor.onmouseover = () => {
+      clearTimeout(destroyTimer)
+      destroyTimer = null
+    }
+
+    absoluteAnchor.onmouseout = () => {
+      if (!destroyTimer) {
+        destroyTimer = setTimeout(destroy, 200)
+      }
+    }
+  }
+
+  absoluteAnchor.destroy = destroy
 
   return absoluteAnchor
 }
@@ -70,8 +88,12 @@ exports.createAbsoluteAnchor = function (anchor, parent, onDestroy) {
  * @param  {HTMLElement} node node to check
  * @return {HTMLElement}      node's rootNode or `window` if there is ShadowDOM is not supported.
  */
-function getRootNode(node){
+function getRootNode (node) {
   return (typeof node.getRootNode === 'function')
-      ? node.getRootNode()
-      : window;
+    ? node.getRootNode()
+    : window
+}
+
+function hasOwnProperty (object, key) {
+  return Object.prototype.hasOwnProperty.call(object, key)
 }

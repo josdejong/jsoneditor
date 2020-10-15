@@ -1,1 +1,1 @@
-module.exports = require('./src/js/JSONEditor');
+module.exports = require('./dist/jsoneditor')

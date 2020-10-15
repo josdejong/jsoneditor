@@ -1,12 +1,12 @@
-'use strict';
+'use strict'
 
-var translate = require('./i18n').translate;
+import { translate } from './i18n'
 
 /**
  * A factory function to create an ShowMoreNode, which depends on a Node
  * @param {function} Node
  */
-function showMoreNodeFactory(Node) {
+export function showMoreNodeFactory (Node) {
   /**
    * @constructor ShowMoreNode
    * @extends Node
@@ -17,12 +17,12 @@ function showMoreNodeFactory(Node) {
    */
   function ShowMoreNode (editor, parent) {
     /** @type {TreeEditor} */
-    this.editor = editor;
-    this.parent = parent;
-    this.dom = {};
+    this.editor = editor
+    this.parent = parent
+    this.dom = {}
   }
 
-  ShowMoreNode.prototype = new Node();
+  ShowMoreNode.prototype = new Node()
 
   /**
    * Return a table row with an append button.
@@ -30,105 +30,104 @@ function showMoreNodeFactory(Node) {
    */
   ShowMoreNode.prototype.getDom = function () {
     if (this.dom.tr) {
-      return this.dom.tr;
+      return this.dom.tr
     }
 
-    this._updateEditability();
+    this._updateEditability()
 
     // display "show more"
     if (!this.dom.tr) {
-      var me = this;
-      var parent = this.parent;
-      var showMoreButton = document.createElement('a');
-      showMoreButton.appendChild(document.createTextNode(translate('showMore')));
-      showMoreButton.href = '#';
-      showMoreButton.onclick = function (event) {
+      const me = this
+      const parent = this.parent
+      const showMoreButton = document.createElement('a')
+      showMoreButton.appendChild(document.createTextNode(translate('showMore')))
+      showMoreButton.href = '#'
+      showMoreButton.onclick = event => {
         // TODO: use callback instead of accessing a method of the parent
         parent.visibleChilds = Math.floor(parent.visibleChilds / parent.getMaxVisibleChilds() + 1) *
-            parent.getMaxVisibleChilds();
-        me.updateDom();
-        parent.showChilds();
+            parent.getMaxVisibleChilds()
+        me.updateDom()
+        parent.showChilds()
 
-        event.preventDefault();
-        return false;
-      };
-
-      var showAllButton = document.createElement('a');
-      showAllButton.appendChild(document.createTextNode(translate('showAll')));
-      showAllButton.href = '#';
-      showAllButton.onclick = function (event) {
-        // TODO: use callback instead of accessing a method of the parent
-        parent.visibleChilds = Infinity;
-        me.updateDom();
-        parent.showChilds();
-
-        event.preventDefault();
-        return false;
-      };
-
-      var moreContents = document.createElement('div');
-      var moreText = document.createTextNode(this._getShowMoreText());
-      moreContents.className = 'jsoneditor-show-more';
-      moreContents.appendChild(moreText);
-      moreContents.appendChild(showMoreButton);
-      moreContents.appendChild(document.createTextNode('. '));
-      moreContents.appendChild(showAllButton);
-      moreContents.appendChild(document.createTextNode('. '));
-
-      var tdContents = document.createElement('td');
-      tdContents.appendChild(moreContents);
-
-      var moreTr = document.createElement('tr');
-      if (this.editor.options.mode === 'tree') {
-        moreTr.appendChild(document.createElement('td'));
-        moreTr.appendChild(document.createElement('td'));
+        event.preventDefault()
+        return false
       }
-      moreTr.appendChild(tdContents);
-      moreTr.className = 'jsoneditor-show-more';
-      this.dom.tr = moreTr;
-      this.dom.moreContents = moreContents;
-      this.dom.moreText = moreText;
+
+      const showAllButton = document.createElement('a')
+      showAllButton.appendChild(document.createTextNode(translate('showAll')))
+      showAllButton.href = '#'
+      showAllButton.onclick = event => {
+        // TODO: use callback instead of accessing a method of the parent
+        parent.visibleChilds = Infinity
+        me.updateDom()
+        parent.showChilds()
+
+        event.preventDefault()
+        return false
+      }
+
+      const moreContents = document.createElement('div')
+      const moreText = document.createTextNode(this._getShowMoreText())
+      moreContents.className = 'jsoneditor-show-more'
+      moreContents.appendChild(moreText)
+      moreContents.appendChild(showMoreButton)
+      moreContents.appendChild(document.createTextNode('. '))
+      moreContents.appendChild(showAllButton)
+      moreContents.appendChild(document.createTextNode('. '))
+
+      const tdContents = document.createElement('td')
+      tdContents.appendChild(moreContents)
+
+      const moreTr = document.createElement('tr')
+      if (this.editor.options.mode === 'tree') {
+        moreTr.appendChild(document.createElement('td'))
+        moreTr.appendChild(document.createElement('td'))
+      }
+      moreTr.appendChild(tdContents)
+      moreTr.className = 'jsoneditor-show-more'
+      this.dom.tr = moreTr
+      this.dom.moreContents = moreContents
+      this.dom.moreText = moreText
     }
 
-    this.updateDom();
+    this.updateDom()
 
-    return this.dom.tr;
-  };
+    return this.dom.tr
+  }
 
   /**
    * Update the HTML dom of the Node
    */
-  ShowMoreNode.prototype.updateDom = function(options) {
+  ShowMoreNode.prototype.updateDom = function (options) {
     if (this.isVisible()) {
       // attach to the right child node (the first non-visible child)
-      this.dom.tr.node = this.parent.childs[this.parent.visibleChilds];
+      this.dom.tr.node = this.parent.childs[this.parent.visibleChilds]
 
       if (!this.dom.tr.parentNode) {
-        var nextTr = this.parent._getNextTr();
+        const nextTr = this.parent._getNextTr()
         if (nextTr) {
-          nextTr.parentNode.insertBefore(this.dom.tr, nextTr);
+          nextTr.parentNode.insertBefore(this.dom.tr, nextTr)
         }
       }
 
       // update the counts in the text
-      this.dom.moreText.nodeValue = this._getShowMoreText();
+      this.dom.moreText.nodeValue = this._getShowMoreText()
 
       // update left margin
-      this.dom.moreContents.style.marginLeft = (this.getLevel() + 1) * 24 + 'px';
-    }
-    else {
+      this.dom.moreContents.style.marginLeft = (this.getLevel() + 1) * 24 + 'px'
+    } else {
       if (this.dom.tr && this.dom.tr.parentNode) {
-        this.dom.tr.parentNode.removeChild(this.dom.tr);
+        this.dom.tr.parentNode.removeChild(this.dom.tr)
       }
     }
-  };
+  }
 
-  ShowMoreNode.prototype._getShowMoreText = function() {
+  ShowMoreNode.prototype._getShowMoreText = function () {
     return translate('showMoreStatus', {
       visibleChilds: this.parent.visibleChilds,
       totalChilds: this.parent.childs.length
-    }) + ' ';
-  };
+    }) + ' '
+  }
 
   /**
    * Check whether the ShowMoreNode is currently visible.
@@ -137,21 +136,19 @@ function showMoreNodeFactory(Node) {
    * @return {boolean} isVisible
    */
   ShowMoreNode.prototype.isVisible = function () {
-    return this.parent.expanded && this.parent.childs.length > this.parent.visibleChilds;
-  };
+    return this.parent.expanded && this.parent.childs.length > this.parent.visibleChilds
+  }
 
   /**
    * Handle an event. The event is caught centrally by the editor
    * @param {Event} event
    */
   ShowMoreNode.prototype.onEvent = function (event) {
-    var type = event.type;
+    const type = event.type
     if (type === 'keydown') {
-      this.onKeyDown(event);
+      this.onKeyDown(event)
     }
-  };
+  }
 
-  return ShowMoreNode;
+  return ShowMoreNode
 }
-
-module.exports = showMoreNodeFactory;

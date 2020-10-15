@@ -2,6 +2,328 @@
 
 https://github.com/josdejong/jsoneditor
 
+
+## not yet published, version 9.1.2
+
+- Log a clear error in the console when the returned value of `onEditable` is 
+  invalid. See #1112.
+
+
+## 2020-09-23, version 9.1.1
+
+- Fix #1111: Enum dropdown not showing when using patternProperties for schema.
+  Thanks @ziga-miklic.
+- Fixed JSONEditor not working when opened in a new window, see #1098.
+  Thanks @joshkel.
+- Fix quick-key `Ctrl+D` (duplicate) not working.
+- Define "charset: utf-8" in all HTML examples.
+
+
+## 2020-09-15, version 9.1.0
+
+- Implemented German translation (`de`). Thanks @s-a.
+- Fix quick-keys `Ctrl-\` (format) and `Ctrl-Shift-\` (compact) not working
+  in `code` mode.
+- Updated dependencies to `ajv@6.12.5`.
+
+
+## 2020-09-09, version 9.0.5
+
+- Fix #1090: autocomplete firing on dragging or clicking a node.
+- Fix #1096: editor crashing when passing an empty string as `name`.
+- Updated dependencies to `ajv@6.12.4`.
+
+
+## 2020-08-15, version 9.0.4
+
+- Updated dependencies to `ace-builds@1.4.12`, `ajv@6.12.3`.
+- Fix #1077: change the `main` field in `package.json` to point to the actual
+  bundled and minified file instead of a node.js index file.
+
+
+## 2020-07-02, version 9.0.3
+
+- Fix regression introduced in `v9.0.2` in the select boxes in the 
+  Transform model not lighlighting the matches correctly.
+
+
+## 2020-07-01, version 9.0.2
+
+- Fix #1029: XSS vulnerabilities. Thanks @onemoreflag for reporting.
+- Fix #1017: unable to style the color of a value containing a color.
+  Thanks @p3x-robot. 
+
+
+## 2020-06-24, version 9.0.1
+
+- Fixed broken link to the Ace editor website (https://ace.c9.io/).
+  Thanks @p3x-robot.
+- Fix #1027: create IE11 Array polyfills `find` and `findIndex` in such a way 
+  that they are not iterable.
+
+
+## 2020-05-24, version 9.0.0
+
+- Implemented option `limitDragging`, see #962. This is a breaking change when 
+  using a JSON schema: dragging is more restrictive by default in that case.
+  Set `limitDragging: false` to keep the old, non-restricted behavior.
+
+
+## 2020-05-13, version 8.6.8
+
+- Fix #936: too many return characters inserted when pasting formatted text
+  from OpenOffice.
+
+
+## 2020-05-10, version 8.6.7
+
+- Fix #858: the `dist/jsoneditor.js` bundle containing a link to a 
+  non-existing source map.
+- Fix #978: in some special cases the caret was jumping to the beginning of the 
+  line whilst typing.
+- Update dependencies to `ajv@6.12.2`.
+
+
+## 2020-04-21, version 8.6.6
+
+- Fix #969: adding a new property to an empty object or array is broken.
+  Regression introduced in `v8.6.5`.
+
+
+## 2020-04-19, version 8.6.5
+
+- Fix #964: translation of titles of some context menu items not working.
+- Update dependencies to `ace-builds@1.4.11`, `ajv@6.12.1`.
+
+
+## 2020-03-29, version 8.6.4
+
+- Fix #921: `sortObjectKeys` emits `onChange` events.
+- Fix #946: `language` not working in modes `text`, `code`, and `preview`.
+- Revert reckoning with the order of object properties when updating an
+  object (introduced in `v8.6.2`). See #917. 
+- Implement support for repairing line separate JSON. 
+
+
+## 2020-03-18, version 8.6.3
+
+- Fix #932: `JSONEditor.update` broken, did not always recognize when the 
+  input changed. Regression introduced in `v8.6.2`. 
+
+
+## 2020-03-18, version 8.6.2
+
+- Fixed #917, #926: Keep order of properties when updating an object.  
+- Fixed #928: Custom root name not reflected in path of navigation bar.
+- Upgraded to `ajv@6.12.0`
+
+
+## 2020-02-17, version 8.6.1
+
+- Fixed #908: editor throwing an exception when switching from `'preview'`
+  to `'code'` mode.
+
+
+## 2020-02-16, version 8.6.0
+
+- Fixed #906: Implemented turning Python objects containing `True`, `False` 
+  and `None` into valid JSON using repair.
+
+
+## 2020-02-06, version 8.5.3
+
+- Fix #892: the undo/redo buttons in mode `code` being broken when custom 
+  loading an old version of Ace Editor.
+
+
+## 2020-02-05, version 8.5.2
+
+- Fix undo/redo buttons in mode `code` not always updating.
+
+
+## 2020-02-05, version 8.5.1
+
+- Fix broken build.
+
+
+## 2020-02-05, version 8.5.0
+
+- Implemented support for customizing the query language used in the 
+  Transform modal. New options `createQuery`, `executeQuery`, and 
+  `queryDescription` are available for this now. An example is available
+  in `examples/23_custom_query_language.html`. See #857, #871.
+- Implement undo/redo buttons in `code` mode.
+- Fix history (undo/redo) being cleared in mode `code` and `text` after 
+  transforming or sorting.
+
+
+## 2020-01-25, version 8.4.1
+
+- Fix `console.log` in production code. Oopsie.
+
+
+## 2020-01-25, version 8.4.0
+
+- Added CSS classes `jsoneditor-expanded` and `jsoneditor-collapsed` on array 
+  and object nodes reflecting there state.
+
+
+## 2020-01-18, version 8.3.0
+
+- Update dependency `ajv` to `v6.11.0`. 
+- Fix #790: editor breaking when missing a translation containing a 
+  placeholder.
+
+
+## 2020-01-16, version 8.2.0
+
+- Make it easy to create custom styling by overriding default SASS variable 
+  values, see #881. Thanks @petermanders89.
+- Update `ace` to `v1.4.8`.
+
+
+## 2020-01-06, version 8.1.2
+
+- Fix #873: buttons Format, Compact, and Repair not supporting 
+  internationalization.
+- Fix #877: Some CSS styling issues when used in combination with Materialize.
+- Updated dependency `vanilla-picker` to `v2.10.1`.
+
+
+## 2019-12-28, version 8.1.1
+
+- Fixed the file size reported in `preview` mode show `KB` and `MB` instead
+  of `KiB` and `MiB` in order to match the size reported by filesystems.
+
+
+## 2019-12-18, version 8.1.0
+
+- Implemented `popupAnchor` allowing to select a custom anchor element. 
+  See #869 and #870.  
+- Fixed #502: CSS rule `* { font-family: ... }` resulting in Ace editor (`code` 
+  mode) not having a mono-space font anymore.
+
+
+## 2019-12-11, version 8.0.0
+
+- Implemented option `timestampFormat` which allows customizing the formatting
+  of timestamp tags. See also option `timestampTag`. Thanks @smallp.
+- Changed the behavior of `timestampTag` to fallback on the built-in rules when
+  the function does not return a boolean. See #856.  
+- Reverted the heuristics introduced in `v7.3.0` to check whether some field
+  contains a timestamp based on the field name, because they can give wrong 
+  timestamps in case of values in seconds instead of the assumed milliseconds 
+  (see #847, #856). 
+
+
+## 2019-12-08, version 7.5.0
+
+- Extended the callback `onValidationError` to also report parse errors,
+  and distinguish between JSON schema validation errors and custom errors.
+  See #861 and #612. Thanks @meirotstein.
+
+
+## 2019-12-01, version 7.4.0
+
+- Implemented callback function `onValidationError`, see #612, #854. 
+  Thanks @meirotstein.
+- Fixed #850: make autocomplete options robust against non-string inputs
+  like `null`, `123`, `true`, `false`. 
+
+
+## 2019-12-01, version 7.3.1
+
+- Fixed #855: `onFocus` and `onBlur` not working in modes `text` and `code` 
+  when editor was created without main menu bar, and `editor.destroy()` 
+  throwing an exception.
+
+
+## 2019-11-27, version 7.3.0
+
+- Implemented callbacks `onFocus` and `onBlur` (PR #809, issue #727). 
+  Thanks @123survesh.
+- Fixed #847: allow customizing the in rules determining whether a value
+  is a timestamp or not by passing a callback function to `timestampTag`.
+
+
+## 2019-10-27, version 7.2.1
+
+- Fixed #826: editor not allowing indentation `0`.
+- Fixed #828: do not expand/collapse when clicking the text of a node
+  in modes `view` or `form`.
+- Fixed #829: z-index issue of context-menu button and conflicting css names.
+
+
+## 2019-10-23, version 7.2.0
+
+- Implemented Japanese translation (`ja`). Thanks @yutakiyama.
+- Implemented French translation (`fr-FR`), and some improvements in the
+  translation. Thanks @yannickyvin.
+- Upgraded to the latest version of Ace editor, 1.4.7.
+- Fixed #824: Parse errors not displayed with bottom right error icon in modes
+  `code` and `text`.
+
+
+## 2019-10-13, version 7.1.0
+
+- Upgraded to the latest version of Ace editor 1.4.6. Changed implementation
+  to use `ace-builds` directly instead of `brace` (still using Ace 1.2.9).
+- Improved Portuguese translation. Thanks @victorananias.
+
+
+## 2019-10-06, version 7.0.5
+
+- Upgraded dependencies: `vanilla-picker@2.10.0`.
+- Minor documentation improvements. Thanks @slash-arun.
+- Minor styling fixes.
+
+
+## 2019-09-11, version 7.0.4
+
+- Fixed #723: schema error popup and color picker not always fully visible.
+- Fixed wrong text color in search box when using JSONEditor in combination
+  with bootstrap. See #791. Thanks @dmitry-kulikov.
+- Fixed react examples not working out of the box when cloning or downloading
+  the git repository of JSONEditor. See #787, #788. Thanks @vishwasnavadak.
+
+
+## 2019-09-04, version 7.0.3
+
+- Fixed `index.js` pointing to non-transpiled code. See #783.
+- Fixed absolute url of images in SASS. Thanks @moonbreezee.
+
+
+## 2019-09-02, version 7.0.2
+
+- Fix #781: race condition when destroying the editor right after setting data.
+
+
+## 2019-09-01, version 7.0.1
+
+- Fix npm package missing `dist` folder.
+
+
+## 2019-09-01, version 7.0.0
+
+- Converted the code largely to ES6, put Babel transpiler in place.
+- Dropped support for bower, removed the `dist` folder from the git repository.
+- Fixed #586: caret position lost when switching browser tabs.
+
+
+## 2019-08-28, version 6.4.1
+
+- Fix styling of autocompletion dropdown broken. Regression since `v6.4.0`.
+
+
+## 2019-08-28, version 6.4.0
+
+- Replaces CSS with SASS internally, improvements in styling. Thanks @ppetkow.
+- Fixed #761: JSON schema errors not rendered in the gutter for mode `code`
+  when the path contained a property with a forward slash, and errors not
+  clickable in the error table.
+- Fixed #777: option `sortObjectKeys` broken.
+
+
 ## 2019-08-15, version 6.3.0
 
 - Fixed #755: JSONEditor throwing an exception in mode `code`, `text`, and

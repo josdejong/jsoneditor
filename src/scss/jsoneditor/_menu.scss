@@ -1,0 +1,126 @@
+.jsoneditor-menu {
+  width: 100%;
+  height: 35px;
+  padding: 2px;
+  margin: 0;
+  -moz-box-sizing: border-box;
+  -webkit-box-sizing: border-box;
+  box-sizing: border-box;
+
+  color: $jse-white;
+  background-color: $jse-blue;
+  border-bottom: 1px solid $jse-blue;
+}
+
+.jsoneditor-menu > button,
+.jsoneditor-menu > .jsoneditor-modes > button {
+  width: 26px;
+  height: 26px;
+  margin: 2px;
+  padding: 0;
+  border-radius: 2px;
+  border: 1px solid transparent;
+  background: transparent url($jse-icons);
+  color: $jse-white;
+  opacity: 0.8;
+
+  font-family: $jse-font;
+  font-size:  $jse-font-size;
+
+  float: left;
+}
+
+.jsoneditor-menu > button:hover,
+.jsoneditor-menu > .jsoneditor-modes > button:hover {
+  background-color: rgba(255,255,255,0.2);
+  border: 1px solid rgba(255,255,255,0.4);
+}
+.jsoneditor-menu > button:focus,
+.jsoneditor-menu > button:active,
+.jsoneditor-menu > .jsoneditor-modes > button:focus,
+.jsoneditor-menu > .jsoneditor-modes > button:active {
+  background-color: rgba(255,255,255,0.3);
+}
+.jsoneditor-menu > button:disabled,
+.jsoneditor-menu > .jsoneditor-modes > button:disabled {
+  opacity: 0.5;
+  background-color: transparent;
+  border: none;
+}
+
+.jsoneditor-menu > button.jsoneditor-collapse-all {
+  background-position: 0 -96px;
+}
+.jsoneditor-menu > button.jsoneditor-expand-all {
+  background-position: 0 -120px;
+}
+.jsoneditor-menu > button.jsoneditor-sort {
+  background-position: -120px -96px;
+}
+.jsoneditor-menu > button.jsoneditor-transform {
+  background-position: -144px -96px;
+}
+.jsoneditor.jsoneditor-mode-view > .jsoneditor-menu > button.jsoneditor-sort,
+.jsoneditor.jsoneditor-mode-form > .jsoneditor-menu > button.jsoneditor-sort,
+.jsoneditor.jsoneditor-mode-view > .jsoneditor-menu > button.jsoneditor-transform,
+.jsoneditor.jsoneditor-mode-form > .jsoneditor-menu > button.jsoneditor-transform {
+  display: none;
+}
+.jsoneditor-menu > button.jsoneditor-undo {
+  background-position: -24px -96px;
+}
+.jsoneditor-menu > button.jsoneditor-undo:disabled {
+  background-position: -24px -120px;
+}
+.jsoneditor-menu > button.jsoneditor-redo {
+  background-position: -48px -96px;
+}
+.jsoneditor-menu > button.jsoneditor-redo:disabled {
+  background-position: -48px -120px;
+}
+.jsoneditor-menu > button.jsoneditor-compact {
+  background-position: -72px -96px;
+}
+.jsoneditor-menu > button.jsoneditor-format {
+  background-position: -72px -120px;
+}
+.jsoneditor-menu > button.jsoneditor-repair {
+  background-position: -96px -96px;
+}
+
+.jsoneditor-menu > .jsoneditor-modes {
+  display: inline-block;
+  float: left;
+}
+
+.jsoneditor-menu > .jsoneditor-modes > button {
+  background-image: none;
+  width: auto;
+  padding-left: 6px;
+  padding-right: 6px;
+}
+
+.jsoneditor-menu > button.jsoneditor-separator,
+.jsoneditor-menu > .jsoneditor-modes > button.jsoneditor-separator {
+  margin-left: 10px;
+}
+
+.jsoneditor-menu a {
+  font-family: $jse-font;
+  font-size:  $jse-font-size;
+  color: $jse-white;
+  opacity: 0.8;
+  vertical-align: middle;
+}
+
+.jsoneditor-menu a:hover {
+  opacity: 1;
+}
+
+.jsoneditor-menu a.jsoneditor-poweredBy {
+  font-size: 8pt;
+  position: absolute;
+  right: 0;
+  top: 0;
+  padding: 10px;
+}

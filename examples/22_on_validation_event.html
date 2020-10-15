@@ -1,0 +1,153 @@
+<!DOCTYPE HTML>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+
+  <title>JSONEditor | onValidationError</title>
+
+  <link href="../dist/jsoneditor.css" rel="stylesheet" type="text/css">
+  <script src="../dist/jsoneditor.js"></script>
+
+  <style type="text/css">
+    body {
+      width: 600px;
+      font: 11pt sans-serif;
+    }
+    #jsoneditor {
+      width: 100%;
+      height: 500px;
+    }
+
+    #onValidationOutput {
+      margin: 5px;
+    }
+
+    /* custom bold styling for non-default JSON schema values */
+    .jsoneditor-is-not-default {
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+<h1>JSON schema validation</h1>
+<p>
+  This example demonstrates onValidationError callback.
+</p>
+
+<div id="jsoneditor"></div>
+<div id="onValidationOutput"></div>
+
+<script>
+  var schema = {
+    "title": "Employee",
+    "description": "Object containing employee details",
+    "type": "object",
+    "properties": {
+      "firstName": {
+        "title": "First Name",
+        "description": "The given name.",
+        "examples": [
+          "John"
+        ],
+        "type": "string"
+      },
+      "lastName": {
+        "title": "Last Name",
+        "description": "The family name.",
+        "examples": [
+          "Smith"
+        ],
+        "type": "string"
+      },
+      "gender": {
+        "title": "Gender",
+        "enum": ["male", "female"]
+      },
+      "availableToHire": {
+        "type": "boolean",
+        "default": false
+      },
+      "age": {
+        "description": "Age in years",
+        "type": "integer",
+        "minimum": 0,
+        "examples": [28, 32]
+      },
+      "job": {
+        "$ref": "job"
+      }
+    },
+    "required": ["firstName", "lastName"]
+  };
+
+  var job = {
+    "title": "Job description",
+    "type": "object",
+    "required": ["address"],
+    "properties": {
+      "company": {
+        "type": "string",
+        "examples": [
+          "ACME",
+          "Dexter Industries"
+        ]
+      },
+      "role": {
+        "description": "Job title.",
+        "type": "string",
+        "examples": [
+          "Human Resources Coordinator",
+          "Software Developer"
+        ],
+        "default": "Software Developer"
+      },
+      "address": {
+        "type": "string"
+      },
+      "salary": {
+        "type": "number",
+        "minimum": 120,
+        "examples": [100, 110, 120]
+      }
+    }
+  };
+
+  var json = {
+    firstName: 'John',
+    lastName: 'Doe',
+    gender: null,
+    age: "28",
+    availableToHire: true,
+    job: {
+      company: 'freelance',
+      role: 'developer',
+      salary: 100
+    }
+  };
+
+  var options = {
+    schema: schema,
+    schemaRefs: {"job": job},
+    mode: 'code',
+    modes: ['code', 'text', 'tree', 'preview'],
+    onValidationError: function(errors) {
+      console.error('onValidationError', errors);
+      const outputEL = document.getElementById('onValidationOutput')
+      outputEL.innerHTML = '<code>onValidationError</code> was called with ' + errors.length + ' error' + (errors.length > 1 ? 's' : '') +  ' <br> ' +
+        'open the browser console to see the error objects';
+    },
+    onValidate: function (json) {
+      var errors = [];
+      if(!isNaN(json.age) && json.age < 30) {
+        errors.push({ path: ['age'], message: 'Member age must be 30 or higher' });
+      }
+      return errors;
+    }
+  };
+
+  // create the editor
+  var container = document.getElementById('jsoneditor');
+  var editor = new JSONEditor(container, options, json);
+</script>
+</body>
+</html>

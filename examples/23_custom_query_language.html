@@ -1,0 +1,123 @@
+<!DOCTYPE HTML>
+<html lang="en">
+<head>
+  <title>JSONEditor | Custom query language</title>
+  <meta charset="utf-8" />
+  <link href="../dist/jsoneditor.css" rel="stylesheet" type="text/css">
+  <script src="../dist/jsoneditor.js"></script>
+  <script src="https://unpkg.com/lodash@4.17.15/lodash.min.js"></script>
+
+  <style type="text/css">
+    p {
+      max-width: 500px;
+      font-family: sans-serif;
+      font-size: 11pt;
+    }
+
+    code {
+      font-size: 11pt;
+      background: #e5e5e5;
+    }
+
+    #jsoneditor {
+      width: 500px;
+      height: 500px;
+    }
+
+    .warning {
+      color: red;
+    }
+  </style>
+</head>
+<body>
+<p>
+  This demo shows how to configure a custom query language.
+  Click on the "Transform" button and try it out.
+</p>
+<p>
+  This basic example uses lodash functions <code>filter</code>, <code>sort</code>, and <code>pick</code>,
+  but you can run any JavaScript code.
+</p>
+<p class="warning">
+  WARNING: this example uses <code>new Function()</code> which can be dangerous when executed with arbitrary code.
+  Don't use it in production.
+</p>
+<div id="jsoneditor"></div>
+
+<script>
+  const container = document.getElementById('jsoneditor')
+  const options = {
+    createQuery: function (json, queryOptions) {
+      console.log('createQuery', queryOptions)
+
+      const { filter, sort, projection } = queryOptions
+      let query = 'data'
+
+      if (filter) {
+        // Note that the comparisons embrace type coercion,
+        // so a filter value like '5' (text) will match numbers like 5 too.
+        const getActualValue = filter.field !== '@'
+          ? `item => _.get(item, '${filter.field}')`
+          : `item => item`
+        query = `_.filter(${query}, ${getActualValue} ${filter.relation} '${filter.value}')`
+      }
+
+      if (sort) {
+        // The '@' field name is a special case,
+        // which means that the field itself is selected.
+        // For example when we have an array containing numbers.
+        query = sort.field !== '@'
+          ? `_.orderBy(${query}, '${sort.field}', '${sort.direction}')`
+          : `_.sortBy(${query}, '${sort.direction}')`
+      }
+
+      if (projection) {
+        // It is possible to make a util function "pickFlat"
+        // and use that when building the query to make it more readable.
+        if (projection.fields.length > 1) {
+          const fields = projection.fields.map(field => {
+            const name = _.last(field.split('.'))
+            return `  '${name}': _.get(item, '${field}')`
+          })
+          query = `_.map(${query}, item => ({\n${fields.join(',\n')}})\n)`
+        } else {
+          const field = projection.fields[0]
+          query = `_.map(${query}, item => _.get(item, '${field}'))`
+        }
+      }
+
+      return query
+    },
+    executeQuery: function (json, query) {
+      console.log('executeQuery', query)
+
+      // WARNING: Using new Function() with arbitrary input can be dangerous! Be careful.
+      const execute = new Function('data', 'return ' + query)
+
+      return execute(json)
+    },
+    queryDescription: 'Enter a JavaScript query to filter, sort, or transform the JSON data.<br/>' +
+      'The <a href="https://lodash.com/" target="_blank">Lodash</a> library is available via <code>_</code> to facilitate this.'
+  }
+  const json = []
+  for (let i = 0; i < 100; i++) {
+    var longitude = 4 + i / 100
+    var latitude = 51 + i / 100
+
+    json.push({
+      name: 'Item ' + i,
+      id: String(i),
+      index: i,
+      time: new Date().toISOString(),
+      location: {
+        latitude: longitude,
+        longitude: latitude,
+        coordinates: [longitude, latitude]
+      },
+      random: Math.random()
+    })
+  }
+  const editor = new JSONEditor(container, options, json)
+</script>
+</body>
+</html>

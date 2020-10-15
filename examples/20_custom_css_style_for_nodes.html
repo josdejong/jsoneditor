@@ -1,7 +1,7 @@
 <!DOCTYPE HTML>
-<html>
+<html lang="en">
 <head>
-  <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+  <meta charset="utf-8">
 
   <link href="../dist/jsoneditor.css" rel="stylesheet" type="text/css">
   <script src="../dist/jsoneditor.js"></script>
@@ -32,12 +32,21 @@
       height: 500px;
     }
     #containerRight .different_element {
-      background-color: greenyellow  !important;
+      background-color: #acee61;
     }
+    #containerRight .different_element div.jsoneditor-field,
+    #containerRight .different_element div.jsoneditor-value {
+      color: red;
+    }
+
     #containerLeft .different_element {
-      background-color: violet  !important;
+      background-color: pink;
     }
-    </style>
+    #containerLeft .different_element div.jsoneditor-field,
+    #containerLeft .different_element div.jsoneditor-value {
+      color: red;
+    }
+  </style>
 </head>
 <body>
 
@@ -52,66 +61,66 @@
 </div>
 
 <script>
-  var containerLeft = document.getElementById('containerLeft');
-  var containerRight = document.getElementById('containerRight');
+  const containerLeft = document.getElementById('containerLeft')
+  const containerRight = document.getElementById('containerRight')
 
   function findNodeInJson(json, path){
     if(!json || path.length ===0) {
       return {field: undefined, value: undefined}
-    }    
-    var first = path[0];
-    var remainingPath = path.slice(1);
+    }
+    const first = path[0]
+    const remainingPath = path.slice(1)
 
     if(remainingPath.length === 0) {
-      return {field: (typeof json[first] !== 'undefined' ? first : undefined), value: json[first]};
+      return {field: (typeof json[first] !== 'undefined' ? first : undefined), value: json[first]}
     } else {
       return findNodeInJson(json[first], remainingPath)
     }
   }
 
   function onClassName({ path, field, value }) {
-    var thisNode = findNodeInJson(jsonRight, path);
-    var oppositeNode = findNodeInJson(jsonLeft, path);
-    var isValueEqual = JSON.stringify(thisNode.value) === JSON.stringify(oppositeNode.value);
+    const thisNode = findNodeInJson(jsonRight, path)
+    const oppositeNode = findNodeInJson(jsonLeft, path)
+    let isValueEqual = JSON.stringify(thisNode.value) === JSON.stringify(oppositeNode.value)
 
     if(Array.isArray(thisNode.value) && Array.isArray(oppositeNode.value)) {
       isValueEqual = thisNode.value.every(function (e) {
-        return oppositeNode.value.includes(e);
+        return oppositeNode.value.includes(e)
       })
     }
 
     if (thisNode.field === oppositeNode.field && isValueEqual) {
-      return 'the_same_element';
+      return 'the_same_element'
     } else {
       return 'different_element'
     }
   }
 
-  var optionsLeft = {
+  const optionsLeft = {
     mode: 'tree',
     onError: function (err) {
-      alert(err.toString());
+      alert(err.toString())
     },
     onClassName: onClassName,
     onChangeJSON: function (j) {
-      jsonLeft = j;      
+      jsonLeft = j
       window.editorRight.refresh()
     }    
-  };
-  
-  var optionsRight = {
+  }
+
+  const optionsRight = {
     mode: 'tree',
     onError: function (err) {
-      alert(err.toString());
+      alert(err.toString())
     },
     onClassName: onClassName,
     onChangeJSON: function (j) {
-      jsonRight = j;
-      window.editorLeft.refresh();
+      jsonRight = j
+      window.editorLeft.refresh()
     }    
-  };
+  }
 
-  var jsonLeft = {
+  let jsonLeft = {
     "arrayOfArrays": [1, 2, 999, [3,4,5]],
     "someField": true,
     "boolean": true,
@@ -126,9 +135,9 @@
     "string": "Hello World",
     "url": "http://jsoneditoronline.org",
     "[0]": "zero"
-  };
+  }
 
-  var jsonRight = {
+  let jsonRight = {
     "arrayOfArrays": [1, 2, [3,4,5]],
     "boolean": true,
     "htmlcode": '&quot;',
@@ -142,10 +151,10 @@
     "string": "Hello World",
     "url": "http://jsoneditoronline.org",
     "[0]": "zero"
-  };
+  }
   
-  window.editorLeft = new JSONEditor(containerLeft, optionsLeft, jsonLeft);
-  window.editorRight = new JSONEditor(containerRight, optionsRight, jsonRight);
+  window.editorLeft = new JSONEditor(containerLeft, optionsLeft, jsonLeft)
+  window.editorRight = new JSONEditor(containerRight, optionsRight, jsonRight)
 </script>
 </body>
 </html>

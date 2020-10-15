@@ -1,6 +1,8 @@
 <!DOCTYPE HTML>
-<html>
+<html lang="en">
 <head>
+  <meta charset="utf-8">
+
   <title>JSONEditor | Custom Ace</title>
 
   <!-- load a custom version of Ace editor -->
@@ -52,21 +54,21 @@
 
 <script>
   // create the editor
-  var container = document.getElementById('jsoneditor');
-  var options = {
+  const container = document.getElementById('jsoneditor')
+  const options = {
     modes: ['text', 'code', 'tree', 'form', 'view'],
     mode: 'code',
     ace: ace
-  };
-  var json = {
+  }
+  const json = {
     'array': [1, 2, 3],
     'boolean': true,
     'null': null,
     'number': 123,
     'object': {'a': 'b', 'c': 'd'},
     'string': 'Hello World'
-  };
-  var editor = new JSONEditor(container, options, json);
+  }
+  const editor = new JSONEditor(container, options, json)
 </script>
 </body>
 </html>

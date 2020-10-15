@@ -1,7 +1,7 @@
 <!DOCTYPE HTML>
-<html>
+<html lang="en">
 <head>
-  <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+  <meta charset="utf-8">
 
   <link href="../dist/jsoneditor.css" rel="stylesheet" type="text/css">
   <script src="../dist/jsoneditor.js"></script>
@@ -37,6 +37,10 @@
   <div id="jsoneditor"></div>
 </form>
 
+<p>
+  <button id="update">Update</button>
+</p>
+
 <script>
   var container, options, json, editor;
 
@@ -46,6 +50,7 @@
     mode: 'tree',
     modes: ['code', 'form', 'text', 'tree', 'view', 'preview'], // allowed modes
     onError: function (err) {
+      console.error(err);
       alert(err.toString());
     },
     onChange: function () {
@@ -53,12 +58,22 @@
     },
     onChangeJSON: function (json) {
       console.log('onChangeJSON', json);
+
+      // test feedback loop which is typical in React -> should not change anything
+      editorTest.update(json)
     },
     onChangeText: function (text) {
       console.log('onChangeText', text);
     },
+    onFocus: function(event) {
+      console.log("Focus : ",event);
+    },
+    onBlur: function(event) {
+      console.log("Blur : ",event);
+    },
     indentation: 4,
-    escapeUnicode: true
+    // escapeUnicode: true,
+    limitDragging: true
   };
 
   json = {
@@ -67,20 +82,49 @@
     "color": "#82b92c",
     "htmlcode": '&quot;',
     "escaped_unicode": '\\u20b9',
-    "unicode": '\u20b9,\uD83D\uDCA9',
+    "unicode": '\u{1F600},\uD83D\uDCA9',
     "return": '\n',
     "null": null,
     "number": 123,
     "object": {"a": "b", "c": "d"},
     "string": "Hello World",
     "timestamp": 1534952749890,
-    "url": "http://jsoneditoronline.org"
+    "url": "http://jsoneditoronline.org",
+    "<button onclick=alert('oopsie!!!')>test xss</button>": "xss?",
+    "xss array": [
+      {
+        "<button onclick=alert('oopsie!!!')>test xss</button>": "xss?"
+      }
+    ]
   };
 
   editorTest = new JSONEditor(container, options, json);
 
   console.log('json', json);
   console.log('string', JSON.stringify(json));
+
+
+  const update = document.getElementById('update')
+  update.onclick = function () {
+    const json2 = {
+      "array": [1, 2, [3,4,5]],
+      "array2": [1, 2, [3,4,5]],
+      "url": "http://jsoneditoronline.org",
+      "boolean": true,
+      "color": "#82b92c",
+      "htmlcode": '&quot;',
+      "escaped_unicode": '\\u20b9',
+      "unicode": '\u20b9,\uD83D\uDCA9',
+      "return": '\n',
+      "null": null,
+      "number": 123,
+      "object": {"a": "b", "c": "d"},
+      "string": "Hello World",
+      "timestamp": 1534952749890
+    };
+
+    editorTest.update(json2)
+  }
 </script>
 </body>
 </html>

@@ -2,7 +2,7 @@
 
 ### Install
 
-install via npm:
+Install via npm:
 
     npm install jsoneditor
 
@@ -18,7 +18,7 @@ in the head of the HTML page:
 
 ## Use
 
-In the body, create an div element with an id and a size:
+In the body, create a div element with an id and a size:
 
 ```html
 <div id="jsoneditor" style="width: 400px; height: 400px;"></div>
@@ -59,10 +59,10 @@ var json = editor.get();
 
 ```html
 <!DOCTYPE HTML>
-<html>
+<html lang="en">
 <head>
     <!-- when using the mode "code", it's important to specify charset utf-8 -->
-    <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+    <meta charset="utf-8">
 
     <link href="jsoneditor/dist/jsoneditor.min.css" rel="stylesheet" type="text/css">
     <script src="jsoneditor/dist/jsoneditor.min.js"></script>

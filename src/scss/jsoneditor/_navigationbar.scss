@@ -1,0 +1,17 @@
+.jsoneditor-navigation-bar {
+  width: 100%;
+  height: 26px;
+  line-height: 26px;
+  padding: 0;
+  margin: 0;
+  border-bottom: 1px solid $jse-bar-border;
+  -moz-box-sizing: border-box;
+  -webkit-box-sizing: border-box;
+  box-sizing: border-box;
+  color: $jse-readonly;
+  background-color: $jse-light-bg;
+  overflow: hidden;
+
+  font-family: $jse-font;
+  font-size:  $jse-font-size;
+}

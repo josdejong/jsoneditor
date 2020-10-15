@@ -1,9 +1,11 @@
-'use strict';
+'use strict'
 
-require('./polyfills');
+/* eslint-disable no-template-curly-in-string */
 
-var _locales = ['en', 'pt-BR', 'zh-CN', 'tr'];
-var _defs = {
+import './polyfills'
+
+const _locales = ['en', 'pt-BR', 'zh-CN', 'tr', 'ja', 'fr-FR', 'de']
+const _defs = {
   en: {
     array: 'Array',
     auto: 'Auto',
@@ -14,7 +16,10 @@ var _defs = {
     ascending: 'Ascending',
     ascendingTitle: 'Sort the childs of this ${type} in ascending order',
     actionsMenu: 'Click to open the actions menu (Ctrl+M)',
+    cannotParseFieldError: 'Cannot parse field into JSON',
+    cannotParseValueError: 'Cannot parse value into JSON',
     collapseAll: 'Collapse all fields',
+    compactTitle: 'Compact JSON data, remove all whitespaces (Ctrl+Shift+\\)',
     descending: 'Descending',
     descendingTitle: 'Sort the childs of this ${type} in descending order',
     drag: 'Drag to move this field (Alt+Shift+Arrows)',
@@ -23,12 +28,11 @@ var _defs = {
     duplicateTitle: 'Duplicate selected fields (Ctrl+D)',
     duplicateField: 'Duplicate this field (Ctrl+D)',
     duplicateFieldError: 'Duplicate field name',
-    cannotParseFieldError: 'Cannot parse field into JSON',
-    cannotParseValueError: 'Cannot parse value into JSON',
     empty: 'empty',
     expandAll: 'Expand all fields',
     expandTitle: 'Click to expand/collapse this field (Ctrl+E). \n' +
       'Ctrl+Click to expand/collapse including all childs.',
+    formatTitle: 'Format JSON data, with proper indentation and line feeds (Ctrl+\\)',
     insert: 'Insert',
     insertTitle: 'Insert a new field with type \'auto\' before this field (Ctrl+Ins)',
     insertSub: 'Select the type of the field to be inserted',
@@ -38,6 +42,10 @@ var _defs = {
     removeText: 'Remove',
     removeTitle: 'Remove selected fields (Ctrl+Del)',
     removeField: 'Remove this field (Ctrl+Del)',
+    repairTitle: 'Repair JSON: fix quotes and escape characters, remove comments and JSONP notation, turn JavaScript objects into JSON.',
+    searchTitle: 'Search fields and values',
+    searchNextResultTitle: 'Next result (Enter)',
+    searchPreviousResultTitle: 'Previous result (Shift + Enter)',
     selectNode: 'Select a node...',
     showAll: 'show all',
     showMore: 'show more',
@@ -80,6 +88,7 @@ var _defs = {
     stringType: 'Field type "string". ' +
       'Field type is not determined from the value, ' +
       'but always returned as string.',
+    modeEditorTitle: 'Switch Editor Mode',
     modeCodeText: 'Code',
     modeCodeTitle: 'Switch to code highlighter',
     modeFormText: 'Form',
@@ -94,6 +103,8 @@ var _defs = {
     modePreviewTitle: 'Switch to preview mode',
     examples: 'Examples',
     default: 'Default',
+    containsInvalidProperties: 'Contains invalid properties',
+    containsInvalidItems: 'Contains invalid items'
   },
   'zh-CN': {
     array: '数组',
@@ -105,7 +116,10 @@ var _defs = {
     ascending: '升序',
     ascendingTitle: '升序排列${type}的子节点',
     actionsMenu: '点击打开动作菜单(Ctrl+M)',
+    cannotParseFieldError: '无法将字段解析为JSON',
+    cannotParseValueError: '无法将值解析为JSON',
     collapseAll: '缩进所有字段',
+    compactTitle: '压缩JSON数据，删除所有空格 (Ctrl+Shift+\\)',
     descending: '降序',
     descendingTitle: '降序排列${type}的子节点',
     drag: '拖拽移动该节点(Alt+Shift+Arrows)',
@@ -114,12 +128,11 @@ var _defs = {
     duplicateTitle: '复制选中字段(Ctrl+D)',
     duplicateField: '复制该字段(Ctrl+D)',
     duplicateFieldError: '重复的字段名称',
-    cannotParseFieldError: '无法将字段解析为JSON',
-    cannotParseValueError: '无法将值解析为JSON',
     empty: '清空',
     expandAll: '展开所有字段',
     expandTitle: '点击 展开/收缩 该字段(Ctrl+E). \n' +
       'Ctrl+Click 展开/收缩 包含所有子节点.',
+    formatTitle: '使用适当的缩进和换行符格式化JSON数据 (Ctrl+\\)',
     insert: '插入',
     insertTitle: '在此字段前插入类型为“auto”的新字段 (Ctrl+Ins)',
     insertSub: '选择要插入的字段类型',
@@ -129,6 +142,7 @@ var _defs = {
     removeText: '移除',
     removeTitle: '移除选中字段 (Ctrl+Del)',
     removeField: '移除该字段 (Ctrl+Del)',
+    repairTitle: '修复JSON：修复引号和转义符，删除注释和JSONP表示法，将JavaScript对象转换为JSON。',
     selectNode: '选择一个节点...',
     showAll: '展示全部',
     showMore: '展示更多',
@@ -185,6 +199,8 @@ var _defs = {
     modePreviewTitle: '切换至预览模式',
     examples: '例子',
     default: '缺省',
+    containsInvalidProperties: '包含无效的属性',
+    containsInvalidItems: '包含无效项目'
   },
   'pt-BR': {
     array: 'Lista',
@@ -196,7 +212,10 @@ var _defs = {
     ascending: 'Ascendente',
     ascendingTitle: 'Organizar filhor do tipo ${type} em crescente',
     actionsMenu: 'Clique para abrir o menu de ações (Ctrl+M)',
+    cannotParseFieldError: 'Não é possível analisar o campo no JSON',
+    cannotParseValueError: 'Não é possível analisar o valor em JSON',
     collapseAll: 'Fechar todos campos',
+    compactTitle: 'Dados JSON compactos, remova todos os espaços em branco (Ctrl+Shift+\\)',
     descending: 'Descendente',
     descendingTitle: 'Organizar o filhos do tipo ${type} em decrescente',
     duplicateKey: 'chave duplicada',
@@ -205,12 +224,11 @@ var _defs = {
     duplicateTitle: 'Duplicar campos selecionados (Ctrl+D)',
     duplicateField: 'Duplicar este campo (Ctrl+D)',
     duplicateFieldError: 'Nome do campo duplicado',
-    cannotParseFieldError: 'Não é possível analisar o campo no JSON',
-    cannotParseValueError: 'Não é possível analisar o valor em JSON',
     empty: 'vazio',
     expandAll: 'Expandir todos campos',
     expandTitle: 'Clique para expandir/encolher este campo (Ctrl+E). \n' +
       'Ctrl+Click para expandir/encolher incluindo todos os filhos.',
+    formatTitle: 'Formate dados JSON, com recuo e feeds de linha adequados (Ctrl+\\)',
     insert: 'Inserir',
     insertTitle: 'Inserir um novo campo do tipo \'auto\' antes deste campo (Ctrl+Ins)',
     insertSub: 'Selecionar o tipo de campo a ser inserido',
@@ -220,53 +238,32 @@ var _defs = {
     removeText: 'Remover',
     removeTitle: 'Remover campos selecionados (Ctrl+Del)',
     removeField: 'Remover este campo (Ctrl+Del)',
-    // TODO: correctly translate
-    selectNode: 'Select a node...',
-    // TODO: correctly translate
-    showAll: 'mostre tudo',
-    // TODO: correctly translate
-    showMore: 'mostre mais',
-    // TODO: correctly translate
+    repairTitle: 'Repare JSON: corrija aspas e caracteres de escape, remova comentários e notação JSONP, transforme objetos JavaScript em JSON.',
+    selectNode: 'Selecione um nódulo...',
+    showAll: 'mostrar todos',
+    showMore: 'mostrar mais',
     showMoreStatus: 'exibindo ${visibleChilds} de ${totalChilds} itens.',
     sort: 'Organizar',
     sortTitle: 'Organizar os filhos deste ${type}',
-    // TODO: correctly translate
     sortTitleShort: 'Organizar os filhos',
-    // TODO: correctly translate
-    sortFieldLabel: 'Field:',
-    // TODO: correctly translate
-    sortDirectionLabel: 'Direction:',
-    // TODO: correctly translate
-    sortFieldTitle: 'Select the nested field by which to sort the array or object',
-    // TODO: correctly translate
-    sortAscending: 'Ascending',
-    // TODO: correctly translate
-    sortAscendingTitle: 'Sort the selected field in ascending order',
-    // TODO: correctly translate
-    sortDescending: 'Descending',
-    // TODO: correctly translate
-    sortDescendingTitle: 'Sort the selected field in descending order',
+    sortFieldLabel: 'Campo:',
+    sortDirectionLabel: 'Direção:',
+    sortFieldTitle: 'Selecione um campo filho pelo qual ordenar o array ou objeto',
+    sortAscending: 'Ascendente',
+    sortAscendingTitle: 'Ordenar o campo selecionado por ordem ascendente',
+    sortDescending: 'Descendente',
+    sortDescendingTitle: 'Ordenar o campo selecionado por ordem descendente',
     string: 'Texto',
-    // TODO: correctly translate
-    transform: 'Transform',
-    // TODO: correctly translate
-    transformTitle: 'Filter, sort, or transform the childs of this ${type}',
-    // TODO: correctly translate
-    transformTitleShort: 'Filter, sort, or transform contents',
-    // TODO: correctly translate
-    transformQueryTitle: 'Enter a JMESPath query',
-    // TODO: correctly translate
-    transformWizardLabel: 'Wizard',
-    // TODO: correctly translate
-    transformWizardFilter: 'Filter',
-    // TODO: correctly translate
-    transformWizardSortBy: 'Sort by',
-    // TODO: correctly translate
-    transformWizardSelectFields: 'Select fields',
-    // TODO: correctly translate
-    transformQueryLabel: 'Query',
-    // TODO: correctly translate
-    transformPreviewLabel: 'Preview',
+    transform: 'Transformar',
+    transformTitle: 'Filtrar, ordenar ou transformar os filhos deste ${type}',
+    transformTitleShort: 'Filtrar, ordenar ou transformar conteúdos',
+    transformQueryTitle: 'Insira uma expressão JMESPath',
+    transformWizardLabel: 'Assistente',
+    transformWizardFilter: 'Filtro',
+    transformWizardSortBy: 'Ordenar por',
+    transformWizardSelectFields: 'Selecionar campos',
+    transformQueryLabel: 'Expressão',
+    transformPreviewLabel: 'Visualizar',
     type: 'Tipo',
     typeTitle: 'Mudar o tipo deste campo',
     openUrl: 'Ctrl+Click ou Ctrl+Enter para abrir link em nova janela',
@@ -284,6 +281,8 @@ var _defs = {
       'mas sempre retornara um texto.',
     examples: 'Exemplos',
     default: 'Revelia',
+    containsInvalidProperties: 'Contém propriedades inválidas',
+    containsInvalidItems: 'Contém itens inválidos'
   },
   tr: {
     array: 'Dizin',
@@ -371,63 +370,334 @@ var _defs = {
     modeViewTitle: 'Ağaç görünümüne geç',
     examples: 'Örnekler',
     default: 'Varsayılan',
+    containsInvalidProperties: 'Geçersiz özellikler içeriyor',
+    containsInvalidItems: 'Geçersiz öğeler içeriyor'
+  },
+  ja: {
+    array: '配列',
+    auto: 'オート',
+    appendText: '追加',
+    appendTitle: '次のフィールドに"オート"のフィールドを追加 (Ctrl+Shift+Ins)',
+    appendSubmenuTitle: '追加するフィールドの型を選択してください',
+    appendTitleAuto: '"オート"のフィールドを追加 (Ctrl+Shift+Ins)',
+    ascending: '昇順',
+    ascendingTitle: '${type}の子要素を昇順に並べ替え',
+    actionsMenu: 'クリックしてアクションメニューを開く (Ctrl+M)',
+    collapseAll: 'すべてを折りたたむ',
+    descending: '降順',
+    descendingTitle: '${type}の子要素を降順に並べ替え',
+    drag: 'ドラッグして選択中のフィールドを移動 (Alt+Shift+Arrows)',
+    duplicateKey: '複製キー',
+    duplicateText: '複製',
+    duplicateTitle: '選択中のフィールドを複製 (Ctrl+D)',
+    duplicateField: '選択中のフィールドを複製 (Ctrl+D)',
+    duplicateFieldError: 'フィールド名が重複しています',
+    cannotParseFieldError: 'JSONのフィールドを解析できません',
+    cannotParseValueError: 'JSONの値を解析できません',
+    empty: '空',
+    expandAll: 'すべてを展開',
+    expandTitle: 'クリックしてフィールドを展開/折りたたむ (Ctrl+E). \n' +
+      'Ctrl+Click ですべての子要素を展開/折りたたむ',
+    insert: '挿入',
+    insertTitle: '選択中のフィールドの前に新しいフィールドを挿入 (Ctrl+Ins)',
+    insertSub: '挿入するフィールドの型を選択',
+    object: 'オブジェクト',
+    ok: '実行',
+    redo: 'やり直す (Ctrl+Shift+Z)',
+    removeText: '削除',
+    removeTitle: '選択中のフィールドを削除 (Ctrl+Del)',
+    removeField: '選択中のフィールドを削除 (Ctrl+Del)',
+    selectNode: 'ノードを選択...',
+    showAll: 'すべてを表示',
+    showMore: 'もっと見る',
+    showMoreStatus: '${totalChilds}個のアイテムのうち ${visibleChilds}個を表示しています。',
+    sort: '並べ替え',
+    sortTitle: '${type}の子要素を並べ替え',
+    sortTitleShort: '並べ替え',
+    sortFieldLabel: 'フィールド:',
+    sortDirectionLabel: '順序:',
+    sortFieldTitle: '配列またはオブジェクトを並び替えるためのフィールドを選択',
+    sortAscending: '昇順',
+    sortAscendingTitle: '選択中のフィールドを昇順に並び替え',
+    sortDescending: '降順',
+    sortDescendingTitle: '選択中のフィールドを降順に並び替え',
+    string: '文字列',
+    transform: '変換',
+    transformTitle: '${type}の子要素をフィルター・並び替え・変換する',
+    transformTitleShort: '内容をフィルター・並び替え・変換する',
+    extract: '抽出',
+    extractTitle: '${type}を抽出',
+    transformQueryTitle: 'JMESPathクエリを入力',
+    transformWizardLabel: 'ウィザード',
+    transformWizardFilter: 'フィルター',
+    transformWizardSortBy: '並び替え',
+    transformWizardSelectFields: 'フィールドを選択',
+    transformQueryLabel: 'クエリ',
+    transformPreviewLabel: 'プレビュー',
+    type: '型',
+    typeTitle: '選択中のフィールドの型を変更',
+    openUrl: 'Ctrl+Click または Ctrl+Enter で 新規ウィンドウでURLを開く',
+    undo: '元に戻す (Ctrl+Z)',
+    validationCannotMove: '子要素に移動できません ',
+    autoType: 'オート： ' +
+      'フィールドの型は値から自動的に決定されます。 ' +
+      '(文字列・数値・ブール・null)',
+    objectType: 'オブジェクト： ' +
+      'オブジェクトは順序が決まっていないキーと値のペア組み合わせです。',
+    arrayType: '配列： ' +
+      '配列は順序が決まっている値の集合体です。',
+    stringType: '文字列： ' +
+      'フィールド型は値から決定されませんが、' +
+      '常に文字列として返されます。',
+    modeCodeText: 'コードモード',
+    modeCodeTitle: 'ハイライトモードに切り替え',
+    modeFormText: 'フォームモード',
+    modeFormTitle: 'フォームモードに切り替え',
+    modeTextText: 'テキストモード',
+    modeTextTitle: 'テキストモードに切り替え',
+    modeTreeText: 'ツリーモード',
+    modeTreeTitle: 'ツリーモードに切り替え',
+    modeViewText: 'ビューモード',
+    modeViewTitle: 'ビューモードに切り替え',
+    modePreviewText: 'プレビュー',
+    modePreviewTitle: 'プレビューに切り替え',
+    examples: '例',
+    default: 'デフォルト',
+    containsInvalidProperties: '無効なプロパティが含まれています',
+    containsInvalidItems: '無効なアイテムが含まれています'
+  },
+  'fr-FR': {
+    array: 'Liste',
+    auto: 'Auto',
+    appendText: 'Ajouter',
+    appendTitle: 'Ajouter un champ de type \'auto\' après ce champ (Ctrl+Shift+Ins)',
+    appendSubmenuTitle: 'Sélectionner le type du champ à ajouter',
+    appendTitleAuto: 'Ajouter un champ de type \'auto\' (Ctrl+Shift+Ins)',
+    ascending: 'Ascendant',
+    ascendingTitle: 'Trier les enfants de ce ${type} par ordre ascendant',
+    actionsMenu: 'Ouvrir le menu des actions (Ctrl+M)',
+    collapseAll: 'Regrouper',
+    descending: 'Descendant',
+    descendingTitle: 'Trier les enfants de ce ${type} par ordre descendant',
+    drag: 'Déplacer (Alt+Shift+Arrows)',
+    duplicateKey: 'Dupliquer la clé',
+    duplicateText: 'Dupliquer',
+    duplicateTitle: 'Dupliquer les champs sélectionnés (Ctrl+D)',
+    duplicateField: 'Dupliquer ce champ (Ctrl+D)',
+    duplicateFieldError: 'Dupliquer le nom de champ',
+    cannotParseFieldError: 'Champ impossible à parser en JSON',
+    cannotParseValueError: 'Valeur impossible à parser en JSON',
+    empty: 'vide',
+    expandAll: 'Étendre',
+    expandTitle: 'Étendre/regrouper ce champ (Ctrl+E). \n' +
+      'Ctrl+Click pour étendre/regrouper avec tous les champs.',
+    insert: 'Insérer',
+    insertTitle: 'Insérer un champ de type \'auto\' avant ce champ (Ctrl+Ins)',
+    insertSub: 'Sélectionner le type de champ à insérer',
+    object: 'Objet',
+    ok: 'Ok',
+    redo: 'Rejouer (Ctrl+Shift+Z)',
+    removeText: 'Supprimer',
+    removeTitle: 'Supprimer les champs sélectionnés (Ctrl+Del)',
+    removeField: 'Supprimer ce champ (Ctrl+Del)',
+    searchTitle: 'Rechercher champs et valeurs',
+    searchNextResultTitle: 'Résultat suivant (Enter)',
+    searchPreviousResultTitle: 'Résultat précédent (Shift + Enter)',
+    selectNode: 'Sélectionner un nœud...',
+    showAll: 'voir tout',
+    showMore: 'voir plus',
+    showMoreStatus: '${visibleChilds} éléments affichés de ${totalChilds}.',
+    sort: 'Trier',
+    sortTitle: 'Trier les champs de ce ${type}',
+    sortTitleShort: 'Trier',
+    sortFieldLabel: 'Champ:',
+    sortDirectionLabel: 'Direction:',
+    sortFieldTitle: 'Sélectionner les champs permettant de trier les listes et objet',
+    sortAscending: 'Ascendant',
+    sortAscendingTitle: 'Trier les champs sélectionnés par ordre ascendant',
+    sortDescending: 'Descendant',
+    sortDescendingTitle: 'Trier les champs sélectionnés par ordre descendant',
+    string: 'Chaîne',
+    transform: 'Transformer',
+    transformTitle: 'Filtrer, trier, or transformer les enfants de ce ${type}',
+    transformTitleShort: 'Filtrer, trier ou transformer le contenu',
+    extract: 'Extraire',
+    extractTitle: 'Extraire ce ${type}',
+    transformQueryTitle: 'Saisir une requête JMESPath',
+    transformWizardLabel: 'Assistant',
+    transformWizardFilter: 'Filtrer',
+    transformWizardSortBy: 'Trier par',
+    transformWizardSelectFields: 'Sélectionner les champs',
+    transformQueryLabel: 'Requête',
+    transformPreviewLabel: 'Prévisualisation',
+    type: 'Type',
+    typeTitle: 'Changer le type de ce champ',
+    openUrl: 'Ctrl+Click ou Ctrl+Enter pour ouvrir l\'url dans une autre fenêtre',
+    undo: 'Annuler la dernière action (Ctrl+Z)',
+    validationCannotMove: 'Cannot move a field into a child of itself',
+    autoType: 'Champe de type "auto". ' +
+      'Ce type de champ est automatiquement déterminé en fonction de la valeur ' +
+      'et peut être de type "chaîne", "nombre", "booléen" ou null.',
+    objectType: 'Champ de type "objet". ' +
+      'Un objet contient un ensemble non ordonné de paires clé/valeur.',
+    arrayType: 'Champ de type "liste". ' +
+      'Une liste contient une collection ordonnée de valeurs.',
+    stringType: 'Champ de type "chaîne". ' +
+      'Ce type de champ n\'est pas déterminé en fonction de la valeur, ' +
+      'mais retourne systématiquement une chaîne de caractères.',
+    modeEditorTitle: 'Changer mode d\'édition',
+    modeCodeText: 'Code',
+    modeCodeTitle: 'Activer surlignage code',
+    modeFormText: 'Formulaire',
+    modeFormTitle: 'Activer formulaire',
+    modeTextText: 'Texte',
+    modeTextTitle: 'Activer éditeur texte',
+    modeTreeText: 'Arbre',
+    modeTreeTitle: 'Activer éditeur arbre',
+    modeViewText: 'Lecture seule',
+    modeViewTitle: 'Activer vue arbre',
+    modePreviewText: 'Prévisualisation',
+    modePreviewTitle: 'Activer mode prévisualiser',
+    examples: 'Exemples',
+    default: 'Défaut',
+    containsInvalidProperties: 'Contient des propriétés non valides',
+    containsInvalidItems: 'Contient des éléments invalides'
+  },
+  de: {
+    array: 'Auflistung',
+    auto: 'Auto',
+    appendText: 'anhängen',
+    appendTitle: 'Fügen Sie nach diesem Feld ein neues Feld mit dem Typ \'auto\' ein (Strg+Umschalt+Ein)',
+    appendSubmenuTitle: 'Wählen Sie den Typ des neuen Feldes',
+    appendTitleAuto: 'Ein neues Feld vom Typ \'auto\' hinzufügen (Strg+Umschalt+Ein)',
+    ascending: 'Aufsteigend',
+    ascendingTitle: 'Sortieren Sie die Elemente dieses ${type} in aufsteigender Reihenfolge',
+    actionsMenu: 'Klicken Sie zum Öffnen des Aktionsmenüs (Strg+M)',
+    cannotParseFieldError: 'Feld kann nicht in JSON geparst werden',
+    cannotParseValueError: 'Wert kann nicht in JSON geparst werden',
+    collapseAll: 'Alle Felder zuklappen',
+    compactTitle: 'JSON-Daten verdichten, alle Leerzeichen entfernen (Strg+Umschalt+\\)',
+    descending: 'Absteigend',
+    descendingTitle: 'Sortieren Sie die Elemente dieses ${type} in absteigender Reihenfolge',
+    drag: 'Ziehen, um dieses Feld zu verschieben (Alt+Umschalt+Pfeile)',
+    duplicateKey: 'Doppelter Schlüssel',
+    duplicateText: 'Duplikat',
+    duplicateTitle: 'Ausgewählte Felder duplizieren (Strg+D)',
+    duplicateField: 'Dieses Feld duplizieren (Strg+D)',
+    duplicateFieldError: 'Doppelter Feldname',
+    empty: 'leer',
+    expandAll: 'Alle Felder anzeigen',
+    expandTitle: 'Klicken Sie, um dieses Feld zu erweitern/zu kollabieren (Strg+E). \nStrg+Klicken Sie, um dieses Feld einschließlich aller Elemente zu erweitern/zu kollabieren.',
+    formatTitle: 'JSON-Daten mit korrekter Einrückung und Zeilenvorschüben formatieren (Strg+\\)',
+    insert: 'einfügen',
+    insertTitle: 'Fügen Sie vor diesem Feld ein neues Feld mit dem Typ \'auto\' ein (Strg+Einfg)',
+    insertSub: 'Wählen Sie den Typ des neuen Feldes',
+    object: 'Objekt',
+    ok: 'Ok',
+    redo: 'Wiederholen (Strg+Umschalt+Z)',
+    removeText: 'entfernen',
+    removeTitle: 'Ausgewählte Felder entfernen (Strg+Entf)',
+    removeField: 'Dieses Feld entfernen (Strg+Entf)',
+    repairTitle: 'JSON reparieren: Anführungszeichen und Escape-Zeichen korrigieren, Kommentare und JSONP-Notation entfernen, JavaScript-Objekte in JSON umwandeln.',
+    searchTitle: 'Suchfelder und Werte',
+    searchNextResultTitle: 'Nächstes Ergebnis (Enter)',
+    searchPreviousResultTitle: 'Vorheriges Ergebnis (Umschalt + Eingabe)',
+    selectNode: 'Wählen Sie einen Knoten aus...',
+    showAll: 'alle anzeigen',
+    showMore: 'mehr anzeigen',
+    showMoreStatus: 'Anzeige von ${visibleChilds} von ${totalChilds}-Elementen.',
+    sort: 'Sortieren',
+    sortTitle: 'Sortieren Sie die Elemente dieses ${type}',
+    sortTitleShort: 'Inhalt sortieren',
+    sortFieldLabel: 'Feld:',
+    sortDirectionLabel: 'Richtung:',
+    sortFieldTitle: 'Wählen Sie das verschachtelte Feld, nach dem das Array oder Objekt sortiert werden soll.',
+    sortAscending: 'Aufsteigend',
+    sortAscendingTitle: 'Sortieren Sie das ausgewählte Feld in aufsteigender Reihenfolge',
+    sortDescending: 'Absteigend',
+    sortDescendingTitle: 'Sortieren Sie das ausgewählte Feld in absteigender Reihenfolge',
+    string: 'Zeichenfolge',
+    transform: 'Verwandeln',
+    transformTitle: 'Die Elemente dieses ${type} filtern, sortieren oder transformieren',
+    transformTitleShort: 'Inhalte filtern, sortieren oder transformieren',
+    extract: 'Auszug',
+    extractTitle: 'Extrahieren Sie diesen ${type}',
+    transformQueryTitle: 'Eine JMESPath-Abfrage eingeben',
+    transformWizardLabel: 'Zauberer',
+    transformWizardFilter: 'Filter',
+    transformWizardSortBy: 'Sortieren nach',
+    transformWizardSelectFields: 'Felder auswählen',
+    transformQueryLabel: 'Anfrage',
+    transformPreviewLabel: 'Vorschau',
+    type: 'Geben Sie  ein.',
+    typeTitle: 'Ändern Sie den Typ dieses Feldes',
+    openUrl: 'Strg+Klicken oder Strg+Eingabe, um die URL in einem neuen Fenster zu öffnen',
+    undo: 'Letzte Aktion rückgängig machen (Strg+Z)',
+    validationCannotMove: 'Kann ein Feld nicht in ein Kind seiner selbst verschieben',
+    autoType: 'Feldtyp "auto". Der Feldtyp wird automatisch aus dem Wert bestimmt und kann ein String, eine Zahl, boolesch oder null sein.',
+    objectType: 'Feldtyp "Objekt". Ein Objekt enthält eine ungeordnete Menge von Schlüssel/Wert-Paaren.',
+    arrayType: 'Feldtyp "Array". Ein Array enthält eine geordnete Sammlung von Werten.',
+    stringType: 'Feldtyp "Zeichenfolge". Der Feldtyp wird nicht aus dem Wert bestimmt, sondern immer als Zeichenfolge zurückgegeben.',
+    modeEditorTitle: 'Editor-Modus umschalten',
+    modeCodeText: 'Code',
+    modeCodeTitle: 'Umschalten auf Code-Highlighter',
+    modeFormText: 'Formular',
+    modeFormTitle: 'Zum Formular-Editor wechseln',
+    modeTextText: 'Text',
+    modeTextTitle: 'Zum Editor für einfachen Text wechseln',
+    modeTreeText: 'Baum',
+    modeTreeTitle: 'Zum Baum-Editor wechseln',
+    modeViewText: 'Siehe',
+    modeViewTitle: 'Zur Baumansicht wechseln',
+    modePreviewText: 'Vorschau',
+    modePreviewTitle: 'In den Vorschau-Modus wechseln',
+    examples: 'Beispiele',
+    default: 'Standardmäßig',
+    containsInvalidProperties: 'Enthält ungültige Eigenschaften',
+    containsInvalidItems: 'Enthält ungültige Elemente'
   }
-};
-
-var _defaultLang = 'en';
-var _lang;
-var userLang = typeof navigator !== 'undefined' ?
-  navigator.language || navigator.userLanguage :
-  undefined;
-_lang = _locales.find(function (l) {
-  return l === userLang;
-});
-if (!_lang) {
-  _lang = _defaultLang;
 }
 
-module.exports = {
-  // supported locales
-  _locales: _locales,
-  _defs: _defs,
-  _lang: _lang,
-  setLanguage: function (lang) {
-    if (!lang) {
-      return;
-    }
-    var langFound = _locales.find(function (l) {
-      return l === lang;
-    });
-    if (langFound) {
-      _lang = langFound;
-    } else {
-      console.error('Language not found');
-    }
-  },
-  setLanguages: function (languages) {
-    if (!languages) {
-      return;
-    }
-    for (var key in languages) {
-      var langFound = _locales.find(function (l) {
-        return l === key;
-      });
-      if (!langFound) {
-        _locales.push(key);
-      }
-      _defs[key] = Object.assign({}, _defs[_defaultLang], _defs[key], languages[key]);
-    }
-  },
-  translate: function (key, data, lang) {
-    if (!lang) {
-      lang = _lang;
-    }
-    var text = _defs[lang][key];
-    if (data) {
-      for (key in data) {
-        text = text.replace('${' + key + '}', data[key]);
-      }
-    }
-    return text || key;
+const _defaultLang = 'en'
+const userLang = typeof navigator !== 'undefined'
+  ? navigator.language || navigator.userLanguage
+  : undefined
+let _lang = _locales.find(l => l === userLang) || _defaultLang
+
+export function setLanguage (lang) {
+  if (!lang) {
+    return
   }
-};
+  const langFound = _locales.find(l => l === lang)
+  if (langFound) {
+    _lang = langFound
+  } else {
+    console.error('Language not found')
+  }
+}
+
+export function setLanguages (languages) {
+  if (!languages) {
+    return
+  }
+  for (const language in languages) {
+    const langFound = _locales.find(l => l === language)
+    if (!langFound) {
+      _locales.push(language)
+    }
+    _defs[language] = Object.assign({}, _defs[_defaultLang], _defs[language], languages[language])
+  }
+}
+
+export function translate (key, data, lang) {
+  if (!lang) {
+    lang = _lang
+  }
+  let text = _defs[lang][key] || _defs[_defaultLang][key] || key
+  if (data) {
+    for (const dataKey in data) {
+      text = text.replace('${' + dataKey + '}', data[dataKey])
+    }
+  }
+  return text
+}

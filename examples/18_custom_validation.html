@@ -1,6 +1,8 @@
 <!DOCTYPE HTML>
-<html>
+<html lang="en">
 <head>
+  <meta charset="utf-8">
+
   <title>JSONEditor | Custom validation</title>
 
   <link href="../dist/jsoneditor.css" rel="stylesheet" type="text/css">
@@ -28,7 +30,7 @@
 <div id="jsoneditor"></div>
 
 <script>
-  var json = {
+  const json = {
     team: [
       {
         name: 'Joe',
@@ -42,9 +44,9 @@
         name: 'Jack'
       }
     ]
-  };
+  }
 
-  var options = {
+  const options = {
     mode: 'tree',
     modes: ['code', 'text', 'tree', 'preview'],
     onValidate: function (json) {
@@ -52,59 +54,56 @@
       // - team, names, and ages must be filled in and be of correct type
       // - a team must have 4 members
       // - at lease one member of the team must be adult
-      var errors = [];
+      const errors = []
 
       if (json && Array.isArray(json.team)) {
         // check whether each team member has name and age filled in correctly
         json.team.forEach(function (member, index) {
           if (typeof member !== 'object') {
-            errors.push({ path: ['team', index], message: 'Member must be an object with properties "name" and "age"' })
+            errors.push({path: ['team', index], message: 'Member must be an object with properties "name" and "age"'})
           }
 
           if ('name' in member) {
             if (typeof member.name !== 'string') {
-              errors.push({ path: ['team', index, 'name'], message: 'Name must be a string' })
+              errors.push({path: ['team', index, 'name'], message: 'Name must be a string'})
             }
-          }
-          else {
-            errors.push({ path: ['team', index], message: 'Required property "name"" missing' })
+          } else {
+            errors.push({path: ['team', index], message: 'Required property "name"" missing'})
           }
 
           if ('age' in member) {
             if (typeof member.age !== 'number') {
-              errors.push({ path: ['team', index, 'age'], message: 'Age must be a number' })
+              errors.push({path: ['team', index, 'age'], message: 'Age must be a number'})
             }
+          } else {
+            errors.push({path: ['team', index], message: 'Required property "age" missing'})
           }
-          else {
-            errors.push({ path: ['team', index], message: 'Required property "age" missing' })
-          }
-        });
+        })
 
         // check whether the team consists of exactly four members
         if (json.team.length !== 4) {
-          errors.push({ path: ['team'], message: 'A team must have 4 members' })
+          errors.push({path: ['team'], message: 'A team must have 4 members'})
         }
 
         // check whether there is at least one adult member in the team
-        var adults = json.team.filter(function (member) {
-          return member ? member.age >= 18 : false;
-        });
+        const adults = json.team.filter(function (member) {
+          return member ? member.age >= 18 : false
+        })
         if (adults.length === 0) {
-          errors.push({ path: ['team'], message: 'A team must have at least one adult person (age >= 18)' })
+          errors.push({path: ['team'], message: 'A team must have at least one adult person (age >= 18)'})
         }
-      }
-      else {
-        errors.push({ path: [], message: 'Required property "team" missing or not an Array' })
+      } else {
+        errors.push({path: [], message: 'Required property "team" missing or not an Array'})
       }
 
-      return errors;
+      return errors
     }
-  };
+  }
 
   // create the editor
-  var container = document.getElementById('jsoneditor');
-  var editor = new JSONEditor(container, options, json);
-  editor.expandAll();
+  const container = document.getElementById('jsoneditor')
+  const editor = new JSONEditor(container, options, json)
+  editor.expandAll()
 </script>
 </body>
 </html>

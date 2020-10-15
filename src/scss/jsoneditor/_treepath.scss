@@ -1,0 +1,48 @@
+.jsoneditor-treepath {
+  padding: 0 5px;
+  overflow: hidden;
+  white-space: nowrap;
+  outline: none;
+  &.show-all {
+    word-wrap: break-word;
+    white-space: normal;
+    position: absolute;
+    background-color: $jse-light-bg;
+    z-index: 1;
+    box-shadow: $jse-box-shadow;
+    span {
+      &.jsoneditor-treepath-show-all-btn {
+        display: none;
+      }
+    }
+  }
+  div {
+    &.jsoneditor-contextmenu-root {
+      position: absolute;
+      left: 0;
+    }
+  }
+  .jsoneditor-treepath-show-all-btn {
+    position: absolute;
+    background-color: $jse-light-bg;
+    left: 0;
+    height: 20px;
+    padding: 0 3px;
+    cursor: pointer;
+  }
+  .jsoneditor-treepath-element {
+    margin: 1px;
+    font-family: $jse-font;
+    font-size:  $jse-font-size;
+  }
+  .jsoneditor-treepath-seperator {
+    margin: 2px;
+    font-size: 9pt;
+    font-family: $jse-font;
+  }
+}
+.jsoneditor-treepath span.jsoneditor-treepath-element:hover,
+.jsoneditor-treepath span.jsoneditor-treepath-seperator:hover {
+  cursor: pointer;
+  text-decoration: underline;
+}

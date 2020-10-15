@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+
+  <title>JSONEditor test getInnerHtml</title>
+
+  <link href="../dist/jsoneditor.css" rel="stylesheet" type="text/css">
+  <script src="../dist/jsoneditor.js"></script>
+
+  <style>
+    html, body {
+      font-family: verdana;
+      background: #f5f5f5;
+      font-size: 11pt;
+    }
+
+    #editableDiv {
+      width: 600px;
+      height: 200px;
+      border: 1px solid red;
+      background: white;
+      font-family: monospace;
+    }
+
+    #editableDiv p {
+      margin: 0;
+    }
+
+    #innerText,
+    #getInnerText,
+    #innerTextStr,
+    #textContentStr {
+      width: 600px;
+    }
+
+    #innerText,
+    #getInnerText {
+      height: 200px;
+      border: 1px solid green;
+    }
+
+    #innerTextStr,
+    #textContentStr {
+      width: 600px;
+      border: 1px solid gray;
+      background: #f5f5f5;
+      font-family: monospace;
+    }
+  </style>
+</head>
+<body>
+contenteditable div:
+<div id="editableDiv" contenteditable="true">
+  <p>Hello world</p>
+  <p>test paste from OpenOffice  </p>
+  a
+  <p>
+    <br>
+  </p>
+  <p>test</p>
+</div>
+
+<p>
+  innerText: <br/>
+  <textarea id="innerText"></textarea>
+</p>
+<p>
+  getInnerText: <br/>
+  <textarea id="getInnerText"></textarea>
+</p>
+<p>
+<p>
+  inner text (stringified): <br/>
+  <input id="innerTextStr" readonly />
+</p>
+<p>
+  text content (stringified): <br/>
+  <input id="textContentStr" readonly />
+</p>
+
+<script>
+  const editableDiv = document.getElementById('editableDiv')
+  const innerText = document.getElementById('innerText')
+  const getInnerTextDiv = document.getElementById('getInnerText')
+  const innerTextStr = document.getElementById('innerTextStr')
+  const textContentStr = document.getElementById('textContentStr')
+
+  function updateInnerTexts () {
+    innerText.value = editableDiv.innerText
+    getInnerTextDiv.value = JSONEditor.getInnerText(editableDiv)
+    innerTextStr.value = JSON.stringify(editableDiv.innerText)
+    textContentStr.value = JSON.stringify(editableDiv.textContent)
+  }
+
+  editableDiv.oninput = updateInnerTexts
+
+  updateInnerTexts()
+
+  innerText.oninput = function () {
+    editableDiv.innerText = innerText.value
+    getInnerTextDiv.value = getInnerText(editableDiv)
+  }
+
+  getInnerTextDiv.oninput = function () {
+    editableDiv.innerText = getInnerTextDiv.value
+    innerText.value = editableDiv.innerText
+  }
+
+</script>
+</body>
+</html>

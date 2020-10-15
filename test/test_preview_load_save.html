@@ -1,7 +1,9 @@
 <!DOCTYPE HTML>
-<html>
+<html lang="en">
 <head>
-  <title>JSONEditor | Load and save</title>
+  <meta charset="utf-8">
+
+  <title>JSONEditor | Preview mode load and save</title>
 
   <link href="../dist/jsoneditor.css" rel="stylesheet" type="text/css">
   <script src="../dist/jsoneditor.js"></script>
@@ -20,7 +22,7 @@
   </style>
 </head>
 <body>
-<h1>Load and save JSON documents</h1>
+<h1>Load and save JSON documents in Preview mode</h1>
 <p>
   This examples uses HTML5 to load/save local files.
   Powered by <a href="http://bgrins.github.io/filereader.js/">FileReader.js</a> and
@@ -38,7 +40,9 @@
 
 <script>
   // create the editor
-  var editor = new JSONEditor(document.getElementById('jsoneditor'));
+  var editor = new JSONEditor(document.getElementById('jsoneditor'), {
+    mode: 'preview'
+  });
 
   // Load a JSON document
   FileReaderJS.setupInput(document.getElementById('loadDocument'), {

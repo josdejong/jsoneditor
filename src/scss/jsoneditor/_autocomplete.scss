@@ -1,0 +1,30 @@
+.jsoneditor {
+  .autocomplete {
+    &.dropdown {
+      position: absolute;
+      background: $jse-white;
+      box-shadow: $jse-box-shadow;
+      border: 1px solid $jse-bar-border;
+      overflow-x: hidden;
+      overflow-y: auto;
+      cursor: default;
+      margin: 0;
+      padding: 5px;
+      text-align: left;
+      outline: 0;
+      font-family: $jse-font-mono;
+      font-size:  $jse-font-size;
+      .item {
+        color: #333;
+        &.hover {
+          background-color: #ddd;
+        }
+      }
+    }
+    &.hint {
+      color: #aaa;
+      top: 4px;
+      left: 4px;
+    }
+  }
+}

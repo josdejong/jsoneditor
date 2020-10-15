@@ -1,4 +1,4 @@
-'use strict';
+'use strict'
 
 /**
  * Convert part of a JSON object to a JSON string.
@@ -21,26 +21,24 @@
  *
  * @returns {string | undefined} Returns the string representation of the JSON object.
  */
-function stringifyPartial(value, space, limit) {
-  var _space; // undefined by default
+export function stringifyPartial (value, space, limit) {
+  let _space // undefined by default
   if (typeof space === 'number') {
     if (space > 10) {
-      _space = repeat(' ', 10);
-    }
-    else if (space >= 1) {
-      _space = repeat(' ', space);
+      _space = repeat(' ', 10)
+    } else if (space >= 1) {
+      _space = repeat(' ', space)
     }
     // else ignore
-  }
-  else if (typeof space === 'string' && space !== '') {
-    _space = space;
+  } else if (typeof space === 'string' && space !== '') {
+    _space = space
   }
 
-  var output = stringifyValue(value, _space, '', limit);
+  const output = stringifyValue(value, _space, '', limit)
 
   return output.length > limit
-      ? (slice(output, limit) + '...')
-      : output;
+    ? (slice(output, limit) + '...')
+    : output
 }
 
 /**
@@ -51,27 +49,27 @@ function stringifyPartial(value, space, limit) {
  * @param {number} limit
  * @return {string | undefined}
  */
-function stringifyValue(value, space, indent, limit) {
+function stringifyValue (value, space, indent, limit) {
   // boolean, null, number, string, or date
   if (typeof value === 'boolean' || value instanceof Boolean ||
       value === null ||
       typeof value === 'number' || value instanceof Number ||
       typeof value === 'string' || value instanceof String ||
       value instanceof Date) {
-    return JSON.stringify(value);
+    return JSON.stringify(value)
   }
 
   // array
   if (Array.isArray(value)) {
-    return stringifyArray(value, space, indent, limit);
+    return stringifyArray(value, space, indent, limit)
   }
 
   // object (test lastly!)
   if (value && typeof value === 'object') {
-    return stringifyObject(value, space, indent, limit);
+    return stringifyObject(value, space, indent, limit)
   }
 
-  return undefined;
+  return undefined
 }
 
 /**
@@ -82,36 +80,35 @@ function stringifyValue(value, space, indent, limit) {
  * @param {number} limit
  * @return {string}
  */
-function stringifyArray(array, space, indent, limit) {
-  var childIndent = space ? (indent + space) : undefined;
-  var str = space ? '[\n' : '[';
+function stringifyArray (array, space, indent, limit) {
+  const childIndent = space ? (indent + space) : undefined
+  let str = space ? '[\n' : '['
 
-  for (var i = 0; i < array.length; i++) {
-    var item = array[i];
+  for (let i = 0; i < array.length; i++) {
+    const item = array[i]
 
     if (space) {
-      str += childIndent;
+      str += childIndent
     }
 
     if (typeof item !== 'undefined' && typeof item !== 'function') {
-      str += stringifyValue(item, space, childIndent, limit);
-    }
-    else {
+      str += stringifyValue(item, space, childIndent, limit)
+    } else {
       str += 'null'
     }
 
     if (i < array.length - 1) {
-      str += space ? ',\n' : ',';
+      str += space ? ',\n' : ','
     }
 
     // stop as soon as we're exceeding the limit
     if (str.length > limit) {
-      return str + '...';
+      return str + '...'
     }
   }
 
-  str += space ? ('\n' + indent + ']') : ']';
-  return str;
+  str += space ? ('\n' + indent + ']') : ']'
+  return str
 }
 
 /**
@@ -122,41 +119,40 @@ function stringifyArray(array, space, indent, limit) {
  * @param {number} limit
  * @return {string}
  */
-function stringifyObject(object, space, indent, limit) {
-  var childIndent = space ? (indent + space) : undefined;
-  var first = true;
-  var str = space ? '{\n' : '{';
+function stringifyObject (object, space, indent, limit) {
+  const childIndent = space ? (indent + space) : undefined
+  let first = true
+  let str = space ? '{\n' : '{'
 
   if (typeof object.toJSON === 'function') {
-    return stringifyValue(object.toJSON(), space, indent, limit);
+    return stringifyValue(object.toJSON(), space, indent, limit)
   }
 
-  for (var key in object) {
-    if (object.hasOwnProperty(key)) {
-      var value = object[key];
+  for (const key in object) {
+    if (hasOwnProperty(object, key)) {
+      const value = object[key]
 
       if (first) {
-        first = false;
-      }
-      else {
-        str += space ? ',\n' : ',';
+        first = false
+      } else {
+        str += space ? ',\n' : ','
       }
 
       str += space
-          ? (childIndent + '"' + key + '": ')
-          : ('"' + key + '":');
+        ? (childIndent + '"' + key + '": ')
+        : ('"' + key + '":')
 
-      str += stringifyValue(value, space, childIndent, limit);
+      str += stringifyValue(value, space, childIndent, limit)
 
       // stop as soon as we're exceeding the limit
       if (str.length > limit) {
-        return str + '...';
+        return str + '...'
       }
     }
   }
 
-  str += space ? ('\n' + indent + '}') : '}';
-  return str;
+  str += space ? ('\n' + indent + '}') : '}'
+  return str
 }
 
 /**
@@ -167,11 +163,11 @@ function stringifyObject(object, space, indent, limit) {
  * @return {string}
  */
 function repeat (text, times) {
-  var res = '';
+  let res = ''
   while (times-- > 0) {
-    res += text;
+    res += text
   }
-  return res;
+  return res
 }
 
 /**
@@ -180,10 +176,10 @@ function repeat (text, times) {
  * @param {number} [limit]
  * @return {string}
  */
-function slice(text, limit) {
+function slice (text, limit) {
   return typeof limit === 'number'
-      ? text.slice(0, limit)
-      : text;
+    ? text.slice(0, limit)
+    : text
 }
 
 /**
@@ -192,9 +188,10 @@ function slice(text, limit) {
  * @param {string} jsonText
  * @return {boolean}
  */
-function containsArray (jsonText) {
+export function containsArray (jsonText) {
   return /^\s*\[/.test(jsonText)
 }
 
-exports.stringifyPartial = stringifyPartial;
-exports.containsArray = containsArray;
+function hasOwnProperty (object, key) {
+  return Object.prototype.hasOwnProperty.call(object, key)
+}

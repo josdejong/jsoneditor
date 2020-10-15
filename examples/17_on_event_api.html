@@ -1,7 +1,7 @@
 <!DOCTYPE HTML>
-<html>
+<html lang="en">
 <head>
-  <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+  <meta charset="utf-8">
 
   <link href="../dist/jsoneditor.css" rel="stylesheet" type="text/css">
   <script src="../dist/jsoneditor.js"></script>
@@ -37,42 +37,42 @@
 </form>
 
 <script>
-  var container, options, json;
+  const container = document.getElementById('jsoneditor')
 
-  container = document.getElementById('jsoneditor');
-
-  options = {
+  const options = {
     mode: 'tree',
     modes: ['code', 'form', 'text', 'tree', 'view', 'preview'], // allowed modes
     name: "jsonContent",
     onError: function (err) {
-      alert(err.toString());
+      alert(err.toString())
     },
     onEvent: function(node, event) {
       if (event.type === 'click') {
-        var message = 'click on <' + node.field +
+        let message = 'click on <' + node.field +
           '> under path <' + node.path + 
-          '> with pretty path: <' + prettyPrintPath(node.path) + '>';
-        if (node.value) message += ' with value <' + node.value + '>';
-        console.log(message);
+          '> with pretty path: <' + prettyPrintPath(node.path) + '>'
+        if (node.value) {
+          message += ' with value <' + node.value + '>'
+        }
+        console.log(message)
       }
       function prettyPrintPath(path) {
-        var str = '';
-        for (var i=0; i<path.length; i++) {
-          var element = path[i];
+        let str = ''
+        for (let i=0; i<path.length; i++) {
+          const element = path[i]
           if (typeof element === 'number') {
             str += '[' + element + ']'
           } else {
-            if (str.length > 0) str += ',';
-            str += element; 
+            if (str.length > 0) str += ','
+            str += element
           }
         }
-        return str;
+        return str
       }
     }
-  };
+  }
 
-  json = {
+  const json = {
     "array": [1, 2, [3,4,5]],
     "boolean": true,
     "htmlcode": '&quot;',
@@ -85,12 +85,12 @@
     "string": "Hello World",
     "url": "http://jsoneditoronline.org",
     "[0]": "zero"
-  };
+  }
   
-  window.editor = new JSONEditor(container, options, json);
+  window.editor = new JSONEditor(container, options, json)
 
-  console.log('json', json);
-  console.log('string', JSON.stringify(json));
+  console.log('json', json)
+  console.log('string', JSON.stringify(json))
 </script>
 </body>
 </html>

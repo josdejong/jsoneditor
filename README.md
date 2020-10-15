@@ -2,9 +2,9 @@
 
 [![Version](https://img.shields.io/npm/v/jsoneditor.svg)](https://www.npmjs.com/package/jsoneditor)
 [![Downloads](https://img.shields.io/npm/dm/jsoneditor.svg)](https://www.npmjs.com/package/jsoneditor)
-![Maintenance](https://img.shields.io/maintenance/yes/2019.svg)
+![Maintenance](https://img.shields.io/maintenance/yes/2020.svg)
 [![License](https://img.shields.io/github/license/josdejong/jsoneditor.svg)](https://github.com/josdejong/jsoneditor/blob/master/LICENSE)
-[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fjosdejong%2Fjsoneditor.svg?type=shield)](https://app.fossa.io/projects/git%2Bgithub.com%2Fjosdejong%2Fjsoneditor?ref=badge_shield) [![Greenkeeper badge](https://badges.greenkeeper.io/josdejong/jsoneditor.svg)](https://greenkeeper.io/)
+[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fjosdejong%2Fjsoneditor.svg?type=shield)](https://app.fossa.io/projects/git%2Bgithub.com%2Fjosdejong%2Fjsoneditor?ref=badge_shield)
 
 JSON Editor is a web-based tool to view, edit, format, and validate JSON.
 It has various modes such as a tree editor, a code editor, and a plain text
@@ -83,10 +83,10 @@ with npm (recommended):
 
 ```html
 <!DOCTYPE HTML>
-<html>
+<html lang="en">
 <head>
     <!-- when using the mode "code", it's important to specify charset utf-8 -->
-    <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+    <meta charset="utf-8">
 
     <link href="jsoneditor/dist/jsoneditor.min.css" rel="stylesheet" type="text/css">
     <script src="jsoneditor/dist/jsoneditor.min.js"></script>
@@ -96,23 +96,23 @@ with npm (recommended):
 
     <script>
         // create the editor
-        var container = document.getElementById("jsoneditor");
-        var options = {};
-        var editor = new JSONEditor(container, options);
+        const container = document.getElementById("jsoneditor")
+        const options = {}
+        const editor = new JSONEditor(container, options)
 
         // set json
-        var json = {
+        const initialJson = {
             "Array": [1, 2, 3],
             "Boolean": true,
             "Null": null,
             "Number": 123,
             "Object": {"a": "b", "c": "d"},
             "String": "Hello World"
-        };
-        editor.set(json);
+        }
+        editor.set(initialJson)
 
         // get json
-        var json = editor.get();
+        const updatedJson = editor.get()
     </script>
 </body>
 </html>
@@ -142,12 +142,27 @@ jsoneditor:
 - To automatically build when a source file has changed:
 
   ```
-  npm run watch
+  npm start
   ```
 
   This will update `./jsoneditor.js` and `./jsoneditor.css` in the dist folder
   on every change, but it will **NOT** update the minified versions as that's
   an expensive operation.
+
+
+## Test
+
+Run unit tests:
+
+```
+npm test
+```
+
+Run code linting ([JavaScript Standard Style](https://standardjs.com/)):
+
+```
+npm run lint
+```
 
 
 ## Custom builds

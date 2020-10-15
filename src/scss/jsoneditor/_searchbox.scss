@@ -1,0 +1,72 @@
+.jsoneditor {
+  &-search {
+    font-family: $jse-font;
+    position: absolute;
+    right: 4px;
+    top: 4px;
+    border-collapse: collapse;
+    border-spacing: 0;
+    display: flex;
+
+    input {
+      color: $jse-content-color;
+      width: 120px;
+      border: none;
+      outline: none;
+      margin: 1px;
+      line-height: 20px;
+      font-family: $jse-font;
+    }
+
+    button {
+      width: 16px;
+      height: 24px;
+      padding: 0;
+      margin: 0;
+      border: none;
+      background: url($jse-icons);
+      vertical-align: top;
+
+      &:hover {
+        background-color: transparent;
+      }
+
+      &.jsoneditor-refresh {
+        width: 18px;
+        background-position: -99px -73px;
+      }
+
+      &.jsoneditor-next {
+        cursor: pointer;
+        background-position: -124px -73px;
+
+        &:hover {
+          background-position: -124px -49px;
+        }
+      }
+      &.jsoneditor-previous {
+        cursor: pointer;
+        background-position: -148px -73px;
+        margin-right: 2px;
+
+        &:hover {
+          background-position: -148px -49px;
+        }
+      }
+    }
+  }
+
+  &-results {
+    font-family: $jse-font;
+    color: $jse-white;
+    padding-right: 5px;
+    line-height: 26px;
+  }
+
+  &-frame {
+    border: 1px solid transparent;
+    background-color: $jse-white;
+    padding: 0 2px;
+    margin: 0;
+  }
+}

@@ -1,6 +1,8 @@
 <!DOCTYPE HTML>
-<html>
+<html lang="en">
 <head>
+  <meta charset="utf-8">
+
   <title>JSONEditor | Custom editable fields</title>
 
   <link href="../dist/jsoneditor.css" rel="stylesheet" type="text/css">
@@ -25,9 +27,9 @@
   <div id="jsoneditor"></div>
 
   <script>
-    var container = document.getElementById('jsoneditor');
+    const container = document.getElementById('jsoneditor')
 
-    var options = {
+    const options = {
       onEditable: function (node) {
         // node is an object like:
         //   {
@@ -37,27 +39,27 @@
         //   }
         switch (node.field) {
           case '_id':
-            return false;
+            return false
 
           case 'name':
             return {
               field: false,
               value: true
-            };
+            }
 
           default:
-            return true;
+            return true
         }
       }
-    };
+    }
 
-    var json = {
+    const json = {
       _id: 123456,
       name: 'John',
       age: 32
-    };
+    }
 
-    var editor = new JSONEditor(container, options, json);
+    const editor = new JSONEditor(container, options, json)
   </script>
 </body>
 </html>

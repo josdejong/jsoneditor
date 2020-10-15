@@ -1,7 +1,7 @@
 <!DOCTYPE HTML>
-<html>
+<html lang="en">
 <head>
-  <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+  <meta charset="utf-8">
 
   <link href="../dist/jsoneditor.css" rel="stylesheet" type="text/css">
   <script src="../dist/jsoneditor.js"></script>
@@ -58,52 +58,50 @@
 </form>
 
 <script>
-  var container, options, json, editor;
+  const container = document.getElementById('jsoneditor')
 
-  container = document.getElementById('jsoneditor');
-
-  options = {
+  const options = {
     mode: 'tree',
     modes: ['code', 'form', 'text', 'tree', 'view', 'preview'], // allowed modes
     onError: function (err) {
-      alert(err.toString());
+      alert(err.toString())
     },
     onChange: function () {
-      console.log('change');
+      console.log('change')
     },
     onModeChange: function (mode) {
-      var treeMode = document.getElementById('treeModeSelection');
-      var textMode = document.getElementById('textModeSelection');
+      const treeMode = document.getElementById('treeModeSelection')
+      const textMode = document.getElementById('textModeSelection')
 
-      treeMode.style.display = textMode.style.display = 'none';
+      treeMode.style.display = textMode.style.display = 'none'
 
       if (mode === 'code' || mode === 'text') {
-        textMode.style.display = 'inline';
+        textMode.style.display = 'inline'
       } else {
-        treeMode.style.display = 'inline';
+        treeMode.style.display = 'inline'
       }
     },
     indentation: 4,
     escapeUnicode: true,
     onTextSelectionChange: function(start, end, text) {
-      var rangeEl = document.getElementById('textRange');
-      rangeEl.innerHTML = 'start: ' + JSON.stringify(start) + ', end: ' + JSON.stringify(end);
-      var textEl = document.getElementById('selectedText');
-      textEl.innerHTML = text;
+      const rangeEl = document.getElementById('textRange')
+      rangeEl.innerHTML = 'start: ' + JSON.stringify(start) + ', end: ' + JSON.stringify(end)
+      const textEl = document.getElementById('selectedText')
+      textEl.innerHTML = text
     },
     onSelectionChange: function(start, end) {
-      var nodesEl = document.getElementById('selectedNodes');
-      nodesEl.innerHTML = '';
+      const nodesEl = document.getElementById('selectedNodes')
+      nodesEl.innerHTML = ''
       if (start) {
-        nodesEl.innerHTML = ('start: '  + JSON.stringify(start));
+        nodesEl.innerHTML = ('start: '  + JSON.stringify(start))
         if (end) {
-          nodesEl.innerHTML += ('<br/>end: '  + JSON.stringify(end));
+          nodesEl.innerHTML += ('<br/>end: '  + JSON.stringify(end))
         }
       }
     }
-  };
+  }
 
-  json = {
+  const json = {
     "array": [1, 2, [3,4,5]],
     "boolean": true,
     "htmlcode": '&quot;',
@@ -115,12 +113,12 @@
     "object": {"a": "b", "c": "d"},
     "string": "Hello World",
     "url": "http://jsoneditoronline.org"
-  };
+  }
 
-  window.editor = new JSONEditor(container, options, json);
+  window.editor = new JSONEditor(container, options, json)
 
-  console.log('json', json);
-  console.log('string', JSON.stringify(json));
+  console.log('json', json)
+  console.log('string', JSON.stringify(json))
 </script>
 </body>
 </html>

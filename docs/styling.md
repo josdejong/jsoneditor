@@ -13,6 +13,7 @@ customized with several classes that reflect its type and state.
     - `jsoneditor-undefined`
     - `jsoneditor-number`
     - `jsoneditor-string`
+    - `jsoneditor-string jsoneditor-color-value`
     - `jsoneditor-boolean`
     - `jsoneditor-regexp`
     - `jsoneditor-array`
