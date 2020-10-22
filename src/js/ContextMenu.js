@@ -9,8 +9,10 @@ import { translate } from './i18n'
  * @param {Object[]} items    Array containing the menu structure
  *                            TODO: describe structure
  * @param {Object} [options]  Object with options. Available options:
- *                            {function} close    Callback called when the
- *                                                context menu is being closed.
+ *                            {function} close        Callback called when the
+ *                                                    context menu is being closed.
+ *                            {boolean} mainMenuBar   Whether main menu bar is
+ *                                                    enabled or not.
  * @constructor
  */
 export class ContextMenu {
@@ -24,6 +26,7 @@ export class ContextMenu {
     this.eventListeners = {}
     this.selection = undefined // holds the selection before the menu was opened
     this.onClose = options ? options.close : undefined
+    this.mainMenuBar = options ? options.mainMenuBar : false
 
     // create root element
     const root = document.createElement('div')
@@ -243,7 +246,8 @@ export class ContextMenu {
     }
 
     if (anchor.className.includes('jsoneditor-treepath-seperator')) {
-      const maxPossibleMenuHeight = frameRect.height - parentRect.top - parentRect.height
+      const mainMenuBarHeight = this.mainMenuBar ? 35 : 0
+      const maxPossibleMenuHeight = frameRect.height - mainMenuBarHeight - parentRect.height
       this.dom.list.style.maxHeight = maxPossibleMenuHeight + 'px'
       this.dom.list.style.overflowY = 'auto'
       this.dom.list.style.width = '100%'

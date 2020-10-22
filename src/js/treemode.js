@@ -1072,7 +1072,7 @@ treemode._createFrame = function () {
     this.navBar.className = 'jsoneditor-navigation-bar nav-bar-empty'
     this.frame.appendChild(this.navBar)
 
-    this.treePath = new TreePath(this.navBar, this.getPopupAnchor())
+    this.treePath = new TreePath(this.navBar, this.getPopupAnchor(), { mainMenuBar: this.options.mainMenuBar })
     this.treePath.onSectionSelected(this._onTreePathSectionSelected.bind(this))
     this.treePath.onContextMenuItemSelected(this._onTreePathMenuItemSelected.bind(this))
   }
