@@ -771,7 +771,7 @@ export function getInternetExplorerVersion () {
     let rv = -1 // Return value assumes failure.
     if (typeof navigator !== 'undefined' && navigator.appName === 'Microsoft Internet Explorer') {
       const ua = navigator.userAgent
-      const re = new RegExp('MSIE ([0-9]+[.0-9]+)')
+      const re = /MSIE ([0-9]+[.0-9]+)/
       if (re.exec(ua) != null) {
         rv = parseFloat(RegExp.$1)
       }
@@ -784,19 +784,19 @@ export function getInternetExplorerVersion () {
 }
 
 /**
+ * cached internet explorer version
+ * @type {Number}
+ * @private
+ */
+let _ieVersion = -1
+
+/**
  * Test whether the current browser is Firefox
  * @returns {boolean} isFirefox
  */
 export function isFirefox () {
   return (typeof navigator !== 'undefined' && navigator.userAgent.indexOf('Firefox') !== -1)
 }
-
-/**
- * cached internet explorer version
- * @type {Number}
- * @private
- */
-var _ieVersion = -1
 
 /**
  * Add an event listener. Works for all browsers

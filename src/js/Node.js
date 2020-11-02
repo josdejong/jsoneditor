@@ -162,8 +162,8 @@ export class Node {
     return !this.parent
       ? undefined // do not add an (optional) field name of the root node
       : (this.parent.type !== 'array')
-        ? this.field
-        : this.index
+          ? this.field
+          : this.index
   }
 
   /**
@@ -1029,8 +1029,9 @@ export class Node {
       // create a temporary row, to prevent the scroll position from jumping
       // when removing the node
       const tbody = (this.dom.tr) ? this.dom.tr.parentNode : undefined
+      let trTemp
       if (tbody) {
-        var trTemp = document.createElement('tr')
+        trTemp = document.createElement('tr')
         trTemp.style.height = tbody.clientHeight + 'px'
         tbody.appendChild(trTemp)
       }
@@ -1052,7 +1053,7 @@ export class Node {
         this.insertBefore(node, beforeNode, updateDom)
       }
 
-      if (tbody) {
+      if (tbody && trTemp) {
         tbody.removeChild(trTemp)
       }
     }
@@ -2810,7 +2811,7 @@ export class Node {
           const appendDom = lastNode.getAppendDom()
           nextDom = appendDom ? appendDom.nextSibling : undefined
         } else {
-          var dom = lastNode.getDom()
+          const dom = lastNode.getDom()
           nextDom = dom.nextSibling
         }
         if (nextDom) {
@@ -2921,7 +2922,7 @@ export class Node {
         }
         handled = true
       } else if (altKey && shiftKey && editable) { // Alt + Shift + Arrow Right
-        dom = firstNode.getDom()
+        const dom = firstNode.getDom()
         const prevDom = dom.previousSibling
         if (prevDom) {
           prevNode = Node.getNodeFromTarget(prevDom)
@@ -3044,11 +3045,15 @@ export class Node {
    * @private
    */
   _onExpand (recurse) {
+    let table
+    let frame
+    let scrollTop
+
     if (recurse) {
       // Take the table offline
-      var table = this.dom.tr.parentNode // TODO: not nice to access the main table like this
-      var frame = table.parentNode
-      var scrollTop = frame.scrollTop
+      table = this.dom.tr.parentNode // TODO: not nice to access the main table like this
+      frame = table.parentNode
+      scrollTop = frame.scrollTop
       frame.removeChild(table)
     }
 
@@ -4236,7 +4241,8 @@ Node.onDrag = (nodes, event) => {
         nodeNext = Node.getNodeFromTarget(trNext)
         if (trNext) {
           bottomNext = trNext.nextSibling
-            ? getAbsoluteTop(trNext.nextSibling) : 0
+            ? getAbsoluteTop(trNext.nextSibling)
+            : 0
           heightNext = trNext ? (bottomNext - topFirst) : 0
 
           if (nodeNext &&

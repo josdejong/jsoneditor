@@ -86,10 +86,10 @@ const compilerMinimalist = webpack({
   module: webpackConfigModule,
   plugins: [
     bannerPlugin,
-    new webpack.IgnorePlugin(new RegExp('^ace-builds')),
-    new webpack.IgnorePlugin(new RegExp('worker-json-data-url')),
-    new webpack.IgnorePlugin(new RegExp('^ajv')),
-    new webpack.IgnorePlugin(new RegExp('^vanilla-picker'))
+    new webpack.IgnorePlugin(/^ace-builds/),
+    new webpack.IgnorePlugin(/worker-json-data-url/),
+    new webpack.IgnorePlugin(/^ajv/),
+    new webpack.IgnorePlugin(/^vanilla-picker/)
   ],
   optimization: {
     // We no not want to minimize our code.

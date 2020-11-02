@@ -85,8 +85,8 @@ export function showSortModal (container, json, onSort, options) {
         return (path === '')
           ? '@'
           : (path[0] === '.')
-            ? path.slice(1)
-            : path
+              ? path.slice(1)
+              : path
       }
 
       paths.forEach(path => {
