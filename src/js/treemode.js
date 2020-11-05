@@ -1,36 +1,36 @@
 'use strict'
 
-import VanillaPicker from './vanilla-picker'
+import simpleJsonRepair from 'simple-json-repair'
+import { autocomplete } from './autocomplete'
+import { ContextMenu } from './ContextMenu'
+import { FocusTracker } from './FocusTracker'
 import { Highlighter } from './Highlighter'
+import { setLanguage, setLanguages, translate } from './i18n'
+import { createQuery, executeQuery } from './jmespathQuery'
+import { ModeSwitcher } from './ModeSwitcher'
+import { Node } from './Node'
 import { NodeHistory } from './NodeHistory'
 import { SearchBox } from './SearchBox'
-import { ContextMenu } from './ContextMenu'
 import { TreePath } from './TreePath'
-import { Node } from './Node'
-import { ModeSwitcher } from './ModeSwitcher'
-import { FocusTracker } from './FocusTracker'
 import {
   addClassName,
   addEventListener,
   debounce,
   getAbsoluteTop,
   getSelectionOffset,
+  getWindow,
   hasParentNode,
   improveSchemaError,
   isPromise,
+  isValidationErrorChanged,
   isValidValidationError,
   parse,
   removeClassName,
   removeEventListener,
-  repair,
   selectContentEditable,
-  setSelectionOffset,
-  isValidationErrorChanged,
-  getWindow
+  setSelectionOffset
 } from './util'
-import { autocomplete } from './autocomplete'
-import { setLanguage, setLanguages, translate } from './i18n'
-import { createQuery, executeQuery } from './jmespathQuery'
+import VanillaPicker from './vanilla-picker'
 
 // create a mixin with the functions for tree mode
 const treemode = {}
@@ -309,7 +309,7 @@ treemode.setText = function (jsonText) {
     this.set(parse(jsonText)) // this can throw an error
   } catch (err) {
     // try to repair json, replace JavaScript notation with JSON notation
-    const repairedJsonText = repair(jsonText)
+    const repairedJsonText = simpleJsonRepair(jsonText)
 
     // try to parse again
     this.set(parse(repairedJsonText)) // this can throw an error
@@ -326,7 +326,7 @@ treemode.updateText = function (jsonText) {
     this.update(parse(jsonText)) // this can throw an error
   } catch (err) {
     // try to repair json, replace JavaScript notation with JSON notation
-    const repairJsonText = repair(jsonText)
+    const repairJsonText = simpleJsonRepair(jsonText)
 
     // try to parse again
     this.update(parse(repairJsonText)) // this can throw an error

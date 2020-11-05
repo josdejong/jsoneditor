@@ -30,6 +30,7 @@
     "ajv": "^6.12.6",
     "javascript-natural-sort": "^0.7.1",
     "jmespath": "^0.15.0",
+    "simple-json-repair": "^1.0.1",
     "json-source-map": "^0.6.1",
     "mobius1-selectr": "^2.4.13",
     "picomodal": "^3.0.0",

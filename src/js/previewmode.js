@@ -1,13 +1,21 @@
 'use strict'
 
-import { setLanguage, setLanguages, translate } from './i18n'
-import { ModeSwitcher } from './ModeSwitcher'
+import simpleJsonRepair from 'simple-json-repair'
+import {
+  DEFAULT_MODAL_ANCHOR,
+  MAX_PREVIEW_CHARACTERS,
+  PREVIEW_HISTORY_LIMIT,
+  SIZE_LARGE
+} from './constants'
 import { ErrorTable } from './ErrorTable'
+import { FocusTracker } from './FocusTracker'
+import { History } from './History'
+import { setLanguage, setLanguages, translate } from './i18n'
+import { createQuery, executeQuery } from './jmespathQuery'
+import { ModeSwitcher } from './ModeSwitcher'
 import { showSortModal } from './showSortModal'
 import { showTransformModal } from './showTransformModal'
 import { textModeMixins } from './textmode'
-import { DEFAULT_MODAL_ANCHOR, MAX_PREVIEW_CHARACTERS, PREVIEW_HISTORY_LIMIT, SIZE_LARGE } from './constants'
-import { FocusTracker } from './FocusTracker'
 import {
   addClassName,
   debounce,
@@ -17,12 +25,9 @@ import {
   limitCharacters,
   parse,
   removeClassName,
-  repair,
   sort,
   sortObjectKeys
 } from './util'
-import { History } from './History'
-import { createQuery, executeQuery } from './jmespathQuery'
 
 const textmode = textModeMixins[0].mixin
 
@@ -464,7 +469,7 @@ previewmode.format = function () {
  */
 previewmode.repair = function () {
   const text = this.getText()
-  const repairedText = repair(text)
+  const repairedText = simpleJsonRepair(text)
 
   this._setTextAndFireOnChange(repairedText)
 }

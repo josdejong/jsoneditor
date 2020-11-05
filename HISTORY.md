@@ -8,6 +8,8 @@ https://github.com/josdejong/jsoneditor
 - Log a clear error in the console when the returned value of `onEditable` is 
   invalid. See #1112.
 - Updated dependency to `ajv@6.12.6`.
+- Extract the JSON repair functionality into a separate, 
+  library `simple-json-repair` with many improvements.
 
 
 ## 2020-09-23, version 9.1.1
