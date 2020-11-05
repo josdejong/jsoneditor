@@ -469,9 +469,13 @@ previewmode.format = function () {
  */
 previewmode.repair = function () {
   const text = this.getText()
-  const repairedText = simpleJsonRepair(text)
+  try {
+    const repairedText = simpleJsonRepair(text)
 
-  this._setTextAndFireOnChange(repairedText)
+    this._setTextAndFireOnChange(repairedText)
+  } catch (err) {
+    // repair was not successful, do nothing
+  }
 }
 
 /**

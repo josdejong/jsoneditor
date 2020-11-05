@@ -1,6 +1,5 @@
 'use strict'
 
-import simpleJsonRepair from 'simple-json-repair'
 import { autocomplete } from './autocomplete'
 import { ContextMenu } from './ContextMenu'
 import { FocusTracker } from './FocusTracker'
@@ -28,7 +27,8 @@ import {
   removeClassName,
   removeEventListener,
   selectContentEditable,
-  setSelectionOffset
+  setSelectionOffset,
+  trySimpleJsonRepair
 } from './util'
 import VanillaPicker from './vanilla-picker'
 
@@ -309,7 +309,7 @@ treemode.setText = function (jsonText) {
     this.set(parse(jsonText)) // this can throw an error
   } catch (err) {
     // try to repair json, replace JavaScript notation with JSON notation
-    const repairedJsonText = simpleJsonRepair(jsonText)
+    const repairedJsonText = trySimpleJsonRepair(jsonText)
 
     // try to parse again
     this.set(parse(repairedJsonText)) // this can throw an error
@@ -326,7 +326,7 @@ treemode.updateText = function (jsonText) {
     this.update(parse(jsonText)) // this can throw an error
   } catch (err) {
     // try to repair json, replace JavaScript notation with JSON notation
-    const repairJsonText = simpleJsonRepair(jsonText)
+    const repairJsonText = trySimpleJsonRepair(jsonText)
 
     // try to parse again
     this.update(parse(repairJsonText)) // this can throw an error

@@ -2,6 +2,7 @@
 
 import './polyfills'
 import naturalSort from 'javascript-natural-sort'
+import simpleJsonRepair from 'simple-json-repair'
 import jsonlint from './assets/jsonlint/jsonlint'
 import jsonMap from 'json-source-map'
 import { translate } from './i18n'
@@ -24,6 +25,19 @@ export function parse (jsonString) {
 
     // rethrow the original error
     throw err
+  }
+}
+
+/**
+ * Try to fix the JSON string. If not successful, return the original string
+ * @param {string} jsonString
+ */
+export function trySimpleJsonRepair (jsonString) {
+  try {
+    return simpleJsonRepair(jsonString)
+  } catch (err) {
+    // repair was not successful, return original text
+    return jsonString
   }
 }
 

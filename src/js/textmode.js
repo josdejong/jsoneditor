@@ -700,8 +700,12 @@ textmode.format = function () {
  */
 textmode.repair = function () {
   const text = this.getText()
-  const repairedText = simpleJsonRepair(text)
-  this.updateText(repairedText)
+  try {
+    const repairedText = simpleJsonRepair(text)
+    this.updateText(repairedText)
+  } catch (err) {
+    // repair was not successful, do nothing
+  }
 }
 
 /**
