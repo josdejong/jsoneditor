@@ -2491,10 +2491,6 @@ export class Node {
     const node = this
     const expandable = this._hasChilds()
 
-    if (typeof this.editor.options.onEvent === 'function') {
-      this._onEvent(event)
-    }
-
     // check if mouse is on menu or on dragarea.
     // If so, highlight current row and its childs
     if (target === dom.drag || target === dom.menu) {
@@ -2679,6 +2675,11 @@ export class Node {
     if (type === 'keydown') {
       this.onKeyDown(event)
     }
+
+    // fire after applying for example a change by clicking a checkbox
+    if (typeof this.editor.options.onEvent === 'function') {
+      this._onEvent(event)
+    }
   }
 
   /**
@@ -2692,15 +2693,23 @@ export class Node {
    */
   _onEvent (event) {
     const element = event.target
-    if (element === this.dom.field || element === this.dom.value) {
+    const isField = element === this.dom.field
+    const isValue = (
+      element === this.dom.value ||
+      element === this.dom.checkbox ||
+      element === this.dom.select)
+
+    if (isField || isValue) {
       const info = {
         field: this.getField(),
         path: this.getPath()
       }
+
       // For leaf values, include value
-      if (!this._hasChilds() && element === this.dom.value) {
+      if (isValue && !this._hasChilds()) {
         info.value = this.getValue()
       }
+
       this.editor.options.onEvent(info, event)
     }
   }

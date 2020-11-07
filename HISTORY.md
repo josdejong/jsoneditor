@@ -5,6 +5,7 @@ https://github.com/josdejong/jsoneditor
 
 ## not yet published, version 9.1.2
 
+- Fix #1126: fire `onEvent` for boolean checkbox and enum selectbox too.
 - Log a clear error in the console when the returned value of `onEditable` is 
   invalid. See #1112.
 - Updated dependency to `ajv@6.12.6`.
