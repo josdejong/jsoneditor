@@ -8,13 +8,10 @@ import { addClassName, removeClassName } from './util'
  * Creates a component that visualize path selection in tree based editors
  * @param {HTMLElement} container
  * @param {HTMLElement} root
- * @param {Object} [options]  Object with options. Available options:
- *                            {boolean} mainMenuBar   Whether main menu bar is
- *                                                    enabled or not.
  * @constructor
  */
 export class TreePath {
-  constructor (container, root, options) {
+  constructor (container, root) {
     if (container) {
       this.root = root
       this.path = document.createElement('div')
@@ -22,7 +19,6 @@ export class TreePath {
       this.path.setAttribute('tabindex', 0)
       this.contentMenuClicked = false
       container.appendChild(this.path)
-      this.options = options
       this.reset()
     }
   }
@@ -69,7 +65,7 @@ export class TreePath {
                 click: _onContextMenuItemClick.bind(me, pathObj, child.name)
               })
             })
-            const menu = new ContextMenu(items, { mainMenuBar: this.options.mainMenuBar })
+            const menu = new ContextMenu(items, { limitHeight: true })
             menu.show(sepEl, me.root, true)
           }
 

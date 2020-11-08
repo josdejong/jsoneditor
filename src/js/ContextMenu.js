@@ -11,8 +11,8 @@ import { translate } from './i18n'
  * @param {Object} [options]  Object with options. Available options:
  *                            {function} close        Callback called when the
  *                                                    context menu is being closed.
- *                            {boolean} mainMenuBar   Whether main menu bar is
- *                                                    enabled or not.
+ *                            {boolean} limitHeight   Whether ContextMenu height should be
+ *                                                    limited or not.
  * @constructor
  */
 export class ContextMenu {
@@ -26,7 +26,7 @@ export class ContextMenu {
     this.eventListeners = {}
     this.selection = undefined // holds the selection before the menu was opened
     this.onClose = options ? options.close : undefined
-    this.mainMenuBar = options ? options.mainMenuBar : false
+    this.limitHeight = options ? options.limitHeight : false
 
     // create root element
     const root = document.createElement('div')
@@ -245,9 +245,11 @@ export class ContextMenu {
       this.dom.menu.style.bottom = '0px'
     }
 
-    if (anchor.className.includes('jsoneditor-treepath-seperator')) {
-      const mainMenuBarHeight = this.mainMenuBar ? 35 : 0
-      const maxPossibleMenuHeight = frameRect.height - mainMenuBarHeight - parentRect.height
+    if (this.limitHeight) {
+      const margin = 10 // make sure there is a little margin left
+      const maxPossibleMenuHeight = showBelow
+        ? frameRect.bottom - anchorRect.bottom - margin
+        : anchorRect.top - frameRect.top - margin
       this.dom.list.style.maxHeight = maxPossibleMenuHeight + 'px'
       this.dom.list.style.overflowY = 'auto'
       this.dom.list.style.width = '100%'
