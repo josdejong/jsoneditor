@@ -4440,65 +4440,71 @@ Node._findEnum = schema => {
 
 /**
  * Return the part of a JSON schema matching given path.
- * @param {Object} schema
+ * @param {Object} topLevelSchema
  * @param {Object} schemaRefs
  * @param {Array.<string | number>} path
+ * @param {Object} currentSchema
  * @return {Object | null}
  * @private
  */
-Node._findSchema = (schema, schemaRefs, path) => {
-  let childSchema = schema
-  let foundSchema = childSchema
+Node._findSchema = (topLevelSchema, schemaRefs, path, currentSchema = topLevelSchema) => {
+  const nextPath = path.slice(1, path.length)
+  const nextKey = path[0]
 
-  let allSchemas = schema.oneOf || schema.anyOf || schema.allOf
-  if (!allSchemas) {
-    allSchemas = [schema]
-  }
+  let possibleSchemas = currentSchema.oneOf || currentSchema.anyOf || currentSchema.allOf || [currentSchema];
 
-  for (let j = 0; j < allSchemas.length; j++) {
-    childSchema = allSchemas[j]
+  for (let schema of possibleSchemas) {
+    currentSchema = schema;
 
-    if ('$ref' in childSchema && typeof childSchema.$ref === 'string') {
-      childSchema = schemaRefs[childSchema.$ref]
-      if (childSchema) {
-        foundSchema = Node._findSchema(childSchema, schemaRefs, path)
+    if ('$ref' in currentSchema && typeof currentSchema.$ref === 'string') {
+      let ref = currentSchema.$ref;
+      if(ref in schemaRefs) {
+        currentSchema = schemaRefs[ref];
+      }
+      else if (ref.startsWith("#/")) {
+        let refPath = ref.substring(2).split("/");
+        currentSchema = topLevelSchema;
+        for (let segment of refPath) {
+          if (segment in currentSchema) {
+            currentSchema = currentSchema[segment];
+          } else {
+            throw Error(`Unable to resovle reference ${ref}`);
+          }
+        }
+      }
+      else {
+        throw Error(`Unable to resolve reference ${ref}`);
       }
     }
 
-    for (let i = 0; i < path.length && childSchema; i++) {
-      const nextPath = path.slice(i + 1, path.length)
-      const key = path[i]
+    // We have no more path segments to resolve, return the currently found schema
+    // We do this here, after resolving references, in case of the leaf schema beeing a reference
+    if (nextKey === undefined) {
+      return currentSchema;
+    }
 
-      if (typeof key === 'string' && childSchema.patternProperties && !(childSchema.properties && key in childSchema.properties)) {
-        for (const prop in childSchema.patternProperties) {
-          if (key.match(prop) && (foundSchema.properties || foundSchema.patternProperties)) {
-            foundSchema = Node._findSchema(childSchema.patternProperties[prop], schemaRefs, nextPath)
+    if (typeof nextKey === 'string') {
+      if (typeof currentSchema.properties === 'object' && currentSchema.properties !== null && nextKey in currentSchema.properties) {
+        currentSchema = currentSchema.properties[nextKey];
+        return Node._findSchema(topLevelSchema, schemaRefs, nextPath, currentSchema)
+      } 
+      if (typeof currentSchema.patternProperties === 'object' && currentSchema.patternProperties !== null) {
+        for (const prop in currentSchema.patternProperties) {
+          if (nextKey.match(prop)) {
+            currentSchema = currentSchema.patternProperties[prop]
+            return Node._findSchema(topLevelSchema, schemaRefs, nextPath, currentSchema);
           }
-        }
-      } else if (typeof key === 'string' && childSchema.properties) {
-        if (!(key in childSchema.properties)) {
-          foundSchema = null
-        } else {
-          childSchema = childSchema.properties[key]
-          if (childSchema) {
-            foundSchema = Node._findSchema(childSchema, schemaRefs, nextPath)
-          }
-        }
-      } else if (typeof key === 'number' && childSchema.items) {
-        childSchema = childSchema.items
-        if (childSchema) {
-          foundSchema = Node._findSchema(childSchema, schemaRefs, nextPath)
         }
       }
+      continue;
+    }
+     if (typeof nextKey === 'number' && typeof currentSchema.items === 'object' && currentSchema.items !== null) {
+      currentSchema = currentSchema.items
+      return Node._findSchema(topLevelSchema, schemaRefs, nextPath, currentSchema);
     }
   }
 
-  // If the found schema is the input schema, the schema does not have the given path
-  if (foundSchema === schema && path.length > 0) {
-    return null
-  }
-
-  return foundSchema
+  return null
 }
 
 /**
