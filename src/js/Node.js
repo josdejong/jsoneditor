@@ -4451,56 +4451,54 @@ Node._findSchema = (topLevelSchema, schemaRefs, path, currentSchema = topLevelSc
   const nextPath = path.slice(1, path.length)
   const nextKey = path[0]
 
-  let possibleSchemas = currentSchema.oneOf || currentSchema.anyOf || currentSchema.allOf || [currentSchema];
+  const possibleSchemas = currentSchema.oneOf || currentSchema.anyOf || currentSchema.allOf || [currentSchema]
 
-  for (let schema of possibleSchemas) {
-    currentSchema = schema;
+  for (const schema of possibleSchemas) {
+    currentSchema = schema
 
     if ('$ref' in currentSchema && typeof currentSchema.$ref === 'string') {
-      let ref = currentSchema.$ref;
-      if(ref in schemaRefs) {
-        currentSchema = schemaRefs[ref];
-      }
-      else if (ref.startsWith("#/")) {
-        let refPath = ref.substring(2).split("/");
-        currentSchema = topLevelSchema;
-        for (let segment of refPath) {
+      const ref = currentSchema.$ref
+      if (ref in schemaRefs) {
+        currentSchema = schemaRefs[ref]
+      } else if (ref.startsWith('#/')) {
+        const refPath = ref.substring(2).split('/')
+        currentSchema = topLevelSchema
+        for (const segment of refPath) {
           if (segment in currentSchema) {
-            currentSchema = currentSchema[segment];
+            currentSchema = currentSchema[segment]
           } else {
-            throw Error(`Unable to resovle reference ${ref}`);
+            throw Error(`Unable to resovle reference ${ref}`)
           }
         }
-      }
-      else {
-        throw Error(`Unable to resolve reference ${ref}`);
+      } else {
+        throw Error(`Unable to resolve reference ${ref}`)
       }
     }
 
     // We have no more path segments to resolve, return the currently found schema
     // We do this here, after resolving references, in case of the leaf schema beeing a reference
     if (nextKey === undefined) {
-      return currentSchema;
+      return currentSchema
     }
 
     if (typeof nextKey === 'string') {
       if (typeof currentSchema.properties === 'object' && currentSchema.properties !== null && nextKey in currentSchema.properties) {
-        currentSchema = currentSchema.properties[nextKey];
+        currentSchema = currentSchema.properties[nextKey]
         return Node._findSchema(topLevelSchema, schemaRefs, nextPath, currentSchema)
-      } 
+      }
       if (typeof currentSchema.patternProperties === 'object' && currentSchema.patternProperties !== null) {
         for (const prop in currentSchema.patternProperties) {
           if (nextKey.match(prop)) {
             currentSchema = currentSchema.patternProperties[prop]
-            return Node._findSchema(topLevelSchema, schemaRefs, nextPath, currentSchema);
+            return Node._findSchema(topLevelSchema, schemaRefs, nextPath, currentSchema)
           }
         }
       }
-      continue;
+      continue
     }
-     if (typeof nextKey === 'number' && typeof currentSchema.items === 'object' && currentSchema.items !== null) {
+    if (typeof nextKey === 'number' && typeof currentSchema.items === 'object' && currentSchema.items !== null) {
       currentSchema = currentSchema.items
-      return Node._findSchema(topLevelSchema, schemaRefs, nextPath, currentSchema);
+      return Node._findSchema(topLevelSchema, schemaRefs, nextPath, currentSchema)
     }
   }
 
