@@ -116,6 +116,47 @@ describe('Node', () => {
       })
     })
 
+    describe('with $ref to internal definition', () => {
+      it('should find a referenced schema', () => {
+        const schema = {
+          $schema: 'http://json-schema.org/draft-07/schema#',
+          type: 'object',
+          patternProperties: {
+            '^/[a-z0-9]*$': {
+              $ref: '#/definitions/component'
+            }
+          },
+          definitions: {
+            component: {
+              type: 'object',
+              properties: {
+                type: {
+                  type: 'string',
+                  minLength: 1
+                },
+                config: {
+                  type: 'object'
+                },
+                children: {
+                  type: 'object',
+                  patternProperties: {
+                    '^/[a-z0-9]+$': {
+                      $ref: '#/definitions/component'
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+        const path = ['/status', 'children', '/bus', 'config']
+        const foundSchema = {
+          type: 'object'
+        }
+        assert.notStrictEqual(Node._findSchema(schema, {}, path), foundSchema)
+      })
+    })
+
     describe('with pattern properties', () => {
       it('should find schema', () => {
         const schema = {
