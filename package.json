@@ -53,7 +53,7 @@
     "mkdirp": "1.0.4",
     "mocha": "8.2.1",
     "source-map-loader": "1.1.2",
-    "standard": "16.0.1",
+    "standard": "16.0.2",
     "uglify-js": "3.11.5",
     "webpack": "4.44.2"
   },
