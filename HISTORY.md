@@ -6,6 +6,7 @@ https://github.com/josdejong/jsoneditor
 ## not yet published, version 9.1.3
 
 - Fix #1158: JSON schema not found if using internal references. Thanks @maufl.
+- Update dependencies: `vanilla-picker@2.11.0`.
 
 
 ## 2020-11-07, version 9.1.2
