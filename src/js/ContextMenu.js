@@ -252,7 +252,6 @@ export class ContextMenu {
         : anchorRect.top - frameRect.top - margin
       this.dom.list.style.maxHeight = maxPossibleMenuHeight + 'px'
       this.dom.list.style.overflowY = 'auto'
-      this.dom.list.style.width = '100%'
     }
 
     // attach the menu to the temporary, absolute anchor
