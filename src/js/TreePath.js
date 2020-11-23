@@ -65,7 +65,7 @@ export class TreePath {
                 click: _onContextMenuItemClick.bind(me, pathObj, child.name)
               })
             })
-            const menu = new ContextMenu(items)
+            const menu = new ContextMenu(items, { limitHeight: true })
             menu.show(sepEl, me.root, true)
           }
 
