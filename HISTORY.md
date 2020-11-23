@@ -3,7 +3,7 @@
 https://github.com/josdejong/jsoneditor
 
 
-## not yet published, version 9.1.4
+## 2020-11-23, version 9.1.4
 
 - Fix #1119: list of keys in navigation bar missing a scroll bar. 
   Thanks @tanmayrajani.
