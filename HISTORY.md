@@ -3,6 +3,12 @@
 https://github.com/josdejong/jsoneditor
 
 
+## not yet published, version 9.1.4
+
+- Fix #1119: list of keys in navigation bar missing a scroll bar. 
+  Thanks @tanmayrajani.
+
+
 ## 2020-11-19, version 9.1.3
 
 - Fix #1158: JSON schema not found if using internal references. Thanks @maufl.
