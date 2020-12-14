@@ -3,7 +3,7 @@
 https://github.com/josdejong/jsoneditor
 
 
-## not yet published, version 9.1.5
+## 2020-12-14, version 9.1.5
 
 - Fix #1185: enum dropdown not selecting actual value when this is not a string.
 - Fix selected value of enum dropdown not updated when changed programmatically. 
