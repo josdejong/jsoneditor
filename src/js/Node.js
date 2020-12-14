@@ -1735,7 +1735,11 @@ export class Node {
             this.dom.select.option = document.createElement('option')
             this.dom.select.option.value = this.enum[i]
             this.dom.select.option.textContent = this.enum[i]
-            if (this.dom.select.option.value === this.value) {
+
+            // Non strict equality check: must also match when this.value is a
+            // number or boolean, since option.value is always a string
+            // noinspection EqualityComparisonWithCoercionJS
+            if (this.dom.select.option.value == this.value) {
               this.dom.select.option.selected = true
             }
             this.dom.select.appendChild(this.dom.select.option)

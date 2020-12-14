@@ -3,6 +3,11 @@
 https://github.com/josdejong/jsoneditor
 
 
+## not yet published, version 9.1.5
+
+- Fix #1185: enum dropdown not selecting actual value when this is not a string.
+
+
 ## 2020-11-23, version 9.1.4
 
 - Fix #1119: list of keys in navigation bar missing a scroll bar. 
