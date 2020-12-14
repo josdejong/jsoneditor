@@ -1725,23 +1725,17 @@ export class Node {
           this.dom.select.name = this.dom.select.id
 
           // Create the default empty option
-          this.dom.select.option = document.createElement('option')
-          this.dom.select.option.value = ''
-          this.dom.select.option.textContent = '--'
-          this.dom.select.appendChild(this.dom.select.option)
+          const defaultOption = document.createElement('option')
+          defaultOption.value = ''
+          defaultOption.textContent = '--'
+          this.dom.select.appendChild(defaultOption)
 
           // Iterate all enum values and add them as options
           for (let i = 0; i < this.enum.length; i++) {
-            this.dom.select.option = document.createElement('option')
-            this.dom.select.option.value = this.enum[i]
-            this.dom.select.option.textContent = this.enum[i]
-
-            // option.value is always a string, so we convert this.value to a
-            // string too to be able to compare strictly
-            if (this.dom.select.option.value === String(this.value)) {
-              this.dom.select.option.selected = true
-            }
-            this.dom.select.appendChild(this.dom.select.option)
+            const option = document.createElement('option')
+            option.value = this.enum[i]
+            option.textContent = this.enum[i]
+            this.dom.select.appendChild(option)
           }
 
           this.dom.tdSelect = document.createElement('td')
@@ -1749,6 +1743,11 @@ export class Node {
           this.dom.tdSelect.appendChild(this.dom.select)
           this.dom.tdValue.parentNode.insertBefore(this.dom.tdSelect, this.dom.tdValue)
         }
+
+        // Select the matching value
+        this.dom.select.value = (this.enum.indexOf(this.value) !== -1)
+          ? this.value
+          : '' // default
 
         // If the enum is inside a composite type display
         // both the simple input and the dropdown field
