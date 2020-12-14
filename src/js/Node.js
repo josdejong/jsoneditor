@@ -1736,10 +1736,9 @@ export class Node {
             this.dom.select.option.value = this.enum[i]
             this.dom.select.option.textContent = this.enum[i]
 
-            // Non strict equality check: must also match when this.value is a
-            // number or boolean, since option.value is always a string
-            // noinspection EqualityComparisonWithCoercionJS
-            if (this.dom.select.option.value == this.value) {
+            // option.value is always a string, so we convert this.value to a
+            // string too to be able to compare strictly
+            if (this.dom.select.option.value === String(this.value)) {
               this.dom.select.option.selected = true
             }
             this.dom.select.appendChild(this.dom.select.option)
