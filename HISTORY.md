@@ -3,7 +3,7 @@
 https://github.com/josdejong/jsoneditor
 
 
-## not yet published, version 9.1.6
+## 2020-12-23, version 9.1.6
 
 - Fix #1192: enum dropdown from a JSON schema not rendered when using
   `additionalProperties`. Thanks @maufl.
