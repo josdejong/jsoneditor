@@ -3,6 +3,11 @@
 <head>
   <meta charset="utf-8">
 
+  <script
+    src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.20/lodash.min.js"
+    integrity="sha512-90vH1Z83AJY9DmlWa8WkjkV79yfS2n2Oxhsi2dZbIv0nC4E6m5AbH8Nh156kkM7JePmqD6tcZsfad1ueoaovww=="
+    crossorigin="anonymous"
+  ></script>
   <link href="../dist/jsoneditor.css" rel="stylesheet" type="text/css">
   <script src="../dist/jsoneditor.js"></script>
 
@@ -50,10 +55,13 @@
 </head>
 <body>
 
-<h3>JSON Diff</h3>
+<h3>Custom class names</h3>
 <p>
   This example highlights the differences between two JSON objects using the option <code>onClassName</code>.
   Make a change in the left or right editor to see the changes update accordingly.
+</p>
+<p>
+  Please note that this is not a full-fledged, performant JSON diffing solution, it's just a small example to demonstrate <code>onClassName</code>.
 </p>
 <div id="wrapper">
   <div id="containerLeft"></div>
@@ -64,36 +72,13 @@
   const containerLeft = document.getElementById('containerLeft')
   const containerRight = document.getElementById('containerRight')
 
-  function findNodeInJson(json, path){
-    if(!json || path.length ===0) {
-      return {field: undefined, value: undefined}
-    }
-    const first = path[0]
-    const remainingPath = path.slice(1)
-
-    if(remainingPath.length === 0) {
-      return {field: (typeof json[first] !== 'undefined' ? first : undefined), value: json[first]}
-    } else {
-      return findNodeInJson(json[first], remainingPath)
-    }
-  }
-
   function onClassName({ path, field, value }) {
-    const thisNode = findNodeInJson(jsonRight, path)
-    const oppositeNode = findNodeInJson(jsonLeft, path)
-    let isValueEqual = JSON.stringify(thisNode.value) === JSON.stringify(oppositeNode.value)
+    const leftValue = _.get(jsonRight, path)
+    const rightValue = _.get(jsonLeft, path)
 
-    if(Array.isArray(thisNode.value) && Array.isArray(oppositeNode.value)) {
-      isValueEqual = thisNode.value.every(function (e) {
-        return oppositeNode.value.includes(e)
-      })
-    }
-
-    if (thisNode.field === oppositeNode.field && isValueEqual) {
-      return 'the_same_element'
-    } else {
-      return 'different_element'
-    }
+    return _.isEqual(leftValue, rightValue)
+      ? 'the_same_element'
+      : 'different_element'
   }
 
   const optionsLeft = {
