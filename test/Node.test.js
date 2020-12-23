@@ -321,6 +321,40 @@ describe('Node', () => {
         path = ['levelOne', 'not-in-schema']
         assert.strictEqual(Node._findSchema(schema, {}, path), null)
       })
+
+      it('should return additionalProperties schema', () => {
+        const schema = {
+          type: 'object',
+          properties: {
+            company: {
+              type: "string",
+              enum: ["1", "2"]
+            },
+            nested: {
+              type: 'object',
+              additionalProperties: {
+                type: "number"
+              }
+            }
+          },
+          additionalProperties: {
+              type: "string",
+              enum: ["1", "2"]
+          }
+        };
+        let path = ['company2']
+        assert.strictEqual(
+          Node._findSchema(schema, {}, path),
+          schema.additionalProperties,
+          'additionalProperties schema'
+        )
+        path = ['nested', 'virtual']
+        assert.strictEqual(
+          Node._findSchema(schema, {}, path),
+          schema.properties.nested.additionalProperties,
+          'additionalProperties schema'
+        )
+      })
     })
   })
 })

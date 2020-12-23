@@ -4496,6 +4496,10 @@ Node._findSchema = (topLevelSchema, schemaRefs, path, currentSchema = topLevelSc
           }
         }
       }
+      if (typeof currentSchema.additionalProperties === 'object') {
+        currentSchema = currentSchema.additionalProperties
+        return Node._findSchema(topLevelSchema, schemaRefs, nextPath, currentSchema)
+      }
       continue
     }
     if (typeof nextKey === 'number' && typeof currentSchema.items === 'object' && currentSchema.items !== null) {
