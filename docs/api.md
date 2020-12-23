@@ -44,9 +44,19 @@ Constructs a new JSONEditor.
 
   ```js
   var options = {
-    ajv: Ajv({ allErrors: true, verbose: true })
+    ajv: Ajv({ 
+      allErrors: true, 
+      verbose: true,
+      jsonPointers: false,
+      $data: true
+    })
   }
   ```
+  
+  > IMPORTANT: JSONEditor relies on some specific configuration of Ajv. 
+  > Providing different configuration (like `jsonPointers: true` instead of `false`) 
+  > results in JSONEditor breaking because the format of the Ajv errors differs
+  > from what is expected.
 
 - `{function} onChange()`
 

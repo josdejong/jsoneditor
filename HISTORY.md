@@ -3,6 +3,11 @@
 https://github.com/josdejong/jsoneditor
 
 
+## not yet published, version 9.1.6
+
+- Fix #1191: clarify docs about configuration option `ajv`.
+
+
 ## 2020-12-14, version 9.1.5
 
 - Fix #1185: enum dropdown not selecting actual value when this is not a string.
