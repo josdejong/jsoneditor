@@ -5,6 +5,8 @@ https://github.com/josdejong/jsoneditor
 
 ## not yet published, version 9.1.6
 
+- Fix #1192: enum dropdown from a JSON schema not rendered when using
+  `additionalProperties`. Thanks @maufl.
 - Fix #1191: clarify docs about configuration option `ajv`.
 - Fix #1193: simplify and fix example 20_custom_css_style_for_nodes.html.
 
