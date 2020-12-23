@@ -329,6 +329,12 @@ describe('Node', () => {
             company: {
               type: "string",
               enum: ["1", "2"]
+            },
+            nested: {
+              type: 'object',
+              additionalProperties: {
+                type: "number"
+              }
             }
           },
           additionalProperties: {
@@ -340,6 +346,12 @@ describe('Node', () => {
         assert.strictEqual(
           Node._findSchema(schema, {}, path),
           schema.additionalProperties,
+          'additionalProperties schema'
+        )
+        path = ['nested', 'virtual']
+        assert.strictEqual(
+          Node._findSchema(schema, {}, path),
+          schema.properties.nested.additionalProperties,
           'additionalProperties schema'
         )
       })
