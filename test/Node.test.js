@@ -327,21 +327,21 @@ describe('Node', () => {
           type: 'object',
           properties: {
             company: {
-              type: "string",
-              enum: ["1", "2"]
+              type: 'string',
+              enum: ['1', '2']
             },
             nested: {
               type: 'object',
               additionalProperties: {
-                type: "number"
+                type: 'number'
               }
             }
           },
           additionalProperties: {
-              type: "string",
-              enum: ["1", "2"]
+            type: 'string',
+            enum: ['1', '2']
           }
-        };
+        }
         let path = ['company2']
         assert.strictEqual(
           Node._findSchema(schema, {}, path),
