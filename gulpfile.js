@@ -55,6 +55,7 @@ const webpackConfigModule = {
 // create a single instance of the compiler to allow caching
 const compiler = webpack({
   entry: ENTRY,
+  target: ['web', 'es5'],
   output: {
     library: 'JSONEditor',
     libraryTarget: 'umd',
@@ -77,6 +78,7 @@ const compiler = webpack({
 // create a single instance of the compiler to allow caching
 const compilerMinimalist = webpack({
   entry: ENTRY,
+  target: ['web', 'es5'],
   output: {
     library: 'JSONEditor',
     libraryTarget: 'umd',
