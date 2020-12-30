@@ -3,7 +3,7 @@
 https://github.com/josdejong/jsoneditor
 
 
-## not yet published, version 9.1.7
+## 2020-12-30, version 9.1.7
 
 - Fix #1206: library bundle broken on IE 11, regression introduced in v9.1.6.
 
