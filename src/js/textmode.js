@@ -250,16 +250,16 @@ textmode.create = function (container, options = {}) {
     }
 
     // create custom buttons
-    if(this.options.buttons){
-      this.options.buttons.forEach(buttonCustomConf=>{
-        var buttonCustom = document.createElement('button');
-        buttonCustom.type = 'button';
-        buttonCustom.className = buttonCustomConf.className;
-        buttonCustom.title = buttonCustomConf.title;
-        this.menu.appendChild(buttonCustom);
-        buttonCustom.onclick = ()=>{
+    if (this.options.buttons) {
+      this.options.buttons.forEach(buttonCustomConf => {
+        const buttonCustom = document.createElement('button')
+        buttonCustom.type = 'button'
+        buttonCustom.className = buttonCustomConf.className
+        buttonCustom.title = buttonCustomConf.title
+        this.menu.appendChild(buttonCustom)
+        buttonCustom.onclick = () => {
           buttonCustomConf.target(this)
-        };
+        }
       })
     }
   }
