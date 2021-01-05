@@ -187,7 +187,7 @@ JSONEditor.VALID_OPTIONS = [
   'sortObjectKeys', 'navigationBar', 'statusBar', 'mainMenuBar', 'languages', 'language', 'enableSort', 'enableTransform', 'limitDragging',
   'maxVisibleChilds', 'onValidationError',
   'modalAnchor', 'popupAnchor',
-  'createQuery', 'executeQuery', 'queryDescription'
+  'createQuery', 'executeQuery', 'queryDescription', 'buttons'
 ]
 
 /**
