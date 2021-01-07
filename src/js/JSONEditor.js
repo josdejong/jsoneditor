@@ -2,6 +2,7 @@
 
 const ace = require('./ace') // may be undefined in case of minimalist bundle
 const VanillaPicker = require('./vanilla-picker') // may be undefined in case of minimalist bundle
+const { ModeSwitcher } = require('./ModeSwitcher')
 const { treeModeMixins } = require('./treemode')
 const { textModeMixins } = require('./textmode')
 const { previewModeMixins } = require('./previewmode')
@@ -9,6 +10,7 @@ const { clear, extend, getInnerText, getInternetExplorerVersion, parse } = requi
 const { tryRequireAjv } = require('./tryRequireAjv')
 const { showTransformModal } = require('./showTransformModal')
 const { showSortModal } = require('./showSortModal')
+const { defaultOptions } = require('./defaultOptions')
 
 const Ajv = tryRequireAjv()
 
@@ -187,7 +189,7 @@ JSONEditor.VALID_OPTIONS = [
   'sortObjectKeys', 'navigationBar', 'statusBar', 'mainMenuBar', 'languages', 'language', 'enableSort', 'enableTransform', 'limitDragging',
   'maxVisibleChilds', 'onValidationError',
   'modalAnchor', 'popupAnchor',
-  'createQuery', 'executeQuery', 'queryDescription', 'buttons'
+  'createQuery', 'executeQuery', 'queryDescription', 'buttons', 'disableButtons'
 ]
 
 /**
@@ -203,6 +205,7 @@ JSONEditor.prototype._create = function (container, options, json) {
   this.json = json || {}
 
   const mode = this.options.mode || (this.options.modes && this.options.modes[0]) || 'tree'
+  this._initButtons()
   this.setMode(mode)
 }
 
@@ -468,6 +471,134 @@ JSONEditor.registerMode = mode => {
     }
 
     JSONEditor.modes[name] = mode
+  }
+}
+
+/**
+ * Create menu buttons by options.buttons
+ */
+JSONEditor.prototype._createButtons = function () {
+  if (this.options && this.options.buttons) {
+    this.options.buttons.forEach((buttonCustomConf) => {
+      // Check mode setting
+      let shouldCreateByModeConf = false
+      if (buttonCustomConf.mode === undefined) {
+        shouldCreateByModeConf = true
+      } else if (
+        buttonCustomConf.mode === this.options.mode ||
+        buttonCustomConf.mode.indexOf(this.options.mode) !== -1
+      ) {
+        shouldCreateByModeConf = true
+      }
+
+      // Check enable condition
+      let shouldCreateByEnableKey = false
+      if (buttonCustomConf.checkEnableKey) {
+        if (this.options[buttonCustomConf.checkEnableKey]) {
+          shouldCreateByEnableKey = true
+        } else {
+          shouldCreateByEnableKey = false
+        }
+      } else {
+        shouldCreateByEnableKey = true
+      }
+
+      // Check the key in editor condition
+      let shouldCreateByInEditorKey = false
+      if (buttonCustomConf.checkInEditorKey) {
+        if (this[buttonCustomConf.checkInEditorKey]) {
+          shouldCreateByInEditorKey = true
+        } else {
+          shouldCreateByInEditorKey = false
+        }
+      } else {
+        shouldCreateByInEditorKey = true
+      }
+
+      if (
+        shouldCreateByModeConf &&
+        shouldCreateByEnableKey &&
+        shouldCreateByInEditorKey
+      ) {
+        // If the config is for children
+        if (buttonCustomConf.children) {
+          const createdButtonMap = {}
+          buttonCustomConf.children.forEach((childConf) => {
+            const buttonCustom = this._createButtonElement(childConf)
+            createdButtonMap[childConf.name] = buttonCustom
+          })
+          if (buttonCustomConf.afterCreate) {
+            buttonCustomConf.afterCreate(this, createdButtonMap)
+          }
+        } else {
+          this._createButtonElement(buttonCustomConf)
+        }
+      }
+    })
+  }
+  if (this.options && this.options.modes && this.options.modes.length) {
+    const me = this
+    this.modeSwitcher = new ModeSwitcher(
+      this.menu,
+      this.options.modes,
+      this.options.mode,
+      function onSwitch (mode) {
+        // switch mode and restore focus
+        me.setMode(mode)
+        me.modeSwitcher.focus()
+      }
+    )
+  }
+}
+
+/**
+ * Create dom element by the button configuration
+ * @param {Object} buttonCustomConf  The configuration of a button.
+ * @return {Element} The button dom element created
+ */
+JSONEditor.prototype._createButtonElement = function (buttonCustomConf) {
+  const buttonCustom = document.createElement('button')
+  buttonCustom.type = 'button'
+  buttonCustom.className = buttonCustomConf.className
+  buttonCustom.title = buttonCustomConf.title
+  buttonCustom.name = buttonCustomConf.name
+  this.menu.appendChild(buttonCustom)
+  buttonCustom.onclick = () => {
+    buttonCustomConf.target(this, buttonCustom)
+  }
+  if (buttonCustomConf.afterCreate) {
+    buttonCustomConf.afterCreate(this, buttonCustom)
+  }
+  return buttonCustom
+}
+
+/**
+ * Initialize options.buttons array
+ */
+JSONEditor.prototype._initButtons = function () {
+  // Merge,filter,sort the custom buttons and built-in buttons
+  if (this.options) {
+    // Filter the default button name in the options.disableButtons
+    let deaultButtons = defaultOptions.buttons
+    let customButtons = this.options.buttons || []
+    if (this.options.disableButtons) {
+      deaultButtons = deaultButtons.filter(
+        (buttonOption) =>
+          this.options.disableButtons.indexOf(buttonOption.name) < 0
+      )
+      customButtons = customButtons.filter(
+        (buttonOption) =>
+          this.options.disableButtons.indexOf(buttonOption.name) < 0
+      )
+    }
+    // Insert the custom buttons into deault buttons by the index of the custom button option
+    if (customButtons) {
+      customButtons.forEach((element) => {
+        deaultButtons.splice(element.index, 0, element)
+      })
+    }
+    console.log(deaultButtons)
+    this.options.buttons = deaultButtons
   }
 }
 

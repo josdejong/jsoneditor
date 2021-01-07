@@ -22,12 +22,12 @@
       }
 
       .jsoneditor-menu > button.jsoneditor-save {
-        background: url("image/save.svg");
+        background: url('image/save.svg');
         background-size: cover;
       }
 
       .jsoneditor-menu > button.jsoneditor-load {
-        background: url("image/load.svg");
+        background: url('image/load.svg');
         background-size: cover;
       }
     </style>
@@ -52,57 +52,62 @@
       const json = {
         team: [
           {
-            name: "Joe",
-            age: 17,
+            name: 'Joe',
+            age: 17
           },
           {
-            name: "Sarah",
-            age: 13,
+            name: 'Sarah',
+            age: 13
           },
           {
-            name: "Jack",
-          },
-        ],
-      };
-
+            name: 'Jack'
+          }
+        ]
+      }
       const options = {
-        mode: "code",
-        modes: ["code", "text", "tree", "preview"],
+        mode: 'code',
+        modes: ['code', 'text', 'tree', 'view', 'form', 'preview'],
+        // disableButtons: ['transform', 'save'],
         buttons: [
           {
-            title: "Save as text.",
-            className: "jsoneditor-save",
+            index: 7,
+            name: 'save',
+            title: 'Save as text.',
+            className: 'jsoneditor-save',
+            mode: ['code'],
             target: function (editor) {
-              const fname = new Date().getTime() + ".json";
+              const fname = new Date().getTime() + '.json'
               const blob = new Blob([editor.getText()], {
-                type: "application/json;charset=utf-8",
-              });
-              saveAs(blob, fname);
-            },
+                type: 'application/json;charset=utf-8'
+              })
+              saveAs(blob, fname)
+            }
           },
           {
-            title: "Upload a json file.",
-            className: "jsoneditor-load",
+            index: 8,
+            name: 'load',
+            title: 'Upload a json file.',
+            mode: ['code'],
+            className: 'jsoneditor-load',
             target: function (editor) {
-              var loadinput = document.createElement("input");
-              loadinput.type = "file";
+              var loadinput = document.createElement('input')
+              loadinput.type = 'file'
               FileReaderJS.setupInput(loadinput, {
-                readAsDefault: "Text",
+                readAsDefault: 'Text',
                 on: {
                   load: function (event, file) {
-                    editor.setText(event.target.result);
-                  },
-                },
-              });
-              loadinput.click();
-            },
-          },
-        ],
-      };
-
+                    editor.setText(event.target.result)
+                  }
+                }
+              })
+              loadinput.click()
+            }
+          }
+        ]
+      }
       // create the editor
-      const container = document.getElementById("jsoneditor");
-      const editor = new JSONEditor(container, options, json);
+      const container = document.getElementById('jsoneditor')
+      const editor = new JSONEditor(container, options, json)
     </script>
   </body>
 </html>

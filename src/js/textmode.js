@@ -5,9 +5,8 @@ import ace from './ace'
 import { DEFAULT_MODAL_ANCHOR } from './constants'
 import { ErrorTable } from './ErrorTable'
 import { FocusTracker } from './FocusTracker'
-import { setLanguage, setLanguages, translate } from './i18n'
+import { setLanguage, setLanguages } from './i18n'
 import { createQuery, executeQuery } from './jmespathQuery'
-import { ModeSwitcher } from './ModeSwitcher'
 import { showSortModal } from './showSortModal'
 import { showTransformModal } from './showTransformModal'
 import { tryRequireThemeJsonEditor } from './tryRequireThemeJsonEditor'
@@ -131,108 +130,8 @@ textmode.create = function (container, options = {}) {
     this.menu.className = 'jsoneditor-menu'
     this.frame.appendChild(this.menu)
 
-    // create format button
-    const buttonFormat = document.createElement('button')
-    buttonFormat.type = 'button'
-    buttonFormat.className = 'jsoneditor-format'
-    buttonFormat.title = translate('formatTitle')
-    this.menu.appendChild(buttonFormat)
-    buttonFormat.onclick = () => {
-      try {
-        me.format()
-        me._onChange()
-      } catch (err) {
-        me._onError(err)
-      }
-    }
-
-    // create compact button
-    const buttonCompact = document.createElement('button')
-    buttonCompact.type = 'button'
-    buttonCompact.className = 'jsoneditor-compact'
-    buttonCompact.title = translate('compactTitle')
-    this.menu.appendChild(buttonCompact)
-    buttonCompact.onclick = () => {
-      try {
-        me.compact()
-        me._onChange()
-      } catch (err) {
-        me._onError(err)
-      }
-    }
-
-    // create sort button
-    if (this.options.enableSort) {
-      const sort = document.createElement('button')
-      sort.type = 'button'
-      sort.className = 'jsoneditor-sort'
-      sort.title = translate('sortTitleShort')
-      sort.onclick = () => {
-        me._showSortModal()
-      }
-      this.menu.appendChild(sort)
-    }
-
-    // create transform button
-    if (this.options.enableTransform) {
-      const transform = document.createElement('button')
-      transform.type = 'button'
-      transform.title = translate('transformTitleShort')
-      transform.className = 'jsoneditor-transform'
-      transform.onclick = () => {
-        me._showTransformModal()
-      }
-      this.menu.appendChild(transform)
-    }
-
-    // create repair button
-    const buttonRepair = document.createElement('button')
-    buttonRepair.type = 'button'
-    buttonRepair.className = 'jsoneditor-repair'
-    buttonRepair.title = translate('repairTitle')
-    this.menu.appendChild(buttonRepair)
-    buttonRepair.onclick = () => {
-      try {
-        me.repair()
-        me._onChange()
-      } catch (err) {
-        me._onError(err)
-      }
-    }
-
-    // create undo/redo buttons
-    if (this.mode === 'code') {
-      // create undo button
-      const undo = document.createElement('button')
-      undo.type = 'button'
-      undo.className = 'jsoneditor-undo jsoneditor-separator'
-      undo.title = translate('undo')
-      undo.onclick = () => {
-        this.aceEditor.getSession().getUndoManager().undo()
-      }
-      this.menu.appendChild(undo)
-      this.dom.undo = undo
-
-      // create redo button
-      const redo = document.createElement('button')
-      redo.type = 'button'
-      redo.className = 'jsoneditor-redo'
-      redo.title = translate('redo')
-      redo.onclick = () => {
-        this.aceEditor.getSession().getUndoManager().redo()
-      }
-      this.menu.appendChild(redo)
-      this.dom.redo = redo
-    }
-
-    // create mode box
-    if (this.options && this.options.modes && this.options.modes.length) {
-      this.modeSwitcher = new ModeSwitcher(this.menu, this.options.modes, this.options.mode, function onSwitch (mode) {
-        // switch mode and restore focus
-        me.setMode(mode)
-        me.modeSwitcher.focus()
-      })
-    }
+    // create buttons defined in options.buttons
+    this._createButtons()
 
     if (this.mode === 'code') {
       const poweredBy = document.createElement('a')
@@ -247,20 +146,6 @@ textmode.create = function (container, options = {}) {
         window.open(poweredBy.href, poweredBy.target, 'noopener')
       }
       this.menu.appendChild(poweredBy)
-    }
-
-    // create custom buttons
-    if (this.options.buttons) {
-      this.options.buttons.forEach(buttonCustomConf => {
-        const buttonCustom = document.createElement('button')
-        buttonCustom.type = 'button'
-        buttonCustom.className = buttonCustomConf.className
-        buttonCustom.title = buttonCustomConf.title
-        this.menu.appendChild(buttonCustom)
-        buttonCustom.onclick = () => {
-          buttonCustomConf.target(this)
-        }
-      })
     }
   }
 
