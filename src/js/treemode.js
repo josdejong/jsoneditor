@@ -28,7 +28,7 @@ import {
   removeEventListener,
   selectContentEditable,
   setSelectionOffset,
-  trySimpleJsonRepair
+  tryJsonRepair
 } from './util'
 import VanillaPicker from './vanilla-picker'
 
@@ -309,7 +309,7 @@ treemode.setText = function (jsonText) {
     this.set(parse(jsonText)) // this can throw an error
   } catch (err) {
     // try to repair json, replace JavaScript notation with JSON notation
-    const repairedJsonText = trySimpleJsonRepair(jsonText)
+    const repairedJsonText = tryJsonRepair(jsonText)
 
     // try to parse again
     this.set(parse(repairedJsonText)) // this can throw an error
@@ -326,7 +326,7 @@ treemode.updateText = function (jsonText) {
     this.update(parse(jsonText)) // this can throw an error
   } catch (err) {
     // try to repair json, replace JavaScript notation with JSON notation
-    const repairJsonText = trySimpleJsonRepair(jsonText)
+    const repairJsonText = tryJsonRepair(jsonText)
 
     // try to parse again
     this.update(parse(repairJsonText)) // this can throw an error

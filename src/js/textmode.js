@@ -1,6 +1,6 @@
 'use strict'
 
-import simpleJsonRepair from 'simple-json-repair'
+import jsonrepair from 'jsonrepair'
 import ace from './ace'
 import { DEFAULT_MODAL_ANCHOR } from './constants'
 import { ErrorTable } from './ErrorTable'
@@ -701,7 +701,7 @@ textmode.format = function () {
 textmode.repair = function () {
   const text = this.getText()
   try {
-    const repairedText = simpleJsonRepair(text)
+    const repairedText = jsonrepair(text)
     this.updateText(repairedText)
   } catch (err) {
     // repair was not successful, do nothing

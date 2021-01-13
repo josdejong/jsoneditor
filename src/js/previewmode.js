@@ -1,6 +1,6 @@
 'use strict'
 
-import simpleJsonRepair from 'simple-json-repair'
+import jsonrepair from 'jsonrepair'
 import {
   DEFAULT_MODAL_ANCHOR,
   MAX_PREVIEW_CHARACTERS,
@@ -470,7 +470,7 @@ previewmode.format = function () {
 previewmode.repair = function () {
   const text = this.getText()
   try {
-    const repairedText = simpleJsonRepair(text)
+    const repairedText = jsonrepair(text)
 
     this._setTextAndFireOnChange(repairedText)
   } catch (err) {
