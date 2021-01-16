@@ -3,7 +3,7 @@
 https://github.com/josdejong/jsoneditor
 
 
-## not yet published, version 9.1.8
+## 2021-01-16, version 9.1.8
 
 - Replaced `simple-json-repair` with `jsonrepair` (library was renamed).
 
