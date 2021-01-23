@@ -3,6 +3,12 @@
 https://github.com/josdejong/jsoneditor
 
 
+## 2021-01-23, version 9.1.9
+
+- Fix `jsoneditor-minimalist` bundle being too large. Regression since `v9.1.5` 
+  (caused by a recent upgrade to Webpack 5). Thanks @cbmgit.
+
+
 ## 2021-01-16, version 9.1.8
 
 - Replaced `simple-json-repair` with `jsonrepair` (library was renamed).
