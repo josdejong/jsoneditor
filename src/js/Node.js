@@ -4472,6 +4472,15 @@ Node._findSchema = (topLevelSchema, schemaRefs, path, currentSchema = topLevelSc
             throw Error(`Unable to resovle reference ${ref}`)
           }
         }
+      } else if (ref.match('/#\//g').length === 1){
+        const [schemaUrl, relativePath] = ref.split('#/');
+        if( schemaUrl in schemaRefs){
+          const referencedSchema = schemaRefs[schemaUrl]
+          const reference = {$ref:'#/'.concat(relativePath)}
+          return Node._findSchema(referencedSchema, schemaRefs, [], reference)
+        } else {
+          throw Error(`Unable to resolve reference ${ref}`)
+        }
       } else {
         throw Error(`Unable to resolve reference ${ref}`)
       }
