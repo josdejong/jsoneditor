@@ -157,6 +157,34 @@ describe('Node', () => {
       })
     })
 
+    describe('with $ref to external definition', () => {
+      it('should find a referenced schema', () => {
+        const schema = {
+          type: 'object',
+          properties: {
+            address: {
+              $ref: 'definitions.json#/address'
+            }
+          }
+        }
+        const definitions = {
+          address: {
+            type: 'object',
+            properties: {
+              country: {
+                type: 'string'
+              },
+              city: {
+                type: 'string'
+              }
+            }
+          }
+        }
+        const path = ['address', 'city']
+        const foundSchema = { type: 'string' }
+        assert.notStrictEqual(Node._findSchema(schema, { 'definitions.json': definitions }, path), foundSchema)
+      })
+    })
     describe('with pattern properties', () => {
       it('should find schema', () => {
         const schema = {
