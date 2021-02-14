@@ -3,6 +3,13 @@
 https://github.com/josdejong/jsoneditor
 
 
+## 2021-02-14, version 9.1.10
+
+- Fixed resolving a JSON schema reference linking to an other schema, see #1239.
+  Thanks @Hagartinger.
+- Upgraded to latest dependencies (`vanilla-picker@2.11.2`).
+
+
 ## 2021-01-23, version 9.1.9
 
 - Fix `jsoneditor-minimalist` bundle being too large. Regression since `v9.1.5` 
@@ -41,7 +48,7 @@ https://github.com/josdejong/jsoneditor
 
 ## 2020-11-19, version 9.1.3
 
-- Fix #1158: JSON schema not found if using internal references. Thanks @maufl.
+- Fix #1158: JSON schema_findSchema not found if using internal references. Thanks @maufl.
 - Update dependencies: `vanilla-picker@2.11.0`.
 
 
