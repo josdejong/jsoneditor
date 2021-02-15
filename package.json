@@ -28,10 +28,11 @@
   "dependencies": {
     "ace-builds": "^1.4.12",
     "ajv": "^6.12.6",
+    "ajv-i18n": "^3.6.0",
     "javascript-natural-sort": "^0.7.1",
     "jmespath": "^0.15.0",
-    "jsonrepair": "^2.0.0",
     "json-source-map": "^0.6.1",
+    "jsonrepair": "^2.0.0",
     "mobius1-selectr": "^2.4.13",
     "picomodal": "^3.0.0",
     "vanilla-picker": "^2.11.2"
