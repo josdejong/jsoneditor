@@ -3,6 +3,11 @@
 https://github.com/josdejong/jsoneditor
 
 
+## not yet published, version 9.2.0
+
+- Added Russian translation. Thanks @PunKHS.
+
+
 ## 2021-02-14, version 9.1.10
 
 - Fixed resolving a JSON schema reference linking to an other schema, see #1239.
