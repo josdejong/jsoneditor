@@ -515,11 +515,11 @@ textmode._onKeyDown = function (event) {
   const keynum = event.which || event.keyCode
   let handled = false
 
-  if (keynum === 220 && event.ctrlKey) {
-    if (event.shiftKey) { // Ctrl+Shift+\
+  if (keynum === 73 && event.ctrlKey) {
+    if (event.shiftKey) { // Ctrl+Shift+I
       this.compact()
       this._onChange()
-    } else { // Ctrl+\
+    } else { // Ctrl+I
       this.format()
       this._onChange()
     }

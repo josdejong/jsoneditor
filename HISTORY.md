@@ -6,6 +6,9 @@ https://github.com/josdejong/jsoneditor
 ## not yet published, version 9.2.0
 
 - Added Russian translation. Thanks @PunKHS.
+- Changed shortcut keys for Format and Compact in code mode from `Ctrl+\` and
+  `Ctrl+Shift+\` to `Ctrl+I` and `Ctrl+Shift+I` respectively, because not all
+  browsers and operating systems support this key combination.
 
 
 ## 2021-02-14, version 9.1.10

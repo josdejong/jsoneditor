@@ -34,5 +34,5 @@ Additionally, there are shortcut keys to format/compact the code:
 
 Key                     | Description
 ----------------------- | ------------------------------------------------
-Ctrl+\                  | Format JSON data, set proper indentation
-Ctrl+Shift+\            | Compact JSON data, remove all whitespace
+Ctrl+I                  | Format JSON data, set proper indentation
+Ctrl+Shift+I            | Compact JSON data, remove all whitespace
