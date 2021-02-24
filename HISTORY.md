@@ -3,7 +3,7 @@
 https://github.com/josdejong/jsoneditor
 
 
-## not yet published, version 9.2.0
+## 2021-02-24, version 9.2.0
 
 - Added Russian translation. Thanks @PunKHS.
 - Changed shortcut keys for Format and Compact in code mode from `Ctrl+\` and
