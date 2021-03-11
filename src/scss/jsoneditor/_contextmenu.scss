@@ -80,7 +80,7 @@
           height: 24px;
           padding: 0;
           margin: 0 4px 0 0;
-          background: url($jse-icons) 0 -72px;
+          background: $jse-icons 0 -72px;
         }
       }
     }
@@ -94,7 +94,7 @@
     border: none;
     padding: 0;
     margin: 0;
-    background-image: url($jse-icons);
+    background-image: $jse-icons;
   }
   .jsoneditor-text {
     padding: 4px 0 4px 24px;
