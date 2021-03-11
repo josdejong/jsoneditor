@@ -162,8 +162,8 @@ export class Node {
     return !this.parent
       ? undefined // do not add an (optional) field name of the root node
       : (this.parent.type !== 'array')
-        ? this.field
-        : this.index
+          ? this.field
+          : this.index
   }
 
   /**
@@ -1029,8 +1029,9 @@ export class Node {
       // create a temporary row, to prevent the scroll position from jumping
       // when removing the node
       const tbody = (this.dom.tr) ? this.dom.tr.parentNode : undefined
+      let trTemp
       if (tbody) {
-        var trTemp = document.createElement('tr')
+        trTemp = document.createElement('tr')
         trTemp.style.height = tbody.clientHeight + 'px'
         tbody.appendChild(trTemp)
       }
@@ -1052,7 +1053,7 @@ export class Node {
         this.insertBefore(node, beforeNode, updateDom)
       }
 
-      if (tbody) {
+      if (tbody && trTemp) {
         tbody.removeChild(trTemp)
       }
     }
@@ -1724,20 +1725,17 @@ export class Node {
           this.dom.select.name = this.dom.select.id
 
           // Create the default empty option
-          this.dom.select.option = document.createElement('option')
-          this.dom.select.option.value = ''
-          this.dom.select.option.textContent = '--'
-          this.dom.select.appendChild(this.dom.select.option)
+          const defaultOption = document.createElement('option')
+          defaultOption.value = ''
+          defaultOption.textContent = '--'
+          this.dom.select.appendChild(defaultOption)
 
           // Iterate all enum values and add them as options
           for (let i = 0; i < this.enum.length; i++) {
-            this.dom.select.option = document.createElement('option')
-            this.dom.select.option.value = this.enum[i]
-            this.dom.select.option.textContent = this.enum[i]
-            if (this.dom.select.option.value === this.value) {
-              this.dom.select.option.selected = true
-            }
-            this.dom.select.appendChild(this.dom.select.option)
+            const option = document.createElement('option')
+            option.value = this.enum[i]
+            option.textContent = this.enum[i]
+            this.dom.select.appendChild(option)
           }
 
           this.dom.tdSelect = document.createElement('td')
@@ -1745,6 +1743,11 @@ export class Node {
           this.dom.tdSelect.appendChild(this.dom.select)
           this.dom.tdValue.parentNode.insertBefore(this.dom.tdSelect, this.dom.tdValue)
         }
+
+        // Select the matching value
+        this.dom.select.value = (this.enum.indexOf(this.value) !== -1)
+          ? this.value
+          : '' // default
 
         // If the enum is inside a composite type display
         // both the simple input and the dropdown field
@@ -2490,10 +2493,6 @@ export class Node {
     const node = this
     const expandable = this._hasChilds()
 
-    if (typeof this.editor.options.onEvent === 'function') {
-      this._onEvent(event)
-    }
-
     // check if mouse is on menu or on dragarea.
     // If so, highlight current row and its childs
     if (target === dom.drag || target === dom.menu) {
@@ -2678,6 +2677,11 @@ export class Node {
     if (type === 'keydown') {
       this.onKeyDown(event)
     }
+
+    // fire after applying for example a change by clicking a checkbox
+    if (typeof this.editor.options.onEvent === 'function') {
+      this._onEvent(event)
+    }
   }
 
   /**
@@ -2691,15 +2695,23 @@ export class Node {
    */
   _onEvent (event) {
     const element = event.target
-    if (element === this.dom.field || element === this.dom.value) {
+    const isField = element === this.dom.field
+    const isValue = (
+      element === this.dom.value ||
+      element === this.dom.checkbox ||
+      element === this.dom.select)
+
+    if (isField || isValue) {
       const info = {
         field: this.getField(),
         path: this.getPath()
       }
+
       // For leaf values, include value
-      if (!this._hasChilds() && element === this.dom.value) {
+      if (isValue && !this._hasChilds()) {
         info.value = this.getValue()
       }
+
       this.editor.options.onEvent(info, event)
     }
   }
@@ -2810,7 +2822,7 @@ export class Node {
           const appendDom = lastNode.getAppendDom()
           nextDom = appendDom ? appendDom.nextSibling : undefined
         } else {
-          var dom = lastNode.getDom()
+          const dom = lastNode.getDom()
           nextDom = dom.nextSibling
         }
         if (nextDom) {
@@ -2921,7 +2933,7 @@ export class Node {
         }
         handled = true
       } else if (altKey && shiftKey && editable) { // Alt + Shift + Arrow Right
-        dom = firstNode.getDom()
+        const dom = firstNode.getDom()
         const prevDom = dom.previousSibling
         if (prevDom) {
           prevNode = Node.getNodeFromTarget(prevDom)
@@ -3044,11 +3056,15 @@ export class Node {
    * @private
    */
   _onExpand (recurse) {
+    let table
+    let frame
+    let scrollTop
+
     if (recurse) {
       // Take the table offline
-      var table = this.dom.tr.parentNode // TODO: not nice to access the main table like this
-      var frame = table.parentNode
-      var scrollTop = frame.scrollTop
+      table = this.dom.tr.parentNode // TODO: not nice to access the main table like this
+      frame = table.parentNode
+      scrollTop = frame.scrollTop
       frame.removeChild(table)
     }
 
@@ -4236,7 +4252,8 @@ Node.onDrag = (nodes, event) => {
         nodeNext = Node.getNodeFromTarget(trNext)
         if (trNext) {
           bottomNext = trNext.nextSibling
-            ? getAbsoluteTop(trNext.nextSibling) : 0
+            ? getAbsoluteTop(trNext.nextSibling)
+            : 0
           heightNext = trNext ? (bottomNext - topFirst) : 0
 
           if (nodeNext &&
@@ -4425,65 +4442,82 @@ Node._findEnum = schema => {
 
 /**
  * Return the part of a JSON schema matching given path.
- * @param {Object} schema
+ * @param {Object} topLevelSchema
  * @param {Object} schemaRefs
  * @param {Array.<string | number>} path
+ * @param {Object} currentSchema
  * @return {Object | null}
  * @private
  */
-Node._findSchema = (schema, schemaRefs, path) => {
-  let childSchema = schema
-  let foundSchema = childSchema
+Node._findSchema = (topLevelSchema, schemaRefs, path, currentSchema = topLevelSchema) => {
+  const nextPath = path.slice(1, path.length)
+  const nextKey = path[0]
 
-  let allSchemas = schema.oneOf || schema.anyOf || schema.allOf
-  if (!allSchemas) {
-    allSchemas = [schema]
-  }
+  const possibleSchemas = currentSchema.oneOf || currentSchema.anyOf || currentSchema.allOf || [currentSchema]
 
-  for (let j = 0; j < allSchemas.length; j++) {
-    childSchema = allSchemas[j]
+  for (const schema of possibleSchemas) {
+    currentSchema = schema
 
-    if ('$ref' in childSchema && typeof childSchema.$ref === 'string') {
-      childSchema = schemaRefs[childSchema.$ref]
-      if (childSchema) {
-        foundSchema = Node._findSchema(childSchema, schemaRefs, path)
-      }
-    }
-
-    for (let i = 0; i < path.length && childSchema; i++) {
-      const nextPath = path.slice(i + 1, path.length)
-      const key = path[i]
-
-      if (typeof key === 'string' && childSchema.patternProperties && !(childSchema.properties && key in childSchema.properties)) {
-        for (const prop in childSchema.patternProperties) {
-          if (key.match(prop) && (foundSchema.properties || foundSchema.patternProperties)) {
-            foundSchema = Node._findSchema(childSchema.patternProperties[prop], schemaRefs, nextPath)
+    if ('$ref' in currentSchema && typeof currentSchema.$ref === 'string') {
+      const ref = currentSchema.$ref
+      if (ref in schemaRefs) {
+        currentSchema = schemaRefs[ref]
+      } else if (ref.startsWith('#/')) {
+        const refPath = ref.substring(2).split('/')
+        currentSchema = topLevelSchema
+        for (const segment of refPath) {
+          if (segment in currentSchema) {
+            currentSchema = currentSchema[segment]
+          } else {
+            throw Error(`Unable to resovle reference ${ref}`)
           }
         }
-      } else if (typeof key === 'string' && childSchema.properties) {
-        if (!(key in childSchema.properties)) {
-          foundSchema = null
+      } else if (ref.match(/#\//g)?.length === 1) {
+        const [schemaUrl, relativePath] = ref.split('#/')
+        if (schemaUrl in schemaRefs) {
+          const referencedSchema = schemaRefs[schemaUrl]
+          const reference = { $ref: '#/'.concat(relativePath) }
+          return Node._findSchema(referencedSchema, schemaRefs, nextPath, reference)
         } else {
-          childSchema = childSchema.properties[key]
-          if (childSchema) {
-            foundSchema = Node._findSchema(childSchema, schemaRefs, nextPath)
+          throw Error(`Unable to resolve reference ${ref}`)
+        }
+      } else {
+        throw Error(`Unable to resolve reference ${ref}`)
+      }
+    }
+
+    // We have no more path segments to resolve, return the currently found schema
+    // We do this here, after resolving references, in case of the leaf schema beeing a reference
+    if (nextKey === undefined) {
+      return currentSchema
+    }
+
+    if (typeof nextKey === 'string') {
+      if (typeof currentSchema.properties === 'object' && currentSchema.properties !== null && nextKey in currentSchema.properties) {
+        currentSchema = currentSchema.properties[nextKey]
+        return Node._findSchema(topLevelSchema, schemaRefs, nextPath, currentSchema)
+      }
+      if (typeof currentSchema.patternProperties === 'object' && currentSchema.patternProperties !== null) {
+        for (const prop in currentSchema.patternProperties) {
+          if (nextKey.match(prop)) {
+            currentSchema = currentSchema.patternProperties[prop]
+            return Node._findSchema(topLevelSchema, schemaRefs, nextPath, currentSchema)
           }
         }
-      } else if (typeof key === 'number' && childSchema.items) {
-        childSchema = childSchema.items
-        if (childSchema) {
-          foundSchema = Node._findSchema(childSchema, schemaRefs, nextPath)
-        }
       }
+      if (typeof currentSchema.additionalProperties === 'object') {
+        currentSchema = currentSchema.additionalProperties
+        return Node._findSchema(topLevelSchema, schemaRefs, nextPath, currentSchema)
+      }
+      continue
+    }
+    if (typeof nextKey === 'number' && typeof currentSchema.items === 'object' && currentSchema.items !== null) {
+      currentSchema = currentSchema.items
+      return Node._findSchema(topLevelSchema, schemaRefs, nextPath, currentSchema)
     }
   }
 
-  // If the found schema is the input schema, the schema does not have the given path
-  if (foundSchema === schema && path.length > 0) {
-    return null
-  }
-
-  return foundSchema
+  return null
 }
 
 /**

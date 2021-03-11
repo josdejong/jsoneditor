@@ -116,6 +116,75 @@ describe('Node', () => {
       })
     })
 
+    describe('with $ref to internal definition', () => {
+      it('should find a referenced schema', () => {
+        const schema = {
+          $schema: 'http://json-schema.org/draft-07/schema#',
+          type: 'object',
+          patternProperties: {
+            '^/[a-z0-9]*$': {
+              $ref: '#/definitions/component'
+            }
+          },
+          definitions: {
+            component: {
+              type: 'object',
+              properties: {
+                type: {
+                  type: 'string',
+                  minLength: 1
+                },
+                config: {
+                  type: 'object'
+                },
+                children: {
+                  type: 'object',
+                  patternProperties: {
+                    '^/[a-z0-9]+$': {
+                      $ref: '#/definitions/component'
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+        const path = ['/status', 'children', '/bus', 'config']
+        const foundSchema = {
+          type: 'object'
+        }
+        assert.notStrictEqual(Node._findSchema(schema, {}, path), foundSchema)
+      })
+    })
+
+    describe('with $ref to external definition', () => {
+      it('should find a referenced schema', () => {
+        const schema = {
+          type: 'object',
+          properties: {
+            address: {
+              $ref: 'definitions.json#/address'
+            }
+          }
+        }
+        const definitions = {
+          address: {
+            type: 'object',
+            properties: {
+              country: {
+                type: 'string'
+              },
+              city: {
+                type: 'string'
+              }
+            }
+          }
+        }
+        const path = ['address', 'city']
+        const foundSchema = { type: 'string' }
+        assert.notStrictEqual(Node._findSchema(schema, { 'definitions.json': definitions }, path), foundSchema)
+      })
+    })
     describe('with pattern properties', () => {
       it('should find schema', () => {
         const schema = {
@@ -279,6 +348,40 @@ describe('Node', () => {
         assert.strictEqual(Node._findSchema(schema, {}, path), null)
         path = ['levelOne', 'not-in-schema']
         assert.strictEqual(Node._findSchema(schema, {}, path), null)
+      })
+
+      it('should return additionalProperties schema', () => {
+        const schema = {
+          type: 'object',
+          properties: {
+            company: {
+              type: 'string',
+              enum: ['1', '2']
+            },
+            nested: {
+              type: 'object',
+              additionalProperties: {
+                type: 'number'
+              }
+            }
+          },
+          additionalProperties: {
+            type: 'string',
+            enum: ['1', '2']
+          }
+        }
+        let path = ['company2']
+        assert.strictEqual(
+          Node._findSchema(schema, {}, path),
+          schema.additionalProperties,
+          'additionalProperties schema'
+        )
+        path = ['nested', 'virtual']
+        assert.strictEqual(
+          Node._findSchema(schema, {}, path),
+          schema.properties.nested.additionalProperties,
+          'additionalProperties schema'
+        )
       })
     })
   })

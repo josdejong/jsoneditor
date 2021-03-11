@@ -195,8 +195,8 @@ export function showTransformModal (
         return (path === '')
           ? '@'
           : (path[0] === '.')
-            ? path.slice(1)
-            : path
+              ? path.slice(1)
+              : path
       }
 
       function updatePreview () {

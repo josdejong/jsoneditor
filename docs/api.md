@@ -44,9 +44,19 @@ Constructs a new JSONEditor.
 
   ```js
   var options = {
-    ajv: Ajv({ allErrors: true, verbose: true })
+    ajv: Ajv({ 
+      allErrors: true, 
+      verbose: true,
+      jsonPointers: false,
+      $data: true
+    })
   }
   ```
+  
+  > IMPORTANT: JSONEditor relies on some specific configuration of Ajv. 
+  > Providing different configuration (like `jsonPointers: true` instead of `false`) 
+  > results in JSONEditor breaking because the format of the Ajv errors differs
+  > from what is expected.
 
 - `{function} onChange()`
 
@@ -555,7 +565,7 @@ Constructs a new JSONEditor.
 
 - `{string} language`
 
-  The default language comes from the browser navigator, but you can force a specific language. So use here string as 'en' or 'pt-BR'. Built-in languages: `en`, `zh-CN`, `pt-BR`, `tr`, `ja`, `fr-FR`, `de`. Other translations can be specified via the option `languages`.
+  The default language comes from the browser navigator, but you can force a specific language. So use here string as 'en' or 'pt-BR'. Built-in languages: `en`, `zh-CN`, `pt-BR`, `tr`, `ja`, `fr-FR`, `de`, `ru`. Other translations can be specified via the option `languages`.
 
 - `{Object} languages`
 

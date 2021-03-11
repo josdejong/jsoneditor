@@ -2,6 +2,7 @@
 
 import './polyfills'
 import naturalSort from 'javascript-natural-sort'
+import jsonrepair from 'jsonrepair'
 import jsonlint from './assets/jsonlint/jsonlint'
 import jsonMap from 'json-source-map'
 import { translate } from './i18n'
@@ -28,315 +29,16 @@ export function parse (jsonString) {
 }
 
 /**
- * Repair a JSON-like string containing. For example changes JavaScript
- * notation into JSON notation.
- * This function for example changes a string like "{a: 2, 'b': {c: 'd'}"
- * into '{"a": 2, "b": {"c": "d"}'
- * @param {string} jsString
- * @returns {string} json
+ * Try to fix the JSON string. If not successful, return the original string
+ * @param {string} jsonString
  */
-export function repair (jsString) {
-  // TODO: refactor this function, it's too large and complicated now
-
-  // escape all single and double quotes inside strings
-  const chars = []
-  let i = 0
-  let indent = 0
-  let isLineSeparatedJson = false
-
-  // If JSON starts with a function (characters/digits/"_-"), remove this function.
-  // This is useful for "stripping" JSONP objects to become JSON
-  // For example: /* some comment */ function_12321321 ( [{"a":"b"}] ); => [{"a":"b"}]
-  const match = jsString.match(/^\s*(\/\*(.|[\r\n])*?\*\/)?\s*[\da-zA-Z_$]+\s*\(([\s\S]*)\)\s*;?\s*$/)
-  if (match) {
-    jsString = match[3]
+export function tryJsonRepair (jsonString) {
+  try {
+    return jsonrepair(jsonString)
+  } catch (err) {
+    // repair was not successful, return original text
+    return jsonString
   }
-
-  const controlChars = {
-    '\b': '\\b',
-    '\f': '\\f',
-    '\n': '\\n',
-    '\r': '\\r',
-    '\t': '\\t'
-  }
-
-  const quote = '\''
-  const quoteDbl = '"'
-  const quoteLeft = '\u2018'
-  const quoteRight = '\u2019'
-  const quoteDblLeft = '\u201C'
-  const quoteDblRight = '\u201D'
-  const graveAccent = '\u0060'
-  const acuteAccent = '\u00B4'
-
-  const pythonConstants = {
-    None: 'null',
-    True: 'true',
-    False: 'false'
-  }
-
-  // helper functions to get the current/prev/next character
-  function curr () { return jsString.charAt(i) }
-  function next () { return jsString.charAt(i + 1) }
-  function prev () { return jsString.charAt(i - 1) }
-
-  function isWhiteSpace (c) {
-    return c === ' ' || c === '\n' || c === '\r' || c === '\t'
-  }
-
-  // get the last parsed non-whitespace character
-  function lastNonWhitespace () {
-    let p = chars.length - 1
-
-    while (p >= 0) {
-      const pp = chars[p]
-      if (!isWhiteSpace(pp)) {
-        return pp
-      }
-      p--
-    }
-
-    return ''
-  }
-
-  // get at the first next non-white space character
-  function nextNonWhiteSpace () {
-    let iNext = i + 1
-    while (iNext < jsString.length && isWhiteSpace(jsString[iNext])) {
-      iNext++
-    }
-
-    return jsString[iNext]
-  }
-
-  // get at the first non-white space character starting at the current character
-  function currNonWhiteSpace () {
-    let iNext = i
-    while (iNext < jsString.length && isWhiteSpace(jsString[iNext])) {
-      iNext++
-    }
-
-    return jsString[iNext]
-  }
-
-  // skip a block comment '/* ... */'
-  function skipBlockComment () {
-    if (curr() === '/' && next() === '*') {
-      i += 2
-      while (i < jsString.length && (curr() !== '*' || next() !== '/')) {
-        i++
-      }
-      i += 2
-
-      if (curr() === '\n') {
-        i++
-      }
-    }
-  }
-
-  // skip a comment '// ...'
-  function skipComment () {
-    if (curr() === '/' && next() === '/') {
-      i += 2
-      while (i < jsString.length && (curr() !== '\n')) {
-        i++
-      }
-    }
-  }
-
-  function parseWhiteSpace () {
-    let whitespace = ''
-    while (i < jsString.length && isWhiteSpace(curr())) {
-      whitespace += curr()
-      i++
-    }
-
-    return whitespace
-  }
-
-  /**
-   * parse single or double quoted string. Returns the parsed string
-   * @param {string} endQuote
-   * @return {string}
-   */
-  function parseString (endQuote) {
-    let string = ''
-
-    string += '"'
-    i++
-    let c = curr()
-    while (i < jsString.length && c !== endQuote) {
-      if (c === '"' && prev() !== '\\') {
-        // unescaped double quote, escape it
-        string += '\\"'
-      } else if (c in controlChars) {
-        // replace unescaped control characters with escaped ones
-        string += controlChars[c]
-      } else if (c === '\\') {
-        // remove the escape character when followed by a single quote ', not needed
-        i++
-        c = curr()
-        if (c !== '\'') {
-          string += '\\'
-        }
-        string += c
-      } else {
-        // regular character
-        string += c
-      }
-
-      i++
-      c = curr()
-    }
-    if (c === endQuote) {
-      string += '"'
-      i++
-    }
-
-    return string
-  }
-
-  // parse an unquoted key
-  function parseKey () {
-    const specialValues = ['null', 'true', 'false']
-    let key = ''
-    let c = curr()
-
-    const regexp = /[a-zA-Z_$\d]/ // letter, number, underscore, dollar character
-    while (regexp.test(c)) {
-      key += c
-      i++
-      c = curr()
-    }
-
-    if (key in pythonConstants) {
-      return pythonConstants[key]
-    } else if (specialValues.indexOf(key) === -1) {
-      return '"' + key + '"'
-    } else {
-      return key
-    }
-  }
-
-  function parseValue () {
-    let c = curr()
-    let value = ''
-    while (/\w/.test(c)) {
-      value += c
-      i++
-      c = curr()
-    }
-
-    if (value.length > 0 && c === '(') {
-      // This is an MongoDB data type like in {"_id": ObjectId("123")}
-      let innerValue
-      i++
-      c = curr()
-      if (c === '"') {
-        // a data type containing a string, like ISODate("2012-12-19T06:01:17.171Z")
-        innerValue = parseString(c)
-        c = curr()
-      } else {
-        // a data type containing a value, like 'NumberLong(2)'
-        innerValue = ''
-        while (c !== ')' && c !== '') {
-          innerValue += c
-          i++
-          c = curr()
-        }
-      }
-
-      if (c === ')') {
-        // skip the closing bracket at the end
-        i++
-
-        // return the value (strip the data type object)
-        return innerValue
-      } else {
-        // huh? that's unexpected. don't touch it
-        return value + '(' + innerValue + c
-      }
-    } else if (typeof pythonConstants[value] === 'string') {
-      // it's a python constant like None
-      return pythonConstants[value]
-    } else {
-      // just leave as is
-      return value
-    }
-  }
-
-  function isSpecialWhiteSpace (c) {
-    return (
-      c === '\u00A0' ||
-        (c >= '\u2000' && c <= '\u200A') ||
-        c === '\u202F' ||
-        c === '\u205F' ||
-        c === '\u3000')
-  }
-
-  while (i < jsString.length) {
-    skipBlockComment()
-    skipComment()
-
-    const c = curr()
-
-    if (c === '{') {
-      indent++
-    }
-    if (c === '}') {
-      indent--
-    }
-
-    if (isSpecialWhiteSpace(c)) {
-      // special white spaces (like non breaking space)
-      chars.push(' ')
-      i++
-    } else if (c === quote) {
-      chars.push(parseString(c))
-    } else if (c === quoteDbl) {
-      chars.push(parseString(quoteDbl))
-    } else if (c === graveAccent) {
-      chars.push(parseString(acuteAccent))
-    } else if (c === quoteLeft) {
-      chars.push(parseString(quoteRight))
-    } else if (c === quoteDblLeft) {
-      chars.push(parseString(quoteDblRight))
-    } else if (c === '}') {
-      // check for missing comma between objects
-      chars.push(c)
-      i++
-
-      const whitespaces = parseWhiteSpace()
-      skipBlockComment()
-
-      if (currNonWhiteSpace() === '{') {
-        chars.push(',')
-        if (indent === 0) {
-          isLineSeparatedJson = true
-        }
-      }
-      chars.push(whitespaces)
-    } else if (c === ',' && [']', '}'].indexOf(nextNonWhiteSpace()) !== -1) {
-      // skip trailing commas
-      i++
-    } else if (/[a-zA-Z_$]/.test(c) && ['{', ','].indexOf(lastNonWhitespace()) !== -1) {
-      // an unquoted object key (like a in '{a:2}')
-      // FIXME: array values are also parsed via parseKey, work this out properly
-      chars.push(parseKey())
-    } else if (/\w/.test(c)) {
-      chars.push(parseValue())
-    } else {
-      chars.push(c)
-      i++
-    }
-  }
-
-  if (isLineSeparatedJson) {
-    chars.unshift('[\n')
-    chars.push('\n]')
-  }
-
-  return chars.join('')
 }
 
 /**
@@ -771,7 +473,7 @@ export function getInternetExplorerVersion () {
     let rv = -1 // Return value assumes failure.
     if (typeof navigator !== 'undefined' && navigator.appName === 'Microsoft Internet Explorer') {
       const ua = navigator.userAgent
-      const re = new RegExp('MSIE ([0-9]+[.0-9]+)')
+      const re = /MSIE ([0-9]+[.0-9]+)/
       if (re.exec(ua) != null) {
         rv = parseFloat(RegExp.$1)
       }
@@ -784,19 +486,19 @@ export function getInternetExplorerVersion () {
 }
 
 /**
+ * cached internet explorer version
+ * @type {Number}
+ * @private
+ */
+let _ieVersion = -1
+
+/**
  * Test whether the current browser is Firefox
  * @returns {boolean} isFirefox
  */
 export function isFirefox () {
   return (typeof navigator !== 'undefined' && navigator.userAgent.indexOf('Firefox') !== -1)
 }
-
-/**
- * cached internet explorer version
- * @type {Number}
- * @private
- */
-var _ieVersion = -1
 
 /**
  * Add an event listener. Works for all browsers

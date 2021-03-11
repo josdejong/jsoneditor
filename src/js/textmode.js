@@ -1,13 +1,16 @@
 'use strict'
 
+import jsonrepair from 'jsonrepair'
 import ace from './ace'
-import { setLanguage, setLanguages, translate } from './i18n'
-import { ModeSwitcher } from './ModeSwitcher'
+import { DEFAULT_MODAL_ANCHOR } from './constants'
 import { ErrorTable } from './ErrorTable'
-import { validateCustom } from './validationUtils'
+import { FocusTracker } from './FocusTracker'
+import { setLanguage, setLanguages, translate } from './i18n'
+import { createQuery, executeQuery } from './jmespathQuery'
+import { ModeSwitcher } from './ModeSwitcher'
 import { showSortModal } from './showSortModal'
 import { showTransformModal } from './showTransformModal'
-import { FocusTracker } from './FocusTracker'
+import { tryRequireThemeJsonEditor } from './tryRequireThemeJsonEditor'
 import {
   addClassName,
   debounce,
@@ -17,15 +20,12 @@ import {
   getPositionForPath,
   improveSchemaError,
   isObject,
+  isValidationErrorChanged,
   parse,
-  repair,
   sort,
-  sortObjectKeys,
-  isValidationErrorChanged
+  sortObjectKeys
 } from './util'
-import { DEFAULT_MODAL_ANCHOR } from './constants'
-import { tryRequireThemeJsonEditor } from './tryRequireThemeJsonEditor'
-import { createQuery, executeQuery } from './jmespathQuery'
+import { validateCustom } from './validationUtils'
 
 // create a mixin with the functions for text mode
 const textmode = {}
@@ -515,11 +515,11 @@ textmode._onKeyDown = function (event) {
   const keynum = event.which || event.keyCode
   let handled = false
 
-  if (keynum === 220 && event.ctrlKey) {
-    if (event.shiftKey) { // Ctrl+Shift+\
+  if (keynum === 73 && event.ctrlKey) {
+    if (event.shiftKey) { // Ctrl+Shift+I
       this.compact()
       this._onChange()
-    } else { // Ctrl+\
+    } else { // Ctrl+I
       this.format()
       this._onChange()
     }
@@ -700,8 +700,12 @@ textmode.format = function () {
  */
 textmode.repair = function () {
   const text = this.getText()
-  const repairedText = repair(text)
-  this.updateText(repairedText)
+  try {
+    const repairedText = jsonrepair(text)
+    this.updateText(repairedText)
+  } catch (err) {
+    // repair was not successful, do nothing
+  }
 }
 
 /**

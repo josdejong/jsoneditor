@@ -55,6 +55,7 @@ const webpackConfigModule = {
 // create a single instance of the compiler to allow caching
 const compiler = webpack({
   entry: ENTRY,
+  target: ['web', 'es5'],
   output: {
     library: 'JSONEditor',
     libraryTarget: 'umd',
@@ -77,6 +78,7 @@ const compiler = webpack({
 // create a single instance of the compiler to allow caching
 const compilerMinimalist = webpack({
   entry: ENTRY,
+  target: ['web', 'es5'],
   output: {
     library: 'JSONEditor',
     libraryTarget: 'umd',
@@ -86,10 +88,10 @@ const compilerMinimalist = webpack({
   module: webpackConfigModule,
   plugins: [
     bannerPlugin,
-    new webpack.IgnorePlugin(new RegExp('^ace-builds')),
-    new webpack.IgnorePlugin(new RegExp('worker-json-data-url')),
-    new webpack.IgnorePlugin(new RegExp('^ajv')),
-    new webpack.IgnorePlugin(new RegExp('^vanilla-picker'))
+    new webpack.IgnorePlugin({ resourceRegExp: /^ace-builds/ }),
+    new webpack.IgnorePlugin({ resourceRegExp: /worker-json-data-url/ }),
+    new webpack.IgnorePlugin({ resourceRegExp: /^ajv/ }),
+    new webpack.IgnorePlugin({ resourceRegExp: /^vanilla-picker/ })
   ],
   optimization: {
     // We no not want to minimize our code.

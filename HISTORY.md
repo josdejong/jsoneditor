@@ -3,10 +3,71 @@
 https://github.com/josdejong/jsoneditor
 
 
-## not yet published, version 9.1.2
+## 2021-02-24, version 9.2.0
 
+- Added Russian translation. Thanks @PunKHS.
+- Changed shortcut keys for Format and Compact in code mode from `Ctrl+\` and
+  `Ctrl+Shift+\` to `Ctrl+I` and `Ctrl+Shift+I` respectively, because not all
+  browsers and operating systems support this key combination.
+
+
+## 2021-02-14, version 9.1.10
+
+- Fixed resolving a JSON schema reference linking to an other schema, see #1239.
+  Thanks @Hagartinger.
+- Upgraded to latest dependencies (`vanilla-picker@2.11.2`).
+
+
+## 2021-01-23, version 9.1.9
+
+- Fix `jsoneditor-minimalist` bundle being too large. Regression since `v9.1.5` 
+  (caused by a recent upgrade to Webpack 5). Thanks @cbmgit.
+
+
+## 2021-01-16, version 9.1.8
+
+- Replaced `simple-json-repair` with `jsonrepair` (library was renamed).
+
+
+## 2020-12-30, version 9.1.7
+
+- Fix #1206: library bundle broken on IE 11, regression introduced in v9.1.6.
+
+
+## 2020-12-23, version 9.1.6
+
+- Fix #1192: enum dropdown from a JSON schema not rendered when using
+  `additionalProperties`. Thanks @maufl.
+- Fix #1191: clarify docs about configuration option `ajv`.
+- Fix #1193: simplify and fix example 20_custom_css_style_for_nodes.html.
+
+
+## 2020-12-14, version 9.1.5
+
+- Fix #1185: enum dropdown not selecting actual value when this is not a string.
+- Fix selected value of enum dropdown not updated when changed programmatically. 
+
+
+## 2020-11-23, version 9.1.4
+
+- Fix #1119: list of keys in navigation bar missing a scroll bar. 
+  Thanks @tanmayrajani.
+
+
+## 2020-11-19, version 9.1.3
+
+- Fix #1158: JSON schema_findSchema not found if using internal references. Thanks @maufl.
+- Update dependencies: `vanilla-picker@2.11.0`.
+
+
+## 2020-11-07, version 9.1.2
+
+- Fix #1126: fire `onEvent` for boolean checkbox and enum selectbox too.
 - Log a clear error in the console when the returned value of `onEditable` is 
   invalid. See #1112.
+- Updated dependency to `ajv@6.12.6`.
+- Extract the JSON repair functionality into a separate, 
+  library `simple-json-repair` with many improvements.
 
 
 ## 2020-09-23, version 9.1.1

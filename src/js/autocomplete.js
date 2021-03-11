@@ -43,7 +43,7 @@ export function autocomplete (config) {
     const onMouseOut = function () { this.style.backgroundColor = '' }
     const onMouseDown = function () { p.hide(); p.onmouseselection(this.__hint, p.rs) }
 
-    var p = {
+    const p = {
       rs: rs,
       hide: function () {
         elem.style.visibility = 'hidden'
@@ -272,9 +272,9 @@ export function autocomplete (config) {
     }
   }
 
-  var dropDownController = createDropDownController(dropDown, rs)
+  const dropDownController = createDropDownController(dropDown, rs)
 
-  var keyDownHandler = function (e) {
+  const keyDownHandler = function (e) {
     // console.log("Keydown:" + e.keyCode);
     e = e || window.event
     const keyCode = e.keyCode
@@ -361,7 +361,7 @@ export function autocomplete (config) {
     }
   }.bind(rs)
 
-  var onBlurHandler = e => {
+  const onBlurHandler = e => {
     rs.hideDropDown()
     // console.log("Lost focus.");
   }
