@@ -29,7 +29,7 @@
       cursor: pointer;
       color: $jse-contextmenu-color;
       background: transparent;
-      font-size:  $jse-font-size;
+      font-size: $jse-font-size;
       font-family: $jse-font;
       box-sizing: border-box;
       text-align: left;
@@ -81,7 +81,7 @@
           padding: 0;
           margin: 0 4px 0 0;
           background-image: $jse-icons;
-          background-position:  0 -72px;
+          background-position: 0 -72px;
         }
       }
     }
@@ -295,7 +295,7 @@
     appearance: none;
     text-indent: 0;
     text-overflow: "";
-    font-size:  $jse-font-size;
+    font-size: $jse-font-size;
     line-height: 1.5em;
     &::-ms-expand {
       display: none;
@@ -423,7 +423,7 @@
 .jsoneditor-modal #query,
 .jsoneditor-modal .jsoneditor-transform-preview {
   font-family: $jse-font-mono;
-  font-size:  $jse-font-size;
+  font-size: $jse-font-size;
   width: 100%;
   box-sizing: border-box;
 }
