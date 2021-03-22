@@ -26,6 +26,7 @@ import {
   sortObjectKeys
 } from './util'
 import { validateCustom } from './validationUtils'
+import ajvLocalize from 'ajv-i18n'
 
 // create a mixin with the functions for text mode
 const textmode = {}
@@ -252,8 +253,8 @@ textmode.create = function (container, options = {}) {
 
   const emptyNode = {}
   const isReadOnly = (this.options.onEditable &&
-  typeof (this.options.onEditable === 'function') &&
-  !this.options.onEditable(emptyNode))
+        typeof (this.options.onEditable === 'function') &&
+        !this.options.onEditable(emptyNode))
 
   this.frame.appendChild(this.content)
   this.container.appendChild(this.frame)
@@ -843,6 +844,7 @@ textmode.validate = function () {
     if (this.validateSchema) {
       const valid = this.validateSchema(json)
       if (!valid) {
+        this._localizeErrors(this.validateSchema.errors)
         schemaErrors = this.validateSchema.errors.map(error => {
           error.type = 'validation'
           return improveSchemaError(error)
@@ -894,6 +896,15 @@ textmode.validate = function () {
         this.options.onValidationError.call(this, parseErrors)
       }
       this.lastSchemaErrors = parseErrors
+    }
+  }
+}
+
+textmode._localizeErrors = function (errors) {
+  if (typeof this.options.language === 'string') {
+    const localize = ajvLocalize[this.options.language] || ajvLocalize.en
+    if (localize !== undefined && localize !== null) {
+      localize(errors)
     }
   }
 }

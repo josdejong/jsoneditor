@@ -31,6 +31,7 @@ import {
   tryJsonRepair
 } from './util'
 import VanillaPicker from './vanilla-picker'
+import ajvLocalize from 'ajv-i18n'
 
 // create a mixin with the functions for tree mode
 const treemode = {}
@@ -154,7 +155,7 @@ treemode._setOptions = function (options) {
         }).show()
       } else {
         console.warn('Cannot open color picker: the `vanilla-picker` library is not included in the bundle. ' +
-            'Either use the full bundle or implement your own color picker using `onColorPicker`.')
+                    'Either use the full bundle or implement your own color picker using `onColorPicker`.')
       }
     },
     timestampTag: true,
@@ -567,6 +568,7 @@ treemode.validate = function () {
   if (this.validateSchema) {
     const valid = this.validateSchema(json)
     if (!valid) {
+      this._localizeValidationErrors(this.validateSchema.errors)
       // apply all new errors
       schemaErrors = this.validateSchema.errors
         .map(error => improveSchemaError(error))
@@ -607,6 +609,15 @@ treemode.validate = function () {
       })
   } catch (err) {
     console.error(err)
+  }
+}
+
+treemode._localizeValidationErrors = function (errors) {
+  if (typeof this.options.language === 'string') {
+    const localize = ajvLocalize[this.options.language] || ajvLocalize.en
+    if (localize !== undefined && localize !== null) {
+      localize(errors)
+    }
   }
 }
 
@@ -667,8 +678,8 @@ treemode._validateCustom = function (json) {
 
               if (!valid) {
                 console.warn('Ignoring a custom validation error with invalid structure. ' +
-                      'Expected structure: {path: [...], message: "..."}. ' +
-                      'Actual error:', error)
+                                    'Expected structure: {path: [...], message: "..."}. ' +
+                                    'Actual error:', error)
               }
 
               return valid
@@ -729,7 +740,7 @@ treemode.startAutoScroll = function (mouseY) {
   if ((mouseY < top + margin) && content.scrollTop > 0) {
     this.autoScrollStep = ((top + margin) - mouseY) / 3
   } else if (mouseY > bottom - margin &&
-      height + content.scrollTop < content.scrollHeight) {
+        height + content.scrollTop < content.scrollHeight) {
     this.autoScrollStep = ((bottom - margin) - mouseY) / 3
   } else {
     this.autoScrollStep = undefined
@@ -1271,7 +1282,7 @@ treemode._updateDragDistance = function (event) {
 
   this.dragDistanceEvent.dragDistance = Math.sqrt(diffX * diffX + diffY * diffY)
   this.dragDistanceEvent.hasMoved =
-      this.dragDistanceEvent.hasMoved || this.dragDistanceEvent.dragDistance > 10
+        this.dragDistanceEvent.hasMoved || this.dragDistanceEvent.dragDistance > 10
 
   event.dragDistance = this.dragDistanceEvent.dragDistance
   event.hasMoved = this.dragDistanceEvent.hasMoved
@@ -1549,11 +1560,11 @@ treemode._onKeyDown = function (event) {
     const me = this
     setTimeout(() => {
       /*
-          - Checking for change in focusTarget
-          - Without the check,
-            pressing tab after reaching the final DOM element in the editor will
-            set the focus back to it than passing focus outside the editor
-      */
+                - Checking for change in focusTarget
+                - Without the check,
+                  pressing tab after reaching the final DOM element in the editor will
+                  set the focus back to it than passing focus outside the editor
+            */
       if (me.focusTarget !== currentTarget) {
         // select all text when moving focus to an editable div
         selectContentEditable(me.focusTarget)
