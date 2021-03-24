@@ -676,15 +676,15 @@ const _defs = {
     duplicateKey: 'повторяющийся ключ',
     duplicateText: 'Дублировать',
     duplicateTitle: 'Дублирование полей (Ctrl+D)',
-    duplicateField: 'Дублирование поля (Ctrl+D)',
+    duplicateField: 'Дублировать поле (Ctrl+D)',
     duplicateFieldError: 'Дублирование названия поля',
-    empty: 'пусто',
+    empty: 'пустой',
     expandAll: 'Развернуть все',
-    expandTitle: 'Нажмите для развертывания/свертывания этого поля (Ctrl+E). \n' +
-        'Ctrl+Click для развертывания/свертывания всех потомков.',
+    expandTitle: 'Нажмите для раскрытия/скрытия поля (Ctrl+E)\n' +
+        'или Ctrl+Click для раскрытия/скрытия всех потомков.',
     formatTitle: 'Форматирование JSON (Ctrl+I)',
     insert: 'Вставить',
-    insertTitle: 'Вставить новое поле с типом \'авто\' после этого поля (Ctrl+Ins)',
+    insertTitle: 'Вставить новое поле с типом \'авто\' перед этим полем (Ctrl+Ins)',
     insertSub: 'Выбрать тип поля для вставки',
     object: 'Объект',
     ok: 'ОК',
@@ -711,16 +711,16 @@ const _defs = {
     sortDescending: 'По убыванию',
     sortDescendingTitle: 'Сортировка выбранного поря по убыванию',
     string: 'Строка',
-    transform: 'Преобразование',
-    transformTitle: 'Фильтрация, сортировка или преобразование данных типа ${type}',
-    transformTitleShort: 'Фильтрация, сортировка или преобразование данных',
-    extract: 'Извлечь',
+    transform: 'Модификация',
+    transformTitle: 'Фильтрация, сортировка или модификация данных типа ${type}',
+    transformTitleShort: 'Фильтрация, сортировка или модификация данных',
+    extract: 'Извлечение',
     extractTitle: 'Извлечь тип ${type}',
     transformQueryTitle: 'Введите JMESpath запрос',
     transformWizardLabel: 'Мастер',
     transformWizardFilter: 'Фильтр',
     transformWizardSortBy: 'Сортировка',
-    transformWizardSelectFields: 'Выбор полей',
+    transformWizardSelectFields: 'Поля',
     transformQueryLabel: 'Запрос',
     transformPreviewLabel: 'Просмотр',
     type: 'Тип',
@@ -728,15 +728,11 @@ const _defs = {
     openUrl: 'Ctrl+Click или Ctrl+Enter для открытия url в новом окне',
     undo: 'Отменить (Ctrl+Z)',
     validationCannotMove: 'Поле не может быть перемещено в потомка',
-    autoType: 'Тип поля "авто". ' +
-        'Тип поля автоматически определяется по значению ' +
+    autoType: 'Тип поля автоматически определяется по значению ' +
         'и может быть строкой, числом, логическим значением или null.',
-    objectType: 'Тип поля "объект". ' +
-        'Объект содержит неупорядоченный набор пар ключ/значение.',
-    arrayType: 'Тип поля "массив". ' +
-        'Массив содержит упорядоченный набор значений.',
-    stringType: 'Тип поля "строка". ' +
-        'Тип поля не определяется из значения, ' +
+    objectType: 'Объект содержит неупорядоченный набор пар ключ/значение.',
+    arrayType: 'Массив содержит упорядоченный набор значений.',
+    stringType: 'Тип поля не определяется из значения, ' +
         'но всегда возвращается как строка.',
     modeEditorTitle: 'Переключение режима редактора',
     modeCodeText: 'Код',
