@@ -3,6 +3,11 @@
 https://github.com/josdejong/jsoneditor
 
 
+## not yet published, version 9.2.1
+
+- Upgraded dependencies to `jsonrepair@2.0.1`
+
+
 ## 2021-02-24, version 9.2.0
 
 - Added Russian translation. Thanks @PunKHS.
