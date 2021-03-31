@@ -1366,8 +1366,9 @@ treemode._onMultiSelect = function (event) {
  */
 treemode._onMultiSelectEnd = function (event) {
   // set focus to the context menu button of the first node
-  if (this.multiselection.nodes[0]) {
-    this.multiselection.nodes[0].dom.menu.focus()
+  const firstNode = this.multiselection.nodes[0]
+  if (firstNode && firstNode.dom.menu) {
+    firstNode.dom.menu.focus()
   }
 
   this.multiselection.start = null
