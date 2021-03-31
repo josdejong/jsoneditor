@@ -5,6 +5,7 @@ https://github.com/josdejong/jsoneditor
 
 ## not yet published, version 9.2.1
 
+- Improve Russian locale. Thanks @PunKHS.
 - Upgraded dependencies to `jsonrepair@2.0.1`
 
 
