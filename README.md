@@ -78,8 +78,11 @@ with npm (recommended):
 > Note that to use JSONEditor in Internet Explorer 11, it is necessary
 > to load a polyfill for `Promise` in your application.
 
+Alternatively, you can use another JavaScript package manager like https://yarnpkg.com/, or a CDN such as https://cdnjs.com/ or https://www.jsdelivr.com/.
 
 ## Use
+
+> Note that in the following example, you'll have to change the urls `jsoneditor/dist/jsoneditor.min.js` and `jsoneditor/dist/jsoneditor.min.css` to match the place where you've downloaded the library, or fill in the URL of the CDN you're using.
 
 ```html
 <!DOCTYPE HTML>

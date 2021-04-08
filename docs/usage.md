@@ -6,6 +6,8 @@ Install via npm:
 
     npm install jsoneditor
 
+Alternatively, you can use another JavaScript package manager like https://yarnpkg.com/, or a CDN such as https://cdnjs.com/ or https://www.jsdelivr.com/.
+
 ## Load
 
 To implement JSONEditor in a web application, load the javascript and css file
@@ -15,6 +17,8 @@ in the head of the HTML page:
 <link href="jsoneditor/dist/jsoneditor.min.css" rel="stylesheet" type="text/css">
 <script src="jsoneditor/dist/jsoneditor.min.js"></script>
 ```
+
+Here you'll have to change the urls `jsoneditor/dist/jsoneditor.min.js` and `jsoneditor/dist/jsoneditor.min.css` to match the place where you've downloaded the library, or fill in the URL of the CDN you're using.
 
 ## Use
 

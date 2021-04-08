@@ -4354,8 +4354,8 @@ Node.onDragEnd = (nodes, event) => {
   const editor = firstNode.editor
 
   // set focus to the context menu button of the first node
-  if (nodes[0]) {
-    nodes[0].dom.menu.focus()
+  if (firstNode && firstNode.dom.menu) {
+    firstNode.dom.menu.focus()
   }
 
   const oldParentPath = editor.drag.oldParent.getInternalPath()
