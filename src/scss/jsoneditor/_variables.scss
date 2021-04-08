@@ -40,4 +40,5 @@ $jse-font-mono: "dejavu sans mono", "droid sans mono", consolas, monaco, "lucida
     monospace, sans-serif !default;
 $jse-font-size: 10pt !default;
 
-$jse-icons: url("./img/jsoneditor-icons.svg") !default;
+$jse-icons: "./img/jsoneditor-icons.svg" !default;
+$jse-icons-url: url($jse-icons) !default;

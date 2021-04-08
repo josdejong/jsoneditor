@@ -132,7 +132,7 @@ div {
         border: none;
         cursor: pointer;
         background-color: transparent;
-        background-image: $jse-icons;
+        background-image: $jse-icons-url;
         &:focus {
           background-color: $jse-preview;
           outline: #e5e5e5 solid 1px;
@@ -152,7 +152,7 @@ div {
         background: none;
       }
       &.jsoneditor-dragarea {
-        background-image: $jse-icons;
+        background-image: $jse-icons-url;
         background-position: -72px -72px;
         cursor: move;
       }
@@ -206,7 +206,7 @@ div {
         height: 24px;
         padding: 0;
         margin: 0 4px 0 0;
-        background-image: $jse-icons;
+        background-image: $jse-icons-url;
         background-position: -168px -48px;
       }
     }
@@ -534,12 +534,12 @@ pre.jsoneditor-preview,
   }
   tr {
     .jsoneditor-schema-error {
-      background-image: $jse-icons;
+      background-image: $jse-icons-url;
       background-position: -168px -48px;
     }
     &.parse-error {
       .jsoneditor-schema-error {
-        background-image: $jse-icons;
+        background-image: $jse-icons-url;
         background-position: -25px 0px;
       }
     }
