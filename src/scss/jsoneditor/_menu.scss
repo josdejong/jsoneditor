@@ -20,26 +20,27 @@
   padding: 0;
   border-radius: 2px;
   border: 1px solid transparent;
-  background: transparent url($jse-icons);
+  background-color: transparent;
+  background-image: $jse-icons-url;
   color: $jse-white;
   opacity: 0.8;
 
   font-family: $jse-font;
-  font-size:  $jse-font-size;
+  font-size: $jse-font-size;
 
   float: left;
 }
 
 .jsoneditor-menu > button:hover,
 .jsoneditor-menu > .jsoneditor-modes > button:hover {
-  background-color: rgba(255,255,255,0.2);
-  border: 1px solid rgba(255,255,255,0.4);
+  background-color: rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.4);
 }
 .jsoneditor-menu > button:focus,
 .jsoneditor-menu > button:active,
 .jsoneditor-menu > .jsoneditor-modes > button:focus,
 .jsoneditor-menu > .jsoneditor-modes > button:active {
-  background-color: rgba(255,255,255,0.3);
+  background-color: rgba(255, 255, 255, 0.3);
 }
 .jsoneditor-menu > button:disabled,
 .jsoneditor-menu > .jsoneditor-modes > button:disabled {
@@ -107,7 +108,7 @@
 
 .jsoneditor-menu a {
   font-family: $jse-font;
-  font-size:  $jse-font-size;
+  font-size: $jse-font-size;
   color: $jse-white;
   opacity: 0.8;
   vertical-align: middle;

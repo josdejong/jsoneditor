@@ -1,5 +1,5 @@
 $jse-white: #ffffff !default;
-$jse-grey:#999999 !default;
+$jse-grey: #999999 !default;
 $jse-light-bg: #ebebeb !default;
 $jse-blue: #3883fa !default;
 $jse-content-color: #1a1a1a !default;
@@ -36,7 +36,9 @@ $jse-box-shadow-inner: inset 0 0 10px rgba(128, 128, 128, 0.5) !default;
 $jse-date: #a1a1a1 !default;
 
 $jse-font: arial, sans-serif !default;
-$jse-font-mono: "dejavu sans mono", "droid sans mono", consolas, monaco, "lucida console", "courier new", courier, monospace, sans-serif !default;
-$jse-font-size: 10pt !default;;
+$jse-font-mono: "dejavu sans mono", "droid sans mono", consolas, monaco, "lucida console", "courier new", courier,
+    monospace, sans-serif !default;
+$jse-font-size: 10pt !default;
 
 $jse-icons: "./img/jsoneditor-icons.svg" !default;
+$jse-icons-url: url($jse-icons) !default;
