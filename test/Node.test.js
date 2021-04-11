@@ -97,6 +97,44 @@ describe('Node', () => {
       assert.strictEqual(Node._findSchema(schema, {}, path), null)
     })
 
+    it('should find one of required properties', () => {
+      const schema = {
+        "properties": {
+          "company": {
+            "type": "string",
+            "enum": ["1", "2"]
+          },
+          "worker": {
+            "type": "string",
+            "enum": ["a", "b"]
+          },
+          "manager": {
+            "type": "string",
+            "enum": ["c", "d"]
+          },
+        },
+        "additionalProperties": false,
+        "oneOf": [
+          {
+            "required": ["worker"]
+          },
+          {
+            "required": ["manager"]
+          }
+        ]
+      };
+      let path = ['company']
+      assert.deepStrictEqual(Node._findSchema(schema, {}, path), {
+          "type": "string",
+          "enum": ["1", "2"]
+      });
+      path = ['worker']
+      assert.deepStrictEqual(Node._findSchema(schema, {}, path), {
+        "type": "string",
+        "enum": ["a", "b"]
+      })
+    })
+
     describe('with $ref', () => {
       it('should find a referenced schema', () => {
         const schema = {
