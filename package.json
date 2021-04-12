@@ -48,7 +48,7 @@
     "gulp-clean-css": "4.3.0",
     "gulp-concat-css": "3.1.0",
     "gulp-sass": "4.1.0",
-    "jsdom": "16.5.2",
+    "jsdom": "16.5.3",
     "json-loader": "0.5.7",
     "mkdirp": "1.0.4",
     "mocha": "8.3.2",
