@@ -7,6 +7,8 @@ https://github.com/josdejong/jsoneditor
 
 - Added Korean translation. Thanks @luasenvy.
 - Added Spanish translation. Thanks @joabac.
+- Fixed #1282: JSON schema enum dropdown not working for conditionals like 
+  `oneOf`, `anyOf`, `allOf`. Thanks @maufl.
 
 
 ## 2021-04-10, version 9.3.1
