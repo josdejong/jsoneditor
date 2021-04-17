@@ -3,13 +3,13 @@
 https://github.com/josdejong/jsoneditor
 
 
-## not yet published, version 9.4.0
+## 2021-04-17, version 9.4.0
 
 - Added Korean translation. Thanks @luasenvy.
 - Added Spanish translation. Thanks @joabac.
-- Fixed #1282: JSON schema enum dropdown not working for conditionals like 
+- Fix #1282: JSON schema enum dropdown not working for conditionals like 
   `oneOf`, `anyOf`, `allOf`. Thanks @maufl.
-- Fix 1307: losing caret position when calling `refresh()` during `onChange`
+- Fix #1307: losing caret position when calling `refresh()` during `onChange`
   callback.
 
 
