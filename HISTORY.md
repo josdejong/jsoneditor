@@ -3,6 +3,12 @@
 https://github.com/josdejong/jsoneditor
 
 
+## not yet published, version 9.4.0
+
+- Added Korean translation. Thanks @luasenvy.
+- Added Spanish translation. Thanks @joabac.
+
+
 ## 2021-04-10, version 9.3.1
 
 - Introduced a new sass variable `$jse-icons-url`, see #1268. Thanks @ppetkow.

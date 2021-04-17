@@ -4,7 +4,6 @@
 
 import './polyfills'
 
-const _locales = ['en', 'pt-BR', 'zh-CN', 'tr', 'ja', 'fr-FR', 'de', 'ru', 'es']
 const _defs = {
   en: {
     array: 'Array',
@@ -946,6 +945,7 @@ const _defs = {
     containsInvalidItems: '잘못된 항목이 포함되어 있습니다'
   }
 }
+const _locales = Object.keys(_defs)
 
 const _defaultLang = 'en'
 const userLang = typeof navigator !== 'undefined'
