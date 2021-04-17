@@ -2237,7 +2237,7 @@ export class Node {
 
       const escapedField = this._escapeHTML(fieldText)
       if (
-        document.activeElement !== domField ||
+        document.activeElement !== domField &&
         escapedField !== this._unescapeHTML(getInnerText(domField))
       ) {
         // only update if it not has the focus or when there is an actual change,
@@ -2256,7 +2256,7 @@ export class Node {
       } else {
         const escapedValue = this._escapeHTML(this.value)
         if (
-          document.activeElement !== domValue ||
+          document.activeElement !== domValue &&
           escapedValue !== this._unescapeHTML(getInnerText(domValue))
         ) {
           // only update if it not has the focus or when there is an actual change,
