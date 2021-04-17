@@ -4453,10 +4453,10 @@ Node._findSchema = (topLevelSchema, schemaRefs, path, currentSchema = topLevelSc
   const nextPath = path.slice(1, path.length)
   const nextKey = path[0]
 
-  let possibleSchemas = [currentSchema];
-  for (const subSchemas of [ currentSchema.oneOf, currentSchema.anyOf, currentSchema.allOf]) {
+  let possibleSchemas = [currentSchema]
+  for (const subSchemas of [currentSchema.oneOf, currentSchema.anyOf, currentSchema.allOf]) {
     if (Array.isArray(subSchemas)) {
-      possibleSchemas = possibleSchemas.concat(subSchemas);
+      possibleSchemas = possibleSchemas.concat(subSchemas)
     }
   }
 

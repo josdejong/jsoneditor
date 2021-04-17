@@ -99,39 +99,39 @@ describe('Node', () => {
 
     it('should find one of required properties', () => {
       const schema = {
-        "properties": {
-          "company": {
-            "type": "string",
-            "enum": ["1", "2"]
+        properties: {
+          company: {
+            type: 'string',
+            enum: ['1', '2']
           },
-          "worker": {
-            "type": "string",
-            "enum": ["a", "b"]
+          worker: {
+            type: 'string',
+            enum: ['a', 'b']
           },
-          "manager": {
-            "type": "string",
-            "enum": ["c", "d"]
-          },
+          manager: {
+            type: 'string',
+            enum: ['c', 'd']
+          }
         },
-        "additionalProperties": false,
-        "oneOf": [
+        additionalProperties: false,
+        oneOf: [
           {
-            "required": ["worker"]
+            required: ['worker']
           },
           {
-            "required": ["manager"]
+            required: ['manager']
           }
         ]
-      };
+      }
       let path = ['company']
       assert.deepStrictEqual(Node._findSchema(schema, {}, path), {
-          "type": "string",
-          "enum": ["1", "2"]
-      });
+        type: 'string',
+        enum: ['1', '2']
+      })
       path = ['worker']
       assert.deepStrictEqual(Node._findSchema(schema, {}, path), {
-        "type": "string",
-        "enum": ["a", "b"]
+        type: 'string',
+        enum: ['a', 'b']
       })
     })
 
