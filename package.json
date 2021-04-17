@@ -48,14 +48,14 @@
     "gulp-clean-css": "4.3.0",
     "gulp-concat-css": "3.1.0",
     "gulp-sass": "4.1.0",
-    "jsdom": "16.5.2",
+    "jsdom": "16.5.3",
     "json-loader": "0.5.7",
     "mkdirp": "1.0.4",
     "mocha": "8.3.2",
     "source-map-loader": "2.0.1",
     "standard": "16.0.3",
-    "uglify-js": "3.13.3",
-    "webpack": "5.31.2"
+    "uglify-js": "3.13.4",
+    "webpack": "5.33.2"
   },
   "files": [
     "dist",
