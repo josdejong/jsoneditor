@@ -3,6 +3,11 @@
 https://github.com/josdejong/jsoneditor
 
 
+## 2021-04-25, version 9.4.1
+
+- Improvements in the Korean translation. Thanks @luasenvy.
+
+
 ## 2021-04-17, version 9.4.0
 
 - Added Korean translation. Thanks @luasenvy.
