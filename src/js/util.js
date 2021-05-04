@@ -740,15 +740,24 @@ export function insideRect (parent, child, margin) {
 export function debounce (func, wait, immediate) {
   let timeout
   return function () {
+    let resolvePromise;
+    let promise = new Promise(resolve=>resolvePromise=resolve);
     const context = this; const args = arguments
     const later = () => {
       timeout = null
-      if (!immediate) func.apply(context, args)
+      if (!immediate) {
+        func.apply(context, args);
+        resolvePromise();
+      }
     }
     const callNow = immediate && !timeout
     clearTimeout(timeout)
     timeout = setTimeout(later, wait)
-    if (callNow) func.apply(context, args)
+    if (callNow) {
+      func.apply(context, args)
+      resolvePromise();
+    }
+    return promise;
   }
 }
 
