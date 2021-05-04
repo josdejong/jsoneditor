@@ -325,34 +325,34 @@ previewmode._renderPreview = function () {
  */
 previewmode._onChange = function () {
   // validate JSON schema (if configured)
-  this._debouncedValidate()
-
-  // trigger the onChange callback
-  if (this.options.onChange) {
-    try {
-      this.options.onChange()
-    } catch (err) {
-      console.error('Error in onChange callback: ', err)
+  this._debouncedValidate().then(()=>{
+    // trigger the onChange callback
+    if (this.options.onChange) {
+      try {
+        this.options.onChange()
+      } catch (err) {
+        console.error('Error in onChange callback: ', err)
+      }
     }
-  }
 
-  // trigger the onChangeJSON callback
-  if (this.options.onChangeJSON) {
-    try {
-      this.options.onChangeJSON(this.get())
-    } catch (err) {
-      console.error('Error in onChangeJSON callback: ', err)
+    // trigger the onChangeJSON callback
+    if (this.options.onChangeJSON) {
+      try {
+        this.options.onChangeJSON(this.get())
+      } catch (err) {
+        console.error('Error in onChangeJSON callback: ', err)
+      }
     }
-  }
 
-  // trigger the onChangeText callback
-  if (this.options.onChangeText) {
-    try {
-      this.options.onChangeText(this.getText())
-    } catch (err) {
-      console.error('Error in onChangeText callback: ', err)
+    // trigger the onChangeText callback
+    if (this.options.onChangeText) {
+      try {
+        this.options.onChangeText(this.getText())
+      } catch (err) {
+        console.error('Error in onChangeText callback: ', err)
+      }
     }
-  }
+  });
 }
 
 /**

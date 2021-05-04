@@ -492,62 +492,62 @@ treemode._onChange = function () {
   this.selection = this.getDomSelection()
 
   // validate JSON schema (if configured)
-  this._debouncedValidate()
+  this._debouncedValidate().then(()=>{
+    if (this.treePath) {
+      const selectedNode = (this.node && this.selection)
+        ? this.node.findNodeByInternalPath(this.selection.path)
+        : this.multiselection
+          ? this.multiselection.nodes[0]
+          : undefined
 
-  if (this.treePath) {
-    const selectedNode = (this.node && this.selection)
-      ? this.node.findNodeByInternalPath(this.selection.path)
-      : this.multiselection
-        ? this.multiselection.nodes[0]
-        : undefined
-
-    if (selectedNode) {
-      this._updateTreePath(selectedNode.getNodePath())
-    } else {
-      this.treePath.reset()
+      if (selectedNode) {
+        this._updateTreePath(selectedNode.getNodePath())
+      } else {
+        this.treePath.reset()
+      }
     }
-  }
 
-  // trigger the onChange callback
-  if (this.options.onChange) {
-    try {
-      this.options.onChange()
-    } catch (err) {
-      console.error('Error in onChange callback: ', err)
+    // trigger the onChange callback
+    if (this.options.onChange) {
+      try {
+        this.options.onChange()
+      } catch (err) {
+        console.error('Error in onChange callback: ', err)
+      }
     }
-  }
 
-  // trigger the onChangeJSON callback
-  if (this.options.onChangeJSON) {
-    try {
-      this.options.onChangeJSON(this.get())
-    } catch (err) {
-      console.error('Error in onChangeJSON callback: ', err)
+    // trigger the onChangeJSON callback
+    if (this.options.onChangeJSON) {
+      try {
+        this.options.onChangeJSON(this.get())
+      } catch (err) {
+        console.error('Error in onChangeJSON callback: ', err)
+      }
     }
-  }
 
-  // trigger the onChangeText callback
-  if (this.options.onChangeText) {
-    try {
-      this.options.onChangeText(this.getText())
-    } catch (err) {
-      console.error('Error in onChangeText callback: ', err)
+    // trigger the onChangeText callback
+    if (this.options.onChangeText) {
+      try {
+        this.options.onChangeText(this.getText())
+      } catch (err) {
+        console.error('Error in onChangeText callback: ', err)
+      }
     }
-  }
 
-  // trigger the onClassName callback
-  if (this.options.onClassName) {
-    this.node.recursivelyUpdateCssClassesOnNodes()
-  }
-
-  // trigger the onNodeName callback
-  if (this.options.onNodeName && this.node.childs) {
-    try {
-      this.node.recursivelyUpdateNodeName()
-    } catch (err) {
-      console.error('Error in onNodeName callback: ', err)
+    // trigger the onClassName callback
+    if (this.options.onClassName) {
+      this.node.recursivelyUpdateCssClassesOnNodes()
     }
-  }
+
+    // trigger the onNodeName callback
+    if (this.options.onNodeName && this.node.childs) {
+      try {
+        this.node.recursivelyUpdateNodeName()
+      } catch (err) {
+        console.error('Error in onNodeName callback: ', err)
+      }
+    }
+  });
 }
 
 /**
