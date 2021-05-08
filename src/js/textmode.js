@@ -869,8 +869,8 @@ textmode.validate = function () {
             }
           }
           this.lastSchemaErrors = errors
-          resolveValidationPromise(this.lastSchemaErrors === undefined ? [] : this.lastSchemaErrors.slice())
         }
+        resolveValidationPromise(this.lastSchemaErrors === undefined ? [] : this.lastSchemaErrors.slice())
       })
       .catch(err => {
         console.error('Custom validation function did throw an error', err)
@@ -898,6 +898,7 @@ textmode.validate = function () {
       }
       this.lastSchemaErrors = parseErrors
     }
+    resolveValidationPromise(this.lastSchemaErrors === undefined ? [] : this.lastSchemaErrors.slice())
   }
 }
 
