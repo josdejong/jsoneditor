@@ -266,7 +266,7 @@ JSONEditor.prototype.getName = function () {
  * Get last errors.
  */
 JSONEditor.prototype.getValidationErrors = function () {
-  return this.validationErrors_promise;
+  return this.validationErrors_promise
 }
 
 /**

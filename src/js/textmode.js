@@ -415,7 +415,7 @@ textmode._onChange = function () {
   setTimeout(() => this._updateHistoryButtons())
 
   // validate JSON schema (if configured)
-  this._debouncedValidate().then(()=>{
+  this._debouncedValidate().then(() => {
     // trigger the onChange callback
     if (this.options.onChange) {
       try {
@@ -424,7 +424,7 @@ textmode._onChange = function () {
         console.error('Error in onChange callback: ', err)
       }
     }
-  
+
     // trigger the onChangeText callback
     if (this.options.onChangeText) {
       try {
@@ -433,7 +433,7 @@ textmode._onChange = function () {
         console.error('Error in onChangeText callback: ', err)
       }
     }
-  });
+  })
 }
 
 textmode._updateHistoryButtons = function () {
@@ -833,8 +833,8 @@ textmode.updateText = function (jsonText) {
  * Throws an exception when no JSON schema is configured
  */
 textmode.validate = function () {
-  let resolveValidationPromise;
-  this.validationErrors_promise = new Promise(resolve=>resolveValidationPromise=resolve);
+  let resolveValidationPromise
+  this.validationErrors_promise = new Promise(resolve => { resolveValidationPromise = resolve })
   let schemaErrors = []
   let parseErrors = []
   let json
@@ -868,8 +868,8 @@ textmode.validate = function () {
               this.options.onValidationError.call(this, errors)
             }
           }
-          this.lastSchemaErrors = errors;
-          resolveValidationPromise(this.lastSchemaErrors === undefined ? [] : this.lastSchemaErrors.slice());
+          this.lastSchemaErrors = errors
+          resolveValidationPromise(this.lastSchemaErrors === undefined ? [] : this.lastSchemaErrors.slice())
         }
       })
       .catch(err => {

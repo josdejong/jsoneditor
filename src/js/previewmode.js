@@ -325,7 +325,7 @@ previewmode._renderPreview = function () {
  */
 previewmode._onChange = function () {
   // validate JSON schema (if configured)
-  this._debouncedValidate().then(()=>{
+  this._debouncedValidate().then(() => {
     // trigger the onChange callback
     if (this.options.onChange) {
       try {
@@ -352,7 +352,7 @@ previewmode._onChange = function () {
         console.error('Error in onChangeText callback: ', err)
       }
     }
-  });
+  })
 }
 
 /**
