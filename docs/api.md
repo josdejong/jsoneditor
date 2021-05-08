@@ -58,6 +58,10 @@ Constructs a new JSONEditor.
   > results in JSONEditor breaking because the format of the Ajv errors differs
   > from what is expected.
 
+- `{Function} getValidationErrors ()`
+
+    This function returns a promise that will resolve a array with the latest validation errors.
+
 - `{function} onChange()`
 
   Set a callback function triggered when the contents of the JSONEditor change.
