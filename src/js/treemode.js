@@ -555,6 +555,8 @@ treemode._onChange = function () {
  * Throws an exception when no JSON schema is configured
  */
 treemode.validate = function () {
+  let resolveValidationPromise;
+  this.validationErrors_promise = new Promise(resolve=>resolveValidationPromise=resolve);
   const root = this.node
   if (!root) { // TODO: this should be redundant but is needed on mode switch
     return
@@ -592,7 +594,7 @@ treemode.validate = function () {
       .then(customValidationErrors => {
         // only apply when there was no other validation started whilst resolving async results
         if (seq === me.validationSequence) {
-          const errorNodes = [].concat(schemaErrors, customValidationErrors || [])
+          const errorNodes = [].concat(schemaErrors, customValidationErrors.nodeErrors || [])
           me._renderValidationErrors(errorNodes)
           if (typeof this.options.onValidationError === 'function') {
             if (isValidationErrorChanged(errorNodes, this.lastSchemaErrors)) {
@@ -600,6 +602,7 @@ treemode.validate = function () {
             }
             this.lastSchemaErrors = errorNodes
           }
+          resolveValidationPromise(customValidationErrors.pathError);
         }
       })
       .catch(err => {
@@ -661,36 +664,44 @@ treemode._validateCustom = function (json) {
 
       return resultPromise.then(customValidationPathErrors => {
         if (Array.isArray(customValidationPathErrors)) {
-          return customValidationPathErrors
-            .filter(error => {
-              const valid = isValidValidationError(error)
+          let entries = customValidationPathErrors
+          .filter(error => {
+            const valid = isValidValidationError(error)
 
-              if (!valid) {
-                console.warn('Ignoring a custom validation error with invalid structure. ' +
-                      'Expected structure: {path: [...], message: "..."}. ' +
-                      'Actual error:', error)
-              }
+            if (!valid) {
+              console.warn('Ignoring a custom validation error with invalid structure. ' +
+                    'Expected structure: {path: [...], message: "..."}. ' +
+                    'Actual error:', error)
+            }
 
-              return valid
-            })
-            .map(error => {
-              let node
-              try {
-                node = (error && error.path) ? root.findNodeByPath(error.path) : null
-              } catch (err) {
-                // stay silent here, we throw a generic warning if no node is found
-              }
-              if (!node) {
-                console.warn('Ignoring validation error: node not found. Path:', error.path, 'Error:', error)
-              }
+            return valid
+          })
+          .map(error => {
+            let node
+            try {
+              node = (error && error.path) ? root.findNodeByPath(error.path) : null
+            } catch (err) {
+              // stay silent here, we throw a generic warning if no node is found
+            }
+            if (!node) {
+              console.warn('Ignoring validation error: node not found. Path:', error.path, 'Error:', error)
+            }
 
-              return {
+            return {
+              nodeError: {
                 node: node,
                 error: error,
                 type: 'customValidation'
+              },
+              pathError: {
+                path: error.path,
+                error: error
               }
-            })
-            .filter(entry => entry && entry.node && entry.error && entry.error.message)
+          }});
+          return {
+            nodeErrors: entries.map(entry => entry.nodeError).filter(entry => entry && entry.node && entry.error && entry.error.message),
+            pathError: entries.filter(entry => entry && entry.pathError)
+          };
         } else {
           return null
         }

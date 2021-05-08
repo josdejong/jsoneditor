@@ -263,6 +263,13 @@ JSONEditor.prototype.getName = function () {
 }
 
 /**
+ * Get last errors.
+ */
+JSONEditor.prototype.getValidationErrors = function () {
+  return this.validationErrors_promise;
+}
+
+/**
  * Change the mode of the editor.
  * JSONEditor will be extended with all methods needed for the chosen mode.
  * @param {String} mode     Available modes: 'tree' (default), 'view', 'form',

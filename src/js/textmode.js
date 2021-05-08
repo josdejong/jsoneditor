@@ -833,6 +833,8 @@ textmode.updateText = function (jsonText) {
  * Throws an exception when no JSON schema is configured
  */
 textmode.validate = function () {
+  let resolveValidationPromise;
+  this.validationErrors_promise = new Promise(resolve=>resolveValidationPromise=resolve);
   let schemaErrors = []
   let parseErrors = []
   let json
@@ -865,8 +867,9 @@ textmode.validate = function () {
             if (isValidationErrorChanged(errors, this.lastSchemaErrors)) {
               this.options.onValidationError.call(this, errors)
             }
-            this.lastSchemaErrors = errors
           }
+          this.lastSchemaErrors = errors;
+          resolveValidationPromise(this.lastSchemaErrors === undefined ? [] : this.lastSchemaErrors.slice());
         }
       })
       .catch(err => {
