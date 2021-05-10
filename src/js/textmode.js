@@ -896,8 +896,8 @@ textmode.validate = function () {
       if (isValidationErrorChanged(parseErrors, this.lastSchemaErrors)) {
         this.options.onValidationError.call(this, parseErrors)
       }
-      this.lastSchemaErrors = parseErrors
     }
+      this.lastSchemaErrors = parseErrors
     resolveValidationPromise(this.lastSchemaErrors === undefined ? [] : this.lastSchemaErrors.slice())
   }
 }
