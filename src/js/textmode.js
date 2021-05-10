@@ -833,8 +833,6 @@ textmode.updateText = function (jsonText) {
  * Throws an exception when no JSON schema is configured
  */
 textmode.validate = function () {
-  let resolveValidationPromise
-  this.validationErrors_promise = new Promise(resolve => { resolveValidationPromise = resolve })
   let schemaErrors = []
   let parseErrors = []
   let json
@@ -870,7 +868,9 @@ textmode.validate = function () {
           }
           this.lastSchemaErrors = errors
         }
-        resolveValidationPromise(this.lastSchemaErrors === undefined ? [] : this.lastSchemaErrors.slice())
+        if (typeof this.resolveValidationPromise === 'function') {
+          this.resolveValidationPromise(this.lastSchemaErrors === undefined ? [] : this.lastSchemaErrors.slice())
+        }
       })
       .catch(err => {
         console.error('Custom validation function did throw an error', err)
@@ -897,8 +897,10 @@ textmode.validate = function () {
         this.options.onValidationError.call(this, parseErrors)
       }
     }
-      this.lastSchemaErrors = parseErrors
-    resolveValidationPromise(this.lastSchemaErrors === undefined ? [] : this.lastSchemaErrors.slice())
+    this.lastSchemaErrors = parseErrors
+    if (typeof this.resolveValidationPromise === 'function') {
+      this.resolveValidationPromise(this.lastSchemaErrors === undefined ? [] : this.lastSchemaErrors.slice())
+    }
   }
 }
 

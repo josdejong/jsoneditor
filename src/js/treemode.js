@@ -555,8 +555,6 @@ treemode._onChange = function () {
  * Throws an exception when no JSON schema is configured
  */
 treemode.validate = function () {
-  let resolveValidationPromise
-  this.validationErrors_promise = new Promise(resolve => { resolveValidationPromise = resolve })
   const root = this.node
   if (!root) { // TODO: this should be redundant but is needed on mode switch
     return
@@ -602,7 +600,9 @@ treemode.validate = function () {
             }
             this.lastSchemaErrors = errorNodes
           }
-          resolveValidationPromise(customValidationErrors.pathError)
+          if (typeof this.resolveValidationPromise === 'function') {
+            this.resolveValidationPromise(customValidationErrors.pathError)
+          }
         }
       })
       .catch(err => {
