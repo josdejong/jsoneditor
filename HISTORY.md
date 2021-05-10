@@ -3,6 +3,12 @@
 https://github.com/josdejong/jsoneditor
 
 
+## not yet published, version 9.4.2
+
+- Fix #1311: exception being thrown under certain conditions when switching 
+  from `code` mode to `preview` mode.
+
+
 ## 2021-04-25, version 9.4.1
 
 - Improvements in the Korean translation. Thanks @luasenvy.

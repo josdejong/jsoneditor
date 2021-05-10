@@ -412,7 +412,11 @@ textmode._onChange = function () {
   }
 
   // enable/disable undo/redo buttons
-  setTimeout(() => this._updateHistoryButtons())
+  setTimeout(() => {
+    if (this._updateHistoryButtons) {
+      this._updateHistoryButtons()
+    }
+  })
 
   // validate JSON schema (if configured)
   this._debouncedValidate()
@@ -800,7 +804,11 @@ textmode._setText = function (jsonText, clearHistory) {
       })
     }
 
-    setTimeout(() => this._updateHistoryButtons())
+    setTimeout(() => {
+      if (this._updateHistoryButtons) {
+        this._updateHistoryButtons()
+      }
+    })
   }
 
   // validate JSON schema
