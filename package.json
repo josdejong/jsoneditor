@@ -51,7 +51,7 @@
     "jsdom": "16.5.3",
     "json-loader": "0.5.7",
     "mkdirp": "1.0.4",
-    "mocha": "8.3.2",
+    "mocha": "8.4.0",
     "source-map-loader": "2.0.1",
     "standard": "16.0.3",
     "uglify-js": "3.13.4",
