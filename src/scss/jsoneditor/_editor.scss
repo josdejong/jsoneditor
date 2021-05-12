@@ -208,6 +208,7 @@ div {
         margin: 0 4px 0 0;
         background-image: $jse-icons-url;
         background-position: -168px -48px;
+        background-color: transparent;
       }
     }
   }
@@ -536,11 +537,13 @@ pre.jsoneditor-preview,
     .jsoneditor-schema-error {
       background-image: $jse-icons-url;
       background-position: -168px -48px;
+      background-color: transparent;
     }
     &.parse-error {
       .jsoneditor-schema-error {
         background-image: $jse-icons-url;
         background-position: -25px 0px;
+        background-color: transparent;
       }
     }
   }
