@@ -215,6 +215,7 @@ treemode.set = function (json) {
 
     // validate JSON schema (if configured)
     this.validate()
+      .catch(err => console.error(err))
 
     // expand
     const recurse = false
@@ -255,6 +256,7 @@ treemode.update = function (json) {
 
   // validate JSON schema
   this.validate()
+    .catch(err => console.error(err))
 
   // update search result if any
   if (this.searchBox && !this.searchBox.isEmpty()) {
@@ -588,7 +590,7 @@ treemode.validate = function () {
     this.validationSequence++
     const me = this
     const seq = this.validationSequence
-    this._validateCustom(json)
+    return this._validateCustom(json)
       .then(customValidationErrors => {
         // only apply when there was no other validation started whilst resolving async results
         if (seq === me.validationSequence) {
@@ -601,12 +603,11 @@ treemode.validate = function () {
             this.lastSchemaErrors = errorNodes
           }
         }
-      })
-      .catch(err => {
-        console.error(err)
+
+        return this.lastSchemaErrors
       })
   } catch (err) {
-    console.error(err)
+    return Promise.reject(err)
   }
 }
 
