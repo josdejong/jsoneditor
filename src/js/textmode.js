@@ -882,10 +882,10 @@ textmode.validate = function () {
         return this.lastSchemaErrors
       })
   } catch (err) {
+    let line
     if (this.getText()) {
       // try to extract the line number from the jsonlint error message
       const match = /\w*line\s*(\d+)\w*/g.exec(err.message)
-      let line
       if (match) {
         line = +match[1]
       }
@@ -905,7 +905,11 @@ textmode.validate = function () {
       this.lastSchemaErrors = parseErrors
     }
 
-    return Promise.resolve(this.lastSchemaErrors)
+    return Promise.resolve([{
+      type: 'error',
+      message: err.message,
+      line: line
+    }])
   }
 }
 
