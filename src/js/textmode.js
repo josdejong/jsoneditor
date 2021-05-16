@@ -875,7 +875,6 @@ textmode.validate = function () {
           ) {
             this.options.onValidationError.call(this, errors)
           }
-
           this.lastSchemaErrors = errors
         }
 
@@ -898,12 +897,13 @@ textmode.validate = function () {
 
     this._renderErrors(parseErrors)
 
-    if (typeof this.options.onValidationError === 'function') {
-      if (isValidationErrorChanged(parseErrors, this.lastSchemaErrors)) {
-        this.options.onValidationError.call(this, parseErrors)
-      }
-      this.lastSchemaErrors = parseErrors
+    if (
+      typeof this.options.onValidationError === 'function' &&
+      isValidationErrorChanged(parseErrors, this.lastSchemaErrors)
+    ) {
+      this.options.onValidationError.call(this, parseErrors)
     }
+    this.lastSchemaErrors = parseErrors
 
     return Promise.resolve(this.lastSchemaErrors)
   }
