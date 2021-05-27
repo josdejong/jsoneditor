@@ -405,16 +405,16 @@
     -webkit-transform-origin: 50% 0 0;
     transform-origin: 50% 0 0;
 
-    -moz-animation: 500ms linear 0s normal forwards infinite running spin;
-    -webkit-animation: 500ms linear 0s normal forwards infinite running spin;
-    animation: 500ms linear 0s normal forwards infinite running spin;
+    -moz-animation: 500ms linear 0s normal forwards infinite running selectr-spin;
+    -webkit-animation: 500ms linear 0s normal forwards infinite running selectr-spin;
+    animation: 500ms linear 0s normal forwards infinite running selectr-spin;
     border-width: 3px;
     border-style: solid;
     border-color: #aaa #ddd #ddd;
     border-radius: 50%;
 }
 
-@-webkit-keyframes spin {
+@-webkit-keyframes selectr-spin {
     0% {
         -webkit-transform: rotate(0deg) translate3d(0px, -50%, 0px);
         transform: rotate(0deg) translate3d(0px, -50%, 0px);
@@ -424,7 +424,7 @@
         transform: rotate(360deg) translate3d(0px, -50%, 0px);
     }
 }
-@keyframes spin {
+@keyframes selectr-spin {
     0% {
         -webkit-transform: rotate(0deg) translate3d(0px, -50%, 0px);
         transform: rotate(0deg) translate3d(0px, -50%, 0px);
