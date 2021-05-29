@@ -7,6 +7,8 @@ https://github.com/josdejong/jsoneditor
 
 - Fix #1311: exception being thrown under certain conditions when switching 
   from `code` mode to `preview` mode.
+- Rename spin animation of `selectr` to prevent conflicts with tailwind, 
+  see #1333. Thanks @mdix.
 
 
 ## 2021-04-25, version 9.4.1
