@@ -54,7 +54,7 @@
     "mocha": "8.3.2",
     "source-map-loader": "2.0.1",
     "standard": "16.0.3",
-    "uglify-js": "3.13.4",
+    "uglify-js": "3.13.8",
     "webpack": "5.35.1"
   },
   "files": [
