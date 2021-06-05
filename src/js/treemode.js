@@ -182,7 +182,7 @@ treemode._setOptions = function (options) {
   this.setSchema(this.options.schema, this.options.schemaRefs)
 
   // create a debounced validate function
-  this._debouncedValidate = debounce(this.validate.bind(this), this.DEBOUNCE_INTERVAL)
+  this._debouncedValidate = debounce(this._validateAndCatch.bind(this), this.DEBOUNCE_INTERVAL)
 
   if (options.onSelectionChange) {
     this.onSelectionChange(options.onSelectionChange)
@@ -214,7 +214,7 @@ treemode.set = function (json) {
     this._setRoot(node)
 
     // validate JSON schema (if configured)
-    this.validate()
+    this._validateAndCatch()
 
     // expand
     const recurse = false
@@ -254,7 +254,7 @@ treemode.update = function (json) {
   this.onChangeDisabled = false
 
   // validate JSON schema
-  this.validate()
+  this._validateAndCatch()
 
   // update search result if any
   if (this.searchBox && !this.searchBox.isEmpty()) {
@@ -588,26 +588,33 @@ treemode.validate = function () {
     this.validationSequence++
     const me = this
     const seq = this.validationSequence
-    this._validateCustom(json)
+    return this._validateCustom(json)
       .then(customValidationErrors => {
         // only apply when there was no other validation started whilst resolving async results
         if (seq === me.validationSequence) {
           const errorNodes = [].concat(schemaErrors, customValidationErrors || [])
           me._renderValidationErrors(errorNodes)
-          if (typeof this.options.onValidationError === 'function') {
-            if (isValidationErrorChanged(errorNodes, this.lastSchemaErrors)) {
-              this.options.onValidationError.call(this, errorNodes)
-            }
-            this.lastSchemaErrors = errorNodes
+          if (
+            typeof this.options.onValidationError === 'function' &&
+            isValidationErrorChanged(errorNodes, this.lastSchemaErrors)
+          ) {
+            this.options.onValidationError.call(this, errorNodes)
           }
+
+          this.lastSchemaErrors = errorNodes
         }
-      })
-      .catch(err => {
-        console.error(err)
+
+        return this.lastSchemaErrors
       })
   } catch (err) {
-    console.error(err)
+    return Promise.reject(err)
   }
+}
+
+treemode._validateAndCatch = function () {
+  this.validate().catch(err => {
+    console.error('Error running validation:', err)
+  })
 }
 
 treemode._renderValidationErrors = function (errorNodes) {

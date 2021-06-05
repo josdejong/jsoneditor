@@ -79,19 +79,29 @@
   };
 
   var options = {
-    mode: 'tree',
+    mode: 'code',
     modes: ['code', 'form', 'text', 'tree', 'view', 'preview'], // allowed modes
-    onError: function (err) {
-      console.error(err);
-    },
     schema: schema,
-    schemaRefs: {"hobbies.json": hobbiesSchema}
+    schemaRefs: {"hobbies.json": hobbiesSchema},
+    onError: function (err) {
+      console.error('ERROR', err);
+    },
+    onChange: async () => {
+      const errors = await editor.validate()
+      if (errors.length === 0) {
+        console.log('validation errors: NONE')
+        // do something, like persisting the JSON
+      } else {
+        // show error to the user or something
+        console.log('validation errors', errors)
+      }
+    }
   };
 
   var json = {
     "firstName": "Jos",
     "lastName": "de Jong",
-    gender: null,
+    "gender": null,
     "age": 34.2,
     "hobbies": [
         "programming",
