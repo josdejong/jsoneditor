@@ -5,7 +5,7 @@ https://github.com/josdejong/jsoneditor
 
 ## not yet published, version 9.5.0
 
-- Implemented new method `JSONEditor.validate(): Promise<ValidationError>`.
+- Implemented new method `JSONEditor.validate(): Promise<ValidationError[]>`.
   Thanks @ChrisAcrobat.
 
 
