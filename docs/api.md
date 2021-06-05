@@ -173,13 +173,16 @@ Constructs a new JSONEditor.
   
   Also see the option `schema` for JSON schema validation.
 
-- `{function} onValidationError(errors)`
+- `{function} onValidationError(errors: ValidationError[])`
 
   Set a callback function for validation and parse errors. Available in all modes.
+  The `ValidationError` contains a `type`, `path`, and `message`. 
 
   On validation of the json, if errors of any kind were found this callback is invoked with the errors data.
 
   On change, the callback will be invoked only if errors were changed.
+
+  See also method `JSONEditor.validate()`.
 
   Example:
 
@@ -881,6 +884,20 @@ valid JSON and the editor is in mode `tree`, `view`, or `form`.
 - `{String} jsonString`
 
   Contents of the editor as string.
+
+#### `JSONEditor.validate()`
+
+Validate the JSON document against the configured JSON schema or custom validator.
+See also the `onValidationError` callback.
+
+*Returns:*
+
+- `{Promise<ValidationError[]>} errorsPromise`
+
+  Returns a promise which resolves with the current validation errors, 
+  or an empty list when there are no errors. The `ValidationError` contains
+  a `type`, `path`, and `message`.
+
 
 ### Static properties
 
