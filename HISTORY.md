@@ -3,7 +3,7 @@
 https://github.com/josdejong/jsoneditor
 
 
-## not yet published, version 9.5.0
+## 2021-06-05, version 9.5.0
 
 - Implemented new method `JSONEditor.validate(): Promise<ValidationError[]>`.
   Thanks @ChrisAcrobat.
