@@ -97,7 +97,7 @@ textmode.create = function (container, options = {}) {
   this.lastSchemaErrors = undefined
 
   // create a debounced validate function
-  this._debouncedValidate = debounce(this.validate.bind(this), this.DEBOUNCE_INTERVAL)
+  this._debouncedValidate = debounce(this._validateAndCatch.bind(this), this.DEBOUNCE_INTERVAL)
 
   this.width = container.clientWidth
   this.height = container.clientHeight
@@ -324,7 +324,7 @@ textmode.create = function (container, options = {}) {
   this.errorTable = new ErrorTable({
     errorTableVisible: this.mode === 'text',
     onToggleVisibility: function () {
-      me.validate()
+      me._validateAndCatch()
     },
     onFocusLine: function (line) {
       me.isFocused = true
@@ -863,22 +863,22 @@ textmode.validate = function () {
     this.validationSequence = (this.validationSequence || 0) + 1
     const me = this
     const seq = this.validationSequence
-    validateCustom(json, this.options.onValidate)
+    return validateCustom(json, this.options.onValidate)
       .then(customValidationErrors => {
         // only apply when there was no other validation started whilst resolving async results
         if (seq === me.validationSequence) {
           const errors = schemaErrors.concat(parseErrors).concat(customValidationErrors)
           me._renderErrors(errors)
-          if (typeof this.options.onValidationError === 'function') {
-            if (isValidationErrorChanged(errors, this.lastSchemaErrors)) {
-              this.options.onValidationError.call(this, errors)
-            }
-            this.lastSchemaErrors = errors
+          if (
+            typeof this.options.onValidationError === 'function' &&
+            isValidationErrorChanged(errors, this.lastSchemaErrors)
+          ) {
+            this.options.onValidationError.call(this, errors)
           }
+          this.lastSchemaErrors = errors
         }
-      })
-      .catch(err => {
-        console.error('Custom validation function did throw an error', err)
+
+        return this.lastSchemaErrors
       })
   } catch (err) {
     if (this.getText()) {
@@ -897,13 +897,22 @@ textmode.validate = function () {
 
     this._renderErrors(parseErrors)
 
-    if (typeof this.options.onValidationError === 'function') {
-      if (isValidationErrorChanged(parseErrors, this.lastSchemaErrors)) {
-        this.options.onValidationError.call(this, parseErrors)
-      }
-      this.lastSchemaErrors = parseErrors
+    if (
+      typeof this.options.onValidationError === 'function' &&
+      isValidationErrorChanged(parseErrors, this.lastSchemaErrors)
+    ) {
+      this.options.onValidationError.call(this, parseErrors)
     }
+    this.lastSchemaErrors = parseErrors
+
+    return Promise.resolve(this.lastSchemaErrors)
   }
+}
+
+textmode._validateAndCatch = function () {
+  this.validate().catch(err => {
+    console.error('Error running validation:', err)
+  })
 }
 
 textmode._renderErrors = function (errors) {
