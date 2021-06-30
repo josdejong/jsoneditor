@@ -3,7 +3,7 @@
 https://github.com/josdejong/jsoneditor
 
 
-## not yet published, version 9.5.1
+## 2021-06-30, version 9.5.1
 
 - Upgrade to `jsonrepair@2.2.1`.
 
