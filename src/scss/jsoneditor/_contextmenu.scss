@@ -322,7 +322,7 @@
     background: $jse-preview;
     height: 200px;
     &.jsoneditor-error {
-      color: $jse-number;
+      color: $jse-error;
     }
   }
   .jsoneditor-jmespath-wizard {
