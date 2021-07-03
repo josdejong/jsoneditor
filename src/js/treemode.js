@@ -6,7 +6,6 @@ import { FocusTracker } from './FocusTracker'
 import { Highlighter } from './Highlighter'
 import { setLanguage, setLanguages, translate } from './i18n'
 import { createQuery, executeQuery } from './jmespathQuery'
-import { ModeSwitcher } from './ModeSwitcher'
 import { Node } from './Node'
 import { NodeHistory } from './NodeHistory'
 import { SearchBox } from './SearchBox'
@@ -981,91 +980,8 @@ treemode._createFrame = function () {
     this.menu.className = 'jsoneditor-menu'
     this.frame.appendChild(this.menu)
 
-    // create expand all button
-    const expandAll = document.createElement('button')
-    expandAll.type = 'button'
-    expandAll.className = 'jsoneditor-expand-all'
-    expandAll.title = translate('expandAll')
-    expandAll.onclick = () => {
-      editor.expandAll()
-    }
-    this.menu.appendChild(expandAll)
-
-    // create collapse all button
-    const collapseAll = document.createElement('button')
-    collapseAll.type = 'button'
-    collapseAll.title = translate('collapseAll')
-    collapseAll.className = 'jsoneditor-collapse-all'
-    collapseAll.onclick = () => {
-      editor.collapseAll()
-    }
-    this.menu.appendChild(collapseAll)
-
-    // create sort button
-    if (this.options.enableSort) {
-      const sort = document.createElement('button')
-      sort.type = 'button'
-      sort.className = 'jsoneditor-sort'
-      sort.title = translate('sortTitleShort')
-      sort.onclick = () => {
-        editor.node.showSortModal()
-      }
-      this.menu.appendChild(sort)
-    }
-
-    // create transform button
-    if (this.options.enableTransform) {
-      const transform = document.createElement('button')
-      transform.type = 'button'
-      transform.title = translate('transformTitleShort')
-      transform.className = 'jsoneditor-transform'
-      transform.onclick = () => {
-        editor.node.showTransformModal()
-      }
-      this.menu.appendChild(transform)
-    }
-
-    // create undo/redo buttons
-    if (this.history) {
-      // create undo button
-      const undo = document.createElement('button')
-      undo.type = 'button'
-      undo.className = 'jsoneditor-undo jsoneditor-separator'
-      undo.title = translate('undo')
-      undo.onclick = () => {
-        editor._onUndo()
-      }
-      this.menu.appendChild(undo)
-      this.dom.undo = undo
-
-      // create redo button
-      const redo = document.createElement('button')
-      redo.type = 'button'
-      redo.className = 'jsoneditor-redo'
-      redo.title = translate('redo')
-      redo.onclick = () => {
-        editor._onRedo()
-      }
-      this.menu.appendChild(redo)
-      this.dom.redo = redo
-
-      // register handler for onchange of history
-      this.history.onChange = () => {
-        undo.disabled = !editor.history.canUndo()
-        redo.disabled = !editor.history.canRedo()
-      }
-      this.history.onChange()
-    }
-
-    // create mode box
-    if (this.options && this.options.modes && this.options.modes.length) {
-      const me = this
-      this.modeSwitcher = new ModeSwitcher(this.menu, this.options.modes, this.options.mode, function onSwitch (mode) {
-        // switch mode and restore focus
-        me.setMode(mode)
-        me.modeSwitcher.focus()
-      })
-    }
+    // create buttons defined in options.buttons
+    this._createButtons()
 
     // create search box
     if (this.options.search) {
