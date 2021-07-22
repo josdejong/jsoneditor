@@ -181,6 +181,8 @@ gulp.task('bundle-minimalist', function (done) {
 
 // bundle css
 gulp.task('bundle-css', function (done) {
+  const concatOptions = { rebaseUrls: false }
+  const minifyOptions = { rebase: false }
   gulp
     .src(['src/scss/jsoneditor.scss'])
     .pipe(
@@ -188,10 +190,10 @@ gulp.task('bundle-css', function (done) {
         // importer: tildeImporter
       })
     )
-    .pipe(concatCss(NAME + '.css'))
+    .pipe(concatCss(NAME + '.css', concatOptions))
     .pipe(gulp.dest(DIST))
-    .pipe(concatCss(NAME + '.min.css'))
-    .pipe(minifyCSS())
+    .pipe(concatCss(NAME + '.min.css', concatOptions))
+    .pipe(minifyCSS(minifyOptions))
     .pipe(gulp.dest(DIST))
   done()
 })
