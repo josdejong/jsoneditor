@@ -3,6 +3,12 @@
 https://github.com/josdejong/jsoneditor
 
 
+## 2021-07-22, version 9.5.2
+
+- Fix #675: Relative image urls in CSS replaced with absolute urls by build 
+  script, see #1354. Thanks @esulu.
+
+
 ## 2021-06-30, version 9.5.1
 
 - Upgrade to `jsonrepair@2.2.1`.
