@@ -82,7 +82,7 @@ describe('Node', () => {
         type: 'object',
         properties: {
           aProperty: {
-            "$ref": "second_schema#/definitions/some_def"
+            $ref: 'second_schema#/definitions/some_def'
           }
         }
       }
@@ -100,11 +100,11 @@ describe('Node', () => {
           }
         }
       }
-      let path = ['aProperty', 'enumProp']
-      let expected_schema = {
+      const path = ['aProperty', 'enumProp']
+      const expectedSchema = {
         enum: [1, 2, 3]
       }
-      assert.deepStrictEqual(Node._findSchema(schema, schemaRefs, path), expected_schema)
+      assert.deepStrictEqual(Node._findSchema(schema, schemaRefs, path), expectedSchema)
     })
 
     it('should find array referenced schema within multi-level object properties', () => {
@@ -112,17 +112,17 @@ describe('Node', () => {
         type: 'object',
         properties: {
           aProperty: {
-            type: "array",
+            type: 'array',
             items: {
-              "$ref": "second_schema#/definitions/some_def"
+              $ref: 'second_schema#/definitions/some_def'
             }
           }
         }
       }
       const schemaRefs = {
-        "second_schema": {
-          "definitions": {
-            "some_def": {
+        second_schema: {
+          definitions: {
+            some_def: {
               type: 'object',
               properties: {
                 enumProp: {
@@ -133,11 +133,11 @@ describe('Node', () => {
           }
         }
       }
-      let path = ['aProperty', 0, 'enumProp']
-      let expected_schema = {
-          enum: [1, 2, 3]
+      const path = ['aProperty', 0, 'enumProp']
+      const expectedSchema = {
+        enum: [1, 2, 3]
       }
-      assert.deepStrictEqual(Node._findSchema(schema, schemaRefs, path), expected_schema)
+      assert.deepStrictEqual(Node._findSchema(schema, schemaRefs, path), expectedSchema)
     })
 
     it('should return null for path that has no schema', () => {
@@ -242,16 +242,16 @@ describe('Node', () => {
           type: 'object',
           properties: {
             foo: {
-              type: "array",
+              type: 'array',
               items: {
-                "$ref": "foo#/definitions/some_def"
+                $ref: 'foo#/definitions/some_def'
               }
             }
           }
         }
         const fooSchema = {
-          "definitions": {
-            "some_def": {
+          definitions: {
+            some_def: {
               type: 'object',
               properties: {
                 propA: {
@@ -273,9 +273,9 @@ describe('Node', () => {
           type: 'object',
           properties: {
             foo: {
-              type: "array",
+              type: 'array',
               items: {
-                "$ref": "foo#/definitions/some_def"
+                $ref: 'foo#/definitions/some_def'
               }
             }
           }
@@ -304,16 +304,16 @@ describe('Node', () => {
           type: 'object',
           properties: {
             foo: {
-              type: "array",
+              type: 'array',
               items: {
-                "$ref": "foo#/definitions/some_def"
+                $ref: 'foo#/definitions/some_def'
               }
             }
           }
         }
         const fooSchema = {
-          "definitions": {
-            "some_def": {
+          definitions: {
+            some_def: {
               type: 'object',
               properties: {
                 propA: {
