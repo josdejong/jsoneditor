@@ -4482,7 +4482,12 @@ Node._findSchema = (topLevelSchema, schemaRefs, path, currentSchema = topLevelSc
         if (schemaUrl in schemaRefs) {
           const referencedSchema = schemaRefs[schemaUrl]
           const reference = { $ref: '#/'.concat(relativePath) }
-          return Node._findSchema(referencedSchema, schemaRefs, nextPath, reference)
+          let auxNextPath = []
+          auxNextPath.push(nextKey)
+          if(nextPath.length > 0) {
+            auxNextPath.push(...nextPath)
+          }
+          return Node._findSchema(referencedSchema, schemaRefs, auxNextPath, reference)
         } else {
           throw Error(`Unable to resolve reference ${ref}`)
         }
