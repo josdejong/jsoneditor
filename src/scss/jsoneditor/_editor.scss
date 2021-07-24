@@ -123,6 +123,8 @@ div {
     height: 100%;
     position: relative;
     overflow: auto;
+    background: $jse-white;
+
     button {
       &.jsoneditor-button {
         width: 24px;

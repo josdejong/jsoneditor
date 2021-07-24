@@ -3,6 +3,11 @@
 https://github.com/josdejong/jsoneditor
 
 
+## not yet published, version 9.5.3
+
+- Fix #1356: background of tree mode is transparent instead of white.
+
+
 ## 2021-07-22, version 9.5.2
 
 - Fix #675: Relative image urls in CSS replaced with absolute urls by build 
