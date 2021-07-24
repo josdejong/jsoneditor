@@ -77,6 +77,69 @@ describe('Node', () => {
       )
     })
 
+    it('should find referenced schema within multi-level object properties', () => {
+      const schema = {
+        type: 'object',
+        properties: {
+          aProperty: {
+            $ref: 'second_schema#/definitions/some_def'
+          }
+        }
+      }
+      const schemaRefs = {
+        second_schema: {
+          definitions: {
+            some_def: {
+              type: 'object',
+              properties: {
+                enumProp: {
+                  enum: [1, 2, 3]
+                }
+              }
+            }
+          }
+        }
+      }
+      const path = ['aProperty', 'enumProp']
+      const expectedSchema = {
+        enum: [1, 2, 3]
+      }
+      assert.deepStrictEqual(Node._findSchema(schema, schemaRefs, path), expectedSchema)
+    })
+
+    it('should find array referenced schema within multi-level object properties', () => {
+      const schema = {
+        type: 'object',
+        properties: {
+          aProperty: {
+            type: 'array',
+            items: {
+              $ref: 'second_schema#/definitions/some_def'
+            }
+          }
+        }
+      }
+      const schemaRefs = {
+        second_schema: {
+          definitions: {
+            some_def: {
+              type: 'object',
+              properties: {
+                enumProp: {
+                  enum: [1, 2, 3]
+                }
+              }
+            }
+          }
+        }
+      }
+      const path = ['aProperty', 0, 'enumProp']
+      const expectedSchema = {
+        enum: [1, 2, 3]
+      }
+      assert.deepStrictEqual(Node._findSchema(schema, schemaRefs, path), expectedSchema)
+    })
+
     it('should return null for path that has no schema', () => {
       const schema = {
         type: 'object',
@@ -151,6 +214,121 @@ describe('Node', () => {
         }
         const path = ['foo']
         assert.strictEqual(Node._findSchema(schema, { foo: fooSchema }, path), fooSchema)
+      })
+
+      it('should find a referenced schema property', () => {
+        const schema = {
+          type: 'object',
+          properties: {
+            foo: {
+              $ref: 'foo'
+            }
+          }
+        }
+        const fooSchema = {
+          type: 'object',
+          properties: {
+            levelTwo: {
+              type: 'string'
+            }
+          }
+        }
+        const path = ['foo', 'levelTwo']
+        assert.strictEqual(Node._findSchema(schema, { foo: fooSchema }, path), fooSchema.properties.levelTwo)
+      })
+
+      it('should find a referenced schema definition', () => {
+        const schema = {
+          type: 'object',
+          properties: {
+            foo: {
+              type: 'array',
+              items: {
+                $ref: 'foo#/definitions/some_def'
+              }
+            }
+          }
+        }
+        const fooSchema = {
+          definitions: {
+            some_def: {
+              type: 'object',
+              properties: {
+                propA: {
+                  type: 'string'
+                },
+                propB: {
+                  type: 'string'
+                }
+              }
+            }
+          }
+        }
+        const path = ['foo', 0]
+        assert.strictEqual(Node._findSchema(schema, { foo: fooSchema }, path), fooSchema.definitions.some_def)
+      })
+
+      it('should find a referenced schema definition 2', () => {
+        const schema = {
+          type: 'object',
+          properties: {
+            foo: {
+              type: 'array',
+              items: {
+                $ref: 'foo#/definitions/some_def'
+              }
+            }
+          }
+        }
+        const fooSchema = {
+          definitions: {
+            some_def: {
+              type: 'object',
+              properties: {
+                propA: {
+                  type: 'string'
+                },
+                propB: {
+                  type: 'string'
+                }
+              }
+            }
+          }
+        }
+        const path = ['foo', 0, 'propA']
+        assert.strictEqual(Node._findSchema(schema, { foo: fooSchema }, path), fooSchema.definitions.some_def.properties.propA)
+      })
+
+      it('should find a referenced schema definition 3', () => {
+        const schema = {
+          type: 'object',
+          properties: {
+            foo: {
+              type: 'array',
+              items: {
+                $ref: 'foo#/definitions/some_def'
+              }
+            }
+          }
+        }
+        const fooSchema = {
+          definitions: {
+            some_def: {
+              type: 'object',
+              properties: {
+                propA: {
+                  type: 'object',
+                  properties: {
+                    propA1: { type: 'boolean' }
+                  }
+                },
+                propB: { type: 'string' }
+              }
+            }
+          }
+        }
+        const path = ['foo', 0, 'propA', 'propA1']
+        assert.strictEqual(Node._findSchema(schema, { foo: fooSchema }, path), fooSchema.definitions.some_def.properties.propA.properties.propA1)
       })
     })
 
@@ -421,6 +599,15 @@ describe('Node', () => {
           'additionalProperties schema'
         )
       })
+    })
+  })
+  describe('_findEnum', () => {
+    it('should find enum', () => {
+      const schema = {
+        type: 'object',
+        enum: [1, 2, 3]
+      }
+      assert.strictEqual(Node._findEnum(schema), schema.enum)
     })
   })
 })

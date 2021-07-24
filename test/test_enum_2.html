@@ -1,0 +1,123 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <title>JSONEditor | template + enums</title>
+
+    <link href="../dist/jsoneditor.css" rel="stylesheet" type="text/css">
+    <script src="../dist/jsoneditor.js"></script>
+
+    <style type="text/css">
+        #jsoneditor {
+            width: 500px;
+            height: 700px;
+            background: white;
+        }
+
+        p {
+            width: 500px;
+            font-family: sans;
+        }
+    </style>
+</head>
+<body>
+<p>Demonstrates a template with JSON schema validation. To use: click the context menu of the first or second employee, click insert or append, click "Employee".</p>
+<p><a href="https://github.com/josdejong/jsoneditor/issues/473">See github issue #473</a></p>
+
+<div id="jsoneditor"></div>
+
+<script>
+    var schema = {
+        "title": "Example Schema",
+        "type": "array",
+        "items": {
+            "type": "object",
+            "properties": {
+                "firstName": {
+                    "type": "string"
+                },
+                "lastName": {
+                    "type": "string"
+                },
+                "gender": {
+                    "enum": ["male", "female"]
+                },
+                "age": {
+                    "description": "Age in years",
+                    "type": "integer",
+                    "minimum": 0
+                },
+                "job": {
+                    "$ref": "job"
+                }
+            },
+            "required": ["firstName", "lastName"]
+        }
+    };
+
+    var job = {
+        "title": "Job description",
+        "type": "object",
+        "properties": {
+            "company": {
+                "type": "string"
+            },
+            "role": {
+                "type": "string"
+            }
+        }
+    };
+
+    var json = [
+        {
+            firstName: 'John',
+            lastName: 'Doe',
+            gender: 'male',
+            age: 28,
+            job: {
+                company: 'freelance',
+                role: 'developer'
+            }
+        },
+        {
+            firstName: 'Susan',
+            lastName: 'Smith',
+            gender: null,
+            age: 28,
+            job: {
+                company: 'freelance',
+                role: 'sales'
+            }
+        }
+    ];
+
+    var templates = [
+        {
+            text: 'Employee',
+            title: 'Insert a new employee',
+            className: 'jsoneditor-type-object',
+            field: 'employee',
+            value: {
+                firstName: '',
+                lastName: '',
+                gender: '',
+                age: '',
+                job: {
+                    company: '',
+                    role: ''
+                }
+            }
+        }
+    ]
+
+    var options = {
+        schema: schema,
+        schemaRefs: {"job": job},
+        templates: templates
+    };
+
+    // create the editor
+    var container = document.getElementById('jsoneditor');
+    var editor = new JSONEditor(container, options, json);
+</script>
+</body>
+</html>
