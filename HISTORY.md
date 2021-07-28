@@ -3,7 +3,7 @@
 https://github.com/josdejong/jsoneditor
 
 
-## not yet published, version 9.5.3
+## 2021-07-28, version 9.5.3
 
 - Fix #1356: background of tree mode is transparent instead of white.
 - Fix #473: enum dropdown not working on referenced schemas and templates,
