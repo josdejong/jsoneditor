@@ -3,6 +3,11 @@
 https://github.com/josdejong/jsoneditor
 
 
+## not yet published, version 9.5.4
+
+- Use `noreferrer` for window.open. Thanks @rajitbanerjee.
+
+
 ## 2021-07-28, version 9.5.3
 
 - Fix #1356: background of tree mode is transparent instead of white.
