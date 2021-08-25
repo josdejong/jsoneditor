@@ -456,27 +456,31 @@ textmode._updateHistoryButtons = function () {
  * @private
  */
 textmode._showSortModal = function () {
-  const me = this
-  const container = this.options.modalAnchor || DEFAULT_MODAL_ANCHOR
-  const json = this.get()
+  try {
+    const me = this
+    const container = this.options.modalAnchor || DEFAULT_MODAL_ANCHOR
+    const json = this.get()
 
-  function onSort (sortedBy) {
-    if (Array.isArray(json)) {
-      const sortedJson = sort(json, sortedBy.path, sortedBy.direction)
+    function onSort (sortedBy) {
+      if (Array.isArray(json)) {
+        const sortedJson = sort(json, sortedBy.path, sortedBy.direction)
 
-      me.sortedBy = sortedBy
-      me.update(sortedJson)
+        me.sortedBy = sortedBy
+        me.update(sortedJson)
+      }
+
+      if (isObject(json)) {
+        const sortedJson = sortObjectKeys(json, sortedBy.direction)
+
+        me.sortedBy = sortedBy
+        me.update(sortedJson)
+      }
     }
 
-    if (isObject(json)) {
-      const sortedJson = sortObjectKeys(json, sortedBy.direction)
-
-      me.sortedBy = sortedBy
-      me.update(sortedJson)
-    }
+    showSortModal(container, json, onSort, me.sortedBy)
+  } catch (err) {
+    this._onError(err)
   }
-
-  showSortModal(container, json, onSort, me.sortedBy)
 }
 
 /**
@@ -484,20 +488,25 @@ textmode._showSortModal = function () {
  * @private
  */
 textmode._showTransformModal = function () {
-  const { modalAnchor, createQuery, executeQuery, queryDescription } = this.options
-  const json = this.get()
+  try {
+    const { modalAnchor, createQuery, executeQuery, queryDescription } = this.options
 
-  showTransformModal({
-    container: modalAnchor || DEFAULT_MODAL_ANCHOR,
-    json,
-    queryDescription, // can be undefined
-    createQuery,
-    executeQuery,
-    onTransform: query => {
-      const updatedJson = executeQuery(json, query)
-      this.update(updatedJson)
-    }
-  })
+    const json = this.get()
+
+    showTransformModal({
+      container: modalAnchor || DEFAULT_MODAL_ANCHOR,
+      json,
+      queryDescription, // can be undefined
+      createQuery,
+      executeQuery,
+      onTransform: query => {
+        const updatedJson = executeQuery(json, query)
+        this.update(updatedJson)
+      }
+    })
+  } catch (err) {
+    this._onError(err)
+  }
 }
 
 /**
