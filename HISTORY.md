@@ -5,6 +5,8 @@ https://github.com/josdejong/jsoneditor
 
 ## not yet published, version 9.5.4
 
+- Change the default behavior of error handling to open a basic alert instead 
+  of logging the error in the console (see #1364).
 - Use `noreferrer` for window.open. Thanks @rajitbanerjee.
 - Fix #1363: parsing error contains html caharacters.
 

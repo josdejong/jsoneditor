@@ -21,7 +21,7 @@
 
     code.multiline {
       display: block;
-      white-space: pre-wrap 
+      white-space: pre-wrap;
     }
 
     #jsoneditor {
@@ -63,9 +63,6 @@
   const options = {
     mode: 'tree',
     modes: ['code', 'form', 'text', 'tree', 'view', 'preview'], // allowed modes
-    onError: function (err) {
-      alert(err.toString())
-    },
     onChange: function () {
       console.log('change')
     },

@@ -28,7 +28,7 @@
 <body>
 
 <p>
-  When clicking on a JSON field or value, a log message will be shown in 
+  When clicking on a JSON field or value, a log message will be shown in
   console.
 </p>
 
@@ -43,9 +43,6 @@
     mode: 'tree',
     modes: ['code', 'form', 'text', 'tree', 'view', 'preview'], // allowed modes
     name: "jsonContent",
-    onError: function (err) {
-      alert(err.toString())
-    },
     onEvent: function(node, event) {
       if (node.value !== undefined) {
         console.log(event.type + ' event ' +
@@ -75,7 +72,7 @@
     "url": "http://jsoneditoronline.org",
     "[0]": "zero"
   }
-  
+
   window.editor = new JSONEditor(container, options, json)
 
   console.log('json', json)

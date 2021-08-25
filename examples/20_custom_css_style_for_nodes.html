@@ -83,26 +83,20 @@
 
   const optionsLeft = {
     mode: 'tree',
-    onError: function (err) {
-      alert(err.toString())
-    },
     onClassName: onClassName,
     onChangeJSON: function (j) {
       jsonLeft = j
       window.editorRight.refresh()
-    }    
+    }
   }
 
   const optionsRight = {
     mode: 'tree',
-    onError: function (err) {
-      alert(err.toString())
-    },
     onClassName: onClassName,
     onChangeJSON: function (j) {
       jsonRight = j
       window.editorLeft.refresh()
-    }    
+    }
   }
 
   let jsonLeft = {
@@ -137,7 +131,7 @@
     "url": "http://jsoneditoronline.org",
     "[0]": "zero"
   }
-  
+
   window.editorLeft = new JSONEditor(containerLeft, optionsLeft, jsonLeft)
   window.editorRight = new JSONEditor(containerRight, optionsRight, jsonRight)
 </script>

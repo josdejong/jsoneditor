@@ -329,7 +329,8 @@ JSONEditor.prototype.getMode = function () {
 
 /**
  * Throw an error. If an error callback is configured in options.error, this
- * callback will be invoked. Else, a regular error is thrown.
+ * callback will be invoked. Else, a basic alert window with the error message
+ * will be shown to the user.
  * @param {Error} err
  * @private
  */
@@ -337,7 +338,7 @@ JSONEditor.prototype._onError = function (err) {
   if (this.options && typeof this.options.onError === 'function') {
     this.options.onError(err)
   } else {
-    throw err
+    alert(err.toString())
   }
 }
 

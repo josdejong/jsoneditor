@@ -119,7 +119,7 @@ Constructs a new JSONEditor.
 - `{function} onError(error)`
 
   Set a callback function triggered when an error occurs. Invoked with the error as first argument. The callback is only invoked
-  for errors triggered by a users action, like switching from code mode to tree mode or clicking the Format button whilst the editor doesn't contain valid JSON.
+  for errors triggered by a users action, like switching from code mode to tree mode or clicking the Format button whilst the editor doesn't contain valid JSON. When not defined, a basic alert with the error message will be opened.
 
 - `{function} onModeChange(newMode, oldMode)`
 

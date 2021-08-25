@@ -43,9 +43,6 @@
   const options = {
     mode: 'tree',
     modes: ['code', 'form', 'text', 'tree', 'view', 'preview'], // allowed modes
-    onError: function (err) {
-      alert(err.toString())
-    },
     onModeChange: function (newMode, oldMode) {
       console.log('Mode switched from', oldMode, 'to', newMode)
     }
