@@ -3,9 +3,9 @@
 https://github.com/josdejong/jsoneditor
 
 
-## not yet published, version 9.5.4
+## 2021-08-25, version 9.5.4
 
-- Use `noreferrer` for window.open. Thanks @rajitbanerjee.
+- Use `noreferrer` for window.open, see #1365. Thanks @rajitbanerjee.
 - Fix #1363: parsing error contains html characters.
 - Fix opening the Transform or Sort modal in code mode with invalid JSON 
   contents not triggering the `onError` callback (see #1364).
