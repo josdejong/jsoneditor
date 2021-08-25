@@ -6,6 +6,7 @@ https://github.com/josdejong/jsoneditor
 ## not yet published, version 9.5.4
 
 - Use `noreferrer` for window.open. Thanks @rajitbanerjee.
+- Fix #1363: parsing error contains html caharacters.
 
 
 ## 2021-07-28, version 9.5.3
