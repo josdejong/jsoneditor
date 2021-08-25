@@ -244,7 +244,7 @@ textmode.create = function (container, options = {}) {
         // TODO: this anchor falls below the margin of the content,
         // therefore the normal a.href does not work. We use a click event
         // for now, but this should be fixed.
-        window.open(poweredBy.href, poweredBy.target, 'noopener')
+        window.open(poweredBy.href, poweredBy.target, 'noreferrer')
       }
       this.menu.appendChild(poweredBy)
     }

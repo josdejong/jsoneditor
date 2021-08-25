@@ -2581,7 +2581,7 @@ export class Node {
             // if read-only, we use the regular click behavior of an anchor
             if (isUrl(this.value)) {
               event.preventDefault()
-              window.open(this.value, '_blank', 'noopener')
+              window.open(this.value, '_blank', 'noreferrer')
             }
           }
           break
@@ -2749,7 +2749,7 @@ export class Node {
       if (target === this.dom.value) {
         if (!this.editable.value || event.ctrlKey) {
           if (isUrl(this.value)) {
-            window.open(this.value, '_blank', 'noopener')
+            window.open(this.value, '_blank', 'noreferrer')
             handled = true
           }
         }
