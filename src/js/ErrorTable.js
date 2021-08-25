@@ -129,7 +129,7 @@ export class ErrorTable {
 
           const td4 = document.createElement('td')
           const pre = document.createElement('pre')
-          pre.appendChild(document.createTextNode(error.message))
+          pre.appendChild(document.createTextNode(error.message.replace(/<br>/gi, '\n')))
           td4.appendChild(pre)
           trEl.appendChild(td4)
         }
