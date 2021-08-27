@@ -23,7 +23,8 @@ import {
   isValidationErrorChanged,
   parse,
   sort,
-  sortObjectKeys
+  sortObjectKeys,
+  stringifyPath
 } from './util'
 import { validateCustom } from './validationUtils'
 
@@ -95,6 +96,7 @@ textmode.create = function (container, options = {}) {
   this.validateSchema = null
   this.annotations = []
   this.lastSchemaErrors = undefined
+  this.externalErrors = []
 
   // create a debounced validate function
   this._debouncedValidate = debounce(this._validateAndCatch.bind(this), this.DEBOUNCE_INTERVAL)
@@ -837,6 +839,27 @@ textmode.updateText = function (jsonText) {
 }
 
 /**
+ * Set external validation errors
+ * @param {Array} errors
+ */
+textmode.setValidationErrors = function (errors) {
+  this.externalErrors = errors.map(error => ({
+    dataPath: stringifyPath(error.path),
+    message: error.message,
+    type: 'externalValidation'
+  }))
+  this.validate()
+}
+
+/**
+ * Clear external validation errors
+ */
+textmode.clearValidationErrors = function () {
+  this.externalErrors = []
+  this.validate()
+}
+
+/**
  * Validate current JSON object against the configured JSON schema
  * Throws an exception when no JSON schema is configured
  */
@@ -867,7 +890,7 @@ textmode.validate = function () {
       .then(customValidationErrors => {
         // only apply when there was no other validation started whilst resolving async results
         if (seq === me.validationSequence) {
-          const errors = schemaErrors.concat(parseErrors).concat(customValidationErrors)
+          const errors = schemaErrors.concat(parseErrors).concat(customValidationErrors).concat(this.externalErrors)
           me._renderErrors(errors)
           if (
             typeof this.options.onValidationError === 'function' &&

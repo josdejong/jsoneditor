@@ -210,7 +210,20 @@ Constructs a new JSONEditor.
     }
   }
   ```
-  
+
+- `{function} setValidationErrors(errors: ValidationError[])`
+  Set the validation errors from external sources. Available in all modes.
+
+  Typically the editor is embedded into an external site that might have its own validation scheme, this API is used to convey the errors from the external validation.
+
+  The `ValidationError` contains a `type`, `path`, and `message`.
+
+  Please note that this is different from `JSONEditor.onValidationError` as the trigger for the validation cannot be controlled for that.
+
+- `{function} clearValidationErrors()`
+  Clear the validation errors set by external sources. Available in all modes.
+
+  See `JSONEditor.setValidationErrors`
   
 - `{function} onCreateMenu(items, node)`
   

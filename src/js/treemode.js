@@ -56,6 +56,7 @@ treemode.create = function (container, options) {
   this.validationSequence = 0
   this.errorNodes = []
   this.lastSchemaErrors = undefined
+  this.externalErrors = []
 
   this.node = null
   this.focusTarget = null
@@ -551,6 +552,41 @@ treemode._onChange = function () {
 }
 
 /**
+ * Set external validation error nodes
+ * @param {Array} errors
+ */
+treemode.setValidationErrors = function (errors) {
+  const root = this.node
+  this.externalErrors = errors.map(error => {
+    let node
+    try {
+      node = (error && error.path) ? root.findNodeByPath(error.path) : null
+    } catch (err) {
+      // stay silent here, we throw a generic warning if no node is found
+    }
+    if (!node) {
+      console.warn('Ignoring validation error: node not found. Path:', error.path, 'Error:', error)
+    }
+
+    return {
+      node: node,
+      error: error,
+      type: 'externalValidation'
+    }
+  })
+    .filter(entry => entry && entry.node && entry.error && entry.error.message)
+  this.validate()
+}
+
+/**
+ * Clear external validation error nodes
+ */
+treemode.clearValidationErrors = function () {
+  this.externalErrors = []
+  this.validate()
+}
+
+/**
  * Validate current JSON object against the configured JSON schema
  * Throws an exception when no JSON schema is configured
  */
@@ -592,7 +628,7 @@ treemode.validate = function () {
       .then(customValidationErrors => {
         // only apply when there was no other validation started whilst resolving async results
         if (seq === me.validationSequence) {
-          const errorNodes = [].concat(schemaErrors, customValidationErrors || [])
+          const errorNodes = [].concat(schemaErrors, customValidationErrors, this.externalErrors || [])
           me._renderValidationErrors(errorNodes)
           if (
             typeof this.options.onValidationError === 'function' &&
