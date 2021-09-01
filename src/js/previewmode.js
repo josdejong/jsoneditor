@@ -246,8 +246,12 @@ previewmode.create = function (container, options = {}) {
     if (this.options && this.options.modes && this.options.modes.length) {
       this.modeSwitcher = new ModeSwitcher(this.menu, this.options.modes, this.options.mode, function onSwitch (mode) {
         // switch mode and restore focus
-        me.setMode(mode)
-        me.modeSwitcher.focus()
+        try {
+          me.setMode(mode)
+          me.modeSwitcher.focus()
+        } catch (err) {
+          me._onError(err)
+        }
       })
     }
   }

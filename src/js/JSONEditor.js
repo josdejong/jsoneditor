@@ -282,40 +282,36 @@ JSONEditor.prototype.setMode = function (mode) {
 
   options.mode = mode
   const config = JSONEditor.modes[mode]
-  if (config) {
-    try {
-      const asText = (config.data === 'text')
-      name = this.getName()
-      data = this[asText ? 'getText' : 'get']() // get text or json
-
-      this.destroy()
-      clear(this)
-      extend(this, config.mixin)
-      this.create(container, options)
-
-      this.setName(name)
-      this[asText ? 'setText' : 'set'](data) // set text or json
-
-      if (typeof config.load === 'function') {
-        try {
-          config.load.call(this)
-        } catch (err) {
-          console.error(err)
-        }
-      }
-
-      if (typeof options.onModeChange === 'function' && mode !== oldMode) {
-        try {
-          options.onModeChange(mode, oldMode)
-        } catch (err) {
-          console.error(err)
-        }
-      }
-    } catch (err) {
-      this._onError(err)
-    }
-  } else {
+  if (!config) {
     throw new Error('Unknown mode "' + options.mode + '"')
+  }
+
+  const asText = (config.data === 'text')
+  name = this.getName()
+  data = this[asText ? 'getText' : 'get']() // get text or json
+
+  this.destroy()
+  clear(this)
+  extend(this, config.mixin)
+  this.create(container, options)
+
+  this.setName(name)
+  this[asText ? 'setText' : 'set'](data) // set text or json
+
+  if (typeof config.load === 'function') {
+    try {
+      config.load.call(this)
+    } catch (err) {
+      console.error(err)
+    }
+  }
+
+  if (typeof options.onModeChange === 'function' && mode !== oldMode) {
+    try {
+      options.onModeChange(mode, oldMode)
+    } catch (err) {
+      console.error(err)
+    }
   }
 }
 

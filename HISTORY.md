@@ -3,6 +3,12 @@
 https://github.com/josdejong/jsoneditor
 
 
+## not yet published, version 9.5.5
+
+- Fix `setMode` not throwing an exception anymore in case of a parse error
+  (regression since `9.5.4`).
+
+
 ## 2021-08-25, version 9.5.4
 
 - Use `noreferrer` for window.open, see #1365. Thanks @rajitbanerjee.
