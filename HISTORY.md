@@ -3,6 +3,11 @@
 https://github.com/josdejong/jsoneditor
 
 
+## not yet published, version 9.5.6
+
+- Fix inefficient regex to replace return characters. 
+
+
 ## 2021-09-01, version 9.5.5
 
 - Fix `setMode` not throwing an exception anymore in case of a parse error
