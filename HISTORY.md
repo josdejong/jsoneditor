@@ -3,7 +3,7 @@
 https://github.com/josdejong/jsoneditor
 
 
-## not yet published, version 9.5.6
+## 2021-09-22, version 9.5.6
 
 - Fix inefficient regex to replace return characters. 
 
