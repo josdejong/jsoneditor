@@ -126,7 +126,7 @@ Constructs a new JSONEditor.
   Set a callback function triggered right after the mode is changed by the user. Only applicable when
   the mode can be changed by the user (i.e. when option `modes` is set).
 
-- `{function} onNodeName({ path, type, size })`
+- `{function} onNodeName({ path, type, size, value })`
 
   Customize the name of object and array nodes. By default the names are brackets with the number of childs inside,
   like `{5}` and `[32]`. The number inside can be customized. using `onNodeName`.
@@ -137,7 +137,8 @@ Constructs a new JSONEditor.
   {
     path: string[],
     type: 'object' | 'array',
-    size: number
+    size: number,
+    value: object
   }
   ```
 
