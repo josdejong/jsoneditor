@@ -3,17 +3,19 @@ if (typeof Element !== 'undefined') {
   // Polyfill for array remove
   (() => {
     function polyfill (item) {
-      if ('remove' in item) {
-        return
-      }
-      Object.defineProperty(item, 'remove', {
-        configurable: true,
-        enumerable: true,
-        writable: true,
-        value: function remove () {
-          if (this.parentNode !== undefined) { this.parentNode.removeChild(this) }
+      if (typeof item !== 'undefined') {
+        if ('remove' in item) {
+          return
         }
-      })
+        Object.defineProperty(item, 'remove', {
+          configurable: true,
+          enumerable: true,
+          writable: true,
+          value: function remove () {
+            if (this.parentNode !== undefined) { this.parentNode.removeChild(this) }
+          }
+        })
+      }
     }
 
     if (typeof window.Element !== 'undefined') { polyfill(window.Element.prototype) }
