@@ -3,6 +3,12 @@
 https://github.com/josdejong/jsoneditor
 
 
+## not yet published, version 9.5.7
+
+- More robust polyfill for `Element.remove`, `window.CharacterData.remove`,
+  and `window.DocumentType.remove`. Thanks @caok2709.
+
+
 ## 2021-09-22, version 9.5.6
 
 - Fix inefficient regex to replace return characters. 
