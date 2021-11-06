@@ -3,10 +3,11 @@
 https://github.com/josdejong/jsoneditor
 
 
-## not yet published, version 9.5.7
+## 2021-11-06, version 9.5.7
 
 - More robust polyfill for `Element.remove`, `window.CharacterData.remove`,
   and `window.DocumentType.remove`. Thanks @caok2709.
+- Update dependencies: `ace-builds@1.4.13`, `vanilla-picker@2.12.1`.
 
 
 ## 2021-09-22, version 9.5.6
