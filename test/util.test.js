@@ -13,7 +13,6 @@ import {
   makeFieldTooltip,
   parsePath,
   parseString,
-  regexReturnAndSurroundingWhitespace,
   removeReturnsAndSurroundingWhitespace,
   sort,
   sortObjectKeys,
