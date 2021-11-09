@@ -12,7 +12,9 @@ import {
   limitCharacters,
   makeFieldTooltip,
   parsePath,
-  parseString, regexReturnAndSurroundingWhitespace,
+  parseString,
+  regexReturnAndSurroundingWhitespace,
+  removeReturnsAndSurroundingWhitespace,
   sort,
   sortObjectKeys,
   stringifyPath
@@ -395,8 +397,8 @@ describe('util', () => {
 
   it('regex should match whitespace and surrounding whitespace', () => {
     assert.strictEqual(
-      'A\nB  \nC  \n  D \n\n E F'.replace(regexReturnAndSurroundingWhitespace, '*'),
-      'A*B*C*D*E F')
+      removeReturnsAndSurroundingWhitespace(' \n A\nB  \nC  \n  D \n\n E F\n '),
+      'ABCDE F')
   })
 
   // TODO: thoroughly test all util methods
