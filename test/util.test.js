@@ -12,7 +12,7 @@ import {
   limitCharacters,
   makeFieldTooltip,
   parsePath,
-  parseString,
+  parseString, regexReturnAndSurroundingWhitespace,
   sort,
   sortObjectKeys,
   stringifyPath
@@ -391,6 +391,12 @@ describe('util', () => {
   it('should test whether a field is a timestamp', () => {
     assert.strictEqual(isTimestamp('foo', 1574809200000), true)
     assert.strictEqual(isTimestamp('foo', 1574809200000.2), false)
+  })
+
+  it('regex should match whitespace and surrounding whitespace', () => {
+    assert.strictEqual(
+      'A\nB  \nC  \n  D \n\n E F'.replace(regexReturnAndSurroundingWhitespace, '*'),
+      'A*B*C*D*E F')
   })
 
   // TODO: thoroughly test all util methods

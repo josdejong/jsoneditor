@@ -400,7 +400,7 @@ export function getInnerText (element, buffer) {
   // text node
   if (element.nodeValue) {
     // remove return characters and the whitespaces surrounding those return characters
-    const trimmedValue = element.nodeValue.replace(/(\b|^)\s*\n\s*(\b|$)/g, '')
+    const trimmedValue = element.nodeValue.replace(regexReturnAndSurroundingWhitespace, '')
     if (trimmedValue !== '') {
       return buffer.flush() + trimmedValue
     } else {
@@ -442,6 +442,10 @@ export function getInnerText (element, buffer) {
   // br or unknown
   return ''
 }
+
+// regular expression matching one or multiple return characters with all their
+// enclosing white spaces
+export const regexReturnAndSurroundingWhitespace = /(\b|^)\s*\n\s*(\b|$)/g
 
 /**
  * Test whether an element has the provided parent node somewhere up the node tree.
