@@ -3,9 +3,10 @@
 https://github.com/josdejong/jsoneditor
 
 
-## not yet published, version 9.5.8
+## 2021-12-19, version 9.5.8
 
 - Fix vertical centering of text and buttons, see #1392.
+- Improve font: 13px Cascadia Mono on Windows, 13px Monaco on Mac, see #1392.
 
 
 ## 2021-11-06, version 9.5.7
