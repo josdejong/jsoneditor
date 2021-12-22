@@ -36,9 +36,10 @@ $jse-box-shadow-inner: inset 0 0 10px rgba(128, 128, 128, 0.5) !default;
 $jse-date: #a1a1a1 !default;
 
 $jse-font: arial, sans-serif !default;
-// Monaco for Mac, Cascadia mono for Windows
-$jse-font-mono: "cascadia mono", monaco, monospace, arial !default;
-$jse-font-size: 13px !default;
+// "consolas" for Windows, "menlo" for Mac
+// (at Mac this font looks too large at 14px, but 13px is too small for the font on Windows)
+$jse-font-mono: consolas, menlo, monospace, arial, sans-serif !default;
+$jse-font-size: 14px !default;
 
 $jse-icons: "./img/jsoneditor-icons.svg" !default;
 $jse-icons-url: url($jse-icons) !default;

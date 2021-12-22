@@ -235,7 +235,7 @@ Constructs a new JSONEditor.
 
 - `{boolean} escapeUnicode`
 
-  If `true`, unicode characters are escaped and displayed as their hexadecimal code (like `\u260E`) instead of of the character itself (like `☎`). `false` by default.
+  If `true`, unicode characters are escaped and displayed as their hexadecimal code (like `\u260E`) instead of the character itself (like `☎`). `false` by default.
 
 - `{boolean} sortObjectKeys`
 

@@ -3,6 +3,13 @@
 https://github.com/josdejong/jsoneditor
 
 
+## 2021-12-22, version 9.5.9
+
+- More tweaking of the font because the 13px Cascadia Mono font on Windows gave
+  issues in Ace editor. Changed to 14px Consolas on Windows, 14px Menlo on Mac, 
+  see #1392, #1403.
+
+
 ## 2021-12-19, version 9.5.8
 
 - Fix vertical centering of text and buttons, see #1392.
