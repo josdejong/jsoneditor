@@ -11,6 +11,7 @@ import { ModeSwitcher } from './ModeSwitcher'
 import { showSortModal } from './showSortModal'
 import { showTransformModal } from './showTransformModal'
 import { tryRequireThemeJsonEditor } from './tryRequireThemeJsonEditor'
+import { SchemaTextCompleter } from './SchemaTextCompleter'
 import {
   addClassName,
   debounce,
@@ -272,13 +273,23 @@ textmode.create = function (container, options = {}) {
     const aceSession = aceEditor.getSession()
     aceEditor.$blockScrolling = Infinity
     aceEditor.setTheme(this.theme)
-    aceEditor.setOptions({ readOnly: isReadOnly })
     aceEditor.setShowPrintMargin(false)
     aceEditor.setFontSize('14px')
     aceSession.setMode('ace/mode/json')
     aceSession.setTabSize(this.indentation)
     aceSession.setUseSoftTabs(true)
     aceSession.setUseWrapMode(true)
+
+    const aceEditorOptions = {
+      readOnly: isReadOnly
+    }
+
+    if (this.options.allowSchemaSuggestions && this.options.schema) {
+      aceEditorOptions.enableBasicAutocompletion = [new SchemaTextCompleter()]
+      aceEditorOptions.enableLiveAutocompletion = true
+    }
+
+    aceEditor.setOptions(aceEditorOptions)
 
     // replace ace setAnnotations with custom function that also covers jsoneditor annotations
     const originalSetAnnotations = aceSession.setAnnotations

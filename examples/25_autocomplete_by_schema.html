@@ -1,0 +1,140 @@
+<!DOCTYPE HTML>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+
+  <title>JSONEditor | JSON schema validation</title>
+
+  <link href="../dist/jsoneditor.css" rel="stylesheet" type="text/css">
+  <script src="../dist/jsoneditor.js"></script>
+
+  <style type="text/css">
+    body {
+      width: 600px;
+      font: 11pt sans-serif;
+    }
+    #jsoneditor {
+      width: 100%;
+      height: 500px;
+    }
+
+    /* custom bold styling for non-default JSON schema values */
+    .jsoneditor-is-not-default {
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+<h1>JSON schema validation</h1>
+<p>
+  This example demonstrates JSON schema validation. The JSON object in this example must contain properties like <code>firstName</code> and <code>lastName</code>, can can optionally have a property <code>age</code> which must be a positive integer.
+</p>
+<p>
+  See <a href="http://json-schema.org/" target="_blank">http://json-schema.org/</a> for more information.
+</p>
+
+<div id="jsoneditor"></div>
+
+<script>
+  const schema = {
+    "title": "Employee",
+    "description": "Object containing employee details",
+    "type": "object",
+    "properties": {
+      "firstName": {
+        "title": "First Name",
+        "description": "The given name.",
+        "examples": [
+          "John"
+        ],
+        "type": "string"
+      },
+      "lastName": {
+        "title": "Last Name",
+        "description": "The family name.",
+        "examples": [
+          "Smith"
+        ],
+        "type": "string"
+      },
+      "gender": {
+        "title": "Gender",
+        "enum": ["male", "female"]
+      },
+      "availableToHire": {
+        "type": "boolean",
+        "default": false
+      },
+      "age": {
+        "description": "Age in years",
+        "type": "integer",
+        "minimum": 0,
+        "examples": [28, 32]
+      },
+      "job": {
+        "$ref": "job"
+      }
+    },
+    "required": ["firstName", "lastName"]
+  }
+
+  const job = {
+    "title": "Job description",
+    "type": "object",
+    "required": ["address"],
+    "properties": {
+      "company": {
+        "type": "string",
+        "examples": [
+          "ACME",
+          "Dexter Industries"
+        ]
+      },
+      "role": {
+        "description": "Job title.",
+        "type": "string",
+        "examples": [
+          "Human Resources Coordinator",
+          "Software Developer"
+        ],
+        "default": "Software Developer"
+      },
+      "address": {
+        "type": "string"
+      },
+      "salary": {
+        "type": "number",
+        "minimum": 120,
+        "examples": [100, 110, 120]
+      }
+    }
+  }
+
+  const json = {
+    firstName: "John",
+    lastName: "Doe",
+    gender: "male",
+    age: 28,
+    availableToHire: true,
+    job: {
+      company: "freelance",
+      role: "developer",
+      salary: 140,
+      address: "Jerusalem"
+    }
+  }
+
+  const options = {
+    schema: schema,
+    schemaRefs: {"job": job},
+    allowSchemaSuggestions: true,
+    mode: 'code',
+    modes: ['code']
+  }
+
+  // create the editor
+  const container = document.getElementById('jsoneditor')
+  const editor = new JSONEditor(container, options, json)
+</script>
+</body>
+</html>
