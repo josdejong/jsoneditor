@@ -37,7 +37,7 @@ color: #333
 }
 
 .ace-jsoneditor.ace_editor {
-font-family: consolas, menlo, monospace, arial, sans-serif !default;
+font-family: consolas, menlo, "dejavu sans mono", monospace, arial, sans-serif !default;
 line-height: 1.3;
 background-color: #fff;
 }
