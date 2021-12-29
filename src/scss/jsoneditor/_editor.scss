@@ -322,7 +322,7 @@ textarea.jsoneditor-text,
 .ace-jsoneditor {
   min-height: 150px;
 
-  * {
+  &.ace_editor {
     font-family: $jse-font-mono;
   }
 }

@@ -3,6 +3,11 @@
 https://github.com/josdejong/jsoneditor
 
 
+## 2021-12-29, version 9.5.11
+
+- Fix the font on Ubuntu for real by add the "ubuntu mono" font. See #1405. 
+
+
 ## 2021-12-27, version 9.5.10
 
 - Fix the font on Ubuntu: add "dejavu sans mono". See #1405. 
