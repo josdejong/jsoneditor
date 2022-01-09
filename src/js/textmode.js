@@ -285,7 +285,7 @@ textmode.create = function (container, options = {}) {
     }
 
     if (this.options.allowSchemaSuggestions && this.options.schema) {
-      aceEditorOptions.enableBasicAutocompletion = [new SchemaTextCompleter()]
+      aceEditorOptions.enableBasicAutocompletion = [new SchemaTextCompleter(this.options.schema, this.options.schemaRefs)]
       aceEditorOptions.enableLiveAutocompletion = true
     }
 
