@@ -4065,7 +4065,7 @@ export class Node {
             path: this.getPath(),
             size: count,
             type: this.type,
-            value: this.getValue()
+            value: this.value
           })
         } catch (err) {
           console.error('Error in onNodeName callback: ', err)
