@@ -13,59 +13,81 @@ import {
  */
 export class SchemaTextCompleter {
   constructor (schema, schemaRefs) {
-    const paths = {};
-    this._buildSuggestions(paths, schema, schemaRefs);
-    setTimeout(()=> console.log('TEMP collected paths', paths), 1000);
+    this.schema = schema;
+    this.schemaRefs = schemaRefs || {};
+    this.paths = {};
+    this._buildSuggestions(this.schema);
+    setTimeout(()=> console.log('TEMP collected paths', this.paths), 1000);
   }
 
-  _buildSuggestions (paths, schema, schemaRefs) {
-    this._handleSchemaEntry(paths, "/" , schema);
+  _buildSuggestions () {
+    this._handleSchemaEntry("/" , this.schema);
   }
 
-  _handleSchemaEntry(paths, currectPath, schemaNode) {
+  _handleRef(currectPath, refName) {
+    if (this.schemaRefs[refName]) {
+      this._handleSchemaEntry(currectPath, this.schemaRefs[refName]);
+    }
+  }
+
+  _handleSchemaEntry(currectPath, schemaNode) {
+    if (schemaNode.$ref) {
+      this._handleRef(currectPath, schemaNode.$ref);
+      return;
+    }
     switch(schemaNode.type) {
       case 'object':
-        this._handleObject(paths, currectPath, schemaNode)
+        this._handleObject(currectPath, schemaNode)
         break;
       case 'string':
       case 'number':
       case 'integer':
-        this._handlePrimitive(paths, currectPath, schemaNode)
+        this._handlePrimitive(currectPath, schemaNode)
         break;
+      case 'boolean':
+        this._handleBoolean(currectPath, schemaNode)
     }
   }
 
-  _handleObject(paths, currectPath, schemaNode) {
+  _handleObject(currectPath, schemaNode) {
     if (isObject(schemaNode.properties)) {
       const props = Object.keys(schemaNode.properties);
-      paths[currectPath] = paths[currectPath] || [];
-      paths[currectPath].push({
+      this.paths[currectPath] = this.paths[currectPath] || [];
+      this.paths[currectPath].push({
         val: props,
         type: 'props'
       })
       props.forEach((prop) => {
         setTimeout(() => {
-          this._handleSchemaEntry(paths, `${currectPath}${prop}/`,schemaNode.properties[prop]);
+          this._handleSchemaEntry(`${currectPath}${prop}/`,schemaNode.properties[prop]);
         })
       })
     }
   }
 
-  _handlePrimitive(paths, currectPath, schemaNode) {
+  _handlePrimitive(currectPath, schemaNode) {
     if (isArray(schemaNode.examples)) {
-      paths[currectPath] = paths[currectPath] || [];
-      paths[currectPath].push({
+      this.paths[currectPath] = this.paths[currectPath] || [];
+      this.paths[currectPath].push({
         val: schemaNode.examples,
         type: 'examples'
       })
     }
     if (isArray(schemaNode.enum)) {
-      paths[currectPath] = paths[currectPath] || [];
-      paths[currectPath].push({
+      this.paths[currectPath] = this.paths[currectPath] || [];
+      this.paths[currectPath].push({
         val: schemaNode.enum,
         type: 'enum'
       })
     }
+  }
+
+  _handleBoolean(currectPath, schemaNode) {
+    this.paths[currectPath] = this.paths[currectPath] || [];
+    this.paths[currectPath].push({
+      val: [true,false],
+      type: 'bool'
+    })
   }
 
   getCompletions (editor, session, pos, prefix, callback) {
