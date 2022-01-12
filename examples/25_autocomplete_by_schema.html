@@ -87,6 +87,21 @@
             "$ref": "senior"
           },
         ]
+      },
+      "publications": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "type": {
+              "type": "string",
+              "enum": ["academic", "professional"]
+            },
+            "journal": {
+              "type": "string"
+            }
+          }
+        }
       }
     },
     "required": ["firstName", "lastName"]
@@ -189,7 +204,15 @@
     profession: {
       level: "senior",
       experience: 10
-    }
+    },
+    publications: [{
+      type: 'academic',
+      journal: 'MIT today'
+    },
+    {
+      type: 'professional',
+      journal: 'stack overflow'
+    }]
   }
 
   const options = {

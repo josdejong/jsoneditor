@@ -26,7 +26,9 @@ export class SchemaTextCompleter {
 
   _handleRef(currectPath, refName) {
     if (this.schemaRefs[refName]) {
-      this._handleSchemaEntry(currectPath, this.schemaRefs[refName]);
+      setTimeout(() => {
+        this._handleSchemaEntry(currectPath, this.schemaRefs[refName]);
+      })
     }
   }
 
@@ -51,6 +53,9 @@ export class SchemaTextCompleter {
         break;
       case 'boolean':
         this._handleBoolean(currectPath, schemaNode)
+        break
+      case 'array':
+        this._handleArray(currectPath, schemaNode)
     }
   }
 
@@ -95,10 +100,18 @@ export class SchemaTextCompleter {
     })
   }
 
+  _handleArray(currectPath, schemaNode) {
+    setTimeout(() => {
+      this._handleSchemaEntry(`${currectPath}/\\d+`, schemaNode.items);
+    })
+  }
+
   _handleOfCondition(currectPath, schemaNode) {
     if (schemaNode && schemaNode.length) {
       schemaNode.forEach(schemaEntry => {
-        this._handleSchemaEntry(currectPath, schemaEntry);
+        setTimeout(() => {
+          this._handleSchemaEntry(currectPath, schemaEntry);
+        })
       })
     }
   }
@@ -152,8 +165,11 @@ export class SchemaTextCompleter {
           if (pointers[ptr].key?.line === pos.row) {
             if (pos.column >= pointers[ptr].key.column && pos.column <= pointers[ptr].keyEnd.column) {
               const parentPtr = ptr.slice(0, ptr.lastIndexOf('/'));
-              if (this.suggestions[parentPtr]) {
-                processCompletionsCallback(this.suggestions[parentPtr]);
+              const options = Object.keys(this.suggestions).filter(key => {
+                return new RegExp(`\^${key}\$`).test(parentPtr)
+              });
+              if (options.length) {
+                processCompletionsCallback(this.suggestions[options[0]]);
                 return;
               }
             }
@@ -161,8 +177,11 @@ export class SchemaTextCompleter {
           if (pointers[ptr].value?.line === pos.row && 
               pointers[ptr].value?.line === pointers[ptr].valueEnd?.line) { // multiline values are objects
             if (pos.column >= pointers[ptr].value.column && pos.column <= pointers[ptr].valueEnd.column) {
-              if (this.suggestions[ptr]) {
-                processCompletionsCallback(this.suggestions[ptr]);
+              const options = Object.keys(this.suggestions).filter(key => {
+                return new RegExp(`\^${key}\$`).test(ptr)
+              });
+              if (options.length) {
+                processCompletionsCallback(this.suggestions[options[0]]);
                 return;
               }
             }
