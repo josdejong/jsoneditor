@@ -35,6 +35,11 @@ export class SchemaTextCompleter {
       this._handleRef(currectPath, schemaNode.$ref);
       return;
     }
+    const ofConditionEntry = this._checkOfConditon(schemaNode);
+    if (ofConditionEntry) {
+      this._handleOfCondition(currectPath, schemaNode[ofConditionEntry]);
+      return;
+    }
     switch(schemaNode.type) {
       case 'object':
         this._handleObject(currectPath, schemaNode)
@@ -90,6 +95,29 @@ export class SchemaTextCompleter {
     })
   }
 
+  _handleOfCondition(currectPath, schemaNode) {
+    if (schemaNode && schemaNode.length) {
+      schemaNode.forEach(schemaEntry => {
+        this._handleSchemaEntry(currectPath, schemaEntry);
+      })
+    }
+  }
+
+  _checkOfConditon(entry) {
+    if (!entry) {
+      return;
+    }
+    if (entry.oneOf) {
+      return 'oneOf';
+    }
+    if (entry.anyOf) {
+      return 'anyOf';
+    }
+    if (entry.allOf) {
+      return 'allOf';
+    }
+  }
+
   getCompletions (editor, session, pos, prefix, callback) {
     try {
       const map = jsonMap.parse(session.getValue())
@@ -98,16 +126,22 @@ export class SchemaTextCompleter {
         if (suggestions?.length) {
           const completions = [];
           let score = 0;
+          const marker = {};
           suggestions.forEach((suggest) => {
             if (suggest?.val?.length) {
               suggest.val.forEach((val) => {
+                const markerKey = `${suggest.type}-${val}`;
+                if(marker[markerKey]) {
+                  return;
+                }
+                marker[markerKey] = true;
                 completions.push({
-                  caption: val,
+                  caption: val + '',
                   meta: `schema [${suggest.type}]`,
                   score: score++,
-                  value: val,
+                  value: val + '',
                 })
-              })              
+              })
             }
           });
           callback(null, completions);

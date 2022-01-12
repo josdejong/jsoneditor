@@ -74,6 +74,19 @@
       },
       "job": {
         "$ref": "job"
+      },
+      "profession": {
+        "oneOf": [
+          {
+            "$ref": "junior"
+          },
+          {
+            "$ref": "experienced"
+          },
+          {
+            "$ref": "senior"
+          },
+        ]
       }
     },
     "required": ["firstName", "lastName"]
@@ -111,6 +124,56 @@
     }
   }
 
+  const junior = {
+    "type": "object",
+    "properties": {
+      "level": {
+      "type": "string",
+      "enum": ["junior"]
+      },
+      "experience": {
+        "description": "years of experience",
+        "type": "number",
+        "minimum": 0,
+        "maximum": 3,
+        "examples": [0,1,2,3]
+      }
+    }
+  }
+
+  const experienced = {
+    "type": "object",
+    "properties": {
+      "level": {
+        "type": "string",
+        "enum": ["experienced"]
+      },
+      "experience": {
+        "description": "years of experience",
+        "type": "number",
+        "minimum": 3,
+        "maximum": 7,
+        "examples": [3,4,5,6,7]
+      }
+    }
+  }
+
+  const senior = {
+    "type": "object",
+    "properties": {
+      "level": {
+        "type": "string",
+        "enum": ["senior"]
+      },
+      "experience": {
+        "description": "years of experience",
+        "type": "number",
+        "minimum": 7,
+        "examples": [7,8,9,10,11]
+      }
+    }
+  }
+
   const json = {
     firstName: "John",
     lastName: "Doe",
@@ -122,12 +185,16 @@
       role: "developer",
       salary: 140,
       address: "Jerusalem"
+    },
+    profession: {
+      level: "senior",
+      experience: 10
     }
   }
 
   const options = {
     schema: schema,
-    schemaRefs: {"job": job},
+    schemaRefs: {job: job, junior: junior, experienced: experienced, senior: senior},
     allowSchemaSuggestions: true,
     mode: 'code',
     modes: ['code']
