@@ -4064,7 +4064,8 @@ export class Node {
           nodeName = this.editor.options.onNodeName({
             path: this.getPath(),
             size: count,
-            type: this.type
+            type: this.type,
+            value: this.value
           })
         } catch (err) {
           console.error('Error in onNodeName callback: ', err)
