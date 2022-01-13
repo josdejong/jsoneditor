@@ -3,7 +3,7 @@
 https://github.com/josdejong/jsoneditor
 
 
-## not yet published, version 9.6.0
+## 2022-01-13, version 9.6.0
 
 - Pass a new property `value` along with the `onNodeName` callback, see #1409. 
   Thanks @brianpos.
