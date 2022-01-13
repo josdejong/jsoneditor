@@ -17,7 +17,7 @@ export class SchemaTextCompleter {
     this.schemaRefs = schemaRefs || {};
     this.suggestions = {};
     this._buildSuggestions(this.schema);
-    setTimeout(()=> console.log('TEMP collected paths', this.suggestions), 1000);
+    setTimeout(() => console.log('TEMP collected paths', this.suggestions, Object.keys(this.suggestions).length), 20000);
   }
 
   _buildSuggestions () {
@@ -33,6 +33,10 @@ export class SchemaTextCompleter {
   }
 
   _handleSchemaEntry(currectPath, schemaNode) {
+    if(!schemaNode) {
+      console.log('wrong',currectPath);
+      return;
+    }
     if (schemaNode.$ref) {
       this._handleRef(currectPath, schemaNode.$ref);
       return;
@@ -62,11 +66,9 @@ export class SchemaTextCompleter {
   _handleObject(currectPath, schemaNode) {
     if (isObject(schemaNode.properties)) {
       const props = Object.keys(schemaNode.properties);
-      this.suggestions[currectPath] = this.suggestions[currectPath] || [];
-      this.suggestions[currectPath].push({
-        val: props,
-        type: 'property'
-      })
+      this.suggestions[currectPath] = this.suggestions[currectPath] || {};
+      this.suggestions[currectPath].props = this.suggestions[currectPath].props || [];
+      this.suggestions[currectPath].props = [...new Set(this.suggestions[currectPath].props.concat(props))]
       props.forEach((prop) => {
         setTimeout(() => {
           this._handleSchemaEntry(`${currectPath}/${prop}`,schemaNode.properties[prop]);
@@ -77,33 +79,31 @@ export class SchemaTextCompleter {
 
   _handlePrimitive(currectPath, schemaNode) {
     if (isArray(schemaNode.examples)) {
-      this.suggestions[currectPath] = this.suggestions[currectPath] || [];
-      this.suggestions[currectPath].push({
-        val: schemaNode.examples,
-        type: 'example'
-      })
+      this.suggestions[currectPath] = this.suggestions[currectPath] || {};
+      this.suggestions[currectPath].examples = this.suggestions[currectPath].examples || [];
+      this.suggestions[currectPath].examples = [...new Set(this.suggestions[currectPath].examples.concat(schemaNode.examples))]
     }
     if (isArray(schemaNode.enum)) {
-      this.suggestions[currectPath] = this.suggestions[currectPath] || [];
-      this.suggestions[currectPath].push({
-        val: schemaNode.enum,
-        type: 'enum'
-      })
+      this.suggestions[currectPath] = this.suggestions[currectPath] || {};
+      this.suggestions[currectPath].enum = this.suggestions[currectPath].enum || [];
+      this.suggestions[currectPath].enum = [...new Set(this.suggestions[currectPath].enum.concat(schemaNode.enum))]
     }
   }
 
   _handleBoolean(currectPath, schemaNode) {
-    this.suggestions[currectPath] = this.suggestions[currectPath] || [];
-    this.suggestions[currectPath].push({
-      val: [true,false],
-      type: 'boolean'
-    })
+    if (!this.suggestions[currectPath]) {
+      this.suggestions[currectPath] = {
+        bool: [true,false]
+      }
+    }
   }
 
   _handleArray(currectPath, schemaNode) {
-    setTimeout(() => {
-      this._handleSchemaEntry(`${currectPath}/\\d+`, schemaNode.items);
-    })
+    if (schemaNode.items) {
+      setTimeout(() => {
+        this._handleSchemaEntry(`${currectPath}/\\d+`, schemaNode.items);
+      })
+    }
   }
 
   _handleOfCondition(currectPath, schemaNode) {
@@ -130,35 +130,42 @@ export class SchemaTextCompleter {
       return 'allOf';
     }
   }
+  
 
   getCompletions (editor, session, pos, prefix, callback) {
     try {
       const map = jsonMap.parse(session.getValue())
       const pointers = map.pointers || {};
       const processCompletionsCallback = (suggestions) => {
-        if (suggestions?.length) {
-          const completions = [];
-          let score = 0;
-          const marker = {};
-          suggestions.forEach((suggest) => {
-            if (suggest?.val?.length) {
-              suggest.val.forEach((val) => {
-                const markerKey = `${suggest.type}-${val}`;
-                if(marker[markerKey]) {
-                  return;
-                }
-                marker[markerKey] = true;
-                completions.push({
-                  caption: val + '',
-                  meta: `schema [${suggest.type}]`,
-                  score: score++,
-                  value: val + '',
-                })
-              })
-            }
-          });
+        let completions = [];
+        let score = 0;
+        const appendSuggesions = (type) => {
+          const typeTitle = {
+            props: 'property',
+            enum: 'enum',
+            bool: 'boolean',
+            examples: 'examples'
+          }
+          if (suggestions && suggestions[type]?.length) {
+            completions = completions.concat(suggestions[type].map(term => {
+              return {
+                caption: term + '',
+                meta: `schema [${typeTitle[type]}]`,
+                score: score++,
+                value: term + '',
+              }
+            }))
+          }
+        }
+        appendSuggesions('props')
+        appendSuggesions('enum')
+        appendSuggesions('bool')
+        appendSuggesions('examples')
+        
+        if (completions.length) {
           callback(null, completions);
         }
+        
       }
       Object.keys(pointers).forEach((ptr) => {
         setTimeout(() => {
