@@ -95,9 +95,12 @@ export class Node {
 
       if ((this.editor.options.mode === 'tree' || this.editor.options.mode === 'form') &&
           (typeof this.editor.options.onEditable === 'function')) {
+        const getValue = this.getValue.bind(this)
         const editable = this.editor.options.onEditable({
           field: this.field,
-          value: this.value,
+          get value() {
+            return getValue()
+          },
           path: this.getPath()
         })
 
@@ -944,7 +947,14 @@ export class Node {
       typeof this.editor.options.onClassName === 'function' &&
       this.dom.tree) {
       removeAllClassNames(this.dom.tree)
-      const addClasses = this.editor.options.onClassName({ path: this.getPath(), field: this.field, value: this.value }) || ''
+      const getValue = this.getValue.bind(this)
+      const addClasses = this.editor.options.onClassName({
+        path: this.getPath(),
+        field: this.field,
+        get value() {
+          return getValue()
+        }
+      }) || ''
       addClassName(this.dom.tree, 'jsoneditor-values ' + addClasses)
     }
   }
@@ -4061,11 +4071,14 @@ export class Node {
     if (this.type === 'object' || this.type === 'array') {
       if (this.editor.options.onNodeName) {
         try {
+          const getValue = this.getValue.bind(this)
           nodeName = this.editor.options.onNodeName({
             path: this.getPath(),
             size: count,
             type: this.type,
-            value: this.value
+            get value() {
+              return getValue()
+            }
           })
         } catch (err) {
           console.error('Error in onNodeName callback: ', err)

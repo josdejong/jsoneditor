@@ -3,6 +3,16 @@
 https://github.com/josdejong/jsoneditor
 
 
+## not yet published, version 9.6.0
+
+- Pass a new property `value` along with the `onNodeName` callback, see #1409. 
+  Thanks @brianpos.
+- Implement the `value` property of the callbacks `onNodeName`, `onEditable`, 
+  and `onClassName` for objects and arrays too (was `undefined` before). 
+  Since this can be a heavy recursive operation, the property is changed into 
+  a lazy getter.
+
+
 ## 2021-12-29, version 9.5.11
 
 - Fix the font on Ubuntu for real by add the "ubuntu mono" font. See #1405. 
