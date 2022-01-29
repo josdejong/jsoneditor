@@ -1785,8 +1785,7 @@ export class Node {
       }
 
       // show color picker when value is a color
-      if (this.editable.value &&
-          this.editor.options.colorPicker &&
+      if (this.editor.options.colorPicker &&
           typeof value === 'string' &&
           isValidColor(value)) {
         if (!this.dom.color) {
@@ -1802,6 +1801,11 @@ export class Node {
 
         // update styling of value and color background
         addClassName(this.dom.value, 'jsoneditor-color-value')
+        if (!this.editable.value) {
+          addClassName(this.dom.color, 'jsoneditor-color-readonly')
+        } else {
+          removeClassName(this.dom.color, 'jsoneditor-color-readonly')
+        }
         this.dom.color.style.backgroundColor = value
       } else {
         // cleanup color picker when displayed
@@ -2536,7 +2540,11 @@ export class Node {
       }
     }
 
-    if (type === 'click' && (event.target === node.dom.tdColor || event.target === node.dom.color)) {
+    if (
+      type === 'click' &&
+      (event.target === node.dom.tdColor || event.target === node.dom.color) &&
+      this.editable.value
+    ) {
       this._showColorPicker()
     }
 

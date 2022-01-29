@@ -185,6 +185,10 @@ div {
         margin: 4px;
         border: 1px solid $jse-readonly;
         cursor: pointer;
+
+        &.jsoneditor-color-readonly {
+          cursor: inherit;
+        }
       }
       &.jsoneditor-date {
         background: $jse-date;

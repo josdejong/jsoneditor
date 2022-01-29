@@ -3,6 +3,11 @@
 https://github.com/josdejong/jsoneditor
 
 
+## not yet published, version 9.7.0
+
+- Implement #1413: show color indicator on readonly fields.
+
+
 ## 2022-01-13, version 9.6.0
 
 - Pass a new property `value` along with the `onNodeName` callback, see #1409. 
