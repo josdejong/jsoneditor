@@ -3,9 +3,9 @@
 https://github.com/josdejong/jsoneditor
 
 
-## not yet published, version 9.7.0
+## 2022-01-30, version 9.7.0
 
-- Implement #1413: show color indicator on readonly fields.
+- Implement #1413: show color indicator on readonly fields and in mode `view`.
 
 
 ## 2022-01-13, version 9.6.0
