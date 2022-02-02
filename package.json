@@ -52,11 +52,11 @@
     "json-loader": "0.5.7",
     "mkdirp": "1.0.4",
     "mocha": "9.2.0",
-    "sass": "1.49.0",
+    "sass": "1.49.7",
     "source-map-loader": "3.0.1",
     "standard": "16.0.4",
     "uglify-js": "3.15.0",
-    "webpack": "5.67.0"
+    "webpack": "5.68.0"
   },
   "files": [
     "dist",
