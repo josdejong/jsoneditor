@@ -408,7 +408,8 @@
   border-radius: 3px;
   padding: 4px;
 }
-.jsoneditor-modal textarea {
+.jsoneditor-modal textarea,
+.jsoneditor-modal #query {
   // workaround for a bug on Chrome resulting in blurry text,
   // see https://github.com/josdejong/jsoneditor/issues/1419
   border-radius: unset;

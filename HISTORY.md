@@ -3,6 +3,11 @@
 https://github.com/josdejong/jsoneditor
 
 
+## 2022-02-09, version 9.7.2
+
+- Fix #1419: blurry text preview query on Chrome.
+
+
 ## 2022-02-09, version 9.7.1
 
 - Fix #1419: blurry text preview on Chrome.
