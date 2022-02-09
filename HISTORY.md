@@ -3,6 +3,11 @@
 https://github.com/josdejong/jsoneditor
 
 
+## 2022-02-09, version 9.7.1
+
+- Fix #1419: blurry text preview on Chrome.
+
+
 ## 2022-01-30, version 9.7.0
 
 - Implement #1413: show color indicator on readonly fields and in mode `view`.
