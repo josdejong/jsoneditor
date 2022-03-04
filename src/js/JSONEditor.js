@@ -384,6 +384,7 @@ JSONEditor.prototype.setSchema = function (schema, schemaRefs) {
       // add schema to the options, so that when switching to an other mode,
       // the set schema is not lost
       this.options.schema = schema
+      this.options.schemaRefs = schemaRefs
 
       // validate now
       this.validate()

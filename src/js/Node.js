@@ -1741,12 +1741,7 @@ export class Node {
           this.dom.select.appendChild(defaultOption)
 
           // Iterate all enum values and add them as options
-          for (let i = 0; i < this.enum.length; i++) {
-            const option = document.createElement('option')
-            option.value = this.enum[i]
-            option.textContent = this.enum[i]
-            this.dom.select.appendChild(option)
-          }
+          this._updateEnumOptions()
 
           this.dom.tdSelect = document.createElement('td')
           this.dom.tdSelect.className = 'jsoneditor-tree'
@@ -1773,7 +1768,7 @@ export class Node {
           delete this.valueFieldHTML
         }
       } else {
-        // cleanup select box when displayed
+        // cleanup select box when displayed, and attach the editable div instead
         if (this.dom.tdSelect) {
           this.dom.tdSelect.parentNode.removeChild(this.dom.tdSelect)
           delete this.dom.tdSelect
@@ -1781,6 +1776,8 @@ export class Node {
           this.dom.tdValue.innerHTML = this.valueFieldHTML
           this.dom.tdValue.style.visibility = ''
           delete this.valueFieldHTML
+
+          this.dom.tdValue.appendChild(this.dom.value)
         }
       }
 
@@ -1849,6 +1846,23 @@ export class Node {
       stripFormatting(domValue)
 
       this._updateDomDefault()
+    }
+  }
+
+  _updateEnumOptions () {
+    if (!this.enum || !this.dom.select) {
+      return
+    }
+
+    // clear the existing options
+    this.dom.select.innerHTML = ''
+
+    // Iterate all enum values and add them as options
+    for (let i = 0; i < this.enum.length; i++) {
+      const option = document.createElement('option')
+      option.value = this.enum[i]
+      option.textContent = this.enum[i]
+      this.dom.select.appendChild(option)
     }
   }
 
@@ -2260,6 +2274,7 @@ export class Node {
         domField.innerHTML = escapedField
       }
       this._updateSchema()
+      this._updateEnumOptions()
     }
 
     // apply value to DOM
@@ -4496,7 +4511,7 @@ Node._findSchema = (topLevelSchema, schemaRefs, path, currentSchema = topLevelSc
           if (segment in currentSchema) {
             currentSchema = currentSchema[segment]
           } else {
-            throw Error(`Unable to resovle reference ${ref}`)
+            throw Error(`Unable to resolve reference ${ref}`)
           }
         }
       } else if (ref.match(/#\//g)?.length === 1) {
