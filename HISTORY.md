@@ -3,7 +3,7 @@
 https://github.com/josdejong/jsoneditor
 
 
-## 2022-03-22, version 9.7.4
+## 2022-03-15, version 9.7.4
 
 - Fix #1421: fix `onBlur` event not firing when focus goes to an `iframe`.
 
