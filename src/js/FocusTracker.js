@@ -26,6 +26,7 @@ export class FocusTracker {
         this._onEvent(event)
       }
     }.bind(this)
+    this._onBlur = this._onEvent.bind(this)
 
     this.focusFlag = false
     this.firstEventFlag = true
@@ -37,6 +38,7 @@ export class FocusTracker {
     if (this.onFocus || this.onBlur) {
       document.addEventListener('click', this._onClick)
       document.addEventListener('keyup', this._onKeyUp)
+      document.addEventListener('blur', this._onBlur)
     }
   }
 
@@ -47,6 +49,7 @@ export class FocusTracker {
   destroy () {
     document.removeEventListener('click', this._onClick)
     document.removeEventListener('keyup', this._onKeyUp)
+    document.removeEventListener('blur', this._onBlur)
     this._onEvent({ target: document.body }) // calling _onEvent with body element in the hope that the FocusTracker is added to an element inside the body tag
   }
 
