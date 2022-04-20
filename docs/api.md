@@ -279,6 +279,14 @@ Constructs a new JSONEditor.
   Schemas that are referenced using the `$ref` property from the JSON schema that are set in the `schema` option,
   the object structure in the form of `{reference_key: schemaObject}`
 
+- `{boolean} allowSchemaSuggestions`
+
+  Enables autocomplete suggestions based on the JSON schema. when enabled, and schema is configured, it will suggest text completions based on the schema properties, examples and enums.
+  
+  limitation: the completions will be presented only for a valid json.
+
+  Only applicable when mode is 'code'.
+
 - `{boolean} search`
 
   Enables a search box in the upper right corner of the JSONEditor. `true` by default. Only applicable when `mode` is 'tree', 'view', or 'form'.
