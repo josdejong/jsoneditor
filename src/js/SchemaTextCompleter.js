@@ -5,6 +5,7 @@ import {
   isArray,
   isObject,
   unigueMergeArrays,
+  asyncExec,
 } from './util'
 
 /**
@@ -73,7 +74,7 @@ export class SchemaTextCompleter {
       suggestionsObj[currectPath].props = suggestionsObj[currectPath].props || [];
       suggestionsObj[currectPath].props = unigueMergeArrays(suggestionsObj[currectPath].props, props);
       props.forEach((prop) => {
-        setTimeout(() => {
+        asyncExec(() => {
           this._handleSchemaEntry(`${currectPath}/${prop}`,schemaNode.properties[prop], suggestionsObj);
         })
       })
@@ -102,7 +103,7 @@ export class SchemaTextCompleter {
 
   _handleArray(currectPath, schemaNode, suggestionsObj) {
     if (schemaNode.items) {
-      setTimeout(() => {
+      asyncExec(() => {
         this._handleSchemaEntry(`${currectPath}/\\d+`, schemaNode.items, suggestionsObj);
       })
     }
@@ -111,7 +112,7 @@ export class SchemaTextCompleter {
   _handleOfCondition(currectPath, schemaNode, suggestionsObj) {
     if (schemaNode && schemaNode.length) {
       schemaNode.forEach(schemaEntry => {
-        setTimeout(() => {
+        asyncExec(() => {
           this._handleSchemaEntry(currectPath, schemaEntry, suggestionsObj);
         })
       })
@@ -170,7 +171,7 @@ export class SchemaTextCompleter {
         
       }
       Object.keys(pointers).forEach((ptr) => {
-        setTimeout(() => {
+        asyncExec(() => {
           const matchPointersToPath = (pointer, currentSuggestions, path) => {
             const option = Object.keys(currentSuggestions).reduce((last, key) => {
               if(new RegExp(`\^${path}${key}`).test(pointer)) {

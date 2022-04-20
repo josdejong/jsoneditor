@@ -1255,6 +1255,10 @@ export function unigueMergeArrays(inputArray1, inputArray2) {
   return [...new Set(arr1.concat(arr2))];  
 }
 
+export function asyncExec(callback) {
+  setTimeout(callback);
+}
+
 function hasOwnProperty (object, key) {
   return Object.prototype.hasOwnProperty.call(object, key)
 }
