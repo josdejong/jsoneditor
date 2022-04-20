@@ -281,11 +281,11 @@ Constructs a new JSONEditor.
 
 - `{boolean} allowSchemaSuggestions`
 
-  Enables autocomplete suggestions based on the JSON schema. when enabled, and schema is configured, it will suggest text completions based on the schema properties, examples and enums.
+  Enables autocomplete suggestions based on the JSON schema. when enabled and schema is configured, the editor will suggest text completions based on the schema properties, examples and enums.
   
-  limitation: the completions will be presented only for a valid json.
+  **limitation**: the completions will be presented only for a valid json.
 
-  Only applicable when mode is 'code'.
+  Only applicable when `mode` is 'code'.
 
 - `{boolean} search`
 
