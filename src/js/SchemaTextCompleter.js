@@ -72,7 +72,6 @@ export class SchemaTextCompleter {
       suggestionsObj[currectPath] = suggestionsObj[currectPath] || {};
       suggestionsObj[currectPath].props = suggestionsObj[currectPath].props || [];
       suggestionsObj[currectPath].props = unigueMergeArrays(suggestionsObj[currectPath].props, props);
-      // [...new Set(suggestionsObj[currectPath].props.concat(props))]
       props.forEach((prop) => {
         setTimeout(() => {
           this._handleSchemaEntry(`${currectPath}/${prop}`,schemaNode.properties[prop], suggestionsObj);
@@ -86,12 +85,10 @@ export class SchemaTextCompleter {
     if (isArray(schemaNode.examples)) {
       suggestionsObj[currectPath].examples = suggestionsObj[currectPath].examples || [];
       suggestionsObj[currectPath].examples = unigueMergeArrays(suggestionsObj[currectPath].examples, schemaNode.examples);
-      // [...new Set(suggestionsObj[currectPath].examples.concat(schemaNode.examples))]
     }
     if (isArray(schemaNode.enum)) {
       suggestionsObj[currectPath].enum = suggestionsObj[currectPath].enum || [];
       suggestionsObj[currectPath].enum = unigueMergeArrays(suggestionsObj[currectPath].enum, schemaNode.enum);
-      // [...new Set(suggestionsObj[currectPath].enum.concat(schemaNode.enum))]
     }
   }
 
@@ -206,10 +203,8 @@ export class SchemaTextCompleter {
                 }
                 return mergedSuggestions;
               } else if (new RegExp(`\^${path}${option}$`).test(pointer)) {
-                console.log('Text suggession match', {path: pointer, schemaPath: `${path}${option}`, suggestions: currentSuggestions[option]});
+                console.log('Text suggestion match', {path: pointer, schemaPath: `${path}${option}`, suggestions: currentSuggestions[option]});
                 return currentSuggestions[option];
-              } else {
-                console.log('Text suggession not match', {path: pointer, schemaPath: `${path}${option}`, suggestions: currentSuggestions[option]});
               }
             }
           }
