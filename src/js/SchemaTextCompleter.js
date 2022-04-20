@@ -4,6 +4,7 @@ import jsonMap from 'json-source-map'
 import {
   isArray,
   isObject,
+  unigueMergeArrays,
 } from './util'
 
 /**
@@ -31,7 +32,7 @@ export class SchemaTextCompleter {
   _handleRef(currectPath, refName, suggestionsObj) {
     suggestionsObj[currectPath] = suggestionsObj[currectPath] || {}
     suggestionsObj[currectPath].refs = suggestionsObj[currectPath].refs || []
-    suggestionsObj[currectPath].refs = [...new Set(suggestionsObj[currectPath].refs.concat([refName]))]
+    suggestionsObj[currectPath].refs = unigueMergeArrays(suggestionsObj[currectPath].refs, [refName]);
   }
 
   _handleSchemaEntry(currectPath, schemaNode, suggestionsObj) {
@@ -70,7 +71,8 @@ export class SchemaTextCompleter {
       const props = Object.keys(schemaNode.properties);
       suggestionsObj[currectPath] = suggestionsObj[currectPath] || {};
       suggestionsObj[currectPath].props = suggestionsObj[currectPath].props || [];
-      suggestionsObj[currectPath].props = [...new Set(suggestionsObj[currectPath].props.concat(props))]
+      suggestionsObj[currectPath].props = unigueMergeArrays(suggestionsObj[currectPath].props, props);
+      // [...new Set(suggestionsObj[currectPath].props.concat(props))]
       props.forEach((prop) => {
         setTimeout(() => {
           this._handleSchemaEntry(`${currectPath}/${prop}`,schemaNode.properties[prop], suggestionsObj);
@@ -83,11 +85,13 @@ export class SchemaTextCompleter {
     suggestionsObj[currectPath] = suggestionsObj[currectPath] || {};
     if (isArray(schemaNode.examples)) {
       suggestionsObj[currectPath].examples = suggestionsObj[currectPath].examples || [];
-      suggestionsObj[currectPath].examples = [...new Set(suggestionsObj[currectPath].examples.concat(schemaNode.examples))]
+      suggestionsObj[currectPath].examples = unigueMergeArrays(suggestionsObj[currectPath].examples, schemaNode.examples);
+      // [...new Set(suggestionsObj[currectPath].examples.concat(schemaNode.examples))]
     }
     if (isArray(schemaNode.enum)) {
       suggestionsObj[currectPath].enum = suggestionsObj[currectPath].enum || [];
-      suggestionsObj[currectPath].enum = [...new Set(suggestionsObj[currectPath].enum.concat(schemaNode.enum))]
+      suggestionsObj[currectPath].enum = unigueMergeArrays(suggestionsObj[currectPath].enum, schemaNode.enum);
+      // [...new Set(suggestionsObj[currectPath].enum.concat(schemaNode.enum))]
     }
   }
 
@@ -187,16 +191,16 @@ export class SchemaTextCompleter {
                   if (this.suggestionsRefs[refName]) {
                     const refSuggestion = matchPointersToPath(pointer, this.suggestionsRefs[refName], `${path}${option}`);
                     if(refSuggestion?.enum) {
-                      mergedSuggestions.enum = (mergedSuggestions.enum || []).concat(refSuggestion.enum);
+                      mergedSuggestions.enum = unigueMergeArrays(mergedSuggestions.enum, refSuggestion.enum);
                     }
                     if(refSuggestion?.examples) {
-                      mergedSuggestions.examples = (mergedSuggestions.examples || []).concat(refSuggestion.examples);
+                      mergedSuggestions.examples = unigueMergeArrays(mergedSuggestions.examples, refSuggestion.examples);
                     }
                     if(refSuggestion?.bool) {
-                      mergedSuggestions.bool = (mergedSuggestions.bool || []).concat(refSuggestion.bool);
+                      mergedSuggestions.bool = unigueMergeArrays(mergedSuggestions.bool, refSuggestion.bool);
                     }
                     if(refSuggestion?.props) {
-                      mergedSuggestions.props = (mergedSuggestions.props || []).concat(refSuggestion.props);
+                      mergedSuggestions.props = unigueMergeArrays(mergedSuggestions.props, refSuggestion.props);
                     }
                   }
                 }
@@ -204,6 +208,8 @@ export class SchemaTextCompleter {
               } else if (new RegExp(`\^${path}${option}$`).test(pointer)) {
                 console.log('Text suggession match', {path: pointer, schemaPath: `${path}${option}`, suggestions: currentSuggestions[option]});
                 return currentSuggestions[option];
+              } else {
+                console.log('Text suggession not match', {path: pointer, schemaPath: `${path}${option}`, suggestions: currentSuggestions[option]});
               }
             }
           }
