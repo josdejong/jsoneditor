@@ -4,14 +4,14 @@ import jsonMap from 'json-source-map'
 import {
   isArray,
   isObject,
-  unigueMergeArrays,
+  uniqueMergeArrays,
   asyncExec,
 } from './util'
 
 /**
- * SchemaTextCompleter is a completer object that implements the
- * ace ext-language_tools completer API, and suggests completions for the text editor
- * according to the cursor position and the json schema
+ * SchemaTextCompleter class implements thea ace ext-language_tools completer API,
+ * and suggests completions for the text editor that are relative
+ * to the cursor position and the json schema
  */
 export class SchemaTextCompleter {
   constructor (schema, schemaRefs) {
@@ -33,12 +33,12 @@ export class SchemaTextCompleter {
   _handleRef(currectPath, refName, suggestionsObj) {
     suggestionsObj[currectPath] = suggestionsObj[currectPath] || {}
     suggestionsObj[currectPath].refs = suggestionsObj[currectPath].refs || []
-    suggestionsObj[currectPath].refs = unigueMergeArrays(suggestionsObj[currectPath].refs, [refName]);
+    suggestionsObj[currectPath].refs = uniqueMergeArrays(suggestionsObj[currectPath].refs, [refName]);
   }
 
   _handleSchemaEntry(currectPath, schemaNode, suggestionsObj) {
     if(!schemaNode) {
-      console.log('wrong',currectPath);
+      console.error('SchemaTextCompleter: schema node is missing for path',currectPath);
       return;
     }
     if (schemaNode.$ref) {
@@ -72,7 +72,7 @@ export class SchemaTextCompleter {
       const props = Object.keys(schemaNode.properties);
       suggestionsObj[currectPath] = suggestionsObj[currectPath] || {};
       suggestionsObj[currectPath].props = suggestionsObj[currectPath].props || [];
-      suggestionsObj[currectPath].props = unigueMergeArrays(suggestionsObj[currectPath].props, props);
+      suggestionsObj[currectPath].props = uniqueMergeArrays(suggestionsObj[currectPath].props, props);
       props.forEach((prop) => {
         asyncExec(() => {
           this._handleSchemaEntry(`${currectPath}/${prop}`,schemaNode.properties[prop], suggestionsObj);
@@ -85,11 +85,11 @@ export class SchemaTextCompleter {
     suggestionsObj[currectPath] = suggestionsObj[currectPath] || {};
     if (isArray(schemaNode.examples)) {
       suggestionsObj[currectPath].examples = suggestionsObj[currectPath].examples || [];
-      suggestionsObj[currectPath].examples = unigueMergeArrays(suggestionsObj[currectPath].examples, schemaNode.examples);
+      suggestionsObj[currectPath].examples = uniqueMergeArrays(suggestionsObj[currectPath].examples, schemaNode.examples);
     }
     if (isArray(schemaNode.enum)) {
       suggestionsObj[currectPath].enum = suggestionsObj[currectPath].enum || [];
-      suggestionsObj[currectPath].enum = unigueMergeArrays(suggestionsObj[currectPath].enum, schemaNode.enum);
+      suggestionsObj[currectPath].enum = uniqueMergeArrays(suggestionsObj[currectPath].enum, schemaNode.enum);
     }
   }
 
@@ -189,22 +189,22 @@ export class SchemaTextCompleter {
                   if (this.suggestionsRefs[refName]) {
                     const refSuggestion = matchPointersToPath(pointer, this.suggestionsRefs[refName], `${path}${option}`);
                     if(refSuggestion?.enum) {
-                      mergedSuggestions.enum = unigueMergeArrays(mergedSuggestions.enum, refSuggestion.enum);
+                      mergedSuggestions.enum = uniqueMergeArrays(mergedSuggestions.enum, refSuggestion.enum);
                     }
                     if(refSuggestion?.examples) {
-                      mergedSuggestions.examples = unigueMergeArrays(mergedSuggestions.examples, refSuggestion.examples);
+                      mergedSuggestions.examples = uniqueMergeArrays(mergedSuggestions.examples, refSuggestion.examples);
                     }
                     if(refSuggestion?.bool) {
-                      mergedSuggestions.bool = unigueMergeArrays(mergedSuggestions.bool, refSuggestion.bool);
+                      mergedSuggestions.bool = uniqueMergeArrays(mergedSuggestions.bool, refSuggestion.bool);
                     }
                     if(refSuggestion?.props) {
-                      mergedSuggestions.props = unigueMergeArrays(mergedSuggestions.props, refSuggestion.props);
+                      mergedSuggestions.props = uniqueMergeArrays(mergedSuggestions.props, refSuggestion.props);
                     }
                   }
                 }
                 return mergedSuggestions;
               } else if (new RegExp(`\^${path}${option}$`).test(pointer)) {
-                console.log('Text suggestion match', {path: pointer, schemaPath: `${path}${option}`, suggestions: currentSuggestions[option]});
+                console.log('SchemaTextCompleter: Text suggestion match', {path: pointer, schemaPath: `${path}${option}`, suggestions: currentSuggestions[option]});
                 return currentSuggestions[option];
               }
             }
