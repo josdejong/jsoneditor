@@ -9,7 +9,7 @@ import {
 } from './util'
 
 /**
- * SchemaTextCompleter class implements thea ace ext-language_tools completer API,
+ * SchemaTextCompleter class implements the ace ext-language_tools completer API,
  * and suggests completions for the text editor that are relative
  * to the cursor position and the json schema
  */
@@ -38,7 +38,7 @@ export class SchemaTextCompleter {
 
   _handleSchemaEntry(currectPath, schemaNode, suggestionsObj) {
     if(!schemaNode) {
-      console.error('SchemaTextCompleter: schema node is missing for path',currectPath);
+      console.error('SchemaTextCompleter: schema node is missing for path', currectPath);
       return;
     }
     if (schemaNode.$ref) {
