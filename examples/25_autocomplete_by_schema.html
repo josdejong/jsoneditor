@@ -227,6 +227,8 @@
   // create the editor
   const container = document.getElementById('jsoneditor')
   const editor = new JSONEditor(container, options, json)
+  schema.properties.firstName.examples.push('David');
+  editor.setSchema(schema, {job: job, junior: junior, experienced: experienced, senior: senior});
 </script>
 </body>
 </html>

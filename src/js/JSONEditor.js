@@ -400,6 +400,10 @@ JSONEditor.prototype.setSchema = function (schema, schemaRefs) {
     this.validate() // to clear current error messages
     this.refresh() // update DOM
   }
+
+  if (typeof this._onSchemaChange === 'function') {
+    this._onSchemaChange.call(this, schema, schemaRefs);
+  }
 }
 
 /**
