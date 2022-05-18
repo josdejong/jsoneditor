@@ -693,6 +693,24 @@ Destroy the editor. Clean up DOM, event listeners, and web workers.
 
 Expand all fields. Only applicable for mode 'tree', 'view', and 'form'.
 
+#### `JSONEditor.expand(options)`
+
+Expand/collapse a given JSON node. Only applicable for mode 'tree', 'view' and 'form'.
+
+*`options` fields:*
+
+- `{Array.<String>} path`
+
+  Path for the node to expand/collapse
+
+- `{Boolean} isExpand`
+
+  Whether to expand the node (else collapse)
+
+- `{Boolean} recursive`
+
+  Whether to expand/collapse child nodes recursively
+
 #### `JSONEditor.focus()`
 
 Set focus to the JSONEditor.
