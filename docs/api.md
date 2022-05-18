@@ -98,6 +98,20 @@ Constructs a new JSONEditor.
 
   In order to update css classes when they depend on external state, you can call `editor.refresh()`.
 
+- `{function} onExpand({ path, isExpand, recursive })`
+
+  Set a callback function to be invoked when a node is expanded/collapsed (not programtically via APIs). Only applicable when option `mode` is `tree`, `form`, or `view`.
+
+  The callback is invoked with an object containing `path`, `isExpand` and `recursive`:
+
+  ```
+  {
+    path: string[],
+    isExpand: boolean,
+    recursive: boolean
+  }
+  ```
+
 - `{function} onEditable({ path, field, value })`
 
   Set a callback function to determine whether individual nodes are editable or read-only. Only applicable when option `mode` is `tree`, `text`, or `code`.

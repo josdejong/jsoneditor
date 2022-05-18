@@ -988,6 +988,13 @@ treemode._createFrame = function () {
     expandAll.title = translate('expandAll')
     expandAll.onclick = () => {
       editor.expandAll()
+      if (typeof this.options.onExpand === 'function') {
+        this.options.onExpand({
+          path: [],
+          isExpand: true,
+          recursive: true
+        })
+      }
     }
     this.menu.appendChild(expandAll)
 
@@ -998,6 +1005,13 @@ treemode._createFrame = function () {
     collapseAll.className = 'jsoneditor-collapse-all'
     collapseAll.onclick = () => {
       editor.collapseAll()
+      if (typeof this.options.onExpand === 'function') {
+        this.options.onExpand({
+          path: [],
+          isExpand: false,
+          recursive: true
+        })
+      }
     }
     this.menu.appendChild(collapseAll)
 

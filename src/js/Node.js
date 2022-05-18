@@ -3112,6 +3112,14 @@ export class Node {
       frame.appendChild(table)
       frame.scrollTop = scrollTop
     }
+
+    if (typeof this.editor.options.onExpand === 'function') {
+      this.editor.options.onExpand({
+        path: this.getPath(),
+        isExpand: this.expanded,
+        recursive: recurse
+      })
+    }
   }
 
   /**
