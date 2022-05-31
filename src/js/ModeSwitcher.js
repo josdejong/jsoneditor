@@ -98,9 +98,9 @@ export class ModeSwitcher {
     container.appendChild(frame)
 
     this.dom = {
-      container: container,
-      box: box,
-      frame: frame
+      container,
+      box,
+      frame
     }
   }
 

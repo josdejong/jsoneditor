@@ -602,9 +602,9 @@ textmode._updateCursorInfo = function () {
       }
 
       me.cursorInfo = {
-        line: line,
+        line,
         column: col,
-        count: count
+        count
       }
 
       if (me.options.statusBar) {
@@ -620,9 +620,9 @@ textmode._updateCursorInfo = function () {
     count = selectedText.length
 
     me.cursorInfo = {
-      line: line,
+      line,
       column: col,
-      count: count
+      count
     }
 
     if (this.options.statusBar) {
@@ -904,7 +904,7 @@ textmode.validate = function () {
       parseErrors = [{
         type: 'error',
         message: err.message.replace(/\n/g, '<br>'),
-        line: line
+        line
       }]
     }
 
@@ -1090,12 +1090,12 @@ export const textModeMixins = [
     mode: 'text',
     mixin: textmode,
     data: 'text',
-    load: load
+    load
   },
   {
     mode: 'code',
     mixin: textmode,
     data: 'text',
-    load: load
+    load
   }
 ]

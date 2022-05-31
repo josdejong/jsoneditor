@@ -277,8 +277,6 @@ JSONEditor.prototype.setMode = function (mode) {
   const container = this.container
   const options = extend({}, this.options)
   const oldMode = options.mode
-  let data
-  let name
 
   options.mode = mode
   const config = JSONEditor.modes[mode]
@@ -287,8 +285,8 @@ JSONEditor.prototype.setMode = function (mode) {
   }
 
   const asText = (config.data === 'text')
-  name = this.getName()
-  data = this[asText ? 'getText' : 'get']() // get text or json
+  const name = this.getName()
+  const data = this[asText ? 'getText' : 'get']() // get text or json
 
   this.destroy()
   clear(this)
@@ -334,7 +332,7 @@ JSONEditor.prototype._onError = function (err) {
   if (this.options && typeof this.options.onError === 'function') {
     this.options.onError(err)
   } else {
-    alert(err.toString())
+    window.alert(err.toString())
   }
 }
 

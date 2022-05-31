@@ -44,7 +44,7 @@ export function autocomplete (config) {
     const onMouseDown = function () { p.hide(); p.onmouseselection(this.__hint, p.rs) }
 
     const p = {
-      rs: rs,
+      rs,
       hide: function () {
         elem.style.visibility = 'hidden'
         // rs.hideDropDown();
@@ -171,7 +171,7 @@ export function autocomplete (config) {
     element: null,
     elementHint: null,
     elementStyle: null,
-    wrapper: wrapper, // Only to allow  easy access to the HTML elements to the final user (possibly for minor customizations)
+    wrapper, // Only to allow  easy access to the HTML elements to the final user (possibly for minor customizations)
     show: function (element, startPos, options) {
       this.startFrom = startPos
       this.wrapper.remove()

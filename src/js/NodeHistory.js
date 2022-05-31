@@ -223,8 +223,8 @@ export class NodeHistory {
   add (action, params) {
     this.index++
     this.history[this.index] = {
-      action: action,
-      params: params,
+      action,
+      params,
       timestamp: new Date()
     }
 

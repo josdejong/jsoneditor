@@ -3,6 +3,13 @@
 https://github.com/josdejong/jsoneditor
 
 
+## 2022-05-31, version 9.8.0
+
+- Implemented method `editor.expand({ path, isExpand, recursive })` and callback 
+  `onExpand({ path, isExpand, recursive })`. Thanks @himanshu520.
+- Upgrade to the latest version of Ace editor, `v1.5.3`.
+
+
 ## 2022-03-15, version 9.7.4
 
 - Fix #1421: fix `onBlur` event not firing when focus goes to an `iframe`.

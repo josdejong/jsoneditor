@@ -201,7 +201,7 @@ export function appendNodeFactory (Node) {
 
       items = this.editor.options.onCreateMenu(items, {
         type: 'append',
-        path: path,
+        path,
         paths: [path]
       })
     }

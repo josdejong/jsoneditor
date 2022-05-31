@@ -445,7 +445,7 @@ export function getInnerText (element, buffer) {
 
 // regular expression matching one or multiple return characters with all their
 // enclosing white spaces
-export function removeReturnsAndSurroundingWhitespace(text) {
+export function removeReturnsAndSurroundingWhitespace (text) {
   return text.replace(/(\b|^)\s*(\b|$)/g, (match) => {
     return /\n/.exec(match) ? '' : match
   })
@@ -785,7 +785,7 @@ export function textDiff (oldText, newText) {
     oldEnd--
   }
 
-  return { start: start, end: newEnd }
+  return { start, end: newEnd }
 }
 
 /**
@@ -835,8 +835,8 @@ export function getInputSelection (el) {
   }
 
   return {
-    startIndex: startIndex,
-    endIndex: endIndex,
+    startIndex,
+    endIndex,
     start: _positionForIndex(startIndex),
     end: _positionForIndex(endIndex)
   }
@@ -852,7 +852,7 @@ export function getInputSelection (el) {
     const col = textTillIndex.length - textTillIndex.lastIndexOf('\n')
 
     return {
-      row: row,
+      row,
       column: col
     }
   }
@@ -902,7 +902,7 @@ export function getPositionForPath (text, paths) {
     const pointer = jsmap.pointers[pointerName]
     if (pointer) {
       result.push({
-        path: path,
+        path,
         line: pointer.key ? pointer.key.line : (pointer.value ? pointer.value.line : 0),
         column: pointer.key ? pointer.key.column : (pointer.value ? pointer.value.column : 0)
       })

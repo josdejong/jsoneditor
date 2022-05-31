@@ -67,7 +67,7 @@ export function showSortModal (container, json, onSort, options) {
 
   picoModal({
     parent: container,
-    content: content,
+    content,
     overlayClass: 'jsoneditor-modal-overlay',
     overlayStyles: {
       backgroundColor: 'rgb(1,1,1)',
