@@ -1,0 +1,87 @@
+<!DOCTYPE HTML>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+
+  <title>JSONEditor | Sync Node Expand</title>
+
+  <link href="../dist/jsoneditor.css" rel="stylesheet" type="text/css">
+  <script src="../dist/jsoneditor.js"></script>
+
+  <style type="text/css">
+    #jsoneditor-left {
+      width: 45%;
+      height: 90%;
+      float: left;
+      margin-left: 2%;
+    }
+    #jsoneditor-right {
+      width: 45%;
+      height: 90%;
+      float: right;
+      margin-right: 2%;
+    }
+  </style>
+</head>
+<body>
+
+<div>
+    <div id="jsoneditor-left"></div>
+    <div id="jsoneditor-right"></div>
+</div>
+
+<script>
+  const left_json = {
+    'student_details': {
+      'name': {
+        'first_name': 'foo',
+        'last_name': 'bar'
+      },
+      'school': {
+        'name': 'foo',
+        'address': 'bar'
+      },
+      'contact': '434343',
+      'age': '39'
+    },
+    'marks': [50, 49, 36]
+  }
+  
+  const right_json = {
+    'marks': [50, 49],
+    'student_details': {
+      'name': 'foo bar',
+      'address': {
+        'street': 'foo',
+        'city': 'bar',
+        'zip': '444444'
+      },
+      'school': {
+        'name': 'foo',
+        'address': 'bar'
+      },
+      'age': '39',
+      'contact': ['434355', '343433', '324343']
+    }
+  }
+
+  const editor_left = new JSONEditor(document.getElementById('jsoneditor-left'), {
+      mode: "tree",
+      onExpand: (options) => {
+          if (editor_right) {
+              editor_right.expand(options)
+          }
+      }
+  }, left_json)
+
+  const editor_right = new JSONEditor(document.getElementById('jsoneditor-right'), {
+      mode: "tree",
+      onExpand: (options) => {
+          if (editor_left) {
+            editor_left.expand(options)
+          }
+      }
+  }, right_json)
+</script>
+</body>
+</html>

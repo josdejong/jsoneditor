@@ -177,7 +177,7 @@ JSONEditor.prototype.DEBOUNCE_INTERVAL = 150
 JSONEditor.VALID_OPTIONS = [
   'ajv', 'schema', 'schemaRefs', 'templates',
   'ace', 'theme', 'autocomplete',
-  'onChange', 'onChangeJSON', 'onChangeText',
+  'onChange', 'onChangeJSON', 'onChangeText', 'onExpand',
   'onEditable', 'onError', 'onEvent', 'onModeChange', 'onNodeName', 'onValidate', 'onCreateMenu',
   'onSelectionChange', 'onTextSelectionChange', 'onClassName',
   'onFocus', 'onBlur',

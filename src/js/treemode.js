@@ -455,6 +455,26 @@ treemode.collapseAll = function () {
 }
 
 /**
+ * Expand/collapse a given JSON node.
+ * @param {Object} [options] Available parameters:
+ *                         {Array<String>} [path] Path for the node to expand/collapse.
+ *                         {Boolean} [isExpand]  Whether to expand the node (else collapse).
+ *                         {Boolean} [recursive]  Whether to expand/collapse child nodes recursively.
+ */
+treemode.expand = function (options) {
+  if (!options) return
+
+  const node = this.node ? this.node.findNodeByPath(options.path) : null
+  if (!node) return
+
+  if (options.isExpand) {
+    node.expand(options.recursive)
+  } else {
+    node.collapse(options.recursive)
+  }
+}
+
+/**
  * The method onChange is called whenever a field or value is changed, created,
  * deleted, duplicated, etc.
  * @param {String} action  Change action. Available values: "editField",
@@ -988,6 +1008,13 @@ treemode._createFrame = function () {
     expandAll.title = translate('expandAll')
     expandAll.onclick = () => {
       editor.expandAll()
+      if (typeof this.options.onExpand === 'function') {
+        this.options.onExpand({
+          path: [],
+          isExpand: true,
+          recursive: true
+        })
+      }
     }
     this.menu.appendChild(expandAll)
 
@@ -998,6 +1025,13 @@ treemode._createFrame = function () {
     collapseAll.className = 'jsoneditor-collapse-all'
     collapseAll.onclick = () => {
       editor.collapseAll()
+      if (typeof this.options.onExpand === 'function') {
+        this.options.onExpand({
+          path: [],
+          isExpand: false,
+          recursive: true
+        })
+      }
     }
     this.menu.appendChild(collapseAll)
 
