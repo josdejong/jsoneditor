@@ -1,6 +1,6 @@
 'use strict'
 
-import jsonMap from 'json-source-map'
+import * as jsonMap from 'json-source-map'
 import {
   isArray,
   isObject,

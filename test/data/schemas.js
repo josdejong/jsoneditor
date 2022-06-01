@@ -178,4 +178,4 @@ export const schema = {
   ]
 }
 
-export const schemaRefs = {job, junior, experienced, senior}
+export const schemaRefs = {employeeSchema, personal, job, junior, experienced, senior}
