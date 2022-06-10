@@ -10,7 +10,7 @@ if (window.ace) {
     // load required Ace plugins
     require('ace-builds/src-noconflict/mode-json')
     require('ace-builds/src-noconflict/ext-searchbox')
-
+    require('ace-builds/src-noconflict/ext-language_tools')
     // embed Ace json worker
     // https://github.com/ajaxorg/ace/issues/3913
     const jsonWorkerDataUrl = require('../generated/worker-json-data-url')

@@ -187,7 +187,8 @@ JSONEditor.VALID_OPTIONS = [
   'sortObjectKeys', 'navigationBar', 'statusBar', 'mainMenuBar', 'languages', 'language', 'enableSort', 'enableTransform', 'limitDragging',
   'maxVisibleChilds', 'onValidationError',
   'modalAnchor', 'popupAnchor',
-  'createQuery', 'executeQuery', 'queryDescription'
+  'createQuery', 'executeQuery', 'queryDescription',
+  'allowSchemaSuggestions'
 ]
 
 /**
@@ -396,6 +397,10 @@ JSONEditor.prototype.setSchema = function (schema, schemaRefs) {
     this.options.schemaRefs = null
     this.validate() // to clear current error messages
     this.refresh() // update DOM
+  }
+
+  if (typeof this._onSchemaChange === 'function') {
+    this._onSchemaChange.call(this, schema, schemaRefs);
   }
 }
 
