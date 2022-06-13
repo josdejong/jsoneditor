@@ -3,6 +3,13 @@
 https://github.com/josdejong/jsoneditor
 
 
+## 2022-06-13, version 9.9.0
+
+- Implemented #968: support for auto-completion based on JSON Schema (#1435).
+  Thanks @meirotstein.
+- Upgrade to the latest version of Ace editor, `v1.6.0`.
+
+
 ## 2022-05-31, version 9.8.0
 
 - Implemented method `editor.expand({ path, isExpand, recursive })` and callback 
