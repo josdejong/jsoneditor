@@ -405,10 +405,10 @@ textmode.create = function (container, options = {}) {
   this.setSchema(this.options.schema, this.options.schemaRefs)
 }
 
-textmode._onSchemaChange = function(schema, schemaRefs) {
+textmode._onSchemaChange = function (schema, schemaRefs) {
   if (this.options.allowSchemaSuggestions && schema) {
     this.aceEditor.setOption('enableBasicAutocompletion', [new SchemaTextCompleter(schema, schemaRefs)])
-    this.aceEditor.setOption('enableLiveAutocompletion', true)    
+    this.aceEditor.setOption('enableLiveAutocompletion', true)
   } else {
     this.aceEditor.setOption('enableBasicAutocompletion', undefined)
     this.aceEditor.setOption('enableLiveAutocompletion', false)

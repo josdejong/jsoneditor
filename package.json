@@ -1,6 +1,6 @@
 {
   "name": "jsoneditor",
-  "version": "9.8.0",
+  "version": "9.9.0",
   "main": "./dist/jsoneditor.min.js",
   "description": "A web-based tool to view, edit, format, and validate JSON",
   "tags": [
@@ -26,23 +26,23 @@
     "prepublishOnly": "npm test && npm run build"
   },
   "dependencies": {
-    "ace-builds": "^1.5.3",
+    "ace-builds": "^1.6.0",
     "ajv": "^6.12.6",
     "javascript-natural-sort": "^0.7.1",
     "jmespath": "^0.16.0",
-    "jsonrepair": "^2.2.1",
     "json-source-map": "^0.6.1",
+    "jsonrepair": "^2.2.1",
     "mobius1-selectr": "^2.4.13",
     "picomodal": "^3.0.0",
     "vanilla-picker": "^2.12.1"
   },
   "devDependencies": {
-    "@babel/core": "7.18.2",
+    "@babel/core": "7.18.5",
     "@babel/preset-env": "7.18.2",
     "@babel/register": "7.17.7",
     "babel-loader": "8.2.5",
     "btoa": "1.2.1",
-    "date-format": "4.0.10",
+    "date-format": "4.0.11",
     "fancy-log": "2.0.0",
     "gulp": "4.0.2",
     "gulp-clean-css": "4.3.0",
@@ -52,11 +52,11 @@
     "json-loader": "0.5.7",
     "mkdirp": "1.0.4",
     "mocha": "10.0.0",
-    "sass": "1.52.1",
-    "source-map-loader": "3.0.1",
+    "sass": "1.52.3",
+    "source-map-loader": "4.0.0",
     "standard": "17.0.0",
-    "uglify-js": "3.15.5",
-    "webpack": "5.72.1"
+    "uglify-js": "3.16.0",
+    "webpack": "5.73.0"
   },
   "files": [
     "dist",

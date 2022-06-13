@@ -17,7 +17,7 @@ import {
   sort,
   sortObjectKeys,
   stringifyPath,
-  uniqueMergeArrays,
+  uniqueMergeArrays
 } from '../src/js/util'
 
 describe('util', () => {
@@ -303,7 +303,7 @@ describe('util', () => {
       assert.strictEqual(JSON.stringify(sortObjectKeys(object, 'desc')), '{"c":"c","b":"b","a":"a"}')
     })
   })
-  
+
   it('should parse a string', () => {
     assert.strictEqual(parseString('foo'), 'foo')
     assert.strictEqual(parseString('234foo'), '234foo')
@@ -403,9 +403,9 @@ describe('util', () => {
 
   describe('uniqueMergeArrays', () => {
     it('should merge arrays with unique values', () => {
-      const arr1 = ['a','b','c','d','e'];
-      const arr2 = ['c','d','f','g'];
-      assert.deepStrictEqual(uniqueMergeArrays(arr1, arr2), ['a','b','c','d','e','f','g'])
+      const arr1 = ['a', 'b', 'c', 'd', 'e']
+      const arr2 = ['c', 'd', 'f', 'g']
+      assert.deepStrictEqual(uniqueMergeArrays(arr1, arr2), ['a', 'b', 'c', 'd', 'e', 'f', 'g'])
     })
   })
 

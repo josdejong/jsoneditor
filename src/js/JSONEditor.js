@@ -400,7 +400,7 @@ JSONEditor.prototype.setSchema = function (schema, schemaRefs) {
   }
 
   if (typeof this._onSchemaChange === 'function') {
-    this._onSchemaChange.call(this, schema, schemaRefs);
+    this._onSchemaChange(schema, schemaRefs)
   }
 }
 

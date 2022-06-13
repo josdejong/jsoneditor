@@ -1244,19 +1244,19 @@ export function isValidationErrorChanged (currErr, prevErr) {
 }
 
 /**
- * Uniquely merge array of elements 
- * @param {Array<string|number>} inputArray1 
- * @param {Array<string|number?} inputArray2 
+ * Uniquely merge array of elements
+ * @param {Array<string|number>} inputArray1
+ * @param {Array<string|number?} inputArray2
  * @returns {Array<string|number>} an array with unique merged elements
  */
-export function uniqueMergeArrays(inputArray1, inputArray2) {
-  const arr1 = inputArray1?.length ? inputArray1 : [];
-  const arr2 = inputArray2?.length ? inputArray2 : [];
-  return [...new Set(arr1.concat(arr2))];  
+export function uniqueMergeArrays (inputArray1, inputArray2) {
+  const arr1 = inputArray1?.length ? inputArray1 : []
+  const arr2 = inputArray2?.length ? inputArray2 : []
+  return [...new Set(arr1.concat(arr2))]
 }
 
-export function asyncExec(callback) {
-  setTimeout(callback);
+export function asyncExec (callback) {
+  setTimeout(callback)
 }
 
 function hasOwnProperty (object, key) {
