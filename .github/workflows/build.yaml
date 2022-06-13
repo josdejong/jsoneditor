@@ -21,3 +21,16 @@ jobs:
       - run: npm run test
         env:
           CI: true
+
+  lint:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v1
+        with:
+          node-version: 16.x
+      - run: npm ci
+      - run: npm run lint
+        env:
+          CI: true
