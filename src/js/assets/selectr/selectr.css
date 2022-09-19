@@ -1,6 +1,6 @@
 /*!
- * Selectr 2.4.0
- * https://github.com/Mobius1/Selectr
+ * Selectr 2.4.13
+ * http://mobius.ovh/docs/selectr
  *
  * Released under the MIT license
  */
@@ -56,9 +56,9 @@
     width: 100%;
     padding: 7px 28px 7px 14px;
     cursor: pointer;
-    border: 1px solid  $jse-grey;
+    border: 1px solid #999;
     border-radius: 3px;
-    background-color: $jse-white;
+    background-color: #fff;
 }
 
 .selectr-selected::before {
@@ -114,7 +114,7 @@
     padding: 2px 25px 2px 8px;
     margin: 0 2px 2px 0;
     cursor: default;
-    color: $jse-white;
+    color: #fff;
     border: medium none;
     border-radius: 10px;
     background: #acb7bf none repeat scroll 0 0;
@@ -134,9 +134,9 @@
     width: 100%;
     border-width: 0 1px 1px;
     border-style: solid;
-    border-color: transparent $jse-grey $jse-grey;
+    border-color: transparent #999 #999;
     border-radius: 0 0 3px 3px;
-    background-color: $jse-white;
+    background-color: #fff;
 }
 
 .selectr-container.open .selectr-options-container {
@@ -202,7 +202,7 @@
     top: 4px;
     width: 3px;
     height: 12px;
-    background-color: $jse-white;
+    background-color: #fff;
 }
 
 .selectr-clear:before,
@@ -237,7 +237,7 @@
     width: calc(100% - 30px);
     margin: 10px 15px;
     padding: 7px 30px 7px 9px;
-    border: 1px solid  $jse-grey;
+    border: 1px solid #999;
     border-radius: 3px;
 }
 
@@ -246,9 +246,9 @@
     box-sizing: border-box;
     width: 100%;
     padding: 8px 16px;
-    border-top: 1px solid  $jse-grey;
+    border-top: 1px solid #999;
     border-radius: 0 0 3px 3px;
-    background-color: $jse-white;
+    background-color: #fff;
 }
 
 .selectr-container.notice .selectr-notice {
@@ -309,7 +309,7 @@
 }
 
 .selectr-option.active {
-    color: $jse-white;
+    color: #fff;
     background-color: #5897fb;
 }
 
@@ -322,7 +322,7 @@
 }
 
 .selectr-container.open .selectr-selected {
-    border-color:  $jse-grey  $jse-grey transparent  $jse-grey;
+    border-color: #999 #999 transparent #999;
     border-radius: 3px 3px 0 0;
 }
 
@@ -405,16 +405,16 @@
     -webkit-transform-origin: 50% 0 0;
     transform-origin: 50% 0 0;
 
-    -moz-animation: 500ms linear 0s normal forwards infinite running selectr-spin;
-    -webkit-animation: 500ms linear 0s normal forwards infinite running selectr-spin;
-    animation: 500ms linear 0s normal forwards infinite running selectr-spin;
+    -moz-animation: 500ms linear 0s normal forwards infinite running spin;
+    -webkit-animation: 500ms linear 0s normal forwards infinite running spin;
+    animation: 500ms linear 0s normal forwards infinite running spin;
     border-width: 3px;
     border-style: solid;
     border-color: #aaa #ddd #ddd;
     border-radius: 50%;
 }
 
-@-webkit-keyframes selectr-spin {
+@-webkit-keyframes spin {
     0% {
         -webkit-transform: rotate(0deg) translate3d(0px, -50%, 0px);
         transform: rotate(0deg) translate3d(0px, -50%, 0px);
@@ -424,7 +424,7 @@
         transform: rotate(360deg) translate3d(0px, -50%, 0px);
     }
 }
-@keyframes selectr-spin {
+@keyframes spin {
     0% {
         -webkit-transform: rotate(0deg) translate3d(0px, -50%, 0px);
         transform: rotate(0deg) translate3d(0px, -50%, 0px);
@@ -435,15 +435,15 @@
     }
 }
 .selectr-container.open.inverted .selectr-selected {
-    border-color: transparent  $jse-grey  $jse-grey;
+    border-color: transparent #999 #999;
     border-radius: 0 0 3px 3px;
 }
 
 .selectr-container.inverted .selectr-options-container {
     border-width: 1px 1px 0;
-    border-color:  $jse-grey  $jse-grey transparent;
+    border-color: #999 #999 transparent;
     border-radius: 3px 3px 0 0;
-    background-color: $jse-white;
+    background-color: #fff;
 }
 
 .selectr-container.inverted .selectr-options-container {
