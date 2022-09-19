@@ -1,6 +1,6 @@
 {
   "name": "jsoneditor",
-  "version": "9.9.0",
+  "version": "9.9.1",
   "main": "./dist/jsoneditor.min.js",
   "description": "A web-based tool to view, edit, format, and validate JSON",
   "tags": [
@@ -11,7 +11,7 @@
   ],
   "author": "Jos de Jong <wjosdejong@gmail.com>",
   "license": "Apache-2.0",
-  "homepage": "https://github.com/josdejong/jsoneditor",
+  "homepage": "https://jsoneditoronline.org",
   "repository": {
     "type": "git",
     "url": "https://github.com/josdejong/jsoneditor.git"
@@ -26,7 +26,7 @@
     "prepublishOnly": "npm test && npm run build"
   },
   "dependencies": {
-    "ace-builds": "^1.6.0",
+    "ace-builds": "^1.10.1",
     "ajv": "^6.12.6",
     "javascript-natural-sort": "^0.7.1",
     "jmespath": "^0.16.0",
@@ -37,26 +37,26 @@
     "vanilla-picker": "^2.12.1"
   },
   "devDependencies": {
-    "@babel/core": "7.18.5",
-    "@babel/preset-env": "7.18.2",
-    "@babel/register": "7.17.7",
+    "@babel/core": "7.19.1",
+    "@babel/preset-env": "7.19.1",
+    "@babel/register": "7.18.9",
     "babel-loader": "8.2.5",
     "btoa": "1.2.1",
-    "date-format": "4.0.11",
+    "date-format": "4.0.13",
     "fancy-log": "2.0.0",
     "gulp": "4.0.2",
     "gulp-clean-css": "4.3.0",
     "gulp-concat-css": "3.1.0",
     "gulp-sass": "5.1.0",
-    "jsdom": "19.0.0",
+    "jsdom": "20.0.0",
     "json-loader": "0.5.7",
     "mkdirp": "1.0.4",
     "mocha": "10.0.0",
-    "sass": "1.52.3",
+    "sass": "1.54.9",
     "source-map-loader": "4.0.0",
     "standard": "17.0.0",
-    "uglify-js": "3.16.0",
-    "webpack": "5.73.0"
+    "uglify-js": "3.17.0",
+    "webpack": "5.74.0"
   },
   "files": [
     "dist",

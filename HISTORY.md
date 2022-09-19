@@ -3,6 +3,11 @@
 https://github.com/josdejong/jsoneditor
 
 
+## 2022-09-19, version 9.9.1
+
+- Upgrade to the latest version of Ace editor, `v1.10.1`.
+
+
 ## 2022-06-13, version 9.9.0
 
 - Implemented #968: support for auto-completion based on JSON Schema (#1435).
