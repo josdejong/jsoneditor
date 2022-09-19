@@ -6,12 +6,9 @@
 [![License](https://img.shields.io/github/license/josdejong/jsoneditor.svg)](https://github.com/josdejong/jsoneditor/blob/master/LICENSE)
 [![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fjosdejong%2Fjsoneditor.svg?type=shield)](https://app.fossa.io/projects/git%2Bgithub.com%2Fjosdejong%2Fjsoneditor?ref=badge_shield)
 
-JSON Editor is a web-based tool to view, edit, format, and validate JSON.
-It has various modes such as a tree editor, a code editor, and a plain text
-editor.
+JSON Editor is a web-based tool to view, edit, format, and validate JSON. It has various modes such as a tree editor, a code editor, and a plain text editor. The editor can be used as a component in your own web application. It can be loaded as CommonJS module, AMD module, or as a regular javascript file.
 
-The editor can be used as a component in your own web application. The library
-can be loaded as CommonJS module, AMD module, or as a regular javascript file.
+The library was originally developed as core component of the popular web application https://jsoneditoronline.org and has been open sourced since then.
 
 Supported browsers: Chrome, Firefox, Safari, Opera, Edge, Internet Explorer 11.
 
