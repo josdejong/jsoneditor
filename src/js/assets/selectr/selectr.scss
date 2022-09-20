@@ -56,9 +56,9 @@
     width: 100%;
     padding: 7px 28px 7px 14px;
     cursor: pointer;
-    border: 1px solid #999;
+    border: 1px solid  $jse-grey;
     border-radius: 3px;
-    background-color: #fff;
+    background-color: $jse-white;
 }
 
 .selectr-selected::before {
@@ -114,7 +114,7 @@
     padding: 2px 25px 2px 8px;
     margin: 0 2px 2px 0;
     cursor: default;
-    color: #fff;
+    color: $jse-white;
     border: medium none;
     border-radius: 10px;
     background: #acb7bf none repeat scroll 0 0;
@@ -134,9 +134,9 @@
     width: 100%;
     border-width: 0 1px 1px;
     border-style: solid;
-    border-color: transparent #999 #999;
+    border-color: transparent $jse-grey $jse-grey;
     border-radius: 0 0 3px 3px;
-    background-color: #fff;
+    background-color: $jse-white;
 }
 
 .selectr-container.open .selectr-options-container {
@@ -202,7 +202,7 @@
     top: 4px;
     width: 3px;
     height: 12px;
-    background-color: #fff;
+    background-color: $jse-white;
 }
 
 .selectr-clear:before,
@@ -237,7 +237,7 @@
     width: calc(100% - 30px);
     margin: 10px 15px;
     padding: 7px 30px 7px 9px;
-    border: 1px solid #999;
+    border: 1px solid  $jse-grey;
     border-radius: 3px;
 }
 
@@ -246,9 +246,9 @@
     box-sizing: border-box;
     width: 100%;
     padding: 8px 16px;
-    border-top: 1px solid #999;
+    border-top: 1px solid  $jse-grey;
     border-radius: 0 0 3px 3px;
-    background-color: #fff;
+    background-color: $jse-white;
 }
 
 .selectr-container.notice .selectr-notice {
@@ -309,7 +309,7 @@
 }
 
 .selectr-option.active {
-    color: #fff;
+    color: $jse-white;
     background-color: #5897fb;
 }
 
@@ -322,7 +322,7 @@
 }
 
 .selectr-container.open .selectr-selected {
-    border-color: #999 #999 transparent #999;
+    border-color:  $jse-grey  $jse-grey transparent  $jse-grey;
     border-radius: 3px 3px 0 0;
 }
 
@@ -405,16 +405,16 @@
     -webkit-transform-origin: 50% 0 0;
     transform-origin: 50% 0 0;
 
-    -moz-animation: 500ms linear 0s normal forwards infinite running spin;
-    -webkit-animation: 500ms linear 0s normal forwards infinite running spin;
-    animation: 500ms linear 0s normal forwards infinite running spin;
+    -moz-animation: 500ms linear 0s normal forwards infinite running selectr-spin;
+    -webkit-animation: 500ms linear 0s normal forwards infinite running selectr-spin;
+    animation: 500ms linear 0s normal forwards infinite running selectr-spin;
     border-width: 3px;
     border-style: solid;
     border-color: #aaa #ddd #ddd;
     border-radius: 50%;
 }
 
-@-webkit-keyframes spin {
+@-webkit-keyframes selectr-spin {
     0% {
         -webkit-transform: rotate(0deg) translate3d(0px, -50%, 0px);
         transform: rotate(0deg) translate3d(0px, -50%, 0px);
@@ -424,7 +424,7 @@
         transform: rotate(360deg) translate3d(0px, -50%, 0px);
     }
 }
-@keyframes spin {
+@keyframes selectr-spin {
     0% {
         -webkit-transform: rotate(0deg) translate3d(0px, -50%, 0px);
         transform: rotate(0deg) translate3d(0px, -50%, 0px);
@@ -435,15 +435,15 @@
     }
 }
 .selectr-container.open.inverted .selectr-selected {
-    border-color: transparent #999 #999;
+    border-color: transparent  $jse-grey  $jse-grey;
     border-radius: 0 0 3px 3px;
 }
 
 .selectr-container.inverted .selectr-options-container {
     border-width: 1px 1px 0;
-    border-color: #999 #999 transparent;
+    border-color:  $jse-grey  $jse-grey transparent;
     border-radius: 3px 3px 0 0;
-    background-color: #fff;
+    background-color: $jse-white;
 }
 
 .selectr-container.inverted .selectr-options-container {
