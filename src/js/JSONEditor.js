@@ -357,7 +357,8 @@ JSONEditor.prototype.setSchema = function (schema, schemaRefs) {
           allErrors: true,
           verbose: true,
           schemaId: 'auto',
-          $data: true
+          $data: true,
+          unknownFormats:'ignore'
         })
 
         // support both draft-04 and draft-06 alongside the latest draft-07
