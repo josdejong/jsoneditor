@@ -34,6 +34,8 @@ Constructs a new JSONEditor.
 - `{Object} ace`
 
   Provide a custom version of the [Ace editor](http://ace.c9.io/) and use this instead of the version that comes embedded with JSONEditor. Only applicable when `mode` is `code`.
+  
+  When providing your own instance of Ace editor, be aware that JSONEditor assumes the following Ace plugins to be loaded: `mode-json`, `worker-json`, `ext-searchbox`, `ext-language_tools`.
 
   Note that when using the minimalist version of JSONEditor (which has Ace excluded), JSONEditor will try to load the Ace plugins `ace/mode/json` and `ace/ext/searchbox`. These plugins must be loaded beforehand or be available in the folder of the Ace editor.
 
