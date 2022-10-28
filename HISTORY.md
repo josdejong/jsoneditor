@@ -3,6 +3,11 @@
 https://github.com/josdejong/jsoneditor
 
 
+## not yet published, version 9.9.3
+
+- Upgrade to the latest version of Ace editor, `v1.12.3`.
+
+
 ## 2022-09-20, version 9.9.2
 
 - Fix #1470: update the code of Selectr from `2.4.0` to `2.4.13`.

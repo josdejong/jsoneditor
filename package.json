@@ -26,7 +26,7 @@
     "prepublishOnly": "npm test && npm run build"
   },
   "dependencies": {
-    "ace-builds": "^1.10.1",
+    "ace-builds": "^1.12.3",
     "ajv": "^6.12.6",
     "javascript-natural-sort": "^0.7.1",
     "jmespath": "^0.16.0",
@@ -37,25 +37,25 @@
     "vanilla-picker": "^2.12.1"
   },
   "devDependencies": {
-    "@babel/core": "7.19.1",
-    "@babel/preset-env": "7.19.1",
+    "@babel/core": "7.19.6",
+    "@babel/preset-env": "7.19.4",
     "@babel/register": "7.18.9",
-    "babel-loader": "8.2.5",
+    "babel-loader": "9.0.0",
     "btoa": "1.2.1",
-    "date-format": "4.0.13",
+    "date-format": "4.0.14",
     "fancy-log": "2.0.0",
     "gulp": "4.0.2",
     "gulp-clean-css": "4.3.0",
     "gulp-concat-css": "3.1.0",
     "gulp-sass": "5.1.0",
-    "jsdom": "20.0.0",
+    "jsdom": "20.0.1",
     "json-loader": "0.5.7",
     "mkdirp": "1.0.4",
-    "mocha": "10.0.0",
-    "sass": "1.54.9",
-    "source-map-loader": "4.0.0",
+    "mocha": "10.1.0",
+    "sass": "1.55.0",
+    "source-map-loader": "4.0.1",
     "standard": "17.0.0",
-    "uglify-js": "3.17.0",
+    "uglify-js": "3.17.4",
     "webpack": "5.74.0"
   },
   "files": [
