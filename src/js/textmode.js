@@ -328,7 +328,7 @@ textmode.create = function (container, options = {}) {
   this._updateHistoryButtons()
 
   this.errorTable = new ErrorTable({
-    errorTableVisible: this.options.showErrorTable.includes(this.mode),
+    errorTableVisible: Array.isArray(this.options.showErrorTable) ? this.options.showErrorTable.includes(this.mode) : this.options.showErrorTable === true,
     onToggleVisibility: function () {
       me._validateAndCatch()
     },
