@@ -51,6 +51,7 @@ textmode.create = function (container, options = {}) {
   options.createQuery = options.createQuery || createQuery
   options.executeQuery = options.executeQuery || executeQuery
   options.errorTableVisible = options.errorTableVisible
+  options.showErrorTable = options.showErrorTable || ['text'] 
   this.options = options
 
   // indentation
@@ -327,7 +328,7 @@ textmode.create = function (container, options = {}) {
   this._updateHistoryButtons()
 
   this.errorTable = new ErrorTable({
-    errorTableVisible: this.options.errorTableVisible,
+    errorTableVisible: this.options.showErrorTable.includes(this.mode),
     onToggleVisibility: function () {
       me._validateAndCatch()
     },
