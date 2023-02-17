@@ -408,6 +408,11 @@ Constructs a new JSONEditor.
 
   Adds status bar to the bottom of the editor - the status bar shows the cursor position and a count of the selected characters. `true` by default. Only applicable when `mode` is 'code', 'text', or 'preview'.
 
+- `{boolean} | {Array} showErrorTable`
+
+  Automatically expand error table above the status bar on error or validation error if `mode` matches an array item. Alternatively used as a boolean value.
+  `mode` is `['text', 'preview']` by default.
+
 - `{function} onTextSelectionChange(start, end, text)`
 
   Set a callback function triggered when a text is selected in the JSONEditor.
