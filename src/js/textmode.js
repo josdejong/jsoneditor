@@ -1,6 +1,6 @@
 'use strict'
 
-import jsonrepair from 'jsonrepair'
+import { jsonrepair } from 'jsonrepair'
 import ace from './ace'
 import { DEFAULT_MODAL_ANCHOR } from './constants'
 import { ErrorTable } from './ErrorTable'

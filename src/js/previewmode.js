@@ -1,6 +1,6 @@
 'use strict'
 
-import jsonrepair from 'jsonrepair'
+import { jsonrepair } from 'jsonrepair'
 import {
   DEFAULT_MODAL_ANCHOR,
   MAX_PREVIEW_CHARACTERS,

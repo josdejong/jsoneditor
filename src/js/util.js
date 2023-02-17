@@ -2,7 +2,7 @@
 
 import './polyfills'
 import naturalSort from 'javascript-natural-sort'
-import jsonrepair from 'jsonrepair'
+import { jsonrepair } from 'jsonrepair'
 import jsonlint from './assets/jsonlint/jsonlint'
 import jsonMap from 'json-source-map'
 import { translate } from './i18n'
