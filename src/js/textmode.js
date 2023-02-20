@@ -50,7 +50,7 @@ textmode.create = function (container, options = {}) {
   options.enableTransform = options.enableTransform !== false
   options.createQuery = options.createQuery || createQuery
   options.executeQuery = options.executeQuery || executeQuery
-
+  options.showErrorTable = options.showErrorTable || ['text', 'preview'] 
   this.options = options
 
   // indentation
@@ -327,7 +327,7 @@ textmode.create = function (container, options = {}) {
   this._updateHistoryButtons()
 
   this.errorTable = new ErrorTable({
-    errorTableVisible: this.mode === 'text',
+    errorTableVisible: Array.isArray(this.options.showErrorTable) ? this.options.showErrorTable.includes(this.mode) : this.options.showErrorTable === true,
     onToggleVisibility: function () {
       me._validateAndCatch()
     },
