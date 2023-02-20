@@ -50,7 +50,7 @@ textmode.create = function (container, options = {}) {
   options.enableTransform = options.enableTransform !== false
   options.createQuery = options.createQuery || createQuery
   options.executeQuery = options.executeQuery || executeQuery
-  options.showErrorTable = options.showErrorTable || ['text', 'preview'] 
+  options.showErrorTable = options.showErrorTable || ['text', 'preview']
   this.options = options
 
   // indentation

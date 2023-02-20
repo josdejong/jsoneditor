@@ -410,8 +410,7 @@ Constructs a new JSONEditor.
 
 - `{boolean} | {Array} showErrorTable`
 
-  Automatically expand error table above the status bar on error or validation error if `mode` matches an array item. Alternatively used as a boolean value.
-  `mode` is `['text', 'preview']` by default.
+  Automatically expand error table above the status bar on error or validation error if `mode` matches an array item. Alternatively used as a boolean value. Default value is `['text', 'preview']`.
 
 - `{function} onTextSelectionChange(start, end, text)`
 

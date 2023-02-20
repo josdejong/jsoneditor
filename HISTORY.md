@@ -3,8 +3,10 @@
 https://github.com/josdejong/jsoneditor
 
 
-## not yet published, version 9.9.3
+## not yet published, version 9.10.0
 
+- Implement option `showErrorTable` to customize in which modes the error table
+  shows up initially (#1497). Thanks @magedhennawy.
 - Upgrade to the latest version of Ace editor, `v1.15.2`.
 - Upgrade to the latest version of jsonrepair, `v3.0.2`.
 - Fix #1208: source map issue "Could not load source file "0" in source map" 
