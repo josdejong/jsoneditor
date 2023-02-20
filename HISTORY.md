@@ -3,7 +3,7 @@
 https://github.com/josdejong/jsoneditor
 
 
-## not yet published, version 9.10.0
+## 2023-02-20, version 9.10.0
 
 - Implement option `showErrorTable` to customize in which modes the error table
   shows up initially (#1497). Thanks @magedhennawy.
