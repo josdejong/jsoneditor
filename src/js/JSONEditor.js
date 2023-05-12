@@ -188,7 +188,7 @@ JSONEditor.VALID_OPTIONS = [
   'maxVisibleChilds', 'onValidationError',
   'modalAnchor', 'popupAnchor',
   'createQuery', 'executeQuery', 'queryDescription',
-  'allowSchemaSuggestions'
+  'allowSchemaSuggestions', 'showErrorTable '
 ]
 
 /**
