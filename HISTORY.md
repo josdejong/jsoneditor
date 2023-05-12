@@ -6,6 +6,7 @@ https://github.com/josdejong/jsoneditor
 ## 2023-05-12, version 9.10.1
 
 - Fix #1515: a console warning is logged when using the option `showErrorTable`.
+- Upgraded to the latest version of `ace` and `jsonrepair`.
 
 
 ## 2023-02-20, version 9.10.0
