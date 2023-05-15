@@ -256,8 +256,12 @@ previewmode.create = function (container, options = {}) {
     }
   }
 
+  const errorTableVisible = Array.isArray(this.options.showErrorTable)
+    ? this.options.showErrorTable.includes(this.mode)
+    : this.options.showErrorTable === true
+
   this.errorTable = new ErrorTable({
-    errorTableVisible: true,
+    errorTableVisible,
     onToggleVisibility: function () {
       me.validate()
     },

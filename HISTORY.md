@@ -3,6 +3,14 @@
 https://github.com/josdejong/jsoneditor
 
 
+## 2023-05-12, version 9.10.2
+
+- Fix option `showErrorTable` (see #1515): 
+  - a console warning was logged when using the option `showErrorTable` 
+  - `showErrorTable: false` was not working
+  - `showErrorTable` was not working for `preview` mode
+
+
 ## 2023-05-12, version 9.10.1
 
 - Fix #1515: a console warning is logged when using the option `showErrorTable`.
