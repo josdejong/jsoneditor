@@ -202,7 +202,7 @@ export class SchemaTextCompleter {
                 }
                 return mergedSuggestions
               } else if (new RegExp(`^${path}${option}$`).test(pointer)) {
-                console.log('SchemaTextCompleter: Text suggestion match', { path: pointer, schemaPath: `${path}${option}`, suggestions: currentSuggestions[option] })
+                // console.log('SchemaTextCompleter: Text suggestion match', { path: pointer, schemaPath: `${path}${option}`, suggestions: currentSuggestions[option] })
                 return currentSuggestions[option]
               }
             }
