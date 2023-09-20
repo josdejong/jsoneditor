@@ -1131,7 +1131,7 @@ export function parseString (str) {
     return false
   }
 
-  if (str.length > 1 && str.charAt(0) === '0') {
+  if (/^0\d+$/.test(str)) { // to treat '001' as a string
     return str;
   }
 
