@@ -315,6 +315,7 @@ describe('util', () => {
     assert.strictEqual(parseString('false'), false)
     assert.strictEqual(parseString('+1'), 1)
     assert.strictEqual(parseString('01'), '01')
+    assert.strictEqual(parseString('001'), '001')
     assert.strictEqual(parseString(' '), ' ')
     assert.strictEqual(parseString(''), '')
     assert.strictEqual(parseString('"foo"'), '"foo"')
