@@ -1,4 +1,3 @@
-
 /**
  * Keep track on any history, be able
  * @param {function} onChange

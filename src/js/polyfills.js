@@ -1,4 +1,3 @@
-
 if (typeof Element !== 'undefined') {
   // Polyfill for array remove
   (() => {

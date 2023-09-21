@@ -1,4 +1,3 @@
-
 /**
  * @typedef {object} QueryOptions
  * @property {FilterOptions} [filter]
