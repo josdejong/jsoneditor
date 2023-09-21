@@ -25,7 +25,7 @@
     "test": "mocha test --require @babel/register",
     "lint": "standard --env=mocha",
     "format": "standard --env=mocha --fix",
-    "prepublishOnly": "npm test && npm run build"
+    "prepublishOnly": "npm run build-and-test"
   },
   "dependencies": {
     "ace-builds": "^1.27.0",

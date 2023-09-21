@@ -66,7 +66,6 @@ Install the libraries locally and test whether they work correctly:
 
     cd tmp-folder
     npm install jsoneditor
-    bower install jsoneditor
 
 
 ## Done
