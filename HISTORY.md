@@ -3,6 +3,12 @@
 https://github.com/josdejong/jsoneditor
 
 
+## 2023-09-21, version 9.10.3
+
+- Fix #1550: trimming zero in front of a number (#1549). Thanks @DarkFisk.
+- Updated dependencies, most notable `ace`, `jsonrepair`, and `vanilla-picker`.
+
+
 ## 2023-05-12, version 9.10.2
 
 - Fix option `showErrorTable` (see #1515): 

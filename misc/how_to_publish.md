@@ -29,7 +29,7 @@ Run the unit tests and validate whether all tests pass:
 
 Build the build (jsoneditor.js, jsoneditor.css, ...) files by running:
 
-    npm run build
+    npm run build-and-test
 
 After the build is complete, verify if the files are updated and contain the
 correct date and version number in the header.
