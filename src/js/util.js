@@ -1131,6 +1131,10 @@ export function parseString (str) {
     return false
   }
 
+  if (/^0\d+$/.test(str)) { // to treat '001' as a string
+    return str
+  }
+
   const num = Number(str) // will nicely fail with '123ab'
   const numFloat = parseFloat(str) // will nicely fail with '  '
   if (!isNaN(num) && !isNaN(numFloat)) {
