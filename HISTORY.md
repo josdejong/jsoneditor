@@ -3,7 +3,7 @@
 https://github.com/josdejong/jsoneditor
 
 
-## not yet published, version 9.10.4
+## 2023-11-08, version 9.10.4
 
 - Fix #1558: url not wrapping on Chrome in mode `view`, font-size increasing
   on mobile Webview.
