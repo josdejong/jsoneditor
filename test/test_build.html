@@ -103,7 +103,16 @@
       {
         "<button onclick=alert('oopsie!!!')>test xss</button>": "xss?"
       }
-    ]
+    ],
+    "wrap": {
+      "a" : "123456789012345678901234567890123456789001234567890",
+      "b" :
+        {
+          "c" : "123456789012345678901234567890123456789012345678",
+          "d" : "1234567890123456789012345678901234567890123456789012345",
+          "url": "https://github.com/josdejong/jsoneditor/issues/1558"
+        }
+    }
   };
 
   editorTest = new JSONEditor(container, options, json);

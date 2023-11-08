@@ -1,5 +1,8 @@
 .jsoneditor,
 .jsoneditor-modal {
+  -webkit-text-size-adjust: none;
+  text-size-adjust: none;
+
   input,
   input:not([type]),
   input[type="text"],

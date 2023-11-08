@@ -3,6 +3,12 @@
 https://github.com/josdejong/jsoneditor
 
 
+## not yet published, version 9.10.4
+
+- Fix #1558: url not wrapping on Chrome in mode `view`, font-size increasing
+  on mobile Webview.
+
+
 ## 2023-09-21, version 9.10.3
 
 - Fix #1550: trimming zero in front of a number (#1549). Thanks @DarkFisk.
