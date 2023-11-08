@@ -7,6 +7,7 @@ https://github.com/josdejong/jsoneditor
 
 - Fix #1558: url not wrapping on Chrome in mode `view`, font-size increasing
   on mobile Webview.
+- Upgraded to the latest version of `ace` and `jsonrepair`.
 
 
 ## 2023-09-21, version 9.10.3
