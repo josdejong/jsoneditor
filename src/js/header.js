@@ -6,7 +6,7 @@
  * It has various modes such as a tree editor, a code editor, and a plain text
  * editor.
  *
- * Supported browsers: Chrome, Firefox, Safari, Opera, Internet Explorer 8+
+ * Supported browsers: Chrome, Firefox, Safari, Edge
  *
  * @license
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
