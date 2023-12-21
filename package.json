@@ -33,7 +33,7 @@
     "javascript-natural-sort": "^0.7.1",
     "jmespath": "^0.16.0",
     "json-source-map": "^0.6.1",
-    "jsonrepair": "^3.4.0",
+    "jsonrepair": "3.1.0",
     "mobius1-selectr": "^2.4.13",
     "picomodal": "^3.0.0",
     "vanilla-picker": "^2.12.2"
