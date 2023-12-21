@@ -5,7 +5,7 @@ https://github.com/josdejong/jsoneditor
 
 ## 2023-12-21, version 10.0.0
 
-- BREAKING CHANGE: dropped official support for Internet Explorer 11.
+- BREAKING CHANGE: dropped support for Internet Explorer 11.
 - Update dependencies `ace` and `jsonrepair`.
 
 
