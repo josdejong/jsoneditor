@@ -3,6 +3,13 @@
 https://github.com/josdejong/jsoneditor
 
 
+## 2024-03-18, version 10.0.2
+
+- Fix: autocompletion sometimes throwing an error when there are no suggestions.
+  Thanks @jpage-godaddy.
+- Update dependencies `ace` and `jsonrepair`.
+
+
 ## 2024-02-09, version 10.0.1
 
 - Fix #1570: Spanish grammar corrections (#1571). Thanks @gonchesan.
