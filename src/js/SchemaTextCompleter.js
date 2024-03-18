@@ -178,7 +178,7 @@ export class SchemaTextCompleter {
                 }
               }
               return last
-            })
+            }, null)
             if (typeof option === 'string') {
               if (currentSuggestions[option]?.refs?.length) {
                 const mergedSuggestions = {}
