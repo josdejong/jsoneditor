@@ -3,6 +3,13 @@
 https://github.com/josdejong/jsoneditor
 
 
+## 2024-04-25, version 10.0.3
+
+- Update dependencies `ace-builds`, `jsonrepair`, and `vanilla-picker`.
+- Fix: fix HTML open tag wrongly being `label` instead of `div`. 
+  Thanks @ppetkow.
+
+
 ## 2024-03-18, version 10.0.2
 
 - Fix: autocompletion sometimes throwing an error when there are no suggestions.
