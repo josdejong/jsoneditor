@@ -3,6 +3,12 @@
 https://github.com/josdejong/jsoneditor
 
 
+## 2024-05-09, version 10.0.4
+
+- Fix: #1591 select contents in tree mode only when using the left mouse button, 
+  not the middle button or right mouse button.
+
+
 ## 2024-04-25, version 10.0.3
 
 - Update dependencies `ace-builds`, `jsonrepair`, and `vanilla-picker`.
