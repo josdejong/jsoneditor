@@ -1131,7 +1131,10 @@ export function parseString (str) {
     return false
   }
 
-  if (/^0\d+$/.test(str)) { // to treat '001' as a string
+  const containsLeadingZero = /^0\d+$/
+  const startsWithZeroPrefix = /^0[xbo]/ // hex, binary, octal numbers
+  if (containsLeadingZero.test(str) || startsWithZeroPrefix.test(str)) {
+    // treat '001', '0x1A', '0b1101', and '0o3700' as a string
     return str
   }
 
