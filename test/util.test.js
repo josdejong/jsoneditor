@@ -328,6 +328,9 @@ describe('util', () => {
     assert.strictEqual(parseString('0x1a'), '0x1a')
     assert.strictEqual(parseString('0b1101'), '0b1101')
     assert.strictEqual(parseString('0o3700'), '0o3700')
+    assert.strictEqual(parseString('0X1a'), '0X1a')
+    assert.strictEqual(parseString('0B1101'), '0B1101')
+    assert.strictEqual(parseString('0O3700'), '0O3700')
   })
 
   it('should find a unique name', () => {

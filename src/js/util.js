@@ -1132,7 +1132,7 @@ export function parseString (str) {
   }
 
   const containsLeadingZero = /^0\d+$/
-  const startsWithZeroPrefix = /^0[xbo]/ // hex, binary, octal numbers
+  const startsWithZeroPrefix = /^0[xbo]/i // hex, binary, octal numbers
   if (containsLeadingZero.test(str) || startsWithZeroPrefix.test(str)) {
     // treat '001', '0x1A', '0b1101', and '0o3700' as a string
     return str
