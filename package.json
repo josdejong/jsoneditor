@@ -1,6 +1,6 @@
 {
   "name": "jsoneditor",
-  "version": "10.0.3",
+  "version": "10.1.0",
   "main": "./dist/jsoneditor.min.js",
   "description": "A web-based tool to view, edit, format, and validate JSON",
   "tags": [
