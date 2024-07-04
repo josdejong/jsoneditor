@@ -2,6 +2,10 @@
 
 <https://github.com/josdejong/jsoneditor>
 
+## unpublished changes since version 10.1.0
+
+- Fix: upgrade to the latest version of `ace`. 
+
 ## 2024-06-19, version 10.1.0
 
 - Feat: upgrade to the latest version of `ace` and `jsonrepair`
