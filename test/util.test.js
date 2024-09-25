@@ -376,6 +376,11 @@ describe('util', () => {
       'b (copy 2)',
       'c'
     ]), 'b (copy 3)')
+
+    assert.strictEqual(findUniqueName('b (copy)', [
+      'a',
+      'c'
+    ]), 'b (copy)')
   })
 
   it('should format a document size in a human readable way', () => {

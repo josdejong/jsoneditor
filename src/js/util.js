@@ -1021,6 +1021,10 @@ export function get (object, path) {
  * @param {Array} existingPropNames    Array with existing prop names
  */
 export function findUniqueName (name, existingPropNames) {
+  if (existingPropNames.indexOf(name) === -1) {
+    return name
+  }
+
   const strippedName = name.replace(/ \(copy( \d+)?\)$/, '')
   let validName = strippedName
   let i = 1
