@@ -1,6 +1,8 @@
+@use "variables";
+
 .jsoneditor {
   &-search {
-    font-family: $jse-font;
+    font-family: variables.$jse-font;
     position: absolute;
     right: 4px;
     top: 4px;
@@ -9,13 +11,13 @@
     display: flex;
 
     input {
-      color: $jse-content-color;
+      color: variables.$jse-content-color;
       width: 120px;
       border: none;
       outline: none;
       margin: 1px;
       line-height: 20px;
-      font-family: $jse-font;
+      font-family: variables.$jse-font;
     }
 
     button {
@@ -24,7 +26,7 @@
       padding: 0;
       margin: 0;
       border: none;
-      background: $jse-icons-url;
+      background: variables.$jse-icons-url;
       vertical-align: top;
 
       &:hover {
@@ -57,15 +59,15 @@
   }
 
   &-results {
-    font-family: $jse-font;
-    color: $jse-white;
+    font-family: variables.$jse-font;
+    color: variables.$jse-white;
     padding-right: 5px;
     line-height: 26px;
   }
 
   &-frame {
     border: 1px solid transparent;
-    background-color: $jse-white;
+    background-color: variables.$jse-white;
     padding: 0 2px;
     margin: 0;
   }

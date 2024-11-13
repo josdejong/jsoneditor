@@ -5,8 +5,9 @@
 ## unpublished changes since version 10.1.0
 
 - Fix: when editing a key giving it a ` (copy)` suffix, the suffix was removed. 
-- Fix: upgrade to the latest version of `ace`.
 - Fix: #1627 `onValidationError` did not always trigger.
+- Fix: upgrade to the latest version of `ace`.
+- Fix: upgrade to the latest version of `sass`.
 
 ## 2024-06-19, version 10.1.0
 

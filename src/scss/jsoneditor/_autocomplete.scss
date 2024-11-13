@@ -1,10 +1,12 @@
+@use "variables";
+
 .jsoneditor {
   .autocomplete {
     &.dropdown {
       position: absolute;
-      background: $jse-white;
-      box-shadow: $jse-box-shadow;
-      border: 1px solid $jse-bar-border;
+      background: variables.$jse-white;
+      box-shadow: variables.$jse-box-shadow;
+      border: 1px solid variables.$jse-bar-border;
       overflow-x: hidden;
       overflow-y: auto;
       cursor: default;
@@ -12,17 +14,17 @@
       padding: 5px;
       text-align: left;
       outline: 0;
-      font-family: $jse-font-mono;
-      font-size: $jse-font-size;
+      font-family: variables.$jse-font-mono;
+      font-size: variables.$jse-font-size;
       .item {
-        color: $jse-content-color;
+        color: variables.$jse-content-color;
         &.hover {
-          background-color: $jse-light-bg;
+          background-color: variables.$jse-light-bg;
         }
       }
     }
     &.hint {
-      color: $jse-date;
+      color: variables.$jse-date;
       top: 4px;
       left: 4px;
     }

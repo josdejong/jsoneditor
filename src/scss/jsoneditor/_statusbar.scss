@@ -1,13 +1,15 @@
+@use "variables";
+
 .jsoneditor-statusbar {
   line-height: 26px;
   height: 26px;
-  color: $jse-readonly;
-  background-color: $jse-bar-bg;
-  border-top: 1px solid $jse-bar-border;
+  color: variables.$jse-readonly;
+  background-color: variables.$jse-bar-bg;
+  border-top: 1px solid variables.$jse-bar-border;
   -moz-box-sizing: border-box;
   -webkit-box-sizing: border-box;
   box-sizing: border-box;
-  font-size: $jse-font-size;
+  font-size: variables.$jse-font-size;
   & > .jsoneditor-curserinfo-val {
     margin-right: 12px;
   }
@@ -20,7 +22,7 @@
     height: 24px;
     padding: 0;
     margin-top: 1px;
-    background-image: $jse-icons-url;
+    background-image: variables.$jse-icons-url;
     background-position: -168px -48px;
     cursor: pointer;
   }
@@ -35,7 +37,7 @@
     height: 24px;
     padding: 0;
     margin: 1px;
-    background-image: $jse-icons-url;
+    background-image: variables.$jse-icons-url;
     background-position: -25px 0px;
   }
   .jsoneditor-array-info {

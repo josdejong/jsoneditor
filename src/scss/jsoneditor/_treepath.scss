@@ -1,3 +1,5 @@
+@use "variables";
+
 .jsoneditor-treepath {
   padding: 0 5px;
   overflow: hidden;
@@ -7,9 +9,9 @@
     word-wrap: break-word;
     white-space: normal;
     position: absolute;
-    background-color: $jse-light-bg;
+    background-color: variables.$jse-light-bg;
     z-index: 1;
-    box-shadow: $jse-box-shadow;
+    box-shadow: variables.$jse-box-shadow;
     span {
       &.jsoneditor-treepath-show-all-btn {
         display: none;
@@ -24,7 +26,7 @@
   }
   .jsoneditor-treepath-show-all-btn {
     position: absolute;
-    background-color: $jse-light-bg;
+    background-color: variables.$jse-light-bg;
     left: 0;
     height: 20px;
     padding: 0 3px;
@@ -32,13 +34,13 @@
   }
   .jsoneditor-treepath-element {
     margin: 1px;
-    font-family: $jse-font;
-    font-size:  $jse-font-size;
+    font-family: variables.$jse-font;
+    font-size:  variables.$jse-font-size;
   }
   .jsoneditor-treepath-seperator {
     margin: 2px;
     font-size: 9pt;
-    font-family: $jse-font;
+    font-family: variables.$jse-font;
   }
 }
 .jsoneditor-treepath span.jsoneditor-treepath-element:hover,

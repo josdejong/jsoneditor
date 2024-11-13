@@ -1,6 +1,8 @@
+@use "variables";
+
 .jsoneditor {
-  color: $jse-content-color;
-  border: thin solid $jse-blue;
+  color: variables.$jse-content-color;
+  border: thin solid variables.$jse-blue;
   -moz-box-sizing: border-box;
   -webkit-box-sizing: border-box;
   box-sizing: border-box;
@@ -38,30 +40,30 @@ div {
       }
     }
     &.jsoneditor-string {
-      color: $jse-string;
+      color: variables.$jse-string;
     }
     &.jsoneditor-number {
-      color: $jse-number;
+      color: variables.$jse-number;
     }
     &.jsoneditor-boolean {
-      color: $jse-boolean;
+      color: variables.$jse-boolean;
     }
     &.jsoneditor-null {
-      color: $jse-null;
+      color: variables.$jse-null;
     }
     &.jsoneditor-color-value {
-      color: $jse-color-value;
+      color: variables.$jse-color-value;
     }
     &.jsoneditor-invalid {
-      color: $jse-invalid;
+      color: variables.$jse-invalid;
     }
   }
   &.jsoneditor-readonly {
     min-width: 16px;
-    color: $jse-readonly;
+    color: variables.$jse-readonly;
   }
   &.jsoneditor-empty {
-    border-color: $jse-bar-border;
+    border-color: variables.$jse-bar-border;
     border-style: dashed;
     border-radius: 2px;
   }
@@ -78,7 +80,7 @@ div {
       &.jsoneditor-separator {
         padding: 3px 0;
         vertical-align: top;
-        color: $jse-readonly;
+        color: variables.$jse-readonly;
       }
       &.jsoneditor-tree {
         vertical-align: top;
@@ -87,8 +89,8 @@ div {
     &.busy {
       pre {
         &.jsoneditor-preview {
-          background: $jse-preview;
-          color: $jse-readonly;
+          background: variables.$jse-preview;
+          color: variables.$jse-readonly;
         }
       }
       div {
@@ -118,7 +120,7 @@ div {
     }
   }
   &.jsoneditor-default {
-    color: $jse-readonly;
+    color: variables.$jse-readonly;
     padding-left: 10px;
   }
   &.jsoneditor-tree {
@@ -126,7 +128,7 @@ div {
     height: 100%;
     position: relative;
     overflow: auto;
-    background: $jse-white;
+    background: variables.$jse-white;
 
     button {
       &.jsoneditor-button {
@@ -137,9 +139,9 @@ div {
         border: none;
         cursor: pointer;
         background-color: transparent;
-        background-image: $jse-icons-url;
+        background-image: variables.$jse-icons-url;
         &:focus {
-          background-color: $jse-preview;
+          background-color: variables.$jse-preview;
           outline: #e5e5e5 solid 1px;
         }
       }
@@ -157,7 +159,7 @@ div {
         background: none;
       }
       &.jsoneditor-dragarea {
-        background-image: $jse-icons-url;
+        background-image: variables.$jse-icons-url;
         background-position: -72px -72px;
         cursor: move;
       }
@@ -170,14 +172,14 @@ div {
         display: inline-block;
         padding: 3px 4px;
         margin: 2px 0;
-        background-color: $jse-separator;
+        background-color: variables.$jse-separator;
         border-radius: 3px;
-        color: $jse-readonly;
-        font-family: $jse-font;
-        font-size: $jse-font-size;
+        color: variables.$jse-readonly;
+        font-family: variables.$jse-font;
+        font-size: variables.$jse-font-size;
         a {
           display: inline-block;
-          color: $jse-readonly;
+          color: variables.$jse-readonly;
         }
       }
       &.jsoneditor-color {
@@ -185,7 +187,7 @@ div {
         width: 12px;
         height: 12px;
         margin: 4px;
-        border: 1px solid $jse-readonly;
+        border: 1px solid variables.$jse-readonly;
         cursor: pointer;
 
         &.jsoneditor-color-readonly {
@@ -193,9 +195,9 @@ div {
         }
       }
       &.jsoneditor-date {
-        background: $jse-date;
-        color: $jse-white;
-        font-family: $jse-font;
+        background: variables.$jse-date;
+        color: variables.$jse-white;
+        font-family: variables.$jse-font;
         border-radius: 3px;
         display: inline-block;
         padding: 3px;
@@ -217,7 +219,7 @@ div {
         height: 24px;
         padding: 0;
         margin: 0 4px 0 0;
-        background-image: $jse-icons-url;
+        background-image: variables.$jse-icons-url;
         background-position: -168px -48px;
         background-color: transparent;
       }
@@ -258,23 +260,23 @@ div {
     text-align: center;
     display: none;
     span {
-      background-color: $jse-busy;
-      border: 1px solid $jse-busy-border-color;
+      background-color: variables.$jse-busy;
+      border: 1px solid variables.$jse-busy-border-color;
       border-radius: 3px;
       padding: 5px 15px;
-      box-shadow: $jse-box-shadow-sm;
+      box-shadow: variables.$jse-box-shadow-sm;
     }
   }
 }
 div.jsoneditor-field.jsoneditor-empty::after,
 div.jsoneditor-value.jsoneditor-empty::after {
   pointer-events: none;
-  color: $jse-empty;
+  color: variables.$jse-empty;
   font-size: 8pt;
 }
 div.jsoneditor-value.jsoneditor-url,
 a.jsoneditor-value.jsoneditor-url {
-  color: $jse-string;
+  color: variables.$jse-string;
   text-decoration: underline;
 }
 a {
@@ -288,7 +290,7 @@ a {
 }
 a.jsoneditor-value.jsoneditor-url:hover,
 a.jsoneditor-value.jsoneditor-url:focus {
-  color: $jse-number;
+  color: variables.$jse-number;
 }
 div.jsoneditor-field[contenteditable="true"]:focus,
 div.jsoneditor-field[contenteditable="true"]:hover,
@@ -296,8 +298,8 @@ div.jsoneditor-value[contenteditable="true"]:focus,
 div.jsoneditor-value[contenteditable="true"]:hover,
 div.jsoneditor-field.jsoneditor-highlight,
 div.jsoneditor-value.jsoneditor-highlight {
-  background-color: $jse-busy;
-  border: 1px solid $jse-busy-border-color;
+  background-color: variables.$jse-busy;
+  border: 1px solid variables.$jse-busy-border-color;
   border-radius: 2px;
 }
 div.jsoneditor-field.jsoneditor-highlight-active,
@@ -306,8 +308,8 @@ div.jsoneditor-field.jsoneditor-highlight-active:hover,
 div.jsoneditor-value.jsoneditor-highlight-active,
 div.jsoneditor-value.jsoneditor-highlight-active:focus,
 div.jsoneditor-value.jsoneditor-highlight-active:hover {
-  background-color: $jse-highlight-bg;
-  border: 1px solid $jse-highlight-border-color;
+  background-color: variables.$jse-highlight-bg;
+  border: 1px solid variables.$jse-highlight-border-color;
   border-radius: 2px;
 }
 div.jsoneditor-value.jsoneditor-object,
@@ -322,14 +324,14 @@ tr.jsoneditor-selected.jsoneditor-first button.jsoneditor-contextmenu-button {
 }
 div.jsoneditor-tree div.jsoneditor-show-more a:hover,
 div.jsoneditor-tree div.jsoneditor-show-more a:focus {
-  color: $jse-number;
+  color: variables.$jse-number;
 }
 textarea.jsoneditor-text,
 .ace-jsoneditor {
   min-height: 150px;
 
   &.ace_editor {
-    font-family: $jse-font-mono;
+    font-family: variables.$jse-font-mono;
   }
 }
 textarea {
@@ -342,13 +344,13 @@ textarea {
     box-sizing: border-box;
     outline-width: 0;
     border: none;
-    background-color: $jse-white;
+    background-color: variables.$jse-white;
     resize: none;
   }
 }
 tr.jsoneditor-highlight,
 tr.jsoneditor-selected {
-  background-color: $jse-empty;
+  background-color: variables.$jse-empty;
 }
 tr.jsoneditor-selected button.jsoneditor-dragarea,
 tr.jsoneditor-selected button.jsoneditor-contextmenu-button {
@@ -377,9 +379,9 @@ div.jsoneditor textarea,
 pre.jsoneditor-preview,
 .jsoneditor-schema-error,
 .jsoneditor-popover {
-  font-family: $jse-font-mono;
-  font-size: $jse-font-size;
-  color: $jse-content-color;
+  font-family: variables.$jse-font-mono;
+  font-size: variables.$jse-font-size;
+  color: variables.$jse-content-color;
 }
 
 .jsoneditor-schema-error {
@@ -393,10 +395,10 @@ pre.jsoneditor-preview,
 }
 
 .jsoneditor-popover {
-  background-color: $jse-popover-bg;
+  background-color: variables.$jse-popover-bg;
   border-radius: 3px;
-  box-shadow: $jse-box-shadow-sm;
-  color: $jse-white;
+  box-shadow: variables.$jse-box-shadow-sm;
+  color: variables.$jse-white;
   padding: 7px 10px;
   position: absolute;
   cursor: auto;
@@ -405,7 +407,7 @@ pre.jsoneditor-preview,
     bottom: 32px;
     left: -98px;
     &:before {
-      border-top: 7px solid $jse-popover-bg;
+      border-top: 7px solid variables.$jse-popover-bg;
       bottom: -7px;
     }
   }
@@ -413,7 +415,7 @@ pre.jsoneditor-preview,
     top: 32px;
     left: -98px;
     &:before {
-      border-bottom: 7px solid $jse-popover-bg;
+      border-bottom: 7px solid variables.$jse-popover-bg;
       top: -7px;
     }
   }
@@ -421,7 +423,7 @@ pre.jsoneditor-preview,
     top: -7px;
     right: 32px;
     &:before {
-      border-left: 7px solid $jse-popover-bg;
+      border-left: 7px solid variables.$jse-popover-bg;
       border-top: 7px solid transparent;
       border-bottom: 7px solid transparent;
       content: "";
@@ -437,7 +439,7 @@ pre.jsoneditor-preview,
     top: -7px;
     left: 32px;
     &:before {
-      border-right: 7px solid $jse-popover-bg;
+      border-right: 7px solid variables.$jse-popover-bg;
       border-top: 7px solid transparent;
       border-bottom: 7px solid transparent;
       content: "";
@@ -500,8 +502,8 @@ pre.jsoneditor-preview,
     margin: auto;
     bottom: 31px;
     left: calc(50% - 92px);
-    color: $jse-readonly;
-    background-color: $jse-light-bg;
+    color: variables.$jse-readonly;
+    background-color: variables.$jse-light-bg;
     padding: 7px 15px;
     border-radius: 8px;
     &.visible {
@@ -518,7 +520,7 @@ pre.jsoneditor-preview,
   .jsoneditor-text-errors {
     width: 100%;
     border-collapse: collapse;
-    border-top: 1px solid $jse-highlight-border-color;
+    border-top: 1px solid variables.$jse-highlight-border-color;
     td {
       padding: 3px 6px;
       vertical-align: middle;
@@ -528,9 +530,9 @@ pre.jsoneditor-preview,
       }
     }
     tr {
-      background-color: $jse-busy;
+      background-color: variables.$jse-busy;
       &.parse-error {
-        background-color: $jse-error;
+        background-color: variables.$jse-error;
       }
     }
   }
@@ -546,13 +548,13 @@ pre.jsoneditor-preview,
   }
   tr {
     .jsoneditor-schema-error {
-      background-image: $jse-icons-url;
+      background-image: variables.$jse-icons-url;
       background-position: -168px -48px;
       background-color: transparent;
     }
     &.parse-error {
       .jsoneditor-schema-error {
-        background-image: $jse-icons-url;
+        background-image: variables.$jse-icons-url;
         background-position: -25px 0px;
         background-color: transparent;
       }

@@ -1,3 +1,5 @@
+@use "variables";
+
 .jsoneditor-contextmenu-root {
   position: relative;
   width: 0;
@@ -13,9 +15,9 @@
     top: 0;
     width: 128px;
     height: auto;
-    background: $jse-white;
-    border: 1px solid $jse-bar-border;
-    box-shadow: $jse-box-shadow;
+    background: variables.$jse-white;
+    border: 1px solid variables.$jse-bar-border;
+    box-shadow: variables.$jse-box-shadow;
     list-style: none;
     margin: 0;
     padding: 0;
@@ -27,10 +29,10 @@
       height: auto;
       border: none;
       cursor: pointer;
-      color: $jse-contextmenu-color;
+      color: variables.$jse-contextmenu-color;
       background: transparent;
-      font-size: $jse-font-size;
-      font-family: $jse-font;
+      font-size: variables.$jse-font-size;
+      font-family: variables.$jse-font;
       box-sizing: border-box;
       text-align: left;
       &::-moz-focus-inner {
@@ -44,7 +46,7 @@
         float: right;
         width: 32px;
         height: 24px;
-        border-left: 1px solid $jse-separator;
+        border-left: 1px solid variables.$jse-separator;
       }
     }
     li {
@@ -55,7 +57,7 @@
         left: -10px;
         top: 0;
         border: none;
-        box-shadow: $jse-box-shadow-inner;
+        box-shadow: variables.$jse-box-shadow-inner;
         padding: 0 10px;
         -webkit-transition: all 0.3s ease-out;
         -moz-transition: all 0.3s ease-out;
@@ -80,7 +82,7 @@
           height: 24px;
           padding: 0;
           margin: 0 4px 0 0;
-          background-image: $jse-icons-url;
+          background-image: variables.$jse-icons-url;
           background-position: 0 -72px;
         }
       }
@@ -95,7 +97,7 @@
     border: none;
     padding: 0;
     margin: 0;
-    background-image: $jse-icons-url;
+    background-image: variables.$jse-icons-url;
   }
   .jsoneditor-text {
     padding: 4px 0 4px 24px;
@@ -106,7 +108,7 @@
   }
   .jsoneditor-separator {
     height: 0;
-    border-top: 1px solid $jse-separator;
+    border-top: 1px solid variables.$jse-separator;
     padding-top: 5px;
     margin-top: 5px;
   }
@@ -186,27 +188,27 @@
 }
 .jsoneditor-contextmenu .jsoneditor-menu button:hover,
 .jsoneditor-contextmenu .jsoneditor-menu button:focus {
-  color: $jse-content-color;
-  background-color: $jse-preview;
+  color: variables.$jse-content-color;
+  background-color: variables.$jse-preview;
   outline: none;
 }
 .jsoneditor-contextmenu .jsoneditor-menu li button.jsoneditor-selected,
 .jsoneditor-contextmenu .jsoneditor-menu li button.jsoneditor-selected:hover,
 .jsoneditor-contextmenu .jsoneditor-menu li button.jsoneditor-selected:focus {
-  color: $jse-white;
-  background-color: $jse-number;
+  color: variables.$jse-white;
+  background-color: variables.$jse-number;
 }
 .jsoneditor-contextmenu .jsoneditor-menu li ul li button:hover,
 .jsoneditor-contextmenu .jsoneditor-menu li ul li button:focus {
-  background-color: $jse-preview;
+  background-color: variables.$jse-preview;
 }
 
 .jsoneditor-modal {
   max-width: 95%;
   border-radius: 2px !important;
   padding: 45px 15px 15px 15px !important;
-  box-shadow: $jse-box-shadow;
-  color: $jse-contextmenu-color;
+  box-shadow: variables.$jse-box-shadow;
+  color: variables.$jse-contextmenu-color;
   line-height: 1.3em;
   &.jsoneditor-modal-transform {
     width: 600px !important;
@@ -220,10 +222,10 @@
     padding: 0 10px;
     height: 30px;
     line-height: 30px;
-    font-family: $jse-font;
+    font-family: variables.$jse-font;
     font-size: 11pt;
-    background: $jse-blue;
-    color: $jse-white;
+    background: variables.$jse-blue;
+    color: variables.$jse-white;
   }
   table {
     width: 100%;
@@ -248,7 +250,7 @@
     }
   }
   a {
-    color: $jse-blue;
+    color: variables.$jse-blue;
   }
   .jsoneditor-jmespath-block {
     margin-bottom: 10px;
@@ -258,7 +260,7 @@
     font-size: 24px !important;
     top: 7px !important;
     right: 7px !important;
-    color: $jse-white;
+    color: variables.$jse-white;
   }
   input {
     padding: 4px;
@@ -267,8 +269,8 @@
     cursor: inherit;
   }
   input[disabled] {
-    background: $jse-empty;
-    color: $jse-readonly;
+    background: variables.$jse-empty;
+    color: variables.$jse-readonly;
   }
   .jsoneditor-select-wrapper {
     position: relative;
@@ -295,7 +297,7 @@
     appearance: none;
     text-indent: 0;
     text-overflow: "";
-    font-size: $jse-font-size;
+    font-size: variables.$jse-font-size;
     line-height: 1.5em;
     &::-ms-expand {
       display: none;
@@ -319,10 +321,10 @@
     }
   }
   .jsoneditor-transform-preview {
-    background: $jse-preview;
+    background: variables.$jse-preview;
     height: 200px;
     &.jsoneditor-error {
-      color: $jse-number;
+      color: variables.$jse-number;
     }
   }
   .jsoneditor-jmespath-wizard {
@@ -379,10 +381,10 @@
     width: 100%;
   }
   .selectr-selected {
-    border-color: $jse-bar-border;
+    border-color: variables.$jse-bar-border;
     padding: 4px 28px 4px 8px;
     .selectr-tag {
-      background-color: $jse-blue;
+      background-color: variables.$jse-blue;
       border-radius: 5px;
     }
   }
@@ -392,7 +394,7 @@
   text-align: left;
   vertical-align: middle;
   font-weight: normal;
-  color: $jse-contextmenu-color;
+  color: variables.$jse-contextmenu-color;
   border-spacing: 0;
   border-collapse: collapse;
 }
@@ -403,8 +405,8 @@
 .jsoneditor-modal input[type="text"]:focus,
 .jsoneditor-modal #query {
   background: #ffffff;
-  border: 1px solid $jse-bar-border;
-  color: $jse-contextmenu-color;
+  border: 1px solid variables.$jse-bar-border;
+  color: variables.$jse-contextmenu-color;
   border-radius: 3px;
   padding: 4px;
 }
@@ -425,18 +427,18 @@
 .jsoneditor-modal input[type="text"],
 .jsoneditor-modal #query {
   font-size: 10.5pt;
-  font-family: $jse-font;
+  font-family: variables.$jse-font;
 }
 .jsoneditor-modal #query,
 .jsoneditor-modal .jsoneditor-transform-preview {
-  font-family: $jse-font-mono;
-  font-size: $jse-font-size;
+  font-family: variables.$jse-font-mono;
+  font-size: variables.$jse-font-size;
   width: 100%;
   box-sizing: border-box;
 }
 .jsoneditor-modal input[type="button"],
 .jsoneditor-modal input[type="submit"] {
-  background: $jse-preview;
+  background: variables.$jse-preview;
   padding: 4px 20px;
 }
 .jsoneditor-modal select,
@@ -445,7 +447,7 @@
 }
 .jsoneditor-modal .jsoneditor-button-group.jsoneditor-button-group-value-asc input.jsoneditor-button-asc,
 .jsoneditor-modal .jsoneditor-button-group.jsoneditor-button-group-value-desc input.jsoneditor-button-desc {
-  background: $jse-blue;
-  border-color: $jse-blue;
-  color: $jse-white;
+  background: variables.$jse-blue;
+  border-color: variables.$jse-blue;
+  color: variables.$jse-white;
 }
