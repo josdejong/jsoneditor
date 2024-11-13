@@ -1235,18 +1235,21 @@ export function contains (array, item) {
  * @param {Array} prevErr previous validation errors
  */
 export function isValidationErrorChanged (currErr, prevErr) {
-  if (!prevErr && !currErr) { return false }
-  if ((prevErr && !currErr) || (!prevErr && currErr)) { return true }
-  if (prevErr.length !== currErr.length) { return true }
+  if (!currErr && !prevErr) {
+    return false
+  }
+  if (!Array.isArray(currErr) || !Array.isArray(prevErr) || prevErr.length !== currErr.length) {
+    return true
+  }
 
-  for (let i = 0; i < currErr.length; ++i) {
-    let pErr
-    if (currErr[i].type === 'error') {
-      pErr = prevErr.find(p => p.line === currErr[i].line)
-    } else {
-      pErr = prevErr.find(p => p.dataPath === currErr[i].dataPath && p.schemaPath === currErr[i].schemaPath)
-    }
-    if (!pErr) {
+  for (let i = 0; i < currErr.length; i++) {
+    const currItem = currErr[i]
+    const prevItem = prevErr[i]
+
+    if (
+      currItem.type !== prevItem.type ||
+      JSON.stringify(currItem.error) !== JSON.stringify(prevItem.error)
+    ) {
       return true
     }
   }
@@ -1257,7 +1260,7 @@ export function isValidationErrorChanged (currErr, prevErr) {
 /**
  * Uniquely merge array of elements
  * @param {Array<string|number>} inputArray1
- * @param {Array<string|number?} inputArray2
+ * @param {Array<string|number>} inputArray2
  * @returns {Array<string|number>} an array with unique merged elements
  */
 export function uniqueMergeArrays (inputArray1, inputArray2) {

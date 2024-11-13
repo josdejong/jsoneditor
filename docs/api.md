@@ -193,7 +193,7 @@ Constructs a new JSONEditor.
 - `{function} onValidationError(errors: ValidationError[])`
 
   Set a callback function for validation and parse errors. Available in all modes.
-  The `ValidationError` contains a `type`, `path`, and `message`. 
+  The `ValidationError` contains a `type`, and an `error` object. 
 
   On validation of the json, if errors of any kind were found this callback is invoked with the errors data.
 
