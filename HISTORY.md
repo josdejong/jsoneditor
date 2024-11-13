@@ -2,7 +2,7 @@
 
 <https://github.com/josdejong/jsoneditor>
 
-## unpublished changes since version 10.1.0
+## 2024-11-13, version 10.1.1
 
 - Fix: when editing a key giving it a ` (copy)` suffix, the suffix was removed. 
 - Fix: #1627 `onValidationError` did not always trigger.
