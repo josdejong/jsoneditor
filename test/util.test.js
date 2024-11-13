@@ -86,10 +86,10 @@ describe('util', () => {
   })
 
   describe('isValidationErrorChanged', () => {
-    const err1 = { type: 'validation', error: { keyword: 'enum', dataPath: '.gender', schemaPath: '#/properties/gender/enum', params: { allowedValues: ['male', 'female'] }, message: 'should be equal to one of: "male", "female"', schema: ['male', 'female'], parentSchema: { title: 'Gender', enum: ['male', 'female'] }, data: null, type: 'validation' }}
-    const err2 = { type: 'validation', error: { keyword: 'type', dataPath: '.age', schemaPath: '#/properties/age/type', params: { type: 'integer' }, message: 'should be integer', schema: 'integer', parentSchema: { description: 'Age in years', type: 'integer', minimum: 0, examples: [28, 32] }, data: '28', type: 'validation' }}
-    const err3 = { type: 'validation', error: { dataPath: '.gender', message: 'Member must be an object with properties "name" and "age"' }}
-    const err3b = { type: 'validation', error: { dataPath: '.gender', message: 'Must be an object' }}
+    const err1 = { type: 'validation', error: { keyword: 'enum', dataPath: '.gender', schemaPath: '#/properties/gender/enum', params: { allowedValues: ['male', 'female'] }, message: 'should be equal to one of: "male", "female"', schema: ['male', 'female'], parentSchema: { title: 'Gender', enum: ['male', 'female'] }, data: null, type: 'validation' } }
+    const err2 = { type: 'validation', error: { keyword: 'type', dataPath: '.age', schemaPath: '#/properties/age/type', params: { type: 'integer' }, message: 'should be integer', schema: 'integer', parentSchema: { description: 'Age in years', type: 'integer', minimum: 0, examples: [28, 32] }, data: '28', type: 'validation' } }
+    const err3 = { type: 'validation', error: { dataPath: '.gender', message: 'Member must be an object with properties "name" and "age"' } }
+    const err3b = { type: 'validation', error: { dataPath: '.gender', message: 'Must be an object' } }
 
     it('empty value for both current and previous error should return false', () => {
       assert.strictEqual(isValidationErrorChanged(), false)
