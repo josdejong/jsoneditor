@@ -34,7 +34,6 @@
     "jmespath": "^0.16.0",
     "json-source-map": "^0.6.1",
     "jsonrepair": "^3.8.1",
-    "mobius1-selectr": "^2.4.13",
     "picomodal": "^3.0.0",
     "vanilla-picker": "^2.12.3"
   },

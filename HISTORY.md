@@ -2,6 +2,11 @@
 
 <https://github.com/josdejong/jsoneditor>
 
+## not yet published, version 10.1.2
+
+- Fix: #1637 remove `mobius1-selectr` from the list with dependencies to get 
+  rid of a security vulnerability in its docs
+
 ## 2024-11-13, version 10.1.1
 
 - Fix: when editing a key giving it a ` (copy)` suffix, the suffix was removed. 
