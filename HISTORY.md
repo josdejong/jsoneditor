@@ -2,10 +2,10 @@
 
 <https://github.com/josdejong/jsoneditor>
 
-## not yet published, version 10.1.2
+## 2024-12-18, version 10.1.2
 
 - Fix: #1637 remove `mobius1-selectr` from the list with dependencies to get 
-  rid of a security vulnerability in its docs
+  rid of a security vulnerability in its docs.
 
 ## 2024-11-13, version 10.1.1
 
