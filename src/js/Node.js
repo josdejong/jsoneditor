@@ -4486,7 +4486,91 @@ Node._findEnum = schema => {
 }
 
 /**
+ * Implementation for _findSchema
+ * @param {Object} topLevelSchema
+ * @param {Object} schemaRefs
+ * @param {Array.<string | number>} path
+ * @param {Object} currentSchema
+ * @return {Object | boolean | null}
+ * @private
+ */
+Node._findOneSchema = (topLevelSchema, schemaRefs, path, currentSchema) => {
+  const nextPath = path.slice(1, path.length)
+  const nextKey = path[0]
+
+  if (typeof currentSchema === 'object' && '$ref' in currentSchema && typeof currentSchema.$ref === 'string') {
+    const ref = currentSchema.$ref
+    if (ref in schemaRefs) {
+      currentSchema = schemaRefs[ref]
+    } else if (ref.startsWith('#/')) {
+      const refPath = ref.substring(2).split('/')
+      currentSchema = topLevelSchema
+      for (const segment of refPath) {
+        if (segment in currentSchema) {
+          currentSchema = currentSchema[segment]
+        } else {
+          throw Error(`Unable to resolve reference ${ref}`)
+        }
+      }
+    } else if (ref.match(/#\//g)?.length === 1) {
+      const [schemaUrl, relativePath] = ref.split('#/')
+      if (schemaUrl in schemaRefs) {
+        const referencedSchema = schemaRefs[schemaUrl]
+        const reference = { $ref: '#/'.concat(relativePath) }
+        const auxNextPath = []
+        auxNextPath.push(nextKey)
+        if (nextPath.length > 0) {
+          auxNextPath.push(...nextPath)
+        }
+        return Node._findSchema(referencedSchema, schemaRefs, auxNextPath, reference)
+      } else {
+        throw Error(`Unable to resolve reference ${ref}`)
+      }
+    } else {
+      throw Error(`Unable to resolve reference ${ref}`)
+    }
+  }
+
+  // We have no more path segments to resolve, return the currently found schema
+  // We do this here, after resolving references, in case of the leaf schema beeing a reference
+  if (nextKey === undefined) {
+    return currentSchema
+  }
+
+  if (typeof nextKey === 'string') {
+    if (typeof currentSchema.properties === 'object' && currentSchema.properties !== null && nextKey in currentSchema.properties) {
+      currentSchema = currentSchema.properties[nextKey]
+      return Node._findSchema(topLevelSchema, schemaRefs, nextPath, currentSchema)
+    }
+    if (typeof currentSchema.patternProperties === 'object' && currentSchema.patternProperties !== null) {
+      for (const prop in currentSchema.patternProperties) {
+        if (nextKey.match(prop)) {
+          currentSchema = currentSchema.patternProperties[prop]
+          return Node._findSchema(topLevelSchema, schemaRefs, nextPath, currentSchema)
+        }
+      }
+    }
+    if (typeof currentSchema.additionalProperties === 'object') {
+      currentSchema = currentSchema.additionalProperties
+      return Node._findSchema(topLevelSchema, schemaRefs, nextPath, currentSchema)
+    }
+    return null
+  }
+  if (typeof nextKey === 'number' && typeof currentSchema.items === 'object' && currentSchema.items !== null) {
+    currentSchema = currentSchema.items
+    return Node._findSchema(topLevelSchema, schemaRefs, nextPath, currentSchema)
+  }
+
+  return null
+}
+
+/**
  * Return the part of a JSON schema matching given path.
+ *
+ * Note that this attempts to find *a* schema matching the path, not necessarily
+ * the best / most appropriate.  For example, oneOf vs. anyOf vs. allOf may
+ * result in different schemas being applied in practice.
+ *
  * @param {Object} topLevelSchema
  * @param {Object} schemaRefs
  * @param {Array.<string | number>} path
@@ -4495,9 +4579,6 @@ Node._findEnum = schema => {
  * @private
  */
 Node._findSchema = (topLevelSchema, schemaRefs, path, currentSchema = topLevelSchema) => {
-  const nextPath = path.slice(1, path.length)
-  const nextKey = path[0]
-
   let possibleSchemas = [currentSchema]
   for (const subSchemas of [currentSchema.oneOf, currentSchema.anyOf, currentSchema.allOf]) {
     if (Array.isArray(subSchemas)) {
@@ -4505,74 +4586,20 @@ Node._findSchema = (topLevelSchema, schemaRefs, path, currentSchema = topLevelSc
     }
   }
 
+  let fallback = null
   for (const schema of possibleSchemas) {
-    currentSchema = schema
-
-    if ('$ref' in currentSchema && typeof currentSchema.$ref === 'string') {
-      const ref = currentSchema.$ref
-      if (ref in schemaRefs) {
-        currentSchema = schemaRefs[ref]
-      } else if (ref.startsWith('#/')) {
-        const refPath = ref.substring(2).split('/')
-        currentSchema = topLevelSchema
-        for (const segment of refPath) {
-          if (segment in currentSchema) {
-            currentSchema = currentSchema[segment]
-          } else {
-            throw Error(`Unable to resolve reference ${ref}`)
-          }
-        }
-      } else if (ref.match(/#\//g)?.length === 1) {
-        const [schemaUrl, relativePath] = ref.split('#/')
-        if (schemaUrl in schemaRefs) {
-          const referencedSchema = schemaRefs[schemaUrl]
-          const reference = { $ref: '#/'.concat(relativePath) }
-          const auxNextPath = []
-          auxNextPath.push(nextKey)
-          if (nextPath.length > 0) {
-            auxNextPath.push(...nextPath)
-          }
-          return Node._findSchema(referencedSchema, schemaRefs, auxNextPath, reference)
-        } else {
-          throw Error(`Unable to resolve reference ${ref}`)
-        }
-      } else {
-        throw Error(`Unable to resolve reference ${ref}`)
-      }
-    }
-
-    // We have no more path segments to resolve, return the currently found schema
-    // We do this here, after resolving references, in case of the leaf schema beeing a reference
-    if (nextKey === undefined) {
-      return currentSchema
-    }
-
-    if (typeof nextKey === 'string') {
-      if (typeof currentSchema.properties === 'object' && currentSchema.properties !== null && nextKey in currentSchema.properties) {
-        currentSchema = currentSchema.properties[nextKey]
-        return Node._findSchema(topLevelSchema, schemaRefs, nextPath, currentSchema)
-      }
-      if (typeof currentSchema.patternProperties === 'object' && currentSchema.patternProperties !== null) {
-        for (const prop in currentSchema.patternProperties) {
-          if (nextKey.match(prop)) {
-            currentSchema = currentSchema.patternProperties[prop]
-            return Node._findSchema(topLevelSchema, schemaRefs, nextPath, currentSchema)
-          }
-        }
-      }
-      if (typeof currentSchema.additionalProperties === 'object') {
-        currentSchema = currentSchema.additionalProperties
-        return Node._findSchema(topLevelSchema, schemaRefs, nextPath, currentSchema)
-      }
+    const result = Node._findOneSchema(topLevelSchema, schemaRefs, path, schema)
+    // Although we don't attempt to find the best / most appropriate schema, we
+    // can at least attempt to find something more specific than `true`.
+    if (result === true) {
+      fallback = true
       continue
-    }
-    if (typeof nextKey === 'number' && typeof currentSchema.items === 'object' && currentSchema.items !== null) {
-      currentSchema = currentSchema.items
-      return Node._findSchema(topLevelSchema, schemaRefs, nextPath, currentSchema)
+    } else if (result !== null) {
+      return result
     }
   }
 
-  return null
+  return fallback
 }
 
 /**
