@@ -198,6 +198,38 @@ describe('Node', () => {
       })
     })
 
+    // https://json-schema.org/understanding-json-schema/reference/object#extending
+    it('works with extending schemas', () => {
+      const schema = {
+        properties: {
+          name: true,
+          manager: {
+            type: 'string',
+            enum: ['c', 'd']
+          }
+        },
+        additionalProperties: false,
+        allOf: [
+          {
+            properties: {
+              name: {
+                type: 'string',
+                enum: ['a', 'b']
+              }
+            }
+          }
+        ]
+      }
+      let path = ['name']
+      // Specifics aren't resolved due to limits of allOf support
+      assert(Node._findSchema(schema, {}, path))
+      path = ['manager']
+      assert.deepStrictEqual(Node._findSchema(schema, {}, path), {
+        type: 'string',
+        enum: ['c', 'd']
+      })
+    })
+
     describe('with $ref', () => {
       it('should find a referenced schema', () => {
         const schema = {
@@ -401,6 +433,7 @@ describe('Node', () => {
         assert.notStrictEqual(Node._findSchema(schema, { 'definitions.json': definitions }, path), foundSchema)
       })
     })
+
     describe('with pattern properties', () => {
       it('should find schema', () => {
         const schema = {

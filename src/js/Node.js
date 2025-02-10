@@ -4508,7 +4508,7 @@ Node._findSchema = (topLevelSchema, schemaRefs, path, currentSchema = topLevelSc
   for (const schema of possibleSchemas) {
     currentSchema = schema
 
-    if ('$ref' in currentSchema && typeof currentSchema.$ref === 'string') {
+    if (typeof currentSchema === 'object' && '$ref' in currentSchema && typeof currentSchema.$ref === 'string') {
       const ref = currentSchema.$ref
       if (ref in schemaRefs) {
         currentSchema = schemaRefs[ref]
