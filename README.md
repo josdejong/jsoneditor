@@ -16,7 +16,7 @@ Supported browsers: Chrome, Firefox, Safari, Edge.
 
 Cross browser testing for JSONEditor is generously provided by <a href="https://www.lambdatest.com" target="_blank">LambdaTest</a>
 
-<a href="https://www.lambdatest.com" target="_blank"><img alt="LambdaTest" src="https://raw.github.com/josdejong/jsoneditor/master/misc/lambdatest.svg"></a>
+[![LambdaTest](https://raw.github.com/josdejong/mathjs/master/misc/lambdatest.svg)](https://www.lambdatest.com)
 
 ## Successor: svelte-jsoneditor
 
