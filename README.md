@@ -14,9 +14,9 @@ Supported browsers: Chrome, Firefox, Safari, Edge.
 
 <img alt="json editor" src="https://raw.github.com/josdejong/jsoneditor/master/misc/jsoneditor.png"> &nbsp; <img alt="code editor" src="https://raw.github.com/josdejong/jsoneditor/master/misc/codeeditor.png">
 
-Cross browser testing for JSONEditor is generously provided by <a href="https://www.browserstack.com" target="_blank">BrowserStack</a>
+Cross browser testing for JSONEditor is generously provided by <a href="https://www.lambdatest.com" target="_blank">LambdaTest</a>
 
-<a href="https://www.browserstack.com" target="_blank"><img alt="BrowserStack" src="https://raw.github.com/josdejong/jsoneditor/master/misc/browserstack.png"></a>
+<a href="https://www.lambdatest.com" target="_blank"><img alt="LambdaTest" src="https://raw.github.com/josdejong/jsoneditor/master/misc/lambdatest.svg"></a>
 
 ## Successor: svelte-jsoneditor
 
