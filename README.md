@@ -14,9 +14,11 @@ Supported browsers: Chrome, Firefox, Safari, Edge.
 
 <img alt="json editor" src="https://raw.github.com/josdejong/jsoneditor/master/misc/jsoneditor.png"> &nbsp; <img alt="code editor" src="https://raw.github.com/josdejong/jsoneditor/master/misc/codeeditor.png">
 
-Cross browser testing for JSONEditor is generously provided by <a href="https://www.lambdatest.com" target="_blank">LambdaTest</a>
+Continuous integration tests are run on [GitHub Actions](https://github.com/josdejong/mathjs/actions), and [LambdaTest](https://www.lambdatest.com) is used to test on all major browsers.
 
 [![LambdaTest](https://raw.github.com/josdejong/mathjs/master/misc/lambdatest.svg)](https://www.lambdatest.com)
+
+Thanks, GitHub Actions and LambdaTest for the generous support for this open source project!
 
 ## Successor: svelte-jsoneditor
 
