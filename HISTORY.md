@@ -2,6 +2,11 @@
 
 <https://github.com/josdejong/jsoneditor>
 
+## 2025-02-17, version 10.1.3
+
+- Fix: #1643 handle `true` property value in a JSON Schema (#1644). 
+  Thanks @joshkel.
+
 ## 2024-12-18, version 10.1.2
 
 - Fix: #1637 remove `mobius1-selectr` from the list with dependencies to get 
