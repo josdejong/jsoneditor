@@ -13,7 +13,9 @@ function setUpTestEnvironment (locale) {
   const dom = new JSDOM('...')
   global.window = dom.window
   global.document = dom.window.document
-  global.navigator = dom.window.navigator
+  if (typeof global.navigator === 'undefined') {
+    global.navigator = dom.window.navigator
+  }
 
   // JSDom has no setter defined for navigator.language, so defineProperty is necessary in order to override it
   Object.defineProperty(navigator, 'language', { value: locale })
