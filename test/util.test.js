@@ -7,7 +7,6 @@ import {
   getChildPaths,
   getIndexForPosition,
   isObject,
-  isSafeNumber,
   isTimestamp,
   isValidationErrorChanged,
   limitCharacters,
@@ -338,7 +337,9 @@ describe('util', () => {
       assert.strictEqual(parseString('9007199254740991'), 9007199254740991)
       assert.strictEqual(parseString('9007199254740991'), 9007199254740991)
       assert.strictEqual(parseString('-9007199254740991'), -9007199254740991)
-      assert.strictEqual(parseString('1e25'), '1e25')
+      assert.strictEqual(parseString('1e25'), 1e25)
+      assert.strictEqual(parseString('1e308'), 1e308)
+      assert.strictEqual(parseString('1e309'), '1e309')
     })
   })
 
@@ -432,29 +433,6 @@ describe('util', () => {
       const arr1 = ['a', 'b', 'c', 'd', 'e']
       const arr2 = ['c', 'd', 'f', 'g']
       assert.deepStrictEqual(uniqueMergeArrays(arr1, arr2), ['a', 'b', 'c', 'd', 'e', 'f', 'g'])
-    })
-  })
-
-  describe('isSafeNumber', () => {
-    it('should return true if number is safe', () => {
-      assert.strictEqual(isSafeNumber(0), true)
-      assert.strictEqual(isSafeNumber(123), true)
-      assert.strictEqual(isSafeNumber(-123), true)
-      assert.strictEqual(isSafeNumber(123.123), true)
-      assert.strictEqual(isSafeNumber(9007199254740991), true)
-      assert.strictEqual(isSafeNumber(-9007199254740991), true)
-    })
-
-    it('should return false if number isn`t safe', () => {
-      assert.strictEqual(isSafeNumber(''), false)
-      assert.strictEqual(isSafeNumber(true), false)
-      assert.strictEqual(isSafeNumber({}), false)
-      assert.strictEqual(isSafeNumber([]), false)
-      assert.strictEqual(isSafeNumber(NaN), false)
-      assert.strictEqual(isSafeNumber(Infinity), false)
-      assert.strictEqual(isSafeNumber(new Date()), false)
-      assert.strictEqual(isSafeNumber(9007199254740992), false)
-      assert.strictEqual(isSafeNumber(-9007199254740992), false)
     })
   })
 
