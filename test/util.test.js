@@ -338,6 +338,7 @@ describe('util', () => {
       assert.strictEqual(parseString('9007199254740991'), 9007199254740991)
       assert.strictEqual(parseString('9007199254740991'), 9007199254740991)
       assert.strictEqual(parseString('-9007199254740991'), -9007199254740991)
+      assert.strictEqual(parseString('1e25'), '1e25')
     })
   })
 
