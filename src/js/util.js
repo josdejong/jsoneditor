@@ -1145,7 +1145,13 @@ export function parseString (str) {
   const num = Number(str) // will nicely fail with '123ab'
   const numFloat = parseFloat(str) // will nicely fail with '  '
   if (!isNaN(num) && !isNaN(numFloat)) {
-    return num
+    if ((num <= Number.MAX_SAFE_INTEGER && num >= Number.MIN_SAFE_INTEGER) && isFinite(num)) {
+      return num
+    }
+    const isExponentialNumber = /^[+-]?\d+(\.\d+)?[eE][+-]?\d+$/
+    if (isExponentialNumber.test(str) && isFinite(num)) {
+      return num
+    }
   }
 
   return str
