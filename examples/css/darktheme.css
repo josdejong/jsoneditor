@@ -25,13 +25,9 @@ tr.jsoneditor-selected {
 }
 
 div.jsoneditor-field[contenteditable=true]:focus,
-div.jsoneditor-field[contenteditable=plaintext-only]:focus,
 div.jsoneditor-field[contenteditable=true]:hover,
-div.jsoneditor-field[contenteditable=plaintext-only]:hover,
 div.jsoneditor-value[contenteditable=true]:focus,
-div.jsoneditor-value[contenteditable=plaintext-only]:focus,
 div.jsoneditor-value[contenteditable=true]:hover,
-div.jsoneditor-value[contenteditable=plaintext-only]:hover,
 div.jsoneditor-field.jsoneditor-highlight,
 div.jsoneditor-value.jsoneditor-highlight {
   background-color: #808080;
