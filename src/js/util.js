@@ -118,10 +118,7 @@ export function getType (object) {
     return 'undefined'
   }
   if ((object instanceof Number) || (typeof object === 'number')) {
-    if (object <= Number.MAX_SAFE_INTEGER) {
-      return 'number'
-    }
-    return 'string'
+    return 'number'
   }
   if ((object instanceof String) || (typeof object === 'string')) {
     return 'string'
@@ -1147,11 +1144,24 @@ export function parseString (str) {
 
   const num = Number(str) // will nicely fail with '123ab'
   const numFloat = parseFloat(str) // will nicely fail with '  '
-  if (!isNaN(num) && !isNaN(numFloat) && num <= Number.MAX_SAFE_INTEGER && numFloat <= Number.MAX_SAFE_INTEGER) {
+  if (isSafeNumber(num) && isSafeNumber(numFloat)) {
     return num
   }
 
   return str
+}
+
+/**
+ * Check values is between max and min safe integer numbers
+ *
+ * @param {*} num
+ * @returns {boolean}
+ */
+export const isSafeNumber = (num) => {
+  const isNumber = typeof num === 'number' && !isNaN(num)
+  const isSafe = num <= Number.MAX_SAFE_INTEGER && num >= Number.MIN_SAFE_INTEGER
+
+  return isNumber && isSafe
 }
 
 /**

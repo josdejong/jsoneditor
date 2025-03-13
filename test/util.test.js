@@ -7,6 +7,7 @@ import {
   getChildPaths,
   getIndexForPosition,
   isObject,
+  isSafeNumber,
   isTimestamp,
   isValidationErrorChanged,
   limitCharacters,
@@ -305,33 +306,39 @@ describe('util', () => {
     })
   })
 
-  it('should parse a string', () => {
-    assert.strictEqual(parseString('foo'), 'foo')
-    assert.strictEqual(parseString('234foo'), '234foo')
-    assert.strictEqual(parseString('  234'), 234)
-    assert.strictEqual(parseString('234  '), 234)
-    assert.strictEqual(parseString('2.3'), 2.3)
-    assert.strictEqual(parseString('null'), null)
-    assert.strictEqual(parseString('true'), true)
-    assert.strictEqual(parseString('false'), false)
-    assert.strictEqual(parseString('+1'), 1)
-    assert.strictEqual(parseString('01'), '01')
-    assert.strictEqual(parseString('001'), '001')
-    assert.strictEqual(parseString('0.3'), 0.3)
-    assert.strictEqual(parseString('0e3'), 0)
-    assert.strictEqual(parseString(' '), ' ')
-    assert.strictEqual(parseString(''), '')
-    assert.strictEqual(parseString('"foo"'), '"foo"')
-    assert.strictEqual(parseString('"2"'), '"2"')
-    assert.strictEqual(parseString('\'foo\''), '\'foo\'')
-    assert.strictEqual(parseString('0x1A'), '0x1A')
-    assert.strictEqual(parseString('0x1F'), '0x1F')
-    assert.strictEqual(parseString('0x1a'), '0x1a')
-    assert.strictEqual(parseString('0b1101'), '0b1101')
-    assert.strictEqual(parseString('0o3700'), '0o3700')
-    assert.strictEqual(parseString('0X1a'), '0X1a')
-    assert.strictEqual(parseString('0B1101'), '0B1101')
-    assert.strictEqual(parseString('0O3700'), '0O3700')
+  describe('parseString', () => {
+    it('should parse a string', () => {
+      assert.strictEqual(parseString('foo'), 'foo')
+      assert.strictEqual(parseString('234foo'), '234foo')
+      assert.strictEqual(parseString('  234'), 234)
+      assert.strictEqual(parseString('234  '), 234)
+      assert.strictEqual(parseString('2.3'), 2.3)
+      assert.strictEqual(parseString('null'), null)
+      assert.strictEqual(parseString('true'), true)
+      assert.strictEqual(parseString('false'), false)
+      assert.strictEqual(parseString('+1'), 1)
+      assert.strictEqual(parseString('01'), '01')
+      assert.strictEqual(parseString('001'), '001')
+      assert.strictEqual(parseString('0.3'), 0.3)
+      assert.strictEqual(parseString('0e3'), 0)
+      assert.strictEqual(parseString(' '), ' ')
+      assert.strictEqual(parseString(''), '')
+      assert.strictEqual(parseString('"foo"'), '"foo"')
+      assert.strictEqual(parseString('"2"'), '"2"')
+      assert.strictEqual(parseString('\'foo\''), '\'foo\'')
+      assert.strictEqual(parseString('0x1A'), '0x1A')
+      assert.strictEqual(parseString('0x1F'), '0x1F')
+      assert.strictEqual(parseString('0x1a'), '0x1a')
+      assert.strictEqual(parseString('0b1101'), '0b1101')
+      assert.strictEqual(parseString('0o3700'), '0o3700')
+      assert.strictEqual(parseString('0X1a'), '0X1a')
+      assert.strictEqual(parseString('0B1101'), '0B1101')
+      assert.strictEqual(parseString('0O3700'), '0O3700')
+      assert.strictEqual(parseString('7405242042266046865'), '7405242042266046865')
+      assert.strictEqual(parseString('9007199254740991'), 9007199254740991)
+      assert.strictEqual(parseString('9007199254740991'), 9007199254740991)
+      assert.strictEqual(parseString('-9007199254740991'), -9007199254740991)
+    })
   })
 
   it('should find a unique name', () => {
@@ -424,6 +431,29 @@ describe('util', () => {
       const arr1 = ['a', 'b', 'c', 'd', 'e']
       const arr2 = ['c', 'd', 'f', 'g']
       assert.deepStrictEqual(uniqueMergeArrays(arr1, arr2), ['a', 'b', 'c', 'd', 'e', 'f', 'g'])
+    })
+  })
+
+  describe('isSafeNumber', () => {
+    it('should return true if number is safe', () => {
+      assert.strictEqual(isSafeNumber(0), true)
+      assert.strictEqual(isSafeNumber(123), true)
+      assert.strictEqual(isSafeNumber(-123), true)
+      assert.strictEqual(isSafeNumber(123.123), true)
+      assert.strictEqual(isSafeNumber(9007199254740991), true)
+      assert.strictEqual(isSafeNumber(-9007199254740991), true)
+    })
+
+    it('should return false if number isn`t safe', () => {
+      assert.strictEqual(isSafeNumber(''), false)
+      assert.strictEqual(isSafeNumber(true), false)
+      assert.strictEqual(isSafeNumber({}), false)
+      assert.strictEqual(isSafeNumber([]), false)
+      assert.strictEqual(isSafeNumber(NaN), false)
+      assert.strictEqual(isSafeNumber(Infinity), false)
+      assert.strictEqual(isSafeNumber(new Date()), false)
+      assert.strictEqual(isSafeNumber(9007199254740992), false)
+      assert.strictEqual(isSafeNumber(-9007199254740992), false)
     })
   })
 
