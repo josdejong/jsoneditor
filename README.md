@@ -25,6 +25,9 @@ Thanks, GitHub Actions and LambdaTest for the generous support for this open sou
 This library [`jsoneditor`](https://github.com/josdejong/jsoneditor) has a successor: [`svelte-jsoneditor`](https://github.com/josdejong/svelte-jsoneditor). The new editor is not a one-to-one replacement, so there may be reasons to stick with `jsoneditor`. 
 The main differences between the two [are described here](https://github.com/josdejong/svelte-jsoneditor#differences-between-josdejongsvelte-jsoneditor-and-josdejongjsoneditor).
 
+## Chrome Plugin
+https://chromewebstore.google.com/detail/json-beautifier-and-edito/lpopeocbeepakdnipejhlpcmifheolpl
+
 ## Features
 
 JSONEditor has various modes, with the following features.
