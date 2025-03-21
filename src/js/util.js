@@ -145,7 +145,7 @@ const isUrlRegex = /^https?:\/\/\S+$/
 
 export function isUrl (text) {
   return (typeof text === 'string' || text instanceof String) &&
-    isUrlRegex.test(text)
+      isUrlRegex.test(text)
 }
 
 /**
@@ -338,7 +338,7 @@ export function getSelectionOffset () {
   const range = getSelection()
 
   if (range && 'startOffset' in range && 'endOffset' in range &&
-    range.startContainer && (range.startContainer === range.endContainer)) {
+      range.startContainer && (range.startContainer === range.endContainer)) {
     return {
       startOffset: range.startOffset,
       endOffset: range.endOffset,
@@ -713,8 +713,8 @@ export function isPromise (object) {
  */
 export function isValidValidationError (validationError) {
   return typeof validationError === 'object' &&
-    Array.isArray(validationError.path) &&
-    typeof validationError.message === 'string'
+      Array.isArray(validationError.path) &&
+      typeof validationError.message === 'string'
 }
 
 /**
@@ -726,9 +726,9 @@ export function isValidValidationError (validationError) {
 export function insideRect (parent, child, margin) {
   const _margin = margin !== undefined ? margin : 0
   return child.left - _margin >= parent.left &&
-    child.right + _margin <= parent.right &&
-    child.top - _margin >= parent.top &&
-    child.bottom + _margin <= parent.bottom
+      child.right + _margin <= parent.right &&
+      child.top - _margin >= parent.top &&
+      child.bottom + _margin <= parent.bottom
 }
 
 /**
@@ -775,12 +775,12 @@ export function textDiff (oldText, newText) {
   let newEnd = newText.length
 
   while (newText.charAt(start) === oldText.charAt(start) &&
-    start < len) {
+  start < len) {
     start++
   }
 
   while (newText.charAt(newEnd - 1) === oldText.charAt(oldEnd - 1) &&
-    newEnd > start && oldEnd > 0) {
+  newEnd > start && oldEnd > 0) {
     newEnd--
     oldEnd--
   }
