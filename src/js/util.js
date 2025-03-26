@@ -1144,7 +1144,10 @@ export function parseString (str) {
 
   const num = Number(str) // will nicely fail with '123ab'
   const numFloat = parseFloat(str) // will nicely fail with '  '
-  if (!isNaN(num) && !isNaN(numFloat)) {
+  const isFiniteNumber = !isNaN(num) && !isNaN(numFloat) && isFinite(num)
+  const isInSafeRange = num <= Number.MAX_SAFE_INTEGER && num >= Number.MIN_SAFE_INTEGER
+  const isInteger = /^\d+$/.test(str)
+  if (isFiniteNumber && (isInSafeRange || !isInteger)) {
     return num
   }
 
