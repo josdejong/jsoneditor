@@ -2,6 +2,11 @@
 
 <https://github.com/josdejong/jsoneditor>
 
+## unpublished changes since version 10.1.3
+
+- Feat: stringify integer numbers bigger than max safe integer (#1646).
+  Thanks @inomn.
+
 ## 2025-02-17, version 10.1.3
 
 - Fix: #1643 handle `true` property value in a JSON Schema (#1644). 
