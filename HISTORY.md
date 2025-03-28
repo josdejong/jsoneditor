@@ -2,7 +2,7 @@
 
 <https://github.com/josdejong/jsoneditor>
 
-## unpublished changes since version 10.1.3
+## 2025-03-28, version 10.2.0
 
 - Feat: stringify integer numbers bigger than max safe integer (#1646).
   Thanks @pawfrolow.
