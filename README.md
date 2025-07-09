@@ -169,26 +169,6 @@ npm run lint
 ```
 
 
-## Custom builds
-
-The source code of JSONEditor consists of CommonJS modules. JSONEditor can be bundled in a customized way using a module bundler like [browserify](http://browserify.org/) or [webpack](http://webpack.github.io/). First, install all dependencies of jsoneditor:
-
-    npm install
-
-To create a custom bundle of the source code using browserify:
-
-    browserify ./index.js -o ./jsoneditor.custom.js -s JSONEditor
-
-The Ace editor, used in mode `code`, accounts for about one third of the total
-size of the library. To exclude the Ace editor from the bundle:
-
-    browserify ./index.js -o ./jsoneditor.custom.js -s JSONEditor -x brace -x brace/mode/json -x brace/ext/searchbox
-
-To minify the generated bundle, use [uglifyjs](https://github.com/mishoo/UglifyJS2):
-
-    uglifyjs ./jsoneditor.custom.js -o ./jsoneditor.custom.min.js -m -c
-
-
 ## License
 
 `jsoneditor` is released as open source under the permissive the [Apache 2.0 license](LICENSE.md).
