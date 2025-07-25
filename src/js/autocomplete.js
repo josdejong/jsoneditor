@@ -1,11 +1,38 @@
 'use strict'
 
+// Helper functions for handling both string and object option formats
+const getOptionText = (option) => {
+  return typeof option === 'string' ? option : (option.text || '')
+}
+
+const getOptionValue = (option) => {
+  return typeof option === 'string' ? option : (option.value || option.text || '')
+}
+
+const getSearchableContent = (option) => {
+  if (typeof option === 'string') {
+    return [option]
+  }
+  const searchFields = []
+  if (option.text) searchFields.push(option.text)
+  if (option.value && option.value !== option.text) searchFields.push(option.value)
+  return searchFields
+}
+
 const defaultFilterFunction = {
   start: function (token, match, config) {
-    return match.indexOf(token) === 0
+    const searchFields = getSearchableContent(match)
+    return searchFields.some(field => {
+      const searchField = config.caseSensitive ? field : field.toLowerCase()
+      return searchField.indexOf(token) === 0
+    })
   },
   contain: function (token, match, config) {
-    return match.indexOf(token) > -1
+    const searchFields = getSearchableContent(match)
+    return searchFields.some(field => {
+      const searchField = config.caseSensitive ? field : field.toLowerCase()
+      return searchField.indexOf(token) > -1
+    })
   }
 }
 
@@ -61,7 +88,7 @@ export function autocomplete (config) {
         rows = []
         const filterFn = typeof config.filter === 'function' ? config.filter : defaultFilterFunction[config.filter]
 
-        const filtered = !filterFn ? [] : array.filter(match => filterFn(config.caseSensitive ? token : token.toLowerCase(), config.caseSensitive ? match : match.toLowerCase(), config))
+        const filtered = !filterFn ? [] : array.filter(match => filterFn(config.caseSensitive ? token : token.toLowerCase(), match, config))
 
         rows = filtered.map(row => {
           const divRow = document.createElement('div')
@@ -72,9 +99,11 @@ export function autocomplete (config) {
           divRow.onmousedown = onMouseDown
           divRow.__hint = row
           divRow.textContent = ''
-          divRow.appendChild(document.createTextNode(row.substring(0, token.length)))
+          
+          const rowText = getOptionText(row)
+          divRow.appendChild(document.createTextNode(rowText.substring(0, token.length)))
           const b = document.createElement('b')
-          b.appendChild(document.createTextNode(row.substring(token.length)))
+          b.appendChild(document.createTextNode(rowText.substring(token.length)))
           divRow.appendChild(b)
           elem.appendChild(divRow)
           return divRow
@@ -83,8 +112,9 @@ export function autocomplete (config) {
         if (rows.length === 0) {
           return // nothing to show.
         }
-        if (rows.length === 1 && ((token.toLowerCase() === rows[0].__hint.toLowerCase() && !config.caseSensitive) ||
-                                           (token === rows[0].__hint && config.caseSensitive))) {
+        const firstRowText = getOptionText(rows[0].__hint)
+        if (rows.length === 1 && ((token.toLowerCase() === firstRowText.toLowerCase() && !config.caseSensitive) ||
+                                           (token === firstRowText && config.caseSensitive))) {
           return // do not show the dropDown if it has only one element which matches what we have just displayed.
         }
 
@@ -189,7 +219,7 @@ export function autocomplete (config) {
 
       dropDown.style.marginLeft = '0'
       dropDown.style.marginTop = element.getBoundingClientRect().height + 'px'
-      this.options = options.map(String)
+      this.options = options;
 
       if (this.element !== element) {
         this.element = element
@@ -256,10 +286,10 @@ export function autocomplete (config) {
 
       for (let i = 0; i < optionsLength; i++) {
         const opt = this.options[i]
-        if ((!config.caseSensitive && opt.toLowerCase().indexOf(token.toLowerCase()) === 0) ||
-                    (config.caseSensitive && opt.indexOf(token) === 0)) { // <-- how about upperCase vs. lowercase
-          this.elementHint.innerText = leftSide + token + opt.substring(token.length)
-          this.elementHint.realInnerText = leftSide + opt
+        if ((!config.caseSensitive && getOptionText(opt).toLowerCase().indexOf(token.toLowerCase()) === 0) ||
+                    (config.caseSensitive && getOptionText(opt).indexOf(token) === 0)) { // <-- how about upperCase vs. lowercase
+          this.elementHint.innerText = leftSide + token + getOptionText(opt).substring(token.length)
+          this.elementHint.realInnerText = leftSide + getOptionValue(opt)
           break
         }
       }
@@ -343,8 +373,8 @@ export function autocomplete (config) {
       const token = text.substring(this.startFrom)
       const m = dropDownController.move(+1)
       if (m === '') { rs.onArrowDown() }
-      this.elementHint.innerText = leftSide + token + m.substring(token.length)
-      this.elementHint.realInnerText = leftSide + m
+      this.elementHint.innerText = leftSide + token + getOptionText(m).substring(token.length)
+      this.elementHint.realInnerText = leftSide + getOptionValue(m)
       e.preventDefault()
       e.stopPropagation()
       return
@@ -354,8 +384,8 @@ export function autocomplete (config) {
       const token = text.substring(this.startFrom)
       const m = dropDownController.move(-1)
       if (m === '') { rs.onArrowUp() }
-      this.elementHint.innerText = leftSide + token + m.substring(token.length)
-      this.elementHint.realInnerText = leftSide + m
+      this.elementHint.innerText = leftSide + token + getOptionText(m).substring(token.length)
+      this.elementHint.realInnerText = leftSide + getOptionValue(m)
       e.preventDefault()
       e.stopPropagation()
     }
@@ -366,8 +396,9 @@ export function autocomplete (config) {
     // console.log("Lost focus.");
   }
 
-  dropDownController.onmouseselection = (text, rs) => {
-    rs.element.innerText = rs.elementHint.innerText = leftSide + text
+  dropDownController.onmouseselection = (option, rs) => {
+    const optionValue = getOptionValue(option)
+    rs.element.innerText = rs.elementHint.innerText = leftSide + optionValue
     rs.hideDropDown()
     window.setTimeout(() => {
       rs.element.focus()
