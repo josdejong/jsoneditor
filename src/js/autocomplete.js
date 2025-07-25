@@ -2,21 +2,24 @@
 
 // Helper functions for handling both string and object option formats
 const getOptionText = (option) => {
+  if (option == null) return ''
   return typeof option === 'string' ? option : (option.text || '')
 }
 
 const getOptionValue = (option) => {
+  if (option == null) return ''
   return typeof option === 'string' ? option : (option.value || option.text || '')
 }
 
 const getSearchableContent = (option) => {
+  if (option == null) return ['']
   if (typeof option === 'string') {
     return [option]
   }
   const searchFields = []
   if (option.text) searchFields.push(option.text)
   if (option.value && option.value !== option.text) searchFields.push(option.value)
-  return searchFields
+  return searchFields.length > 0 ? searchFields : ['']
 }
 
 const defaultFilterFunction = {
