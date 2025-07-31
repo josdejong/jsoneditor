@@ -11,31 +11,31 @@ const getOptionValue = (option) => {
   return typeof option === 'string' ? option : (option.value || option.text || '')
 }
 
-const getSearchableContent = (option) => {
-  if (option == null) return ['']
-  if (typeof option === 'string') {
-    return [option]
-  }
-  const searchFields = []
-  if (option.text) searchFields.push(option.text)
-  if (option.value && option.value !== option.text) searchFields.push(option.value)
-  return searchFields.length > 0 ? searchFields : ['']
+const isObject = (value) => {
+  return value !== null && typeof value === 'object'
+}
+
+const normalizeCase = (text, config) => {
+  return config.caseSensitive ? text : text.toLowerCase()
+}
+
+const ensureStringOption = (option) => {
+  // Keep objects as-is, but convert primitives to strings to prevent breaking changes
+  return isObject(option) ? option : String(option)
 }
 
 const defaultFilterFunction = {
   start: function (token, match, config) {
-    const searchFields = getSearchableContent(match)
-    return searchFields.some(field => {
-      const searchField = config.caseSensitive ? field : field.toLowerCase()
-      return searchField.indexOf(token) === 0
-    })
+    const normalizedToken = normalizeCase(token, config)
+    return isObject(match)
+      ? normalizeCase(match.text || '', config).indexOf(normalizedToken) === 0 || normalizeCase(match.value || '', config).indexOf(normalizedToken) === 0
+      : normalizeCase(match || '', config).indexOf(normalizedToken) === 0
   },
   contain: function (token, match, config) {
-    const searchFields = getSearchableContent(match)
-    return searchFields.some(field => {
-      const searchField = config.caseSensitive ? field : field.toLowerCase()
-      return searchField.indexOf(token) > -1
-    })
+    const normalizedToken = normalizeCase(token, config)
+    return isObject(match)
+      ? normalizeCase(match.text || '', config).indexOf(normalizedToken) > -1 || normalizeCase(match.value || '', config).indexOf(normalizedToken) > -1
+      : normalizeCase(match || '', config).indexOf(normalizedToken) > -1
   }
 }
 
@@ -222,7 +222,7 @@ export function autocomplete (config) {
 
       dropDown.style.marginLeft = '0'
       dropDown.style.marginTop = element.getBoundingClientRect().height + 'px'
-      this.options = options;
+      this.options = options.map(ensureStringOption);
 
       if (this.element !== element) {
         this.element = element

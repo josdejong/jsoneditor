@@ -9,106 +9,38 @@
   <script src="../dist/jsoneditor.js"></script>
 
   <style type="text/css">
-    .editor-container {
-      width: 500px;
-      height: 400px;
-      margin-bottom: 30px;
+    body {
+      width: 600px;
+      font: 11pt sans-serif;
+    }
+    #jsoneditor {
+      width: 100%;
+      height: 500px;
     }
 
-    p {
-      width: 800px;
-      font-family: "DejaVu Sans", sans-serif;
-      margin-bottom: 20px;
-    }
-
-    h3 {
-      font-family: "DejaVu Sans", sans-serif;
-      color: #333;
-      margin-top: 30px;
-      margin-bottom: 10px;
-    }
-
-    .demo-section {
-      margin-bottom: 40px;
-      padding: 20px;
-      border: 1px solid #ddd;
-      border-radius: 5px;
-      background-color: #f9f9f9;
-    }
-
-    .search-info {
-      background-color: #e8f4fd;
-      padding: 10px;
-      border-left: 4px solid #2196F3;
-      margin: 10px 0;
-      font-size: 14px;
+    /* custom bold styling for non-default JSON schema values */
+    .jsoneditor-is-not-default {
+      font-weight: bold;
     }
   </style>
 
 </head>
 <body>
-<h1>JSONEditor - Enhanced Autocomplete with Text/Value Objects</h1>
-
+<h1>Auto Complete with Text/Value Objects</h1>
 <p>
-  This example demonstrates the enhanced autocomplete functionality that supports both traditional string arrays 
-  and new object arrays with separate <code>text</code> and <code>value</code> properties. The autocomplete can 
-  search within both the display text and the underlying value.
+  This example demonstrates the enhanced autocomplete functionality using objects with separate text (display) and value (actual value) properties. 
+  You can search by either the company name or stock symbol. Try typing "Apple", "Microsoft", "Google", "AAPL", "MSFT", or "GOOGL". 
+  The dropdown shows company names, but the selected value will be the stock symbol.
 </p>
 
-<div class="demo-section">
-  <h3>1. Traditional String Array Autocomplete (Backward Compatible)</h3>
-  <p>Original functionality with simple string arrays:</p>
-  <div class="search-info">
-    <strong>Available options:</strong> 'apple', 'cranberry', 'raspberry', 'pie', 'mango', 'mandarine', 'melon', 'appleton'<br>
-    <strong>Search:</strong> Type any part of the fruit names to see suggestions.
-  </div>
-  <div id="jsoneditor1" class="editor-container"></div>
-</div>
-
-<div class="demo-section">
-  <h3>2. Enhanced Object Array Autocomplete (New Feature)</h3>
-  <p>New functionality using objects with <code>text</code> (display) and <code>value</code> (actual value) properties:</p>
-  <div class="search-info">
-    <strong>Search by Company Name:</strong> Try typing "Apple", "Microsoft", "Google", etc.<br>
-    <strong>Search by Stock Symbol:</strong> Try typing "AAPL", "MSFT", "GOOGL", etc.<br>
-    <strong>Result:</strong> The dropdown shows company names, but the selected value will be the stock symbol.
-  </div>
-  <div id="jsoneditor2" class="editor-container"></div>
-</div>
-
-<div class="demo-section">
-  <h3>3. Mixed Content Example</h3>
-  <p>Countries with multiple searchable fields (name, code, and capital):</p>
-  <div class="search-info">
-    <strong>Search by Country:</strong> "United States", "Germany", "Japan"<br>
-    <strong>Search by Code:</strong> "US", "DE", "JP"<br>
-    <strong>Search by Capital:</strong> "Washington", "Berlin", "Tokyo"<br>
-    <strong>Result:</strong> Displays country name, returns country code as value.
-  </div>
-  <div id="jsoneditor3" class="editor-container"></div>
-</div>
+<div id="jsoneditor"></div>
 
 <script>
-  // Example 1: Traditional string array (backward compatible)
-  const container1 = document.getElementById('jsoneditor1')
-  const options1 = {
+  // Object array with text/value properties
+  const container = document.getElementById('jsoneditor')
+  const options = {
     autocomplete: {
-      getOptions: function () {
-        return ['apple', 'cranberry', 'raspberry', 'pie', 'mango', 'mandarine', 'melon', 'appleton'];
-      }
-    }
-  }
-  const json1 = {
-    'fruits': ['apple', 'mango'],
-    'favorite': 'cranberry',
-    'description': 'Traditional string array autocomplete'
-  }
-  const editor1 = new JSONEditor(container1, options1, json1)
-
-  // Example 2: Object array with text/value properties
-  const container2 = document.getElementById('jsoneditor2')
-  const options2 = {
-    autocomplete: {
+      filter: 'contain', // Use contain filter for better search experience
       getOptions: function () {
         return [
           { text: 'Apple Inc.', value: 'AAPL' },
@@ -125,41 +57,13 @@
       }
     }
   }
-  const json2 = {
+  const json = {
     'portfolio': ['AAPL', 'GOOGL'],
     'watchlist': ['TSLA', 'META'],
     'favorite_stock': 'MSFT',
     'description': 'Search by company name or stock symbol - value stored is the symbol'
   }
-  const editor2 = new JSONEditor(container2, options2, json2)
-
-  // Example 3: More complex objects with multiple searchable fields
-  const container3 = document.getElementById('jsoneditor3')
-  const options3 = {
-    autocomplete: {
-      getOptions: function () {
-        return [
-          { text: 'United States', value: 'US' },
-          { text: 'United Kingdom', value: 'GB' },
-          { text: 'Germany', value: 'DE' },
-          { text: 'France', value: 'FR' },
-          { text: 'Japan', value: 'JP' },
-          { text: 'Australia', value: 'AU' },
-          { text: 'Canada', value: 'CA' },
-          { text: 'Brazil', value: 'BR' },
-          { text: 'India', value: 'IN' },
-          { text: 'China', value: 'CN' }
-        ];
-      }
-    }
-  }
-  const json3 = {
-    'user_countries': ['US', 'DE'],
-    'origin_country': 'JP',
-    'shipping_countries': ['US', 'CA', 'GB'],
-    'description': 'Search by country name or code - value stored is the country code'
-  }
-  const editor3 = new JSONEditor(container3, options3, json3)
+  const editor = new JSONEditor(container, options, json)
 </script>
 
 </body>
