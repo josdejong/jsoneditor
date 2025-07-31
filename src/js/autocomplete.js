@@ -15,7 +15,7 @@ const isObject = (value) => {
   return value !== null && typeof value === 'object'
 }
 
-const normalizeCase = (text, config) => {
+const normalizeCase = (text = '', config) => {
   return config.caseSensitive ? text : text.toLowerCase()
 }
 
@@ -24,18 +24,57 @@ const ensureStringOption = (option) => {
   return isObject(option) ? option : String(option)
 }
 
+const getHighlightedTextParts = (query, row, config) => {
+  const rowText = getOptionText(row)
+  const rowValue = getOptionValue(row)
+  const tokenLower = normalizeCase(query, config)
+  const rowTextLower = normalizeCase(rowText, config)
+  const rowValueLower = normalizeCase(rowValue, config)
+
+  // Find the best match position for highlighting
+  let matchIndex = -1
+  const matchLength = query.length
+  let displayText = rowText
+
+  // Prefer text matches over value matches for display
+  if (rowTextLower.indexOf(tokenLower) > -1) {
+    matchIndex = rowTextLower.indexOf(tokenLower)
+    displayText = rowText
+  } else if (rowValueLower.indexOf(tokenLower) > -1) {
+    matchIndex = rowValueLower.indexOf(tokenLower)
+    displayText = rowValue
+  }
+
+  if (matchIndex > -1) {
+    return {
+      beforeText: displayText.substring(0, matchIndex),
+      matchText: displayText.substring(matchIndex, matchIndex + matchLength),
+      afterText: displayText.substring(matchIndex + matchLength),
+      displayText
+    }
+  } else {
+    // No match found, return the display text as-is
+    return {
+      beforeText: '',
+      matchText: '',
+      afterText: displayText,
+      displayText
+    }
+  }
+}
+
 const defaultFilterFunction = {
   start: function (token, match, config) {
     const normalizedToken = normalizeCase(token, config)
     return isObject(match)
-      ? normalizeCase(match.text || '', config).indexOf(normalizedToken) === 0 || normalizeCase(match.value || '', config).indexOf(normalizedToken) === 0
-      : normalizeCase(match || '', config).indexOf(normalizedToken) === 0
+      ? normalizeCase(match.text, config).indexOf(normalizedToken) === 0 || normalizeCase(match.value, config).indexOf(normalizedToken) === 0
+      : normalizeCase(match, config).indexOf(normalizedToken) === 0
   },
   contain: function (token, match, config) {
     const normalizedToken = normalizeCase(token, config)
     return isObject(match)
-      ? normalizeCase(match.text || '', config).indexOf(normalizedToken) > -1 || normalizeCase(match.value || '', config).indexOf(normalizedToken) > -1
-      : normalizeCase(match || '', config).indexOf(normalizedToken) > -1
+      ? normalizeCase(match.text, config).indexOf(normalizedToken) > -1 || normalizeCase(match.value, config).indexOf(normalizedToken) > -1
+      : normalizeCase(match, config).indexOf(normalizedToken) > -1
   }
 }
 
@@ -102,12 +141,25 @@ export function autocomplete (config) {
           divRow.onmousedown = onMouseDown
           divRow.__hint = row
           divRow.textContent = ''
-          
-          const rowText = getOptionText(row)
-          divRow.appendChild(document.createTextNode(rowText.substring(0, token.length)))
-          const b = document.createElement('b')
-          b.appendChild(document.createTextNode(rowText.substring(token.length)))
-          divRow.appendChild(b)
+
+          const { beforeText, matchText, afterText } = getHighlightedTextParts(token, row, config)
+
+          // Add text before match (if any)
+          if (beforeText) {
+            divRow.appendChild(document.createTextNode(beforeText))
+          }
+
+          // Add highlighted match (if any)
+          if (matchText) {
+            const b = document.createElement('b')
+            b.appendChild(document.createTextNode(matchText))
+            divRow.appendChild(b)
+          }
+
+          // Add text after match
+          if (afterText) {
+            divRow.appendChild(document.createTextNode(afterText))
+          }
           elem.appendChild(divRow)
           return divRow
         })
@@ -222,7 +274,7 @@ export function autocomplete (config) {
 
       dropDown.style.marginLeft = '0'
       dropDown.style.marginTop = element.getBoundingClientRect().height + 'px'
-      this.options = options.map(ensureStringOption);
+      this.options = options.map(ensureStringOption)
 
       if (this.element !== element) {
         this.element = element
@@ -287,12 +339,33 @@ export function autocomplete (config) {
       const token = text.substring(this.startFrom)
       leftSide = text.substring(0, this.startFrom)
 
+      // Use the same filter logic as the dropdown for consistency
+      const filterFn = typeof config.filter === 'function' ? config.filter : defaultFilterFunction[config.filter]
+
       for (let i = 0; i < optionsLength; i++) {
         const opt = this.options[i]
-        if ((!config.caseSensitive && getOptionText(opt).toLowerCase().indexOf(token.toLowerCase()) === 0) ||
-                    (config.caseSensitive && getOptionText(opt).indexOf(token) === 0)) { // <-- how about upperCase vs. lowercase
-          this.elementHint.innerText = leftSide + token + getOptionText(opt).substring(token.length)
-          this.elementHint.realInnerText = leftSide + getOptionValue(opt)
+
+        if (filterFn && filterFn(token, opt, config)) {
+          const optText = getOptionText(opt)
+          const optValue = getOptionValue(opt)
+
+          // For hints, prioritize matches that start with the token for better UX
+          let hintText = ''
+          if ((!config.caseSensitive && optText.toLowerCase().indexOf(token.toLowerCase()) === 0) ||
+              (config.caseSensitive && optText.indexOf(token) === 0)) {
+            // Text starts with token - show completion
+            hintText = leftSide + token + optText.substring(token.length)
+          } else if ((!config.caseSensitive && optValue.toLowerCase().indexOf(token.toLowerCase()) === 0) ||
+                     (config.caseSensitive && optValue.indexOf(token) === 0)) {
+            // Value starts with token - show completion
+            hintText = leftSide + token + optValue.substring(token.length)
+          } else {
+            // Contains match but doesn't start with token - just show the token
+            hintText = leftSide + token
+          }
+
+          this.elementHint.innerText = hintText
+          this.elementHint.realInnerText = leftSide + optValue
           break
         }
       }
