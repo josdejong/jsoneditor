@@ -24,16 +24,16 @@ const ensureStringOption = (option) => {
   return isObject(option) ? option : String(option)
 }
 
-const getHighlightedTextParts = (query, row, config) => {
+const getHighlightedTextParts = (token, row, config) => {
   const rowText = getOptionText(row)
   const rowValue = getOptionValue(row)
-  const tokenLower = normalizeCase(query, config)
+  const tokenLower = normalizeCase(token, config)
   const rowTextLower = normalizeCase(rowText, config)
   const rowValueLower = normalizeCase(rowValue, config)
 
   // Find the best match position for highlighting
   let matchIndex = -1
-  const matchLength = query.length
+  const matchLength = token.length
   let displayText = rowText
 
   // Prefer text matches over value matches for display
@@ -63,18 +63,36 @@ const getHighlightedTextParts = (query, row, config) => {
   }
 }
 
+// Helper function to reduce duplication in filter functions
+const matchesFilter = (token, match, config, matchFunction) => {
+  const normalizedToken = normalizeCase(token, config)
+
+  if (isObject(match)) {
+    // Check both text and value properties for object matches
+    const matchText = getOptionText(match)
+    const matchValue = getOptionValue(match)
+    const normalizedText = normalizeCase(matchText, config)
+    const normalizedValue = normalizeCase(matchValue, config)
+
+    return matchFunction(normalizedText, normalizedToken) ||
+           matchFunction(normalizedValue, normalizedToken)
+  } else {
+    // Handle simple string matches
+    const normalizedMatch = normalizeCase(String(match), config)
+    return matchFunction(normalizedMatch, normalizedToken)
+  }
+}
+
 const defaultFilterFunction = {
   start: function (token, match, config) {
-    const normalizedToken = normalizeCase(token, config)
-    return isObject(match)
-      ? normalizeCase(match.text, config).indexOf(normalizedToken) === 0 || normalizeCase(match.value, config).indexOf(normalizedToken) === 0
-      : normalizeCase(match, config).indexOf(normalizedToken) === 0
+    return matchesFilter(token, match, config, (normalizedText, normalizedToken) =>
+      normalizedText.indexOf(normalizedToken) === 0
+    )
   },
   contain: function (token, match, config) {
-    const normalizedToken = normalizeCase(token, config)
-    return isObject(match)
-      ? normalizeCase(match.text, config).indexOf(normalizedToken) > -1 || normalizeCase(match.value, config).indexOf(normalizedToken) > -1
-      : normalizeCase(match, config).indexOf(normalizedToken) > -1
+    return matchesFilter(token, match, config, (normalizedText, normalizedToken) =>
+      normalizedText.indexOf(normalizedToken) > -1
+    )
   }
 }
 
