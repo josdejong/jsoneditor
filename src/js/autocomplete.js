@@ -148,7 +148,7 @@ export function autocomplete (config) {
         rows = []
         const filterFn = typeof config.filter === 'function' ? config.filter : defaultFilterFunction[config.filter]
 
-        const filtered = !filterFn ? [] : array.filter(match => filterFn(config.caseSensitive ? token : token.toLowerCase(), match, config))
+        const filtered = !filterFn ? [] : array.filter(match => filterFn(token, match, config))
 
         rows = filtered.map(row => {
           const divRow = document.createElement('div')
@@ -186,12 +186,9 @@ export function autocomplete (config) {
           return // nothing to show.
         }
         const firstRowText = getOptionText(rows[0].__hint)
-        if (rows.length === 1 && ((token.toLowerCase() === firstRowText.toLowerCase() && !config.caseSensitive) ||
-                                           (token === firstRowText && config.caseSensitive))) {
+        if (rows.length === 1 && normalizeCase(token, config) === normalizeCase(firstRowText, config)) {
           return // do not show the dropDown if it has only one element which matches what we have just displayed.
         }
-
-        if (rows.length < 2) return
         p.highlight(0)
 
         if (distanceToTop > distanceToBottom * 3) { // Heuristic (only when the distance to the to top is 4 times more than distance to the bottom
@@ -369,12 +366,14 @@ export function autocomplete (config) {
 
           // For hints, prioritize matches that start with the token for better UX
           let hintText = ''
-          if ((!config.caseSensitive && optText.toLowerCase().indexOf(token.toLowerCase()) === 0) ||
-              (config.caseSensitive && optText.indexOf(token) === 0)) {
+          const normalizedToken = normalizeCase(token, config)
+          const normalizedOptText = normalizeCase(optText, config)
+          const normalizedOptValue = normalizeCase(optValue, config)
+
+          if (normalizedOptText.indexOf(normalizedToken) === 0) {
             // Text starts with token - show completion
             hintText = leftSide + token + optText.substring(token.length)
-          } else if ((!config.caseSensitive && optValue.toLowerCase().indexOf(token.toLowerCase()) === 0) ||
-                     (config.caseSensitive && optValue.indexOf(token) === 0)) {
+          } else if (normalizedOptValue.indexOf(normalizedToken) === 0) {
             // Value starts with token - show completion
             hintText = leftSide + token + optValue.substring(token.length)
           } else {
