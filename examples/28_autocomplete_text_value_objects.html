@@ -1,0 +1,70 @@
+<!DOCTYPE HTML>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+
+  <title>JSONEditor | Auto Complete with Text/Value Objects</title>
+
+  <link href="../dist/jsoneditor.css" rel="stylesheet" type="text/css">
+  <script src="../dist/jsoneditor.js"></script>
+
+  <style type="text/css">
+    body {
+      width: 600px;
+      font: 11pt sans-serif;
+    }
+    #jsoneditor {
+      width: 100%;
+      height: 500px;
+    }
+
+    /* custom bold styling for non-default JSON schema values */
+    .jsoneditor-is-not-default {
+      font-weight: bold;
+    }
+  </style>
+
+</head>
+<body>
+<h1>Auto Complete with Text/Value Objects</h1>
+<p>
+  This example demonstrates the enhanced autocomplete functionality using objects with separate text (display) and value (actual value) properties. 
+  You can search by either the company name or stock symbol. Try typing "Apple", "Microsoft", "Google", "AAPL", "MSFT", or "GOOGL". 
+  The dropdown shows company names, but the selected value will be the stock symbol.
+</p>
+
+<div id="jsoneditor"></div>
+
+<script>
+  // Object array with text/value properties
+  const container = document.getElementById('jsoneditor')
+  const options = {
+    autocomplete: {
+      filter: 'contain', // Use contain filter for better search experience
+      getOptions: function () {
+        return [
+          { text: 'Apple Inc.', value: 'AAPL' },
+          { text: 'Microsoft Corporation', value: 'MSFT' },
+          { text: 'Alphabet Inc. (Google)', value: 'GOOGL' },
+          { text: 'Amazon.com Inc.', value: 'AMZN' },
+          { text: 'Tesla Inc.', value: 'TSLA' },
+          { text: 'Meta Platforms Inc. (Facebook)', value: 'META' },
+          { text: 'NVIDIA Corporation', value: 'NVDA' },
+          { text: 'Netflix Inc.', value: 'NFLX' },
+          { text: 'PayPal Holdings Inc.', value: 'PYPL' },
+          { text: 'Adobe Inc.', value: 'ADBE' }
+        ];
+      }
+    }
+  }
+  const json = {
+    'portfolio': ['AAPL', 'GOOGL'],
+    'watchlist': ['TSLA', 'META'],
+    'favorite_stock': 'MSFT',
+    'description': 'Search by company name or stock symbol - value stored is the symbol'
+  }
+  const editor = new JSONEditor(container, options, json)
+</script>
+
+</body>
+</html> 

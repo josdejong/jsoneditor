@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+
+    <title>JSONEditor | Auto Complete with Multiple Searchable Fields</title>
+
+    <link href="../dist/jsoneditor.css" rel="stylesheet" type="text/css" />
+    <script src="../dist/jsoneditor.js"></script>
+
+    <style type="text/css">
+      body {
+        width: 600px;
+        font: 11pt sans-serif;
+      }
+      #jsoneditor {
+        width: 100%;
+        height: 500px;
+      }
+
+      /* custom bold styling for non-default JSON schema values */
+      .jsoneditor-is-not-default {
+        font-weight: bold;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Auto Complete with Multiple Searchable Fields</h1>
+    <p>
+      This example demonstrates advanced autocomplete functionality with custom
+      filtering that searches across multiple fields within each option.
+      Countries with multiple searchable fields - you can search by country
+      name, capital city, or country code. Try typing "United States",
+      "Washington", "US", "Germany", "Berlin", "DE", "Japan", "Tokyo", or "JP".
+    </p>
+
+    <div id="jsoneditor"></div>
+
+    <script>
+      // Advanced autocomplete with multiple searchable fields
+      const container = document.getElementById("jsoneditor");
+
+      // Country data with multiple searchable fields
+      const countries = [
+        { name: "United States", capital: "Washington", code: "US" },
+        { name: "United Kingdom", capital: "London", code: "GB" },
+        { name: "Germany", capital: "Berlin", code: "DE" },
+        { name: "France", capital: "Paris", code: "FR" },
+        { name: "Japan", capital: "Tokyo", code: "JP" },
+        { name: "Australia", capital: "Canberra", code: "AU" },
+        { name: "Canada", capital: "Ottawa", code: "CA" },
+        { name: "Brazil", capital: "Brasília", code: "BR" },
+        { name: "India", capital: "New Delhi", code: "IN" },
+        { name: "China", capital: "Beijing", code: "CN" },
+        { name: "Italy", capital: "Rome", code: "IT" },
+        { name: "Spain", capital: "Madrid", code: "ES" },
+        { name: "Russia", capital: "Moscow", code: "RU" },
+        { name: "South Korea", capital: "Seoul", code: "KR" },
+        { name: "Mexico", capital: "Mexico City", code: "MX" },
+      ];
+
+      const normalizeCase = (text = "", config) => {
+        return config.caseSensitive ? text : text.toLowerCase();
+      };
+
+      const options = {
+        autocomplete: {
+          getOptions: function () {
+            // Convert country data to text/value format for autocomplete
+            return countries.map((country) => ({
+              text: country.name,
+              value: country.code,
+              // Store additional searchable fields for custom filtering
+              _searchableFields: [country.name, country.capital, country.code],
+            }));
+          },
+          filter: function (token, match, config) {
+            const normalizedToken = normalizeCase(token, config);
+            // Custom filter that searches across multiple fields
+            if (typeof match === "string") {
+              // Handle simple string matches
+              const normalizedMatch = normalizeCase(match, config);
+              return normalizedMatch.indexOf(normalizedToken) > -1;
+            }
+
+            if (match && match._searchableFields) {
+              // Search across all searchable fields
+              return match._searchableFields.some((field) => {
+                const normalizedField = normalizeCase(field, config);
+                return normalizedField.indexOf(normalizedToken) > -1;
+              });
+            }
+
+            
+            const textMatch =
+              match.text && 
+              normalizeCase(match.text, config).indexOf(normalizedToken) > -1;
+            const valueMatch =
+              match.value &&
+              normalizeCase(match.value, config).indexOf(normalizedToken) > -1;
+            return textMatch || valueMatch;
+          },
+        },
+      };
+
+      const json = {
+        user_countries: ["US", "DE"],
+        origin_country: "JP",
+        shipping_countries: ["US", "CA", "GB"],
+        description:
+          "Search by country name, capital, or code - value stored is the country code",
+      };
+
+      const editor = new JSONEditor(container, options, json);
+    </script>
+  </body>
+</html>

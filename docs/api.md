@@ -361,7 +361,7 @@ Constructs a new JSONEditor.
 
      - `start`         : Match your input from the start, e.g. `ap` match `apple` but `pl` does not.
      - `contain`       : Contain your input or not, e.g. `pl` match `apple` too.
-     - Custom Function : Define custom filter rule, return `true` will match you input.
+     - Custom Function : Define custom filter rule with signature `function(token, match, config)`. The `match` parameter can be either a string or an object with `text` and `value` properties. Return `true` if the option matches the input token.
 
   - `{string} trigger`
 
@@ -391,9 +391,9 @@ Constructs a new JSONEditor.
 
      *Returns:*
 
-     - Can return an array with autocomplete options (strings), for example `['apple','cranberry','raspberry','pie']`
+     - Can return an array with autocomplete options. Options can be either strings (e.g. `['apple','cranberry','raspberry','pie']`) or objects with `text` and `value` properties (e.g. `[{text: 'Apple', value: 'apple'}, {text: 'Cranberry', value: 'cranberry'}]`)
      - Can return `null` when there are no autocomplete options.
-     - Can return an object `{startFrom: number, options: string[]}`. Here `startFrom` determines the start character from where the existing text will be replaced. `startFrom` is `0` by default, replacing the whole text.
+     - Can return an object `{startFrom: number, options: (string|object)[]}`. Here `startFrom` determines the start character from where the existing text will be replaced. `startFrom` is `0` by default, replacing the whole text. Options can be strings or objects as described above.
      - Can return a `Promise` resolving one of the return types above to support asynchronously retrieving a list with options.
 
 - `{boolean} mainMenuBar`

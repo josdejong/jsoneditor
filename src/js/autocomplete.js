@@ -1,11 +1,98 @@
 'use strict'
 
+// Helper functions for handling both string and object option formats
+const getOptionText = (option) => {
+  if (option == null) return ''
+  return typeof option === 'string' ? option : (option.text || '')
+}
+
+const getOptionValue = (option) => {
+  if (option == null) return ''
+  return typeof option === 'string' ? option : (option.value || option.text || '')
+}
+
+const isObject = (value) => {
+  return value !== null && typeof value === 'object'
+}
+
+const normalizeCase = (text = '', config) => {
+  return config.caseSensitive ? text : text.toLowerCase()
+}
+
+const ensureStringOption = (option) => {
+  // Keep objects as-is, but convert primitives to strings to prevent breaking changes
+  return isObject(option) ? option : String(option)
+}
+
+const getHighlightedTextParts = (token, row, config) => {
+  const rowText = getOptionText(row)
+  const rowValue = getOptionValue(row)
+  const tokenLower = normalizeCase(token, config)
+  const rowTextLower = normalizeCase(rowText, config)
+  const rowValueLower = normalizeCase(rowValue, config)
+
+  // Find the best match position for highlighting
+  let matchIndex = -1
+  const matchLength = token.length
+  let displayText = rowText
+
+  // Prefer text matches over value matches for display
+  if (rowTextLower.indexOf(tokenLower) > -1) {
+    matchIndex = rowTextLower.indexOf(tokenLower)
+    displayText = rowText
+  } else if (rowValueLower.indexOf(tokenLower) > -1) {
+    matchIndex = rowValueLower.indexOf(tokenLower)
+    displayText = rowValue
+  }
+
+  if (matchIndex > -1) {
+    return {
+      beforeText: displayText.substring(0, matchIndex),
+      matchText: displayText.substring(matchIndex, matchIndex + matchLength),
+      afterText: displayText.substring(matchIndex + matchLength),
+      displayText
+    }
+  } else {
+    // No match found, return the display text as-is
+    return {
+      beforeText: '',
+      matchText: '',
+      afterText: displayText,
+      displayText
+    }
+  }
+}
+
+// Helper function to reduce duplication in filter functions
+const matchesFilter = (token, match, config, matchFunction) => {
+  const normalizedToken = normalizeCase(token, config)
+
+  if (isObject(match)) {
+    // Check both text and value properties for object matches
+    const matchText = getOptionText(match)
+    const matchValue = getOptionValue(match)
+    const normalizedText = normalizeCase(matchText, config)
+    const normalizedValue = normalizeCase(matchValue, config)
+
+    return matchFunction(normalizedText, normalizedToken) ||
+           matchFunction(normalizedValue, normalizedToken)
+  } else {
+    // Handle simple string matches
+    const normalizedMatch = normalizeCase(String(match), config)
+    return matchFunction(normalizedMatch, normalizedToken)
+  }
+}
+
 const defaultFilterFunction = {
   start: function (token, match, config) {
-    return match.indexOf(token) === 0
+    return matchesFilter(token, match, config, (normalizedText, normalizedToken) =>
+      normalizedText.indexOf(normalizedToken) === 0
+    )
   },
   contain: function (token, match, config) {
-    return match.indexOf(token) > -1
+    return matchesFilter(token, match, config, (normalizedText, normalizedToken) =>
+      normalizedText.indexOf(normalizedToken) > -1
+    )
   }
 }
 
@@ -61,7 +148,7 @@ export function autocomplete (config) {
         rows = []
         const filterFn = typeof config.filter === 'function' ? config.filter : defaultFilterFunction[config.filter]
 
-        const filtered = !filterFn ? [] : array.filter(match => filterFn(config.caseSensitive ? token : token.toLowerCase(), config.caseSensitive ? match : match.toLowerCase(), config))
+        const filtered = !filterFn ? [] : array.filter(match => filterFn(token, match, config))
 
         rows = filtered.map(row => {
           const divRow = document.createElement('div')
@@ -72,10 +159,25 @@ export function autocomplete (config) {
           divRow.onmousedown = onMouseDown
           divRow.__hint = row
           divRow.textContent = ''
-          divRow.appendChild(document.createTextNode(row.substring(0, token.length)))
-          const b = document.createElement('b')
-          b.appendChild(document.createTextNode(row.substring(token.length)))
-          divRow.appendChild(b)
+
+          const { beforeText, matchText, afterText } = getHighlightedTextParts(token, row, config)
+
+          // Add text before match (if any)
+          if (beforeText) {
+            divRow.appendChild(document.createTextNode(beforeText))
+          }
+
+          // Add highlighted match (if any)
+          if (matchText) {
+            const b = document.createElement('b')
+            b.appendChild(document.createTextNode(matchText))
+            divRow.appendChild(b)
+          }
+
+          // Add text after match
+          if (afterText) {
+            divRow.appendChild(document.createTextNode(afterText))
+          }
           elem.appendChild(divRow)
           return divRow
         })
@@ -83,12 +185,10 @@ export function autocomplete (config) {
         if (rows.length === 0) {
           return // nothing to show.
         }
-        if (rows.length === 1 && ((token.toLowerCase() === rows[0].__hint.toLowerCase() && !config.caseSensitive) ||
-                                           (token === rows[0].__hint && config.caseSensitive))) {
+        const firstRowText = getOptionText(rows[0].__hint)
+        if (rows.length === 1 && normalizeCase(token, config) === normalizeCase(firstRowText, config)) {
           return // do not show the dropDown if it has only one element which matches what we have just displayed.
         }
-
-        if (rows.length < 2) return
         p.highlight(0)
 
         if (distanceToTop > distanceToBottom * 3) { // Heuristic (only when the distance to the to top is 4 times more than distance to the bottom
@@ -189,7 +289,7 @@ export function autocomplete (config) {
 
       dropDown.style.marginLeft = '0'
       dropDown.style.marginTop = element.getBoundingClientRect().height + 'px'
-      this.options = options.map(String)
+      this.options = options.map(ensureStringOption)
 
       if (this.element !== element) {
         this.element = element
@@ -254,12 +354,35 @@ export function autocomplete (config) {
       const token = text.substring(this.startFrom)
       leftSide = text.substring(0, this.startFrom)
 
+      // Use the same filter logic as the dropdown for consistency
+      const filterFn = typeof config.filter === 'function' ? config.filter : defaultFilterFunction[config.filter]
+
       for (let i = 0; i < optionsLength; i++) {
         const opt = this.options[i]
-        if ((!config.caseSensitive && opt.toLowerCase().indexOf(token.toLowerCase()) === 0) ||
-                    (config.caseSensitive && opt.indexOf(token) === 0)) { // <-- how about upperCase vs. lowercase
-          this.elementHint.innerText = leftSide + token + opt.substring(token.length)
-          this.elementHint.realInnerText = leftSide + opt
+
+        if (filterFn && filterFn(token, opt, config)) {
+          const optText = getOptionText(opt)
+          const optValue = getOptionValue(opt)
+
+          // For hints, prioritize matches that start with the token for better UX
+          let hintText = ''
+          const normalizedToken = normalizeCase(token, config)
+          const normalizedOptText = normalizeCase(optText, config)
+          const normalizedOptValue = normalizeCase(optValue, config)
+
+          if (normalizedOptText.indexOf(normalizedToken) === 0) {
+            // Text starts with token - show completion
+            hintText = leftSide + token + optText.substring(token.length)
+          } else if (normalizedOptValue.indexOf(normalizedToken) === 0) {
+            // Value starts with token - show completion
+            hintText = leftSide + token + optValue.substring(token.length)
+          } else {
+            // Contains match but doesn't start with token - just show the token
+            hintText = leftSide + token
+          }
+
+          this.elementHint.innerText = hintText
+          this.elementHint.realInnerText = leftSide + optValue
           break
         }
       }
@@ -343,8 +466,8 @@ export function autocomplete (config) {
       const token = text.substring(this.startFrom)
       const m = dropDownController.move(+1)
       if (m === '') { rs.onArrowDown() }
-      this.elementHint.innerText = leftSide + token + m.substring(token.length)
-      this.elementHint.realInnerText = leftSide + m
+      this.elementHint.innerText = leftSide + token + getOptionText(m).substring(token.length)
+      this.elementHint.realInnerText = leftSide + getOptionValue(m)
       e.preventDefault()
       e.stopPropagation()
       return
@@ -354,8 +477,8 @@ export function autocomplete (config) {
       const token = text.substring(this.startFrom)
       const m = dropDownController.move(-1)
       if (m === '') { rs.onArrowUp() }
-      this.elementHint.innerText = leftSide + token + m.substring(token.length)
-      this.elementHint.realInnerText = leftSide + m
+      this.elementHint.innerText = leftSide + token + getOptionText(m).substring(token.length)
+      this.elementHint.realInnerText = leftSide + getOptionValue(m)
       e.preventDefault()
       e.stopPropagation()
     }
@@ -366,8 +489,9 @@ export function autocomplete (config) {
     // console.log("Lost focus.");
   }
 
-  dropDownController.onmouseselection = (text, rs) => {
-    rs.element.innerText = rs.elementHint.innerText = leftSide + text
+  dropDownController.onmouseselection = (option, rs) => {
+    const optionValue = getOptionValue(option)
+    rs.element.innerText = rs.elementHint.innerText = leftSide + optionValue
     rs.hideDropDown()
     window.setTimeout(() => {
       rs.element.focus()
