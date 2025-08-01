@@ -2,6 +2,12 @@
 
 <https://github.com/josdejong/jsoneditor>
 
+## 2025-08-01, version 10.3.0
+
+- Feat: add support for autocompletion options with separate `text` and `value` 
+  (#1669). Thanks @ahmed-saber.
+- Fix: update dependencies (like `jsonrepair` and `ace-builds`).
+
 ## 2025-03-28, version 10.2.0
 
 - Feat: stringify integer numbers bigger than max safe integer (#1646).
