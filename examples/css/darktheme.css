@@ -34,12 +34,12 @@ div.jsoneditor-value.jsoneditor-highlight {
   border-color: #808080;
 }
 
-div.jsoneditor-field.highlight-active,
-div.jsoneditor-field.highlight-active:focus,
-div.jsoneditor-field.highlight-active:hover,
-div.jsoneditor-value.highlight-active,
-div.jsoneditor-value.highlight-active:focus,
-div.jsoneditor-value.highlight-active:hover {
+div.jsoneditor-field.jsoneditor-highlight-active,
+div.jsoneditor-field.jsoneditor-highlight-active:focus,
+div.jsoneditor-field.jsoneditor-highlight-active:hover,
+div.jsoneditor-value.jsoneditor-highlight-active,
+div.jsoneditor-value.jsoneditor-highlight-active:focus,
+div.jsoneditor-value.jsoneditor-highlight-active:hover {
   background-color: #b1b1b1;
   border-color: #b1b1b1;
 }
