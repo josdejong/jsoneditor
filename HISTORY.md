@@ -2,8 +2,10 @@
 
 <https://github.com/josdejong/jsoneditor>
 
-## not yet published, version 10.3.1
+## not yet published, version 10.4.0
 
+- Feat: implemented a new option `withPath` for the `expand` method, 
+  see #1671.
 - Fix: #1673 refinements in the autocomplete text highlighting and dropdown 
   logic (#1674). Thanks @ahmed-saber.
 - Fix: some class names for highlighting search results in the `darktheme.css` 
