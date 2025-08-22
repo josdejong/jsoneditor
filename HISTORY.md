@@ -2,6 +2,16 @@
 
 <https://github.com/josdejong/jsoneditor>
 
+## 2025-08-22, version 10.4.0
+
+- Feat: implemented a new option `withPath` for the `expand` method, 
+  see #1671.
+- Feat: update dependencies `jsonrepair` and `ace-builds`.
+- Fix: #1673 refinements in the autocomplete text highlighting and dropdown 
+  logic (#1674). Thanks @ahmed-saber.
+- Fix: some class names for highlighting search results in the `darktheme.css` 
+  example file (#1672). Thanks @epeleh.
+
 ## 2025-08-01, version 10.3.0
 
 - Feat: add support for autocompletion options with separate `text` and `value` 

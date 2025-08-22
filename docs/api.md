@@ -715,15 +715,19 @@ Expand/collapse a given JSON node. Only applicable for mode 'tree', 'view' and '
 
 - `{Array.<String>} path`
 
-  Path for the node to expand/collapse
+  Path for the node to expand/collapse. Required.
 
 - `{Boolean} isExpand`
 
-  Whether to expand the node (else collapse)
+  When true, expand the node. Else collapse it. Required.
 
 - `{Boolean} recursive`
 
-  Whether to expand/collapse child nodes recursively
+  When true, expand/collapse child nodes recursively. Optional.
+
+- `{Boolean} withPath`
+
+  When true, expand/collapse all nodes of `path` itself. Optional.
 
 #### `JSONEditor.focus()`
 

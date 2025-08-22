@@ -458,14 +458,28 @@ treemode.collapseAll = function () {
  * Expand/collapse a given JSON node.
  * @param {Object} [options] Available parameters:
  *                         {Array<String>} [path] Path for the node to expand/collapse.
- *                         {Boolean} [isExpand]  Whether to expand the node (else collapse).
- *                         {Boolean} [recursive]  Whether to expand/collapse child nodes recursively.
+ *                         {Boolean} [isExpand]  When true, expand the node. Else collapse it.
+ *                         {Boolean} [recursive] When true, expand/collapse child nodes recursively.
+ *                         {Boolean} [withPath]  When true, expand/collapse all nodes of `path` itself.
  */
 treemode.expand = function (options) {
-  if (!options) return
+  if (!options || !this.node) return
 
-  const node = this.node ? this.node.findNodeByPath(options.path) : null
+  const node = this.node.findNodeByPath(options.path)
   if (!node) return
+
+  if (options.withPath) {
+    for (let i = 0; i < options.path.length; i++) {
+      const parentNode = this.node.findNodeByPath(options.path.slice(0, i))
+      if (parentNode) {
+        if (options.isExpand) {
+          parentNode.expand(false)
+        } else {
+          parentNode.collapse(false)
+        }
+      }
+    }
+  }
 
   if (options.isExpand) {
     node.expand(options.recursive)
