@@ -42,7 +42,7 @@ const getHighlightedTextParts = (token, row, config) => {
     displayText = rowText
   } else if (rowValueLower.indexOf(tokenLower) > -1) {
     matchIndex = rowValueLower.indexOf(tokenLower)
-    displayText = rowValue
+    displayText = rowText
   }
 
   if (matchIndex > -1) {
@@ -185,8 +185,9 @@ export function autocomplete (config) {
         if (rows.length === 0) {
           return // nothing to show.
         }
-        const firstRowText = getOptionText(rows[0].__hint)
-        if (rows.length === 1 && normalizeCase(token, config) === normalizeCase(firstRowText, config)) {
+
+        const firstRowValue = getOptionValue(rows[0].__hint)
+        if (rows.length === 1 && normalizeCase(token, config) === normalizeCase(firstRowValue, config)) {
           return // do not show the dropDown if it has only one element which matches what we have just displayed.
         }
         p.highlight(0)
