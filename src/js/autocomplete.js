@@ -42,7 +42,7 @@ const getHighlightedTextParts = (token, row, config) => {
     displayText = rowText
   } else if (rowValueLower.indexOf(tokenLower) > -1) {
     matchIndex = rowValueLower.indexOf(tokenLower)
-    displayText = rowValue
+    displayText = rowText
   }
 
   if (matchIndex > -1) {
