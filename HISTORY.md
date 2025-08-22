@@ -2,6 +2,11 @@
 
 <https://github.com/josdejong/jsoneditor>
 
+## not yet published, version 10.3.1
+
+- Fix: #1673 refinements in the autocomplete text highlighting and dropdown 
+  logic (#1674). Thanks @ahmed-saber.
+
 ## 2025-08-01, version 10.3.0
 
 - Feat: add support for autocompletion options with separate `text` and `value` 
