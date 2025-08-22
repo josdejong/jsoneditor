@@ -6,6 +6,8 @@
 
 - Fix: #1673 refinements in the autocomplete text highlighting and dropdown 
   logic (#1674). Thanks @ahmed-saber.
+- Fix: some class names for highlighting search results in the `darktheme.css` 
+  example file (#1672). Thanks @epeleh.
 
 ## 2025-08-01, version 10.3.0
 
