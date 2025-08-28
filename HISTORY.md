@@ -2,6 +2,11 @@
 
 <https://github.com/josdejong/jsoneditor>
 
+## 2025-08-28, version 10.4.1
+
+- Fix: show autocompletion dropdown for single element when `option.text` is 
+  available (#1676). Thanks @ahmed-saber.
+
 ## 2025-08-22, version 10.4.0
 
 - Feat: implemented a new option `withPath` for the `expand` method, 
