@@ -360,7 +360,7 @@ treemode.getName = function () {
  * - to the first button in the top menu
  */
 treemode.focus = function () {
-  let input = this.scrollableContent.querySelector('[contenteditable=true]')
+  let input = this.scrollableContent.querySelector('[contenteditable=plaintext-only]') || this.scrollableContent.querySelector('[contenteditable=true]')
   if (input) {
     input.focus()
   } else if (this.node.dom.expand) {

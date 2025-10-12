@@ -2235,7 +2235,7 @@ export class Node {
     if (domField) {
       if (this.fieldEditable) {
         // parent is an object
-        domField.contentEditable = this.editable.field
+        setContentEditable(domField, this.editable.field)
         domField.spellcheck = false
         domField.className = 'jsoneditor-field'
       } else {
@@ -2428,7 +2428,7 @@ export class Node {
       } else {
         // create an editable or read-only div
         domValue = document.createElement('div')
-        domValue.contentEditable = this.editable.value
+        setContentEditable(domValue, this.editable.value)
         domValue.spellcheck = false
         domValue.innerHTML = this._escapeHTML(this.value)
       }
@@ -4774,6 +4774,21 @@ function getField (node) {
 
 function hasOwnProperty (object, key) {
   return Object.prototype.hasOwnProperty.call(object, key)
+}
+/**
+ * Safe way to set "contentEditable"
+ * @param {HTMLElement} div
+ * @param {boolean} enable
+ */
+function setContentEditable (element, enable) {
+  if (element) {
+    try {
+      element.contentEditable = enable ? 'plaintext-only' : false
+    } catch {
+      // fallback for browsers not supporting 'plaintext-only'
+      element.contentEditable = enable
+    }
+  }
 }
 
 // TODO: find a nicer solution to resolve this circular dependency between Node and AppendNode
