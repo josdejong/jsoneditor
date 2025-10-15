@@ -38,7 +38,7 @@
     "vanilla-picker": "^2.12.3"
   },
   "devDependencies": {
-    "@babel/core": "7.28.3",
+    "@babel/core": "7.28.4",
     "@babel/preset-env": "7.28.3",
     "@babel/register": "7.28.3",
     "babel-loader": "10.0.0",
@@ -49,15 +49,15 @@
     "gulp-clean-css": "4.3.0",
     "gulp-concat-css": "3.1.0",
     "gulp-sass": "6.0.1",
-    "jsdom": "26.1.0",
+    "jsdom": "27.0.0",
     "json-loader": "0.5.7",
     "mkdirp": "3.0.1",
-    "mocha": "11.7.1",
-    "sass": "1.90.0",
+    "mocha": "11.7.4",
+    "sass": "1.93.2",
     "source-map-loader": "5.0.0",
     "standard": "17.1.2",
     "uglify-js": "3.19.3",
-    "webpack": "5.101.3"
+    "webpack": "5.102.1"
   },
   "files": [
     "dist",
