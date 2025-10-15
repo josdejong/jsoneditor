@@ -591,7 +591,7 @@ treemode._onChange = function () {
 treemode.validate = function () {
   const root = this.node
   if (!root) { // TODO: this should be redundant but is needed on mode switch
-    return
+    return Promise.resolve([])
   }
 
   const json = root.getValue()
