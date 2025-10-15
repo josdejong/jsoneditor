@@ -2,6 +2,10 @@
 
 <https://github.com/josdejong/jsoneditor>
 
+## 2025-10-15, version 10.4.2
+
+- Fix: #1680 ensure that method `.validate()` always returns a `Promise`.
+
 ## 2025-08-28, version 10.4.1
 
 - Fix: show autocompletion dropdown for single element when `option.text` is 
