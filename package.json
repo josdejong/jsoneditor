@@ -57,7 +57,7 @@
     "source-map-loader": "5.0.0",
     "standard": "17.1.2",
     "uglify-js": "3.19.3",
-    "webpack": "5.102.1"
+    "webpack": "5.105.0"
   },
   "files": [
     "dist",
