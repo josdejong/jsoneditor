@@ -29,7 +29,7 @@
   },
   "dependencies": {
     "ace-builds": "^1.36.2",
-    "ajv": "^6.12.6",
+    "ajv": "^8.18.0",
     "javascript-natural-sort": "^0.7.1",
     "jmespath": "^0.16.0",
     "json-source-map": "^0.6.1",
