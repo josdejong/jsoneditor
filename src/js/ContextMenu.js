@@ -42,6 +42,7 @@ export class ContextMenu {
     // create a list to hold the menu items
     const list = document.createElement('ul')
     list.className = 'jsoneditor-menu'
+    list.setAttribute('role', 'menu')
     menu.appendChild(list)
     dom.list = list
     dom.items = [] // list with all buttons
@@ -49,6 +50,7 @@ export class ContextMenu {
     // create a (non-visible) button to set the focus to the menu
     const focusButton = document.createElement('button')
     focusButton.type = 'button'
+    focusButton.setAttribute('aria-label', 'Close menu')
     dom.focusButton = focusButton
     const li = document.createElement('li')
     li.style.overflow = 'hidden'
@@ -76,9 +78,13 @@ export class ContextMenu {
           const button = document.createElement('button')
           button.type = 'button'
           button.className = item.className
+          button.setAttribute('role', 'menuitem')
           domItem.button = button
           if (item.title) {
             button.title = item.title
+            button.setAttribute('aria-label', item.title)
+          } else if (item.text) {
+            button.setAttribute('aria-label', item.text)
           }
           if (item.click) {
             button.onclick = event => {

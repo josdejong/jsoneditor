@@ -40,6 +40,7 @@ export class SearchBox {
     const refreshSearch = document.createElement('button')
     refreshSearch.type = 'button'
     refreshSearch.className = 'jsoneditor-refresh'
+    refreshSearch.setAttribute('aria-label', 'Refresh search results')
     divInput.appendChild(refreshSearch)
 
     const search = document.createElement('input')
@@ -68,6 +69,7 @@ export class SearchBox {
     const searchNext = document.createElement('button')
     searchNext.type = 'button'
     searchNext.title = translate('searchNextResultTitle')
+    searchNext.setAttribute('aria-label', translate('searchNextResultTitle'))
     searchNext.className = 'jsoneditor-next'
     searchNext.onclick = () => {
       searchBox.next()
@@ -78,6 +80,7 @@ export class SearchBox {
     const searchPrevious = document.createElement('button')
     searchPrevious.type = 'button'
     searchPrevious.title = translate('searchPreviousResultTitle')
+    searchPrevious.setAttribute('aria-label', translate('searchPreviousResultTitle'))
     searchPrevious.className = 'jsoneditor-previous'
     searchPrevious.onclick = () => {
       searchBox.previous()

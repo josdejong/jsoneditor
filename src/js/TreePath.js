@@ -46,7 +46,15 @@ export class TreePath {
         let sepEl
         pathEl.className = 'jsoneditor-treepath-element'
         pathEl.innerText = pathObj.name
+        pathEl.setAttribute('role', 'button')
+        pathEl.setAttribute('aria-label', `Select ${pathObj.name}`)
         pathEl.onclick = _onSegmentClick.bind(me, pathObj)
+        pathEl.onkeydown = (event) => {
+          if (event.key === 'Enter' || event.key === ' ') {
+            event.preventDefault()
+            _onSegmentClick.call(me, pathObj)
+          }
+        }
 
         me.path.appendChild(pathEl)
 
@@ -54,6 +62,9 @@ export class TreePath {
           sepEl = document.createElement('span')
           sepEl.className = 'jsoneditor-treepath-seperator'
           sepEl.textContent = '\u25BA'
+          sepEl.setAttribute('role', 'button')
+          sepEl.setAttribute('tabindex', '0')
+          sepEl.setAttribute('aria-label', 'Show child items')
 
           sepEl.onclick = () => {
             me.contentMenuClicked = true
@@ -67,6 +78,12 @@ export class TreePath {
             })
             const menu = new ContextMenu(items, { limitHeight: true })
             menu.show(sepEl, me.root, true)
+          }
+          sepEl.onkeydown = (event) => {
+            if (event.key === 'Enter' || event.key === ' ') {
+              event.preventDefault()
+              sepEl.onclick()
+            }
           }
 
           me.path.appendChild(sepEl)
