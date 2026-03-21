@@ -2,6 +2,36 @@
 
 <https://github.com/josdejong/jsoneditor>
 
+## 2025-10-15, version 10.4.2
+
+- Fix: #1680 ensure that method `.validate()` always returns a `Promise`.
+
+## 2025-08-28, version 10.4.1
+
+- Fix: show autocompletion dropdown for single element when `option.text` is 
+  available (#1676). Thanks @ahmed-saber.
+
+## 2025-08-22, version 10.4.0
+
+- Feat: implemented a new option `withPath` for the `expand` method, 
+  see #1671.
+- Feat: update dependencies `jsonrepair` and `ace-builds`.
+- Fix: #1673 refinements in the autocomplete text highlighting and dropdown 
+  logic (#1674). Thanks @ahmed-saber.
+- Fix: some class names for highlighting search results in the `darktheme.css` 
+  example file (#1672). Thanks @epeleh.
+
+## 2025-08-01, version 10.3.0
+
+- Feat: add support for autocompletion options with separate `text` and `value` 
+  (#1669). Thanks @ahmed-saber.
+- Fix: update dependencies (like `jsonrepair` and `ace-builds`).
+
+## 2025-03-28, version 10.2.0
+
+- Feat: stringify integer numbers bigger than max safe integer (#1646).
+  Thanks @pawfrolow.
+
 ## 2025-02-17, version 10.1.3
 
 - Fix: #1643 handle `true` property value in a JSON Schema (#1644). 

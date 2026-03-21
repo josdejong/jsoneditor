@@ -410,6 +410,7 @@ JSONEditor.prototype.setSchema = function (schema, schemaRefs) {
  */
 JSONEditor.prototype.validate = () => {
   // must be implemented by treemode and textmode
+  return Promise.resolve([])
 }
 
 /**
