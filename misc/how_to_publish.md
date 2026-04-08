@@ -38,7 +38,7 @@ correct date and version number in the header.
 ## Test
 
 Test whether the npm library is ok by opening some examples, and check whether
-the files under `dists` are created and have contents.
+the files under `dist` are created and have contents.
 
 
 ## Commit

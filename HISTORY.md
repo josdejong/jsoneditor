@@ -2,6 +2,10 @@
 
 <https://github.com/josdejong/jsoneditor>
 
+## 2026-04-01, version 10.4.3
+
+- Feat: update dependencies, most notably `jsonrepair`.
+
 ## 2025-10-15, version 10.4.2
 
 - Fix: #1680 ensure that method `.validate()` always returns a `Promise`.
