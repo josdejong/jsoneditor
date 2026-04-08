@@ -25,25 +25,21 @@ tr.jsoneditor-selected {
 }
 
 div.jsoneditor-field[contenteditable=true]:focus,
-div.jsoneditor-field[contenteditable=plaintext-only]:focus,
 div.jsoneditor-field[contenteditable=true]:hover,
-div.jsoneditor-field[contenteditable=plaintext-only]:hover,
 div.jsoneditor-value[contenteditable=true]:focus,
-div.jsoneditor-value[contenteditable=plaintext-only]:focus,
 div.jsoneditor-value[contenteditable=true]:hover,
-div.jsoneditor-value[contenteditable=plaintext-only]:hover,
 div.jsoneditor-field.jsoneditor-highlight,
 div.jsoneditor-value.jsoneditor-highlight {
   background-color: #808080;
   border-color: #808080;
 }
 
-div.jsoneditor-field.highlight-active,
-div.jsoneditor-field.highlight-active:focus,
-div.jsoneditor-field.highlight-active:hover,
-div.jsoneditor-value.highlight-active,
-div.jsoneditor-value.highlight-active:focus,
-div.jsoneditor-value.highlight-active:hover {
+div.jsoneditor-field.jsoneditor-highlight-active,
+div.jsoneditor-field.jsoneditor-highlight-active:focus,
+div.jsoneditor-field.jsoneditor-highlight-active:hover,
+div.jsoneditor-value.jsoneditor-highlight-active,
+div.jsoneditor-value.jsoneditor-highlight-active:focus,
+div.jsoneditor-value.jsoneditor-highlight-active:hover {
   background-color: #b1b1b1;
   border-color: #b1b1b1;
 }

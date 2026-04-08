@@ -2235,7 +2235,7 @@ export class Node {
     if (domField) {
       if (this.fieldEditable) {
         // parent is an object
-        setContentEditable(domField, this.editable.field)
+        domField.contentEditable = this.editable.field
         domField.spellcheck = false
         domField.className = 'jsoneditor-field'
       } else {
@@ -2428,7 +2428,7 @@ export class Node {
       } else {
         // create an editable or read-only div
         domValue = document.createElement('div')
-        setContentEditable(domValue, this.editable.value)
+        domValue.contentEditable = this.editable.value
         domValue.spellcheck = false
         domValue.innerHTML = this._escapeHTML(this.value)
       }

@@ -2,7 +2,7 @@
 
 [![Version](https://img.shields.io/npm/v/jsoneditor.svg)](https://www.npmjs.com/package/jsoneditor)
 [![Downloads](https://img.shields.io/npm/dm/jsoneditor.svg)](https://www.npmjs.com/package/jsoneditor)
-[![Maintenance](https://img.shields.io/maintenance/yes/2025.svg)](https://github.com/josdejong/jsoneditor/pulse)
+[![Maintenance](https://img.shields.io/maintenance/yes/2026.svg)](https://github.com/josdejong/jsoneditor/pulse)
 [![License](https://img.shields.io/github/license/josdejong/jsoneditor.svg)](https://github.com/josdejong/jsoneditor/blob/master/LICENSE)
 [![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fjosdejong%2Fjsoneditor.svg?type=shield)](https://app.fossa.io/projects/git%2Bgithub.com%2Fjosdejong%2Fjsoneditor?ref=badge_shield)
 
@@ -167,26 +167,6 @@ Run code linting ([JavaScript Standard Style](https://standardjs.com/)):
 ```
 npm run lint
 ```
-
-
-## Custom builds
-
-The source code of JSONEditor consists of CommonJS modules. JSONEditor can be bundled in a customized way using a module bundler like [browserify](http://browserify.org/) or [webpack](http://webpack.github.io/). First, install all dependencies of jsoneditor:
-
-    npm install
-
-To create a custom bundle of the source code using browserify:
-
-    browserify ./index.js -o ./jsoneditor.custom.js -s JSONEditor
-
-The Ace editor, used in mode `code`, accounts for about one third of the total
-size of the library. To exclude the Ace editor from the bundle:
-
-    browserify ./index.js -o ./jsoneditor.custom.js -s JSONEditor -x brace -x brace/mode/json -x brace/ext/searchbox
-
-To minify the generated bundle, use [uglifyjs](https://github.com/mishoo/UglifyJS2):
-
-    uglifyjs ./jsoneditor.custom.js -o ./jsoneditor.custom.min.js -m -c
 
 
 ## License
