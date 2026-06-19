@@ -38,9 +38,9 @@
     "vanilla-picker": "^2.12.3"
   },
   "devDependencies": {
-    "@babel/core": "7.29.0",
-    "@babel/preset-env": "7.29.2",
-    "@babel/register": "7.28.6",
+    "@babel/core": "8.0.1",
+    "@babel/preset-env": "8.0.2",
+    "@babel/register": "8.0.1",
     "babel-loader": "10.1.1",
     "btoa": "1.2.1",
     "date-format": "4.0.14",
