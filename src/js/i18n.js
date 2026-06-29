@@ -476,6 +476,7 @@ const _defs = {
     ascendingTitle: '${type}の子要素を昇順に並べ替え',
     actionsMenu: 'クリックしてアクションメニューを開く (Ctrl+M)',
     collapseAll: 'すべてを折りたたむ',
+    compactTitle: 'JSONデータを圧縮し、すべての空白を削除 (Ctrl+Shift+I)',
     descending: '降順',
     descendingTitle: '${type}の子要素を降順に並べ替え',
     drag: 'ドラッグして選択中のフィールドを移動 (Alt+Shift+Arrows)',
@@ -490,6 +491,7 @@ const _defs = {
     expandAll: 'すべてを展開',
     expandTitle: 'クリックしてフィールドを展開/折りたたむ (Ctrl+E). \n' +
       'Ctrl+Click ですべての子要素を展開/折りたたむ',
+    formatTitle: 'JSONデータを適切なインデントと改行で整形 (Ctrl+I)',
     insert: '挿入',
     insertTitle: '選択中のフィールドの前に新しいフィールドを挿入 (Ctrl+Ins)',
     insertSub: '挿入するフィールドの型を選択',
@@ -499,6 +501,10 @@ const _defs = {
     removeText: '削除',
     removeTitle: '選択中のフィールドを削除 (Ctrl+Del)',
     removeField: '選択中のフィールドを削除 (Ctrl+Del)',
+    repairTitle: 'JSONを修復：引用符とエスケープ文字を修正し、コメントとJSONP記法を削除し、JavaScriptオブジェクトをJSONに変換します。',
+    searchTitle: 'フィールドと値を検索',
+    searchNextResultTitle: '次の結果 (Enter)',
+    searchPreviousResultTitle: '前の結果 (Shift + Enter)',
     selectNode: 'ノードを選択...',
     showAll: 'すべてを表示',
     showMore: 'もっと見る',
@@ -541,6 +547,7 @@ const _defs = {
     stringType: '文字列： ' +
       'フィールド型は値から決定されませんが、' +
       '常に文字列として返されます。',
+    modeEditorTitle: 'エディターモードを切り替え',
     modeCodeText: 'コードモード',
     modeCodeTitle: 'ハイライトモードに切り替え',
     modeFormText: 'フォームモード',
