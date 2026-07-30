@@ -16,6 +16,7 @@ import {
   getAbsoluteLeft,
   getAbsoluteTop,
   getInnerText,
+  hasParentNode,
   getType,
   isTimestamp,
   isUrl,
@@ -2235,7 +2236,7 @@ export class Node {
     if (domField) {
       if (this.fieldEditable) {
         // parent is an object
-        domField.contentEditable = this.editable.field
+        setContentEditable(domField, this.editable.field)
         domField.spellcheck = false
         domField.className = 'jsoneditor-field'
       } else {
@@ -2428,7 +2429,7 @@ export class Node {
       } else {
         // create an editable or read-only div
         domValue = document.createElement('div')
-        domValue.contentEditable = this.editable.value
+        setContentEditable(domValue, this.editable.value)
         domValue.spellcheck = false
         domValue.innerHTML = this._escapeHTML(this.value)
       }
@@ -2627,6 +2628,9 @@ export class Node {
 
         case 'cut':
         case 'paste':
+          if (type === 'paste') {
+            pastePlainTextIntoContentEditable(event, domValue)
+          }
           setTimeout(() => {
             node._getDomValue()
             node._updateDomValue()
@@ -2671,6 +2675,9 @@ export class Node {
 
         case 'cut':
         case 'paste':
+          if (type === 'paste') {
+            pastePlainTextIntoContentEditable(event, domField)
+          }
           setTimeout(() => {
             node._getDomField()
             node._updateDomField()
@@ -4774,6 +4781,92 @@ function getField (node) {
 
 function hasOwnProperty (object, key) {
   return Object.prototype.hasOwnProperty.call(object, key)
+}
+/**
+ * Safe way to set "contentEditable"
+ * @param {HTMLElement} div
+ * @param {boolean} enable
+ */
+function setContentEditable (element, enable) {
+  if (element) {
+    element.contentEditable = enable
+  }
+}
+
+function pastePlainTextIntoContentEditable (event, element) {
+  if (!event || !element || !event.clipboardData) {
+    return
+  }
+
+  const text = event.clipboardData.getData('text/plain')
+  if (text === '') {
+    return
+  }
+
+  event.preventDefault()
+
+  if (document.queryCommandSupported && document.queryCommandSupported('insertText')) {
+    try {
+      if (document.execCommand('insertText', false, text)) {
+        return
+      }
+    } catch {
+      // Fallback to Range insertion when insertText is unavailable.
+    }
+  }
+
+  insertTextIntoContentEditable(element, text)
+}
+
+function insertTextIntoContentEditable (element, text) {
+  const selection = window.getSelection && window.getSelection()
+  if (!selection) {
+    element.textContent += text
+    setEndOfContentEditable(element)
+    return
+  }
+
+  if (selection.rangeCount === 0) {
+    setEndOfContentEditable(element)
+  }
+
+  let range = selection.rangeCount > 0 ? selection.getRangeAt(0) : null
+  if (!range || (!hasParentNode(range.commonAncestorContainer, element) && range.commonAncestorContainer !== element)) {
+    setEndOfContentEditable(element)
+    range = selection.rangeCount > 0 ? selection.getRangeAt(0) : null
+  }
+
+  if (!range) {
+    element.textContent += text
+    setEndOfContentEditable(element)
+    return
+  }
+
+  range.deleteContents()
+
+  const fragment = document.createDocumentFragment()
+  const parts = text.split('\n')
+  for (let i = 0; i < parts.length; i++) {
+    if (parts[i] !== '') {
+      fragment.appendChild(document.createTextNode(parts[i]))
+    }
+    if (i < parts.length - 1) {
+      fragment.appendChild(document.createElement('br'))
+    }
+  }
+
+  const lastNode = fragment.lastChild
+  range.insertNode(fragment)
+
+  if (lastNode) {
+    range = document.createRange()
+    range.setStartAfter(lastNode)
+    range.collapse(true)
+    selection.removeAllRanges()
+    selection.addRange(range)
+  } else {
+    setEndOfContentEditable(element)
+  }
 }
 
 // TODO: find a nicer solution to resolve this circular dependency between Node and AppendNode
