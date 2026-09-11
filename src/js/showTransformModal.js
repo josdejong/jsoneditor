@@ -98,7 +98,7 @@ export function showTransformModal (
       '            spellcheck="false"' +
       '            title="' + translate('transformQueryTitle') + '">[*]</textarea>' +
       '</div>' +
-      '<div class="jsoneditor-jmespath-label">' + translate('transformPreviewLabel') + ' </div>' +
+      '<div class="jsoneditor-jmespath-label"><label for="preview">' + translate('transformPreviewLabel') + ' </label></div>' +
       '<div class="jsoneditor-jmespath-block">' +
       '  <textarea id="preview" ' +
       '      class="jsoneditor-transform-preview"' +
@@ -185,8 +185,8 @@ export function showTransformModal (
 
       elem.querySelector('.pico-modal-contents').onclick = event => {
         // prevent the first clear button (in any select box) from getting
-        // focus when clicking anywhere in the modal. Only allow clicking links.
-        if (event.target.nodeName !== 'A') {
+        // focus when clicking anywhere in the modal. Allow links and labels.
+        if (event.target.nodeName !== 'A' && event.target.nodeName !== 'LABEL') {
           event.preventDefault()
         }
       }
