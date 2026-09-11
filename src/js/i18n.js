@@ -235,6 +235,9 @@ const _defs = {
     removeTitle: '移除选中字段 (Ctrl+Del)',
     removeField: '移除该字段 (Ctrl+Del)',
     repairTitle: '修复JSON：修复引号和转义符，删除注释和JSONP表示法，将JavaScript对象转换为JSON。',
+    searchTitle: '搜索字段和值',
+    searchNextResultTitle: '下一个结果 (Enter)',
+    searchPreviousResultTitle: '上一个结果 (Shift + Enter)',
     selectNode: '选择一个节点...',
     showAll: '展示全部',
     showMore: '展示更多',
@@ -277,6 +280,7 @@ const _defs = {
     stringType: '字段类型 "string". ' +
       '字段类型由值自动确定，' +
       '但始终作为字符串返回.',
+    modeEditorTitle: '切换编辑器模式',
     modeCodeText: '代码',
     modeCodeTitle: '切换至代码高亮',
     modeFormText: '表单',
