@@ -3951,7 +3951,7 @@ export class Node {
       })
     }
 
-    const menu = new ContextMenu(items, { close: onClose })
+    const menu = new ContextMenu(items, { close: onClose, limitHeight: true })
     menu.show(anchor, this.editor.getPopupAnchor())
   }
 
