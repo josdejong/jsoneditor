@@ -4048,11 +4048,9 @@ export class Node {
     const json = '"' + this._escapeJSON(escapedText) + '"'
     const htmlEscaped = parse(json)
 
-    return htmlEscaped
-      .replace(/&lt;/g, '<')
-      .replace(/&gt;/g, '>')
-      .replace(/&nbsp;|\u00A0/g, ' ')
-      .replace(/&amp;/g, '&') // must be replaced last
+    // getInnerText reads decoded DOM text. Decoding HTML entities again would
+    // change literal strings such as "&lt;" when a field or value is edited.
+    return htmlEscaped.replace(/\u00A0/g, ' ')
   }
 
   /**

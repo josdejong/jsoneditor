@@ -3,6 +3,39 @@ import './setup'
 import { Node } from '../src/js/Node'
 
 describe('Node', () => {
+  describe('DOM text round trips', () => {
+    const values = [
+      '&lt;tag&gt;', '&amp;', '&nbsp;', '&amp;lt;', '&#60;tag&#62;',
+      '<tag>', 'a & b', '  two  spaces  ', 'line\nnext', '"quoted" \\ path',
+      '<img src=x onerror="window.executed=true">', '<script>window.executed=true</script>'
+    ]
+
+    for (const escapeUnicode of [false, true]) {
+      for (const text of values) {
+        it(`preserves edited value ${JSON.stringify(text)} (escapeUnicode=${escapeUnicode})`, () => {
+          const node = new Node({ options: { escapeUnicode } }, { value: text, type: 'string' })
+          node._debouncedOnChangeValue = () => {}
+          node.dom.value = document.createElement('div')
+          node.dom.value.innerHTML = node._escapeHTML(text + '!')
+          assert.strictEqual(node.dom.value.querySelectorAll('*').length, 0)
+          node._getDomValue()
+          assert.strictEqual(node.value, text + '!')
+        })
+
+        it(`preserves edited field ${JSON.stringify(text)} (escapeUnicode=${escapeUnicode})`, () => {
+          const node = new Node({ options: { escapeUnicode } }, { field: text, fieldEditable: true, value: null })
+          node.parent = { getFieldNames: () => [] }
+          node._debouncedOnChangeField = () => {}
+          node.dom.field = document.createElement('div')
+          node.dom.field.innerHTML = node._escapeHTML(text + '!')
+          assert.strictEqual(node.dom.field.querySelectorAll('*').length, 0)
+          node._getDomField()
+          assert.strictEqual(node.field, text + '!')
+        })
+      }
+    }
+  })
+
   describe('_findSchema', () => {
     it('should find schema', () => {
       const schema = {
