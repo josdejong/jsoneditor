@@ -1629,6 +1629,11 @@ export class Node {
    * @private
    */
   _onChangeField () {
+    // A data update can remove this node while its field change is debounced.
+    if (!this.parent) {
+      return
+    }
+
     // get current selection, then override the range such that we can select
     // the added/removed text on undo/redo
     const oldSelection = this.editor.getDomSelection()
