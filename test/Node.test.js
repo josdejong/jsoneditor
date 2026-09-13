@@ -3,6 +3,47 @@ import './setup'
 import { Node } from '../src/js/Node'
 
 describe('Node', () => {
+  describe('_onChangeField', () => {
+    it('should ignore a debounced field change after the node is removed', async () => {
+      const actions = []
+      const editor = {
+        options: {},
+        getDomSelection: () => ({}),
+        _onAction: (...args) => actions.push(args)
+      }
+      const parent = new Node(editor, { value: { hello: 'world' } })
+      const child = parent.childs[0]
+      child.field = 'renamed'
+      child._debouncedOnChangeField()
+      parent.removeChild(child, false)
+
+      await new Promise(resolve => setTimeout(resolve, child.DEBOUNCE_INTERVAL + 50))
+
+      assert.strictEqual(child.parent, null)
+      assert.deepStrictEqual(actions, [])
+    })
+
+    it('should still record a field change for an attached node', () => {
+      const actions = []
+      const editor = {
+        options: {},
+        getDomSelection: () => ({}),
+        _onAction: (...args) => actions.push(args)
+      }
+      const parent = new Node(editor, { value: { hello: 'world' } })
+      const child = parent.childs[0]
+      child.field = 'renamed'
+      child._onChangeField()
+
+      assert.strictEqual(actions.length, 1)
+      assert.strictEqual(actions[0][0], 'editField')
+      assert.strictEqual(actions[0][1].oldValue, 'hello')
+      assert.strictEqual(actions[0][1].newValue, 'renamed')
+      assert.deepStrictEqual(actions[0][1].parentPath, [])
+      assert.strictEqual(child.previousField, 'renamed')
+    })
+  })
+
   describe('_findSchema', () => {
     it('should find schema', () => {
       const schema = {
