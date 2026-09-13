@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Dynamic schema autocomplete regression</title>
+  <link href="../dist/jsoneditor.css" rel="stylesheet">
+  <script src="../dist/jsoneditor.js"></script>
+</head>
+<body>
+<div id="editor" style="height:400px"></div>
+<pre id="result">Running…</pre>
+<script>
+  window.testPromise = (async function () {
+    const schema = values => ({ type: 'object', properties: { choice: { type: 'string', enum: values } } })
+    const editor = new JSONEditor(document.getElementById('editor'), {
+      mode: 'code', allowSchemaSuggestions: true, schema: schema(['old-one', 'old-two'])
+    }, { choice: '' })
+    const ace = editor.aceEditor
+    const expectedPopup = async values => {
+      const expected = values.slice().sort().join(',')
+      const deadline = Date.now() + 2000
+      do {
+        const actual = ace.completer && ace.completer.popup
+          ? ace.completer.popup.data.map(item => item.value).sort().join(',') : ''
+        if (actual === expected && ace.completer.activated) return
+        await new Promise(resolve => setTimeout(resolve, 20))
+      } while (Date.now() < deadline)
+      throw new Error('Expected popup suggestions: ' + expected)
+    }
+    const open = () => {
+      const row = ace.session.getValue().split('\n').findIndex(line => line.includes('"choice"'))
+      ace.moveCursorTo(row, ace.session.getLine(row).lastIndexOf('"'))
+      ace.execCommand('startAutocomplete')
+    }
+    try {
+      open()
+      await expectedPopup(['old-one', 'old-two'])
+      editor.setSchema(schema(['new-one', 'new-two']))
+      await expectedPopup(['new-one', 'new-two'])
+      editor.setSchema(schema(['third-one', 'third-two']))
+      await expectedPopup(['third-one', 'third-two'])
+      editor.setSchema(schema(['only-option']))
+      await expectedPopup(['only-option'])
+      if (editor.get().choice !== '') throw new Error('Changing the schema must not insert a suggestion')
+      editor.setSchema(null)
+      if (ace.completer.activated || ace.completers.length || ace.getOption('enableLiveAutocompletion')) {
+        throw new Error('Removing the schema must disable stale suggestions')
+      }
+      editor.setSchema(schema(['restored-one', 'restored-two']))
+      open()
+      await expectedPopup(['restored-one', 'restored-two'])
+      document.getElementById('result').textContent = 'Passed: initial schema, repeated live updates, single suggestion without insertion, removal, re-enabling'
+      return true
+    } finally {
+      editor.destroy()
+    }
+  })().catch(error => {
+    document.getElementById('result').textContent = 'FAILED: ' + error.message
+    throw error
+  })
+</script>
+</body>
+</html>
