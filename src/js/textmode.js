@@ -418,11 +418,20 @@ textmode._onSchemaChange = function (schema, schemaRefs) {
   }
 
   if (this.options.allowSchemaSuggestions && schema) {
-    this.aceEditor.setOption('enableBasicAutocompletion', [new SchemaTextCompleter(schema, schemaRefs)])
+    // Ace only initializes this list once when enabling autocomplete.
+    this.aceEditor.completers = [new SchemaTextCompleter(schema, schemaRefs)]
+    this.aceEditor.setOption('enableBasicAutocompletion', this.aceEditor.completers)
     this.aceEditor.setOption('enableLiveAutocompletion', true)
+    if (this.aceEditor.completer && this.aceEditor.completer.activated) {
+      this.aceEditor.completer.updateCompletions(false)
+    }
   } else {
+    this.aceEditor.completers = []
     this.aceEditor.setOption('enableBasicAutocompletion', undefined)
     this.aceEditor.setOption('enableLiveAutocompletion', false)
+    if (this.aceEditor.completer) {
+      this.aceEditor.completer.detach()
+    }
   }
 }
 
